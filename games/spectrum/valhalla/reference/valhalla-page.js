@@ -335,10 +335,16 @@ const VH = {
     show(71);
   }
 
-  // How it works: fights and weapons.
-  function fightWidget() {
+  // The objects you can carry, by number.
+  function carried() {
     const objs = [];
     for (let n = 63; n <= 97; n++) { const w = word(n); if (w && (n < 88 || n === 96) && n !== 68 && n !== 73) objs.push(n); }
+    return objs;
+  }
+
+  // How it works: fights.
+  function fightWidget() {
+    const objs = carried();
     const fill = (sel, list, none) => { sel.innerHTML = (none ? '<option value="0">nothing</option>' : '') + list.map(n => '<option value="' + n + '">' + (n <= 39 ? word(n) : the(n)) + '</option>').join(''); };
     const people = []; for (let n = 1; n <= 39; n++) people.push(n);
     fill($('vh-fa'), people); fill($('vh-fd'), people); fill($('vh-faw'), objs, true); fill($('vh-fdw'), objs, true);
@@ -380,7 +386,11 @@ const VH = {
       $('vh-presets').append(b);
     });
     $('vh-fa').value = 1; setFrom('a', 1); $('vh-fd').value = 4; setFrom('d', 4); run();
-    // 05: the weapons table
+  }
+
+  // Discoveries: the weapons table.
+  function weapWidget() {
+    const objs = carried();
     $('vh-weap').innerHTML = '<tr><th>No.</th><th>Object</th><th>In a fight</th><th>Thrown</th></tr>' + objs.map(n => {
       const thrown = { 67: 10, 69: 10, 63: 20, 64: 20, 66: 30, 87: 40 }[n] || 2;
       return '<tr' + (n > 66 ? ' class="vh-yes"' : '') + '><td class="vh-n">' + n + '</td><td>' + word(n) + '</td><td class="vh-n">+' + (n > 66 ? 80 : 40) + '</td><td class="vh-n">' + thrown + '</td></tr>';
@@ -711,7 +721,7 @@ const VH = {
   if (typeof Spectrum === 'undefined') { need('This widget reads the game from listing.json and needs the built site.'); return; }
   Spectrum.load('listing.json').then(G => {
     ram = G.ram;
-    const run = [['vh-loc', mapWidget], ['vh-fa', fightWidget], ['vh-type', typeWidget], ['vh-route', routeWidget], ['vh-mwho', moneyWidget],
+    const run = [['vh-loc', mapWidget], ['vh-fa', fightWidget], ['vh-weap', weapWidget], ['vh-type', typeWidget], ['vh-route', routeWidget], ['vh-mwho', moneyWidget],
       ['vh-help', helpWidget], ['vh-stale', staleWidget], ['vh-cast', castWidget], ['vh-ladder', ladderWidget], ['vh-you', youWidget],
       ['vh-hmap', homesWidget]];
     for (const [id, f] of run) if (has(id)) f();

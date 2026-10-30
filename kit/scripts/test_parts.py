@@ -273,6 +273,82 @@ class Parts(unittest.TestCase):
         self.assertEqual(comments, [])
         self.assertEqual([x.get('name') or x['text'] for x in left], ['in', 'x'])
 
+    def test_a_part_keeps_the_names_of_its_own_variables(self):
+        # the engine keeps a work byte at $20, and the park, loaded over it, a count of its own there
+        away, names = [[0x0000, 0x3FFF, 'the engine']], [[0x0020, 0x002F, "the park's variables"]]
+        mine, said = sym(0x0020, 'park_count', 'AbsoluteAddress'), line(0x0020, "The park's count.")
+        _, syms, comments, left = P.clip([], [mine], [said], away, names)
+        self.assertEqual((syms, comments, left), ([mine], [said], []))
+        _, syms, comments, left = P.clip([], [mine], [said], away)          # without "names", another part's
+        self.assertEqual((syms, comments, left), ([], [], [mine, said]))
+        _, syms, _, _ = P.clip([], [dict(mine, kind='auto')], [], away, names)
+        self.assertEqual(syms, [])                                          # a name the session minted is not
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code'), (0x1010, 0x1010, 'Byte')],
+                    [sym(0x0020, 'engine_temp', 'AbsoluteAddress'), sym(0x1000, 'engine_main'), sym(0x1003, 'engine_get'),
+                     sym(0x1010, 'engine_var', 'AbsoluteAddress')],
+                    [line(0x0020, "The engine's work byte."), line(0x1000, 'a'), line(0x1003, 'b'), line(0x1010, 'c')])
+            f = g / 'parts' / 'park' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), names=[['$0020', '$002F', "the park's variables"]])))
+            symbols(g, 'park', [(0x4000, 0x4005, 'Code'), (0x4010, 0x4011, 'Address'), (0x4020, 0x4022, 'Code')],
+                    [mine, sym(0x4000, 'park_entry'), sym(0x4010, 'park_vector', 'AbsoluteAddress'), sym(0x4020, 'park_read')],
+                    [said, line(0x4000, 'The park.'), line(0x4010, 'Its vector.'), line(0x4020, 'Reads the count.')])
+            park = snapshot(g / 'park2.vsf', ENGINE, PARK, {0x4020: [0xA5, 0x20, 0x60]})     # lda $20, rts
+            run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'park', park)
+            self.assertEqual({r['a']: r for r in records(g, 'park')}[0x4020]['o'], 'park_count')
+            self.assertEqual(tracked_count(str(g / 'parts' / 'park')), (11, 11))     # $20 counts in no ledger
+            _, seeded = P.seed(str(g / 'parts' / 'park'))
+            at = [s['name'] for s in seeded['symbols'] if s['address'] == 0x0020]
+            self.assertEqual(at, ['park_count'])                            # not the engine's name as well
+
+    def test_a_name_from_beneath_stays_out_of_the_parts_own_variables(self):
+        # $21 is among the park's variables too, though it has no name there: an operand reads as the
+        # address, not as the engine's name for what the engine keeps at $21
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code')],
+                    [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x1000, 'engine_main')],
+                    [line(0x0021, "The engine's flag."), line(0x1000, 'a')])
+            f = g / 'parts' / 'park' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), names=[['$0020', '$002F', "the park's variables"]])))
+            symbols(g, 'park', [(0x4000, 0x4005, 'Code'), (0x4020, 0x4022, 'Code')],
+                    [sym(0x4000, 'park_entry'), sym(0x4020, 'park_read')],
+                    [line(0x4000, 'The park.'), line(0x4020, 'Reads the flag.')])
+            park = snapshot(g / 'park2.vsf', ENGINE, PARK, {0x4020: [0xA5, 0x21, 0x60]})     # lda $21, rts
+            run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'park', park)
+            self.assertNotEqual({r['a']: r for r in records(g, 'park')}[0x4020]['o'], 'engine_flag')
+
+    def test_a_name_carried_in_from_beneath_is_not_the_parts_own(self):
+        # a session seeded with the engine's names before the park had its names rows still holds
+        # them there: the export leaves out what the engine has word for word, and keeps the park's
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code')],
+                    [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x1000, 'engine_main')],
+                    [line(0x0021, "The engine's flag."), line(0x1000, 'a')])
+            names = [[0x0020, 0x002F, "the park's variables"]]
+            Ps = P.parts(str(g))
+            me = next(p for p in Ps if p['id'] == 'park')
+            syms, comments, dropped = P.carried(
+                Ps, me, [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x0020, 'park_count', 'AbsoluteAddress')],
+                [line(0x0021, "The engine's flag."), line(0x0020, "The park's count.")], names)
+            self.assertEqual([s['name'] for s in syms], ['park_count'])
+            self.assertEqual([c['text'] for c in comments], ["The park's count."])
+            self.assertEqual(len(dropped), 2)
+            self.assertEqual(P.carried(Ps, me, [sym(0x0021, 'park_flag', 'AbsoluteAddress')], [], names)[2], [])
+            f = g / 'parts' / 'park' / 'part.json'
+            proj = g / 'park.regen2000proj'
+            run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj)
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), names=[['$0020', '$002F', "the park's variables"]])))
+            p = json.loads(proj.read_text())
+            p['labels'][str(0x0021)] = [{'name': 'engine_flag', 'label_type': 'AbsoluteAddress', 'kind': 'User'}]
+            proj.write_text(json.dumps(p))
+            out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
+            self.assertIn('$0021  engine_flag', out)
+            kept = json.loads((g / 'parts' / 'park' / 'symbols.json').read_text())['symbols']
+            self.assertNotIn('engine_flag', [s['name'] for s in kept])
+
     def test_a_symbol_only_the_part_beneath_refers_to_is_left_out(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)

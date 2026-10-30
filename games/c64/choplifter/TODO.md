@@ -23,7 +23,7 @@ except the last.
 | Gold requirement | State |
 |---|---|
 | 100 % coverage | done |
-| Interactive article | done: nine sections, each with something to press |
+| Interactive article | done: eight sections on How it works, each with something to press, and the bugs and quirks on Discoveries |
 | A finding beyond the documentation verified live | done, several. The shot that cannot hit anything (`$AD86` / `$B344`), the tank spawn that lands outside the world (`$9F54`), the free list built four links too long (`$AA11`) |
 | **A human has read the copy** | **not done.** `copy` in `game.json` is `agent` and stays that way until a human reads it |
 

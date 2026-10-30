@@ -21,6 +21,10 @@ than the listing's rebuilds from the file and that snapshot, and where their
 bytes differ it holds less than the file did (#562). A label renamed or a
 comment reworded loses nothing; deleting work on purpose needs --force.
 
+A comment that names a routine or table by an automatic name the address
+no longer has (s_10B4, renamed show_bonus since) is printed after the
+export: the listing shows only the new name, so a reader cannot follow it.
+
 Coverage regions come from game.json. The platform rule is the same for
 every game: "video" names the screen base (excluded: it is output) and the
 character-set base (included: authored data the video chip reads through a
@@ -40,7 +44,7 @@ refers to, at addresses that part wrote before this one's load replaced them:
 the disassembler mints one wherever that code refers to its own bytes there,
 and the part's own code may never use it.
 """
-import importlib.util, json, os, sys
+import importlib.util, json, os, re, sys
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -284,6 +288,17 @@ def losses(path, out, reg):
             + [f"  {x}" for x in gone[:8]] + ([f"  and {len(gone) - 8} more"] if len(gone) > 8 else []))
 
 
+def old_names(syms, comments):
+    """[(old, new, comment address)]: an automatic name in a comment's text, such as s_10B4, where the
+    export names that address otherwise, such as show_bonus. A reader finds no label by the old name."""
+    names, now = {s["name"] for s in syms}, {}
+    for s in syms:
+        now.setdefault(s["address"], s["name"])
+    return [(old, now[int(a, 16)], c["address"]) for c in comments
+            for old, a in re.findall(r"\b([a-z]{1,4}_([0-9A-F]{4}))\b", c["text"])
+            if old not in names and int(a, 16) in now]
+
+
 def platform_of(game):
     """game.json's platform, which every game must name (kit/PLATFORMS.md)."""
     plat = game.get("platform")
@@ -354,7 +369,7 @@ def main():
         print(__doc__); return
     gdir = argv[0]
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from parts import load_game, parts, clip, home
+    from parts import load_game, parts, clip, home, carried
     if parts(gdir):
         sys.exit(f"{gdir} is a game of several parts: export one, {os.path.join(gdir, 'parts', '<id>')}")
     game = load_game(gdir)
@@ -370,7 +385,17 @@ def main():
         source = "regenerator2000 live" if plat == "c64" else "live"
     reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
-        blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"])
+        blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"], game.get("names") or [])
+        if game.get("names"):
+            top, pid = home(gdir)
+            P = parts(top)
+            syms, comments, dropped = carried(P, next(p for p in P if p["id"] == pid), syms, comments, game["names"])
+            if dropped:
+                print(f"left out {len(dropped)} label(s) and comment(s) in this part's names rows (part.json \"names\") "
+                      "that a part beneath has there word for word: the session was seeded with them before the rows "
+                      "were set. Name the part's own variables in its own words:\n  "
+                      + "\n  ".join(f"${x['address']:04X}  {x.get('name') or x['text'][:60]}" for x in dropped[:12])
+                      + (f"\n  and {len(dropped) - 12} more" if len(dropped) > 12 else ""))
         if not key:     # only a live session says what refers to what
             syms, stray = drop_strays(plat, session, syms, game)
     syms.sort(key=lambda s: s["address"])
@@ -403,6 +428,13 @@ def main():
               "this part's load replaced: the session minted them tracing that code")
     if lost:
         print("written with --force, holding less than the file it replaced:\n  " + "\n".join(lost))
+    renamed = old_names(syms, comments)
+    if renamed:
+        print(f"{len(renamed)} comment(s) name a label by an automatic name it no longer has; write the new name in:")
+        for old, new, at in renamed[:8]:
+            print(f"  ${at:04X}  {old} is now {new}")
+        if len(renamed) > 8:
+            print(f"  and {len(renamed) - 8} more")
     if left:
         # what the session holds at addresses another part owns: kept only if that part has it too
         top = home(gdir)[0]

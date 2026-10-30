@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's high-score table against the game's own code. index.html's commando-table block
+// Hold the page's high-score table against the game's own code. discoveries.html's commando-table block
 // runs beside the game's insert ($09A4) on the kit's 6502 simulator, over the bytes of the
 // committed listing, as this copy has it (the walk from entry 7) and as the 1985 release has it
 // (entry 6: the bytes at $09A5 and $0A0D are $06 there, the only difference in the routine): every
@@ -11,7 +11,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'discoveries.html';
 const { insertScore, START_BYTES, startTable } = g.run(page, 'commando-table', 'insertScore', 'START_BYTES', 'startTable');
 const m = g.listing().ram;
 const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x36 }, io: { read(a) { throw new Error('read $' + a.toString(16)); }, write(a) { throw new Error('write $' + a.toString(16)); } } });

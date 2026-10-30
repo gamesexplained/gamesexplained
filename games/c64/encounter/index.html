@@ -76,7 +76,7 @@ td.m{font-family:var(--fm);font-size:13px}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1984 · Novagen Software</p>
   <h1>Encounter</h1>
-  <p class="sub">A first-person plain of obelisks and saucers, drawn with text where characters change every frame, and the ground is rendered by turning the sky upside down.</p>
+  <p class="sub">A first-person plain of obelisks and saucers, drawn with text where characters change every frame, and the ground is rendered by turning the sky upside down. What it keeps from the player is on <a href="discoveries.html">Discoveries</a>.</p>
 </header>
 <main class="wrap">
 
@@ -174,7 +174,7 @@ td.m{font-family:var(--fm);font-size:13px}
 
 <section>
   <p class="fig">05 · Controls</p>
-  <h2 class="t">Secret: any level can be picked from the title screen</h2>
+  <h2 class="t">One routine reads the stick and plays back the demo</h2>
   <div class="plate">
     <table>
       <tr><th>Input</th><th>Read at</th><th>Does</th></tr>
@@ -188,7 +188,7 @@ td.m{font-family:var(--fm);font-size:13px}
     </table>
   </div>
   <p>The joystick is in control port 2 and is read once per pass of the main loop by <code>$BC2C</code> with the direction nibble kept in <code>$6D</code> and the fire bit in <code>$6E</code>. The same routine replays a recorded stick script from <code>$7400</code> when the attract demo is running, one record per stick change with a count of passes, so the demo is a real game playing a recording.</p>
-  <p>On the title screen the keys go through the KERNAL's own scanner. <span class="kbd">F7</span> or the fire button starts. <span class="kbd">F5</span> cycles the skill through Novice, Advanced and Expert. The number keys 1 to 8 pick a level. The manual says only levels already reached can be picked; in the code the comparison with the highest level reached is still there at <code>$9CE3</code> but the branch after it has been replaced by two <code>NOP</code>s, so any level is available at once.</p>
+  <p>On the title screen the keys go through the KERNAL's own scanner. <span class="kbd">F7</span> or the fire button starts. <span class="kbd">F5</span> cycles the skill through Novice, Advanced and Expert. The number keys 1 to 8 pick a level, and any level, whatever the manual says (<a href="discoveries.html#level-keys">Discoveries</a>).</p>
 </section>
 
 <section>
@@ -300,26 +300,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">12 · Quirks</p>
-  <h2 class="t">Things a pilot would not know</h2>
-  <h3>It refuses to run on an NTSC machine</h3>
-  <p><code>$9DEC</code> reads the raster line through the odd address <code>$CFF9,X</code> with X = 25, which lands on <code>$D012</code>, and spins until the line reads 0. It then looks at the previous non-zero value. On PAL that is <code>$37</code> (line 311 wrapping to 0) and the game continues. On NTSC it is <code>$06</code>, and the code jumps through a pointer that by then holds <code>$DBE8</code>, an address in colour memory. Tested with the emulator set to NTSC: the title screen is drawn and the processor parks at <code>$DBE8</code> for good.</p>
-  <h3>Seven bytes that should not be executed</h3>
-  <p>Between the game-start setup and the level start, <code>$9FF9</code> holds <code>A9 4B 53 54 41 3A 2A</code>. A checkpoint counted one pass through them on every F7. The processor reads them as <code>LDA #$4B</code>, then the undocumented <code>SRE ($54),Y</code>, <code>EOR ($3A,X)</code> and <code>ROL A</code>, none of which matters to what follows. As text they read <code>KSTA:*</code>. Whether this is a patch or original is unknown.</p>
-  <h3>RESET restarts the game</h3>
-  <p><code>$8000</code> holds the vector <code>$9C3E</code> twice and <code>$8004</code> the text <code>CBM80</code>, the signature the KERNAL looks for in a cartridge. A hardware reset or RESTORE therefore lands in the game's own init instead of BASIC.</p>
-  <h3>Any level, any time</h3>
-  <p>The number keys were meant to reopen only levels already reached this session. The comparison is still in the title loop; the branch that acted on it is two <code>NOP</code>s. Pressing 5 on a fresh boot starts level 5.</p>
-  <h3>The pause key cannot unpause</h3>
-  <p>SPACE enters a loop that watches F1 and the joystick. It never looks at SPACE again; any stick direction resumes play.</p>
-  <h3>The shield count is a screen cell</h3>
-  <p>No variable holds the shields. The routines that add and subtract them edit the character code of the digit on the status line.</p>
-  <h3>Calls into the title screen</h3>
-  <p>Six routines, including the main loop's wait for the raster, call addresses inside row 13 of the title screen, where seven <code>JMP $6A1D</code> lead to an <code>RTS</code>. Something once lived there. What it was, whether a loader hook or a protection check, is unknown.</p>
-</section>
-
-<section>
-  <p class="fig">13 · Where it lives</p>
+  <p class="fig">12 · Where it lives</p>
   <h2 class="t">Where everything sits in memory</h2>
   <div class="plate"><table>
     <tr><th>Range</th><th class="n">Bytes</th><th>What</th></tr>

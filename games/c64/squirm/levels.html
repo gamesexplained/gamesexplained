@@ -1,0 +1,245 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squirm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.sq-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.sq-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.sq-btn:hover{border-color:var(--ink-mute)}
+.sq-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sq-btn:disabled{opacity:.45;cursor:default}
+.sq-lbl{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-right:2px}
+.sq-pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.sq-pics.sq-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sq-pics figure{margin:0}
+.sq-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.sq-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.sq-stack{position:relative;width:100%;max-width:768px}
+.sq-stack canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.sq-stack canvas+canvas{position:absolute;left:0;top:0;pointer-events:none;image-rendering:auto}
+.sq-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.sq-tbl th,.sq-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.sq-tbl th{font-weight:700;color:var(--ink-soft)}
+.sq-tbl td.sq-n,.sq-tbl th.sq-n{font-family:var(--fm);font-size:13px;white-space:nowrap;text-align:right}
+.sq-tbl tr.sq-on td{background:var(--hl)}
+.sq-wrapx{overflow-x:auto}
+.sq-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:12px 0 0;line-height:1.55;white-space:pre-wrap}
+.sq-log{font-family:var(--fm);font-size:12.5px;line-height:1.5;margin:12px 0 0;padding:10px 12px;background:var(--surface-2);border-radius:6px;min-height:7.5em;white-space:pre-wrap}
+.sq-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.sq-big{font-family:var(--fm);font-size:28px;letter-spacing:.06em;margin:8px 0 0}
+.sq-keys{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:6px 0 0}
+.sq-keys button{font-family:var(--fm);font-size:12px;padding:8px 0;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.sq-keys button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sq-keys span{font-family:var(--fm);font-size:11px;color:var(--ink-mute);text-align:center}
+.sq-bits{font-family:var(--fm);font-size:15px;margin:12px 0 0}
+@media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.sq-pics,.sq-pics.sq-two,.sq-split{grid-template-columns:1fr}.sq-keys{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · Mastertronic</p>
+  <h1>Squirm</h1>
+  <p class="sub">The three mazes, drawn by the game's own code from the listing, with where the player, the worms, and the treasure start, and the cycle of twelve levels that puts each maze with each stage.</p>
+</header>
+<main class="wrap">
+
+<section id="mazes">
+  <p class="fig">01 · The mazes</p>
+  <h2 class="t">Three mazes, one after another</h2>
+  <p class="lede">Level 1 uses maze 1, level 2 maze 2, level 3 maze 3, and the fourth level starts the round again.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" id="sq-m-prev" aria-label="The maze before">‹</button><select id="sq-m-sel" aria-label="Maze"></select><button type="button" class="step" id="sq-m-next" aria-label="The maze after">›</button></div>
+    <div class="sq-bar">
+      <button type="button" class="sq-btn" id="sq-m-marks" aria-pressed="true">Show where things start</button>
+    </div>
+    <div class="sq-stack"><canvas id="sq-m-cv" width="384" height="272" aria-label="The maze as the game draws and colours it"></canvas><canvas id="sq-m-ov" width="768" height="544" aria-hidden="true"></canvas></div>
+    <div class="sq-wrapx"><table class="sq-tbl" id="sq-m-tbl"></table></div>
+    <p class="cap">Drawn by the game's own code, taken from the listing and run on a model of the C64's processor, the 6502. <code>show_maze1</code>, <code>show_maze2</code>, or <code>show_maze3</code> (<code>$246A</code>, <code>$2491</code>, <code>$24B8</code>) copies the maze's 840 character codes to rows 2 to 22, and <code>colour_maze</code> (<code>$35E8</code>) colours it. The marks are the start cells that <code>reset_worms</code> (<code>$3669</code>) and <code>level_complete</code> (<code>$394A</code>) set: P the player, A to E the worms, T the treasure. The arrows are the open cells at the edges. Numbers written with a $ are hexadecimal, counting in sixteens; those in dark boxes are addresses in the C64's memory, and each opens the Source code tab there.</p>
+  </div>
+  <p>Each maze is stored as the character codes of rows 2 to 22, one byte a cell and 840 bytes in all, at <code>maze1</code> (<code>$16D2</code>), <code>maze2</code> (<code>$1A1A</code>), and <code>maze3</code> (<code>$1D62</code>). Walls are characters <code>$1B</code> to <code>$25</code>, and the corridors are spaces. The status lines above and below are drawn from stored patterns of their own. Every maze starts the player on row 12 at the left edge, and each worm on the same cell in all three mazes, so those cells are corridor in all three.</p>
+  <p>The open cells at the edges are the exits. A step left from the first column lands in the last column of the row above, because the position is kept as an address in screen memory, where each row follows straight on from the one before. In mazes 1 and 3 the player can leave by row 12 at the left and comes in on row 11 at the right. Maze 2 has two openings on each side, and so two ways across.</p>
+</section>
+
+<section id="cycle">
+  <p class="fig">02 · The cycle</p>
+  <h2 class="t">Every maze with every stage, once in twelve levels</h2>
+  <p class="lede">The maze goes round in threes and the stage of what moves in fours, so the same pairing comes back every twelve levels. The game is a jiffy (a sixtieth of a second) a pass faster each time round the stages.</p>
+  <div class="plate">
+    <div class="sq-wrapx"><table class="sq-tbl" id="sq-c-tbl"></table></div>
+    <p class="cap">Worked out by the game's own <code>level_complete</code> (<code>$3879</code>) and one pass of the main loop for each level, run on the model of the 6502, with the bonus run left out. A pass is one time round the main loop, the routine that moves everything one step. The table shows <code>maze_number</code> (<code>$2682</code>), <code>level_stage</code> (<code>$2688</code>), and <code>step_delay</code> (<code>$2689</code>) as each level begins.</p>
+  </div>
+  <p>The stage decides what moves (<code>move_creatures</code>, <code>$3A46</code>). Worms C, D, and E move at every stage. The treasure joins at stage 2, worm B at stage 3, and worm A, the long one, only at stage 4. A level's speed comes from how many cycles of four stages have gone by (<a href="index.html#levels">How it works</a>).</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+'use strict';
+/* sq-machine */
+// The widgets' machine: the game's own code from the listing, run on the kit's 6502 (C64Cpu) with
+// the chips the code touches answered here. $DC01, the joystick port, reads M.stick ($FF for
+// nothing pressed); colour RAM ($D800-$DBFF) and the video chip's registers keep what the code
+// writes; the SID and the CIAs' other registers take writes and read 0. Every loop that waits on
+// the jiffy clock (the read of $A2 at each address of waits) finds $A2 set to 0 and ends at once,
+// so a routine runs to its end at once and the widget keeps its own time. $D011 starts at $1B and
+// $D016 at $C8, as the KERNAL leaves them.
+//   M.run(pc, until, hooks)   runs from pc until the program counter reaches until
+//   M.call(pc, regs, hooks)   calls the routine at pc and returns when it does
+//   M.newGame()               start ($3B1D), fire pressed on the title, up to the main loop's
+//                             first wait ($3C56): maze 1 drawn and coloured, the worms coiled
+//   M.pass(hooks)             one pass of the main loop, main_loop ($3BF6) to its wait ($3C56)
+//   M.irq()                   one call of the game's interrupt, irq_handler ($3CB3), up to the
+//                             KERNAL's handler ($EA31) that it ends in
+//   M.frame()                 the frame C64.renderFrame draws, from memory as it is now
+function sqMachine(ram) {
+  const waits = [0x30AE, 0x3120, 0x329A, 0x32B4, 0x37A2, 0x37AF, 0x37D6, 0x38C2, 0x38E4, 0x38F1,
+    0x3A9E, 0x3AE2, 0x3B03, 0x3BC4, 0x3C5B, 0x3C7C, 0x3D4F, 0x3D82];
+  const m = ram.slice(), vic = new Uint8Array(64), colour = new Uint8Array(1024);
+  vic[0x11] = 0x1B; vic[0x16] = 0xC8;
+  const M = { m, vic, colour, stick: 0xFF };
+  const io = {
+    read(a) {
+      if (a === 0xDC01) return M.stick;
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+      return a >= 0xD000 && a < 0xD040 ? vic[a - 0xD000] : 0;
+    },
+    write(a, v) {
+      if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15;
+      else if (a >= 0xD000 && a < 0xD040) vic[a - 0xD000] = v;
+    },
+  };
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+  const base = {};
+  for (const w of waits) base[w] = () => { m[0xA2] = 0; return false; };
+  const all = (h) => Object.assign({}, base, h || {});
+  M.cpu = cpu;
+  M.run = (pc, until, h) => { cpu.pc = pc; cpu.sp = 0xF0; cpu.run({ until, hooks: all(h), maxSteps: 2000000 }); };
+  M.call = (pc, regs, h) => cpu.call(pc, Object.assign({ a: 0, x: 0, y: 0 }, regs || {}), { hooks: all(h), maxSteps: 2000000 });
+  M.newGame = () => { M.stick = 0xEF; M.run(0x3B1D, 0x3C56); M.stick = 0xFF; };
+  M.pass = (h) => M.run(0x3BF6, 0x3C56, h);
+  M.irq = () => M.run(0x3CB3, 0xEA31);
+  M.frame = () => ({ lines: 312, cycles: 63, vic: Array.from(vic.subarray(0, 47)), cia2: [0x97, 0x3F],
+    writes: [], mem: m, colourMem: colour });
+  return M;
+}
+// end of sq-machine
+
+const $ = (id) => document.getElementById(id);
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+function missing(el, what) {
+  const p = document.createElement('p');
+  p.className = 'cap';
+  p.textContent = 'This widget needs ' + what + ', which the built site serves: it does not run from the file alone.';
+  el.appendChild(p);
+}
+const CX = (c) => 2 * (32 + 8 * c), CY = (r) => 2 * (35 + 8 * r);
+const MAZES = [[1, 0x16D2, 0x246A], [2, 0x1A1A, 0x2491], [3, 0x1D62, 0x24B8]];
+// start cells: the player's ($3B7D, $394A), the worms' (reset_worms, $3669) and the treasure's ($3B89)
+const STARTS = [['P', 0x05E0], ['A', 0x048E], ['B', 0x0755], ['C', 0x04CB], ['D', 0x0575], ['E', 0x06FB], ['T', 0x0755]];
+
+function mazesWidget(ram) {
+  const M = sqMachine(ram);
+  M.newGame();
+  for (let i = 0; i < 95; i++) M.irq();
+  const cv = $('sq-m-cv'), ov = $('sq-m-ov'), sel = $('sq-m-sel');
+  let at = 0, marks = true;
+  for (const [n] of MAZES) sel.insertAdjacentHTML('beforeend', `<option value="${n - 1}">Maze ${n}: levels ${n}, ${n + 3}, ${n + 6}, and every third after</option>`);
+  function draw() {
+    const [n, data, show] = MAZES[at];
+    M.call(show); M.call(0x35E8);
+    C64.drawFrame(cv, M.frame(), 1);
+    const g = ov.getContext('2d');
+    g.clearRect(0, 0, ov.width, ov.height);
+    const left = [], right = [];
+    let open = 0;
+    for (let r = 2; r <= 22; r++) {
+      for (let c = 0; c < 40; c++) if (ram[data + (r - 2) * 40 + c] === 0x20) open++;
+      if (ram[data + (r - 2) * 40] === 0x20) left.push(r);
+      if (ram[data + (r - 2) * 40 + 39] === 0x20) right.push(r);
+    }
+    if (marks) {
+      g.font = '700 14px "IBM Plex Mono", monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (const [k, a] of STARTS) {
+        const o = a - 0x400, r = Math.floor(o / 40), c = o % 40, dx = k === 'T' ? 16 : 0;
+        g.fillStyle = k === 'P' ? '#ffd23f' : k === 'T' ? '#7fe08a' : '#fff';
+        g.fillRect(CX(c) + dx, CY(r), 16, 16);
+        g.fillStyle = '#000'; g.fillText(k, CX(c) + dx + 8, CY(r) + 9);
+      }
+      g.fillStyle = '#ffd23f'; g.font = '700 20px "IBM Plex Mono", monospace';
+      for (const r of left) g.fillText('←', CX(0) - 22, CY(r) + 9);
+      for (const r of right) g.fillText('→', CX(39) + 38, CY(r) + 9);
+    }
+    $('sq-m-tbl').innerHTML = '<tbody>' +
+      `<tr><th>Stored at</th><td><code>${hex(data)}</code>, 840 bytes, copied by <code>${hex(show)}</code></td></tr>` +
+      `<tr><th>Corridor cells</th><td class="sq-n" style="text-align:left">${open} of 840</td></tr>` +
+      `<tr><th>Open at the left</th><td>${left.length > 1 ? 'rows' : 'row'} ${left.join(' and ')}</td></tr>` +
+      `<tr><th>Open at the right</th><td>${right.length > 1 ? 'rows' : 'row'} ${right.join(' and ')}</td></tr>` +
+      `<tr><th>Levels</th><td>${[0, 1, 2, 3, 4, 5].map((k) => n + 3 * k).join(', ')}, and every third after</td></tr></tbody>`;
+    sel.value = String(at);
+    $('sq-m-prev').classList.toggle('off', at === 0);
+    $('sq-m-next').classList.toggle('off', at === MAZES.length - 1);
+  }
+  sel.addEventListener('change', () => { at = +sel.value; draw(); });
+  $('sq-m-prev').addEventListener('click', () => { if (at > 0) { at--; draw(); } });
+  $('sq-m-next').addEventListener('click', () => { if (at < MAZES.length - 1) { at++; draw(); } });
+  $('sq-m-marks').addEventListener('click', (e) => {
+    marks = !marks; e.currentTarget.setAttribute('aria-pressed', marks ? 'true' : 'false'); draw();
+  });
+  draw();
+}
+
+function cycleWidget(ram) {
+  const M = sqMachine(ram);
+  M.newGame();
+  const MOVES = ['', 'worms C, D, E', 'worms C, D, E and the treasure', 'worms B to E and the treasure', 'all five worms and the treasure'];
+  const skip = { 0x3780: (c) => { c.rts(); return false; } };
+  const t = $('sq-c-tbl');
+  t.innerHTML = '<thead><tr><th class="sq-n">Level</th><th class="sq-n">Maze</th><th class="sq-n">Stage</th><th>What moves</th><th class="sq-n">Jiffies a pass</th></tr></thead>';
+  const b = document.createElement('tbody');
+  for (let n = 1; n <= 24; n++) {
+    try { M.pass(); } catch (e) { break; }
+    const d = M.m[0x2689], j = d >= 0x80 ? 256 - d : 0;
+    b.insertAdjacentHTML('beforeend', `<tr><td class="sq-n">${n}</td><td class="sq-n">${M.m[0x2682]}</td><td class="sq-n">${M.m[0x2688]}</td><td>${MOVES[M.m[0x2688]]}</td><td class="sq-n">${j || 'none'}</td></tr>`);
+    M.call(0x3879, {}, skip);
+  }
+  t.appendChild(b);
+}
+
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+  for (const id of ['sq-m-tbl', 'sq-c-tbl']) missing($(id).parentNode, "the site's C64 library and 6502");
+} else {
+  C64.load('listing.json').then((L) => { mazesWidget(L.ram); cycleWidget(L.ram); });
+}
+</script>

@@ -154,5 +154,29 @@ class FormatTests(unittest.TestCase):
             self.assertEqual(traced, [])
 
 
+
+class ZapTests(unittest.TestCase):
+    """A stopped machine runs for the monitor's command, so zap says that what ran then, a
+    snapshot's start-up for one, was cleared with the rest."""
+
+    def zap(self, stopped):
+        import contextlib
+        import io
+        import codemap
+        saved = codemap.connect, codemap.paused, codemap.monitor
+        codemap.connect, codemap.paused = (lambda: None), (lambda rpc: stopped)
+        codemap.monitor = lambda cmd, rpc=None: "(C:$1000) "
+        out = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out):
+                codemap.zap()
+        finally:
+            codemap.connect, codemap.paused, codemap.monitor = saved
+        return out.getvalue()
+
+    def test_zap_on_a_stopped_machine_says_what_it_lost(self):
+        self.assertIn("zap in the part before", self.zap(True))
+        self.assertEqual(self.zap(False).strip(), "execute record cleared")
+
 if __name__ == "__main__":
     unittest.main()

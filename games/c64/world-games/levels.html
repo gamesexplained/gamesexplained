@@ -1,0 +1,223 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Games: Maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.wg-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.wg-stack{position:relative}
+.wg-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent;pointer-events:none}
+.wg-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.wg-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.wg-btn:hover{border-color:var(--ink-mute)}
+.wg-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.wg-out b{font-weight:700}
+.wg-pics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.wg-pics.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wg-pics figure{margin:0}
+.wg-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.wg-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:5px;line-height:1.4}
+.wg-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.wg-tbl th,.wg-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.wg-tbl th{font-weight:700;color:var(--ink-soft)}
+.wg-tbl td.wg-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.wg-tbl tr.wg-on td{background:var(--hl)}
+.wg-wrapx{overflow-x:auto}
+.wg-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
+.wg-field label{color:var(--ink-soft)}
+.wg-range{width:100%;max-width:360px;accent-color:var(--accent)}
+.wg-mono{font-family:var(--fm);font-size:13px}
+.wg-sub{font-size:14px;font-weight:700;color:var(--ink-soft);margin:16px 0 6px}
+.wg-win{display:flex;gap:10px;margin:4px 0;align-items:center}
+.wg-win em{font-style:normal;font-family:var(--fm);font-size:12px;color:var(--ink-soft);width:210px;flex:none}
+.wg-win span{flex:1;min-width:0;height:16px}
+.wg-win span i{display:flex;justify-content:flex-end;height:100%;background:var(--line);border-radius:3px;overflow:hidden}
+.wg-win span b{display:block;height:100%;background:var(--green);min-width:2px}
+.wg-bars{display:flex;gap:3px;align-items:flex-end;height:120px;margin:8px 0 0}
+.wg-bars div{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:pointer}
+.wg-bars i{display:block;width:100%;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px}
+.wg-bars b{font-family:var(--fm);font-size:10.5px;font-weight:500;color:var(--ink-mute);margin-top:3px}
+.wg-bars div.on i{background:var(--amber)}
+.wg-bars div.over i{background:var(--coral)}
+.wg-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.wg-strip button{font:inherit;font-family:var(--fm);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:4px 0;cursor:pointer;color:var(--ink)}
+.wg-strip button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-mem{position:relative;height:34px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;margin:6px 0 4px;overflow:hidden}
+.wg-mem i{position:absolute;top:0;bottom:0;border-right:1px solid rgba(255,255,255,.7)}
+.wg-memx{display:flex;justify-content:space-between;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+.wg-key{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.wg-chart{display:block;width:100%;height:auto}
+.wg-grid{display:grid;grid-template-columns:repeat(32,minmax(0,1fr));gap:1px;margin:6px 0 0}
+.wg-grid i{display:block;aspect-ratio:1;background:var(--green)}
+.wg-grid i.fall{background:var(--coral)}
+.wg-time{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;margin:0 0 10px}
+.wg-time input{font:inherit;font-family:var(--fm);font-size:14px;width:4.2em;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.wg-clocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:4px 0 0}
+.wg-clocks div{background:#000;color:#fff;border-radius:6px;padding:14px;text-align:center}
+.wg-clocks b{display:block;font-family:var(--fm);font-size:34px;font-weight:500;line-height:1.2}
+.wg-clocks span{font-size:13px;color:#b2b2b2}
+.wg-map{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000}
+.wg-mapbox{max-height:72vh;overflow:auto;border-radius:4px;background:#000}
+.wg-mapbox .wg-map{width:100%}
+.wg-wide{overflow-x:auto;border-radius:4px;background:#000}
+.wg-wide .wg-map{width:auto;max-width:none}
+@media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.wg-pics{grid-template-columns:repeat(2,minmax(0,1fr))}.wg-strip{grid-template-columns:repeat(5,minmax(0,1fr))}.wg-win{flex-wrap:wrap;gap:2px}.wg-win em{width:100%}.wg-win span{flex:1 1 100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Epyx</p>
+  <h1>World Games: Maps</h1>
+  <p class="sub">Four of the events scroll over a map larger than the screen. Each is drawn here whole, from the event's own map, colours and character set.</p>
+</header>
+<main class="wrap">
+
+<section id="slalom" data-part="slalom">
+  <p class="fig">01 · Slalom</p>
+  <h2 class="t">The slalom run, start to finish</h2>
+  <p class="lede">A run is twenty sections of 25 rows, taken in a fixed order from seven, with 39 gates placed on top. Here is all of it, 500 rows, as the skier meets it from the top.</p>
+  <div class="plate">
+    <div class="wg-mapbox"><canvas class="wg-map" id="wg-map-sl" style="max-width:520px;margin:0 auto" aria-label="The whole slalom run, top to bottom"></canvas></div>
+    <p class="wg-out" id="wg-map-sl-out"></p>
+    <p class="cap">Drawn from the course (<code>sl_course</code>, <code>$1000</code>, 65 columns a row), its colours (<code>$9000</code>) and the character set (<code>$4000</code>), section by section in the order at <code>$C543</code>. The flags are placed as <code>sl_place_flags</code> (<code>$C42D</code>) places them: a flag's top, character <code>$88</code>, in blue or red a gate at a time, and its pole below, from each flag's column (<code>sl_flag_columns</code>, <code>$EF00</code>) and row on the run's counter (<code>sl_flag_rows</code>, <code>$EF80</code>), which goes round at 256.</p>
+  </div>
+  <p>The course wraps round: column 64 is next to column 0, and the view shows 40 of its 65 columns at a time, following the skier (<code>sl_draw_view</code>, <code>$8795</code>). Twenty gates come in the first 256 rows and nineteen in the rest. The finish banner is the last section's, rows 150 to 174 of the course.</p>
+</section>
+
+<section id="cliff" data-part="cliff-diving">
+  <p class="fig">02 · Cliff diving</p>
+  <h2 class="t">The cliff, from the top to the sea bed</h2>
+  <p class="lede">The cliff is 102 rows of characters, and the event scrolls it a row at a time as the diver falls, from whichever of the six levels the dive starts.</p>
+  <div class="plate">
+    <div class="wg-mapbox"><canvas class="wg-map" id="wg-map-cd" style="max-width:640px;margin:0 auto" aria-label="The whole cliff"></canvas></div>
+    <p class="cap">Drawn from the map (<code>cd_cliff_map</code>, <code>$3000</code>, 40 characters a row), its colours (<code>$9000</code>) and the character set (<code>$4800</code>), in the colours the event sets: black behind, light blue and brown for the two shared colours (<code>$112B</code>). Below the water's surface the game turns both shared colours blue (<code>cd_irq_water</code>, <code>$1379</code>); the surface moves with the waves, so the map is drawn in the colours above it.</p>
+  </div>
+</section>
+
+<section id="bull" data-part="bull-riding">
+  <p class="fig">03 · Bull riding</p>
+  <h2 class="t">The arena, 120 columns wide</h2>
+  <p class="lede">The bull and its rider stay near the middle of the screen, and the arena scrolls under them. The view is 40 of the arena's 120 columns; the sky above moves a pixel for every 11 columns the arena moves.</p>
+  <div class="plate">
+    <div class="wg-wide"><canvas class="wg-map" id="wg-map-br" aria-label="The bull riding arena, all 120 columns"></canvas></div>
+    <p class="cap">The top four rows from <code>br_sky</code> (<code>$A000</code>) and their colours (<code>$A988</code>), in the top band's colours, orange behind, light grey and light blue (<code>br_top_band</code>, <code>$1CF9</code>); below them the arena's 18 rows of 120 from <code>br_arena_map</code> (<code>$A0A0</code>) and <code>br_arena_colours</code> (<code>$AA28</code>), in the arena band's, dark grey, light grey and orange (<code>br_arena_band</code>, <code>$1D3A</code>). Both use the character set at <code>$4000</code>. The sky is the same at every column of the view, so it is drawn once, over the view's first place.</p>
+  </div>
+  <p>The view's first column runs from 0 to 76 (<code>$27</code>), and the arena is drawn into the screen not shown, 18 rows from screen row 4, then the two screens are swapped (<code>br_draw_arena</code>, <code>$1AE2</code>; <code>br_swap_screens</code>, <code>$1BDF</code>).</p>
+</section>
+
+<section id="caber" data-part="caber-toss">
+  <p class="fig">04 · Caber toss</p>
+  <h2 class="t">The field, 128 columns wide</h2>
+  <p class="lede">The thrower runs up from the left, and the field scrolls by behind. The scenery is 11 rows of 128 columns, under six rows of sky that stay put.</p>
+  <div class="plate">
+    <div class="wg-wide"><canvas class="wg-map" id="wg-map-ct" aria-label="The caber toss field, all 128 columns"></canvas></div>
+    <p class="cap">The top six rows from <code>ct_top_rows</code> (<code>$8000</code>) and <code>ct_top_colours</code> (<code>$8800</code>), in the sky's colours, light blue behind, light grey and grey (<code>$143E</code>); the scenery's 11 rows of 128 from <code>ct_scenery_map</code> (<code>$8170</code>) and <code>ct_scenery_colours</code> (<code>$8970</code>), in the field's, green behind, dark grey and light grey (<code>$1520</code>), shown on screen rows 7 to 17 (<code>ct_draw_scenery</code>, <code>$197A</code>), under a row of character <code>$F7</code> in green that the event writes at the start (<code>$10A2</code>). All of them use the character set at <code>$7800</code>. The plain grass below, rows 18 to 22, is left out.</p>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* wg-maps */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const RGB = typeof C64 === 'undefined' ? [] : C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+// Draws a map of characters in the VIC-II's multicolour character mode into an image: cell(r, c)
+// gives [character, colour]; a colour with bit 3 set draws the character in four colours (the
+// background, the two shared colours and its own, less bit 3), the rest in two. bg(r) gives the
+// background and the two shared colours for row r.
+function drawMap(cv, ram, rows, cols, charset, cell, bg) {
+  cv.width = cols * 8; cv.height = rows * 8;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(cols * 8, rows * 8), d = img.data;
+  for (let r = 0; r < rows; r++) {
+    const b = bg(r);
+    for (let c = 0; c < cols; c++) {
+      const [ch, col] = cell(r, c);
+      if (ch === null) continue;
+      const cc = col & 15;
+      for (let py = 0; py < 8; py++) {
+        const bits = ram[charset + 8 * ch + py];
+        for (let p = 0; p < 8; p++) {
+          let k;
+          if (cc & 8) { const v = bits >> (6 - (p & 6)) & 3; k = v === 3 ? cc & 7 : b[v]; } else k = bits >> (7 - p) & 1 ? cc & 7 : b[0];
+          const o = ((r * 8 + py) * cols * 8 + c * 8 + p) * 4, q = RGB[k];
+          d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+function missing(id, what) { $(id).parentNode.insertAdjacentHTML('afterend', '<p class="cap">This needs ' + what + ', which did not load.</p>'); }
+
+// ---- slalom: the run as skied, 20 sections of 25 rows, with the gates' flags
+function slMap(ram) {
+  const order = [];
+  for (let a = 0xC543; ram[a] !== 0xFF && order.length < 40; a++) order.push(ram[a]);
+  const flags = new Map();
+  for (let i = 0; ram[0xEF80 + i] !== 0xFF && i < 0x7C; i++) {
+    const row = ram[0xEF80 + i] + (i >= 40 ? 256 : 0), col = ram[0xEF00 + i], c = (i & 3) < 2 ? 6 : 2;
+    flags.set(row * 65 + col, [0x88, c]); flags.set((row + 1) * 65 + col, [0x26, 6]); flags.set((row + 2) * 65 + col, [0x28, 6]);
+  }
+  const rows = order.length * 25;
+  drawMap($('wg-map-sl'), ram, rows, 65, 0x4000, (r, c) => {
+    const f = flags.get(r * 65 + c);
+    if (f) return f;
+    const cr = order[Math.floor(r / 25)] + r % 25;
+    return [ram[0x1000 + 65 * cr + c], ram[0x9000 + 65 * cr + c]];
+  }, () => [1, 0x0C, 0x0A]);
+  $('wg-map-sl-out').innerHTML = 'Sections, from the top: ' + order.map((r) => r).join(', ') + '; ' + (flags.size / 3 | 0) + ' flags.';
+}
+// ---- cliff diving: 102 rows of 40
+function cdMap(ram) {
+  drawMap($('wg-map-cd'), ram, 102, 40, 0x4800, (r, c) => [ram[0x3000 + 40 * r + c], ram[0x9000 + 40 * r + c]], () => [0, 0x0E, 0x09]);
+}
+// ---- bull riding: the sky's 4 rows of 40 over the arena's 18 rows of 120
+function brMap(ram) {
+  drawMap($('wg-map-br'), ram, 22, 120, 0x4000, (r, c) => r < 4 ? (c < 40 ? [ram[0xA000 + 40 * r + c], ram[0xA988 + 40 * r + c]] : [null]) : [ram[0xA0A0 + 120 * (r - 4) + c], ram[0xAA28 + 120 * (r - 4) + c]],
+    (r) => r < 4 ? [8, 0x0F, 0x0E] : [0x0B, 0x0F, 8]);
+}
+// ---- caber toss: the top 6 rows of 40, the line of $F7 on row 6, then the scenery's 11 rows of
+// 128 on screen rows 7 to 17
+function ctMap(ram) {
+  drawMap($('wg-map-ct'), ram, 18, 128, 0x7800, (r, c) => r < 6 ? (c < 40 ? [ram[0x8000 + 40 * r + c], ram[0x8800 + 40 * r + c]] : [null]) : r === 6 ? [0xF7, 5] : [ram[0x8170 + 128 * (r - 7) + c], ram[0x8970 + 128 * (r - 7) + c]],
+    (r) => r < 6 ? [0x0E, 0x0F, 0x0C] : [5, 0x0B, 0x0F]);
+}
+const maps = [['slalom', 'wg-map-sl', slMap], ['cliff-diving', 'wg-map-cd', cdMap], ['bull-riding', 'wg-map-br', brMap], ['caber-toss', 'wg-map-ct', ctMap]];
+for (const [p, id, f] of maps) {
+  if (typeof C64 === 'undefined') { missing(id, 'the site\'s C64 library'); continue; }
+  C64.load('parts/' + p + '/listing.json').then((L) => f(L.ram), () => missing(id, 'the listing of ' + p));
+}
+// end of wg-maps
+</script>

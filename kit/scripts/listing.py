@@ -1014,6 +1014,13 @@ def main():
     for i in index: kinds[i["k"]] = kinds.get(i["k"], 0) + 1
     print(f"wrote {path}: {len(records)} records, {sum(1 for r in records if r['t']=='code')} instructions, "
           f"index {kinds}, {os.path.getsize(path)//1024} KB")
+    # a block with a line comment is a routine in the Source tab's index, listed under its name,
+    # and the disassembler's own name for it (b_3A8F) tells a reader nothing
+    auto = {x["address"] for x in sym["symbols"] if x.get("kind") == "auto"}
+    unnamed = [i["n"] for i in index if i["k"] == "routine" and i["a"] in auto]
+    if unnamed:
+        print(f"note: {len(unnamed)} routine(s) in the Source tab's index keep the disassembler's own name "
+              f"({', '.join(unnamed[:3])}{', ...' if len(unnamed) > 3 else ''}): give each a name that says what it does")
     if was and was.get("sha256") != shot["sha256"]:
         print(f"note: the listing was built from {was.get('file')} ({str(was.get('sha256'))[:12]}), and this one "
               f"from {shot['file']} ({shot['sha256'][:12]}). Data the game changes as it runs may have moved: "

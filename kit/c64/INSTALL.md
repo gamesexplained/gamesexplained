@@ -310,8 +310,18 @@ the way to one where none exists, and no run of it is recorded on either.
 cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
+`--locked` builds it with the dependency versions the release was
+published with. Without it cargo takes the newest that fit, and on 30
+October 2026 one of those stopped 0.9.20 compiling, with `error[E0308]:
+mismatched types` in `src/main.rs`.
+
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
+
+`--locked` builds it with the versions of its own pieces it was
+released with. Without it, cargo takes the newest that match: on 30
+October 2026 that was `regenerator2000-tui` 0.9.21, and 0.9.20 failed to
+compile against it (`error[E0308]: mismatched types` in `src/main.rs`).
 
 Install that release, from crates.io, and not a build of the project's
 main branch. On 13 October 2026 main also called itself 0.9.20, and its
@@ -321,10 +331,11 @@ read the project back; the crates.io release, published on 11 July
 2026, answers both. When a later release is out, try it on a test
 snapshot with `symbols_export.py` before moving the version here.
 
-Keep `--locked`: it builds the release with the dependencies it was
-published with. Without it, on 30 October 2026, cargo took
-`regenerator2000-core` 0.9.21 for the 0.9.20 release, and the compile
-stopped with `error[E0308]: mismatched types` at `src/main.rs:838`.
+Keep `--locked`, which builds the release with the dependencies it was
+published with. Without it cargo takes the newest version each
+dependency allows: on 30 October 2026 that was `regenerator2000-tui`
+0.9.21, which does not compile with regenerator2000 0.9.20 (`error[E0308]`
+at `src/main.rs:838`, `CoreError` where `anyhow::Error` was expected).
 
 What it is, and say so when you ask: regenerator2000 is an open-source
 6502 disassembler by Ricardo Quesada, source at

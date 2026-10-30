@@ -316,14 +316,22 @@ def sizes(executed, ram):
     return {a: 1 if a in changed else n[a] for a in executed}, sorted(changed)
 
 
+ZAP_STOPPED = ("the machine was stopped, so it ran for a moment for the command, and what it ran "
+               "before the record was cleared is not in it. A snapshot loaded at a part's entry runs "
+               "the part's start-up in that moment: to keep the start-up, zap in the part before "
+               "and play through the load")
+
+
 def zap():
     try:
-        out = monitor("memmapzap")
+        rpc = connect()
+        was_paused = paused(rpc)
+        out = monitor("memmapzap", rpc)
     except OSError as exc:
         sys.exit(f"no monitor on 127.0.0.1:{MONITOR_PORT}: {exc} (run `tools.py vice` first)")
     if "ERROR" in out:
         sys.exit(f"memmapzap failed: {out.strip()[:200]}")
-    print("execute record cleared")
+    print("execute record cleared" + ("; " + ZAP_STOPPED if was_paused else ""))
 
 
 def dump(gdir, under_rom=False):

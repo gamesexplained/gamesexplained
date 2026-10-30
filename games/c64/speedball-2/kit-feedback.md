@@ -13,7 +13,7 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/c64/INSTALL.md` and `kit/c64/tools.py`: both `cargo install` lines for regenerator2000, and the message `tools.py` prints when it is missing, now pass `--locked`, and the install section says why. Without it cargo took `regenerator2000-core` 0.9.21 for the 0.9.20 release, and the compile stopped with `error[E0308]` at `src/main.rs:838`.
+- None to `kit/c64/INSTALL.md` or `kit/c64/tools.py` in the end: this run made them pass `--locked` to `cargo install` for regenerator2000, and the Power Drift run (#644) made the same change on main first, so the merge took main's text. Without the flag cargo took a newer dependency for the 0.9.20 release, and the compile stopped with `error[E0308]` at `src/main.rs:838`.
 - `kit/lessons/2026-10-30-speedball-2.md`: a code map recorded while a game runs code it unpacks into a shared buffer.
 
 ## Candidates

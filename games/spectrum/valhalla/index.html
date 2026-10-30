@@ -10,7 +10,7 @@
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Eighty-one places and thirty-six characters with minds of their own, in a game written mostly in BASIC. Every fight is settled before the first blow, food makes a better weapon than an axe, and the spelling checker forgives a wrong letter.</p>
+  <p class="sub">Eighty-one places and thirty-six characters with minds of their own, in a game written mostly in BASIC. Every fight is settled before the first blow, <a href="discoveries.html#weapons">food makes a better weapon than an axe</a>, and the spelling checker forgives a wrong letter.</p>
 </header>
 <main class="wrap">
 
@@ -60,18 +60,7 @@
 </section>
 
 <section>
-  <p class="fig">03 · Weapons</p>
-  <h2 class="t">Secret: food is a better weapon than an axe</h2>
-  <p class="lede">The test for the better weapon is only the object's number. The axe is 63 and food is 96.</p>
-  <div class="plate"><div class="vh-row">
-    <div class="vh-col"><img class="vh-shot" src="reference/fight-food.png" width="352" height="296" alt="Valheim after the fight: You attack Idun with the food. You defeat Idun. Idun leaves."></div>
-    <div class="vh-col"><table class="vh-tbl" id="vh-weap"></table></div>
-  </div><p class="cap">You, at 175 strength, against Idun at 215 in the emulator. With the axe, 215 against 215 is a draw; with the food, 255 against 215 is a win by 40. The table is every object you can carry, by its number in the dictionary.</p></div>
-  <p>The weapon's score in line 1362 is <code>(w&gt;o)*40+(w&gt;66)*40</code>, where <code>o</code> is the variable that holds 0. Every object counts for 40, and every one numbered above 66 for 80, which puts the sword and Skalir with the rock, the ring, the wine and the food. The axe, Felstrong, the shield and lightning only reach 40. Thrown, the axe and Felstrong do 20 damage and food does 2 (line 1471), so the numbers only favour food in a fight hand to hand.</p>
-</section>
-
-<section>
-  <p class="fig">04 · Typing</p>
+  <p class="fig">03 · Typing</p>
   <h2 class="t">The spelling checker forgives one wrong letter</h2>
   <p class="lede">Each word is looked up among the 255 rows of the dictionary as you press ENTER. One letter wrong, missing or extra still finds it, and so does an "s" on the end.</p>
   <div class="plate">
@@ -84,39 +73,11 @@
 </section>
 
 <section>
-  <p class="fig">05 · Money</p>
-  <h2 class="t">Bug: picking up crowns pays one crown</h2>
-  <p class="lede">The routine that adds money, line 3410, adds the number of the one receiving it instead of the amount.</p>
-  <div class="plate">
-    <div class="vh-ctl"><label>Crowns <input id="vh-mamt" type="number" min="0" max="9999" value="50"></label><label>go to <select id="vh-mwho"></select></label></div>
-    <div id="vh-mout" class="vh-out"></div>
-    <p class="cap">Line 3410 is <code>LET x=FN m(n)+n</code>, with n the character and m the amount. In the emulator, picking up a pile of 50 printed "You get 50 crowns." and then "You have 151 crowns."</p>
-  </div>
-  <p>The same routine pays the seller in a trade, so a character paid 100 crowns for its sword gets its own number. Thor is 4. The rest of the money leaves the game.</p>
-</section>
-
-<section>
-  <p class="fig">06 · Saving</p>
-  <h2 class="t">Bug: BREAK during a save resets the Spectrum</h2>
-  <p class="lede"><code>save</code> and <code>load</code> mean to catch BREAK on the tape and carry on. Pressing it resets the machine instead.</p>
-  <p>Both routines, <code>$5CF0</code> and <code>$5D0B</code>, change only the low byte of the address BASIC jumps to on an error, to $25, meaning <code>$5D25</code>. In play that address is the game's own handler, <code>$DA3C</code>, so the jump goes to <code>$DA25</code>, in the middle of the spelling checker, and the Spectrum resets. Seen in play, for both.</p>
-</section>
-
-<section>
-  <p class="fig">07 · Sound</p>
+  <p class="fig">04 · Sound</p>
   <h2 class="t">Sound: the beeper</h2>
   <p class="lede">There is no music. The machine code clicks each key, and the BASIC has five sounds made with <code>BEEP</code>.</p>
   <div class="plate"><div class="vh-ctl" id="vh-snd"></div>
   <p class="cap">Square waves at each sound's pitch and length: BEEP's pitch p is 261.63 × 2<sup>p/12</sup> Hz, and the key sounds call the ROM's BEEPER at <code>$03B5</code> with the counts in <code>$D5B7</code> and <code>$D5AE</code>. The chest and the death are 110 and 131 Hz, which small speakers barely play.</p></div>
-</section>
-
-<section>
-  <p class="fig">08 · Leftovers</p>
-  <h2 class="t">Left behind on the tape</h2>
-  <p class="lede">The machine code was saved with some of what was in memory on the authors' Spectrum.</p>
-  <div class="plate"><pre id="vh-stale" class="vh-dump"></pre>
-  <p class="cap vh-need"><code>$D1D3</code> to <code>$D2B0</code>, 222 bytes nothing reads. From <code>$D200</code> they hold an older copy of the line editor's variables, with its line buffer marked. The editor in use is at <code>$D2B4</code>.</p></div>
-  <p>Someone typed "quitt the axe at Nidhogg". The name "Jas.Learmont" sits at <code>$FE5C</code>, where nothing reads it: James Learmont is in the manual's production team. The BASIC variable <code>i</code> is 13 on the tape, the end of a <code>FOR</code> loop to 12 run as a direct command before the program was saved, and line 10 is <code>REM LEGEND (c) 1983 021083</code>, 2 October 1983.</p>
 </section>
 
 </main>
