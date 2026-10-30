@@ -110,8 +110,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="wg-out" id="wg-865-out"></p>
     <p class="cap"><code>wl_plates</code> (<code>$1985</code>) and <code>wl_strip</code> (<code>$1C31</code>), held by <code>test_widgets.js</code> to the game's code for every weight and every strip, with the lifter standing, as while a weight is chosen: the bar's line, <code>$2F</code>, is <code>$31</code>. Checked in VICE on 30 October 2026: with the weight set to 860 kg the plates were drawn, and at 865 kg the processor stopped at <code>$1C63</code> and stayed there.</p>
   </div>
-  <p>The plates come from the weight in 5 kg steps, less 25 kg. A big plate takes the first 100 kg and a mark the next 50, and what is left sets where the last plate starts, 9 less it (<code>$19B3</code>). Up to 225 kg what is left is 0 to 9. Above 225 kg, 9 less it is below 0, and the routine draws its largest last plate instead. At 865 kg, 9 less it is -129, one below the least a byte can hold, and the byte reads +127.</p>
-  <p>The plates are drawn by 75 <code>STA</code> instructions in a row, one for each pixel line, entered three bytes on for each line down (<code>wl_column_writer</code>, <code>$1C53</code>). The last plate now starts 176 lines down, and three times 176 overflows a byte too: the writer is entered at <code>$1C63</code>, the second byte of <code>STA $67F2,X</code>. That byte, <code>$F2</code>, is one of the twelve codes that halt a 6502.</p>
+  <p>The routine takes 25 kg off the weight, then 100 kg for a big plate and 50 kg for a second, when the weight has them. What is left, in 5 kg steps, sets where the last plate starts: 9 less it (<code>$19B3</code>). Up to 225 kg what is left is 0 to 9. Above 225 kg, 9 less it is below 0, and the routine draws its largest last plate instead. At 865 kg, 9 less it is -129, one below the least a byte can hold, and the byte reads +127.</p>
+  <p>The plates are drawn by 75 <code>STA</code> instructions in a row, each storing a byte of the plate in the picture, one for each pixel line, entered three bytes on for each line down (<code>wl_column_writer</code>, <code>$1C53</code>). The last plate now starts 176 lines down, and three times 176 overflows a byte too: the writer is entered at <code>$1C63</code>, the second byte of <code>STA $67F2,X</code>. That byte, <code>$F2</code>, is one of the twelve codes that stop the C64's processor, a 6502, where it stands.</p>
   <p>A player reaches 865 kg in a competition. A good lift at 225 kg, the hardest timing the game sets, makes the next weight 230 kg, and from there each push right adds 5 kg with no limit (<a href="#weights">below</a>). The 127th push stops the machine.</p>
 </section>
 
@@ -247,7 +247,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="slalom-colour" data-part="slalom">
   <p class="fig">13 · Slalom</p>
-  <h2 class="t">Bug: the best time's colour goes to the timer chip</h2>
+  <h2 class="t">Bug: the best time's colour is written to the joystick chip</h2>
   <p class="lede">Slalom shows the best time at the top right in white. The loop that colours it writes to <code>$DC47</code> and on, where colour RAM's <code>$D847</code> was meant. <code>$DC00</code> to <code>$DCFF</code> belongs to CIA 1, the chip that reads the joysticks.</p>
   <div class="plate">
     <p class="cap" style="margin-top:0">At <code>$8189</code> the event copies the best time's seven characters from <code>$0FF0</code> to row 1, column 31, on both of its screens, and writes 1, white, to <code>$DC47</code> plus the character's place, where <code>$D847</code> plus the place was meant. Checked in VICE on 30 October 2026 as a slalom run began: the loop wrote 1 to <code>$DC4D</code> down to <code>$DC47</code>, and colour RAM at <code>$D847</code>-<code>$D84D</code> already held 1.</p>
