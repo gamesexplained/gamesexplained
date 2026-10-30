@@ -36,7 +36,12 @@ to JavaScript and held to the game's code in lockstep
 
 No source found on the web on 30 October 2026 answers these.
 
-- Why the cheat code is BRADFORD-ON-AVON (a town in Wiltshire).
+- Why the cheat code is BRADFORD-ON-AVON (a town in Wiltshire). Aaron
+  suggests the author's favourite football team. Against it: the town's
+  senior club, Bradford Town F.C., was founded in 1992, a year after the
+  game, when senior football came back to the town
+  (https://en.wikipedia.org/wiki/Bradford_Town_F.C.), and Carl Muller is
+  from New Zealand. Nothing found settles it.
 - Whose face the MARTIN picture shows. Martin Walker wrote the C64
   version's music and sound effects, but nothing in the game names the
   picture.
