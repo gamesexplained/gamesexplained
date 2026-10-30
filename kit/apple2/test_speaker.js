@@ -106,5 +106,22 @@ for (const every of [500, 1305, 270, 3000]) {
     fail('notes(log, 2) for two voices:', JSON.stringify(ns.map(n => [n.t.toFixed(3), n.hz.toFixed(1), n.clicks])), 'want', want.map(h => h.toFixed(1)).join(', '));
 }
 
+// track(): a note a hundredth of a second, for the bouncing ball. A tone of 0.2 s, a rest of 0.05 s,
+// a second tone of 0.2 s and the same tone again after 3 ms: three notes, the last two at one pitch,
+// each starting in the hundredth it starts in, and silence through the rest.
+{
+  const speaker = [], at = s => Math.round(s * S.CLOCK);
+  for (const [from, to, every] of [[0, 0.2, 500], [0.25, 0.45, 700], [0.453, 0.65, 700]])
+    for (let c = at(from); c <= at(to); c += every) speaker.push(c);
+  const tr = S.track({ clock: S.CLOCK, start: 0, end: at(0.695), speaker });
+  const v = tr.voices[0], starts = [];
+  v.start.forEach((x, k) => { if (x) starts.push(k); });
+  if (tr.rate !== 100 || tr.voices.length !== 1 || v.hz.length !== 70) fail('track(): one voice, a tick a hundredth', tr.rate, v.hz.length);
+  if (starts.join() !== '0,25,45') fail('track(): a note starts where each note starts, the repeat too:', starts.join());
+  if (Math.abs(v.hz[10] - S.hz(500)) > 0.5 || Math.abs(v.hz[30] - S.hz(700)) > 0.5 || v.level[10] !== 1)
+    fail('track(): each note\'s pitch, at level 1', v.hz[10], v.hz[30], v.level[10]);
+  if (!Number.isNaN(v.hz[22]) || v.level[22] !== 0 || !Number.isNaN(v.hz[68])) fail('track(): no pitch in the rest or after the end');
+}
+
 if (bad) { console.log(bad + ' failed'); process.exit(1); }
 console.log('apple2-speaker: the model follows the speaker\'s rule');

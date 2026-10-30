@@ -56,6 +56,22 @@ check(quiet < 1e-6, '15 is silent');
 const per = measure(S.render(log([[0, 0xE0], [0, 0xF0]], 2), RATE), RATE, RATE / 2);
 check(Math.abs(per.hz - 500000 / 960) / (500000 / 960) < 0.02, `periodic noise at rate 0: ${per.hz.toFixed(1)} Hz, 520.8 by the rule`);
 
+// track(): what each tone did each hundredth of a second, from the state that held longest in it.
+// SOUND 3 at N = 213 and volume 0 from 4 ms, SOUND 1 at N = 30 and volume 3; at 0.0545 s SOUND 3
+// goes to N = 224, its low byte making N = 208 for the 50 microseconds before its high byte, and at
+// 0.1 s it falls silent: N = 208 never shows.
+{
+  const tr = S.track(log([[0.004, 0x85], [0.004, 0x0D], [0.004, 0x90], [0.004, 0xCE], [0.004, 0x01], [0.004, 0xD3],
+                          [0.0545, 0x80], [0.05455, 0x0E], [0.1, 0x9F]], 0.15));
+  const a = tr.voices[0], c = tr.voices[2];
+  check(tr.rate === 100 && tr.voices.length === 3 && a.hz.length === 15, 'track(): three tones, a tick a hundredth');
+  check(Math.abs(a.hz[2] - S.hz(213)) < 1e-3 && a.level[2] === 1 && Math.abs(c.level[2] - S.VOLUME[3] / S.VOLUME[0]) < 1e-6,
+    'track(): a tone\'s pitch, and its loudness against volume 0');
+  check(Math.abs(a.hz[5] - S.hz(224)) < 1e-3 && [...a.hz.subarray(0, 10)].every(h => [S.hz(213), S.hz(224)].some(w => Math.abs(h - w) < 1e-3)),
+    'track(): a tone half written for 50 microseconds is never seen');
+  check(Number.isNaN(a.hz[12]) && a.level[12] === 0 && Number.isNaN(tr.voices[1].hz[3]), 'track(): no pitch where a tone is silent');
+}
+
 // pack and unpack keep every write
 const L = log([[0, 0x80], [0.001, 0x01], [0.5, 0x9F]], 1);
 check(JSON.stringify(S.unpack(S.pack(L)).writes) === JSON.stringify(L.writes), 'pack, then unpack, gives the writes back');

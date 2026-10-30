@@ -28,12 +28,21 @@
 //                        semitone is about 1/17), and hz is clock / that sum, the same formula
 //   hz(cycles)           the pitch of clicks that many cycles apart
 //   render(log, rate)    Float32Array: the output at `rate` samples a second, to 50 ms after the end
-//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log, voices }), a stop button and
-//                        a drawing of the notes (rows by pitch) with each click as a tick along the
-//                        foot, its playhead moving as the sound plays. opts.onTime(t, tune) is called
-//                        each animation frame while a sound plays, and with t = null when it stops.
-//                        opts.buttons false leaves the buttons out, for a page that starts them
-//                        itself. Returns { play(i), stop(), draw(i), set(i, log) }.
+//   track(log, voices)   what the clicks play in each hundredth of a second, for the bouncing ball:
+//                        { rate, voices: [{ hz, level, start }] }, one voice whatever `voices` is, as
+//                        the speaker is one: hz the pitch of the note of notes(log, voices) that
+//                        sounds for most of the hundredth (NaN where none does), level 1 while one
+//                        sounds (the speaker has no volume) and start true where that note is a new
+//                        one, so that a note played twice at one pitch is two
+//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log, voices }), a stop button,
+//                        a bouncing ball (../../lib/bounce.js, loaded from beside this script) and a
+//                        switch to a drawing of the notes (rows by pitch) with each click as a tick
+//                        along the foot, its playhead moving as the sound plays; opts.bounce false for
+//                        the drawing alone, which also shows until the ball has loaded and where it
+//                        cannot. opts.onTime(t, tune) is called each animation frame while a sound
+//                        plays, and with t = null when it stops. opts.buttons false leaves the buttons
+//                        out, for a page that starts them itself. Returns { play(i), stop(), draw(i),
+//                        set(i, log) }.
 (function (root) {
   'use strict';
   const CLOCK = 1020484;          // cycles a second (apple2-reference, "The speaker")
@@ -97,6 +106,43 @@
     return out;
   }
 
+  const TRACK = 100;              // track()'s ticks a second
+  function track(log, voices) {
+    log = unpack(log);
+    const ns = notes(log, voices), n = Math.max(1, Math.ceil((log.end - log.start) / log.clock * TRACK));
+    const hz = new Float32Array(n).fill(NaN), level = new Float32Array(n), start = new Uint8Array(n);
+    const which = new Int32Array(n).fill(-1), most = new Float64Array(n);
+    ns.forEach((e, j) => {
+      const a = e.t * TRACK, b = (e.t + e.dur) * TRACK;
+      for (let k = Math.floor(a); k < b && k < n; k++) {
+        const cover = Math.min(b, k + 1) - Math.max(a, k);
+        if (cover > most[k]) { most[k] = cover; which[k] = j; }
+      }
+    });
+    for (let k = 0; k < n; k++) {
+      const j = which[k];
+      if (j < 0) continue;
+      hz[k] = ns[j].hz; level[k] = 1; start[k] = k === 0 || which[k - 1] !== j ? 1 : 0;
+    }
+    return { rate: TRACK, voices: [{ hz, level, start }] };
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (root.NoteBounce) return Promise.resolve(root.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => root.NoteBounce ? ok(root.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
+
   function render(log, rate) {
     log = unpack(log);
     const len = (log.end - log.start) / log.clock;
@@ -134,7 +180,10 @@
       st.textContent = `.a2spk-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.4rem 0}
 .a2spk-bar button{font:inherit;padding:.25rem .7rem;border:1px solid #555;background:#1c1c1c;color:#eee;border-radius:3px;cursor:pointer}
 .a2spk-bar button.on{background:#2e7d32;border-color:#4caf50}
+.a2spk-view{display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem;color:#aaa}
+.a2spk-view[hidden]{display:none}
 .a2spk-clock{margin-left:auto;font-variant-numeric:tabular-nums;opacity:.8}
+.a2spk-roll[hidden]{display:none}
 .a2spk-roll{display:block;width:100%;height:200px;border-radius:3px}`;
       document.head.appendChild(st);
     }
@@ -154,17 +203,39 @@
     stopB.textContent = '■ Stop';
     stopB.onclick = () => stop();
     bar.appendChild(stopB);
+    // the bouncing ball, in place of the drawing once it has loaded, and the switch between them
+    const BOUNCE = opts.bounce !== false;
+    const views = document.createElement('span');
+    views.className = 'a2spk-view'; views.hidden = true;
+    views.innerHTML = 'View <button type="button" data-view="ball" class="on">Ball</button><button type="button" data-view="roll">Piano roll</button>';
+    bar.appendChild(views);
+    const box = document.createElement('div');
+    box.hidden = true;
     const clock = document.createElement('span');
     clock.className = 'a2spk-clock';
     bar.appendChild(clock);
     const canvas = document.createElement('canvas');
     canvas.className = 'a2spk-roll';
-    el.append(bar, canvas);
+    el.append(bar, box, canvas);
 
     let ctx = null, src = null, started = 0, playing = -1, shown = 0, raf = 0;
-    const cache = new Map();
+    let ball = null, view = 'roll';
+    const cache = new Map(), scores = new Map();
+    const length = i => (tunes[i].log.end - tunes[i].log.start) / tunes[i].log.clock;
+    function time(i, t) {
+      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + length(i).toFixed(2) + ' s';
+    }
+    // the ball's score for a sound: its notes and their pitches, a hundredth of a second at a time
+    function scoreOf(i) {
+      if (!scores.has(i)) {
+        const tr = track(tunes[i].log, tunes[i].voices);
+        scores.set(i, { rate: tr.rate, voices: tr.voices.map(root.NoteBounce.voice) });
+      }
+      return scores.get(i);
+    }
     function draw(i, t) {
       shown = i;
+      if (view === 'ball') { time(i, t); return; }
       const tune = tunes[i], ns = notes(tune.log, tune.voices), cs = clicks(tune.log);
       const len = (tune.log.end - tune.log.start) / tune.log.clock;
       const W = canvas.clientWidth || 640, H = 200, dpr = root.devicePixelRatio || 1;
@@ -184,7 +255,7 @@
       g.fillStyle = '#777';
       for (const c of cs) g.fillRect(X(c), H - FOOT + 4, 1, FOOT - 8);
       if (t != null) { g.fillStyle = '#fff'; g.fillRect(X(t), 0, 2, H); }
-      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + len.toFixed(2) + ' s';
+      time(i, t);
     }
     function stop() {
       if (src) { try { src.stop(); } catch (e) { /* already stopped */ } src = null; }
@@ -205,10 +276,12 @@
       started = ctx.currentTime + 0.05; src.start(started);
       playing = i; buttons[i].classList.add('on');
       src.onended = () => { if (playing === i) stop(); };
+      if (ball) ball.score(scoreOf(i));
       const tick = () => {
         if (playing !== i) return;
-        const t = Math.min(Math.max(0, ctx.currentTime - started), (tunes[i].log.end - tunes[i].log.start) / tunes[i].log.clock);
+        const t = Math.min(Math.max(0, ctx.currentTime - started), length(i));
         draw(i, t);
+        if (ball && view === 'ball') ball.draw((ctx.currentTime - (ctx.outputLatency || 0) - started) * TRACK);
         if (opts.onTime) opts.onTime(t, i);
         raf = requestAnimationFrame(tick);
       };
@@ -216,11 +289,28 @@
     }
     draw(0, null);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (playing < 0) draw(shown, null); }).observe(canvas);
+    views.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-view]');
+      if (!b) return;
+      view = b.dataset.view;
+      views.querySelectorAll('[data-view]').forEach(v => v.classList.toggle('on', v === b));
+      box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+      if (view === 'roll' && playing < 0) draw(shown, null);
+    });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the drawing stays
+      ball = NB.stage(box, { colors: ['#e8a33d'], font: getComputedStyle(el).getPropertyValue('--fb').trim() || undefined });
+      if (playing >= 0) ball.score(scoreOf(playing));
+      view = 'ball';
+      box.hidden = false; canvas.hidden = true; views.hidden = false;
+    }, () => {});
     return {
       play, stop, draw: i => draw(i, null),
-      set(i, log) { tunes[i].log = unpack(log); cache.delete(i); if (playing < 0 && shown === i) draw(i, null); },
+      set(i, log) {
+        tunes[i].log = unpack(log); cache.delete(i); scores.delete(i);
+        if (playing < 0 && shown === i) draw(i, null);
+      },
     };
   }
 
-  root.Apple2Speaker = { CLOCK, LEVEL, HIGHPASS, pack, unpack, clicks, notes, hz, render, mount };
+  root.Apple2Speaker = { CLOCK, LEVEL, HIGHPASS, TRACK, pack, unpack, clicks, notes, hz, render, track, mount };
 }(typeof window !== 'undefined' ? window : globalThis));

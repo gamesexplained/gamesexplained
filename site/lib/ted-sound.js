@@ -45,12 +45,21 @@
 //                        above volume 0
 //   hz(value)            a voice's frequency for a value of 0 to 1023
 //   render(log, rate)    Float32Array: the output at `rate` samples a second
-//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button and
-//                        a piano roll of the two voices (rows by pitch, the noise in grey at its
-//                        voice's pitch) with the volume along the foot, its playhead moving as the
-//                        tune plays. opts.onTime(t, tune) is called each animation frame while a tune
-//                        plays, and with t = null when it stops. opts.buttons false leaves the buttons
-//                        out, for a page that starts the tunes itself. Returns { play(i), stop(), draw(i) }.
+//   track(log)           what each voice's square wave did in each frame, for the bouncing ball:
+//                        { rate, voices: [{ hz, level }] }, from the state that held for most of the
+//                        frame, so that a value half written is never seen; hz the square's pitch
+//                        (NaN where it is off, playing noise, held by D/A or at a value of 1022, which
+//                        never turns over) and level the volume TED plays, which the two voices
+//                        share, against 8, 0 to 1
+//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button, a
+//                        bouncing ball a voice (../../lib/bounce.js, loaded from beside this script)
+//                        and a switch to a piano roll of the two voices (rows by pitch, the noise in
+//                        grey at its voice's pitch) with the volume along the foot, its playhead
+//                        moving as the tune plays; opts.bounce false for the piano roll alone, which
+//                        also shows until the ball has loaded and where it cannot. opts.onTime(t,
+//                        tune) is called each animation frame while a tune plays, and with t = null
+//                        when it stops. opts.buttons false leaves the buttons out, for a page that
+//                        starts the tunes itself. Returns { play(i), stop(), draw(i), set(i, log) }.
 //
 // The sound of a game as it plays (a Play tab), on the same model as render():
 //   live(rate)           { push(frames, most), render(out, n), queued }: frames of writes as the game
@@ -256,6 +265,45 @@ function tedSoundModel() {
     return out.sort((a, b) => a.t - b.t || a.ch - b.ch);
   }
 
+  function track(log) {
+    log = unpack(log);
+    const st = decode(log), len = (log.end - log.start) / log.clock, rate = CLOCK / FRAME;
+    const n = Math.max(1, Math.ceil(len * rate)), which = new Int32Array(n).fill(-1), most = new Float64Array(n);
+    // each state holds from its write to the next; before the first write (-1) nothing is switched on
+    for (let j = -1; j < st.length; j++) {
+      const a = j < 0 ? 0 : st[j].t * rate, b = (j + 1 < st.length ? st[j + 1].t : len) * rate;
+      for (let k = Math.max(0, Math.floor(a)); k < b && k < n; k++) {
+        const cover = Math.min(b, k + 1) - Math.max(a, k);
+        if (cover > most[k]) { most[k] = cover; which[k] = j; }
+      }
+    }
+    const voices = [0, 1].map(() => ({ hz: new Float32Array(n).fill(NaN), level: new Float32Array(n) }));
+    for (let k = 0; k < n; k++) {
+      const e = st[which[k]];
+      if (!e || e.da || !e.vol) continue;
+      [e.voice1, e.square].forEach((on, ch) => {
+        if (on && reload(e.value[ch]) > 1) { voices[ch].hz[k] = hz(e.value[ch]); voices[ch].level[k] = VOLUME[e.vol] / VOLUME[8]; }
+      });
+    }
+    return { rate, voices };
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
+
   // The recording on the model, a tick at a time, averaged down to the output's rate (phase as
   // output()'s, for a comparison with plus4emu's samples).
   function render(log, rate, phase = 0) {
@@ -329,7 +377,10 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
       st.textContent = `.tedsnd-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.4rem 0}
 .tedsnd-bar button{font:inherit;padding:.25rem .7rem;border:1px solid #555;background:#1c1c1c;color:#eee;border-radius:3px;cursor:pointer}
 .tedsnd-bar button.on{background:#2e7d32;border-color:#4caf50}
+.tedsnd-view{display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem;color:#aaa}
+.tedsnd-view[hidden]{display:none}
 .tedsnd-clock{margin-left:auto;font-variant-numeric:tabular-nums;opacity:.8}
+.tedsnd-roll[hidden]{display:none}
 .tedsnd-roll{display:block;width:100%;height:220px;border-radius:3px}
 .tedsnd-legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.85em;opacity:.85;margin-top:.3rem}
 .tedsnd-legend i{display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;border-radius:2px}`;
@@ -349,6 +400,14 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
     stopB.textContent = '■ Stop';
     stopB.onclick = () => stop();
     bar.appendChild(stopB);
+    // the bouncing ball, in place of the piano roll once it has loaded, and the switch between them
+    const BOUNCE = opts.bounce !== false;
+    const views = document.createElement('span');
+    views.className = 'tedsnd-view'; views.hidden = true;
+    views.innerHTML = 'View <button type="button" data-view="ball" class="on">Ball</button><button type="button" data-view="roll">Piano roll</button>';
+    bar.appendChild(views);
+    const box = document.createElement('div');
+    box.hidden = true;
     const clock = document.createElement('span');
     clock.className = 'tedsnd-clock';
     bar.appendChild(clock);
@@ -358,14 +417,28 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
     legend.className = 'tedsnd-legend';
     legend.innerHTML = NAMES.map((n, i) => `<span><i style="background:${COLOURS[i]}"></i>${n}</span>`).join('') +
       '<span><i style="background:#666"></i>volume</span>';
-    el.append(bar, canvas, legend);
+    el.append(bar, box, canvas, legend);
 
     let ctx = null, src = null, started = 0, playing = -1, shown = 0, raf = 0;
-    const cache = new Map();
+    let ball = null, view = 'roll';
+    const cache = new Map(), scores = new Map();
+    const length = i => (tunes[i].log.end - tunes[i].log.start) / tunes[i].log.clock;
+    function time(i, t) {
+      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + length(i).toFixed(2) + ' s';
+    }
+    // the ball's score for a tune: each voice's notes, pitch and loudness in every frame
+    function scoreOf(i) {
+      if (!scores.has(i)) {
+        const tr = track(tunes[i].log);
+        scores.set(i, { rate: tr.rate, voices: tr.voices.map(globalThis.NoteBounce.voice) });
+      }
+      return scores.get(i);
+    }
     function draw(i, t) {
       shown = i;
+      if (view === 'ball') { time(i, t); return; }
       const tune = tunes[i], ns = notes(tune.log), st = decode(tune.log);
-      const len = (tune.log.end - tune.log.start) / tune.log.clock;
+      const len = length(i);
       const W = canvas.clientWidth || 640, H = 220, dpr = globalThis.devicePixelRatio || 1;
       canvas.width = W * dpr; canvas.height = H * dpr;
       const g = canvas.getContext('2d');
@@ -389,7 +462,7 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
         if (v) g.fillRect(X(e.t), H - 2 - v * 3.5, Math.max(1, X(t1) - X(e.t)), v * 3.5);
       }
       if (t != null) { g.fillStyle = '#fff'; g.fillRect(X(t), 0, 2, H); }
-      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + len.toFixed(2) + ' s';
+      time(i, t);
     }
     function stop() {
       if (src) { try { src.stop(); } catch (e) { /* already stopped */ } src = null; }
@@ -411,10 +484,12 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
       started = ctx.currentTime + 0.05; src.start(started);
       playing = i; buttons[i].classList.add('on');
       src.onended = () => { if (playing === i) stop(); };
+      if (ball) ball.score(scoreOf(i));
       const tick = () => {
         if (playing !== i) return;
         const t = Math.max(0, ctx.currentTime - started);
         draw(i, t);
+        if (ball && view === 'ball') ball.draw((ctx.currentTime - (ctx.outputLatency || 0) - started) * CLOCK / FRAME);
         if (opts.onTime) opts.onTime(t, i);
         raf = requestAnimationFrame(tick);
       };
@@ -422,12 +497,29 @@ registerProcessor('ted-sound', TEDSoundProcessor);`;
     }
     draw(0, null);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (playing < 0) draw(shown, null); }).observe(canvas);
+    views.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-view]');
+      if (!b) return;
+      view = b.dataset.view;
+      views.querySelectorAll('[data-view]').forEach(v => v.classList.toggle('on', v === b));
+      box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+      if (view === 'roll' && playing < 0) draw(shown, null);
+    });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the piano roll stays
+      ball = NB.stage(box, { colors: COLOURS.slice(0, 2), font: getComputedStyle(el).getPropertyValue('--fb').trim() || undefined });
+      if (playing >= 0) ball.score(scoreOf(playing));
+      view = 'ball';
+      box.hidden = false; canvas.hidden = true; views.hidden = false;
+    }, () => {});
     return {
       play, stop, draw: i => draw(i, null),
       // a tune's log replaced, for a page that makes its tunes afresh (a game's random numbers)
-      set(i, log) { tunes[i].log = unpack(log); cache.delete(i); if (playing < 0 && shown === i) draw(i, null); },
+      set(i, log) {
+        tunes[i].log = unpack(log); cache.delete(i); scores.delete(i);
+        if (playing < 0 && shown === i) draw(i, null);
+      },
     };
   }
 
-  return { CLOCK, FRAME, RATE, VOLUME, NAMES, pack, unpack, decode, notes, hz, reload, render, mount, live, host, worklet, model: MODEL };
+  return { CLOCK, FRAME, RATE, VOLUME, NAMES, pack, unpack, decode, notes, hz, reload, render, track, mount, live, host, worklet, model: MODEL };
 })();

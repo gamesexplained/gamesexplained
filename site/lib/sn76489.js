@@ -29,12 +29,21 @@
 //   notes(log)           the tone channels' notes: [{ ch, t, dur, n, hz, vol }], a note being a
 //                        stretch of one N at one volume other than 15 that lasts 2 ms or more
 //   render(log, rate)    Float32Array: the chip's output at `rate` samples a second
-//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button
-//                        and a piano roll of the three tones (rows by pitch, the noise along the
-//                        foot), its playhead moving as the tune plays. opts.onTime(t, tune) is
-//                        called each animation frame while a tune plays, and with t = null when
-//                        it stops, so a page can show what the program was doing at that moment.
-//                        Returns { play(i), stop(), draw(i) }.
+//   track(log)           what each tone channel did in each hundredth of a second, the MOS's tick,
+//                        on which it updates the sound (bbc-reference, "Interrupts and timers"), for
+//                        the bouncing ball: { rate, voices: [{ hz, level }] }, from the state that
+//                        held for most of the hundredth, so that a tone half written is never seen;
+//                        hz its pitch (NaN where it is silent) and level its loudness against volume
+//                        0, 0 to 1
+//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button,
+//                        a bouncing ball a tone channel (../../lib/bounce.js, loaded from beside
+//                        this script) and a switch to a piano roll of the three tones (rows by
+//                        pitch, the noise along the foot), its playhead moving as the tune plays;
+//                        opts.bounce false for the piano roll alone, which also shows until the
+//                        ball has loaded and where it cannot. opts.onTime(t, tune) is called each
+//                        animation frame while a tune plays, and with t = null when it stops, so a
+//                        page can show what the program was doing at that moment. Returns
+//                        { play(i), stop(), draw(i) }.
 globalThis.BBCSound = (function () {
   const CHIP = 500000;                  // the chip's step rate: 4 MHz divided by 8
   const VOLUME = new Float32Array(16);  // jsbeeb's volumeTable: 2 dB a step, a quarter at loudest
@@ -101,6 +110,43 @@ globalThis.BBCSound = (function () {
     return out.sort((a, b) => a.t - b.t || a.ch - b.ch);
   }
 
+  const TRACK = 100;                    // track()'s ticks a second
+  function track(log) {
+    log = unpack(log);
+    const st = decode(log), len = (log.end - log.start) / log.clock;
+    const n = Math.max(1, Math.ceil(len * TRACK)), which = new Int32Array(n).fill(-1), most = new Float64Array(n);
+    // each state holds from its write to the next; before the first write (-1) the chip is silent
+    for (let j = -1; j < st.length; j++) {
+      const a = j < 0 ? 0 : st[j].t * TRACK, b = (j + 1 < st.length ? st[j + 1].t : len) * TRACK;
+      for (let k = Math.max(0, Math.floor(a)); k < b && k < n; k++) {
+        const cover = Math.min(b, k + 1) - Math.max(a, k);
+        if (cover > most[k]) { most[k] = cover; which[k] = j; }
+      }
+    }
+    const voices = [0, 1, 2].map(() => ({ hz: new Float32Array(n).fill(NaN), level: new Float32Array(n) }));
+    for (let k = 0; k < n; k++) {
+      const e = st[which[k]];
+      if (e) for (let ch = 0; ch < 3; ch++) if (e.vol[ch] < 15) { voices[ch].hz[k] = hz(e.tone[ch]); voices[ch].level[k] = VOLUME[e.vol[ch]] / VOLUME[0]; }
+    }
+    return { rate: TRACK, voices };
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
+
   function render(log, rate) {
     log = unpack(log);
     const total = Math.ceil((log.end - log.start) / log.clock * CHIP);
@@ -149,7 +195,10 @@ globalThis.BBCSound = (function () {
       st.textContent = `.bbcsnd-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.4rem 0}
 .bbcsnd-bar button{font:inherit;padding:.25rem .7rem;border:1px solid #555;background:#1c1c1c;color:#eee;border-radius:3px;cursor:pointer}
 .bbcsnd-bar button.on{background:#2e7d32;border-color:#4caf50}
+.bbcsnd-view{display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem;color:#aaa}
+.bbcsnd-view[hidden]{display:none}
 .bbcsnd-clock{margin-left:auto;font-variant-numeric:tabular-nums;opacity:.8}
+.bbcsnd-roll[hidden]{display:none}
 .bbcsnd-roll{display:block;width:100%;height:220px;border-radius:3px}
 .bbcsnd-legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.85em;opacity:.85;margin-top:.3rem}
 .bbcsnd-legend i{display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;border-radius:2px}`;
@@ -169,6 +218,14 @@ globalThis.BBCSound = (function () {
     stopB.textContent = '■ Stop';
     stopB.onclick = () => stop();
     bar.appendChild(stopB);
+    // the bouncing ball, in place of the piano roll once it has loaded, and the switch between them
+    const BOUNCE = opts.bounce !== false;
+    const views = document.createElement('span');
+    views.className = 'bbcsnd-view'; views.hidden = true;
+    views.innerHTML = 'View <button type="button" data-view="ball" class="on">Ball</button><button type="button" data-view="roll">Piano roll</button>';
+    bar.appendChild(views);
+    const box = document.createElement('div');
+    box.hidden = true;
     const clock = document.createElement('span');
     clock.className = 'bbcsnd-clock';
     bar.appendChild(clock);
@@ -177,13 +234,27 @@ globalThis.BBCSound = (function () {
     const legend = document.createElement('div');
     legend.className = 'bbcsnd-legend';
     legend.innerHTML = NAMES.map((n, i) => `<span><i style="background:${COLOURS[i]}"></i>${n}</span>`).join('');
-    el.append(bar, canvas, legend);
+    el.append(bar, box, canvas, legend);
 
     let ctx = null, src = null, started = 0, playing = -1, shown = 0, raf = 0;
-    const cache = new Map();
+    let ball = null, view = 'roll';
+    const cache = new Map(), scores = new Map();
+    const length = i => (tunes[i].log.end - tunes[i].log.start) / tunes[i].log.clock;
+    function time(i, t) {
+      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + length(i).toFixed(2) + ' s';
+    }
+    // the ball's score for a tune: each tone channel's notes, pitch and loudness every hundredth
+    function scoreOf(i) {
+      if (!scores.has(i)) {
+        const tr = track(tunes[i].log);
+        scores.set(i, { rate: tr.rate, voices: tr.voices.map(globalThis.NoteBounce.voice) });
+      }
+      return scores.get(i);
+    }
     function draw(i, t) {
       shown = i;
-      const tune = tunes[i], ns = notes(tune.log), len = (tune.log.end - tune.log.start) / tune.log.clock;
+      if (view === 'ball') { time(i, t); return; }
+      const tune = tunes[i], ns = notes(tune.log), len = length(i);
       const W = canvas.clientWidth || 640, H = 220, dpr = globalThis.devicePixelRatio || 1;
       canvas.width = W * dpr; canvas.height = H * dpr;
       const g = canvas.getContext('2d');
@@ -211,7 +282,7 @@ globalThis.BBCSound = (function () {
       }
       g.globalAlpha = 1;
       if (t != null) { g.fillStyle = '#fff'; g.fillRect(X(t), 0, 2, H); }
-      clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + len.toFixed(2) + ' s';
+      time(i, t);
     }
     function stop() {
       if (src) { try { src.stop(); } catch (e) { /* already stopped */ } src = null; }
@@ -233,10 +304,12 @@ globalThis.BBCSound = (function () {
       started = ctx.currentTime + 0.05; src.start(started);
       playing = i; buttons[i].classList.add('on');
       src.onended = () => { if (playing === i) stop(); };
+      if (ball) ball.score(scoreOf(i));
       const tick = () => {
         if (playing !== i) return;
         const t = Math.max(0, ctx.currentTime - started);
         draw(i, t);
+        if (ball && view === 'ball') ball.draw((ctx.currentTime - (ctx.outputLatency || 0) - started) * TRACK);
         if (opts.onTime) opts.onTime(t, i);
         raf = requestAnimationFrame(tick);
       };
@@ -244,8 +317,22 @@ globalThis.BBCSound = (function () {
     }
     draw(0, null);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (playing < 0) draw(shown, null); }).observe(canvas);
+    views.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-view]');
+      if (!b) return;
+      view = b.dataset.view;
+      views.querySelectorAll('[data-view]').forEach(v => v.classList.toggle('on', v === b));
+      box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+      if (view === 'roll' && playing < 0) draw(shown, null);
+    });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the piano roll stays
+      ball = NB.stage(box, { colors: COLOURS.slice(0, 3), font: getComputedStyle(el).getPropertyValue('--fb').trim() || undefined });
+      if (playing >= 0) ball.score(scoreOf(playing));
+      view = 'ball';
+      box.hidden = false; canvas.hidden = true; views.hidden = false;
+    }, () => {});
     return { play, stop, draw: i => draw(i, null) };
   }
 
-  return { CHIP, VOLUME, NAMES, pack, unpack, decode, notes, hz, render, mount };
+  return { CHIP, VOLUME, NAMES, TRACK, pack, unpack, decode, notes, hz, render, track, mount };
 })();

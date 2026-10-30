@@ -99,6 +99,23 @@ ok(noise.rms > 0.05 && Math.abs(noise.hz - 110840 / (1023 - 0x280)) > 20, `the n
     'decode: voice 1 at $112 from $FF0E and $FF12, voice 2 at $240, volume 7, both squares');
 }
 
+// track(): each voice's square wave in each frame, from the state that held longest in it. Voice 1 at
+// $200 and voice 2's square at $300, volume 6; from frame 3 voice 2 plays noise; from frame 5 the
+// volume is 8; voice 1 goes to 1022 in frame 7 and D/A is set in frame 9.
+{
+  const F = T.FRAME / T.CLOCK, at = k => k * F + F / 4;
+  const tr = T.track(log([[0, 0xFF0E, 0x00], [0, 0xFF12, 2], [0, 0xFF0F, 0x00], [0, 0xFF10, 3], [0, 0xFF11, 0x36],
+                          [at(3), 0xFF11, 0x56], [at(5), 0xFF11, 0x58], [at(7), 0xFF0E, 0xFE], [at(7), 0xFF12, 3],
+                          [at(9), 0xFF11, 0xD8]], 11 * F));
+  const [v1, v2] = tr.voices;
+  ok(Math.abs(tr.rate - T.CLOCK / T.FRAME) < 1e-9 && tr.voices.length === 2 && v1.hz.length === 11, 'track(): two voices, a tick a frame');
+  ok(Math.abs(v1.hz[1] - T.hz(0x200)) < 1e-3 && Math.abs(v2.hz[1] - T.hz(0x300)) < 1e-3 && Math.abs(v1.level[1] - 56 / 75) < 1e-6,
+    'track(): each square\'s pitch, at the volume both share against 8');
+  ok(Number.isNaN(v2.hz[4]) && v1.level[6] === 1 && v2.level[6] === 0, 'track(): no pitch while voice 2 plays noise; the volume raised to 8');
+  ok(Number.isNaN(v1.hz[8]) && Math.abs(v1.hz[6] - T.hz(0x200)) < 1e-3, 'track(): no pitch at 1022, which never turns over');
+  ok(Number.isNaN(v1.hz[10]) && v1.level[10] === 0, 'track(): no pitch under D/A');
+}
+
 // plus4emu's own output, recorded by kit/c16/sound.py
 const fx = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'ted-sound.json'), 'utf8'));
 for (const l of fx.logs) {
