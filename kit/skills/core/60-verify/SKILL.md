@@ -154,6 +154,8 @@ run's "runs every frame" was in 16 comments, and another's wrong unit
 for a drawing routine's runs was in 16 too. For each wrong comment,
 whether the sample is bad or not, say what it believed, search the
 listing for every comment that says the same, and correct them together.
+In a game of several parts search every part's listing: a routine carried
+from one part to another carries its wrong comments with it.
 
 Comments a program wrote, a decoder describing every record of a format
 from templates, are a few claims each made hundreds of times. Give them
