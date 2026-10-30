@@ -4061,12 +4061,12 @@
   {
    "address": 27702,
    "type": "line",
-   "text": "The S key's switch: a press would set it to 1 when it is 0, and clear it, stopping every sound, when it is not. It keeps whatever byte the file holds there, since the key is never seen (sound_step)."
+   "text": "The S key's switch: a press sets it to 1 when it is 0, and clears it, stopping every sound, when it is not; nothing else reads it. The file holds 0 here, so it takes two presses to stop the sounds."
   },
   {
    "address": 27703,
    "type": "line",
-   "text": "Starts sound A (99 and above are ignored) from snd_table: its first byte is the slot it plays in, its second the SID voice; the slot's script starts at its third byte on the next step, with the slot's transposition, tuning, slide and sweep cleared. A sound already playing in that slot is cut off."
+   "text": "Starts sound A (100 and above are ignored) from snd_table: its first byte is the slot it plays in, its second the SID voice; the slot's script starts at its third byte on the next step, with the slot's transposition, tuning, slide and sweep cleared. A sound already playing in that slot is cut off."
   },
   {
    "address": 27788,
@@ -4091,7 +4091,7 @@
   {
    "address": 27825,
    "type": "line",
-   "text": "The sound engine, once a frame from the interrupt. First the S key, read through CIA 1 (column 1, row 5): pressed after a release, it turns snd_s_key over. Port A of CIA 1 is an input in every event (their start-up writes 0 to $DC02), so the column is never driven and the key is never seen."
+   "text": "The sound engine, once a frame from the interrupt. First the S key, read through CIA 1 (row 1, column 5): pressed after a release, it turns snd_s_key over. The event's start-up makes port A of CIA 1 an input (it writes 0 to $DC02), so the engine's write there drives no row; the key is seen only while joystick 2 is held down, which pulls row 1 low on the same line."
   },
   {
    "address": 27887,
@@ -4166,7 +4166,7 @@
   {
    "address": 28435,
    "type": "line",
-   "text": "Runs a slot's script from ($82) until it waits. A byte under $80 is a note: its pitch (set_note), then a byte of how many frames it lasts, and the gate on with the envelope restarted. From $80 a command, its number in the low seven bits, through snd_commands; numbers above 28 end the sound (snd_bad)."
+   "text": "Runs a slot's script from ($82) until it waits. A byte under $80 is a note: its pitch (set_note), then a byte of how many frames it lasts, and the gate on with the envelope restarted. From $80 a command, its number in the low seven bits, through snd_commands; numbers above 28 stop the sound (cmd_stop)."
   },
   {
    "address": 28470,
