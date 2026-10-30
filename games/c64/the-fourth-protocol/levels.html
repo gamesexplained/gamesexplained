@@ -1,0 +1,498 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Fourth Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+h3.tfp-h{font-size:19px;margin:28px 0 8px}
+.tfp-pics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tfp-pics figure{margin:0}
+.tfp-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.tfp-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.tfp-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.tfp-stack{position:relative}
+.tfp-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent;pointer-events:none}
+.tfp-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.tfp-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.tfp-btn:hover{border-color:var(--ink-mute)}
+.tfp-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tfp-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.tfp-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.tfp-tbl th,.tfp-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.tfp-tbl th{font-weight:700;color:var(--ink-soft)}
+.tfp-tbl td.tfp-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.tfp-tbl tr.tfp-on td{background:var(--hl)}
+.tfp-wide{overflow-x:auto}
+.tfp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px}
+.tfp-grid button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:5px 0;cursor:pointer;background:var(--surface)}
+.tfp-grid button.tfp-zero{background:#f6d8d3;border-color:#e2a99f}
+.tfp-grid button.tfp-dead{background:#f7e3bf;border-color:#e0bd7c}
+.tfp-grid button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.tfp-key{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.tfp-key i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-1px;margin-right:5px}
+.tfp-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.tfp-pick select{font:inherit;font-size:14px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);max-width:100%}
+.tfp-memo{background:#000;border-radius:4px;padding:10px;overflow-x:auto}
+.tfp-memo canvas{display:block;image-rendering:pixelated;margin:0 auto}
+.tfp-codes{font-family:var(--fm);font-size:12.5px;line-height:1.9;margin:12px 0 0;word-break:break-word}
+.tfp-codes span{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:0 3px 3px 0;background:var(--surface-2)}
+.tfp-codes span b{font-weight:500;color:var(--ink-mute);margin-right:4px}
+.tfp-icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.tfp-icons figure{margin:0;text-align:center}
+.tfp-icons canvas{display:block;margin:0 auto 4px;image-rendering:pixelated;background:#000;border-radius:3px;max-width:100%}
+.tfp-icons figcaption{font-size:12px;color:var(--ink-mute);line-height:1.35}
+.tfp-line{font-family:var(--fm);font-size:15px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;text-transform:uppercase;background:#40318d;color:#a5a5ff}
+.tfp-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.tfp-chips button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:3px 8px;cursor:pointer;background:var(--surface-2)}
+.tfp-parse{font-family:var(--fm);font-size:13.5px;line-height:1.7;margin:12px 0 0;min-height:5em}
+.tfp-parse .tfp-hit{background:var(--hl);border-radius:3px}
+@media (max-width:640px){ .tfp-pics{grid-template-columns:minmax(0,1fr)} :root{--gx:16px;--pp:14px} }
+.lv-info{margin:14px 0 0}
+.lv-info .tfp-tbl th{width:10em}
+.lv-map{display:block;width:100%;min-width:480px;max-width:668px;height:auto;margin:0 auto;cursor:pointer}
+.lv-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.lv-tiles figure,.lv-plans figure{margin:0}
+.lv-tiles figcaption,.lv-plans figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.lv-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.lv-doors{font-size:14px;margin:8px 0 0;padding-left:22px;line-height:1.6}
+.lv-doors li{cursor:default}
+.lv-doors li:hover{background:var(--hl)}
+.lv-scroll{max-height:560px;overflow:auto}
+.lv-scroll .tfp-tbl a{color:var(--link)}
+@media (max-width:640px){ .lv-plans{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:640px){ .lv-info .tfp-tbl th{width:auto} }
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Hutchinson Computer Publishing (UK); Bantam Software (US)</p>
+  <h1>The Fourth Protocol</h1>
+  <p class="sub">Episode two’s 249 places as its screen shows them, the housing estate at Faslane laid out street by street, the three pictures the game builds from tiles, and the two floors of Building 17.</p>
+</header>
+<main class="wrap">
+
+<section data-part="the-bomb" id="places">
+  <p class="fig">01 · Episode two</p>
+  <h2 class="t">Every place, as the game shows it</h2>
+  <p class="lede">Episode two’s screen hardly changes: the icons stay where they are, and only the two names at the top say where you are. Everything else about a place is a record of 14 bytes in <code>location_records</code> (<code>$ADFD</code>): eight exits, the directions a feature guards, the feature, the two names and a text about who is there. Episodes one and three have a single screen each, Cencom and the room, both on <a href="index.html">How it works</a>.</p>
+  <div class="plate">
+    <div class="pick" id="lv-pick"><a class="step" id="lv-prev" role="button" tabindex="0" aria-label="The place before">‹</a><select id="lv-sel" aria-label="Place"></select><a class="step" id="lv-next" role="button" tabindex="0" aria-label="The place after">›</a></div>
+    <canvas class="tfp-cv" id="lv-screen" width="768" height="544"></canvas>
+    <div class="lv-info" id="lv-info"></div>
+    <p class="cap">The names are printed as <code>show_location</code> (<code>$A47C</code>) prints them: each window cleared, each character’s eight bytes from the operating system’s font, inverted, a cell inside the frame, a new line at each return and a word that does not fit carried over. The test beside this page runs the game’s own routine for every place and gets the same bytes. Who is here is unpacked as the memos of episode one are, from episode two’s own dictionary at <code>$C91C</code>, and the test holds it to <code>print_text</code> (<code>$AA3B</code>). The objects are those <code>object_starts</code> (<code>$7F03</code>) puts here at a new game. Euston Road runs on for ever: location 18’s south exit and location 19’s north exit lead back to themselves.</p>
+  </div>
+</section>
+
+<section data-part="the-bomb" id="estate">
+  <p class="fig">02 · Faslane</p>
+  <h2 class="t">Fifty-two identical streets</h2>
+  <p class="lede">The bug planted on Winkler leads to Faslane, and the taxi goes there when you ask for BOMB; no exit leads in or out. Every street on the estate is ANOTHER IDENTICAL STREET. They are the only places whose exits fit a grid, so the map below is drawn from them alone: each street a step from its neighbour in the direction its exit says. The number under each is the Geiger counter’s reading there, from <code>geiger_readings</code> (<code>$6F5B</code>).</p>
+  <div class="plate">
+    <div class="tfp-wide"><canvas id="lv-estate" class="lv-map"></canvas></div>
+    <div class="tfp-key" id="lv-estate-key"></div>
+    <p class="cap">Location 200, ringed in blue at the foot of the map, is where the taxi leaves you, and its south exit, the small ring, leads back to itself. Location 213, ringed in blue, is the gate, where the guard answers one question about a plot. The counter reads 8 in four streets (212, 225, 226 and 236) and 0 only where the taxi stops. Click a street to see it in the browser above.</p>
+  </div>
+</section>
+
+<section data-part="the-bomb" id="tiles">
+  <p class="fig">03 · Episode two</p>
+  <h2 class="t">Three pictures made of tiles</h2>
+  <p class="lede">Examining the tube map, the piece of paper from the Mistral or the ID card opens a window of 14 by 7 cells and fills it from a set of 49 tiles of 8 by 8 pixels (<code>tiles</code>, <code>$C794</code>), one tile number and one colour byte a cell. The ID card adds Preston’s photo on top as an icon, from <code>pic_photo</code> (<code>$1F50</code>).</p>
+  <div class="plate">
+    <div class="lv-tiles" id="lv-tiles"></div>
+    <p class="cap">Each picture is drawn as <code>show_tile_picture</code> (<code>$C466</code>) draws it, and the test beside this page runs the game’s routine for each of the three and gets the same bytes and colours.</p>
+  </div>
+</section>
+
+<section data-part="nato-documents" id="building-17">
+  <p class="fig">04 · Episode one</p>
+  <h2 class="t">Building 17's two floors</h2>
+  <p class="lede">Memo 28 sends you to secure Building 17 in episode one. <code>building_17</code> (<code>$7BE4</code>) draws the basement and then the ground floor, each 10 rows of 14 tiles (<code>draw_plan</code>, <code>$7F97</code>), and you choose a lock for each door. The doors are numbered below in the order of <code>basement_doors</code> and <code>ground_floor_doors</code>; point at a name to find its door. Which locks pass is on <a href="index.html">How it works</a>.</p>
+  <div class="plate">
+    <div class="lv-plans" id="lv-plans"></div>
+    <p class="cap">The plans are drawn as <code>draw_plan</code> draws them, each tile inverted, grey on black, and the test beside this page holds both to the game’s routine. The room names are the game’s own, unpacked from <code>room_names</code> (<code>$7F79</code>) as <code>show_room_name</code> prints them.</p>
+  </div>
+</section>
+
+<section data-part="the-bomb" id="all-places">
+  <p class="fig">05 · Episode two</p>
+  <h2 class="t">All 249 places and their exits</h2>
+  <p class="lede">Every record at once, with its exits, its feature and its text. Click a number to see the place. Location 0 and location 20 are blank records whose exits all lead to location 0. Nothing leads to location 20, and only Euston Road’s west exits lead to location 0, through a road that ends the game first.</p>
+  <div class="plate">
+    <div class="lv-scroll"><table class="tfp-tbl" id="lv-table"></table></div>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* tfp-text */
+// Episode one's packed text, read as next_word ($642F) reads it and printed as print_text ($63AC)
+// prints it. A text is a stream of four-bit codes, the low half of each byte first; a code or a
+// group of codes is a word number into the dictionary at $96D0, 301 zero-terminated words counted
+// from its start (find_dictionary_word): 3-15 alone are words 288-300, 1 n words 256-271 (256 ends
+// the text), 0 n words 272-287, and 2 l h words h * 16 + l. print_word drops a space that comes at
+// the start of the text or of a line ($1969), and print_text_joined ($63A5), which the room names of
+// Building 17 are printed with, keeps the one at the start (joined). The tables hold each text's
+// address, low byte first.
+// Episode two packs its texts the same way (next_word_number, $AA8B) against its own dictionary of
+// 301 words at $C91C (find_word), and print_string ($AA58) drops the same spaces.
+const TFP_TEXT_TABLES = [
+  { name: 'Memos', at: 0x5A4F, n: 46 },
+  { name: 'Reports', at: 0x5AAB, n: 16 },
+  { name: 'Sitreps', at: 0x5ACB, n: 16 },
+  { name: 'Calls', at: 0x5AEB, n: 16 },
+  { name: 'Sitreps with nothing seen', at: 0x5B0B, n: 7 },
+  { name: 'Blenheim files', at: 0x5B19, n: 26 },
+];
+const TFP_DICTIONARY = 0x96D0;
+function tfpWords(ram, at = TFP_DICTIONARY) {
+  const w = [];
+  for (let a = at, i = 0; i < 301; i++) {
+    const at = a; let text = '';
+    while (ram[a]) text += String.fromCharCode(ram[a++]);
+    w.push({ at, text }); a++;
+  }
+  return w;
+}
+function tfpUnpack(ram, ad) {
+  let low = true;
+  const nib = () => { const v = low ? ram[ad] & 15 : ram[ad++] >> 4; low = !low; return v; };
+  const out = [];
+  for (;;) {
+    const c = nib(), codes = [c];
+    let n;
+    if (c === 0) { const x = nib(); codes.push(x); n = 272 + x; }
+    else if (c === 1) { const x = nib(); codes.push(x); n = 256 + x; }
+    else if (c === 2) { const l = nib(), h = nib(); codes.push(l, h); n = h * 16 + l; }
+    else n = 285 + c;
+    if (n === 256) break;
+    out.push({ codes, word: n });
+  }
+  return { words: out, end: low ? ad : ad + 1 };
+}
+function tfpText(ram, words, ad, joined = false) {
+  let drop = !joined, s = '';
+  for (const w of tfpUnpack(ram, ad).words) for (const ch of words[w.word].text) {
+    const c = ch.charCodeAt(0);
+    if (c === 0x20 && drop) continue;
+    drop = c === 13;
+    s += ch;
+  }
+  return s;
+}
+// end of tfp-text
+</script>
+<script>
+/* tfp-names */
+// Episode two's places. location_records ($ADFD) holds 249 records of 14 bytes: the exits north,
+// east, south, west, enter, leave, up and down ($FF none), a byte that is 0 in every record, the
+// directions the feature guards (a bit each, in the same order, which check_feature tests), the
+// feature kind, the two names and the presence text ($FF none). show_location ($A47C) prints the
+// names in windows 0 and 1 at the top of the screen: print_name_0 and print_name_1 select the
+// window, clear it (control code 12) and print the plain string location_names ($A4D7) points to
+// with print_string ($AA58), which drops a space just after a new line. The OS's print_char
+// ($FBF4) puts each character's eight bytes from font ($FDB2), inverted, at the text cursor, one
+// cell inside the window's frame, and moves the cursor on eight pixels; control code 13 starts the
+// next line eight pixels down, with nothing to stop it at the window's foot. Before a character
+// that would pass the last column, wrap_check ($FC77) starts a new line, drops a space there, and
+// after a letter or a sign first prints a hyphen where the cursor is, on the window's frame.
+const TFP_LOCATIONS = 0xADFD, TFP_LOCATION_NAMES = 0xA4D7, TFP_FONT = 0xFDB2;
+const TFP_NAME_WINDOWS = [[9, 3, 22, 4], [9, 10, 22, 4]];
+function tfpString(ram, a) { let s = ''; while (ram[a]) s += String.fromCharCode(ram[a++]); return s; }
+function tfpLocation(ram, n) {
+  const a = TFP_LOCATIONS + 14 * n, r = ram.slice(a, a + 14);
+  const name = (i) => tfpString(ram, ram[TFP_LOCATION_NAMES + 2 * i] | ram[TFP_LOCATION_NAMES + 2 * i + 1] << 8);
+  return { n, at: a, exits: Array.from(r.slice(0, 8)), guards: r[9], kind: r[10], names: [r[11], r[12]],
+    first: name(r[11]), second: name(r[12]), presence: r[13] };
+}
+// Prints string s into name window w of the bitmap at $2000 in mem (font is the OS's memory, for
+// the font), as print_name_0 or print_name_1 does once the window is cleared: its text cells $FF.
+function tfpPrintName(mem, font, w, s) {
+  const [wx, wy, ww, wh] = TFP_NAME_WINDOWS[w], x0 = wx + 1, y0 = wy + 1, cols = ww - 2, last = (cols - 1) * 8;
+  for (let r = 0; r < wh - 2; r++) {
+    const row = 0x2000 + (y0 + r) * 320 + x0 * 8;
+    mem.fill(0xFF, row, row + cols * 8);
+  }
+  let x = 0, y = 0, prev = 0, drop = true;
+  const glyph = (c) => {
+    const at = 0x2000 + (y0 + (y >> 3)) * 320 + x0 * 8 + (x & 0xF8);
+    for (let i = 0; i < 8; i++) mem[(at + i) & 0xFFFF] = font[TFP_FONT + (c - 32) * 8 + i] ^ 0xFF;
+    x = (x + 8) & 0xFF;
+  };
+  const newline = () => { x = 0; y = (y + 8) & 0xFF; };
+  for (const ch of s) {
+    const c = ch.charCodeAt(0);
+    if (c === 13) { drop = true; newline(); continue; }
+    if (c === 32 && drop) continue;
+    drop = false;
+    if (c < 32) continue;
+    if (x > last) {
+      if (c === 32) { newline(); continue; }
+      if (prev >= 0x21 && prev < 0x7F) glyph(0x2D);
+      newline();
+    }
+    prev = c;
+    glyph(c);
+  }
+}
+// The Geiger counter's reading, as use_geiger_counter ($6EF7) gives it: only where the first name
+// is FASLANE ($6F), from geiger_readings ($6F5B) at the location less $C5.
+function tfpGeiger(ram, n) {
+  return ram[TFP_LOCATIONS + 14 * n + 11] === 0x6F ? ram[0x6F5B + ((n - 0xC5) & 0xFF)] : null;
+}
+// end of tfp-names
+</script>
+<script>
+/* tfp-tiles */
+// Episode two's three tile pictures, as show_tile_picture ($C466) draws them in a window at cell
+// 13, 10: 7 rows of 14 tiles from a tile map, each tile's eight bytes from tiles ($C794) copied
+// straight into the bitmap (draw_tiles), and a colour byte a cell from the colour map
+// (tile_colours), over the window's frame. For the ID card, the photo (pic_photo, $1F50, 5 by 4
+// cells, five bytes a row) goes on as an icon (add_icon_here) over the top left 5 by 4 cells,
+// coloured $10. Episode one's floor plans, as draw_plan ($7F97) draws them: 10 rows of
+// 14 tiles, read on from one row to the next, each tile's eight bytes at $9498 plus its offset in
+// the table at $5B7F, inverted, in a window coloured $C0. Each gives { w, h, bits, colours }: w by
+// h cells, the eight bytes of each cell row by row, and a colour byte a cell.
+const TFP_TILE_PICTURES = [
+  { name: 'The tube map', entry: 0xC427, map: 0xC548, colours: 0xC5AA, photo: false },
+  { name: 'The plan on the piece of paper', entry: 0xC43C, map: 0xC60C, colours: 0xC66E, photo: false },
+  { name: 'The ID card', entry: 0xC451, map: 0xC6D0, colours: 0xC732, photo: true },
+];
+function tfpTilePicture(ram, p) {
+  const w = 14, h = 7, bits = new Uint8Array(w * h * 8), colours = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    bits.set(ram.subarray(0xC794 + 8 * ram[p.map + i], 0xC794 + 8 * ram[p.map + i] + 8), 8 * i);
+    colours[i] = ram[p.colours + i];
+  }
+  if (p.photo) for (let cy = 0; cy < 4; cy++) for (let cx = 0; cx < 5; cx++) {
+    const i = cy * w + cx;
+    for (let r = 0; r < 8; r++) bits[8 * i + r] = ram[0x1F50 + (cy * 8 + r) * 5 + cx];
+    colours[i] = 0x10;
+  }
+  return { w, h, bits, colours };
+}
+const TFP_PLANS = [
+  { name: 'Basement', map: 0x7FF9, doors: 0x7D58, n: 9, x: 8, y: 6 },
+  { name: 'Ground floor', map: 0x8085, doors: 0x7E25, n: 13, x: 15, y: 10 },
+];
+function tfpPlan(ram, p) {
+  const w = 14, h = 10, bits = new Uint8Array(w * h * 8), colours = new Uint8Array(w * h).fill(0xC0);
+  for (let i = 0; i < w * h; i++) {
+    const t = ram[p.map + i], off = ram[0x5B7F + 2 * t] | ram[0x5B80 + 2 * t] << 8;
+    for (let r = 0; r < 8; r++) bits[8 * i + r] = ram[(0x9498 + off + r) & 0xFFFF] ^ 0xFF;
+  }
+  return { w, h, bits, colours };
+}
+// end of tfp-tiles
+</script>
+<script>
+// The frame: kit/c64/frame.py capture, trimmed to the memory the drawing reads, in VICE v3.14.0:
+// episode two at the start, Gordon's, your office, with the pointing hand.
+const TFP_OFFICE = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[25,153,25,153,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,209,0,3,200,0,61,119,240,0,0,0,3,3,246,246,241,242,243,244,240,247,240,243,244,245,246,247,252],"cia2":[199,63],"cpu":[47,21],"writes":[],"colour":"Dg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":2944,"b":"AAAAAYAAAcAAA8AAA8AAB4AAD4AAHwAAP//8f//+fgH8ffwAffwAfgAAffgAffgAfgAAffAAffAAfwAAAAAA"},{"a":3008,"b":"A8AAB+AAB+AAB+AAD+AAH+AAP8AAf//+///////////////+//4A//4A//wA//wA//wA//gA//gA//gA/4AA"},{"a":3072,"b":"EBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEA=="},{"a":4088,"b":"Li8="},{"a":8192,"b":"/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AAH9/f39/f38A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP7+/v7+/v7/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/gL+2q7//AP8A/7uv//8A/wD/q13//wD/AP//////AP8A//////8A/wH9/f39/wD/AP8A/wB/f39/f39/f59vf09vb5//n29vb29vn/8fb28fX29v/z9fb29vXz//n29vb29vn/9vby8PT29v/9+/f///////n29/n+9vn//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+/v7+/v7+/v8A/wD/AP8A/4CAgICAgID/AAAAAAAAAP8AAAAAAAAA/wEBAQEBAQH/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wCAv7+/v7+/vwD/////////AP////////8A/////v///wD///8Pz69vAf39/f39/f3/AP8A/wD/AH9/f39/f39///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////7+/v7+/v7+/wD/AP8A/wCAgICAgICAgAAAAAAAAwcPAAAAAACAwOABBwcBAQEBAf8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AL+/t6utnp+/8+vdvX7+//////////9/f/77+vr39+/v7//+/H93t6/9/R3NnT09/f8A/wD/AP8Af39/f39/fwD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/v7+/v7+/gD/AP8A/wD/AICAgICAgICADw8HAwAAAAHg4MCAAAAAAAEBAQEBAQEB/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8Av7+/v7+/v7///////////7+829fv////394////////PD////////z39/f39/f39/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8AgICAgICAgIADAwMDAQAAAICAgIAAAAAAAQEBAQEBAQH/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wC/v7+/v4D/AP//////AP8A//////8A/wD//////wD/AP//////AP8A/f39/f0B/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wAAf39/f39/fwD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/v7+/v7+/v8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8H/wD/AP/yyJD/AP8A/w8DA/8D/hz4HPw//4D/cD9wf/j/AP8A/wD/AH9/f39/f39/d3cnj9/f3/+fb29vb2+f/29vb29vb5//H29vH19vb////////////59vb29vb5//D39/H39/f/8Pf38ff39//x+/v7+/vx//n29/f39vn/8Pf38ff38P//////////////////////////////////////////////////////////////////////////////////////////////////7+/v7+/v7+/wD/AP8A/wD/AP8D/wH/B/8A/4/DyJ4f/wD/AP/wP4//AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/A/8P/jz48eLAgAAgQIMECB4fH3cfD49/f//38O/fgL6+vr4fmF/Y39i/cP8A/wD/AP8Af39/f39/f3///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v7+/v7+/v7/AP8A/wD/AP488sb8HPwcPwcBEB0dHTvj+fw/B+H4/v/gfzyP53Ec/wD/AP+A//D/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/jz4cODA4HAAAAAAAAAAAB8fDwAAAAAA48MDBw8cP/CA//wc+Bz+A//gf3A/cP+A/wD/AP8A/wB/f39/f39/AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD/////////AP////////8A/////////wD+/v7+/v7+AP8A/wD/AP8A/A7+Dv8H/wM7+/f3Tz9/v/////////jBhuH4+MEPP/A/nA9H8x//AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wDwOPgd/wD/AAA//+D/AP8AB///AP8A/wD/4P8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/Af8H/wH/AL7Yww+f3P8AD3//AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8H/jn3b+/f/4F+////////4H+c7/b3+/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wH/AP8A/w/+8f8A/3/4xz/4/3v5APnb/wD/gP/A/4D/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A39/fb+9v73f///////////v7+/b39vfu/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wP/Dv079+/fv/9wv9zv9/v9/wD/AP8A/8D/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/Af8A/wD/GI///wD/AP8A/xj8GP0d/QX/AAAAf39/f/8AAAD//////wwfDF9YX1j/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD3N/sd/Qb/A//D/////zzD7+/cv79n/97//B/c37h/5/8A/wD/AP+B/wD/AP8A/+D/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8D/w7/A//8z6xv738D9zf3N/j//sDv7O/sH///wP8/8zX29/8A/wD/wP9w/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/APwY/Q39Df0NAAB/f39+daoFBf39/b1VqX+/v87l+v3+//7+uVOvX79f2N/Y39jf2P8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/Af8H/w79e/fu37t+/f6Z92/v3x/ffv////////9/nO/29/v7+/8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD9O/fv3+/3O+Dv///////vH+zr7+/u7+74N5eXN3f3dwf3///////3v9zv9/v379z/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/Q39Df0N/Q2VyuX6/f7+/lWpUa1dvT29/v79++ffurU/v9/v832uVt/Y39jf2N/Y/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD9DfwP/wD/AN3NBs7e+/8Ab6+vr+83x/f///////////v29/b37u/s/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP0O/wP/AP8A4O9vrM/8/wcf//g39zf3A/j/H+zv7O/AB/f2NfM//+C/cP/A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD9Df0N/Q39Df3759+/v3513e3x/f14vFBqVSpVKgAAAKtVqlWqAAAAX1hfWF8MHwz/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD7Hf0G/wP/AP////88w/8A37i/YP/A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/A/8A/wD/AH+/3+/3O/0O/v379+/cv3D/wP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP0N/Rj8GP8AKlUqAAAA/wCqVaoAAAD/AF9YXwwfDP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wA="},{"a":16383,"b":"AA=="}],"capture":{"phase_cycles_uncertain":1,"frame_cycles":19654,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":0,"colour_cells_changed_during_frame":0}};
+</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const src = (part, a) => `<code><a href="source-${part}.html#${a.toString(16).toUpperCase().padStart(4, '0')}">${hex(a)}</a></code>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const TFP_DIRS = ['north', 'east', 'south', 'west', 'enter', 'leave', 'up', 'down'];
+const TFP_KINDS = { 1: 'a ticket barrier', 2: 'a lift', 3: 'guards who want to see ID', 4: 'the suspects’ locked door',
+  5: 'a road that kills', 6: 'the Tower', 9: 'a telephone', 20: 'a tube platform' };
+const flat = (s) => s.replace(/\r/g, ' ');
+const title = (L) => L.first === L.second ? flat(L.first) : flat(L.first) + ': ' + flat(L.second);
+
+// A picture of w by h hi-res cells, each its eight bytes and a colour byte, at s screen pixels
+// to a C64 pixel.
+function drawCells(cv, pic, s) {
+  cv.width = pic.w * 8 * s; cv.height = pic.h * 8 * s;
+  const ctx = cv.getContext('2d');
+  for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+    const i = cy * pic.w + cx, c = pic.colours[i];
+    for (let r = 0; r < 8; r++) {
+      const b = pic.bits[8 * i + r];
+      for (let x = 0; x < 8; x++) {
+        ctx.fillStyle = C64.PAL[b & (0x80 >> x) ? c >> 4 : c & 15];
+        ctx.fillRect((cx * 8 + x) * s, (cy * 8 + r) * s, s, s);
+      }
+    }
+  }
+}
+
+function placesWidget(B, R) {
+  const W2 = tfpWords(B.ram, 0xC91C), font = R.ram;
+  const locs = Array.from({ length: 249 }, (_, n) => tfpLocation(B.ram, n));
+  const start = new Uint8Array(0x10000);
+  for (const r of TFP_OFFICE.ram) start.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  const objects = [];
+  for (let i = 0; i < 48; i++) {
+    const at = B.ram[0x7F03 + i];
+    if (at) (objects[at] = objects[at] || []).push(tfpString(B.ram, B.ram[0x7D07 + 2 * i] | B.ram[0x7D08 + 2 * i] << 8));
+  }
+  const presence = (p) => p === 0xFF ? null : tfpText(B.ram, W2, B.ram[0x4BD5 + 2 * p] | B.ram[0x4BD6 + 2 * p] << 8);
+  const sel = $('lv-sel'), cv = $('lv-screen'), info = $('lv-info');
+  sel.innerHTML = locs.map((L) => `<option value="${L.n}">${L.n}. ${esc(title(L))}</option>`).join('');
+  let cur = 1;
+  function show(n) {
+    cur = n; sel.value = n;
+    const L = locs[n], mem = start.slice();
+    tfpPrintName(mem, font, 0, L.first); tfpPrintName(mem, font, 1, L.second);
+    C64.drawFrame(cv, Object.assign({}, TFP_OFFICE, { mem }), 2);
+    const exits = L.exits.map((t, d) => t === 0xFF ? '' :
+      `<button type="button" class="tfp-btn" data-go="${t}">${TFP_DIRS[d]}: ${t}. ${esc(title(locs[t]))}</button>`).join('');
+    const guarded = TFP_DIRS.filter((_, d) => L.guards >> d & 1);
+    const kind = !L.kind ? 'none' : (TFP_KINDS[L.kind] || `kind ${L.kind}, which changes nothing`) +
+      (guarded.length ? `, in the way ${guarded.join(' and ')}` : '');
+    const p = presence(L.presence), g = tfpGeiger(B.ram, n);
+    info.innerHTML = '<table class="tfp-tbl">' +
+      `<tr><th>Record</th><td>location ${n} at ${src('the-bomb', L.at)}</td></tr>` +
+      `<tr><th>Exits</th><td><div class="tfp-bar" style="margin:0">${exits || 'none'}</div></td></tr>` +
+      `<tr><th>Feature</th><td>${esc(kind)}</td></tr>` +
+      `<tr><th>Who is here</th><td>${p === null ? 'no one' : `text ${L.presence}: ${esc(p).replace(/\r/g, '<br>')}`}</td></tr>` +
+      `<tr><th>Objects at the start</th><td>${objects[n] ? esc(objects[n].join(', ')) : 'none'}</td></tr>` +
+      (g === null ? '' : `<tr><th>Geiger counter</th><td>${g}</td></tr>`) + '</table>';
+    for (const b of info.querySelectorAll('[data-go]')) b.addEventListener('click', () => show(+b.dataset.go));
+    $('lv-prev').classList.toggle('off', n === 0); $('lv-next').classList.toggle('off', n === 248);
+  }
+  sel.addEventListener('change', () => show(+sel.value));
+  const step = (d) => () => { if (cur + d >= 0 && cur + d < 249) show(cur + d); };
+  for (const [id, d] of [['lv-prev', -1], ['lv-next', 1]]) {
+    $(id).addEventListener('click', step(d));
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); step(d)(); } });
+  }
+  show(1);
+  estateWidget(B, locs, (n) => { show(n); $('places').scrollIntoView({ behavior: 'smooth' }); });
+  tableWidget(B, locs, presence, (n) => { show(n); $('places').scrollIntoView({ behavior: 'smooth' }); });
+}
+
+// The estate: each street placed from location 200 by its compass exits, a step each way.
+function estateWidget(B, locs, go) {
+  const D = [[0, -1], [1, 0], [0, 1], [-1, 0]], at = new Map([[200, [0, 0]]]), q = [200];
+  while (q.length) {
+    const n = q.shift(), [x, y] = at.get(n);
+    locs[n].exits.slice(0, 4).forEach((t, d) => { if (t !== 0xFF && !at.has(t) && tfpGeiger(B.ram, t) !== null) { at.set(t, [x + D[d][0], y + D[d][1]]); q.push(t); } });
+  }
+  const xs = [...at.values()].map((p) => p[0]), ys = [...at.values()].map((p) => p[1]);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), C = 54, P = 10;
+  const cv = $('lv-estate'), ctx = cv.getContext('2d');
+  cv.width = (Math.max(...xs) - x0 + 1) * C + 2 * P; cv.height = (Math.max(...ys) - y0 + 1) * C + 2 * P;
+  const px = (n) => { const [x, y] = at.get(n); return [P + (x - x0) * C + C / 2, P + (y - y0) * C + C / 2]; };
+  const heat = ['#fbf3e4', '#f6e2bd', '#f1cf94', '#ebb96b', '#e3a046', '#d98526', '#c86a12', '#ad520a', '#8c3c06'];
+  ctx.lineCap = 'round';
+  for (const n of at.keys()) locs[n].exits.slice(0, 4).forEach((t, d) => {
+    if (t === 0xFF) return;
+    const [ax, ay] = px(n);
+    ctx.strokeStyle = '#80838a'; ctx.lineWidth = 3;
+    if (t === n) { ctx.beginPath(); ctx.arc(ax + D[d][0] * C * .42, ay + D[d][1] * C * .42, 7, 0, 2 * Math.PI); ctx.stroke(); return; }
+    if (!at.has(t)) return;
+    const [bx, by] = px(t), back = locs[t].exits.indexOf(n) >= 0 && locs[t].exits.indexOf(n) < 4;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(back ? bx : (ax + bx) / 2, back ? by : (ay + by) / 2); ctx.stroke();
+  });
+  ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const n of at.keys()) {
+    const [x, y] = px(n), g = tfpGeiger(B.ram, n);
+    ctx.fillStyle = heat[g]; ctx.strokeStyle = n === 200 || n === 213 ? '#1f5fa8' : '#55585f'; ctx.lineWidth = n === 200 || n === 213 ? 3 : 1.2;
+    ctx.beginPath(); ctx.rect(x - 19, y - 17, 38, 34); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = g >= 6 ? '#fff' : '#2f3136'; ctx.fillText(String(n), x, y - 6);
+    ctx.font = '400 11px "IBM Plex Mono", monospace'; ctx.fillText('· ' + g + ' ·', x, y + 8); ctx.font = '600 12px "IBM Plex Mono", monospace';
+  }
+  $('lv-estate-key').innerHTML = heat.map((c, g) => `<span><i style="background:${c}"></i>${g}</span>`).join('');
+  cv.addEventListener('click', (e) => {
+    const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height;
+    for (const n of at.keys()) { const [x, y] = px(n); if (Math.abs(mx - x) < 20 && Math.abs(my - y) < 18) go(n); }
+  });
+}
+
+function tilesWidget(B) {
+  const box = $('lv-tiles');
+  box.innerHTML = TFP_TILE_PICTURES.map((p, k) => `<figure><canvas class="tfp-cv" id="lv-tile-${k}"></canvas>` +
+    `<figcaption>${esc(p.name)}: tiles ${src('the-bomb', p.map)}, colours ${src('the-bomb', p.colours)}</figcaption></figure>`).join('');
+  TFP_TILE_PICTURES.forEach((p, k) => drawCells($('lv-tile-' + k), tfpTilePicture(B.ram, p), 4));
+}
+
+function plansWidget(N, R) {
+  const W1 = tfpWords(N.ram), box = $('lv-plans');
+  const roomName = (i) => tfpText(N.ram, W1, N.ram[0x7F79 + 2 * i] | N.ram[0x7F7A + 2 * i] << 8, true).trim();
+  box.innerHTML = TFP_PLANS.map((p, k) => `<figure><div class="tfp-stack"><canvas class="tfp-cv" id="lv-plan-${k}"></canvas><canvas id="lv-plan-ov-${k}"></canvas></div>` +
+    `<figcaption>${esc(p.name)}: plan ${src('nato-documents', p.map)}, doors ${src('nato-documents', p.doors)}</figcaption><ol class="lv-doors" id="lv-doors-${k}"></ol></figure>`).join('');
+  TFP_PLANS.forEach((p, k) => {
+    const S = 4, cv = $('lv-plan-' + k), ov = $('lv-plan-ov-' + k);
+    drawCells(cv, tfpPlan(N.ram, p), S);
+    ov.width = cv.width; ov.height = cv.height;
+    const ctx = ov.getContext('2d'), doors = [];
+    for (let i = 0; i < p.n; i++) {
+      const e = p.doors + 4 * i, ad = (N.ram[e + 2] | N.ram[e + 3] << 8) - 0x2000;
+      doors.push({ label: N.ram[e], cx: ((ad % 320) >> 3) - p.x, cy: Math.floor(ad / 320) - p.y });
+    }
+    let on = -1;
+    const draw = () => {
+      ctx.clearRect(0, 0, ov.width, ov.height);
+      ctx.font = `700 ${3 * S}px "IBM Plex Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      doors.forEach((d, i) => {
+        const x = (d.cx * 8 + 4) * S, y = (d.cy * 8 + 4) * S;
+        ctx.fillStyle = i === on ? '#c25a00' : '#1f5fa8';
+        ctx.globalAlpha = .9; ctx.beginPath(); ctx.arc(x, y, 3.4 * S, 0, 2 * Math.PI); ctx.fill(); ctx.globalAlpha = 1;
+        ctx.fillStyle = '#fff'; ctx.fillText(String(i + 1), x, y + 1);
+      });
+    };
+    const list = $('lv-doors-' + k);
+    list.innerHTML = doors.map((d) => `<li>${esc(roomName(d.label))}</li>`).join('');
+    [...list.children].forEach((li, i) => {
+      li.addEventListener('mouseenter', () => { on = i; draw(); });
+      li.addEventListener('mouseleave', () => { on = -1; draw(); });
+    });
+    draw();
+  });
+}
+
+function tableWidget(B, locs, presence, go) {
+  const t = $('lv-table');
+  t.innerHTML = '<tr><th>#</th><th>Place</th><th>Exits</th><th>Feature</th><th>Who is here</th></tr>' + locs.map((L) => {
+    const ex = L.exits.map((x, d) => x === 0xFF ? '' : `${TFP_DIRS[d]} <a href="#places" data-go="${x}">${x}</a>`).filter(Boolean).join(', ');
+    const p = presence(L.presence);
+    return `<tr><td class="tfp-n"><a href="#places" data-go="${L.n}">${L.n}</a></td><td>${esc(title(L))}</td><td>${ex || 'none'}</td>` +
+      `<td>${!L.kind ? '' : esc(TFP_KINDS[L.kind] || 'kind ' + L.kind)}</td><td>${p === null ? '' : esc(flat(p))}</td></tr>`;
+  }).join('');
+  t.addEventListener('click', (e) => { const a = e.target.closest('[data-go]'); if (a) { e.preventDefault(); go(+a.dataset.go); } });
+}
+
+(function () {
+  const fail = (id, e) => { $(id).textContent = 'This did not load: ' + e.message; };
+  if (typeof C64 === 'undefined') { ['lv-info', 'lv-tiles', 'lv-plans'].forEach((i) => { $(i).textContent = 'This needs the site’s c64.js, which the built site serves: open the page from the site.'; }); return; }
+  Promise.all([C64.load('parts/the-bomb/listing.json'), C64.load('parts/resident/listing.json')]).then(([B, R]) => {
+    try { placesWidget(B, R); } catch (e) { fail('lv-info', e); }
+    try { tilesWidget(B); } catch (e) { fail('lv-tiles', e); }
+  }).catch((e) => fail('lv-info', e));
+  C64.load('parts/nato-documents/listing.json').then((N) => plansWidget(N)).catch((e) => fail('lv-plans', e));
+})();
+</script>

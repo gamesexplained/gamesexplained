@@ -122,8 +122,13 @@ each lock is counted by the kind of room (`lock_counts`). `judge_locks`
 - the building is secure with at least two locks on offices, one on the
   security door, two on the main entrance, two on the computer room or
   data storage, and one on the desk and key room (`judge_security`);
-  otherwise memo 31, a break-in, once in 99, and memo 32, a serious
-  breach, the rest of the time;
+  otherwise memo 32, a serious breach, every time. The branch after
+  `random` (`$7CB6`, `BNE`) was meant to bring memo 31, a break-in, when
+  the number is 0, but it tests the Z flag that `random`'s last
+  `CMP #$63` leaves, and `random` returns only numbers below `$63`, so the
+  branch is always taken and memo 31 never comes. *Live*: with `random`
+  seeded to give 0 (`$88`-`$8A` = `$00 $0C $5A`), the game went on to
+  memo 32 (`$7CBF`) and never reached `$7CB8`;
 - more than 10 locks bring memo 42, the union's threat of a strike; 10 or
   fewer earn progress 10 and memo 33, the computer's security, in four
   days.
@@ -154,3 +159,4 @@ play.
 | Test | Result |
 |---|---|
 | 1,000 frames advanced, checkpoints on `irq` and `day_clock` | the frame count in `$1936` up by 1,000; both checkpoints hit 1,000 times |
+| `random` seeded to give 0, then `judge_security`'s failing branch run from `$7CAC` | `random` returned 0 with Z clear; `$7CBF` (memo 32) hit, `$7CB8` (memo 31) not |
