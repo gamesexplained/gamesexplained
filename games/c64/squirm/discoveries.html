@@ -69,7 +69,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1984 · Mastertronic</p>
   <h1>Squirm</h1>
-  <p class="sub">What the code does that the game never tells the player: a level counter that loops, a death that sounds different on each sound chip, a keyboard that plays, and the remains of the assembler the game was written with.</p>
+  <p class="sub">What the code does that the game never tells the player: a level counter that loops, a death that sounds different on each sound chip, a keyboard that plays, and the remains of the programming tool the game was written with.</p>
 </header>
 <main class="wrap">
 
@@ -85,29 +85,29 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="sq-big" id="sq-l-now"></p>
     <p class="sq-out" id="sq-l-list"></p>
-    <p class="cap">Each press runs the game's own lines <code>$3887</code>-<code>$389A</code>, from the listing on the kit's 6502, on the two digits of LEVEL on the top line (<code>$0423</code> and <code>$0424</code>). In VICE, the level number poked to 19 showed 10 at the start of the next level.</p>
+    <p class="cap">Each press runs the game's own instructions at <code>$3887</code>-<code>$389A</code>, taken from the listing, on a model of the C64's processor, the 6502. They work on the two digits of LEVEL on the top line (<code>$0423</code> and <code>$0424</code>). In the VICE emulator, with the level number set to 19 by hand, the next level showed 10. Numbers written with a $ are hexadecimal, counting in sixteens; those in dark boxes are addresses in the C64's memory, and each opens the Source code tab there.</p>
   </div>
-  <p>The level number exists only as two characters on the top line, reversed digits whose codes run from <code>$B0</code> for 0 to <code>$B9</code> for 9. At the end of a level, <code>level_complete</code> adds 1 to the units digit (<code>$3887</code>). When the units reach <code>$BA</code>, one past 9, it writes <code>$B1</code>, a 1, into the tens digit and <code>$B0</code> into the units. It should have added 1 to the tens. Every carry therefore leaves the tens at 1: 09 becomes 10 correctly, and 19 becomes 10 again.</p>
+  <p>The level number exists only as two characters on the top line, digits drawn light on dark, whose character codes run from <code>$B0</code> for 0 to <code>$B9</code> for 9. At the end of a level, <code>level_complete</code> adds 1 to the units digit (<code>$3887</code>). When the units reach <code>$BA</code>, one past 9, it writes <code>$B1</code>, a 1, into the tens digit and <code>$B0</code> into the units. It should have added 1 to the tens. So every time the units pass 9, the tens become 1. 09 becomes 10 correctly, and 19 becomes 10 again.</p>
   <p>Only the number on the screen is wrong. The maze and the speed come from <code>maze_number</code> and <code>step_delay</code>, which count on correctly, so the 20th level is drawn and played as the 20th while the top line says 10 (<a href="index.html#levels">How it works</a>).</p>
 </section>
 
 <section id="death-sound">
   <p class="fig">02 · The death's noise</p>
   <h2 class="t">Bug: the death sounds different on the two kinds of sound chip</h2>
-  <p class="lede">The fall lowers the noise's pitch by reading it back from the sound chip, which cannot be read back. On the older chip the pitch jumps to the top after one step; on the newer one it falls as the programmer meant.</p>
+  <p class="lede">The fall lowers the noise's pitch by reading it back from the sound chip, which cannot be read back. On the older chip the pitch jumps to the top after one step. On the newer one it falls as the programmer meant.</p>
   <div class="plate">
     <div id="sq-death"></div>
     <div class="sq-wrapx"><table class="sq-tbl" id="sq-death-tbl"></table></div>
-    <p class="cap">The player runs the game's own <code>lose_life</code> (<code>$3A7D</code>) on the kit's 6502, with the chip's data bus kept as VICE keeps it: the last value written, for 7,424 cycles on a 6581 and 663,552 on an 8580. The table is what each <code>DEC $D401</code> wrote there. In VICE, a checkpoint after each one read the same values, with the 8580 and, from a fresh start, with a 6581.</p>
+    <p class="cap">The sound player runs the game's own <code>lose_life</code> (<code>$3A7D</code>) on a model of the C64's processor, with the chip's data lines kept as the VICE emulator keeps them. They hold the last value written for 7,424 of the processor's cycles on a 6581 and 663,552 on an 8580; the processor runs about a million cycles a second. The table is what each <code>DEC $D401</code> wrote there. In VICE, stopping the machine after each one showed the same values, on an 8580 and, from a fresh start, on a 6581.</p>
   </div>
-  <p><code>lose_life</code> switches voice 1 to noise at a pitch of <code>$14</code>, then lowers the pitch once for each row the player falls, three jiffies apart, with one instruction: <code>DEC $D401</code> (<code>$3A8F</code>). DEC reads a byte, takes 1 from it and writes it back. But the SID's pitch registers can only be written. A read of one gets whatever is still on the chip's data lines from the last write, until it fades away.</p>
-  <p>The C64 was made with two models of the SID over the years, the 6581 and later the 8580, and VICE emulates both. The first DEC comes a few cycles after the write of <code>$14</code>, so on both chips it reads <code>$14</code> and writes <code>$13</code>. The next comes three jiffies, about 49,000 cycles, later. VICE's 6581 has let the value fade to 0 by then, so DEC writes 0 minus 1, which is <code>$FF</code>, the highest pitch, and it does the same for every row after. VICE's 8580 holds the value for much longer, so each DEC reads back what the last one wrote and the pitch steps down a row at a time. How long a real chip holds the value varies from chip to chip; the two lengths here are VICE's.</p>
+  <p><code>lose_life</code> switches voice 1 of the SID, the C64's sound chip, to noise at a pitch of <code>$14</code>. Then it lowers the pitch once for each row the player falls, three jiffies (sixtieths of a second) apart, with one instruction: <code>DEC $D401</code> (<code>$3A8F</code>). DEC reads a byte, takes 1 from it, and writes it back. But the SID's pitch registers, the chip's settings, can only be written. A read of one gets whatever is still on the chip's data lines, the wires that carry each byte to and from the chip, from the last write, until that value fades away.</p>
+  <p>The C64 was made with two models of the SID over the years, the 6581 and later the 8580, and VICE emulates both. The first DEC comes a few cycles after the write of <code>$14</code>, so on both chips it reads <code>$14</code> and writes <code>$13</code>. The next comes three jiffies, about 49,000 cycles, later. VICE's 6581 has let the value fade to 0 by then, so DEC writes 0 minus 1. A byte cannot go below 0, so that wraps round to <code>$FF</code>, the highest pitch, and every row after does the same. VICE's 8580 holds the value for much longer, so each DEC reads back what the last one wrote and the pitch steps down a row at a time. How long a real chip holds the value varies from one chip to the next. The two lengths here are VICE's.</p>
 </section>
 
 <section id="keyboard">
   <p class="fig">03 · The keyboard</p>
   <h2 class="t">Secret: five keys of the keyboard play the game</h2>
-  <p class="lede">The game only reads the joystick, but the keys 1, ←, CTRL, 2 and SPACE move the player and fire as well.</p>
+  <p class="lede">The game only reads the joystick, but the keys 1, ←, CTRL, 2, and SPACE move the player and fire as well.</p>
   <div class="plate">
     <div class="sq-wrapx"><table class="sq-tbl">
       <thead><tr><th>Key</th><th>Line of <code>$DC01</code></th><th>Acts as</th></tr></thead>
@@ -120,9 +120,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <tr><td>C=, Q, RUN/STOP</td><td class="sq-n">bits 5 to 7</td><td>nothing alone; held with a direction, they stop it counting</td></tr>
       </tbody>
     </table></div>
-    <p class="cap">The keyboard's row 7, from the C64's keyboard matrix. In VICE, holding 2, 1, CTRL and ← for a quarter of a second each moved the player right, up, left and down, and SPACE started a game. The widget on <a href="index.html#controls">How it works</a> runs the game's own code on any mix of these lines.</p>
+    <p class="cap">The keyboard's row 7, from the C64's keyboard matrix. In VICE, holding 2, 1, CTRL, and ← for a quarter of a second each moved the player right, up, left, and down, and SPACE started a game. The widget on <a href="index.html#controls">How it works</a> runs the game's own code on any mix of these lines.</p>
   </div>
-  <p>The C64 reads its keyboard as a grid of eight rows and eight columns. One chip, CIA 1, drives a row with one port and reads the columns with its other port, <code>$DC01</code>. Joystick port 1 is wired to that same input port, on bits 0 to 4. The KERNAL leaves row 7 of the keyboard selected, and Squirm never changes it. So every key of row 7 pulls the same line as a joystick direction, and <code>move_player</code> (<code>$306E</code>), which reads <code>$DC01</code>, cannot tell the two apart. The game also wants each value exact, so a key from bits 5 to 7, held with the stick, turns a direction into a value it does not know and the player carries straight on.</p>
+  <p>The C64 reads its keyboard as a grid of eight rows and eight columns. One chip, CIA 1, one of the C64's two input and output chips, drives a row with one port and reads the columns with its other port, <code>$DC01</code>. Joystick port 1 is wired to that same input port, on bits 0 to 4. The KERNAL, the C64's built-in system code, leaves row 7 of the keyboard selected between its checks of the keys, and Squirm never changes it. So each of row 7's first five keys pulls down the same line as a joystick direction or fire, and <code>move_player</code> (<code>$306E</code>), which reads <code>$DC01</code>, cannot tell the two apart. The game also wants each value exact. A key from bits 5 to 7, held with the stick, turns a direction into a value the game does not know, and the player carries straight on.</p>
 </section>
 
 <section id="new-hi">
@@ -134,22 +134,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure><img src="reference/new-hi-climbing.png" alt="Name entry in VICE: the name DCC with 000300 climbing the table; the top line still says SCORE 000300" width="384" height="272"><figcaption>A score of 300 climbing the table: the top line still says SCORE 000300.</figcaption></figure>
       <figure><img src="reference/new-hi-done.png" alt="The table after the climb: DCC 000300 on the first row; the top line says HI 000300 and SCORE 000000" width="384" height="272"><figcaption>At the top: HI 000300, and SCORE 000000.</figcaption></figure>
     </div>
-    <p class="cap">Both from VICE, after a game ended with a score poked to 300 and the name DCC entered.</p>
+    <p class="cap">Both from the VICE emulator, after a game ended with its score set to 300 by hand and the name DCC entered.</p>
   </div>
-  <p>The score is never stored anywhere but the screen (<a href="index.html#hiscores">How it works</a>). When a score reaches first place, <code>enter_name</code> copies its digits into the top status line's template (<code>$0FA4</code>), and then redraws the status lines from their templates (<code>draw_status_lines</code>, called at <code>$3258</code>) to show the new HI. The same template holds SCORE as 000000, ready for a new game, so the redraw puts that on the screen too. The score the player just made stays on the screen only as the new HI.</p>
+  <p>The score is never stored anywhere but the screen (<a href="index.html#hiscores">How it works</a>). When a score reaches first place, <code>enter_name</code> copies its digits into the stored pattern the top status line is drawn from (<code>$0FA4</code>). Then it redraws the status lines from those patterns (<code>draw_status_lines</code>, called at <code>$3258</code>) to show the new HI. The same pattern holds SCORE as 000000, ready for a new game, so the redraw puts that on the screen too. The score the player just made stays on the screen only as the new HI.</p>
 </section>
 
 <section id="bonus-tune">
   <p class="fig">05 · The bonus tune</p>
   <h2 class="t">Secret: from level 9, the bonus run plays part of the title tune</h2>
-  <p class="lede">The bonus tune is written to last exactly as long as the run on the first levels. The runs get faster, the tune does not, and from level 9 the player reads on past its end into the title tune.</p>
+  <p class="lede">The bonus tune is written to last exactly as long as the run on the first levels. The runs get faster, the tune does not, and from level 9 the routine that plays it reads on past its end into the title tune.</p>
   <div class="plate">
     <div id="sq-bonus"></div>
     <canvas id="sq-b-cv" width="1100" height="210" style="display:block;width:100%;height:auto;margin-top:12px" aria-label="The 255 notes of the bonus tune, with how far the run gets at each speed"></canvas>
-    <p class="cap" id="sq-b-cap">Each bar is one of the 255 notes <code>bonus_tune_step</code> (<code>$3D5C</code>) plays, its height the pitch, a gap a silent note. The blue ones are <code>bonus_tune</code> (<code>$3DB8</code>), the orange ones the first bytes of <code>title_tune_voice1</code> (<code>$3E80</code>), which follow it in memory. The marks show how many notes a run of 901 jiffies plays at each speed. The player runs the game's own code, the run at six and at four jiffies a pass.</p>
+    <p class="cap" id="sq-b-cap">Each bar is one of the 255 notes <code>bonus_tune_step</code> (<code>$3D5C</code>) plays, its height the pitch, a gap a silent note. The blue ones are <code>bonus_tune</code> (<code>$3DB8</code>), the orange ones the first bytes of <code>title_tune_voice1</code> (<code>$3E80</code>), which follow it in memory. The marks show how many notes a run of 901 jiffies (sixtieths of a second) plays at each speed. The sound player runs the game's own code, for a run at six jiffies a pass and at four.</p>
   </div>
-  <p><code>bonus_tune_step</code> (<code>$3D5C</code>) plays one note a pass of the bonus run and counts its place from 0 to 254 before it starts again (<code>$3D66</code>). The table at <code>$3DB8</code> holds 151 notes and then 49 zeros, which are silent, and the 200 bytes after it are the title tune's two voices. Notes 200 to 254 are therefore the first 55 bytes of the title tune's first voice.</p>
-  <p>The run lasts 901 jiffies whatever the level, and each pass waits <code>step_delay</code>, as in play. On the first four levels a pass is six jiffies, so the run has 151 passes, one for each note of the tune. On levels 5 to 8 a pass is five jiffies: the tune ends and the last two and a half seconds of the run are silent. On levels 9 to 12 a pass is four jiffies, and after more than three seconds of silence the run plays the rising notes of the title tune's opening. From level 13 the run outlasts all 255 notes, and the tune starts again.</p>
+  <p><code>bonus_tune_step</code> (<code>$3D5C</code>) plays one note each pass of the bonus run, each time round the loop that moves the player. It counts its place from 0 to 254 before it starts again (<code>$3D66</code>). The table at <code>$3DB8</code> holds 151 notes and then 49 zeros, which are silent. The 200 bytes after it are the title tune's two voices. Notes 200 to 254 are therefore the first 55 bytes of the title tune's first voice.</p>
+  <p>The run lasts 901 jiffies whatever the level, and each pass waits as long as it does in play (<code>step_delay</code>). On the first four levels a pass is six jiffies, so the run has 151 passes, one for each note of the tune. On levels 5 to 8 a pass is five jiffies, so the run has 181 passes. The tune ends, and the last two and a half seconds of the run are silent. On levels 9 to 12 a pass is four jiffies, and the run has 226 passes. After more than three seconds of silence, the run plays the rising notes of the title tune's opening. From level 13 the run outlasts all 255 notes, and the tune starts again.</p>
 </section>
 
 <section id="worm-test">
@@ -158,9 +158,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The test a worm makes before each step was rewritten, and the old one is still in the code behind a jump. It refused the player's cell, so a worm could only catch a player who ran into it.</p>
   <div class="plate">
     <div class="sq-wrapx"><table class="sq-tbl" id="sq-wt-tbl"></table></div>
-    <p class="cap">Both tests run by the page on the kit's 6502 with the worm's next cell holding each character: <code>cell_is_free</code> (<code>$3C93</code>), the one the game uses, and <code>old_cell_check</code> (<code>$32D5</code>), entered with the low byte of the cell's address already loaded, as the instruction the jump overwrote would have done. 0 means the worm may move there.</p>
+    <p class="cap">Both tests run on the model of the 6502, with the worm's next cell holding each character in turn. One is <code>cell_is_free</code> (<code>$3C93</code>), the test the game uses. The other is <code>old_cell_check</code> (<code>$32D5</code>), started with the low byte of the cell's address already loaded, as the instruction that the jump wrote over would have done. 0 means the worm may move there.</p>
   </div>
-  <p>Every worm's step ends with a call of <code>try_worm_step</code> (<code>$32EF</code>), which ends with a jump to <code>$32D2</code>. There a three-byte <code>JMP</code> sends it on to <code>cell_is_free</code> (<code>$3C93</code>), at the far end of the program. Those three bytes were written over the start of the older test, and the rest of it is still there from <code>$32D5</code> to <code>$32EE</code>: it reads the cell and takes a space (<code>$20</code>) or an egg (<code>$46</code>) as free. The new test adds one comparison, with the player's character <code>$51</code>.</p>
+  <p>Every worm's step ends with a call of <code>try_worm_step</code> (<code>$32EF</code>), which ends with a jump to <code>$32D2</code>. There a jump instruction (<code>JMP</code>, three bytes) sends it on to <code>cell_is_free</code> (<code>$3C93</code>), at the far end of the program. Those three bytes were written over the start of the older test. The rest of the old test is still there, from <code>$32D5</code> to <code>$32EE</code>. It reads the cell and takes a space (<code>$20</code>) or an egg (<code>$46</code>) as free. The new test adds one comparison, with the player's character <code>$51</code>.</p>
   <p>With the old test the worms went round the player. The main loop only checks the cell the player moves into, so a player could die only by running into a worm. With the new one, a worm may crawl onto the player. The worms move before the player in each pass, so a player that does not move off the cell in the same pass dies there.</p>
 </section>
 
@@ -174,33 +174,33 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <input type="range" id="sq-s-lv" min="1" max="32" value="1" style="flex:1;max-width:420px;accent-color:var(--accent)">
     </div>
     <p class="sq-out" id="sq-s-out"></p>
-    <p class="cap">The level's <code>step_delay</code> as the game counts it (<code>$3BAF</code> sets <code>$FA</code>; <code>$3A72</code> adds 1 at the start of every fifth stage) and what the wait at <code>$3C56</code> makes of it: it stores the value in <code>$A2</code>, which the interrupt counts up 60 times a second, and loops while it is <code>$80</code> or more.</p>
+    <p class="cap">The level's <code>step_delay</code> as the game counts it: <code>$3BAF</code> sets <code>$FA</code>, and <code>$3A72</code> adds 1 each time the stage counter reaches 5 and goes back to 1. Beside it is what the wait at <code>$3C56</code> makes of the value. The wait stores it in <code>$A2</code>, which the KERNAL's interrupt routine, run by a timer, adds 1 to 60 times a second. Then it loops while <code>$A2</code> is <code>$80</code> (128) or more.</p>
   </div>
-  <p><code>step_delay</code> (<code>$2689</code>) starts at <code>$FA</code>, six jiffies short of 256, and the wait lasts until <code>$A2</code> counts past <code>$FF</code> to 0. At level 25 the value reaches <code>$00</code>, which is below <code>$80</code> already, and the loop goes straight through. A pass then takes only as long as its own work, many times faster than the ten passes a second of the first level. The value goes on rising every four levels, but the main loop would only wait again at <code>$80</code>, more than 500 levels later.</p>
+  <p><code>step_delay</code> (<code>$2689</code>) starts at <code>$FA</code>, which is 250, six short of 256. The wait lasts until <code>$A2</code> counts past <code>$FF</code> (255) to 0. At level 25 the value reaches <code>$00</code>, which is below <code>$80</code> already, and the loop goes straight through. A pass then takes only as long as its own work, many times faster than the ten passes a second of the first level. The value goes on rising every four levels, but the main loop would only wait again at <code>$80</code>, more than 500 levels later.</p>
 </section>
 
 <section id="assembler">
   <p class="fig">08 · The assembler</p>
   <h2 class="t">The tape carries the menu of the assembler the game was written with</h2>
-  <p class="lede">The file on the tape is a plain save of memory from <code>$0801</code> to <code>$3F47</code>, and nearly 2,000 bytes after its first line are most of another program: the BASIC menu of the CBM 64 Assembler, by Derek Bush and Peter Holmes, 1983.</p>
+  <p class="lede">The file on the tape is a plain copy of memory from <code>$0801</code> to <code>$3F47</code>. Nearly 2,000 bytes after its first line are most of another program: the BASIC menu of the CBM 64 Assembler, by Derek Bush and Peter Holmes, 1983.</p>
   <div class="plate">
     <div class="sq-log" id="sq-basic" style="max-height:24em;overflow:auto"></div>
     <p class="cap">Read by the page from <code>$084C</code> to <code>$0F9F</code> of the listing, line by line along the BASIC program's own links, with BASIC's keywords spelt out and the colour and cursor codes left out. The game never reads these bytes.</p>
   </div>
-  <p>A BASIC program on the C64 starts at <code>$0801</code> and is a chain of lines, each starting with the address of the next. The game's own BASIC is one line, <code>10 SYS 15133</code>, which starts the machine code at <code>$3B1D</code>, and its chain ends two bytes later. The bytes after it, up to <code>$0F9F</code>, were simply in memory when the game was saved: lines 15 to 340 of the assembler's menu, with its title page, its error messages and the line-by-line entry routine that calls the assembler's machine code with <code>SYS 52113</code> and <code>SYS 51972</code>. Just before line 15 are the words "2.03/06-07-83", the end of a version and a date.</p>
-  <p>The character set holds more of the same tool. From <code>$2AF0</code> the shapes of the unused characters are text: three-letter names of 6502 instructions, AND, ROL, CPX and the rest, from the assembler's table of opcodes. They show what the game was built with: a BASIC assembler with its machine code high in memory, the game's code assembled into the area above, and the whole of memory saved to tape in one go.</p>
+  <p>An assembler turns a programmer's instructions, written as short words, into the machine code the processor runs. This one has a menu written in BASIC, the programming language built into the C64. A BASIC program on the C64 starts at <code>$0801</code> and is a chain of lines, each starting with the address of the next. The game's own BASIC is one line, <code>10 SYS 15133</code>. SYS starts machine code at an address, here 15133, which is <code>$3B1D</code>. The chain ends two bytes after that line. The bytes after it, up to <code>$0F9F</code>, were simply in memory when the game was saved. They are lines 15 to 340 of the assembler's menu, with its title page, its error messages, and the line-by-line entry routine that calls the assembler's machine code with <code>SYS 52113</code> and <code>SYS 51972</code>. Just before line 15 are the words "2.03/06-07-83", the end of a version and a date.</p>
+  <p>The character set, the 256 shapes the screen's characters are drawn from, holds more of the same tool. From <code>$2AF0</code> the shapes of the unused characters are really text: the three-letter names of the processor's instructions, such as AND, ROL, and CPX, from the assembler's table of them. Together they show how the game was made. A BASIC menu ran an assembler whose machine code sat high in memory, at <code>$CB04</code> and <code>$CB91</code>, the two SYS addresses. The game's code was assembled above the menu program, and then everything from <code>$0801</code> to the game's end was saved to tape in one go.</p>
 </section>
 
 <section id="arrow">
   <p class="fig">09 · The arrow</p>
   <h2 class="t">An arrow is animated 8.6 times a second and never drawn</h2>
-  <p class="lede">The game's interrupt turns three characters round in turn, an arrow in three frames, but no screen in the game ever uses them.</p>
+  <p class="lede">The game's interrupt routine cycles three characters, the three frames of an arrow, but no screen in the game ever shows them.</p>
   <div class="plate">
     <div class="sq-bar"><button type="button" class="sq-btn" id="sq-a-run" aria-pressed="false">Run the interrupt</button></div>
     <canvas id="sq-a-cv" width="704" height="120" style="display:block;width:100%;max-width:704px;height:auto;image-rendering:pixelated" aria-label="The characters the interrupt animates"></canvas>
-    <p class="cap">Drawn from the character set at <code>$2800</code> as the game's own <code>irq_handler</code> (<code>$3CB3</code>) leaves it, run on the kit's 6502 sixty times a second: the arrow (<code>$40</code>-<code>$42</code>), the egg (<code>$46</code>), the two treasures (<code>$47</code>-<code>$4A</code>) and the eight frames of the spinning figure (<code>$4E</code>-<code>$55</code>).</p>
+    <p class="cap">Drawn from the character set at <code>$2800</code> as the game's own <code>irq_handler</code> (<code>$3CB3</code>) leaves it, run on the model of the 6502 sixty times a second: the arrow (<code>$40</code>-<code>$42</code>), the egg (<code>$46</code>), the two treasures (<code>$47</code>-<code>$4A</code>), and the eight frames of the spinning figure (<code>$4E</code>-<code>$55</code>).</p>
   </div>
-  <p>On every seventh interrupt the handler moves the shapes of characters <code>$40</code>, <code>$41</code> and <code>$42</code> round one place (<code>$3CC4</code>). Nothing in the title, the mazes, the status lines or the high-score screen holds those characters, and no code writes them to the screen. The arrow costs 24 bytes of shapes, and about 270 of the processor's cycles on every seventh interrupt for as long as the game runs.</p>
+  <p>On every seventh interrupt the handler moves the shapes of characters <code>$40</code>, <code>$41</code>, and <code>$42</code> round one place (<code>$3CC4</code>). Nothing in the title, the mazes, the status lines, or the high-score screen holds those characters, and no code writes them to the screen. The arrow costs 24 bytes of shapes, and about 270 of the processor's cycles on every seventh interrupt for as long as the game runs.</p>
 </section>
 
 <section id="quirks">
@@ -211,12 +211,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="sq-wrapx"><table class="sq-tbl">
       <thead><tr><th>Where</th><th>What the code does</th></tr></thead>
       <tbody>
-        <tr><td><code>$3649</code></td><td>The last loop of <code>colour_maze</code> starts with its index at <code>$FF</code>, one past the 75 cells it means to colour, and writes one colour to <code>$DC4C</code>. That is CIA 1, a mirror of its serial data register, which nothing in the game uses.</td></tr>
-        <tr><td><code>$2441</code></td><td>The start-up shows the title with a call of <code>$2441</code> (<code>$3B74</code>), which is not the start of an instruction: it is the last byte of a branch, <code>$F5</code>, followed by the <code>$60</code> of a return. Read from there, <code>$F5 $60</code> is <code>SBC $60,X</code>, a subtraction that changes only the accumulator and the flags, and the next instruction is the real start of <code>show_title_screen</code> (<code>$2443</code>).</td></tr>
+        <tr><td><code>$3649</code></td><td>The last loop of <code>colour_maze</code> starts with its counter still at <code>$FF</code>, where the loop before left it. So before the 75 cells it means to colour, it writes one colour to <code>$DC4C</code>, past the end of colour RAM. That address belongs to CIA 1, an input and output chip: it is a second copy of the chip's serial data register, which nothing in the game uses.</td></tr>
+        <tr><td><code>$2441</code></td><td>The start-up shows the title with a call of <code>$2441</code> (<code>$3B74</code>). That address is not the start of an instruction. It holds the last byte of a branch, <code>$F5</code>, and after it comes the <code>$60</code> of a return. Read from <code>$2441</code>, <code>$F5 $60</code> is <code>SBC $60,X</code>, a subtraction. It changes only the accumulator and the flags, the processor's working number and its notes on the last result. The next instruction is the real start of <code>show_title_screen</code> (<code>$2443</code>).</td></tr>
       </tbody>
     </table></div>
   </div>
-  <p>The first is a loop that runs one step too far. The second works by luck: the stray subtraction happens to be harmless, so the title appears as it should.</p>
+  <p>The first is a loop that runs one step too many. The second works by luck: the stray subtraction happens to be harmless, so the title appears as it should.</p>
 </section>
 
 </main>

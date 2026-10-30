@@ -69,7 +69,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1984 · Mastertronic</p>
   <h1>Squirm</h1>
-  <p class="sub">The three mazes, drawn by the game's own code from the listing, with where the player, the worms and the treasure start, and the cycle of twelve levels that puts each maze with each stage.</p>
+  <p class="sub">The three mazes, drawn by the game's own code from the listing, with where the player, the worms, and the treasure start, and the cycle of twelve levels that puts each maze with each stage.</p>
 </header>
 <main class="wrap">
 
@@ -84,21 +84,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div class="sq-stack"><canvas id="sq-m-cv" width="384" height="272" aria-label="The maze as the game draws and colours it"></canvas><canvas id="sq-m-ov" width="768" height="544" aria-hidden="true"></canvas></div>
     <div class="sq-wrapx"><table class="sq-tbl" id="sq-m-tbl"></table></div>
-    <p class="cap">Drawn by the game's own code on the kit's 6502, from the listing: <code>show_maze1</code>, <code>show_maze2</code> or <code>show_maze3</code> (<code>$246A</code>, <code>$2491</code>, <code>$24B8</code>) copies the maze's 840 screen codes to rows 2 to 22, and <code>colour_maze</code> (<code>$35E8</code>) colours it. The marks are the start cells that <code>reset_worms</code> (<code>$3669</code>) and <code>level_complete</code> (<code>$394A</code>) set: P the player, A to E the worms, T the treasure. The arrows are the open cells at the edges.</p>
+    <p class="cap">Drawn by the game's own code, taken from the listing and run on a model of the C64's processor, the 6502. <code>show_maze1</code>, <code>show_maze2</code>, or <code>show_maze3</code> (<code>$246A</code>, <code>$2491</code>, <code>$24B8</code>) copies the maze's 840 character codes to rows 2 to 22, and <code>colour_maze</code> (<code>$35E8</code>) colours it. The marks are the start cells that <code>reset_worms</code> (<code>$3669</code>) and <code>level_complete</code> (<code>$394A</code>) set: P the player, A to E the worms, T the treasure. The arrows are the open cells at the edges. Numbers written with a $ are hexadecimal, counting in sixteens; those in dark boxes are addresses in the C64's memory, and each opens the Source code tab there.</p>
   </div>
-  <p>Each maze is stored as the screen codes of rows 2 to 22, 840 bytes, at <code>maze1</code> (<code>$16D2</code>), <code>maze2</code> (<code>$1A1A</code>) and <code>maze3</code> (<code>$1D62</code>). Walls are characters <code>$1B</code> to <code>$25</code>, and the corridors are spaces. The status lines above and below are drawn from their own templates. Every maze starts the player on row 12 at the left edge, and every worm on the same cell in each maze, so the start cells must be corridor in all three.</p>
-  <p>The open cells at the edges are the exits. A step left from the first column lands in the last column of the row above, because the position is a screen address and the screen is one row of memory. In mazes 1 and 3 the player can leave by row 12 at the left and comes in on row 11 at the right. Maze 2 has two openings on each side, and so two ways across.</p>
+  <p>Each maze is stored as the character codes of rows 2 to 22, one byte a cell and 840 bytes in all, at <code>maze1</code> (<code>$16D2</code>), <code>maze2</code> (<code>$1A1A</code>), and <code>maze3</code> (<code>$1D62</code>). Walls are characters <code>$1B</code> to <code>$25</code>, and the corridors are spaces. The status lines above and below are drawn from stored patterns of their own. Every maze starts the player on row 12 at the left edge, and each worm on the same cell in all three mazes, so those cells are corridor in all three.</p>
+  <p>The open cells at the edges are the exits. A step left from the first column lands in the last column of the row above, because the position is kept as an address in screen memory, where each row follows straight on from the one before. In mazes 1 and 3 the player can leave by row 12 at the left and comes in on row 11 at the right. Maze 2 has two openings on each side, and so two ways across.</p>
 </section>
 
 <section id="cycle">
   <p class="fig">02 · The cycle</p>
   <h2 class="t">Every maze with every stage, once in twelve levels</h2>
-  <p class="lede">The maze goes round in threes and the stage of what moves in fours, so the same pairing comes back every twelve levels, a jiffy faster each time round the stages.</p>
+  <p class="lede">The maze goes round in threes and the stage of what moves in fours, so the same pairing comes back every twelve levels. The game is a jiffy (a sixtieth of a second) a pass faster each time round the stages.</p>
   <div class="plate">
     <div class="sq-wrapx"><table class="sq-tbl" id="sq-c-tbl"></table></div>
-    <p class="cap">Worked out by the game's own <code>level_complete</code> (<code>$3879</code>) and one pass of the main loop for each level, run on the kit's 6502, the bonus run left out: <code>maze_number</code> (<code>$2682</code>), <code>level_stage</code> (<code>$2688</code>) and <code>step_delay</code> (<code>$2689</code>) as each level begins.</p>
+    <p class="cap">Worked out by the game's own <code>level_complete</code> (<code>$3879</code>) and one pass of the main loop for each level, run on the model of the 6502, with the bonus run left out. A pass is one time round the main loop, the routine that moves everything one step. The table shows <code>maze_number</code> (<code>$2682</code>), <code>level_stage</code> (<code>$2688</code>), and <code>step_delay</code> (<code>$2689</code>) as each level begins.</p>
   </div>
-  <p>The stage decides what moves (<code>move_creatures</code>, <code>$3A46</code>). Worms C, D and E move at every stage. The treasure joins at stage 2, worm B at stage 3, and worm A, the long one that lays eggs, only at stage 4. A level's speed comes from how many cycles of four stages have gone by (<a href="index.html#levels">How it works</a>).</p>
+  <p>The stage decides what moves (<code>move_creatures</code>, <code>$3A46</code>). Worms C, D, and E move at every stage. The treasure joins at stage 2, worm B at stage 3, and worm A, the long one, only at stage 4. A level's speed comes from how many cycles of four stages have gone by (<a href="index.html#levels">How it works</a>).</p>
 </section>
 
 </main>
@@ -175,7 +175,7 @@ function mazesWidget(ram) {
   for (let i = 0; i < 95; i++) M.irq();
   const cv = $('sq-m-cv'), ov = $('sq-m-ov'), sel = $('sq-m-sel');
   let at = 0, marks = true;
-  for (const [n] of MAZES) sel.insertAdjacentHTML('beforeend', `<option value="${n - 1}">Maze ${n}: levels ${n}, ${n + 3}, ${n + 6} and every third after</option>`);
+  for (const [n] of MAZES) sel.insertAdjacentHTML('beforeend', `<option value="${n - 1}">Maze ${n}: levels ${n}, ${n + 3}, ${n + 6}, and every third after</option>`);
   function draw() {
     const [n, data, show] = MAZES[at];
     M.call(show); M.call(0x35E8);
@@ -204,9 +204,9 @@ function mazesWidget(ram) {
     $('sq-m-tbl').innerHTML = '<tbody>' +
       `<tr><th>Stored at</th><td><code>${hex(data)}</code>, 840 bytes, copied by <code>${hex(show)}</code></td></tr>` +
       `<tr><th>Corridor cells</th><td class="sq-n" style="text-align:left">${open} of 840</td></tr>` +
-      `<tr><th>Open at the left</th><td>row ${left.join(' and ')}</td></tr>` +
-      `<tr><th>Open at the right</th><td>row ${right.join(' and ')}</td></tr>` +
-      `<tr><th>Levels</th><td>${[0, 1, 2, 3, 4, 5].map((k) => n + 3 * k).join(', ')} and every third after</td></tr></tbody>`;
+      `<tr><th>Open at the left</th><td>${left.length > 1 ? 'rows' : 'row'} ${left.join(' and ')}</td></tr>` +
+      `<tr><th>Open at the right</th><td>${right.length > 1 ? 'rows' : 'row'} ${right.join(' and ')}</td></tr>` +
+      `<tr><th>Levels</th><td>${[0, 1, 2, 3, 4, 5].map((k) => n + 3 * k).join(', ')}, and every third after</td></tr></tbody>`;
     sel.value = String(at);
     $('sq-m-prev').classList.toggle('off', at === 0);
     $('sq-m-next').classList.toggle('off', at === MAZES.length - 1);
