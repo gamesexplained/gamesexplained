@@ -127,9 +127,9 @@ in `orientation.md`.
   reader in play is the computer's aiming (`ai_side1_target`, `$A898`,
   which tests its sign), so SKILL (255 less it) decides how easily a
   team's own players are brought down by a slide, and a higher SKILL
-  makes it easier: a slide into a SKILL 224 side succeeds 88 % of
-  the time and into a SKILL 48 side 20 %, whatever the slider's own
-  (*simulated*). The shop's extra skill (`shop_extra_skill`, `$AE59`,
+  makes it easier: a slide into a SKILL 224 side succeeds for 225 of
+  the 256 random bytes (88 %) and into a SKILL 48 side for 49 (19 %),
+  whatever the slider's own (*simulated*). The shop's extra skill (`shop_extra_skill`, `$AE59`,
   the figure down 10) and reduce skill (`shop_reduce_skill`, `$AE6F`, the
   computer's figure up 26) therefore work against the buyer. Otherwise the two
   players' facings decide, through `$B996`; a human player wins only
@@ -270,7 +270,10 @@ in `orientation.md`.
 - *Simulated*, `tackle_resolve` with side 0's player 1 sliding into
   side 1's player 6 from 384 random states for each pair of figures: the
   victim's figure alone set the rate (88 % at 31, 20 % at 207, 50 % at
-  128, 100 % at 1).
+  128, 100 % at 1). Then with `random_next` (`$949E`) made to give each
+  byte in turn, both ways round (`test_rules.js`): the victim went down
+  exactly when the byte was at least the victim's figure, for figures 1,
+  31, 128, 207 and 255 and either figure for the slider.
 - *Simulated*, the end of `match_over` once a week from `league_init`'s
   state: a league ends after 22, 33 and 121 weeks for the first, second
   and last menu choices.

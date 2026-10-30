@@ -7,35 +7,47 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "A widget that runs a mechanic is a claim too": I wrote `test_rules.js` to hold the Discoveries widgets to the game's routines, and it found the tackle-pair count and the knockout count wrong on the page, in `facts.md` and in `features.md`.
+- `70-minisite`: "Sweep the whole input space, not a few plausible values": the slide test tries every random byte and the knockout test 200 seeds over the whole range, which turned up the draws with only eight wrong rounds.
+- `60-verify`: "Both the sample and the audit are done by checkers: agents that wrote none of the comments": a fresh agent sampled 60 comments and found 11 wrong that I had read past.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/INSTALL.md` and `kit/c64/tools.py`: the disassembler's install command is `cargo install --locked ...`, and INSTALL.md says why. On 30 October 2026 a plain install took `regenerator2000-core` 0.9.21, and regenerator2000 0.9.20 failed to compile against it (E0308 in `main.rs`). An install fix, so no lesson.
+- `kit/cpu/m6502.py`: `ANC #imm` (`$0B`) is in the undocumented opcodes the listing decodes, with a case in `kit/scripts/test_listing_undocumented.py`. The game's timer check (`LAX abs`, then `ANC #imm`) was listed as data before. A script fix, so no lesson.
+- `kit/lessons/2026-10-30-speedball.md`: a bug in a table that two routines share is tested by running both routines together.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **A widget built from the tables repeats the reader's mistake.** The
+  tackle check's pair tables were read by hand: the reader took the
+  measuring routine to write through the right list of cells and only
+  the checking routine to read through a list 13 bytes early. Both go
+  through the early list. The first widget worked its grid out from the
+  same tables, so it showed the same wrong count (34 of 45 pairs where
+  13 is right), and nothing disagreed until the test placed each pair
+  touching and ran both routines. A skill would say, in `70-minisite`
+  under "A widget that runs a mechanic is a claim too": when a claim is
+  that one routine misreads what another writes, the widget and its test
+  run the writer and the reader together, never a model of the two made
+  from their tables. No other game folder is named for it yet.
+
+## Operating system and tools
+
+Ubuntu 24.04.5 in a Claude cloud container, x86_64. The vice-mcp
+v3.14.0 release passed 57 of 57 of `check-emulator`'s checks after the
+nine libraries `kit/c64/INSTALL.md` lists were unpacked into
+`tools/vice-libs`. regenerator2000 0.9.20 built with `--locked` (above).
+node 22.22.0; the container's Playwright and Chromium ran
+`kit/scripts/shoot.js`.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Writing the pages' tests before putting counts into `facts.md` would
+have saved the most: the two counts the tests corrected had already gone
+into `facts.md`, `features.md` and the Discoveries copy from a reading of
+the tables and a sample of seeds.

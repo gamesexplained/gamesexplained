@@ -80,25 +80,26 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">02 · The music</p>
   <h2 class="t">Music: a goal plays the scoring side's own tune</h2>
-  <p class="lede">The menu's credits name Dave Whittaker for the music and the sound effects. The driver plays seven tunes, from the menu's theme to the jingles for a goal.</p>
+  <p class="lede">The menu's credits name Dave Whittaker for the music and the sound effects. Of his seven tunes, two are short jingles for a goal, one for each side, and green's plays again at full time.</p>
   <div class="plate">
     <div id="sb-music"></div>
-    <p class="cap">The game's own sound driver, run on the site's 6502 from the bytes in the Source tab, through the site's model of the SID chip. Each tune starts as the game starts it (<code>tune_play</code>, <code>$8B2F</code>) and plays one call a frame, as the game's interrupt makes it (<code>music_frame</code>, <code>$8B5F</code>). A test holds the page to the driver, every write of every frame.</p>
+    <p class="cap">The game's own sound driver, the code that plays its music, run on the site's 6502, a model of the C64's processor, on the bytes in the Source tab, and heard through the site's model of the SID, the C64's sound chip. Names in code type are the routines and variables the Source tab names, and numbers that start with $ are their addresses in memory, in hexadecimal. Each tune starts as the game starts it (<code>tune_play</code>, <code>$8B2F</code>) and plays one call a frame, fifty times a second, as the game's interrupt makes it (<code>music_frame</code>, <code>$8B5F</code>). A test holds the page to the driver, every write of every frame.</p>
   </div>
-  <p>The driver is <code>FILE0</code>, loaded at <code>$0810</code>. Each tune has seven bytes in <code>tune_table</code> (<code>$131E</code>): its tempo, then where each of the three voices finds its list of patterns. Once a frame the driver adds the tempo to a running total (<code>music_frame_voices</code>, <code>$094E</code>), and each time the total carries past 255 every voice steps through its pattern. Tunes 5 and 6, the goal jingles, end on their own; the others loop.</p>
+  <p>The driver is the disk's file <code>FILE0</code>, which loads into memory at <code>$0810</code>. The SID has three voices, each playing one note at a time. Each tune has seven bytes in <code>tune_table</code> (<code>$131E</code>): its tempo, then where each voice finds its list of patterns, the short runs of notes the tune is built from. Once a frame the driver adds the tempo to a running total (<code>music_frame_voices</code>, <code>$094E</code>). Each time the total goes past 255 and starts again, every voice moves on a step in its pattern, so a larger tempo plays faster. Tunes 5 and 6, the goal jingles, end on their own; the others loop.</p>
 </section>
 
 <section>
   <p class="fig">03 · One frame</p>
   <h2 class="t">One frame, rebuilt from memory</h2>
-  <p class="lede">The match screen is a scrolling pitch of characters with the panel split off below it, and the players are sprites reused down the screen.</p>
+  <p class="lede">The match screen is a scrolling pitch built of characters, with the panel split off below it. The players are sprites, small pictures the video chip draws over the screen, and each sprite is used again lower down.</p>
   <div class="plate">
     <div class="sb-bar" id="sb-frame-bar"></div>
     <canvas id="sb-frame" class="sb-cv" width="384" height="272"></canvas>
     <p class="sb-out" id="sb-frame-out"></p>
-    <p class="cap">Drawn by the site's C64 library from one frame recorded in the emulator: the video chip's registers at the top of the frame, every change the game's raster interrupts make during it, and the memory the chip reads. All 104,448 pixels match the emulator's own picture of the same frame, for both screens.</p>
+    <p class="cap">Drawn by the site's C64 library from one frame recorded in the emulator: the video chip's registers at the top of the frame, every change the game makes to them during it, at lines of the screen it chooses, and the memory the chip reads. All 104,448 pixels match the emulator's own picture of the same frame, for both screens.</p>
   </div>
-  <p>The game runs one interrupt handler (<code>irq_handler</code>, <code>$86D3</code>) and steps it through a chain of slots, each a raster line, the video registers to set there and a routine (<code>irq_slot_run</code>, <code>$8704</code>). In a match the slots place the sprites: ten players, the ball and the four parts of the ball launcher are sorted by height every pass (<code>sprites_sort</code>, <code>$8ADD</code>) and handed out to the eight sprites from the top of the screen down. The pitch is a map of 40 columns by 74 rows at <code>$F300</code>, built before each match (<code>pitch_map_build</code>, <code>$917D</code>) and copied into whichever of two screens is hidden when the camera moves a row (<code>scroll_update</code>, <code>$9292</code>).</p>
+  <p>The video chip can interrupt the processor when it reaches a chosen line of the screen as it draws it (a raster line). The processor then stops what it was doing and runs a routine. The game has one such routine (<code>irq_handler</code>, <code>$86D3</code>), and it works through a chain of slots, one each time it runs. A slot holds the line for the next interrupt, the video chip's settings (its registers) for that line, and a routine to run (<code>irq_slot_run</code>, <code>$8704</code>).</p>
+  <p>In a match the slots place the sprites. The game moves everything once a pass, every second frame. Each pass the ten players, the ball and the four parts of the ball launcher are sorted by height (<code>sprites_sort</code>, <code>$8ADD</code>) and handed out to the chip's eight sprites from the top of the screen down, so one sprite draws several of them. The pitch is a map of 40 columns by 74 rows at <code>$F300</code>, built before each match (<code>pitch_map_build</code>, <code>$917D</code>). The game keeps two screens, shows one and copies the next view into the other when the camera moves a row (<code>scroll_update</code>, <code>$9292</code>).</p>
 </section>
 
 <section>
@@ -116,7 +117,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">05 · Tiles</p>
   <h2 class="t">Tokens come up more often than all the power-ups together</h2>
-  <p class="lede">A tile appears on the floor 50 passes after the last one was taken. Your controlled player takes it by standing on it.</p>
+  <p class="lede">A new tile appears on the floor 50 passes, two seconds, after the last one was taken, and the player you control takes it by standing on it. Eleven times in twenty it is a token, which the shop takes as money; the rest are power-ups.</p>
   <div class="plate">
     <div class="sb-bar" id="sb-tiles-bar"></div>
     <div class="sb-hist" id="sb-tiles"></div>
@@ -142,7 +143,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">07 · Tackles</p>
   <h2 class="t">How a tackle is decided</h2>
   <p class="lede">Two players who touch are measured against each other by the way they face, unless one of them is sliding.</p>
-  <p>Every pass the game measures the distance between each of the 45 pairs of players (<code>pair_distances</code>, <code>$B038</code>) and then looks for pairs that touch (<code>tackles_check</code>, <code>$8DD6</code>). For two opponents that touch, <code>tackle_resolve</code> (<code>$8EF5</code>) decides. A sliding player brings the other down when a random number from 0 to 255 is at least the victim's tackle figure, unless the victim's side has power-up P. Otherwise the two players' facings, looked up in <code>$B996</code>, say who wins, and a player you control wins only while you hold fire. The loser falls and loses stamina by the winner's power (<code>stamina_drain</code>, <code>$908A</code>); the winner takes the ball if the loser had it.</p>
+  <p>Every pass the game measures the distance between each of the 45 pairs of players (<code>pair_distances</code>, <code>$B038</code>) and then looks for pairs that touch (<code>tackles_check</code>, <code>$8DD6</code>). For two opponents that touch, <code>tackle_resolve</code> (<code>$8EF5</code>) decides. A sliding player brings the other down when a random number from 0 to 255 is at least the victim's tackle figure, unless the victim's side has power-up P. Otherwise a table at <code>$B996</code> says who wins from the directions the two players face, and a player you control wins only while you hold fire. The loser falls and loses stamina by the winner's power (<code>stamina_drain</code>, <code>$908A</code>); the winner takes the ball if the loser had it.</p>
   <p>Below 12 stamina a player runs a step slower (<code>player_dir_step</code>, <code>$9F98</code>), and below 6 a player's throws are a step weaker (<code>player_move</code>, <code>$9E45</code>). Both bugs in this part of the game, a table looked up thirteen bytes early and a skill figure that works backwards, are on the <a href="discoveries.html">Discoveries</a> tab.</p>
 </section>
 
@@ -160,19 +161,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · Copy protection</p>
   <h2 class="t">Two timers that must keep in step</h2>
   <p class="lede">The game checks that two timers in the computer's second interface chip are running, and running together, in every frame of a match.</p>
-  <p>At start-up the game sets timers A and B of CIA 2 (the C64's second interface chip) to the same period, <code>$231F</code> cycles, and starts them four cycles apart (<code>game_start</code>, <code>$201A</code>). It never uses them for timing. Three checks read them instead:</p>
-  <p>The interrupt handler reads timer B's control register on every interrupt, through an undocumented instruction, and when the timer has stopped it sets the match clock's target to 255, so the match never ends (<code>irq_handler</code>, <code>$86D3</code>). The keyboard reader makes the same test and sends the interrupt chain to a slot that does not exist (<code>keys_read</code>, <code>$8891</code>). At the top of the match screen, <code>irq_slot_play_top</code> (<code>$8745</code>) reads timer A and then timer B four cycles later; started four cycles apart, the two read the same, and their EOR, added to <code>$2DD0</code>, stays 0. That byte is ORed into the joystick, used as the frame-wait flag and picks the league's save file, so on a copy whose timers drift the stick jams and the game hangs. The four reads go through a different mirror of the timer registers each frame (<code>irq_slot_shop_row</code>, <code>$881D</code>), which hides them from a search for the registers' own addresses.</p>
+  <p>At start-up the game sets timers A and B of CIA 2 (the C64's second interface chip) to the same period, <code>$231F</code> (8,991) cycles of the processor's clock, and starts them four cycles apart (<code>game_start</code>, <code>$201A</code>). It never uses them for timing. Three checks read them instead:</p>
+  <p>The interrupt handler reads timer B's control register on every interrupt, with an instruction the processor's makers never documented, and when the timer has stopped it sets the match clock's target to 255, so the match never ends (<code>irq_handler</code>, <code>$86D3</code>). The keyboard reader makes the same test and sends the interrupt chain to a slot that does not exist (<code>keys_read</code>, <code>$8891</code>). At the top of the match screen, <code>irq_slot_play_top</code> (<code>$8745</code>) reads timer A and then timer B four cycles later. Started four cycles apart, the two read the same. The game combines them with EOR, which gives 0 when two numbers are equal, and adds the result to <code>$2DD0</code>, which so stays 0. The game merges that byte into what it reads from the joystick, uses it as the flag that waits for the next frame, and uses it to pick the league's save file. On a copy whose timers drift apart, the stick jams and the game hangs.</p>
+  <p>The timers' registers answer at several addresses, called mirrors, and these reads use a different one each frame (<code>irq_slot_shop_row</code>, <code>$881D</code>). That hides them from a search for the registers' usual addresses.</p>
 </section>
 
 <section>
   <p class="fig">10 · Sound effects</p>
   <h2 class="t">Sound: over half the driver's effects are never played</h2>
-  <p class="lede">The driver holds 26 sound effects and the launcher's hum. A match uses twelve of the effects.</p>
+  <p class="lede">The driver holds 26 sound effects and the launcher's hum. The game asks for twelve of the effects and never for the other fourteen.</p>
   <div class="plate">
     <div id="sb-sfx"></div>
     <p class="cap">The game's own driver again, each effect started as the game starts it (<code>sound_play</code>, <code>$8B80</code>) after the kick-off's launcher has set the volume. The ones marked unused are records in <code>effect_table</code> (<code>$0F16</code>) that no call in the game asks for.</p>
   </div>
-  <p>An effect is a record of 20 bytes: its length in frames, two starting frequencies, envelopes, waveforms and slides for voices 1 and 3. Starting one takes those voices from the music (<code>effect_start</code>, <code>$0E7A</code>). The launcher's hum is voice 2 alone (<code>hum_start</code>, <code>$1155</code>), held while the launcher spins and stopped when it shoots the ball out (<code>launcher_sequence</code>, <code>$3739</code>).</p>
+  <p>An effect is a record of 20 bytes: its length in frames, and for voices 1 and 3 a starting pitch, an envelope (how the volume rises and falls), a waveform (the shape of the tone) and a slide (how the pitch moves). Starting one takes those voices from the music (<code>effect_start</code>, <code>$0E7A</code>). The launcher's hum is voice 2 alone (<code>hum_start</code>, <code>$1155</code>), held while the launcher spins and stopped when it shoots the ball out (<code>launcher_sequence</code>, <code>$3739</code>).</p>
 </section>
 
 </main>
