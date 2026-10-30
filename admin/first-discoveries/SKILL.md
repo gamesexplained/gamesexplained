@@ -1,6 +1,6 @@
 ---
 name: first-discoveries
-description: Search the web for an earlier record of each section on the games' Discoveries tabs, and log the result in a ledger, so the findings nobody published before stand out and no section is looked up twice. Run by hand, e.g. /first-discoveries games/c64/into-the-eagles-nest.
+description: Search the web for an earlier record of each section on the games' Discoveries tabs, and record the result with the game, so the findings nobody published before stand out and no section is looked up twice. Run by hand, e.g. /first-discoveries games/c64/into-the-eagles-nest.
 argument-hint: [games/<platform>/<slug> ...]
 disable-model-invocation: true
 ---
@@ -9,8 +9,8 @@ disable-model-invocation: true
 
 This lives in `admin/` because `.claude/skills` is the contributor kit.
 
-Report only. Change no game page; the maintainer decides what to do with
-a first.
+Leave the game's pages as they are; the maintainer decides what to do
+with a first.
 
 ## Setup
 
@@ -18,9 +18,9 @@ a first.
 python3 admin/first-discoveries/todo.py $ARGUMENTS
 ```
 
-lists the sections `ledger.md` has no entry for: the link a reader
-follows to each, and its heading. With no games named it lists every
-game's. Take a game at a time, all of its sections together.
+lists the sections that their game's `facts.md` has no entry for yet:
+the link a reader follows to each, and its heading. With no games named it lists
+every game's. Take a game at a time, all of its sections together.
 
 ## Looking a game up
 
@@ -43,27 +43,28 @@ game's. Take a game at a time, all of its sections together.
    after it, does not.
 
 A search that finds nothing says nothing about the world, only about the
-searches, so the ledger lists them and a later look can try others.
+searches, so the entry lists them and a later look can try others.
 
-## The ledger
+## The record
 
-`ledger.md` holds one bullet per section, under its verdict:
+Each game's `facts.md` ends with a section `## Known before`, one bullet
+per Discoveries section in page order. A bullet starts with its verdict
+in bold, then the section's heading linked by the link `todo.py` printed,
+and the date looked up:
 
-| Verdict | When | The bullet gives |
+| Verdict | When | The bullet goes on to give |
 |---|---|---|
 | None found | no earlier record turned up | the searches run |
 | Partly known | an earlier record states part of it | the record, linked, and the part it lacks |
 | Known | an earlier record states it | the earliest record found, linked and dated |
 | Not a finding | the section holds none, such as a list of open questions | nothing more |
 
-Each bullet starts with the game and its platform, the section's heading
-linked by the link `todo.py` printed, and the date looked up. A section of
-several findings goes under the verdict of its least known one, and its
-bullet says which that is. Under None found and Partly known, put what a
-player could see or do without tools above what only the code shows.
+A section of several findings takes the verdict of its least known one,
+and its bullet says which that is. `todo.py --firsts` gathers the None
+found and Partly known bullets of every game.
 
-Commit the ledger and open a pull request titled
-`admin: Add <game> to the first-discoveries ledger`.
+Commit and open a pull request titled `<game> (<platform>): Record which
+discoveries were known before`, or `games:` and the list for several.
 
 ## Report
 

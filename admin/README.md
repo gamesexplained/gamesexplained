@@ -54,9 +54,10 @@ ln -s "$PWD/admin/fix-issues" ~/.claude/skills/fix-issues
 
 To have Claude search the web for an earlier record of each Discoveries
 section, run `/first-discoveries` in a session in this repo, naming games
-or none for all. The steps are `first-discoveries/SKILL.md`; what has been
-looked up, and what turned up nothing, is `first-discoveries/ledger.md`.
-Link it into your own skills once, as above:
+or none for all. The steps are `first-discoveries/SKILL.md`. Each game's
+`facts.md` records what was looked up, in its section "Known before", and
+`python3 admin/first-discoveries/todo.py --firsts` lists what turned up
+nothing. Link it into your own skills once, as above:
 
 ```
 ln -s "$PWD/admin/first-discoveries" ~/.claude/skills/first-discoveries
