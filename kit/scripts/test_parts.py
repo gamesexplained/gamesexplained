@@ -319,6 +319,36 @@ class Parts(unittest.TestCase):
             run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'park', park)
             self.assertNotEqual({r['a']: r for r in records(g, 'park')}[0x4020]['o'], 'engine_flag')
 
+    def test_a_name_carried_in_from_beneath_is_not_the_parts_own(self):
+        # a session seeded with the engine's names before the park had its names rows still holds
+        # them there: the export leaves out what the engine has word for word, and keeps the park's
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code')],
+                    [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x1000, 'engine_main')],
+                    [line(0x0021, "The engine's flag."), line(0x1000, 'a')])
+            names = [[0x0020, 0x002F, "the park's variables"]]
+            Ps = P.parts(str(g))
+            me = next(p for p in Ps if p['id'] == 'park')
+            syms, comments, dropped = P.carried(
+                Ps, me, [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x0020, 'park_count', 'AbsoluteAddress')],
+                [line(0x0021, "The engine's flag."), line(0x0020, "The park's count.")], names)
+            self.assertEqual([s['name'] for s in syms], ['park_count'])
+            self.assertEqual([c['text'] for c in comments], ["The park's count."])
+            self.assertEqual(len(dropped), 2)
+            self.assertEqual(P.carried(Ps, me, [sym(0x0021, 'park_flag', 'AbsoluteAddress')], [], names)[2], [])
+            f = g / 'parts' / 'park' / 'part.json'
+            proj = g / 'park.regen2000proj'
+            run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj)
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), names=[['$0020', '$002F', "the park's variables"]])))
+            p = json.loads(proj.read_text())
+            p['labels'][str(0x0021)] = [{'name': 'engine_flag', 'label_type': 'AbsoluteAddress', 'kind': 'User'}]
+            proj.write_text(json.dumps(p))
+            out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
+            self.assertIn('$0021  engine_flag', out)
+            kept = json.loads((g / 'parts' / 'park' / 'symbols.json').read_text())['symbols']
+            self.assertNotIn('engine_flag', [s['name'] for s in kept])
+
     def test_a_symbol_only_the_part_beneath_refers_to_is_left_out(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)

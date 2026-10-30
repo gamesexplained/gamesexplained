@@ -354,7 +354,7 @@ def main():
         print(__doc__); return
     gdir = argv[0]
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from parts import load_game, parts, clip, home
+    from parts import load_game, parts, clip, home, carried
     if parts(gdir):
         sys.exit(f"{gdir} is a game of several parts: export one, {os.path.join(gdir, 'parts', '<id>')}")
     game = load_game(gdir)
@@ -371,6 +371,16 @@ def main():
     reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
         blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"], game.get("names") or [])
+        if game.get("names"):
+            top, pid = home(gdir)
+            P = parts(top)
+            syms, comments, dropped = carried(P, next(p for p in P if p["id"] == pid), syms, comments, game["names"])
+            if dropped:
+                print(f"left out {len(dropped)} label(s) and comment(s) in this part's names rows (part.json \"names\") "
+                      "that a part beneath has there word for word: the session was seeded with them before the rows "
+                      "were set. Name the part's own variables in its own words:\n  "
+                      + "\n  ".join(f"${x['address']:04X}  {x.get('name') or x['text'][:60]}" for x in dropped[:12])
+                      + (f"\n  and {len(dropped) - 12} more" if len(dropped) > 12 else ""))
         if not key:     # only a live session says what refers to what
             syms, stray = drop_strays(plat, session, syms, game)
     syms.sort(key=lambda s: s["address"])

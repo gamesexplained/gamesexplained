@@ -327,6 +327,29 @@ def clip(blocks, syms, comments, away, names=()):
     return kept, [s for s in syms if ours(s)], [c for c in comments if ours(c)], left
 
 
+def carried(P, me, syms, comments, names):
+    """(symbols, comments, dropped): the user's labels and comments at addresses in names
+    (part.json "names") that a part beneath has there word for word are dropped. A session
+    seeded with the part beneath before the part had its names rows still holds them, and the
+    export would otherwise keep that part's names and words as this one's own."""
+    if not names:
+        return syms, comments, []
+    theirs = set()
+    for q in under(P, me):
+        f = os.path.join(q["dir"], "symbols.json")
+        if os.path.isfile(f):
+            S = json.load(open(f))
+            theirs |= {(x["address"], x["name"]) for x in S.get("symbols", []) if x.get("kind", "user") == "user"}
+            theirs |= {(x["address"], x["text"]) for x in S.get("comments", [])}
+
+    def theirs_here(x):
+        return (any(lo <= x["address"] <= hi for lo, hi, _ in names)
+                and (x["address"], x["name"] if "name" in x else x["text"]) in theirs
+                and x.get("kind", "user") == "user")
+    dropped = [x for x in syms + comments if theirs_here(x)]
+    return ([s for s in syms if not theirs_here(s)], [c for c in comments if not theirs_here(c)], dropped)
+
+
 def strays(syms, away, over, refs):
     """The addresses of the automatic symbols at addresses this part's load wrote over a part
     beneath (over: replaces()) that only code this part does not own refers to. A session on
