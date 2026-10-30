@@ -1,0 +1,307 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speedball 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:34px;--h2:22px;--fs:16px}}
+
+.sb-cv{max-width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.sb-bar button{font-family:var(--fm);font-size:12.5px;line-height:1.3;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.sb-bar button:hover{border-color:var(--accent)}
+.sb-bar button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sb-type{font-family:var(--fm);font-size:16px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;width:100%;max-width:420px;text-transform:uppercase}
+.sb-codes{display:grid;gap:10px;margin:14px 0 0}
+.sb-code{font-family:var(--fm);font-size:15px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.sb-code b{font-family:var(--fb);font-size:13px;color:var(--ink-mute);min-width:84px;font-weight:700}
+.sb-code span{display:inline-block;min-width:22px;text-align:center;padding:3px 2px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line-soft)}
+.sb-code span.ok{background:var(--accent);border-color:var(--accent);color:#fff}
+.sb-out{font-size:15px;color:var(--ink-soft);margin:12px 0 0;min-height:1.6em}
+.sb-out b{color:var(--ink)}
+.sb-tbl{border-collapse:collapse;font-size:14.5px;width:100%;margin:6px 0 0}
+.sb-tbl th,.sb-tbl td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.sb-tbl th{font-weight:700;color:var(--ink-mute);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+.sb-tbl td.n{font-family:var(--fm);font-size:13.5px}
+.sb-tbl tr.hit td{background:var(--hl)}
+.sb-scroll{overflow-x:auto}
+.sb-miss{font-size:14px;color:var(--ink-mute);margin:0}
+.sb-hexd{font-family:var(--fm);font-size:13px;line-height:1.7;overflow-x:auto;white-space:pre;margin:0;color:var(--ink);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:12px 14px}
+.sb-hexd i{font-style:normal;color:var(--ink-mute)}
+.sb-hexd em{font-style:normal;background:var(--hl)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1991 · Imageworks (Mirrorsoft)</p>
+  <h1>Speedball 2</h1>
+  <p class="sub">Two words typed on the title screen: one turns on a cheat, the other shows a photograph. And a message for anyone who reads the code.</p>
+</header>
+<main class="wrap" data-part="game">
+
+<section id="cheat">
+  <p class="fig">01 · A typed code</p>
+  <h2 class="t">Secret: typing BRADFORD-ON-AVON on the title turns on a cheat</h2>
+  <p class="lede">The title screen checks every key against two words. The first switches on cheat keys that work in the menus and in a match.</p>
+  <div class="plate">
+    <label for="sb-type" class="cap" style="display:block;margin:0 0 8px">Type on the title screen, as the game reads it:</label>
+    <input id="sb-type" class="sb-type" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="type here">
+    <div class="sb-codes" id="sb-codes"><p class="sb-miss">The codes are read from the game's bytes in the built site.</p></div>
+    <p class="sb-out" id="sb-type-out" aria-live="polite"></p>
+    <p class="cap">The two codes are stored at <code>$C1A0</code> and <code>$C1B1</code> as key numbers, each ending with a zero. The C64 wires its keys in a grid of eight rows and eight columns, and a key's number is eight times its row plus its column. The page decodes them and matches keys as the title does (<code>title</code>, <code>$C0C4</code>).</p>
+  </div>
+  <p>The title keeps a place in each code. A key that matches the next letter moves the place on; any other key puts it back to the start, and that key does not count as the code's first letter, so BBRADFORD-ON-AVON does nothing. When the place reaches the end of BRADFORD-ON-AVON, the cheat's on/off switch in memory, <code data-part="">$0C10</code>, flips, with one sound for on and another for off. Typing the code three times in VICE set the flag to 1, 0 and 1.</p>
+  <p>The cheat keys. All but the match's + were tested in VICE; that one is read from the code.</p>
+  <div class="sb-scroll"><table class="sb-tbl"><thead><tr><th>Where</th><th>Key</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>Menus, gym, manager</td><td>+</td><td>Adds 100 to the bank (<code>menu_frame</code>, <code>$6189</code>). Three presses in the gym took it from 1100 to 1400.</td></tr>
+    <tr><td>A match</td><td>T</td><td>Knocks down every one of team 2's players on the pitch, as the zap team token does (<code>token_zap_team</code>, <code>$32AD</code>).</td></tr>
+    <tr><td>A match</td><td>G</td><td>Gives the ball to the controlled player, as the grab ball token does (<code>token_grab_ball</code>, <code>$326C</code>).</td></tr>
+    <tr><td>A match</td><td>F</td><td>Freezes team 2, as the freeze team token does (<code>token_freeze</code>, <code>$334E</code>). The manual gives F as the key for fast play; there is no fast play in the code.</td></tr>
+    <tr><td>A match</td><td>+</td><td>Adds team 1's star bonus to its score (<code>$216D</code>).</td></tr>
+    <tr><td>A match</td><td>RUN/STOP</td><td>Ends the match as a draw, 000 to 000, which counts as played (<code>play_match</code>, <code>$7467</code>). Without the cheat, RUN/STOP abandons the match.</td></tr>
+  </tbody></table></div>
+  <p>Bradford on Avon is a town in Wiltshire, and the code is most likely the name of the author's favourite football team. The game itself does not say.</p>
+</section>
+
+<section id="martin">
+  <p class="fig">02 · A typed code</p>
+  <h2 class="t">Secret: typing MARTIN shows a digitised face</h2>
+  <p class="lede">The second word on the title screen shows a picture that appears nowhere else in the game, until fire is pressed.</p>
+  <div class="plate">
+    <canvas id="sb-martin" class="sb-cv" width="640" height="400"></canvas>
+    <p class="cap">Drawn from the game's bytes: the list at <code>$C4F9</code> names three packed blocks, the screen colours at <code>$C8C5</code>, the bitmap at <code>$C506</code> and colour RAM at <code>$C994</code>. The page unpacks them with the game's own rules (<code>unpack</code>, <code>$498E</code>) and draws it as the chip shows it, a multicolour bitmap, a picture stored pixel by pixel, on black, as <code>screen_on</code> (<code>$5039</code>) sets the chip.</p>
+  </div>
+  <p>The picture is a grey photograph of a face on a cyan ground (<code>show_picture</code>, <code>$4FF3</code>, called from <code>$C135</code>). Typing MARTIN in VICE showed it, and fire went back to the title. The game does not say whose face it is, but it is almost certainly Martin Walker's: he wrote the C64 version's music and sound effects, and the intro's credits name him.</p>
+</section>
+
+<section id="star">
+  <p class="fig">03 · The intro's letters</p>
+  <h2 class="t">Secret: the intro's eighth letter is a star parked off the screen</h2>
+  <p class="lede">The intro spells SPEEDBALL with seven sprites, small pictures the video chip draws over the screen. The eighth sprite is a star, switched on and placed past the right edge of the picture.</p>
+  <div class="plate">
+    <canvas id="sb-starcv" class="sb-cv" width="960" height="120"></canvas>
+    <p class="cap">The eight sprites at the X positions in <code data-part="intro">letters_xs</code> (<code data-part="intro">$0F6D</code>, stored halved), drawn from frames <code>$60</code>-<code>$67</code> of the intro (<code data-part="intro">$D800</code>-<code data-part="intro">$D9FF</code>). The blue band is what a monitor shows, the border darker and the paper lighter; the grey beyond it is past the edge.</p>
+  </div>
+  <p>The letters object places its eight sprites from a table of X positions, each stored as half its value so that it fits in a byte. The last entry is <code>$C8</code>, 200, so the star sits at X 400. The visible picture, border and all, ends near X 375. In VICE, with the letters shown, sprite 7 was switched on at X 400 and Y 60, showing frame <code>$67</code>, the star. Nothing in the intro moves it, so it is never seen.</p>
+</section>
+
+<section id="message">
+  <p class="fig">04 · A message</p>
+  <h2 class="t">Secret: the game's code starts with a message for anyone reading it</h2>
+  <p class="lede">The first instructions of the game jump over 60 bytes of text that nothing prints.</p>
+  <div class="plate">
+    <pre class="sb-hexd" id="sb-msg">The bytes are read from the game's listing in the built site.</pre>
+    <p class="cap">The game's entry, <code>$C000</code>-<code>$C047</code>. Five instructions, then the jump to <code>start_init</code> (<code>$C044</code>) over the text at <code>$C008</code>.</p>
+  </div>
+  <p>The loader jumps to <code>$C000</code>. The game turns interrupts off, clears decimal mode, resets the stack and jumps to <code>$C044</code>. In between sits a message in ASCII, the standard code for letters: STOP PERVING AT MY CODE SCUMBAG! WRITE YOUR OWN ****** GAME. It can be read only in memory, or after getting past the disk's protection, which decrypts and unpacks this load twice before it runs.</p>
+</section>
+
+<section id="a-key">
+  <p class="fig">05 · The keyboard</p>
+  <h2 class="t">Bug: A on the keyboard also sets a seventh bit on player one's joystick</h2>
+  <p class="lede">The loop that turns keys into joystick bits reads one entry more than each table holds.</p>
+  <div class="plate">
+    <div class="sb-bar" role="group" aria-label="Press a key" id="sb-akeys"></div>
+    <div class="sb-scroll"><table class="sb-tbl" id="sb-atbl"><thead><tr><th>Entry</th><th>Port 2 table</th><th>Port 1 table</th><th>Bit</th></tr></thead><tbody></tbody></table></div>
+    <p class="sb-out" id="sb-aout" aria-live="polite">Press a key to see which entries match it.</p>
+    <p class="cap">The tables at <code>$1C4D</code> and <code>$1C53</code>, six entries each, and the seventh entry the loop reads from the bytes that follow (<code>read_input</code>, <code>$4A75</code>).</p>
+  </div>
+  <p>The game turns each joystick's position into a byte, with one bit, an on/off signal, for each direction and for fire. Each joystick's table has six keys: four directions, fire and RUN/STOP. The loop goes over seven entries, and each sets its own bit, bit 0 for the first and bit 6 for the seventh. Port 2's seventh entry is the first byte of port 1's table, the key number of A, so A sets bit 6 of port 2 as well as up on port 1. Port 1's seventh entry is <code>$C0</code>, which is no key. In VICE, A set bit 6 of <code>$9C</code>. Nothing in the game tests that bit, so the extra press does nothing. The intro's own key tables (<code data-part="intro">$1EFE</code>) are read the same way.</p>
+</section>
+
+<section id="unused-tune" data-part="intro">
+  <p class="fig">06 · The tune data</p>
+  <h2 class="t">Music: a second tune that the intro never starts</h2>
+  <p class="lede">The intro's music data holds two tunes. Only the first is ever played.</p>
+  <p>Tune 1's header, at <code>$0D93</code>, points each voice at a track of one pattern, and each track ends with <code>$FE</code>, the code that stops the music. Played, it lasts seven frames: one note on each voice and then silence. The intro starts its music in two places, and both load 0 into A before calling <code>music_init</code> (<code>$146B</code>, <code>$14A4</code>), so tune 1 never plays. The player on the <a href="index.html#music">How it works</a> page runs it through the intro's own code.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const LIB = typeof C64 !== 'undefined';
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const PAL = LIB ? C64.PAL : [];
+const NEED = 'This widget draws from the game\'s bytes through the site\'s shared scripts; it works in the built site.';
+const missing = (el) => { if (!el) return; const p = document.createElement('p'); p.className = 'sb-miss'; p.textContent = NEED; el.replaceWith(p); };
+
+// the keyboard matrix: key number 8 x row + column
+const SB_MATRIX = [
+  ['DEL', 'RETURN', 'CRSR →', 'F7', 'F1', 'F3', 'F5', 'CRSR ↓'],
+  ['3', 'W', 'A', '4', 'Z', 'S', 'E', 'L SHIFT'],
+  ['5', 'R', 'D', '6', 'C', 'F', 'T', 'X'],
+  ['7', 'Y', 'G', '8', 'B', 'H', 'U', 'V'],
+  ['9', 'I', 'J', '0', 'M', 'K', 'O', 'N'],
+  ['+', 'P', 'L', '-', '.', ':', '@', ','],
+  ['£', '*', ';', 'HOME', 'R SHIFT', '=', '↑', '/'],
+  ['1', '←', 'CTRL', '2', 'SPACE', 'C=', 'Q', 'RUN/STOP'],
+];
+const keyName = (n) => n < 64 ? SB_MATRIX[n >> 3][n & 7] : null;
+const keyNum = {};
+SB_MATRIX.forEach((r, row) => r.forEach((k, col) => { keyNum[k] = 8 * row + col; }));
+
+// The game's unpacker ($498E)
+function unpack(m, src) {
+  const out = [];
+  for (;;) {
+    const b = m[src++];
+    if (b < 0x80) { for (let k = 0; k <= b; k++) out.push(m[src++]); continue; }
+    const n = m[src++];
+    if (!n) return Uint8Array.from(out);
+    const from = out.length - (256 - b);
+    for (let k = 0; k < n; k++) out.push(out[from + k]);
+  }
+}
+
+// ---- 01 the codes, matched as title ($C0C4) matches them
+function codes(G) {
+  const read = (a) => { const c = []; while (G.ram[a]) c.push(G.ram[a++]); return c; };
+  const C = [{ name: 'Cheat', at: 0xC1A0, keys: read(0xC1A0), pos: 0 }, { name: 'Picture', at: 0xC1B1, keys: read(0xC1B1), pos: 0 }];
+  let cheat = 0;
+  const box = $('sb-codes'), out = $('sb-type-out');
+  const show = () => {
+    box.innerHTML = '';
+    for (const c of C) {
+      const d = document.createElement('div'); d.className = 'sb-code';
+      d.innerHTML = `<b>${c.name}</b>` + c.keys.map((k, i) => `<span class="${i < c.pos ? 'ok' : ''}" title="key ${k}">${keyName(k)}</span>`).join('');
+      box.appendChild(d);
+    }
+  };
+  const key = (n) => {
+    for (const c of C) { if (c.keys[c.pos] === n) c.pos++; else c.pos = 0; }
+    if (C[0].pos === C[0].keys.length) {
+      cheat ^= 1; C[0].pos = 0;
+      out.innerHTML = `<b>The cheat is ${cheat ? 'on' : 'off'}.</b> <code>$0C10</code> = ${cheat}, and the game plays effect <code>${hex(0x24 + cheat, 2)}</code>.`;
+    } else if (C[1].pos === C[1].keys.length) {
+      C[0].pos = 0; C[1].pos = 0;
+      out.innerHTML = '<b>The picture.</b> The title clears the screen and shows the face below (<a href="#martin">02</a>), then starts again from the top, with both codes back at their start.';
+    } else out.innerHTML = `Key ${n}, ${keyName(n)}.`;
+    show();
+  };
+  const toC64 = (ch) => ch === ' ' ? 'SPACE' : ch.toUpperCase();
+  $('sb-type').addEventListener('input', (e) => {
+    const v = e.target.value;
+    for (const ch of v) { const k = keyNum[toC64(ch)]; if (k !== undefined) key(k); }
+    e.target.value = '';
+  });
+  show();
+  out.textContent = 'Nothing typed.';
+}
+
+// ---- 02 the MARTIN picture: show_picture ($4FF3) on the list at $C4F9
+function martin(G) {
+  const L = G.bytes(0xC4F9, 13), blocks = {};
+  for (let k = 0; k < L[0]; k++) {
+    const src = L[1 + 4 * k] | L[2 + 4 * k] << 8, dst = L[3 + 4 * k] | L[4 + 4 * k] << 8;
+    blocks[dst] = unpack(G.ram, src);
+  }
+  const scr = blocks[0xCC00], bm = blocks[0xE000], col = blocks[0xD800], bg = 0;
+  const cv = $('sb-martin'), s = 2, ctx = C64.canvas(cv, 320 * s, 200 * s);
+  for (let cy = 0; cy < 25; cy++) for (let cx = 0; cx < 40; cx++) {
+    const i = cy * 40 + cx, cols = [bg, scr[i] >> 4, scr[i] & 15, col[i] & 15];
+    for (let r = 0; r < 8; r++) {
+      const b = bm[i * 8 + r];
+      for (let p = 0; p < 4; p++) {
+        ctx.fillStyle = PAL[cols[(b >> (6 - 2 * p)) & 3]];
+        ctx.fillRect((cx * 8 + p * 2) * s, (cy * 8 + r) * s, 2 * s, s);
+      }
+    }
+  }
+}
+
+// ---- 03 the star: letters_xs ($0F6D) and frames $60-$67 of the intro
+function star(I) {
+  const xs = I.bytes(0x0F6D, 8), wide = 0x44;   // letters_wide as the intro sets it: EE and LL
+  const cv = $('sb-starcv'), s = 2, W = 480, H = 60, ctx = C64.canvas(cv, W * s, H * s);
+  const X0 = -8;                                  // VICE shows sprite X -8 to 375
+  ctx.fillStyle = '#55585f'; ctx.fillRect(0, 0, W * s, H * s);
+  ctx.fillStyle = '#2e2c9b'; ctx.fillRect(0, 0, 384 * s, H * s);
+  ctx.fillStyle = '#706deb'; ctx.fillRect((24 - X0) * s, 0, 320 * s, H * s);
+  for (let k = 0; k < 8; k++) {
+    const x = xs[k] * 2, f = I.bytes(0xD800 + 64 * k, 63);
+    C64.drawSprite(ctx, f, (x - X0) * s, 14 * s, s, PAL[1], (wide >> k) & 1 ? 2 : 1, 1);
+  }
+  ctx.font = 'bold 22px "IBM Plex Mono", monospace'; ctx.fillStyle = '#fff';
+  ctx.fillText('the edge of the picture', 384 * s - 300, 54 * s);
+  ctx.fillStyle = '#ffd23f'; ctx.fillRect(384 * s - 2, 0, 4, H * s);
+  ctx.fillStyle = '#fff'; ctx.fillText('X 400', (400 - X0) * s, 54 * s);
+}
+
+// ---- 04 the message at $C008
+function message(G) {
+  const b = G.bytes(0xC000, 0x48), pre = $('sb-msg'), lines = [];
+  for (let r = 0; r < 0x48; r += 12) {
+    const part = Array.from(b.subarray(r, Math.min(r + 12, 0x48)));
+    const hx = part.map((v, i) => { const a = r + i, h = v.toString(16).toUpperCase().padStart(2, '0'); return a >= 8 && a < 0x44 ? `<em>${h}</em>` : h; }).join(' ');
+    const tx = part.map((v, i) => { const a = r + i; return a >= 8 && a < 0x44 ? String.fromCharCode(v) : '.'; }).join('');
+    lines.push(`<i>${hex(0xC000 + r)}</i>  ${hx.padEnd(0)}${' '.repeat(Math.max(0, (12 - part.length) * 3))}  ${tx.replace(/&/g, '&amp;').replace(/</g, '&lt;')}`);
+  }
+  pre.innerHTML = lines.join('\n');
+}
+
+// ---- 05 the A key: read_input's loop over seven entries
+function akey(G) {
+  const t2 = G.bytes(0x1C4D, 7), t1 = G.bytes(0x1C53, 7), body = $('sb-atbl').tBodies[0], box = $('sb-akeys');
+  const BITS = ['0 up', '1 down', '2 left', '3 right', '4 fire', '5 RUN/STOP', '6'];
+  const show = (n) => {
+    body.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+      const tr = document.createElement('tr');
+      const c = (v, a) => `${hex(a)}: ${hex(v, 2)}, ${keyName(v) || 'no key'}`;
+      tr.innerHTML = `<td class="n">${i + 1}</td><td class="n">${c(t2[i], 0x1C4D + i)}</td><td class="n">${c(t1[i], 0x1C53 + i)}</td><td class="n">${BITS[i]}</td>`;
+      if (n !== undefined && (t2[i] === n || t1[i] === n)) tr.className = 'hit';
+      body.appendChild(tr);
+    }
+  };
+  for (const k of ['I', 'M', 'J', 'K', 'SPACE', 'A', 'Z', ',', '.', '/', 'RUN/STOP']) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = k; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => {
+      box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+      const n = keyNum[k], hits = [];
+      t2.forEach((v, i) => { if (v === n) hits.push('port 2 bit ' + i); });
+      t1.forEach((v, i) => { if (v === n) hits.push('port 1 bit ' + i); });
+      $('sb-aout').innerHTML = `<b>${k}</b>, key ${n}, sets ${hits.join(' and ')}.`;
+      show(n);
+    };
+    box.appendChild(b);
+  }
+  show();
+}
+
+if (!LIB) { for (const id of ['sb-codes', 'sb-martin', 'sb-starcv', 'sb-atbl']) missing($(id)); }
+else {
+  C64.load('parts/game/listing.json').then((G) => { codes(G); martin(G); message(G); akey(G); });
+  C64.load('parts/intro/listing.json').then((I) => star(I));
+}
+</script>
