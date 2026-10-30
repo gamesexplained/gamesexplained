@@ -3903,13 +3903,13 @@
   },
   {
    "address": 9206,
-   "name": "face_colour_lo",
+   "name": "face_mask_ptr_lo",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 9236,
-   "name": "face_colour_hi",
+   "name": "face_mask_ptr_hi",
    "type": "Field",
    "kind": "user"
   },
@@ -12639,7 +12639,7 @@
   {
    "address": 67,
    "type": "line",
-   "text": "High byte of the mask list's address."
+   "text": "High byte of mask_ptr: the mask list's address for the picture and face copies (mask_bit_next); the team animation at $3E5A also uses $42/$43 as the address of the bitmap it draws to (team_picture_lo/hi)."
   },
   {
    "address": 68,
@@ -12764,7 +12764,7 @@
   {
    "address": 92,
    "type": "line",
-   "text": "The current side's fire counter (from $64 or $65): passes fire has been held; at 5 a throw becomes a high one, and $FF marks it done."
+   "text": "The current side's fire counter (from $64 or $65, back there after player_move). It moves on only after a throw has started: a press with the ball throws at once (ball_throw) and then each pass with fire held adds one, while human_turn ($5F) is set, and at 5 the throw becomes a high one; $FF marks it done. A press without the ball leaves it at 0."
   },
   {
    "address": 93,
@@ -13129,7 +13129,7 @@
   {
    "address": 2270,
    "type": "line",
-   "text": "Frames before voice 1's slide starts."
+   "text": "Voice 1's slide delay: counted down each frame before the test (dec, then bne), so a delay of N applies the slide first on the Nth frame, N-1 frames after the command."
   },
   {
    "address": 2271,
@@ -14064,7 +14064,7 @@
   {
    "address": 7333,
    "type": "line",
-   "text": "Each team's tackle figure ($BA21): the lower, the better it wins tackles; its card shows 255 less it as skill. The computer's matches against each other also go by it (league_week_end)."
+   "text": "Each team's tackle figure ($BA21); its card shows 255 less it as SKILL. In play it is read only when a player slides into one of this team's: the slide brings him down when a random byte is at least this figure (tackle_resolve), so a low figure, a high SKILL, makes the team easier to bring down. The computer's matches against each other go by it too (league_week_end)."
   },
   {
    "address": 7344,
@@ -14084,12 +14084,12 @@
   {
    "address": 7377,
    "type": "line",
-   "text": "Which of the eleven templates each record came from: its name, picture and figures. In a knockout, record n is round n's opponent."
+   "text": "Which of the eleven templates each record came from: its name, picture and figures. In a knockout, record n's template is the team the screens name as round n's opponent; match_restart then loads the figures of the record numbered by that template, another team in almost every round."
   },
   {
    "address": 7399,
    "type": "line",
-   "text": "Each player's stamina, players 0-9: drained by tackles (stamina_drain), raised by power-up S; below 12 he runs a step slower and throws shorter."
+   "text": "Each player's stamina, players 0-9: drained by tackles (stamina_drain), raised by power-up S; below 12 he runs a step slower (player_dir_step, $9FE4), and below 6 his throws are a step weaker (player_move)."
   },
   {
    "address": 7404,
@@ -14324,7 +14324,7 @@
   {
    "address": 7856,
    "type": "line",
-   "text": "The league's length as chosen, 1-10 (the menu's choice plus one): match_over ends the league when $1EC4 reaches it."
+   "text": "The league's length as chosen, 1-10 (the menu's choice plus one): match_over ends the league when $1EC4 reaches it. A one player league starts its $1EDB at 2, so it lasts one run of eleven weeks more than the menu says: TEN WEEKS is 22 weeks, ONE HUNDRED WEEKS 121."
   },
   {
    "address": 7857,
@@ -14369,12 +14369,12 @@
   {
    "address": 7865,
    "type": "line",
-   "text": "Side 0's tackle figure: the lower, the better; skill on screen is 255 less it."
+   "text": "Side 0's tackle figure, SKILL on screen being 255 less it: a slide by side 1 brings a side 0 player down when a random byte is at least this (j_9051)."
   },
   {
    "address": 7866,
    "type": "line",
-   "text": "Side 1's tackle figure."
+   "text": "Side 1's tackle figure: a slide by side 0 brings a side 1 player down when a random byte is at least this (tackle_resolve)."
   },
   {
    "address": 7867,
@@ -14514,7 +14514,7 @@
   {
    "address": 7895,
    "type": "line",
-   "text": "The computer's team record for this match: the knockout round plus one, or the league week."
+   "text": "The team record the prematch screen draws: the knockout round plus one, or the league week. Its template ($1CD1) gives the face and name; the figures on the card are side 1's, which opponent_load set."
   },
   {
    "address": 7896,
@@ -14634,7 +14634,7 @@
   {
    "address": 7919,
    "type": "line",
-   "text": "Passes before the thrower may take the ball back."
+   "text": "The thrower's wait before he may take the ball back: 26 at a throw. The decrement at $3AF3 is shared by ball_pickup_side0 and ball_pickup_side1, both called every pass while the ball is free and $7B is 0, so it lasts 13 passes."
   },
   {
    "address": 7920,
@@ -14974,7 +14974,7 @@
   {
    "address": 8851,
    "type": "line",
-   "text": "The save file's slot by game type: index 0 two player, 1 knockout, 2 (the league's $FF less $FD) league."
+   "text": "The save file's slot by game type, read at game type + 1: index 0 the league ($FF + 1) slot 0, index 1 a two player game slot 2, index 2 a knockout slot 1. So the league saves as \"0\", the knockout as \"1\" and the two player game as \"2\", the files the three LOAD entries read."
   },
   {
    "address": 8854,
@@ -15064,7 +15064,7 @@
   {
    "address": 9014,
    "type": "line",
-   "text": "Each box's address in the bitmap at $6000, low bytes."
+   "text": "For each text box, the bitmap address one byte before its first byte (the cell to its left, which box_frame draws in), low bytes: box_clear writes from this address plus 1."
   },
   {
    "address": 9029,
@@ -15134,22 +15134,22 @@
   {
    "address": 9146,
    "type": "line",
-   "text": "The faces' parts, four tables of 30: bitmap source, low bytes."
+   "text": "The faces' parts, four tables of 30 entries, read by face_ptrs: here the source the part is copied from, low bytes (entries 0-9 the ten face layers' bitmap bytes, 10-29 their colour bytes); $23D8 the high bytes; $23F6 and $2414 the mask list that says which cells are copied."
   },
   {
    "address": 9176,
    "type": "line",
-   "text": "The faces' bitmap sources, high bytes."
+   "text": "The faces' part sources, high bytes."
   },
   {
    "address": 9206,
    "type": "line",
-   "text": "The faces' colour sources, low bytes."
+   "text": "The faces' mask lists, low bytes, which face_ptrs puts in mask_ptr ($42): entries 0-9 the face layers' cell masks ($D750-$D798), 10-29 the colour masks at $EFCD-$F0AD."
   },
   {
    "address": 9236,
    "type": "line",
-   "text": "The faces' colour sources, high bytes."
+   "text": "The faces' mask lists, high bytes ($42/$43 through face_ptrs, read by mask_bit_next); no other code reads them."
   },
   {
    "address": 9266,
@@ -15699,7 +15699,7 @@
   {
    "address": 11728,
    "type": "line",
-   "text": "The copy protection's sum: the top slot of play adds CIA 2's timer A and timer B low bytes, EORed, each frame. On a genuine copy the two timers count in step and it stays 0. It is ORed into port 2's stick, stored into the frame flag (so wait_frame would never end), used as the league's load slot and added into the text table."
+   "text": "The copy protection's sum: the top slot of play adds CIA 2's timer A and timer B low bytes, EORed, each frame. On a genuine copy the two timers count in step and it stays 0. Its readers: ORed into port 2's stick (sticks_read) and into the ball's speed index (throw_speed_set), stored into the frame flag (so wait_frame would never end), used as the play interrupt chain's first slot (pitch_setup, $9119) and as the league's load slot (menu_load_league), and added in at $3B61 and $3B68."
   },
   {
    "address": 11729,
@@ -15799,7 +15799,7 @@
   {
    "address": 12057,
    "type": "line",
-   "text": "For each of the ten players, the address of his row of distances in the table at $1E49 (ten bytes a row), low bytes. list_min, marker_facing and side1_control read the first five entries of a row, the distances to players 0-4."
+   "text": "For each of the ten players, the address of his row of distances in the table at $1E49 (ten bytes a row), low bytes. marker_facing reads entries 0-4 of a row, list_min entries 1-4, and side1_control the one entry for the controlled player $60."
   },
   {
    "address": 12067,
@@ -15919,7 +15919,7 @@
   {
    "address": 12738,
    "type": "line",
-   "text": "The start of a match or of its extra time: the drawn clock bar $75 at 0, the quit flag $7A clear, the clock's pass counter $74 at 112. By game type ($1EAF): a league loads this week's opponent (opponent_load) and shows the league prematch screen; a knockout the next round's opponent ($1CD1 at round + 1) and its screen; a two player game its own. Then the players' stamina and power (players_attributes_set) and the pitch (pitch_setup)."
+   "text": "The start of a match or of its extra time: the drawn clock bar $75 at 0, the quit flag $7A clear, the clock's pass counter $74 at 112. By game type ($1EAF): a league loads this week's opponent (opponent_load, record = week) and shows the league prematch screen; a knockout takes the template number $1CD1 of record round + 1 and loads the record with that number (a second lookup, so the figures are another team's than the one the screen names), then its screen; a two player game its own. Then the players' stamina and power (players_attributes_set) and the pitch (pitch_setup)."
   },
   {
    "address": 12792,
@@ -16239,7 +16239,7 @@
   {
    "address": 16133,
    "type": "line",
-   "text": "Record 0 from template 0, then records 1-10 from the templates starting at a random 1-10 and stepping by 3 (wrapping within 1-10): the order of the knockout's opponents. Week and $1EDB = 1."
+   "text": "Record 0 from template 0, then templates 1-10 into the records starting at a random record 1-10 and stepping by 3 (wrapping within 1-10), so $1CD1 holds a shuffled order of the templates: the knockout's opponents as the screens name them. Week and $1EDB = 1."
   },
   {
    "address": 16178,
@@ -16604,7 +16604,7 @@
   {
    "address": 34769,
    "type": "line",
-   "text": "Slot 8, line $A0 on the shop and prematch screens: sprites hi-res and expanded both ways; with an item highlighted ($1EE8 positive) places four sprites from $2F45/$2F59 by the entry in $2F33 and their pointers from $2F36, black; with $1EE8 negative, sprites off."
+   "text": "Slot 8, line $A0, on the screens prematch_screen_setup draws (the team choice, the prematch screens and the league table): sprites hi-res and expanded both ways; with a team highlighted ($1EE8 positive) places four sprites from $2F45/$2F59 by the entry in $2F33 and their pointers from $2F36, black; with $1EE8 negative, sprites off."
   },
   {
    "address": 34845,
@@ -17399,7 +17399,7 @@
   {
    "address": 40497,
    "type": "line",
-   "text": "A plain step for a side 0 player (player_step), keeping the fire counter $64."
+   "text": "A plain step for a side 0 player (player_step), then the fire counter $5C, which player_step does not change, copied into $64."
   },
   {
    "address": 40507,
@@ -17409,7 +17409,7 @@
   {
    "address": 40517,
    "type": "line",
-   "text": "The fire button of player X, then his step. Fire held (bit $10 of $41) counts up the side's counter: holding the ball, it builds the throw (more than 4 counts makes a high throw: $1EE3 = 1, $1EE4 = 4); without it, it leads to a jump or a slide. Fire released: a player holding the ball throws it (ball_throw) with a strength by the count, less one or two when his stamina is low. Then the step (player_step), unless frozen by power-up F ($6C) or knocked down."
+   "text": "The fire button of player X, then his step. Fire pressed with the counter at 0: a player holding the ball throws it at once (ball_throw) at the throw strength less one, less two when his stamina is below 6 (a strength of 16 or more as it is); one without it jumps (action 1) when the ball is in the air within $19, and otherwise marks that he wants the ball ($5E), which side0_control turns into a slide. Fire held after a throw counts the side's counter up each pass, and at 5 the ball goes high ($1EE3 = 1, $1EE4 = 4, the counter $FF). Fire released: the counter back to 0 and his flag $08 cleared. Then the step (player_step), unless frozen by power-up F ($6C) or knocked down."
   },
   {
    "address": 40694,
@@ -17454,7 +17454,7 @@
   {
    "address": 41238,
    "type": "line",
-   "text": "Role 0, side 0's goalkeeper, at the bottom goal. Nothing while the camera's top line is above $E8 (he is off screen) or while he is down. While side 0 holds the ball he walks back to his spot ($9A, $220) at his own pace ($1D37), facing up when he is there. Otherwise, with the camera at line $190 or lower he follows the stick on port 2: fire with the stick centred jumps (action 1), fire with left or right dives that way (action 7, or 10 for side 1), and the stick alone moves him across the goal mouth (x $64-$C8) and no higher than line $21A; with the camera higher, he walks to his spot."
+   "text": "Role 0, side 0's goalkeeper, at the bottom goal. Nothing while the camera's top line is above $E8 (he is off screen) or while he is down. While side 0 holds the ball he walks back to his spot ($9A, $220), facing up when he is there, with his timer $1D37 at 1 between new aims. Otherwise, with the camera at line $190 or lower he follows the stick on port 2: fire dives left or right with the stick that way (action 7, or 10 for side 1), and jumps (action 1) with neither held; without fire, up is ignored, down moves him only while he is above line $21A, and left and right only inside the goal mouth (x $64-$C8), where he takes action 8 while he moves; with the camera higher, he walks to his spot."
   },
   {
    "address": 41565,
@@ -17589,7 +17589,7 @@
   {
    "address": 43412,
    "type": "line",
-   "text": "Picks the next tile's type $68 from the table at $BB21, at a random place 0-9 (0-10 in a two player game, which adds the reverse tile J) after ten chances in nineteen (or twenty) of 0, the token. Plays sound $0B for a token, $0C for a power-up, and copies the tile's two sixteen-colour fades from $D7A0 and $D850 (sixteen bytes a type) to $DC3D/$DC4D and $DC5D/$DC6D."
+   "text": "Picks the next tile's type $68 from the table at $BB21: a random number 0-19 (0-20 in a two player game, game type 0) less ten, anything below 0 taken as 0, so eleven numbers in twenty (or twenty-one) give place 0, the token; place 10, the reverse tile J, needs the 21st. Plays sound $0B for a token, $0C for a power-up, and copies the tile's two sixteen-colour fades from $D7A0 and $D850 (sixteen bytes a type) to $DC3D/$DC4D and $DC5D/$DC6D."
   },
   {
    "address": 43488,
@@ -17909,7 +17909,7 @@
   {
    "address": 45865,
    "type": "line",
-   "text": "Copies the block the load put at $6000-$64B1 to $0200-$06B1: the SELECT GAME picture and its colours, out of the way of the bitmap screen."
+   "text": "Copies the block the load put at $6000-$64B1 to $0200-$06B1, the SELECT GAME picture and its colours, out of the way of the bitmap screen: five pages at a time with Y from 0 down to 1, the last page only for Y below $B3, so $64B2 goes to $06B2 too, one byte past the block, which nothing uses."
   },
   {
    "address": 45905,

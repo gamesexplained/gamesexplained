@@ -60,11 +60,13 @@ Six sectors on track 1 are marked in use with no file holding them.
    PLAY OR F3 FOR MAIN MENU"; fire starts the match.
 6. Snapshots, all in `work/`:
    - `entry.vsf`: a stopping checkpoint on `$2000` from a power-cycled
-     boot, saved at the stop. This is the hand-over and the image the
-     listing is built from: it holds code at `$F300`-`$FEFF` and the
-     `FILE7` block at `$6000` that play overwrites or moves.
+     boot, saved at the stop. This is the hand-over: it holds the play
+     sprites at `$F300`-`$FEFF`, which the game moves to `$5C00`-`$67FF`
+     for each match and back afterwards, and the `FILE7` block at `$6000`
+     that the start-up moves to `$0200`.
    - `play-match1.vsf`: about ten seconds into the first match, players
-     on the pitch.
+     on the pitch. The listing is built from this one, since every
+     routine and table is in place in it.
 
 ## Steady state
 
@@ -83,9 +85,10 @@ No writes to the interrupt vectors happen during a frame.
 
 Nothing is reloaded per match. Between the hand-over and the match the
 game builds `$5C00`-`$7FFF` (screens, character sets, sprites), and
-overwrites `$F300`-`$FFFF`. The save and load options reach the disk
-with the game's own code: nothing in RAM calls the KERNAL's `LOAD` or
-`SAVE` after the loader.
+overwrites `$F300`-`$FFFF`. The save and load options bank the KERNAL
+back in for the length of the transfer (`kernal_enter`, `$BE00`) and
+call its own `SAVE` and `LOAD` (`$F5ED`, `$F4A5`), with `$1C00`-`$1FFF`,
+the game's state, as the file.
 
 ## The loader, in a paragraph
 
@@ -96,6 +99,8 @@ starts CIA 2's timer A with an NMI, and loads the one-character-named second sta
 `$F000`, which ends in the stage at `$1C00` (the file `2`).
 That stage loads each `FILEn` with the KERNAL's `LOAD`, shows the two
 pictures, copies `FILE1` from `$8000` up to `$C000`, and jumps to
-`$2000`. What the `$F000` stage checks was not read. The game's
-interrupt handler reads CIA 2's control register B on every raster
-interrupt, which the loader set. Not annotated further, by policy.
+`$2000`. What the `$F000` stage checks was not read. The game's own
+start-up then starts CIA 2's timers A and B with the same period, four
+cycles apart, and its interrupt handler checks them on every raster
+interrupt (copy protection: `facts.md`). Not annotated further, by
+policy.
