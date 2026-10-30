@@ -5,11 +5,11 @@
 // the nearest button; a touch on the controller is the page's (the browser neither scrolls nor
 // moves the focus), and everything lets go when the window loses the focus. Full screen carries the
 // page's screen, the row of buttons above it, its bar and the controller, keeps the row above the
-// picture with the switch in it showing ✕, and puts each back where it was, by the switch, ✕,
-// Escape or Back, adding one step to the history and taking it off again. Each Play page that
-// loads it has a full screen switch beside its CRT screen switch in a row above the screen,
-// attaches it, and keeps no touch pad of its own beside it. Runs in node, on a stand-in for the
-// page's document.
+// picture (beside it where it would cost the picture height) with the switch in it showing ✕, and
+// puts each back where it was, by the switch, ✕, Escape or Back, adding one step to the history and
+// taking it off again. Each Play page that loads it has a full screen switch beside its CRT screen
+// switch in a row above the screen, attaches it, and keeps no touch pad of its own beside it. Runs
+// in node, on a stand-in for the page's document.
 //   node kit/scripts/test_play_controls.js
 const fs = require('fs');
 const path = require('path');
@@ -159,10 +159,17 @@ pc.hand('right');
   const full = body.children.find(n => n.className.split(' ').includes('pc-full'));
   check(!!full && full.contains(screen) && full.contains(above) && full.contains(bar) && full.contains(ctl), 'full screen carries the screen, the row above it, the bar and the controller');
   const top = full.children[0];
-  check(top.className === 'pc-top' && top.children.length === 2 && top.children[0].className === 'pc-icon' && top.children[1] === above && full.children[1].children[0] === screen,
+  check(top.className === 'pc-top' && top.children.length === 2 && top.children[0].className === 'pc-icon pc-swap' && top.children[1] === above && full.children[1].children[0] === screen,
     'the row stays above the picture, ⇄ at its left, and with the switch in it there is no ✕ of its own');
   check(top.style.width === screen.style.width, 'the row is as wide as the picture, so its buttons keep their places');
   check(glyph.textContent === '✕', 'the switch shows ✕ while full screen lasts');
+  full.rect = { left: 0, top: 0, width: 844, height: 390 }; pc.hand('right');
+  check(full.classList.contains('pc-wide') && !full.classList.contains('pc-roomy') && top.style.width === '',
+    'a phone on its side: the row\'s buttons go beside the picture, which keeps the height');
+  full.rect = { left: 0, top: 0, width: 1280, height: 800 }; pc.hand('right');
+  check(full.classList.contains('pc-wide') && full.classList.contains('pc-roomy') && top.style.width === screen.style.width,
+    'a wide window with height to spare keeps the row above the picture');
+  full.rect = { left: 0, top: 0, width: 390, height: 844 }; pc.hand('right');
   check(html.classList.contains('pc-lock') && pc.on && button.attrs['aria-pressed'] === 'true', 'holds the page under it still, and the switch shows it on');
   check(history.length === len + 1 && history.state && history.state.playControls, 'and adds a step to the history, for Back');
   check(/^\d+px$/.test(screen.style.width), 'the picture is sized to the window (' + screen.style.width + ')');

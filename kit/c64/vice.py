@@ -21,8 +21,9 @@ Usage:
   pause(rpc)                           # stop wherever it is, between two instructions,
                                        # never vice_execution_pause alone (pause-at-instruction)
   stick_arm(rpc); stick(rpc, LEFT)     # joystick input on a build that fails joy-port-1
-  with paddle(rpc, x=100) as pad:      # the paddles, which the server has no tool for: every
-      pad.frames(50)                   # read of $D419 (x) and $D41A (y) answered, at about 8 a second
+  with paddle(rpc, x=100) as pad:      # the paddles, exactly: every read of $D419 (x) and $D41A (y)
+      pad.frames(50)                   # answered, at about 8 a second (v3.14.0's vice_paddle_set is
+                                       # full speed, with VICE's paddle noise)
 
 Which of these to use depends on `tools.py --platform c64 check-emulator`: step_pass needs
 stop-exact and step-pass, frames and pause need the frame-advance- checks,
@@ -302,10 +303,11 @@ def arm(rpc, a, end=None, ignore=0, condition=None, stop=True, exec=None, load=F
     It costs the one frame pause() runs. The ignore count is used up before hit_count counts, so
     a checkpoint with ignore=99 stops with hit_count 1, on its hundredth hit.
 
-    condition is "PC == $xxxx". The server also takes A, X, Y and SP, and the v3.13.2 release then
-    crashes at the checkpoint's first hit: parse_simple_condition stores the register without its
-    memory space, and VICE's evaluator calls through a CPU interface that is not there (read in
-    the source, and measured on Linux, 3 October 2026). So those are refused here."""
+    condition is "PC == $xxxx". The server also takes A, X, Y and SP, and builds before v3.13.3
+    then crash at the checkpoint's first hit: parse_simple_condition stores the register without
+    its memory space, and VICE's evaluator calls through a CPU interface that is not there (read
+    in the source, and measured on Linux, 3 October 2026). barryw/vice-mcp#32 fixed it in v3.13.3,
+    but the server's version answer is VICE's (3.10), not the build's, so those are refused here."""
     if condition is not None and not re.match(r"\s*PC\b", condition, re.I):
         raise ViceError(f"arm: condition {condition!r}: only PC conditions are safe; an A, X, Y or SP "
                         "condition crashes the emulator at the first hit (see arm's comment)")
@@ -637,11 +639,12 @@ def paddle(rpc, x=None, y=None, at=()):
             pad.x = lambda hit: aim(rpc)        # or a function of the read, asked at each one
             pad.reads(1)                        # run to just after the next read
 
-    vice-mcp has no paddle input (v3.13.2), and with nothing in the control ports both registers
-    read $FF. So the helper stops the machine at each read and puts the result right: a stopping
-    load checkpoint on the registers that have a value, and frame advances that it ends. A tool
-    was asked for upstream as barryw/vice-mcp#34 (17 October 2026); once a build has it, this
-    helper can call it behind the same interface and the checkpoints below can go.
+    vice-mcp had no paddle input before v3.14.0, and with nothing in the control ports both
+    registers read $FF. So the helper stops the machine at each read and puts the result right: a
+    stopping load checkpoint on the registers that have a value, and frame advances that it ends.
+    v3.14.0 adds vice_paddle_set (barryw/vice-mcp#36), which runs the game at its own speed; its
+    values pass through VICE's paddle sampling, which adds a few units of noise, so this helper is
+    still the way to give a read an exact value, or one worked out at the read.
     Measured on the v3.13.2 release on Linux x86_64, 16 October 2026: a load checkpoint stops after
     the reading instruction has run, with the PC on the next one and the register loaded with $FF,
     N and Z set from it. So for LDA, LDX, LDY and LAX the helper sets the register that was loaded,

@@ -9,9 +9,9 @@ import frame
 
 
 class FakeMachine(frame.Machine):
-    """The io bank holds the chip. vice_vicii_get_state, which v3.13.2 answers from wherever the
-    processor reads $D000 (the RAM's power-on pattern and line 256 with an Ultimax cartridge,
-    zeros and line 0 with the I/O banked out), must not be asked."""
+    """The io bank holds the chip. vice_vicii_get_state, which builds before v3.13.4 answer from
+    wherever the processor reads $D000 (the RAM's power-on pattern and line 256 with an Ultimax
+    cartridge, zeros and line 0 with the I/O banked out), must not be asked."""
     def __init__(self, line):
         self.line = line
 
