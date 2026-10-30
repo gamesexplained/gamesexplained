@@ -7,35 +7,58 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "One kind deserves a special look: a state the code accepts but the programmer never meant anyone to reach": followed a player's report of a crash at 865 kg in weightlifting to the plates routine, proved a competition reaches the weight, saw the processor stop in VICE, and built the section around a weight slider.
+- `c64-reference`: "Work odds out from a table read with the chip running, never from the code alone.": took "about seven times in ten" for weightlifting's collapse off the page and read the random table live instead (160 of 256 above the limit).
+- `70-minisite`: "A widget that runs a mechanic is a claim too.": put every sum the pages compute in a block that `test_widgets.js` runs against the game's routine in the kit's simulator, 745,891 cases over eight routines.
+- `60-verify`: "A test must contain cases that have to succeed.": made the final-heat test fail unless the game both kept and replaced a time, and the music test fail unless a note started.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/INSTALL.md`: the disassembler's install command takes
+  `--locked`, with the reason beside it. Without it cargo took newer
+  dependencies and regenerator2000 0.9.20 failed to compile on 30
+  October 2026 (`error[E0308]: mismatched types` in `src/main.rs`);
+  with it the build finished. An install fix, so its reason is here.
+- `kit/c64/tools.py`: the two hints that print the install command
+  carry `--locked` too, to match.
+- `kit/lessons/2026-10-30-world-games.md`: two lessons, on computed
+  entries into unrolled code and on limits tested for equality.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
-
-## Maintainer asks
-
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **A part's ranges taken from the bytes that changed lose pages.**
+  `kit/skills/core/15-parts`, step 4, finds a load's ranges "by watching
+  the load ... or by comparing the snapshots either side of it".
+  Comparing snapshots finds only the bytes that changed, so a page the
+  load writes with the bytes already there is left out, its bytes
+  uncounted and unlisted, and the coverage figure still reads 100 %.
+  Here caber toss's `$6000`-`$60FF`, the shapes of pose `$34`, went
+  missing until a listing showed a pose with no shapes. The skill would
+  say: take the ranges from the load's stores, or from the file's load
+  address and length, never from a comparison alone.
+- **Template comments that give a range of poses read as every pose in
+  it.** Comments written by a script for sprite shape blocks said "for
+  poses X to Y"; the sample found one block whose range included a pose
+  that does not use it (sumo, `$A040`). The skill on templates would
+  say: list the members, or say "among poses X to Y".
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Carrying the music driver's names and comments to its nine copies at
+nine addresses took a matcher written for the run; the script asked
+for in #552 would have saved the most.
+
+The rest, in order: the twelve parts' annotation itself (356,094
+bytes), and working out each scrolling event's bands and colours for the
+Maps tab, which no part's facts had recorded.
+
+## Operating system and tools
+
+Ubuntu 24.04.5 in a Claude cloud container, x86_64; VICE x64sc from the
+vice-mcp release v3.14.0; regenerator2000 0.9.20 built with `--locked`
+behind the container's proxy (`CARGO_HTTP_PROXY`, `CARGO_HTTP_CAINFO`);
+Node 22.22.0; the pre-installed Chromium for `shoot.js`.
+
+## Maintainer asks
+
+- #552: this run's case added as a comment: nine copies of one music driver carried across parts.

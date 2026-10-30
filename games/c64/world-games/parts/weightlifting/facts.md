@@ -79,7 +79,9 @@ this part's listing.
   "CURRENT WEIGHT" (`wl_txt_weight`, `$16F5`), the C, `$43`, read as a
   number. Script 5 starts tunes 9, 10, 11 and 7, script 6 tune 7 twice.
   *Live*, 30 October 2026: random numbers `$00` and `$4E` played script
-  5, and `$4F`, `$80` and `$FF` script 6.
+  5, and `$4F`, `$80` and `$FF` script 6. The table of random numbers
+  read in one run held 148 different values, 160 of the 256 at least
+  `$4F` (`live_wl_random.py`); the odds depend on the table.
 
 ## Pictures
 

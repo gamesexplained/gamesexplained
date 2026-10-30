@@ -138,14 +138,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="frame" data-part="caber-toss">
   <p class="fig">04 · One frame</p>
   <h2 class="t">The caber toss, rebuilt from memory</h2>
-  <p class="lede">One frame of the caber toss, drawn by the page from the memory and the video chip's registers as they were, and from every write to them during the frame.</p>
+  <p class="lede">One frame of the caber toss, drawn by the page from the memory and the video chip's registers, its settings, as they were, and from every write to them during the frame.</p>
   <div class="plate">
     <div class="wg-bar" id="wg-frame-bar"></div>
     <div class="wg-stack"><canvas id="wg-frame" class="wg-cv" width="384" height="272" aria-label="The caber toss screen, rebuilt"></canvas><canvas id="wg-frame-hi" width="384" height="272"></canvas></div>
     <p class="wg-out" id="wg-frame-out"></p>
     <p class="cap">Recorded in VICE as the thrower runs up with the caber, and drawn by the site's C64 library line by line, with each register as it was when the beam reached it. 0 of the 104,448 pixels differ from VICE's own picture of the same frame.</p>
   </div>
-  <p>The picture is made of characters, the C64's 8 by 8 tiles, in multicolour mode, where each tile has four colours. Three of them are the same for every tile on the screen, and the interrupt at line 98 changes all three, from sky to field: light blue, light grey and grey above, green, dark grey and light grey below. The scenery is a map 128 columns wide (<code>$8170</code>), and the event draws the 40 columns in view into the screen not shown, then swaps the two (<code>ct_draw_scenery</code>, <code>$197A</code>; <code>ct_swap_screens</code>, <code>$19DB</code>).</p>
+  <p>The picture is made of characters, the C64's 8 by 8 tiles, in multicolour mode, where each tile has four colours. Three of them are the same for every tile on the screen, and the interrupt at line 98, a routine the video chip sets off as it reaches that line, changes all three, from sky to field: light blue, light grey and grey above, green, dark grey and light grey below. The scenery is a map 128 columns wide (<code>$8170</code>), and the event draws the 40 columns in view into the screen not shown, then swaps the two (<code>ct_draw_scenery</code>, <code>$197A</code>; <code>ct_swap_screens</code>, <code>$19DB</code>).</p>
   <p>The thrower and the caber are sprites, the chip's eight movable pictures. The caber is too tall for one, so it is a column of them, with the thrower beside it. The same eight sprites are used again below the picture, where the interrupt at line 251 moves them for the text row of names.</p>
 </section>
 
@@ -160,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wg-wrapx"><table class="wg-tbl" id="wg-mem-tbl"></table></div>
     <p class="cap">From each program's listing: the ranges its bytes fill and what they are. The shell's bytes stay in memory under every other program.</p>
   </div>
-  <p>The shell sits in the low memory, from <code data-part="shell">$0800</code> to <code data-part="shell">$0FFF</code>: the eight players' records, a jump table, the loader and its prompt to turn the disk, and the world records, 20 bytes for each event. Every other program is one file, packed to save space on the disk. The shell's unpacker copies itself to <code data-part="shell">$D000</code>, where nothing else is kept, and unpacks the file in place from <code data-part="shell">$1000</code> upwards (<code data-part="shell">$0F00</code>). Slalom alone needs a second file, which the shell copies to <code data-part="slalom">$E000</code>: the skier's falls, the course's edges and the code that times the run, checks the gates and plays the music.</p>
+  <p>The shell sits in the low memory, from <code data-part="shell">$0800</code> to <code data-part="shell">$0FFF</code>: the eight players' records, a jump table, the loader and its prompt to turn the disk, and the world records, 20 bytes for each event. Every other program is one file, packed to save space on the disk. The shell's unpacker copies itself to <code data-part="shell">$D000</code>, where nothing else is kept, and unpacks the file in place from <code data-part="">$1000</code> upwards (<code data-part="shell">$0F00</code>). Slalom alone needs a second file, which the shell copies to <code data-part="slalom">$E000</code>: the skier's falls, the course's edges and the code that times the run, checks the gates and plays the music.</p>
   <p>The programs share nothing but the shell. Each event has its own interrupts, its own variables at the same addresses in the first 256 bytes of memory and its own copy of the music driver. An event leaves its result as text and as a number in the player's record (<code data-part="shell">$0810</code> and on), and the menu reads the numbers to hand out the medals.</p>
 </section>
 
@@ -261,7 +261,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The gap between sprites 7 and 3, and the inches from <code>ct_inches</code> (<code>$2297</code>), indexed by twice the pixels left over plus one bit read from colour RAM (<code>ct_show_result</code>, <code>$2170</code>).</p>
   </div>
   <p>The thrower runs with left and right in time with the stride, and fire held plants the caber. While fire is held a count grows by the run's speed each frame, and each time it passes a threshold the caber leans a step further: <code>$38</code>, <code>$68</code>, <code>$90</code>, <code>$B4</code> and <code>$D4</code> (<code>$1CC2</code>, read at <code>$1AB5</code>). A lean of 5 fells it. Letting go throws it, and the caber must turn over and land on its far end (<code>ct_landing</code>, <code>$22AC</code>).</p>
-  <p>The inches take one bit from a read of colour RAM, which holds only four bits a byte. The other four read as whatever was last on the data bus, the lines every chip shares with the processor, so the bit changes from one throw to the next, and below 4 pixels over it decides between two inches. The release has a quirk of its own (<a href="discoveries.html#caber">Discoveries</a>).</p>
+  <p>The inches take one bit from a read of colour RAM, the memory that holds each character's colour, which holds only four bits a byte. The other four read as whatever was last on the data bus, the lines every chip shares with the processor, so the bit changes from one throw to the next, and below 4 pixels over it decides between two inches. The release has a quirk of its own (<a href="discoveries.html#caber">Discoveries</a>).</p>
 </section>
 
 <section id="sumo" data-part="sumo">
@@ -292,7 +292,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>Caber toss</td><td>one bit of the data bus, read through colour RAM's missing upper half (<code data-part="caber-toss">$2170</code>)</td></tr>
     </table></div>
   </div>
-  <p>The shell starts the third voice as noise at the frequency <code>$FFFF</code> (<code data-part="shell">sid_start</code>, <code data-part="shell">$0D18</code>), so its oscillator's top eight bits change too fast to follow. Weightlifting reads them 256 times at its start and keeps the readings, and later takes one at a time, such as the one that chooses between the two endings of a lift held too long (<code data-part="weightlifting">$1546</code>).</p>
+  <p>The shell starts the third voice as noise at the frequency <code>$FFFF</code> (<code data-part="shell">sid_start</code>, <code data-part="shell">$0D18</code>), so the top eight bits of its output change too fast to follow. Weightlifting reads them 256 times at its start and keeps the readings, and later takes one at a time, such as the one that chooses between the two endings of a lift held too long (<code data-part="weightlifting">$1546</code>).</p>
 </section>
 
 </main>

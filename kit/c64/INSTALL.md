@@ -138,7 +138,7 @@ alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
 RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
-RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000 --version 0.9.20
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
@@ -307,8 +307,13 @@ the way to one where none exists, and no run of it is recorded on either.
 ## Get the disassembler
 
 ```
-cargo install --root tools/cargo regenerator2000 --version 0.9.20
+cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
+
+`--locked` builds it with the dependency versions the release was
+published with. Without it cargo takes the newest that fit, and on 30
+October 2026 one of those stopped 0.9.20 compiling, with `error[E0308]:
+mismatched types` in `src/main.rs`.
 
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.

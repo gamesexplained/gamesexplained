@@ -184,7 +184,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="flags" data-part="slalom">
   <p class="fig">07 · Slalom</p>
   <h2 class="t">A flag hit head-on is a fall 100 times in 256</h2>
-  <p class="lede">The manual says a skier who hits a gate head-on wipes out. The game decides by the frame counter: below 100 the skier falls, and from 100 to 255 the flag bends and the skier skis on.</p>
+  <p class="lede">The manual says a skier who hits a gate head-on wipes out. The game decides by the frame counter, which goes up by one every frame: below 100 the skier falls, and from 100 to 255 the flag bends and the skier skis on.</p>
   <div class="plate">
     <div class="wg-grid" id="wg-flag-grid"></div>
     <p class="cap">The frame counter, <code>$70</code>, from 0 to 255 in rows of 32: red where a head-on hit is a fall, green where the flag bends (<code>sl_flag_hit</code>, <code>$F371</code>). Checked in VICE on 30 October 2026: with the counter at 0, 50 and 99 the skier fell, and at 100, 150 and 255 the flag bent.</p>
@@ -209,9 +209,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="wg-bar"><button type="button" class="wg-btn" id="wg-feet-step">Step back</button><button type="button" class="wg-btn" id="wg-feet-reset">Stand still</button></div>
     <p class="wg-out" id="wg-feet-out"></p>
-    <p class="cap"><code>lr_step</code> (<code>$2183</code>) as <code>test_widgets.js</code> holds it to the game's routine, for every speed in both directions. Checked in VICE on 30 October 2026: called with -121 it gave -128, and with -122 and -128 it gave <code>$FFFF</code>.</p>
+    <p class="cap"><code>lr_step</code> (<code>$2183</code>) as <code>test_widgets.js</code> holds it to the game's routine, for every speed in both directions. Checked in VICE on 30 October 2026: called with -121 it gave -128, and with -122 and -128 it gave <span class="wg-mono">$FFFF</span>.</p>
   </div>
-  <p>The speed is kept in two bytes, a whole part and 256ths, and a step changes the whole part. Forwards, a step that would pass 127 sets the speed to <code>$7FFF</code>, the most there is. Backwards, a step from -122 or below would pass -128, and the routine sets the speed to <code>$FFFF</code>, which is -1/256, where <code>$8000</code>, -128, was meant. A lumberjack running backwards as fast as they can is suddenly standing still on the log.</p>
+  <p>The speed is kept in two bytes, a whole part and 256ths, and a step changes the whole part. Forwards, a step that would pass 127 sets the speed to <span class="wg-mono">$7FFF</span>, the most there is. Backwards, a step from -122 or below would pass -128, and the routine sets the speed to <span class="wg-mono">$FFFF</span>, which is -1/256, where <span class="wg-mono">$8000</span>, -128, was meant. A lumberjack running backwards as fast as they can is suddenly standing still on the log.</p>
 </section>
 
 <section id="judge" data-part="weightlifting">
@@ -231,7 +231,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <p class="cap" style="margin-top:0">At <code>$1549</code> the event reads the first byte of <code>wl_txt_weight</code> (<code>$16F5</code>), the letter C, <code>$43</code>, and multiplies it by 5, which in 8 bits is <code>$4F</code>. A random number of <code>$4F</code> or more plays script 6, and a lower one script 5 (<code>$155B</code>). Checked in VICE on 30 October 2026: <code>$16F5</code> held <code>$43</code> and the limit came to <code>$4F</code>; random numbers <code>$00</code> and <code>$4E</code> played script 5, and <code>$4F</code>, <code>$80</code> and <code>$FF</code> script 6.</p>
   </div>
-  <p>The text's C is a byte like any other, and <code>$4F</code> splits the 256 random numbers 177 to 79: script 6 plays about seven times in ten. The two scripts play the endings of a lift held too long, each with its own sounds (script 5 starts tunes 9, 10, 11 and 7, script 6 only tune 7, all on <a href="index.html#music">the music player</a>).</p>
+  <p>The text's C is a byte like any other, and <code>$4F</code> splits the 256 values a byte can hold 177 to 79, in favour of script 6. The random numbers are 256 readings of the sound chip's noise, taken once as the event starts (<code>wl_random</code>, <code>$197D</code>), and they are not spread evenly: in a table read in VICE on 30 October 2026, 160 of the 256 were <code>$4F</code> or more. The two scripts play the endings of a lift held too long, each with its own sounds (script 5 starts tunes 9, 10, 11 and 7, script 6 only tune 7, all on <a href="index.html#music">the music player</a>).</p>
 </section>
 
 <section id="epyx" data-part="menu">
@@ -248,7 +248,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="slalom-colour" data-part="slalom">
   <p class="fig">13 · Slalom</p>
   <h2 class="t">Bug: the best time's colour is written to the joystick chip</h2>
-  <p class="lede">Slalom shows the best time at the top right in white. The loop that colours it writes to <code>$DC47</code> and on, where colour RAM's <code>$D847</code> was meant. <code>$DC00</code> to <code>$DCFF</code> belongs to CIA 1, the chip that reads the joysticks.</p>
+  <p class="lede">Slalom shows the best time at the top right in white. The loop that colours it writes to <code>$DC47</code> and on, where <code>$D847</code>, in the colour RAM that holds the screen's colours, was meant. <code>$DC00</code> to <code>$DCFF</code> belongs to CIA 1, the chip that reads the joysticks.</p>
   <div class="plate">
     <p class="cap" style="margin-top:0">At <code>$8189</code> the event copies the best time's seven characters from <code>$0FF0</code> to row 1, column 31, on both of its screens, and writes 1, white, to <code>$DC47</code> plus the character's place, where <code>$D847</code> plus the place was meant. Checked in VICE on 30 October 2026 as a slalom run began: the loop wrote 1 to <code>$DC4D</code> down to <code>$DC47</code>, and colour RAM at <code>$D847</code>-<code>$D84D</code> already held 1.</p>
   </div>
