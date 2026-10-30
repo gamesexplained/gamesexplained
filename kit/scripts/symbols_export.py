@@ -370,7 +370,7 @@ def main():
         source = "regenerator2000 live" if plat == "c64" else "live"
     reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
-        blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"])
+        blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"], game.get("names") or [])
         if not key:     # only a live session says what refers to what
             syms, stray = drop_strays(plat, session, syms, game)
     syms.sort(key=lambda s: s["address"])

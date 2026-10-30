@@ -39,6 +39,7 @@ page (`70-minisite`).
 | `seen_by` | a bank's `part.json` | the part whose code reads the bank; it keeps the window's addresses for its own RAM |
 | `window` | a bank's `part.json` | where the bank shows among the CPU's addresses |
 | `banks` rows | the `part.json` of the part that sees a bank | which of its instructions see the bank, as `[first, last, bank's id, why]` |
+| `names` rows | a load's `part.json` | addresses outside its ranges where its labels and comments are its own, as `[first, last, why]`: the variables its code keeps where a part beneath keeps others (zero page, most often). Without them, its operands there take the names of the part beneath |
 | owner | the coverage figure | the one part that counts a byte; a game's coverage, the sum over its parts, counts each byte once |
 
 A part's symbol map uses the same addresses as its listing. A game of
