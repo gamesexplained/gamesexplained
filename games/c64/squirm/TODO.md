@@ -18,19 +18,21 @@ every step.
   are wrong elsewhere. An audit of the whole listing (337 comments) on a
   proven model, as `kit/CHECKING.md` describes, would find them.
 
+## Platinum (reached)
+
+The Play tab is the whole game: every routine of the listing ported to
+JavaScript (`reference/sq-port.js`) and run on the game's own 64 KB by
+the page's own clock and chips (`reference/sq-play.js`). `test_play.js`
+holds it in CI: three lockstep sessions against the game's code from the
+hand-over, every pass compared, every routine of the main program run;
+the page's pace against the C64's, waiting levels and the levels with no
+wait; and the page alone for 20,000 frames. No bug in the port is known.
+
 ## Gold
 
 A human's pass through the How it works and Discoveries tabs, section by
-section (`AGENTS.md`, "Definition of done").
-
-## Platinum
-
-A Play tab with the whole game ported to JavaScript and run in lockstep
-with the game's own code. The game is small and the pages already run
-most of it: the worms' moves, the player's step, the level cycle, the
-treasure, the death and every sound. A port would write those routines
-again in JavaScript and check each against the page's machine, which
-`test_frame.js` and `test_sound.js` already hold to the game.
+section (`AGENTS.md`, "Definition of done"). With Platinum reached, that
+pass makes the game Diamond.
 
 ## Open questions
 

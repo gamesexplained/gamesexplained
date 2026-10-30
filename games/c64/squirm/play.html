@@ -1,0 +1,257 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+a{color:var(--link)}
+a:hover{color:var(--link-hover)}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+section table{margin:6px 0 18px}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0;touch-action:none}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-above button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-over button{font-size:16px}
+.pl-bar button[aria-pressed="true"],.pl-above button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover,.pl-above button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-keys b{color:var(--ink)}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Play the whole game in your browser: eat the eggs the worms lay, grab the treasure, keep clear of the worms, and race the bonus clock between levels.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-above" id="pl-above" data-above>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-fullscreen aria-pressed="false" title="The game over the whole screen, with a bigger joystick on a touch screen; this button again, Escape or Back returns to the page">⛶ Full screen</button>
+    </div>
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the arrow keys and Space.">
+      <canvas id="pl-cv" width="768" height="544" role="img" aria-label="The Commodore 64 screen of Squirm"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart" title="The machine switched on again: the title screen and its tune">Start again</button>
+      <button type="button" data-act="f1" title="F1 on the C64's keyboard: the game's own pause, which fire ends">F1: pause the game</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <ul class="pl-keys">
+      <li><b>Joystick</b>: <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Space</kbd> or <kbd>Z</kbd> fires. Fire at the title starts a game.</li>
+      <li><b>In the maze</b> the player keeps going the way it last went until a wall stops it, and turns as soon as the stick points at an open way. Fire alone stops it.</li>
+      <li><kbd>F1</kbd> or <kbd>P</kbd> pauses, with the stick let go; fire goes on.</li>
+      <li><b>A high score</b>: left and right pick a letter, fire takes it. Three letters make the name.</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
+    </ul>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. Squirm reads one joystick, in control port 1: the arrows and Space are that joystick here, and on a touch screen the pad under the picture is.</p>
+  </div>
+</section>
+<section id="differences">
+  <p class="fig">01 · Differences</p>
+  <h2 class="t">What differs from a C64</h2>
+  <p>Nothing on this page runs the game's 6502 code. Every routine of the game is written again in JavaScript, one function for each routine of the listing, and runs on the game's own 64 KB, loaded from the bytes the Source code tab shows. Every variable stays where the game keeps it: the worms' cells at <code>$2648</code>, the treasure at <code>$268A</code>, the step delay at <code>$2689</code>, and the score, the level and the bonus clock on the screen itself.</p>
+  <p>Both of the game's interrupt routines end in the KERNAL's, in the C64's ROM, and the page has no ROM. It runs a stand-in that does what the game reads of the KERNAL's routine: it counts the jiffy clock at <code>$A0</code>-<code>$A2</code>, which every wait in the game watches, and scans the keyboard for the key number at <code>$C5</code>, which is how the game sees F1. It takes the time the ROM's routine takes, longer with a key held, so the game keeps the C64's pace.</p>
+  <p>On a C64 the keyboard's bottom row shares its lines with control port 1, so <kbd>1</kbd>, <kbd>←</kbd>, <kbd>CTRL</kbd> and <kbd>2</kbd> move the player up, down, left and right, and <kbd>SPACE</kbd> fires. Here only the arrows, <kbd>Space</kbd>, <kbd>Z</kbd> and the touch pad do. F1 pauses only while the stick is let go, on the page as on the C64: the KERNAL's scan reads the stick's lines as keys of the bottom row, and keeps the last key it finds, so a held direction hides F1.</p>
+  <p>The sound is the game's writes to the SID, a twelfth of a frame at a time, played through the site's model of the SID.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
+<script src="reference/sq-port.js"></script>
+<script src="reference/sq-play.js"></script>
+<script>
+/* the page: the port on a virtual PAL clock, drawn each frame, the joystick and F1 */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const CLOCK = 985248;
+let data = null, rt = null, keep = null, running = false, paused = false, target = 0, last = 0;
+
+// --- drawing: the last whole frame, through the site's model of the video chip
+CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+function draw() {
+  const f = rt && rt.shown;
+  if (!f) return;
+  C64.drawFrame(cv, { lines: 312, cycles: 63, vic: f.vic, cia2: f.cia2, writes: f.writes, mem: f.mem, colourMem: f.colour, keep }, 2);
+}
+
+// --- sound: the SID writes of each twelfth of a frame, one call of the model's driver each
+let host = null, soundOn = false;
+const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, rt ? rt.sid[r] : 0); return all; };
+async function sound(on) {
+  soundOn = on;
+  if (on && !host) {
+    try {
+      host = await C64Sid.host({ live: true, gain: 0.5, period: SquirmPlay.FRAME / SquirmPlay.SLICES });
+      host.push([registers()]);
+    } catch (e) { soundOn = false; say('No sound: ' + e.message); }
+  }
+  hold();
+  return soundOn;
+}
+function hold() { if (host) { if (soundOn && running && !paused) host.ctx.resume(); else host.ctx.suspend(); } }
+Sound.attach(document.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
+
+// --- input: the arrows, Space and Z as the joystick in port 1, F1 and P as the C64's F1 (the
+// KERNAL's key 4). A key the game has not seen yet is held until it has, so a tap is never lost:
+// a direction or fire until the game's main program has read the stick, F1 until it has read the
+// key number after the interrupt has scanned the keyboard. A key held longer lets go the moment
+// it comes up.
+const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Space: 16, KeyZ: 16 };
+const F1 = { F1: 1, KeyP: 1 };
+const held = new Map(), letGo = new Set();
+function seen(h) {
+  if (!rt) return true;
+  if (h.k !== 'F1') return rt.reads.stick > h.stick;
+  if (h.scanned < 0 && rt.reads.irq > h.irq) h.scanned = rt.reads.key;
+  return h.scanned >= 0 && rt.reads.key > h.scanned;
+}
+function input() {
+  if (!rt) return;
+  for (const c of letGo) { const h = held.get(c); if (!h || seen(h)) { letGo.delete(c); held.delete(c); } }
+  let bits = 0, f1 = false;
+  for (const h of held.values()) if (h.k === 'F1') f1 = true; else bits |= h.k;
+  rt.joy1 = 0x1F & ~bits;
+  if (f1) rt.keys.add(4); else rt.keys.delete(4);
+}
+function press(code, k) {
+  if (!held.has(code) || letGo.has(code)) held.set(code, { k, stick: rt ? rt.reads.stick : 0, irq: rt ? rt.reads.irq : 0, scanned: -1 });
+  letGo.delete(code);
+  input();
+}
+function release(code) { if (held.has(code)) { letGo.add(code); input(); } }
+function onKey(e, down) {
+  if (!running || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = JOY[e.code] !== undefined ? JOY[e.code] : F1[e.code] ? 'F1' : null;
+  if (k === null) return;
+  e.preventDefault();
+  if (down) { if (!e.repeat) press(e.code, k); } else release(e.code);
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); letGo.clear(); input(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+// the touch pad docked under the screen, and full screen (site/lib/play-controls.js): each of its
+// bits is held as a key is, so a tap is never lost either; fire starts the game, as a tap does
+PlayControls.attach({
+  screen, canvas: cv, above: $('pl-above'), bar: $('pl-bar'), button: document.querySelector('[data-fullscreen]'), pad: true,
+  onPad(bits) {
+    if (!running) { if ((bits & 16) && data) start(); return; }
+    for (const b of [1, 2, 4, 8, 16]) {
+      const code = 'pad-' + b;
+      if (bits & b) { if (!held.has(code) || letGo.has(code)) press(code, b); }
+      else release(code);
+    }
+  },
+});
+
+// --- the clock: a target one frame on for each frame shown, and the port run up to it
+function frame(t) {
+  if (!running) return;
+  requestAnimationFrame(frame);
+  if (paused || !rt) { last = 0; return; }
+  try {
+    const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+    last = t;
+    input();
+    target += dt * CLOCK;
+    rt.run(target);
+    input();
+    const slices = [];
+    for (const f of rt.sound.splice(0)) for (const s of f) slices.push(s);
+    if (soundOn && host && slices.length) host.push(slices);
+    draw();
+  } catch (e) {
+    running = false; hold();
+    overMsg.textContent = 'The port stopped: ' + e.message + '. Start again runs it from the start.'; over.hidden = false; console.error(e);
+  }
+}
+document.addEventListener('visibilitychange', () => { last = 0; });
+
+// --- controls
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
+function start() {
+  over.hidden = true;
+  keep = {};
+  rt = SquirmPlay.create({ M: data.ram.slice(), keep });
+  held.clear(); letGo.clear();
+  if (host) host.push([registers()]);
+  target = 0; last = 0; paused = false;
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  if (!running) { running = true; requestAnimationFrame(frame); }
+  hold();
+  screen.focus();
+}
+// F1 from the bar: held as a tap of the key is
+function f1() { if (!rt || !running) return; press('bar-F1', 'F1'); release('bar-F1'); }
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); hold(); }
+  else if (act === 'restart' && data) start();
+  else if (act === 'f1') f1();
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && data) start(); });
+C64.load('listing.json').then((D) => {
+  data = D;
+  overMsg.textContent = 'Squirm from its first instruction: the title screen and its tune. Press fire (Space) at the title to play.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(); };
+  over.appendChild(bt);
+}).catch((e) => { overMsg.textContent = 'The game\'s data did not load: ' + e.message; console.error(e); });
+window.SquirmPage = { get rt() { return rt; }, start };
+})();
+</script>

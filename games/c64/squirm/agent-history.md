@@ -81,3 +81,40 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   Source tab's index read `b_3A8F` and the like. They were named in a
   last pass (`work/ann/09-names.txt`), after the pages were written; no
   page uses the old names.
+
+## The Play tab (30 October 2026)
+
+- The port, `reference/sq-port.js`, is one function for each routine of
+  the listing, on the game's memory. Both of the game's interrupt
+  handlers end in the KERNAL's at `$EA31`, which the kit's machine has no
+  ROM for, so the port and the test's machine share a stand-in,
+  `SquirmPort.kernal`: the jiffy clock, the STOP row, the keyboard scan
+  for `$C5` and `$CB`, port A left at `$7F` and `$DC0D` read. It was run
+  beside kernal-901227-03, VICE's file, in the kit's simulator (scratch
+  only, never committed) over 1,675 interrupts with keys and the stick
+  varied: no difference in `$A0`-`$A2`, `$C5`, `$CB` or `$91`. The first
+  version gave 56 for F1 with the stick held up where the ROM gives 64:
+  the scan reads a ninth time with no row selected, where the stick's up
+  line reads as key 64. The cycles the ROM's handler takes, 161 to 168
+  with no key and about 1,530 plus 21 a held place of the matrix with
+  keys, came from the same runs.
+- The lockstep (`test_play.js`) found one fault in the port, in the bonus
+  run with the step delay at `$7F`: the game's first read of `$A2` came
+  through `irqByte` as `$80`, an interrupt having come between the store
+  and the read, but the port's next poll came before the game had made
+  that read, and saw `$7F` in its own memory, so the port left the wait
+  and the game did not. A poll that sees the stored value again now reads
+  as the first read did (`jiffies` in the port). The step delay at `$7F`
+  is not a value play reaches (it would take 133 cycles of four levels after the first),
+  so the sessions force `$FF`, `$FD`, `$02`, `$00` and `$FA` instead.
+- The page's costs: a base for each stretch between checkpoints and a
+  cost for each call of 17 routines, fitted non-negative to 105,030
+  stretches, two cycles out on average. The cycles the game spends in its
+  polling loops are measured with hooks on the loops and left out, since
+  the page runs each wait to the interrupt that ends it. A first version
+  took a line a poll off instead, which the lockstep's extra polls (the
+  port polling on while the game waits at the next checkpoint) made
+  wrong by tens of thousands of cycles on the screens after a game. The
+  game's start, from the hand-over to the title's first wait, is measured
+  on its own. The page then reached play at the same frame as the C64
+  (103.3) and kept its pace to within 0.03 %, waiting or not.
