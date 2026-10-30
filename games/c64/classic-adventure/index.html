@@ -103,7 +103,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Melbourne House's 1984 version of Crowther and Woods' Adventure keeps the whole cave as data: 140 rooms spelled from a 305-word dictionary, and 452 rules that decide everything a command can do. One of those rules makes the cave's last puzzle impossible to solve.</p>
+  <p class="sub">Melbourne House's 1984 version of Crowther and Woods' Adventure keeps the whole cave as data: 140 rooms spelled from a 305-word dictionary, and 452 rules that decide everything a command can do. One of those rules makes the cave's last puzzle impossible to solve (<a href="discoveries.html#unwinnable">Discoveries</a>).</p>
 </header>
 <main class="wrap">
 
@@ -127,39 +127,8 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
   <p>The cave is Crowther and Woods' Adventure, with its rooms, treasures, and puzzles, fitted into one program for the 64. The title screen credits Abersoft and the inlay John Jones-Steele.</p>
 </section>
 
-<section id="unwinnable">
-  <p class="fig">02 · The end of the cave</p>
-  <h2 class="t">Bug: the game cannot be won</h2>
-  <p class="lede">The cave closes when exactly fifteen objects lie in the building, and the player is moved to the repository at its far end. Blasting the wall there wins the game, but only when the rod with the rusty mark is not in the room, and that rod can never be put down anywhere else.</p>
-  <p>The rules spell out the win. BLAST at the south-west end runs rule 406 when rod 10 is carried or lies there, and rule 407, the win, otherwise. The closing puts rod 10 at the south-west end, so the rod has to be carried to the north-east end and left there. From the north-east end, where the closing leaves the player, that takes six commands:</p>
-  <table class="ca-endcmds">
-    <tr><th>Command</th><th>Meant to</th><th>What the game does</th></tr>
-    <tr><td>SW</td><td>go to the south-west end, where rod 10 lies</td><td>the same</td></tr>
-    <tr><td>GET ROD</td><td>pick up rod 10</td><td>the same, by rule 211</td></tr>
-    <tr><td>NE</td><td>carry rod 10 back to the north-east end</td><td>the same</td></tr>
-    <tr><td>DROP ROD</td><td>leave rod 10 there</td><td>"You have it already": rule 263 takes the rod instead of dropping it</td></tr>
-    <tr><td>SW</td><td>go back to the south-west end without the rod</td><td>goes back with the rod still in hand</td></tr>
-    <tr><td>BLAST</td><td>blow a hole into the main office and win, message 133</td><td>"you are suddenly splashed across the walls of the room": rule 406, message 135</td></tr>
-  </table>
-  <div class="plate" id="ca-end">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Close the cave and type the six commands</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">A game set up as a player would leave it, with the fifteen treasures in the building and the lamp, keys, food, and bottle carried; the button then types the commands. The screen is the game's own rules and messages from there on.</p>
-  </div>
-  <p>Five rules touch the rod with the rusty mark, object 10. Status rules 11 and 12 close the cave on the next arrival in the hall of mists, and both put rod 10 at the south-west end, where the blast has to be set off. Rule 406 is that blast: with rod 10 carried or in the room, the explosion ends the game. Rule 211 is GET ROD. DROP ROD tries rule 262 first, which drops the other rod if it is carried, and then rule 263, whose action is take where drop belongs, so DROP ROD with rod 10 in hand answers "You have it already".</p>
-  <div id="ca-rod-rules"></div>
-  <p>Rod 10 cannot leave the south-west end by any other way. The repository's two rooms lead only to each other, and none of the rules that kill the player can run there, so dying cannot carry it out. The winning text, message 133, is in the game: "…a cheering band of friendly elves carry the conquering adventurer off into the sunset." It shows only with the player poked into the south-west end in a game that never put rod 10 there.</p>
-</section>
-
 <section id="text">
-  <p class="fig">03 · The text</p>
+  <p class="fig">02 · The text</p>
   <h2 class="t">Every text is spelled from one dictionary of 305 words</h2>
   <p class="lede">Room descriptions, messages and object names are ASCII with the words taken out: any byte below 4 starts a two-byte reference to a word in a dictionary of 305, and the printer puts the spaces back.</p>
   <div class="plate">
@@ -191,7 +160,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="parser">
-  <p class="fig">04 · The parser</p>
+  <p class="fig">03 · The parser</p>
   <h2 class="t">The parser reads the first four letters of each word</h2>
   <p class="lede">A command is cut into words, and each word to its first four letters, which are looked up among 226 vocabulary entries. Words the game does not know are skipped. The first word it knows is the verb and the second is the noun.</p>
   <div class="plate">
@@ -205,7 +174,7 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="rules">
-  <p class="fig">05 · Command rules</p>
+  <p class="fig">04 · Command rules</p>
   <h2 class="t">422 command rules decide what a command does</h2>
   <p class="lede">The command rules are tried in the order they are stored. A rule applies when its verb is the first word and its noun is the second, or any noun at all; the first one that applies and whose conditions all hold runs its actions, and the scan stops there.</p>
   <div class="plate">
@@ -226,140 +195,15 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="status">
-  <p class="fig">06 · Status rules</p>
+  <p class="fig">05 · Status rules</p>
   <h2 class="t">30 status rules run the cave between commands</h2>
   <p class="lede">The status rules have no words. They run in order after each room description and after every command that does not end the turn, and each one whose conditions hold runs its actions.</p>
   <div class="ca-scroll"><table class="ca-rtable" id="ca-status"></table></div>
   <p>Thirteen of them, rules 0 to 10, 23 and 29, move the player straight on from a room that is only a sentence. "The crack is far too small for you to follow." sends the player back, and "You didn't make it." goes to room 0, which is death. Room 31 has no text at all, and rules 5 and 6 send the player on from it to one of two rooms, depending on whether the plant has grown. The rest give the cave its life: rule 21 is the pit that kills a player in the dark, rule 22 the dwarf who throws his axe, rules 24 to 27 the bird attacking the snake and the dragon, rule 28 the bear chasing off the troll, and rules 11 and 12 the closing of the cave.</p>
 </section>
 
-<section id="dark">
-  <p class="fig">07 · Darkness and death</p>
-  <h2 class="t">Secret: lighting the lamp gives no dark moves back</h2>
-  <p class="lede">Each description of a dark room takes one from a count that starts at 4, and status rule 21 throws the player into a pit when it reaches 0. The count is never refilled while the player lives: lighting the lamp only stops it falling.</p>
-  <div class="plate" id="ca-dark">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Walk into the dark</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">A new game. The player takes the lamp, goes through to the dark debris room without lighting it, looks, lights the lamp, looks, puts it out, and looks twice more.</p>
-  </div>
-  <p>The count is flag 5, <code>$0C99</code>. <code>describe_room</code> (<code>$1503</code>) takes one from it each time it prints "It is now pitch dark", on arriving and on every LOOK, and a move that a status rule turns into a second description takes two. Rooms 1 to 9, 100, 115, 116, and 126 are lit, and any other only while the lit lamp is carried or lies there. Nothing sets the count but a new game, which sets 4, and a death, which sets 3, so four dark descriptions in one life are the limit however far apart they come.</p>
-  <h3>Dying</h3>
-  <p>Room 0 is death. <code>death</code> (<code>$1B35</code>) prints the reincarnation text with the lives left in it, puts a carried lamp back on the road, drops everything else carried in the room the player came from, and wakes the player in the building with the darkness count at 3. The fifth death ends the game with the score, which dying does not reduce.</p>
-</section>
-
-<section id="score">
-  <p class="fig">08 · The score</p>
-  <h2 class="t">Bug: the score promises 210 and stops at 150</h2>
-  <p class="lede">Every object in the building with its treasure bit set scores 10, and the score message says "out of a possible 210". Only fifteen treasures can be carried, so the score tops out at 150.</p>
-  <div class="plate ca-score">
-    <div class="ca-score-grid" id="ca-objs"></div>
-    <div class="ca-bar"><button type="button" id="ca-all15">The 15 treasures, nothing else</button><button type="button" id="ca-twenty">Objects 1-20 as treasures</button><button type="button" id="ca-start">As a new game starts</button></div>
-    <pre class="ca-mini" id="ca-scoreout" style="margin-top:14px"></pre>
-    <p class="ca-facts" id="ca-scorefacts"></p>
-    <p class="cap">Tick the objects that lie in the building; the score is <code>act_score</code> (<code>$19E4</code>) run by the port. Objects 1, 2, 28 and 29 start there.</p>
-  </div>
-  <p>Eighteen objects have the treasure bit, bit 4 of their flags, and fifteen of them can be carried home. Of the other three, 67 is the vase resting on the pillow, which takes the vase's place and scores instead of it; 76 is the chain on the bear's wall, which no rule moves; and 78, "Underneath the body is a small flute.", is placed by no rule.</p>
-  <p>The score is kept as three ASCII digits inside the message and counted there. A carry out of the tens writes a 1 into the hundreds instead of adding one, so 200 would read 100. No game reaches 200, but objects 1 to 20 poked into the building as treasures show the fault.</p>
-  <p>The same pass decides when the cave closes. <code>act_score</code> counts every object in the building, treasure or not, and a SCORE that finds exactly fifteen sets flag 12 (<code>$1A27</code>). The next arrival in the hall of mists then closes the cave (section 02). With the treasures and the lamp in the building there are sixteen, and the cave stays open.</p>
-</section>
-
-<section id="bear">
-  <p class="fig">09 · The bear</p>
-  <h2 class="t">Bug: the chained bear can be led away</h2>
-  <p class="lede">Feeding the bear makes it gentle, and GET BEAR should then answer "The bear is still chained to the wall." until the chain is unlocked. The rule that says so tests the wrong object.</p>
-  <div class="plate" id="ca-bear">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Feed the bear and take it</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">The player poked into the bear's room with the lit lamp and the food.</p>
-  </div>
-  <p>Rule 190 (<code>$567D</code>) needs the gentle bear and object 78, "Underneath the body is a small flute.", which no rule ever places; object 76, the bear locked to the wall with a golden chain, is the one that makes sense there. With rule 190 never running, GET BEAR falls through to the rule that takes the bear, and the bear follows the player while the chain stays on the wall.</p>
-</section>
-
-<section id="troll">
-  <p class="fig">10 · The troll</p>
-  <h2 class="t">Bug: FEE FIE never brings the troll back</h2>
-  <p class="lede">Throwing a treasure to the troll at the bridge makes him leave. FEE FIE brings the golden eggs back to the giant room, and a second FEE FIE rule would bring the troll back as well, but the first rule always runs.</p>
-  <div class="plate" id="ca-troll">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Pay the troll, then FEE FIE</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">The player poked onto the troll's side of the bridge with the lit lamp and the eggs.</p>
-  </div>
-  <p>Rule 395 (<code>$5B4B</code>) runs when the eggs have a location or flags, and the eggs keep their treasure bit after the troll has them, so the condition always holds. Rule 396 (<code>$5B51</code>), which also puts the troll back at the bridge, is never reached.</p>
-</section>
-
-<section id="blank">
-  <p class="fig">11 · Empty answers</p>
-  <h2 class="t">Bug: two answers are blank lines</h2>
-  <p class="lede">KILL CLAM, and OVER at the fissure before the bridge exists, each print a message, and both messages are empty.</p>
-  <div class="plate" id="ca-clam">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Kill the clam</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">The player poked into the clam's room with the lit lamp.</p>
-  </div>
-  <p>Rule 328 (<code>$59B9</code>) prints message 15 and rule 36 (<code>$52E1</code>) message 87. Both have equal offsets in the message table, so <code>print_record</code> prints only the line break that ends every text. 105 of the 200 messages are empty, and these are the only two a rule prints.</p>
-</section>
-
-<section id="turns">
-  <p class="fig">12 · The turn counter</p>
-  <h2 class="t">Bug: the 10,000th command rewrites the printer</h2>
-  <p class="lede">The turns are counted as four ASCII digits inside the score message. On the 10,000th command the carry runs off the front of the digits and adds one to a byte of the printing code.</p>
-  <div class="plate" id="ca-turns">
-    <div class="ca-term">
-      <div class="ca-left">
-        <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
-        <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
-        <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Make the 10,000th command</button></div>
-      </div>
-      <div class="ca-insp" aria-live="polite"></div>
-    </div>
-    <p class="cap">The turn digits poked to 9998, then SCORE and LOOK. The port stops where the patched code would run.</p>
-  </div>
-  <p>The digits are at <code>$0F68</code> to <code>$0F6B</code>. <code>get_command</code> (<code>$13BD</code>) adds one to the last and carries to the left with the X register. After 9999 the carry out of the thousands leaves X at <code>$FF</code>, and the store indexed by X lands on <code>$1067</code>, inside <code>print_record</code>. That byte is the opcode of <code>STA $61</code>, <code>$85</code>, and it becomes <code>$86</code>, <code>STX $61</code>. From then on <code>print_record</code> takes the length of each text from X, which its callers mostly leave at 0, so every room and message comes out as a blank line, and the turns read 0000. The game also keeps a 16-bit count of the turns at <code>$0CA1</code>, which nothing reads.</p>
-  <figure class="plate" style="margin:18px 0 0;max-width:432px"><img class="ca-shot" src="reference/turn-10000-blank.png" width="384" height="272" alt="The C64 screen after the 10,000th command: blank, with only the typed word score and the cursor"><figcaption class="cap">The same moment in VICE, 8 October 2026: after the 10,000th command, LOOK and SCORE print only blank lines.</figcaption></figure>
-</section>
-
-<section id="never">
-  <p class="fig">13 · Rules that never run</p>
-  <h2 class="t">Secret: the dwarf can never be hit</h2>
-  <p class="lede">THROW AXE at the dwarf needs flag 11, and no rule sets flag 11. The dwarf cannot be hit, and status rule 22 puts his axe back in the canyon each time the player comes without it.</p>
-  <p>Other parts of the tables are written for things the game never does:</p>
-  <ul>
-    <li>Flags 0, 1, 3, 4, 8, and 9 are read by no rule. Flags 3 and 4 are counted down by the code and never set, and 8 and 9 are set by the two blasts.</li>
-    <li>Action 9, offer another game, and action 14, set a flag to 4, have handlers, and no rule uses either.</li>
-  </ul>
-</section>
-
 <section id="save">
-  <p class="fig">14 · SAVE and another game</p>
+  <p class="fig">06 · SAVE and another game</p>
   <h2 class="t">SAVE writes the whole game to tape in two files</h2>
   <p>SAVE (<code>$1A5D</code>) writes two files to tape with no name: the objects' locations and flags, <code>$8AA2</code> to <code>$8B3C</code>, and the block from <code>$0BBB</code> to <code>$0F97</code>, which holds the starting copy of the objects, the line buffer, every variable, the handler tables, and the built-in messages, with the lives, score, and turn digits inside them. RESTORE loads both back where they came from, and neither checks for an error. On the Play tab the tape is kept in the browser.</p>
   <p>The end of a game asks "Another game (y or n)?". An unshifted N jumps through the reset vector, and the C64 restarts into BASIC; anything else, a shifted N included, starts again from the starting copy. QUIT asks "Are you sure?", and only an unshifted Y quits.</p>
@@ -1274,35 +1118,6 @@ globalThis.CAUI = (function () {
     document.querySelectorAll('#ca-main [data-cmd]').forEach(b => { b.onclick = () => main.type(b.dataset.cmd); });
     $('#ca-main-restart').onclick = () => main.restart();
 
-    // the demonstrations: a game set up as play leaves it, then typed into
-    const carry = (M, ...ns) => { for (const n of ns) { M[OBJ(n)] = 0; M[OBJ(n) + 1] |= 2; } M[T.FLAGS + 2] += ns.length; };
-    const litLamp = M => { M[OBJ(2)] = 0; carry(M, 3); };          // the lamp taken and lit
-    const demo = (id, setup, lines, note) => {
-      const s = U.Scenario($(id), M0, { setup, lines, note, inspect: U.inspect });
-      $(id + ' [data-run]').onclick = s.play;
-    };
-    const TREASURES = [57, 59, 60, 61, 62, 63, 64, 65, 66, 69, 70, 71, 72, 75, 77];
-    demo('#ca-end', M => {
-      for (const n of TREASURES) M[OBJ(n)] = 3;                       // all fifteen delivered
-      litLamp(M); carry(M, 1, 28, 29);                                // the rest carried out again
-      M[T.ROOM] = 3;
-    }, ['score', 'xyzy', 'pit', 'd', 'sw', 'get rod', 'ne', 'drop rod', 'sw', 'blast'], 'In the building, with the fifteen treasures there. Press the button, or type SCORE and go to the hall of mists yourself.');
-    demo('#ca-dark', null, ['in', 'get lamp', 'xyzy', 'look', 'on', 'look', 'off', 'look', 'look']);
-    demo('#ca-bear', M => { litLamp(M); carry(M, 28); M[T.ROOM] = 130; }, ['look', 'feed bear', 'get bear', 'invent', 'look'], 'In the bear’s room, with the lit lamp and the food. Press the button, or type.');
-    demo('#ca-troll', M => { litLamp(M); carry(M, 64); M[T.ROOM] = 117; }, ['look', 'throw eggs', 'fee fie', 'look'], 'At the troll’s bridge, with the lit lamp and the eggs. Press the button, or type.');
-    demo('#ca-clam', M => { litLamp(M); M[T.ROOM] = 103; }, ['look', 'kill clam', 'open clam'], 'In the clam’s room, with the lit lamp. Press the button, or type.');
-    demo('#ca-turns', M => { M.set([0x39, 0x39, 0x39, 0x38], 0x0F68); }, ['score', 'look'], 'On the road, with 9,998 turns already counted. Press the button, or type two commands.');
-
-    // 02: the rules that touch the rod with the rusty mark
-    const ruleRow = (kind, i) => {
-      const R = U.rule(M0, kind, i);
-      const conds = R.conds.map(([c, a]) => esc(U.condText(M0, c, a))).join('<br>') || '<span class="ca-quiet">none</span>';
-      const acts = U.actsText(M0, R.acts).map(esc).join('<br>');
-      return `<tr><td>${U.addr(R.at)}</td><td>${kind === 'command' ? esc(U.wordName(M0, R.verb).split('/')[0] + ' ' + (R.noun === 0xFF ? '(any)' : U.wordName(M0, R.noun).split('/')[0])) : 'status ' + i}</td><td>${conds}</td><td>${acts}</td></tr>`;
-    };
-    const head = '<tr><th>Rule</th><th>Words</th><th>Conditions</th><th>Actions</th></tr>';
-    $('#ca-rod-rules').innerHTML = '<table class="ca-rtable">' + head + [['status', 11], ['status', 12], ['command', 211], ['command', 262], ['command', 263], ['command', 406]].map(([k, i]) => ruleRow(k, i)).join('') + '</table>';
-
     // 03: the texts
     const kindSel = $('#ca-kind'), recSel = $('#ca-rec');
     const counts = { ROOMS: 140, MESSAGES: 200, OBJECTS: 78 }, names = { ROOMS: 'Room', MESSAGES: 'Message', OBJECTS: 'Object' };
@@ -1370,28 +1185,6 @@ globalThis.CAUI = (function () {
       return `<tr><td>${U.addr(R.at)}</td><td>${i}</td><td>${R.conds.map(([c, a]) => esc(U.condText(M0, c, a))).join('<br>') || '<span class="ca-quiet">none</span>'}</td><td>${U.actsText(M0, R.acts).map(esc).join('<br>')}</td></tr>`;
     }).join('');
 
-    // 08: the score, from act_score run on the objects as ticked
-    const START = [1, 2, 28, 29], ODD = { 67: 'takes the vase’s place when the vase is put on the pillow', 76: 'the chain on the bear’s wall, never moved by any rule', 78: 'placed by no rule' };
-    const rows = [...START, ...TREASURES, 67, 76, 78];
-    $('#ca-objs').innerHTML = rows.map(n => `<label class="${ODD[n] ? 'ca-off' : ''}"><input type="checkbox" data-obj="${n}"${START.includes(n) ? ' checked' : ''}> ${n} ${esc(short(U.objName(M0, n), 34))}${ODD[n] ? ' (' + ODD[n] + ')' : ''}</label>`).join('');
-    let extra = [];
-    function showScore() {
-      const M = Uint8Array.from(M0);
-      M.set([0x20, 0x20, 0x20, 0x30], 0x0F68);
-      for (const n of START) M[OBJ(n)] = 0;
-      for (const b of document.querySelectorAll('#ca-objs input')) if (b.checked) M[OBJ(+b.dataset.obj)] = 3;
-      for (const n of extra) { M[OBJ(n)] = 3; M[OBJ(n) + 1] |= 0x10; }
-      const r = U.scoreRun(M);
-      $('#ca-scoreout').textContent = r.lines.join('\n');
-      let here = 0; for (let n = 1; n <= 78; n++) if (r.M[OBJ(n)] === 3) here++;
-      $('#ca-scorefacts').textContent = `${here} object${here === 1 ? '' : 's'} in the building. ` + (r.M[T.FLAGS + 12] ? 'Exactly 15: act_score sets flag 12, and the cave will close.' : 'Flag 12 stays clear: the cave closes only on exactly 15.');
-    }
-    const tick = ns => { extra = []; document.querySelectorAll('#ca-objs input').forEach(b => { b.checked = ns.includes(+b.dataset.obj); }); showScore(); };
-    $('#ca-objs').addEventListener('change', () => { extra = []; showScore(); });
-    $('#ca-all15').onclick = () => tick(TREASURES);
-    $('#ca-start').onclick = () => tick(START);
-    $('#ca-twenty').onclick = () => { tick([]); extra = Array.from({ length: 20 }, (_, i) => i + 1); showScore(); };
-    showScore();
   }, err => {
     document.querySelectorAll('.ca-screen').forEach(e => { e.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
   });

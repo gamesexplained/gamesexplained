@@ -72,7 +72,7 @@ input[type=range]{width:100%}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Ocean</p>
   <h1>Wizball</h1>
-  <p class="sub">Sensible Software's shooter, read from its code: how a ball you can only spin gets anywhere, and why the game crashes itself when its clock stops.</p>
+  <p class="sub">Sensible Software's shooter, read from its code: how a ball you can only spin gets anywhere, and <a href="discoveries.html#clock">why the game crashes itself when its clock stops</a>.</p>
 </header>
 <main class="wrap">
 
@@ -201,41 +201,6 @@ input[type=range]{width:100%}
   <p>The highest level open is <code>$B1CE</code> = 2 + the number of levels done, counted from level 1 with no gap (<code>$A9C6</code>). The manual says level five opens when level two is done; in the code it also needs level one. Tubes lead up only as far as <code>$B1CE</code>. After all eight levels the game starts again from level 1 with every alien firing every 10 frames.</p>
 </section>
 
-<section id="secrets">
-  <p class="fig">09 · Secrets, quirks and bugs</p>
-  <h2 class="t">Things the manual never told you</h2>
-
-  <h3>Secret: stop the game's clock and it crashes</h3>
-  <p>The initialisation sets CIA 2's timer A to count 19,656 cycles (<code>$4CC7</code> + 1), exactly one PAL frame, and makes it the NMI. The NMI handler (<code>$7C61</code>) only clears <code>$85</code>. Late in each frame the band <code>$8BBB</code> stores a non-zero value there, and early in the next the band <code>$8A52</code> ends with a check (<code>$8B04</code>): if <code>$85</code> is not back to 0, the NMI has not come, and the check pulls a byte off the stack so that the band's return goes astray. Anything that stops the timer or its interrupt sets it off.</p>
-  <div class="plate"><table class="d">
-    <tr><th>Address</th><th>Bytes</th><th>Instruction</th><th>What it does</th></tr>
-    <tr><td><code>$8B04</code></td><td class="mono">A7 86</td><td class="mono">LAX $86</td><td>A and X = <code>$FF</code>, set once by the initialisation</td></tr>
-    <tr><td><code>$8B06</code></td><td class="mono">DF 86 FF</td><td class="mono">DCP $FF86,X</td><td><span class="mono">$FF86</span> + <span class="mono">$FF</span> wraps round to <code>$0085</code>: decrement it and compare with <span class="mono">$FF</span></td></tr>
-    <tr><td><code>$8B09</code></td><td class="mono">F0 03</td><td class="mono">BEQ $8B0E</td><td>it was 0: the NMI came, return normally</td></tr>
-    <tr><td><code>$8B0B</code></td><td class="mono">68</td><td class="mono">PLA</td><td>otherwise lose a byte of the return address</td></tr>
-  </table><p class="cap">Both instructions that touch <code>$85</code> are undocumented opcodes, and the address wraps round the top of memory, so a search of the code for <code>$85</code> finds only the writes. In the emulator, with CIA 2's interrupts switched off, the check failed on the next frame and the processor ran into screen memory and stopped on a <span class="mono">JAM</span> opcode at <span class="mono">$EA7D</span>, in the landscape screen.</p></div>
-  <p>The title screen has its own version, with an <span class="mono">INC $FFB0,X</span> that also wraps round to <code>$85</code>, and a failure path (<code>$9292</code>) that increments a random byte of memory first. One more disguised decrement, at <code>$B589</code>, is <code>LXA #$FF</code> followed by <code>DCP $FF97,X</code>. <code>LXA</code> is an undocumented opcode whose result depends on a constant that varies between 6510 chips; only with the constant <code>$EE</code> does X come out as <code>$EE</code> and the address wrap to <code>$0085</code>. The VICE emulator fixes the constant at <code>$EE</code> with the source comment "needs to be 0xee for wizball". The start-up hides as well: the initialisation reaches CIA 2 only through indexed addresses (<span class="mono">STA $DC8E,X</span> with X = <span class="mono">$7F</span> is <span class="mono">$DD0D</span>) and then overwrites itself with random bytes. The menu and "get ready!" screens compare the hardware vectors with their stored copy every frame (<code>$90F8</code>), flickering the screen if they differ.</p>
-
-  <h3>Bug: level 5 draws a tile that does not exist</h3>
-  <p>The tile table has 192 entries, but one byte of the map, at <code>$092B</code>, holds tile number <code>$F8</code> (248). The drawing code does not check, and reads the tile's 25 characters from <code>$2642</code> + 25 × 248 = <code>$3E7A</code>, the middle of two sound-effect records. Most of those bytes are small numbers, which draw as sky, but two are <code>$FF</code>, and glyph <code>$FF</code> of the play character set is the last eight bytes of memory: two unused bytes and the NMI, reset and IRQ vectors. The result sits just to the right of level 5's first well.</p>
-  <div class="plate"><div class="two"><div><img class="ref" src="reference/level5-stray-tile-zoom.png" alt="The stray tile beside level 5's first well, enlarged"></div><div><canvas id="tileCv" width="200" height="200" style="width:200px;height:200px;background:#000;border-radius:6px"></canvas><div id="tileBytes" class="mono" style="margin-top:8px"></div></div></div>
-  <p class="cap">Left: the emulator's screen on level 5, enlarged. Right: the tile's 5 × 5 bytes from <code>$3E7A</code>, drawn with level 5's character set; a 0 is sky, and the star glyphs <code>$01</code>-<code>$5A</code> show whatever stars the game has plotted into them. Remember's 1997 crack lists "matrix in level 5" among the bugs it fixed, and changes exactly this byte to <code>$00</code>.</p></div>
-
-  <h3>Bug: a shield survives quitting the game</h3>
-  <p>The shield timer (<code>$7F06</code>, 40 units, one used every 50 frames) is cleared only when it runs out and in the Wiz-lab. Quitting with Q while paused does not touch it, and nor does starting a new game, so a shield that was running carries into the next game, while that game's icon bar offers the shield as unused. In the emulator: 38 units at the quit, 36 when the new game began, and a collision in the new game cost 8 units and no life. Remember's crack names this as its second fix.</p>
-
-  <h3>Secret: BOREWIZ, and starting on a later level</h3>
-  <p>On the title or the player menu, the band <code>$AF85</code> compares each key pressed with the letters B O R E W I Z (<code>$AFCE</code>, in the game's key numbering). After all seven the border turns brown and <code>$BB07</code> is set: collisions stop ending lives, except during "colour completed" and the bonus stage (<code>$7EF4</code>). The letters only have to come seven in a row, which is why Remember's notes can give it as WIZBOREWIZ; a doubled B breaks it, because a wrong key resets the count without being tried as a new first letter. The same band reads the keys 0 to 5: key n starts the next game on level n + 1, as far as the first level the last game did not finish (<code>$AF7D</code>), with the skipped levels marked done and up to five of thrust, anti-grav, beam, catelite and spray given for free (<code>$B10D</code>). Wiztips calls it the continue game feature.</p>
-
-  <h3>The spray icon Remember's crack "fixed"</h3>
-  <p>Remember's third fix is "the wrong sprite on the spray icon". Every icon in the bar shows what taking it next would give: after thrust is taken the first icon shows anti-grav, after the beam the second shows double. The spray icon follows the same rule, and after the Wiz takes the spray it shows the cat spray, a cat's face with dots very like the catelite's icon. Remember's version of the handler (<code>$7325</code> here) swaps the two images, so its icon shows who holds the spray instead.</p>
-
-  <h3>A hang in the Wiz-lab that no player can reach</h3>
-  <p>The lab keeps up to nine permanent weapons (<code>$B116</code>). When a tenth is taken, <code>$B0B0</code> frees the first two slots holding the spray and tries again; with fewer than two sprays among the nine it jumps to itself for ever (<code>$B0D2</code>). In the emulator, with nine other weapons put in the list by hand, choosing the spray froze the game there. A player never gets that far: thrust, anti-grav, beam, double, catelite and blazers each turn their icon to the used-up shape once taken, so at most six slots can hold anything but the spray.</p>
-
-  <h3>An earlier build left in memory</h3>
-  <p>The image carries pieces of an older version of the game. After the initialisation sits a second copy of its last part (<code>$ECB4</code>) with different addresses, never run. <code>$BB0D</code> holds an earlier draft of the third Wiztips page, spelling "permanent" correctly where the real page says "permenant". <code>$6EE4</code>, just after the quit code, would mark the current level's colours done and jump into the level-complete sequence, and the test in front of it for the Q key branches to the next instruction either way: a debugging key, disconnected. Tests for three more keys (<code>$9E5A</code>) branch nowhere too. And the name-entry buffer at <code>$BFF4</code> still holds "POO BAG", where a team's two sets of initials go; the game fills the buffer with spaces before every entry, so nobody sees it.</p>
-</section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 
@@ -1083,8 +1048,6 @@ const TUNES = ['police alarm', 'bonus stage 2', 'colour completed', 'title', 'bo
 // port itself so there is one table.
 const MODES = createDriver(null).modes;
 
-
-
 const NAMES = ['Police alarm', 'Bonus stage 2', 'Colour completed', 'Title', 'Bonus stage 1', 'Get ready', 'Name entry', 'Game over', 'Wiz-lab', 'End of bonus (unused)'];
 function mountMusic(root) {
   if (!root) return;
@@ -1337,7 +1300,7 @@ mountMusic(document.getElementById('music'));
       const p = L.parts;
       $('landCap').innerHTML = `<b>${names[level]}</b>: map rows ${p[0].row}-${p[0].row + 3}, columns ${p[0].col}-${p[0].col + p[0].n - 1}` +
         (p[1] ? ` and rows ${p[1].row}-${p[1].row + 3}, columns ${p[1].col}-${p[1].col + p[1].n - 1}` : '') +
-        `; glyphs from <code>${hex(L.block, 4)}</code>` + (level === 4 ? '. The red box is the stray tile (Secrets, below).' : level === 2 ? '. The three heads in the third row are the Mount Rushmore Zzap!64 mentions.' : '.');
+        `; glyphs from <code>${hex(L.block, 4)}</code>` + (level === 4 ? '. The red box is the stray tile (<a href="discoveries.html#stray-tile">Discoveries</a>).' : level === 2 ? '. The three heads in the third row are the Mount Rushmore Zzap!64 mentions.' : '.');
       drawMap();
       const box = landCv.parentElement;
       if (level === 4) box.scrollLeft = Math.max(0, (57 - 45) * 40 * S2 - 200); else box.scrollLeft = 0;
@@ -1350,26 +1313,6 @@ mountMusic(document.getElementById('music'));
     });
     $('colBtn').onclick = () => { coloured = !coloured; $('colBtn').setAttribute('aria-pressed', String(coloured)); drawLand(); };
     drawLand();
-
-    /* the stray tile */
-    {
-      const cs = wizCharset(ram, 4), tc = $('tileCv').getContext('2d');
-      tc.fillStyle = '#000'; tc.fillRect(0, 0, 200, 200);
-      const bytes = [];
-      for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) {
-        const code = ram[0x3E7A + 5 * y + x]; bytes.push(code);
-        for (let py = 0; py < 8; py++) {
-          const bits = code === 0 ? 0 : cs[code * 8 + py];
-          for (let p = 0; p < 4; p++) {
-            const q = (bits >> (6 - 2 * p)) & 3;
-            if (!q) continue;
-            tc.fillStyle = PAL[[0, 11, 12, 1][q]]; tc.fillRect(x * 40 + p * 10, y * 40 + py * 5, 10, 5);
-          }
-        }
-        tc.strokeStyle = 'rgba(255,255,255,.15)'; tc.strokeRect(x * 40 + .5, y * 40 + .5, 39, 39);
-      }
-      $('tileBytes').innerHTML = [0, 1, 2, 3, 4].map(y => bytes.slice(5 * y, 5 * y + 5).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')).join('<br>');
-    }
 
     /* the aliens */
     const spr = n => ram.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);

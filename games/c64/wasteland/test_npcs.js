@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the page's port of the NPCs' refusals against the game's own code, and its table of NPCs
-// against the maps. party.html's WLNpcs block (npcs/npcs.js) and the dice it throws with
+// against the maps. discoveries.html's WLNpcs block (npcs/npcs.js) and the dice it throws with
 // (reference/wasteland-dice.js) run in node beside the original routines on the kit's 6502 simulator, in the
 // engine's and the game's committed listings, with the same random bytes: npc_obey_check ($0D61)
 // for every refusal byte, the three Use entries ($8D83, $8D86, $8D89), the trade's test in
@@ -18,12 +18,13 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
-// The map window's block is on the Overview (index.html), the NPCs' on the party tab, and the
-// dice, which the party tab and the Dice and combat tab share, in a file of their own.
-const html = g.read('party.html');
+// The map window's block is on the Overview (index.html), the NPCs' on the Discoveries tab beside
+// the widget, the cast table on the party tab, and the dice, which the Discoveries tab and the Dice
+// and combat tab share, in a file of their own.
+const html = g.read('party.html'), disc = g.read('discoveries.html');
 const M = g.run('index.html', 'maps/maps.js', 'WLMaps').WLMaps;
 const D = g.run('reference/wasteland-dice.js', 'dice/dice.js', 'WLDice').WLDice;
-const N = g.run('party.html', 'npcs/npcs.js', 'WLNpcs').WLNpcs;
+const N = g.run('discoveries.html', 'npcs/npcs.js', 'WLNpcs').WLNpcs;
 
 let bad = 0, cases = 0;
 const fail = (what, ...more) => { if (bad++ < 20) console.log('DIFFERS', what, ...more); };
@@ -224,7 +225,7 @@ function hooks(bytes, extra) {
   }
 
   // the number the widget's caption gives
-  const sim = cases - simFrom, sc = html.match(/were given the same random bytes for ([\d,]+) checks, trades, and hires/);
+  const sim = cases - simFrom, sc = disc.match(/were given the same random bytes for ([\d,]+) checks, trades, and hires/);
   if (!sc || +sc[1].replace(/,/g, '') !== sim) fail('the caption says', sc && sc[1], 'checks, trades, and hires; the test ran', sim);
 
   // ---- square_checks ($8E14, game) for a party with Dan Citrine in it ------------------------

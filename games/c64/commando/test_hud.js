@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's score line against the game's own code. index.html's commando-hud block runs
+// Hold the page's score line against the game's own code. discoveries.html's commando-hud block runs
 // beside the score add ($134F), the grenade box ($2A8E), the throw ($3903) and the prints ($136F,
 // $13D7, $13F1) on the kit's 6502 simulator, over the bytes of the committed listing: every BCD
 // score with every points value the game adds, every grenade count from 0 to 255 with a box and
@@ -12,7 +12,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'discoveries.html';
 const { createHud } = g.run(page, 'commando-hud', 'createHud');
 const m = g.listing().ram;
 const io = {                                               // the sound effects' writes only

@@ -13,7 +13,7 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/c64/INSTALL.md` and `kit/c64/tools.py`: the disassembler's install command is `cargo install --locked ...`, and INSTALL.md says why. On 30 October 2026 a plain install took `regenerator2000-core` 0.9.21, and regenerator2000 0.9.20 failed to compile against it (E0308 in `main.rs`). An install fix, so no lesson.
+- `kit/c64/INSTALL.md` and `kit/c64/tools.py`: none. This run made the disassembler's install `cargo install --locked ...`, because a plain install of regenerator2000 0.9.20 took a 0.9.21 library and failed to compile (E0308 in `main.rs`). Two other runs on 30 October 2026 had already put the same fix on main, so this branch took main's text.
 - `kit/cpu/m6502.py`: `ANC #imm` (`$0B`) is in the undocumented opcodes the listing decodes, with a case in `kit/scripts/test_listing_undocumented.py`. The game's timer check (`LAX abs`, then `ANC #imm`) was listed as data before. A script fix, so no lesson.
 - `kit/lessons/2026-10-30-speedball.md`: a bug in a table that two routines share is tested by running both routines together.
 

@@ -310,14 +310,18 @@ the way to one where none exists, and no run of it is recorded on either.
 cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
+`--locked` builds it with the dependency versions the release was
+published with. Without it cargo takes the newest that fit, and on 30
+October 2026 one of those stopped 0.9.20 compiling, with `error[E0308]:
+mismatched types` in `src/main.rs`.
+
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
 
-`--locked` builds it with the library versions its release was tested
-with. Without it cargo takes the newest compatible ones: on 30 October
-2026 that was `regenerator2000-core` 0.9.21, which 0.9.20 does not
-compile against (error E0308 in its `main.rs`, `expected
-anyhow::Error, found CoreError`).
+`--locked` builds it with the versions of its own pieces it was
+released with. Without it, cargo takes the newest that match: on 30
+October 2026 that was `regenerator2000-tui` 0.9.21, and 0.9.20 failed to
+compile against it (`error[E0308]: mismatched types` in `src/main.rs`).
 
 Install that release, from crates.io, and not a build of the project's
 main branch. On 13 October 2026 main also called itself 0.9.20, and its

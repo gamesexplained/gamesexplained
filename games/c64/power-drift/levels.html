@@ -1,0 +1,246 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Drift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pd-shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.pd-shots figure{margin:0}
+.pd-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.pd-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.pd-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.pd-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.pd-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.pd-sel{font-family:var(--fm);font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.pd-bar label{font-family:var(--fm);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
+.pd-bar input[type=range]{width:200px;max-width:50vw}
+.pd-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.pd-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
+.pd-tab th,.pd-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.pd-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.pd-tab td.n{font-family:var(--fm);text-align:right}
+.pd-tab th.n{text-align:right}
+.pd-scroll{overflow-x:auto}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
+.pd-key{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin-top:10px}
+.pd-key span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-2px;background:var(--k)}
+.pd-thumbs{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-top:10px}
+.pd-thumbs figure{margin:0;text-align:center}
+.pd-thumbs canvas{display:block;image-rendering:pixelated;border-radius:3px}
+.pd-thumbs figcaption{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:4px}
+.pd-sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.2);vertical-align:-2px;margin-right:4px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Activision · Maps / levels</p>
+  <h1>Power Drift</h1>
+  <p class="sub">Five courses of five stages. Each stage is a few bytes in a course record: a list of track pieces, a list of roadside objects, two colours, two horizon pictures, and whether the track starts high off the ground.</p>
+</header>
+<main class="wrap">
+
+<section id="stage">
+  <p class="fig">01 · Every stage</p>
+  <h2 class="t">A stage is a list of pieces and a list of scenery</h2>
+  <p class="lede">Each of the 25 stages, drawn from its course record: its horizon, the pieces of one lap, and the objects along the road.</p>
+  <div class="plate" id="pd-stage">
+    <div class="pick"><a class="step" aria-label="The stage before">‹</a><select aria-label="Stage" id="pd-pick"></select><a class="step" aria-label="The stage after">›</a></div>
+    <h3 style="margin-top:6px">The horizon</h3>
+    <div class="pd-scroll"><canvas id="pd-hz" width="640" height="96" style="display:block;image-rendering:pixelated;border-radius:4px"></canvas></div>
+    <p class="cap">The stage's two horizon pictures, the whole 80 columns of each, as <code>draw_horizon_rows</code> copies them at the start of a stage: the upper one with its bottom row on screen row 9, the lower one on row 15, in the stage's sky and ground colours and its view multicolour. A bend scrolls them sideways a column a step, and a hill moves them up and down. Their characters <code>$F1</code>-<code>$FE</code> are the set <code>setup_stage</code> copies in for the stage: from <code>$B785</code> when the lower picture is the one at <code>$A571</code>, otherwise from <code>$B685</code>.</p>
+    <h3>One lap</h3>
+    <div class="pd-scroll"><canvas id="pd-lap" width="820" height="110" style="display:block;border-radius:4px;background:#fff"></canvas></div>
+    <div class="pd-key" id="pd-key"></div>
+    <p class="cap">The stage's piece list, each piece as long as the number of steps its routine runs for, with the bend above it: 9 notches either way from straight, left upward. A lap is about 400 steps; the list starts again from the top at its end.</p>
+    <p class="pd-out" id="pd-sum"></p>
+    <h3>Along the road</h3>
+    <div class="pd-thumbs" id="pd-thumbs"></div>
+    <p class="cap">Every kind of object the stage's scenery list names, in the order it first appears, drawn at distance 6 with the block of character shapes the list has loaded by then, in the stage's colours.</p>
+  </div>
+  <p>A course record (<code>course_a</code> and the four after it) holds two bytes for each stage in six groups: the piece list, the scenery list, a raised-track count with the view's multicolour, the sky and ground colours, and the two horizon pictures. <code>setup_stage</code> reads them at the start. The pieces are described on the <a href="index.html#road">How it works</a> tab; the scenery list is a run of streams, each four records of an object on the left, one over the road and one on the right, with now and then a block of character shapes to copy into the race set before the next.</p>
+  <p>A raised-track count above 0 at the start means the stage begins high off the ground, where a kart that leaves the road falls. Climbs add to the count and the pieces that level out take from it.</p>
+</section>
+
+<section id="all">
+  <p class="fig">02 · All stages</p>
+  <h2 class="t">Twenty-five stages side by side</h2>
+  <p class="lede">The numbers behind each stage, from the five course records and the 25 piece lists.</p>
+  <div class="pd-scroll"><table class="pd-tab" id="pd-all"></table></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined') {
+    $('pd-stage').insertAdjacentHTML('beforeend', '<p class="cap">These drawings need the site\'s shared scripts, which did not load.</p>');
+    return;
+  }
+  // The piece routines track_step runs, by address: a name, the steps each runs for (from its own
+  // count), its colour on the strip, and how it moves the bend $2D (9 straight, 0 sharpest left).
+  const PIECES = {
+    0x2B0C: { n: 'start', steps: 0 },
+    0x2F14: { n: 'straight', steps: 4, k: '#c9c6bd' },
+    0x2F0B: { n: 'straight', steps: 16, k: '#c9c6bd' },
+    0x2B2F: { n: 'bend left', steps: 10, k: '#1f5fa8', bend: -1 },
+    0x2B52: { n: 'bend right', steps: 10, k: '#c25a00', bend: 1 },
+    0x2F24: { n: 'climb', steps: 23, k: '#2a8a4a' },
+    0x30F7: { n: 'crest', steps: 29, k: '#d9a520' },
+    0x30CD: { n: 'jump', steps: 29, k: '#d04a3a' },
+    0x2D9A: { n: 'descent', steps: 29, k: '#4a5bd6' },
+    0x2FE7: { n: 'descent into straight', steps: 25, k: '#9a7be0', straighten: 13 },
+    0x2E89: { n: 'level out', steps: 12, k: '#35a0a0' },
+  };
+  const KEY = ['straight', 'bend left', 'bend right', 'climb', 'crest', 'jump', 'descent', 'descent into straight', 'level out'];
+  const BLOCKS = [0x5820, 0x5D98, 0x6310, 0x6888];
+
+  C64.load('listing.json').then((L) => {
+    const r = L.ram, w = (a) => r[a] | r[a + 1] << 8, P = C64.PAL;
+    const stages = [];
+    for (let c = 0; c < 5; c++) {
+      const rec = w(0x3733 + 2 * c);
+      for (let s = 0; s < 5; s++) {
+        const st = { name: 'ABCDE'[c] + (s + 1), course: 'ABCDE'[c], stage: s + 1,
+          track: w(rec + 2 * s), scen: w(rec + 10 + 2 * s), raised: r[rec + 20 + 2 * s], mc: r[rec + 21 + 2 * s],
+          sky: r[rec + 30 + 2 * s], ground: r[rec + 31 + 2 * s], upper: w(rec + 40 + 2 * s), lower: w(rec + 50 + 2 * s) };
+        st.pieces = [];
+        for (let a = st.track; w(a) !== 0xFFFF; a += 2) st.pieces.push(w(a));
+        // the scenery list: streams below $4000, blocks of shapes above, $FFxx the end; every list
+        // ends with $6310's block, which is so in place as the next stage's first stream is read
+        st.kinds = []; st.blocks = [];
+        let cur = 0x6310;
+        for (let a = st.scen; (w(a) >> 8) !== 0xFF; a += 2) {
+          const v = w(a);
+          if (v >= 0x4000) { cur = v; st.blocks.push(v); continue; }
+          for (let i = 0; i < 12; i++) { const t = r[v + i]; if (t && !st.kinds.some((k) => k.t === t)) st.kinds.push({ t, block: cur }); }
+        }
+        stages.push(st);
+      }
+    }
+    const raceSet = (block, stageChars) => {
+      const cs = r.slice(0xF800, 0x10000);
+      if (block) cs.set(r.subarray(block, block + 1400), 0x42 * 8);
+      if (stageChars) cs.set(r.subarray(stageChars, stageChars + 113), 0xF1 * 8);
+      return cs;
+    };
+    const glyph = (ctx, cs, code, x, y, colour, st) => {
+      if (colour >= 8) C64.drawGlyphMC(ctx, cs, code, x, y, 1, [null, P[st.mc & 15], P[0], P[colour & 7]]);
+      else C64.drawGlyph(ctx, cs, code, x, y, 1, P[colour & 15]);
+    };
+
+    // the pick control
+    const pick = $('pd-pick'), [prev, , next] = document.querySelector('#pd-stage .pick').children;
+    stages.forEach((st, i) => pick.add(new Option('Course ' + st.course + ', stage ' + st.stage, String(i))));
+    const go = (i) => { pick.value = String(Math.max(0, Math.min(stages.length - 1, i))); show(); };
+    prev.onclick = () => go(+pick.value - 1); next.onclick = () => go(+pick.value + 1);
+    pick.onchange = show;
+    $('pd-key').innerHTML = KEY.map((n) => '<span style="--k:' + Object.values(PIECES).find((p) => p.n === n).k + '">' + n + '</span>').join('');
+
+    const hz = C64.canvas($('pd-hz'), 640, 96), lap = C64.canvas($('pd-lap'), 820, 110);
+    function show() {
+      const i = +pick.value, st = stages[i];
+      prev.classList.toggle('off', i === 0); next.classList.toggle('off', i === stages.length - 1);
+      // the horizon: screen rows 5 to 16, the upper picture's bottom on row 9, the lower's on 15
+      const cs = raceSet(0x6310, (st.lower >> 8) === 0xA5 ? 0xB785 : 0xB685);
+      hz.fillStyle = P[st.sky & 15]; hz.fillRect(0, 0, 640, 88);
+      hz.fillStyle = P[st.ground & 15]; hz.fillRect(0, 88, 640, 8);
+      const pic = (bottom, rows, row) => {
+        for (let k = 0; k < rows; k++) for (let x = 0; x < 80; x++) {
+          const code = r[bottom - k * 256 + x];
+          glyph(hz, cs, code, x * 8, (row - k - 5) * 8, 8, st);
+        }
+      };
+      pic(st.upper, 4, 9); pic(st.lower, 3, 15);
+      // one lap
+      lap.fillStyle = '#ffffff'; lap.fillRect(0, 0, 820, 110);
+      let x = 10, bend = 9, steps = 0;
+      const sx = 2, mid = 40, path = [[x, mid]];
+      const count = {};
+      for (const a of st.pieces) {
+        const p = PIECES[a] || { n: 'unknown', steps: 0, k: '#000' };
+        count[p.n] = (count[p.n] || 0) + 1;
+        if (!p.steps) continue;
+        lap.fillStyle = p.k; lap.fillRect(x, 84, p.steps * sx, 18);
+        lap.fillStyle = '#ffffff'; lap.fillRect(x + p.steps * sx - 1, 84, 1, 18);
+        for (let k = 1; k <= p.steps; k++) {
+          if (p.bend && k <= 9) bend += p.bend;
+          if (p.straighten === k) bend = 9;
+          path.push([x + k * sx, mid + (bend - 9) * 3.5]);
+        }
+        x += p.steps * sx; steps += p.steps;
+      }
+      lap.strokeStyle = '#d5d3cc'; lap.lineWidth = 1;
+      lap.beginPath(); lap.moveTo(10, mid + 0.5); lap.lineTo(x, mid + 0.5); lap.stroke();
+      lap.strokeStyle = '#2f3136'; lap.lineWidth = 2;
+      lap.beginPath(); path.forEach(([px, py], k) => (k ? lap.lineTo(px, py) : lap.moveTo(px, py))); lap.stroke();
+      lap.fillStyle = '#80838a'; lap.font = '11px IBM Plex Mono, monospace';
+      lap.fillText('left', 10, 10); lap.fillText('right', 10, 80);
+      const n = (k) => count[k] || 0;
+      $('pd-sum').textContent = st.pieces.length + ' pieces, ' + steps + ' steps: ' + (n('bend left') + n('bend right')) + ' bend pieces, ' +
+        n('climb') + (n('climb') === 1 ? ' climb, ' : ' climbs, ') + n('jump') + (n('jump') === 1 ? ' jump' : ' jumps') +
+        '. Raised-track count at the start: ' + st.raised + '. Character blocks: ' + st.blocks.map((b) => C64.hex(b)).join(', ') + '.';
+      // along the road
+      const box = $('pd-thumbs'); box.innerHTML = '';
+      for (const k of st.kinds) {
+        const tab = w(0x3E0B + 2 * k.t), rec = tab + 4 * 6, wd = r[rec], ht = r[rec + 1], src = w(rec + 2), colour = r[0x3E3D + k.t];
+        const fig = document.createElement('figure'), cv = document.createElement('canvas');
+        const ctx = C64.canvas(cv, wd * 8 + 8, ht * 8 + 8);
+        cv.style.width = (wd * 8 + 8) * 2 + 'px';
+        ctx.fillStyle = P[st.sky & 15]; ctx.fillRect(0, 0, wd * 8 + 8, ht * 8 + 8);
+        const kcs = raceSet(k.block);
+        for (let y = 0; y < ht; y++) for (let xx = 0; xx < wd; xx++) {
+          const code = r[src + y * 256 + xx];
+          if (code) glyph(ctx, kcs, code, 4 + xx * 8, 4 + y * 8, colour, st);
+        }
+        fig.appendChild(cv);
+        fig.insertAdjacentHTML('beforeend', '<figcaption>kind ' + k.t + '</figcaption>');
+        box.appendChild(fig);
+      }
+    }
+    go(0);
+
+    // every stage
+    const sw = (c) => '<span class="pd-sw" style="background:' + P[c & 15] + '"></span>';
+    let h = '<tr><th>Stage</th><th>Sky</th><th>Ground</th>' + ['Pieces', 'Bends', 'Climbs', 'Jumps', 'Raised at start', 'Kinds of object'].map((t) => '<th class="n">' + t + '</th>').join('') + '</tr>';
+    for (const st of stages) {
+      const n = (name) => st.pieces.filter((a) => PIECES[a] && PIECES[a].n === name).length;
+      h += '<tr><td>' + st.name + '</td><td>' + sw(st.sky) + '</td><td>' + sw(st.ground) + '</td><td class="n">' + st.pieces.length +
+        '</td><td class="n">' + (n('bend left') + n('bend right')) + '</td><td class="n">' + n('climb') + '</td><td class="n">' + n('jump') +
+        '</td><td class="n">' + st.raised + '</td><td class="n">' + st.kinds.length + '</td></tr>';
+    }
+    $('pd-all').innerHTML = h;
+  }).catch((e) => { $('pd-stage').insertAdjacentHTML('beforeend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
+})();
+</script>

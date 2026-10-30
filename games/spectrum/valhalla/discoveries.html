@@ -1,0 +1,122 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/valhalla-page.css">
+<style>
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Valhalla pays one crown for a pile of fifty, lets food beat an axe, and stops dead when Loki's goodness drops below 0.</p>
+</header>
+<main class="wrap">
+
+<section id="weapons">
+  <p class="fig">01 · Weapons</p>
+  <h2 class="t">Secret: food is a better weapon than an axe</h2>
+  <p class="lede">The test for the better weapon is only the object's number. The axe is 63 and food is 96.</p>
+  <div class="plate"><div class="vh-row">
+    <div class="vh-col"><img class="vh-shot" src="reference/fight-food.png" width="352" height="296" alt="Valheim after the fight: You attack Idun with the food. You defeat Idun. Idun leaves."></div>
+    <div class="vh-col"><table class="vh-tbl" id="vh-weap"></table></div>
+  </div><p class="cap">You, at 175 strength, against Idun at 215 in the emulator. With the axe, 215 against 215 is a draw; with the food, 255 against 215 is a win by 40. The table is every object you can carry, by its number in the dictionary.</p></div>
+  <p>The weapon's score in line 1362 is <code>(w&gt;o)*40+(w&gt;66)*40</code>, where <code>o</code> is the variable that holds 0. Every object counts for 40, and every one numbered above 66 for 80, which puts the sword and Skalir with the rock, the ring, the wine and the food. The axe, Felstrong, the shield and lightning only reach 40. Thrown, the axe and Felstrong do 20 damage and food does 2 (line 1471), so the numbers only favour food in a fight hand to hand.</p>
+</section>
+
+<section id="quests">
+  <p class="fig">02 · Quests</p>
+  <h2 class="t">Secret: Felstrong can be the first quest</h2>
+  <p class="lede">The manual puts Felstrong fifth. On the map's own tables, nothing stands between the start and its cave but a ring.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous step">‹</button><select id="vh-route" aria-label="Step"></select><button class="step" data-d="1" aria-label="Next step">›</button></div>
+    <div class="vh-row">
+      <canvas id="vh-rmap" class="vh-map" width="396" height="396" aria-label="The route on the map"></canvas>
+      <div class="vh-col"><canvas id="vh-rpic" class="vh-pic" width="512" height="256" aria-label="The picture at this step"></canvas><div id="vh-rdesc" class="vh-desc"></div></div>
+    </div>
+    <p class="cap vh-need">The route walked in the emulator from the start, with a ring poked into your pack: two steps west, a ringway, one step west, a ringway, north-east, north into Rankle's hall and its ringway to the cave. The game answered "You are not strong enough to open the cupboard."</p>
+  </div>
+  <table class="vh-tbl" id="vh-quests" style="margin-top:20px;width:auto"></table>
+  <p>The table is a search of the map and the special places, which takes every condition but a quest object as met: the right ordinary object or character at hand, a ring for every ringway and someone strong enough for every lock. Each quest needs only the ones listed beside it. A chest or cupboard opens with the key and <code>(35-sp)*6</code> strength, sp being the special place's number (line 1955). That is 174 for Ofnir, which you can manage at your full 175, and 180 to 204 for the other five, so for those you must tell someone stronger, with a key of its own, to open it.</p>
+</section>
+
+<section id="money">
+  <p class="fig">03 · Money</p>
+  <h2 class="t">Bug: picking up crowns pays one crown</h2>
+  <p class="lede">The routine that adds money, line 3410, adds the number of the one receiving it instead of the amount.</p>
+  <div class="plate">
+    <div class="vh-ctl"><label>Crowns <input id="vh-mamt" type="number" min="0" max="9999" value="50"></label><label>go to <select id="vh-mwho"></select></label></div>
+    <div id="vh-mout" class="vh-out"></div>
+    <p class="cap">Line 3410 is <code>LET x=FN m(n)+n</code>, with n the character and m the amount. In the emulator, picking up a pile of 50 printed "You get 50 crowns." and then "You have 151 crowns."</p>
+  </div>
+  <p>The same routine pays the seller in a trade, so a character paid 100 crowns for its sword gets its own number. Thor is 4. The rest of the money leaves the game.</p>
+</section>
+
+<section id="saving">
+  <p class="fig">04 · Saving</p>
+  <h2 class="t">Bug: BREAK during a save resets the Spectrum</h2>
+  <p class="lede"><code>save</code> and <code>load</code> mean to catch BREAK on the tape and carry on. Pressing it resets the machine instead.</p>
+  <p>Both routines, <code>$5CF0</code> and <code>$5D0B</code>, change only the low byte of the address BASIC jumps to on an error, to $25, meaning <code>$5D25</code>. In play that address is the game's own handler, <code>$DA3C</code>, so the jump goes to <code>$DA25</code>, in the middle of the spelling checker, and the Spectrum resets. Seen in play, for both.</p>
+</section>
+
+<section id="loki">
+  <p class="fig">05 · Loki</p>
+  <h2 class="t">Bug: throwing things at Loki stops the game</h2>
+  <p class="lede">A step down from goodness 0 is a negative number, and <code>CHR$</code> of it stops the program with "B Integer out of range, 1356". Four characters start at goodness 1, and good characters throwing things at one of them at your order can take it below 0.</p>
+  <div class="plate"><div class="vh-row">
+    <div class="vh-col"><img class="vh-shot" src="reference/goodness-crash.png" width="352" height="296" alt="Valheim, with the report B Integer out of range, 1356:8 below the picture"></div>
+    <div class="vh-col"><ol class="vh-log">
+      <li><span class="vh-said">You ask Skadi to throw the food at Loki.</span></li>
+      <li><span class="vh-said">Loki attacks Skadi with the axe.</span></li>
+      <li><span class="vh-said">Loki attacks Skadi with the axe.</span><span class="vh-why">Loki goes from 1 to 0.</span></li>
+      <li><span class="vh-said">The fight is drawn.</span></li>
+      <li><span class="vh-said">…</span></li>
+      <li><span class="vh-said">You ask Odin to throw the food at Loki.</span></li>
+      <li><span class="vh-said">Loki attacks Odin with the axe.</span></li>
+      <li><span class="vh-said">Loki attacks Odin with the axe.</span><span class="vh-why">0 less 1.</span></li>
+      <li><span class="vh-said">B Integer out of range, 1356:8</span></li>
+    </ol></div>
+  </div>
+  <p class="cap">In the emulator, from the tape's own start with nothing poked: Thor, Idun, Skadi and Odin told in turn to throw what they carried at Loki, with <code>summon</code> whenever one was missing. Loki reached goodness 0 after about five minutes of play and the game stopped after ten, at Valheim.</p></div>
+  <p>A throw you order counts as your command for the fight that follows, so Loki's counterattack runs line 1356 with you as the one who gave the order. His victim is the good character who threw, so he steps down. Loki, Hel, Nasher and Gastro start at 1, and two such steps take any of them below 0. Each counterattack line is printed twice when that happens, once by the throw (line 1452) and once by line 1356 itself, which is the sign that a goodness may have moved.</p>
+  <p>You can stop the game yourself the same way: every attack you make on a good character lowers you a step one time in two, and from 0 the next one stops the program. That was seen in play with your goodness poked to 0.</p>
+</section>
+
+<section id="boldir">
+  <p class="fig">06 · Boldir</p>
+  <h2 class="t">Bug: Boldir can lose his goodness of 15 for good</h2>
+  <p class="lede">Boldir's byte 17 is 15 × 16 + 15, 255. A step down makes it 239, and the step back up would make it 255 again, which the guard refuses.</p>
+  <p>The guard against 255 reads as a cap on goodness at 15, but it tests the whole byte, so the charisma decides where goodness stops. With charisma 15, the highest goodness a step up can reach is 14. Boldir and Loki are the two characters with charisma 15. Boldir starts at 15 and can only lose it; Loki can climb from 1 to 14 and no further. For everyone else the guard does what it should: a step up from 15 makes a byte of 256 or more, and the byte stays as it was. The arithmetic is line 1356's, the same expression that section 05, <a href="#loki">Loki</a>, saw fail at the other end.</p>
+</section>
+
+<section id="help">
+  <p class="fig">07 · Help</p>
+  <h2 class="t">Bug: help never says what is forbidden</h2>
+  <p class="lede">At a special place, <code>help</code> is meant to say what the extra exits need and what they forbid. What they forbid never reaches the screen.</p>
+  <div class="plate"><div class="vh-scroll"><table class="vh-tbl" id="vh-help"></table></div>
+  <p class="cap vh-need">Every special place from <code>s$</code>. An extra exit is open when what it needs is carried or present and what it forbids is neither (line 3860).</p></div>
+  <p>Line 6555 skips the extra exits altogether where a place both needs and forbids something. Where it only forbids, line 6563 starts the sentence again with "You can go ", over the forbidding text. Both were seen in play with the two bytes set by hand. Sixteen places forbid something, and help names none of them.</p>
+</section>
+
+<section id="chests">
+  <p class="fig">08 · Chests</p>
+  <h2 class="t">Bug: a chest at a full place stops the game</h2>
+  <p class="lede">Putting an ordinary object into a chest or cupboard where all six places are taken stops the program with "3 Subscript wrong, 5310:5".</p>
+  <p>An object put down where there is no room brings Klepto, who takes it to a neighbouring place: "Klepto steals the rock." Line 5309 works out where Klepto should stand from the column of the object, and an object in a container has the column 255, so the subscript of the screen's column array is out of range. Both were seen in play.</p>
+</section>
+
+<section id="leftovers">
+  <p class="fig">09 · Leftovers</p>
+  <h2 class="t">Left behind on the tape</h2>
+  <p class="lede">The machine code was saved with some of what was in memory on the authors' Spectrum.</p>
+  <div class="plate"><pre id="vh-stale" class="vh-dump"></pre>
+  <p class="cap vh-need"><code>$D1D3</code> to <code>$D2B0</code>, 222 bytes nothing reads. From <code>$D200</code> they hold an older copy of the line editor's variables, with its line buffer marked. The editor in use is at <code>$D2B4</code>.</p></div>
+  <p>Someone typed "quitt the axe at Nidhogg". The name "Jas.Learmont" sits at <code>$FE5C</code>, where nothing reads it: James Learmont is in the manual's production team. The BASIC variable <code>i</code> is 13 on the tape, the end of a <code>FOR</code> loop to 12 run as a direct command before the program was saved, and line 10 is <code>REM LEGEND (c) 1983 021083</code>, 2 October 1983.</p>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/spectrum.js"></script>
+<script src="reference/valhalla-page.js"></script>

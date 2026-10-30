@@ -9,7 +9,7 @@ the wave size following the score.
 
 The one thing missing is the last line of the tier: **a human has read the
 copy.** `game.json` says `copy: agent-draft`, which is the honest value
-until someone reads the page. Read `index.html`, and if the writing stands
+until someone reads the page. Read `index.html` and `discoveries.html`, and if the writing stands
 up, set `copy` to `agent` and `tier` to `gold`. If you change a word, set
 it to `human-edited`.
 

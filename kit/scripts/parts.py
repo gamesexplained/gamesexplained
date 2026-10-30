@@ -179,6 +179,13 @@ def ranges(p):
     return sorted((hexint(a), hexint(b)) for a, b in settings(p).get(key) or [])
 
 
+def named(p):
+    """[[first, last, why]] from part.json "names": addresses outside the part's ranges whose
+    labels and comments are its own, such as the zero-page variables its code keeps where a part
+    beneath keeps others. They name the part's operands there and count in no ledger."""
+    return [[hexint(a), hexint(b), why] for a, b, why in settings(p).get("names") or []]
+
+
 def started(p):
     """True once the part has a symbol map with something in it, or is a bank with nothing left
     to explain."""
@@ -291,6 +298,7 @@ def load_game(gdir):
     if own.get("banks"):
         out["banks"] = own["banks"]
     out["elsewhere"] = elsewhere(P, me)
+    out["names"] = named(me)
     out["replaces"] = replaces(P, me)
     return out
 
@@ -299,9 +307,10 @@ def owned(a, away):
     return not any(lo <= a <= hi for lo, hi, _ in away)
 
 
-def clip(blocks, syms, comments, away):
+def clip(blocks, syms, comments, away, names=()):
     """(blocks, symbols, comments, left out): what lies at addresses this part owns, and the
-    user's labels and comments that do not. A block that straddles an edge is cut at it."""
+    user's labels and comments that do not. A block that straddles an edge is cut at it. A user's
+    label or comment at an address in names (part.json "names") is the part's own as well."""
     kept = []
     for b in sorted(blocks, key=lambda b: b["start"]):
         a = b["start"]
@@ -312,10 +321,33 @@ def clip(blocks, syms, comments, away):
             e = min([b["end"]] + [lo - 1 for lo, hi, _ in away if lo > a])
             kept.append(dict(b, start=a, end=e))
             a = e + 1
-    left = [s for s in syms if not owned(s["address"], away) and s.get("kind", "user") == "user"] + \
-           [c for c in comments if not owned(c["address"], away)]
-    return (kept, [s for s in syms if owned(s["address"], away)],
-            [c for c in comments if owned(c["address"], away)], left)
+    def ours(x):
+        return owned(x["address"], away) or (not owned(x["address"], names) and x.get("kind", "user") == "user")
+    left = [s for s in syms if not ours(s) and s.get("kind", "user") == "user"] + [c for c in comments if not ours(c)]
+    return kept, [s for s in syms if ours(s)], [c for c in comments if ours(c)], left
+
+
+def carried(P, me, syms, comments, names):
+    """(symbols, comments, dropped): the user's labels and comments at addresses in names
+    (part.json "names") that a part beneath has there word for word are dropped. A session
+    seeded with the part beneath before the part had its names rows still holds them, and the
+    export would otherwise keep that part's names and words as this one's own."""
+    if not names:
+        return syms, comments, []
+    theirs = set()
+    for q in under(P, me):
+        f = os.path.join(q["dir"], "symbols.json")
+        if os.path.isfile(f):
+            S = json.load(open(f))
+            theirs |= {(x["address"], x["name"]) for x in S.get("symbols", []) if x.get("kind", "user") == "user"}
+            theirs |= {(x["address"], x["text"]) for x in S.get("comments", [])}
+
+    def theirs_here(x):
+        return (any(lo <= x["address"] <= hi for lo, hi, _ in names)
+                and (x["address"], x["name"] if "name" in x else x["text"]) in theirs
+                and x.get("kind", "user") == "user")
+    dropped = [x for x in syms + comments if theirs_here(x)]
+    return ([s for s in syms if not theirs_here(s)], [c for c in comments if not theirs_here(c)], dropped)
 
 
 def strays(syms, away, over, refs):
@@ -346,10 +378,11 @@ def seed(gdir):
         return game, sym
     P = parts(top)
     me = next(p for p in P if p["id"] == pid)
-    b, s, c, left = clip(sym["blocks"], sym["symbols"], sym["comments"], game["elsewhere"])
+    b, s, c, left = clip(sym["blocks"], sym["symbols"], sym["comments"], game["elsewhere"], game["names"])
     if left or b != sorted(sym["blocks"], key=lambda x: x["start"]):
         say_left(P, me, left)
-    taken = [[lo, hi, ""] for lo, hi in ranges(me)]      # every address an entry has come from already
+    # every address an entry has come from already, and those whose names are this part's own
+    taken = [[lo, hi, ""] for lo, hi in ranges(me)] + [[lo, hi, ""] for lo, hi, _ in game["names"]]
     sym = dict(sym, blocks=b, symbols=s, comments=c)
     for q in under(P, me):
         f = os.path.join(q["dir"], "symbols.json")
@@ -391,19 +424,22 @@ def say_left(P, me, left):
 def names_under(gdir, game=None):
     """{address: name} from the parts gdir's part lies over, nearest first, for the addresses
     it does not own: how an operand that points out of the part is named. {} for a game
-    folder, or a part that lies over none."""
+    folder, or a part that lies over none. An address in the part's "names" rows is its own
+    even where it has no name for it, so it takes none from beneath."""
     top, pid = home(gdir)
     out = {}
     if pid is None:
         return out
-    away = (game or load_game(gdir)).get("elsewhere") or []
+    game = game or load_game(gdir)
+    away, mine = game.get("elsewhere") or [], game.get("names") or []
     P = parts(top)
     for q in under(P, next(p for p in P if p["id"] == pid)):
         f = os.path.join(q["dir"], "symbols.json")
         if os.path.isfile(f):
             for s in json.load(open(f))["symbols"]:
-                if not owned(s["address"], away):
-                    out.setdefault(s["address"], s["name"])
+                a = s["address"]
+                if not owned(a, away) and not any(lo <= a <= hi for lo, hi, _ in mine):
+                    out.setdefault(a, s["name"])
     return out
 
 

@@ -1,0 +1,564 @@
+<title>Jupiter Lander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:16px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+p{max-width:70ch}
+.hero .eyebrow{max-width:none}   /* the eyebrow is a <p>; the measure cap would box it left of centre */
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;display:block;max-width:100%}
+.screenwrap{background:#000;border-radius:6px;padding:0;display:inline-block;line-height:0;max-width:100%}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.col{flex:1 1 280px;min-width:0}
+button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--violet)}
+button.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+button:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+label.inline{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:7px;align-items:center;cursor:pointer}
+input[type=range]{accent-color:var(--violet);width:190px;max-width:100%}
+table{border-collapse:collapse;font-family:var(--fm);font-size:12.5px;width:100%}
+th,td{border-bottom:1px solid var(--line-soft);padding:6px 9px;text-align:left}
+th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+td.n{text-align:right}
+.tablewrap{overflow-x:auto}
+.stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);line-height:1.8}
+.stat b{color:var(--amber);font-weight:500}
+.asm{font-family:var(--fm);font-size:12.5px;background:#090a16;border:1px solid var(--line-soft);
+ border-radius:8px;padding:14px 16px;overflow-x:auto;color:var(--ink-soft);line-height:1.7;margin:16px 0 0;white-space:pre}
+.asm .a{color:var(--ink-mute)} .asm .k{color:var(--violet)} .asm .c{color:var(--green)}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,40px);gap:6px}
+.key{font-family:var(--fm);font-size:12px;display:flex;align-items:center;justify-content:center;
+ border:1px solid var(--line);border-radius:7px;background:var(--surface-2);color:var(--ink-soft);cursor:pointer;user-select:none}
+.key.on{background:var(--amber);border-color:var(--amber);color:#0a0b18;font-weight:600}
+.key.wide{grid-column:span 3}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.note{border-left:3px solid var(--amber);padding:2px 0 2px 16px;color:var(--ink-soft);margin:22px 0;font-size:15px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin-top:0;font-size:15px;color:var(--amber)}
+.card p{font-size:14.5px;color:var(--ink-soft);margin:0}
+img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:block}
+.legend{font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media(max-width:560px){.hero h1{font-size:17px}.wrap{padding:0 16px}}
+</style>
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Commodore and HAL Laboratory</p>
+  <h1>Jupiter Lander</h1>
+  <p class="sub">Jupiter Lander pays a bonus for a landing that is climbing, and lets a ship land a pixel past the yellow cell of its gauge. Both come from rules the screen never shows.</p>
+</header>
+<main class="wrap">
+
+<section id="scoring">
+  <p class="fig">01 &middot; Scoring</p>
+  <h2 class="t">Secret: it's possible to land while going UP</h2>
+  <p class="lede">One pad has open air beside it, which means it's possible to sideslip onto it and even push
+    up into a negative speed.</p>
+  <div class="plate">
+    <div class="row">
+      <div class="col">
+        <div class="screenwrap"><canvas id="tasCv" width="608" height="368"></canvas></div>
+        <p class="cap">The x2 close-up, view 2. The amber line is world Y <code>$009A</code>, the
+        one line on which the pad test can pass, and the amber bracket is the range of X it
+        accepts, <code>$0160</code> to <code>$0190</code>. The whole manoeuvre is eight world units
+        of sideways drift, so the inset shows the lander's feet and the pad's edge at eight times
+        the size. Every pass shown here was replayed in the emulator with the game's control read
+        redirected to this list of inputs; the positions matched to the byte, and the screen
+        printed what the last step shows.</p>
+      </div>
+      <div class="col">
+        <div class="ctl">
+          <button id="tasPrev">&larr; pass</button>
+          <button id="tasNext">pass &rarr;</button>
+          <button id="tasPlay">play</button>
+          <button id="tasReset">reset</button>
+        </div>
+        <div class="ctl">
+          <button class="tasRoute" data-r="5">landing 2, gravity 5: 2540</button>
+          <button class="tasRoute on" data-r="4">landing 1, gravity 4: 2400</button>
+        </div>
+        <div class="stat" id="tasStat" style="margin-top:14px"></div>
+        <div class="screenwrap" style="margin-top:14px"><canvas id="tasBonus" width="608" height="48"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <p>Each pass of the flight loop does four things in a fixed order: it asks the video chip
+  whether the lander has touched rock, it tests the pad, it reads the controls and it moves the
+  ship. The pad test is an exact match on the ship's world Y and a range check on its X, so the
+  velocity that <code>touchdown</code> sees is the one that carried the ship onto the line in the
+  previous pass. Arriving from above, that velocity is positive; a climbing arrival means the ship
+  was <em>below</em> the line the pass before, which on the x5 and x10 pads is inside rock, and the
+  collision test runs first. The x2 plateau is the exception: its flat top is 98 pixels wide with
+  a 45&deg; slope on either side, so a ship hovering on the pad's line just left of it is in clear
+  air, and can drift right onto the pad with any velocity at all.</p>
+  <p>From above, the smallest speed you can land at is not one either. The main thruster changes
+  the velocity by <code>&minus;12</code> and gravity by <code>+4</code> on the first landing, so
+  every velocity the ship can have is a multiple of 4 and the softest arrival is 4, which pays
+  760, shown as 7600. On the landings where gravity is 5 or 7 the steps are coprime with 12 and a
+  speed of 1 is possible, worth 790. Where gravity is 6 the softest arrival is 6 and the best is
+  740. The 800 that a perfect stop would pay exists only on the x2 pad, sideways, at zero speed,
+  where the multiplier turns it into 1600.</p>
+  <div class="plate">
+    <div class="row">
+      <div class="col">
+        <div class="ctl">
+          <label class="inline">Landing speed <input type="range" id="scv" min="-60" max="90" value="0"><span id="scvV"></span></label>
+        </div>
+        <div class="ctl">
+          <button class="padBtn" data-p="1">x5 pad</button>
+          <button class="padBtn on" data-p="3">x10 pad</button>
+          <button class="padBtn" data-p="2">x2 pad</button>
+        </div>
+        <div class="stat" id="scoreStat" style="margin-top:14px"></div>
+      </div>
+      <div class="col">
+        <div class="screenwrap"><canvas id="bonusCv" width="608" height="48"></canvas></div>
+        <p class="cap">The bonus line the game draws on screen row 2, rendered from the same
+        character set. Everything on screen is ten times the number the game holds, because the
+        status line has a <code>0</code> painted on the end of it. The doubling for the x2 and x10
+        pads is eight-bit too and loses its carry, which is why a speed of &minus;48 on the x2 pad
+        pays nothing at all.</p>
+      </div>
+    </div>
+  </div>
+  <p>Every point counted out also puts 70 units back in the tank, one point and 70 units at a
+  time, at about 21 milliseconds each. A good landing on the x10 pad therefore takes roughly
+  seventeen seconds to pay out, and you watch the fuel bar grow the whole time.</p>
+</section>
+
+<section id="the-gauge">
+  <p class="fig">02 &middot; The gauge</p>
+  <h2 class="t">Secret: the landing gauge lets you go over - by one pixel</h2>
+  <p class="lede">The instructions say the vertical velocity has to be inside the yellow area of
+  the scale. There is one yellow cell. It covers downward speeds 0 to 63. The landing test
+  accepts everything up to 71, and accepts every upward speed there is.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="screenwrap"><canvas id="gaugeCv" width="160" height="400"></canvas></div>
+      </div>
+      <div>
+        <div class="screenwrap"><canvas id="gaugeZoom" width="420" height="288"></canvas></div>
+      </div>
+      <div class="col">
+        <div class="ctl">
+          <label class="inline" style="width:100%">Y velocity
+            <input type="range" id="gv" min="-300" max="300" value="0">
+          </label>
+        </div>
+        <div class="stat" id="gaugeStat"></div>
+        <div class="ctl">
+          <button class="gpre" data-v="-16">-16, climbing</button>
+          <button class="gpre" data-v="0">0</button>
+          <button class="gpre" data-v="63">63</button>
+          <button class="gpre" data-v="64">64</button>
+          <button class="gpre" data-v="71">71</button>
+          <button class="gpre" data-v="72">72</button>
+        </div>
+        <div class="legend">
+          <span><i style="background:#56ac4d"></i>the scale</span>
+          <span><i style="background:#edf171"></i>the yellow cell</span>
+          <span><i style="background:#a9ff9f"></i>lands</span>
+          <span><i style="background:#d04a3a"></i>SORRY NO BONUS</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Sixteen character rows, eight needle positions inside each: 128 over the whole
+    scale, one for every eight units of velocity. The needle is a black line cut out of the bar,
+    glyph <code>$18</code> plus the bottom three bits of the position, and the cell keeps the
+    colour of its row, green or yellow, because the routine never writes colour memory. The strip
+    beside the scale is not on the C64's screen: it is the landing test's verdict at every needle
+    position. The inset is rows 11 to 13 at twelve times the size.</p>
+  </div>
+  <div class="note">Set the velocity to 63, then 64. The needle leaves the yellow cell, and the
+  landing still works: 64 through 71 all land. Then 71, then 72. The needle moves one pixel,
+  inside the same cell, and the strip beside it turns from lands to SORRY NO BONUS. That pixel is
+  the line between nine hundred points and a destroyed ship, and nothing on the scale marks it.</div>
+</section>
+
+<section id="quirks">
+  <p class="fig">03 &middot; Quirks</p>
+  <h2 class="t">Things a pilot would not know</h2>
+  <div class="grid2">
+    <div class="card"><h3>Nothing is synchronised to the screen</h3><p>No raster interrupt is
+    enabled, and the timer interrupt is masked for the whole of a game. The game times itself by
+    counting down a register ten times two hundred, which is about 10.3 milliseconds, and waits
+    three of those per update. On an NTSC machine, with a faster clock, the whole game runs about
+    four per cent quicker.</p></div>
+
+    <div class="card"><h3>The interrupt exists to flash one line of text</h3><p>It runs only
+    during the attract sequence. Every twentieth tick it steps the colour of eighteen cells at
+    <code>$DBCA</code>, which is exactly the eighteen characters of PUSH F1 TO START, and on
+    every tick it checks whether F1 is down. That is all it does.</p></div>
+
+    <div class="card"><h3>The last 255 units of fuel are unspendable</h3><p>The tank is called
+    empty when its high byte reaches zero, and that same test clears both thrust flags. Up to 255
+    units are still sitting in the low byte, and no thruster will ever touch them. It also means
+    the counter can never underflow, which is presumably the point.</p></div>
+
+    <div class="card"><h3>Running dry does not end the game</h3><p>OUT OF FUEL appears, the
+    engines stop, and the ship keeps falling. The game ends at the next impact, when the crash
+    handler finds the tank at zero and there is nothing to charge the crash to.</p></div>
+
+    <div class="card"><h3>A crash costs fuel, and the bill is capped</h3><p>The impact speed
+    shifted right by four comes off the fuel high byte. Above a speed of <code>$01FF</code> the
+    calculation is clamped, so every very fast crash costs the same 7936 units. Hitting the
+    ground at speed 512 and at speed 768 cost exactly the same.</p></div>
+
+    <div class="card"><h3>What the counter actually holds</h3><p>Four packed BCD
+    digits, printed followed by a <code>0</code> that is part of the static template. The counter
+    tops out at 9999, which reads as 99990, and a single point is worth ten on screen.</p></div>
+
+    <div class="card"><h3>The perfect stop cannot happen</h3><p>A pad is one world line
+    reached from above, so the velocity the bonus subtracts is never zero: the softest arrival is
+    4 on the first landing and 1 where gravity is 5 or 7, for 7600 and 7900 on the x10 pad. The
+    only way to be paid for zero, or for a climb, is sideways onto the x2 plateau, where the
+    eight-bit arithmetic pays up to 2540. Section 01 steps through it.</p></div>
+
+    <div class="card"><h3>The whole game is 49 bytes of state</h3><p>Everything the game knows
+    about itself lives in <code>$02</code> to <code>$32</code>: two positions, two velocities, a
+    tank, a score, a high score, a view number and a handful of flags. Nothing else in memory
+    changes while you fly.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+const DATA={"charset":"AAAAAAAAAAD///////////+92+fn273/w73988+/gf+Bv4f7/bvH//fn1/f398H/w725pZ29w/9VqlWq/////wB+KiorAgQIECBAnCIYRDgAAAAAAAD/////AAAAAAAA/+DAgAcPDw//Pz8/wMHD/w8PDweAwOD/w8HAvz8/f/8AAAAAAAAAAICAgICAgICAwMDAwMDAwMDg4ODg4ODg4PDw8PDw8PDw+Pj4+Pj4+Pj8/Pz8/Pz8/P7+/v7+/v7+AP//////////AP//////////AP//////////AP//////////AP//////////AP//////////AP//////////AIDA4OD4/v7/gMDAwODA4PDw8Pj4/P7+///+/v7+/v7/AQMHBx9/f/8BAwMDBwMHDw8PHx8/f3//8ODg4ODg4PD//v744ODAgPDgwODAwMCA//7+/Pj48PAPBwcHBwcHD/9/fx8HBwMBDwcDBwMDAwH/f38/Hx8PD/9/f39/f3//AHzGztbmxnwAGDgYGBgYPAB8xsYMOOD+AHzGBhwGxnwADBwsTP4MDAD+wMD8BsZ8ABwwYPzGxnwAfsYMGBgYGAB8xsZ8xsZ8AHzGxn4GDDgAABgYABgYAAAAAAAAROpKCuoEAAAAAAAAAAB+AH4AAAAAEhUVFRIAAAASFdUVEgAAAAAAAAAAAAA4bMbG/sbGAPxmZnxmZvwAPGbAwMBmPAD4ZGZmZmT4AP5gYHxgYP4A/mBgfGBg8AA8ZsDexmY8AMbGxv7GxsYAPBgYGBgYPAAeDAwMzMx4AMbM2PDYzMYA8GBgYGBg/gDG7v7WxsbGAMbm9t7OxsYAfO7GxsbufAD8ZmZ8YGDwADhkwsLKZDoA/MbG/NjMxgB8xsB8BsZ8AH5aGBgYGDwAxsbGxsbGfADGxsZsbDg4AMbGxtb+fEQAxsZsOGzGxgDGxmx8ODg4AP7GDDhgxv4ABgwYMBgMBgAAAAAYGDBgAMBgMBgwYMAAAAAAABgYAAAAAH5+AAAAAQMHDx8/f/+AwODw+Pz+///+/Pjw4MCA/38/Hw8HAwF//8DAwMD/fw+fmBgYmJ8P4fkZGRkZ+eGc/8ODg4ODg3j8BgYGBgYGZ39wYGBgYGAe/+HBwcHBwQ+fmJiYmJ+P8PkZGRkZ+fD//4GBgYH//4+fmJiYmJ+P8fkZGRkZ+fG8/sKAgICAgD9/YH9/YH8/wOBg4OAA4MAAAAABAQEBAQAAAICAgICAqqigAFBUVQAAAAADBw8fHj48PDw8PD4eAAD8////AwAD/////AAAAB8PBwMAAAAAAAAAYM7YzmAAAADNbW1szAAAAPe29zY3AAAA3sPG2N8AAABgz8zPYA==","sprites":"EAASCH4cBf/MBhA2D5/wCJIQCPPwCPIQCPQIH/4YIAH0IACkJ4C8J8CkH//8DTywGcOYMQCMMAAMeAAe/AA/ADj+PBWB6goANwnvyxBgDxdt6BcMCBcB6Bcd9GA+5F++Cl/dWlhjQlg/WiAAAhLDZiY8ZErDUkkA0oQAIfwAPwBHAc4qfhUV/8s2EDUvn/EokhcowPQoPhTodwqe75qg+7WgfyWnPj2nwKVf//0tPJlZw5q1PK22wy17AN4CAEAAuP49VYHqKgA3SH8LUf/PU//oV+3zz/b6D6P5XUK9X8j8T6N6T+r6V7/yo//iUf/Gpn8lSoBSSTzShMMh/QC/AMD/gqP/5c//8J/9+D+C/H6QLngBXvwAD/oAH/AAB/wAF/iAD/oAL/0AH36Jnn+k/j/3/J//+a//9XP/zgD/AAAgu4Ej/+CPNXIOiFg4gLQyAA5wAAroAAdoAAHAAAfQAARoAAXwAAK0AAtwAAY6gFoukqwLKHlH29AB/0CgvQoAAAAAAPhQBoEwFACEBAEeAAAEEAAAJAAVYAABYAAFIAAIIAAAQAAKKAAEAAAGIAAACAAMDIA4AAAAAM3AAAcAAAAAAAAMAAEAEAAAACAAAAAAAgAAAQAAAAAAAgAAAgAAAIAAAAAAAkAAAAAABAAAAAAAAAAAACAAEAgAJADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAB/4AA/wAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeeAAP8AAH4AADwAAAAAAAAAAAAAAAAAAAAAADAAAMAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAMAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","screen":"IQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACUAACIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmCAkjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlAQAAASEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJgEACgEiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAEBAAEBASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAEBAQABAQEBIAAAAAAAAAAAAAAAAAAAJAcHBwcHByAAAAAAAAAAJQEBAQEAAQEBAQEgAAAAAAAAAAAAAAAAJAEBAQIDAQEBIAAAAAAAACsBAQEBAAEBAQEBASAAAAAAAAAAAAAAJAEBAQEBAQEBAQEgAAAAAAArAQEBAQABAQEBAQEBIAAAAAAAAAAAJAEBAQEBAQEBAQEBASAAAAAALQEBAQEAAQEBAQEBAQEgAAAAAAAAJAEBAQEBAQEBAQEBAQEBIQAAAAAvAQEBAAEBAQEBAQEBASEAAAAAJQEBAQEBAQEBAQEBAQEBASIAAAAALwEBATsBAQEBAQEBAQEiAAAAACsBAQEBAQEBAQEBAQEBAQEjAAAAAC8BAQE8AQEBAQEBAQEBIwAAAAAtAQEBAQEBAQEBAQEBAQEBKgAAACUBAQEBAAEBAQEBAQEBASoAAAAAACwBAQEBAQEBAQEBAQEBASkAAAArAQEBAQABAQEBAQEBAQEpAAAAAAAALwEBAQEBAQEBAQEBASgAAAAAKwEBAQEAAQEBAQEBAQEjAAAAAAAAAC8BAQEBDA0BAQEBASgAAAAAACYBAQEBAAEBAQEBAQEBIwAAAAAAACUBAQEBAQ4PAQEBASMAAAAAACUBAQEBAQABAQEBAQEBASMAAAAAAAAmAQEBAQEBAQEBAQEjAAAAAAArAQEBAQEAAQEBAQEBAQEBBwcHBwcHAQEBAQEBAQEBAQEBIwAAAAAAJgEBAQEBPxwBAQEBAQEBAQEBAgQBAQEBAQEBAQEBAQEBAQEHBwcHBwEBAQEBAQALAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQIFBgEBAQEBAQEAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAAU0NPUkUAOgAAAAAAMAAAAABISV9TQ09SRQA6AAAAAAAwAAAAAAAAAEZVRUwAOgABAQEBAQEBAQEBAQEBAQEBAQEBARIAAAAAAAAAAAAAAA==","colour":"AgMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIGBgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCAQECAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCAgAFAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgIABQICAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAQUCAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAgAFAgICAgMDAwMDAwMDAwMDAwMDAgICAgICAgIDAwMDAwMDAgICAgIABQICAgICAwMDAwMDAwMDAwMDAgICAgICAgICAgMDAwMDAwICAgICAAUCAgICAgIDAwMDAwMDAwMDAgICAgICAgICAgICAwMDAwMCAgICAgAFAgICAgICAgMDAwMDAwMDAgICAgICAgICAgICAgIDAwMDAgICAgIABQICAgICAgICAwMDAwMDAgICAgICAgICAgICAgICAgMDAwMCAgICAAUCAgICAgICAgIDAwMDAgICAgICAgICAgICAgICAgIDAwMDAgICAgEFAgICAgICAgICAwMDAwICAgICAgICAgICAgICAgICAwMDAwICAgIBBwICAgICAgICAgMDAwMCAgICAgICAgICAgICAgICAgMDAwICAgICAAUCAgICAgICAgIDAwMDAwICAgICAgICAgICAgICAgIDAwMCAgICAgAFAgICAgICAgICAwMDAwMDAgICAgICAgICAgICAgIDAwMDAgICAgIABQICAgICAgICAwMDAwMDAwICAgICAgICAgICAgIDAwMDAwICAgICAAUCAgICAgICAgMDAwMDAwICAgICAgICAgICAgIDAwMDAwICAgICAgAFAgICAgICAgIDAwMDAwMCAgICAgICAgICAgICAwMDAwMCAgICAgIABQICAgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMDAgICAgICAQUCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAFAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYFBQUFBQUFBQEBAQEBAQEBAQQEBAQEBAQEBAQBAQEBAQEBAQEBAQEBBwcHBwcHBwYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg==","sprState":{"ptr":[128,240,249,251],"x":99,"y":108},"terrain":{"0":"ASEkAAElASIkAAEmASMjAAElAQEBAQEhIgABJgEBAQEBIiEAASQCAQIBASAfAAEkAwEDAQEgDgABJAYHASAHAAElBAEEAQEgDAABJAMBAQIBAwMBASAGAAErBAEFAQEgCgABJAoBASAFAAErBAEGAQEgCAABJAwBASAEAAEtBAEHAQEgBgABJA4BASEEAAEvAwEIAQEhBAABJQ8BASIEAAEvAwEIAQEiBAABKw8BASMEAAEvAwEIAQEjBAABLQ8BASoDAAElBAEIAQEqBQABLA4BASkDAAErBAEIAQEpBgABLwwBASgEAAErBAEHAQEjBwABLwQBAQwBDQUBASgFAAEmBAEHAQEjBgABJQUBAQ4BDwQBASMFAAElBQEHAQEjBgABJgsBASMFAAErBQEIAQYHDAEBIwUAASYFAQoBAQIBBA8BBQcGARwBAQIBBQEGBwEmAQA=","1":"DAEBIQoAASUOAQwBASIKAAEmDgENAQEhCQABLw4BDQEBIgkAAS8OAQ0BASMJAAEuDgENAQEjCQABLQ4BDQEBKgoAASwNAQ0BASkLAAEsDAEMAQEqDQABLwsBDAEBKQ0AAS8LAQsBASMOAAEvCwELAQEjDgABLwsBCwEBIw0AASUMAQsBASMNAAEmDAELAQEjDAABJQ0BCwEBIwwAASYNAQwBDAcOASYBEQEBAgEEEwEdAQEMAQ0HAR0BAQ4BDwcBJgEmAQA=","2":"JgAmACYAJgAmACYAJgAmACYAJgALAAEkDAcBIA0ACgABJA4BASAMAAkAASQHAQECAQMHAQEgCwAIAAEkEgEBIAoABwABJBQBASAJAAYAASQWAQEgCAAFAAEkGAEBIAcABAABJBoBASAGAAMAASQcAQEhBQACAAEkCgEBDAENEQEBIgUAAQABJQsBAQ4BDxIBASEEAAEAASYfAQEiBAABAAEvHwEBIwQAAA==","3":"FQEBIQgAAS8HARUBASIIAAEvBwEVAQEjCAABLwcBFQEBIwgAAS8HARUBASoHAAElCAEVAQEpBwABJggBFAEBKggAAS8IAQYBAQwBDQwBASkIAAEvCAEGAQEOAQ8LAQEoCQABLwgBEgEBKAoAAS8IAREBASgKAAElCQEQAQEoCwABJgkBDwEBIwsAASUKAQ8BASMLAAEmCgEPAQEjCwABLwoBDwEBIwsAAS8KAQ8BASMKAAElCwEPAQEjCgABJgsBEAEKBwwBJgETAQECAQEBBQEGDwEmASYBAA=="},"gravity":[4,5,4,5,6,5,6,6,6,7,8,7,7,8,9,9],"tunes":{"intro":"Bz8TB9YcBwAAB9YcYn4mB8YtB34mB8Ytaaw5DgAABz8TB9YcBwAAB9YcYn4mB8YtB34mB8Ytaaw5DgAAB/xMKgAAB/xMIwAAB/xMHAAAB/xMFQAAB/xMDgAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAA","landing":"fiYAAH4mfzCsOX8wrDl/MDQrAAA0K2EzvEC8QLxAqUisOX8wqUisOX8wqUisOfxMAACpSPxM/Ez8TPxM/Ew=","crash":"rDkAAPxMrDl/MAAArDl/MH4mAAB/MH4m1hzWHAAAchw4G9YcjR5eII0eXiBLIlUkfiYAAAAA1hw4G9YcjR6NHo0e1hzWHAAAAAAAAFUkAAAAAAAAfiY="}};
+// ---- decoding -------------------------------------------------------------
+function un64(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+const CHARSET=un64(DATA.charset), SPRITES=un64(DATA.sprites);
+const SCREEN=un64(DATA.screen),  COLOUR=un64(DATA.colour);
+const TERR=[0,1,2,3].map(i=>un64(DATA.terrain[i]));
+const TUNES={intro:un64(DATA.tunes.intro),landing:un64(DATA.tunes.landing),crash:un64(DATA.tunes.crash)};
+const PAL=['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171',
+           '#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const hex=(n,w=2)=>'$'+n.toString(16).toUpperCase().padStart(w,'0');
+
+// ---- glyph + sprite drawing ----------------------------------------------
+function glyphPix(code,x,y){ return (CHARSET[((code&0x7f)*8)+y]>>(7-x))&1; }
+function drawGlyph(ctx,code,px,py,s,colour){
+  ctx.fillStyle=colour;
+  for(let y=0;y<8;y++){const b=CHARSET[((code&0x7f)*8)+y];
+    for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect(px+x*s,py+y*s,s,s);}
+}
+function drawSprite(ctx,slot,px,py,s,colour){
+  const base=(slot-0xF0)*64; ctx.fillStyle=colour;
+  for(let y=0;y<21;y++) for(let bx=0;bx<3;bx++){const b=SPRITES[base+y*3+bx];
+    for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect(px+(bx*8+x)*s,py+y*s,s,s);}
+}
+function spritePix(slot,x,y){ // x 0..23, y 0..20
+  const base=(slot-0xF0)*64; return (SPRITES[base+y*3+(x>>3)]>>(7-(x&7)))&1;
+}
+
+// ---- shared world model --------------------------------------------------
+const VIEW_ORIGIN=[null,{x:0x0038,y:0xE2},{x:0x00E8,y:0x42},{x:0x0148,y:0xE2}];
+const PADS=[{y:0x016A,x0:0x00B0,x1:0x00E0,m:5,view:1},
+            {y:0x009A,x0:0x0160,x1:0x0190,m:2,view:2},
+            {y:0x017A,x0:0x01E0,x1:0x0200,m:10,view:3}];
+function zoneFor(x,y){
+  if(y>=0x0114 && x<0x0140) return 1;
+  if(x>=0x0110 && x<0x01D8 && y>=0x0074) return 2;
+  if(x>=0x0140 && y>=0x0114) return 3;
+  return 0;
+}
+function decodeView(v){
+  const s=TERR[v], cells=new Uint8Array(38*23);
+  let p=0,i=0;
+  while(p<s.length && s[p]){const n=s[p],ch=s[p+1];p+=2;
+    for(let k=0;k<n;k++){ if(i<cells.length) cells[i]=ch; i++; }}
+  return cells;
+}
+const VIEWCELLS=[0,1,2,3].map(decodeView);
+function runsOf(v){const s=TERR[v],r=[];let p=0;
+  while(p<s.length&&s[p]){r.push([s[p],s[p+1]]);p+=2;} return r;}
+function paintCells(ctx,cells,S){
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,38*8*S,23*8*S);
+  for(let r=0;r<23;r++)for(let c=0;c<38;c++){
+    const g=cells[r*38+c]; if(!g) continue;
+    drawGlyph(ctx,g,c*8*S,r*8*S,S,PAL[2]);
+  }
+}
+function shipScreen(view,x,y){
+  if(view===0) return {sx:(x>>1)-24, sy:(y>>1)-50, s:1};
+  const o=VIEW_ORIGIN[view];
+  return {sx:(x-o.x)-24, sy:(y-o.y)-50, s:2};
+}
+function hitsRock(cells,sx,sy,s){
+  for(let py=0;py<21;py++)for(let px=0;px<24;px++){
+    if(!spritePix(0xF0,px,py)) continue;
+    for(let dy=0;dy<s;dy++)for(let dx=0;dx<s;dx++){
+      const X=sx+px*s+dx, Y=sy+py*s+dy;
+      if(X<0||Y<0||X>=38*8||Y>=23*8) continue;
+      const g=cells[(Y>>3)*38+(X>>3)];
+      if(g && glyphPix(g,X&7,Y&7)) return true;
+    }
+  }
+  return false;
+}
+
+// ---- 06: the gauge -------------------------------------------------------
+(function(){
+  const cv=document.getElementById('gaugeCv'), ctx=cv.getContext('2d'), S=2;
+  const zc=document.getElementById('gaugeZoom'), zx=zc.getContext('2d'), Z=12;
+  const sl=document.getElementById('gv');
+  const LANDS='#a9ff9f', NOBONUS='#d04a3a';
+  // the game's arithmetic, from draw_velocity_gauge at $EC01
+  function markerFor(vy){
+    const v=vy<0?vy+65536:vy;
+    const hi=(v>>8)&0xFF;
+    if(!(hi<2 || hi>=0xFE)) return null;
+    let a=((v>>2)&0xFF);
+    a=(a+0x80)&0xFF; a=a>>1;
+    return {row:4+((a>>2)&0xFE)/2, sub:a&7, value:a};
+  }
+  // the landing test at touchdown: every climb, and descents below 72
+  const landsAt=vy=> vy<0 ? true : vy<0x48;
+  // needle position p covers velocities (2p-128)*4 .. +7; the verdict is the same for all eight
+  const posLands=p=> landsAt((2*p-128)*4);
+  // one cell of the scale, at any magnification: the bar, or the needle cut into it, in the row's colour
+  function cell(c,code,x,y,s,row){ drawGlyph(c,code,x,y,s,row===12?PAL[7]:PAL[5]); }
+  function verdictStrip(c,x,yTop,s,w,p0,p1){
+    for(let p=p0;p<=p1;p++){ c.fillStyle=posLands(p)?LANDS:NOBONUS; c.fillRect(x,yTop+(p-p0)*s,w,s); }
+  }
+  function draw(){
+    const vy=+sl.value, m=markerFor(vy);
+    // the whole scale, as the game draws it
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const colX=2*8*S;
+    drawGlyph(ctx,0x08,1*8*S,1*8*S,S,PAL[1]); drawGlyph(ctx,0x09,2*8*S,1*8*S,S,PAL[1]);
+    for(let r=2;r<=20;r++) cell(ctx,0x01,colX,r*8*S,S,r);
+    drawGlyph(ctx,0x0A,colX,3*8*S,S,PAL[5]); drawGlyph(ctx,0x0B,colX,20*8*S,S,PAL[5]);
+    drawGlyph(ctx,0x3E,1*8*S,4*8*S,S,PAL[1]);
+    drawGlyph(ctx,0x3B,1*8*S,11*8*S,S,PAL[1]); drawGlyph(ctx,0x3C,1*8*S,12*8*S,S,PAL[1]);
+    drawGlyph(ctx,0x3F,1*8*S,19*8*S,S,PAL[1]);
+    if(m){ ctx.fillStyle='#000'; ctx.fillRect(colX,m.row*8*S,8*S,8*S); cell(ctx,0x18+m.sub,colX,m.row*8*S,S,m.row); }
+    // beside it, the verdict for all 128 positions: rows 4 to 19, one pixel each
+    verdictStrip(ctx,colX+8*S+2*S,4*8*S,S,4*S,0,127);
+    // the inset: rows 11 to 13
+    zx.fillStyle='#000'; zx.fillRect(0,0,zc.width,zc.height);
+    const bx=Z, top=11;
+    for(let r=top;r<=13;r++){
+      zx.fillStyle='#000'; zx.fillRect(bx,(r-top)*8*Z,8*Z,8*Z);
+      if(m && m.row===r) cell(zx,0x18+m.sub,bx,(r-top)*8*Z,Z,r); else cell(zx,0x01,bx,(r-top)*8*Z,Z,r);
+    }
+    verdictStrip(zx,bx+8*Z+2*Z,0,Z,4*Z,(top-4)*8,(top-4)*8+23);
+    zx.font='11px IBM Plex Mono, monospace'; zx.textBaseline='middle';
+    const tx=bx+14*Z+8;
+    const label=(y,t,c)=>{ zx.fillStyle=c||'#b2b2b2'; zx.fillText(t,tx,y); };
+    label(0.5*8*Z,'row 11: climbing, lands');
+    label(1.5*8*Z,'row 12: 0 to 63, the yellow cell');
+    label(2*8*Z+0.5*Z,'row 13, pixel 0: 64 to 71, lands',LANDS);
+    label(2*8*Z+3*Z,'pixel 1 and below: 72 and up,',NOBONUS);
+    label(2*8*Z+4.2*Z,'SORRY NO BONUS',NOBONUS);
+    zx.strokeStyle='#4a4a4a'; zx.lineWidth=1;
+    for(let r=1;r<3;r++){ zx.beginPath(); zx.moveTo(0,r*8*Z+.5); zx.lineTo(bx+14*Z+2,r*8*Z+.5); zx.stroke(); }
+    // the line the scale does not draw: between pixel 0 and pixel 1 of row 13
+    zx.strokeStyle='#fff'; zx.beginPath(); zx.moveTo(bx+14*Z+2,2*8*Z+Z+.5); zx.lineTo(zc.width-8,2*8*Z+Z+.5); zx.stroke();
+    // the readout
+    const lands=landsAt(vy);
+    document.getElementById('gaugeStat').innerHTML=
+      'Y velocity <b>'+vy+'</b><br>'+
+      (m? ('needle position <b>'+m.value+'</b> of 128: row <b>'+m.row+'</b>, pixel <b>'+m.sub+'</b>'+(m.row===12?' <span style="color:var(--amber)">the yellow cell</span>':'')+'<br>marker glyph <b>'+hex(0x18+m.sub)+'</b>')
+        : '<span style="color:var(--coral)">off the scale: no marker is drawn at all</span>')+
+      '<br>landing test: '+(lands?'<span style="color:var(--green)">lands</span>':'<span style="color:var(--coral)">SORRY NO BONUS</span>');
+  }
+  sl.oninput=draw;
+  document.querySelectorAll('.gpre').forEach(b=>b.onclick=()=>{sl.value=b.dataset.v;draw();});
+  draw();
+})();
+// ---- 07: scoring, the sideways landing -----------------------------------
+(function(){
+  // Two input movies, replayed live in the emulator with every pass matching. The start is a
+  // hover on the pad's line, eight world units left of the pad; from there only stick inputs.
+  // L = joystick left (the left jet, which pushes the ship right), F = fire (main thruster).
+  const ROUTES={
+    4:{g:4, x:0x015800, y:0x009A80, fuel:0xFFFF, label:'landing 1, gravity 4',
+       path:'L L L L L L FL FL L FL FL L L FL L L FL - L FL L FL FL FL FL FL'},
+    5:{g:5, x:0x015800, y:0x009AFF, fuel:0xA2CB, label:'landing 2, gravity 5',
+       path:'F - - FL L L FL L FL L FL L L FL L FL L FL L L F L FL FL FL FL FL FL FL'}};
+  const cv=document.getElementById('tasCv'), ctx=cv.getContext('2d'), S=2;
+  const bcv=document.getElementById('tasBonus'), bctx=bcv.getContext('2d');
+  const s16=v=>{v&=0xFFFF; return v&0x8000? v-0x10000 : v;};
+  let route=ROUTES[4], states=[], k=0, timer=null;
+  function build(){
+    const inputs=route.path.split(' ').map(t=>t==='-'?'':t);
+    let st={x:route.x,y:route.y,vx:0,vy:0,fuel:route.fuel}; states=[];
+    for(const inp of inputs){
+      const pad=onPad(st);
+      states.push({...st,inp,pad});
+      if(pad) break;
+      st=move(st,inp);
+    }
+    states.push({...st,inp:'',pad:onPad(st)});
+  }
+  function onPad(st){ return (st.y>>8)===0x009A && (st.x>>8)>=0x0160 && (st.x>>8)<=0x0190; }
+  function move(st,inp){                       // move_ship, $E2CB, exactly
+    let {x,y,vx,vy,fuel}=st;
+    if(inp.includes('L')){ vx=s16(vx+6); fuel-=30; }
+    x=(x+vx)&0xFFFFFF;
+    if(inp.includes('F')){ vy=s16(vy-12); fuel-=111; }
+    vy=s16(vy+route.g);
+    y=(y+vy)&0xFFFFFF;
+    return {x,y,vx,vy,fuel:fuel&0xFFFF};
+  }
+  function bonusOf(vy){                        // touchdown, $E57D, for the x2 pad
+    const lo=vy&0xFF, base=(0x50-lo)&0xFF, dbl=(base*2)&0xFF;
+    return {lo,base,total:dbl};
+  }
+  const O=VIEW_ORIGIN[2];
+  const shipPx=st=>({sx:((st.x>>8)-O.x)-24, sy:((st.y>>8)-O.y)-50});   // close-up: 1 world unit = 1 pixel
+  function scene(g,Z,st,i){                    // draw the view at scale Z into context g
+    g.imageSmoothingEnabled=false;
+    paintCells(g,VIEWCELLS[2],Z);
+    // the pad's line and its X range, in the ship's own coordinates
+    const lineY=(0x9A-O.y-50+42)*Z;            // the lander's feet on the pad line
+    const x0=(0x160-O.x-24)*Z, x1=(0x190-O.x-24+48)*Z;
+    g.fillStyle='rgba(255,176,64,.35)'; g.fillRect(0,lineY-Z,38*8*Z,Z);
+    g.fillStyle='rgba(255,176,64,.95)'; g.fillRect(x0,lineY-Z,x1-x0,Z);
+    g.fillRect(x0,lineY-6*Z,Z,6*Z); g.fillRect(x1-Z,lineY-6*Z,Z,6*Z);
+    // ghosts of the passes so far
+    for(let j=0;j<i;j++){const p=shipPx(states[j]);
+      g.fillStyle='rgba(117,206,200,.35)'; g.fillRect(p.sx*Z,(p.sy+41)*Z,Z,Z);}
+    const p=shipPx(st), s=2*Z;
+    if(st.inp.includes('F')) drawSprite(g,i&1?0xF9:0xF8,p.sx*Z,p.sy*Z,s,PAL[2]);
+    if(st.inp.includes('L')) drawSprite(g,0xFA,p.sx*Z,p.sy*Z,s,PAL[8]);
+    drawSprite(g,0xF0,p.sx*Z,p.sy*Z,s,PAL[3]);
+  }
+  const off=document.createElement('canvas'); off.width=38*8; off.height=23*8;
+  function draw(){
+    const st=states[k];
+    scene(ctx,S,st,k);
+    // inset: the lander's feet and the pad's left edge, eight times
+    scene(off.getContext('2d'),1,st,k);
+    const p=shipPx(st), M=8, w=48, h=22, ix=p.sx+16, iy=p.sy+42-14;
+    const W=w*M, H=h*M, px=6, py=cv.height-H-6;
+    ctx.fillStyle='#000'; ctx.fillRect(px-3,py-3,W+6,H+6);
+    ctx.drawImage(off,ix,iy,w,h,px,py,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=1; ctx.strokeRect(px-.5,py-.5,W+1,H+1);
+    ctx.strokeRect(ix*S+.5,iy*S+.5,w*S,h*S);
+    ctx.fillStyle='#fff'; ctx.font='11px IBM Plex Mono, monospace'; ctx.fillText('x8',px+4,py+12);
+    // the stat panel
+    const X=st.x>>8, Y=st.y>>8, last=k===states.length-1;
+    const sideTxt=st.inp.includes('L')?'<span style="color:var(--amber)">left jet</span>':'';
+    const upTxt=st.inp.includes('F')?'<span style="color:var(--amber)">main thruster</span>':'';
+    const inpTxt=(sideTxt||upTxt)?[sideTxt,upTxt].filter(Boolean).join(' + '):'nothing';
+    const yOk=Y===0x9A, xOk=X>=0x160&&X<=0x190;
+    let html='<b>'+route.label+'</b>: pass <b>'+k+'</b> of '+(states.length-1)+'<br>'+
+      'world X <b>'+hex(X,4)+'</b>.'+hex(st.x&255).slice(1)+' &nbsp; Y <b>'+hex(Y,4)+'</b>.'+hex(st.y&255).slice(1)+'<br>'+
+      'X velocity <b>'+st.vx+'</b> &nbsp; Y velocity <b>'+st.vy+'</b> (low byte '+hex(st.vy&255)+') '+
+        (st.vy<0?'<span style="color:var(--green)">climbing</span>':(st.vy>0?'sinking':'still'))+'<br>'+
+      'fuel <b>'+hex(st.fuel,4)+'</b><br>'+
+      'pad test: Y on the line '+(yOk?'<span style="color:var(--green)">yes</span>':'<span style="color:var(--coral)">no</span>')+
+      ', X in range '+(xOk?'<span style="color:var(--green)">yes</span>':'<span style="color:var(--coral)">no, '+(0x160-X)+' to go</span>')+'<br>';
+    if(last){
+      const b=bonusOf(st.vy);
+      html+='<span style="color:var(--amber)">touchdown</span>: $50 &minus; '+hex(b.lo)+' = <b>'+b.base+'</b>, '+
+        '&times;2 in eight bits = <b>'+b.total+'</b>, shown as <b>'+(b.total*10)+'</b><br>'+
+        'refuel <b>'+(b.total*70)+'</b> units';
+    } else html+='input this pass: '+inpTxt;
+    document.getElementById('tasStat').innerHTML=html;
+    // the bonus line as draw_bonus_line prints it
+    bctx.fillStyle='#000'; bctx.fillRect(0,0,bcv.width,bcv.height);
+    if(last){
+      const b=bonusOf(st.vy), tens=Math.floor(b.base/10), units=b.base%10;
+      const codes=[]; codes.push(tens?0x30|tens:0); codes.push(0x30|units); codes.push(0x30); codes.push(0);
+      codes.push(0x58,0,0,0x32,0x3D,0);
+      const t=String(b.total).padStart(3,' ');
+      for(const ch of t) codes.push(ch===' '?0:0x30+(+ch)); codes.push(0x30);
+      codes.forEach((c,i)=>{ if(c) drawGlyph(bctx,c,(12+i)*8*S,8*S,S,PAL[1]); });
+    }
+  }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} }
+  document.getElementById('tasNext').onclick=()=>{stop(); if(k<states.length-1)k++; draw();};
+  document.getElementById('tasPrev').onclick=()=>{stop(); if(k>0)k--; draw();};
+  document.getElementById('tasReset').onclick=()=>{stop(); k=0; draw();};
+  document.getElementById('tasPlay').onclick=()=>{ if(timer){stop();return;} if(k>=states.length-1)k=0;
+    timer=setInterval(()=>{ if(k>=states.length-1){stop();return;} k++; draw(); },250); };
+  document.querySelectorAll('.tasRoute').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tasRoute').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); route=ROUTES[+b.dataset.r]; stop(); build(); k=0; draw();});
+  build(); draw();
+})();
+
+// ---- 07b: the bonus arithmetic --------------------------------------------
+(function(){
+  const sl=document.getElementById('scv'), cv=document.getElementById('bonusCv'), ctx=cv.getContext('2d'), S=2;
+  let pad=3;
+  const MULT={1:5,2:2,3:10};
+  function calc(v){
+    const lo=((v%256)+256)%256;          // the low byte of a 16-bit velocity
+    const base=(0x50-lo)&0xFF;           // eight-bit subtraction, exactly as the game does it
+    const dbl=pad===1?base:(base*2)&0xFF; // the x2 and x10 doubling is eight-bit too; its carry is lost
+    return {lo, base, total:pad===2?dbl:dbl*5};
+  }
+  function text(v){
+    const r=calc(v);
+    const b=String(r.base).padStart(2,' ')+'0';
+    const m=MULT[pad]===10?'10':(' '+MULT[pad]);
+    const t=String(r.total).padStart(3,' ')+'0';
+    return {line:' '+b+' X '+m+'= '+t, r};
+  }
+  function draw(){
+    const v=+sl.value, lands = v<0 ? true : v<0x48;
+    const {line,r}=text(v);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const s=lands?line:' SORRY NO BONUS';
+    const start=11;
+    for(let i=0;i<s.length;i++){
+      const ch=s[i]; let code=0;
+      if(ch===' ')code=0; else if(ch>='0'&&ch<='9')code=0x30+(ch.charCodeAt(0)-48);
+      else if(ch>='A'&&ch<='Z')code=ch.charCodeAt(0);
+      else if(ch==='=')code=0x3D;
+      drawGlyph(ctx,code,(start+i)*8*S,8*S,S,PAL[1]);
+    }
+    document.getElementById('scvV').textContent=v;
+    document.getElementById('scoreStat').innerHTML= lands
+      ? ('velocity low byte <b>'+hex(r.lo)+'</b><br>'+
+         '$50 &minus; '+hex(r.lo)+' = <b>'+r.base+'</b> points<br>'+
+         '&times; <b>'+MULT[pad]+'</b> = <b>'+r.total+'</b> points<br>'+
+         'shown on screen as <b>'+(r.total*10)+'</b><br>'+
+         'refuel <b>'+(r.total*70)+'</b> units, over <b>'+(r.total*0.021).toFixed(1)+'</b> seconds'
+         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: only the x2 pad can be reached this way</span>':'')
+         + (v===0 ? '<br><span style="color:var(--amber)">a perfect stop: not reachable from above on any pad</span>':''))
+      : '<span style="color:var(--coral)">faster than $0048. SORRY NO BONUS, and the ship is destroyed.</span>';
+  }
+  sl.oninput=draw;
+  document.querySelectorAll('.padBtn').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.padBtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); pad=+b.dataset.p; draw();});
+  draw();
+})();
+</script>
