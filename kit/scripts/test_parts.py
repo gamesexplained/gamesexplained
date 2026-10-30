@@ -302,6 +302,23 @@ class Parts(unittest.TestCase):
             at = [s['name'] for s in seeded['symbols'] if s['address'] == 0x0020]
             self.assertEqual(at, ['park_count'])                            # not the engine's name as well
 
+    def test_a_name_from_beneath_stays_out_of_the_parts_own_variables(self):
+        # $21 is among the park's variables too, though it has no name there: an operand reads as the
+        # address, not as the engine's name for what the engine keeps at $21
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'engine', [(0x1000, 0x1006, 'Code')],
+                    [sym(0x0021, 'engine_flag', 'AbsoluteAddress'), sym(0x1000, 'engine_main')],
+                    [line(0x0021, "The engine's flag."), line(0x1000, 'a')])
+            f = g / 'parts' / 'park' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), names=[['$0020', '$002F', "the park's variables"]])))
+            symbols(g, 'park', [(0x4000, 0x4005, 'Code'), (0x4020, 0x4022, 'Code')],
+                    [sym(0x4000, 'park_entry'), sym(0x4020, 'park_read')],
+                    [line(0x4000, 'The park.'), line(0x4020, 'Reads the flag.')])
+            park = snapshot(g / 'park2.vsf', ENGINE, PARK, {0x4020: [0xA5, 0x21, 0x60]})     # lda $21, rts
+            run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'park', park)
+            self.assertNotEqual({r['a']: r for r in records(g, 'park')}[0x4020]['o'], 'engine_flag')
+
     def test_a_symbol_only_the_part_beneath_refers_to_is_left_out(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)

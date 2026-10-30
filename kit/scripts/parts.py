@@ -401,19 +401,22 @@ def say_left(P, me, left):
 def names_under(gdir, game=None):
     """{address: name} from the parts gdir's part lies over, nearest first, for the addresses
     it does not own: how an operand that points out of the part is named. {} for a game
-    folder, or a part that lies over none."""
+    folder, or a part that lies over none. An address in the part's "names" rows is its own
+    even where it has no name for it, so it takes none from beneath."""
     top, pid = home(gdir)
     out = {}
     if pid is None:
         return out
-    away = (game or load_game(gdir)).get("elsewhere") or []
+    game = game or load_game(gdir)
+    away, mine = game.get("elsewhere") or [], game.get("names") or []
     P = parts(top)
     for q in under(P, next(p for p in P if p["id"] == pid)):
         f = os.path.join(q["dir"], "symbols.json")
         if os.path.isfile(f):
             for s in json.load(open(f))["symbols"]:
-                if not owned(s["address"], away):
-                    out.setdefault(s["address"], s["name"])
+                a = s["address"]
+                if not owned(a, away) and not any(lo <= a <= hi for lo, hi, _ in mine):
+                    out.setdefault(a, s["name"])
     return out
 
 
