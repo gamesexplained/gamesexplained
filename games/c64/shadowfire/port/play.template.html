@@ -57,10 +57,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys b{color:var(--ink)}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -88,7 +84,6 @@ section table{margin:6px 0 18px}
       <button type="button" class="pl-fk" data-key="F3" title="The control menu: the joystick">F3</button>
       <button type="button" class="pl-fk" data-key="F5" title="The control menu: the analog joystick, the mouse on this page">F5</button>
       <button type="button" class="pl-fk" data-key="F7" title="The control menu: the light pen, the mouse on this page">F7</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -99,12 +94,8 @@ section table{margin:6px 0 18px}
       <li><b>Light pen</b> (F7) or <b>analog joystick</b> (F5): the mouse moves the cursor, a click fires</li>
       <li><b>Keyboard</b> (F1): the <kbd>Q</kbd>–<kbd>P</kbd> row up, the <kbd>A</kbd>–<kbd>L</kbd> row down, <kbd>Z</kbd> <kbd>C</kbd> <kbd>B</kbd> <kbd>M</kbd> right, <kbd>X</kbd> <kbd>V</kbd> <kbd>N</kbd> left, a digit fires</li>
       <li><kbd>Esc</kbd> is RUN/STOP</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. Every command is an icon: move the cursor onto it and fire. On a touch screen, choose <b>F3</b> and use the pad, or <b>F7</b> and touch the screen where the cursor should go. A game saved from the file screen is kept in this browser under its name, whether you choose tape or disk, and a load of the same name brings it back.</p>
   </div>
 </section>
@@ -118,6 +109,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <!-- port -->
 <script>
@@ -262,12 +254,8 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
 // the mouse, or a finger, on the screen: its place on the frame's pixels, and its button
 function place(e) {
   const r = cv.getBoundingClientRect();

@@ -515,6 +515,23 @@ shorter queue runs dry and overflows by turns, which is heard as the
 music skipping. `kit/scripts/test_live_sound.js` fails a Play page with
 a queue of its own.
 
+Every Play tab that draws on a canvas loads `../../lib/play-controls.js`
+and calls `PlayControls.attach({ screen, canvas, bar })` once the two
+switches above exist, `screen` being the element that holds the canvas
+(the CRT screen puts its canvas in the same parent, so a bare canvas
+gets a `<div>` round it). It moves the sound and CRT switches into a
+row over the picture, adds Full screen after them, and carries the
+screen, the row and the bar into full screen, so every Play tab keeps
+its switches in the same place. A game played with a joystick passes
+`pad: true` and an `onPad(bits)` that feeds the bits to the game as its
+keys are fed: a touch screen then gets a thumb joystick under the
+picture and a bigger one in full screen, and the page keeps no pad of
+its own. A game played another way leaves the joystick off, since one
+the game does not read only gets in the way. The header of
+`site/lib/play-controls.js` gives the bits and the other options.
+`kit/scripts/test_play_controls.js` fails a Play page that does not
+attach it, and a page with the joystick that keeps its own pad.
+
 Every Play tab's Reset works whatever the page is doing, a stop
 included: it builds a new machine, lets go of the page's own pause, sets
 the sound chip's registers as the new machine has them, and starts the

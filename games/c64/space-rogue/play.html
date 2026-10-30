@@ -56,10 +56,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-fig{margin:6px 0 18px;max-width:420px}
@@ -98,7 +94,6 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Draw the 3D view at the screen's own frame rate, moving between the game's passes">Smooth motion</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -112,12 +107,8 @@ section table{margin:6px 0 18px}
       <li><kbd>V</kbd> view, <kbd>I</kbd> TAC data, <kbd>L</kbd> automatic fire</li>
       <li><kbd>N</kbd> Navigation Control, <kbd>G</kbd> surrender, <kbd>J</kbd> jettison cargo</li>
       <li><kbd>Esc</kbd> or <kbd>F1</kbd> pause; <kbd>Tab</kbd> is the C64's CTRL: <kbd>Tab</kbd>+<kbd>S</kbd> saves in space</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. A save (<kbd>Tab</kbd>+<kbd>S</kbd> in space) is kept in this browser, and <b>O</b> at "Old or New Game?" loads it. Before an old game the game asks for a word from its manual; the page shows that word beside the buttons. <b>Skip to the cockpit</b> starts a new game and runs the title and the story as fast as it can, as pressing a key through them would. <b>Native resolution</b> draws the 3D view (the same ships, dots and arrows, from the same positions) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> draws the 3D view at the screen's own frame rate, moving it from each of the game's passes to the next (section 02).</p>
   </div>
 </section>
@@ -185,6 +176,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/core.js */
 // Space Rogue's port: P, the game's routines on the game's memory. Each group of routines is a file
@@ -12163,12 +12155,8 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- controls ----------------------------------------------------------------------------------
 let sayTimer = 0;

@@ -60,7 +60,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button class="cp-btn" id="cp-reset">Reset</button>
       <span class="cp-out" id="cp-out"></span>
     </div>
-    <canvas class="cp-screen" id="cp-screen" width="768" height="544"></canvas>
+    <div><canvas class="cp-screen" id="cp-screen" width="768" height="544"></canvas></div>
     <p class="cap"><b>The game as the port runs it.</b> On the title screen, click or press F1 (or 1) for the menu, then F1 for one player or F3 (or 2) for two; both players turn the same mouse. The see-saw's raised end has to be under the falling clown. The keys 1 and 2 stand for F1 and F3, which a browser keeps for itself; the arrow keys move the see-saw too.</p>
   </div>
 </section>
@@ -79,6 +79,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="reference/cl-port.js"></script>
 <script>
 'use strict';
@@ -130,6 +131,9 @@ if (!window.C64 || !window.ClownsPort) {
   // ---- the screen: the port's memory through the site's model of the video chip
   const cv = $('cp-screen');
   CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
+  // carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
   function draw() {
     C64.drawFrame(cv, { lines: 312, cycles: 63, vic: Array.from(vic.subarray(0, 47)), cia2: [3, 3], writes: [],
       mem: M, colourMem: colour, ultimax: rom, keep }, 2);

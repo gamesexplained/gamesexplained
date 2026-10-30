@@ -52,10 +52,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 .pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
@@ -82,7 +78,6 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -96,12 +91,8 @@ section table{margin:6px 0 18px}
       <li><kbd>Enter</kbd> on the title switches between joystick and keyboard</li>
       <li><kbd>Esc</kbd> goes back to the title</li>
       <li><kbd>A</kbd> <kbd>S</kbd> <kbd>P</kbd> <kbd>L</kbd> are the game's own keys, with the keyboard chosen</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line. The arrows and Space are the joystick in port 2, or the game's own keys when the title is set to the keyboard. <b>Start on</b> begins a new game on that level the way the title does: the page taps right on the title until it shows the level, then presses fire.</p>
   </div>
 </section>
@@ -138,6 +129,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/ted-sound.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/core.js */
 // Prospector Pete's port: P, the game's routines on the game's memory. Each group of routines is a
@@ -2436,12 +2428,8 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); typed.clear(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- a level picked: the title's own way there, run as fast as it goes -----------------------
 // Right is tapped until the title shows the level ($A7, change_level), then fire starts the game.

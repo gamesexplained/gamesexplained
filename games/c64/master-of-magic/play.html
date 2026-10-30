@@ -43,24 +43,20 @@ table.pl-t{border-collapse:collapse;width:100%;font-size:14.5px;margin:16px 0 0}
 table.pl-t th,table.pl-t td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 table.pl-t th{font-weight:700;color:var(--ink-soft)}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:16px 0 0}
-.pl-bar button{font-family:var(--fm);font-size:13px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
-.pl-bar button:hover{border-color:var(--accent)}
-.pl-bar button:focus-visible,.pl-pad button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pl-bar button,.pc-above button{font-family:var(--fm);font-size:13px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+.pl-bar button:hover,.pc-above button:hover{border-color:var(--accent)}
+.pl-bar button:focus-visible,.pc-above button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .pl-bar button.pl-main{background:var(--accent);border-color:var(--accent);color:#fff}
 .pl-bar button.pl-main:hover{background:var(--link-hover)}
-.pl-bar button[aria-pressed="true"]::after{content:" on"}
-.pl-bar button[aria-pressed="false"]::after{content:" off"}
+.pl-bar button[aria-pressed="true"]::after,.pc-above :is([data-sound],[data-crt])[aria-pressed="true"]::after{content:" on"}
+.pl-bar button[aria-pressed="false"]::after,.pc-above :is([data-sound],[data-crt])[aria-pressed="false"]::after{content:" off"}
 .pl-status{font-size:14px;color:var(--ink-soft);margin-left:4px}
 .pl-help{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-start;margin:16px 0 0}
 .pl-help .cap{margin:0;flex:1 1 320px}
-.pl-pad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:5px;flex:0 0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
-.pl-pad button{font:inherit;font-size:18px;line-height:1;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);cursor:pointer;padding:0;touch-action:none;-webkit-tap-highlight-color:transparent}
-.pl-pad button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.pl-pad .pl-fire{font-family:var(--fm);font-size:12px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
-@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}.pl-pad{grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px)}}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -76,7 +72,7 @@ table.pl-t th{font-weight:700;color:var(--ink-soft)}
 <section class="pl-first" id="play">
   <div class="plate">
     <div class="pl-wrap"><canvas class="pl-c64" id="mm-screen" width="768" height="544" aria-label="The Commodore 64 screen of Master of Magic"></canvas></div>
-    <div class="pl-bar">
+    <div class="pl-bar" id="mm-bar">
       <button type="button" id="mm-pause" aria-pressed="false">Pause</button>
       <button type="button" id="mm-reset" title="Start again from the title, as after loading">Reset</button>
       <button type="button" id="mm-record" title="On the title, CTRL and R start a game that is recorded; F ends the recording">Record a game</button>
@@ -86,18 +82,7 @@ table.pl-t th{font-weight:700;color:var(--ink-soft)}
       <span class="pl-status" id="mm-out" aria-live="polite"></span>
     </div>
     <div class="pl-help">
-      <p class="cap"><b>Play with W, A, S, D and the mouse.</b> Click a word in the menu to pick it, and click anywhere else on the picture to bring the menu back. The mouse is the page's own addition: a click on a word moves the black cursor to it with the joystick, as a player would, and presses fire, and a click elsewhere is fire, which stops a RUN. W, A, S and D or the arrow keys are the joystick in port 2 and Enter is its fire button; the other keys of a PC keyboard stand where the C64's do. RUN walks until fire is pressed; every other verb takes its own time and then the menu comes back. On a touch screen the pad is the joystick.</p>
-      <div class="pl-pad" id="mm-pad" aria-label="Joystick">
-        <button type="button" data-j="5" aria-label="Up and left">↖</button>
-        <button type="button" data-j="1" aria-label="Up">↑</button>
-        <button type="button" data-j="9" aria-label="Up and right">↗</button>
-        <button type="button" data-j="4" aria-label="Left">←</button>
-        <button type="button" class="pl-fire" data-j="16" aria-label="Fire">FIRE</button>
-        <button type="button" data-j="8" aria-label="Right">→</button>
-        <button type="button" data-j="6" aria-label="Down and left">↙</button>
-        <button type="button" data-j="2" aria-label="Down">↓</button>
-        <button type="button" data-j="10" aria-label="Down and right">↘</button>
-      </div>
+      <p class="cap"><b>Play with W, A, S, D and the mouse.</b> Click a word in the menu to pick it, and click anywhere else on the picture to bring the menu back. The mouse is the page's own addition: a click on a word moves the black cursor to it with the joystick, as a player would, and presses fire, and a click elsewhere is fire, which stops a RUN. W, A, S and D or the arrow keys are the joystick in port 2 and Enter is its fire button; the other keys of a PC keyboard stand where the C64's do. RUN walks until fire is pressed; every other verb takes its own time and then the menu comes back. On a touch screen the pad under the picture is the joystick. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, Esc or Back returns to the page.</p>
     </div>
     <table class="pl-t">
       <tr><th>Keys</th><th>On the C64</th><th>Does</th></tr>
@@ -150,6 +135,7 @@ window.MOM_PLAY = {"note":"Master of Magic (Mastertronic 1985, C64), for the Pla
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="../../lib/collide.js"></script>
 <script src="reference/mom-music.js"></script>
 <script src="reference/mom-port.js"></script>
@@ -196,14 +182,6 @@ function start(D) {
   });
   addEventListener('keyup', (e) => { if (held.delete(e.code)) e.preventDefault(); });
   addEventListener('blur', () => held.clear());
-  for (const b of $('mm-pad').querySelectorAll('button')) {
-    const j = +b.dataset.j;
-    const on = (e) => { pad.joy |= j; b.classList.add('on'); e.preventDefault(); };
-    const off = () => { pad.joy &= ~j; b.classList.remove('on'); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-    b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-    b.addEventListener('contextmenu', (e) => e.preventDefault());
-  }
   const hold = (keys, frames) => timed.push({ keys, until: play.frames + frames });
   // A click on a menu: the slot under it, from the menu's first cell ($03C5), each slot's width in
   // characters ($03BE) and the number in it ($0397). Text column c starts at the picture's pixel
@@ -263,6 +241,8 @@ function start(D) {
   // KERNAL's screen shows at the cold start, whose glyphs are in the character ROM
   const g = cv.getContext('2d');
   const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: $('mm-bar'), pad: true, onPad(bits) { pad.joy = bits; } });
   function draw() {
     const f = play.frameAt(target);
     if (!f) return;

@@ -103,7 +103,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
       <button class="pl-btn" id="pl-reset">Reset</button>
       <span class="pl-out" id="pl-out"></span>
     </div>
-    <canvas class="pl-screen" id="pl-screen" width="512" height="480" tabindex="0"></canvas>
+    <div><canvas class="pl-screen" id="pl-screen" width="512" height="480" tabindex="0"></canvas></div>
     <div class="pl-pad" id="pl-pad">
       <div class="pl-group"><button data-bit="64">◀</button><button data-bit="128">▶</button></div>
       <div class="pl-group"><button data-bit="4">Sel</button><button data-bit="8">Start</button></div>
@@ -177,6 +177,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 <script src="../../lib/cpu6502.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="reference/bf-port.js"></script>
 <script src="reference/bf-play.js"></script>
 <script src="reference/bf-mods.js"></script>
@@ -199,6 +200,9 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   // ---- the screen: the port's PPU through the site's model of the chip
   const cv = $('pl-screen'), ctx = cv.getContext('2d');
   CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
+  // carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
   const mods = BalloonFightMods.create(g);
   window.bfMods = mods;
   const V = BalloonFight.V, see = {};

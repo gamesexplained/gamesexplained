@@ -71,7 +71,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
       <button class="en-btn" type="button" id="en-reset">Reset</button>
       <span class="en-out" id="en-out"></span>
     </div>
-    <canvas id="en-screen" width="768" height="544" aria-label="The game"></canvas>
+    <div><canvas id="en-screen" width="768" height="544" aria-label="The game"></canvas></div>
     <div class="en-pad" id="en-pad" aria-label="Joystick">
       <button type="button" data-j="1">up</button>
       <button type="button" data-j="2">down</button>
@@ -130,6 +130,7 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="reference/en-core.js"></script>
 <script src="reference/en-g0-loop.js"></script>
 <script src="reference/en-g1-attract.js"></script>
@@ -198,6 +199,9 @@ function start(D) {
 
   // ---- the screen: the port's memory through the site's model of the video chip
   const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
+  // carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
   function draw() {
     const f = play.shown;
     if (!f) return;

@@ -71,11 +71,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sp-stack canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .sp-stack canvas+canvas{position:absolute;left:0;top:0;pointer-events:none;background:transparent}
 #sp-screen{background:#000;border-radius:4px;touch-action:none}
-.sp-pad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,48px);gap:6px;margin:14px 0 0;user-select:none;-webkit-user-select:none;touch-action:none}
-.sp-pad button{font:inherit;font-family:var(--fm);font-size:13px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;color:var(--ink);touch-action:none}
-.sp-pad button.on{background:var(--chip);color:var(--chip-ink)}
-.sp-pad .sp-fire{grid-column:3;grid-row:3}
-@media (pointer:coarse),(max-width:700px){.sp-pad{display:grid}}
 #sp-map{background:#fff;min-width:640px}
 .sp-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0;font-family:var(--fm);font-size:12px;color:var(--ink-soft)}
 .sp-key i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
@@ -93,24 +88,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Play Storm with the keyboard</h2>
   <p class="lede">The characters turn rather than steer: left and right turn a character a quarter at a time, and up walks it the way it faces. On the title, fire starts; then left picks one player and right two, and down skips the instructions.</p>
   <div class="plate">
-    <div class="st-row">
+    <div class="sp-stack">
+      <canvas id="sp-screen" width="768" height="544" aria-label="The game"></canvas>
+      <canvas id="sp-path" width="768" height="544" aria-hidden="true"></canvas>
+    </div>
+    <div class="st-row" id="sp-bar">
       <button class="st-btn" id="sp-pause" aria-pressed="false">Pause</button>
       <button class="st-btn" data-sound aria-pressed="true">🔊 Sound</button>
       <button class="st-btn" id="sp-guide" aria-pressed="false">Guide</button>
       <button type="button" class="st-btn" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <button class="st-btn" id="sp-reset">Reset</button>
       <span id="sp-out"></span>
-    </div>
-    <div class="sp-stack">
-      <canvas id="sp-screen" width="768" height="544" aria-label="The game"></canvas>
-      <canvas id="sp-path" width="768" height="544" aria-hidden="true"></canvas>
-    </div>
-    <div class="sp-pad" id="sp-pad" aria-label="Joystick 1">
-      <button data-b="1" style="grid-column:2;grid-row:1">up</button>
-      <button data-b="4" style="grid-column:1;grid-row:2">left</button>
-      <button data-b="8" style="grid-column:3;grid-row:2">right</button>
-      <button data-b="2" style="grid-column:2;grid-row:3">down</button>
-      <button data-b="16" class="sp-fire">fire</button>
     </div>
     <table class="st-tbl">
       <tr><th>Joystick</th><th>Agravain (joystick 1)</th><th>Storm (joystick 2)</th></tr>
@@ -119,7 +107,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>Fire</td><td><code>Space</code></td><td><code>Enter</code></td></tr>
       <tr><td>Magic</td><td><code>S</code> a mask, <code>S</code> with <code>Space</code> a scroll</td><td><code>↓</code> with <code>Enter</code> an amulet</td></tr>
     </table>
-    <p class="cap"><b>The game as the port runs it.</b> A one-player game is always Agravain's, on joystick 1, so the arrow keys and Enter drive joystick 1 too until a two-player game begins. On a touch screen the pad under the game is joystick 1. The Guide button draws, over the room, the way to the nearest brooch each player can reach with what the two of them carry, and once three are carried, the way to Corrine.</p>
+    <p class="cap"><b>The game as the port runs it.</b> A one-player game is always Agravain's, on joystick 1, so the arrow keys and Enter drive joystick 1 too until a two-player game begins. On a touch screen the pad under the game is joystick 1. <b>Full screen</b>, over the game's right corner, makes the game and the pad as big as the screen allows; the same button, <code>Esc</code> or Back returns to the page. The Guide button draws, over the room, the way to the nearest brooch each player can reach with what the two of them carry, and once three are carried, the way to Corrine.</p>
   </div>
 </section>
 
@@ -156,6 +144,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script src="reference/storm-port.js"></script>
 <script src="reference/storm-guide.js"></script>
@@ -200,14 +189,6 @@ function start(D) {
   });
   addEventListener('keyup', (e) => { if (held.delete(e.code)) e.preventDefault(); });
   addEventListener('blur', () => held.clear());
-  for (const b of $('sp-pad').querySelectorAll('button')) {
-    const bit = +b.dataset.b;
-    const on = (e) => { pad.bits |= bit; b.classList.add('on'); e.preventDefault(); };
-    const off = () => { pad.bits &= ~bit; b.classList.remove('on'); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-    b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-    b.addEventListener('contextmenu', (e) => e.preventDefault());
-  }
   function sticks() {
     const M = play.M, two = M[0x8137] === 2 && !M[0x8106], j = [pad.bits, 0];
     for (const k of held) { const [p, bit] = KEYS[k]; j[two ? p : 0] |= bit; }
@@ -217,6 +198,8 @@ function start(D) {
   // ---- the screen: the port's memory through the site's model of the video chip
   const cv = $('sp-screen'), over = $('sp-path'), og = over.getContext('2d');
   CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the game, full screen and the touch joystick, joystick 1 (site/lib/play-controls.js)
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: $('sp-bar'), pad: true, onPad(bits) { pad.bits = bits; } });
   function draw() {
     const f = play.shown;
     if (!f) return;

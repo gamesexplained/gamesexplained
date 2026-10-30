@@ -52,10 +52,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 .pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
@@ -86,7 +82,6 @@ section table{margin:6px 0 18px}
       <button type="button" data-cheat="lives" aria-pressed="false" title="Plus/4 World's poke: the DEC that takes a life becomes a load">Unlimited lives</button>
       <button type="button" data-cheat="energy" aria-pressed="false" title="Plus/4 World's poke: the DEC that counts down the energy becomes a load">Unlimited energy</button>
       <button type="button" data-cheat="tough" aria-pressed="false" title="Plus/4 World's poke: an RTS where the way to the death sequence starts">Nothing kills him</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -103,12 +98,8 @@ section table{margin:6px 0 18px}
       <li><kbd>P</kbd> pauses, <kbd>P</kbd> again goes on</li>
       <li><kbd>D</kbd> gives up a life</li>
       <li><kbd>Z</kbd> <kbd>X</kbd> and <kbd>Shift</kbd> are the game's own keys, with a keyboard game chosen</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap">The page runs the port, the game's code written again in JavaScript, and draws the screen from the port's memory as TED, the C16's video chip, would draw it, line by line: the room in its colours above, the panel in its own below. The arrows and Space are a joystick in port 2, or the game's own keys when the menu's choice was a keyboard game. <b>One player</b> and <b>Two players</b> press RETURN on the title and then F1 or F3 on the menu, as a player would. The three cheats are pokes published by Plus/4 World, changes to single bytes of the game's code. The page makes them in the game's memory, as a machine-code monitor, a tool for changing memory, would make them.</p>
   </div>
 </section>
@@ -132,6 +123,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/ted-sound.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/core.js */
 // Mr Puniverse's port: P, the game's routines on the game's memory. Each group of routines is a
@@ -2074,12 +2066,8 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); typed.clear(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- the loop: one frame of TED's time per frame of real time -------------------------------
 let acc = 0, last = 0;

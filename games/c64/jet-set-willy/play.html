@@ -69,7 +69,7 @@ button.jw-b:hover{border-color:var(--ink-mute)}
       <button class="jw-b" type="button" id="jw-reset">Reset</button>
       <span class="jw-out" id="jw-out"></span>
     </div>
-    <canvas id="jw-screen" width="768" height="544" aria-label="The game"></canvas>
+    <div><canvas id="jw-screen" width="768" height="544" aria-label="The game"></canvas></div>
     <div class="jw-pad" id="jw-pad" aria-label="Joystick">
       <button type="button" data-j="4">left</button>
       <button type="button" data-j="8">right</button>
@@ -107,6 +107,7 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="reference/jsw-port.js"></script>
 <script src="../../lib/collide.js"></script>
 <script src="reference/jsw-play.js"></script>
@@ -166,6 +167,9 @@ function start(D) {
   // crackers' start-up shows the KERNAL's screen, whose glyphs are in the character ROM
   const g = cv.getContext('2d');
   const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
+  // carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
   function draw() {
     const f = play.shown;
     if (!f) return;

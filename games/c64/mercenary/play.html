@@ -57,10 +57,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-coords{font-family:var(--fm);font-size:13px;color:var(--ink-soft);white-space:nowrap}
@@ -110,12 +106,8 @@ section table{margin:6px 0 18px}
       <li><kbd>E</kbd> the lift, <kbd>Y</kbd> yes</li>
       <li><kbd>Esc</kbd> pause (CTRL + RETURN)</li>
       <li>CTRL + Q, CTRL + S and CTRL + L: the buttons</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <div class="pl-mod">
       <button type="button" id="alive-on" aria-pressed="false">🚗✈️ Mod: Targ Traffic</button>
       <span id="cheat-bar" class="pl-cheats">
@@ -224,6 +216,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* the port: Mercenary's routines, each a function on the game's memory M, named by the listing's label */
 (function () {
@@ -7329,13 +7322,8 @@ function makeDisplay(opts) {
   const tapList = [];
   function tap(keys, frames) { tapList.push({ keys, left: frames || 12 }); keysNow(); screen.focus(); }
   function taps() { let ch = false; for (let i = tapList.length - 1; i >= 0; i--) if (--tapList[i].left <= 0) { tapList.splice(i, 1); ch = true; } if (ch) keysNow(); }
-  // the touch pad
-  document.querySelectorAll('#pl-pad button').forEach(b => {
-    const bits = +b.dataset.pad;
-    const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); joy(); screen.focus(); };
-    const offf = () => { padBits &= ~bits; b.classList.remove('on'); joy(); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', offf); b.addEventListener('pointercancel', offf); b.addEventListener('pointerleave', offf);
-  });
+  // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+  PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; joy(); } });
 
   // --- sound: the SID writes of each frame, streamed to the site's SID model ------------------
   // Each write is filed under the frame of C64 time it was made in, and every frame goes to the
@@ -7410,7 +7398,7 @@ function makeDisplay(opts) {
     screen.focus();                             // every button hands the keyboard back to the game
   });
   // The CRT screen (site/lib/crt.js) draws the C64's pixels again, so native resolution goes off with it
-  const crt = CRT.attach(cv, { button: bar.querySelector('[data-crt]'), onChange: on => {
+  const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), onChange: on => {
     if (on && native) { native = false; bar.querySelector('[data-act="render"]').setAttribute('aria-pressed', 'false'); cv.width = 1; draw(); }
   } });
   screen.addEventListener('click', () => { if (!running && rt === null && image) start(); });

@@ -90,7 +90,6 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -150,6 +149,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/core.js */
 // The port's frame: P, the game's routines on the game's memory. Each group of routines is a file
@@ -8389,6 +8389,7 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;

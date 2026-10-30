@@ -95,7 +95,6 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a C64 with a much faster processor would: a new frame 60 times a second, as fast as the Speed sets">Fast CPU</button>
       <label class="pl-speed" title="How fast you move with Fast CPU: 1× as fast as a C64 at its quickest, with little in view; 2× and 5× faster still">Speed <input type="range" id="pl-speed" min="0" max="2" step="1" value="0"><output id="pl-speed-v">1×</output></label>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -220,6 +219,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script src="../../lib/fast-cpu.js"></script>
 <script>
@@ -6478,6 +6478,7 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
 
 // --- the saved games, kept in this browser by the name the game was given
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));

@@ -46,10 +46,10 @@ section table{margin:6px 0 18px}
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
-.pl-bar button,.pl-above button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
 .pl-over button{font-size:16px}
-.pl-bar button[aria-pressed="true"],.pl-above button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pl-bar button:hover,.pl-above button:hover{border-color:var(--ink-mute)}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
@@ -66,10 +66,6 @@ section table{margin:6px 0 18px}
 <main class="wrap">
 <section class="pl-first" id="game">
   <div class="plate pl-plate">
-    <div class="pl-above" id="pl-above" data-above>
-      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
-      <button type="button" data-fullscreen aria-pressed="false" title="The game over the whole screen, with a bigger joystick on a touch screen; this button again, Escape or Back returns to the page">⛶ Full screen</button>
-    </div>
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the arrow keys and Space.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of The Sacred Armour of Antiriad"></canvas>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
@@ -79,8 +75,8 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart" title="The machine switched on again: the title screen and its tune">Start again</button>
       <button type="button" data-act="quit" title="Q on the C64's keyboard: the game in play ends and the title comes back">Q: new game</button>
       <button type="button" data-act="solution" aria-pressed="false" title="The route on the Maps tab, from the title to the ending, in about six minutes">▶ Watch the solution</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys">
@@ -4061,10 +4057,11 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-// the touch pad docked under the screen, and full screen (site/lib/play-controls.js): each of its
-// bits is held as a key is, so a tap is never lost either; fire starts the game, as a tap does
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js):
+// each of the joystick's bits is held as a key is, so a tap is never lost either; fire starts the
+// game, as a tap does
 PlayControls.attach({
-  screen, canvas: cv, above: $('pl-above'), bar: $('pl-bar'), button: document.querySelector('[data-fullscreen]'),
+  screen, canvas: cv, bar: $('pl-bar'), pad: true,
   onPad(bits) {
     if (!running) { if ((bits & 16) && data) start(); return; }
     for (const b of [1, 2, 4, 8, 16]) {

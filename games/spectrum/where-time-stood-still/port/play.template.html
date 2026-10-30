@@ -54,10 +54,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 /* the wide view: the plate over the whole window, the picture above the bar */
 .pl-wide-only{display:none}
 .pl-stage{display:none;position:absolute;inset:0;overflow:hidden}
@@ -76,11 +72,11 @@ html.pl-wide-page section{content-visibility:visible!important;contain:none!impo
 .pl-wide .pl-stage{display:block}
 .pl-wide #pl-cv{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .pl-wide.pl-drawn #pl-cv{visibility:hidden}
-.pl-wide .pl-keys,.pl-wide .pl-pad,.pl-wide #pl-cap,.pl-wide #pl-cv + .crt-screen{display:none!important}
+.pl-wide .pl-keys,.pl-wide .pc,.pl-wide [data-fullscreen],.pl-wide #pl-cap,.pl-wide #pl-cv + .crt-screen{display:none!important}
 .pl-wide .pl-wide-only{display:inline-block}
-.pl-wide .pl-bar{margin:0;padding:8px 12px;background:#17191d}
-.pl-wide .pl-bar button{background:#2a2d33;color:#e9e7e1;border-color:#3d4047}
-.pl-wide .pl-bar button[aria-pressed="true"]{background:#e9e7e1;color:#17191d;border-color:#e9e7e1}
+.pl-wide .pl-bar,.pl-wide .pc-above{margin:0;padding:8px 12px;background:#17191d}
+.pl-wide .pl-bar button,.pl-wide .pc-above button{background:#2a2d33;color:#e9e7e1;border-color:#3d4047}
+.pl-wide .pl-bar button[aria-pressed="true"],.pl-wide .pc-above button[aria-pressed="true"]{background:#e9e7e1;color:#17191d;border-color:#e9e7e1}
 .pl-wide .pl-bar .pl-sep{background:#3d4047}
 .pl-wide .pl-status,.pl-wide .pl-hint{font-family:var(--fm);font-size:12px;color:#9a9da4}
 .pl-zoom{font-family:var(--fm);font-size:13px;color:#e9e7e1;min-width:2.6em;text-align:center}
@@ -125,12 +121,8 @@ section table{margin:6px 0 18px}
       <li><kbd>Space</kbd> the menus: the arrows move the pointer and fire picks. Or just click and use the mouse: a click opens the menus, the pointer follows the mouse and a click picks; with the game paused, a click carries on</li>
       <li><kbd>1</kbd>, <kbd>3</kbd> or <kbd>4</kbd> on the control selection: keys of your own, Interface 2 or cursor, played on the Spectrum's keys</li>
       <li>🔭 Wide view: <kbd>−</kbd> and <kbd>+</kbd> zoom, <kbd>Esc</kbd> goes back to the 128's screen</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="10">↖</button><button type="button" data-pad="8">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="2">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="1">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="4">↓</button><button type="button" data-pad="5">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum 128 would show it, at the 128's own pace: the game draws a new view six to eight times a second, into the screen it is not showing, and then shows it. The sound is the port's writes to the AY chip and the beeper, played by the site's model of them as each frame is shown.</p>
   </div>
 </section>
@@ -167,6 +159,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/ay.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <!-- port -->
 <script>
 /* the page: the port on a virtual 128 clock, drawn each frame, the keyboard and the joystick */
@@ -312,6 +305,7 @@ function cell(F, c, r, u, y) {
   }
 }
 function setWide(on) {
+  if (on) controls.exit();                    // the wide view is a full screen of its own
   wideOn = on;
   plate.classList.toggle('pl-wide', on);
   plate.classList.remove('pl-drawn');
@@ -437,12 +431,11 @@ document.addEventListener('keydown', e => {
   if (active) onKey(e, true);
 });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js),
+// its bits put in the Kempston interface's order: 1 right, 2 left, 4 down, 8 up, 16 fire
+const KEMPSTON = [[1, 8], [2, 4], [4, 2], [8, 1], [16, 16]];
+const controls = PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true,
+  onPad(bits) { padBits = 0; for (const [b, k] of KEMPSTON) if (bits & b) padBits |= k; input(); } });
 // the mouse (page/mouse.js): where it is on the 128's screen, in the screen's pixels, from the
 // picture of it shown (in the wide view the screen over the plateau, else the screen in its
 // border); a press it asks for held as a key is, by the latch above

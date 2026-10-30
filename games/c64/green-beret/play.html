@@ -55,11 +55,6 @@ section table{margin:6px 0 18px}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys b{color:var(--ink)}
-.pl-pad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px) 44px;gap:6px;margin-top:14px}
-.pl-pad .pl-wide{grid-column:1/4;font-size:15px;font-weight:700}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);touch-action:none}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
 <!-- tabs -->
@@ -78,7 +73,6 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart" title="The machine switched on again: the title page and its tune">Start again</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -88,14 +82,9 @@ section table{margin:6px 0 18px}
       <li><b>On the ground</b>: left and right walk, up jumps, or climbs a ladder he stands at; down lies down, or climbs down; the diagonals jump left and right. Fire stabs with the knife, standing or lying down.</li>
       <li><kbd>Space</kbd> fires the weapon he carries, once he has picked one up from a white soldier: a flame thrower, a bazooka or hand grenades. The ones he has left show at the top of the screen.</li>
       <li>Hold <kbd>1</kbd> during a jump and he hangs in the air until it is let go: a cheat the game kept (Discoveries).</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5" aria-label="Up and left">↖</button><button type="button" data-pad="1" aria-label="Up">↑</button><button type="button" data-pad="9" aria-label="Up and right">↗</button>
-      <button type="button" data-pad="4" aria-label="Left">←</button><button type="button" data-pad="16" aria-label="Fire">●</button><button type="button" data-pad="8" aria-label="Right">→</button>
-      <button type="button" data-pad="6" aria-label="Down and left">↙</button><button type="button" data-pad="2" aria-label="Down">↓</button><button type="button" data-pad="10" aria-label="Down and right">↘</button>
-      <button type="button" class="pl-wide" data-key="SPACE" aria-label="Space: the weapon he carries">Weapon (Space)</button>
-    </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The game reads one joystick, in control port 2, and two keys: the arrows and <kbd>X</kbd> are that joystick here, <kbd>Space</kbd> and <kbd>1</kbd> are the C64's, and on a touch screen the pad is both.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The game reads one joystick, in control port 2, and two keys: the arrows and <kbd>X</kbd> are that joystick here, <kbd>Space</kbd> and <kbd>1</kbd> are the C64's, and on a touch screen the pad under the picture is the joystick and its <b>Weapon</b> button is <kbd>Space</kbd>.</p>
   </div>
 </section>
 <section id="differences">
@@ -118,6 +107,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script>
 /* port/src/core.js */
@@ -5594,11 +5584,21 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const k = b.dataset.key || +b.dataset.pad, code = 'pad-' + k;
-  const on = ev => { ev.preventDefault(); if (!running) return; press(code, k); b.classList.add('on'); screen.focus(); };
-  const off = () => { if (!held.has(code)) return; letGo.add(code); b.classList.remove('on'); release(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js):
+// each of the joystick's bits, and Weapon's Space, is held as a key is, so a tap is never lost
+// either; fire starts the game, as a tap does
+PlayControls.attach({
+  screen, canvas: cv, bar: $('pl-bar'), pad: true,
+  fire: [{ label: 'Weapon', bit: 32 }, { label: 'Fire', bit: 16 }],
+  onPad(bits) {
+    if (!running) { if ((bits & 16) && data) start(); return; }
+    for (const b of [1, 2, 4, 8, 16, 32]) {
+      const code = 'pad-' + b;
+      if (bits & b) { if (!held.has(code) || letGo.has(code)) press(code, b === 32 ? 'SPACE' : b); }
+      else if (held.has(code)) letGo.add(code);
+    }
+    release();
+  },
 });
 
 // --- controls

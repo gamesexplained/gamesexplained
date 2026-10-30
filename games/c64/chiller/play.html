@@ -189,8 +189,8 @@ section table{margin:6px 0 18px}
         <button type="button" data-transport="forward" title="Move forward five seconds in recorded play" disabled><span aria-hidden="true">⏩</span> Fast forward</button>
       </div>
       <button type="button" data-act="restart">Start again</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
         <output id="pl-scrub-t" aria-label="Playback position">0.0 s of 0.0 s</output>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
@@ -218,10 +218,6 @@ section table{margin:6px 0 18px}
       <span>Artwork</span>
       <label class="pl-painted"><input type="checkbox" id="pl-painted"> Painted scenery</label>
       <span>Forest concept · original game rules</span>
-    </div>
-    <div class="pl-levels" aria-label="Screen effect">
-      <span>Screen</span>
-      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
     </div>
     <div class="pl-levels" id="pl-show" aria-label="Show over the game">
       <span>Show</span>
@@ -343,6 +339,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/kernal.js */
 // Stand-ins for the four KERNAL routines Chiller calls with the KERNAL banked in: the tail of the
@@ -3961,6 +3958,7 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
