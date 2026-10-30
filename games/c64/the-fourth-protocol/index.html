@@ -82,7 +82,7 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
 <header class="hero">
   <p class="eyebrow">1985 · Hutchinson Computer Publishing (UK); Bantam Software (US)</p>
   <h1>The Fourth Protocol</h1>
-  <p class="sub">Frederick Forsyth's thriller as three games on one disk: a desk job against the clock, an adventure played with a pointing hand, and a bomb defused by typing. Underneath are an operating system of the game's own, every memo packed four bits to a word, and a telephone number that stops the machine.</p>
+  <p class="sub">Frederick Forsyth's thriller as three games on one disk: a desk job against the clock, an adventure played with a pointing hand, and a bomb defused by typing. The first two run on an operating system of the game's own, and in the second a telephone number stops the machine.</p>
 </header>
 <main class="wrap">
 
@@ -104,8 +104,8 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
   <p class="fig">02 · The title tune</p>
   <h2 class="t">Music: David Dunn's title tune</h2>
   <p class="lede">The tune plays while the title picture waits for SPACE. It lasts two and a half minutes, then starts again.</p>
-  <div class="plate"><div id="tfp-music"></div><p class="cap">The page runs the game's own player, <code>tune_play</code> at <code>$CCF5</code>, on the kit's 6502, once a frame as the title's raster interrupt does. It reads the player and the tune from the title's listing, <code>$C388</code> to <code>$CF27</code>, and plays what the player writes to the sound chip through the site's model of the chip. A test beside the page runs the title's own interrupt on the same bytes for a whole pass of the tune and checks that every write matches. The filter's cutoff is one 6581's, and real chips differ. Voices 1 and 2 go down to 32 Hz, which laptop and phone speakers barely play.</p></div>
-  <p>The tune is a stream of bytes from <code>$C389</code>, read by <code>tune_play</code> once a frame from the title's raster interrupt at line 252 (<code>title_irq</code>, <code>$413F</code>). Each command byte is the low byte of the address of its own routine in page <code>$CD</code>. The player writes it into a <code>JMP</code> instruction at <code>tune_dispatch</code> and jumps, so the commands need no table: command <code>$53</code> is the routine at <code>$CD53</code>.</p>
+  <div class="plate"><div id="tfp-music"></div><p class="cap">The page runs the game's own player, <code>tune_play</code> at <code>$CCF5</code>, on a model of the Commodore's 6502 processor written in JavaScript, once a frame as the title's raster interrupt does. It reads the player and the tune from the title's listing, <code>$C388</code> to <code>$CF27</code>, and plays what the player writes to the sound chip through the site's model of the chip. A test beside the page runs the title's own interrupt on the same bytes for a whole pass of the tune and checks that every write matches. The filter's cutoff is one 6581's, and real chips differ. Voices 1 and 2 go down to 32 Hz, which laptop and phone speakers barely play.</p></div>
+  <p>The tune is a stream of bytes from <code>$C389</code>. A raster interrupt, a call the video chip makes each time it reaches a chosen line of the screen, runs <code>tune_play</code> once a frame from line 252 (<code>title_irq</code>, <code>$413F</code>). Every routine the tune can call sits in the 256 bytes from <code>$CD00</code>, and each command byte is the last two digits of its routine's address. The player writes the byte into a <code>JMP</code> instruction at <code>tune_dispatch</code> and jumps, so the commands need no table: command <code>$53</code> is the routine at <code>$CD53</code>.</p>
   <div class="plate tfp-wide"><table class="tfp-tbl">
     <tr><th>Command</th><th>What it does</th></tr>
     <tr><td class="tfp-n"><code>$0E</code> <code>$17</code> <code>$20</code></td><td>Start a note on voice 1, 2 or 3, its frequency in the next two bytes</td></tr>
@@ -132,12 +132,12 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
     <p class="cap">The page draws this from one frame of episode one, recorded in the emulator: the video chip's registers, the bitmap at <span data-part=""><code>$2000</code></span>, its colours at <span data-part=""><code>$0C00</code></span> and the two sprites of the pointer, run through the site's model of the video chip. All 104,448 pixels match the emulator's own picture of the same frame. The boxes come from the operating system's tables in the same frame, <code>window_table</code> at <code>$0200</code> and <code>icon_table</code> at <code>$0300</code>.</p>
   </div>
   <p>The operating system, the file <code>XXXMYOS1</code>, copies itself to <span data-part=""><code>$EB00</code>-<code>$FFFF</code></span>, the memory under the KERNAL (the Commodore's own operating system in ROM), and the game then switches the KERNAL out of sight. It keeps one picture of 320 by 200 pixels, a bitmap at <span data-part=""><code>$2000</code></span>, with a byte of colours for each 8 by 8 cell at <span data-part=""><code>$0C00</code></span>. Its background is a pattern of white and black stripes (<code>clear_screen</code>).</p>
-  <p>On that picture it keeps two lists. The 16 windows are rectangles of cells, each with a double frame, black outside and white inside; windows 8 to 14 save what they cover and put it back when they close. The 32 icons are pictures, one bit to a pixel, placed in a rectangle of cells inside a window or on the whole screen (window <code>$10</code>). The pointer is two sprites, a shape and its black outline. In episode one it is a yellow hand, and SPACE moves it from icon to icon.</p>
+  <p>On that picture it keeps two lists. The 16 windows are rectangles of cells, each with a double frame, black outside and white inside; windows 8 to 14 save what they cover and put it back when they close. The 32 icons are pictures, one bit to a pixel, placed in a rectangle of cells inside a window or on the whole screen (window <code>$10</code>). The pointer is two sprites, small pictures the video chip draws over the screen by itself: a shape and its black outline. In episode one it is a yellow hand, and SPACE moves it from icon to icon.</p>
 </section>
 
 <section data-part="resident">
   <p class="fig">04 · The operating system</p>
-  <h2 class="t">87 numbered calls, and 25 that crash</h2>
+  <h2 class="t">25 of the operating system's 87 calls would crash the machine</h2>
   <p class="lede">A program asks the operating system for something by calling <code>$EC00</code> with the number of what it wants in the accumulator, the processor's main register.</p>
   <div class="plate">
     <div class="tfp-grid" id="tfp-os"></div>
@@ -145,19 +145,19 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
     <p class="tfp-out" id="tfp-os-out">Press a number to read what the listing says about its function.</p>
     <p class="cap">Read from <code>os_function_table</code> at <code>$EC22</code> in the operating system's listing: two bytes, an address, for each number from <code>$00</code> to <code>$56</code>.</p>
   </div>
-  <p>Some functions take what they need from the bytes that follow the call: a window's position and size, or an icon's picture and colour. The function then returns past them (<code>os_inline_args</code>). Thirteen numbers have no function at all, and their entries are zero. Twelve more lead to <code>JMP $FC00</code>, eleven of them at once and function <code>$03</code> by way of <code>draw_to_second_bitmap</code>. <code>$FC00</code> falls in the middle of another instruction, so the processor would run on through bytes that were never meant as code (<code>os_dead_stub</code>). Each of the game's 335 calls names its function with a number written into the code, and none of them asks for one of the 25. Functions <code>$03</code> and <code>$21</code> were meant to send the drawing to a second bitmap at <span data-part=""><code>$C000</code></span>, which was never finished.</p>
+  <p>Some functions take what they need from the bytes that follow the call: a window's position and size, or an icon's picture and colour. The function then returns past them (<code>os_inline_args</code>). Thirteen of the numbers have no function, and their entries in the table are zero, so a call would jump to address 0. Twelve more lead to <code>JMP $FC00</code>, eleven of them at once and function <code>$03</code> by way of <code>draw_to_second_bitmap</code>. <code>$FC00</code> falls in the middle of another instruction, so the processor would run on through bytes that were never meant as code (<code>os_dead_stub</code>). Functions <code>$03</code> and <code>$21</code> were meant to send the drawing to a second bitmap at <span data-part=""><code>$C000</code></span>, which was never finished. The game is safe from all 25: each of its 335 calls names its function with a number written into the code, and every one of those numbers has a working function.</p>
 </section>
 
 <section data-part="nato-documents">
   <p class="fig">05 · Text</p>
   <h2 class="t">Every memo, packed four bits at a time</h2>
-  <p class="lede">Episode one is mostly reading: 46 memos, 16 reports, the sitreps of the watchers and the files of a security firm. They fit on the disk because each word is stored as a number, often in just four bits.</p>
+  <p class="lede">Episode one is mostly reading: 46 memos, 16 reports, the watchers' situation reports (sitreps), and the Blenheim files, which a telephone call with the code of the week releases. They fit on the disk because each word is stored as a number, often in just four bits, half a byte.</p>
   <div class="plate">
     <div class="tfp-pick" id="tfp-memo-pick"></div>
     <div class="tfp-memo"><canvas id="tfp-memo"></canvas></div>
     <p class="tfp-out" id="tfp-memo-out"></p>
     <div class="tfp-codes" id="tfp-memo-codes"></div>
-    <p class="cap">The page unpacks each text from episode one's listing as <code>next_word</code> (<code>$642F</code>) does, and draws it in the operating system's own font (<code>font</code>, at <code>$FDB2</code> in its listing). Each grey chip is one word: the codes that stand for it, in hexadecimal, then the word. A test beside the page runs the game's own <code>print_text</code> (<code>$63AC</code>) on all 121 texts and checks that the page prints the same characters.</p>
+    <p class="cap">The page unpacks each text from episode one's listing as <code>next_word</code> (<code>$642F</code>) does, and draws it in the operating system's own font (<code>font</code>, at <code>$FDB2</code> in its listing). Each grey chip is one word: the codes that stand for it, in hexadecimal (base 16, the digits 0 to 9 then A to F), then the word. A test beside the page runs the game's own <code>print_text</code> (<code>$63AC</code>) on all 121 texts and checks that the page prints the same characters.</p>
   </div>
   <p>A text is a run of four-bit codes, read from the low half of each byte first. The thirteen commonest things in English text, the space, eleven letters and the new line, take a single code each. Two codes give the rest of the letters and the commonest short pieces, and three codes give one of 256 whole words. The words themselves sit in a dictionary of 301 at <code>$96D0</code>, and the game finds word number n by counting n zero bytes from its start (<code>find_dictionary_word</code>).</p>
   <div class="plate tfp-wide"><table class="tfp-tbl">
@@ -173,36 +173,37 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
 <section data-part="nato-documents">
   <p class="fig">06 · Episode one</p>
   <h2 class="t">Forty days at Cencom</h2>
-  <p class="lede">Episode one runs on a clock. A day lasts 14,400 frames, 4 minutes 48 seconds on a European machine, and the game gives you 40 of them to find who is passing NATO's papers on.</p>
+  <p class="lede">Episode one runs on a clock. A day lasts 14,400 frames, 4 minutes 48 seconds on a European machine. The game gives you 40 days to find who is passing NATO's papers on.</p>
   <p>The clock is the raster interrupt, which the video chip raises once a frame: <code>day_clock</code> (<code>$5C38</code>) counts the frames and ends the day when the count reaches 14,400. The calendar starts in June and turns to July with a picture of an L drawn over the N of JUN (<code>pic_calendar_l</code>).</p>
-  <p>Everything that happens is an event in one of four lists, of the story's memos, the reports, the watchers' findings and the telephone calls, each with eight places for each of 41 days, from <span data-part=""><code>$1000</code></span> on. A choice you make, an option in a memo or an answer on the telephone, puts the next event a few days ahead (<code>schedule_in</code>). Your prestige starts at 500 and ends the game below 50 (<code>add_prestige</code>), and it sets how many watchers you may put on your suspects: a tenth of your prestige, plus 50 (<code>watcher_allowance</code>).</p>
+  <p>Everything that happens is an event in one of four lists, from <span data-part=""><code>$1000</code></span> on: the story's memos, the reports, the watchers' findings and the telephone calls. Each list has eight places for each of 41 days. A choice you make, an option in a memo or an answer on the telephone, puts the next event a few days ahead (<code>schedule_in</code>).</p>
+  <p>Your prestige starts at 500, and the game ends if it falls below 50 (<code>add_prestige</code>). Prestige also sets how many watchers you may put on your suspects: a tenth of your prestige, plus 50 (<code>watcher_allowance</code>).</p>
   <h3 class="tfp-h">Building 17's locks</h3>
-  <p>Memo 28 asks you to secure Building 17. You place locks on the doors of two floor plans, and <code>judge_locks</code> (<code>$7C3F</code>) answers with a memo a few days later. Lock doors below to see what it says. A building that fails always brings memo 32, a serious breach: the game has a second memo, a break-in, for one time in 99, and a slip in the code means it never comes (<a href="discoveries.html#tfp-breakin">Discoveries</a>).</p>
+  <p>Memo 28 asks you to secure Building 17. You place locks on the doors of two floor plans, and <code>judge_locks</code> (<code>$7C3F</code>) answers with a memo a few days later. Lock doors below to see what it says. A building that fails brings memo 32, a serious breach, every time. The code was meant to bring memo 31, a break-in, one time in 99 instead, and a slip in it means memo 31 never comes (<a href="discoveries.html#tfp-breakin">Discoveries</a>).</p>
   <div class="plate">
     <div id="tfp-locks"></div>
     <p class="tfp-out" id="tfp-locks-out"></p>
-    <p class="cap">The page judges the locks as <code>judge_locks</code> does, with the counts <code>lock_door</code> keeps for each kind of room (<code>lock_counts</code>, <code>$7EE8</code>). A test beside the page runs the game's own routine on every combination of counts the two floors allow, with its random number seeded once to give 0 and once not, and checks that the page gives the same memos and progress. The doors are those of <code>basement_doors</code> and <code>ground_floor_doors</code>; the plans themselves are on the Maps tab.</p>
+    <p class="cap">The page judges the locks as <code>judge_locks</code> does, with the counts <code>lock_door</code> keeps for each kind of room (<code>lock_counts</code>, <code>$7EE8</code>). A test beside the page runs the game's own routine on every combination of counts the two floors allow, with its random number seeded once to give 0 and once not, and checks that the page gives the same memos and progress. The doors are those of <code>basement_doors</code> and <code>ground_floor_doors</code>, in the same order, and the plans themselves are on the <a href="levels.html#building-17">Maps tab</a>.</p>
   </div>
   <h3 class="tfp-h">The end</h3>
-  <p>The telephone number 12377563 reaches Sir Anthony Plumb, who asks six questions (<code>plumb_questions</code>, <code>$501B</code>): the traitor, his contact's nationality, the contact's alias and real name, the proof, and where it happened. Six right answers, with the fingerprint found among Holmar's effects in Sweden, start a countdown of ten days, and its end wins the game. Day 41 without it loses, and so does prestige below 50. The winning memo, from Sir Nigel Irvine, carries a password for the next episode: 10 190 216 277 358.</p>
+  <p>The telephone number 12377563 reaches Sir Anthony Plumb, who asks six questions (<code>plumb_questions</code>, <code>$501B</code>): the traitor, his contact's nationality, the contact's alias and real name, the proof, and where it happened. Six right answers, with the fingerprint found among Holmar's effects in Sweden, start a countdown of ten days, and its end wins the game. Reaching day 41 first loses, and so does prestige below 50. The winning memo, from Sir Nigel Irvine, gives a new password: 10 190 216 277 358. Nothing in the game asks for it. The first lift in episode two wants ASPEN, a word of five letters, and the one-time pads that would turn the five numbers into letters are not in the program.</p>
 </section>
 
 <section data-part="the-bomb">
   <p class="fig">07 · Episode two</p>
-  <h2 class="t">249 places, chosen with icons</h2>
-  <p class="lede">Episode two is an adventure across London, Bristol, Dover and a housing estate at Faslane, played entirely with the pointing hand.</p>
+  <h2 class="t">An adventure played with a pointing hand</h2>
+  <p class="lede">Episode two crosses London, Bristol, Dover and a housing estate at Faslane. You choose almost everything with icons, and type only a destination, a telephone number or a code.</p>
   <div class="plate">
     <div class="tfp-icons" id="tfp-icons"></div>
     <p class="cap">Episode two's icons, drawn by the page from the file <code>XXXICONS</code> (<code>$1000</code>-<code>$1FFF</code>), one bit to a pixel, in rows as many bytes wide as the icon is cells. Each address links to the picture in the listing.</p>
   </div>
-  <p>The screen shows the place's two names in two windows, and seven icons around them: manipulate, assessment, utilities, look, wait, move and communicate (<code>main_menu</code>). Most open a window of icons of their own, drawn in another colour where they cannot be used here. Every choice counts as a move (<code>moves</code>, <code>$4042</code>), and the assessment icon reports your efficiency as a percentage together with the moves taken.</p>
-  <p>Each of the 249 places is a record of 14 bytes (<code>location_records</code>, <code>$ADFD</code>): where each of the eight directions leads, north, east, south, west, enter, leave, up and down; what is there, such as a lift, a telephone or a ticket barrier; its two names; and a line about who is present. The Maps tab walks through all of them. The taxi takes a word for a destination (<code>taxi_destinations</code>, <code>$7C6F</code>), the telephone takes a word for a number (<code>phone_numbers</code>, <code>$8231</code>), and the lifts take a code (<code>lift</code>, <code>$496C</code>).</p>
-  <p>Episode two has no music and no sound effects: no instruction in it touches the sound chip. It sets up no interrupt either, so nothing happens until you choose something.</p>
+  <p>The screen shows the place's two names in two windows, and seven icons around them: manipulate, assessment, utilities, look, wait, move and communicate (<code>main_menu</code>). Most open a window of icons of their own, and an icon that cannot be used in this place is drawn in another colour. Every choice counts as a move (<code>moves</code>, <code>$4042</code>), and the assessment icon reports your efficiency as a percentage together with the moves taken.</p>
+  <p>Each of the 249 places is a record of 14 bytes (<code>location_records</code>, <code>$ADFD</code>): where each of the eight directions leads, north, east, south, west, enter, leave, up and down; what is there, such as a lift, a telephone or a ticket barrier; its two names; and a line about who is present. The <a href="levels.html">Maps tab</a> shows every one of them. The taxi takes a word for a destination (<code>taxi_destinations</code>, <code>$7C6F</code>), the telephone takes a word for a number (<code>phone_numbers</code>, <code>$8231</code>), and the lifts take a code (<code>lift</code>, <code>$496C</code>).</p>
+  <p>Episode two is silent: its code never writes to the sound chip. It sets up no interrupt either, so nothing on the screen moves until you choose something.</p>
 </section>
 
 <section data-part="sas-assault">
   <p class="fig">08 · Episode three's screen</p>
-  <h2 class="t">One room, seven raster interrupts</h2>
+  <h2 class="t">Seven raster interrupts draw one room</h2>
   <p class="lede">Episode three is another program by another programmer. It shows a single room, a picture with a text window under it, and changes the video chip's settings seven times on the way down the screen.</p>
   <div class="plate">
     <div class="tfp-bar" id="tfp-room-bar"></div>
@@ -210,12 +211,12 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
     <p class="tfp-out" id="tfp-room-out"></p>
     <p class="cap">The page draws this from one frame of episode three, recorded in the emulator with the drawer open and the alarm ringing: the video chip's registers at the top of the frame and the 49 writes the interrupts make on the way down, run through the site's model of the video chip. All 104,448 pixels match the emulator's own picture of the same frame. The text window's letters come from the Commodore's character ROM, and the page carries only the 23 letters it shows, from the ROM 901225-01.</p>
   </div>
-  <p>The room is a multicolour bitmap at <code>$6000</code>, 160 double-width pixels across and 160 rows down (<code>picture</code>). Everything that moves is a sprite over it: the door, the guard, the drawer and the bomb with its three coloured lights. Eight sprites are not enough, so the interrupts use some of them twice, once in the top half of the screen and again lower down (<code>irq_guard_lower</code>, <code>irq_door_lower</code>). At line <code>$D7</code>, <code>irq_text</code> switches to the character screen at <code>$0400</code> for the five rows of text. It also moves the guards, sounds the siren and scans the keyboard, once a frame.</p>
+  <p>The room is a multicolour bitmap at <code>$6000</code>, 160 double-width pixels across and 160 rows down (<code>picture</code>). Everything that moves is a sprite over it: the door, the guard, the drawer and the bomb with its three coloured lights. The video chip has only eight sprites, so the interrupts use some of them twice, once in the top half of the screen and again lower down (<code>irq_guard_lower</code>, <code>irq_door_lower</code>). At line <code>$D7</code> (215), <code>irq_text</code> switches to the character screen at <code>$0400</code>, where each byte is a letter, for the five rows of text. The same interrupt moves the guards, sounds the siren and reads the keyboard, once a frame.</p>
 </section>
 
 <section data-part="sas-assault">
   <p class="fig">09 · Episode three's parser</p>
-  <h2 class="t">Eighteen verbs and 28 nouns</h2>
+  <h2 class="t">The parser finds one verb and one noun anywhere in the line</h2>
   <p class="lede">You type what Preston does, and the game looks for one verb and one noun in the line. Type a line, or press an example.</p>
   <div class="plate">
     <input class="tfp-line" id="tfp-line" type="text" maxlength="40" value="USE THE SECOND KEYPAD" aria-label="A line typed in episode three" autocomplete="off" spellcheck="false">
@@ -228,8 +229,8 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
 
 <section data-part="sas-assault">
   <p class="fig">10 · Episode three's bomb</p>
-  <h2 class="t">Five steps to defuse it, and many ways to set it off</h2>
-  <p class="lede">The bomb is in the second drawer of a filing cabinet. It goes off on the 144th line you type, whatever you are doing.</p>
+  <h2 class="t">Five lines defuse the bomb</h2>
+  <p class="lede">The bomb is in the second drawer of a filing cabinet. Typed in the right order, the five steps below defuse it. Otherwise it goes off on the 144th line you type, whatever you are doing.</p>
   <div class="plate tfp-wide"><table class="tfp-tbl">
     <tr><th>Type</th><th>What happens</th><th>Where</th></tr>
     <tr><td class="tfp-n">USE SECOND</td><td>Chooses the second keypad, for one line. FIRST and THIRD choose the wrong ones.</td><td class="tfp-n"><code>$B488</code></td></tr>
@@ -238,8 +239,8 @@ h3.tfp-h{font-size:19px;margin:28px 0 8px}
     <tr><td class="tfp-n">PUSH RED, PUSH YELLOW, PUSH GREEN</td><td>In that order the panel slides away and the timer shows. A button out of turn sets the bomb off.</td><td class="tfp-n"><code>$B4BF</code></td></tr>
     <tr><td class="tfp-n">CUT RED, CUT YELLOW, CUT GREEN</td><td>In that order the bomb is defused. A wire out of turn, or the blue one, sets it off.</td><td class="tfp-n"><code>$B54E</code></td></tr>
   </table></div>
-  <p>The state of the bomb is one byte (<code>bomb_state</code>, <code>$8784</code>): 0 while the cabinet is sealed, 2 with the drawer open, 4 with the timer showing, and <code>$80</code> once it is defused. Attacking, kicking, hitting, destroying or pushing the cabinet or any part of the bomb sets it off, and so does a guard who kills you. The guards come in while the alarm rings, up to five of them, and with each one in the room your chance of being killed after a line goes up: 1 in 16 with one or two guards, then 1 in 8, 1 in 4 and 1 in 2 (<code>attack_chances</code>, <code>$B66C</code>).</p>
-  <p>How it ends depends on the count of lines typed (<code>commands_typed</code>, <code>$879A</code>). The bomb defused brings an alliance government in the 1987 election and early retirement. An explosion on an odd count brings an epilogue from the annals of the Australo-Indonesian empire, and on an even count one in which the blast at Faslane is blamed on a NATO bomb going off by accident. The 144th line always ends on the even one. The Discoveries tab has the stranger corners of the parser.</p>
+  <p>The bomb's state is one byte (<code>bomb_state</code>, <code>$8784</code>): 0 while the cabinet is sealed, 2 with the drawer open, 4 with the timer showing, and <code>$80</code> once it is defused. Attacking, kicking, hitting, destroying or pushing the cabinet or any part of the bomb sets it off, and so does a guard who kills you. The guards come in while the alarm rings, up to five of them, and with each one in the room your chance of being killed after a line goes up: 1 in 16 with one or two guards, then 1 in 8, 1 in 4 and 1 in 2 (<code>attack_chances</code>, <code>$B66C</code>).</p>
+  <p>How it ends depends on the count of lines typed (<code>commands_typed</code>, <code>$879A</code>). The bomb defused brings an alliance government in the 1987 election and early retirement. An explosion on an odd count brings an epilogue from the annals of the Australo-Indonesian empire, and on an even count one in which the blast at Faslane is blamed on a NATO bomb going off by accident. The 144th line always ends on the even one. The <a href="discoveries.html">Discoveries</a> tab has the stranger corners of the parser.</p>
 </section>
 
 </main>
