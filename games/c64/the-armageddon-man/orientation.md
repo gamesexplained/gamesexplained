@@ -54,8 +54,8 @@ Snapshots, all in `work/` and saved without ROMs:
 Interrupt vectors in play are the hardware ones in RAM: NMI `$62CB`, IRQ
 `$624C` (`$FFFA`-`$FFFF`, written by the start-up at `$6306`-`$631A`); the
 KERNAL's `$0314` is left at `$EA31` and unused, since the ROMs stay banked
-out. In play `$01` holds `$15` (RAM, the I/O area, RAM) and the start-up
-runs with `$14` (RAM everywhere). The video chip uses bank 3
+out. The game keeps `$01` at `$14` (RAM everywhere) and switches the I/O
+area in (`$15`) only while it touches a chip (`io_in`, `io_out`). The video chip uses bank 3
 (`$DD00` = `$C4`): bitmap at `$E000`, screen at `$DC00`, under the I/O
 area. The raster interrupt's line is `$EB` at start-up (`$6329`).
 
