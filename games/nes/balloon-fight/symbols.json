@@ -10221,12 +10221,12 @@
   {
    "address": 50111,
    "type": "line",
-   "text": "Which generator runs at each difficulty step 0 to 9: 0, 0, 2, 2, 2, 2, 2, 4, 3, 1: the fixed opening twice, five steps of the generator that also makes a bubble now and then, a quiet step where nothing is made, sparks alone, then balloons with sparks."
+   "text": "Which generator runs at each difficulty step 0 to 9: 0, 0, 2, 2, 2, 2, 2, 4, 3, 1: the fixed opening for two steps (runs 1 to 63, since trip_progress rises before each run; the pointer is never set back, so it reads on through trip_layout and past its end), five steps of the generator that also makes a bubble now and then, a quiet step where nothing is made, sparks alone, then balloons with sparks."
   },
   {
    "address": 50121,
    "type": "line",
-   "text": "Reads bytes from trip_layout through platform_left_ptr until a 0: a byte $80 to $BF puts a balloon at Y equal to its low bits times 8, a byte $00 to $3F puts a spark there with speed 0; other bytes end the read. Each object enters from the left edge."
+   "text": "One run of the fixed opening. Reads bytes from trip_layout through platform_left_ptr until a 0: a byte $80 to $BF puts a balloon at Y equal to its low five bits times 8, a byte $01 to $3F puts a spark there with speed 0; any other byte ends the run as a 0 does. Each object enters from the left edge. The next run carries on from the byte after."
   },
   {
    "address": 50167,
@@ -10271,12 +10271,12 @@
   {
    "address": 50349,
    "type": "line",
-   "text": "The fixed opening of Balloon Trip, 122 bytes read by trip_stream_reader: $80 to $BF a balloon at row (byte and $3F), $00 to $3F a spark at that row, 0 the end. The same every game, which is why the first screens of Balloon Trip never change; after it the generators are random."
+   "text": "The fixed opening of Balloon Trip, 122 bytes read by trip_stream_reader: $80 to $BF a balloon at Y (its low five bits times 8), $01 to $3F a spark there, a 0 the end of one run's objects. 58 runs, the same every game, which is why the first screens of Balloon Trip never change. trip_handler_order gives the reader 63 runs, so its last five read on into set_balloon_value's code: six sparks and a balloon. After that the generators are random."
   },
   {
    "address": 50471,
    "type": "line",
-   "text": "Loads the next bonus round's values (set_bonus_round_values) and multiplies the balloon value by ten, giving bonus_value in tens of points: 30, 50 or 70 for 300, 500 or 700 points."
+   "text": "Loads the next bonus round's values (set_bonus_round_values) and multiplies the balloon value by ten, giving bonus_value in tens of points: 30, 50 or 70 for 300, 500 or 700 points. Its first twelve bytes, $C527 to $C532, are read as layout too, by the last five runs of trip_stream_reader, which run past the end of trip_layout."
   },
   {
    "address": 50489,

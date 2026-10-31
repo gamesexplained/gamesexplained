@@ -33,6 +33,8 @@ time, operating system and tool versions.
 
 - `lo_hi_address` on a split pointer table that has a label on its second half: regenerator2000 0.9.20 paired each half with its own label rather than with the other half and minted addresses in the middle of routines (`a_C096` inside the NMI handler, `a_E3AB` inside `draw_actor`). The tell was the coverage queue showing bare runs inside described routines. The tables went back to `byte` with the pairing in the comment. The next run on a 6502 game with split tables that meets it should add the case to `tool-regen2000`'s trap on `lo_hi_address`.
 
+- **A Play tab's lockstep run on the page's own image of the cartridge.** The page carries the cartridge with every code byte the port does not read set to zero, but `test_play.js` gave the port the listing's whole memory, so a byte the port reads and the page left zero never showed. On 31 October 2026 it ran the port on the page's image instead and found three such places: Balloon Trip's opening reads twelve bytes past its list, and the demonstration reads past two short tables. `kit/nes/lockstep.js`, and the other platforms' lockstep, could take the image a page runs as an option, so that every Play tab's test checks it without being told.
+
 ## Maintainer asks
 
 - **NesCartDB, StrategyWiki and The Cutting Room Floor refuse the agent's fetch.** Each is named by `nes-reference`, "Where to read about a game first", and each answered 403, a bot check, or a decoy page on 19 October 2026; StrategyWiki's MediaWiki API (`/w/api.php?action=parse`) still answered. The reference should name the API, and the other two should be marked as sites to read by hand until a way in is found.
