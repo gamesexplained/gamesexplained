@@ -7,35 +7,46 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "The comparison that counts the pixels that differ from the emulator's picture of the same frame is the drawing's test": I recorded the whole frame with `kit/c64/frame.py` rather than drawing the screen from one read of the registers, and the comparison put the screen split on lines 210 and 265, which corrected the comments at `$6AB6` and `$6B1C` and `orientation.md`.
+- `60-verify`: "Comments a program wrote, a decoder describing every record of a format": I gave the 846 comments generated from the database's records a stratum of their own, drew 20 of the 80 from it, and reported the weighted rate beside the plain one.
+- `60-verify`: "search the listing for every comment that says the same": each of the sample's six wrong comments led to the others that repeated it (`word_count`, the word buffer, command 85, the item-word compare), corrected with it.
+- `60-verify`: "A test must contain cases that have to succeed": `test_pictures.js` decodes all 70 files and draws 45 rooms, and `test_parser.js` runs 20,202 lines, so that each test fails when the port is broken on purpose.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+None.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **A widget's answer beyond the ported routine is an untested claim.**
+  The parser box ports the command line up to the verb and noun, and the
+  test holds that much. Its answer then went one step further, which
+  actions fit, and for GET RING it said "No action has this verb", when
+  the game's own GET answers the line. Nothing tested that step. It was
+  caught by reading the action scan to write the answer. The skill would
+  say: when a widget writes what the game does next, beyond the routine
+  its test holds, either take that step into the test or have the widget
+  stop where the test does.
+- **A quoted reply written from expectation.** A draft quoted the game's
+  answer to a command without running it through the port the page
+  already had, and the quote was wrong. Running every quoted reply
+  through the port, or the game, before the copy pass would have caught
+  it at once.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- #661: Say whether code a game runs inside the disk drive is counted.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Regenerator 2000's tracer decoding the inline arguments after `SETHLI`
+and its four sister routines as code again on each later trace; a note in
+`kit/skills/c64/tool-regen2000` that typed inline arguments must be typed
+again after every trace (or the trace run once, before typing them)
+would have saved the most.
+
+## System and tools
+
+Linux 6.18 x86_64 in a cloud container with no display; VICE v3.14.0
+(vice-mcp), check-emulator 57 of 57; Regenerator 2000 0.9.20; Python
+3.13.17; Node v22.22.0. Nothing new for the install notes.

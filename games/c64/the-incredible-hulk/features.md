@@ -61,7 +61,8 @@ Found in the code, not in the manual.
   to four bars of colour ($6B8B). live
 - **A winning password.** SCORE with every treasure in the fuzzy area
   has the Chief Examiner say "Save this password: ARIA" (actions 202 to
-  208). live
+  208). live. The manual does not mention it; search results on 31
+  October 2026 (Wikipedia's article among them) name the password.
 - **Saved games already on the disk.** Commodore's 1984 disk holds four
   saved games, and areas A and D are the same three blocks, which the
   disk's block map lists as free: the first game saved, in any area, goes
