@@ -98,8 +98,31 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
   </div>
 </section>
 
+<section id="s7b">
+  <p class="fig">02 &middot; The sound</p>
+  <h2 class="t">Sound: both engine voices are noise</h2>
+  <p class="lede">Two of the SID's three voices carry the helicopter and both are set to the
+  noise waveform. <code>$9975</code> writes <code>$81</code> to <code>$D404</code>: bit 7
+  selects noise, bit 0 opens the gate, and it stays open. Voice 1 is the rumble, and its
+  frequency low byte is a variable the game walks: <code>$0B5E</code> climbs towards
+  <code>$C0</code> in steps of <code>$10</code> while the machine is off the ground and falls
+  back towards <code>$30</code> when it lands. Voice 2 is the chop, fixed at <code>$041A</code>
+  with a short envelope, re-gated every <code>$94</code> frames, and <code>$94</code> shortens
+  from 17 to 8 as the rumble rises. The blades speed up because the engine does.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" id="engBtn">Sweep the engine, $30 to $C0</button>
+      <span class="mono" id="engLbl"></span>
+    </div>
+    <canvas id="engCv" width="640" height="150"></canvas>
+    <p class="cap">The line is the SID noise rate the value produces, <code>f = value &times;
+    985248 / 16777216</code> on PAL. The sound is a browser approximation of filtered noise at
+    that rate, not a SID emulation.</p>
+  </div>
+</section>
+
 <section id="s2">
-  <p class="fig">02 &middot; The shape table</p>
+  <p class="fig">03 &middot; The shape table</p>
   <h2 class="t">Seventy-five bitmaps and no sprites</h2>
   <p class="lede">Everything the game can draw is in one table. <code>$8009</code> holds 75
   pointers and <code>$80A1</code> to <code>$8A8A</code> holds the bitmaps. A shape is a width
@@ -123,7 +146,7 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
 </section>
 
 <section id="s3">
-  <p class="fig">03 &middot; Two screens</p>
+  <p class="fig">04 &middot; Two screens</p>
   <h2 class="t">Nothing is cleared, only un-drawn</h2>
   <p class="lede">There are two complete displays. VIC bank 0 has its bitmap at <code>$2000</code>
   and its colour matrix at <code>$0400</code>; bank 1 has them at <code>$6000</code> and
@@ -143,7 +166,7 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
 </section>
 
 <section id="s4">
-  <p class="fig">04 &middot; Controls</p>
+  <p class="fig">05 &middot; Controls</p>
   <h2 class="t">One button, three meanings, decided by a count</h2>
   <p class="lede">The manual describes a short press, a medium press and a long press. In the
   code there is one threshold. The raster interrupt counts frames into <code>$96</code> while
@@ -170,7 +193,7 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
 </section>
 
 <section id="s5">
-  <p class="fig">05 &middot; The tank</p>
+  <p class="fig">06 &middot; The tank</p>
   <h2 class="t">Five gun angles and a bearing window</h2>
   <p class="lede">A tank has three pieces, and each one is filed in the frame's object list on
   its own, so the hull, the turret and the barrel can be hit separately. The aiming is a table
@@ -193,7 +216,7 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
 </section>
 
 <section id="s6">
-  <p class="fig">06 &middot; The jet</p>
+  <p class="fig">07 &middot; The jet</p>
   <h2 class="t">Four canned manoeuvres, stepped one record a frame</h2>
   <p class="lede">The jet does not steer. It has five states, four of which are lists of
   four-byte records read one per frame: a shape number, a step in X, and two vertical
@@ -208,7 +231,7 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
 </section>
 
 <section id="s7">
-  <p class="fig">07 &middot; Progression</p>
+  <p class="fig">08 &middot; Progression</p>
   <h2 class="t">What gets harder, and by how much</h2>
   <div class="plate">
     <div class="tablewrap"><table id="diffTbl">
@@ -217,29 +240,6 @@ th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:up
     <p class="cap">Difficulty is not the sortie number. It is <code>$8D</code>, raised at
     <code>$9EBA</code> the first time the player unloads after a pickup, so it tracks how well the
     player is doing rather than how long the game has run. At 0 only tanks can appear.</p>
-  </div>
-</section>
-
-<section id="s7b">
-  <p class="fig">08 &middot; The sound</p>
-  <h2 class="t">Sound: both engine voices are noise</h2>
-  <p class="lede">Two of the SID's three voices carry the helicopter and both are set to the
-  noise waveform. <code>$9975</code> writes <code>$81</code> to <code>$D404</code>: bit 7
-  selects noise, bit 0 opens the gate, and it stays open. Voice 1 is the rumble, and its
-  frequency low byte is a variable the game walks: <code>$0B5E</code> climbs towards
-  <code>$C0</code> in steps of <code>$10</code> while the machine is off the ground and falls
-  back towards <code>$30</code> when it lands. Voice 2 is the chop, fixed at <code>$041A</code>
-  with a short envelope, re-gated every <code>$94</code> frames, and <code>$94</code> shortens
-  from 17 to 8 as the rumble rises. The blades speed up because the engine does.</p>
-  <div class="plate">
-    <div class="ctl">
-      <button class="k" id="engBtn">Sweep the engine, $30 to $C0</button>
-      <span class="mono" id="engLbl"></span>
-    </div>
-    <canvas id="engCv" width="640" height="150"></canvas>
-    <p class="cap">The line is the SID noise rate the value produces, <code>f = value &times;
-    985248 / 16777216</code> on PAL. The sound is a browser approximation of filtered noise at
-    that rate, not a SID emulation.</p>
   </div>
 </section>
 

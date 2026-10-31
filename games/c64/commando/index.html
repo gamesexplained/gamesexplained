@@ -112,7 +112,27 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · The battlefield</p>
+  <p class="fig">03 · The sound effects</p>
+  <h2 class="t">Sound: the game never asks for half its sound effects</h2>
+  <p class="lede">The driver holds sixteen effects (<code>$55F9</code>) and the game asks for eight of them. Each button plays one alone.</p>
+  <div class="plate"><div id="cm-sfx"></div>
+  <p class="cap">The same port as the music, starting one effect as the game's call at <code>$500F</code> does. The effect's frequencies come from the music's note table.</p></div>
+  <p>An effect is sixteen bytes: the start of the first two voices' registers, a first and a last note, and a byte that says whether to step the notes up or down, how many frames each step lasts and whether to flip each voice's gate as it goes (<code>$5531</code>, <code>$53A5</code>). While an effect sounds, the music gives up voices 1 and 2 to it and keeps playing on voice 3 (<code>$538F</code>). In the title tune that third voice carries the bass and nearly all the drums, so under a grenade the tune loses its upper parts and keeps its rhythm.</p>
+  <table class="cm-tbl"><thead><tr><th>Effect</th><th>Asked for when</th><th>Where</th></tr></thead><tbody>
+    <tr><td class="cm-n">0</td><td>a box of grenades is picked up</td><td class="cm-n"><code>$2AA6</code></td></tr>
+    <tr><td class="cm-n">1</td><td>a grenade is thrown</td><td class="cm-n"><code>$3913</code></td></tr>
+    <tr><td class="cm-n">2</td><td>a grenade destroys a bunker</td><td class="cm-n"><code>$37BC</code></td></tr>
+    <tr><td class="cm-n">4</td><td>Super Joe is hit, or falls</td><td class="cm-n"><code>$1060</code>, <code>$3C17</code></td></tr>
+    <tr><td class="cm-n">5</td><td>the jeep comes up from behind</td><td class="cm-n"><code>$1ECB</code></td></tr>
+    <tr><td class="cm-n">9</td><td>the third area is won</td><td class="cm-n"><code>$0933</code></td></tr>
+    <tr><td class="cm-n">11</td><td>a letter is shot in the name entry</td><td class="cm-n"><code>$0DCC</code></td></tr>
+    <tr><td class="cm-n">12</td><td>an extra life</td><td class="cm-n"><code>$136B</code></td></tr>
+    <tr><td class="cm-n">3, 6-8, 10, 13-15</td><td>never</td><td></td></tr>
+  </tbody></table>
+</section>
+
+<section>
+  <p class="fig">04 · The battlefield</p>
   <h2 class="t">Every area's map, from the start line to the gate</h2>
   <p class="lede">Each area is one map, 40 characters wide and 200 rows deep, built from the area's own character set. Play starts near the bottom and the gate is at row 0. The screen shows 21 rows at a time.</p>
   <div class="plate" id="cm-maps">
@@ -137,7 +157,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">04 · Enemy fire</p>
+  <p class="fig">05 · Enemy fire</p>
   <h2 class="t">A soldier fires only where he already faces</h2>
   <p class="lede">Point at the field to move Super Joe. The shading shows which way the soldier would have to face to shoot at him from each place, and the line shows a shot when the facing matches.</p>
   <div class="plate" id="cm-aim1"></div>
@@ -146,7 +166,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · Progression</p>
+  <p class="fig">06 · Progression</p>
   <h2 class="t">Soldiers fire faster in each area, until the third loop starts over</h2>
   <p class="lede">A rifle soldier may fire once every 64 frames in the first area, every 32 in the second and every 16 in the third. The game keeps counting areas after the third, and the rate follows the count.</p>
   <div class="plate" id="cm-loop">
@@ -160,7 +180,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · The play screen</p>
+  <p class="fig">07 · The play screen</p>
   <h2 class="t">One frame, rebuilt from memory</h2>
   <p class="lede">The first area at the start of play, drawn by this page from the game's memory and the video chip's registers.</p>
   <div class="plate"><canvas id="cm-frame" class="cm-cv" width="768" height="544" role="img" aria-label="The play screen rebuilt from one frame of memory"></canvas>
@@ -172,7 +192,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">07 · The player and the enemies</p>
+  <p class="fig">08 · The player and the enemies</p>
   <h2 class="t">Every sprite in the game</h2>
   <p class="lede">The 112 sprite shapes at <code>$E400</code>, drawn from the listing. Click one to see what it is.</p>
   <div class="plate"><canvas id="cm-cast" class="cm-cv" width="728" height="368" role="img" aria-label="Every sprite shape in the game"></canvas>
@@ -181,7 +201,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">08 · Weapons</p>
+  <p class="fig">09 · Weapons</p>
   <h2 class="t">Super Joe's weapons</h2>
   <p class="lede">A press of fire gives two bullets and no more until the button is let go (<code>$39C3</code>). Space throws a grenade.</p>
   <p>A counter set to <code>$FF</code> while fire is up counts once a frame for each free bullet slot. A bullet goes when the counter reaches 0 and again when it reaches 8, two frames later with all four shot slots free, and there the counter stops. Held down for 40 frames at a time, four presses made eight bullets in the emulator. A bullet flies for 15 frames and stops at a wall.</p>
@@ -192,26 +212,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>a grenade only</td><td>a soldier lying in wait, in a trench or in a foxhole, a bunker's gun, the lorry and the sniper</td></tr>
     <tr><td>a bullet only</td><td>the two guards; shooting both frees their prisoner (<code>$2443</code>)</td></tr>
     <tr><td>nothing</td><td>the prisoner, the motorcycle, the crossing vehicle and the jeep</td></tr>
-  </tbody></table>
-</section>
-
-<section>
-  <p class="fig">09 · The sound effects</p>
-  <h2 class="t">Sound: the game never asks for half its sound effects</h2>
-  <p class="lede">The driver holds sixteen effects (<code>$55F9</code>) and the game asks for eight of them. Each button plays one alone.</p>
-  <div class="plate"><div id="cm-sfx"></div>
-  <p class="cap">The same port as the music, starting one effect as the game's call at <code>$500F</code> does. The effect's frequencies come from the music's note table.</p></div>
-  <p>An effect is sixteen bytes: the start of the first two voices' registers, a first and a last note, and a byte that says whether to step the notes up or down, how many frames each step lasts and whether to flip each voice's gate as it goes (<code>$5531</code>, <code>$53A5</code>). While an effect sounds, the music gives up voices 1 and 2 to it and keeps playing on voice 3 (<code>$538F</code>). In the title tune that third voice carries the bass and nearly all the drums, so under a grenade the tune loses its upper parts and keeps its rhythm.</p>
-  <table class="cm-tbl"><thead><tr><th>Effect</th><th>Asked for when</th><th>Where</th></tr></thead><tbody>
-    <tr><td class="cm-n">0</td><td>a box of grenades is picked up</td><td class="cm-n"><code>$2AA6</code></td></tr>
-    <tr><td class="cm-n">1</td><td>a grenade is thrown</td><td class="cm-n"><code>$3913</code></td></tr>
-    <tr><td class="cm-n">2</td><td>a grenade destroys a bunker</td><td class="cm-n"><code>$37BC</code></td></tr>
-    <tr><td class="cm-n">4</td><td>Super Joe is hit, or falls</td><td class="cm-n"><code>$1060</code>, <code>$3C17</code></td></tr>
-    <tr><td class="cm-n">5</td><td>the jeep comes up from behind</td><td class="cm-n"><code>$1ECB</code></td></tr>
-    <tr><td class="cm-n">9</td><td>the third area is won</td><td class="cm-n"><code>$0933</code></td></tr>
-    <tr><td class="cm-n">11</td><td>a letter is shot in the name entry</td><td class="cm-n"><code>$0DCC</code></td></tr>
-    <tr><td class="cm-n">12</td><td>an extra life</td><td class="cm-n"><code>$136B</code></td></tr>
-    <tr><td class="cm-n">3, 6-8, 10, 13-15</td><td>never</td><td></td></tr>
   </tbody></table>
 </section>
 
