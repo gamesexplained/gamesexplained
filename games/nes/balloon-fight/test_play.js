@@ -3,11 +3,12 @@
 // Hold the Play tab's port of the whole game (reference/bf-port.js) against the game's own code,
 // frame by frame, in the kit's lockstep (kit/nes/lockstep.js). The game runs on the kit's NES from
 // the cartridge's bytes in the committed listing, started at its reset vector ($C000); the port
-// runs beside it from the same start. Each pass is one frame: the exit of the game's wait for the
-// frame ($F46D). At the start of every pass the 2 KB of RAM is compared (the stack page aside), and
-// so are the nametables, the palette, the sprite table and the PPU's and the APU's registers as
-// written. The sound driver is the one routine the port runs as the game's own bytes, on the
-// kit's 6502, as the minisite skill allows a music driver.
+// runs beside it from the same start, on the page's own image of the cartridge (play.html), so a
+// byte the port reads that the page left out shows as a difference. Each pass is one frame: the
+// exit of the game's wait for the frame ($F46D). At the start of every pass the 2 KB of RAM is
+// compared (the stack page aside), and so are the nametables, the palette, the sprite table and
+// the PPU's and the APU's registers as written. The sound driver is the one routine the port runs
+// as the game's own bytes, on the kit's 6502, as the minisite skill allows a music driver.
 //
 // The controllers, set at the start of a pass as a player's would be: a pilot that waits on the
 // title, picks one player, two players or Balloon Trip in turn (and lets the demonstration run
@@ -104,6 +105,9 @@ class Pilot {
     return pads;
   }
 }
+// The Play tab's image of the cartridge (play.html, game_rom): every code byte the port does not
+// read is zero, so a byte it reads that the page left out shows as a difference.
+const PAGE_ROM = Uint8Array.from(Buffer.from(JSON.parse(/<script type="application\/json" id="bf-play-data">([\s\S]*?)<\/script>/.exec(g.read('play.html'))[1]).game_rom, 'base64'));
 const JUMPS = [0, 3, 8, 12, 15, 5, 11, 7, 13, 9, 2, 14, 1, 6, 10, 4];
 
 function session(opts) {
@@ -119,6 +123,7 @@ function session(opts) {
       costs.get(k).push(s.cycles);
       if (s.nmis === 1) nmiCycles.push(s.nmiCycles);
     } : null });
+  P.M.set(PAGE_ROM, 0xC000); P.M.set(PAGE_ROM, 0x8000);   // the port on the page's image of the cartridge, as the Play tab runs it
   const r = ls.run({ passes: opts.passes, onPass: (n, mm) => { pilot.pass(mm); } });
   return { r, m, pilot, costs, nmiCycles };
 }
