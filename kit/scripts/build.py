@@ -14,7 +14,7 @@ Every tab but Source draws from the same listing.json: C64.load, BBC.load and
 Spectrum.load fetch it whole, one download the browser caches for all of a
 game's tabs.
 A game with no listing at all, at tier none, builds with no Source tab, no
-footprint on About and no memory strip or size in the catalogue; at any other
+footprint on About and no size in the catalogue; at any other
 tier the build stops and says how to make the listing.
 A game of several parts (kit/scripts/parts.py) gets a Source page for each part
 that has a listing, source-<id>.html, with source.html the first of them; the
@@ -1494,7 +1494,6 @@ def build_game(gdir, out_root):
             memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
         foot = ""
-    game["_totals"] = totals
     about_template = os.path.join(gdir, "about-layout.html")
     if not os.path.isfile(about_template):
         about_template = os.path.join(SITE, "about.html")
@@ -1696,15 +1695,6 @@ def hook(g):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
-def strip_html(g):
-    """The one-dimensional memory map under the featured game, drawn by C64Map.strip from
-    memmap.json. Nothing for a game with no listing: it has no memmap.json."""
-    if g["_totals"] is None:
-        return ""
-    total = sum(g["_totals"][k] for k in PROGRAM)
-    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
-
-
 def featured_frames(g):
     """game.json's "featured_frames": more pictures from the game folder for the featured box to fade
     through after the title image. Each must be a file in the game folder, as title_image must."""
@@ -1720,14 +1710,14 @@ def featured_frames(g):
 
 
 def featured_html(g):
-    """One game, large: title screen, memory strip, the title and its opening line."""
+    """One game, large: title screen, the title and its opening line."""
     plat, slug = g["platform"], g["slug"]
     meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
     shot = shot_html(g)
     frames = [f"{plat}/{slug}/{p}" for p in featured_frames(g)]
     if frames and shot.startswith("<img"):
         shot = shot.replace("<img ", f'<img data-frames="{html.escape(" ".join(frames), quote=True)}" ', 1)
-    return (f'<a class="show" href="{plat}/{slug}/">{shot}{strip_html(g)}'
+    return (f'<a class="show" href="{plat}/{slug}/">{shot}'
             f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
