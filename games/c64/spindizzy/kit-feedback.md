@@ -7,35 +7,42 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `60-verify`: "A wrong comment is usually one belief written down more than once": `on_ice`'s comment called ice water, and the search found the same swap in six more comments (`surface_response`, `find_floor_at`, `place_block`, `queue_block_tiles`, `block_base_tiles` and the switch symbols' tile pictures), all corrected together.
+- `60-verify`: "Give them a stratum of their own, draw about 20 from it": the 518 comments the world script wrote got 20 draws of their own; 4 were wrong, and the template was fixed and all 127 structure comments written again, rather than the four alone.
+- `70-minisite`: "for a widget that runs the game's own code on the listing's bytes": the room pictures, the sound effects, the password check and the inhabitants' speeds all run the game's routines, and the room widget turned up two facts given per pass that hold every other pass.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/vice.py`: `read_mem`'s docstring says that with no bank it reads what the processor sees, the ROM over a bitmap under the KERNAL, and that bank `"ram"` reads the RAM beneath. This run's first dumps of a bitmap at $E000 read the KERNAL; `c64-reference` says the same for $D000, and the function a run calls is where it is found at that moment.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+A page that runs the game's own routines on the listing's bytes starts
+with zero page at 0, since the listing holds no bytes there. A routine
+that reads a pointer from zero page fails loudly, but a mask or a mode
+read from it can give a picture that looks right and is not: here the
+colour mask $61 at 0 draws every room in colour scheme 0, a plausible
+room in the wrong colours. It was caught only by comparing the page's
+bitmap and colour matrix with the emulator's, byte for byte. The skill
+would say, in `70-minisite` where it introduces `cpu6502.js`: when a
+widget runs the game's code, list every zero-page and I/O read the
+routine makes before its first output, set each from the snapshot or
+the code that sets it in play, and compare one output with the emulator.
+No other game folder could be named for it.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Matching the page's room pictures to the emulator byte for byte; a line in
+`kit/skills/c64/tool-vice-mcp` that a dump taken right after a key that
+redraws the screen can catch the redraw half done would have saved most of
+it.
+
+## Operating system and tools
+
+Linux x86_64 cloud container (Ubuntu 24.04.5), VICE x64sc v3.14.0 from
+the vice-mcp release, regenerator2000 0.9.20, Python 3.13.18, Node
+22.23.4. Nothing new for `kit/c64/INSTALL.md`.

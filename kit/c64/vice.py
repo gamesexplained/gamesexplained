@@ -176,6 +176,9 @@ def _number(a):
 def read_mem(rpc, a, size, bank=None):
     """size bytes from address a (a number, "$C000", or a name the server knows), wrapping at $FFFF.
 
+    With no bank it reads what the processor sees as $01 sets it: the ROM over a bitmap or table
+    under the KERNAL or BASIC, the chips at $D000. bank "ram" reads the RAM beneath, "io" the chips.
+
     Any size: more than READ_MAX bytes is read in pieces. A read the server will not answer on a
     running machine (the v3.13.1 release on macOS returned no data, 28 September 2026) is retried
     with the machine stopped for it, and the machine is set running again."""
