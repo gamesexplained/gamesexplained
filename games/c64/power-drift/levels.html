@@ -69,8 +69,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </header>
 <main class="wrap">
 
+<section id="drive">
+  <p class="fig">01 · Drive a course</p>
+  <h2 class="t">Drive any stage from the start line round to the start line</h2>
+  <p class="lede">Pick a stage and the view runs a lap of it, 400 steps of track, then goes on to the course's next stage until the fifth is done. There are no karts: only the road, the roadside and the horizon.</p>
+  <div class="plate" id="pd-drive">
+    <div class="pd-bar">
+      <select class="pd-sel" id="pd-dpick" aria-label="Stage"></select>
+      <button class="pd-btn" type="button" id="pd-dgo">Drive</button>
+      <label>Speed <input type="range" id="pd-dspeed" min="10" max="32" value="32"></label>
+      <span class="pd-out" id="pd-dspd"></span>
+    </div>
+    <canvas class="pd-cv" id="pd-dview" width="320" height="160"></canvas>
+    <p class="pd-out" id="pd-dpos"></p>
+    <p class="cap">The view is drawn by the game's own routines, from the listing's bytes, on the site's model of the 6502 processor. <code>setup_stage</code> (<code>$3558</code>) sets the stage up. Then each race frame does what <code>race_frame_loop</code> (<code>$08AC</code>) does: when the kart has moved on a step, <code>track_step</code>, <code>scenery_tick</code> and <code>bend_drift</code>, then <code>clear_view</code>, <code>draw_horizon_rows</code>, <code>draw_road</code> and <code>draw_scenery</code> into the back screen, the flip, and <code>copy_colours</code>. Two things differ from a race. The kart is held in the middle of the road (<code>$2F</code> = <code>$E0</code>), as if steered perfectly, and its speed level (<code>$536F</code>) is the slider's, which adds 7 km/h a level. The slider stops at level 10, 70 km/h, because a kart any slower falls at the first jump (<code>piece_jump</code>). The page draws the screen just drawn in the view's multicolour characters, with the sky colour above the line where the timer changes it (<code>$23</code>) and the ground colour below. It runs a race frame every three video frames, about 17 a second, as the game does at its fastest. <code>test_course.js</code> runs the game's own <code>race_frame_loop</code> beside it on the kit's simulator, with the same two things standing in for <code>move_player</code>, and checks every character and colour of the view, frame by frame, for a whole lap of every stage.</p>
+  </div>
+</section>
+
 <section id="stage">
-  <p class="fig">01 · Every stage</p>
+  <p class="fig">02 · Every stage</p>
   <h2 class="t">A stage is a list of pieces and a list of scenery</h2>
   <p class="lede">Each of the 25 stages, drawn from its course record: its horizon, the pieces of one lap, and the objects along the road.</p>
   <div class="plate" id="pd-stage">
@@ -92,7 +109,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="all">
-  <p class="fig">02 · All stages</p>
+  <p class="fig">03 · All stages</p>
   <h2 class="t">Twenty-five stages side by side</h2>
   <p class="lede">The numbers behind each stage, from the five course records and the 25 piece lists.</p>
   <div class="pd-scroll"><table class="pd-tab" id="pd-all"></table></div>
@@ -101,6 +118,96 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* pd-course */
+// createCourse(ram, C64Cpu): a stage driven as the game draws it, on ram, the 64 KB of the listing
+// (C64.load's L.ram), which is left as it is. start(course, stage) sets the stage up as stage_loop
+// does and draws the view at the start line; frame(level) runs one race frame at that speed level
+// and returns false once the lap of 400 steps is over. In place of move_player, the kart is held
+// in the middle of the road and its speed level is level's, from 10 (slower, it falls at a jump)
+// to 32. m and colour are the memory and the colour RAM the game's code wrote, read by viewPixels.
+const PD_COURSE = {
+  clearTextScreen: 0x1A18, setupStage: 0x3558, trackStep: 0x2329, sceneryTick: 0x1A77, bendDrift: 0x321C,
+  clearView: 0x39A1, drawHorizonRows: 0x1837, drawRoad: 0x4555, drawScenery: 0x3C76, copyColours: 0x3904,
+  LAP: 400, MIDDLE: 0xE0,
+};
+function createCourse(ram, C64Cpu) {
+  const A = PD_COURSE, m = new Uint8Array(65536), colour = new Uint8Array(1024);
+  const io = {
+    read(a) {
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800] | 0xF0;
+      throw new Error('read $' + a.toString(16));
+    },
+    write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; },   // and setup_stage's border
+  };
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+  const call = (a) => cpu.call(a, {}, { maxSteps: 200000 });
+  let units = 0;
+  function view() {                                   // race_frame_loop from clear_view on
+    call(A.clearView); call(A.drawHorizonRows); call(A.drawRoad); call(A.drawScenery);
+    m[0x24] = m[0x23];
+    m[0x2E] ^= 1;
+    call(A.copyColours);
+  }
+  return {
+    m, colour,
+    start(course, stage) {
+      m.set(ram); colour.fill(0); units = 0;
+      m[0x2E] = 0;                                    // as game_start leaves it
+      m[0x53E4] = course; m[0x53E5] = stage;
+      call(A.clearTextScreen);                        // the colour buffer at 8, as the screens before a race leave it
+      call(A.setupStage); call(A.trackStep);
+      m[0x2F] = A.MIDDLE;
+      view();
+    },
+    frame(level) {
+      if (units >= A.LAP * 32) return false;
+      const bit = m[0x5381] & 0x20;                   // a step each time bit 5 of the position changes
+      if (bit !== m[0x53A6]) { m[0x53A6] = bit; call(A.trackStep); call(A.sceneryTick); call(A.bendDrift); }
+      m[0x536F] = level; m[0x2F] = A.MIDDLE;          // move_player's stand-in, then its move_on
+      const p = m[0x5381] + level;
+      m[0x5381] = p & 255;
+      m[0x5380] = (m[0x5380] + (p >> 8)) % 0x32;
+      units += level;
+      m[0xE6]++;
+      view();
+      return true;
+    },
+    steps: () => Math.min(A.LAP, units >> 5),
+  };
+}
+// viewPixels(m, colour, out): the view, screen rows 5 to 24, as the video chip shows the screen
+// race_irq_view picks ($D018 from view_d018 by $2E): 320 by 160 colour indices into out, in
+// multicolour text with the race's character set at $F800, multicolours $53EA and 0. The background
+// is the sky colour $25 until CIA 1's timer A runs out, $23 * 256 cycles after race_irq_top starts
+// it, and the ground colour $26 from there: 204 cycles more from the top of the frame to the store
+// in irq_handler. Four frames recorded in the emulator put the store within 5 cycles of that, the
+// interrupt's own jitter: line 177, cycle 61 three times and cycle 56 once for $2B, and line 234,
+// cycle 53 for $39. A store in cycle c shows from pixel (c - 17) * 8 of its line.
+function viewPixels(m, colour, out) {
+  const screen = m[0x399F + m[0x2E]] === 0xBE ? 0xEC00 : 0xE800;
+  const T = 256 * m[0x23] + 204, line = Math.floor(T / 63), from = (T % 63 - 17) * 8;
+  const sky = m[0x25] & 15, ground = m[0x26] & 15, mc1 = m[0x53EA] & 15;
+  for (let row = 5; row < 25; row++) for (let col = 0; col < 40; col++) {
+    const code = m[screen + row * 40 + col], c = colour[row * 40 + col], glyph = 0xF800 + code * 8;
+    for (let y = 0; y < 8; y++) {
+      const ln = 51 + row * 8 + y, bits = m[glyph + y], o = ((row - 5) * 8 + y) * 320 + col * 8;
+      for (let x = 0; x < 8; x++) {
+        const px = col * 8 + x, bg = ln > line || (ln === line && px >= from) ? ground : sky;
+        let v;
+        if (c & 8) {
+          const pair = bits >> (6 - (x & 6)) & 3;
+          v = pair === 0 ? bg : pair === 1 ? mc1 : pair === 2 ? 0 : c & 7;
+        } else v = bits >> (7 - x) & 1 ? c : bg;
+        out[o + x] = v;
+      }
+    }
+  }
+  return out;
+}
+// end of pd-course
+</script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -230,6 +337,46 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       }
     }
     go(0);
+
+    // drive a course
+    if (typeof C64Cpu !== 'undefined') drive(stages);
+    else $('pd-drive').insertAdjacentHTML('beforeend', '<p class="cap">The drive needs the site\'s 6502 script, which did not load.</p>');
+    function drive(stages) {
+      const dpick = $('pd-dpick'), dgo = $('pd-dgo'), speed = $('pd-dspeed'), pos = $('pd-dpos');
+      stages.forEach((st, i) => dpick.add(new Option('Course ' + st.course + ', stage ' + st.stage, String(i))));
+      const course = createCourse(L.ram, C64Cpu);
+      const ctx = C64.canvas($('pd-dview'), 320, 160), img = ctx.createImageData(320, 160), px = new Uint8Array(320 * 160);
+      const rgb = P.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+      let at = 0, running = false, last = 0, owed = 0, over = false;
+      const FRAME = 3000 / 50.125;                     // ms: a race frame takes three PAL video frames
+      function paint() {
+        viewPixels(course.m, course.colour, px);
+        for (let i = 0; i < px.length; i++) { const c = rgb[px[i]]; img.data[4 * i] = c[0]; img.data[4 * i + 1] = c[1]; img.data[4 * i + 2] = c[2]; img.data[4 * i + 3] = 255; }
+        ctx.putImageData(img, 0, 0);
+        const st = stages[at];
+        pos.textContent = 'Course ' + st.course + ', stage ' + st.stage + ': step ' + course.steps() + ' of ' + PD_COURSE.LAP + (over ? ', the course is over' : '');
+      }
+      function begin(i) { at = i; over = false; dpick.value = String(i); course.start(Math.floor(i / 5), i % 5); paint(); }
+      function setRun(on) { running = on; dgo.textContent = on ? 'Pause' : over ? 'Drive again' : 'Drive'; if (on) { last = performance.now(); owed = 0; requestAnimationFrame(tick); } }
+      function tick(now) {
+        if (!running) return;
+        owed = Math.min(owed + now - last, 4 * FRAME); last = now;
+        let moved = false;
+        while (owed >= FRAME) {
+          owed -= FRAME; moved = true;
+          if (course.frame(+speed.value)) continue;
+          if (at % 5 < 4) { begin(at + 1); continue; }   // on to the course's next stage
+          over = true; setRun(false); break;
+        }
+        if (moved) paint();
+        if (running) requestAnimationFrame(tick);
+      }
+      const showSpeed = () => { $('pd-dspd').textContent = 'level ' + speed.value + ', ' + 7 * speed.value + ' km/h'; };
+      speed.oninput = showSpeed; showSpeed();
+      dpick.onchange = () => { begin(+dpick.value); };
+      dgo.onclick = () => { if (over) begin(at - at % 5); setRun(!running); };
+      begin(0);
+    }
 
     // every stage
     const sw = (c) => '<span class="pd-sw" style="background:' + P[c & 15] + '"></span>';

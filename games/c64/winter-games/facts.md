@@ -120,6 +120,23 @@ Two engines.
   form with three slots, no `S` key and no pulse-width sweep
   (speed-skating `snd_jumps`, `$A600`).
 
+## Pictures
+
+- Skating's skater is eight sprites in four pairs (`sprite_places`): the
+  odd sprites multicolour (`$D01C` = `$AA`), orange with blue and light
+  grey, the even ones white and in front. `draw_frame` (`$1BBB`) unpacks
+  the 60 frames, filling empty bytes with 0 in a multicolour shape and
+  `$FF` in a white one. Over the 60 frames the white sprites cover 3,958
+  of the 25,412 pixels the multicolour sprites draw, at the outline.
+- Ski Jump's close-up poses by band of the lean, as `draw_frame`
+  (`$1973`) draws them over the unpacked landing slope: on the left and
+  right axis (`lean_frames_lr`) bands 0 to 3 lean back, frames 22, 20, 19
+  and 18, and bands 5 to 8 lean forward until flat on the skis, frames 23
+  to 26; on up and down (`lean_frames_ud`) bands 0 to 3 cross the skis,
+  frames 27, 30, 29 and 28, and bands 5 to 8 bend the knees ever further,
+  frames 7, 8, 9 and 21. The centre band is frame 6 on both. Right and
+  down add to the lean (`flight_steer`, `$1600`).
+
 ## The listing's error rate
 
 A sample of 60 comments, drawn with seed 20261030 from the 2,696 in the
@@ -162,3 +179,12 @@ its `work/` folder, with input on joystick 2; the scripts stay in `work/`.
   slid over the line and recorded 22.20, where the same run steered clean
   to the end recorded 22.10; a crash at stretch 164 came to a halt and
   recorded 99.99.
+- Bobsled, the recorded frame (How it works, "One frame"): the far view
+  shows piece 24. `draw_far` run on the listing for piece 24 gives every
+  cell of the view as recorded but one, row 3 column 25, whose top line
+  held `$02` where the panorama's byte at `$878A` is `$69`; `$878A` held 5
+  at the frame's end. Every far-view cell has screen byte `$1E` and colour
+  RAM 2, and the background is 0. `$878A` is the first byte of panorama
+  column 71's fourth cell, so it is on screen in far pieces 21 to 25.
+  `draw_far` is called when the stretch's far piece differs from the one
+  drawn (`$42B9`), and at the start.

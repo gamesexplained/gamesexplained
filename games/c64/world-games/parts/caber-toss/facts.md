@@ -60,7 +60,13 @@ part's listing.
 - The distance is the gap between sprites 7 and 3: a foot for every 8
   pixels, plus 10 feet; the inches come from `ct_inches` (`$2297`),
   indexed by twice the pixels left over plus bit 4 of a read of colour
-  RAM at `$D800` (`ct_show_result`, `$2170`).
+  RAM at `$D800` (`ct_show_result`, `$2170`). Sprite 3 is the
+  thrower's legs and sprite 7 the caber's lowest part, its foot, read
+  as the caber lands. *Live*, 31 October 2026: in a throw whose landing
+  pose (`$3C`, `$0F`) was set to `$10` by hand as it touched the ground
+  (`$22B4`), `ct_show_result` read sprite 3 at x 50 and sprite 7 at x
+  68, 18 pixels, and showed 12' 5" (`live_ct_measure.py`;
+  `reference/caber-toss-gap.png`).
 - Colour RAM holds only four bits; the upper four of a read are
   whatever was last on the bus. So the inches' lowest bit is noise for
   2 to 7 inches less than 4 pixels over, and makes no difference above

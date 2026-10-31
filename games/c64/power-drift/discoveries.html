@@ -63,8 +63,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </header>
 <main class="wrap">
 
+<section id="note">
+  <p class="fig">01 · Text</p>
+  <h2 class="t">Secret: a note in front of the first instruction</h2>
+  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that nothing reads.</p>
+  <div class="plate"><pre class="pd-pre" id="pd-sig"></pre>
+  <p class="cap">The bytes at <code>$0800</code>-<code>$0833</code> (<code>signature_text</code>), as text: a return is a new line, and <code>$05</code>, the code for white text, is left out.</p></div>
+  <p>The loader's last instruction jumps to <code>$0834</code>, just past the text. The copyright line on the select screen names Activision, Sega and Chris Butler. What "pbj gma89" stands for is not known.</p>
+</section>
+
 <section id="bonus">
-  <p class="fig">01 · The time bonus</p>
+  <p class="fig">02 · The time bonus</p>
   <h2 class="t">Bug: the time bonus is counted out in hexadecimal</h2>
   <p class="lede">After a stage won, the panel shows a bonus of 45 minus the seconds on the clock, and counts it into the score a thousand points at a time. The count runs in the wrong number system, so the bonus pays more than it shows, the panel shows letters, and 45 seconds exactly pays the most of all.</p>
   <div class="plate">
@@ -86,7 +95,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="clock">
-  <p class="fig">02 · The clock</p>
+  <p class="fig">03 · The clock</p>
   <h2 class="t">The race clock runs about 40 % fast</h2>
   <p class="lede">The clock on the panel counts the game's own pictures, not time. Ten seconds of play put about fourteen and a half seconds on it.</p>
   <div class="plate">
@@ -101,7 +110,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="engine">
-  <p class="fig">03 · Sound effects</p>
+  <p class="fig">04 · Sound effects</p>
   <h2 class="t">Secret: an engine sound the game never plays</h2>
   <p class="lede">The sound driver holds four effects. The game starts only two of them, and the fourth is an engine's hum that keeps itself going.</p>
   <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is called by nothing. It sounds like an engine.</p>
@@ -109,28 +118,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="jump">
-  <p class="fig">04 · Jumps</p>
+  <p class="fig">05 · Jumps</p>
   <h2 class="t">In the air, the stick does nothing</h2>
   <p class="lede">A jump fixes the kart's sideways drift at the moment it leaves the ground.</p>
   <p>From the 7th to the 21st step of a jump piece the kart is in the air, and <code>piece_jump</code> sets <code>$53E8</code>. While it is set, <code>move_player</code> leaves out the steering and every change of speed; only fire still changes gear. It still adds the road's sideways slide at <code>$30</code> to the kart's place across the road, and nothing changes <code>$30</code> in the air, so the kart keeps sliding the way the stick last pushed it on the ground until it lands.</p>
 </section>
 
 <section id="stripes">
-  <p class="fig">05 · Unused pictures</p>
+  <p class="fig">06 · Unused pictures</p>
   <h2 class="t">Two sprites of stripes that nothing shows</h2>
   <p class="lede">Sprites <code>$A1</code> and <code>$A2</code> sit in the part of a view screen that is never shown, and no table or routine points a sprite at them.</p>
   <div class="plate"><canvas class="pd-cv" id="pd-stripes" width="96" height="42" style="max-width:384px"></canvas>
   <p class="cap">Sprites <code>$A1</code> and <code>$A2</code> from <code>$E840</code> and <code>$E880</code>, drawn in multicolour, as the race draws every sprite, with the race's two shared sprite colours, black and light grey, and white for their own colour, which nothing gives them.</p></div>
   <p>The video chip finds a sprite's picture at 64 times its pointer in the video bank at <code>$C000</code>. Pointers <code>$A0</code> to <code>$A2</code> land in rows 0 to 4 of the view screen at <code>$E800</code>, which is never shown, since the panel takes those rows from another screen; so the game keeps three sprites there. <code>$A0</code> is the last driver's head looking back. The other two hold only bands of stripes.</p>
-</section>
-
-<section id="note">
-  <p class="fig">06 · Text</p>
-  <h2 class="t">Secret: a note in front of the first instruction</h2>
-  <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that nothing reads.</p>
-  <div class="plate"><pre class="pd-pre" id="pd-sig"></pre>
-  <p class="cap">The bytes at <code>$0800</code>-<code>$0833</code> (<code>signature_text</code>), as text: a return is a new line, and <code>$05</code>, the code for white text, is left out.</p></div>
-  <p>The loader's last instruction jumps to <code>$0834</code>, just past the text. The copyright line on the select screen names Activision, Sega and Chris Butler. What "pbj gma89" stands for is not known.</p>
 </section>
 
 </main>

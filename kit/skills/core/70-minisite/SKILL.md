@@ -139,9 +139,12 @@ looking at before the first interrupt or table. Then, once the widgets
 work and before the copy, choose the one or two things a reader would
 most regret missing. They are usually things that move or make a sound:
 a tune player, a map to scrub through, a replay of the game playing.
-Move each into the two or three sections after the opening, as far as
-the sections it relies on allow, and read the moved section again for
-anything it now mentions before the page has explained it. No other
+Sound effects are among them: their player goes straight after the
+music's, not at the foot of the page, where few readers reach it
+(games/c64/speedball, games/c64/power-drift). Move each into the two or
+three sections after the opening, as far as the sections it relies on
+allow, and read the moved section again for anything it now mentions
+before the page has explained it. No other
 section has a fixed place, not even the rebuilt frame: it is a natural
 first look inside, the establishing shot, but a page whose best thing is
 its music or its maps can put that first instead.

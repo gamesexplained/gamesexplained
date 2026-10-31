@@ -84,8 +84,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The select screen is silent. Its interrupts never call the driver; only the race's interrupt (<code>$5253</code>) and the text screens' (<code>$5181</code>) do.</p>
 </section>
 
+<section id="effects">
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: four effects, two of them never heard</h2>
+  <p class="lede">The driver stores four sound effects and plays them on the third voice. The game starts only two.</p>
+  <div class="plate"><div id="pd-sfx"></div>
+  <p class="cap">The same driver as the music, from the listing's bytes. A button leaves the driver as the game does before the select screen, with the music off, and writes the effect's number to <code>sound_effect</code> (<code>$B805</code>), as the game does. <code>test_music.js</code> checks these buttons against the game's own code as it checks the tunes. The spin's effect repeats its last note until <code>kart_spin</code> ends it as the spin stops, so here it plays until it is stopped.</p></div>
+  <p>The game writes <code>$B805</code> in three places: 2 when the player's place changes (<code>update_place</code>) or a rival comes alongside (<code>rival_near</code>), and 3 when the kart spins (<code>kart_spin</code>). Effect 1 has no writer at all. Effect 4 is a steady tone with a sweeping pulse, which starts itself again whenever it ends; it sounds like an engine. Only starting effect 4 sets the flag at <code>$B808</code> that keeps it going, and only a routine nothing calls clears it (<code>sound_engine_off</code>). So the game carries an engine sound it never plays.</p>
+</section>
+
 <section id="frame">
-  <p class="fig">03 · One frame</p>
+  <p class="fig">04 · One frame</p>
   <h2 class="t">One frame of a race, drawn from memory</h2>
   <p class="lede">The race screen is two screens in one: a panel of five text rows at the top, and the view under it.</p>
   <div class="plate">
@@ -101,7 +110,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="view">
-  <p class="fig">04 · The view</p>
+  <p class="fig">05 · The view</p>
   <h2 class="t">The roadside is cut out of a sheet of characters</h2>
   <p class="lede">The view is a screen of text characters. Each object beside the road is a block of them, with a picture of its own for each of 16 distances.</p>
   <div class="plate">
@@ -119,7 +128,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="road">
-  <p class="fig">05 · The road</p>
+  <p class="fig">06 · The road</p>
   <h2 class="t">Every hill is a list of road widths</h2>
   <p class="lede">The road is drawn from the bottom of the screen up, one character row at a time. A list gives each row's width, and a hill is a different list for every step.</p>
   <div class="plate">
@@ -131,7 +140,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="karts">
-  <p class="fig">06 · The karts</p>
+  <p class="fig">07 · The karts</p>
   <h2 class="t">Eleven rivals share four sprites</h2>
   <p class="lede">The C64 shows eight sprites at once. The player's kart takes four of them, and the other eleven karts take turns with the remaining four.</p>
   <div class="plate">
@@ -147,7 +156,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="speed">
-  <p class="fig">07 · Speed and time</p>
+  <p class="fig">08 · Speed and time</p>
   <h2 class="t">Speed levels of 7 km/h</h2>
   <p class="lede">Up on the stick adds a speed level every other race frame. The read-out adds 7 km/h for each level.</p>
   <div class="plate">
@@ -163,22 +172,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="places">
-  <p class="fig">08 · Places</p>
+  <p class="fig">09 · Places</p>
   <h2 class="t">Three places on the podium, and the game ends when they are gone</h2>
   <p class="lede">Each race has three places on the podium. Once rivals have taken all three, the game is over, wherever the player is.</p>
   <div class="plate pd-shots"><figure><img src="reference/wiki-third-place.png" alt="Three karts stacked above the road, each with a driver's face" width="320" height="200"><figcaption>The player has finished third. The three finishers stand one above another over the road, the first at the top, each with its driver's face from the front.</figcaption></figure></div>
   <p>Each race frame <code>update_place</code> works out the player's place from the rivals' laps and positions. The rivals keep their order of speed, so it only has to look from the slowest up for the first rival ahead. A change of place starts a sound and swaps the player's face along the row of faces on the panel (<code>show_place</code>).</p>
   <p>Every kart that finishes its fourth lap takes the next of three places on the podium (<code>place_finisher</code>): its kart and its driver's face appear over the road, with the place written across the top of the face. When the third place goes to a rival, the game is over (<code>game_over</code>). When the player takes a place, the stage is won (<code>stage_won</code>), and after the fifth stage of a course the screen says CONGRATULATIONS (<code>course_complete</code>).</p>
   <p>When the player finishes, the slowest rival, rival 10, is given the player's lane, speed and colour, and the player's own sprites are pointed at an empty picture (<code>move_on</code>). So the kart seems to drive on up the road while the view stays where it is.</p>
-</section>
-
-<section id="effects">
-  <p class="fig">09 · Sound effects</p>
-  <h2 class="t">Sound: four effects, two of them never heard</h2>
-  <p class="lede">The driver stores four sound effects and plays them on the third voice. The game starts only two.</p>
-  <div class="plate"><div id="pd-sfx"></div>
-  <p class="cap">The same driver as the music, from the listing's bytes. A button leaves the driver as the game does before the select screen, with the music off, and writes the effect's number to <code>sound_effect</code> (<code>$B805</code>), as the game does. <code>test_music.js</code> checks these buttons against the game's own code as it checks the tunes. The spin's effect repeats its last note until <code>kart_spin</code> ends it as the spin stops, so here it plays until it is stopped.</p></div>
-  <p>The game writes <code>$B805</code> in three places: 2 when the player's place changes (<code>update_place</code>) or a rival comes alongside (<code>rival_near</code>), and 3 when the kart spins (<code>kart_spin</code>). Effect 1 has no writer at all. Effect 4 is a steady tone with a sweeping pulse, which starts itself again whenever it ends; it sounds like an engine. Only starting effect 4 sets the flag at <code>$B808</code> that keeps it going, and only a routine nothing calls clears it (<code>sound_engine_off</code>). So the game carries an engine sound it never plays.</p>
 </section>
 
 </main>

@@ -43,6 +43,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-key{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px}
 .wg-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
 .wg-ctl label{display:flex;gap:6px;align-items:center}
+.wg-btn{font:inherit;font-size:14px;padding:3px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.wg-btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .wg-out{font-family:var(--fm);font-size:15px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px}
 @media (max-width:700px){:root{--gx:16px;--h1:34px}.wg-two{grid-template-columns:1fr}}
 </style>
@@ -73,8 +75,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>A fall is the easiest move there is: stick down with fire, from skating forward. In the emulator a skater fell about every 1.7 seconds, so the minute holds 19 with time to spare. Free Skating has the same signed test, but there each fall also lowers a ceiling of 6.0 by 0.2, which holds a wrapped penalty down: 26 falls give 0.8.</p>
 </section>
 
+<section data-part="menu">
+  <p class="fig">02 · The menu</p>
+  <h2 class="t">Secret: the menu knows nine Summer Games events</h2>
+  <p class="lede">After Bobsled, the menu's list of event names runs on into Epyx's two earlier games.</p>
+  <p>The table of event names (<a href="source-menu.html#1639"><code>event_names</code></a>) has sixteen entries. After the seven winter events come Cycling, Pole Vault, Platform Diving, 4 x 400 m Relay, 100 m Dash, Gymnastics, Freestyle Relay, 100 m Freestyle and Skeet Shooting, events of Summer Games and Summer Games II. A switch at <code>$087F</code> would make the menu list all sixteen, from A) to P), and show "YES)" at the end of option 6's line (<a href="source-menu.html#0FF3"><code>opt_more_events</code></a>). Nothing in the game sets the switch, and the disks have no files for those events.</p>
+</section>
+
 <section data-part="skating">
-  <p class="fig">02 · Free Skating</p>
+  <p class="fig">03 · Free Skating</p>
   <h2 class="t">Bug: every Free Skating mark below 6.0 is a tenth short</h2>
   <p class="lede">Free Skating subtracts one tenth more than its rules say, from every program, falls or no falls.</p>
   <div class="plate">
@@ -88,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="bobsled">
-  <p class="fig">03 · Bobsled</p>
+  <p class="fig">04 · Bobsled</p>
   <h2 class="t">Bug: a bobsled crash near the end costs only a tenth of a second</h2>
   <p class="lede">A crash is meant to score 99.99. But the wreck keeps sliding down the course, and a crash late enough slides over the line and scores the clock's time.</p>
   <div class="plate">
@@ -100,7 +109,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="hot-dog">
-  <p class="fig">04 · The S key</p>
+  <p class="fig">05 · The S key</p>
   <h2 class="t">Secret: S stops the music, but only with joystick 2 held down</h2>
   <p class="lede">Five events check the S key once a frame to switch the sound off. Pressed on its own, it does nothing.</p>
   <div class="plate">
@@ -121,7 +130,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="">
-  <p class="fig">05 · The clocks</p>
+  <p class="fig">06 · The clocks</p>
   <h2 class="t">Bug: every clock in the game runs a fifth slow on a PAL machine</h2>
   <p class="lede">Times on a European C64 are shorter than the time it takes to skate them.</p>
   <p>Every event counts its clock in frames: six frames to a tenth of a second, sixty to a second (Biathlon's <a href="source-biathlon.html#73AC"><code>clock_tick</code></a>, Skating's <a href="source-skating.html#1DE3"><code>clock_tick</code></a>, Bobsled's <a href="source-bobsled.html#4B80"><code>clock_tick</code></a>, Speed Skating's <a href="source-speed-skating.html#964B"><code>irq_top</code></a>). That is right for an American machine, whose screen is drawn sixty times a second. A European machine, a PAL one, draws fifty, so each second on the clock takes 1.2 real seconds. A 22.10 bobsled run takes 26.5 seconds, and Figure Skating's minute lasted about 72 seconds in the emulator. The skating music is timed in frames too, so it still fits the program: Figure Skating's tune lasts 3,633 frames and Free Skating's 7,203.</p>
@@ -129,25 +138,26 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="bobsled">
-  <p class="fig">06 · Bobsled</p>
+  <p class="fig">07 · Bobsled</p>
   <h2 class="t">Bug: the bobsled's rumble writes into the sky</h2>
-  <p class="lede">The runners' sound picks a random note every frame, and also stores a random number in a part of the screen's picture.</p>
+  <p class="lede">The runners' sound picks a random note every frame, and also stores a random number in the picture of the sky, where it shows as a short black dash.</p>
+  <div class="plate">
+    <div class="wg-ctl" id="wg-far-vals"></div>
+    <div class="wg-two">
+      <canvas id="wg-far" class="wg-canvas" width="608" height="160"></canvas>
+      <canvas id="wg-far-zoom" class="wg-canvas" width="480" height="160"></canvas>
+    </div>
+    <p class="cap">Far piece 24, as in the frame recorded in the left-hand bend from stretch 21, drawn by the game's own <a href="source-bobsled.html#45EB"><code>draw_far</code></a> from the listing's bytes with <code>$878A</code> set to the number chosen, and on the right the cells around it, larger, the byte's four dots outlined. The colours are the ones every cell of the far view has in the frame recorded in the emulator: light blue sky and white, with black where a dot's two bits are clear.</p>
+  </div>
   <p>The rumble is a sound script that calls a few bytes of machine code each frame (<a href="source-bobsled.html#A50F"><code>rumble_step_src</code></a>, run at <code>$C80F</code>). The code picks a random note, then a random length, and stores the length three bytes into the sound's slot, through a pointer: two bytes in zero page, the first 256 bytes of memory, that hold an address. It uses the pointer at <code>$F0</code>. The engine keeps its slot pointer at <code>$80</code>. So the length never reaches the slot, whose count stays at 1, and the note changes every frame, which is what makes it rumble.</p>
-  <p>The byte goes wherever <code>$F0</code>-<code>$F1</code> points. Those two bytes belong to the KERNAL, the machine's own operating system, which keeps a table of the screen's lines there. The event never sets them, and they hold <code>$87</code>, <code>$87</code>, so the store lands at <code>$878A</code>. That is one byte of the far view's sky panorama (<a href="source-bobsled.html#8400"><code>far_panorama</code></a>). In the emulator <code>$878A</code> took values from 1 to 8 during a run. The far view copies the panorama to the screen as it turns, and four pixels of sky in far pieces 21 to 25 show whatever number was there last.</p>
+  <p>The byte goes wherever <code>$F0</code>-<code>$F1</code> points. Those two bytes belong to the KERNAL, the machine's own operating system, which keeps a table of the screen's lines there. The event never sets them, and they hold <code>$87</code>, <code>$87</code>, so the store lands at <code>$878A</code>. That is one byte of the far view's panorama of sky and hills (<a href="source-bobsled.html#8400"><code>far_panorama</code></a>): the top line of one cell, four dots across, in the 72nd of its 95 columns. The far view shows nineteen columns at a time and draws them again only when the course turns, so the cell is on screen in far pieces 21 to 25, with whatever the byte held when the piece was drawn. The panorama has <code>$69</code> there, white and light blue. In the emulator <code>$878A</code> took values from 1 to 8 during a run, and each of them turns two or three of the four dots black: a dash in the sky that stays until the view turns again. The frame on the <a href="index.html">How it works</a> tab has one, drawn while the byte held 2.</p>
 </section>
 
 <section data-part="bobsled">
-  <p class="fig">07 · Bobsled</p>
+  <p class="fig">08 · Bobsled</p>
   <h2 class="t">Bug: the crash has a whistle no one can hear</h2>
   <p class="lede">A crash starts a sound on the sound chip's third voice, and the same sound switches that voice off.</p>
   <p>The crash plays sound 28 (<a href="source-bobsled.html#A65E"><code>snd_crash_whistle_src</code></a>): a triangle wave on the third voice, whistling upward for 106 frames. Its script also sets the filter mode, and the mode it writes to <span data-part=""><code>$D418</code></span> has bit 7 set. On the SID, that bit takes the third voice out of the output unless the filter takes it in, and the script routes the voice past the filter. So the whistle plays to nobody. The bit stays set until every sound is stopped at the end of the run, and in the emulator the engine's copy of <span data-part=""><code>$D418</code></span> held <code>$8F</code> from the crash on.</p>
-</section>
-
-<section data-part="menu">
-  <p class="fig">08 · The menu</p>
-  <h2 class="t">Secret: the menu knows nine Summer Games events</h2>
-  <p class="lede">After Bobsled, the menu's list of event names runs on into Epyx's two earlier games.</p>
-  <p>The table of event names (<a href="source-menu.html#1639"><code>event_names</code></a>) has sixteen entries. After the seven winter events come Cycling, Pole Vault, Platform Diving, 4 x 400 m Relay, 100 m Dash, Gymnastics, Freestyle Relay, 100 m Freestyle and Skeet Shooting, events of Summer Games and Summer Games II. A switch at <code>$087F</code> would make the menu list all sixteen, from A) to P), and show "YES)" at the end of option 6's line (<a href="source-menu.html#0FF3"><code>opt_more_events</code></a>). Nothing in the game sets the switch, and the disks have no files for those events.</p>
 </section>
 
 </main>
@@ -232,9 +242,40 @@ function free(ram) {
   }
 }
 
+// ---- 07: the far view with the rumble's byte, drawn by the game's own draw_far
+// draw_far ($45EB) draws far piece $3F (far_piece) into the bitmap at $A000, 19 cells across and
+// five down from column 20. The colours are those of every far-view cell in the frame recorded in
+// the emulator (How it works, "One frame"): the screen byte $1E (white and light blue), colour RAM
+// 2 (red) and the background black.
+function far(L) {
+  const ram = L.ram, sym = L.sym, PAL = C64.PAL, AT = 0x878A, PIECE = 24, CELL = [3, 5];
+  const cols = [PAL[0], PAL[1], PAL[14], PAL[2]];
+  const noIO = { read(a) { throw new Error('read $' + a.toString(16)); }, write(a) { throw new Error('write $' + a.toString(16)); } };
+  const m = ram.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io: noIO });
+  const view = $('wg-far'), zoom = $('wg-far-zoom');
+  const draw = (v) => {
+    m[AT] = v; m[0x3F] = PIECE;
+    cpu.call(sym('draw_far'), {}, { maxSteps: 200000 });
+    const vc = view.getContext('2d'), zc = zoom.getContext('2d');
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 19; c++) C64.drawGlyphMC(vc, m.subarray(0xA000), r * 40 + 20 + c, c * 32, r * 32, 4, cols);
+    vc.strokeStyle = '#d04a3a'; vc.lineWidth = 3; vc.strokeRect(CELL[1] * 32 - 6, CELL[0] * 32 - 6, 44, 16);
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) C64.drawGlyphMC(zc, m.subarray(0xA000), (CELL[0] - 1 + r) * 40 + 20 + CELL[1] - 2 + c, c * 80, r * 80, 10, cols);
+    zc.strokeStyle = '#d04a3a'; zc.lineWidth = 4; zc.strokeRect(160 - 3, 80 - 3, 86, 16);
+    box.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.v === v));
+  };
+  const box = $('wg-far-vals');
+  [ram[AT], 1, 2, 3, 4, 5, 6, 7, 8].forEach((v, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'wg-btn'; b.dataset.v = v;
+    b.textContent = i ? String(v) : '$' + v.toString(16).toUpperCase() + ', the panorama\'s own';
+    b.addEventListener('click', () => draw(v)); box.appendChild(b);
+  });
+  draw(2);
+}
+
 if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
   $('wg-falls-out').textContent = 'The site\'s scripts did not load, so this widget cannot run here.';
 } else {
   C64.load('parts/skating/listing.json').then((L) => { falls(L.ram); free(L.ram); });
+  C64.load('parts/bobsled/listing.json').then(far);
 }
 </script>

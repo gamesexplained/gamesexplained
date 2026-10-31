@@ -73,10 +73,10 @@ Found in the code, not in the manual.
   events, and a switch ($087F) that would offer them; nothing sets it
   (part `menu`, `opt_more_events`).
 - In Bobsled the runners' rumble writes a random number into the far
-  view's sky at $878A every frame, a speck in far pieces 21 to 25; a
-  crash leaves the whistle's voice switched off until the run ends; a
-  wreck that slides over the line records the clock's time, not 99.99
-  (part `bobsled`; each live).
+  view's sky at $878A every frame, a short black dash in far pieces 21
+  to 25; a crash leaves the whistle's voice switched off until the run
+  ends; a wreck that slides over the line records the clock's time, not
+  99.99 (part `bobsled`; each live).
 - Speed Skating's computer pacer is rubber-banded: its skill rises while
   the player leads and falls while it leads (part `speed-skating`,
   `pacer_adjust`).
