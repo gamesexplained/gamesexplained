@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The link at the end of a tab to the next one: it names the tab after it in the bar, skips a tab
 the game does not have, sits above the edit footer, and the last tab has none. And the bar's order:
-How it works, Play and Discoveries first, Source code and About last, whatever a game's own list says."""
+How it works, Play and Discoveries first, Source code and About last, whatever a game's own list says,
+with a game's How it works split into a tab for each episode kept together at the front."""
 from pathlib import Path
 import json
 import re
@@ -50,6 +51,16 @@ class NextTab(unittest.TestCase):
         self.assertEqual([f for f, _ in build.tab_order(game, present)],
                          ["index.html", "mechanics.html", "play.html", "discoveries.html", "levels.html", "music.html",
                           "solution.html", "source.html", "about.html"])
+
+    def test_how_it_works_split_into_episodes_leads_the_bar(self):
+        game = {"tabs": [["index.html", "Episode 1"], ["discoveries.html", "Discoveries"], ["episode-2.html", "Episode 2"],
+                         ["music.html", "Music"], ["episode-3.html", "Episode 3"]],
+                "how_it_works": ["episode-2.html", "episode-3.html"]}
+        present = {f for f, _ in game["tabs"]} | {"source.html", "about.html"}
+        self.assertEqual([f for f, _ in build.tab_order(game, present)],
+                         ["index.html", "episode-2.html", "episode-3.html", "discoveries.html", "music.html",
+                          "source.html", "about.html"])
+        self.assertEqual(target(build.next_tab(game, present, "episode-3.html")), ("discoveries.html", "Discoveries"))
 
     def test_a_games_own_tabs_cannot_leave_out_source_code_or_about(self):
         game = {"tabs": [["index.html", "How it works"], ["discoveries.html", "Discoveries"], ["levels.html", "Maps"]]}

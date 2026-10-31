@@ -41,9 +41,10 @@ others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
 authored page it names is copied through, and a page in the folder that no tab
 names is left out with a warning (about-layout.html, the game's own About
 template, aside). Whatever the list's order, the bar starts with How it works
-(index.html, then any other tab labelled How it works), Play and Discoveries,
-and ends with Source code and About; the game's other tabs sit between them in
-the order it lists them (tab_order).
+(index.html, then any other tab labelled How it works or named in game.json's
+"how_it_works", for a game whose How it works is a tab for each episode or
+part), Play and Discoveries, and ends with Source code and About; the game's
+other tabs sit between them in the order it lists them (tab_order).
 Every tab but Source lists its sections in the left margin (pagenav), and every
 tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
@@ -365,13 +366,14 @@ def tier_name(t, steward=""):
     return "platinum (claimed)" if t == "platinum" and steward else TIER_NAMES.get(t, t)
 
 
-def tab_place(f, n):
+def tab_place(f, n, how=()):
     """Where a tab sits in the bar, whatever order game.json's "tabs" lists it in: How it works
-    (index.html, then a tab of the game's own of that name), Play and Discoveries lead, Source code
-    and About close it, and every other tab (4) keeps the game's order between them."""
+    (index.html, then a tab of the game's own of that name or one that how, game.json's
+    "how_it_works", names), Play and Discoveries lead, Source code and About close it, and every
+    other tab (4) keeps the game's order between them."""
     if f == "index.html":
         return 0
-    if n == "How it works":
+    if n == "How it works" or f in how:
         return 1
     return {"play.html": 2, "discoveries.html": 3, "source.html": 5, "about.html": 6}.get(f, 4)
 
@@ -383,7 +385,8 @@ def tab_order(game, present):
     tabs = list(game.get("tabs", TABS))
     named = {f for f, _ in tabs}
     tabs += [(f, n) for f, n in TABS if f in ASSEMBLED and f not in named]
-    return sorted(((f, n) for f, n in tabs if f in present), key=lambda t: tab_place(*t))
+    how = set(game.get("how_it_works", ()))
+    return sorted(((f, n) for f, n in tabs if f in present), key=lambda t: tab_place(*t, how))
 
 
 def tab_href(f):

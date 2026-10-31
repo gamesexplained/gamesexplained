@@ -83,6 +83,22 @@ windows are; the game's own routine put it at the corner, and the page
 follows it. The estate's 52 streets turned out to lie on a grid, so the
 page draws them as a map with the Geiger readings.
 
+**Episode tabs and the story-lines (31 October 2026).** The maintainer
+asked how episode one plays out and for a tab per episode. The pages
+became Episode 1 (`index.html`), Episode 2 (`the-bomb.html`) and
+Episode 3 (`sas-assault.html`); the Maps tab went into Episode 2, its
+Building 17 plans into Episode 1, and `game.json`'s `redirects` keep the
+old addresses. The story-lines section was written from `init_stories`
+and the routine each memo, report, sitrep and call runs. `test_story.js`
+runs all 99 of those routines over the listing with answers given, and
+holds every effect the page shows to them. Checking the draft against
+the code corrected it in places: the earliest day Plumb can be answered
+is day 30, not 29; the sergeant's first name is Torsen; the exercise
+books in Storuman are Holmar's; and memo 8's papers point to three of
+the watchable names rather than being the only clue. The Stop button
+on the title tune had stopped only the page's timer while the player's
+sound went on; `test_music.js` holds Stop to the title's own SPACE.
+
 **Left open.** Which word episode one's five-number password spells (the
 one-time pads are not in the program), what `XXXCOPY` checks, and what
 the disk's 43 sectors that no file holds contain beyond the boot's second

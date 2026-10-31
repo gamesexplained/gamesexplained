@@ -26,7 +26,9 @@ game that needs other tabs lists all of its tabs as `[file, label]` pairs
 in `game.json`'s `"tabs"`; the build publishes the pages named there and
 warns about any other `.html` in the folder. The bar always opens with
 How it works, Play and Discoveries and closes with Source code and About;
-the list orders the tabs between.
+the list orders the tabs between. A game made of separate episodes may
+give each its own How it works tab, `index.html` the first, and name the
+others in `game.json`'s `"how_it_works"` so that they stay at the front.
 
 When merging or renaming a page, keep its old URL in `game.json`'s
 `"redirects"`, for example `{"old.html": "levels.html#area-name"}`. The target
