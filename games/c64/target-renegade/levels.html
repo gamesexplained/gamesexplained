@@ -37,21 +37,21 @@ img{max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 </style>
 <style>.tr-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.tr-controls label{display:flex;gap:8px;align-items:center}.tr-controls input{max-width:170px}.tr-scroll{overflow:auto;margin-top:18px;border:1px solid var(--line)}.tr-scroll canvas{display:block;image-rendering:pixelated;width:1280px;height:320px;max-width:none}.tr-view{display:block;width:100%;max-width:640px;height:auto;image-rendering:pixelated;background:#000;margin:20px auto}.tr-info{font-family:var(--fm);font-size:13px}button,select{font:inherit;padding:6px 10px}</style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">1988 · Imagine Software · Commodore 64</p><h1>Target Renegade</h1><p class="sub">Five stages, drawn from two maps and three sets of character shapes per load.</p></header>
+<header class="hero"><p class="eyebrow">1988 · Imagine Software · Commodore 64</p><p class="tr-page-label">Maps / levels</p><h1>Target Renegade</h1><p class="sub">Choose a stage to explore its stored background and compare it with an original game capture.</p></header>
 <main class="wrap">
 <section data-part="resident" id="stage-browser"><p class="fig">01 · Maps</p><h2 class="t">The stage backgrounds</h2>
-<p>Each map is 80 columns wide and 20 rows tall. A map square holds a number that chooses a block of 4 × 4 characters. Each character chooses an 8 × 8 picture. That makes the whole stored background 2,560 × 640 pixels. The game shows a 320 × 160 window above the status panel.</p>
-<div class="plate"><div class="pick"><button class="step" id="tr-prev" aria-label="Previous stage">←</button><select id="tr-stage" aria-label="Stage"><option>1 · Car park</option><option>2 · Street</option><option>3 · Park</option><option>4 · Shopping street</option><option>5 · Bar</option></select><button class="step" id="tr-next" aria-label="Next stage">→</button></div>
-<canvas class="tr-view" id="tr-view" width="320" height="160" aria-label="Rebuilt background window"></canvas>
+
+<div class="plate"><p class="cap">Selected stage controls the background map and the original stage capture below.</p><div class="pick"><button class="step" id="tr-prev" aria-label="Previous stage">←</button><select id="tr-stage" aria-label="Stage for map and original capture"><option>1 · Car park</option><option>2 · Street</option><option>3 · Park</option><option>4 · Shopping street</option><option>5 · Bar</option></select><button class="step" id="tr-next" aria-label="Next stage">→</button></div>
+<h3 id="tr-map-title">Stage 1 · Car park: background</h3><canvas class="tr-view" id="tr-view" width="320" height="160" aria-label="Rebuilt background window"></canvas>
 <div class="tr-controls"><label>Left column <input id="tr-x" type="range" min="0" max="280" value="200"></label><label>Top row <input id="tr-y" type="range" min="0" max="60" value="0"></label><button id="tr-home">Stage start</button><label><input id="tr-grid" type="checkbox">Tile grid</label></div>
 <p class="tr-info" id="tr-map-info" aria-live="polite">Loading map data…</p>
 <div class="tr-scroll"><canvas id="tr-world" width="2560" height="640" aria-label="Full stored map with current window outlined"></canvas></div>
 <p class="cap">The full stored map appears below the window at half size. Scroll sideways to see its width. Changing stages also changes the character shapes and colours. Some stored areas lie outside a stage's usual route. The browser shows the stored data without claiming that every area is reachable in that stage.</p></div>
-<p>The column renderer at <code>$2A6C</code> reads map indices from <a href="source-first-load.html#2dc0">first-load $2DC0</a> or <a href="source-second-load.html#2dc0">second-load $2DC0</a>. It selects sixteen character codes from the tile table at $B000. Resource swaps at <code>$84FE</code> put the chosen character shapes and colours into the memory areas the display reads. These addresses identify where the game keeps each table.</p>
+<p>Each map is 80 columns wide and 20 rows tall. A map square holds a number that chooses a block of 4 × 4 characters. Each character chooses an 8 × 8 picture. That makes the whole stored background 2,560 × 640 pixels. The game shows a 320 × 160 window above the status panel.</p><p>The column renderer at <code>$2A6C</code> reads map indices from <a href="source-first-load.html#2dc0">first-load $2DC0</a> or <a href="source-second-load.html#2dc0">second-load $2DC0</a>. It selects sixteen character codes from the tile table at $B000. Resource swaps at <code>$84FE</code> put the chosen character shapes and colours into the memory areas the display reads. These addresses identify where the game keeps each table.</p>
 <p class="cap">The map lookup was checked against the game's own renderer for 51,200 character cells across both loads. The five font/colour selections were also compared with initialized native stage snapshots. The window omits fighters and the status panel.</p>
 </section>
-<section id="stage-reference"><p class="fig">02 · In play</p><h2 class="t">The native stage view</h2><figure class="plate" style="margin:0"><img id="tr-shot" src="reference/stage1.png" width="384" height="272" alt="Native stage 1 in VICE"><figcaption class="cap">Captured after native stage setup. The later stages were reached with explicit state changes and the game's loading routines.</figcaption></figure></section>
-</main>
+<section id="stage-reference"><p class="fig">02 · In play</p><h2 class="t">The original stage capture</h2><h3 id="tr-capture-title">Stage 1 · Car park: original capture</h3><figure class="plate" style="margin:0"><img id="tr-shot" src="reference/stage1.png" width="384" height="272" alt="Native stage 1 in VICE"><figcaption class="cap">Captured after native stage setup. The later stages were reached with explicit state changes and the game's loading routines.</figcaption></figure></section>
+<section data-part="resident" id="resources"><p class="fig">03 · Stages</p><h2 class="t">Replacing the streets</h2><p>The first three stages share one set of loaded graphics. Stages four and five use another set. Each set contains a map of 80 × 20 blocks and three sets of character shapes, colours, and enemy graphics. The engine exchanges a selected set with the active graphics before drawing the stage.</p><p><a href="levels.html">Open the five-stage map browser →</a></p><p>Stage setup at <code>$A768</code> chooses the exchanges; <code>$84FE</code> performs them. The ending loads its own short program and sprite data. The shared engine returns to the title after that sequence.</p><figure class="plate" style="margin:0"><img class="tr-thumb" src="reference/ending.png" width="384" height="272" alt="Native ending sequence"><figcaption class="cap">The ending capture follows the native H/I load and entry at ending $3400. It was reached with an explicit end-state change.</figcaption></figure></section></main>
 <script src="../../lib/c64.js"></script>
 <script>
 /* trMap */
@@ -79,8 +79,23 @@ function trMapCell(m,stage,x,y) {
    const w=world.getContext('2d');w.drawImage(background,0,0);w.strokeStyle='#fff';w.lineWidth=3;w.strokeRect(x*8,y*8,320,160);$('tr-map-info').textContent=`${s.part} · columns ${x}–${x+39} · rows ${y}–${y+19} · font $${s.font.toString(16).toUpperCase()}`;
   }
   function home() {const s=TR_STAGES[pick.selectedIndex];$('tr-x').value=s.x;$('tr-y').value=s.y;windowDraw();}
-  function choose(){const s=TR_STAGES[pick.selectedIndex],m=data[s.part],ctx=background.getContext('2d');for(let y=0;y<80;y++)for(let x=0;x<320;x++)cell(ctx,m,s,x,y,x*8,y*8);$('tr-shot').src=`reference/stage${pick.selectedIndex+1}.png`;$('tr-shot').alt=`Native stage ${pick.selectedIndex+1} in VICE`;home();}
+  function choose(){
+   const name=pick.options[pick.selectedIndex].textContent;
+   $('tr-map-title').textContent='Stage '+name+': background';
+   $('tr-capture-title').textContent='Stage '+name+': original capture';
+   const url=new URL(location.href);url.searchParams.set('stage',pick.selectedIndex+1);history.replaceState(null,'',url);
+   const s=TR_STAGES[pick.selectedIndex],m=data[s.part],ctx=background.getContext('2d');for(let y=0;y<80;y++)for(let x=0;x<320;x++)cell(ctx,m,s,x,y,x*8,y*8);$('tr-shot').src=`reference/stage${pick.selectedIndex+1}.png`;$('tr-shot').alt=`Native stage ${pick.selectedIndex+1} in VICE`;home();}
+  const requested=Number(new URLSearchParams(location.search).get('stage'));if(Number.isInteger(requested)&&requested>=1&&requested<=5)pick.selectedIndex=requested-1;
   pick.addEventListener('change',choose);$('tr-prev').onclick=()=>{pick.selectedIndex=(pick.selectedIndex+4)%5;choose();};$('tr-next').onclick=()=>{pick.selectedIndex=(pick.selectedIndex+1)%5;choose();};$('tr-home').onclick=home;for(const id of ['tr-x','tr-y','tr-grid'])$(id).addEventListener('input',windowDraw);choose();
  } catch(e){$('tr-map-info').textContent='Map could not load: '+e.message;}
 })();
 </script>
+<style>
+.tr-page-label{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:0 0 10px}
+.tr-figure{margin:20px 0;text-align:center}.tr-figure img{width:384px;max-width:100%}.tr-figure .cap{text-align:left}
+.tablewrap{max-width:100%;overflow-x:auto}.tablewrap table{min-width:560px}
+.tr-toolbar label{max-width:100%;flex-wrap:wrap}.tr-events{overflow:auto;max-width:100%}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid #1f5fa8;outline-offset:3px}
+.tr-thumb{max-width:100%;width:384px}.tr-readout{overflow-wrap:anywhere}h3{margin:18px 0 10px}
+@media(max-width:700px){.plate{padding:16px}.tr-toolbar{gap:10px}.tr-toolbar input[type=range]{max-width:180px}.tr-pair{gap:16px}.tr-pair canvas{max-width:100%;height:auto}.tr-scroll{max-width:100%;overflow:auto}.tr-pad button{min-height:44px}}
+</style>
