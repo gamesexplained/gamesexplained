@@ -2,7 +2,8 @@
 // A self-test of kit/scripts/shoot.js on a stand-in for a Playwright page, so it needs no browser:
 // each section is scrolled into view and waited for before its picture is taken, the pictures are
 // named by id or heading, console errors and page errors are counted, --click clicks what can be
-// clicked and sets each select back, and ListingReads.report() is read only with ?listing-reads.
+// clicked and sets each select back, ListingReads.report() is read only with ?listing-reads, and an
+// element that shows though it is hidden is an error.
 // Exits 1 on any failure.  node kit/scripts/test_shoot.js
 const fs = require('fs');
 const os = require('os');
@@ -12,7 +13,7 @@ let fails = 0;
 const check = (what, ok, detail = '') => { if (!ok) { fails++; console.log('FAIL', what, detail); } else console.log('ok  ', what); };
 
 // What the page does is pushed to calls, in order
-function fakePage({ sections, buttons = [], selects = [], report = null, onLoad = () => {} }) {
+function fakePage({ sections, buttons = [], selects = [], report = null, shown = [], onLoad = () => {} }) {
   const calls = [], on = {};
   let url = '';
   const message = (type, text) => ({ type: () => type, text: () => text, location: () => ({ url: 'page.js', lineNumber: 4 }) });
@@ -26,6 +27,7 @@ function fakePage({ sections, buttons = [], selects = [], report = null, onLoad 
     async evaluate(fn) {
       const src = String(fn);
       if (src.includes('main > section')) return sections;
+      if (src.includes('[hidden]')) return shown;
       if (src.includes('requestAnimationFrame')) { calls.push(['frames']); return undefined; }
       if (src.includes('ListingReads')) { calls.push(['report']); return report; }
       throw new Error('the fake page does not know ' + src);
@@ -101,6 +103,15 @@ const quiet = lines => s => lines.push(s);
       did.indexOf('click 4') < did.indexOf('scroll 0') && did.indexOf('shot 0 g-01-run.png') < did.indexOf('report'), did.join(', '));
     check('the report is printed', lines.some(l => l.startsWith('ListingReads.report(): {')), lines.join('\n'));
     check('no errors', r.errors === 0);
+  }
+
+  // An element that shows though it is hidden
+  {
+    const lines = [];
+    const page = fakePage({ sections: [{ id: 'map', heading: '' }], shown: ['img#shot.cv'] });
+    const r = await shoot(page, { url: 'http://x/c64/g/levels.html', prefix: path.join(dir, 'g'), wait: 0 }, quiet(lines));
+    check('an element shown though hidden is an error, and named', r.errors === 1
+      && lines.some(l => l.startsWith('shown though hidden: img#shot.cv')), lines.join('\n'));
   }
 
   // A page with no sections
