@@ -31,6 +31,12 @@ this part's listing.
 - The bull's moves are bucks, runs and spins. After the first, chosen
   by the bull's place, each move is a random number against the bull's
   five thresholds (`br_bull_odds`, `$2332`; `br_choose_move`, `$222C`).
+- The five bulls look the same. The bull and rider are drawn from the
+  move's frame alone (`br_draw_bull`, `$1E16`), and the bull's number,
+  `$24`, is read only for its name (`$1951`) and its odds (`$2235`,
+  `$2241`). *Live*, 31 October 2026: each bull chosen in practice and
+  caught at the same frame in the chute; the five pictures matched
+  pixel for pixel above the text row (`reference/bull-riding-*.png`).
 - The sixth bull follows the other joystick: nothing pressed, the next
   move as the bulls choose it; up a spin, up with fire a turn while
   spinning, down a buck (`br_joystick_bull`, `$22E3`).

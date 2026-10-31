@@ -51,7 +51,11 @@ part's listing.
   it falls by 1 a frame.
 - A lean of 24 or more either way is a fall; the one leaning further
   falls, lumberjack 1 on a tie. The meters at the bottom show each lean
-  (`lr_meters`, `$1CB2`).
+  (`lr_meters`, `$1CB2`), from the middle out, a character filled for
+  every three of lean, towards the side of the lean. *Live*, 31 October
+  2026, in a bout played with the stick: leans of 1, 13 and 23 (`$0F70`)
+  showed 0, 4 and 7 cells, and at 24 the lumberjack's arms went up as
+  the fall began (`reference/log-rolling-lean-*.png`).
 - The fall plays in stages (`lr_fall_step`, `$29E4`): 1 the standing
   pose for a frame; 2 (leaning forward) or 3 (back), with the splash;
   4, the second splash; 5 both lumberjacks in turn and the crowd's

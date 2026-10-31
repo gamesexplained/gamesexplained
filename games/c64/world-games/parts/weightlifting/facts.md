@@ -71,6 +71,17 @@ this part's listing.
   apart.
 - A judge votes white while the hold is under 48 frames and red after
   (`wl_vote`, `$1577`). Two white lamps make a good lift.
+- The judges first read the stick (`$1502`) in the frame the lift's
+  script ends, from `$43` as the interrupt read it that frame. The last
+  window of both lifts is down (`$209F`, `$2114`), and a good push
+  there ends the script at once, so the stick is still down when the
+  judges look: the weight is put down before any vote (`$1536`), three
+  red lamps. Left to run out, the window ends the script with result 1
+  all the same. *Live*, 31 October 2026, a snatch at 75 kg from
+  `play-F.vsf`: a push of down held for one frame in the last window
+  started script 4 in the same frame, with three red lamps and `$46` =
+  0; with the window left alone, all three judges voted white, the first
+  at a hold of 0 (`live_wl_last_window.py`).
 - The lifter's colour changes every 64 frames of the hold: light red,
   orange, red, purple, blue (`wl_skin_colours`, `$1572`).
 - Held too long, every judge left votes red and one of two endings

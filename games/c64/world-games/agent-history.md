@@ -63,3 +63,25 @@ colours was not looked into.
 
 A credit on the title screen was first read as "Bob Maddwell"; an
 enlargement reads MacDOWELL.
+
+**Follow-ups, 31 October 2026.** The contributor asked for a picture
+of each event in its section, a playable lift, and pictures of log
+rolling's lean, the bulls and the caber's gap, among other changes.
+
+The lift was ported routine by routine: the script stepper and the
+windows (`wl_script`), the judges (`wl_judges`), the divide and the
+plates' drawing (`wl_draw_plates`, with the wipe before it), each held
+to the game's code frame by frame in `test_widgets.js`. Playing the
+port turned up a case the code had not been read for: a good push in
+the last window ends the lift with the stick still down, and the
+judges' first look at the stick, in the same frame, puts the weight
+down with three red lamps. A snatch played in VICE did the same.
+
+The caber's gap needed a measured throw. Twenty-five minutes of random
+play in VICE, and an earlier search over run-ups and holds, never
+landed one, so a real throw had its landing pose set to a good one by
+hand and the game measured it; the page says so. The two sprites
+measured turned out to be the thrower's legs and the caber's foot.
+
+The five bulls were compared in the chute pixel for pixel; they are
+the same picture with a different name.
