@@ -13,7 +13,8 @@
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
 //   voice(x)    optional: plain data about voice x (0-2) for the display's rows; a field named
-//               as one the player reads from the chip (freq, pw, ctrl, ad, sr, env) is ignored
+//               as one the player reads from the chip (freq, pw, ctrl, ad, sr, env) or finds in
+//               the writes (again) is ignored
 //   readback(env3, osc3, bus)  optional: called before each play() with what $D41C and $D41B
 //               read, voice 3's envelope level and the top eight bits of its waveform, and what a
 //               register the chip does not answer reads (bus, below), as the model has them at
@@ -21,7 +22,8 @@
 //   writes      optional: every register write of the last frame in order, as a flat list
 //               [register, value, register, value, ...]. When a driver keeps it, the player
 //               applies the writes in order instead of the frame's final registers, so a gate
-//               turned off and on again within one frame restarts the envelope, as on the chip
+//               turned off and on again within one frame restarts the envelope, as on the chip,
+//               and the display counts it as a note (again, startsNote)
 // A driver that reads a register it writes ($D400-$D418) does not get back what it wrote there:
 // the chip answers only $D419-$D41C, and a read of any other register returns the data bus, the
 // last value written to any register (or read from $D41B or $D41C), until it fades (createBus,
@@ -87,6 +89,7 @@
 //   C64Sid.worklet(driver)       the source text host() runs in the AudioWorklet, for tests
 //   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
 //   C64Sid.waveLevel(ctrl, pw)   how loud a voice's waveform is against its envelope, 0 to 1
+//   C64Sid.startsNote(v, prev)   whether a voice's frame starts a note: mount's mark by default
 globalThis.C64Sid = (function () {
   'use strict';
   // How loud a voice's waveform is, 0 to 1, against the level its envelope sets: none with no
@@ -99,6 +102,16 @@ globalThis.C64Sid = (function () {
     if (!(ctrl & 0x40)) return 1;
     const d = (pw & 0xFFF) / 4096;
     return 2 * Math.sqrt(d * (1 - d));
+  }
+
+  // Whether a voice's frame starts a note, given its snapshot and the frame before's (null for the
+  // first): where its gate comes on, or goes off and on again within the frame (again), as a
+  // driver does that starts every note afresh with the gate left on (Power Drift's race tune). A
+  // restart on the frame after another is not a note: a driver that restarts a voice every frame
+  // is holding or shaping one sound (Castle Master's alarm keeps its tone loud that way), not
+  // playing fifty notes a second.
+  function startsNote(v, p) {
+    return !!(v.ctrl & 1) && (!(p && p.ctrl & 1) || (!!v.again && !p.again));
   }
 
   // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
@@ -427,11 +440,12 @@ globalThis.C64Sid = (function () {
         else if (c.cmd === 'filter') sid.setFilter(c.chip);
       }
       function snapshot(t) {                                 // what the display needs, per frame
-        const s = drv.sid, v = [];
+        const s = drv.sid, v = [], again = restarted(drv.writes);
         for (let x = 0; x < 3; x++) {
           const r = 7 * x;
           v.push(Object.assign({}, drv.voice ? drv.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
-            pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env }));
+            pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env,
+            again: again[x] }));
         }
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
@@ -486,8 +500,21 @@ globalThis.C64Sid = (function () {
     }
     const liveMost = (opts) => Math.ceil(0.5 * clockOf(opts) / periodOf(opts));
 
+    // Per voice, whether a frame's writes ([register, value, ...]) turned its gate off and then on
+    // again: the chip starts a new note though the frame ends with the gate on, as it began
+    function restarted(w) {
+      const off = [false, false, false], again = [false, false, false];
+      if (w) for (let k = 0; k + 1 < w.length; k += 2) {
+        const r = w[k];
+        if (r >= 21 || r % 7 !== 4) continue;
+        if (!(w[k + 1] & 1)) off[(r - 4) / 7] = true;
+        else if (off[(r - 4) / 7]) again[(r - 4) / 7] = true;
+      }
+      return again;
+    }
+
     return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer,
-      createLive, liveMost };
+      createLive, liveMost, restarted };
   }
 
   // ------------------------------------------------------------------ the sound, on a page
@@ -627,11 +654,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   tunes   the names of the driver's tunes, in its order: one button each
   //   rows    optional: the lines of each voice's panel above its frequency, each
   //           {k: 'Label', f} or, for an indented line with no label, {in: true, mono, f}.
-  //           f(v, x) gets the voice's snapshot for the frame (freq, pw, ctrl, ad, sr, env and
-  //           whatever the driver's voice(x) returns) and returns the text; null leaves the line
-  //           as it was
+  //           f(v, x) gets the voice's snapshot for the frame (freq, pw, ctrl, ad, sr, env, again
+  //           and whatever the driver's voice(x) returns) and returns the text; null leaves the
+  //           line as it was. again is true where the frame's writes turned the voice's gate off
+  //           and on again (a driver that keeps writes)
   //   mark    optional: (v, prev) => true where a note starts, drawn taller on the piano roll;
-  //           by default, where the voice's gate comes on
+  //           by default startsNote: where the voice's gate comes on, or goes off and on again
+  //           within the frame
   //   gain    optional: the output level, 0.6 by default
   //   filter  optional: '6581', '8580' or 'none', the filter the player starts with. Given, the
   //           player shows a switch between the three, heard at once, to compare them, and
@@ -672,7 +701,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const px = PX * PERIOD / (o.ntsc ? E.NTSC_FRAME_CYCLES : E.FRAME_CYCLES);   // piano roll: pixels a call
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
-    const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
+    const mark = o.mark || startsNote;
     const BOUNCE = o.bounce !== false, NOISE = !!o.noise;
     const loopOf = (t) => (o.loops && o.loops[t]) || null;
     const wrapped = (t, f) => {                              // a frame of tune t as its bar shows it
@@ -751,12 +780,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           const w = d.writes, s = d.sid;                     // as the player sets the chip
           if (w) for (let i = 0; i + 1 < w.length; i += 2) chip.write(w[i], w[i + 1]);
           chip.setRegs(s);
-          const env = chip.V.map((c) => c.env);
+          const env = chip.V.map((c) => c.env), again = E.restarted(w);
           chip.skip(PERIOD);
           for (let x = 0; x < 3; x++) {
             const r = 7 * x;
             const v = Object.assign({}, d.voice ? d.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
-              pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] });
+              pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x],
+              again: again[x] });
             const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
             level[x][k] = lv * waveLevel(v.ctrl, v.pw);
             if (lv && v.freq && wave && (wave !== 0x80 || NOISE)) line[x][k] = semis(v.freq);   // noise: only if asked
@@ -978,5 +1008,5 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }, () => {});
   }
 
-  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel };
+  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel, startsNote };
 })();
