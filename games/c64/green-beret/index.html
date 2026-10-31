@@ -91,7 +91,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · One frame, rebuilt from memory</p>
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: effects borrow the music's voices</h2>
+  <p class="lede">Seventeen effects of 31 bytes each, played on the same three voices as the music.</p>
+  <div class="plate">
+    <div id="gb-sfx"></div>
+    <p class="cap">Each button runs the game's own routine that starts the effect (<code>sfx_hit</code>, <code>sfx_gun</code> and the rest), then the driver once a frame until the sound has died away, checked by <code>test_music.js</code> like the tunes.</p>
+  </div>
+  <p>An effect is a voice's whole setting in one block: waveform, envelope, frequency, pulse width, and a frequency slide or arpeggio with a pulse sweep. <code>sfx_start</code> copies it to the voice and marks the voice as taken, and the music's notes on that voice go silent until the effect's sound time runs out. A bigger sound, an explosion, a bazooka shell or a weapon being taken, takes all three voices at once.</p>
+</section>
+
+<section>
+  <p class="fig">04 · One frame, rebuilt from memory</p>
   <h2 class="t">Twenty-one figures on eight sprites</h2>
   <p class="lede">The C64 has eight sprites. Green Beret moves up to 21 figures, and re-uses each sprite lower down the screen once its first figure has been drawn.</p>
   <div class="plate">
@@ -105,7 +116,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">04 · The map</p>
+  <p class="fig">05 · The map</p>
   <h2 class="t">A stage is a strip of tiles</h2>
   <p class="lede">Each new column at the right edge of the screen is read from two tiles, one above the other.</p>
   <div class="plate">
@@ -121,7 +132,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · The hero</p>
+  <p class="fig">06 · The hero</p>
   <h2 class="t">A jump is 42 frames</h2>
   <p class="lede">The hero is moved from the raster interrupt, once a frame, and every jump in the game follows one table of heights.</p>
   <div class="plate">
@@ -136,7 +147,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · The enemies</p>
+  <p class="fig">07 · The enemies</p>
   <h2 class="t">The soldiers and what each one does</h2>
   <p class="lede">Every enemy is two sprites, a top and legs, and a type number from 0 to 9 that picks its colour, its speed, its points and its behaviour.</p>
   <div class="plate">
@@ -149,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">07 · Who comes when</p>
+  <p class="fig">08 · Who comes when</p>
   <h2 class="t">The difficulty creeps up while you play</h2>
   <p class="lede">Most enemies come from five lanes, each a timer. A difficulty number rises as you play and changes which enemy each lane sends and how soon.</p>
   <div class="plate">
@@ -167,7 +178,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">08 · The end of each stage</p>
+  <p class="fig">09 · The end of each stage</p>
   <h2 class="t">Each stage ends in a fight of its own</h2>
   <p class="lede">When the scroll reaches the stage's last column, an alarm sounds, the hero may walk on across the screen, and the stage's own routine takes over the main loop.</p>
   <div class="plate">
@@ -186,7 +197,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">09 · Memory</p>
+  <p class="fig">10 · Memory</p>
   <h2 class="t">Four stages in one load</h2>
   <p class="lede">The game loads once. Each stage's characters, tiles and tile colours wait elsewhere in memory, and nine block swaps put them where the video chip and the map routine read them.</p>
   <div class="plate">
@@ -198,17 +209,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="gb-scroll"><table class="gb-tbl" id="gb-swaps"></table></div>
   <p><code>block_swap</code> exchanges two blocks of memory byte for byte, so the graphics it moves out are kept where the new ones were, and a second swap puts everything back. The blocks under the I/O area, <code>$D000</code>-<code>$DFFF</code>, hold three character sets that the processor can only see with the chips switched out, and the routine switches them out for those swaps. The Bridge's swaps leave the Harbour's in place, and the Prison Camp's are made on top of the Bridge's, so each stage's memory is the sum of the swaps before it. A new game undoes them all (<code>swaps_undo</code>).</p>
   <p>The same trick serves the title page and the scenes between stages: swap 8 brings the title's character set to <code>$7800</code> and takes it back. The texts, such as WELL DONE and the credits, are kept in spare characters of a character set, and move with it.</p>
-</section>
-
-<section>
-  <p class="fig">10 · Sound effects</p>
-  <h2 class="t">Sound: effects borrow the music's voices</h2>
-  <p class="lede">Seventeen effects of 31 bytes each, played on the same three voices as the music.</p>
-  <div class="plate">
-    <div id="gb-sfx"></div>
-    <p class="cap">Each button runs the game's own routine that starts the effect (<code>sfx_hit</code>, <code>sfx_gun</code> and the rest), then the driver once a frame until the sound has died away, checked by <code>test_music.js</code> like the tunes.</p>
-  </div>
-  <p>An effect is a voice's whole setting in one block: waveform, envelope, frequency, pulse width, and a frequency slide or arpeggio with a pulse sweep. <code>sfx_start</code> copies it to the voice and marks the voice as taken, and the music's notes on that voice go silent until the effect's sound time runs out. A bigger sound, an explosion, a bazooka shell or a weapon being taken, takes all three voices at once.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

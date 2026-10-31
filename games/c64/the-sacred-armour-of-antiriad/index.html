@@ -122,8 +122,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>In play the tempo stays at 47.3 steps a second. The short tunes heard in the game, the suit waking, the panel powering up, a life restored and the ending, are tracks of the same driver.</p>
 </section>
 
+<section id="sound">
+  <p class="fig">03 · The effects</p>
+  <h2 class="t">Sound: every effect is a track of the music driver</h2>
+  <p class="lede">Footsteps, stones, the Geiger counter and the typing of the panel's messages are tracks like the title tune's, asked of one voice each.</p>
+  <div class="plate">
+    <div id="an-sfx"></div>
+    <p class="cap">The same driver on the same 6502 at the tempo of play, each button asking the voice the game asks for that track. <code>test_music.js</code> checks these as well. The footstep, Tal's fall and a creature's death are pitched far down, between 16 and 170 Hz, which laptop and phone speakers barely play. The typing and the power centre's drone repeat until the game stops them.</p>
+  </div>
+  <p>A sound is asked for by putting a track number in a voice's request byte (<code>$035E</code>-<code>$0360</code>), and the next tick of timer B starts it (<code>start_requests</code>).</p>
+  <p>Each voice has its own sounds. Voice 1 plays Tal's footsteps and the suit's hum, voice 2 the effects of stones, shots, creatures and pick-ups (<code>play_effect</code>), and voice 3 the Geiger counter's clicks and the typing as each letter of a message appears. The power centre's drone plays on voice 2 and is the only sound that uses the filter. While the drone plays, <code>play_effect</code> drops every effect asked of voice 2.</p>
+  <p>While the suit is waking for the first time, the driver starts a request only when voice 1's is one of the three activation tunes (<code>activation_tracks</code>, <code>$C605</code>), and then starts the other voices' requests with it. Every other sound waits until the panel has powered up.</p>
+</section>
+
 <section id="screen">
-  <p class="fig">03 · The screen</p>
+  <p class="fig">04 · The screen</p>
   <h2 class="t">Two character sets share one screen</h2>
   <p class="lede">The playfield and the status panel are both drawn in characters on the same screen at <code>$4000</code>. The raster interrupt changes the character set and the colours where the panel begins, and again at the bottom of the frame.</p>
   <div class="plate">
@@ -133,11 +146,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">One frame in room <code>$2B</code> with the suit worn, recorded in the emulator and drawn here from the screen at <code>$4000</code>, the two character sets, colour RAM, the sprites and every register the game wrote during the frame, by the site's renderer. All 104,448 pixels of the drawing match the emulator's own picture of the frame.</p>
   </div>
   <p>The interrupt comes three times a frame (<code>raster_bands</code>, <code>$AE92</code>). At line 250, in the bottom border, it sets up the playfield for the next frame and then runs the game's work for the frame: the timers, Tal's joystick, the creatures' paths and animations, the collisions and the Q key. At line 50, as the playfield starts, it scrolls the message strip and rolls the score. At line 178 it switches to the panel.</p>
-  <p>The playfield's character set is rebuilt for every room (section 04), so one screen code draws jungle in one room and rock in another. The panel keeps its own set at <code>$7000</code>. The message strip and the score's digits are characters in that set whose shapes the game rewrites as they move: the strip scrolls two pixels a frame, and each digit rolls up to the next like an odometer.</p>
+  <p>The playfield's character set is rebuilt for every room (section 05), so one screen code draws jungle in one room and rock in another. The panel keeps its own set at <code>$7000</code>. The message strip and the score's digits are characters in that set whose shapes the game rewrites as they move: the strip scrolls two pixels a frame, and each digit rolls up to the next like an odometer.</p>
 </section>
 
 <section id="rooms">
-  <p class="fig">04 · The rooms</p>
+  <p class="fig">05 · The rooms</p>
   <h2 class="t">Each room borrows a strip from both neighbours</h2>
   <p class="lede">A room is eight tiles across and four down, and each side of the screen shows one column of tiles from the room next door, so neighbouring screens overlap by 64 pixels.</p>
   <div class="plate">
@@ -152,7 +165,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="solid">
-  <p class="fig">05 · Walls and floors</p>
+  <p class="fig">06 · Walls and floors</p>
   <h2 class="t">The colour of a cell decides whether it is solid</h2>
   <p class="lede">The game never looks at a character's shape to see whether Tal can stand on it. It reads the cell's colour in colour RAM and looks it up in three short tables.</p>
   <div class="plate">
@@ -173,19 +186,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table>
   <p>The four colours that hurt are open in both directions: Tal can walk into a thorn. In the character lists they belong to the thrusting thorns, the monkey, the dragons' fire and most of the machine gunner. A touch costs Tal 4 or 8 energy, or the suit half of that, a quarter with the Particle Negator, and the game waits 25 frames before the next touch counts (<code>scenery_hits</code>). The game skips the check in room <code>$00</code>, at the top of the world.</p>
   <p>The tables hold the whole nibble of colour RAM, with the bit that marks a multicolour character. That bit is bit 3, so in a multicolour room the nibble 15 is a shape in yellow and the room's two colours, and 13 a shape in green.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">06 · The effects</p>
-  <h2 class="t">Sound: every effect is a track of the music driver</h2>
-  <p class="lede">Footsteps, stones, the Geiger counter and the typing of the panel's messages are tracks like the title tune's, asked of one voice each.</p>
-  <div class="plate">
-    <div id="an-sfx"></div>
-    <p class="cap">The same driver on the same 6502 at the tempo of play, each button asking the voice the game asks for that track. <code>test_music.js</code> checks these as well. The footstep, Tal's fall and a creature's death are pitched far down, between 16 and 170 Hz, which laptop and phone speakers barely play. The typing and the power centre's drone repeat until the game stops them.</p>
-  </div>
-  <p>A sound is asked for by putting a track number in a voice's request byte (<code>$035E</code>-<code>$0360</code>), and the next tick of timer B starts it (<code>start_requests</code>).</p>
-  <p>Each voice has its own sounds. Voice 1 plays Tal's footsteps and the suit's hum, voice 2 the effects of stones, shots, creatures and pick-ups (<code>play_effect</code>), and voice 3 the Geiger counter's clicks and the typing as each letter of a message appears. The power centre's drone plays on voice 2 and is the only sound that uses the filter. While the drone plays, <code>play_effect</code> drops every effect asked of voice 2.</p>
-  <p>While the suit is waking for the first time, the driver starts a request only when voice 1's is one of the three activation tunes (<code>activation_tracks</code>, <code>$C605</code>), and then starts the other voices' requests with it. Every other sound waits until the panel has powered up.</p>
 </section>
 
 <section id="tal">
@@ -258,7 +258,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="an-border" id="an-end-box"><canvas id="an-end" class="an-cv" width="640" height="256"></canvas></div>
     <canvas id="an-end-strip" class="an-strip" width="264" height="24"></canvas>
     <p class="an-out" id="an-end-out"></p>
-    <p class="cap">Room <code>$00</code> drawn as in section 04, without its sprites, with the three cells <code>check_detonation</code> (<code>$9850</code>) looks for marked: screen codes <code>$C9</code>-<code>$CB</code> at row 12, columns 18 to 20. Set off, the panel's strip scrolls message <code>$93</code> as section 08 does, and then the playfield dissolves as <code>victory_sequence</code> (<code>$8AD9</code>) dissolves it, which <code>test_ending.js</code> holds to the routine step by step.</p>
+    <p class="cap">Room <code>$00</code> drawn as in section 05, without its sprites, with the three cells <code>check_detonation</code> (<code>$9850</code>) looks for marked: screen codes <code>$C9</code>-<code>$CB</code> at row 12, columns 18 to 20. Set off, the panel's strip scrolls message <code>$93</code> as section 08 does, and then the playfield dissolves as <code>victory_sequence</code> (<code>$8AD9</code>) dissolves it, which <code>test_ending.js</code> holds to the routine step by step.</p>
   </div>
   <p>While the suit stands on the ground, <code>check_detonation</code> reads the screen code in the cell below and to the right of Tal. When it is one of the three in <code>detonator_chars</code> (<code>$CE30</code>) and the Implosion Mine is fitted, it starts message <code>$93</code>, "IMPLOSION MINE DETONATION SEQUENCE INITIALIZED", which counts down from FIVE to ZERO as it scrolls, about seven and a half seconds.</p>
   <p>When the message has gone, the ending tune plays and the playfield's characters dissolve in nine steps (<code>victory_sequence</code>). Each step ANDs all 2,048 bytes of the room's character set with a 64-byte mask from <code>$0800</code>, a new mask each step, and then flips the border and background between black and white and the fine scroll between 3 and 0, so the whole picture jumps three lines up and back. A step takes 17 or 18 frames: about eight while the processor works through the bytes, between the frame's other jobs, and then a wait of ten.</p>

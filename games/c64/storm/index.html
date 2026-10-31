@@ -100,8 +100,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table>
 </section>
 
+<section id="sound">
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: fifteen effects on two voices</h2>
+  <p class="lede">Every sound in play is one of fifteen records of twenty bytes, swept on voices 1 and 3 once a frame.</p>
+  <div class="plate"><div id="st-sfx"></div>
+    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), on the kit's 6502 simulator in the page. Checked against the same code called on the simulator directly: every register write of all 15 effects, 805 frames, matches. Each starts from a silenced chip, as the first effect of a game does.</p></div>
+  <p>A record (<code>sfx_records</code>) holds a duration, a step length, start frequencies, envelopes, waveforms, and pulse widths for both voices, a sweep for each, a repeat count, and a flag that adds a random byte to voice 1's pitch at each repeat. <code>sfx_update</code> sweeps both voices every frame, restarts them at each repeat, and stops the effect when its duration runs out. Effect 5 is never asked for.</p>
+</section>
+
 <section id="rooms">
-  <p class="fig">03 · A room</p>
+  <p class="fig">04 · A room</p>
   <h2 class="t">Each room is four short lists and its doorways</h2>
   <p class="lede">A room is drawn from four lists, of floor pieces, walls, generators, and objects, and four bits that say where its outer wall has doorways. Turn each part off and on to see what it draws.</p>
   <div class="plate" id="st-room">
@@ -124,7 +133,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="monsters">
-  <p class="fig">04 · Monsters</p>
+  <p class="fig">05 · Monsters</p>
   <h2 class="t">One monster moves at a time, straight at Agravain</h2>
   <p class="lede">Every 50 passes of the main loop a generator puts out a monster, and on each pass one monster takes a step. Run the game's own code and watch them come.</p>
   <div class="plate" id="st-mon">
@@ -145,7 +154,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="energy">
-  <p class="fig">05 · Energy</p>
+  <p class="fig">06 · Energy</p>
   <h2 class="t">Armour that outweighs a drain stops it completely</h2>
   <p class="lede">Hunger and monsters' touches drain each player's energy. Armour stands in front of every drain, and while it is greater than the drain, nothing at all is lost.</p>
   <div class="plate" id="st-en">
@@ -175,7 +184,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="objects">
-  <p class="fig">06 · Objects</p>
+  <p class="fig">07 · Objects</p>
   <h2 class="t">The same picture can be food or a trap</h2>
   <p class="lede">Every object in a room is one of 28 pictures. A second byte decides whether touching it takes it, stops the player, or springs a trap.</p>
   <div class="plate"><div class="st-gal" id="st-gal"></div>
@@ -186,7 +195,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="screen">
-  <p class="fig">07 · The screen</p>
+  <p class="fig">08 · The screen</p>
   <h2 class="t">Four raster interrupts split every frame</h2>
   <p class="lede">Four raster interrupts split the screen into a panel in the C64's own font, a scrolling message line, and the play area in the game's characters.</p>
   <div class="plate">
@@ -206,7 +215,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="controls">
-  <p class="fig">08 · Controls</p>
+  <p class="fig">09 · Controls</p>
   <h2 class="t">Turn, then walk</h2>
   <p class="lede">Left and right turn a player a quarter turn; up walks one cell the way he faces. Down is magic.</p>
   <table class="st-tbl">
@@ -218,15 +227,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>Down and fire</td><td>a scroll: the monsters cleared</td><td>an amulet: the monsters cleared</td></tr>
   </table>
   <p>The players' controls are read every other pass. On the title, fire on either joystick starts; then left asks for one player and right for two, and up shows the instructions and down skips them. Masks, scrolls, and amulets, like keys and brooches, are counters the two players share.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">09 · Sound effects</p>
-  <h2 class="t">Sound: fifteen effects on two voices</h2>
-  <p class="lede">Every sound in play is one of fifteen records of twenty bytes, swept on voices 1 and 3 once a frame.</p>
-  <div class="plate"><div id="st-sfx"></div>
-    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), on the kit's 6502 simulator in the page. Checked against the same code called on the simulator directly: every register write of all 15 effects, 805 frames, matches. Each starts from a silenced chip, as the first effect of a game does.</p></div>
-  <p>A record (<code>sfx_records</code>) holds a duration, a step length, start frequencies, envelopes, waveforms, and pulse widths for both voices, a sweep for each, a repeat count, and a flag that adds a random byte to voice 1's pitch at each repeat. <code>sfx_update</code> sweeps both voices every frame, restarts them at each repeat, and stops the effect when its duration runs out. Effect 5 is never asked for.</p>
 </section>
 
 </main>
