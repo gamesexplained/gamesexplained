@@ -60,10 +60,13 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 .pl-screen:focus-visible{box-shadow:0 0 0 3px var(--accent)}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:14px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-pad{display:none;gap:8px;margin-top:14px;align-items:center;justify-content:space-between}
-.pl-pad button{font-size:18px;font-weight:700;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);width:64px;height:64px;touch-action:none;user-select:none}
+.pl-pad button{font-size:min(18px,4.4vw);font-weight:700;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);flex:0 1 64px;width:64px;min-width:0;height:64px;padding:0;touch-action:none;user-select:none}
 .pl-pad button.on{background:var(--ink);color:#fff}
-.pl-pad .pl-group{display:flex;gap:8px}
-@media (pointer:coarse){.pl-pad{display:flex}}
+.pl-pad .pl-group{display:flex;gap:8px;min-width:0}   /* the six buttons narrow to fit a phone */
+.pl-bar{margin:12px 0 0}
+/* a touch screen gets the pad under the picture, before the bar; on the page the pad's Sel and Start
+   stand in for the bar's, which come back in full screen, where the bar leaves the plate without the pad */
+@media (pointer:coarse){.pl-pad{display:flex}.pl-plate .pl-also-pad{display:none}}
 .pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
@@ -93,21 +96,21 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   <h2 class="t">Play Balloon Fight with the keyboard</h2>
   <p class="lede">Left and right steer. Z or Space flaps once, and holding X flaps again and again. Enter is Start and Shift is Select. On the title screen, Select moves the balloon between one player, two players and Balloon Trip, and Start begins. Start also pauses a game.</p>
   <div class="plate pl-plate">
-    <div class="pl-row">
-      <button class="pl-btn" id="pl-start">Start</button>
-      <button class="pl-btn" id="pl-select">Select</button>
+    <div><canvas class="pl-screen" id="pl-screen" width="512" height="480" tabindex="0"></canvas></div>
+    <div class="pl-pad" id="pl-pad">
+      <div class="pl-group"><button data-bit="64">◀</button><button data-bit="128">▶</button></div>
+      <div class="pl-group"><button data-bit="4">Sel</button><button data-bit="8">Start</button></div>
+      <div class="pl-group"><button data-bit="2">B</button><button data-bit="1">A</button></div>
+    </div>
+    <div class="pl-row pl-bar" id="pl-bar">
+      <button class="pl-btn pl-also-pad" id="pl-start">Start</button>
+      <button class="pl-btn pl-also-pad" id="pl-select">Select</button>
       <button class="pl-btn" id="pl-pause" aria-pressed="false">Hold</button>
       <button class="pl-btn" type="button" id="pl-rewind" aria-pressed="false" title="Hold to go back, up to twenty seconds (or hold R)">⏪ Rewind</button>
       <button class="pl-btn" type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" class="pl-btn" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <button class="pl-btn" id="pl-reset">Reset</button>
       <span class="pl-out" id="pl-out"></span>
-    </div>
-    <div><canvas class="pl-screen" id="pl-screen" width="512" height="480" tabindex="0"></canvas></div>
-    <div class="pl-pad" id="pl-pad">
-      <div class="pl-group"><button data-bit="64">◀</button><button data-bit="128">▶</button></div>
-      <div class="pl-group"><button data-bit="4">Sel</button><button data-bit="8">Start</button></div>
-      <div class="pl-group"><button data-bit="2">B</button><button data-bit="1">A</button></div>
     </div>
     <ul class="pl-keys">
       <li><kbd>←</kbd> <kbd>→</kbd> steer; in the air, lean</li>
@@ -200,9 +203,9 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   // ---- the screen: the port's PPU through the site's model of the chip
   const cv = $('pl-screen'), ctx = cv.getContext('2d');
   CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
-  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
-  // carried into full screen with them
-  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
+  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar under
+  // the screen carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: $('pl-bar') });
   const mods = BalloonFightMods.create(g);
   window.bfMods = mods;
   const V = BalloonFight.V, see = {};
