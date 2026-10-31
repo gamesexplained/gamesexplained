@@ -11,6 +11,8 @@
 // - Each section goes to <output prefix>-01-<name>.png, -02-..., named by its id or its heading.
 // - Every console message and page error is printed as it comes, and the run exits 1 when the
 //   page threw or logged an error, so one cannot pass unseen.
+// - An element in main with the hidden attribute that shows all the same, because the page's CSS
+//   gives it a display, counts as an error too: the picture has it, and the console says nothing.
 // - --click first clicks every button in main and steps every select through its options, then
 //   sets each select back: a smoke test, since a widget that throws does so on the console.
 // - Opened with ?listing-reads (site/lib/listing-reads.js), the page's ListingReads.report() is
@@ -102,6 +104,12 @@ async function shoot(page, o, say = console.log) {
   page.on('pageerror', e => { errors++; say(`page error: ${e.message}`); });
   page.on('dialog', d => { say(`dialog (dismissed): ${d.message()}`); d.dismiss().catch(() => {}); });
   await page.goto(o.url, { waitUntil: 'load' });
+  // An element with the hidden attribute still shows when the page's CSS gives it a display
+  // (.x{display:block}), and nothing says so on the console
+  const shown = await page.evaluate(() => [...document.querySelectorAll('main [hidden]')]
+    .filter(e => getComputedStyle(e).display !== 'none')
+    .map(e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + [...e.classList].map(c => '.' + c).join('')));
+  for (const e of shown) { errors++; say(`shown though hidden: ${e} (its CSS display wins over the hidden attribute)`); }
   if (o.click) await exercise(page, o, say);
 
   const sections = await page.evaluate(() => [...document.querySelectorAll('main > section')].map(s => {
