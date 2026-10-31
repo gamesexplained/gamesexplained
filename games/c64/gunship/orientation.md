@@ -58,15 +58,18 @@ are all in memory then.
 
 ## The parts
 
-Seven parts, in the order they are played. Three are BASIC programs with
-machine code beside them; the flight is all machine code.
+Eight parts, in the order they are played. Six hold a BASIC program
+(`GUNSHIP`, `BEGIN`, `6`, `G2`, `B` and `E`), most with machine code
+beside it; the library and the side 2 helpers are machine code alone, and
+the flight is `G2` round a machine-code engine.
 
 | Part | What it is | Snapshot (in `parts/<id>/work/`) | Route |
 |---|---|---|---|
 | `title` | `GUNSHIP` (BASIC, `$0801`-`$10E4`) and the title sequence it loads: `SMALL`, `TITLE`, `CHOPPER`, `ROTORS`, `METAL` | `entry.vsf` at the `SMALL` load (5 s); `play-credits.vsf` at the `TYPE` load (85 s) | power-on, autostart side 1 |
 | `library` | `TYPE`, the machine-code library at `$7500`-`$8B4C` with its fonts, and `MAP.CHR.TN` | `entry.vsf` at the `MAP.CHR.TN` load (95 s); `play-roster-checked.vsf` at the `BEGIN` load (104 s) | the boot program loads both |
 | `front` | `BEGIN` (BASIC, `$0801`-`$6609`), over the library | `entry.vsf` at the first picture's load (`I<n>`, 120 s); `play-menu.vsf`; `play-briefing-we.vsf` | steps 3 and 4 above |
-| `loader` | side 2's `6` (BASIC, `$0801`-`$1013`) and its helpers at `$8000`-`$80E2` | `entry.vsf` and `play-loading.vsf`, both at the `CP` load | step 5: the first file side 2 loads |
+| `helpers` | the machine code `6` brings with it at `$8000`-`$80E2`: a `CBM80` reset trap and the copy and fill routines its BASIC calls | `entry.vsf` and `play-loading.vsf`, both at the `CP` load | step 5: the first file side 2 loads |
+| `loader` | side 2's `6` (BASIC, `$0801`-`$1013`), over the helpers | `entry.vsf` at the `CP` load | step 5 |
 | `flight` | `CP`, `CH`, `W3.<theatre>`, `M`, `M.<theatre><n>`, `G2` and `AWH`: the flight engine, its terrain and the BASIC that runs before and after it | `entry.vsf` at the engine's first interrupt; `play-cockpit-we.vsf`; `play-flying-we.vsf` | steps 5 and 6 |
 | `debrief` | `B` (BASIC, `$0801`-`$1831`): the mission result summary | `entry.vsf` at the `1` load; `play-summary.vsf` at the `2` load | land at a base and switch off both engines; with side 2 in the drive press fire |
 | `base` | `E` (BASIC, `$0801`-`$64F8`) and `OP`, the same library again, over the library part | `entry.vsf` at the `OP` load; `play-what-next.vsf` | after the summary |
@@ -110,10 +113,26 @@ landed; the KERNAL reports some of Rapidlok's ends wrongly):
 - The title and the debriefing run with the KERNAL's screen at `$0400`
   and its lower-case character set.
 
-Nothing is reloaded during a flight. Each theatre has its own terrain
-files (`W3.TN`, `W3.SE`, `W3.CA`, `W3.ME`, `W3.WE`, with `M.<theatre>`
-and an enemy-level digit); the flight part's snapshots are of Western
-Europe.
+During a flight only two pictures are loaded: C= shows the stores
+(file `1`) and left SHIFT the damage (file `2`), each read from side 2
+with the KERNAL banked back in, then the cockpit comes back. Each theatre
+has its own terrain files (`W3.TN`, `W3.SE`, `W3.CA`, `W3.ME`, `W3.WE`,
+with `M.<theatre>` and an enemy-level digit); the flight part's snapshots
+are of Western Europe.
+
+## How the flight is put together
+
+`6` copies the theatre's map font from `$A800`, where the front end left
+it, to `$C800`, then loads the flight's files and moves each piece where
+the engine wants it: `CP`'s to `$4000`, `$D040`, `$F040`, `$7C00`, `$EE08`
+and `$6000` (the window and panel pictures for both buffers and their
+colours), `CH`'s to `$E300`, `$5100` and `$E200` (map colours, the units
+and their bits on the map), then `W3.<theatre>`, `M` (the engine) and
+`M.<theatre><n>`. It ends by loading `G2`, which sets the stores and the
+window's colours and loads `AWH` last: `AWH`'s few bytes land on the
+stack, so the KERNAL's LOAD returns into the engine at `$3100` instead of
+to BASIC. When the flight ends, the engine drops that return and goes
+back to `G2`, which loads the debriefing.
 
 ## The loader, in a paragraph
 

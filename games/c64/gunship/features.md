@@ -22,35 +22,35 @@ Sources:
 | Pilot roster of up to eight pilots saved on side 1, with rank, medals and points | live | `title`, `front`, `base` |
 | Roster corruption: "ROSTER DATA HAS BEEN CORRUPTED!" and the roster cleared | live (the text, in the boot program) | `title` |
 | Five duty assignments: training in the USA, Southeast Asia, Central America, Middle East, Western Europe | live | `front` |
-| Three styles: regular, volunteer, volunteer hazardous; said to change damage tolerance, cannon effect and Hind activity | open | `front`, `flight` |
+| Three styles: regular, volunteer, volunteer hazardous; said to change damage tolerance, cannon effect and Hind activity | traced: the style (`zpa_4C`) gates hits on the helicopter, how many hits stop the engines, the cannon's range and the Hind's take-offs | `front`; `flight` `$5AE5`, `$3D60`, `$598D` |
 | Reality levels (flight model, landings, winds and temperature) | live | `front` |
 | Overall risk shown on the menu | live | `front` |
 | Briefing with primary and secondary missions at map coordinates | live | `front` |
 | Map and intelligence screens, sick call | open | `front` |
 | Checklist before take-off | live | `front` |
 | Arming: weapons loads chosen within a weight limit | live | `front` |
-| Night missions | open | `front`, `flight` |
-| Weather: wind and temperature change the load the helicopter can lift | open | `front` |
+| Night missions | traced: half a page more of `CH`, units see half as far, the night window colours, the target box a step lighter | `front`; `flight` `$0A24`, `$5495`, `$3CB6` |
+| Weather: wind and temperature change the load the helicopter can lift | traced for the wind, added to the position every second pass; the temperature open | `front`; `flight` `$3B10` |
 | Engines 1 and 2, rotor clutch 3, collective on F1/F3/F5/F7 | live | `flight` |
-| Pitch and roll on the joystick; yaw on the cursor keys (only at low speed), RETURN stops the turn | open | `flight` |
-| Sidewinder, FFAR, Hellfire, 30 mm cannon on keys 4 to 7 | open | `flight` |
-| Chaff (9), radar jammer (0), infrared jammer (+), flares (-) | open | `flight` |
-| Views to the side and forward (DEL, £, HOME) | open | `flight` |
-| Target switching with right SHIFT; the target box's colour shows the chance of a hit | open | `flight` |
-| CRT display cycled with SPACE (map, target, messages); big map on Z | open | `flight` |
-| Damage display (left SHIFT), weapons display (C=) | open | `flight` |
-| Pause (RUN/STOP), fast motion on ← in the map view | open | `flight` |
-| RESTORE with a weapon key jettisons it; RESTORE with RUN/STOP aborts | open | `flight` |
-| Hills drawn filled, block line of sight and can be hit | open | `flight` |
-| Missiles and shells as sprites | open | `flight` |
-| Hind helicopters as airborne enemies | open | `flight` |
-| Password and countersign to land at a friendly base | open | `flight` |
-| Landing judged on speed and rate of descent, near the T | open | `flight`, `debrief` |
+| Pitch and roll on the joystick; yaw on the cursor keys (only at low speed), RETURN stops the turn | traced | `flight` `$370F`, `$353A`, `$35AD`, `$348D` |
+| Sidewinder, FFAR, Hellfire, 30 mm cannon on keys 4 to 7 | traced | `flight` `$348D`, `$3E1E`, `$3D60` |
+| Chaff (9), radar jammer (0), infrared jammer (+), flares (-) | traced | `flight` `$34FC`, `$353A` |
+| Views to the side and forward (DEL, £, HOME) | traced | `flight` `$3383` |
+| Target switching with right SHIFT; the target box's colour shows the chance of a hit | traced: four colours by distance and aim | `flight` `$3383`, `$3CB6`, `$53A4` |
+| CRT display cycled with SPACE (map, target, messages); big map on Z | traced | `flight` `$332E`, `$9614` |
+| Damage display (left SHIFT), weapons display (C=) | traced: each picture is loaded from side 2 when asked for | `flight` `$332E`, `$999E` |
+| Pause (RUN/STOP), fast motion on ← in the map view | traced | `flight` `$3383`, `$332E` |
+| RESTORE with a weapon key jettisons it; RESTORE with RUN/STOP aborts | traced | `flight` `$35AD`, `$332E` |
+| Hills drawn filled, block line of sight and can be hit | traced for the drawing and the line of sight; a hill hit open | `flight` `$A163`, `hill_between` |
+| Missiles and shells as sprites | traced: five sizes by distance, launch smoke from each wing, six explosion frames | `flight` `$958F`, `$7200` |
+| Hind helicopters as airborne enemies | traced: one Hind, from a base unit, flying at the helicopter and back | `flight` `$5727`, `$598D`, `$53FB` |
+| Password and countersign to land at a friendly base | traced: a checksum of the typed countersign against the codeword's; two wrong tries set every damage bit | `flight` `challenge`, `$E741` |
+| Landing judged on speed and rate of descent, near the T | traced for speed and sink rate; the T open | `flight` `$39CC`, `debrief` |
 | Mission result summary: rank, time, landing, position, damage, missions, wounds | live | `debrief` |
 | Medals and promotion up to colonel, then brigadier general | open | `debrief`, `base` |
 | What next after landing: inspect, take off again, rearm, repair, leave | live | `base` |
 | Points subtracted after a mission longer than 20 minutes | open | `debrief` |
-| Cheat (wiki): unlimited ammunition, `POKE 23082,189` | open | `flight` |
+| Cheat (wiki): unlimited ammunition, `POKE 23082,189` | traced: `$5A2A` is the DEC that takes from a store; 189 makes it an LDA | `flight` `use_store` |
 | Cheat (wiki, "Master .d64 version"): no damage, no fuel use | open | `flight` |
 
 ## Beyond the documentation
@@ -63,12 +63,22 @@ Found in the code, not in the manual.
 - The front end hands the mission to the flight through the cassette
   buffer at `$033C`: BASIC lines 713-743 of `BEGIN` write it, and side 2's
   programs read it.
+- Each ground unit falls to one missile kind only: the table at `$B5A4`
+  gives each unit kind the FFAR, the Hellfire or the Sidewinder, and a
+  missile of another kind that hits it does nothing.
+- With the lowest style nothing ever hits the helicopter (`$5AE5`).
+- The joystick reads nothing unless CIA 2's two timers still keep the gap
+  the library set on side 1 (`joystick`, `$E40C`).
+- On a C128 the engine switches to 2 MHz while the raster is below the
+  picture, and back to 1 MHz at its top (`$9110`, `$948F`).
+- Messages the CRT can show include "CEASE FIRE / FRIENDLY TROOPS HAVE
+  BEEN HIT" and "SURV RADAR ALERT: ENEMY HIND HELICOPTER AIRBORNE"
+  (`$7A52`, `$7A83`).
 
 ## Open questions
 
 - Each BASIC program's first line is `REM`, five DEL characters and a
   shifted L (`$CC`, a byte with no keyword): what LIST does with it.
 
-- What `CP`, `CH`, `AWH` and the `M.<theatre><n>` files hold.
 - Where the flight engine stores the roster's changes before the base
   program saves them.
