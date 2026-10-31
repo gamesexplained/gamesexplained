@@ -5,12 +5,16 @@ listing.py keeps the ledger, the record format and the source of every
 byte; this module owns only what is specific to the machine. The 6502 itself,
 its opcode table, addressing modes and operand text, is `kit/cpu/m6502.py`,
 shared with every machine built on one; this adds the C64's two character
-sets. `kit/<platform>/cpu.py` is the same interface for another machine, and
+sets, and its BASIC: a program as LOAD leaves it at $0801 is the text type
+`BASIC`, read by `basic.py` beside this file and listed a line at a time as
+BASIC's own LIST prints it. `kit/<platform>/cpu.py` is the same interface for another machine, and
 listing.py picks it by `game.json`'s `platform`.
 
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None
   operand(a, m, mode, bs, names, regs, chips) -> (text, target)
   text_decode(kind, byte)            -> str
+  text_items(kind, ram, start, end)  -> (texts, starts) or None
+      for BASIC, whose items are longer than a byte: a program line each (basic.pieces)
   TEXT_TYPES                         the block types this machine can hold
 
 `regs` maps an address to a chip register's name (kit/<platform>/registers.py)
@@ -23,6 +27,11 @@ CPU = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 if CPU not in sys.path:
     sys.path.append(CPU)
 from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode, operand  # noqa: E402,F401  the 6502, shared
+import importlib.util  # noqa: E402
+# by path, under a name of its own: kit/spectrum/ and kit/bbc/ each have a basic.py too
+_spec = importlib.util.spec_from_file_location("c64_basic", os.path.join(os.path.dirname(os.path.abspath(__file__)), "basic.py"))
+basic = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(basic)
 
 
 # --- text -------------------------------------------------------------------
@@ -43,7 +52,7 @@ def petscii(c):
     return "."
 
 
-TEXT_TYPES = ("PETSCII", "Screencode")
+TEXT_TYPES = ("PETSCII", "Screencode", "BASIC")
 
 
 # --- the string sweep (kit/cpu/strings.py) ------------------------------------
@@ -78,8 +87,8 @@ def sweep_runs(kind, ram):
     second set (or lower-case mode) when it holds a byte that only that one has as a letter,
     otherwise in the first, which is the machine's at power-on: text in small letters alone reads
     as capitals. Reversed screen codes are a run of their own."""
-    if kind not in TEXT_TYPES:
-        sys.exit(f"kit/c64/cpu.py: no text type {kind!r}")
+    if kind not in ("PETSCII", "Screencode"):
+        sys.exit(f"kit/c64/cpu.py: no text type {kind!r} to sweep")
     one = _pet if kind == "PETSCII" else _screen
     out, a = [], 0
     while a < len(ram):
@@ -101,7 +110,15 @@ def text_decode(kind, byte):
         return petscii(byte)
     if kind == "Screencode":
         return screencode(byte)
+    if kind == "BASIC":
+        return basic.byte_text(byte)
     sys.exit(f"kit/c64/cpu.py: no text type {kind!r}")
+
+
+def text_items(kind, ram, start, end):
+    if kind == "BASIC":
+        return basic.pieces(ram, start, end)
+    return None
 
 
 if __name__ == "__main__":

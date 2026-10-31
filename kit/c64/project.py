@@ -32,6 +32,7 @@ TO_PROJECT = {
     "Lo/Hi Address": "LoHiAddress", "Hi/Lo Address": "HiLoAddress",
     "Lo/Hi Word": "LoHiWord", "Hi/Lo Word": "HiLoWord",
     "External File": "ExternalFile", "Undefined": "Undefined",
+    "BASIC": "DataByte",    # regenerator2000 has no BASIC type: symbols_export.py types it again
 }
 
 

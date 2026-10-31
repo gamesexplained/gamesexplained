@@ -297,6 +297,8 @@ def load_game(gdir):
         out["part"]["machine"], out["part"]["size"] = me["machine"], own["size"]
     if own.get("banks"):
         out["banks"] = own["banks"]
+    if own.get("basic"):
+        out["basic"] = own["basic"]
     out["elsewhere"] = elsewhere(P, me)
     out["names"] = named(me)
     out["replaces"] = replaces(P, me)

@@ -1,0 +1,185 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "gunship",
+ "part": "loader",
+ "build": "original disk, Rapidlok V6, PAL, C64 Preservation Project gunship_s1/s2[microprose_1985](rl6)(pal)",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    1024,
+    2047,
+    "screen RAM"
+   ],
+   [
+    0,
+    2048,
+    "Side two helpers"
+   ],
+   [
+    4116,
+    65535,
+    "Side two helpers"
+   ]
+  ],
+  "extra": [],
+  "edges": [
+   0,
+   256,
+   512,
+   1024,
+   2048,
+   4096,
+   16384,
+   32768,
+   40960,
+   49152,
+   53248,
+   57344
+  ],
+  "elsewhere": [
+   [
+    0,
+    2048,
+    "Side two helpers"
+   ],
+   [
+    4116,
+    65535,
+    "Side two helpers"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 2049,
+   "end": 4115,
+   "type": "BASIC"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 2049,
+   "name": "basic_6_list_guard",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2061,
+   "name": "line_1_setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2205,
+   "name": "line_10_move",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2279,
+   "name": "line_900_tables",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2713,
+   "name": "line_940_level_row",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2788,
+   "name": "line_960_level_data",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3219,
+   "name": "line_9000_load",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3295,
+   "name": "line_14000_load_flight",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3815,
+   "name": "line_19000_constants",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 3980,
+   "name": "line_19520_setnam",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 2049,
+   "type": "line",
+   "text": "Line 0: REM, five DEL characters and a shifted L. LIST prints a REM's bytes as they are, so the DELs rub out the \"0 REM\" it has just printed, and the shifted L, a byte with no keyword, stops LIST with ?SYNTAX ERROR before the next line. Every BASIC program in the game starts so."
+  },
+  {
+   "address": 2061,
+   "type": "line",
+   "text": "Line 1 switches off RESTORE (NMI vector to an RTI) and the CIA's interrupts, lowers BASIC's top to $1300 and clears the variables. Line 2 sets the constants (19000), builds the mission's tables (900), loads the flight's files (14000), then lines 3-5 print LOAD \"g2\",8,1 on the screen, put a RETURN in the keyboard buffer and end with NEW, so BASIC loads G2 itself."
+  },
+  {
+   "address": 2205,
+   "type": "line",
+   "text": "Lines 10-11: copies L pages from page F to page T through all of RAM (move_ram), F, T and L being page numbers that may carry a fraction for an offset inside the page."
+  },
+  {
+   "address": 2279,
+   "type": "line",
+   "text": "Lines 900-949: the mission's tables for the flight. MP$ becomes the theatre's two letters (tn, se, ca, me, we) from $035E, the theatre number the front end left in the cassette buffer. Sixty-four values from DATA go to $5398-$53D7. The two mission targets' twelve-byte records are copied from the theatre file's table at $9000 (index from $035C and $035D) to $53E0 and $53EC, and one more value from $909C to $53FB."
+  },
+  {
+   "address": 2713,
+   "type": "line",
+   "text": "Lines 940-949: picks one of the twelve rows of ten values below, by theatre and enemy level (theatre*3 + $0340 - 3), and copies it to $53A9-$53B2, over the defaults line 910 put there."
+  },
+  {
+   "address": 2788,
+   "type": "line",
+   "text": "Lines 960-977: twelve rows of ten values, one row for each theatre from Southeast Asia to Western Europe and each of its three enemy levels. Training keeps the defaults of lines 920-923."
+  },
+  {
+   "address": 3219,
+   "type": "line",
+   "text": "Lines 9000-9002: loads the file named F$ with the KERNAL's LOAD, through call (SETLFS and SETNAM at 19520), and tries again until the status says it worked."
+  },
+  {
+   "address": 3295,
+   "type": "line",
+   "text": "Lines 14000-14095: first copies eight pages from $A800 to $C800, then loads the flight's files in turn and moves each piece where the flight wants it. cp, then its pieces to $4000, $D040, $F040, $7C00, $EE08 and $6000; ch, then its pieces to $E300, $5100 (half a page more at night) and $E200; the theatre's terrain w3.<theatre> (Western Europe's for training), with a page to $1A86; m, the engine; and m.<theatre><n>, n being 4 minus the enemy level, which line 14095 loads last."
+  },
+  {
+   "address": 3815,
+   "type": "line",
+   "text": "Lines 19000-19004: FNLB(X) gives the low byte of X as the copy routines take it, the helpers' addresses (SB, MV, BM, KE, S6, M6), A0-A6 = 165-171 ($A5-$AB, the helpers' registers), KP = 256."
+  },
+  {
+   "address": 3980,
+   "type": "line",
+   "text": "Lines 19520-19528: puts the file name in memory at 1006 ($03EE), then calls the KERNAL's SETLFS (device 8, secondary address 1) and SETNAM through call."
+  }
+ ]
+}
