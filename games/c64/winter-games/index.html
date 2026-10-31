@@ -49,7 +49,30 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-out{font-family:var(--fm);font-size:15px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px}
 .wg-big{font-size:28px;font-weight:700;color:var(--ink)}
 .wg-key{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px}
-@media (max-width:700px){:root{--gx:16px;--h1:34px}.wg-shots{grid-template-columns:repeat(2,1fr)}.wg-two{grid-template-columns:1fr}}
+.wg-btn{font:inherit;font-size:14px;padding:3px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.wg-moves{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.wg-move{display:flex;flex-direction:column;gap:3px;padding:6px 6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink);text-align:center}
+.wg-move:hover{border-color:var(--accent)}
+.wg-move:disabled{opacity:.45;cursor:default}
+.wg-move canvas{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.wg-move .nm{font-size:14px;font-weight:700;line-height:1.25}
+.wg-move .dl{font-family:var(--fm);font-size:13px;color:var(--ink-mute)}
+.wg-move .dl.up{color:var(--green)}
+.wg-move .dl.down{color:var(--coral)}
+.wg-run{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-family:var(--fb);font-size:14px;color:var(--ink-mute)}
+.wg-chip{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:1px 9px;color:var(--ink)}
+.wg-scroll{overflow-x:auto}
+.wg-bandtab{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+.wg-bandtab th{text-align:left;font-weight:700;font-size:13px;color:var(--ink-soft);padding:4px 8px 4px 0;width:110px;line-height:1.3}
+.wg-bandtab td{text-align:center;padding:3px;font-family:var(--fm);vertical-align:bottom}
+.wg-bandtab td.mid{background:#eaf5ee}
+.wg-bandtab td.bn{font-size:12px;color:var(--ink-mute)}
+.wg-bandtab td.pen{color:var(--coral)}
+.wg-bandtab canvas{width:100%;height:auto;image-rendering:pixelated;display:block}
+.wg-bar{height:60px;display:flex;align-items:flex-end;justify-content:center}
+.wg-bar i{display:block;width:60%;background:var(--accent);border-radius:2px 2px 0 0}
+.wg-bandtab td.mid .wg-bar i{background:var(--green)}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}.wg-shots{grid-template-columns:repeat(2,1fr)}.wg-two{grid-template-columns:1fr}.wg-moves{grid-template-columns:repeat(3,1fr)}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -84,20 +107,55 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
 </section>
 
+<section data-part="skating">
+  <p class="fig">02 · Figure and Free Skating</p>
+  <h2 class="t">Skating: every move, and the mark it earns</h2>
+  <p class="lede">One program in two modes. Figure Skating has one minute and counts each element once; Free Skating has two and counts each up to three times. Click the moves to skate a program and watch its base mark.</p>
+  <div class="plate">
+    <div class="wg-ctl">
+      <label><select id="wg-mode"><option value="0">Figure Skating</option><option value="1">Free Skating</option></select></label>
+      <label><input type="checkbox" id="wg-white" checked> White sprites</label>
+      <button type="button" class="wg-btn" id="wg-undo">Undo</button>
+      <button type="button" class="wg-btn" id="wg-clear">Start again</button>
+    </div>
+    <div class="wg-moves" id="wg-moves"></div>
+    <div class="wg-out">
+      <div>Base mark <span class="wg-big" id="wg-mark">0.0</span> <span id="wg-mark-note"></span></div>
+      <div class="wg-run" id="wg-run"></div>
+    </div>
+    <p class="cap">Each skater is drawn by the game's own <code>draw_frame</code> (<a href="source-skating.html#1BBB"><code>$1BBB</code></a>) from the bytes the Source tab lists, run on a model of the C64's processor. A <code>$</code> marks a number in hexadecimal, base 16, and here each is an address in the C64's memory. Each move plays the frames its records list, each held for as many frames as the list says (a frame is one picture on the screen, fifty a second on a European C64), and a jump rises and falls by the game's own <code>jump_height</code> (<code>$1436</code>). The number under a move is what it would add to the mark now. Each click runs <a href="source-skating.html#1CFA"><code>base_mark</code></a> with the falls, the awkward moves and the elements where the program leaves them (<code>$46</code>, <code>$47</code> and the list from <code>$4A</code>). The judges then add their random tenths. <code>test_marks.js</code> checks the page against the routine.</p>
+  </div>
+  <p>The elements are seven: the camel spin, the sit spin, the double and triple lutz, the double and triple axel, and the camel spin into the sit spin. Skating forward, fire with the stick up and right jumps a double axel, down and right a triple. Skating backward, up spins the camel, down the sit spin, and the left diagonals jump the lutzes. A take-off is clean when fire is pressed on the stride's glide, and awkward otherwise. A spin must be left after exactly seven turns, or its ending is awkward; an eighth turn throws the skater down.</p>
+  <p>In Figure Skating the elements are worth 0.7, 0.7, 0.6, 1.1, 0.6, 1.1 and 1.2, and the seven together make exactly 6.0. Each awkward move costs 0.2 and each fall 0.7. In Free Skating each counts up to three times at a lower value, and the falls and awkward moves also lower a ceiling of 6.0. The arithmetic has two faults. Free Skating's marks come out a tenth short, and Figure Skating's penalty can wrap round: fall 22 times with no elements and the mark is 6.0. Both are on the <a href="discoveries.html">Discoveries</a> tab.</p>
+  <p>The skater is eight sprites, the video chip's shapes of 24 by 21 dots that move over the picture, in four pairs making a square two by two. In each pair one sprite is multicolour, orange with blue and light grey, and its dots are two wide. The other, in front of it, is white like the ice, with a hole in the skater's shape. Its edge trims the multicolour dots where they stick out, so the skater's outline is finer than a multicolour sprite can draw alone: untick White sprites to see the difference. The sixty frames are packed (<a href="source-skating.html#1C45"><code>frame_ptrs</code></a>): each eight bytes of a shape start with a mask byte whose set bits stand for the bytes that follow, and the rest are filled, with 0 in a multicolour shape and with <code>$FF</code> in a white one. <code>draw_frame</code> unpacks each frame into one of two sets of eight shapes, at <span data-part=""><code>$BC00</code> and <code>$BE00</code></span> in turn.</p>
+</section>
+
+<section data-part="ski-jump">
+  <p class="fig">03 · Ski Jump</p>
+  <h2 class="t">Ski Jump: a centred lean flies furthest</h2>
+  <p class="lede">In the air a random drift tips the jumper off balance, and the corner close-up shows which way. Pushing the stick against it brings the jumper back.</p>
+  <div class="plate">
+    <div class="wg-scroll"><table class="wg-bandtab" id="wg-bands"></table></div>
+    <p class="cap">For each of the nine bands of the lean, the close-up's pose when the drift works on the stick's left and right (<a href="source-ski-jump.html#1A80"><code>lean_frames_lr</code></a>) and when it works on up and down (<code>lean_frames_ud</code>, <code>$1A77</code>). Each is drawn by the game's own <code>draw_frame</code> (<code>$1973</code>) over the landing slope's picture, which the game's <code>unpack_list</code> (<code>$1273</code>) unpacks from the listing. Below them, the flight's speed lost each frame in 256ths (<a href="source-ski-jump.html#18AA"><code>drag_table</code></a>), and the style points lost on coming back to the centre from that band (<code>lean_size</code> and <code>lean_penalties</code>, <code>$16DA</code>).</p>
+  </div>
+  <p>A flight starts at a speed of 60 and lands when the speed has fallen to 40. Each frame the speed adds to the distance, and the lean's drag takes some off: 14 in the centre band, up to 21 at the edges. So a jumper kept centred stays in the air longest and flies furthest. The drift is drawn at random, a direction on one of two axes. On one the jumper tips back or forward, and the stick's left and right bring the lean back; on the other the skis cross or the knees bend, and up and down bring it back. The stick moves the lean two a frame, three against the drift's own direction.</p>
+  <p>Style starts at 20. Each return to the centre costs 0, 2, 4 or 8 points, by the worst lean since the last one. A good landing keeps at least 6, and a fall takes 18. The score is three times the distance plus the style points, worked out on the whole distance, so a jump shown as 68.6 metres scores 205.9.</p>
+</section>
+
 <section data-part="menu">
-  <p class="fig">02 · The anthems</p>
+  <p class="fig">04 · The anthems</p>
   <h2 class="t">Music: an anthem for every flag</h2>
   <p class="lede">Each country's flag has its anthem. The menu plays it when a player picks the flag, and again for every gold medal.</p>
   <div class="plate">
     <div id="wg-anthems"></div>
-    <p class="cap">Each button runs the game's own music player, the bytes the Source tab lists, on a model of the C64's processor. A <code>$</code> marks a number in hexadecimal, base 16, and here each is an address in the C64's memory. The page calls <code>music_init</code> (<a href="source-menu.html#1DA3"><code>$1DA3</code></a>), then <code>music_start</code> (<code>$1DE0</code>) with the country's place in the flag chooser, then <code>music_step</code> (<code>$1E11</code>) twice a frame, as the menu calls it. A frame is one picture on the screen, fifty a second on a European C64. The opening ceremony's two tunes run on the ceremony's copy of the same player (<a href="source-opening.html#B056"><code>$B056</code></a>). <code>test_music.js</code> runs every button against the game's code and checks every write to the sound chip, frame by frame.</p>
+    <p class="cap">Each button runs the game's own music player, the bytes the Source tab lists, on a model of the C64's processor. The page calls <code>music_init</code> (<a href="source-menu.html#1DA3"><code>$1DA3</code></a>), then <code>music_start</code> (<code>$1DE0</code>) with the country's place in the flag chooser, then <code>music_step</code> (<code>$1E11</code>) twice a frame, as the menu calls it. The opening ceremony's two tunes run on the ceremony's copy of the same player (<a href="source-opening.html#B056"><code>$B056</code></a>). <code>test_music.js</code> runs every button against the game's code and checks every write to the sound chip, frame by frame.</p>
   </div>
   <p>The anthem player is small. The C64's sound chip, the SID, has three voices, each playing one note at a time, and a tune is a list of four bytes a note: one pitch for each voice and a length. Voices 1 and 2 play a pulse wave, a hollow tone, and voice 3 a sawtooth, a brighter one. For a note's last four steps the player turns each voice's gate off, the chip's signal to let the note fade. So every note dies away briefly before the next begins. The player steps twice a frame.</p>
   <p>The table at <code>$1DF9</code> turns a place in the flag chooser into a tune. The chooser has three rows of eight places, and only six flags in each row. The two places after each row's sixth flag are empty, and the menu uses two of those empty places for its own tunes: place 6 is the final standings' tune, and place 7 the world records'. The others play the U.S.A.'s anthem. The opening ceremony carries a second tune that it never plays; its 345 bytes are the menu's world records tune, byte for byte.</p>
 </section>
 
 <section data-part="">
-  <p class="fig">03 · The events' music</p>
+  <p class="fig">05 · The events' music</p>
   <h2 class="t">Music: each event's tune, on one sound engine</h2>
   <p class="lede">Every event brings its own music and sound effects, and all but one play them on the same engine.</p>
   <div class="plate">
@@ -113,7 +171,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="bobsled">
-  <p class="fig">04 · One frame</p>
+  <p class="fig">06 · One frame</p>
   <h2 class="t">Bobsled, one frame rebuilt from memory</h2>
   <p class="lede">The bobsled screen is one bitmap: the course map on the left, the view down the chute at the top right, and the panel with the speed bar and the clock below it.</p>
   <div class="plate">
@@ -121,52 +179,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">Drawn by the site's model of the video chip from the frame's memory and the 30 writes the game made to the chip during it, recorded in the emulator in the left-hand bend from stretch 21, the sled high on the right wall. The drawing matches the emulator's picture of the same frame pixel for pixel, but for the player's name on the bottom row: the video chip draws that row's letters from the character ROM, where the C64 keeps its own letters, and the page does not carry it.</p>
   </div>
   <p>The screen is a multicolour bitmap: a picture stored dot by dot, where each pair of dots across shows one of four colours. The video chip sees 16K of memory at a time, and this picture is in its third 16K, bank 2, at <code>$A000</code>, with its colours at <code>$8000</code>. Twice a frame the raster interrupt changes the chip's mode: to bitmap for the picture, and to text for the bottom row, which shows the player's name in the character ROM's letters. The view down the chute is redrawn a piece at a time as the sled moves on: a far piece and a near piece, chosen by the stretch of course the sled is on (<a href="source-bobsled.html#4759"><code>bs_course</code></a>). The sled is drawn with sprites, small pictures the video chip lays over the screen. They are built again from one of 13 frames as the sled climbs the walls (<code>build_sled</code>, <code>$4E45</code>).</p>
-</section>
-
-<section data-part="resident">
-  <p class="fig">05 · The loader</p>
-  <h2 class="t">The loader stays while everything else changes</h2>
-  <p class="lede">Eleven files, two disk sides and one fast loader that never leaves memory.</p>
-  <div class="plate" data-part="">
-    <table class="wg-tab">
-      <thead><tr><th>File</th><th>What it is</th><th>Loads at</th><th>Ends at</th></tr></thead>
-      <tbody>
-        <tr><td>boot</td><td>One block over the addresses BASIC jumps through, so that LOAD ends by jumping into it</td><td><code>$02A7</code></td><td><code>$030B</code></td></tr>
-        <tr><td><code>COPYRIGHT 1985</code></td><td>The fast loader, which copies itself to <code>$0900</code> and stays</td><td><code>$C000</code></td><td><code>$C636</code></td></tr>
-        <tr><td><code>T</code></td><td>The title screen</td><td><a href="source-title.html#3F00"><code>$3F00</code></a></td><td><code>$67D0</code></td></tr>
-        <tr><td><code>O</code></td><td>The opening ceremony</td><td><a href="source-opening.html#6400"><code>$6400</code></a></td><td><code>$B420</code></td></tr>
-        <tr><td><code>M</code></td><td>The menu, the players and the medals</td><td><a href="source-menu.html#0F00"><code>$0F00</code></a></td><td><code>$3FE5</code></td></tr>
-        <tr><td><code>H</code>, <code>I</code></td><td>Hot Dog Aerials, Biathlon (side 1), over the menu</td><td><code>$1000</code></td><td><code>$6CFE</code>, <code>$9FFE</code></td></tr>
-        <tr><td><code>S</code></td><td>Speed Skating (side 1), which leaves the menu in place</td><td><a href="source-speed-skating.html#4C00"><code>$4C00</code></a></td><td><code>$ADC8</code></td></tr>
-        <tr><td><code>F</code>, <code>J</code>, <code>B</code></td><td>Figure and Free Skating, Ski Jump, Bobsled (side 2), over the menu</td><td><code>$1000</code></td><td><code>$79FE</code>, <code>$7AFE</code>, <code>$A6FE</code></td></tr>
-      </tbody>
-    </table>
-    <p class="cap">The files as the loader's table at <a href="source-resident.html#0CC3">$0CC3</a> gives them: twelve bytes a file, its name, load address, end, entry point and disk side.</p>
-  </div>
-  <p>The boot file loads <code>COPYRIGHT 1985</code>, which copies the fast loader to the six pages from <code>$0900</code> (a page is 256 bytes) and keeps it there for good. Every other part calls it at three fixed addresses: <code>$0900</code> to go back to the menu, <code>$0903</code> to load and run a file by its number, and <code>$0934</code> to save the world records. An event ends by jumping to <code>$0900</code>, which loads the menu again over it and starts it where it left off, at an address the menu kept before it loaded the event.</p>
-  <p>Before a load, <code>ldr_check_side</code> (<code>$0958</code>) reads one byte of the disk's header, the eighth letter of the disk's name, which is 1 on side 1 and 2 on side 2. When the file wants the other side, the loader asks for it: "INSERT WINTER GAMES SIDE 2 THEN PRESS JOYSTICK BUTTON". RUN/STOP and RESTORE pressed together stop the program wherever it is and run the loader's own routine for those keys, which goes back to the main menu.</p>
-</section>
-
-<section data-part="menu">
-  <p class="fig">06 · The players</p>
-  <h2 class="t">One page of memory holds every player</h2>
-  <p class="lede">The menu and every event share the 256 bytes at <code>$0800</code>, which the loader clears once and nothing loads over.</p>
-  <div class="plate">
-    <table class="wg-tab">
-      <thead><tr><th>Bytes of a record</th><th>What they hold</th></tr></thead>
-      <tbody>
-        <tr><td><code>+$00</code>-<code>+$0A</code></td><td>The name, up to ten letters</td></tr>
-        <tr><td><code>+$0B</code>-<code>+$0F</code></td><td>The country's code in brackets, such as (USA)</td></tr>
-        <tr><td><code>+$10</code>-<code>+$15</code></td><td>The score as text, as the event shows it</td></tr>
-        <tr><td><code>+$16</code>-<code>+$18</code></td><td>The score as a number, which the menu sorts by</td></tr>
-        <tr><td><code>+$19</code>-<code>+$1B</code></td><td>Gold, silver and bronze medals</td></tr>
-        <tr><td><code>+$1C</code></td><td>The country</td></tr>
-        <tr><td><code>+$1D</code>-<code>+$1F</code></td><td>Not the player's: three of the game's shared variables in each record's gap</td></tr>
-      </tbody>
-    </table>
-    <p class="cap">Eight records of 32 bytes (<a href="source-menu.html#1A36"><code>player_offsets</code></a>). The gaps hold the number of players at <code>$081E</code>, the event at <code>$081F</code> and the number of joysticks at <code>$087D</code>, among others.</p>
-  </div>
-  <p>Each event writes its score into the player's record in two forms: the text the results screen prints, and a number the menu sorts. The menu has one sort, highest first (<code>sort_players</code>, <code>$19BD</code>). That suits marks and distances, but not times, where the lowest wins. So Biathlon, Speed Skating and Bobsled store their times turned over, each byte subtracted from its largest value, and the fastest time becomes the biggest number.</p>
 </section>
 
 <section data-part="hot-dog">
@@ -223,38 +235,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The skill moves after every choice, up while the player leads and down while the pacer does. A player far ahead faces a pacer that chooses right 255 times in 256; a player far behind, one that chooses right only 56 times in 256. Either way the pacer stays close. A skater who has not crossed the line after three minutes gets a FAULT.</p>
 </section>
 
-<section data-part="skating">
-  <p class="fig">10 · Figure and Free Skating</p>
-  <h2 class="t">Skating: how the base mark is worked out</h2>
-  <p class="lede">One program in two modes. Figure Skating has one minute and counts each element once; Free Skating has two and counts each up to three times.</p>
-  <div class="plate">
-    <div class="wg-ctl">
-      <label><select id="wg-mode"><option value="0">Figure Skating</option><option value="1">Free Skating</option></select></label>
-      <label>Falls <input id="wg-falls" type="range" min="0" max="40" value="0"><span id="wg-falls-n">0</span></label>
-      <label>Awkward moves <input id="wg-awk" type="range" min="0" max="20" value="0"><span id="wg-awk-n">0</span></label>
-    </div>
-    <div class="wg-ctl" id="wg-elems"></div>
-    <div class="wg-out">Base mark <span class="wg-big" id="wg-mark">0.0</span> <span id="wg-mark-note"></span></div>
-    <p class="cap">Each change runs the game's own <a href="source-skating.html#1CFA"><code>base_mark</code></a> on the listing's bytes, with the falls, the awkward moves and the elements where the program leaves them (<code>$46</code>, <code>$47</code> and the list from <code>$4A</code>). The judges then add their random tenths. <code>test_marks.js</code> checks the page against the routine.</p>
-  </div>
-  <p>The elements are seven: the camel spin, the sit spin, the double and triple axel, the double and triple lutz, and the camel spin into the sit spin. Skating forward, fire with the stick up and right jumps a double axel, down and right a triple. Skating backward, up spins the camel, down the sit spin, and the left diagonals jump the lutzes. A take-off is clean when fire is pressed on the stride's glide, and awkward otherwise. A spin must be left after exactly seven turns, or its ending is awkward; an eighth turn throws the skater down.</p>
-  <p>In Figure Skating the elements are worth 0.7, 0.7, 0.6, 1.1, 0.6, 1.1 and 1.2, and the seven together make exactly 6.0. Each awkward move costs 0.2 and each fall 0.7. In Free Skating each counts up to three times at a lower value, and the falls and awkward moves also lower a ceiling of 6.0. The arithmetic has two faults. Free Skating's marks come out a tenth short, and Figure Skating's penalty can wrap round: set the falls to 22 with no elements and the mark is 6.0. Both are on the <a href="discoveries.html">Discoveries</a> tab.</p>
-</section>
-
-<section data-part="ski-jump">
-  <p class="fig">11 · Ski Jump</p>
-  <h2 class="t">Ski Jump: a centred lean flies furthest</h2>
-  <p class="lede">In the air a random drift tips the jumper off balance, and the corner close-up shows which way. Pushing the stick against it brings the jumper back.</p>
-  <div class="plate">
-    <canvas id="wg-drag" class="wg-canvas" width="720" height="240" style="background:#fff"></canvas>
-    <p class="cap">The flight's speed lost each frame, in 256ths, for each of the nine bands of the lean (<a href="source-ski-jump.html#18AA"><code>drag_table</code></a>), and the style points lost when the jumper comes back to the centre from each band (<code>lean_size</code> and <code>lean_penalties</code>, <code>$16DA</code>).</p>
-  </div>
-  <p>A flight starts at a speed of 60 and lands when the speed has fallen to 40. Each frame the speed adds to the distance, and the lean's drag takes some off: 14 in the centre band, up to 21 at the edges. So a jumper kept centred stays in the air longest and flies furthest. The drift is drawn at random, a direction on one of two axes, and the close-up's poses show it: the knees bent, too far forward, too far back, the skis crossed. The stick pushes the lean back two a frame, three against the drift's own direction.</p>
-  <p>Style starts at 20. Each return to the centre costs 0, 2, 4 or 8 points, by the worst lean since the last one. A good landing keeps at least 6, and a fall takes 18. The score is three times the distance plus the style points, worked out on the whole distance, so a jump shown as 68.6 metres scores 205.9.</p>
-</section>
-
 <section data-part="bobsled">
-  <p class="fig">12 · Bobsled</p>
+  <p class="fig">10 · Bobsled</p>
   <h2 class="t">Bobsled: the course, stretch by stretch</h2>
   <p class="lede">The run is 177 stretches of four bytes each. Each names the view's two pieces, the bend, and how many dots of the course map to light.</p>
   <div class="plate">
@@ -407,7 +389,7 @@ const $ = (id) => document.getElementById(id);
 const hex = (n) => '$' + n.toString(16).toUpperCase().padStart(4, '0');
 const need = (name, el) => { if (el) el.textContent = name + ' did not load, so this widget cannot run here.'; };
 
-// ---- 02 and 03: the players, on the game's own code (wg-music)
+// ---- 04 and 05: the players, on the game's own code (wg-music)
 function sound(L) {
   const mems = {};
   for (const k in WG_RANGES) mems[k] = WG_RANGES[k].map(([a, b, at]) => [at === undefined ? a : at, L[k].ram.slice(a, b + 1)]);
@@ -417,7 +399,7 @@ function sound(L) {
   mount('wg-effects', WG_EFFECTS);
 }
 
-// ---- 04: the recorded Bobsled frame
+// ---- 06: the recorded Bobsled frame
 function frame() {
   const F = JSON.parse($('wg-frame-data').textContent);
   C64.drawFrame($('wg-frame'), F, 2);
@@ -446,46 +428,181 @@ function heart(ram) {
   line('fall', 400, '#1f5fa8', 'sight falls, 256ths a frame', true);
 }
 
-// ---- 10: the skating marks, on the game's own base_mark (wg-marks)
-function marks(ram) {
-  const names = ['Camel spin', 'Sit spin', 'Double lutz', 'Double axel', 'Triple lutz', 'Triple axel', 'Camel into sit spin'];
-  const box = $('wg-elems'), counts = names.map(() => 0);
-  names.forEach((n, i) => {
-    const l = document.createElement('label');
-    l.innerHTML = n + ' <select data-e="' + (i + 1) + '"><option>0</option><option>1</option><option>2</option><option>3</option></select>';
-    box.appendChild(l);
-  });
-  const update = () => {
-    const mode = +$('wg-mode').value, falls = +$('wg-falls').value, awk = +$('wg-awk').value;
-    $('wg-falls-n').textContent = falls; $('wg-awk-n').textContent = awk;
-    const list = [];
-    box.querySelectorAll('select').forEach((s) => { for (let k = 0; k < +s.value; k++) list.push(+s.dataset.e); });
-    const mk = wgMark(ram, C64Cpu, mode, falls, awk, list.slice(0, 30));
-    $('wg-mark').textContent = (mk / 10).toFixed(1);
-    $('wg-mark-note').textContent = mode === 0 && falls >= 19 && mk === 60 && list.length === 0 ? '(the penalty has wrapped round)' : '';
-  };
-  box.addEventListener('change', update);
-  ['wg-mode', 'wg-falls', 'wg-awk'].forEach((id) => $(id).addEventListener('input', update));
-  update();
-}
-
-// ---- 11: Ski Jump's drag and style penalties by the lean's band
-function drag(ram) {
-  const cv = $('wg-drag'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
-  const dragT = [...ram.slice(0x18AA, 0x18B3)], size = [...ram.slice(0x18B3, 0x18BC)], pen = [...ram.slice(0x16DA, 0x16DE)];
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-  const bw = (W - 80) / 9, y0 = H - 50;
-  ctx.font = '13px "IBM Plex Mono", monospace'; ctx.textAlign = 'center';
-  for (let b = 0; b < 9; b++) {
-    const x = 40 + b * bw, h = dragT[b] / 22 * (y0 - 20);
-    ctx.fillStyle = b === 4 ? '#2a8a4a' : '#1f5fa8'; ctx.fillRect(x + 8, y0 - h, bw - 16, h);
-    ctx.fillStyle = '#2f3136'; ctx.fillText(String(dragT[b]), x + bw / 2, y0 - h - 6);
-    ctx.fillStyle = '#d04a3a'; ctx.fillText(pen[size[b]] ? '-' + pen[size[b]] : '0', x + bw / 2, y0 + 18);
-    ctx.fillStyle = '#80838a'; ctx.fillText(b === 4 ? 'centre' : (b < 4 ? 'band ' + b : 'band ' + b), x + bw / 2, y0 + 36);
+// ---- 02: the skater's moves, drawn by the game's own draw_frame, and the mark (wg-marks)
+// draw_frame ($1BBB) unpacks frame Y into eight sprite shapes at $BC00 ($3A = $F0) and leaves the
+// frame's x offset at $32. Shapes 0, 2, 4 and 6 are the multicolour sprites 1, 3, 5 and 7, shapes 1,
+// 3, 5 and 7 the white sprites 0, 2, 4 and 6 in front of them (place_sprites, $13C1), each pair at
+// its place in sprite_places and in sprite_colours' colours. A move is the frame lists of its
+// records, two bytes a frame (the frame, the frames it lasts) to $FF; a record's +4 picks the jump's
+// speed and pull from jump_speeds as start_move does ($15F0), and jump_height ($1436) moves the
+// height at $2B-$2C once a frame. The ice behind is white, as in the emulator's picture.
+const WG_MOVES = [
+  { name: 'Camel spin', e: 1, recs: [['mv_camel_in', 1], ['mv_camel_spin', 7], ['mv_camel_out', 1]] },
+  { name: 'Sit spin', e: 2, recs: [['mv_sit_in', 1], ['mv_sit_spin', 7], ['mv_sit_out', 1]] },
+  { name: 'Double lutz', e: 3, recs: [['mv_lutz2', 1], ['fly_lutz2', 1], ['land_clean', 1]] },
+  { name: 'Triple lutz', e: 5, recs: [['mv_lutz3', 1], ['fly_lutz3', 1], ['land_clean', 1]] },
+  { name: 'Double axel', e: 4, recs: [['mv_axel2', 1], ['mv_axel2_up', 1], ['fly_axel2', 1], ['land_clean_2', 1]] },
+  { name: 'Triple axel', e: 6, recs: [['mv_axel3', 1], ['mv_axel3_up', 1], ['fly_axel3', 1], ['land_clean_2', 1]] },
+  { name: 'Camel into sit spin', e: 7, recs: [['mv_camel_in', 1], ['mv_camel_spin', 2], ['mv_combo', 1], ['mv_sit_spin', 6], ['mv_sit_out', 1]] },
+  { name: 'A fall', fall: true, recs: [['mv_fall_fwd', 1]] },
+  { name: 'An awkward move', awk: true, recs: [['land_awkward', 1]] },
+];
+// end of WG_MOVES
+function skating(L) {
+  const ram = L.ram, sym = L.sym, PAL = C64.PAL;
+  const noIO = { read(a) { throw new Error('read $' + a.toString(16)); }, write(a) { throw new Error('write $' + a.toString(16)); } };
+  const m = ram.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io: noIO });
+  const places = sym('sprite_places'), colours = sym('sprite_colours');
+  const at = [0, 1, 2, 3].map((p) => [ram[places + 4 * p + 2] - ram[places + 2], ram[places + 4 * p + 3] - ram[places + 3]]);
+  const W = 80, H = 80, X0 = 16, Y0 = 34;                    // a tile: the skater's square at (X0, Y0), room above for a jump
+  const pics = [false, true].map(() => []);                  // each frame drawn once, without and with the white sprites
+  for (let y = 0; y < 60; y++) {
+    m[0x3A] = 0xF0; cpu.call(sym('draw_frame'), { y }, { maxSteps: 100000 });
+    const off = m[0x32] << 24 >> 24, sh = (k) => m.slice(0xBC00 + 64 * k, 0xBC00 + 64 * k + 63);
+    for (const white of [false, true]) {
+      const c = document.createElement('canvas'); c.width = W; c.height = 42;
+      const ctx = c.getContext('2d');
+      for (let p = 0; p < 4; p++) C64.drawSpriteMC(ctx, sh(2 * p), X0 + off + at[p][0], at[p][1], 1, PAL[ram[colours + 3]], PAL[ram[colours]], PAL[ram[colours + 1]]);
+      if (white) for (let p = 0; p < 4; p++) C64.drawSprite(ctx, sh(2 * p + 1), X0 + off + at[p][0], at[p][1], 1, PAL[ram[colours + 2]]);
+      pics[+white].push(c);
+    }
   }
+  const js = sym('jump_speeds');
+  const tiles = WG_MOVES.map((mv) => {
+    const seq = [];
+    for (const [name, n] of mv.recs) for (let i = 0; i < n; i++) seq.push(sym(name));
+    const mm = ram.slice(), jc = new C64Cpu.CPU(mm, { port: 0x35, io: noIO });
+    const t = { mv, seq, mm, ri: 0, li: 0, left: 0, hold: 0, frame: 0 };
+    t.begin = (ri) => {                                      // a record: its jump as start_move gives it, then its frames
+      t.ri = ri; const r = seq[ri];
+      if (!mm[0x35]) { const k = ram[r + 4]; mm[0x2D] = ram[js + k]; mm[0x2E] = ram[js + k + 1]; mm[0x35] = ram[js + k + 2]; }
+      t.li = ram[r] | ram[r + 1] << 8; t.frame = ram[t.li]; t.left = ram[t.li + 1];
+    };
+    t.restart = () => { mm.fill(0, 0x2B, 0x2F); mm[0x35] = 0; t.begin(0); t.hold = 25; };
+    t.tick = () => {
+      if (t.hold > 0) { if (--t.hold === 0 && t.ri < 0) t.restart(); return; }
+      jc.call(sym('jump_height'), {}, { maxSteps: 1000 });
+      if (--t.left > 0) return;
+      t.li += 2;
+      if (ram[t.li] !== 0xFF) { t.frame = ram[t.li]; t.left = ram[t.li + 1]; return; }
+      if (t.ri + 1 < seq.length) t.begin(t.ri + 1);
+      else { t.ri = -1; t.hold = 40; }                       // the last pose held, then round again
+    };
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'wg-move';
+    b.innerHTML = '<canvas width="' + W + '" height="' + H + '"></canvas><span class="nm">' + mv.name + '</span><span class="dl"></span>';
+    t.button = b; t.ctx = b.querySelector('canvas').getContext('2d'); t.dl = b.querySelector('.dl');
+    t.draw = (white) => {
+      t.ctx.fillStyle = PAL[1]; t.ctx.fillRect(0, 0, W, H);
+      t.ctx.drawImage(pics[+white][t.frame], 0, Y0 + (mm[0x2C] << 24 >> 24));
+    };
+    t.restart();
+    return t;
+  });
+  const grid = $('wg-moves');
+  tiles.forEach((t) => grid.appendChild(t.button));
+
+  // the program skated so far, and base_mark on it
+  const run = [];
+  const tally = (extra) => {
+    const c = { falls: 0, awk: 0, list: [] };
+    for (const mv of extra ? run.concat([extra]) : run) { if (mv.fall) c.falls++; else if (mv.awk) c.awk++; else c.list.push(mv.e); }
+    return c;
+  };
+  const mark = (c, mode) => wgMark(ram, C64Cpu, mode, c.falls, c.awk, c.list);
+  const full = (c) => c.list.length > 30 || c.falls > 60 || c.awk > 60;
+  const tenths = (n) => (n / 10).toFixed(1);
+  const update = () => {
+    const mode = +$('wg-mode').value, c = tally(), mk = mark(c, mode);
+    $('wg-mark').textContent = tenths(mk);
+    $('wg-mark-note').textContent = mk > mark({ falls: 0, awk: 0, list: c.list }, mode)
+      ? 'The penalties have raised the mark: their sum has wrapped round.' : '';
+    for (const t of tiles) {
+      const c2 = tally(t.mv), d = mark(c2, mode) - mk;
+      t.button.disabled = full(c2);
+      t.dl.textContent = (d < 0 ? '−' : '+') + tenths(Math.abs(d));
+      t.dl.className = 'dl' + (d > 0 ? ' up' : d < 0 ? ' down' : '');
+    }
+    const box = $('wg-run');
+    box.textContent = run.length ? '' : 'Nothing skated yet: click a move.';
+    run.forEach((mv) => { const s = document.createElement('span'); s.className = 'wg-chip'; s.textContent = mv.name; box.appendChild(s); });
+  };
+  tiles.forEach((t) => t.button.addEventListener('click', () => { run.push(t.mv); update(); }));
+  $('wg-undo').addEventListener('click', () => { run.pop(); update(); });
+  $('wg-clear').addEventListener('click', () => { run.length = 0; update(); });
+  $('wg-mode').addEventListener('input', update);
+  update();
+
+  // fifty steps a second while the tiles are on screen; with reduced motion, only the tile pointed at
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let seen = true, last = 0, acc = 0, over = null;
+  if (still) tiles.forEach((t) => { t.button.addEventListener('pointerenter', () => { over = t; }); t.button.addEventListener('pointerleave', () => { over = null; }); });
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { seen = es[0].isIntersecting; }).observe(grid);
+  const white = $('wg-white');
+  const loop = (now) => {
+    requestAnimationFrame(loop);
+    acc = Math.min(acc + (last ? now - last : 0), 100); last = now;
+    if (!seen) return;
+    while (acc >= 20) { acc -= 20; for (const t of tiles) if (!still || t === over) t.tick(); }
+    for (const t of tiles) t.draw(white.checked);
+  };
+  tiles.forEach((t) => t.draw(true));
+  requestAnimationFrame(loop);
 }
 
-// ---- 12: Bobsled's course and map
+// ---- 03: Ski Jump's poses, drag and style penalties by the lean's band
+// The landing slope's picture comes from the game's unpack_list ($1273) on flight_list, as
+// show_flight ($1422) unpacks it: the bitmap at $A000, the screen at $8000 and the colours, which
+// it writes to the colour RAM at $D800. draw_frame ($1973) then draws a pose into the close-up:
+// thirty bitmap cells at rows 2 to 6, columns 30 to 35, and four black sprites at $8F00, which
+// sj_setup points sprites 1 to 4 at, placed by setup_positions. The background is black ($D021 = 0,
+// sj_irq). Each pose is cut to the close-up's frame, above the distance under it.
+function skiJump(L) {
+  const ram = L.ram, sym = L.sym, PAL = C64.PAL;
+  const colour = new Uint8Array(1000);
+  const m = ram.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+    read(a) { throw new Error('read $' + a.toString(16)); },
+    write(a, v) { if (a >= 0xD800 && a < 0xDBE8) { colour[a - 0xD800] = v & 15; return; } throw new Error('write $' + a.toString(16)); },
+  } });
+  const list = sym('flight_list');
+  m[0x16] = list & 255; m[0x17] = list >> 8;
+  cpu.call(sym('unpack_list'), {}, { maxSteps: 5000000 });
+  const sp = sym('setup_positions'), sc = sym('setup_colours');
+  const X = 230, Y = 6, W = 68, H = 58;                     // the close-up and its frame, in the picture's dots
+  const pose = (f) => {
+    m[0x41] = f; m[0x43] = 0;
+    cpu.call(sym('draw_frame'), {}, { maxSteps: 100000 });
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    for (let r = 0; r < 8; r++) for (let col = 28; col < 38; col++) {
+      const i = r * 40 + col, s = m[0x8000 + i];
+      C64.drawGlyphMC(ctx, m.subarray(0xA000), i, col * 8 - X, r * 8 - Y, 1, [PAL[0], PAL[s >> 4], PAL[s & 15], PAL[colour[i]]]);
+    }
+    for (let s = 1; s <= 4; s++) {
+      const x = ram[sp + 2 * s] + ((ram[sp + 16] >> s) & 1) * 256 - 24, y = ram[sp + 2 * s + 1] - 50;
+      C64.drawSprite(ctx, m.subarray(0x8F00 + 64 * (s - 1)), x - X, y - Y, 1, PAL[ram[sc + 2 + s]]);
+    }
+    return c;
+  };
+  const lr = sym('lean_frames_lr'), ud = sym('lean_frames_ud');
+  const dragT = sym('drag_table'), size = sym('lean_size'), pen = sym('lean_penalties');
+  const tab = $('wg-bands');
+  const row = (head, cell) => {
+    const tr = document.createElement('tr'), th = document.createElement('th');
+    th.textContent = head; tr.appendChild(th);
+    for (let b = 0; b < 9; b++) { const td = document.createElement('td'); if (b === 4) td.className = 'mid'; cell(td, b); tr.appendChild(td); }
+    tab.appendChild(tr);
+  };
+  row('', (td, b) => { td.textContent = b === 4 ? 'centre' : 'band ' + b; td.classList.add('bn'); });
+  row('Stick left and right', (td, b) => td.appendChild(pose(ram[lr + b])));
+  row('Stick up and down', (td, b) => td.appendChild(pose(ram[ud + b])));
+  row('Speed lost a frame', (td, b) => {
+    const d = ram[dragT + b];
+    td.innerHTML = '<div class="wg-bar"><i style="height:' + (d / 21 * 100).toFixed(1) + '%"></i></div>' + d;
+  });
+  row('Style points lost', (td, b) => { const p = ram[pen + ram[size + b]]; td.textContent = p ? '−' + p : '0'; td.classList.add('pen'); });
+}
+
+// ---- 10: Bobsled's course and map
 function course(ram) {
   const cv = $('wg-map'), ctx = cv.getContext('2d'), S = 4;
   const st = [...Array(177)].map((_, i) => [...ram.slice(0x4759 + 4 * i, 0x4759 + 4 * i + 4)]);
@@ -516,7 +633,7 @@ if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
     const L = {}; parts.forEach((p, i) => { L[p] = ls[i]; });
     if (typeof C64Sid === 'undefined') ['wg-anthems', 'wg-events', 'wg-effects'].forEach((id) => need('sid.js', $(id)));
     else sound(L);
-    heart(L.biathlon.ram); marks(L.skating.ram); drag(L['ski-jump'].ram); course(L.bobsled.ram);
+    skating(L.skating); skiJump(L['ski-jump']); heart(L.biathlon.ram); course(L.bobsled.ram);
   });
 }
 </script>

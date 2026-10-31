@@ -96,3 +96,21 @@ fixed order, and Bobsled's 177 stretches are drawn on the How it works
 page. There is no Play tab, and no recording of play (`65-inputs`) was
 made, since no step needed one. The 47 sectors on side 1 that the BAM
 marks used and no file holds are open: nothing in this run read them.
+
+## 31 October 2026: the contributor's follow-ups
+
+The contributor asked for the loader and player-page sections to go, for
+the skating calculator to become a tile for each move, animated, that adds
+the move to a program, for Ski Jump's chart to show the jumper for each
+band, and for a closer look at Bobsled's rumble. The skater's frames come
+from running `draw_frame` on the listing for each of the 60 frames; the
+white sprites, solid where the skater is not, sit in front of the
+multicolour ones as a mask on the white ice. Each tile plays the
+frame lists of its move's records, and `test_marks.js` checks that each
+tile's records count the element, fall or awkward move its click adds.
+Ski Jump's poses needed the landing slope unpacked first, by the game's
+own `unpack_list`, since `draw_frame` draws over it. For the rumble, the
+recorded Bobsled frame turned out to show far piece 24, and `draw_far` on
+the listing matched it in every cell but the rumble's, which held `$02`
+where the panorama has `$69`: the change is a black dash in the sky, not
+a hidden byte.
