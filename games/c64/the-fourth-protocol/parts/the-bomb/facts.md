@@ -49,7 +49,7 @@ the video chip's interrupt registers, the CIAs' or the sound chip
   22 by 4 cells) with `print_string`, 20 characters to a line;
   `wrap_check` in the OS carries a longer word to the next line.
   `test_levels.js` runs `print_name_0` and `print_name_1` for all 249
-  places against the Maps tab's drawing.
+  places against the Episode 2 tab's drawing.
 - Location 0 and location 20 are blank records whose exits all lead to
   location 0. Nothing leads to 20; Euston Road's west exits (17-19) lead
   to 0 through a deadly road, which ends the game (`game_over`) first.
@@ -65,7 +65,7 @@ the video chip's interrupt registers, the CIAs' or the sound chip
   `show_tile_picture` opens a window of 14 by 7 cells at x 13, y 10 and
   fills all of it from `tiles` and a colour map, over the window's frame.
   The ID card's photo (`pic_photo`) goes over its top left 5 by 4 cells.
-  `test_levels.js` holds the Maps tab's three pictures to it.
+  `test_levels.js` holds the Episode 2 tab's three pictures to it.
 - London, Bristol, Dover and the Faslane estate. The tube's lines
   (`tube_lines`, `$7748`) are the Circle line both ways, the Victoria line
   and the Piccadilly line; a ticket costs £1 at any ticket office

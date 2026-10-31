@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's parser against episode three's own. index.html's tfp-parse block (tfpParse)
+// Hold the page's parser against episode three's own. sas-assault.html's tfp-parse block (tfpParse)
 // finds the verb, the noun and the routine as parse ($A00C) and find_word ($A182) do. Here the
 // game's parser runs on the kit's simulator over episode three's listing, from $A01C (past the
 // pause and the test for an empty line), with the line in the buffer at $0200 ended by a zero, and
@@ -13,7 +13,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] || 'index.html';
+const g = game(__dirname), page = process.argv[2] || 'sas-assault.html';
 const B = g.run(page, 'tfp-parse', 'tfpParse', 'tfpListWords', 'TFP_VERBS', 'TFP_NOUNS');
 const L = g.listing('parts/sas-assault/listing.json');
 const verbs = B.tfpListWords(L.ram, B.TFP_VERBS), nouns = B.tfpListWords(L.ram, B.TFP_NOUNS);
