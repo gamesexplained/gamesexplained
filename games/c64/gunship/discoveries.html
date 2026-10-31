@@ -1,0 +1,216 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gunship</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.gs-pic{width:100%;max-width:576px;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.gs-ctl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:0 0 12px;font-size:15px}
+.gs-k{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
+.gs-btn{font:inherit;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.gs-btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.gs-cell{font-family:var(--fm);font-size:13px;text-align:center;border-radius:6px;padding:8px 4px;background:var(--surface-2)}
+.gs-cell.hit{background:#d04a3a;color:#fff}
+.gs-out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px;line-height:1.5}
+.gs-tab{border-collapse:collapse;width:100%;font-size:15px}
+.gs-tab th,.gs-tab td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.gs-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · MicroProse</p>
+  <h1>Gunship</h1>
+  <p class="sub">What the code does that the manual leaves out. In the training theatre nothing can hit you, and a missile of the wrong kind can hit a tank and leave it standing.</p>
+</header>
+<main class="wrap">
+
+<section data-part="flight">
+  <p class="fig">01 · Training</p>
+  <h2 class="t">Secret: in training, nothing can hit you</h2>
+  <p class="lede">In the training theatre every enemy shot misses, whatever fired it. The same test decides how many shots hit on a real mission, by the style of missions the pilot chose.</p>
+  <div class="plate">
+    <div class="gs-ctl" id="gs-style"><span class="gs-k">Missions</span></div>
+    <div class="gs-ctl" id="gs-att"><span class="gs-k">Attacker</span></div>
+    <div class="gs-ctl"><span class="gs-k">Random number</span><input id="gs-rnd" type="range" min="0" max="15" value="3"><span id="gs-rnd-v">3</span></div>
+    <div class="gs-grid" id="gs-hits"></div>
+    <div class="gs-out" id="gs-hits-out">-</div>
+    <p class="cap">The test in <code>hit_helicopter</code> (<code>$5AE5</code>), ported, for each value of the pass counter's low two bits, with the attacker's chances read from the flight's listing at <code>$5ADD</code>. A test beside the page runs the game's own routine in the kit's 6502 for every attacker, style, pass and random number, 32,768 cases, and checks that the port agrees on each.</p>
+  </div>
+  <p>The routine takes a random number from 0 to 15 (the SID's third oscillator) and compares it with the attacker's chance at <code>$5ADD</code>: 4, 8 or always. If that passes, the pass counter's low two bits must be below <code>zpa_4C</code> for the shot to hit. The flight's BASIC, <code>G2</code>, sets <code>zpa_4C</code> from the mission block the front end wrote, where line 720 of <code>BEGIN</code> puts the style plus 1, or 0 in training. Two bits below 0 is impossible, so in training the second test always fails.</p>
+  <p>On a mission the same test makes the style a straight share of hits. A quarter of the shots that pass the first test hit on regular missions, half on volunteer missions and three quarters on volunteer hazardous duty. <code>zpa_4C</code> also sets how many hits stop both engines (more than 7 less <code>zpa_4C</code>), and the cannon's range.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">02 · Missiles</p>
+  <h2 class="t">Secret: a missile of the wrong kind does nothing</h2>
+  <p class="lede">The C64-Wiki's table of weapons gives Hellfires for armour and FFARs for soft targets. The code is stricter: each kind of ground unit can be destroyed by one kind of missile only, and any other kind that hits it does nothing.</p>
+  <div class="plate">
+    <table class="gs-tab"><thead><tr><th>Missile</th><th>Unit kinds it can destroy</th></tr></thead><tbody id="gs-mk"></tbody></table>
+    <p class="cap">Read from the table at <code>$B5A4</code> in the flight's listing, one byte for each of the sixteen unit kinds: 1 the FFAR, 2 the Hellfire, 0 the Sidewinder. A unit's kind is bits 0-3 of its type byte (<code>$5300</code>).</p>
+  </div>
+  <p>When a missile's explosion ends, the code at <code>$B2F1</code> looks up its target's kind in <code>$B5A4</code> and compares the missile's guidance flags with that missile kind's (<code>$AE12</code>). Only a match destroys the unit. The Hind is the one exception: it is unit 5, and a missile that explodes on unit 5 destroys it whatever its kind (<code>$B309</code>). Kinds 14 and 15 are the only ones the table gives to the Sidewinder, and the five theatres' files do not have a unit of either kind. So a Sidewinder can destroy the Hind and nothing else.</p>
+  <p>The cannon works another way: it hits by range and aim alone, so it can destroy any unit, given enough rounds.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">03 · The cannon</p>
+  <h2 class="t">The cannon fires only at a target</h2>
+  <p class="lede">The fire button does nothing to the cannon unless the CRT shows the target view. With the map or a message on the CRT, fire moves the CRT on instead.</p>
+  <div class="plate">
+    <p style="margin:0">In the emulator, from a snapshot in flight with the CRT on the map and no target picked, the fire button was pressed ten times. The cannon's 60 rounds stayed at 60. The code is at <code>$3C2D</code>: with the CRT on the map or a message (<code>zpa_FF</code> not 0), fire with a target picked (<code>zpa_FA</code> = 2) steps the CRT on, with sound 8, and nothing is fired. The firing itself starts at <code>$3D60</code>, on the path that only the target view reaches.</p>
+    <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
+  </div>
+</section>
+
+<section data-part="flight">
+  <p class="fig">04 · The joystick</p>
+  <h2 class="t">Secret: the joystick checks two timers before it reads</h2>
+  <p class="lede">The flight's joystick routine throws away what it reads unless CIA 2's two timers are still running the way the program on side 1 started them.</p>
+  <div class="plate">
+    <table class="gs-tab">
+      <thead><tr><th>Test</th><th>Timers A and B, high bytes</th><th>Stick held left reads</th></tr></thead>
+      <tbody>
+        <tr><td>As the game left them</td><td><code>$48</code> and <code>$C9</code>, <code>$7F</code> apart</td><td>left (<code>zpa_84</code> = <code>$FF</code>)</td></tr>
+        <tr><td>Timer B stopped (<code>$DD0F</code> = 0)</td><td><code>$7C</code> and <code>$C9</code>, <code>$B3</code> apart</td><td>nothing (<code>zpa_84</code> = 0)</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
+  </div>
+  <p><code>joystick</code> (<code>$E40C</code>) reads port 2 into its two directions, then subtracts the high byte of timer B from the high byte of timer A (<code>$E423</code>). Unless the difference is <code>$7D</code> to <code>$80</code>, it sets both directions to 0. The flight never starts those timers, so the gap was set before side 2 was ever read, and holds as long as both timers keep counting from where they started. What the check guards against is not in the code. A copy of side 2 run on its own, without the side 1 programs before it, would fly with a dead stick.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">05 · Cheats</p>
+  <h2 class="t">A no-fuel POKE for this disk</h2>
+  <p class="lede">The C64-Wiki lists three POKEs for Gunship, entered with a freezer cartridge during a flight. On the original disk the ammunition one works, and the fuel one makes the tanks drain faster.</p>
+  <div class="plate">
+    <table class="gs-tab">
+      <thead><tr><th>POKE</th><th>What it changes here</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><code>POKE 23082,189</code></td><td><code>use_store</code>'s <code>DEC $53D8,X</code> at <code>$5A2A</code> becomes <code>LDA $53D8,X</code></td><td>Unlimited ammunition: in the kit's 6502, five shots leave 60 rounds at 60</td></tr>
+        <tr><td><code>POKE 22840,5:POKE 22885,5</code></td><td>The fuel burn at <code>$5937</code> and <code>$5964</code> subtracts <code>zpa_05</code>, which is 0 in flight, instead of the burn</td><td>No fuel used: both tanks unchanged after 6 seconds, where the game burns 126 from each</td></tr>
+        <tr><td><code>POKE 22837,5:POKE 22882,5</code></td><td>The wiki's: the tanks' <code>LDA zpa_70</code> and <code>LDA zpa_72</code> read <code>zpa_05</code> instead</td><td>The tanks fall faster, by 136 and 339 in 6 seconds</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">The fuel POKEs tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe. The wiki gives its fuel and damage POKEs for another version of the game; on this disk the damage POKEs land in the middle of other instructions.</p>
+  </div>
+</section>
+
+<section data-part="">
+  <p class="fig">06 · The listings</p>
+  <h2 class="t">Secret: LIST stops before it shows a line of the BASIC</h2>
+  <p class="lede">Five of the game's six BASIC programs start with a line that stops LIST before it shows anything. Only <code>B</code>, the debriefing, lists as usual.</p>
+  <div class="plate">
+    <img class="gs-pic" src="reference/list-guard-syntax-error.png" alt="LIST on a C64 prints nothing and stops with a syntax error">
+    <p class="cap"><code>G2</code>'s bytes put into a freshly reset C64 in VICE and listed, on 31 October 2026.</p>
+  </div>
+  <p>The line is <code>REM</code>, then five DEL characters and a shifted L. It is line 0, or line 1 in <code>BEGIN</code>. LIST prints the line's number and "REM", five characters, then the five DELs, which rub them out again. The shifted L is the byte <code>$CC</code>, past the last of BASIC's keywords, and LIST stops on it with <code>?SYNTAX ERROR</code>. RUN never reaches the problem, because it skips the rest of a line after REM.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">07 · The starter</p>
+  <h2 class="t">Bug: the starter's sound writes a register the SID does not have</h2>
+  <p class="lede">The engine starter's sound effect is the unused effect 0 with its slides reversed, and its first entry names register <code>$50</code>. The SID has 25 registers.</p>
+  <div class="plate">
+    <table class="gs-tab">
+      <thead><tr><th>Effect</th><th>First entry at</th><th>Frame</th><th>Register</th><th>Value</th></tr></thead>
+      <tbody id="gs-sfx0"></tbody>
+    </table>
+    <p class="cap">The first entry of effects 0 and 9, read from the flight's listing (<code>sound_effects</code>, <code>$EC00</code>). The <a href="index.html">How it works</a> tab plays both.</p>
+  </div>
+  <p>The player writes the value to <code>$D400</code> plus the register (<code>$9A6C</code>), so the starter writes <code>$10</code> to <code>$D450</code>. The SID answers at every 32 bytes from <code>$D400</code> to <code>$D7FF</code>, so <code>$D450</code> is register 16, the low byte of voice 3's pulse width. Effect 0's first entry writes the same value, <code>$10</code>, to register 1, the high byte of voice 1's frequency. Whether the stray write is heard depends on voice 3's waveform at that moment, since the pulse width changes only a pulse wave.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* gs-hits */
+// The test hit_helicopter ($5AE5) makes before a shot does damage. chance is the attacker's entry
+// of the table at $5ADD (its attributes, zpa_5A, and 7); a random number from 0 to 15 (the SID's
+// third oscillator, and 15) must be below it. Then the pass counter's low two bits (zpa_6A and 3)
+// must be below zpa_4C: 0 in training, the style of missions plus 1 otherwise.
+function gsHit(chance, random, pass, style) {
+  if ((random & 15) >= chance) return false;
+  return (pass & 3) < style;
+}
+// end of gs-hits
+
+const $ = (id) => document.getElementById(id);
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+function hits(ram) {
+  const STYLES = ['Training', 'Regular', 'Volunteer', 'Hazardous duty'];
+  const chances = [...ram.slice(0x5ADD, 0x5AE5)];
+  let style = 0, att = 0, rnd = 3;
+  const bar = (el, names, set, on) => names.forEach((n, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'gs-btn'; b.textContent = n; b.setAttribute('aria-pressed', i === on);
+    b.addEventListener('click', () => { el.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); set(i); draw(); });
+    el.appendChild(b);
+  });
+  bar($('gs-style'), STYLES, (i) => { style = i; }, 0);
+  const atts = [0, 1, 2], attName = (c) => c >= 16 ? 'always' : c + ' in 16';
+  bar($('gs-att'), atts.map((i) => 'Attacker ' + i + ', ' + attName(chances[i])), (i) => { att = i; }, 0);
+  $('gs-rnd').addEventListener('input', (e) => { rnd = +e.target.value; $('gs-rnd-v').textContent = rnd; draw(); });
+  function draw() {
+    const grid = $('gs-hits'); grid.innerHTML = '';
+    let n = 0;
+    for (let p = 0; p < 4; p++) {
+      const h = gsHit(chances[att], rnd, p, style);
+      if (h) n++;
+      grid.insertAdjacentHTML('beforeend', `<div class="gs-cell${h ? ' hit' : ''}">pass ${p}<br>${h ? 'hit' : 'miss'}</div>`);
+    }
+    const first = (rnd & 15) < chances[att];
+    $('gs-hits-out').textContent = first
+      ? `${rnd} is below ${chances[att]}: the shot goes on to the second test, and zpa_4C = ${style} lets ${n} of the 4 passes hit.`
+      : `${rnd} is not below ${chances[att]}: the shot misses before the second test.`;
+  }
+  draw();
+}
+
+function missiles(ram) {
+  const NAME = { 0: 'Sidewinder', 1: 'FFAR', 2: 'Hellfire' };
+  const by = { 0: [], 1: [], 2: [] };
+  for (let k = 0; k < 16; k++) (by[ram[0xB5A4 + k]] || (by[ram[0xB5A4 + k]] = [])).push(k);
+  for (const m of [1, 2, 0]) $('gs-mk').insertAdjacentHTML('beforeend', `<tr><td>${NAME[m]}</td><td>${by[m].join(', ')}</td></tr>`);
+}
+
+function starter(ram) {
+  for (const e of [0, 9]) {
+    const a = 0xEC00 | ram[0xEC00 + e];
+    $('gs-sfx0').insertAdjacentHTML('beforeend', `<tr><td>${e}</td><td><code>${hex(a)}</code></td><td>${ram[a]}</td><td><code>${hex(ram[a + 1], 2)}</code></td><td><code>${hex(ram[a + 2], 2)}</code></td></tr>`);
+  }
+}
+
+if (typeof C64 === 'undefined') $('gs-hits-out').textContent = 'The site\'s scripts did not load, so this widget cannot run here.';
+else C64.load('parts/flight/listing.json').then((F) => { hits(F.ram); missiles(F.ram); starter(F.ram); });
+</script>

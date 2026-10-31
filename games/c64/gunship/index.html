@@ -1,6 +1,7 @@
+<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
+<title>Gunship</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -33,34 +34,434 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-
+.gs-shots{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gs-shots figure{margin:0}
+.gs-shots img,.gs-pic{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.gs-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:4px}
+.gs-canvas{width:100%;height:auto;image-rendering:pixelated;display:block;background:#000;border-radius:4px}
+.gs-wire{width:100%;height:auto;display:block;background:var(--surface-2);border-radius:6px;touch-action:none;cursor:grab}
+.gs-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
+.gs-ctl label{display:flex;gap:6px;align-items:center}
+.gs-ctl input[type=range]{width:180px}
+.gs-btn{font:inherit;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.gs-btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gs-out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px;line-height:1.5}
+.gs-tab{border-collapse:collapse;width:100%;font-size:15px}
+.gs-tab th,.gs-tab td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.gs-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.gs-tab td.n{font-family:var(--fm)}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}.gs-shots{grid-template-columns:1fr}}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">{{year}} · {{publisher}}</p>
-  <h1>{{title}}</h1>
-  <p class="sub">The standfirst, which the agent writes: the most interesting thing inside this game, in a sentence or two.</p>
+  <p class="eyebrow">1986 · MicroProse</p>
+  <h1>Gunship</h1>
+  <p class="sub">An Apache gunship simulator in which BASIC runs everything but the flight. Six of the eight programs on the disk are BASIC listings, and the 3D engine they hand over to keeps the whole of its world in wireframe shapes of a few dozen bytes each.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
+
+<section data-part="">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">An attack helicopter in five theatres</h2>
+  <p class="lede">You fly an AH-64 Apache for the US Army. You start in training in the USA, then move on to Southeast Asia, Central America, the Middle East and Western Europe.</p>
+  <div class="gs-shots">
+    <figure><img src="reference/front-briefing-we.png" alt="The briefing for a mission in Western Europe"><figcaption>The briefing: a primary and a secondary target, and the enemy's strength.</figcaption></figure>
+    <figure><img src="reference/flight-cockpit-we.png" alt="The cockpit on the ground in Western Europe"><figcaption>The cockpit. Above is the 3D view, below are the instruments and the CRT in the middle.</figcaption></figure>
+  </div>
+  <p>Each mission has two targets, a primary and a secondary. Before take-off you arm the helicopter with Sidewinder missiles, FFAR rockets, Hellfire missiles, cannon rounds, chaff and flares. You start the two engines, engage the rotor and raise the collective. You find the targets on the map, destroy what you can and fly home to land at a friendly base. After landing, a debriefing scores the mission and may award a medal or a promotion. Your pilot is saved to disk between missions in a roster of up to eight.</p>
+  <p>Damage comes in fourteen kinds, each with a lamp along the top of the canopy. A hit can stop an engine, blind the gunsight or leak fuel. A wrecked helicopter or a dead pilot ends the career.</p>
 </section>
+
+<section data-part="flight">
+  <p class="fig">02 · The world in wireframe</p>
+  <h2 class="t">The 3D world is made of wireframe shapes</h2>
+  <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file.</p>
+  <div class="plate">
+    <div id="gs-shape-pick"></div>
+    <canvas id="gs-shape" class="gs-wire" width="640" height="360" aria-label="The shape, turning"></canvas>
+    <div class="gs-ctl" style="margin-top:12px">
+      <label>Heading <input id="gs-yaw" type="range" min="0" max="255" value="32"></label>
+      <label>Tilt <input id="gs-tilt" type="range" min="0" max="64" value="16"></label>
+      <button type="button" class="gs-btn" id="gs-spin" aria-pressed="true">Turn</button>
+    </div>
+    <div class="gs-out" id="gs-shape-out">-</div>
+    <p class="cap">Drawn from the bytes of Western Europe's terrain file as the flight's snapshot holds them. Each point is a combination of one x value, one y value and one height, numbered at <code>$1C37</code>, <code>$1CA8</code> and <code>$1D19</code>, or a fraction of another point. Every edge the shape lists is drawn here. The game leaves out an edge when both of the faces it joins turn away from the eye. Drag the picture to turn it.</p>
+  </div>
+  <p>A shape's record starts with how many points it has and their numbers (<code>$1E9F</code> on). Then come its faces, five bytes each, a colour number and its edges. An edge names two faces and two points, or a single point drawn as a dot. A flat shape has no faces, so all its edges are always drawn. The hills are the only shapes with faces that matter beyond drawing: <code>project</code> (<code>$894A</code>) sets a flag when a hill's face turns towards the eye from inside it, and the main loop ends the flight as a crash (<code>$31F8</code>).</p>
+  <p>Most things in the world have two shapes, a near view and a far one. A hill seen from far away is only its ridge lines, and a base is only its outline. Each terrain lists a fixed object (a hill, or nothing) and up to eight switchable ones: one bit for each square of the map at <code>$E200</code> switches them on. A shape from <code>$24E3</code> on can be locked as a target, and the byte after it names it. That byte plus 11 is the number of the message the CRT prints, so the shape at <code>$27BE</code> prints "T-72".</p>
+</section>
+
+<section data-part="title">
+  <p class="fig">03 · Music: the title</p>
+  <h2 class="t">Music: the Ride of the Valkyries</h2>
+  <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries while the helicopter rises over the hills. It is the only music in the game.</p>
+  <div class="plate">
+    <div id="gs-music"></div>
+    <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run once a frame on the kit's 6502 on the title's bytes, as the title's raster interrupt calls it, and played through the site's model of the SID. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
+  </div>
+  <p>Each voice's stream is a note number and a length, two bytes a note. <code>$80</code> is a rest and <code>$81</code> the end. The length is multiplied by the tempo, 2 frames a unit on a PAL machine and 3 on NTSC (<code>tempo_by_tv</code>, <code>$8530</code>). So the tune lasts the same time on both. The note numbers index two tables of SID frequencies, 16 entries to an octave, of which 12 are notes and 4 are zeros (<code>$9006</code>, <code>$9082</code>). The table's values are those of an NTSC machine, so on a PAL machine every note sounds a little flat.</p>
+  <p>The first voice plays a pulse wave and the other two a sawtooth (<code>tune_waves</code>, <code>$9003</code>). The player ends the tune when any voice reads <code>$81</code>. A key pressed during the tune skips it.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">04 · The cockpit</p>
+  <h2 class="t">Two pictures, one screen</h2>
+  <p class="lede">The cockpit is two multicolour bitmaps in two different 16 KB banks of memory. A raster interrupt switches the video chip from one to the other a third of the way down the screen.</p>
+  <div class="plate">
+    <canvas id="gs-frame" class="gs-canvas" aria-label="The cockpit, drawn from memory"></canvas>
+    <div class="gs-ctl" style="margin-top:12px">
+      <button type="button" class="gs-btn" data-fv="all" aria-pressed="true">The frame</button>
+      <button type="button" class="gs-btn" data-fv="split" aria-pressed="false">Mark the split</button>
+    </div>
+    <p class="cap">One whole frame of the game in flight, recorded in the emulator (every write to the video chip with the line it came on, and the memory it reads) and drawn here by the site's model of the video chip. 104,447 of its 104,448 pixels match the emulator's own picture of the same frame. The one that differs is in the border.</p>
+  </div>
+  <p>The window at the top is rows 0-12 of a bitmap at <code>$4000</code> or <code>$6000</code>, in the video chip's bank 1, with its colours at <code>$7C00</code>. The panel below is rows 13-24 of a bitmap at <code>$C000</code> or <code>$E000</code>, in bank 3, with its colours at <code>$EC00</code>. The interrupt at line <code>$9A</code> (<code>irq_split</code>, <code>$94B8</code>) moves the chip to bank 3 for the panel. The one at line <code>$FB</code> (<code>irq_bottom</code>, <code>$9206</code>), below the picture, moves it back and shows whichever window buffer was finished last.</p>
+  <p>Both halves are double-buffered. The engine draws the next view into the window bitmap the chip is not showing (<code>draw_view</code>, <code>$8451</code>), then swaps (<code>$910C</code> holds the four settings of <code>$D018</code>). The rows of each 8 KB bitmap that never reach the screen hold other things: sprites, the 128 units' records at <code>$5100</code>, the messages, the map's font and much of the engine's code.</p>
+  <p>On a Commodore 128 the engine also switches the processor to 2 MHz below the picture and back to 1 MHz at its top (<code>engine_on</code>, <code>$9110</code>; <code>irq_c128</code>, <code>$948F</code>). The fast part is the time the video chip is not reading the screen.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">05 · The map</p>
+  <h2 class="t">The theatre on one screen</h2>
+  <p class="lede">Pressing Z shows the big map: the theatre's terrain in characters, the units you have seen, and the waypoint.</p>
+  <div class="plate">
+    <canvas id="gs-map" class="gs-canvas" aria-label="The big map of Western Europe, drawn from memory"></canvas>
+    <p class="cap">One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip. 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites. The <a href="levels.html">Maps / levels</a> tab draws all five theatres.</p>
+  </div>
+  <p>A theatre is 16 by 16 squares, one byte each, numbering one of 33 terrains (<code>theatre_map</code>, <code>$1A86</code>). The big map shows the middle 12 by 12 (<code>draw_map</code>, <code>$9685</code>). Each square is three characters wide and two high, in multicolour character mode, from the font at <code>$C800</code>. A terrain's six characters follow each other in the font, from character 58 on. Their colours come from a table by character code (<code>$E33C</code>).</p>
+  <p>A unit appears on the map only once its type byte has bit 4 set (<code>$5300</code>), which happens when the helicopter has seen it. Its character is drawn in its square: friendly units in white, targets in one colour and other enemies in another.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">06 · Flying it</p>
+  <h2 class="t">Controls</h2>
+  <p class="lede">The joystick is the cyclic, which tilts the rotor. The keyboard does everything else.</p>
+  <div class="plate">
+    <table class="gs-tab" id="gs-keys">
+      <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Joystick, port 2</td><td>The cyclic: forward, back and the two sides (<code>joystick</code>, <code>$E40C</code>)</td></tr>
+        <tr><td>Fire</td><td>The chosen weapon, with the CRT on the target view (<code>$3D60</code>)</td></tr>
+        <tr><td>F1, F3, F5, F7</td><td>The collective up 4, up 1, down 1, down 4, from 0 to 42 (<code>$3383</code>)</td></tr>
+        <tr><td>1, 2</td><td>Start or stop engine 1 or engine 2 (<code>$3406</code>)</td></tr>
+        <tr><td>3</td><td>Engage or free the rotor's clutch</td></tr>
+        <tr><td>4, 5, 6, 7</td><td>Choose the Sidewinders, the FFARs, the Hellfires or the cannon (<code>$348D</code>)</td></tr>
+        <tr><td>9, minus</td><td>Chaff, a flare (<code>$34FC</code>)</td></tr>
+        <tr><td>RETURN</td><td>Stop turning</td></tr>
+        <tr><td>SPACE</td><td>Step the CRT on to its next display (<code>crt_next</code>, <code>$9CCD</code>)</td></tr>
+        <tr><td>Right SHIFT</td><td>Ask for the next target</td></tr>
+        <tr><td>HOME, £, DEL</td><td>Look ahead, left, right</td></tr>
+        <tr><td>Z</td><td>The big map; ← on it switches fast motion on and off</td></tr>
+        <tr><td>C=, left SHIFT</td><td>The stores and the damage pictures, loaded from the disk</td></tr>
+        <tr><td>RUN/STOP</td><td>Pause</td></tr>
+        <tr><td>RUN/STOP and RESTORE</td><td>Abort the flight</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">From the key handling in the main loop, <code>$332E</code> to <code>$3500</code>. The keyboard is read once a frame by the interrupt (<code>keyboard</code>, <code>$A8D8</code>), which puts a newly pressed key in the keyboard buffer.</p>
+  </div>
+  <p>The joystick routine reads the stick only if CIA 2's two timers are still running the way the library on side 1 left them. It reads the high bytes of timers A and B, and unless they are <code>$7D</code> to <code>$80</code> apart, it throws away what it read (<code>$E423</code>). The <a href="discoveries.html">Discoveries</a> tab has the test.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">07 · Weapons and hits</p>
+  <h2 class="t">Each ground unit falls to one kind of missile</h2>
+  <p class="lede">A missile of the wrong kind that hits a ground unit does nothing at all. The flight engine names one missile kind for each of the sixteen kinds of unit, and only the Hind falls to any missile.</p>
+  <div class="plate">
+    <table class="gs-tab" id="gs-kinds"><thead><tr><th>Unit kind</th><th>Destroyed by</th><th>Its own weapon</th><th>Radar</th></tr></thead><tbody></tbody></table>
+    <p class="cap">Read from the flight's listing: the table at <code>$B5A4</code> (1 the FFAR, 2 the Hellfire, 0 the Sidewinder) and each kind's attributes at <code>$53A8</code> (bits 0-2 its weapon: up to 2 a gun reaching that number plus 1 times <code>$800</code>, half a map square, and from 3 up a missile of that kind; bit 6 radar). The kinds are numbers in a unit's type byte, bits 0-3. The units' names on the CRT come from their shapes instead, so this table numbers them.</p>
+  </div>
+  <p>The cannon works differently. It hits when a random fraction of its range is beyond the target's distance, and the range shrinks with a worse aim, a harder style and a damaged gun (<code>$3D60</code>). The colour of the target box tells the pilot how good the shot is: the aim and the distance give a class from 0 to 3, which picks one of four colours (<code>$3CB6</code>, <code>$53A4</code>).</p>
+  <p>When an enemy shoots at the helicopter, <code>hit_helicopter</code> (<code>$5AE5</code>) decides whether it hits. First a random number from 0 to 15 is checked against the attacker's chance (<code>$5ADD</code>: 4 in 16, 8 in 16 or always, by the attacker). Then the pass counter's low two bits must be below <code>zpa_4C</code>, which is 0 in training and the style of missions plus 1 otherwise. So in training nothing ever hits. Of the shots that pass the first test, a quarter hit on regular missions, a half on volunteer missions and three quarters on volunteer hazardous duty. A hit sets one of the fourteen damage bits at random. More than 7 hits, less <code>zpa_4C</code>, stop both engines. The <a href="discoveries.html">Discoveries</a> tab lets you try the test.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">08 · Sound: the effects</p>
+  <h2 class="t">Sound: ten effects from one small table</h2>
+  <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of SID registers to write, and the frame on which to write them.</p>
+  <div class="plate">
+    <div id="gs-sfx"></div>
+    <p class="cap">The game's own effect player, <code>sound_step</code> (<code>$9A39</code>), run once a frame on the kit's 6502 on the flight's bytes, as the interrupt calls it, after <code>sound_start</code> (<code>$9AAC</code>) as the game starts each effect. It plays through the site's model of the SID. The test beside the page compares every write with the same calls on the flight's whole memory.</p>
+  </div>
+  <p>The effects' addresses are low bytes in one page (<code>sound_effects</code>, <code>$EC00</code>). An effect's entries are three bytes: the frame it is due on, a SID register and the value to write. A frame with bit 7 set starts a slide instead: from then on, each frame adds a step to a register. The slide's register is the low three bits of its start value, so a slide can only reach voice 1 and the first byte of voice 2. Effect 0 is never asked for by any of the flight's calls.</p>
+  <p>Effect 9, an engine's starter, is effect 0 with its slides going the other way. Its first entry names register <code>$50</code>, where effect 0's names register 1. The SID repeats its registers every 32 bytes, so the write lands on register 16, the low byte of voice 3's pulse width.</p>
+  <p>Under the effects, the main loop keeps two voices going all through the flight (<code>$3BBD</code>). Voice 2's pitch is the rotor's speed, and its pulse width follows the height. Voice 3 is the engines' whine.</p>
+</section>
+
+<section data-part="">
+  <p class="fig">09 · Eight programs</p>
+  <h2 class="t">BASIC around a machine-code engine</h2>
+  <p class="lede">The title, the front end, the debriefing and the base are BASIC programs that call a machine-code library through a jump table at <code>$7500</code>. Only the flight itself is machine code.</p>
+  <div class="plate">
+    <table class="gs-tab">
+      <thead><tr><th>Program</th><th>What it does</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td><code>GUNSHIP</code></td><td>The title, the tune and the credits, then the library and the roster check</td><td><a href="source-title.html">title</a>, <a href="source-library.html">library</a></td></tr>
+        <tr><td><code>BEGIN</code></td><td>The identity check, the roster, the duty and the briefing, the checklist and the arming</td><td><a href="source-front.html">front</a></td></tr>
+        <tr><td><code>6</code></td><td>Side 2's loader: the flight's files, moved where the engine wants them</td><td><a href="source-loader.html">loader</a>, <a href="source-helpers.html">helpers</a></td></tr>
+        <tr><td><code>G2</code> and <code>M</code></td><td>The flight: the BASIC that sets it up and the engine</td><td><a href="source-flight.html">flight</a></td></tr>
+        <tr><td><code>B</code></td><td>The mission result summary</td><td><a href="source-debrief.html">debrief</a></td></tr>
+        <tr><td><code>E</code></td><td>The base: scores, medals, promotions, repairs, and the roster saved</td><td><a href="source-base.html">base</a></td></tr>
+      </tbody>
+    </table>
+    <p class="cap">One program hands over to the next by printing a <code>LOAD</code> command on the screen, putting a RETURN in the keyboard buffer and ending with <code>NEW</code>, so BASIC loads it as if it had been typed.</p>
+  </div>
+  <p>The front end passes the mission to the flight through the cassette buffer at <code>$033C</code>. <code>G2</code> copies it into the engine's variables, which wait at <code>$3F00</code> until the engine swaps them into zero page (<code>swap_zp</code>, <code>$919B</code>). The last file <code>G2</code> loads, <code>AWH</code>, is a few bytes that land on the processor's stack. When the load returns, it returns into the engine at <code>$3100</code> instead of into BASIC (<code>flight_start</code>). When the flight ends, the engine drops that return and goes back to <code>G2</code>, and the debriefing reads the flight's results from <code>$3F00</code>.</p>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+/* gs-music */
+// createDriver for C64Sid: runs the title's own tune player on the kit's 6502 (C64Cpu, which sid.js
+// passes to createDriver), its code and tables taken from the title's listing over
+// GS_TUNE_RANGES. init puts the three streams back where the file has them as it loads ($9117,
+// $91C7, $95D1; each note's count at 1 and the PAL tempo, 2, in tune_tempo) and calls tune_start
+// ($8E78), which sets the SID's 25 registers and marks the tune playing; play() is one call of
+// tune_play ($8E89), as the title's interrupt makes it once a frame; playing() is tune_done
+// ($8F52) still 0. The effects player runs the flight's sound_start ($9AAC) for effect t from the
+// list at $EC00, as sound ($59C7) does after setting the volume to 15, and then sound_step ($9A39)
+// once a frame; playing() is $819B, the effect's page, still set.
+const GS_TUNE_RANGES = [[0x8E5D, 0x8E5F], [0x8E78, 0x8F61], [0x9000, 0x96C3]];
+const GS_SFX_RANGES = [[0x00F5, 0x00F6], [0x819A, 0x819B], [0x9A35, 0x9AC6], [0xEC00, 0xECFF]];
+const GS_TUNES = [{ name: 'Ride of the Valkyries', tune: true }];
+const GS_EFFECTS = [
+  { name: '0, never used', n: 0 }, { name: '1, the cannon', n: 1 }, { name: '2, chaff or a flare', n: 2 },
+  { name: "3, a missile's end", n: 3 }, { name: '4, a jammer', n: 4 }, { name: '5, a missile hits you', n: 5 },
+  { name: '6, a missile fired', n: 6 }, { name: '7, an explosion', n: 7 }, { name: '8, a blip', n: 8 },
+  { name: "9, an engine's starter", n: 9 },
+];
+function createDriver(D, C64Cpu) {
+  const base = new Uint8Array(0x10000);
+  for (const [ad, bytes] of D.mem) base.set(bytes, ad);
+  const sid = new Uint8Array(25);
+  let m, cpu, writes = [], bus = 0, list = D.list, cur = null;
+  const io = {
+    read(ad) { if (ad >= 0xD400 && ad < 0xD800) return bus; throw new Error('read $' + ad.toString(16)); },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; }
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  const run = (ad, regs) => cpu.call(ad, regs || { a: 0, x: 0, y: 0 }, { maxSteps: 200000 });
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      cur = list[t];
+      m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+      sid.fill(0); bus = 0; writes = [];
+      if (cur.tune) {
+        m.set([0x17, 0xC7, 0xD1, 0x91, 0x91, 0x95], 0x8F53);    // tune_stream_lo, tune_stream_hi
+        m.set([1, 1, 1], 0x8F5F);                                 // tune_left
+        m.set([2, 2, 2], 0x9000);                                 // tune_tempo, PAL
+        run(0x8E78);                                              // tune_start
+      } else {
+        io.write(0xD418, 0x0F);                                   // sound: the volume full
+        m[0xA5] = 0x00; m[0xA6] = 0xEC; m[0xA7] = cur.n;
+        run(0x9AAC);                                              // sound_start
+      }
+    },
+    stop() {
+      writes = [];
+      if (!m) return;
+      if (cur && cur.tune) m[0x8F52] = 1; else m[0x819B] = 0;
+      for (const r of [4, 11, 18]) io.write(0xD400 + r, sid[r] & 0xFE);
+    },
+    play() {
+      writes = [];
+      if (cur.tune) { if (!m[0x8F52]) run(0x8E89); } else if (m[0x819B]) run(0x9A39);
+    },
+    playing() { return !!m && (cur.tune ? m[0x8F52] === 0 : m[0x819B] !== 0); },
+  };
+}
+// end of gs-music
+
+/* gs-shapes */
+// The shapes of the terrain file as the flight's listing holds them (W3.WE): the points table and
+// one record a shape. A point is an x value, a y value and a height, each a signed word in two
+// tables (x: $1B88 low, $1BA5 high; y: $1BC4, $1BE7; heights: $1C0C, $1C21), numbered for it at
+// $1C37, $1CA8 and $1D19, for $1C36 + 1 points; after them come the fraction points, $1D8A + 1 of
+// them, each a source point ($1D8B) halved n times ($1DB1). A shape: its last point's index n,
+// then n + 1 point numbers; its face count, five bytes a face; a colour byte; its last edge's
+// index; then each edge, two faces and two points, or two faces and one point with bit 7 set,
+// drawn as a dot.
+function gsPoints(ram) {
+  const s16 = (lo, hi) => { const v = lo | hi << 8; return v >= 0x8000 ? v - 0x10000 : v; };
+  const pts = [];
+  const n = ram[0x1C36] + 1;
+  for (let i = 0; i < n; i++) {
+    const xi = ram[0x1C37 + i], yi = ram[0x1CA8 + i], hi = ram[0x1D19 + i];
+    pts.push([s16(ram[0x1B88 + xi], ram[0x1BA5 + xi]), s16(ram[0x1BC4 + yi], ram[0x1BE7 + yi]),
+      s16(ram[0x1C0C + hi], ram[0x1C21 + hi])]);
+  }
+  for (let j = 0; j <= ram[0x1D8A]; j++) {
+    const p = pts[ram[0x1D8B + j]] || [0, 0, 0], k = ram[0x1DB1 + j];
+    pts.push(p.map((v) => v >> k));
+  }
+  return pts;
+}
+function gsShape(ram, a) {
+  const n = ram[a], pl = [];
+  for (let i = 0; i <= n; i++) pl.push(ram[a + 1 + i]);
+  let y = a + n + 2;
+  const nf = ram[y]; y += 1 + 5 * nf;
+  const colour = ram[y], ne = ram[y + 1] + 1; y += 2;
+  const edges = [];
+  for (let e = 0; e < ne; e++) {
+    const p1 = ram[y + 2];
+    if (p1 & 0x80) { edges.push([p1 & 0x7F, p1 & 0x7F]); y += 3; } else { edges.push([p1, ram[y + 3]]); y += 4; }
+  }
+  return { points: pl, faces: nf, colour, edges, end: y };
+}
+// end of gs-shapes
+
+const $ = (id) => document.getElementById(id);
+const need = (name, el) => { if (el) el.textContent = name + ' did not load, so this widget cannot run here.'; };
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const GS_COCKPIT = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[160,85,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,93,0,255,216,1,249,126,241,0,254,3,255,255,240,245,240,251,243,247,247,241,241,241,241,241,241,241,241],"cia2":[150,63],"cpu":[47,21],"writes":[[154,46,53277,0,0],[154,52,53272,185,184],[154,58,56576,148,148],[155,1,53281,240,0],[155,7,53271,0,0],[155,56,53276,0,0],[155,62,53264,96,96],[156,5,53248,100,100],[156,11,53250,179,179],[156,17,53252,48,48],[156,23,53254,68,68],[156,29,53256,110,110],[156,47,53262,36,36],[156,53,53249,217,217],[156,59,53251,190,190],[157,2,53253,235,235],[157,8,53255,235,235],[157,14,53257,162,162],[157,20,53259,182,182],[157,26,53261,207,207],[157,32,53263,215,215],[157,44,53288,240,0],[157,50,53289,253,13],[157,56,53290,250,10],[157,62,53291,247,7],[158,5,53292,247,7],[158,11,53293,247,7],[158,17,53294,247,7],[158,23,65534,6,6],[158,29,65535,146,146],[251,40,53281,245,5],[251,54,53271,1,1],[252,25,53277,3,3],[252,42,53272,249,248],[252,54,56576,150,150],[253,14,53276,254,254],[253,20,53264,0,0],[253,26,53248,160,160],[253,32,53250,0,0],[253,38,53252,0,0],[253,44,53254,0,0],[253,50,53256,0,0],[254,12,53262,0,0],[254,18,53249,85,85],[254,24,53251,0,0],[254,30,53253,0,0],[254,36,53255,0,0],[254,42,53257,0,0],[254,48,53259,0,0],[254,54,53261,0,0],[255,4,53263,0,0],[255,16,53288,241,1],[255,22,53289,241,1],[255,28,53290,241,1],[255,34,53291,241,1],[255,40,53292,241,1],[255,46,53293,241,1],[255,52,53294,241,1],[258,22,53269,8,8],[260,50,53251,0,0],[261,24,53248,0,0],[263,14,53266,80,80],[263,38,53263,48,48],[265,18,53254,28,28],[265,42,53251,2,2],[271,36,65534,184,184],[271,42,65535,148,148]],"colour":"AAAABQUABQUABQUFBQUFAAUFBQUFBQUFBQUFBQUFBQUFBQAFBQAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAFBQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEFBQAAAAAPDw8BAgIFBQEBAQEBAQEBAQEBAQEBAQEBAAEBAQEBAQULCwsBDw8PDw8BBQYCBwUBAQEBAQEBDQ0NDQ0NDQ0NDQABAQEBAQEBCwsLCwEPDw8PAQcHBwcBAQEBAQEBAQ0NDQ0NDQ0NDQ0BAQEBAQEBAQoKCwsBDw8PAQEHBwcHBQEBAQEBAQENDQ0NDQ0NDQ0NAAEBAQEFAQELCwsLAQEPDwEFBwcHBw8BAQEBAQ8BDQ0NDQ0NDQ0NDQ8PAQEBAQEPCwsLCwUBDwEMAgcHBwcPDwMDAwMPBQ0NDQ0NDQ0NDQ0PDwEBAQEPBQUBBQUBDwEFAQUFBwcHDwMDAwMDAwUNDQ0NDQ0NDQ0NAAEBAQEBAQ8FCgoKCgoPBQcHBQcHAQMDAwMDAwMDDg4ODg4ODg4ODgEBAQUFAQEPCgoKCgoKCgUFBQcHBwEDAwMDAwMDAw4ODg4ODg4ODg4BAQECAgEBDwoKCgoKCgoHBwEBBQUFAwMDAwMDAwUODg4BAQEBDg4OAQEBAQEBAQ8KCgoKCgoKDAUFBQUFBQ8DAwMDAwMFDg4OAQEBAQ4ODg8BAQEBAQEPCgoKCgoKDwgICAgICAgICAgICAgICAgICAgICAgICA==","ram":[{"a":20544,"b":"AAAAAAAAABAAABAAABAAABAAAAAAAAAAAAAAAAAA+AA+AAAAAAAAAAAAAAAAABAAABAAABAAABAAAAAAAAAA"},{"a":20608,"b":"cAAA2AAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24576,"b":"/9/3va+ruqr/////f9/3vf7V//X//f//r26ubq5ur6r+ru6+7u7+qqpV/lX/Vf//q1urW6tbq6r/77u7u+//qqqWqpaqlqqq//vu6u7u/6rq5erl6uXqqr+6u7u7ur+q+rn6ubq5+qqvbq5urm6vqv6u/r7+/v6qqqpWqlaqqqr/7u7q6u7/qurq5urm6uqq/+7u6uru/6rq5erl6uXqqqpWqlaqVqqq/+rv6+/q/6rq6uXq6uXqqr+6u7q7ur+q+rn6+fq5+qqrW6tbq1urqv+rv6+/v/+qqpaqlqqWqqr/++7u6u7/qurl6uXq5eqqv7u7u7u6v6r6+fr5+rn6qr+7u7u7ur+q+vn6+fq5+qqqVapVqlWqqr+6u7q7u7+q+rm6+bq5+qr/V/9f/3/////////9999+//fffvrqrqrruq6rqqquvq+ruqrruq7nf9/3va+ruqr7+/v7e9v7u//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v7+/v7efv7v3333766q6q+uququuuutvrrrrqqqq6vr6+vrq6ur7q5dnp2evb6dnren63tXV/ebu7u6vr6+vr/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+7u7urr6+vr66293l5d/W1bZ2tn6+drZ76+vq6urr6r6urq6+vr6+vp2evb6dnp2X+5v3m/eX+56+vr6/ubm6v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////6+vr6+/m5ur9bv5t/m39bmtn6+drZ2tnq6ur6+vr6+vp6e7rqqqqqutrWpbl+e7bv3m/ub95XZWbm6ubm6ubm//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////m5urm5urm5v5t/m7+bXVW6+mllltvu+dra7vrqqqqqurq6vr6+vr66t7u3u7e7t7nubu7e7u7u6ubm6ubm6ub/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+rm5urm5urm227u7u3u7u6rt7u3u7e7t6urq6+vr6+v+vr6+vr6+uru3u7e7t7u3ru7u7u7qampm6ubm6u7u7v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////5urm5uru7u7u7u7u7mpqaru3u7e7t7u3r6+vr6+vr6vq6urqq6uvr+7e7t7u3q7eaampqalpubu7u7u7u5ubm6oAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAADu7u7u7ubm5mlqampqaW7uu7e7t7u3urerq6ur6ur6+quuqq6qrqqu7t7u3u7e7t67u2mpqampqZubm5ubq6urAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObm5ubm6urq7u5pampqamq7t7u3u7e7t+q6qrqquqq6qq6qrqquqq7u3u7e7t7u3qlpqalru7t7q6urq7urq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6urq6u7q6upqaWpq6e7u7bu3u7e7t7u3qrqquqq6qrqqrqquqq6qru7e7t7u3u7ee3t7e3t7e7urq6urq6urqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADq6urq6urq6u3t7e3t7e3uu7e7t7u3u7equqq6qrqquqququ7r+/b27t7+/v7+/v27u7u5t5t7+6ura/v729vrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOrq6e/v5+fr7u7ubt7m7e+7t5eXt7e3d6q6qrvr75+f9vb29vb29vb23n7+/v7+/ru7e3u7u3t7+/v7+/vb6+sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAggIAKqAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAoCAggICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQBAEAQAAAAAAAABAEAQBAAAAAAAAAABA7+/v7+/n6+vt7u3t7u7t7Ve3vb+3v7+/n5+fn5+fn58="},{"a":30208,"b":"AAAAAAAAAAAAAAAAAAAAAoCgAgAgAgAgAgAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAgAgAgAgAgAoCg"},{"a":31744,"b":"+/vw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8Pv7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+w=="},{"a":32760,"b":"QdhCQkJCQkI="},{"a":53248,"b":"EAAAEAAAGAAAGAAAGAAAEAAAEAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57344,"b":"AAAAAAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAA"},{"a":57408,"b":"8AAADwAAAPAAAA8AAADwAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57472,"b":"AAAAAAAAAAAAAAAAADAAADAAAMAAAMAAAMAAAwAAAwAAAwAAAwAADAAADAAADAAAMAAAMAAAMAAAwAAAwAAA"},{"a":57536,"b":"wAAAwAAAwAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60672,"b":"P//wAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAP//w"},{"a":60736,"b":"/AAAeAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60800,"b":"AAAAAAAAAAAAAAAAMAAAeAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60936,"b":"+/v7+/Hx8fv7+/v7+/v7+/v7+/v7+/v7+/v7+/v78fv7+/v7+/v7+8vL+/v7+/v7+/vLy/v7+/v7+/v7+/v7+/v7+/vLy/v7+/vL+/v7y8vLy/v7y/v7+8vLy8vLy/tXV1dXV1dXV1dX+8vLy8vLy/v7y/v7+8vL+/v7xsbG+8vLy3vLy8vLV1dXV1dXV1dXV8vLy8t7y/vL+8vLy/v7+/v7+2bGZvbLe3vLy8vLy1dXV1dXV1dXV1fLy1tbW1v7y/vL+8v7+/v7+/tmxmb2y8vLy8vLy8tXV1dXV1dXV1dXy8v7y/vL+8v7+/v7+/v7+/v7+8bG9vvLy8vLy/vLV1dXV1dXV1dXV8v7y8vLy8v7+/v7+/v7+/v7+/tmZvvLy8HBwcvLy1dXV1dXV1dXV1fLy8vLy8vLu7GxsbGxsbH7+/v7Zmb7y8vLwcHLy8vLy8tbW1tby8vLy3t7e8vLy7uxsbGxsbGx+/v7u7a2+8vHx8HBy8vLy8vLW1tbW8vLy8vLy3t7y8u7sbGxsbGxscvLy/vLy/vLy8HBwcvLy8vLy8vLy8vLy8vLy8vLy8vLu7GxsbGxsbH7+/v7+/v7y8vLy8vL+8vLy8vLy8vLy8vLy8vLy8vLy7uxsbGxsbGx"},{"a":61432,"b":"tEC1toCBgoM="},{"a":61504,"b":"9vb774CAgID+/s7+AgIBBnt7u7uLiIgI+/ur/6gBBQb///3VWGGFFP3VWIEVUAAKVWoAV0AEBARV3wD/AJWVl1X9AP8AVVWVVf8A/wBVVVVV/wD/AFVVqlX/AP8AVVWpVf8A/wBVVVVV/wD/AFVVV1X/AP8AWlqaVf8A/wCqVQBV/wD/AKpVAFX/AP8AqlUAVf8A/wCqVQBV/wD/AKpVAFX/AP8AqlUAVf8A/wCqVQBV/wD/AKpVAFX/AP8AqlUAVf8A/wCqVQBV/wD/AKWlplX/AP8AVVXVVf8A/wBVVVVV/wD/AFVValX/AP8AVVWqVf8A/wBVVVVV/wD/AFVVVlXdAP8AVlbWVVUA/wEQGhp/VyVCVAWgqv//f1clSVIU7+/q/+pAUJDt7e7u4iIiIL+/s7+AgECQn5/v+wICAgKAgIOOuKCAgjjggAIIIIAACCCAAAEBAQUcGXFldHSQUFBAAAAAqoCABgYAAACAiokEBAQEBASERJiVlZWVlZWVlVVVVlhiYopaYIoqqqqqqgOqqqusrKuqAgAAAMDAAACVJckCAAMAAFhVVVWVJSUJmlpaWlpaWlo8MzwzMwBVqgwzMz8zAFWqPDMzMzwAVao/DAwMPwBVqgwzMzMMAFWqAAAAAAAAVaozPz8zMwBVqg8wDAM8AFWqDzAzMw8AVaoAAAAAAABVqqalpaWlpaWlJZVVVVZYWGBWWGCAwAwzH4AAAAADAwMAwAAAwDAwMMClCQIAAAwMDFZVVZXlCQkCJpZWVlZWVlYaGhoaGxsbGxISEhK7uxMThaFUAFYDVwM0ZG1ZHR2GhSAIAgBAQEBQLAsCgCAIAgACAsKyLgoCgoigAAAAAAAAAAAAAAAAAAAFBQcVHRUdVFBAQEBAAAAAv7+/qgAAAACAgIqJAAAAAAQEhEQEBAQElpaWmJiYmKAqKiqqqqoqAr+qqqqqqqqqqqqqqqqqqqoAAAAAAAAAAAAA88w88wAADgICwMAAAABaWlqampqaKlVVVVVVVVVVVVVVVVVVVVdFUVFUVVXVtVVVVVUVFRVAVVVVVVVVVQFVVVVVVVVVVVVVVVVVVVUAVlZVVVVVVRBVVZWVZWVZCFVVVVVVVVUEpaWlpqampqiAgIAAA8wDDAMMAAAAwADAAAAAAAAAAAAAAAAAAAAAAAwMAAAAAAAAAAAAADDMMMCWlpYmJuYmChsbGxAQEhAQExKqAACqAABXA6oAAaoBAMXhoQEBoAAAUFDQVHRUdBUAAAAAAAAAACIKAAAAAAAAAAAAAAAAAAEAAAABBRFBAVR0dFTQ0NDQFRAUEgMjIyMAAAAAAAAAAFQQEBCIzMzMBAQEBAQEBASgoKCgrKCgoAAA8DPD8AAAKgLMMzPMAACqqioCAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAyoqKioqKioqVVVVVVVVVVVXVVVVVVVVVem1VVVVVVVVVVVVVVVVVVVUVVZWWlpaWgFUpaWVlZWVFVVVVVVVVVVBVVVVVVVVVVZVVVVVVVVVUZWVlZWVlZWoqKioqKioqAMAAAAAAD8DAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD0AAAAAAAAcAoKCgoKCgoKExMTExMTExD/DzMzDzP/AAAPDw8PDwAAAMLCwMLCAAIVHR0VBwcHBwAAAEBQREFAAAAAAAAAAEAEkIAAAAAAAAEBBQcHBycn0NBAQEBAQAAjMzMzMzMzMwAAAAAAAAAAzMzMzMzMzMwEBAQEBAQEBKCgqKioqKqqAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwAAAAAMMzMMAAAAAMAwMMICKiqqqqqqqqpVVVVWWWWVVVVVVapVVVVVVVVVlWVZWVZVVVVVVVVVVVVWVlZWVlZWValpaVlZWalpqampqalpVVWlpaWlpaVVVVZZWZmZWmWVVVVVWqVVVaioqqqqqqqqDAwMwAAAgIABAQEBAQEBMFUDAwMDA1UAVT8DPzA/VQBQEBAQEBBQDAwwDHAAAAAACgoq6ioqqqoQEhAQExMTEwCqAAD/z8/PAaoBAAAPDw8CoAICAMLCwAcHAQEBISEBQEBQ0NDQ2NgQBgIAAAAAAAAAAAACAgklJSWdnFR00FAAAAAAAAAAADMzMzMzMzMzAAAAAAAAAADMzMzMzMzMzAQEBAQEBAQEqqqqqqqqqqsMgKCgqKqqqgDPzMPPAICsADDMzDAAAAAAAAAAAAAAwAAAAAAAMgIqAjoqKqqqqquqqqqqqqqqqlVVVVVVVVVVVWlpqampaWlVVVVVVVVVVZVlZVlWVVVVVVVVVapVVVVVVVVVqlVVVVVVVVWqVVVVVVVVWqVVVVVmlpVVVVVVVVVVVVVVVVVVqqqqqqqqqqqAoKioqqqq6sDwzHAAsKCoAAADAwMAAwAAANAAwDDAAAwPAwMAAwIKAEIKCiqqqqqqqqqqqqqq6hMTExAQERERz8//AACZmZkPDwAAAJmZmcLCAAAAmZmZISAAAACZmZlYWHZ2VZ2XhQAAAACAgGBYl11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGCgKqqqgAAAAAAqqqqAAAKL78AqqoAqv///wKqqgCo/v//qqqqAACA4PioqqoAAAECAKqqqgoKCgoKVVVVVVVVVVVVVVVVVVVVVVVVVVV1+fntVVVVZallVVVVVVVVVVVVVVVVVVVVV19/VVVVVeXpqflVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVeqqqqgoKCgoCqqqgAAQIAAqqqqAAACCCCAqqoAKrAAMMCqqgCqAAAPqqqqAACgyAKqqqoAAAAAACqqqgICQoICEBEREBpVqgCImZkAqlWqAIiZmQCqVaoCiJmZAKpVqqqImZkAqlWqAIWRkACqVaoA1nVVHaVZqgKqVWVUVFBQUKpVMz8/MwAAqlUWBQUBAQGAQEBAQEBAQCIiIiIjMzMzICAgICAwMDAEBAQEBAQEBICAgICAgoKCAgsvL7/////////////////////////////////////+/////////wCA4OD4/v7+CgoKCgoKCgqVlZWVlZWVVVVVVVVVVVVVVVVVVVVVVVVVVVVlqWVVVVWpqampqVVVf25rWVVVVVW1pZVVVVVVVVVVpaWlpVVVVVVVVVVVVVVXV1dVVVVVVaCgoKCgoKCgAAILCCCAgIyAAAAA8MAw8DAwMAAAAAAAAwwPAAAAAAAAAAADAAMAA4AgCDjCAMADAgICAgKBgoIAIBAAAAABAQABBBBAQAAAFEAAAAAAAAAQEBAQEBAQEFAFAAAAAAAAAABAEAQEAQEBIREBAQEBAVBQUFBUVGVVAAAAAAAAAFUBAQEBBQUWVUBAQEBAQEBAMzMzMzMzMzMwMDAwMDAwMAQEBAQEBAQEi4uLi6+vr6////////////////////////////////////////////////////////////////+KioqK6urq6qo/Pz8wPz8/qv//PwA///+q//8PDw///6qPj4yPj4+Pqv/zD/P///+q/////AP8/6ry8vLy8vLyqv///PD8//+q//wAAwD8/6r8/Pz8/Pz8oqKioqioqKgAAAAAAAAAAAAAAAAAAAAAAAAAAAADDwAAAAAAwPD8AAAAAAAAAAAAAAAAAAAAAMAiIiIi6ggpiAQEEBAQUEBAAAAAAAAAAAEAAAUQEEBAABBUERAQEBAAAABAEBAEBAEAAAAAAAAAAEFBERERFQUFAPzMzMz8AKoA/MzMzPwAqgD8zMzM/ACqgICAgICAgKUzMzMzMwAAVTAwMDAwAABVBAQEBAQEBKSvoKCgoKCgqP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAOoqKioqKiqqqgAAAAAAAACqAA8ADwwPAKoAwMDAAMAAqoCAgICAgICqAAAAAAAAAKoA/AwMDAwAqgICAgICAgKqAAAAAAAAAKoADwwPDA8AqgDAwMDAwACoqqioqKioqgCqAAAAAAAAKKgoAAAAAAAAAAAADwMAAAAAAAD88MAAAwMDAAAAAAAAwjDAAAAAAImIiYgpCAnoQEBAVUBAQEABAQFVAQEBAQAAAFQAAAAAAAAAEAAAAAABAYFVAQEBAQAAAFUAAAAABQUFVQUFBQUAAAAAqgAAAAAAAACqAAAAAAMAAKoAAAAAV9wwmgAAAAAAAACqAAAAAAAAAKoAAAAEBAQEpAQEBKioqKqqqqqqAAAAAAAAgKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgoqqqqqqqqqqqqqPz88Pz88P6r/8//zPP/zqv8/z//zP/+qj4+Pj4+Pj6r///z8/P//qv//Pz8///+q8vLy8vLy8qr///P8////qv///wAA//+q/Pz8/Pz8/KqqqqqqqqqqAAAAgICMoKgAAPDAMPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwADAAAAAAAAwwLKKSgpqKmoqahAUFBQUFRUVQAAAAAAAAAAQEAQEAUAAAAQEBAQEVQQEAQEEBBAAAAAAAAAAAAAAAEFFRUVFVVVVQCqAERGRUdEAKoASURJQEUAqgBABIBEgACqAAMDAwMDAKoAPzA/Az8AqgA/Mz8DAwSkBAQEBAQEqqqqq6iqqqqgqKqqqqqqqgAAAICgqqqqAAAAAAAAqqoAAAAAAAKqqgAAAgoqqqqqKqqqqaiqqqqqqqqqqqqqqqoAAAAAAAAAqgDPzMzMzwCqAMDAwMDAAKqAgICAgICAqgD8wPzM/ACqAPzMzMz8AKoCAgICAgICqgAAAAAAAACqAM/MzMzPAKoAwMDAwMAAqqqqqqqqqqqrqqqq6iqqqgAAgKCoqqqqMDAwMACwqqoPAwwPAACqqgMAAALKqqqqOiqqqqqqqqqpqKmo6SipqFVVVVVlRVVVAEBAUFRVVVUAAAAAAEBUVRAQEBAQEBBVAAAAAAAFVVUBBQUVVVVVVVVVVVVVWVFV"},{"a":65535,"b":"lA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":130,"colour_cells_changed_during_frame":0}};
+const GS_MAPFRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[110,232,94,85,6,6,6,6,6,6,6,6,6,6,6,6,4,27,0,93,0,255,216,0,163,126,241,0,0,0,255,255,251,245,246,253,243,247,247,241,240,241,241,241,241,241,241],"cia2":[148,63],"cpu":[47,21],"writes":[[3,48,53266,16,16],[4,5,53263,16,16],[5,2,53254,24,24],[5,22,53251,0,0],[7,13,53266,80,80],[7,37,53263,48,48],[9,13,53254,28,28],[9,37,53251,2,2]],"colour":"BgYLCwMDCAgIAwgICAgLCwMJCQMPCAgICAgPDwgICAgICwsICwsGBgYGCwsJCQkDDwgDCA8PCwsJAg8PCAgIDwgICAgDCAsICAgICAsDBgYGBgkJAwgLCQkDCAkICQkJAwgDCAsLCAgLCw8ICwgDCAsLCAgLCwYGBgYIDw8ICwgPDwkJCAgIDw8PCAMLAggDCAgICwsPCAMLAggDCAgGBgYGDwgICAgIAwEPDwgICAsLCAsLCAgIDwgICAgICAsLDwgICAgIBgYGBggICA8ICAgICAgICAgICAgLCAgPDwgICAgLCAgICAgICAgLCAYGBgYICAgICwEICAsIAwgLCwgPCAsICAgICAsIAwgCAwgLCwMDCAgGBgYGCA8PAwgBDwsLDwgDCwsICAsLCAgICwsDDwgDDwgDCwsJCQkDBgYGBggLCwgLCwgDCAELCAMICAgLCwgLCwgDCAsLAwkDCAkJAwgLCQYGBgYICAsICwgPCAMICwsICAMICwgICAsPCAMLCwkPDwkIDw8ICwgGBgYGCwsICAsBCAsLCAsLCAsLCAgLCAgIDwgLCQkDCAgLCAsICAsLBgYGBgsLCAgLCwgLCAMICAgLAw8LCwgPDwgLCwIPDw8LCwgLCwgLAwYGBgYDCAgICwEPCAsIAwgICwsICwsICwgICwsICwsICwsPCAgICAgGBgYGCAgDAwgBCAsLDwgDCAgLCAsICAsLAwgICAsICAsDCAgICAsIBgYGBggICAgICAgLCwgLCw8ICAgICAgIAggICAgICAQIDw8ICAgLCwYGBgYICAgICwgICAgICAgICAgPCAgICAgICwgPCAgICAgICAMICwgGBgYGCAsLCAsLCAMICwsDAwgICAsICAsLCAsICAsLCAsLCAsBAQsBBgYGBggICwgLCA8IAwsLCQkJAwgLCwgLAwgLCwgEAwMECAgLAwgLCwYGBgYICAgLCwQJAwgECQMICwkJAwgJCAkDCAgEAwQLCwQJAwgDCAgGBgYGCA8PCwsJDw8JBA8PCAsIDw8JCQgICQkDDwQDCwsJDw8JCQkDBgYGBgkICQkJAwgLCwQICwgDBAgLCwMICAgLCQkDCAkJAwgLCwgLCQYGBgYJCAgIDw8DBAgPCwsPBAMDCAgICAMICwgPDwkIDw8ICwgICwgGBgYGCAsIDw8ICAgIBAsECAsLCAsLCAsICAsLCAgLCAsLDwgLCAMIBgYGBgMLCAgIAwgLCAQICAgLAwgLCAgLCwgLAw8LCwgLCAgLCw8IAwYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg==","ram":[{"a":49664,"b":"0N3KENqm/r24xBhlv2mAhaa98MOFpaX9KfwKkALmphhlpYWlkALmpqX9KQOF/QoKChhpCo3FwqnDaQCNxsKt"},{"a":51416,"b":"////4OXq5f8="},{"a":51432,"b":"////A1OrU/8="},{"a":51456,"b":"//////////8AAAAMPwwAAA=="},{"a":51488,"b":"AAwMDAwMPwAAADAMAww/AAD/z8/Dw8P/MDw/PDAwMAA="},{"a":51528,"b":"AAwMDAwMPwAAADAMAww/AA=="},{"a":51560,"b":"AAAADD8MAAA="},{"a":51584,"b":"w5mRiZmZw//n58fn5+eB/8OZ+fPPn4H/w5n54/mZw//58eGZgPn5/4Gfg/n5mcP/w5mfg5mZw/+BmfPn5+fn/8OZmcOZmcP/w5mZwfmZw/8="},{"a":51688,"b":"/+Hl6+Xh//8="},{"a":51712,"b":"AAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAD8/Pz8/AAAKDg8DAAAAALj8sAAAAAAAAAAAAAAAAAIAAAAAACCqr8DAMDAwDAwMAAAAAAAAAACr+z8/AAAAAIyDgwMAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAIKiorCwAAAAAAwODwDAMAAAAAAAAKAsAwDAwDA7DgwAAAAAAAADw8PDw8PAAAAAAAAAACCgAAAAA8v6+qAAAAAAAAAAAKDg8DAAAAALzs8AAAAAAAAAAAAMAwMAwAAAAAAAwrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDwAAAIAAAAD/AAAADAwMDAwMDAwAAAAAAAAoqwAAAAAAAACADAwMDAwMDAyqKwsCAAAAALDg8MAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAEQQAAAAAAEBAEBAQEAAAAAAAAAAAAAAAAAAAAAAEAQEAAAAguAAAAEAQEBAFAAAAAAAAAACvOAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAAAAAAAVAAAAAAMDAwNVAPz88PDw8BBAAAAAAAAAAAAAAAIKK64AAAAAgLDw8AAAAAAAAAAAr7u+MAAAAACwwAAAAAEBBAEBAVRAAAAAAAAABQQQEEAQEBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDw8PDw8AAAAAwMDAwAAAAAAAAAAAAFHAwDAwDAwDVwAAAAAAAABUBQAAAAAAAAAAAAAAAAAAAMEwMDAwMDAwAAAAAMAwMAwAAAAAAAgrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDAMDAIAAAAAAAADAAAA8PDw8AAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAACqKwoCAAAAAMDAgAAAAAAAAAAAAAAAAAAAAAADAwwMDMDAwAAAADAwAAAAAAAAAwMwMDDAwMAAAAAAAAAAAAAAADw8PDw8PAAAAAMDMzMDDDDAAAADPMAAAAAAA/wAAAAMMDDAAAAAAMDAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA88MM8AAAAMAAAAAAAAAAAAAAPDw8PAAAAAAAAAAAAwAAAAADDDDAAAAAAAAAAADPzAwMDAMDAwAAAAAAAAAAAAAD/AAAAAADPMAAAAAqqgAAAAAAAADAAgIDAwAAAAD/v7jggAAAAAAAAAAAAAAAAAAA/wAAAAAAAADwDAMDAAAAAAAAAADAAA8PPz8/Dw8AAAAAAAAAADAMDAMAAAAAAAAA/wAAAAIAAAD/AACgqgAAAP8AAAAAAgAAAAAAAACruz4OAAAAAICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8/Pz8/Pw8AAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqrqwAAAIDwwIDADAwMDAwMDAyvrDAAAAAAAAAAAAAAAAAAAAAAAAIKKqsAAAAAgLDwsDAwMDAwMDAwr7u+IAAAAADgwAAAAAAAADAwMDAwMDAwAAAAAAAAAwMAAAMMMMAAAMDAAAAAAAAADAwMDAwMDAwDAw8PDwMDAPDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAADAwMDAAAAAAAADDDDAAAAAAP8AAAADAwwM8AAAAAAAAAAAAAAAAAAAQAAAOAAAGAAAGAAAFAAAEgAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":58240,"b":"CQMICwkICwgJAwgPDwkLCwMLCwkJCQMIDw8JCAkJCAgICwsICAgPCAgICAMICwgICwsDCAgICAMPCAgICAgI"},{"a":59392,"b":"Gx2Oj5B8fX709fbu7/COj5CUlZbExcbQ0dL6+/zW19igoaJSU1QbHTEykZKTf4CB9/j58fLzkZKTJJiZx8jJ09TV/f7/2drbo6SlVVZXMTIbHZSVloKDhIiJipqbnJSVlvT19ujp6lhZWmRlZvT19ujp6lhZWhsdMTGXmJmFhoeLjI2dnp+XmJn3+PnrKu1bXF1naGn3+PnrKu1bXF0xMRsdxMXG0NHS3CbeuLm6oKGiTE1O7u/wxMXG1tfYamtsuLm61tfYGx0xMMfIydPU1d/g4bu8vaOkpU9QUfHy88fIydna221ub7u8vdna2zEwGx3u7/BYWSFAQUL09fbo6epkZWa+v8DKy8z09fYq9faOj5B8fX4bHTA58fLzW1whQ0RF9/j56+ztZ2hpwcLDzc7P9/j59/j5kZKTf4CBMDkbHV5fYExNTvT19iGtrrKztExNTl5fYPT19o6PkIiJipSVloKDhBsdMDhhYmNPUFH3+PmvsLG1trdPUFFhYmP3+PmRkpOLjI2XmJmFhocwOBsd6OnqrK0mTE1OWFla4uPkQEFC7u/wZGVmlJWWQEFCrK2uUlNUGx0wN+vs7a+wsU9QUVtcXeXm50NERfHy82doaSSYmUNERa+wsVVWVzA3Gx2ys7RYWSFkZWb09fZeX2BMTU5wcXJYWVpMTU5SU1TExcbW19gbHTA2tba3W1whZ2hp9/j5YWJjT1BRc3R1W1xdT1BRVVZXx8jJ2drbMDYbHb6/wNbX2GprbHZ3eLi5utDR0r6/KtbX2NDR0iHd3qanqExNThsdMDXBwsPZ2tttbm95enu7vL3T1NXBwsPZ2tvT1NXf4OGpqqtPUFEwNRsdXl9gTE1O9PX2jo+QfH1+rK2u4uPkrK2uUlNUWFlaUlMhIa0mGx0wNGFiY09QUff4+ZGSk3+Aga+wseXm56+wsVUhV1shXVVWV6+wsTA0Gx3u7/COjy2IiYohlZaCg4SIiYqam5x8fX4q9S2Ojy2IiYp8fX4bHTAz8fLzkZKTi4yNJJiZhYaHi4yNnZ6ff4CB9y35kZKTi4yNf4CBMDMbHZqbnJSVllhZWilBQvT1LVhZWrKztIKDhIiJipSVlkxNToKDhBsdMDKdnp+XmJlbIV1DREX3LflbXF21treFhoeLjI2XmJlPUFGFhocwMhsdRkdI+vv81tfYJaEhUlNUTE1OcHFyUlNUQEFCTE1OZGVm9PX2Gx0wMUlKS/3+/9na2yekpVVWV09QUXN0dVVWV0NERU9QUWdoaff4+TAxICAwMT0wMj0wMz0wND0wNT0wNj0wNz0wOD0wOT0xMD0xMT0xMj0gIA=="},{"a":60408,"b":"t0D9344I3z8="},{"a":60864,"b":"AYAAAYAAAYAAAYAAAYAAAAAA/D+AAAAAAYAAAYAAAYAAAYAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":63424,"b":"l11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGC"},{"a":65344,"b":"//8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/"},{"a":65535,"b":"lw=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19657,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":823,"colour_cells_changed_during_frame":0}};
+
+function gsMessage(ram, n) {
+  // message n, from the tables at $7B04 (low bytes) and $7B26 (high bytes): 1-26 are A-Z, $1F a
+  // space, $1E a hyphen, the digits as the map font has them, bit 7 a new line, $FF the end. The
+  // font draws 10 and 24, J and X, as 7 and 8, and its O is also its 0.
+  const DIG = { 0x2F: '1', 0x3A: '2', 0x3B: '3', 0x3C: '4', 0x3E: '5', 0x3F: '6', 0x0A: '7', 0x18: '8', 0x00: '9' };
+  let a = ram[0x7B04 + n] | ram[0x7B26 + n] << 8, s = '';
+  for (let i = 0; i < 60; i++, a++) {
+    const c = ram[a];
+    if (c === 0xFF) break;
+    if (c & 0x80 && s) s += ' / ';
+    const b = c & 0x7F;
+    s += DIG[b] ? DIG[b] : b === 15 && /\d$/.test(s) ? '0' : b >= 1 && b <= 26 ? String.fromCharCode(64 + b) : b === 0x1F ? ' ' : b === 0x1E ? '-' : b === 0x1C ? ':' : b === 0x2E ? '!' : '?';
+  }
+  return s.trim();
+}
+
+function shapes(ram, names) {
+  const pts = gsPoints(ram);
+  const list = [];
+  for (const [a, l] of names) {
+    if (a < 0x1EC9 || a > 0x2FF0) continue;
+    if (!/^(shape|hill|box|pad|outline|line|strokes|dots|zigzag)/.test(l)) continue;
+    const sh = gsShape(ram, a);
+    let title;
+    if (a === 0x24E3) title = 'A single dot, which no object uses';
+    else if (a > 0x24E3 && a !== 0x2FF0) title = gsMessage(ram, ram[sh.end] + 11) + ' (target)';
+    else if (a === 0x2FF0) title = 'Mi-24 Hind';
+    else if (/^hill(\d)_(near|far)/.test(l)) { const m = l.match(/^hill(\d)_(near|far)/); title = 'Hill ' + m[1] + ', ' + m[2] + ' view'; }
+    else if (/_far/.test(l)) title = 'Far view, ' + l.replace(/_far.*/, '').replace(/_/g, ' ');
+    else title = l.replace(/_[0-9A-F]{4}$/, '').replace(/_/g, ' ');
+    list.push({ a, l, title, sh });
+  }
+  list.sort((p, q) => (p.a > 0x24E3) === (q.a > 0x24E3) ? p.a - q.a : (p.a > 0x24E3 ? -1 : 1));
+  const pick = $('gs-shape-pick');
+  pick.className = 'pick';
+  pick.innerHTML = '<a class="step" href="#" data-d="-1" aria-label="The shape before">‹</a><select aria-label="Shape"></select><a class="step" href="#" data-d="1" aria-label="The shape after">›</a>';
+  const sel = pick.querySelector('select');
+  list.forEach((s, i) => sel.add(new Option(s.title + ' · ' + hex(s.a), i)));
+  const cv = $('gs-shape'), ctx = cv.getContext('2d');
+  let yaw = 32, tilt = 16, spin = true, cur = 0;
+  const COL = { 1: '#2f3136', 2: '#1f5fa8', 3: '#d04a3a' };
+  function draw() {
+    const s = list[cur], P = s.sh.points.map((i) => pts[i] || [0, 0, 0]);
+    const t = yaw / 256 * 2 * Math.PI, el = tilt / 256 * 2 * Math.PI;
+    let cx = 0, cy = 0, cz = 0;
+    P.forEach((p) => { cx += p[0]; cy += p[1]; cz += p[2]; });
+    cx /= P.length || 1; cy /= P.length || 1; cz /= P.length || 1;
+    const proj = P.map(([x, y, h]) => {
+      x -= cx; y -= cy; h -= cz;
+      const u = x * Math.cos(t) - y * Math.sin(t), v = x * Math.sin(t) + y * Math.cos(t);
+      return [u, -(h * Math.cos(el) + v * Math.sin(el))];
+    });
+    const mx = Math.max(1, ...proj.map((p) => Math.max(Math.abs(p[0]), Math.abs(p[1]))));
+    const sc = (cv.height / 2 - 24) / mx;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.strokeStyle = ctx.fillStyle = COL[s.sh.colour & 3] || '#2f3136';
+    ctx.lineWidth = 2;
+    for (const [p1, p2] of s.sh.edges) {
+      const a = proj[p1], b = proj[p2];
+      if (!a || !b) continue;
+      if (p1 === p2) { ctx.beginPath(); ctx.arc(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc, 3, 0, 7); ctx.fill(); continue; }
+      ctx.beginPath(); ctx.moveTo(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc); ctx.lineTo(cv.width / 2 + b[0] * sc, cv.height / 2 + b[1] * sc); ctx.stroke();
+    }
+    $('gs-shape-out').textContent = `${s.l} at ${hex(s.a)}: ${s.sh.points.length} points, ${s.sh.faces} faces, ${s.sh.edges.length} edges, colour ${s.sh.colour & 3}, ${s.sh.end - s.a} bytes` +
+      (s.a > 0x24E3 && s.a !== 0x2FF0 ? `; name byte ${s.sh.end >= 0 ? ram[s.sh.end] : ''} at ${hex(s.sh.end)}, message ${ram[s.sh.end] + 11}` : '');
+  }
+  function show(i) {
+    cur = (i + list.length) % list.length; sel.value = cur;
+    pick.querySelector('[data-d="-1"]').classList.toggle('off', false);
+    draw();
+  }
+  sel.addEventListener('change', () => show(+sel.value));
+  pick.querySelectorAll('.step').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); show(cur + +b.dataset.d); }));
+  $('gs-yaw').addEventListener('input', (e) => { yaw = +e.target.value; draw(); });
+  $('gs-tilt').addEventListener('input', (e) => { tilt = +e.target.value; draw(); });
+  $('gs-spin').addEventListener('click', (e) => { spin = !spin; e.target.setAttribute('aria-pressed', spin); });
+  let drag = null;
+  cv.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY, yaw, tilt]; cv.setPointerCapture(e.pointerId); spin = false; $('gs-spin').setAttribute('aria-pressed', 'false'); });
+  cv.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    yaw = ((drag[2] - (e.clientX - drag[0]) / 2) % 256 + 256) % 256;
+    tilt = Math.max(0, Math.min(64, drag[3] + (e.clientY - drag[1]) / 4));
+    $('gs-yaw').value = yaw; $('gs-tilt').value = tilt; draw();
+  });
+  cv.addEventListener('pointerup', () => { drag = null; });
+  let timer = 0;
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on && !timer) timer = setInterval(() => { if (spin) { yaw = (yaw + 1) % 256; $('gs-yaw').value = yaw; draw(); } }, 50);
+    if (!on && timer) { clearInterval(timer); timer = 0; }
+  }).observe(cv);
+  const first = list.findIndex((s) => /T-72/.test(s.title));
+  show(first < 0 ? 0 : first);
+}
+
+function kinds(ram) {
+  const MISSILE = { 0: 'Sidewinder', 1: 'FFAR', 2: 'Hellfire' };
+  const tb = $('gs-kinds').querySelector('tbody');
+  for (let k = 0; k < 16; k++) {
+    const at = ram[0x53A8 + k], w = at & 7;
+    const weapon = w < 3 ? 'a gun, reaching ' + ['half a square', 'one square', 'a square and a half'][w] : 'missile kind ' + w;
+    tb.insertAdjacentHTML('beforeend', `<tr><td class="n">${k}</td><td>${MISSILE[ram[0xB5A4 + k]] || '?'}</td><td>${at ? weapon : 'none'}</td><td>${at & 0x40 ? 'yes' : '-'}</td></tr>`);
+  }
+}
+
+function frames() {
+  let split = false;
+  const draw = () => {
+    const r = C64.drawFrame($('gs-frame'), GS_COCKPIT, 1);
+    if (split) {
+      const ctx = $('gs-frame').getContext('2d');
+      ctx.fillStyle = '#ff3050'; ctx.fillRect(0, 0x9A - 16, r.w, 1);
+      ctx.fillStyle = '#ffd040'; ctx.fillRect(0, 0xFB - 16, r.w, 1);
+    }
+  };
+  document.querySelectorAll('[data-fv]').forEach((b) => b.addEventListener('click', () => {
+    split = b.dataset.fv === 'split';
+    document.querySelectorAll('[data-fv]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    draw();
+  }));
+  draw();
+  C64.drawFrame($('gs-map'), GS_MAPFRAME, 1);
+}
+
+if (typeof C64 === 'undefined') {
+  ['gs-shape-out', 'gs-music', 'gs-sfx'].forEach((id) => need('The site\'s scripts', $(id)));
+} else {
+  frames();
+  Promise.all([C64.load('parts/flight/listing.json'), C64.load('parts/title/listing.json')]).then(([F, T]) => {
+    shapes(F.ram, F.names);
+    kinds(F.ram);
+    if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') ['gs-music', 'gs-sfx'].forEach((id) => need('sid.js', $(id)));
+    else {
+      const tmem = GS_TUNE_RANGES.map(([a, b]) => [a, T.ram.slice(a, b + 1)]);
+      const fmem = GS_SFX_RANGES.map(([a, b]) => [a, F.ram.slice(a, b + 1)]);
+      C64Sid.mount($('gs-music'), { driver: createDriver, data: { mem: tmem, list: GS_TUNES }, tunes: GS_TUNES.map((c) => c.name) });
+      C64Sid.mount($('gs-sfx'), { driver: createDriver, data: { mem: fmem, list: GS_EFFECTS }, tunes: GS_EFFECTS.map((c) => c.name) });
+    }
+  });
+}
 </script>
