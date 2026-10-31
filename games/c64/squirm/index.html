@@ -58,12 +58,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sq-log{font-family:var(--fm);font-size:12.5px;line-height:1.5;margin:12px 0 0;padding:10px 12px;background:var(--surface-2);border-radius:6px;min-height:7.5em;white-space:pre-wrap}
 .sq-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
 .sq-big{font-family:var(--fm);font-size:28px;letter-spacing:.06em;margin:8px 0 0}
-.sq-keys{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:6px 0 0}
-.sq-keys button{font-family:var(--fm);font-size:12px;padding:8px 0;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-.sq-keys button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.sq-keys span{font-family:var(--fm);font-size:11px;color:var(--ink-mute);text-align:center}
-.sq-bits{font-family:var(--fm);font-size:15px;margin:12px 0 0}
-@media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.sq-pics,.sq-pics.sq-two,.sq-split{grid-template-columns:1fr}.sq-keys{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.sq-pics,.sq-pics.sq-two,.sq-split{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -197,24 +192,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="cap">From <code>reset_worms</code> (<code>$3669</code>), the five routines, and <code>move_creatures</code> (<code>$3A46</code>). The cell lists are at <code>$2648</code>-<code>$267F</code>, head first. On the first three stages of each cycle, worm E lays every egg there is.</p>
 </section>
 
-<section id="controls">
-  <p class="fig">07 · Controls</p>
-  <h2 class="t">The game reads one byte from the joystick port, and wants it exact</h2>
-  <p class="lede">The stick in control port 1 is read straight from the chip it is wired to, and only five values mean anything.</p>
-  <div class="plate">
-    <div class="sq-keys" id="sq-keys"></div>
-    <p class="sq-bits" id="sq-bits"></p>
-    <p class="sq-out" id="sq-keys-out"></p>
-    <p class="cap">Press the joystick's lines, or the keys of the keyboard's row 7, which share them. The page runs the game's <code>step_player</code> (<code>$3014</code>) on that value with the player at a crossing of four corridors, row 11, column 30 of maze 1, and says what it did.</p>
-  </div>
-  <p>Every time the game reads the stick, it loads the byte at <code>$DC01</code>. That is the data port of the CIA, the input and output chip that joystick port 1 is wired to. Each of the byte's eight bits is one line, a wire that reads 0 while it is pressed: up, down, left, right, and fire are bits 0 to 4. <code>step_player</code> (<code>$3014</code>) compares the whole byte with exactly <code>$FE</code> (up), <code>$FD</code> (down), <code>$FB</code> (left), <code>$F7</code> (right) and <code>$EF</code> (fire alone). Any other value, a diagonal or a direction with fire, counts as no new direction, and the player carries on.</p>
-  <p>F1 pauses the game. That is the only key the game asks the KERNAL, the C64's built-in system code, about: it reads the number of the last key pressed from <code>$C5</code> at <code>$3C67</code>. The pause silences the sound, waits about two seconds, then waits for fire (<code>pause</code>, <code>$3C73</code>). The same port also reads one row of the keyboard, and five of that row's keys play the game (<a href="discoveries.html#keyboard">Discoveries</a>).</p>
-</section>
-
 <section id="levels">
-  <p class="fig">08 · Progression</p>
+  <p class="fig">07 · Progression</p>
   <h2 class="t">A jiffy faster every four levels</h2>
-  <p class="lede">The levels cycle through three mazes and through four stages of what moves. After each cycle of stages, a pass of the main loop waits one jiffy less.</p>
+  <p class="lede">The levels cycle through three mazes and through four stages of what moves. After each cycle of stages, a pass of the main loop waits one jiffy less. A jiffy is one tick of the clock the C64 keeps for itself, about a sixtieth of a second.</p>
   <div class="plate">
     <div class="sq-wrapx"><table class="sq-tbl" id="sq-lv-tbl"></table></div>
     <p class="cap" id="sq-lv-cap">Worked out by the game's own code on the model of the 6502: <code>level_complete</code> (<code>$3879</code>), then one pass of the main loop, for each level in turn, with the bonus run left out.</p>
@@ -224,7 +205,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="treasure">
-  <p class="fig">09 · The treasure</p>
+  <p class="fig">08 · The treasure</p>
   <h2 class="t">The mystery bonus is decided by the pass you take it on</h2>
   <p class="lede">The treasure's worth goes round 1, 2, 3 on every pass, ten times a second, and is read at the moment the player reaches it.</p>
   <div class="plate">
@@ -240,7 +221,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="bonus">
-  <p class="fig">10 · The bonus run</p>
+  <p class="fig">09 · The bonus run</p>
   <h2 class="t">In the bonus run, the trail is a wall</h2>
   <p class="lede">After the 255th egg the worms stop, the timer counts 900 down, and every cell the player leaves becomes a block it cannot cross again.</p>
   <div class="plate">
@@ -254,7 +235,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="death">
-  <p class="fig">11 · Lives</p>
+  <p class="fig">10 · Lives</p>
   <h2 class="t">A death drops the player down the screen</h2>
   <p class="lede">The player falls a row at a time to the bottom of the maze, with a falling noise, and the walls flash through every colour.</p>
   <div class="plate">
@@ -266,7 +247,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="hiscores">
-  <p class="fig">12 · High scores</p>
+  <p class="fig">11 · High scores</p>
   <h2 class="t">The high-score table is kept inside the screen that shows it</h2>
   <p class="lede">There is no table of scores anywhere in memory. The five rows live in the stored picture of the high-score screen.</p>
   <div class="plate">
@@ -619,40 +600,7 @@ function stepper(ram, o) {
   return { get M() { return M; } };
 }
 
-// 07: the joystick port's lines and what step_player makes of them
-function keysWidget(ram) {
-  const LINES = [['up', '1'], ['down', '←'], ['left', 'CTRL'], ['right', '2'], ['fire', 'SPACE'], ['', 'C='], ['', 'Q'], ['', 'RUN/STOP']];
-  const box = $('sq-keys');
-  let v = 0xFF;
-  const btns = LINES.map(([j, k], bit) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.setAttribute('aria-pressed', 'false');
-    b.textContent = k;
-    b.title = j ? `the key ${k}, or the stick ${j}` : `the key ${k}`;
-    b.addEventListener('click', () => { v ^= 1 << bit; run(); });
-    return b;
-  });
-  for (const b of btns) box.appendChild(b);
-  for (const [j] of LINES) { const s = document.createElement('span'); s.textContent = j ? 'stick ' + j : '–'; box.appendChild(s); }
-  function run() {
-    btns.forEach((b, bit) => b.setAttribute('aria-pressed', v & (1 << bit) ? 'false' : 'true'));
-    $('sq-bits').textContent = `$DC01 = %${v.toString(2).padStart(8, '0')} = ${hex(v, 2)}`;
-    const M = sqMachine(ram);
-    M.newGame();
-    const at = 0x05D6;                                   // row 11, column 30 of maze 1: open four ways
-    M.m[0xFB] = M.m[0xFD] = at & 0xFF; M.m[0xFC] = M.m[0xFE] = at >> 8;
-    M.m[0x57] = 0xF7; M.m[0x58] = v;
-    M.call(0x3014);
-    const now = M.m[0xFB] | M.m[0xFC] << 8, d = now - at;
-    const way = { '-40': 'up', 40: 'down', '-1': 'left', 1: 'right' }[d];
-    $('sq-keys-out').textContent = way ? `step_player moved the player ${way}.`
-      : v === 0xEF ? 'step_player stopped the player where it stands.'
-        : `step_player returned A = ${M.cpu.a}: not a direction it knows, so move_player carries on the way the player was already going.`;
-  }
-  run();
-}
-
-// 08: the levels, as the game's code takes them
+// 07: the levels, as the game's code takes them
 function levelsWidget(ram) {
   const M = sqMachine(ram);
   M.newGame();
@@ -678,7 +626,7 @@ function levelsWidget(ram) {
   t.appendChild(b);
 }
 
-// 09: the treasure's worth, a port of step_treasure's count and collect_treasure's pay
+// 08: the treasure's worth, a port of step_treasure's count and collect_treasure's pay
 function treasureWidget() {
   const PAY = ['', 'nothing', '10 points', '100 points'];
   let value = 1, timer = null;
@@ -698,7 +646,7 @@ function treasureWidget() {
   show();
 }
 
-// 11: the death, a picture at each of lose_life's waits
+// 10: the death, a picture at each of lose_life's waits
 function deathWidget(ram) {
   const cv = $('sq-d-cv');
   let shots = [], timer = null;
@@ -730,7 +678,7 @@ function soundWidgets(ram) {
 }
 
 treasureWidget();
-const SQ_NEED = ['sq-frame-cap', 'sq-p-out', 'sq-w-log', 'sq-keys-out', 'sq-lv-cap', 'sq-d-cv', 'sq-music', 'sq-sfx'];
+const SQ_NEED = ['sq-frame-cap', 'sq-p-out', 'sq-w-log', 'sq-lv-cap', 'sq-d-cv', 'sq-music', 'sq-sfx'];
 if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
   for (const id of SQ_NEED) missing($(id).parentNode, "the site's C64 library and 6502");
 } else {
@@ -741,7 +689,6 @@ if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
       before: (M) => { M.stick = stick; }, onPick: (v) => { stick = v; } });
     stepper(L.ram, { cv: 'sq-w-cv', ov: 'sq-w-ov', log: 'sq-w-log', step: 'sq-w-step', ten: 'sq-w-ten', reset: 'sq-w-reset', bar: 'sq-w-stage',
       before: (M) => { M.m[0x2688] = stage; }, onPick: (v) => { stage = v; } });
-    keysWidget(L.ram);
     levelsWidget(L.ram);
     deathWidget(L.ram);
     if (typeof C64Sid === 'undefined') { missing($('sq-music'), "the site's sound chip"); missing($('sq-sfx'), "the site's sound chip"); }
