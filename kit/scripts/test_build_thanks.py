@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The thanks to the tools' makers: site/credits.json names a tool for every kit, the About page
-prints each entry's words with its people in bold and its link, and a status card names its kit's
-tools with their makers, emulators first. A kit with no tool, or an entry with no link, fails."""
+prints each entry's words with its people in bold and its link, and the status page names a kit's
+tools, each linked, emulators first. A kit with no tool, or an entry with no link, fails."""
 import json
 import os
 from pathlib import Path
@@ -43,14 +43,13 @@ class Thanks(unittest.TestCase):
         self.assertIn('<b>Cy</b>, for the <a href="https://example.org/tests">tests</a>.', html)
         self.assertLess(html.index("Ada"), html.index("Cy"))   # the file's order
 
-    def test_status_card_names_emulators_first(self):
+    def test_status_page_names_emulators_first(self):
         cs = self.credits(TOOLS)
         self.assertEqual(build.runs_on(cs, "c64"),
-                         '<p class="tools">Runs on <a href="https://example.org/emu?a=1&amp;b=2">Emu</a> by the Emu team, '
-                         '<a href="https://example.org/bridge">Bridge</a> by Bob and '
-                         '<a href="https://example.org/disasm">Disasm</a> by Ada.</p>')
-        self.assertEqual(build.runs_on(cs[:1], "c64"),
-                         '<p class="tools">Runs on <a href="https://example.org/disasm">Disasm</a> by Ada.</p>')
+                         '<a href="https://example.org/emu?a=1&amp;b=2">Emu</a>, '
+                         '<a href="https://example.org/bridge">Bridge</a> and '
+                         '<a href="https://example.org/disasm">Disasm</a>')
+        self.assertEqual(build.runs_on(cs[:1], "c64"), '<a href="https://example.org/disasm">Disasm</a>')
         self.assertEqual(build.runs_on(cs, "bbc"), "")
 
     def test_kit_with_no_tool_fails(self):
