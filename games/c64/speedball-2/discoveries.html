@@ -124,21 +124,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The loader jumps to <code>$C000</code>. The game turns interrupts off, clears decimal mode, resets the stack and jumps to <code>$C044</code>. In between sits a message in ASCII, the standard code for letters: STOP PERVING AT MY CODE SCUMBAG! WRITE YOUR OWN ****** GAME. It can be read only in memory, or after getting past the disk's protection, which decrypts and unpacks this load twice before it runs.</p>
 </section>
 
-<section id="a-key">
-  <p class="fig">05 · The keyboard</p>
-  <h2 class="t">Bug: A on the keyboard also sets a seventh bit on player one's joystick</h2>
-  <p class="lede">The loop that turns keys into joystick bits reads one entry more than each table holds.</p>
-  <div class="plate">
-    <div class="sb-bar" role="group" aria-label="Press a key" id="sb-akeys"></div>
-    <div class="sb-scroll"><table class="sb-tbl" id="sb-atbl"><thead><tr><th>Entry</th><th>Port 2 table</th><th>Port 1 table</th><th>Bit</th></tr></thead><tbody></tbody></table></div>
-    <p class="sb-out" id="sb-aout" aria-live="polite">Press a key to see which entries match it.</p>
-    <p class="cap">The tables at <code>$1C4D</code> and <code>$1C53</code>, six entries each, and the seventh entry the loop reads from the bytes that follow (<code>read_input</code>, <code>$4A75</code>).</p>
-  </div>
-  <p>The game turns each joystick's position into a byte, with one bit, an on/off signal, for each direction and for fire. Each joystick's table has six keys: four directions, fire and RUN/STOP. The loop goes over seven entries, and each sets its own bit, bit 0 for the first and bit 6 for the seventh. Port 2's seventh entry is the first byte of port 1's table, the key number of A, so A sets bit 6 of port 2 as well as up on port 1. Port 1's seventh entry is <code>$C0</code>, which is no key. In VICE, A set bit 6 of <code>$9C</code>. Nothing in the game tests that bit, so the extra press does nothing. The intro's own key tables (<code data-part="intro">$1EFE</code>) are read the same way.</p>
-</section>
-
 <section id="unused-tune" data-part="intro">
-  <p class="fig">06 · The tune data</p>
+  <p class="fig">05 · The tune data</p>
   <h2 class="t">Music: a second tune that the intro never starts</h2>
   <p class="lede">The intro's music data holds two tunes. Only the first is ever played.</p>
   <p>Tune 1's header, at <code>$0D93</code>, points each voice at a track of one pattern, and each track ends with <code>$FE</code>, the code that stops the music. Played, it lasts seven frames: one note on each voice and then silence. The intro starts its music in two places, and both load 0 into A before calling <code>music_init</code> (<code>$146B</code>, <code>$14A4</code>), so tune 1 never plays. The player on the <a href="index.html#music">How it works</a> page runs it through the intro's own code.</p>
@@ -270,38 +257,9 @@ function message(G) {
   pre.innerHTML = lines.join('\n');
 }
 
-// ---- 05 the A key: read_input's loop over seven entries
-function akey(G) {
-  const t2 = G.bytes(0x1C4D, 7), t1 = G.bytes(0x1C53, 7), body = $('sb-atbl').tBodies[0], box = $('sb-akeys');
-  const BITS = ['0 up', '1 down', '2 left', '3 right', '4 fire', '5 RUN/STOP', '6'];
-  const show = (n) => {
-    body.innerHTML = '';
-    for (let i = 0; i < 7; i++) {
-      const tr = document.createElement('tr');
-      const c = (v, a) => `${hex(a)}: ${hex(v, 2)}, ${keyName(v) || 'no key'}`;
-      tr.innerHTML = `<td class="n">${i + 1}</td><td class="n">${c(t2[i], 0x1C4D + i)}</td><td class="n">${c(t1[i], 0x1C53 + i)}</td><td class="n">${BITS[i]}</td>`;
-      if (n !== undefined && (t2[i] === n || t1[i] === n)) tr.className = 'hit';
-      body.appendChild(tr);
-    }
-  };
-  for (const k of ['I', 'M', 'J', 'K', 'SPACE', 'A', 'Z', ',', '.', '/', 'RUN/STOP']) {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = k; b.setAttribute('aria-pressed', 'false');
-    b.onclick = () => {
-      box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b));
-      const n = keyNum[k], hits = [];
-      t2.forEach((v, i) => { if (v === n) hits.push('port 2 bit ' + i); });
-      t1.forEach((v, i) => { if (v === n) hits.push('port 1 bit ' + i); });
-      $('sb-aout').innerHTML = `<b>${k}</b>, key ${n}, sets ${hits.join(' and ')}.`;
-      show(n);
-    };
-    box.appendChild(b);
-  }
-  show();
-}
-
-if (!LIB) { for (const id of ['sb-codes', 'sb-martin', 'sb-starcv', 'sb-atbl']) missing($(id)); }
+if (!LIB) { for (const id of ['sb-codes', 'sb-martin', 'sb-starcv']) missing($(id)); }
 else {
-  C64.load('parts/game/listing.json').then((G) => { codes(G); martin(G); message(G); akey(G); });
+  C64.load('parts/game/listing.json').then((G) => { codes(G); martin(G); message(G); });
   C64.load('parts/intro/listing.json').then((I) => star(I));
 }
 </script>
