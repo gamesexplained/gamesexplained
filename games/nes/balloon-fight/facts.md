@@ -234,6 +234,19 @@ cleared when every bird is out of play or falling (`phase_loop`,
   256 frames and `start_game` plays a two-player game with both players
   steered by a random byte every 16 frames (`steer_actor`, `$E6ED`), no
   scoring and the APU off, until a life is lost or Start or Select.
+  Each demonstration player is also steered as a bird is, and
+  `steer_actor` times its decisions from `bird_decision_masks` and
+  `bird_decision_bases` by its `actor_type`, 3 (7 with one balloon),
+  past the tables' three entries: with two balloons the mask is `$20`
+  and the base `$A2`, the first byte of `read_joypads` (`$E768`), so a
+  decision comes every 162 to 195 frames. The title loop adds 1 to
+  `two_players` rather than setting it, so a demonstration after a
+  two-player game runs `player_place` for actor 2 too, which reads
+  `player_start_x` one past its two entries (`$F3B0`, the first byte
+  of `actor_init_player`). The Play tab's image of the cartridge
+  carries these bytes and the twelve Balloon Trip reads past
+  `trip_layout`, since the port reads them as the game does
+  (`test_play.js` runs the port on that image).
 
 ## The bonus round
 
@@ -250,10 +263,16 @@ cannot die here (`no_enemies`).
 `trip_start` and `trip_loop` (`$C1C5`, `$C209`). One life, no
 platforms (`platform_count` `$FF`), the fish active. On odd frames the
 scene scrolls one pixel (`trip_scroll_x`) and every object moves right
-by one; every 8 scroll steps a generator runs: the fixed opening
-(`trip_layout`, 122 bytes, the same every game) twice, then random ones
-chosen by `trip_handler_order` as `trip_difficulty` rises every 32
-generator runs. A balloon is 300 points, then 500 and 700 after each
+by one; every 8 scroll steps a generator runs, chosen by
+`trip_handler_order` as `trip_difficulty` rises every 32 generator runs.
+The first two steps, runs 1 to 63 (`trip_progress` rises before each
+run), are `trip_stream_reader`, which reads the fixed opening
+(`trip_layout`, 122 bytes, the same every game) a run at a time, to a 0,
+and never sets its pointer back. The list holds 58 runs, so runs 59 to
+63 read on into the first twelve bytes of `set_balloon_value` (`$C527`
+to `$C532`) and make six sparks and a balloon from them; this was
+observed on the kit's NES running the listing's bytes, the player held
+in the sky (`test_trip.js`). The random generators follow. A balloon is 300 points, then 500 and 700 after each
 run of 20 popped without a miss (`balloons_popped_p2` counts the run; a
 balloon that drifts off the right edge resets it), with 10,000 points
 and the perfect jingle at each 20 (`$C348`). Popping a bubble (a rare
