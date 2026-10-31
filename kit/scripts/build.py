@@ -1810,6 +1810,21 @@ def platform_pages(games, out_root):
                  platform_name=name, cards="".join(card_html(g, "../", badge=False) for g in gs), n_games=len(gs)))
 
 
+def machines_html(games):
+    """The home page's row of machines: each one's logo, name and number of games, most games
+    first, linking to its platform page, so a reader sees every machine the site covers before
+    the first cards (mostly one machine's) do. Nothing while the site has only one."""
+    counts = {}
+    for g in games:
+        counts[g["platform"]] = counts.get(g["platform"], 0) + 1
+    if len(counts) < 2:
+        return ""
+    chips = "".join(f'<a href="{plat}/">{platform_icon(plat)}<span>{html.escape(PLATFORM_NAMES.get(plat, plat))}</span>'
+                    f'<span class="n">{n}</span></a>'
+                    for plat, n in sorted(counts.items(), key=lambda kv: (-kv[1], PLATFORM_NAMES.get(kv[0], kv[0]))))
+    return f'<nav class="machines" aria-label="Games by machine">{chips}</nav>'
+
+
 def featured_game(games):
     """The game the home page opens with: the one whose game.json says "featured": true,
     else the first a person has curated, else the first there is."""
@@ -2408,7 +2423,7 @@ def main():
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
                 cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
-                recent=recent_html(recent_changes(games)), n_games=len(games))
+                recent=recent_html(recent_changes(games)), machines=machines_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
     history = landed(games)   # read once: the status page's contributors and the activity page

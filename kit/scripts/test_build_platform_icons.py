@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The machine's logo on a game's card: every kit has one in site/icons/platforms/, in one colour (the
 text's) on a 24-unit square, saying where it comes from; the card links it to the platform's page under
-the machine's name; a page of one platform's games leaves it out, and so does a platform with no logo."""
+the machine's name; a page of one platform's games leaves it out, and so does a platform with no logo.
+The home page's row of machines carries the same logos, with each machine's number of games."""
 from pathlib import Path
 import re
 import sys
@@ -50,6 +51,13 @@ class PlatformIcons(unittest.TestCase):
         finally:
             build.shot_html = shot
         self.assertNotIn('class="plat"', card)
+
+    def test_the_home_page_lists_each_machine_most_games_first(self):
+        games = [dict(GAME, platform=p) for p in ("c64", "spectrum", "c64", "bbc", "spectrum", "c64")]
+        row = build.machines_html(games)
+        chips = re.findall(r'<a href="([a-z0-9]+)/"><svg [^>]*>.*?</svg><span>([^<]+)</span><span class="n">(\d+)</span></a>', row)
+        self.assertEqual(chips, [("c64", "Commodore 64", "3"), ("spectrum", "ZX Spectrum", "2"), ("bbc", "BBC Micro", "1")])
+        self.assertEqual(build.machines_html([GAME, GAME]), "", "one machine needs no row")
 
 
 if __name__ == "__main__":
