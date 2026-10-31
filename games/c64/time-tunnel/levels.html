@@ -1,0 +1,206 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Tunnel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.tt-shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.tt-shots figure{margin:0}
+.tt-shots img,.tt-shots canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.tt-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.tt-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.tt-cv[hidden]{display:none}
+.tt-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.tt-bar button{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.tt-bar button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.tt-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
+.tt-tab th,.tt-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.tt-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.tt-tab td.n{font-family:var(--fm);text-align:right}
+.tt-wrapx{overflow-x:auto}
+.tt-objview{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.tt-objview canvas{flex:none;width:288px;max-width:100%;height:auto;image-rendering:pixelated;background:#1a1a1a;border-radius:4px}
+.tt-objview table{flex:1;min-width:220px;margin-top:0}
+.tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.tt-grid figure{margin:0;cursor:pointer}
+.tt-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · U.S. Gold</p>
+  <h1>Time Tunnel</h1>
+  <p class="sub">All 53 rooms of the nine eras, each drawn on this page by the game's own code from the listing, with the objects in it at the start of a game.</p>
+</header>
+<main class="wrap">
+
+<section id="rooms">
+  <p class="fig">01 · Every room</p>
+  <h2 class="t">Every room, as the gnome walks in</h2>
+  <p class="lede">Pick a room. Dark rooms stay black until the gnome carries the lit torch in; the button lights them.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The room before">‹</button><select id="tt-room-sel" aria-label="Room"></select><button type="button" class="step" data-d="1" aria-label="The room after">›</button></div>
+    <div class="tt-bar"><button type="button" id="tt-torch" aria-pressed="false">Carry the lit torch</button></div>
+    <canvas id="tt-map" class="tt-cv" width="384" height="272" aria-label="The room as the game draws it"></canvas>
+    <img id="tt-map-shot" class="tt-cv" src="reference/controls.png" alt="The time machine's controls in the emulator" width="384" height="272" hidden>
+    <p class="cap" id="tt-map-cap"></p>
+    <div class="tt-wrapx"><table class="tt-tab" id="tt-map-tab"></table></div>
+  </div>
+  <p>Each picture comes from the game's own code, run on the site's 6502 over the listing. First the start-up's unpacking of where every object begins (<code>obj_start_table</code>, <code>$0909</code>), then the era's character set (<code>era_load_charset</code>, <code>$3456</code>) and <code>room_enter</code> (<code>$3A47</code>), which draws the room's screen, gives a sprite to each object there and runs the era's routine for entering the room. That routine is why some rooms differ from their screen: the gold rush's dark house and the caves of Persia and the Stone Age go black without the lit torch, and the throne room puts the staff in the king's hand. The gnome himself is left out.</p>
+  <p>Some rooms share a screen. Persia's cave is four rooms with one picture, the Stone Age's three caves are another, and three of the spaceship's corridors are a third. What tells them apart is the code: each room has its own doorways, objects and puzzle. The time machine's controls are drawn in the letters of the C64's character ROM, which this site does not carry, so that room shows the emulator's picture.</p>
+  <p>Eight of these pictures were checked against the emulator, with the gnome brought into each room at the start of a game by the game's own routine for entering an era (<code>era_enter</code>): the mansion's hall, the gold rush's saloon street, Persia's sunset hills, the Stone Age's first cliffs, Greece's temples, a spaceship corridor, Salem's church street, and the throne room. Apart from the gnome, and the staff in the throne room, which flickers through colours every frame, every pixel matches (<code>test_rooms.js</code>, against the pictures in <code>reference/</code>).</p>
+</section>
+
+<section id="era">
+  <p class="fig">02 · An era</p>
+  <h2 class="t">The rooms of one era</h2>
+  <p class="lede">The rooms of the era picked above, side by side. A picture picks its room.</p>
+  <div class="plate"><div class="tt-grid" id="tt-grid"></div></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* tt-rooms */
+// ttRoom(ram, Cpu, era, room, torch): a room as the game draws it when the gnome walks in at the
+// start of a game, for C64.renderFrame. On a copy of the listing's memory (ram), the kit's 6502
+// (Cpu, C64Cpu on a page) runs the game's own code: the start-up's unpacking of obj_start_table
+// with sprites_build and sprite_ptrs_set ($0D87-$0DD3), the screen's $D011 value that the start-up
+// keeps in $A5 ($17, $0EC2), then era_load_charset ($3456) and room_enter ($3A47) for the era in $2A
+// and the room in $19. $29 is 0, as on a walk from room to room, but 1 in the closet (era 2, room
+// 9), which play_state enters with it set ($38C0). With torch, the gnome carries the torch (object
+// $24, room 0) and it is lit ($AB = 1), which lights the dark rooms. The video chip's registers
+// start as the emulator had them in play (TT_VIC, $D000-$D02E; TT_CIA2, $DD00 and $DD02: bank 3)
+// and take the code's writes. The gnome's sprite (0), and the torch's when it is carried, are
+// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }.
+const TT_VIC = [132, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 178, 0, 23, 0, 0, 0, 129, 216, 0, 237, 114, 241, 0, 129, 0,
+  0, 129, 240, 240, 251, 242, 243, 248, 241, 247, 242, 243, 244, 245, 246, 247, 243];
+const TT_CIA2 = [148, 63];
+function ttRoom(ram, Cpu, era, room, torch) {
+  const m = ram.slice(), vic = TT_VIC.slice(), colour = new Uint8Array(1024);
+  let line = 0;
+  const io = {
+    read(a) {
+      if (a === 0xD012) { line = (line + 1) % 312; return line & 0xFF; }
+      if (a === 0xD011) { line = (line + 7) % 312; return (vic[0x11] & 0x7F) | (line > 255 ? 0x80 : 0); }
+      if (a >= 0xD000 && a < 0xD02F) return vic[a - 0xD000];
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+      if (a === 0xDC00 || a === 0xDC01) return 0xFF;
+      return 0;
+    },
+    write(a, v) {
+      if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v;
+      else if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15;
+    },
+  };
+  const cpu = new Cpu.CPU(m, { port: 0x35, io });
+  cpu.pc = 0x0D87; cpu.run({ until: 0x0DD4, maxSteps: 1e6 });
+  m[0xA5] = 0x17;
+  m[0x2A] = era; m[0x19] = room; m[0x29] = era === 2 && room === 9 ? 1 : 0;
+  if (torch) { m[0x0705 + 0x24] = 0; m[0xAB] = 1; }
+  cpu.call(0x3456, {}, { maxSteps: 1e6 });
+  cpu.call(0x3A47, {}, { maxSteps: 1e6 });
+  vic[0x15] &= 0xFE;
+  if (torch && m[0x75] === 0x24) vic[0x15] &= ~(1 << m[0x74]);
+  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63 };
+}
+// end of tt-rooms
+</script>
+<script>
+const TT_ROOM_NAMES = {"1": ["the living room", "the hall", "the room with the time machine", "the time machine's controls", "an empty screen"], "2": ["the street with the saloon", "the street with the blacksmith's", "the end of the street, with the treadle", "the cave with the stalactites", "the scorpion's cave", "the cave at the lift's foot", "the dark house", "the house with the lift", "the closet"], "3": ["the hole", "the message"], "4": ["hills at sunset", "the flying carpet's hills", "the snake's basket", "the boulder over the cave", "the cave", "the cave", "the cave", "the cave"], "5": ["the cliffs, where the cage lies", "the cliffs where the boulder blocks the way", "the cliffs with the mouth of cave 7", "the left end of the cliffs", "the right end of the cliffs", "cave 6", "cave 7", "cave 8"], "6": ["two temples", "the hall of columns", "the wall with the marked block", "the pedestals", "Medusa's hall"], "7": ["the control room", "a corridor", "the levers, in a corridor", "a corridor", "the corridor to the numbered door", "the safe", "the teleport pads", "the moon"], "8": ["the church and the chemist's", "the shop and a brick house", "the log house by the lake", "the wooded hillside", "inside the chemist's", "inside the shop", "inside the log house"], "9": ["the throne room"]};
+const TT_NAMES = ["The gnome seen from behind, walking up", "The gnome seen from the front, walking down", "The gnome from the side, walking", "The gnome from the side, facing the other way", "The gold rush's piece of the scripture", "The black hole's piece of the scripture", "Persia's piece of the scripture", "The stone age's piece of the scripture", "Greece's piece of the scripture", "The moon's piece of the scripture", "Salem's piece of the scripture", "The scorpion", "The cage", "The lift", "The flat balloon", "The balloon, blown up", "The oxygen tank", "The bolt the gnome fires", "The stalactite", "The mansion's log", "The time machine's part in place", "The time machine's missing part", "The plant", "The time machine's lights", "The time machine's lights", "The horse facing left", "The oxygen tank's valve", "The time portal", "The bat", "The dead bat", "The fire", "A lift wheel", "A lift wheel", "A lift wheel", "The horse facing right", "The horse's food", "The torch", "The ladder", "The smoke", "The first potion", "The second potion", "The broom's handle", "The broom's head", "The flying broom's left end", "The flying broom's middle", "The flying broom's right end", "The rock over the hollow on Salem's hillside", "The rock over Salem's piece of the scripture", "The cauldron", "The wine flask", "The glass", "The lamp", "The dynamite with its fuse burning", "The basket's lid", "The snake's basket", "The snake rising from the basket", "The risen snake", "The key", "The woman on the flying carpet", "The flying carpet's left half", "The flying carpet's right half", "The flute lying still", "The cave's mouth in the boulder, upper part", "The cave's mouth, lower part", "The stone age's log", "A small rock on the clifftop", "The other small rock", "A boulder", "The safe", "The dynamite", "A thin dark shape that no code uses", "Another thin dark shape, also unused", "The first lever, off", "The first lever, on", "The second lever, off", "The second lever, on", "The flute being played", "The first candelabra", "The sword", "The tipped log", "A doorway", "A doorway", "A doorway", "A doorway", "The shield", "The first dark hole", "Medusa's upper half", "Medusa's lower half", "The staff", "The king on the throne, first of six pieces", "The king, second piece", "The king, third piece", "The king, fourth piece", "The king, fifth piece", "The king, sixth piece", "The round light from the control panel", "The hole the round light fits", "The pyramid key", "The lock under the left pad", "The second boulder", "A doorway", "A doorway", "A doorway", "A doorway", "The second candelabra", "The second dark hole", "A lit candelabra", "The other lit candelabra", "Medusa's shot"];
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const missing = (el, what) => { el.insertAdjacentHTML('afterend', '<p class="cap">' + what + ' needs the site\'s shared scripts, which did not load.</p>'); };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { missing($('tt-map'), 'This map'); return; }
+  const ERA = ['', 'Gnome Mansion', 'The California gold rush', 'The Black Hole', 'Magical Persia', 'The Stone Age',
+    'Mythological Greece', 'The intergalactic spaceship', 'Colonial Salem', 'The throne room'];
+  const H = (n, w) => C64.hex(n, w), code = (t) => '<code>' + t + '</code>';
+  const list = [];
+  for (let e = 1; e <= 9; e++) TT_ROOM_NAMES[e].forEach((n, i) => list.push([e, i + 1]));
+  const sel = $('tt-room-sel');
+  list.forEach(([e, r], i) => sel.add(new Option(ERA[e] + ', room ' + r + ': ' + TT_ROOM_NAMES[e][r - 1], i)));
+  const params = new URLSearchParams(location.hash.slice(1));
+  C64.load('listing.json').then((L) => {
+    const m = L.ram, w = (a) => m[a] | m[a + 1] << 8, name = (a) => L.names.get(a) || H(a);
+    const isText = (e, r) => e === 1 && r === 4;
+    const show = () => {
+      const [e, r] = list[+sel.value], torch = $('tt-torch').getAttribute('aria-pressed') === 'true';
+      const F = ttRoom(m, C64Cpu, e, r, torch);
+      const text = isText(e, r);
+      $('tt-map').hidden = text; $('tt-map-shot').hidden = !text;
+      if (!text) C64.drawFrame($('tt-map'), F, 1);
+      const rec = 0x0A76 + m[0x0BA8 + e], scr = w(rec + 8 + 2 * r);
+      const hdr = Array.from(m.subarray(scr, scr + 5));
+      $('tt-map-cap').innerHTML = ERA[e] + ', room ' + r + ': ' + TT_ROOM_NAMES[e][r - 1] + '. Its screen is ' + code(name(scr)) +
+        (hdr[0] & 0x80 ? ', a header with its top bit set: an empty room, filled with character 0 on black.' :
+          ', header ' + hdr.map((v) => H(v, 2).slice(1)).join(' ') + '.') + (text ? ' The picture is the emulator\'s: the room is drawn in the character ROM\'s letters.' : '');
+      let rows = '';
+      for (let s = 7; s >= 1; s--) {
+        if (!(F.vic[0x15] & (1 << s))) continue;
+        const o = F.mem[0x43 + s];
+        rows += '<tr><td>' + code(H(o, 2)) + '</td><td>' + (TT_NAMES[o] || '') + '</td><td class="n">' + H(F.mem[0x33 + s], 2) + '</td><td class="n">' + H(F.mem[0x3B + s], 2) + '</td><td class="n">' + s + '</td></tr>';
+      }
+      $('tt-map-tab').innerHTML = '<tr><th>Object</th><th>What it is</th><th>x</th><th>y</th><th>Sprite</th></tr>' + (rows || '<tr><td colspan="5">No objects in this room at the start.</td></tr>');
+      grid(e, torch);
+      history.replaceState(null, '', '#era=' + e + '&room=' + r);
+    };
+    let gridEra = 0, gridTorch = null;
+    const grid = (e, torch) => {
+      if (e === gridEra && torch === gridTorch) return;
+      gridEra = e; gridTorch = torch;
+      const g = $('tt-grid'); g.innerHTML = '';
+      list.forEach(([ee, r], i) => {
+        if (ee !== e) return;
+        const f = document.createElement('figure'), cv = document.createElement('canvas');
+        cv.className = 'tt-cv'; cv.setAttribute('aria-label', 'Room ' + r);
+        f.appendChild(cv);
+        const cap = document.createElement('figcaption'); cap.textContent = 'Room ' + r + ': ' + TT_ROOM_NAMES[ee][r - 1]; f.appendChild(cap);
+        f.onclick = () => { sel.value = i; show(); $('rooms').scrollIntoView({ behavior: 'smooth' }); };
+        g.appendChild(f);
+        if (isText(ee, r)) { const img = new Image(); img.src = 'reference/controls.png'; img.className = 'tt-cv'; img.alt = 'The controls'; f.replaceChild(img, cv); }
+        else C64.drawFrame(cv, ttRoom(m, C64Cpu, ee, r, torch), 1);
+      });
+    };
+    sel.onchange = show;
+    $('tt-torch').onclick = function () { this.setAttribute('aria-pressed', String(this.getAttribute('aria-pressed') !== 'true')); show(); };
+    for (const b of document.querySelectorAll('#rooms .step')) b.onclick = () => {
+      sel.value = Math.min(list.length - 1, Math.max(0, +sel.value + +b.dataset.d)); show();
+    };
+    const e0 = +params.get('era'), r0 = +params.get('room'), i0 = list.findIndex(([e, r]) => e === e0 && r === r0);
+    sel.value = i0 >= 0 ? i0 : 0;
+    show();
+  });
+})();
+</script>
