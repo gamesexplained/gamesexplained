@@ -86,37 +86,7 @@ globalThis.makeMemMap = function (LABELS) {
     cv.addEventListener('click', e => { const a = addrOf(e); if (src && at(a)) location.href = src + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
     return M;
   }
-  // The strip: the same addresses left to right in one row, each column the colour of whatever
-  // most of its bytes are. The catalogue's compact map; the ruler is the same as render's.
-  async function strip(el, url) {
-    const M = await fetch(url).then(r => r.json());
-    const RANK = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'other', 'unused'];
-    const cv = document.createElement('canvas'); el.innerHTML = ''; el.appendChild(cv);
-    const draw = () => {
-      const dpr = window.devicePixelRatio || 1, w = Math.max(64, Math.round((cv.clientWidth || 256) * dpr)), h = Math.max(1, Math.round((cv.clientHeight || 8) * dpr));
-      cv.width = w; cv.height = h;
-      const ctx = cv.getContext('2d'); ctx.fillStyle = COLOURS.unused; ctx.fillRect(0, 0, w, h);
-      const base = M.base || 0, per = (M.size || 0x10000) / w, counts = new Array(w);
-      for (let [a, n, k] of M.runs) {
-        a -= base;
-        for (let c = Math.floor(a / per), c1 = Math.floor((a + n - 1) / per); c <= c1; c++) {
-          const lo = Math.max(a, c * per), hi = Math.min(a + n, (c + 1) * per);
-          (counts[c] = counts[c] || {})[k] = (counts[c][k] || 0) + (hi - lo);
-        }
-      }
-      for (let c = 0; c < w; c++) {
-        if (!counts[c]) continue;
-        let best = null, bn = 0;
-        for (const k of RANK) { const n = counts[c][k] || 0; if (n > bn) { bn = n; best = k; } }
-        if (!best || best === 'unused') continue;
-        ctx.fillStyle = COLOURS[best]; ctx.fillRect(c, 0, 1, h);
-      }
-    };
-    draw();
-    if (window.ResizeObserver) { let w = cv.clientWidth; new ResizeObserver(() => { if (cv.clientWidth !== w) { w = cv.clientWidth; draw(); } }).observe(cv); }
-    return M;
-  }
-  return { render, strip, COLOURS, LABELS };
+  return { render, COLOURS, LABELS };
 };
 
 // The Commodore 64's names for the categories.
