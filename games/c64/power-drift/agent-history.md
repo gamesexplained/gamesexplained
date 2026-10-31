@@ -92,3 +92,27 @@ they had lost when renamed (`s_10B4` for `show_bonus`). They were
 rewritten, and `symbols_export.py` now prints such names after each
 export. One of them, the race frame loop's, still called `place_rivals`
 part of the sky.
+
+## 31 October 2026: the course drive and the page order
+
+The contributor asked for the sound effects to sit higher on How it works,
+the note in front of the first instruction to open Discoveries, and a way to
+drive a course on Maps / levels. The effects section moved to follow the
+music, and the text section to the top of Discoveries.
+
+**The drive.** The levels page runs the game's own `setup_stage` and the
+drawing half of `race_frame_loop` on the site's 6502, from the listing's
+bytes, with `move_player` replaced by a speed level and the kart held in
+the middle of the road (`$2F` = `$E0`, found by drawing a few values). The
+first picture drawn from the listing's snapshot had the road in hires
+stripes: the colour buffer was 0, because the snapshot is taken at the
+game's entry, before any screen has run `clear_text_screen`, which leaves
+it at 8. Below speed level 10 the first jump calls `drop_kart_back`, which
+waits on the frame counter, so the slider stops at 10. `test_course.js`
+runs the game's own `stage_loop` and `race_frame_loop` beside the page,
+with stand-ins only for `wait_frame` and `move_player`, and compares the
+two view screens, the character set, colour RAM and the sky and ground
+bytes after every frame of a lap of all 25 stages; dropping `bend_drift`
+from the page fails it at frame 146 of A1. The sky and ground's change of
+colour comes from timer A, 256 × `$24` + 204 cycles into the frame, within
+5 cycles on four recorded frames.
