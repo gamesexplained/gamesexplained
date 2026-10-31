@@ -108,8 +108,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The two voices share TED's one volume setting. A note on voice 1 sets the volume to 8, and each frame takes one off, so every note of the tune dies away over eight frames. Every eighth step, voice 2 stops its note. For the first three frames of that step it plays noise instead, which sounds like a drum on the beat.</p>
 </section>
 
+<section id="sound">
+  <p class="fig">03 · Sound</p>
+  <h2 class="t">Sound: every effect plays on voice 2</h2>
+  <p class="lede">With the tune off, the game's effects all play on voice 2: the refill of the EGY bar at the start of a turn, a fall, a jump, and a death.</p>
+  <div class="plate">
+    <div class="pu-scroll"><table class="pu-table" id="pu-sfx"><tr><th></th><th>Effect</th><th>What TED plays</th><th class="n">Frames</th><th>Made by</th></tr>
+      <tr data-k="refill"><td></td><td>the EGY bar refilled</td><td>a warble that jumps between a low tone and a high one at every step of the bar, both creeping up</td><td class="n"></td><td><code>refill_energy</code></td></tr>
+      <tr data-k="fall"><td></td><td>a fall</td><td>one high note, held until he lands</td><td class="n"></td><td><code>player_move</code></td></tr>
+      <tr data-k="jump"><td></td><td>a jump</td><td>a note that sweeps up as he rises and back down as he comes down</td><td class="n"></td><td><code>player_move</code></td></tr>
+      <tr data-k="death"><td></td><td>a death</td><td>noise rising in pitch while the room flashes, then fading out</td><td class="n"></td><td><code>death</code></td></tr></table></div>
+    <div id="pu-sfxroll"></div>
+    <p class="cap">Each effect as the game makes it, recorded on the kit's model of the C16 (<code>kit/c16/machine.js</code>) running the game's code from the listing, in room 0 at the start of a game: the refill as the first turn starts, the fall that follows, a jump from the floor, and the D key. plus4emu's sound log of the same steps has the same writes with the same values, each within a fifth of a frame. They play through the site's model of TED.</p>
+  </div>
+  <p>The effects write TED's registers straight from the code that causes them. <code>voice2_on</code> and <code>voice2_off</code> switch voice 2 on and off, and the rest of the code sets its pitch in <code>$FF0F</code> and <code>$FF10</code>. The tune is off in play. <code>start_turn</code> clears <code>music_on</code>, so the interrupt stops calling <code>music_tick</code>, and the effects have voice 2 to themselves. Voice 1 is silent in play. <code>voice1_on_unused</code> and <code>voice1_off_unused</code>, which would switch it on and off, are never called.</p>
+</section>
+
 <section id="objects">
-  <p class="fig">03 · The objects</p>
+  <p class="fig">04 · The objects</p>
   <h2 class="t">Crushers, cannons and force fields are characters redrawn in place</h2>
   <p class="lede">The C16's screen is a grid of characters, small square pictures picked from a set of 256. The C16 has no sprites, the moving pictures that other machines' hardware draws over the screen, so everything that moves is drawn into the grid as characters. Pick a room and watch its objects run.</p>
   <div class="plate">
@@ -130,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="frame">
-  <p class="fig">04 · One frame, rebuilt from memory</p>
+  <p class="fig">05 · One frame, rebuilt from memory</p>
   <h2 class="t">The colours change under the room, every frame</h2>
   <p class="lede">The room and the panel below it each have three colours of their own, shared by the whole area. Twice a frame, the game's raster interrupt switches TED's colour registers from one set to the other. A raster interrupt stops the program when TED's beam reaches a chosen line of the picture, and runs a short routine.</p>
   <div class="plate">
@@ -148,7 +164,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="him">
-  <p class="fig">05 · Mr Puniverse</p>
+  <p class="fig">06 · Mr Puniverse</p>
   <h2 class="t">Mr Puniverse is six characters, redrawn on every pass</h2>
   <p class="lede">He moves a pixel at a time inside a block two characters wide and three high. The six characters of the block are used for nothing else. The game draws him into them, over a copy of whatever scenery is behind him.</p>
   <div class="plate">
@@ -170,7 +186,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="feet">
-  <p class="fig">06 · Moving</p>
+  <p class="fig">07 · Moving</p>
   <h2 class="t">The character under his feet decides what happens</h2>
   <p class="lede">Each pass, the game looks at the character below the bottom of his block. Solid ground holds him, a ladder holds him, a conveyor carries him and the deadly floor kills him. Anything else lets him fall.</p>
   <div class="plate">
@@ -185,7 +201,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="danger">
-  <p class="fig">07 · What kills him</p>
+  <p class="fig">08 · What kills him</p>
   <h2 class="t">Only two of his six cells can be hit</h2>
   <p class="lede">A shot, a force field or a crusher kills Mr Puniverse only when it reaches one particular cell of his block: the middle cell of the column he stands in, or that column's bottom cell when he is low in the block.</p>
   <div class="plate">
@@ -199,7 +215,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="rooms">
-  <p class="fig">08 · The rooms</p>
+  <p class="fig">09 · The rooms</p>
   <h2 class="t">A room's walls fit in 45 bytes</h2>
   <p class="lede">Each room is one record of 62 to 128 bytes. It holds the room's exits, its vitamin, its colours, its walls as a bitmap (a picture with one bit for each pair of cells) and its objects. Every room is drawn on the <a href="levels.html">Maps</a> tab.</p>
   <div class="plate">
@@ -218,7 +234,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="energy">
-  <p class="fig">09 · The EGY bar and the clock</p>
+  <p class="fig">10 · The EGY bar and the clock</p>
   <h2 class="t">Each room drains the EGY bar or fills it, at its own rate</h2>
   <p class="lede">The EGY bar, at the foot of the panel, holds 34 cells of four steps each. A room's record sets how many passes of the main loop each step takes, and whether the steps go down or up.</p>
   <div class="plate">
@@ -233,7 +249,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="controls">
-  <p class="fig">10 · Controls</p>
+  <p class="fig">11 · Controls</p>
   <h2 class="t">Both players use the joystick in port 2</h2>
   <p class="lede">The menu offers the joystick or the keyboard, for one player or for two. The game reads K and M as up and down and then ignores them.</p>
   <div class="plate">
@@ -259,7 +275,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="turns">
-  <p class="fig">11 · Lives, turns and the end</p>
+  <p class="fig">12 · Lives, turns and the end</p>
   <h2 class="t">The 25th vitamin ends the game</h2>
   <p class="lede">The game has one ending. The 25th vitamin plays the title tune, waits for a key, and then runs the death sequence with no lives left.</p>
   <div class="plate">
@@ -269,22 +285,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>Each player starts with eight lives, shown as little men in the panel. A death runs the death sequence (<code>death</code>). The room's background flashes through the colours while a rising noise plays, the EGY bar empties, and a life goes. In a game for two, the other player then takes a turn. Each turn starts in the room the player was in, at the place where he came into it, with the bar full. The clock and the vitamins carry on from where they were.</p>
   <p>A vitamin taken is gone for good for that player. <code>collect_vitamin</code> sets his bit in the room's entry in <code>vitamins_got</code>, and the room is drawn without the vitamin the next time he comes in. The 25th vitamin sets his lives to 1, plays the tune and waits for a key, and the death sequence that follows finds no lives left. In a game for two the other player plays on. With both players out, GAME OVER shows and the title comes back.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">12 · Sound</p>
-  <h2 class="t">Sound: every effect plays on voice 2</h2>
-  <p class="lede">With the tune off, the game's effects all play on voice 2: the refill of the EGY bar at the start of a turn, a fall, a jump, and a death.</p>
-  <div class="plate">
-    <div class="pu-scroll"><table class="pu-table" id="pu-sfx"><tr><th></th><th>Effect</th><th>What TED plays</th><th class="n">Frames</th><th>Made by</th></tr>
-      <tr data-k="refill"><td></td><td>the EGY bar refilled</td><td>a warble that jumps between a low tone and a high one at every step of the bar, both creeping up</td><td class="n"></td><td><code>refill_energy</code></td></tr>
-      <tr data-k="fall"><td></td><td>a fall</td><td>one high note, held until he lands</td><td class="n"></td><td><code>player_move</code></td></tr>
-      <tr data-k="jump"><td></td><td>a jump</td><td>a note that sweeps up as he rises and back down as he comes down</td><td class="n"></td><td><code>player_move</code></td></tr>
-      <tr data-k="death"><td></td><td>a death</td><td>noise rising in pitch while the room flashes, then fading out</td><td class="n"></td><td><code>death</code></td></tr></table></div>
-    <div id="pu-sfxroll"></div>
-    <p class="cap">Each effect as the game makes it, recorded on the kit's model of the C16 (<code>kit/c16/machine.js</code>) running the game's code from the listing, in room 0 at the start of a game: the refill as the first turn starts, the fall that follows, a jump from the floor, and the D key. plus4emu's sound log of the same steps has the same writes with the same values, each within a fifth of a frame. They play through the site's model of TED.</p>
-  </div>
-  <p>The effects write TED's registers straight from the code that causes them. <code>voice2_on</code> and <code>voice2_off</code> switch voice 2 on and off, and the rest of the code sets its pitch in <code>$FF0F</code> and <code>$FF10</code>. The tune is off in play. <code>start_turn</code> clears <code>music_on</code>, so the interrupt stops calling <code>music_tick</code>, and the effects have voice 2 to themselves. Voice 1 is silent in play. <code>voice1_on_unused</code> and <code>voice1_off_unused</code>, which would switch it on and off, are never called.</p>
 </section>
 
 </main>

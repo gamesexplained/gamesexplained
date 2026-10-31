@@ -92,8 +92,27 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table>
 </section>
 
+<section id="effects">
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: a second effect is dropped while one plays</h2>
+  <p class="lede">The effects play on the sound chip's first voice, one at a time.</p>
+  <div class="plate"><div id="tt-sfx"></div>
+  <p class="cap">The same sound code as the music, from the listing, on the site's copy of the C64's processor. A button calls <code>sfx_start</code> (<code>$BB32</code>) as the game does, then <code>sfx_play</code> (<code>$BB51</code>) once a frame, as the main loop does. Effects 2, 3, 4 and 6 repeat until the game stops them, so here they play until their button is pressed again. <code>test_music.js</code> checks these against the game's own code as it does the tunes.</p></div>
+  <p>An effect is a script of one-byte commands (<code>sfx_script</code>, <code>$BC6E</code>): set a pitch, set a waveform, fade, wait, slide up or down, loop, and warble. The code keeps track of one effect at a time, so <code>sfx_start</code> ignores a new effect while another plays. Seventeen places in the game start an effect.</p>
+  <table class="tt-tab">
+    <tr><th>Effect</th><th>Started by</th></tr>
+    <tr><td class="n">0</td><td>the closet (a store room he can reach from any era) refusing to let him go, the trip into the closet, Medusa beaten</td></tr>
+    <tr><td class="n">1</td><td>the living room's fire lighting, Medusa's shot, Salem's brew and the broom it makes</td></tr>
+    <tr><td class="n">2</td><td>the oxygen tank's valve appearing, in the gold rush (<code>gold_tank</code>)</td></tr>
+    <tr><td class="n">3</td><td>a trip in time (<code>time_travel</code>)</td></tr>
+    <tr><td class="n">4</td><td>the time machine's button, the spaceship's teleport</td></tr>
+    <tr><td class="n">5</td><td>arriving in an era, the machine's countdown over, the bolt that hits Persia's lamp, the dynamite going off, arriving on the moon</td></tr>
+    <tr><td class="n">6</td><td>the Black Hole's message</td></tr>
+  </table>
+</section>
+
 <section id="frame">
-  <p class="fig">03 · The screen</p>
+  <p class="fig">04 · The screen</p>
   <h2 class="t">One frame of play, rebuilt</h2>
   <p class="lede">The living room, drawn on this page from the memory and the video chip's registers (the settings it draws the screen by) that the emulator recorded over one frame of play.</p>
   <div class="plate"><canvas id="tt-frame" class="tt-cv" width="384" height="272" aria-label="The living room with the gnome, rebuilt from memory"></canvas>
@@ -102,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="rooms">
-  <p class="fig">04 · Rooms</p>
+  <p class="fig">05 · Rooms</p>
   <h2 class="t">A room in about 400 bytes</h2>
   <p class="lede">Every room is one packed screen. The 44 screens take 17,911 bytes, where the plain screens would take 42,460.</p>
   <div class="plate">
@@ -116,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="eras">
-  <p class="fig">05 · Eras</p>
+  <p class="fig">06 · Eras</p>
   <h2 class="t">Every era is one record in a table</h2>
   <p class="lede">The time machine has seven years on its dial. The game has nine eras: those seven, the mansion, and the throne room where the game ends.</p>
   <div class="plate"><div class="tt-wrapx"><table class="tt-tab" id="tt-eras"></table></div>
@@ -127,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="objects">
-  <p class="fig">06 · Objects</p>
+  <p class="fig">07 · Objects</p>
   <h2 class="t">Seven sprites for the objects in a room</h2>
   <p class="lede">Everything the gnome can see or carry is an object: the scorpion, the cage, the broom, the king on his throne. Each has a place in time and a picture.</p>
   <div class="plate">
@@ -141,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="controls">
-  <p class="fig">07 · Controls</p>
+  <p class="fig">08 · Controls</p>
   <h2 class="t">One button does everything</h2>
   <p class="lede">The game reads both joystick ports at once and one key, F7, for pause.</p>
   <div class="plate"><table class="tt-tab">
@@ -159,7 +178,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="closet">
-  <p class="fig">08 · The closet</p>
+  <p class="fig">09 · The closet</p>
   <h2 class="t">A closet outside time</h2>
   <p class="lede">Holding the button takes the gnome to a closet, from any era, with whatever he carries. Holding it again takes him back.</p>
   <p>The closet is room 9 of the gold rush era, a room no door leads to. <code>play_state</code> keeps the era, room and position he left in <code>$B0</code>-<code>$B3</code>, and the closet's own code (<code>closet_pass</code>) puts him back there. So the closet is a store for objects that are needed in other eras, and the torch starts there.</p>
@@ -167,7 +186,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="end">
-  <p class="fig">09 · The end</p>
+  <p class="fig">10 · The end</p>
   <h2 class="t">The message in the Black Hole</h2>
   <p class="lede">The seven pieces drift in the Black Hole until all seven are there. Then they line up and show a message.</p>
   <div class="plate tt-shots">
@@ -180,30 +199,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="broom">
-  <p class="fig">10 · The broom</p>
+  <p class="fig">11 · The broom</p>
   <h2 class="t">Salem's flying broom</h2>
   <p class="lede">The broom made in Salem's cauldron flies, with its own small physics.</p>
   <p>The flying broom is three objects, the left end, the middle and the right end, kept 12 steps apart (<code>salem_broom</code>, <code>$3111</code>). The gnome picks up the middle to ride it, and from then the stick steers the broom, not him. Its height rests at <code>$61</code>. Up starts a hop and down a dip. The speed starts at one line a step, and each step it loses a pull of 2/256 of a line, so a hop rises, slows and comes back down to rest (<code>broom_height</code>, <code>$320F</code>). The broom steps on three frames in four. A dip works the same way upside down. Pushing the other way, down during a hop or up during a dip, switches to a stronger pull: 5/256 for a hop and 4/256 for a dip (<code>broom_pull</code>, <code>$3287</code>).</p>
   <p>With the stick at rest the broom wanders by itself, up and left until it nears the left edge, then down and right (<code>broom_wander</code>, <code>$30CA</code>). Ridden off the right edge of the third street room, it flies to the hillside, where the last puzzle of Salem waits under two rocks.</p>
-</section>
-
-<section id="effects">
-  <p class="fig">11 · Sound effects</p>
-  <h2 class="t">Sound: a second effect is dropped while one plays</h2>
-  <p class="lede">The effects play on the sound chip's first voice, one at a time.</p>
-  <div class="plate"><div id="tt-sfx"></div>
-  <p class="cap">The same sound code as the music, from the listing, on the site's copy of the C64's processor. A button calls <code>sfx_start</code> (<code>$BB32</code>) as the game does, then <code>sfx_play</code> (<code>$BB51</code>) once a frame, as the main loop does. Effects 2, 3, 4 and 6 repeat until the game stops them, so here they play until their button is pressed again. <code>test_music.js</code> checks these against the game's own code as it does the tunes.</p></div>
-  <p>An effect is a script of one-byte commands (<code>sfx_script</code>, <code>$BC6E</code>): set a pitch, set a waveform, fade, wait, slide up or down, loop, and warble. The code keeps track of one effect at a time, so <code>sfx_start</code> ignores a new effect while another plays. Seventeen places in the game start an effect.</p>
-  <table class="tt-tab">
-    <tr><th>Effect</th><th>Started by</th></tr>
-    <tr><td class="n">0</td><td>the closet refusing to let him go, the trip into the closet, Medusa beaten</td></tr>
-    <tr><td class="n">1</td><td>the living room's fire lighting, Medusa's shot, Salem's brew and the broom it makes</td></tr>
-    <tr><td class="n">2</td><td>the oxygen tank's valve appearing, in the gold rush (<code>gold_tank</code>)</td></tr>
-    <tr><td class="n">3</td><td>a trip in time (<code>time_travel</code>)</td></tr>
-    <tr><td class="n">4</td><td>the time machine's button, the spaceship's teleport</td></tr>
-    <tr><td class="n">5</td><td>arriving in an era, the machine's countdown over, the bolt that hits Persia's lamp, the dynamite going off, arriving on the moon</td></tr>
-    <tr><td class="n">6</td><td>the Black Hole's message</td></tr>
-  </table>
 </section>
 
 </main>

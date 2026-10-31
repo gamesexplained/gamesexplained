@@ -143,8 +143,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Tune 0, at speed 6, is the music the manual credits to Millers. Tunes 1 and 2, at speed 8, and tune 3, at speed 5, are jingles a few seconds long. Nothing in the game starts them, and the sound effects are just as silent (<a href="#sound">below</a>).</p>
 </section>
 
+<section id="sound">
+  <p class="fig">04 · The sound effects</p>
+  <h2 class="t">Sound: seventeen effects the game never plays</h2>
+  <p class="lede">A player for two-voice sound effects and an alarm sits in the sound code, ready to call, and no instruction in the game calls it.</p>
+  <div class="plate">
+    <div id="am-sfx"></div>
+    <p class="cap">The game's own sound code from the listing on the site's 6502: <code>sfx_start</code> (<code>$4A8E</code>) with the effect's number, or <code>alarm_start</code> (<code>$4A48</code>) with a period, then <code>sound_irq</code> once a frame. The game never calls either, so these are the calls their code expects, made by the page; the alarm's period is the page's choice. Every write to the chip is checked against the same calls on the listing in the kit's simulator.</p>
+  </div>
+  <p>Each effect is a record of twenty bytes, from <code>sfx_0</code> (<code>$4B39</code>) on, found through <code>sfx_table</code> (<code>$4B17</code>): a frequency, an envelope (how the volume rises and dies away), a waveform and a pulse width for voices 1 and 3, a step that sweeps each frequency up or down, how many steps the effect lasts, and how often and how many times it goes back to its starting pitches. While an effect plays, the music gives up voices 1 and 3 and keeps voice 2. The alarm takes voice 2 instead: a steady tone with the period 7, noise with the period 0, and a tone broken by bursts of noise with any period between.</p>
+  <p>No instruction calls <code>sfx_start</code> or <code>alarm_start</code>, and no table holds their addresses. The effects, the alarm and their records fill <code>$4A48</code> to <code>$4DB0</code>, 873 bytes, and what the game would have played them for is not known.</p>
+</section>
+
 <section id="clock">
-  <p class="fig">04 · The clock</p>
+  <p class="fig">05 · The clock</p>
   <h2 class="t">A week lasts 31 seconds</h2>
   <p class="lede">The world moves on a clock that counts frames on the main screen, and it stops while a window waits for the player.</p>
   <div class="plate">
@@ -155,7 +167,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="events">
-  <p class="fig">05 · How a country acts</p>
+  <p class="fig">06 · How a country acts</p>
   <h2 class="t">Each country climbs a ladder of 32 events</h2>
   <p class="lede">On every tick the game picks a country at random and looks for a neighbour whose hostility lands on one of the country's 32 event levels.</p>
   <div class="plate">
@@ -180,7 +192,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="answers">
-  <p class="fig">06 · The answers</p>
+  <p class="fig">07 · The answers</p>
   <h2 class="t">Every answer moves trust and hostility</h2>
   <p class="lede">The player's only levers on the world are the answers to memos and mail, and the letters in the OUT tray.</p>
   <div class="plate">
@@ -196,7 +208,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="satellites">
-  <p class="fig">07 · The satellites</p>
+  <p class="fig">08 · The satellites</p>
   <h2 class="t">A satellite sees a few pixels around it</h2>
   <p class="lede">Six laser satellites shoot down missiles and three Big Birds spy on countries, but only on a country whose rectangle comes within five pixels.</p>
   <div class="plate">
@@ -210,7 +222,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="radio">
-  <p class="fig">08 · The radio</p>
+  <p class="fig">09 · The radio</p>
   <h2 class="t">Eight filters unscramble a message</h2>
   <p class="lede">A message picked up while the radio scans arrives scrambled, and each of eight filters set right lets more of it through.</p>
   <div class="plate">
@@ -229,7 +241,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="war">
-  <p class="fig">09 · War</p>
+  <p class="fig">10 · War</p>
   <h2 class="t">Every missile that lands is one hit</h2>
   <p class="lede">A Total Missile Attack starts an exchange in which each side fires everything the other can still take.</p>
   <div class="plate">
@@ -245,7 +257,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="communique">
-  <p class="fig">10 · The communique</p>
+  <p class="fig">11 · The communique</p>
   <h2 class="t">Your rating is the world's trust added up</h2>
   <p class="lede">Every week ends with the U.N.N. Council's communique: a word for the Commander's performance and a word for the radiation.</p>
   <div class="plate">
@@ -259,7 +271,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="endings">
-  <p class="fig">11 · The endings</p>
+  <p class="fig">12 · The endings</p>
   <h2 class="t">Four ways the year ends</h2>
   <p class="lede">The game has four last messages (<code>game_over_texts</code>, <code>$B428</code>), and after each it starts a new year.</p>
   <div class="plate">
@@ -270,18 +282,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
   </div>
   <p>The year ends after 52 weeks with a rating of 16 less the countries destroyed, times 25, divided by 4 (<code>year_over</code>, <code>$B36F</code>): 100 with every country standing, 93 with one gone, and nothing at all for the trust the Commander built. The world ends at the end of a week whose radiation has reached 255. The Commander is recalled for lack of confidence by answering Agree when a country asks for a new Commander, and for incompetence by a Neutral answer to terrorism.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">12 · The sound effects</p>
-  <h2 class="t">Sound: seventeen effects the game never plays</h2>
-  <p class="lede">A player for two-voice sound effects and an alarm sits in the sound code, ready to call, and no instruction in the game calls it.</p>
-  <div class="plate">
-    <div id="am-sfx"></div>
-    <p class="cap">The game's own sound code from the listing on the site's 6502: <code>sfx_start</code> (<code>$4A8E</code>) with the effect's number, or <code>alarm_start</code> (<code>$4A48</code>) with a period, then <code>sound_irq</code> once a frame. The game never calls either, so these are the calls their code expects, made by the page; the alarm's period is the page's choice. Every write to the chip is checked against the same calls on the listing in the kit's simulator.</p>
-  </div>
-  <p>Each effect is a record of twenty bytes, from <code>sfx_0</code> (<code>$4B39</code>) on, found through <code>sfx_table</code> (<code>$4B17</code>): a frequency, an envelope (how the volume rises and dies away), a waveform and a pulse width for voices 1 and 3, a step that sweeps each frequency up or down, how many steps the effect lasts, and how often and how many times it goes back to its starting pitches. While an effect plays, the music gives up voices 1 and 3 and keeps voice 2. The alarm takes voice 2 instead: a steady tone with the period 7, noise with the period 0, and a tone broken by bursts of noise with any period between.</p>
-  <p>No instruction calls <code>sfx_start</code> or <code>alarm_start</code>, and no table holds their addresses. The effects, the alarm and their records fill <code>$4A48</code> to <code>$4DB0</code>, 873 bytes, and what the game would have played them for is not known.</p>
 </section>
 
 </main>

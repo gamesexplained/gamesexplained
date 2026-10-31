@@ -162,41 +162,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Before each note the player reads the keyboard. A special key such as CONTROL-S is obeyed at once, and any other key is thrown away, so a key pressed during a tune never reaches the fight.</p>
 </section>
 
-<section id="fighting" data-part="engine">
-  <p class="fig">05 · Fighting</p>
-  <h2 class="t">A blow on a standing hero kills him outright</h2>
-  <p class="lede">Arrows count the blows a fighter can take, but only in the stance. A hero caught standing, running or bowing dies of the first blow, whatever his arrows (<code>$712A</code>); a guard caught the same way only reels.</p>
-  <p>Whether a blow lands is decided by <code>hit_test</code> (<code>$7366</code>) from the distance between the fighters and the class of the target's pose (<code>pose_class</code>, <code>$70C6</code>, 26 classes for the 42 poses of the legs). A kick always lands within the target's reach plus one column, and the reach is 6 or 7 columns (<code>$7300</code>). Punches land by tables, at the reach (<code>$7348</code>, <code>$7352</code>) and at the reach plus two (<code>$7334</code>, <code>$733E</code>, <code>$735C</code>). A quick punch, thrown while stepping, lands only at exactly its own reach (<code>$745B</code>). Closer than the reach the two collide, and a hero who is moving is pushed back two columns.</p>
-  <p>Each blow that lands takes an arrow (<code>$0BC1</code>, <code>$0BD2</code>), and arrows come back one at a time while a fighter is not hit (<code>$0BE3</code>). The stages share out the strength. The hero's most arrows and each opponent's always add up to 28, and each guard beaten moves one more from the hero's side to the next guard's, until the hero is down to a floor that each stage sets.</p>
-  <div class="ka-scroll"><table class="ka-tbl">
-    <tr><th>Stage</th><th>The hero's most arrows at the start</th><th>Each opponent's</th><th>The hero gives one up per guard while he has</th><th>Guards' headgear</th></tr>
-    <tr><td>The cliff (<a href="source-cliff.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">14</td><td class="n">14</td><td>10 or more</td><td>0 to 5</td></tr>
-    <tr><td>The palace (<a href="source-palace.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">12</td><td class="n">16</td><td>9 or more</td><td>1 to 5</td></tr>
-    <tr><td>The dungeon (<a href="source-dungeon.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">10</td><td class="n">18</td><td>any number</td><td>3 to 6, then the hawk</td></tr>
-    <tr><td>Akuma's chamber (<a href="source-akuma.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">8</td><td class="n">20</td><td></td><td>Akuma</td></tr>
-  </table></div>
-  <p class="ka-note">The dungeon's hawk is its last opponent, with 5 arrows that never come back, and the hero has 23 for that fight: 28 again.</p>
-</section>
-
-<section id="controls" data-part="engine">
-  <p class="fig">06 · Controls</p>
-  <h2 class="t">Controls: the low kick is on X</h2>
-  <p class="lede">The manual gives Z for the low kick. The game reads X, and Z is the low punch.</p>
-  <div class="ka-scroll"><table class="ka-tbl">
-    <tr><th>Key</th><th>Standing</th><th>In the stance</th><th>Code</th></tr>
-    <tr><td>SPACE</td><td>take the stance</td><td>stand up</td><td><code>$6E78</code></td></tr>
-    <tr><td>RIGHT arrow</td><td>run, and keep running</td><td>one step forward</td><td><code>$6E69</code></td></tr>
-    <tr><td>LEFT arrow</td><td>stop running</td><td>one step back</td><td><code>$6E69</code></td></tr>
-    <tr><td>Q, A, Z</td><td></td><td>punch high, middle, low</td><td><code>$6EB9</code></td></tr>
-    <tr><td>W, S, X</td><td></td><td>kick high, middle, low</td><td><code>$6EE0</code></td></tr>
-    <tr><td>B</td><td>bow</td><td></td><td><code>$6F04</code></td></tr>
-  </table></div>
-  <p>A blow pressed while another is under way waits, and is sent again each frame until the fighter can take it (<code>$46</code>, <code>$47</code>). With the joystick, chosen with J (K goes back to the keys), holding the stick up keeps the hero standing, and letting it go puts him in the stance, where the buttons kick and punch at the height the stick points to (<code>player_input</code>, <code>$6E00</code>). Up stands him up again only when no guard or Akuma is within 15 columns and the hawk is not close.</p>
-  <p>The special keys work at any time, even in the middle of a tune (<code>special_keys</code>, <code>$7697</code>). ESC freezes the game until a key is pressed. CONTROL-S turns the music off, then the sound, then both back on. CONTROL-B swaps the joystick's buttons, CONTROL-E its axes, CONTROL-X reverses left and right and CONTROL-Y up and down, and CONTROL-N puts all four back. CONTROL-R goes back to the title. Each answers with a beep.</p>
-</section>
-
 <section id="sound" data-part="engine">
-  <p class="fig">07 · Sound</p>
+  <p class="fig">05 · Sound</p>
   <h2 class="t">Sound: one recording, played at seven speeds</h2>
   <p class="lede">Seven short effects are clicks spaced by the Monitor ROM's delay routine. The eighth sound is a recording of 2,048 one-bit samples (<code>$0E00</code>), played back slower or faster for a guard falling dead, a doorway kicked open, the hero falling to Akuma, Mariko's kick, Akuma's cry and the hawk.</p>
   <div class="plate">
@@ -215,6 +182,39 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table></div>
   <p><code>play_sample</code> (<code>$0DC0</code>) waits <code>$BA</code> turns of a loop between samples and clicks the speaker only where the sample changes, so the speed sets the pitch and the length together: the recording lasts 0.35 seconds at speed 30 and 0.45 at 40.</p>
   <p>All the sounds are made at the end of the frame that asked for them (<code>end_frame</code>, <code>$7628</code>), and CONTROL-S silences them. The last stage turns the music and the sound back on whatever the player chose, so the ending is always heard (<a href="source-akuma.html#B700"><code data-part="">$B700</code></a>).</p>
+</section>
+
+<section id="fighting" data-part="engine">
+  <p class="fig">06 · Fighting</p>
+  <h2 class="t">A blow on a standing hero kills him outright</h2>
+  <p class="lede">Arrows count the blows a fighter can take, but only in the stance. A hero caught standing, running or bowing dies of the first blow, whatever his arrows (<code>$712A</code>); a guard caught the same way only reels.</p>
+  <p>Whether a blow lands is decided by <code>hit_test</code> (<code>$7366</code>) from the distance between the fighters and the class of the target's pose (<code>pose_class</code>, <code>$70C6</code>, 26 classes for the 42 poses of the legs). A kick always lands within the target's reach plus one column, and the reach is 6 or 7 columns (<code>$7300</code>). Punches land by tables, at the reach (<code>$7348</code>, <code>$7352</code>) and at the reach plus two (<code>$7334</code>, <code>$733E</code>, <code>$735C</code>). A quick punch, thrown while stepping, lands only at exactly its own reach (<code>$745B</code>). Closer than the reach the two collide, and a hero who is moving is pushed back two columns.</p>
+  <p>Each blow that lands takes an arrow (<code>$0BC1</code>, <code>$0BD2</code>), and arrows come back one at a time while a fighter is not hit (<code>$0BE3</code>). The stages share out the strength. The hero's most arrows and each opponent's always add up to 28, and each guard beaten moves one more from the hero's side to the next guard's, until the hero is down to a floor that each stage sets.</p>
+  <div class="ka-scroll"><table class="ka-tbl">
+    <tr><th>Stage</th><th>The hero's most arrows at the start</th><th>Each opponent's</th><th>The hero gives one up per guard while he has</th><th>Guards' headgear</th></tr>
+    <tr><td>The cliff (<a href="source-cliff.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">14</td><td class="n">14</td><td>10 or more</td><td>0 to 5</td></tr>
+    <tr><td>The palace (<a href="source-palace.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">12</td><td class="n">16</td><td>9 or more</td><td>1 to 5</td></tr>
+    <tr><td>The dungeon (<a href="source-dungeon.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">10</td><td class="n">18</td><td>any number</td><td>3 to 6, then the hawk</td></tr>
+    <tr><td>Akuma's chamber (<a href="source-akuma.html#B700"><code data-part="">$B700</code></a>)</td><td class="n">8</td><td class="n">20</td><td></td><td>Akuma</td></tr>
+  </table></div>
+  <p class="ka-note">The dungeon's hawk is its last opponent, with 5 arrows that never come back, and the hero has 23 for that fight: 28 again.</p>
+</section>
+
+<section id="controls" data-part="engine">
+  <p class="fig">07 · Controls</p>
+  <h2 class="t">Controls: the low kick is on X</h2>
+  <p class="lede">The manual gives Z for the low kick. The game reads X, and Z is the low punch.</p>
+  <div class="ka-scroll"><table class="ka-tbl">
+    <tr><th>Key</th><th>Standing</th><th>In the stance</th><th>Code</th></tr>
+    <tr><td>SPACE</td><td>take the stance</td><td>stand up</td><td><code>$6E78</code></td></tr>
+    <tr><td>RIGHT arrow</td><td>run, and keep running</td><td>one step forward</td><td><code>$6E69</code></td></tr>
+    <tr><td>LEFT arrow</td><td>stop running</td><td>one step back</td><td><code>$6E69</code></td></tr>
+    <tr><td>Q, A, Z</td><td></td><td>punch high, middle, low</td><td><code>$6EB9</code></td></tr>
+    <tr><td>W, S, X</td><td></td><td>kick high, middle, low</td><td><code>$6EE0</code></td></tr>
+    <tr><td>B</td><td>bow</td><td></td><td><code>$6F04</code></td></tr>
+  </table></div>
+  <p>A blow pressed while another is under way waits, and is sent again each frame until the fighter can take it (<code>$46</code>, <code>$47</code>). With the joystick, chosen with J (K goes back to the keys), holding the stick up keeps the hero standing, and letting it go puts him in the stance, where the buttons kick and punch at the height the stick points to (<code>player_input</code>, <code>$6E00</code>). Up stands him up again only when no guard or Akuma is within 15 columns and the hawk is not close.</p>
+  <p>The special keys work at any time, even in the middle of a tune (<code>special_keys</code>, <code>$7697</code>). ESC freezes the game until a key is pressed. CONTROL-S turns the music off, then the sound, then both back on. CONTROL-B swaps the joystick's buttons, CONTROL-E its axes, CONTROL-X reverses left and right and CONTROL-Y up and down, and CONTROL-N puts all four back. CONTROL-R goes back to the title. Each answers with a beep.</p>
 </section>
 
 <section id="stages" data-part="engine">

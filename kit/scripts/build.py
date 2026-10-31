@@ -14,7 +14,7 @@ Every tab but Source draws from the same listing.json: C64.load, BBC.load and
 Spectrum.load fetch it whole, one download the browser caches for all of a
 game's tabs.
 A game with no listing at all, at tier none, builds with no Source tab, no
-footprint on About and no memory strip or size in the catalogue; at any other
+footprint on About and no size in the catalogue; at any other
 tier the build stops and says how to make the listing.
 A game of several parts (kit/scripts/parts.py) gets a Source page for each part
 that has a listing, source-<id>.html, with source.html the first of them; the
@@ -51,7 +51,7 @@ Plus a home page with the catalogue and the games most recently added or changed
 (from site/platform.html: its catalogue alone, the page the platform in a game's
 breadcrumb links to), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
 KIT_LIB), status.html (from site/status.html +
-site/status.json: which kits work on which computers, and the work needed),
+site/status.json: which kits work on which computers, and who has contributed),
 activity.html (from site/activity.html: what landed on main each day, from git
 history and the issues GitHub has closed as completed; site/lib/activity.js draws it),
 about.html (from site/about-site.html: who runs the site and the
@@ -1494,7 +1494,6 @@ def build_game(gdir, out_root):
             memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
         foot = ""
-    game["_totals"] = totals
     about_template = os.path.join(gdir, "about-layout.html")
     if not os.path.isfile(about_template):
         about_template = os.path.join(SITE, "about.html")
@@ -1696,15 +1695,6 @@ def hook(g):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
-def strip_html(g):
-    """The one-dimensional memory map under the featured game, drawn by C64Map.strip from
-    memmap.json. Nothing for a game with no listing: it has no memmap.json."""
-    if g["_totals"] is None:
-        return ""
-    total = sum(g["_totals"][k] for k in PROGRAM)
-    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
-
-
 def featured_frames(g):
     """game.json's "featured_frames": more pictures from the game folder for the featured box to fade
     through after the title image. Each must be a file in the game folder, as title_image must."""
@@ -1720,14 +1710,14 @@ def featured_frames(g):
 
 
 def featured_html(g):
-    """One game, large: title screen, memory strip, the title and its opening line."""
+    """One game, large: title screen, the title and its opening line."""
     plat, slug = g["platform"], g["slug"]
     meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
     shot = shot_html(g)
     frames = [f"{plat}/{slug}/{p}" for p in featured_frames(g)]
     if frames and shot.startswith("<img"):
         shot = shot.replace("<img ", f'<img data-frames="{html.escape(" ".join(frames), quote=True)}" ', 1)
-    return (f'<a class="show" href="{plat}/{slug}/">{shot}{strip_html(g)}'
+    return (f'<a class="show" href="{plat}/{slug}/">{shot}'
             f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
@@ -2031,29 +2021,29 @@ def fixed_issues():
     return sorted(out, key=lambda i: i["t"])
 
 
-def activity_data(games, now=None):
+def activity_data(games, now=None, landed_=None):
     """What the activity page draws, as one JSON object: the changes and the kit's version bumps
-    (landed), the issues fixed (fixed_issues, null when not asked), each game's title by
+    (landed, or landed_ when the caller has read them), the issues fixed (fixed_issues, null when not asked), each game's title by
     platform/slug, the repository, and the moment the build read them, which is where the
     page's periods end."""
-    changes, bumps = landed(games)
+    changes, bumps = landed_ or landed(games)
     return {"now": int(now if now is not None else datetime.datetime.now(datetime.timezone.utc).timestamp()),
             "repo": json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"),
             "changes": changes, "bumps": bumps, "issues": fixed_issues(),
             "games": {f'{g["platform"]}/{g["slug"]}': g["title"] for g in games}}
 
 
-def activity_page(games):
+def activity_page(games, landed_=None):
     """site/activity.html with activity_data embedded, which site/lib/activity.js draws: a
     period to pick, a tile for each count, the chosen count day by day, and every day's
     changes and fixes. "</" is escaped so no title can close the script element it sits in."""
-    data = json.dumps(activity_data(games), separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+    data = json.dumps(activity_data(games, landed_=landed_), separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
     return fill(read(os.path.join(SITE, "activity.html")), site_title="Activity · Games Explained", lib="lib",
                 data=data, repo=html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/")))
 
 
-# --- the status page: which kits work on which computers, and the work needed
-HOST_STATES = {"works": "Works", "limited": "Limited", "untested": "No run recorded"}
+# --- the status page: which kits work on which computers, and who has contributed
+HOST_STATES = {"works": "Works", "limited": "Limited", "untested": "Not yet"}
 MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
           "October", "November", "December")
 
@@ -2103,10 +2093,11 @@ def thanks_html(cs):
 
 
 def runs_on(cs, kit):
-    """A kit's tools on its status cards, emulators first: 'Runs on VICE by the VICE team, ... and ...'."""
-    items = [f'<a href="{html.escape(c["url"])}">{html.escape(c["name"])}</a> by {html.escape(c["by"])}'
+    """A kit's tools on its row of the status page, emulators first, each linked: 'VICE, vice-mcp and
+    regenerator2000'. The About page thanks their makers by name (thanks_html)."""
+    items = [f'<a href="{html.escape(c["url"])}">{html.escape(c["name"])}</a>'
              for c in sorted((c for c in cs if kit in (c.get("kits") or [])), key=lambda c: c.get("role") != "emulator")]
-    return f'<p class="tools">Runs on {" and ".join(filter(None, [", ".join(items[:-1]), items[-1]]))}.</p>' if items else ""
+    return " and ".join(filter(None, [", ".join(items[:-1]), items[-1]])) if items else ""
 
 
 TIER_ORDER = ("diamond", "platinum", "gold", "silver-claimed", "silver", "bronze", "none")
@@ -2127,116 +2118,99 @@ def tier_stamps(gs):
                     for t in TIER_ORDER if counts.get(t))
 
 
-def a_or_an(name):
-    """'a' or 'an' before a system's name, by its sound: an Apple II, an NES, an MSX, a BBC Micro.
-    A name that opens on capitals is read letter by letter, and F, H, L, M, N, R, S and X open on a vowel."""
-    w = name.split()[0] if name.split() else ""
-    initials = len(w) > 1 and w.isupper() and w.isalpha()
-    return "an" if w[:1].lower() in "aeiou" or (initials and w[0] in "FHLMNRSX") else "a"
-
-
 def rough(n):
     """A library size to two significant figures, since that is all the sources support: 23,000, 1,400, 460."""
     step = 10 ** max(len(str(int(n))) - 2, 0)
     return int(n / step + 0.5) * step
 
 
-def status_page(games):
+def and_more(gs, shown=2):
+    """Games as a status cell names them, best first (by_tier), each linked: 'A and B', 'A, B and C',
+    or 'A, B and 12 more' once there are more than one past the ones shown."""
+    links = [f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in by_tier(gs)]
+    if len(links) > shown + 1:
+        links = links[:shown] + [f"{len(links) - shown} more"]
+    return " and ".join(filter(None, [", ".join(links[:-1]), links[-1]])) if links else ""
+
+
+def contributor_board(changes, games, leave_out=()):
+    """[(name, login, pull requests merged, games, [platform ids])] per person, most pull requests first.
+
+    Read from the changes that landed on main (landed): a pull request counts for each person it
+    credits, a game for each person credited on the change that added its game.json, so long as the
+    game is still on the site, and the platforms are the ones those games are on, most of their
+    games first. The people in leave_out, by GitHub login or git author name, compared without
+    case, are left out."""
+    out = {str(x).strip().lower() for x in leave_out}
+    on_site = {f'{g["platform"]}/{g["slug"]}' for g in games}
+    rows = {}
+    for c in changes:
+        for name, login in c.get("who", []):
+            if (login or "").lower() in out or name.lower() in out:
+                continue
+            r = rows.setdefault(login or name, {"name": name, "login": login, "prs": 0, "games": set()})
+            r["prs"] += 1 if c.get("pr") else 0
+            r["games"] |= set(c.get("added", [])) & on_site
+    def platforms(gs):
+        n = {}
+        for g in gs:
+            n[g.split("/")[0]] = n.get(g.split("/")[0], 0) + 1
+        return sorted(n, key=lambda p: (-n[p], p))
+    return sorted(((r["name"], r["login"], r["prs"], len(r["games"]), platforms(r["games"]))
+                   for r in rows.values() if r["prs"] or r["games"]),
+                  key=lambda r: (-r[2], -r[3], -len(r[4]), (r[1] or r[0]).lower()))
+
+
+def status_page(games, changes=None):
     """site/status.html filled from site/status.json and the repository.
 
     What the repository knows (which systems have a kit, the games made with each, the
-    computer each was made on) is read here at build time. What it cannot know (what a
-    kit was measured doing on each kind of computer, how many games a system had) is in
-    status.json, each with a date. Works: every kit and computer measured as working.
-    Work needed: every other pairing of a kit and a computer, and every system with no kit,
-    the ones marked "wanted" first. Every box carries a prompt to paste into an agent;
-    status.json can give one of its own as "prompt"."""
+    computer each was made on, who landed what) is read here at build time. What it cannot
+    know (what a kit was measured doing on each kind of computer, how many games a system
+    had) is in status.json, each with a date. The page prints only the verdicts: a table of
+    every kit on every kind of computer, each cell Works, Limited or Not yet with two of the
+    games made there; the notes behind them, and the sources of the library sizes, stay in
+    status.json. Then the systems with no kit,
+    the games per system, and the contributors (contributor_board) less status.json's
+    contributors.leave_out. changes is landed()'s, read here when the caller has none."""
     S = json.load(open(os.path.join(SITE, "status.json")))
-    raw_repo = json.load(open(os.path.join(SITE, "config.json")))["repo"]
-    repo = html.escape(raw_repo)
-    blob = lambda path, text: f'<a href="{repo}/blob/main/{path}">{html.escape(text)}</a>'
+    repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"])
     have = kits()
     cs = credits()
     names = {s["id"]: s["name"] for s in S["systems"]}
     name = lambda k: names.get(k) or PLATFORM_NAMES.get(k, k)
-    stamp = lambda cls, text: f'<span class="state {cls}">{html.escape(text)}</span>'
-    wanted = '<span class="wanted">Wanted</span>'
+    if changes is None:
+        changes = landed(games)[0]
 
-    ids = iter(range(1, 1000))
-
-    def card(title, state, note, seen, extra, start, want, prompt):
-        """One box: what it is, where it stands, and the line to paste into an agent to take it on."""
-        date = f' <span class="mute">Recorded {long_date(seen)}.</span>' if seen else ""
-        go = f'<p class="start">Start with {" and ".join(start)}.</p>' if start else ""
-        pid = f"prompt-{next(ids)}"
-        paste = (f'<div class="paste"><code id="{pid}">{html.escape(prompt)}</code>'
-                 f'<button type="button" data-copy="#{pid}">Copy</button></div>')
-        return (f'<div class="proj{" want" if want else ""}"><p class="top"><b>{title}</b>{wanted if want else ""}</p>{state}'
-                f'<p>{html.escape(note)}{date}</p>{extra}{go}{paste}</div>')
-
-    works, research = [], []
+    head = "".join(f'<th>{html.escape(h["name"])}<span class="m">{html.escape(h["arch"])}</span></th>' for h in S["hosts"])
+    kit_rows = []
     for k in have:
+        cells = []
         for h in S["hosts"]:
-            c = h["kits"].get(k) or {"state": "untested", "note": "No run recorded."}
+            c = h["kits"].get(k) or {"state": "untested"}
             if c["state"] not in HOST_STATES:
                 sys.exit(f"site/status.json: host {h['id']}, kit {k}: state {c['state']!r} is not one of {', '.join(HOST_STATES)}")
-            title = f'{html.escape(name(k))} on {html.escape(h["name"])}, {html.escape(h["arch"])}'
-            if c["state"] == "works":
-                pat = re.compile(h["match"], re.I)
-                gs = [g for g in games if g["platform"] == k and pat.search(str((g.get("tools") or {}).get("host") or ""))]
-                made = ('<p class="made">Games made here: ' + ", ".join(
-                    f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
-                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), runs_on(cs, k) + made, [], False,
-                                  c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
-                                  f'and I want to explain {a_or_an(name(k))} {name(k)} game.'))
-            else:
-                start = [blob(f"kit/{k}/INSTALL.md", f"kit/{k}/INSTALL.md"),
-                         blob("kit/INSTALL.md#the-footprint-principle", "the footprint principle")]
-                prompt = c.get("prompt") or (
-                    f'Clone {raw_repo} and follow kit/START.md to explain {a_or_an(name(k))} {name(k)} game on {h["name"]}, {h["arch"]}. '
-                    'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
-                    f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
-                research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
-                                                           c.get("seen"), runs_on(cs, k), start, c.get("wanted"), prompt)))
+            pat = re.compile(h["match"], re.I)
+            made = and_more([g for g in games if g["platform"] == k and pat.search(str((g.get("tools") or {}).get("host") or ""))]) \
+                if c["state"] == "works" else ""
+            cells.append(f'<td data-host="{html.escape(h["name"])}, {html.escape(h["arch"])}">'
+                         f'<span class="state {c["state"]}">{HOST_STATES[c["state"]]}</span>'
+                         + (f'<span class="made">{made}</span>' if made else "") + '</td>')
+        tools = runs_on(cs, k)
+        kit_rows.append(f'<tr><td><b>{html.escape(name(k))}</b>' + (f'<span class="m">{tools}</span>' if tools else "")
+                        + "</td>" + "".join(cells) + "</tr>")
+    kits_html = f'<div class="tablewrap"><table class="kits"><tr><th>System</th>{head}</tr>{"".join(kit_rows)}</table></div>'
+
     rows = []
     for s in S["systems"]:
         if s["id"] in have:
             continue
         lib = s.get("library") or {}
         meta = " · ".join(str(x) for x in (s.get("maker"), s.get("year"), s.get("cpu")) if x)
-        if s.get("wanted"):
-            size = f' Its library runs to roughly {rough(lib["games"]):,} titles.' if lib.get("games") else ""
-            research.append((False, card(f'{html.escape(s["name"])}, on any computer', stamp("nokit", "No kit"),
-                                         (s.get("note") or "No kit on any computer.") + size, None,
-                                         f'<p class="m">{html.escape(meta)}</p>',
-                                         [blob("kit/PLATFORMS.md", "kit/PLATFORMS.md"), blob("kit/EMULATOR.md", "kit/EMULATOR.md")], True,
-                                         s.get("prompt") or f'Clone {raw_repo} and follow kit/PLATFORMS.md to add the {s["name"]} as a '
-                                         f'platform: choose an emulator that passes the tests in kit/EMULATOR.md and a disassembler '
-                                         f'for its {s.get("cpu") or "CPU"}, both with an agent interface, then take one game to Silver '
-                                         'with kit/START.md.')))
-            continue
         rows.append(f'<tr><td><b>{html.escape(s["name"])}</b><span class="m">{html.escape(meta)}</span></td>'
                     f'<td class="num">{"~" + format(rough(lib["games"]), ",") if lib.get("games") else "<span class=mute>unknown</span>"}</td></tr>')
-    research.sort(key=lambda r: r[0])   # stable: wanted first, otherwise in the order above
-    grid = lambda cards: '<div class="projs">' + "".join(cards) + '</div>'
-    unrecorded = [g for g in games if not (g.get("tools") or {}).get("host")]
-    works_html = grid(works) + (f'<p class="mute">{len(unrecorded)} {"games do" if len(unrecorded) != 1 else "game does"} not record '
-                                f'the computer they were made on: {", ".join(html.escape(g.get("title", g["slug"])) for g in unrecorded)}.</p>'
-                                if unrecorded else "")
     systems_html = ('<div class="tablewrap"><table class="systems"><tr><th>System</th><th class="num">Library</th></tr>'
                     + "".join(rows) + '</table></div>')
-
-    src = []
-    for s in S["systems"]:
-        lib = s.get("library") or {}
-        if lib.get("games"):
-            fig = lib.get("figure") or f'{lib["games"]:,}'
-            src.append(f'<li><b>{html.escape(s["name"])}</b>: {html.escape(fig[0].lower() + fig[1:])} {html.escape(lib.get("counts", ""))}. '
-                       f'<a href="{html.escape(lib["url"])}">{html.escape(lib["source"])}</a>'
-                       + (f', read {long_date(lib["seen"])}' if lib.get("seen") else "") + '.</li>')
-    sources_html = ('<p class="mute">Library sizes are rough. Every source counts in its own way: some list only commercial or licensed '
-                    'releases, some add public-domain games, type-ins and new games written since, and a few count software of every '
-                    'kind. Each line says what its figure counts.</p><ul class="sources">' + "".join(src) + '</ul>')
 
     # games per system: the systems runs have chosen, most games first
     per = {}
@@ -2253,10 +2227,18 @@ def status_page(games):
                   '<th></th><th>Tiers</th></tr>' + board + '</table></div>'
                   + (f'<p class="mute">The other {others} systems on this page have none.</p>' if per and others else ""))
 
+    people = contributor_board(changes, games, (S.get("contributors") or {}).get("leave_out") or [])
+    people_html = ('<div class="tablewrap"><table class="people"><tr><th class="num">#</th><th>Contributor</th>'
+                   '<th class="num">PRs merged</th><th class="num">Games</th><th>Platforms</th></tr>'
+                   + "".join(f'<tr><td class="num rank">{i}</td><td><b>{person_html(nm, login)}</b></td><td class="num">{prs}</td>'
+                             f'<td class="num">{ng}</td><td>{html.escape(", ".join(name(p) for p in pls))}</td></tr>'
+                             for i, (nm, login, prs, ng, pls) in enumerate(people, 1))
+                   + '</table></div>') if people else '<p class="mute">No contributions recorded in this build.</p>'
+
     built, commit = commit_stamp()
     return fill(read(os.path.join(SITE, "status.html")), site_title="Platform status · Games Explained", lib="lib", built=built,
-                commit=html.escape(commit), repo=repo, works=works_html, research=grid(r for _, r in research),
-                systems=systems_html, sources=sources_html, board=board_html)
+                commit=html.escape(commit), repo=repo, kits=kits_html, systems=systems_html, board=board_html,
+                people=people_html)
 
 
 def broken_links(out_root):
@@ -2429,8 +2411,9 @@ def main():
                 recent=recent_html(recent_changes(games)), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
-    open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
-    open(os.path.join(out_root, "activity.html"), "w").write(activity_page(games))
+    history = landed(games)   # read once: the status page's contributors and the activity page
+    open(os.path.join(out_root, "status.html"), "w").write(status_page(games, history[0]))
+    open(os.path.join(out_root, "activity.html"), "w").write(activity_page(games, history))
     # the site's About page; site/about.html is the About tab of a game
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
     open(os.path.join(out_root, "about.html"), "w").write(
