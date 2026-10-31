@@ -65,20 +65,33 @@ Found in the code, not in the manual.
   programs read it.
 - Each ground unit falls to one missile kind only: the table at `$B5A4`
   gives each unit kind the FFAR, the Hellfire or the Sidewinder, and a
-  missile of another kind that hits it does nothing.
-- With the lowest style nothing ever hits the helicopter (`$5AE5`).
+  missile of another kind that hits it does nothing (`$B2F1`). The Hind,
+  unit 5, falls to any missile (`$B309`), and no unit in the five
+  theatres' files is of the two kinds the table gives the Sidewinder.
+- In training nothing ever hits the helicopter, and on a mission the
+  style sets what share of the enemy's shots hit: a quarter, a half or
+  three quarters (`$5AE5`, `facts.md`).
 - The joystick reads nothing unless CIA 2's two timers still keep the gap
   the library set on side 1 (`joystick`, `$E40C`).
 - On a C128 the engine switches to 2 MHz while the raster is below the
   picture, and back to 1 MHz at its top (`$9110`, `$948F`).
-- Messages the CRT can show include "CEASE FIRE / FRIENDLY TROOPS HAVE
-  BEEN HIT" and "SURV RADAR ALERT: ENEMY HIND HELICOPTER AIRBORNE"
+- Messages the CRT can show include "SURV RADAR ALERT: ENEMY HIND
+  HELICOPTER AIRBORNE" and "CEASE FIRE / FRIENDLY TROOPS HAVE BEEN HIT"
   (`$7A52`, `$7A83`).
+- Five of the six BASIC programs, all but `B`, the debriefing, start with
+  a line of `REM`, five DEL characters and a shifted L (line 0, or line 1
+  in `BEGIN`): LIST rubs out the line's number and `REM` and stops at once
+  with `?SYNTAX ERROR`, so the program cannot be listed (*live* for `G2`,
+  `facts.md`).
+- The cannon fires only with the CRT on the target view (`$3D60`): with
+  the map or a message up, fire with a target picked moves the CRT on.
+- The C64-Wiki's unlimited ammunition POKE fits this build; its fuel and
+  damage POKEs are for another (`cheats.md`).
 
 ## Open questions
 
-- Each BASIC program's first line is `REM`, five DEL characters and a
-  shifted L (`$CC`, a byte with no keyword): what LIST does with it.
-
-- Where the flight engine stores the roster's changes before the base
-  program saves them.
+None that the code leaves open. The roster's changes go through two
+hands: the flight leaves its variables in the copy of its zero page at
+`$3F00` (`swap_zp`, `$919B`), the debriefing `B` reads them there (lines
+4-5) and copies the ones the base needs into the cassette buffer at
+`$033C` (lines 59-62), and the base program `E` saves the roster.
