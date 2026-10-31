@@ -97,16 +97,29 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries while the helicopter rises over the hills. It is the only music in the game.</p>
   <div class="plate">
     <div id="gs-music"></div>
-    <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run once a frame on the title's bytes by the site's copy of the 6502, the C64's processor, as the title's raster interrupt calls it. A frame is one picture on the television, 50 a second in Europe. The notes go through the site's model of the SID, the C64's sound chip. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
+    <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run on the title's bytes by the site's copy of the 6502, the C64's processor. The title calls it once a frame from a raster interrupt, code that the video chip starts when it reaches a chosen line of the screen. A frame is one picture on the television, 50 a second in Europe. The notes go through the site's model of the SID, the C64's sound chip. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
   </div>
   <p>Each voice's stream is a note number and a length, two bytes a note. <code>$80</code> is a rest and <code>$81</code> the end. The length is multiplied by the tempo: 2 frames a unit on a PAL machine, the European C64 with 50 frames a second, and 3 on an NTSC machine, the American one with 60 (<code>tempo_by_tv</code>, <code>$8530</code>). A unit therefore lasts a twenty-fifth of a second on PAL and a twentieth on NTSC, so the tune plays a little slower in America. Each note number picks the note's frequency for the SID from two tables, one for the low byte and one for the high (<code>$9006</code>, <code>$9082</code>). The tables have 16 entries to an octave: 12 notes, then 4 zeros. The table's values are those of an NTSC machine, so on a PAL machine every note sounds a little flat.</p>
   <p>The first voice plays a pulse wave and the other two a sawtooth (<code>tune_waves</code>, <code>$9003</code>). The player ends the tune when any voice reads <code>$81</code>. A key pressed during the tune skips it.</p>
 </section>
 
 <section data-part="flight">
-  <p class="fig">04 · The cockpit</p>
+  <p class="fig">04 · Sound: the effects</p>
+  <h2 class="t">Sound: ten effects from one small table</h2>
+  <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of values to write into the SID's registers, the sound chip's settings, and the frame on which to write each one.</p>
+  <div class="plate">
+    <div id="gs-sfx"></div>
+    <p class="cap">The game's own effect player, <code>sound_step</code> (<code>$9A39</code>), run once a frame on the flight's bytes by the site's copy of the 6502, as the flight's raster interrupt calls it, after <code>sound_start</code> (<code>$9AAC</code>) as the game starts each effect. It plays through the site's model of the SID. The test beside the page compares every write with the same calls on the flight's whole memory.</p>
+  </div>
+  <p>All ten effects sit in one page of 256 bytes, so each one's address is a single byte (<code>sound_effects</code>, <code>$EC00</code>). An effect's entries are three bytes: the frame it is due on, a SID register and the value to write. A frame with bit 7 set starts a slide instead: from then on, each frame adds a step to a register. The slide's register is the low three bits of its start value, so a slide can only reach voice 1 and the first byte of voice 2. Effect 0 is never asked for by any of the flight's calls.</p>
+  <p>Effect 9, an engine's starter, is effect 0 with its slides going the other way. Its first entry names register <code>$50</code>, where effect 0's names register 1. The SID repeats its registers every 32 bytes, so the write lands on register 16, the low byte of voice 3's pulse width.</p>
+  <p>Under the effects, the main loop keeps two voices going all through the flight (<code>$3BBD</code>). Voice 2's pitch is the rotor's speed, and its pulse width follows the height. Voice 3 is the engines' whine.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">05 · The cockpit</p>
   <h2 class="t">Two pictures, one screen</h2>
-  <p class="lede">The cockpit is two pictures, each a bitmap that sets every pixel, in two different 16 KB banks of memory. The video chip can see only one bank at a time. A raster interrupt, code the chip runs when it reaches a chosen line of the screen, switches it from one bank to the other a third of the way down.</p>
+  <p class="lede">The cockpit is two pictures, each a bitmap that sets every pixel, in two different 16 KB banks of memory. The video chip can see only one bank at a time, and a raster interrupt switches it from one bank to the other a third of the way down the screen.</p>
   <div class="plate">
     <canvas id="gs-frame" class="gs-canvas" aria-label="The cockpit, drawn from memory"></canvas>
     <div class="gs-ctl" style="margin-top:12px">
@@ -121,7 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">05 · The map</p>
+  <p class="fig">06 · The map</p>
   <h2 class="t">The theatre on one screen</h2>
   <p class="lede">Pressing Z shows the big map: the theatre's terrain in characters, the units you have seen, and the waypoint.</p>
   <div class="plate">
@@ -133,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">06 · Flying it</p>
+  <p class="fig">07 · Flying it</p>
   <h2 class="t">Controls</h2>
   <p class="lede">The joystick is the cyclic, the stick that tilts the rotor to fly the helicopter forward, back or sideways. The keyboard does everything else.</p>
   <div class="plate">
@@ -163,7 +176,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">07 · Weapons and hits</p>
+  <p class="fig">08 · Weapons and hits</p>
   <h2 class="t">Each ground unit falls to one kind of missile</h2>
   <p class="lede">A missile of the wrong kind that hits a ground unit does nothing at all. The flight engine names one missile kind for each of the sixteen kinds of unit, and only the Hind falls to any missile.</p>
   <div class="plate">
@@ -172,19 +185,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>The cannon works another way. Each shot takes a random fraction of the cannon's range and hits when that is beyond the target's distance. The range shrinks with a worse aim, a harder style of mission and a damaged gun (<code>$3D60</code>). The colour of the target box tells the pilot how good the shot is: the aim and the distance give a class from 0 to 3, which picks one of four colours (<code>$3CB6</code>, <code>$53A4</code>).</p>
   <p>When an enemy shoots at the helicopter, <code>hit_helicopter</code> (<code>$5AE5</code>) decides whether it hits. First a random number from 0 to 15 is checked against the attacker's chance (<code>$5ADD</code>: 4 in 16, 8 in 16 or always, by the attacker). Then the pass counter, which goes up by one each time round the main loop, is checked: its lowest two bits, a number from 0 to 3, must be below <code>zpa_4C</code>. That variable is 0 in training, and on a mission it is the style of missions plus 1. So in training nothing ever hits. Of the shots that pass the first test, a quarter hit on regular missions, a half on volunteer missions and three quarters on volunteer hazardous duty. A hit sets one of the fourteen damage bits at random. More than 7 hits, less <code>zpa_4C</code>, stop both engines. The <a href="discoveries.html">Discoveries</a> tab lets you try the test.</p>
-</section>
-
-<section data-part="flight">
-  <p class="fig">08 · Sound: the effects</p>
-  <h2 class="t">Sound: ten effects from one small table</h2>
-  <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of values to write into the SID's registers, the sound chip's settings, and the frame on which to write each one.</p>
-  <div class="plate">
-    <div id="gs-sfx"></div>
-    <p class="cap">The game's own effect player, <code>sound_step</code> (<code>$9A39</code>), run once a frame on the kit's 6502 on the flight's bytes, as the interrupt calls it, after <code>sound_start</code> (<code>$9AAC</code>) as the game starts each effect. It plays through the site's model of the SID. The test beside the page compares every write with the same calls on the flight's whole memory.</p>
-  </div>
-  <p>All ten effects sit in one page of 256 bytes, so each one's address is a single byte (<code>sound_effects</code>, <code>$EC00</code>). An effect's entries are three bytes: the frame it is due on, a SID register and the value to write. A frame with bit 7 set starts a slide instead: from then on, each frame adds a step to a register. The slide's register is the low three bits of its start value, so a slide can only reach voice 1 and the first byte of voice 2. Effect 0 is never asked for by any of the flight's calls.</p>
-  <p>Effect 9, an engine's starter, is effect 0 with its slides going the other way. Its first entry names register <code>$50</code>, where effect 0's names register 1. The SID repeats its registers every 32 bytes, so the write lands on register 16, the low byte of voice 3's pulse width.</p>
-  <p>Under the effects, the main loop keeps two voices going all through the flight (<code>$3BBD</code>). Voice 2's pitch is the rotor's speed, and its pulse width follows the height. Voice 3 is the engines' whine.</p>
 </section>
 
 <section data-part="">
