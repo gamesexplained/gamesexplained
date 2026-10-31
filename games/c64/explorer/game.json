@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "explorer",
+  "title": "Explorer",
+  "year": 1987,
+  "publisher": "Electric Dreams Software",
+  "developer": "The RamJam Corporation",
+  "title_image": "reference/title.png",
+  "build": "a freezer backup of Electric Dreams' 1987 disk release, the TOSEC image Explorer (1987)(Electric Dreams) from the Internet Archive (MD5 858dc180…672db); its code agrees byte for byte with Triad's crack of the same release",
+  "tier": "silver",
+  "coverage_percent": 100.0,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Graham Relf",
+      "role": "design and program"
+    },
+    {
+      "by": "Simon Dunstan",
+      "role": "graphics"
+    },
+    {
+      "by": "David John Rowe",
+      "role": "inlay art"
+    },
+    {
+      "by": "The RamJam Corporation",
+      "role": "developer"
+    }
+  ],
+  "tools": {
+    "emulator": "release v3.14.0, v3.14.0-linux-x86_64-gui.zip (VICE x64sc, PAL)",
+    "disassembler": "regenerator2000 0.9.20",
+    "host": "Linux x86_64, Ubuntu 24.04.5 cloud container, four cores, no display",
+    "python": "3.13.17",
+    "node": "22.22.0"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5"
+    ],
+    "20-features": [
+      "claude-opus-5-5"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "80-retro": [
+      "claude-opus-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 75,
+      "wrong": 8,
+      "fixed": 8,
+      "seed": 20261031,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "60 of 494 hand-written comments and 15 of 43 generated; two of the eight were corrected between the draw and the check"
+    },
+    {
+      "step": "port",
+      "fixed": 3,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "the ground view, drawn on the page by the game's own drawing code from the listing's bytes and compared with the game in the emulator at the same place, which corrected divide_8 at $10E8 and the random seed's comments at $002B and $10FF"
+    }
+  ],
+  "kit_version": "0.0.277",
+  "created": "2026-10-31",
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$03FF",
+        "runtime: zero page, the stack and pages 2-3. zp_init copies zero page from zp_image ($0C92) at the start; pages 2 and 3 hold what the freezing machine left, and no instruction of the game reads them"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "not the game's: the freezing machine's text screen (its DOLPHINDOS start-up text and LOAD); the game shows VIC banks 1 and 3 only"
+      ],
+      [
+        "$0800",
+        "$0802",
+        "not the game's: the byte before BASIC's start and the first two bytes of the backup's BASIC line, which Triad's crack has as other values; no instruction reads them"
+      ],
+      [
+        "$3EAE",
+        "$3FFF",
+        "zeros after the last routine; no instruction reads them and the video chip never shows bank 0"
+      ],
+      [
+        "$4000",
+        "$43FF",
+        "runtime: the screen (colours) of VIC bank 1, which the game draws into and shows in turn with bank 3's"
+      ],
+      [
+        "$4AB6",
+        "$5FFF",
+        "leftover bytes after the sight's picture: no instruction names an address there, no pointer table points there, and the video chip, which reads bank 1's screen at $4000, its characters at $4800-$49FF and its bitmap at $6000, never reads them"
+      ],
+      [
+        "$6000",
+        "$7FFF",
+        "runtime: the bitmap of VIC bank 1, drawn by the game"
+      ],
+      [
+        "$BCBE",
+        "$BCFF",
+        "zeros between the last picture and the font; nothing reads them"
+      ],
+      [
+        "$C3E8",
+        "$C3FF",
+        "the bytes after bank 3's screen (the sprite pointers' page end); the game uses no sprites and nothing reads them"
+      ],
+      [
+        "$C400",
+        "$C7FF",
+        "not the game's: the release's loader ($C400-$C45C), the names of the two files it loaded ($C49D-$C4BC) and zeros after them; the game never calls it (kit policy: the loader is described in orientation.md)"
+      ],
+      [
+        "$C800",
+        "$CFFF",
+        "runtime: copy_charset's copy of map_charset at $C800-$C97F for bank 3, and zeros after it"
+      ],
+      [
+        "$FF40",
+        "$FFFF",
+        "the loader's copy of the picture ran 192 bytes past the bitmap, so these hold the first colours again; the last six are the NMI, reset and IRQ vectors init_machine sets"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [],
+  "links": {
+    "wiki": {
+      "title": "",
+      "url": ""
+    },
+    "manual": {
+      "title": "Explorer instructions – Spectrum Computing",
+      "url": "https://spectrumcomputing.co.uk/pub/sinclair/games-info/e/Explorer.txt"
+    },
+    "designer": {
+      "title": "The Forest - history – Graham Relf",
+      "url": "https://www.grelf.net/foresthistory.html"
+    }
+  }
+}
