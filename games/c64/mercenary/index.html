@@ -607,23 +607,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Each square's byte in the table at <code>$2B00</code> holds its owner (bit 6 Mechanoid, bit 5 nobody's, neither Palyar) and, in its low five bits, a script number n. When the square is destroyed, script 32 + n runs once. Scripts 36 to 48 name the landmarks ("YOU HAVE JUST DESTROYED", then BOSHER STADIUM, say), and all but Novabill's then set off an attack by the square's owner; scripts 49 and 50 print their one word and leave you alone.</p>
 </section>
 
-<section id="frame">
-  <p class="fig">07 · The screen</p>
-  <h2 class="t">The double buffer gives 4 or 5 fps</h2>
-  <p class="lede">The view is a bitmap of 160 by 136 wide pixels, and there are two of them: the game draws into one while you look at the other.</p>
-  <div class="plate">
-    <div class="frame-wrap"><canvas id="frame-cv" width="768" height="544"></canvas></div>
-    <div class="frame-ctl"><button id="frame-back" type="button" aria-pressed="false">Show the other bitmap</button><span id="frame-state" class="frame-state"></span></div>
-    <p class="cap" id="frame-cap">One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the memory and video-chip writes recorded in the emulator: all 104,448 pixels match the emulator's own picture of that frame. The button points the view at the other bitmap, which is half drawn.</p>
-  </div>
-  <p>Above the panel the screen is in multicolour bitmap mode: each byte holds four pixels of two bits, and each pixel is twice as wide as it is tall. Two bitmaps sit in the video chip's second bank, at <code>$4000</code> and <code>$6000</code>. On every pass the main loop swaps them (<code>$AF84</code>): the counter <code>$24</code> picks which one the game draws into (<code>$25</code>), and <code>$C7</code> holds the value the view's raster interrupt writes into <code>$D018</code> to show the other. At line 186 a second interrupt switches the screen to text for the panel (<code>$BA1E</code>).</p>
-  <p>Seen from above the whole city, a view takes 13 frames to draw, so the picture changes about four times a second. On the ground, with one building to draw, the main loop runs five passes a second.</p>
-</section>
-
 <!-- benson: Benson's message window, how a message is stored, the event scripts, money in BCD.
      Needs benson.css, ../../lib/c64.js, window.MERC_GAME = C64.load('listing.json'), then benson.js. -->
 <section id="benson-window">
-  <p class="fig">08 · Benson</p>
+  <p class="fig">07 · Benson</p>
   <h2 class="t">Benson and his sound</h2>
   <p class="lede">Benson, the craft's computer, speaks through a strip of 23 cells at the bottom of the panel. Under his words runs a tick: one square wave that sounds for the whole game, retuned every frame from the character he has just printed. A blank sets its pitch to zero, and the note falls silent.</p>
   <div class="plate benson-plate">
@@ -666,12 +653,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="sound">
-  <p class="fig">09 · Sound</p>
+  <p class="fig">08 · Sound</p>
   <h2 class="t">Sound: thirteen sound effects and an engine</h2>
   <p class="lede">The game has no music. Its sound effects are thirteen entries of four bytes in one table, each started on voice 1 or voice 2 by the same routine; only the doors' hum and Benson's tick come from elsewhere. The lift and the engine rewrite a register while they play.</p>
   <div class="plate">
     <div id="snd-player"></div>
-    <p class="cap">Each button plays the game's own register writes, frame by frame, through the site's model of the SID: the four bytes from the table at <code>$B987</code>, then whatever the game writes while the sound runs (the lift's pitch every frame, the wipes' two blocks, the opening's gate). The bytes are read from listing.json. A test runs the game's code in the kit's 6502 simulator and gets the same registers and the same gate changes on every frame, for every button. Voice 3 is Benson's (section 08) and stays silent here.</p>
+    <p class="cap">Each button plays the game's own register writes, frame by frame, through the site's model of the SID: the four bytes from the table at <code>$B987</code>, then whatever the game writes while the sound runs (the lift's pitch every frame, the wipes' two blocks, the opening's gate). The bytes are read from listing.json. A test runs the game's code in the kit's 6502 simulator and gets the same registers and the same gate changes on every frame, for every button. Voice 3 is Benson's (section 07) and stays silent here.</p>
     <p class="snd-need" hidden></p>
   </div>
   <p><code>$B958</code> (voice 1) and <code>$B93A</code> (voice 2) share a tail at <code>$B961</code> that closes the voice's gate, then writes the frequency's high byte, the attack and decay, the sustain and release, and the control byte, which opens the gate again with a pulse or noise wave. The frequency's low byte is <code>$80</code> and the pulse width <code>$800</code>, as <code>$B910</code> sets them from <code>$B921</code>, so every pulse is square; only the doors' hum changes the low byte, until <code>$B910</code> runs again. Whatever the voice was playing is cut off.</p>
@@ -705,6 +692,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>On the surface, and not during the opening's descent, the panel's routine sets the engine note once a pass (<code>$B5D8</code>-<code>$B61C</code>). Voice 2 plays noise. The sustain level is the speed's power of two less 3, and at least 1, so from 32 units a pass the engine gets one step louder each time the speed doubles. The frequency's high byte takes the level in its top four bits and the top four bits of the speed's mantissa below them: the pitch climbs in 16 steps through each doubling and then jumps. When the level rises the game starts sound <code>$24</code> again, since the SID's envelope only falls to a new sustain level by itself. When the level falls, a write to <code>$D40D</code> is enough.</p>
   <p>Below a speed of 1 the sustain and release byte is 0 and the engine is silent. The other silence comes from the arithmetic. The level is the speed's exponent byte less <code>$0C</code>, and bit 0 of that byte is the sign. Going forward at 8 to 16 units a pass the byte is <code>$0C</code>, the difference is 0, and the code replaces it with the minimum, level 1. Reversing at the same speeds the byte is <code>$0D</code> and the difference is 1, which the code keeps: shifted into place it becomes <code>$0C</code>, sustain 0 and a three-second release. The engine falls silent between −8 and −16, SPEED −3 to −5 on the panel, and comes back at −16.</p>
+</section>
+
+<section id="frame">
+  <p class="fig">09 · The screen</p>
+  <h2 class="t">The double buffer gives 4 or 5 fps</h2>
+  <p class="lede">The view is a bitmap of 160 by 136 wide pixels, and there are two of them: the game draws into one while you look at the other.</p>
+  <div class="plate">
+    <div class="frame-wrap"><canvas id="frame-cv" width="768" height="544"></canvas></div>
+    <div class="frame-ctl"><button id="frame-back" type="button" aria-pressed="false">Show the other bitmap</button><span id="frame-state" class="frame-state"></span></div>
+    <p class="cap" id="frame-cap">One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the memory and video-chip writes recorded in the emulator: all 104,448 pixels match the emulator's own picture of that frame. The button points the view at the other bitmap, which is half drawn.</p>
+  </div>
+  <p>Above the panel the screen is in multicolour bitmap mode: each byte holds four pixels of two bits, and each pixel is twice as wide as it is tall. Two bitmaps sit in the video chip's second bank, at <code>$4000</code> and <code>$6000</code>. On every pass the main loop swaps them (<code>$AF84</code>): the counter <code>$24</code> picks which one the game draws into (<code>$25</code>), and <code>$C7</code> holds the value the view's raster interrupt writes into <code>$D018</code> to show the other. At line 186 a second interrupt switches the screen to text for the panel (<code>$BA1E</code>).</p>
+  <p>Seen from above the whole city, a view takes 13 frames to draw, so the picture changes about four times a second. On the ground, with one building to draw, the main loop runs five passes a second.</p>
 </section>
 
 <section id="benson-store">
@@ -3163,7 +3163,7 @@ window.MERC_GAME.catch(() => {});
 <script src="../../lib/sid.js"></script>
 <script>
 /* sound */
-/* Sound (section 09): the sound effects and the engine through the site's model of the SID
+/* Sound (section 08): the sound effects and the engine through the site's model of the SID
    (../../lib/sid.js), from the game's own bytes in listing.json.
 
    createSfxDriver(D) is the driver sid.js calls once a frame. It refers to nothing outside itself,
@@ -3185,7 +3185,7 @@ function createSfxDriver(D) {
   const put = (k, r, v) => frame(k).w.push(r, v);
   const say = (k, x, s) => frame(k).l.push(x, s);
   const frames = ms => Math.ceil(ms / 1000 * FPS);
-  // $B910 sid_init: $D418 down to $D400 from $B921. Voice 3 is Benson's tick (section 08) and is
+  // $B910 sid_init: $D418 down to $D400 from $B921. Voice 3 is Benson's tick (section 07) and is
   // left out: $B910 gates it on at frequency 0, which is silent.
   function sidInit(k) {
     for (let r = 0x18; r >= 0; r--) if (r < 0x0E || r > 0x14) put(k, r, D.init[r]);

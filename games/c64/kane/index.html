@@ -87,7 +87,30 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · One frame of the ride</p>
+  <p class="fig">03 · The effects</p>
+  <h2 class="t">Sound: the effects</h2>
+  <p class="lede">The canyon's drum, the arrow's whistle, the two kinds of gunshot and the train's hoofbeats are short routines that set the sound chip once a frame.</p>
+  <div class="plate"><div id="kn-sfx"></div>
+  <p class="cap">The page runs each effect's own routine from the listing on the kit's 6502 once a frame, as <code>play_effects</code> (<code>$91E7</code>) and <code>play_music</code> (<code>$9475</code>) call them, after setting the bytes the game sets when the effect starts. The test beside this page holds every write against the game's code. The drum is a low note: laptop and phone speakers play it quietly.</p></div>
+  <p>Each effect has a bit in <code>effects</code> (<code>$23</code>): bit 7 the Marshall's shot, bit 6 a gunman's, bit 5 the whistle, bit 4 the drum. The shots and the whistle clear their own bit when they end. The drum's bit stays set until the stage ends, so the drum beats for the whole canyon, every fifteen frames, a high note on one beat in four. The hoofbeats belong to the train. They are noise on all three voices, struck once a period that starts at 20 frames and shortens by a frame at each beat, so the train speeds up as the gallop does (<code>hoof_sound</code>, <code>$96FF</code>).</p>
+</section>
+
+<section>
+  <p class="fig">04 · The samples</p>
+  <h2 class="t">Sound: a duck's cry is the Marshall's death, sped up</h2>
+  <p class="lede">A hit duck, a hit gunman, the Marshall's death, the horse's whinny and a man's voice saying “Well done” at the end of the game are recordings, one bit a sample, played while the whole game stops.</p>
+  <div class="plate">
+    <div class="kn-bar" id="kn-samps"></div>
+    <canvas id="kn-wave" class="kn-cv" width="800" height="120" style="background:#1d1f24"></canvas>
+    <p class="kn-out" id="kn-samp-out"></p>
+    <p class="cap">The page runs the game's own sample player on the kit's 6502, with a model of the timer it waits on, and turns each bit into a level: voice 1 held high, or low, scaled by the volume. The interrupts that still run during a sample would delay a bit here and there; the page leaves them out.</p>
+  </div>
+  <p>The player turns voice 1 into a switch. It sets the voice to a pulse wave of width <code>$FFF</code> with a frequency of 0, so the oscillator never moves and the output sits low. Setting the voice's test bit forces the output high. Each bit of the sample sets or clears the test bit (<code>$93E9</code>, <code>$93F0</code>), and CIA 2's timer A times the bits. The stream comes in blocks of a volume byte and sixteen bytes of bits, so the volume can change every 128 bits.</p>
+  <p>Three of the cries are one recording, the hit sample at <code>$F3F0</code>, played at three speeds and three volumes: <code>sample_rate</code> (<code>$9449</code>) sets the length of a bit and <code>sample_volume</code> (<code>$9448</code>) is taken off each block's volume. A duck's cry is the same sound as the Marshall's death, played in about half the time and quieter.</p>
+</section>
+
+<section>
+  <p class="fig">05 · One frame of the ride</p>
   <h2 class="t">One frame of the first ride, rebuilt</h2>
   <p class="lede">The ride's screen is eight bands, one above the other, each set up by its own raster interrupt as the picture is drawn. Press a band to see what its handler changes.</p>
   <div class="plate">
@@ -100,7 +123,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">04 · The pictures</p>
+  <p class="fig">06 · The pictures</p>
   <h2 class="t">Pictures drawn from a packed stream</h2>
   <p class="lede">Before each stage the game draws its picture a byte at a time, slowly enough to watch. The canyon takes about a second.</p>
   <div class="plate">
@@ -115,7 +138,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · The rides</p>
+  <p class="fig">07 · The rides</p>
   <h2 class="t">A course of 400 characters</h2>
   <p class="lede">Each ride's ground is a strip 400 characters long and five high, built from nine obstacles before the ride starts. The screen shows forty characters of the strip at a time.</p>
   <div class="plate">
@@ -132,7 +155,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · The shoot-out</p>
+  <p class="fig">08 · The shoot-out</p>
   <h2 class="t">How a gunman picks where to appear</h2>
   <p class="lede">The bad guys come out of sixteen fixed places, four at a time at most. Press a place to see how its gunman appears.</p>
   <div class="plate">
@@ -143,29 +166,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>Four sprites, 3 to 6, carry the gunmen. Every fifth pass of the shoot-out's loop, <code>gunmen_appear</code> (<code>$3E77</code>) counts down a delay for each free sprite, and gives it a place when the delay runs out. <code>gunmen_appear</code> picks the place at random by mixing CIA 1's timer with the raster line, the line the video chip is drawing. A gunman is tiny, eight pixels wide and five to eleven lines tall, and the game draws him into his sprite a row at a time as he comes out (<code>gunman_step</code>, <code>$8810</code>). He waits seven steps, fires once at the gunmen's aim, and goes back the way he came.</p>
   <p>The check that a place is free reads the wrong byte, so two gunmen can share a place. <a href="discoveries.html">Discoveries</a> has the details.</p>
-</section>
-
-<section>
-  <p class="fig">07 · The effects</p>
-  <h2 class="t">Sound: the effects</h2>
-  <p class="lede">The canyon's drum, the arrow's whistle, the two kinds of gunshot and the train's hoofbeats are short routines that set the sound chip once a frame.</p>
-  <div class="plate"><div id="kn-sfx"></div>
-  <p class="cap">The page runs each effect's own routine from the listing on the kit's 6502 once a frame, as <code>play_effects</code> (<code>$91E7</code>) and <code>play_music</code> (<code>$9475</code>) call them, after setting the bytes the game sets when the effect starts. The test beside this page holds every write against the game's code. The drum is a low note: laptop and phone speakers play it quietly.</p></div>
-  <p>Each effect has a bit in <code>effects</code> (<code>$23</code>): bit 7 the Marshall's shot, bit 6 a gunman's, bit 5 the whistle, bit 4 the drum. The shots and the whistle clear their own bit when they end. The drum's bit stays set until the stage ends, so the drum beats for the whole canyon, every fifteen frames, a high note on one beat in four. The hoofbeats belong to the train. They are noise on all three voices, struck once a period that starts at 20 frames and shortens by a frame at each beat, so the train speeds up as the gallop does (<code>hoof_sound</code>, <code>$96FF</code>).</p>
-</section>
-
-<section>
-  <p class="fig">08 · The samples</p>
-  <h2 class="t">Sound: a duck's cry is the Marshall's death, sped up</h2>
-  <p class="lede">A hit duck, a hit gunman, the Marshall's death, the horse's whinny and a man's voice saying “Well done” at the end of the game are recordings, one bit a sample, played while the whole game stops.</p>
-  <div class="plate">
-    <div class="kn-bar" id="kn-samps"></div>
-    <canvas id="kn-wave" class="kn-cv" width="800" height="120" style="background:#1d1f24"></canvas>
-    <p class="kn-out" id="kn-samp-out"></p>
-    <p class="cap">The page runs the game's own sample player on the kit's 6502, with a model of the timer it waits on, and turns each bit into a level: voice 1 held high, or low, scaled by the volume. The interrupts that still run during a sample would delay a bit here and there; the page leaves them out.</p>
-  </div>
-  <p>The player turns voice 1 into a switch. It sets the voice to a pulse wave of width <code>$FFF</code> with a frequency of 0, so the oscillator never moves and the output sits low. Setting the voice's test bit forces the output high. Each bit of the sample sets or clears the test bit (<code>$93E9</code>, <code>$93F0</code>), and CIA 2's timer A times the bits. The stream comes in blocks of a volume byte and sixteen bytes of bits, so the volume can change every 128 bits.</p>
-  <p>Three of the cries are one recording, the hit sample at <code>$F3F0</code>, played at three speeds and three volumes: <code>sample_rate</code> (<code>$9449</code>) sets the length of a bit and <code>sample_volume</code> (<code>$9448</code>) is taken off each block's volume. A duck's cry is the same sound as the Marshall's death, played in about half the time and quieter.</p>
 </section>
 
 </main>

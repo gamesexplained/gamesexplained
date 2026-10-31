@@ -84,7 +84,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="map">
-  <p class="fig">03 · The map</p>
+  <p class="fig">03 · Sound</p>
+  <h2 class="t">Sound: 31 effects from one player</h2>
+  <p class="lede">The menu loads a sound player that stays in memory for the rest of the game. The map, the battle, the fort and the train all start their sounds through it by number.</p>
+  <div class="plate"><div id="ns-sfx"></div>
+    <p class="cap">The game's own sound player, run on the kit's 6502 from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. <code>test_music.js</code> checks these against the player as well.</p></div>
+  <p>The battle, the fort and the train load over the map but stop short of <code>$F128</code>, so the player is still there when they run. The menu has its own copy of the player with a table of 16 sounds (<span data-part="menu"><code>$FC0E</code></span>), and its sound numbers mean other sounds.</p>
+</section>
+
+<section data-part="map">
+  <p class="fig">04 · The map</p>
   <h2 class="t">Each start year puts the armies where the war stood</h2>
   <p class="lede">The menu's calendar picks 1861, 1862, 1863 or 1864. Each year starts with its own owners for the 26 territories and its own armies.</p>
   <div class="plate">
@@ -97,7 +106,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="map">
-  <p class="fig">04 · A turn</p>
+  <p class="fig">05 · A turn</p>
   <h2 class="t">Where an army moves decides what happens</h2>
   <p>A side's armies move one territory each, or stay. The one under the storm cloud, when the storm is on, cannot move (<code>list_armies</code>, <code>$2E20</code>). Clicking the band with the month and year ends the turn. What a move does depends only on what is in the territory it enters:</p>
   <table class="ns-tab">
@@ -112,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="map">
-  <p class="fig">05 · The computer</p>
+  <p class="fig">06 · The computer</p>
   <h2 class="t">The computer general picks one of five plans each turn</h2>
   <p class="lede">Before it moves, the computer sets a plan number from four questions (<code>ai_plan</code>, <code>$3C98</code>). The plan changes how much each territory is worth to its armies.</p>
   <div class="plate">
@@ -130,7 +139,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="">
-  <p class="fig">06 · The levels</p>
+  <p class="fig">07 · The levels</p>
   <h2 class="t">The levels count one way in the arcade and the other way in strategic mode</h2>
   <p class="lede">Clicking a character's head on the menu steps that side's level: corporal, sergeant, captain (<span data-part="menu"><code>$1193</code></span>, kept in <span data-part="resident"><code>$0380</code></span> and <span data-part="resident"><code>$0381</code></span>). Each part of the game reads the level for itself, and they do not agree on which end is strong.</p>
   <p>Where the table says "a random number from <code>$7F</code>", the game draws a number from 0 to 255 and the thing happens when it comes out at <code>$7F</code> (127) or more.</p>
@@ -150,7 +159,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="battle">
-  <p class="fig">07 · The battle</p>
+  <p class="fig">08 · The battle</p>
   <h2 class="t">Each battle is fought on one of three fields, picked at random</h2>
   <p class="lede">A random number from 0 to 255 picks the field (<code>field_unpack</code>, <code>$90A5</code>): the canyon with a wooden bridge or the river with a stone bridge, 85 chances in 256 each, or the open field, 86 in 256.</p>
   <div class="plate">
@@ -163,7 +172,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="battle">
-  <p class="fig">08 · The units</p>
+  <p class="fig">09 · The units</p>
   <h2 class="t">The three kinds of unit</h2>
   <p>A player picks which of the three units the stick moves (RUN/STOP for the Union, F5 for the Confederacy).</p>
   <ul>
@@ -180,20 +189,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="fort">
-  <p class="fig">09 · The fort and the train</p>
+  <p class="fig">10 · The fort and the train</p>
   <h2 class="t">The train is the fort's engine on a moving floor</h2>
   <p>To take a town, the attacker runs through its fort to the flag at the far end before the clock runs out: about 76 seconds, 3,780 frames (<code>fort_clock</code>, <code>$8945</code>). Guards come one at a time, a dog runs out now and then, and barrels roll in. Fire next to a guard swings the sabre; farther away it throws a knife, four in all (<code>fighter_strike</code>, <code>$957F</code>; <code>fighter_throw</code>, <code>$95D3</code>). A knife passes over a fighter who ducks (<code>knife_hits</code>, <code>$9A63</code>).</p>
   <p>The train's file holds the same code, rebuilt at other addresses: the fighters, their poses, the knives and the guards. It takes away the walls, the dog and the barrels, and adds scenery in three bands that scroll at different speeds, wheels that turn and a driver in the cab. The attacker has 43 seconds (<span data-part="train"><code>train_clock</code>, <code>$8ADE</code></span>) to reach the locomotive. A fighter who climbs down to the ground is left behind as the train pulls away, and is beaten 30 columns later unless he climbs back on (<span data-part="train"><code>left_behind</code>, <code>$8D4D</code></span>).</p>
   <p>Both are maps of tiles. A tile is 2 by 2 characters, and a character is a block of 8 by 8 pixels drawn from a set of shapes in memory: the fort nine rows of 400 tiles (<code>fort_map</code>, <code>$2718</code>), the train six rows of 240 (<span data-part="train"><code>train_map</code>, <code>$2610</code></span>). The <a href="levels.html">Maps / levels</a> tab draws both whole.</p>
-</section>
-
-<section data-part="map">
-  <p class="fig">10 · Sound</p>
-  <h2 class="t">Sound: 31 effects from one player</h2>
-  <p class="lede">The menu loads a sound player that stays in memory for the rest of the game. The map, the battle, the fort and the train all start their sounds through it by number.</p>
-  <div class="plate"><div id="ns-sfx"></div>
-    <p class="cap">The game's own sound player, run on the kit's 6502 from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. <code>test_music.js</code> checks these against the player as well.</p></div>
-  <p>The battle, the fort and the train load over the map but stop short of <code>$F128</code>, so the player is still there when they run. The menu has its own copy of the player with a table of 16 sounds (<span data-part="menu"><code>$FC0E</code></span>), and its sound numbers mean other sounds.</p>
 </section>
 
 <section data-part="ending">

@@ -85,7 +85,18 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">03 · The flap</p>
+  <p class="fig">03 · The sound effects</p>
+  <h2 class="t">Sound: fourteen effects, most of them one write of four bytes</h2>
+  <p class="lede">The game asks for an effect by setting a request bit, one bit of a byte in memory, and the driver plays the effect on the next frame.</p>
+  <div class="plate">
+    <div id="bf-sfx"></div>
+    <p class="cap">Each effect is started by its request bit (<code>$F0</code> to <code>$F3</code>) and played by the game's driver on the page, like the tunes above. Most effects are a block of four bytes written to one channel's registers, the chip's settings, and then left to the chip, whose own envelope, sweep and length counter shape the volume, the pitch and the length (<code>$F683</code>). The lightning steps the noise channel's period up every three frames (<code>$F87D</code>); a longer period sounds lower. The spark's bounce and the fish's rise pick random pitches (<code>$F8A6</code>, <code>$F993</code>). The flap is the first block of four bytes, <code>$94 $AB $FD $58</code>: a quiet pulse wave at a fixed volume, whose pitch the sweep slides up from 440 Hz to about 660 Hz before the length counter ends it, 90 ms later. That was measured from the page's model of the chip.</p>
+  </div>
+  <p>Thunder is the one effect without a sound. The cloud's flash sets bit 3 of the second request byte (<code>$C852</code>). The driver's dispatch, the code that picks which effect to play, shifts that bit out without testing it (<code>$FA59</code>). Bit 4, which the dispatch does answer at that point, is a bird's flap.</p>
+</section>
+
+<section>
+  <p class="fig">04 · The flap</p>
   <h2 class="t">At most one flap every nine frames, and the controller read every third frame</h2>
   <p class="lede">The balloonist's flight comes from four numbers in a table and a short list of states the balloonist moves between. The chart below runs the game's own arithmetic.</p>
   <div class="plate">
@@ -104,7 +115,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">04 · One frame, rebuilt</p>
+  <p class="fig">05 · One frame, rebuilt</p>
   <h2 class="t">The screen, drawn again from the picture chip's memory</h2>
   <p class="lede">A reconstruction, not a screenshot: the page draws the screen from the picture chip's memory, as a saved moment of the game holds it.</p>
   <div class="plate">
@@ -116,7 +127,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">05 · The birds</p>
+  <p class="fig">06 · The birds</p>
   <h2 class="t">Pink, green and white: the same bird with faster numbers</h2>
   <p class="lede">A bird's colour is its type, and its type indexes every table that makes it move and think.</p>
   <p>A bird decides what to do when its timer runs out (<code>$E712</code>). It then reloads the timer with a random number of frames, from a range that depends on its colour: 32 to 63 for pink, 16 to 31 for green, and 8 to 15 for white (<code>$E762</code>). So a white bird decides about four times as often as a pink one. Each decision looks at one player, the two players taking turns. If that player is alive and has not just arrived, the bird flaps when the player is higher than it, and steers toward the player's X, the position across the screen. With no player to chase, the bird only flaps (<code>$E731</code>). Y is the position down the screen, counted from the top, and below Y <code>$A0</code>, near the water, a bird always flaps. The colours' physics are in the table above: a white bird falls faster, flaps harder and flies faster than a pink one.</p>
@@ -130,7 +141,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">06 · The phases</p>
+  <p class="fig">07 · The phases</p>
   <h2 class="t">Twelve layouts, then phases 4 to 12 for ever</h2>
   <p class="lede">Each phase is built from a record, a fixed list of its clouds, propellers, birds and platforms. The <a href="levels.html">Maps / levels tab</a> draws every one.</p>
   <p>Sixteen records are listed at <code>$DB2A</code>. Each record first names the lists of blocks that paint its ledges. Then come its clouds, as positions on the screen's grid; its propellers, with the angle each starts at; its birds, with a position and a colour each; and four tables of platform edges that the collision code reads. Every fourth record is a bonus round's. Its list of birds is empty, and that empty list is what makes the phase a bonus round (<code>$D394</code>). After the sixteenth record, the count goes back to 4 (<code>$F358</code>). So the layouts of phases 4 to 12 and their bonus rounds repeat, while the phase number keeps counting up and the difficulty tables keep climbing.</p>
@@ -139,7 +150,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">07 · The storm and the fish</p>
+  <p class="fig">08 · The storm and the fish</p>
   <h2 class="t">A spark every so often, from a random cloud</h2>
   <p class="lede">The storm is a counter that ticks every 128 frames. The fish bites only what is exactly above it.</p>
   <p>Once every 128 frames, about two seconds, the storm's counter goes down by one (<code>$C790</code>). At 0, a cloud is chosen at random. The cloud flashes for half a second: the game rewrites the cloud's attributes, the settings that pick which palette colours each patch of the background uses, four times (<code>$C831</code>). Then the cloud throws a spark. The spark sets off in one of four directions, picked at random, at a speed from the spark table plus a random 0 to 31, and the next spark's speed level is one higher. Two sparks can be in the air at once, and while both are, the counter waits at 2. A spark bounces off the top and the sides of the screen and off every platform edge it meets (<code>$CA67</code>). It keeps its speed, and is lost off the bottom. A spark hits a player within 8 pixels sideways and 12 down (<code>$CB1C</code>). Both balloons go at once, and the stunned player tumbles into the water.</p>
@@ -147,7 +158,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">08 · Balloon Trip</p>
+  <p class="fig">09 · Balloon Trip</p>
   <h2 class="t">Balloon Trip: a fixed opening, then random stretches, and 10,000 points for twenty in a row</h2>
   <p class="lede">The third mode is the same game with the birds taken out and a scrolling sky put in.</p>
   <p>The scene moves on odd frames only, one pixel at a time (<code>$C216</code>). Every eight pixels a generator, a routine that makes new things, runs and puts balloons and sparks at the left edge. A step counter that goes up every 32 runs picks each run's generator from a table (<code>$C3BF</code>). For the first two steps, 63 runs, the generator reads the next run's worth of a 122-byte list (<code>$C4AD</code>), so every game opens the same way for about 17 seconds. The list holds only 58 runs, so the last five read on into the code after it (<code>$C527</code>) and turn its bytes into six sparks and a balloon (<a href="levels.html">Maps / levels</a> draws them). Then come five steps of random balloons and sparks, with now and then a bubble at the water line instead. Then there is one step whose generator is a bare RTS, the instruction that ends a routine and goes back to the code that called it, so it makes nothing; a step of sparks alone; and a step of balloons with sparks. A balloon is worth 300 points. Popping twenty without letting one drift off the right edge pays 10,000 points with the perfect-bonus jingle, and raises a balloon's value to 500, then 700 (<code>$C348</code>). A balloon that gets away starts the count of twenty again. Popping a bubble stops the scrolling for two seconds (<code>$ECBA</code>).</p>
@@ -155,21 +166,10 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 </section>
 
 <section>
-  <p class="fig">09 · The bonus round</p>
+  <p class="fig">10 · The bonus round</p>
   <h2 class="t">Twenty balloons from four chimneys</h2>
   <p class="lede">The bonus round reuses Balloon Trip's balloons, and their value goes up from one bonus round to the next.</p>
   <p>Every fourth layout is the bonus round. Twenty balloons rise one at a time from the four chimneys (<code>$CEAE</code>), 40 to 103 frames apart. They sway on the same spring as a parachute, and rise at a speed set by the round (<code>$D112</code>). A balloon within 24 pixels up or down and 16 pixels sideways of a player is popped and counted for that player (<code>$CECE</code>). When the last balloon has gone, the results screen shows each player's count times the round's value, 300, 500 or 700 points, and adds it to the score 100 points at a time (<code>$D213</code>). When the players pop all twenty between them, the screen shows PERFECT!!! and pays a super bonus of 10,000, 15,000, 20,000, 25,000 and then 30,000 points (<code>$D117</code>). A player cannot die here. One who falls bounces back up at Y <code>$C8</code> with both balloons back (<code>$EB62</code>).</p>
-</section>
-
-<section>
-  <p class="fig">10 · The sound effects</p>
-  <h2 class="t">Sound: fourteen effects, most of them one write of four bytes</h2>
-  <p class="lede">The game asks for an effect by setting a request bit, one bit of a byte in memory, and the driver plays the effect on the next frame.</p>
-  <div class="plate">
-    <div id="bf-sfx"></div>
-    <p class="cap">Each effect is started by its request bit (<code>$F0</code> to <code>$F3</code>) and played by the game's driver on the page, like the tunes above. Most effects are a block of four bytes written to one channel's registers, the chip's settings, and then left to the chip, whose own envelope, sweep and length counter shape the volume, the pitch and the length (<code>$F683</code>). The lightning steps the noise channel's period up every three frames (<code>$F87D</code>); a longer period sounds lower. The spark's bounce and the fish's rise pick random pitches (<code>$F8A6</code>, <code>$F993</code>). The flap is the first block of four bytes, <code>$94 $AB $FD $58</code>: a quiet pulse wave at a fixed volume, whose pitch the sweep slides up from 440 Hz to about 660 Hz before the length counter ends it, 90 ms later. That was measured from the page's model of the chip.</p>
-  </div>
-  <p>Thunder is the one effect without a sound. The cloud's flash sets bit 3 of the second request byte (<code>$C852</code>). The driver's dispatch, the code that picks which effect to play, shifts that bit out without testing it (<code>$FA59</code>). Bit 4, which the dispatch does answer at that point, is a bird's flap.</p>
 </section>
 
 </main>

@@ -100,7 +100,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The driver plays the hymn in the chip music style of its day, with its chords broken into arpeggios and a melody that sweeps between some of its notes. Channel A plays the harmony one note at a time. The top four bits of each of its notes pick a row of the table at <code>$7995</code>, and the row adds 0, 4 and 7 semitones in turn, a fiftieth of a second each, for a major chord (<code>$7693</code>); other rows make minor, diminished and suspended chords. The melody's row lifts each note an octave for one fiftieth of a second in every four, once the note has sounded for a fifth of a second. A melody note whose byte has bit 7 set sweeps to its pitch a quarter of a semitone each fiftieth of a second, instead of jumping there (<code>$75D9</code>, <code>$761C</code>). "Feet", the fourth note of the first line, sweeps up this way.</p>
 </section>
 <section>
-  <p class="fig">04 · The view</p>
+  <p class="fig">04 · Sound effects</p>
+  <h2 class="t">Sound: what sets off each effect</h2>
+  <p class="lede">The menu's sound icon swaps the music for sound effects. In that mode the driver plays tune 4, which is silent, and the game starts an effect by writing its number into a channel's byte.</p>
+  <div class="plate wt-dark"><div id="wt-sfx"></div>
+  <p class="cap">Each effect is the game's driver run as it is in sound-effects mode, with the number written into the channel the game uses for it (channel A for those it never asks for), recorded until the effect's last sound or for three seconds. The bytes of the 24 effects are at <code>$7795</code>, 16 to an effect.</p></div>
+  <table class="wt-tbl" id="wt-sfx-table"><thead><tr><th></th><th>Effect</th><th>Channel</th><th>What sets it off</th></tr></thead><tbody></tbody></table>
+  <p>The three channels' bytes are <code>$7006</code>, <code>$701F</code> and <code>$7038</code>. The driver takes a number from one of them at its next call and clears the byte (<code>$76D3</code>). Effect 1 plays nothing, and effects 6, <code>$0C</code>, <code>$0D</code>, <code>$13</code>, <code>$14</code>, <code>$15</code> and <code>$16</code> are in the table but the game never asks for them.</p>
+</section>
+<section>
+  <p class="fig">05 · The view</p>
   <h2 class="t">One frame, rebuilt from memory: the view is a window onto a map of blocks</h2>
   <p class="lede">Each area of the plateau is a map of 64 by 32 blocks, and each block is 4 by 4 characters. The view is a window 28 characters across and 18 down onto the map, and it scrolls a pixel row at a time up and down and half a character across.</p>
   <div class="plate wt-dark"><canvas id="wt-view" class="wt-view" width="224" height="144"></canvas>
@@ -110,15 +119,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The map lives in bank 0 at <code>$C000</code>, a byte a block. The block's number picks one of the area's definitions through the list at <code>$C800</code>, and a definition is 16 character numbers. A character number counts from the first character of a set, which a small table at <code>$E840</code> gives for each range of definitions, and the set's 8-byte characters are in bank 4 from <code>$CD40</code>. Point at the view to follow one character through those steps.</p>
   <p>Each area has a split. Blocks numbered above it take their definitions from a second run, 256 further on, and their sets from a second table at <code>$E864</code>. The split is not kept in a variable: the loader writes it into the operand of the comparison at <code>$9C12</code>, so the instruction itself changes from area to area. In area 13 the split is <code>$57</code>. Tick the box above to see which blocks of the view are numbered over it.</p>
   <p>Every area is drawn whole on the <a href="levels.html">Maps</a> tab.</p>
-</section>
-<section>
-  <p class="fig">05 · Sound effects</p>
-  <h2 class="t">Sound: what sets off each effect</h2>
-  <p class="lede">The menu's sound icon swaps the music for sound effects. In that mode the driver plays tune 4, which is silent, and the game starts an effect by writing its number into a channel's byte.</p>
-  <div class="plate wt-dark"><div id="wt-sfx"></div>
-  <p class="cap">Each effect is the game's driver run as it is in sound-effects mode, with the number written into the channel the game uses for it (channel A for those it never asks for), recorded until the effect's last sound or for three seconds. The bytes of the 24 effects are at <code>$7795</code>, 16 to an effect.</p></div>
-  <table class="wt-tbl" id="wt-sfx-table"><thead><tr><th></th><th>Effect</th><th>Channel</th><th>What sets it off</th></tr></thead><tbody></tbody></table>
-  <p>The three channels' bytes are <code>$7006</code>, <code>$701F</code> and <code>$7038</code>. The driver takes a number from one of them at its next call and clears the byte (<code>$76D3</code>). Effect 1 plays nothing, and effects 6, <code>$0C</code>, <code>$0D</code>, <code>$13</code>, <code>$14</code>, <code>$15</code> and <code>$16</code> are in the table but the game never asks for them.</p>
 </section>
 <section>
   <p class="fig">06 · The party</p>

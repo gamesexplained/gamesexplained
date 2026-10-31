@@ -173,7 +173,41 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">05 · Controls</p>
+  <p class="fig">05 · Sound</p>
+  <h2 class="t">Sound: the engine is noise at two pitches, swapped every frame</h2>
+  <p class="lede">There is no sound driver. The raster interrupt steps two short pitch tables once a frame, one for the engine on voice 1 and one for a saucer's hum on voice 3, and the main loop writes the chip itself wherever something happens: a shot, a bump, an explosion, the stargate.</p>
+  <div class="plate">
+    <div id="enc-sid"></div>
+    <p class="cap">Each button runs the game's own code for the sound, its bytes from the listing, on a 6502 in the page: the interrupt every frame, and the pieces of the main loop on the frames the main loop reached them in play. A sound that lasts as long as something stays true (the engine while the stick is pushed, a saucer's hum, the warp at full speed) loops until Stop. <code>test_sound.js</code> holds every write of every frame to the same code run on the whole listing.</p>
+  </div>
+  <table>
+    <tr><th>Sound</th><th>Voice</th><th>What the code writes</th><th>Where</th></tr>
+    <tr><td>Engine</td><td class="n">1</td><td>noise, its pitch byte <code>$08</code> and <code>$FF</code> on alternate frames; gate on and no waveform with the stick centred</td><td class="m">$A231, $B415, $80C8</td></tr>
+    <tr><td>Your shot</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 8, cut after 12 frames</td><td class="m">$ACCF</td></tr>
+    <tr><td>Your shot hits an obelisk</td><td class="n">1</td><td>noise at <code>$1414</code>, attack 3, decay 6, only while voice 1 is free</td><td class="m">$A09F</td></tr>
+    <tr><td>Driving into an obelisk</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 10; the engine waits 44 frames</td><td class="m">$B53F</td></tr>
+    <tr><td>A saucer's hum</td><td class="n">3</td><td>triangle, its pitch byte stepped a frame at a time: 40 30 20 30 while it moves, 40 38 30 28 20 28 30 38 while it hovers</td><td class="m">$A616, $B444, $80A0</td></tr>
+    <tr><td>A saucer warms up to fire</td><td class="n">3</td><td>square wave from <code>$0800</code>, up <code>$80</code> a pass</td><td class="m">$A64D, $A676</td></tr>
+    <tr><td>A saucer's shot</td><td class="n">2</td><td>noise at <code>$1400</code>, decay 8</td><td class="m">$A9BA</td></tr>
+    <tr><td>Its shot hits an obelisk</td><td class="n">2</td><td>noise at <code>$1414</code>, attack 3, decay 6</td><td class="m">$A0E8</td></tr>
+    <tr><td>A saucer destroyed</td><td class="n">3</td><td>noise, decay 11, its pitch byte <code>$16</code>, <code>$14</code>, <code>$12</code>, <code>$10</code> and round again while the fragments fly</td><td class="m">$A8B2, $A14F</td></tr>
+    <tr><td>A homing missile</td><td class="n">2, 3</td><td>two triangles pitched from its range, rising as it closes in</td><td class="m">$A3D5, $A811</td></tr>
+    <tr><td>You are hit</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 11; voices 2 and 3 off</td><td class="m">$AB9D</td></tr>
+    <tr><td>The stargate</td><td class="n">2, 3</td><td>two triangles <code>$100</code> apart, falling as the gate opens and rising as it closes</td><td class="m">$A2DD, $A04F, $A4CD</td></tr>
+    <tr><td>The warp</td><td class="n">2, 3</td><td>noise on voice 3 rising with the speed; at full speed a sawtooth chord, <code>$0800</code> and <code>$1121</code></td><td class="m">$A722, $A19E</td></tr>
+    <tr><td>A burst-fire saucer</td><td class="n">3</td><td>a pass-long triangle beep at <code>$30</code>, every 16 passes, 16 times</td><td class="m">$A563</td></tr>
+    <tr><td>A level key on the title screen</td><td class="n">1</td><td>sawtooth at <code>$0606</code> while the key is held</td><td class="m">$9CEA</td></tr>
+  </table>
+  <p>The engine is the interrupt's table at <code>$80C8</code> read from its second entry: <code>$08</code>, <code>$FF</code>, then the 0 that sends it back. Voice 1 plays noise with those two pitch bytes in turn, a frame each, so the sound repeats 25 times a second. It runs whenever the stick is pushed, turning included, and stops the moment the stick is centred: <code>engine_sound_select</code> (<code>$A231</code>) picks entry 1 of the table at <code>$80C0</code> for any direction and entry 0 for none.</p>
+  <p>Voice 1 is shared with your shot, the bump and your death. Each of those sets a countdown at <code>$1D</code>, 12, 44 and 63 frames, and plays its own noise; the interrupt leaves the voice alone until the countdown runs out, then gives it back to the engine. A shot that hits an obelisk tests the same countdown, so its sound is lost when it lands while the shot's own sound still plays.</p>
+  <p>A saucer is heard on voice 3 from the moment it arrives, a triangle whose pitch the interrupt steps through one of two loops at <code>$80A0</code>: a quick four-step wobble while it moves, and a slower eight-step one while it hovers. Before it fires, the hum stops and a square wave climbs a step every pass (<code>$A64D</code>), until a counter at <code>$91</code>, falling four a pass from <code>$FF</code>, drops below the value at <code>$92</code>. One pass later the shot goes off, as noise on voice 2 (<code>$A9BA</code>). A burst-fire saucer turns the hum off and beeps instead: sixteen pass-long blips, one every 16 passes, and then its burst.</p>
+  <p>A homing missile is heard as a whine on voices 2 and 3 (<code>$A811</code>). Voice 3 plays at <code>((~range) | $80) × 16</code> and voice 2 lower by the range's complement, so as the range falls from <code>$EE</code> to <code>$8A</code> the pair rises from <code>$0910</code> to <code>$0F50</code> and drifts further apart. Two tones that close beat at the difference between them, which here grows from 1 Hz to 7 Hz as the missile comes in.</p>
+  <p>The stargate's two triangles are one pitch byte apart, 15 Hz, and beat 15 times a second. Their pitch comes from <code>$75</code>, which <code>$A04F</code> moves eight a pass: the tone falls as the gate opens, holds while it stays open, and climbs back as it closes. It climbs back too when the player flies in, and then the warp starts. Voice 3 plays noise at <code>h × h + $100</code>, where <code>h</code> is the square of the warp's progress <code>$A5</code> divided by 256, so the hiss rises slowly at first and then fast. At full speed it gives way to a sawtooth chord on voices 2 and 3, held until the warp's time is up, and then the noise falls back the same way. The chord's top note is <code>$1121</code> because <code>$A1CA</code> stores the control byte, <code>$21</code>, as its low byte where the other voice gets 0.</p>
+  <p>The volume is 15 throughout: the title's set-up (<code>$9D8A</code>) clears the chip and sets it, and each life's set-up (<code>$A043</code>) sets it again. No voice is ever routed through the filter.</p>
+</section>
+
+<section>
+  <p class="fig">06 · Controls</p>
   <h2 class="t">One routine reads the stick and plays back the demo</h2>
   <div class="plate">
     <table>
@@ -192,7 +226,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">06 · The plain</p>
+  <p class="fig">07 · The plain</p>
   <h2 class="t">Sixty-four obelisks on a grid</h2>
   <p class="lede">Every object has a 24-bit X and Z position. The obelisks sit on a 32-unit grid and a 16 × 16 map at <code>$8A00</code> turns any position into the obelisk in that cell, which is how a collision test costs one table read.</p>
   <div class="plate">
@@ -205,7 +239,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">07 · Enemies</p>
+  <p class="fig">08 · Enemies</p>
   <h2 class="t">Only one enemy is on the plain at a time</h2>
   <p class="lede">There is one enemy slot. Between enemies the game waits a random 8 to 39 passes of its main loop, a third of a second to a second and a half, then decides between a saucer and a homing missile. A saucer's type is random within the range the level has unlocked, and each type has a fire script.</p>
   <div class="plate">
@@ -240,7 +274,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">08 · Scoring and shields</p>
+  <p class="fig">09 · Scoring and shields</p>
   <h2 class="t">The shield count is kept only on the screen</h2>
   <div class="plate">
     <table id="ptsTable"><tr><th>Saucer type</th><th>Points</th><th>× level 1</th><th>× level 8</th></tr></table>
@@ -251,7 +285,7 @@ td.m{font-family:var(--fm);font-size:13px}
 </section>
 
 <section>
-  <p class="fig">09 · Levels</p>
+  <p class="fig">10 · Levels</p>
   <h2 class="t">Each level is a sixteen-byte scene record</h2>
   <p class="lede">A level is a 16-byte scene record: sprite flags and five colour pairs. The level index counts down, <code>$70</code> for level 1 to <code>$00</code> for level 8, and <code>$80</code> is the warp. Levels 2, 4 and 7 have a black sky, the other five a coloured one.</p>
   <div class="plate">
@@ -263,40 +297,6 @@ td.m{font-family:var(--fm);font-size:13px}
     <p class="cap">Eight tables of four bytes at <code>$8F80</code>, one column per skill; the demo plays from the fourth column.</p>
   </div>
   <p>When the last enemy dies the stargate (object 3) is placed at that enemy's X for 240 passes, about ten seconds, and a shield is added at once. Flying into it starts the warp: the scene switches to record 8, speed ramps toward the level's top speed (<code>$A7E8</code>: <span id="warpSpeeds"></span>), and spheres spawn in the enemy-shot slots every three passes. After about four periods of 256 frames the level number goes up (<code>$A798</code>). Missing the gate returns to play with a new enemy count and no penalty (<code>$A552</code>); hitting a sphere is an ordinary death.</p>
-</section>
-
-<section>
-  <p class="fig">10 · Sound</p>
-  <h2 class="t">Sound: the engine is noise at two pitches, swapped every frame</h2>
-  <p class="lede">There is no sound driver. The raster interrupt steps two short pitch tables once a frame, one for the engine on voice 1 and one for a saucer's hum on voice 3, and the main loop writes the chip itself wherever something happens: a shot, a bump, an explosion, the stargate.</p>
-  <div class="plate">
-    <div id="enc-sid"></div>
-    <p class="cap">Each button runs the game's own code for the sound, its bytes from the listing, on a 6502 in the page: the interrupt every frame, and the pieces of the main loop on the frames the main loop reached them in play. A sound that lasts as long as something stays true (the engine while the stick is pushed, a saucer's hum, the warp at full speed) loops until Stop. <code>test_sound.js</code> holds every write of every frame to the same code run on the whole listing.</p>
-  </div>
-  <table>
-    <tr><th>Sound</th><th>Voice</th><th>What the code writes</th><th>Where</th></tr>
-    <tr><td>Engine</td><td class="n">1</td><td>noise, its pitch byte <code>$08</code> and <code>$FF</code> on alternate frames; gate on and no waveform with the stick centred</td><td class="m">$A231, $B415, $80C8</td></tr>
-    <tr><td>Your shot</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 8, cut after 12 frames</td><td class="m">$ACCF</td></tr>
-    <tr><td>Your shot hits an obelisk</td><td class="n">1</td><td>noise at <code>$1414</code>, attack 3, decay 6, only while voice 1 is free</td><td class="m">$A09F</td></tr>
-    <tr><td>Driving into an obelisk</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 10; the engine waits 44 frames</td><td class="m">$B53F</td></tr>
-    <tr><td>A saucer's hum</td><td class="n">3</td><td>triangle, its pitch byte stepped a frame at a time: 40 30 20 30 while it moves, 40 38 30 28 20 28 30 38 while it hovers</td><td class="m">$A616, $B444, $80A0</td></tr>
-    <tr><td>A saucer warms up to fire</td><td class="n">3</td><td>square wave from <code>$0800</code>, up <code>$80</code> a pass</td><td class="m">$A64D, $A676</td></tr>
-    <tr><td>A saucer's shot</td><td class="n">2</td><td>noise at <code>$1400</code>, decay 8</td><td class="m">$A9BA</td></tr>
-    <tr><td>Its shot hits an obelisk</td><td class="n">2</td><td>noise at <code>$1414</code>, attack 3, decay 6</td><td class="m">$A0E8</td></tr>
-    <tr><td>A saucer destroyed</td><td class="n">3</td><td>noise, decay 11, its pitch byte <code>$16</code>, <code>$14</code>, <code>$12</code>, <code>$10</code> and round again while the fragments fly</td><td class="m">$A8B2, $A14F</td></tr>
-    <tr><td>A homing missile</td><td class="n">2, 3</td><td>two triangles pitched from its range, rising as it closes in</td><td class="m">$A3D5, $A811</td></tr>
-    <tr><td>You are hit</td><td class="n">1</td><td>noise at <code>$1414</code>, decay 11; voices 2 and 3 off</td><td class="m">$AB9D</td></tr>
-    <tr><td>The stargate</td><td class="n">2, 3</td><td>two triangles <code>$100</code> apart, falling as the gate opens and rising as it closes</td><td class="m">$A2DD, $A04F, $A4CD</td></tr>
-    <tr><td>The warp</td><td class="n">2, 3</td><td>noise on voice 3 rising with the speed; at full speed a sawtooth chord, <code>$0800</code> and <code>$1121</code></td><td class="m">$A722, $A19E</td></tr>
-    <tr><td>A burst-fire saucer</td><td class="n">3</td><td>a pass-long triangle beep at <code>$30</code>, every 16 passes, 16 times</td><td class="m">$A563</td></tr>
-    <tr><td>A level key on the title screen</td><td class="n">1</td><td>sawtooth at <code>$0606</code> while the key is held</td><td class="m">$9CEA</td></tr>
-  </table>
-  <p>The engine is the interrupt's table at <code>$80C8</code> read from its second entry: <code>$08</code>, <code>$FF</code>, then the 0 that sends it back. Voice 1 plays noise with those two pitch bytes in turn, a frame each, so the sound repeats 25 times a second. It runs whenever the stick is pushed, turning included, and stops the moment the stick is centred: <code>engine_sound_select</code> (<code>$A231</code>) picks entry 1 of the table at <code>$80C0</code> for any direction and entry 0 for none.</p>
-  <p>Voice 1 is shared with your shot, the bump and your death. Each of those sets a countdown at <code>$1D</code>, 12, 44 and 63 frames, and plays its own noise; the interrupt leaves the voice alone until the countdown runs out, then gives it back to the engine. A shot that hits an obelisk tests the same countdown, so its sound is lost when it lands while the shot's own sound still plays.</p>
-  <p>A saucer is heard on voice 3 from the moment it arrives, a triangle whose pitch the interrupt steps through one of two loops at <code>$80A0</code>: a quick four-step wobble while it moves, and a slower eight-step one while it hovers. Before it fires, the hum stops and a square wave climbs a step every pass (<code>$A64D</code>), until a counter at <code>$91</code>, falling four a pass from <code>$FF</code>, drops below the value at <code>$92</code>. One pass later the shot goes off, as noise on voice 2 (<code>$A9BA</code>). A burst-fire saucer turns the hum off and beeps instead: sixteen pass-long blips, one every 16 passes, and then its burst.</p>
-  <p>A homing missile is heard as a whine on voices 2 and 3 (<code>$A811</code>). Voice 3 plays at <code>((~range) | $80) × 16</code> and voice 2 lower by the range's complement, so as the range falls from <code>$EE</code> to <code>$8A</code> the pair rises from <code>$0910</code> to <code>$0F50</code> and drifts further apart. Two tones that close beat at the difference between them, which here grows from 1 Hz to 7 Hz as the missile comes in.</p>
-  <p>The stargate's two triangles are one pitch byte apart, 15 Hz, and beat 15 times a second. Their pitch comes from <code>$75</code>, which <code>$A04F</code> moves eight a pass: the tone falls as the gate opens, holds while it stays open, and climbs back as it closes. It climbs back too when the player flies in, and then the warp starts. Voice 3 plays noise at <code>h × h + $100</code>, where <code>h</code> is the square of the warp's progress <code>$A5</code> divided by 256, so the hiss rises slowly at first and then fast. At full speed it gives way to a sawtooth chord on voices 2 and 3, held until the warp's time is up, and then the noise falls back the same way. The chord's top note is <code>$1121</code> because <code>$A1CA</code> stores the control byte, <code>$21</code>, as its low byte where the other voice gets 0.</p>
-  <p>The volume is 15 throughout: the title's set-up (<code>$9D8A</code>) clears the chip and sets it, and each life's set-up (<code>$A043</code>) sets it again. No voice is ever routed through the filter.</p>
 </section>
 
 <section>
