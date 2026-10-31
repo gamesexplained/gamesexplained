@@ -52,3 +52,69 @@ Node 22. VICE's autostart gave up when the loader left the ROM for `$0330`
 ("Autostart: aborting" in its log) and left the keyboard ignoring every
 key until VICE was restarted; typing `LOAD"*",8,1` by hand avoided it
 (`agent-history.md`).
+
+## The Play tab (31 October 2026)
+
+The Play tab came after the Silver run, in a branch of its own.
+
+### What helped
+
+- Shadowfire's port and page (`games/c64/shadowfire/port`), copied in
+  shape: generators with checkpoints at each wait, the page's virtual
+  clock with the video chip's stolen cycles, and the cost fit. Most of
+  `port/page/runtime.js` and `port/scripts/fit-cost.js` started as its
+  files.
+- `kit/c64/lockstep.js` with saved moments of play: every routine group
+  was in step before the page was written.
+- Green Beret's `test_play.js`, whose first check runs the page on the
+  memory it carries beside the page on the whole memory. That check
+  found a listing error no other test could: a code block that started
+  a byte early, on a text's end byte.
+
+### Candidates
+
+**A race the lockstep cannot hand over.** The game reads its controls
+through zero page `$04`, which the interrupt also writes while a radio
+message unscrambles; an interrupt between the main program's store and
+its read changes what it reads. The lockstep's `irqBytes` hand the port
+the interrupt's bytes a stretch at a time, so a race inside one
+instruction pair cannot be given to the port, and trying to give it
+instruction by instruction put every session out of step. The test now
+watches the four store-and-read pairs and names the race when a session
+parts from the port. `kit/c64/lockstep.js` could do this for any game:
+on a divergence, report each byte the interrupt wrote that the main
+program had stored and not yet read.
+
+**Pacing that stops at a frame's end.** A page whose clock moves only up
+to the end of the frame it runs to, while a stretch still owes cycles,
+draws a long window in too few frames, because the cost owed is paid in
+the next frame at once. `70-minisite/play.md` could say that a page's
+clock runs on past the frame's end while a stretch is owed, and the
+frames it passes are finished as the C64 would finish them.
+
+**A lockstep that never opens the game's menus.** The lockstep's test
+player moved the stick at the start of each pass of the main loop, and
+the loop's first act is to wait for fire to be let go, so no press ever
+reached the routine that opens an icon. Every session ran in step, and
+105 of the 357 routines ported, the radio, the letters, the satellite
+panel and the reports among them, had never run in any of them. A list
+of the routines the sessions called, beside the routines ported, showed
+it at once. `kit/c64/lockstep.js` could print that list at the end of a
+run, and `70-minisite/play.md` could ask for it before the port is
+called done.
+
+**A loop the fit cannot see.** Wars ran up to eight frames slow on the
+page, because a war frame's cost varied by about 860 cycles between
+frames that called the same routines the same number of times. The
+spread came from `draw_shape`, which turns each row of a shape once for
+each pixel of its offset in the cell, 15 cycles a turn. A count of those
+turns (`P.N.rot`) took the war frames' error from 691 cycles on average
+to 19. Grouping the timed stretches by their calls and looking at the
+spread inside each group is what found it. `70-minisite/play.md` could
+say: before trusting the fit, group stretches with identical calls, and
+where a group's cycles spread, find the loop whose turns vary with the
+data and count them.
+
+### Maintainer asks
+
+None.

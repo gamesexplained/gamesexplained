@@ -85,4 +85,61 @@ and the game kept starting new ones, which suited the test: the fourth new
 game opened with Libya's Total Missile Attack on Israel as its first event.
 
 The game has one screen, the main screen with its windows, so there is no
-Maps / levels tab. There is no Play tab.
+Maps / levels tab.
+
+## The Play tab (31 October 2026)
+
+Asked for after the Silver run was merged, with the Controls section cut
+from How it works and the unshown title picture noted as the Spectrum's
+loading screen. One agent ported the whole game into `port/src`, group by
+group, following Shadowfire's port: generators for the main program, a
+checkpoint at each wait, the interrupt run whole between two of the
+port's steps, and the game's own sound driver on the kit's 6502.
+
+The lockstep (`port/test/lockstep.js`) ran the port beside the game's code
+from the hand-over and from 50 moments of play saved by
+`port/scripts/gen-states.js`, 1,200 passes each, and from three moments
+with a war, the year's end and the fallout forced. Two moments parted
+from the port, both where the game's own race on `$04` falls: while a
+radio message unscrambles, the interrupt leaves a random number in the
+byte the main program reads the controls through. An attempt to hand the
+port those reads as the interrupt leaves them, instruction by
+instruction, put every session out of step, since the port counts its
+polling turns differently; it was undone, and the test names the race
+where it falls instead.
+
+Those sessions had a gap the page's test showed up. The lockstep's test
+player moved the stick at the start of each pass, where the main loop
+first waits for fire to be let go, so its presses never reached
+`move_cursor` and none of the six icons was ever opened from the main
+screen: the windows the sessions saw were the week's events and memos.
+Moving the player to the checkpoint after that wait (`$7CDB`) opened the
+icons, the letters, the radio and the satellite panel; every session ran
+600 passes in step again, but one that parts at the race on `$04`.
+`port/scripts/coverage.js` then listed what was still never run, and
+three forced sessions were added for it: the keyboard as the control
+(`keys`), a war with the six SDI satellites in orbit across the map
+(`sdi`, the lasers), and every hostility at its country's event 1 level
+(`strike`, a limited strike). All three ran in step. TODO.md lists the six
+routines no session reaches.
+
+The page's pacing was fitted on stretch timings from the same sessions
+(`port/scripts/time-stretches.js`, `fit-cost.js`): about 1 % per
+stretch. Beside the C64, the first week's communique drew in too few
+frames, because the page's clock stopped at the frame's end while a
+stretch was still owed; letting it run on past the frame's end fixed it.
+
+`test_play.js`, run on the page as built, found a listing error: the
+force's message ("TROOP MOVEMENT ... to arrive in ... within N
+week(s).") ends at `$8416` with its `$24`, and the
+listing had that byte as the first of `unused_wait_200`, a `bit $A9`. The
+page blanks the code bytes the listing marks, so it printed past the end
+of the message. The block was moved by a byte in `symbols.json` and the
+listing rebuilt.
+
+The same test showed wars running up to eight frames slow. Stretches with
+the same calls varied by about 860 cycles: `draw_shape` turns each row of
+a shape once per pixel of its offset in the cell. A count of those turns
+(`P.N.rot`, 14.9 cycles each in the fit, 15 by the instructions) and a
+fresh timing of every session brought the war frames' error from 691
+cycles on average to 19, and every stretch's from 1.3 % to 0.4 %.

@@ -16,20 +16,38 @@ step.
   says more are wrong elsewhere. An audit of the whole listing on another
   proven model, as `kit/CHECKING.md` describes, would find them.
 
-## Gold
+## Platinum (reached)
 
-A human's pass through the How it works and Discoveries tabs, section by
-section (`AGENTS.md`, "Definition of done").
+The Play tab is the whole game, ported to JavaScript routine by routine
+(`port/src`) and held in lockstep with the game's own code
+(`port/test/lockstep.js`): from the hand-over, from 50 saved moments of
+play for 600 passes each with the test player opening the icons, on the
+keyboard, and with a war, SDI satellites firing in a war, a limited
+strike, the year's end and the fallout forced. `test_play.js` holds the
+published page beside the game on the kit's C64 in CI. The game's own
+race on zero page `$04` (facts.md, Controls) is the one place the page
+plays differently, and the Play tab's Differences section says so.
 
-## Platinum
+`port/scripts/coverage.js` lists the routines the sessions ran: 336 of
+the 357 ported. Eleven more are checked alone against the game's code
+(`port/test/routines.js`), and four run only inside those or inside
+routines the sessions ran (`minus_10` and the three `point_` helpers of
+the script commands). Six no session reaches, and a forced session for
+each would close the gap:
 
-A Play tab with the whole game ported to JavaScript and run in lockstep
-with the game's own code. The mechanics already ported for the widgets
-(the event search, the starting hostilities, satellite cover, the radio's
-scrambling, the random numbers) and the game's own sound driver are a
-start; the script engine, its 77 commands and the event, mail and letter
-scripts are the bulk of what is left, with the windows, the menus and the
-war.
+- `halt_with_border` and `border_until_fire`, the game's stop for a
+  country number of 16 or more, which play never produces;
+- `script_tech_report` and `script_resources_report`, script commands no
+  event in the sessions reached;
+- `satellite_carry`, carrying a satellite across the map, which the test
+  player never picks up;
+- `followup_run`, the follow-up of mail left unread at a week's end.
+
+## Gold, then Diamond
+
+A human's pass through the How it works, Play and Discoveries tabs,
+section by section (`AGENTS.md`, "Definition of done"); with the Play tab
+already Platinum, that makes the game Diamond.
 
 ## Open questions
 
