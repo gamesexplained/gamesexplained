@@ -210,6 +210,11 @@ in `orientation.md`.
   frame (`irq_slot_shop_row`, `$881D`). Both bytes are 0 in both
   snapshots, and stayed 0 over 3,000 frames on the kit's machine with
   the timers started as the game starts them (*simulated*).
+- What the check is for is not stated anywhere in the game. A copy of
+  the files started the usual way runs `game_start` and passes; a
+  freezer cartridge's copy resumes without it and has to restart the
+  timers itself, without a way to read back their period. That is the
+  page's reading of its purpose, marked as one (not tested).
 
 ## Data tables
 
@@ -267,6 +272,11 @@ in `orientation.md`.
   pairs 4, 7, 19 (pair 0), 5, 8, 10, 20 (pair 1), 6, 9, 11, 12, 21
   (pair 2) and 18 (pair 3); nothing for pairs 4 to 12 and 18 to 21. The
   Discoveries grid runs the same test, and `test_rules.js` holds it.
+- *Simulated*, the same test with the only four reads of `$F290` in
+  memory (`ldx $F290,y` at `$8DE6`, `$8DFF`, `$8E44` in `tackles_check`
+  and `$B05E` in `pair_distances`) pointed at `$F29D`: every one of the
+  45 pairs is seen when it touches and acts on nothing else.
+  `test_rules.js` holds it.
 - *Simulated*, `tackle_resolve` with side 0's player 1 sliding into
   side 1's player 6 from 384 random states for each pair of figures: the
   victim's figure alone set the rate (88 % at 31, 20 % at 207, 50 % at

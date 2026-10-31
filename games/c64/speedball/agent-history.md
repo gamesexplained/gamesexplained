@@ -72,3 +72,17 @@ draft until the pages' tests ran the game's routines:
 
 There is no Levels tab: the game has one arena, and its ten layouts of
 bounce domes are drawn on How it works. There is no Play tab.
+
+After the merge, the maintainer asked for the tackles discovery in
+plain words, for what the copy protection is for, and for the sound
+effects beside the music. Writing the tackles section again, I tested
+the fix it implies: the four reads of `$F290` in memory, pointed at
+`$F29D`, make every pair work, and `test_rules.js` now holds that. The
+copy protection's purpose is a reading, given on the page as one: it
+passes a copy of the files started as the original starts and fails a
+freezer cartridge's copy, which never runs `game_start` again. The
+report that the menu tune's voice 1 and the prematch tune's voice 3
+left the bouncing ball floating came from the SID player before its
+fix for gates restarted within a frame: with the player from before
+it, those two voices floated 96 % of the first 20 seconds, and with it
+9 % and 13 %.

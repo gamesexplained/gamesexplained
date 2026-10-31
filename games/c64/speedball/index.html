@@ -89,7 +89,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · One frame</p>
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: over half the driver's effects are never played</h2>
+  <p class="lede">The driver holds 26 sound effects and the launcher's hum. The game asks for twelve of the effects and never for the other fourteen.</p>
+  <div class="plate">
+    <div id="sb-sfx"></div>
+    <p class="cap">The game's own driver again, each effect started as the game starts it (<code>sound_play</code>, <code>$8B80</code>) after the kick-off's launcher has set the volume. The ones marked unused are records in <code>effect_table</code> (<code>$0F16</code>) that no call in the game asks for.</p>
+  </div>
+  <p>An effect is a record of 20 bytes: its length in frames, and for voices 1 and 3 a starting pitch, an envelope (how the volume rises and falls), a waveform (the shape of the tone) and a slide (how the pitch moves). Starting one takes those voices from the music (<code>effect_start</code>, <code>$0E7A</code>). The launcher's hum is voice 2 alone (<code>hum_start</code>, <code>$1155</code>), held while the launcher spins and stopped when it shoots the ball out (<code>launcher_sequence</code>, <code>$3739</code>).</p>
+</section>
+
+<section>
+  <p class="fig">04 · One frame</p>
   <h2 class="t">One frame, rebuilt from memory</h2>
   <p class="lede">The match screen is a scrolling pitch built of characters, with the panel split off below it. The players are sprites, small pictures the video chip draws over the screen, and each sprite is used again lower down.</p>
   <div class="plate">
@@ -103,7 +114,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">04 · The pitch</p>
+  <p class="fig">05 · The pitch</p>
   <h2 class="t">The bounce domes move after every match</h2>
   <p class="lede">Four domes stand on the pitch, and their places change after every match, through ten layouts in turn.</p>
   <div class="plate">
@@ -115,7 +126,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · Tiles</p>
+  <p class="fig">06 · Tiles</p>
   <h2 class="t">Tokens come up more often than all the power-ups together</h2>
   <p class="lede">A new tile appears on the floor 50 passes, two seconds, after the last one was taken, and the player you control takes it by standing on it. Eleven times in twenty it is a token, which the shop takes as money; the rest are power-ups.</p>
   <div class="plate">
@@ -129,7 +140,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · Teams</p>
+  <p class="fig">07 · Teams</p>
   <h2 class="t">The computer's ten teams grow stronger in order</h2>
   <p class="lede">Your three teams have figures of their own; the ten others are built from templates that grow stronger in order.</p>
   <div class="plate sb-wrapx"><table class="sb-tbl" id="sb-teams"></table>
@@ -140,7 +151,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">07 · Tackles</p>
+  <p class="fig">08 · Tackles</p>
   <h2 class="t">How a tackle is decided</h2>
   <p class="lede">Two players who touch are measured against each other by the way they face, unless one of them is sliding.</p>
   <p>Every pass the game measures the distance between each of the 45 pairs of players (<code>pair_distances</code>, <code>$B038</code>) and then looks for pairs that touch (<code>tackles_check</code>, <code>$8DD6</code>). For two opponents that touch, <code>tackle_resolve</code> (<code>$8EF5</code>) decides. A sliding player brings the other down when a random number from 0 to 255 is at least the victim's tackle figure, unless the victim's side has power-up P. Otherwise a table at <code>$B996</code> says who wins from the directions the two players face, and a player you control wins only while you hold fire. The loser falls and loses stamina by the winner's power (<code>stamina_drain</code>, <code>$908A</code>); the winner takes the ball if the loser had it.</p>
@@ -148,7 +159,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">08 · The shop</p>
+  <p class="fig">09 · The shop</p>
   <h2 class="t">What the tokens buy</h2>
   <p class="lede">After every match the shop sells eleven items for the tokens you collected.</p>
   <div class="plate sb-wrapx"><table class="sb-tbl" id="sb-shop"></table>
@@ -158,23 +169,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">09 · Copy protection</p>
+  <p class="fig">10 · Copy protection</p>
   <h2 class="t">Two timers that must keep in step</h2>
   <p class="lede">The game checks that two timers in the computer's second interface chip are running, and running together, in every frame of a match.</p>
   <p>At start-up the game sets timers A and B of CIA 2 (the C64's second interface chip) to the same period, <code>$231F</code> (8,991) cycles of the processor's clock, and starts them four cycles apart (<code>game_start</code>, <code>$201A</code>). It never uses them for timing. Three checks read them instead:</p>
   <p>The interrupt handler reads timer B's control register on every interrupt, with an instruction the processor's makers never documented, and when the timer has stopped it sets the match clock's target to 255, so the match never ends (<code>irq_handler</code>, <code>$86D3</code>). The keyboard reader makes the same test and sends the interrupt chain to a slot that does not exist (<code>keys_read</code>, <code>$8891</code>). At the top of the match screen, <code>irq_slot_play_top</code> (<code>$8745</code>) reads timer A and then timer B four cycles later. Started four cycles apart, the two read the same. The game combines them with EOR, which gives 0 when two numbers are equal, and adds the result to <code>$2DD0</code>, which so stays 0. The game merges that byte into what it reads from the joystick, uses it as the flag that waits for the next frame, and uses it to pick the league's save file. On a copy whose timers drift apart, the stick jams and the game hangs.</p>
   <p>The timers' registers answer at several addresses, called mirrors, and these reads use a different one each frame (<code>irq_slot_shop_row</code>, <code>$881D</code>). That hides them from a search for the registers' usual addresses.</p>
-</section>
-
-<section>
-  <p class="fig">10 · Sound effects</p>
-  <h2 class="t">Sound: over half the driver's effects are never played</h2>
-  <p class="lede">The driver holds 26 sound effects and the launcher's hum. The game asks for twelve of the effects and never for the other fourteen.</p>
-  <div class="plate">
-    <div id="sb-sfx"></div>
-    <p class="cap">The game's own driver again, each effect started as the game starts it (<code>sound_play</code>, <code>$8B80</code>) after the kick-off's launcher has set the volume. The ones marked unused are records in <code>effect_table</code> (<code>$0F16</code>) that no call in the game asks for.</p>
-  </div>
-  <p>An effect is a record of 20 bytes: its length in frames, and for voices 1 and 3 a starting pitch, an envelope (how the volume rises and falls), a waveform (the shape of the tone) and a slide (how the pitch moves). Starting one takes those voices from the music (<code>effect_start</code>, <code>$0E7A</code>). The launcher's hum is voice 2 alone (<code>hum_start</code>, <code>$1155</code>), held while the launcher spins and stopped when it shoots the ball out (<code>launcher_sequence</code>, <code>$3739</code>).</p>
+  <p>Nothing in the game says what the check is for, so what follows is our reading of it. A copy of the game's files that starts it the usual way runs <code>game_start</code>, sets the timers going and passes. What fails is a copy made with a freezer cartridge, such as the Action Replay, which stops a running game, saves the whole of memory to an ordinary disk and later starts it again from where it stopped. Copies made that way were a common answer to disks that could not be copied directly. When the game is restarted from such a copy, <code>game_start</code> does not run again, so the cartridge has to restart the timers itself. The chip lets a program read where a timer's count has reached, but not the period it was set to, so the cartridge cannot know to set both to <code>$231F</code>, four cycles apart. The timers then stay stopped, or run out of step, and the game breaks partway through a match in a way that looks like a bug rather than a copy check.</p>
 </section>
 
 </main>

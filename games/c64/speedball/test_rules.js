@@ -7,7 +7,7 @@
 // rounds of ten or more, falling a template a round with at most one wrap from 1 to 10; sbPairs
 // must find pairs 4-12 and 18-21 never seen to touch, nine of them opponents, and pairs 0-3 also
 // acting on the pairs that read their cell, and the same must hold with the other players placed
-// at random. From index.html's sb-tiles block: sbTileCounts must never choose E (7) or M (9), and J
+// at random; with the four reads of $F290 pointed at $F29D, every pair must act on itself alone. From index.html's sb-tiles block: sbTileCounts must never choose E (7) or M (9), and J
 // (10) only in a two player game. Then the two tests the pages state without a widget run here:
 // tile_choose ($A994) with random_range (hooked) giving each number it can, and
 // tackle_resolve's slide test ($8EBC and $9051) with random_next ($949E, hooked) giving each byte:
@@ -56,6 +56,14 @@ check(missed.join() === [...range(4, 12), ...range(18, 21)].join(), 'pairs never
 check(missed.filter((j) => P[j].a < 5 && P[j].b >= 5).length === 9, 'opponent pairs never seen');
 P.forEach((p, j) => check(p.acts.join() === range(0, 44).filter((i) => P[i].from === j).join(), 'pair', j, 'acts on', p.acts.join()));
 check(P[0].acts.join() === '0,4,7,19', 'pair 0 acts on', P[0].acts.join());
+// The fix the page states: the only four reads of $F290 in memory, pointed at $F29D, make every
+// pair act on itself alone.
+const reads = [];
+for (let i = 0; i < 0xFFFE; i++) if (ram[i + 1] === 0x90 && ram[i + 2] === 0xF2) reads.push(i);
+check(reads.map((r) => r.toString(16) + ':' + ram[r].toString(16)).join() === '8de6:be,8dff:be,8e44:be,b05e:be', 'reads of $F290', reads.map((r) => r.toString(16)).join());
+const fixed = ram.slice();
+reads.forEach((r) => { fixed[r + 1] = 0x9D; });
+sbPairs(fixed, C64Cpu).forEach((p, j) => check(p.acts.join() === String(j), 'with the fix, pair', j, 'acts on', p.acts.join()));
 const tackles = (pos) => {
   const m = ram.slice(), cpu = cpuOn(m);
   pos.forEach(([x, y], i) => { m[0x1E09 + i] = x & 0xFF; m[0x1E19 + i] = x >> 8; m[0x1E29 + i] = y & 0xFF; m[0x1E39 + i] = y >> 8; });
