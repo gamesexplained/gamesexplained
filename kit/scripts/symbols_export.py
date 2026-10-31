@@ -25,6 +25,11 @@ A comment that names a routine or table by an automatic name the address
 no longer has (s_10B4, renamed show_bonus since) is printed after the
 export: the listing shows only the new name, so a reader cannot follow it.
 
+A program in BASIC is declared in game.json (a part's part.json) as
+"basic": [["$0801", "$1A2F", "the loader"]], its first line to the two zero
+bytes that end it, and the export types it "BASIC", which the disassembler
+has no type for.
+
 Coverage regions come from game.json. The platform rule is the same for
 every game: "video" names the screen base (excluded: it is output) and the
 character-set base (included: authored data the video chip reads through a
@@ -238,6 +243,24 @@ def cross_references(plat, addresses, gdir=None):
     return fn(addresses, gdir) if fn else None
 
 
+def basic_blocks(blocks, game):
+    """The blocks with each range "basic" declares ([first, last, why], in game.json or a part's
+    part.json) typed as one BASIC program: a disassembler with no BASIC type of its own holds it
+    as bytes, and the listing reads it a line at a time (kit/<platform>/basic.py)."""
+    for lo, hi, *_ in game.get("basic") or []:
+        lo, hi = hexint(lo), hexint(hi)
+        out = []
+        for b in blocks:
+            if b["end"] < lo or b["start"] > hi:
+                out.append(b); continue
+            if b["start"] < lo:
+                out.append(dict(b, end=lo - 1))
+            if b["end"] > hi:
+                out.append(dict(b, start=hi + 1))
+        blocks = out + [{"start": lo, "end": hi, "type": "BASIC"}]
+    return blocks
+
+
 def drop_strays(plat, session, syms, game):
     """(symbols, how many it left out): a live session's symbols without the automatic ones that
     only the code of a part beneath refers to, where this part's load replaced its bytes
@@ -383,6 +406,7 @@ def main():
         session = argv[argv.index("--from") + 1] if "--from" in argv else gdir
         blocks, syms, comments = read_live(plat, session)
         source = "regenerator2000 live" if plat == "c64" else "live"
+    blocks = basic_blocks(blocks, game)
     reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
         blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"], game.get("names") or [])
