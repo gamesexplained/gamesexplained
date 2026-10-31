@@ -56,7 +56,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · MicroProse</p>
   <h1>Gunship</h1>
-  <p class="sub">An Apache gunship simulator in which BASIC runs everything but the flight. Six of the eight programs on the disk are BASIC listings, and the 3D engine they hand over to keeps the whole of its world in wireframe shapes of a few dozen bytes each.</p>
+  <p class="sub">An Apache helicopter simulator in which BASIC, the programming language built into the C64, runs everything but the flight. Six of the eight programs on the disk are written in BASIC. For the flight they hand over to a 3D engine written in machine code, the processor's own instructions, which builds its whole world from wireframe shapes of a few dozen bytes each.</p>
 </header>
 <main class="wrap">
 
@@ -68,7 +68,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <figure><img src="reference/front-briefing-we.png" alt="The briefing for a mission in Western Europe"><figcaption>The briefing: a primary and a secondary target, and the enemy's strength.</figcaption></figure>
     <figure><img src="reference/flight-cockpit-we.png" alt="The cockpit on the ground in Western Europe"><figcaption>The cockpit. Above is the 3D view, below are the instruments and the CRT in the middle.</figcaption></figure>
   </div>
-  <p>Each mission has two targets, a primary and a secondary. Before take-off you arm the helicopter with Sidewinder missiles, FFAR rockets, Hellfire missiles, cannon rounds, chaff and flares. You start the two engines, engage the rotor and raise the collective. You find the targets on the map, destroy what you can and fly home to land at a friendly base. After landing, a debriefing scores the mission and may award a medal or a promotion. Your pilot is saved to disk between missions in a roster of up to eight.</p>
+  <p>Each mission has two targets, a primary and a secondary. Before take-off you arm the helicopter with Sidewinder missiles, FFAR rockets, Hellfire missiles, cannon rounds, chaff and flares. You start the two engines, engage the rotor and raise the collective, the lever that sets how hard the rotor lifts. You find the targets on the map, destroy what you can and fly home to land at a friendly base. After landing, a debriefing scores the mission and may award a medal or a promotion. Your pilot is saved to disk between missions in a roster of up to eight.</p>
   <p>Damage comes in fourteen kinds, each with a lamp along the top of the canopy. A hit can stop an engine, blind the gunsight or leak fuel. A wrecked helicopter or a dead pilot ends the career.</p>
 </section>
 
@@ -85,10 +85,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" class="gs-btn" id="gs-spin" aria-pressed="true">Turn</button>
     </div>
     <div class="gs-out" id="gs-shape-out">-</div>
-    <p class="cap">Drawn from the bytes of Western Europe's terrain file as the flight's snapshot holds them. Each point is a combination of one x value, one y value and one height, numbered at <code>$1C37</code>, <code>$1CA8</code> and <code>$1D19</code>, or a fraction of another point. Every edge the shape lists is drawn here. The game leaves out an edge when both of the faces it joins turn away from the eye. Drag the picture to turn it.</p>
+    <p class="cap">Drawn from the bytes of Western Europe's terrain file, as they sit in memory during a flight. A number written with a <code>$</code> is in hexadecimal, base 16, and most such numbers on this page are addresses in the C64's 64 KB of memory. Each point is a combination of one x value, one y value and one height, picked by the tables at <code>$1C37</code>, <code>$1CA8</code> and <code>$1D19</code>, or it is a fraction of another point. Every edge the shape lists is drawn here. The game leaves out an edge when both of the faces it joins turn away from the eye. Drag the picture to turn it.</p>
   </div>
-  <p>A shape's record starts with how many points it has and their numbers (<code>$1E9F</code> on). Then come its faces, five bytes each, a colour number and its edges. An edge names two faces and two points, or a single point drawn as a dot. A flat shape has no faces, so all its edges are always drawn. The hills are the only shapes with faces that matter beyond drawing: <code>project</code> (<code>$894A</code>) sets a flag when a hill's face turns towards the eye from inside it, and the main loop ends the flight as a crash (<code>$31F8</code>).</p>
-  <p>Most things in the world have two shapes, a near view and a far one. A hill seen from far away is only its ridge lines, and a base is only its outline. Each terrain lists a fixed object (a hill, or nothing) and up to eight switchable ones: one bit for each square of the map at <code>$E200</code> switches them on. A shape from <code>$24E3</code> on can be locked as a target, and the byte after it names it. That byte plus 11 is the number of the message the CRT prints, so the shape at <code>$27BE</code> prints "T-72".</p>
+  <p>A shape's record starts with how many points it has and their numbers (<code>$1E9F</code> on). Then come its faces, five bytes each, a colour number and its edges. An edge names two faces and two points, or a single point drawn as a dot. A flat shape has no faces, so all its edges are always drawn. The hills are the only shapes whose faces matter for more than drawing. The routine <code>project</code> (<code>$894A</code>) sets a flag when a hill's face turns towards the eye from inside the hill, which means the helicopter has flown into it. The main loop then ends the flight as a crash (<code>$31F8</code>).</p>
+  <p>Most things in the world have two shapes, a near view and a far one. A hill seen from far away is only its ridge lines, and a base is only its outline. Each of the 33 kinds of terrain lists a fixed object (a hill, or nothing) and up to eight switchable ones. A table at <code>$E200</code> holds a byte for each square of the map, and each of its bits switches one of those objects on. A shape stored from <code>$24E3</code> on can be locked as a target, and the byte after the shape names it. That byte plus 11 is the number of the message the CRT prints, so the shape at <code>$27BE</code> prints "T-72".</p>
 </section>
 
 <section data-part="title">
@@ -97,27 +97,27 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries while the helicopter rises over the hills. It is the only music in the game.</p>
   <div class="plate">
     <div id="gs-music"></div>
-    <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run once a frame on the kit's 6502 on the title's bytes, as the title's raster interrupt calls it, and played through the site's model of the SID. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
+    <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run once a frame on the title's bytes by the site's copy of the 6502, the C64's processor, as the title's raster interrupt calls it. A frame is one picture on the television, 50 a second in Europe. The notes go through the site's model of the SID, the C64's sound chip. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
   </div>
-  <p>Each voice's stream is a note number and a length, two bytes a note. <code>$80</code> is a rest and <code>$81</code> the end. The length is multiplied by the tempo, 2 frames a unit on a PAL machine and 3 on NTSC (<code>tempo_by_tv</code>, <code>$8530</code>). So the tune lasts the same time on both. The note numbers index two tables of SID frequencies, 16 entries to an octave, of which 12 are notes and 4 are zeros (<code>$9006</code>, <code>$9082</code>). The table's values are those of an NTSC machine, so on a PAL machine every note sounds a little flat.</p>
+  <p>Each voice's stream is a note number and a length, two bytes a note. <code>$80</code> is a rest and <code>$81</code> the end. The length is multiplied by the tempo: 2 frames a unit on a PAL machine, the European C64 with 50 frames a second, and 3 on an NTSC machine, the American one with 60 (<code>tempo_by_tv</code>, <code>$8530</code>). A unit therefore lasts a twenty-fifth of a second on PAL and a twentieth on NTSC, so the tune plays a little slower in America. Each note number picks the note's frequency for the SID from two tables, one for the low byte and one for the high (<code>$9006</code>, <code>$9082</code>). The tables have 16 entries to an octave: 12 notes, then 4 zeros. The table's values are those of an NTSC machine, so on a PAL machine every note sounds a little flat.</p>
   <p>The first voice plays a pulse wave and the other two a sawtooth (<code>tune_waves</code>, <code>$9003</code>). The player ends the tune when any voice reads <code>$81</code>. A key pressed during the tune skips it.</p>
 </section>
 
 <section data-part="flight">
   <p class="fig">04 · The cockpit</p>
   <h2 class="t">Two pictures, one screen</h2>
-  <p class="lede">The cockpit is two multicolour bitmaps in two different 16 KB banks of memory. A raster interrupt switches the video chip from one to the other a third of the way down the screen.</p>
+  <p class="lede">The cockpit is two pictures, each a bitmap that sets every pixel, in two different 16 KB banks of memory. The video chip can see only one bank at a time. A raster interrupt, code the chip runs when it reaches a chosen line of the screen, switches it from one bank to the other a third of the way down.</p>
   <div class="plate">
     <canvas id="gs-frame" class="gs-canvas" aria-label="The cockpit, drawn from memory"></canvas>
     <div class="gs-ctl" style="margin-top:12px">
       <button type="button" class="gs-btn" data-fv="all" aria-pressed="true">The frame</button>
       <button type="button" class="gs-btn" data-fv="split" aria-pressed="false">Mark the split</button>
     </div>
-    <p class="cap">One whole frame of the game in flight, recorded in the emulator (every write to the video chip with the line it came on, and the memory it reads) and drawn here by the site's model of the video chip. 104,447 of its 104,448 pixels match the emulator's own picture of the same frame. The one that differs is in the border.</p>
+    <p class="cap">One whole frame of the game in flight, recorded in the emulator, the program that plays the part of a C64 (every write to the video chip with the line it came on, and the memory the chip reads), and drawn here by the site's model of the video chip. 104,447 of its 104,448 pixels match the emulator's own picture of the same frame. The one that differs is in the border.</p>
   </div>
-  <p>The window at the top is rows 0-12 of a bitmap at <code>$4000</code> or <code>$6000</code>, in the video chip's bank 1, with its colours at <code>$7C00</code>. The panel below is rows 13-24 of a bitmap at <code>$C000</code> or <code>$E000</code>, in bank 3, with its colours at <code>$EC00</code>. The interrupt at line <code>$9A</code> (<code>irq_split</code>, <code>$94B8</code>) moves the chip to bank 3 for the panel. The one at line <code>$FB</code> (<code>irq_bottom</code>, <code>$9206</code>), below the picture, moves it back and shows whichever window buffer was finished last.</p>
-  <p>Both halves are double-buffered. The engine draws the next view into the window bitmap the chip is not showing (<code>draw_view</code>, <code>$8451</code>), then swaps (<code>$910C</code> holds the four settings of <code>$D018</code>). The rows of each 8 KB bitmap that never reach the screen hold other things: sprites, the 128 units' records at <code>$5100</code>, the messages, the map's font and much of the engine's code.</p>
-  <p>On a Commodore 128 the engine also switches the processor to 2 MHz below the picture and back to 1 MHz at its top (<code>engine_on</code>, <code>$9110</code>; <code>irq_c128</code>, <code>$948F</code>). The fast part is the time the video chip is not reading the screen.</p>
+  <p>The window at the top is rows 0-12 of a bitmap at <code>$4000</code> or <code>$6000</code>, in the video chip's bank 1, with its colours at <code>$7C00</code>. The panel below is rows 13-24 of a bitmap at <code>$C000</code> or <span data-part=""><code>$E000</code></span>, in bank 3, with its colours at <code>$EC00</code>. The interrupt at line <code>$9A</code>, line 154 (<code>irq_split</code>, <code>$94B8</code>), moves the chip to bank 3 for the panel. The one at line <code>$FB</code>, line 251 (<code>irq_bottom</code>, <code>$9206</code>), comes below the picture. It moves the chip back and shows whichever window was finished last.</p>
+  <p>Both halves are double-buffered: each has two copies, one on screen and one being drawn. The engine draws the next view into the window bitmap the chip is not showing (<code>draw_view</code>, <code>$8451</code>), then swaps the two. The swap is a write to the chip's register <span data-part=""><code>$D018</code></span>, which says where in the bank the picture is, and <code>$910C</code> holds its four settings. The rows of each 8 KB bitmap that never reach the screen hold other things: sprites, the records of the 128 units (the tanks, launchers and bases on the ground, and the moving things in the air) at <code>$5100</code>, the messages, the map's font and much of the engine's code.</p>
+  <p>On a Commodore 128, whose processor can run at twice the speed, the engine switches the processor to 2 MHz below the picture and back to 1 MHz at its top (<code>engine_on</code>, <code>$9110</code>; <code>irq_c128</code>, <code>$948F</code>). The fast part is the time the video chip is not reading the screen.</p>
 </section>
 
 <section data-part="flight">
@@ -126,23 +126,23 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Pressing Z shows the big map: the theatre's terrain in characters, the units you have seen, and the waypoint.</p>
   <div class="plate">
     <canvas id="gs-map" class="gs-canvas" aria-label="The big map of Western Europe, drawn from memory"></canvas>
-    <p class="cap">One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip. 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites. The <a href="levels.html">Maps / levels</a> tab draws all five theatres.</p>
+    <p class="cap">One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip. 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites, the small movable pictures the chip draws over the screen. The <a href="levels.html">Maps / levels</a> tab draws all five theatres.</p>
   </div>
-  <p>A theatre is 16 by 16 squares, one byte each, numbering one of 33 terrains (<code>theatre_map</code>, <code>$1A86</code>). The big map shows the middle 12 by 12 (<code>draw_map</code>, <code>$9685</code>). Each square is three characters wide and two high, in multicolour character mode, from the font at <code>$C800</code>. A terrain's six characters follow each other in the font, from character 58 on. Their colours come from a table by character code (<code>$E33C</code>).</p>
-  <p>A unit appears on the map only once its type byte has bit 4 set (<code>$5300</code>), which happens when the helicopter has seen it. Its character is drawn in its square: friendly units in white, targets in one colour and other enemies in another.</p>
+  <p>A theatre is 16 by 16 squares, one byte each, and each byte is the number of one of 33 terrains (<code>theatre_map</code>, <code>$1A86</code>). The big map shows the middle 12 by 12 (<code>draw_map</code>, <code>$9685</code>). The map is drawn in characters, as text is, from a font at <code>$C800</code> whose characters are small pictures of terrain. Each square is three characters wide and two high. A terrain's six characters follow each other in the font, from character 58 on. Their colours come from a table by character code (<code>$E33C</code>).</p>
+  <p>A unit appears on the map only once the helicopter has seen it. Seeing it sets bit 4 of the unit's type byte (<code>$5300</code>). Its character is drawn in its square: friendly units in white, targets in one colour and other enemies in another.</p>
 </section>
 
 <section data-part="flight">
   <p class="fig">06 · Flying it</p>
   <h2 class="t">Controls</h2>
-  <p class="lede">The joystick is the cyclic, which tilts the rotor. The keyboard does everything else.</p>
+  <p class="lede">The joystick is the cyclic, the stick that tilts the rotor to fly the helicopter forward, back or sideways. The keyboard does everything else.</p>
   <div class="plate">
     <table class="gs-tab" id="gs-keys">
       <thead><tr><th>Key</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td>Joystick, port 2</td><td>The cyclic: forward, back and the two sides (<code>joystick</code>, <code>$E40C</code>)</td></tr>
         <tr><td>Fire</td><td>The chosen weapon, with the CRT on the target view (<code>$3D60</code>)</td></tr>
-        <tr><td>F1, F3, F5, F7</td><td>The collective up 4, up 1, down 1, down 4, from 0 to 42 (<code>$3383</code>)</td></tr>
+        <tr><td>F1, F3, F5, F7</td><td>The collective up 4, up 1, down 1 or down 4, from 0 to 42 (<code>$3383</code>)</td></tr>
         <tr><td>1, 2</td><td>Start or stop engine 1 or engine 2 (<code>$3406</code>)</td></tr>
         <tr><td>3</td><td>Engage or free the rotor's clutch</td></tr>
         <tr><td>4, 5, 6, 7</td><td>Choose the Sidewinders, the FFARs, the Hellfires or the cannon (<code>$348D</code>)</td></tr>
@@ -157,9 +157,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         <tr><td>RUN/STOP and RESTORE</td><td>Abort the flight</td></tr>
       </tbody>
     </table>
-    <p class="cap">From the key handling in the main loop, <code>$332E</code> to <code>$3500</code>. The keyboard is read once a frame by the interrupt (<code>keyboard</code>, <code>$A8D8</code>), which puts a newly pressed key in the keyboard buffer.</p>
+    <p class="cap">From the key handling in the main loop, <code>$332E</code> to <code>$3500</code>. The interrupt reads the keyboard once a frame (<code>keyboard</code>, <code>$A8D8</code>) and puts a newly pressed key in the keyboard buffer, where the main loop finds it.</p>
   </div>
-  <p>The joystick routine reads the stick only if CIA 2's two timers are still running the way the library on side 1 left them. It reads the high bytes of timers A and B, and unless they are <code>$7D</code> to <code>$80</code> apart, it throws away what it read (<code>$E423</code>). The <a href="discoveries.html">Discoveries</a> tab has the test.</p>
+  <p>The joystick routine keeps what it reads only if two timers are still running the way the code on side 1 of the disk left them. The timers are in CIA 2, one of the C64's two input and output chips. The routine compares the high bytes of timers A and B, and unless they are <code>$7D</code> to <code>$80</code> apart, it throws away what it read (<code>$E423</code>). The <a href="discoveries.html">Discoveries</a> tab has the test.</p>
 </section>
 
 <section data-part="flight">
@@ -168,21 +168,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A missile of the wrong kind that hits a ground unit does nothing at all. The flight engine names one missile kind for each of the sixteen kinds of unit, and only the Hind falls to any missile.</p>
   <div class="plate">
     <table class="gs-tab" id="gs-kinds"><thead><tr><th>Unit kind</th><th>Destroyed by</th><th>Its own weapon</th><th>Radar</th></tr></thead><tbody></tbody></table>
-    <p class="cap">Read from the flight's listing: the table at <code>$B5A4</code> (1 the FFAR, 2 the Hellfire, 0 the Sidewinder) and each kind's attributes at <code>$53A8</code> (bits 0-2 its weapon: up to 2 a gun reaching that number plus 1 times <code>$800</code>, half a map square, and from 3 up a missile of that kind; bit 6 radar). The kinds are numbers in a unit's type byte, bits 0-3. The units' names on the CRT come from their shapes instead, so this table numbers them.</p>
+    <p class="cap">Read from the flight's listing: the table at <code>$B5A4</code> (1 the FFAR, 2 the Hellfire, 0 the Sidewinder) and each kind's attributes at <code>$53A8</code> (bits 0-2 its weapon: 0 to 2 a gun whose reach is that number plus 1, times <code>$800</code>, half a map square; 3 and up a missile of that kind; bit 6 radar). A unit's kind is a number from 0 to 15 in bits 0-3 of its type byte. The names the CRT shows for units come from their shapes, not their kinds, so this table can only number the kinds.</p>
   </div>
-  <p>The cannon works differently. It hits when a random fraction of its range is beyond the target's distance, and the range shrinks with a worse aim, a harder style and a damaged gun (<code>$3D60</code>). The colour of the target box tells the pilot how good the shot is: the aim and the distance give a class from 0 to 3, which picks one of four colours (<code>$3CB6</code>, <code>$53A4</code>).</p>
-  <p>When an enemy shoots at the helicopter, <code>hit_helicopter</code> (<code>$5AE5</code>) decides whether it hits. First a random number from 0 to 15 is checked against the attacker's chance (<code>$5ADD</code>: 4 in 16, 8 in 16 or always, by the attacker). Then the pass counter's low two bits must be below <code>zpa_4C</code>, which is 0 in training and the style of missions plus 1 otherwise. So in training nothing ever hits. Of the shots that pass the first test, a quarter hit on regular missions, a half on volunteer missions and three quarters on volunteer hazardous duty. A hit sets one of the fourteen damage bits at random. More than 7 hits, less <code>zpa_4C</code>, stop both engines. The <a href="discoveries.html">Discoveries</a> tab lets you try the test.</p>
+  <p>The cannon works another way. Each shot takes a random fraction of the cannon's range and hits when that is beyond the target's distance. The range shrinks with a worse aim, a harder style of mission and a damaged gun (<code>$3D60</code>). The colour of the target box tells the pilot how good the shot is: the aim and the distance give a class from 0 to 3, which picks one of four colours (<code>$3CB6</code>, <code>$53A4</code>).</p>
+  <p>When an enemy shoots at the helicopter, <code>hit_helicopter</code> (<code>$5AE5</code>) decides whether it hits. First a random number from 0 to 15 is checked against the attacker's chance (<code>$5ADD</code>: 4 in 16, 8 in 16 or always, by the attacker). Then the pass counter, which goes up by one each time round the main loop, is checked: its lowest two bits, a number from 0 to 3, must be below <code>zpa_4C</code>. That variable is 0 in training, and on a mission it is the style of missions plus 1. So in training nothing ever hits. Of the shots that pass the first test, a quarter hit on regular missions, a half on volunteer missions and three quarters on volunteer hazardous duty. A hit sets one of the fourteen damage bits at random. More than 7 hits, less <code>zpa_4C</code>, stop both engines. The <a href="discoveries.html">Discoveries</a> tab lets you try the test.</p>
 </section>
 
 <section data-part="flight">
   <p class="fig">08 · Sound: the effects</p>
   <h2 class="t">Sound: ten effects from one small table</h2>
-  <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of SID registers to write, and the frame on which to write them.</p>
+  <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of values to write into the SID's registers, the sound chip's settings, and the frame on which to write each one.</p>
   <div class="plate">
     <div id="gs-sfx"></div>
     <p class="cap">The game's own effect player, <code>sound_step</code> (<code>$9A39</code>), run once a frame on the kit's 6502 on the flight's bytes, as the interrupt calls it, after <code>sound_start</code> (<code>$9AAC</code>) as the game starts each effect. It plays through the site's model of the SID. The test beside the page compares every write with the same calls on the flight's whole memory.</p>
   </div>
-  <p>The effects' addresses are low bytes in one page (<code>sound_effects</code>, <code>$EC00</code>). An effect's entries are three bytes: the frame it is due on, a SID register and the value to write. A frame with bit 7 set starts a slide instead: from then on, each frame adds a step to a register. The slide's register is the low three bits of its start value, so a slide can only reach voice 1 and the first byte of voice 2. Effect 0 is never asked for by any of the flight's calls.</p>
+  <p>All ten effects sit in one page of 256 bytes, so each one's address is a single byte (<code>sound_effects</code>, <code>$EC00</code>). An effect's entries are three bytes: the frame it is due on, a SID register and the value to write. A frame with bit 7 set starts a slide instead: from then on, each frame adds a step to a register. The slide's register is the low three bits of its start value, so a slide can only reach voice 1 and the first byte of voice 2. Effect 0 is never asked for by any of the flight's calls.</p>
   <p>Effect 9, an engine's starter, is effect 0 with its slides going the other way. Its first entry names register <code>$50</code>, where effect 0's names register 1. The SID repeats its registers every 32 bytes, so the write lands on register 16, the low byte of voice 3's pulse width.</p>
   <p>Under the effects, the main loop keeps two voices going all through the flight (<code>$3BBD</code>). Voice 2's pitch is the rotor's speed, and its pulse width follows the height. Voice 3 is the engines' whine.</p>
 </section>
@@ -190,7 +190,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="">
   <p class="fig">09 · Eight programs</p>
   <h2 class="t">BASIC around a machine-code engine</h2>
-  <p class="lede">The title, the front end, the debriefing and the base are BASIC programs that call a machine-code library through a jump table at <code>$7500</code>. Only the flight itself is machine code.</p>
+  <p class="lede">The title, the front end, the debriefing and the base are BASIC programs. They call routines in a machine-code library through a table of jumps at <code>$7500</code>, one jump for each routine. Only the flight itself is machine code.</p>
   <div class="plate">
     <table class="gs-tab">
       <thead><tr><th>Program</th><th>What it does</th><th>Source</th></tr></thead>
@@ -205,7 +205,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </table>
     <p class="cap">One program hands over to the next by printing a <code>LOAD</code> command on the screen, putting a RETURN in the keyboard buffer and ending with <code>NEW</code>, so BASIC loads it as if it had been typed.</p>
   </div>
-  <p>The front end passes the mission to the flight through the cassette buffer at <code>$033C</code>. <code>G2</code> copies it into the engine's variables, which wait at <code>$3F00</code> until the engine swaps them into zero page (<code>swap_zp</code>, <code>$919B</code>). The last file <code>G2</code> loads, <code>AWH</code>, is a few bytes that land on the processor's stack. When the load returns, it returns into the engine at <code>$3100</code> instead of into BASIC (<code>flight_start</code>). When the flight ends, the engine drops that return and goes back to <code>G2</code>, and the debriefing reads the flight's results from <code>$3F00</code>.</p>
+  <p>The front end passes the mission to the flight in the cassette buffer at <code>$033C</code>, memory the C64 keeps for tape loading and Gunship borrows. <code>G2</code> copies the mission into the engine's variables. They wait at <code>$3F00</code> until the engine swaps them into zero page, the first 256 bytes of memory, which the processor reaches fastest (<code>swap_zp</code>, <code>$919B</code>). The last file <code>G2</code> loads, <code>AWH</code>, is a few bytes that land on the processor's stack, where it keeps the address to return to after a routine. So when the load is over, it returns into the engine at <code>$3100</code> instead of into BASIC (<code>flight_start</code>). When the flight ends, the engine drops that return and goes back to <code>G2</code>, and the debriefing reads the flight's results from <code>$3F00</code>.</p>
 </section>
 
 </main>

@@ -62,10 +62,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gs-ctl"><span class="gs-k">Random number</span><input id="gs-rnd" type="range" min="0" max="15" value="3"><span id="gs-rnd-v">3</span></div>
     <div class="gs-grid" id="gs-hits"></div>
     <div class="gs-out" id="gs-hits-out">-</div>
-    <p class="cap">The test in <code>hit_helicopter</code> (<code>$5AE5</code>), ported, for each value of the pass counter's low two bits, with the attacker's chances read from the flight's listing at <code>$5ADD</code>. A test beside the page runs the game's own routine in the kit's 6502 for every attacker, style, pass and random number, 32,768 cases, and checks that the port agrees on each.</p>
+    <p class="cap">The test in <code>hit_helicopter</code>, the routine that decides whether a shot hits, written again in JavaScript for this page and shown for each of the four values of the pass counter's lowest two bits. A number written with a <code>$</code> is in hexadecimal, base 16, and most are addresses in the C64's memory: the routine is at <code>$5AE5</code>, and the attackers' chances are read from the game's bytes at <code>$5ADD</code>. A test beside the page runs the game's own routine on the site's copy of the C64's processor for every attacker, style, pass and random number, 32,768 cases, and checks that the page's version agrees on each.</p>
   </div>
-  <p>The routine takes a random number from 0 to 15 (the SID's third oscillator) and compares it with the attacker's chance at <code>$5ADD</code>: 4, 8 or always. If that passes, the pass counter's low two bits must be below <code>zpa_4C</code> for the shot to hit. The flight's BASIC, <code>G2</code>, sets <code>zpa_4C</code> from the mission block the front end wrote, where line 720 of <code>BEGIN</code> puts the style plus 1, or 0 in training. Two bits below 0 is impossible, so in training the second test always fails.</p>
-  <p>On a mission the same test makes the style a straight share of hits. A quarter of the shots that pass the first test hit on regular missions, half on volunteer missions and three quarters on volunteer hazardous duty. <code>zpa_4C</code> also sets how many hits stop both engines (more than 7 less <code>zpa_4C</code>), and the cannon's range.</p>
+  <p>The routine takes a random number from 0 to 15, read from the third voice of the SID, the sound chip, and compares it with the attacker's chance at <code>$5ADD</code>: 4, 8 or always. If that passes, it takes the pass counter, which goes up by one each time round the flight's main loop. The counter's lowest two bits, a number from 0 to 3, must be below the variable <code>zpa_4C</code> for the shot to hit. <code>G2</code>, the BASIC program that sets up the flight, copies <code>zpa_4C</code> from the mission that the front end wrote. There, line 720 of the front end, <code>BEGIN</code>, puts the style plus 1, or 0 in training. A number from 0 to 3 is never below 0, so in training the second test always fails.</p>
+  <p>On a mission the same test turns the style into a fixed share of hits. A quarter of the shots that pass the first test hit on regular missions, half on volunteer missions and three quarters on volunteer hazardous duty. <code>zpa_4C</code> also sets how many hits stop both engines (more than 7 less <code>zpa_4C</code>), and the cannon's range.</p>
 </section>
 
 <section data-part="flight">
@@ -74,9 +74,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The C64-Wiki's table of weapons gives Hellfires for armour and FFARs for soft targets. The code is stricter: each kind of ground unit can be destroyed by one kind of missile only, and any other kind that hits it does nothing.</p>
   <div class="plate">
     <table class="gs-tab"><thead><tr><th>Missile</th><th>Unit kinds it can destroy</th></tr></thead><tbody id="gs-mk"></tbody></table>
-    <p class="cap">Read from the table at <code>$B5A4</code> in the flight's listing, one byte for each of the sixteen unit kinds: 1 the FFAR, 2 the Hellfire, 0 the Sidewinder. A unit's kind is bits 0-3 of its type byte (<code>$5300</code>).</p>
+    <p class="cap">Read from the table at <code>$B5A4</code> in the flight's code, one byte for each of the sixteen kinds of unit: 1 the FFAR, 2 the Hellfire, 0 the Sidewinder. A unit's kind is a number from 0 to 15 kept in bits 0-3 of its type byte (<code>$5300</code>).</p>
   </div>
-  <p>When a missile's explosion ends, the code at <code>$B2F1</code> looks up its target's kind in <code>$B5A4</code> and compares the missile's guidance flags with that missile kind's (<code>$AE12</code>). Only a match destroys the unit. The Hind is the one exception: it is unit 5, and a missile that explodes on unit 5 destroys it whatever its kind (<code>$B309</code>). Kinds 14 and 15 are the only ones the table gives to the Sidewinder, and the five theatres' files do not have a unit of either kind. So a Sidewinder can destroy the Hind and nothing else.</p>
+  <p>When a missile's explosion ends, the code at <code>$B2F1</code> looks up its target's kind in <code>$B5A4</code>, which gives the missile that can destroy it. Then it compares the guidance flags of the two missiles, the bits that say how each kind finds its target (<code>$AE12</code>). Only a match destroys the unit. The Hind is the one exception: it is unit 5, and a missile that explodes on unit 5 destroys it whatever its kind (<code>$B309</code>). Kinds 14 and 15 are the only ones the table gives to the Sidewinder, and the five theatres' files do not have a unit of either kind. So a Sidewinder can destroy the Hind and nothing else.</p>
   <p>The cannon works another way: it hits by range and aim alone, so it can destroy any unit, given enough rounds.</p>
 </section>
 
@@ -85,7 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The cannon fires only at a target</h2>
   <p class="lede">The fire button does nothing to the cannon unless the CRT shows the target view. With the map or a message on the CRT, fire moves the CRT on instead.</p>
   <div class="plate">
-    <p style="margin:0">In the emulator, from a snapshot in flight with the CRT on the map and no target picked, the fire button was pressed ten times. The cannon's 60 rounds stayed at 60. The code is at <code>$3C2D</code>: with the CRT on the map or a message (<code>zpa_FF</code> not 0), fire with a target picked (<code>zpa_FA</code> = 2) steps the CRT on, with sound 8, and nothing is fired. The firing itself starts at <code>$3D60</code>, on the path that only the target view reaches.</p>
+    <p style="margin:0">In the emulator, from a snapshot in flight with the CRT on the map and no target picked, the fire button was pressed ten times. The cannon's 60 rounds stayed at 60. The code is at <code>$3C2D</code>. When the CRT shows the map or a message (the variable <code>zpa_FF</code> is not 0) and a target is picked (<code>zpa_FA</code> = 2), fire steps the CRT on to its next display, with sound 8, and the cannon stays silent. The firing itself starts at <code>$3D60</code>, on the path that only the target view reaches.</p>
     <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
   </div>
 </section>
@@ -93,7 +93,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="flight">
   <p class="fig">04 · The joystick</p>
   <h2 class="t">Secret: the joystick checks two timers before it reads</h2>
-  <p class="lede">The flight's joystick routine throws away what it reads unless CIA 2's two timers are still running the way the program on side 1 started them.</p>
+  <p class="lede">The flight's joystick routine throws away what it reads unless two timers are still running the way the program on side 1 of the disk started them. The timers are in CIA 2, one of the C64's two input and output chips.</p>
   <div class="plate">
     <table class="gs-tab">
       <thead><tr><th>Test</th><th>Timers A and B, high bytes</th><th>Stick held left reads</th></tr></thead>
@@ -104,18 +104,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </table>
     <p class="cap">Tested live in VICE on 31 October 2026, from the flight's snapshot in Western Europe.</p>
   </div>
-  <p><code>joystick</code> (<code>$E40C</code>) reads port 2 into its two directions, then subtracts the high byte of timer B from the high byte of timer A (<code>$E423</code>). Unless the difference is <code>$7D</code> to <code>$80</code>, it sets both directions to 0. The flight never starts those timers, so the gap was set before side 2 was ever read, and holds as long as both timers keep counting from where they started. What the check guards against is not in the code. A copy of side 2 run on its own, without the side 1 programs before it, would fly with a dead stick.</p>
+  <p>The routine <code>joystick</code> (<code>$E40C</code>) reads the stick in port 2 as two directions, across and up or down, then subtracts the high byte of timer B from the high byte of timer A (<code>$E423</code>). Unless the difference is <code>$7D</code> to <code>$80</code>, it sets both directions to 0. The flight never starts those timers, so the gap was set before side 2 was ever read, and holds as long as both timers keep counting from where they started. What the check guards against is not in the code. A copy of side 2 run on its own, without the side 1 programs before it, would fly with a dead stick.</p>
 </section>
 
 <section data-part="flight">
   <p class="fig">05 · Cheats</p>
   <h2 class="t">A no-fuel POKE for this disk</h2>
-  <p class="lede">The C64-Wiki lists three POKEs for Gunship, entered with a freezer cartridge during a flight. On the original disk the ammunition one works, and the fuel one makes the tanks drain faster.</p>
+  <p class="lede">The C64-Wiki lists three POKEs for Gunship. A POKE writes one byte into memory, and these are typed in during a flight through a freezer cartridge, a plug-in that stops the game and lets you change its memory. On the original disk the ammunition one works, and the fuel one makes the tanks drain faster.</p>
   <div class="plate">
     <table class="gs-tab">
       <thead><tr><th>POKE</th><th>What it changes here</th><th>Result</th></tr></thead>
       <tbody>
-        <tr><td><code>POKE 23082,189</code></td><td><code>use_store</code>'s <code>DEC $53D8,X</code> at <code>$5A2A</code> becomes <code>LDA $53D8,X</code></td><td>Unlimited ammunition: in the kit's 6502, five shots leave 60 rounds at 60</td></tr>
+        <tr><td><code>POKE 23082,189</code></td><td>In <code>use_store</code> at <code>$5A2A</code>, the instruction that takes one away from the store's count, <code>DEC $53D8,X</code>, becomes one that only reads it, <code>LDA $53D8,X</code></td><td>Unlimited ammunition: in the kit's 6502, five shots leave 60 rounds at 60</td></tr>
         <tr><td><code>POKE 22840,5:POKE 22885,5</code></td><td>The fuel burn at <code>$5937</code> and <code>$5964</code> subtracts <code>zpa_05</code>, which is 0 in flight, instead of the burn</td><td>No fuel used: both tanks unchanged after 6 seconds, where the game burns 126 from each</td></tr>
         <tr><td><code>POKE 22837,5:POKE 22882,5</code></td><td>The wiki's: the tanks' <code>LDA zpa_70</code> and <code>LDA zpa_72</code> read <code>zpa_05</code> instead</td><td>The tanks fall faster, by 136 and 339 in 6 seconds</td></tr>
       </tbody>
@@ -132,13 +132,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <img class="gs-pic" src="reference/list-guard-syntax-error.png" alt="LIST on a C64 prints nothing and stops with a syntax error">
     <p class="cap"><code>G2</code>'s bytes put into a freshly reset C64 in VICE and listed, on 31 October 2026.</p>
   </div>
-  <p>The line is <code>REM</code>, then five DEL characters and a shifted L. It is line 0, or line 1 in <code>BEGIN</code>. LIST prints the line's number and "REM", five characters, then the five DELs, which rub them out again. The shifted L is the byte <code>$CC</code>, past the last of BASIC's keywords, and LIST stops on it with <code>?SYNTAX ERROR</code>. RUN never reaches the problem, because it skips the rest of a line after REM.</p>
+  <p>The line is <code>REM</code>, BASIC's word for a remark that the program skips, then five DEL characters and a shifted L. It is line 0, or line 1 in <code>BEGIN</code>. LIST prints the line's number and "REM", five characters, then the five DELs, which rub them out again. BASIC stores each of its keywords as a single byte. The shifted L is the byte <code>$CC</code>, past the last of the keywords, so LIST cannot print it and stops with <code>?SYNTAX ERROR</code>. RUN never reaches the problem, because it skips the rest of a line after REM.</p>
 </section>
 
 <section data-part="flight">
   <p class="fig">07 · The starter</p>
   <h2 class="t">Bug: the starter's sound writes a register the SID does not have</h2>
-  <p class="lede">The engine starter's sound effect is the unused effect 0 with its slides reversed, and its first entry names register <code>$50</code>. The SID has 25 registers.</p>
+  <p class="lede">The engine starter's sound effect is the unused effect 0 with its slides, the steps that bend a sound frame by frame, reversed. Its first entry writes to register <code>$50</code>, number 80, of the SID, the sound chip, which has 25 registers.</p>
   <div class="plate">
     <table class="gs-tab">
       <thead><tr><th>Effect</th><th>First entry at</th><th>Frame</th><th>Register</th><th>Value</th></tr></thead>
@@ -146,7 +146,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </table>
     <p class="cap">The first entry of effects 0 and 9, read from the flight's listing (<code>sound_effects</code>, <code>$EC00</code>). The <a href="index.html">How it works</a> tab plays both.</p>
   </div>
-  <p>The player writes the value to <code>$D400</code> plus the register (<code>$9A6C</code>), so the starter writes <code>$10</code> to <code>$D450</code>. The SID answers at every 32 bytes from <code>$D400</code> to <code>$D7FF</code>, so <code>$D450</code> is register 16, the low byte of voice 3's pulse width. Effect 0's first entry writes the same value, <code>$10</code>, to register 1, the high byte of voice 1's frequency. Whether the stray write is heard depends on voice 3's waveform at that moment, since the pulse width changes only a pulse wave.</p>
+  <p>The SID's registers start at address <code>$D400</code>. The player writes the value to <code>$D400</code> plus the register (<code>$9A6C</code>), so the starter writes <code>$10</code> to <code>$D450</code>. The SID's 32 addresses repeat every 32 bytes from <code>$D400</code> to <code>$D7FF</code>, so <code>$D450</code> is register 16, the low byte of voice 3's pulse width. Effect 0's first entry writes the same value, <code>$10</code>, to register 1, the high byte of voice 1's frequency. Whether the stray write is heard depends on voice 3's waveform at that moment, since the pulse width changes only a pulse wave.</p>
 </section>
 
 </main>

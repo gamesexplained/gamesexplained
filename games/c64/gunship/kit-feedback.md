@@ -40,7 +40,7 @@ when the shape viewer showed "T-J2" for a target's name.
 
 ## Maintainer asks
 
-- **kit/c64: Add a script that logs every KERNAL LOAD during play, with the file name and the memory each load changed.** Gunship's disk is protected with Rapidlok V6, whose directory points at decoy sectors, so `kit/c64/disk.py` decoded 32 sectors of either side and none of the files. Every load (more than twenty across the two sides) had to be found by stopping at `$FFD5`, reading the name through `$BB`-`$BC` and its length at `$B7`, and comparing memory before and after, with throwaway scripts; a checkpoint on the load's return address did not fire reliably under Rapidlok, so diffs between successive `$FFD5` stops were what worked. A `kit/c64` script that runs the emulator through a route and writes, for each `$FFD5` call, the name, the drive, the secondary address and the address ranges that changed until the next call, would give `15-parts` its load table and each part's `ranges` in one run, and would work on any disk whose loader goes through the KERNAL's LOAD, protected or not.
+- #664: kit/c64: Add a script that logs every KERNAL LOAD with the memory it changed
 
 ## What cost the most time
 
