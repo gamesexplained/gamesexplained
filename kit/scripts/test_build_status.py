@@ -2,8 +2,8 @@
 """The status page keeps up with the games and stays short: a game made on a kind of computer (game.json's
 tools.host, found by a host's match in site/status.json) puts its platform's cell there at "works"; each
 cell is Works, Limited or Not yet, names two of the games made there and counts the rest; and the
-contributors table counts each person's merged pull requests, the games they added and the platforms
-those are on, leaving out the people status.json names."""
+contributors table counts each person's merged pull requests and the games they added, and names the
+platforms those are on, leaving out the people status.json names."""
 from pathlib import Path
 import glob
 import json
@@ -74,9 +74,10 @@ class StatusPage(unittest.TestCase):
             {"pr": 7, "who": [["Aaron Bell", "AIR"], ["Ada", "ada"]]},
             {"pr": 8, "who": [["Dee", "dee"]]},
         ]
-        gs = [game("a"), game("b", platform="nes"), game("c")]
+        changes.insert(0, {"pr": 9, "who": [["Ada", "ada"]], "added": ["nes/e"]})
+        gs = [game("a"), game("b", platform="nes"), game("c"), game("e", platform="nes")]
         self.assertEqual(build.contributor_board(changes, gs, ["air", "dee"]),
-                         [("Ada", "ada", 4, 2, 2), ("Cy", "cy", 2, 0, 0), ("Bo", None, 1, 1, 1)])
+                         [("Ada", "ada", 5, 3, ["nes", "c64"]), ("Cy", "cy", 2, 0, []), ("Bo", None, 1, 1, ["c64"])])
 
     def test_the_page_leaves_out_who_status_json_says(self):
         left = (STATUS.get("contributors") or {}).get("leave_out") or []
@@ -85,6 +86,7 @@ class StatusPage(unittest.TestCase):
                                               {"pr": 2, "who": [["Ada", "ada"]], "added": ["c64/a"]}])
         people = re.search(r'<table class="people">(.*?)</table>', page, re.S).group(1)
         self.assertIn('href="https://github.com/ada"', people)
+        self.assertIn("<td>Commodore 64</td>", people)   # the platforms by name
         self.assertNotIn("github.com/air", people)
 
 

@@ -2144,12 +2144,13 @@ def and_more(gs, shown=2):
 
 
 def contributor_board(changes, games, leave_out=()):
-    """[(name, login, pull requests merged, games, platforms)] per person, most pull requests first.
+    """[(name, login, pull requests merged, games, [platform ids])] per person, most pull requests first.
 
     Read from the changes that landed on main (landed): a pull request counts for each person it
     credits, a game for each person credited on the change that added its game.json, so long as the
-    game is still on the site, and the platforms are the ones those games are on. The people in
-    leave_out, by GitHub login or git author name, compared without case, are left out."""
+    game is still on the site, and the platforms are the ones those games are on, most of their
+    games first. The people in leave_out, by GitHub login or git author name, compared without
+    case, are left out."""
     out = {str(x).strip().lower() for x in leave_out}
     on_site = {f'{g["platform"]}/{g["slug"]}' for g in games}
     rows = {}
@@ -2160,9 +2161,14 @@ def contributor_board(changes, games, leave_out=()):
             r = rows.setdefault(login or name, {"name": name, "login": login, "prs": 0, "games": set()})
             r["prs"] += 1 if c.get("pr") else 0
             r["games"] |= set(c.get("added", [])) & on_site
-    return sorted(((r["name"], r["login"], r["prs"], len(r["games"]), len({g.split("/")[0] for g in r["games"]}))
+    def platforms(gs):
+        n = {}
+        for g in gs:
+            n[g.split("/")[0]] = n.get(g.split("/")[0], 0) + 1
+        return sorted(n, key=lambda p: (-n[p], p))
+    return sorted(((r["name"], r["login"], r["prs"], len(r["games"]), platforms(r["games"]))
                    for r in rows.values() if r["prs"] or r["games"]),
-                  key=lambda r: (-r[2], -r[3], -r[4], (r[1] or r[0]).lower()))
+                  key=lambda r: (-r[2], -r[3], -len(r[4]), (r[1] or r[0]).lower()))
 
 
 def status_page(games, changes=None):
@@ -2173,7 +2179,8 @@ def status_page(games, changes=None):
     know (what a kit was measured doing on each kind of computer, how many games a system
     had) is in status.json, each with a date. The page prints only the verdicts: a table of
     every kit on every kind of computer, each cell Works, Limited or Not yet with two of the
-    games made there; the notes behind them stay in status.json. Then the systems with no kit,
+    games made there; the notes behind them, and the sources of the library sizes, stay in
+    status.json. Then the systems with no kit,
     the games per system, and the contributors (contributor_board) less status.json's
     contributors.leave_out. changes is landed()'s, read here when the caller has none."""
     S = json.load(open(os.path.join(SITE, "status.json")))
@@ -2215,18 +2222,6 @@ def status_page(games, changes=None):
     systems_html = ('<div class="tablewrap"><table class="systems"><tr><th>System</th><th class="num">Library</th></tr>'
                     + "".join(rows) + '</table></div>')
 
-    src = []
-    for s in S["systems"]:
-        lib = s.get("library") or {}
-        if lib.get("games"):
-            fig = lib.get("figure") or f'{lib["games"]:,}'
-            src.append(f'<li><b>{html.escape(s["name"])}</b>: {html.escape(fig[0].lower() + fig[1:])} {html.escape(lib.get("counts", ""))}. '
-                       f'<a href="{html.escape(lib["url"])}">{html.escape(lib["source"])}</a>'
-                       + (f', read {long_date(lib["seen"])}' if lib.get("seen") else "") + '.</li>')
-    sources_html = ('<p class="mute">Library sizes are rough. Every source counts in its own way: some list only commercial or licensed '
-                    'releases, some add public-domain games, type-ins and new games written since, and a few count software of every '
-                    'kind. Each line says what its figure counts.</p><ul class="sources">' + "".join(src) + '</ul>')
-
     # games per system: the systems runs have chosen, most games first
     per = {}
     for g in games:
@@ -2244,16 +2239,16 @@ def status_page(games, changes=None):
 
     people = contributor_board(changes, games, (S.get("contributors") or {}).get("leave_out") or [])
     people_html = ('<div class="tablewrap"><table class="people"><tr><th class="num">#</th><th>Contributor</th>'
-                   '<th class="num">PRs merged</th><th class="num">Games</th><th class="num">Platforms</th></tr>'
+                   '<th class="num">PRs merged</th><th class="num">Games</th><th>Platforms</th></tr>'
                    + "".join(f'<tr><td class="num rank">{i}</td><td><b>{person_html(nm, login)}</b></td><td class="num">{prs}</td>'
-                             f'<td class="num">{ng}</td><td class="num">{npl}</td></tr>'
-                             for i, (nm, login, prs, ng, npl) in enumerate(people, 1))
+                             f'<td class="num">{ng}</td><td>{html.escape(", ".join(name(p) for p in pls))}</td></tr>'
+                             for i, (nm, login, prs, ng, pls) in enumerate(people, 1))
                    + '</table></div>') if people else '<p class="mute">No contributions recorded in this build.</p>'
 
     built, commit = commit_stamp()
     return fill(read(os.path.join(SITE, "status.html")), site_title="Platform status · Games Explained", lib="lib", built=built,
-                commit=html.escape(commit), repo=repo, kits=kits_html, systems=systems_html, sources=sources_html,
-                board=board_html, people=people_html)
+                commit=html.escape(commit), repo=repo, kits=kits_html, systems=systems_html, board=board_html,
+                people=people_html)
 
 
 def broken_links(out_root):
