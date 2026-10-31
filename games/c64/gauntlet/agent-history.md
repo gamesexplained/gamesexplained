@@ -109,3 +109,14 @@ short pushes. Play differed from the listing in 717 bytes, nearly all
 player two's sprite buffers and shot shapes, which were written back
 from the earlier listing into `work/play-level1.vsf`; the unpatched
 snapshot is `work/play-level1-raw.vsf`.
+
+## 31 October 2026, the four heroes
+
+Asked for a summary of each hero. The hero tables gave each hero's
+values, and a snapshot with the Warrior and the Valkyrie playing showed
+them in place, except player two's unread hand-to-hand byte, which held
+the program file's `$40` where the Valkyrie's table has `$80`. Following
+that showed that no code sets a joining player's values: a live test with
+player two set to the Wizard confirmed it. The kit had moved `opcodes.py`
+and `cpu6502.js` to `kit/cpu/` since the last session; `work/dis.py` was
+pointed there.

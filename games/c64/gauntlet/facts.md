@@ -154,6 +154,33 @@ player two at every stage after a blow.
 
 ### Players
 
+- The heroes, by index (player_hero, `$911C`): 0 Warrior (red), 1
+  Valkyrie (cyan), 2 Wizard (yellow), 3 Elf (green). Each player's values
+  come from the hero tables (power_reset, `$9F7D`): shot damage `$ACC0`
+  from `$9E0B` ($80 $40 $80 $40), shot against generators `$ACAD` from
+  `$9E07` (2 1 2 1), hand to hand against generators `$ACC8` from `$9E0F`
+  (2 1 0 0), magic against generators `$A00C` from `$A002` (2 1 3 1),
+  magic against monsters `$A010` from `$A006` ($80 $40 $C0 $40). The
+  blast reads `$A00A,x` and `$A00E,x` with X = blast_owner - 1, 2 or 3
+  for the players and 0 for a shot potion (`$A00A` = 1, `$A00E` = `$40`).
+  *Live*: on level 2 with the Warrior as player one, every value matched
+  the Warrior's column.
+- Hand to hand reads `$ACCA,x` with X the player, `$40` for both; the
+  per-hero `$9E13` ($80 $80 $40 $40) is copied to `$ACCC`, which nothing
+  reads.
+- Only the Warrior's shot (type 1, the hero + 1, shot_fire `$A74E`) turns
+  as it flies. No read of player_hero is in the code that moves a player
+  (every reader: the panel, the sprite and title colours, the shapes'
+  loading, the powers, the shot type, the hero's name in messages), so
+  every hero walks at the same speed.
+- A player's values are all set from its hero only by wait_first_player
+  (`$A563`), for the first player of a game, and leave_timers (`$A684`),
+  when a dead player's wait ends. A player who joins during play
+  (players_join) keeps what memory holds: on a fresh load the program
+  file's values, `$01`/`$40` throughout, the Valkyrie's. *Live*
+  (`work/live13.py`): player two set to the Wizard on level 1 joined with
+  shot damage `$40`, shot and fight against generators 1, magic `$40` and
+  1, and player_powers_reset never ran.
 - Health is four decimal digits (health_hi/lo), 2000 at the start. Food
   adds 100 (food_eat). Every pickup (door opened, chest, food, potion,
   key, amulet) scores 100 (score_100); a shot that hits a monster scores
