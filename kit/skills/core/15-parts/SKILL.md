@@ -80,8 +80,10 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
      every part is resident: make it a part of its own, and add each
      load with `--over <its id>`, giving the addresses the load writes
      as `"ranges"` in its `part.json`. Find them by watching the load (a
-     store checkpoint over all of memory while the loader runs), or by
-     comparing the snapshots either side of it. The part beneath then
+     store checkpoint over all of memory while the loader runs, or the
+     tool in the platform's `steps` skill, "loads", that logs every load
+     with the memory it changed), or by comparing the snapshots either
+     side of it. The part beneath then
      owns everything else.
    - **A leftover.** A stretch that matches another part's where nothing
      calls it is a leftover of an earlier build, not shared code.

@@ -1,6 +1,6 @@
 ---
 name: steps
-description: Which of the kit's tools each core step uses on the Commodore 64 - the snapshot, the disk's files, the disassembler, the register census, the references search, the processor's idioms, the simulator, the whole machine, the lockstep, the frame, the sound, the checker's fixes and the page's scripts. Read it beside the core skill that names a row.
+description: Which of the kit's tools each core step uses on the Commodore 64 - the snapshot, the disk's files, the game's loads, the disassembler, the register census, the references search, the processor's idioms, the simulator, the whole machine, the lockstep, the frame, the sound, the checker's fixes and the page's scripts. Read it beside the core skill that names a row.
 ---
 
 # The core steps on the C64
@@ -18,6 +18,7 @@ JavaScript file's header is its manual.
 | `media` | `10-orient`, step 7; `15-parts`, step 6: the files on the disk | `c1541` from the emulator's build reads a G64 or D64; `python3 kit/c64/disk.py extract <image> <dir>` writes every file, and `disk.py <image>` lists the sectors no file holds. A cartridge is `kit/c64/crt.py` (`c64-reference`, "Bank-switched cartridges") |
 | `disassembler` | `10-orient`, step 6; `50-coverage`, the loop | regenerator2000, live, through `kit/c64/r2000.py` (`tool-regen2000`); `symbols_export.py <game>` reads the running session, and `coverage.py --live` its figure |
 | `census` | `40-sweep`, the register census | `python3 kit/cpu/census.py <game or part dir> [<snapshot.vsf>] [--live]`: the chips at `$D000`-`$DFFF`, the expansion port's pages and the processor port at `$00`-`$01` |
+| `loads` | `15-parts`, step 4: the files a game loads and the addresses each writes | `python3 kit/c64/loads.py <game>` with the emulator running the game: every call of the KERNAL's LOAD at `$FFD5`, with its file's name, device and secondary address and the RAM that changed before the next, in `work/loads.jsonl`. It gives the table of files for a disk `media` cannot read, a protected one whose directory points at decoys (`c64-reference`, "Loading a file") |
 | `references` | `50-coverage`, step 2; `60-verify`, "Negative results" | `python3 kit/cpu/opcodes.py <game> [<snapshot.vsf>] [--live] --refs <address>`: by name, as a pointer, through an index, and through an index that wraps past `$FFFF`, undocumented opcodes included |
 | `cpu` | `50-coverage`, inline arguments and jump tables | the 6510 runs the NMOS 6502's instructions: `kit/skills/cpu/6502`; its undocumented opcodes are in `c64-reference` |
 | `simulator` | `60-verify`; `70-minisite`, a widget's test | `kit/cpu/cpu6502.js` ("The simulator", below); `kit/scripts/port_check.js` cuts a page's block out and hands it the same simulator |
