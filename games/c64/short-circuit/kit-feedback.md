@@ -22,6 +22,8 @@ None.
 
 - **A snapshot that was saved stopped is loaded stopped, and `10-orient` says the opposite.** `10-orient` says "A loaded snapshot **starts running immediately**", while `tool-vice-mcp` says a load on a stopped machine leaves it stopped. On release v3.14.0 a snapshot saved after `pause()` loaded stopped: the joystick seemed to do nothing and the clock seemed frozen until `vice_ping` said `paused`. The skill could say that a snapshot saved while stopped is loaded stopped and needs `vice_execution_run`.
 
+- **`kit/c64/test_stdio_bridge.py` fails on macOS.** `test_snapshot_conversion_preserves_ram_and_previous_project` compares `/private/var/folders/...` with `/var/folders/...`: on a Mac the temporary folder is a link, and the test's `project_path` resolves it where the expected path is not. The test passes on Linux. Resolve both sides with `Path.resolve()` in the test.
+
 ## What cost the most time
 
 The disassembler follows no table of address-minus-one words, so every handler of a game that dispatches with `PHA` and `RTS` has to be found by hand: a script that lists every `PHA`/`PHA`/`RTS` dispatch and prints the table it reads would have saved the most time.
