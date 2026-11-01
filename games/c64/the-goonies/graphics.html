@@ -8,22 +8,25 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">A packed picture from the disk for each scene, and every moving thing drawn into it by hand: no hardware sprites, two bitmaps taking turns, and the same four colours on every screen.</p>
+  <p class="sub">Step through a Goonie’s walk, then inspect the shapes behind each scene. The game draws its moving characters into two alternating pictures.</p>
 </header>
 <main class="wrap">
+<div class="plate scene-scope" id="graphics-picker"></div>
+<section id="walk">
+  <p class="fig">The walk</p>
+  <h2 class="t">A walking Goonie's two frames are half a byte apart</h2>
+  <p class="lede">The two walking frames also help position a Goonie between the picture’s byte columns. Step the demonstration to see a four-pixel move on each update. The frame changes every update; the byte column changes every other update.</p>
+  <p>Each byte spans eight screen pixels. The routine <code>goonie_frame</code> (<code>$0C36</code>) uses the Goonie’s horizontal position to choose its walking frame. The second frame’s artwork sits four pixels further right within its bytes, so changing the frame supplies the intermediate step.</p>
+  <div class="plate" id="walk-widget"></div>
+  <p class="cap">A walking demonstration reconstructed from the selected scene’s first Goonie. The grid marks eight-pixel columns; yellow marks its position. Walk advances every 80 ms. The arrow exports this same diagram and pace as a GIF.</p>
+</section>
+
 <section id="colours">
   <p class="fig">The colours</p>
   <h2 class="t">Every scene is drawn in black, red, blue, and white</h2>
   <p class="lede">The screen is a multicolour bitmap, where each pair of bits picks one of four colours for a double-width pixel. Three of the four come from the screen matrix and the colour RAM, which can differ for every 8 by 8 cell, and most C64 bitmap games use that to put many colours on screen.</p>
   <p>The Goonies fills every cell with the same three. <code>fill_screens</code> (<code>$691E</code>) writes <code>$26</code> into every byte of both screen matrices, which gives red and blue, and <code>fill_colour_ram</code> (<code>$6905</code>) writes 1, white, into the colour RAM. With the black background, those are the only colours any scene can show. Only the two status rows differ, filled with <code>$3C</code> for the score's cyan and grey.</p>
-  <p>Because every cell has the same colours, a shape can be drawn at any position without clashing with the cells around it. The reviewers noticed the price. <i>ZZap!64</i> complained of "a distinct lack of colour, with only four used!"<sup class="fn"><a href="about.html#src-3" title="ZZap!64 9, as transcribed on GameBase64">3</a></sup></p>
-</section>
-
-<section id="buffers">
-  <p class="fig">Two bitmaps</p>
-  <h2 class="t">The game draws into one bitmap while the other is on screen</h2>
-  <p class="lede">The game keeps two complete screens, one in each of the video chip's first two banks: the screen matrix at <code>$0400</code> with the bitmap at <code>$2000</code>, and the screen matrix at <code>$6000</code> with the bitmap at <code>$4000</code>. Each pass the main loop draws the next frame into the one not shown, then asks for a flip (<code>$12C8</code>), and the raster interrupt at line <code>$FB</code> (<code>irq</code>, <code>$0A03</code>) switches banks in the bottom border, after the visible screen has been drawn.</p>
-  <p>A pass takes four frames, so the picture moves at about 12.5 frames a second on a PAL machine. The player never sees a half-drawn frame, because the bitmap being drawn is never the one on screen.</p>
+  <p>Because every cell has the same colours, a shape can be drawn at any position without clashing with the cells around it. The reviewers noticed the restricted palette. <i>ZZap!64</i> complained of "a distinct lack of colour, with only four used!"<sup class="fn"><a href="about.html#src-3" title="ZZap!64 9, as transcribed on GameBase64">3</a></sup></p>
 </section>
 
 <section id="drawing">
@@ -34,29 +37,27 @@
   <p>Before it draws, <code>draw_shape</code> saves the bitmap bytes the shape will cover. Each bitmap has its own save area, from <code>$F900</code> and <code>$FC00</code>, and a list of what was saved (<code>$131E</code>). The next time that bitmap is drawn into, <code>erase_sprites</code> (<code>$6E23</code>) walks its list from the last entry back to the first and puts the saved bytes back, leaving the clean picture to draw the new frame into.</p>
 </section>
 
+<section id="buffers">
+  <p class="fig">Two bitmaps</p>
+  <h2 class="t">The game draws into one bitmap while the other is on screen</h2>
+  <p class="lede">The game keeps two complete screens, one in each of the video chip's first two banks: the screen matrix at <code>$0400</code> with the bitmap at <code>$2000</code>, and the screen matrix at <code>$6000</code> with the bitmap at <code>$4000</code>. Each pass the main loop draws the next frame into the one not shown, then asks for a flip (<code>$12C8</code>), and the raster interrupt at line <code>$FB</code> (<code>irq</code>, <code>$0A03</code>) switches banks in the bottom border, after the visible screen has been drawn.</p>
+  <p>A pass takes four frames, so the picture moves at about 12.5 frames a second on a PAL machine. The player never sees a half-drawn frame, because the bitmap being drawn is never the one on screen.</p>
+</section>
+
 <section id="shapes">
   <p class="fig">The shapes</p>
   <h2 class="t">A shape moves eight pixels at a time unless it has copies</h2>
   <p class="lede">A byte of the bitmap holds four pixels, each two bits wide on the screen, so a shape drawn at a byte boundary can only be placed every eight screen pixels. To move more smoothly, a shape needs copies of itself drawn shifted inside its bytes.</p>
   <p>The shape table at <code>$70BE</code> gives each of its 58 shapes four pointers, one for each value of the two low bits of an object's x position, which is counted in units of two pixels. <code>draw_object</code> (<code>$0C8A</code>) takes the pointer the low bits choose and draws that copy at column x divided by four. How finely a shape moves depends on how many different copies its four pointers name:</p>
-  <table class="t">
+  <div class="table-scroll" role="region" aria-label="Graphics reference table" tabindex="0"><table class="t">
     <tr><th class="n">Shapes</th><th>Copies</th><th>Step</th><th>Which</th></tr>
     <tr><td class="n">15</td><td>four, two pixels apart</td><td>2 pixels</td><td>shapes 30 to 42, 48, and 57, among them the bird's six frames</td></tr>
     <tr><td class="n">6</td><td>two, four pixels apart</td><td>4 pixels</td><td>the two Goonies standing still, and shapes 26, 28, 29, and 55</td></tr>
     <tr><td class="n">37</td><td>one</td><td>8 pixels</td><td>everything else, the walking Goonies among them</td></tr>
-  </table>
+  </table></div>
   <p>Shapes 0 to 15 are the scene's two Goonies, eight frames each: walking right, walking left, climbing, standing, and swimming. The game holds seven Goonies, each a different child, in seven blocks of shape pointers at <code>$B797</code>-<code>$B996</code>. When a scene loads, <code>load_scene_graphics</code> (<code>$6F7A</code>) copies the scene's two blocks (<code>scene_shape_blocks</code>, <code>$7049</code>) into the start of the table, so the pair of Goonies on screen changes from scene to scene. Scene 8 breaks the pattern: its start routine draws the second Goonie from shapes 49 to 56 instead (<code>$9D63</code>), a figure about three lines taller than any of the children. Shapes 16 to 57, the creatures and the other things that move, stay in place for the whole game.</p>
   <div class="plate" id="shape-widget"></div>
-  <p class="cap">Every shape in the table for the chosen scene, drawn from the game's bytes at three times size. The colours here are the game's four. <b>Show all four copies</b> draws the copy for each value of the two low bits of x side by side, so a shape with one copy appears four times unchanged.</p>
-</section>
-
-<section id="walk">
-  <p class="fig">The walk</p>
-  <h2 class="t">A walking Goonie's two frames are half a byte apart</h2>
-  <p class="lede">A walking Goonie has one copy of each frame, so by the table above it should move eight pixels at a time. It moves four. <code>goonie_frame</code> (<code>$0C36</code>) picks one of two walking frames by bit 1 of the Goonie's x position, and the second frame is drawn four pixels further right inside its bytes than the first.</p>
-  <p>A Goonie walks two units, four pixels, a pass. On one pass the first frame is drawn at a byte boundary, and on the next the second frame is drawn from the same byte, its figure four pixels further on. The walking animation and the half-byte step are the same two frames.</p>
-  <div class="plate" id="walk-widget"></div>
-  <p class="cap">A Goonie walking right, drawn the way <code>draw_object</code> draws it, one pass at a time. The grid marks the bitmap's byte columns, eight pixels apart, and the yellow mark is the Goonie's x position. The frame changes every pass and the column every other pass.</p>
+  <p class="cap">Shapes reconstructed from the selected scene’s base pointer table. Show all four copies compares the horizontal offsets. Scene 8 overrides its second character with the taller figure in shapes 49–56; the base entries 8–15 remain visible here for reference.</p>
 </section>
 
 <section id="pictures">
@@ -66,8 +67,10 @@
   <p>The picture arrives packed at <code>$4140</code>. <code>unpack_picture</code> (<code>$7071</code>) unpacks it into the bitmap at <code>$2140</code> with a simple run-length code. A count with bit 7 set repeats the next byte that many times (the count less <code>$80</code>), a count below <code>$80</code> copies that many bytes as they are, and a zero ends the picture. The unpacked picture is then copied into the second bitmap, and the scene's shapes are drawn over both.</p>
   <p>The disk loader lives in the first bitmap's top rows while it works, at <code>$2000</code>. Between loads the game keeps a copy of it in the RAM under the I/O chips at <code>$D800</code>, and copies it back before each picture loads. When a disk read fails, the status line shows DISK ERROR.</p>
 </section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="reference/goonies-page.js"></script>
-<script>GOON.mountShapes(document.getElementById('shape-widget')); GOON.mountWalk(document.getElementById('walk-widget'));</script>
+<script src="reference/goonies-scenes.js"></script>
+<script>GOONPAGES.mountGraphics();</script>
