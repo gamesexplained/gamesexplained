@@ -7500,6 +7500,24 @@
    "kind": "user"
   },
   {
+   "address": 31429,
+   "name": "tune2_voice1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 31445,
+   "name": "tune2_voice2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 31467,
+   "name": "tune2_voice3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 31680,
    "name": "sprite_blank",
    "type": "Field",
@@ -12438,6 +12456,24 @@
    "kind": "user"
   },
   {
+   "address": 59008,
+   "name": "tune1_voice1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 59072,
+   "name": "tune1_voice2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 59200,
+   "name": "tune1_voice3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 59261,
    "name": "room_picture_16_e77d",
    "type": "UserDefined",
@@ -12746,7 +12782,7 @@
   {
    "address": 8264,
    "type": "line",
-   "text": "Cold start, run once from the loader's jump to $2000. Clears zero page from $02, the stack page, $3FF0-$3FF9 and $3FFF, then falls into the warm start at $2067."
+   "text": "Cold start, run once from the loader's jump to $2000. Clears the whole of zero page (STA $02,X with X counting down from 0 wraps within the page, reaching $00 and $01) and the stack page, then $3FF0-$3FF9 and $3FFF, and falls into the warm start at $2067."
   },
   {
    "address": 8295,
@@ -12836,7 +12872,7 @@
   {
    "address": 8931,
    "type": "line",
-   "text": "\" \u00a9 A.P.S. SOFTWARE 1986\" in PETSCII; the title converts it to screen codes for row 1."
+   "text": "The copyright line for the title, in the title set's own codes: byte $00 is the copyright sign (glyph 0 of the title set), then \" A.P.S. SOFTWARE 1986\" with each full stop stored as $5C; title_sequence ($222F) converts the line to screen codes, $5C becoming $3C."
   },
   {
    "address": 8953,
@@ -13076,7 +13112,7 @@
   {
    "address": 10055,
    "type": "line",
-   "text": "Prints the character in A at the text panel's cursor, keeping A, X, Y and the flags. Waits for any fade to finish, then: carriage return starts a new line; \"*\" clears the panel; letters ($40 and up) go straight to the screen; punctuation and digits are mapped to the panel font's codes. After the seventh line it waits for fire once every six lines (a \"more\" pause) and asks the interrupt to scroll the panel up ($56)."
+   "text": "Prints the character in A at the text panel's cursor, keeping A, X, Y and the flags. Waits for any fade to finish, then: carriage return starts a new line; \"*\" clears the panel; letters ($40 and up) have $20 taken off (the SBC #$20 hidden in the BIT at $279D) to make the panel font's codes; punctuation and digits are mapped to the panel font's codes one by one. After the seventh line it waits for fire once every six lines (a \"more\" pause) and asks the interrupt to scroll the panel up ($56)."
   },
   {
    "address": 10221,
@@ -13326,7 +13362,7 @@
   {
    "address": 11956,
    "type": "line",
-   "text": "A main-loop task: finds, among the objects of the player's room (the list at $0250, $02F6 of them, with their rectangles in $1B00/$1B20/$1B40/$1B60), the nearest one on each side of the player's position ($64, and $1D7D) and stores their edges and numbers in $1DE4-$1DEB, copied to $1DEC-$1DF3."
+   "text": "A main-loop task: finds, among the objects of the player's room (the list at $0250, $02F6 of them, with their rectangles in $1B00/$1B20/$1B40/$1B60), the nearest one on each side of the player's position ($64, and $1D7D) and stores their edges in $1DE4-$1DE7 and their positions in the room's list (the index into $0250) in $1DE8-$1DEB, all copied to $1DEC-$1DF3."
   },
   {
    "address": 12126,
@@ -13376,7 +13412,7 @@
   {
    "address": 12610,
    "type": "line",
-   "text": "Text printed in the text panel by the call at $313F: \"(clears the panel) YOU CAN/T CARRY ANY MORE! /\"."
+   "text": "Text printed in the text panel by the call at $313F: \"(clears the panel) YOU CAN/T CARRY ANY MORE!  (new line)\"."
   },
   {
    "address": 12638,
@@ -13461,7 +13497,7 @@
   {
    "address": 13800,
    "type": "line",
-   "text": "Keeps the player's X within the room's limits $1DE1/$1DE2, takes the scroll column $40 and fine scroll $19 from it (the player $94 pixels from the left edge), and when the column changed copies the room map ($0C00-$1AFF, 15 rows of 256 columns, from column $40) to screen rows 0-14."
+   "text": "Takes the player's X ($1D69/$1D73, written back as it is) less $94 pixels as the scroll position, kept between 0 and the room's limit $1DE1/$1DE2; its low three bits give the fine scroll $19 and the rest the scroll column $40. When the column has changed it copies the room map ($0C00-$1AFF, 15 rows of 256 columns, from column $40) to screen rows 0-14."
   },
   {
    "address": 14114,
@@ -13636,7 +13672,7 @@
   {
    "address": 15319,
    "type": "line",
-   "text": "Unpacks picture record X of the list at $C100 into the room map, with the RAM under the I/O area switched in ($01 = $34). Each record starts with the address of the next and the picture's width; with carry clear the picture is centred in a 41-column screen, with carry set it starts at column 0. $2F and $30 are left at its right and left columns. The picture's 15 rows are unpacked column by column across ($3C3D)."
+   "text": "Unpacks picture record X of the list at $C100 into the room map, with the RAM under the I/O area switched in ($01 = $34). Each record starts with the address of the next and the picture's width; with carry clear the picture is centred in a 40-column screen (starting at (40 - width) / 2, or at 0 when it is wider), with carry set it starts at column 0. $2F and $30 are left at its right and left columns. The picture's 15 rows are unpacked one after another, each from its left column to its right ($3C3D)."
   },
   {
    "address": 15416,
@@ -13646,7 +13682,7 @@
   {
    "address": 15421,
    "type": "line",
-   "text": "Next character of a packed picture: a count byte starts a run (zero ends the picture, through two PLAs back to $3C38); its first bit says whether the run is one character repeated or a run of characters sharing a high nibble with a 4-bit low nibble each."
+   "text": "Next character of a packed picture. A run starts with a count byte (zero ends the picture, through two PLAs back to $3C38) and one bit: clear, the run's characters are whole bytes; set, a 4-bit high nibble follows and each character of the run is that nibble with 4 bits of its own. The stream is read a bit at a time, low bit first ($3D56)."
   },
   {
    "address": 15469,
@@ -13761,7 +13797,7 @@
   {
    "address": 16093,
    "type": "line",
-   "text": "Text printed in the text panel by the call at $3EDA: \"(clears the panel) IT/S LOCKED. /\"."
+   "text": "Text printed in the text panel by the call at $3EDA: \"(clears the panel) IT/S LOCKED.  (new line)\"."
   },
   {
    "address": 16108,
@@ -13771,7 +13807,7 @@
   {
    "address": 16112,
    "type": "line",
-   "text": "Text printed in the text panel by the call at $3EED: \"THE KEY WILL NOT FIT. /\"."
+   "text": "Text printed in the text panel by the call at $3EED: \"THE KEY WILL NOT FIT.  (new line)\"."
   },
   {
    "address": 16135,
@@ -13781,7 +13817,7 @@
   {
    "address": 16139,
    "type": "line",
-   "text": "Text printed in the text panel by the call at $3F08: \"YOU SEE NO DOOR. /\"."
+   "text": "Text printed in the text panel by the call at $3F08: \"YOU SEE NO DOOR.  (new line)\"."
   },
   {
    "address": 16157,
@@ -13796,7 +13832,7 @@
   {
    "address": 16287,
    "type": "line",
-   "text": "Away from doors: on a fire press, in play, lets $8042 deal with it first; otherwise, or in the list menus, does what fire does in the menu ($310B)."
+   "text": "Away from doors: in the list menus (states 4 and 6) with no entry chosen ($0147 negative) it goes straight to what fire does in the menu ($310B); otherwise, on a fire press, in play it lets $8042 deal with it first, and then, or in the other states, goes to $310B."
   },
   {
    "address": 16322,
@@ -13982,6 +14018,21 @@
    "address": 31168,
    "type": "line",
    "text": "sprites props, continued: bytes $79C0-$7BFF."
+  },
+  {
+   "address": 31429,
+   "type": "line",
+   "text": "The second tune's first voice, among the sprite shapes ($97FB gives its address): played when Snide first enters a room where someone has died ($945E)."
+  },
+  {
+   "address": 31445,
+   "type": "line",
+   "text": "The second tune's second voice."
+  },
+  {
+   "address": 31467,
+   "type": "line",
+   "text": "The second tune's third voice; the sprite shapes resume after it."
   },
   {
    "address": 31680,
@@ -14211,7 +14262,7 @@
   {
    "address": 33793,
    "type": "line",
-   "text": "The names of the pieces of furniture, by their index ($025A): \"FOUR POSTER BED\", \"CHEST OF DRAWERS\", \"PAINTING\", \"MICROWAVE\", \"SIDEBOARD\", \"STAIRCASE\", \"WINDOW\", \"SHELVES\", \"OPEN WALL SAFE\", \"DINGLE/S BODY!\", \"STABBED DOCTOR!\" and others; icon_action_1 ($80A9) prints one."
+   "text": "The names of the pieces of furniture, zero-terminated, by the object number the room's list gives them ($0250): string 0 is \"DUMMY\", then \"FOUR POSTER BED\", \"CHEST OF DRAWERS\", \"FIREPLACE\", ... \"OPEN WALL SAFE\", \"DINGLE/S BODY!\", \"STABBED DOCTOR!\"; icon_action_1 ($80A9) prints one."
   },
   {
    "address": 34152,
@@ -14266,17 +14317,17 @@
   {
    "address": 34697,
    "type": "line",
-   "text": "The icon lists of menus 0-5, each ended by $FF."
+   "text": "The icon lists of menus 0-5, each ended by $FF, $8789-$87A4."
   },
   {
    "address": 34719,
    "type": "line",
-   "text": "Icon masks of menus 6 and up."
+   "text": "The end of menu 5's icon list at $8789. Menus 6 and up read their masks with LDA $879F,X (X 6 and up), so the masks begin at $87A5."
   },
   {
    "address": 34725,
    "type": "line",
-   "text": "Part of the menu tables at $8782, read by $B65F as the objects Bentley names (a negative byte: he does not)."
+   "text": "One byte for each object: the mask of icons its menu offers (menu 6 + the object; build_menu picks icons from $8782 by its bits), bit 7 also marking the objects Bentley names when asked about them ($B65F)."
   },
   {
    "address": 34777,
@@ -14326,7 +14377,7 @@
   {
    "address": 34922,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8867: \"(clears the panel) IT WON/T FIT! /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8867: \"(clears the panel) IT WON/T FIT!  (new line)\"."
   },
   {
    "address": 34938,
@@ -14386,7 +14437,7 @@
   {
    "address": 35144,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8945: \"A DOOR /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8945: \"A DOOR  (new line)\"."
   },
   {
    "address": 35152,
@@ -14396,7 +14447,7 @@
   {
    "address": 35159,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8954: \"A SECRET PASSAGE! /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8954: \"A SECRET PASSAGE!  (new line)\"."
   },
   {
    "address": 35178,
@@ -14411,7 +14462,7 @@
   {
    "address": 35206,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8983: \"PUT IN: /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8983: \"PUT IN:  (new line)\"."
   },
   {
    "address": 35215,
@@ -14431,7 +14482,7 @@
   {
    "address": 35266,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $89BF: \"(clears the panel) OKAY. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $89BF: \"(clears the panel) OKAY.  (new line)\"."
   },
   {
    "address": 35274,
@@ -14446,7 +14497,7 @@
   {
    "address": 35278,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $89CB: \"(clears the panel) SORRY, YOU CAN/T DO THAT. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $89CB: \"(clears the panel) SORRY, YOU CAN/T DO THAT.  (new line)\"."
   },
   {
    "address": 35306,
@@ -14481,7 +14532,7 @@
   {
    "address": 35429,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8A62: \"(clears the panel) TYPE IN THE COMBINATION: /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8A62: \"(clears the panel) TYPE IN THE COMBINATION:  (new line)\"."
   },
   {
    "address": 35456,
@@ -14491,7 +14542,7 @@
   {
    "address": 35475,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8A90: \"(clears the panel) THE SAFE IS OPEN! /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8A90: \"(clears the panel) THE SAFE IS OPEN!  (new line)\"."
   },
   {
    "address": 35495,
@@ -14511,7 +14562,7 @@
   {
    "address": 35540,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $8AD1: \"THE SAFE DOESN/T OPEN /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $8AD1: \"THE SAFE DOESN/T OPEN  (new line)\"."
   },
   {
    "address": 35563,
@@ -14541,7 +14592,7 @@
   {
    "address": 35633,
    "type": "line",
-   "text": "The title's cast introduction, every frame: in its phases ($1E66) shows the portrait sprites 0 and 1 at the right of the panel with the colours of the character being introduced (tables $8C7B-$8C90), animates the portrait ($1E4E, $1E4F), starts the next character's picture ($8D13) every eight counts of $1E69, and at phase $FE builds the next portrait's masks ($8D6E)."
+   "text": "The title's cast introduction, every frame: in its phases ($1E66) shows the portrait sprites 0 and 1 at the right of the panel with the colours of the character being introduced (tables at $8C81-$8C94, read as $8C7B,X and $8C85,X with X 6-15), animates the portrait ($1E4E, $1E4F), starts the next character's picture ($8D13) every eight counts of $1E69, and at phase $FE builds the next portrait's masks ($8D6E)."
   },
   {
    "address": 35963,
@@ -14636,7 +14687,7 @@
   {
    "address": 37176,
    "type": "line",
-   "text": "Mirrors a character's sprite shapes, a few rows each call, while $76 counts: each byte through the pixel-reversal table at $0500, and the bytes of each row in reverse order (table $0380). With $76 negative it copies the shapes instead, 64 bytes at a time from ($BB) to ($BD), until it reaches $83."
+   "text": "Mirrors a character's sprite shapes while $76 counts down: each call does 127 bytes (two shapes), each byte through the pixel-reversal table at $0500 and the bytes of each row in reverse order (table $0380). With $76 negative it copies shapes instead, 63 bytes of each 64-byte step from ($BB) to ($BD), until $76 reaches $7F, and then sets $76 = 5."
   },
   {
    "address": 37217,
@@ -15001,7 +15052,7 @@
   {
    "address": 41338,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A177: \"IT/S EMPTY.. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A177: \"IT/S EMPTY..  (new line)\"."
   },
   {
    "address": 41352,
@@ -15011,7 +15062,7 @@
   {
    "address": 41356,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A189: \"YUK.. THAT DIDN/T TASTE TOO GOOD..! /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A189: \"YUK.. THAT DIDN/T TASTE TOO GOOD..!  (new line)\"."
   },
   {
    "address": 41393,
@@ -15026,12 +15077,12 @@
   {
    "address": 41440,
    "type": "line",
-   "text": "The time/pause action: prints \"THE TIME IS NOW:\" and the clock, \"PAUSED..PRESS FIRE TO CONTINUE.\", and waits for fire with the game state's top bit set, which stops the clock ($2A8B counts frames only below state 10)."
+   "text": "The time/pause action: prints \"THE TIME IS NOW:\" and the clock, \"PAUSED..PRESS FIRE TO CONTINUE.\", and waits for fire with the game state shifted right and its top bit set (state 10 or more): anim_rotate ($2C5D) then skips the animation jobs, the clock's among them, so the clock stops."
   },
   {
    "address": 41443,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A1E0: \"(clears the panel)   THE TIME IS NOW: /  /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A1E0: \"(clears the panel)   THE TIME IS NOW: (new line)  (new line)\"."
   },
   {
    "address": 41470,
@@ -15041,7 +15092,7 @@
   {
    "address": 41486,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A20B: \"/  /    PAUSED..PRESS /  FIRE TO CONTINUE.\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A20B: \"/  (new line)    PAUSED..PRESS (new line)  FIRE TO CONTINUE.\"."
   },
   {
    "address": 41524,
@@ -15056,7 +15107,7 @@
   {
    "address": 41544,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A245: \"USE: /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A245: \"USE:  (new line)\"."
   },
   {
    "address": 41550,
@@ -15071,7 +15122,7 @@
   {
    "address": 41560,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A255: \"(clears the panel) TO: /  /   OPEN /   BREAK /   CUT /   EXAMINE /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A255: \"(clears the panel) TO: (new line)  (new line)   OPEN (new line)   BREAK (new line)   CUT (new line)   EXAMINE (new line)\"."
   },
   {
    "address": 41598,
@@ -15091,7 +15142,7 @@
   {
    "address": 41623,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A294: \"(clears the panel)  /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A294: \"(clears the panel)   (new line)\"."
   },
   {
    "address": 41626,
@@ -15131,7 +15182,7 @@
   {
    "address": 41751,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A314: \"IN  /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A314: \"IN   (new line)\"."
   },
   {
    "address": 41756,
@@ -15141,7 +15192,7 @@
   {
    "address": 41773,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $A32A: \"OUTSIDE /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $A32A: \"OUTSIDE  (new line)\"."
   },
   {
    "address": 41782,
@@ -15581,7 +15632,7 @@
   {
    "address": 45579,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B208: \"(clears the panel) IN THE ROOM YOU SEE: /  /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B208: \"(clears the panel) IN THE ROOM YOU SEE: (new line)  (new line)\"."
   },
   {
    "address": 45603,
@@ -15591,7 +15642,7 @@
   {
    "address": 45668,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B261: \"NOBODY.. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B261: \"NOBODY..  (new line)\"."
   },
   {
    "address": 45678,
@@ -15611,7 +15662,7 @@
   {
    "address": 45713,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B28E: \"LEFT. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B28E: \"LEFT.  (new line)\"."
   },
   {
    "address": 45721,
@@ -15621,7 +15672,7 @@
   {
    "address": 45743,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B2AC: \"IS WAITING.. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B2AC: \"IS WAITING..  (new line)\"."
   },
   {
    "address": 45758,
@@ -15656,7 +15707,7 @@
   {
    "address": 45874,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B32F: \"/   MR MCFUNGUS /   AN OBJECT /   ANOTHER GUEST /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B32F: \"/   MR MCFUNGUS (new line)   AN OBJECT (new line)   ANOTHER GUEST (new line)\"."
   },
   {
    "address": 45918,
@@ -15711,7 +15762,7 @@
   {
    "address": 46546,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $B5CF: \"(clears the panel) ASK ABOUT: /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $B5CF: \"(clears the panel) ASK ABOUT:  (new line)\"."
   },
   {
    "address": 46559,
@@ -15881,7 +15932,7 @@
   {
    "address": 48627,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $BDF0: \"(clears the panel) TYPE IN THE NAME OF THE BOOK YOU WANT: /  /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $BDF0: \"(clears the panel) TYPE IN THE NAME OF THE BOOK YOU WANT: (new line)  (new line)\"."
   },
   {
    "address": 48669,
@@ -15911,7 +15962,7 @@
   {
    "address": 48727,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $BE54: \"FIND THE BOOK. /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $BE54: \"FIND THE BOOK.  (new line)\"."
   },
   {
    "address": 48743,
@@ -15976,7 +16027,7 @@
   {
    "address": 49172,
    "type": "line",
-   "text": "Text printed in the text panel (through $201E) by the call at $C011: \"(clears the panel) EVIDENCE COLLECTED: /\"."
+   "text": "Text printed in the text panel (through $201E) by the call at $C011: \"(clears the panel) EVIDENCE COLLECTED:  (new line)\"."
   },
   {
    "address": 49194,
@@ -16011,32 +16062,32 @@
   {
    "address": 49408,
    "type": "line",
-   "text": "Room picture record 0 of the list at $C100: the address of the next record, the picture's width in columns (67), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 0 of the list at $C100: the address of the next record, the picture's width in columns (67), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 50002,
    "type": "line",
-   "text": "Room picture record 1 of the list at $C100: the address of the next record, the picture's width in columns (80), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 1 of the list at $C100: the address of the next record, the picture's width in columns (80), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 51005,
    "type": "line",
-   "text": "Room picture record 2 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 2 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 51652,
    "type": "line",
-   "text": "Room picture record 3 of the list at $C100: the address of the next record, the picture's width in columns (68), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 3 of the list at $C100: the address of the next record, the picture's width in columns (68), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 52361,
    "type": "line",
-   "text": "Room picture record 4 of the list at $C100: the address of the next record, the picture's width in columns (67), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 4 of the list at $C100: the address of the next record, the picture's width in columns (67), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 53051,
    "type": "line",
-   "text": "Room picture record 5 of the list at $C100: the address of the next record, the picture's width in columns (21), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 5 of the list at $C100: the address of the next record, the picture's width in columns (21), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 53248,
@@ -16046,22 +16097,22 @@
   {
    "address": 53331,
    "type": "line",
-   "text": "Room picture record 6 of the list at $C100: the address of the next record, the picture's width in columns (36), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 6 of the list at $C100: the address of the next record, the picture's width in columns (36), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 53751,
    "type": "line",
-   "text": "Room picture record 7 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 7 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 54259,
    "type": "line",
-   "text": "Room picture record 8 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 8 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 54833,
    "type": "line",
-   "text": "Room picture record 9 of the list at $C100: the address of the next record, the picture's width in columns (42), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 9 of the list at $C100: the address of the next record, the picture's width in columns (42), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 55346,
@@ -16071,12 +16122,12 @@
   {
    "address": 55395,
    "type": "line",
-   "text": "Room picture record 10 of the list at $C100: the address of the next record, the picture's width in columns (25), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 10 of the list at $C100: the address of the next record, the picture's width in columns (25), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 55724,
    "type": "line",
-   "text": "Room picture record 11 of the list at $C100: the address of the next record, the picture's width in columns (37), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 11 of the list at $C100: the address of the next record, the picture's width in columns (37), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 55789,
@@ -16141,7 +16192,7 @@
   {
    "address": 56213,
    "type": "line",
-   "text": "Room picture record 12 of the list at $C100: the address of the next record, the picture's width in columns (52), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 12 of the list at $C100: the address of the next record, the picture's width in columns (52), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 56216,
@@ -16171,12 +16222,12 @@
   {
    "address": 56778,
    "type": "line",
-   "text": "Room picture record 13 of the list at $C100: the address of the next record, the picture's width in columns (44), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 13 of the list at $C100: the address of the next record, the picture's width in columns (44), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 57249,
    "type": "line",
-   "text": "Room picture record 14 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 14 of the list at $C100: the address of the next record, the picture's width in columns (50), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 57344,
@@ -16186,12 +16237,27 @@
   {
    "address": 57759,
    "type": "line",
-   "text": "Room picture record 15 of the list at $C100: the address of the next record, the picture's width in columns (43), then its 15 rows packed column by column as $3BD7 unpacks them"
+   "text": "Room picture record 15 of the list at $C100: the address of the next record, the picture's width in columns (43), then its 15 rows, one after another, packed as $3BD7 unpacks them"
   },
   {
    "address": 58237,
    "type": "line",
-   "text": "Room picture record 16 of the list at $C100: the address of the next record, the picture's width in columns (32), then its 15 rows packed column by column as $3BD7 unpacks them; where this last record ends was not measured, and the bytes to $E7FF are counted with it"
+   "text": "Room picture record 16 of the list at $C100, the last (its next address is 0): width 32 columns. No room's type names it. Where its packed rows end was not measured; the title tune's sequences follow from $E680."
+  },
+  {
+   "address": 59008,
+   "type": "line",
+   "text": "The title tune's first voice: the sequence of notes and commands the music player reads ($94EB), looping back to here at $FF. The start-up copies its address from $97F5."
+  },
+  {
+   "address": 59072,
+   "type": "line",
+   "text": "The title tune's second voice."
+  },
+  {
+   "address": 59200,
+   "type": "line",
+   "text": "The title tune's third voice, running on to $E7FF."
   },
   {
    "address": 59261,
