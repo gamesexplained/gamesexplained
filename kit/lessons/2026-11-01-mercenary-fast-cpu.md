@@ -20,3 +20,25 @@
   plug-in point for the wait. The kit's guide had given the game a 60 Hz
   beat of its own; a 60 Hz beat would have to skip the wait and would
   drift against the interrupts.
+- **Ease what the game works out each pass from what changes once a
+  pass.** Playing the Dart with Fast CPU, the contributor saw the horizon
+  tilt in steps while the rest of the view glided. The game sets the roll
+  ($28/$29) every pass from the turn rate ($22/$23), which it damps once a
+  pass, so the roll changed on one loop of each shadow pass: in a test of
+  banking and levelling out, in 27 of 401 loops, up to 5 units of the
+  1,024 in a turn at once. Eased over the pass's loops, it moved in 72 of
+  them, 1 unit at most, and stood at the game's value at the end of all
+  31 shadow passes.
+- **List the bytes that change only on a shadow pass's first loop.** Over
+  30 s on foot and 40 s in the Dart, with random moves, 14 bytes did, each
+  meant to: the event script, the turn rate, the speed and the attack
+  ship's aim. With the bank's easing taken out the same run finds 18
+  more, the roll and everything worked out from it (its sines and the
+  horizon's step and fill), so the list would have found the bank before
+  anyone played it. `games/c64/mercenary/test_fast.js` holds the list.
+- **Count a mod's share from its job.** Targ Traffic, the page's mod,
+  moves its cars and craft at the top of the main loop, after the game has
+  drawn its objects for that loop. Counted from the shadow pass's first
+  loop, the first loop drew each vehicle from the last pass's poses, a
+  step backwards; counted from the job (`since`), a moving vehicle moved
+  in 9,958 of 9,975 loops, where once a pass it moved in 1,006.

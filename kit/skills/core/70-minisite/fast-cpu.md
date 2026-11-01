@@ -125,6 +125,21 @@ rate). When two aims clash the higher wins:
   empty one (`games/c64/mercenary`, the table's `follow`). The jobs once a
   pace run in the first of them, and each carry keeps its share of a unit
   when K changes.
+- **Ease what the game works out each loop from what changes once a
+  pace.** The moves glide a share a loop, but a value set from one the
+  game changes once a pace (a craft's bank, from a turn rate damped once
+  a pace) still jumps once a pace, and among frames that glide the jump
+  shows. Give it a plug-in point that moves it to the game's value over
+  the pace's loops and stands at it on the last (`ease`). Draw what the
+  page's own code moves once a pace (a mod's traffic) the share of a pace
+  gone since it moved (`since`), counted from that job, because the game
+  may draw before the job runs in the same loop.
+- **Find what still steps by listing it, not by playing.** Run Fast CPU
+  in every way the player moves and list the bytes that change only on
+  the first loop of the machine's loops: each is a count meant to run
+  once a pace or a value to ease. The test holds the list with the reason
+  for each, so a byte that joins it fails
+  (`games/c64/mercenary/test_fast.js`).
 - **Take the pace from the machine's timings.** Without a cost model, for
   the same pace K is the middle of its loops in play, or the pace the
   game itself aims at when it has one (a loop it allows a fixed number of
@@ -216,8 +231,13 @@ rates and settings, the clock's jobs at the same moments on and off, K
 shares ending where one step ends, the pace at each setting, switches
 once a press, stopping in the loop where the key comes up, a wait that only
 keeps something up, long random play, and each refresh showing its own
-last loop's frame. Count the loops that read the keys rather than the
-loops, since a loop can return before it reads them. In a browser, check
+last loop's frame. Measure what decides between Fast CPU and Smooth
+motion in node, with refreshes simulated at 50, 60 and 144 Hz: the delay
+from a key to the first frame that moves and from letting go to the
+last, against the machine's and Smooth motion's, because a headless
+browser's timing is its renderer's, not the game's. Count the loops that
+read the keys rather than the loops, since a loop can return before it
+reads them. In a browser, check
 that the view stops when a key comes up and that a short press of a
 switch acts once at every setting
 (`games/c64/castle-master/port/test/fast-browser.js`, run by hand where
