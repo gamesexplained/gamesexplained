@@ -1837,8 +1837,20 @@ PUBLISHED = re.compile(r"(index|levels|play)\.html|features\.md|(game|listing|sy
                        r"|parts/[^/]+/(part|listing|symbols)\.json")
 
 
+def change_title(subject):
+    """What a change did, from its commit or pull request title, for a card that already names the
+    game: the area before the colon ("Gunship (C64): ", "c64: ") and the pull request's number
+    dropped. "" for a title that is a bare branch name ("Game/c64/<slug>", a pull request opened
+    with its branch for a title), which says nothing."""
+    s = SQUASHED.sub("", subject).strip()
+    s = re.sub(r"^(?:[^:()]+ \([^()]*\)|[a-z0-9-]+):\s+", "", s, count=1)
+    if not s or re.fullmatch(r"(?:game|kit|site)/\S.*", s, re.I):
+        return ""
+    return s[:1].upper() + s[1:]
+
+
 def recent_changes(games, n=20):
-    """The newest n changes to games, one row per game per day: {game, date, kind, who}.
+    """The newest n changes to games, one row per game per day: {game, date, kind, who, what}.
 
     Walks main's first-parent line, so a merged pull request is one change. A change
     counts when it alters what readers see of exactly one game, a file the build
@@ -1846,18 +1858,21 @@ def recent_changes(games, n=20):
     alone, is left out. It is "contributed" when it adds the game's game.json, else
     "updated". The people are the git authors of the change, named as on the About tab
     (credit; for a merge, the authors of the commits it brought in, not whoever merged
-    it), agents and bots left out as there, and so is anyone the game lists as uncredited."""
+    it), agents and bots left out as there, and so is anyone the game lists as uncredited.
+    what is the title of the change that added the game, for a game contributed that day,
+    else of the day's newest change to it (change_title), so a new game's card leads with the
+    game and not with a tidy-up that landed after it; "" when that title says nothing."""
     by_key = {(g["platform"], g["slug"]): g for g in games}
     git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
     try:
         out = git("log", "--first-parent", "--diff-merges=first-parent", "--name-status",
-                  "--format=%x1e%H %P%x1f%cs%x1f%aN%x1f%aE", "HEAD", "--", "games")
+                  "--format=%x1e%H %P%x1f%cs%x1f%aN%x1f%aE%x1f%s", "HEAD", "--", "games")
     except Exception:
         return []
     rows = {}
     for chunk in out.split("\x1e")[1:]:
         head, *files = chunk.strip("\n").split("\n")
-        shas, date, name, email = head.split("\x1f")
+        shas, date, name, email, subject = head.split("\x1f")
         sha, *parents = shas.split()
         if len(rows) >= n and date < list(rows.values())[n - 1]["date"]:
             break
@@ -1885,17 +1900,26 @@ def recent_changes(games, n=20):
                 if uncredited(by_key[key], *who):
                     continue
                 counts[who] = counts.get(who, 0) + 1
-        row = rows.setdefault(key + (date,), {"game": by_key[key], "date": date, "kind": "updated", "who": {}})
+        if MERGED.fullmatch(subject):   # a merge commit carries the pull request's title in its message
+            subject = next((ln for ln in git("log", "-1", "--format=%b", sha).splitlines() if ln.strip()), "")
+        row = rows.setdefault(key + (date,), {"game": by_key[key], "date": date, "kind": "updated", "who": {}, "what": ""})
         if key in added:
             row["kind"] = "contributed"
+            row["newest"] = row["what"] = change_title(subject)
+        elif "newest" not in row:   # the log runs newest first
+            row["newest"] = row["what"] = change_title(subject)
         for who, _ in sorted(counts.items(), key=lambda kv: -kv[1]):
             row["who"].setdefault(who[1] or who[0], who)
+    for row in rows.values():
+        row.pop("newest", None)
     return list(rows.values())[:n]
 
 
 def recent_html(rows):
-    """One card per change (tile_html): the game, who changed it and when. Four show at a time;
-    site.js turns the row into a carousel that moves on by itself."""
+    """One card per change (tile_html): the game, what the change did, who made it and when, with
+    "New" before a game contributed that day; "contributed by" or "updated by" in place of what it
+    did when its title says nothing. Four show at a time; site.js turns the row into a carousel
+    that moves on by itself."""
     if not rows:
         return ""
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
@@ -1903,8 +1927,13 @@ def recent_html(rows):
     for r in rows:
         who = names([person_html(nm, login) for nm, login in r["who"].values()])
         m, d = (int(x) for x in r["date"].split("-")[1:])
-        cards.append(tile_html(r["game"], "", r["kind"] + (f" by {who}" if who else ""),
-                               f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time>'))
+        when = f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time>'
+        if r.get("what"):
+            new = "New · " if r["kind"] == "contributed" else ""
+            cards.append(tile_html(r["game"], "", f'<span class="what">{html.escape(r["what"])}</span>',
+                                   f'<span class="m">{new}{who + " · " if who else ""}{when}</span>'))
+        else:
+            cards.append(tile_html(r["game"], "", r["kind"] + (f" by {who}" if who else ""), when))
     return (f'<div class="recent"><div class="cathead"><h2>New and updated</h2>'
             f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
             f'<div class="cards" tabindex="0" aria-label="New and updated games">{"".join(cards)}</div>'
