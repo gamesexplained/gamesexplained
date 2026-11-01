@@ -382,6 +382,26 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   (`$0027`); animation numbers said always to be move numbers (`$7720`).
   All 12 were corrected, with six comments that said the same
   (`$0099`, `$1A7C`, `$1E32`, `$1E44`, `$2B8E`, `$76D7`).
+- **Audit 1** (31 October to 1 November 2026): every one of the 884
+  comments checked by two checkers on claude-opus-5-5 that wrote none of
+  them, one after the other, each on its own range: `$0000`-`$198F`, 442
+  comments, 45 corrected; `$1990`-`$FFFF`, 442 comments, 76 corrected, 38
+  of them one wording slip repeated over the multiplexer's self-modified
+  sprite-pointer operands ("with X = `$20`" where the code loads X from
+  `$20`). 121 corrected in all, none wrong in its main claim. The rest
+  were of the sample's kinds: lists of writers, callers or readers with
+  places missing; cited addresses that were wrong, swapped or
+  mid-instruction (`$0200`/`$0300`, `$15F7`, `$2FF2`, `$7720`, which the
+  sample's own correction had got wrong); claims true on one path, one
+  facing or one level stated as general (`$118F`, `$11BD`, `$11D6`,
+  `$27F0`); and what a value or image is (pointers `$40`-`$47` and `$4F`
+  are the cells of frames `$4D` and `$4E`, a standing figure no animation
+  uses, and not the bull; the crouch restarted by `$2A8F` resumes at its
+  fourth and last step). Two comments could not be checked from this
+  game's bytes: `$27E4` and `$7E00`, which say they match Fist II's
+  tables. A third, `$00CF`, what the loader's menu calls the speech
+  setting, was checked against the hand-over snapshot (the text is at
+  `$C408` there), and its comment now says where.
 
 ## Live tests
 

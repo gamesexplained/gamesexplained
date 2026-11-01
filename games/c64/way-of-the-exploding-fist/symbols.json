@@ -9776,7 +9776,7 @@
   {
    "address": 207,
    "type": "line",
-   "text": "Non-zero switches the speech samples off (speech_start tests it, $3186). DEL flips it in the attract mode ($1ED8); the loader's menu calls this sound effects on and off."
+   "text": "Non-zero switches the speech samples off (speech_start tests it, $3186). DEL flips it in the attract mode ($1ED8); the loader's menu calls this sound effects on and off (its text \"DEL   - SOUND EFFECTS ON/OFF\" is at $C408 in the hand-over snapshot work/entry.vsf, overwritten before play)."
   },
   {
    "address": 249,
@@ -11466,7 +11466,7 @@
   {
    "address": 9149,
    "type": "line",
-   "text": "No attack to answer. While $4B,X is set the held move stays. While $74,X is set: a turn-round (move $12) with $9A,X set ends by flipping facing $53,X and standing; other moves are held for a random time ($8E,X = random AND $8D + 5) then dropped to stand. Otherwise, from moves 1-3, measures the distance (ai_measure); any other move is held."
+   "text": "No attack to answer. While $4B,X is set the held move stays. While $74,X is set: a crouch (move 4) is held; a turn-round (move $12) with $9A,X set ends by flipping facing $53,X and standing (with $9A,X clear it is held); other moves are held for a random time ($8E,X = (random AND $8D) + 5 plus the carry $2589 leaves, so 5 or 6 more) then dropped to stand. Otherwise, from moves 1-3, measures the distance (ai_measure); any other move is held."
   },
   {
    "address": 9242,
@@ -11491,7 +11491,7 @@
   {
    "address": 9393,
    "type": "line",
-   "text": "Picks an attack. Same facing -> ai_attack_behind. Opponent in move $13 -> $27A1[random AND 3]; in move $14 -> $27A5[random AND 3] (7 there starts plan 5). Otherwise $26D5[$73+$33 + random AND $94], adjusted: $0E becomes walk forward (2) from level 7; $0A is skipped below level 2; 7 starts plan 5; $0F/$10 go to ai_back_attack; others through ai_lower_if_opponent_low."
+   "text": "Picks an attack. Same facing -> ai_attack_behind. Opponent in move $13 -> $27A1[random AND 3]; in move $14 -> $27A5[random AND 3] (7 there starts plan 5). Otherwise $26D5[$73+$33 + random AND $94]: $0E becomes walk forward (2) from level 7; every other value first goes through ai_lower_if_opponent_low, and then a result of $0A is skipped below level 2, 7 starts plan 5, $0F/$10 go to ai_back_attack, and any other is requested."
   },
   {
    "address": 9502,
@@ -11586,7 +11586,7 @@
   {
    "address": 10021,
    "type": "line",
-   "text": "79 moves: the attack when both face the same way, indexed by $73+$29 plus random AND $94 ($2554); $73 is $DF-$1E there, so indexes $08-$4E end at $2773. Opponent ahead with its back turned: $0A, $0E, $0C, $0B, $11, $0D, $18, 6; close either side: walks; opponent behind: $0F, then $10 further off."
+   "text": "79 moves: the attack when both face the same way, indexed by $73+$29 plus random AND $94 ($2554). From ai_close_range $73 is $DF-$1E, so the index is $08-$4E and ends at $2773; on the counter-attack path from ai_threat_in_range $73 comes from $2D00 (3-$1F), so the index is $2C-$4F, and $4F reads $2774, the 0 that opens the plan table. Opponent ahead with its back turned: $0A, $0E, $0C, $0B, $11, $0D, $18, 6; close either side: walks; opponent behind: $0F, then $10 further off."
   },
   {
    "address": 10100,
@@ -11646,7 +11646,7 @@
   {
    "address": 10224,
    "type": "line",
-   "text": "Per level into $9C: masks the response roll in ai_threat_in_range (bit 7 counter-attack, bits 4-6 block, then a low nibble of 0 move 9 or $0B, else a plan): A3 B2 F1 F0 70 8F 7F 0F 7F 7F 7F 7F. Levels 4 and 6-11 have bit 7 clear and never counter-attack outright; level 4 ($70) blocks with 224 of the 255 random values and otherwise takes move 9 or $0B; level 7 ($0F) never blocks or counter-attacks and starts a plan with 240 of 255."
+   "text": "Per level into $9C: masks the response roll in ai_threat_in_range (bit 7 counter-attack, bits 4-6 block, then a low nibble of 0 move 9 or $0B, else a plan): A3 B2 F1 F0 70 8F 7F 0F 7F 7F 7F 7F. Levels 4 and 6-11 have bit 7 clear and never counter-attack outright; level 4 ($70) blocks with 224 of the 255 random values and otherwise takes move 9 or $0B; level 7 ($0F) never counter-attacks and takes the plan branch with 240 of 255, which starts the plan $2788[opponent move] or, when that is 0 (against move $0D), blocks."
   },
   {
    "address": 10236,
@@ -11716,7 +11716,7 @@
   {
    "address": 10895,
    "type": "line",
-   "text": "Runs when fighter X's animation has ended ($59,X set by the animator at $37E8/$380A; cleared here). If a forced move is pending in $5F,X it is copied to $5E and nothing else is done. Otherwise, a move that was playing in reverse ($4B,X): move $11 flips the facing $53,X; $4B, $74, $67, $47 cleared; moves $0A, $10, $07 go back to the crouch 4, restarted at its second step ($4D,X = 8, via $3885); anything else to standing (1). A move played forwards: $115D[move] = 0 holds the last pose ($74,X = 1), otherwise back to standing with $90,X = 1."
+   "text": "Runs when fighter X's animation has ended ($59,X set by the animator at $37E8/$380A; cleared here). If a forced move is pending in $5F,X it is copied to $5E and nothing else is done. Otherwise, a move that was playing in reverse ($4B,X): move $11 flips the facing $53,X; $4B, $74, $67, $47 cleared; moves $0A, $10, $07 go back to the crouch 4, restarted near its end ($3885, then $4D,X = 8, so the next tick loads offset 12, the fourth and last step); anything else to standing (1). A move played forwards: $115D[move] = 0 holds the last pose ($74,X = 1), otherwise back to standing with $90,X = 1."
   },
   {
    "address": 10994,
@@ -11736,7 +11736,7 @@
   {
    "address": 11120,
    "type": "line",
-   "text": "Hit test, once per blow: only when fighter X is in an attack move ($1176 non-zero), a new animation step began this frame ($88,X), the move is neither reversing nor held, and the pose $51,X equals the move's striking pose $1204[move]. Then $2B8E grades the blow."
+   "text": "Hit test, once per blow: only when fighter X is in an attack move ($1176 non-zero), a new animation step began on this pass of the exchange loop ($88,X), the move is neither reversing nor held, and the pose $51,X equals the move's striking pose $1204[move]. Then $2B8E grades the blow."
   },
   {
    "address": 11150,
@@ -11756,7 +11756,7 @@
   {
    "address": 11432,
    "type": "line",
-   "text": "After a scoring blow: $8C = fighter X's move. If CIA 2 control register A ($DD0E, which the game never writes) reads non-zero, A and Y are pushed and the code jumps to the animator $37BD with X = $4E, so its RTS returns to an address built from those bytes, not to the caller: a deliberate derailment, outcome not traced. Otherwise the opponent's forced move $5F,Y gets the hit reaction: facing each other, forward blow: $1B with the sample entry $315E for moves $18, 7, $0C, else $16 with $3158; facing each other, backward blow: $1A with $315E; same facing (hit from behind): forward blow $1A with $315E, backward blow $16 with $3158."
+   "text": "After a scoring blow: $8C = fighter X's move. If CIA 2 control register A ($DD0E, which the game never writes) reads non-zero, A and Y are pushed and the code jumps to the animator $37BD with X = $4E, so its RTS returns to an address built from those bytes, not to the caller: a derailment: live, with $DD0E set to 1 before a blow, the CPU ended at $0201 with the screen filled with garbage (facts.md). Otherwise the opponent's forced move $5F,Y gets the hit reaction: facing each other, forward blow: $1B with the sample entry $315E for moves $18, 7, $0C, else $16 with $3158; facing each other, backward blow: $1A with $315E; same facing (hit from behind): forward blow $1A with $315E, backward blow $16 with $3158."
   },
   {
    "address": 11520,
@@ -11766,7 +11766,7 @@
   {
    "address": 11618,
    "type": "line",
-   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. Moves sprites 0-2 down to the second row of fighter A (the fighter in $20, drawn with sprites 0-2, top at Y $1C): Y from $2D6D, pointers $CFF8-$CFFA from $2D87/$2D8C/$2D91. Acknowledges the VIC, sets the next raster line ($2D7D) and the next handler ($2D82 low, $2D96 high). Used in every chain except the level one (see $2FB0)."
+   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. Moves sprites 0-2 down to the second row of fighter A (the fighter in $20, drawn with sprites 0-2, top at Y $1C): Y from $2D6D, pointers $CFF8-$CFFA from $2D87/$2D8C/$2D91. Acknowledges the VIC, sets the next raster line ($2D7D) and the next handler ($2D82 low, $2D96 high). Used in every chain except the level one and the one for the front fighter exactly $14 lines lower ($2DD6, $2F59, $2D9C; see $2FB0)."
   },
   {
    "address": 11629,
@@ -11786,17 +11786,17 @@
   {
    "address": 11655,
    "type": "line",
-   "text": "Sprite pointers for $CFF8/$CFF9/$CFFA in $2D62 (fighter A's second row): written by $36A3-$36B1 from $08/$0A/$0C,X with X = $20."
+   "text": "Sprite pointers for $CFF8/$CFF9/$CFFA in $2D62 (fighter A's second row): written by $36A3-$36B1 from $08/$0A/$0C,X with X loaded from $20."
   },
   {
    "address": 11660,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2D87. written by $36A3-$36B1 from $08/$0A/$0C,X with X = $20."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2D87. written by $36A3-$36B1 from $08/$0A/$0C,X with X loaded from $20."
   },
   {
    "address": 11665,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2D87. written by $36A3-$36B1 from $08/$0A/$0C,X with X = $20."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2D87. written by $36A3-$36B1 from $08/$0A/$0C,X with X loaded from $20."
   },
   {
    "address": 11670,
@@ -11826,17 +11826,17 @@
   {
    "address": 11713,
    "type": "line",
-   "text": "Sprite pointers for $CFF8-$CFFA in $2D9C (fighter A's third row): written by $36B5-$36C3 from $0E/$10/$12,X with X = $20."
+   "text": "Sprite pointers for $CFF8-$CFFA in $2D9C (fighter A's third row): written by $36B5-$36C3 from $0E/$10/$12,X with X loaded from $20."
   },
   {
    "address": 11718,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2DC1. written by $36B5-$36C3 from $0E/$10/$12,X with X = $20."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2DC1. written by $36B5-$36C3 from $0E/$10/$12,X with X loaded from $20."
   },
   {
    "address": 11723,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2DC1. written by $36B5-$36C3 from $0E/$10/$12,X with X = $20."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2DC1. written by $36B5-$36C3 from $0E/$10/$12,X with X loaded from $20."
   },
   {
    "address": 11728,
@@ -11866,17 +11866,17 @@
   {
    "address": 11772,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2DD6 (fighter B's second row): written by $36C7-$36D5 from $08/$0A/$0C,X with X = $21."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2DD6 (fighter B's second row): written by $36C7-$36D5 from $08/$0A/$0C,X with X loaded from $21."
   },
   {
    "address": 11777,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2DFC. written by $36C7-$36D5 from $08/$0A/$0C,X with X = $21."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2DFC. written by $36C7-$36D5 from $08/$0A/$0C,X with X loaded from $21."
   },
   {
    "address": 11782,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2DFC. written by $36C7-$36D5 from $08/$0A/$0C,X with X = $21."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2DFC. written by $36C7-$36D5 from $08/$0A/$0C,X with X loaded from $21."
   },
   {
    "address": 11787,
@@ -11906,17 +11906,17 @@
   {
    "address": 11831,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2E11 (fighter B's third row): written by $36D9-$36E7 from $0E/$10/$12,X with X = $21."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2E11 (fighter B's third row): written by $36D9-$36E7 from $0E/$10/$12,X with X loaded from $21."
   },
   {
    "address": 11836,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2E37. written by $36D9-$36E7 from $0E/$10/$12,X with X = $21."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2E37. written by $36D9-$36E7 from $0E/$10/$12,X with X loaded from $21."
   },
   {
    "address": 11841,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2E37. written by $36D9-$36E7 from $0E/$10/$12,X with X = $21."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2E37. written by $36D9-$36E7 from $0E/$10/$12,X with X loaded from $21."
   },
   {
    "address": 11846,
@@ -11946,32 +11946,32 @@
   {
    "address": 11902,
    "type": "line",
-   "text": "Sprite pointers for $CFF8-$CFFA in $2E4C: written by $36EB-$36F9 from $08/$0A/$0C,X with X = $20 (fighter A's second row)."
+   "text": "Sprite pointers for $CFF8-$CFFA in $2E4C: written by $36EB-$36F9 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row)."
   },
   {
    "address": 11907,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2E7E. written by $36EB-$36F9 from $08/$0A/$0C,X with X = $20 (fighter A's second row)."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2E7E. written by $36EB-$36F9 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row)."
   },
   {
    "address": 11912,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2E7E. written by $36EB-$36F9 from $08/$0A/$0C,X with X = $20 (fighter A's second row)."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2E7E. written by $36EB-$36F9 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row)."
   },
   {
    "address": 11917,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2E4C: written by $36FC-$370A from $08/$0A/$0C,X with X = $21 (fighter B's second row)."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2E4C: written by $36FC-$370A from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row)."
   },
   {
    "address": 11922,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2E8D. written by $36FC-$370A from $08/$0A/$0C,X with X = $21 (fighter B's second row)."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2E8D. written by $36FC-$370A from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row)."
   },
   {
    "address": 11927,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2E8D. written by $36FC-$370A from $08/$0A/$0C,X with X = $21 (fighter B's second row)."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2E8D. written by $36FC-$370A from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row)."
   },
   {
    "address": 11932,
@@ -12006,32 +12006,32 @@
   {
    "address": 11993,
    "type": "line",
-   "text": "Sprite pointers for $CFF8-$CFFA in $2EA7: written by $370E-$371C from $0E/$10/$12,X with X = $20 (fighter A's third row)."
+   "text": "Sprite pointers for $CFF8-$CFFA in $2EA7: written by $370E-$371C from $0E/$10/$12,X with X loaded from $20 (fighter A's third row)."
   },
   {
    "address": 11998,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2ED9. written by $370E-$371C from $0E/$10/$12,X with X = $20 (fighter A's third row)."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2ED9. written by $370E-$371C from $0E/$10/$12,X with X loaded from $20 (fighter A's third row)."
   },
   {
    "address": 12003,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2ED9. written by $370E-$371C from $0E/$10/$12,X with X = $20 (fighter A's third row)."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2ED9. written by $370E-$371C from $0E/$10/$12,X with X loaded from $20 (fighter A's third row)."
   },
   {
    "address": 12008,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2EA7: written by $371F-$372D from $0E/$10/$12,X with X = $21 (fighter B's third row)."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2EA7: written by $371F-$372D from $0E/$10/$12,X with X loaded from $21 (fighter B's third row)."
   },
   {
    "address": 12013,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2EE8. written by $371F-$372D from $0E/$10/$12,X with X = $21 (fighter B's third row)."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2EE8. written by $371F-$372D from $0E/$10/$12,X with X loaded from $21 (fighter B's third row)."
   },
   {
    "address": 12018,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2EE8. written by $371F-$372D from $0E/$10/$12,X with X = $21 (fighter B's third row)."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2EE8. written by $371F-$372D from $0E/$10/$12,X with X loaded from $21 (fighter B's third row)."
   },
   {
    "address": 12023,
@@ -12076,32 +12076,32 @@
   {
    "address": 12087,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2F02: written by $3742-$3750 from $08/$0A/$0C,X with X = $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2F02: written by $3742-$3750 from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
   },
   {
    "address": 12092,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2F37. written by $3742-$3750 from $08/$0A/$0C,X with X = $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2F37. written by $3742-$3750 from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
   },
   {
    "address": 12097,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2F37. written by $3742-$3750 from $08/$0A/$0C,X with X = $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2F37. written by $3742-$3750 from $08/$0A/$0C,X with X loaded from $21 (fighter B's second row); $3765-$3773 would write $0E/$10/$12 of fighter B instead, but no call to $3754 was found."
   },
   {
    "address": 12105,
    "type": "line",
-   "text": "Sprite pointers for $CFF8-$CFFA in $2F02: written by $3731-$373F from $0E/$10/$12,X with X = $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
+   "text": "Sprite pointers for $CFF8-$CFFA in $2F02: written by $3731-$373F from $0E/$10/$12,X with X loaded from $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
   },
   {
    "address": 12110,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2F49. written by $3731-$373F from $0E/$10/$12,X with X = $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2F49. written by $3731-$373F from $0E/$10/$12,X with X loaded from $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
   },
   {
    "address": 12115,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2F49. written by $3731-$373F from $0E/$10/$12,X with X = $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2F49. written by $3731-$373F from $0E/$10/$12,X with X loaded from $20 (fighter A's third row); $3754-$3762 would write $08/$0A/$0C instead (no caller found)."
   },
   {
    "address": 12121,
@@ -12136,37 +12136,37 @@
   {
    "address": 12174,
    "type": "line",
-   "text": "Sprite pointers for $CFF8-$CFFA in $2F59: written by $3777-$3785 from $08/$0A/$0C,X with X = $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
+   "text": "Sprite pointers for $CFF8-$CFFA in $2F59: written by $3777-$3785 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
   },
   {
    "address": 12179,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2F8E. written by $3777-$3785 from $08/$0A/$0C,X with X = $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
+   "text": "Pointer 2 of 3 (for $CFF9) of the same set as $2F8E. written by $3777-$3785 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
   },
   {
    "address": 12184,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2F8E. written by $3777-$3785 from $08/$0A/$0C,X with X = $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
+   "text": "Pointer 3 of 3 (for $CFFA) of the same set as $2F8E. written by $3777-$3785 from $08/$0A/$0C,X with X loaded from $20 (fighter A's second row); $379A-$37A8 would write $0E/$10/$12 instead, but no call to $379A was found."
   },
   {
    "address": 12192,
    "type": "line",
-   "text": "Sprite pointers for $CFFB-$CFFD in $2F59: written by $3788-$3796 from $0E/$10/$12,X with X = $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
+   "text": "Sprite pointers for $CFFB-$CFFD in $2F59: written by $3788-$3796 from $0E/$10/$12,X with X loaded from $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
   },
   {
    "address": 12197,
    "type": "line",
-   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2FA0. written by $3788-$3796 from $0E/$10/$12,X with X = $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
+   "text": "Pointer 2 of 3 (for $CFFC) of the same set as $2FA0. written by $3788-$3796 from $0E/$10/$12,X with X loaded from $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
   },
   {
    "address": 12202,
    "type": "line",
-   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2FA0. written by $3788-$3796 from $0E/$10/$12,X with X = $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
+   "text": "Pointer 3 of 3 (for $CFFD) of the same set as $2FA0. written by $3788-$3796 from $0E/$10/$12,X with X loaded from $21 (fighter B's third row); $37AB-$37B9 would write $08/$0A/$0C (no caller found)."
   },
   {
    "address": 12208,
    "type": "line",
-   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. Installed by the handler $31F2 (which $30E5 arms for line 0); $31F2 arms this one for line $59 (89), and it waits for line $5A (90), acknowledges, sets the next raster line ($2FC7) and handler ($2FCC/$2FD1: the head of the sprite chain that $3291-$35EE picked), starts CIA 2 timer B with latch $16BC ($DD06/$DD07, $DD0F = $09) for the NMI $2FF2, switches to multicolour bitmap ($D011 = $3B) and sets the background $D021 from $2FEC. The chains, by $1C/$1D: level $2E4C, $2EA7; A higher by less than $16 (not $14) $2D62, $2DD6, $2D9C, $2E11; A higher by $14 $2D62, $2F02, $2E11; A higher by $16 or more $2D62, $2D9C, $2DD6, $2E11; B higher: the same with the groups swapped ($2DD6, $2D62, $2E11, $2D9C / $2DD6, $2F59, $2D9C / $2DD6, $2E11, $2D62, $2D9C). Each chain ends in the handler held in $25/$26."
+   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. Installed by the handler $31F2 (which $30E5 arms for line 0); $31F2 arms this one for line $59 (89), and it waits for line $5A (90), acknowledges, sets the next raster line ($2FC7) and handler ($2FCC/$2FD1: the head of the sprite chain that the pickers $3307-$35F0 wrote), starts CIA 2 timer B with latch $16BC ($DD06/$DD07, $DD0F = $09) for the NMI $2FF2, switches to multicolour bitmap ($D011 = $3B) and sets the background $D021 from $2FEC. The chains, by $1C/$1D: level $2E4C, $2EA7; A higher by less than $16 (not $14) $2D62, $2DD6, $2D9C, $2E11; A higher by $14 $2D62, $2F02, $2E11; A higher by $16 or more $2D62, $2D9C, $2DD6, $2E11; B higher: the same with the groups swapped ($2DD6, $2D62, $2E11, $2D9C / $2DD6, $2F59, $2D9C / $2DD6, $2E11, $2D62, $2D9C). Each chain ends in the handler held in $25/$26."
   },
   {
    "address": 12231,
@@ -12191,17 +12191,17 @@
   {
    "address": 12274,
    "type": "line",
-   "text": "NMI handler (vector $FFFA set at $1971). Acts only when CIA 2 raised it (BIT $DD0D negative), so the RESTORE key does nothing: sets the background $D021 to 7 (yellow). CIA 2 timer B is started at line 90 by $2FB0 with $16BC = 5820 cycles, which at 63 cycles a line is about 92 lines, so the colour changes near line 182. Line 218 ($30E5) sets $D021 from $AD."
+   "text": "NMI handler (vector $FFFA set at $1973). Acts only when CIA 2 raised it (BIT $DD0D negative), so the RESTORE key does nothing: sets the background $D021 to 7 (yellow). CIA 2 timer B is started at line 90 by $2FB0 with $16BC = 5820 cycles, which at 63 cycles a line is about 92 lines, so the colour changes near line 182. Line 255 ($30E5) sets $D021 from $AD."
   },
   {
    "address": 12287,
    "type": "line",
-   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. One of the four handlers that follow the fighters' chain, chosen at $3253-$3264 when fighter A's top $1C is not $A0 and fighter B's $1D is (A off the ground): puts sprites 0-2 at Y $DA with pointers from $3015/$301A/$301F (written by $3291-$329B from $27/$29/$2B,X of fighter A), then line $FF and handler $30E5. A fourth row at a fixed Y near the ground, drawn only while the fighter is off the ground (Y $A0 is standing: $29D1, $383E): by all appearances the shadow under a jumping fighter (features.md, live), not checked against the sprite images. The body runs on to $3038, in the next range."
+   "text": "Raster handler; like every one it first tests CIA 1 (BIT $DC0D) and, if the timer of the sample player raised the interrupt, re-enables interrupts and jumps to $311A. One of the four handlers that follow the fighters' chain, chosen at $3277-$327D (after $3253-$3257 and $3268-$326A) when fighter A's top $1C is not $A0 and fighter B's $1D is (A off the ground): puts sprites 0-2 at Y $DA with pointers from $3015/$301A/$301F (written by $3291-$329B from $27/$29/$2B,X of fighter A), then line $FF and handler $30E5. A fourth row at a fixed Y near the ground, drawn only while the fighter is off the ground (Y $A0 is standing: $29D1, $383E): by all appearances the shadow under a jumping fighter (features.md, live), not checked against the sprite images. The body runs on to $3038, in the next range."
   },
   {
    "address": 12309,
    "type": "line",
-   "text": "Operand: sprite 0 pointer for the front fighter's fourth row in the $2FFF handler; written by $3291 from $27,X (X = $20)."
+   "text": "Operand: sprite 0 pointer for the front fighter's fourth row in the $2FFF handler; written by $3291 from $27,X (X loaded from $20)."
   },
   {
    "address": 12314,
@@ -12221,7 +12221,7 @@
   {
    "address": 12367,
    "type": "line",
-   "text": "Operand: sprite 3 pointer for the back fighter's fourth row in irq_row4_back; written by $32C0 from $27,X (X = $21)."
+   "text": "Operand: sprite 3 pointer for the back fighter's fourth row in irq_row4_back; written by $32C0 from $27,X (X loaded from $21)."
   },
   {
    "address": 12372,
@@ -12436,7 +12436,7 @@
   {
    "address": 14269,
    "type": "line",
-   "text": "One animation tick for fighter X (0 or 1): nothing if its animation $45,X is 0; starts it with anim_start when $47,X is 0, then anim_tick. Called from $1328, $135E, $13D5, $1427, $1A85, $1A8A, $1E35, $1E50."
+   "text": "One animation tick for fighter X (0 or 1): nothing if its animation $45,X is 0; starts it with anim_start when $47,X is 0, then anim_tick. Called from $1328, $135E, $13D5, $1427, $1A85, $1A8A, $1E35, $1E50, $1E55, and jumped to from $2B6D and $2CB8."
   },
   {
    "address": 14284,
@@ -12856,62 +12856,62 @@
   {
    "address": 29833,
    "type": "line",
-   "text": "Reach profile for blow $06 (up-forward: high punch) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $06 (up-forward: high punch) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 29892,
    "type": "line",
-   "text": "Reach profile for blow $07 (down-forward while crouching) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $07 (down-forward while crouching) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 29951,
    "type": "line",
-   "text": "Reach profile for blow $0A (fire + down) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0A (fire + down) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30010,
    "type": "line",
-   "text": "Reach profile for blow $0B (fire + down-forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0B (fire + down-forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30069,
    "type": "line",
-   "text": "Reach profile for blow $0C (fire + forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0C (fire + forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30128,
    "type": "line",
-   "text": "Reach profile for blow $0D (fire + up-forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0D (fire + up-forward) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30187,
    "type": "line",
-   "text": "Reach profile for blow $0E (fire + up: flying kick) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0E (fire + up: flying kick) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30246,
    "type": "line",
-   "text": "Reach profile for blow $0F (fire + up-back) when the defender faces the same way as the attacker: a backward blow, so it lands on the front of a defender standing behind the attacker (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $0F (fire + up-back) when the defender faces the same way as the attacker: a backward blow, so it lands on the front of a defender standing behind the attacker (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30305,
    "type": "line",
-   "text": "Reach profile for blow $18 (down-forward from standing: mid punch) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $18 (down-forward from standing: mid punch) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30364,
    "type": "line",
-   "text": "Reach profile for blow $11 (fire + back) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $11 (fire + back) when the defender faces the same way as the attacker, i.e. is struck from behind (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30423,
    "type": "line",
-   "text": "Reach profile for blow $10 (fire + down-back) when the defender faces the same way as the attacker: a backward blow, so it lands on the front of a defender standing behind the attacker (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2C40) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
+   "text": "Reach profile for blow $10 (fire + down-back) when the defender faces the same way as the attacker: a backward blow, so it lands on the front of a defender standing behind the attacker (pointer in move_reach_ptr_same_facing $124F): 59 bytes, one per defender shape frame 0-$3A. Each is the distance at which the blow lands squarely; the hit test ($2B70-$2CA7; this table is compared at $2C44-$2CA7) scores a whole point when the fighters are at that distance or nearer by up to move_full_window[move], a half point when nearer by up to move_half_window, and $80 means a defender in that frame cannot be hit."
   },
   {
    "address": 30496,
    "type": "line",
-   "text": "Animation step lists, one word per animation number: the move number for a fighter's move, copied from $61,X at $2B4C, or set directly for the opening bow ($1A3E), the winner's bow ($1E25) and the bull ($1322): entries 1-31 point at $7762-$79D6, entry 0 is $0000 (no animation) and entry 32 ($79EA) marks the end of list 31. anim_start ($3885) takes a list's length as the difference of the low bytes of two consecutive words, so each list must be shorter than 256 bytes (all are)."
+   "text": "Animation step lists, one word per animation number: the move number for a fighter's move, copied from $61,X at $2B4C, or set directly for the opening bow ($1A3E), the winner's bow ($1E25) and in the bonus round (fighter 0 standing at $1322, the bull at $1346, $1393 and $1415): entries 1-31 point at $7762-$79D6, entry 0 is $0000 (no animation) and entry 32 ($79EA) marks the end of list 31. anim_start ($3885) takes a list's length as the difference of the low bytes of two consecutive words, so each list must be shorter than 256 bytes (all are)."
   },
   {
    "address": 30497,
@@ -13081,47 +13081,47 @@
   {
    "address": 31456,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 0 of the 3 x 3 grid (row 1, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 0 of the 3 x 3 grid (row 1, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31535,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 1 of the 3 x 3 grid (row 1, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 1 of the 3 x 3 grid (row 1, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31614,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 2 of the 3 x 3 grid (row 1, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 2 of the 3 x 3 grid (row 1, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31693,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 3 of the 3 x 3 grid (row 2, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 3 of the 3 x 3 grid (row 2, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31772,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 4 of the 3 x 3 grid (row 2, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 4 of the 3 x 3 grid (row 2, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31851,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 5 of the 3 x 3 grid (row 2, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 5 of the 3 x 3 grid (row 2, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 31930,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 6 of the 3 x 3 grid (row 3, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 6 of the 3 x 3 grid (row 3, column 1): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 32009,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 7 of the 3 x 3 grid (row 3, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 7 of the 3 x 3 grid (row 3, column 2): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 32088,
    "type": "line",
-   "text": "Shape frame to cell, sprite slot 8 of the 3 x 3 grid (row 3, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
+   "text": "Shape frame to cell, sprite slot 8 of the 3 x 3 grid (row 3, column 3): 79 bytes, one per shape frame 0-$4E. Read by the sprite builder ($3936-$3B0C, and by the mirrored build $3C0A-$3E2C with the outer columns swapped): cell 0 leaves the slot blank (pointer 0, the empty sprite at $C000); any other cell is copied from $8000 + 64 x cell. For the bull (frames $3B-$4C, with $5D = $40) the byte is used as the sprite pointer itself."
   },
   {
    "address": 32256,
@@ -13131,7 +13131,7 @@
   {
    "address": 32512,
    "type": "line",
-   "text": "Page of each shape cell: entry n is $80 + n / 4, so cell n's 64 bytes start at $8000 + 64 x n (the low byte comes from cell_lo_offsets at $38B0). Read with the cell number as index by the sprite builder ($3956 and the eight like it)."
+   "text": "Page of each shape cell: entry n is $80 + n / 4, so cell n's 64 bytes start at $8000 + 64 x n (the low byte comes from cell_lo_offsets at $38B0). Read with the cell number as index by the sprite builder ($3956 and the eight like it, and $3E3E in the mirrored copy)."
   },
   {
    "address": 32768,
@@ -13266,7 +13266,7 @@
   {
    "address": 53248,
    "type": "line",
-   "text": "RAM under the I/O chips, seen only by the video chip (VIC bank 3): sprite images shown directly by pointer. $D000-$D1FF, pointers $40-$47: parts of the bull."
+   "text": "RAM under the I/O chips, seen only by the video chip (VIC bank 3): sprite images shown directly by pointer. $D000-$D1FF, pointers $40-$47: with $4F, the cells of shape frames $4D and $4E in the frame tables, which rendered from the snapshot form a standing human figure, not the bull; no animation list uses frames $4D or $4E."
   },
   {
    "address": 53760,
@@ -13276,7 +13276,7 @@
   {
    "address": 54208,
    "type": "line",
-   "text": "Sprite image for pointer $4F, part of the bull (a cell in the bull's frames $3B-$4C)."
+   "text": "Sprite image for pointer $4F: slot 7 of shape frame $4D in the frame tables, part of the human figure with $40-$42; no animation list uses frame $4D, so it is not shown in play."
   },
   {
    "address": 54272,
@@ -13286,7 +13286,7 @@
   {
    "address": 54400,
    "type": "line",
-   "text": "Sprite images $52-$70 ($D480-$DC3F, $5C also the judge's): the fighters' lowest sprite row, used in place of built cells. The pointer table at $3B5D gives these for the shape frames drawn off the ground, and the handler on line $D9 ($2FFF/$3039/$3073/$30C5) shows them at Y $DA. Watching the pointers live through the attract mode found $52-$70 in sprites 0-5; the images are mostly flat white strips (the shadow under a jumping fighter)."
+   "text": "Sprite images $52-$70 ($D480-$DC3F, except $5C, which is the judge's and not in the table): the fighters' lowest sprite row, used in place of built cells. The pointer table at $3B5D gives these for the shape frames drawn off the ground, and the handler on line $D9 ($2FFF/$3039/$3073; $30C5 changes no sprites) shows them at Y $DA. Watching the pointers live through the attract mode found $52-$70 in sprites 0-5; the images are mostly flat white strips (the shadow under a jumping fighter)."
   },
   {
    "address": 55424,
@@ -13296,7 +13296,7 @@
   {
    "address": 56384,
    "type": "line",
-   "text": "Sprite images $71-$7F ($DC40-$DFFF): parts of the bull, pointed to directly by its frames. $77 also appeared in all eight sprite pointers at once in the attract mode."
+   "text": "Sprite images $71-$7F ($DC40-$DFFF): parts of the bull, pointed to directly by its frames (all but $7B, which no frame uses). $77 also appeared in all eight sprite pointers at once in the attract mode."
   },
   {
    "address": 57344,
