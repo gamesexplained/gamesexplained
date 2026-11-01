@@ -4,6 +4,8 @@ Tier: `bronze` in `game.json`, because the run was made on `claude-sonnet-5-5`, 
 
 ## Missing for Silver
 
+- The sample found 5 of 28 routine comments wrong in a detail (18 per cent), read by the author model. A full audit on a proven model is the next step after the maintainer's sample; part two's actors (`$2DD4`-`$35B3`) were corrected once against their code and are the next-weakest.
+
 - A maintainer's sample of the listing's comments (`kit/skills/core/60-verify`). Part two's actor routines (`$2DD4`-`$35B3`) and the variable comments that only list references (from `$8B20`, `$9100` and the character-set areas) are the weakest.
 - Names for part two's creatures: the fifteen event routines allocate sprites whose pictures nobody has looked at (`$8A6E`).
 

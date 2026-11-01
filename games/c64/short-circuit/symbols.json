@@ -1985,9 +1985,9 @@
   },
   {
    "address": 937,
-   "name": "a_03A9",
+   "name": "skip_operand_03A9",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 1024,
@@ -2099,7 +2099,7 @@
   },
   {
    "address": 1449,
-   "name": "edge_flag_clear",
+   "name": "skip_operand_05A9",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -2303,7 +2303,7 @@
   },
   {
    "address": 1961,
-   "name": "irq_band_panel_mid",
+   "name": "skip_operand_07A9",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -8087,15 +8087,15 @@
   },
   {
    "address": 40040,
-   "name": "voice3_command_table",
+   "name": "voice_table_spare",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 40044,
-   "name": "p_9C6C",
+   "name": "voice3_command_table",
    "type": "Pointer",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40096,
@@ -9700,8 +9700,20 @@
    "kind": "user"
   },
   {
+   "address": 40977,
+   "name": "v1_cmd_set_transpose",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 40985,
    "name": "v1_cmd_call",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41017,
+   "name": "v1_cmd_call_machine",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -9774,6 +9786,18 @@
   {
    "address": 41158,
    "name": "v1_cmd_goto",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41171,
+   "name": "v1_cmd_filter_none",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41193,
+   "name": "v1_cmd_set_pitch_mode",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -9900,6 +9924,12 @@
   {
    "address": 41470,
    "name": "v2_cmd_goto",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41483,
+   "name": "v2_cmd_set_pitch_mode",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -12212,7 +12242,7 @@
   {
    "address": 263,
    "type": "line",
-   "text": "An address inside the resident loader's copy in the stack page, which the NMI path at $2B25 jumps to."
+   "text": "An address inside the resident loader's copy in the stack page, which the NMI path at $2B25 jumps to; the game's own stack has grown over most of the loader by the time play begins, so what is there is not reliable."
   },
   {
    "address": 512,
@@ -13182,7 +13212,7 @@
   {
    "address": 937,
    "type": "line",
-   "text": "Data at $03A9 (a_03A9): read by voice3_pitch_reset_b, v1_cmd_load_envelope, v2_cmd_set_sweep_byte."
+   "text": "Not a variable. The bytes $A9 $03 that follow a BIT opcode ($2C) in the music driver's commands at $A018, $A15D and $A288: the processor reads them as the operand of BIT and skips them, where an entry at the second byte reads them as LDA #$03. It is the idiom that lets two entries share one tail."
   },
   {
    "address": 1024,
@@ -13217,7 +13247,7 @@
   {
    "address": 1449,
    "type": "line",
-   "text": "Clears the fire edge flag and falls into the direction flags."
+   "text": "Not a variable. The bytes $A9 $05 after a BIT opcode in the commands at $A20D, which the processor skips; the entry one byte later reads them as LDA #$05."
   },
   {
    "address": 1488,
@@ -13297,7 +13327,7 @@
   {
    "address": 1961,
    "type": "line",
-   "text": "The middle of the second raster handler: sets the screen, colours and scroll and runs the sound driver."
+   "text": "Not a variable. The bytes $A9 $07 after a BIT opcode in the command at $A0EB, which the processor skips; the entry one byte later reads them as LDA #$07."
   },
   {
    "address": 2000,
@@ -13592,7 +13622,7 @@
   {
    "address": 5793,
    "type": "line",
-   "text": "Mode 5: a direction press steps through HIDE, INPUT, DESCRIBE (queueing each verb) and wraps to ABORT; fire jumps through the table at $1664 to the setup of the chosen verb."
+   "text": "Mode 5: a stick press queues NO (declining the verb on offer), then FIRE TO and the next verb of HIDE, INPUT and DESCRIBE, and after the last it queues ABORT and ends the mode; fire jumps through the table at $1664 to the setup of the verb on offer."
   },
   {
    "address": 5896,
@@ -13627,7 +13657,7 @@
   {
    "address": 6399,
    "type": "line",
-   "text": "Handler for the LASER action. If a LASER ROM (object 0) is in the inventory it returns at once, leaving the laser to the part-two code; without it, and with nothing queued, it queues MALFUNCTION and NEED MORE INPUT and the prompt."
+   "text": "Handler for the LASER action. If a LASER ROM (object 0) is in the inventory it returns at once and nothing more happens here; without one, and with nothing queued, it queues MALFUNCTION and NEED MORE INPUT and the prompt."
   },
   {
    "address": 6447,
@@ -14057,7 +14087,7 @@
   {
    "address": 10335,
    "type": "line",
-   "text": "Part of the part-two scroll: moves the sprite slots one pixel and starts a new scroll step."
+   "text": "One step of part two's sideways scroll: moves sprite slots 2 to 7 one pixel left ($2884), then adds $80 to $0248, whose carry raises the count of pending row shifts at $0247 that the lower band's handler works off."
   },
   {
    "address": 10355,
@@ -15067,7 +15097,7 @@
   {
    "address": 35490,
    "type": "line",
-   "text": "Part of $8A8E: works out the row of the character under the player's feet from his Y and the scroll phase."
+   "text": "Part of $8A8E: from the player's Y ($0254 less $78, divided by 8), X ($024C less $030C and the scroll phase, divided by 8) and the row offsets at $8AEC it works out which cell of the screen map is under the player's feet, and then looks the character there up in the terrain table."
   },
   {
    "address": 35548,
@@ -15497,7 +15527,12 @@
   {
    "address": 40040,
    "type": "line",
-   "text": "Jump table of voice 3's script commands."
+   "text": "Four bytes before voice 3's command table: the words $B60A and $B60D, which no code was found to read."
+  },
+  {
+   "address": 40044,
+   "type": "line",
+   "text": "Jump table of voice 3's script commands (26 entries); the command byte minus $C0 chooses the entry (the reader at $A752 adds $AC to the command to get the low byte of the pointer)."
   },
   {
    "address": 40096,
@@ -16815,9 +16850,19 @@
    "text": "Second entry of voice 3's pitch-sweep reset: restarts the four sweep counters from their stored values."
   },
   {
+   "address": 40977,
+   "type": "line",
+   "text": "Voice 1 command: sets voice 1's transposition (zero page $EC) from the next script byte."
+  },
+  {
    "address": 40985,
    "type": "line",
    "text": "Voice 1 command: call a subroutine of the script. Pushes the address after the command on voice 1's return stack (at $9CBD and $9CC5, indexed by $E9), counting the depth down, and continues at the address in the script."
+  },
+  {
+   "address": 41017,
+   "type": "line",
+   "text": "Voice 1 command: pushes the return address $98A5 and jumps to the machine-code routine whose address follows in the script."
   },
   {
    "address": 41035,
@@ -16868,6 +16913,16 @@
    "address": 41158,
    "type": "line",
    "text": "Voice 1 command: jumps to the address in the script."
+  },
+  {
+   "address": 41171,
+   "type": "line",
+   "text": "Writes $F0 to the SID filter control $D417 (resonance 15, no voice sent through the filter) and records 3 in $9DCE."
+  },
+  {
+   "address": 41193,
+   "type": "line",
+   "text": "Voice 1 command with two entries: $A0E9 loads 5 and the entry at $A0EC loads 7 (the other is hidden behind a BIT, see $07A9); both store the number in $9CAD, the byte that switches the voice's pitch sweep on (bits 0 to 2 choose how it repeats), and go on."
   },
   {
    "address": 41205,
@@ -16948,6 +17003,11 @@
    "address": 41470,
    "type": "line",
    "text": "Voice 2 command: jumps to the address in the script."
+  },
+  {
+   "address": 41483,
+   "type": "line",
+   "text": "Voice 2 command with two entries: $A20B loads 7 and the entry at $A20E loads 5 (hidden behind a BIT, see $05A9); both store the number in $9CE2, voice 2's pitch sweep switch."
   },
   {
    "address": 41495,

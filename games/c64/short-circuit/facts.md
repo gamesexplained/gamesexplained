@@ -83,11 +83,11 @@ Messages are plain text in screen-code-like letters: `A` to `Z` are 1 to 26, dig
 
 ## Sound
 
-Martin Galway's three-voice script driver. Each tune is a record of three script addresses (`$ACA0`); per voice the interpreter (`$A48B`, `$A5E2`, `$A73B`) reads notes (a byte below `$C0`, then a duration) and commands (`$C0` and above, through the tables at `$9C00`, `$9C34` and `$9C68`); the per-tick effects (`$A898`, `$A9D6`, `$AB48`) sweep pulse width and pitch and the filter. The music is called from the raster interrupt, once or four times a frame by the speed flag `$031B`. Five tunes: attract, intro, ending, part one, part two (`$ACA0`).
+Martin Galway's three-voice script driver. Each tune is a record of three script addresses (`$ACA0`); per voice the interpreter (`$A48B`, `$A5E2`, `$A73B`) reads notes (a byte below `$C0`, then a duration) and commands (`$C0` and above, through the tables at `$9C00`, `$9C34` and `$9C6C`); the per-tick effects (`$A898`, `$A9D6`, `$AB48`) sweep pulse width and pitch and the filter. The music is called from the raster interrupt, once or four times a frame by the speed flag `$031B`. Five tunes: attract, intro, ending, part one, part two (`$ACA0`).
 
 ## The listing's error rate
 
-Not measured. This run was made on a model that `kit/models.json` does not list as proven; its listing awaits a maintainer's sample (`kit/CHECKING.md`).
+Two samples, both read by the model that wrote the comments, so neither is independent: of 60 comments drawn from all 1,110, 12 were wrong (10 of them mechanical, variable comments that named a wrong routine as writer or reader); of 28 comments of code routines, 5 were wrong in a detail. All were corrected. This run was made on a model that `kit/models.json` does not list as proven, so the listing awaits a maintainer's sample (`kit/CHECKING.md`); expect about one routine comment in five to be wrong in a detail.
 
 ## Live tests
 
