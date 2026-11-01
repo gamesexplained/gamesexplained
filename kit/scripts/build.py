@@ -5,7 +5,7 @@ For every games/<platform>/<slug>/game.json:
   index.html   copied through, tab bar injected  (How it works)
   play.html    copied through if authored          (Play)
   discoveries.html copied through if authored    (Discoveries)
-  levels.html  copied through if authored          (Maps / levels)
+  levels.html  copied through if authored          (Levels, Maps or Map: game.json's "levels_tab")
   source.html  from site/source.html + listing.json   (Source code)
                + original-source.md, for a game whose authors' source survives
   about.html   from site/about.html + game.json + features.md + git log
@@ -36,7 +36,8 @@ address, type, label and bytes (embed_listings), and the loaders take the
 listing from the page. A byte a page reads and does not name reads as 0, which
 opening the page with ?listing-reads finds (site/lib/listing-reads.js). The
 repository keeps the whole listing.
-Those are the default tabs, in the order the bar shows them. A game that wants
+Those are the default tabs, in the order the bar shows them. The levels tab is
+named in one word, game.json's "levels_tab" (default_tabs). A game that wants
 others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
 authored page it names is copied through, and a page in the folder that no tab
 names is left out with a warning (about-layout.html, the game's own About
@@ -115,7 +116,7 @@ PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of R
                 "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM",
                 "nes": "the NES's 64 KB address space: 2 KB of RAM, the chips' registers and the cartridge"}
 TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
-        ("levels.html", "Maps / levels"), ("source.html", "Source code"), ("about.html", "About")]
+        ("levels.html", "Levels"), ("source.html", "Source code"), ("about.html", "About")]
 _warned = set()
 
 
@@ -376,11 +377,18 @@ def tab_place(f, n):
     return {"play.html": 2, "discoveries.html": 3, "source.html": 5, "about.html": 6}.get(f, 4)
 
 
+def default_tabs(game):
+    """TABS, with the levels tab named as game.json's "levels_tab" names it: the one word for what
+    the page draws, Levels, Maps or Map, or another in the rare game neither fits."""
+    name = game.get("levels_tab") or "Levels"
+    return [(f, name if f == "levels.html" else n) for f, n in TABS]
+
+
 def tab_order(game, present):
     """The game's tabs as the bar shows them, in order: (file, label) for each one it has. The bar
     closes with Source code and About whatever a game's own list says, so a list that leaves either
     out cannot hide the listing or the record of how it was checked."""
-    tabs = list(game.get("tabs", TABS))
+    tabs = list(game["tabs"] if "tabs" in game else default_tabs(game))
     named = {f for f, _ in tabs}
     tabs += [(f, n) for f, n in TABS if f in ASSEMBLED and f not in named]
     return sorted(((f, n) for f, n in tabs if f in present), key=lambda t: tab_place(*t))
@@ -1162,6 +1170,9 @@ def check_tabs(gdir, game):
             warn(f"{where}: game.json has a tab for {f!r}, which is not a page name like controls.html; the tab is left out")
         elif f not in ASSEMBLED and not os.path.isfile(os.path.join(gdir, f)):
             warn(f"{where}: game.json has a tab for {f}, which is not in the folder; the tab is left out")
+    if "tabs" not in game and not game.get("levels_tab") and os.path.isfile(os.path.join(gdir, "levels.html")):
+        warn(f"{where}: levels.html has no name, so its tab reads Levels: name it in game.json's "
+             "\"levels_tab\", in one word (Levels, Maps or Map)")
     pages = set(authored(gdir, game)) | set(LAYOUTS)
     for p in sorted(glob.glob(os.path.join(gdir, "*.html"))):
         if os.path.basename(p) not in pages:

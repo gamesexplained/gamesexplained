@@ -7,7 +7,7 @@ code by tests. The copy is an agent's draft.
 ## For Gold
 
 - A human pass through the three pages, section by section: How it
-  works, Discoveries and Maps / levels. Set `copy` and `steward` in
+  works, Discoveries and Maps. Set `copy` and `steward` in
   `game.json` as `kit/style.md` says.
 
 ## Recommended: an audit of the listing

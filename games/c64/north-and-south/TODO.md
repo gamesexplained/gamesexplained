@@ -17,7 +17,7 @@ recommended before the listing is relied on
 
 ## For Gold
 
-- A human edit pass over How it works, Discoveries and Maps / levels,
+- A human edit pass over How it works, Discoveries and Maps,
   section by section (`kit/style.md`).
 - Every Discoveries section is traced in the code, not seen in play. Try
   them in VICE: a duck under a guard's knife; the Confederacy choosing a
