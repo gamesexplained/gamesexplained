@@ -11,7 +11,12 @@
 // - startsNote, mount's mark by default, starts a note where the gate comes on and where it is
 //   restarted, but not where a voice is restarted on the frame after another restart: a driver
 //   that does that every frame holds one sound (games/c64/castle-master, the alarm);
-// - a gate held on is one note, however often the driver writes it.
+// - a gate held on is one note, however often the driver writes it;
+// - noteStarts, which the ball's scoring and the piano roll call frame by frame, moves a note
+//   marked while the voice has no frequency to the first frame that has one, if the gate stays on
+//   till then: some drivers turn the gate on a frame before they set the pitch, and taking notes
+//   only where the gate comes on with a pitch found none at all (games/c64/north-and-south, the
+//   title tune: 1964 gates come on, every one at frequency 0, and the ball showed an empty sheet).
 // Exits 1 on any failure.
 // node kit/c64/test_sid_note_starts.js
 const path = require('path');
@@ -73,6 +78,38 @@ function notes(keep) {
 }
 check(!S.startsNote({ ctrl: 0x40, again: true }, { ctrl: 0x41 }), 'startsNote: a voice that ends the frame with its gate off starts nothing');
 check(S.startsNote({ ctrl: 0x41, again: true }, { ctrl: 0x40, again: true }), 'startsNote: a gate that comes on is a note, whatever came before');
+
+// noteStarts: frames of one voice, in order, and the frames it starts a note on
+function startsAt(frames, mark) {
+  const starts = S.noteStarts(mark), at = [];
+  frames.forEach((v, i) => { if (starts(v, i ? frames[i - 1] : null, 1)) at.push(i); });
+  return at;
+}
+const fr = (freq, ctrl, again) => ({ freq, ctrl, again: !!again });
+// as the North and South title's voice 1 plays its first notes: the gate on with pulse at
+// frequency 0, then the pitch with triangle, the gate held, a slide, the gate off
+const ns = [fr(0, 0), fr(0, 0x41), fr(0x17B5, 0x11), fr(0x17B5, 0x41), fr(0x17B5, 0x41), fr(0x17DF, 0x41), fr(0x1809, 0x40),
+  fr(0x17DF, 0x40), fr(0, 0x41), fr(0x17B5, 0x11), fr(0x17B5, 0x40), fr(0x17B5, 0x40), fr(0, 0x41), fr(0x1FA5, 0x11)];
+check(same(startsAt(ns), [2, 9, 13]), 'noteStarts: a gate that comes on at frequency 0 starts its note where the pitch comes (' + startsAt(ns).join(' ') + ')');
+check(same(ns.map((v, i) => S.startsNote(v, i ? ns[i - 1] : null) && v.freq ? i : -1).filter((i) => i >= 0), []),
+      'and startsNote with a pitch there finds none of them');
+check(same(startsAt([fr(0, 0), fr(0x1000, 0x41), fr(0x1000, 0x41), fr(0x1100, 0x41), fr(0x1100, 0x40), fr(0x1100, 0x41)]), [1, 5]),
+      'noteStarts: a gate that comes on with a pitch starts its note there, and a new pitch with the gate held is no new note');
+check(same(startsAt([fr(0, 0x41), fr(0, 0x41), fr(0, 0x40), fr(0x1000, 0x40), fr(0x1000, 0x40)]), []),
+      'noteStarts: a gate that goes off before the voice gets a pitch starts nothing, and a pitch with the gate off after it starts nothing');
+check(same(startsAt([fr(0, 0x41), fr(0, 0x41), fr(0, 0x41), fr(0x1000, 0x41), fr(0x1100, 0x41)]), [3]),
+      'noteStarts: the note waits as long as the gate stays on, and starts once');
+{
+  const mk = (v, p) => !!v.read && (!p || !p.read || p.read !== v.read);   // a page's own mark, from the driver's state
+  const fs = [{ freq: 0, ctrl: 0x41, read: 1 }, { freq: 0x1000, ctrl: 0x41, read: 1 }, { freq: 0x1200, ctrl: 0x41, read: 2 }];
+  check(same(startsAt(fs, mk), [1, 2]), 'noteStarts: a page\'s own mark is moved the same way (' + startsAt(fs, mk).join(' ') + ')');
+}
+{
+  const a = S.noteStarts(), b = S.noteStarts();
+  a(fr(0, 0x41), null, 0); a(fr(0, 0x41), null, 2);
+  check(!b(fr(0x1000, 0x41), fr(0, 0x41), 0) && a(fr(0x1000, 0x41), fr(0, 0x41), 0) && !a(fr(0x1000, 0x40), fr(0, 0x41), 1) && a(fr(0x1000, 0x41), fr(0, 0x41), 2),
+        'noteStarts: each call keeps its own state, and each voice its own');
+}
 
 console.log(fails ? fails + ' FAILED' : 'all ok');
 process.exit(fails ? 1 : 0);
