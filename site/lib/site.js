@@ -64,8 +64,9 @@
       back.src=frames[i]; back.style.opacity=1; top.style.opacity=0; top=back;
     },3500);
   });
-  // Home page, the catalogue: search, filters, sorts that group, and a list view, all over the cards
-  // build.py wrote; without script every card is still there, best first
+  // The catalogue, on the home page and each platform's page (site/catalogue.html): search, filters,
+  // sorts that group, and a list view, all over the cards build.py wrote; without script every card
+  // is still there, best first
   (function(){
     var cat=document.getElementById('catalogue'), finder=document.getElementById('finder');
     if(!cat||!finder) return;
@@ -81,7 +82,8 @@
     var FACETS=[
       ['platform','All platforms',Object.keys(plats).map(function(k){ return [k,plats[k]]; }),function(c){ return c.dataset.platform; }],
       ['tier','All tiers',TIERS.map(function(t){ return [t[0],t[1]]; }),function(c){ return c.dataset.tier; }],
-      ['era','Any year',ERAS.map(function(e){ return [e[0],e[0]]; }),era]];
+      ['era','Any year',ERAS.map(function(e){ return [e[0],e[0]]; }),era]]
+      .filter(function(F){ return F[0]!=='platform'||F[2].length>1; });   // one machine's page: nothing to choose
     var st={q:'',sort:'tier',view:'cards',f:{platform:'',tier:'',era:''},open:{}};
     try{ var v=localStorage.getItem('ge-view'); if(v==='list') st.view=v; }catch(e){}
     function ok(c,skip){
@@ -121,7 +123,7 @@
     function draw(){
       drawFacets();
       var list=cards.filter(function(c){ return ok(c); });
-      count.textContent=list.length===cards.length?cards.length+' games':list.length+' of '+cards.length+' games';
+      count.textContent=(list.length===cards.length?'':list.length+' of ')+cards.length+(cards.length===1?' game':' games');
       cat.classList.toggle('list',st.view==='list');
       cat.innerHTML='';
       if(!list.length){ cat.innerHTML='<div class="empty"><p><b>No games match.</b></p><p>Try fewer filters, or search for a publisher or a person.</p></div>'; return; }

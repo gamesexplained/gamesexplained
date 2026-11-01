@@ -50,7 +50,8 @@ tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), a page for each platform with games, <platform>/index.html
 (from site/platform.html: its catalogue alone, the page the platform in a game's
-breadcrumb links to), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
+breadcrumb links to; both pages take the catalogue, with its search and filters,
+from site/catalogue.html), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
 KIT_LIB), status.html (from site/status.html +
 site/status.json: which kits work on which computers, and who has contributed),
 activity.html (from site/activity.html: what landed on main each day, from git
@@ -1796,7 +1797,7 @@ def tile_html(g, root, line, foot, data="", badge=True):
 def card_html(g, root="", badge=True):
     """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
     as the About tab credits them, and the year and publisher. The data- attributes are what the
-    home page's search, filters and sorts read (site.js)."""
+    catalogue's search, filters and sorts read (site.js)."""
     plat, slug = g["platform"], g["slug"]
     cons = g["_cons"]
     words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
@@ -1810,15 +1811,23 @@ def card_html(g, root="", badge=True):
     return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data, badge)
 
 
+def catalogue_html(games, root="", badge=True):
+    """The catalogue, from site/catalogue.html: the heading, the finder (search, sort, view and
+    filters, which site.js shows) and a card for each game, best first. The home page and each
+    platform's page show the same one, so a change to it reaches both."""
+    return fill(read(os.path.join(SITE, "catalogue.html")), games=f'{len(games)} game{"s" if len(games) != 1 else ""}',
+                cards="".join(card_html(g, root, badge) for g in by_tier(games)))
+
+
 def platform_pages(games, out_root):
     """<platform>/index.html for each platform with games: the home page's catalogue of
     that platform's games alone, where the platform in a game's breadcrumb leads."""
     for plat in sorted({g["platform"] for g in games}):
-        gs = [g for g in by_tier(games) if g["platform"] == plat]
+        gs = [g for g in games if g["platform"] == plat]
         name = html.escape(PLATFORM_NAMES.get(plat, plat))
         open(os.path.join(out_root, plat, "index.html"), "w").write(
             fill(read(os.path.join(SITE, "platform.html")), site_title=f"{name} · Games Explained", lib="../lib",
-                 platform_name=name, cards="".join(card_html(g, "../", badge=False) for g in gs), n_games=len(gs)))
+                 platform_name=name, catalogue=catalogue_html(gs, "../", badge=False)))
 
 
 def machines_html(games):
@@ -2462,8 +2471,8 @@ def main():
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
-                cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
-                recent=recent_html(recent_changes(games)), machines=machines_html(games), n_games=len(games))
+                catalogue=catalogue_html(games), featured=featured_html(feat) if feat else "",
+                recent=recent_html(recent_changes(games)), machines=machines_html(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
     history = landed(games)   # read once: the status page's contributors and the activity page
