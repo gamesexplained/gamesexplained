@@ -23,8 +23,18 @@ Sources:
   read 31 October 2026: publisher, developer and year only.
 - A web search on 31 October 2026, second-hand through its result
   summaries: Spectrum Computing credits Graham T. Relf (code), Simon
-  Dunstan (graphics) and David John Rowe (inlay art), and Crash gave the
-  Spectrum release 32 % in March 1987.
+  Dunstan (graphics) and David John Rowe (inlay art).
+- The reviews, read from the Internet Archive's scans on 1 November 2026:
+  ZZAP!64 issue 24, April 1987, page 106
+  (https://archive.org/details/zzapp_64_issue_024_600dpi, also at
+  https://www.zzap64.co.uk/magazine/zzap64/24/106), the C64 release at
+  £9.99 cassette and £14.99 disk, 13 % overall, comments by Steve
+  Jarratt, Julian Rignall and Paul Sumner (initials on the comment
+  boxes, names from the issue's staff list and editorial); and Crash
+  issue 38, March 1987, page 101
+  (https://archive.org/details/Crash_Magazine_038), the Spectrum
+  release at £7.99, 32 % overall. Both take "40 billion mappable
+  locations" from the instructions.
 - MobyGames and the ZZAP!64 archive refused the fetch (HTTP 403) and
   C64-Wiki has no page for the game, so no published screenshots were
   saved; every picture in `reference/` is from the emulator.
