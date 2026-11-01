@@ -24,7 +24,7 @@ For the gate:
 
 For the minisite:
 
-- Replace or supplement the Maps / levels reference gallery with rooms drawn from decoded scene data and verified connections. The screenshot gallery does not meet complete-map coverage.
+- Replace or supplement the Areas reference gallery with rooms drawn from decoded scene data and verified connections. The screenshot gallery does not meet complete-map coverage.
 - Verify any further secret or bug before labelling it as such. The counter sequence on Discoveries is a checked mechanic, without a demonstrated secret or bug claim.
 
 For a full-game Silver contribution:

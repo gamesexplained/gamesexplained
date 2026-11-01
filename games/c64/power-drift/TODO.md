@@ -29,7 +29,7 @@ proven model, `claude-opus-5-5`, for every step.
 
 ## Gold
 
-A human's pass through the How it works, Discoveries and Maps / levels
+A human's pass through the How it works, Discoveries and Tracks
 tabs, section by section (`AGENTS.md`, "Definition of done").
 
 ## Platinum

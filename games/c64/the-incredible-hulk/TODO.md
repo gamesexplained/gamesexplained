@@ -7,7 +7,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 Silver: 100 % coverage (21,750 bytes), `facts.md`, the listing sampled
 and every step recorded in `accuracy`, the minisite built (How it works,
-Discoveries, Maps / levels, Source code), every feature confirmed,
+Discoveries, Rooms, Source code), every feature confirmed,
 traced or open, copy `agent-draft`. The game has no music, so it needs
 no tune player.
 

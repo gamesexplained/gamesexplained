@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the room port in reference/jsw-rooms.js, which the Maps / levels and How it works tabs draw
+// Hold the room port in reference/jsw-rooms.js, which the Map and How it works tabs draw
 // with, against the game's own code, run on the kit's 6502 simulator over the bytes of the
 // committed listing.
 // - Every room, 0-59: the game enters at $2E07 with the room in $0E and builds it up to the main

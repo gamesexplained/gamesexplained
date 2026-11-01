@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Maps / levels tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Levels or Maps tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -13,10 +13,10 @@ game itself). If you can build it, build it.
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Play** (`play.html`, authored, only
 when a JavaScript version exists), **Discoveries** (`discoveries.html`,
-authored, the secrets, quirks and bugs), **Maps / levels** (`levels.html`,
-authored, for every game with more than one level, map, room, stage or
-screen), **Source code** (`source.html`, generated from `listing.json`),
-**About** (generated from `game.json`, `features.md` and git).
+authored, the secrets, quirks and bugs), **Levels** or **Maps**
+(`levels.html`, authored, for every game with more than one level, map,
+room, stage or screen; "Maps or levels", below, names it), **Source
+code** (`source.html`, generated from `listing.json`), **About** (generated from `game.json`, `features.md` and git).
 `kit/scripts/build.py` assembles them; you write the authored ones.
 `facts.md`, `cheats.md` and `orientation.md` stay in the repository and
 no tab shows them, so what a reader should see from them goes on an
@@ -96,7 +96,7 @@ address links into the Source tab, and the house style in `kit/style.md`.
 - **Controls.** What the game reads and how, including anything the
    manual never mentioned.
 - **Levels and data.** Where the level lives and what format, shown on
-   one level, with a link to the Maps / levels tab, where every level is
+   one level, with a link to the Levels or Maps tab, where every level is
    drawn (below). If placement is procedural, show the rule and let the
    reader roll it.
 - **Enemy movement and AI.** The actual decision rule, steppable.
@@ -212,7 +212,7 @@ its music or its maps can put that first instead.
   players, table explorers.
 - Keep every section a top-level `<section>` with the template's label
   line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
-  Discoveries, Maps / levels and Play pages too. The build lists each
+  Discoveries, Play and `levels.html` pages too. The build lists each
   page's sections in its left margin by their headings (any further
   `<h2>` gets an entry of its own, and so does a section or heading the
   page's script adds), so the headings are what a reader scans to choose
@@ -448,7 +448,7 @@ reader can walk through. It is one kind of discovery among several.
 When the run found none, leave the tab out and say so in
 `agent-history.md`.
 
-## Maps / levels
+## Maps or levels
 
 A game with more than one level, map, room, stage or screen gets this
 tab: a shooter's stages, a platformer's rooms, an adventure's map, a
@@ -463,6 +463,14 @@ that page.
 Leave the tab out only when every level is the same screen (one arena,
 or one board whose contents a table changes), and say why in
 `agent-history.md`.
+
+Name the tab in one word for what it draws, in `game.json`'s
+`"levels_tab"` (or as its label in `"tabs"`, for a game that lists its
+tabs): **Levels** for a game played level by level, stage by stage or
+board by board, **Maps** for places the player explores, **Map** when
+they are one world. Another word, such as Rooms or Arenas, only when
+neither fits, and never the two joined: each tab in the bar is one thing.
+The build warns about a `levels.html` with no name and calls it Levels.
 
 ## Play
 

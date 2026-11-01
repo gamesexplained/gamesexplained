@@ -40,7 +40,7 @@ Next: Review Painted scenery against the original collision surfaces before exte
 - **The enemy path scripts, decoded.** Direction bytes (0 up, 1 down, 2
   left, 3 right) ended by `$FF`, at `path_scripts` `$4A00`-`$4A8F`,
   stepped by `path_step` `$CC12`. Nine scripts serve the ten screens'
-  fifty slots. Steppable on the Maps / levels tab; see `facts.md`,
+  fifty slots. Steppable on the Maps tab; see `facts.md`,
   "Enemy paths, decoded".
 - **SHIFT as a jump key, tested.** The emulator's key-injection tools
   have no name for SHIFT, so `work/verify_shift.py` held the KERNAL's
@@ -89,6 +89,6 @@ Next: Review Painted scenery against the original collision surfaces before exte
   `verify_shift.py` (SHIFT held by poking `$028D`), `render_1000.py`
   (`$1000`-`$1FFF` drawn as sprites), `scripts.py` (the enemy path
   scripts, from 50-coverage), `browser_check_levels.js` and
-  `check_reach_widget.js` (the Maps / levels tab, headless Chrome).
+  `check_reach_widget.js` (the Maps tab, headless Chrome).
 - Run shell commands one at a time and put anything longer than a line in
   a file: the terminal is the contributor's interactive zsh.

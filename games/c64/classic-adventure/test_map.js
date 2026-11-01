@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the map on the Maps / levels tab against the game's own tables, read from the committed
+// Hold the map on the Map tab against the game's own tables, read from the committed
 // listing.json with the page's CAUI helpers. A room that a status rule takes the player straight
 // out of is not drawn, so an exit or a move into it counts as one to wherever that rule sends the
 // player. Every solid line must be an exit in the exit table between its two rooms, and every exit
