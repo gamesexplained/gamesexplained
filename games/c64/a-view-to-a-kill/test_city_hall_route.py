@@ -8,7 +8,7 @@ door the key, the tool or the item that opens it, taken earlier. Run:
 python3 games/c64/a-view-to-a-kill/test_city_hall_route.py
 It checks the order and the geometry. Fire times and weight were played
 in the emulator and are not checked here."""
-import re, sys
+import json, re, sys
 from collections import deque
 from pathlib import Path
 
@@ -28,6 +28,8 @@ def neighbours(r, opened):
         k = (min(r, n), max(r, n))
         if 1 <= n <= 75 and (r - 1) // 15 == (n - 1) // 15 and k not in WALLS and (k not in doors or k in opened):
             yield n
+    if r == 75 and (75, 76) in opened:
+        yield 76
     if r in WEST or r in EAST:
         if r not in (64, 72):
             yield r + 15
@@ -47,38 +49,34 @@ def reachable(a, b, opened):
     return False
 
 
-# ("go", room) walk, ("take", items) pick up, ("open", left room, right room, what opens it)
-ROUTE = [
-    ("go", 9), ("take", [30]), ("go", 8), ("open", 7, 8, 30), ("go", 7), ("take", [43]), ("go", 6), ("take", [24]),
-    ("go", 9), ("open", 9, 10, 24), ("go", 11), ("take", [44, 45, 46]), ("open", 11, 12, "tool"), ("go", 13), ("take", [60]),
-    ("go", 14), ("take", [32]),
-    ("go", 27), ("go", 28), ("take", [47, 48]), ("go", 26), ("open", 25, 26, "tool"), ("go", 25), ("take", [31]),
-    ("go", 24), ("take", [56]), ("go", 22), ("take", [49, 37]), ("open", 21, 22, 32),
-    ("go", 6), ("open", 5, 6, "tool"), ("go", 5), ("take", [89, 57]),
-    ("go", 43), ("take", [81]), ("go", 28), ("open", 28, 29, 31), ("go", 29), ("open", 29, 30, "tool"), ("go", 30),
-    ("take", [21, 58, 59]), ("go", 8),
-    ("go", 19), ("go", 35), ("take", [62, 63]), ("go", 37), ("take", [25]), ("go", 48), ("open", 47, 48, 25), ("go", 46),
-    ("take", [38]), ("go", 33), ("take", [84]), ("go", 50), ("open", 50, 51, "tool"), ("go", 51), ("take", [33]),
-    ("go", 65), ("take", [29]), ("go", 66), ("take", [69]),
-    ("go", 56), ("open", 55, 56, 33), ("go", 55), ("take", [86, 39]), ("go", 72), ("open", 71, 72, "tool"), ("go", 70),
-    ("take", [78, 79, 80]), ("go", 38), ("open", 37, 38, "tool"),
-    ("go", 65), ("take", [85, 36]), ("go", 63), ("open", 62, 63, "tool"), ("go", 62), ("open", 61, 62, "56+57"), ("go", 61),
-    ("take", [88, 72, 73, 91]),
-    ("go", 57), ("open", 57, 58, 29), ("go", 58), ("open", 58, 59, "tool"), ("go", 60), ("take", [40]),
-    ("go", 72), ("open", 72, 73, 36), ("go", 73), ("take", [87]), ("go", 75),
-]
+# The route is the JSON the page animates (script#ch-route): ["stage", title, goal],
+# ["go", room], ["take", items], ["use", item, room], ["open", left, right, what opens it].
+ROUTE = json.loads(re.search(r'<script type="application/json" id="ch-route">(.*?)</script>', page, re.S).group(1))
+ITEM_ROOMS = {}
+for m in re.finditer(r'<text x="([\d.]+)" y="([\d.]+)" font-size="8.5"[^>]*>(\d+)</text>', svg):
+    ITEM_ROOMS[int(m.group(3))] = int((float(m.group(2)) - 38) // 62) * 15 + int((float(m.group(1)) - 10) // 64) + 1
 TOOL_FODDER = {44, 45, 46, 60, 47, 48, 49, 58, 59, 62, 63, 81, 72, 73, 91, 69, 78, 79, 80}
 
 
 def main():
-    pos, held, opened, tool_uses, errors = 8, set(), set(), 0, []
+    pos, held, opened, tool_uses, errors = 8, {54}, set(), 0, []
     for step in ROUTE:
         if step[0] == "go":
             if not reachable(pos, step[1], opened):
                 errors.append(f"no way from room {pos} to room {step[1]}")
             pos = step[1]
+        elif step[0] == "stage":
+            pass
         elif step[0] == "take":
+            for it in step[1]:
+                if ITEM_ROOMS.get(it) != pos:
+                    errors.append(f"item {it} is in room {ITEM_ROOMS.get(it)}, taken in room {pos}")
             held |= set(step[1])
+        elif step[0] == "use":
+            if step[1] not in held:
+                errors.append(f"item {step[1]} used before it is taken")
+            if pos != step[2]:
+                errors.append(f"item {step[1]} used in room {pos}, not {step[2]}")
         else:
             _, l, r, how = step
             if (l, r) not in doors:
@@ -95,8 +93,8 @@ def main():
             elif how not in held:
                 errors.append(f"door {l}-{r}: key {how} not taken yet")
             opened.add((l, r))
-    if not (reachable(75, 75, opened) and (75, 76) in doors):
-        errors.append("room 76 door missing")
+    if pos != 76:
+        errors.append(f"the route ends in room {pos}, not 76")
     if not {84, 85, 86, 87, 88, 89} <= held:
         errors.append("kit pieces missing")
     spare = len(held & TOOL_FODDER) - tool_uses
