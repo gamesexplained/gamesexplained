@@ -58,6 +58,49 @@ for m in re.finditer(r'<text x="([\d.]+)" y="([\d.]+)" font-size="8.5"[^>]*>(\d+
 TOOL_FODDER = {44, 45, 46, 60, 47, 48, 49, 58, 59, 62, 63, 81, 72, 73, 91, 69, 78, 79, 80}
 
 
+FIRE = {int(m.group(1)): float(m.group(2)) for m in re.finditer(r'data-n="(\d+)" data-ft="([\d.]+)"', page)}
+
+
+def shortest(a, b, opened):
+    """The rooms the page's animation walks from a to b, as the player does."""
+    prev, q = {a: None}, deque([a])
+    while q:
+        r = q.popleft()
+        for n in neighbours(r, opened):
+            if n not in prev:
+                prev[n] = r; q.append(n)
+    out = []
+    while b != a:
+        out.append(b); b = prev[b]
+    return out[::-1]
+
+
+def check_fire(errors):
+    """Walk the route at an even pace over the 28.9 minutes played: no room entered may already
+    be burning, and cupboard key 37 and item 21 must be used before their deadlines."""
+    rooms, pos, opened = [], 8, set()
+    for step in ROUTE:
+        if step[0] == "go":
+            for n in shortest(pos, step[1], opened):
+                rooms.append(n); pos = n
+        elif step[0] == "open":
+            opened.add((step[1], step[2]))
+    minutes = 28.9 / len(rooms)
+    pos, opened, hops = 8, set(), 0
+    for step in ROUTE:
+        if step[0] == "go":
+            for n in shortest(pos, step[1], opened):
+                hops += 1; pos = n
+                if FIRE.get(n, 99) <= hops * minutes:
+                    errors.append(f"room {n} is already burning when Bond enters at about {hops * minutes:.1f} minutes")
+        elif step[0] == "open":
+            opened.add((step[1], step[2]))
+        elif step[0] == "use" and step[1] in (37, 21):
+            limit = FIRE[step[2]]
+            if hops * minutes >= limit:
+                errors.append(f"item {step[1]} used at about {hops * minutes:.1f} minutes, after room {step[2]} burns at {limit}")
+
+
 def main():
     pos, held, opened, tool_uses, errors = 8, {54}, set(), 0, []
     for step in ROUTE:
@@ -97,6 +140,7 @@ def main():
         errors.append(f"the route ends in room {pos}, not 76")
     if not {84, 85, 86, 87, 88, 89} <= held:
         errors.append("kit pieces missing")
+    check_fire(errors)
     spare = len(held & TOOL_FODDER) - tool_uses
     if spare < 0:
         errors.append(f"tool needs {tool_uses} items, route took {len(held & TOOL_FODDER)}")
