@@ -127,9 +127,10 @@ def virtual_display(cmd, env):
     return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd
 
 
-def vice_command(exe):
+def vice_command(exe, env=None):
     """The emulator with its MCP server, its monitor (#236), RAM that powers on the same every time,
-    and its sound on and written to nowhere (SOUND, below).
+    and, where the computer's own sound output is missing or stalls it, its sound written to
+    nowhere (quiet() and SOUND, below).
 
     VICE fills RAM at power-on with a pattern of $00 and $FF runs and then flips random bits in it
     (its RAMInitRandomChance), so two cold boots of one disk differ wherever nothing has written yet,
@@ -137,18 +138,27 @@ def vice_command(exe):
     two captures of a game differ only where it did something."""
     return [exe, "-mcpserver", "-mcpserverport", str(VICE_PORT),
             "-remotemonitor", "-remotemonitoraddress", f"127.0.0.1:{MONITOR_PORT}",
-            "-raminitrandomchance", "0"] + SOUND
+            "-raminitrandomchance", "0"] + (SOUND if quiet(os.environ if env is None else env) else [])
 
 
-# Sound on, written to /dev/null, on every computer. With sound off the SID's reads are not the
-# chip's ($D41B and $D41C read the low byte of the cycle counter, the write-only registers 0;
-# VICE's sid.c), and a snapshot saved that way does not start the SID when loaded with sound on.
-# VICE's `dummy` device is no better: nothing drains its buffer, so the SID is not clocked
-# (sid_bus.clocked() fails on it). The host's own sound output can stall the emulator (WSLg's
-# PulseAudio) or never answer (a Mac whose output was a remote-desktop program's), and a machine
-# without one turns sound off. The `fs` device writing to /dev/null clocks the chip on all of them
-# (kit/c64/sid_bus.py, #194, #634). Nothing is heard.
+# Sound stays on everywhere. With it off the SID's reads are not the chip's ($D41B and $D41C read
+# the low byte of the cycle counter, the write-only registers 0; VICE's sid.c), and a snapshot saved
+# that way does not start the SID when loaded with sound on. VICE's `dummy` device is no better:
+# nothing drains its buffer, so the SID is not clocked (sid_bus.clocked() fails on it). On a
+# desktop the sound goes to the computer's speakers, so a contributor hears the game. Where there
+# is no display there is usually no sound device either, and VICE would turn its sound off; under
+# WSL, WSLg's PulseAudio stalled the emulator (#634). There the `fs` device writes it to /dev/null,
+# which clocks the chip and is heard by nobody (kit/c64/sid_bus.py, #194).
 SOUND = ["-sound", "-sounddev", "fs", "-soundarg", os.devnull]
+
+
+def quiet(env):
+    """True where the emulator's sound goes to /dev/null: Linux with no display, and WSL."""
+    if not sys.platform.startswith("linux"):
+        return False
+    if not (env.get("DISPLAY") or env.get("WAYLAND_DISPLAY")):
+        return True
+    return bool(env.get("WSL_DISTRO_NAME")) or "microsoft" in os.uname().release.lower()
 
 
 def vice(machine="x64sc"):
@@ -187,7 +197,7 @@ def vice(machine="x64sc"):
     data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
     if os.path.isdir(share) and not os.path.lexists(data):
         os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
-    start(virtual_display(vice_command(exe), env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+    start(virtual_display(vice_command(exe, env), env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
           port=VICE_PORT, name="emulator")
     if not mcp_answers(VICE_PORT):
         print(f"but its MCP server did not answer a first call within 10 s: the port is open and the emulated machine is not\n"
