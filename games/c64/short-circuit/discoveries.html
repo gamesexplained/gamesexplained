@@ -1,0 +1,61 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Short Circuit — Discoveries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<!--
+  Template for a game article. Keep it self-contained: inline CSS and JS,
+  fonts are the only external resource, opens from disk. The section below
+  shows the parts a section is made of, not which section comes first: the
+  kinds of section are listed in kit/skills/core/70-minisite, in no order,
+  and this page's order is its own. The best thing to press or hear goes
+  as high as the explanation lets it, and every section should have
+  something the reader can press. Copy follows kit/style.md and is written
+  last.
+-->
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Things the code does that the manual and the wiki do not say.</p></header>
+<main class="wrap">
+<section id="d1"><p class="fig">01 · A key to jump straight to part two</p><h2 class="t">A key to jump straight to part two</h2><p>On the attract screens, <code>F3</code> starts part two at once, with the clock at 6:00 and no part one played; <code>F1</code> starts part one without the intro (<code>$95B5</code>, <code>$95BF</code>). The C64-Wiki page says only that cracked copies with a menu skip to part two. Here the original code does it, so no crack is needed. Seen live: with <code>F3</code> pressed the countryside came up with the clock at 6:00.</p></section>
+<section id="d2"><p class="fig">02 · The loader hides behind the character-output vector</p><h2 class="t">The loader hides behind the character-output vector</h2><p>The boot program does not start itself with a <code>SYS</code>. It rewrites the KERNAL's output-character vector at <code>$0326</code> so that the first character the system prints runs the loader, which then restores the vector (<code>$0363</code> in the file at <code>$0316</code>).</p></section>
+<section id="d3"><p class="fig">03 · Collisions are done in software</p><h2 class="t">Collisions are done in software</h2><p>The census of the chip registers finds no read of the sprite collision registers <code>$D01E</code> and <code>$D01F</code>. Every touch, whether Johnny against the enemy robot (<code>$1BD5</code>) or against a creature of part two (<code>$2DD4</code> on), is a subtraction of sprite positions.</p></section>
+<section id="d4"><p class="fig">04 · The clock is real time, and F7 stops it</p><h2 class="t">The clock is real time, and F7 stops it</h2><p>The thirty minutes of part one are counted by the second CIA chip's time-of-day clock, not by frames. The pause key freezes it by reading the hours register, which latches the clock, and writing it back, then restores the tenths register to start it again (<code>$21CF</code>). Seen live: the clock read the same value three seconds apart while paused.</p></section>
+<section id="d5"><p class="fig">05 · Undocumented opcodes in the colour fill</p><h2 class="t">Undocumented opcodes in the colour fill</h2><p>Seven loops (<code>$0BCF</code>, <code>$0BDD</code>, <code>$1EC8</code>, <code>$1ED6</code>, <code>$2AD6</code>, <code>$2AF4</code>, <code>$2B02</code>) read a character from the screen with the opcode <code>$B3</code>, <code>LAX (zp),y</code>, which loads A and X together so that the next instruction can use X to look up the character's colour. A disassembler that does not know the opcode shows a stray byte and then garbage instructions.</p></section>
+<section id="d6"><p class="fig">06 · An older ending left in the file</p><h2 class="t">An older ending left in the file</h2><p>The 544 bytes at <code>$3DE0</code> to <code>$3FFF</code> decode as part two's ending sequence, but with variable accesses to zero-page addresses where the live code uses page 3, and calls to addresses where nothing now sits. Nothing refers to them and no run executes them. They look like an earlier build of the routine at <code>$39F5</code>, written once to the disk and never removed.</p></section>
+<section id="d7"><p class="fig">07 · Three tempos for one driver</p><h2 class="t">Three tempos for one driver</h2><p>The same Galway driver is called at three rates: once a frame in part one, 3.5 times a frame by the attract mode (four handlers, each adding <code>$E4</code> to a counter and ticking on the carry) and about 2.75 times in part two. The Music tab does the same for each tune.</p></section>
+<section id="d8"><p class="fig">08 · Spelling and a scrambled heading</p><h2 class="t">Spelling and a scrambled heading</h2><p>The game's text spells <i>achieved</i> as ACHEIVED (message 33 and the description of the computer protocols) and <i>overridden</i> as OVERIDED (message 34). Message 49, the copyright message, ends with the letters RAPT OEN, an anagram of PART ONE, just before the heading PART ONE; what the scramble is for was not found.</p></section>
+<section id="d9"><p class="fig">09 · Bytes nobody reads</p><h2 class="t">Bytes nobody reads</h2><p>1,192 bytes after the title picture's bitmap (<code>$7F40</code> to <code>$83E7</code>) are not read by any routine found, and the first of them is a second copy of the text of descriptions 75 to 79. The 1,051 bytes at <code>$8B75</code> to <code>$8F8F</code>, after part two's terrain table, are mostly zero.</p></section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a></footer>
