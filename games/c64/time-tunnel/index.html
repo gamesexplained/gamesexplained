@@ -48,8 +48,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-tab td.n{font-family:var(--fm);text-align:right}
 .tt-wrapx{overflow-x:auto}
 .tt-objview{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
-.tt-objview canvas{flex:none;width:288px;max-width:100%;height:auto;image-rendering:pixelated;background:#1a1a1a;border-radius:4px}
+.tt-objpics{flex:none;width:288px;max-width:100%}
+.tt-objpics canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+#tt-objcv{border-radius:4px;background:#000}
+#tt-objfr{margin-top:10px}
+.tt-objpics .cap{margin-top:8px}
 .tt-objview table{flex:1;min-width:220px;margin-top:0}
+.tt-pad{margin:14px 0 10px}
+.tt-pad button{touch-action:none;user-select:none;-webkit-user-select:none}
+.tt-pad button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.tt-now{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-left:auto}
+#tt-trace{display:block;width:100%;height:auto;background:var(--surface-2);border-radius:4px}
+#tt-broom:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -111,8 +121,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table>
 </section>
 
+<section id="objects">
+  <p class="fig">04 · Objects</p>
+  <h2 class="t">Seven sprites for the objects in a room</h2>
+  <p class="lede">Everything the gnome can see or carry is an object: the scorpion, the cage, the broom, the king on his throne. Each has a place in time and a picture.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The object before">‹</button><select id="tt-obj" aria-label="Object"></select><button type="button" class="step" data-d="1" aria-label="The object after">›</button></div>
+    <div class="tt-objview">
+      <div class="tt-objpics"><canvas id="tt-objcv" width="288" height="216" aria-label="The object in the room where it starts"></canvas><canvas id="tt-objfr" width="288" height="48" aria-label="The object's frames, the one showing marked"></canvas><p class="cap" id="tt-objwhere"></p></div>
+      <table class="tt-tab" id="tt-objtab"></table>
+    </div>
+    <p class="cap">The object in the room where it starts, three times over: the game's own <code>room_enter</code> (<code>$3A47</code>) draws the room and gives the object its sprite, and <code>sprite_draw</code> (<code>$A185</code>) draws each frame into it, from the listing, on the site's copy of the C64's processor. The frames change at the game's speed, as <code>sprite_update</code> (<code>$A15E</code>) steps them: each lasts as many frames of play as the object's table says, and a frame of play is a fiftieth of a second. An object that starts nowhere is drawn on the plain colour that shows it best. Where the object starts comes from <code>obj_start_table</code> (<code>$0909</code>).</p>
+  </div>
+  <p>Objects 4 to <code>$6C</code> live in the world. For each one the game keeps five bytes in five tables: its era (<code>$069C</code>), its room (<code>$0705</code>, <code>$FF</code> for nowhere and 0 for carried), its x and y (<code>$076E</code>, <code>$07D7</code>), and the sprite it has on screen (<code>obj_slot</code>, <code>$0840</code>). On entering a room, <code>room_enter</code> (<code>$3A47</code>) gives a sprite to every object whose era and room are the current ones. Objects 0 to 3 are the gnome walking up, down, and to either side.</p>
+  <p>A sprite is a picture the video chip draws over the screen by itself, and it has eight. The gnome always has sprite 0, so <code>sprite_alloc</code> (<code>$A0FE</code>) hands out the other seven, from 7 down, and a room can show seven objects at most, the one the gnome carries among them.</p>
+  <p>A sprite's picture is 24 pixels wide and 21 high, three bytes to a row. A frame of an object is copied into it in rows of one, two or three bytes, so a narrow object's frames take less memory. The object's flags give its colour, the width of its rows, whether the sprite is stretched to double width, and whether it is multicolour. A second table gives how many frames it has and how many frames of play each one lasts, and whether the gnome can pick it up.</p>
+</section>
+
 <section id="frame">
-  <p class="fig">04 · The screen</p>
+  <p class="fig">05 · The screen</p>
   <h2 class="t">One frame of play, rebuilt</h2>
   <p class="lede">The living room, drawn on this page from the memory and the video chip's registers (the settings it draws the screen by) that the emulator recorded over one frame of play.</p>
   <div class="plate"><canvas id="tt-frame" class="tt-cv" width="384" height="272" aria-label="The living room with the gnome, rebuilt from memory"></canvas>
@@ -121,7 +148,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="rooms">
-  <p class="fig">05 · Rooms</p>
+  <p class="fig">06 · Rooms</p>
   <h2 class="t">A room in about 400 bytes</h2>
   <p class="lede">Every room is one packed screen. The 44 screens take 17,911 bytes, where the plain screens would take 42,460.</p>
   <div class="plate">
@@ -131,11 +158,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>A packed screen starts with five bytes: the three colours the whole screen shares, and two colours for the cells. The rest is the 960 cells of 24 rows, packed (<code>room_draw</code>, <code>$39A1</code>). The packing (<code>unpack</code>, <code>$3B2C</code>) works in groups of eight cells. A byte is eight bits, each 0 or 1, and the first byte of a group is a flag byte: each of its bits, from the top, says whether the next cell repeats the last value or takes a new byte from the data. So a run of the same character costs one bit a cell. A new byte equal to the last one ends the screen.</p>
   <p>Each cell's byte holds a character number, 0 to 127, in its lower seven bits. The top bit picks which of the two cell colours from the header the cell gets. The button above marks those cells. The living room's header is <code>00 0B 02 06 03</code>: black, dark grey and red for the whole screen, and blue or cyan for the cells. The same packing holds the character sets.</p>
-  <p>Two rooms are empty. A header with its top bit set means no screen at all (<code>empty_screen</code>, <code>$41A5</code>), and <code>room_draw</code> fills the screen with character 0 on black. The Black Hole's first room is one, so it is black but for its sprites, the moving pictures the video chip draws over the screen.</p>
+  <p>Two rooms are empty. A header with its top bit set means no screen at all (<code>empty_screen</code>, <code>$41A5</code>), and <code>room_draw</code> fills the screen with character 0 on black. The Black Hole's first room is one, so it is black but for its sprites.</p>
 </section>
 
 <section id="eras">
-  <p class="fig">06 · Eras</p>
+  <p class="fig">07 · Eras</p>
   <h2 class="t">Every era is one record in a table</h2>
   <p class="lede">The time machine has seven years on its dial. The game has nine eras: those seven, the mansion, and the throne room where the game ends.</p>
   <div class="plate"><div class="tt-wrapx"><table class="tt-tab" id="tt-eras"></table></div>
@@ -143,20 +170,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The era is one number, kept at <code>$2A</code>, and the room another, at <code>$19</code>. Each era's record names a routine (a piece of the program that others call) that runs every frame of play in that era, another that runs as the gnome walks into one of its rooms, the era's character set, its tune and tempo, where the gnome arrives, and the address of each room's screen. Both routines go straight to the code for the current room through a table of addresses (<code>switch_room</code>, <code>$387D</code>). So the whole game is one main loop that calls the era's routine, and each puzzle is a few dozen instructions in one room's entry of that table.</p>
   <div class="plate tt-shots"><figure><img src="reference/controls.png" alt="The time machine control room: seven years around the screen, 1849 lit, and two lines of instructions" width="384" height="272"><figcaption>The time machine's controls, in the character ROM's letters. Each press of the button lights the next year.</figcaption></figure></div>
   <p>The controls are the mansion's fourth room. Each press of the button lights the next year, and the stick pulled down leaves (<code>controls_pass</code>, <code>$11C1</code>). When the machine runs, the lit year's number, 0 to 6, plus 2 is the era it goes to (<code>machine_countdown_over</code>, <code>$10E4</code>). The game's description in the LaunchBox database says the year is chosen with the joystick and RETURN goes back to the mansion. The screen itself gives the right instructions: FIRE BUTTON SELECTS NEW YEAR, DOWN JOYSTICK RETURNS TO MANSION.</p>
-</section>
-
-<section id="objects">
-  <p class="fig">07 · Objects</p>
-  <h2 class="t">Seven sprites for the objects in a room</h2>
-  <p class="lede">Everything the gnome can see or carry is an object: the scorpion, the cage, the broom, the king on his throne. Each has a place in time and a picture.</p>
-  <div class="plate">
-    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The object before">‹</button><select id="tt-obj" aria-label="Object"></select><button type="button" class="step" data-d="1" aria-label="The object after">›</button></div>
-    <div class="tt-objview"><canvas id="tt-objcv" width="288" height="252" aria-label="The object's frames"></canvas><table class="tt-tab" id="tt-objtab"></table></div>
-    <p class="cap">Each frame drawn by the game's own <code>sprite_draw</code> (<code>$A185</code>) into the memory a sprite's picture is read from, from the listing, on the site's copy of the C64's processor, after the start-up has built the mirrored frames (<code>sprites_build</code>). Where the object starts comes from <code>obj_start_table</code> (<code>$0909</code>).</p>
-  </div>
-  <p>Objects 4 to <code>$6C</code> live in the world. For each one the game keeps five bytes in five tables: its era (<code>$069C</code>), its room (<code>$0705</code>, <code>$FF</code> for nowhere and 0 for carried), its x and y (<code>$076E</code>, <code>$07D7</code>), and the sprite it has on screen (<code>obj_slot</code>, <code>$0840</code>). On entering a room, <code>room_enter</code> (<code>$3A47</code>) gives a sprite to every object whose era and room are the current ones. Objects 0 to 3 are the gnome walking up, down, and to either side.</p>
-  <p>A sprite is a picture the video chip draws over the screen by itself, and it has eight. The gnome always has sprite 0, so <code>sprite_alloc</code> (<code>$A0FE</code>) hands out the other seven, from 7 down, and a room can show seven objects at most, the one the gnome carries among them.</p>
-  <p>A sprite's picture is 24 pixels wide and 21 high, three bytes to a row. A frame of an object is copied into it in rows of one, two or three bytes, so a narrow object's frames take less memory. The object's flags give its colour, the width of its rows, whether the sprite is stretched to double width, and whether it is multicolour. A second table gives how many frames it has and how many frames of play each one lasts, and whether the gnome can pick it up.</p>
 </section>
 
 <section id="controls">
@@ -181,6 +194,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · The closet</p>
   <h2 class="t">A closet outside time</h2>
   <p class="lede">Holding the button takes the gnome to a closet, from any era, with whatever he carries. Holding it again takes him back.</p>
+  <div class="plate"><canvas id="tt-closet" class="tt-cv" width="384" height="272" aria-label="The closet, with the torch where the game starts it"></canvas>
+  <p class="cap">The closet, as the game's own <code>room_enter</code> draws it, with the torch lying where the game starts it.</p></div>
   <p>The closet is room 9 of the gold rush era, a room no door leads to. <code>play_state</code> keeps the era, room and position he left in <code>$B0</code>-<code>$B3</code>, and the closet's own code (<code>closet_pass</code>) puts him back there. So the closet is a store for objects that are needed in other eras, and the torch starts there.</p>
   <p>The closet keeps him in when it is too full. Before he leaves, <code>closet_pass</code> counts the objects lying in it. Five or more, and he stays, with a sound. A piece of the scripture puts the count at five by itself, so he cannot leave while a piece lies there. The game's description in the LaunchBox database says the closet holds eight objects; the code lets him leave with four at most. <a href="discoveries.html#closet">Discoveries</a> has the details.</p>
 </section>
@@ -202,6 +217,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">11 · The broom</p>
   <h2 class="t">Salem's flying broom</h2>
   <p class="lede">The broom made in Salem's cauldron flies, with its own small physics.</p>
+  <div class="plate">
+    <canvas id="tt-broom" class="tt-cv" width="384" height="272" tabindex="0" aria-label="Salem's third street room, with the gnome riding the flying broom"></canvas>
+    <div class="tt-bar tt-pad" id="tt-pad">
+      <button type="button" data-b="4" aria-label="Left">&#9664; Left</button><button type="button" data-b="1" aria-label="Up">&#9650; Up</button><button type="button" data-b="2" aria-label="Down">&#9660; Down</button><button type="button" data-b="8" aria-label="Right">Right &#9654;</button>
+      <span class="tt-now" id="tt-broom-now"></span>
+    </div>
+    <canvas id="tt-trace" width="384" height="72" aria-label="The broom's height over the last 384 passes"></canvas>
+    <p class="cap">Hold a button, or click the picture and use the arrow keys. Salem's third street room is drawn by the game's own <code>room_enter</code>, with the broom put in it and the gnome on it. Each pass, a fiftieth of a second, the page runs the game's own <code>salem_broom</code> (<code>$3111</code>) with the stick as the buttons set it, then <code>sprite_update</code> for every object, as the main loop does, from the listing, on the site's copy of the C64's processor. The line under the picture is the broom's height over the last 384 passes, higher up the page for higher on the screen; the dashed line is its height at rest. The broom stops at the right edge here, where in the game it flies on to the hillside.</p>
+  </div>
   <p>The flying broom is three objects, the left end, the middle and the right end, kept 12 steps apart (<code>salem_broom</code>, <code>$3111</code>). The gnome picks up the middle to ride it, and from then the stick steers the broom, not him. Its height rests at <code>$61</code>. Up starts a hop and down a dip. The speed starts at one line a step, and each step it loses a pull of 2/256 of a line, so a hop rises, slows and comes back down to rest (<code>broom_height</code>, <code>$320F</code>). The broom steps on three frames in four. A dip works the same way upside down. Pushing the other way, down during a hop or up during a dip, switches to a stronger pull: 5/256 for a hop and 4/256 for a dip (<code>broom_pull</code>, <code>$3287</code>).</p>
   <p>With the stick at rest the broom wanders by itself, up and left until it nears the left edge, then down and right (<code>broom_wander</code>, <code>$30CA</code>). Ridden off the right edge of the third street room, it flies to the hillside, where the last puzzle of Salem waits under two rocks.</p>
 </section>
@@ -216,7 +240,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // createDriver for C64Sid: runs the game's own sound code, taken from the listing over
 // TT_DRIVER_RANGES, on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which sid.js passes to
 // createDriver). Zero page starts at 0 but for the pause flag $AF, $FF (running) as the start-up's
-// dec at $0E91 leaves it. A tune's button starts it as the game does: tune_start ($BCAA) with
+// dec at $0E91 leaves it. Every button first runs the start-up's lda #$0F / sta $D418 ($0EA4),
+// which sets the chip's volume to 15: nothing in the sound code sets it for an effect, and the
+// chip is silent at volume 0. A tune's button then starts it as the game does: tune_start ($BCAA) with
 // X = the tune's number times 4, then its tempo mask in $A0 (era_enter takes both from the era's
 // record, $38B2; play_state sets mask 1 for the flute's tunes, $3513 and $353A). Then music_play
 // ($BCEE) once a frame, as the raster interrupt calls it. A tune repeats for ever. An effect's
@@ -225,7 +251,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // script position ($7A) is back to 0; effects 2, 3, 4 and 6 loop until something stops them, so
 // those four play until their button is pressed again. The code reads no chip, and its writes are all to
 // the sound chip.
-const TT_DRIVER_RANGES = [[0xBB11, 0xC5A7]];
+const TT_DRIVER_RANGES = [[0x0EA4, 0x0EA8], [0xBB11, 0xC5A7]];
 const TT_TUNES = [
   { name: 'The mansion, the black hole and the throne (3)', tune: 3, mask: 7 },
   { name: 'The gold rush (1)', tune: 1, mask: 1 },
@@ -267,6 +293,7 @@ function createDriver(D, C64Cpu) {
       c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
       sid.fill(0); over = false; writes = [];
+      cpu.pc = 0x0EA4; cpu.run({ until: 0x0EA9, maxSteps: 10 });
       if (c.sfx === undefined) { run(0xBCAA, { x: c.tune * 4 }); m[0xA0] = c.mask; }
       else run(0xBB32, { x: c.sfx });
     },
@@ -294,7 +321,8 @@ function createDriver(D, C64Cpu) {
 // $24, room 0) and it is lit ($AB = 1), which lights the dark rooms. The video chip's registers
 // start as the emulator had them in play (TT_VIC, $D000-$D02E; TT_CIA2, $DD00 and $DD02: bank 3)
 // and take the code's writes. The gnome's sprite (0), and the torch's when it is carried, are
-// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }.
+// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }, and
+// call(address, registers), which runs more of the game's code on the same memory and chips.
 const TT_VIC = [132, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 178, 0, 23, 0, 0, 0, 129, 216, 0, 237, 114, 241, 0, 129, 0,
   0, 129, 240, 240, 251, 242, 243, 248, 241, 247, 242, 243, 244, 245, 246, 247, 243];
 const TT_CIA2 = [148, 63];
@@ -324,7 +352,8 @@ function ttRoom(ram, Cpu, era, room, torch) {
   cpu.call(0x3A47, {}, { maxSteps: 1e6 });
   vic[0x15] &= 0xFE;
   if (torch && m[0x75] === 0x24) vic[0x15] &= ~(1 << m[0x74]);
-  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63 };
+  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63,
+    call: (a, regs) => cpu.call(a, regs || {}, { maxSteps: 1e6 }) };
 }
 // end of tt-rooms
 </script>
@@ -352,6 +381,55 @@ function ttFrames(ram, Cpu, obj, count) {
   return { frames, colour: fl & 15, wide: !!(fl & 0x40), multi: !!(fl & 0x80) };
 }
 // end of tt-objects
+</script>
+<script>
+/* tt-broom */
+// ttBroom(ram, Cpu): Salem's flying broom, ridden, as the game flies it. ttRoom draws Salem's third
+// street room (era 8, room 3). The broom's three objects ($2B-$2D) go into it 12 apart at the
+// broom's height at rest, $61, and the game's own sprite_alloc ($A0FE) gives each a sprite, as the
+// game does when the gnome rides the broom into a room (salem_broom_park, $2CD7). The gnome is on it:
+// $B6 bit 7 set, the height ($B9) and its fraction ($B8) at $61 as the houses' entry sets them
+// ($2D0F), the speed ($BA, $BB) 0, sprite 0 on. pass(stick) is one pass of the main loop: the frame
+// count $23 steps (main_loop, $38E7), the stick goes into $25 as main_loop leaves it there (bits 0-3
+// up, down, left and right, each 0 when pushed; stick is the pushed ones as 1s), salem_broom ($3111)
+// runs, as Salem's code runs it once a pass ($2D8B), and sprite_update ($A15E) runs for every object
+// with a sprite, as the pass ends ($3819). sprites(px) paints the video chip's sprites over px, a
+// picture from C64.renderFrame with the sprites off: each from its pointer, colour and position,
+// multicolour and double size as the registers say, the lower number in front, and none over the
+// border. test_broom.js holds it to renderFrame with the sprites on.
+function ttBroom(ram, Cpu) {
+  const F = ttRoom(ram, Cpu, 8, 3), m = F.mem;
+  for (let i = 0; i < 3; i++) {
+    const o = 0x2B + i;
+    m[0x069C + o] = 8; m[0x0705 + o] = 3; m[0x076E + o] = 0x40 + 12 * i; m[0x07D7 + o] = 0x61;
+    F.call(0xA0FE, { y: o });
+  }
+  m[0xB6] = 0x80; m[0xB8] = m[0xB9] = 0x61; m[0xBA] = m[0xBB] = 0; m[0x3B] = 0x61 - 8;
+  F.vic[0x15] |= 1;
+  const pass = (stick) => {
+    m[0x23] = (m[0x23] + 1) & 63; m[0x25] = 15 ^ stick;
+    F.call(0x3111);
+    for (let o = 4; o < 0x6D; o++) if (m[0x0840 + o]) F.call(0xA15E, { x: m[0x0840 + o] });
+  };
+  const sprites = (px) => {
+    const v = F.vic, top = v[0x11] & 8 ? 35 : 39, bottom = v[0x11] & 8 ? 234 : 230;
+    const left = v[0x16] & 8 ? 32 : 39, right = v[0x16] & 8 ? 351 : 342;
+    for (let i = 7; i >= 0; i--) if (v[0x15] >> i & 1) {
+      const X = v[2 * i] + ((v[0x10] >> i & 1) << 8), Y = v[2 * i + 1], d = 0xC000 + m[0xFBF8 + i] * 64;
+      const mc = v[0x1C] >> i & 1, ex = (v[0x1D] >> i & 1) + 1, ey = (v[0x17] >> i & 1) + 1;
+      const cols = [-1, v[0x25] & 15, v[0x27 + i] & 15, v[0x26] & 15];
+      for (let y = 0; y < 21 * ey; y++) for (let x = 0; x < 24 * ex; x++) {
+        const sx = x / ex | 0, b = m[d + (y / ey | 0) * 3 + (sx >> 3)];
+        const c = mc ? cols[b >> (6 - (sx & 6)) & 3] : b & (0x80 >> (sx & 7)) ? cols[2] : -1;
+        const px0 = X + 8 + x, py0 = Y - 15 + y;
+        if (c >= 0 && px0 >= left && px0 <= right && py0 >= top && py0 <= bottom) px[py0 * 384 + px0] = c;
+      }
+    }
+    return px;
+  };
+  return { F, pass, sprites };
+}
+// end of tt-broom
 </script>
 <script>
 const TT_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[132,133,0,0,0,0,0,0,0,0,0,0,0,0,192,178,0,23,0,0,0,129,216,0,237,114,241,0,129,0,0,129,240,240,251,242,243,248,241,247,242,243,244,245,246,247,243],"cia2":[148,63],"cpu":[47,53],"writes":[],"colour":"Dg4ODg4LCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsODg4ODg4ODg4OCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLDg4ODg4ODg4ODgsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw4ODg4ODg4ODg4LCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsODg4ODg4ODg4OCwsLCwsLCwsLCw4LCwsLCwsLCw4LCwsLCwsLCwsLDg4ODg4ODg4ODgsLCwsLCwsLCw4ODg4ODg4ODg4ODgsLCwsLCwsLCw4ODg4ODg4ODg4LCwsLCwsLCwsLDg4ODg4ODg4ODgsLCwsLCwsLCwsODg4ODg4ODg4OCwsLCwsLCwsLCw4ODg4ODg4ODg4LCwsLCwsLCwsLDg4ODg4ODg4ODgsLCwsLCwsLCwsODg4ODg4ODg4OCwsLCwsLCwsLCw4ODg4ODg4ODg4LCwsLCwsLCwsLDg4ODg4ODg4ODgsLCwsLCwsLCwsODg4ODg4ODg4OCwsLCwsLCwsLCw4ODg4ODg4ODg4LCwsLCwsLCwsLDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==","ram":[{"a":60416,"b":"AVQABVVABVBUClQBCtQAKrAAC/AAP9UAPVUANVVANVVA9VlAAVlAAVVAAKqKAVVGBVVWBVFWAUFSAUAACoAA"},{"a":60864,"b":"qAAAVAAAmAAAqAAAqAAAIAAAIAAAIAAAqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":61440,"b":"AAAAAAAAAACqalpaVlZVVaqppaWVlVVVlpaWlpaWlpZaWlpaWlpaWqWlpaWlpaWllpaWlpaWlpY="},{"a":61512,"b":"VVVVVVVXV1dVVVVVVf///1dXV1dXV1dX"},{"a":61552,"b":"///99fXV1dX11VVVVVVVVf/////9/fX19dVXX19/f3A="},{"a":61600,"b":"/////39/X19fV1VVVVVVVf//f19fV1dXACoqKioqKioAqqqqqqqqqv/39/////////9/f19fV1dAQEBAQEBAQFBVVUVAQEBA/w9QVRUBAQH///8/Pz8/Pw=="},{"a":61696,"b":"VVVVVVZWWlpVVVVVlZWlpampqqqqAFVV///9/fX11dUAVVVVVVVVVVVVVVVVVf//VVVVVVVV/fyqqqqqqgBVVf8//8//z//zKioqKioqKioBAQEBAQEBAX9/X19XVVVV/f319dVVVVVfV9X1NT09PQ=="},{"a":61960,"b":"VVVVVVVVVVWqqqqqqqqqqv//////////VVVWVlpaamq/v7+/v7+/Pw+DqKqqqqqq//8/g6iqqqr/////P4Ooqj8/Pz4++voq/v7++vrq6urz888///////Pz8/PzAPz8"},{"a":62064,"b":"/Pz8/Pz8/z//////P8Az/P/8//z//P8A////////AP//f39/f39/f//8//z///z//////8A////z8/PzAP///P3///////zz9fX9/f39/f1qaqqqqsDV9VVVVVX/wD//VVVVVVVff/zz/8//P/8//1VXV1dXX19fX19fX19fX19fX1dXV1VVVVVVlZWlpamp"},{"a":63488,"b":"Q0NDQ0MZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRlDQ0NDQ0NDQ0NDGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZQ0NDQ0NDQ0NDQxkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGUNDQ0NDQ0NDQ0MZGRkZGRkZGRkZGRkZEBEtFBkZGRkZGRkZGRkZGRlDQ0NDQ0NDQ0NDGRkZGRkZGRkZGUIZDg8rLBUWGUIZGRkZGRkZGRkZQ0NDQ0NDQ0NDQxkZGQkKCgsZGUJCQkJCQkJCQkJCQhkZCQoKCxkZGUNDQ0NDQ0NDQ0MZGRkLQ0MLGRkZGBgYGBgYGBgYGBkZGQtDQwsZGRlDHB0eQ0NDQ0NDGRkZC0NDCxkZGUJCFxgYGBgYKUIZGRkLQ0MLGRkZQxsqUkNDQ0NDQxkZGQtDGQsZGRlCQikAAAAAQilCGRkZC0MZCxkZGUMbKlJDQ0NDQ0MZGRkLQ0MLGRkZQkIpAAAAAEIpQhkZGQtDQwsZGRlDGypSQ0NDQ0NDGRkZC0NDCxkZGUJCKQAAAABCKUIZGRkLQ0MLGRkZQxsqUkNDQ0NDI0FBQUFBQUFBQSBCQkJCQkJCQkJCIUFBQUFBQUFBQRobKlJDQ0NDI0FBQUFBQUFBWllYJycnJycnJycnJyJBQUFBQUFBQUFBQUFSQ0NDI0FBQUFBQUFBXFtDV0FBQUFBQUFBQUFBQUFBQUFBQUFBQUFBUkNDI0FBQUFBQUFBQV0oQ1YlJkFBQUFBQUFBQUFBQUFBQUFBQUFBQRpDI0FBQUFBQUFBQUFeU1RVT0xCQkJCQkJCQkJfQUFBQUFBQUFBQUFBGkFBQUFBQUFBQUFBQVJRUE5LQgJBQQFCQkJCQl9BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQURFQ0NSSkIDBAUGQkJCQkJCX0FBQUFBQUFBQUFBQUFBQUFBQUFBQURCRkdISUJCA0JCBkJCQkJCQkJfQUFBQUFBQUFBQUFBQUFBQUFBQURCQkJCQkJCQkJCQkJCQkJCQkJCQl9BQUFBQUFBQUFBQUFBQUFBQUEkJCQkJCQkJCQkJCQkJCQkJCQkJCQkQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBUSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=="},{"a":64504,"b":"sA=="},{"a":64511,"b":"tw=="},{"a":65535,"b":"Dw=="}],"capture":{"phase_cycles_uncertain":2,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":7,"colour_cells_changed_during_frame":0}};
@@ -386,7 +464,10 @@ const TT_NAMES = ["The gnome seen from behind, walking up", "The gnome seen from
     }
     $('tt-eras').innerHTML = t;
 
-    if (typeof C64Cpu === 'undefined') { missing($('tt-room'), 'This picture'); missing($('tt-objcv'), 'This viewer'); return; }
+    if (typeof C64Cpu === 'undefined') {
+      missing($('tt-room'), 'This picture'); missing($('tt-objcv'), 'This viewer'); missing($('tt-closet'), 'This picture'); missing($('tt-broom'), 'The broom');
+      return;
+    }
     // the living room, and the cells whose top bit picked the second colour
     const room = ttRoom(r, C64Cpu, 1, 1), hdr = w(0x0A76 + r[0x0BA9] + 10), second = (r[hdr + 4] | 8) & 15;
     const drawRoom = (mark) => {
@@ -403,29 +484,93 @@ const TT_NAMES = ["The gnome seen from behind, walking up", "The gnome seen from
     };
     C64.drawFrame($('tt-msg'), ttRoom(r, C64Cpu, 3, 2), 1);
     C64.drawFrame($('tt-throne'), ttRoom(r, C64Cpu, 9, 1), 1);
+    C64.drawFrame($('tt-closet'), ttRoom(r, C64Cpu, 2, 9), 1);
 
-    // the objects
-    const sel = $('tt-obj');
+    // the objects: each in the room where it starts, its frames changing at the game's speed
+    const sel = $('tt-obj'), P = C64.PAL, RGB = P.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+    const lum = (c) => 0.299 * RGB[c][0] + 0.587 * RGB[c][1] + 0.114 * RGB[c][2];
     for (let o = 0; o < 0x6D; o++) sel.add(new Option(H(o, 2) + ' · ' + TT_NAMES[o], o));
-    const P = C64.PAL;
-    const showObj = () => {
-      const o = +sel.value, F = ttFrames(r, C64Cpu, o), cv = $('tt-objcv'), ctx = C64.canvas(cv, 288, 252);
-      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 288, 252);
-      const cw = F.wide ? 96 : 48, per = Math.floor(288 / (cw + 6)) || 1;
-      F.frames.forEach((d, i) => {
-        const x = (i % per) * (cw + 6), y = Math.floor(i / per) * 48;
-        if (F.multi) C64.drawSpriteMC(ctx, d, x, y, 2, P[F.colour], P[8], P[1], F.wide ? 2 : 1);
-        else C64.drawSprite(ctx, d, x, y, 2, P[F.colour], F.wide ? 2 : 1);
-      });
-      let where = 'the gnome';
-      if (o >= 4) {
-        const b = 0x0909 + (o - 4) * 3, er = r[b] >> 4, rm = r[b] & 15;
-        where = rm === 15 ? 'nowhere: something in play puts it in place' : ERA[er] + ', room ' + rm + ', at x ' + H(r[b + 1], 2) + ', y ' + H(r[b + 2], 2);
+    const crop = (ctx, px, cx, cy) => {        // 96 x 72 pixels of the picture from cx, cy, three times over
+      const img = ctx.createImageData(288, 216);
+      for (let y = 0; y < 216; y++) for (let x = 0; x < 288; x++) {
+        const c = RGB[px[(cy + (y / 3 | 0)) * 384 + cx + (x / 3 | 0)]], k = (y * 288 + x) * 4;
+        img.data[k] = c[0]; img.data[k + 1] = c[1]; img.data[k + 2] = c[2]; img.data[k + 3] = 255;
       }
-      const an = r[0xA29D + o];
-      $('tt-objtab').innerHTML = '<tr><th>Object</th><td>' + code(H(o, 2)) + '</td></tr><tr><th>Frames</th><td>' + F.frames.length +
-        ((an & 7) && F.frames.length > 1 ? ', each for ' + (an & 7) + ' frames of play' : '') + '</td></tr><tr><th>Drawn</th><td>' +
-        (F.multi ? 'multicolour' : 'one colour') + (F.wide ? ', double width' : '') + '</td></tr><tr><th>Can be carried</th><td>' +
+      return img;
+    };
+    let timer = 0;
+    const showObj = () => {
+      clearInterval(timer);
+      const o = +sel.value, S = ttFrames(r, C64Cpu, o), n = S.frames.length, an = r[0xA29D + o];
+      const draw = (ctx, d, x, y, s) => S.multi ? C64.drawSpriteMC(ctx, d, x, y, s, P[S.colour], P[8], P[1], S.wide ? 2 : 1)
+        : C64.drawSprite(ctx, d, x, y, s, P[S.colour], S.wide ? 2 : 1);
+      // the colours the frames use ($D025 is orange and $D026 white in play), and the black or grey furthest from them
+      const used = new Set();
+      for (const d of S.frames) for (const v of d) {
+        if (S.multi) { for (let s = 0; s < 8; s += 2) if (v >> s & 3) used.add([0, 8, S.colour, 1][v >> s & 3]); } else if (v) used.add(S.colour);
+      }
+      let grey = 12, far = -1;
+      for (const g of [0, 11, 12, 15]) { const d = Math.min(...[...used].map((c) => Math.abs(lum(c) - lum(g)))); if (d > far) { far = d; grey = g; } }
+      // the room where it starts, drawn by the game's own room_enter; the gnome in the living room, where he arrives
+      let F = null, slot = 0;
+      const b = 0x0909 + (o - 4) * 3, er = o < 4 ? 1 : r[b] >> 4, rm = o < 4 ? 1 : r[b] & 15;
+      if (o < 4) {
+        const rec = 0x0A76 + r[0x0BA9];
+        F = ttRoom(r, C64Cpu, 1, 1); F.mem[0x33] = r[rec + 8]; F.mem[0x3B] = r[rec + 9]; F.mem[0x43] = o; F.vic[0x15] |= 1;
+      } else if (er >= 1 && er <= 9 && rm >= 1 && rm <= ROOMS[er]) {
+        F = ttRoom(r, C64Cpu, er, rm, o !== 0x24); slot = F.mem[0x0840 + o];
+        if (!slot || !(F.vic[0x15] >> slot & 1)) F = null;
+      }
+      const ctx = C64.canvas($('tt-objcv'), 288, 216);
+      let pics = null;
+      if (F) {
+        const off = F.vic.slice(); off[0x15] &= ~(1 << slot);
+        const bg = C64.renderFrame(Object.assign({}, F, { vic: off })).px, frames = [];
+        let x0 = 384, y0 = 272, x1 = -1, y1 = -1;
+        for (let f = 0; f < n; f++) {
+          F.mem[0x6B + slot] = f; F.call(0xA185, { x: slot });
+          const px = C64.renderFrame(F).px; frames.push(px);
+          for (let i = 0; i < px.length; i++) if (px[i] !== bg[i]) {
+            const x = i % 384, y = i / 384 | 0;
+            if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+          }
+        }
+        if (x1 >= 0) {
+          const cx = Math.max(0, Math.min(288, ((x0 + x1) >> 1) - 48)), cy = Math.max(0, Math.min(200, ((y0 + y1) >> 1) - 36));
+          pics = frames.map((px) => crop(ctx, px, cx, cy));
+        }
+      }
+      const room = !!pics;
+      if (!room) {
+        const pc = document.createElement('canvas'); pc.width = 288; pc.height = 216;
+        const pctx = pc.getContext('2d', { willReadFrequently: true }), w = (S.wide ? 48 : 24) * 3;
+        pics = S.frames.map((d) => {
+          pctx.fillStyle = P[grey]; pctx.fillRect(0, 0, 288, 216); draw(pctx, d, (288 - w) >> 1, 76, 3);
+          return pctx.getImageData(0, 0, 288, 216);
+        });
+      }
+      // every frame, on the same colour, the one showing marked
+      const cw = (S.wide ? 48 : 24) * 2, per = Math.max(1, Math.floor(294 / (cw + 6))), rows = Math.ceil(n / per);
+      const fctx = C64.canvas($('tt-objfr'), 288, rows * 52);
+      let cur = 0;
+      const show = () => {
+        ctx.putImageData(pics[cur], 0, 0);
+        fctx.clearRect(0, 0, 288, rows * 52);
+        S.frames.forEach((d, i) => {
+          const x = (i % per) * (cw + 6), y = Math.floor(i / per) * 52;
+          fctx.fillStyle = P[grey]; fctx.fillRect(x, y, cw, 42); draw(fctx, d, x, y, 2);
+          fctx.fillStyle = i === cur ? '#1f5fa8' : '#d5d3cc'; fctx.fillRect(x, y + 45, cw, 3);
+        });
+      };
+      show();
+      if (n > 1 && (an & 7)) timer = setInterval(() => { cur = (cur + 1) % n; show(); }, (an & 7) * 20);
+      let where = 'the gnome';
+      if (o >= 4) where = o === 0x46 || o === 0x47 ? 'nowhere, and no code puts it anywhere' : rm === 15 ? 'nowhere: something in play puts it in place' : ERA[er] + ', room ' + rm + ', at x ' + H(r[b + 1], 2) + ', y ' + H(r[b + 2], 2);
+      $('tt-objwhere').textContent = o < 4 ? 'In the living room, where the gnome arrives.' : room ? 'Where it starts: ' + ERA[er] + ', room ' + rm + '.'
+        : rm === 15 ? 'It starts nowhere, so it is drawn on a plain background.' : 'It starts out of sight, so it is drawn on a plain background.';
+      $('tt-objtab').innerHTML = '<tr><th>Object</th><td>' + code(H(o, 2)) + '</td></tr><tr><th>Frames</th><td>' + n +
+        ((an & 7) && n > 1 ? ', each for ' + (an & 7) + ' frames of play' : '') + '</td></tr><tr><th>Drawn</th><td>' +
+        (S.multi ? 'multicolour' : 'one colour') + (S.wide ? ', double width' : '') + '</td></tr><tr><th>Can be carried</th><td>' +
         (an & 0x80 ? 'yes' : 'no') + '</td></tr><tr><th>Starts</th><td>' + where + '</td></tr>';
     };
     sel.onchange = showObj;
@@ -433,6 +578,53 @@ const TT_NAMES = ["The gnome seen from behind, walking up", "The gnome seen from
       const v = Math.min(0x6C, Math.max(0, +sel.value + +b.dataset.d)); sel.value = v; showObj();
     };
     sel.value = 0x0B; showObj();
+
+    // the broom, flown by the game's own salem_broom once a pass, 50 passes a second
+    const B = ttBroom(r, C64Cpu), bm = B.F.mem, bcv = $('tt-broom'), bctx = C64.canvas(bcv, 384, 272);
+    const offv = B.F.vic.slice(); offv[0x15] = 0;
+    const back = C64.renderFrame(Object.assign({}, B.F, { vic: offv })).px.slice();
+    const img = bctx.createImageData(384, 272), u32 = new Uint32Array(img.data.buffer);
+    const PAL32 = RGB.map(([R, G, Bl]) => (255 << 24 | Bl << 16 | G << 8 | R) >>> 0);
+    const tctx = C64.canvas($('tt-trace'), 384, 72), hist = [], yOf = (h) => (h - 0x10) * 72 / 0x80;
+    let keys = 0, btns = 0, acc = 0, last = 0, seen = false, raf = 0;
+    const drawBroom = () => {
+      const px = B.sprites(back.slice());
+      for (let i = 0; i < px.length; i++) u32[i] = PAL32[px[i]];
+      bctx.putImageData(img, 0, 0);
+      tctx.clearRect(0, 0, 384, 72);
+      tctx.strokeStyle = '#80838a'; tctx.lineWidth = 1; tctx.setLineDash([4, 4]);
+      tctx.beginPath(); tctx.moveTo(0, Math.round(yOf(0x61)) + 0.5); tctx.lineTo(384, Math.round(yOf(0x61)) + 0.5); tctx.stroke();
+      tctx.setLineDash([]); tctx.strokeStyle = '#1f5fa8'; tctx.lineWidth = 2; tctx.beginPath();
+      hist.forEach((h, i) => { const x = 384 - hist.length + i; if (i) tctx.lineTo(x, yOf(h)); else tctx.moveTo(x, yOf(h)); });
+      tctx.stroke();
+      const v = ((bm[0xBB] << 8 | bm[0xBA]) << 16 >> 16) / 256, b6 = bm[0xB6];
+      $('tt-broom-now').textContent = 'height ' + H(bm[0xB9], 2) + ' · speed ' + (v >= 0 ? '+' : '') + v.toFixed(2) + ' · ' +
+        (b6 & 2 ? 'a dip' : 'a hop') + (b6 & 4 ? ', the stronger pull' : '') + ((keys | btns) ? '' : ' · wandering');
+    };
+    const fly = (t) => {
+      raf = 0;
+      if (!seen || document.hidden) return;
+      acc = Math.min(acc + (last ? t - last : 0), 100); last = t;
+      let ran = false;
+      while (acc >= 20) { acc -= 20; B.pass(keys | btns); hist.push(bm[0xB9]); if (hist.length > 384) hist.shift(); ran = true; }
+      if (ran) drawBroom();
+      raf = requestAnimationFrame(fly);
+    };
+    const go = () => { if (!raf && seen && !document.hidden) { last = 0; raf = requestAnimationFrame(fly); } };
+    for (const b of document.querySelectorAll('#tt-pad button')) {
+      const bit = +b.dataset.b, up = () => { btns &= ~bit; b.classList.remove('on'); };
+      b.addEventListener('pointerdown', (e) => { btns |= bit; b.classList.add('on'); b.setPointerCapture(e.pointerId); e.preventDefault(); });
+      for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, up);
+      b.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { btns |= bit; b.classList.add('on'); e.preventDefault(); } });
+      b.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') up(); });
+    }
+    const KEY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8 };
+    bcv.addEventListener('keydown', (e) => { if (KEY[e.key]) { keys |= KEY[e.key]; e.preventDefault(); } });
+    bcv.addEventListener('keyup', (e) => { if (KEY[e.key]) keys &= ~KEY[e.key]; });
+    bcv.addEventListener('blur', () => { keys = 0; });
+    new IntersectionObserver((es) => { seen = es[es.length - 1].isIntersecting; go(); }).observe(bcv);
+    document.addEventListener('visibilitychange', go);
+    drawBroom();
   });
 })();
 </script>

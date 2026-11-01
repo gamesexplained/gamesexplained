@@ -79,3 +79,44 @@ pictures showed the Maps tab drawing the controls' screenshot under every
 room: the `img` had the `hidden` attribute, and the page's own CSS gave its
 class `display:block`, which wins over `hidden`. The page now hides
 `.tt-cv[hidden]`.
+
+## Second round of changes, 1 November 2026
+
+Aaron asked for six changes after reading the published pages.
+
+**The effects player was silent.** Every effect button played at volume 0.
+The game sets the sound chip's volume to 15 once, in the start-up
+(`lda #$0F` / `sta $D418` at `$0EA4`), and nothing in the effect code sets
+it again; the tunes worked only because `sid_clear` sets it on their path.
+The page's driver now runs those two instructions before each button, and
+`test_music.js` fails a button whose chip is left at volume 0. Without the
+fix the test fails on every effect.
+
+**Objects.** The viewer drew black objects, the scorpion among them, on a
+near-black square. Each object is now shown in the room where it starts:
+`ttRoom` draws the room, and the game's own `sprite_draw` draws each frame
+into the object's sprite, the picture cropped around the pixels that change
+when the sprite is switched off. `ttRoom` now returns `call` for running
+more of the game's code on the same memory. Frames step every `obj_anim`
+bits 0-2 passes, which is how `sprite_update` steps them: `sprite_alloc`
+sets the counter to 1, so an object with a delay of 0 never animates. An
+object that starts nowhere, or out of sight (`$4F` starts in room 9 of an
+era of eight rooms; `$5C`-`$5E` start beyond the right border), is drawn on
+whichever of black and three greys is furthest in brightness from its
+colours. The section moved up to 04, after the sound effects.
+
+**The broom.** The main loop runs one pass a frame: the era's routine
+through `($17)`, then `sprite_update` for every object with a sprite
+(`$3819`). That loop is the only thing that writes the broom's positions to
+the video chip while it flies. The page runs `salem_broom` and that loop,
+50 passes a second, in Salem's third street room. `C64.renderFrame` takes
+about 19 ms a frame in node, too slow to run 50 times a second, so the page
+paints the sprites over a picture of the room drawn once with them off.
+`test_broom.js` holds the painting to `renderFrame` over 1,300 passes. A
+sprite's first line is on raster line Y + 1 (picture line Y - 15), and
+sprites under the border must be left out: without that, 19 pixels of the
+left end of the broom differed at x 21.
+
+**The rest.** The closet has its picture, the Discoveries tab's unused
+frames play at the game's speed with the never-shown frame outlined, and the
+Maps tab no longer has the grid of one era's rooms.
