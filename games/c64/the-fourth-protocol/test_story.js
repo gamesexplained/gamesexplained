@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold episode one's story-lines on the page (index.html's tfp-story block, TFP_STORY) against the
+// Hold episode one's story-lines on the page (nato-documents.html's tfp-story block, TFP_STORY) against the
 // episode's own code, run on the kit's simulator over episode one's listing.
 // - Each story-line's fixed starts: init_events, init_targets and init_stories run from nothing;
 //   the events they put in the four lists ($1000-$151F) must be the page's starts, and each
@@ -119,7 +119,7 @@ function starts() {
 module.exports = { run, starts, L, S, INLINE };
 if (require.main !== module) return;
 
-const page = process.argv[2] || 'index.html';
+const page = process.argv[2] || 'nato-documents.html';
 const { TFP_STORY } = g.run(page, 'tfp-story', 'TFP_STORY');
 let bad = 0;
 const fail = (...w) => { if (bad++ < 20) console.log('DIFFERS', ...w); };

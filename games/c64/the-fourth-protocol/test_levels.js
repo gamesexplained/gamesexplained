@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold episode two's tab (the-bomb.html) and Building 17's plans (index.html) against the game's
+// Hold episode two's tab (the-bomb.html) and Building 17's plans (nato-documents.html) against the game's
 // own drawing and printing.
 // - tfp-names: tfpPrintName prints a place's two names as show_location ($A47C) does. Here episode
 //   two's print_name_0 ($A49D) and print_name_1 ($A4A4) run on the kit's simulator for each of the
@@ -13,17 +13,17 @@
 //   print_text ($AA3B) prints (a hook on the OS's $EC03) for each of the 96 in presence_texts.
 // - tfp-tiles: tfpTilePicture against show_tile_picture's three entries ($C427, $C43C, $C451), run
 //   from the office until it waits ($A8F0): the 14 by 7 cells at 13, 10 and their colours.
-// - tfp-plans, on index.html: tfpPlan against draw_plan ($7F97) on episode one's listing, and
+// - tfp-plans, on nato-documents.html: tfpPlan against draw_plan ($7F97) on episode one's listing, and
 //   TFP_PLANS' windows against the arguments building_17 opens them with. The room names, joined,
 //   against show_room_name ($7F65).
-// - The tfp-text block must be the same in index.html and the-bomb.html.
+// - The tfp-text block must be the same in index.html, nato-documents.html and the-bomb.html.
 // It exits 1 on any difference.
-//   node games/c64/the-fourth-protocol/test_levels.js [the-bomb.html] [index.html]
+//   node games/c64/the-fourth-protocol/test_levels.js [the-bomb.html] [nato-documents.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] || 'the-bomb.html', one = process.argv[3] || 'index.html';
-g.sameBlock('tfp-text', one, page);
+const g = game(__dirname), page = process.argv[2] || 'the-bomb.html', one = process.argv[3] || 'nato-documents.html';
+g.sameBlock('tfp-text', 'index.html', one, page);
 const { tfpWords, tfpText } = g.run(page, 'tfp-text', 'tfpWords', 'tfpText');
 const { tfpLocation, tfpPrintName, tfpGeiger } = g.run(page, 'tfp-names', 'tfpLocation', 'tfpPrintName', 'tfpGeiger');
 const { TFP_TILE_PICTURES, tfpTilePicture } = g.run(page, 'tfp-tiles', 'TFP_TILE_PICTURES', 'tfpTilePicture');

@@ -84,11 +84,13 @@ follows it. The estate's 52 streets turned out to lie on a grid, so the
 page draws them as a map with the Geiger readings.
 
 **Episode tabs and the story-lines (31 October 2026).** The maintainer
-asked how episode one plays out and for a tab per episode. The pages
-became Episode 1 (`index.html`), Episode 2 (`the-bomb.html`) and
-Episode 3 (`sas-assault.html`); the Maps tab went into Episode 2, its
-Building 17 plans into Episode 1, and `game.json`'s `redirects` keep the
-old addresses. The story-lines section was written from `init_stories`
+asked how episode one plays out and for a tab per episode. How it works
+(`index.html`) kept what the episodes share: the disk, the title tune,
+the operating system and the packed text. Episode one's sections went to
+Episode 1 (`nato-documents.html`), with Building 17's plans from the Maps
+tab; the rest of the Maps tab became Episode 2 (`the-bomb.html`), and
+episode three's sections Episode 3 (`sas-assault.html`). `game.json`'s
+`redirects` keep the old addresses. The story-lines section was written from `init_stories`
 and the routine each memo, report, sitrep and call runs. `test_story.js`
 runs all 99 of those routines over the listing with answers given, and
 holds every effect the page shows to them. Checking the draft against

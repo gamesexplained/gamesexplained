@@ -6,8 +6,8 @@ code by tests. The copy is an agent's draft.
 
 ## For Gold
 
-- A human pass through the three pages, section by section: Episode 1,
-  Episode 2, Episode 3 and Discoveries. Set `copy` and `steward` in
+- A human pass through the five pages, section by section: How it works,
+  Discoveries, and Episodes 1, 2 and 3. Set `copy` and `steward` in
   `game.json` as `kit/style.md` says.
 
 ## Recommended: an audit of the listing
