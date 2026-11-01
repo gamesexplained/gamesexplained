@@ -402,6 +402,21 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   tables. A third, `$00CF`, what the loader's menu calls the speech
   setting, was checked against the hand-over snapshot (the text is at
   `$C408` there), and its comment now says where.
+- **Sample 2** (1 November 2026, after the audit): seed 20261101, drawn
+  from the 884 comments as the audit left them, 41 of the 605
+  hand-written over each annotator's range and 19 of the 279 written to
+  a template. Checked by the checker of sample 1, which wrote and audited
+  none of them, on claude-opus-5-5. 4 of the 60 were wrong in a detail,
+  all hand-written (9.8 % of that stratum, 6.7 % unweighted; 95 %
+  interval for 4 of 60, 2.6 % to 15.9 %), over the mark of 2 in 60. What
+  was wrong: a clearing loop at `$12ED` cited as clearing the sprite
+  pointers, though nothing calls it, a line the audit had added to nine
+  comments (`$0006`); a store of 0 cited as a store of 1 (`$0088`); a
+  high-score place said to be above the first equal or higher score
+  where it is below (`$163A`); a hesitation said always to end in an
+  attack, which a random value of 0 does not (`$249B`). All 4 were
+  corrected, with the eight other sprite-pointer comments that said the
+  same (`$0002`-`$0012`).
 
 ## Live tests
 
