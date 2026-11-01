@@ -5,8 +5,8 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=require('./layered.js')(game(__dirname));
-const {labRoomCell}=g.run('index.html','lab-room','labRoomCell');
-const scenes=[...g.read('index.html').matchAll(/\['(scene-\d\d)',/g)].map(m=>m[1]);
+const {labRoomCell}=g.run('how-it-works.html','lab-room','labRoomCell');
+const scenes=[...g.read('how-it-works.html').matchAll(/\['(scene-\d\d)',/g)].map(m=>m[1]);
 let cells=0;
 for(const id of scenes){
  const {ram}=g.listing(`parts/${id}/listing.json`),code=ram[0x705],rows=1<<code,width=256>>code;
