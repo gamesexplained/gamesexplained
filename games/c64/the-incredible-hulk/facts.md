@@ -75,6 +75,15 @@ from reading the code in the snapshot named in `orientation.md`.
 - Command 88 waits while HL counts 65,536 steps ($55FD); the
   demonstration waits while HL counts down 5,000 before each character
   it types ($7D6A).
+- At the prompt the game polls the keyboard about 111 times a frame
+  (110.8). *live*: VICE v3.14.0, the polls counted over
+  frames at the command prompt.
+- A picture's load through the fast loader takes about 1.75 million
+  cycles to find the file and 1,884 cycles a byte; a name with no file
+  takes 2.16 to 2.40 million cycles to fail. *live*: VICE v3.14.0 with
+  the 1541 emulated, the stopwatch read at `load_picture`, `decode` and
+  `load_failed` for R??002*, R??083*, R??084*, R??086* and four pieces
+  with no file.
 
 ## Controls
 
@@ -146,9 +155,19 @@ from reading the code in the snapshot named in `orientation.md`.
 - GET carries at most 10 items ($8072). GET or DROP of a word no action
   uses searches the items' names for it between slashes ($5D9A).
 - The score counts the items whose names start with `*` in room 16, of
-  17 ($5836). With all 17 there SCORE has the Chief Examiner give the
-  password "ARIA" and shows picture 87 (actions 202-208), and the score
-  ends the game with "YOU WON!". *live*: the password and picture 87.
+  17 ($5836). With all 17 there SCORE typed in room 16 has the Chief
+  Examiner give the password "ARIA" and shows picture 87 (actions
+  202-208), and the score ends the game with "YOU WON!". *live*: the
+  password and picture 87.
+- Command 80 ($56A6), which SCORE's actions 202 and 208 use to swap the
+  room with saved room 0 (the fuzzy area), does not move the player: it
+  stores the saved room, saves the current one and jumps to $5754 with
+  the current room still in A, which sets it again. So actions 203-206
+  test the gems in the room the player stands in. *live*: SCORE in the
+  dome with the 17 treasures in room 16 prints "Stored 17 treasures",
+  "Scale 0-100 thats 100" and "YOU WON!" with no Chief Examiner. *traced*
+  on the game's code in the kit's simulator: with the 17 in the dome,
+  SCORE there gives the password and "Stored 0 treasures".
 - The light is item 9 and lasts 150 turns ($8078), but item 9 starts in
   room 0 and no action brings it out, so the countdown ($6C55) never
   runs. It is dark only while the eyes are closed (action 137).

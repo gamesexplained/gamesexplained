@@ -76,6 +76,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .hk-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .hk-shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 </style>
+<style>
+.hk-map{overflow-x:auto}
+.hk-map svg{display:block;width:100%;max-width:960px;min-width:620px;height:auto;margin:0 auto;font-family:var(--fb)}
+.hk-map .rm{cursor:pointer;outline:none}
+.hk-map .rm rect{fill:#fff;stroke:#9a9890;stroke-width:1.2}
+.hk-map .rm:hover rect,.hk-map .rm:focus-visible rect{stroke:var(--ink);stroke-width:2}
+.hk-map .rm.on rect{fill:#fff0c2;stroke:var(--ink);stroke-width:2}
+.hk-map .rm .n{font-weight:900;font-size:16px;fill:var(--ink)}
+.hk-map .rm .s{font-size:13.5px;fill:var(--ink)}
+.hk-map .way{stroke:#55585f;stroke-width:1.4;fill:none}
+.hk-map .way.auto{stroke-dasharray:5 4}
+.hk-map .lab{font-family:var(--fm);font-size:12.5px;fill:#2e2c9b}
+</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1984 · Adventure International for Commodore</p>
@@ -85,7 +98,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <main class="wrap">
 
 <section>
-  <p class="fig">01 · The rooms</p>
+  <p class="fig">01 · The map</p>
+  <h2 class="t">Twenty rooms and the ways between them</h2>
+  <p class="lede">Every way from one room to another that the game's database holds: the exits a direction takes, the commands that move the player on, and the moves the game makes by itself at the end of a turn. Click a room to see it below.</p>
+  <div class="plate">
+    <div class="hk-map" id="hk-map"></div>
+    <p class="cap">A line with a letter is an exit in the table at <code>$A4D0</code>; one with a command is an action; a dashed line is an automatic action, which the game tries at the end of every turn. An arrowhead shows the way a line goes. A way to a room too far off for a line is written in both rooms: after ▸ in the room it leaves, and after ◂ in the room it reaches.</p>
+  </div>
+  <p>Three domes share one picture, and each has its own tunnel, field and hole: GO DOME in a tunnel leads out to its field, and GO DOME in the field leads back in. North, south, east and west from any field lead to the warp in room 17, which moves the player on to the fuzzy area by itself. South, east and west from the fuzzy area lead to the other warp, room 18, which picks the next room by chance: a field, or once, on 20 turns in 100, the Chief Examiner's room. The first dome's iron ring, lifted by the Hulk, opens a hole down to the small underground room and a hole in that room's ceiling back up.</p>
+  <p>Two moves are left off the drawing because they can happen anywhere. Carrying the rage with the counter past 3, the Hulk loses control and rampages off to the fuzzy area (action 54), and a death puts the player in limbo, room 20, whose only exit is down to the first dome.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The rooms</p>
   <h2 class="t">Twenty rooms, ten pictures</h2>
   <p class="lede">Each room as the game draws it when a new game starts: its picture, with the items lying there laid over it, each a small picture of its own.</p>
   <div class="plate">
@@ -101,7 +126,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">02 · The other pictures</p>
+  <p class="fig">03 · The other pictures</p>
   <h2 class="t">Scenes, close-ups and the inventory</h2>
   <p class="lede">Pictures 81 to 99 belong to no room. Actions show the scenes, LOOK at certain things shows a close-up, and the inventory, the list of what the player carries, has a picture with each carried item laid over it.</p>
   <div class="plate">
@@ -112,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · The items</p>
+  <p class="fig">04 · The items</p>
   <h2 class="t">Forty pieces for fifty-five items</h2>
   <p class="lede">Every piece file on the disk: those that end in R lie over a room, those that end in I over the inventory.</p>
   <div class="plate">
@@ -358,7 +383,7 @@ const HulkDB = (function () {
       case 77: return 'take one from the counter';
       case 78: return 'print the counter';
       case 79: return `set the counter to ${nx()}`;
-      case 80: return 'swap the room with saved room 0';
+      case 80: return 'put the room in saved room 0, where a swap was meant, and stay in it';
       case 81: return `swap the counter with saved counter ${nx()}`;
       case 82: return `add ${nx()} to the counter`;
       case 83: return `take ${nx()} from the counter`;
@@ -460,6 +485,117 @@ const HulkDB = (function () {
 })();
 </script>
 <script>
+/* hulk-map */
+// The map's ways between rooms, read from the database: the exits table, and every action that
+// moves the player (command 54) from where it can fit. An action fits in the room its condition 4
+// names; or where an item it needs (conditions 2 and 3) can lie: the item's room at the start, or a
+// room an action puts it in (command 53 in that action's room, command 62's room, or the place of
+// the item that command 72 swaps it with); or, for an automatic action that tests a flag
+// (condition 8), in the rooms where an action sets that flag (command 58). Actions that fit
+// anywhere (the Hulk's rampage, the start of a game) are not drawn. AT is where each room sits on
+// the drawing, column and row.
+const HulkMap = (function () {
+  const AT = { 1: [0, 2], 20: [0, 3], 12: [1, 0], 15: [1, 1], 2: [1, 2], 3: [1, 3], 4: [1, 4], 9: [1, 5],
+    17: [2, 0], 16: [2, 1], 14: [2, 2], 5: [2, 3], 7: [2, 4], 10: [2, 5],
+    18: [3, 0], 19: [3, 1], 13: [3, 2], 6: [3, 3], 8: [3, 4], 11: [3, 5] };
+  const NAMES = { 1: 'tied to a chair', 15: 'small underground room', 19: 'the Chief Examiner', 20: 'limbo' };
+  function split(D, a) {                                // an action's conditions, and its commands with their parameters
+    const cs = a.conds.map(x => [x % 20, Math.floor(x / 20)]);
+    const P = cs.filter(([t]) => t === 0).map(([, v]) => v);
+    let k = 0;
+    const cmds = a.cmds.filter(c => c).map(c => { const n = HulkDB.PARAMS[c] || 0, ps = P.slice(k, k + n); k += n; return [c, ps]; });
+    return { cs, cmds, rooms: cs.filter(([t]) => t === 4).map(([, v]) => v) };
+  }
+  // The rooms each item can lie in, and those where each flag can be set
+  function places(D) {
+    const at = D.items.map(i => new Set(i.start > 0 && i.start < 21 ? [i.start] : []));
+    const flags = Array.from({ length: 32 }, () => new Set());
+    for (let pass = 0; pass < 4; pass++) D.actions.forEach(a => {
+      const { cmds, rooms } = split(D, a);
+      cmds.forEach(([c, ps]) => {
+        if (c === 53) rooms.forEach(r => at[ps[0]] && at[ps[0]].add(r));
+        if (c === 62 && ps[1] > 0 && ps[1] < 21 && at[ps[0]]) at[ps[0]].add(ps[1]);
+        if (c === 72 && at[ps[0]] && at[ps[1]]) { at[ps[1]].forEach(r => at[ps[0]].add(r)); at[ps[0]].forEach(r => at[ps[1]].add(r)); }
+        if (c === 58 && flags[ps[0]]) rooms.forEach(r => flags[ps[0]].add(r));
+      });
+    });
+    return { at, flags };
+  }
+  // Every way between two rooms: { from, to, kind: 'exit', dir } or { from, to, kind: 'action',
+  // action, auto }, auto true for an automatic action
+  function ways(D) {
+    const out = [], { at, flags } = places(D);
+    D.exits.forEach((xs, r) => xs.forEach((to, k) => { if (to) out.push({ from: r, to, kind: 'exit', dir: D.dirs[k] }); }));
+    D.actions.forEach(a => {
+      if (a.verb === 0 && a.noun === 0) return;         // a continuation fits where the action before it does
+      const { cs, cmds, rooms } = split(D, a);
+      const go = cmds.find(([c]) => c === 54);
+      if (!go) return;
+      let from = rooms;
+      if (!from.length) {
+        from = [];
+        cs.filter(([t]) => t === 2 || t === 3).forEach(([, v]) => at[v] && at[v].forEach(r => from.push(r)));
+        if (!from.length && a.verb === 0) cs.filter(([t]) => t === 8).forEach(([, v]) => flags[v].forEach(r => from.push(r)));
+      }
+      new Set(from).forEach(r => { if (r !== go[1][0]) out.push({ from: r, to: go[1][0], kind: 'action', action: a.n, auto: a.verb === 0 }); });
+    });
+    return out;
+  }
+  const name = (D, r) => NAMES[r] || D.rooms[r].replace(/^\*/, '').split('\n')[0];
+  // The drawing, into el: a box for each room at AT, and a line for each way between rooms next to
+  // each other, two side by side when there are ways both ways. A way to a room further off is
+  // written in the boxes it leaves and reaches. pick(r) is called when a room is clicked.
+  function draw(D, el, pick) {
+    const W = 165, H = 68, PX = 235, PY = 124, M = 8, LH = 13.5;
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const pairs = new Map();
+    ways(D).forEach(w => {
+      const k = w.from + '>' + w.to;
+      const p = pairs.get(k) || pairs.set(k, { from: w.from, to: w.to, dirs: [], words: [], auto: true }).get(k);
+      if (w.kind === 'exit') p.dirs.push(w.dir[0]);
+      else if (!w.auto) { const h = HulkDB.describe(D, D.actions[w.action]).head.replace(' (any noun)', ' …'); if (!p.words.includes(h)) p.words.push(h); }
+      if (!w.auto) p.auto = false;
+    });
+    const lines = p => [p.dirs.join(' '), ...p.words].filter(t => t);
+    const label = p => p.auto ? 'by itself' : lines(p).join(', ');
+    const box = r => ({ x: M + AT[r][0] * PX, y: M + AT[r][1] * PY });
+    const near = (a, b) => Math.abs(AT[a][0] - AT[b][0]) <= 1 && Math.abs(AT[a][1] - AT[b][1]) <= 1;
+    const out = {}, inn = {}, add = (m, r, t, o) => { m[r] = m[r] || {}; (m[r][t] = m[r][t] || []).push(o); };
+    let g = '';
+    pairs.forEach(p => {
+      if (!near(p.from, p.to)) { add(out, p.from, label(p), p.to); add(inn, p.to, label(p), p.from); return; }
+      const a = box(p.from), b = box(p.to), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+      const t = Math.min(dx ? (W / 2 + 4) / Math.abs(dx) : 1e9, dy ? (H / 2 + 4) / Math.abs(dy) : 1e9);
+      const nx = -dy / len, ny = dx / len, o = pairs.has(p.to + '>' + p.from) ? 4 : 0;
+      const x1 = a.x + W / 2 + dx * t + nx * o, y1 = a.y + H / 2 + dy * t + ny * o;
+      const x2 = b.x + W / 2 - dx * t + nx * o, y2 = b.y + H / 2 - dy * t + ny * o;
+      g += `<line class="way${p.auto ? ' auto' : ''}" data-from="${p.from}" data-to="${p.to}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" marker-end="url(#hk-ar)"/>`;
+      if (p.auto) return;
+      const f = !o && (ny < -0.3 || (Math.abs(ny) <= 0.3 && nx < 0)) ? -1 : 1;   // a lone line's label goes below it, or right
+      const sx = nx * f, sy = ny * f, ls = lines(p), lx = (x1 + x2) / 2 + sx * 6, ly = (y1 + y2) / 2 + sy * 6;
+      const anchor = Math.abs(sx) > 0.3 ? (sx > 0 ? 'start' : 'end') : 'middle';
+      const top = sy > 0.3 ? ly + 9 : sy < -0.3 ? ly - 3 - (ls.length - 1) * LH : ly + 4 - (ls.length - 1) * LH / 2;
+      g += `<text class="lab" text-anchor="${anchor}">` + ls.map((l, i) => `<tspan x="${lx.toFixed(1)}" y="${(top + i * LH).toFixed(1)}">${esc(l)}</tspan>`).join('') + '</text>';
+    });
+    Object.keys(AT).forEach(r => {
+      const { x, y } = box(r), notes = [], nm = name(D, r), cut = nm.length > 22 ? nm.lastIndexOf(' ', 21) : -1;
+      const rows = cut > 0 ? [nm.slice(0, cut), nm.slice(cut + 1)] : [nm];
+      Object.entries(out[r] || {}).forEach(([t, to]) => notes.push(`▸ ${to.sort((a, b) => a - b).join(', ')}: ${t}`));
+      Object.entries(inn[r] || {}).forEach(([t, from]) => notes.push(`◂ ${from.sort((a, b) => a - b).join(', ')}: ${t}`));
+      g += `<g class="rm" data-r="${r}" tabindex="0" role="button" aria-label="Room ${r}, ${esc(nm)}"><rect x="${x}" y="${y}" width="${W}" height="${H}" rx="5"/>` +
+        `<text class="n" x="${x + 8}" y="${y + 19}">${r}</text>` + rows.map((t, i) => `<text class="s" x="${x + 8}" y="${y + 36 + i * 14}">${esc(t)}</text>`).join('') +
+        notes.map((t, i) => `<text class="lab" x="${x + 8}" y="${y + 37 + (rows.length + i) * LH}">${esc(t)}</text>`).join('') + '</g>';
+    });
+    el.innerHTML = `<svg viewBox="0 0 ${2 * M + 3 * PX + W} ${2 * M + 5 * PY + H}" role="group" aria-label="The map of the twenty rooms">` +
+      '<defs><marker id="hk-ar" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0.5 L8,4 L0,7.5 z" fill="#55585f"/></marker></defs>' + g + '</svg>';
+    const go = e => { const b = e.target.closest('.rm'); if (b && (e.type === 'click' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+b.dataset.r); } };
+    el.addEventListener('click', go); el.addEventListener('keydown', go);
+    return { mark: r => el.querySelectorAll('.rm').forEach(b => b.classList.toggle('on', +b.dataset.r === r)) };
+  }
+  return { AT, ways, places, name, draw };
+})();
+</script>
+<script>
 (function () {
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -469,22 +605,7 @@ const HulkDB = (function () {
   C64.load('listing.json').then(L => {
     const ram = L.ram, D = HulkDB.read(ram);
     const start = D.items.map(i => i.start);
-    // the ways out of each room: the exits table, and the actions that send the player on
-    const moves = Array.from({ length: 21 }, () => []);
-    D.actions.forEach(a => {
-      const d = HulkDB.describe(D, a), cs = a.conds.map(x => [x % 20, Math.floor(x / 20)]);
-      const P = cs.filter(([t]) => t === 0).map(([, v]) => v);
-      let to = null, k = 0;
-      a.cmds.filter(c => c).forEach(c => {
-        const n = HulkDB.PARAMS[c] || 0, ps = P.slice(k, k + n); k += n;
-        if (c === 54) to = ps[0];
-      });
-      if (to === null) return;
-      const inRoom = cs.filter(([t]) => t === 4).map(([, v]) => v);
-      const here = cs.filter(([t]) => t === 2 || t === 3).map(([, v]) => D.items[v] ? D.items[v].start : -1);
-      const from = new Set(inRoom.length ? inRoom : here.filter(r => r > 0));
-      from.forEach(r => { if (r >= 0 && r < 21) moves[r].push({ a, to, d }); });
-    });
+    const ways = HulkMap.ways(D);
     const sel = $('hk-sel');
     for (let r = 0; r < 21; r++) {
       const o = document.createElement('option');
@@ -493,8 +614,9 @@ const HulkDB = (function () {
     }
     sel.value = 1;
     const ctx = $('hk-cv').getContext('2d');
+    const map = HulkMap.draw(D, $('hk-map'), r => { show(r); $('hk-cv').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
     function show(r) {
-      r = Math.max(0, Math.min(20, r)); sel.value = r;
+      r = Math.max(0, Math.min(20, r)); sel.value = r; map.mark(r);
       $('hk-prev').classList.toggle('off', r === 0); $('hk-next').classList.toggle('off', r === 20);
       const S = HulkPics.drawRoom(ram, files, r, start);
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 320);
@@ -506,7 +628,7 @@ const HulkDB = (function () {
       $('hk-desc').textContent = r === 0 ? '(room 0 has no description)' : (t[0] === '*' ? t.slice(1) : "I'm in a " + t) + '.';
       const items = D.items.filter(i => i.start === r && i.text);
       const ex = D.exits[r].map((x, k) => x ? `<a data-r="${x}">${D.dirs[k]} to room ${x}</a>` : '').filter(x => x);
-      const mv = moves[r].filter(m => m.to !== r).map(m => `<li><a data-r="${m.to}">room ${m.to}</a>: action ${m.a.n}, ${esc(m.d.head)}${m.d.conds.length ? ', if ' + esc(m.d.conds.join(' and ')) : ''}</li>`);
+      const mv = ways.filter(w => w.kind === 'action' && w.from === r).map(w => { const d = HulkDB.describe(D, D.actions[w.action]); return `<li><a data-r="${w.to}">room ${w.to}</a>: action ${w.action}, ${esc(d.head)}${d.conds.length ? ', if ' + esc(d.conds.join(' and ')) : ''}</li>`; });
       $('hk-dl').innerHTML = `<dt>Exits in the table</dt><dd>${ex.join(' · ') || '<span class="hk-mute">none</span>'}</dd>` +
         `<dt>Actions that move the player on</dt><dd>${mv.length ? '<ul class="hk-list">' + mv.join('') + '</ul>' : '<span class="hk-mute">none</span>'}</dd>` +
         `<dt>Items here at the start</dt><dd>${items.length ? '<ul class="hk-list">' + items.map(i => `<li>${i.n}: ${esc(i.name)}${files[HulkPics.name('B', HulkPics.pieceFor(ram, r, i.n), 'R')] ? ' <span class="hk-mute">(drawn)</span>' : ''}</li>`).join('') + '</ul>' : '<span class="hk-mute">none</span>'}</dd>`;

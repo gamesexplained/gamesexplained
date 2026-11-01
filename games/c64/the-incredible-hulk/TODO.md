@@ -5,11 +5,15 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: 100 % coverage (21,750 bytes), `facts.md`, the listing sampled
-and every step recorded in `accuracy`, the minisite built (How it works,
-Discoveries, Rooms, Source code), every feature confirmed,
-traced or open, copy `agent-draft`. The game has no music, so it needs
-no tune player.
+Platinum: the Silver (100 % coverage of 21,750 bytes, `facts.md`, the
+listing sampled and every step recorded in `accuracy`, the minisite
+built (How it works, Discoveries, Rooms, Source code), every feature
+confirmed, traced or open, copy `agent-draft`; the game has no music, so
+it needs no tune player) with a Play tab that is the whole game: the
+interpreter, the screen editor, the pictures, the disk and the saved
+games ported to JavaScript and held to the game's code by
+`test_play.js`, with no known bug in the port. The Rooms tab's map is
+held to the game's code by `test_map.js`.
 
 ## Audit the listing
 
@@ -23,19 +27,19 @@ which case a routine covers, an end address off by one), then a new
 sample, would let the Source tab call the listing checked
 (`kit/skills/core/60-verify`).
 
-## For Gold
+## For Gold, and so Diamond
 
 A human curates the pages section by section (`AGENTS.md`, "Definition of
 done"): rewrites the copy where it reads as an agent's, cuts what is
-dull, and adds what the agent missed.
+dull, and adds what the agent missed. With the Play tab Platinum, that
+makes the game Diamond.
 
-## For Platinum
+## Hand edits for the disassembler project
 
-A Play tab that is the whole game: the parser, the action interpreter,
-the conditions and commands, the room drawing and the save format ported
-to JavaScript and held to the game's code in lockstep
-(`kit/skills/core/70-minisite/play.md`). The parser and the pictures are
-ported already.
+The comments corrected for the Play tab were edited in `symbols.json` by
+hand (`listing.py --recomment`): $56A6, $1F14, $74B5, $61A1, and the
+action comments at $944A, $9510 and $9516. The project needs them before
+its next export, or the export puts the old text back.
 
 ## Open questions
 
@@ -53,7 +57,5 @@ No source found on the web on 31 October 2026 answers these.
 
 - A player for the page-end beep on the How it works tab's sound
   section, through `site/lib/sid.js`.
-- A map of the twenty rooms on the Maps tab, drawn from the exits table
-  and the actions that move the player.
 - The drive's half of the fast loader, track 35 sectors 0 and 1, listed
   once #661 says where it goes.
