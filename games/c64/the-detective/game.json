@@ -9,7 +9,7 @@
   "title_image": "reference/title.png",
   "build": "T64 tape image of a cracked release: the game packed into one 44,302-byte program (Trianon, 1987), and a second program of crackers' instructions (Danish Gold, 1987)",
   "tier": "bronze",
-  "coverage_percent": 0.0,
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
   "credits": [
@@ -42,6 +42,9 @@
     ],
     "40-sweep": [
       "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
     ]
   },
   "accuracy": [],
@@ -52,12 +55,164 @@
     "charset": "$4000"
   },
   "coverage": {
-    "exclude": [],
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "runtime: zero page, the game's variables, cleared by the cold start ($2048) and written as it runs"
+      ],
+      [
+        "$0200",
+        "$03FF",
+        "runtime: the sprite slot tables ($0208-$0264), the typed-line and list buffer ($0300) and the mirror index tables ($0380, $03C0, built by $919E)"
+      ],
+      [
+        "$0400",
+        "$04FF",
+        "runtime: the message bar's line buffer ($21D8 writes it, $2B21 reads it)"
+      ],
+      [
+        "$0500",
+        "$05FF",
+        "runtime: the multicolour mirror table built at start-up by $2383"
+      ],
+      [
+        "$0600",
+        "$07FF",
+        "runtime: the music player's spare byte ($0600) and the save areas for the picture behind each door ($0610 on, $3A27)"
+      ],
+      [
+        "$0800",
+        "$0BFF",
+        "not the game's: what the crackers' unpacker left in memory, text of another program (\"TOWN RESCUE\", \"KASSETTE OHNE HIGHSCORE\"); no instruction of the game names it"
+      ],
+      [
+        "$0C00",
+        "$1AFF",
+        "runtime: the room map, 15 rows of 256 columns, built for each room by $388D (and the title's tables at $0C00-$0FFF, built by $8DC0)"
+      ],
+      [
+        "$1CC0",
+        "$1EDF",
+        "runtime: the room's door lists ($1CC0-$1CFF, built by $388D), the music player's state ($1CE8-$1D1F), and the player's, the cast's and the game's state ($1D41-$1EDF), set at the start of each game and written as it runs"
+      ],
+      [
+        "$3FE2",
+        "$3FEF",
+        "unused: fourteen bytes before the flip flags at $3FF0 that no instruction reads"
+      ],
+      [
+        "$3FF0",
+        "$3FFF",
+        "runtime: the cast's flip flags ($3FF0-$3FF9) and the number of the room character set in place ($3FFF)"
+      ],
+      [
+        "$58C0",
+        "$593F",
+        "runtime: the buffer where a sprite shape is mirrored ($91E0) or a portrait wiped on ($8B01), inside the sprite shapes"
+      ],
+      [
+        "$7C00",
+        "$7FFF",
+        "runtime: the screen and the sprite pointers, drawn by the game"
+      ],
+      [
+        "$FFFA",
+        "$FFFF",
+        "runtime: the NMI, reset and IRQ vectors, written by $28FA"
+      ]
+    ],
     "extra": [],
-    "include": []
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "the RAM under the I/O area: room pictures 5 to 13 of the list at $C100, which $3BD7 unpacks with the I/O banked out ($01 = $34)"
+      ]
+    ]
   },
-  "io": [],
-  "regions": [],
+  "io": [
+    [
+      "$3BD7",
+      "$3C3C",
+      "ram",
+      "banked out by $3BD9 ($01 = $34) until $3C3A"
+    ]
+  ],
+  "regions": [
+    [
+      "$2000",
+      "$3FDF",
+      "code",
+      "the engine: start-up, interrupts, text, menus, rooms and doors"
+    ],
+    [
+      "$4000",
+      "$47FF",
+      "graphics",
+      "the title's character set at the hand-over; the room set in play"
+    ],
+    [
+      "$4800",
+      "$4FFF",
+      "graphics",
+      "the text panel's character set, with the word list for speech and the objects' starting places"
+    ],
+    [
+      "$5000",
+      "$7BFF",
+      "graphics",
+      "sprite shapes: the cast, the player, portraits, pointer and props"
+    ],
+    [
+      "$8000",
+      "$A45F",
+      "code",
+      "the adventure module: menus, objects, speech, music and actions"
+    ],
+    [
+      "$A460",
+      "$A903",
+      "code",
+      "the cast's script interpreter"
+    ],
+    [
+      "$A904",
+      "$B18C",
+      "tables",
+      "the nine characters' scripts, in the interpreter's byte code"
+    ],
+    [
+      "$B18D",
+      "$C0EA",
+      "code",
+      "the module's last routines: questions, the arrest, keyboard and storm"
+    ],
+    [
+      "$C100",
+      "$E7FF",
+      "graphics",
+      "the seventeen packed room pictures"
+    ],
+    [
+      "$E800",
+      "$E9FF",
+      "graphics",
+      "animation frames, the safe's pictures and room tables"
+    ],
+    [
+      "$EA00",
+      "$F9FF",
+      "graphics",
+      "the room character sets, swapped in by the title and per room"
+    ],
+    [
+      "$FA00",
+      "$FDBF",
+      "graphics",
+      "the menu icons"
+    ]
+  ],
   "links": {
     "wiki": {
       "title": "The Detective (video game)",
