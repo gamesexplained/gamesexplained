@@ -56,7 +56,9 @@
 //                    machine's loops would take for the work the last loop did, by its cost model,
 //                    and calls loop.begin() as each loop starts. A machine's loop of K beats (a
 //                    shadow loop) is K loops of Fast CPU: each takes 1/K of its steps, the jobs
-//                    once a pace run on the first, and a repeat every K beats. K is read again as the next
+//                    once a pace run on the first, and a repeat every K beats; a value the game sets
+//                    once a pace from the whole step (plug-in point ease) moves to it in K shares
+//                    from where it stood. K is read again as the next
 //                    shadow loop starts, so the pace follows the machine's, view by view, and the
 //                    carries keep their share of a unit across a change of K. speeds is then left out
 // Each of switches, repeats, ctrl and held may be left out when the game has none.
@@ -120,6 +122,21 @@ function attach(rt, table) {
       if (k === 'repeat' && fx.last.has(id) && t - fx.last.get(id) >= fx.K) { fx.last.set(id, t); return true; }
       return false;
     },
+    // a value the game sets once a pace from what it worked out for the whole step (a craft's
+    // bank, from a turn rate it changes once a pace): with the pace followed, eased from where it
+    // stood as the machine's loop began to the game's value, which it reaches on the loop's last
+    // share; otherwise the game's value
+    ease(key, from, to) {
+      if (!T.follow) return to;
+      let e = fx.eased.get(key);
+      if (!e || e.shadow !== fx.shadow || e.to !== to || e.wrote !== from) {
+        e = { shadow: fx.shadow, from, to, wrote: from };
+        fx.eased.set(key, e);
+      }
+      const done = fx.K - fx.left;                 // the loops of this shadow loop so far, this one too
+      e.wrote = e.from + Math.round((to - e.from) * done / fx.K);
+      return e.wrote;
+    },
     once(key) {
       if (T.follow) return fx.first;
       const t = tick(), l = fx.onceAt.get(key);
@@ -153,7 +170,7 @@ function attach(rt, table) {
 }
 function reset(fx) {
   Object.assign(fx, { ang: new Map(), carry: new Map(), stepped: new Set(), before: new Set(), now: new Set(),
-    last: new Map(), onceAt: new Map(), hold: null, owed: false, left: 0, first: true, shadow: 0 });
+    last: new Map(), onceAt: new Map(), hold: null, owed: false, left: 0, first: true, shadow: 0, eased: new Map() });
 }
 // a loop starts (a game that follows the machine's pace): the first of a shadow loop reads K again,
 // and each carry keeps its share of a unit

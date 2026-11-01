@@ -17,6 +17,8 @@
 //   the video frames within a frame of each other;
 // - whole steps: walking straight and turning on foot, each shadow pass moves exactly as far as
 //   one of the C64's passes;
+// - the bank: in the Dart, banking and levelling out, the roll moves to the game's new value a
+//   share at a time over each shadow pass and stands at it on the pass's last loop;
 // - the pace: walking and turning for 20 s on foot, and 10 s of level flight in the Dart, cover
 //   the C64's distance and heading within 1 % or one of its passes' steps;
 // - repeats: in the Dart, + held trims the thrust once a shadow pass, and a press of three video
@@ -26,8 +28,8 @@
 //   CPU switched now and then, throw nothing;
 // - no frame behind: after each refresh that ran a loop, the machine is parked at that loop's end
 //   and the bitmap on show ($C7) is the one its flip put up.
-//   node games/c64/mercenary/test_fast.js [part: off, limiter, same, clock, whole, pace, repeats,
-//     stopping, random, behind]
+//   node games/c64/mercenary/test_fast.js [part: off, limiter, same, clock, whole, bank, pace,
+//     repeats, stopping, random, behind]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -215,6 +217,37 @@ if (part('whole')) {
     if (off.length) fail(`${what}: ${off.length} of ${steady.length} shadow passes moved ${key(off[0])}, the C64's pass ${[...want][0]}`);
     console.log(`whole: ${what}, ${steady.length} shadow passes of 1 to ${Math.max(...fast.map(s => s.K))} loops each move ${[...want][0]}, the C64's step a pass`);
   }
+}
+
+// --- the bank: the roll, which the game sets from a turn rate it changes once a pass -------------
+if (part('bank')) {
+  const m = machine(false), { M, fx } = m;
+  dart(m);
+  m.frames(16, 0); m.frames(2, 2); m.frames(4, 0);           // off the ground, nose up, then level
+  if (M[0x7F]) fail('the Dart is still on the ground');
+  FastCPU.set(fx, true);
+  m.refresh(1, 0);
+  const roll = () => ((M[0x29] << 8 | M[0x28]) << 16) >> 16;
+  const e0 = fx.plug.ease;
+  let to = null, from = roll(), last = roll(), loops = 0, moved = 0, ends = 0, off = 0, jumpy = 0, most = 0;
+  fx.plug.ease = (k, f, t) => { to = t; return e0(k, f, t); };
+  const b0 = fx.loop.begin;
+  fx.loop.begin = () => { b0(); if (fx.first) from = roll(); };
+  const between = () => {
+    loops++;
+    const r = roll(), d = Math.abs(r - last);
+    if (d) moved++;
+    most = Math.max(most, d);
+    if (to !== null && d > Math.ceil(Math.abs(to - from) / fx.K)) jumpy++;
+    if (fx.left === 0 && to !== null) { ends++; if (r !== to) off++; }
+    last = r; to = null;
+  };
+  for (const joy of [LEFT, 0, RIGHT, 0]) { m.press(joy); for (let i = 0; i < 120; i++) FastCPU.run(fx, 1000 / 60, between); }
+  m.press();
+  if (!moved) fail('the roll never moved: the Dart did not bank');
+  if (off) fail(`${off} of ${ends} shadow passes ended with the roll away from the game's value`);
+  if (jumpy) fail(`${jumpy} loops moved the roll by more than their share`);
+  console.log(`bank: the roll moved in ${moved} of ${loops} loops, ${most} at most (1,024 to a turn), and stood at the game's value at the end of all ${ends} shadow passes`);
 }
 
 // --- the pace -----------------------------------------------------------------------------------

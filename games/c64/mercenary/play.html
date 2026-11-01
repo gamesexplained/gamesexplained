@@ -200,7 +200,7 @@ section table{margin:6px 0 18px}
   </table>
   <h3>Fast CPU</h3>
   <p>With <b>Fast CPU</b> on, the page plays the game as a C64 with a much faster processor would. The main loop goes round once every video frame, 50 times a second, where the C64 manages four to twelve passes. Each pass draws a new frame into the game's own bitmaps, so every frame on screen is one the game drew.</p>
-  <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends.</p>
+  <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends. A craft's bank, which the game sets once a pass from its rate of turn, moves to each new angle the same way, a share at a time.</p>
   <p>What the game counts in passes happens once for each of the C64's passes: the event scripts' next operation, the lifetimes of the missiles and the attack ship, a building's collapse, the damping of a craft's turn and speed, and a held <kbd>=</kbd> or <kbd>−</kbd>. What the game times by its clock keeps its time, since the raster interrupts still come 50.12 times a second on their lines: the panel's seconds, Benson's printing, the lift ride.</p>
   <table>
     <tr><th>From the crash site</th><th>C64</th><th>Fast CPU</th></tr>
@@ -250,8 +250,10 @@ section table{margin:6px 0 18px}
 //   once(key)      whether a job that counts passes, or whose effect adds up, runs this time (always)
 //   take(act)      whether a key held down for a repeat acts this time (always)
 //   read()         the controls are about to be read again
+//   ease(key, from, to)  a value the game sets once a pass from what it worked out for the whole
+//                  pass (a craft's bank), standing at from: what this pass sets (to)
 function install_plug(P) {
-  P.plug = { step: (key, v) => v, once: key => true, take: act => true, read: () => {} };
+  P.plug = { step: (key, v) => v, once: key => true, take: act => true, read: () => {}, ease: (key, from, to) => to };
 }
 
 // ---- view3d ------------------------------------------------------------------------------------
@@ -3415,7 +3417,9 @@ function install_motion(P) {
     let a = M[0xBEA7];                             // $A11B
     if (!(a & 0x80)) a = (a + M[0x23]) & 255;
     q = P.fp_to_int16({ x: M[0x22], y: a });
-    M[0x28] = q.y; M[0x29] = q.x;
+    // the roll, from the turn rate the game changes once a pass (plug-in point: ease)
+    const roll = P.plug.ease(0x28, ((M[0x29] << 8 | M[0x28]) << 16) >> 16, ((q.x << 8 | q.y) << 16) >> 16) & 0xFFFF;
+    M[0x28] = roll & 255; M[0x29] = roll >> 8;
     return P.spin_step();
   };
 
