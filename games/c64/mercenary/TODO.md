@@ -70,9 +70,6 @@ next export would put it back: copy these five line comments from
 - The smooth view in the C64's pixels fills the sky and the ground by the
   horizon's half-plane, not by `$AFD5`'s row stepping, so along a banked
   horizon its edge can sit a pixel from the game's.
-- Fast CPU moves Targ Traffic once for each of the C64's passes, so the
-  traffic steps while the game glides; the mod's step could take shares
-  as the game's movers do.
 - Fast CPU beats on the C64's video frame, 50.12 a second, so a 60 Hz
   display shows one frame in five twice. A beat at the display's 60 a
   second would need the frame start's wait for line 224 made a plug-in

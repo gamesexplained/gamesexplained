@@ -63,7 +63,8 @@
 //                    carries keep their share of a unit across a change of K. speeds is then left out
 // Each of switches, repeats, ctrl and held may be left out when the game has none.
 // The plug-in points once (a job whose effect adds up) and after (a wait that only keeps a message
-// up) take the byte they ask about from the port, so they need no entry.
+// up) take the byte they ask about from the port, so they need no entry; since(key) gives the share
+// of a pace gone since the job once(key) last ran, for a mod that moves what it draws once a pace.
 (function (root) {
 'use strict';
 
@@ -138,12 +139,16 @@ function attach(rt, table) {
       return e.wrote;
     },
     once(key) {
-      if (T.follow) return fx.first;
+      if (T.follow) { if (fx.first) fx.onceAt.set(key, { t: tick(), K: fx.K }); return fx.first; }
       const t = tick(), l = fx.onceAt.get(key);
-      if (l !== undefined && t - l < fx.K) return false;
-      fx.onceAt.set(key, t);
+      if (l !== undefined && t - l.t < fx.K) return false;
+      fx.onceAt.set(key, { t, K: fx.K });
       return true;
     },
+    // the share of a pace gone since the job once a pace `key` last ran (plug-in point once), at
+    // most 1: a mod that moves what it draws in that job draws it that share of the way from where
+    // it stood to where it put it, so it glides as the game's own steps do
+    since(key) { const l = fx.onceAt.get(key); return l === undefined ? 1 : Math.min(1, (tick() - l.t) / l.K); },
     // shown for one loop: from the loop that shows it, for K ticks, the game reads it as shown
     // after it has taken it down, and what goes with it as it was
     held(a, v) {

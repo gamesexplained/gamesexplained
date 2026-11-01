@@ -19,6 +19,12 @@
 //   one of the C64's passes;
 // - the bank: in the Dart, banking and levelling out, the roll moves to the game's new value a
 //   share at a time over each shadow pass and stands at it on the pass's last loop;
+// - the traffic: with Targ Traffic on, each car and craft is drawn a share of its pass's move
+//   further each loop, and where the mod had put it on a shadow pass's first loop, as the C64
+//   draws it;
+// - once a pass: on foot and in the Dart, every byte that changes only on a shadow pass's first
+//   loop is one listed as meant to (the event script, the turn rate, the speed, the attack
+//   ship's aim);
 // - the pace: walking and turning for 20 s on foot, and 10 s of level flight in the Dart, cover
 //   the C64's distance and heading within 1 % or one of its passes' steps;
 // - repeats: in the Dart, + held trims the thrust once a shadow pass, and a press of three video
@@ -28,8 +34,8 @@
 //   CPU switched now and then, throw nothing;
 // - no frame behind: after each refresh that ran a loop, the machine is parked at that loop's end
 //   and the bitmap on show ($C7) is the one its flip put up.
-//   node games/c64/mercenary/test_fast.js [part: off, limiter, same, clock, whole, bank, pace,
-//     repeats, stopping, random, behind]
+//   node games/c64/mercenary/test_fast.js [part: off, limiter, same, clock, whole, bank, traffic,
+//     once, pace, repeats, stopping, random, behind]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -43,7 +49,8 @@ const { MERC_INSTALL } = g.run(PAGE, "the port: Mercenary's routines, each a fun
 const { makeRuntime } = g.run(PAGE, 'runtime', 'makeRuntime');
 g.run(PAGE, 'modern', 'MercModern');
 g.run(PAGE, 'fast', 'MERC_FAST');
-const { FastCPU, MercModern, MERC_FAST: T } = globalThis;
+g.run(PAGE, 'alive', 'MercAlive');
+const { FastCPU, MercModern, MercAlive, MERC_FAST: T } = globalThis;
 const ui = g.block(PAGE, 'ui').text;
 const ORIGINAL_7009 = /const ORIGINAL_7009 = \[([^\]]*)\]/.exec(ui)[1].split(',').map(Number);
 const image = g.listing().ram;
@@ -248,6 +255,102 @@ if (part('bank')) {
   if (off) fail(`${off} of ${ends} shadow passes ended with the roll away from the game's value`);
   if (jumpy) fail(`${jumpy} loops moved the roll by more than their share`);
   console.log(`bank: the roll moved in ${moved} of ${loops} loops, ${most} at most (1,024 to a turn), and stood at the game's value at the end of all ${ends} shadow passes`);
+}
+
+// --- the traffic --------------------------------------------------------------------------------
+if (part('traffic')) {
+  const m = machine(false), { M, P, fx, rt } = m;
+  const alive = MercAlive.attach(rt);
+  alive.set(true);
+  m.frames(8, 0);                                             // the traffic under way, on the C64
+  FastCPU.set(fx, true);
+  m.refresh(1, 0);
+  // the pose each vehicle is drawn at, read from the borrowed slot as draw_object reads it
+  const b3 = (lo, mid, hi) => M[lo + 9] | M[mid + 9] << 8 | M[hi + 9] << 16;
+  const drawn = new Map(), last = new Map();
+  const d0 = P.draw_object;
+  P.draw_object = function (r) {
+    const v = P.drawTag;
+    if (v) drawn.set(v, { x: b3(0x2880, 0x2480, 0x2540), h: b3(0x28C0, 0x24C0, 0x2580), y: b3(0x2900, 0x2500, 0x25C0), head: M[0x802A + 9] });
+    return d0.call(this, r);
+  };
+  // each loop: a moving vehicle moves at most its share of a pass (this pass's, or the last's on a
+  // pass's first loop, which draws before the mod moves it); on a shadow pass's first loop it is
+  // drawn where the mod had put it, where the C64 draws it for the whole pass
+  let loops = 0, could = 0, moved = 0, jumpy = 0, firsts = 0, off = 0;
+  const share = new Map();
+  const between = () => {
+    loops++;
+    for (const [v, d] of drawn) {
+      const l = last.get(v), w = v.was;
+      const step = w ? Math.max(Math.abs(v.x - w.x), Math.abs(v.h - w.h), Math.abs(v.y - w.y)) : 0;
+      const most = Math.max(Math.ceil(step / fx.K), share.get(v) || 0) + 1;
+      if (l && step >= fx.K && step <= 65536) {
+        const by = Math.max(Math.abs(d.x - l.x), Math.abs(d.h - l.h), Math.abs(d.y - l.y));
+        could++; if (by) moved++;
+        if (by > most) jumpy++;
+      }
+      if (fx.first && w) { firsts++; if (d.x !== (w.x & 0xFFFFFF) || d.h !== (w.h & 0xFFFFFF) || d.y !== (w.y & 0xFFFFFF) || d.head !== ((w.head >> 4) & 63)) off++; }
+      last.set(v, d); share.set(v, Math.ceil(step / fx.K));
+    }
+    drawn.clear();
+  };
+  for (let i = 0; i < 600; i++) FastCPU.run(fx, 1000 / 60, between);
+  if (!could) fail('no vehicle moved: the traffic did not run');
+  if (moved < could * 0.9) fail(`the traffic moved in ${moved} of the ${could} loops it could have: in steps, once a C64 pass`);
+  if (jumpy) fail(`${jumpy} times a vehicle moved by more than its share of a pass`);
+  if (off) fail(`${off} of ${firsts} vehicles drawn on a shadow pass's first loop stood away from where the mod had put them`);
+  console.log(`traffic: a moving vehicle moved in ${moved} of ${could} loops, ${jumpy ? jumpy + " times by more than its share" : "none by more than its share"}, and was drawn where the mod had put it on the first loop of a shadow pass ${firsts} times out of ${firsts}`);
+}
+
+// --- once a pass ---------------------------------------------------------------------------------
+// A byte that changes only on the first loop of a shadow pass is set once a C64 pass. That is meant
+// for what counts passes; anything else on screen steps once a pass while the rest glides, as the
+// Dart's bank did. Each byte that does is listed here, with why; a byte that joins them fails
+if (part('once')) {
+  const MEANT = {
+    'the event script, one operation a pass (plug-in point once)': [0x1F, 0x20, 0xE5, 0xE7, 0x8ACD, 0x8E27, 0x8E28],
+    'the turn rate, damped once a pass (the bank eases to the roll it gives)': [0x22, 0x23],
+    "the craft's speed, thrust and drag once a pass ($9F86; the moves it gives are shared)": [0x26, 0x27],
+    "the attack ship's velocity, aimed at you once a pass ($BDAB-$BDF2, object 15)": [0xBDB2, 0xBDBA, 0xBDC2, 0xBDCA, 0xBDD2, 0xBDDA, 0xBDE2, 0xBDEA, 0xBDF2],
+  };
+  const meant = new Set(Object.values(MEANT).flat());
+  const STICKS = [0x1F, 0x1E, 0x1D, 0x1B, 0x17, 0x1A, 0x16, 0x19, 0x15];
+  const found = new Map();
+  let loops = 0, shadows = 0;
+  for (const where of ['on foot', 'in the Dart']) {
+    const m = machine(false), { M, fx } = m;
+    if (where === 'in the Dart') { dart(m); m.frames(16, 0); m.frames(2, 2); m.frames(4, 0); }
+    FastCPU.set(fx, true);
+    m.refresh(1, 0);
+    const first = new Uint32Array(65536), later = new Uint32Array(65536), prev = M.slice();
+    const between = () => {
+      loops++;
+      if (fx.K >= 2) {
+        const f = fx.first;
+        if (f) shadows++;
+        for (let a = 0; a < 65536; a++) if (M[a] !== prev[a]) (f ? first : later)[a]++;
+      }
+      prev.set(M);
+    };
+    seed = 12345;
+    for (let i = 0, n = 60 * (where === 'on foot' ? 30 : 40); i < n; i++) {
+      if (i % 20 === 0) {
+        m.rt.input.joy = STICKS[rnd(STICKS.length)] & (where === 'on foot' || rnd(4) ? 0x1F : 0x0F);
+        m.rt.input.keys = new Set(where === 'in the Dart' && rnd(6) === 0 ? [[0x28, 0x2B, 0x20, 0x3B][rnd(4)]] : []);
+      }
+      FastCPU.run(fx, 1000 / 60, between);
+    }
+    m.press();
+    for (let a = 0; a < 65536; a++) {
+      if (a >= 0x4000 && a < 0x8000) continue;              // the two bitmaps and their screens
+      if (first[a] >= 4 && !later[a]) found.set(a, (found.get(a) || []).concat(where));
+    }
+  }
+  const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
+  const stray = [...found.keys()].filter(a => !meant.has(a));
+  if (stray.length) fail(`set only on a shadow pass's first loop, and not listed as meant: ${stray.map(a => hex(a) + ' (' + found.get(a).join(', ') + ')').join(' ')}`);
+  console.log(`once: in ${loops} loops (${shadows} shadow passes) on foot and in the Dart, ${found.size} bytes change only on a shadow pass's first loop, ${stray.length ? stray.length + ' not listed' : 'each listed as meant'}`);
 }
 
 // --- the pace -----------------------------------------------------------------------------------

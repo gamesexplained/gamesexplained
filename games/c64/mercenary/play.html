@@ -200,7 +200,7 @@ section table{margin:6px 0 18px}
   </table>
   <h3>Fast CPU</h3>
   <p>With <b>Fast CPU</b> on, the page plays the game as a C64 with a much faster processor would. The main loop goes round once every video frame, 50 times a second, where the C64 manages four to twelve passes. Each pass draws a new frame into the game's own bitmaps, so every frame on screen is one the game drew.</p>
-  <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends. A craft's bank, which the game sets once a pass from its rate of turn, moves to each new angle the same way, a share at a time.</p>
+  <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends. A craft's bank, which the game sets once a pass from its rate of turn, moves to each new angle the same way, a share at a time, and so do Targ Traffic's cars and craft, which the mod moves once a pass.</p>
   <p>What the game counts in passes happens once for each of the C64's passes: the event scripts' next operation, the lifetimes of the missiles and the attack ship, a building's collapse, the damping of a craft's turn and speed, and a held <kbd>=</kbd> or <kbd>−</kbd>. What the game times by its clock keeps its time, since the raster interrupts still come 50.12 times a second on their lines: the panel's seconds, Benson's printing, the lift ride.</p>
   <table>
     <tr><th>From the crash site</th><th>C64</th><th>Fast CPU</th></tr>
@@ -211,7 +211,7 @@ section table{margin:6px 0 18px}
     <tr><td>A turn key pressed to the view turning, on foot</td><td>about 290 ms</td><td>about 30 ms</td></tr>
   </table>
   <p>The keys are read every frame, so the view answers in the next frame or the one after, and letting go stops you in the next. The C64 reads them once a pass, after drawing, so a move first shows in the next pass's view, up to two passes after the press; Smooth motion starts to move about 125 ms after a press. A press shorter than three frames is held for three, so that a pass reads it.</p>
-  <p>Some things change with the finer steps. What the game tests once a pass it now tests at each share of the move: whether your missile has struck a building, whether the attack ship's missile has reached you, whether you have walked into a door. Targ Traffic's cars and craft still move once for each of the C64's passes, in steps. The game's frames come at the C64's 50.12 a second: a display at 50 or 100 Hz shows each for the same time, and skips one about every eight seconds since it runs 0.25 % slower; at 60 Hz one frame in five stays up for two refreshes. Switched off, the game is the C64's again from where it stands.</p>
+  <p>Some things change with the finer steps. What the game tests once a pass it now tests at each share of the move: whether your missile has struck a building, whether the attack ship's missile has reached you, whether you have walked into a door. The game's frames come at the C64's 50.12 a second: a display at 50 or 100 Hz shows each for the same time, and skips one about every eight seconds since it runs 0.25 % slower; at 60 Hz one frame in five stays up for two refreshes. Switched off, the game is the C64's again from where it stands.</p>
 </section>
 <section id="differences">
   <p class="fig">04 · Differences</p>
@@ -252,8 +252,10 @@ section table{margin:6px 0 18px}
 //   read()         the controls are about to be read again
 //   ease(key, from, to)  a value the game sets once a pass from what it worked out for the whole
 //                  pass (a craft's bank), standing at from: what this pass sets (to)
+//   since(key)     the share of a pass gone since the job once(key) last ran, for a mod that moves
+//                  what it draws in that job (Targ Traffic): all of it (1)
 function install_plug(P) {
-  P.plug = { step: (key, v) => v, once: key => true, take: act => true, read: () => {}, ease: (key, from, to) => to };
+  P.plug = { step: (key, v) => v, once: key => true, take: act => true, read: () => {}, ease: (key, from, to) => to, since: key => 1 };
 }
 
 // ---- view3d ------------------------------------------------------------------------------------
@@ -7119,7 +7121,10 @@ function makeDisplay(opts) {
     function step() {
       pass++;
       if (pass > matchDay + 2400) matchDay = pass + 4000 + Math.floor(rnd() * 3000);
-      for (const v of V) if (!v.dead) (v.kind === 'car' ? stepCar : stepCraft)(v);
+      for (const v of V) {
+        v.was = { x: v.x, h: v.h, y: v.y, head: v.head || 0 };   // where it stood, for Fast CPU (pose)
+        if (!v.dead) (v.kind === 'car' ? stepCar : stepCraft)(v);
+      }
     }
     return { V, populate, step, get pass() { return pass; }, set enabled(v) { enabled = v; }, get enabled() { return enabled; }, FACTION, G };
   }
@@ -7156,17 +7161,31 @@ function makeDisplay(opts) {
       saved.code.forEach((b, i) => { M[SCRIPT_AT + i] = b; });
       saved = null;
     }
+    // where a vehicle is: where the mod put it at the top of the pass. With Fast CPU, which moves
+    // the game's own objects a share of a pass each loop, it is the share of a pass gone since the
+    // mod moved it of the way there from where it stood (plug-in point since), so the traffic
+    // glides as the game's objects do. A jump of more than a square (the escort taking its place
+    // beside the ship) is made at once
+    function pose(v) {
+      const f = P.plug.since(0x7A11), w = v.was;
+      if (f >= 1 || !w) return v;
+      const dx = v.x - w.x, dh = v.h - w.h, dy = v.y - w.y;
+      if (Math.max(Math.abs(dx), Math.abs(dh), Math.abs(dy)) > SQ) return v;
+      const turn = (((v.head || 0) - w.head + 1536) % 1024) - 512;
+      return { x: w.x + Math.round(dx * f), h: w.h + Math.round(dh * f), y: w.y + Math.round(dy * f), head: (w.head + Math.round(turn * f) + 1024) % 1024 };
+    }
     // put a vehicle in the borrowed slot, run f, and put the slot back
     function inSlot(v, f) {
       const keep = SLOT_BYTES.map(a => M[a + (a < 0xBDA3 ? SLOT : 0)]);
       const put = (lo, mid, hi, val) => { const u = val & 0xFFFFFF; M[lo + SLOT] = u & 255; M[mid + SLOT] = (u >> 8) & 255; M[hi + SLOT] = u >> 16; };
-      put(0x2880, 0x2480, 0x2540, v.x); put(0x28C0, 0x24C0, 0x2580, v.h); put(0x2900, 0x2500, 0x25C0, v.y);
+      const p = pose(v);
+      put(0x2880, 0x2480, 0x2540, p.x); put(0x28C0, 0x24C0, 0x2580, p.h); put(0x2900, 0x2500, 0x25C0, p.y);
       M[0x2800 + SLOT] = v.model & 255; M[0x2840 + SLOT] = v.model >> 8;
       M[0x2940 + SLOT] = 0; M[0x29C0 + SLOT] = 0x10;
       // the heading in 64ths, as leaving a craft stores it (heading >> 4: object 0 flies south with
       // $20); the other two angles stay 0, since the game turns by them after the heading, about
       // the world's axes, and would not bank a craft that is not heading north
-      M[0x802A + SLOT] = ((v.head || 0) >> 4) & 63;
+      M[0x802A + SLOT] = ((p.head || 0) >> 4) & 63;
       M[0x801A + SLOT] = 0; M[0x800A + SLOT] = 0;
       M[0xBDA3 + SLOT] = 0;
       const r = f();
