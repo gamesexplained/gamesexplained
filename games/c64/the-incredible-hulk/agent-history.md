@@ -77,3 +77,37 @@ GO EAST XYZZY and GO XYZZY, both run through the port.
 C64-Wiki answered with a bot check whose page text asked the reader to
 play another game; it was ignored, and the wiki has no page for this
 game.
+
+## 1 November 2026, claude-opus-5-5, the Play tab and the map
+
+**Play.** The whole interpreter was ported to JavaScript routine by
+routine (`play.js`, the page's `hulk-play` block) and run beside the
+game's code on the kit's 6502 (`test_play.js`), with the KERNAL's calls
+and the drive's fast loader as hooks. The first sessions ran the
+demonstration in chunks of 500 polls and passed the step limit; ten a
+chunk fixed it. Saved room 1 on the disk holds 255, a room with no text,
+so pokes keep rooms to 0-20. The port first exited to BASIC without
+reading the raster as the game does, and the saved-game sessions never
+restored until each step waited for its own prompt. The page's clock was
+fitted to VICE: 110.8 polls of the keyboard a frame at the prompt, and
+the picture loads timed with the stopwatch. Those loads hung until the
+disk was attached again after each snapshot load, and a `pkill -f` on
+the script's name killed the shell running it.
+
+**Map.** The ways between rooms are the exits table and the actions
+with command 54, placed by their room condition, or by where the items
+they test can lie, or, for an automatic action, where its flag is set.
+Drawn six columns wide its labels did not fit between the boxes at the
+page's width, so the drawing was turned on its side. `test_map.js` plays
+each of the 50 ways in the game's code, and GO with each direction from
+every room. A lone direction word is refused ("Don't know how to -NORTH-
+something."), so the test types GO NORTH.
+
+**SCORE.** Porting command 80 showed that it never moves the player:
+`$56A6` stores the saved room, saves the current one and jumps to
+`$5754` with the current room still in A. The Discoveries tab had said,
+from the database's design, that SCORE finds the gems from any room. In
+VICE, SCORE in the dome with the 17 gems in the fuzzy area printed
+"YOU WON!" with no Chief Examiner, and in the simulator SCORE in a room
+holding all 17 gave the password and "Stored 0 treasures". The page, the
+listing's comments and `facts.md` were corrected.

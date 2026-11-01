@@ -87,15 +87,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · The end</p>
   <h2 class="t">Winning gives a password that this game never asks for</h2>
-  <p class="lede">With all seventeen gems in the fuzzy area, SCORE brings the Chief Examiner, who gives a word to keep.</p>
+  <p class="lede">With all seventeen gems in the fuzzy area, SCORE typed there brings the Chief Examiner, who gives a word to keep.</p>
   <div class="plate">
     <div class="hk-two">
-      <figure class="hk-fig"><img src="reference/aria-password.png" alt="The Chief Examiner at his desk; the text reads: Chief Examiner appears and says: Save this password: ARIA" width="384" height="272"><figcaption>In the emulator, after SCORE with the gems put in room 16.</figcaption></figure>
+      <figure class="hk-fig"><img src="reference/aria-password.png" alt="The Chief Examiner at his desk; the text reads: Chief Examiner appears and says: Save this password: ARIA" width="384" height="272"><figcaption>In the emulator, after SCORE in the fuzzy area with the gems put there. The room was set by a poke, so the text above SCORE is still the first room's.</figcaption></figure>
       <div id="hk-aria" class="hk-out"></div>
     </div>
     <p class="cap">The actions read by the page from the database in the listing. The game prints the password's quotation marks as hyphens, because its printing routine (<code>$66A5</code>) turns every <code>"</code> into <code>-</code>.</p>
   </div>
-  <p>SCORE is action 202, and six more actions, each going on into the next, make it one long rule. Action 202 swaps the player's room with saved room 0, which holds the fuzzy area, so that "is here" now means "is in the fuzzy area". It also sets the counter, a number the actions can test, to 4. Actions 203 to 206 test the gems in groups of five, four, four and four. Each takes one from the counter only when the one before it did. If the counter reaches 0, action 207 prints message 84, pauses twice and shows picture 87, the Chief Examiner at his desk with the gems in front of him. Action 208 puts the room and the counter back, describes the room and gives the score, which ends the game when every treasure is in. Because of the swap, SCORE finds the gems from any room. The manual says nothing of a password, and nothing in the game asks for one.</p>
+  <p>SCORE is action 202, and six more actions, each going on into the next, make it one long rule. Action 202 is written to swap the player's room with saved room 0, which holds the fuzzy area, so that "is here" would mean "is in the fuzzy area". It also sets the counter, a number the actions can test, to 4. Actions 203 to 206 test the gems in groups of five, four, four and four. Each takes one from the counter only when the one before it did. If the counter reaches 0, action 207 prints message 84, pauses twice and shows picture 87, the Chief Examiner at his desk with the gems in front of him. Action 208 swaps back, puts the counter back, describes the room and gives the score, which ends the game when every treasure is in the fuzzy area. The manual says nothing of a password, and nothing in the game asks for one.</p>
+  <p>The swap never happens. Command 80 (<code>$56A6</code>) puts the saved room in, saves the player's room, and then jumps to the routine that sets the room (<code>$5754</code>) with the player's room still in hand, so the player stays put and "is here" keeps meaning the room they stand in. SCORE typed anywhere but the fuzzy area still wins the game when the gems are there, since the score itself counts that room, but the Chief Examiner never comes. Leave all seventeen gems in another room and type SCORE there, and he comes and gives the password, while the score says 0 treasures are stored.</p>
 </section>
 
 <section>
@@ -430,7 +431,7 @@ const HulkDB = (function () {
       case 77: return 'take one from the counter';
       case 78: return 'print the counter';
       case 79: return `set the counter to ${nx()}`;
-      case 80: return 'swap the room with saved room 0';
+      case 80: return 'put the room in saved room 0, where a swap was meant, and stay in it';
       case 81: return `swap the counter with saved counter ${nx()}`;
       case 82: return `add ${nx()} to the counter`;
       case 83: return `take ${nx()} from the counter`;
