@@ -118,24 +118,19 @@ def virtual_display(cmd, env):
     """The GUI build needs an X display. A Linux server or container has none; give it a virtual one.
 
     xvfb-run starts Xvfb on a free display number, runs the emulator on it and stops it when the
-    emulator exits. Nothing is drawn anywhere, and screenshots still work: VICE renders them itself.
-
-    Nothing is heard either, and such a machine usually has no sound device: VICE then turns its
-    sound off, and with it off the SID's reads are not the chip's ($D41B and $D41C read the low
-    byte of the cycle counter, the write-only registers 0; VICE's sid.c). Its `dummy` device is
-    no better: nothing drains its buffer, so once the buffer fills the SID stops being clocked
-    and voice 3 and the data bus freeze (v3.13.2, 7 October 2026). The `fs` device writing to
-    /dev/null keeps the chip clocked as on a machine with sound (kit/c64/sid_bus.py, #194)."""
+    emulator exits. Nothing is drawn anywhere, and screenshots still work: VICE renders them itself."""
     if not sys.platform.startswith("linux") or env.get("DISPLAY") or env.get("WAYLAND_DISPLAY"):
         return cmd
     if not shutil.which("xvfb-run"):
         sys.exit("no display and no xvfb-run: install Xvfb (Debian/Ubuntu: xvfb), or run with a desktop session")
     env["NO_AT_BRIDGE"] = "1"      # no accessibility bus in a container; GTK waits for it otherwise
-    return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd + ["-sounddev", "fs", "-soundarg", os.devnull]
+    return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd
 
 
-def vice_command(exe):
-    """The emulator with its MCP server, its monitor (#236), and RAM that powers on the same every time.
+def vice_command(exe, env=None):
+    """The emulator with its MCP server, its monitor (#236), RAM that powers on the same every time,
+    and, where the computer's own sound output is missing or stalls it, its sound written to
+    nowhere (quiet() and SOUND, below).
 
     VICE fills RAM at power-on with a pattern of $00 and $FF runs and then flips random bits in it
     (its RAMInitRandomChance), so two cold boots of one disk differ wherever nothing has written yet,
@@ -143,7 +138,27 @@ def vice_command(exe):
     two captures of a game differ only where it did something."""
     return [exe, "-mcpserver", "-mcpserverport", str(VICE_PORT),
             "-remotemonitor", "-remotemonitoraddress", f"127.0.0.1:{MONITOR_PORT}",
-            "-raminitrandomchance", "0"]
+            "-raminitrandomchance", "0"] + (SOUND if quiet(os.environ if env is None else env) else [])
+
+
+# Sound stays on everywhere. With it off the SID's reads are not the chip's ($D41B and $D41C read
+# the low byte of the cycle counter, the write-only registers 0; VICE's sid.c), and a snapshot saved
+# that way does not start the SID when loaded with sound on. VICE's `dummy` device is no better:
+# nothing drains its buffer, so the SID is not clocked (sid_bus.clocked() fails on it). On a
+# desktop the sound goes to the computer's speakers, so a contributor hears the game. Where there
+# is no display there is usually no sound device either, and VICE would turn its sound off; under
+# WSL, WSLg's PulseAudio stalled the emulator (#634). There the `fs` device writes it to /dev/null,
+# which clocks the chip and is heard by nobody (kit/c64/sid_bus.py, #194).
+SOUND = ["-sound", "-sounddev", "fs", "-soundarg", os.devnull]
+
+
+def quiet(env):
+    """True where the emulator's sound goes to /dev/null: Linux with no display, and WSL."""
+    if not sys.platform.startswith("linux"):
+        return False
+    if not (env.get("DISPLAY") or env.get("WAYLAND_DISPLAY")):
+        return True
+    return bool(env.get("WSL_DISTRO_NAME")) or "microsoft" in os.uname().release.lower()
 
 
 def vice(machine="x64sc"):
@@ -182,7 +197,7 @@ def vice(machine="x64sc"):
     data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
     if os.path.isdir(share) and not os.path.lexists(data):
         os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
-    start(virtual_display(vice_command(exe), env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+    start(virtual_display(vice_command(exe, env), env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
           port=VICE_PORT, name="emulator")
     if not mcp_answers(VICE_PORT):
         print(f"but its MCP server did not answer a first call within 10 s: the port is open and the emulated machine is not\n"

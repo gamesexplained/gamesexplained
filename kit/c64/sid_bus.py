@@ -24,7 +24,7 @@ Usage:
 What is measured is the emulator's model of the chip (its SID engine, named in the
 fixture), not a physical SID: real chips fade bit by bit, at rates that differ from chip to
 chip and with temperature. The emulator must be clocking the SID: with its sound off, or on
-a sound device nothing drains, VICE's reads are not the chip's (virtual_display in
+a sound device nothing drains, VICE's reads are not the chip's (SOUND in
 kit/c64/tools.py), and record stops with that.
 """
 import json, os, re, sys, time
@@ -205,7 +205,7 @@ def record():
             em.set_model(model)
             if not clocked(em):
                 raise SystemExit("the emulator is not clocking its SID, so its reads are not the chip's: "
-                                 "start it with sound on (kit/c64/tools.py, virtual_display)")
+                                 "start it with sound on (kit/c64/tools.py, SOUND)")
             out["engine"] = engine()
             rows = []
             for case in CASES:
