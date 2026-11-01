@@ -25,6 +25,10 @@ A comment that names a routine or table by an automatic name the address
 no longer has (s_10B4, renamed show_bonus since) is printed after the
 export: the listing shows only the new name, so a reader cannot follow it.
 
+A user label "start" at an address the machine names as its own (the C64's
+and the C16's $0000, the processor's port) is written under that name, from
+kit/<platform>/registers.py, and the export says so.
+
 A program in BASIC is declared in game.json (a part's part.json) as
 "basic": [["$0801", "$1A2F", "the loader"]], its first line to the two zero
 bytes that end it, and the export types it "BASIC", which the disassembler
@@ -322,6 +326,21 @@ def old_names(syms, comments):
             if old not in names and int(a, 16) in now]
 
 
+def port_names(plat, syms):
+    """[(address, new name)]: a user label "start" at an address the platform names as its own
+    (kit/<platform>/registers.py, CENSUS_OTHER, such as the C64's $0000), renamed in syms. A
+    project made from a snapshot begins at $0000, and that first address has come back as a user
+    label "start", so a write to the processor's port read `sta start` (#643)."""
+    path = os.path.join(KIT, plat or "", "registers.py")
+    own = getattr(load_by_path(path, f"{plat}_registers"), "CENSUS_OTHER", {}) if os.path.exists(path) else {}
+    done = []
+    for s in syms:
+        if s.get("kind") == "user" and s["name"] == "start" and s["address"] in own:
+            s["name"] = own[s["address"]]
+            done.append((s["address"], s["name"]))
+    return done
+
+
 def platform_of(game):
     """game.json's platform, which every game must name (kit/PLATFORMS.md)."""
     plat = game.get("platform")
@@ -407,6 +426,7 @@ def main():
         blocks, syms, comments = read_live(plat, session)
         source = "regenerator2000 live" if plat == "c64" else "live"
     blocks = basic_blocks(blocks, game)
+    ported = port_names(plat, syms)
     reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
         blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"], game.get("names") or [])
@@ -447,6 +467,9 @@ def main():
         json.dump(out, f, indent=1)
     users = sum(1 for s in syms if s['kind'] == 'user')
     print(f"wrote {path}: {len(blocks)} blocks, {len(syms)} symbols ({users} user), {len(comments)} comments")
+    for a, name in ported:
+        print(f"renamed the user label start at ${a:04X} {name}, the name kit/{plat}/registers.py gives the "
+              "machine's own byte there; rename it in the session too")
     if stray:
         print(f"left out {stray} automatic symbol(s) that only the code of a part beneath refers to, at addresses "
               "this part's load replaced: the session minted them tracing that code")
