@@ -59,6 +59,20 @@ same way, so tiers mean the same thing everywhere.
    to carry into it.
 5. Repeat until the tier you are aiming for is met.
 
+### Code the game holds more than once
+
+A routine written out once for each voice, an engine each part carries
+at an address of its own, a level's code assembled again elsewhere:
+describe one copy, then carry its names and comments to the others with
+`kit/scripts/carry.py` on a 6502 machine. `find` says where the copies
+are, `pair` pairs one with the source and reports where it differs, and
+`apply` writes what it carried into the copy's `symbols.json`. A carried
+comment reads as right and can still describe the first copy only, where
+the copy calls another routine, loads another constant or holds other
+data, so read again against the copy's own bytes each one `pair` flags.
+Keep the pairing files in `work/carry/`: when a comment in the source is
+corrected, `pair` and `apply` again carry the correction to every copy.
+
 ### When the disassembler does not follow control flow
 
 Where the disassembler walks the code and mints a symbol at every branch
