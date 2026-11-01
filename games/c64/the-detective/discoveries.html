@@ -92,27 +92,34 @@ $BC68  jmp $2042      ; real bullets: the game is over</div>
   <p>When the clock reaches 11:03, an unseen assassin shoots Snide (<code>$2592</code>). Before it checks the time, the routine skips the shot when Snide is on the stairs, and when the room's type is 3. Type 3 is the type of rooms 26 and 28, outside the house. But the instruction reads <code>$1BC0</code> without an index: the type of room 0, the drawing room, which is 1 and which nothing in the game ever changes. The test never holds, so the assassin's shot finds Snide outside as well. The intended test was probably <code>LDA $1BC0,X</code> with the player's room in X, as the room builder reads the same table (<code>$38B2</code>).</p>
 </section>
 
+<section id="fire">
+  <p class="fig">06 · Bug</p>
+  <h2 class="t">Bug: about one press of fire in three is lost</h2>
+  <p>Fire in play opens the investigation menu, but often it does nothing and has to be pressed again. A press reaches the menu through a latch at <code>$0129</code>, which <code>read_joystick</code> (<code>$2200</code>) sets when it finds fire newly pressed. The same routine clears the latch every time it runs, and two callers run it: the main loop, once a pass, and the raster interrupt, once a frame (<code>$2A88</code>). The main loop also tests and throws away the latch at the top of every pass (<code>$2224</code>). The menu's own test (<code>$3FAE</code>) comes later in the pass. A latch set by one caller and cleared by another, or thrown away at the top of the pass, before that test reads it is a press lost.</p>
+  <p>Measured in the emulator, in the hall: 60 presses of fire, each held for six frames and started at a random moment, opened the menu 37 times. In each of the other 23, the game read the press and set the latch once, and the menu's test never found it set.</p>
+</section>
+
 <section id="carry">
-  <p class="fig">06 · Quirk</p>
+  <p class="fig">07 · Quirk</p>
   <h2 class="t">Five things in Snide's hands, not six</h2>
   <p>Zzap!64's review says Snide can carry six items. The code counts what he holds and refuses the next one at five: "YOU CAN/T CARRY ANY MORE!" (<code>$30CF</code>, counting through <code>$883B</code>). Carrying more means putting things inside other things: a briefcase, a jacket or a bag holds five more (<code>$8856</code>), and the evidence envelopes hold ten.</p>
 </section>
 
 <section id="tenth">
-  <p class="fig">07 · Quirk</p>
+  <p class="fig">08 · Quirk</p>
   <h2 class="t">Ten script pointers from a table of nine</h2>
   <p>At the start of a game, <code>init_scripts</code> (<code>$A7E6</code>) copies each character's script start from the table at <code>$A7FB</code>. The loop counts from 9 down to 0, which is ten entries for nine characters. The tenth start is read from the two bytes after the table, the first instruction of the next routine (<code>$A80D</code>: <code>LDY #$01</code>), as the address <code>$01A0</code>. Its low byte lands in character 0's pointer high byte, which the loop's last pass then overwrites, and its high byte, 1, in character 0's chosen door (<code>$1E7F</code>), which the Reverend's script replaces before he first uses a door.</p>
 </section>
 
 <section id="leftovers">
-  <p class="fig">08 · Quirk</p>
+  <p class="fig">09 · Quirk</p>
   <h2 class="t">Old word lists under the icons</h2>
   <p>The icon characters at <code>$4E00</code>, where the panel's icon pictures are copied when a menu opens (<code>$873F</code>), hold leftovers of the game's development until then: two older copies of the word list, one spelling the vicar's title "THE REVERAND". The first menu overwrites them.</p>
   <p>Three pictures in the icon set are never given an action. Icons 4, 5 and 17 have pictures at <code>$FA00</code> like the others, but their entries in the table of icon handlers point at a lone <code>RTS</code> (<code>$883A</code>), so choosing one does nothing. The How it works page draws all eighteen.</p>
 </section>
 
 <section id="guest">
-  <p class="fig">09 · Quirk</p>
+  <p class="fig">10 · Quirk</p>
   <h2 class="t">"GUEST ERROR.."</h2>
   <p>When a script asks a character to walk to a room that no door leads to from where they stand, or to use a door it never chose, the screen flashes red and the game prints "GUEST ERROR.." in that character's voice (<code>$A618</code>). It is a check the author left in for his scripts.</p>
 </section>

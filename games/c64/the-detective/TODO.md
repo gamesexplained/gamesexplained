@@ -7,7 +7,8 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 100 % coverage; `facts.md`; a sample of 60 comments checked (14 wrong,
 all corrected, `facts.md`, "The listing's error rate"); the minisite with
-the two tunes, the cast's scripts and every room drawn.
+the two tunes, the cast's scripts, every room with its doors, the menu
+pointer and the order of the murders.
 
 ## Recommended next
 
@@ -18,17 +19,23 @@ the two tunes, the cast's scripts and every room drawn.
 
 ## Questions for the contributor
 
-- Which icon picture is which action? The handlers are known
-  (`$87ED`); the pictures were not matched to them on screen.
 - Is the second tune heard anywhere besides the first visit to a room
   where someone has died?
+- Does anyone have the original inlay or instructions? None was found
+  online on 1 November 2026 (`features.md`, "Sources"), so the features
+  list rests on the game, Zzap!64, Wikipedia and the author's interview.
+- Is there an uncracked copy? Three cracks agree, but a change made
+  before all of them cannot be ruled out (`orientation.md`).
 
 ## Ideas
 
-- Draw the doors and the objects over the room pictures on the Maps tab
-  (door table `$1F00`, door drawing `$3993`).
-- A stepper for the menu pointer's momentum (`$315F`), ported and
-  tested against the game's code.
-- A recorded route through the winning moves (swap the bullets, fill the
-  envelopes, accuse Dingle), replayed on the page (`kit/skills/core/65-inputs`).
-- A timeline of the murders: which script waits for what (`$B09C`).
+- A recorded route through the whole game to the promotion, played from
+  the start with stick input only (`kit/skills/core/65-inputs`). The
+  ending is tested live from a state set by hand (`facts.md`, "Live
+  tests"); the route itself needs a bot that also walks Snide through
+  doors, opens the safe (the keyboard), names the library book, and waits
+  for each murder by being in the right rooms. `work/bot.py` already
+  drives the menus and the lists through the stick.
+- The doors' depth on the Maps tab: only their columns are marked; the
+  furniture's nearest and farthest depth (`$1B40`, `$1B60`) are not drawn.
+- How the lost fire presses depend on the room: measured only in the hall.

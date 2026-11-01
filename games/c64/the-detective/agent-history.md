@@ -42,3 +42,27 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   although the game restarted; the stack showed it waiting in `$25F8`.
 - No browser extension was connected; the pages were checked with
   headless Chrome (`--dump-dom`, `--screenshot`) on the built site.
+
+## Follow-ups, 1 November 2026
+
+- The contributor asked for the follow-ups, a search for the original
+  manual, a check against the other copies on their desktop, and no
+  reliance on the crackers' material. The original instructions were
+  not found online; `DETECTIVE DOX` is no longer a source, and the icon
+  list it gave was replaced by the game's own pictures. Its "file up" and
+  "file down" are the door icons (arrows up and down through a line);
+  three icons have pictures and no action.
+- Two disk images were run to `$2000` and compared with the tape's
+  hand-over. One is the same Trianon crack. The other, by WOW, waits on an
+  intro for Space and holds a machine frozen in play; its program is the
+  same as the tape's.
+- The start of a game resets the doors (`$8680`), so the Maps tab draws
+  that state, not the hand-over's.
+- The ending was played live with a bot that steers the momentum pointer
+  from memory. Its fire presses failed at first. A stick state set while
+  the emulator was stopped at a checkpoint never reached `$DC00`, and
+  presses started at a frame boundary were mostly lost. Pressing a random
+  number of instructions into a frame worked about two times in three,
+  which led to the measurement of the game's own lost presses.
+- Using the gun goes through the inventory (the gun's own menu offers
+  icon 6), not the "use" icon.
