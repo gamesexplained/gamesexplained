@@ -317,8 +317,8 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   (`$80` + n); 25 instruments with pulse-width and filter modulation from
   three triangle LFOs and voice 3's oscillator and envelope (`$0D3C`-`$0EB2`).
 - **The music is tuned for an NTSC machine:** the note table (`$0D15`-`$0D20`,
-  high byte 1) is within 5 cents of equal temperament at 1,022,727 Hz and
-  65-70 cents flat at the PAL 985,248 Hz (computed from the table with
+  high byte 1) is slightly flat of equal temperament at 1,022,727 Hz, by
+  at most 5.4 cents (D sharp), and 65-70 cents flat at the PAL 985,248 Hz (computed from the table with
   the formula in `c64-reference`), so this PAL release plays two-thirds
   of a semitone flat.
 - **Speech:** a one-bit player (`speech_irq`, `$311A`) toggles the SID's
@@ -357,6 +357,66 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
 - `$67,X` is written at four places and never read.
 - Never reached: `$3754`, `$379A`, the speech entries for samples 4-7
   (`$3170`-`$3185`), the routine at `$12ED` and `JMP $1AED` at `$115A`.
+
+## The listing's error rate
+
+- **Sample 1** (31 October 2026): seed 20261031, drawn from the 884
+  comments in `symbols.json`, in two strata: 60 of the 605 hand-written
+  comments, spread over each annotator's range in proportion to its size,
+  and 20 of the 279 comments written to a template (families of eight or
+  more with the same opening words: song patterns, instruments, reach
+  profiles, shape cells, sprite pointers). Checked by a checker on
+  claude-opus-5-5 that wrote none of them; its 13 findings were settled
+  against the code, one of them a false alarm (`$26D5`). 12 of the 80 were
+  wrong in a detail and none in their main claim: 10 of 60 hand-written
+  (16.7 %) and 2 of 20 template (10.0 %), 14.6 % weighted by stratum size;
+  95 % interval for 12 of 80, 8.8 % to 24.4 %, a lower bound on the true
+  rate. What was wrong: lists of writers, callers or clearing sites with
+  places missing (`$0059`, `$0063`, `$00B2`); a load cited as the store
+  (`$15F6`); "once per frame" for code run once per pass of the exchange
+  loop (`$1AFF`, `$2808`); the sprite-collision test read the wrong way
+  round (`$2808`); the back kick and back sweep said to land on a
+  defender's back when both fighters face the same way (`$124F`, `$7626`);
+  a hit-test flag described for one facing only (`$11A8`); the filter
+  sweep said only to add (`$0CC2`); a pointer's source table misnamed
+  (`$0027`); animation numbers said always to be move numbers (`$7720`).
+  All 12 were corrected, with six comments that said the same
+  (`$0099`, `$1A7C`, `$1E32`, `$1E44`, `$2B8E`, `$76D7`).
+- **Audit 1** (31 October to 1 November 2026): every one of the 884
+  comments checked by two checkers on claude-opus-5-5 that wrote none of
+  them, one after the other, each on its own range: `$0000`-`$198F`, 442
+  comments, 45 corrected; `$1990`-`$FFFF`, 442 comments, 76 corrected, 38
+  of them one wording slip repeated over the multiplexer's self-modified
+  sprite-pointer operands ("with X = `$20`" where the code loads X from
+  `$20`). 121 corrected in all, none wrong in its main claim. The rest
+  were of the sample's kinds: lists of writers, callers or readers with
+  places missing; cited addresses that were wrong, swapped or
+  mid-instruction (`$0200`/`$0300`, `$15F7`, `$2FF2`, `$7720`, which the
+  sample's own correction had got wrong); claims true on one path, one
+  facing or one level stated as general (`$118F`, `$11BD`, `$11D6`,
+  `$27F0`); and what a value or image is (pointers `$40`-`$47` and `$4F`
+  are the cells of frames `$4D` and `$4E`, a standing figure no animation
+  uses, and not the bull; the crouch restarted by `$2A8F` resumes at its
+  fourth and last step). Two comments could not be checked from this
+  game's bytes: `$27E4` and `$7E00`, which say they match Fist II's
+  tables. A third, `$00CF`, what the loader's menu calls the speech
+  setting, was checked against the hand-over snapshot (the text is at
+  `$C408` there), and its comment now says where.
+- **Sample 2** (1 November 2026, after the audit): seed 20261101, drawn
+  from the 884 comments as the audit left them, 41 of the 605
+  hand-written over each annotator's range and 19 of the 279 written to
+  a template. Checked by the checker of sample 1, which wrote and audited
+  none of them, on claude-opus-5-5. 4 of the 60 were wrong in a detail,
+  all hand-written (9.8 % of that stratum, 6.7 % unweighted; 95 %
+  interval for 4 of 60, 2.6 % to 15.9 %), over the mark of 2 in 60. What
+  was wrong: a clearing loop at `$12ED` cited as clearing the sprite
+  pointers, though nothing calls it, a line the audit had added to nine
+  comments (`$0006`); a store of 0 cited as a store of 1 (`$0088`); a
+  high-score place said to be above the first equal or higher score
+  where it is below (`$163A`); a hesitation said always to end in an
+  attack, which a random value of 0 does not (`$249B`). All 4 were
+  corrected, with the eight other sprite-pointer comments that said the
+  same (`$0002`-`$0012`).
 
 ## Live tests
 
