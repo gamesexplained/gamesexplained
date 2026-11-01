@@ -45,14 +45,14 @@ Sources:
 | Joystick in port 2: fire on the title screen starts the game | live | `orientation.md`; `reference/play-hall.png` |
 | Inspector Snide walks the mansion with the stick, the rooms drawn at an angle (Zzap: "3D ... Ultimate-style") | live | four directions tested from `work/play-hall.vsf`; `work/sheet.png` |
 | Controls with momentum: the author calls them "Newtonian physics" | traced | the menu pointer, not Snide's walking: `$315F` changes the pointer's speed with the stick and lets it coast and bounce (Zzap's reviewer: "the inertial cursor"); Snide steps at a fixed rate (`$34FE`) |
-| Fire opens the investigation menu: icons, chosen with an arrow (a pointing hand) moved by the stick, fire again to activate | live | `reference/investigation-menu.png`; `$34E9`, `$86EE`, `$87D9` |
+| Fire opens the investigation menu: icons, chosen with an arrow (a pointing hand) moved by the stick, fire again to activate | live | `reference/investigation-menu.png`; `$34E9`, `$86EE`, `$87D9`; about one press in three is lost, measured (`facts.md`, "Live tests"; Discoveries) |
 | Fire with nothing near answers "NOTHING HERE" | live | `reference/nothing-here.png`; `$8118` |
 | The border flashes when Snide is near something to investigate (Zzap, the author) | traced | the border, once on arrival: objects whose flag at `$E880` has bit 0 set (`$3845`) and doors (`$3E32`), not a closed secret passage |
 | The icons: 18 pictures, each with its action | traced | pictures drawn from the game's bytes (`$FA00`, 48 bytes each) and matched by number to the handlers at `$87ED`: 0 open box = open (list the contents), 1 magnifying glass = look, 2 notepad = inventory, 3 a red shape on a blue foot (perhaps a microscope) = put the chosen object into the furniture at hand, 6 gun = use the gun, 7 handcuffs = accuse, 8 and 9 arrows up and down through a line = open or close the door, 10 key = unlock, 11 "Q" = question, 12 open book = read, 13 knife and fork = consume, 14 cross = use, 15 clock face = time and pause, 16 box and envelope = put one carried object in another; 4, 5 and 17 have pictures and do nothing (`$883A`). The How it works page draws all 18 |
 | The icons offered depend on the situation | traced | each menu is built from a list or a mask for the situation (`$86EE`); questions need a character within 22 pixels across and 9 in depth (`$B2E1`) |
 | Accuse | traced | icon 7 (`$BB50`), in the icon lists of menus 0, 1 and 4 at `$8789` |
 | Inventory of six items, more with something to carry them in (Zzap) | differs | five: with five objects carried a sixth is refused, "YOU CAN/T CARRY ANY MORE!" (`$30CF`); an object or piece of furniture holds five more (`$8856`) |
-| Ten pieces of evidence, put in envelopes, before the accusation (the author) | traced | `$BB17` lists the ten; `$BB76` needs all in place `$C0` and Dingle accused |
+| Ten pieces of evidence, put in envelopes, before the accusation (the author) | confirmed | `$BB17` lists the ten; `$BB76` needs all in place `$C0` and Dingle accused. Live: refused without them; with them put in place `$C0` by hand, the arrest scene, the blanks, the escape and the win all ran (`facts.md`, "Live tests"). No win was played from the start |
 | Real time, with a time limit; lose the case if it runs out | live | the clock starts at `09:10` (`$2153`);  one minute per 3,000 frames, measured; the limit `11:03` ends the game (`$2592`), tried by setting the clock (`facts.md`, "Live tests") |
 | Pause, through the clock icon | traced | `$A1E0`: shows the time and waits for fire with the clock stopped |
 | Characters walk the house on their own: the Major, the Reverend Wrinklebottom, the cook Hilda Crumble, a butler, a professor, Cynthia Sludgebucket and others; Angus McFungus is the first victim | live | Bentley walks up and speaks at the start (`reference/`); the nine scripts at `$A904`-`$B18C`; the vicar is "REVERAND WRINKLEBUM" in the game; McFungus is not one of the cast |
@@ -93,7 +93,9 @@ Found in the code, not in the manual.
   blanks, and the promotion (`facts.md`, "Winning"). (traced)
 - The win needs a swap made beforehand: the blank bullets put where
   Dingle takes his ammunition (place `$18`) in place of the real ones.
-  (traced, `$B1E6`, `$BC5E`)
+  (traced, `$B1E6`, `$BC5E`; live from a state set by hand: with the
+  blanks there the gun clicks and Snide can make the arrest, with the
+  bullets the game ends)
 
 ## Open questions
 

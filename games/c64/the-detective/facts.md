@@ -360,5 +360,35 @@ recommended.
   came back, so they are not quoted.
 - *live*, 1 November 2026: with six icons, the menu box showed them three
   to a row at columns 27, 31 and 35 of rows 18-21 (`$32CE`).
+- *live*, 1 November 2026, the endings (`work/live_ending.py`,
+  `work/live_ending2.py`, `work/live_gun.py`, driven through the menus
+  with stick input on port 2 by `work/bot.py`, which reads the pointer
+  and the lists from memory to decide which way to push). From
+  `work/play-hall.vsf`, accusing Dingle with nothing prepared printed
+  "YOU DO NOT HAVE THE EVIDENCE TO PROVE IT". The rest started from a
+  state set by hand, not reached by play: the ten pieces of evidence in
+  place `$C0` and the elephant gun (object `$16`) carried. With the blank
+  bullets in place `$18`: the accusation ran the scene, took Snide to the
+  cellar (room 6) with Dingle, the blanks became Dingle's (`$F7`), the
+  message bar showed "HE PULLS THE TRIGGER, BUT NOTHING HAPPENS", and
+  Dingle's script moved to the escape (`$B159`). Left alone from there,
+  Dingle left every room (`$B202`), and the game reached its end
+  (`$203F`) and the title. Choosing the gun from the inventory instead
+  opened its menu (look, put in, use the gun: the mask at `$87BB`), and
+  using the gun ran the winning branch (`$BCEB`), not the refusal
+  (`$BCFF`). With the real bullets in place `$18`, Dingle took them
+  (`$F7`) and the game's end at `$2042` ran. No route to a win by play
+  was recorded.
+- *live*, 1 November 2026, lost presses (`work/live_fire_rate.py`): 60
+  presses of fire, six frames long, each at a random moment (a random
+  1-40 frames and 0-19,000 instructions after loading
+  `work/play-hall.vsf`), opened the menu 37 times. In all 23 others the
+  game read the press (`$4B` bit 7) and `read_joystick` set the latch
+  once (`$221B`), and the menu task's test (`$3FB3`, after `$3FAE`) never
+  found it set. `read_joystick` (`$2200`) clears the latch at every call
+  and is called both by the main loop (task 1, after task 0 has tested and
+  discarded the latch at `$2224`) and by the interrupt once a frame
+  (`$2A88`); a latch set by one call and cleared by another before the
+  menu task looks is a press lost.
 - *live*: fire on port 2 starts the game; the stick walks Snide in four
   directions; fire opens the menu (`features.md`).

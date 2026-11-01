@@ -49,6 +49,32 @@ Writing annotation files through `wsl.exe` from Git Bash: every `$` in a heredoc
   quoted.
 - A script in the working folder named `dis.py` shadowed Python's `dis`
   module, which `vice.py`'s imports load.
+- Follow-up session, driving the menus by stick input. We pressed fire
+  with `joy()` while the machine was stopped at a stopping checkpoint and
+  then ran frames. We expected the game to see the press. It did not:
+  `$DC00` never showed fire. The same press set after a
+  `vice_execution_step` was seen. We did not find out why; a state set
+  after a step, or at a pause from `pause()`/`frames()`, worked every
+  time we checked.
+- Presses set between two `frames()` calls always begin at the same
+  point of the frame, the vertical sync. In this game the interrupt at
+  line 10 reads the stick too. A press seen first by the interrupt can
+  be lost, so presses made that way failed far more often than presses
+  at random moments. Stepping a random 50 to 6,000 instructions into the
+  frame before the press made the bot behave like a player.
+- `vice.key()` is a context manager: called as a plain function it
+  presses nothing and raises no error. `with key(rpc, "SPACE"):` works.
+
+## Candidates (follow-up session)
+
+A bot that steers a game's own cursor from memory, frame by frame, with
+real stick input, turned "traced" claims about the endings into live
+ones without a recorded route. Pressing at the vertical sync made it
+unreliable in a way that looked like a bug in the bot and was partly a
+bug in the game. `kit/skills/core/65-inputs` could say that input given
+by the frame starts every press at the same point of the frame, and that
+a game reading its controls from an interrupt can treat such presses
+differently from a player's. Only this game is known to have needed it.
 
 ## System
 
