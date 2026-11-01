@@ -111,8 +111,9 @@ Verdict:
 
 ## Output
 
-Write a JSON list with one entry for every comment: `address`,
-`verdict`, `problem` (every wrong or doubtful detail, in a sentence or
+Write a JSON list with one entry for every comment: `address`, and
+`folder` when the comment came with one, `text` (the comment word for
+word as you were given it), `verdict`, `problem` (every wrong or doubtful detail, in a sentence or
 two; empty when right) and `evidence` (briefly, what you checked). Write
 it as you go, every ten comments or so, so that nothing is lost if you
 are stopped. When all are done, reply with the counts per verdict.
