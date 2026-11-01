@@ -118,24 +118,18 @@ def virtual_display(cmd, env):
     """The GUI build needs an X display. A Linux server or container has none; give it a virtual one.
 
     xvfb-run starts Xvfb on a free display number, runs the emulator on it and stops it when the
-    emulator exits. Nothing is drawn anywhere, and screenshots still work: VICE renders them itself.
-
-    Nothing is heard either, and such a machine usually has no sound device: VICE then turns its
-    sound off, and with it off the SID's reads are not the chip's ($D41B and $D41C read the low
-    byte of the cycle counter, the write-only registers 0; VICE's sid.c). Its `dummy` device is
-    no better: nothing drains its buffer, so once the buffer fills the SID stops being clocked
-    and voice 3 and the data bus freeze (v3.13.2, 7 October 2026). The `fs` device writing to
-    /dev/null keeps the chip clocked as on a machine with sound (kit/c64/sid_bus.py, #194)."""
+    emulator exits. Nothing is drawn anywhere, and screenshots still work: VICE renders them itself."""
     if not sys.platform.startswith("linux") or env.get("DISPLAY") or env.get("WAYLAND_DISPLAY"):
         return cmd
     if not shutil.which("xvfb-run"):
         sys.exit("no display and no xvfb-run: install Xvfb (Debian/Ubuntu: xvfb), or run with a desktop session")
     env["NO_AT_BRIDGE"] = "1"      # no accessibility bus in a container; GTK waits for it otherwise
-    return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd + ["-sounddev", "fs", "-soundarg", os.devnull]
+    return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd
 
 
 def vice_command(exe):
-    """The emulator with its MCP server, its monitor (#236), and RAM that powers on the same every time.
+    """The emulator with its MCP server, its monitor (#236), RAM that powers on the same every time,
+    and its sound on and written to nowhere (SOUND, below).
 
     VICE fills RAM at power-on with a pattern of $00 and $FF runs and then flips random bits in it
     (its RAMInitRandomChance), so two cold boots of one disk differ wherever nothing has written yet,
@@ -143,7 +137,18 @@ def vice_command(exe):
     two captures of a game differ only where it did something."""
     return [exe, "-mcpserver", "-mcpserverport", str(VICE_PORT),
             "-remotemonitor", "-remotemonitoraddress", f"127.0.0.1:{MONITOR_PORT}",
-            "-raminitrandomchance", "0"]
+            "-raminitrandomchance", "0"] + SOUND
+
+
+# Sound on, written to /dev/null, on every computer. With sound off the SID's reads are not the
+# chip's ($D41B and $D41C read the low byte of the cycle counter, the write-only registers 0;
+# VICE's sid.c), and a snapshot saved that way does not start the SID when loaded with sound on.
+# VICE's `dummy` device is no better: nothing drains its buffer, so the SID is not clocked
+# (sid_bus.clocked() fails on it). The host's own sound output can stall the emulator (WSLg's
+# PulseAudio) or never answer (a Mac whose output was a remote-desktop program's), and a machine
+# without one turns sound off. The `fs` device writing to /dev/null clocks the chip on all of them
+# (kit/c64/sid_bus.py, #194, #634). Nothing is heard.
+SOUND = ["-sound", "-sounddev", "fs", "-soundarg", os.devnull]
 
 
 def vice(machine="x64sc"):
