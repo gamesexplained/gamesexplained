@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Hold the Maps tab (levels.html) against the game's own drawing and printing.
+// Hold episode two's tab (the-bomb.html) and Building 17's plans (nato-documents.html) against the game's
+// own drawing and printing.
 // - tfp-names: tfpPrintName prints a place's two names as show_location ($A47C) does. Here episode
 //   two's print_name_0 ($A49D) and print_name_1 ($A4A4) run on the kit's simulator for each of the
 //   249 places, over episode two's listing with the OS's ($EB00-$FFFF) and the screen of the page's
@@ -11,20 +12,22 @@
 // - The presence texts: tfpText with episode two's dictionary ($C91C) must be the characters
 //   print_text ($AA3B) prints (a hook on the OS's $EC03) for each of the 96 in presence_texts.
 // - tfp-tiles: tfpTilePicture against show_tile_picture's three entries ($C427, $C43C, $C451), run
-//   from the office until it waits ($A8F0): the 14 by 7 cells at 13, 10 and their colours. tfpPlan
-//   against draw_plan ($7F97) on episode one's listing, and TFP_PLANS' windows against the
-//   arguments building_17 opens them with. The room names, joined, against show_room_name ($7F65).
-// - The tfp-text block must be the same in index.html and levels.html.
+//   from the office until it waits ($A8F0): the 14 by 7 cells at 13, 10 and their colours.
+// - tfp-plans, on nato-documents.html: tfpPlan against draw_plan ($7F97) on episode one's listing, and
+//   TFP_PLANS' windows against the arguments building_17 opens them with. The room names, joined,
+//   against show_room_name ($7F65).
+// - The tfp-text block must be the same in index.html, nato-documents.html and the-bomb.html.
 // It exits 1 on any difference.
-//   node games/c64/the-fourth-protocol/test_levels.js [levels.html]
+//   node games/c64/the-fourth-protocol/test_levels.js [the-bomb.html] [nato-documents.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] || 'levels.html';
-g.sameBlock('tfp-text', 'index.html', page);
+const g = game(__dirname), page = process.argv[2] || 'the-bomb.html', one = process.argv[3] || 'nato-documents.html';
+g.sameBlock('tfp-text', 'index.html', one, page);
 const { tfpWords, tfpText } = g.run(page, 'tfp-text', 'tfpWords', 'tfpText');
 const { tfpLocation, tfpPrintName, tfpGeiger } = g.run(page, 'tfp-names', 'tfpLocation', 'tfpPrintName', 'tfpGeiger');
-const { TFP_TILE_PICTURES, tfpTilePicture, TFP_PLANS, tfpPlan } = g.run(page, 'tfp-tiles', 'TFP_TILE_PICTURES', 'tfpTilePicture', 'TFP_PLANS', 'tfpPlan');
+const { TFP_TILE_PICTURES, tfpTilePicture } = g.run(page, 'tfp-tiles', 'TFP_TILE_PICTURES', 'tfpTilePicture');
+const { TFP_PLANS, tfpPlan } = g.run(one, 'tfp-plans', 'TFP_PLANS', 'tfpPlan');
 const { TFP_OFFICE } = g.run(page, 'TFP_OFFICE', 'TFP_OFFICE');
 const B = g.listing('parts/the-bomb/listing.json'), R = g.listing('parts/resident/listing.json');
 const N = g.listing('parts/nato-documents/listing.json');
@@ -134,5 +137,5 @@ for (let i = 0; i < 15; i++) {
   if (mine !== out) say('room name', i, JSON.stringify(out), '|', JSON.stringify(mine));
 }
 console.log('2 floor plans, 15 room names');
-console.log(bad ? bad + ' differences' : 'the Maps tab draws and prints what the game does');
+console.log(bad ? bad + ' differences' : 'the Episode 2 tab draws and prints what the game does');
 process.exit(bad ? 1 : 0);

@@ -6,11 +6,11 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=require('./layered.js')(game(__dirname));
-Object.assign(globalThis,g.run('index.html','labyrinth-dictionary','expandLabyrinthWord','labyrinthWords'));
-const {labDispatch,labRows,labReply}=g.run('index.html','lab-dispatch','labDispatch','labRows','labReply');
+Object.assign(globalThis,g.run('how-it-works.html','labyrinth-dictionary','expandLabyrinthWord','labyrinthWords'));
+const {labDispatch,labRows,labReply}=g.run('how-it-works.html','lab-dispatch','labDispatch','labRows','labReply');
 g.sameBlock('labyrinth-dictionary');
-const {labNextRandom}=g.run('index.html','lab-random','labNextRandom');
-const scenes=[...g.read('index.html').matchAll(/\['(scene-\d\d)',/g)].map(m=>m[1]);
+const {labNextRandom}=g.run('how-it-works.html','lab-random','labNextRandom');
+const scenes=[...g.read('how-it-works.html').matchAll(/\['(scene-\d\d)',/g)].map(m=>m[1]);
 assert.equal(scenes.length,21);
 let lookups=0,texts=0;
 for(const id of scenes){

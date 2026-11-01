@@ -18,7 +18,13 @@ from reading the code in the snapshot named in `orientation.md`.
 - Left in the image from development: a KERNAL loader at `$1000`
   (`dev_loader`) that loads the files `TITCOL`, `TITLES`, `SWMA` and
   `PAIN`, shows the title picture and copies `SWMA` to `$E000`; the title
-  picture itself (`$2000` bitmap, `$0C00` colours); and RAM fill patterns
+  picture itself (`$2000` bitmap, `$0C00` colours), which is the Spectrum
+  version's loading screen: 32 by 24 cells from column 4, 762 of the 768
+  cells the same bits as `ArmageddonManThe.scr` from Spectrum Computing's
+  archive, each Spectrum colour mapped to one C64 colour (black 0, blue 6,
+  red 2, magenta 4, green 5, cyan 14, yellow 7, white 1) and bright
+  dropped; the six that differ, row 0 columns 12-17, are blank on the C64
+  where the Spectrum file has the characters "2m20s2"; and RAM fill patterns
   in `window_records` (`$8C67`) and after the last text (`$CDD7`-`$CFFF`).
   `game_start` writes its state copy over `$1000`-`$1320` before anything
   could call the loader.
@@ -76,6 +82,16 @@ from reading the code in the snapshot named in `orientation.md`.
   M right, SPACE fire, `read_keys`), F3 a joystick in port 2
   (`read_joystick`). The choice rewrites the call in `read_controls`.
 - RESTORE does nothing: the NMI handler is a lone `rti` (`nmi`, `$62CB`).
+- The controls are read through zero page `$04`, which the interrupt
+  also writes while a radio message unscrambles (`unscramble_irq`
+  leaves a random number there). An interrupt between the main
+  program's store and its read (`read_controls` `$5156`-`$515B`,
+  `key_down` `$50F9`-`$5104`, `key_bit` `$5111`-`$511B`, the radio's
+  filter buttons `$7A48`-`$7A4B`) changes what the controls read: fire
+  held as a message opens can close it at once. *Lockstep*: of the 50
+  saved moments run 600 passes beside the port, the one that parts from
+  it does so where such an interrupt falls (`port/test/lockstep.js` names
+  it); the port reads `$04` as it stored it.
 
 ## Graphics
 

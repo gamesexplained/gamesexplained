@@ -1969,9 +1969,9 @@ def landed(games):
     pull request's title on the line after "Merge pull request #N"), or a commit pushed to
     main. It is dated when it landed, its committer time. kit-version.yml's bump is not a
     change of its own; its number goes in the bumps, [time, version]. Each change is
-    {t, sha, pr, title, who, areas, games, added, removed, fixes}: games the folders it
+    {t, sha, pr, title, who, areas, games, added, removed, kits, fixes}: games the folders it
     touched, added and removed the game.json files it added and deleted (which is how the
-    total is counted), fixes the issues its message closes ("Closes #12", which a squash
+    total is counted), kits the platforms whose kit/<platform>/tools.py it added, fixes the issues its message closes ("Closes #12", which a squash
     merge copies from the pull request), and who its people, named as on the home page's
     New and updated row (credit): agents and bots left out, and so is anyone a game it
     touched lists as uncredited."""
@@ -1991,7 +1991,7 @@ def landed(games):
         if KIT_BUMP.fullmatch(subject.replace(" [skip ci]", "")) and is_agent(email):
             bumps.append([t, KIT_BUMP.match(subject).group(1)])
             continue
-        paths, added, removed = [], [], []
+        paths, added, removed, new_kits = [], [], [], []
         for ln in files.strip("\n").split("\n"):
             status, *ps = ln.split("\t")
             paths += ps
@@ -2000,6 +2000,9 @@ def landed(games):
                 added.append(m.group(1))
             elif m and status == "D":
                 removed.append(m.group(1))
+            k = re.fullmatch(r"kit/([^/]+)/tools\.py", ps[0]) if ps else None
+            if k and status == "A":
+                new_kits.append(k.group(1))
         touched = sorted({"/".join(p.split("/")[1:3]) for p in paths if p.startswith("games/") and p.count("/") >= 3})
         pr, title = None, subject
         m = SQUASHED.search(subject) or MERGED.match(subject)
@@ -2022,7 +2025,7 @@ def landed(games):
             who.setdefault(login or nm, [nm, login])
         change = {"t": t, "sha": sha[:10], "pr": pr, "title": title, "who": list(who.values()),
                   "areas": (["new"] if added else []) + areas(paths), "games": touched, "added": added, "removed": removed,
-                  "fixes": sorted({int(n) for n in CLOSES.findall(body)} - {pr})}
+                  "kits": new_kits, "fixes": sorted({int(n) for n in CLOSES.findall(body)} - {pr})}
         changes.append({k: v for k, v in change.items() if v or k in ("t", "sha", "title", "areas")})   # the page reads a field left out as empty
     changes.reverse()
     bumps.reverse()
@@ -2177,31 +2180,28 @@ def and_more(gs, shown=2):
     return " and ".join(filter(None, [", ".join(links[:-1]), links[-1]])) if links else ""
 
 
-def contributor_board(changes, games, leave_out=()):
+def contributor_board(changes, games, leave_out=(), have=None):
     """[(name, login, pull requests merged, games, [platform ids])] per person, most pull requests first.
 
     Read from the changes that landed on main (landed): a pull request counts for each person it
     credits, a game for each person credited on the change that added its game.json, so long as the
-    game is still on the site, and the platforms are the ones those games are on, most of their
-    games first. The people in leave_out, by GitHub login or git author name, compared without
-    case, are left out."""
+    game is still on the site, and a platform for each person credited on the change that added its
+    kit (kit/<platform>/tools.py), so long as the kit is still in have (kits()). The people in
+    leave_out, by GitHub login or git author name, compared without case, are left out."""
     out = {str(x).strip().lower() for x in leave_out}
     on_site = {f'{g["platform"]}/{g["slug"]}' for g in games}
+    have = set(kits() if have is None else have)
     rows = {}
     for c in changes:
         for name, login in c.get("who", []):
             if (login or "").lower() in out or name.lower() in out:
                 continue
-            r = rows.setdefault(login or name, {"name": name, "login": login, "prs": 0, "games": set()})
+            r = rows.setdefault(login or name, {"name": name, "login": login, "prs": 0, "games": set(), "kits": set()})
             r["prs"] += 1 if c.get("pr") else 0
             r["games"] |= set(c.get("added", [])) & on_site
-    def platforms(gs):
-        n = {}
-        for g in gs:
-            n[g.split("/")[0]] = n.get(g.split("/")[0], 0) + 1
-        return sorted(n, key=lambda p: (-n[p], p))
-    return sorted(((r["name"], r["login"], r["prs"], len(r["games"]), platforms(r["games"]))
-                   for r in rows.values() if r["prs"] or r["games"]),
+            r["kits"] |= set(c.get("kits", [])) & have
+    return sorted(((r["name"], r["login"], r["prs"], len(r["games"]), sorted(r["kits"]))
+                   for r in rows.values() if r["prs"] or r["games"] or r["kits"]),
                   key=lambda r: (-r[2], -r[3], -len(r[4]), (r[1] or r[0]).lower()))
 
 
@@ -2271,7 +2271,7 @@ def status_page(games, changes=None):
                   '<th></th><th>Tiers</th></tr>' + board + '</table></div>'
                   + (f'<p class="mute">The other {others} systems on this page have none.</p>' if per and others else ""))
 
-    people = contributor_board(changes, games, (S.get("contributors") or {}).get("leave_out") or [])
+    people = contributor_board(changes, games, (S.get("contributors") or {}).get("leave_out") or [], have)
     people_html = ('<div class="tablewrap"><table class="people"><tr><th class="num">#</th><th>Contributor</th>'
                    '<th class="num">PRs merged</th><th class="num">Games</th><th>Platforms</th></tr>'
                    + "".join(f'<tr><td class="num rank">{i}</td><td><b>{person_html(nm, login)}</b></td><td class="num">{prs}</td>'

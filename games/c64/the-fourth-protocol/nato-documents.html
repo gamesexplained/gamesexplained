@@ -1,0 +1,1977 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Fourth Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+h3.tfp-h{font-size:19px;margin:28px 0 8px}
+.tfp-pics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tfp-pics figure{margin:0}
+.tfp-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.tfp-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.tfp-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.tfp-stack{position:relative}
+.tfp-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent;pointer-events:none}
+.tfp-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.tfp-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.tfp-btn:hover{border-color:var(--ink-mute)}
+.tfp-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tfp-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.tfp-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.tfp-tbl th,.tfp-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.tfp-tbl th{font-weight:700;color:var(--ink-soft)}
+.tfp-tbl td.tfp-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.tfp-tbl tr.tfp-on td{background:var(--hl)}
+.tfp-wide{overflow-x:auto}
+.tfp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px}
+.tfp-grid button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:5px 0;cursor:pointer;background:var(--surface)}
+.tfp-grid button.tfp-zero{background:#f6d8d3;border-color:#e2a99f}
+.tfp-grid button.tfp-dead{background:#f7e3bf;border-color:#e0bd7c}
+.tfp-grid button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.tfp-key{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.tfp-key i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-1px;margin-right:5px}
+.tfp-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.tfp-pick select{font:inherit;font-size:14px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);max-width:100%}
+.tfp-memo{background:#000;border-radius:4px;padding:10px;overflow-x:auto}
+.tfp-memo canvas{display:block;image-rendering:pixelated;margin:0 auto}
+.tfp-codes{font-family:var(--fm);font-size:12.5px;line-height:1.9;margin:12px 0 0;word-break:break-word}
+.tfp-codes span{display:inline-block;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:0 3px 3px 0;background:var(--surface-2)}
+.tfp-codes span b{font-weight:500;color:var(--ink-mute);margin-right:4px}
+.tfp-icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.tfp-icons figure{margin:0;text-align:center}
+.tfp-icons canvas{display:block;margin:0 auto 4px;image-rendering:pixelated;background:#000;border-radius:3px;max-width:100%}
+.tfp-icons figcaption{font-size:12px;color:var(--ink-mute);line-height:1.35}
+.tfp-line{font-family:var(--fm);font-size:15px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;text-transform:uppercase;background:#40318d;color:#a5a5ff}
+.tfp-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.tfp-chips button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:3px 8px;cursor:pointer;background:var(--surface-2)}
+.tfp-parse{font-family:var(--fm);font-size:13.5px;line-height:1.7;margin:12px 0 0;min-height:5em}
+.tfp-parse .tfp-hit{background:var(--hl);border-radius:3px}
+@media (max-width:640px){ .tfp-pics{grid-template-columns:minmax(0,1fr)} :root{--gx:16px;--pp:14px} }
+.lv-info{margin:14px 0 0}
+.lv-info .tfp-tbl th{width:10em}
+.lv-map{display:block;width:100%;min-width:480px;max-width:668px;height:auto;margin:0 auto;cursor:pointer}
+.lv-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.lv-tiles figure,.lv-plans figure{margin:0}
+.lv-tiles figcaption,.lv-plans figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.lv-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.lv-doors{font-size:14px;margin:8px 0 0;padding-left:22px;line-height:1.6}
+.lv-doors li{cursor:default}
+.lv-doors li:hover{background:var(--hl)}
+.lv-scroll{max-height:560px;overflow:auto}
+.lv-scroll .tfp-tbl a{color:var(--link)}
+@media (max-width:640px){ .lv-plans{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:640px){ .lv-info .tfp-tbl th{width:auto} }
+.tfp-tl{display:grid;grid-template-columns:11em repeat(40,minmax(15px,1fr));min-width:760px;font-size:12px;row-gap:2px;margin:0 0 4px}
+.tfp-tl>div{min-height:26px;position:relative}
+.tfp-tl .tfp-d0,.tfp-tl [class^="tfp-d"]{font-family:var(--fm);font-size:10.5px;color:var(--ink-mute);text-align:center;min-height:18px;border-bottom:1px solid var(--line)}
+.tfp-tl .tfp-d0{text-align:left;padding-left:6px}
+.tfp-tl .tfp-r{font:inherit;font-size:13px;text-align:left;background:none;border:0;border-radius:5px;padding:3px 6px;cursor:pointer;color:var(--ink);line-height:1.25}
+.tfp-tl .tfp-r:hover{background:var(--surface-2)}
+.tfp-tl .tfp-r[aria-pressed="true"]{background:var(--accent);color:#fff}
+.tfp-tl .tfp-c{border-left:1px solid var(--line-soft);cursor:pointer}
+.tfp-tl .tfp-d5{border-right:1px solid var(--line)}
+.tfp-tl .tfp-c.tfp-w{background:#dce8f5}
+.tfp-tl .tfp-c.tfp-sel{box-shadow:inset 0 -2px 0 var(--accent)}
+.tfp-tl .tfp-m{position:absolute;left:1px;right:1px;top:4px;bottom:4px;display:flex;align-items:center;justify-content:center;background:var(--amber);color:#fff;border-radius:4px;font-family:var(--fm);font-size:9px;letter-spacing:-.4px;overflow:hidden;z-index:1}
+.tfp-tl .tfp-wl{position:absolute;left:3px;top:2px;white-space:nowrap;font-size:11px;color:var(--cyan);font-weight:700;z-index:2;pointer-events:none}
+.tfp-tl .tfp-wl.tfp-wl2{top:auto;bottom:-3px}
+.tfp-tl>div.tfp-c{min-height:30px}
+.tfp-key i.tfp-key-m{background:var(--amber);border-color:var(--amber)}
+.tfp-key i.tfp-key-w{background:#dce8f5}
+#tfp-story-out{margin:18px 0 0}
+#tfp-story-out h3.tfp-h{margin-top:0}
+.tfp-steps{margin:10px 0 0;padding-left:24px}
+.tfp-steps>li{margin:0 0 16px}
+.tfp-steps p{margin:4px 0 6px}
+.tfp-st{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.tfp-when{font-size:13px;color:var(--ink-mute)}
+.tfp-code{font-size:13px;color:var(--ink-mute);margin-left:auto}
+.tfp-fx{display:inline-block;font-size:12.5px;line-height:1.35;border:1px solid var(--line);border-radius:10px;padding:1px 8px;margin:2px 2px 2px 0;background:var(--surface-2);color:var(--ink-soft)}
+.tfp-fx.tfp-up{background:#e1f2e6;border-color:#a9d6b6;color:#1d6b36}
+.tfp-fx.tfp-down{background:#f8e1dd;border-color:#e2a99f;color:#a1352a}
+.tfp-fx.tfp-none{font-style:italic}
+.tfp-ch{margin:6px 0 0}
+.tfp-ch td.tfp-ans{font-family:var(--fm);font-size:12.5px;width:34%}
+.tfp-best{display:block;font-family:var(--fb);font-size:11.5px;font-weight:700;color:var(--green);margin-top:2px}
+@media (max-width:640px){ .tfp-ch td.tfp-ans{width:auto} .tfp-code{margin-left:0} }
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Hutchinson Computer Publishing (UK); Bantam Software (US)</p>
+  <h1>The Fourth Protocol</h1>
+  <p class="sub">Episode one, The NATO Documents: forty days at Cencom, where every story-line starts on a fixed day and only one of them, the NATO leak, can win the game.</p>
+</header>
+<main class="wrap">
+
+<section data-part="nato-documents" id="episode-one">
+  <p class="fig">01 · Episode one</p>
+  <h2 class="t">Forty days at Cencom</h2>
+  <p class="lede">Episode one runs on a clock. A day lasts 14,400 frames, 4 minutes 48 seconds on a European machine. The game gives you 40 days to find who is passing NATO's papers on.</p>
+  <p>The clock is the raster interrupt, which the video chip raises once a frame: <code>day_clock</code> (<code>$5C38</code>) counts the frames and ends the day when the count reaches 14,400. The calendar starts in June and turns to July with a picture of an L drawn over the N of JUN (<code>pic_calendar_l</code>).</p>
+  <p>Everything that happens is an event in one of four lists, from <span data-part=""><code>$1000</code></span> on: the story's memos, the reports, the watchers' findings and the telephone calls. Each list has eight places for each of 41 days. A choice you make, an option in a memo or an answer on the telephone, puts the next event a few days ahead (<code>schedule_in</code>).</p>
+  <p>Your prestige starts at 500, and the game ends if it falls below 50 (<code>add_prestige</code>). Prestige also sets how many watchers you may put on your suspects: a tenth of your prestige, plus 50, which makes 100 at the start (<code>watcher_allowance</code>).</p>
+  <p>Watchers are how most of the story moves. SURVEILLANCE takes a surname and up to 25 watchers for it. Each new day, for each name with watchers, the game picks a number from 1 to 50, and the watchers find something if there are at least that many of them (<code>watcher_chance</code>, <code>$5DC6</code>), so 25 watchers succeed about half the time. What they find depends on the name's day, the last byte of its record. Before that day, or while it is 0, the find is a sitrep saying that nothing happened (<code>daily_surveillance</code>). The game knows 16 names (<code>target_records</code>), and a surname it does not know becomes a target whose day is always 99, so its watchers never find anything.</p>
+  <p>Memos, reports, sitreps and calls wait in four trays. ACT runs a memo's or a report's routine, once. DELETE on a memo not yet acted on runs it first, so deleting a memo has the same consequences as acting on it (<code>next_memo</code>, <code>$5813</code>). A call rings for 1,920 frames, about 38 seconds, and one left ringing is lost (<code>call_timer</code>). Each tray holds 48 items. A 49th stops the game: <code>post_item</code> (<code>$5EB3</code>) prints DEBUG ERROR and Office stack full, then cycles the border's colour for ever. Watched names bring sitreps every day, most of them saying that nothing happened, so they need deleting.</p>
+</section>
+
+<section data-part="nato-documents" id="story-lines">
+  <p class="fig">02 · The story-lines</p>
+  <h2 class="t">Every story-line starts on a fixed day, then waits for you</h2>
+  <p class="lede">The same memos arrive on the same days in every game. After its first memo, a story-line moves only when you do: watchers on the right name, an answer to a memo or a report, or a number dialled. Choose a story-line to see its steps.</p>
+  <div class="plate">
+    <div class="tfp-wide"><div class="tfp-tl" id="tfp-tl"></div></div>
+    <div class="tfp-key"><span><i class="tfp-key-m"></i>a memo (M), report (R) or call (C) that comes on that day in every game; a number counts several</span><span><i class="tfp-key-w"></i>watchers on the name shown can find something</span></div>
+    <div id="tfp-story-out"></div>
+    <p class="cap">The starts are the events that <code>init_stories</code> (<code>$68B9</code>) puts in the four lists, and the watch days are the days it gives the names. Each step's effects are those of the routine named beside it, given the answers shown. A test beside the page runs <code>init_stories</code> and each of those routines, 99 runs in all, on a model of the Commodore's 6502 processor over episode one's listing, and checks that the page gives the same events, prestige, progress, watchers and telephone numbers.</p>
+  </div>
+  <p>Two things are left to chance: the code word for Blenheim, picked as the episode starts, and the day watchers find something. Everything else is fixed, both the day each story-line starts and what each answer leads to.</p>
+  <p>The ASSESSMENT icon shows progress as a percentage (<code>show_progress</code>), and the ending screen gives it again as YOU HAVE COMPLETED so many % OF THE GAME. The best answers in every story-line add up to exactly 100. Only the NATO leak can win the game. The others add progress and prestige, and prestige keeps the game going and pays for watchers. Most story-lines also have a wrong answer that costs prestige, and two go on costing it. Once memo 38 has been acted on, memo 40 and report 15 come back every day, for 50 prestige each time, for as long as Maras has watchers. Thorn's calls cost 10 each until Bracton is dealt with.</p>
+</section>
+
+<section data-part="nato-documents" id="the-spy">
+  <p class="fig">03 · The NATO leak</p>
+  <h2 class="t">Catching the spy, step by step</h2>
+  <p class="lede">Only one story-line wins the episode. It cannot begin before day 18, each step waits on the one before, and one unanswered telephone call loses it.</p>
+  <p>Memo 8, on day 3, says that photocopies of five top secret NATO papers have come through the post. Blenheim has the rest. Files PAPER 1 to PAPER 5 give each paper's circulation list as initials, and files CABINET, FOREIGN and MOD list each department's staff, with a star for those who can use a photocopier. Only the Ministry of Defence saw all five papers. Five of its staff are on all five lists and have a star: T Allen, D Faulkner, F Janes, R Night and A Sopwith. Allen, Faulkner and Sopwith are among the 16 names the game knows, and watchers on Janes or Night never find anything.</p>
+  <div class="plate"><div id="tfp-spy"></div><p class="cap">The steps of the NATO leak's story-line, with the same routines and the same test as the story-lines above. The winning path is the row marked in each choice.</p></div>
+  <p>Faulkner's watchers find nothing before day 18 (<code>init_faulkner</code>), so a player who watches him from the start sees two weeks of sitreps saying that nothing happened. From day 18 the case runs through the Pizza House and its owners, the Genovese brothers, whose name is only in the PIZZA file at Blenheim, then a tape and the voices of the nine customers on the delivery list. The voice prints under report 3 point to the name Sir Anthony Plumb wants on the telephone, NILSON. His call rings once. A call left ringing is lost, and the routine for call 12 missed is an <code>RTS</code>, an instruction that returns at once, so the call never comes back and the case cannot be won.</p>
+  <p>Sweden tells the story behind the name. Nilson's army file leads to the files on a patrol he led in Gaza, where his sergeant, Torsen Stenberij, was reported killed. The commander's report says that the two were so alike that they were often taken for brothers. In Borgafjall the police say that Nilson's father Holmar died in a climbing fall, and Lars at the climbing shop says that he went up with three strangers who came back without him. Holmar's sister Anna moved to Storuman, and among his things she keeps some old exercise books with a smudged, inky fingerprint, the proof Plumb wants. Plumb's answers are FAULKNER, SWEDISH, NILSON, STENBERIJ, FINGERPRINT and GAZA, and DEREK, STIG and TORSEN will do for three of them. A trip home without the fingerprint costs 100 prestige, and memo 27 never comes again, so Sweden cannot be visited a second time.</p>
+  <p>Six right answers start a countdown of ten days, and its end wins the game (<code>plumb_questions</code>, <code>$501B</code>). Day 41 wins as well while the countdown runs, so the answers may come as late as day 40, and day 41 without them loses. With every find on its first possible day and no detour in Sweden, Plumb can be answered on day 30. Each find is a roll of the dice, though, so the days from 18 to 40 go quickly. The winning memo, from Sir Nigel Irvine, gives a new password: 10 190 216 277 358. Nothing in the game asks for it. The first lift in episode two wants ASPEN, a word of five letters, and the one-time pads that would turn the five numbers into letters are not in the program.</p>
+</section>
+
+<section data-part="nato-documents" id="building-17">
+  <p class="fig">04 · Building 17</p>
+  <h2 class="t">Building 17's locks</h2>
+  <p class="lede">Memo 28 asks you to secure Building 17. <code>building_17</code> (<code>$7BE4</code>) draws its basement and then its ground floor, and you choose a lock for each door.</p>
+  <div class="plate">
+    <div class="lv-plans" id="lv-plans"></div>
+    <p class="cap"><code>draw_plan</code> (<code>$7F97</code>) draws both plans, each 10 rows of 14 tiles, each tile inverted, black lines on grey, and a test beside this page holds both to the game’s routine. The doors are numbered in the order of <code>basement_doors</code> and <code>ground_floor_doors</code>: point at a name to find its door. The room names are the game’s own, unpacked from <code>room_names</code> (<code>$7F79</code>) as <code>show_room_name</code> prints them.</p>
+  </div>
+  <p>As you leave, <code>judge_locks</code> (<code>$7C3F</code>) gives its verdict in memos, most of them the next day. Lock doors below to see what it says. A building that fails brings memo 32, a serious breach, every time. The code was meant to bring memo 31, a break-in, one time in 99 instead, and a slip in it means memo 31 never comes (<a href="discoveries.html#tfp-breakin">Discoveries</a>).</p>
+  <div class="plate">
+    <div id="tfp-locks"></div>
+    <p class="tfp-out" id="tfp-locks-out"></p>
+    <p class="cap">The page judges the locks as <code>judge_locks</code> does, with the counts <code>lock_door</code> keeps for each kind of room (<code>lock_counts</code>, <code>$7EE8</code>). A test beside the page runs the game's own routine on every combination of counts the two floors allow, with its random number seeded once to give 0 and once not, and checks that the page gives the same memos and progress. The doors are those of <code>basement_doors</code> and <code>ground_floor_doors</code>, in the order of the numbers on the plans above.</p>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* tfp-text */
+// Episode one's packed text, read as next_word ($642F) reads it and printed as print_text ($63AC)
+// prints it. A text is a stream of four-bit codes, the low half of each byte first; a code or a
+// group of codes is a word number into the dictionary at $96D0, 301 zero-terminated words counted
+// from its start (find_dictionary_word): 3-15 alone are words 288-300, 1 n words 256-271 (256 ends
+// the text), 0 n words 272-287, and 2 l h words h * 16 + l. print_word drops a space that comes at
+// the start of the text or of a line ($1969), and print_text_joined ($63A5), which the room names of
+// Building 17 are printed with, keeps the one at the start (joined). The tables hold each text's
+// address, low byte first.
+// Episode two packs its texts the same way (next_word_number, $AA8B) against its own dictionary of
+// 301 words at $C91C (find_word), and print_string ($AA58) drops the same spaces.
+const TFP_TEXT_TABLES = [
+  { name: 'Memos', at: 0x5A4F, n: 46 },
+  { name: 'Reports', at: 0x5AAB, n: 16 },
+  { name: 'Sitreps', at: 0x5ACB, n: 16 },
+  { name: 'Calls', at: 0x5AEB, n: 16 },
+  { name: 'Sitreps with nothing seen', at: 0x5B0B, n: 7 },
+  { name: 'Blenheim files', at: 0x5B19, n: 26 },
+];
+const TFP_DICTIONARY = 0x96D0;
+function tfpWords(ram, at = TFP_DICTIONARY) {
+  const w = [];
+  for (let a = at, i = 0; i < 301; i++) {
+    const at = a; let text = '';
+    while (ram[a]) text += String.fromCharCode(ram[a++]);
+    w.push({ at, text }); a++;
+  }
+  return w;
+}
+function tfpUnpack(ram, ad) {
+  let low = true;
+  const nib = () => { const v = low ? ram[ad] & 15 : ram[ad++] >> 4; low = !low; return v; };
+  const out = [];
+  for (;;) {
+    const c = nib(), codes = [c];
+    let n;
+    if (c === 0) { const x = nib(); codes.push(x); n = 272 + x; }
+    else if (c === 1) { const x = nib(); codes.push(x); n = 256 + x; }
+    else if (c === 2) { const l = nib(), h = nib(); codes.push(l, h); n = h * 16 + l; }
+    else n = 285 + c;
+    if (n === 256) break;
+    out.push({ codes, word: n });
+  }
+  return { words: out, end: low ? ad : ad + 1 };
+}
+function tfpText(ram, words, ad, joined = false) {
+  let drop = !joined, s = '';
+  for (const w of tfpUnpack(ram, ad).words) for (const ch of words[w.word].text) {
+    const c = ch.charCodeAt(0);
+    if (c === 0x20 && drop) continue;
+    drop = c === 13;
+    s += ch;
+  }
+  return s;
+}
+// end of tfp-text
+</script>
+<script>
+/* tfp-locks */
+// Building 17's verdict, as judge_locks ($7C3F) gives it from the counts lock_door keeps
+// (lock_counts, $7EE8): a lock on a WC brings memo 30 and one on the staircase memo 29, each the
+// next day (judge_amenities); the building is secure with at least two locks on offices, one on the
+// security door, two on the main entrance, two on the computer room and data storage together, and
+// one on the desk and key room (judge_security), and otherwise memo 32 comes the next day. The
+// game meant memo 31 when random gives 0, but its BNE ($7CB6) tests the Z flag random's last
+// CMP #$63 leaves, never set, so memo 32 comes every time. A building that fails brings memo 28
+// back in three days; one that passes brings memo 42 the next day with more than 10 locks in all,
+// or otherwise adds 10 to progress (add_progress) and brings memo 33 in four days. c holds the
+// counts { offices, wcs, staircase, security, entrance, computer, desk, total }. Returns
+// { memos: [[memo, days], ...], progress }, in the order the game schedules them.
+const TFP_DOORS = [
+  ['Basement', [['computer', 'Computer room'], ['offices', 'Office'], ['wcs', 'Male WC'], ['wcs', 'Female WC'],
+    ['', 'Lift'], ['', 'Lift'], ['staircase', 'Staircase'], ['computer', 'Data storage'], ['computer', 'Computer room']]],
+  ['Ground floor', [['entrance', 'Main entrance'], ['entrance', 'Main entrance'], ['desk', 'Desk and key room'], ['', 'Tea room'], ['', 'Photocopy room'],
+    ['wcs', 'Male WC'], ['wcs', 'Female WC'], ['', 'Lift'], ['', 'Lift'], ['staircase', 'Staircase'], ['offices', 'Office'], ['security', 'Security door'], ['', 'Meeting room']]],
+];
+function tfpJudge(c) {
+  const memos = [];
+  let ok = true, progress = 0;
+  if (c.wcs) { memos.push([30, 1]); ok = false; }
+  if (c.staircase) { memos.push([29, 1]); ok = false; }
+  if (!(c.offices >= 2 && c.security && c.entrance >= 2 && c.computer >= 2 && c.desk)) {
+    ok = false; memos.push([32, 1]);
+  }
+  if (!ok) memos.push([28, 3]);
+  else if (c.total >= 11) memos.push([42, 1]);
+  else { progress = 10; memos.push([33, 4]); }
+  return { memos, progress };
+}
+// end of tfp-locks
+</script>
+<script>
+/* tfp-story */
+// Episode one's story-lines: what starts each (starts, [list, event, day]: list 0 memos, 1 reports,
+// 2 the watchers' finds, 3 telephone calls), the day from which watchers on a target (watch,
+// [target, day]) can find something, and the steps that follow. A step or choice with a routine
+// (name, at) gives the memory set first (set), the answers to the routine's questions (ans: an
+// option's number, 0 for Y; a word's token), the routines that stand in with an answer (ret), and
+// where the run stops (until). fx is what the routine does, in order: ['item', tray, n] (tray 0 the
+// memos, 1 the reports, 2 the sitreps, from $20, 3 the telephone), ['on', list, event, day] and
+// ['in', list, event, days] (schedule_event, schedule_in), ['prestige', n], ['progress', n],
+// ['target', t, day] and ['target in', t, days] (set_target_day, set_target_day_in: watchers on
+// target t can find something from that day; 0 never), ['phone', number, last day] and
+// ['phone for', number, days] (set_phone_until, phone_for_days), ['day'] (end_day), and the
+// countdown or the fingerprint as they change. best marks the choice the winning path takes; the
+// progress on that path adds up to 100. test_story.js runs every routine named here and checks fx.
+const TFP_STORY = [
+ {
+  "name": "Your first day",
+  "id": "opening",
+  "lede": "The first morning brings a telephone call, two memos and a report. One memo gives the week’s code word, which Blenheim, the archive, asks for before it releases a file.",
+  "starts": [
+   [3, 11, 1],
+   [0, 0, 1],
+   [1, 0, 1]
+  ],
+  "steps": [
+   {
+    "title": "Call 11",
+    "when": "Day 1",
+    "name": "post_call_11",
+    "at": 27507,
+    "say": "Bertie Capstick rings to congratulate you. Answering it does nothing more.",
+    "fx": [
+     ["item", 3, 11]
+    ]
+   },
+   {
+    "title": "Memo 0 and report 0",
+    "when": "Day 1",
+    "name": "post_memo_0",
+    "at": 27491,
+    "say": "Your appointment as head of C1(A), and a survey of ministry buildings. Neither has anything to act on.",
+    "fx": [
+     ["item", 0, 0]
+    ]
+   },
+   {
+    "title": "The code word",
+    "when": "Day 1",
+    "say": "The episode picks the code word as it starts, from a random number: FIREBIRD half the time, PHOENIX or ROCKET a quarter of the time each. A memo from the registry gives it the same day. Telephone Blenheim on 04382731, give the code word, and ask for files by name.",
+    "choices": [
+     {
+      "label": "FIREBIRD",
+      "name": "choose_firebird",
+      "at": 16429,
+      "say": "Memo 35, one-time pad FP2.",
+      "fx": [
+       ["on", 0, 35, 1]
+      ]
+     },
+     {
+      "label": "PHOENIX",
+      "name": "choose_phoenix",
+      "at": 16441,
+      "say": "Memo 36, pad FP1.",
+      "fx": [
+       ["on", 0, 36, 1]
+      ]
+     },
+     {
+      "label": "ROCKET",
+      "name": "choose_rocket",
+      "at": 16453,
+      "say": "Memo 37, pad FP3.",
+      "fx": [
+       ["on", 0, 37, 1]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "The NATO leak",
+  "id": "spy",
+  "spy": true,
+  "lede": "The case the episode is about, and the only story-line that can win it. Every step waits for watchers or for an answer of yours.",
+  "starts": [
+   [0, 8, 3]
+  ],
+  "watch": [
+   [1, 18]
+  ],
+  "steps": [
+   {
+    "title": "Memo 8",
+    "when": "Day 3",
+    "name": "post_memo_8",
+    "at": 28423,
+    "say": "Photocopies of five top secret NATO papers have come through the post. The files at Blenheim narrow it down: the five papers’ circulation lists, and the Ministry of Defence’s staff, with a star for each who can use a photocopier. Five people saw all five papers and can copy them. Three are among the names you can watch: Allen, Faulkner and Sopwith.",
+    "fx": [
+     ["item", 0, 8]
+    ]
+   },
+   {
+    "title": "Faulkner, the first find",
+    "when": "From day 18",
+    "name": "faulkner_seen",
+    "at": 28734,
+    "set": {
+     "faulkner_first_find": 0
+    },
+    "say": "Watchers on FAULKNER find nothing before day 18. After that, sitrep 1: he used a call box beside his house, although his file says he has a cleared telephone at home. They can find the next thing two days on.",
+    "fx": [
+     ["item", 2, 33],
+     ["target in", 1, 2]
+    ]
+   },
+   {
+    "title": "Faulkner, the second find",
+    "name": "faulkner_seen",
+    "at": 28734,
+    "set": {
+     "faulkner_first_find": 255,
+     "pizza_house_watched": 0
+    },
+    "say": "Sitrep 13: he dines at the Pizza House, finishes the Times crossword and leaves the paper behind. The Pizza House file at Blenheim names the owners, the Genovese brothers, and watchers on GENOVESE can find something two days on. The same routine also sets Allen’s day two days on, target 5, the slot before the Genovese brothers’.",
+    "fx": [
+     ["target in", 5, 2],
+     ["target in", 6, 2],
+     ["item", 2, 45]
+    ]
+   },
+   {
+    "title": "The Pizza House",
+    "name": "pizza_house_seen",
+    "at": 28791,
+    "say": "Sitrep 6: the Pizza House has a delivery service, and the file DELIVERY appears in Cencom. It lists nine customers, and CONTACTS, at Blenheim, gives their nationalities. Report 2 comes two days on.",
+    "fx": [
+     ["progress", 5],
+     ["prestige", 10],
+     ["target", 6, 0],
+     ["in", 1, 2, 2],
+     ["item", 2, 38]
+    ]
+   },
+   {
+    "title": "Report 2: the tape",
+    "name": "analyze_tape",
+    "at": 28852,
+    "say": "British Telecom has intercepted a call to Faulkner. ACT on the report and answer ANALYZE THE TAPE?",
+    "choices": [
+     {
+      "label": "Y",
+      "name": "analyze_tape",
+      "at": 28852,
+      "ans": [0],
+      "say": "Report 3 tomorrow.",
+      "fx": [
+       ["in", 1, 3, 1]
+      ],
+      "best": true
+     },
+     {
+      "label": "N",
+      "name": "analyze_tape",
+      "at": 28852,
+      "ans": [1],
+      "say": "Nothing, and the case stops here.",
+      "fx": []
+     }
+    ]
+   },
+   {
+    "title": "Report 3",
+    "name": "post_report_3",
+    "at": 28868,
+    "say": "The voice analysis is done on Faulkner’s caller and the nine on the delivery list.",
+    "fx": [
+     ["prestige", 20],
+     ["progress", 5],
+     ["item", 1, 3]
+    ]
+   },
+   {
+    "title": "The voices",
+    "name": "examine_results",
+    "at": 28888,
+    "ans": [1],
+    "say": "ACT on report 3, and EXAMINE THE RESULTS? Y shows the caller’s voice print and lets you type names to compare. NILSON’s print is the caller’s. Either answer brings Sir Anthony Plumb’s call tomorrow.",
+    "fx": [
+     ["in", 3, 12, 1]
+    ]
+   },
+   {
+    "title": "Call 12: Plumb",
+    "name": "plumb_contact",
+    "at": 29266,
+    "say": "PRESTON, IT’S PLUMB. WHO IS FAULKNER’S CONTACT? The call rings for a while. Left unanswered, it never comes back, and the case is lost.",
+    "choices": [
+     {
+      "label": "NILSON or STIG",
+      "name": "plumb_contact",
+      "at": 29266,
+      "ans": [0],
+      "say": "Memo 27 tomorrow.",
+      "fx": [
+       ["in", 0, 27, 1],
+       ["progress", 3]
+      ],
+      "best": true
+     },
+     {
+      "label": "Anything else",
+      "name": "plumb_contact",
+      "at": 29266,
+      "ans": [49],
+      "say": "Nothing, and the case stops here.",
+      "fx": []
+     }
+    ]
+   },
+   {
+    "title": "Memo 27: Stockholm",
+    "name": "fly_to_stockholm",
+    "at": 30381,
+    "say": "C sends you to Stockholm to look into Nilson. ACT on it: FLY TO STOCKHOLM?",
+    "choices": [
+     {
+      "label": "Y",
+      "name": "fly_to_stockholm",
+      "at": 30381,
+      "ans": [0],
+      "until": "stockholm_menu",
+      "say": "Cencom goes and Sweden takes its place. The flight costs a day.",
+      "fx": [
+       ["day"]
+      ],
+      "best": true
+     },
+     {
+      "label": "N",
+      "name": "fly_to_stockholm",
+      "at": 30381,
+      "ans": [1],
+      "say": "The memo again in three days.",
+      "fx": [
+       ["in", 0, 27, 3],
+       ["prestige", -100]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Stockholm",
+    "name": "stockholm_menu",
+    "at": 30509,
+    "ans": [0, 0, 1, 1],
+    "until": "umea_menu",
+    "say": "VIEW A FILE, NILSON: DIPLOMATIC shows his embassy file with a fingerprint; ARMY says the file is kept at HQ, Umea, and adds FLY TO UMEA to the menu. The flight takes a day.",
+    "fx": [
+     ["day"]
+    ]
+   },
+   {
+    "title": "Umea and Borgafjall",
+    "name": "umea_menu",
+    "at": 30631,
+    "ans": [0, 16, 1, 22, 1, 23, 0],
+    "until": "umea_menu",
+    "say": "Umea keeps Nilson’s army record and the files on his patrol in Gaza: STENBERIJ, ROSENCRANZ, WESTIN, the INCIDENT and the COMMANDER’S REPORT. GO SOMEWHERE, BORGAFJALL, where he was born, a day away. GO SOMEWHERE LOCAL: the POLICE send you to Lars at the CLIMBING SHOP, who says that Holmar Nilson’s sister Anna moved to Storuman. RETURN TO UMEA takes another day.",
+    "fx": [
+     ["day"],
+     ["day"]
+    ]
+   },
+   {
+    "title": "Storuman",
+    "name": "umea_menu",
+    "at": 30631,
+    "ans": [0, 17, 1, 24, 2, 0],
+    "until": "umea_menu",
+    "say": "FIND SOMEONE, ANNA: Holmar’s sister, in an old people’s home. EXAMINE EFFECTS: among Holmar’s things are some old exercise books with a smudged, inky fingerprint. Storuman takes no time to reach, but the way back to Umea takes a day.",
+    "fx": [
+     ["progress", 10],
+     ["day"],
+     ["fingerprint", 255]
+    ]
+   },
+   {
+    "title": "Home",
+    "name": "umea_menu",
+    "at": 30631,
+    "say": "RETURN TO LONDON, from Umea or Stockholm.",
+    "choices": [
+     {
+      "label": "With the fingerprint",
+      "name": "umea_menu",
+      "at": 30631,
+      "set": {
+       "fingerprint_found": 255
+      },
+      "ans": [2],
+      "until": "cencom_loop",
+      "say": "Back to Cencom, the same day.",
+      "fx": [],
+      "best": true
+     },
+     {
+      "label": "Without it",
+      "name": "umea_menu",
+      "at": 30631,
+      "set": {
+       "fingerprint_found": 0
+      },
+      "ans": [2],
+      "until": "cencom_loop",
+      "say": "Back to Cencom, and the proof is out of reach: Sweden cannot be visited again.",
+      "fx": [
+       ["prestige", -100]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Plumb’s six questions",
+    "name": "plumb_questions",
+    "at": 20507,
+    "say": "Dial Sir Anthony Plumb on 12377563 (file PHONE at Blenheim). He asks who the British traitor is, his contact’s nationality, the contact’s alias and real name, the proof, and where it happened.",
+    "choices": [
+     {
+      "label": "FAULKNER, SWEDISH, NILSON, STENBERIJ, FINGERPRINT, GAZA",
+      "name": "plumb_questions",
+      "at": 20507,
+      "set": {
+       "fingerprint_found": 255
+      },
+      "ans": [41, 42, 0, 12, 43, 44],
+      "say": "The countdown starts at 10 days.",
+      "fx": [
+       ["countdown", 10]
+      ],
+      "best": true
+     },
+     {
+      "label": "Any answer wrong",
+      "name": "plumb_questions",
+      "at": 20507,
+      "set": {
+       "fingerprint_found": 255
+      },
+      "ans": [41, 42, 0, 49, 43, 44],
+      "say": "Memo 41 tomorrow: the Joint Intelligence Committee disagrees, and 100 prestige goes. Plumb can be asked again.",
+      "fx": [
+       ["in", 0, 41, 1]
+      ]
+     },
+     {
+      "label": "All six right, no fingerprint",
+      "name": "plumb_questions",
+      "at": 20507,
+      "set": {
+       "fingerprint_found": 0
+      },
+      "ans": [41, 42, 0, 12, 43, 44],
+      "say": "Counted as wrong.",
+      "fx": [
+       ["in", 0, 41, 1]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "The end",
+    "when": "The countdown’s end, or day 41",
+    "name": "game_won",
+    "at": 18483,
+    "until": 18347,
+    "say": "Each new day takes one off the countdown, and at nothing the game is won. Day 41 wins too while the countdown runs, so the six answers may come as late as day 40. Memo 44, from Sir Nigel Irvine: finding the false flag spy was an excellent piece of work.",
+    "fx": [
+     ["prestige", 200],
+     ["progress", 5]
+    ]
+   }
+  ]
+ },
+ {
+  "name": "The Abbs affair",
+  "id": "abbs",
+  "lede": "A young clerk meets a foreign national. The meetings are a chance to bring a Czech diplomat over.",
+  "starts": [
+   [0, 1, 1],
+   [0, 7, 16]
+  ],
+  "steps": [
+   {
+    "title": "Memo 1",
+    "when": "Day 1",
+    "name": "post_memo_1",
+    "at": 28024,
+    "say": "Jane Abbs, a young clerical officer, has regular meetings with a foreign national. Watchers on ABBS can find something two days on.",
+    "fx": [
+     ["item", 0, 1],
+     ["target in", 4, 2]
+    ]
+   },
+   {
+    "title": "Abbs is seen",
+    "name": "abbs_seen",
+    "at": 28039,
+    "say": "Sitrep 4: Joe is meeting the Czech diplomat Jan Stanistav, a possible emotional entanglement. Memo 2 tomorrow.",
+    "fx": [
+     ["target", 4, 0],
+     ["item", 2, 36],
+     ["progress", 5],
+     ["prestige", 10],
+     ["in", 0, 2, 1]
+    ]
+   },
+   {
+    "title": "Memo 2: advise",
+    "name": "abbs_advice",
+    "at": 28080,
+    "say": "D6 asks what to do. ACT on it for six options.",
+    "choices": [
+     {
+      "label": "ARREST CO, DEPORT DIPLOMAT",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [0],
+      "say": "Report 1 and memo 3 tomorrow, the press and the minister furious, then Stanistav defects to the Americans.",
+      "fx": [
+       ["in", 1, 1, 1],
+       ["in", 0, 3, 1],
+       ["in", 0, 7, 1]
+      ]
+     },
+     {
+      "label": "CHECK GIRL’S CLEARANCE",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [1],
+      "say": "Memo 4: she handles nothing classified. Memo 2 again in two days.",
+      "fx": [
+       ["in", 0, 4, 1],
+       ["in", 0, 2, 2]
+      ]
+     },
+     {
+      "label": "ASK GIRL TO PASS FALSE INFO",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [2],
+      "say": "Memo 5, the deputy director on amateurs, and memo 2 again.",
+      "fx": [
+       ["in", 0, 5, 1],
+       ["prestige", -10],
+       ["in", 0, 2, 2]
+      ]
+     },
+     {
+      "label": "INFORMALLY QUESTION GIRL, then SUGGEST DEFECTION",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [3, 4, 28],
+      "say": "Questioning her tells you more, the first time for 10 prestige, and the options come back.",
+      "fx": [
+       ["prestige", 10],
+       ["in", 0, 6, 1]
+      ]
+     },
+     {
+      "label": "SUGGEST DEFECTION, WHO? STANISTAV",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [4, 28],
+      "say": "Memo 6 tomorrow. JAN or STANIS will do for the name.",
+      "fx": [
+       ["in", 0, 6, 1]
+      ],
+      "best": true
+     },
+     {
+      "label": "SUGGEST DEFECTION, another name",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [4, 49],
+      "say": "NO IDEA WHAT YOU MEAN, and memo 2 again.",
+      "fx": [
+       ["prestige", -10],
+       ["in", 0, 2, 2]
+      ]
+     },
+     {
+      "label": "NO ACTION AT PRESENT",
+      "name": "abbs_advice",
+      "at": 28080,
+      "ans": [5],
+      "say": "Memo 2 again in two days.",
+      "fx": [
+       ["prestige", -10],
+       ["in", 0, 2, 2]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Memo 6",
+    "name": "post_memo_6",
+    "at": 28313,
+    "say": "Sir Bernard: Stanistav has defected and is spilling the beans about the StB. Good show.",
+    "fx": [
+     ["item", 0, 6],
+     ["prestige", 25],
+     ["progress", 5]
+    ]
+   },
+   {
+    "title": "Day 16",
+    "when": "Day 16",
+    "name": "abbs_defected",
+    "at": 28333,
+    "set": {
+     "abbs_acted": 0
+    },
+    "say": "Unless memo 2 has been acted on, Stanistav defects to the Americans instead, under your nose. Memo 7 from Sir Nigel. A memo 2 that comes back from day 17 on ends the same way.",
+    "fx": [
+     ["target", 4, 0],
+     ["prestige", -50],
+     ["item", 0, 7]
+    ],
+    "path": false
+   }
+  ]
+ },
+ {
+  "name": "Allen",
+  "id": "allen",
+  "lede": "One of the three who could have copied the papers. He is the wrong man, and the game rewards you for seeing it.",
+  "watch": [
+   [5, 5]
+  ],
+  "steps": [
+   {
+    "title": "Allen, the first find",
+    "when": "From day 5",
+    "name": "allen_seen",
+    "at": 28439,
+    "set": {
+     "allen_first_find": 0
+    },
+    "say": "Sitrep 5: he visited premises in Tooting just long enough to pick up the mail. His watchers can find the next thing two days on.",
+    "fx": [
+     ["item", 2, 37],
+     ["target in", 5, 2]
+    ]
+   },
+   {
+    "title": "Allen, the second find",
+    "name": "allen_seen",
+    "at": 28439,
+    "set": {
+     "allen_first_find": 255
+    },
+    "say": "Sitrep 11: a man followed him in, and his car radiophone is 179794433. The number answers from now on.",
+    "fx": [
+     ["target", 5, 0],
+     ["item", 2, 43],
+     ["phone", 6, 41]
+    ]
+   },
+   {
+    "title": "Dial 179794433",
+    "name": "allen_phone",
+    "at": 28491,
+    "say": "The number stops answering, and three options.",
+    "choices": [
+     {
+      "label": "FOLLOW ALLEN",
+      "name": "allen_phone",
+      "at": 28491,
+      "ans": [0],
+      "say": "His watchers start again from the first find, two days on.",
+      "fx": [
+       ["phone", 6, 0],
+       ["target in", 5, 2]
+      ]
+     },
+     {
+      "label": "FOLLOW HIS ASSOCIATE",
+      "name": "allen_phone",
+      "at": 28491,
+      "ans": [1],
+      "say": "Allen’s watchers move to ASSOCIATE, a target that never finds anything, and Allen starts again from the first find.",
+      "fx": [
+       ["phone", 6, 0],
+       ["target in", 5, 2]
+      ]
+     },
+     {
+      "label": "SEARCH THE FLAT, ARREST ALLEN, TRANSFER ALLEN",
+      "name": "allen_phone",
+      "at": 28491,
+      "ans": [2, 1, 2],
+      "say": "ONLY PORNOGRAPHIC MATERIAL WAS FOUND. The arrest, then CLEARLY, YOU HAVE THE WRONG MAN. INTERROGATE THE LANDLORD and Y to PULL IN ALLEN? leads to the same arrest.",
+      "fx": [
+       ["phone", 6, 0],
+       ["progress", 5],
+       ["prestige", 25],
+       ["progress", 5]
+      ],
+      "best": true
+     },
+     {
+      "label": "SEARCH THE FLAT, ARREST ALLEN, CHARGE HIM FOR ESPIONAGE",
+      "name": "allen_phone",
+      "at": 28491,
+      "ans": [2, 1, 3],
+      "say": "Memo 9 tomorrow: the trial was a joke and he was acquitted, and 100 prestige goes.",
+      "fx": [
+       ["phone", 6, 0],
+       ["progress", 5],
+       ["in", 0, 9, 1]
+      ]
+     },
+     {
+      "label": "SEARCH THE FLAT, ARREST ALLEN, USE HEAVY METHODS, then TRANSFER",
+      "name": "allen_phone",
+      "at": 28491,
+      "ans": [2, 1, 1, 2],
+      "say": "Heavy methods cost 50 prestige and bring the options back.",
+      "fx": [
+       ["phone", 6, 0],
+       ["progress", 5],
+       ["prestige", -50],
+       ["prestige", 25],
+       ["progress", 5]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Sopwith and Maras",
+  "id": "sopwith",
+  "lede": "The third name from the papers, and a South African he meets. Watching Maras for long angers another service.",
+  "watch": [
+   [9, 7],
+   [7, 8]
+  ],
+  "steps": [
+   {
+    "title": "Sopwith, the first find",
+    "when": "From day 7",
+    "name": "sopwith_seen",
+    "at": 27772,
+    "set": {
+     "sopwith_first_find": 0
+    },
+    "say": "Sitrep 9: seen with a foreign national at a hotel in Saffron Walden.",
+    "fx": [
+     ["item", 2, 41]
+    ]
+   },
+   {
+    "title": "Sopwith, the second find",
+    "name": "sopwith_seen",
+    "at": 27772,
+    "set": {
+     "sopwith_first_find": 255
+    },
+    "say": "Sitrep 15: a photograph of the two at lunch, sent to Blodwyn, who knows every face. His watchers find nothing more.",
+    "fx": [
+     ["target", 9, 0],
+     ["item", 2, 47],
+     ["in", 1, 14, 1]
+    ]
+   },
+   {
+    "title": "Report 14",
+    "name": "maras_named",
+    "at": 27811,
+    "say": "Blodwyn: Mr Sopwith’s friend is a South African called Maras.",
+    "fx": [
+     ["item", 1, 14],
+     ["target in", 7, 1],
+     ["progress", 3],
+     ["prestige", 20]
+    ]
+   },
+   {
+    "title": "Maras is seen",
+    "when": "From day 8",
+    "name": "maras_seen",
+    "at": 27891,
+    "say": "Watchers on MARAS can find something from day 8, Blodwyn or not. Sitrep 7: he is a South African diplomat in their trade section. Memo 38 tomorrow.",
+    "fx": [
+     ["item", 2, 39],
+     ["target", 7, 0],
+     ["in", 0, 38, 1]
+    ]
+   },
+   {
+    "title": "Memo 38",
+    "name": "arrest_maras",
+    "at": 27920,
+    "say": "Special Branch: SHALL WE PULL MARAS IN? ACT on it.",
+    "choices": [
+     {
+      "label": "N",
+      "name": "arrest_maras",
+      "at": 27920,
+      "ans": [1],
+      "say": "Memo 40 tomorrow, as long as Maras is still watched.",
+      "fx": [
+       ["in", 0, 40, 1]
+      ],
+      "best": true
+     },
+     {
+      "label": "Y",
+      "name": "arrest_maras",
+      "at": 27920,
+      "ans": [0],
+      "say": "Memo 39 tomorrow: he has diplomatic immunity, and 100 prestige goes.",
+      "fx": [
+       ["in", 0, 39, 1],
+       ["in", 0, 40, 1]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Memo 40 and report 15",
+    "name": "mi6_breakdown",
+    "at": 27976,
+    "set": {
+     "$1681": 5
+    },
+    "say": "ETSS asks you to desist: Sopwith is their man and Maras is their case. Report 15 follows, and the pair comes back every day, 50 prestige each time, until the watchers come off Maras.",
+    "fx": [
+     ["item", 1, 15],
+     ["prestige", -50],
+     ["in", 0, 40, 1]
+    ],
+    "path": false
+   }
+  ]
+ },
+ {
+  "name": "Building 17",
+  "id": "b17",
+  "lede": "A job for the section rather than a case: securing a building, then its computer.",
+  "starts": [
+   [0, 28, 8]
+  ],
+  "steps": [
+   {
+    "title": "Memo 28",
+    "when": "Day 8",
+    "name": "go_to_building_17",
+    "at": 31482,
+    "say": "Building security asks you to install security systems in Building 17. ACT on it: GO TO BUILDING 17?",
+    "choices": [
+     {
+      "label": "Y",
+      "say": "The two floor plans, and a lock to choose for each door (the plans and the locks are below).",
+      "best": true
+     },
+     {
+      "label": "N",
+      "name": "go_to_building_17",
+      "at": 31482,
+      "ans": [1],
+      "say": "The memo again in two days.",
+      "fx": [
+       ["prestige", -20],
+       ["in", 0, 28, 2]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "The locks",
+    "name": "judge_locks",
+    "at": 31807,
+    "say": "judge_locks gives its verdict as you leave.",
+    "choices": [
+     {
+      "label": "Secure, 10 locks or fewer",
+      "name": "judge_locks",
+      "at": 31807,
+      "set": {
+       "locks_offices": 2,
+       "locks_security_door": 1,
+       "locks_main_entrance": 2,
+       "locks_computer_room": 2,
+       "locks_desk_key_room": 1,
+       "locks_total": 8,
+       "building_ok": 255
+      },
+      "say": "Memo 33 in four days.",
+      "fx": [
+       ["progress", 10],
+       ["in", 0, 33, 4]
+      ],
+      "best": true
+     },
+     {
+      "label": "Secure, more than 10 locks",
+      "name": "judge_locks",
+      "at": 31807,
+      "set": {
+       "locks_offices": 4,
+       "locks_security_door": 1,
+       "locks_main_entrance": 2,
+       "locks_computer_room": 2,
+       "locks_desk_key_room": 2,
+       "locks_total": 11,
+       "building_ok": 255
+      },
+      "say": "Memo 42 tomorrow, the union threatening to strike, and nothing more.",
+      "fx": [
+       ["in", 0, 42, 1]
+      ]
+     },
+     {
+      "label": "Not secure",
+      "name": "judge_locks",
+      "at": 31807,
+      "set": {
+       "locks_offices": 1,
+       "locks_security_door": 1,
+       "locks_main_entrance": 2,
+       "locks_computer_room": 2,
+       "locks_desk_key_room": 1,
+       "locks_total": 7,
+       "building_ok": 255
+      },
+      "say": "Memo 32, a serious breach, tomorrow, and memo 28 again in three days.",
+      "fx": [
+       ["in", 0, 32, 1],
+       ["in", 0, 28, 3]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Memo 33",
+    "name": "computer_security",
+    "at": 31590,
+    "say": "Computer security lists four measures for 12 seconds and asks for their ORDER: audits by analysts, a code changed weekly, special keys, calls through human operators.",
+    "choices": [
+     {
+      "label": "2 4 3 1",
+      "name": "computer_security",
+      "at": 31590,
+      "ans": [26],
+      "say": "4 2 3 1, 2 4 1 3 and 4 2 1 3 count too.",
+      "fx": [
+       ["progress", 5],
+       ["prestige", 50]
+      ],
+      "best": true
+     },
+     {
+      "label": "Any other order",
+      "name": "computer_security",
+      "at": 31590,
+      "ans": [49],
+      "say": "Memo 34, a hacker, in two days, and memo 33 again two days after that.",
+      "fx": [
+       ["in", 0, 34, 2]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Warburton",
+  "id": "warburton",
+  "lede": "A man has vanished with a list of sensitive buildings. The trail runs through his wife’s lover to a body.",
+  "starts": [
+   [1, 4, 13],
+   [0, 13, 23]
+  ],
+  "steps": [
+   {
+    "title": "Report 4",
+    "when": "Day 13",
+    "name": "post_report_4",
+    "at": 29335,
+    "say": "Security at the PSA: one of their men has vanished with a list of funny buildings. Call 79265856, which answers for four days.",
+    "fx": [
+     ["item", 1, 4],
+     ["phone for", 5, 4]
+    ]
+   },
+   {
+    "title": "Dial 79265856",
+    "name": "psa_phone",
+    "at": 29350,
+    "say": "Cyril Warburton has vanished, and the police have no leads. Watchers on WARBURTON can find something from tomorrow.",
+    "fx": [
+     ["phone", 5, 0],
+     ["target in", 10, 1]
+    ]
+   },
+   {
+    "title": "Warburton is seen",
+    "name": "warburton_seen",
+    "at": 29377,
+    "say": "Sitrep 10: Susan Warburton has a lover, Fred Banister. Watchers on BANISTER can find something from tomorrow.",
+    "fx": [
+     ["target", 10, 0],
+     ["target in", 2, 1],
+     ["item", 2, 42]
+    ]
+   },
+   {
+    "title": "Banister is seen",
+    "name": "banister_seen",
+    "at": 29399,
+    "say": "Sitrep 2: Banister is burying something large, and the watcher is in phone box 02586141, which answers for a day.",
+    "fx": [
+     ["target", 2, 0],
+     ["phone for", 4, 1],
+     ["progress", 2],
+     ["item", 2, 34]
+    ]
+   },
+   {
+    "title": "Dial 02586141",
+    "name": "phone_box",
+    "at": 29426,
+    "say": "He buried a big box: what shall we do?",
+    "choices": [
+     {
+      "label": "INFORM SPECIAL BRANCH",
+      "name": "phone_box",
+      "at": 29426,
+      "ans": [1],
+      "say": "OK CHIEF, and report 5 tomorrow.",
+      "fx": [
+       ["phone", 4, 0],
+       ["in", 1, 5, 1]
+      ],
+      "best": true
+     },
+     {
+      "label": "DIG IT UP, then INFORM SPECIAL BRANCH",
+      "name": "phone_box",
+      "at": 29426,
+      "ans": [2, 1],
+      "say": "IT’S A BODY, CHIEF, then the same.",
+      "fx": [
+       ["phone", 4, 0],
+       ["in", 1, 5, 1]
+      ]
+     },
+     {
+      "label": "CONTINUE SURVEILLANCE",
+      "name": "phone_box",
+      "at": 29426,
+      "ans": [0],
+      "say": "The body is found tomorrow, and the murderers have fled.",
+      "fx": [
+       ["phone", 4, 0],
+       ["in", 0, 13, 1]
+      ]
+     },
+     {
+      "label": "DIG IT UP, then CARRY ON",
+      "name": "phone_box",
+      "at": 29426,
+      "ans": [2, 0],
+      "say": "The same.",
+      "fx": [
+       ["phone", 4, 0],
+       ["in", 0, 13, 1]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Report 5",
+    "name": "post_report_5",
+    "at": 29536,
+    "say": "Nice one, chief: they have confessed.",
+    "fx": [
+     ["prestige", 20],
+     ["progress", 5],
+     ["item", 1, 5]
+    ]
+   },
+   {
+    "title": "Day 23",
+    "when": "Day 23",
+    "name": "body_found",
+    "at": 29556,
+    "set": {
+     "special_branch_told": 0
+    },
+    "say": "Unless Special Branch has been told, the police find the body on day 23 and say you knew and did nothing: memo 13.",
+    "fx": [
+     ["phone", 5, 0],
+     ["phone", 4, 0],
+     ["prestige", -20],
+     ["item", 0, 13],
+     ["target", 2, 0]
+    ],
+    "path": false
+   }
+  ]
+ },
+ {
+  "name": "Adamson",
+  "id": "adamson",
+  "lede": "A short one: an officer on sick leave.",
+  "starts": [
+   [0, 14, 16]
+  ],
+  "steps": [
+   {
+    "title": "Memo 14",
+    "when": "Day 16",
+    "name": "post_memo_14",
+    "at": 29644,
+    "say": "Adamson is on sick leave. Watchers on ADAMSON can find something two days on.",
+    "fx": [
+     ["item", 0, 14],
+     ["target in", 3, 2]
+    ]
+   },
+   {
+    "title": "Adamson is seen",
+    "name": "adamson_seen",
+    "at": 29660,
+    "say": "Sitrep 3: he has a new girlfriend, a Miss Browning. That is all.",
+    "fx": [
+     ["progress", 2],
+     ["item", 2, 35],
+     ["target", 3, 0]
+    ]
+   }
+  ]
+ },
+ {
+  "name": "The newspaper leak",
+  "id": "leak",
+  "lede": "The privatisation of the NEB has leaked to the Daily News.",
+  "starts": [
+   [0, 15, 19]
+  ],
+  "steps": [
+   {
+    "title": "Memo 15",
+    "when": "Day 19",
+    "name": "newspaper_leak",
+    "at": 29702,
+    "say": "ACT on it for five options.",
+    "choices": [
+     {
+      "label": "ANALYZE THE PAPERS",
+      "name": "newspaper_leak",
+      "at": 29702,
+      "ans": [0],
+      "say": "Report 6 in two days.",
+      "fx": [
+       ["in", 1, 6, 2]
+      ],
+      "best": true
+     },
+     {
+      "label": "KEEP WATCH ON STAFF",
+      "name": "newspaper_leak",
+      "at": 29702,
+      "ans": [1],
+      "say": "Memo 19 tomorrow: the watching scared him off.",
+      "fx": [
+       ["in", 0, 19, 1]
+      ]
+     },
+     {
+      "label": "STOP SENSITIVE WORK",
+      "name": "newspaper_leak",
+      "at": 29702,
+      "ans": [2],
+      "say": "Memo 20, and the leak again in four days.",
+      "fx": [
+       ["in", 0, 20, 2],
+       ["in", 0, 15, 4],
+       ["prestige", -50]
+      ]
+     },
+     {
+      "label": "MAKE PAPER REVEAL SOURCE",
+      "name": "newspaper_leak",
+      "at": 29702,
+      "ans": [3],
+      "say": "Report 7 in three days: the paper fights the court order. Y to continuing it gives report 8 and report 6 in four days.",
+      "fx": [
+       ["in", 1, 7, 3]
+      ]
+     },
+     {
+      "label": "IGNORE IT",
+      "name": "newspaper_leak",
+      "at": 29702,
+      "ans": [4],
+      "say": "The leak again in two days.",
+      "fx": [
+       ["in", 0, 15, 2],
+       ["prestige", -20]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Report 6",
+    "name": "post_report_6",
+    "at": 29781,
+    "say": "The fingerprints of Sam Willis, an executive officer in the section, were found.",
+    "fx": [
+     ["item", 1, 6],
+     ["progress", 5]
+    ]
+   },
+   {
+    "title": "Willis",
+    "name": "willis_action",
+    "at": 29794,
+    "say": "ACT on report 6.",
+    "choices": [
+     {
+      "label": "PROSECUTE UNDER OS ACT",
+      "name": "willis_action",
+      "at": 29794,
+      "ans": [1],
+      "say": "Memo 17: not a bad job.",
+      "fx": [
+       ["progress", 5],
+       ["prestige", 20],
+       ["in", 0, 17, 2]
+      ],
+      "best": true
+     },
+     {
+      "label": "FIRE HIM",
+      "name": "willis_action",
+      "at": 29794,
+      "ans": [0],
+      "say": "Memo 16: a bit lenient.",
+      "fx": [
+       ["progress", 5],
+       ["prestige", 10],
+       ["in", 0, 16, 2]
+      ]
+     },
+     {
+      "label": "WARN HIM",
+      "name": "willis_action",
+      "at": 29794,
+      "ans": [2],
+      "say": "Memo 18: the Prime Minister is displeased.",
+      "fx": [
+       ["prestige", -20],
+       ["in", 0, 18, 2]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Johnston and Pasternak",
+  "id": "johnston",
+  "lede": "One of your own men is seen with a foreigner. The foreigner turns out to be a KGB colonel who wants to come over.",
+  "starts": [
+   [0, 22, 22]
+  ],
+  "steps": [
+   {
+    "title": "Memo 22",
+    "when": "Day 22",
+    "name": "post_memo_22",
+    "at": 29987,
+    "say": "Sam Johnston has been seen a lot with a foreigner. Watchers on JOHNSTON can find something four days on.",
+    "fx": [
+     ["item", 0, 22],
+     ["target in", 0, 4]
+    ]
+   },
+   {
+    "title": "Johnston, the first find",
+    "name": "johnston_seen",
+    "at": 30002,
+    "set": {
+     "johnston_first_find": 0
+    },
+    "say": "Sitrep 0: the contact is a real professional, met at the Science Museum. The watchers can find more from the next day.",
+    "fx": [
+     ["target", 0, 2],
+     ["item", 2, 32]
+    ]
+   },
+   {
+    "title": "Johnston, the second find",
+    "name": "johnston_seen",
+    "at": 30002,
+    "set": {
+     "johnston_first_find": 255
+    },
+    "say": "Sitrep 14: the contact is Ivan Pasternak, a colonel in the KGB’s advance planning section. Memo 23 tomorrow.",
+    "fx": [
+     ["target", 0, 0],
+     ["item", 2, 46],
+     ["in", 0, 23, 1]
+    ]
+   },
+   {
+    "title": "Memo 23",
+    "name": "pasternak_options",
+    "at": 30056,
+    "say": "What to do about Pasternak: ACT on it for five options.",
+    "choices": [
+     {
+      "label": "APPROACH JOHNSTON",
+      "name": "pasternak_options",
+      "at": 30056,
+      "ans": [3],
+      "say": "Memo 26 in three days.",
+      "fx": [
+       ["in", 0, 26, 3]
+      ],
+      "best": true
+     },
+     {
+      "label": "ARREST JOHNSTON",
+      "name": "pasternak_options",
+      "at": 30056,
+      "ans": [0],
+      "say": "Report 9: on what charges?",
+      "fx": [
+       ["in", 1, 9, 1]
+      ]
+     },
+     {
+      "label": "ENTRAP PASTERNAK",
+      "name": "pasternak_options",
+      "at": 30056,
+      "ans": [1],
+      "say": "Memo 24, a fiasco, and memo 25 tomorrow: the minister is playing merry hell.",
+      "fx": [
+       ["item", 0, 24],
+       ["in", 0, 25, 1]
+      ]
+     },
+     {
+      "label": "CONTINUE SURVEILLANCE",
+      "name": "pasternak_options",
+      "at": 30056,
+      "ans": [2],
+      "say": "Johnston’s watchers report again two days on.",
+      "fx": [
+       ["target in", 0, 2],
+       ["prestige", -10]
+      ]
+     },
+     {
+      "label": "ARREST PASTERNAK",
+      "name": "pasternak_options",
+      "at": 30056,
+      "ans": [4],
+      "say": "Report 10: he pleads diplomatic immunity and leaves.",
+      "fx": [
+       ["in", 1, 10, 2]
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Memo 26",
+    "name": "post_memo_26",
+    "at": 30153,
+    "say": "Johnston says Joe is ready to come over and will try to arrange a meeting. His call comes in two days.",
+    "fx": [
+     ["item", 0, 26],
+     ["in", 3, 13, 2]
+    ]
+   },
+   {
+    "title": "Call 13",
+    "name": "meet_pasternak",
+    "at": 30197,
+    "say": "PASTERNAK IS READY. CAN YOU MEET HIM ON VAUXHALL BRIDGE AT ONCE? MEET PASTERNAK? A call missed once rings again two days on; missed twice, it counts as N.",
+    "choices": [
+     {
+      "label": "Y",
+      "name": "meet_pasternak",
+      "at": 30197,
+      "ans": [0],
+      "until": "cencom_loop",
+      "say": "On the bridge Pasternak gasps one word, SVETOFOR, and dies. Report 12 tomorrow: a toxin, probably from a Bulgarian umbrella.",
+      "fx": [
+       ["in", 1, 12, 1],
+       ["prestige", 100],
+       ["progress", 10]
+      ],
+      "best": true
+     },
+     {
+      "label": "N",
+      "name": "meet_pasternak",
+      "at": 30197,
+      "ans": [1],
+      "say": "Report 11 in two days: the Sûreté turned him.",
+      "fx": [
+       ["prestige", -50],
+       ["in", 1, 11, 2]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Bracton and Thorn",
+  "id": "bracton",
+  "lede": "A worried superior rings about his man. The one to worry about is the superior.",
+  "starts": [
+   [3, 14, 27]
+  ],
+  "watch": [
+   [8, 31]
+  ],
+  "steps": [
+   {
+    "title": "Call 14",
+    "when": "Day 27",
+    "name": "bracton_call",
+    "at": 27537,
+    "set": {
+     "bracton_done": 0,
+     "bracton_calls": 0
+    },
+    "say": "Bracton, an assistant secretary at the Ministry of Defence, is worried about one of his principals, Thorn. He rings again every two days, three times in all, until he is dealt with.",
+    "fx": [
+     ["item", 3, 14],
+     ["in", 3, 14, 2]
+    ]
+   },
+   {
+    "title": "Bracton is seen",
+    "when": "From day 31",
+    "name": "bracton_seen",
+    "at": 27720,
+    "say": "Thorn’s file says he has recovered from a breakdown. Bracton’s file says he is obsessed with his staff’s psychology, and watchers on BRACTON find something from day 31. Sitrep 8: he visited a satanic temple in Finchley and danced naked around a plastic goat. Medical Security, 71288989, answers from now on.",
+    "fx": [
+     ["target", 8, 0],
+     ["item", 2, 40],
+     ["phone for", 2, 41]
+    ]
+   },
+   {
+    "title": "Dial 71288989",
+    "name": "medical_security",
+    "at": 27614,
+    "say": "WHICH OFFICER IS A POTENTIAL SECURITY RISK? and WHY (BE BRIEF)?",
+    "choices": [
+     {
+      "label": "BRACTON, then SATAN, TEMPLE, MASS, MAGIC, DANCING or NAKED",
+      "name": "medical_security",
+      "at": 27614,
+      "ans": [39, 40],
+      "say": "WE’LL CHECK ON HIM, and report 13 tomorrow. The number stops answering.",
+      "fx": [
+       ["phone", 2, 0],
+       ["in", 1, 13, 1]
+      ],
+      "best": true
+     },
+     {
+      "label": "Anything else",
+      "name": "medical_security",
+      "at": 27614,
+      "ans": [39, 49],
+      "say": "RUBBISH.",
+      "fx": []
+     }
+    ]
+   },
+   {
+    "title": "Report 13",
+    "name": "bracton_retired",
+    "at": 27700,
+    "say": "Bracton was on the verge of a breakdown and has been retired on medical grounds.",
+    "fx": [
+     ["item", 1, 13],
+     ["progress", 5],
+     ["prestige", 50]
+    ]
+   },
+   {
+    "title": "Thorn is getting worse",
+    "name": "thorn_worse",
+    "at": 27573,
+    "set": {
+     "bracton_done": 0
+    },
+    "say": "After his third call, a call every two days that Thorn is getting worse, each costing 10 prestige, until Bracton is dealt with or day 38 comes.",
+    "fx": [
+     ["prestige", -10],
+     ["item", 3, 15]
+    ],
+    "path": false
+   }
+  ]
+ },
+ {
+  "name": "Mary Cannel",
+  "id": "cannel",
+  "lede": "A name on the pizza customers’ list that belongs to someone else’s operation.",
+  "steps": [
+   {
+    "title": "Watchers on CANNEL",
+    "name": "b_523E",
+    "at": 21054,
+    "ret": {
+     "find_word": 9,
+     "ask_watchers": 0
+    },
+    "say": "Putting watchers on MARY or CANNEL brings memo 10 two days on: ‘6’, the other service, asks what ‘5’ is doing interfering with one of its operations.",
+    "fx": [
+     ["in", 0, 10, 2]
+    ],
+    "path": false
+   },
+   {
+    "title": "Memo 10",
+    "name": "post_memo_10",
+    "at": 28837,
+    "say": "Memo 10, and the prestige it costs.",
+    "fx": [
+     ["item", 0, 10],
+     ["prestige", -20]
+    ],
+    "path": false
+   }
+  ]
+ },
+ {
+  "name": "Retson and Nickels",
+  "id": "herrings",
+  "lede": "Two memos about men acting oddly. Nothing follows either of them.",
+  "starts": [
+   [0, 11, 5],
+   [0, 12, 11]
+  ],
+  "steps": [
+   {
+    "title": "Memo 11",
+    "when": "Day 5",
+    "name": "post_memo_11",
+    "at": 29303,
+    "say": "Sir Frank Gough is worried about Retson, a bit secretive of late.",
+    "fx": [
+     ["item", 0, 11]
+    ]
+   },
+   {
+    "title": "Memo 12",
+    "when": "Day 11",
+    "name": "post_memo_12",
+    "at": 29319,
+    "say": "Sir Harry Jarvis on Nickels, acting oddly. Retson and Nickels are not targets, and watchers put on them find nothing.",
+    "fx": [
+     ["item", 0, 12]
+    ]
+   }
+  ]
+ }
+];
+const TFP_TARGETS = ['JOHNSTON', 'FAULKNER', 'BANISTER', 'ADAMSON', 'ABBS', 'ALLEN', 'GENOVESE', 'MARAS', 'BRACTON',
+  'SOPWITH', 'WARBURTON', 'ALLEN', 'ASSOCIATE', 'FAULKNER', 'JOHNSTON', 'SOPWITH'];
+const TFP_NUMBERS = { 0: '04382731', 2: '71288989', 3: '12377563', 4: '02586141', 5: '79265856', 6: '179794433' };
+// end of tfp-story
+</script>
+<script>
+/* tfp-plans */
+// Episode one's floor plans of Building 17, as draw_plan ($7F97) draws them: 10 rows of 14 tiles,
+// read on from one row to the next, each tile's eight bytes at $9498 plus its offset in the table
+// at $5B7F, inverted, in a window coloured $C0. tfpPlan gives { w, h, bits, colours }: w by h
+// cells, the eight bytes of each cell row by row, and a colour byte a cell. Each plan's doors are
+// at doors, n of them, four bytes each, and x, y is the window's first cell inside its frame.
+const TFP_PLANS = [
+  { name: 'Basement', map: 0x7FF9, doors: 0x7D58, n: 9, x: 8, y: 6 },
+  { name: 'Ground floor', map: 0x8085, doors: 0x7E25, n: 13, x: 15, y: 10 },
+];
+function tfpPlan(ram, p) {
+  const w = 14, h = 10, bits = new Uint8Array(w * h * 8), colours = new Uint8Array(w * h).fill(0xC0);
+  for (let i = 0; i < w * h; i++) {
+    const t = ram[p.map + i], off = ram[0x5B7F + 2 * t] | ram[0x5B80 + 2 * t] << 8;
+    for (let r = 0; r < 8; r++) bits[8 * i + r] = ram[(0x9498 + off + r) & 0xFFFF] ^ 0xFF;
+  }
+  return { w, h, bits, colours };
+}
+// end of tfp-plans
+</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const src = (part, a) => `<code><a href="source-${part}.html#${a.toString(16).toUpperCase().padStart(4, '0')}">${hex(a)}</a></code>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function lacks(el, what) { el.textContent = 'This needs ' + what + ', which the built site serves: open the page from the site.'; }
+function button(bar, label, on, pressed) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'tfp-btn'; b.textContent = label;
+  b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  b.addEventListener('click', () => { for (const o of bar.querySelectorAll('.tfp-btn')) o.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-pressed', 'true'); on(); });
+  bar.appendChild(b);
+  return b;
+}
+function comment(L, a) {
+  const r = L.listing.records.find((x) => x.a === a);
+  return r && r.c ? r.c : '';
+}
+
+// ---- the title tune
+// ---- Building 17's locks
+const TFP_MEMO_SAYS = { 28: 'Building security asks again: CAN YOU COME ROUND AND INSTALL SECURITY SYSTEMS IN CO DATA ANALYST BUILDING 17?',
+  29: 'The health and safety committee: YOUR RECOMMENDATIONS INCLUDE BLOCKING FIRE EXITS!',
+  30: 'Establishments: TOILET PAPER NOT NORMALLY CLASSED AS SECRET PAPERS.',
+  32: 'A SERIOUS BREACH OF SECURITY AT BUILDING 17. SENSITIVE MATERIAL HAS GONE.',
+  33: 'Computer security: WE ARE NOW READY TO SECURE THE COMPUTER, and four measures to put in order.',
+  42: 'Establishments: CPSA IS THREATENING STRIKE ACTION UNLESS IT IS CHANGED.' };
+function locksWidget() {
+  const box = $('tfp-locks'), out = $('tfp-locks-out'), doors = [];
+  box.innerHTML = TFP_DOORS.map(([floor, list], f) => `<p class="tfp-k" style="margin:8px 0 6px;font-weight:700;font-size:14px">${floor}</p><div class="tfp-bar">` +
+    list.map(([kind, name], k) => `<button type="button" class="tfp-btn" aria-pressed="false" data-f="${f}" data-k="${k}">${esc(name)}</button>`).join('') + '</div>').join('');
+  for (const b of box.querySelectorAll('button')) {
+    const [kind] = TFP_DOORS[b.dataset.f][1][b.dataset.k];
+    doors.push({ b, kind });
+    b.addEventListener('click', () => { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); judge(); });
+  }
+  function judge() {
+    const c = { offices: 0, wcs: 0, staircase: 0, security: 0, entrance: 0, computer: 0, desk: 0, total: 0 };
+    for (const d of doors) if (d.b.getAttribute('aria-pressed') === 'true') { c.total++; if (d.kind) c[d.kind]++; }
+    const r = tfpJudge(c);
+    const day = (n) => n === 1 ? 'the next day' : 'in ' + n + ' days';
+    const lines = r.memos.map(([m, d]) => `<li>Memo ${m} ${day(d)}: ${esc(TFP_MEMO_SAYS[m])}</li>`);
+    out.innerHTML = `${c.total} lock${c.total === 1 ? '' : 's'}. <ul style="margin:6px 0 0;padding-left:20px">${lines.join('')}</ul>` + (r.progress ? '<div>Progress goes up by 10.</div>' : '');
+  }
+  judge();
+}
+
+// ---- the story-lines
+// A day column for each of the 40 days, a row for each story-line: its fixed starts (TFP_STORY's
+// starts) and the days its watchers can find something (watch). Choosing a row lists its steps.
+const TFP_LISTS = ['Memo', 'Report', 'Find', 'Call'];
+function tfpFx(f) {
+  const days = (d) => d === 1 ? 'tomorrow' : `in ${d} days`;
+  const who = (t) => TFP_TARGETS[t];
+  const num = (n) => TFP_NUMBERS[n];
+  switch (f[0]) {
+    case 'item': return f[1] === 2 ? (f[2] >= 0x20 ? `sitrep ${f[2] - 0x20}` : 'a sitrep: nothing seen') : `${TFP_LISTS[f[1]].toLowerCase()} ${f[2]} ${f[1] === 3 ? 'rings' : 'arrives'}`;
+    case 'on': return `${TFP_LISTS[f[1]].toLowerCase()} ${f[2]} on day ${f[3]}`;
+    case 'in': return `${TFP_LISTS[f[1]].toLowerCase()} ${f[2]} ${days(f[3])}`;
+    case 'prestige': return `${f[1] > 0 ? '+' : '−'}${Math.abs(f[1])} prestige`;
+    case 'progress': return `+${f[1]} progress`;
+    case 'target': return f[2] === 0 ? `watchers on ${who(f[1])} find nothing more` : `watchers on ${who(f[1])} can find more from now on`;
+    case 'target in': return `watchers on ${who(f[1])} can find something ${f[2] === 1 ? 'from tomorrow' : `in ${f[2]} days`}`;
+    case 'phone': return f[2] === 0 ? `${num(f[1])} stops answering` : `${num(f[1])} answers from now on`;
+    case 'phone for': return f[2] >= 41 ? `${num(f[1])} answers from now on` : `${num(f[1])} answers for ${f[2] === 1 ? 'a day' : f[2] + ' days'}`;
+    case 'day': return 'a day passes';
+    case 'countdown': return `the countdown starts at ${f[1]} days`;
+    case 'fingerprint': return 'the fingerprint is found';
+  }
+  return f.join(' ');
+}
+function tfpChips(fx) {
+  if (!fx || !fx.length) return '<span class="tfp-fx tfp-none">nothing happens</span>';
+  return fx.map((f) => {
+    const k = f[0] === 'progress' ? ' tfp-up' : f[0] === 'prestige' ? (f[1] > 0 ? ' tfp-up' : ' tfp-down') : f[0] === 'countdown' || f[0] === 'fingerprint' ? ' tfp-up' : '';
+    return `<span class="tfp-fx${k}">${esc(tfpFx(f))}</span>`;
+  }).join(' ');
+}
+function tfpSteps(s) {
+  const code = (o) => o.at === undefined ? '' : `<span class="tfp-code">${src('nato-documents', o.at)} ${esc(o.name)}</span>`;
+  return `<ol class="tfp-steps">` + s.steps.map((st) => {
+    let h = `<li><div class="tfp-st"><b>${esc(st.title)}</b>${st.when ? ` <span class="tfp-when">${esc(st.when)}</span>` : ''}${code(st)}</div><p>${esc(st.say)}</p>`;
+    if (st.choices) h += '<table class="tfp-tbl tfp-ch">' + st.choices.map((c) =>
+      `<tr${c.best ? ' class="tfp-on"' : ''}><td class="tfp-ans">${esc(c.label)}${c.best ? '<span class="tfp-best">winning path</span>' : ''}</td>` +
+      `<td>${esc(c.say || '')} ${c.fx ? tfpChips(c.fx) : ''}${c.at !== undefined && c.at !== st.at ? ' ' + code(c) : ''}</td></tr>`).join('') + '</table>';
+    else if (st.fx) h += `<div>${tfpChips(st.fx)}</div>`;
+    return h + '</li>';
+  }).join('') + '</ol>';
+}
+function storyWidget() {
+  const tl = $('tfp-tl'), out = $('tfp-story-out'), rows = [];
+  let h = '<div class="tfp-d0">Day</div>';
+  for (let d = 1; d <= 40; d++) h += `<div class="tfp-d${d % 5 === 0 ? ' tfp-d5' : ''}">${d === 1 || d % 5 === 0 ? d : ''}</div>`;
+  TFP_STORY.filter((s) => !s.spy).concat(TFP_STORY.filter((s) => s.spy)).forEach((s) => {
+    const at = {}, from = {};
+    for (const [l, e, d] of s.starts || []) (at[d] = at[d] || []).push(`${TFP_LISTS[l]} ${e}`);
+    for (const [t, d] of s.watch || []) if (d > 0 && d < 41) (from[d] = from[d] || []).push(TFP_TARGETS[t]);
+    const first = Math.min(41, ...Object.keys(from).map(Number));
+    let lastLabel = -99, low = false;
+    h += `<button type="button" class="tfp-r" data-id="${s.id}" aria-pressed="false">${esc(s.name)}</button>`;
+    for (let d = 1; d <= 40; d++) {
+      const m = at[d], w = from[d];
+      // A name that starts within a few days of the last one goes under it rather than over it.
+      if (w) { low = d - lastLabel < 6 ? !low : false; lastLabel = d; }
+      h += `<div class="tfp-c${d >= first ? ' tfp-w' : ''}${d % 5 === 0 ? ' tfp-d5' : ''}" data-id="${s.id}">` +
+        (m ? `<span class="tfp-m" title="${esc(m.join(', ') + ' on day ' + d)}">${m.length > 1 ? m.length : esc(m[0].replace(/^(\w)\w* /, '$1'))}</span>` : '') +
+        (w ? `<span class="tfp-wl${low ? ' tfp-wl2' : ''}" title="${esc('Watchers on ' + w.join(' and ') + ' can find something from day ' + d)}">${esc(w.join(', '))}</span>` : '') + '</div>';
+    }
+  });
+  tl.innerHTML = h;
+  function show(id) {
+    const s = TFP_STORY.find((x) => x.id === id);
+    for (const b of tl.querySelectorAll('.tfp-r')) b.setAttribute('aria-pressed', b.dataset.id === id ? 'true' : 'false');
+    for (const c of tl.querySelectorAll('.tfp-c')) c.classList.toggle('tfp-sel', c.dataset.id === id);
+    out.innerHTML = `<h3 class="tfp-h">${esc(s.name)}</h3><p>${esc(s.lede)}</p>` + tfpSteps(s);
+  }
+  tl.addEventListener('click', (e) => { const c = e.target.closest('[data-id]'); if (c) show(c.dataset.id); });
+  show('abbs');
+  const spy = $('tfp-spy');
+  if (spy) spy.innerHTML = tfpSteps(TFP_STORY.find((x) => x.spy));
+}
+
+// ---- Building 17
+// A picture of w by h hi-res cells, each its eight bytes and a colour byte, at s screen pixels
+// to a C64 pixel.
+function drawCells(cv, pic, s) {
+  cv.width = pic.w * 8 * s; cv.height = pic.h * 8 * s;
+  const ctx = cv.getContext('2d');
+  for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+    const i = cy * pic.w + cx, c = pic.colours[i];
+    for (let r = 0; r < 8; r++) {
+      const b = pic.bits[8 * i + r];
+      for (let x = 0; x < 8; x++) {
+        ctx.fillStyle = C64.PAL[b & (0x80 >> x) ? c >> 4 : c & 15];
+        ctx.fillRect((cx * 8 + x) * s, (cy * 8 + r) * s, s, s);
+      }
+    }
+  }
+}
+
+function plansWidget(N, R) {
+  const W1 = tfpWords(N.ram), box = $('lv-plans');
+  const roomName = (i) => tfpText(N.ram, W1, N.ram[0x7F79 + 2 * i] | N.ram[0x7F7A + 2 * i] << 8, true).trim();
+  box.innerHTML = TFP_PLANS.map((p, k) => `<figure><div class="tfp-stack"><canvas class="tfp-cv" id="lv-plan-${k}"></canvas><canvas id="lv-plan-ov-${k}"></canvas></div>` +
+    `<figcaption>${esc(p.name)}: plan ${src('nato-documents', p.map)}, doors ${src('nato-documents', p.doors)}</figcaption><ol class="lv-doors" id="lv-doors-${k}"></ol></figure>`).join('');
+  TFP_PLANS.forEach((p, k) => {
+    const S = 4, cv = $('lv-plan-' + k), ov = $('lv-plan-ov-' + k);
+    drawCells(cv, tfpPlan(N.ram, p), S);
+    ov.width = cv.width; ov.height = cv.height;
+    const ctx = ov.getContext('2d'), doors = [];
+    for (let i = 0; i < p.n; i++) {
+      const e = p.doors + 4 * i, ad = (N.ram[e + 2] | N.ram[e + 3] << 8) - 0x2000;
+      doors.push({ label: N.ram[e], cx: ((ad % 320) >> 3) - p.x, cy: Math.floor(ad / 320) - p.y });
+    }
+    let on = -1;
+    const draw = () => {
+      ctx.clearRect(0, 0, ov.width, ov.height);
+      ctx.font = `700 ${3 * S}px "IBM Plex Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      doors.forEach((d, i) => {
+        const x = (d.cx * 8 + 4) * S, y = (d.cy * 8 + 4) * S;
+        ctx.fillStyle = i === on ? '#c25a00' : '#1f5fa8';
+        ctx.globalAlpha = .9; ctx.beginPath(); ctx.arc(x, y, 3.4 * S, 0, 2 * Math.PI); ctx.fill(); ctx.globalAlpha = 1;
+        ctx.fillStyle = '#fff'; ctx.fillText(String(i + 1), x, y + 1);
+      });
+    };
+    const list = $('lv-doors-' + k);
+    list.innerHTML = doors.map((d) => `<li>${esc(roomName(d.label))}</li>`).join('');
+    [...list.children].forEach((li, i) => {
+      li.addEventListener('mouseenter', () => { on = i; draw(); });
+      li.addEventListener('mouseleave', () => { on = -1; draw(); });
+    });
+    draw();
+  });
+}
+
+(function () {
+  try { storyWidget(); } catch (e) { $('tfp-story-out').textContent = 'The story-lines did not load: ' + e.message; }
+  try { locksWidget(); } catch (e) { $('tfp-locks-out').textContent = 'The locks did not load: ' + e.message; }
+  if (typeof C64 === 'undefined') { lacks($('lv-plans'), 'the site’s c64.js'); return; }
+  C64.load('parts/nato-documents/listing.json').then((L) => {
+    try { plansWidget(L); } catch (e) { $('lv-plans').textContent = 'The plans did not draw: ' + e.message; }
+  }).catch((e) => { $('lv-plans').textContent = 'Episode one’s listing did not load: ' + e.message; });
+})();
+</script>
