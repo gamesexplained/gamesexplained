@@ -282,3 +282,11 @@ the game, beside Start again and Sound. Removed the duplicate Pause button
 and its old state updates. The transport's own buttons now provide the
 single pause/play state, and starting a game refreshes them immediately.
 The lower lab retains the paused routine list and advanced memory editor.
+
+## Page review, 1 November 2026
+
+The contributor reviewed a separate preview across the minisite and requested a shared level selector for maps and enemy paths, explicit level names above both views, subtle GIF download arrows, and a short player caption without a separate help section. The published pages carry those revisions; Play is rebuilt from its template and fragments.
+
+The cross widget compared its selected character with the colour bit in the wrong direction. `test_widgets.js` compares its decision with the original `cross_touch` routine for both characters and all sixteen colours. The routine removes the cross before the test intercepts `cross_count`, so this checks eligibility rather than scoring. The source comment describing bit 2 had the two colours reversed too; it was corrected in `symbols.json` and propagated with `listing.py --recomment`.
+
+GIF exports use the gallery’s sprite renderer and preview pace. An independent decoder in `test_widgets.js` checks all eighteen exports, including the 107-frame changing enemy, against that renderer: 179 frames, with palette, delay, looping, and end markers checked. The decoder caught an end-code width boundary in the reused encoding approach; the local exporter increases the width before writing its end code when the decoder’s final dictionary entry crosses that boundary.
