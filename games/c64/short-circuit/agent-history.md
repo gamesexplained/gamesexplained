@@ -26,3 +26,11 @@ Narrative of how the analysis went, including wrong turns, for the next agent's 
 
 - Tools that print too much cost tokens: a block dump of `$A05F`-`$A15D` through a helper that printed the whole contiguous code block instead of the range printed all of the music driver.
 - Several routines were first described from the call shape alone and later corrected from the code (`$0767` and `$07A0`, `$3251`, `$9968`, `$9AE3`). A reader should treat comments in part two's actor routines (`$2DD4`-`$35B3`) as the least checked.
+
+## Pages and tests
+
+- The music player runs the game's own driver on the kit's 6502. The first comparison with a recording of the emulator's SID (one frame at a time, `vice_sid_get_state`) matched only 67 per cent of the register values, because the driver's note lengths are counted in ticks, and the game ticks the voices at a fractional rate (3.5 a frame in the attract mode: four raster handlers, each adding `$E4` to a counter). Counting hits on `$3C93` and `$A48B` with non-stopping checkpoints (200 and 173 in 50 frames) showed the rate; once the page called the driver the way each part does, the note starts agreed with the recording to within a frame, which is what `test_music.js` holds.
+- `test_levels.js` finds the first frame's screen inside the strip of tiles (offset 37 characters).  It found it on the first run, with tile data read row after row, four characters a row.
+- Part two's creatures were run by poking the scroll column `$02AE` and the last-seen column `$0241` so that `$8936` starts the event at once. The screenshots were taken at fixed times and show a bird (events 1 and 5), a squirrel (3), a low animal (4), a log (6) and a crouching figure (8); they were not matched to numbers with care and the pages do not name them.
+- No browser was used. Chrome is installed on this Mac, but the install notes say it can start Google's updater outside the clone, and nobody was there to ask. The pages' scripts were checked for syntax with `node --check` and their data and drawing by the three tests.
+- A run of `test_kit.py` took 15 minutes. Waiting that long between tool calls let the prompt cache expire, and the next call cost a full uncached read of the conversation (about 1.5 dollars): run long tests in the background and keep working.

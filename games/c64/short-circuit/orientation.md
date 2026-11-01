@@ -25,7 +25,8 @@ No sector is in use that a file does not hold. The disk's name field holds a lin
 3. To start play, hold **fire on joystick port 2** for a second (or press **F1** for part one directly, **F3** for part two directly). Fire plays an intro (`PART ONE`, a short walk-on of the robot), after which part one is running about 8 seconds later. The clock reads `03:00`.
 4. Snapshots in `work/`:
    - `entry.vsf`: the machine stopped on the first instruction of the game, `$9548`, after the loader's jump (a stopping checkpoint at `$9548` after a hard reset).
-   - `play-part1.vsf`: part one in play, clock at about 03:00:35, Johnny standing in the first room, mid-search.
+   - `play-part1.vsf`: part one in play, the clock at about 03:00:35, the robot in the first room with the prompt showing.
+   - `play-part2.vsf`: part two in play, reached with **F3** on the attract screen and the stick held right for two seconds; the clock reads 06:00.
 
 No joystick input is needed for the loader. The load needs no key press.
 
