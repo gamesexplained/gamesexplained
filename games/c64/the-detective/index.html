@@ -45,6 +45,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .td-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:13px}
 .td-spoil{border-left:4px solid var(--coral);padding:4px 14px;margin:0 0 18px;color:var(--ink-soft)}
 .td-note{font-size:14px;color:var(--ink-mute)}
+.td-tl{padding-left:1.4em}
+.td-tl li{margin:0 0 10px}
+.td-row button{font-family:var(--fm);font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.td-row button.td-stick{min-width:42px;touch-action:none;user-select:none}
+.td-row button:active{background:var(--hl)}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -104,6 +109,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </tbody>
   </table>
   <p class="cap">At the accusation Snide is led at gunpoint through a dark tunnel to the cellar, and Dingle says "VERY CLEVER, INSPECTOR.. I PAID THE DOCTOR TO CERTIFY ME DEAD, AND THEN TOOK CARE OF HIM.. NOW I JUST HAVE TO TAKE CARE OF YOU!" and fires. With the blanks loaded, "NOTHING HAPPENS" and Snide can arrest him. With the real bullets the game ends.</p>
+  <h3 style="font-size:20px;margin:30px 0 10px">The murders, in order</h3>
+  <p>The killings are not tied to the clock. Each step of Dingle's scripts waits for Snide to be somewhere else, so the order is fixed and the timing depends on where the player walks. A script's wait counts down once every 16 rounds of the interpreter (<code>$A519</code>), 144 calls; in the hall the interpreter ran 35,148 times in 3,000 frames, so one unit of wait is about a quarter of a second there. The times below use that rate, which changes with how busy the main loop is.</p>
+  <ol class="td-tl">
+    <li><b>Dingle fakes his death.</b> He walks to his room (19) and asks anyone there to leave ("WOULD YOU MIND LEAVING MY ROOM PLEASE, SIR.."). Once Snide is not with him, he locks his door, waits 74 (about 18 seconds) and lies down as if strangled (<code>$B08A</code>, <code>$B1CF</code>). That counts the first death.</li>
+    <li><b>The Doctor reports it.</b> With a death counted, the Doctor leaves his search for his scalpels at random (<code>$AE90</code>, <code>$AED7</code>), says "GOOD EVENING", goes up to his room and on to Dingle's. From there he walks the house until he is in Snide's room, says "INSPECTOR..MR. DINGLE'S BEEN STRANGLED!", leads him back ("HERE..", "POOR FELLOW..TERRIBLE") and switches Dingle to his second script (<code>$AFA6</code>).</li>
+    <li><b>Dingle disappears.</b> He waits for Snide to be in the corridor downstairs (room 1) or the corridor upstairs (room 15), locks his door, leaves every room (<code>$B18D</code>) and waits 260 (about a minute).</li>
+    <li><b>Cynthia.</b> When Snide is in the drawing room, the servants' corridor (room 13), or Bentley's, the Cook's or Gabriel's room, her script is stopped and she is killed: her body is put in the hall, and "YOU HEAR A SCREAM.. FOLLOWED.." is printed (<code>$B0CA</code>, <code>$AC96</code>).</li>
+    <li><b>The bomb.</b> As soon as Snide is out of his own room (23), Dingle plants the bomb (<code>$B198</code>), then waits 368, about a minute and a half, and 120 more for as long as a coin toss says so.</li>
+    <li><b>The Doctor.</b> When Snide is upstairs (the landing or either upstairs corridor), "YOU HEAR A RATHER UNPLEASANT, GASPING SCREAM FROM DOWNSTAIRS!", the Doctor's script is stopped and he is killed in room 27, and the knife is moved to place <code>$1A</code> (<code>$B0EE</code>, <code>$B19E</code>).</li>
+    <li><b>Gabriel.</b> After a wait of 122, about half a minute, and once Snide is in one of the upstairs corridors, she is killed in her room (<code>$B13F</code>, <code>$ACEC</code>).</li>
+    <li><b>The ammunition.</b> After 632, about two and a half minutes, and 152 more for as long as a coin toss says so, and once Snide is out of the study, Dingle takes the ammunition from its place (<code>$B14F</code>, <code>$B1E6</code>): the real bullets if they are there, the blanks if the player has swapped them. His script then stops for good. The accusation runs the same routine again, so the swap can be made any time before Dingle has taken them.</li>
+  </ol>
 </section>
 
 <section id="clock">
@@ -117,8 +134,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">06 · The menu</p>
   <h2 class="t">A pointer with momentum</h2>
   <img src="reference/investigation-menu.png" alt="The investigation menu" style="max-width:384px;width:100%;image-rendering:pixelated;border-radius:4px">
-  <p>Fire opens the investigation menu, a box of icons in the panel. The pointer that chooses them does not move with the stick. Every fourth frame the stick changes the pointer's speed by one, up to seven either way; every sixth frame the speed drops by one towards zero; at the box's edges the pointer bounces back (<code>$315F</code>). Sam Manthorpe has called this "Newtonian physics" for the feel of the controls, and his biggest regret in the game. Zzap!64's reviewer called it the inertial cursor.</p>
-  <p>The icons are built for each menu from the situation (<code>$86EE</code>): question only with someone near enough to talk to, the door icons only at a door. Each icon's picture is 48 bytes at <code>$FA00</code>, copied into the panel's character set when the menu opens.</p>
+  <p>Fire opens the investigation menu, a box of icons in the panel. The pointer that chooses them does not move with the stick. Every fourth frame the stick changes the pointer's speed by one, from eight pixels a frame one way to seven the other; every sixth frame the speed drops by one towards zero; at the box's edges the pointer bounces back (<code>$315F</code>). Sam Manthorpe has called this "Newtonian physics" for the feel of the controls, and his biggest regret in the game. Zzap!64's reviewer called it the inertial cursor.</p>
+  <div class="plate">
+    <div class="td-row"><span>Hold a direction:</span>
+      <button type="button" class="td-stick" data-bit="4" aria-label="Left">◀</button><button type="button" class="td-stick" data-bit="1" aria-label="Up">▲</button><button type="button" class="td-stick" data-bit="2" aria-label="Down">▼</button><button type="button" class="td-stick" data-bit="8" aria-label="Right">▶</button>
+      <button type="button" id="td-preset">Push right for half a second</button><button type="button" id="td-preset2">Tap right</button><button type="button" id="td-preset3">Push up-left for a second</button><button type="button" id="td-reset">Open the menu again</button></div>
+    <div class="td-scroll" style="background:#000;border-radius:6px;overflow-x:auto"><canvas id="td-ptr" width="448" height="224" tabindex="0" aria-label="The menu box; the arrow keys move the pointer while it has focus"></canvas></div>
+    <p class="cap" id="td-ptr-cap">The pointer runs in the built site.</p>
+  </div>
+  <p>The stepper runs a port of the game's own pointer code once every fiftieth of a second, as the game does on a European machine, and a test holds it against the game's code over 120,000 frames of random stick movements (<code>test_pointer.js</code>). Three details make the feel. The speed changes only every fourth frame, so a short tap does nothing at all unless it happens to cover the fourth frame. The drag of every sixth frame is weaker than a push, so the pointer keeps speeding up for as long as the stick is held, up to seven pixels a frame right or down and eight left or up. A bounce flips the speed's bits (<code>EOR #$FF</code>) instead of negating it, so a pointer hitting the right edge at 3 leaves at -4, and one hitting the left edge at -4 leaves at 3.</p>
+  <p>The icons are built for each menu from the situation (<code>$86EE</code>): question only with someone near enough to talk to, the door icons only at a door. Each icon's picture is 48 bytes at <code>$FA00</code>, six characters in multicolour, copied into the panel's character set when the menu opens. The box above holds menu 0's icons, the first list at <code>$8789</code>. The pointer is over an icon only within 22 pixels across and the middle 12 lines of each place (<code>$33A3</code>), so the gaps between icons count as nothing.</p>
+  <table class="td-tab" id="td-icons"><thead><tr><th>Icon</th><th>Picture</th><th>What it does</th><th>Handler</th></tr></thead><tbody></tbody></table>
+  <p class="td-note">The pictures are drawn from the listing's bytes; the actions are what each handler in the table at <code>$87ED</code> does. Icons 4, 5 and 17 have pictures and no action: their handler is a lone <code>RTS</code> (<code>$883A</code>).</p>
 </section>
 
 <section id="rooms">
@@ -232,6 +259,54 @@ function tdScripts(ram) {
 // end of td-scripts
 </script>
 <script>
+/* td-pointer */
+// The investigation menu's pointer, ported from the game. tdPointerNew() is the state the menu
+// opens with ($3308): X $00F0, Y $C8, no speed, both frame counters at 1. tdPointerStep(s, stick)
+// is one frame of state3_menu's movement ($3185-$3248): stick is the byte read from $DC00, a 0 bit
+// for each direction held (bit 0 up, 1 down, 2 left, 3 right). Every fourth frame each direction
+// held changes the speed by one, within -8 to 7; every sixth frame the speed moves one towards 0;
+// the position moves by the speed, and at the box's edges (X $F4 and $131, Y $C0 and $E1) it is put
+// back on the edge and the speed's bits are flipped (EOR #$FF), so 3 becomes -4 and -4 becomes 3.
+// tdIconUnder(s, count) is icon_under_pointer ($33A3): the place 0-8 the pointer is over, or -1.
+// Checked against the game's own code by test_pointer.js.
+function tdPointerNew() { return { x: 0xF0, y: 0xC8, vx: 0, vy: 0, t4: 1, t6: 1 }; }
+function tdPointerStep(s, stick) {
+  let { x, y, vx, vy, t4, t6 } = s;
+  t4 = (t4 - 1) & 0xFF;
+  if (t4 === 0) {
+    t4 = 4;
+    if (!(stick & 1)) { vy--; if (vy < -8) vy++; }
+    if (!(stick & 2)) { vy++; if (vy > 7) vy--; }
+    if (!(stick & 4)) { vx--; if (vx < -8) vx++; }
+    if (!(stick & 8)) { vx++; if (vx > 7) vx--; }
+  }
+  t6 = (t6 - 1) & 0xFF;
+  if (t6 === 0) {
+    t6 = 6;
+    if (vx) vx += vx > 0 ? -1 : 1;
+    if (vy) vy += vy > 0 ? -1 : 1;
+  }
+  x += vx;                  // nine bits: $013B and bit 0 of $013C
+  const hi = x >> 8;
+  let lo = x & 0xFF;
+  if (hi === 0 && lo < 0xF4) { vx = ~vx; lo = 0xF4; }   // ~v is EOR #$FF on a signed byte
+  if (hi === 1 && lo >= 0x3A) { vx = ~vx; lo = 0x31; }
+  let ny = (y + vy) & 0xFF;
+  if (ny < 0xC0) { vy = ~vy; ny = 0xC0; }
+  if (ny >= 0xEA) { vy = ~vy; ny = 0xE1; }
+  return { x: (hi << 8) | lo, y: ny, vx, vy, t4, t6 };
+}
+function tdIconUnder(s, count) {
+  const px = ((s.x & 0xFF) - 0xEE) & 0xFF;
+  if ((px & 0x1F) >= 0x16) return -1;
+  const py = (s.y - 0xBE) & 0xFF;
+  if ((py & 0x0F) < 2 || (py & 0x0F) >= 0x0E) return -1;
+  const row = py >> 4, place = (px >> 5) + (row === 0 ? 0 : row === 1 ? 3 : 6);
+  return place < count ? place : -1;
+}
+// end of td-pointer
+</script>
+<script>
 (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -260,6 +335,87 @@ function tdScripts(ram) {
       tr.innerHTML = '<td class="n">$' + (0x60 + i).toString(16).toUpperCase() + '</td><td>' + JSON.stringify(words[i]) + '</td><td class="n">$' + (0x70 + i).toString(16).toUpperCase() + '</td><td>' + JSON.stringify(words[i + 16]) + '</td>';
       tb.appendChild(tr);
     }
+    // the icons: pictures from $FA00 (48 bytes each, six multicolour characters, three across and two
+    // down), actions from the handlers in the table at $87ED
+    const ICON_DOES = ['open: list what is inside', 'look: name the furniture or door at hand, or examine an object', 'inventory',
+      'put the chosen object into the furniture at hand', 'nothing', 'nothing', 'use the gun', 'accuse', 'open or close the door',
+      'open or close the door', 'unlock', 'question someone here', 'read', 'consume', 'use', 'time and pause', 'put one carried object in another', 'nothing'];
+    const ICON_COLS = ['#d8dde6', '#000000', C64.PAL[2], C64.PAL[6]];
+    const drawIcon = (ctx, n, ox, oy, sc) => {
+      for (let c = 0; c < 6; c++) for (let row = 0; row < 8; row++) {
+        const b = r[0xFA00 + n * 48 + c * 8 + row];
+        for (let k = 0; k < 4; k++) {
+          ctx.fillStyle = ICON_COLS[(b >> (6 - 2 * k)) & 3];
+          ctx.fillRect(ox + ((c % 3) * 8 + 2 * k) * sc, oy + (Math.floor(c / 3) * 8 + row) * sc, 2 * sc, sc);
+        }
+      }
+    };
+    const itb = document.querySelector('#td-icons tbody');
+    for (let n = 0; n < 18; n++) {
+      const tr = document.createElement('tr'), cv = document.createElement('canvas');
+      const ctx = C64.canvas(cv, 48, 32); drawIcon(ctx, n, 0, 0, 2);
+      const h = r[0x87ED + 2 * n] | (r[0x87EE + 2 * n] << 8);
+      tr.innerHTML = '<td class="n">' + n + '</td><td></td><td>' + ICON_DOES[n] + '</td><td class="n"><code>$' + h.toString(16).toUpperCase() + '</code></td>';
+      tr.children[1].appendChild(cv);
+      itb.appendChild(tr);
+    }
+    // the pointer stepper: the box in sprite coordinates, $E8-$14F across and $B8-$EF down, four times
+    const menu = [];
+    for (let a = 0x8789; r[a] < 0x80; a++) menu.push(r[a]);
+    const pc = $('td-ptr'), S = 4, X0 = 0xE8, Y0 = 0xB8;
+    const pctx = C64.canvas(pc, (0x150 - X0) * S, (0xF0 - Y0) * S);
+    let ps = tdPointerNew(), held = 0, script = null, raf = 0, last = 0, acc = 0, trail = [];
+    function paint() {
+      pctx.fillStyle = '#20242c'; pctx.fillRect(0, 0, pc.width, pc.height);
+      pctx.strokeStyle = '#5a6170'; pctx.setLineDash([4, 4]);
+      pctx.strokeRect((0xF4 - X0) * S, (0xC0 - Y0) * S, (0x131 - 0xF4) * S, (0xE1 - 0xC0) * S);
+      pctx.setLineDash([]);
+      const under = tdIconUnder(ps, menu.length);
+      menu.forEach((n, k) => {
+        const x = 0xEE + 32 * (k % 3), y = 0xBE + 16 * Math.floor(k / 3);
+        drawIcon(pctx, n, (x - X0) * S, (y - Y0) * S, S);
+        pctx.strokeStyle = k === under ? '#ffd23f' : '#3b4252'; pctx.lineWidth = k === under ? 4 : 1;
+        pctx.strokeRect((x - X0) * S, (y + 2 - Y0) * S, 22 * S, 12 * S);
+      });
+      pctx.lineWidth = 1;
+      pctx.strokeStyle = 'rgba(255,255,255,.35)'; pctx.beginPath();
+      trail.forEach(([x, y], i) => (i ? pctx.lineTo : pctx.moveTo).call(pctx, (x - X0) * S, (y - Y0) * S)); pctx.stroke();
+      const px = (ps.x - X0) * S, py = (ps.y - Y0) * S;
+      pctx.fillStyle = '#ffffff'; pctx.beginPath(); pctx.moveTo(px, py); pctx.lineTo(px + 22, py + 8); pctx.lineTo(px + 8, py + 22); pctx.closePath(); pctx.fill();
+      $('td-ptr-cap').innerHTML = '<b>Pointer at X ' + ps.x + ', Y ' + ps.y + ', speed ' + ps.vx + ' across and ' + ps.vy + ' down.</b> ' +
+        (under >= 0 ? 'Over icon ' + menu[under] + ' (' + ICON_DOES[menu[under]] + ').' : 'Over no icon.') +
+        ' The dashed line is where the pointer bounces; each icon\'s outline is where the game counts the pointer as over it. The white line is the last second of movement.';
+    }
+    function frame() {
+      let stick = 0xFF & ~held;
+      if (script) { const d = script.shift(); stick = 0xFF & ~d; if (!script.length) script = null; }
+      ps = tdPointerStep(ps, stick);
+      trail.push([ps.x, ps.y]); if (trail.length > 50) trail.shift();
+    }
+    function tick(t) {
+      if (!last) last = t;
+      acc += t - last; last = t;
+      let n = 0;
+      while (acc >= 20 && n < 10) { frame(); acc -= 20; n++; }
+      if (acc > 200) acc = 0;
+      if (n) paint();
+      raf = requestAnimationFrame(tick);
+    }
+    for (const b of document.querySelectorAll('.td-stick')) {
+      const bit = +b.dataset.bit;
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); held |= bit; });
+      for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => { held &= ~bit; });
+    }
+    const KEYS = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8 };
+    pc.addEventListener('keydown', (e) => { if (KEYS[e.key]) { e.preventDefault(); held |= KEYS[e.key]; } });
+    pc.addEventListener('keyup', (e) => { if (KEYS[e.key]) held &= ~KEYS[e.key]; });
+    pc.addEventListener('blur', () => { held = 0; });
+    $('td-preset').onclick = () => { script = Array(25).fill(8); };
+    $('td-preset2').onclick = () => { script = Array(3).fill(8); };
+    $('td-preset3').onclick = () => { script = Array(50).fill(5); };
+    $('td-reset').onclick = () => { ps = tdPointerNew(); trail = []; script = null; paint(); };
+    paint();
+    raf = requestAnimationFrame(tick);   // still until the stick moves it
   });
 })();
 </script>
