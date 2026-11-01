@@ -21,7 +21,7 @@ Open, for anyone with the tape:
 
 For the page:
 
-- The map on the Maps / levels tab is laid out by hand. A layout that
+- The map on the Map tab is laid out by hand. A layout that
   follows the compass more closely, or that draws the place words
   (PIT, DEBRIS, VIEW and the rest) on demand, would show more of how
   the game's own directions run.

@@ -20510,7 +20510,7 @@
   {
    "address": 2535,
    "type": "line",
-   "text": "Raster band handler (installed as $1864 -> here): next band $185E at line $77. If $117F is set, starts a fresh ship (s_3905) and switches to the band at $18A3, line $E8. Otherwise by $0FA9: 0 reloads the eight sprite positions from $0FAF/$0FB7 and numbers ($2F + slot); 1 puts seven sprites in a row at line $5B with X from $0FC0 and sets their pointers to $9B; 2 runs the attack-wave step ($8010, unless $12CC) and $3C89, then goes on to $9C40. Used on the title and the interlude screens."
+   "text": "Raster band handler (installed as $1864 -> here): next band $185E at line $77. If $117F is set, starts a fresh ship (sprites_clear_xy) and switches to the band at $18A3, line $E8. Otherwise by $0FA9: 0 reloads the eight sprite positions from $0FAF/$0FB7 and numbers ($2F + slot); 1 puts seven sprites in a row at line $5B with X from $0FC0 and sets their pointers to $9B; 2 runs the attack-wave step ($8010, unless $12CC) and $3C89, then goes on to $9C40. Used on the title and the interlude screens."
   },
   {
    "address": 2664,
@@ -20540,7 +20540,7 @@
   {
    "address": 2819,
    "type": "line",
-   "text": "One step of the between-waves sequence, entered from $9563 with the step number in Y: 0 counts $0FAF down and advances $0FCC when it reaches zero; 1 sets $112A and $0FCD and advances; 2 (once $112A is clear) cycles $0FA9 through 0-2, sets $12CC and $117F and the entry of $0FE8 for it, and starts the ship (s_3905); 3 checks $0FE8, then sets up $1187/$1183/$1186/$1167/$1166/$116B from the tables at $0FEB/$0FEE/$1004/$1007 for screen $0FA9, resets the ship (ship_reset_position) and advances; past 3, when $112E is clear, $0FCC returns to 0 and play goes on at $9B00. All paths end at $3B80."
+   "text": "One step of the between-waves sequence, entered from $9563 with the step number in Y: 0 counts $0FAF down and advances $0FCC when it reaches zero; 1 sets $112A and $0FCD and advances; 2 (once $112A is clear) cycles $0FA9 through 0-2, sets $12CC and $117F and the entry of $0FE8 for it, and starts the ship (sprites_clear_xy); 3 checks $0FE8, then sets up $1187/$1183/$1186/$1167/$1166/$116B from the tables at $0FEB/$0FEE/$1004/$1007 for screen $0FA9, resets the ship (ship_reset_position) and advances; past 3, when $112E is clear, $0FCC returns to 0 and play goes on at $9B00. All paths end at $3B80."
   },
   {
    "address": 2976,
@@ -23845,7 +23845,7 @@
   {
    "address": 5120,
    "type": "line",
-   "text": "Sets up a new game's first stage: $0FA8 = 1, the band chain's restart at $1002/$1003 = line $F3, handler $18D0; clears the stage and wave counters ($1229, $12C1, $107D, $114D, $129B) through init_wave_tables ($91D4) and $9E93; resets the $1110 block, $3F52 and the bullets; sets the band pointer $8B/$8C to line $C5 and handler $1844, colours $1183/$1186/$1187, $12C9 and $9FC1 to $FF, the attack-pattern pointers $12F5/$12F6 and $9FBF/$9FC0 to $AE38; clears the sprite tables (s_3905), puts frame $0E in the first animation slot, patches the jump at $3B85 to $3C7A and the joystick read at $3388 to $DBFF, sets the speed-dependent jumps (s_1900), and clears the per-wave flags ($129D, $129E, $1112, $48, $1117, $112B) before setting $12CC, $43F0 and $43F1."
+   "text": "Sets up a new game's first stage: $0FA8 = 1, the band chain's restart at $1002/$1003 = line $F3, handler $18D0; clears the stage and wave counters ($1229, $12C1, $107D, $114D, $129B) through init_wave_tables ($91D4) and $9E93; resets the $1110 block, $3F52 and the bullets; sets the band pointer $8B/$8C to line $C5 and handler $1844, colours $1183/$1186/$1187, $12C9 and $9FC1 to $FF, the attack-pattern pointers $12F5/$12F6 and $9FBF/$9FC0 to $AE38; clears the sprite tables (sprites_clear_xy), puts frame $0E in the first animation slot, patches the jump at $3B85 to $3C7A and the joystick read at $3388 to $DBFF, sets the speed-dependent jumps (set_speed_jumps), and clears the per-wave flags ($129D, $129E, $1112, $48, $1117, $112B) before setting $12CC, $43F0 and $43F1."
   },
   {
    "address": 5280,
@@ -23915,7 +23915,7 @@
   {
    "address": 5632,
    "type": "line",
-   "text": "Start of a game, from the title: clears both players' scores ($11C0-$11C5, $11D0-$11D5, $9FB9-$9FBE) and $11D6, $9FB8, $9FC9; sets the current player to 1 ($11AB); gives lives: with two players ($12CA set) 3 each ($12CB and $1228), with one player 0 for player 2 and 3 for player 1; draws both players' lives (draw_lives) and both scores (s_3D31, once per player), then leaves the interrupt."
+   "text": "Start of a game, from the title: clears both players' scores ($11C0-$11C5, $11D0-$11D5, $9FB9-$9FBE) and $11D6, $9FB8, $9FC9; sets the current player to 1 ($11AB); gives lives: with two players ($12CA set) 3 each ($12CB and $1228), with one player 0 for player 2 and 3 for player 1; draws both players' lives (draw_lives) and both scores (draw_score, once per player), then leaves the interrupt."
   },
   {
    "address": 5712,
@@ -23925,7 +23925,7 @@
   {
    "address": 5824,
    "type": "line",
-   "text": "Between the title and play, by step Y (from $1C63): step 2, once $112A is clear, runs $385D, marks the game running ($0FFE), patches the code for play and sets $116D and $117F; otherwise, when $116D is clear, sets up the first stage (wave_setup_start), sets $107F, $12C8, $114A, $0FFF, starts the music (s_9E50 with A = 1), sets $1149 = $60, $1087 = 3 and clears $0FFE again."
+   "text": "Between the title and play, by step Y (from $1C63): step 2, once $112A is clear, runs $385D, marks the game running ($0FFE), patches the code for play and sets $116D and $117F; otherwise, when $116D is clear, sets up the first stage (wave_setup_start), sets $107F, $12C8, $114A, $0FFF, starts the music (set_tune_request with A = 1), sets $1149 = $60, $1087 = 3 and clears $0FFE again."
   },
   {
    "address": 5904,
@@ -24075,7 +24075,7 @@
   {
    "address": 6320,
    "type": "line",
-   "text": "Multicolour off-scroll for the bottom panel ($D016 = $17), then sets up the eight icon sprites (s_36BD) with X high bits for sprites 6 and 7."
+   "text": "Multicolour off-scroll for the bottom panel ($D016 = $17), then sets up the eight icon sprites (icons_sprites_set) with X high bits for sprites 6 and 7."
   },
   {
    "address": 6334,
@@ -24110,7 +24110,7 @@
   {
    "address": 6400,
    "type": "line",
-   "text": "Chooses $B8 or $B9 as the high byte of three jump targets ($3F85/$3F86, $8089/$808A, $8152/$8153, low bytes cleared), $B9 from stage $16 on ($107D, and at exactly $16 also s_1CF2). Picks between two blocks of attack data at $B800 and $B900 by stage."
+   "text": "Chooses $B8 or $B9 as the high byte of three jump targets ($3F85/$3F86, $8089/$808A, $8152/$8153, low bytes cleared), $B9 from stage $16 on ($107D, and at exactly $16 also set_129a_if_129b). Picks between two blocks of attack data at $B800 and $B900 by stage."
   },
   {
    "address": 6440,
@@ -24120,7 +24120,7 @@
   {
    "address": 6448,
    "type": "line",
-   "text": "Sets the X high bits for sprites 6 and 7, sets up the icons (s_36BD) and their colours (s_3734), and leaves the interrupt."
+   "text": "Sets the X high bits for sprites 6 and 7, sets up the icons (icons_sprites_set) and their colours (icons_colours_set), and leaves the interrupt."
   },
   {
    "address": 6464,
@@ -24205,7 +24205,7 @@
   {
    "address": 7168,
    "type": "line",
-   "text": "Title band ($18A6), line $1F -> next $18A9: screen blanked, all sprite pointers to frame $9B, X and Y of the eight sprites from $43C8 and $0FE0, the stars (s_1DB9); while a key has just been pressed ($0FFB) shows the three option sprites (players $43C0, controls $43C2, music $43C4 by $12CA, $0FFC, $0FFD) in sprites 5-7. Then by $0FFE: 0 goes to $9710, 1 starts the game (game_start_scores), 2+ goes on with interlude_game_start."
+   "text": "Title band ($18A6), line $1F -> next $18A9: screen blanked, all sprite pointers to frame $9B, X and Y of the eight sprites from $43C8 and $0FE0, the stars (stars_update); while a key has just been pressed ($0FFB) shows the three option sprites (players $43C0, controls $43C2, music $43C4 by $12CA, $0FFC, $0FFD) in sprites 5-7. Then by $0FFE: 0 goes to $9710, 1 starts the game (game_start_scores), 2+ goes on with interlude_game_start."
   },
   {
    "address": 7296,
@@ -24260,7 +24260,7 @@
   {
    "address": 7609,
    "type": "line",
-   "text": "The scrolling starfield, once a frame on the title and in play: erases the stars, steps the colour-cycle (s_257C), moves the middle and fast layers, the slow layer every second frame ($101C toggles), and draws them again. Each star is one character whose glyph holds a single pixel; rolling that pixel through the glyph moves every star of the layer smoothly, and the character moves a column when the pixel wraps."
+   "text": "The scrolling starfield, once a frame on the title and in play: erases the stars, steps the colour-cycle (erase_char_objects), moves the middle and fast layers, the slow layer every second frame ($101C toggles), and draws them again. Each star is one character whose glyph holds a single pixel; rolling that pixel through the glyph moves every star of the layer smoothly, and the character moves a column when the pixel wraps."
   },
   {
    "address": 7645,
@@ -24340,7 +24340,7 @@
   {
    "address": 8320,
    "type": "line",
-   "text": "Every eighth frame ($1037 counts 0-7), with all RAM banked in ($01 = $34) to read the tables under the I/O area: on the counter's zero goes to $952F; otherwise returns. Entered as hazard_rows_spawn at $2096 with A = $103A to start new hazards: for the top row ($1038, $1090) and the bottom row ($1039, $1098), takes the next entry of the section's spawn list at $D500 (a zero ends it), finds a free slot of seven, sets its bit in $1078/$1079, marks it busy, gives it the X start $4F and looks up its animation start in the tables at $D000/$D100 (s_97E0, s_9820 / s_9860, s_9890). $103C counts the rows down. Banks the I/O back in ($01 = $35) and leaves the interrupt."
+   "text": "Every eighth frame ($1037 counts 0-7), with all RAM banked in ($01 = $34) to read the tables under the I/O area: on the counter's zero goes to $952F; otherwise returns. Entered as hazard_rows_spawn at $2096 with A = $103A to start new hazards: for the top row ($1038, $1090) and the bottom row ($1039, $1098), takes the next entry of the section's spawn list at $D500 (a zero ends it), finds a free slot of seven, sets its bit in $1078/$1079, marks it busy, gives it the X start $4F and looks up its animation start in the tables at $D000/$D100 (top_slot_anim_start, top_slot_anim_start_b / bottom_slot_anim_start, bottom_slot_anim_start_b). $103C counts the rows down. Banks the I/O back in ($01 = $35) and leaves the interrupt."
   },
   {
    "address": 8391,
@@ -24375,7 +24375,7 @@
   {
    "address": 8583,
    "type": "line",
-   "text": "Interlude, by the state of title page $0FA9 ($0FE8 + page): 0 nothing; 1 puts that page's picture into the five big sprites (copy_sprite_rows_a/b/c); 2 advances the state, patches $3B91 to $40, resets the cursor (s_2210) and loads four colours $11A0-$11A3 from $1040 + 4 x page; 3 (when $116D is clear) advances, patches $3B91 to $4A and loads the colours from $104C; afterwards waits for $116D. All paths go on to $955B."
+   "text": "Interlude, by the state of title page $0FA9 ($0FE8 + page): 0 nothing; 1 puts that page's picture into the five big sprites (copy_sprite_rows_a/b/c); 2 advances the state, patches $3B91 to $40, resets the cursor (cursor_reset) and loads four colours $11A0-$11A3 from $1040 + 4 x page; 3 (when $116D is clear) advances, patches $3B91 to $4A and loads the colours from $104C; afterwards waits for $116D. All paths go on to $955B."
   },
   {
    "address": 8708,
@@ -24390,7 +24390,7 @@
   {
    "address": 8734,
    "type": "line",
-   "text": "After the bottom row: adds the pending score into the score (s_232D) and goes on at $9968."
+   "text": "After the bottom row: adds the pending score into the score (score_add_pending) and goes on at $9968."
   },
   {
    "address": 8740,
@@ -24520,7 +24520,7 @@
   {
    "address": 10197,
    "type": "line",
-   "text": "Moves and draws each active character object: the six one-row shots ($10AA-$10AF set: s_3021-s_31CA) and the two 2x2 objects ($10A8, $10A9: s_321F, s_32CA). Then draws three fixed characters ($32, $33, $34 through $A0, $A2, $A4) and three two-cell pairs ($FE/$FF, $FC/$FD, $FA/$FB through $49, $4B, $4D), and leaves the interrupt."
+   "text": "Moves and draws each active character object: the six one-row shots ($10AA-$10AF set: move_enemy_shot_0-move_enemy_shot_5) and the two 2x2 objects ($10A8, $10A9: move_enemy_bomb_0, move_enemy_bomb_1). Then draws three fixed characters ($32, $33, $34 through $A0, $A2, $A4) and three two-cell pairs ($FE/$FF, $FC/$FD, $FA/$FB through $49, $4B, $4D), and leaves the interrupt."
   },
   {
    "address": 10305,
@@ -24650,7 +24650,7 @@
   {
    "address": 11442,
    "type": "line",
-   "text": "Runs the hazard-row frame step (s_9480) unless $107F and $12C8 are both other than 1."
+   "text": "Runs the hazard-row frame step (hazard_frames_step) unless $107F and $12C8 are both other than 1."
   },
   {
    "address": 11460,
@@ -24820,7 +24820,7 @@
   {
    "address": 13910,
    "type": "line",
-   "text": "Every fourth frame ($1129): runs whichever colour fades are under way: the sprite fade ($112A, s_3771), the colour-set step ($112E, s_37A5), the row-sprite fade ($112C, s_37CE), the interlude fade ($0FCD) and the interlude colour set ($0FCE). Then, during play ($11AE): in the shop ($1288) keeps the timer $12FA loaded; after it, counts $12FA down and turns any credits left into points (they are paid off one a frame by shop_spend_step)."
+   "text": "Every fourth frame ($1129): runs whichever colour fades are under way: the sprite fade ($112A, sprite_fade_step), the colour-set step ($112E, colour_set_step), the row-sprite fade ($112C, row_fade_step), the interlude fade ($0FCD) and the interlude colour set ($0FCE). Then, during play ($11AE): in the shop ($1288) keeps the timer $12FA loaded; after it, counts $12FA down and turns any credits left into points (they are paid off one a frame by shop_spend_step)."
   },
   {
    "address": 14013,
@@ -24940,12 +24940,12 @@
   {
    "address": 14854,
    "type": "line",
-   "text": "Stage start sequence, by $107F: 0 goes on to the death sequence ($3AE8); 1 sets up the bands for the stage ($1CE0 -> $3A15); 2, once $112E is clear, counts the banner timer $1149/$114A down and, at zero, ends the banner ($43D6, fade $112A) and moves on; 3+ waits for the fade, then sets up the stage's waves (s_9BD0) and the band restart for its number of hazard rows ($12C1: none, one or two)."
+   "text": "Stage start sequence, by $107F: 0 goes on to the death sequence ($3AE8); 1 sets up the bands for the stage ($1CE0 -> $3A15); 2, once $112E is clear, counts the banner timer $1149/$114A down and, at zero, ends the banner ($43D6, fade $112A) and moves on; 3+ waits for the fade, then sets up the stage's waves (stage_start_flag) and the band restart for its number of hazard rows ($12C1: none, one or two)."
   },
   {
    "address": 14869,
    "type": "line",
-   "text": "Sets the raster chain for a stage by its hazard rows ($12C1, or $1084): with none, the chain restarts at line $7E with $18C8 and the bottom at $F3/$18D0; with one, the top row at $47 ($1867) and the other at $E0 with the bottom at $DD/$1874; with two, $45/$182A, $CB and $C5/$1844. Loads the sprite template (s_38DD), sets $12CC and clears $11A9. Then $19C2."
+   "text": "Sets the raster chain for a stage by its hazard rows ($12C1, or $1084): with none, the chain restarts at line $7E with $18C8 and the bottom at $F3/$18D0; with one, the top row at $47 ($1867) and the other at $E0 with the bottom at $DD/$1874; with two, $45/$182A, $CB and $C5/$1844. Loads the sprite template (sprites_from_template), sets $12CC and clears $11A9. Then $19C2."
   },
   {
    "address": 14975,
@@ -25040,7 +25040,7 @@
   {
    "address": 15802,
    "type": "line",
-   "text": "The ship being hit, by $1087: 0 goes to the stage-clear step; 1 starts the explosion ($11AD, animation from position 2), sets $11D0 = $40 frames, takes a life ($12CB), queues the sound, picks a new attack pattern (s_3F7D) and resets $12C9; 2 waits out the $40 frames, then with no lives left goes to game over and the name entry, with two players and the other alive changes turn (swap_players), otherwise restarts the stage for the same player; the stage restart sets the banner and the start states."
+   "text": "The ship being hit, by $1087: 0 goes to the stage-clear step; 1 starts the explosion ($11AD, animation from position 2), sets $11D0 = $40 frames, takes a life ($12CB), queues the sound, picks a new attack pattern (attack_pattern_pick) and resets $12C9; 2 waits out the $40 frames, then with no lives left goes to game over and the name entry, with two players and the other alive changes turn (swap_players), otherwise restarts the stage for the same player; the stage restart sets the banner and the start states."
   },
   {
    "address": 15887,
@@ -25780,7 +25780,7 @@
   {
    "address": 33484,
    "type": "line",
-   "text": "Slot 1's mover (the other six slots repeat it at $84B4, $869C, $8884, $8A6C, $8C54, $8E3C with their own variables). For a live enemy ($11E1): when its explosion ($12A9) has ended (frame $9B) frees the slot and counts it in $128C; when hit ($1071) takes a hit point ($1241, never from $FF): at zero it either changes into its next form, when bit 7 of its segment's byte 3 says so ($1219: new animation and hit points from the form list at $12FE + n, $FF there making it final, $1209), or explodes: animation position 2 (the explosion frames), its points added (s_9074, by $1281), marked exploding ($12A9). When an icon is touched in the shop ($1221), or it leaves the play area (Y outside $38-$E0, or past X $158), it is removed ($841D). Otherwise it follows its path: the path list ($1251/$1259) names segments (four bytes each at $A880 + 4n: a velocity list from $A080, the speed/fire byte $12E9, an animation offset added to $12A1, the frames per step with bit 7 = change form when killed), and the velocity list gives a (dx, dy) pair every $1279 frames, mirrored by $1211/$1291, into $11E9/$11F1. A $FF in the path list jumps to a new address; $80 in a velocity list sets $12B1 to read the next segment."
+   "text": "Slot 1's mover (the other six slots repeat it at $84B4, $869C, $8884, $8A6C, $8C54, $8E3C with their own variables). For a live enemy ($11E1): when its explosion ($12A9) has ended (frame $9B) frees the slot and counts it in $128C; when hit ($1071) takes a hit point ($1241, never from $FF): at zero it either changes into its next form, when bit 7 of its segment's byte 3 says so ($1219: new animation and hit points from the form list at $12FE + n, $FF there making it final, $1209), or explodes: animation position 2 (the explosion frames), its points added (score_add_points, by $1281), marked exploding ($12A9). When an icon is touched in the shop ($1221), or it leaves the play area (Y outside $38-$E0, or past X $158), it is removed ($841D). Otherwise it follows its path: the path list ($1251/$1259) names segments (four bytes each at $A880 + 4n: a velocity list from $A080, the speed/fire byte $12E9, an animation offset added to $12A1, the frames per step with bit 7 = change form when killed), and the velocity list gives a (dx, dy) pair every $1279 frames, mirrored by $1211/$1291, into $11E9/$11F1. A $FF in the path list jumps to a new address; $80 in a velocity list sets $12B1 to read the next segment."
   },
   {
    "address": 33972,
@@ -25830,7 +25830,7 @@
   {
    "address": 37007,
    "type": "line",
-   "text": "Wave type 1 handler (through $9F20): counts $1290 down; while the group has enemies left ($128C) advances $129C (wrapping at 7) and $128F, and spawns another ($80C9) every call until $128F reaches $20 (the operand at $90AE, patched per stage by s_9E40); then clears the type."
+   "text": "Wave type 1 handler (through $9F20): counts $1290 down; while the group has enemies left ($128C) advances $129C (wrapping at 7) and $128F, and spawns another ($80C9) every call until $128F reaches $20 (the operand at $90AE, patched per stage by wave_type1_count); then clears the type."
   },
   {
    "address": 37038,
@@ -26260,7 +26260,7 @@
   {
    "address": 39680,
    "type": "line",
-   "text": "End of the interlude on title page 2: starts the attract-mode demo: clears the waves, $0F76/$0F77 (the recorded input's position), weapon 4 and the shop flag, resets the swap store (s_9C20), sets $0F78 (demo on), the joystick 'port' $0F91 to $1F (nothing pressed), three credits, the attack data at $B900/$9100 ($808A/$8153 = $B9, $8089/$8152 = $91), $129A = $FF and the wave pointer to $ABF0. Then $3B80."
+   "text": "End of the interlude on title page 2: starts the attract-mode demo: clears the waves, $0F76/$0F77 (the recorded input's position), weapon 4 and the shop flag, resets the swap store (purchase_state_clear), sets $0F78 (demo on), the joystick 'port' $0F91 to $1F (nothing pressed), three credits, the attack data at $B900/$9100 ($808A/$8153 = $B9, $8089/$8152 = $91), $129A = $FF and the wave pointer to $ABF0. Then $3B80."
   },
   {
    "address": 39760,

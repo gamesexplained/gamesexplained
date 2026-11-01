@@ -65,4 +65,4 @@ has had its pass, then becomes `diamond`.
   glyphs an object takes each pass and the two buffers.
 - The walker's chase rule as a playable diagram: one enemy, one player,
   a round from the browser.
-- A Maps / levels tab with all 100 rounds on one sheet.
+- A Maps tab with all 100 rounds on one sheet.

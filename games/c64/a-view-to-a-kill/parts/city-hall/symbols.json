@@ -7739,7 +7739,7 @@
   {
    "address": 16640,
    "type": "line",
-   "text": "Colours the room view from the room record at ($3F): byte 1 to $1B50 (the top band's background), byte 2 as the left wall colour (s_4127), byte 3 the left doorway (s_418A), byte 16 = next room's byte 2 as the right wall colour (s_4162), byte 17 = next room's byte 3 the right doorway (s_41CC)."
+   "text": "Colours the room view from the room record at ($3F): byte 1 to $1B50 (the top band's background), byte 2 as the left wall colour (colour_left_wall), byte 3 the left doorway (draw_left_door), byte 16 = next room's byte 2 as the right wall colour (colour_right_wall), byte 17 = next room's byte 3 the right doorway (draw_right_door)."
   },
   {
    "address": 16679,
@@ -8234,12 +8234,12 @@
   {
    "address": 26497,
    "type": "line",
-   "text": "Through the left doorway: only when the room's door code (byte 3) is 4, open. Steps ($3F) back one 14-byte record, animates the door (s_68C0), puts Bond at the right side (X $A0, $6F02 $80), decrements $1B51 and redraws the room at $67CF."
+   "text": "Through the left doorway: only when the room's door code (byte 3) is 4, open. Steps ($3F) back one 14-byte record, animates the door (animate_left_door), puts Bond at the right side (X $A0, $6F02 $80), decrements $1B51 and redraws the room at $67CF."
   },
   {
    "address": 26538,
    "type": "line",
-   "text": "Through the right doorway: needs the next room's door code (byte $11) = 4. Steps ($3F) on one record, animates the door (s_6920), puts Bond at the left side (X $38, $6F02 $18), increments $1B51, then redraws: static screen, walls, canvas, objects, items, and calls $8915, which is the middle of bond_overlay: the CPU runs $07 $E8 (the undocumented SLO $E8), then STX $07FC with whatever X holds, the sprite positioning and show_stacey_text. The next game-loop pass sets sprite 4's shape right."
+   "text": "Through the right doorway: needs the next room's door code (byte $11) = 4. Steps ($3F) on one record, animates the door (animate_right_door), puts Bond at the left side (X $38, $6F02 $18), increments $1B51, then redraws: static screen, walls, canvas, objects, items, and calls $8915, which is the middle of bond_overlay: the CPU runs $07 $E8 (the undocumented SLO $E8), then STX $07FC with whatever X holds, the sprite positioning and show_stacey_text. The next game-loop pass sets sprite 4's shape right."
   },
   {
    "address": 26609,
@@ -8474,7 +8474,7 @@
   {
    "address": 31232,
    "type": "line",
-   "text": "Item menu, opened by fire: waits for the stick's fire to be let go (s_8131, flash mode 2), rebuilds the list at $7E00 ($FE fill, $FF end marks, item 54 first, then the inventory $6AC1 onwards, $FF end), then shows three icons at a time (s_7A3E) and lets left/right scroll; fire goes on to the word menu ($8000) or, in SEARCH, back to the caller."
+   "text": "Item menu, opened by fire: waits for the stick's fire to be let go (wait_release_items, flash mode 2), rebuilds the list at $7E00 ($FE fill, $FF end marks, item 54 first, then the inventory $6AC1 onwards, $FF end), then shows three icons at a time (show_item_window) and lets left/right scroll; fire goes on to the word menu ($8000) or, in SEARCH, back to the caller."
   },
   {
    "address": 31294,
@@ -8629,7 +8629,7 @@
   {
    "address": 32768,
    "type": "line",
-   "text": "Word menu: shows the ten characters of word 0 at $0509, waits for fire release (s_8120, flash mode 1); left/right scroll the 80-character strip at $8095 ten characters at a time, one character per step (s_80FD), between words 0 and 7 ($02); fire enters the word's handler from the table at $80E5 through the patched JMP at $807E."
+   "text": "Word menu: shows the ten characters of word 0 at $0509, waits for fire release (wait_release_words, flash mode 1); left/right scroll the 80-character strip at $8095 ten characters at a time, one character per step (show_word_window), between words 0 and 7 ($02); fire enters the word's handler from the table at $80E5 through the patched JMP at $807E."
   },
   {
    "address": 32895,
@@ -8884,7 +8884,7 @@
   {
    "address": 34304,
    "type": "line",
-   "text": "New game (from the memo page, menu_screen's RESTART GAME and a lost game): room pointer ($3F) = $4292 (room 8), $1B51 = 8, fire-spread timer $38/$39, restores the tables (s_8700); sprites: 4-7 pointed at $D0-$D3, every sprite hi-res ($D01C = 0), sprite 4 orange and 5 white, 2 and 3 the menu bars (shape $CE, X-expanded, behind the background); colours, energy $1B5B/$1C = $2A, weight 0, Stacey not following, music init ($C640), clock 10 00 00, empty kit icon, JMP game_loop."
+   "text": "New game (from the memo page, menu_screen's RESTART GAME and a lost game): room pointer ($3F) = $4292 (room 8), $1B51 = 8, fire-spread timer $38/$39, restores the tables (restore_tables); sprites: 4-7 pointed at $D0-$D3, every sprite hi-res ($D01C = 0), sprite 4 orange and 5 white, 2 and 3 the menu bars (shape $CE, X-expanded, behind the background); colours, energy $1B5B/$1C = $2A, weight 0, Stacey not following, music init ($C640), clock 10 00 00, empty kit icon, JMP game_loop."
   },
   {
    "address": 34560,

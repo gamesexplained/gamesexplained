@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the Maps / levels page to the game. Its lnr-scene block puts each level together from the
+// Hold the Levels page to the game. Its lnr-scene block puts each level together from the
 // engine's listing and the level's two loads and runs the game's own renderer on the kit's 6502.
 // In each level the area the snapshot was taken in must give the emulator's play window, recorded
 // below as a hash of its 240 by 144 palette indices (from work/<part>/game.vsf, with the colour RAM

@@ -24,10 +24,15 @@ class NextTab(unittest.TestCase):
         every = {f for f, _ in build.TABS}
         self.assertEqual(target(build.next_tab({}, every, "index.html")), ("play.html", "Play"))
         self.assertEqual(target(build.next_tab({}, every, "play.html")), ("discoveries.html", "Discoveries"))
-        self.assertEqual(target(build.next_tab({}, every, "discoveries.html")), ("levels.html", "Maps / levels"))
+        self.assertEqual(target(build.next_tab({}, every, "discoveries.html")), ("levels.html", "Levels"))
         self.assertEqual(target(build.next_tab({}, every, "levels.html")), ("source.html", "Source code"))
         self.assertEqual(target(build.next_tab({}, every, "source.html")), ("about.html", "About"))
         self.assertEqual(build.next_tab({}, every, "about.html"), "")
+
+    def test_the_levels_tab_takes_the_name_the_game_gives_it(self):
+        every = {f for f, _ in build.TABS}
+        self.assertEqual(target(build.next_tab({"levels_tab": "Maps"}, every, "discoveries.html")), ("levels.html", "Maps"))
+        self.assertIn(("levels.html", "Map"), build.tab_order({"levels_tab": "Map"}, every))
 
     def test_a_tab_the_game_does_not_have_is_skipped(self):
         self.assertEqual(target(build.next_tab({}, {"index.html", "source.html", "about.html"}, "source.html")),

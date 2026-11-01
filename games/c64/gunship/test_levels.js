@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the Maps / levels page's maps to the game. levels.html's gs-levels block (gsMapScreen) runs
+// Hold the Maps page's maps to the game. levels.html's gs-levels block (gsMapScreen) runs
 // the flight's own draw_map on the kit's 6502. With the flight's listing as it is (Western Europe,
 // its units as the snapshot left them), the screen it draws must be the screen of the big map's
 // frame recorded in the emulator, which the page embeds, cell for cell, in all 864 cells draw_map

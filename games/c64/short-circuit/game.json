@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "short-circuit",
+  "title": "Short Circuit",
+  "year": 1987,
+  "publisher": "Ocean Software",
+  "developer": "Ocean Software",
+  "title_image": "reference/title-credits.png",
+  "build": "G64 disk image of a cracked original: a loader program, a second program of 1,026 bytes that sets up a fast loader, and one 64,508-byte program that holds both parts of the game",
+  "tier": "bronze",
+  "coverage_percent": null,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "John Meegan",
+      "role": "code"
+    },
+    {
+      "by": "Karen Davies",
+      "role": "graphics"
+    },
+    {
+      "by": "Martin Galway",
+      "role": "sound"
+    }
+  ],
+  "tools": {
+    "host": "macOS arm64 (Apple silicon)",
+    "emulator": "release v3.14.0, v3.14.0-macos-arm64-gui.dmg",
+    "disassembler": "regenerator2000 0.9.20",
+    "publication": "Python 3; symbols_export.py and listing.py",
+    "subagents": "none: one agent throughout"
+  },
+  "model": "claude-sonnet-5-5",
+  "step_models": {
+    "50-coverage": [
+      "claude-sonnet-5-5"
+    ],
+    "60-verify": [
+      "claude-sonnet-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "note": "one agent, no helpers"
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 12,
+      "fixed": 12,
+      "seed": 20261101,
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "note": "checked by the model that wrote the comments, not by another: 2 comments carried a wrong number (rows, an entry's place in a table), 10 variable comments named the wrong routine as writer or reader because their owner labels were missing; all 12 corrected and every other comment of the same two kinds regenerated"
+    },
+    {
+      "step": "sample",
+      "size": 28,
+      "wrong": 5,
+      "fixed": 5,
+      "seed": 777,
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "note": "28 comments of code routines drawn at random and read against their code by the model that wrote them, not by another: 5 were wrong in a detail (a label taken for a mid-instruction operand of a BIT skip, a missing step in a menu, a loose description of two routines, voice 3's command table one word off); all 5 fixed, and the false symbols of the same kind ($03A9, $05A9, $07A9) corrected"
+    }
+  ],
+  "kit_version": "0.0.256",
+  "created": "2026-11-01",
+  "video": {
+    "screen": "$C000",
+    "charset": "$D800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$C000",
+        "$C3FF",
+        "the screen memory and sprite pointers of video bank 3: the start-up at $9762 clears and redraws the screens before they are shown, so the loaded bytes are never displayed"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "RAM under the I/O area: character sets that the video chip reads in bank 3 ($D000 and $D800), which the processor reads only with I/O banked out"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0000",
+      "$00FF",
+      "variables",
+      "zero page: pointers, scroll and stick state, the sound voices' script pointers"
+    ],
+    [
+      "$0200",
+      "$03FF",
+      "variables",
+      "game variables: sprite slots, message queue, inventory, score"
+    ],
+    [
+      "$0EBF",
+      "$153C",
+      "text",
+      "the game's 89 messages"
+    ],
+    [
+      "$153D",
+      "$15FA",
+      "tables",
+      "searchable tiles, objects, containers, terminals"
+    ],
+    [
+      "$4000",
+      "$42FF",
+      "levels",
+      "part one's map: three rows of 256 tiles"
+    ],
+    [
+      "$4400",
+      "$45FF",
+      "levels",
+      "part two's map: two rows of 256 tiles"
+    ],
+    [
+      "$4600",
+      "$5BCF",
+      "graphics",
+      "part two's and part one's tiles"
+    ],
+    [
+      "$5C00",
+      "$7F3F",
+      "graphics",
+      "the title picture: screen colours and bitmap"
+    ],
+    [
+      "$896E",
+      "$8A6D",
+      "levels",
+      "part two's event table"
+    ],
+    [
+      "$9B4F",
+      "$9EB0",
+      "sound",
+      "the music driver's work area and note tables"
+    ],
+    [
+      "$ACA0",
+      "$BFFE",
+      "sound",
+      "the tune table and the voices' scripts"
+    ],
+    [
+      "$D000",
+      "$DFFF",
+      "graphics",
+      "character sets"
+    ],
+    [
+      "$E000",
+      "$FFFB",
+      "graphics",
+      "sprite shapes and character data"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "Short Circuit \u2013 C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Short_Circuit"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    }
+  },
+  "tabs": [
+    [
+      "index.html",
+      "How it works"
+    ],
+    [
+      "levels.html",
+      "Maps / levels"
+    ],
+    [
+      "music.html",
+      "Music"
+    ],
+    [
+      "discoveries.html",
+      "Discoveries"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ]
+}

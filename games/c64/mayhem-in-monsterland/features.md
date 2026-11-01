@@ -39,7 +39,7 @@ Sources:
 | Spiked enemies must be rammed from the front, not jumped on | traced | kinds `$FB` and `$F7` cannot be stomped; `$FC` and `$FA` always hurt; `$F8` hurts only when walked into (`$B5B1`) |
 | The lightning power-up gives the charge: left/right + fire runs fast and rams enemies | traced | item effect 0 sets the charge flag `$1BEB` (`$BC55`); without it, right+fire moved exactly as right did (live, below) |
 | Some enemies come back and give nothing the second time | traced | defeat sets bit 4 of record byte 10 (`$CB02`); a respawned object with it is freed without its item (`$C962`); `$E595` clears the marks when a land starts |
-| Hidden areas reached by ducking and running; platforms nearly invisible against the background | open | not searched for as such: the maps (Maps / levels tab) show every platform, but which ones are hard to see in play, and where ducking while running leads, were not tested |
+| Hidden areas reached by ducking and running; platforms nearly invisible against the background | open | not searched for as such: the maps (Levels tab) show every platform, but which ones are hard to see in play, and where ducking while running leads, were not tested |
 | Down + fire drops through a platform | traced | player movement, `$2A3A`-`$2FFF`: glyphs below the land's `$9020` are platforms he can drop through and jump up through, below `$9021` walls |
 | A variable jump: letting go of up early cuts the jump short | traced | jump index `$1B5D` with speeds from `$3460` |
 | An extra life for every million points | traced | when the score's millions digit `$CF7A` rises (`$3534`/`$355E` → `$3636` → `$3866`), except when a 100,000-point event carries it there: then no life (`$3541`-`$3548`; `parts/engine/facts.md`) |

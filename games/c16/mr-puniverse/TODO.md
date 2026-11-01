@@ -10,7 +10,7 @@ routine by routine and held to the game's own code by
 `port/test/lockstep.js`, and `test_play.js` holds the published page in
 CI. It is Silver underneath: 100 % coverage, `facts.md`, one sample of 80
 comments (4 wrong, all corrected), the minisite built (How it works,
-Discoveries, Maps / levels), copy `agent-draft`.
+Discoveries, Map), copy `agent-draft`.
 
 ## Recommended
 

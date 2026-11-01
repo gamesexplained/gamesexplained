@@ -1,0 +1,114 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Short Circuit — Maps / levels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<!--
+  Template for a game article. Keep it self-contained: inline CSS and JS,
+  fonts are the only external resource, opens from disk. The section below
+  shows the parts a section is made of, not which section comes first: the
+  kinds of section are listed in kit/skills/core/70-minisite, in no order,
+  and this page's order is its own. The best thing to press or hear goes
+  as high as the explanation lets it, and every section should have
+  something the reader can press. Copy follows kit/style.md and is written
+  last.
+-->
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Part one is one long strip of 256 tiles that you scroll through; part two is a strip of 256 columns with a creature sown along it by a table.</p></header>
+<main class="wrap">
+<style>
+.sc-btn{font:500 14px/1.2 var(--fm);padding:8px 12px;border:1px solid var(--ink-mute);border-radius:8px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.sc-map{position:relative;overflow-x:auto;background:#000;border:1px solid var(--line)}
+.sc-map .in{position:relative;line-height:0}
+.sc-map canvas{image-rendering:pixelated;display:block}
+.sc-obj{position:absolute;top:2px;min-width:20px;height:20px;padding:0 4px;font:700 12px/20px var(--fm);text-align:center;background:#fff;color:#000;border:2px solid #000;border-radius:10px;cursor:pointer}
+.sc-obj[aria-pressed="true"]{background:#ffe27a}
+#sc-objinfo{margin:10px 0 0;padding:12px 14px;background:var(--surface-2);border-radius:8px;min-height:3.2em}
+table.sc{border-collapse:collapse;width:100%;font-size:15px}
+table.sc th,table.sc td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft)}
+table.sc th{font-family:var(--fm);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute)}
+</style>
+<section id="part-one"><p class="fig">01 · Part one</p><h2 class="t">The whole laboratory, drawn from the tile map</h2>
+<p class="lede">256 columns of 4 by 4 characters, three tiles high: <code>$4000</code>, <code>$4100</code> and <code>$4200</code>. Scroll sideways; each numbered badge is one of the 21 objects at its column from the table at <code>$1568</code>.</p>
+<div class="plate"><div class="sc-map" id="sc-map"><div class="in" id="sc-in"></div></div><p id="sc-objinfo">Loading the map from the listing…</p>
+<p class="cap">Drawn by this page from the listing's bytes: tile numbers, the tiles at <code>$5000</code>, the character set at <code>$D800</code> and each character's colour from <code>$8448</code>, in the multicolour mode the game uses, with brown and light blue as the two shared colours that the raster handler sets for the playfield. The 40 by 12 characters on screen at any moment are 10 tile columns; <code>test_levels.js</code> finds the first frame's screen inside this strip, character for character. The three rows are scenery: an object lies in a column of the middle row, and a locked drawer or cabinet is one of the eight columns at <code>$15BC</code>.</p></div></section>
+<section id="part-two"><p class="fig">02 · Part two</p><h2 class="t">Where the creatures come from</h2>
+<p class="lede">A table of 256 event numbers, one for each scroll column of part two (<code>$896E</code>), says what starts there. 156 of the columns hold nothing; the rest start one of fifteen creatures.</p>
+<div class="plate"><canvas id="sc-ev" height="150"></canvas>
+<p class="cap">One row for each event number and one dot for each column that starts it. The routine behind each number allocates a sprite at the left or right edge of the screen (<code>$3663</code>) and gives it a colour. Nobody has yet looked at what the sprites draw.</p>
+<table class="sc"><tr><th>Event</th><th>Columns</th><th>Starter routine</th><th>Enters from</th></tr><tr><td>1</td><td>20</td><td><code>$2DC2</code></td><td>left</td></tr><tr><td>2</td><td>11</td><td><code>$2E7A</code></td><td>right</td></tr><tr><td>3</td><td>10</td><td><code>$3470</code></td><td>right</td></tr><tr><td>4</td><td>6</td><td><code>$2E19</code></td><td>right</td></tr><tr><td>5</td><td>2</td><td><code>$33AC</code></td><td>left</td></tr><tr><td>6</td><td>1</td><td><code>$2F80</code></td><td>right</td></tr><tr><td>7</td><td>8</td><td><code>$2ED4</code></td><td>right</td></tr><tr><td>8</td><td>4</td><td><code>$31C1</code></td><td>left</td></tr><tr><td>9</td><td>4</td><td><code>$30C8</code></td><td>left</td></tr><tr><td>11</td><td>17</td><td><code>$33D1</code></td><td>right</td></tr><tr><td>12</td><td>4</td><td><code>$34CA</code></td><td>left</td></tr><tr><td>13</td><td>5</td><td><code>$3523</code></td><td>left</td></tr><tr><td>14</td><td>3</td><td><code>$357C</code></td><td>right</td></tr><tr><td>15</td><td>5</td><td><code>$35A1</code></td><td>right</td></tr></table></div></section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* mapchars */
+// The character at column i (0 to 3) and row j (0 to 3) of the tile at map column col in map row row (0 top to 2).
+function mapChar(ram, col, row, i, j) { return ram[0x5000 + 16 * ram[0x4000 + 256 * row + col] + j * 4 + i]; }
+// The character at screen position x (0 up) and y (0 to 11) when the left edge is the character at offset first of the strip.
+function stripChar(ram, first, x, y) { const c = first + x; return mapChar(ram, c >> 2, y >> 2, c & 3, y & 3); }
+// end of mapchars
+(function () {
+  const S = 2, W = 256 * 4 * 8 * S, H = 12 * 8 * S;
+  C64.load('listing.json').then(M => {
+    const ram = M.ram, inner = document.getElementById('sc-in'), info = document.getElementById('sc-objinfo');
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; inner.appendChild(cv);
+    const ctx = cv.getContext('2d'), P = C64.PAL, charset = ram.subarray(0xD800, 0xE000);
+    ctx.fillStyle = P[0]; ctx.fillRect(0, 0, W, H);
+    for (let c = 0; c < 1024; c++) for (let y = 0; y < 12; y++) {
+      const code = stripChar(ram, 0, c, y), col = ram[0x8448 + code];
+      if (col & 8) C64.drawGlyphMC(ctx, charset, code, c * 8 * S, y * 8 * S, S, [P[0], P[9], P[14], P[col & 7]]);
+      else C64.drawGlyph(ctx, charset, code, c * 8 * S, y * 8 * S, S, P[col & 7], P[0]);
+    }
+    const names = ['LASER ROM','CONSTRUCTION ROM','JUMP ROM','UNKNOWN ROM','REMOTE CONTROL DEVICE','AUDIT','ROBOTICS CONSTRUCTION DOCUMENT','RESEARCH THESIS','A LASER GUN','SECURITY DOCUMENT','COMPUTER SPECS','FIRE SYSTEM MANUAL','COMPUTER PROTOCOLS','LABRADOR PUPPY','PASSCARD','PASSWORD','LIGHTED CIGARETTE','SET OF KEYS','DESK KEY','CHUB KEY','IGNITION KEY'];
+    const btns = [];
+    for (let i = 0; i < 21; i++) {
+      const o = 0x1568 + 4 * i, col = ram[o], b = document.createElement('button');
+      b.className = 'sc-obj'; b.textContent = ram[o + 2]; b.style.left = (col * 32 * S + 8 * S) + 'px'; b.setAttribute('aria-pressed', 'false');
+      b.title = names[ram[o + 2]] + ', column ' + col;
+      b.onclick = () => { btns.forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true');
+        info.innerHTML = '<b>' + ram[o + 2] + ' · ' + names[ram[o + 2]].toLowerCase() + '</b>, in map column ' + col + ' (<code>$' + col.toString(16).toUpperCase().padStart(2, '0') + '</code>).';
+        document.getElementById('sc-map').scrollLeft = Math.max(0, col * 32 * S - 300); };
+      inner.appendChild(b); btns.push(b);
+    }
+    info.innerHTML = 'Press a badge to see which object it is.';
+    const ev = document.getElementById('sc-ev'); ev.width = 256 * 4 + 40; const c2 = ev.getContext('2d');
+    c2.fillStyle = '#fff'; c2.fillRect(0, 0, ev.width, ev.height); c2.font = '10px monospace';
+    for (let k = 1; k <= 15; k++) {
+      c2.fillStyle = '#80838a'; c2.fillText(k, 4, k * 9.5 + 4);
+      for (let c = 0; c < 256; c++) if (ram[0x896E + c] === k) { c2.fillStyle = '#1f5fa8'; c2.fillRect(30 + c * 4, k * 9.5 - 3, 3, 6); }
+    }
+  }).catch(e => { document.getElementById('sc-objinfo').textContent = 'The map needs the listing: ' + e.message; });
+})();
+</script>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a></footer>

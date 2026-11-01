@@ -16,7 +16,8 @@ The data the ledger does not count, which listing.py keeps in listing.json as
 "uncounted", fails a game at Silver or above, whose listing is meant to be whole, and
 is named as a warning below it (#420). So, the same way, are two bytes at BASIC's start
 that hold a BASIC line's link with nothing there saying so ("basic_start" in
-symbols_export.PLATFORM_DEFAULTS).
+symbols_export.PLATFORM_DEFAULTS). A comment that names a label by an automatic name it
+no longer has (s_10B4, renamed show_bonus) fails (#641).
 
 Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
 every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
@@ -100,6 +101,20 @@ def unnamed_basic_link(records, start):
     return None if any("basic" in t.lower() for t in said) else start + y + 1
 
 
+def old_name_error(S):
+    """The error for comments that name a label by an automatic name it no longer has, such as
+    s_10B4 after the routine there was renamed show_bonus: on the Source tab that name leads
+    nowhere (#641). None when there are none."""
+    from symbols_export import old_names
+    found = old_names(S["symbols"], S["comments"])
+    if not found:
+        return None
+    old, new, at = found[0]
+    return (f"{len(found)} comment(s) name a label by an automatic name it no longer has (the first at ${at:04X}: "
+            f"{old} is now {new}); write the new name in symbols.json, read the sentence round it, and run "
+            "listing.py <game dir> --recomment")
+
+
 def check(gdir):
     """(errors, notes) for one listing: errors fail the check, notes are printed as warnings."""
     lp, sp = os.path.join(gdir, "listing.json"), os.path.join(gdir, "symbols.json")
@@ -141,6 +156,9 @@ def check(gdir):
     for c in S["comments"]:
         if c["type"] == "line" and c["text"].strip() and comments.get(c["address"]) != c["text"]:
             errs.append(f"line comment at ${c['address']:04X} missing or different in listing")
+    said = old_name_error(S)
+    if said:
+        errs.append(said)
     left = L.get("uncounted") or []
     if left:
         s, e, why = left[0]

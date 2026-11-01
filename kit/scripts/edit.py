@@ -2,7 +2,7 @@
 """Edit a game's pages in the browser: click a paragraph and type.
 
 Serves the site as build.py makes it, to this computer only. The authored tabs (How it
-works, Discoveries, Maps / levels, Play) are rendered from the game folder on every load,
+works, Discoveries, Levels or Maps, Play) are rendered from the game folder on every load,
 each block tagged with where it sits in the source, with the editor on top. Leaving a block writes
 it back into the file and changes nothing else there, so `git diff` shows exactly what
 was edited.

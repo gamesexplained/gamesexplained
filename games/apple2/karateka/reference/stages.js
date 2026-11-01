@@ -1,5 +1,5 @@
 /* stages.js */
-// The four stages for the Maps / levels tab, each drawn by its own code: the stage's listing laid
+// The four stages for the Levels tab, each drawn by its own code: the stage's listing laid
 // over the engine's, as its load lays it in the game, run on the kit's 6502 (C64Cpu, bare) from the
 // stage's entry ($BFFA) to a flip of the page shown, as demo.js runs the title. A stage begins from
 // what the stage before it left in the engine's memory, which no listing holds: zero page, the tune

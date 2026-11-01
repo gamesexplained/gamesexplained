@@ -7,7 +7,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 Silver: 100 % coverage, `facts.md`, one sample of the listing's comments
 checked and recorded, every feature confirmed, traced or explicitly
-open, and the minisite built (How it works, Discoveries, Maps / levels,
+open, and the minisite built (How it works, Discoveries, Maps,
 Source code), with a player for the title tune and every sound effect.
 
 ## Recommended next: an audit of the listing

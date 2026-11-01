@@ -15625,7 +15625,7 @@
   {
    "address": 37099,
    "type": "line",
-   "text": "Three flags set at end of game ($9174-$9184): $FF when the item with id $36, $3E, $02 (in order) is carried or in state 4 (s_928C); a set flag prints WITH + the item name (messages $1E/$20/$22: THE CRYSTAL, THE TIRU PLANS, SPLINX) and doubled the bonus. $90EE unused byte."
+   "text": "Three flags set at end of game ($9174-$9184): $FF when the item with id $36, $3E, $02 (in order) is carried or in state 4 (item_bonus_check); a set flag prints WITH + the item name (messages $1E/$20/$22: THE CRYSTAL, THE TIRU PLANS, SPLINX) and doubled the bonus. $90EE unused byte."
   },
   {
    "address": 37100,
@@ -15665,7 +15665,7 @@
   {
    "address": 37284,
    "type": "line",
-   "text": "Four object ids $42,$43,$41,$4A tested by s_928C at $9196 when $4F is non-zero; the first one carried (or in state 4) doubles the bonus and sets the success flag at $90EF (AND HAVE SUCCESSFULLY vs BUT HAVE NOT HALTED THE PRODUCTION OF HEATONITE)."
+   "text": "Four object ids $42,$43,$41,$4A tested by item_bonus_check at $9196 when $4F is non-zero; the first one carried (or in state 4) doubles the bonus and sets the success flag at $90EF (AND HAVE SUCCESSFULLY vs BUT HAVE NOT HALTED THE PRODUCTION OF HEATONITE)."
   },
   {
    "address": 37288,
@@ -16060,7 +16060,7 @@
   {
    "address": 40961,
    "type": "line",
-   "text": "Tail of the object move/collision test s_9EC8 (entered from $9FFD with the up/left case): probes the map with j_990D at the object's next position ($64-$67 = x,y) using the per-object size tables $18F0 (width) and $1940 (height) and the tile flags $EC/$ED/$EE it returns; leaves $75 = 0 when the move is clear."
+   "text": "Tail of the object move/collision test move_object_general (entered from $9FFD with the up/left case): probes the map with terrain_probe at the object's next position ($64-$67 = x,y) using the per-object size tables $18F0 (width) and $1940 (height) and the tile flags $EC/$ED/$EE it returns; leaves $75 = 0 when the move is clear."
   },
   {
    "address": 41015,
@@ -16075,12 +16075,12 @@
   {
    "address": 41025,
    "type": "line",
-   "text": "Move test, left with no vertical component (from $9FAD): checks the tile at the object's top-left and bottom-left edges ($18F0 width) via j_990D; $75 = $80 if blocked."
+   "text": "Move test, left with no vertical component (from $9FAD): checks the tile at the object's top-left and bottom-left edges ($18F0 width) via terrain_probe; $75 = $80 if blocked."
   },
   {
    "address": 41062,
    "type": "line",
-   "text": "Move test for a purely vertical move ($CB = 0, from $9EDB): $CC positive = up, negative = down; probes both bottom corners (down) or top corners with $1940 height (up) through j_990D and sets $75 = $FF if blocked."
+   "text": "Move test for a purely vertical move ($CB = 0, from $9EDB): $CC positive = up, negative = down; probes both bottom corners (down) or top corners with $1940 height (up) through terrain_probe and sets $75 = $FF if blocked."
   },
   {
    "address": 41170,
@@ -16095,7 +16095,7 @@
   {
    "address": 41172,
    "type": "line",
-   "text": "One frame of a jump for object X (called from $CA44): on the first frame latches $CB and sets $1B20 (object 0 state) = $0A; vertical $CC = $01 (up) for frames 0-23, 0 for frames 24-39, then $81 (down) until blocked; moves through s_9EC8. On landing ($75 = $80) or $FF, clears the counter, stops $CC (and $CB on $80) and sets state $1B20,X = $0C."
+   "text": "One frame of a jump for object X (called from $CA44): on the first frame latches $CB and sets $1B20 (object 0 state) = $0A; vertical $CC = $01 (up) for frames 0-23, 0 for frames 24-39, then $81 (down) until blocked; moves through move_object_general. On landing ($75 = $80) or $FF, clears the counter, stops $CC (and $CB on $80) and sets state $1B20,X = $0C."
   },
   {
    "address": 41259,
@@ -16115,7 +16115,7 @@
   {
    "address": 41276,
    "type": "line",
-   "text": "Main-loop subsystem: the vertical lift, object $0E. While moving ($1B20+$0E <> 0) it steps Y by 2 in direction $F8 (via lift_step_y), carrying the Doctor (object 0) when $F7 is set; on reaching the stop in lift_stop_y_lo/hi[$F9] it plays sound $16, sets pause timer $FA = $7F, stops, and chooses the next stop (bounces between stop 0 and stop 7, $F8 = $02 up / $82 down). While stopped it counts $FA down; at $FA = 5 lift_check_board tests whether the Doctor is standing on it; at 0 it restarts. Every frame it ends in j_81DA (sprite update for X)."
+   "text": "Main-loop subsystem: the vertical lift, object $0E. While moving ($1B20+$0E <> 0) it steps Y by 2 in direction $F8 (via lift_step_y), carrying the Doctor (object 0) when $F7 is set; on reaching the stop in lift_stop_y_lo/hi[$F9] it plays sound $16, sets pause timer $FA = $7F, stops, and chooses the next stop (bounces between stop 0 and stop 7, $F8 = $02 up / $82 down). While stopped it counts $FA down; at $FA = 5 lift_check_board tests whether the Doctor is standing on it; at 0 it restarts. Every frame it ends in sprite_list_add_object (sprite update for X)."
   },
   {
    "address": 41457,
@@ -16130,7 +16130,7 @@
   {
    "address": 41554,
    "type": "line",
-   "text": "Tests whether the Doctor (object X=0) stands on the lift (object $0E): within $96/$64 plays sound $16 (s_C7C7, only if $1B2E set), and if |dx| < $12 and |dy| = 8 exactly sets $1B20,X = 2, stops $CC and returns A = $FF (boarded); otherwise stops sound $16 when far and returns 0. Preserves $DA. Also called from $CAC8."
+   "text": "Tests whether the Doctor (object X=0) stands on the lift (object $0E): within $96/$64 plays sound $16 (sound_start, only if $1B2E set), and if |dx| < $12 and |dy| = 8 exactly sets $1B20,X = 2, stops $CC and returns A = $FF (boarded); otherwise stops sound $16 when far and returns 0. Preserves $DA. Also called from $CAC8."
   },
   {
    "address": 41648,
@@ -16150,7 +16150,7 @@
   {
    "address": 41657,
    "type": "line",
-   "text": "Main-loop subsystem: the horizontal carrier, object $0F. First picks which of two tracks it serves from the mover's own X high byte ($1BC0+$0F < 8: stops 0/1, else stops 2/3, only on a change of track). Does nothing while zone $56 = 0. Moving: steps X by 2 in direction $FC, carrying the Doctor while $FB is set; plays sound $17 while the Doctor is within $96/$64. At an end stop: sound $17 off, pause $FE = $BE, flips $FD bit 0 and reverses $FC. At pause 5, truck_check_board decides whether the Doctor is aboard. Ends in j_81DA."
+   "text": "Main-loop subsystem: the horizontal carrier, object $0F. First picks which of two tracks it serves from the mover's own X high byte ($1BC0+$0F < 8: stops 0/1, else stops 2/3, only on a change of track). Does nothing while zone $56 = 0. Moving: steps X by 2 in direction $FC, carrying the Doctor while $FB is set; plays sound $17 while the Doctor is within $96/$64. At an end stop: sound $17 off, pause $FE = $BE, flips $FD bit 0 and reverses $FC. At pause 5, truck_check_board decides whether the Doctor is aboard. Ends in sprite_list_add_object."
   },
   {
    "address": 41877,
@@ -16240,7 +16240,7 @@
   {
    "address": 42699,
    "type": "line",
-   "text": "Main-loop subsystem: objects in flight. Two slots (Y = 1,0): $46,Y object number, $48,Y frame count ($FF = free), $4A,Y horizontal and $4C,Y vertical direction. An object whose state $1B20 is no longer $0E frees its slot. Thrown level: flies flat until frame $30, then drops ($81) and falls faster ($82) from frame $60; thrown up: rises until frame $28. Moves by s_9EC8; on hitting a wall it loses horizontal motion and snaps X to 8 pixels; on landing it gets state 0 and, except for Splinx (object 2), is reported in $82 with $83 = $FF. Sound $0B while flying."
+   "text": "Main-loop subsystem: objects in flight. Two slots (Y = 1,0): $46,Y object number, $48,Y frame count ($FF = free), $4A,Y horizontal and $4C,Y vertical direction. An object whose state $1B20 is no longer $0E frees its slot. Thrown level: flies flat until frame $30, then drops ($81) and falls faster ($82) from frame $60; thrown up: rises until frame $28. Moves by move_object_general; on hitting a wall it loses horizontal motion and snaps X to 8 pixels; on landing it gets state 0 and, except for Splinx (object 2), is reported in $82 with $83 = $FF. Sound $0B while flying."
   },
   {
    "address": 42967,
@@ -16260,7 +16260,7 @@
   {
    "address": 43059,
    "type": "line",
-   "text": "Map test for placing item Y beside object X: aligns the bottoms using heights $19B0, then for facing left ($CB negative) or right uses the edge offsets $1A00/$1A20 and width $18F0 to find the cell, and asks j_990D; $75 = $FF when the space is solid."
+   "text": "Map test for placing item Y beside object X: aligns the bottoms using heights $19B0, then for facing left ($CB negative) or right uses the edge offsets $1A00/$1A20 and width $18F0 to find the cell, and asks terrain_probe; $75 = $FF when the space is solid."
   },
   {
    "address": 43185,
@@ -16400,12 +16400,12 @@
   {
    "address": 43980,
    "type": "line",
-   "text": "Graphics set already installed: continue at j_8310."
+   "text": "Graphics set already installed: continue at charobj_step."
   },
   {
    "address": 43983,
    "type": "line",
-   "text": "Installs the character shapes and colours for zone $56: if the set zone_charset_bank[$56] is not already in, swaps the 8 bytes of each of the 16 characters in swap_char_codes (at $4000 + 8*code) with its store at $2E00 + 16*n + slot, and swaps each character's colour byte $2F00,code with $3E60 + 2*slot + n; then records which slot is now free. Ends in j_8310 when nothing to do. Called from start-up $4A39, $8C3D, $941A, $94E4."
+   "text": "Installs the character shapes and colours for zone $56: if the set zone_charset_bank[$56] is not already in, swaps the 8 bytes of each of the 16 characters in swap_char_codes (at $4000 + 8*code) with its store at $2E00 + 16*n + slot, and swaps each character's colour byte $2F00,code with $3E60 + 2*slot + n; then records which slot is now free. Ends in charobj_step when nothing to do. Called from start-up $4A39, $8C3D, $941A, $94E4."
   },
   {
    "address": 44135,
@@ -16545,7 +16545,7 @@
   {
    "address": 44888,
    "type": "line",
-   "text": "Main-loop subsystem (only when $FC64 <> 0): with no direction held and S newly pressed ($D3, edge $D7) opens the Splinx Programmer: blanks the display, calls s_C89C, sets $1032 = 7, turns off sprites and raster interrupts, switches to VIC bank 0 with $D018 = $32 (screen $0C00, characters $0800), sets text scroll 3/3, sprite 0 Y-expanded and sprite 3 X-expanded, sprite colours 2,7,8,$E and pointers at $0FF8, continuing past $B000. Otherwise goes to j_B1A0."
+   "text": "Main-loop subsystem (only when $FC64 <> 0): with no direction held and S newly pressed ($D3, edge $D7) opens the Splinx Programmer: blanks the display, calls sound_silence_all, sets $1032 = 7, turns off sprites and raster interrupts, switches to VIC bank 0 with $D018 = $32 (screen $0C00, characters $0800), sets text scroll 3/3, sprite 0 Y-expanded and sprite 3 X-expanded, sprite colours 2,7,8,$E and pointers at $0FF8, continuing past $B000. Otherwise goes to splinx_update."
   },
   {
    "address": 45056,
@@ -17170,7 +17170,7 @@
   {
    "address": 49154,
    "type": "line",
-   "text": "Second half of s_BFEF (the LDA $8788,Y whose operand fills $C000-$C001 starts at $BFFF). For X=3..0: map cell whose column is ($BFE2,X/$BFDE,X) minus scroll origin $24/$25 and row ($BFEA,X/$BFE6,X) minus $26/$27; if it lies in the 40x21 window, stores char $BFDA,X into the visible screen (row start from $8746/$875F, screen page $5C from $8788,$52); if not on the window's edge, also stores it into the other screen (page $60 from $878A,$52) at the position shifted by $8778,$72/$8780,$72, the pending scroll step. Keeps four fixed cells drawn on both buffers."
+   "text": "Second half of every8_mode3_update (the LDA $8788,Y whose operand fills $C000-$C001 starts at $BFFF). For X=3..0: map cell whose column is ($BFE2,X/$BFDE,X) minus scroll origin $24/$25 and row ($BFEA,X/$BFE6,X) minus $26/$27; if it lies in the 40x21 window, stores char $BFDA,X into the visible screen (row start from $8746/$875F, screen page $5C from $8788,$52); if not on the window's edge, also stores it into the other screen (page $60 from $878A,$52) at the position shifted by $8778,$72/$8780,$72, the pending scroll step. Keeps four fixed cells drawn on both buffers."
   },
   {
    "address": 49281,
@@ -17250,7 +17250,7 @@
   {
    "address": 49782,
    "type": "line",
-   "text": "Waypoints 0-6 for objects 3-5: Y high byte ($C276-$C27C; the code reads it from auto label f_C276)."
+   "text": "Waypoints 0-6 for objects 3-5: Y high byte ($C276-$C27C)."
   },
   {
    "address": 49786,

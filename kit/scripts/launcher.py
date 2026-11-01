@@ -131,8 +131,13 @@ def unpack_dmg(path, dest, scratch):
     tools/downloads. `scratch` is a folder inside tools/ for the mount point."""
     os.makedirs(scratch, exist_ok=True)
     mnt = tempfile.mkdtemp(dir=scratch)
-    subprocess.run(["hdiutil", "attach", "-nobrowse", "-readonly", "-mountpoint", mnt, path], check=True,
-                   stdout=subprocess.DEVNULL)
+    attach = ["hdiutil", "attach", "-nobrowse", "-readonly", "-mountpoint"]
+    if subprocess.run(attach + [mnt, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
+        # a mount point on an external drive can be refused (seen with a clone on one); the system's
+        # temporary folder is empty and ours to use, and is unmounted below
+        os.rmdir(mnt)
+        mnt = tempfile.mkdtemp()
+        subprocess.run(attach + [mnt, path], check=True, stdout=subprocess.DEVNULL)
     try:
         for f in sorted(os.listdir(mnt)):
             src = os.path.join(mnt, f)

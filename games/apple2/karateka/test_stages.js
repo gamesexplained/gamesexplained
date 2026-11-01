@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The Maps / levels tab, reference/stages.js: each stage run from the listings on the kit's 6502
+// The Levels tab, reference/stages.js: each stage run from the listings on the kit's 6502
 // from its entry, with the engine's memory as the stage before it left it. At every place the tab
 // shows, the page shown holds the same picture, byte for byte, as Apple2TS showed when run from the
 // stage's snapshot at $BFFA, stopped at the same six places at the same flip after the same changes
