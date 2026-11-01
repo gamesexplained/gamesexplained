@@ -111,3 +111,33 @@ VICE, SCORE in the dome with the 17 gems in the fuzzy area printed
 "YOU WON!" with no Chief Examiner, and in the simulator SCORE in a room
 holding all 17 gave the password and "Stored 0 treasures". The page, the
 listing's comments and `facts.md` were corrected.
+
+## 1 November 2026: the solution and Skip loading times
+
+Aaron asked for a switch that removes the wait for pictures and for the
+solution under the game on the Play tab.
+
+**Skip loading times.** The port marks its picture waits (`picture:
+'load'` for the drive, `'draw'` for clearing, copying, filling and
+drawing), and the page skips them while the switch is on. Over the
+solution at the C64's pace the loads took 746 seconds and the drawing
+230; every REMEMBER NIGHTMARE shows a picture and redraws the room, 16
+seconds of loading each.
+
+**The route.** Worked out from the action list rather than copied: the
+Hulk's counter (`$1C00`) is his anger, the gas takes one a turn wherever
+flag 4 is clear, REMEMBER NIGHTMARE adds two and past three the rampage
+puts him in the fuzzy area with flag 4 set. Two REMEMBER NIGHTMAREs in a
+row are a way out of the caves, so the ring and the gas outlet were never
+needed. The ants attack on the turn after they swarm, so the first command
+in their field after the warp is free, and everything there works in the
+dark. The warp is the only chance on the route, and the office comes up
+one time in five only until visited, so the office is the first warp
+part and later warps cannot land there. Two published walkthroughs were
+read (ctrl-alt-rees.com's HULK.TXT and the Adventure Gamers one); both
+plug the gas outlet and lift the ring instead.
+
+**Play this part.** The page's text tail first read only unshifted
+letters, missed "What shall I do?" (its capitals are $61-$7A), and the
+fast-forward pressed Return at the restore question for ever. The tail
+now reads both ranges.
