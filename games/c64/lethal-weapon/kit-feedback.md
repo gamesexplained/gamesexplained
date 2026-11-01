@@ -10,7 +10,7 @@ time, operating system and tool versions.
 - `15-parts`: "Nor is data the game fetches into a buffer during play": the fourteen stage loads were treated as data in the game part's buffers, with every stage drawn on the Maps tab, instead of fourteen parts.
 - `50-coverage`: "Let a script hold the typing against the map": the code maps were re-sized from the snapshots by a script after a crash had corrupted the RAM the dump read, rather than trimmed by hand.
 - `60-verify`: "If none can run it, the listing is unmeasured, and that is a gap, not a pass": with no checker allowed, the sample was drawn and handed off and the tier left at Bronze.
-- `70-minisite`: "Test the port against the game's own code run in a 6502 simulator": the music test found 64 bytes of the frequency tables missing from a listing at 100 %.
+- `70-minisite`: "against the original code run in the kit's simulator": the music test found 64 bytes of the frequency tables missing from a listing at 100 %.
 
 ## What was changed in the kit
 
