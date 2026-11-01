@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's Building 17 verdict against episode one's own. index.html's tfp-locks block
+// Hold the page's Building 17 verdict against episode one's own. nato-documents.html's tfp-locks block
 // (tfpJudge) judges the locks as judge_locks ($7C3F) does. Here judge_locks runs on the kit's
 // simulator over episode one's listing for every combination of counts the two floors' doors allow
 // (TFP_DOORS: each door locked once or not at all), with the lock counters ($195C-$1962), the total
@@ -12,7 +12,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] || 'index.html';
+const g = game(__dirname), page = process.argv[2] || 'nato-documents.html';
 const { tfpJudge, TFP_DOORS } = g.run(page, 'tfp-locks', 'tfpJudge', 'TFP_DOORS');
 const L = g.listing('parts/nato-documents/listing.json');
 const KINDS = ['offices', 'wcs', 'staircase', 'security', 'entrance', 'computer', 'desk'];

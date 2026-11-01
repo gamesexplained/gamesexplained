@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the map on the Maps tab against the game's own code. levels.html's hulk-map block (HulkMap)
+// Hold the map on the Rooms tab against the game's own code. levels.html's hulk-map block (HulkMap)
 // reads the ways between rooms from the database, and its drawing gives each room a box, and each
 // way a line between two boxes or a note in both.
 //   1. Every room from 1 to 20 has a box in a place of its own; every way has a line, or a note in

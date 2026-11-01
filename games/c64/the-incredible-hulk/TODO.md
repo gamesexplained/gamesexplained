@@ -6,13 +6,14 @@ Current tier and what is missing for the next one. Coverage gaps from
 ## Tier
 
 Platinum: the Silver (100 % coverage of 21,750 bytes, `facts.md`, the
-listing sampled and every step recorded in `accuracy`, every feature
+listing sampled and every step recorded in `accuracy`, the minisite
+built (How it works, Discoveries, Rooms, Source code), every feature
 confirmed, traced or open, copy `agent-draft`; the game has no music, so
 it needs no tune player) with a Play tab that is the whole game: the
 interpreter, the screen editor, the pictures, the disk and the saved
 games ported to JavaScript and held to the game's code by
-`test_play.js`, with no known bug in the port. The Maps tab's map is held
-to the game's code by `test_map.js`.
+`test_play.js`, with no known bug in the port. The Rooms tab's map is
+held to the game's code by `test_map.js`.
 
 ## Audit the listing
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// The Maps / levels page draws every phase from the layout tables with the block nes-phases.
+// The Levels page draws every phase from the layout tables with the block nes-phases.
 // This holds it to the listing: built from the listing's bytes, phase 1's screen must match the
 // nametable the How it works page embeds (the snapshot's own, below the status bar; a star cell
 // in any of its twinkle tiles counts), the bonus round must have no birds, and the sixteen

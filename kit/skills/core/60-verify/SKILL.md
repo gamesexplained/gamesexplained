@@ -75,11 +75,15 @@ A checker does one of two jobs. A sample check marks a random draw of
 comments and changes nothing, so its count is a measurement. An audit
 checks every comment in a range and corrects the wrong ones.
 
-1. **Sample.** Draw about 60 comments at random, with a fixed seed,
-   spread over every agent's range, and give them to a checker for a
-   sample check. Read every comment it marks wrong or doubtful against
-   the code yourself: count the ones that are wrong, and drop the false
-   alarms.
+1. **Sample.** Draw about 60 comments at random from the whole
+   listing, with a fixed seed (`python3 kit/scripts/sample.py draw
+   <game> --seed <n>`), and give them to a checker for a sample check as
+   the draw wrote them, before you change any of them: a comment
+   corrected between the draw and the check makes the listing look
+   better than it was. Read every comment it marks wrong or doubtful
+   against the code yourself, and add to its verdict whether the finding
+   held; `sample.py count` counts the ones that are wrong, without the
+   false alarms, and refuses a verdict on other text than was drawn.
 2. **The mark.** A sample is within the mark when at most 2 of its 60
    are wrong (at most one in 30 in a larger sample). At that mark a
    listing with 3 % of its comments wrong comes within it three times in
@@ -159,8 +163,9 @@ from one part to another carries its wrong comments with it.
 
 Comments a program wrote, a decoder describing every record of a format
 from templates, are a few claims each made hundreds of times. Give them
-a stratum of their own, draw about 20 from it, and beside the plain rate
-give the rate weighted by each stratum's size: three drawn from a
+a stratum of their own (`sample.py draw --stratum`, by a pattern their
+text matches), draw about 20 from it, and beside the plain rate give the
+rate weighted by each stratum's size, as `sample.py count` does: three drawn from a
 stratum of thousands would stand for all of it. When they are bad,
 correct them by template in this run, as one claim made many times, and
 not one by one: test every sentence a template writes

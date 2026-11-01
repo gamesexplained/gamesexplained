@@ -8,22 +8,13 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">What reading the whole program turned up: a protection check hidden in the Goonie's own movement, a page of the developers' source code, and the places where the game and its guides disagree.</p>
+  <p class="sub">Read the surviving source fragment for the cage puzzle, and see how a hidden copy-protection check can corrupt play. Edition differences and open questions are kept beside the evidence.</p>
 </header>
 <main class="wrap">
-<section id="protection">
-  <p class="fig">Copy protection</p>
-  <h2 class="t">The game checks its loader on every move the Goonie makes</h2>
-  <p class="lede">The disk's loader leaves a value in a place nothing else looks: <code>$EF</code> in the CPU's own data direction register, at address <code>$00</code>. The KERNAL leaves <code>$2F</code> there, so a copy loaded any other way carries the wrong value.</p>
-  <p>Every pass, after moving the Goonie the player controls, <code>goonie_active</code> reads that register (<code>$0B2D</code>). The read is disguised. The code loads an index from <code>$A14F</code>, which holds <code>$E3</code>, and reads <code>$1D</code> plus that index, an address that wraps round the zero page to <code>$00</code>. It then adds <code>$11</code> from <code>$A150</code>, which gives zero only for <code>$EF</code>. Both values sit among scene 8's tables, so neither the address nor the value it wants appears in the code that does the check.</p>
-  <p>When the sum is not zero, the routine moves the Goonie a second time and calls into the middle of the interrupt handler (<code>$0A49</code>), whose pulls and return wreck the stack. Tested in the emulator with <code>$2F</code> poked into <code>$00</code>, the second move ran four times in 200 frames and then the screen was corrupted. With the loader's <code>$EF</code> it never ran. No instruction in the game writes <code>$00</code>, so the loader's value survives the whole game.</p>
-  <p>A second check runs once, at the hand-over from the loader (<code>game_start</code>, <code>$0800</code>). It compares eleven bytes at <code>$CF79</code> with eleven at <code>$CF99</code>, sixteen times over, and jumps to <code>$0000</code>, crashing the machine, if they ever agree. In an untouched load they differ. Then the routine wipes its own first 45 bytes, so in play the check is gone. What it is meant to catch is not known.</p>
-</section>
-
 <section id="source">
   <p class="fig">Leftover source</p>
   <h2 class="t">A page of the developers' source code is still in memory</h2>
-  <p class="lede">At <code>$F84D</code>, after the attract mode's recorded demonstrations, is a stretch of assembler source in plain text, with bit 7 stripped from each character. Nothing reads it. It was left in memory when the game was built and saved with the rest.</p>
+  <p class="lede">The program retains a fragment of the makers’ source for the cage scene. Names such as DOORX and DOORY describe the hidden passage’s positions. The fragment is stored as text at <code>$F84D</code>, after the recorded demonstrations, and matches the corresponding part of the finished game.</p>
   <pre class="gsrc">DOORX    HEX 568C
 DOORY    HEX A33A
 DOORXOFF HEX 36C8
@@ -37,19 +28,28 @@ DFL31    LDA PLAY,X
   <p>The fragment is the source of scene 6, the cage, and it matches the finished game byte for byte. Its seven tables are the bytes at <code>$F405</code> to <code>$F412</code>, in the same order. DOORX and DOORY are the two mouths of the scene's hidden passage, DOORXOFF and DOORYOFF how far each mouth carries a Goonie, and DOORMASK the stick bit each one needs. MKDRX and MKDRY are the two levers that hold the door open. The three instructions are the start of <code>s6_platforms</code> (<code>$F413</code>), which works out which platforms are solid from the pads held down. In the game, the table the developers called PLAY is at <code>$F481</code>.</p>
 </section>
 
+<section id="protection">
+  <p class="fig">Copy protection</p>
+  <h2 class="t">The game checks its loader on every move the Goonie makes</h2>
+  <p class="lede">A game loaded without the expected setup can corrupt its own screen during play. Every update, the controlled Goonie’s routine checks a value left by the disk loader. The expected value is <code>$EF</code> in the processor’s data direction register at <code>$0000</code>. The C64’s KERNAL system software leaves <code>$2F</code> there instead.</p>
+  <p>Every pass, after moving the Goonie the player controls, <code>goonie_active</code> reads that register (<code>$0B2D</code>). The read is disguised. The code loads an index from <code>$A14F</code>, which holds <code>$E3</code>, and reads <code>$1D</code> plus that index, an address that wraps round the zero page to <code>$00</code>. It then adds <code>$11</code> from <code>$A150</code>, which gives zero only for <code>$EF</code>. Both values sit among scene 8's tables, so neither the address nor the value it wants appears in the code that does the check.</p>
+  <p>When the sum is not zero, the routine moves the Goonie a second time and calls into the middle of the interrupt handler (<code>$0A49</code>), whose pulls and return wreck the stack. Tested in the emulator with <code>$2F</code> poked into <code>$00</code>, the second move ran four times in 200 frames and then the screen was corrupted. With the loader's <code>$EF</code> it never ran. No instruction in the game writes <code>$00</code>, so the loader's value survives the whole game.</p>
+  <p>A second check runs once, at the hand-over from the loader (<code>game_start</code>, <code>$0800</code>). It compares eleven bytes at <code>$CF79</code> with eleven at <code>$CF99</code>, sixteen times over, and jumps to <code>$0000</code>, crashing the machine, if they ever agree. In an untouched load they differ. Then the routine wipes its own first 45 bytes, so in play the check is gone. What it is meant to catch is not known.</p>
+</section>
+
 <section id="guides">
   <p class="fig">The game against the guides</p>
   <h2 class="t">Where the code and the C64-Wiki disagree</h2>
   <p class="lede">The C64-Wiki describes the Datasoft game and the U.S. Gold release side by side.<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> The disk analysed here is the Datasoft one, and in several places its code does what the wiki gives to U.S. Gold, or something else again.</p>
-  <table class="t">
+  <div class="table-scroll" role="region" aria-label="Discoveries reference table" tabindex="0"><table class="t">
     <tr><th>The wiki</th><th>The code</th><th>Where</th></tr>
     <tr><td>The standard game starts with 8 lives</td><td>Five, shown as LIVES 5 in every scene</td><td><code>$0868</code></td></tr>
     <tr><td>Two players take turns; playing at once is U.S. Gold's</td><td>Two players play at once, with a joystick each, and there are no turns</td><td><code>$172B</code></td></tr>
     <tr><td>5,000 points for each Goonie left at the end</td><td>5,000 for each life left and one more</td><td><code>$A4E6</code></td></tr>
     <tr><td>U.S. Gold: F7 skips ahead a scene a press</td><td>F7 always starts at scene 1</td><td><code>$0846</code></td></tr>
     <tr><td>U.S. Gold: the lives are not capped</td><td>Scene 4's three extra lives stop at nine</td><td><code>$181B</code></td></tr>
-    <tr><td>Scene 8's tasks are fixed to one Goonie each</td><td>No routine asks which Goonie does a task</td><td><code>$9D33</code></td></tr>
-  </table>
+    <tr><td>Scene 8's tasks are fixed to one Goonie each</td><td>The task routines accept either; whether the taller figure’s size restricts access remains open</td><td><code>$9D33</code></td></tr>
+  </table></div>
   <p>The wiki also leaves out two keys the game reads. V prints the version line, V 1 BY SES, and L turns a player's joystick a quarter turn (<a href="controls.html#keys">Controls</a>). A third key, F5, is scanned with the others and nothing acts on it (<code>$161C</code>).</p>
 </section>
 
@@ -74,5 +74,6 @@ DFL31    LDA PLAY,X
     <li>Which of the four tunes, if any, is the film's song (<a href="music.html">Music</a>).</li>
   </ul>
 </section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

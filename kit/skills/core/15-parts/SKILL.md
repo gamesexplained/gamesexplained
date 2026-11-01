@@ -80,8 +80,10 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
      every part is resident: make it a part of its own, and add each
      load with `--over <its id>`, giving the addresses the load writes
      as `"ranges"` in its `part.json`. Find them by watching the load (a
-     store checkpoint over all of memory while the loader runs), or by
-     comparing the snapshots either side of it. The part beneath then
+     store checkpoint over all of memory while the loader runs, or the
+     tool in the platform's `steps` skill, "loads", that logs every load
+     with the memory it changed), or by comparing the snapshots either
+     side of it. The part beneath then
      owns everything else.
    - **A leftover.** A stretch that matches another part's where nothing
      calls it is a leftover of an earlier build, not shared code.
@@ -120,13 +122,9 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
    has none, give `game.json` a row under `coverage.virtual`, `[bytes,
    what it is and where it comes from]`, and the About and Source tabs
    show it beside the figure, so that 100 % says what it is 100 % of.
-8. **A part whose code is another part's at other addresses** can take
-   that part's names and comments, carried across by pairing the two.
-   A carried comment still describes the first part, and reads as right
-   where the second loads another value, calls another routine or holds
-   other data under the same name. After carrying them, check each
-   carried comment that names a value, a colour, a count or a routine
-   against the second part's own bytes. <!-- until #552 -->
+8. **A part whose code is another part's at other addresses** takes
+   that part's names and comments with `kit/scripts/carry.py`
+   (`50-coverage`, "Code the game holds more than once").
 
 From here on, every script that takes a game's folder takes a part's in
 its place.

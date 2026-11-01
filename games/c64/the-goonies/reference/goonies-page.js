@@ -81,7 +81,7 @@ const GOON = (function () {
     const box = el('div', { class: 'pick' });
     const prev = el('button', { class: 'step', type: 'button', 'aria-label': 'Previous', text: '‹' });
     const next = el('button', { class: 'step', type: 'button', 'aria-label': 'Next', text: '›' });
-    const sel = el('select', { 'aria-label': 'Choose' });
+    const sel = el('select', { 'aria-label': 'Choose a scene' });
     items.forEach((t, i) => sel.append(el('option', { value: i, text: t })));
     box.append(prev, sel, next); root.append(box);
     const go = i => { i = (i + items.length) % items.length; sel.value = i; onPick(i); };
@@ -100,9 +100,14 @@ const GOON = (function () {
     const show = new Set([0, 1, 2, 3, 4, 5, 6, 7]);
     const pickRow = el('div'); root.append(pickRow);
     const keys = el('div', { class: 'row' }); root.append(keys);
-    const cv = el('canvas', { class: 'scr', width: 384 * S, height: 272 * S }); root.append(cv);
+    const heading = el('h3', { class: 'scene-heading' }); root.append(heading);
+    const cv = el('canvas', { class: 'scr', width: 384 * S, height: 272 * S, role: 'img', 'aria-label': 'Scene collision map' }); root.append(cv);
+    root.append(keys);
+    const guide = el('a', { text: 'Read this scene’s solution' }); root.append(el('p', {}, [guide]));
     const info = el('p', { class: 'kv' }); root.append(info);
-    const tbl = el('div', { class: 'tablewrap' }); root.append(tbl);
+    const detail = el('details', { class: 'reference-detail' });
+    const summary = el('summary'); detail.append(summary);
+    const tbl = el('div', { class: 'tablewrap', role: 'region', 'aria-label': 'Collision rectangle data', tabindex: '0' }); detail.append(tbl); root.append(detail);
     const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
     let cur = null, img = null, hover = -1;
     for (const K of KINDS) {
@@ -133,27 +138,34 @@ const GOON = (function () {
           el('td', { text: q.j }),
           el('td', {}, [el('span', { class: 'sw', style: 'background:' + KINDS[q.kind & 7].col }), document.createTextNode((q.kind & 7) + ' ' + KINDS[q.kind & 7].name + (q.kind & 0x80 ? ', out of use' : ''))]),
           el('td', { class: 'n', text: q.l }), el('td', { class: 'n', text: q.t }), el('td', { class: 'n', text: q.r }), el('td', { class: 'n', text: q.b })]);
-        tr.onmouseenter = () => { hover = q.j; draw(); }; tr.onmouseleave = () => { hover = -1; draw(); };
+        tr.tabIndex = 0;
+        tr.onfocus = tr.onmouseenter = () => { hover = q.j; draw(); }; tr.onblur = tr.onmouseleave = () => { hover = -1; draw(); };
         t.append(tr);
       }
       tbl.replaceChildren(t);
     }
     picker(pickRow, SCENES.map(s => 'Scene ' + s.n + ': ' + s.name), i => {
-      const sc = SCENES[i];
+      const sc = SCENES[i]; hover = -1;
+      heading.textContent = 'Scene ' + sc.n + ': ' + sc.name;
+      summary.textContent = 'Rectangle data for scene ' + sc.n;
+      cv.setAttribute('aria-label', 'Saved collision map for scene ' + sc.n + ': ' + sc.name);
+      guide.href = 'gameplay.html?scene=' + sc.n + '#scenes';
+      if (typeof GOONPAGES !== 'undefined') GOONPAGES.setScene(sc.n);
       cur = rects(ram, sc.idx);
-      img = new Image(); img.onload = draw; img.src = sc.img;
+      const nextImage = new Image(); img = nextImage; nextImage.onload = () => { if (img === nextImage) draw(); }; nextImage.src = sc.img;
       info.replaceChildren(document.createTextNode('Scene index ' + sc.idx + ' · ' + cur.n + ' rectangles · kinds at '), code(cur.ptrs[0]),
         document.createTextNode(', edges at '), code(cur.ptrs[1]), document.createTextNode(', '), code(cur.ptrs[2]),
         document.createTextNode(', '), code(cur.ptrs[3]), document.createTextNode(', '), code(cur.ptrs[4]));
       table(sc); draw();
-    });
+    }, typeof GOONPAGES !== 'undefined' ? GOONPAGES.sceneIndex() : 0);
   }
 
   // Graphics: the shape table of a chosen scene, every shape at its size, with its copies.
-  async function mountShapes(root) {
+  async function mountShapes(root, shared) {
     let G; try { G = await load(); } catch (e) { root.textContent = 'The shapes need listing.json: ' + e.message; return; }
     const ram = G.ram;
-    const pickRow = el('div'); root.append(pickRow);
+    const pickRow = el('div'); if (!shared) root.append(pickRow);
+    const heading = el('h3', { class: 'scene-heading' }); root.append(heading);
     const opts = el('div', { class: 'row' }); root.append(opts);
     const btn = el('button', { class: 'b', type: 'button', 'aria-pressed': 'false', text: 'Show all four copies' });
     opts.append(btn);
@@ -168,7 +180,7 @@ const GOON = (function () {
         const list = all ? ptrs : [ptrs[0]];
         const wmax = Math.max(...list.map(a => ram[a])), hmax = Math.max(...list.map(a => ram[a + 1]));
         const s = 3, gap = 6;
-        const cv = el('canvas', { width: list.length * (wmax * 8 * s + gap), height: hmax * s });
+        const cv = el('canvas', { width: list.length * (wmax * 8 * s + gap), height: hmax * s, role: 'img', 'aria-label': 'Shape ' + n + (all ? ', four horizontal offsets' : '') });
         const ctx = cv.getContext('2d');
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
         list.forEach((a, i) => drawShape(ctx, ram, a, i * (wmax * 8 * s + gap), 0, s));
@@ -180,19 +192,25 @@ const GOON = (function () {
         gal.append(el('figure', { class: 'gal-cell' }, [cv, cap]));
       });
     }
-    picker(pickRow, SCENES.map(s => 'Scene ' + s.n + ': ' + s.name), i => { idx = SCENES[i].idx; render(); });
+    function select(i) { idx = SCENES[i].idx; heading.textContent = 'Shapes for scene ' + SCENES[i].n + ': ' + SCENES[i].name; render(); }
+    if (!shared) picker(pickRow, SCENES.map(s => 'Scene ' + s.n + ': ' + s.name), select);
+    return select;
   }
 
   // Graphics: a walking Goonie, drawn the way draw_object ($0C8A) and goonie_frame ($0C36) draw it,
   // pass by pass: x moves two units a pass, the column is x / 4, and bit 1 of x picks the frame.
   async function mountWalk(root) {
     let G; try { G = await load(); } catch (e) { root.textContent = 'The walk needs listing.json: ' + e.message; return; }
-    const ram = G.ram, t = shapeTable(ram, 0), s = 4;
-    const cv = el('canvas', { class: 'scr', width: 112 * s, height: 30 * s }); root.append(cv);
+    const ram = G.ram, s = 4; let t = shapeTable(ram, 0);
+    const heading = el('h3', { class: 'scene-heading' }); root.append(heading);
+    const cv = el('canvas', { class: 'scr', width: 112 * s, height: 30 * s, role: 'img', 'aria-label': 'Walking frame and bitmap columns' });
+    const imageWrap = el('div', { class: 'gifw' }); root.append(imageWrap); imageWrap.append(cv);
+    const download = el('button', { class: 'gifb', type: 'button', text: '↓', title: 'Download this walking diagram as a GIF (80 ms per frame)', 'aria-label': 'Download walking diagram GIF' }); imageWrap.append(download);
     const row = el('div', { class: 'row' }); root.append(row);
     const step = el('button', { class: 'b', type: 'button', text: 'Next pass' });
     const play = el('button', { class: 'b', type: 'button', 'aria-pressed': 'false', text: 'Walk' });
     row.append(step, play);
+    const reset = el('button', { class: 'b', type: 'button', text: 'Reset walk' }); row.append(reset);
     const out = el('p', { class: 'kv' }); root.append(out);
     const ctx = cv.getContext('2d');
     let x = 8, timer = null;
@@ -205,13 +223,23 @@ const GOON = (function () {
       ctx.fillStyle = '#ffe14d'; ctx.fillRect(2 * x * s, 0, 2, 5 * s);
       out.replaceChildren(document.createTextNode('x = ' + x + ' (' + 2 * x + ' pixels) · column ' + (x >> 2) + ' · frame ' + frame + ' · '), code(a));
     }
-    function adv() { x += 2; if (x > 100) x = 8; draw(); }
+    function nextX(value) { const n = value + 2, frame = (n & 2) ? 2 : 0; return ((n >> 2) * 8 + ram[t[frame][n & 3]] * 8 > 112) ? 8 : n; }
+    function adv() { x = nextX(x); draw(); }
+    function stop() { clearInterval(timer); timer = null; play.setAttribute('aria-pressed', 'false'); play.textContent = 'Walk'; }
+    reset.onclick = () => { stop(); x = 8; draw(); };
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
     step.onclick = adv;
     play.onclick = () => {
-      if (timer) { clearInterval(timer); timer = null; play.setAttribute('aria-pressed', 'false'); return; }
-      timer = setInterval(adv, 80); play.setAttribute('aria-pressed', 'true');   // a pass is four frames, 80 ms
+      if (timer) { stop(); return; }
+      timer = setInterval(adv, 80); play.setAttribute('aria-pressed', 'true'); play.textContent = 'Pause walk';   // a pass is four frames, 80 ms
     };
-    draw();
+    download.onclick = () => {
+      const saved = x, frames = []; stop(); x = 8;
+      do { draw(); frames.push(ctx.getImageData(0, 0, cv.width, cv.height)); x = nextX(x); } while (x !== 8);
+      x = saved; draw(); GOONPAGES.saveGif(frames, download.dataset.scene || '1');
+    };
+    function select(i) { stop(); x = 8; t = shapeTable(ram, SCENES[i].idx); heading.textContent = 'Walk for scene ' + SCENES[i].n + ': ' + SCENES[i].name; download.dataset.scene = SCENES[i].n; draw(); }
+    select(0); return select;
   }
 
   // Music: the four tunes through the port of the Pearl Music Player.

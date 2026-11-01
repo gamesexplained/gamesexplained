@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the Maps / levels page's course drive against the game's own code. levels.html's pd-course
+// Hold the Tracks page's course drive against the game's own code. levels.html's pd-course
 // block (createCourse) sets a stage up and runs its race frames on the site's 6502 with the kart
 // held in the middle of the road at a set speed level. Here the game runs its own path on the
 // kit's simulator over the whole listing: stage_loop from setup_stage to copy_colours ($086F-$08A1),

@@ -31,7 +31,7 @@ in order:
    | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
    | inputs | `kit/skills/core/65-inputs` | a recording of play that replays on any machine and on the Play tab, when a step needs one |
-   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `discoveries.html` (Discoveries), `listing.json` (Source code), `levels.html` (Maps / levels) for a game with more than one level, optional `play.html` |
+   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `discoveries.html` (Discoveries), `listing.json` (Source code), `levels.html` (Levels or Maps) for a game with more than one level, optional `play.html` |
    | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
 
    A Bronze run stops after `40-sweep`. It exports the symbol map and
@@ -159,6 +159,10 @@ see the work. Write for someone clever who knows nothing about it.
   happened, how we checked, and a possible fix. Give each a sentence or
   two of its own.
 - Leave out shorthand picked up during the work. Say what it stands for.
+- When a pull request changes a page in a way a reader can see, put
+  screenshots of it before and after the change in the description, so
+  a reviewer can see the difference and approve it without opening a
+  preview of the site and finding the page.
 - Before posting, or handing a draft to the contributor, read it again
   against this list.
 

@@ -32,7 +32,7 @@ A Play tab that is the whole game: Gerald's movement, the surfaces, the
 pieces and the room renderer ported to JavaScript routine by routine and
 held to the game's code in lockstep (`kit/skills/core/70-minisite/play.md`),
 with the title, the options, the map and the score screens. The room
-pictures already come from the game's own code on the Maps / levels tab,
+pictures already come from the game's own code on the Map tab,
 and `test_rooms.js` holds them to the emulator's screenshots, which a
 port's renderer could be checked against.
 

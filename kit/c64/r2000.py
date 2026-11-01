@@ -24,6 +24,11 @@ Usage:
     one by one, and each that fails is printed with its line number (its entry, for .json). A file
     that names one label at two addresses, or leaves a comment's type to an address that has both
     kinds, sends nothing: the disassembler would refuse the second label and go on with the rest
+  r2000.py --seed <codemap.json>              disassemble from every start the code map records
+      (kit/c64/codemap.py), 60 a round, until each is inside a code block: regenerator2000 stops
+      at an RTS, an RTI or an indirect JMP, and a routine that starts on the next byte is in the
+      same run of the map, so seeding each run's first address leaves it out (#642). Says how
+      many it seeded, in how many rounds, and which starts no round reached
   r2000.py --game games/c64/<slug> <tool> '<json>'
   r2000.py --log annotations-3.jsonl <tool> '<json>'   write to that log instead
 
@@ -335,6 +340,53 @@ def apply(path, explicit=None, log=None, batch=200):
     return bad
 
 
+def code_blocks(rpc):
+    """[(first, last)] of the session's code blocks, both ends inside."""
+    return [(b["start_address"], b["end_address"]) for b in json.loads(call(rpc, "r2000_get_blocks", {}))
+            if b["type"] == "Code"]
+
+
+def outside(starts, blocks):
+    """The starts that no block holds."""
+    blocks, out, i = sorted(blocks), [], 0
+    for a in sorted(starts):
+        while i < len(blocks) and blocks[i][1] < a:
+            i += 1
+        if not (i < len(blocks) and blocks[i][0] <= a):
+            out.append(a)
+    return out
+
+
+def seed(path, explicit=None, log=None, per_round=60):
+    """Disassemble from the code map's starts until each is inside code; return how many no round
+    reached. Each round asks for the blocks again and seeds the first per_round starts still
+    outside that no round has tried: one start's walk takes in many of the others."""
+    with open(path) as f:
+        starts = json.load(f)["starts"]
+    gdir = game_dir(explicit)
+    rpc, tried, n = make_client(gdir), set(), 0
+    left = outside(starts, code_blocks(rpc))
+    print(f"{len(starts)} starts in {path}, {len(left)} outside code")
+    while True:
+        ask = [a for a in left if a not in tried][:per_round]
+        if not ask:
+            break
+        n += 1
+        tried |= set(ask)
+        got = json.loads(call(rpc, "r2000_batch_execute", {"calls": [
+            {"name": "r2000_disassemble", "arguments": {"address": a}} for a in ask]}))
+        for a, r in zip(ask, got if isinstance(got, list) else []):
+            if r.get("status") == "success" and not (r.get("result") or {}).get("isError"):
+                log_call(gdir, "r2000_disassemble", {"address": a}, log)
+        left = outside(left, code_blocks(rpc))
+        print(f"round {n}: seeded {len(ask)}, {len(left)} outside code")
+    print(f"seeded {len(tried)} start(s) in {n} round(s); {len(left)} still outside code"
+          + (": " + " ".join(f"${a:04X}" for a in left[:16]) + (" ..." if len(left) > 16 else "")
+             + "\nthe disassembler would not walk from these; look for bytes the game rewrote after they ran"
+             if left else ""))
+    return len(left)
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -347,6 +399,8 @@ def main():
             log, argv = argv[1], argv[2:]
     if argv[0] == "--replay":
         replay(argv[1]); return
+    if argv[0] == "--seed":
+        sys.exit(1 if seed(argv[1], explicit, log) else 0)
     if argv[0] == "--apply":
         sys.exit(1 if apply(argv[1], explicit, log) else 0)
     rpc = make_client(game_dir(explicit))

@@ -404,6 +404,21 @@ copies the default RAM vectors, the 32 bytes at `$0314`-`$0333`, from a
 table in the ROM (`$FD30` in the KERNAL VICE 3.13.2 ships; both read from
 it on 10 October 2026).
 
+## Loading a file
+
+A program loads a file with three KERNAL calls. SETNAM (`$FFBD`, `$FDF9`)
+keeps the name's length at `$B7` and where it is at `$BB`-`$BC`. SETLFS
+(`$FFBA`, `$FE00`) keeps the logical file at `$B8`, the device at `$BA`
+and the secondary address at `$B9`. LOAD (`$FFD5`) takes A as 0 to load
+and anything else to verify, and X and Y as the address to load to when
+the secondary address is 0; it keeps them at `$C3`-`$C4` and jumps
+through the vector at `$0330`, `$F4A5` by default (`$F49E` and the table
+at `$FD30`, kernal-901227-03 as VICE 3.14.0 ships it, read on 1 November
+2026). A game that calls its loader through `$FFD5` stops there
+whatever the vector leads to, a fast loader of its own included, and
+`kit/c64/loads.py` logs every such load with the memory it changed. A
+loader the game calls at its own address does not pass `$FFD5`.
+
 ## Cartridge images
 
 A 16 KB program that loads at `$8000` and begins

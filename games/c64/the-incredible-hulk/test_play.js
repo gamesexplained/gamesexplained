@@ -12,7 +12,7 @@
 // The game's KERNAL calls are hooks: GETIN takes the next key, CHROUT and PLOT record, SAVE and
 // LOAD keep saved games in a disk of the test's, which starts with the four on the game's disk,
 // and the drive's fast loader is two hooks, send_byte ($78A3) and receive_byte ($7859), which
-// answer from the picture files the Maps tab carries, as test_pictures.js does.
+// answer from the picture files the Rooms tab carries, as test_pictures.js does.
 // The sessions: the game's own demonstration (D at the restore question); every saved game on the
 // disk restored and played on, and a damaged one refused; actions rewritten to run the commands and
 // conditions the database never uses; keys the line reader refuses; and seeded random sessions made

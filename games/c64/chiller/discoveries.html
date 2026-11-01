@@ -6,23 +6,23 @@
 <link rel="stylesheet" href="reference/chiller-page.css">
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}} · Discoveries</p>
   <h1>{{title}}</h1>
-  <p class="sub">Unused routines, an enemy that wears every sprite in the game, a disputed claim that the game could not be finished, and questions the code cannot settle.</p>
+  <p class="sub">An enemy changes shape, unused routines hint at abandoned features, and a remembered impossible cross turns out to be reachable. Explore the evidence and the questions it leaves open.</p>
 </header>
 <main class="wrap">
 <section id="completion">
-  <p class="fig">A disputed memory</p>
+  <p class="fig">01 · A disputed memory</p>
   <h2 class="t">Was a cross impossible to collect?</h2>
   <p class="lede">A 2022 comment on Lemon64 recalls a cross that could not be reached, and a crack that the player believed fixed it.<sup class="fn"><a href="about.html#src-8" title="Lemon64's entry for Chiller">8</a></sup> In the copy studied, every cross can be taken and the whole journey out and back can be finished, although the game then loops back to the forest.</p>
   <p>The three lowest crosses, in the graveyard, the ghetto, and the cinema on the way home, sit in the bottom two rows. The boy cannot stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but the test for what he touches looks below and beside him, reaching rows 23 and 24 (<code>probe_offset</code>, <code>$5145</code>). So he takes each of the three by walking left along the ground.</p>
   <p>Whether another release or a crack moved a cross, or whether some order of play can leave a player stuck, is not known.</p>
 </section>
 <section id="unused">
-  <p class="fig">Secret</p>
-  <h2 class="t">Secret: enemies could once be killed, for points</h2>
+  <p class="fig">02 · Secret</p>
+  <h2 class="t">Unused routines for killing enemies</h2>
   <p class="lede">In Chiller you cannot hurt an enemy, and there are no lives and no scrolling. <b>Its code has all three</b>, and a second sound player whose every write goes nowhere. None of it can be reached in play.</p>
-  <table class="t">
+  <div class="ch-table-scroll" role="region" aria-label="Scrollable reference table" tabindex="0"><table class="t">
     <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
     <tr><td>An enemy being hit, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them</td></tr>
     <tr><td>Lives: a starting count, take one, restart the screen</td><td><code>$45ED</code>, <code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
@@ -30,19 +30,19 @@
     <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
     <tr><td>Fire putting a second sprite on top of the boy, facing his way, with a sound, and that sprite switched off when it hits the scenery</td><td><code>switch_check</code> <code>$C7D4</code>, <code>sprite1_hit_scenery</code> <code>$C4FB</code></td><td>the first works only on a screen with no jumping, and every screen has jumping; the second is switched off on every screen (<code>$45FE</code> = 0)</td></tr>
     <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
-  </table>
+  </table></div>
   <p>The code does not say how an enemy was hit; the first routine is named for a shot only because a shot is one possibility. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy. The row above may be a shot's beginning: fire puts a second sprite on the boy, facing his way, with a sound, and it vanishes when it hits the scenery. No code has been found that moves that sprite along, so nothing left in the game settles which.</p>
   <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
 </section>
 <section id="silver-crosses">
-  <p class="fig">Secret</p>
+  <p class="fig">03 · Secret</p>
   <h2 class="t">Secret: the magic crosses were once silver</h2>
   <p class="lede">Three of the first five levels carry a spare score line that is never shown. <b>It says SILVER CROSSES</b> where the game says MAGIC CROSSES.</p>
       <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
       <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
 </section>
 <section id="menu">
-  <p class="fig">Unfinished</p>
+  <p class="fig">04 · Unfinished</p>
   <h2 class="t">Unfinished: a PRESS CTRL FOR MENU prompt that never appears</h2>
   <p class="lede">After GAME OVER the game still calls a routine meant to put PRESS CTRL FOR MENU on the bottom row. <b>The routine reads the text, the screen and the colours, and writes nothing.</b> It looks like a feature left out before release, with its prompt stubbed so it never shows. </p>
       <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
@@ -50,8 +50,8 @@
   <p>An older forest card is left behind the same way: <code>card_forest_title</code> (<code>$5D0D</code>) is still there, and its printer, <code>$5E00</code>, is never called.</p>
 </section>
 <section id="shape-shifter">
-  <p class="fig">Quirk</p>
-  <h2 class="t">Quirk: an enemy that wears every sprite in the game</h2>
+  <p class="fig">05 · Quirk</p>
+  <h2 class="t">Bug: an enemy cycles through unintended pictures</h2>
   <p class="lede">In the forest on the way home, one enemy never settles on a shape. <b>The enemy plays 107 frames</b>, and most of them are memory that was never meant to be a sprite: program code, the character set, and the boy's and the girl's own frames.</p>
   <div class="plate"><canvas id="shift" class="scr" style="max-width:192px" role="img" aria-label="The shape-shifting enemy, stepping through its 107 frames"></canvas>
     <p class="kv" id="shift-kv"></p>
@@ -60,8 +60,8 @@
   <p><code>$7523</code> is the byte that the title screen's flicker writes to by mistake, in place of the video chip's <code>$D023</code> (<code>title_flicker</code>, <code>$7580</code>). The flicker reads <code>$D023</code>, whose top four bits always read as 1, flips one bit, and stores the result, so whatever it writes is <code>$F0</code> or more. The flicker runs on the title after every game over, so the enemy keeps its 107 frames however often you play. The copy studied holds <code>$F2</code> there even before the first game, which suggests the game was saved from memory after its title had already run.</p>
 </section>
 <section id="odd">
-  <p class="fig">Odds and ends</p>
-  <h2 class="t">Things the manual never told you</h2>
+  <p class="fig">06 · Odds and ends</p>
+  <h2 class="t">Other slips and unused features</h2>
   <p class="lede">Small slips and leftovers in the code.</p>
   <ul class="odd">
     <li><b>The enemies can speed up, but nobody has seen it.</b> Each enemy slot has a count the code calls lives. A life here is one entrance: coming back on screen uses one, and leaving by an edge gives it back. When every slot has used up its count and all five are off the screen, a LEVEL counter goes up, is shown over the play area, and every enemy's movement and animation delays are halved. Edges refund a life and most slots start with 200, so play does not seem to get there. (<code>level_up</code> <code>$2C19</code>; <code>speed_up</code> <code>$5681</code>; counts at <code>$CF76</code>, from <code>$45E7</code>)</li>
@@ -70,8 +70,8 @@
   </ul>
 </section>
 <section id="unsure">
-  <p class="fig">Open questions</p>
-  <h2 class="t">What we're still unsure of</h2>
+  <p class="fig">07 · Open questions</p>
+  <h2 class="t">Questions the surviving code leaves open</h2>
   <ul>
     <li>Whether the three <code>NOP</code>s at <code>$7F06</code>-<code>$7F08</code>, the length of one subroutine call, replaced an ending or something else. The surviving code does not say.</li>
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
