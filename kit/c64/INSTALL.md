@@ -44,6 +44,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2, from source (`get-vice build`) | Linux x86_64 | 9 October 2026 | 57 of 57, Ubuntu 26.04.1 under WSL2 |
 | v3.14.0 release, `v3.14.0-linux-x86_64-gui.zip` | Linux x86_64 | 29 October 2026 | 57 of 57, five runs |
+| v3.14.0 release, `v3.14.0-macos-arm64-gui.dmg` | macOS arm64 | 2 November 2026 | 57 of 57 |
 
 One row per build on each kind of computer, the kinds being the hosts of
 `site/status.json`: Linux x86_64 is one kind, on a desktop, a server or in

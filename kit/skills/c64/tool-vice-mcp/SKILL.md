@@ -434,6 +434,11 @@ addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
   `BinaryMonitorServer=1` in the same file, VICE's binary monitor answers
   on port 6502, and memory space 1 of its protocol is drive 8, so the
   drive's program counter and RAM can be read while the C64 waits.
+  A snapshot saved with true drive emulation holds the drive's 2 KB of RAM
+  in its `DRIVECPU0` module, 114 bytes after the module's name (found from
+  the DOS's error message, which the drive keeps at `$02D5`): saving one
+  at the C64's next LOAD shows the drive code a protection is running,
+  without a monitor session (`kit/lessons/2026-11-02-rambo.md`).
   Try the image before writing the file: VICE's own defaults already run
   the drive's processor. On 26 September 2026 the v3.13.1 Linux release,
   with no `vicerc` at all, autostarted a publisher's original G64 through
