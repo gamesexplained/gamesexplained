@@ -1,0 +1,119 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.td-shots{display:flex;flex-wrap:wrap;gap:14px}
+.td-shots img{width:100%;max-width:384px;image-rendering:pixelated;border-radius:4px}
+.td-scr{font-family:var(--fm);font-size:13px;line-height:1.5;max-height:420px;overflow:auto;background:var(--surface-2);border-radius:6px;padding:10px 14px;white-space:pre-wrap}
+.td-scr .op{color:var(--violet)}
+.td-scr .tx{color:var(--amber)}
+.td-scr .lb{color:var(--ink-mute)}
+.td-tab{width:100%;border-collapse:collapse;font-size:14px}
+.td-tab th,.td-tab td{border-bottom:1px solid var(--line-soft);padding:4px 8px;text-align:left;vertical-align:top}
+.td-tab td.n{font-family:var(--fm)}
+.td-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:13px}
+.td-spoil{border-left:4px solid var(--coral);padding:4px 14px;margin:0 0 18px;color:var(--ink-soft)}
+.td-note{font-size:14px;color:var(--ink-mute)}
+.td-scr{font-family:var(--fm);font-size:13px;line-height:1.5;background:var(--surface-2);border-radius:6px;padding:10px 14px;white-space:pre-wrap}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Argus Press Software</p>
+  <h1>The Detective</h1>
+  <p class="sub">The answer to the safe is written on an object in the house, the winning move is made long before the accusation, and the time limit ignores a test meant to spare a player outside.</p>
+</header>
+<main class="wrap">
+<p class="td-spoil">Every section on this tab gives away part of the mystery.</p>
+
+<section id="bullets">
+  <p class="fig">01 · Secret</p>
+  <h2 class="t">Secret: the arrest is won by swapping the bullets</h2>
+  <p>Accusing the right person is not enough. At the accusation, Dingle leads Snide to the cellar at gunpoint and fires. What his gun holds was decided earlier: the last line of Dingle's murder script takes the ammunition from one place in the house, place <code>$18</code> in the object table, where the bullets start (<code>$B1E6</code>). The arrest runs the same routine again as he draws (<code>$BC5E</code>). Whatever is in that place when he gets there is what he loads: the real bullets (object <code>$33</code>), or the blank bullets (object 1), if the player has swapped them in.</p>
+  <div class="td-scr">$BC61  lda $1DAD      ; the blank bullets' place
+$BC64  cmp #$F7       ; $F7: Dingle's
+$BC66  beq $BC6B      ; blanks: "PULLS THE TRIGGER, BUT NOTHING HAPPENS.."
+$BC68  jmp $2042      ; real bullets: the game is over</div>
+  <p>With the blanks, play goes on with Dingle in the cellar, and Snide can use the gun on him: "DON/T SHOOT! I/LL COME QUIETLY.." and a promotion (<code>$BCAF</code>). The player who waits too long sees "DINGLE HAS ESCAPED..NEVER TO BE SEEN AGAIN" (<code>$B159</code>). Nothing in the game hints that the bullets matter.</p>
+</section>
+
+<section id="safe">
+  <p class="fig">02 · Secret</p>
+  <h2 class="t">Secret: the safe's combination is inscribed on an object</h2>
+  <p>Behind the picture in the drawing room is a safe. "TYPE IN THE COMBINATION:" waits for six characters, and the game compares them with six bytes at <code>$8AFB</code>: "210319" (<code>$8A62</code>). One object in the house, examined, says "IT/S INSCRIBED: TO ANGUS MCFUNGUS, BORN 21 MARCH 1919" (<code>$9B90</code>). The day, the month and the year are the combination.</p>
+  <p>Sam Manthorpe has said the safe codes were part of the original's copy protection. In this release, the clue to the code is part of the game.</p>
+</section>
+
+<section id="dingle">
+  <p class="fig">03 · Secret</p>
+  <h2 class="t">Secret: the first victim is the murderer</h2>
+  <p>Mr Dingle goes up to his room, locks the door and, once he is alone, lies down as if dead: a few lines of 6502 code called from his script swap his sprites for a body and add "DINGLE/S BODY!" to the room (<code>$B1CF</code>). The Doctor's script then waits until Snide is in the same room and announces "INSPECTOR..MR. DINGLE/S BEEN STRANGLED!" (opcode 23, <code>$A8D2</code>). After "POOR FELLOW..TERRIBLE", the Doctor's script rewrites Dingle's script pointer (opcode 25), and from then on Dingle's script is the murderer's (<code>$B09C</code>). The Doctor is the second to die, and Dingle explains why at the end: "I PAID THE DOCTOR TO CERTIFY ME DEAD, AND THEN TOOK CARE OF HIM".</p>
+</section>
+
+<section id="passages">
+  <p class="fig">04 · Secret</p>
+  <h2 class="t">Secret: secret passages keep the border still</h2>
+  <p>The border flashes when Snide first reaches something he can investigate, a door included (<code>$3E32</code>). One kind of door is left out: a door of type 8, the secret passage, gives no flash while it is closed. Closed, it is also invisible, because closing it puts back the picture behind it (<code>$3B8B</code>). Examining the wall in front of one says "A SECRET PASSAGE!" and opens it (<code>$892A</code>). Professor Bull's notebooks are "PLANS OF THE CASTLE AND SHOW SECRET PASSAGES IN THE KITCHEN AND IN THE BEDROOMS".</p>
+</section>
+
+<section id="assassin">
+  <p class="fig">05 · Bug</p>
+  <h2 class="t">Bug: the time limit's test for the room reads the wrong byte</h2>
+  <p>When the clock reaches 11:03, an unseen assassin shoots Snide (<code>$2592</code>). Before it checks the time, the routine skips the shot when Snide is on the stairs, and when the room's type is 3. Type 3 is the type of rooms 26 and 28, outside the house. But the instruction reads <code>$1BC0</code> without an index: the type of room 0, the drawing room, which is 1 and which nothing in the game ever changes. The test never holds, so the assassin's shot finds Snide outside as well. The intended test was probably <code>LDA $1BC0,X</code> with the player's room in X, as the room builder reads the same table (<code>$38B2</code>).</p>
+</section>
+
+<section id="carry">
+  <p class="fig">06 · Quirk</p>
+  <h2 class="t">Five things in Snide's hands, not six</h2>
+  <p>Zzap!64's review says Snide can carry six items. The code counts what he holds and refuses the next one at five: "YOU CAN/T CARRY ANY MORE!" (<code>$30CF</code>, counting through <code>$883B</code>). Carrying more means putting things inside other things: a briefcase, a jacket or a bag holds five more (<code>$8856</code>), and the evidence envelopes hold ten.</p>
+</section>
+
+<section id="tenth">
+  <p class="fig">07 · Quirk</p>
+  <h2 class="t">Ten script pointers from a table of nine</h2>
+  <p>At the start of a game, <code>init_scripts</code> (<code>$A7E6</code>) copies each character's script start from the table at <code>$A7FB</code>. The loop counts from 9 down to 0, which is ten entries for nine characters. The tenth start is read from the two bytes after the table, the first instruction of the next routine (<code>$A80D</code>: <code>LDY #$01</code>), as the address <code>$01A0</code>. Its low byte lands in character 0's pointer high byte, which the loop's last pass then overwrites, and its high byte, 1, in character 0's chosen door (<code>$1E7F</code>), which the Reverend's script replaces before he first uses a door.</p>
+</section>
+
+<section id="leftovers">
+  <p class="fig">08 · Quirk</p>
+  <h2 class="t">Another game's text in the gaps</h2>
+  <p>This release was packed by crackers, and their unpacker left memory it did not clear. Between <code>$0800</code> and <code>$0BFF</code> the snapshot holds text from a different program, in German: "TOWN RESCUE", "KASSETTE OHNE HIGHSCORE", "SAVE SCORES", "HERO LIST". No instruction of The Detective reads it. Inside the game's own data are leftovers of its development too: the icon characters at <code>$4E00</code> hold two older copies of the word list, one spelling the vicar's title "THE REVERAND", which the first menu overwrites.</p>
+</section>
+
+<section id="guest">
+  <p class="fig">09 · Quirk</p>
+  <h2 class="t">"GUEST ERROR.."</h2>
+  <p>When a script asks a character to walk to a room that no door leads to from where they stand, or to use a door it never chose, the screen flashes red and the game prints "GUEST ERROR.." in that character's voice (<code>$A618</code>). It is a check the author left in for his scripts.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

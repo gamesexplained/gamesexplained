@@ -1,0 +1,207 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.td-scroll{overflow-x:auto;background:#000;border-radius:6px}
+.td-scroll canvas{display:block}
+.td-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:13px}
+.td-row label{display:flex;gap:6px;align-items:center}
+.td-tab{width:100%;border-collapse:collapse;font-size:14px}
+.td-tab th,.td-tab td{border-bottom:1px solid var(--line-soft);padding:4px 8px;text-align:left}
+.td-tab td.n{font-family:var(--fm)}
+.td-note{font-size:14px;color:var(--ink-mute)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Argus Press Software</p>
+  <h1>The Detective</h1>
+  <p class="sub">The McFungus house is thirty rooms drawn from seventeen packed pictures, each stretched, recoloured and given its own characters as Snide walks in.</p>
+</header>
+<main class="wrap">
+<section id="rooms">
+  <p class="fig">01 · Every room</p>
+  <h2 class="t">The house, room by room</h2>
+  <p class="lede">Pick a room to draw it from the game's own bytes. Wide rooms scroll in the game; here they are drawn whole.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The room before">◀</button><select id="td-room" aria-label="Room"></select><button type="button" class="step" data-d="1" aria-label="The room after">▶</button></div>
+    <div class="td-row"><label><input type="checkbox" id="td-after"> after two deaths</label></div>
+    <div class="td-scroll"><canvas id="td-cv" width="640" height="240"></canvas></div>
+    <p class="cap" id="td-cap">Drawn in the built site.</p>
+  </div>
+  <p>Each room is a picture record from the list at <code>$C100</code>, chosen by the room's type in <code>$1BC0</code>. <code>build_room</code> (<code>$388D</code>) clears a map 256 columns wide and 15 rows deep at <code>$0C00</code>, unpacks the record into it (<code>$3BD7</code>), and copies a 40-column window of the map to the screen as the player walks (<code>$35E8</code>). The same record serves several rooms: the corridors upstairs are one picture, and the bedrooms another, told apart by their colours (<code>$1B80</code>, <code>$1BA0</code>) and by which of three sets of characters the room asks for (<code>$1EE0</code>).</p>
+  <p>Doors are not part of the pictures. The game draws them over the map afterwards, from the door table at <code>$1F00</code>, which is why a closed secret passage looks like plain wall here and in the game. The cast and the objects are drawn by other routines again.</p>
+</section>
+<section id="records">
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Seventeen records, packed a bit at a time</h2>
+  <p>A record is the address of the next record, the picture's width in columns, and then the picture as a stream of bits, read lowest bit first (<code>$3D56</code>). The stream is a series of runs. Each run is a count byte and one bit: with the bit clear, each character of the run is a whole byte; with it set, a 4-bit high nibble follows and each character of the run takes only 4 bits of its own (<code>$3C3D</code>). A count of zero ends the picture. Rooms are mostly walls and floors drawn from a few neighbouring character codes, so most runs cost half a byte a character.</p>
+  <table class="td-tab" id="td-rec"><thead><tr><th>Record</th><th>Address</th><th>Width</th><th>Packed bytes</th><th>Rooms</th></tr></thead><tbody></tbody></table>
+  <p class="td-note">Records 10 and 11 are not any room's own picture: they are laid over the landing and the hall, from the left edge, once two of the cast are dead (<code>$3D0A</code>). Record 16, the last, is used by no room.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* td-rooms */
+// The room builder, ported from the game: tdBuildRoom(ram, room, deaths) does what build_room ($388D)
+// does to the room map for room `room`: clears the 256 x 15 map ($3BBB), unpacks the picture record
+// of the room's type ($1BC0 & $7F) centred ($3BD7 with carry clear), widens a room whose type has
+// bit 7 set, and lays record type + 2 over the landing and the hall from column 0 once `deaths`
+// ($C8) is 2 or more ($3D0A). It returns { map, left, right }: the map as 15 rows of 256 character
+// codes, and the picture's first column and the column after its last. tdUnpack(ram, n, map, fromLeft)
+// is $3BD7 alone. Checked against the game's own $3BBB, $3BD7 and $3D0A on the kit's 6502 by
+// test_rooms.js beside this page.
+function tdUnpack(ram, n, map, fromLeft) {
+  let a = 0xC100;
+  for (let i = 0; i < n; i++) a = ram[a] | (ram[a + 1] << 8);
+  const width = ram[a + 2];
+  let left = 0;
+  if (!fromLeft) { const s = ((width ^ 0xFF) + 0x29); left = s > 0xFF ? (s & 0xFF) >> 1 : 0; }
+  const right = (left + width) & 0xFF;
+  let p = a + 3, c9 = 0, cur = 0, z23 = 0, count = 0, flag = 0, hi = 0, done = false;
+  const bit = () => {
+    if (c9 === 0) cur = ram[p];
+    c9++; if (c9 >= 8) { c9 = 0; p = (p + 1) & 0xFFFF; }
+    const b = cur & 1; cur >>= 1; return b;
+  };
+  const byte8 = () => {
+    if (c9 === 0) { const v = ram[p]; p = (p + 1) & 0xFFFF; return v; }
+    for (let i = 0; i < 8; i++) z23 = (z23 >> 1) | (bit() << 7);
+    return z23;
+  };
+  const nib = () => { for (let i = 0; i < 4; i++) z23 = (z23 >> 1) | (bit() << 7); return z23 >> 4; };
+  const next = () => {
+    if (count === 0) {
+      count = byte8();
+      if (count === 0) { done = true; return 0; }
+      flag = bit();
+      if (flag) hi = nib() << 4;
+    }
+    count = (count - 1) & 0xFF;
+    return flag ? (nib() | hi) : byte8();
+  };
+  for (let row = 0; row < 15 && !done; row++) {
+    let y = left;
+    do {
+      const ch = next();
+      if (done) break;
+      map[row * 256 + y] = ch;
+      y = (y + 1) & 0xFF;
+    } while (y < right);
+  }
+  return { left, right };
+}
+function tdBuildRoom(ram, room, deaths) {
+  const map = new Uint8Array(15 * 256).fill(0x20);
+  const kind = ram[0x1BC0 + room];
+  const type = kind & 0x7F;
+  let { left, right } = tdUnpack(ram, type, map, false);
+  if (kind & 0x80) {
+    const r = right, dest = (right - 0x1E) & 0xFF;
+    right = (right + dest) & 0xFF;
+    for (let row = 0; row < 15; row++)
+      for (let y = r; y >= 0x10; y--) { const t = row * 256 + dest + y; if (t < map.length) map[t] = map[row * 256 + y]; }
+  } else if ((kind >> 1) === 4 && deaths >= 2) {
+    tdUnpack(ram, type + 2, map, true);
+  }
+  return { map, left, right };
+}
+// end of td-rooms
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined') return;
+  const PEOPLE = ['the Reverend', 'Bentley', 'Cook', 'Gabriel', 'Cynthia', 'the Professor', 'the Doctor', 'the Major', 'Dingle', 'Snide'];
+  C64.load('listing.json').then((L) => {
+    const r = L.ram;
+    // the room names, from the list at $A362 (an entry of 1 says nothing, 2 outside, 3 the landing, 4 + n n's room)
+    const rooms = [];
+    let a = 0xA362;
+    for (let i = 0; i < 30; i++) {
+      let e = a; while (r[e]) e++;
+      const b = r.subarray(a, e);
+      let n;
+      if (b[0] === 1) n = 'a passage';
+      else if (b[0] === 2) n = 'outside';
+      else if (b[0] === 3) n = 'the landing';
+      else if (b[0] === 4) n = PEOPLE[b.length > 1 ? b[1] : 0] + "'s room";
+      else n = String.fromCharCode(...b).toLowerCase().replace(/^your/, 'Snide\'s');
+      rooms.push(n); a = e + 1;
+    }
+    const sel = $('td-room');
+    rooms.forEach((n, i) => sel.add(new Option('Room ' + i + ': ' + n, String(i))));
+    sel.value = '9';
+    const cv = $('td-cv');
+    function draw() {
+      const room = +sel.value, deaths = $('td-after').checked ? 2 : 0;
+      const { map, left, right } = tdBuildRoom(r, room, deaths);
+      const lo = (r[0x1BC0 + room] >> 1) === 4 && deaths >= 2 ? 0 : left;
+      const w = Math.max(40, ((right - lo) & 0xFF) || 40), s = 2;
+      const ctx = C64.canvas(cv, w * 8 * s, 15 * 8 * s);
+      ctx.fillStyle = C64.PAL[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      const set = r[0x1EE0 + room] % 3;
+      const cs = new Uint8Array(0x800);
+      cs.set(r.subarray(0xEA00, 0xEE00), 0);
+      cs.set(r.subarray([0xEE00, 0xF200, 0xF600][set], [0xEE00, 0xF200, 0xF600][set] + 0x400), 0x400);
+      const cols = [C64.PAL[0], C64.PAL[r[0x1B80 + room] & 15], C64.PAL[r[0x1BA0 + room] & 15], C64.PAL[11 & 7]];
+      for (let row = 0; row < 15; row++)
+        for (let x = 0; x < w; x++) C64.drawGlyphMC(ctx, cs, map[row * 256 + ((lo + x) & 0xFF)], x * 8 * s, row * 8 * s, s, cols);
+      $('td-cap').innerHTML = '<b>Room ' + room + ', ' + rooms[room] + '.</b> Picture record ' + (r[0x1BC0 + room] & 0x7F) +
+        ((r[0x1BC0 + room] & 0x80) ? ', widened' : '') + ', ' + ((right - left) & 0xFF) + ' columns from column ' + left +
+        '; colours ' + (r[0x1B80 + room] & 15) + ' and ' + (r[0x1BA0 + room] & 15) + ', character set ' + set +
+        '. Drawn from the listing\'s bytes by a port of the game\'s room builder, checked against the game\'s own code (test_rooms.js); doors, the cast and the objects are not drawn.';
+    }
+    sel.onchange = draw; $('td-after').onchange = draw;
+    for (const b of document.querySelectorAll('.pick .step')) b.onclick = () => {
+      sel.value = String((+sel.value + +b.dataset.d + rooms.length) % rooms.length); draw();
+    };
+    draw();
+    // the records table
+    const tb = document.querySelector('#td-rec tbody');
+    let ad = 0xC100;
+    for (let n = 0; n < 17; n++) {
+      const nx = r[ad] | (r[ad + 1] << 8);
+      const used = rooms.map((x, i) => i).filter((i) => (r[0x1BC0 + i] & 0x7F) === n);
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td class="n">' + n + '</td><td class="n"><code>$' + ad.toString(16).toUpperCase() + '</code></td><td class="n">' + r[ad + 2] +
+        '</td><td class="n">' + (nx ? nx - ad : '?') + '</td><td>' + (used.length ? used.map((i) => i + ' ' + rooms[i]).join(', ') : (n === 10 || n === 11 ? 'laid over room ' + (n - 2) : 'none')) + '</td>';
+      tb.appendChild(tr);
+      if (!nx) break;
+      ad = nx;
+    }
+  });
+})();
+</script>

@@ -24,3 +24,21 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   game; saving under that name was refused and the copy step picked up
   the old file. The hand-over was saved again as `detective-entry` and
   copied over it.
+
+## 1 November 2026: Silver, claude-opus-5-5 (checker claude-fable-5-1)
+
+- The code map from play (`codemap.json`) and the jump tables found most
+  of the code; dispatch tables at `$2B0F`, `$2D48`, `$39B4`, `$3B24`,
+  `$87ED`, `$8826`, `$A4C8` and `$A7FB` the rest. `$A7FB` points at byte
+  code, not 6502: traced as code by mistake first, then untyped.
+- A scan for `JSR $201E` call sites matched three data bytes at `$91CD`
+  and typed a table as text; inline-text sites are taken only from code.
+- Reading the room unpacker for the Maps port found two of my own
+  comments wrong (the order of the rows, the run format) before the
+  sample did. The music test found the tunes' sequences at `$E680` and
+  `$7AC5`, inside ranges described as room pictures and sprites.
+- The live time-limit test looked like a failure: the ending's text goes
+  to the message bar, not the panel, and the checkpoint counters read 0
+  although the game restarted; the stack showed it waiting in `$25F8`.
+- No browser extension was connected; the pages were checked with
+  headless Chrome (`--dump-dom`, `--screenshot`) on the built site.
