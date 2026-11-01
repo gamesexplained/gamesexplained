@@ -159,6 +159,10 @@ see the work. Write for someone clever who knows nothing about it.
   happened, how we checked, and a possible fix. Give each a sentence or
   two of its own.
 - Leave out shorthand picked up during the work. Say what it stands for.
+- When a pull request changes a page in a way a reader can see, put
+  screenshots of it before and after the change in the description, so
+  a reviewer can see the difference and approve it without opening a
+  preview of the site and finding the page.
 - Before posting, or handing a draft to the contributor, read it again
   against this list.
 
