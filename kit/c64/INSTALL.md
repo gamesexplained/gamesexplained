@@ -525,12 +525,15 @@ package installation was needed for that run.
 
   ```
   [C64SC]
-  SoundDeviceName="dummy"
+  SoundDeviceName="fs"
+  SoundDeviceArg="/dev/null"
   ```
 
-  and start it again: the SID is still emulated, and `vice_sid_get_state`
-  still reads it. `tools.py vice` now makes one call after starting and
-  says so when it is not answered.
+  and start it again: the sound goes nowhere, and the SID is still
+  emulated and clocked. Not `"dummy"`: it leaves the SID stopped
+  (`sid_bus.py`'s `clocked()` fails on it, v3.14.0, 1 November 2026).
+  `tools.py vice` makes one call after starting and says so when it is
+  not answered.
 - **The disassembler** binds port 3000 with no option to change it, and
   only one instance can run on a port ("Another program on port 3000" is
   the way to a second). Drive it with
@@ -682,18 +685,18 @@ things to know:
   paths alone.
 - The emulator twice fell to about 4 % of real time while using 7 % of a
   core, its log full of "Sync is ... ms behind", and once a cold boot hung
-  at `LOADING`; a restart cured it each time. With sound off, through
-  `tools/vice-home/config/vice/vicerc` holding `[C64SC]` and `Sound=0`, it
-  ran at full speed for the rest of the run (several hours), and warp ran
-  at 7× instead of about 4.5×. Sound off changes what the game reads,
-  though: `$D41B` and `$D41C` then read the low byte of the cycle counter
-  (`virtual_display` in `kit/c64/tools.py`), so a game that takes its
-  random numbers from voice 3's noise gets a smooth ramp instead, and its
-  random events come out wrong. A snapshot saved with sound off does not
-  start the SID when loaded with sound on (VICE v3.13.2 logs "Cannot
-  initialize SID engine"), so a run on such a game keeps sound on, with
-  `SoundDeviceName="fs"` and `SoundDeviceArg="/dev/null"` in `vicerc`,
-  from its first snapshot.
+  at `LOADING`; a restart cured it each time. On 28 October 2026 its sound
+  through WSLg's PulseAudio stalled it the same way (620 of those warnings,
+  40 seconds in the power-on memory test). So under WSL `tools.py vice`
+  writes the sound to `/dev/null` (`quiet()` in `kit/c64/tools.py`),
+  which keeps the SID running and is heard by nobody; on a desktop it
+  plays through the computer's speakers. Leave sound on: with `Sound=0`,
+  `$D41B` and `$D41C` read the low byte of the cycle counter, so a game
+  that takes its random numbers from voice 3's noise gets a smooth ramp
+  and its random events come out wrong, and a snapshot saved that way
+  does not start the SID when loaded with sound on (VICE v3.13.2 logs
+  "Cannot initialize SID engine"). VICE's `dummy` sound device leaves the
+  SID stopped as well.
 
 **No display.** A server or container has no X display, and the GUI build
 will not start without one. The launcher sees that (neither `DISPLAY` nor
