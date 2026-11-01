@@ -50,12 +50,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1991 · Ocean Software</p>
   <h1>Toki</h1>
-  <p class="sub">The sound chip, two modes, and a driver with three sets of tunes.</p>
+  <p class="sub">Listen to Keith Tinman’s music and effects. The stage card makes you choose between them; this player lets you hear each separately.</p>
 </header>
 <main class="wrap">
 <section id="player">
   <p class="fig">Listen</p>
-  <h2 class="t">Music: the tunes and effects, played by the game's driver</h2>
+  <h2 class="t">Hear the music and sound effects</h2>
   <p class="lede">The player below runs the game's own sound driver, <code>$6501</code> to <code>$7CBC</code>, on the kit's 6502 simulator, frame by frame, and plays what it writes to the SID.</p>
   <div class="plate"><div id="sidRoot"></div>
     <p class="cap">The driver's bytes are the cartridge's own, unpacked by the game's routine, and agree with the Source tab wherever it holds them. It runs a tune with <code>sid_player_init</code> <code>$66A9</code>, and an effect with <code>sound_init</code> <code>$660D</code> and <code>sid_load_song_voices</code> <code>$6633</code>, once a frame as the game calls it. The filter is the kit's model of the 6581.</p></div>
@@ -130,9 +130,17 @@ function createDriver(M, C64Cpu) {
   const bytes = Uint8Array.from(atob(IMAGE), c => c.charCodeAt(0));
   S.mount($('sidRoot'), {
     driver: createDriver, data: { base: 0x6501, bytes }, filter: '6581',
-    tunes: ['Tune 1 (X=0)', 'Tune 2 (X=6, the one SPACE starts)', 'Tune 3 (X=12)',
+    tunes: ['Tune 1', 'Tune 2 · started by SPACE', 'Tune 3',
             'Effect $00', 'Effect $04', 'Effect $08', 'Effect $0C', 'Effect $10', 'Effect $14', 'Effect $18', 'Effect $1C', 'Effect $20', 'Effect $24'],
     rows: [{ k: 'Note', f: v => v.note }, { k: 'Gate', f: v => v.gate }],
   });
 })();
 </script>
+<style data-toki-pages>
+figure{margin:22px 0}.reference{max-width:100%;height:auto;image-rendering:pixelated}figure img[src*="stage-"]{display:block;width:456px;max-width:100%;margin:auto}
+.stage-panel{padding-top:28px}.stage-panel h3.t{font-size:26px}.stage-picker{margin:24px 0 12px}.stage-picker>label{display:block;font-weight:700;margin-bottom:8px}.toki-stage-controls{display:flex;gap:8px;align-items:stretch}.toki-stage-controls select{flex:1;min-width:0;max-width:100%}.toki-stage-controls button{min-width:44px}
+button,select,summary{font:inherit}button,select{padding:9px 12px;border:1px solid #c4c2bc;border-radius:6px;background:white;color:#2f3136}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}button[aria-pressed=true]{background:#e4edf9;border-color:#1f5fa8;color:#154480}button:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid #1f5fa8;outline-offset:3px}
+[hidden]{display:none!important}.map-scroll img{display:block!important;max-width:100%!important;width:100%!important;height:auto!important}.map-scroll.native-size img{max-width:none!important;width:auto!important}.map-scroll{max-height:80vh}.map-scroll:not(.native-size){max-height:none}.engine-details{margin:30px 0;border-top:1px solid #d5d3cc;padding:20px 0}.engine-details>summary{font-weight:700;cursor:pointer}
+.aim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:340px;margin:20px 0}.aim-grid button{font-size:24px;min-height:72px}.aim-grid small{display:block;font-size:12px}.aim-result{font-weight:700}table{max-width:100%}.table-scroll{overflow:auto}.table-scroll table{min-width:480px}.plate{min-width:0}a{overflow-wrap:anywhere}
+@media(max-width:600px){figure.plate{padding:12px}.toki-stage-controls select{font-size:15px}section{padding-top:28px}.stage-picker{margin-top:16px}.aim-grid{max-width:none}.map-scroll.native-size{max-height:65vh}}
+</style><script>(()=>{function reveal(hash){if(!hash)return;let e=document.getElementById(decodeURIComponent(hash.slice(1)));if(!e)return;for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}function openBookmark(){reveal(location.hash);}document.addEventListener('click',e=>{const a=e.target.closest('.pagenav a');if(a)reveal(a.hash);},true);addEventListener('hashchange',openBookmark);openBookmark();})();</script>

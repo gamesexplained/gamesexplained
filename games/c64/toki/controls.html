@@ -50,14 +50,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1991 · Ocean Software</p>
   <h1>Toki</h1>
-  <p class="sub">The joystick, the pause key, and how far Toki jumps and falls.</p>
+  <p class="sub">Use the joystick to move, jump, and aim. Try the ground-level aiming rule, then see the tables behind a jump.</p>
 </header>
 <main class="wrap">
 <section id="keys">
   <p class="fig">Controls</p>
   <h2 class="t">One joystick and two keys</h2>
   <p class="lede">The joystick moves Toki, jumps, and fires. The keyboard has two commands, and a third combination is hidden.</p>
-  <table>
+  <div class="table-scroll" role="region" aria-label="Scrollable reference table" tabindex="0"><table>
     <tr><th>Input</th><th>What it does</th></tr>
     <tr><td>Joystick left or right</td><td>walks left <code>$8727</code> or right <code>$8703</code></td></tr>
     <tr><td>Joystick up</td><td>jumps straight up <code>$8840</code></td></tr>
@@ -67,24 +67,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>RUN/STOP</td><td>pauses and resumes <code>$5290</code></td></tr>
     <tr><td>SPACE</td><td>switches between sound effects and music <code>$5290</code></td></tr>
     <tr><td>Both joysticks, then the Commodore key</td><td>skips a stage: <a href="discoveries.html#skip">the hidden combination</a></td></tr>
-  </table>
+  </table></div>
   <p>The game reads joystick port 2 each frame, and reads port 1 instead when port 2 is idle <code>$8572</code>. The four direction bits become a direction byte, and the fire bit becomes a flag, which the movement and shooting routines read.</p>
 </section>
 <section id="aim">
   <p class="fig">Shooting</p>
-  <h2 class="t">The stick picks the aim</h2>
+  <h2 class="t">The stick picks the aim</h2><div class="plate"><p id="aim-help">Choose the joystick direction while firing on flat ground. This diagram shows aim only.</p><label for="facing">Toki faces </label><select id="facing"><option value="right">Right</option><option value="left">Left</option></select><div class="aim-grid" role="group" aria-label="Joystick direction"><button type="button" data-aim="ul" aria-label="Up-left" aria-pressed="false">↖<small>Up-left</small></button><button type="button" data-aim="u" aria-label="Up" aria-pressed="false">↑<small>Up</small></button><button type="button" data-aim="ur" aria-label="Up-right" aria-pressed="false">↗<small>Up-right</small></button><button type="button" data-aim="l" aria-label="Left" aria-pressed="false">←<small>Left</small></button><button type="button" data-aim="idle" aria-label="Released" aria-pressed="true">•<small>Released</small></button><button type="button" data-aim="r" aria-label="Right" aria-pressed="false">→<small>Right</small></button><button type="button" data-aim="dl" aria-label="Down-left" aria-pressed="false">↙<small>Down-left</small></button><button type="button" data-aim="d" aria-label="Down" aria-pressed="false">↓<small>Down</small></button><button type="button" data-aim="dr" aria-label="Down-right" aria-pressed="false">↘<small>Down-right</small></button></div><p class="aim-result" aria-live="polite" id="aim-result">Released stick → shot to the right, where Toki faces.</p></div>
   <p class="lede">A shot goes where the joystick points when fire is pressed.</p>
-  <p>On the ground, up aims straight up, up-right and up-left aim diagonally, and right and left aim sideways <code>$AF34</code>. Any other direction aims the way Toki faces. Each weapon record holds one path for every aim direction, so a weapon can send its shots differently in each of the eight directions.</p>
+  <p>On flat ground, up aims straight up, up-right and up-left aim diagonally, and right and left aim sideways <code>$AF34</code>. Any other direction aims the way Toki faces. Each weapon record holds one path for every aim direction, so a weapon can send its shots differently in each of the eight directions.</p>
 </section>
 <section id="jump">
   <p class="fig">Jumping and falling</p>
   <h2 class="t">The speed of a jump is a table</h2>
   <p class="lede">A jump rises quickly, slows, and falls faster the longer it falls, all from two small tables.</p>
-  <table>
+  <div class="table-scroll" role="region" aria-label="Scrollable reference table" tabindex="0"><table>
     <tr><th>Table</th><th>Pixels per frame, by counter value from 0</th></tr>
     <tr><td>Rise <code>$02CE</code></td><td>1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 6</td></tr>
     <tr><td>Fall <code>$02DF</code></td><td>0, 1, 1, 2, 2, 3, 4, 5, 6</td></tr>
-  </table>
+  </table></div>
   <p>The routines for the rise <code>$877A</code> and the fall <code>$87B8</code> take their step from these tables and move the player's trial position. The rise counter holds the height left to climb and counts down, and any value above 16 reads the last entry, so a jump starts at 6 pixels a frame and slows near the top. The fall counter starts at 0 and stops rising at 8, so a long fall tops out at 6 pixels a frame. The normal jump starts its counter at $38 <code>$08FC</code>, and a jump out of the second movement routine starts it at $10 <code>$922F</code>.</p>
 </section>
 </main>
@@ -92,3 +92,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script>
 // Inline everything. Data extracted from the snapshot goes here as arrays.
 </script>
+<script>(()=>{let selected='idle';const facing=document.getElementById('facing');const results={ul:'diagonally up-left',u:'straight up',ur:'diagonally up-right',l:'to the left',r:'to the right'};function update(){document.querySelectorAll('[data-aim]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.aim===selected));document.getElementById('aim-result').textContent='Shot '+(results[selected]||'to the '+facing.value+', where Toki faces')+'.';}document.querySelectorAll('[data-aim]').forEach(b=>b.onclick=()=>{selected=b.dataset.aim;update()});facing.onchange=update;})();</script><style data-toki-pages>
+figure{margin:22px 0}.reference{max-width:100%;height:auto;image-rendering:pixelated}figure img[src*="stage-"]{display:block;width:456px;max-width:100%;margin:auto}
+.stage-panel{padding-top:28px}.stage-panel h3.t{font-size:26px}.stage-picker{margin:24px 0 12px}.stage-picker>label{display:block;font-weight:700;margin-bottom:8px}.toki-stage-controls{display:flex;gap:8px;align-items:stretch}.toki-stage-controls select{flex:1;min-width:0;max-width:100%}.toki-stage-controls button{min-width:44px}
+button,select,summary{font:inherit}button,select{padding:9px 12px;border:1px solid #c4c2bc;border-radius:6px;background:white;color:#2f3136}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}button[aria-pressed=true]{background:#e4edf9;border-color:#1f5fa8;color:#154480}button:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid #1f5fa8;outline-offset:3px}
+[hidden]{display:none!important}.map-scroll img{display:block!important;max-width:100%!important;width:100%!important;height:auto!important}.map-scroll.native-size img{max-width:none!important;width:auto!important}.map-scroll{max-height:80vh}.map-scroll:not(.native-size){max-height:none}.engine-details{margin:30px 0;border-top:1px solid #d5d3cc;padding:20px 0}.engine-details>summary{font-weight:700;cursor:pointer}
+.aim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:340px;margin:20px 0}.aim-grid button{font-size:24px;min-height:72px}.aim-grid small{display:block;font-size:12px}.aim-result{font-weight:700}table{max-width:100%}.table-scroll{overflow:auto}.table-scroll table{min-width:480px}.plate{min-width:0}a{overflow-wrap:anywhere}
+@media(max-width:600px){figure.plate{padding:12px}.toki-stage-controls select{font-size:15px}section{padding-top:28px}.stage-picker{margin-top:16px}.aim-grid{max-width:none}.map-scroll.native-size{max-height:65vh}}
+</style><script>(()=>{function reveal(hash){if(!hash)return;let e=document.getElementById(decodeURIComponent(hash.slice(1)));if(!e)return;for(let p=e.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;}function openBookmark(){reveal(location.hash);}document.addEventListener('click',e=>{const a=e.target.closest('.pagenav a');if(a)reveal(a.hash);},true);addEventListener('hashchange',openBookmark);openBookmark();})();</script>
