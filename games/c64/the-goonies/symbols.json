@@ -14108,7 +14108,7 @@
   {
    "address": 2108,
    "type": "line",
-   "text": "Cold start after the check: marks no scene as loaded ($12BB = $FF), sets the first scene of a game to 0 ($12BC), keeps the scene loader safe by copying it under the I/O area (s_6800), clears both sprite-restore counts and the two-player flag, then falls into the attract mode."
+   "text": "Cold start after the check: marks no scene as loaded ($12BB = $FF), sets the first scene of a game to 0 ($12BC), keeps the scene loader safe by copying it under the I/O area (save_loader), clears both sprite-restore counts and the two-player flag, then falls into the attract mode."
   },
   {
    "address": 2135,
@@ -14118,17 +14118,17 @@
   {
    "address": 2152,
    "type": "line",
-   "text": "Starts a real game (F7, or fire during the attract mode, comes here): five lives, demo flag off, score cleared (s_1173), and the first scene from $12BC."
+   "text": "Starts a real game (F7, or fire during the attract mode, comes here): five lives, demo flag off, score cleared (clear_score), and the first scene from $12BC."
   },
   {
    "address": 2179,
    "type": "line",
-   "text": "Enters scene $12B9: resets the stack, clears both screen buffers' sprite-restore lists by redrawing with nothing (s_6E23 on each), sets up the scene (s_1098) and runs the scene's own start routine through the vector at $B2. On a cold start it also fills both colour screens (s_82B5). Starts the music and the score display, then runs the main loop from $08D6."
+   "text": "Enters scene $12B9: resets the stack, clears both screen buffers' sprite-restore lists by redrawing with nothing (erase_sprites on each), sets up the scene (setup_scene) and runs the scene's own start routine through the vector at $B2. On a cold start it also fills both colour screens (fill_screens_33). Starts the music and the score display, then runs the main loop from $08D6."
   },
   {
    "address": 2262,
    "type": "line",
-   "text": "The main loop, once per four frames. Notes the frame count, reads the controls into $12BF (the joystick in port 1 in a game; the recorded demo through s_F7DF in the attract mode, or \"fire\" on the title), handles the music on or off key, starts a jingle per scene ($09F9), and in the attract mode a press of fire starts a game. Space pauses: while paused only the keyboard is read. Otherwise it turns fire into a one-shot press ($12D0), runs every object's behaviour (s_0A80), waits for the screen flip, erases the sprites drawn two frames ago (s_6E23), runs the scene's per-frame routine (vector $AE), draws every object (s_0AB2), runs the scene's second routine (vector $B0), updates the high score and the score line, then asks the interrupt to show the buffer just drawn and waits until four frames have passed since the loop began."
+   "text": "The main loop, once per four frames. Notes the frame count, reads the controls into $12BF (the joystick in port 1 in a game; the recorded demo through demo_read in the attract mode, or \"fire\" on the title), handles the music on or off key, starts a jingle per scene ($09F9), and in the attract mode a press of fire starts a game. Space pauses: while paused only the keyboard is read. Otherwise it turns fire into a one-shot press ($12D0), runs every object's behaviour (run_objects), waits for the screen flip, erases the sprites drawn two frames ago (erase_sprites), runs the scene's per-frame routine (vector $AE), draws every object (draw_objects), runs the scene's second routine (vector $B0), updates the high score and the score line, then asks the interrupt to show the buffer just drawn and waits until four frames have passed since the loop began."
   },
   {
    "address": 2553,
@@ -14178,7 +14178,7 @@
   {
    "address": 2738,
    "type": "line",
-   "text": "Draws every object of the eleven slots that has a type and a visible shape (bit 7 of $54,x clear), with s_0C8A."
+   "text": "Draws every object of the eleven slots that has a type and a visible shape (bit 7 of $54,x clear), with draw_object."
   },
   {
    "address": 2761,
@@ -14198,7 +14198,7 @@
   {
    "address": 2809,
    "type": "line",
-   "text": "Behaviour of the Goonie the player controls (type 1). While dying ($12CF) it takes no input. Reads the controls (the demo's in the attract mode, otherwise the stick through read_stick), copies up onto the fire bit so that up jumps, and keeps them in $80,x for move_object; moves it (move_object), picks its animation frame (s_0C36) and plays a splash on landing in water (s_0B98). Then a hidden check (from $0B2D): it reads the CPU port's direction register $00 and returns only if it holds $EF, the value the copy-protected loader leaves there. With any other value (the KERNAL's own is $2F) it moves the Goonie a second time and calls into the middle of the interrupt handler ($0A49), whose pulls and RTI wreck the stack: in a test with $00 set to $2F the game had corrupted the screen within four passes."
+   "text": "Behaviour of the Goonie the player controls (type 1). While dying ($12CF) it takes no input. Reads the controls (the demo's in the attract mode, otherwise the stick through read_stick), copies up onto the fire bit so that up jumps, and keeps them in $80,x for move_object; moves it (move_object), picks its animation frame (goonie_frame) and plays a splash on landing in water (splash_check). Then a hidden check (from $0B2D): it reads the CPU port's direction register $00 and returns only if it holds $EF, the value the copy-protected loader leaves there. With any other value (the KERNAL's own is $2F) it moves the Goonie a second time and calls into the middle of the interrupt handler ($0A49), whose pulls and RTI wreck the stack: in a test with $00 set to $2F the game had corrupted the screen within four passes."
   },
   {
    "address": 2861,
@@ -14238,7 +14238,7 @@
   {
    "address": 3210,
    "type": "line",
-   "text": "Draws object X into the back buffer: looks up its shape ($54,x) in the shape table at $70BE, takes the one of its four pointers that the two low bits of its x choose, and draws that copy at column x/4, line y (s_6D4E). For most shapes the four pointers name one copy, which then moves a byte (eight pixels) at a time; for some they name two copies four pixels apart, or four copies two pixels apart."
+   "text": "Draws object X into the back buffer: looks up its shape ($54,x) in the shape table at $70BE, takes the one of its four pointers that the two low bits of its x choose, and draws that copy at column x/4, line y (draw_shape). For most shapes the four pointers name one copy, which then moves a byte (eight pixels) at a time; for some they name two copies four pixels apart, or four copies two pixels apart."
   },
   {
    "address": 3261,
@@ -14253,7 +14253,7 @@
   {
    "address": 3325,
    "type": "line",
-   "text": "Moves object X by its velocity ($28,x across, $33,x down) and settles it against the scene's rectangles. First marks which of the eight rectangle kinds the moved object touches ($105B-$1062) and notes its direction and the stick ($80,x) in $1063-$106B; then walls stop it across (s_0F3A, s_0F4B), ladders hold it ($5F,x, $6A,x, centred by s_0F63), a ceiling stops it rising (s_0F7C) and a floor stops it falling (s_0FA5). Gravity adds one to the fall speed up to four, kind 6 slows a fall, and a jump is set up from the stick: $FB upwards with fire, sideways at two."
+   "text": "Moves object X by its velocity ($28,x across, $33,x down) and settles it against the scene's rectangles. First marks which of the eight rectangle kinds the moved object touches ($105B-$1062) and notes its direction and the stick ($80,x) in $1063-$106B; then walls stop it across (stop_at_left, stop_at_right), ladders hold it ($5F,x, $6A,x, centred by centre_on_ladder), a ceiling stops it rising (hit_ceiling) and a floor stops it falling (land_on_floor). Gravity adds one to the fall speed up to four, kind 6 slows a fall, and a jump is set up from the stick: $FB upwards with fire, sideways at two."
   },
   {
    "address": 3898,
@@ -14438,7 +14438,7 @@
   {
    "address": 4248,
    "type": "line",
-   "text": "Sets up scene $12B9: interrupts off, display blanked, silence; clears and loads the scene's picture (s_6F7A), points the NMI at an RTI so RESTORE does nothing, clears the object table, builds the row tables and screens (s_6830), clears the game variables, loads the scene's rectangles and vectors (s_1189), installs the raster interrupt at $0A03, clears the keyboard state, and draws the score line, lives and the player indicators."
+   "text": "Sets up scene $12B9: interrupts off, display blanked, silence; clears and loads the scene's picture (load_scene_graphics), points the NMI at an RTI so RESTORE does nothing, clears the object table, builds the row tables and screens (setup_screens), clears the game variables, loads the scene's rectangles and vectors (load_scene_tables), installs the raster interrupt at $0A03, clears the keyboard state, and draws the score line, lives and the player indicators."
   },
   {
    "address": 4467,
@@ -14858,7 +14858,7 @@
   {
    "address": 5406,
    "type": "line",
-   "text": "Reads the keyboard when no key is pending ($12C0 clear) and no stick or key holds a line low. Notes shift, then finds the key: with $12C5 set only the eight keys the game uses (s_15E4), otherwise any key (s_15AE). When the key changes it stores it with the shift bit in $12C2 and sets $12C0."
+   "text": "Reads the keyboard when no key is pending ($12C0 clear) and no stick or key holds a line low. Notes shift, then finds the key: with $12C5 set only the eight keys the game uses (scan_game_keys), otherwise any key (scan_any_key). When the key changes it stores it with the shift bit in $12C2 and sets $12C0."
   },
   {
    "address": 5550,
@@ -14893,7 +14893,7 @@
   {
    "address": 5684,
    "type": "line",
-   "text": "Once a pass: in the attract mode, fire on port 1 starts a game. Reads the keyboard and acts on a new key. With no scene loaded it re-enters the scene. Space pauses or resumes (PAUSED is printed, the music stops), and nothing else is read while paused; F1 goes to the attract mode, F7 starts a new game, V prints the version line \"V 1 BY SES\", F3 on the title switches between one and two players, S turns the music off and on, and L (shift L for player 2) turns that player's joystick a quarter turn (s_172B), showing 1L or 2L."
+   "text": "Once a pass: in the attract mode, fire on port 1 starts a game. Reads the keyboard and acts on a new key. With no scene loaded it re-enters the scene. Space pauses or resumes (PAUSED is printed, the music stops), and nothing else is read while paused; F1 goes to the attract mode, F7 starts a new game, V prints the version line \"V 1 BY SES\", F3 on the title switches between one and two players, S turns the music off and on, and L (shift L for player 2) turns that player's joystick a quarter turn (read_stick), showing 1L or 2L."
   },
   {
    "address": 5864,
@@ -14918,12 +14918,12 @@
   {
    "address": 5981,
    "type": "line",
-   "text": "Scene 4 (the rolling rocks, scene index 3) start: on a fresh start ($12BA clear) the three planks are back ($1978 = 3), the bell counter is at 6 ($1937) and the first rolling rock is set up in slot 2 (s_1ADB). Both Goonies at x $80 and $8A, line $26, on the top floor, the second one facing left ($8C = 8)."
+   "text": "Scene 4 (the rolling rocks, scene index 3) start: on a fresh start ($12BA clear) the three planks are back ($1978 = 3), the bell counter is at 6 ($1937) and the first rolling rock is set up in slot 2 (s4_reset_rock). Both Goonies at x $80 and $8A, line $26, on the top floor, the second one facing left ($8C = 8)."
   },
   {
    "address": 6051,
    "type": "line",
-   "text": "Scene 4 each pass. While the bell is ringing ($1928 is clear and $12DD counts down five bats) it releases a bat a pass with the bell sound (7) and closes every floor gap (s_19EB). Then, for each floor (lines $1F, $47 and $6F at x $61), a Goonie standing there opens that floor's gaps under the chain (s_1859, s_185D, s_1861). Then the flap (s_1979), the planks (s_1948), the bell (s_18E9), the floor pieces (s_187A) and the exit (s_181B)."
+   "text": "Scene 4 each pass. While the bell is ringing ($1928 is clear and $12DD counts down five bats) it releases a bat a pass with the bell sound (7) and closes every floor gap (s4_close_gaps). Then, for each floor (lines $1F, $47 and $6F at x $61), a Goonie standing there opens that floor's gaps under the chain (s4_gaps_top, s_185D, s_1861). Then the flap (s4_flap), the planks (s4_planks), the bell (s4_bell), the floor pieces (s4_floor_pieces) and the exit (s4_exit)."
   },
   {
    "address": 6171,
@@ -14953,7 +14953,7 @@
   {
    "address": 6322,
    "type": "line",
-   "text": "Scene 4: the floor piece s_187A is drawing, counting down from 8."
+   "text": "Scene 4: the floor piece s4_floor_pieces is drawing, counting down from 8."
   },
   {
    "address": 6323,
@@ -15108,12 +15108,12 @@
   {
    "address": 6687,
    "type": "line",
-   "text": "Behaviour of a type-6 object, a rolling rock. Swaps in the scene's rock rectangles (s_1AFC), steers by what it is over (s_1A41), moves (move_object) and swaps the Goonies' rectangles back (s_1B0C); plays the rolling sound ($16) while it is on a floor and pushed left or right ($1090 with $1068, or $108F with $1069)."
+   "text": "Behaviour of a type-6 object, a rolling rock. Swaps in the scene's rock rectangles (s4_rect_rocks), steers by what it is over (s4_rock_steer), moves (move_object) and swaps the Goonies' rectangles back (s4_rect_goonies); plays the rolling sound ($16) while it is on a floor and pushed left or right ($1090 with $1068, or $108F with $1069)."
   },
   {
    "address": 6721,
    "type": "line",
-   "text": "Steers a rock. On the flap (x $43 to $4C, lines $A3 to $AC) it rolls left ($19) or right ($15) by the flap's position. Otherwise it looks for the first of rectangles $15 to $20 it touches: $15 to $1E give its direction from $1B1C (rectangles $15 to $1A only while their kind's top bit is clear, that is while the floor there is open); rectangle $1F is the lever by the planks: while any plank remains it removes one and scores 35 points; rectangle $20 is a wrong way out, which brings the bell a step nearer ringing ($1937). After either the rock starts again at the top (s_1ADB)."
+   "text": "Steers a rock. On the flap (x $43 to $4C, lines $A3 to $AC) it rolls left ($19) or right ($15) by the flap's position. Otherwise it looks for the first of rectangles $15 to $20 it touches: $15 to $1E give its direction from $1B1C (rectangles $15 to $1A only while their kind's top bit is clear, that is while the floor there is open); rectangle $1F is the lever by the planks: while any plank remains it removes one and scores 35 points; rectangle $20 is a wrong way out, which brings the bell a step nearer ringing ($1937). After either the rock starts again at the top (s4_reset_rock)."
   },
   {
    "address": 6875,
@@ -15423,7 +15423,7 @@
   {
    "address": 26672,
    "type": "line",
-   "text": "Clears the border and background to black, builds the bitmap row tables (s_6875), compares eight bytes at the address $A151 names with themselves (always equal), clears the top character row of both bitmaps, fills the colour RAM and both screens with the scene's colours (s_6905, s_691E), sets multicolour mode and builds the sprite mask table (s_6F51)."
+   "text": "Clears the border and background to black, builds the bitmap row tables (build_row_tables), compares eight bytes at the address $A151 names with themselves (always equal), clears the top character row of both bitmaps, fills the colour RAM and both screens with the scene's colours (fill_colour_ram, fill_screens), sets multicolour mode and builds the sprite mask table (build_mask_table)."
   },
   {
    "address": 26741,
@@ -15493,7 +15493,7 @@
   {
    "address": 27982,
    "type": "line",
-   "text": "Draws a shape into the back buffer at column $12, line $13: ($15) points at its width in bytes and height in lines, then the bytes, column by column within each line. Each byte is masked into the bitmap through the table at $6400 (clearing the pixels the shape colours) and ORed in, with the operands of the masking instructions rewritten per byte. Before drawing it records the area in the buffer's restore list (s_6EC7) and saves the bytes it covers into that list's save area."
+   "text": "Draws a shape into the back buffer at column $12, line $13: ($15) points at its width in bytes and height in lines, then the bytes, column by column within each line. Each byte is masked into the bitmap through the table at $6400 (clearing the pixels the shape colours) and ORed in, with the operands of the masking instructions rewritten per byte. Before drawing it records the area in the buffer's restore list (add_restore_entry) and saves the bytes it covers into that list's save area."
   },
   {
    "address": 28070,
@@ -15508,7 +15508,7 @@
   {
    "address": 28081,
    "type": "line",
-   "text": "The operand of draw_shape's store into the save area, set by s_6EC7 ($6F46, $6F4D) to the new record's bytes, five past its start, so the background under the shape is saved as it is drawn."
+   "text": "The operand of draw_shape's store into the save area, set by add_restore_entry ($6F46, $6F4D) to the new record's bytes, five past its start, so the background under the shape is saved as it is drawn."
   },
   {
    "address": 28082,
@@ -15553,7 +15553,7 @@
   {
    "address": 28538,
    "type": "line",
-   "text": "Clears the score rows and the first part of both bitmaps. If the scene's picture is not already loaded: copies the loader back from $D800 to $2000, copies the scene's two blocks of shape pointers (from $7049) to $70BE, loads the picture into $4140 (load_scene_picture; DISK ERROR on a failure), unpacks it into the bitmap at $2140 (s_7071) and copies it to the second bitmap, then notes the scene as loaded."
+   "text": "Clears the score rows and the first part of both bitmaps. If the scene's picture is not already loaded: copies the loader back from $D800 to $2000, copies the scene's two blocks of shape pointers (from $7049) to $70BE, loads the picture into $4140 (load_scene_picture; DISK ERROR on a failure), unpacks it into the bitmap at $2140 (unpack_picture) and copies it to the second bitmap, then notes the scene as loaded."
   },
   {
    "address": 28745,
@@ -15588,7 +15588,7 @@
   {
    "address": 29459,
    "type": "line",
-   "text": "Scene 2 each pass: animates the three water spouts (four frames, $77CE), moves the three weights that drop onto the top ledge and rise again ($77EC: down three lines a pass to $27, a thud, then up a line a pass; each weight's rectangle moves with it, s_75D4), the drips that fall from them (s_759C), draws them and their ropes, works the lift at the right (a Goonie on it, x $81 to $8C, rides it down a line a pass to $6C with a creak; empty it climbs back), then the float (s_76A4), the key (s_774E), the exit (s_763F), the lake (s_7674), the spring (s_7504) and the flier (s_869A)."
+   "text": "Scene 2 each pass: animates the three water spouts (four frames, $77CE), moves the three weights that drop onto the top ledge and rise again ($77EC: down three lines a pass to $27, a thud, then up a line a pass; each weight's rectangle moves with it, s2_weight_box), the drips that fall from them (s2_drip_hit), draws them and their ropes, works the lift at the right (a Goonie on it, x $81 to $8C, rides it down a line a pass to $6C with a creak; empty it climbs back), then the float (s2_float), the key (s2_key), the exit (s2_exit), the lake (s2_lake), the spring (s2_spring) and the flier (s2_spawn_flier)."
   },
   {
    "address": 29956,
@@ -15923,7 +15923,7 @@
   {
    "address": 31465,
    "type": "line",
-   "text": "Scene 1 each pass: keeps rectangle $17 disabled, draws the fire (s_7CF3), works the money press (s_7D41), moves the banknotes (s_7DF8), the water tank (s_7E6C), the pushable crate (s_7C05), and checks the exit (s_8013)."
+   "text": "Scene 1 each pass: keeps rectangle $17 disabled, draws the fire (s1_fire), works the money press (s1_press), moves the banknotes (s1_notes), the water tank (s1_tank), the pushable crate (s1_crate), and checks the exit (s1_exit)."
   },
   {
    "address": 31487,
@@ -16008,7 +16008,7 @@
   {
    "address": 32065,
    "type": "line",
-   "text": "The money press: a Goonie standing on its handle (x $76 to $80, line $20) works it. The first time scores 100 and plays sound 2. Each pass the press's plate ($7DBC) moves a line, down to $1C and back up to $12; at the bottom it prints a banknote (s_7DBD). Draws the plate at column $1E."
+   "text": "The money press: a Goonie standing on its handle (x $76 to $80, line $20) works it. The first time scores 100 and plays sound 2. Each pass the press's plate ($7DBC) moves a line, down to $1C and back up to $12; at the bottom it prints a banknote (s1_new_note). Draws the plate at column $1E."
   },
   {
    "address": 32187,
@@ -16473,7 +16473,7 @@
   {
    "address": 34885,
    "type": "line",
-   "text": "Behaviour of a type-9 object, the bird: moves two units a pass towards its target point; a Goonie it touches dies. Animates three frames from shape $23, mirrored by direction. Takes the next point of its path ($898D for x, $8995 for lines); at the end of a path ($00) it asks s_E232 whether it may drop an egg, and $FF parks it out of sight and lets the next one start."
+   "text": "Behaviour of a type-9 object, the bird: moves two units a pass towards its target point; a Goonie it touches dies. Animates three frames from shape $23, mirrored by direction. Takes the next point of its path ($898D for x, $8995 for lines); at the end of a path ($00) it asks s5_drop_egg whether it may drop an egg, and $FF parks it out of sight and lets the next one start."
   },
   {
    "address": 35118,
@@ -16578,12 +16578,12 @@
   {
    "address": 35533,
    "type": "line",
-   "text": "Scene 3 each pass: keeps rectangle $1F as floor until the pipe bursts (then kind $81, out of use), and while the gunman is out draws him (s_8BA5) and checks the exit (s_8C89)."
+   "text": "Scene 3 each pass: keeps rectangle $1F as floor until the pipe bursts (then kind $81, out of use), and while the gunman is out draws him (s3_draw_gunman) and checks the exit (s3_exit)."
   },
   {
    "address": 35562,
    "type": "line",
-   "text": "The gunman (type 7) climbs up and down the right-hand side: two countdowns ($8BDF, $8BE0) decide when he is out at all. He climbs towards the line $8BE2 holds; once there he waits ($8BE3 counts to $60), and at $28 he fires along the row he is on (s_8B66 part) if a Goonie is in that row (x $05 to $98), then takes the next of sixteen stops from $8BE5."
+   "text": "The gunman (type 7) climbs up and down the right-hand side: two countdowns ($8BDF, $8BE0) decide when he is out at all. He climbs towards the line $8BE2 holds; once there he waits ($8BE3 counts to $60), and at $28 he fires along the row he is on (b_8B66 part) if a Goonie is in that row (x $05 to $98), then takes the next of sixteen stops from $8BE5."
   },
   {
    "address": 35749,
@@ -16723,7 +16723,7 @@
   {
    "address": 36435,
    "type": "line",
-   "text": "The three vents (at $8F6C across, $8F6F down): a Goonie touching one closes it and the bits of $8F6A say which are closed. When the two that matter are closed (the value is 3) the pipe bursts: 200 points, sound 4, and the burst animation starts. Each vent is drawn open or closed from $8F72, and an open vent blows a jet (s_8F35) that kills."
+   "text": "The three vents (at $8F6C across, $8F6F down): a Goonie touching one closes it and the bits of $8F6A say which are closed. When the two that matter are closed (the value is 3) the pipe bursts: 200 points, sound 4, and the burst animation starts. Each vent is drawn open or closed from $8F72, and an open vent blows a jet (s3_jet_hit) that kills."
   },
   {
    "address": 36616,
@@ -16863,7 +16863,7 @@
   {
    "address": 36812,
    "type": "line",
-   "text": "Scene 3's late routine: the acid (s_8CBD), the vents (s_8E53) and the shot (s_8C18), drawn after the objects."
+   "text": "Scene 3's late routine: the acid (s3_acid), the vents (s3_vents) and the shot (s3_shot), drawn after the objects."
   },
   {
    "address": 36822,
@@ -17008,7 +17008,7 @@
   {
    "address": 38061,
    "type": "line",
-   "text": "Scene 7 each pass: the current under the crate (s_98EE), the crate's rectangle (s_97D6), the flipper (s_96EE), the octopus (s_962A), the deadly spot by the pond (s_95CE), the exit (s_95FD), the falling water (s_953E) and the fliers (s_94C6)."
+   "text": "Scene 7 each pass: the current under the crate (s7_current), the crate's rectangle (s7_crate_rect), the flipper (s7_flipper), the octopus (s7_octopus), the deadly spot by the pond (s7_hazard), the exit (s7_exit), the falling water (s7_waterfall) and the fliers (s7_fliers)."
   },
   {
    "address": 38086,
@@ -17348,7 +17348,7 @@
   {
    "address": 40363,
    "type": "line",
-   "text": "Scene 8 each pass: the portholes (s_A0B6), the lift (s_A049), the treasure chest (s_9F0B), the falling coins (s_A00A), the water (s_9DEB) and the exit (s_9DBE)."
+   "text": "Scene 8 each pass: the portholes (s8_portholes), the lift (s8_lift), the treasure chest (s8_chest), the falling coins (s8_coins), the water (s8_water) and the exit (s8_exit)."
   },
   {
    "address": 40382,
@@ -17388,7 +17388,7 @@
   {
    "address": 40715,
    "type": "line",
-   "text": "The treasure chest on the top deck (line $40, x in $9FB2): a Goonie walking right into it pushes it along, up to x $90 (the selected Goonie, and the other with two players). Past x $86 it spills coins (s_9FD3) and rectangle $34 becomes kind 4; before that the rectangle is out of use ($80). Draws the chest at column x/4, line $39 (shapes from $9FA2, the spilling ones from offset 8) and the porthole at column $12, line $8B to match (s_9FB3)."
+   "text": "The treasure chest on the top deck (line $40, x in $9FB2): a Goonie walking right into it pushes it along, up to x $90 (the selected Goonie, and the other with two players). Past x $86 it spills coins (s8_spill_coins) and rectangle $34 becomes kind 4; before that the rectangle is out of use ($80). Draws the chest at column x/4, line $39 (shapes from $9FA2, the spilling ones from offset 8) and the porthole at column $12, line $8B to match (s_9FB3)."
   },
   {
    "address": 40866,
@@ -18183,17 +18183,17 @@
   {
    "address": 47616,
    "type": "line",
-   "text": "Entry points of the sound code, a jump table: $BA00 silence the effects (s_C8F0), $BA03 start an effect on a voice (s_C90C), $BA09 run the effects for a frame (s_C921), $BA18 stop the tune, $BA1B start tune $BA24 (s_BA6B), $BA21 play the tune for a frame (s_BBDB). Then the driver's variables: $BA0C-$BA0E the effect on each voice ($FF none), $BA0F-$BA11 an effect to start, $BA24 the tune, $BA25 tune finished, $BA26 tune ended, $BA27 tune running, $BA29-$BA2B which voices the tune may use, $BA2C a transposition."
+   "text": "Entry points of the sound code, a jump table: $BA00 silence the effects (effects_init), $BA03 start an effect on a voice (effect_start), $BA09 run the effects for a frame (effects_play), $BA18 stop the tune, $BA1B start tune $BA24 (start_tune), $BA21 play the tune for a frame (play_tune). Then the driver's variables: $BA0C-$BA0E the effect on each voice ($FF none), $BA0F-$BA11 an effect to start, $BA24 the tune, $BA25 tune finished, $BA26 tune ended, $BA27 tune running, $BA29-$BA2B which voices the tune may use, $BA2C a transposition."
   },
   {
    "address": 47619,
    "type": "line",
-   "text": "Sound entry: start effect A on voice X (s_C90C)."
+   "text": "Sound entry: start effect A on voice X (effect_start)."
   },
   {
    "address": 47625,
    "type": "line",
-   "text": "Sound entry: run the three effect players for a frame (s_C921), called by the interrupt."
+   "text": "Sound entry: run the three effect players for a frame (effects_play), called by the interrupt."
   },
   {
    "address": 47628,
@@ -18263,12 +18263,12 @@
   {
    "address": 47643,
    "type": "line",
-   "text": "Sound entry: start tune $BA24 (s_BA6B)."
+   "text": "Sound entry: start tune $BA24 (start_tune)."
   },
   {
    "address": 47649,
    "type": "line",
-   "text": "Sound entry: play the tune for a frame (s_BBDB), called by the interrupt."
+   "text": "Sound entry: play the tune for a frame (play_tune), called by the interrupt."
   },
   {
    "address": 47652,
@@ -18318,7 +18318,7 @@
   {
    "address": 47723,
    "type": "line",
-   "text": "Starts tune $BA24 with the playing flag held off while it sets up (s_BAA5)."
+   "text": "Starts tune $BA24 with the playing flag held off while it sets up (tune_setup)."
   },
   {
    "address": 47737,
@@ -18328,7 +18328,7 @@
   {
    "address": 47781,
    "type": "line",
-   "text": "Sets a tune going: its voice pointers, the driver reset (s_BAC6), then reads each enabled voice's first command (s_BD07)."
+   "text": "Sets a tune going: its voice pointers, the driver reset (tune_reset), then reads each enabled voice's first command (voice_commands)."
   },
   {
    "address": 47814,
@@ -18418,12 +18418,12 @@
   {
    "address": 48091,
    "type": "line",
-   "text": "The tune player, once a frame from the interrupt. Unless the tune is stopped, counts the tempo ($BF3F) down; on each tick counts down each voice's note, releasing the gate a step before the end and reading the voice's next commands when the note is over (s_BCC4)."
+   "text": "The tune player, once a frame from the interrupt. Unless the tune is stopped, counts the tempo ($BF3F) down; on each tick counts down each voice's note, releasing the gate a step before the end and reading the voice's next commands when the note is over (voice_next)."
   },
   {
    "address": 48324,
    "type": "line",
-   "text": "Reads the next note of a voice: the pitch (0 is a rest) from the frequency tables at $BF81 and $BFD5, transposed by $BA2C, then the waveform and envelope unless the voice holds; then carries on with the voice's commands (s_BD07)."
+   "text": "Reads the next note of a voice: the pitch (0 is a rest) from the frequency tables at $BF81 and $BFD5, transposed by $BA2C, then the waveform and envelope unless the voice holds; then carries on with the voice's commands (voice_commands)."
   },
   {
    "address": 48391,
@@ -18443,7 +18443,7 @@
   {
    "address": 48457,
    "type": "line",
-   "text": "Command 0: the length of the voice's notes, from the length table at $BE45 (dotted or triplet values through s_BE02)."
+   "text": "Command 0: the length of the voice's notes, from the length table at $BE45 (dotted or triplet values through note_length)."
   },
   {
    "address": 48483,
@@ -18468,7 +18468,7 @@
   {
    "address": 48614,
    "type": "line",
-   "text": "Where every command carries on: back to read the voice's next command (s_BD07)."
+   "text": "Where every command carries on: back to read the voice's next command (voice_commands)."
   },
   {
    "address": 48617,
@@ -18488,7 +18488,7 @@
   {
    "address": 48709,
    "type": "line",
-   "text": "Note lengths in tempo ticks, 32 entries: command 0 picks from the first sixteen, or from the second sixteen while $BF7F is set; s_BE02 also derives the release point from them."
+   "text": "Note lengths in tempo ticks, 32 entries: command 0 picks from the first sixteen, or from the second sixteen while $BF7F is set; note_length also derives the release point from them."
   },
   {
    "address": 48741,
@@ -19158,7 +19158,7 @@
   {
    "address": 57418,
    "type": "line",
-   "text": "Scene 5 each pass: the tunnels (s_E17A), the bird (s5_spawn_bird), the egg it carries (s_E1F3), the bones and lava bridges (s_E0B7), the egg pile (s_E08A) and the exit (s_E05D)."
+   "text": "Scene 5 each pass: the tunnels (s5_tunnels), the bird (s5_spawn_bird), the egg it carries (s5_bird_egg), the bones and lava bridges (s5_bones), the egg pile (s5_egg_pile) and the exit (s5_exit)."
   },
   {
    "address": 57437,
@@ -19303,7 +19303,7 @@
   {
    "address": 57980,
    "type": "line",
-   "text": "Behaviour of a type-8 object, an egg. Its count $6A,x falls while the timer $12D9 is clear; at eight it shows the cracking shape $26, and at zero it hatches (s_E539). A Goonie walking into either side of it pushes it the way he faces (either Goonie with two players). It goes through the tunnels like a Goonie (s_E3AB), hidden while inside, and moves with the rocks' rectangle set (s_E3FD, s_E40D). Then the lava (s_E36B) and the pile (s_E33C)."
+   "text": "Behaviour of a type-8 object, an egg. Its count $6A,x falls while the timer $12D9 is clear; at eight it shows the cracking shape $26, and at zero it hatches (s5_hatch). A Goonie walking into either side of it pushes it the way he faces (either Goonie with two players). It goes through the tunnels like a Goonie (s5_egg_tunnels), hidden while inside, and moves with the rocks' rectangle set (s5_rect_eggs, s5_rect_goonies). Then the lava (s5_egg_in_lava) and the pile (s5_egg_at_pile)."
   },
   {
    "address": 58172,
@@ -19318,7 +19318,7 @@
   {
    "address": 58283,
    "type": "line",
-   "text": "Moves egg Y through a tunnel mouth as s_E17A does for the Goonies (across by $E5F0), hiding it for four passes ($8B)."
+   "text": "Moves egg Y through a tunnel mouth as s5_tunnels does for the Goonies (across by $E5F0), hiding it for four passes ($8B)."
   },
   {
    "address": 58365,
@@ -19788,12 +19788,12 @@
   {
    "address": 61539,
    "type": "line",
-   "text": "Scene 6 (the cage and the drips, scene index 5) start: both Goonies at the top left (x 9, line $36), the pads and tunnels clear, $F485 = $18; nine drips set up (s_F209) and eight lava bubbles given random columns and waits."
+   "text": "Scene 6 (the cage and the drips, scene index 5) start: both Goonies at the top left (x 9, line $36), the pads and tunnels clear, $F485 = $18; nine drips set up (s6_drips) and eight lava bubbles given random columns and waits."
   },
   {
    "address": 61645,
    "type": "line",
-   "text": "Scene 6 each pass: the platforms (s_F413), the door and its passage (s_F32B), the lava floor (s_F1DC), the pads (s_F16E), the exit (s_F141) and the lava bubbles (s_F0E0)."
+   "text": "Scene 6 each pass: the platforms (s6_platforms), the door and its passage (s6_door), the lava floor (s6_lava_floor), the pads (s6_pads), the exit (s6_exit) and the lava bubbles (s6_bubbles)."
   },
   {
    "address": 61664,
@@ -19888,7 +19888,7 @@
   {
    "address": 62251,
    "type": "line",
-   "text": "The door: while a Goonie hangs from either lever (x $40, line $5F, or x $8F, line $8C) the passage through it works (s_F363); otherwise the door is drawn shut at column $14, line $91."
+   "text": "The door: while a Goonie hangs from either lever (x $40, line $5F, or x $8F, line $8C) the passage through it works (b_F363); otherwise the door is drawn shut at column $14, line $91."
   },
   {
    "address": 62307,
