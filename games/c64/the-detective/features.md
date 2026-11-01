@@ -43,14 +43,14 @@ Sources:
 | Some icons appear only when they apply: Question only with another person near, and facing them; Consume only near something to eat or drink | open | |
 | Accuse is available at any time | open | |
 | Inventory of six items, more with something to carry them in (Zzap) | open | |
-| Ten pieces of evidence, put in envelopes, before the accusation (the author) | open | |
-| Real time, from 9.10 pm, with a time limit; lose the case if it runs out | open | the clock |
-| Pause, through the time/pause icon | open | |
+| Ten pieces of evidence, put in envelopes, before the accusation (the author) | open | strings `$9DD8` ("THERE ARE 10 ENVELOPES ... YOU MUST FILL ALL OF THEM BEFORE YOU SOLVE THE MURDER"), `$C015` ("EVIDENCE COLLECTED:"), `$BB25` ("YOU DO NOT HAVE THE EVIDENCE TO PROVE IT.") |
+| Real time, from 9.10 pm, with a time limit; lose the case if it runs out | open | string `$A1E4` ("THE TIME IS NOW:") |
+| Pause, through the time/pause icon | open | string `$A20D` ("PAUSED..PRESS FIRE TO CONTINUE.") |
 | Characters walk the house on their own: the Major, the Reverend Wrinklebottom, the cook Hilda Crumble, a butler, a professor, Cynthia Sludgebucket and others; Angus McFungus is the first victim | open | |
 | Characters answer questions about McFungus, objects and each other; each drops a clue about the killer (the author) | open | |
 | More murders as time passes: strangling, stabbing, a piano falling on Cynthia Sludgebucket on the landing | open | |
 | Secret passages (Zzap) | open | |
-| Safe codes, originally part of the copy protection (the author) | open | |
+| Safe codes, originally part of the copy protection (the author) | open | strings `$8A44`-`$8AE8` ("YOU FIND A SAFE!", "TYPE IN THE COMBINATION:", "THE SAFE IS OPEN!") |
 | Rain and thunder on the sound chip; a title tune (Zzap) | open | |
 | RESTORE restarts the game when a flag allows it | traced | NMI handler `$294A`; `orientation.md`, "Steady state" |
 | Status line of text under the room ("YOU ARE IN THE HALL") and a picture panel to its right | live | `reference/play-hall.png` |
@@ -61,7 +61,23 @@ Found in the code, not in the manual.
 
 - The game's start-up is a jump table at `$2000` with four entries
   (`$2048`, `$2747`, `$289E`, `$32CE`); only the first is known to be the
-  start.
+  start. (open)
+- A library where the player types a book's name: "TYPE IN THE NAME OF
+  THE BOOK YOU WANT:" (`$BDF4`), with `101 DETECTIVE STORIES` (`$BE68`)
+  stored beside it. (open)
+- Over thirty items by name, and furniture, with lines for Examine
+  (`facts.md`, "Memory layout"); among the items a bomb, an elephant
+  gun, bullets and a syringe. How many there are, and which line goes
+  with which, is open.
+- Characters say things on their own as they move about ("AWFUL
+  WEATHER", "HAS ANYONE SEEN MY SCALPELS?") and answer "ASK ABOUT:"
+  (`$B5D3`) questions. (open)
+- A cast of ten, with a biography each, on the title screen
+  ("INTRODUCING THE CAST..", `$2161`; the biographies at `$8E65`). (open)
+- Endings in text: the lights going out and the player shot by an
+  unseen assassin ("THE GAME IS OVER.", `$2639`-`$267E`), being led
+  away at gunpoint (`$BD34`), and a promotion ("CREDIT TO THE FORCE,
+  TAKE ... PROMOTION!", `$BD6E`). (open)
 
 ## Open questions
 
