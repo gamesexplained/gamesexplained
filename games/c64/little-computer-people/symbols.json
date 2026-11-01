@@ -22891,7 +22891,7 @@
   {
    "address": 16,
    "type": "line",
-   "text": "Parser pointer, low byte (high byte $11): walks a word list in s_C187 (five concept bytes, the word, $00; $FF ends the list) comparing records with the current word at $C020, and walks the 16-byte rule records from $C96A in s_C1C5."
+   "text": "Parser pointer, low byte (high byte $11): walks a word list in parse_search_list (five concept bytes, the word, $00; $FF ends the list) comparing records with the current word at $C020, and walks the 16-byte rule records from $C96A in parse_match_rules."
   },
   {
    "address": 17,
@@ -22901,12 +22901,12 @@
   {
    "address": 18,
    "type": "line",
-   "text": "Parser rule matcher s_C1C5: OR over the ten bit bytes of (rule bits AND NOT sentence bits $C016-$C01F). Zero means every concept the rule needs is in the sentence, and the rule's action codes are taken."
+   "text": "Parser rule matcher parse_match_rules: OR over the ten bit bytes of (rule bits AND NOT sentence bits $C016-$C01F). Zero means every concept the rule needs is in the sentence, and the rule's action codes are taken."
   },
   {
    "address": 19,
    "type": "line",
-   "text": "Parser rule matcher s_C1C5: the current sentence bit byte ($C016,y) inverted, ANDed with the rule byte."
+   "text": "Parser rule matcher parse_match_rules: the current sentence bit byte ($C016,y) inverted, ANDed with the rule byte."
   },
   {
    "address": 20,
@@ -22916,7 +22916,7 @@
   {
    "address": 24,
    "type": "line",
-   "text": "Scratch pointer, low byte (high $19), shared by many routines: unpack_figure_sprite's packed-data pointer and s_12B7's source image; update_figure_sprites' pointer to the frame Y offsets; the body image builder at $1585-$160B; script_next's activity script pointer ($8F14); draw_object's frame list ($9708) and, through copy_frame_record ($99D5), the colour-RAM source the blitter $3E79 reads; the product of the multiply at $3E5A. draw_clock_hand keeps its direction flips in $18."
+   "text": "Scratch pointer, low byte (high $19), shared by many routines: unpack_figure_sprite's packed-data pointer and build_outline's source image; update_figure_sprites' pointer to the frame Y offsets; the body image builder at $1585-$160B; script_next's activity script pointer ($8F14); draw_object's frame list ($9708) and, through copy_frame_record ($99D5), the colour-RAM source the blitter $3E79 reads; the product of the multiply at $3E5A. draw_clock_hand keeps its direction flips in $18."
   },
   {
    "address": 25,
@@ -22926,7 +22926,7 @@
   {
    "address": 26,
    "type": "line",
-   "text": "Scratch pointer, low byte (high $1B): the sprite block being written by unpack_figure_sprite, s_12B7 and s_13AC ($4000 + 64 x block, from s_1396); the blitter's colour-matrix source ($3E88); the part builder's pointer at $1592-$1606; the multiplicand at $3E5A. draw_clock_hand keeps its step index in $1A."
+   "text": "Scratch pointer, low byte (high $1B): the sprite block being written by unpack_figure_sprite, build_outline and clip_sprite ($4000 + 64 x block, from sprite_addr); the blitter's colour-matrix source ($3E88); the part builder's pointer at $1592-$1606; the multiplicand at $3E5A. draw_clock_hand keeps its step index in $1A."
   },
   {
    "address": 27,
@@ -23126,7 +23126,7 @@
   {
    "address": 76,
    "type": "line",
-   "text": "Activity phase: the index for the switches reached by JSR $3F11 inside each activity (84 sites), so it picks the handler for this pass. j_8F0B adds 1 (next phase); many handlers store a phase; cleared at cold start. The activity number itself is $8D9B."
+   "text": "Activity phase: the index for the switches reached by JSR $3F11 inside each activity (84 sites), so it picks the handler for this pass. next_phase adds 1 (next phase); many handlers store a phase; cleared at cold start. The activity number itself is $8D9B."
   },
   {
    "address": 77,
@@ -23141,12 +23141,12 @@
   {
    "address": 79,
    "type": "line",
-   "text": "Scratch word of the timer tune player (with $50): the jump vector for a tune command, JMP ($004F) at $4059 (set at $4045 from the command table $4072); also a branch target, the note byte in s_4243, the frequency step of vibrato and pitch slides ($4334, $4386, $43AD-$43EB) and the pointer to a tune's (register, value) list ($440F). $4F-$65 are cleared together by s_44E8."
+   "text": "Scratch word of the timer tune player (with $50): the jump vector for a tune command, JMP ($004F) at $4059 (set at $4045 from the command table $4072); also a branch target, the note byte in music_note, the frequency step of vibrato and pitch slides ($4334, $4386, $43AD-$43EB) and the pointer to a tune's (register, value) list ($440F). $4F-$65 are cleared together by music_clear."
   },
   {
    "address": 80,
    "type": "line",
-   "text": "High byte of the tune player's scratch word $4F; in s_4243 the note byte's length nibble, 0 meaning the note does not wait ($425A, $426E)."
+   "text": "High byte of the tune player's scratch word $4F; in music_note the note byte's length nibble, 0 meaning the note does not wait ($425A, $426E)."
   },
   {
    "address": 81,
@@ -23156,7 +23156,7 @@
   {
    "address": 83,
    "type": "line",
-   "text": "$53-$5F: the current tune voice's 13-byte record, copied in from ($62) before the interpreter s_4022 runs and copied back after ($3F96-$3FAB); s_44A9 sets it up from the tune table $3A03. $53/$54 = where the voice's next tune bytes are: s_422C reads ($53),Y with Y from $7F40, and s_405C adds $7F40 to it after each event."
+   "text": "$53-$5F: the current tune voice's 13-byte record, copied in from ($62) before the interpreter music_run_voice runs and copied back after ($3F96-$3FAB); music_voice_init sets it up from the tune table $3A03. $53/$54 = where the voice's next tune bytes are: music_fetch reads ($53),Y with Y from $7F40, and music_commit adds $7F40 to it after each event."
   },
   {
    "address": 84,
@@ -23176,12 +23176,12 @@
   {
    "address": 87,
    "type": "line",
-   "text": "Voice record byte 4: articulation. The gate goes off when the countdown reaches $56 x $57 ($4275-$4284); 0 = no early release. Set to 2 by s_44A9."
+   "text": "Voice record byte 4: articulation. The gate goes off when the countdown reaches $56 x $57 ($4275-$4284); 0 = no early release. Set to 2 by music_voice_init."
   },
   {
    "address": 88,
    "type": "line",
-   "text": "Voice record byte 5: the CIA1 timer A high byte (a tick is $58 x 256 cycles), $3B from s_44A9 ($447A); the tempo command also copies it into the three voice records and $DC05."
+   "text": "Voice record byte 5: the CIA1 timer A high byte (a tick is $58 x 256 cycles), $3B from music_voice_init ($447A); the tempo command also copies it into the three voice records and $DC05."
   },
   {
    "address": 89,
@@ -23201,7 +23201,7 @@
   {
    "address": 92,
    "type": "line",
-   "text": "Voice record byte 9: timer-A ticks until the voice's next event: length x 8 from a note ($4273), 1 from s_44A9. Timer A counts the record's copy down ($3F59) and runs the interpreter at 0."
+   "text": "Voice record byte 9: timer-A ticks until the voice's next event: length x 8 from a note ($4273), 1 from music_voice_init. Timer A counts the record's copy down ($3F59) and runs the interpreter at 0."
   },
   {
    "address": 93,
@@ -23216,7 +23216,7 @@
   {
    "address": 95,
    "type": "line",
-   "text": "Voice record byte 12, flags: bit 7 voice active (tested at $3F4E, cleared by the end command $40F6), bit 6 early release (set by each note $424E, cleared for a tied note), bit 5 invert intervals, bit 3 call the vector at $7FF4 (always $44A8, an RTS), bit 2 slide up, bit 1 pitch slide ($431D), bit 0 vibrato ($4357). $C0 from s_44A9."
+   "text": "Voice record byte 12, flags: bit 7 voice active (tested at $3F4E, cleared by the end command $40F6), bit 6 early release (set by each note $424E, cleared for a tied note), bit 5 invert intervals, bit 3 call the vector at $7FF4 (always $44A8, an RTS), bit 2 slide up, bit 1 pitch slide ($431D), bit 0 vibrato ($4357). $C0 from music_voice_init."
   },
   {
    "address": 96,
@@ -23251,7 +23251,7 @@
   {
    "address": 102,
    "type": "line",
-   "text": "Pointer to the next character of the letter being typed: set to $7F40 at $55A9, where the code at $55C4 assembles the letter from the pieces at $5600; read and advanced by s_5599."
+   "text": "Pointer to the next character of the letter being typed: set to $7F40 at $55A9, where the code at $55C4 assembles the letter from the pieces at $5600; read and advanced by letter_next_char."
   },
   {
    "address": 103,
@@ -23371,12 +23371,12 @@
   {
    "address": 138,
    "type": "line",
-   "text": "Text: right limit ($BDC6 - 6 = $0139), low byte, written by s_BD7E. No traced instruction reads it or $8B."
+   "text": "Text: right limit ($BDC6 - 6 = $0139), low byte, written by text_home. No traced instruction reads it or $8B."
   },
   {
    "address": 139,
    "type": "line",
-   "text": "Text: right limit, high byte. Written by s_BD7E only."
+   "text": "Text: right limit, high byte. Written by text_home only."
   },
   {
    "address": 140,
@@ -23391,7 +23391,7 @@
   {
    "address": 142,
    "type": "line",
-   "text": "Text: pixel row of the top of the text line in the band, set to $0E by s_BD7E; added to each glyph's vertical offset."
+   "text": "Text: pixel row of the top of the text line in the band, set to $0E by text_home; added to each glyph's vertical offset."
   },
   {
    "address": 143,
@@ -23551,7 +23551,7 @@
   {
    "address": 193,
    "type": "line",
-   "text": "Text window number, an index into the margin table $BDC4: set to 0 by $BA3A and only read by s_BD7E, so the band's single window (X 3 to $13F) is the only one used."
+   "text": "Text window number, an index into the margin table $BDC4: set to 0 by $BA3A and only read by text_home, so the band's single window (X 3 to $13F) is the only one used."
   },
   {
    "address": 194,
@@ -23706,7 +23706,7 @@
   {
    "address": 749,
    "type": "line",
-   "text": "Cleared with $478D by $3953 (j_394E, reached through $800F) and by the cold start's page 2 clear; nothing reads it."
+   "text": "Cleared with $478D by $3953 (music_driver_start, reached through $800F) and by the cold start's page 2 clear; nothing reads it."
   },
   {
    "address": 750,
@@ -23866,7 +23866,7 @@
   {
    "address": 863,
    "type": "line",
-   "text": "The mood, 0-2, drawn on his face: head frames below $18 get +0, +$0F or +$1E (head_mood_offsets). house_clock moves it along 1, 0, 1, 2 every two days; while the illness level $0365 is 2 or more it is held at 2; CTRL P (petting) sets 0 at $2C39 when the person is not moving ($03BC) and the check s_2DE4 with X = $2B passes. The parser adds 3, 1 or 0 for moods 0, 1, 2 to a request's score ($C064 through jt_get_mood), so mood 0 is the happiest."
+   "text": "The mood, 0-2, drawn on his face: head frames below $18 get +0, +$0F or +$1E (head_mood_offsets). house_clock moves it along 1, 0, 1, 2 every two days; while the illness level $0365 is 2 or more it is held at 2; CTRL P (petting) sets 0 at $2C39 when the person is not moving ($03BC) and the check at_place with X = $2B passes. The parser adds 3, 1 or 0 for moods 0, 1, 2 to a request's score ($C064 through jt_get_mood), so mood 0 is the happiest."
   },
   {
    "address": 864,
@@ -23996,7 +23996,7 @@
   {
    "address": 897,
    "type": "line",
-   "text": "Column clip per figure ($0381 body ... $0385 head), applied when the image is rebuilt (s_13AC from $0F94): bits 0-6 = how many 2-bit pixel columns (1-12) are blanked, bit 7 set = from the left, clear = from the right. The doorway code sets $81/$01/$00 ($3229, $32E4, $32EF) and moves it one column per half-pixel step ($32FC-$3354); saved and cleared at $1F2A-$1F4A. $0C (the whole body blanked) in the image."
+   "text": "Column clip per figure ($0381 body ... $0385 head), applied when the image is rebuilt (clip_sprite from $0F94): bits 0-6 = how many 2-bit pixel columns (1-12) are blanked, bit 7 set = from the left, clear = from the right. The doorway code sets $81/$01/$00 ($3229, $32E4, $32EF) and moves it one column per half-pixel step ($32FC-$3354); saved and cleared at $1F2A-$1F4A. $0C (the whole body blanked) in the image."
   },
   {
    "address": 899,
@@ -24261,17 +24261,17 @@
   {
    "address": 1007,
    "type": "line",
-   "text": "s_12B7's current image row widened by one pixel to each side ($03EF-$03F1, $12E1-$1317), ORed with the rows above and below to make the outline sprite ($131F-$1328)."
+   "text": "build_outline's current image row widened by one pixel to each side ($03EF-$03F1, $12E1-$1317), ORed with the rows above and below to make the outline sprite ($131F-$1328)."
   },
   {
    "address": 1008,
    "type": "line",
-   "text": "Byte 1 of s_12B7's widened row ($12F2, $130A, $130D)."
+   "text": "Byte 1 of build_outline's widened row ($12F2, $130A, $130D)."
   },
   {
    "address": 1009,
    "type": "line",
-   "text": "Byte 2 of s_12B7's widened row ($12FC-$1303). $03F2-$03F3 after it are not referenced."
+   "text": "Byte 2 of build_outline's widened row ($12FC-$1303). $03F2-$03F3 after it are not referenced."
   },
   {
    "address": 1012,
@@ -24296,7 +24296,7 @@
   {
    "address": 1044,
    "type": "line",
-   "text": "Random number generator state (j_195E, jt_random): the last value returned in A. Many routines read it directly as a random byte (for example $17B0, $AD11, $BF66). In the image as loaded, $0414-$0417 hold the ASCII letters 'Zeke' (the crack's copy at $4C14), so those four letters are the generator's starting state; the first call (clock_start, from the cold start) overwrites them, and nothing reads them as text."
+   "text": "Random number generator state (random, jt_random): the last value returned in A. Many routines read it directly as a random byte (for example $17B0, $AD11, $BF66). In the image as loaded, $0414-$0417 hold the ASCII letters 'Zeke' (the crack's copy at $4C14), so those four letters are the generator's starting state; the first call (clock_start, from the cold start) overwrites them, and nothing reads them as text."
   },
   {
    "address": 1045,
@@ -24831,7 +24831,7 @@
   {
    "address": 3649,
    "type": "line",
-   "text": "Builds the sprite image of figure X (0 the person's body, 1 the dog, 2 and 3 objects, 4 the person's head) for its frame $038B,x. The frame table index is the frame plus figure_frame_base,x; for the body, frames below $19 get +$5D (and $21 becomes $0D) while $0391 is set; for the head, frames below $18 (table index below $AA) have head_mood_offsets[$035F] (0, $0F or $1E) added to the graphic number. The frame table gives a graphic number; the graphic's packed data is found through the offset table at $E453 (stored offset - $5000 + $E453). The figure's sprite block ($0D68,x) is flipped between two buffers (EOR 8) and the data unpacked into $4000 + 64 * block: a count byte with bit 7 set copies (n AND $7F) * 3 literal bytes, otherwise the next three bytes are repeated n times, until 61 bytes are written. If the facing flag $039A,x is set each row is mirrored (s_135F, left and right bytes swapped) and, for the body and the head, moved one multicolour pixel. Then columns are clipped off by s_13AC when $0381,x is set, the figure's colour is stored in $0386,x through the self-modified LDA at $0FA8, and for figures 0, 1 and 4 the hires outline sprite is built in the next block by s_12B7."
+   "text": "Builds the sprite image of figure X (0 the person's body, 1 the dog, 2 and 3 objects, 4 the person's head) for its frame $038B,x. The frame table index is the frame plus figure_frame_base,x; for the body, frames below $19 get +$5D (and $21 becomes $0D) while $0391 is set; for the head, frames below $18 (table index below $AA) have head_mood_offsets[$035F] (0, $0F or $1E) added to the graphic number. The frame table gives a graphic number; the graphic's packed data is found through the offset table at $E453 (stored offset - $5000 + $E453). The figure's sprite block ($0D68,x) is flipped between two buffers (EOR 8) and the data unpacked into $4000 + 64 * block: a count byte with bit 7 set copies (n AND $7F) * 3 literal bytes, otherwise the next three bytes are repeated n times, until 61 bytes are written. If the facing flag $039A,x is set each row is mirrored (mirror_mc_byte, left and right bytes swapped) and, for the body and the head, moved one multicolour pixel. Then columns are clipped off by clip_sprite when $0381,x is set, the figure's colour is stored in $0386,x through the self-modified LDA at $0FA8, and for figures 0, 1 and 4 the hires outline sprite is built in the next block by build_outline."
   },
   {
    "address": 3818,
@@ -24846,17 +24846,17 @@
   {
    "address": 3820,
    "type": "line",
-   "text": "unpack_figure_sprite continued: a count byte below $80 repeats the next three bytes ($1C, $1D, $1E) as that many sprite rows. From $0F1F the finished image is mirrored when the figure's facing flag $039A,x is set: each 3-byte row has its bytes swapped end for end and each byte's 2-bit pixels reversed (s_135F); for the body and the head (figures 0 and 4) the mirrored row is also shifted left one multicolour pixel."
+   "text": "unpack_figure_sprite continued: a count byte below $80 repeats the next three bytes ($1C, $1D, $1E) as that many sprite rows. From $0F1F the finished image is mirrored when the figure's facing flag $039A,x is set: each 3-byte row has its bytes swapped end for end and each byte's 2-bit pixels reversed (mirror_mc_byte); for the body and the head (figures 0 and 4) the mirrored row is also shifted left one multicolour pixel."
   },
   {
    "address": 3987,
    "type": "line",
-   "text": "Byte counter for s_13AC, the column clip at $13AC: counts down the three bytes of each sprite row while it ANDs them with the clip masks from $13EF."
+   "text": "Byte counter for clip_sprite, the column clip at $13AC: counts down the three bytes of each sprite row while it ANDs them with the clip masks from $13EF."
   },
   {
    "address": 3988,
    "type": "line",
-   "text": "unpack_figure_sprite, last part: clips columns off the image with s_13AC when $0381,x is non-zero, loads the figure's colour through the self-modified LDA at $0FA8 into $0386,x, and for figures 0, 1 and 4 points $18/$19 at the new image and $1A/$1B 64 bytes on and calls s_12B7 to build the hires outline sprite (X kept in $1390)."
+   "text": "unpack_figure_sprite, last part: clips columns off the image with clip_sprite when $0381,x is non-zero, loads the figure's colour through the self-modified LDA at $0FA8 into $0386,x, and for figures 0, 1 and 4 points $18/$19 at the new image and $1A/$1B 64 bytes on and calls build_outline to build the hires outline sprite (X kept in $1390)."
   },
   {
    "address": 4008,
