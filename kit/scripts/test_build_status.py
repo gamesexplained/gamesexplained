@@ -3,7 +3,7 @@
 tools.host, found by a host's match in site/status.json) puts its platform's cell there at "works"; each
 cell is Works, Limited or Not yet, names two of the games made there and counts the rest; and the
 contributors table counts each person's merged pull requests and the games they added, and names the
-platforms those are on, leaving out the people status.json names."""
+platforms they added a kit for, leaving out the people status.json names."""
 from pathlib import Path
 import glob
 import json
@@ -74,19 +74,24 @@ class StatusPage(unittest.TestCase):
             {"pr": 7, "who": [["Aaron Bell", "AIR"], ["Ada", "ada"]]},
             {"pr": 8, "who": [["Dee", "dee"]]},
         ]
-        changes.insert(0, {"pr": 9, "who": [["Ada", "ada"]], "added": ["nes/e"]})
-        gs = [game("a"), game("b", platform="nes"), game("c"), game("e", platform="nes")]
-        self.assertEqual(build.contributor_board(changes, gs, ["air", "dee"]),
-                         [("Ada", "ada", 5, 3, ["nes", "c64"]), ("Cy", "cy", 2, 0, []), ("Bo", None, 1, 1, ["c64"])])
+        changes += [
+            {"pr": 9, "who": [["Cy", "cy"]], "kits": ["nes"]},              # the NES kit
+            {"pr": 10, "who": [["Cy", "cy"]], "kits": ["scripts"]},         # kit/scripts/tools.py: no platform
+            {"pr": 11, "who": [["Ed", "ed"]], "kits": ["bbc"]},             # a kit removed since
+            {"pr": 12, "who": [["Aaron Bell", "air"]], "kits": ["c64"]},
+        ]
+        gs = [game("a"), game("b", platform="nes"), game("c")]
+        self.assertEqual(build.contributor_board(changes, gs, ["air", "dee"], have=["c64", "nes"]),
+                         [("Ada", "ada", 4, 2, []), ("Cy", "cy", 4, 0, ["nes"]), ("Bo", None, 1, 1, []), ("Ed", "ed", 1, 0, [])])
 
     def test_the_page_leaves_out_who_status_json_says(self):
         left = (STATUS.get("contributors") or {}).get("leave_out") or []
         self.assertIn("air", left)
         page = build.status_page([game("a")], [{"pr": 1, "who": [["Aaron Bell", "air"]]},
-                                              {"pr": 2, "who": [["Ada", "ada"]], "added": ["c64/a"]}])
+                                              {"pr": 2, "who": [["Ada", "ada"]], "added": ["c64/a"], "kits": ["c64"]}])
         people = re.search(r'<table class="people">(.*?)</table>', page, re.S).group(1)
         self.assertIn('href="https://github.com/ada"', people)
-        self.assertIn("<td>Commodore 64</td>", people)   # the platforms by name
+        self.assertIn("<td>Commodore 64</td>", people)   # the platform whose kit she added, by name
         self.assertNotIn("github.com/air", people)
 
 
