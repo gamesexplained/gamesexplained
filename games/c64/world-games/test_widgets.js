@@ -18,6 +18,10 @@
 //   random weights, the joystick at random or pushing in the windows;
 // - wlJudges against wl_judges ($14ED) frame by frame, for 3,000 holds with random timings,
 //   random numbers and a random frame for the weight to come down;
+// - wlHolds on the game's own lift and judges ($183D, $14ED), both lifts at every weight from 75
+//   to 300 kg: played with a push in the last frame of each window, it marks one window, the last
+//   opened; a push at any frame of that window ends the lift with no white lamp, and held through
+//   it the judges vote, two white lamps at least, before down puts the weight down;
 // - wlDrawPlates against wl_draw_plates ($1A14) for 3,000 poses and weights one after another,
 //   every byte of the bitmap after each (weightlifting).
 // And discoveries.html's wg-disc block, with its copy of wg-rules held to index.html's:
@@ -31,8 +35,8 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] || 'index.html';
 g.sameBlock('wg-rules');
-const { wlGood, bullNext, lrPoints, suFinal, wlPlates, wlStrip, wlDivide, wlLift, wlJudges, wlDrawPlates } =
-  g.run(page, 'wg-rules', 'wlGood', 'bullNext', 'lrPoints', 'suFinal', 'wlPlates', 'wlStrip', 'wlDivide', 'wlLift', 'wlJudges', 'wlDrawPlates');
+const { wlGood, bullNext, lrPoints, suFinal, wlPlates, wlStrip, wlDivide, wlLift, wlHolds, wlJudges, wlDrawPlates } =
+  g.run(page, 'wg-rules', 'wlGood', 'bullNext', 'lrPoints', 'suFinal', 'wlPlates', 'wlStrip', 'wlDivide', 'wlLift', 'wlHolds', 'wlJudges', 'wlDrawPlates');
 let bad = 0, cases = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 const noio = { read(a) { throw new Error('read $' + a.toString(16)); }, write(a) { throw new Error('write $' + a.toString(16)); } };
@@ -257,6 +261,78 @@ const noio = { read(a) { throw new Error('read $' + a.toString(16)); }, write(a)
   }
   if (!ends.down || !ends['long 5'] || !ends['long 6']) fail('wlJudges: an ending never came', JSON.stringify(ends));
   console.log('weightlifting: the judges ended ' + JSON.stringify(ends));
+}
+// weightlifting: the last window of each lift (wlHolds), on the game's own code from the lift's start
+// to the weight put down. The judges first read the stick byte ($43) the lift's last frame left.
+{
+  const base = g.listing('parts/weightlifting/listing.json').ram;
+  let seed = 0x3C4D5E6;
+  const rnd = (n) => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) % n; };
+  const hooks = { 0x1E3A: (c) => { c.rts(); }, 0x1E8B: (c) => { c.rts(); }, 0x1A14: (c) => { c.rts(); },
+    0x2800: (c) => { c.rts(); }, 0x2803: (c) => { c.rts(); }, 0x1966: () => true };
+  const ended = (m) => !!(m[0x3A] & 0x40);
+  // one frame of the lift with the stick held, as wl_script runs it
+  const frame = (m, stick) => { m[0x43] = ~stick & 0xFF; new CPU(m, { port: 0x35, io: noio }).call(0x183D, { a: 0, x: 0, y: 0 }, { hooks }); };
+  // the judges on the stick the lift ended with, down once all three lamps are lit: the lamps, the
+  // white ones and how they ended
+  function judges(m) {
+    const col = new Uint8Array(1024), R = Array.from({ length: 4096 }, () => rnd(256));
+    for (const o of [0, 16, 31]) col[0x2D3 + o] = col[0x2D5 + o] = 12;
+    const lamps = () => [0, 16, 31].map((o) => col[0x2D3 + o] === 1 ? 1 : col[0x2D5 + o] === 2 ? 2 : 0);
+    const io = { read(a) { if (a >= 0xD800 && a < 0xDC00) return col[a - 0xD800] | 0xF0; throw new Error('read $' + a.toString(16)); },
+      write(a, v) { if (a >= 0xD800 && a < 0xDC00) col[a - 0xD800] = v & 15; else if (a !== 0xD028) throw new Error('write $' + a.toString(16)); } };
+    let gi = 0, first = true, voted = false, stop = '';
+    m[0x46] = 0; m[0x3B] = 0;
+    new CPU(m, { port: 0x35, io }).call(0x14ED, { a: 0, x: 0, y: 0 }, { maxSteps: 1e7, hooks: {
+      0x1502: () => {
+        if (first) { first = false; return; }
+        if (voted) { voted = false; return; }
+        m[0x3B] = (m[0x3B] + 1) & 0xFF; m[0x43] = lamps().every((l) => l) ? ~2 & 0xFF : 0xFF;
+      },
+      0x1525: () => { voted = true; },
+      0x1539: () => { stop = 'down'; return true; },
+      0x155B: () => { stop = 'long'; return true; },
+      0x1568: () => { stop = 'long'; return true; },
+      0x197D: (c) => { c.a = R[gi++]; c.z = c.a === 0 ? 1 : 0; c.n = c.a >> 7; c.rts(); },
+    } });
+    return { lamps: lamps(), whites: m[0x46], stop };
+  }
+  const seen = {};
+  for (const script of [2, 3]) for (let kg = 75; kg <= 300; kg += 5) {
+    const factor = base[0x1493 + kg / 5 - 15], m = base.slice(), w = (a) => m[a] | m[a + 1] << 8;
+    for (const a of [0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x26, 0x27, 0x2A, 0x2B, 0x2C, 0x2D, 0x3A, 0x3D, 0x40, 0x42, 0xF0]) m[a] = 0;
+    m[0x4B] = factor; m[0x38] = m[0x2E] = 0x1E;
+    new CPU(m, { port: 0x35, io: noio }).call(0x1969, { a: script, x: 0, y: 0 });
+    // a push in the last frame of each window until wlHolds marks one, which must be the last
+    let opened = 0, marked = 0;
+    for (let f = 0; f < 4000 && !ended(m) && !wlHolds(base, { win: m[0x2B], goodAt: w(0x12) }); f++) {
+      const before = m[0x2B];
+      frame(m, before === 1 ? m[0x2C] : 0);
+      if (m[0x2B] > Math.max(0, before - 1)) opened++;
+    }
+    const len = m[0x2B], last = script === 2 ? 3 : 5;
+    cases++;
+    if (ended(m) || opened !== last) { fail('wlHolds: the window marked', script, kg, opened, len); continue; }
+    // every frame of the window with a push in it, and the window held through
+    for (let k = 0; k <= len; k++) {
+      const n = m.slice(), wn = (a) => n[a] | n[a + 1] << 8;
+      let stick = 0;
+      for (let f = 0; f < 1000 && !ended(n); f++) {
+        stick = f === k && k < len ? 2 : 0;
+        if (f > k && wlHolds(base, { win: n[0x2B], goodAt: wn(0x12) })) marked++;
+        frame(n, stick);
+      }
+      const r = n[0x3D] === 1 ? judges(n) : { lamps: [0, 0, 0], whites: 0, stop: 'failed' };
+      const held = k === len, ok = held ? r.stop === 'down' && r.whites >= 2 && r.lamps.every((l) => l) : r.whites === 0;
+      cases++;
+      if (!ok || !ended(n)) fail('wlHolds', script, kg, k, held, n[0x3D], JSON.stringify(r));
+      const key = (held ? 'held: ' : 'pushed: ') + (r.stop === 'failed' ? 'failed lift' : r.whites + ' white');
+      seen[key] = (seen[key] || 0) + 1;
+    }
+    cases++;
+    if (marked) fail('wlHolds: a window after the last', script, kg, marked);
+  }
+  console.log('weightlifting: the last window ' + JSON.stringify(seen));
 }
 // weightlifting: the plates drawn, one pose after another
 {

@@ -70,8 +70,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-wl-meter b{position:absolute;top:0;bottom:0;right:0;width:0;background:var(--green)}
 .wg-wl-meter i{position:absolute;top:0;bottom:0;left:0;width:0;background:rgba(31,95,168,.3);border-right:3px solid var(--accent);box-sizing:border-box}
 .wg-wl-meter s{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--ink);display:none}
-.wg-wl-meter.hold{background:#f2c4bd}
-.wg-wl-meter.hold b{left:0;right:auto;background:#fff;border-right:1px solid var(--line)}
+.wg-wl-meter.hold{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--line) 6px 12px)}
 .wg-wl-pad{margin-top:12px}
 .wg-wl-pad .wg-btn{touch-action:none;user-select:none;-webkit-user-select:none;padding:8px 16px;font-size:14px}
 .wg-wl-pad .wg-btn.held{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -80,6 +79,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wg-win span{flex:1;min-width:0;height:16px}
 .wg-win span i{display:flex;justify-content:flex-end;height:100%;background:var(--line);border-radius:3px;overflow:hidden}
 .wg-win span b{display:block;height:100%;background:var(--green);min-width:2px}
+.wg-win span i.hold{background:repeating-linear-gradient(135deg,var(--line) 0 5px,var(--surface-2) 5px 10px)}
 .wg-bars{display:flex;gap:3px;align-items:flex-end;height:120px;margin:8px 0 0}
 .wg-bars div{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:pointer}
 .wg-bars i{display:block;width:100%;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px}
@@ -180,7 +180,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">06 · Weightlifting</p>
   <h2 class="t">The heavier the weight, the later the push</h2>
   <div class="wg-intro">
-    <p class="lede">A lift is a script of poses, with windows where a push on the joystick counts. Only the last part of each window is good, and it shrinks as the weight goes up. Choose a lift and a weight, press Start, and push when the bar reaches the green.</p>
+    <p class="lede">A lift is a script of poses, with windows where a push on the joystick counts. Only the last part of each window is good, and it shrinks as the weight goes up. Choose a lift and a weight, press Start, and push when the bar reaches the green. The last window of each lift is the exception: hold the weight up until it runs out, and pull down only once the judges' lamps are lit.</p>
     <figure><img src="reference/weightlifting.png" alt="A weightlifter in a blue singlet stands behind a barbell with red plates on a platform in a grey hall, the judges’ lamps in the panel below" width="384" height="272"><figcaption>Weightlifting, Soviet Union</figcaption></figure>
   </div>
   <div class="plate">
@@ -192,7 +192,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="wg-bar wg-wl-pad"><button type="button" class="wg-btn" id="wg-wl-go">Start</button><button type="button" class="wg-btn" data-stick="1" aria-label="Joystick up">Up ▲</button><button type="button" class="wg-btn" data-stick="2" aria-label="Joystick down">Down ▼</button></div>
     <p class="wg-out" id="wg-wl-say" aria-live="polite"></p>
     <div id="wg-wl-wins"></div>
-    <p class="cap">The arena, the lifter's poses and the plates are drawn by the page from the event's bitmap (<code>$6000</code>), its sprites (<code>wl_shapes</code>, <code>$9000</code>) and the plates' routine (<code>wl_draw_plates</code>, <code>$1A14</code>). The lift runs the game's scripts (<code>wl_script_data</code>, <code>$2010</code>) 50 times a second, as a PAL machine does, and the judges vote as <code>wl_judges</code> (<code>$14ED</code>) does, with the page's random numbers in place of the 256 the game reads from the sound chip's noise. <code>test_widgets.js</code> holds the page's lift, judges and plates to the game's routines, frame by frame. The bar above the buttons is the page's own: the game shows no timer. Below it, every window of both lifts at the weight, each bar as long as its window; the good part's size is the window's length times the weight's factor, over 256, at least one frame (<code>wl_multiply</code>, <code>$1DCB</code>).</p>
+    <p class="cap">The arena, the lifter's poses and the plates are drawn by the page from the event's bitmap (<code>$6000</code>), its sprites (<code>wl_shapes</code>, <code>$9000</code>) and the plates' routine (<code>wl_draw_plates</code>, <code>$1A14</code>). The lift runs the game's scripts (<code>wl_script_data</code>, <code>$2010</code>) 50 times a second, as a PAL machine does, and the judges vote as <code>wl_judges</code> (<code>$14ED</code>) does, with the page's random numbers in place of the 256 the game reads from the sound chip's noise. <code>test_widgets.js</code> holds the page's lift, judges and plates to the game's routines, frame by frame. The bar above the buttons is the page's own: the game shows no timer. Below it, every window of both lifts at the weight, each bar as long as its window; the good part's size is the window's length times the weight's factor, over 256, at least one frame (<code>wl_multiply</code>, <code>$1DCB</code>). The last window of each lift is striped: the script gives it a good part, but a push there still has the stick down in the frame the judges first look at it.</p>
   </div>
   <p>The weight is chosen with left and right, 75 kg to 225 kg in steps of 5 (<code>wl_choose_weight</code>, <code>$13B7</code>). Once fire confirms it, the weight's factor comes from <code>wl_timing</code> (<code>$1493</code>), 31 bytes from <code>$FF</code> at 75 kg down to 1 at 225 kg. A push in the good part counts, and one before it sends the script to its failed lift.</p>
   <p>The table ends at 225 kg, but the weight does not. After a round with a good lift, the next round starts 5 kg above it, so a good lift at 225 kg is followed by 230 kg, and the game reads the 32nd factor from the next routine's code (<a href="discoveries.html#weights">Discoveries</a>). At 865 kg the plates stop the machine (<a href="discoveries.html#crash">Discoveries</a>).</p>
@@ -580,6 +580,11 @@ function wlLift(ram, script, factor) {
   };
   return S;
 }
+// wlHolds: whether a lift's open window is one to hold through: a push in its good part ends the
+// script (00, the last window of the snatch and of the clean and jerk), and the judges first look
+// at the stick in that same frame ($1502), see down and put the weight down; a push before it is
+// a failed lift.
+function wlHolds(ram, S) { return S.win > 0 && ram[S.goodAt] === 0; }
 // wlJudges: the judges of a lift held overhead (wl_judges, $14ED), the pushes' timing and count
 // from the lift. look(stick, rnd) is one pass of its loop at the hold's count, hold ($3B, which the
 // interrupt counts up each frame), rnd() giving the next random byte ($197D). It gives 'down',
@@ -804,13 +809,13 @@ function wlWidget(ram) {
     while (a < end) {
       const b = ram[a];
       if (b === 0) a += 2; else if (b === 0xF0 || b === 0xF4) a += 3; else if (b === 0xF3) a += 1; else if (b === 0xF6) a += 2;
-      else if (b > 0xF0) { w.push([b & 15, ram[a + 1]]); a += 4; } else a += 2;
+      else if (b > 0xF0) { w.push([b & 15, ram[a + 1], !ram[ram[a + 2] | ram[a + 3] << 8]]); a += 4; } else a += 2;
     }
     return w;
   }
   const lifts = [windows(2), windows(3)];
   let lift = 0, phase = 'idle', S = null, J = null, queue = [], pose = 0, drawn = -1, lamps = [0, 0, 0], skin = null;
-  let held = 0, tapped = 0, last = 0, acc = 0, running = false, notes = [], shown = null;
+  let held = 0, tapped = 0, last = 0, acc = 0, running = false, notes = [], shown = null, lit = -1, pushedLast = false;
   const plates = { st: { f2: 0, top: 0, ptr: 0 }, bm: ram.slice() };
   const w5 = () => +kg.value / 5, factor = () => ram[0x1493 + w5() - 15];
 
@@ -845,13 +850,18 @@ function wlWidget(ram) {
     wlDrawPlates(ram, plates.bm, plates.st, p, (ram[pa + 2] + 0x68) & 0xFF, w5(), wlPlates(ram, w5()).e);
     drawn = -1;
   }
+  // the bar for a window: its good part at the end, or striped with none for the last window of a
+  // lift, where a push puts the weight down (wlHolds)
+  const bar = (mask, len, good, hold, at) => hold
+    ? { hold: true, len, at, good: 0, label: 'Last window: hold it up', n: at + ' of ' + len }
+    : { len, good, at, label: Dir(mask) + ', ' + len + ' frames, the last ' + good + ' good', n: at + ' of ' + len };
   function paint() {
     const key = pose + ',' + lamps + ',' + skin;
     if (key !== drawn) { draw(); drawn = key; }
-    // the bar: the open window, its good part at the end; during the judges, the hold
+    // the bar: the open window; during the judges, the hold, green from the frame the third lamp lit
     let m = null;
-    if (phase === 'judges') m = { hold: true, len: 255, at: J.hold, good: 48, label: 'Held overhead: down puts the weight down', n: J.hold + ' frames' };
-    else if (S && S.win && phase === 'lift') m = { len: S.len, at: S.len - S.win, good: S.good, label: Dir(S.mask) + ', ' + S.len + ' frames, the last ' + S.good + ' good', n: (S.len - S.win) + ' of ' + S.len };
+    if (phase === 'judges') m = { hold: true, len: 255, at: J.hold, good: lit < 0 ? 0 : 255 - lit, label: lit < 0 ? 'Hold it up: the judges vote' : 'Lamps lit: pull down', n: J.hold + ' frames' };
+    else if (S && S.win && phase === 'lift') m = bar(S.mask, S.len, S.good, wlHolds(ram, S), S.len - S.win);
     else if (S && S.win && phase === 'ready') m = { len: S.len, at: 0, good: 0, label: Dir(S.mask) + ' when you are ready', n: '' };
     if (m) shown = m;
     const v = shown || { len: 1, at: 0, good: 0, label: '', n: '' };
@@ -866,39 +876,40 @@ function wlWidget(ram) {
     return (whites >= 2 ? '<b>Good lift</b>: ' + whites + ' white lamps.' : '<b>No lift</b>' + (J ? ': ' + whites + ' white lamp' + (whites === 1 ? '' : 's') + '.' : '.')) + ' ' + notes.join(' ');
   }
   function tell() {
-    if (phase === 'idle') say.innerHTML = 'Choose a lift and a weight, then press Start. Pull down to take hold of the bar and push up to begin; then, in each window, push the way the bar names once it reaches the green.';
+    if (phase === 'idle') say.innerHTML = 'Choose a lift and a weight, then press Start. Pull down to take hold of the bar and push up to begin; then, in each window, push the way the bar names once it reaches the green. The last window has no green: hold the weight up until it runs out, and pull down once the three lamps are lit.';
     else if (phase === 'ready') say.innerHTML = !S || S.mask !== 1 ? 'Pull <b>down</b> to take hold of the bar.' : 'Push <b>up</b> to begin ' + NAMES[lift] + '.';
-    else if (phase === 'lift') say.innerHTML = notes.length ? notes.join(' ') : 'In each window, push the way the bar names once it reaches the green.';
-    else if (phase === 'judges') say.innerHTML = 'Overhead. A judge votes white while the hold is under 48 frames and red after; pull <b>down</b> to put the weight down.';
+    else if (phase === 'lift') say.innerHTML = (notes.length ? notes.join(' ') : 'In each window, push the way the bar names once it reaches the green.') + (S && wlHolds(ram, S) ? ' <b>Hold it up</b> through this last window: down now puts the weight down.' : '');
+    else if (phase === 'judges') say.innerHTML = lit < 0 ? 'Overhead. <b>Hold it up</b> while the judges vote: white while the hold is under 48 frames, red after.' : 'All three lamps are lit: pull <b>down</b> to put the weight down.';
     else say.innerHTML = verdict();
   }
   function script(n) { S = wlLift(ram, n, factor()); }
   function judge(stick) {
     const r = J.look(stick, () => Math.random() * 256 | 0);
     lamps = J.lamps.slice(); skin = J.skin;
+    if (!r && !J.left && lit < 0) { lit = J.hold; tell(); }
     if (!r) return;
     skin = null;
     queue = r === 'down' ? [4] : [J.end];
     if ((r === 'down' || J.end === 6) && J.whites >= 2) queue.push(7);
     if (r === 'long') notes.push('Held for 255 frames: too long.');
-    if (r === 'down' && !J.hold) notes.push('The stick was still down as the lift ended, and down puts the weight down: no judge had voted yet.');
+    if (r === 'down' && !J.hold && !pushedLast) notes.push('The stick was still down as the lift ended, and down puts the weight down: no judge had voted yet.');
     phase = 'after'; script(queue.shift()); tell();
   }
   function tick(stick) {
     if (phase === 'judges') { J.hold++; judge(stick); return; }
-    const was = S.win, opened = S.opened, mask = S.mask, len = S.len, good = S.good;
+    const was = S.win, opened = S.opened, mask = S.mask, len = S.len, good = S.good, hold = phase === 'lift' && wlHolds(ram, S);
     S.frame(stick);
     if (S.pose >= 0 && S.pose !== pose) show(S.pose);
     if (phase === 'lift') {
-      const bar = (at) => ({ len, good, at, label: Dir(mask) + ', ' + len + ' frames, the last ' + good + ' good', n: at + ' of ' + len });
       if (S.push) {
         const left = S.push.left;
-        notes.push(Dir(mask) + (S.push.ok ? ': good, ' : ': too early, ') + left + ' frame' + (left === 1 ? '' : 's') + ' before the end' + (S.push.ok ? '.' : ', with only the last ' + good + ' good.'));
-        shown = Object.assign(bar(len - left), { mark: len - left }); tell();
+        if (hold) { pushedLast = true; notes.push('Down in the last window puts the weight down: hold it up until that window runs out.'); }
+        else notes.push(Dir(mask) + (S.push.ok ? ': good, ' : ': too early, ') + left + ' frame' + (left === 1 ? '' : 's') + ' before the end' + (S.push.ok ? '.' : ', with only the last ' + good + ' good.'));
+        shown = Object.assign(bar(mask, len, good, hold, len - left), { mark: len - left }); tell();
       } else if (was && (!S.win || S.opened !== opened)) {
-        notes.push(Dir(mask) + ': no push before the window closed.');
-        shown = bar(len); tell();
-      }
+        notes.push(hold ? 'Held through the last window.' : Dir(mask) + ': no push before the window closed.');
+        shown = bar(mask, len, good, hold, len); tell();
+      } else if (S.opened !== opened) tell();
     }
     if (!S.ended) return;
     if (phase === 'ready') { phase = 'lift'; script(2 + lift); shown = null; }
@@ -921,7 +932,7 @@ function wlWidget(ram) {
     if (running) requestAnimationFrame(loop);
   }
   function stop(to) {
-    running = false; phase = to; S = null; J = null; queue = []; lamps = [0, 0, 0]; skin = null; notes = []; shown = null;
+    running = false; phase = to; S = null; J = null; queue = []; lamps = [0, 0, 0]; skin = null; notes = []; shown = null; lit = -1; pushedLast = false;
     show(0); go.textContent = 'Start'; tell(); paint();
   }
   function start() {
@@ -958,9 +969,9 @@ function wlWidget(ram) {
     let h = '';
     for (const [i, ws] of lifts.entries()) {
       h += '<div class="wg-sub">' + ['The snatch', 'The clean and jerk'][i] + '</div>';
-      for (const [d, len] of ws) {
+      for (const [d, len, hold] of ws) {
         const g = wlGood(len, f);
-        h += '<div class="wg-win"><em>' + dirs(d) + ', ' + len + ' frames, ' + g + ' good</em><span><i style="width:' + (100 * len / 160) + '%"><b style="width:' + (100 * g / len) + '%"></b></i></span></div>';
+        h += '<div class="wg-win"><em>' + dirs(d) + ', ' + len + ' frames, ' + (hold ? 'hold it up' : g + ' good') + '</em><span><i' + (hold ? ' class="hold"' : '') + ' style="width:' + (100 * len / 160) + '%">' + (hold ? '' : '<b style="width:' + (100 * g / len) + '%"></b>') + '</i></span></div>';
       }
     }
     box.innerHTML = h;

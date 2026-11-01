@@ -85,3 +85,10 @@ measured turned out to be the thrower's legs and the caber's foot.
 
 The five bulls were compared in the chute pixel for pixel; they are
 the same picture with a different name.
+
+On 1 November 2026 Aaron found the lift's bar misleading in its last
+window: it showed a green part, and a push there loses the lift. The
+bar now stripes that window with no green and asks the player to hold,
+and during the judges it turns green once all three lamps are lit.
+`wlHolds` marks the window, and `test_widgets.js` plays every frame of
+it on the game's code at every weight.
