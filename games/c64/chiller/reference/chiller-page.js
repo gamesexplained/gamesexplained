@@ -36,6 +36,8 @@
     }
   }
 
+  function crossTaken(who, col) { return ((col >> 2) & 1) !== who; }
+
   // ---- 04: crosses ----
   function crosses(G) {
     const cv = $('#xc'); if (!need(cv)) return;
@@ -46,7 +48,7 @@
       // standing frames: the boy's $E2, the girl's $F2 (player_swap adds $10); sprite colours as
       // the game sets them ($D027 = 10, $D025 = 9, $D026 = 1)
       spriteMC(ctx, G, who ? 0xF2 : 0xE2, 40, 10, s, [10, 9, 1]);
-      const taken = ((col >> 2) & 1) === who;
+      const taken = crossTaken(who, col);
       // the cross, tile $57, drawn in multicolour as the screen shows it
       if (!taken) C64.drawGlyphMC(ctx, G.ram.subarray(0x8000, 0x8400), 0x57, 110 * s, 22 * s, s * 2,
         [null, C64.PAL[1], C64.PAL[7], C64.PAL[col & 7]]);
@@ -98,6 +100,16 @@
     const F = [0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xE0, 0xE1, 0xE2, 0xE6];
     for (let who = 0; who < 2; who++) F.forEach((p, j) =>
       spriteMC(ctx, G, p + 16 * who, 12 + j * 58 + (j >> 2) * 8, 6 + who * 68, 2, [10, 9, 1]));
+    if (globalThis.ChillerGIF) {
+      const wrap = document.createElement('div'); wrap.className = 'ch-gif-sheet'; cv.before(wrap); wrap.append(cv);
+      for (let who = 0; who < 2; who++) for (let direction = 0; direction < 2; direction++) {
+        const name = (who ? 'girl' : 'boy') + '-walk-' + (direction ? 'right' : 'left');
+        const frames = [0,1,2,3].map(i => 0xD8 + 16 * who + direction * 4 + i);
+        const button = ChillerGIF.button(G, frames, 10, name);
+        button.style.left = (direction ? '66%' : '32%'); button.style.top = (who ? '96%' : '48%');
+        wrap.append(button);
+      }
+    }
   }
 
   // ---- the enemies of each screen, animated ----
@@ -168,7 +180,13 @@
       const ctx = C64.canvas(cv, 24 * 3, 21 * 3);
       const draw = t => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height); spriteMC(ctx, G, a.f[t % a.f.length], 0, 0, 3, [a.col, 9, 1]); };
       draw(0);
-      if (a.f.length > 1) animate(draw);
+      if (a.f.length > 1) {
+        animate(draw);
+        if (globalThis.ChillerGIF) {
+          const wrap = document.createElement('span'); wrap.className = 'ch-gif-wrap'; cv.before(wrap); wrap.append(cv);
+          wrap.append(ChillerGIF.button(G, a.f, a.col, 'enemy-' + a.first.toString(16) + '-' + a.last.toString(16)));
+        }
+      }
     }
   }
 
