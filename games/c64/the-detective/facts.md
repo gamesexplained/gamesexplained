@@ -8,8 +8,10 @@ from reading the code in the snapshot named in `orientation.md`
 
 ## Build
 
-A cracked tape release (`orientation.md`, "The image"). No build
-identifier was found in the game. The title screen says
+A cracked tape release (`orientation.md`, "The image"). Two other
+cracked releases, run to `$2000` and compared byte for byte, hold the
+same program (`orientation.md`, "Other releases compared"); no uncracked
+original was compared. No build identifier was found in the game. The title screen says
 `© A.P.S. SOFTWARE 1986` (`$22E3`), and the credit line at `$7A00`
 reads `THE DETECTIVE GAME - WRITTEN BY SAM....CHARACTERS BY PAUL
 JAY....PLOT CUNNINGLY DEVISED BY THE MAGNIFICENT SEVEN....   PRESS FIRE
@@ -156,6 +158,26 @@ Gabriel (`$ACEC`); he places the bomb (`$B198`) and, last, takes the
 ammunition from place `$18` (`$B1E6`). Each death counts in `$C8`, which
 other scripts test (the Major asks about the piano once two have died).
 
+Each step of Dingle's second script waits on the player's room (opcode
+24), never on the clock: for room 1 or 15 before he disappears
+(`$B09C`); for room 0, 13, 7, 11 or 12 before Cynthia (`$B0B1`); for the
+player to leave room 23 before the bomb (`$B0D1`); for room 14, 15 or 8
+before the Doctor (`$B0DF`); for room 14 or 15 before Gabriel
+(`$B134`); for the player to leave room 10 before the ammunition
+(`$B14F`). Between them are waits of 260, 368, 122 and 632, two of them
+lengthened at random (`$B0DC`, `$B14C`). A wait (opcode 0, `$A519`)
+counts down once every 16 interpreter rounds of nine calls, when the low
+four bits of `$CA` are zero. *live*, 1 November 2026: from
+`work/play-hall.vsf`, the interpreter (`$A460`) ran 5,938 times in 500
+frames and 35,148 times in the next 3,000 (non-stopping checkpoints,
+against `$2ACC` once a frame), 11.7 calls a frame, so a wait of one is
+about 12 frames there. The rate depends on the main loop's load and was
+measured only in the hall.
+
+The Doctor's announcement is reached by chance: once a death is counted
+(opcode 21 at `$AE90`), his loop at `$AE97` ends with a random jump
+(`$AED7`), and falling through it starts the walk at `$AEDA`.
+
 ## Objects
 
 52 objects (names at `$8151`); their places at `$1DAC` start from the
@@ -182,9 +204,23 @@ holds five; the envelopes hold ten (`$8856`).
 Fire in play opens the investigation menu (state 3). Its pointer moves
 with momentum (`$315F`): every fourth frame the stick changes its speed
 by one, within -8 to 7; every sixth frame the speed falls by one towards
-zero; it bounces off the box's edges. The icons (48 bytes each at
-`$FA00`) are copied into the panel's character set for each menu
-(`$86EE`). 18 icon actions (`$87ED`) include examine, take, the
+zero; the position moves by the speed, and past the box's edges (X `$F4`
+and `$13A`, Y `$C0` and `$EA`) it is put back (to `$F4`, `$131`, `$C0`,
+`$E1`) and the speed's bits are flipped with `EOR #$FF`, so 3 becomes -4.
+The menu opens with the pointer at X `$F0`, Y `$C8`, no speed (`$3308`).
+`$33A3` names the icon place under the pointer: 22 pixels across from X
+`$EE` in steps of 32, the middle 12 of 16 lines from Y `$BE`. The page's
+port is held against `$3185`-`$3248` and `$33A3` by `test_pointer.js`
+(120,000 frames of random stick input and 18,972 positions on
+1 November 2026). The icons (48 bytes each at `$FA00`, six multicolour
+characters, three across and two down) are copied into the panel's
+character set for each menu (`$86EE`, `$873F`). Drawn from those bytes,
+the pictures are: 0 an open box, 1 a magnifying glass, 2 a notepad, 3 a
+red shape on a blue foot, 4 a sheet with a cross, 5 red letters, 6 a
+gun, 7 handcuffs, 8 and 9 arrows up and down through a line, 10 a key,
+11 a "Q", 12 an open book, 13 a knife and fork, 14 a cross, 15 a clock
+face, 16 a box and an envelope, 17 a white shape with a red bar. Icons 4, 5 and 17 point at a
+lone `RTS` (`$883A`). 18 icon actions (`$87ED`) include examine, take, the
 inventory, put in, read (`$9E6D`), consume (`$A16D`), time/pause
 (`$A1E0`), use (`$A2AF`, five-byte records at `$A3E9`), question
 (`$B270`), accuse (`$BB50`) and the gun (`$BCAF`).
@@ -198,10 +234,34 @@ away.
 
 32 door records of eight bytes at `$1F00`: the two rooms and the door's
 place in each, the flags (+4: bit 0 open, bit 1 locked), the door's type
-on each side, and its key (+7). Doors of type 8 are secret passages: drawn
-closed, they restore the picture behind them and cannot be seen
-(`$3B8B`); examined, "A SECRET PASSAGE!" (`$892A`). A closed door of type
-10 is drawn as plain floor (`$3B97`). Three doors start locked (`$86E2`).
+on each side, and its key (+7). Records 29-31 name no room (`$FF`).
+`build_room` draws every door of the room with the room on either side
+(`$38FB`), open through the table at `$39B4` and closed through
+`$3B24`, after laying the floor row (`$38F3`), and then blanks rows
+0-13 right of the picture (`$3954`).
+
+A type with bits 0-1 clear is in the back wall, one with value 2 there is
+a gap in the front row (`$3DD5`). `$892A` names the kinds by the upper
+bits: types 0-3 "A DOOR", 8-11 "A SECRET PASSAGE!" (and marks the door
+open), 4-7 nothing. Type 4 draws nothing open or closed and type 6 is
+drawn as a gap either way: openings. A closed type 8 restores the picture
+behind it and cannot be seen (`$3B8B`); a closed type 10 is drawn as plain
+floor (`$3B97`). Six records have a secret passage on one side (9, 23 and
+25-28). The table's `+1`/`+3` places are map columns; types 0 and 8 add
+the room's depth (`$1BE0`) divided by four.
+
+The start of a game (`$8680`) sets every door's flags to closed, except
+a record whose two types ORed together and masked with `$FC` give 4 (an
+opening on at least one side and no secret passage: records 10, 18, 19
+and 24), which it marks open, and then locks
+doors 2, 3 and 20 (`$86E2`): the study's and Bentley's, whose key (+7)
+is object 15, "A BUNCH OF KEYS", and the Professor's, whose key is object
+16, "A BIG IRON KEY". The hand-over snapshot holds other flags (only
+records 24 and 31 open, none locked).
+
+The Maps tab draws every room with its doors as a game starts, and
+`test_rooms.js` holds the page's port against `build_room` and `$8680`
+on the kit's 6502 for all 30 rooms (245 cases on 1 November 2026).
 
 ## The safe and the library
 

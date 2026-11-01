@@ -108,3 +108,23 @@ next stream and jumps back to `$0812`, where the first stage has put a
 second decoder of 256 bytes. A later stage copies a mover to `$0100`
 and runs it. The last jump lands on `$2000` with the stack pointer at
 `$F2`. How each decoder encodes its data was not studied, by policy.
+
+## Other releases compared
+
+The contributor had two more cracked copies, both disk images, which
+were run to the game's first instruction and compared with
+`work/entry.vsf` byte for byte on 1 November 2026 (`work/unpack3.py`,
+`work/cmp3.py`, `work/cmp4.py`). Neither is used for anything else.
+
+| Image | Program | How it starts | Against `entry.vsf`, `$2000`-`$FFFF` |
+|---|---|---|---|
+| `Detective Game, The (1986)(Argus Press)[a].d64`, disk name `BLENDO75` | `DETECTIVE`, `$0801`-`$B50F`, 44,304 bytes | the same Trianon packer; the file differs from the tape's in 21 bytes near its end | identical; only the screen and zero page below `$0800` differ |
+| `Detective Game, The.d64`, disk name `C64.COM` | `DETECTIVE / WOW`, `$0801`-`$BB46`, 45,895 bytes, between two decoy entries | a "WOW" intro that waits for Space, then the game at `$2000` | the program code and tables are the same; the differences are the state of a game in progress (the variables at `$1C40`-`$1FFF`, the character sets at `$3FF0`-`$47FF` and `$EA00`-`$F1FF` as play arranges them, the sprite shapes the game mirrors in play, the buffer at `$4E00`, the screen, two bytes at `$9161` the code changes; most of the character sets, the mirrored shapes and those two bytes are as in `work/play-hall.vsf`), as if this crack was made from a frozen machine; and seven bytes at `$BAB5`, where an answer's text "SORRY, " reads `01 FC E2 01 FC E2 01` |
+
+The "WOW" copy was made by another group from another starting point,
+a machine frozen in play, and still holds the same program as the tape
+analysed here. The seven bytes at `$BAB5` are that copy's damage, not a
+change in the tape: in the tape they are the plain text the answer
+prints, and in the WOW copy they are not text at all. No uncracked
+original was available, so a change made before all three cracks
+cannot be ruled out.

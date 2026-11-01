@@ -55,15 +55,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Pick a room to draw it from the game's own bytes. Wide rooms scroll in the game; here they are drawn whole.</p>
   <div class="plate">
     <div class="pick"><button type="button" class="step" data-d="-1" aria-label="The room before">◀</button><select id="td-room" aria-label="Room"></select><button type="button" class="step" data-d="1" aria-label="The room after">▶</button></div>
-    <div class="td-row"><label><input type="checkbox" id="td-after"> after two deaths</label></div>
+    <div class="td-row"><label><input type="checkbox" id="td-after"> after two deaths</label><label><input type="checkbox" id="td-open"> every door open</label><label><input type="checkbox" id="td-marks" checked> label doors and furniture</label></div>
     <div class="td-scroll"><canvas id="td-cv" width="640" height="240"></canvas></div>
     <p class="cap" id="td-cap">Drawn in the built site.</p>
   </div>
   <p>Each room is a picture record from the list at <code>$C100</code>, chosen by the room's type in <code>$1BC0</code>. <code>build_room</code> (<code>$388D</code>) clears a map 256 columns wide and 15 rows deep at <code>$0C00</code>, unpacks the record into it (<code>$3BD7</code>), and copies a 40-column window of the map to the screen as the player walks (<code>$35E8</code>). The same record serves several rooms: the corridors upstairs are one picture, and the bedrooms another, told apart by their colours (<code>$1B80</code>, <code>$1BA0</code>) and by which of three sets of characters the room asks for (<code>$1EE0</code>).</p>
-  <p>Doors are not part of the pictures. The game draws them over the map afterwards, from the door table at <code>$1F00</code>, which is why a closed secret passage looks like plain wall here and in the game. The cast and the objects are drawn by other routines again.</p>
+  <p>Doors are not part of the pictures. Once the picture is in, <code>build_room</code> lays a row of floor along the front (<code>$38F3</code>), then looks through the door table at <code>$1F00</code> for every door with the room on either side and draws each one open or closed (<code>$3993</code>). Last, it blanks everything right of the picture. The picture above is drawn the same way, as the doors stand when a game starts.</p>
+</section>
+<section id="doors">
+  <p class="fig">02 · Doors</p>
+  <h2 class="t">Thirty-two doors in one table</h2>
+  <p>Each door is an eight-byte record at <code>$1F00</code>: the room on one side and the door's column there, the room on the other side and its column there, a flags byte (bit 0 open, bit 1 locked), a type for each side, and the object that unlocks it. Twenty-nine records are used; the last three name no room (<code>$FF</code>).</p>
+  <p>The type says where the door is drawn and what it is. An even type with bit 1 clear sits in the back wall, and one with bit 1 set is a gap in the front row of floor. The upper bits give the kind, and the game names the kinds itself when the player investigates a door (<code>$892A</code>): types 0 to 3 are "A DOOR", types 8 to 11 are "A SECRET PASSAGE!", and types 4 to 7 get no answer at all. Those are openings: one of type 4 draws nothing whether open or closed, and one of type 6 is always drawn as a gap.</p>
+  <p>A secret passage hides itself in the drawing. Closed, one in the back wall (type 8) puts back the picture behind it (<code>$3B8B</code>), and one in the floor (type 10) is drawn as six characters of plain floor (<code>$3B97</code>). Investigating it says "A SECRET PASSAGE!", marks it open and redraws it. The house has six, in the kitchen, the cellar, the drawing room and the Reverend's and the Major's rooms, and between the passages and the two areas outside that they lead to.</p>
+  <p>When a game starts (<code>$8680</code>), every door is closed except the four that are an opening on at least one side and a secret passage on neither, and three doors are locked (<code>$86E2</code>): the study's and Bentley's, whose key is object 15 ("A BUNCH OF KEYS"), and the Professor's, whose key is object 16 ("A BIG IRON KEY"). The cast lock and unlock doors as they go, through their scripts.</p>
+  <p>The coloured bars under the picture mark each door's columns, as the drawing routines place them, and each piece of furniture's: the first and last column of the rectangle the player cannot walk through (<code>$1B00</code>, <code>$1B20</code>), named from the list at <code>$8401</code>. The small objects are not drawn anywhere: they are kept in the furniture, and the game lists them only when the player opens it.</p>
 </section>
 <section id="records">
-  <p class="fig">02 · The pictures</p>
+  <p class="fig">03 · The pictures</p>
   <h2 class="t">Seventeen records, packed a bit at a time</h2>
   <p>A record is the address of the next record, the picture's width in columns, and then the picture as a stream of bits, read lowest bit first (<code>$3D56</code>). The stream is a series of runs. Each run is a count byte and one bit: with the bit clear, each character of the run is a whole byte; with it set, a 4-bit high nibble follows and each character of the run takes only 4 bits of its own (<code>$3C3D</code>). A count of zero ends the picture. Rooms are mostly walls and floors drawn from a few neighbouring character codes, so most runs cost half a byte a character.</p>
   <table class="td-tab" id="td-rec"><thead><tr><th>Record</th><th>Address</th><th>Width</th><th>Packed bytes</th><th>Rooms</th></tr></thead><tbody></tbody></table>
@@ -137,6 +146,100 @@ function tdBuildRoom(ram, room, deaths) {
   }
   return { map, left, right };
 }
+// tdFinishRoom(ram, room, built) does the rest of what build_room does to the map once the picture is
+// in: the marker of room type 14 ($24F1), the floor row ($38F3: row 14, columns 0 to the room's width
+// at $1C20 less 1, character $53), every door of the room from the door table at $1F00 ($38FB-$3952,
+// drawn open or closed by bit 0 of its flags through $39B4 and $3B24), and the blanking of rows 0-13
+// right of the picture's last column ($3954). The game saves the map behind each door just before
+// drawing it ($3A27) and a closed door of type 0 or 8 puts that back ($3A58): within build_room the
+// put-back restores what was just saved, so it is left out here. It returns the door list (door
+// number, column, type, open, locked, key object) and the furniture list (number, name, first and
+// last column, nearest and farthest depth). Checked against build_room ($388D) by test_rooms.js.
+function tdFinishRoom(ram, room, built) {
+  const map = built.map;
+  const put = (addr, x, v) => { const i = addr - 0x0C00 + (x & 0xFF); if (i >= 0 && i < map.length) map[i] = v; };
+  const rows3467 = (x, v) => { put(0x0F00, x, v); put(0x1000, x, v); put(0x1200, x, v); put(0x1300, x, v); };
+  const rows37 = (x, v) => { put(0x0F00, x, v); put(0x1000, x, v); put(0x1100, x, v); put(0x1200, x, v); put(0x1300, x, v); };
+  const rows57 = (x, v) => { put(0x1100, x, v); put(0x1200, x, v); put(0x1300, x, v); };
+  const type = ram[0x1BC0 + room] & 0x7F;
+  if (type === 14 && (ram[0x1E68] & 3)) put(0x1500, ram[0x2507 + (ram[0x1E68] & 3)], 0x9D);
+  for (let y = ram[0x1C20 + room]; y > 0; y--) map[0x0DFF + y] = 0x53;
+  const d4 = ram[0x1BE0 + room] >> 2;
+  const frame = (x) => {           // $3A91: six columns, returns the column after them
+    put(0x0E00, x, 0x06); rows3467(x, 0x09); put(0x1100, x, 0x0C); put(0x1400, x, 0x0D); x = (x + 1) & 0xFF;
+    for (let k = 0; k < 4; k++) { put(0x0E00, x, 0x07); rows3467(x, 0x0A); put(0x1100, x, 0x11); put(0x1400, x, 0x13); x = (x + 1) & 0xFF; }
+    put(0x0E00, x, 0x08); rows3467(x, 0x0B); put(0x1100, x, 0x12); put(0x1400, x, 0x14);
+    return (x + 1) & 0xFF;
+  };
+  const bottomOpen = (c) => { put(0x1A00, c, 0x59); for (let k = 1; k <= 4; k++) put(0x1A00 + k, c, 0x5A); put(0x1A05, c, 0x5B); };   // $3B6C
+  const draw = {
+    open: {
+      0: (c) => {                  // $39CC
+        let x = frame((d4 + c - 6) & 0xFF);
+        put(0x10FB, x, 0x10);
+        put(0x0E00, x, 0x5C); rows37(x, 0x5F); put(0x1400, x, 0x5F); x = (x + 1) & 0xFF;
+        for (let k = 0; k < 4; k++) { put(0x0E00, x, 0x5D); rows37(x, 0x20); put(0x1400, x, 0x20); x = (x + 1) & 0xFF; }
+        put(0x0E00, x, 0x5E); rows37(x, 0x60); put(0x1400, x, 0x60);
+      },
+      2: bottomOpen, 6: bottomOpen, 10: bottomOpen,
+      8: (c) => {                  // $3AD9
+        let x = (d4 + c) & 0xFF;
+        for (let k = 0; k < 4; k++) { put(0x1000, x, 0x20); rows57(x, 0x20); x = (x + 1) & 0xFF; }
+        put(0x13FC, x, 0x47); put(0x12FE, x, 0x47); put(0x13FD, x, 0x48); put(0x13FE, x, 0x0A); put(0x13FF, x, 0x31); put(0x12FF, x, 0x30);
+      },
+    },
+    closed: {
+      0: (c) => { const x = frame((d4 + c) & 0xFF); put(0x10FE, x, 0x10); },   // $3B3C, $3BAB
+      2: (c) => { [0x54, 0x55, 0x56, 0x56, 0x57, 0x58].forEach((v, k) => put(0x1A00, c + k, v)); },   // $3B51
+      6: bottomOpen,
+      8: () => {},                 // $3B8B: the picture behind it, unchanged
+      10: (c) => { for (let k = 0; k < 6; k++) put(0x1A00, c + k, 0x53); },   // $3B97
+    },
+  };
+  const doors = [];
+  for (let d = 0; d < 32; d++) {
+    const o = 0x1F00 + d * 8;
+    let col, kind;
+    if (ram[o] === room) { col = ram[o + 1]; kind = ram[o + 5]; }
+    else if (ram[o + 2] === room) { col = ram[o + 3]; kind = ram[o + 6]; }
+    else continue;
+    const open = !!(ram[o + 4] & 1);
+    const f = draw[open ? 'open' : 'closed'][kind];
+    if (f) f(col);
+    doors.push({ door: d, col, type: kind, open, locked: !!(ram[o + 4] & 2), key: ram[o + 7], to: ram[o] === room ? ram[o + 2] : ram[o] });
+  }
+  for (let row = 0; row < 14; row++) for (let y = built.right; y < 256; y++) map[row * 256 + y] = 0x20;
+  // the room's furniture, from its list at $1C40 ($2F5E)
+  const furniture = [];
+  let y = -1;
+  for (let x = room; x > 0; x--) { do { y++; } while (ram[0x1C40 + y] < 0x80); }
+  for (;;) {
+    y++;
+    const v = ram[0x1C40 + y];
+    if (v >= 0x80) break;
+    if (v === 0) continue;
+    furniture.push({ n: v, first: ram[0x1B00 + v], last: ram[0x1B20 + v], near: ram[0x1B40 + v], far: ram[0x1B60 + v] });
+  }
+  return { doors, furniture };
+}
+// tdNewGame(ram) changes a copy of the listing's bytes as the start of a game does ($8680): every
+// door's flags cleared, except a record whose two types ORed and masked with $FC give 4, which is
+// marked open; doors
+// 2, 3 and 20 locked ($86E2); the drawing room's list starting with furniture 5 in place of 27, and
+// the other entries the set-up clears ($86C4-$86DC). Checked against $8680 by test_rooms.js.
+function tdNewGame(ram) {
+  const m = ram.slice();
+  let last = 0;
+  for (let d = 0; d < 32; d++) {
+    const o = 0x1F00 + d * 8;
+    last = ((m[o + 5] | m[o + 6]) & 0xFC) === 4 ? 1 : 0;
+    m[o + 4] = last;
+  }
+  m[0x1C40] = 5;
+  for (const a of [0x1C41, 0x1C42, 0x1C60, 0x1C8B, 0x1C7A, 0x1C4C, 0x1C6A]) m[a] = 0;
+  m[0x1F14] = m[0x1F1C] = m[0x1FA4] = 2;
+  return m;
+}
 // end of td-rooms
 </script>
 <script>
@@ -164,13 +267,23 @@ function tdBuildRoom(ram, room, deaths) {
     const sel = $('td-room');
     rooms.forEach((n, i) => sel.add(new Option('Room ' + i + ': ' + n, String(i))));
     sel.value = '9';
+    // the furniture's names, string n of the list at $8401
+    const furnName = [];
+    for (let a = 0x8401, n = 0; n < 40; n++) { let e = a; while (r[e]) e++; furnName.push(String.fromCharCode(...r.subarray(a, e)).replace(/\//g, '\'')); a = e + 1; }
     const cv = $('td-cv');
     function draw() {
       const room = +sel.value, deaths = $('td-after').checked ? 2 : 0;
-      const { map, left, right } = tdBuildRoom(r, room, deaths);
-      const lo = (r[0x1BC0 + room] >> 1) === 4 && deaths >= 2 ? 0 : left;
-      const w = Math.max(40, ((right - lo) & 0xFF) || 40), s = 2;
-      const ctx = C64.canvas(cv, w * 8 * s, 15 * 8 * s);
+      const ram = tdNewGame(r);   // the doors and furniture as a game starts
+      if ($('td-open').checked) for (let d = 0; d < 32; d++) ram[0x1F04 + d * 8] |= 1;
+      const built = tdBuildRoom(ram, room, deaths);
+      const { doors, furniture } = tdFinishRoom(ram, room, built);
+      const { map, left, right } = built;
+      const marks = $('td-marks').checked;
+      // drawn from column 0: the doors, the floor row and the furniture's columns are counted from there
+      const lo = 0;
+      const w = Math.max(40, right || 40), s = 2;
+      const lane = 22, lanes = marks ? 1 + furniture.length : 0;
+      const ctx = C64.canvas(cv, w * 8 * s, 15 * 8 * s + lanes * lane);
       ctx.fillStyle = C64.PAL[0]; ctx.fillRect(0, 0, cv.width, cv.height);
       const set = r[0x1EE0 + room] % 3;
       const cs = new Uint8Array(0x800);
@@ -179,10 +292,34 @@ function tdBuildRoom(ram, room, deaths) {
       const cols = [C64.PAL[0], C64.PAL[r[0x1B80 + room] & 15], C64.PAL[r[0x1BA0 + room] & 15], C64.PAL[11 & 7]];
       for (let row = 0; row < 15; row++)
         for (let x = 0; x < w; x++) C64.drawGlyphMC(ctx, cs, map[row * 256 + ((lo + x) & 0xFF)], x * 8 * s, row * 8 * s, s, cols);
+      // the doors' columns, as the drawing routines place them, and the furniture's, from $1B00/$1B20
+      const d4 = r[0x1BE0 + room] >> 2;
+      const doorSpan = (d) => {
+        if (d.type === 0) return d.open ? [d4 + d.col - 6, d4 + d.col + 11] : [d4 + d.col, d4 + d.col + 5];
+        if (d.type === 8) return [d4 + d.col, d4 + d.col + 3];
+        return [d.col, d.col + 5];
+      };
+      // what the game calls each kind at $892A: types 0-3 "A DOOR", 8-11 "A SECRET PASSAGE!", 4-7 nothing
+      const kindName = (t) => ['door', 'opening', 'secret passage'][t >> 2] + ((t & 3) === 2 ? ' (front)' : ' (back wall)');
+      if (marks) {
+        ctx.font = '12px "IBM Plex Mono", monospace'; ctx.textBaseline = 'middle';
+        const bar = (x0, x1, ln, colour, text) => {
+          const y = 15 * 8 * s + ln * lane;
+          ctx.fillStyle = colour; ctx.fillRect(x0 * 8 * s, y + 3, (x1 - x0 + 1) * 8 * s - 2, lane - 6);
+          ctx.fillStyle = '#000'; ctx.fillText(text, x0 * 8 * s + 4, y + lane / 2, Math.max(40, (x1 - x0 + 1) * 8 * s - 6));
+        };
+        for (const d of doors) {
+          const [a, b] = doorSpan(d);
+          bar(a, b, 0, d.open ? '#9ae39a' : (d.locked ? '#f2a3a3' : '#f2d98c'), kindName(d.type).replace(/ \(.*/, '') + ' to ' + rooms[d.to] + (d.locked ? ', locked' : ''));
+        }
+        furniture.forEach((f, i) => bar(f.first, f.last, 1 + i, '#a9c8f0', furnName[f.n] || ('furniture ' + f.n)));
+      }
+      const doorText = doors.length ? doors.map((d) => kindName(d.type) + ' ' + d.door + ' to room ' + d.to + ' (' + rooms[d.to] + '), ' +
+        (d.open ? 'open' : 'closed') + (d.locked ? ' and locked' : '')).join('; ') : 'none';
       $('td-cap').innerHTML = '<b>Room ' + room + ', ' + rooms[room] + '.</b> Picture record ' + (r[0x1BC0 + room] & 0x7F) +
         ((r[0x1BC0 + room] & 0x80) ? ', widened' : '') + ', ' + ((right - left) & 0xFF) + ' columns from column ' + left +
         '; colours ' + (r[0x1B80 + room] & 15) + ' and ' + (r[0x1BA0 + room] & 15) + ', character set ' + set +
-        '. Drawn from the listing\'s bytes by a port of the game\'s room builder, checked against the game\'s own code (test_rooms.js); doors, the cast and the objects are not drawn.';
+        '. Doors: ' + doorText + '. Drawn from the listing\'s bytes by a port of the game\'s room builder, doors and floor included, checked against the game\'s own code (test_rooms.js). The cast and the small objects are not drawn: the objects lie inside the furniture.';
     }
     sel.onchange = draw; $('td-after').onchange = draw;
     for (const b of document.querySelectorAll('.pick .step')) b.onclick = () => {
