@@ -19,7 +19,11 @@ screen are one part, so count what the player waits for, not what the
 disk holds. A state that differs only in its variables is not a part: a
 title screen and play in one load are one, and `10-orient` step 4
 chooses its snapshot. The loader, a protection check and a cracker's
-menu are not parts either; they stand in front of the game. Nor is data
+menu are not parts either; they stand in front of the game, and so does
+code the game sends to run inside a disk drive with a processor of its
+own, even a loader that stays at work through play: coverage counts the
+computer's memory, and what the drive does for the game shows in the
+calls the game makes to it. Nor is data
 the game fetches into a buffer during play, a portrait for each fight or
 a tune for each room: a widget that shows it carries its bytes in the
 page (`70-minisite`).
