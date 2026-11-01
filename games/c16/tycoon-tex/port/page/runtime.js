@@ -15,7 +15,8 @@
 //                   KEY) and joy (port 2's stick, active low: 1 up, 2 down, 4 left, 8 right,
 //                   16 fire) the page sets
 //   rt.M, rt.ted, rt.P, rt.beam, rt.t (the clock), rt.frame (the frame the clock is in),
-//   rt.passes (the main loop's passes, at $2A28)
+//   rt.passes (the main loop's passes: each counted once the clock reaches $2A28, the stretch
+//   that leads there paid)
 //
 // The clock is TED's: 312 lines of 114 ticks of the double clock a frame, the processor's cycles
 // placed on them as TED gives them (C16.timing.Beam: the single clock on the display's lines, the
@@ -232,6 +233,7 @@ function create(o) {
   function step() {
     const run = top();
     if (run.owe > 0) { if (!pay(run)) take(); return; }
+    if (run.pass) { run.pass = false; passes++; }         // the clock has reached the pass's start
     if (run.cli) { run.cli = false; run.I = 0; }
     if (run.poll) {                                         // a turn of a polling loop: to the next line
       if (run.until < 0) run.until = (Math.floor(t / LINE) + 1) * LINE;
@@ -248,7 +250,7 @@ function create(o) {
     }
     const y = r.value;
     run.seen = 0;
-    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) passes++; }
+    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) run.pass = true; }
     else if (y && y.cycles !== undefined) run.owe += y.cycles;
     else run.poll = true;                                   // the routines called in the turn are paid first
   }
