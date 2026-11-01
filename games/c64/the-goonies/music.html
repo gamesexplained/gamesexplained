@@ -8,32 +8,33 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Four tunes and twenty-one sound effects, played by John A. Fitzpatrick's Pearl Music Player, which leaves the third voice free for the effects while a scene plays.</p>
+  <p class="sub">Listen to the Datasoft disk’s four tunes through John A. Fitzpatrick’s Pearl Music Player. The explanation below shows how music and effects share the sound chip.</p>
 </header>
 <main class="wrap">
 <section id="tunes">
   <p class="fig">The tunes</p>
-  <h2 class="t">Four tunes for ten scenes</h2>
-  <p class="lede">The music driver at <code>$BA00</code> carries the text PEARL MUSIC PLAYER COPYRIGHT 1984 JOHN A. FITZPATRICK (<code>$BA34</code>). It holds four tunes, and a table gives each scene the one it plays (<code>scene_jingles</code>, <code>$09F9</code>).</p>
+  <h2 class="t">Listen to the four tunes</h2>
+  <p class="lede">Press a tune’s button to listen. These are the tunes from the Datasoft disk examined here; the U.S. Gold disk has different music data. The game’s music software names John A. Fitzpatrick and his Pearl Music Player (<code>$BA34</code>).</p>
   <div class="plate" id="music-widget"></div>
-  <p class="cap">The game's own music driver ported to JavaScript and played through the site's model of the SID. Each tune is started the way the game starts it. The port was checked against the driver itself, run on the bytes of the listing: every SID register matched on every frame, over 30,000 frames of each tune.</p>
-  <table class="t">
+  <p class="cap">The original music player rewritten in JavaScript, heard through the site’s model of the SID, the C64’s sound chip.</p>
+  <div class="table-scroll" role="region" aria-label="Music reference table" tabindex="0"><table class="t">
     <tr><th>Tune</th><th>Voices</th><th>Length</th><th>Where it plays</th></tr>
     <tr><td>0</td><td>three</td><td>50 seconds</td><td>the title and the attract mode, and the ending</td></tr>
     <tr><td>1</td><td>two</td><td>50 seconds</td><td>scenes 1, 5, 7, and 8</td></tr>
     <tr><td>2</td><td>two</td><td>50 seconds</td><td>scenes 3 and 4</td></tr>
     <tr><td>3</td><td>two</td><td>38 seconds</td><td>scene 2</td></tr>
-  </table>
+  </table></div>
   <p>Scene 6 has no tune. The tunes do not loop by themselves. Each pass, the main loop checks whether the tune has ended and starts it again from the top (<code>$092C</code>). S switches the music off for every scene except the ending, whose tune plays regardless (<code>$0905</code>).</p>
   <p>Which tune, if any, is the film's song, Cyndi Lauper's "The Goonies 'R' Good Enough", has not been established. The <i>ZZap!64</i> panel was unimpressed, rating the sound 35 % with "Terrible tunes and few FX".<sup class="fn"><a href="about.html#src-3" title="ZZap!64 9, as transcribed on GameBase64">3</a></sup></p>
 </section>
 
 <section id="driver">
+  <details class="reference-detail"><summary>How this player was checked</summary><p>The port was compared with the game’s original driver running on the listing’s bytes. Every sound-chip register matched after every frame, over 30,000 frames of each tune. The scene’s tune is selected by <code>scene_jingles</code> (<code>$09F9</code>).</p></details>
   <p class="fig">The driver</p>
   <h2 class="t">Each voice reads a stream of notes and commands</h2>
   <p class="lede">A tune is three streams of bytes, one for each of the SID's voices (<code>f_C02E</code>). The player runs once a frame from the raster interrupt (<code>play_tune</code>, <code>$BBDB</code>). It counts down the tempo, and on each tick counts down every voice's note, releasing the note a step before its end and reading the voice's next bytes when the note is over (<code>voice_next</code>, <code>$BCC4</code>).</p>
   <p>A byte with bit 7 clear is a note: 0 is a rest, and anything else picks one of 84 frequencies (<code>$BF81</code>, <code>$BFD5</code>) after the tune's transposition is added. A byte with bit 7 set is a command, numbered by bits 4 to 6, and <code>$FF</code> ends the tune (<code>voice_commands</code>, <code>$BD07</code>).</p>
-  <table class="t">
+  <div class="table-scroll" role="region" aria-label="Music reference table" tabindex="0"><table class="t">
     <tr><th>Command</th><th>What it sets</th><th>Where</th></tr>
     <tr><td>0 and 7</td><td>the length of the voice's notes, from a table that includes dotted and triplet values</td><td><code>$BD49</code></td></tr>
     <tr><td>1</td><td>the filter</td><td><code>$BD63</code></td></tr>
@@ -42,7 +43,7 @@
     <tr><td>4</td><td>the pulse width, from the next two bytes</td><td><code>$BEAA</code></td></tr>
     <tr><td>5</td><td>one of eight filter settings</td><td><code>$BEC5</code></td></tr>
     <tr><td>6</td><td>the tempo, from the next byte</td><td><code>$BEFE</code></td></tr>
-  </table>
+  </table></div>
   <p>The four tunes use only command 0. Run on the kit's 6502 machine from start to end, the driver reads 1,166 commands across the four tunes, and every one sets a note length. The six other routines are there for tunes that this game does not have. The table of filter settings that command 5 would read even overlaps a tune's notes at <code>$C08E</code>.</p>
 </section>
 

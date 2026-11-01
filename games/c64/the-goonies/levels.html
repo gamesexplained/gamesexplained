@@ -8,17 +8,17 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The eight scenes as the code sees them: lists of rectangles that say where a Goonie can stand, climb, swim, and hang, drawn over each scene's picture.</p>
+  <p class="sub">Choose a scene and uncover its floors, ladders, and walls. These saved collision tables show where the game tests movement, independently of the scenery.</p>
 </header>
 <main class="wrap">
 <section id="map">
   <p class="fig">The collision maps</p>
   <h2 class="t">Each scene is a list of rectangles of eight kinds</h2>
-  <p class="lede">The picture on screen is only scenery. What a Goonie can stand on is a list of rectangles kept beside each scene's code, between 22 and 53 of them (<code>$11F7</code>), each with a kind and four edges. When a scene starts, <code>load_scene_tables</code> (<code>$1189</code>) points the collision tests at its five lists through a table of ten words per list (<code>$1201</code>).</p>
+  <p class="lede">The game checks movement against rectangles that describe floors, walls, and ladders. Toggle a kind to see where it appears. The scene’s rectangle count is at <code>$11F7</code>; <code>load_scene_tables</code> (<code>$1189</code>) selects its lists through <code>$1201</code>.</p>
   <div class="plate" id="map-widget"></div>
-  <p class="cap">Every rectangle of the scene's lists, from the game's bytes, drawn over a screenshot of the scene. Edges across are in units of two pixels and lines count from the top of the play area, one character row below the status line. A dashed outline is a rectangle whose kind has bit 7 set, which the collision test skips: the lists as they stand in the saved game, where scene 1's fire has not been put out. Hover over a row of the table to find its rectangle.</p>
+  <p class="cap">Saved collision tables over original scene captures. Dashed rectangles are disabled in the saved data. This is a static reference view: the diagrams do not simulate switches or changes during play. Focus or point to a data row to highlight its rectangle.</p>
   <p>Each pass, <code>move_object</code> (<code>$0CFD</code>) moves an object by its speeds and then looks for every rectangle its new box overlaps, noting one of each kind. The kind decides what happens next:</p>
-  <table class="t">
+  <div class="table-scroll" role="region" aria-label="Levels reference table" tabindex="0"><table class="t">
     <tr><th>Kind</th><th>What it does to a Goonie</th><th>Where</th></tr>
     <tr><td>0</td><td>a wall met moving left: the Goonie stops with its left edge on the rectangle's</td><td><code>$0F3A</code></td></tr>
     <tr><td>1</td><td>a wall met moving right: stops it against the rectangle's left edge</td><td><code>$0F4B</code></td></tr>
@@ -28,7 +28,7 @@
     <tr><td>5</td><td>a ladder: up climbs it, and the Goonie is centred on it</td><td><code>$0F63</code></td></tr>
     <tr><td>6</td><td>water, which slows a fall</td><td><code>$0F05</code></td></tr>
     <tr><td>7</td><td>a bar: up holds on, gravity stops, and left or right jumps off</td><td><code>$0E31</code></td></tr>
-  </table>
+  </table></div>
   <p>A wall works from one side only. A kind 0 rectangle stops a Goonie moving left and a kind 1 stops one moving right, so each solid block on the map is drawn as a pair of thin walls, and a Goonie inside one walks out freely.</p>
 </section>
 
@@ -36,7 +36,7 @@
   <p class="fig">Moving parts</p>
   <h2 class="t">Doors and bridges are rectangles switched on and off</h2>
   <p class="lede">Nothing in a scene's picture moves the collision map. The scene's own routine changes the lists while it plays, most often by setting or clearing bit 7 of a rectangle's kind.</p>
-  <table class="t">
+  <div class="table-scroll" role="region" aria-label="Levels reference table" tabindex="0"><table class="t">
     <tr><th>Scene</th><th>What changes</th><th>Where</th></tr>
     <tr><td>1</td><td>the fire's rectangle is out of use while it burns and becomes a ladder's top when the tank puts it out</td><td><code>$7CF3</code></td></tr>
     <tr><td>2</td><td>the three weights' rectangles move with them, and the float is a rectangle the Goonies ride</td><td><code>$75D4</code>, <code>$76A4</code></td></tr>
@@ -46,7 +46,7 @@
     <tr><td>6</td><td>thirteen platforms are solid or not by the pattern of pads held down, eight patterns in all</td><td><code>$F413</code></td></tr>
     <tr><td>7</td><td>the flipper turns a rectangle into water, and the fallen crate becomes a floor</td><td><code>$96EE</code>, <code>$97D6</code></td></tr>
     <tr><td>8</td><td>each porthole's two rectangles change with its lever, and the lift's floor follows it</td><td><code>$A17E</code>, <code>$A049</code></td></tr>
-  </table>
+  </table></div>
   <p>Scenes 4, 5, and 7 keep a second list for the things that roll, the rocks, the eggs, and the crate, and swap it in while one of them moves (<code>$1B34</code>, <code>$E427</code>, <code>$98DA</code>). A rock rolls on its own floors, which the Goonies never touch.</p>
 </section>
 
@@ -54,7 +54,7 @@
   <p class="fig">The order</p>
   <h2 class="t">Scenes 2 and 3 are stored the other way round</h2>
   <p class="lede">The game numbers its scenes by an index (<code>$12B9</code>), which picks the scene's lists, its routines, its tune, and its picture on the disk. The play order is not the index order: each exit stores the index of the next scene, and scene 1's exit jumps to index 2.</p>
-  <div class="tw"><table class="t">
+  <div class="tw" role="region" aria-label="Scene numbering table" tabindex="0"><table class="t">
     <tr><th>Scene</th><th class="n">1</th><th class="n">2</th><th class="n">3</th><th class="n">4</th><th class="n">5</th><th class="n">6</th><th class="n">7</th><th class="n">8</th><th>ending</th><th>title</th></tr>
     <tr><td>Index</td><td class="n">0</td><td class="n">2</td><td class="n">1</td><td class="n">3</td><td class="n">4</td><td class="n">5</td><td class="n">6</td><td class="n">7</td><td>8</td><td>9</td></tr>
   </table></div>
@@ -64,4 +64,5 @@
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="reference/goonies-page.js"></script>
+<script src="reference/goonies-scenes.js"></script>
 <script>GOON.mountMap(document.getElementById('map-widget'));</script>
