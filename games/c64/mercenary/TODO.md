@@ -16,7 +16,8 @@ after it began and are agent-written, not yet read by the steward: section
 (the sound) and the Play tab's four sections (the mod, the port, the
 speed, the differences) (#61). The Play tab's smooth motion came later and
 is agent-written too: the caption's last sentence, section 03's Smooth
-motion and its line in section 04.
+motion and its line in section 04. So is Fast CPU, which came after it: the
+caption's sentence on it, section 03's Fast CPU and its line in section 04.
 
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
@@ -69,6 +70,13 @@ next export would put it back: copy these five line comments from
 - The smooth view in the C64's pixels fills the sky and the ground by the
   horizon's half-plane, not by `$AFD5`'s row stepping, so along a banked
   horizon its edge can sit a pixel from the game's.
+- Fast CPU moves Targ Traffic once for each of the C64's passes, so the
+  traffic steps while the game glides; the mod's step could take shares
+  as the game's movers do.
+- Fast CPU beats on the C64's video frame, 50.12 a second, so a 60 Hz
+  display shows one frame in five twice. A beat at the display's 60 a
+  second would need the frame start's wait for line 224 made a plug-in
+  point and the shares counted in time rather than whole beats.
 - The Play tab shows the port's case of the game's two interrupt races
   (the Play page, section 02). Running the interrupts inside a step, at the
   cycle the cost model puts them, would show the white band too (#74).

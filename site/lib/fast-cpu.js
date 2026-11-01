@@ -51,6 +51,14 @@
 //   held             what the game shows for one loop, shown for a pace: [{ at, shown, gone, with }],
 //                    the byte, its value while shown and once taken down, and the bytes that go with
 //                    it, kept as they were while it is held
+//   follow           true for a game kept at the machine's own pace, view by view: K is not set but
+//                    followed. The page's runtime gives rt.machineBeats(), the beats one of the
+//                    machine's loops would take for the work the last loop did, by its cost model,
+//                    and calls loop.begin() as each loop starts. A machine's loop of K beats (a
+//                    shadow loop) is K loops of Fast CPU: each takes 1/K of its steps, the jobs
+//                    once a pace run on the first, and a repeat every K beats. K is read again as the next
+//                    shadow loop starts, so the pace follows the machine's, view by view, and the
+//                    carries keep their share of a unit across a change of K. speeds is then left out
 // Each of switches, repeats, ctrl and held may be left out when the game has none.
 // The plug-in points once (a job whose effect adds up) and after (a wait that only keeps a message
 // up) take the byte they ask about from the port, so they need no entry.
@@ -58,10 +66,10 @@
 'use strict';
 
 function attach(rt, table) {
-  const P = rt.P, M = P.M, T = Object.assign({ switches: [], repeats: [], ctrl: null, ctrlRepeats: [], held: [] }, table);
+  const P = rt.P, M = P.M, T = Object.assign({ switches: [], repeats: [], ctrl: null, ctrlRepeats: [], held: [], speeds: [{ name: '', K: 1 }] }, table);
   const fx = {
     rt, T, on: false, speed: 0, K: T.speeds[0].K, game: P.plug,
-    loop: { start: T.start, work: new Set(T.work), cap: T.cap, between: null },
+    loop: { start: T.start, work: new Set(T.work), cap: T.cap, between: null, begin: T.follow ? () => begin(fx) : null },
   };
   const tick = () => rt.ticks;
   // an angle: the whole step the game holds, and the share of a step past it in K-ths; the game
@@ -113,6 +121,7 @@ function attach(rt, table) {
       return false;
     },
     once(key) {
+      if (T.follow) return fx.first;
       const t = tick(), l = fx.onceAt.get(key);
       if (l !== undefined && t - l < fx.K) return false;
       fx.onceAt.set(key, t);
@@ -144,7 +153,15 @@ function attach(rt, table) {
 }
 function reset(fx) {
   Object.assign(fx, { ang: new Map(), carry: new Map(), stepped: new Set(), before: new Set(), now: new Set(),
-    last: new Map(), onceAt: new Map(), hold: null, owed: false });
+    last: new Map(), onceAt: new Map(), hold: null, owed: false, left: 0, first: true, shadow: 0 });
+}
+// a loop starts (a game that follows the machine's pace): the first of a shadow loop reads K again,
+// and each carry keeps its share of a unit
+function begin(fx) {
+  if (fx.left > 0) { fx.first = false; fx.left--; return; }
+  const K = Math.max(1, Math.round(fx.rt.machineBeats()));
+  if (K !== fx.K) for (const [k, a] of fx.carry) fx.carry.set(k, Math.min(K - 1, Math.floor(a * K / fx.K)));
+  fx.K = K; fx.first = true; fx.left = K - 1; fx.shadow++;
 }
 
 function set(fx, on, speed) {

@@ -27,11 +27,11 @@ in the platform's reference skill.
   waits for its clock every loop and keeps up gains nothing.
 - **Choose the kind of Fast CPU by the game's pace.** An action game,
   played at its own pace (`games/c64/mercenary`, `games/c64/space-rogue`),
-  gets more frames at the same pace: 60 frames a second, the pace fixed
-  at the machine's usual one and no Speed to set, because a faster pace
-  is another game. A very slow game (`games/c64/castle-master`) gets more
-  frames and a faster pace: 60 frames a second and a Speed, because its
-  machine's pace is a wait rather than the game.
+  gets more frames at the same pace: a frame each beat, the pace the
+  machine's own and no Speed to set, because a faster pace is another
+  game. A very slow game (`games/c64/castle-master`) gets more frames and
+  a faster pace: 60 frames a second and a Speed, because its machine's
+  pace is a wait rather than the game.
 
 ## Two pieces, and nothing else
 
@@ -65,13 +65,18 @@ rate). When two aims clash the higher wins:
 - **Beat on the game's clock when it ticks 60 times a second.** Then
   loops and ticks line up one to one (`games/c64/castle-master`'s
   timer). A game timed by a slower clock, such as its screen's 50 video
-  frames a second (`games/c64/mercenary`, `games/c64/space-rogue`), gets
-  a beat of its own counted in the machine's cycles, and its clock goes
-  on counting its own ticks, so what it times keeps its time in seconds.
-- **A wait for the screen's beam before a flip does not hold the loop.**
-  On the machine it keeps the picture whole; the page shows whole frames
-  anyway, and the wait would hold the loop to the machine's own frame
-  rate. Make it a plug-in point.
+  frames a second (`games/c64/space-rogue`), gets a beat of its own
+  counted in the machine's cycles, and its clock goes on counting its own
+  ticks, so what it times keeps its time in seconds.
+- **A game that waits for a line of its screen before each flip can beat
+  on that line, once a video frame** (`games/c64/mercenary`). Its wait
+  then ends at once, its flips fall where the machine's do against the
+  interrupts, and a display at the machine's frame rate shows every frame
+  for the same time; a 60 Hz display shows one frame in five twice.
+- **Otherwise a wait for the screen's beam before a flip does not hold
+  the loop.** On the machine it keeps the frame whole; the page shows
+  whole frames anyway, and the wait would hold the loop to the machine's
+  own frame rate. Make it a plug-in point.
 - **Run the loops owed each refresh, at most the cap, and drop the
   rest.** The cap is 60 over 15, 4 loops, which keeps real time on a
   15 Hz display and stops one slow refresh setting off a longer one;
@@ -112,9 +117,18 @@ rate). When two aims clash the higher wins:
   its countdowns (`games/c64/mercenary`, `games/c64/space-rogue`) needs a
   share in every mover and a once-a-pace in every count, since 60 frames
   a second needs every move in shares.
-- **Take the pace from the machine's timings.** For the same pace, K is
-  the middle of its loops in play, or the pace the game itself aims at
-  when it has one (a loop it allows a fixed number of frames). For a
+- **Follow the machine's pace when the page has a cost model of its
+  loop.** Before each of the machine's loops, the model gives the beats
+  the machine would take over the work the last loop did; that many loops
+  make one of the machine's, each taking its share of the steps, so every
+  view moves at the machine's speed, slow in a busy one and quick in an
+  empty one (`games/c64/mercenary`, the table's `follow`). The jobs once a
+  pace run in the first of them, and each carry keeps its share of a unit
+  when K changes.
+- **Take the pace from the machine's timings.** Without a cost model, for
+  the same pace K is the middle of its loops in play, or the pace the
+  game itself aims at when it has one (a loop it allows a fixed number of
+  frames). For a
   faster pace, put the slowest setting at the machine's quickest loop in
   play, timed while turning and while walking from every saved moment,
   and the others faster still: a faster processor is nowhere slower than
