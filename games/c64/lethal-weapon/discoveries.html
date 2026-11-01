@@ -1,0 +1,97 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+table.t{border-collapse:collapse;margin:0 0 20px;font-size:15px}table.t td,table.t th{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;text-align:left;vertical-align:top}
+</style>
+<!--
+  Template for a game article. Keep it self-contained: inline CSS and JS,
+  fonts are the only external resource, opens from disk. The section below
+  shows the parts a section is made of, not which section comes first: the
+  kinds of section are listed in kit/skills/core/70-minisite, in no order,
+  and this page's order is its own. The best thing to press or hear goes
+  as high as the explanation lets it, and every section should have
+  something the reader can press. Copy follows kit/style.md and is written
+  last.
+-->
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1992 · Ocean Software</p>
+  <h1>Lethal Weapon: discoveries</h1>
+  <p class="sub">A game over that crashes on this disk, a stage nobody can reach, and a clock that hands out ammunition.</p>
+</header>
+<main class="wrap">
+<section id="title-crash">
+  <p class="fig">01 · Bug, on this disk</p>
+  <h2 class="t">Game over asks for a file called TITLE</h2>
+  <p>When the last continue runs out, <code>$0766</code> loads a file named TITLE at <code>$C000</code> and jumps there. This disk has no file called TITLE: its title program is called LOADER. The load finds nothing, and the jump runs whatever the stage left at <code>$C000</code>, which is level map. On this disk the machine crashes there, with the program counter stuck at <code>$C011</code>, every time a game runs out of lives in the emulator. The original release may have had a file called TITLE; this copy is the only one checked.</p>
+</section>
+<section id="l4ax">
+  <p class="fig">02 · Cut content</p>
+  <h2 class="t">Stage L4AX</h2>
+  <p>The table of stage files (<code>$1ACD</code>) has fifteen names. Every A stage of levels 1, 2, 3 and 5 has an X stage beside it, the other half of the same map, reached through doors. Level 4 has a name for one, L4AX, and nothing else: no file on the disk, and no door in any stage leads there. Five stages also ask for a sprite file SP03 that the disk does not hold, while SP02 and SP23 are on the disk and no stage asks for them.</p>
+</section>
+<section id="ammo">
+  <p class="fig">03 · Mechanic</p>
+  <h2 class="t">The clock pays you in magazines</h2>
+  <p>Every time the seconds digit of the clock reaches 0 or 5, <code>$F424</code> adds a magazine. A minute on the game's clock gives twelve. When the clock reaches 0:00 you lose a life, and the next life starts with 9:00 on the clock instead of 5:00, until a door to a new stage (other than an X stage) sets it back to 5:00.</p>
+</section>
+<section id="jump">
+  <p class="fig">04 · Mechanic</p>
+  <h2 class="t">Riggs jumps no higher than Murtaugh</h2>
+  <p>Both jump tables rise 40 lines. Murtaugh's (<code>$36A0</code>) takes 32 frames and Riggs's (<code>$36E2</code>) 40. Riggs hangs in the air longer.</p>
+</section>
+<section id="keys">
+  <p class="fig">05 · Controls</p>
+  <h2 class="t">P pauses, RESTORE does nothing</h2>
+  <p>The P key pauses the game and P again unpauses it (<code>$E12F</code>). The NMI that RESTORE raises goes to a lone <code>RTI</code> (<code>$EC65</code>). The game reads both joystick ports at once, so either port plays.</p>
+</section>
+<section id="continues">
+  <p class="fig">06 · Mechanic</p>
+  <h2 class="t">Two continues</h2>
+  <p>After GAME OVER the game offers CONTINUE with a countdown from 9. Fire continues with full energy, 25 magazines and five minutes. The count of continues (<code>$2865</code>) starts at 2 and is never refilled.</p>
+</section>
+<section id="leftovers">
+  <p class="fig">07 · Leftovers</p>
+  <h2 class="t">Code nothing calls</h2>
+  <p>A version of the hazard that takes 5 energy instead of 10 (<code>$113B</code>), a routine that turns the background red (<code>$2382</code>), a patrol for an enemy type the game no longer has (<code>$0FD7</code>) and a third way for thugs to move (<code>$E5DA</code>) are all in the game's code, and nothing reaches them.</p>
+</section>
+<section id="sp90">
+  <p class="fig">08 · Quirk</p>
+  <h2 class="t">Sprites over the top of the map</h2>
+  <p>The level map starts at <code>$7D80</code>, inside the sprite area. On stage 1A the sprite file SP90 loads after the map is built and covers the map's first 192 characters, the top row of the stage, with the boss's frames. Whether the camera ever shows that row was not checked.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

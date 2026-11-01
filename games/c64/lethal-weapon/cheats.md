@@ -6,3 +6,8 @@ labelled as candidates.
 
 | Effect | Poke | Status |
 |---|---|---|
+| Lives | `$373C` (3 at the start) | candidate |
+| Energy | `$F373`, full at `$40` | candidate |
+| Magazines | `$F359`, two decimal digits | candidate |
+| Clock | `$F423` minutes, `$F422` seconds (decimal) | candidate |
+| Weapon level | `$1193`: 0, 3 or 6 | candidate |

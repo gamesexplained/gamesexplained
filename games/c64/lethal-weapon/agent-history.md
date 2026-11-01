@@ -53,3 +53,29 @@ known point, before anything can crash.
 
 Random play under warp ran into the game-over path every time and then
 crashed at `$C011`: see `facts.md`, "Game over on this disk".
+
+### Parts, after the work
+
+The ending turned out to be a third load: the last door's `$375C` loads
+the file `111` over `$0900`. It is a part of its own address space: made
+a load `over` the game, it took `$0900`-`$0E17` and `$E000`-`$F5D5` away
+from the game part, whose own code lives there, so `over` was removed and
+the ending's `part.json` excludes everything outside its own loads. Its
+copy of `MUSI` is excluded too, with the title part named as the place
+the same bytes are described. The ending's session was briefly started
+with the game's symbols, so its `symbols.json` carries copies of the
+game's comments outside its ledger; nothing counts them.
+
+### The sample
+
+The contributor asked for no subagents. `60-verify` needs the sample
+checked by an agent that wrote none of the comments, so the sample was
+drawn (seed 20261101) and its brief written to `work/handoff/sample/`, and
+`tier` stays `bronze` (`facts.md`, "The listing's error rate").
+
+### The music test
+
+`test_music.js` first failed: the title listing lacked 64 bytes of the
+frequency table at `$E568`, outside every span. Typing `$E568`-`$E663`
+as bytes put them back; the retype also turned `$E628`-`$E663` to data
+for a moment, and that code was traced again.

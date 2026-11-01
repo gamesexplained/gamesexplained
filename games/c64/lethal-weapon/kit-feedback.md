@@ -7,35 +7,40 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `15-parts`: "Nor is data the game fetches into a buffer during play": the fourteen stage loads were treated as data in the game part's buffers, with every stage drawn on the Maps tab, instead of fourteen parts.
+- `50-coverage`: "Let a script hold the typing against the map": the code maps were re-sized from the snapshots by a script after a crash had corrupted the RAM the dump read, rather than trimmed by hand.
+- `60-verify`: "If none can run it, the listing is unmeasured, and that is a gap, not a pass": with no checker allowed, the sample was drawn and handed off and the tier left at Bronze.
+- `70-minisite`: "Test the port against the game's own code run in a 6502 simulator": the music test found 64 bytes of the frequency tables missing from a listing at 100 %.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+Nothing. Each problem below either showed itself through a check or is a candidate.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+A listing at 100 % can leave out bytes a routine reads. The title's
+frequency table at `$E568` had an untyped symbol, so its span stopped
+after 64 bytes and the rest of the 96 notes was in no ledger and not in
+`listing.json`; `listing.py`'s list of uncounted data did not name it,
+because the bytes differ between the hand-over and the play snapshot
+(the music loads after the hand-over). The page's music test, which runs
+the driver on the listing's memory, wrote different frequencies and
+caught it. A skill or `listing.py` could say: data read through an
+indexed address whose base symbol is untyped is counted only 64 bytes;
+type the whole table.
+
+The flow tracer, seeded at a title program that carries 1541 drive code,
+followed the drive code's `JMP`s and `JSR`s (drive RAM and drive ROM
+addresses) into the C64's memory and minted 13 KB of code there. It
+showed as an implausible code size; typing the drive code as data first
+avoids it.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Say what a run does when the contributor forbids subagents.** `kit/START.md` and `60-verify` start one checker without asking, but this contributor's message said "Use one agent at a time (no subagents)". The run followed the contributor, drew the sample, wrote the brief to `work/handoff/sample/` and left the game at Bronze, which costs the contributor the Silver they asked for. START.md could say which wins, or ask the contributor in the first message whether the sample's one checker is allowed.
+
+- **Make `kit/c64/test_stdio_bridge.py` pass on macOS.** On macOS 27.0 (Apple M4), `python3 kit/scripts/test_kit.py` fails `test_snapshot_conversion_preserves_ram_and_previous_project`: it expects `/var/folders/...` and gets `/private/var/folders/...`, because macOS's temporary folder is a symlink. Comparing resolved paths (`Path.resolve()`) on both sides would fix it. The test was not changed by this run.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A code map that does not mix parts: `codemap.py dump` taken once while each part runs alone, and a note in `tool-vice-mcp` that a zap on a stopped machine needs the machine running afterwards, would have saved three recordings.
