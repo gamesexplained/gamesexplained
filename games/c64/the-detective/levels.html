@@ -70,6 +70,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>A secret passage hides itself in the drawing. Closed, one in the back wall (type 8) puts back the picture behind it (<code>$3B8B</code>), and one in the floor (type 10) is drawn as six characters of plain floor (<code>$3B97</code>). Investigating it says "A SECRET PASSAGE!", marks it open and redraws it. The house has six, in the kitchen, the cellar, the drawing room and the Reverend's and the Major's rooms, and between the passages and the two areas outside that they lead to.</p>
   <p>When a game starts (<code>$8680</code>), every door is closed except the four that are an opening on at least one side and a secret passage on neither, and three doors are locked (<code>$86E2</code>): the study's and Bentley's, whose key is object 15 ("A BUNCH OF KEYS"), and the Professor's, whose key is object 16 ("A BIG IRON KEY"). The cast lock and unlock doors as they go, through their scripts.</p>
   <p>The coloured bars under the picture mark each door's columns, as the drawing routines place them, and each piece of furniture's: the first and last column of the rectangle the player cannot walk through (<code>$1B00</code>, <code>$1B20</code>), named from the list at <code>$8401</code>. The small objects are not drawn anywhere: they are kept in the furniture, and the game lists them only when the player opens it.</p>
+  <p>The floor plan under the bars shows the room from above. Besides a column, Snide has a depth (<code>$1D7D</code>), which grows as he walks away from the viewer: up on the stick adds one. He can stand from one less than the room's front value (<code>$1C00</code>) to one less than its back value (<code>$1BE0</code>), the grey band. Each piece of furniture is a rectangle in columns and depth (<code>$1B00</code>-<code>$1B60</code>), and a task of the main loop (<code>$2EB4</code>) finds the nearest edge on each side of him, which is as far as he can walk. Most furniture stands against the back wall and reaches past it. In the emulator, in the hall, Snide stopped at depth 58 against the back value of 59 and at 7 against the front value of 8, and under the stairs, whose front edge is 26, the back limit the game keeps (<code>$1DEF</code>) became 26. The plan ignores the picture's perspective: doors and passages in the back wall (types 0 and 8) are drawn a quarter of the room's depth to the right of their column, and the plan marks them where they are drawn.</p>
 </section>
 <section id="records">
   <p class="fig">03 · The pictures</p>
@@ -154,7 +155,7 @@ function tdBuildRoom(ram, room, deaths) {
 // drawing it ($3A27) and a closed door of type 0 or 8 puts that back ($3A58): within build_room the
 // put-back restores what was just saved, so it is left out here. It returns the door list (door
 // number, column, type, open, locked, key object) and the furniture list (number, name, first and
-// last column, nearest and farthest depth). Checked against build_room ($388D) by test_rooms.js.
+// last column, back and front edges in depth). Checked against build_room ($388D) by test_rooms.js.
 function tdFinishRoom(ram, room, built) {
   const map = built.map;
   const put = (addr, x, v) => { const i = addr - 0x0C00 + (x & 0xFF); if (i >= 0 && i < map.length) map[i] = v; };
@@ -218,7 +219,7 @@ function tdFinishRoom(ram, room, built) {
     const v = ram[0x1C40 + y];
     if (v >= 0x80) break;
     if (v === 0) continue;
-    furniture.push({ n: v, first: ram[0x1B00 + v], last: ram[0x1B20 + v], near: ram[0x1B40 + v], far: ram[0x1B60 + v] });
+    furniture.push({ n: v, first: ram[0x1B00 + v], last: ram[0x1B20 + v], back: ram[0x1B40 + v], front: ram[0x1B60 + v] });
   }
   return { doors, furniture };
 }
@@ -283,7 +284,12 @@ function tdNewGame(ram) {
       const lo = 0;
       const w = Math.max(40, right || 40), s = 2;
       const lane = 22, lanes = marks ? 1 + furniture.length : 0;
-      const ctx = C64.canvas(cv, w * 8 * s, 15 * 8 * s + lanes * lane);
+      // the floor plan: columns across as above, depth up the canvas, 3 pixels a unit; the room's
+      // back ($1BE0) and front ($1C00), and each piece of furniture's back and front edges ($1B40, $1B60)
+      const back = r[0x1BE0 + room], front = r[0x1C00 + room], ps = 3;
+      const top = Math.max(back, ...furniture.map((f) => f.back)) + 2;
+      const planY = 15 * 8 * s + lanes * lane + 28, planH = (top + 2) * ps;
+      const ctx = C64.canvas(cv, w * 8 * s, planY + planH + 6);
       ctx.fillStyle = C64.PAL[0]; ctx.fillRect(0, 0, cv.width, cv.height);
       const set = r[0x1EE0 + room] % 3;
       const cs = new Uint8Array(0x800);
@@ -314,6 +320,26 @@ function tdNewGame(ram) {
         }
         furniture.forEach((f, i) => bar(f.first, f.last, 1 + i, '#a9c8f0', furnName[f.n] || ('furniture ' + f.n)));
       }
+      // the floor plan, seen from above: where Snide can stand, from one less than the front's depth
+      // to one less than the back's ($35B6, $35D5), less each piece of furniture's rectangle ($2EB4)
+      {
+        const py = (d) => planY + (top - d) * ps;   // depth grows away from the viewer, drawn upwards
+        const cw = 8 * s, width = r[0x1C20 + room];
+        ctx.font = '12px "IBM Plex Mono", monospace'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ccc'; ctx.fillText('Floor plan from above: the back wall at the top, the front at the bottom', 4, planY - 14);
+        ctx.fillStyle = '#222'; ctx.fillRect(0, py(top), w * cw, (top + 1) * ps);
+        ctx.fillStyle = '#5a5a5a'; ctx.fillRect(0, py(back - 1), width * cw, (back - front + 1) * ps);
+        for (const f of furniture) {
+          const y0 = py(f.back), y1 = py(f.front);
+          ctx.fillStyle = '#a9c8f0'; ctx.fillRect(f.first * cw, y0, (f.last - f.first + 1) * cw - 2, y1 - y0);
+          ctx.fillStyle = '#000'; ctx.fillText(furnName[f.n] || ('furniture ' + f.n), f.first * cw + 4, Math.min(y1 - 8, y0 + 10), Math.max(40, (f.last - f.first + 1) * cw - 6));
+        }
+        for (const d of doors) {
+          const [a, b] = doorSpan(d), y = (d.type & 3) === 2 ? py(front - 1) : py(back - 1) - 6;
+          ctx.fillStyle = d.open ? '#9ae39a' : (d.locked ? '#f2a3a3' : '#f2d98c');
+          ctx.fillRect(a * cw, y, (b - a + 1) * cw - 2, 6);
+        }
+      }
       const doorText = doors.length ? doors.map((d) => kindName(d.type) + ' ' + d.door + ' to room ' + d.to + ' (' + rooms[d.to] + '), ' +
         (d.open ? 'open' : 'closed') + (d.locked ? ' and locked' : '')).join('; ') : 'none';
       $('td-cap').innerHTML = '<b>Room ' + room + ', ' + rooms[room] + '.</b> Picture record ' + (r[0x1BC0 + room] & 0x7F) +
@@ -321,7 +347,8 @@ function tdNewGame(ram) {
         '; colours ' + (r[0x1B80 + room] & 15) + ' and ' + (r[0x1BA0 + room] & 15) + ', character set ' + set +
         '. Doors: ' + doorText + '. Drawn from the listing\'s bytes by a port of the game\'s room builder, doors and floor included, checked against the game\'s own code (test_rooms.js). The cast and the small objects are not drawn: the objects lie inside the furniture.';
     }
-    sel.onchange = draw; $('td-after').onchange = draw;
+    sel.onchange = draw;
+    for (const id of ['td-after', 'td-open', 'td-marks']) $(id).onchange = draw;
     for (const b of document.querySelectorAll('.pick .step')) b.onclick = () => {
       sel.value = String((+sel.value + +b.dataset.d + rooms.length) % rooms.length); draw();
     };
