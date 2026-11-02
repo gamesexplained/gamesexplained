@@ -52,7 +52,7 @@ Sources:
 | The icons offered depend on the situation | traced | each menu is built from a list or a mask for the situation (`$86EE`); questions need a character within 22 pixels across and 9 in depth (`$B2E1`) |
 | Accuse | traced | icon 7 (`$BB50`), in the icon lists of menus 0, 1 and 4 at `$8789` |
 | Inventory of six items, more with something to carry them in (Zzap) | differs | five: with five objects carried a sixth is refused, "YOU CAN/T CARRY ANY MORE!" (`$30CF`); an object or piece of furniture holds five more (`$8856`) |
-| Ten pieces of evidence, put in envelopes, before the accusation (the author) | confirmed | `$BB17` lists the ten; `$BB76` needs all in place `$C0` and Dingle accused. Live: refused without them; with them put in place `$C0` by hand, the arrest scene, the blanks, the escape and the win all ran (`facts.md`, "Live tests"). No win was played from the start |
+| Ten pieces of evidence, put in envelopes, before the accusation (the author) | confirmed | `$BB17` lists the ten; `$BB76` needs all in place `$C0` and Dingle accused. Live: refused without them; with them put in place `$C0` by hand, the arrest scene, the blanks, the escape and the win all ran; and a whole game was won from the start with stick and keyboard input, all ten put in the envelopes by play (`facts.md`, "Live tests") |
 | Real time, with a time limit; lose the case if it runs out | live | the clock starts at `09:10` (`$2153`);  one minute per 3,000 frames, measured; the limit `11:03` ends the game (`$2592`), tried by setting the clock (`facts.md`, "Live tests") |
 | Pause, through the clock icon | traced | `$A1E0`: shows the time and waits for fire with the clock stopped |
 | Characters walk the house on their own: the Major, the Reverend Wrinklebottom, the cook Hilda Crumble, a butler, a professor, Cynthia Sludgebucket and others; Angus McFungus is the first victim | live | Bentley walks up and speaks at the start (`reference/`); the nine scripts at `$A904`-`$B18C`; the vicar is "REVERAND WRINKLEBUM" in the game; McFungus is not one of the cast |
@@ -95,7 +95,8 @@ Found in the code, not in the manual.
   Dingle takes his ammunition (place `$18`) in place of the real ones.
   (traced, `$B1E6`, `$BC5E`; live from a state set by hand: with the
   blanks there the gun clicks and Snide can make the arrest, with the
-  bullets the game ends)
+  bullets the game ends; live by play in the won game, where the blanks
+  were swapped into the study's desk at 09:19)
 
 ## Open questions
 

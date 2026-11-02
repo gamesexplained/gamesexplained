@@ -199,6 +199,22 @@ with "YOU CAN/T CARRY ANY MORE!" when five are already carried (`$30CF`,
 counting place `$80` through `$883B`). A piece of furniture or an object
 holds five; the envelopes hold ten (`$8856`).
 
+## Walking and the furniture
+
+The player has a column (`$64`, from the X at `$1D69`/`$1D73` divided
+by eight) and a depth (`$1D7D`), which grows away from the viewer: up on
+the stick adds one (`$35C7`), down takes one away (`$35E5`). Each piece
+of furniture is a rectangle: first and last column (`$1B00`, `$1B20`),
+back edge and front edge in depth (`$1B40`, the larger, and `$1B60`).
+The task at `$2EB4` finds, among the room's furniture, the nearest edge
+on each side of the player, starting from the room's front value
+(`$1C00`) and its depth (`$1BE0`), and `$34FE` stops a step that would
+reach it. *live*, 1 November 2026, from `work/play-hall.vsf`: in the
+hall (front 8, depth 59) Snide stopped at depth 58 walking up and at 7
+walking down, and in the columns of the staircase (front edge 26) the
+back limit at `$1DEF` became 26. The Maps tab draws each room's plan from
+these tables.
+
 ## The menus
 
 Fire in play opens the investigation menu (state 3). Its pointer moves
@@ -377,8 +393,33 @@ recommended.
   opened its menu (look, put in, use the gun: the mask at `$87BB`), and
   using the gun ran the winning branch (`$BCEB`), not the refusal
   (`$BCFF`). With the real bullets in place `$18`, Dingle took them
-  (`$F7`) and the game's end at `$2042` ran. No route to a win by play
-  was recorded.
+  (`$F7`) and the game's end at `$2042` ran.
+- *live*, 1-2 November 2026, a won game played from the hand-over
+  snapshot with stick and keyboard input only (`work/drv.py`, `nav.py`,
+  `items.py`, with the phases in `work/r_rest.py` and `work/r_end.py`,
+  run in one go by `work/r_full.py`; every input logged in
+  `route.json`). The promotion's branch (`$BCEB`) ran at 09:28 on the
+  game's clock, 55,889 frames after the snapshot, with all ten pieces of
+  evidence in place `$C0`. `route_replay.py` played the 24,689 logged
+  inputs again from the hand-over snapshot on 2 November 2026: all 33
+  milestones were reached in the same room at the same clock, and the
+  win branch ran. A log joined from runs that each began at a saved
+  snapshot did not replay: it parted from the recording at the first
+  join, so the recording is one unbroken run. The order and the
+  triggers are on the How it works page. On the way: taking the BOOKS from the library's bookcase
+  asks for the title (`$30BA`, `$805D`); a closed secret passage gets the
+  ordinary menu at its door, and investigating it opens it (`$892A`); the
+  use action is the main menu's icon 14, choosing the tool, then the way,
+  then the target, in that order (`$A2AF`, record 50/45/0 for the small
+  key and the briefcase, 31/30/0 for the screwdriver and the locket); the
+  knife was found in the Cook's bed (place `$1A`); the second tune (state
+  8) holds play on the first visit to the hall after Cynthia's death.
+- Dingle's door (record 16) cannot be unlocked by the player once his
+  second script has locked it (`$B0A7`): its key byte is 0, only objects
+  15 and 16 have the unlock icon in their masks (`$87A5`, bit 5), and no
+  script unlocks it again. *live*: in a game where Snide had passed
+  through room 1 after the Doctor's report, the door was locked and the
+  hot water bottle's menu offered icons 1, 16 and 0.
 - *live*, 1 November 2026, lost presses (`work/live_fire_rate.py`): 60
   presses of fire, six frames long, each at a random moment (a random
   1-40 frames and 0-19,000 instructions after loading
@@ -390,5 +431,14 @@ recommended.
   discarded the latch at `$2224`) and by the interrupt once a frame
   (`$2A88`); a latch set by one call and cleared by another before the
   menu task looks is a press lost.
+- *live*, 2 November 2026, lost presses by room (`work/fire_rooms.py`):
+  the same test, 40 presses each from eight snapshots saved along a
+  played game, opened the menu 22 times in the hall, 20 in the Major's
+  room, 14 in Dingle's, 15 in the corridor downstairs, 20 in the study,
+  13 in the library, 15 in the drawing room and 24 in the Doctor's room:
+  143 of 320. A chi-square test of the eight counts gives about 12 on 7
+  degrees of freedom (p about 0.1), so they do not show a difference
+  between rooms. Each snapshot is also a different moment of the cast's
+  scripts, so a room effect and a script effect could not be told apart.
 - *live*: fire on port 2 starts the game; the stick walks Snide in four
   directions; fire opens the menu (`features.md`).
