@@ -141,7 +141,7 @@ G.main = function (P) {
   });
 
   // The game over: the reason on the message line ($8BF2: 1 the shield, 2 the time, 3 the energy,
-  // 4 and 5 the game's own ends, 6 aborted from the information screen), its sound (but for 5),
+  // 4 a fall, 5 every sector made safe, 6 aborted from the information screen), its sound (but for 5),
   // the view of area $7F with the count of safe sectors, held 13 x 75 frames, the last twelve of
   // them ended by a key; then the demonstration ($891F = 3) unless a key was pressed.
   function* gameOver(end) {

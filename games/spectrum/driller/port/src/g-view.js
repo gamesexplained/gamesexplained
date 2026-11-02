@@ -468,7 +468,9 @@ G.view = function (P) {
     const off = P.mul_s8({ h: (M[0x88DB] - 1 - a) & 255, l: M[0x88DD] }).hl;
     let hl = (w(0x8A95) + off) & 0xFFFF;
     const pat = (w(0x891D) + ((((M[0x8917] - 1) & 255) * 4) & 255)) & 0xFFFF;
+    const N = P.N;
     for (;;) {
+      N.fillRows = (N.fillRows || 0) + 1;
       const px = M[(pat + (a & 3)) & 0xFFFF];
       let p = hl;
       const st = M[iy];
@@ -507,6 +509,7 @@ G.view = function (P) {
             }
           }
           const c = b;
+          N.fillBytes = (N.fillBytes || 0) + (b >> 3);
           for (let k = b >> 3; k > 0; k--) { M[p] = px; p = (p + 1) & 0xFFFF; }
           const rem = c & 7;
           if (rem) {
@@ -686,6 +689,7 @@ G.view = function (P) {
         let e = y0, bb = (y1 - y0) & 255;
         if (sgn16((y1 - y0) & 0xFFFF)) { e = y1; bb = (-bb) & 255; }
         let iy = (w(0x8A9F) + 3 * e) & 0xFFFF;
+        P.N.edgeRows = (P.N.edgeRows || 0) + (bb || 256);
         for (let j = bb || 256; j > 0; j--) { plot(iy, x1); iy = (iy + 3) & 0xFFFF; }
       } else {
         let b = 1, c = 1, adx = (x1 - x0) & 0xFFFF;
@@ -699,6 +703,7 @@ G.view = function (P) {
           // a steep edge: a row each step
           setw(0x83F8, ady); setw(0x83FA, adx);
           let err = ady >> 1;
+          P.N.edgeRows = (P.N.edgeRows || 0) + (ady || 256);
           for (let j = ady || 256; j > 0; j--) {
             plot(iy, x);
             const s = (w(0x83FA) + (err & 255)) & 0xFFFF;
@@ -710,9 +715,11 @@ G.view = function (P) {
           // a shallow edge: x steps until the error passes, a row's first x plotted
           setw(0x83FA, ady); setw(0x83F8, adx);
           let err = (adx & 255) >> 1;
+          P.N.edgeRows = (P.N.edgeRows || 0) + (ady || 256);
           for (let j = ady || 256; j > 0; j--) {
             plot(iy, x);
             for (;;) {
+              P.N.edgeSteps = (P.N.edgeSteps || 0) + 1;
               x = (x + step) & 255;
               const s = (w(0x83FA) + (err & 255)) & 0xFFFF;
               const d = (s - w(0x83F8)) & 0xFFFF;
@@ -743,6 +750,7 @@ G.view = function (P) {
       if (sgn16((y1 - y0) & 0xFFFF)) { lo = y1; hi = y0; b = (-b) & 255; }
       let iy = row(lo);
       setw(0x891B, lo); setw(0x8919, hi);
+      P.N.lineSteps = (P.N.lineSteps || 0) + ((b + 1) & 255 || 256);
       for (let j = (b + 1) & 255 || 256; j > 0; j--) { M[iy] = 1; M[(iy + 1) & 0xFFFF] = x1; iy = (iy + 3) & 0xFFFF; }
     } else {
       let b = 1, c = 1, adx = (x1 - x0) & 0xFFFF;
@@ -758,6 +766,7 @@ G.view = function (P) {
         setw(0x85FB, ady); setw(0x85FD, adx);
         let err = ady >> 1;
         M[iy] = 1; M[(iy + 1) & 0xFFFF] = a;
+        P.N.lineSteps = (P.N.lineSteps || 0) + (ady || 256);
         for (let j = ady || 256; j > 0; j--) {
           const s = (w(0x85FD) + err) & 0xFFFF;
           const d = (s - w(0x85FB)) & 0xFFFF;
@@ -769,6 +778,7 @@ G.view = function (P) {
         setw(0x85FD, ady); setw(0x85FB, adx);
         let err = adx >> 1;
         M[iy] = 1; M[(iy + 1) & 0xFFFF] = a;
+        P.N.lineSteps = (P.N.lineSteps || 0) + (adx || 256);
         for (let j = adx || 256; j > 0; j--) {
           a = (a + step) & 255;
           const s = (w(0x85FD) + err) & 0xFFFF;

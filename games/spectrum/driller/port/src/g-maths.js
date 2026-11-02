@@ -168,6 +168,7 @@ G.maths = function (P) {
     const hl = r.hl !== undefined ? r.hl : (r.h << 8 | r.l);
     let scr = P.w(hl), n = M[(hl + 2) & 0xFFFF] || 256, ix = r.ix;
     const font = P.w(0x8A81);
+    P.N.chars = (P.N.chars || 0) + n;
     while (n-- > 0) {
       const ch = M[ix];
       let src = (font + 3 * (((ch - 0x20) * 2) & 255)) & 0xFFFF;
