@@ -276,8 +276,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   `test_play.js` gives 2,654 passes drawn in 23,100 frames on main's page
   and on this one alike, where the page says 2,686, and the C64's passes
   a second differ too (8.1 to 10.3 in a fight here, 8.4 to 11.1 on the
-  page). The page keeps its figures, and the Fast CPU table quotes the
-  C64's from the Smooth motion table; Fast CPU made 16.7 in all 23.
+  page). The page keeps its Native resolution figures, and the Fast CPU
+  table gives the C64's from these moments; Fast CPU made 16.7 in all
+  23.
 - `test_fast.js` first counted a moving object as standing still on 148
   of 899 checks: it looked once a refresh, and a 60 Hz refresh runs no
   pass one time in six. It now looks after every pass.
@@ -285,3 +286,16 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   scratch, from the cockpit's ship display drawn every seventh pass, so
   it lists what a save keeps, $0403-$0801, as Castle Master's does.
 
+## Smooth motion taken out (2 November 2026)
+
+- Aaron asked for Smooth motion to go once Fast CPU was in, as on
+  Mercenary's Play tab. Out went its button and text, the poses between
+  passes in `port/page/modern.js` (the history of passes, the camera
+  placed for skipped passes, the turns between orientations), the second
+  copy of the port that painted a pose in the C64's pixels, and
+  `test_play.js`'s checks of the smooth view. Native resolution keeps
+  what it draws from: each drawn pass captured as `build_draw_list`
+  starts, and every pass still numbered, since the number seeds the
+  sparks it draws at random. The view Native resolution draws at every
+  frame of 1,500 frames of flight and 1,500 with Fast CPU was the same
+  before and after, and `test_play.js` gave the same counts.
