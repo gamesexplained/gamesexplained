@@ -95,3 +95,16 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - Each phase saved a snapshot and its input log, so a failure was
   retried from the phase before. `work/replay.py` plays the whole log
   from the hand-over snapshot in one run.
+
+## Sprites and animated characters, 2 November 2026
+
+- The contributor asked for more of the graphics and animation. A contact
+  sheet of every shape drawn first with `$D025` and `$D026` the wrong way
+  round (faces white); the code at `$29E8`-`$2A04` and the reference
+  screenshot of the hall settled it: bit pair 01 is white, 11 black.
+- Writing the bodies' placement from `$250B` showed that its comment had
+  type 2 wrong ("the second 2 pixels left and 21 lines up"): the second
+  sprite is 21 lines below the first, and the first is 2 pixels right.
+  The comment was corrected.
+- Which rooms use the animated characters 97 and 52-54 was found by
+  building every room with the Maps page's tested room builder.

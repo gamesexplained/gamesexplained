@@ -324,6 +324,33 @@ set's upper half rotate through `$4400` per room (`$3CC0`). Up to four
 characters in view are each a pair of sprites; a character turning round
 has its shapes mirrored in place (`$9138`, `$0500`, `$0380`).
 
+Sprites are multicolour with `$D025` = 1 (white) and `$D026` = 0 (black)
+in play (`$29E8`-`$2A04`). Each person's own colour (`$1EB3`-`$1EBC`) is
+10, light red (`$3763`, `$306A`); the bottle of pills sets Snide's to 5
+(`$A1B1`). Snide's head is `$372E`,direction (0 away, 1 right, 2 towards,
+3 left, from `$3743`) and his body the head plus `$3734`,step; the step
+counts down from 8 to 1 every third pass of the play handler, is 0 when
+he stands, and the direction is taken only when it starts again
+(`$36B4`-`$371F`). Each of the nine others has ten shapes from
+`$9230`,x: heads 0-2 and bodies 3-5 walking right (pose 2) or towards the
+viewer (pose 3), head 6 and bodies 7-9 walking left (0) or away (1), the
+body plus `$9239`,step; the step moves every third call of `$9241`
+(animation jobs 1 and 3), and odd poses use the mirrored shapes (`$93A3`).
+The speaker's head is the base plus `$93C2`,step (`$93CA`). The Major (7)
+adds the step to his head too in poses 2 and 3 (`$9391`). A dead person's
+`$1EA6` picks the placement at `$250B`: 1 side by side at Y+21, 2 stacked
+with the first sprite 2 pixels right, 3 the first alone at line `$92`.
+The bodies are Cynthia `$D1` (type 3), Gabriel `$E0`/`$E1` (2), the
+Doctor `$DC`/`$DD` (1) and Dingle's pretence `$BF`/`$D9` (2); Snide's end
+is `$D7`/`$D8` (1, `$25D6`), after `$DA`/`$DB` for the bomb (`$C066`).
+
+Two characters of the room set are animated by the interrupt's jobs
+(`$2C57`). Character 97, a small flame in rooms 1, 2, 4, 6, 13, 14, 15
+and 20, gets frame 0, 1, 2, 1 of `$E800` every fourth frame (`$2C83`).
+Characters 52-54, the drawing room's fire, get 24 bytes of the 40-byte
+ring at `$E818` every eighth frame, 8 bytes further on each time
+(`$2CC2`).
+
 ## Sound
 
 A three-voice music player (`$945E`, `$973E`): sequences of notes and
