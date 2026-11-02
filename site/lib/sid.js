@@ -90,6 +90,8 @@
 //   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
 //   C64Sid.waveLevel(ctrl, pw)   how loud a voice's waveform is against its envelope, 0 to 1
 //   C64Sid.startsNote(v, prev)   whether a voice's frame starts a note: mount's mark by default
+//   C64Sid.noteStarts(mark)      starts(v, prev, x): mark, frame by frame, with a note marked
+//                                before the voice has a pitch moved to where it gets one
 globalThis.C64Sid = (function () {
   'use strict';
   // How loud a voice's waveform is, 0 to 1, against the level its envelope sets: none with no
@@ -112,6 +114,24 @@ globalThis.C64Sid = (function () {
   // playing fifty notes a second.
   function startsNote(v, p) {
     return !!(v.ctrl & 1) && (!(p && p.ctrl & 1) || (!!v.again && !p.again));
+  }
+
+  // Where each voice's notes start, given every frame of it in order: starts(v, prev, x) for
+  // voice x's snapshot of a frame and the frame before's. A note starts where mark says (by
+  // default startsNote), but one marked while the voice has no frequency starts on the first
+  // frame that has one, if its gate stays on till then: a driver may turn the gate on a frame
+  // before it sets the pitch (North and South's tunes do it for every note), and a note with no
+  // pitch has no place on the ball's sheet or the piano roll.
+  function noteStarts(mark) {
+    const is = mark || startsNote, wait = [false, false, false];
+    return (v, p, x) => {
+      if (is(v, p)) { wait[x] = !v.freq && !!(v.ctrl & 1); return !!v.freq; }
+      if (!wait[x]) return false;
+      if (!(v.ctrl & 1)) return (wait[x] = false);
+      if (!v.freq) return false;
+      wait[x] = false;
+      return true;
+    };
   }
 
   // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
@@ -660,7 +680,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           and on again (a driver that keeps writes)
   //   mark    optional: (v, prev) => true where a note starts, drawn taller on the piano roll;
   //           by default startsNote: where the voice's gate comes on, or goes off and on again
-  //           within the frame
+  //           within the frame. A note marked before the voice has a frequency starts where it
+  //           gets one (noteStarts)
   //   gain    optional: the output level, 0.6 by default
   //   filter  optional: '6581', '8580' or 'none', the filter the player starts with. Given, the
   //           player shows a switch between the three, heard at once, to compare them, and
@@ -775,6 +796,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1).fill(NaN)) : null;
         const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1)) : null;
         const chip = BOUNCE ? E.createSID(8000, { ntsc: o.ntsc }) : null;
+        const starts = noteStarts(mark);
         const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
         const collect = BOUNCE ? (d, k) => {
           const w = d.writes, s = d.sid;                     // as the player sets the chip
@@ -790,7 +812,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
             const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
             level[x][k] = lv * waveLevel(v.ctrl, v.pw);
             if (lv && v.freq && wave && (wave !== 0x80 || NOISE)) line[x][k] = semis(v.freq);   // noise: only if asked
-            if (mark(v, prev[x]) && v.freq) notes[x].push({ t: k, n: semis(v.freq) });
+            if (starts(v, prev[x], x)) notes[x].push({ t: k, n: semis(v.freq) });
             prev[x] = v;
           }
         } : null;
@@ -967,15 +989,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         g.fillText('Choose a tune to start.', 40, H / 2);
         return;
       }
-      const x0 = W - hist.length * px;
+      const x0 = W - hist.length * px, starts = noteStarts(mark);
       for (let i = 0; i < hist.length; i++) {
         const s = hist[i], p = hist[i - 1];
         for (let x = 0; x < 3; x++) {
-          const v = s.v[x];
+          const v = s.v[x], start = starts(v, p && p.v[x], x);
           if (!v.env || !v.freq || !(v.ctrl & 0xF0)) continue;
           const n = 12 * Math.log2(v.freq * HZ / C0);
           if (n < LO - 1 || n > HI + 1) continue;
-          const start = mark(v, p && p.v[x]);
           g.globalAlpha = muted[x] ? 0.12 : 0.3 + 0.7 * v.env / 255;
           g.fillStyle = COLORS[x];
           const xa = Math.round(x0 + i * px), xb = Math.round(x0 + (i + 1) * px);
@@ -1008,5 +1029,5 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }, () => {});
   }
 
-  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel, startsNote };
+  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel, startsNote, noteStarts };
 })();
