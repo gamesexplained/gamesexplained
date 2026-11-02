@@ -27,11 +27,11 @@ in the platform's reference skill.
   waits for its clock every loop and keeps up gains nothing.
 - **Choose the kind of Fast CPU by the game's pace.** An action game,
   played at its own pace (`games/c64/mercenary`, `games/c64/space-rogue`),
-  gets more frames at the same pace: 60 frames a second, the pace fixed
-  at the machine's usual one and no Speed to set, because a faster pace
-  is another game. A very slow game (`games/c64/castle-master`) gets more
-  frames and a faster pace: 60 frames a second and a Speed, because its
-  machine's pace is a wait rather than the game.
+  gets more frames at the same pace: a frame each beat, the pace the
+  machine's own and no Speed to set, because a faster pace is another
+  game. A very slow game (`games/c64/castle-master`) gets more frames and
+  a faster pace: 60 frames a second and a Speed, because its machine's
+  pace is a wait rather than the game.
 
 ## Two pieces, and nothing else
 
@@ -65,13 +65,18 @@ rate). When two aims clash the higher wins:
 - **Beat on the game's clock when it ticks 60 times a second.** Then
   loops and ticks line up one to one (`games/c64/castle-master`'s
   timer). A game timed by a slower clock, such as its screen's 50 video
-  frames a second (`games/c64/mercenary`, `games/c64/space-rogue`), gets
-  a beat of its own counted in the machine's cycles, and its clock goes
-  on counting its own ticks, so what it times keeps its time in seconds.
-- **A wait for the screen's beam before a flip does not hold the loop.**
-  On the machine it keeps the picture whole; the page shows whole frames
-  anyway, and the wait would hold the loop to the machine's own frame
-  rate. Make it a plug-in point.
+  frames a second (`games/c64/space-rogue`), gets a beat of its own
+  counted in the machine's cycles, and its clock goes on counting its own
+  ticks, so what it times keeps its time in seconds.
+- **A game that waits for a line of its screen before each flip can beat
+  on that line, once a video frame** (`games/c64/mercenary`). Its wait
+  then ends at once, its flips fall where the machine's do against the
+  interrupts, and a display at the machine's frame rate shows every frame
+  for the same time; a 60 Hz display shows one frame in five twice.
+- **Otherwise a wait for the screen's beam before a flip does not hold
+  the loop.** On the machine it keeps the frame whole; the page shows
+  whole frames anyway, and the wait would hold the loop to the machine's
+  own frame rate. Make it a plug-in point.
 - **Run the loops owed each refresh, at most the cap, and drop the
   rest.** The cap is 60 over 15, 4 loops, which keeps real time on a
   15 Hz display and stops one slow refresh setting off a longer one;
@@ -112,9 +117,33 @@ rate). When two aims clash the higher wins:
   its countdowns (`games/c64/mercenary`, `games/c64/space-rogue`) needs a
   share in every mover and a once-a-pace in every count, since 60 frames
   a second needs every move in shares.
-- **Take the pace from the machine's timings.** For the same pace, K is
-  the middle of its loops in play, or the pace the game itself aims at
-  when it has one (a loop it allows a fixed number of frames). For a
+- **Follow the machine's pace when the page has a cost model of its
+  loop.** Before each of the machine's loops, the model gives the beats
+  the machine would take over the work the last loop did; that many loops
+  make one of the machine's, each taking its share of the steps, so every
+  view moves at the machine's speed, slow in a busy one and quick in an
+  empty one (`games/c64/mercenary`, the table's `follow`). The jobs once a
+  pace run in the first of them, and each carry keeps its share of a unit
+  when K changes.
+- **Ease what the game works out each loop from what changes once a
+  pace.** The moves glide a share a loop, but a value set from one the
+  game changes once a pace (a craft's bank, from a turn rate damped once
+  a pace) still jumps once a pace, and among frames that glide the jump
+  shows. Give it a plug-in point that moves it to the game's value over
+  the pace's loops and stands at it on the last (`ease`). Draw what the
+  page's own code moves once a pace (a mod's traffic) the share of a pace
+  gone since it moved (`since`), counted from that job, because the game
+  may draw before the job runs in the same loop.
+- **Find what still steps by listing it, not by playing.** Run Fast CPU
+  in every way the player moves and list the bytes that change only on
+  the first loop of the machine's loops: each is a count meant to run
+  once a pace or a value to ease. The test holds the list with the reason
+  for each, so a byte that joins it fails
+  (`games/c64/mercenary/test_fast.js`).
+- **Take the pace from the machine's timings.** Without a cost model, for
+  the same pace K is the middle of its loops in play, or the pace the
+  game itself aims at when it has one (a loop it allows a fixed number of
+  frames). For a
   faster pace, put the slowest setting at the machine's quickest loop in
   play, timed while turning and while walking from every saved moment,
   and the others faster still: a faster processor is nowhere slower than
@@ -202,8 +231,13 @@ rates and settings, the clock's jobs at the same moments on and off, K
 shares ending where one step ends, the pace at each setting, switches
 once a press, stopping in the loop where the key comes up, a wait that only
 keeps something up, long random play, and each refresh showing its own
-last loop's frame. Count the loops that read the keys rather than the
-loops, since a loop can return before it reads them. In a browser, check
+last loop's frame. Measure what decides between Fast CPU and Smooth
+motion in node, with refreshes simulated at 50, 60 and 144 Hz: the delay
+from a key to the first frame that moves and from letting go to the
+last, against the machine's and Smooth motion's, because a headless
+browser's timing is its renderer's, not the game's. Count the loops that
+read the keys rather than the loops, since a loop can return before it
+reads them. In a browser, check
 that the view stops when a key comes up and that a short press of a
 switch acts once at every setting
 (`games/c64/castle-master/port/test/fast-browser.js`, run by hand where

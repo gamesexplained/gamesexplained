@@ -88,7 +88,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="skip" title="Run the intro at full speed to the crash landing, the frame where the game hands you control">Skip intro</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
-      <button type="button" data-act="smooth" aria-pressed="false" title="Draw the view at the screen's own frame rate, moving between the game's pictures">Smooth motion</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a C64 with a much faster processor would: a new frame from the game every video frame, at the C64's own pace">Fast CPU</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-sep" aria-hidden="true"></span>
@@ -117,7 +117,7 @@ section table{margin:6px 0 18px}
       </span>
       <span class="pl-status" id="alive-status"></span>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution. <b>Smooth motion</b> draws the view at the screen's own frame rate, sliding it from each of the game's pictures to the next (section 03).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would: a new frame from the game's own code every video frame, at the C64's pace (section 03).</p>
     <div id="alive-panel" hidden>
       <canvas id="alive-cv" width="440" height="440" role="img" aria-label="Map of the city: the roads, you, and the traffic"></canvas>
       <p class="cap" id="alive-cap">Targ Traffic can be switched on at any time; the traffic appears at once and the game carries on. Switched off, the game is the original again. On the map north is up, <b>blue</b> is Palyar and <b>red</b> Mechanoid, a square is a car and a triangle a craft, and the amber disc is you.</p>
@@ -186,17 +186,20 @@ section table{margin:6px 0 18px}
     <tr><td>On the Colony Craft's deck</td><td>400</td><td>49</td><td>48</td></tr>
     <tr><td>The descent</td><td>400</td><td>46</td><td>45</td></tr>
   </table>
-  <h3>Smooth motion</h3>
-  <p>The C64 redraws the view once a pass: about twelve times a second in a room, five to eight times with the city in view. With <b>Smooth motion</b> on, the page draws the view at the screen's own rate, 60, 120 or 144 times a second, and the game underneath does not change.</p>
-  <p>This works because every picture the C64 shows is a pass behind the game. While a picture is on show, the next one is being drawn, from where the game moved you at the end of the pass before. So the page knows where the next picture looks from before it appears. It draws the picture on show from an eye part of the way there, and moves each craft, car and missile part of the way to where the game has already put it. By the time the C64 would flip to the next picture, the view has arrived at it.</p>
-  <p>How long a picture stays on show depends on how much the next pass draws, so the page cannot know it in advance. It follows the program through its pass and expects the rest to take as long as it did last time. One kind of pass runs much longer: the one that rebuilds the list of roads in view, when you fly into a new square or a new band of height. The page sees that coming from your course and slows the glide for it, where the C64 holds the picture.</p>
-  <p>What the game changes at once stays sudden: a door, a lift, boarding or leaving a craft. A craft's turn and a building's rotor keep the game's steps, since only positions slide. Without native resolution the page draws the view in the C64's pixels with its own lines and fill, which match the game's bitmaps to within a pixel.</p>
+  <h3>Fast CPU</h3>
+  <p>With <b>Fast CPU</b> on, the page plays the game as a C64 with a much faster processor would. The main loop goes round once every video frame, 50 times a second, where the C64 manages four to twelve passes. Each pass draws a new frame into the game's own bitmaps, so every frame on screen is one the game drew.</p>
+  <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends. A craft's bank, which the game sets once a pass from its rate of turn, moves to each new angle the same way, a share at a time, and so do Targ Traffic's cars and craft, which the mod moves once a pass.</p>
+  <p>What the game counts in passes happens once for each of the C64's passes: the event scripts' next operation, the lifetimes of the missiles and the attack ship, a building's collapse, the damping of a craft's turn and speed, and a held <kbd>=</kbd> or <kbd>−</kbd>. What the game times by its clock keeps its time, since the raster interrupts still come 50.12 times a second on their lines: the panel's seconds, Benson's printing, the lift ride.</p>
   <table>
-    <tr><th>Session, with smooth motion drawing at 144 frames a second</th><th>Passes</th><th>The game's memory</th></tr>
-    <tr><td>Walking and turning at the landing site</td><td>1,221</td><td>identical at every pass to a run without it</td></tr>
-    <tr><td>Boarding the Dart, climbing, banking, under attack</td><td>554</td><td>identical at every pass</td></tr>
-    <tr><td>Both again with Targ Traffic on</td><td>1,221 and 519</td><td>identical at every pass</td></tr>
+    <tr><th>From the crash site</th><th>C64</th><th>Fast CPU</th></tr>
+    <tr><td>Walking for 20 seconds</td><td>13,120 units</td><td>13,146 units</td></tr>
+    <tr><td>Turning on foot for 20 seconds</td><td>1,632 steps of 1,024 to a turn</td><td>1,648 steps</td></tr>
+    <tr><td>Flying the Dart level for 10 seconds</td><td>48,990 units</td><td>49,257 units</td></tr>
+    <tr><td>The panel's clock after 20 seconds</td><td>1,002 frames</td><td>1,001 frames</td></tr>
+    <tr><td>A turn key pressed to the view turning, on foot</td><td>about 290 ms</td><td>about 30 ms</td></tr>
   </table>
+  <p>The keys are read every frame, so the view answers in the next frame or the one after, and letting go stops you in the next. The C64 reads them once a pass, after drawing, so a move first shows in the next pass's view, up to two passes after the press. A press shorter than three frames is held for three, so that a pass reads it.</p>
+  <p>Some things change with the finer steps. What the game tests once a pass it now tests at each share of the move: whether your missile has struck a building, whether the attack ship's missile has reached you, whether you have walked into a door. The game's frames come at the C64's 50.12 a second: a display at 50 or 100 Hz shows each for the same time, and skips one about every eight seconds since it runs 0.25 % slower; at 60 Hz one frame in five stays up for two refreshes. Switched off, the game is the C64's again from where it stands.</p>
 </section>
 <section id="differences">
   <p class="fig">04 · Differences</p>
@@ -207,7 +210,7 @@ section table{margin:6px 0 18px}
     <li><b>The screen.</b> The video chip is drawn line by line from the registers the game writes and the line each write lands on, which is how the game splits the screen into the view, the panel and the message window. A register written in the middle of a line takes effect from the next line.</li>
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, a frame at a time.</li>
     <li><b>The interrupts.</b> They run between the steps of a pass, not inside them (section 02).</li>
-    <li><b>Smooth motion.</b> A view between two of the game's pictures never appears on a C64. The page draws it from the game's own positions, part of the way from one pass to the next (section 03).</li>
+    <li><b>Fast CPU.</b> The frames between two of the C64's passes are the game's own, from passes that each take a share of the C64's step. The C64 never shows them, and what the game tests once a pass, it tests at each share (section 03).</li>
     <li><b>The keyboard.</b> The arrows are the joystick in port 2, and F or the right Ctrl key fires. The other keys are the C64's by name: the digits set the thrust, T takes and B boards. Esc is CTRL + RETURN, the game's pause.</li>
   </ul>
 </section>
@@ -217,10 +220,30 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/play-controls.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <script>
 /* the port: Mercenary's routines, each a function on the game's memory M, named by the listing's label */
 (function () {
 'use strict';
+
+// ---- plug-in points ------------------------------------------------------------------------------
+// The places in the routines where the page's Fast CPU (site/lib/fast-cpu.js, with Mercenary's table
+// in the block "fast") passes in a value or skips a job, each marked "plug-in point" where it is
+// used. These are the game's own: with nothing plugged in, each gives what the game's code does, so
+// the lockstep (test_play.js) holds the port and its plug-in points together. Fast CPU swaps in its
+// own while it is on.
+//   step(key, v)   a move's step v, in the units the routine adds it in: what of it this pass takes
+//                  (all of it)
+//   once(key)      whether a job that counts passes, or whose effect adds up, runs this time (always)
+//   take(act)      whether a key held down for a repeat acts this time (always)
+//   read()         the controls are about to be read again
+//   ease(key, from, to)  a value the game sets once a pass from what it worked out for the whole
+//                  pass (a craft's bank), standing at from: what this pass sets (to)
+//   since(key)     the share of a pass gone since the job once(key) last ran, for a mod that moves
+//                  what it draws in that job (Targ Traffic): all of it (1)
+function install_plug(P) {
+  P.plug = { step: (key, v) => v, once: key => true, take: act => true, read: () => {}, ease: (key, from, to) => to, since: key => 1 };
+}
 
 // ---- view3d ------------------------------------------------------------------------------------
 // Group view3d: the float maths ($828B-$855B), the view's trigonometry and matrix ($A544, $A320),
@@ -1645,7 +1668,7 @@ function install_scene(P) {
   P.ground_flash = function* (r) {
     let x = r && r.x;
     const f = M[0xF0];
-    if (f) {
+    if (f && P.plug.once(0xAFA8)) {                         // plug-in point: once, a count of passes
       M[0xF0] = (f - 1) & 255;
       if (M[0xF0] === 0) M[0xA5] = M[0xC4];
       else { x = f; M[0xA5] = M[0xBB7E + f]; }               // $AFB7 TAX: the count before the DEC
@@ -1659,7 +1682,7 @@ function install_scene(P) {
   // $AFCA black_flash_countdown: $F9 (2 after a crash landing, $A0DF) counts down a pass and at 0
   // flashes the view black; then draw_sky_ground.
   P.black_flash_countdown = function* (r) {
-    if (M[0xF9]) {
+    if (M[0xF9] && P.plug.once(0xAFCA)) {                   // plug-in point: once, a count of passes
       M[0xF9] = (M[0xF9] - 1) & 255;
       if (M[0xF9] === 0) yield* P.flash_black({ x: r && r.x });
     }
@@ -3104,6 +3127,19 @@ function install_motion(P) {
     M[base + 1] = mid & 255;
     M[base + 2] = (M[base + 2] + ((x & 0x80) ? 0xFF : 0) + (mid >> 8)) & 255;
   }
+  // Plug-in point step for a 16-bit step q (X high, Y low): the part of it this pass takes, in the
+  // same form (all of it)
+  function share(key, q) {
+    const d = P.plug.step(key, (((q.x << 8) | q.y) << 16) >> 16) & 0xFFFF;
+    return { x: d >> 8, y: d & 255 };
+  }
+  // the 16-bit value at lo (low) and lo + 1 (high) moved by the part of v this pass takes (plug-in
+  // point step); the high byte kept to mask, as the game's carry or borrow into it leaves it
+  function move16(lo, key, v, mask) {
+    const s = ((M[lo + 1] << 8) | M[lo]) + P.plug.step(key, v);
+    M[lo] = s & 255;
+    M[lo + 1] = (s >> 8) & mask;
+  }
 
   // $9D99 load_motion_record: record A, the 16 bytes at $9DAD + 16A, into $BEA0-$BEAF (the motion
   // routine, then its handling). A is the mode $A9: 0-7 the craft, 9 falling, 10 the descent.
@@ -3159,9 +3195,8 @@ function install_motion(P) {
     return descent_step(h >> 1);
   };
   function descent_step(x) {                       // $9E6A
-    const mid = M[0x76] - M[0x9E9E + x];           // descent_step_lo
-    M[0x76] = mid & 255;
-    M[0x77] = (M[0x77] - M[0x9EAE + x] - (mid < 0 ? 1 : 0)) & 255;   // descent_step_hi
+    // $77:$76 less descent_step_hi:descent_step_lo (plug-in point: step)
+    move16(0x76, 0x9E6A, -((M[0x9EAE + x] << 8) | M[0x9E9E + x]), 255);
     if (M[0x77] === 0 && M[0x9E93] !== 0x4C) {    // $9E7B
       M[0x9E93] = 0x4C;                            // $9E84: JSR $8510 becomes JMP $8510
       M[0x77] = 6;
@@ -3183,9 +3218,7 @@ function install_motion(P) {
   // $9EBE motion_fall: falling (record 9, off the deck or shot down) and the opening's last
   // stage: the height's middle byte loses $BEA2 a pass; below 0, the crash landing.
   P.motion_fall = function () {
-    const mid = M[0x76] - M[0xBEA2];
-    M[0x76] = mid & 255;
-    M[0x77] = (M[0x77] - (mid < 0 ? 1 : 0)) & 255;
+    move16(0x76, 0x9EBE, -M[0xBEA2], 255);         // plug-in point: step
     if (M[0x77] & 0x80) return P.crash_landing();
     return P.motion_spin();
   };
@@ -3199,15 +3232,9 @@ function install_motion(P) {
   // $9ED6 motion_spin: roll += $BEA3, pitch += $BEA4, heading += $BEA5, the carries into the
   // high bytes unmasked, so the view tumbles; then spin_step.
   P.motion_spin = function () {
-    let s = M[0x28] + M[0xBEA3];
-    M[0x28] = s & 255;
-    if (s > 255) M[0x29] = (M[0x29] + 1) & 255;
-    s = M[0x2A] + M[0xBEA4];
-    M[0x2A] = s & 255;
-    if (s > 255) M[0x2B] = (M[0x2B] + 1) & 255;
-    s = M[0x2C] + M[0xBEA5];
-    M[0x2C] = s & 255;
-    if (s > 255) M[0x2D] = (M[0x2D] + 1) & 255;
+    move16(0x28, 0x9ED6, M[0xBEA3], 255);          // plug-in points: step
+    move16(0x2A, 0x9EE4, M[0xBEA4], 255);
+    move16(0x2C, 0x9EF2, M[0xBEA5], 255);
     return P.spin_step();
   };
 
@@ -3219,7 +3246,7 @@ function install_motion(P) {
     M[0x75] = 0x3F;
     yield* P.motion_flight(r);
     if (M[0x7F]) return {};                        // $9F09
-    M[0x77] = (M[0x77] - 1) & 255;
+    move16(0x76, 0x9F09, -256, 255);               // $77 less 1 (plug-in point: step)
     if (!(M[0x77] & 0x80)) return {};
     M[0x77] = 0;                                   // STA $77 with A = $7F = 0
     return P.crash_landing();
@@ -3230,46 +3257,47 @@ function install_motion(P) {
   // 3 right, 0 = pushed. Carries on as craft_add_x_step to spin_step.
   P.motion_flight = function* (r = {}) {
     if (M[0xCA]) return yield* P.elevator_ride(r);
-    // $9F1E: turn rate $22/$23 x turn damping $BEA2/3
-    M[0x08] = M[0x22]; M[0x09] = M[0x23];
-    let q = P.fp_mul({ x: M[0xBEA2], y: M[0xBEA3] });
-    M[0x22] = q.x; M[0x23] = q.y;
-    if (!(M[0x80] & 0x04)) {                       // $9F33: left adds the turn step
-      q = P.fp_add({ x: M[0xBEA4], y: M[0xBEA5] });
+    let q;
+    // $9F1E: turn rate $22/$23 x turn damping $BEA2/3, with left's or right's step: a rate that the
+    // game damps and pushes once a pass (plug-in point: once)
+    if (P.plug.once(0x9F1E)) {
+      M[0x08] = M[0x22]; M[0x09] = M[0x23];
+      q = P.fp_mul({ x: M[0xBEA2], y: M[0xBEA3] });
       M[0x22] = q.x; M[0x23] = q.y;
+      if (!(M[0x80] & 0x04)) {                     // $9F33: left adds the turn step
+        q = P.fp_add({ x: M[0xBEA4], y: M[0xBEA5] });
+        M[0x22] = q.x; M[0x23] = q.y;
+      }
+      if (!(M[0x80] & 0x08)) {                     // $9F46: right, the step with INY (its sign flipped)
+        q = P.fp_add({ x: M[0xBEA4], y: (M[0xBEA5] + 1) & 255 });
+        M[0x22] = q.x; M[0x23] = q.y;
+      }
     }
-    if (!(M[0x80] & 0x08)) {                       // $9F46: right, the step with INY (its sign flipped)
-      q = P.fp_add({ x: M[0xBEA4], y: (M[0xBEA5] + 1) & 255 });
-      M[0x22] = q.x; M[0x23] = q.y;
-    }
-    if (!(M[0x80] & 0x01)) {                       // $9F5A: up, pitch += the pitch step (10 bits)
-      const s = M[0x2A] + M[0xBEA6];
-      M[0x2A] = s & 255; M[0x2B] = (M[0x2B] + (s >> 8)) & 3;
-    }
-    if (!(M[0x80] & 0x02)) {                       // $9F70: down, pitch -= the pitch step
-      const s = M[0x2A] - M[0xBEA6];
-      M[0x2A] = s & 255; M[0x2B] = (M[0x2B] - (s < 0 ? 1 : 0)) & 3;
-    }
+    // $9F5A: up, pitch += the pitch step (10 bits); $9F70: down, pitch -= it (plug-in points: step)
+    if (!(M[0x80] & 0x01)) move16(0x2A, 0x9F5A, M[0xBEA6], 3);
+    if (!(M[0x80] & 0x02)) move16(0x2A, 0x9F70, -M[0xBEA6], 3);
     // $9F86: speed = (speed + throttle x thrust) x damping; the throttle doubled in craft 1 while
-    // the Poweramp (object 28, $29DC bit 7) is carried
-    let e = M[0xED];
-    if ((M[0x29DC] & 0x80) && M[0xA9] === 1) e = (e + 4) & 255;
-    M[0x08] = M[0xEC]; M[0x09] = e;
-    P.fp_mul({ x: M[0xBEAE], y: M[0xBEAF] });
-    P.fp_add({ x: M[0x26], y: M[0x27] });
-    q = P.fp_mul({ x: M[0xBEAA], y: M[0xBEAB] });
-    M[0x26] = q.x; M[0x27] = q.y;
-    // $9FB9: Y += speed x cos pitch x cos heading
+    // the Poweramp (object 28, $29DC bit 7) is carried. Once a pass (plug-in point: once)
+    if (P.plug.once(0x9F86)) {
+      let e = M[0xED];
+      if ((M[0x29DC] & 0x80) && M[0xA9] === 1) e = (e + 4) & 255;
+      M[0x08] = M[0xEC]; M[0x09] = e;
+      P.fp_mul({ x: M[0xBEAE], y: M[0xBEAF] });
+      P.fp_add({ x: M[0x26], y: M[0x27] });
+      q = P.fp_mul({ x: M[0xBEAA], y: M[0xBEAB] });
+      M[0x26] = q.x; M[0x27] = q.y;
+    }
+    // $9FB9: Y += speed x cos pitch x cos heading (plug-in point: step)
     M[0x08] = M[0x38]; M[0x09] = M[0x39];
     P.fp_mul({ x: M[0x3E], y: M[0x3F] });
     q = P.fp_mul({ x: M[0x26], y: M[0x27] });
-    q = P.fp_to_int16({ x: q.x, y: q.y });
+    q = share(0x9FD2, P.fp_to_int16({ x: q.x, y: q.y }));
     add_step(0x78, q.x, q.y);
-    // $9FE8: X += speed x cos pitch x sin heading
+    // $9FE8: X += speed x cos pitch x sin heading (plug-in point: step)
     M[0x08] = M[0x38]; M[0x09] = M[0x39];
     P.fp_mul({ x: M[0x3C], y: M[0x3D] });
     q = P.fp_mul({ x: M[0x26], y: M[0x27] });
-    q = P.fp_to_int16({ x: q.x, y: q.y });
+    q = share(0xA001, P.fp_to_int16({ x: q.x, y: q.y }));
     return P.craft_add_x_step({ x: q.x, y: q.y });
   };
 
@@ -3310,7 +3338,7 @@ function install_motion(P) {
       }
     }
     q = P.fp_mul({ x: M[0xBEA8], y });             // $A06B
-    q = P.fp_to_int16({ x: q.x, y: q.y });
+    q = share(0xA074, P.fp_to_int16({ x: q.x, y: q.y }));   // plug-in point: step
     add_step(0x75, q.x, q.y);
     const h = M[0x77];
     if (h & 0x80) return P.craft_touchdown_test(); // $A08C: below the ground
@@ -3372,25 +3400,22 @@ function install_motion(P) {
   // turn rate x 2^($BEA7 / 4), none when $BEA7 is negative.
   P.craft_turn = function () {
     let q = P.fp_to_int16({ x: M[0x22], y: M[0x23] });
-    const lo = q.y + M[0x2C] + (q.x >> 7);         // TXA; ASL; TYA; ADC $2C
-    M[0x2C] = lo & 255;
-    M[0x2D] = (q.x + M[0x2D] + (lo >> 8)) & 255;
+    // TXA; ASL; TYA; ADC $2C ...: $2D:$2C += X:Y and the sign as the carry (plug-in point: step)
+    move16(0x2C, 0xA102, ((((q.x << 8) | q.y) << 16) >> 16) + (q.x >> 7), 255);
     if (M[0x7F]) return P.spin_step();
     let a = M[0xBEA7];                             // $A11B
     if (!(a & 0x80)) a = (a + M[0x23]) & 255;
     q = P.fp_to_int16({ x: M[0x22], y: a });
-    M[0x28] = q.y; M[0x29] = q.x;
+    // the roll, from the turn rate the game changes once a pass (plug-in point: ease)
+    const roll = P.plug.ease(0x28, ((M[0x29] << 8 | M[0x28]) << 16) >> 16, ((q.x << 8 | q.y) << 16) >> 16) & 0xFFFF;
+    M[0x28] = roll & 255; M[0x29] = roll >> 8;
     return P.spin_step();
   };
 
   // $A12B spin_step, the end of every movement model: unless the square's building is destroyed
   // ($F2 bit 7), its rotating part's angle $9A:$99 += the spin rate $A2.
   P.spin_step = function () {
-    if (!(M[0xF2] & 0x80)) {
-      const s = M[0x99] + M[0xA2];
-      M[0x99] = s & 255;
-      M[0x9A] = (M[0x9A] + (s >> 8)) & 255;
-    }
+    if (!(M[0xF2] & 0x80)) move16(0x99, 0xA12B, M[0xA2], 255);   // plug-in point: step
     return {};
   };
 
@@ -3416,14 +3441,8 @@ function install_motion(P) {
       if (!(M[0x80] & 0x01)) P.walk_step({ a: 1 });
       if (!(M[0x80] & 0x02)) P.walk_step({ a: 0 });
     }
-    if (!(M[0x80] & 0x04)) {                       // $A1AC
-      const s = M[0x2C] + M[0xAC];
-      M[0x2C] = s & 255; M[0x2D] = (M[0x2D] + (s >> 8)) & 3;
-    }
-    if (!(M[0x80] & 0x08)) {                       // $A1C1
-      const s = M[0x2C] - M[0xAC];
-      M[0x2C] = s & 255; M[0x2D] = (M[0x2D] - (s < 0 ? 1 : 0)) & 3;
-    }
+    if (!(M[0x80] & 0x04)) move16(0x2C, 0xA1AC, M[0xAC], 3);      // plug-in points: step
+    if (!(M[0x80] & 0x08)) move16(0x2C, 0xA1C1, -M[0xAC], 3);
     if (M[0xFA] && P.colony_pad_test().c) {        // $A1D6
       M[0xA9] = 9;
       P.load_motion_record({ a: 9 });
@@ -3437,13 +3456,13 @@ function install_motion(P) {
   P.walk_step = function (r) {
     M[0x08] = M[0xAA]; M[0x09] = (r.a ^ M[0xAB]) & 255;
     let q = P.fp_mul({ x: M[0x3E], y: M[0x3F] });
-    q = P.fp_to_int16({ x: q.x, y: q.y });
+    q = share(0xA200, P.fp_to_int16({ x: q.x, y: q.y }));   // plug-in points: step
     add_step(0x78, q.x, q.y);
     M[0x08] = M[0xAA]; M[0x09] = (r.a ^ M[0xAB]) & 255;
     q = P.fp_mul({ x: M[0x3C], y: M[0x3D] });
-    q = P.fp_to_int16({ x: q.x, y: q.y });
+    q = share(0xA22B, P.fp_to_int16({ x: q.x, y: q.y }));
     add_step(0x72, q.x, q.y);
-    if (M[0xB1]) M[0xB1]--;                        // $A243
+    if (M[0xB1] && P.plug.once(0xA243)) M[0xB1]--;  // $A243 (plug-in point: once, a count of passes)
     return {};
   };
 
@@ -3572,7 +3591,7 @@ function install_combat(P) {
     const q = v >> 7;
     M[0x09] = q >> 8; M[0x08] = q & 255;
     // $864F CLC, SBC $08 / SBC $09: a 16-bit subtraction with one borrowed in
-    const w = (v - q - 1) & 0xFFFF;
+    const w = (v - P.plug.step(0x864F, q + 1)) & 0xFFFF;   // plug-in point: step
     M[0x24C7] = w & 255;                                   // $8652
     M[0x2587] = w >> 8;                                    // $8658
     const a = (w >> 8) | (w & 255);                        // $865B ORA
@@ -3587,28 +3606,32 @@ function install_combat(P) {
   // that pass. A moving object gets its velocity added to its 24-bit X, height and Y; a height
   // gone negative becomes $FF:$FF:$FF. Object 8, your missile, the last, then goes on to
   // missile_collisions.
-  function add3(o, lo, mid, hi, vlo, vmid, vhi) {         // CLC, then three ADCs
-    let t = M[lo + o] + M[vlo + o];
+  // CLC, then three ADCs: the 24-bit velocity added to the position, or the part of it this pass
+  // takes (plug-in point: step, keyed by the object and the axis)
+  function add3(o, lo, mid, hi, vlo, vmid, vhi, axis) {
+    const v = (((M[vhi + o] << 16) | (M[vmid + o] << 8) | M[vlo + o]) << 8) >> 8;
+    const t = ((M[hi + o] << 16) | (M[mid + o] << 8) | M[lo + o]) + P.plug.step(0x10000 + o * 4 + axis, v);
     M[lo + o] = t & 255;
-    t = M[mid + o] + M[vmid + o] + (t >> 8);
-    M[mid + o] = t & 255;
-    t = M[hi + o] + M[vhi + o] + (t >> 8);
-    M[hi + o] = t & 255;
-    return t & 255;                                        // the high byte (its bit 7 is N)
+    M[mid + o] = (t >> 8) & 255;
+    M[hi + o] = (t >> 16) & 255;
+    return (t >> 16) & 255;                                // the high byte (its bit 7 is N)
   }
   P.move_objects = function (r) {
     r = r || {};
     let a = r.a;
+    const pace = P.plug.once(0x869B);                      // plug-in point: once, the lifetimes count passes
     for (let x = 0x0F; x !== 7; x--) {                     // $8690 LDX #$0F ... $8709 CPX #$07
       a = M[0xBDA3 + x];                                   // $8692
       if (a === 0 || a === 0x7F) continue;                 // idle, held
-      M[0xBDA3 + x] = (a - 1) & 255;                       // $869B DEC (A keeps the old value)
-      if (a === 1) return P.remove_object({ a, x, y: r.y });              // $869E BEQ
-      add3(x, 0x2880, 0x2480, 0x2540, 0xBDAB, 0xBDB3, 0xBDBB);           // X
-      if (add3(x, 0x28C0, 0x24C0, 0x2580, 0xBDC3, 0xBDCB, 0xBDD3) & 0x80) { // height; $86D8 BPL
+      if (pace) {
+        M[0xBDA3 + x] = (a - 1) & 255;                     // $869B DEC (A keeps the old value)
+        if (a === 1) return P.remove_object({ a, x, y: r.y });            // $869E BEQ
+      }
+      add3(x, 0x2880, 0x2480, 0x2540, 0xBDAB, 0xBDB3, 0xBDBB, 0);        // X
+      if (add3(x, 0x28C0, 0x24C0, 0x2580, 0xBDC3, 0xBDCB, 0xBDD3, 1) & 0x80) { // height; $86D8 BPL
         M[0x2580 + x] = 0xFF; M[0x24C0 + x] = 0xFF; M[0x28C0 + x] = 0xFF;
       }
-      a = add3(x, 0x2900, 0x2500, 0x25C0, 0xBDDB, 0xBDE3, 0xBDEB);       // Y
+      a = add3(x, 0x2900, 0x2500, 0x25C0, 0xBDDB, 0xBDE3, 0xBDEB, 2);    // Y
       if (x === 8) return P.missile_collisions({ a, x, y: r.y });         // $8705 JMP
     }
     return { a, x: 7, y: r.y, c: 1, z: 1, n: 0 };          // $870D, after CPX #$07
@@ -4000,6 +4023,7 @@ function install_panel(P) {
   // 0 = pressed). Any stick or fire input sets bit 7 of $BEC0 and skips the keyboard; otherwise a
   // key found by the scan sets the same bit and goes to the dispatch.
   P.read_controls = function* () {
+    P.plug.read();                                     // plug-in point: read
     const io = P.io;
     io.ciaWrite(2, 0x00);
     const v = io.ciaRead(0);
@@ -4029,8 +4053,9 @@ function install_panel(P) {
       const b = P.beep_vehicle({ a: 4, x, y });
       return yield* run(P.leave_craft({ a: b.a, x, y }));
     }
-    if (x === 0x2B) return P.key_speed_trim({ x: 0xF8, y: 0xFC });   // $B356 - held: x 0.98
-    if (x === 0x28) return P.key_speed_trim({ x: 0x08, y: 0x00 });   // $B361 + held: x 1.03
+    // $B356 - held: x 0.98; $B361 + held: x 1.03; each pass the key is down (plug-in points: take)
+    if (x === 0x2B) return P.plug.take(0x2B) ? P.key_speed_trim({ x: 0xF8, y: 0xFC }) : { a: M[0xE9], x, y };
+    if (x === 0x28) return P.plug.take(0x28) ? P.key_speed_trim({ x: 0x08, y: 0x00 }) : { a: M[0xE9], x, y };
     if (y === 0x8D) {                                  // $B36C CTRL+S
       M[0x825F] = y;
       return yield* P.save_load_dialog({ x: 0x3B, y });
@@ -5776,7 +5801,7 @@ function install_main(P) {
   P.main_loop = function* () {
     for (;;) {
       yield CP(0x855C);
-      yield* gen(P.script_step());
+      if (P.plug.once(0x8AB2)) yield* gen(P.script_step());   // plug-in point: once, one operation a pass
       yield CP(0x855F);
       yield* gen(P.hired_ship_update());
       let surfaceFrom = 0;                           // 0: $85A1, 1: $85B0 (a door out to the surface)
@@ -5823,16 +5848,20 @@ function install_main(P) {
         yield CP(0x85BF); yield* gen(P.project_building());
         yield CP(0x85C2); yield* gen(P.draw_building());
       }
-      // $85C5: object 0, the brother-in-law's new ship, one step south along column 00
-      M[0x2500] = (M[0x2500] + 1) & 255;
-      if (!M[0x2500]) M[0x25C0] = (M[0x25C0] + 1) & 0x0F;
+      // $85C5: object 0, the brother-in-law's new ship, one step south along column 00: Y's middle
+      // byte + 1, the carry into the high byte kept to 0-15 (plug-in point: step, in Y's units)
+      {
+        const v = ((M[0x2500] << 8) | M[0x2900]) + P.plug.step(0x85C5, 256);
+        M[0x2900] = v & 255; M[0x2500] = (v >> 8) & 255;
+        if (v >> 16) M[0x25C0] = (M[0x25C0] + 1) & 0x0F;
+      }
       yield CP(0x85D5); yield* gen(P.line_mode_clear());
       yield CP(0x85D8); yield* gen(P.object_loop());
       yield CP(0x85DB); const rc = yield* gen(P.read_controls());
       yield CP(0x85DE); const mp = yield* gen(P.move_player({ c: rc && rc.c ? 1 : 0 }));
       // $85E1 LDA #$30: X and Y are what move_player left (sound_voice1 parks X at $B985)
       yield CP(0x85E3); yield* gen(P.fire_missile({ a: 0x30, x: mp ? mp.x : undefined, y: mp ? mp.y : undefined }));
-      yield CP(0x85E6); yield* gen(P.building_hit_update());
+      yield CP(0x85E6); if (P.plug.once(0x879B)) yield* gen(P.building_hit_update());   // plug-in point: once
       yield CP(0x85E9); yield* gen(P.move_objects());
       yield CP(0x85EC); yield* gen(P.attack_ship_update());
     }
@@ -5842,7 +5871,7 @@ function install_main(P) {
   P.gen = gen;
 }
 
-window.MERC_INSTALL = [install_view3d, install_scene, install_objects, install_scripts, install_motion, install_combat, install_panel, install_rooms, install_intro, install_main];
+window.MERC_INSTALL = [install_plug, install_view3d, install_scene, install_objects, install_scripts, install_motion, install_combat, install_panel, install_rooms, install_intro, install_main];
 })();
 </script>
 <script>
@@ -5971,6 +6000,7 @@ function makeRuntime(P, opts) {
     if (before.ca) c += 150;
     return c;
   };
+  let irqCycles = 0;                                      // every interrupt's cycles so far (Fast CPU's pace)
   function runIrq(L) {
     lastTrigger = L;
     latch |= 1;
@@ -5981,7 +6011,7 @@ function makeRuntime(P, opts) {
     P[name]();
     if (keep) [w.cyc, w.px, w.rows, w.dots, w.vf, w.vb, w.e, w.ea, w.v, w.objs] = keep;   // the interrupt's work is not the segment's
     const c = irqCost(v, before);
-    t += c;
+    t += c; irqCycles += c;
     rollFrames();
     return c;
   }
@@ -6061,30 +6091,47 @@ function makeRuntime(P, opts) {
   const prog = program();
   let lastCp = null, lastUnder = 0, passes = 0;
   const PRE_WAIT = 20;                                    // frame_start's two stores before its wait
-  const listeners = { pass: [], cp: [] };
+  const listeners = { pass: [] };
+  // Fast CPU's clock (runTicks, below): loop is its loop's settings while it runs the clock, else
+  // null; free while a loop's own work runs, which takes no time; parked at a loop's end, waiting
+  // for the beat; flipped once the buffers have flipped since the last checkpoint. W counts the
+  // cycles of work, by the cost model, since the last flip, and lastW the work of the last pass
+  // from one flip to the next (with Fast CPU, a loop's): what one of the C64's passes takes
+  let loop = null, free = false, parked = false, flipped = false, W = 0, lastW = null, works = 0, lastBeat = -Infinity, beatT = -1, ticks = 0, irqFrame = 0;
+  const flip0 = P.flip_buffers;
+  P.flip_buffers = function* (r) { const v = yield* flip0.call(this, r); flipped = true; return v; };
+  const spend = dt => { W += dt; if (!free) advance(dt); };
+  // one step of the program: up to its next yield, the clock moved on by what it took
+  function step() {
+    const r = prog.next();
+    if (r.done) throw new Error('the program ended');
+    const y = r.value;
+    if (y && y.cp !== undefined) {
+      const dt = lastCp === null ? 0 : cost(lastCp, y.cp, lastUnder, P.work);
+      zeroWork();
+      lastCp = y.cp; lastUnder = M[0xA8] ? 1 : 0;
+      spend(dt);
+      if (y.cp === 0x855C) { passes++; for (const f of listeners.pass) f(passes); }
+      // with Fast CPU's clock, a loop ends at the first checkpoint after the buffers flip
+      if (flipped) {
+        flipped = false; lastW = W; W = 0; works++;
+        if (loop && passes > 0) { free = false; parked = true; }
+      }
+    } else if (y && y.wait !== undefined) {
+      // the frame's wait for line $E0: the work before it is two stores; the segment after it
+      // (the flip, the colours, the sky or the interior fill) is the model's $AF7D
+      if (lastCp !== null) spend(PRE_WAIT);
+      untilLine(y.wait);
+      if (lastCp !== null) { zeroWork(); lastCp = 0xAF7D; lastUnder = M[0xA8] ? 1 : 0; }
+    }
+    else if (y && y.cycles !== undefined) advance(y.cycles);
+    else advance(LINE);                                   // a polling loop: one raster line passes
+  }
   // run the program until the clock reaches cycle `until`
   function runUntil(until) {
     let guard = 0;
     while (t < until) {
-      const r = prog.next();
-      if (r.done) throw new Error('the program ended');
-      const y = r.value;
-      if (y && y.cp !== undefined) {
-        const dt = lastCp === null ? 0 : cost(lastCp, y.cp, lastUnder, P.work);
-        zeroWork();
-        lastCp = y.cp; lastUnder = M[0xA8] ? 1 : 0;
-        advance(dt);
-        for (const f of listeners.cp) f(y.cp, t);
-        if (y.cp === 0x855C) { passes++; for (const f of listeners.pass) f(passes); }
-      } else if (y && y.wait !== undefined) {
-        // the frame's wait for line $E0: the work before it is two stores; the segment after it
-        // (the flip, the colours, the sky or the interior fill) is the model's $AF7D
-        if (lastCp !== null) advance(PRE_WAIT);
-        untilLine(y.wait);
-        if (lastCp !== null) { zeroWork(); lastCp = 0xAF7D; lastUnder = M[0xA8] ? 1 : 0; }
-      }
-      else if (y && y.cycles !== undefined) advance(y.cycles);
-      else advance(LINE);                                 // a polling loop: one raster line passes
+      step();
       if (++guard > 1e6) throw new Error('runUntil: no progress');
     }
   }
@@ -6092,7 +6139,69 @@ function makeRuntime(P, opts) {
   // is behind it (a pass's drawing is taken whole, so the clock can run a few frames ahead; the
   // calls that follow then wait for real time to catch up)
   let target = null;
-  function runFrame() { if (target === null) target = t; target += FRAME; if (t < target) runUntil(target); return done[done.length - 1]; }
+  function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; W = 0; }
+    if (target === null) target = t;
+    target += FRAME; if (t < target) runUntil(target); return done[done.length - 1];
+  }
+  // Fast CPU's clock (site/lib/fast-cpu.js): the real time owed, in cycles. The beat is line 224 of
+  // each video frame, where the C64 flips its buffers when a pass is done in time: the main loop goes
+  // round once on each beat, its own work taking no time, as on a processor fast enough to finish it
+  // inside a frame, so the game's wait for line 224 ends at once and the buffers flip on the beat.
+  // A loop runs from the first checkpoint after one flip to the first after the next. A wait inside a
+  // loop (a wipe, a flash, the pause, a dialog) and the program outside the main loop take the C64's
+  // time; the next loop starts on the first beat after. o.cap is the most loops one call runs (time
+  // owed past them is dropped), o.begin() is called as each loop starts and o.between() after it.
+  // Returns the loops run; rt.ticks counts the beats.
+  const BEAT = 224 * LINE;
+  function nextBeat() {
+    let b = Math.ceil((t - BEAT) / FRAME) * FRAME + BEAT;
+    if (b <= lastBeat) b = lastBeat + FRAME;
+    return b;
+  }
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = false; parked = false; W = 0; }
+    if (target === null) target = t;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // a loop's own work goes on at the beat's moment; a wait, or the program outside the main
+        // loop, as far as real time is owed
+        if (t >= target && !(free && t === beatT)) break;
+        step();
+        if (parked && o.between) o.between();
+        continue;
+      }
+      const at = nextBeat();
+      if (at > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the wait for the beat, the frame's interrupts running on the way in their own time
+      const i0 = irqCycles;
+      for (;;) {
+        const L = nextTrigger();
+        if (L * LINE > at) break;
+        t = Math.max(t, L * LINE); rollFrames();
+        runIrq(L);
+      }
+      if (t < at) { t = at; rollFrames(); }
+      irqFrame = irqCycles - i0;
+      lastBeat = at; beatT = t; ticks++; loops++;
+      parked = false; free = true;
+      if (o.begin) o.begin();
+    }
+    return loops;
+  }
+  // the video frames one of the C64's passes takes for the work the last loop did: the work and the
+  // interrupts of each frame it spans, then the wait for line 224
+  function machineBeats() {
+    if (lastW === null) return 8;
+    const I = irqFrame || 500;
+    let F = 1;
+    while (lastW + F * I > F * FRAME) F++;
+    return F;
+  }
   // The opening: the start-up's starfield and planet until the main loop's first pass, then the
   // descent, motion mode 10 ($A9). The descent ends in the crash landing, whose leave_craft ($98C8)
   // puts the player on foot ($A9 = $80), and the next pass's read_controls ($85DB) walks: the game
@@ -6107,10 +6216,11 @@ function makeRuntime(P, opts) {
   }
   return {
     P, M, vic, sid, colour, input,
-    get t() { return t; }, get target() { return target; }, get frame() { return frameIdx; }, get passes() { return passes; },
+    get t() { return t; }, get frame() { return frameIdx; }, get passes() { return passes; },
     get inOpening() { return inOpening(); }, skipOpening,
-    runFrame, runUntil, lastFrame: () => done[done.length - 1],
-    onPass: f => listeners.pass.push(f), onCheckpoint: f => listeners.cp.push(f), onSid: f => sidListeners.push(f),
+    get ticks() { return ticks; }, get parked() { return parked; }, get lastW() { return lastW; }, get works() { return works; },
+    runFrame, runUntil, runTicks, machineBeats, lastFrame: () => done[done.length - 1],
+    onPass: f => listeners.pass.push(f), onSid: f => sidListeners.push(f),
   };
 }
 </script>
@@ -6134,7 +6244,9 @@ function makeDisplay(opts) {
   // regs: the 47 video registers as the frame starts; writes: [line, reg, value] in order, applied
   // from the line after the one they were made on (the interrupts write within a line's first
   // cycles, before the line's pixels... see validate); bank: VIC bank base (0x4000 here)
-  function compose(mem, colour, regs0, writes, bank) {
+  // view: with Fast CPU, the bitmap the game flipped to ($C7, $70 or $78), on the lines that show
+  // one of the view's two bitmaps
+  function compose(mem, colour, regs0, writes, bank, view) {
     const R = regs0.slice();
     let wi = 0;
     const base = bank === undefined ? 0x4000 : bank;
@@ -6149,7 +6261,9 @@ function makeDisplay(opts) {
       if (!inDisplay) { px.fill(border, o, o + W); continue; }
       px.fill(border, o, o + BORDER); px.fill(border, o + BORDER + 320, o + W);
       const row = (line - 51) >> 3, rl = (line - 51) & 7;
-      const d11 = R[0x11], d16 = R[0x16], d18 = R[0x18], bg = R[0x21] & 15;
+      const d11 = R[0x11], d16 = R[0x16], bg = R[0x21] & 15;
+      let d18 = R[0x18];
+      if (view !== undefined && (d11 & 0x20) && (d18 === 0x70 || d18 === 0x78)) d18 = view;
       const bmm = d11 & 0x20, ecm = d11 & 0x40, mcm = d16 & 0x10;
       const screen = base + ((d18 >> 4) << 10), chars = base + ((d18 & 0x0E) << 10), bitmap = base + ((d18 & 0x08) << 10);
       if (bmm && !ecm) { bitmapLine[y] = 1; pageLine[y] = bitmap; }
@@ -6217,100 +6331,40 @@ function makeDisplay(opts) {
    (position, the three angles, the view centre $8E/$8F, the mirror). When that bitmap is on
    show, the same scene is projected again in double precision, with the game's focal lengths
    (64 across, 128 down) and its horizon (from the fixed centre 80, 68, as $AFD5 fills it), and
-   drawn as smooth lines. Everything else on the screen (the panel, the border, the bands of a
-   wipe or a lift ride, the starfields) is the faithful frame, scaled.
-   Smooth motion draws the view between flips too, at the screen's own rate. A pass's picture
-   goes on show at the flip that ends the next pass, and by then the game has already worked out
-   where that next pass looks from: its eye was moved at the end of the pass before, and every
-   object was moved (object 0's step south at $85C5 is still to come, and is added as the main
-   loop adds it). So while a picture is on show, its eye (position, angles, view centre) and each
-   object it drew slide toward those, at a pace aimed to arrive as the next picture goes on show.
-   When that will be is exact once the next flip has run. Before that it is foreseen from the
-   checkpoint the program last reached and how long the rest of the last ordinary pass took from
-   there, plus what a rebuilt road list costs when the eye is about to cross into a new square
-   or view radius (city_view_update, $94E0). The pace is eased over a frame, so a change of plan
-   bends the motion instead of breaking it. Every drawing is made afresh from two passes the game
-   computed, so nothing builds up; the game's memory is only read; and the view reaches each of
-   the game's pictures at about the moment the C64 shows it. What the game changes at once (a
-   door, a lift ride, a craft boarded or left, the descent's stages, a jump of more than 32
-   squares or an eighth of a turn) is not slid across, and an object's own turn and a rotor's
-   spin keep the game's steps: only positions slide. */
+   drawn as sharp lines. Everything else on the screen (the panel, the border, the bands of a
+   wipe or a lift ride, the starfields) is the faithful frame, scaled. The game's memory is only
+   read. */
 (function () {
   'use strict';
-  const TAU = Math.PI * 2, LINE = 63, FRAME = 63 * 312;
+  const TAU = Math.PI * 2;
   const s24 = v => (v & 0x800000 ? v - 0x1000000 : v);
-  const d24 = (a, b) => s24((b - a) & 0xFFFFFF);                  // b - a on the 24-bit world, the short way round
-  const d10 = (a, b) => ((b - a + 512) & 1023) - 512;              // the same on the 10-bit angles
   // the angles exactly: the game's table is sampled half a step off (level reads -0.003), which only a sharp horizon would show
-  const sin10 = a => Math.sin(a * TAU / 1024), cos10 = a => sin10(a + 256);   // exact, as the object viewer turns its models (and between steps, for smooth motion)
-  const FAR = 0x200000;                                            // 32 squares: farther than any pass moves anything
+  const sin10 = a => Math.sin(a * TAU / 1024), cos10 = a => sin10(a + 256);   // exact, as the object viewer turns its models
 
   function attach(rt) {
     const P = rt.P, M = P.M;
-    const scenes = { 0x40: null, 0x60: null }, hist = [];
-    const st = { scenes, hist, clock: { V: null, phi: 0, v: 0 }, rt, cycle: new Map(), cp: null, cpT: 0, rest: null, city: 0, extra: 0 };
-    let cur = null, pending = null, serial = 0, flipT = 0, waitT = null, rebuilt = false;
+    const scenes = { 0x40: null, 0x60: null };
+    let cur = null, pending = null;
     const w24 = (lo, mid, hi) => (M[hi] << 16) | (M[mid] << 8) | M[lo];
     const player = () => ({ x: w24(0x72, 0x73, 0x74), h: w24(0x75, 0x76, 0x77), y: w24(0x78, 0x79, 0x7A) });
-    // an object's position in its tables, and what is being drawn: the object's number, or the
-    // thing a mod draws in a borrowed slot (P.drawTag, which keeps its own x, h, y)
-    const objAt = o => ({ x: w24(0x2880 + o, 0x2480 + o, 0x2540 + o), h: w24(0x28C0 + o, 0x24C0 + o, 0x2580 + o), y: w24(0x2900 + o, 0x2500 + o, 0x25C0 + o) });
-    const who = () => (P.drawTag !== undefined ? P.drawTag : M[0xAF]);
-    function objNow(k) {                                          // at a flip: where the pass after will draw it
-      if (typeof k !== 'number') return { x: k.x & 0xFFFFFF, h: k.h & 0xFFFFFF, y: k.y & 0xFFFFFF };
-      const p = objAt(k);
-      if (k === 0 && !M[0xA8]) {                                  // $85C5, before the objects are drawn
-        const mid = (M[0x2500] + 1) & 255, hi = mid ? M[0x25C0] : (M[0x25C0] + 1) & 0x0F;
-        p.y = (hi << 16) | (mid << 8) | M[0x2900];
-      }
-      return p;
-    }
-    function cut(a, b) {
-      if (a.under !== b.under || a.room !== b.room || a.mode !== b.mode || a.mirror !== b.mirror || a.descent !== b.descent || a.lift || b.lift) return true;
-      if (Math.abs(d24(a.eye.x, b.eye.x)) > FAR || Math.abs(d24(a.eye.h, b.eye.h)) > FAR || Math.abs(d24(a.eye.y, b.eye.y)) > FAR) return true;
-      return Math.abs(d10(a.head, b.head)) > 128 || Math.abs(d10(a.pitch, b.pitch)) > 128 || Math.abs(d10(a.roll, b.roll)) > 128;
-    }
     function begin() {
-      const sc = { n: ++serial, page: M[0x25], verts: new Map(), edges: [], dots: [], objs: new Map(),
+      const sc = { page: M[0x25], verts: new Map(), edges: [], dots: [],
         eye: player(), roll: M[0x28] | M[0x29] << 8, pitch: M[0x2A] | M[0x2B] << 8,
         head: M[0x2C] | M[0x2D] << 8, cx: M[0x8E], cy: M[0x8F], mirror: M[0xF1] & 1,
-        level: !!(M[0xA8] || (M[0xA9] & 0x80)), under: !!M[0xA8], descent: M[0x9E93] === 0x20,
-        room: M[0xCD], mode: M[0xA9], lift: M[0xCA] };
-      if (cur) {
-        cur.showT = (Math.floor(flipT / FRAME) + 1) * FRAME;     // the next line 0 copies $C7 into $D018
-        cur.next = sc;
-        cur.objNext = new Map();
-        for (const k of cur.objs.keys()) cur.objNext.set(k, objNow(k));
-        sc.cut = cut(cur, sc);
-        // the way from the last flip to this one: from a pass that rebuilt no road list, how long
-        // the rest took from each checkpoint to the wait; from one that did, how much longer
-        // city_view_update ($85A4-$85A7) took than usual. The picture it ended is marked.
-        const a = st.cycle.get(0x85A4), b = st.cycle.get(0x85A7), city = a !== undefined && b !== undefined ? b - a : null;
-        if (rebuilt) {
-          if (city !== null) st.extra = Math.max(0, city - st.city);
-          if (hist.length > 1) hist[hist.length - 2].rebuilt = true;
-        } else if (waitT !== null) {
-          if (city !== null) st.city = city;
-          st.rest = new Map();
-          for (const [c, t] of st.cycle) st.rest.set(c, waitT - t);
-        }
-      }
-      st.cycle = new Map([[0xAF7D, flipT]]); st.cp = 0xAF7D; st.cpT = flipT;
-      waitT = null; rebuilt = false;
+        level: !!(M[0xA8] || (M[0xA9] & 0x80)), under: !!M[0xA8], descent: M[0x9E93] === 0x20 };
       cur = sc;
       scenes[sc.page] = sc;
-      hist.push(sc); if (hist.length > 6) hist.shift();
     }
-    function wrap(name, after, before) {
+    function wrap(name, after) {
       const f = P[name];
       if (!f) return;
       const isGen = f.constructor && f.constructor.name === 'GeneratorFunction';
-      P[name] = isGen ? function* (r) { if (before) before(r); const v = yield* f.call(this, r); if (after) after(r, v); return v; }
-        : function (r) { if (before) before(r); const v = f.call(this, r); if (after) after(r, v); return v; };
+      P[name] = isGen ? function* (r) { const v = yield* f.call(this, r); after(r, v); return v; }
+        : function (r) { const v = f.call(this, r); after(r, v); return v; };
     }
     // a pass's picture starts when the buffers flip
-    wrap('flip_buffers', () => begin(), () => { flipT = rt.t; });
-    // where each vertex is in the world, as the game's own integers, and whose it is
+    wrap('flip_buffers', () => begin());
+    // where each vertex is in the world, as the game's own integers
     wrap('vertex_rel', () => {
       const i = M[0x19];
       pending = { x: s24(w24(0x0400 + i, 0x0440 + i, 0x0740 + i)), h: s24(w24(0x0480 + i, 0x04C0 + i, 0x0780 + i)), y: s24(w24(0x0500 + i, 0x0540 + i, 0x07C0 + i)) };
@@ -6318,7 +6372,7 @@ function makeDisplay(opts) {
     wrap('model_vertex_rel', () => {
       const e = cur ? cur.eye : player();
       const rel = (a, o) => s24(w24(a, a + 1, a + 2)) + ((M[o] | M[o + 1] << 8) << 16 >> 16);
-      pending = { x: s24(e.x) + rel(0xD5, 0xCF), h: s24(e.h) + rel(0xD8, 0xD1), y: s24(e.y) + rel(0xDB, 0xD3), o: who() };
+      pending = { x: s24(e.x) + rel(0xD5, 0xCF), h: s24(e.h) + rel(0xD8, 0xD1), y: s24(e.y) + rel(0xDB, 0xD3) };
     });
     wrap('square_centre_rel', r => {
       const sq = r && r.a !== undefined ? r.a : 0;
@@ -6336,98 +6390,12 @@ function makeDisplay(opts) {
     wrap('plot_point_dot', () => {
       if (!cur) return;
       const e = cur.eye, rel = a => s24(w24(a, a + 1, a + 2));
-      cur.dots.push({ x: s24(e.x) + rel(0xD5), h: s24(e.h) + rel(0xD8), y: s24(e.y) + rel(0xDB), o: who() });
+      cur.dots.push({ x: s24(e.x) + rel(0xD5), h: s24(e.h) + rel(0xD8), y: s24(e.y) + rel(0xDB) });
     });
-    // where the program is: each checkpoint of the main loop as it reaches it, the wait before a
-    // flip (frame_start's two stores, then line 224), and a road list rebuilt ($8EC2, from
-    // city_view_update), which holds that flip back
-    if (rt.onCheckpoint) rt.onCheckpoint((c, t) => { st.cp = c; st.cpT = t; if (!st.cycle.has(c)) st.cycle.set(c, t); });
-    wrap('frame_start', null, () => { waitT = rt.t + 20; });
-    wrap('build_road_list', null, () => { rebuilt = true; });
-    // every object a pass draws, where it is as the pass draws it ($AF is set inside, from X)
-    wrap('draw_object', null, r => {
-      if (!cur || !r) return;
-      const k = P.drawTag !== undefined ? P.drawTag : r.x & 255;
-      if (!cur.objs.has(k)) cur.objs.set(k, objAt(r.x & 255));
-    });
-    return st;
+    return { scenes };
   }
-
-  // --- smooth motion -----------------------------------------------------------------------------
-  // the earliest a flip made at cycle t or later goes on show: it waits for line 224, and the next
-  // frame's line 0 shows it
-  const showAfter = t => { let f = Math.floor(t / FRAME) * FRAME + 224 * LINE; if (f < t) f += FRAME; return f + FRAME - 224 * LINE; };
-  // a picture's usual time on show: the last one's that no road list lengthened
-  function usual(H, i) {
-    for (let j = i; j > 0; j--) if (H[j - 1].showT !== undefined && H[j].showT !== undefined && !H[j].cut && !H[j - 1].rebuilt) return Math.min(40 * FRAME, H[j].showT - H[j - 1].showT);
-    return 8 * FRAME;
-  }
-  // whether the pass whose flip ends a picture's time on show rebuilds the road list before it
-  // ($94E0: a new square, or a new view radius $2A00[height / 2048] below height $200000): judged
-  // from where the eye's last step takes it, two passes on from the picture's
-  function rebuildNext(M, s) {
-    const b = s.next;
-    if (!b || b.cut || b.under || b.lift) return false;
-    const on = (a, c) => (c + d24(a, c)) & 0xFFFFFF;
-    const nx = on(s.eye.x, b.eye.x), ny = on(s.eye.y, b.eye.y), nh = Math.max(0, s24(b.eye.h) + d24(s.eye.h, b.eye.h));
-    if (nx >> 16 !== b.eye.x >> 16 || ny >> 16 !== b.eye.y >> 16) return true;
-    if (nh >= 0x200000 || b.eye.h >= 0x200000) return false;
-    const r = h => M[0x2A00 + (h >> 11 & 255)];
-    return r(nh) !== r(b.eye.h);
-  }
-  // how long the picture H[i] stays on show: exact once the flip after it has run; before that,
-  // from the checkpoint the program last reached and how long the rest of the last ordinary pass
-  // took from there (the last ordinary picture's time, until one is known), plus a rebuild's
-  // extra if one is coming; never less than the program has already run without flipping
-  function showLength(st, i) {
-    const H = st.hist, s = H[i];
-    if (s.next && s.next.showT !== undefined) return s.next.showT - s.showT;
-    const fore = st.extra > 0 && rebuildNext(st.rt.M, s);
-    const rest = st.rest && st.rest.get(st.cp);
-    const L = rest !== undefined ? showAfter(st.cpT + rest + (fore && !st.cycle.has(0x85A7) ? st.extra : 0)) - s.showT
-      : usual(H, i) + (fore ? st.extra : 0);
-    return Math.max(L, showAfter(st.rt.t) - s.showT);
-  }
-  // the scene to draw at cycle V of the machine's clock, and its eye and objects part of the way
-  // to the next pass's. The way is a phase, the scene's number and a fraction, which moves at a
-  // pace aimed to reach the next pass's eye as its picture goes on show; the pace is eased over
-  // a frame, so a change of plan bends the motion instead of breaking it
-  function smooth(st, V) {
-    const H = st.hist, c = st.clock;
-    let i = H.length - 1;
-    while (i >= 0 && !(H[i].showT <= V)) i--;
-    if (i < 0) return null;
-    const s = H[i], L = showLength(st, i), end = s.n + 1;
-    let phi;
-    if (c.V === null || V < c.V || V - c.V > 8 * FRAME || c.phi > end || c.phi < s.n - 1) {
-      phi = s.n + Math.min(1, (V - s.showT) / L); c.v = 1 / L;
-    } else {
-      const left = s.showT + L - c.V, want = left > 0 ? Math.min((end - c.phi) / left, 1 / FRAME) : 1 / FRAME;
-      c.v += (want - c.v) * (1 - Math.exp(-(V - c.V) / FRAME));
-      phi = Math.min(end, c.phi + Math.max(0, c.v) * (V - c.V));
-    }
-    if (s.cut && phi < s.n) phi = s.n;                    // nothing from before a cut once it is on show
-    c.V = V; c.phi = phi;
-    let sc = s, f = phi - s.n;
-    if (f < 0) { const q = H.find(h => h.n === Math.floor(phi)); if (q) { sc = q; f = phi - q.n; } else f = 0; }
-    return pose(sc, Math.min(1, f));
-  }
-  // a scene's eye and objects the fraction f of the way to the next pass's
-  function pose(sc, f) {
-    const b = sc.next, e = sc.eye;
-    if (!b || b.cut || !(f > 0)) return { sc, f: 0, ex: s24(e.x), eh: s24(e.h), ey: s24(e.y), head: sc.head, pitch: sc.pitch, roll: sc.roll, cx: sc.cx, cy: sc.cy, off: null };
-    const off = new Map();
-    for (const [k, p] of sc.objs) {
-      const q = sc.objNext.get(k);
-      if (!q) continue;
-      const dx = d24(p.x, q.x), dh = d24(p.h, q.h), dy = d24(p.y, q.y);
-      if (Math.abs(dx) > FAR || Math.abs(dh) > FAR || Math.abs(dy) > FAR) continue;   // taken somewhere else, not moved
-      if (dx || dh || dy) off.set(k, [dx * f, dh * f, dy * f]);
-    }
-    return { sc, f, ex: s24(e.x) + d24(e.x, b.eye.x) * f, eh: s24(e.h) + d24(e.h, b.eye.h) * f, ey: s24(e.y) + d24(e.y, b.eye.y) * f,
-      head: (sc.head & 1023) + d10(sc.head, b.head) * f, pitch: (sc.pitch & 1023) + d10(sc.pitch, b.pitch) * f,
-      roll: (sc.roll & 1023) + d10(sc.roll, b.roll) * f, cx: sc.cx + (b.cx - sc.cx) * f, cy: sc.cy + (b.cy - sc.cy) * f, off };
-  }
+  // a scene's eye
+  const eyeOf = sc => ({ sc, ex: s24(sc.eye.x), eh: s24(sc.eye.h), ey: s24(sc.eye.y), head: sc.head, pitch: sc.pitch, roll: sc.roll, cx: sc.cx, cy: sc.cy });
 
   // --- drawing ---------------------------------------------------------------------------------
   function project(v) {
@@ -6438,12 +6406,11 @@ function makeDisplay(opts) {
       -sH * sP * cR + cH * sR, cP * cR, -(cH * sP * cR + sH * sR),
       sH * cP, sP, cH * cP];
     const Mx = sc.level ? [mir * cH, 0, -mir * sH, 0, -1, 0, -sH, 0, -cH] : full;
-    const ex = v.ex, eh = v.eh, ey = v.ey, off = v.off;
+    const ex = v.ex, eh = v.eh, ey = v.ey;
     const k = sc.descent ? 8 : 1;                               // the descent's first stage: heights x 8
     const NEAR = 1;
     const view = q => {
-      let x = q.x, hh = q.h, y = q.y;
-      if (off && q.o !== undefined) { const d = off.get(q.o); if (d) { x += d[0]; hh += d[1]; y += d[2]; } }
+      const x = q.x, hh = q.h, y = q.y;
       const X = x - ex, H = (q.road ? -(eh & ~255) : hh - eh) * (q.road ? k : 1), Y = y - ey;
       return [X * Mx[0] + H * Mx[1] + Y * Mx[2], X * Mx[3] + H * Mx[4] + Y * Mx[5], X * Mx[6] + H * Mx[7] + Y * Mx[8]];
     };
@@ -6469,15 +6436,14 @@ function makeDisplay(opts) {
     for (let y = disp.BORDER; y < disp.BORDER + 136; y++) if (disp.bitmapLine[y]) { if (y0 < 0) y0 = y; y1 = y; page = disp.pageLine[y]; }
     return y0 < 0 ? null : { y0, y1, page };
   }
-  // what to draw: the scene of the bitmap on show, or with V (a cycle of the clock) the smooth pose
-  function poseFor(rt, disp, on, V) {
+  // what to draw: the scene of the bitmap on show
+  function viewFor(rt, on) {
     const st = rt.modern;
     if (!st || rt.M[0xBEFE]) return null;                 // the escape's starfield: no scene, bitmap A holds the stars
-    if (V !== undefined && V !== null) return smooth(st, V);
     const sc = st.scenes[on.page >> 8];
-    return sc ? pose(sc, 0) : null;
+    return sc ? eyeOf(sc) : null;
   }
-  function draw(cv, faithful, rt, frame, disp, V) {
+  function draw(cv, faithful, rt, frame, disp) {
     const dpr = window.devicePixelRatio || 1, css = cv.getBoundingClientRect();
     const W = Math.max(352, Math.round(css.width * dpr)), H = Math.round(W * disp.H / disp.W);
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.classList.add('pl-native'); }
@@ -6486,7 +6452,7 @@ function makeDisplay(opts) {
     g.drawImage(faithful, 0, 0, W, H);
     const on = shown(disp);
     if (!on) return;
-    const v = poseFor(rt, disp, on, V);
+    const v = viewFor(rt, on);
     if (!v) return;
     const sc = v.sc, { y0, y1 } = on;
     const M = rt.M, col = n => C64.PAL[n & 15];
@@ -6536,67 +6502,43 @@ function makeDisplay(opts) {
     }
     g.restore();
   }
-  // the smooth view in the C64's own pixels (160 x 136, each two wide), into a frame of palette
-  // indices where the frame shows a bitmap, the gun sight left in front; false when there is none.
-  // As the game draws them: the ground from row 67 when level ($AFD5 puts the horizon 33.5 double
-  // rows down), the ends of an edge and a dot at the nearest pixel. At a flip it matches the
-  // game's own frame to within a few hundred of the view's 43,520 pixels (the line steps).
-  function paint(px, rt, disp, V) {
-    const on = shown(disp);
-    if (!on) return false;
-    const v = poseFor(rt, disp, on, V);
-    if (!v) return false;
-    const sc = v.sc, M = rt.M, Pj = project(v);
-    const sky = 6, ground = M[0xA5] & 15, lineAnd = M[0xA3] & 15, lineOr = M[0xA6] & 15;
-    const buf = paint.buf || (paint.buf = new Uint8Array(160 * 136));
-    for (let y = 0, o = 0; y < 136; y++) {
-      if (sc.under) { buf.fill(ground, o, o + 160); o += 160; continue; }
-      for (let x = 0; x < 160; x++, o++) buf[o] = Pj.upOf(x + 0.5, y + 1.5) < 0 ? ground : sky;
-    }
-    // a line between the pixels nearest its ends, clipped to the view first
-    function line(q, c, groundOnly) {
-      const [[ax, ay], [bx, by]] = q;
-      if (!Number.isFinite(ax + ay + bx + by)) return;
-      const dx = bx - ax, dy = by - ay;
-      let t0 = 0, t1 = 1;
-      for (const [p, r] of [[-dx, ax + 0.5], [dx, 159.499 - ax], [-dy, ay + 0.5], [dy, 135.499 - ay]]) {
-        if (p === 0) { if (r < 0) return; continue; }
-        const t = r / p;
-        if (p < 0) { if (t > t1) return; if (t > t0) t0 = t; } else { if (t < t0) return; if (t < t1) t1 = t; }
-      }
-      let x0 = Math.round(ax + t0 * dx), y0 = Math.round(ay + t0 * dy);
-      const x1 = Math.round(ax + t1 * dx), y1 = Math.round(ay + t1 * dy);
-      const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, ex = Math.abs(x1 - x0), ey = -Math.abs(y1 - y0);
-      let err = ex + ey;
-      for (;;) {
-        const o = y0 * 160 + x0;
-        if (!groundOnly || buf[o] === ground) buf[o] = c;
-        if (x0 === x1 && y0 === y1) break;
-        const e2 = 2 * err;
-        if (e2 >= ey) { err += ey; x0 += sx; }
-        if (e2 <= ex) { err += ex; y0 += sy; }
-      }
-    }
-    for (const [a, b, or] of sc.edges) if (or) { const q = Pj.segment(a, b); if (q) line(q, lineOr, true); }
-    for (const [a, b, or] of sc.edges) if (!or) { const q = Pj.segment(a, b); if (q) line(q, lineAnd, false); }
-    for (const d of sc.dots) {
-      const q = Pj.view(d); if (q[2] <= Pj.NEAR) continue;
-      const p = Pj.proj(q), x = Math.round(p[0]), y = Math.round(p[1]);
-      if (x >= 0 && x < 160 && y >= 0 && y < 136) buf[y * 160 + x] = lineAnd;
-    }
-    const B = disp.BORDER, W = disp.W;
-    for (let y = on.y0; y <= on.y1; y++) {
-      if (!disp.bitmapLine[y]) continue;
-      const o = y * W + B, r = (y - B) * 160;
-      for (let x = 0; x < 160; x++) {
-        const c = buf[r + x];
-        if (!disp.sprite || !disp.sprite[o + 2 * x]) px[o + 2 * x] = c;
-        if (!disp.sprite || !disp.sprite[o + 2 * x + 1]) px[o + 2 * x + 1] = c;
-      }
-    }
-    return true;
-  }
-  window.MercModern = { attach, draw, paint, smooth };
+  window.MercModern = { attach, draw };
+})();
+</script>
+<script>
+/* fast */
+/* fast: Mercenary's table for Fast CPU (site/lib/fast-cpu.js), what Fast CPU knows about the game.
+   The beat is the C64's video frame, 50.12 a second, the clock the game counts its passes in: the
+   runtime starts a loop at line 224 of each frame, where the C64 flips its buffers. The game keeps
+   its own pace (follow): one of the C64's passes takes as many frames as its cost model gives for
+   the work the last loop did, and each loop takes that share of a pass's steps, so every view moves
+   as fast as on the C64. The numbers are the plug-in points' keys in the port: the routine's
+   address, or for a moving object 0x10000 + 4 x its number + the axis. */
+(function () {
+  'use strict';
+  const steps = {};
+  // a move each pass, its share each loop: the descent ($9E6A), the fall ($9EBE), the tumble's roll,
+  // pitch and heading ($9ED6, $9EE4, $9EF2), a ground craft off the ground ($9F09), the pitch up and
+  // down ($9F5A, $9F70), a craft's Y and X ($9FD2, $A001), climb ($A074) and turn ($A102), the
+  // building's rotor ($A12B), turning on foot ($A1AC, $A1C1), walking ($A200, $A22B), the hired ship
+  // coming down ($864F) and object 0 going south ($85C5)
+  for (const k of [0x9E6A, 0x9EBE, 0x9ED6, 0x9EE4, 0x9EF2, 0x9F09, 0x9F5A, 0x9F70, 0x9FD2, 0xA001, 0xA074, 0xA102,
+    0xA12B, 0xA1AC, 0xA1C1, 0xA200, 0xA22B, 0x864F, 0x85C5]) steps[k] = 'pace';
+  // the moving objects 8-15 (your missile, the attack ship and its missile), on each axis
+  for (let o = 8; o < 16; o++) for (let a = 0; a < 3; a++) steps[0x10000 + o * 4 + a] = 'pace';
+  window.MERC_FAST = {
+    tick: 19656, hz: 985248,           // the beat: a PAL video frame, 312 lines of 63 cycles
+    cap: 4,                            // the most loops a refresh runs: real time on a 15 Hz display
+    follow: true,                      // the C64's own pace, view by view (rt.machineBeats)
+    steps,
+    // held down, - and + trim the thrust once a pass (key_dispatch, $B356 and $B361)
+    repeats: [0x2B, 0x28],
+    // The rest the plug-in points ask for themselves, once a pass (once): a script operation
+    // ($8AB2), a collapsing building ($879B), the moving objects' lifetimes ($869B), the ground's
+    // flash ($AFA8), the countdown to the black flash ($AFCA), the door guard ($A243), and the two
+    // halves of a craft's flight model that the game damps each pass, the turn rate ($9F1E) and
+    // the speed ($9F86). Every key is a switch already: the game takes a new key once ($E9)
+  };
 })();
 </script>
 <script>
@@ -6957,7 +6899,10 @@ function makeDisplay(opts) {
     function step() {
       pass++;
       if (pass > matchDay + 2400) matchDay = pass + 4000 + Math.floor(rnd() * 3000);
-      for (const v of V) if (!v.dead) (v.kind === 'car' ? stepCar : stepCraft)(v);
+      for (const v of V) {
+        v.was = { x: v.x, h: v.h, y: v.y, head: v.head || 0 };   // where it stood, for Fast CPU (pose)
+        if (!v.dead) (v.kind === 'car' ? stepCar : stepCraft)(v);
+      }
     }
     return { V, populate, step, get pass() { return pass; }, set enabled(v) { enabled = v; }, get enabled() { return enabled; }, FACTION, G };
   }
@@ -6994,17 +6939,31 @@ function makeDisplay(opts) {
       saved.code.forEach((b, i) => { M[SCRIPT_AT + i] = b; });
       saved = null;
     }
+    // where a vehicle is: where the mod put it at the top of the pass. With Fast CPU, which moves
+    // the game's own objects a share of a pass each loop, it is the share of a pass gone since the
+    // mod moved it of the way there from where it stood (plug-in point since), so the traffic
+    // glides as the game's objects do. A jump of more than a square (the escort taking its place
+    // beside the ship) is made at once
+    function pose(v) {
+      const f = P.plug.since(0x7A11), w = v.was;
+      if (f >= 1 || !w) return v;
+      const dx = v.x - w.x, dh = v.h - w.h, dy = v.y - w.y;
+      if (Math.max(Math.abs(dx), Math.abs(dh), Math.abs(dy)) > SQ) return v;
+      const turn = (((v.head || 0) - w.head + 1536) % 1024) - 512;
+      return { x: w.x + Math.round(dx * f), h: w.h + Math.round(dh * f), y: w.y + Math.round(dy * f), head: (w.head + Math.round(turn * f) + 1024) % 1024 };
+    }
     // put a vehicle in the borrowed slot, run f, and put the slot back
     function inSlot(v, f) {
       const keep = SLOT_BYTES.map(a => M[a + (a < 0xBDA3 ? SLOT : 0)]);
       const put = (lo, mid, hi, val) => { const u = val & 0xFFFFFF; M[lo + SLOT] = u & 255; M[mid + SLOT] = (u >> 8) & 255; M[hi + SLOT] = u >> 16; };
-      put(0x2880, 0x2480, 0x2540, v.x); put(0x28C0, 0x24C0, 0x2580, v.h); put(0x2900, 0x2500, 0x25C0, v.y);
+      const p = pose(v);
+      put(0x2880, 0x2480, 0x2540, p.x); put(0x28C0, 0x24C0, 0x2580, p.h); put(0x2900, 0x2500, 0x25C0, p.y);
       M[0x2800 + SLOT] = v.model & 255; M[0x2840 + SLOT] = v.model >> 8;
       M[0x2940 + SLOT] = 0; M[0x29C0 + SLOT] = 0x10;
       // the heading in 64ths, as leaving a craft stores it (heading >> 4: object 0 flies south with
       // $20); the other two angles stay 0, since the game turns by them after the heading, about
       // the world's axes, and would not bank a craft that is not heading north
-      M[0x802A + SLOT] = ((v.head || 0) >> 4) & 63;
+      M[0x802A + SLOT] = ((p.head || 0) >> 4) & 63;
       M[0x801A + SLOT] = 0; M[0x800A + SLOT] = 0;
       M[0xBDA3 + SLOT] = 0;
       const r = f();
@@ -7012,15 +6971,14 @@ function makeDisplay(opts) {
       return r;
     }
     // drawn after the game's own objects, on the surface, by the game's own routine; not counted
-    // in the pass's time (the mod pretends the machine has time to spare). Each is named in
-    // P.drawTag while it is drawn, since they all share slot 9: the smooth view follows each one
+    // in the pass's time (the mod pretends the machine has time to spare)
     const loop0 = P.object_loop;
     P.object_loop = function (r) {
       const out = loop0.call(this, r);
       if (!on || M[0xA8] || M[0xCD]) return out;
       const work = Object.assign({}, P.work), key = M[0xB8];
       M[0xB8] = 0;                                            // no T or B for the traffic
-      for (const v of mod.V) if (!v.dead && !v.hidden) inSlot(v, () => { P.drawTag = v; try { P.draw_object({ x: SLOT }); } finally { P.drawTag = undefined; } });
+      for (const v of mod.V) if (!v.dead && !v.hidden) inSlot(v, () => P.draw_object({ x: SLOT }));
       M[0xB8] = key;
       Object.assign(P.work, work);
       return out;
@@ -7041,9 +6999,10 @@ function makeDisplay(opts) {
       }
       return out;
     };
-    // once a pass: move the traffic; start a pending reprisal when no event script runs
+    // once a pass: move the traffic; start a pending reprisal when no event script runs (with Fast
+    // CPU, once a pace: plug-in point once)
     rt.onPass(() => {
-      if (!on) return;
+      if (!on || !P.plug.once(0x7A11)) return;
       mod.step();
       for (const v of mod.V) if (v.dead && mod.pass > v.respawn) { v.dead = false; v.route = null; v.legs = null; v.park = 100; v.wait = 100; }
       if (pendingScript.length && !(M[0xBEC0] & 0x40) && !M[0xE6]) P.start_script({ a: pendingScript.shift() });
@@ -7136,8 +7095,7 @@ function makeDisplay(opts) {
 /* play: the page. Loads the game's bytes from listing.json (through the site's C64 library),
    puts the original disk's first message back, builds the port on that memory, and runs it at
    the PAL machine's pace: 50.12 frames a second, the main loop taking as many frames a pass as
-   the C64 would. With smooth motion the view is drawn again at every frame the browser paints
-   (the modern script's smooth), at the moment on the machine's clock that frame stands for. */
+   the C64 would, or with Fast CPU a loop each video frame (the block fast). */
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -7151,7 +7109,8 @@ function makeDisplay(opts) {
   const ORIGINAL_7009 = [0x01, 0xFF, 0x20, 0x20, 0x4E, 0x4F, 0x56, 0x41, 0x44, 0x52, 0x49, 0x56, 0x45, 0x20,
     0x43, 0x4F, 0x55, 0x4E, 0x54, 0x44, 0x4F, 0x57, 0x4E, 0x20, 0xA0, 0x00];
 
-  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, smooth = false, skipping = false;
+  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, skipping = false;
+  let fx = null, fast = false;                     // Fast CPU (site/lib/fast-cpu.js), and whether it is on
   const INSTALL = window.MERC_INSTALL || [];
 
   // --- saving: the game's save file (1904 bytes) in the browser's storage, one slot a digit
@@ -7177,44 +7136,38 @@ function makeDisplay(opts) {
     rt = makeRuntime(P, store);
     if (window.MercModern) rt.modern = window.MercModern.attach(rt);
     if (window.MERC_MODS) for (const m of window.MERC_MODS) if (m.attach) m.attach(rt);
+    if (window.FastCPU && window.MERC_FAST) { fx = FastCPU.attach(rt, window.MERC_FAST); FastCPU.set(fx, fast); }
     disp = makeDisplay({ border: 16 });
   }
 
   // --- drawing ---------------------------------------------------------------------------------
-  // The faithful frame is composed when the clock finishes one. With smooth motion the view is
-  // drawn over it at every frame the browser paints, for a moment one frame behind the clock
-  // (every flip up to it has run), in the C64's pixels or, with native resolution, as lines.
+  // The faithful frame is composed when the clock finishes one, and shown in the C64's pixels or,
+  // with native resolution, with the view drawn over it as lines (the block modern).
   const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
-  const CYCLES = 19656;
   const off = document.createElement('canvas');
-  let offCtx = null, img = null, frame = null, work = null;
+  let offCtx = null, img = null, frame = null;
   function rgb(px) {
     if (!offCtx) { off.width = disp.W; off.height = disp.H; offCtx = off.getContext('2d'); img = offCtx.createImageData(disp.W, disp.H); }
     const d = img.data;
     for (let i = 0, o = 0; i < px.length; i++, o += 4) { const c = RGB[px[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
     offCtx.putImageData(img, 0, 0);
   }
+  // With Fast CPU the view shows the bitmap the game flipped to at the end of the last loop ($C7):
+  // the game's newest frame, in the refresh after its loop, not a frame later at line 0
   function compose() {
     frame = rt.lastFrame(); if (!frame) return;
-    disp.compose(rt.M, rt.colour, frame.regs0, frame.writes, 0x4000);
-    if (!smooth || native) rgb(disp.px);
+    disp.compose(rt.M, rt.colour, frame.regs0, frame.writes, 0x4000, fast ? rt.M[0xC7] : undefined);
+    rgb(disp.px);
   }
-  const viewTime = () => (smooth && rt && rt.target !== null ? rt.target - CYCLES + Math.min(acc, FRAME_MS) / FRAME_MS * CYCLES : undefined);
-  function present(V) {
+  function present() {
     if (!frame) return;
     const MM = window.MercModern;
-    if (smooth && !native) {
-      if (!work) work = new Uint8Array(disp.px.length);
-      work.set(disp.px);
-      if (MM) MM.paint(work, rt, disp, V);
-      rgb(work);
-    }
     if (!native || !MM) {
       if (cv.width !== disp.W) { cv.width = disp.W; cv.height = disp.H; cv.classList.remove('pl-native'); }
       cv.getContext('2d').drawImage(off, 0, 0);
-    } else MM.draw(cv, off, rt, frame, disp, V);
+    } else MM.draw(cv, off, rt, frame, disp);
   }
-  function draw() { if (!rt) return; compose(); present(viewTime()); }
+  function draw() { if (!rt) return; compose(); present(); }
 
   // --- the loop --------------------------------------------------------------------------------
   let acc = 0, last = 0;
@@ -7222,17 +7175,33 @@ function makeDisplay(opts) {
     requestAnimationFrame(tick);
     if (skipping && running && !paused) { skipSlice(now); return; }
     if (!running || paused) { last = now; return; }
+    if (fast) return tickFast(now);
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
     try {
       while (acc >= FRAME_MS && n < 10) { rt.runFrame(); taps(); sound.frame(); acc -= FRAME_MS; n++; }
     } catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
     if (n === 10) acc = 0;
-    if (n) { compose(); skipButton(); }
-    if (n || smooth) {
-      try { present(viewTime()); }
-      catch (e) { console.error(e); setSmooth(false); say('Smooth motion stopped: ' + e.message); }   // the view, never the game
+    if (n) {
+      compose(); skipButton();
+      try { present(); }
+      catch (e) { console.error(e); say('The view could not be drawn: ' + e.message); }   // the view, never the game
     }
+  }
+
+  // Fast CPU: the loops owed for the time since the last refresh (at most four), then the last one's
+  // frame. A key let go is held until it has been down for three video frames, so the first loop
+  // that reads it counts it
+  function tickFast(now) {
+    const ms = Math.min(250, now - (last || now)); last = now;
+    const f0 = rt.frame;
+    let n = 0;
+    try { n = FastCPU.run(fx, ms); }
+    catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
+    for (let f = f0; f < rt.frame; f++) taps();
+    releases();
+    sound.frame();
+    if (n || rt.frame !== f0) { compose(); skipButton(); present(); }
   }
 
   // --- skipping the intro: the clock runs as fast as the browser allows, a slice of frames each
@@ -7256,7 +7225,7 @@ function makeDisplay(opts) {
     let over = false;
     try { do over = rt.skipOpening(25); while (!over && performance.now() - t0 < SKIP_MS); }
     catch (e) { skipping = false; running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
-    compose(); present(viewTime());
+    compose(); present();
     const at = Math.round(rt.frame * FRAME_MS / 1000) + ' s';
     if (!over) { say('Skipping the intro: ' + at + ' in…'); return; }
     skipping = false; acc = 0; last = now;
@@ -7274,11 +7243,24 @@ function makeDisplay(opts) {
     Numpad7: 5, Numpad9: 9, Numpad1: 6, Numpad3: 10, KeyF: 16, ControlRight: 16, Numpad5: 16, Numpad0: 16 };
   const held = new Map();                          // event code -> C64 key numbers it holds
   let joyBits = 0, padBits = 0;
-  function joy() { if (rt) rt.input.joy = 0x1F & ~(joyBits | padBits); }
+  // With Fast CPU, what was let go before three video frames: event code -> { frame, joy, keys }
+  const downAt = new Map(), late = new Map();
+  let lateJoy = 0;
+  function joy() { if (rt) rt.input.joy = 0x1F & ~(joyBits | padBits | lateJoy); }
+  function releases() {
+    if (!late.size) return;
+    let ch = false;
+    for (const [c, l] of late) if (!rt || rt.frame >= l.frame) { late.delete(c); ch = true; }
+    if (!ch) return;
+    lateJoy = 0;
+    for (const l of late.values()) lateJoy |= l.joy;
+    joy(); keysNow();
+  }
   function keysNow() {
     if (!rt) return;
     const s = new Set();
     for (const ks of held.values()) for (const k of ks) s.add(k);
+    for (const l of late.values()) for (const k of l.keys) s.add(k);
     for (const t of tapList) for (const k of t.keys) s.add(k);
     rt.input.keys = s;
   }
@@ -7298,19 +7280,27 @@ function makeDisplay(opts) {
     if (k && k.length === 1) { const u = k.toUpperCase(); if (KEY[u] !== undefined && u !== 'F') return [KEY[u]]; }
     return null;
   }
+  function hold(code, joyBit, keys) {              // a key up: held on for three frames with Fast CPU
+    const d = downAt.get(code);
+    downAt.delete(code);
+    if (!fast || !rt || d === undefined || rt.frame >= d + 3) return;
+    late.set(code, { frame: d + 3, joy: joyBit, keys: keys || [] });
+    lateJoy |= joyBit;
+  }
   function onKey(e, down) {
     if (!running) return;
     if (e.metaKey || e.altKey) return;
+    if (down && !e.repeat && rt) { downAt.set(e.code, rt.frame); late.delete(e.code); }
     if (JOY[e.code] !== undefined && !(e.ctrlKey && e.code === 'KeyF')) {
       e.preventDefault();
-      if (down) joyBits |= JOY[e.code]; else joyBits &= ~JOY[e.code];
+      if (down) joyBits |= JOY[e.code]; else { joyBits &= ~JOY[e.code]; hold(e.code, JOY[e.code]); }
       joy(); return;
     }
     const ks = c64Keys(e);
     if (!ks) return;
     e.preventDefault();
     if (down) { const all = ks.slice(); if (e.ctrlKey && !ks.includes(KEY.CTRL)) all.push(KEY.CTRL); held.set(e.code, all); }
-    else held.delete(e.code);
+    else { hold(e.code, 0, held.get(e.code)); held.delete(e.code); }
     keysNow();
   }
   let active = false;
@@ -7372,7 +7362,12 @@ function makeDisplay(opts) {
   // --- controls ---------------------------------------------------------------------------------
   let sayTimer = 0;
   function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
-  function setSmooth(v) { smooth = v; bar.querySelector('[data-act="smooth"]').setAttribute('aria-pressed', String(v)); }
+  // Fast CPU on or off; off, the C64's clock again from where it stands
+  function setFast(v) {
+    fast = v; bar.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(v));
+    if (fx) FastCPU.set(fx, v);
+    if (!v) { late.clear(); lateJoy = 0; joy(); keysNow(); acc = 0; }
+  }
   function showOver(t, btn) {
     overMsg.textContent = t; over.hidden = false;
     const old = over.querySelector('button'); if (old) old.remove();
@@ -7391,7 +7386,7 @@ function makeDisplay(opts) {
     else if (act === 'restart') { rt = null; skipping = false; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); skipButton(); screen.focus(); }
     else if (act === 'skip') skip();
     else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (native) crt.set(false); else cv.width = 1; draw(); screen.focus(); }
-    else if (act === 'smooth') { setSmooth(!smooth); draw(); screen.focus(); }
+    else if (act === 'fast') { setFast(!fast); draw(); screen.focus(); }
     else if (act === 'ctrlq' && running) tap([KEY.CTRL, KEY.Q], 12);
     else if (act === 'save' && running) { tap([KEY.CTRL, KEY.S], 12); say('Saving: type a digit 0-9, then Enter.'); }
     else if (act === 'load' && running) { tap([KEY.CTRL, KEY.L], 12); say('Loading: type a digit 0-9, then Enter.'); }
@@ -7408,7 +7403,7 @@ function makeDisplay(opts) {
     showOver('Mercenary, as the original disk starts it: the countdown, the crash, and then Targ. Click, then use the keyboard.', 'Start');
     requestAnimationFrame(tick);
   }, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
-  window.MercPlay = { get rt() { return rt; }, get P() { return P; }, tap, KEY };
+  window.MercPlay = { get rt() { return rt; }, get P() { return P; }, get fx() { return fx; }, tap, KEY, setFast };
 })();
 </script>
 
