@@ -77,3 +77,18 @@ them have.
 faster on this disk; a POKE on the subtraction's operand instead stops
 the burn. The ammunition POKE could not be tested live, since the cannon
 fires only at a target, so it was run in the kit's 6502 on `use_store`.
+
+**Flying over the theatres.** The How it works page runs `view_frame` on
+the listing with each theatre's terrain file, so the eye can go anywhere.
+Its first view, redrawn where a recorded cockpit frame had the
+helicopter, differed from the frame by 28 bytes: `view_frame` works out
+the shapes' points only when the pitch or heading has changed since the
+last view (`zpa_F3`, `zpa_F4`), and the listing's zero page said nothing
+had. With `zpa_F3` set to a pitch the view never has, the redraw is the
+frame byte for byte (`test_fly.js`). Turning the view through the eight
+eighths of the compass then showed the view facing north-west drawing one
+square eight times: the two 72-byte tables of nine squares for each
+eighth ($8281, $82D9) were described by symbols whose spans stop at 64
+bytes, so the listing had left out their last 8 bytes and the page read
+zeros there. Both tails, and the 65th entry of the quarter circle at
+$BF03, now have comments of their own, and the listing carries them.
