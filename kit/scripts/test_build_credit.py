@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Who the build credits: a login read from a noreply address or named by GitHub, never an
-agent's, and no request to GitHub from a build that was given no token."""
+agent's, no request to GitHub from a build that was given no token, and on a game's banner and
+card only the people who changed that game alone."""
 import contextlib
 import io
 import os
@@ -118,6 +119,23 @@ class Credit(unittest.TestCase):
                          [(1, "Bob", None, 1), (5, "Ada Lovelace", "ada", 0)])
         self.assertEqual(build.credit(self.authors(), own={"stranger", "c1", "c2"}),
                          [(5, "Ada Lovelace", "ada", 2), (1, "Bob", None, 1)])
+
+    def test_the_banner_and_card_name_only_who_changed_this_game_alone(self):
+        # Ada's five site-wide changes name her on the About tab, never on the banner or the card
+        cons = build.credit(self.authors(), own={"stranger"})
+        self.assertEqual(build.named(cons), [(1, "Bob", None, 1)])
+        game = {"platform": "c64", "slug": "x", "tier": "gold"}
+        self.assertIn("curated by Bob.", build.banner(game, cons))
+        self.assertIn("contributed by Bob.", build.banner(dict(game, tier="silver"), cons))
+        self.assertIn("contributed by Bob</span>", build.card_html(dict(game, _cons=cons)))
+        both = build.credit(self.authors(), own={"stranger", "c1"})
+        self.assertEqual(build.named(both), both)
+
+    def test_with_no_commit_to_this_game_alone_everyone_is_named(self):
+        # a clone too shallow to tell, or a game only ever changed alongside others
+        cons = build.credit(self.authors())
+        self.assertEqual(build.named(cons), cons)
+        self.assertEqual(build.named([]), [])
 
     def test_the_about_tab_says_which_commits_were_this_games_alone(self):
         self.assertEqual(build.commits_said(5, 5), "5 commits")

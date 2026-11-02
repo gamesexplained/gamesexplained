@@ -25,13 +25,16 @@
 //   on the C64;
 // - five minutes of random play in many areas, Fast CPU and the Speed switched now and then, throw
 //   nothing and leave every angle in the game's range;
+// - once a pace: with each way of moving held, no byte of the state a saved game keeps changes
+//   only once every K ticks, a step among frames that glide, unless listed as meant; a walk given
+//   whole once a pace is caught;
 // - no frame behind: after each refresh the machine has run nothing past its last loop, the view on
 //   show is that loop's copy to the screen, a key down before a refresh changes that refresh's
 //   view, and at the game's own angles the C64-pixel renderer paints the game's frame (the mark
 //   test_modern.js holds it to).
 // port/test/fast-browser.js checks the page in Chromium.
 //   node games/c64/castle-master/test_fast.js [part: off, limiter, same, clock, whole, speeds, switches,
-//     stopping, messages, random, behind]
+//     stopping, messages, random, once, behind]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -456,6 +459,81 @@ if (part('random')) {
   }
   if (bad.size) fail('random play left: ' + [...bad].slice(0, 4).join(', '));
   else if (!threw) console.log('random play: five minutes in ' + areas.size + ' areas, ' + loops + ' loops with Fast CPU on: nothing thrown, every angle in the game\'s range');
+}
+
+// ---- once a pace
+// With Fast CPU on, the moves glide a share each loop. A byte of the game's state that changes only
+// once every K ticks while a key is held steps once a pace: right for what the game counts in its
+// own loops, but what is drawn from it jumps among frames that glide, as whole strides did. The
+// state is what a saved game keeps, $2406-$246F and the objects' flags in the database at
+// $9D00-$BF8F: every view is drawn afresh from it and the angles' shares, so a step shows only
+// where the state steps (the renderers' own bytes change with the view at their own steady rates,
+// which can be a whole number of paces). In six areas, each way of moving held for three seconds
+// at 1x and 2x, this lists every byte of it that changed in at least a third of the paces, three
+// times in four a whole number of paces after the last (a loop that reads no keys can put one off
+// by a tick); each must be listed here with why, and a byte that joins them fails. The quarter
+// turns are left out: they jump by design, once every K ticks while held (switches, above). And
+// the listing must catch a walk given whole once a pace, as whole strides gave it
+if (part('once')) {
+  const MEANT = {};
+  const meant = new Set(Object.values(MEANT).flat());
+  const STATE = [[0x2406, 0x246F], [0x9D00, 0xBF8F]];
+  const AREAS = [[4, 216], [6, 215], [9, 224], [13, 219], [16, 214], [21, 216]];
+  // each way of moving: the key tapped first, if any, the keys held and the joystick
+  const MOVES = { 'walking': [[], [], 1], 'backing': [[], [], 2], 'turning left': [[], [], 4], 'turning right': [[], [], 8],
+    'looking up': [[], ['P'], 0], 'looking down': [[], ['L'], 0], 'walking and turning': [[], [], 9], 'throwing': [[], [], 16],
+    'running': [['R'], [], 1], 'crawling': [['C'], [], 1] };
+  const N = { loops: 0, windows: 0, left: 0 };
+  // the bytes of the state that step once a pace while a move is held, or null when it took the
+  // player through an entrance into another area (and back, held): the entrance's script, run
+  // once a pace, moves them, and the whole view with them
+  const listing = (m, K, tap, keys, joy) => {
+    const M = m.M, prev = M.slice();
+    if (tap.length) { m.refresh(0.1, tap, 0); m.refresh(0.2); }
+    // the move held: a moment to start, then three seconds measured
+    m.press(keys, joy);
+    for (let i = 0; i < 18; i++) FastCPU.run(m.fx, REFRESH);
+    const at = new Int32Array(65536), n = new Uint16Array(65536), paced = new Uint16Array(65536);
+    for (const [lo, hi] of STATE) prev.set(M.subarray(lo, hi + 1), lo);
+    for (let i = 0; i < 180; i++) FastCPU.run(m.fx, REFRESH, () => {
+      N.loops++;
+      const t = m.rt.ticks;
+      for (const [lo, hi] of STATE) for (let a = lo; a <= hi; a++) if (M[a] !== prev[a]) {
+        if (n[a] && (t - at[a]) % K === 0) paced[a]++;
+        at[a] = t; n[a]++; prev[a] = M[a];
+      }
+    });
+    m.press(); m.refresh(0.5);
+    if (n[0x2429]) { N.left++; return null; }
+    N.windows++;
+    const out = [];
+    for (let a = 0; a < 65536; a++) if (n[a] >= 180 / K / 3 && paced[a] * 4 >= (n[a] - 1) * 3) out.push(a);
+    return out;
+  };
+  const found = new Map();
+  for (const speed of SPEEDS.filter(s => s.K >= 5)) {
+    const m = fastMachine(speed);
+    for (const area of AREAS) {
+      m.go(area); m.refresh(1);
+      for (const [what, [tap, keys, joy]] of Object.entries(MOVES)) {
+        for (const a of listing(m, speed.K, tap, keys, joy) || []) {
+          if (!found.has(a)) found.set(a, new Set());
+          found.get(a).add(what + ' at ' + speed.name);
+        }
+      }
+    }
+  }
+  const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
+  const stray = [...found.keys()].filter(a => !meant.has(a));
+  if (stray.length) fail('set only once a pace, and not listed as meant: ' + stray.map(a => hex(a) + ' (' + [...found.get(a)].slice(0, 3).join(', ') + (found.get(a).size > 3 ? ', ...' : '') + ')').join(' '));
+  const seen = Object.assign({}, N);
+  // the control: backing away from the Wilderness's first view, open ground behind, the step
+  // given whole in the first loop of each K ticks and none in the others
+  const speed = SPEEDS[0], m = fastMachine(speed), step = m.P.plug.step, paces = {};
+  m.P.plug.step = (key, v) => { step(key, v); const p = Math.floor(m.rt.ticks / speed.K); if (paces[key] === p) return 0; paces[key] = p; return v; };
+  const caught = (listing(m, speed.K, [], [], 2) || []).filter(a => a >= 0x2407 && a <= 0x240C);
+  if (!caught.length) fail('once a pace: a walk given whole once a pace at ' + speed.name + ' moved the player without the listing finding it');
+  console.log('once a pace: in ' + seen.windows + ' moves held 3 s (' + seen.loops + ' loops; ' + seen.left + ' more left out, through an entrance), ' + found.size + ' bytes change only once a pace, ' + (stray.length ? stray.length + ' not listed' : 'each listed as meant') + '; a walk given whole once a pace is found, at ' + caught.map(hex).join(' '));
 }
 
 // ---- no frame behind
