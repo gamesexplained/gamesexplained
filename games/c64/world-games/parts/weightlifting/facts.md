@@ -81,7 +81,11 @@ this part's listing.
   `play-F.vsf`: a push of down held for one frame in the last window
   started script 4 in the same frame, with three red lamps and `$46` =
   0; with the window left alone, all three judges voted white, the first
-  at a hold of 0 (`live_wl_last_window.py`).
+  at a hold of 0 (`live_wl_last_window.py`). A push before the good
+  part of that window is a failed lift (the script's early target,
+  `$2180`), so no push in it gives a good lift: *traced* on the game's
+  code in `test_widgets.js`, both lifts at every weight from 75 to 300
+  kg, a push at every frame of the window, and the window held through.
 - The lifter's colour changes every 64 frames of the hold: light red,
   orange, red, purple, blue (`wl_skin_colours`, `$1572`).
 - Held too long, every judge left votes red and one of two endings
