@@ -1,4 +1,4 @@
-## next · 2026-11-02 · Space Rogue (C64) · air with Claude
+## 0.0.295 · 2026-11-02 · Space Rogue (C64) · air with Claude
 
 - **The game's own frame budget is its planned speed.** Space Rogue's main
   loop allows three PAL video frames a pass: it counts the frames each
