@@ -1,0 +1,85 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.tbl{border-collapse:collapse;font-size:14px;width:100%}.tbl td,.tbl th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.shots{display:flex;gap:12px;flex-wrap:wrap}.shots img{width:320px;max-width:100%;image-rendering:pixelated;border-radius:6px}
+#rb-mapwrap{height:520px;overflow:auto;background:#000;border-radius:6px}#rb-map{image-rendering:pixelated;display:block}
+button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Ocean Software</p>
+  <h1>Rambo: First Blood Part II</h1>
+  <p class="sub">Secrets, quirks and leftovers: a loader that runs into its own data, a rotor you only hear with the music off, and the authors' names in the high-score table.</p>
+</header>
+<main class="wrap">
+<section id="protection">
+  <p class="fig">01 · The loader</p>
+  <h2 class="t">A load that switches the KERNAL off under itself</h2>
+  <p>The disk is Ocean's original, mastered on 4 December 1985 and "PROTECTED BY XROM SYSTEM . TEQUILA SUNRISE BELGIUM", as a sector of the directory track says in plain text. The boot file loads at <code>$0101</code>, over the stack, so the KERNAL's own return from the load lands in it. It resets the drive and sends it the command <code>&amp;</code>, which runs the 31-byte file of that name as drive code. That code runs the BAM, the sector the drive keeps in its buffer at <code>$0700</code>, as a program, and the BAM decrypts itself and hooks the drive's job loop: from then on every track and sector the C64 asks for is renumbered, so the directory and the files the C64 sees are not the ones on the disk.</p>
+  <p>The second load reads a hidden directory and a two-sector file that loads from <code>$FE0B</code>, runs past <code>$FFFF</code> and ends at <code>$0001</code>. Its last byte goes to the processor port and banks the KERNAL out while the KERNAL's own load loop is running. The processor carries on in the RAM beneath, where the boot file had already written a <code>BRK</code> at <code>$F51E</code>, and the <code>BRK</code> goes through the vector the stream itself left at <code>$FFFE</code>, into the next stage. After two more stages of decryption a fast loader reads the game from 409 sectors the directory does not list.</p>
+  <p>In the emulator used for this write-up (VICE 3.13.2 and 3.14.0 with a 1541), the first file the loader opens after the hidden directory is reported as missing, and the boot falls back to <code>READY.</code>. Sending the loader back once to open it again gets past it (the recipe is in the game folder's orientation.md on GitHub). Why the emulated drive misses that file was not found.</p>
+</section>
+<section id="rotor">
+  <p class="fig">02 · A quirk</p>
+  <h2 class="t">The helicopter's rotor only sounds with the music off</h2>
+  <p>The flight starts a repeating sound on voice 1 (command 20) and, while the gunship is on screen, another on voice 2 (command 22). The routine that repeats them, <code>loop_tick</code> (<code>$8423</code>), does nothing while any voice belongs to the music (<code>voice_mask</code>, <code>$828A</code>). The game gives the music all three voices unless S has switched it off, so with the music on both loops stay silent. This was read in the code and reproduced on the driver in <code>test_music.js</code>; it has not been checked by ear in the emulator.</p>
+</section>
+<section id="credits">
+  <p class="fig">03 · A secret</p>
+  <h2 class="t">The credits are in the high-score table</h2>
+  <p>The 80 names of the heroes table start as the credits, ten letters to a name: CODING BY TONY, DAVE, BILL, MARTIN; GRAPHICS BY STEVE, TONY, DAVE; MUSIC AND SOUND FX BY MARTIN; TAPE LOADER BY BILL; DRINKS BY BREWS LEE; ASSISTED BY, followed by friends and colleagues (<code>heroes_names</code>, <code>$B0F0</code>). Every default score is a round thousand, from 80,000 down to 1,000 (<code>table_defaults</code>, <code>$C435</code>), so the credits scroll past in the attract pages until someone beats them. The music data also holds MUSIC BY MARTIN GALWAY (<code>$922B</code>), which nothing prints.</p>
+</section>
+<section id="leftovers">
+  <p class="fig">04 · Leftovers</p>
+  <h2 class="t">Code and data nothing reaches</h2>
+  <table class="tbl"><tr><th>What</th><th>Where</th></tr>
+  <tr><td>Lock and unlock the stick. <code>read_stick</code> tests the lock, but only these two routines write it and nothing calls them, so the lock is never set.</td><td><code>$07A4</code>, <code>$07AA</code></td></tr>
+  <tr><td>Tune 28, which no code asks for.</td><td><code>cmd_tune_chain2</code> <code>$84B8</code></td></tr>
+  <tr><td>About 2.3 KB in the driver's sequence format that no tune pointer reaches.</td><td><code>$B6FB</code></td></tr>
+  <tr><td>A second copy of the screen-row drawer, assembled for other working bytes.</td><td><code>$2833</code></td></tr>
+  <tr><td>Code that would set CIA 2's time-of-day clock.</td><td><code>$CF0D</code></td></tr>
+  <tr><td>Code that would send RESTORE back to BASIC. The game points the NMI at an <code>RTI</code> instead (<code>$FFF9</code>), so RESTORE does nothing.</td><td><code>$CE56</code></td></tr>
+  <tr><td>The bytes <code>$C5 $CE $C4</code>, "END" in shifted PETSCII, between modules.</td><td><code>$801C</code>, <code>$2833</code>, <code>$CF06</code></td></tr>
+  <tr><td>Character-shaped bytes outside the video bank.</td><td><code>$3A00</code></td></tr></table>
+</section>
+<section id="north">
+  <p class="fig">05 · Difficulty</p>
+  <h2 class="t">The jungle gets more dangerous the further north you go</h2>
+  <p>Each frame <code>bullet_fire</code> (<code>$2586</code>) picks a soldier and fires with a chance of one in (255 − row/4)/4, where the row is how far north the screen is. At the south end that is one chance in 63; near the top of the map it is about one in 4.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
