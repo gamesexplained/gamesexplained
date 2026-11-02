@@ -1,0 +1,658 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encounter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:16px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+p{max-width:68ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:18px 0}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.btn{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+.btn.on,.btn.on:hover{color:#fff;border-color:var(--violet);background:var(--violet)}
+.btn:hover{color:var(--ink)}
+label.sl{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
+input[type=range]{width:220px}
+select{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+table{border-collapse:collapse;font-size:14px;width:100%;margin:10px 0}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--fm);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+td.n{font-family:var(--fm);text-align:right}
+td.m{font-family:var(--fm);font-size:13px}
+.sw{display:inline-block;width:18px;height:18px;border-radius:3px;vertical-align:middle;border:1px solid rgba(255,255,255,.15);margin-right:4px}
+.mono{font-family:var(--fm);font-size:13px;white-space:pre-wrap;word-break:break-word;color:var(--ink-soft);line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.tok{display:inline-block;font-family:var(--fm);font-size:12px;padding:1px 6px;border-radius:4px;margin:2px;border:1px solid var(--line)}
+.tok.row{background:#e7e5fb;border-color:#c9c4f2}.tok.fill{background:#dff1e5;border-color:#b5dbc3}.tok.edge{background:#fbe9d6;border-color:#efcca6}.tok.end{background:#f8dcdc;border-color:#e6b3b3}
+.kbd{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:var(--surface-2)}
+.ctiles{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
+.ctile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 3px 3px;font-family:var(--fm);font-size:11.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.ctile:hover{color:var(--ink)}
+.ctile.on{color:var(--ink);border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
+.ctile.gap{margin-left:12px}
+.ctile canvas{border-radius:2px}
+.encpicks{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 14px}
+.encpick{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 4px 3px;font-family:var(--fm);font-size:11.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.encpick:hover{color:var(--ink)}
+.encpick.on{color:var(--ink);border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
+.encpick canvas{width:48px;height:32px;border-radius:2px}
+.ufgrid{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,5fr);gap:14px;align-items:start}
+@media(max-width:820px){.ufgrid{grid-template-columns:1fr}}
+canvas.screen{width:100%;height:auto;aspect-ratio:320/200}
+canvas.map{width:100%;height:auto;aspect-ratio:1}
+canvas.strip{width:100%;height:14px;margin-top:14px;cursor:pointer;border-radius:3px}
+canvas.chart{width:100%;height:auto;margin-top:14px}
+.panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 20px;margin-top:12px;min-height:84px}
+@media(max-width:700px){.panel{grid-template-columns:1fr}}
+.legend{margin-top:6px}
+.enph{font-family:var(--fm);font-size:20px;font-weight:700;margin:0 0 2px}
+.enbar{display:grid;grid-template-columns:130px 1fr 60px;gap:8px;align-items:center;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:5px 0}
+.enbar i{display:block;height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.enbar b{display:block;height:100%}
+.enbar em{font-style:normal;text-align:right;color:var(--ink)}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.transport input[type=range]{flex:1;min-width:140px;width:auto}
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 6px 8px}
+.card canvas{width:100%;height:auto;aspect-ratio:96/72}
+.card .nm{font-family:var(--fm);font-size:13px;font-weight:500;margin:6px 0 0;color:var(--ink)}
+.card .cap{font-size:12px;margin-top:2px}
+.card .sw{width:13px;height:13px;margin-right:2px}
+.lvgrid{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:16px;align-items:start}
+@media(max-width:820px){.lvgrid{grid-template-columns:1fr}}
+canvas.grab{cursor:grab;touch-action:pan-y}
+canvas.grab:active{cursor:grabbing}
+#lvInfo .nm{font-family:var(--fm);font-size:13px;font-weight:500;color:var(--ink);margin:10px 0 4px}
+#lvInfo p{margin:4px 0}
+.scroll{overflow-x:auto}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Novagen Software</p>
+  <h1>Encounter</h1>
+  <p class="sub">Eight levels and the warp between them. A level changes the sky, the hills and clouds on the horizon, and which saucers can come; the obelisks stand in the same places on every one.</p>
+</header>
+<main class="wrap">
+
+<section id="look-around">
+  <p class="fig">01 · Look around</p>
+  <h2 class="t">Turn on the spot on every level</h2>
+  <p class="lede">Pick a level and turn the player round: drag the picture, hold the turn buttons, or click the picture and use the arrow keys. The warp is the flight from one level to the next.</p>
+  <div class="plate">
+    <div class="encpicks" id="lvTiles"></div>
+    <div class="lvgrid">
+      <div>
+        <canvas id="lvScreen" class="screen grab" width="320" height="184" style="aspect-ratio:320/184" tabindex="0" aria-label="the view: drag or use the arrow keys to turn"></canvas>
+        <div class="transport"><button class="btn" id="lvLeft">◀ turn left</button><button class="btn" id="lvRight">turn right ▶</button><button class="btn" id="lvSpin">spin</button><span class="cap" id="lvHeading" style="margin:0"></span></div>
+      </div>
+      <div>
+        <canvas id="lvMap" class="map" width="300" height="300"></canvas>
+        <div id="lvInfo" class="cap"></div>
+      </div>
+    </div>
+    <p class="cap">The picture is drawn by the game's own view routines from the object table as the level starts, with the player's heading turned and nothing else changed; the status row is left off, since it shows level 1 until the first enemy is set up. Turning goes at the game's own rate for Novice: <code>$25</code> 2048ths of a circle a pass, a pass every two frames. The hills and clouds are sprites, placed against the heading by <code>$B9A5</code> from the level's scenery record at <code>$9840</code>. The warp is the flight as the game flies it, from the moment the gate is entered: scene record 8, the obelisks left out (<code>$90</code> = <code>$1F</code>) and spheres in the enemy-shot slots.</p>
+  </div>
+</section>
+
+<section id="scenes">
+  <p class="fig">02 · Scene records</p>
+  <h2 class="t">Each level is a sixteen-byte scene record</h2>
+  <p class="lede">A level is a 16-byte scene record: sprite flags and five colour pairs. The level index counts down, <code>$70</code> for level 1 to <code>$00</code> for level 8, and <code>$80</code> is the warp. Levels 2, 4 and 7 have a black sky, the other five a coloured one.</p>
+  <div class="plate">
+    <div class="scroll"><table id="sceneTable"><tr><th>Record</th><th>Level</th><th>Sky</th><th>Horizon 1</th><th>Horizon 2</th><th>Horizon 3</th><th>Ground</th><th>$D022</th><th>sprites</th></tr></table></div>
+    <p class="cap">Records at <code>$8010</code>, copied to <code>$AB</code> to <code>$BA</code> by <code>$B920</code>. A split swatch is a colour pair whose two nibbles differ: the band flickers between them. The ground colour is written whole, so only its low nibble shows.</p>
+  </div>
+  <div class="plate">
+    <div class="scroll"><table id="skillTable"><tr><th>Parameter</th><th>Expert</th><th>Advanced</th><th>Novice</th><th>Demo</th></tr></table></div>
+    <p class="cap">Eight tables of four bytes at <code>$8F80</code>, one column per skill; the demo plays from the fourth column.</p>
+  </div>
+  <p>When the last enemy dies the stargate (object 3) is placed at that enemy's X for 240 passes, about ten seconds, and a shield is added at once. Flying into it starts the warp: the scene switches to record 8, speed ramps toward the level's top speed (<code>$A7E8</code>: <span id="warpSpeeds"></span>), and spheres spawn in the enemy-shot slots every three passes. After about four periods of 256 frames the level number goes up (<code>$A798</code>). Missing the gate returns to play with a new enemy count and no penalty (<code>$A552</code>); hitting a sphere is an ordinary death.</p>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* enc-view-mem */
+const ENC_VIEW_MEM = [
+  [0x1401, "dgACWyC6AFAHArsgbUUAArwgvQBQBwK+IGG/AALAIJ1HAEYKAkEg/wLCIcMA//8ejgNHYSH/HhkMAnUgZB8cR2EhwgACeiBmQQPEIsMARgsCfiBafwOfI0oAA2tcIF2AOD8wNz4oDANFpyBPnAOeI58AAw=="],
+  [0x14C1, "QXsgd3oEa5IjlwSLJU4AA1J4IHZ1BJGJI5YEiiSJADwTA3VqIGlcBwSRYSN0AAcHJYsAA5gABwd+QQTHJAAAAiVOADwRA35PIGHJfwTKJcsEiSWKAARrnKYgYKGABMwkiUUFTiaLADIWAnAggUEEUqEiYc1BBMwlygV8JmEAAm8ggQTOoiKdUQVFiSXLErxZeQAyFwNX8nBkYwSbncJojwVHYSXCBX0nfAADUmYgZFYEmmEjxUEFxCbDBXkmYQA="],
+  [0x1741, "CWsu4wlVLwAEepNaIOSUe0EGf50mYeUH1irRQQjmLOcJQaMtsQno6ekJVC5Y7urfBI57dyDo4s5wBpClJuPYpQfrKmHsCO0t7gnLLolFCe8v8AprMOMKVTEABHN4dyA="],
+  [0x1E00, "UAUBIEAAASBBANAPCwcBIEIAASBDAAEgRAACRSBFAFAFASBGAAJHIEgA0BEMCAEgSUoAASBLAAJKIEwAAk0gTQBQBgJOIE8AAlAgUQBGCwJSIFNBAlQhVQACViBXAlghAEYLAlkgWlsCWCFUAAJcIF1FAiJVAEYJAl4hXwIiWAADSmAgYWIDVSJUADwNAmMgZFYDVSMDVSMAA0FlIGZSA1QiWANUIlgAPBEDZ2ggaWprA1QjVQNUI1UAA2xtIGluA1gjA1gjADITAm8gV3ADcSNiA1gjVANYI1QAAnIgc0EDdCJhSgMkVQMkVQAyEwN1diB3eFIDYSN5AyRYAyRYAAN6dyB3e0EEfCR9BFUkVARVJFQAMhIDfm0gaWh/BFUlBFUlBFUlAARrXGkgaWqABFQkWARUJFgEVCRYACgZAm8ggXAEZ4Ijg2sEVCVVBFQlVQRUJVUAAoEggUEEhGAiYYUEWCUEWCUEWCUAKBkDY3Ygd3hWBHElYgRYJVQEWCVUBFglVAAEQWV3IHd7UgR0JGFKBCZVBCZVBCZVACgYBIBqhiCHiFxrBIkligQmWAQmWAQmWAAEf2hPIIdtfgVOJosFVSZUBVUmVAVVJlQAHhsDQVcgU3MFQYxhI2CNBVUnBVUnBVUnBVUnAANwUyBTjgWPgySCkAVUJlgFVCZYBVQmWAVUJlgAHiEEcHt3IF13ekEFkYklkmsFVCdVBVQnVQVUJ1UFVCdVAASOeJMglHaVBZYmlwVYJwVYJwVYJwVYJwAeIAVBfm2HIIdPaJgFcSdiBVgnVAVYJ1QFWCdUBVgnVAAFUlyIhyCHhmp1BXQmYUoFKFUFKFUFKFUFKFUAFB8="],
+  [0x209F, "BUF6k1ogWpR7cAaPkiaJmwZUKFgGVChYBlQoWAZUKFgGVChYAAopBEFXZiBkZXMGa5xhJZ1+Bp4pnwZYKVQGWClUBlgpVAZYKVQGWClUAARwU2QgZKCOBoChJqJ/BqMpSgYqVQYqVQYqVQYqVQYqVQAKIgZBpKVgI6anmAdBqCmpB1UrB1UrB1UrB1UrB1UrB1UrAAZSqoZhI0+rdQesiSmtB1QqWAdUKlgHVCpYB1QqWAdUKlgHVCpYAAoj"],
+  [0x217E, "B2d0KGFsB6MrSgcsVQcsVQcsVQcsVQcsVQcsVQAKHAhBdCuwCFUtCFUtCFUtCFUtCFUtCFUtCFUtAAixYSuyCFQsWAhULFgIVCxYCFQsWAhULFgIVCxYCFQsWAAKIg=="],
+  [0x21FD, "CIktTgguVQguVQguVQguVQguVQguVQguVQAKGg=="],
+  [0x2232, "CVQuWAlULlgJVC5YCVQuWAlULlgJVC5YCVQuWAlULlgAChoKVTEKVTEKVTEKVTEKVTEKVTEKVTEKVTEAClQwWApUMFgKVDBYClQwWApUMFgKVDBYClQwWApUMFgA"],
+  [0x22CB, "Cho="],
+  [0x22E6, "DFQ0WAxUNFgMVDRYDFQ0WAxUNFgMVDRYDFQ0WAxUNFgACho="],
+  [0x2322, "DVQ2WA1UNlgNVDZYDVQ2WA1UNlgNVDZYDVQ2WA1UNlgA"],
+  [0x237F, "CiIPVDtVD1Q7VQ9UO1UPVDtVD1Q7VQ9UO1UPVDtVD1Q7VQAPWDsPWDsPWDsPWDsPWDsPWDsPWDsPWDsAUAUBIEAAASBBANAPCwcBILMAASC0AAEgtQACayBrAFAFASC2AAJrIIAA0BEMCAEgt2sAASC4AAJrILkAAmcgZwBQBgJFIHYAAlsgugBQBwK7IG1FAAK8IL0AUAcCviBhvwACwCCdRwBGCgJBIMECwiHDAAJwII4DR2EhxABGDAJ1IGRSA0dhIcIAAnogZkEDxCLDAEYLAn4gWn8DnyNKAANrXCBdgAOeIqMARgwDRacgT5wDniOfAANbpSCGWQOjI0oAPA8BIG8Dm50hoo8DoyOeAAJBIHADmmEhxUEESiSfADwQAlYgU1IDxiJhrQROJIkAAlcgU0EEQcAinawEiySKADwRA0F7IHd6BGuSI5cEiyVOAANSeCB2dQSRiSOWBIokiQA8EwN1aiBpXFIEkWEjdGsEiiWLAAOYaCBtfkEExyTIBIklTgA8EQN+TyBhyX8EyiXLBIkligAEa5ymIGChgATMJIlFBU4miwAyFgJwIIFBBFKhImHNQQTMJcoFfCZhAAJvIIEEzqIinc8FRYklywV9JnkAMhcDQWUgZGMEm50joo8FR2ElwgV9J3wAA1JmIGRWBJphI8VBBcQmwwV5JmEAMhcDdZMgWnZSBIUkYYQFxCZhRwV5J30AA5iUIF2kQQVrwCSdZwXDJsIFYSd8ADIYBHWhYSFgnFIFu2EldEUFoyeeBnwoYQAEmMkign5BBdAm0QZKKJ8GfSh5ACgdA1Z4IHd7UgVSoSRhzUEGQagnqQaLKU4GWClUAANjdiB3ZUEFzqIknc8GrIknrQaKKIkGKlUAKBsEdadPIIeGnFIFryZhbAbSKZEGiSmKB1UrAASYbYcgh4h+QQZrriZ0ZwbTKKNrB04qiwdUKlgAHiMDjmUgZKBwBXWhJGGcUgabYSd0jwdFiSnMB9Qr1QdYK1QAA3NmIGRXQQWYoiSdfkEG1ijRQQfLKsoH1yphQQcsVQAeIgSVlGkgaW2qjgZroSZhzQdrqCnYB8MrxAhBYSvXCFUtAAVBmGppIGlopHAGZ6ImnWwHZ4kphAfCKmFHCNUs1AhULFgAFCUDQXMgU3IFkKFhI2CrjwavKGFsB8orywhHLNkI2i3bCFgtVAADcFcgU28F3MkkgqpBB2uuKHRnB8wqiUUI3SzeCN8tQQguVQAUKAR1dlog4F14UgaAwCeMawebYSl0jwisYSvCQQjhLeIJay7jCVUvAAR6k1og5JR7QQZ/nSZh5QfWKtFBCOYs5wlBoy2xCegu6QlULlgACisEjnt3IOp3ZXAGkKUmYaePB+sqYewI7S3uCcsuiUUJ7y/wCmsw4wpVMQAEc3h3IJN2Y0EG8fImnZxBCGvRKnSACUHMLImPCcouzAprYS/zCugw6QpUMFgACicGmPQmYWp1CGvFKmH1CWuoLdgJzC/KCt0xRwr2MfcLRTL2C1UzAAdBfqImnVxSCICiKp3sCWeJLYQKRYkvywreMNkLRTL4C/gy9wtUMlgACigIgMArjGsJm4ktko8KkWEvdGsLQaMx4Qv5M/oL2TPeDEU09gxVNQAIf50qYeUJmi6ZQQrHMMgLsTLiC/syiUEMRzTdDPg09wxUNFgA"],
+  [0x28B4, "CiM="],
+  [0x28D8, "C2eJMYQMrIkzrQzMNIlFDZ82ng3ZN0cOSjifDt043g5UOFgACiUM7TXuDa02iawOa4k3/g7/OR8BDqM5ng9OOokPnztKD1Q7VQANQcw0iY8NqTaoQQ4fATj/Dv44iWsPSjqfD4s6ig+eOqMPWDsAUAUBIEAAASBBANARDQgBIB8CAAEgHwMAASBwAAJBIEEAUAYBIB8EAAJBIFIA0BMOCQEgHwVBAAEgHwYAAkEgVgACUiBSAFAHAkEgHwcAAlIgdQBQCAJSIB8IQQACdSCYAFAIAnUgHwlSAAKYIH5BAFAIApggHwp1AANBfiCcUgBQCQNBfiAfC5gAA1KcIKF1AFAKA1KcIB8MfkEAA3WhIKKYAEYMASBvA3WhIGGcUgACQSBwA5iiIJ1+QQBGDAEgHw0DmKIhoXUAAmsgtQRBfp0gYZxSAEYOAkEgHw4EQX6dIaKYAAKPIB8PBFKcYSGhdQBGDwKPIHZBBFKcYSGdfkEAApAg3AR1oSKimABGDgLOIF1SBHWhImGcUgACzyBuQQSYoiKdfkEARg4CHxAgbXUEmKIjoXUAA0H1IL1SBUF+nSJhnFIARg8DQeUgT5gFQX6dI6KYAANSjCCDdQVSnGEjoXUAPBQBIEADUh8RIX5BBVKcYSOdfkEAASBBA3UfEiCjmAV1oSSimAA8FAJBIMEDda4hHxNSBXWhJGGcUgACcCCOA5h0IGF+QQWYoiSdfkEAPBUCgCB2awRBfp0hopgGQX6dJaKYAAJ/IKQEUpxhIaF1BlKcYSWhdQA8FQJsIG1nBHWhImGcUgZ1oSZhnFIA"],
+  [0x2B7C, "MhwCUiBTQQN1wiEfF1IFdaEkYZxSB3WhKGGcUgA="],
+  [0x2BEB, "MhwCzSBpbAR1oSJhnFIGdaEmYZxSCHWhKmGcUgADa6cgbWcEmKIinX5BBpiiJp1+QQiYoiqdfkEA"],
+  [0x2CF8, "HioDa1wgWn4EQf4jHxwGQX6dJaKYCEF+nSmimApBfp0topgMQX6dMaKYAAOAXSBafwRSiSMfHQZSnGEloXUIUpxhKaF1ClKcYS2hdQxSnGExoXUA"],
+  [0x2E0C, "CjwDQWUgZGMERXQj0QVSHyAl5UEHUpxhJ51+QQlSnGErnX5BC1KcYS+dfkENUpxhM51+QQ9SnGE3nX5BAA=="],
+  [0x2E79, "UAUBIEAAASBBANAPCwcBILMAASC0AAEgtQACayBrAFAGASAfIQACQSCPANAUDgkBIB8iQQABIB8jAAJBIB8kAAKsIKwAUAcCQSAfJQACjyCbAFAIAoAgHyZrAALsIOsARgwBIEACHycgHyhEAAEgQQIfKSDRRQBGDQEgHyECHykgYR8nAAJBII8DRdEgdEQARg0CQSAfJQNHriEfKgACjyCbA0h0IGEfKwBGDgKPIB8mQQNIdCGuRwACmyDWAx8rYSEfKgA8EwEgQAKbIB8ojwMfLGEhdB8tAAEgQQLWINFBAx8uIh8vSgA8EQEgHyEC1iBhmwOIImEfMAACQSCPA0HRIHSPBE7yIp0fMQA8EQJBIB8lA0HRIdYETvIjiAACjyCbA490IGGbBB8xnSJhHzAAPBUCjyAfJkEDj3Qh0UEEHzJgI6Z8AAKbINYDm2Eh1gQfM2EjhwAyGQEgQAKbIB8ojwObYSF0jwQfM2EjYB8yAAEgQQLWINFBA9Yi0UEEhySmfAAyEwEgHyEC1iBhmwPWImGbBCZYAAJBII8DQdEgdI8EQdEidI8FVSZUADIWAkEgHyUDQdEh1gVBgdEj1oEFVScAAo8gmwOPdCBhmwVwHzR0ImEfNW8FVCZYADIb"],
+  [0x3073, "Apsg1gObYSHWBW8fNWEj1oEFWCcAKB8="],
+  [0x30A8, "ASBBAtYg0UED1iLRQQVT6yTRU2sFKFUAKBwCQSAfJQNB0SHWBEHRI9YGRWTRJR8pZAZVKQA="],
+  [0x32D0, "CiwDQdEh1gRB0SPWBUHRJdYGQdEn1gdB0SnWCkpaWh8vKx8uWloKVTEKVTEA"],
+  [0x34A7, "CjMIj3Qr0UEJj3Qt0UEKj3Qv0UEPcIGBgR80dDHRgYGBgUEPVDtVD1Q7VQ9UO1UPVDtVAA=="],
+  [0x354E, "UAYBIB87AAEgRwBQBgEgHzwAAkEgsQBQBgEgHz0AAmsgHwEAUAYBIB8+AAJFIB8/AFAGASAfQAACRyDdAFAGASAfQAACRyDdAEYKASBAAkEgH0EAASBBArEg4gBGCwEgHzkCayAfQgABIGsCHwEg/wBGCwEgHzoCRSAfQwABIEUCHz8gH0QARgoBIB87Akcg2QABIEcC3SDeAEYKASAfOwJHINkAASBHAt0g3gBGCwEgHzwCsSCjQQACQSCxAuIg4QBGDAEgHz4CHz8gYUUAAkUgHz8CH0QgH0UARgoBIB9AAt0hRwACRyDdAt4g2QA="],
+  [0x36BA, "PA4BIB9AAt0hRwLZId4A"],
+  [0x37B9, "HhoBIB87Akcg2QLeId0DRyLZA94j3QRHJNkA"],
+  [0x3838, "UAYBIB9GAAJrIGcAUAcCQSAfJQACjyCbAFAHAmsgH0cAAmcghABQCAKPIB8mQQACmyDWAFAIAmcgH0hrAAKEINgAUAgCZyAfSGsAAoQg2ABGCwEgQAKbIB8ojwABIEEC1iDRQQBGCwEgHzkChCCJZwABIGsC2CCoawBGCwEgHyEC1iBhmwACQSCPA0HRIHSPAEYKASAfRgLYIYQAAmsgZwNrqCCJZwBGCgEgH0YC2CGEAAJrIGcDa6ggiWcARgwCQSAfJQNB0SHWAAKPIJsDj3QgYZsARg4CjyAfJkEDj3Qh0UEAApsg1gObYSHWAEYOAmcgH0hrA2eJIahrAAKEINgDhCLYADwQASAfOQKEIIlnA4QiiWcA"],
+  [0x39A0, "PBQCjyAfJkEDj3Qh0UEEj3Qj0UEAApsg1gObYSHWBJthI9YA"],
+  [0x39E6, "MhIBIB9GAtghhAPYI4QE2CWEAAJrIGcDa6ggiWcEa6giiWcFa6gkiWcA"],
+  [0x3AE1, "HhoBIB9GAtghhAPYI4QE2CWEBdgnhAbYKYQA"],
+  [0x3B96, "UAgCdSAfCVIAApggfkEAUAgCmCAfCnUAA0F+IJxSAFAJA0F+IB8LmAADUpwgoXUAUAoDUpwgHwx+QQADdaEgopgAUAoDUpwgHwx+QQADdaEgopgARgwBIEADdaEgYZxSAAEgQQOYoiCdfkEARgwBIB8EA5iiIaF1AAJBIFIEQX6dIGGcUgBGDgJBIB8HBEF+nSGimAACUiB1BFKcYSGhdQBGEAJSIB8IQQRSnGEhnX5BAAJ1IJgEdaEiopgARhACUiAfCEEEUpxhIZ1+QQACdSCYBHWhIqKYAEYPAnUgHwlSBHWhImGcUgACmCB+QQSYoiKdfkEARhADQX4gHwuYBUF+nSOimAADUpwgoXUFUpxhI6F1AA=="],
+  [0x3CF3, "PBgCUiAfCEEEUpxhIZ1+QQZSnGElnX5BAA=="],
+  [0x3E5A, "KCQCdSAfCVIEdaEiYZxSBnWhJmGcUgh1oSphnFIKdaEuYZxSAA=="],
+  [0x3EEB, "Hg=="],
+  [0x6000, "gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDjo/R0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="],
+  [0x62D0, "0NDQ0NDQ6uTk5OTk69DQ0NDS1NTU1NjQ0NDQ6uTk5OTk69DQ0NDQ0OjQ6NDo0OLQ0NDQ0OPQ0NDS09HR0dHZ2NDQ0OLQ0NDQ0OPQ6dDp0Ono0OjQ6NDs5eXl5eXt0NDQ09HR4N7R0dnQ0NDs5eXl5eXt0OnQ6dDp6NDo0OjQ4tDQ0NDQ49DQ0NHR0d/d0dHR0NDQ4tDQ0NDQ49Dp0OnQ6ejQ6NDo0Ozl5eXl5e3Q0NDW0dHh3NHR29DQ0Ozl5eXl5e3Q6dDp0Ono0OjQ6NDi0NDQ0NDj0NDQ1dbR0dHR29rQ0NDi0NDQ0NDj0OnQ6dDp0NDQ0NDQ7ubm5ubm79DQ0NDV19fX19rQ0NDQ7ubm5ubm79DQ0NDQ0AAAAH0AAAAAAAAAAAAAAH2QnO3LzM3MzgAAAwAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
+  [0x6700, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAYGAAQCAAQCAAQCAAQCAAQCAAYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//+P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/4D///////////8AAH0AfQAAAAAAAAAAAAAAfQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH0AAAAAAAAAAAAAAH0AnO3LzM3Mzg=="],
+  [0x6939, "DwEBAQEBAQ=="],
+  [0x7000, "AgAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAAAAAAAAAAAgAAAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAgAAAAAAAAAAAABAAAAAAAAAAgAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAQAAAAAAACAAAAAAAAAAAAAAAEAACAAAAABAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAABAAAAAAAAAAAAAAQAAAAAAAAAAIABAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAIACAAAAAAAAAAAAAAgAAIAAAAAAAAAAAAAAAAAAAAIAAAAAAAAACAAAEAAAAAAAAAAAAAAAAAgAAAAgAAAAAAAAAAAIAAAAAQAAAAACAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAIAgAAAAABAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAQAAABAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAKBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAACBAAAAAAAAAAAAAAAAAAAAAgAAAAAIAAAAAAAAAAABAAAAIAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAf/8B///H///v///////3///x///gP/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAH8GAf+fh///7///////////5+f/gYD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AB//wP//+////f//8A//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAYD+D+P/v///3///B//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAA4fAB8/Bh//jz///7///7///////9///8f//4D//gAAAAAAP8AB//gH//4P//8P//8f//+f//+////////////////////////f//+f//+P//8P//8H//4B//gAP8ADv9G+wn+B/8K90L2Af4G+gL7Cv4K/wH7Av8B7wHrAf8D+wL/Ae8M/wPvAu0F7wj/NPcF9Rz3BfUB9wn2B/4D7gLvAf0B9wT/cfcf9gX+B/YN5gTnAvcG9QT9BP8B+wf6Bf4C9gX3Af8E+Qj7A/oI/hP2BucD/yv3Bv8I+QX9AvkF/S7tAv8Y/l37CPoJ/gf2BP4K9grmBfcD/zP3EvYF9wv2Dv8D+wH5CfsB+QP7D/oM/gHuAuYB9wH1Df0F+QP7BfoD/gr2CvcD5wH/G/4h/wL3GvYQ9wn2A/4E+wL5A/0Q+QL7BPoK6gHrAekB+QH9C/kF/QX1AvcH9gT+A/oN+wf6D/4E7gTmAfYI/gf/PvcH9QX9DvUH/RLtA/0G/wj3BfYB/hj7A/oB/hb/BP0F+QH9AvkE/RH5BPsI+gT7C+8B6QHtAekB/QH5Dv0K+QH7AfoL+wL5Bf0e+QH7D/oC/gb2DOYB7gP6BeoC+wHrAekB/QX5B/0B+QH9Bv8D/gn2Cv4F9gH3AucB5QL1DP0D+QH7BPoF/i3/Bfke+wn6Bv4I9gL3BPUQ9wH1AfcK9Q/3BfYE/gv2BOYC5wL3B/UF/QX5BfsF+gT+A/YH9wXnA+YB/gH3BPUF9wH/UP5K9gH3B/UN9wv1A/cP9gLmBPYG/hH/Af0E/zL9LfUB90T2Cv4T9gf3BucE9wP1Bf0E/zP+C/oE+wL6Af4D9gL/Cf0D/wj3DPUF9wH1AfcT9hD+BvoD/gP3AvUE9wb+BPoE+wPrAukB+Qv9A/cD9gT+CPYG/gX/KfcI/wr7Av8B+wL/B/cC/wT+GP8E/lL/d/sE/wj7B/8d+wX/A/cE/wP3Bf8D+wP/Bvse/wT3Bf8R9yf/Qv0B9yP2A/4I9gT3G/YE/gjmAf8W9wj2A/4b/wH3AvUU9wH1AfcZ9gb+DfsS+hP+DfYD5gPnAfcJ/wL3RP8B/Qb5HvsE+g37AvkC/QH5BfsD+gT+B+4E9gj+EvoD+wb6HO4D9gP/TvkV/RDtAf8u9wr/AP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI1+ZmZmZn5+ADw8PDw8PDwA/gb+/sD+/gD+Dhwczv7+AODg7Oz+/gwA/sD+Bsb+/gD+4P7m5v7+AP4ODg4ODg4A/sb+xsb+/gD+xsb+Bv7+AAAAAAAAAAAAAAAAAAAYGAD/A3tjewP/AP7m5v7+5uYA/ub+5ub+/gD+5uDg5v7+APzm5ubm/vwA/uD8/OD+/gD+4Pz84ODgAP7g7u7m/v4A5ub+/ubm5gD+ODg4OP7+AP4YGBjY+PgA5uz4+Pzu5gDg4ODg4P7+AMbu/v7WxsYA5vb+/v7u5gD+5ubm5v7+AP7m5v7+4OAA/ubm5u789gD+5ub+/O7mAP7g/v4G/v4A/v44ODg4OADm5ubm5v7+AObm5ub+/nwAxsbW/v7uxgDG7nw4fO7GAMbufDg4ODgA/g4cOHD+/gAHBwcHBwcHAAAAAAD/AAf/4Bx9+Dx//D/6/HWvzn/9/t3f///v3/1/////39z/+/+7/1//fnt//jv/3D/z/B7zuAf/4AD/AP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAB/4AP//A///x///7///////9///4f//gH/4AA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKgABVUAKqqgVVVUqqqqVVVVKqqqBVVQAKqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAABxAAD7gAH/wAO+4AVVUAqqqBVVVCqqqlVVVaqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAHAAAPgAAfwAA/4AB18ADqqAFVVAKqqgVVVQqqqpVVVWqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgCABwHADoKgFUVQKqqoVVVUqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIAAAcAAAcAAA+BAA+DgBfHwBXK4CqqoCqqqFVVVFVVVKqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAAA/gAD64ALqqAqqqiqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAH8AA+ugFVVUqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAMHwA/LoCqqqKqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAADwAAP4MAXcfBVVVSqqqopPzw8PDw/PwD8PDw8PPz8AA8PDw8PDw8A8PDw8PDw8AD/AP//8P//APw8/PwA/PwA/wADA/D//wD8/PDw/Pz8APz8/Pz//wAAAADw8Pz88AD/8P8A8P//APwA/Dw8/PwA//z//Pz//wD8APw8PPz8AP8AAAAAAAAA/Pz8/Pz8/AD/8P/w8P//APw8/Dw8/PwA//Dw/wD//wD8PDz8PPz8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAAAAAAAAwMAA/wA/PD8A/wD/D88Pzw//AP/8/P///PwA/Dw8/Pw8PAD//P/8/P//APw8/Dw8/PwA//z8/Pz//wD8PAAAPPz8AP/8/Pz8//8A8Dw8PDz88AD//P///P//APwA8PAA/PwA//z///z8/AD8APDwAAAAAP/8/Pz8//8A/AD8/Dz8/AD8/P///Pz8ADw8/Pw8PDwA/w8PDw///wD8wMDAwPz8AP8DAwPz//8A/MDAwMDAwAD8/P////z8ADzwwMDw/DwA/Pz8/Pz//wAAAAAAAPz8APD8///z8PAAPPz8/Dw8PAD8//////z8ADw8/Pz8/DwA//z8/Pz//wD8PDw8PPz8AP/8/P///PwA/Dw8/PwAAAD//Pz8/P//APw8PDz88DwA//z8///8/AD8PDz88Pw8AP/8//8A//8A/AD8/Dz8/AD//w8PDw8PAPz8wMDAwMAA/Pz8/Pz//wA8PDw8PPz8APz8/Pz//z8APDw8PPz88ADw8PP///zwADw8PPz8/DwA8Pw/Dz/88AA8/PDA8Pw8APD8Pw8PDw8APPzwwMDAwAD/AAMPP///APz88MAA/PwAAAAAAAAAAAA/Pz8/Pz8/AP//////////AAAAAAAAAAD//////vz48ODAgAAAAAAA/////wAAAADw+Pz+/////wAAAAAAgMDgAAAAAP//////////fz8fDwcDAQAAAAAADx8/f/////8AAAAAAAEDB4CAgAAAAAAAgICA/4CAgIAAAAAAgICAgAEBAf8BAQEBAAAAAAEBAQEBAQEAAAAAAPj4+Pj4+Pj4Hx8fHx8fHx////////8AAAAA/////wAAAAD//////////////////z8/Pz8/Pz8//Pz8/Pz8/Pz////////+/P///////38//P7//////vw/f/////9/P/z+////////P3////////+AwODw+Pz+///+/Pjw4MCA/38/Hw8HAwEBAwcPHz9//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////z6cPpzDws04MAAAAAAAAAARqgII+gL+qIiIAAAAAAAAEQAODv7+/gAAAAAAAAAAABGICQj6Av6oqqoAAAAAAAAR7gwI+gL+7u5mAAAAAAAAEQACDP7+/gAAAAAAAAAAABHuCggCAv7u7mYAAAAAAAARAAkN/v7+AAAAAAAAAAAAEe4FCPoC/u7uZgAAAAAAAO4AAAkCAgIAAAAAAAAAAAA="],
+  [0x8280, "ACBAYICgwOAAIEBggKDA4AAgQGCAoMDgACBAYICgwOAAIEBggKDA4AAgQGCAoMDgACBAYICgwOAAIEBggKDA4A=="],
+  [0x82E0, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="],
+  [0x8340, "QEBAQEBAQEBgYGBgYGBgYICAgICAgICAoKCgoKCgoKDAwMDAwMDAwODg4ODg4ODgAAAAAAAAAAAgICAgICAgIA=="],
+  [0x83A0, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="],
+  [0x8400, "/////////////////////////////////////////////////////////////////////////////////////w=="],
+  [0x8460, "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw=="],
+  [0x8500, "///+/fz7+vn49/b19PPy8fDw7+7t7Ovq6uno5+bm5eTj4uLh4N/f3t3c3Nva2dnY19fW1dTU09LS0dDQz87OzczMy8vKycnIx8fGxsXFxMPDwsLBwMC/v76+vb28vLu6urm5uLi3t7a2tbW0tLOzsrKxsbCwr6+vrq6traysq6uqqqqpqaiop6enpqalpaSkpKOjoqKioaGgoKCfn56enp2dnZycm5ubmpqamZmZmJiYl5eWlpaVlZWUlJSTk5OSkpKRkZGRkJCQj4+Pjo6OjY2NjIyMjIuLi4qKioqJiYmIiIiIh4eHhoaGhoWFhYWEhISDg4ODgoKCgoGBgYGAgAABAwQFBggJCgsNDg8REhMUFhcYGRscHR4gISIkJSYnKSorLC4vMDEzNDU2Nzk6Ozw+P0BBQ0RFRkdJSktMTU9QUVJTVVZXWFlbXF1eX2BiY2RlZmdoamtsbW5vcHJzdHV2d3h5enx9fn+AgYKDhIWGh4mKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsbKztLW2t7i5uru8vL2+v8DBwsPDxMXGx8jJycrLzM3Ozs/Q0dLT09TV1tfX2Nna29vc3d7e3+Dh4eLj5OTl5ufn6Onq6uvs7O3u7+/w8fHy8/P09fX29/j4+fr6+/v8/f3+//8BAQIDBAUGCAkKDA0OEBESAgIDBAUGBwgKCwwODxAREgMEBAUGBwgJCgwNDg8REhMFBQUGBwgJCgsMDQ8QERITBgYGBwgJCgsMDQ4PEBESEwcHBwgJCgoLDA0PEBESExQICAgJCgoLDA0ODxAREhMUCQkJCgoLDA0ODxAREhMUFQoKCgsLDA0ODg8QERITFBULCwsMDA0NDg8QERITExQVDAwMDA0NDg8QEBESExQVFg0NDQ0ODg8QEBESExMUFRYNDQ4ODg8QEBESEhMUFRYWDg4ODw8QEBEREhMUFBUWFw8PDw8QEBEREhMTFBUWFhcQEBAQEREREhMTFBUVFhcX"],
+  [0x884A, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQECAgMDBAQFBQUGBgcHCAgJCQoKCwsMDA0NDg4PDxAQEBERERISEhMTExQUFBUVFRYWFhcXFxgYGBkZGRoaGhobGxsbHBwcHB0dHR0eHh4eHx8fHx//////////////"],
+  [0x8BA0, "AAAAAAAAAAAXAAAAAAAFAAAAAQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAAJAAAAEAAAABEAAAASAAAAEwAAABQAAAAVAAAAFgB/f39/fx9/P39ffx9fP18Abw8XMTlNcw9/b02jD48xFxAAEAAQAP8PAwADAAMAAwADAAMAAwADAAMAAwADABAA/xcAAAAIMHj/MQAAAAgOeAAAAAgOeAAAAAgOeP85AEAASABQAFgAYABoAHAAeAAAAAgAEAAYACAAKAAwADj/TTAA/28AAAAIAHgAEDBw/3MDAAMIA3gDEANwAxggaP9/AAAACA54AAAAEA5wAAAAGA5o/48AYABkAGgAbABwAHQAeAB8AAAABAAIAAwAEAAUABgAHP+jAAAREhITFBUWFg4ODg8PEBARERITFBQVFih3P3/d/zN9PXc/f93/M309CQkJmpqap6encXFxcXEREQ=="],
+  [0x8D84, "gICAgICAgICAgICAfHh0cGxoZGBcWFQ="],
+  [0x8DC3, "FBMSERAPDg0MCwoJCAcHBgYFBQQEBAQDAwMDAgICAgEBAQEB"],
+  [0x8E00, "DBgYGB4eHh4eHyAhIiIjJCQmJykrLS4vMDI0NTY4OjskJicpKy0uLzAyNDU2ODo7Ozs7PDw8PT09Pj9AQEFCQ//AwMDAwMDAvLu6ubi3trXAwMDAwMDAwMDAwMDAwMDAsLCwsLS0tLS4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLgfDx8/Awd/Dx8PHz8DB38PHw8fPwMHfw8fDx8/Awd/Dx8PHz8DB38PHw8fPwMHfw8fDx8/Awd/Dx8PHz8DB38Pl5eTMzMzczNxM3MTMzMzMxExEXERMRFxkaGxwZGhscGRobHBkaGxwcCQsJCgkMCQoJCQsJCQoJCQoJCQoJCQkA=="],
+  [0x8F40, "7O3u78rLzM3m5syw5p3NsM2ezLDNnc6wAQABEAKAApACmgKoIC4HMW1tbW1cVFhgRERgUERkYFBkZGBQZGREUCAgBT+AUEBQr39vf7CAUGBYUExQmJSSlA4MCgoIBAAA"],
+  [0x9000, "AAAAAAAAAAAAAAAAAAAAAAAAAAAYCAAAOAAAAAAACAAYOAAAAAAAAAAAAAAAAAAAAAgAABgAAAAAGAAAAAgAAAAACAAAAAAAADgYCAAAAAAAABgAAAAACAAIAAAAGBgIAAAIOAAACAAYCAAAAAAIAAgAAAAAAAAAAAAAAAAAAAAIABgIAAAAAAgACAAYAAAAAAgIGAgAABgIOBgIAAgYOAAYCDgAAAAICBgAAAAIABgIAAgAAAA4GAgIABgACBgIAAAAAAAAAAAAAAAAAAAAOAgYAAAYCAAAOAAAAAAAOBh4eAgAAAAAAAAAAAAAAAAAABgAADgAAAAAOAAACBgAAAAAOBgACBh4CDgYCAgAAAAAABgAAAAACAAIAAAAOBgIAAgYOAAIeAAYCAAAAAAYCBgACAAAAAAAAAAAAAAACAAYADgYCAgICBgYCAAYAAAACBgIGBgICDgIOBgIAAgYOAAYCDgAAAgYCBgACAAIADgYABgICAA4GAgIABgIGBgIAAAAAAAAAAAAYAAwGAgIeBg4AAAYCAAAOAAAAAAAOBh4eAgAAAAAABh4CAAAOAAAABgAADgAAAAAOAAACBgAAAAAeDgIGHh4eHg4GBgIAAAAADgAAAAIGAAYCAAIeBgIABg4OAA4eBg4GAAIAAgYCBgACAAAAAAAAAAAAAgYGAg4ADgYCBgYCBg4GAg4CAAACBgIGBgICDgYOBgIAAgYOBAYCDgICAgYCBgACAAYCDgYAHgIGAg4GAgYCDgIGDgYAAAAAAAAAAAAcAh4OBgIeBg4AAAYCAAAOAh4ABg4eDh4eBgAAAAAAHh4OAAIeBgAADgAAHgAAAAAOAAACBgIAAAAeDgIGHh4eHg4GBgIAAAACHgIGAAYOAA4GAgYeDgYADh4eAB4eDg4GAgYAAg4GDgIGAAAAAAAAAAACBg4GAg4ADgYCDgYGDh4GAg4GAAIGDgYOBgIGDgYOBgIAAgYOHg4GDh4CAgYCBgQGAgYCDgYCHgIeBg4GAgYCDgIGDgYAAAAAAAAOAgYcAh4OBgIeBg4AAAYCAAAOBh4CDh4eDh4eBgAAAAACHh4eAAYeDgAADgAAHgAOHgYOAAICBgYCAAAeHgYOHh4eHg4GDgYAAAICHh4eAAYOAg4GAg4eDgYAHh4eBh4eHh4ODh4CBh4ODgIGAAAAABgMBgYCBg4OBh4AHg4GDg4GDh4GAg4OAgYGDgYOBgIGDg4eBgIGBg4OHg4GDh4GBg4CBh4GAgYCDgYGHgIeBg4GAgYCDgYODgYAABgMBgIOAgYcAh4OBgIeBg4AAAYCAAAODh4GHh4eDh4eBgIeBg4CHh4eAAYeDgAADgAAHgIeHh4OBg4CBg4GAgAeHgYOHh4eHg4GHg4AAgYCHh4eAgYOBh4OBh4eDgYCHh4eDh4eHh4OHh4CBh4ODgIGAAAABBgMBg4GDh4OBh4AHg4GHg4GDh4OBh4OAgYOHgYOBgIODg4eBgIOBg4OHg4GDh4OBg4CBh4OBg4GDgYOHgIeDh4OBgYCDgYODgYAABgMBgIOAgYcAh4OBgIeBg4CHgYCBg4ODh4GHh4eDh4eBg4eHh4GHh4eAg4eHgAADgIGHgYeHh4ODh4CBh4OBgAeHg4eHh4eHg4GHg4CAgYGHh4eBg4eDh4OBh4eDgYeHh4eHh4eHh4OHh4CBh4eDgIGGAwGDhweDg4GDh4OBh4EHg4GHg4OHh4OBh4eBg4OHg4eBgIODh4eBgIOBg4OHg4GHh4eBg4GDh4eDg4GHg4OHgYeHh4OBgYCDg4eHg4EAhgMBgIOAgYcAh4OBgIeBg4GHgYCDh4ODh4GHh4eDh4eBh4eHh4GHh4eAg4eHg4GDh4eHg4eHh4OHh4CBh4OBh4eHg4eHh4eHg4GHh4OBg4GHh4eHg4eHh4eDh4eDgYeHh4eHh4eHh4eHh4GDh4eHgYOGAwGDhweDg4GDh4OBh4eHg4GHh4OHh4OBh4eDh4OHg4eDgYeHh4eDgYeBg4eHh4OHh4eDh4GDh4eDh4OHg4eHgYeHh4OBg4GHg4eHg4f0MHy49TF9qbWhDEf0IHzpxrPBTsx6iLdmFNQSofCgD8tGgayW8g1pBME9uugFMoBOC+nX5mTzgjFQj85drFuwyrTPiqZCTrs3xNI/rSrI5wVDkdA+rYx7eomo10aFFHp0nsjjDQdBvUhj78wIhXJ/7Rq4ZiPiMJ8NnLvqSYg3m5jV0q+da6lXdcPSkQ++jVv6qXi39yZVlOQzgtIxkPBeGrcj8Q5sSgfV0+Jg3138mynYh6bF5RRDgsIBUKAPbs66FaFtujdUgd88urjG9TNxwC6tjGtaWW"],
+  [0x9700, "IyMjIiIiIiEhISEgICAgHx8fHx8eHh4eHh4eHh4eHh4oKCgoJycnJiYmJiUlJSUlJSQkJCQkJCQkJCQjIyMjIy4tLSwsLCwrKysrKyoqKioqKioqKikpKSkpKSkpKSkpNDQzMzMyMjIxMTEwMDAwMC8vLy8vLy8vLi4uLi4uLi43Nzc3NjY2NjY2NjY2NTU1NTU1NTU1NTU1NTU1NTU1NTo6Ojo6OTk5OTk5OTk4ODg4ODg4ODg4ODg4ODg4ODc3Pj4+Pj09PT09PDw8PDw8PDw8Ozs7Ozs7"],
+  [0x9801, "AAAAAAAAAAAAAAAQAAAAAAgYAAAAAAgAAAgYCAAAAAgAAAAAAAAAEAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAEBAQEAgYAAAQAAAQQFCapOzt7u/Ky8zN5ubMsOadzbDNzczNzc3OzG1tbW1cVFhgRERgUERkYFBkZGBgZGREYAAAAAAAAAAAAAAAEDgAAAAACBgICAAAGAgYCBgIAAgACAAAAAAAEAA4CAgAAAAIGAAAGDgAAAAAAAAAAAAAEAgQEBA4GDgAABAAACpVf6rVsbKztLW3uLm6u7y9vr/AwcLDxMXGx8jJVlZWVkRERERWVlZWRERERFZWVlZEREREAAgAAAAAAAAAABA4eAAAAAAIGAgYCAAYCBgIGBgICAAYAAAAAAAQADgICAAAAAgYOBgYOAAAAAAAAAAAABAQCBAQODgYOAAQOAAAEICQmqjs7e7vysvMzebmzLDmnc2wzZ7MsM2dzrBtbW1tXFRYYEREYFBEZGBQZGRgUGRkRFAACAAAAAAAAAAQOHh4AAAACBg4GDgYCBgIOAgYGAgYCBgAAAAAEDgIeBgYCDgYeHg4GBg4AAgICAAAAAAQEBAIEDg4OBg4ABA4AAAQQFCapOzt7u/Ky8zN5ubMsOadzbDNzczNzc3OzG1tbW1cVFhgRERgUERkYFBkZGBgZGREYAAIAAAAAAAAEDh4eHgAAAAIOHg4OBgIOBg4GDgYCDgYOABgMBgQOAh4GHg4OBh4eDgYGDgACAgIAAAAEBAQEAg4ODg4GDgQOHgAACpVf6rVsbKztLW3uLm6u7y9vr/AwcLDxMXGx8jJVlZWVkRERERWVlZWRERERFZWVlZEREREAAgAAAAAABA4eHh4eAA4GBh4eHg4GAh4ODg4eBgIOBh4EGAwGDh4OHh4eDg4GHh4OBgYOAgYGHg4ABAQEBA4GDg4OHg4eBA4eAAA/ICIjZTs7e7vysvMzebmzLDmnc2wzZ7MsM2dzrBtbW1tXFRYYEREYFBEZGBQZGRgUGRkRFAAGAAAEGAwOHh4eHh4ODgYOHh4eHg4GHh4eHh4OBg4GHgQYDAYOHg4eHh4ODgYeHg4GBg4CBh4eDgQEBAQODgYODh4eDh4OHh4AAAqVX+q1bGys7S1t7i5uru8vb6/wMHCw8TFxsfIyVZWVlZEREREVlZWVkRERERWVlZWRERERAAYYDA4cHh4eHh4eHg4eDh4eHh4eHg4eHh4eHh4ODgYeDhweDh4eDh4eHg4OBh4eDgYGDh4eHh4OBAQEDg4OBg4eHh4OHg4eHgAABCAkJqo7O3u78rLzM3m5syw5p3NsM2ezLDNnc6wbW1tbVxUWGBERGBQRGRgUGRkYFBkZERQ"],
+  [0x9EE5, "qf2NG9A="],
+  [0x9F25, "qQGNJ9CpkI34Y6ltjQPQqaCNAtCiBr05aZ0o0MoQ96IHqQCdAECdAFCpVZ0AQZ0AUamqnQBCnQBSqf+dAEOdAFOpEJ24F8oQ2A=="],
+  [0xA7E0, "IyMjIiIiISFQWGBocHiAoK0A26IAKQ/JAtAFqQpMAqipAiBwqqIAoAIgJq2wA0yaq6UxyYCwAqmASf+F/wmAhQypAEYMakYMakYMakYMao0O1Djl/40H1KUMjQ/U6QCNCNSpEY0L1I0S1KUxxUCQP8Y20BQgHrwlP2kBhTYgHryFN6U4Sf+FOKU48BOtwoTlN43ChK2ihOkAjaKETI+orcKEZTeNwoStooRpAI2ihKICIKG1oAGiAiAmrZAVoASiAiAmrZAMoAWiAiAmrZADTHepqQCFWJ3gg40L1I0S1I0O1I0H1IVIhZGN4oOpCKJQIHCqqQKiACBwqqk/hVqpC40T1KkAjRTUqYGNEtSlM/AJqYCFPakMTAWpqUCFPaV6"],
+  [0xAAA5, "paWlpaWlpaelpaWlpaelpdbW1tbWY9YN1sfWY8cNx8c="],
+  [0xAD75, "YIYGvYG8hQu9gb2FjsDgkANMBLq5AJaF97kAl4X4oACx9woIGGkUCoX5pQppAIX6pRIpAyiQBskD8A/QCUrwA0xJrirQBKjIsfeFFeYVpBWx9/CsyUCwWskf8GaQMikf8BOqpAKlC8DYkAKR+cgQDsrQ9IQCpQYJBIUDTMGt5hWkFbH38E3JH9AC5hXJEbDuhf+lBBhpzTjl/4UCpfkYaSiF+ZAC5vqlAhDTpQaFA0zBraQCwNiQAyDbruYCEL9Mwa3IhBWx96QCwNiQ7iBTsEwwrmAqSQPQBKABsfeFFeYVpBWx9/DsyUCwWskf8GiQMikf8BWqpAKlC8AAEAKR+YjA2DAMytDyhAKlBoUDTFSu5hWkFbH38LrJH9AC5hXJEbDuGGnLGGUEhQKl+RhpKIX5kALm+qUCydgw1aUGCQSFA0xUrqQCEAMg267GAqQCwNgwvUxUrsiEFbH3pAIQ7CBTsEzBroUQqrH5LH680ANMla8KhfulCSoG+yoG+yqF/KAAvcCPBQOqsfs9hbwdBb2R+6YQoAG9gJAFA6qx+z2FvB0FvZH7phCgAr1AkQUDqrH7PYW8HQW9kfumEKADvQCSBQOqsfs9hbwdBb2R+6YQoAS9wJIFA6qx+z2FvB0FvZH7phCgBb2AkwUDqrH7PYW8HQW9kfumEKAGvUCUBQOqsfs9hbwdBb2R+6YQoAe9AJUFA6qx+z2FvB0FvZH7YAoqKiqqvYG9hQelBZH5phC9wI8FA6ilBzmFvBkFvaAAkf29gJAFA6ilBzmFvBkFvaABkf29QJEFA6ilBzmFvBkFvaACkf29AJIFA6ilBzmFvBkFvaADkf29wJIFA6ilBzmFvBkFvaAEkf29gJMFA6ilBzmFvBkFvaAFkf29QJQFA6ilBzmFvBkFvaAGkf29AJUFA6ilBzmFvBkFvaAHkf2lBRhpIGkAhQWl/hhpASn3hf4pB9AHpf0YaQiF/WCFEKqx+Sx+vNADTA2xCoX7pQkqBvsqBvsqhfygAL0AmAUDqrH7PYW8HQW9kfumEKABvYCYBQOqsfs9hbwdBb2R+6YQoAK9AJkFA6qx+z2FvB0FvZH7phCgA72AmQUDqrH7PYW8HQW9kfumEKAEvQCaBQOqsfs9hbwdBb2R+6YQoAW9gJoFA6qx+z2FvB0FvZH7phCgBr0AmwUDqrH7PYW8HQW9kfumEKAHvYCbBQOqsfs9hbwdBb2R+2AKKioqqr2BvYUHpQWR+aYQvQCYBQOopQc5hbwZBb2gAJH9vYCYBQOopQc5hbwZBb2gAZH9vQCZBQOopQc5hbwZBb2gApH9vYCZBQOopQc5hbwZBb2gA5H9vQCaBQOopQc5hbwZBb2gBJH9vYCaBQOopQc5hbwZBb2gBZH9vQCbBQOopQc5hbwZBb2gBpH9vYCbTCaw5gilCGqwIqkAoqCdT2Cd72DK0PepgIUFqUSF/qkAhf2pCIUJqV+FCmA="],
+  [0xB1EC, "pQhqkANMebKiJ71QYEn/nahivXhgSf+dgGK9oGBJ/51YYr3IYEn/nTBivfBgSf+dCGK9GGFJ/53gYb1AYUn/nbhhvWhhSf+dkGHKEL2lBQoKCgkHqkn/qL0AQJkAT70AQZkATr0AQpkATb0AQ5kATL0ARJkAS70ARZkASr0ARpkASb0AR5kASMrI0Mxg"],
+  [0xB4C0, "hSCEIaAIqQBmIZADGGUgamYiiNDzpCJg"],
+  [0xB6A2, "qQCFLL3Agjj5wIKFJ71ggvlggoUmEBGpADjlJ4UnqQDlJoUmqQSFLL2Agzj5gIOFKb0gg/kgg4UoEBOpAgUshSypADjlKYUpqQDlKIUoxSaQE9ArpSnFJ5AL0COlKdAf5ilMIbelKEilKUilJoUopSeFKWiFJ2iFJqkBBSyFLKQsuXa8hSpgoA+lKDAKiAYnJiYGKSoQ9oQrBikqhSiouQCFpCYgwLQGIiqQAqn/qKUqarkAhpACSf845R+opSrlHikHYKUmSkpKSoX/pSgp8AX/qKUrCgoKCnkAh2CmkKAAhA+toISFHq3AhIUfqQCFLejK0AFgveCD8PetYII4/WCCyWCQBMmfkOitIIM4/SCDyWCQBMmfkNmgACCituAYkCOkJsAEsB2kKMAEsBeGLSApt/AvyQfwK53AFCBmt51AF0yUtzjtoIQpB/ALyQHwB8kH8ANMlLcgKbfwB8kH8ANMlLedwBSYnSAV5g+kD4qZYBQgZredQBeouQCInQAUEALGD0yUt6QP8CuEF75gFL1AF4QVhhCI8Aq+YBTdQBeQ7rDzpBemFblgFJ1gFKUQmWAUiNDVYKQPuWAUyQPwCojQ9kyBu6WD0O2GZaYP8DyGEb1gFKq9QIQp4B0AFKi9wBSF/70gFUb/akmAhRJKSoUE4ALQAoVlvUCEKQOGj+AD8AqqIHatphHK0MRg"],
+  [0xB920, "pWMJD6iiD7kQgJWriMoQ96WvjR3QpbCNF9ClsY0V0KWshbulsoW8pbOFvaW0hb6lYzA+CgkQoiaG+Aom+Aom+IX3oD+iF7H3nWiPiMoQ96IXsfedQI+IyhD3ogqx951Zj4jKyhD2qf+iCp1Yj8rKEPmlrqKgnU/Yne/YnY/ZnS/aytDxYKIKvVmPCiYeOO3AhKilHikB7aCESoUfJv+l/ykBwKBpAEpKmJAE5cDmH50E0KUfKQPdWI/wHZ1Yj4oKHViPqLlAj0i5aI+dBdCKSqhomfpjmfpnysoQq6X/CgqNENBgpo+9QBeouQCNhSCldTAOCqggwrSFa6kAhWpML7oKqCDCtIVqoP4gwrSFa6Vr0AKpAYV9SkpKhX6latACqQFKhX9lErAMOOkxsANMgbvJoJACqZ+FgUpKhYKlEjjlf5AE6TCwAqkAyaCw4IV/SkqFgMWC0BClgSkDhf+lfykDCgoF/xAWpX8pA6q9ArxFg4WESf8ljoWHpYEpA6q9BrxFg4WFSf8ljoWIqWiF+aUKGGkChfqp/4WKhYuFjakHhYzmiqWKyQjQAWDFftAQpX0pB0kHhYukg9AEhY0QAKSAxILwCaWEpocgmbukgqWFpoggmbulC6SD0BSkixA5pIDEgvAfyMSC8BqR+UwGu6AnxILwBZH5iBD3pICIMAWR+YgQ+6WLEBCl+TjpKIX5pfrpAIX6TMO6pIPwBoWMxoDmgqSAxILwE8jEgvAOhBWpAKaOIJm7pBVMSbulg/Ag"],
+  [0xBB80, "YKWD8PuiAKlAhQupaIX5pQoYaQKF+kx0u4WGhomx+Sx+vPAiCoX7pQkqBvsqBvsqhfykjMSN8A2x+yWGBYmR+4jEjdDzYAoqKiqqvYG9hQelBZH5pQegB8SM8AeR/YjEjND5pQclhgWJxI3wB5H9iMSN0PmlB8D/8AWR/YgQ+0w1sADA8Pw/DwMA/8/DwP//8/D////8"],
+  [0xBC76, "AAEDAgcGBAWfgJQAIEBg///////////8/Pz8Pz8/P/Pz8/PPz8/P8PDw8A8PDw/Pz8/P8/Pz88zMzMwzMzMzw8PDw8PDw8PAwMDAAwMDAw=="],
+  [0xBCEA, "8PDwDAwMDDAwMDADAwMDwMDAwAAAAAAAAAAAAAAAAAAAAAAAAQIDAECAwAAECAwAECAwAAUKDwBQoPAAECAwAAQIDAARIjMARIjMABQoPAAUKDwAFSo/AFSo/A=="],
+  [0xBD6A, "BQoPAFGi8wBFio8AVKj8ABUqPwBVqv8AVar/"]
+];
+// end of enc-view-mem
+</script>
+<script>
+/* enc-view */
+// The view, drawn by the game's own code. ENC_VIEW_MEM is the listing's bytes for the routines
+// that build a frame and the tables they read, with the screen's fixed parts (the font at $7800,
+// the console, the sprite images). For each picture the page writes what the game held at that
+// moment (the object table, the player's heading, the scene) and runs, on the kit's 6502
+// (C64Cpu, ../../lib/cpu6502.js), the routines in the order a pass calls them: $B920 copies the
+// level's scene record and colours the view, $B9A5 places the hills and clouds against the
+// heading, $B1A1 clears the buffer, $B77F finds what is in view, $B829 sorts it far to near, $B868
+// draws it with the shape scripts, and $B1EC mirrors the sky half into the ground. At the start
+// $9EE5 and $9F25 set the sprites and the four fixed fills as the game's start does.
+// encScreen then shows the result as the video chip does: the multicolour view between the
+// raster bands, the status row and the console in the wide font, the sprites behind or in front.
+function encViewer(C64Cpu, track = {}) {   // track: reads, executed maps, for the test
+  const mem = new Uint8Array(65536), vic = new Uint8Array(64), col = new Uint8Array(1024);
+  for (const [a, b] of ENC_VIEW_MEM) { const s = atob(b); for (let i = 0; i < s.length; i++) mem[a + i] = s.charCodeAt(i); }
+  const io = {
+    read(a) { throw new Error('the view read the chip at $' + a.toString(16)); },
+    write(a, v) { if (a < 0xD400) vic[a & 63] = v; else if (a >= 0xD800 && a < 0xDC00) col[a - 0xD800] = v & 15; },
+  };
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });
+  const piece = (start, stop) => { cpu.pc = start; cpu.run(Object.assign({ until: stop, maxSteps: 1e5 }, track)); };
+  piece(0x9EE5, 0x9EEA);                 // $D01B: the gun sight in front of the view, the rest behind it
+  piece(0x9F25, 0x9F6E);                 // the gun sight's colour, pointer and place, sprite colours, the fixed fills
+  // st: obj[k] = [x, z, type] for each live object 0-31 (positions 24-bit), or null; hd the
+  // player's heading (11 bits); scene ($63), gate ($83), last ($90), size ($75), shift ($C0)
+  function render(st) {
+    for (let k = 0; k < 32; k++) {
+      const e = st.obj[k];
+      mem[0x83E0 + k] = e ? (k ? 1 : 0xFF) : 0;
+      if (!e) continue;
+      mem[0x8260 + k] = e[0] >>> 16; mem[0x82C0 + k] = e[0] >>> 8 & 255;
+      mem[0x8320 + k] = e[1] >>> 16; mem[0x8380 + k] = e[1] >>> 8 & 255; mem[0x8440 + k] = e[2];
+    }
+    mem[0x84A0] = st.hd >> 8; mem[0x84C0] = st.hd & 255;
+    mem[0x63] = st.scene; mem[0x83] = st.gate || 0; mem[0x90] = st.last === undefined ? 0x5F : st.last;
+    mem[0x75] = st.size || 0; mem[0xC0] = st.shift || 0;
+    mem[0x08] = 1;                       // $B1A1 counts it on to 2: buffer A, screen $6000, characters $4000
+    for (const e of [0xB920, 0xB9A5, 0xB1A1, 0xB77F, 0xB829, 0xB868, 0xB1EC]) cpu.call(e, {}, Object.assign({ maxSteps: 4e6 }, track));
+    return { mem, vic, col };
+  }
+  return { render, mem, vic, col };
+}
+const ENC_PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171', '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+const ENC_RGB = ENC_PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+// One frame of the screen into img (an ImageData of 320 x 200, or a part of it: rows from row0 to
+// row1). f: what render left; o.frame: the frame counter $1B, whose bit 0 picks the colour pairs'
+// nibble as the interrupt at $B45F does (low on even frames); o.a7: the object colour pair;
+// o.status: the 80 bytes of rows 0-1; o.lamps: the lamp colours of rows 19, 21, 23; o.radar:
+// [x, y, on] of sprite 0; o.flash: the background of each line during the death flash, from
+// encFlash; o.sprites: false leaves the sprites out.
+function encScreen(img, f, o) {
+  const m = f.mem, W = 320, px = img.data, odd = o.frame & 1, nib = (v) => odd ? v >> 4 : v & 15;
+  const d022 = nib(m[0xAB]), d023 = nib(o.a7), sky = nib(m[0xAC]), b1 = nib(m[0xB2]), b2 = nib(m[0xB3]), b3 = nib(m[0xB4]), ground = m[0xAD] & 15;
+  const y0 = (o.row0 || 0) * 8, y1 = (o.row1 === undefined ? 25 : o.row1) * 8;
+  const fg = new Uint8Array(W * 200);
+  const put = (x, y, c) => { const i = ((y - y0) * W + x) * 4, rgb = ENC_RGB[c]; px[i] = rgb[0]; px[i + 1] = rgb[1]; px[i + 2] = rgb[2]; px[i + 3] = 255; };
+  for (let y = y0; y < y1; y++) {
+    const row = y >> 3, line = y + 50, r = y & 7;   // line + 1 is the raster line: row 0 starts on line 51
+    let bg, mc, chars, code = (c) => m[0x6000 + row * 40 + c], colour;
+    if (row < 2) { bg = 11; mc = false; chars = 0x7800; code = (c) => o.status ? o.status[row * 40 + c] : m[0x6000 + row * 40 + c]; colour = () => 1; }
+    else if (row < 18) {
+      mc = true; chars = row < 10 ? 0x4000 : 0x4800; colour = (c) => f.col[row * 40 + c];
+      bg = line < 121 ? sky : line < 125 ? b1 : line < 128 ? b2 : line < 130 ? b3 : ground;
+    } else {
+      bg = 0; mc = false; chars = 0x7800;
+      colour = (c) => { const lamp = (c >= 7 && c <= 11) || (c >= 28 && c <= 32) ? [19, 21, 23].indexOf(row) : -1; return lamp >= 0 && o.lamps ? o.lamps[lamp] : 11; };
+    }
+    const spans = o.flash && row >= 2 && row < 18 ? o.flash[y] : null;
+    let si = 0;
+    for (let c = 0; c < 40; c++) {
+      if (spans) { while (si + 1 < spans.length && spans[si + 1][0] <= c * 8) si++; bg = spans[si][1]; }
+      const b = m[chars + code(c) * 8 + r], cr = colour(c);
+      for (let p = 0; p < 8; p += 2) {
+        let c0, c1, f0 = 0, f1 = 0;
+        if (mc && (cr & 8)) { const v = (b >> (6 - p)) & 3; c0 = c1 = [bg, d022, d023, cr & 7][v]; f0 = f1 = v >= 2; }
+        else { const v0 = (b >> (7 - p)) & 1, v1 = (b >> (6 - p)) & 1; c0 = v0 ? cr : bg; c1 = v1 ? cr : bg; f0 = v0; f1 = v1; }
+        const x = c * 8 + p; put(x, y, c0); put(x + 1, y, c1); fg[y * W + x] = f0; fg[y * W + x + 1] = f1;
+      }
+    }
+  }
+  // the sprites, 7 first so that 0 ends on top (o.sprites false: the view alone)
+  const en = o.sprites === false ? 0 : (f.vic[0x15] & 0xFE) | (o.radar && o.radar[2] ? 1 : 0);
+  for (let n = 7; n >= 0; n--) {
+    if (!(en & (1 << n))) continue;
+    const sx = n == 0 ? o.radar[0] : f.vic[n * 2] | ((f.vic[0x10] >> n & 1) << 8), sy = n == 0 ? o.radar[1] : f.vic[n * 2 + 1];
+    const ex = f.vic[0x1D] >> n & 1, ey = f.vic[0x17] >> n & 1, behind = f.vic[0x1B] >> n & 1, c = f.vic[0x27 + n] & 15;
+    const data = 0x4000 + m[0x63F8 + n] * 64;
+    for (let j = 0; j < 21; j++) for (let i = 0; i < 24; i++) {
+      if (!(m[data + j * 3 + (i >> 3)] & (0x80 >> (i & 7)))) continue;
+      for (let dy = 0; dy <= ey; dy++) for (let dx = 0; dx <= ex; dx++) {
+        const x = sx - 24 + i * (ex + 1) + dx, y = sy - 50 + j * (ey + 1) + dy;
+        if (x < 0 || x >= W || y < y0 || y >= y1) continue;
+        if (behind && fg[y * W + x]) continue;
+        put(x, y, c);
+      }
+    }
+  }
+}
+// The death flash ($AB9A): for 63 frames the loop at $ABC2 turns once every 27 cycles, and each
+// turn writes the next byte of the game's code at $A800 (Y counting on), its bit 0 flipped, into
+// the background colour, but only while $AA is set: from the interrupt at the top of the view to
+// the one at its foot. The video chip takes 40 cycles on each bad line and the interrupts take
+// theirs, so the colours fall where they fall. encFlash(mem) gives a function that returns the
+// next frame's background, line by line: for each of the 200 lines, [x, colour] from x on.
+function encFlash(mem) {
+  const IRQ = { 16: 40, 66: 60, 121: 50, 125: 50, 128: 50, 130: 60, 194: 330 };   // cycles each interrupt takes
+  let y = 0, wait = 27, debt = 0, aa = 0, colour = 0;
+  return function frame() {
+    const lines = [];
+    for (let line = 0; line < 312; line++) {
+      const bad = line >= 51 && line <= 250 && (line & 7) === 3, vis = line - 51, spans = [[-1, colour]];
+      if (IRQ[line]) { debt += IRQ[line]; if (line === 66) aa = 1; if (line === 194) aa = 0; }
+      for (let c = 0; c < 63; c++) {
+        if (bad && c >= 15 && c < 55) continue;
+        if (debt > 0) { debt--; continue; }
+        if (--wait > 0) continue;
+        wait = 27; y = (y + 1) & 255;
+        if (aa) { colour = (mem[0xA800 + y] ^ 1) & 15; spans.push([(c - 16) * 8, colour]); }
+      }
+      if (vis >= 0 && vis < 200) lines[vis] = spans;
+    }
+    return lines;
+  };
+}
+// end of enc-view
+</script>
+<script>
+/* enc-clips */
+const ENC_CLIPS = {
+"level1": {"level":1,"skill":2,"passes":1,"f1b":172,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,112]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,5]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level2": {"level":2,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,96]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level3": {"level":3,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,80]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level4": {"level":4,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,64]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level5": {"level":5,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,48]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level6": {"level":6,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,32]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level7": {"level":7,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,16]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"level8": {"level":8,"skill":2,"passes":1,"f1b":173,"tr":{"0":[[0,1,259367,12399136]]},"ty":{},"hd":[[0,1210]],"vec":[[0,41610]],"dt":[[0,2]],"zp":{"31":[[0,234]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,0]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,95]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,7]],"4D":[[0,50]],"3B":[[0,48]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,0]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]},
+"warp": {"level":1,"skill":2,"passes":300,"f1b":123,"tr":{"0":[[0,300,11843367,4345888,-52992,-82176]],"8":[[11,48,7058968,317537],[59,48,7111224,11354561],[107,48,2494744,8638785],[155,48,900760,3885313],[203,48,14175448,776481],[251,48,12911704,12667713],[299,1,8421816,10350593]],"9":[[0,14,9742025,3699917],[14,48,8872137,15263149],[62,48,5241897,12020205],[110,48,1867081,8915373],[158,48,16518185,4430125],[206,48,14725513,16717293],[254,46,12740073,12355917]],"10":[[0,17,12510914,1781601],[17,48,8031746,15313633],[65,48,5518498,11478785],[113,48,3468002,7182785],[161,48,15886722,4865185],[209,48,13627938,512769],[257,43,12692034,12141697]],"11":[[0,20,12062050,1543430],[20,48,7316578,15602950],[68,48,4601122,11772582],[116,48,2875266,7150662],[164,48,1617762,2655334],[212,48,16090818,15395334],[260,40,11542914,12545766]],"12":[[0,23,9650334,2505857],[23,48,8981854,14263617],[71,48,4431230,11613057],[119,48,2639038,6991617],[167,48,324478,2893345],[215,48,13467774,16627745],[263,37,11674462,12072641]],"13":[[0,26,11796225,1024936],[26,48,6918561,15216648],[74,48,4070593,11453416],[122,48,1814689,7294728],[170,48,15677281,3794760],[218,48,13684801,16018792],[266,34,13281345,10933000]],"14":[[0,29,9714053,1788647],[29,48,8189925,13941223],[77,48,5880965,9905607],[125,48,2517349,6331783],[173,48,1195269,1901671],[221,48,12696645,16688807],[269,31,10437541,12402247]],"15":[[0,32,9945264,1166441],[32,48,6178672,15164585],[80,48,5374800,9884905],[128,48,1546192,6774633],[176,48,811696,1689801],[224,48,15085264,14561833],[272,28,12384048,10656969]],"16":[[0,35,8985894,1666054],[35,48,8383750,13292582],[83,48,3436870,11038598],[131,48,3887462,5231430],[179,48,15921126,2249990],[227,48,13273126,15260614],[275,25,9964166,12089766]],"17":[[0,38,10408977,288107],[38,48,7044881,13557355],[86,48,3476017,10515019],[134,48,2805297,5299915],[182,48,16416465,1660075],[230,48,12783505,15196747],[278,22,10991633,10706219]],"18":[[0,41,10129670,167305],[41,48,6566406,13569545],[89,48,5042918,8944585],[137,48,2139974,5238569],[185,48,14624550,2855113],[233,48,12498118,15147401],[281,19,10572934,10592937]],"19":[[0,44,10206410,16544398],[44,48,8031562,12573358],[92,48,5595850,8536302],[140,48,2170538,4895022],[188,48,16572298,859886],[236,48,12943018,14327822],[284,16,11352394,9900110]],"20":[[0,47,8137000,860166],[47,48,6740744,12686662],[95,48,2710888,10105638],[143,48,122664,6214054],[191,48,505960,341830],[239,48,13990536,13411430],[287,13,10164328,10233542]],"21":[[2,48,8514719,89592],[50,48,8244575,11846072],[98,48,3699391,8797816],[146,48,922079,4964248],[194,48,14986559,1197016],[242,48,14715455,12888120],[290,10,10763775,9509944]],"22":[[5,48,8133126,64809],[53,48,7135526,11888745],[101,48,2714854,9239465],[149,48,2044454,4024201],[197,48,15326182,582089],[245,48,12879590,13392585],[293,7,11490534,8831881]],"23":[[8,48,9673085,15576564],[56,48,4923613,13125012],[104,48,4120061,7779476],[152,48,1810621,3809716],[200,48,15091549,368084],[248,48,12248381,13443124],[296,4,10789309,8818644]]},"ty":{"8":[[11,35],[107,34],[251,35],[299,33]],"9":[[0,34],[62,35],[158,34]],"10":[[0,35],[17,34],[113,35],[161,34],[257,33]],"11":[[0,35],[116,33],[164,34]],"12":[[0,35],[119,34],[167,35],[215,33],[263,35]],"13":[[0,35],[26,33],[74,35],[122,34],[170,33],[218,34]],"14":[[0,33],[29,35],[125,34],[173,35],[221,34],[269,33]],"15":[[0,34],[32,33],[80,34],[176,35],[272,34]],"16":[[0,33],[35,34],[179,33]],"17":[[0,35],[38,33],[86,35]],"18":[[0,33],[41,34]],"19":[[0,33],[44,34],[92,33],[140,34]],"20":[[0,33],[191,34],[287,33]],"21":[[2,35],[50,34],[194,35],[242,33],[290,34]],"22":[[5,35],[53,33],[101,35],[245,33]],"23":[[8,34],[56,33],[104,35],[152,34],[248,33],[296,35]]},"hd":[[0,1210]],"vec":[[0,42771]],"dt":[[0,2],[2,3],[3,2],[4,3],[162,4],[163,3],[243,4],[244,3],[290,4],[293,3],[299,2]],"zp":{"31":[[0,240],[4,241],[6,240],[11,241],[14,242],[16,241],[20,242],[23,243],[26,242],[30,241],[36,240],[39,239],[43,238],[46,237],[49,236],[52,235],[55,234],[59,233],[62,232],[65,230],[68,229],[71,228],[75,226],[78,225,-1],[80,224,-1],[83,222],[85,221,-1],[87,220],[89,219,-2],[91,217,-1],[93,216,-1],[96,214,-1],[99,212,-2],[101,210,-1],[110,200,-1],[112,199,-1],[114,196],[116,195,-1],[119,193],[121,192],[123,193],[125,194],[127,195,2],[129,197,1],[138,207],[140,208,1],[144,211,2],[146,213,1],[150,216,1],[153,218,2],[155,220],[157,221],[159,222],[161,223,1],[163,224,1],[165,225],[167,227],[170,228],[173,229,1],[175,230],[178,231],[180,232],[184,234],[189,235],[193,236,1],[195,237],[199,238],[202,239],[204,240],[208,241],[214,242,1],[216,243],[221,244],[224,245],[234,246],[237,245],[243,246,-1],[245,245],[250,244],[253,245],[256,244],[258,245],[263,244],[268,243],[273,242],[275,241],[282,240],[288,238],[293,237],[298,236]],"36":[[0,1]],"37":[[0,142]],"38":[[0,255]],"40":[[0,192]],"44":[[0,0]],"45":[[0,0]],"46":[[0,0]],"47":[[0,0]],"56":[[0,31]],"63":[[0,128]],"69":[[0,0]],"75":[[0,0]],"78":[[0,0]],"83":[[0,0]],"90":[[0,31]],"91":[[0,0]],"92":[[0,224]],"C0":[[0,0]],"A7":[[0,119]],"4D":[[0,51]],"3B":[[0,5]],"4C":[[0,31]],"7A":[[0,2]],"5E":[[0,1,-1],[2,2,-1],[5,2,-1],[8,2,-1],[11,2,-1],[14,2,-1],[17,2,-1],[20,2,-1],[23,2,-1],[26,2,-1],[29,2,-1],[32,2,-1],[35,2,-1],[38,2,-1],[41,2,-1],[44,2,-1],[47,2,-1],[50,2,-1],[53,2,-1],[56,2,-1],[59,2,-1],[62,2,-1],[65,2,-1],[68,2,-1],[71,2,-1],[74,2,-1],[77,2,-1],[80,2,-1],[83,2,-1],[86,2,-1],[89,2,-1],[92,2,-1],[95,2,-1],[98,2,-1],[101,2,-1],[104,2,-1],[107,2,-1],[110,2,-1],[113,2,-1],[116,2,-1],[119,2,-1],[122,2,-1],[125,2,-1],[128,2,-1],[131,2,-1],[134,2,-1],[137,2,-1],[140,2,-1],[143,2,-1],[146,2,-1],[149,2,-1],[152,2,-1],[155,2,-1],[158,2,-1],[161,2,-1],[164,2,-1],[167,2,-1],[170,2,-1],[173,2,-1],[176,2,-1],[179,2,-1],[182,2,-1],[185,2,-1],[188,2,-1],[191,2,-1],[194,2,-1],[197,2,-1],[200,2,-1],[203,2,-1],[206,2,-1],[209,2,-1],[212,2,-1],[215,2,-1],[218,2,-1],[221,2,-1],[224,2,-1],[227,2,-1],[230,2,-1],[233,2,-1],[236,2,-1],[239,2,-1],[242,2,-1],[245,2,-1],[248,2,-1],[251,2,-1],[254,2,-1],[257,2,-1],[260,2,-1],[263,2,-1],[266,2,-1],[269,2,-1],[272,2,-1],[275,2,-1],[278,2,-1],[281,2,-1],[284,2,-1],[287,2,-1],[290,2,-1],[293,2,-1],[296,2,-1],[299,2]],"7B":[[0,23]]},"lamps":[[0,[11,8,6]]],"status":[[0,"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDhofR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dE="]],"radar":[[0,[0,0,0]]]}
+};
+// end of enc-clips
+</script>
+<script>
+// ---- recordings: the game's object table and variables, pass by pass (ENC_CLIPS) ----------------
+// A clip keeps each value as runs: positions as runs of constant velocity [first pass, passes, X0,
+// Z0, dX, dZ] in the game's 24-bit units, the rest as [first pass, value, step] or [first pass,
+// value], which rebuild every recorded value exactly.
+const M24 = 1 << 24, wrap = (d) => ((d % 256) + 384) % 256 - 128, hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+function runsAt(r, N, mod) {
+  const a = new Array(N);
+  let j = 0;
+  for (let p = 0; p < N; p++) {
+    while (j + 1 < r.length && r[j + 1][0] <= p) j++;
+    const [p0, v, s] = r[j];
+    a[p] = typeof v === 'number' ? (((v + (p - p0) * (s || 0)) % mod) + mod) % mod : v;
+  }
+  return a;
+}
+function expandClip(name) {
+  const c = ENC_CLIPS[name], N = c.passes, obj = [];
+  for (let k = 0; k < 32; k++) {
+    const X = new Int32Array(N).fill(-1), Z = new Int32Array(N), T = new Uint8Array(N);
+    for (const [p0, n, x0, z0, dx = 0, dz = 0] of c.tr[k] || []) for (let i = 0; i < n; i++) { X[p0 + i] = (((x0 + i * dx) % M24) + M24) % M24; Z[p0 + i] = (((z0 + i * dz) % M24) + M24) % M24; }
+    if (c.ty[k]) T.set(runsAt(c.ty[k], N, 256));
+    obj.push({ X, Z, T });
+  }
+  const zp = {};
+  for (const k in c.zp) zp[k] = runsAt(c.zp[k], N, 256);
+  const dt = runsAt(c.dt, N, 1e9), t = new Float64Array(N + 1);
+  for (let p = 0; p < N; p++) t[p + 1] = t[p] + dt[p];
+  const st = runsAt(c.status, N), cache = new Map();
+  const statusAt = (p) => { let b = cache.get(st[p]); if (!b) { const s = atob(st[p]); b = Uint8Array.from(s, (ch) => ch.charCodeAt(0)); cache.set(st[p], b); } return b; };
+  const hits = [];
+  for (let p = 0; p < N; p++) if (dt[p] > 20) hits.push(p);   // the death flash: 63 frames inside one pass
+  return { name, N, obj, zp, dt, t, hits, statusAt, level: c.level, f1b: c.f1b,
+    hd: runsAt(c.hd, N, 2048), vec: runsAt(c.vec, N, 65536), lamps: runsAt(c.lamps, N), radar: runsAt(c.radar, N) };
+}
+function stateAt(C, p) {
+  const obj = C.obj.map((o) => o.X[p] < 0 ? null : [o.X[p], o.Z[p], o.T[p]]);
+  return { obj, hd: C.hd[p], scene: C.zp['63'][p], gate: C.zp['83'][p], last: C.zp['90'][p], size: C.zp['75'][p], shift: C.zp.C0[p] };
+}
+const passAt = (C, F) => { let lo = 0, hi = C.N - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (C.t[m] <= F) lo = m; else hi = m - 1; } return lo; };
+
+// ---- the cockpit: a viewer of its own, the view drawn once a pass, coloured once a frame ---------
+function cockpit(canvas) {
+  const V = encViewer(C64Cpu), ctx = canvas.getContext('2d'), img = ctx.createImageData(320, 200);
+  let key = '', flashes = new Map();
+  function flashFrames(C, p) {             // the 63 frames of the death flash that follows a hit in pass p
+    const k = C.name + p;
+    if (!flashes.has(k)) { const next = encFlash(V.mem), fr = []; for (let i = 0; i < 63; i++) fr.push(next()); flashes.set(k, fr); }
+    return flashes.get(k);
+  }
+  return function draw(C, p, frame) {     // frame: the video frame, counted from the clip's start
+    const k = C.name + ':' + p;
+    if (k !== key) { V.render(stateAt(C, p)); key = k; }
+    const into = frame - C.t[p] - 1, flash = C.dt[p] > 20 && into >= 0 && into < 63 ? flashFrames(C, p)[into] : undefined;
+    encScreen(img, V, { frame: (C.f1b + frame) & 255, a7: C.zp.A7[p], status: C.statusAt(p), lamps: C.lamps[p], radar: C.radar[p], flash });
+    ctx.putImageData(img, 0, 0);
+  };
+}
+
+// ---- the map: the same pass from above, centred on the player ----------------------------------
+const TABLES = encViewer(C64Cpu).mem;   // the bytes enc-view carries, as the pages' tables read them
+const OBELISKS = (() => {
+  const m = TABLES, out = [];
+  for (let k = 32; k < 96; k++) if (m[0x83E0 + k]) out.push([m[0x8260 + k] + m[0x82C0 + k] / 256, m[0x8320 + k] + m[0x8380 + k] / 256]);
+  return out;
+})();
+const PAIRS = Array.from(TABLES.subarray(0x8CE0, 0x8CF0));   // each saucer type's colour pair
+const nib = (v, odd) => ENC_PAL[odd ? v >> 4 : v & 15];
+const xz = (C, k, p) => { const o = C.obj[k]; return o.X[p] < 0 ? null : [o.X[p] / 65536, o.Z[p] / 65536]; };
+function mapView(canvas) {
+  const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
+  return function draw(C, p, o) {
+    const s = W / 120 * (o.zoom || 1), P = xz(C, 0, p), cx = P[0], cz = P[1];
+    const at = (x, z) => [W / 2 + wrap(x - cx) * s, H / 2 - wrap(z - cz) * s];
+    const line = (pts, col, w, alpha) => {
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.globalAlpha = alpha; ctx.beginPath();
+      let last = null;
+      for (const q of pts) { if (!q) { last = null; continue; } const [x, y] = at(q[0], q[1]); if (last && Math.hypot(x - last[0], y - last[1]) < W / 3) ctx.lineTo(x, y); else ctx.moveTo(x, y); last = [x, y]; }
+      ctx.stroke(); ctx.globalAlpha = 1;
+    };
+    ctx.fillStyle = '#16241a'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 1;
+    for (let gq = 0; gq < 256; gq += 16) { const [gx, gz] = at(gq + 8, gq + 8); ctx.beginPath(); ctx.moveTo(Math.round(gx) + .5, 0); ctx.lineTo(Math.round(gx) + .5, H); ctx.moveTo(0, Math.round(gz) + .5); ctx.lineTo(W, Math.round(gz) + .5); ctx.stroke(); }
+    // what the view can see: 45 degrees either side of the heading, $60 units on each axis
+    const a = C.hd[p] / 2048 * 2 * Math.PI;
+    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.beginPath(); ctx.moveTo(W / 2, H / 2); ctx.arc(W / 2, H / 2, 0x60 * s, a - Math.PI / 2 - Math.PI / 4, a - Math.PI / 2 + Math.PI / 4); ctx.closePath(); ctx.fill();
+    for (const [x, z] of OBELISKS) { const [sx, sz] = at(x, z); if (sx < -10 || sz < -10 || sx > W + 10 || sz > H + 10) continue; ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(sx, sz, Math.max(2.5, s * 1.2), 0, 7); ctx.fill(); ctx.strokeStyle = '#6b7a66'; ctx.lineWidth = 1; ctx.stroke(); }
+    if (o.paths) for (const [k, col, w] of o.paths) { const pts = []; for (let q = 0; q <= p; q++) pts.push(xz(C, k, q)); line(pts, col, w, .9); }
+    const a7 = C.zp.A7[p], odd = (C.f1b + Math.floor(C.t[p])) & 1;
+    // shots: the player's (1, 4, 5) and the enemy's (8-23), each with the path it has flown
+    for (let k = 1; k < 24; k++) {
+      if (!(k == 1 || k == 4 || k == 5 || k >= 8) || !xz(C, k, p)) continue;
+      const mine = k < 8, col = mine ? '#ffffff' : nib(a7, 0);
+      let q0 = p;
+      // back to where this shot was fired: a slot taken by a new shot jumps to the saucer
+      const near = (a, b) => a && b && Math.hypot(wrap(a[0] - b[0]), wrap(a[1] - b[1])) < 6;
+      while (q0 > 0 && near(xz(C, k, q0 - 1), xz(C, k, q0)) && (o.whole || p - q0 < 10)) q0--;
+      const pts = []; for (let q = q0; q <= p; q++) pts.push(xz(C, k, q));
+      line(pts, col, 1.5, .75);
+      const [sx, sz] = at(...xz(C, k, p)); ctx.fillStyle = col; ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(sx, sz, 2.6, 0, 7); ctx.fill(); ctx.stroke();
+    }
+    for (const k of [7, 3]) { const A = xz(C, k, p); if (!A) continue; const [sx, sz] = at(...A); ctx.strokeStyle = k == 7 ? '#ffffff' : '#edf171'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(sx, sz, 8 + 3 * Math.sin(p / 2), 0, 7); ctx.stroke(); }
+    // the enemy, in its colour pair; a dashed line to the player while it aims or shoots
+    const E = xz(C, 2, p), ph = phaseAt(C, p);
+    if (E) {
+      const [ex, ez] = at(...E), missile = (C.obj[2].T[p] & 0xE0) == 0x60;
+      if (ph == 'aim' || ph == 'shoot') { ctx.strokeStyle = ph == 'aim' ? 'rgba(232,163,61,.6)' : 'rgba(208,74,58,.6)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ex, ez); ctx.lineTo(W / 2, H / 2); ctx.stroke(); ctx.setLineDash([]); }
+      const q2 = Math.min(C.N - 1, p + 1), N2 = xz(C, 2, q2);
+      if (N2) { const vx = wrap(N2[0] - E[0]), vz = wrap(N2[1] - E[1]), L = Math.hypot(vx, vz); if (L > 1e-6) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ex, ez); ctx.lineTo(ex + vx / L * 16, ez - vz / L * 16); ctx.stroke(); } }
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+      if (missile) { ctx.fillStyle = '#d04a3a'; ctx.beginPath(); ctx.moveTo(ex, ez - 6); ctx.lineTo(ex + 5, ez); ctx.lineTo(ex, ez + 6); ctx.lineTo(ex - 5, ez); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      else { ctx.fillStyle = nib(a7, 0); ctx.beginPath(); ctx.arc(ex, ez, 6.5, Math.PI / 2, Math.PI * 1.5); ctx.fill(); ctx.fillStyle = nib(a7, 1); ctx.beginPath(); ctx.arc(ex, ez, 6.5, -Math.PI / 2, Math.PI / 2); ctx.fill(); ctx.beginPath(); ctx.arc(ex, ez, 6.5, 0, 7); ctx.stroke(); }
+      ctx.font = '600 12px "IBM Plex Mono",ui-monospace,Menlo,monospace'; ctx.fillStyle = PHASES[ph][0] == '#3a3d45' ? '#fff' : PHASES[ph][0]; ctx.fillText(PHASES[ph][1], ex + 10, ez - 8);
+    }
+    for (const q of C.hits) if (p >= q && p < q + 20) { ctx.strokeStyle = 'rgba(208,74,58,' + (1 - (p - q) / 20) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(W / 2, H / 2, 12 + (p - q) * 2, 0, 7); ctx.stroke(); }
+    ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(a); ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(6, 7); ctx.lineTo(-6, 7); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    ctx.font = '12px "IBM Plex Mono",ui-monospace,Menlo,monospace'; ctx.fillStyle = 'rgba(255,255,255,.8)';
+    ctx.fillText('pass ' + p + ' · ' + (C.t[p] / 50).toFixed(1) + ' s · range code ' + hex(C.zp['31'][p]), 10, H - 10);
+  };
+}
+
+// what the enemy is doing in a pass, from the state vector ($A3/$A4) and the handler's own counters
+function phaseAt(C, p) {
+  const v = C.vec[p], z = (k) => C.zp[k][p], live = C.obj[2].X[p] >= 0;
+  if (v == 0xA28A) return z('4D') > 0 ? 'between' : (live || z('78') > 0 ? 'arrive' : 'between');
+  if (!live) return 'between';
+  if (v == 0xA5D6) return z('47') ? 'shoot' : z('44') ? 'move' : z('45') ? 'wait' : 'aim';
+  if (v == 0xA5C7 || v == 0xA563) return z('44') ? 'move' : 'aim';
+  if (v == 0xA70D) return 'shoot';
+  if (v == 0xA7F0) return z('31') < z('40') ? 'home' : 'weave';
+  return 'between';
+}
+const PHASES = { between: ['#3a3d45', 'no enemy'], arrive: ['#8e3c97', 'warping in'], move: ['#4a78d6', 'move'], wait: ['#8a8d94', 'wait'], aim: ['#e8a33d', 'aim'], shoot: ['#d04a3a', 'shoot'], weave: ['#e89a8e', 'weave'], home: ['#d04a3a', 'straight in'] };
+const HANDLER = { 0xA5D6: 'default handler $A5D6', 0xA5C7: 'script fire $A5C7', 0xA563: 'burst fire $A563', 0xA70D: 'permanent fire $A70D', 0xA7F0: 'homing missile $A7F0', 0xA28A: 'between enemies $A28A' };
+
+// ---- a player: one clock for a cockpit, a map and whatever else follows the pass -----------------
+function player(o) {
+  let C = null, F = 0, playing = false, speed = 1, last = 0, shown = -1;
+  const $ = (id) => document.getElementById(id);
+  function show() {
+    const p = passAt(C, F), f = Math.floor(F);
+    if (f === shown) return;
+    shown = f;
+    o.draw(C, p, f);
+    if (o.slider) o.slider.value = p;
+    if (o.strip) drawStrip(p);
+  }
+  let stripImg = null;
+  function makeStrip() {
+    if (!o.strip) return;
+    const sc = o.strip.getContext('2d'), w = o.strip.width, h = o.strip.height;
+    for (let x = 0; x < w; x++) { const q = Math.floor(x / w * C.N); sc.fillStyle = PHASES[phaseAt(C, q)][0]; sc.fillRect(x, 0, 1, h); }
+    sc.fillStyle = '#fff';
+    for (const q of C.hits) sc.fillRect(Math.round(q / (C.N - 1) * (w - 1)) - 1, 0, 2, h);
+    stripImg = sc.getImageData(0, 0, w, h);
+  }
+  function drawStrip(p) { const sc = o.strip.getContext('2d'), w = o.strip.width; sc.putImageData(stripImg, 0, 0); sc.fillStyle = '#fff'; sc.fillRect(Math.round(p / (C.N - 1) * (w - 1)) - 1, 0, 3, o.strip.height); }
+  function tick(ts) {
+    if (!playing) return;
+    if (last) F += (ts - last) / 20 * speed;            // a PAL frame is 20 ms
+    last = ts;
+    if (F >= C.t[C.N]) { F = C.t[C.N] - 1; playing = false; setPlay(); }
+    show();
+    if (playing) requestAnimationFrame(tick);
+  }
+  function setPlay() { o.play.textContent = playing ? 'pause' : 'play'; o.play.classList.toggle('on', playing); }
+  o.play.onclick = () => { if (F >= C.t[C.N] - 1) F = 0; playing = !playing; last = 0; setPlay(); if (playing) requestAnimationFrame(tick); };
+  o.slider.oninput = () => { F = C.t[+o.slider.value]; shown = -1; show(); };
+  o.speed.onchange = () => { speed = +o.speed.value; };
+  if (o.strip) o.strip.onclick = (e) => { const R = o.strip.getBoundingClientRect(); F = C.t[Math.round((e.clientX - R.left) / R.width * (C.N - 1))]; shown = -1; show(); };
+  return {
+    load(name, at) { C = expandClip(name); o.slider.max = C.N - 1; F = C.t[at || 0]; shown = -1; makeStrip(); show(); },
+    redraw() { shown = -1; show(); },
+    get clip() { return C; },
+  };
+}
+
+// ---- a saucer on its own ---------------------------------------------------------------------
+const SAUCER = (() => {
+  // a saucer straight ahead of the player on its first level's plain, the obelisks left out ($90 = $1F)
+  const V = encViewer(C64Cpu), img = new ImageData(320, 200);
+  return function (type, dist, odd) {
+    const level = Math.max(1, (type >> 1) + 1), P = 0x808000;
+    const obj = new Array(32).fill(null);
+    obj[0] = [P, P, 0]; obj[2] = [P, P + dist * 65536, type < 0 ? 0x62 : 0x42];
+    V.render({ obj, hd: 0, scene: (8 - level) * 16, gate: 0, last: 0x1F, size: 0, shift: 0 });
+    encScreen(img, V, { frame: odd ? 1 : 0, a7: type < 0 ? 0x33 : PAIRS[type], row0: 2, row1: 18, sprites: false });
+    return img;
+  };
+})();
+function cropTo(canvas, img, x0, y0) { const c = canvas.getContext('2d'); c.putImageData(img, -x0, -y0, x0, y0, canvas.width, canvas.height); }
+let SLOW = false;
+const flickers = [];      // [canvas, draw(odd)] pairs, swapped every frame (or every half second, slowed)
+(function flick() {
+  let lastOdd = -1;
+  const step = (ts) => { const odd = Math.floor(ts / (SLOW ? 500 : 20)) & 1; if (odd !== lastOdd) { lastOdd = odd; for (const [cv, f] of flickers) if (cv.isConnected) f(odd); } requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+})();
+
+// ---- 01 look around ----------------------------------------------------------------------------
+(function () {
+  const $ = (id) => document.getElementById(id), cv = $('lvScreen'), tiles = $('lvTiles'), info = $('lvInfo');
+  const V = encViewer(C64Cpu), ctx = cv.getContext('2d'), img = ctx.createImageData(320, 184);   // rows 2-24: the view and the console
+  const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => expandClip('level' + n)).concat([expandClip('warp')]);
+  const TURN = TABLES[0x8F80 + 6 * 4 + 2];         // the turn rate $25 for Novice: table 7 at $8F80, column 2
+  let cur = 0, turn = 0, spin = false, F = 0, last = 0, key = '', visible = true, held = 0;
+  const C = () => LEVELS[cur];
+  // the player's heading on each level: the start heading, turned by the reader
+  const heads = LEVELS.map((L) => L.hd[0]);
+  function pass() { const L = C(); return cur < 8 ? 0 : Math.floor(F / 2) % L.N; }   // the warp loops, a pass every two frames
+  function frame() {
+    const L = C(), p = pass(), st = stateAt(L, p);
+    if (cur == 8) st.hd = (L.hd[p] + heads[8] - L.hd[0] + 2048) % 2048; else st.hd = heads[cur];
+    const k = cur + ':' + p + ':' + st.hd;
+    if (k !== key) { V.render(st); key = k; drawMap(L, p, st.hd); }
+    encScreen(img, V, { frame: (L.f1b + Math.floor(F)) & 255, a7: L.zp.A7[p], lamps: L.lamps[p], radar: [0, 0, 0], row0: 2 });
+    ctx.putImageData(img, 0, 0);
+    $('lvHeading').textContent = 'heading ' + hex(st.hd, 3) + ' · ' + (st.hd * 360 / 2048).toFixed(1) + '°';
+  }
+  function tick(ts) {
+    const dt = last ? Math.min(100, ts - last) : 0;
+    last = ts;
+    if (visible) {
+      const frames = dt / 20, before = Math.floor(F / 2);
+      F += frames;
+      const passes = Math.floor(F / 2) - before;          // a pass every two frames at full pace
+      const dir = spin ? 1 : turn;
+      if (dir && passes > 0) heads[cur] = (heads[cur] + dir * TURN * passes + 2048 * 64) % 2048;
+      frame();
+    }
+    requestAnimationFrame(tick);
+  }
+  new IntersectionObserver((e) => { visible = e[0].isIntersecting; }).observe(cv);
+  // the map: the obelisks round the player and the wedge the view can see
+  const mc = $('lvMap').getContext('2d');
+  function drawMap(L, p, hd) {
+    const W = 300, s = W / 140, P = xz(L, 0, p), at = (x, z) => [W / 2 + wrap(x - P[0]) * s, W / 2 - wrap(z - P[1]) * s];
+    mc.fillStyle = '#16241a'; mc.fillRect(0, 0, W, W);
+    const a = hd / 2048 * 2 * Math.PI;
+    mc.fillStyle = 'rgba(255,255,255,.09)'; mc.beginPath(); mc.moveTo(W / 2, W / 2); mc.arc(W / 2, W / 2, 0x60 * s, a - Math.PI * 0.75, a - Math.PI * 0.25); mc.closePath(); mc.fill();
+    if (cur < 8) for (const [x, z] of OBELISKS) { const [sx, sz] = at(x, z); mc.fillStyle = '#000'; mc.beginPath(); mc.arc(sx, sz, 3, 0, 7); mc.fill(); mc.strokeStyle = '#6b7a66'; mc.lineWidth = 1; mc.stroke(); }
+    else for (let k = 8; k < 24; k++) { const A = xz(L, k, p); if (!A) continue; const [sx, sz] = at(...A); mc.fillStyle = nib(L.zp.A7[p], 0); mc.beginPath(); mc.arc(sx, sz, 3, 0, 7); mc.fill(); }
+    mc.save(); mc.translate(W / 2, W / 2); mc.rotate(a); mc.fillStyle = '#fff'; mc.strokeStyle = '#000'; mc.beginPath(); mc.moveTo(0, -9); mc.lineTo(6, 7); mc.lineTo(-6, 7); mc.closePath(); mc.fill(); mc.stroke(); mc.restore();
+  }
+  const sw = (v) => { const lo = v & 15, hi = v >> 4; return '<span class="sw" style="background:' + (lo === hi ? ENC_PAL[lo] : 'linear-gradient(90deg,' + ENC_PAL[lo] + ' 50%,' + ENC_PAL[hi] + ' 50%)') + '"></span>'; };
+  function showInfo() {
+    const rec = TABLES.subarray(0x8010 + (cur < 8 ? 7 - cur : 8) * 16);
+    let h = '<p class="nm">' + (cur < 8 ? 'Level ' + (cur + 1) + ' · scene ' + hex((7 - cur) * 16) : 'The warp · scene $80') + '</p>';
+    h += '<p>sky ' + sw(rec[1]) + ' horizon ' + sw(rec[7]) + sw(rec[8]) + sw(rec[9]) + ' ground ' + sw(rec[2] & 15 | (rec[2] & 15) << 4) + '</p>';
+    if (cur < 8) h += '<p>Saucers that can come: types 0 to ' + (2 * cur + 1) + '. New on this level:</p><div class="encpicks" id="lvNew"></div>';
+    else h += '<p>Spheres in the enemy-shot slots, a new one every three passes; one that hits the player is an ordinary death.</p>';
+    info.innerHTML = h;
+    if (cur < 8) for (const t of [2 * cur, 2 * cur + 1]) {
+      const b = document.createElement('span'), c = document.createElement('canvas');
+      b.className = 'encpick'; c.width = 48; c.height = 32; b.append(c, document.createTextNode('type ' + t)); $('lvNew').append(b);
+      const frames = [0, 1].map((odd) => { const k = document.createElement('canvas'); k.width = 48; k.height = 32; cropTo(k, SAUCER(t, 0x10, odd), 136, 48); return k; });
+      flickers.push([c, (odd) => c.getContext('2d').drawImage(frames[odd], 0, 0)]);
+    }
+  }
+  LEVELS.forEach((L, i) => {
+    const b = document.createElement('button');
+    b.className = 'btn' + (i == 0 ? ' on' : ''); b.textContent = i < 8 ? 'level ' + (i + 1) : 'warp';
+    b.onclick = () => { cur = i; F = 0; key = ''; for (const x of tiles.children) x.classList.toggle('on', x === b); showInfo(); frame(); };
+    tiles.append(b);
+  });
+  // turning: buttons held, keys, dragging the picture (its width is the view's 90 degrees)
+  const hold = (btn, d) => {
+    btn.onpointerdown = (e) => { e.preventDefault(); turn = d; btn.classList.add('on'); };
+    btn.onpointerup = btn.onpointerleave = btn.onpointercancel = () => { if (turn === d) turn = 0; btn.classList.remove('on'); };
+  };
+  hold($('lvLeft'), -1); hold($('lvRight'), 1);
+  $('lvSpin').onclick = () => { spin = !spin; $('lvSpin').classList.toggle('on', spin); };
+  cv.onkeydown = (e) => { if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') { turn = e.key == 'ArrowLeft' ? -1 : 1; e.preventDefault(); } };
+  cv.onkeyup = (e) => { if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') turn = 0; };
+  cv.onpointerdown = (e) => { held = e.clientX; cv.setPointerCapture(e.pointerId); cv.focus(); };
+  cv.onpointermove = (e) => {
+    if (held === 0) return;
+    const R = cv.getBoundingClientRect(), d = Math.round((held - e.clientX) / R.width * 512);
+    if (d) { heads[cur] = (heads[cur] + d + 2048 * 64) % 2048; held = e.clientX; }
+  };
+  cv.onpointerup = cv.onpointercancel = () => { held = 0; };
+  showInfo(); frame(); requestAnimationFrame(tick);
+})();
+
+// ---- 02 scenes and skills ----------------------------------------------------------------------
+(function () {
+  const sw = (v) => { const lo = v & 15, hi = v >> 4; return lo === hi ? '<span class="sw" style="background:' + ENC_PAL[lo] + '"></span>' + hex(v) : '<span class="sw" style="background:linear-gradient(90deg,' + ENC_PAL[lo] + ' 50%,' + ENC_PAL[hi] + ' 50%)"></span>' + hex(v); };
+  const t = document.getElementById('sceneTable');
+  for (let r = 0; r < 9; r++) {
+    const rec = TABLES.subarray(0x8010 + r * 16, 0x8020 + r * 16), lvl = r < 8 ? (8 - r) : 'warp';
+    t.insertAdjacentHTML('beforeend', '<tr><td class="n">' + r + '</td><td class="n">' + lvl + '</td><td>' + sw(rec[1]) + '</td><td>' + sw(rec[7]) + '</td><td>' + sw(rec[8]) + '</td><td>' + sw(rec[9]) + '</td><td>' + sw(rec[2] & 15 | (rec[2] & 15) << 4).replace(hex(rec[2] & 15 | (rec[2] & 15) << 4), hex(rec[2])) + '</td><td>' + sw(rec[0]) + '</td><td class="m">expand X ' + hex(rec[4]) + ' · Y ' + hex(rec[5]) + ' · enable ' + hex(rec[6]) + '</td></tr>');
+  }
+  const st = document.getElementById('skillTable'), names = ['difficulty base $3B', 'player speed $68', 'player-shot speed', 'enemy-shot speed $A6', 'hit tolerance $57', 'obstacle range $4F', 'turn rate $25', 'warp bonus $A9'];
+  names.forEach((n, i) => { st.insertAdjacentHTML('beforeend', '<tr><td>' + n + '</td>' + [0, 1, 2, 3].map((k) => '<td class="n">' + hex(TABLES[0x8F80 + i * 4 + k]) + '</td>').join('') + '</tr>'); });
+  document.getElementById('warpSpeeds').textContent = Array.from(TABLES.subarray(0xA7E8, 0xA7F0), (v) => hex(v)).join(', ');
+})();
+</script>

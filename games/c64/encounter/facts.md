@@ -135,7 +135,9 @@ conversion at $AB21 and clamped to the scanner box. Sprite 1 is the gun
 sight, fixed at X $A0, Y $6D, expanded both ways. Sprites 2-7 are the
 scenery: a horizon hill strip (sprite 2, Y 109) and clouds, each with
 four images ($8F40) chosen from bits 9-10 of the view heading and
-scrolled against it ($B9A5), which is what makes the horizon turn.
+scrolled against it ($B9A5), which is what makes the horizon turn. The
+main loop places them at $A18B, after the frame is drawn and just before
+$1A shows it, so they always match the heading the frame was drawn at.
 Sprites 24-31 in the object table are explosion fragments (objects, not
 hardware sprites). No sprite is multicoloured.
 
@@ -366,6 +368,15 @@ type has a fire script at $8C00 and one of four behaviour routines
   player. While its range code $31 is at or above $40 (far) it adds or
   subtracts a turn $37 (up to 45°), switching side ($38) every 1-64
   passes ($36), so it weaves; inside that range it flies straight in.
+  Its speed is set at launch ($A3BF) to $8E00[X] plus the skill's
+  player speed $68, so a player driving straight away from it at full
+  speed is closed on at the table speed alone.
+
+**Saucer looks.** Every saucer type is object type $42 (shape family 2);
+the type only picks the colour pair $A7 from $8CE0 (77 3F 7F DD FF 33 7D
+3D, then the same eight again), so types 8-15 look like types 0-7. The
+missile is $62 in the pair $33. Enemy shots are $22 and share $D023, the
+saucer's pair.
 
 *Live:* five recordings of level 1 (saucer types 0, 5, 7 and 9 forced at
 $A441, and a forced missile), 1,200 passes each, read at $A04C every
@@ -412,6 +423,9 @@ character colour and sprite enable/expand; levels 2, 4 and 7 have a
 black sky, the others a coloured one) and a 64-byte scenery record
 ($9840 + $63 × 8: sprite Y positions, image pointers, positions). The
 level index counts down: level 1 is $70, level 8 is $00, warp is $80.
+The level digit on the status row ($6014/$6015) is written from $63 each
+time an enemy is set up ($A34E), so a level picked with a number key
+shows L1 until the first enemy is set up, 51 passes in.
 Skill ($62) picks a column of the eight parameter tables at $8F80
 (difficulty base $3B, player speed $68, player-shot speed, enemy-shot
 speed $A6, collision threshold $57, $4F, turn rate $25, warp bonus $A9);
@@ -565,6 +579,11 @@ a missile's passes and the warp's came 1 to 4 frames apart.
   counter samples over three seconds all read $DBE8). On PAL, $9DFF never
   runs and $9E02 runs once. The game is PAL-only by construction; an NTSC
   machine shows the title and hangs (reference/ntsc-hang-title.png).
+- **A read past the shape scripts.** Drawing explosion fragments, the
+  view's routines read $3EED, two bytes past the one-byte shape script at
+  $3EEB (fragment C, size step 0), in the tail that the coverage counts
+  as unreferenced and the listing does not hold. What the game holds
+  there is not known; run from the listing it is 0.
 - **Calls into the title screen.** `JSR $6A0B`, `$6A0E`, `$6A11`, `$6A17`
   land in row 13 of the title screen data, which holds `JMP $6A1D`
   repeated seven times followed by `RTS` at $6A1D. Every one of these
@@ -572,6 +591,16 @@ a missile's passes and the warp's came 1 to 4 frames apart.
   loader hook, a protection check) is unknown.
 
 ## Live tests
+
+- 2026-11-02, the kit's C64 model (kit/c64/machine.js) running the whole
+  game from listing.json with a scripted stick (test_enemies.js): 6,361
+  frames from 27 recordings (each saucer type forced at $A441, a forced
+  missile met two ways, levels 1-8 and the warp) drawn again by the
+  view routines alone from the recorded object table; screen codes,
+  characters, view colour memory, sprite places, colours and pointers
+  all matched. Types 0 and 1 forced on level 1 at Novice fired once in
+  1,200 passes ($3B = 5); on level 2 they fired 8 and 21 times ($3B =
+  $30).
 
 - 2026-09-20, fresh autostart: checkpoints (non-stopping) at $0960 and
   $9C00 hit once each before the title screen: the boot chain in

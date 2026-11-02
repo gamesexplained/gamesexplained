@@ -125,3 +125,27 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   stick direction (`$A231`); the warp chord's top note is `$1121`.
 - bounce.js and sid.js gained loops (a tune that repeats from a frame),
   and sid.js a ball line for noise, for the engine, the hums and the warp.
+
+## 2026-11-02, Enemies and Levels tabs (Claude Opus 5.5)
+
+- The contributor asked for the plain's replay higher up How it works,
+  the enemies on a tab of their own with every saucer drawn in its
+  flickering colours, each one shooting at the player from medium range
+  as the game draws it, with its shot pattern on a map, the missile's
+  pursuit traced while the player backs away and shoots, and the levels
+  on a tab where the view can be turned.
+- The pictures are the game's own: enemies.html and levels.html carry
+  the view routines ($B920, $B9A5, $B1A1, $B77F, $B829, $B868, $B1EC)
+  and the bytes they read, and run them on the kit's 6502 for each pass
+  of a recording. The recordings are made by test_enemies.js, which runs
+  the whole game from listing.json on kit/c64/machine.js with a scripted
+  stick, so they are the same on every machine; the test makes them
+  again and holds every recorded frame to the page's drawing.
+- The test first flagged the scenery sprites as one pass late. They were
+  not: the main loop places them at $A18B, after the frame the test
+  captured at $A10F, and before the frame is shown. The capture moved.
+- Found on the way: all sixteen saucer types are one shape ($42) in
+  eight colour pairs; the level digit reads L1 until the first enemy is
+  set up; the routines read $3EED, a byte the listing does not hold.
+  facts.md has each.
+
