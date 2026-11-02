@@ -167,7 +167,7 @@ G.area = function (P) {
 
   // drill ($BEFA): commands $28 (drill) and $2A (collect the rig), only when the key is pressed
   // alone. Each needs an area that can have a rig ($8862 below $13), the probe on the ground (not
-  // the jet) and a shield of 5 or more, which each costs. Drilling places the rig in front of the
+  // the jet) and energy of 5 or more ($8875), which each costs. Drilling places the rig in front of the
   // probe by its heading, on the floor or on top of a block, clear of every other object, and
   // rates the strike by the distance from the area's gas field: 100 - (distance x 100 / size), the
   // percentage; 50 or more makes the sector safe (18 safe sectors win the game). The score goes up
@@ -185,7 +185,7 @@ G.area = function (P) {
       else if (!state) { ix = 0x8CAC; ok = false; }
     }
     if (ok && M[0x877A]) { ix = 0x8C66; ok = false; }
-    if (ok && sgn8(M[0x8875] - 5)) { ix = 0x8C58; ok = false; }
+    if (ok && sgn8(P.irqByte(0x8875) - 5)) { ix = 0x8C58; ok = false; }
     let bc;
     if (ok && e !== 0x28) {
       // collect
@@ -195,7 +195,7 @@ G.area = function (P) {
       const p = P.mul_16x8({ hl: P.mul_s8({ h: pct, l: gas }).hl, a: 0xF6 });
       setw(0xBEF7, p.hl); M[0xBEF9] = p.a & 255;
       yield* P.run_script({ ix: 0xBEF6, a: 4 });
-      M[0x8875] = (M[0x8875] - 5) & 255;
+      M[0x8875] = (P.irqByte(0x8875) - 5) & 255;
       const was = M[(0x877B + c) & 0xFFFF];
       M[(0x877B + c) & 0xFFFF] = 0;
       if (was === 3) M[0x889E] = (M[0x889E] - 1) & 255;
@@ -262,7 +262,7 @@ G.area = function (P) {
         }
       }
       if (ok) {
-        M[0x8875] = (M[0x8875] - 5) & 255;
+        M[0x8875] = (P.irqByte(0x8875) - 5) & 255;
         const at = (0x882C + 3 * ((area - 1) & 255)) & 0xFFFF;
         M[at] = x; M[at + 1] = y; M[at + 2] = z;
         const bx = (x + 6) & 255, bz = (z + 6) & 255;

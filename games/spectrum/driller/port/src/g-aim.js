@@ -168,7 +168,7 @@ G.aim = function (P) {
   });
 
   // copy_view ($9BF7): the view buffer at ($8A95) to the screen, a row of ($88DD) bytes at a time
-  // to the rows of the table at ($8A1B), from the bottom row up, all but the top one; then the
+  // to the rows of the table at ($8A1B), from the top row down (the buffer holds the top row first), all but the bottom one; then the
   // sound queued in $8A1F. Every register kept.
   P.def(0x9BF7, 'copy_view', () => {
     let ix = (w(0x8A1B) + 2 * ((w(0x88DB) - 1) & 0xFFFF)) & 0xFFFF, hl = w(0x8A95);

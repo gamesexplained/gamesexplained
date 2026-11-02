@@ -68,12 +68,12 @@ G.panel = function (P) {
   });
 
   // process_sensors ($9841): each sensor in the view's list ($8A26, $8A24 of them, six bytes each:
-  // the object, the frames between shots, the count, how it fires, where it is on the screen) is
-  // checked for a line to the probe: one that shoots on sight (1) by what the crosshair would pick
-  // at its place on the screen, one that shoots through walls (2) by the probe's move to it, with
+  // the object, the frames between shots, the count, draw_sensor's state, where it is on the screen)
+  // is checked for a line to the probe: one on the screen (1) by what the crosshair would pick at
+  // its place there, one in reach off the screen (2) by the probe's move to it, which a wall stops, with
   // the step's margin off and as if flying; one that cannot see the probe stops (0). Then, once the
   // interrupt is not drawing a beam ($8A21 bit 0) and told to leave the list alone (bit 2), the
-  // list goes to the interrupt's ($8A44), each count kept, and the new view is shown: the area's
+  // list goes to the interrupt's ($8A44), each count kept from the copy (0 or 1 put back to 2), and the new view is shown: the area's
   // colours if asked for, dissolved in or copied, the crosshair over it.
   P.def(0x9841, 'process_sensors', function* () {
     const n = M[0x8A24];
@@ -104,8 +104,12 @@ G.panel = function (P) {
         M[0x877A] = M[0x983F];
       }
     }
-    M[0x8A21] |= 4;
+    // the wait starts and ends in step with the game's ($9931, $9937), so that the interrupts it
+    // waits on fall where the game's did (test/lockstep.js)
+    yield { cp: 0x9931 };
+    M[0x8A21] = P.irqByte(0x8A21) | 4;
     yield* P.until0(0x8A21, 1, 24);
+    yield { cp: 0x9937 };
     M[0x8A25] = M[0x8A24];
     // the interrupt's counts, which it may have moved on in the frame that ended the wait
     for (let k = 0; k < 5; k++) {
@@ -117,7 +121,7 @@ G.panel = function (P) {
     // dissolve keeps the flags its caller had, so the copy follows only when $8BF0 is 0
     if (M[0x8BF0]) P.dissolve({}); else P.copy_view({});
     if (M[0x88A2]) P.crosshair({});
-    M[0x8A21] &= ~4;
+    M[0x8A21] = P.irqByte(0x8A21) & ~4;
     return {};
   });
 
@@ -154,7 +158,7 @@ G.panel = function (P) {
     if (op === 2 || op === 0x13) {
       // add to the energy (2) or the shield ($13), at most $3F; below 0 ends the game
       const [v, out, bit] = op === 2 ? [0x8875, 3, 4] : [0x8878, 1, 0x10];
-      let a = (M[v] + at(1)) & 255;
+      let a = (P.irqByte(v) + at(1)) & 255;
       if (sgn8(a)) { M[0x8BF2] = out; a = 0; } else if (!sgn8(a - 0x3F)) a = 0x3F;
       M[v] = a;
       M[0x8921] |= bit;
@@ -178,10 +182,12 @@ G.panel = function (P) {
     if ([9, 0x0A, 0x0B, 0x14].includes(op)) {
       // the variables at $887F: add one, take one, test, set
       const v = (0x887F + ((at(1) - 1) & 255)) & 0xFFFF;
-      if (op === 9) M[v] = (M[v] + 1) & 255;
-      else if (op === 0x0A) M[v] = (M[v] - 1) & 255;
+      // the interrupt counts the last two on each minute: read as the game read them
+      const get = () => (v === 0x889C || v === 0x889D ? P.irqByte(v) : M[v]);
+      if (op === 9) M[v] = (get() + 1) & 255;
+      else if (op === 0x0A) M[v] = (get() - 1) & 255;
       else if (op === 0x14) M[v] = at(2);
-      else if (at(2) !== M[v]) return false;
+      else if (at(2) !== get()) return false;
       return true;
     }
     if ([0x0C, 0x0D, 0x0E, 0x1D].includes(op)) {
@@ -215,11 +221,11 @@ G.panel = function (P) {
       // the probe into the jet or out of it, each with its own energy and shield
       if (!M[0x877A]) {
         M[0x887E] |= 0x80; M[0x877A] = 1;
-        M[0x8877] = M[0x8875]; M[0x887A] = M[0x8878];
+        M[0x8877] = P.irqByte(0x8875); M[0x887A] = P.irqByte(0x8878);
         M[0x8875] = M[0x8876]; M[0x8878] = M[0x8879];
       } else {
         M[0x877A] = 0; M[0x887E] &= 0x7F;
-        M[0x8876] = M[0x8875]; M[0x8879] = M[0x8878];
+        M[0x8876] = P.irqByte(0x8875); M[0x8879] = P.irqByte(0x8878);
         M[0x8875] = M[0x8877]; M[0x8878] = M[0x887A];
       }
       M[0x8921] |= 0x94; M[0x8920] |= 0x08;
@@ -270,7 +276,9 @@ G.panel = function (P) {
       let iy = 0x8A44;
       for (let b = M[0x8A25]; b > 0; b--, iy = (iy + 6) & 0xFFFF) {
         if (M[iy] !== M[(o + 7) & 0xFFFF]) continue;
+        yield { cp: 0xB47A };
         yield* P.until0(0x8A21, 1, 24);
+        yield { cp: 0xB481 };
         M[iy + 3] = 0;
         M[(iy - 0x1B) & 0xFFFF] = 0;
         break;
@@ -420,13 +428,13 @@ G.panel = function (P) {
     }
     a = M[0x8921];
     if (a & 4) {
-      const l = M[0x8A67], h = M[0x8875];
+      const l = M[0x8A67], h = P.irqByte(0x8875);
       M[0x8A67] = h;
       P.bar({ ix: 0xCFCE, h, l });
       a = M[0x8921];
     }
     if (a & 0x10) {
-      const l = M[0x8A68], h = M[0x8878];
+      const l = M[0x8A68], h = P.irqByte(0x8878);
       M[0x8A68] = h;
       P.bar({ ix: 0xCFD1, h, l });
       a = M[0x8921];
@@ -460,9 +468,14 @@ G.panel = function (P) {
   // while the game is on ($8BF2 = 0), the clock ($88A4-$88AB, counted down from the time the game
   // gives) by a second every 50 frames, the energy a unit a minute (out at 0); and, unless the main
   // program is changing the list (bit 2 of $8A21 with no beam drawn), each sensor's count on: one
-  // that shoots on sight draws its beam to the probe (XOR, on at 1 and off at 0), each flashes the
+  // on the screen draws its beam to the probe (XOR, on at 1 and off at 0), each flashes the
   // border, and at 0 it hits: sound 2 and a unit of shield (out at 0).
   P.def(0xBAE6, 'interrupt', () => {
+    const main = P.N;
+    P.N = P.NI;
+    try { return interrupt(); } finally { P.N = main; }
+  });
+  function interrupt() {
     M[0x8A1D] = (M[0x8A1D] + 1) & 255;
     if (M[0x8FC2]) M[0x8FC2]--;
     if (!M[0x8BF2]) {
@@ -478,6 +491,7 @@ G.panel = function (P) {
     if (!M[0x8A25]) return {};
     let ix = 0x8A44;
     for (let b = M[0x8A25]; b > 0; b--, ix = (ix + 6) & 0xFFFF) {
+      P.N.sensors = (P.N.sensors || 0) + 1;
       M[ix + 2] = (M[ix + 2] + 1) & 255;
       if (M[ix + 2] === M[ix + 1]) M[ix + 2] = 0;
       if (!M[ix + 3]) continue;
@@ -493,7 +507,7 @@ G.panel = function (P) {
         else if (M[ix + 2] === 1) M[0x8A21] |= 1;
       }
       if (!act) continue;
-      if (act === 2) beam(ix);
+      if (act === 2) { beam(ix); P.N.beams = (P.N.beams || 0) + 1; }
       P.io.out(0xFE, c, P.T);
       if (M[ix + 2]) continue;
       P.play_sound({ a: 2 });
@@ -504,7 +518,7 @@ G.panel = function (P) {
       } else M[0x8BF2] = 1;
     }
     return {};
-  });
+  }
   // The clock a second on: the digits count down, 59 seconds after 00; a minute costs a unit of
   // energy, and the time running out ends the game ($8BF2 = 2) before the last digits are shown.
   function clock() {

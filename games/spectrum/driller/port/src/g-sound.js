@@ -75,7 +75,7 @@ G.sound = function (P) {
   P.def(0x95D2, 'sound_3', () => { tone(0x0C, 0x07A6); tone(0x0A, 0x093C); spend(10); return {}; });
   P.def(0x95E5, 'sound_4', () => { tone(0x0C, 0x07A6); tone(0x0E, 0x066A); spend(10); return {}; });
   P.def(0x95F8, 'sound_6', () => { tone(0x29, 0x01F0); spend(10); return {}; });
-  // a rising run of single cycles, from 0 by $14 below the limit
+  // a rising run of two cycles at each pitch, from 0 by $14 below the limit
   const run = (from, step, below) => {
     spend(10);
     for (let hl = from; ;) {

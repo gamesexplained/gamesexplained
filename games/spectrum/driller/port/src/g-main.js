@@ -11,7 +11,10 @@ G.main = function (P) {
 
   // The main loop's checkpoints: the address of each CALL in the main program's body.
   P.CHECKPOINTS = [0x97B5, 0x97BA, 0x97CA, 0x97D3, 0x97D6, 0x97E0, 0x97E8, 0x97EB, 0x97FD,
-    0x9807, 0x9815, 0x9822, 0x9825, 0x9828, 0x9833];
+    0x9807, 0x9815, 0x9822, 0x9825, 0x9828, 0x9833,
+    // and where each wait on the sensors' beam ($8A21) begins and ends, so that the interrupts it
+    // waits on fall where the game's did
+    0x9931, 0x9937, 0x9ABB, 0x9AC1, 0xB47A, 0xB481, 0xC3ED, 0xC3F3];
   // the frame counter at $8FC2 set and waited out
   const frames = function* (n) { M[0x8FC2] = n; yield* P.until0(0x8FC2, 0xFF, 29); };
   P.frames = frames;
@@ -145,8 +148,10 @@ G.main = function (P) {
   // the view of area $7F with the count of safe sectors, held 13 x 75 frames, the last twelve of
   // them ended by a key; then the demonstration ($891F = 3) unless a key was pressed.
   function* gameOver(end) {
-    M[0x8A21] |= 4;
+    yield { cp: 0x9ABB };
+    M[0x8A21] = P.irqByte(0x8A21) | 4;
     yield* P.until0(0x8A21, 1, 24);
+    yield { cp: 0x9AC1 };
     const ix = { 1: 0x8CC8, 2: 0x8CBA, 3: 0x8CD6, 4: 0x8CE4, 5: 0x8D00 }[end] || 0x8CF2;
     P.print_text({ hl: 0xCFAD, ix });
     P.invert({ hl: 0xCFAD });

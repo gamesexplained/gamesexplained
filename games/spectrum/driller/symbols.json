@@ -1885,7 +1885,7 @@
   {
    "address": 27410,
    "type": "line",
-   "text": "Draws the 3D view into the view buffer: a new picture when bit 2 of $8920 asks for one, the last one again when bit 3 of $8921 does. On the tape the first two bytes are JR $6B12, a jump to itself: the game hangs on its first call here unless the security question was answered, which writes $DD and $E5 (PUSH IX) over them ($CBD8, $CCE8). A new picture bounds what can be seen (bound_view_box), builds the view matrix (make_view_matrix) and the multiply routines for it (make_multipliers), empties the sensor list, then puts every object of the area ($8864, $8863 of them) and the player's own objects at $87A5 ($890F of them) through draw_object_list, sorts what was queued (sort_faces) and draws it (draw_faces). The record that $8BF3 points to takes the frame count $8A65 at the start (+1), after the objects (+2) and after the sort (+3)."
+   "text": "Draws the 3D view into the view buffer: a new picture when bit 2 of $8920 asks for one, the last one again when bit 3 of $8921 does. On the tape the first two bytes are JR $6B12, a jump to itself: the game hangs on its first call here unless the security question was answered, which writes $DD and $E5 (PUSH IX) over them ($CBD8, $CCE8). A new picture bounds what can be seen (bound_view_box), builds the view matrix (make_view_matrix) and the multiply routines for it (make_multipliers), empties the sensor list, then puts every object of the area ($8864, $8863 of them) and the player's own objects at $87A5 ($890F of them) through draw_object_list, sorts what was queued (sort_faces) and draws it (draw_faces). It lights the pass lamps as it goes, at the screen address $8BF3 holds, in their lit colour ($8A65): the second (+1) at the start, the third (+2) after the objects and the fourth (+3) after the sort."
   },
   {
    "address": 27443,
@@ -1980,7 +1980,7 @@
   {
    "address": 30098,
    "type": "line",
-   "text": "Handles a sensor (object type 2). Every sensor of the area gets a 6-byte record in the sensor list at ($8A62), which draw_view starts empty and counts in $8A24: its id (+7), its range byte (+10), and a state at +3: 0 when it is hidden, when the player is on none of the sides it watches (the side bits $5E62 against its mask, +13) or when the player is out of its reach; 2 when it is in reach but not on the screen; and 1 when it is, with +4 and +5 then its point on the screen. Reach is |x| + |y| + |z| from the player to the sensor's corner, against the word +11. A sensor in reach is drawn as a line of two points at its corner, a dot ($8A09, colour the low nibble of +9), by draw_face_list."
+   "text": "Handles a sensor (object type 2). Every sensor of the area gets a 6-byte record in the sensor list at ($8A62), which draw_view starts empty and counts in $8A24: its id (+7), the frames between its shots (+10), which the interrupt counts to, and a state at +3: 0 when it is hidden, when the player is on none of the sides it watches (the side bits $5E62 against its mask, +13) or when the player is out of its reach; 2 when it is in reach but not on the screen; and 1 when it is, with +4 and +5 then its point on the screen. Reach is |x| + |y| + |z| from the player to the sensor's corner, against the word +11. A sensor in reach is drawn as a line of two points at its corner, a dot ($8A09, colour the low nibble of +9), by draw_face_list."
   },
   {
    "address": 30334,
@@ -2225,7 +2225,7 @@
   {
    "address": 35087,
    "type": "line",
-   "text": "How many of the player's objects there are ($890F, 8); the area's colours to be set ($8910); the entrance the probe is put at ($8911); where the area records are ($8912) and their table of offsets ($8914); the object being drawn or looked for ($8916); the colour of the face being filled ($8917); the count of faces on the draw list ($8918); the top and bottom rows of the face being filled ($8919, $891B); the colour patterns ($891D); what the game is doing ($891F: 1 play, 3 the demonstration); what draw_view and update_panel are to redraw, a bit each ($8920, $8921); the shared scripts ($8922); the demonstration's start ($8924), its repeat count ($8926) and its place ($8927)."
+   "text": "How many of the player's objects there are ($890F, 8); the area's colours to be set ($8910); the entrance the probe is put at ($8911); where the area records are ($8912) and their table of offsets ($8914); the object being drawn or looked for ($8916); the colour of the face being filled ($8917); the count of entries on the draw list ($8918), four bytes and one object each, with all its faces; the top and bottom rows of the face being filled ($8919, $891B); the colour patterns ($891D); what the game is doing ($891F: 1 play, 3 the demonstration); what draw_view and update_panel are to redraw, a bit each ($8920, $8921); the shared scripts ($8922); the demonstration's start ($8924), its repeat count ($8926) and its place ($8927)."
   },
   {
    "address": 35113,
@@ -2260,7 +2260,7 @@
   {
    "address": 35366,
    "type": "line",
-   "text": "The sensors in view, six bytes each, room for five, as draw_sensor lists them: from here the main program writes, and at $8A44 the interrupt keeps its own copy, whose third byte of each it counts for the beam. $8A62 is where the next record goes."
+   "text": "The sensors of the area and of the player's objects, six bytes each, room for five, as draw_sensor lists them, those hidden, not watching or out of reach among them with state 0: from here the main program writes, and at $8A44 the interrupt keeps its own copy, whose third byte of each it counts for the beam. $8A62 is where the next record goes."
   },
   {
    "address": 35428,
@@ -2395,12 +2395,12 @@
   {
    "address": 37591,
    "type": "line",
-   "text": "Divides DE:HL by BC, both signed, into DE:HL, with BC the remainder of the magnitudes (also at $92D5). The quotient of the magnitudes is rounded up when the remainder less half the divisor is not negative, then given its sign: so it is the nearest whole number, halves away from zero. A dividend of 0 gives 0 and BC = 0. AF is kept."
+   "text": "Divides DE:HL by BC, both signed, into DE:HL, with BC the remainder of the magnitudes (also at $92D5). The quotient of the magnitudes is rounded up when the remainder less half the divisor is not negative, then given its sign. Half the divisor is taken rounded down, so a remainder of a third rounds up when the divisor is 3: 1 / 3 gives 1, 4 / 3 gives 2. A dividend of 0 gives 0 and BC = 0. AF is kept."
   },
   {
    "address": 37722,
    "type": "line",
-   "text": "The last bit, then the rounding: the remainder against half the divisor."
+   "text": "The rounding: the remainder against half the divisor, the quotient one more when it is not less. The last bit of the quotient went in just before ($9352-$9358)."
   },
   {
    "address": 37776,
@@ -2415,7 +2415,7 @@
   {
    "address": 37892,
    "type": "line",
-   "text": "The keyboard as read_keys last scanned it: one byte for each of the eight half-rows, the keys held as set bits. Then the repeat flag ($940C), the count of keys held last time ($940D) and those keys' codes ($940E-$9412)."
+   "text": "The keyboard as read_keys last scanned it: one byte for each of the eight half-rows, the keys held as set bits, each bit cleared as read_keys turns its key into a code, so that once it returns they hold only keys past the fifth, usually none. Then the repeat flag ($940C), the count of keys held last time ($940D) and those keys' codes ($940E-$9412)."
   },
   {
    "address": 37908,
@@ -2475,7 +2475,7 @@
   {
    "address": 38402,
    "type": "line",
-   "text": "Effect 7: single cycles, each lower than the last, from tone's shortest half-period by $14 to $C00."
+   "text": "Effect 7: two cycles at each pitch, each lower than the last, from tone's shortest half-period by $14 to $C00."
   },
   {
    "address": 38428,
@@ -2530,17 +2530,17 @@
   {
    "address": 38714,
    "type": "line",
-   "text": "Effect 20: single cycles from tone's shortest half-period by $14 to $1900."
+   "text": "Effect 20: two cycles at each pitch (tone plays DE + 1, and DE is 1), from tone's shortest half-period by $14 to $1900."
   },
   {
    "address": 38740,
    "type": "line",
-   "text": "Effect 21: single cycles from $300 down by 10."
+   "text": "Effect 21: two cycles at each pitch, from $300 down by 10."
   },
   {
    "address": 38760,
    "type": "line",
-   "text": "Plays DE + 1 cycles of a square wave on the beeper. Each half is a wait of H turns of 63 of a loop, plus L / 4 turns, plus L mod 4 NOPs (the jump into the NOPs at $977E is set by IX); the high half is one turn longer. The first edge raises the speaker, with the border colour from $886A and MIC set."
+   "text": "Plays DE + 1 cycles of a square wave on the beeper. Each half is a wait of H turns of 63 of a loop, plus L / 4 + 1 turns, plus L mod 4 NOPs (the jump into the NOPs at $977E is set by IX); the high half is one turn longer. The wait before the first edge is shorter. The first edge raises the speaker, with the border colour from $886A and MIC set."
   },
   {
    "address": 38820,
@@ -2560,12 +2560,12 @@
   {
    "address": 38969,
    "type": "line",
-   "text": "What check_sensors keeps while it tests a line from the probe to a sensor that fires through walls: the probe's x, height and z ($9839, $983B, $983D, words), the vehicle ($983F) and the wall margin ($9840), each put back after."
+   "text": "What check_sensors keeps while it tests a line from the probe to a sensor in reach but off the screen: the probe's x, height and z ($9839, $983B, $983D, words), the vehicle ($983F) and the wall margin ($9840), each put back after."
   },
   {
    "address": 38977,
    "type": "line",
-   "text": "Checks each sensor in the view's list ($8A26, $8A24 of them, six bytes each: the object, the frames between shots, the count, how it fires, its place on the screen) for a line to the probe. One that fires on sight (1) keeps firing only if pick_object, with the crosshair put at its place on the screen, finds it there; one that fires through walls (2) only if move_to, from the probe to the sensor with the step's margin ($88D0) off and as if flying, gets all the way. Then it waits until the interrupt has no beam on the screen ($8A21 bit 0) with bit 2 set to keep the interrupt off the list, hands the list to the interrupt's copy at $8A44 with each sensor's count kept, and shows the new view: the area's colours if asked for ($8910), dissolved in when $8BF0 is set or else copied, and the crosshair over it if it is shown ($88A2). Every register is kept."
+   "text": "Checks each sensor in the list at $8A26 ($8A24 of them, six bytes each: the object, the frames between shots, the count, the state draw_sensor gave it, its place on the screen) for a line to the probe. One on the screen (1) keeps firing only if pick_object, with the crosshair put at its place on the screen, finds it there; one in reach but off the screen (2) only if move_to, from the probe to the sensor with the step's margin ($88D0) off and as if flying, gets all the way, so that a wall between them stops it. Then it waits until the interrupt has no beam on the screen ($8A21 bit 0) with bit 2 set to keep the interrupt off the list, hands the list to the interrupt's copy at $8A44 with each sensor's count kept from the copy, a count of 0 or 1 put back to 2, and shows the new view: the area's colours if asked for ($8910), dissolved in when $8BF0 is set or else copied, and the crosshair over it if it is shown ($88A2). Every register is kept."
   },
   {
    "address": 39306,
@@ -2590,7 +2590,7 @@
   {
    "address": 39927,
    "type": "line",
-   "text": "Copies the view buffer at ($8A95) to the screen, a row of ($88DD) bytes at a time to the screen rows the table at ($8A1B) lists, from the bottom row up, all but the top one; then plays the sound queued in $8A1F. Every register is kept."
+   "text": "Copies the view buffer at ($8A95) to the screen, a row of ($88DD) bytes at a time to the screen rows the table at ($8A1B) lists, from the top row down (the buffer holds the top row first), all but the bottom one; then plays the sound queued in $8A1F. Every register is kept."
   },
   {
    "address": 39990,
@@ -2605,7 +2605,7 @@
   {
    "address": 40393,
    "type": "line",
-   "text": "step_to's copy of the probe's cell height before a climb, and the probe's own cell for the test above it in a climb ($9DCA)."
+   "text": "step_to's copy of the probe's cell height before a climb, and the byte where collide writes the number of an object it meets in the test above the probe in a climb ($9DCA), so that the test leaves $8A69 alone."
   },
   {
    "address": 40399,
@@ -2675,7 +2675,7 @@
   {
    "address": 42874,
    "type": "line",
-   "text": "Makes the area's colours current ($886E-$8871 to $886A-$886D), resets every sensor's count to 2, paints the view window's attributes with the ink and paper at $886C and $886D, and sets the border."
+   "text": "Makes the area's colours current ($886E-$8871 to $886A-$886D), resets every sensor's count to 2, paints the view window's attributes with the paper and ink at $886C and $886D, and sets the border."
   },
   {
    "address": 43011,
@@ -2695,7 +2695,7 @@
   {
    "address": 43356,
    "type": "line",
-   "text": "Carries out commands $15-$1E. $1E swaps what the keys do ($88AC: turn the probe, or move the crosshair), redraws the key panel and shows the crosshair; $15 shows or hides the crosshair ($88AD); both pause 9 frames. While the crosshair is shown ($88A2), $17-$1A move it a pixel within the view, and $16 fires the laser: four lines from the view's edges to the crosshair, sound 1, the lines rubbed out, then pick_object finds what was hit."
+   "text": "Carries out commands $15-$1E. $1E swaps what the keys do ($88AC: turn the probe, or move the crosshair), redraws the key panel and plays sound $13: going to the crosshair it shows the crosshair, going back it takes it off and shows it again only if the player wants it ($88AD). $15 shows or hides the crosshair ($88AD) while the keys turn the probe, and does nothing while they move the crosshair. Each pauses 9 frames when it acts. While the crosshair is shown ($88A2), $17-$1A move it a pixel within the view, and $16 fires the laser: four lines from the view's edges to the crosshair, sound 1, the lines rubbed out, then pick_object finds what was hit."
   },
   {
    "address": 43583,
@@ -2770,7 +2770,7 @@
   {
    "address": 47443,
    "type": "line",
-   "text": "A quarter-turn of a dial's edge, x and y a byte each for the 18 angles from 0 to 85 degrees, which needle turns into the right quarter."
+   "text": "A quarter-turn of a dial's edge, x and y a byte each for the 19 angles from 0 to 90 degrees, which needle turns into the right quarter."
   },
   {
    "address": 47481,
@@ -2800,7 +2800,7 @@
   {
    "address": 47846,
    "type": "line",
-   "text": "The frame interrupt. Counts $8A1D on and $8FC2 down. While the game is on ($8BF2 = 0) it counts 50 frames to a second at $88A3 and then the clock ($88A4-$88AB) down a second: a minute costs a unit of energy (none left ends the game, $8BF2 = 3), and the clock running out ends it ($8BF2 = 2). Then, unless the main program is changing the sensors' list ($8A21 bit 2) with no beam on the screen (bit 0), each sensor's count goes round its period: one that fires on sight draws its beam (four lines from it to a strip down the view's middle, by flipping pixels) at 1 and takes it off at 0; the border flashes in the area's colours; and at 0 it hits, with sound 2 and a unit of shield (none left ends the game, $8BF2 = 1). Bit 1 of $8A21 holds the beams off."
+   "text": "The frame interrupt. Counts $8A1D on and $8FC2 down. While the game is on ($8BF2 = 0) it counts 50 frames to a second at $88A3 and then the clock ($88A4-$88AB) down a second: a minute costs a unit of energy (none left ends the game, $8BF2 = 3), and the clock running out ends it ($8BF2 = 2). Then, unless the main program is changing the sensors' list ($8A21 bit 2) with no beam on the screen (bit 0), each sensor's count goes round its period: one on the screen (state 1) draws its beam (four lines from it to a strip down the view's middle, by flipping pixels) at 1 and takes it off at 0; the border flashes in the area's colours; and at 0 it hits, with sound 2 and a unit of shield (none left ends the game, $8BF2 = 1). Bit 1 of $8A21 holds the beams off."
   },
   {
    "address": 48294,
@@ -2820,7 +2820,7 @@
   {
    "address": 48500,
    "type": "line",
-   "text": "Sets up the pointers into the game's data: the areas at $CF3E and their table of offsets at $D006, the colour patterns at $CF48, the font at $CDDC, the recorded demonstration ($8924, $8927) and the script run every turn ($8922). Then the probe's limits, the key repeat's delay and rate, the counters the interrupt keeps, the message line's record, the clock's digits, and whether the game starts in the jet, with that vehicle's shield and fuel."
+   "text": "Sets up the pointers into the game's data: the areas at $CF3E and their table of offsets at $D006, the colour patterns at $CF48, the font at $CDDC, the recorded demonstration ($8924, $8927) and the shared scripts ($8922). Then the probe's limits, the key repeat's delay and rate, the pass lamps' lit and dark colours ($8A65, $8A66, from $D004), the lamps' screen address ($CFA4 to $8BF3), the clock's digits, and whether the game starts in the jet, with that vehicle's shield and fuel."
   },
   {
    "address": 48664,
@@ -2835,7 +2835,7 @@
   {
    "address": 48890,
    "type": "line",
-   "text": "Commands $28 (drill) and $2A (collect the rig), taken only when the key is pressed alone. Each needs an area that can have a rig (below $13), the probe on the ground rather than the jet, and a shield of 5 or more, which each costs. Drilling places the rig in front of the probe, by its heading, on the floor or on top of a block, clear of every other object and the area's walls, and rates the strike by the distance from the area's gas field: 100 - distance x 100 / the field's size, as a percentage. 50 or more makes the sector safe ($877B = 3), and 18 safe sectors win the game. The score goes up by the percentage times the gas the rig taps times 10, the gas from the table at ($87A3), which the first strike of a game picks by the interrupt's frame count; collecting a rig takes that score back. A refusal flashes its reason on the message line."
+   "text": "Commands $28 (drill) and $2A (collect the rig), taken only when the key is pressed alone. Each needs an area that can have a rig (below $13), the probe rather than the jet, and energy of 5 or more ($8875), which each costs. Drilling places the rig in front of the probe, by its heading, on the floor or on top of a block, clear of every other object and the area's walls, and rates the strike by the distance from the area's gas field: 100 - distance x 100 / the field's size, as a percentage. 50 or more makes the sector safe ($877B = 3), and 18 safe sectors win the game. The score goes up by the percentage times the gas the rig taps times 10, the gas from the table at ($87A3), which the first strike of a game picks by the interrupt's frame count; collecting a rig takes that score back. A refusal flashes its reason on the message line."
   },
   {
    "address": 49753,
@@ -2870,7 +2870,7 @@
   {
    "address": 51220,
    "type": "line",
-   "text": "The checksum of HL bytes at DE: the even bytes XORed into B, the odd ones into C, then BC turned two bits to the left."
+   "text": "The checksum of HL bytes at DE: the even bytes XORed into B, the odd ones into C, then both shifted two bits to the left as a pair (SLA B, RL C, RL B, RL C): B's top two bits go to C's bottom two, C's top bit to B's bottom one, and C's bit 6 is lost."
   },
   {
    "address": 51250,

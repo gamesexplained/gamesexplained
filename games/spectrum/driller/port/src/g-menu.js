@@ -17,7 +17,8 @@ G.menu = function (P) {
   const M = P.M, w = P.w, setw = P.setw;
   const sgn8 = v => (v & 0x80) !== 0;
   const frames = function* (n) { M[0x8FC2] = n; yield* P.until0(0x8FC2, 0xFF, 29); };
-  const waitBeam = function* () { M[0x8A21] |= 4; yield* P.until0(0x8A21, 1, 24); };
+  // the wait on the sensors' beam, begun and ended in step with the game's (g-main.js's checkpoints)
+  const waitBeam = function* () { yield { cp: 0xC3ED }; M[0x8A21] = P.irqByte(0x8A21) | 4; yield* P.until0(0x8A21, 1, 24); yield { cp: 0xC3F3 }; };
   const keys = function* () { for (;;) { const k = yield* P.read_keys({}); if (k.cf) return k.a & 255; yield; } };
   const blank = (at, n) => { for (let k = 0; k < n; k++) M[(at + k) & 0xFFFF] = 0x20; };
   const copy = (from, to, n) => { for (let k = 0; k < n; k++) M[(to + k) & 0xFFFF] = M[(from + k) & 0xFFFF]; };
@@ -232,7 +233,7 @@ G.menu = function (P) {
   }
 
   // checksum ($C814): the bytes at DE, HL of them, folded into BC: the even ones XORed into B, the
-  // odd ones into C, then BC turned two bits to the left.
+  // odd ones into C, then both shifted two bits left as a pair (C's bit 6 lost).
   P.def(0xC814, 'checksum', r => {
     let de = r.de & 0xFFFF, hl = r.hl & 0xFFFF, b = 0, c = 0;
     for (;;) {

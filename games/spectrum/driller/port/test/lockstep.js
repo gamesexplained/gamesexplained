@@ -16,9 +16,12 @@ const { player } = require('./sessions.js');
 // the bytes the interrupt writes and the main program reads in the middle of a stretch: the wait
 // counter ($8FC2), the beam state ($8A21), the clock's frame count ($88A3, which drill reads for
 // the gas), the frame counter the security question is picked by ($8A1D), the minutes ($889D),
-// the game's end ($8BF2), and the sensors' beam counts in the interrupt's copy of the list ($8A46,
-// six bytes apart), which process_sensors keeps once the beams are still
-const IRQ_BYTES = [0x8FC2, 0x8A21, 0x88A3, 0x8A1D, 0x889D, 0x8BF2, 0x8A46, 0x8A4C, 0x8A52, 0x8A58, 0x8A5E];
+// the game's end ($8BF2), the sensors' beam counts in the interrupt's copy of the list ($8A46,
+// six bytes apart), which process_sensors keeps once the beams are still, the minutes again ($889C,
+// both of which the scripts test), and the energy and shield ($8875, $8878), which the interrupt
+// takes from as the clock runs and the sensors hit, and the scripts, drill and the panel read
+const IRQ_BYTES = [0x8FC2, 0x8A21, 0x88A3, 0x8A1D, 0x889C, 0x889D, 0x8BF2, 0x8A46, 0x8A4C, 0x8A52, 0x8A58, 0x8A5E,
+  0x8875, 0x8878];
 // the game's stack: $FFF8 down, above the interrupt's table at $FE00-$FF00
 const STACK = [0xFF01, 0xFFF7];
 

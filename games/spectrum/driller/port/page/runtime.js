@@ -10,7 +10,8 @@
 //     cost     the pacing (scripts/fit-cost.js, cost.json): { seg: { 'from>to': T-states }, call:
 //              { routine: T-states, '#count': T-states }, irq }: each stretch's own, each routine's
 //              and each count of the work inside them (P.N, src/core.js), fitted on the game, and
-//              the interrupt's, measured
+//              the interrupt's (irq), with each count of its own work (irqN: P.NI, the sensors'
+//              beams), fitted on the game's interrupts
 //     tape     the cassette, as src/g-menu.js's info screen uses it: save(flag, bytes) and
 //              load(flag, length), which gives { flag, bytes }, null for none, or undefined while
 //              the page waits for the player to pick a file
@@ -23,6 +24,7 @@
 //                      held) }
 //   rt.onBeep(f)       f(value, T-state) for each change of the beeper (bit 4 of the byte written
 //                      to port $FE)
+//   rt.missing         the stretches met that the cost model has no figure for, 'from>to' in hex
 //   rt.wiped           true once three wrong answers to the security question have wiped memory and
 //                      reset the machine, as the game does: the program has stopped
 //   rt.restore(state, entry)   a machine saved by the tests (kit/spectrum/machine.js's save()),
@@ -40,7 +42,8 @@
 // stretch's end. A sound effect plays with the interrupts off: the clock moves on by the
 // T-states its loops take, each edge of the beeper at its own T-state, and the interrupts that
 // fall due meanwhile are lost, as on the Spectrum (the game's clock loses them too). The sensors'
-// hit, which the interrupt itself plays, lengthens that interrupt by its sound.
+// hit, which the interrupt itself plays, lengthens that interrupt by its sound, and a beam it draws
+// by the beam's cost.
 (function (root) {
 'use strict';
 const LINE = 224, LINES = 312, FRAME = LINE * LINES;
@@ -119,7 +122,7 @@ function create(o) {
   P.T = P.T || 0;
   const ROM = o.data.rom ? { from: o.data.rom.from, bytes: b64(o.data.rom.bytes) } : null;
   const model = o.cost || { seg: {}, call: {} };
-  const IRQ = model.irq || 0;
+  const IRQ = model.irq || 0, IRQN = model.irqN || {};
   let calls = Object.create(null), counting = true, owed = 0;
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
   for (const name of Object.keys(model.call)) {
@@ -144,7 +147,13 @@ function create(o) {
     return c;
   }
   function pay() { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
-  function cost(from, to) { return Math.round((model.seg[from.toString(16) + '>' + to.toString(16)] || 0) + callsCost()); }
+  // a stretch the fit never saw costs only its calls: test/t-page.js fails on any it meets
+  const missing = new Set();
+  function cost(from, to) {
+    const k = from.toString(16) + '>' + to.toString(16);
+    if (!(k in model.seg)) missing.add(k);
+    return Math.round((model.seg[k] || 0) + callsCost());
+  }
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) { if (counting) pay(); return M[a]; }
@@ -174,8 +183,10 @@ function create(o) {
         counting = false;
         const T0 = P.T, outer = sound;
         sound = { t, T: T0 };
+        for (const k in P.NI) P.NI[k] = 0;
         try { P.interrupt({}); } finally { counting = true; sound = outer; }
-        const len = IRQ + (P.T - T0);
+        let len = IRQ + (P.T - T0);
+        for (const k in P.NI) if (k !== 'beep' && P.NI[k]) len += Math.round((IRQN['#' + k] || 0) * P.NI[k]);
         t += len; end += len;
       }
     }
@@ -244,7 +255,7 @@ function create(o) {
     M, P, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    get border() { return border; }, get wiped() { return wiped; },
+    get border() { return border; }, get wiped() { return wiped; }, missing,
     runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onBeep: f => beepers.push(f),
   };

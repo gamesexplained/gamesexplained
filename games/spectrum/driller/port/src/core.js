@@ -40,6 +40,9 @@ function makePort(M, io, opts = {}) {
   // counts of the work inside routines whose length varies, for the page's pacing
   // (scripts/fit-cost.js, page/runtime.js)
   P.N = {};
+  // the same counts of the interrupt's own work (the sensors' beam), which the page adds to the
+  // interrupt's time: the interrupt counts into P.NI, never into the program's P.N
+  P.NI = {};
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
   // A tight loop on a byte the interrupt writes, until (byte AND mask) is 0: each turn yields the
   // T-states the game's turn takes (LD A,(nn) / OR A / JR NZ, 29; BIT 0,(HL) / JR NZ, 24), so that
