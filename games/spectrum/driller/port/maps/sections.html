@@ -1,0 +1,63 @@
+<section class="pl-first" id="moon">
+  <p class="fig">01 · The sectors</p>
+  <h2 class="t">The moon's sectors, as their edges join them</h2>
+  <p class="lede">Walk off the side of a sector and the next one loads, with the probe at its opposite edge. Eight sectors make a ring round the moon's middle: walk east from Amethyst through eight of them and you are back where you started.</p>
+  <div class="plate">
+    <div class="mp-grid" id="mp-grid"></div>
+    <p class="cap">Each sector where its edges put it, from Amethyst, where the game starts. An edge is a rectangle along the side of the area (objects 51 to 54) whose script goes to the next area with no entrance; <code>set_start</code> then keeps the probe's place and moves it to the opposite edge. Ruby, at the left end of the middle row, and Malachite, at the right, are neighbours too. The places below have no edges: the probe reaches them through doors, or, for Mitral, by walking off the moon, and 127 is the scene the game shows when it ends.</p>
+    <div class="mp-rest" id="mp-rest"></div>
+  </div>
+  <p>The two ends of the map are closed at the start. Niccolite's south edge and Opal's both lead into Diamond, and each has a wall 62 cells high along it; Diamond's only edge leads back north to Opal. Trachyte, at the top, is reached only from Obsidian, whose north edge starts hidden behind a wall. Edges that lead nowhere set flag 21 instead, and a script that runs in every area then takes the probe to Mitral (below).</p>
+</section>
+
+<section id="mp-viewer">
+  <p class="fig">02 · Every area</p>
+  <h2 class="t">Each area from its entrances</h2>
+  <p class="lede">Pick an area, then an entrance. The view is drawn by the same routines the Play tab runs.</p>
+  <div class="pick"><button type="button" class="step" id="mp-prev" aria-label="Previous area">‹</button><select id="mp-area" aria-label="Area"></select><button type="button" class="step" id="mp-next" aria-label="Next area">›</button></div>
+  <div class="mp-two">
+    <div>
+      <div class="mp-screen"><canvas id="mp-view" width="208" height="105" aria-label="The view from the chosen entrance"></canvas></div>
+      <div class="mp-ents" id="mp-ents"></div>
+      <table id="mp-info" style="margin-top:14px"></table>
+    </div>
+    <div class="mp-plan">
+      <canvas id="mp-plan" width="512" height="512" aria-label="The area's plan"></canvas>
+      <div class="mp-key"><span><i style="background:rgba(47,49,54,.55)"></i>shapes, darker when taller</span><span><i style="background:rgba(31,95,168,.55)"></i>a door to another area</span><span><i style="background:#d04a3a;border-radius:6px"></i>a sensor</span><span><i style="background:#2a8a4a;border-radius:6px"></i>an entrance and its heading</span><span><i style="background:rgba(194,90,0,.3)"></i>the gas: a strike, and a safe sector inside</span><span><i style="border:1px dashed #2f3136"></i>hidden at the start</span></div>
+    </div>
+  </div>
+  <p class="cap">The view is the probe's at the entrance, walking, at the start of a game: <code>new_game</code>, then <code>set_start</code>, <code>draw_view</code> and <code>copy_view</code> from the Play tab's port, run on the memory the tape loads. The plan looks down on the area's 128 by 128 cells, x to the right and z up, each shape's footprint from its record. The gas diamonds are where a rig strikes gas at all and where it makes the sector safe: <code>drill</code> takes 100 less the rig's distance from the field's centre, across plus along, times 100 over the field's size, and 50 or more is safe.</p>
+  <h3>What the objects do</h3>
+  <ul class="mp-do" id="mp-do"></ul>
+</section>
+
+<section id="record">
+  <p class="fig">03 · The format</p>
+  <h2 class="t">An area's record</h2>
+  <p>The game's data starts at <code>$CF3E</code> with the count of areas, 29, and the table at <code>$D006</code> holds where each record is. <code>load_area</code> searches the records for the area's number, so they need not be in order, and they are not: the sectors come in the order 1, 2, 3, 8, 14 to 18, then the Stores and the complexes, then 5, 4, 6 and the rest.</p>
+  <table>
+    <tr><th>Byte</th><th>What it holds</th></tr>
+    <tr><td><code>+0</code></td><td>whether the view is cleared before it is drawn: with 0, what no face covers keeps the last picture</td></tr>
+    <tr><td><code>+1</code></td><td>the count of objects</td></tr>
+    <tr><td><code>+2</code></td><td>the area's number, which scripts and doors use</td></tr>
+    <tr><td><code>+3</code></td><td>where the area's own scripts are, from the record's start</td></tr>
+    <tr><td><code>+5</code></td><td>the scale: the probe's step, height, climb and fall are multiplied by it</td></tr>
+    <tr><td><code>+6</code></td><td>the border, the colour a sensor's shot flashes, and the view's paper and ink</td></tr>
+    <tr><td><code>+10</code></td><td>the gas field: its centre, x and z, and its size</td></tr>
+    <tr><td><code>+13</code></td><td>the name, 12 characters</td></tr>
+    <tr><td><code>+25</code></td><td>the objects, each as long as its byte +8 says</td></tr>
+  </table>
+  <p>An object starts with its type (bit 7 set when it starts hidden, bit 6 while it is hidden), its corner in cells (x, height, z), its size, its number and its length; then the colours of its faces and, for a line or a flat polygon, its points. Whatever follows, up to the length, is its script. An entrance is an object of type 0 that is never drawn: in place of a size it holds the pitch, heading and roll the probe comes in with. A sensor (type 2) holds how often it fires and how far it reaches.</p>
+</section>
+
+<section id="shared">
+  <p class="fig">04 · The scripts</p>
+  <h2 class="t">The scripts that join the areas</h2>
+  <p>Five scripts at <code>$D04C</code> run after every pass that moved anything, wherever the probe is. They hold three of the game's surprises, and two areas' own scripts hold the way to the last sector.</p>
+  <ul class="pl-list">
+    <li><b>The visitor.</b> Variable 31 counts the minutes since the area was loaded. At eight, three of the player's own objects appear high over the middle of the area (numbers 248 to 250, at <code>$87FE</code>): two pyramids round a sensor, which fires. At nine they go, and the count starts again. Nothing in the game moves an object, so this is as close as it comes to a ship flying over.</li>
+    <li><b>Off the moon.</b> An edge with no neighbour sets flag 21, and the third script then sends the vehicle to Mitral, area 32: the jet to entrance 6, high in the air, and the probe on to entrance 7, on the floor. Mitral is a floor, a tower and a sensor on top of it, with no way out, and its floor takes 2 of energy and 2 of shield at every step (<a href="discoveries.html#mitral">Discoveries</a>).</li>
+    <li><b>Two puzzles across areas.</b> One waits, after a shot anywhere, until object 15 in Niccolite, 28 in Alabaster, 36 in Opal and 28 in Quartz are all shown, then takes down the wall along Opal's south edge, the way into Diamond. The other waits until object 41 in Obsidian, 11 in the area named UNKNOWN AREA, 16 in Ochre and 15 in Graphite are all shown, then takes down Obsidian's north wall and shows the edge behind it, the way into Trachyte.</li>
+  <li><b>The number on the wall.</b> Obsidian's north wall carries a 17, drawn as two rectangles and a four-cornered shape (objects 36 to 38). Its own script waits until 17 sectors are safe (variable 32 is the count, <code>$889E</code>), then hides the number and shows a panel with a switch (objects 39, 40 and 42); shooting the switch flips it to object 41, one of the four the second puzzle waits for. Trachyte's script waits for 18 and then shows the probe seven areas in turn.</li>
+</ul>
+</section>

@@ -1,0 +1,99 @@
+<section class="pl-first" id="game">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">A probe, eighteen platforms and four hours</h2>
+  <div class="hw-shots"><img src="reference/title.png" alt="The title screen: DRILLER, introducing Freescape"><img src="reference/play-start.png" alt="The probe in Amethyst at the start of a game, with the console below the view"></div>
+  <p>Mitral, a moon mined and then abandoned, is filling with gas, and the gas will blow it apart in four hours. You drive a probe over the eighteen platforms built on its surface. In each one you find where the gas lies and teleport a drilling rig onto the spot; a rig close enough to the pocket makes the platform, or sector, safe. Make all eighteen safe before the clock runs out.</p>
+  <p>Everything is solid and you can look any way you like. The platforms hold buildings, doors, crystals and switches, and sensors that shoot at the probe and wear its shield down. Energy goes on drilling and on time, and some puzzles need a jet, kept in a hangar, that flies where the probe cannot.</p>
+  <p>Incentive called the engine Freescape. Each area is a list of boxes, pyramids and flat shapes, and each shape can carry a short script that runs when it is shot or walked into. The <a href="levels.html">Maps</a> tab draws every area.</p>
+</section>
+
+<section id="painter">
+  <p class="fig">02 · The view</p>
+  <h2 class="t">The view is painted from the back, one face at a time</h2>
+  <p class="lede">Pick an area and an entrance, then paint the view and watch the order the faces go in.</p>
+  <div class="plate">
+    <div class="pick"><select id="hw-area" aria-label="Area"></select></div>
+    <div class="hw-screen"><canvas id="hw-view" width="208" height="105" aria-label="The view, as far as the painting has got"></canvas></div>
+    <div class="hw-btns" id="hw-ents"></div>
+    <div class="hw-row"><span>Heading</span><input type="range" id="hw-turn" min="0" max="71" step="1" aria-label="Heading"><span id="hw-turn-out"></span></div>
+    <div class="hw-row"><button type="button" class="hw-btn" id="hw-play">▶ Paint it</button><input type="range" id="hw-face" min="0" max="0" step="1" aria-label="Faces filled"><span id="hw-face-out"></span></div>
+    <p class="cap">The probe at the entrance at the start of a game, drawn by the Play tab's port of <code>draw_view</code> on the memory the tape loads, with a copy of the view put on the screen after each call of <code>fill_face</code>. The port is held to the game's own code byte for byte in the lockstep test, and its drawing of the view at a moment saved from the emulator matches the game's screen in every pixel. The heading is in 72nds of a turn, as the game keeps it; the view keeps the entrance's place and pitch.</p>
+  </div>
+  <p>A picture takes several steps, all in <code>draw_view</code> at <code>$6B12</code>. First the area is cut down to the box that can be in view (<code>bound_view_box</code>). Each object then has its corners turned by the view matrix, made from the heading, the pitch and the roll and a table of sines at <code>$8E78</code>. A corner is turned without a multiply loop: before each picture, <code>make_multipliers</code> writes nine short routines of Z80 code into memory, one for each number in the matrix, each of which multiplies by that one number. The faces are clipped against the edges of the view and projected, and each visible face goes into a list.</p>
+  <p><code>sort_faces</code> then puts the list in order, farthest first, and <code>fill_face</code> fills each face into a buffer with one of 15 patterns of four rows (<code>$CF48</code>): solid, empty, and the dithers and stripes that stand in for shades of colour on a machine with two colours to each square of 8 by 8 pixels. A face painted later covers what was painted before it. The finished buffer is copied to the screen in one go, so a player never sees the painting.</p>
+</section>
+
+<section id="sound">
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: every effect stops the game while it plays</h2>
+  <p class="lede">Press an effect to hear it. The game has no music: 21 effects, all on the beeper.</p>
+  <div class="plate">
+    <div class="hw-fx" id="hw-fx"></div>
+    <div class="hw-wave"><canvas id="hw-wave" width="960" height="70" aria-label="The beeper's level over the effect"></canvas></div>
+    <p class="hw-out" id="hw-fx-out">Pick an effect.</p>
+    <p class="cap">Each effect is the Play tab's port of <code>play_sound</code> (<code>$9574</code>), run when the button is pressed: its writes to port <code>$FE</code> at the T-states the game's timing loops take, played by the site's model of the beeper. The line above is the beeper's level over the whole effect. What calls each effect is read from the code and from the areas' scripts.</p>
+  </div>
+  <p>The Spectrum's beeper is one bit, bit 4 of port <code>$FE</code>, and a note is that bit flipped at the right rate by a loop that counts. <code>play_sound</code> looks the effect up in a table of 21 addresses at <code>$954A</code> and calls it with the interrupts off, so nothing else happens while it plays: the clock stops, the sensors stop firing, and the keys are not read. Effect 11, which a script plays when the visitor appears over an area after eight minutes (<a href="levels.html#shared">Maps</a>), holds the game for three seconds. Effects 16 and 18 make no sound at all.</p>
+</section>
+
+<section id="gas">
+  <p class="fig">04 · Drilling</p>
+  <h2 class="t">How close the rig must be to the gas</h2>
+  <p class="lede">Pick a sector and click its plan to place a rig. The shading is every place a rig would strike gas; the darker diamond is where it would make the sector safe.</p>
+  <div class="plate">
+    <div class="pick"><select id="hw-sector" aria-label="Sector"></select></div>
+    <div class="hw-two">
+      <div class="hw-plan"><canvas id="hw-gas" width="512" height="512" aria-label="The sector's plan, with the gas"></canvas></div>
+      <div>
+        <p class="hw-out" id="hw-gas-out"></p>
+        <div class="hw-row"><span>Frame of the first strike, 0 to 15</span><input type="range" id="hw-rot" min="0" max="15" value="0" aria-label="The frame count at the first strike"><span id="hw-rot-out"></span></div>
+        <div class="hw-amts" id="hw-amts" aria-label="Each sector's gas"></div>
+      </div>
+    </div>
+    <p class="cap">The plan looks down on the sector's 128 by 128 cells, north up, its shapes in grey. Each cell's shade is <code>drill</code>'s own sum for a rig centred there, worked out with the game's multiply and divide routines from the gas field in the area's record (bytes +10 to +12). The rig is the 12 by 12 square.</p>
+  </div>
+  <p>Every sector's record holds a gas field: a centre and a size. <code>drill</code> (<code>$BEFA</code>) puts the rig a few cells in front of the probe and measures from the rig's centre to the field's centre, across plus along rather than in a straight line. The strike is 100 less that distance times 100 over the field's size, so the region that strikes anything is a diamond, and the region that strikes 50 % or more, which makes the sector safe, is a diamond half its size.</p>
+  <p>The amount of gas in each sector is not in its record. It comes from a table of 18 amounts at <code>$88EB</code>, stored twice over, and the game starts reading it at a place set by the frame counter at the moment of the first strike of the game. The amounts are the same in every game, but which sector holds which moves round by up to 15 places. The score for a rig is the percentage times the amount times ten.</p>
+</section>
+
+<section id="security">
+  <p class="fig">05 · Before the game</p>
+  <h2 class="t">The security question and its 128 hidden words</h2>
+  <p class="lede">Move the slider to pick a question. The bytes below are the record the game reads, and the letters are what <code>security</code> makes of them.</p>
+  <div class="plate">
+    <div class="hw-row"><span>Frame counter, low 7 bits</span><input type="range" id="hw-sec" min="0" max="127" value="0" aria-label="The frame counter"><span id="hw-sec-out"></span></div>
+    <p class="hw-q" id="hw-sec-q"></p>
+    <div class="hw-bytes" id="hw-sec-bytes"></div>
+    <p class="cap">The record at <code id="hw-sec-at"></code> in the table at <code>$ABC1</code>: the word's length, the page plus <code>$40</code>, the line, the word plus <code>$20</code>, then one byte a letter.</p>
+  </div>
+  <p>Before play, the game asks for a word from the manual by page, line and word number. <code>security</code> (<code>$CB7A</code>) picks the question with the low seven bits of the frame counter, counting through the variable-length records one by one. The answer must be typed in capitals, ten letters at most, and three wrong answers clear the memory and restart the Spectrum.</p>
+  <p>The words are not stored as text. Each letter is shifted one bit to the left, and three bits that would be the same for every capital letter, the top two and the bottom one, are made to vary, so each letter is stored as one of four bytes. A search of memory for IMPROVE finds nothing. The check undoes it: it clears bit 6, sets bit 7 and shifts the byte back to the right. A right answer also mends the first instruction of <code>draw_view</code>, which the tape loads as a jump to itself (<a href="discoveries.html">Discoveries</a>).</p>
+</section>
+
+<section id="sensors">
+  <p class="fig">06 · Sensors</p>
+  <h2 class="t">Sensors shoot from inside the frame interrupt</h2>
+  <p>A sensor is an object of type 2 with a range and a rate of fire. When the view is drawn, every sensor in range of the probe gets a six-byte record: its number, its range, and a state. The main loop then checks each one. A sensor on the screen fires only while <code>pick_object</code> finds it at its place in the picture; one off the screen fires only while <code>move_to</code> can walk a straight line from the probe to it, so a wall between them keeps the probe safe.</p>
+  <p>The shot itself is drawn by the interrupt, fifty times a second, whatever the main loop is doing. The interrupt counts each sensor's period down, draws its beam to the probe as a line flipped onto the screen and off again, plays effect 2 and takes the shield down. The time the interrupt spends on a beam is taken from the main loop, so a sensor that keeps firing slows the whole game down.</p>
+  <table>
+    <tr><th>What uses the energy</th><th>Costs</th></tr>
+    <tr><td>A minute of the clock</td><td>1</td></tr>
+    <tr><td>Drilling, or taking a rig back</td><td>5 each</td></tr>
+    <tr><td>Graphite's mines, the rectangles on its floor</td><td>3 each</td></tr>
+  </table>
+  <p>The probe starts with 48 of energy and 50 of shield, the jet with 29 and 34, each at most 63. A sensor's shot takes shield; running out of either, or the clock reaching 00:00:00, or a fall of more than a few cells, ends the game.</p>
+</section>
+
+<section id="loop">
+  <p class="fig">07 · The main loop</p>
+  <h2 class="t">One key, one picture</h2>
+  <p>The game does not run at a fixed rate. <code>main_loop</code> (<code>$9807</code>) waits for a command, carries it out, redraws the view if anything moved, checks the sensors, updates the console and runs the scripts, and only then reads the keys again. A pass that redraws takes several frames, more in a crowded area. With no key held, a pass still comes once a minute of the clock, so the scripts that count minutes keep running.</p>
+  <p>Five lamps on the console show each pass going by. They go dark as a pass starts, and light one at a time: when the command is taken, when the picture begins, when its objects are queued, when they are sorted and when the view reaches the screen.</p>
+  <table>
+    <tr><th>Keys</th><th>Command</th></tr>
+    <tr><td><kbd>O</kbd> <kbd>K</kbd> <kbd>Q</kbd> <kbd>W</kbd></td><td>forward, back, turn left, turn right; with SPACE, the crosshair</td></tr>
+    <tr><td><kbd>P</kbd> <kbd>L</kbd> · <kbd>N</kbd> <kbd>M</kbd> · <kbd>R</kbd> <kbd>F</kbd></td><td>look up and down, tilt, rise and fall</td></tr>
+    <tr><td><kbd>0</kbd> · <kbd>B</kbd></td><td>fire at the crosshair; show or hide the crosshair</td></tr>
+    <tr><td><kbd>D</kbd> <kbd>C</kbd> · <kbd>I</kbd></td><td>drill, collect the rig; the information screen</td></tr>
+  </table>
+</section>
