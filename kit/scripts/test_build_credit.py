@@ -109,8 +109,26 @@ class Credit(unittest.TestCase):
                 ("Bob", "bob@example.org", "stranger")]
 
     def test_credit_is_one_row_a_person_and_none_for_an_agent(self):
-        self.assertEqual(build.credit(self.authors()), [(5, "Ada Lovelace", "ada"), (1, "Bob", None)])
+        self.assertEqual(build.credit(self.authors()), [(5, "Ada Lovelace", "ada", 0), (1, "Bob", None, 0)])
         self.assertEqual(sorted(self.asked), ["agent-alias", "squash", "stranger"])
+
+    def test_who_did_most_on_this_game_alone_comes_first(self):
+        # Bob's one pull request on this minisite puts him before Ada's five site-wide changes
+        self.assertEqual(build.credit(self.authors(), own={"stranger"}),
+                         [(1, "Bob", None, 1), (5, "Ada Lovelace", "ada", 0)])
+        self.assertEqual(build.credit(self.authors(), own={"stranger", "c1", "c2"}),
+                         [(5, "Ada Lovelace", "ada", 2), (1, "Bob", None, 1)])
+
+    def test_the_about_tab_says_which_commits_were_this_games_alone(self):
+        self.assertEqual(build.commits_said(5, 5), "5 commits")
+        self.assertEqual(build.commits_said(1, 1), "1 commit")
+        self.assertEqual(build.commits_said(21, 0), "21 commits that changed other games too")
+        self.assertEqual(build.commits_said(8, 3), "8 commits, 3 to this game alone")
+
+    def test_a_commit_is_this_games_alone_when_it_changes_no_other_game(self):
+        folders = build.game_folders()
+        self.assertTrue(folders)
+        self.assertTrue(all(all(f.count("/") == 2 and f.startswith("games/") for f in v) for v in folders.values()))
 
     def test_an_author_github_cannot_name_is_reported_without_their_address(self):
         build.credit(self.authors())
@@ -124,7 +142,7 @@ class Credit(unittest.TestCase):
     def test_credit_without_a_token_is_unlinked_and_counted_not_warned(self):
         del os.environ["GITHUB_TOKEN"]
         rows = build.credit(a for a in self.authors() if a[2] != "agent-alias")
-        self.assertEqual(rows, [(3, "Ada Lovelace", None), (2, "ada", "ada"), (1, "Bob", None)])
+        self.assertEqual(rows, [(3, "Ada Lovelace", None, 0), (2, "ada", "ada", 0), (1, "Bob", None, 0)])
         self.assertEqual((self.asked, self.said.getvalue()), ([], ""))
         self.assertEqual(build._unasked, {"Ada Lovelace", "Bob"})
 
@@ -136,7 +154,7 @@ class Credit(unittest.TestCase):
     def test_a_request_that_fails_is_the_last_and_is_said_once(self):
         self.assertIsNone(build.github_login("eve@example.org", "down"))
         self.assertEqual(build.credit(self.authors()),
-                         [(3, "Ada Lovelace", None), (2, "ada", "ada"), (1, "Claude", None), (1, "Bob", None)])
+                         [(3, "Ada Lovelace", None, 0), (2, "ada", "ada", 0), (1, "Claude", None, 0), (1, "Bob", None, 0)])
         self.assertEqual(self.asked, ["down"])
         said = self.said.getvalue()
         self.assertEqual(said.count("GitHub could not be asked"), 1, said)
