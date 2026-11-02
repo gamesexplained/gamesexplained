@@ -88,7 +88,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="skip" title="Run the intro at full speed to the crash landing, the frame where the game hands you control">Skip intro</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
-      <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a C64 with a much faster processor would: a new frame from the game every video frame, at the C64's own pace">Fast CPU</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a C64 with a much faster processor would: a new frame from the game every video frame, at the C64's own pace or the game's where the C64 falls behind">Fast CPU</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-sep" aria-hidden="true"></span>
@@ -117,7 +117,7 @@ section table{margin:6px 0 18px}
       </span>
       <span class="pl-status" id="alive-status"></span>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would: a new frame from the game's own code every video frame, at the C64's pace (section 03).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would: a new frame from the game's own code every video frame, at the C64's pace, or the game's own where the C64 falls behind it (section 03).</p>
     <div id="alive-panel" hidden>
       <canvas id="alive-cv" width="440" height="440" role="img" aria-label="Map of the city: the roads, you, and the traffic"></canvas>
       <p class="cap" id="alive-cap">Targ Traffic can be switched on at any time; the traffic appears at once and the game carries on. Switched off, the game is the original again. On the map north is up, <b>blue</b> is Palyar and <b>red</b> Mechanoid, a square is a car and a triangle a craft, and the amber disc is you.</p>
@@ -189,12 +189,15 @@ section table{margin:6px 0 18px}
   <h3>Fast CPU</h3>
   <p>With <b>Fast CPU</b> on, the page plays the game as a C64 with a much faster processor would. The main loop goes round once every video frame, 50 times a second, where the C64 manages four to twelve passes. Each pass draws a new frame into the game's own bitmaps, so every frame on screen is one the game drew.</p>
   <p>A faster C64 would also be a faster game, since the game moves you a fixed step each pass. Fast CPU keeps the C64's pace instead. After each pass the page works out, from what that pass drew, how many frames the C64 would have taken over it, as its clock does for the C64 itself. That many of Fast CPU's passes stand for one of the C64's, and each takes its share of the step: of a walk, a turn, a climb, a missile's flight. The shares go through the game's own movement code and add up to the C64's step exactly, so the last of them ends where the C64's pass ends. A craft's bank, which the game sets once a pass from its rate of turn, moves to each new angle the same way, a share at a time, and so do Targ Traffic's cars and craft, which the mod moves once a pass.</p>
+  <p>Fast CPU follows the C64 down only as far as the pace the game itself plans for. The game brings the interstellar ship down in 780 passes, and its panel calls that 2 MINS: six and a half passes a second. Where the C64 takes longer over a pass, with many objects or much of the city in view, its processor has fallen behind the game, and a faster one would not. So Fast CPU holds each of the C64's passes to eight frames, 6.27 a second. Standing at the crash site, the C64 makes 5.05 passes a second and Fast CPU 6.25. Put seven keys down in front of you and the C64 slows to 3.60, while Fast CPU stays at 6.25. Walking north, where the C64 makes seven and a half, Fast CPU keeps its pace.</p>
   <p>What the game counts in passes happens once for each of the C64's passes: the event scripts' next operation, the lifetimes of the missiles and the attack ship, a building's collapse, the damping of a craft's turn and speed, and a held <kbd>=</kbd> or <kbd>−</kbd>. What the game times by its clock keeps its time, since the raster interrupts still come 50.12 times a second on their lines: the panel's seconds, Benson's printing, the lift ride.</p>
   <table>
     <tr><th>From the crash site</th><th>C64</th><th>Fast CPU</th></tr>
     <tr><td>Walking for 20 seconds</td><td>13,120 units</td><td>13,146 units</td></tr>
-    <tr><td>Turning on foot for 20 seconds</td><td>1,632 steps of 1,024 to a turn</td><td>1,648 steps</td></tr>
-    <tr><td>Flying the Dart level for 10 seconds</td><td>48,990 units</td><td>49,257 units</td></tr>
+    <tr><td>Turning on foot for 20 seconds</td><td>1,632 steps of 1,024 to a turn</td><td>2,022 steps</td></tr>
+    <tr><td>Flying the Dart level for 10 seconds</td><td>48,990 units</td><td>66,297 units</td></tr>
+    <tr><td>Passes a second, standing</td><td>5.05</td><td>6.25</td></tr>
+    <tr><td>Passes a second, seven keys in view</td><td>3.60</td><td>6.25</td></tr>
     <tr><td>The panel's clock after 20 seconds</td><td>1,002 frames</td><td>1,001 frames</td></tr>
     <tr><td>A turn key pressed to the view turning, on foot</td><td>about 290 ms</td><td>about 30 ms</td></tr>
   </table>
@@ -210,7 +213,7 @@ section table{margin:6px 0 18px}
     <li><b>The screen.</b> The video chip is drawn line by line from the registers the game writes and the line each write lands on, which is how the game splits the screen into the view, the panel and the message window. A register written in the middle of a line takes effect from the next line.</li>
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, a frame at a time.</li>
     <li><b>The interrupts.</b> They run between the steps of a pass, not inside them (section 02).</li>
-    <li><b>Fast CPU.</b> The frames between two of the C64's passes are the game's own, from passes that each take a share of the C64's step. The C64 never shows them, and what the game tests once a pass, it tests at each share (section 03).</li>
+    <li><b>Fast CPU.</b> The frames between two of the C64's passes are the game's own, from passes that each take a share of the C64's step. The C64 never shows them, and what the game tests once a pass, it tests at each share. A pass the C64 takes more than eight frames over takes eight (section 03).</li>
     <li><b>The keyboard.</b> The arrows are the joystick in port 2, and F or the right Ctrl key fires. The other keys are the C64's by name: the digits set the thrust, T takes and B boards. Esc is CTRL + RETURN, the game's pause.</li>
   </ul>
 </section>
@@ -6511,8 +6514,9 @@ function makeDisplay(opts) {
    The beat is the C64's video frame, 50.12 a second, the clock the game counts its passes in: the
    runtime starts a loop at line 224 of each frame, where the C64 flips its buffers. The game keeps
    its own pace (follow): one of the C64's passes takes as many frames as its cost model gives for
-   the work the last loop did, and each loop takes that share of a pass's steps, so every view moves
-   as fast as on the C64. The numbers are the plug-in points' keys in the port: the routine's
+   the work the last loop did, up to the game's own pace (most), and each loop takes that share of a
+   pass's steps, so every view moves as fast as on the C64, or where the C64 falls behind the game,
+   at the game's pace. The numbers are the plug-in points' keys in the port: the routine's
    address, or for a moving object 0x10000 + 4 x its number + the axis. */
 (function () {
   'use strict';
@@ -6530,6 +6534,11 @@ function makeDisplay(opts) {
     tick: 19656, hz: 985248,           // the beat: a PAL video frame, 312 lines of 63 cycles
     cap: 4,                            // the most loops a refresh runs: real time on a 15 Hz display
     follow: true,                      // the C64's own pace, view by view (rt.machineBeats)
+    // but never slower than the pace the game itself assumes: it brings the interstellar ship down
+    // in 780 passes and calls that 2 MINS, 6.5 passes a second, so a pass takes at most 8 frames
+    // (6.27 a second). A C64 pass that takes longer, where many objects or much of the city are in
+    // view, is the processor falling behind, not the game
+    most: 8,
     steps,
     // held down, - and + trim the thrust once a pass (key_dispatch, $B356 and $B361)
     repeats: [0x2B, 0x28],

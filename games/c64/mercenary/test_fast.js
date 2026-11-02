@@ -26,16 +26,20 @@
 //   loop is one listed as meant to (the event script, the turn rate, the speed, the attack
 //   ship's aim);
 // - the pace: walking and turning for 20 s on foot, and 10 s of level flight in the Dart, cover
-//   the C64's distance and heading within 1 % or one of its passes' steps;
-// - repeats: in the Dart, + held trims the thrust once a shadow pass, and a press of three video
-//   frames trims it once;
+//   the C64's distance and heading with each of its passes held to the cap (T.most frames), within
+//   1 % on foot and 2 % turning or in flight, or one of its passes' steps, and never less than the
+//   C64's own;
+// - the cap: standing at the crash site with the seven keys in view, where the C64 falls behind,
+//   Fast CPU keeps the cap's pace and no shadow pass takes more than T.most loops;
+// - repeats: in the Dart, + held trims the thrust once a shadow pass, at least as often as on the
+//   C64, and a press of three video frames trims it once;
 // - stopping: on foot, a walk and a turn stop in the loop where the stick comes back;
 // - three minutes of random play on foot and in the Dart, at random refresh intervals, with Fast
 //   CPU switched now and then, throw nothing;
 // - no frame behind: after each refresh that ran a loop, the machine is parked at that loop's end
 //   and the bitmap on show ($C7) is the one its flip put up.
 //   node games/c64/mercenary/test_fast.js [part: off, limiter, same, clock, whole, bank, traffic,
-//     once, pace, repeats, stopping, random, behind]
+//     once, pace, cap, repeats, stopping, random, behind]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -362,30 +366,76 @@ if (part('once')) {
 
 // --- the pace -----------------------------------------------------------------------------------
 if (part('pace')) {
+  // the C64's pace with each pass held to the cap (T.most frames): on the C64, the frames each pass
+  // took; the cap's pace covers the same ground in sum(min(frames, most)) of them
   const run = (fast, setup, secs, joy, keys) => {
     const m = machine(false);
     if (setup) setup(m);
     if (fast) FastCPU.set(m.fx, true);
     const p0 = pos(m.M), s0 = fast ? m.fx.shadow : m.rt.passes;
-    let h = p0.head, dh = 0;
-    const each = () => { const n = pos(m.M).head; dh += turned(h, n); h = n; };
+    let h = p0.head, dh = 0, pass = m.rt.passes, at = m.rt.frame, all = 0, held = 0;
+    const each = () => {
+      const n = pos(m.M).head; dh += turned(h, n); h = n;
+      if (!fast && m.rt.passes !== pass) { const f = (m.rt.frame - at) / (m.rt.passes - pass); all += f; held += Math.min(f, T.most); pass = m.rt.passes; at = m.rt.frame; }
+    };
     if (fast) m.refresh(secs, joy, keys, 1000 / 60, each);
     else { m.press(joy, keys); for (let i = 0, n = Math.round(secs / FRAME_MS * 1000); i < n; i++) { m.rt.runFrame(); each(); } m.press(); }
     const p1 = pos(m.M);
-    return { d: dist(p0, p1), dh: Math.abs(dh), passes: (fast ? m.fx.shadow : m.rt.passes) - s0 };
+    return { d: dist(p0, p1), dh: Math.abs(dh), passes: (fast ? m.fx.shadow : m.rt.passes) - s0, scale: held ? all / held : 1 };
   };
-  // within tol, or one of the C64's steps (slack): a pass is a sizeable share of 20 s
-  const within = (what, a, b, tol, slack = 0) => {
-    const e = Math.abs(b - a) / Math.abs(a);
-    if (!(e <= tol || Math.abs(b - a) <= slack)) fail(`${what}: the C64 ${a.toFixed(0)}, Fast CPU ${b.toFixed(0)}, ${(100 * e).toFixed(2)} % apart`);
-    return (100 * e).toFixed(2) + ' %';
+  // never slower than the C64; and within tol, or one of the C64's steps (slack), of the C64's
+  // pace held to the cap
+  const within = (what, c64, b, tol, slack = 0) => {
+    const a = c64.v * c64.scale, e = Math.abs(b - a) / Math.abs(a);
+    if (b < c64.v * (1 - tol) - slack) fail(`${what}: Fast CPU ${b.toFixed(0)}, slower than the C64's ${c64.v.toFixed(0)}`);
+    if (!(e <= tol || Math.abs(b - a) <= slack)) fail(`${what}: the C64 held to ${T.most} frames a pass ${a.toFixed(0)}, Fast CPU ${b.toFixed(0)}, ${(100 * e).toFixed(2)} % apart`);
+    return `${a.toFixed(0)} expected, ${(100 * e).toFixed(2)} % apart`;
   };
   const wa = run(false, null, 20, UP), wb = run(true, null, 20, UP);
   const ta = run(false, null, 20, LEFT), tb = run(true, null, 20, LEFT);
   const fa = run(false, dart, 10, 0), fb = run(true, dart, 10, 0);
-  console.log(`pace: walking 20 s ${wa.d.toFixed(0)} and ${wb.d.toFixed(0)} units (${within('walking', wa.d, wb.d, 0.01, 80)}), ` +
-              `in ${wa.passes} C64 passes and ${wb.passes} shadow passes; turning 20 s ${ta.dh} and ${tb.dh} (${within('turning', ta.dh, tb.dh, 0.01, 16)}); ` +
-              `flying 10 s ${fa.d.toFixed(0)} and ${fb.d.toFixed(0)} (${within('flying', fa.d, fb.d, 0.01)})`);
+  console.log(`pace: walking 20 s, the C64 ${wa.d.toFixed(0)} units and Fast CPU ${wb.d.toFixed(0)} (${within('walking', { v: wa.d, scale: wa.scale }, wb.d, 0.01, 80)}); ` +
+              `turning 20 s, ${ta.dh} and ${tb.dh} heading steps (${within('turning', { v: ta.dh, scale: ta.scale }, tb.dh, 0.02, 16)}); ` +
+              `level flight 10 s, ${fa.d.toFixed(0)} and ${fb.d.toFixed(0)} units (${within('flying', { v: fa.d, scale: fa.scale }, fb.d, 0.02)})`);
+}
+
+// --- the cap ------------------------------------------------------------------------------------
+// the seven keys put down in front of you at the crash site: the C64 falls behind, Fast CPU keeps
+// to the cap, T.most frames a pass, and no shadow pass takes more
+if (part('cap')) {
+  const keys = m => {
+    const { M, P } = m;
+    const px = M[0x72] | M[0x73] << 8 | M[0x74] << 16, py = M[0x78] | M[0x79] << 8 | M[0x7A] << 16;
+    [17, 18, 19, 20, 21, 22, 23].forEach((o, i) => {
+      const x = (px + (i - 3) * 600) & 0xFFFFFF, y = (py - 0x1800 - (i % 2) * 0x400) & 0xFFFFFF;   // ahead: north is -Y
+      M[0x29C0 + o] &= 0x7F; M[0x2940 + o] = M[0xCD];
+      M[0x2880 + o] = x & 255; M[0x2480 + o] = x >> 8 & 255; M[0x2540 + o] = x >> 16;
+      M[0x2900 + o] = y & 255; M[0x2500 + o] = y >> 8 & 255; M[0x25C0 + o] = y >> 16;
+      M[0x28C0 + o] = 0; M[0x24C0 + o] = 0; M[0x2580 + o] = 0;
+    });
+    P.list_room_objects();
+    m.frames(1, 0);
+  };
+  const out = [];
+  for (const put of [false, true]) {
+    const m = machine(false);
+    if (put) keys(m);
+    const p0 = m.rt.passes;
+    m.frames(20, 0);
+    const c64 = (m.rt.passes - p0) / 20;
+    FastCPU.set(m.fx, true); m.refresh(1, 0);
+    let most = 0;
+    const b0 = m.fx.loop.begin;
+    m.fx.loop.begin = () => { b0(); if (m.fx.first) most = Math.max(most, m.fx.K); };
+    const s0 = m.fx.shadow;
+    m.refresh(20, 0);
+    const fast = (m.fx.shadow - s0) / 20;
+    if (most > T.most) fail(`a shadow pass took ${most} loops, more than the cap's ${T.most}`);
+    if (fast < c64 * 0.99) fail(`${put ? 'with the keys' : 'without them'}, Fast CPU ${fast.toFixed(2)} C64 passes a second, slower than the C64's ${c64.toFixed(2)}`);
+    if (put && Math.abs(fast - 50.12 / T.most) > 0.01 * 50.12 / T.most) fail(`with the keys, Fast CPU ${fast.toFixed(2)} C64 passes a second, not the cap's ${(50.12 / T.most).toFixed(2)}`);
+    out.push(`${put ? 'the seven keys in view' : 'none'}: the C64 ${c64.toFixed(2)} passes a second, Fast CPU ${fast.toFixed(2)}, ${most} loops at most`);
+  }
+  console.log('cap: standing at the crash site, ' + out.join('; '));
 }
 
 // --- repeats --------------------------------------------------------------------------------------
@@ -405,7 +455,7 @@ if (part('repeats')) {
   };
   const a = trims(false, 3, [0x28]), b = trims(true, 3, [0x28]);
   if (Math.abs(b.n - b.held) > 1) fail(`+ held 3 s trimmed ${b.n} times in ${b.held} shadow passes`);
-  if (Math.abs(b.n - a.n) > 2) fail(`+ held 3 s trimmed ${a.n} times on the C64 and ${b.n} with Fast CPU`);
+  if (b.n < a.n - 1) fail(`+ held 3 s trimmed ${a.n} times on the C64 and only ${b.n} with Fast CPU`);
   const tap = trims(true, 3 * FRAME_MS / 1000, [0x28]);
   if (tap.n !== 1) fail(`a press of + for three video frames trimmed ${tap.n} times, at ${tap.K} loops a shadow pass`);
   console.log(`repeats: + held 3 s trims ${a.n} times on the C64 and ${b.n} in ${b.held} shadow passes; a press of three video frames, ${tap.n} at ${tap.K} loops a shadow pass`);

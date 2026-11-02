@@ -32,6 +32,16 @@ in the platform's reference skill.
   game. A very slow game (`games/c64/castle-master`) gets more frames and
   a faster pace: 60 frames a second and a Speed, because its machine's
   pace is a wait rather than the game.
+- **Where the loop's length rides on the view, build Fast CPU on the whole
+  port.** Following the pace view by view needs a cost model of the loop
+  fitted on the game's own code; a share of each step needs every routine
+  that moves something once a loop; and each count or value the game
+  changes once a loop needs running once a pace or easing. That is the
+  port and the clock a lockstep Play tab has (`play.md`), so it comes
+  first: without it the pace is a guess in every view nobody timed, and a
+  missed once-a-loop job shows only when someone plays there. A game that
+  moves only the player at a pace that is set (`games/c64/castle-master`)
+  needs far less.
 
 ## Two pieces, and nothing else
 
@@ -50,8 +60,9 @@ rate). When two aims clash the higher wins:
    and the page states what it changes.
 4. **Same keys, same game.** Any display, any refresh rate, a fast or a
    slow computer: the same game.
-5. **The pace is set, not the view.** One pace whatever is on screen:
-   the machine's usual one, or the Speed's.
+5. **The pace is set, not the frame rate.** The machine's usual pace or
+   the Speed's, or the machine's own view by view held to the pace the
+   game plans for; never how fast the page draws.
 6. **Every frame is the game's.** Each frame shown is one the game
    rendered, on the first refresh after its loop.
 
@@ -125,6 +136,16 @@ rate). When two aims clash the higher wins:
   empty one (`games/c64/mercenary`, the table's `follow`). The jobs once a
   pace run in the first of them, and each carry keeps its share of a unit
   when K changes.
+- **Hold the followed pace to the one the game plans for.** A loop slower
+  than that is the processor falling behind in a crowded view, which a
+  faster processor would not, so it is no part of the game; a game that
+  does all its logic once a loop keeps working at a steadier pace, and
+  what a quicker one changes is the time a player has to react. Find the
+  planned pace in the game's own words (a countdown of so many loops that
+  it or its manual calls so many seconds), time the machine's loops in its
+  busiest and emptiest views, and set the most beats a loop may take to
+  the whole number nearest that pace and no quicker (the table's `most`).
+  Views quicker than the cap keep the machine's pace.
 - **Ease what the game works out each loop from what changes once a
   pace.** The moves glide a share a loop, but a value set from one the
   game changes once a pace (a craft's bank, from a turn rate damped once

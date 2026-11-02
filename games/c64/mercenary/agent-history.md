@@ -341,3 +341,11 @@ text in sections 03 and 04, the motion code of the modern view, the
 runtime's checkpoint listeners, and the tag Targ Traffic set for it.
 Native resolution stays; in Chromium it drew six views from the crash
 site, on foot and with Fast CPU, pixel for pixel as it did before.
+
+Aaron then asked whether Fast CPU should copy the C64's slowdowns. A pass
+took 14 frames with seven keys dropped in view, 11 in low flight and 10
+at the crash site, against the game's own pace of 6.5 passes a second
+(780 passes for the interstellar ship's 2 MINS). He chose the C64's pace
+held to 8 frames a pass: the table's `most`, a new field in
+`site/lib/fast-cpu.js`. `test_fast.js` gained a part for it and its pace
+and repeats parts now compare with the C64's passes held to 8 frames.

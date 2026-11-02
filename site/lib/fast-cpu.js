@@ -61,6 +61,8 @@
 //                    from where it stood. K is read again as the next
 //                    shadow loop starts, so the pace follows the machine's, view by view, and the
 //                    carries keep their share of a unit across a change of K. speeds is then left out
+//   least, most      with follow, the fewest and the most beats a shadow loop may take: a machine's
+//                    loop slower than most is played at most's pace (left out: no limit)
 // Each of switches, repeats, ctrl and held may be left out when the game has none.
 // The plug-in points once (a job whose effect adds up) and after (a wait that only keeps a message
 // up) take the byte they ask about from the port, so they need no entry; since(key) gives the share
@@ -181,7 +183,7 @@ function reset(fx) {
 // and each carry keeps its share of a unit
 function begin(fx) {
   if (fx.left > 0) { fx.first = false; fx.left--; return; }
-  const K = Math.max(1, Math.round(fx.rt.machineBeats()));
+  const K = Math.min(fx.T.most || Infinity, Math.max(fx.T.least || 1, Math.round(fx.rt.machineBeats())));
   if (K !== fx.K) for (const [k, a] of fx.carry) fx.carry.set(k, Math.min(K - 1, Math.floor(a * K / fx.K)));
   fx.K = K; fx.first = true; fx.left = K - 1; fx.shadow++;
 }
