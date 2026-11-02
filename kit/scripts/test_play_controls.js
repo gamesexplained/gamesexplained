@@ -10,7 +10,8 @@
 // where it would cost the picture height) with the switch showing ✕, and puts each back where it
 // was, by the switch, Escape or Back, adding one step to the history and taking it off again.
 // Every Play page with a canvas attaches it, and a page with the joystick keeps no touch pad of
-// its own beside it. Runs in node, on a stand-in for the page's document.
+// its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
+// each shows what it does. Runs in node, on a stand-in for the page's document.
 //   node kit/scripts/test_play_controls.js
 const fs = require('fs');
 const path = require('path');
@@ -223,6 +224,9 @@ pc.hand('right');
       if (e.isDirectory()) { if (e.name !== 'work' && e.name !== 'node_modules') walk(p); continue; }
       if (!/^play(\.template)?\.html$/.test(e.name)) continue;
       const page = fs.readFileSync(p, 'utf8'), name = path.relative(ROOT, p);
+      const words = page.replace(/<(style|script)\b[\s\S]*?<\/\1>|<!--[\s\S]*?-->/g, ' ').replace(/<[^>]*>/g, '');
+      const help = words.match(/\bpad under the (picture|game)\b|\bslide your thumb\b|\bBack returns to the page\b|\bFull screen, over the\b/i);
+      check(!help, name + ' leaves the touch joystick and Full screen to explain themselves, with no text telling the reader how they work' + (help ? ': "' + help[0] + '"' : ''));
       if (!/<canvas\b/.test(page)) continue;
       pages++;
       check(page.includes('lib/play-controls.js') && /\bPlayControls\.attach\(/.test(page), name + ' loads site/lib/play-controls.js and calls PlayControls.attach');
