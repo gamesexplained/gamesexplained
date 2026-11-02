@@ -11,6 +11,8 @@
 //   back, 0 fires, D drills (or says why not) and I opens the information screen, which another key
 //   closes;
 // - the view is drawn on the screen shown, and the beeper plays;
+// - a sensor's hit plays its sound inside the interrupt, for longer than a frame, and the page
+//   goes on, missing the frame starts that pass as the game does;
 // - three wrong words wipe the machine, as the game does.
 // No frame throws, and the clock keeps to the frames.
 //   node games/spectrum/driller/test_play.js
@@ -142,6 +144,24 @@ if (!m.threw) {
   if (!at.beeps) fail('the beeper never moved');
   if (Math.abs(rt.t / DRPage.FRAME - (rt.shown + 1)) > 50) fail('the clock at frame ' + Math.round(rt.t / DRPage.FRAME) + ' with frame ' + rt.shown + ' shown');
   console.log(m.f + ' frames, ' + at.passes + ' passes, ' + at.beeps + ' changes of the beeper; ' + set + ' bytes of the view set');
+}
+
+// --- a sensor that hits at every interrupt it gets, as the interrupt's own list of sensors in view
+// has it ($8A25, six bytes each from $8A44): each hit plays its sound inside the interrupt, for
+// longer than a frame, so the frame starts that pass while it plays are missed. The page keeps
+// going, a hit takes a unit of shield each time the interrupt runs, and the clock keeps to the
+// frames. No key is held, so no pass of play writes the list again.
+if (!m.threw) {
+  run(30);
+  const M = rt.M, s0 = M[0x8878], f0 = m.f;
+  M[0x8A25] = 1;
+  M.set([1, 1, 0, 2, 0, 0], 0x8A44);          // the object, every frame, the count, it fires
+  run(60);
+  const hits = s0 - M[0x8878];
+  if (m.threw) { /* failed already */ }
+  else if (hits < 15 || hits > 30) fail('a sensor hitting at every interrupt took ' + hits + ' of shield in 60 frames');
+  else if (Math.abs(rt.t / DRPage.FRAME - (rt.shown + 1)) > 50) fail('with a sensor hitting, the clock at frame ' + Math.round(rt.t / DRPage.FRAME) + ' with frame ' + rt.shown + ' shown');
+  else console.log('a sensor hitting at every interrupt: ' + hits + ' hits in ' + (m.f - f0) + ' frames, the shield ' + s0 + ' to ' + M[0x8878]);
 }
 
 // --- three wrong words wipe the machine

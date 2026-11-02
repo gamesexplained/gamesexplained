@@ -56,13 +56,47 @@ were identical in the game and the port, with no routine standing in for
 the game.
 
 **Pacing.** The page runs the port at the game's speed by a cost model
-fitted on the game's own T-states (`port/scripts/fit-cost.js`). On a
-moment with a sensor in view the page ran ahead, because the interrupt
-draws the sensors' beams and that work is not the main program's; the
-interrupt got counts of its own work (sensors and beams) and a fit of its
-own. On 1,199 passes it was not fitted on, the median error of a whole
-pass is −0.9 %. `port/test/t-page.js` plays the built page against the
-game on saved moments and checks the pace is within 5 %.
+of the game's own T-states (`port/scripts/fit-cost.js`, whose header
+holds the commands that made `port/cost.json`). On a moment with a sensor
+in view the page ran ahead, because the interrupt draws the sensors'
+beams and that work is not the main program's; the interrupt got counts
+of its own work (sensors and beams) and a fit of its own.
+
+The first fit priced every routine together by non-negative least
+squares, and held within 6 % on random play. The page's pace test, which
+holds a round of keys rather than pressing them at random, found a moment
+where the page ran 13 % fast: held, a look up fills the view with faces,
+and the fit had priced the face sort at nothing. `own-cycles.js` hooks
+the game at every routine the port names and measures each one's own
+T-states. The sort is a bubble sort, 473,000 T-states a call in that view
+and 14,000 in an ordinary one, and the span filler, which nearly every
+view fills alike, had its cost put on the drawing routines it moves with.
+The port got counters for the work inside the heaviest routines (the
+sort's comparisons and swaps, the rotation's multiply steps, the edges'
+rows by their slope), and `price-routines.js` prices those routines, and
+nine whose cost a call is steady, from the measurements; the rest is
+fitted around them. Pricing every routine at its mean a call was tried
+and was worse, off by 17 % on one moment: a routine with a loop of its
+own (the faces it draws, the steps it takes) has no single price.
+
+On 2,399 passes it was not fitted on, the median error of a whole pass
+is −0.1 %, and seven in eight are within 5 %. Over 60 passes from each
+of 153 moments, with random keys and with the held round, 296 of 306 runs
+are within 5 %; the slowest are in Mitral, up to 9 % slow, where no
+pricing tried brought them under 6 %. `port/test/t-page.js` plays the
+built page against the game on 16 saved moments and checks the pace is
+within 5 %: the widest is 4.4 %.
+
+**A freeze in Mitral.** The same pace test hung on a moment from which
+its held keys walked off the edge of the moon into Mitral. A sensor there
+hits every five frames, and the interrupt plays the hit's sound, longer
+than a frame, inside its handler. The page's clock ran an interrupt for
+every frame start it had passed, so each hit was followed by interrupts
+run back to back, each of which could hit again. The Spectrum loses a
+frame start that passes while the handler runs with the interrupts off;
+the page now does the same, stops with a message rather than freezing if
+an interrupt ever runs 100,000 times in one stretch, and `test_play.js`
+gives a sensor a hit at every interrupt.
 
 **The sample.** 75 of the listing's 262 comments, drawn with seed
 20261102, went cold to a second session as checker before any was

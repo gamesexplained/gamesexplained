@@ -178,8 +178,7 @@ if (missing.size) {
 // passes and only their time differs: the clock at the start of the last pass both reach in 30
 // seconds of the game's time. The page's pass counts once its clock has paid the stretch to it.
 const SECONDS = 30;
-const PLAN = [['O'], ['W'], ['O'], ['P'], ['L'], ['Q'], ['K'], ['N'], ['M'], ['O']];
-const plan = n => PLAN[Math.floor(n / 4) % PLAN.length];
+const plan = lib.pacePlan;
 const faster = off => 'the page ' + Math.abs(off * 100).toFixed(1) + ' % ' + (off < 0 ? 'slower' : 'faster');
 let sum = 0, paced = 0;
 for (const st of states.filter((n, i) => i % 10 === 0)) {

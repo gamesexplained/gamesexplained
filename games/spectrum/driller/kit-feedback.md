@@ -15,11 +15,12 @@ time, operating system and tool versions.
 
 ## What was changed in the kit
 
-- `kit/lessons/2026-11-02-driller.md`: what the run learned about reading a game's object scripts (below).
+- `kit/skills/core/70-minisite/play.md`, "A clock, not a frame loop": a frame start that passes while the interrupts are off is lost, and a page that runs the lost ones back to back freezes when the handler is longer than a frame. Driller's Play tab froze that way after a sensor's hit, and `games/spectrum/where-time-stood-still` already loses, in its page's machine, the interrupt its long view copy passes over.
+- `kit/lessons/2026-11-02-driller.md`: what the run learned about reading a game's object scripts, and the frozen page (below).
 
 ## Candidates
 
-None.
+- `kit/skills/core/70-minisite/play.md`, "Pace it by the machine's clock": to find what the fit does not count, hook the machine at each routine's entry and its return and take each routine's own cycles a call, its callees and the interrupts left out; price from those measurements the routines whose cost a call is steady, give a routine whose cost a call varies widely a count of its own work, and fit the rest around them. Driller's face sort is a bubble sort that cost 14,000 T-states a call in one scene and 473,000 in another; uncounted, the fit put its cost on the drawing routines and the page ran 13 % fast in a view full of faces, and keys held for several passes, as well as random ones, found the scene (`port/scripts/own-cycles.js`, `port/scripts/price-routines.js`). It waits for a second game that shows it before it goes into the skill.
 
 ## Maintainer asks
 

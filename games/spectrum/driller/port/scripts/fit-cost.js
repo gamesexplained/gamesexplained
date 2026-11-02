@@ -9,21 +9,40 @@
 // the page's clock runs for itself, and is left out. The interrupt is fitted the same way on the
 // interrupts of every stretch: its own T-states each time (irq) and each count of its work (irqN,
 // P.NI: the sensors it counts and the beams it draws), which a sensor in view makes long. Prints
-// the error of a whole pass, and with --test the same on rows it was not fitted on.
-//   node fit-cost.js out.json rows.jsonl... [--test rows.jsonl]
+// the error of a whole pass, and with --test the same on rows it was not fitted on. A price measured
+// on the game (--fixed, scripts/price-routines.js) is taken as it is and the rest fitted around it: a count
+// that moves with others, such as the bytes the span filler writes, which nearly every view fills
+// alike, is otherwise priced at nothing and its cost put on what it moves with.
+//   node fit-cost.js out.json rows.jsonl... [--test rows.jsonl,...] [--fixed '#count=T,...']
+// cost.json was made, from the game folder, with W=work, the session s4 held back for the test:
+//   node port/scripts/time-stretches.js $W/rows/boot.jsonl 60 boot
+//   node port/scripts/time-stretches.js $W/rows/scenarios.jsonl 60 scenarios
+//   for s in s1 s2 s3 s4 s5 s6 s7; do
+//     node port/scripts/time-stretches.js $W/rows/$s.jsonl 60 $s-
+//     node port/scripts/time-stretches.js $W/rows/plan-$s.jsonl 60 plan:$s-
+//     node port/scripts/own-cycles.js $W/own/$s.json $s- 5
+//   done
+//   node port/scripts/price-routines.js $W/own/s1.json,$W/own/s2.json,...,$W/own/s7.json \
+//     $W/own/fixed.txt $W/rows/plan-s*.jsonl
+//   node port/scripts/fit-cost.js port/cost.json $W/rows/{boot,scenarios,s1,s2,s3,s5,s6,s7}.jsonl \
+//     $W/rows/plan-s{1,2,3,5,6,7}.jsonl --test $W/rows/s4.jsonl,$W/rows/plan-s4.jsonl \
+//     --fixed "$(cat $W/own/fixed.txt)"
 const fs = require('fs');
 const args = process.argv.slice(2);
 const ti = args.indexOf('--test');
 const test = ti >= 0 ? args.splice(ti, 2)[1] : null;
+const fi = args.indexOf('--fixed');
+const FIXED = Object.fromEntries((fi >= 0 ? args.splice(fi, 2)[1] : '').split(',').filter(Boolean).map(kv => kv.split('=')).map(([k, v]) => [k, +v]));
 const out = args.shift();
-if (!out || !args.length) { console.log('usage: node fit-cost.js out.json rows.jsonl... [--test rows.jsonl]'); process.exit(2); }
+if (!out || !args.length) { console.log("usage: node fit-cost.js out.json rows.jsonl... [--test rows.jsonl,...] [--fixed '#count=T,...']"); process.exit(2); }
 const lines = f => fs.readFileSync(f, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
 const read = f => lines(f).filter(r => !r.summary && !r.polls);
 const rows = args.flatMap(read);
 const sums = args.flatMap(f => lines(f).filter(r => r.summary));
 const median = a => { const s = a.slice().sort((p, q) => p - q); return s[s.length >> 1]; };
 const key = r => r.from.toString(16) + '>' + r.to.toString(16);
-const fns = [...new Set(rows.flatMap(r => Object.keys(r.calls)))].sort();
+const fns = [...new Set(rows.flatMap(r => Object.keys(r.calls)))].filter(k => !(k in FIXED)).sort();
+const fixedCost = r => Object.entries(FIXED).reduce((s, [k, v]) => s + v * (r.calls[k] || 0), 0);
 const segs = [...new Set(rows.map(key))].sort();
 const idx = new Map(fns.map((f, i) => [f, i]));
 segs.forEach((s, i) => idx.set('@' + s, fns.length + i));
@@ -62,8 +81,8 @@ function nnls(data, n) {
   }
   return x;
 }
-const x = nnls(rows.map(r => ({ y: r.cycles,
-  v: Object.entries(r.calls).map(([k, c]) => [idx.get(k), c]).concat([[idx.get('@' + key(r)), 1]]) })), fns.length + segs.length);
+const x = nnls(rows.map(r => ({ y: r.cycles - fixedCost(r),
+  v: Object.entries(r.calls).filter(([k]) => !(k in FIXED)).map(([k, c]) => [idx.get(k), c]).concat([[idx.get('@' + key(r)), 1]]) })), fns.length + segs.length);
 // The interrupt: each one's own T-states (irq), and each count of its work (irqN: the sensors it
 // counts, the beams it draws and their line steps), fitted on the stretches' interrupts (their
 // sound effects taken out), the polling stretches' too
@@ -78,6 +97,7 @@ ik.forEach((k, i) => { if (xi[i + 1] > 0) model.irqN[k] = Math.round(xi[i + 1] *
 segs.forEach(s => { const v = x[idx.get('@' + s)]; model.seg[s] = v > 0 ? Math.round(v * 10) / 10 : 0; });
 for (const r of args.flatMap(f => lines(f).filter(r => !r.summary))) if (!(key(r) in model.seg)) model.seg[key(r)] = 0;
 fns.forEach(f => { const v = x[idx.get(f)]; if (v > 0) model.call[f] = Math.round(v * 10) / 10; });
+Object.assign(model.call, FIXED);
 // each whole pass (from the main loop's head, $9807, to the next) as the model has it
 function passes(rs) {
   const e = [];
@@ -93,7 +113,8 @@ function passes(rs) {
     ', mean size ' + (e.reduce((s, v) => s + Math.abs(v), 0) / e.length * 100).toFixed(1) + '%';
 }
 console.log('fitted on ' + rows.length + ' stretches: ' + passes(rows));
-if (test) console.log('not fitted on: ' + passes(read(test)));
+const held = test ? test.split(',').flatMap(read) : null;
+if (test) console.log('not fitted on: ' + passes(held));
 fs.writeFileSync(out, JSON.stringify(model) + '\n');
 // the interrupts as the model has them, against the game's, over each stretch's
 function irqError(rs) {
@@ -101,6 +122,6 @@ function irqError(rs) {
   for (const r of rs) { if (!r.irq || !r.irq.n) continue; g += r.irq.t; p += model.irq * r.irq.n + ik.reduce((s, k) => s + (model.irqN[k] || 0) * (r.irq[k] || 0), 0); }
   return g ? ((p - g) / g * 100).toFixed(1) + '%' : 'none';
 }
-console.log('the interrupts: ' + irqError(rows) + (test ? ', not fitted on ' + irqError(read(test)) : ''));
+console.log('the interrupts: ' + irqError(rows) + (test ? ', not fitted on ' + irqError(held) : ''));
 console.log('wrote ' + out + ': ' + Object.keys(model.call).length + ' routines, ' + Object.keys(model.seg).length + ' stretches; the interrupt ' +
   model.irq + ' T-states, and ' + JSON.stringify(model.irqN));

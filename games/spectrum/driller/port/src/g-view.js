@@ -197,7 +197,8 @@ G.view = function (P) {
     return {};
   });
 
-  // The routine make_multipliers wrote at a: the entry's magnitude and sign, read from its code.
+  // The routine make_multipliers wrote at a: the entry's magnitude and sign, read from its code,
+  // and how many adds and doublings it runs (ops), which the page's clock counts.
   function readMultiplier(a) {
     if (M[a] === 0xC3) {
       if (w(a + 1) !== 0x7981) throw new Error('rotate_vertices: a multiply routine at $' + a.toString(16) + ' that jumps to $' + w(a + 1).toString(16));
@@ -209,7 +210,7 @@ G.view = function (P) {
     for (let n = 0; n < 40; n++) {
       if (M[p] === 0x19 && M[p + 1] === 0xCE && M[p + 2] === 0) { m += 1; p += 3; }
       else if (M[p] === 0x29 && M[p + 1] === 0x17) { m *= 2; p += 2; }
-      else if (M[p] === 0xC3 && w(p + 1) === 0x795E) return { m, sign };
+      else if (M[p] === 0xC3 && w(p + 1) === 0x795E) return { m, sign, ops: n };
       else throw new Error('rotate_vertices: a multiply routine at $' + a.toString(16) + ' with $' + M[p].toString(16) + ' at $' + p.toString(16));
     }
     throw new Error('rotate_vertices: a multiply routine at $' + a.toString(16) + ' that does not end');
@@ -229,6 +230,7 @@ G.view = function (P) {
         for (let k = 0; k < 3; k++) {
           const f = mul[row * 3 + k];
           if (!f) continue;
+          P.N.mulOps = (P.N.mulOps || 0) + f.ops + 1;
           let de = w(vin + 2 * k), b = 0;
           if (de & 0x8000) { b = 0xFF; de = neg(de); }
           let acc = (f.m * de) % 0x1000000;
@@ -498,6 +500,7 @@ G.view = function (P) {
             if (bit) {
               let t = 0x80B9 + bit - 1, c = bit;
               for (;;) {
+                N.fillBits = (N.fillBits || 0) + 1;
                 d |= M[t]; t++;
                 b = (b - 1) & 255;
                 if (b === 0) break;
@@ -664,6 +667,7 @@ G.view = function (P) {
     const de0 = (0x8A6B + (len || 0x10000)) & 0xFFFF;
     M[de0] = M[ix]; M[(de0 + 1) & 0xFFFF] = M[(ix + 1) & 0xFFFF];
     const next = (ix + len) & 0xFFFF;
+    P.N.corners = (P.N.corners || 0) + (n || 256);
     let p = 0x8A6B;
     setw(0x8919, M[0x8A6C]); setw(0x891B, M[0x8A6C]);
     for (let k = n || 256; k > 0; k--) {
@@ -689,7 +693,7 @@ G.view = function (P) {
         let e = y0, bb = (y1 - y0) & 255;
         if (sgn16((y1 - y0) & 0xFFFF)) { e = y1; bb = (-bb) & 255; }
         let iy = (w(0x8A9F) + 3 * e) & 0xFFFF;
-        P.N.edgeRows = (P.N.edgeRows || 0) + (bb || 256);
+        P.N.edgeRowsV = (P.N.edgeRowsV || 0) + (bb || 256);
         for (let j = bb || 256; j > 0; j--) { plot(iy, x1); iy = (iy + 3) & 0xFFFF; }
       } else {
         let b = 1, c = 1, adx = (x1 - x0) & 0xFFFF;
@@ -715,7 +719,7 @@ G.view = function (P) {
           // a shallow edge: x steps until the error passes, a row's first x plotted
           setw(0x83FA, ady); setw(0x83F8, adx);
           let err = (adx & 255) >> 1;
-          P.N.edgeRows = (P.N.edgeRows || 0) + (ady || 256);
+          P.N.edgeRowsH = (P.N.edgeRowsH || 0) + (ady || 256);
           for (let j = ady || 256; j > 0; j--) {
             plot(iy, x);
             for (;;) {
@@ -976,9 +980,11 @@ G.view = function (P) {
     for (;;) {
       passes = (passes - 1) & 255;
       if (passes === 0 || sgn8(passes)) return {};
+      P.N.sortPasses = (P.N.sortPasses || 0) + 1;
       let ix = w(0x8A9D);
       M[0x5EE5] = 0;
       for (let k = (M[0x8918] - 1) & 255 || 256; k > 0; k--) {
+        P.N.sortSteps = (P.N.sortSteps || 0) + 1;
         const bi = w((ix + 2) & 0xFFFF), bj = w((ix + 6) & 0xFFFF);
         setw(0x5EE6, bi); setw(0x5EE8, bj);
         let a = 0;
@@ -1026,6 +1032,7 @@ G.view = function (P) {
         if ([0x20, 0x08, 0x02, 0x28, 0x0A, 0x22, 0x2A].includes(code)) ix = (ix + 4) & 0xFFFF;
         else {
           M[0x5EE5] = 1;
+          P.N.sortSwaps = (P.N.sortSwaps || 0) + 1;
           for (let q = 0; q < 4; q++) { const t = M[ix]; M[ix] = M[(ix + 4) & 0xFFFF]; M[(ix + 4) & 0xFFFF] = t; ix = (ix + 1) & 0xFFFF; }
         }
       }

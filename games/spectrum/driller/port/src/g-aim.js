@@ -31,6 +31,7 @@ G.aim = function (P) {
     }
     let x = M[0x8A0E], y = M[0x8A0F], n = (major + 1) & 255, de = (major & 255) >> 1;
     do {
+      P.N.linePoints = (P.N.linePoints || 0) + 1;
       M[0x8A1A] = n;
       plot(x, y);
       x = (x + M[0x8A16]) & 255; y = (y + M[0x8A17]) & 255;

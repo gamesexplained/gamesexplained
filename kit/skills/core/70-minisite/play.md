@@ -151,7 +151,12 @@ demonstration.
   waiting for that line misses its frame. Draw the frame due at the
   target, not the newest one finished: a stretch that carries the clock
   past the target (an interrupt that holds the main program back)
-  finishes a frame early, and showing it skips one.
+  finishes a frame early, and showing it skips one. A frame start that
+  passes while the interrupts are off, inside a handler that runs longer
+  than a frame (a sound it plays) or a stretch that turns them off, is
+  lost: move the next interrupt past the clock when it comes back, or
+  the page runs the lost ones back to back, which with a long handler
+  never ends and freezes the tab.
 - **The page's own chips.** The page runs the port on chips of its own,
   not on `machine.js`, so it needs the chip behaviour the game leans on:
   the raster latch (the platform reference), the timers a speech or

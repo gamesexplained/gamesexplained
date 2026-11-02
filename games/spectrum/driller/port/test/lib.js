@@ -113,6 +113,13 @@ function writeState(name, m, extra = {}) {
 }
 const restore = (s, o = {}) => DMachine.restore(s, Object.assign({ passAt: PASS_AT, rom: romImage(), romRanges: ROM_RANGES }, o));
 
+// The commands the page's pace is checked with (test/t-page.js) and fitted on as well
+// (scripts/time-stretches.js, "plan:"), set as each pass begins: each held for four passes, walks,
+// turns, looks up and down, the crosshair's moves and its keys. Held, a look up or down fills the
+// view with faces, which random keys seldom do.
+const PACE_PLAN = [['O'], ['W'], ['O'], ['P'], ['L'], ['Q'], ['K'], ['N'], ['M'], ['O']];
+const pacePlan = n => PACE_PLAN[Math.floor(n / 4) % PACE_PLAN.length];
+
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
 function makeRnd(seed) {
   let s = seed >>> 0 || 1;
@@ -120,4 +127,4 @@ function makeRnd(seed) {
 }
 
 module.exports = { EXCERPT, ROM, ROM_RANGES, boot, memory, answer, toPlay, JOY, DMachine, Machine, KEY, ROOT, GAME, STATES, PASS_AT,
-  states, readState, writeState, restore, hex, makeRnd };
+  states, readState, writeState, restore, hex, makeRnd, pacePlan };

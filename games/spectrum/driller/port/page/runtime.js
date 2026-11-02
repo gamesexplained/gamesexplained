@@ -175,11 +175,13 @@ function create(o) {
   // ---- the interrupt: at each frame's start, the game's handler ($BAE6) unless the interrupts are
   // off; its own time added, and the sensors' hit it plays
   function advance(dt) {
-    let end = t + dt;
+    let end = t + dt, handled = 0;
     while (nextInt * FRAME <= end) {
       t = Math.max(t, nextInt * FRAME); nextInt++;
       roll();
       if (irqsOn && !di) {
+        // a page that stops with a message is better than a tab that freezes
+        if (++handled > 1e5) throw new Error('the interrupt ran 100,000 times in one stretch');
         counting = false;
         const T0 = P.T, outer = sound;
         sound = { t, T: T0 };
@@ -188,6 +190,10 @@ function create(o) {
         let len = IRQ + (P.T - T0);
         for (const k in P.NI) if (k !== 'beep' && P.NI[k]) len += Math.round((IRQN['#' + k] || 0) * P.NI[k]);
         t += len; end += len;
+        // a frame start that passes while the handler runs is missed: the handler runs with the
+        // interrupts off, and the ULA holds its interrupt for only 32 T-states. A sensor's hit plays
+        // its sound inside the handler, for longer than a frame
+        while (nextInt * FRAME < t) nextInt++;
       }
     }
     t = Math.max(t, end); roll();

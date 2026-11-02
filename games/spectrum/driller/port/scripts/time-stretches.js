@@ -10,19 +10,23 @@
 // src/core.js) as '#count'; and the interrupts the game took in it, irq: { n, t, and the port's
 // counts of their work (P.NI: the sensors, the beams and the beam's line steps) }, their sound
 // effects' T-states taken out as the stretch's are. The last line holds the interrupt's own
-// T-states, as their median.
-//   node time-stretches.js out.jsonl [passes] [state filter, "boot" or "scenarios"] [seed]
+// T-states, as their median. A filter "plan:<filter>" plays the moments with the commands the
+// page's pace is checked with (lib.js, pacePlan) in place of random keys.
+//   node time-stretches.js out.jsonl [passes] [state filter, "plan:<filter>", "boot" or "scenarios"] [seed]
 const fs = require('fs');
 const { run, SCENARIOS } = require('../test/lockstep.js');
 const lib = require('../test/lib.js');
 
 const out = process.argv[2], passes = +(process.argv[3] || 150), filter = process.argv[4] || 'boot', seed = +(process.argv[5] || 1);
-if (!out) { console.log('usage: node time-stretches.js out.jsonl [passes] [state filter, "boot" or "scenarios"] [seed]'); process.exit(2); }
+if (!out) { console.log('usage: node time-stretches.js out.jsonl [passes] [state filter, "plan:<filter>", "boot" or "scenarios"] [seed]'); process.exit(2); }
 const rows = [], irqs = [];
 // the port's helpers, which are not routines of the game: the page does not cost them
 const HELPERS = new Set(['irqByte', 'until0', 'w', 'setw', 'jump', 'jumpGen', 'def', 'program']);
+const planned = filter.startsWith('plan:'), states = planned ? filter.slice(5) : filter;
 const runs = filter === 'boot' ? [{}] : filter === 'scenarios' ? Object.keys(SCENARIOS).map(scenario => ({ scenario }))
-  : lib.states(filter).filter(f => lib.restore(lib.readState(f)).cpu.pc === lib.PASS_AT).map(state => ({ state }));
+  : lib.states(states).filter(f => lib.restore(lib.readState(f)).cpu.pc === lib.PASS_AT).map(state => ({ state }));
+// the plan's commands, from the moment's first pass, as test/t-page.js sets them
+if (planned) for (const o of runs) { let n = 0; o.onPass = (_, mm) => { mm.releaseAll(); for (const k of lib.pacePlan(n++)) mm.press(k); }; }
 for (const o of runs) {
   let port = null;
   const r = run(Object.assign({ passes: filter === 'scenarios' ? undefined : passes, seed, onPort: P => { port = P; }, timing: s => {
