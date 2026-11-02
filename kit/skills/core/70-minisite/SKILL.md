@@ -538,10 +538,14 @@ its switches in the same place. A game played with a joystick passes
 keys are fed: a touch screen then gets a thumb joystick under the
 picture and a bigger one in full screen, and the page keeps no pad of
 its own. A game played another way leaves the joystick off, since one
-the game does not read only gets in the way. The header of
+the game does not read only gets in the way. The page's text says
+nothing about how the joystick or Full screen works, since each shows
+what it does and a paragraph about them is one more for the reader to
+skip. The header of
 `site/lib/play-controls.js` gives the bits and the other options.
 `kit/scripts/test_play_controls.js` fails a Play page that does not
-attach it, and a page with the joystick that keeps its own pad.
+attach it, a page with the joystick that keeps its own pad, and a page
+whose text explains the joystick or Full screen.
 
 Every Play tab's Reset works whatever the page is doing, a stop
 included: it builds a new machine, lets go of the page's own pause, sets
