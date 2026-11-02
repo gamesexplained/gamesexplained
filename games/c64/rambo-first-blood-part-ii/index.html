@@ -103,8 +103,10 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <script>
 /* rb-music */
 // createDriver for C64Sid: runs the game's own music driver ($8100-$AFB3 and its zero page
-// $20-$2F, from the listing over RB_DRIVER_RANGES) on the kit's 6502. A button sends what the game
-// sends: command 1 (silence), command 26 with X = 7 (music may use all three voices), then its own
+// $20-$2F, from the listing over RB_DRIVER_RANGES) on the kit's 6502. A button first sends command
+// 25 with X = 15, as the start-up does ($C1BA): it sets the master volume to 15, which no command of
+// the music's sets, and the chip is silent at volume 0. Then it sends what the game sends for the
+// sound: command 1 (silence), command 26 with X = 7 (music may use all three voices), then its own
 // command. Each frame is command 0, as music_tick ($1159) sends it; the button stops when command 2
 // returns zero (cmd_status, $8466), as message_screen waits for it.
 const RB_DRIVER_RANGES = [[0x0020, 0x002F], [0x8100, 0xAFB3]];
@@ -141,7 +143,7 @@ function createDriver(D, C64Cpu) {
       const c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
       sid.fill(0); over = false; writes = [];
-      cmd(1); cmd(26, c.mask === undefined ? 7 : c.mask); cmd(c.cmd);
+      cmd(25, 15); cmd(1); cmd(26, c.mask === undefined ? 7 : c.mask); cmd(c.cmd);
     },
     stop() { over = true; writes = []; },
     play() {

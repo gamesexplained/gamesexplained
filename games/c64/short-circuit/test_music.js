@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // Holds the music page's driver against the game. The page's createDriver runs the game's own sound driver
 // on the kit's 6502 over bytes of the listing; this test checks
-//   1. the page's bytes are the listing's: $3C73-$3CB2 and $9B4F-$BFFF;
+//   1. the page's bytes are the listing's: $955C-$9560, $3C73-$3CB2 and $9B4F-$BFFF;
 //   2. the first 300 frames of the attract tune, run as the page runs them, play the notes that the
 //      emulator's recording of the game's SID (test_music_attract.json) plays, voice by voice: the same
 //      frequencies at each note's start, each start within one frame of the recording's (the recording's first frame
 //      is the one before the call to start_tune, so the page's list gets a first frame of zeros);
-//   3. every one of the six buttons starts, plays 2,000 frames and writes only to registers 0 to 24.
+//   3. every one of the six buttons starts, plays 2,000 frames and writes only to registers 0 to 24, and never
+//      gates a voice on while the chip's volume is 0, which is silent.
 //   node games/c64/short-circuit/test_music.js [page.html]
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -19,6 +20,7 @@ const ram = g.listing().ram;
 let bad = 0;
 const fail = (...w) => { if (bad++ < 20) console.log('DIFFERS', ...w); };
 const hexOf = (a, b) => Buffer.from(ram.slice(a, b + 1)).toString('hex');
+if (SC_MUSIC.s0 !== hexOf(0x955C, 0x9560)) fail('s0 is not $955C-$9560 of the listing');
 if (SC_MUSIC.s1 !== hexOf(0x3C73, 0x3CB2)) fail('s1 is not $3C73-$3CB2 of the listing');
 if (SC_MUSIC.s2 !== hexOf(0x9B4F, 0xBFFF)) fail('s2 is not $9B4F-$BFFF of the listing');
 
@@ -29,7 +31,7 @@ function frames(n, tune) {
     d.play();
     const s = d.sid, r = [];
     for (let v = 0; v < 3; v++) { const o = v * 7; r.push(s[o] | s[o + 1] << 8, s[o + 4]); }
-    out.push({ r, w: d.writes.slice() });
+    out.push({ r, w: d.writes.slice(), vol: s[24] & 15 });
   }
   return { out, d };
 }
@@ -60,8 +62,15 @@ for (let v = 0; v < 3; v++) {
 // every button
 for (let t = 0; t < SC_MUSIC.tune.length; t++) {
   const { out, d } = frames(2000, t);
-  let stray = 0, total = 0;
-  for (const f of out) { total += f.w.length / 2; for (let i = 0; i < f.w.length; i += 2) if (f.w[i] > 24) stray++; }
+  let stray = 0, total = 0, quiet = 0;
+  for (const f of out) {
+    total += f.w.length / 2;
+    for (let i = 0; i < f.w.length; i += 2) {
+      if (f.w[i] > 24) stray++;
+      else if (f.w[i] % 7 === 4 && f.w[i] < 21 && (f.w[i + 1] & 1) && !f.vol) quiet++;
+    }
+  }
+  if (quiet) fail('button', t, 'gates a voice on', quiet, 'times at volume 0, which is silent');
   if (total === 0) fail('button', t, 'wrote nothing');
   if (stray) fail('button', t, stray, 'writes outside registers 0-24');
 }

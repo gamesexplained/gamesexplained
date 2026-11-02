@@ -4,8 +4,9 @@
 // Exposes C64Sid (window.C64Sid on a page; globalThis.C64Sid in node, for tests).
 //
 // A game supplies its music driver, ported from the game's code: a function createDriver(data,
-// C64Cpu) that refers to nothing outside itself (the player runs its source text in an
-// AudioWorklet) and returns an object with
+// C64Cpu) that refers to nothing outside itself but atob (the player runs its source text in an
+// AudioWorklet, whose scope has no atob of its own, so worklet() gives it one) and returns an
+// object with
 //   init(tune)  start a tune, as the game's own call does
 //   stop()      stop the music, as the game's own call does
 //   play()      one call of the driver, as the game's interrupt makes it: once a frame, or once
@@ -559,12 +560,28 @@ class C64SidProcessor extends AudioWorkletProcessor {
 }
 registerProcessor('c64-sid', C64SidProcessor);`;
 
-  // The worklet's module: the model, the 6502 when the page has loaded ../../lib/cpu6502.js, the
-  // page's driver and the processor, each from its source text.
+  // atob(text) as a page has it: base64 to a string of bytes, ignoring spaces and padding. A driver
+  // may decode its bytes with atob, which a page and node's tests have and an AudioWorklet's scope
+  // does not, so without this one the driver throws there alone and the music never starts.
+  function atob64(s) {
+    const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let out = '', acc = 0, bits = 0;
+    for (const c of String(s).replace(/[\t\n\f\r =]/g, '')) {
+      const v = A.indexOf(c);
+      if (v < 0) throw new Error('atob: ' + JSON.stringify(c) + ' is not base64');
+      acc = (acc << 6 | v) & 0xFFFF; bits += 6;
+      if (bits >= 8) { bits -= 8; out += String.fromCharCode(acc >> bits & 255); }
+    }
+    return out;
+  }
+
+  // The worklet's module: the model, the 6502 when the page has loaded ../../lib/cpu6502.js, atob,
+  // the page's driver and the processor, each from its source text.
   function worklet(driver) {
     const cpu = globalThis.C64Cpu;
     return 'const E = (' + engine.toString() + ')();\n' +
       'const C64Cpu = ' + (cpu && cpu.core ? '(' + cpu.core.toString() + ')()' : 'undefined') + ';\n' +
+      'const atob = typeof globalThis.atob === \'function\' ? globalThis.atob : (' + atob64.toString() + ');\n' +
       'const createDriver = (' + driver.toString() + ');\n' + WORKLET;
   }
 

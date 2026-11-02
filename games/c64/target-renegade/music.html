@@ -112,7 +112,7 @@ function createEffects(data,C64Cpu) {
  try {
   const L=await C64.load('parts/resident/listing.json');
   C64Sid.mount($('tr-music'),{driver:createDriver,data:{bytes:L.ram.slice(0x0700,0x2023)},tunes:['0 · Title','1 · Stages 1 and 3','2 · Stage 4','3 · Stages 2 and 5','4 · Ending','5 · Short cue','6 · Stage exit','7 · Short cue','8 · Transition'],rows:[{k:'Stream',f:v=>'$'+v.stream.toString(16).toUpperCase().padStart(4,'0')},{k:'Countdown',f:v=>String(v.remaining)}]});
-  C64Sid.mount($('tr-effects'),{driver:createEffects,data:{bytes:L.ram.slice(0x20C2,0x253E)},tunes:Array.from({length:13},(_,i)=>`Request ${i}`),rows:[{k:'Sequence step',f:v=>String(v.step)},{k:'Repeats',f:v=>String(v.remaining)}]});
+  C64Sid.mount($('tr-effects'),{driver:createEffects,data:{bytes:L.ram.slice(0x20C2,0x253E)},tunes:Array.from({length:13},(_,i)=>i?`Request ${i}`:'Request 0 (silent)'),rows:[{k:'Sequence step',f:v=>String(v.step)},{k:'Repeats',f:v=>String(v.remaining)}]});
  } catch(e){for(const id of ['tr-music','tr-effects'])if($(id).textContent.includes('Loading'))$(id).textContent='Could not load: '+e.message;console.error(e);}
 })();
 </script>

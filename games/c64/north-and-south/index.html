@@ -88,7 +88,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: 31 effects from one player</h2>
   <p class="lede">The menu loads a sound player that stays in memory for the rest of the game. The map, the battle, the fort and the train all start their sounds through it by number.</p>
   <div class="plate"><div id="ns-sfx"></div>
-    <p class="cap">The game's own sound player, run on the kit's 6502 from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. <code>test_music.js</code> checks these against the player as well.</p></div>
+    <p class="cap">The game's own sound player, run on the kit's 6502 from the map part's listing: <code>$F128</code> sets it up, <code>$F12B</code> starts sound A, <code>$F12E</code> plays a frame. Each button is named for where the game asks for that number. Five numbers, 9, 10, 14, 21 and 25, are asked for nowhere, and a few sounds go on until something else stops them. Sound 17 is silence: for 14 frames it writes 0 to every voice's registers, which stops whatever was playing. <code>test_music.js</code> checks these against the player as well.</p></div>
   <p>The battle, the fort and the train load over the map but stop short of <code>$F128</code>, so the player is still there when they run. The menu has its own copy of the player with a table of 16 sounds (<span data-part="menu"><code>$FC0E</code></span>), and its sound numbers mean other sounds.</p>
 </section>
 
@@ -244,7 +244,7 @@ const NS_EFFECTS = [
   'A fort or train taken', "The map's battle panel", 'Cavalry moves off', 'The cavalry charge', 'A cannon fires',
   'A unit chosen', 'Rifles fire', 'The dog bites', 'Smoke after the bomb', 'Unused 9', 'Unused 10',
   'A bag of gold counted', 'The supply arrives', 'A hit', 'Unused 14', 'A ball lands', 'The fort panel',
-  'An interception, the ship', 'The bomb bursts', 'An army lost', 'A knife thrown', 'Unused 21',
+  'An interception, the ship (silent)', 'The bomb bursts', 'An army lost', 'A knife thrown', 'Unused 21',
   "The reinforcements' ship", 'The supply train', 'An army moves', 'Unused 25', 'Time is up',
   'An army reinforced', 'A knife hits', 'A bark', 'A sabre stroke',
 ].map((name, n) => ({ name: n + ' · ' + name, src: 'effects', reset: 0xF128, init: 0xF12B, play: 0xF12E, a: n, on: [0xF13B, 0xF13C, 0xF13D] }));
