@@ -20,6 +20,13 @@
 //   rt.restore(machine, entry)   the machine of a moment saved by the tests (kit/c64/machine.js's
 //                      state: its memory, chips and clock), and the main program started at
 //                      entry(P), a generator (test/t-page.js)
+//   rt.snapshot()      the machine as restore takes it, for a test to start from again: taken
+//                      where the main program is about to start a pass of flight (rt.parked)
+//   rt.fast            Fast CPU's view of the machine (site/lib/fast-cpu.js, FastCPU.attach(rt.fast,
+//                      SR_FAST)): the main program's port, the beats so far, runTicks and
+//                      machineBeats (below)
+//   rt.fastFrame()     with Fast CPU, the frame to show after the loops a refresh ran: the screen as
+//                      it stands, or null outside flight (then rt.lastFrame())
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. Each stretch of the program moves the clock on
 // by its cost, and the raster interrupts that fall due on the way run on their lines, their own
@@ -195,8 +202,16 @@ function create(o) {
   };
 
   // ---- the programs
+  // Fast CPU's clock (runTicks, below): loop is its settings while it runs the clock, else null; free
+  // while a pass of flight runs on its beat, its own work taking no time; parked at a pass's start,
+  // waiting for the beat; away while a routine that leaves flight runs (AWAY), and spoiled once one
+  // has in this pass. W counts the cycles of a pass's work by the cost model, and lastW the last
+  // whole pass's: what one of the C64's passes takes
+  let loop = null, free = false, parked = false, away = 0, spoiled = false, W = 0, lastW = null, works = 0;
+  let lastBeat = -Infinity, beatT = -1, ticks = 0, fastPlug = null;
+  const AWAY = ['key_navigation', 'key_save', 'key_escape', 'key_surrender', 'ask_agree', 'dock', 'gate_jump'];
   const ports = {};
-  const port = name => ports[name] || (ports[name] = name === 'main' ? counted(SR.makePort(M, io, {})) : name === 'intro' ? asking(SR.makePort(M, io, { program: name })) : SR.makePort(M, io, { program: name }));
+  const port = name => ports[name] || (ports[name] = name === 'main' ? fastAware(counted(SR.makePort(M, io, {}))) : name === 'intro' ? asking(SR.makePort(M, io, { program: name })) : SR.makePort(M, io, { program: name }));
   // the manual's question: find_question leaves the page, paragraph, sentence and word at $2C-$2F
   // and the word's address at $2A/$2B
   function asking(P) {
@@ -226,6 +241,23 @@ function create(o) {
     }
     return P;
   }
+  // the main program's plug-in points: the game's own (src/core.js) except while a pass of Fast
+  // CPU's runs; and the routines that leave flight, counted in away
+  function fastAware(P) {
+    const gamePlug = P.plug;
+    Object.defineProperty(P, 'plug', {
+      get: () => (fastPlug && loop && free && !away ? fastPlug : gamePlug),
+      set: v => { fastPlug = v === gamePlug ? null : v; },
+    });
+    const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
+    for (const name of AWAY) {
+      const f = P[name];
+      P[name] = f instanceof GENERATOR
+        ? function* (...a) { away++; try { return yield* f.apply(this, a); } finally { if (!--away) spoiled = true; } }
+        : function (...a) { away++; try { return f.apply(this, a); } finally { if (!--away) spoiled = true; } };
+    }
+    return P;
+  }
   // the routines called since the clock last moved, at their cost
   function callsCost() {
     let c = 0;
@@ -243,12 +275,13 @@ function create(o) {
   // (frame_skip3); read at the stretch's start, it would never skip, and a busy view would run at
   // half the game's passes.
   function irqByte(a) {
-    if (program === 'main' && counting) { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
+    if (program === 'main' && counting) { const c = callsCost(); if (c >= 1) spend(Math.round(c)); }
     return M[a];
   }
   let program = null, P = null, it = null, lastCp = null;
   function start(name, entry) {
     program = name; P = port(name); it = entry(P); lastCp = null; calls = Object.create(null);
+    free = false; parked = false; away = 0;
   }
   function goto(g) {
     const from = program;
@@ -262,6 +295,11 @@ function create(o) {
     else throw new Error('the port went to $' + g.to.toString(16) + ' from ' + from);
   }
   start('title', p => p.title_start());
+  const toB64 = u => typeof Buffer !== 'undefined' ? Buffer.from(u).toString('base64') : btoa(String.fromCharCode.apply(null, Array.from(u)));
+  function snapshot() {
+    return { ram: toB64(M), colour: toB64(colour), cpu: { pdir: M[0], pdata: M[1], cycles: t }, vic: Array.from(vic),
+      cmp, latch, enable, pra, ddra, ddrb, pra2, ddra2, sidw: Array.from(sidw) };
+  }
   function restore(s, entry) {
     M.set(b64(s.ram)); colour.set(b64(s.colour).subarray(0, 0x400));
     M[0] = s.cpu.pdir; M[1] = s.cpu.pdata;
@@ -273,6 +311,7 @@ function create(o) {
     if (vm) vm.at(-1, [], 0);
     done.length = 0; begin();
     program = 'main'; P = port('main'); it = entry(P); lastCp = null; calls = Object.create(null);
+    free = false; parked = false; away = 0; lastBeat = -Infinity;
   }
 
   // ---- the interrupts: through the KERNAL's entry and $0314 while the KERNAL is banked in, through
@@ -316,9 +355,21 @@ function create(o) {
       if (dt === undefined) dt = lastCp === null ? 0 : cost(lastCp, y.cp);
       else calls = Object.create(null);
       lastCp = y.cp;
-      advance(dt);
+      spend(dt);
+      // with Fast CPU's clock, a pass of flight starts here: the loop before it is over, and the
+      // next waits for the beat
+      if (y.cp === 0x0DED && loop && program === 'main' && !away) {
+        if (free && !spoiled) { lastW = W; works++; }
+        free = false; parked = true;
+        if (loop.between) loop.between();
+      }
     } else if (y && y.cycles !== undefined) advance(y.cycles);
     else advance(LINE - t % LINE);                    // a turn of a polling loop: to the next line
+  }
+  // a stretch of the main program: its cost moves the clock on, or, in a loop of Fast CPU's, adds to
+  // the loop's work, which takes no time
+  function spend(dt) {
+    if (free && !away) W += dt; else advance(dt);
   }
   function runUntil(until) {
     let guard = 0;
@@ -329,16 +380,80 @@ function create(o) {
   }
 
   function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; }
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return done[done.length - 1];
   }
+
+  // ---- Fast CPU's clock (site/lib/fast-cpu.js): the real time owed, in cycles. The beat is line 60
+  // of each video frame, just after the interrupt at line $32 has counted the frame and scanned the
+  // keyboard: a pass of flight starts on each beat and its own work takes no time, as on a
+  // processor fast enough to finish it at once, so it reads the keys the interrupt has just put in
+  // the buffer and shows its frame in the refresh it runs in. A pass runs from one $0DED to the
+  // next. A wait inside one, a routine of those below that leaves flight (Navigation Control, a
+  // save, a dialog, docking and the stations, the gate's jump), and the program outside the main
+  // loop take the C64's time; the next pass starts on the first beat after. o.cap is the most passes
+  // one call runs (time owed past them is dropped), o.begin() is called as each starts and
+  // o.between() after it. Returns the passes run; ticks counts the beats.
+  const BEAT = 60 * LINE;
+  function nextBeat() {
+    let b = Math.ceil((t - BEAT) / FRAME) * FRAME + BEAT;
+    if (b <= lastBeat) b = lastBeat + FRAME;
+    return b;
+  }
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = false; parked = false; W = 0; }
+    if (target === null) target = t;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress in the ' + program + ' program');
+      if (!parked) {
+        // a pass's own work goes on at its beat's moment; a wait, or the program outside flight, as
+        // far as real time is owed
+        if (t >= target && !(free && !away && t === beatT)) break;
+        step();
+        continue;
+      }
+      const at = nextBeat();
+      if (at > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the wait for the beat, the frame's interrupts running on the way in their own time
+      for (;;) {
+        const L = nextTrigger();
+        if (L * LINE > at) break;
+        t = Math.max(t, L * LINE); rollFrames();
+        runIrq(L);
+      }
+      if (t < at) { t = at; rollFrames(); }
+      lastBeat = at; beatT = t; ticks++; loops++;
+      parked = false; free = true; spoiled = false; W = 0;
+      if (o.begin) o.begin();
+    }
+    return loops;
+  }
+  // the video frames one of the C64's passes takes for the work the last pass did (the interrupt's
+  // own time taken from each frame), before the page rounds it
+  function machineBeats() {
+    return lastW === null ? 3 : lastW / (FRAME - IRQ_COST);
+  }
+  const fast = { get P() { return port('main'); }, get ticks() { return ticks; }, runTicks, machineBeats };
+  // the screen as it stands after a pass of Fast CPU's (the game splits nothing within a frame), so
+  // the pass's frame shows in the refresh that ran it
+  const fastKeep = {};
+  function fastFrame() {
+    if (!loop || program !== 'main' || away || lastW === null) return null;
+    return { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: M, colourMem: colour, keep: fastKeep };
+  }
   return {
     M, colour, vic, sidw, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get program() { return program; }, get P() { return P; },
     get target() { return target; },
-    runFrame, runUntil, restore, lastFrame: () => done[done.length - 1],
+    get ticks() { return ticks; }, get lastW() { return lastW; }, get works() { return works; }, get parked() { return parked; },
+    fast, fastFrame, machineBeats,
+    runFrame, runUntil, restore, snapshot, lastFrame: () => done[done.length - 1],
     onSid: f => sidListeners.push(f),
     files,
   };

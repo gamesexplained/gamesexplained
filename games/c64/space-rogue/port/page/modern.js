@@ -1,6 +1,6 @@
-// The Play page's modern view of space: the 3D view drawn at the screen's own resolution, and, with
-// smooth motion, between the game's passes. The game is not changed: the routines below are
-// watched, and its memory is only read.
+// The Play page's modern view of space: the 3D view drawn at the screen's own resolution (Native
+// resolution). The game is not changed: the routines below are watched, and its memory is only
+// read.
 //
 // At each pass of the main loop, once everything has moved (the drawing about to start, or the
 // pass about to skip it), the pass is kept as the game's own numbers: the camera's position and
@@ -14,19 +14,11 @@
 // a checkerboard is drawn as their blend, and every polygon in its own colour: the C64's cells
 // give a cell's pixels of two colours the last one drawn there.
 //
-// Smooth motion draws a pose part of the way from one pass to the next: positions slide and
-// orientations turn, and the scene is drawn again from the pose. The way is a phase, a pass's
-// number and a fraction, which never runs ahead of the last pass the game has computed and moves
-// at the game's own rate of passes (smooth, below).
-//
 //   const st = SRModern.attach(rt)   watch the main program's port; again after a restore is harmless
-//   SRModern.onShow(st, F)            the picture on show in frame F, or null when the view shows
+//   SRModern.onShow(st, F)            the pass on show in frame F, or null when the view shows
 //                                     anything else
-//   SRModern.smooth(st, V, F)         the pose to draw at cycle V of the machine's clock, or null
 //   SRModern.render(scene)            a scene's drawing, in the window's coordinates
 //   SRModern.draw(cv, faithful, view) the faithful frame scaled up, the view over it
-//   SRModern.paint(px, st, view)      the view in the C64's own pixels, drawn by a second copy of
-//                                     the port from the pose, into a frame of palette indices
 (function (root) {
 'use strict';
 const LINE = 63, FRAME = 63 * 312;
@@ -42,70 +34,16 @@ const vecLin = (M, a) => [linAt(M, a), linAt(M, a + 3), linAt(M, a + 6)];
 const logPair = (M, a) => ((M[a + 1] << 24) >> 24) + M[a] / 256;
 const w16 = (M, a) => M[a] | M[a + 1] << 8;
 const s16 = v => (v << 16) >> 16;
-// and back, for the second copy of the port: zero is $EC.00, as lin_to_log makes it
-function putLog(M, a, v) {
-  const m = Math.abs(v);
-  let w = -20, f = 0;
-  if (m > 0) { const l = Math.log2(m); w = Math.floor(l); f = Math.round((l - w) * 256); if (f === 256) { f = 0; w++; } }
-  if (w < -20) { w = -20; f = 0; }
-  M[a] = f; M[a + 1] = w & 255; M[a + 2] = v < 0 && m > 0 ? 0xFF : 0;
-}
-function putLin(M, a, v) {
-  const n = Math.round(v * 256) & 0xFFFFFF;
-  M[a] = n & 255; M[a + 1] = (n >> 8) & 255; M[a + 2] = n >> 16;
-}
 
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const len = a => Math.sqrt(dot(a, a));
-const lerp = (a, b, f) => a + (b - a) * f;
-const lerp3 = (a, b, f) => [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f)];
 const times = (R, v) => [dot(R[0], v), dot(R[1], v), dot(R[2], v)];
 const transpose = R => [[R[0][0], R[1][0], R[2][0]], [R[0][1], R[1][1], R[2][1]], [R[0][2], R[1][2], R[2][2]]];
 // rows a and b: the rows of b applied to each row of a, as mat_times_mat makes them
 const rowsTimes = (a, b) => a.map(r => times(b, r));
-
-// ---- orientations between passes: three rows to a quaternion and back, and the turn between two
-function toQuat(R) {
-  const [[a, b, c], [d, e, f], [g, h, i]] = R, t = a + e + i;
-  let q;
-  if (t > 0) { const s = 2 * Math.sqrt(t + 1); q = [s / 4, (h - f) / s, (c - g) / s, (d - b) / s]; }
-  else if (a > e && a > i) { const s = 2 * Math.sqrt(1 + a - e - i); q = [(h - f) / s, s / 4, (b + d) / s, (c + g) / s]; }
-  else if (e > i) { const s = 2 * Math.sqrt(1 + e - a - i); q = [(c - g) / s, (b + d) / s, s / 4, (f + h) / s]; }
-  else { const s = 2 * Math.sqrt(1 + i - a - e); q = [(d - b) / s, (c + g) / s, (f + h) / s, s / 4]; }
-  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  return q.map(x => x / n);
-}
-function fromQuat(q) {
-  const [w, x, y, z] = q;
-  return [[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
-    [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
-    [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]];
-}
-// the turn from one set of rows to another, a fraction f of the way: the rows' lengths (about 1 in
-// the game's numbers) slide, their directions turn as one rotation
-function slerpRows(A, B, f) {
-  const la = A.map(len), lb = B.map(len);
-  const qa = toQuat(A.map((r, i) => r.map(x => x / (la[i] || 1)))), qb = toQuat(B.map((r, i) => r.map(x => x / (lb[i] || 1))));
-  let d = qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3];
-  if (d < 0) { for (let i = 0; i < 4; i++) qb[i] = -qb[i]; d = -d; }
-  let q;
-  if (d > 0.9995) q = qa.map((x, i) => lerp(x, qb[i], f));
-  else {
-    const th = Math.acos(Math.min(1, d)), s = Math.sin(th);
-    const u = Math.sin((1 - f) * th) / s, v = Math.sin(f * th) / s;
-    q = qa.map((x, i) => u * x + v * qb[i]);
-  }
-  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  return fromQuat(q.map(x => x / n)).map((r, i) => r.map(x => x * lerp(la[i], lb[i], f)));
-}
-// the cosine of half the turn between two orientations
-function turnCos(A, B) {
-  const qa = toQuat(A), qb = toQuat(B);
-  return Math.abs(qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3]);
-}
 
 // ---- the draw routines a type's entry names ($08F8), and the models (src/g-render.js)
 const KIND = { 0x8834: 'disc', 0x88E4: 'ring', 0x89CF: 'burst', 0x8A08: 'annulus', 0x8A29: 'ragged', 0x8B1B: 'sparks', 0x8BEF: 'flicker' };
@@ -177,10 +115,10 @@ function pixelsOf(col, bg, ram) {
 }
 
 // ---- a pass, as the game's numbers stand once everything has moved
-function capture(M, how, chips) {
+function capture(M, chips) {
   const cam = w16(M, 0x58), ori = w16(M, 0x5A);
   const s = {
-    how, view: M[0x0D3C], gate: M[0x0838],
+    view: M[0x0D3C], gate: M[0x0838],
     cam: { pos: vecLin(M, cam), rows: rowsLog(M, ori), at: cam, oriAt: ori },
     player: { pos: vecLin(M, 0x065D), rows: rowsLog(M, 0x044B) },
     dcc: rowsLog(M, 0x0DCC),
@@ -214,7 +152,7 @@ function capture(M, how, chips) {
   return s;
 }
 
-// ---- the scene of a pass (or of a pose between two): the game's drawing, in double precision.
+// ---- the scene of a pass: the game's drawing, in double precision.
 // The camera's frame: x right, y up, z behind (the view looks along -z). A point's window position
 // is the centre plus x and y over twice its distance in front, scaled (project); the window's x
 // is the C64's hires pixel from its left edge, y the pixel row from its bottom.
@@ -364,62 +302,6 @@ function arrows(out, s) {
   for (const pts of a) out.push({ k: 'shape', pts, c: 0, arrow: true });
 }
 
-// ---- a pose between two passes: positions slid, orientations turned. An object that changed its
-// type, came or went, or jumped is not slid, nor is a particle (type flag bit 2), which stays where
-// it is until the game puts it back near the camera
-function pose(a, b, f) {
-  if (!b || f <= 0) return a;
-  if (f >= 1) return b;
-  const s = Object.assign({}, f < 0.5 ? a : b);
-  s.prims = null; s.dcc = null; s.hazard = a.hazard;
-  s.cam = { pos: lerp3(a.cam.pos, b.cam.pos, f), rows: slerpRows(a.cam.rows, b.cam.rows, f), at: b.cam.at, oriAt: b.cam.oriAt };
-  s.player = { pos: lerp3(a.player.pos, b.player.pos, f), rows: slerpRows(a.player.rows, b.player.rows, f) };
-  s.types = Object.assign({}, a.types, b.types); s.models = Object.assign({}, a.models, b.models);
-  s.objs = a.objs.map((oa, i) => {
-    const ob = b.objs[i], ty = s.types[oa.type];
-    if (!oa.used || !ob.used || oa.type !== ob.type || !ty || (ty.flags & 4) || len(sub(ob.pos, oa.pos)) > 32) return f < 0.5 ? oa : ob;
-    const o = { slot: oa.slot, used: oa.used, type: oa.type, pos: lerp3(oa.pos, ob.pos, f) };
-    if (oa.rows && ob.rows) o.rows = slerpRows(oa.rows, ob.rows, f);
-    return o;
-  });
-  return s;
-}
-// two passes the motion does not slide across: another view, the gate, a jump of the player or of
-// the camera against the player (an outside view's camera put back ahead of the ship), or a turn of
-// more than 60 degrees
-function cut(a, b) {
-  if (a.view !== b.view || a.gate !== b.gate || a.cam.at !== b.cam.at) return true;
-  const dp = sub(b.player.pos, a.player.pos);
-  if (len(dp) > 256 || len(sub(sub(b.cam.pos, a.cam.pos), dp)) > 24 + 2 * len(dp)) return true;
-  return turnCos(a.cam.rows, b.cam.rows) < Math.cos(Math.PI / 6);
-}
-// An outside view's camera at a pass the game does not draw. The game moves it only when it draws
-// (update_camera): the chase view's toward a point behind the ship, the cinematic view's not at
-// all, and each aims it at the ship with the world's up ($0DB1, the identity's second row). For a
-// pass in between, the chase camera keeps its offset from the ship, the offset sliding from one
-// drawn pass's to the next once that is known, the cinematic camera its place; both are aimed at
-// the ship as the game aims them.
-function aim(s, pos, like) {
-  const off = sub(pos, s.player.pos), l = len(off);
-  if (!(l > 1e-6)) return { pos, rows: like.rows, at: like.at, oriAt: like.oriAt };
-  const z = off.map(v => v / l), x0 = cross([0, 1, 0], z), lx = len(x0) || 1, x = x0.map(v => v / lx);
-  return { pos, rows: [x, cross(z, x), z], at: like.at, oriAt: like.oriAt };
-}
-function follow(H, s) {
-  let i = H.length - 1, D = null;
-  for (; i >= 0; i--) { if (H[i].how === 'draw') { D = H[i]; break; } if (H[i].cutBefore) return null; }
-  if (!D || D.view !== s.view) return null;
-  if (s.how === 'skip') s.cam = aim(s, s.view === 1 ? add(s.player.pos, sub(D.cam.pos, D.player.pos)) : D.cam.pos, D.cam);
-  return { D, i };
-}
-function refollow(H, D, i, s) {
-  const o0 = sub(D.cam.pos, D.player.pos), o1 = sub(s.cam.pos, s.player.pos);
-  for (let j = i + 1; j < H.length; j++) {
-    const q = H[j], f = (q.n - D.n) / (s.n - D.n);
-    q.cam = aim(q, s.view === 1 ? add(q.player.pos, lerp3(o0, o1, f)) : lerp3(D.cam.pos, s.cam.pos, f), D.cam);
-    q.prims = null; q.still = null;
-  }
-}
 
 // ---- watching the port
 // the view's bytes in one buffer: character rows 3-15, columns 4-35, the bitmap and the cells
@@ -446,32 +328,23 @@ function attach(rt) {
   const was = P.__srModern;
   if (was) {
     // a machine restored to another moment: what was kept belongs to another run
-    const last = was.hist[was.hist.length - 1];
-    if (last && last.t > rt.t) { was.hist = []; was.flips = []; was.bufs = { 0: null, 128: null }; was.drawing = null; was.clock.V = null; was.wait = 0; }
+    if (was.t > rt.t) { was.flips = []; was.bufs = { 0: null, 128: null }; was.drawing = null; }
+    was.t = rt.t;
     return was;
   }
   const M = P.M;
-  const st = { rt, P, hist: [], n: 0, clock: { V: null, phi: 0, v: 0 }, bufs: { 0: null, 128: null },
-    drawing: null, hazard: null, flips: [], wait: 0, port2: null };
+  const st = { rt, P, n: 0, t: rt.t, bufs: { 0: null, 128: null }, drawing: null, hazard: null, flips: [] };
   P.__srModern = st;
   const chips = () => ({ d021: rt.vic ? rt.vic[0x21] : 0, ram: rt.colour ? rt.colour[9 * 40 + 20] : 1 });
-  function push(s) {
-    const H = st.hist, last = H[H.length - 1];
-    s.n = ++st.n; s.t = rt.t;
-    const f = s.view && last ? follow(H, s) : null;
-    s.cutBefore = !last || cut(last, s);
-    if (f && s.how === 'draw' && !s.cutBefore) refollow(H, f.D, f.i, s);
-    H.push(s);
-    if (H.length > 80) H.shift();
-  }
-  // a pass that skips its drawing is kept as frame_skip leaves it; one that draws, as
-  // build_draw_list starts (the camera of an outside view, the particles and the flash colour set)
-  const skipped = (r, out) => { if (out && out.c) push(capture(M, 'skip', chips())); };
+  // every pass is numbered, drawn or not: the number seeds what the view draws at random (sparks)
+  const skipped = (r, out) => { if (out && out.c) { st.n++; st.t = rt.t; } };
   wrap(P, 'frame_skip3', null, skipped);
   wrap(P, 'frame_skip5', null, skipped);
+  // a pass that draws is kept as build_draw_list starts (the camera of an outside view, the
+  // particles and the flash colour set)
   wrap(P, 'build_draw_list', () => {
-    const s = capture(M, 'draw', chips());
-    push(s);
+    const s = capture(M, chips());
+    s.n = ++st.n; st.t = rt.t;
     st.drawing = s;
     const b = st.bufs[s.buf];
     s.layers = b ? b.concat([s]) : null;      // what the buffer holds once this is drawn; null: not known
@@ -486,6 +359,12 @@ function attach(rt) {
     if (!st.hazard) return;
     const p = i => s16(w16(M, 0xFD00 + i));
     st.hazard.push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: [M[0x3D], M[0x3E]], c: 5 });
+  });
+  // with Fast CPU, a hazard's triangle drawn again on a later pass of the C64's (spray_again)
+  wrap(P, 'spray_again', r => {
+    if (!st.drawing) return;
+    const p = i => s16(r.pts[i] | r.pts[i + 1] << 8);
+    (st.drawing.hazard = st.drawing.hazard || []).push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: r.pat.slice(), c: 5 });
   });
   wrap(P, 'view_clear_c000', () => { st.bufs[0] = []; });
   wrap(P, 'view_clear_4000', () => { st.bufs[128] = []; });
@@ -534,60 +413,6 @@ function onShow(st, F) {
   return null;
 }
 
-// a pass as smooth motion draws it, the world's axes from its camera
-const still = s => s.still || (s.still = Object.assign({}, s, { dcc: null, prims: null, still: null }));
-
-// ---- smooth motion. The game's passes each move everything a fixed step, but they come unevenly:
-// one that draws takes several frames, the ones that skip their drawing to catch up come close
-// behind it. Smooth motion draws the game as it stood a short while ago, D cycles before the moment
-// V on the clock: where the game was then is found from when each pass was computed, as a pass
-// number and a fraction, and drawn as a pose that far between the two passes. D is the longest
-// wait between two passes of late, so the pass after is always known when the phase gets there,
-// and the phase follows that point through a smoothing that takes out the unevenness: it moves at
-// the game's own rate of passes, eased toward the point over a few frames. On average the view is
-// no later than the C64's own picture, which shows a pass from when its drawing ends until the
-// next one's does.
-function smooth(st, V, F) {
-  const s = onShow(st, F), c = st.clock;
-  if (!s) { c.V = null; return null; }
-  if (!(V >= 0)) V = (F.frame + 1) * FRAME;
-  if (s.layers && s.layers.length > 1) { c.V = null; return { scene: s, layers: s.layers, shown: s }; }
-  const H = st.hist, last = H[H.length - 1], K = Math.min(12, H.length - 1);
-  if (K < 2) { c.V = V; c.phi = s.n; c.v = 0; return { scene: still(s), shown: s, phi: s.n }; }   // the smooth view starts from here
-  const first = H[H.length - 1 - K], rate = (last.n - first.n) / Math.max(FRAME, last.t - first.t);
-  let wait = 0;
-  for (let j = H.length - K; j < H.length; j++) wait = Math.max(wait, H[j].t - H[j - 1].t);
-  st.wait = st.wait ? (wait > st.wait ? wait : st.wait + (wait - st.wait) * 0.02) : wait;
-  // where the game was D cycles ago: between the two passes computed either side of then
-  const at = V - st.wait - FRAME / 2;
-  let g;
-  if (at >= last.t) g = last.n;
-  else if (at <= H[0].t) g = H[0].n;
-  else {
-    let j = H.length - 1;
-    while (j > 0 && H[j - 1].t > at) j--;
-    const a = H[j - 1], b = H[j];
-    g = a.n + (b.n - a.n) * (b.t > a.t ? (at - a.t) / (b.t - a.t) : 1);
-  }
-  let phi;
-  if (c.V === null || V < c.V || V - c.V > 8 * FRAME) { phi = g; c.v = rate; }
-  else {
-    const dV = V - c.V, want = rate + (g - c.phi) / (3 * FRAME);
-    c.v += (want - c.v) * (1 - Math.exp(-dV / FRAME));
-    phi = c.phi + Math.max(0, c.v) * dV;
-  }
-  phi = Math.max(H[0].n, Math.min(phi, last.n));
-  c.V = V; c.phi = phi;
-  // the passes either side of the phase. Every scene is drawn with the camera's own orientation
-  // for the world's axes: the game's $0DCC is the camera's of the pass before in an outside view
-  const n0 = Math.floor(phi), a = H.find(h => h.n === n0), b = H.find(h => h.n === n0 + 1);
-  if (!a) return { scene: still(s), shown: s, phi };
-  if (!b || b.cutBefore || phi === n0) return { scene: still(a), shown: s, phi };
-  const sc = pose(a, b, phi - n0);
-  sc.hazard = s.hazard;
-  return { scene: sc, shown: s, phi };
-}
-
 // ---- drawing on a canvas, at the screen's own resolution
 const SRGB = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
 const toLin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -614,7 +439,7 @@ function fillOf(s, p) {
 // 66 + x, its row y (from the bottom) at frame y 161 - y
 const VX = 66, VY = 162, VW = 252, VH = 103;
 // Draws the faithful frame (a canvas of 384 by 272) scaled to cv's pixels, and the view over it
-// from view (smooth's, or a picture's scene or its layers): cv is sized to its place on the page
+// from view (a pass's scene, or the layers of the gate's jump): cv is sized to its place on the page
 function draw(cv, faithful, view) {
   const dpr = root.devicePixelRatio || 1, css = cv.getBoundingClientRect();
   const W = Math.max(768, Math.round(css.width * dpr)), H = Math.round(W * 272 / 384);
@@ -705,65 +530,6 @@ function rng(seed) {
   return () => { a ^= a << 13; a >>>= 0; a ^= a >>> 17; a ^= a << 5; a >>>= 0; return a / 4294967296; };
 }
 
-// ---- smooth motion in the C64's own pixels: a second copy of the port, on a copy of the game's
-// memory with the pose written in, draws the view as the game would draw that pose, into the
-// $C000 buffer; its view then goes into px, a frame of palette indices (384 by 272)
-function port2(st) {
-  if (st.port2) return st.port2;
-  const M2 = new Uint8Array(0x10000);
-  const io = { read: () => 0, write: () => {}, vicRead: () => 0, vicWrite: () => {}, sidRead: () => 0, sidWrite: () => {},
-    colourRead: () => 0, colourWrite: () => {}, ciaRead: () => 0, ciaWrite: () => {}, cia2Read: () => 0, cia2Write: () => {},
-    irqByte: a => M2[a], load: () => null, block: () => null, save: () => {} };
-  st.port2 = { M: M2, P: root.SRPort.makePort(M2, io, {}) };
-  return st.port2;
-}
-function paint(px, st, view) {
-  if (!view || view.layers) return false;     // the gate's jump: what each buffer holds stays the game's
-  const sc = view.scene, { M: M2, P: P2 } = port2(st);
-  M2.set(st.rt.M);
-  M2[1] &= 0xFC;
-  // the pose in the game's numbers: every slot, the camera, the world's axes seen from it
-  const lin3 = (a, v) => v.forEach((x, j) => putLin(M2, a + 3 * j, x));
-  const log9 = (a, R) => R.forEach((r, i) => r.forEach((x, j) => putLog(M2, a + 9 * i + 3 * j, x)));
-  for (const o of sc.objs) {
-    const y = o.slot;
-    M2[0x0649 + y] = o.used; M2[0x060D + y] = o.type;
-    lin3(0x065D + 9 * y, o.pos);
-    if (o.rows && y < 7) log9(0x044B + M2[0x083C + y], o.rows);
-  }
-  lin3(0x065D, sc.player.pos); log9(0x044B, sc.player.rows);
-  const cam = sc.cam;
-  M2[0x58] = cam.at & 255; M2[0x59] = cam.at >> 8; M2[0x5A] = cam.oriAt & 255; M2[0x5B] = cam.oriAt >> 8;
-  if (cam.at !== 0x065D) lin3(cam.at, cam.pos);
-  if (cam.oriAt !== 0x044B) log9(cam.oriAt, cam.rows);
-  log9(0x0DCC, transpose(cam.rows));
-  M2[0x0445] = sc.target; M2[0x0837] = 0xFF; M2[0x99] = sc.z99; M2[0x8B0A] = sc.ragged;
-  M2[0x3A] = 0;
-  P2.window_view();
-  P2.set_colour({ x: 1 });
-  P2.view_clear_c000();
-  M2[0x9002] = view.shown.buf ? 0x70 : 0x80;
-  const it = P2.build_draw_list();
-  for (let r = it.next(), g = 0; !r.done; r = it.next()) if (++g > 1e5) throw new Error('paint: the draw list did not end');
-  if (sc.hazard) for (const h of sc.hazard) {
-    P2.set_colour({ x: 5 });
-    h.pts.forEach((q, i) => { const a = 0xFD00 + 4 * i; M2[a] = q[0] & 255; M2[a + 1] = (q[0] >> 8) & 255; M2[a + 2] = q[1] & 255; M2[a + 3] = (q[1] >> 8) & 255; });
-    M2[0x3D] = h.pat[0]; M2[0x3E] = h.pat[1]; M2[0x55] = 3;
-    P2.fill_polygon();
-  }
-  P2.draw_target_arrows();
-  const colour = st.rt.colour, bg = sc.d021;
-  for (let R = 24; R <= 126; R++) {
-    const o = (35 + R) * 384;
-    for (let X = 34; X <= 285; X++) {
-      const cell = (R >> 3) * 40 + (X >> 3), b = M2[0xC000 + (R >> 3) * 320 + (X >> 3) * 8 + (R & 7)];
-      const v = (b >> (6 - 2 * ((X & 7) >> 1))) & 3, c = M2[0xE000 + cell];
-      px[o + 32 + X] = v === 0 ? bg : v === 1 ? c >> 4 : v === 2 ? c & 15 : colour[cell] & 15;
-    }
-  }
-  return true;
-}
-
-root.SRModern = { attach, onShow, smooth, render, draw, paint, pose, capture, readModel, colourOf, pixelsOf, blend,
-  logAt, vecLog, rowsLog, vecLin, putLog, putLin, FRAME, LINE, VIEW_RECT: { x: VX, y: VY - VH, w: VW, h: VH } };
+root.SRModern = { attach, onShow, render, draw, capture, readModel, colourOf, pixelsOf, blend,
+  logAt, vecLog, rowsLog, vecLin, FRAME, LINE, VIEW_RECT: { x: VX, y: VY - VH, w: VW, h: VH } };
 })(typeof window !== 'undefined' ? window : globalThis);

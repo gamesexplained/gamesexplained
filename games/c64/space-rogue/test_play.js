@@ -1,22 +1,16 @@
 'use strict';
-// Holds the Play tab's two switches for the 3D view, Native resolution and Smooth motion
-// (port/page/modern.js), to the port they watch. The page's own blocks run in node: the port, the
-// page's machine (port/page/runtime.js) and the modern view, on the disk the page carries. Two
-// machines start from power-on and go to the cockpit as Skip to the cockpit does, then fly on a
-// script: the stick round its directions, the view key (cockpit, chase and cinematic views) and the
-// target key. One has the modern view attached and asks it for a smooth view three times a frame,
-// painted in the C64's pixels as the page paints it; the other runs alone. At every frame
+// Holds the Play tab's Native resolution (port/page/modern.js) to the port it watches. The page's
+// own blocks run in node: the port, the page's machine (port/page/runtime.js) and the modern view,
+// on the disk the page carries. Two machines start from power-on and go to the cockpit as Skip to
+// the cockpit does, then fly on a script: the stick round its directions, the view key (cockpit,
+// chase and cinematic views) and the target key. One has the modern view attached and asks it at
+// every frame for the pass on show, as the page does; the other runs alone. At every frame
 // - the two machines' memory, colour RAM, chips, clocks and programs are the same: the modern view
-//   only reads the game;
-// - the smooth view never moves back from one view to the next, and on average it is no more than
-//   three quarters of a pass further behind the game's newest pass than the C64's own picture is:
-//   it waits for the pass after the one it shows, which the C64's picture does not.
+//   only reads the game.
 // At every pass the game draws
 // - the view modern.js builds from the game's memory is the port's own drawing: the same polygons
 //   in the same order and colours, each dot, ring and burst at the same place and size to within a
-//   pixel, each corner of a model to within 2.5 pixels (the game rounds where the page does not);
-// - the smooth view at that pass, painted in the C64's pixels, is the frame the game shows, but for
-//   frames where the game has started its next picture in the buffer still on show.
+//   pixel, each corner of a model to within 2.5 pixels (the game rounds where the page does not).
 // Each count must clear its mark and each kind of view must be reached, so a script that stops
 // reaching them fails. With the moments the port's tests save in work/states (a contributor's,
 // port/test/lib.js), the same checks run again from each moment of flight, of a fight and of
@@ -32,12 +26,11 @@ const PAGE = 'play.html', page = g.read(PAGE);
 const blocks = [...page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)].map(m => m[1]);
 if (!blocks.includes('port/page/modern.js')) { console.log('FAIL: play.html has no port/page/modern.js'); process.exit(1); }
 for (const b of blocks) g.run(PAGE, b, 'SRPort');
-const { SRPage, SRModern, C64 } = globalThis;
+const { SRPage, SRModern } = globalThis;
 const cost = JSON.parse(/^window\.SR_COST = (.*);$/m.exec(page)[1]);
 const disk = JSON.parse(/<script type="application\/json" id="sr-disk">([^<]*)<\/script>/.exec(page)[1]);
 const b64 = s => Uint8Array.from(Buffer.from(s, 'base64'));
 const FRAMES = +process.argv[2] || 2400, FILTER = process.argv[3] || '';
-const FRAME = SRPage.FRAME, SUB = 3;
 
 let fails = 0;
 const fail = (...w) => { if (fails++ < 12) console.log('FAIL', ...w); };
@@ -103,7 +96,7 @@ function record(rt, st) {
 }
 
 const T = { passes: 0, views: {}, polys: 0, polyBad: 0, flats: 0, flatBad: 0, pts: 0, ptBad: 0, ptMax: 0,
-  smooth: 0, still: 0, none: 0, back: 0, lag: 0, lagC64: 0, painted: 0, px: 0, pxBad: 0, frames: 0, moved: 0 };
+  frames: 0, shown: 0 };
 // What modern.js builds at a pass against what the port drew there
 function compare(what, rec, scene) {
   T.passes++; T.views[scene.view] = (T.views[scene.view] || 0) + 1;
@@ -134,35 +127,13 @@ function compare(what, rec, scene) {
 }
 
 // Flight on both machines: A with the modern view, B without
-function fly(what, A, B, frames, restored) {
-  const st = SRModern.attach(A), passes = record(A, st), px = new Uint8Array(384 * 272);
-  let phi = null;
+function fly(what, A, B, frames) {
+  const st = SRModern.attach(A), passes = record(A, st);
   for (let f = 0; f < frames; f++) {
     const p = plan(f);
     for (const rt of [A, B]) { rt.input.joy = p.joy; rt.input.keys = new Set(p.keys); }
     A.runFrame(); B.runFrame(); T.frames++;
-    const F = A.lastFrame(), shown = C64.renderFrame(F).px;
-    for (let k = 0; k < SUB; k++) {
-      const v = SRModern.smooth(st, A.target - FRAME + (k / SUB) * FRAME, F);
-      if (!v) { phi = null; T.none++; continue; }
-      if (v.phi === undefined) { phi = null; T.still++; continue; }
-      T.smooth++;
-      if (phi !== null && v.phi < phi - 1e-9) { T.back++; if (T.back < 4) console.log('  ' + what + ', frame ' + f + ': the view stepped back from pass ' + phi.toFixed(3) + ' to ' + v.phi.toFixed(3)); }
-      phi = v.phi;
-      const newest = st.hist[st.hist.length - 1].n;
-      T.lag += newest - v.phi; T.lagC64 += newest - v.shown.n;
-      SRModern.render(v.scene);
-      px.set(shown);
-      const painted = SRModern.paint(px, st, v);
-      // at the pass on show, in the cockpit view; not in a frame where the game has started the
-      // next picture in the buffer still on show, before the interrupt has changed the bank, nor
-      // in the first three passes from a restored moment, where a dot or two can differ by a row
-      // (36 pixels in all, in two of the moments; the cause is not known)
-      if (painted && v.phi === v.shown.n && v.scene.view === 0 && A.M[0x3A] !== v.shown.buf && (!restored || v.shown.n > 3)) {
-        T.painted++;
-        for (let y = 59; y <= 161; y++) for (let x = 66; x <= 317; x++) { T.px++; if (px[y * 384 + x] !== shown[y * 384 + x]) T.pxBad++; }
-      }
-    }
+    if (SRModern.onShow(SRModern.attach(A), A.lastFrame())) T.shown++;
     const d = [];
     if (A.program !== B.program) d.push('program ' + A.program + ' / ' + B.program);
     if (A.t !== B.t) d.push('clock ' + A.t + ' / ' + B.t);
@@ -172,7 +143,6 @@ function fly(what, A, B, frames, restored) {
     for (let r = 0; r < 0x20; r++) if (A.sidw[r] !== B.sidw[r]) d.push('SID ' + r);
     if (d.length) { fail(what + ', frame ' + f + ', with the modern view and without: ' + d.join(', ')); return; }
   }
-  T.moved += st.n;
   for (const { rec, scene } of passes) compare(what, rec, scene);
 }
 
@@ -186,7 +156,7 @@ for (const m of moments) {
   const s = JSON.parse(fs.readFileSync(path.join(STATES, m), 'utf8')).machine;
   const a = machine(), b = machine();
   a.restore(s, P => P.main_loop()); b.restore(s, P => P.main_loop());
-  fly(m.replace(/\.json$/, ''), a, b, Math.min(FRAMES, 900), true);
+  fly(m.replace(/\.json$/, ''), a, b, Math.min(FRAMES, 900));
 }
 
 const pc = (a, n) => n ? (100 * a / n).toFixed(2) + ' %' : '-';
@@ -195,17 +165,11 @@ console.log((moments.length ? 'power-on and ' + moments.length + ' moments' : 'p
 console.log('  polygons as the port drew them  ' + (T.polys - T.polyBad) + ' of ' + T.polys + ' (' + pc(T.polys - T.polyBad, T.polys) + ')');
 console.log('  dots, rings and bursts          ' + (T.flats - T.flatBad) + ' of ' + T.flats + ' (' + pc(T.flats - T.flatBad, T.flats) + ')');
 console.log('  model corners within 2.5 px     ' + (T.pts - T.ptBad) + ' of ' + T.pts + ', the farthest ' + T.ptMax.toFixed(2) + ' px');
-console.log('  smooth views                    ' + T.smooth + ', ' + T.back + ' stepped back; ' + T.still + ' the game\'s own picture, ' + T.none + ' none');
-const later = (T.lag - T.lagC64) / T.smooth;
-console.log('  behind the newest pass, average ' + (T.lag / T.smooth).toFixed(2) + ' passes; the C64\'s picture ' + (T.lagC64 / T.smooth).toFixed(2) +
-  ' (' + Math.round(later * T.frames / T.moved * 1000 / 50.12) + ' ms later, at ' + (T.moved / T.frames * 50.12).toFixed(1) + ' passes a second)');
-console.log('  painted at a pass, the view     ' + (T.px - T.pxBad) + ' of ' + T.px + ' pixels the game\'s (' + T.painted + ' views)');
+console.log('  frames showing a pass drawn     ' + T.shown + ' of ' + T.frames);
 for (const v of [0, 1, 2]) if (!T.views[v]) fail('no pass drew view ' + v + ': the script no longer reaches it');
 if (T.polys < 100 || T.polyBad > T.polys * 0.02) fail('polygons: ' + T.polyBad + ' of ' + T.polys + ' differ (the mark is 2 %)');
 if (T.flats < 100 || T.flatBad > T.flats * 0.02) fail('dots, rings and bursts: ' + T.flatBad + ' of ' + T.flats + ' differ (the mark is 2 %)');
 if (T.pts < 100 || T.ptBad > T.pts * 0.01) fail('model corners: ' + T.ptBad + ' of ' + T.pts + ' further than 2.5 px (the mark is 1 %)');
-if (T.smooth < T.frames || T.back) fail('smooth views: ' + T.smooth + ' in ' + T.frames + ' frames, ' + T.back + ' stepped back');
-if (later > 0.75) fail('smooth views: ' + (T.lag / T.smooth).toFixed(2) + ' passes behind the game, the C64\'s picture ' + (T.lagC64 / T.smooth).toFixed(2) + ' (the mark is three quarters of a pass more)');
-if (!T.painted || T.pxBad > T.px * 0.001) fail('painted views: ' + T.pxBad + ' of ' + T.px + ' pixels differ (the mark is 0.1 %)');
+if (T.shown < T.frames * 0.9) fail('frames showing a pass drawn: ' + T.shown + ' of ' + T.frames + ' (the mark is 90 %)');
 console.log(fails ? 'FAIL: ' + fails + ' check(s)' : 'ok');
 process.exit(fails ? 1 : 0);

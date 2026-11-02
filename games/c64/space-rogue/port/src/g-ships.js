@@ -114,7 +114,7 @@ G.ships = function (P) {
     0x392A: 'key_surrender'
   };
   P.do_key = function* () {
-    yield* P.joystick_flight();
+    if (P.plug.once('joystick_flight')) yield* P.joystick_flight();   // plug-in point: once, the stick eased a pass at a time
     const k = P.get_key();
     if (!k.c) return k;
     let y = M[0x0838] ? 0x18 : 0x24;
@@ -442,6 +442,18 @@ G.ships = function (P) {
     P.set_colour({ x: M[0x2410 + (r.a & 7)] });
     if (!M[0xB2]) {
       if (!M[0x0D3C]) {
+        // the two triangles from the guns, on the buffer on show, until the pass's flip. With Fast
+        // CPU, drawn instead on each loop's buffer before its flip, for the C64's pass (plug-in point
+        // shown, the beam the player's own)
+        const c = M[0x2410 + (r.a & 7)];
+        const guns = () => {
+          P.set_colour({ x: c });
+          for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x23F9 + i];
+          M[0x55] = 3; P.fill_polygon();
+          for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x2405 + i];
+          M[0x55] = 3; P.fill_polygon();
+        };
+        if (!P.plug.shown('flip', guns, true)) return {};
         P.flip_draw_buffer();
         for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x23F9 + i];
         M[0x55] = 3; P.fill_polygon();
@@ -449,7 +461,10 @@ G.ships = function (P) {
         M[0x55] = 3; P.fill_polygon();
         return P.flip_draw_buffer();
       }
-    } else if (!M[0xB3]) return P.fill_window();
+    } else if (!M[0xB3]) {
+      P.plug.shown('objects', () => { P.set_colour({ x: M[0x2410 + (r.a & 7)] }); P.fill_window(); });   // plug-in point: shown
+      return P.fill_window();
+    }
     P.slot_pos_ptr({ y: M[0xB2] });
     if (!P.project_point().n) return {};
     for (let i = 0; i < 4; i++) M[0xFD00 + i] = M[0x51 + i];
@@ -478,6 +493,9 @@ G.ships = function (P) {
     const add4 = (to, from) => { const s = M[from] + 4; M[to] = s & 255; M[to + 1] = (M[from + 1] + (s >> 8)) & 255; };
     if (across) { M[0xFD08] = M[0x51]; M[0xFD09] = M[0x52]; add4(0xFD0A, 0x53); } else { add4(0xFD08, 0x51); M[0xFD0A] = M[0x53]; M[0xFD0B] = M[0x54]; }
     M[0x55] = 3;
+    // with Fast CPU, the beam drawn again before each later loop's drawing (plug-in point shown)
+    const pts = M.slice(0xFD00, 0xFD0C), c = M[0x2410 + (r.a & 7)];
+    P.plug.shown('objects', () => { P.set_colour({ x: c }); M.set(pts, 0xFD00); M[0x55] = 3; P.fill_polygon(); });
     return P.fill_polygon();
   };
   // The point at ($74) on screen ($51-$54), as seen from the camera ($58, $5A); A and N its depth's

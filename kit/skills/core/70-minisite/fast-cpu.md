@@ -104,6 +104,10 @@ two aims clash, the higher one wins.
   (`games/c64/space-rogue`). Such a game gets ticks of its own, counted in
   the machine's cycles. Its own clock goes on counting at its own rate.
   So what it times keeps its time in seconds.
+- **Put such a tick just after the interrupt that reads the keys**
+  (`games/c64/space-rogue`, a line after its interrupt's). Each loop then
+  takes the keys the interrupt has just read. Its frame shows in the
+  refresh that runs it.
 - **A game that waits for a line of its screen before each flip can tick
   on that line, once a video frame** (`games/c64/mercenary`). Its wait
   then ends at once. Its flips fall where the machine's do against the
@@ -134,7 +138,11 @@ two aims clash, the higher one wins.
   counting a loop's cost would make the game depend on something besides
   its code and the clock.
 - **Outside the main loop, the machine keeps its own speed.** The title,
-  the menus and loading are not play.
+  the menus and loading are not play. So do the routines the loop calls
+  that leave play for a while, such as a menu, a dialog or docking. Count
+  them while they run, and give the port the game's own plug-in points
+  meanwhile (`games/c64/space-rogue/port/page/runtime.js`, `AWAY`). Their
+  waits and counts are the machine's.
 
 ## Step scaling
 
@@ -146,6 +154,17 @@ two aims clash, the higher one wins.
   own step code. The part of a unit left over is carried to the next loop
   while the key is held. So in open space, K shares end where one step
   ends.
+- **Share a number the game keeps as a logarithm by its logarithm.** Take
+  log2 K from it (`parts`). A share can fall below the least the game acts
+  on, such as a turn too small to make. Then give the whole step once a
+  step instead, or the move stops.
+- **Work out once a step what the game works out from where things stood
+  as its loop began.** One example is a change toward a target, such as
+  an engine closing a craft's velocity on a wanted one, the rest of the
+  way in one go. Another is a decision, such as whether a craft turns.
+  Taken again each loop, either would act K times, or change partway
+  through the step. Keep the first loop's value for the step's other
+  loops, and give it in shares (`keep`).
 - **List everything a loop does once, and give each a plug-in point.** The
   list holds the player's moves and every other object's move. It holds
   every chance rolled and every count of loops. It holds what is shown
@@ -169,7 +188,10 @@ two aims clash, the higher one wins.
   the game. A game that does all its logic once a loop keeps working at a
   steadier speed. What a quicker speed changes is the time a player has
   to react. Find the planned speed in the game's own words: a countdown
-  of so many loops that the game or its manual calls so many seconds.
+  of so many loops that the game or its manual calls so many seconds. Or
+  find it in the game's code: a loop that leaves out its drawing until it
+  is back to so many video frames a loop plans that speed
+  (`games/c64/space-rogue`).
   Time the machine's loops in its busiest and its emptiest views. Set the
   most ticks a step may take (the table's `most`). Make it the nearest
   whole number of ticks that is no quicker than the planned speed. Views
@@ -240,6 +262,9 @@ two aims clash, the higher one wins.
 - **Hold every key down for at least three of the machine's video
   frames.** The first loop that reads the key counts it. So no press goes
   missing.
+- **A key the game's interrupt puts in a buffer is taken once from it.**
+  The interrupt's repeat keeps its time in seconds. So such a key needs
+  no entry as a switch or a repeat.
 - **A speed of the game's own stays the machine's.** The machine may move
   something in a loop that renders no view, such as a pointer. That loop
   takes the same time everywhere. Measure it on the game's own code. Each
@@ -263,6 +288,17 @@ two aims clash, the higher one wins.
 - **Show each frame on the first refresh after its loop.** Never render
   between two loops. Never hold a frame back. Either would show the game
   late, in frames it never rendered.
+- **A game that splits nothing within a video frame can be shown as its
+  memory stands after the loop** (`games/c64/space-rogue`, `rt.fastFrame`).
+  A loop run on a tick inside the video frame flips its buffers there. The
+  video frame the machine draws would show the old buffer above that line.
+- **Draw again what the game draws for one loop.** The machine keeps a
+  drawing on the buffer on show until its loop's flip, such as a beam
+  drawn between two flips. It keeps a drawing on the buffer it is drawing
+  for one loop's frame, such as a flash. A loop that flips at once would
+  hide the first and show the second for one tick. Keep each for the rest
+  of the step. Draw it again on each loop's buffer where the game would,
+  the first before the flip (`shown` and `again`).
 - **Fast CPU replaces Smooth motion once it is shown faithful on that
   game.** Shown faithful means its tests pass and the page states each
   measured difference. Then Fast CPU gives the frame rate Smooth motion
@@ -284,6 +320,15 @@ two aims clash, the higher one wins.
   gives the game's own value. So the lockstep holds the port with them in
   place. `games/c64/castle-master/port/src/core.js` lists the kinds. Every
   place where Fast CPU changes a loop is a plug-in point.
+- **A plug-in point keeps every call the routine makes.** The page's
+  clock may cost a stretch of code by the routines called in it. A share
+  worked out in place of the game's routine would then move the clock
+  with Fast CPU off. Put the share inside that routine, behind an
+  argument the game never passes
+  (`games/c64/space-rogue/port/src/g-vec.js`, `vec_add_lin`). Check "off
+  means off" against the page as it was before the plug-in points went
+  in, frame by frame, memory and clock. Check it against the page with
+  Fast CPU unloaded too.
 - **The renderers** are unchanged. Each refresh, they render the last
   loop's draw list, when it is new.
 - **Leave out** copies of the game's routines, code that writes into the

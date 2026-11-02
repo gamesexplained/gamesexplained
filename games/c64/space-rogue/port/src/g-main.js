@@ -10,26 +10,30 @@ G.main = function (P) {
 
   // ---- the main loop of flight ($0DED): each pass moves everything, reads a key and checks the
   // collisions; then, unless the frames it took leave the drawing behind (frame_skip3's carry),
-  // draws the view and the arrows and shows the buffer just drawn
+  // draws the view and the arrows and shows the buffer just drawn. With Fast CPU a pass is a share
+  // of one of the C64's: what counts passes runs once a C64 pass (plug-in point once: the upkeep's
+  // counts, the lifetimes, the ships' minds, the stick and the hazards' dice), what moves takes its
+  // share in its own routine, and what the game draws for one pass is drawn again (plug-in point
+  // again: under the view's objects, under the arrows, and over everything)
   P.main_loop = function* () {
     for (;;) {
-      yield { cp: 0x0DED }; yield* P.frame_update();
-      yield { cp: 0x0DF0 }; P.age_objects();
-      yield { cp: 0x0DF3 }; yield* P.ship_ai();
+      yield { cp: 0x0DED }; if (P.plug.once('frame_update')) yield* P.frame_update();
+      yield { cp: 0x0DF0 }; if (P.plug.once('age_objects')) P.age_objects();
+      yield { cp: 0x0DF3 }; if (P.plug.once('ship_ai')) yield* P.ship_ai();
       yield { cp: 0x0DF6 }; P.turn_objects();
       yield { cp: 0x0DF9 }; P.apply_thrust();
       yield { cp: 0x0DFC }; yield* P.gravity();
       yield { cp: 0x0DFF }; P.move_objects();
-      yield { cp: 0x0E02 }; yield* P.do_key();
+      yield { cp: 0x0E02 }; P.plug.read(); yield* P.do_key();
       yield { cp: 0x0E05 }; yield* P.check_collisions();
       yield { cp: 0x0E08 };
       if (P.frame_skip3().c) continue;
       yield { cp: 0x0E0D }; P.update_camera();
       yield { cp: 0x0E10 }; P.place_particles();
-      yield { cp: 0x0E13 }; yield* P.draw_frame();
-      yield { cp: 0x0E16 }; P.sector_hazard();
-      yield { cp: 0x0E19 }; P.draw_target_arrows();
-      yield { cp: 0x0E1C }; P.flip_buffers();
+      yield { cp: 0x0E13 }; P.plug.again('objects'); yield* P.draw_frame();
+      yield { cp: 0x0E16 }; if (P.plug.once('sector_hazard')) P.sector_hazard();
+      yield { cp: 0x0E19 }; P.plug.again('arrows'); P.draw_target_arrows();
+      yield { cp: 0x0E1C }; P.plug.again('flip'); P.flip_buffers();
     }
   };
   P.MAIN_LOOP = [0x0DED, 0x0DF0, 0x0DF3, 0x0DF6, 0x0DF9, 0x0DFC, 0x0DFF, 0x0E02, 0x0E05, 0x0E08, 0x0E0D, 0x0E10,

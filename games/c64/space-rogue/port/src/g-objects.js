@@ -27,6 +27,26 @@ G.objects = function (P) {
   // the pair at a/a+1 less b/b+1 (16 bits) has its top bit set: the game's CMP and SBC, then BMI
   const neg = (al, ah, bl, bh) => ((ah - bh - (al < bl ? 1 : 0)) & 0x80) !== 0;
   const dec16 = (a, d) => { const v = ((M[a] | M[a + 1] << 8) - d) & 0xFFFF; M[a] = v & 255; M[a + 1] = v >> 8; };
+  // Fast CPU's plug-in points for a move (core.js lists them). A 24-bit linear number, signed
+  const s24 = a => ((M[a] | M[a + 1] << 8 | M[a + 2] << 16) << 8) >> 8;
+  const put24 = (a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; M[a + 2] = (v >> 16) & 255; };
+  // the vector at a (three of them), each component this pass's share of it (plug-in point step;
+  // keep first, for a step the game works out once a pass): key + 0, 1, 2 its components' keys
+  const share = (a, key, kept) => {
+    for (let i = 0; i < 3; i++) {
+      let v = s24(a + 3 * i);
+      if (kept) v = P.plug.keep(key + i, v);
+      put24(a + 3 * i, P.plug.step(key + i, v));
+    }
+  };
+  // a number in the game's logarithms at lo/lo+1 (256ths, the whole part signed), less the log of
+  // the loops this step is shared over (plug-in point parts): this pass's share of it
+  const lessParts = lo => {
+    const d = Math.round(256 * Math.log2(P.plug.parts()));
+    if (!d) return;
+    const v = (M[lo] | M[lo + 1] << 8) - d;
+    M[lo] = v & 255; M[lo + 1] = (v >> 8) & 255;
+  };
 
   // ---- making and freeing objects
   // An object of type X in a free slot, at the position ($74); the slot comes back in Y, $FF when
@@ -232,6 +252,12 @@ G.objects = function (P) {
   };
   // The sector's hazards, while it has hazard entries: now and then a burst of triangles in the
   // window, and a large one jolts the ship
+  // each of the hazard's triangles, as spray_triangle fills it: drawn again before the arrows on
+  // the later loops of the C64's pass (plug-in point shown)
+  const keepSpray = () => {
+    const t = { pts: M.slice(0xFD00, 0xFD0C), pat: [M[0x3D], M[0x3E]] };
+    P.plug.shown('arrows', () => P.spray_again(t));
+  };
   P.sector_hazard = function () {
     if (!M[0x0782]) return {};
     if (!(P.random_upto({ a: 0x8B }).a & 0x80)) return {};
@@ -240,7 +266,8 @@ G.objects = function (P) {
     M[0x51] = P.random_upto({ a: M[0x41] }).a;
     M[0x53] = P.random_upto({ a: M[0x42] }).a;
     const n = (P.random_upto({ a: 0xBF }).a + 1) & 255;
-    P.spray_triangles({ a: n, x: 2, y: 9 });
+    P.keepSpray = keepSpray;
+    try { P.spray_triangles({ a: n, x: 2, y: 9 }); } finally { P.keepSpray = null; }
     if (n < 0xAD) return { a: n };
     P.sound_play({ a: 0x0B });
     return P.jolt_player();
@@ -276,6 +303,7 @@ G.objects = function (P) {
     M[0x61] = M[0x0D01]; M[0x5F] = M[0x0C04]; M[0x60] = M[0x0C05];
     P.engine_damage();
     P.forward_times();
+    share(0x0896, 0x140000);                            // plug-in point: step, the thrust's share
     setp(0x76, 0x0545);
     P.vec_add_lin();
     setp(0x78, 0x089F);
@@ -304,14 +332,23 @@ G.objects = function (P) {
     M[0x5F] = lo & 255;
     M[0x60] = (M[0x0C05 + y] - M[0x60] - (lo < 0 ? 1 : 0)) & 255;
     P.engine_damage();
+    // the change to the velocity, worked out once a C64 pass and given a share at a time (plug-in
+    // points keep and step): a thrust's worth toward the wanted velocity, or the rest of the way
+    const key = 0x110000 + x * 4;
     if (M[0x60] & 0x80) {
       P.vec_scale();
       P.vec_log_to_lin();
+      share(0x089F, key, true);
       M[0x78] = M[0x76]; M[0x79] = M[0x77];
       return P.vec_add_lin();
     }
     M[0x78] = M[0x76]; M[0x79] = M[0x77];
     setp(0x74, 0x0896);
+    const v = ptr(0x78);
+    for (let i = 0; i < 3; i++) {
+      const d = P.plug.keep(key + i, s24(0x0896 + 3 * i) - s24(v + 3 * i));
+      put24(0x0896 + 3 * i, s24(v + 3 * i) + P.plug.step(key + i, d));
+    }
     return P.copy9();
   };
   // Ship $94's nose (its third row) times the log-form number in $5F-$61, linear at $0896
@@ -328,12 +365,13 @@ G.objects = function (P) {
     if (M[0x0409 + x] & 4) M[0x60] = (M[0x60] - 2) & 255;
     return { a: M[0x0409 + x] & 4, x };
   };
-  // Every moving object (type flag bit 4) moved by its velocity
+  // Every moving object (type flag bit 4) moved by its velocity (with Fast CPU, a share of it:
+  // plug-in point step)
   P.move_objects = function () {
     for (let x = 0x13; x >= 0; x--) {
       if (!M[0x05F9 + x] || !(flags(x) & 0x10)) continue;
       setp(0x74, vel(x)); setp(0x76, pos(x)); setp(0x78, pos(x));
-      P.vec_add_lin();
+      P.vec_add_lin({ share: 0x100000 + x * 4, of: 0x74 });   // plug-in point: step, the velocity's share
     }
     return { x: 0xFF };
   };
@@ -344,16 +382,20 @@ G.objects = function (P) {
     M[0x94] = x;
     do {
       if (M[0x05F9 + x]) {
-        if (x >= 6) M[0x0516 + x] = (M[0x0516 + x] + 1) & 255;
-        if (M[0x050F + x] | M[0x0516 + x] | M[0x0508 + x]) P.turn_ship({ x });
+        if (x >= 6 && P.plug.once('spin')) M[0x0516 + x] = (M[0x0516 + x] + 1) & 255;   // plug-in point: once
+        // plug-in point: keep, whether it turns this pass, decided as the C64's pass begins
+        if (P.plug.keep(0x230000 + x, (M[0x050F + x] | M[0x0516 + x] | M[0x0508 + x]) !== 0)) P.turn_ship({ x });
       }
       M[0x94] = (M[0x94] - 1) & 255;
       x = M[0x94];
     } while (x);
     setp(0x74, 0x0095); setp(0x78, 0x044B);
-    P.rate_to_radians({ a: M[0x050F] }); M[0x9B] = M[0x5F]; M[0x9C] = M[0x60]; M[0x9D] = M[0x61];
-    P.rate_to_radians({ a: M[0x0516] }); M[0x98] = M[0x5F]; M[0x99] = M[0x60]; M[0x9A] = M[0x61];
-    P.rate_to_radians({ a: M[0x0508] }); M[0x95] = M[0x5F]; M[0x96] = M[0x60]; M[0x97] = M[0x61];
+    // the player's three rates, in 1,024ths of a turn: this pass's share, in whole 1,024ths (plug-in
+    // point step), so that each turn is one the game's own arithmetic makes
+    const rate = a => P.plug.step(a, (M[a] << 24) >> 24) & 255;
+    P.rate_to_radians({ a: rate(0x050F) }); M[0x9B] = M[0x5F]; M[0x9C] = M[0x60]; M[0x9D] = M[0x61];
+    P.rate_to_radians({ a: rate(0x0516) }); M[0x98] = M[0x5F]; M[0x99] = M[0x60]; M[0x9A] = M[0x61];
+    P.rate_to_radians({ a: rate(0x0508) }); M[0x95] = M[0x5F]; M[0x96] = M[0x60]; M[0x97] = M[0x61];
     P.turn_by_rates();
     M[0x74] = M[0x5A]; M[0x75] = M[0x5B]; setp(0x78, 0x0DCC);
     return P.mat_transpose();
@@ -369,21 +411,30 @@ G.objects = function (P) {
   };
   // Computer ship X turned one step of its type's turning on each axis whose rate is nonzero,
   // each rate moved a step toward zero
+  // (With Fast CPU, a share of the step: plug-in point parts; a share smaller than the least turn
+  // turn_by_rates makes, a whole part below -8, is given whole once a C64 pass instead. Whether an
+  // axis turns, and its count, are the C64 pass's: plug-in points keep and once.)
   P.turn_ship = function (r) {
     const x = r.x, t = (M[0x060D + x] << 1) & 255;
     const lo = M[0x0BE2 + t] - 0x59;
     M[0x9E] = lo & 255; M[0x9F] = (M[0x0BE3 + t] - 7 - (lo < 0 ? 1 : 0)) & 255;
+    const whole = M[0x9E] | M[0x9F] << 8;
+    lessParts(0x9E);
+    if (((M[0x9F] - 0xF8) & 0x80) && !(((whole >> 8) - 0xF8) & 0x80)) {
+      if (P.plug.once('least_turn')) { M[0x9E] = whole & 255; M[0x9F] = whole >> 8; }
+    }
     setp(0x78, 0x0095);
     P.copy9_from_0DAB();
-    const step = (rate, sign, to) => {
-      const v = M[rate + x];
-      if (!v) return;
-      if (v & 0x80) { M[rate + x] = (v + 1) & 255; M[sign] = 0xFF; } else { M[rate + x] = (v - 1) & 255; M[sign] = 0; }
+    const step = (rate, sign, to, i) => {
+      const v = M[rate + x], d = P.plug.keep(0x220000 + x * 4 + i, v ? (v & 0x80 ? -1 : 1) : 0);
+      if (!d) return;
+      if (v && P.plug.once('turn_count')) M[rate + x] = (v & 0x80 ? v + 1 : v - 1) & 255;
+      M[sign] = d < 0 ? 0xFF : 0;
       M[to] = M[0x9E]; M[to + 1] = M[0x9F];
     };
-    step(0x0508, 0x97, 0x95);
-    step(0x0516, 0x9A, 0x98);
-    step(0x050F, 0x9D, 0x9B);
+    step(0x0508, 0x97, 0x95, 0);
+    step(0x0516, 0x9A, 0x98, 1);
+    step(0x050F, 0x9D, 0x9B, 2);
     setp(0x78, orient(x)); setp(0x74, 0x0095);
     return P.turn_by_rates();
   };
@@ -465,6 +516,7 @@ G.objects = function (P) {
             setp(0x76, pos(s));
             P.slot_pos_ptr({ y: M[0x94] });
             yield* P.gravity_pull();
+            share(0x006B, 0x120000 + (M[0x94] * 8 + M[0x95]) * 4);   // plug-in point: step, the pull's share
             const v = vel(M[0x95]);
             setp(0x78, v); setp(0x76, v);
             P.vec_add_lin();
@@ -617,7 +669,7 @@ G.objects = function (P) {
         } while (!(b & 0x80));
       }
       x = M[0xC6];
-      if (M[0x040F + x]) M[0x040F + x]--;
+      if (M[0x040F + x] && P.plug.once('rammed')) M[0x040F + x]--;   // plug-in point: once, a count of passes
       x = (x - 1) & 255;
       M[0xC6] = x;
       if (x & 0x80) return { x };
@@ -648,7 +700,7 @@ G.objects = function (P) {
     if (M[0xB9] === 0x14 && !r.x) return yield* P.gate_contact();
     const fx = M[0x08D5 + M[0xB8]], fy = M[0x08D5 + M[0xB9]];
     if ((fx | fy) & 0x20) return yield* P.missile_hit({ x: M[0xB8], y: M[0xB9] });
-    if (fy & 0x40) return yield* P.hazard_hit();
+    if (fy & 0x40) return P.plug.once('hazard_hit') ? yield* P.hazard_hit() : {};   // plug-in point: once, the damage adds up
     return yield* P.ram();
   };
   // A shard (type $1B) explodes against the first object, and a new one starts at the origin
@@ -664,8 +716,9 @@ G.objects = function (P) {
     if (P.contact_cooldown({ x: M[0xB2] }).drop) return {};
     if (P.contact_cooldown({ x: M[0xB3] }).drop) return {};
     if (!M[0xB2] || !M[0xB3]) {
-      P.set_colour({ x: M[0x8C] });
-      P.fill_window();
+      const c = M[0x8C], flash = () => { P.set_colour({ x: c }); P.fill_window(); };
+      P.plug.shown('objects', flash);                         // plug-in point: shown, the window's flash
+      flash();
       P.sound_play({ a: 9 });
     }
     setp(0x74, vel(M[0xB2])); setp(0x76, vel(M[0xB3])); setp(0x78, 0x00BA);
@@ -780,12 +833,13 @@ G.objects = function (P) {
     setp(0x74, vel(r.y)); setp(0x78, vel(r.y));
     return P.vec_neg_lin();
   };
-  // Slot Y moved back a step: its position less its velocity
+  // Slot Y moved back a step: its position less its velocity (with Fast CPU, the share it last
+  // moved: plug-in point step)
   P.back_off = function (r) {
     P.slot_pos_ptr({ y: r.y });
     M[0x78] = M[0x74]; M[0x79] = M[0x75];
     setp(0x76, vel(r.y));
-    return P.vec_sub_lin();
+    return P.vec_sub_lin({ share: 0x130000 + r.y * 4, of: 0x76 });   // plug-in point: step
   };
   P.jolt_turn = function (r) {
     const y = r.y;
@@ -800,8 +854,9 @@ G.objects = function (P) {
   P.blow_up = function* (r) {
     M[0xAA] = r.a; M[0xA8] = r.x; M[0xA9] = r.y;
     if (!r.y) {
-      P.set_colour({ x: 0x12 });
-      P.fill_window();
+      const flash = () => { P.set_colour({ x: 0x12 }); P.fill_window(); };
+      P.plug.shown('objects', flash);                         // plug-in point: shown, the window's flash
+      flash();
       P.jolt_player();
       P.sound_play({ a: 5 });
     } else P.sound_play({ a: 6 });

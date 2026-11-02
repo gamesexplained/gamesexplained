@@ -67,6 +67,15 @@
 // The plug-in points once (a job whose effect adds up) and after (a wait that only keeps a message
 // up) take the byte they ask about from the port, so they need no entry; since(key) gives the share
 // of a pace gone since the job once(key) last ran, for a mod that moves what it draws once a pace.
+// Three more need no entry either, for a game whose numbers are not all whole steps of a key:
+// parts() is the loops this step is shared over (1 with Fast CPU off), for a step the port shares
+// itself, such as a number kept as a logarithm; keep(key, v), with the pace followed, gives the
+// value the game worked out on the pace's first loop on its other loops too (a thrust worked out
+// from where things stood as the machine's loop began, or whether a craft turns); and shown(at,
+// draw, mine) keeps a drawing the game makes for one loop (a beam, a flash), which the machine shows
+// until its next loop's frame, to be made again where the port calls again(at), on each later loop
+// of the pace, and with mine on this loop too, the port then leaving it out where the game made it
+// (it returns whether the game makes it there).
 (function (root) {
 'use strict';
 
@@ -151,6 +160,28 @@ function attach(rt, table) {
     // most 1: a mod that moves what it draws in that job draws it that share of the way from where
     // it stood to where it put it, so it glides as the game's own steps do
     since(key) { const l = fx.onceAt.get(key); return l === undefined ? 1 : Math.min(1, (tick() - l.t) / l.K); },
+    // the loops a step is shared over this loop, for a share the port works out itself
+    parts() { return fx.K; },
+    // a value the game works out once a pace: with the pace followed, the first loop's on every
+    // loop of the shadow loop (the first time the key is asked in it, when it comes later)
+    keep(key, v) {
+      if (!T.follow) return v;
+      const k = fx.kept.get(key);
+      if (k && k.shadow === fx.shadow) return k.v;
+      fx.kept.set(key, { shadow: fx.shadow, v });
+      return v;
+    },
+    // a drawing the game makes for one loop, kept for the pace's later loops (and with mine, this
+    // one: the game leaves it out where it made it)
+    shown(at, draw, mine) {
+      fx.shown.push({ at, draw, mine: !!mine, t: tick(), K: fx.K, shadow: fx.shadow });
+      return !mine;
+    },
+    again(at) {
+      const t = tick();
+      fx.shown = fx.shown.filter(s => (T.follow ? s.shadow === fx.shadow : t - s.t < s.K));
+      for (const s of fx.shown) if (s.at === at && (s.mine || t !== s.t)) s.draw();
+    },
     // shown for one loop: from the loop that shows it, for K ticks, the game reads it as shown
     // after it has taken it down, and what goes with it as it was
     held(a, v) {
@@ -177,7 +208,8 @@ function attach(rt, table) {
 }
 function reset(fx) {
   Object.assign(fx, { ang: new Map(), carry: new Map(), stepped: new Set(), before: new Set(), now: new Set(),
-    last: new Map(), onceAt: new Map(), hold: null, owed: false, left: 0, first: true, shadow: 0, eased: new Map() });
+    last: new Map(), onceAt: new Map(), hold: null, owed: false, left: 0, first: true, shadow: 0, eased: new Map(),
+    kept: new Map(), shown: [] });
 }
 // a loop starts (a game that follows the machine's pace): the first of a shadow loop reads K again,
 // and each carry keeps its share of a unit
