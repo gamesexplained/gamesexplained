@@ -51,10 +51,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-objview canvas{flex:none;width:288px;max-width:100%;height:auto;image-rendering:pixelated;background:#1a1a1a;border-radius:4px}
 .tt-objview table{flex:1;min-width:220px;margin-top:0}
 .tt-hex{font-family:var(--fm);font-size:13px;line-height:1.5;background:#1a1a1a;color:#e9e7e1;border-radius:6px;padding:12px 14px;overflow-x:auto;white-space:pre}
-.tt-sprites{display:flex;gap:14px;flex-wrap:wrap}
+.tt-sprites{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
 .tt-sprites figure{margin:0}
-.tt-sprites canvas{display:block;image-rendering:pixelated;background:#1a1a1a;border-radius:4px}
-.tt-sprites figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;max-width:220px}
+.tt-sprites canvas{display:block;max-width:100%;image-rendering:pixelated;border-radius:4px}
+.tt-sprites canvas+canvas{margin-top:8px;border-radius:0}
+.tt-sprites figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;max-width:270px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -111,7 +112,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Pictures the game never shows</h2>
   <p class="lede">A few frames and two whole objects are drawn and stored, and never appear.</p>
   <div class="plate"><div class="tt-sprites" id="tt-unused"></div>
-  <p class="cap">Drawn by the game's own <code>sprite_draw</code> (<code>$A185</code>) on the site's copy of the C64's processor, asked for frames the game never asks for.</p></div>
+  <p class="cap">Drawn by the game's own <code>sprite_draw</code> (<code>$A185</code>) on the site's copy of the C64's processor, asked for frames the game never asks for, and played at the game's speed: each frame lasts as many frames of play, fiftieths of a second, as the object's table says. Each is on the plain colour that shows it best.</p></div>
   <p>Medusa's two halves (objects <code>$56</code> and <code>$57</code>) have three frames each, and a fourth is stored after them. The burning dynamite (<code>$34</code>) has four, and a fifth follows. The objects' frame counts never reach the extra frames, and no code sets them. Objects <code>$46</code> and <code>$47</code> are thin dark shapes with a place in every table, but they start nowhere and no code names them. The basket's lid has a third row of picture that is never copied into its sprite.</p>
 </section>
 
@@ -145,7 +146,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // $24, room 0) and it is lit ($AB = 1), which lights the dark rooms. The video chip's registers
 // start as the emulator had them in play (TT_VIC, $D000-$D02E; TT_CIA2, $DD00 and $DD02: bank 3)
 // and take the code's writes. The gnome's sprite (0), and the torch's when it is carried, are
-// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }.
+// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }, and
+// call(address, registers), which runs more of the game's code on the same memory and chips.
 const TT_VIC = [132, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 178, 0, 23, 0, 0, 0, 129, 216, 0, 237, 114, 241, 0, 129, 0,
   0, 129, 240, 240, 251, 242, 243, 248, 241, 247, 242, 243, 244, 245, 246, 247, 243];
 const TT_CIA2 = [148, 63];
@@ -175,7 +177,8 @@ function ttRoom(ram, Cpu, era, room, torch) {
   cpu.call(0x3A47, {}, { maxSteps: 1e6 });
   vic[0x15] &= 0xFE;
   if (torch && m[0x75] === 0x24) vic[0x15] &= ~(1 << m[0x74]);
-  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63 };
+  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63,
+    call: (a, regs) => cpu.call(a, regs || {}, { maxSteps: 1e6 }) };
 }
 // end of tt-rooms
 </script>
@@ -224,20 +227,51 @@ function ttFrames(ram, Cpu, obj, count) {
     if (typeof C64Cpu === 'undefined') { missing($('tt-throne'), 'This'); missing($('tt-unused'), 'These pictures'); return; }
     const F = ttRoom(r, C64Cpu, 9, 1);
     $('tt-throne').textContent = dump(F.mem.subarray(0xF3C8, 0xF408), 0xF3C8);
-    const P = C64.PAL, show = [[0x56, 4, 3, 'Medusa\'s upper half, frames 0-3: the fourth is never shown'], [0x57, 4, 3, 'Medusa\'s lower half, frames 0-3'],
-      [0x34, 5, 4, 'The burning dynamite, frames 0-4: the fifth is never shown'], [0x46, 1, -1, 'Object $46'], [0x47, 1, -1, 'Object $47']];
-    for (const [o, n, last, cap] of show) {
-      const S = ttFrames(r, C64Cpu, o, n), cw = S.wide ? 96 : 48, f = document.createElement('figure'), cv = document.createElement('canvas');
-      const ctx = C64.canvas(cv, n * (cw + 4), 42);
-      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, cv.width, 42);
-      S.frames.forEach((d, i) => {
-        if (S.multi) C64.drawSpriteMC(ctx, d, i * (cw + 4), 0, 2, P[S.colour], P[8], P[1], S.wide ? 2 : 1);
-        else C64.drawSprite(ctx, d, i * (cw + 4), 0, 2, S.colour ? P[S.colour] : P[11], S.wide ? 2 : 1);
-        if (i > last && last >= 0) { ctx.strokeStyle = '#ffeb3b'; ctx.strokeRect(i * (cw + 4) + 0.5, 0.5, cw - 1, 41); }
-      });
-      const c = document.createElement('figcaption'); c.textContent = cap;
-      f.appendChild(cv); f.appendChild(c); $('tt-unused').appendChild(f);
-    }
+    // each picture at the game's speed, through every frame stored, on the black or grey that shows it best
+    const P = C64.PAL, RGB = P.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+    const lum = (c) => 0.299 * RGB[c][0] + 0.587 * RGB[c][1] + 0.114 * RGB[c][2];
+    const greyFor = (parts) => {        // the colours the frames use ($D025 is orange and $D026 white in play)
+      const used = new Set();
+      for (const S of parts) for (const d of S.frames) for (const v of d) {
+        if (S.multi) { for (let s = 0; s < 8; s += 2) if (v >> s & 3) used.add([0, 8, S.colour, 1][v >> s & 3]); } else if (v) used.add(S.colour);
+      }
+      let grey = 12, far = -1;
+      for (const g of [0, 11, 12, 15]) { const d = Math.min(...[...used].map((c) => Math.abs(lum(c) - lum(g)))); if (d > far) { far = d; grey = g; } }
+      return P[grey];
+    };
+    const draw = (ctx, S, f, x, y, s) => S.multi ? C64.drawSpriteMC(ctx, S.frames[f], x, y, s, P[S.colour], P[8], P[1], S.wide ? 2 : 1)
+      : C64.drawSprite(ctx, S.frames[f], x, y, s, P[S.colour], S.wide ? 2 : 1);
+    // objs drawn one under the other, as the game places Medusa's halves, or side by side (row); n frames,
+    // of which the game shows the first `shown`
+    const figure = (objs, n, cap, row) => {
+      const parts = objs.map((o) => ttFrames(r, C64Cpu, o, n)), an = r[0xA29D + objs[0]], shown = (an >> 3 & 7) || 1;
+      const grey = greyFor(parts), w = parts[0].wide ? 48 : 24, k = parts.length;
+      const W = row ? k * w + (k - 1) * 4 : w, Hh = row ? 21 : 21 * k, at = (j, s) => row ? [j * (w + 4) * s, 0] : [0, j * 21 * s];
+      const f = document.createElement('figure'), big = document.createElement('canvas'), strip = document.createElement('canvas');
+      const bctx = C64.canvas(big, W * 4, Hh * 4), cw = W * 2, sctx = C64.canvas(strip, n * (cw + 6) - 6, Hh * 2 + 6);
+      big.setAttribute('aria-label', cap); strip.setAttribute('aria-label', 'Every frame, the one showing marked');
+      let cur = 0;
+      const paint = () => {
+        bctx.fillStyle = grey; bctx.fillRect(0, 0, W * 4, Hh * 4);
+        parts.forEach((S, j) => { const [x, y] = at(j, 4); draw(bctx, S, cur, x, y, 4); });
+        sctx.clearRect(0, 0, strip.width, strip.height);
+        for (let i = 0; i < n; i++) {
+          const x0 = i * (cw + 6);
+          sctx.fillStyle = grey; sctx.fillRect(x0, 0, cw, Hh * 2);
+          parts.forEach((S, j) => { const [x, y] = at(j, 2); draw(sctx, S, i, x0 + x, y, 2); });
+          if (i >= shown) { sctx.strokeStyle = '#c25a00'; sctx.lineWidth = 2; sctx.strokeRect(x0 + 1, 1, cw - 2, Hh * 2 - 2); }
+          sctx.fillStyle = i === cur ? '#1f5fa8' : '#d5d3cc'; sctx.fillRect(x0, Hh * 2 + 3, cw, 3);
+        }
+      };
+      paint();
+      f.appendChild(big);
+      if (n > 1) { f.appendChild(strip); setInterval(() => { cur = (cur + 1) % n; paint(); }, (an & 7) * 20); }
+      const c = document.createElement('figcaption'); c.textContent = cap; f.appendChild(c);
+      $('tt-unused').appendChild(f);
+    };
+    figure([0x56, 0x57], 4, 'Medusa, her two halves ($56 over $57) together, a frame every 7 frames of play. The game shows frames 0 to 2; frame 3, outlined, never appears.');
+    figure([0x34], 5, 'The burning dynamite ($34), a frame every 2 frames of play. The game shows frames 0 to 3; frame 4, outlined, never appears.');
+    figure([0x46, 0x47], 1, 'Objects $46 and $47, one frame each, in black.', true);
   });
 })();
 </script>

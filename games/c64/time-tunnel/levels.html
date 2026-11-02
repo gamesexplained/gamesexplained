@@ -51,9 +51,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .tt-objview{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
 .tt-objview canvas{flex:none;width:288px;max-width:100%;height:auto;image-rendering:pixelated;background:#1a1a1a;border-radius:4px}
 .tt-objview table{flex:1;min-width:220px;margin-top:0}
-.tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.tt-grid figure{margin:0;cursor:pointer}
-.tt-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -80,13 +77,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Eight of these pictures were checked against the emulator, with the gnome brought into each room at the start of a game by the game's own routine for entering an era (<code>era_enter</code>): the mansion's hall, the gold rush's saloon street, Persia's sunset hills, the Stone Age's first cliffs, Greece's temples, a spaceship corridor, Salem's church street, and the throne room. Apart from the gnome, and the staff in the throne room, which flickers through colours every frame, every pixel matches (<code>test_rooms.js</code>, against the pictures in <code>reference/</code>).</p>
 </section>
 
-<section id="era">
-  <p class="fig">02 · An era</p>
-  <h2 class="t">The rooms of one era</h2>
-  <p class="lede">The rooms of the era picked above, side by side. A picture picks its room.</p>
-  <div class="plate"><div class="tt-grid" id="tt-grid"></div></div>
-</section>
-
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
@@ -103,7 +93,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // $24, room 0) and it is lit ($AB = 1), which lights the dark rooms. The video chip's registers
 // start as the emulator had them in play (TT_VIC, $D000-$D02E; TT_CIA2, $DD00 and $DD02: bank 3)
 // and take the code's writes. The gnome's sprite (0), and the torch's when it is carried, are
-// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }.
+// switched off: the picture shows the room. Returns { mem, vic, colourMem, cia2, cpu, writes }, and
+// call(address, registers), which runs more of the game's code on the same memory and chips.
 const TT_VIC = [132, 133, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 192, 178, 0, 23, 0, 0, 0, 129, 216, 0, 237, 114, 241, 0, 129, 0,
   0, 129, 240, 240, 251, 242, 243, 248, 241, 247, 242, 243, 244, 245, 246, 247, 243];
 const TT_CIA2 = [148, 63];
@@ -133,7 +124,8 @@ function ttRoom(ram, Cpu, era, room, torch) {
   cpu.call(0x3A47, {}, { maxSteps: 1e6 });
   vic[0x15] &= 0xFE;
   if (torch && m[0x75] === 0x24) vic[0x15] &= ~(1 << m[0x74]);
-  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63 };
+  return { mem: m, vic, colourMem: colour, cia2: TT_CIA2, cpu: [47, 53], writes: [], lines: 312, cycles: 63,
+    call: (a, regs) => cpu.call(a, regs || {}, { maxSteps: 1e6 }) };
 }
 // end of tt-rooms
 </script>
@@ -173,25 +165,7 @@ const TT_NAMES = ["The gnome seen from behind, walking up", "The gnome seen from
         rows += '<tr><td>' + code(H(o, 2)) + '</td><td>' + (TT_NAMES[o] || '') + '</td><td class="n">' + H(F.mem[0x33 + s], 2) + '</td><td class="n">' + H(F.mem[0x3B + s], 2) + '</td><td class="n">' + s + '</td></tr>';
       }
       $('tt-map-tab').innerHTML = '<tr><th>Object</th><th>What it is</th><th>x</th><th>y</th><th>Sprite</th></tr>' + (rows || '<tr><td colspan="5">No objects in this room at the start.</td></tr>');
-      grid(e, torch);
       history.replaceState(null, '', '#era=' + e + '&room=' + r);
-    };
-    let gridEra = 0, gridTorch = null;
-    const grid = (e, torch) => {
-      if (e === gridEra && torch === gridTorch) return;
-      gridEra = e; gridTorch = torch;
-      const g = $('tt-grid'); g.innerHTML = '';
-      list.forEach(([ee, r], i) => {
-        if (ee !== e) return;
-        const f = document.createElement('figure'), cv = document.createElement('canvas');
-        cv.className = 'tt-cv'; cv.setAttribute('aria-label', 'Room ' + r);
-        f.appendChild(cv);
-        const cap = document.createElement('figcaption'); cap.textContent = 'Room ' + r + ': ' + TT_ROOM_NAMES[ee][r - 1]; f.appendChild(cap);
-        f.onclick = () => { sel.value = i; show(); $('rooms').scrollIntoView({ behavior: 'smooth' }); };
-        g.appendChild(f);
-        if (isText(ee, r)) { const img = new Image(); img.src = 'reference/controls.png'; img.className = 'tt-cv'; img.alt = 'The controls'; f.replaceChild(img, cv); }
-        else C64.drawFrame(cv, ttRoom(m, C64Cpu, ee, r, torch), 1);
-      });
     };
     sel.onchange = show;
     $('tt-torch').onclick = function () { this.setAttribute('aria-pressed', String(this.getAttribute('aria-pressed') !== 'true')); show(); };

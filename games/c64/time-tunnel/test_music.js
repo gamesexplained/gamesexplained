@@ -3,7 +3,8 @@
 // tt-music block (createDriver) runs the game's sound code on the site's 6502 over
 // TT_DRIVER_RANGES, for each button of the music player (TT_TUNES) and of the effects player
 // (TT_EFFECTS). Here the game's own path runs on the kit's simulator over the whole listing, with
-// the pause flag $AF at $FF as the start-up's dec at $0E91 leaves it: for an era's tune,
+// the pause flag $AF at $FF as the start-up's dec at $0E91 leaves it, and the volume set to 15 by
+// the start-up's own lda #$0F / sta $D418 ($0EA4-$0EA8), run first for every button: for an era's tune,
 // era_record_ptr ($3B92) for an era that plays it, then era_enter's start of the tune and its tempo
 // from the record ($38B2-$38BF); for the flute's two tunes, play_state's own starts ($350E-$3516
 // and $3535-$353D); for an effect, sfx_start ($BB32) with the effect in X, as its seventeen callers
@@ -48,6 +49,7 @@ if (started.size !== TT_EFFECTS.length) fail('the game starts effects', [...star
   };
   const cpu = new CPU(m, { port: 0x35, io });
   const drv = isolated({ mem, list }, kit);
+  run(cpu, 0x0EA4, 0x0EA9);
   if (c.sfx !== undefined) cpu.call(0xBB32, { x: c.sfx }, { maxSteps: 100000 });
   else if (c.tune === 6) run(cpu, 0x3535, 0x353E);
   else { m[0x2A] = ERA_OF[c.tune]; cpu.call(0x3B92, {}, { maxSteps: 1000 }); run(cpu, 0x38B2, 0x38C0); }
@@ -71,6 +73,7 @@ if (started.size !== TT_EFFECTS.length) fail('the game starts effects', [...star
     frames++;
   }
   if (!sounded) fail(set, c.name, 'never opened a voice\'s gate');
+  if (!(drv.sid[24] & 15)) fail(set, c.name, 'the chip\'s volume is 0, so it is silent');
   ends.push(c.name + ' ' + (done < 0 ? 'plays on' : done + 1 + ' frames'));
 }));
 console.log(`${TT_TUNES.length + TT_EFFECTS.length} buttons, ${frames} frames: ` + (bad ? bad + ' differences' : 'every write matches the game\'s code; ' + ends.join(', ')));
