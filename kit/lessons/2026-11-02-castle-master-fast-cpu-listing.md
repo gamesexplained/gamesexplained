@@ -1,4 +1,4 @@
-## next · 2026-11-02 · Castle Master (C64) · air with Claude
+## 0.0.293 · 2026-11-02 · Castle Master (C64) · air with Claude
 
 - **Keep the clock's beat when the loop waits for no screen line.**
   Mercenary's Fast CPU beats on raster line 224, 50.12 times a second,
