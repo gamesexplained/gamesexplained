@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
-  <p class="sub">Two programs sharing one processor, a second joystick nothing switches on, an opponent who writes into the hero's slot, and graphics nothing reads.</p>
+  <p class="sub">Two programs sharing one processor, sound effects hidden in the spare half of a font, a second joystick nothing switches on, and an opponent who writes into the hero's slot.</p>
 </header>
 <main class="wrap">
 <section id="tasks">
@@ -17,6 +17,11 @@
   <p class="lede">The fighting and the scrolling are two separate programs, each with its own stack, and the raster interrupt switches between them.</p>
   <p>The main loop (<code>$21E2</code>) runs the fighters, the opponent and the rules. The scrolling needs a whole new screen built every time the view moves a character's width, which is far more work than fits between two frames. So the game gives it a task of its own (<code>$1503</code>): it shifts the hidden screen one column at a time and draws the new edge, and when its time is up it gives the processor back.</p>
   <p>The switch is made by patching an interrupt handler. When the scroll task has work, the routine at <code>$12CA</code> writes a <code>NOP</code> over the <code>RTI</code> that ends the status-band interrupt (<code>$3D86</code>), so instead of returning, the handler falls into a jump to the other task and its stack. A second routine switches back (<code>$14E8</code>), and a third puts the <code>RTI</code> back (<code>$12E0</code>) when the work is done. The first task is started by an <code>RTI</code> from a stack frame the game builds itself (<code>$0133</code>).</p>
+</section>
+<section id="samples">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: the sound effects hide behind the font</h2>
+  <p>The status-band font takes the first 272 bytes of its block of memory (<code>$E800</code>). The 1,200 bytes after it, from <code>$E910</code>, look like spare room, but they are the game's sound effects: every sample's start and end (<code>$FFCB</code>) is an offset from <code>$C8D0</code> that lands there (<code>$3F09</code>). The samples are read with an indirect address the player builds at run time (<code>$3D9A</code>), which is why a search for readers of those bytes finds none. Nine sample numbers share four stretches of these bytes, each played at its own rate and loudness; the tenth reads past the end of its table and plays bytes elsewhere. <a href="music.html#effects">All ten can be heard on the Music tab</a>.</p>
 </section>
 <section id="second-player">
   <p class="fig">Secret</p>
@@ -52,11 +57,6 @@
   <p>It also says that a poisoned hero "will not regain Chi" until a meditation cures him.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The routine that gives energy back, a point every 128 frames (<code>$2D14</code>), tests no poison flag; it pauses only while a room's barriers are being read again. The one place energy drains steadily is area 5, and there the drain stops when the eighth scroll is delivered (<code>$2CE4</code>), not after a meditation. No poison state was found anywhere in the code, which is a statement about this search.</p>
   <p>And F5, the manual says, ends the game and returns to the demo.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The Mindscape disk has no demo: F5 starts a new game at once (<code>$2444</code>).</p>
 </section>
-<section id="trap">
-  <p class="fig">Quirk</p>
-  <h2 class="t">An area that drains you until the last scroll is found</h2>
-  <p>In area 5, the game checks whether scroll 8 has been delivered to its chamber. If it has not, the screen flashes and the hero loses a point of energy every ten frames until he falls (<code>$2CE4</code>). Delivering the eighth scroll is what makes the area safe: the game reads scroll 8's byte (<code>$040C</code>), and once it is marked delivered the drain is skipped (<code>$2CF0</code>).</p>
-</section>
 <section id="leftovers">
   <p class="fig">Leftovers</p>
   <h2 class="t">Graphics and code nothing uses</h2>
@@ -64,7 +64,7 @@
     <tr><th>What</th><th>Why it seems unused</th></tr>
     <tr><td>29 uncompressed head sprites, side-on (<code>$B746</code>)</td><td>no instruction or pointer table reaching them was found</td></tr>
     <tr><td>A full character set of 193 glyphs (<code>$E000</code>)</td><td>the start-up points the video chip at it for a moment; nothing else reads it</td></tr>
-    <tr><td>1,200 bytes in the unused half of the status-band font (<code>$E910</code>)</td><td>no reader found</td></tr>
+    <tr><td>Four of the ten sound samples, numbers 5, 6, 7, and 9 (<code>$BEC6</code>); <a href="music.html#effects">hear them on the Music tab</a></td><td>every call to the sample player (<code>$3DB8</code>) asks for 1, 2, 3, 4, 8, or 10</td></tr>
     <tr><td>An older start-up routine (<code>$C280</code>)</td><td>nothing calls it, and it calls an address where no routine is</td></tr>
     <tr><td>27 blank sprite images (<code>$AF10</code>)</td><td>no entry in the frame tables points at them</td></tr>
     <tr><td>The Adventure loader (<code>$C000</code>)</td><td>its work is done before the game starts</td></tr>
