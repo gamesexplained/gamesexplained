@@ -1,4 +1,4 @@
-## next · 2026-11-02 · Rambo: First Blood Part II (C64) · air, claude-opus-5-5
+## 0.0.291 · 2026-11-02 · Rambo: First Blood Part II (C64) · air, claude-opus-5-5
 
 **A music player whose every write matched the game's was silent.** The
 Rambo page's test compared its driver's writes with the game's code,
