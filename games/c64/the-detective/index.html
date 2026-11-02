@@ -50,6 +50,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .td-row button{font-family:var(--fm);font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
 .td-row button.td-stick{min-width:42px;touch-action:none;user-select:none}
 .td-row button:active{background:var(--hl)}
+.td-row button[aria-pressed=true]{background:var(--ink);color:#fff}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -171,8 +172,32 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Each room is drawn from a packed picture into a map 256 columns wide (<code>$0C00</code>), and the screen shows a 40-column window of it that scrolls as Snide walks. The Maps tab draws every room. Doors are drawn over the picture afterwards, from a table of 32 doors (<code>$1F00</code>). Doors of type 8 are secret passages: closed, the game draws the wall back over them, and the border, which flashes when Snide reaches something to investigate, stays still for them (<code>$3E32</code>).</p>
 </section>
 
+<section id="sprites">
+  <p class="fig">08 · Sprites</p>
+  <h2 class="t">Everyone is two sprites</h2>
+  <p>Each person on screen is a pair of sprites, a head above a body. The machine has eight sprites, so a room shows at most four people: the main loop fills four slots with whoever is in Snide's room and in view (<code>$2F91</code>), and the interrupt places the pairs from the slots every frame (<code>$2A0D</code>). Every sprite is multicolour, with white and black shared by all of them (<code>$D025</code> = 1, <code>$D026</code> = 0) and a colour of its own, light red for skin. The game changes that colour once: when Snide swallows the bottle of pills, "YUK.. THAT DIDN'T TASTE TOO GOOD..!", he turns green until the next game (<code>$A1B1</code>).</p>
+  <div class="plate">
+    <div class="td-row"><label>Person <select id="td-sp-who"></select></label></div>
+    <div class="td-row" id="td-sp-acts"></div>
+    <div class="td-scroll" style="background:#7b7b7b;border-radius:6px;overflow-x:auto"><canvas id="td-sp" width="480" height="200" aria-label="The chosen person, animated as the game animates them"></canvas></div>
+    <p class="cap" id="td-sp-cap">The sprites are drawn in the built site.</p>
+  </div>
+  <p>Snide and the cast are animated by different code. Snide has twenty shapes, a head and four bodies for each of four directions (<code>$43</code>-<code>$56</code>), and none is ever mirrored. The direction picks the head (<code>$372E</code>), and a step counter that runs down from 8 to 1, one step every third frame, picks the body (<code>$36B4</code>, <code>$3734</code>), so his walk repeats every 24 frames. The direction is taken only when the counter starts again, so a turn can show up to seven steps late.</p>
+  <p>Each of the nine others has ten shapes, from <code>$6D</code> on: three heads and three bodies facing the viewer, then a head and three bodies facing away. Twice in every four frames (<code>$9241</code>) the cast's animation moves on after every third call, through the eight offsets 1, 0, 1, 2, 1, 0, 1, 2 (<code>$9239</code>), which pick the body. Walking right or towards the viewer uses the shapes facing the viewer, and walking left or away the shapes facing away (<code>$9228</code>, <code>$922C</code>). Towards the viewer and away are drawn mirrored: when a character turns between the two, the game reverses its ten shapes in memory, two shapes a call, through a table that reverses the four pixels of each byte (<code>$9138</code>, <code>$0500</code>). The character speaking steps through the three heads instead, by the offsets 0, 0, 1, 1, 0, 2, 1, 2 (<code>$93C2</code>), so the mouth moves. The Major is an exception in the code: walking right or towards the viewer, his head moves with the steps too (<code>$9391</code>).</p>
+  <p>The dead are drawn with other shapes, and their pairs are placed in other ways, by a number kept for each person (<code>$1EA6</code>, set by <code>$AD18</code>, used by <code>$250B</code>): 1 puts the two sprites side by side, lying down; 2 keeps them one above the other with the head 2 pixels to the right of the body; 3 shows one sprite alone. Snide lies down the same way when the game ends with him beaten: when the clock runs out, when he drinks from the small bottle ("GASP IN AGONY AND DROP DEAD"), and after the bomb, which first shows him as a BOOM (<code>$C066</code>). All three end in <code>$25D6</code>.</p>
+  <div class="plate">
+    <div class="td-scroll" style="background:#7b7b7b;border-radius:6px;overflow-x:auto"><canvas id="td-sp-dead" width="480" height="200" aria-label="The bodies and Snide's endings"></canvas></div>
+    <p class="cap" id="td-sp-dead-cap">Drawn in the built site.</p>
+  </div>
+  <p>All 176 sprite shapes, <code>$40</code> to <code>$EF</code> at <code>$5000</code>-<code>$7BFF</code>, are below in the colours of play. Besides the people and the bodies, they hold the title's sprites and the menu's pointer. Hover over a shape, or tap it, for its number.</p>
+  <div class="plate">
+    <div class="td-scroll" style="background:#7b7b7b;border-radius:6px;overflow-x:auto"><canvas id="td-sheet" width="480" height="480" aria-label="Every sprite shape in the game"></canvas></div>
+    <p class="cap" id="td-sheet-cap">Shape numbers are shown on hover.</p>
+  </div>
+</section>
+
 <section id="words">
-  <p class="fig">08 · Speech</p>
+  <p class="fig">09 · Speech</p>
   <h2 class="t">Thirty-two words in one byte each</h2>
   <p>The cast's lines are stored in capitals, with single bytes standing in for common words. A byte of <code>$60</code> or more is a token: its low five bits pick a word from a list at <code>$4A90</code>, and the print routine prints the word instead (<code>$21D8</code>). The first ten words are the names, so a script can say "<i>[8]</i>" to mean "DINGLE".</p>
   <table class="td-tab" id="td-words"><thead><tr><th>Token</th><th>Word</th><th>Token</th><th>Word</th></tr></thead><tbody></tbody></table>
@@ -375,6 +400,142 @@ function tdIconUnder(s, count) {
       tr.innerHTML = '<td class="n">' + n + '</td><td></td><td>' + ICON_DOES[n] + '</td><td class="n"><code>$' + h.toString(16).toUpperCase() + '</code></td>';
       tr.children[1].appendChild(cv);
       itb.appendChild(tr);
+    }
+    // the sprites: shape n is 63 bytes at $4000 + 64 n (video bank 1); multicolour, bit pairs 01 white
+    // ($D025 = 1), 10 the sprite's own colour, 11 black ($D026 = 0); a mirrored shape is drawn reversed
+    const drawShape = (ctx, n, ox, oy, s, colour, flip) => {
+      const base = 0x4000 + n * 64, cols = [null, C64.PAL[1], C64.PAL[colour & 15], C64.PAL[0]];
+      for (let row = 0; row < 21; row++) for (let p = 0; p < 12; p++) {
+        const v = (r[base + row * 3 + (p >> 2)] >> (6 - 2 * (p & 3))) & 3;
+        if (!v) continue;
+        ctx.fillStyle = cols[v];
+        ctx.fillRect(ox + (flip ? 11 - p : p) * 2 * s, oy + row * s, 2 * s, s);
+      }
+    };
+    // a pair as $2A0D and $250B place it: type 0 stacked, 1 side by side at Y + 21, 2 stacked with the
+    // first 2 pixels right, 3 the first alone (at a fixed line in the game; here at Y + 21)
+    const drawPair = (ctx, top, bottom, type, ox, oy, s, colour, flip) => {
+      if (type === 1) { drawShape(ctx, top, ox, oy + 21 * s, s, colour, flip); drawShape(ctx, bottom, ox + 24 * s, oy + 21 * s, s, colour, flip); return; }
+      if (type === 3) { drawShape(ctx, top, ox, oy + 21 * s, s, colour, flip); return; }
+      drawShape(ctx, top, ox + (type === 2 ? 2 * s : 0), oy, s, colour, flip);
+      drawShape(ctx, bottom, ox, oy + 21 * s, s, colour, flip);
+    };
+    const SP_BG = C64.PAL[12];   // grey, so that the sprites' black shows
+    const hex2 = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+    {
+      const PEOPLE = ['Snide'].concat(CAST);
+      const who = $('td-sp-who'), acts = $('td-sp-acts'), sc = $('td-sp'), S = 4;
+      PEOPLE.forEach((n, i) => who.add(new Option(n[0].toUpperCase() + n.slice(1), String(i))));
+      const sctx = C64.canvas(sc, 120 * S, 48 * S);
+      // Snide ($36A6-$371F): direction $1B (0 away, 1 right, 2 towards, 3 left) picks the head at $372E;
+      // every third frame the step $012C counts down, and when it passes 1 (or the stick is pressed
+      // from standing) it starts again at 8 and only then takes the stick's direction; with the stick
+      // let go the step is 0. The body is the head + the byte at $3734 + step.
+      const SN_ACTS = [['walk away', 0], ['walk right', 1], ['walk towards the viewer', 2], ['walk left', 3], ['stand', -1]];
+      // the cast ($9241, $937E, $93CA): pose 0 left, 1 away, 2 right, 3 towards; odd poses mirrored
+      const CA_ACTS = [['walk left', 0], ['walk away', 1], ['walk right', 2], ['walk towards the viewer', 3], ['stand', -1], ['talk', -2]];
+      let person = 0, act = 2, green = false;
+      const sn = { dir: 2, c3: 0, step: 0 }, ca = { calls: 0, step: 0, flip: 0 };
+      let fno = 0;
+      function buttons() {
+        acts.innerHTML = '';
+        const list = person ? CA_ACTS : SN_ACTS;
+        for (const [label, a] of list) {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+          b.setAttribute('aria-pressed', String(a === act));
+          b.onclick = () => { act = a; buttons(); };
+          acts.appendChild(b);
+        }
+        if (!person) {
+          const l = document.createElement('label'), c = document.createElement('input');
+          c.type = 'checkbox'; c.checked = green; c.onchange = () => { green = c.checked; };
+          l.append(c, ' after the bottle of pills'); acts.appendChild(l);
+        }
+      }
+      function shapes() {
+        if (!person) {
+          const top = r[0x372E + sn.dir];
+          return { top, bottom: (top + r[0x3734 + sn.step]) & 255, flip: false, colour: green ? 5 : 10,
+            note: 'Direction ' + sn.dir + ', step ' + sn.step + ': head ' + hex2(top) + ' from $372E, body head + ' + r[0x3734 + sn.step] + ' from $3734.' };
+        }
+        const x = person - 1, base = r[0x9230 + x], b7 = r[0x9239 + ca.step];
+        if (act === -1) return { top: base, bottom: base + 3, flip: false, colour: 10, note: 'Standing as a new game leaves the cast ($93E3): head ' + hex2(base) + ', body ' + hex2(base + 3) + '.' };
+        if (act === -2) {
+          const top = base + r[0x93C2 + ca.step];
+          return { top, bottom: base + 3, flip: !!ca.flip, colour: 10, note: 'Talking, step ' + ca.step + ': head ' + hex2(top) + ' (base + ' + r[0x93C2 + ca.step] + ' from $93C2), body ' + hex2(base + 3) + '.' };
+        }
+        const y = act;
+        const top = base + r[0x9228 + y] + (x === 7 && y >= 2 ? b7 : 0), bottom = base + r[0x922C + y] + b7;
+        return { top, bottom, flip: !!(y & 1), colour: 10,
+          note: 'Pose ' + y + ', step ' + ca.step + ': head ' + hex2(top) + ', body ' + hex2(bottom) + ' (base ' + hex2(base) + ' + ' + r[0x922C + y] + ' + ' + b7 + ' from $9239)' + (y & 1 ? ', mirrored.' : '.') };
+      }
+      function frame() {
+        // Snide: the play handler, every frame
+        if (++sn.c3 >= 3) {
+          sn.c3 = 0;
+          if (act < 0) sn.step = 0;
+          else { sn.step--; if (sn.step <= 0) { sn.dir = act; sn.step = 8; } }
+        }
+        // the cast: animation jobs 1 and 3, every other frame; the step moves on every third call
+        if (fno & 1) { if (++ca.calls >= 3) { ca.calls = 0; ca.step = (ca.step + 1) & 7; } }
+        if (person && act >= 0) ca.flip = act & 1;
+        fno++;
+      }
+      function paint() {
+        sctx.fillStyle = SP_BG; sctx.fillRect(0, 0, sc.width, sc.height);
+        const s = shapes();
+        drawPair(sctx, s.top, s.bottom, 0, (120 - 24) / 2 * S, 3 * S, S, s.colour, s.flip);
+        $('td-sp-cap').innerHTML = '<b>' + PEOPLE[person][0].toUpperCase() + PEOPLE[person].slice(1) + '.</b> ' + s.note +
+          (person ? ' The cast\'s step moves every sixth frame, so a walk repeats every 48 frames.' : ' Snide\'s step moves every third frame.') +
+          ' Drawn from the listing\'s bytes, four times the machine\'s size, at 50 frames a second.';
+      }
+      who.onchange = () => { person = +who.value; act = person ? 3 : 2; buttons(); paint(); };
+      buttons();
+      let last = 0, acc = 0;
+      const tick = (t) => {
+        requestAnimationFrame(tick);
+        if (!last) last = t;
+        acc += t - last; last = t;
+        if (acc > 200) acc = 0;
+        let n = 0;
+        while (acc >= 20) { frame(); acc -= 20; n++; }
+        if (n) paint();
+      };
+      paint(); requestAnimationFrame(tick);
+      // the bodies and Snide's endings, from the code that sets them
+      const DEAD = [
+        ['Cynthia', 0xD1, 0, 3, '$AC96, type 3'], ['Gabriel', 0xE0, 0xE1, 2, '$ACEC, type 2'], ['the Doctor', 0xDC, 0xDD, 1, '$B19E, type 1'],
+        ['Dingle, faking', 0xBF, 0xD9, 2, '$B1CF, type 2'], ['Snide, the end', 0xD7, 0xD8, 1, '$25D6, type 1'], ['Snide and the bomb', 0xDA, 0xDB, 0, '$C066']];
+      const span = (t) => (t === 1 ? 48 : 26) + 8;
+      const dc = $('td-sp-dead'), D = 3, dctx = C64.canvas(dc, (DEAD.reduce((n, d) => n + span(d[3]), 0) + 8) * D, 50 * D);
+      dctx.fillStyle = SP_BG; dctx.fillRect(0, 0, dc.width, dc.height);
+      let dx = 8;
+      for (const [, a, b, t] of DEAD) { drawPair(dctx, a, b, t, dx * D, 4 * D, D, 10, false); dx += span(t); }
+      $('td-sp-dead-cap').innerHTML = DEAD.map(([n, a, b, t, w]) => '<b>' + n + '</b>: ' + hex2(a) + (t === 3 ? '' : ' and ' + hex2(b)) + ' (' + w + ')').join('; ') +
+        '. Cynthia\'s single sprite is shown at the body\'s height here; the game puts it at line $92.';
+      // every shape, $40-$EF
+      const sh = $('td-sheet'), SS = 2, PER = 16, N = 0xF0 - 0x40, cellW = 26, cellH = 23;
+      const shctx = C64.canvas(sh, PER * cellW * SS, Math.ceil(N / PER) * cellH * SS);
+      const group = (n) => n >= 0x43 && n <= 0x56 ? 'Snide' : n >= 0x6D && n <= 0xC6 ? CAST[Math.floor((n - 0x6D) / 10)] :
+        [0xD1, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xE0, 0xE1].includes(n) ? 'a body or ending' : '';
+      const sheet = (hi) => {
+        shctx.fillStyle = SP_BG; shctx.fillRect(0, 0, sh.width, sh.height);
+        for (let k = 0; k < N; k++) {
+          const x = (k % PER) * cellW * SS, y = Math.floor(k / PER) * cellH * SS;
+          if (k === hi) { shctx.fillStyle = C64.PAL[15]; shctx.fillRect(x, y, cellW * SS, cellH * SS); }
+          drawShape(shctx, 0x40 + k, x + SS, y + SS, SS, 10, false);
+        }
+      };
+      sheet(-1);
+      const pick = (e) => {
+        const b = sh.getBoundingClientRect(), px = (e.clientX - b.left) * sh.width / b.width, py = (e.clientY - b.top) * sh.height / b.height;
+        const k = Math.floor(py / (cellH * SS)) * PER + Math.floor(px / (cellW * SS));
+        if (k < 0 || k >= N) return;
+        const n = 0x40 + k, g = group(n);
+        sheet(k);
+        $('td-sheet-cap').innerHTML = '<b>Shape ' + hex2(n) + '</b> at <code>$' + (0x4000 + n * 64).toString(16).toUpperCase() + '</code>' + (g ? ': ' + g + '.' : '.');
+      };
+      sh.addEventListener('pointermove', pick); sh.addEventListener('pointerdown', pick);
     }
     // the pointer stepper: the box in sprite coordinates, $E8-$14F across and $B8-$EF down, four times
     const menu = [];
