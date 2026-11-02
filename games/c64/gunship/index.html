@@ -50,7 +50,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gs-tab th,.gs-tab td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 .gs-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
 .gs-tab td.n{font-family:var(--fm)}
-@media (max-width:700px){:root{--gx:16px;--h1:34px}.gs-shots{grid-template-columns:1fr}}
+.gf-top{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:12px}
+.gf-view{cursor:pointer;outline:none}
+.gf-view:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+.gf-map{cursor:crosshair}
+.gf-keys{font-size:13px;color:var(--ink-mute);margin:8px 0 0}
+.gf-keys kbd{font-family:var(--fm);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.gf-where{font-family:var(--fm);font-size:13px;line-height:1.5;margin-top:8px;color:var(--ink-soft)}
+.gf-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.gf-label{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 8px}
+.gf-presets{display:flex;flex-wrap:wrap;gap:8px}
+.gf-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gf-pad .gs-btn{padding:6px 4px;touch-action:none;user-select:none;-webkit-user-select:none}
+.gf-pad .gs-btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gf-speed{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:15px}
+.gf-speed input{flex:1}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}.gs-shots{grid-template-columns:1fr}.gf-top,.gf-controls{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -73,7 +88,54 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">02 · The world in wireframe</p>
+  <p class="fig">02 · Fly over the theatres</p>
+  <h2 class="t">Fly over the theatres in the game's own 3D view</h2>
+  <p class="lede">The view below is drawn by the game's own 3D routine, from wherever you put the helicopter. The game draws only nine squares of its map, the helicopter's own and eight ahead, so a hill or a base appears from nothing when its square joins the nine.</p>
+  <div class="plate">
+    <div id="gf-pick"></div>
+    <div class="gf-top">
+      <div class="gf-left">
+        <canvas id="gf-view" class="gs-canvas gf-view" width="640" height="224" tabindex="0" aria-label="The 3D view, drawn by the game's own code. Focus it to fly with the keyboard."></canvas>
+        <p class="gf-keys">Click the view, then <kbd>←</kbd> <kbd>→</kbd> turn, <kbd>↑</kbd> <kbd>↓</kbd> nose down and up, <kbd>W</kbd> <kbd>S</kbd> forward and back, <kbd>R</kbd> <kbd>F</kbd> climb and descend, <kbd>Q</kbd> <kbd>E</kbd> roll.</p>
+      </div>
+      <div class="gf-side">
+        <canvas id="gf-map" class="gs-canvas gf-map" width="640" height="400" aria-label="The theatre's big map, the helicopter's place and the nine squares the view draws. Click it to go there."></canvas>
+        <div class="gf-where" id="gf-where" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="gf-controls">
+      <div class="gf-group">
+        <p class="gf-label">Go to</p>
+        <div class="gf-presets" id="gf-presets"></div>
+      </div>
+      <div class="gf-group">
+        <p class="gf-label">Fly</p>
+        <div class="gf-pad" id="gf-pad">
+          <button type="button" class="gs-btn" data-act="rollL" title="Roll left (Q)">Roll ⟲</button>
+          <button type="button" class="gs-btn" data-act="down" title="Nose down (↑)">Nose down</button>
+          <button type="button" class="gs-btn" data-act="rollR" title="Roll right (E)">Roll ⟳</button>
+          <button type="button" class="gs-btn" data-act="left" title="Turn left (←)">◀ Turn</button>
+          <button type="button" class="gs-btn" data-act="up" title="Nose up (↓)">Nose up</button>
+          <button type="button" class="gs-btn" data-act="right" title="Turn right (→)">Turn ▶</button>
+          <button type="button" class="gs-btn" data-act="climb" title="Climb (R)">Climb</button>
+          <button type="button" class="gs-btn" data-act="fwd" title="Forward (W)">Forward</button>
+          <button type="button" class="gs-btn" data-act="level" title="Level the nose and the wings">Level</button>
+          <button type="button" class="gs-btn" data-act="sink" title="Descend (F)">Descend</button>
+          <button type="button" class="gs-btn" data-act="back" title="Back (S)">Back</button>
+          <button type="button" class="gs-btn" id="gf-cruise" aria-pressed="false" title="Keep flying forward">Fly on</button>
+        </div>
+        <label class="gf-speed">Speed <input type="range" id="gf-speed" min="0" max="100" value="50"><span id="gf-speed-v"></span></label>
+      </div>
+    </div>
+    <div class="gs-out" id="gf-out">-</div>
+    <p class="cap">The flight's view routine, <code>view_frame</code> at <code>$8F01</code>, run on the site's copy of the C64's processor. Its memory is the flight's, with the theatre's terrain file, map and units as they were in memory on a mission there. The eye is set the way the game's main loop sets it from the helicopter: its place, its height plus 24, and its heading, pitch and roll turned round. The site's model of the video chip shows the bitmap the routine drew inside a frame of the cockpit recorded in the emulator, the program that plays the part of a C64. The Hind and the missiles are left out. The map beside it is drawn by the game's <code>draw_map</code>, as on the Maps page, with every unit shown: the yellow squares are the nine the view drew, and the red mark is the helicopter with a line for its heading. The page moves the helicopter without the game's flight model, so it can stop in mid-air and fly backwards.</p>
+  </div>
+  <p>The map has 16 by 16 squares, and each view draws nine of them. The routine <code>view_squares</code> (<code>$832B</code>) takes the eighth of the compass the view faces and reads a list of nine steps from the helicopter's square (<code>$82D9</code>), one list for each eighth. Facing north, the nine are the helicopter's square, the squares either side of it and the six beyond. Facing north-east, the helicopter's square is the south-west corner of a block of three by three. Nothing outside the nine is drawn. A hill one square behind the helicopter is gone, and a base three squares ahead appears only when the helicopter crosses into the next square. Turn on the spot and the yellow block on the map swings round with the view.</p>
+  <p>The sky is never drawn as a shape. The routine draws each square's fixed object first, a hill where the terrain has one, and then <code>fill_sky</code> (<code>$A82C</code>) goes down each of the window's 32 columns from the top, filling it with sky until it meets a drawn pixel. The outline of a hill is enough to make it stand solid against the sky. The switchable objects, the units among them, are drawn after the fill, over the sky.</p>
+</section>
+
+<section data-part="flight">
+  <p class="fig">03 · The world in wireframe</p>
   <h2 class="t">The 3D world is made of wireframe shapes</h2>
   <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file.</p>
   <div class="plate">
@@ -92,9 +154,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="title">
-  <p class="fig">03 · Music: the title</p>
+  <p class="fig">04 · The title</p>
+  <h2 class="t">The title: the helicopter rises into view</h2>
+  <p class="lede">Before the menu, the title lifts an Apache up from below the screen to the sound of its rotor, writes GUNSHIP under it a letter at a time and plays the Ride of the Valkyries. Every picture is put together from two copies of the screen.</p>
+  <div class="plate">
+    <canvas id="gi-screen" class="gs-canvas" width="384" height="272" aria-label="The title screen: an Apache helicopter over the word GUNSHIP on red"></canvas>
+    <div class="gs-ctl" style="margin:12px 0 0">
+      <button type="button" class="gs-btn" id="gi-play">▶ Play</button>
+      <button type="button" class="gs-btn" id="gi-sound" aria-pressed="true">🔊 Sound</button>
+      <span id="gi-out" class="gi-out"></span>
+    </div>
+    <p class="cap">The title's main loop and its raster interrupt, written again in JavaScript routine by routine and run on the title's own bytes. The site's model of the video chip draws each frame as the beam would, and its model of the SID plays the sound. It starts where the title turns the screen on. Before that the screen is blank while the title clears both copies of it.</p>
+  </div>
+  <p>The title keeps two copies of the screen, two multicolour bitmaps: one at <code>$4000</code> in the video chip's bank 1 and one at <code>$C000</code> in bank 3, with their screen colours at <code>$6000</code> and <code>$E000</code>. The main loop draws the next picture into the copy the chip is not showing, sets <code>frame_ready</code> (<code>$8F62</code>) and waits. The raster interrupt (<code>irq</code>, <code>$8940</code>) takes the new picture at the top of the next frame. A new picture comes every other frame, 25 a second. The screen is split as well. Down to the line under the rotor's blades, the chip shows the copy with the newest rotor in it. From that line down (<code>irq_band</code>, <code>$8A6B</code>), it shows the copy with the newest helicopter. So the rotor can turn at every picture while the helicopter's body is only copied when it has to move.</p>
+  <p>The helicopter climbs with the video chip's fine scroll, the three low bits of <code>$D011</code>, which move the whole picture down by 0 to 7 lines. At each picture the title takes one line off (<code>fine_scroll</code>, <code>$8FBC</code>), so the helicopter rises a line without a byte of its bitmap moving. Meanwhile the title builds the helicopter a character row higher in the hidden copy, a few rows at each step: four of its character rows at a time, then its screen colours. When the scroll runs out and starts again at 7, the chip is switched to that copy, and the colour RAM, which both copies share, moves up a row (<code>title_rise_rows</code>, <code>$82A7</code>). Near the top the helicopter slows down: pictures without a step come in between, more and more of them, until it settles at character row 4.</p>
+  <p>The blades are drawn again at every picture (<code>rotor_frame</code>, <code>$8532</code>): one of four frames, two character rows tall, copied out of the GUNSHIP picture that comes with the title by eight copies of 80 bytes. The routine writes their addresses into its own instructions first. It clears the row under the blades, so they leave no trail as they climb. Three sprites make the mast and the rotor head, and the interrupt moves them with the blades at every frame. The interrupt also plays the rotor's sound, which fades in over about two and a half seconds before the helicopter appears and rises in pitch every fourth picture as it climbs.</p>
+  <p>Once the helicopter is up, the gun under its nose turns, one view every six pictures. Then GUNSHIP is written under it a letter at a time (<code>draw_letter</code>, <code>$8743</code>), each letter with a note and a glint, a sprite that sparkles on it. Each letter is drawn twice, into each copy of the screen, ten pictures apart. After a short pause the tune plays, below. A key pressed during the title ends it, and BASIC carries on from where it called the title.</p>
+</section>
+
+<section data-part="title">
+  <p class="fig">05 · Music: the title</p>
   <h2 class="t">Music: the Ride of the Valkyries</h2>
-  <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries while the helicopter rises over the hills. It is the only music in the game.</p>
+  <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries once the helicopter has risen and GUNSHIP is written under it. It is the only music in the game.</p>
   <div class="plate">
     <div id="gs-music"></div>
     <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run on the title's bytes by the site's copy of the 6502, the C64's processor. The title calls it once a frame from a raster interrupt, code that the video chip starts when it reaches a chosen line of the screen. A frame is one picture on the television, 50 a second in Europe. The notes go through the site's model of the SID, the C64's sound chip. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
@@ -104,7 +185,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">04 · Sound: the effects</p>
+  <p class="fig">06 · Sound: the effects</p>
   <h2 class="t">Sound: ten effects from one small table</h2>
   <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of values to write into the SID's registers, the sound chip's settings, and the frame on which to write each one.</p>
   <div class="plate">
@@ -117,7 +198,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">05 · The cockpit</p>
+  <p class="fig">07 · The cockpit</p>
   <h2 class="t">Two pictures, one screen</h2>
   <p class="lede">The cockpit is two pictures, each a bitmap that sets every pixel, in two different 16 KB banks of memory. The video chip can see only one bank at a time, and a raster interrupt switches it from one bank to the other a third of the way down the screen.</p>
   <div class="plate">
@@ -134,19 +215,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">06 · The map</p>
+  <p class="fig">08 · The map</p>
   <h2 class="t">The theatre on one screen</h2>
   <p class="lede">Pressing Z shows the big map: the theatre's terrain in characters, the units you have seen, and the waypoint.</p>
   <div class="plate">
     <canvas id="gs-map" class="gs-canvas" aria-label="The big map of Western Europe, drawn from memory"></canvas>
-    <p class="cap">One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip. 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites, the small movable pictures the chip draws over the screen. The <a href="levels.html">Maps</a> tab draws all five theatres.</p>
+    <p class="cap">One frame of the big map in Western Europe, recorded in the emulator and drawn by the site's model of the video chip. 25 of its 104,448 pixels differ from the emulator's picture, all on the sprites, the small movable pictures the chip draws over the screen. The <a href="levels.html">Maps / levels</a> tab draws all five theatres.</p>
   </div>
   <p>A theatre is 16 by 16 squares, one byte each, and each byte is the number of one of 33 terrains (<code>theatre_map</code>, <code>$1A86</code>). The big map shows the middle 12 by 12 (<code>draw_map</code>, <code>$9685</code>). The map is drawn in characters, as text is, from a font at <code>$C800</code> whose characters are small pictures of terrain. Each square is three characters wide and two high. A terrain's six characters follow each other in the font, from character 58 on. Their colours come from a table by character code (<code>$E33C</code>).</p>
   <p>A unit appears on the map only once the helicopter has seen it. Seeing it sets bit 4 of the unit's type byte (<code>$5300</code>). Its character is drawn in its square: friendly units in white, targets in one colour and other enemies in another.</p>
 </section>
 
 <section data-part="flight">
-  <p class="fig">07 · Flying it</p>
+  <p class="fig">09 · Flying it</p>
   <h2 class="t">Controls</h2>
   <p class="lede">The joystick is the cyclic, the stick that tilts the rotor to fly the helicopter forward, back or sideways. The keyboard does everything else.</p>
   <div class="plate">
@@ -176,7 +257,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">08 · Weapons and hits</p>
+  <p class="fig">10 · Weapons and hits</p>
   <h2 class="t">Each ground unit falls to one kind of missile</h2>
   <p class="lede">A missile of the wrong kind that hits a ground unit does nothing at all. The flight engine names one missile kind for each of the sixteen kinds of unit, and only the Hind falls to any missile.</p>
   <div class="plate">
@@ -188,7 +269,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="">
-  <p class="fig">09 · Eight programs</p>
+  <p class="fig">11 · Eight programs</p>
   <h2 class="t">BASIC around a machine-code engine</h2>
   <p class="lede">The title, the front end, the debriefing and the base are BASIC programs. They call routines in a machine-code library through a table of jumps at <code>$7500</code>, one jump for each routine. Only the flight itself is machine code.</p>
   <div class="plate">
@@ -279,6 +360,1103 @@ function createDriver(D, C64Cpu) {
 }
 // end of gs-music
 
+/* gs-intro */
+// The title sequence, written again in JavaScript: TITLE's main program from title_setup ($8132)
+// to title_end ($84AA) and its raster interrupt (irq, $8940), on the title's 64 KB. Each routine
+// writes what the game's writes, at the game's addresses, the operands the game rewrites in its
+// own code among them, and counts the processor cycles the game's takes, for the page's clock.
+// The main program is a generator that yields where the game's code has got to, as the kit's
+// lockstep reads it (kit/c64/lockstep.js): { cp } at a checkpoint, { cycles } for work done,
+// { wait } for scroll_cells's wait for line $30, and a bare yield for each turn of a loop that
+// waits for the interrupt. The chips are reached through io: vicRead, vicWrite, sidWrite,
+// colourRead, colourWrite, ciaRead, ciaWrite. games/c64/gunship/test_intro.js holds it against the
+// title's own code on the kit's C64.
+const GsIntro = (() => {
+  // The title as it starts: TITLE's bytes as the file loads them, where the listing (saved as the
+  // title ends) holds what the title has written over them; the variables past the file's end
+  // ($96C6-$96F0) as RAM holds them at power-on; and $02A6, the KERNAL's flag for a PAL machine.
+  const INIT = [
+    [0x2A6, [0x01]], [0x849D, [0x00]], [0x868B, [0xFF, 0xFF]], [0x868E, [0xFF, 0xFF]],
+    [0x8691, [0xFF, 0xFF]], [0x8694, [0xFF, 0xFF]], [0x8697, [0xFF, 0xFF]], [0x869A, [0xFF, 0xFF]],
+    [0x869D, [0xFF, 0xFF]], [0x86A0, [0xFF, 0xFF]], [0x86A3, [0xFF, 0xFF]], [0x86A6, [0xFF, 0xFF]],
+    [0x86A9, [0xFF, 0xFF]], [0x86AC, [0xFF, 0xFF]], [0x86AF, [0xFF, 0xFF]], [0x86B2, [0xFF, 0xFF]],
+    [0x86B5, [0xFF, 0xFF]], [0x86B8, [0xFF, 0xFF]], [0x8704, [0xFF, 0xFF]], [0x870D, [0xFF]],
+    [0x8788, [0x00]], [0x879A, [0x00]], [0x87A5, [0x00]], [0x87B7, [0x00]], [0x8A23, [0x00]],
+    [0x8A28, [0x00]], [0x8A2D, [0x00]], [0x8A64, [0x00]], [0x8A7D, [0x00]], [0x8AF4, [0x00]],
+    [0x8B89, [0xFF, 0xFF]], [0x8B8C, [0xFF, 0xFF]], [0x8B8F, [0xFF, 0xFF]], [0x8B92, [0xFF, 0xFF]],
+    [0x8B95, [0xFF, 0xFF]], [0x8B98, [0xFF, 0xFF]], [0x8B9B, [0xFF, 0xFF]], [0x8B9E, [0xFF, 0xFF]],
+    [0x8C22, [0xFF, 0xFF]], [0x8C6E, [0xFF, 0xFF]], [0x8CBE, [0xFF, 0xFF]], [0x8CC1, [0xFF, 0xFF]],
+    [0x8CE8, [0xFF, 0xFF]], [0x8E4A, [0x00]], [0x8E59, [0x9F]], [0x8E61, [0x00, 0x00]],
+    [0x8F19, [0xFF, 0xFF]], [0x8F49, [0x00]], [0x8F4C, [0x00, 0xFF]], [0x8F53, [0x17, 0xC7, 0xD1]],
+    [0x8F57, [0x91, 0x95, 0x00, 0x00, 0x00]], [0x8F5F, [0x01, 0x01, 0x01, 0x01, 0x00]],
+    [0x8F66, [0x00]], [0x8F6B, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]],
+    [0x8F7C, [0xDB, 0xDB]], [0x8F7F, [0x00, 0x00, 0x00, 0x00, 0x00]], [0x8F88, [0x1E, 0x03]],
+    [0x8F8D, [0x40]], [0x8FA1, [0x03, 0x00, 0x04, 0x00, 0x00]], [0x8FA8, [0x00]],
+    [0x8FAA, [0x00, 0x00, 0x00]], [0x8FB2, [0x00, 0x00, 0x00]],
+    [0x8FB7, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]], [0x9000, [0x03, 0x03, 0x03]],
+    [0x96C4, [0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00]]
+  ];
+  // The video chip's registers as the loader leaves them, for $D000-$D02E.
+  const VIC0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x3B, 0x37, 0, 0, 0, 0xC8, 0, 0x68, 0, 0, 0,
+    0, 0, 0, 0, 6, 6, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 12];
+  // Checkpoints, as the lockstep names them: rotor_frame's entry (once a frame drawn), the three
+  // places a frame is marked ready, and start_irq's call at the end of the set-up
+  const CP = { rotor: 0x8532, riseReady: 0x82ED, hoverReady: 0x844C, showReady: 0x847A, irqOn: 0x81E5,
+    riseShown: 0x82F5, hoverShown: 0x8454, showShown: 0x8482 };
+  const WAIT = 0x8CB6;          // scroll_cells's wait for line $30: the instruction after it
+
+  function create(M, chips) {
+    const P = { M, io: chips, i: 0, hc: 0, ended: false };
+    // the chips are read through P.io when the code runs: a lockstep gives the port its own
+    const io = {
+      vicRead: (r) => P.io.vicRead(r), vicWrite: (r, v) => P.io.vicWrite(r, v), sidWrite: (r, v) => P.io.sidWrite(r, v),
+      colourRead: (i) => P.io.colourRead(i), colourWrite: (i, v) => P.io.colourWrite(i, v),
+      ciaRead: (r) => P.io.ciaRead(r), ciaWrite: (r, v) => P.io.ciaWrite(r, v), cia2Write: (r, v) => P.io.cia2Write(r, v),
+    };
+    let cyc = 0;                                 // the main program's cycles not yet yielded
+    const C = (n) => { cyc += n; };
+    const H = (n) => { P.hc += n; };             // the interrupt's cycles, counted as it runs
+    const cross = (base, x) => ((base & 0xFF) + x > 0xFF ? 1 : 0);
+    const w16 = (a) => M[a] | M[a + 1] << 8;
+    function* spent() { if (cyc) { const n = cyc; cyc = 0; yield { cycles: n }; } }
+    function* at(cp) { yield* spent(); yield { cp }; }
+
+    // ---- small_copy ($8003, JMP $80C9): $AA:$A9 bytes from ($A5) to ($A7), A in $01, interrupts off
+    function copyBytes(port) {
+      C(6 + 3 + 2 + 3 + 2);                      // JSR, JMP, SEI, STA $01, LDY #0
+      P.i = 1; M[1] = port;
+      for (;;) {
+        M[w16(0xA7)] = M[w16(0xA5)];
+        C(5 + 6 + 2 + 3 + 2 + 3);                // LDA (A5),Y STA (A7),Y SEC LDA A9 SBC #1 STA A9
+        const lo = M[0xA9];
+        M[0xA9] = (lo - 1) & 255;
+        if (lo === 0) { M[0xAA] = (M[0xAA] - 1) & 255; C(2 + 5); } else C(3);
+        C(3 + 3);                                // LDA A9 ORA AA
+        if (!(M[0xA9] | M[0xAA])) { C(3); break; }
+        C(2);
+        M[0xA5] = (M[0xA5] + 1) & 255; C(5);
+        if (M[0xA5]) C(3); else { M[0xA6] = (M[0xA6] + 1) & 255; C(2 + 5); }
+        M[0xA7] = (M[0xA7] + 1) & 255; C(5);
+        if (M[0xA7]) C(3); else { M[0xA8] = (M[0xA8] + 1) & 255; C(2 + 5 + 3); }
+      }
+      M[1] = 0x37; P.i = 0;
+      C(2 + 3 + 2 + 6);                          // LDA #$37 STA $01 CLI RTS
+    }
+    function pointers(src, dst, n) {             // the six LDA/STA pairs before each call
+      M[0xA5] = src & 255; M[0xA6] = src >> 8; M[0xA7] = dst & 255; M[0xA8] = dst >> 8;
+      M[0xA9] = n & 255; M[0xAA] = n >> 8;
+      C(6 * 5);
+    }
+
+    // ---- key_check ($849E): any key down ends the title
+    function keyCheck() {
+      io.ciaWrite(0, 0);
+      const k = io.ciaRead(1);
+      C(6 + 2 + 4 + 4 + 2 + 3);                  // JSR LDA STA LDX INX BNE (not taken: +2, RTS 6 below)
+      if (((k + 1) & 255) !== 0) return true;
+      C(-1 + 6);
+      return false;
+    }
+
+    // ---- flip ($8520): the other buffer is drawn next
+    function flip() {
+      const b = M[0x8F8C] ^ 1;
+      M[0x8F8C] = b; M[0x8F8D] = M[0x8F90 + b];
+      C(6 + 4 + 2 + 4 + 2 + 4 + 4 + 6);
+    }
+
+    // ---- delay ($871A): 2048 reads of $FFFF,X
+    function delay() { C(6 + 2 + 37 + 254 * 45 + 44 + 6); }
+
+    // ---- copy_row ($8AFD): row X of the helicopter's bitmap ($2000) to row Y of the buffer drawn
+    function copyRow(x, y) {
+      C(6);
+      // the sources: the four LDAs' operands at $8B89, $8B8F, $8B95, $8B9B
+      let hi = (M[0x8D5B + x] + 0x20) & 255;
+      M[0x8B8A] = M[0x8B90] = M[0x8B96] = M[0x8B9C] = hi;
+      let lo = M[0x8D42 + x];
+      M[0x8B89] = lo;
+      C(4 + 2 + 2 + 4 * 4 + 4 + 4 + 2 + 2 + 4);
+      for (const [l, h] of [[0x8B8F, [0x8B90, 0x8B96, 0x8B9C]], [0x8B95, [0x8B96, 0x8B9C]], [0x8B9B, [0x8B9C]]]) {
+        const s = lo + 0x50;
+        if (l !== 0x8B8F) C(2 + 4);              // ADC #$50 STA (the first is counted above)
+        lo = s & 255; M[l] = lo;
+        if (s > 255) { for (const a of h) M[a] = (M[a] + 1) & 255; C(2 + 6 * h.length + (h.length > 1 ? 2 : 0)); } else C(3);
+      }
+      // the destinations: the four STAs' operands at $8B8C, $8B92, $8B98, $8B9E
+      hi = (M[0x8D5B + y] + M[0x8F8D]) & 255;
+      M[0x8B8D] = M[0x8B93] = M[0x8B99] = M[0x8B9F] = hi;
+      lo = M[0x8D42 + y];
+      M[0x8B8C] = lo;
+      C(4 + 2 + 4 + 4 * 4 + 4 + 4 + 2 + 2 + 4);
+      for (const [l, h] of [[0x8B92, [0x8B93, 0x8B99, 0x8B9F]], [0x8B98, [0x8B99, 0x8B9F]], [0x8B9E, [0x8B9F]]]) {
+        const s = lo + 0x50;
+        if (l !== 0x8B92) C(2 + 4);
+        lo = s & 255; M[l] = lo;
+        if (s > 255) { for (const a of h) M[a] = (M[a] + 1) & 255; C(2 + 6 * h.length + (h.length > 1 ? 2 : 0)); } else C(3);
+      }
+      M[1] = 0; C(2 + 3 + 2);
+      const src = [w16(0x8B89), w16(0x8B8F), w16(0x8B95), w16(0x8B9B)];
+      const dst = [w16(0x8B8C), w16(0x8B92), w16(0x8B98), w16(0x8B9E)];
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 4; k++) { M[(dst[k] + i) & 0xFFFF] = M[(src[k] + i) & 0xFFFF]; C(4 + cross(src[k], i) + 5); }
+        C(2 + (i ? 3 : 2));
+      }
+      M[1] = 5; C(2 + 3 + 6);
+    }
+
+    // ---- scroll_colours ($8BA8): the buffer's screen colours up two rows, two new ones at the foot
+    const CROW = [0x78, 0xC8, 0x118, 0x168, 0x1B8, 0x208, 0x258, 0x2A8, 0x2F8, 0x348, 0x398];
+    function scrollColours() {
+      C(6 + 2 + 4 * 4 + 2 + 2 + 4 + 2);
+      M[0x8C22] = M[0x8C23] = M[0x8C6E] = M[0x8C6F] = 0x1C;
+      const x = (0x1C - M[0x8F88]) & 255;
+      if (x & 0x80) C(3);
+      else {
+        C(2 + 2);
+        if (x >= 0x19) C(3);
+        else {
+          const hi = (M[0x8D8D + x] + 0x18) & 255, lo = M[0x8D74 + x];
+          M[0x8C23] = M[0x8C6F] = hi; M[0x8C22] = M[0x8C6E] = lo;
+          C(2 + 4 + 2 + 2 + 4 + 4 + 4 + 4 + 4);
+        }
+      }
+      const bank1 = M[0x8F8C] !== 0, base = bank1 ? 0x6000 : 0xE000;
+      const src = bank1 ? w16(0x8C22) : w16(0x8C6E);
+      C(2 + 4 + (bank1 ? 2 : 4));
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 11; k++) { M[base + CROW[k] - 0x50 + i] = M[base + CROW[k] + i]; C(4 + cross(CROW[k], i) + 5); }
+        M[base + 0x398 + i] = M[(src + i) & 0xFFFF]; C(4 + cross(src, i) + 5);
+        C(2 + (i ? (bank1 ? 4 : 3) : 2));
+      }
+      C(6);
+    }
+
+    // ---- scroll_cells ($8C77), up to its wait for line $30, and after it
+    function cellsSetup() {
+      C(6 + 2 + 4 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2 + 2 + 4 + 2);
+      M[0x8CE8] = M[0x8CE9] = 0x1C; M[0x8CBE] = 0x28; M[0x8CBF] = 0xD8; M[0x8CC1] = 0; M[0x8CC2] = 0xD8;
+      const x = (0x1C - M[0x8F88]) & 255;
+      if (x & 0x80) C(3);
+      else {
+        C(2 + 2);
+        if (x >= 0x19) C(3);
+        else { M[0x8CE9] = (M[0x8D8D + x] + 0x1C) & 255; M[0x8CE8] = M[0x8D74 + x]; C(2 + 4 + 2 + 2 + 4 + 4 + 4); }
+      }
+    }
+    function cellsScroll() {
+      M[0x8F62] = (M[0x8F62] + 1) & 255;
+      C(6 + 2);
+      for (let y = 23; y >= 0; y--) {
+        const s = w16(0x8CBE) - 0xD800, d = w16(0x8CC1) - 0xD800;
+        C(2);
+        for (let i = 39; i >= 0; i--) { io.colourWrite(d + i, io.colourRead(s + i)); C(4 + cross(s, i) + 5 + 2 + (i ? 3 : 2)); }
+        let v = M[0x8CBE] + 0x28;
+        M[0x8CBE] = v & 255; C(4 + 2 + 2 + 4);
+        if (v > 255) { M[0x8CBF] = (M[0x8CBF] + 1) & 255; C(2 + 6 + 2); } else C(3);
+        v = M[0x8CC1] + 0x28;
+        M[0x8CC1] = v & 255; C(4 + 2 + 4);
+        if (v > 255) { M[0x8CC2] = (M[0x8CC2] + 1) & 255; C(2 + 6); } else C(3);
+        C(2 + (y ? 3 : 2));
+      }
+      const n = w16(0x8CE8);
+      C(2);
+      for (let i = 39; i >= 0; i--) { io.colourWrite(0x3C0 + i, M[(n + i) & 0xFFFF]); C(4 + cross(n, i) + 5 + 2 + (i ? 2 + 3 : 3)); }
+      C(6);
+    }
+
+    // ---- rotor_frame ($8532): the next rotor frame into one buffer, the row under it cleared
+    function rotorFrame() {
+      let f = (M[0x8F89] - 1) & 255;
+      if (f & 0x80) { f = 3; C(6 + 2 + 2 + 4); } else C(6 + 3);
+      M[0x8F89] = f;
+      M[1] = 0; C(2 + 3);
+      const x = (M[0x8F88] - 2) & 255;
+      C(4 + 2 + 2 + 2);
+      // the destinations: the eight STAs' operands, 80 bytes apart
+      const dst = [], src = [];
+      if (x >= 0x19) { dst[0] = 0x6464; C(2 + 2 + 4 + 3); }
+      else {
+        const b = M[0x8F90 + M[0x8F8B]];
+        dst[0] = ((M[0x8D5B + x] + b) & 255) << 8 | M[0x8D42 + x];
+        C(3 + 4 + 2 + 4 + 4 + 4 + 4);
+      }
+      C(4);                                      // STA rotor_dst1_lo
+      for (let k = 1; k < 8; k++) {
+        dst[k] = (dst[k - 1] + 0x50) & 0xFFFF;
+        C((k > 1 ? 4 : 0) + 2 + 2 + 4 + 4 + 2 + 4);
+        if (k === 3) {                           // after the fourth: the last two rows of the screen
+          C(2);
+          if (x >= 0x18) { dst[3] = 0x6464; C(2 + 2 + 4 + 4); } else C(3);
+        }
+      }
+      // the sources, the frame's strip of the GUNSHIP picture
+      M[0x96C6] = x; C(4 + 2);
+      if (x >= 0x19) { src[0] = 0x6464; C(2 + 2 + 4 + 3); }
+      else { src[0] = ((M[0x8716 + f] + 0xA0) & 255) << 8 | M[0x8712 + f]; C(3 + 4 + 4 + 2 + 2 + 4 + 4); }
+      C(4);
+      for (let k = 1; k < 8; k++) {
+        src[k] = (src[k - 1] + 0x50) & 0xFFFF;
+        C((k > 1 ? 4 : 0) + 2 + 2 + 4 + 4 + 2 + 4);
+        if (k === 3) {
+          C(4 + 2);
+          if (M[0x96C6] >= 0x18) { src[3] = 0x6464; C(2 + 2 + 4 + 4); } else C(3);
+        }
+      }
+      const OPS = [0x868B, 0x8691, 0x8697, 0x869D, 0x86A3, 0x86A9, 0x86AF, 0x86B5];
+      for (let k = 0; k < 8; k++) {
+        M[OPS[k]] = src[k] & 255; M[OPS[k] + 1] = src[k] >> 8;
+        M[OPS[k] + 3] = dst[k] & 255; M[OPS[k] + 4] = dst[k] >> 8;
+      }
+      C(2);
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 8; k++) { M[(dst[k] + i) & 0xFFFF] = M[(src[k] + i) & 0xFFFF]; C(4 + cross(src[k], i) + 5); }
+        C(2 + (i ? 3 : 2));
+      }
+      // rotor_clear_below and clear_row
+      let clr = 0x6000;
+      C(2 + 4 + 2 + 4 + 4 + 2);
+      if (M[0x8FBC] >= 6) { clr = (dst[7] + 0x50) & 0xFFFF; C(2 + 4 + 2 + 2 + 4 + 4 + 2 + 4); } else C(3);
+      M[0x8704] = clr & 255; M[0x8705] = clr >> 8;
+      const clr2 = (clr + 0xFF) & 0xFFFF;
+      M[0x870C] = clr2 & 255; M[0x870D] = clr2 >> 8;
+      C(6 + 4 + 2 + 2 + 4 + 4 + 2 + 4 + 2 + 2);
+      for (let i = 0; i < 256; i++) M[(clr + i) & 0xFFFF] = 0;
+      C(256 * 10 - 1);
+      for (let i = 1; i <= 0x40; i++) M[(clr2 + i) & 0xFFFF] = 0;
+      C(2 + 64 * 10 - 1 + 6);
+      M[1] = 5;
+      M[0x8F8B] ^= 1;
+      C(2 + 3 + 4 + 2 + 4 + 6);
+    }
+
+    // ---- draw_letter ($8743): letter $8FB7 of GUNSHIP into row 19 of the buffer drawn
+    function letterNote(x) {
+      io.sidWrite(x + 4, 0x80); io.sidWrite(x, 0); io.sidWrite(x + 6, 0); io.sidWrite(x + 1, 3);
+      io.sidWrite(x + 5, 0x0A); io.sidWrite(x + 4, 0x81);
+      C(6 + 2 + 5 + 2 + 5 + 5 + 2 + 5 + 2 + 5 + 2 + 5 + 6);
+    }
+    function drawLetter() {
+      C(6 + 2);
+      io.sidWrite(0x04, 0x80); io.sidWrite(0x0B, 0x80); io.sidWrite(0x12, 0x80);
+      M[1] = 0;
+      const n = M[0x8FB7];
+      C(4 * 3 + 2 + 3 + 4);
+      M[0x879A] = M[0x887C + n]; M[0x87B7] = M[0x8883 + n]; M[0x87A5] = M[0x8898 + n]; M[0x877D] = M[0x888A + n];
+      let s = M[0x888A + n];
+      M[0xA5] = s & 255;
+      M[0x8788] = M[0x8891 + n];
+      M[0xA6] = (M[0x8891 + n] + 0xAA) & 255;
+      C(4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2 + 2 + 3 + 4 + 4 + 2 + 3);
+      const b = M[0x8F8C];
+      s = M[0x877D] + M[0x88B5 + b];
+      M[0xA7] = s & 255;
+      M[0xA8] = (M[0x8788] + M[0x88B7 + b] + (s >> 8)) & 255;
+      M[0x8FB3] = 4;
+      C(2 + 2 + 4 + 4 + 3 + 2 + 4 + 3 + 2 + 4);
+      const ml = M[0x879A], mr = M[0x87B7], bytes = M[0x87A5];
+      for (;;) {
+        const a = w16(0xA5), d = w16(0xA7);
+        C(2);
+        for (let y = 7; y >= 0; y--) {
+          const v = M[(d + y) & 0xFFFF];
+          M[(d + y) & 0xFFFF] = ((M[(a + y) & 0xFFFF] ^ v) & ml) ^ v;
+          C(5 + cross(a, y) + 5 + cross(d, y) + 2 + 5 + cross(d, y) + 6 + 2 + (y ? 3 : 2));
+        }
+        C(2 + 2);
+        let y = 8;
+        if (!bytes) C(3);
+        else {
+          C(2);
+          for (let k = bytes; k > 0; k--, y++) { M[(d + y) & 0xFFFF] = M[(a + y) & 0xFFFF]; C(5 + cross(a, y) + 6 + 2 + 2 + (k > 1 ? 3 : 2)); }
+        }
+        C(2);
+        for (let k = 7; k >= 0; k--, y++) {
+          const v = M[(d + y) & 0xFFFF];
+          M[(d + y) & 0xFFFF] = ((M[(a + y) & 0xFFFF] ^ v) & mr) ^ v;
+          C(5 + cross(a, y) + 5 + cross(d, y) + 2 + 5 + cross(d, y) + 6 + 2 + 2 + (k ? 3 : 2));
+        }
+        const a2 = (a + 0x140) & 0xFFFF, d2 = (d + 0x140) & 0xFFFF;
+        M[0xA5] = a2 & 255; M[0xA6] = a2 >> 8; M[0xA7] = d2 & 255; M[0xA8] = d2 >> 8;
+        C(3 + 2 + 2 + 3 + 3 + 2 + 3 + 3 + 2 + 2 + 3 + 3 + 2 + 3 + 6);
+        const left = (M[0x8FB3] - 1) & 255;
+        M[0x8FB3] = left;
+        if (left & 0x80) { C(2); break; }
+        C(3);
+      }
+      // letter_done
+      M[1] = 5;
+      const x = M[0x8FB7];
+      M[0x8F63] = M[0x8F9A + x]; M[0x8FA6] = 3;
+      M[0x8FB8] = (M[0x8FB8] + 1) & 255;
+      C(2 + 3 + 4 + 4 + 4 + 2 + 4 + 2 + 3 + 6);
+      C(2); letterNote(0x0E); C(2); letterNote(0x07); C(2); letterNote(0x00);
+      C(4 + 2 + 2);
+      if (x === 6) { M[0x8F83] = 1; C(2 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 1) {
+        M[0x632C] = M[0xE32C] = 0xCB; M[0x632D] = M[0xE32D] = 0xBB; M[0x637C] = M[0xE37C] = 0xFC;
+        C(2 + 2 + 4 + 4 + 2 + 4 + 4 + 2 + 4 + 4);
+      } else C(3);
+      C(2);
+      if (x === 2) { M[0x632E] = M[0xE32E] = 0xBB; M[0x8F7C] = 0xE3; C(2 + 2 + 4 + 4 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 3) { M[0x8F7D] = 0xEB; C(2 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 4) {
+        for (const a of [0x6339, 0xE339, 0x633A, 0xE33A, 0x633C, 0xE33C]) M[a] = 0xBB;
+        C(2 + 2 + 6 * 4);
+      } else C(3);
+      C(6);
+    }
+
+    // ---- the copies of four of the helicopter's rows, as the rise and the hover make them
+    function copyRows() {
+      for (;;) {
+        let x = M[0x8FAC], y = M[0x8FAB];
+        C(4 + 2);
+        if (x >= 0x19) { C(3); x = y = 0; C(4); }
+        else {
+          C(2 + 4 + 2);
+          if (y >= 0x19) { C(2); x = y = 0; C(4); } else C(3);
+        }
+        copyRow(x, y);
+        M[0x8FAC] = (M[0x8FAC] + 1) & 255; M[0x8FAB] = (M[0x8FAB] + 1) & 255;
+        const left = (M[0x8FB2] - 1) & 255;
+        M[0x8FB2] = left;
+        C(6 + 6 + 6);
+        if (left & 0x80) { C(2); return; }
+        C(3);
+      }
+    }
+
+    // ---- title_show_wait ($8477): flip, a frame marked ready, and the wait for the interrupt
+    function* showWait() {
+      C(6); flip();
+      yield* at(CP.showReady);
+      M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+      yield* spent();
+      while (M[0x8F62]) yield;
+      C(4 + 2);
+      yield* at(CP.showShown);
+      C(6);
+    }
+    // ---- title_pause ($8483): 20 frames, the rotor turning
+    function* pause() {
+      M[0x849D] = 0x14; C(6 + 2 + 4);           // the JSR, LDA #$14, STA
+      for (;;) {
+        const n = (M[0x849D] - 1) & 255;
+        M[0x849D] = n; C(6);
+        if (n & 0x80) { C(3 + 6); return false; }
+        C(2);
+        yield* showWait();
+        C(6); yield* at(CP.rotor); rotorFrame();
+        delay();
+        if (keyCheck()) return true;
+        C(3);
+      }
+    }
+
+    // ---- the main program
+    P.program = function* () {
+      // title_setup ($8132): the SID silenced, the GUNSHIP picture's top colours over the
+      // helicopter's, bank 1 cleared
+      C(2 + 2);
+      for (let x = 0x18; x >= 0; x--) { io.sidWrite(x, 0); C(5 + 2 + (x ? 3 : 2)); }
+      M[0x4000] = 0; C(4);
+      pointers(0x9800, 0x1800, 0x00A0); C(2); copyBytes(0x36);
+      pointers(0x9C00, 0x1C00, 0x00A0); C(2); copyBytes(0x36);
+      pointers(0x4000, 0x4001, 0x27FF); C(2); copyBytes(0x37);
+      yield* spent();
+      // title_sprites ($8196)
+      for (const [r, v] of [[0x11, 0], [0x26, 0], [0x15, 0xFF], [0x1C, 0xF6], [0x17, 1], [0x1D, 1], [0x1B, 0xF8], [0x25, 0x0C]]) io.vicWrite(r, v);
+      C(44);
+      pointers(0x4000, 0xC000, 0x4000); C(2); copyBytes(0x00);
+      // title_tempo ($81D7)
+      const tempo = M[0x8530 + M[0x02A6]];
+      M[0x9000] = M[0x9001] = M[0x9002] = tempo;
+      C(39);
+      // title_screen_on ($81E5): start_irq, a red screen, the volume faded in
+      yield* at(CP.irqOn);
+      C(6 + 2 + 2 + 4);
+      P.i = 1;
+      io.ciaWrite(0x0D, 1); io.ciaRead(0x0D); io.vicWrite(0x1A, 1);
+      M[0xFFFE] = M[0xFFFC] = 0x40; M[0xFFFF] = M[0xFFFD] = 0x89; M[0xFFFA] = 0xB9; M[0xFFFB] = 0x88;
+      C(4 + 2 + 4 + 32 + 4 + 2);
+      io.vicWrite(0x11, io.vicRead(0x11) & 0x7F);
+      io.vicWrite(0x12, 0);
+      M[1] = 5;
+      C(4 + 2 + 4 + 2 + 3 + 2);
+      yield* spent();
+      P.i = 0;                                   // the CLI: an interrupt waiting comes in after the RTS
+      C(6);
+      yield* spent();
+      for (const [r, v] of [[0x20, 2], [0x21, 2], [0x16, 0xD8], [0x18, 0x80], [0x11, 0x37]]) io.vicWrite(r, v);
+      C(2 + 4 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2);
+      for (let x = 0; x < 16; x++) {
+        io.sidWrite(0x18, x); C(4);
+        for (;;) {
+          const a = M[0x96F0]; C(4);
+          yield* spent();
+          while (M[0x96F0] === a) yield;
+          C(4 + 2 + 2);
+          if ((a & 7) === 0) { C(2); break; }
+          C(3);
+        }
+        C(2 + 2 + (x < 15 ? 3 : 2));
+      }
+
+      // title_rise ($8215)
+      for (;;) {
+        if (keyCheck()) return yield* end();
+        M[0x96E8] = (M[0x96E8] + 1) & 255;
+        C(6 + 4 + 2);
+        if (!(M[0x96E8] & 3)) { M[0x8E59] = (M[0x8E59] + 1) & 255; C(2 + 6); } else C(3);
+        C(4 + 2);
+        if (M[0x8F88] === 4) { C(2 + 3); break; }
+        C(3 + 4 + 2);
+        const row = M[0x8F88];
+        let step = true;
+        if (row < 7) {
+          C(2 + 2);
+          if (row === 5) {
+            C(3);
+            const s = (M[0x8FA2] - 1) & 255; M[0x8FA2] = s; C(6);
+            if (s & 0x80) { M[0x8FA2] = M[0x8FA3]; M[0x8FA3] = (M[0x8FA3] + 1) & 255; C(2 + 4 + 4 + 6); }
+            else { C(3); step = false; }
+          } else {
+            C(2);
+            const s = (M[0x8FA2] - 1) & 255; M[0x8FA2] = s; C(6);
+            if (s & 0x80) {
+              C(2);
+              M[0x8FA2] = M[0x8FA3]; M[0x8FA3] >>= 1; C(4 + 4 + 6 + 4 + 2);
+              if (!M[0x8FA3]) { M[0x8FA3] = 1; C(6); } else C(1);
+              step = false;
+            } else C(3);
+          }
+        } else C(3);
+        if (!step) {                             // b_8250: a frame without a step
+          C(6); yield* at(CP.rotor); rotorFrame();
+          delay(); C(3);
+          yield* at(CP.riseReady);
+          M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+        } else {
+          // title_rise_step ($8267)
+          let fs = (M[0x8FBC] - 1) & 255; M[0x8FBC] = fs; C(6);
+          if (fs & 0x80) { M[0x8FBC] = fs = 7; M[0x8F88] = (M[0x8F88] - 1) & 255; C(2 + 2 + 4 + 6); } else C(3);
+          C(6); yield* at(CP.rotor); rotorFrame();
+          let y = ((M[0x8F88] << 3) & 255) + M[0x8FBC];
+          y = (y & 255) + 0x9E;
+          C(4 + 2 + 2 + 2 + 2 + 4 + 2 + 2);
+          if (y < 256) {
+            M[0x8F6F] = M[0x8F70] = y; C(2 + 4 + 4 + 2 + 2);
+            y += 0x15;
+            if (y < 256) { M[0x8F71] = M[0x8F72] = y; C(2 + 4 + 4); } else C(3);
+          } else C(3);
+          C(4 + 2);
+          if (fs === 7) {
+            C(2); flip();
+            cellsSetup();
+            yield* spent();
+            const ln = io.vicRead(0x12) | (io.vicRead(0x11) & 0x80) << 1;
+            C(4 + 2 + 2);                        // the poll's last turn, before the wait's exit
+            yield* spent();
+            // the line the loop leaves on, and the line its first read saw: the same when the loop
+            // found line $30 at once
+            yield { wait: (ln & 255) === 0x30 ? ln : ln < 0x30 ? 0x30 : ln < 0x130 ? 0x130 : 0x30, seen: ln };
+            cellsScroll();
+            C(3);
+          } else {
+            C(3 + 2);
+            if (fs === 0) { C(3); scrollColours(); }
+            else {
+              C(2);
+              const x = fs - 1;
+              M[0x8FAB] = ((x << 2) + M[0x8F88] - 1) & 255;
+              M[0x8FAC] = M[0x8FAD + x];
+              M[0x8FB2] = 3;
+              C(4 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 6 + 4 + 4 + 2 + 4);
+              copyRows();
+              C(3);
+            }
+            yield* at(CP.riseReady);
+            M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+          }
+        }
+        yield* spent();
+        while (M[0x8F62]) yield;
+        C(4 + 2);
+        yield* at(CP.riseShown);
+        C(3);
+      }
+
+      // title_hover ($82F8): sprites 0-3 to their places on the helicopter
+      for (let x = 3; x >= 0; x--) M[0x8F6B + x] = M[0x8F84 + x];
+      C(2 + 3 * 15 + 13);                       // the BPL at $8301 crosses to page $82
+      for (;;) {
+        // title_hover_loop ($8303)
+        if (keyCheck()) return yield* end();
+        C(6); yield* at(CP.rotor); rotorFrame();
+        M[0x8FB4] = (M[0x8FB4] + 1) & 255; C(6);
+        if (!M[0x8FB4]) { M[0x8FB5] = (M[0x8FB5] + 1) & 255; C(2 + 6); } else C(3);
+        M[0x8FAC] = M[0x8FAB] = 0x1A;
+        C(2 + 4 + 4 + 4);
+        let rows = true;
+        if (!M[0x8FB5]) {
+          C(2 + 4);
+          if (!(M[0x8FB4] & 0x80)) {
+            const n = (M[0x8FB4] & 0x7F) >> 3;
+            C(2 + 2 + 2 + 2 + 2 + 2);
+            if (n === 0) {
+              // the helicopter's screen colours into the buffer drawn
+              const bank1 = M[0x8F8C] !== 0, to = bank1 ? 0x6000 : 0xE000;
+              C(2 + 4 + (bank1 ? 2 : 3) + 2);
+              for (let x = 0; x < 256; x++) {
+                M[to + x] = M[0x1800 + x]; M[to + 0x100 + x] = M[0x1900 + x];
+                M[to + 0x200 + x] = M[0x1A00 + x]; M[to + 0x2F8 + x] = M[0x1AF8 + x];
+                C(4 + 5 + 4 + 5 + 4 + 5 + 4 + cross(0xF8, x) + 5 + 2 + (x < 255 ? 3 : 2));
+              }
+              C(3);
+              rows = false;
+            } else {
+              C(3);
+              const x = n - 1;
+              M[0x8FAB] = ((x << 2) + M[0x8F88]) & 255;
+              M[0x8FAC] = M[0x8FAD + x];
+              C(2 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 4 + 4);
+            }
+          } else C(3);
+        } else C(3);
+        if (rows) {
+          M[0x8FB2] = 3; C(2 + 4);
+          copyRows();
+        }
+        // title_stages ($83A9)
+        C(4);
+        let toLetter = false;
+        if (!M[0x8FBB]) {
+          C(2 + 4);
+          if (M[0x8FBA]) { C(3); toLetter = true; }
+          else {
+            C(2 + 4);
+            let go = true;
+            if (!M[0x8FA5]) {
+              C(2 + 4 + 2);
+              if (M[0x8FB4] < 0x82) { C(3); go = false; }
+              else { M[0x8FA5] = (M[0x8FA5] + 1) & 255; C(2 + 6); }
+            } else C(3);
+            if (go) {
+              const w = (M[0x8FA4] - 1) & 255; M[0x8FA4] = w; C(6);
+              if (w & 0x80) {
+                M[0x8FA4] = 5; C(2 + 2 + 4);
+                const v = (M[0x8FA1] - 1) & 255; M[0x8FA1] = v; C(6);
+                if (v & 0x80) { M[0x8FBA] = (M[0x8FBA] + 1) & 255; C(2 + 6); toLetter = true; } else C(3);
+              } else C(3);
+            }
+          }
+        } else C(3);
+        if (toLetter) {
+          // title_letter ($83D4)
+          C(4);
+          if (M[0x8FB6]) {
+            C(2);
+            drawLetter();
+            M[0x8FB6] = (M[0x8FB6] - 1) & 255; M[0x8FB9] = 0x0A;
+            M[0x8FB7] = (M[0x8FB7] + 1) & 255;
+            C(6 + 2 + 4 + 6 + 4 + 2);
+            if (M[0x8FB7] === 7) {
+              M[0x8FBB] = (M[0x8FBB] + 1) & 255; M[0x8DD0] = 2; M[0x8E4A] = (M[0x8E4A] + 1) & 255;
+              C(2 + 6 + 2 + 4 + 6 + 6);
+              for (let x = 6; x >= 0; x--) io.sidWrite(0x0E + x, 0);
+              C(2 + 2 + 6 * 10 + 9 + 6);
+            } else C(3);
+            C(3);
+          } else {
+            C(3);
+            const w = (M[0x8FB9] - 1) & 255; M[0x8FB9] = w; C(6);
+            if (w & 0x80) {
+              C(2); drawLetter();
+              M[0x8FB6] = (M[0x8FB6] + 1) & 255; C(6 + 3);
+            } else {
+              C(3);
+              const x = M[0x8FB9];
+              C(4 + 2);
+              if (x === 6) { M[0x8FA1] = (M[0x8FA1] + 1) & 255; C(2 + 6 + 3); }
+              else {
+                C(3 + 2);
+                if (x < 4) { M[0x8F7E] = M[0x88AD + x]; C(2 + 4 + 4); } else C(3);
+              }
+            }
+          }
+        } else C(3);
+        // title_glints ($8424)
+        const g = M[0x8FA6];
+        C(4);
+        let flipNow = true;
+        if (!(g & 0x80)) {
+          M[0x8F7B] = M[0x88B1 + g];
+          M[0x8FA6] = (g - 1) & 255;
+          C(2 + 4 + 4 + 6 + 3);
+        } else {
+          C(3 + 4 + 2);
+          if (M[0x8FB7] === 7) { C(2 + 3); break; }
+          C(3);
+        }
+        // title_flip ($843F)
+        C(4);
+        if (M[0x8FB4] & 0x80) C(3);
+        else { C(2 + 4); flipNow = M[0x8FB5] !== 0; C(flipNow ? 2 : 3); }
+        if (flipNow) flip();
+        yield* at(CP.hoverReady);
+        M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+        yield* spent();
+        while (M[0x8F62]) yield;
+        C(4 + 2);
+        yield* at(CP.hoverShown);
+        C(3);
+      }
+
+      // title_tune ($8457): a pause, the tune, a pause
+      if (yield* pause()) return yield* end();
+      C(6 + 2);                                  // tune_start ($8E78)
+      for (let x = 0x18; x >= 0; x--) { io.sidWrite(x, M[0x90FE + x]); C(4 + cross(0xFE, x) + 5 + 2 + (x ? 3 : 2)); }
+      M[0x8F52] = 0; C(2 + 4 + 6);
+      yield* showWait();
+      for (;;) {
+        C(6); yield* at(CP.rotor); rotorFrame();
+        delay();
+        if (keyCheck()) return yield* end();
+        yield* showWait();
+        C(4);
+        if (M[0x8F52]) { C(2); break; }
+        C(3);
+      }
+      yield* pause();
+      C(6);
+      return yield* end();
+    };
+    // ---- title_end ($84AA): the interrupt off, the SID silenced; BASIC goes on to its next line
+    function* end() {
+      P.i = 1;
+      M[1] = 0x37;
+      io.vicWrite(0x1A, 0);
+      for (let x = 0x18; x >= 0; x--) io.sidWrite(x, 0);
+      io.vicWrite(0x19, 1);
+      P.i = 0;
+      C(4 + 4 + 2 + 2 + 3 + 2 + 4 + 2 + 25 * 10 - 1 + 2 + 4 + 2 + 6);
+      yield* spent();
+      P.ended = true;
+    }
+
+    // ---- the raster interrupt ($8940)
+    function spritesToShadow() {
+      for (let x = 7; x >= 0; x--) {
+        M[0x96C7 + x] = M[0x8F63 + x]; M[0x96CF + x] = M[0x8F6B + x];
+        M[0x96D7 + x] = M[0x8F73 + x]; M[0x96DF + x] = M[0x8F7B + x];
+      }
+      M[0x96E7] = M[0x8F83]; M[0x8FA8] = M[0x8F89];
+      H(6 + 2 + 41 * 7 + 40 + 4 + 4 + 4 + 4);
+      // turret_sprites ($88C0)
+      H(6 + 4);
+      const v = M[0x8FA1];
+      if (v & 0x80) H(4);                        // its three branches to r_8904 cross to page $89
+      else {
+        H(2);
+        M[0x8F66] = M[0x8F93 + v];
+        const s = (v + 0xCC) & 255;
+        M[0x8F7F] = s; M[0x8F80] = (s + 8) & 255; M[0x8F81] = (s + 16) & 255; M[0x8F82] = (s + 24) & 255;
+        H(4 + 4 + 2 + 2 + 2 + 4 + 2 + 2 + 4 + 2 + 2 + 4 + 2 + 2 + 4);
+        let y = ((M[0x8F88] << 3) & 255) + M[0x8FBC];
+        y = (y & 255) + 0x9E;
+        H(4 + 2 + 2 + 2 + 2 + 4 + 2 + 2);
+        if (y < 256) {
+          M[0x8F6F] = M[0x8F70] = y; H(2 + 4 + 4 + 2 + 2);
+          y += 0x15;
+          if (y < 256) { M[0x8F71] = M[0x8F72] = y; H(2 + 4 + 4); } else H(4);
+        } else H(4);
+      }
+      H(6);
+      // rotor_band ($84F1)
+      const h = ((M[0x8F88] << 3) & 255) + M[0x8FBC] & 255;
+      H(4 + 2 + 2 + 2 + 2 + 4 + 3 + 2 + 2);
+      if (h + 0x36 < 256) {
+        M[0x8A64] = h + 0x36; H(2 + 4 + 2);
+        if (h + 0x36 + 0x58 < 256) { M[0x8A7D] = h + 0x36 + 0x58; H(2 + 4); } else H(3);
+      } else H(3);
+      H(4 + 2 + 2);
+      if (h + 0x12 < 256) {
+        M[0x8A23] = h + 0x12; H(2 + 4 + 2 + 2);
+        if (h + 0x12 + 0x1D < 256) { M[0x8A28] = M[0x8A2D] = h + 0x12 + 0x1D; H(2 + 4 + 4); } else H(3);
+      } else H(3);
+      H(6);
+    }
+    function rotorSound() {
+      H(6 + 4);
+      if (M[0x8FB8]) { M[0x96F0] = (M[0x96F0] + 1) & 255; H(2 + 6 + 6); return; }
+      H(3 + 4);
+      if (!M[0x8E4A]) {
+        M[0x8E4A] = (M[0x8E4A] + 1) & 255;
+        for (let x = 0x14; x >= 0; x--) io.sidWrite(x, M[0x8E63 + x]);
+        M[0x8E51] = M[0x8E52] = 0x81; M[0x8E53] = 0x41;
+        H(2 + 6 + 2 + 20 * 14 + 13 + 2 + 4 + 4 + 2 + 4);
+      } else H(3);
+      M[0x96EF] = M[0x8DD0];
+      H(2 + 4);
+      for (;;) {
+        const x = M[0x96EF];
+        const t = (M[0x8E60 + x] - 1) & 255; M[0x8E60 + x] = t;
+        H(4 + 7);
+        if (t & 0x80) {
+          H(2);
+          const c = M[0x8E51 + x] ^ 1; M[0x8E51 + x] = c;
+          io.sidWrite(M[0x8E5D + x] + 4, c);
+          H(4 + 2 + 5 + 3 + 4 + 2 + 4 + 5 + 4 + 4 + 2);
+          if (c & 1) { M[0x8E60 + x] = M[0x8E4B + x]; H(2 + 4 + 3); } else { M[0x8E60 + x] = M[0x8E4E + x]; H(3 + 4); }
+          M[0x96E9 + x] = M[0x8E54 + x]; M[0x96EC + x] = M[0x8E57 + x];
+          H(5 + 4 + 5 + 3 + 4 + 5 + 3 + 3);
+          // j_8E39 with X the voice, not its offset: the pitch goes to $D401+X and $D400+X
+          io.sidWrite(x + 1, M[0x96EC + x]); io.sidWrite(x, M[0x96E9 + x]);
+        } else {
+          H(4);
+          const sw = M[0x8E5A + x], s = M[0x96E9 + x] + sw;
+          M[0x96E9 + x] = s & 255;
+          H(4 + 2 + 4 + 5 + 3 + 4);
+          if (sw & 0x80) { if (s > 255) H(3 + 3); else { M[0x96EC + x] = (M[0x96EC + x] - 1) & 255; H(3 + 2 + 7); } }
+          else if (s > 255) { M[0x96EC + x] = (M[0x96EC + x] + 1) & 255; H(2 + 2 + 7 + 3); } else H(2 + 3);
+          const o = M[0x8E5D + x];
+          H(4 + 3 + 4 + 2);
+          io.sidWrite(o + 1, M[0x96EC + x]); io.sidWrite(o, M[0x96E9 + x]);
+        }
+        H(4 + 5 + 4 + 5);
+        const v = (M[0x96EF] - 1) & 255; M[0x96EF] = v; H(6);
+        if (v & 0x80) { H(2); break; }
+        H(4);
+      }
+      M[0x96F0] = (M[0x96F0] + 1) & 255;
+      H(6 + 6);
+    }
+    function tuneRead() {
+      const a = w16(0x8F19), v = M[a];
+      const n = (a + 1) & 0xFFFF;
+      M[0x8F19] = n & 255; M[0x8F1A] = n >> 8;
+      H(6 + 4 + 6 + ((n & 255) ? 3 : 2 + 6) + 3 + 4 + 6);
+      return v;
+    }
+    function multiply(a, y) {
+      M[0x8F4E] = a; M[0x8F4D] = y; M[0x8F49] = 0;
+      H(6 + 4 + 4 + 2 + 4 + 2);
+      for (let k = 7; k >= 0; k--) {
+        const c = M[0x8F4E] & 1; M[0x8F4E] >>= 1;
+        H(6);
+        if (c) { M[0x8F49] = (M[0x8F49] + M[0x8F4D]) & 255; H(2 + 2 + 4 + 4 + 4); } else H(3);
+        M[0x8F4D] = (M[0x8F4D] << 1) & 255;
+        H(6 + 2 + (k ? 3 : 2));
+      }
+      H(2 + 6);
+      return M[0x8F49];
+    }
+    function tunePlay() {
+      H(6 + 4);
+      if (M[0x8F52]) { H(2 + 6); return; }
+      H(3 + 2 + 4);
+      M[0x8F4B] = 2;
+      for (;;) {
+        const x = M[0x8F4B];
+        H(4 + 4);
+        let next = true;
+        if (M[0x8F4F + x]) {
+          H(3);
+          const y = M[0x8E5D + x];
+          const left = (M[0x8F5F + x] - 1) & 255; M[0x8F5F + x] = left;
+          H(4 + 2 + 7);
+          if (!left) {
+            H(3);
+            io.sidWrite(y + 4, M[0x8F59 + x] & 0xFE);
+            M[0x8F19] = M[0x8F53 + x]; M[0x8F1A] = M[0x8F56 + x];
+            H(4 + 2 + 5 + 4 + 4 + 4 + 4);
+            const note = tuneRead();
+            M[0x8F4C] = note;
+            H(4);
+            if (note & 0x80) H(3);
+            else {
+              io.sidWrite(y, M[0x9006 + note]); io.sidWrite(y + 1, M[0x9082 + note]);
+              H(2 + 2 + 4 + cross(0x06, note) + 5 + 4 + cross(0x82, note) + 5);
+            }
+            const len = tuneRead();
+            H(2 + 4 + 4);
+            M[0x8F5F + x] = multiply(M[0x9000 + x], len);
+            M[0x8F59 + x] = M[0x9003 + x];
+            H(5 + 4 + 2 + 4 + 5 + 4);
+            if (M[0x8F4C] & 0x80) H(3);
+            else { io.sidWrite(y + 4, M[0x8F59 + x]); H(2 + 4 + 5); }
+            H(4 + 2);
+            if (M[0x8F4C] === 0x81) { M[0x8F52] = (M[0x8F52] + 1) & 255; H(2 + 6); } else H(3);
+            M[0x8F53 + x] = M[0x8F19]; M[0x8F56 + x] = M[0x8F1A];
+            H(4 + 5 + 4 + 5);
+            next = false;
+          } else H(2 + 3);
+        } else H(2 + 3);
+        if (next) { /* the JMP to tune_next_voice is counted above */ }
+        const v = (M[0x8F4B] - 1) & 255; M[0x8F4B] = v; H(6);
+        if (v & 0x80) { H(3 + 6); return; }
+        H(2 + 3);
+      }
+    }
+    P.irq = function () {
+      P.hc = 0;
+      M[0x8AF4] = (M[1] & 0x2F) | 0x10; M[1] = 5;   // $01 as the processor port reads it: bit 4 is the tape button's input, high
+      const line = io.vicRead(0x12);
+      H(7 + 3 + 2 + 3 + 2 + 3 + 3 + 4 + 2 + 3 + 4 + 2);
+      if (line >= 8) {
+        // irq_band ($8A6B): below the rotor's band, or below the letters
+        H(2 + 3 + 4);
+        if (!M[0x8F8A]) {
+          H(2);
+          io.cia2Write(0, M[0x8F8E + M[0x8FA9]]);
+          M[0x8F8A] = (M[0x8F8A] + 1) & 255;
+          io.vicWrite(0x12, M[0x8A7D]);
+          H(4 + 4 + 4 + 6 + 2 + 4 + 3);
+        } else {
+          H(3);
+          io.vicWrite(0x1C, 0xF6); io.vicWrite(0x17, 1); io.vicWrite(0x1D, 1); io.vicWrite(0x10, M[0x96E7]);
+          H(2 + 4 + 2 + 4 + 4 + 4 + 4);
+          for (let n = 0; n < 3; n++) { io.vicWrite(n * 2, M[0x96C7 + n]); H(8); }
+          for (let n = 0; n < 3; n++) { io.vicWrite(n * 2 + 1, M[0x96CF + n]); H(8); }
+          for (let n = 0; n < 3; n++) { io.vicWrite(0x27 + n, M[0x96D7 + n]); H(8); }
+          const to = M[0x8FA9] ? 0xE3F8 : 0x63F8;
+          H(2 + 4 + (M[0x8FA9] ? 2 : 3));
+          for (let x = 2; x >= 0; x--) { M[to + x] = M[0x96DF + x]; H(4 + 5 + 2 + (x ? 3 : 2)); }
+          if (M[0x8FA9]) H(3);
+          io.vicWrite(0x12, 0);
+          H(2 + 4);
+        }
+      } else {
+        // the top of the frame: a frame taken if one is ready, the rotor's band shown
+        H(3 + 2 + 4 + 4);
+        M[0x8F8A] = 0;
+        if (M[0x8F62]) {
+          H(3 + 2 + 4);
+          M[0x8F62] = 0;
+          io.vicWrite(0x11, io.vicRead(0x11) & 0xF8 | M[0x8FBC]);
+          M[0x8FA9] = M[0x8F8C]; M[0x8FAA] = M[0x8F8B];
+          H(4 + 2 + 4 + 4 + 4 + 4 + 4 + 4);
+          spritesToShadow();
+          for (let n = 3; n < 8; n++) { io.vicWrite(n * 2, M[0x96C7 + n]); H(8); }
+          for (let n = 3; n < 8; n++) { io.vicWrite(n * 2 + 1, M[0x96CF + n]); H(8); }
+          for (let n = 3; n < 8; n++) { io.vicWrite(0x27 + n, M[0x96D7 + n]); H(8); }
+          const to = M[0x8FA9] ? 0x63FB : 0xE3FB;
+          H(2 + 4 + (M[0x8FA9] ? 2 : 3));
+          for (let x = 4; x >= 0; x--) { M[to + x] = M[0x96E2 + x]; H(4 + 5 + 2 + (x ? 3 : 2)); }
+          if (M[0x8FA9]) H(3);
+        } else H(2 + 3);
+        io.cia2Write(0, M[0x8F8E + M[0x8FAA]]);
+        io.vicWrite(0x1C, 0xFF); io.vicWrite(0x1D, 0); io.vicWrite(0x17, 0); io.vicWrite(0x10, 0);
+        io.vicWrite(0x00, 0xAE); io.vicWrite(0x02, 0xA8); io.vicWrite(0x04, 0xC0);
+        io.vicWrite(0x01, M[0x8A23]); io.vicWrite(0x03, M[0x8A28]); io.vicWrite(0x05, M[0x8A2D]);
+        io.vicWrite(0x27, 0x0F); io.vicWrite(0x28, 0x0F); io.vicWrite(0x29, 0x0F);
+        const r = M[0x8FA8];
+        M[0x63F8] = M[0xE3F8] = (r + 0xC0) & 255;
+        const p = ((r << 1) + 0xC4) & 255;
+        M[0x63F9] = M[0xE3F9] = p; M[0x63FA] = M[0xE3FA] = (p + 1) & 255;
+        H(4 + 4 + 4 + 2 + 4 + 2 + 4 + 4 + 4 + 6 * 6 + 2 + 4 + 4 + 4 + 4 + 2 + 2 + 4 + 4 + 4 + 2 + 2 + 2 + 4 + 4 + 2 + 2 + 4 + 4);
+        rotorSound();
+        tunePlay();
+        io.vicWrite(0x12, M[0x8A64]);
+        H(2 + 4 + 3);
+      }
+      // j_8AEE: the video chip's interrupt acknowledged, $01 and the registers back
+      io.vicWrite(0x19, 1);
+      M[1] = M[0x8AF4];
+      H(2 + 4 + 2 + 3 + 4 + 2 + 4 + 2 + 4 + 6);
+    };
+    return P;
+  }
+  return { INIT, VIC0, CP, WAIT, create };
+})();
+// end of gs-intro
+
+/* gs-intro-run */
+// The title sequence on a PAL C64's clock, for the page: GsIntro's main program and its raster
+// interrupt run against the beam, 312 lines of 63 cycles. Each stretch of the main program moves
+// the clock on by the cycles the title's own code takes for it, and the video chip's (the 40 of a
+// bad line, and five for each sprite on each line it is fetched on, as kit/c64/machine.js has
+// them) are added as the beam passes the lines it takes them on. The interrupt comes at the start
+// of the line it was set for and runs whole; the clock is brought up to the cycles it has counted
+// each time it reads or writes a chip, so its writes land where the beam is by then. A turn of a
+// loop that waits for the interrupt moves the clock to the next line.
+//   gsIntroRun(ram, o)  ram: TITLE's 64 KB from its listing. o.from: the first frame handed out, a
+//             number, or 'on' for the first whole frame after the title turns the screen on (the
+//             frames before run without their pictures); o.render false leaves the pictures out
+//   .next()   the next frame finished, as C64.renderFrame takes it, with its SID writes in sid
+//             ([register, value, ...]) and in cp the last of GsIntro.CP the program passed, which
+//             says what stage the title is at; null once the title has ended
+//   .sid      the SID's 25 registers as last written, for a player starting part-way
+//   .takes    the frames in which the interrupt took a new picture
+function gsIntroRun(ram, o = {}) {
+  const LINE = 63, LINES = 312, FRAME = LINE * LINES;
+  const M = new Uint8Array(0x10000), colour = new Uint8Array(0x400).fill(14);
+  M.set(ram);
+  for (const [a, b] of GsIntro.INIT) M.set(b, a);
+  const vic = new Uint8Array(0x40);
+  vic.set(GsIntro.VIC0);
+  let cmp = vic[0x12] | (vic[0x11] & 0x80) << 1, latch = 0, enable = 0, pra2 = 0xC0, ddra2 = 0x3F;
+  let t = 0, lastLine = 0, inIrq = false, irqSpent = 0, offSeen = false, onAt = -1;
+  const sidw = new Uint8Array(25);
+  const lineOf = () => Math.floor(t / LINE) % LINES;
+
+  // ---- the frames, as the beam draws them
+  const C64 = o.render === false ? null : globalThis.C64;
+  const keep = {};
+  let vm = null, live = false, frameIdx = 0, cur = null, lastCp = 0;
+  const done = [];
+  // from the first frame handed out on, memory is followed for the pictures
+  function goLive() {
+    if (live || (o.from === 'on' ? onAt < 0 : frameIdx < (o.from || 0))) return;
+    live = true;
+    if (C64) vm = C64.videoMemory(M, colour, { keep, frames: 4 });
+  }
+  function begin() {
+    goLive();
+    const f = vm ? vm.begin() : { mem: null, colour: null };
+    cur = { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: f.mem, colourMem: f.colour, keep, sid: [] };
+  }
+  begin();
+  // the lines the clock has passed (the raster latch set on the compare's) and the frames finished
+  function roll() {
+    const ln = Math.floor(t / LINE);
+    while (lastLine < ln) { lastLine++; if (lastLine % LINES === cmp) latch |= 1; }
+    if (vm) vm.at(t, cur.writes);
+    while (t >= (frameIdx + 1) * FRAME) { if (live) { cur.cp = lastCp; done.push(cur); } frameIdx++; begin(); }
+  }
+
+  // ---- the video chip's fetches (kit/c64/machine.js, dmaNext and dmaCatchUp): its next look at
+  // its registers, at cycle 12 or 55 of a line, or the start of its next hold on the processor
+  const dma = { at: -1, holds: [], bad: false, rows: [0, 0, 0, 0, 0, 0, 0, 0] };
+  function dmaNext() {
+    const d = dma;
+    if (d.at < 0) {
+      const c = t % LINE;
+      d.at = t - c + (c <= 11 ? 11 : c <= 54 ? 54 : LINE + 11);
+      d.bad = (vic[0x11] & 0x10) !== 0;
+    }
+    return d.holds.length ? Math.min(d.at, d.holds[0][0]) : d.at;
+  }
+  function dmaEvent() {
+    const d = dma;
+    if (d.holds.length && d.holds[0][0] === dmaNext()) {
+      const [first, last] = d.holds.shift();
+      t += last - first + 1;
+      return;
+    }
+    const ls = d.at - d.at % LINE, ln = (ls / LINE) % LINES;
+    if (d.at % LINE === 11) {
+      if (ln === 0) d.bad = false;
+      if (ln === 48 && (vic[0x11] & 0x10)) d.bad = true;
+      if (d.bad && ln >= 48 && ln <= 247 && (ln & 7) === (vic[0x11] & 7)) d.holds.push([ls + 11, ls + 53]);
+      d.at = ls + 54;
+    } else {
+      let hold = null;
+      for (let n = 0; n < 8; n++) {
+        if (!d.rows[n] && (vic[0x15] >> n & 1) && vic[1 + 2 * n] === (ln & 255)) d.rows[n] = vic[0x17] >> n & 1 ? 42 : 21;
+        if (!d.rows[n]) continue;
+        d.rows[n]--;
+        const first = ls + 54 + 2 * n, last = first + 4;
+        if (hold && first <= hold[1]) hold[1] = last;
+        else { if (hold) d.holds.push(hold); hold = [first, last]; }
+      }
+      if (hold) d.holds.push(hold);
+      d.at = ls + LINE + 11;
+    }
+  }
+
+  // ---- the clock: own of the processor's cycles spent, or the clock taken to limit, the video
+  // chip's holds added, and outside the handler an interrupt taken where it falls due
+  function spend(own, limit) {
+    for (;;) {
+      const e = dmaNext();
+      if (e <= t) { dmaEvent(); continue; }
+      roll();
+      if (!inIrq && !P.i && (latch & enable & 15)) { irq(); continue; }
+      if (own <= 0 || t >= limit) return;
+      const s = Math.min(own, e - t, limit - t, LINE - t % LINE);
+      t += s; own -= s;
+    }
+  }
+  const nextLine = () => t - t % LINE + LINE;
+  // in the handler, the clock brought up to the cycles it has counted so far (its take's 7 among them)
+  function sync() {
+    if (inIrq && P.hc > irqSpent) { const own = P.hc - irqSpent; irqSpent = P.hc; spend(own, Infinity); }
+    roll();
+  }
+  const takes = [];
+  function irq() {
+    inIrq = true; irqSpent = 0;
+    if (M[0x8F62] && lineOf() < 8) takes.push(Math.floor(t / FRAME));
+    P.irq();
+    sync();
+    inIrq = false;
+  }
+
+  // ---- the chips, as the port reaches them
+  const io = {
+    vicRead(r) {
+      r &= 0x3F; sync();
+      const ln = lineOf();
+      if (r === 0x12) return ln & 255;
+      if (r === 0x11) return (vic[0x11] & 0x7F) | (ln >> 8) << 7;
+      if (r === 0x19) return latch | 0x70 | ((latch & enable) ? 0x80 : 0);
+      if (r === 0x1A) return enable | 0xF0;
+      return vic[r];
+    },
+    vicWrite(r, v) {
+      r &= 0x3F; v &= 255; sync();
+      if (r < 47 && r !== 0x19 && r !== 0x1A) cur.writes.push([lineOf(), t % LINE + 1, 0xD000 + r, v]);
+      if (r === 0x12) cmp = (cmp & 0x100) | v;
+      else if (r === 0x11) {
+        cmp = (cmp & 0xFF) | ((v & 0x80) << 1); vic[r] = v;
+        if (!(v & 0x10)) offSeen = true; else if (offSeen && onAt < 0) onAt = frameIdx;
+        if ((v & 0x10) && lineOf() === 48) dma.bad = true;
+      } else if (r === 0x19) latch &= ~v & 15;
+      else if (r === 0x1A) enable = v & 15;
+      else vic[r] = v;
+    },
+    sidWrite(r, v) { sync(); r &= 0x1F; v &= 255; if (r < 25) sidw[r] = v; cur.sid.push(r, v); },
+    colourRead: (i) => colour[i & 0x3FF],
+    colourWrite(i, v) { colour[i & 0x3FF] = v & 15; },
+    ciaRead: (r) => ((r & 15) === 1 ? 0xFF : 0),   // no key held, no timer's interrupt
+    ciaWrite() {},
+    cia2Write(r, v) {
+      r &= 15; v &= 255; sync();
+      if (r !== 0 && r !== 2) return;
+      if (r === 0) pra2 = v; else ddra2 = v;
+      cur.writes.push([lineOf(), t % LINE + 1, 0xDD00 + r, v]);
+    },
+  };
+
+  // ---- the main program, to its next yield, and the clock moved on as it says
+  const P = GsIntro.create(M, io);
+  const prog = P.program();
+  let ended = false;
+  function step() {
+    const r = prog.next();
+    if (r.done) { ended = true; return; }
+    const y = r.value;
+    if (!y) spend(Infinity, nextLine());                  // a turn of a loop waiting for the interrupt
+    else if (y.cycles) spend(y.cycles, Infinity);
+    else if (y.cp) lastCp = y.cp;
+    else if (y.wait !== undefined && y.seen !== y.wait) {
+      // scroll_cells's loop, which reads the raster until it is on line $30 (or $130)
+      while (lineOf() !== y.wait) spend(Infinity, nextLine());
+    }
+  }
+  function next() {
+    while (!done.length) { if (ended) return null; step(); }
+    return done.shift();
+  }
+  return { next, takes, sid: sidw, P, M };
+}
+// end of gs-intro-run
+
 /* gs-shapes */
 // The shapes of the terrain file as the flight's listing holds them (W3.WE): the points table and
 // one record a shape. A point is an x value, a y value and a height, each a signed word in two
@@ -318,11 +1496,90 @@ function gsShape(ram, a) {
 }
 // end of gs-shapes
 
+/* gs-levels */
+const GS_MAPFRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[110,232,94,85,6,6,6,6,6,6,6,6,6,6,6,6,4,27,0,93,0,255,216,0,163,126,241,0,0,0,255,255,251,245,246,253,243,247,247,241,240,241,241,241,241,241,241],"cia2":[148,63],"cpu":[47,21],"writes":[[3,48,53266,16,16],[4,5,53263,16,16],[5,2,53254,24,24],[5,22,53251,0,0],[7,13,53266,80,80],[7,37,53263,48,48],[9,13,53254,28,28],[9,37,53251,2,2]],"colour":"BgYLCwMDCAgIAwgICAgLCwMJCQMPCAgICAgPDwgICAgICwsICwsGBgYGCwsJCQkDDwgDCA8PCwsJAg8PCAgIDwgICAgDCAsICAgICAsDBgYGBgkJAwgLCQkDCAkICQkJAwgDCAsLCAgLCw8ICwgDCAsLCAgLCwYGBgYIDw8ICwgPDwkJCAgIDw8PCAMLAggDCAgICwsPCAMLAggDCAgGBgYGDwgICAgIAwEPDwgICAsLCAsLCAgIDwgICAgICAsLDwgICAgIBgYGBggICA8ICAgICAgICAgICAgLCAgPDwgICAgLCAgICAgICAgLCAYGBgYICAgICwEICAsIAwgLCwgPCAsICAgICAsIAwgCAwgLCwMDCAgGBgYGCA8PAwgBDwsLDwgDCwsICAsLCAgICwsDDwgDDwgDCwsJCQkDBgYGBggLCwgLCwgDCAELCAMICAgLCwgLCwgDCAsLAwkDCAkJAwgLCQYGBgYICAsICwgPCAMICwsICAMICwgICAsPCAMLCwkPDwkIDw8ICwgGBgYGCwsICAsBCAsLCAsLCAsLCAgLCAgIDwgLCQkDCAgLCAsICAsLBgYGBgsLCAgLCwgLCAMICAgLAw8LCwgPDwgLCwIPDw8LCwgLCwgLAwYGBgYDCAgICwEPCAsIAwgICwsICwsICwgICwsICwsICwsPCAgICAgGBgYGCAgDAwgBCAsLDwgDCAgLCAsICAsLAwgICAsICAsDCAgICAsIBgYGBggICAgICAgLCwgLCw8ICAgICAgIAggICAgICAQIDw8ICAgLCwYGBgYICAgICwgICAgICAgICAgPCAgICAgICwgPCAgICAgICAMICwgGBgYGCAsLCAsLCAMICwsDAwgICAsICAsLCAsICAsLCAsLCAsBAQsBBgYGBggICwgLCA8IAwsLCQkJAwgLCwgLAwgLCwgEAwMECAgLAwgLCwYGBgYICAgLCwQJAwgECQMICwkJAwgJCAkDCAgEAwQLCwQJAwgDCAgGBgYGCA8PCwsJDw8JBA8PCAsIDw8JCQgICQkDDwQDCwsJDw8JCQkDBgYGBgkICQkJAwgLCwQICwgDBAgLCwMICAgLCQkDCAkJAwgLCwgLCQYGBgYJCAgIDw8DBAgPCwsPBAMDCAgICAMICwgPDwkIDw8ICwgICwgGBgYGCAsIDw8ICAgIBAsECAsLCAsLCAsICAsLCAgLCAsLDwgLCAMIBgYGBgMLCAgIAwgLCAQICAgLAwgLCAgLCwgLAw8LCwgLCAgLCw8IAwYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg==","ram":[{"a":49664,"b":"0N3KENqm/r24xBhlv2mAhaa98MOFpaX9KfwKkALmphhlpYWlkALmpqX9KQOF/QoKChhpCo3FwqnDaQCNxsKt"},{"a":51416,"b":"////4OXq5f8="},{"a":51432,"b":"////A1OrU/8="},{"a":51456,"b":"//////////8AAAAMPwwAAA=="},{"a":51488,"b":"AAwMDAwMPwAAADAMAww/AAD/z8/Dw8P/MDw/PDAwMAA="},{"a":51528,"b":"AAwMDAwMPwAAADAMAww/AA=="},{"a":51560,"b":"AAAADD8MAAA="},{"a":51584,"b":"w5mRiZmZw//n58fn5+eB/8OZ+fPPn4H/w5n54/mZw//58eGZgPn5/4Gfg/n5mcP/w5mfg5mZw/+BmfPn5+fn/8OZmcOZmcP/w5mZwfmZw/8="},{"a":51688,"b":"/+Hl6+Xh//8="},{"a":51712,"b":"AAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAD8/Pz8/AAAKDg8DAAAAALj8sAAAAAAAAAAAAAAAAAIAAAAAACCqr8DAMDAwDAwMAAAAAAAAAACr+z8/AAAAAIyDgwMAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAIKiorCwAAAAAAwODwDAMAAAAAAAAKAsAwDAwDA7DgwAAAAAAAADw8PDw8PAAAAAAAAAACCgAAAAA8v6+qAAAAAAAAAAAKDg8DAAAAALzs8AAAAAAAAAAAAMAwMAwAAAAAAAwrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDwAAAIAAAAD/AAAADAwMDAwMDAwAAAAAAAAoqwAAAAAAAACADAwMDAwMDAyqKwsCAAAAALDg8MAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAEQQAAAAAAEBAEBAQEAAAAAAAAAAAAAAAAAAAAAAEAQEAAAAguAAAAEAQEBAFAAAAAAAAAACvOAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAAAAAAAVAAAAAAMDAwNVAPz88PDw8BBAAAAAAAAAAAAAAAIKK64AAAAAgLDw8AAAAAAAAAAAr7u+MAAAAACwwAAAAAEBBAEBAVRAAAAAAAAABQQQEEAQEBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDw8PDw8AAAAAwMDAwAAAAAAAAAAAAFHAwDAwDAwDVwAAAAAAAABUBQAAAAAAAAAAAAAAAAAAAMEwMDAwMDAwAAAAAMAwMAwAAAAAAAgrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDAMDAIAAAAAAAADAAAA8PDw8AAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAACqKwoCAAAAAMDAgAAAAAAAAAAAAAAAAAAAAAADAwwMDMDAwAAAADAwAAAAAAAAAwMwMDDAwMAAAAAAAAAAAAAAADw8PDw8PAAAAAMDMzMDDDDAAAADPMAAAAAAA/wAAAAMMDDAAAAAAMDAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA88MM8AAAAMAAAAAAAAAAAAAAPDw8PAAAAAAAAAAAAwAAAAADDDDAAAAAAAAAAADPzAwMDAMDAwAAAAAAAAAAAAAD/AAAAAADPMAAAAAqqgAAAAAAAADAAgIDAwAAAAD/v7jggAAAAAAAAAAAAAAAAAAA/wAAAAAAAADwDAMDAAAAAAAAAADAAA8PPz8/Dw8AAAAAAAAAADAMDAMAAAAAAAAA/wAAAAIAAAD/AACgqgAAAP8AAAAAAgAAAAAAAACruz4OAAAAAICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8/Pz8/Pw8AAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqrqwAAAIDwwIDADAwMDAwMDAyvrDAAAAAAAAAAAAAAAAAAAAAAAAIKKqsAAAAAgLDwsDAwMDAwMDAwr7u+IAAAAADgwAAAAAAAADAwMDAwMDAwAAAAAAAAAwMAAAMMMMAAAMDAAAAAAAAADAwMDAwMDAwDAw8PDwMDAPDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAADAwMDAAAAAAAADDDDAAAAAAP8AAAADAwwM8AAAAAAAAAAAAAAAAAAAQAAAOAAAGAAAGAAAFAAAEgAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":58240,"b":"CQMICwkICwgJAwgPDwkLCwMLCwkJCQMIDw8JCAkJCAgICwsICAgPCAgICAMICwgICwsDCAgICAMPCAgICAgI"},{"a":59392,"b":"Gx2Oj5B8fX709fbu7/COj5CUlZbExcbQ0dL6+/zW19igoaJSU1QbHTEykZKTf4CB9/j58fLzkZKTJJiZx8jJ09TV/f7/2drbo6SlVVZXMTIbHZSVloKDhIiJipqbnJSVlvT19ujp6lhZWmRlZvT19ujp6lhZWhsdMTGXmJmFhoeLjI2dnp+XmJn3+PnrKu1bXF1naGn3+PnrKu1bXF0xMRsdxMXG0NHS3CbeuLm6oKGiTE1O7u/wxMXG1tfYamtsuLm61tfYGx0xMMfIydPU1d/g4bu8vaOkpU9QUfHy88fIydna221ub7u8vdna2zEwGx3u7/BYWSFAQUL09fbo6epkZWa+v8DKy8z09fYq9faOj5B8fX4bHTA58fLzW1whQ0RF9/j56+ztZ2hpwcLDzc7P9/j59/j5kZKTf4CBMDkbHV5fYExNTvT19iGtrrKztExNTl5fYPT19o6PkIiJipSVloKDhBsdMDhhYmNPUFH3+PmvsLG1trdPUFFhYmP3+PmRkpOLjI2XmJmFhocwOBsd6OnqrK0mTE1OWFla4uPkQEFC7u/wZGVmlJWWQEFCrK2uUlNUGx0wN+vs7a+wsU9QUVtcXeXm50NERfHy82doaSSYmUNERa+wsVVWVzA3Gx2ys7RYWSFkZWb09fZeX2BMTU5wcXJYWVpMTU5SU1TExcbW19gbHTA2tba3W1whZ2hp9/j5YWJjT1BRc3R1W1xdT1BRVVZXx8jJ2drbMDYbHb6/wNbX2GprbHZ3eLi5utDR0r6/KtbX2NDR0iHd3qanqExNThsdMDXBwsPZ2tttbm95enu7vL3T1NXBwsPZ2tvT1NXf4OGpqqtPUFEwNRsdXl9gTE1O9PX2jo+QfH1+rK2u4uPkrK2uUlNUWFlaUlMhIa0mGx0wNGFiY09QUff4+ZGSk3+Aga+wseXm56+wsVUhV1shXVVWV6+wsTA0Gx3u7/COjy2IiYohlZaCg4SIiYqam5x8fX4q9S2Ojy2IiYp8fX4bHTAz8fLzkZKTi4yNJJiZhYaHi4yNnZ6ff4CB9y35kZKTi4yNf4CBMDMbHZqbnJSVllhZWilBQvT1LVhZWrKztIKDhIiJipSVlkxNToKDhBsdMDKdnp+XmJlbIV1DREX3LflbXF21treFhoeLjI2XmJlPUFGFhocwMhsdRkdI+vv81tfYJaEhUlNUTE1OcHFyUlNUQEFCTE1OZGVm9PX2Gx0wMUlKS/3+/9na2yekpVVWV09QUXN0dVVWV0NERU9QUWdoaff4+TAxICAwMT0wMj0wMz0wND0wNT0wNj0wNz0wOD0wOT0xMD0xMT0xMj0gIA=="},{"a":60408,"b":"t0D9344I3z8="},{"a":60864,"b":"AYAAAYAAAYAAAYAAAYAAAAAA/D+AAAAAAYAAAYAAAYAAAYAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":63424,"b":"l11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGC"},{"a":65344,"b":"//8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/"},{"a":65535,"b":"lw=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19657,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":823,"colour_cells_changed_during_frame":0}};
+const GS_THEATRES = [{"id":"tn","name":"Flight training in the USA","b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMFAgoVGggKIBgFAQAAAAACIBEMFxkSBRMXGhgAAAAAEA0NCwUBBgQfAR8dAAAAAAkCChsKGxYaGRsVEQAAAAAWEQQFAR8cHwMBFxgAAAAAFhoZFQgbFhoIGxURAAAAAB4MDRANDx4DBAUGAQAAAAAQCwMcBQ4QDQ8DCQMAAAAAHgQfCQMEHgwLBB4BAAAAAB0TAR4CIBEODQ0QDwAAAAAXCBURBgUDHwMHFA4AAAAAHwEXGRYaCBsgGhEDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzDwMMAAAADDMzPzMAAAA8MzwzPAAAAAwzMDMMAAAAPDMzMzwAAAA/MDwwPwAAAD8wPDAwAAAADzAzMw8AAAAzMz8zMwAAAD8MDAw/AAAAPwMMDAwAAAAzMzwzMwAAADAwMDA/AAAAMz8/MzMAAAA8MzMzMwAAAAwzMzMMAAAAPDM8MDAAAAAMMzM8AwAAADwzPDMzAAAADzAMAzwAAAA/DAwMDAAAADMzMzM/AAAAMzMzDAwAAAAzMz8/MwAAAAwzDDMMAAAAMzMMDAwAAAA/AwwwPwAAAP///+Dl6uX/AAwADAAAAAD///8DU6tT/wAAPAAAAAAAAAAAAAAAAAD//////////wAAAAw/DAAAAAAAMwwzAAAAAAAAPDwAAAAMDAwMDD8AAAAwDAMMPwAA/8/Pw8PD/zA8PzwwMDAAADzDw8P//zwADAwMDAw/AAAAMAwDDD8AAAAwDAMMPwAA/8/Pw8PD/wAAAAw/DAAADAwMAAwAAAAMDAwMDAAAAMOZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP/DDMDDD8AAAA8Aw8DPAAAAAMzMz8DAAAA/+Hl6+Xh//8/MDwDPAAAAA8wPDMMAAAAAAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAD8/Pz8/AAAKDg8DAAAAALj8sAAAAAAAAAAAAAAAAAIAAAAAACCqr8DAMDAwDAwMAAAAAAAAAACr+z8/AAAAAIyDgwMAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAIKiorCwAAAAAAwODwDAMAAAAAAAAKAsAwDAwDA7DgwAAAAAAAADw8PDw8PAAAAAAAAAACCgAAAAA8v6+qAAAAAAAAAAAKDg8DAAAAALzs8AAAAAAAAAAAAMAwMAwAAAAAAAwrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDwAAAIAAAAD/AAAADAwMDAwMDAwAAAAAAAAoqwAAAAAAAACADAwMDAwMDAyqKwsCAAAAALDg8MAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAEQQAAAAAAEBAEBAQEAAAAAAAAAAAAAAAAAAAAAAEAQEAAAAguAAAAEAQEBAFAAAAAAAAAACvOAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAAAAAAAVAAAAAAMDAwNVAPz88PDw8BBAAAAAAAAAAAAAAAIKK64AAAAAgLDw8AAAAAAAAAAAr7u+MAAAAACwwAAAAAEBBAEBAVRAAAAAAAAABQQQEEAQEBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDw8PDw8AAAAAwMDAwAAAAAAAAAAAAFHAwDAwDAwDVwAAAAAAAABUBQAAAAAAAAAAAAAAAAAAAMEwMDAwMDAwAAAAAMAwMAwAAAAAAAgrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDAMDAIAAAAAAAADAAAA8PDw8AAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAACqKwoCAAAAAMDAgAAAAAAAAAAAAAAAAAAAAAADAwwMDMDAwAAAADAwAAAAAAAAAwMwMDDAwMAAAAAAAAAAAAAAADw8PDw8PAAAAAMDMzMDDDDAAAADPMAAAAAAA/wAAAAMMDDAAAAAAMDAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA88MM8AAAAMAAAAAAAAAAAAAAPDw8PAAAAAAAAAAAAwAAAAADDDDAAAAAAAAAAADPzAwMDAMDAwAAAAAAAAAAAAAD/AAAAAADPMAAAAAqqgAAAAAAAADAAgIDAwAAAAD/v7jggAAAAAAAAAAAAAAAAAAA/wAAAAAAAADwDAMDAAAAAAAAAADAAA8PPz8/Dw8AAAAAAAAAADAMDAMAAAAAAAAA/wAAAAIAAAD/AACgqgAAAP8AAAAAAgAAAAAAAACruz4OAAAAAICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8/Pz8/Pw8AAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqrqwAAAIDwwIDADAwMDAwMDAyvrDAAAAAAAAAAAAAAAAAAAAAAAAIKKqsAAAAAgLDwsDAwMDAwMDAwr7u+IAAAAADgwAAAAAAAADAwMDAwMDAwAAAAAAAAAwMAAAMMMMAAAMDAAAAAAAAADAwMDAwMDAwDAw8PDwMDAPDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAADAwMDAAAAAAAADDDDAAAAAAP8AAAADAwwM8AAAAAAAAAAAAAAAAwMDAwMDAwMDAgICAgICAQEBAAAAAAABAQIDBAUGCAsPFBskMEBVcnBxc3R2d3l6fH1/gIKDhYaIiYuNAwgICAgICw8LCwgLCAMLCAgLCwgLCAgLCwgLAwgLCwMICAgLCwgICw8ICwgLCwgLCwgICAgLCAgLCwgLCwgICAMICAkJAwgLCQgLCAkDCA8PCQsLAwsLCQkJAwgPDwkICQkICAgLCwgICA8ICAgIAwgLCAgLCwMICAgIAw8ICAgICAgICAgICA8ICAgICAgICwsLAwgICA8ICAgICAgLCAMIDwgICAgLCwgLAwsLCAsLCAgICAgPDwgDCA8IAw8PCAgIA29vbwAAAHyENDxEVF50hIGOJCw0PERQXn58kKShrISsxMDARFSsb8DAzMygvJScMERBPDxMVE6QpLRAQFSwrLxEVKQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcHBwAAAAJCQ0NDQsLiwwLy5EREREREA+Qjw8QD9ETFBMTFRgZGRwbHRsdHx8lIycoJ+ktLS0rqy0tLzExMS8wMzM1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoKDM0NDU2Nzg4OUJDQ0RERUZISElKSktYW1xcXGRla3d8fH19ioyZmqOkpKS0tbW1ubq7xMTFy8vM1NXaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAECAQEBAAECAAABAAEBAgABAAABAAEBAAECAQAAAAECAAEAAQEBAAABAgAAAQIBAQEBAgIAAgACAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAAAAAA2BIZFRETEhERERERExITEhIRERkRHR0ZEREdERExMRk2ERHXFREZEhQRHR0aGR0dHRISEhERERHWFBERGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"id":"se","name":"1st Cavalry in Southeast Asia","b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABkEGgEbERAKHRASAQAAAAAcGwMRHRQNEwkYESAAAAAAAg8QFBwZDAsMEBQYAAAAABwGHhsYAR8TCBYcAgAAAAABBRUcAxsEDB4YAxsAAAAAGxcdARgEBwgcGwQeAAAAABwEHBEgAwsVAg8dIAAAAAACEh4XDx0KEhwRIAEAAAAAGBcdEBQcDBcQFAMYAAAAABkaARkaAR8OCRsZAgAAAAABIBweAwUeGR8OEwkAAAAABBsCHAQRIBoDBB8IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzDwMMAAAADDMzPzMAAAA8MzwzPAAAAAwzMDMMAAAAPDMzMzwAAAA/MDwwPwAAAD8wPDAwAAAADzAzMw8AAAAzMz8zMwAAAD8MDAw/AAAAPwMMDAwAAAAzMzwzMwAAADAwMDA/AAAAMz8/MzMAAAA8MzMzMwAAAAwzMzMMAAAAPDM8MDAAAAAMMzM8AwAAADwzPDMzAAAADzAMAzwAAAA/DAwMDAAAADMzMzM/AAAAMzMzDAwAAAAzMz8/MwAAAAwzDDMMAAAAMzMMDAwAAAA/AwwwPwAAAP///+Dl6uX/AAwADAAAAAD///8DU6tT/wAAPAAAAAAAAAAAAAAAAAD//////////wAAAAw/DAAAAAAAMwwzAAAAAAAAPDwAAAAMDAwMDD8AAAAwDAMMPwAA/8/Pw8PD/zA8PzwwMDAAADzDw8P//zwADAwMDAw/AAAAMAwDDD8AAAAwDAMMPwAA/8/Pw8PD/wAAAAw/DAAADAwMAAwAAAAMDAwMDAAAAMOZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP/DDMDDD8AAAA8Aw8DPAAAAAMzMz8DAAAA/+Hl6+Xh//8/MDwDPAAAAA8wPDMMAAAAAAAAAAICAwIgKKqu6quq6wAAAADAsPyrAAAAAAAAAACqKwoLAAAAAO74oIAAAAAAAAAAAAAAAAAAAgIKCiorq4CgqLjq77u+AAAAAAAAAACru7q6qKCAAOu84MAAAAAAAAAAAAAAAAAAAAAAAACAqAAAAAAAAAAAAAAAAAAAAACuu7AAAAAAAIAAAAAAAAAAADw8PDw8PAIAAAAACD666wAAAAAAAADAAgAAAAAAAACqqioKAAAAAMDAAAAAAAAAAAAAAAEBAQQQEEBBBBBAAAAAAEAAAPDwAQAAAAAAAAAAUAQEAQEEEPDwAAAAAAAAAAAAAAAAAAAQEBAEEEBAEAAAAAAAAAAAAAAAAAAAAAAQEAQEEEAQEAAAAAAAAAAAAAAAAAAAAAAwDAMDAAAIKgAAAADAMAwDAgAAAAAAAACuuysCAAAAAADAwIAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAPz8wDAMAwAAAAAAAAAAwMAwMPz8/PwAAAAAAAAAAww8zAwwMMAAAAAAAAAAAAAAAAAADAMAAAAAAAAAAMAwAAAAAAAAwPD8/PwwAAAAAAAAAUEwMDA1MXAwMBBAUEQEAQEBFAAAAAAAAAAwMDAwMDAwMAAAAAAAAAAAPDw8PAwAAAAwMDAwMDAwMAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwMAAA/Pz8/AAAAAAAAAAAAA8wMDAwMDAyMgAAAAAAAKCqDw8PDwAAAAAyMjIwMDAwMO647AAAAAAAAAAABQUFAP8wMDAwMDAw/wAAAAAAAAD/AAAAAAMDAwMAAPz84ODg4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PgAAAAAAAACAwDAMAwAAAAAqKAD/AAAAAAMMMMAAAAAAAAAAAAAABVAUBBRVVBQQVQAAEEAAABRBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAABBEAQAAAAAAAABFFAAAAAAAAAAAAQQQAAAAAFAAAAAAAAAAAAAAAAAAAAEQFBEEBBBAAAAAAEAQEAQBAAAAAAAAAABAQBAQEAQEEAAAAAAAAAAAAAAQVEFAQEAQEEBAQAAA/AAAAAAAAAAAAAMDAwMAAAD88PDw8AAAAAAAAAAAAAAAAABQUFMDAP8wMDAMDAMA/wAAAAAAAMD/AAAAAAAAAAAwMDAwMDAwMAAAAAAAAAAAAAAAAAAAAAAAAAAAOC667wAAAAAAAICAQEAQEAQEAQCqqioKAABAEODgoKAAAAAAAAAAAAMDAwMAAAAA/AMwMwAAAAAA8DAwAwMDAwMAAAAAPDwA/wAAADAwMDDwAAAAAAAAAA8MDAwAAAAAwD8AwwAAAAAAwDAwDAwMDwAAAAAMMAD/AAAAADAwMPAAAAAAAAAAAAAAAgIAADAwAACoqgAA/Pz8/ACAAAAAAAAAAADuugAAAQEEEMEBBBBAAAAAAAAAAAAAAAAAAAAAADAwAAAAAAAAAAAAAAAAPDw8PABQUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/AAAAAAAAAAAAAAAAAMDDw8PDwAA8PDAwMDAAAA8PDw8AAAAAAAAAAAAAAAAAFBQUAAAAAAwPD8/PwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/AAAAAAABAQEEEAAAAAAAAAABQAAAAAAABBFQBAFAAAAAAAQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAKqgAAAAAAAAAAAAAAAAAAAAC77jsOAAAAAICA4OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/DAAAAAAAAAAAAAAAAAMAAMMMAMMMMDAAAAAAAAAAAAAAUQAAAAAEEMDAAAAAAAAAAAAEAAAFBQUAAAUFBQAAAAAAAAAAAAAAAAAAwMDAwMDAwMDAgICAgICAQEBAAAAAAABAQIDBAUGCAsPFBskMEBVcnBxc3R2d3l6fH1/gIKDhYaIiYuNDw4ICAsLCw8LCwsLCwsLCw8LCw8LCw8LCw8LCwsLDw8PDw8PDwsLDw8ICAsLCw8PDwgIDwgICAgIDwgICAsICw8IDwsIDw8IDw8ICwgICA8PDwgLCwgICA8PDwsLCwsLCwsLCw8PDw8PDw8PDw8PDwgICAgICAsLCwsLCwEBAQEBAQEBAQEBAQ8IDwsLCw8IDw8OAg8PDw8PDwsLCwsPDwsPDw8ICA8PDwICDwsLCwsLCw8LCwsLCwcHBwAICAgICA4OAUBAQAAAAFxqdISQoJ+w0DxaetAsPDxMXGBqfICQnLSwxDQ6RD5AQGyKnJq0sDRARFxkjKw0OlxwipSOkKysHESEqrTAHCAwPECUpCAkICwwNDA0SlRPf4CUn7q/wCw0lI/AzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAX19fAAAALCw0LDA0LzAwRDw8QExUTFBUUExMTFBQVE9UXFxkYV9gYFxkXGRgbGx0dHRwcIR8hIR8hIGAhHyUlJCMjJCkoKScnJykrLS0rLSwsLSstK+vrLSvrK+0xMDEv8C/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2Nzc4OTo6Oz1ERkhNU1RUVVZWV1hYWVpbW1xjZGRkZGRnaWpqa2tzdHR2dnl7g4SGh4mJiYmLi5KUmJubnKKio6SkqaqysrKzs7Ozs7W1tbi4ubq8vLzDw8nJzM0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQICAgAAAAIAAAEAAAIBAAIBAAEEAgEAAQIDBAAAAAMBAgIBAgABAAAAAAABAAECBAABAAIBAAECAAIDAAECAQECBAABAgMEAAIDAQIBAgADBAABAgMBAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAAAAAAAgUCCDAxMDAwUgIyMFIyU1ILMAICMDAxMTAyAjEyMDYwAjIyNgIwAgIFCwIxAgICCwMxMjAwAwICkgMDCzALMDCSkgICAgUIBQILBwMLBQcCMAIwCwcICwgFBzAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"id":"ca","name":"82nd Airborne in Central America","b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEaGB4fCR4aAREUAgAAAAASHgQDGQwEAxsGAwcAAAAAFxASHAILERAdFAcIAAAAAAIWFx0QChQbAhkMHgAAAAAJHB4cBwgYARoHCBgAAAAAHw4NDggZAhkDCxkCAAAAABgbDBoEBhwYBAwPHgAAAAAHDggEAxEdEA8KFBgAAAAAChAPHRAUHAIGHw4JAAAAAAseFxIeGxUYER0aHwAAAAAMFhwXEhwbHhcSGwIAAAAAHwkCGwYCBAIbBgEZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzDwMMAAAADDMzPzMAAAA8MzwzPAAAAAwzMDMMAAAAPDMzMzwAAAA/MDwwPwAAAD8wPDAwAAAADzAzMw8AAAAzMz8zMwAAAD8MDAw/AAAAPwMMDAwAAAAzMzwzMwAAADAwMDA/AAAAMz8/MzMAAAA8MzMzMwAAAAwzMzMMAAAAPDM8MDAAAAAMMzM8AwAAADwzPDMzAAAADzAMAzwAAAA/DAwMDAAAADMzMzM/AAAAMzMzDAwAAAAzMz8/MwAAAAwzDDMMAAAAMzMMDAwAAAA/AwwwPwAAAP///+Dl6uX/AAwADAAAAAD///8DU6tT/wAAPAAAAAAAAAAAAAAAAAD//////////wAAAAw/DAAAAAAAMwwzAAAAAAAAPDwAAAAMDAwMDD8AAAAwDAMMPwAA/8/Pw8PD/zA8PzwwMDAAADzDw8P//zwADAwMDAw/AAAAMAwDDD8AAAAwDAMMPwAA/8/Pw8PD/wAAAAw/DAAADAwMAAwAAAAMDAwMDAAAAMOZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP/DDMDDD8AAAA8Aw8DPAAAAAMzMz8DAAAA/+Hl6+Xh//8/MDwDPAAAAA8wPDMMAAAAAAAAAAICAwIgKLqru6uu6wAAAADAsOy/AAAAAAAAAACuKwoLAAAAAO74sIAAAAAAAAAAAAAAAAAAAgIKCi4rq4Cg6Li667u+AAAAAAAAAACrv7uu7KCAAOu84MAAAAAAAAAAAAAAAAAAAAAAAACAqAAAAAAAAAAAAAAAAAAAAACuu7AAAAAAAIAAAAAAAAAAADw8PDw8PAIAAAAACC7quwAAAAAAAADAAgAAAAAAAACqrisKAAAAAMDAAAAAAAAAAAAAAAEBAQQQEEBBBBBAAAAAAEAAAPDwAQAAAAAAAAAAUAQEAQEEEPDwAAAAAAAAAAAAAAAAAAAQEBAEEEBAEAAAAAAAAAAAAAAAAAAAAAAQEAQEEEAQEAAAAAAAAAAAAAAAAAAAAAAwDAMAAAAIKgAAAMAwDAMDAgAAAAAAAACuuysCAAAAAADAwIAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAPz8wDAMAwAAAAAAAAAAwMAwMPz8/PwAAAAAAAAAAww8zMwwMMAAAAAAAAAAAAAAAAAADAMAAAAAAAAAAMAwAAAAAAAAwPD8/PwwAAAAAAAAAUEwMDA1MXAwMBBAUEQEAQEBFAAAAAAAAAAwMDAwMDAwMAAAAAAAAAAAPDw8PAwAAAAwMDAwMDAwMAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwMAAA/Pz8/AAAAAAAAAAAAA8wMDAwMDAyMgAAAAAAAKCqDw8PDwAAAAAwMDAwMDAwMO647AAAAAAAAAAABQUFAP8wMDAwMDAw/wAAAAAAAAD/AAAAAAMDAwMAAPz84ODg4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PgAAAAAAAACAwDAMAwAAAAAqKAD/AAAAAAMMMMAAAAAAAAAAAAAABVAUBBRVFBAQVQAAEEAAABRBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAABBEAQAAAAAAAABFFAAAAAAAAAAAAQQQAAAAAFAAAAAAAAAAAAAAAAAAAAEQFBEEBBBAAAAAAEAQEAQBAAAAAAAAAABAQBAQEAQEEAAAAAAAAAAAAAAQVEFAQEAQEEBAQAAA/AAAAAAAAAAAAAMDAwMAAAD88PDw8AAAAAAAAAAAAAAAAABQUFMDAP8wMDAMDAMA/wAAAAAAAMD/AAAAAAAAAAAwMDAwMDAwMAAAAAAAAAAAAAAAAAAAAAAAAAAAOC667wAAAAAAAICAQEAQEAQEAQCrrioKAABAEODgoKAAAAAAAAAAAAMDAwMAAAAA/AMADAAAAAAA8DAwAwMDAwMAAAAMPDwA/wAAADAwMDDwAAAAAAAAAA8MDAwAAAAAwD8AMAAAAAAAwDAwDAwMDwAAAAAwAAD/AAAAADAwMPAAAAAAAAAAAAAAAgIAADAwAACoqgAA/Pz8/ACAAAAAAAAAAADuugAAAQEEEMEBBBBAAAAAAAAAAAAAAAAAAAAAAAwMAAAAAAAAAAAAAAA8PDw8AAAUFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/AAAAAAAAAAAAAAAAAMDDw8PDwAA8PDAwMDAAAA8PDw8AAAAAAAAAAAAAAAAAFBQUAAAAAAwPD8/PwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/AAAAAAABAQEEEAAAAAAAAAABQAAAAAAABBFQBAFAAAAAAAQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAKqgAAAAAAAAAAAAAAAAAAAAC77jsOAAAAAICA4OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/Pz8/DAAAAAAAAAAAAAAAAAAAAMMMAMMMMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwMDAgICAgICAQEBAAAAAAABAQIDBAUGCAsPFBskMEBVcnBxc3R2d3l6fH1/gIKDhYaIiYuNDw+YiAsLCw8LCwsLCwsLCw8LCw8LCw8LCw8LCwsLDw8PDw8PDwsLDw8ICAsLCw8PDwgIDwgICAgIDwgICAsICw8IDwsIDw8IDw8ICwgICA8PDwgLCwgICA8PDwsLCwsLCwsLCw8PDw8PDw8PDw8PDwgICAgICAsLCwsLCwEBAQEBAQEBAQEBAQ8IDwsLCw8IDw8OAg8PDw8PDwsLCwsPDwsPDw8ICA8PDwICDwsLCwsLCw8LCwsLCwEBDwEICAsLCAgICMrKygAAADxETHBvhHq6xBwkLERqhJSstLrEHBwsPGyktDxcZGy61MoqNFRgnKSgvDRETGRqdG9wkJqsxMBATFRQjJSkrrzMPFRkaoCMnKwkLDQ8THqANExceoAuOmpwlKzATKzQzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATExMAAAAJCQkJB8kHBwkMCw0NCw0NCw0MDREQERAPEREUFRUTExUTFxkZGRcYGBgdGxwdGx0b3R0cGx0dIB8gICEhISEfISQlJSMjJSMjKCkpJycnKC0sLSsr8G8vMDEwL/QzMzPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkJCUnJygoLCwyMjM0Nzg5Ozs8PEJCQ0RHSktUVlZXXF1dY2NlZmpqamxzdHV2d3d3d3l6e3x8hIWFhYmJiouMjZSVlpeYmZqboqOjpKWoqLO1tri4w8THx8nLzNXb3d0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAECAgMAAQABAAAAAAIAAQACAAEAAAACAQEAAQAAAgMAAgIBAAIDAAEBAAEAAgMEBAAAAgQCAAIDAAEAAQEAAAACAAEAAQABAAEBAAABAgAAAAMCAAABAgABAAABAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAAAAAACwICMTAyNgUCAgsCAjICAgJSC1IxMgICAgVSMgICAjIyNjIBAQEFCwdSAgEDCQEFBggICwIFCAEFCwcLApKTAgICAgIDAgKSkgMCAgICMjEyAgIxNjAyMjEyAgUCAgkGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"id":"me","name":"101st Air Assault in Middle East","b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEBx8FBgQDBR8NHwAAAAALEwsFDAkTAQcPCwsAAAAACx8HCwoWGA8NHw0fAAAAAAcNHw8OFAYHDwsfCwAAAAANDxcIFRkWCAobIA0AAAAAHwcNHx0DHAUPDQ8fAAAAAA0PHw8GBAkMCx8LDQAAAAALCwsFCQ0UBR8PDQ8AAAAADRsSDxQMEB8NDwsfAAAAAAIVGRURAxwLDwcPDQAAAAAXER8XCBsWGhgLDR8AAAAAHw0PBw4HHgEdCx8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzDwMMAAAADDMzPzMAAAA8MzwzPAAAAAwzMDMMAAAAPDMzMzwAAAA/MDwwPwAAAD8wPDAwAAAADzAzMw8AAAAzMz8zMwAAAD8MDAw/AAAAPwMMDAwAAAAzMzwzMwAAADAwMDA/AAAAMz8/MzMAAAA8MzMzMwAAAAwzMzMMAAAAPDM8MDAAAAAMMzM8AwAAADwzPDMzAAAADzAMAzwAAAA/DAwMDAAAADMzMzM/AAAAMzMzDAwAAAAzMz8/MwAAAAwzDDMMAAAAMzMMDAwAAAA/AwwwPwAAAP///+Dl6uX/AAwADAAAAAD///8DU6tT/wAAPAAAAAAAAAAAAAAAAAD//////////wAAAAw/DAAAAAAAMwwzAAAAAAAAPDwAAAAMDAwMDD8AAAAwDAMMPwAA/8/Pw8PD/zA8PzwwMDAAADzDw8P//zwADAwMDAw/AAAAMAwDDD8AAAAwDAMMPwAA/8/Pw8PD/wAAAAw/DAAADAwMAAwAAAAMDAwMDAAAAMOZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP/DDMDDD8AAAA8Aw8DPAAAAAMzMz8DAAAA/+Hl6+Xh//8/MDwDPAAAAA8wPDMMAAAAAAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAAAAAAAAAAAKDg8DAAAAALj8sAAAAAAAAAAAAAMDAwMAAAAAAKCo6sDAwMDAMDAMAAAAAAAAAAD+Og8DAAAAAAyDg4OAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAADC8rCgAAAAAAAMCwDAMAAAAAAAAKAsAwDAMAAKCggAAAAMAwAAAAAAAAAAAAAAAAAAACCwAAAAAAoLCwAAAAAAAAAAAKAgAAAAAAALDAwIAAAAAAAAAAAMAwMAwAAAAAAAAMKwAAAAAAAADAAwAAAAAAAAAKwMAwDwAAAAAAAAD/AAAADAwMDwwMDAwAAADwAAAqqgAAAAAAAAAADAwMDAwMDAwrKwwIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgKCw4AAAAAAIC8qwAAAAAAAAAAAgAAAAAAAADvLwsCAAAAAAAAgMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIKK64AAAAAgLDg+AAAAAAAAAAAr7u+MAAAAACwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMAAAAAAAAAAMAwDAMAAAAAAAAAAMAwAg4rCg8CAADAwMDAAAAAADAwMDAwMDAwAAAAAMAwMAwAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAwMAwDAMDAAAAAAAAAADAAAAAAAAAAAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAAAqKwoCAAAAAMDAgICAAAAAAAAAAAAAAwwAAAMMMMACCjDAAAAAAKCgDAwMDAwMDAwOKzo7LzwAALCwwMAAAAAAAAAAAAAAAAAAAAADAwwMPzDAwAADDPAAAAMMMMAAAADwBQUAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA8wMM8AAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDDDAAAAAAAAAAAAPDAwMAwMAAAAAwAAAAMDAAAAD/AAAAAADPMAAAAAqqsAAAAAAAACAAgIDAwAAAAC++7zgwAAAAAAAAAAAAAAAAAAA/wAAAAAAAADAMAwDAAAAAAAAAADAAAAAAAAAAAAAAAUFAAAAADAwMDwzMDAwAAAA/wAAAAAAAAD/AAAoqgAAAP8AAAAAAAAAAAAAAAArDgAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqruwAAAIDwsODADAwMDAwMDAyvu6yw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAAAAAAwwAAAMMMMAAADDAAAAAAAAADAwMDAwMDAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADDDDAAAAAAP8AAABTUwzwAAAAAAAAAAAAAAAAAwMDAwMDAwMDAgICAgICAQEBAAAAAAABAQIDBAUGCAsPFBskMEBVcnBxc3R2d3l6fH1/gIKDhYaIiYuNCw4LCA4LCwgLCwsLCAgLCAgLCwgLCwgLCwsLCwgLCwsLCwgLCwgICwgLCwsLCwgLCwgICAgICAgLCwsLCwgICAgICAgICAsLCAgLCwgICAgICAsLCAsLCAsLCwgLCwgICAsLCAgLCwgICAgICAgICAsLCwgLCwgICAgLCwsICAgICAgICAgICAgICAgICAgICwsLCAgICAgICAgICAsLCAgICAgICAgLCwgLCwsLCAsLCAgICAgICAsICAgICAgICAgICLCwsAAAAExOdKSiYGB8fHBgbHSEfrREUExMYG6AgJy0sERAPExsgJSShJCkxGBkdHyEnrSuXGSktLCurLRQXGRgXJSeNDA+VGBcXG6AgHySjLAwLFx8hH6AnKCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAX19fAAAAJCIkJCI0LDQwQExUVFRSTFxkZFxkYmRgYGRgdHBsbGxsdHKEhHx8lIyMlJSSlI6kpJykoJ6cnLS0tLCstK7EwMK8xMS8vsTAxMK8wNDMzMzUztDQzNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgIAAAAAAAAAAAAAlJScqKjY2ODhHVldXWFhbZGVlZWZnaGhqa2t0dHR1d3h5eYiJioyWlpeYmJqbm6amqqurq6urtba2tra5usPDxMXGxsbHyMjIycnL09PW2NjY2Nra2wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAABAAIAAgECAAEAAQMBAAECAAEAAQEAAgABAgMAAAABAQADAwADAwABAQEDAAEDAQIDBAUAAAECAwADAQIBAQABAgMAAQIAAgEBAgEAAQIDAAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAAAAAACgQCMTEBDTEyUQMEA1IDMQgCCQgCDVFRMTI2AgYIBQ0DMTFRUTExBwYJBAMEDQEEAwkNAQEKDZKRCQUHAQEJBQSYkgmYAQEBCgENMgYIAg0NDQoyNjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"id":"we","name":"3rd Armored in Western Europe","b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIgGhEEAwkEAQMHHwAAAAAQDwUBHwUUDA0PAwwAAAAAHg4NDwwNEAsfDg0LAAAAAAYDHw4LExwTBAUEEwAAAAAWGggKFRkWGhkbEgMAAAAAFAUHHwYDCQUDBBcaAAAAAB0TAwUcAR4HDwETBAAAAAAGAx8TFAMGHw4NDwwAAAAAHgUBHx0HFhgfHw4LAAAAABcZGxURAx4XGggVGgAAAAAPDA0QDx8dBQcfHQUAAAAADgsfHg4PFxkgGhEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzDwMMAAAADDMzPzMAAAA8MzwzPAAAAAwzMDMMAAAAPDMzMzwAAAA/MDwwPwAAAD8wPDAwAAAADzAzMw8AAAAzMz8zMwAAAD8MDAw/AAAAPwMMDAwAAAAzMzwzMwAAADAwMDA/AAAAMz8/MzMAAAA8MzMzMwAAAAwzMzMMAAAAPDM8MDAAAAAMMzM8AwAAADwzPDMzAAAADzAMAzwAAAA/DAwMDAAAADMzMzM/AAAAMzMzDAwAAAAzMz8/MwAAAAwzDDMMAAAAMzMMDAwAAAA/AwwwPwAAAP///+Dl6uX/AAwADAAAAAD///8DU6tT/wAAPAAAAAAAAAAAAAAAAAD//////////wAAAAw/DAAAAAAAMwwzAAAAAAAAPDwAAAAMDAwMDD8AAAAwDAMMPwAA/8/Pw8PD/zA8PzwwMDAAADzDw8P//zwADAwMDAw/AAAAMAwDDD8AAAAwDAMMPwAA/8/Pw8PD/wAAAAw/DAAADAwMAAwAAAAMDAwMDAAAAMOZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP/DDMDDD8AAAA8Aw8DPAAAAAMzMz8DAAAA/+Hl6+Xh//8/MDwDPAAAAA8wPDMMAAAAAAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAD8/Pz8/AAAKDg8DAAAAALj8sAAAAAAAAAAAAAAAAAIAAAAAACCqr8DAMDAwDAwMAAAAAAAAAACr+z8/AAAAAIyDgwMAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAIKiorCwAAAAAAwODwDAMAAAAAAAAKAsAwDAwDA7DgwAAAAAAAADw8PDw8PAAAAAAAAAACCgAAAAA8v6+qAAAAAAAAAAAKDg8DAAAAALzs8AAAAAAAAAAAAMAwMAwAAAAAAAwrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDwAAAIAAAAD/AAAADAwMDAwMDAwAAAAAAAAoqwAAAAAAAACADAwMDAwMDAyqKwsCAAAAALDg8MAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAEQQAAAAAAEBAEBAQEAAAAAAAAAAAAAAAAAAAAAAEAQEAAAAguAAAAEAQEBAFAAAAAAAAAACvOAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAAAAAAAVAAAAAAMDAwNVAPz88PDw8BBAAAAAAAAAAAAAAAIKK64AAAAAgLDw8AAAAAAAAAAAr7u+MAAAAACwwAAAAAEBBAEBAVRAAAAAAAAABQQQEEAQEBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDw8PDw8AAAAAwMDAwAAAAAAAAAAAAFHAwDAwDAwDVwAAAAAAAABUBQAAAAAAAAAAAAAAAAAAAMEwMDAwMDAwAAAAAMAwMAwAAAAAAAgrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDAMDAIAAAAAAAADAAAA8PDw8AAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAACqKwoCAAAAAMDAgAAAAAAAAAAAAAAAAAAAAAADAwwMDMDAwAAAADAwAAAAAAAAAwMwMDDAwMAAAAAAAAAAAAAAADw8PDw8PAAAAAMDMzMDDDDAAAADPMAAAAAAA/wAAAAMMDDAAAAAAMDAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA88MM8AAAAMAAAAAAAAAAAAAAPDw8PAAAAAAAAAAAAwAAAAADDDDAAAAAAAAAAADPzAwMDAMDAwAAAAAAAAAAAAAD/AAAAAADPMAAAAAqqgAAAAAAAADAAgIDAwAAAAD/v7jggAAAAAAAAAAAAAAAAAAA/wAAAAAAAADwDAMDAAAAAAAAAADAAA8PPz8/Dw8AAAAAAAAAADAMDAMAAAAAAAAA/wAAAAIAAAD/AACgqgAAAP8AAAAAAgAAAAAAAACruz4OAAAAAICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8/Pz8/Pw8AAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqrqwAAAIDwwIDADAwMDAwMDAyvrDAAAAAAAAAAAAAAAAAAAAAAAAIKKqsAAAAAgLDwsDAwMDAwMDAwr7u+IAAAAADgwAAAAAAAADAwMDAwMDAwAAAAAAAAAwMAAAMMMMAAAMDAAAAAAAAADAwMDAwMDAwDAw8PDwMDAPDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAADAwMDAAAAAAAADDDDAAAAAAP8AAAADAwwM8AAAAAAAAAAAAAAAAwMDAwMDAwMDAgICAgICAQEBAAAAAAABAQIDBAUGCAsPFBskMEBVcnBxc3R2d3l6fH1/gIKDhYaIiYuNAwgICAgICw8LCwgLCAMLCAgLCwgLCAgLCwgLAwgLCwMICAgLCwgICw8ICwgLCwgLCwgICAgLCAgLCwgLCwgICAMICAkJAwgLCQgLCAkDCA8PCQsLAwsLCQkJAwgPDwkICQkICAgLCwgICA8ICAgIAwgLCAgLCwMICAgIAw8ICAgICAgICAgICA8ICAgICAgICwsLAwgICA8ICAgICAgLCAMIDwgICAgLCwgLAwsLCAsLCAgICAgPDwgDCA8IAw8PCAgIAz8/PwAAAExMVGyAzCQ+TGRhfHy8zNQ0TEyEgJSkoZy0vERBVKCuxMzUYGB0hISUrDQ0VF6AjsQ0TnyEfoyMnNBMXH58vDQ0YKS0saw/ZHyEfqyswMB0cYLCwGxsfIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsLCwAAAAHCQkHCQkNC40MC8wLCw0LEBAPEQ8REA/REBEUE9QTE5QVFRcZFxkXGRgdGxwcnRubIR+hIR+gHx8fJSMkoyMpJycoKCfpLC0tLSutKystMC/vr680MzMzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlJSUnKC0yNDU2Njg4PD09Q0VFSEhJSkpKS0xUVFVaW1xdXWZmZ2hoaWtzc3V2eHl8g4WIiIiJiYqNlZaYmJyjo6aqq6urtLa4uLi7u7y8x8fIzMzX19jYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgABAgACAAABAAEAAAEAAAEAAQAAAQIAAAABAAACAQECAQIBAAEAAQABAAABAgICAgABAgECAQABAQABAQABAQAAAQIAAgABAgABAQIAAQAAAQABAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAAAAAAl5WRDQEKAZGZnZ0EAQ0NA52RlAEHAV1dWl0DDQ0NUVExMTYBAQEKAQJRMTENAQEBATYBDQ0NAQYEATEBAQkEMTEBDQ0NCjYBDQ0NCAYBAQ0NCgoBAQQNAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}];
+// One theatre's big map, drawn by the game's own draw_map ($9685) on the kit's 6502. ram is the
+// flight's listing; frame the recorded frame of the big map (its memory holds the screen's edges,
+// the labels draw_map never writes, and its colour RAM). A theatre's bytes, in GS_THEATRES, are its
+// map ($1A86, 256), its font ($C800, 2048), its colours by character ($E300, 256) and its units'
+// records ($5100-$537F, 640). With all, every unit gets its seen bit (bit 4 of $5300). zpa_18 = 1
+// says the map is up, so draw_map writes colour RAM as well as the screen. Returns the 64 KB and
+// the colour RAM the video chip then reads.
+function gsMapScreen(ram, frame, theatre, all, C64Cpu) {
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const m = ram.slice();
+  for (const r of frame.ram) m.set(b64(r.b), r.a);
+  if (theatre) {
+    const t = b64(theatre.b);
+    m.set(t.subarray(0, 256), 0x1A86); m.set(t.subarray(256, 2304), 0xC800);
+    m.set(t.subarray(2304, 2560), 0xE300); m.set(t.subarray(2560, 3200), 0x5100);
+  }
+  if (all) for (let i = 6; i < 128; i++) if (m[0x5300 + i]) m[0x5300 + i] |= 0x10;
+  const colour = b64(frame.colour).slice(0, 1024);
+  const io = {
+    read(a) { return a >= 0xD800 && a < 0xDC00 ? colour[a - 0xD800] : 0; },
+    write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; },
+  };
+  m[0x18] = 1;
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+  cpu.call(0x9685, { a: 0, x: 0, y: 0 }, { maxSteps: 2000000 });
+  return { mem: m, colour };
+}
+// end of gs-levels
+
+/* gs-fly */
+// The 3D view from anywhere over a theatre, drawn by the flight's own view_frame ($8F01, which
+// the main loop calls through $8106) on the kit's 6502 (C64Cpu). GS_COCKPIT is a frame of the
+// cockpit recorded in the emulator; GS_VIEWS holds, for each theatre, the bytes of its terrain
+// file as they sit in memory on a mission there ($1B86-$2FFF: the coordinate values, the points,
+// the object lists and the shapes), its unit bits ($E200-$E2FF), then the window's background,
+// screen and colour RAM colours and the helicopter's start: x, y and heading.
+// gsFlyMemory builds the flight's memory for a theatre: ram is the flight's listing, then the
+// cockpit frame's RAM (the window's bitmap and screen, the panel), the theatre's map ($1A86) and
+// units ($5100-$537F) from the Maps tab's record, and the view's bytes. The zero page the view
+// reads is set as a flight has it (GS_FLY_ZP); zpa_BF = $60 and the page byte at $A4D1 = $61
+// make the bitmap at $6000, the one the frame shows, the one drawn. The Hind ($5105) and the six
+// missiles ($81AC) are switched off. zpa_F3 and zpa_F4 hold the pitch and heading of the last
+// view; while they match, view_frame works out only the moving objects' points and keeps the
+// rest, so zpa_F3 = $80, a pitch the view never has, makes the first view work them all out.
+// gsFlyView sets the eye as the main loop does ($31A3-$31F5) from the helicopter's x and y
+// (zpa_5E-zpa_61), height (zpa_62-zpa_63), heading, pitch and roll (zpa_34-zpa_36): x and y to
+// $812D-$8130, the height plus 24 to $8131-$8132, the view's heading the negative of the
+// helicopter's ($8133), its pitch the negative halved ($8134), its roll the negative ($8135).
+// Then it calls view_frame and returns the map numbers of the nine squares drawn ($826F-$8277)
+// and the cycles the view took.
+const GS_COCKPIT = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[160,85,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,93,0,255,216,1,249,126,241,0,254,3,255,255,240,245,240,251,243,247,247,241,241,241,241,241,241,241,241],"cia2":[150,63],"cpu":[47,21],"writes":[[154,46,53277,0,0],[154,52,53272,185,184],[154,58,56576,148,148],[155,1,53281,240,0],[155,7,53271,0,0],[155,56,53276,0,0],[155,62,53264,96,96],[156,5,53248,100,100],[156,11,53250,179,179],[156,17,53252,48,48],[156,23,53254,68,68],[156,29,53256,110,110],[156,47,53262,36,36],[156,53,53249,217,217],[156,59,53251,190,190],[157,2,53253,235,235],[157,8,53255,235,235],[157,14,53257,162,162],[157,20,53259,182,182],[157,26,53261,207,207],[157,32,53263,215,215],[157,44,53288,240,0],[157,50,53289,253,13],[157,56,53290,250,10],[157,62,53291,247,7],[158,5,53292,247,7],[158,11,53293,247,7],[158,17,53294,247,7],[158,23,65534,6,6],[158,29,65535,146,146],[251,40,53281,245,5],[251,54,53271,1,1],[252,25,53277,3,3],[252,42,53272,249,248],[252,54,56576,150,150],[253,14,53276,254,254],[253,20,53264,0,0],[253,26,53248,160,160],[253,32,53250,0,0],[253,38,53252,0,0],[253,44,53254,0,0],[253,50,53256,0,0],[254,12,53262,0,0],[254,18,53249,85,85],[254,24,53251,0,0],[254,30,53253,0,0],[254,36,53255,0,0],[254,42,53257,0,0],[254,48,53259,0,0],[254,54,53261,0,0],[255,4,53263,0,0],[255,16,53288,241,1],[255,22,53289,241,1],[255,28,53290,241,1],[255,34,53291,241,1],[255,40,53292,241,1],[255,46,53293,241,1],[255,52,53294,241,1],[258,22,53269,8,8],[260,50,53251,0,0],[261,24,53248,0,0],[263,14,53266,80,80],[263,38,53263,48,48],[265,18,53254,28,28],[265,42,53251,2,2],[271,36,65534,184,184],[271,42,65535,148,148]],"colour":"AAAABQUABQUABQUFBQUFAAUFBQUFBQUFBQUFBQUFBQUFBQAFBQAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAFBQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEFBQAAAAAPDw8BAgIFBQEBAQEBAQEBAQEBAQEBAQEBAAEBAQEBAQULCwsBDw8PDw8BBQYCBwUBAQEBAQEBDQ0NDQ0NDQ0NDQABAQEBAQEBCwsLCwEPDw8PAQcHBwcBAQEBAQEBAQ0NDQ0NDQ0NDQ0BAQEBAQEBAQoKCwsBDw8PAQEHBwcHBQEBAQEBAQENDQ0NDQ0NDQ0NAAEBAQEFAQELCwsLAQEPDwEFBwcHBw8BAQEBAQ8BDQ0NDQ0NDQ0NDQ8PAQEBAQEPCwsLCwUBDwEMAgcHBwcPDwMDAwMPBQ0NDQ0NDQ0NDQ0PDwEBAQEPBQUBBQUBDwEFAQUFBwcHDwMDAwMDAwUNDQ0NDQ0NDQ0NAAEBAQEBAQ8FCgoKCgoPBQcHBQcHAQMDAwMDAwMDDg4ODg4ODg4ODgEBAQUFAQEPCgoKCgoKCgUFBQcHBwEDAwMDAwMDAw4ODg4ODg4ODg4BAQECAgEBDwoKCgoKCgoHBwEBBQUFAwMDAwMDAwUODg4BAQEBDg4OAQEBAQEBAQ8KCgoKCgoKDAUFBQUFBQ8DAwMDAwMFDg4OAQEBAQ4ODg8BAQEBAQEPCgoKCgoKDwgICAgICAgICAgICAgICAgICAgICAgICA==","ram":[{"a":20544,"b":"AAAAAAAAABAAABAAABAAABAAAAAAAAAAAAAAAAAA+AA+AAAAAAAAAAAAAAAAABAAABAAABAAABAAAAAAAAAA"},{"a":20608,"b":"cAAA2AAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24576,"b":"/9/3va+ruqr/////f9/3vf7V//X//f//r26ubq5ur6r+ru6+7u7+qqpV/lX/Vf//q1urW6tbq6r/77u7u+//qqqWqpaqlqqq//vu6u7u/6rq5erl6uXqqr+6u7u7ur+q+rn6ubq5+qqvbq5urm6vqv6u/r7+/v6qqqpWqlaqqqr/7u7q6u7/qurq5urm6uqq/+7u6uru/6rq5erl6uXqqqpWqlaqVqqq/+rv6+/q/6rq6uXq6uXqqr+6u7q7ur+q+rn6+fq5+qqrW6tbq1urqv+rv6+/v/+qqpaqlqqWqqr/++7u6u7/qurl6uXq5eqqv7u7u7u6v6r6+fr5+rn6qr+7u7u7ur+q+vn6+fq5+qqqVapVqlWqqr+6u7q7u7+q+rm6+bq5+qr/V/9f/3/////////9999+//fffvrqrqrruq6rqqquvq+ruqrruq7nf9/3va+ruqr7+/v7e9v7u//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v7+/v7efv7v3333766q6q+uququuuutvrrrrqqqq6vr6+vrq6ur7q5dnp2evb6dnren63tXV/ebu7u6vr6+vr/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+7u7urr6+vr66293l5d/W1bZ2tn6+drZ76+vq6urr6r6urq6+vr6+vp2evb6dnp2X+5v3m/eX+56+vr6/ubm6v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////6+vr6+/m5ur9bv5t/m39bmtn6+drZ2tnq6ur6+vr6+vp6e7rqqqqqutrWpbl+e7bv3m/ub95XZWbm6ubm6ubm//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////m5urm5urm5v5t/m7+bXVW6+mllltvu+dra7vrqqqqqurq6vr6+vr66t7u3u7e7t7nubu7e7u7u6ubm6ubm6ub/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+rm5urm5urm227u7u3u7u6rt7u3u7e7t6urq6+vr6+v+vr6+vr6+uru3u7e7t7u3ru7u7u7qampm6ubm6u7u7v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////5urm5uru7u7u7u7u7mpqaru3u7e7t7u3r6+vr6+vr6vq6urqq6uvr+7e7t7u3q7eaampqalpubu7u7u7u5ubm6oAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAADu7u7u7ubm5mlqampqaW7uu7e7t7u3urerq6ur6ur6+quuqq6qrqqu7t7u3u7e7t67u2mpqampqZubm5ubq6urAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObm5ubm6urq7u5pampqamq7t7u3u7e7t+q6qrqquqq6qq6qrqquqq7u3u7e7t7u3qlpqalru7t7q6urq7urq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6urq6u7q6upqaWpq6e7u7bu3u7e7t7u3qrqquqq6qrqqrqquqq6qru7e7t7u3u7ee3t7e3t7e7urq6urq6urqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADq6urq6urq6u3t7e3t7e3uu7e7t7u3u7equqq6qrqquqququ7r+/b27t7+/v7+/v27u7u5t5t7+6ura/v729vrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOrq6e/v5+fr7u7ubt7m7e+7t5eXt7e3d6q6qrvr75+f9vb29vb29vb23n7+/v7+/ru7e3u7u3t7+/v7+/vb6+sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAggIAKqAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAoCAggICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQBAEAQAAAAAAAABAEAQBAAAAAAAAAABA7+/v7+/n6+vt7u3t7u7t7Ve3vb+3v7+/n5+fn5+fn58="},{"a":30208,"b":"AAAAAAAAAAAAAAAAAAAAAoCgAgAgAgAgAgAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAgAgAgAgAgAoCg"},{"a":31744,"b":"+/vw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8Pv7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+w=="},{"a":32760,"b":"QdhCQkJCQkI="},{"a":53248,"b":"EAAAEAAAGAAAGAAAGAAAEAAAEAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57344,"b":"AAAAAAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAA"},{"a":57408,"b":"8AAADwAAAPAAAA8AAADwAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57472,"b":"AAAAAAAAAAAAAAAAADAAADAAAMAAAMAAAMAAAwAAAwAAAwAAAwAADAAADAAADAAAMAAAMAAAMAAAwAAAwAAA"},{"a":57536,"b":"wAAAwAAAwAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60672,"b":"P//wAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAP//w"},{"a":60736,"b":"/AAAeAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60800,"b":"AAAAAAAAAAAAAAAAMAAAeAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60936,"b":"+/v7+/Hx8fv7+/v7+/v7+/v7+/v7+/v7+/v7+/v78fv7+/v7+/v7+8vL+/v7+/v7+/vLy/v7+/v7+/v7+/v7+/v7+/vLy/v7+/vL+/v7y8vLy/v7y/v7+8vLy8vLy/tXV1dXV1dXV1dX+8vLy8vLy/v7y/v7+8vL+/v7xsbG+8vLy3vLy8vLV1dXV1dXV1dXV8vLy8t7y/vL+8vLy/v7+/v7+2bGZvbLe3vLy8vLy1dXV1dXV1dXV1fLy1tbW1v7y/vL+8v7+/v7+/tmxmb2y8vLy8vLy8tXV1dXV1dXV1dXy8v7y/vL+8v7+/v7+/v7+/v7+8bG9vvLy8vLy/vLV1dXV1dXV1dXV8v7y8vLy8v7+/v7+/v7+/v7+/tmZvvLy8HBwcvLy1dXV1dXV1dXV1fLy8vLy8vLu7GxsbGxsbH7+/v7Zmb7y8vLwcHLy8vLy8tbW1tby8vLy3t7e8vLy7uxsbGxsbGx+/v7u7a2+8vHx8HBy8vLy8vLW1tbW8vLy8vLy3t7y8u7sbGxsbGxscvLy/vLy/vLy8HBwcvLy8vLy8vLy8vLy8vLy8vLy8vLu7GxsbGxsbH7+/v7+/v7y8vLy8vL+8vLy8vLy8vLy8vLy8vLy8vLy7uxsbGxsbGx"},{"a":61432,"b":"tEC1toCBgoM="},{"a":61504,"b":"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qqqqqqqqqqqAoKioqqqq6sDwzHAAsKCoAAADAwMAAwAAANAAwDDAAAwPAwMAAwIKAEIKCiqqqqqqqqqqqqqq6hMTExAQERERz8//AACZmZkPDwAAAJmZmcLCAAAAmZmZISAAAACZmZlYWHZ2VZ2XhQAAAACAgGBYl11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGCgKqqqgAAAAAAqqqqAAAKL78AqqoAqv///wKqqgCo/v//qqqqAACA4PioqqoAAAECAKqqqgoKCgoKVVVVVVVVVVVVVVVVVVVVVVVVVVV1+fntVVVVZallVVVVVVVVVVVVVVVVVVVVV19/VVVVVeXpqflVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVeqqqqgoKCgoCqqqgAAQIAAqqqqAAACCCCAqqoAKrAAMMCqqgCqAAAPqqqqAACgyAKqqqoAAAAAACqqqgICQoICEBEREBpVqgCImZkAqlWqAIiZmQCqVaoCiJmZAKpVqqqImZkAqlWqAIWRkACqVaoA1nVVHaVZqgKqVWVUVFBQUKpVMz8/MwAAqlUWBQUBAQGAQEBAQEBAQCIiIiIjMzMzICAgICAwMDAEBAQEBAQEBICAgICAgoKCAgsvL7/////////////////////////////////////+/////////wCA4OD4/v7+CgoKCgoKCgqVlZWVlZWVVVVVVVVVVVVVVVVVVVVVVVVVVVVlqWVVVVWpqampqVVVf25rWVVVVVW1pZVVVVVVVVVVpaWlpVVVVVVVVVVVVVVXV1dVVVVVVaCgoKCgoKCgAAILCCCAgIyAAAAA8MAw8DAwMAAAAAAAAwwPAAAAAAAAAAADAAMAA4AgCDjCAMADAgICAgKBgoIAIBAAAAABAQABBBBAQAAAFEAAAAAAAAAQEBAQEBAQEFAFAAAAAAAAAABAEAQEAQEBIREBAQEBAVBQUFBUVGVVAAAAAAAAAFUBAQEBBQUWVUBAQEBAQEBAMzMzMzMzMzMwMDAwMDAwMAQEBAQEBAQEi4uLi6+vr6////////////////////////////////////////////////////////////////+KioqK6urq6qo/Pz8wPz8/qv//PwA///+q//8PDw///6qPj4yPj4+Pqv/zD/P///+q/////AP8/6ry8vLy8vLyqv///PD8//+q//wAAwD8/6r8/Pz8/Pz8oqKioqioqKgAAAAAAAAAAAAAAAAAAAAAAAAAAAADDwAAAAAAwPD8AAAAAAAAAAAAAAAAAAAAAMAiIiIi6ggpiAQEEBAQUEBAAAAAAAAAAAEAAAUQEEBAABBUERAQEBAAAABAEBAEBAEAAAAAAAAAAEFBERERFQUFAPzMzMz8AKoA/MzMzPwAqgD8zMzM/ACqgICAgICAgKUzMzMzMwAAVTAwMDAwAABVBAQEBAQEBKSvoKCgoKCgqP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAOoqKioqKiqqqgAAAAAAAACqAA8ADwwPAKoAwMDAAMAAqoCAgICAgICqAAAAAAAAAKoA/AwMDAwAqgICAgICAgKqAAAAAAAAAKoADwwPDA8AqgDAwMDAwACoqqioqKioqgCqAAAAAAAAKKgoAAAAAAAAAAAADwMAAAAAAAD88MAAAwMDAAAAAAAAwjDAAAAAAImIiYgpCAnoQEBAVUBAQEABAQFVAQEBAQAAAFQAAAAAAAAAEAAAAAABAYFVAQEBAQAAAFUAAAAABQUFVQUFBQUAAAAAqgAAAAAAAACqAAAAAAMAAKoAAAAAV9wwmgAAAAAAAACqAAAAAAAAAKoAAAAEBAQEpAQEBKioqKqqqqqqAAAAAAAAgKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgoqqqqqqqqqqqqqPz88Pz88P6r/8//zPP/zqv8/z//zP/+qj4+Pj4+Pj6r///z8/P//qv//Pz8///+q8vLy8vLy8qr///P8////qv///wAA//+q/Pz8/Pz8/KqqqqqqqqqqAAAAgICMoKgAAPDAMPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwADAAAAAAAAwwLKKSgpqKmoqahAUFBQUFRUVQAAAAAAAAAAQEAQEAUAAAAQEBAQEVQQEAQEEBBAAAAAAAAAAAAAAAEFFRUVFVVVVQCqAERGRUdEAKoASURJQEUAqgBABIBEgACqAAMDAwMDAKoAPzA/Az8AqgA/Mz8DAwSkBAQEBAQEqqqqq6iqqqqgqKqqqqqqqgAAAICgqqqqAAAAAAAAqqoAAAAAAAKqqgAAAgoqqqqqKqqqqaiqqqqqqqqqqqqqqqoAAAAAAAAAqgDPzMzMzwCqAMDAwMDAAKqAgICAgICAqgD8wPzM/ACqAPzMzMz8AKoCAgICAgICqgAAAAAAAACqAM/MzMzPAKoAwMDAwMAAqqqqqqqqqqqrqqqq6iqqqgAAgKCoqqqqMDAwMACwqqoPAwwPAACqqgMAAALKqqqqOiqqqqqqqqqpqKmo6SipqFVVVVVlRVVVAEBAUFRVVVUAAAAAAEBUVRAQEBAQEBBVAAAAAAAFVVUBBQUVVVVVVVVVVVVVWVFV"},{"a":65535,"b":"lA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":130,"colour_cells_changed_during_frame":0}};
+const GS_VIEWS = [{"id":"tn","v":"HBcAEPD6BgD+/v7+/v7/AQEAAAAAAAAA+AgG+vwEgAAA//8AAI+Pj4+Pj+8AEAAE/P7/AQL/AAD//wD/IhwA8BAM+ugA/v7+/v7+AQEBAAAAAAAAAIAI+Az0/AYYBPoQgAD/AAD//wCPkJCQkJAAECAEAPwC/gH//wD/AP//AAAA/wAAFBEIBAAAAAAAAAAAAQAogAAUBPwQBgIAAAAAAAAAAAAAAAAAAQEAAP8AAABwAAEAAgAAAAMEAAUGBwgJCgsMDQ4MDQ4MDQ4PEBAQDw8RERISERMUEhQSFQ8PDxQVDxQPExMPDxMWFxcWFhcXFg8WFhYWFxcXFxgPGQ8PDxgYGBgZGRkZDxYWFxcaGhobGxsPDxgbGhkPDxgYGRkUHBMAAAEAAgMDBAQFBgcICQoLDA0NDQ4ODg8PDxAQERISERIRExQQFREUFRMUERETFhMVFREXFxcWFhgYGRkaGhsbHBkbGhgYGhsZERkRHR4fHR8gICAgHR8eGxoaGxgRHBgRHCEfESAgHx0YGRkZGRYiIgAAAAAAAQICAgADBAUGBwgJCgoKCgoKCgoKCwsLCwsLCwsLCwsMDAwLDQsNDg4ODQwMDAsPDw8PCwsLCxAQEBAQEQsLERELCxELCwsLEAsLEAsQCxALEBIRERERCxMLCxMLEhQQEBALEAsLEAsQCwsLJRobIRweJB0gJBscJh4gIBobMDEyHhocHSQdJR88PT4/QEpNV0dCAQEBAQEBAQECAgMBAgMCAwMBAQEDAgICAwMBAwEBAQEBAQEBAQEAAQEBAQEBAQEBAQABAAEAAAEAAQAAAAABAAEAAQEAAAAAvtb0BiRIbIqu0uoIJkpohrDU+BZAcJrE4gAeSGCEqMwAKysrLCwsLCwsLCwtLS0tLS0tLS4uLi4uLi8vLy8vLy8AAwQCBAUFBAUFAwUEBgQFBwUGBAcIBwcEBQQHAwUGBgYAxNz6DCpOcpC02OoOJlBohrbU/hZAcJrK4gYeTmaEqMwAKysrLCwsLCwsLCwtLS0tLS0tLS4uLi4uLi8vLy8vLy/jJAoD///wLwsD/////wwD/////w0D/////w4D/////w8D/////xAD/////wRxchwdHgACBP//AAH//wEC//8CA///AwT//wQABx8gHiFzInJ0AAIG//8DAf//AQL//wIA//8DB///BAX//wUG//8GBwMfIB4hAAID//8DAf//AQL//wIA//8DAAN1InEjAAID//8DAf//AQL//wIA//8DAAd1InEaGx0eIwACBv//BwH//wEC//8AB///Awb//wME//8EBf//BQYEHxobHR4AAgP//wEC//8CA///AwT//wEEA3Zyd3gAAgP//wAB//8BAv//AgP//wMAAh8kHQABAP//AQICHyEcAAEA//8BAgIfGh4AAQD//wECAh8gGwABAP//AQICHxodAAEB//8BAP//AgABHxoAAQD//wABAnkaIAABAP//AQIDHyAaHAABAf//AQL//wEDBB8hGhweAAEB//8BA///AgQCeSEbAAEA//8BAgEfJAABAP//AAECehodAAEA//8BAgEfIQABAP//AAEGH3kle3x4JwACAv//AQL//wME//8FBgMfeXt4AAIC//+B//+C//+DAx8kdR0AAwL//wAB//8AAv//AgMDKCF0HAADAv//AAH//wAC//8CAwR9cyEoHAADA///AgH//wEA//8AA///AwQEfnMkch0AAwP//wIB//8BAP//AAP//wMEBH8geXQbAAMD//8AAf//AAL//wID//8DBAYfJBscHiEpBQYCAQAmBgMCQDYGBANgNQYFBKAsBgEFwCYCCQAAAQIBAQIDAgIDBAMDBAUEBAUBAAQBBgABAgYBAgMGAgMEBgMEBQYGHyQbHB4hKQUGAgEAJgYDAkA2BgQDYDUGBQSgLAYBBcAmAgQABAEGAAECBgECAwYCAwQGAwQFBgYfGhsqICErBQYCAQAxBgMCTSoGBANzKgYFBMAxBgEF4CwCCQAAAQIBAQIDAgIDBAMDBAUEBAUBAAQBBgABAgYBAgMGAgMEBgMEBQYGHxobKiAhKwUGAgEAMQYDAk0qBgQDcyoGBQTAMQYBBeAsAgQABAEGAAECBgECAwYCAwQGAwQFBgUfIhwqIywEBQIBDSUFAwJgMgUEA4AtBQEEwC0CBwAAAQIBAQIDAgIDBAMDAQQAAwUBAAEFAgECBQMCAwUEBR8iHCojLAQFAgENJQUDAmAyBQQDgC0FAQTALQIDAAMFAQABBQIBAgUDAgMFBAcfGhwdf3YtLgYGAgEgJwcCBjM0BwMCQDMHBAOWIQYFBLMsBgEF4CcCCwAAAQICAgIDAwMDBAQEBAUFBQUBAAUGAQABBgIEBQYFAQIHAgIDBwMDBAcEAQQGBwcfGhwdf3YtLgYGAgEgJwcCBjM0BwMCQDMHBAOWIQYFBLMsBgEF4CcCBgAFBgEAAQYCBAUGBQECBwICAwcDAwQHBAEEBgcIHxobHCogIS8rBgcCAQAmBwMCQCYHBANgLAgFBHMqCAYFwDEIAQbgLAIMAAABAgEBAgMCAgMEAwMEBQQEBQYEBQYIAgUHCAUFAQYABQEHAAECBwECAwcCAwQIAwQFCAgfGhscKiAhLysGBwIBACYHAwJAJgcEA2AsCAUEcyoIBgXAMQgBBuAsAgYEBQYIAgUHCAAFAQcAAQIHAQIDBwIDBAgDBAUIB4CBex+Cg3yEBQUBBAAABgIFQAAHAwaAAAQAB8AABQQGAEABCwAAAAEBAQECAgICAwMDAwAABAQFAQQFBgIEBgcDBAcEAAMABAABAQUBAgIGAgMDBw4DgIF7HwABA///AAH//wEC//8CA///AwAJM4V9fzQ1Njd5egUFAQQAAAYCBUAABwMGgAAEAAfAAAUEBgBAAQ0AAAABAQEBAgICAgMDAwMAAAQEBQEEBQYCBAYHAwQHBAMAAAQAAQEFAQICBgIDAwf//wAI//8ICQUzhX1/eXoAAQX//wAB//8BAv//AgP//wMA//8ABP//BAUHhnqHHzAxJjIFBQEEAAAGAgVAAAcDBoAABAAHwAAFBAYAQAELAAAAAQEBAQICAgIDAwMDAAAEBAUBBAUGAgQGBwMEBwQDAAAEAAEBBQECAgYCAwMHA4Z6hx8AAQP//wAB//8BAv//AgP//wMAAB8AAwD//4APHzOFfX80NTY3eXqIiYGAHwUGAgUAAAcDBkAACAQHgAAFAQjAAAYFBwBAAREAAAECAQECAwICAwQDAwQBAAQFBgEEBgcCBAcIAwQIBQMAAQUAAQIGAQIDBwIDBAj//wEJ//8JCv//Cgv//wsD//8MDf//Dg8TBB96iH95AAED//8BAv//AgP//wME//8EAQ4feYaFMyUwNTR6iH2Be4oFBgIFAAAHAwZAAAgEB4AABQEIwAAGBQeAPgERAAABAgEBAgMCAgMEAwMEAQAEBQYBBAYHAgQHCAMECAUDAAEFAAECBgECAwcCAwQI//8CCf//CQr//woL//+M//+N//+ODAcfeYaFM3qIfQABBv//AQL//wID//8DBP//BAH//wIF//8FBv//BgcOH4CBex+Cg3yEeoh/eYmLBQYCBQAABwMGQAAIBAeAAAUBCMAABgUHAEABEAAAAQIBAQIDAgIDBAMDBAEABAUGAQQGBwIEBwgDBAgFAAMBBQABAgYBAgMHAgMECP//CQr//woL//8LDP//CQz//w0ODQQfeoh/eQABA///AQL//wID//8DBP//AQQOH4CBe4yCg3yEdXhzfjN/BQYCBQAABwMGQAAIBAeAAAUBCMAABgUHAEABEQAAAQIBAQIDAgIDBAMDBAEABAUGAQQGBwIEBwgDBAgFAwABBQABAgYBAgMHAgMECP//Awn//wkK//8KC///CwH//wwN//8NDgsGH4CBe3V4cwABBf//AQL//wID//8DBP//BAX//wUG//8GAQgfODk6O42Oj5AFBgIFACAHAwZALQgEB4AgBQEIwC0GBQcAQAMLAAABAgEBAgMCAgMEAwMEAQAEBQYBBAYHAgQHCAMECAUDAAEFAAECBgECAwcCAwQICgofgImBhnuHfop9iAADCv//gP//gf//gv//g///hP//hf//hv//h///iP//if//igENQEFCQ0RFRkdISUpLTE0IAgEHgCADBALAAAYFAwAgBwgGQAAACQwgKwAKCVoWAAsKphYADAvgKwMSAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQEDAkFBQkKBgYKCwcHCwz//wwNBAUACQUGAAoGBwALBwQADAMNkUFCQ0RFRkdISZJLTpMIAgEHgCADBALAAAYFAwAgBwgGQAAACQwYMAAKCWgcAAsKmBwADAvoMAMSAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQEDAkFBQkKBgYKCwcHCwz//wwNBAUACQUGAAoGBwALBwQADAQSQEFCQ0RFRkdIT1BRUlNUVVZMlAgCAQeAIAMEAsAABgUDACAHCAZAAAwLAA0ADg0MgAAQDw7AAAoJEAATAxcBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHBAcJCgQFCwwFBg0OBgcPEAQECQsFBQsNBgYNDwcHDwn//woM//8MDv//DhD//xAK//8REv//gAcOQFg7Q1laRjpbXF1eX2BhBAIBB4AgAwQCwAAGBQMAAAcIBkAAAxIBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHAgIEBQAAAQj//wkK//8MDf//CQz//woN//8LDv//AAv//wAOBQUfOzg5OmIAAwL//wED//8CBP//AAUICGNBQkNERUZHSAgCAQeAIAMEAsAABgUDACAHCAZAAAACB4A7AAMCwDYABgMANgAHBkA2Aw0BAQEEAQUCAwEAAQIBAgMEAwcGBwMDBQgCAwUGAAMHCAIGAwYABAIHBAUAAgUGAAMGBwAGBAcABwYSTEFCQ0RFRkdISWSVZZZmZ1ZokwkCAQeAIAMEAsAABgUDACAHCAZAAAoJESAADAsKTQAODQyAABAPDrgAEQAQ8wABGQEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcEBQkKBQYLDAYHDQ4HCA8QCAQAEQUFCQsGBgsNBwcNDwgIDwAEBAAJ//8KDP//DA7//w4Q//8QEf//EQr//wASEBJpQUJDREVGR0hPUGprbG1VVmhNCQIBB4AgAwQCwAAGBQMAIAcIBkAACgkRDRIMCwpAAA4NDIAAEA8OwAARABDzEgEZAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQFCQoFBgsMBgcNDgcIDxAIBAARBQUJCwYGCw0HBw0PCAgPAAQEAAn//woM//8MDv//DhD//xAR//8RCv//ABIPHABAI+EiJAP///YpIAF/H38fGgFJIDIgHwCbIkEiJAP//74nGwDSH9IfHAAdIB0gIAFJIDIgHwAZIc0gIAP//74nHQFJIDIgHwCdIVEhHgP//0UoHAP//2QqJAFJIDIgHQFJIDIgKAATItUhGwP//xErHQP//2QqIwP//0UoJAFJIDIgIAFJIDIgKACbIkEiIgP//0UoIAP///YpGwP//74nJACtH60fHgCXH5cfHACdIVEhGgP//0UoIQP//0UoIAETJ54mJAEmHyYfKAATItUhJALsJXolIAETJ54mGwH//40nIQCXH5cfHQCiH6IfbgCbIkEiGwP//2QqGgP//0UoJACtH60fIACtH60fIQFJIDIgKAAZIc0gIQP//74nIACiH6IfHQCiH6IfGwP//0UoHwH//40nIACbIJsgJAFJIDIgHQFJIDIgHwATItUhJAP//74nHQP//zYnGwBaIFogIAFJIDIgJAP//zYnGwH//40nGgFJIDIgIQBuIG4gHACCIIIgHgAOH+YeIQBAI+EiHAP//74nHgH//40nHQC0ILQgGwFJIDIgIQP//0UoIAP//2spKgDJHskeJAC0ILQgGwFJIDIgGwP//0UoHgKFJhQmHABuIG4gGgCXH5cfHQCtH60fIAFJIDIgIQCCIIIgKAATItUhIAKFJhQmJAP//98pGwP//0UoIQATIBMgHgCXH5cfHAP//0UobgP//0UoJAF/H38fHQFJIDIgIAAIIAggGwDcH9wfHwCbIkEiIQH//40nJAP//2QqGwJhJeskIAFJIDIgIQP//2spIAP//0UoKALdI4cjJAFJIDIgHQFJIDIgGwDcH9wfHgDcH9wfHQP//74nHgP//0UoGgP//0UobgLLJHYkJAEmHyYfGwDnH+cfIAAIIAggbwLdI4cjGwP//8woHQP//0UoIAD3H/cfIwJUJPUjbgLdI4cjJACtH60fHAC4H7gfIAP//74nIwH//40nHQP//0UocALdI4cjJAF/H38fHAAIIAggHgDDH8MfbwCdIVEhHAP//74nJAAoICggGgAIIAggHQFJIDIgGwP//98pHQP//0UoIABmHz4fJACiH6IfHACXH5cfbgCbIkEiGwH//40nJACiH6IfGwCiH6IfIAFJIDIgbwJhJeskIQP//0UoGgP//zYnJAFJIDIgGwBmHz4fIACiH6IfHQCiH6IfKACdIVEhJACtH60fIACtH60fHQFJIDIgIQBAI+EiKgP//8woHgP//0UoGwH//40nGwCtH60fHQCtH60fJAP//74nGwP//74nIwP//74nGgC4H7gfIACtH60fKgBmHz4fHAP//74nbgP//74nJAP//8woIAB/H38fGgFJIDIgHQFJIDIgGwP///YpbgP//0UoHAC4H7gfJADJHskeHQFJIDIgIACiH6IfCQABAgMEBQYHCAkGAAYHzQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACGA4GeA4dBjwOGAYAAAAADj0eDnIePxwIcA4OAAAAAH0/Px4cBhsNOwc4GAAAAAAcDgZ4BnhuDhx6fxgAAAAAbBgOGQY4BzgCB3AOAAAAAGwOHHgYeWwOGHh+GwAAAAA4DDx8PBw4Ag0YGgYAAAAAfBwCBxgMfD4eAhwCAAAAADgNPxwCDDgMHAw4BgAAAAAYCAc/DjwYDj4+fBwAAAAAcBh+HBgYAjgCDXkMAAAAADgGdB5sDhh4PQ4YAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCQYAbwBwAA=="},{"id":"se","v":"HBcAEPD6BgD+/v7+/v7/AQEAAAAAgAAAAPgIBvoA5AAA//8AAL+/v7+/v+8AEAD8BP8AAQj6/wAA//75IBoA8BAM+ugA/v7+/v7+AQEBAAAAgAAAAAj4DPT8BBgG+nhY3gD/AAD//wCfoKCgoKAAECAABPwAAf8IAP8A//8AAAD//yA8FBEIBAAAAAAAAAAAAQAoFIAgBPwQCAIAAAAAAAAAAAAAAAAAAAECAP8AAABqAAEAAgAAAAMEAAUGBwgJCgsMDQ4MDQ4MDQ4PEA8REQ8QEBESEhMQFA8SEg8PDxUPEQ8WFg8UDxMTDw8PFA8SEhMXGBgXFxgYFw8XFxcXGBgYGBkPGg8PGRkZGRoaGhoPDw8PFxcYGBYbHBsgvgCOIL4AAAEAAgMDBAQFBgcICQoLDA0NDQ4ODg8PDxARERASEhIQERMTEBIUFBUUEBUWEBEQFRIQEBUTExAVEBMUFBQTExcXGBgZGRoaGxgaGRcXGRoYEBgQHB0eHB8fHx8eHB4dGRwaGRkaIBESFLcBZQF1AQAAAAAAAQICAgADBAUGBwgJCgoKCgoKCgoKCwsLCwsLCwsLCwwNDAsLCwsODwsLDg4OCwsPCwsLCwsNDQwNDQ0NCwsLCxAQEBAQEQsLERELCxELCwsLEAsQCxALEAsQCxITFBERERELCwsLcH5QfmDuHBscHR4gISIfHSYdHx4sPCEgHhs+RUZHSElTVmAhYO5A7kBuQH5+AQEBAQEBAQEDAQIDAgEBAwMDAwEBAQEBAQEBAQJQfkHvQe9BT0EAAQEBAQAAAQAAAAABAAEAAAAAAAEAAAEAAAAAAAABAAAAw9XnBR1Ba4mt1wcxYZG13wMnRXWTt9sFKVmJrdH7H0MAKioqKysrKysrKywsLCwsLC0tLS0tLS0uLi4uLi4uLy8AAgIEAwYHBAYHCAcHCAUHBgYFCAQGBgYGCAgGBgcFBggAydvtCx1BcYmt1wc3YZe13wMnRXuTt+EFKVmJrdEBH0MAKioqKysrKysrKywsLCwsLC0tLS0tLS0uLi4uLi4vLy+iJAoD//9zLwsD/////wwD/////w0D/////w4D/////w8D/////xAD/////wYaa2xtbh9vAAIF//8BAv//AgP//wME//8EBf//BQb//wYBBxogHyFwa3FtAAIG//8DAf//AQL//wIA//8DB///BAX//wUG//8GBwMaIB8hAAID//8DAf//AQL//wIA//8DAANya2xvAAID//8DAf//AQL//wIA//8DAANrcW5vAAID//8AAf//AQL//wID//8DAAUaIh0fIBsAAQT//wEC//8CA///AwT//wQF//8FAQIaGx4AAQD//wECAhohHQABAP//AQICGhwfAAEA//8BAgIaICIAAQD//wECAhobHQABAf//AAH//wACAhohIgABAf//AAH//wACAhogHAABAf//AAH//wACAhocHgABAf//AQD//wIABBohHB0fAAEB//8BA///AgQGGiMkcyVvdAACAv//AQL//wME//8FBgMaI3NvAAIC//+B//+C//+DAxobch4AAwL//wAB//8AAv//AgMEGichbR0AAwL//wEC//8BA///AwQFGigcdSkfAAMD//8CAf//AwH//wME//8EBQN2ISgiAAMC//8BAP//AgD//wIDBCkgKm0iAAMD//8AAf//AAL//wID//8DBAN2Gx0gAAMC//8AAf//AAL//wADBBobbG4fAAMC//8BAv//AgP//wMEBBoiKncfAAMC//8BAv//AgP//wMEBhocayBydR0AAwT//wEC//8CA///AwT//wQF//8FBgQaHCp3IAADAv//AQL//wID//8DBAYaHGshKSceAAME//8BAv//AgT//wME//8EBf//BQYFGhwqIXIdAAMD//8BAv//AgP//wME//8EBQcaHGxwKXcdHwADBv//AQL//wID//8DBP//BAX//wUG//8FAv//BAcGGhwdHh8hKwUGAQXgLAYCASAsBgMCQDEGBAOAMQYFBKAsAgkBAQECAgICAwMDAwQEBAQFAAAFAQABAQYBAgIGAgMDBgMEBAYEAAUGBhocHR4fISsFBgEF4CwGAgEgLAYDAkAxBgQDgDEGBQSgLAIEAAEBBgECAgYCAwMGAwQEBgQABQYFGnEeHyF4BAUBBPMqBQIBMzEFAwKANAUEA6AvAgcBAQECAgICAwMDAwQAAAQBAAEBBQADBAUBAgIFAgMDBQUacR4fIXgEBQEE8yoFAgEzMQUDAoA0BQQDoC8CAwABAQUAAwQFAQICBQIDAwUFGmsdbm94BAUCAQ0qBQMCYC8FBAOAJwUBBMAsAgcAAAECAQECAwICAwQDAwEEAAMFAQABBQIBAgUDAgMFBAUaax1ub3gEBQIBDSoFAwJgLwUEA4AnBQEEwCwCAwADBQEAAQUCAQIFAwIDBQQJGi0uHh8hGy8wMQgHAQbgLAgCByAsCAMCYCwJAwh2MQkEA4AtCQUEoCcHBgnAMQcJCABAAg8BAQECAgICAwQEAwQFBQQFBgYFBgAABgEBBwcIBgcHCQMHCAkAAQEHAAYGBwECAggCAwMIAwQDCQQFBAkFBgUJCRotLh4fIRsvMDEIBwEG4CwIAgcgLAgDAmAsCQMIdjEJBAOALQkFBKAnBwYJwDEHCQgAQAIPAQEBAgICAgMEBAMEBQUEBQYGBQYAAAYBAQcHCAYHBwkDBwgJAAEBBwAGBgcBAgIIAgMDCAMEAwkEBQQJBQYFCQgaLSIdHzIzGzQHCAEH4DEIAgEgMQgDAkAsCAQDYCYIBQSALAgGBcAyCAcG0zECDQEBAQICAgIDAwMDBAQEBAUFBQUGBgYGBwAABwEAAQEIAQICCAIDAwgDBAQIBAUFCAUGBggGAAcICBotIh0fMjMbNAcIAQfgMQgCASAxCAMCQCwIBANgJggFBIAsCAYFwDIIBwbTMQIGAAEBCAECAggCAwMIAwQECAQFBQgFBgYIBgAHCAoaKic1KSh1Njc4OQADB///AQL//wID//8DBP//BAH//wUK//8ABv//Bwj//wgJBBoqJzUpAAMD//8BAv//AgP//wME//8EAQAaAAMA//+ABxo2N3M6O3klBQUBBMAABgIFAAAHAwZAAAQAB4AABQQGAEABCwAAAAEBAQECAgICAwMDAwAABAQFAQQFBgIEBgcDBAcEAAMABAABAQUBAgIGAgMDBw4DGjY3cwABA///AAH//wEC//8CA///AwAOGjY7KD0qPiM/enN2KXcnBQgCBgBAAgEEQAAEAwYAAAYFCMAACAcCgAABEQEBAQMCAgMFAwMFBwQEBwEBAAIEAgAEBgMABggEAAgCAQQBAgECAwQCAwUGAwQHCP//CQr//wAL//8DDv//Dg3//w0M//8MBxMEGid3KSoAAQP//wEC//8CA///AwT//wQBDRo6KD0qPiM/e3Z8dXcpBQcBBQBAAQADQAADAgUAAAUEB8AABwYBkwABEQEBAAICAgIEAwMEBgQEBgABAAEDAgADBQMABQcEAAcBAQQAAQECAgMCAwQFAwQGB///iP//if//iv//Cwz//wwN//8NBgwGGigqI3V3KQABBv//AAH//wEC//8CA///AwD//wQF//8FBv//BgMNGjdzNjtAJTondykqfX4FBQEEAAAGAgVAAAcABoAABAMHwAAFBAYAQAEQAAADAQEBAQICAgIAAwMDAAAEBAUBBAUGAgQGBwMEBwQAAwMEAAEBBQECAgYCAwAH//8ICf//CQr//woL//8IC///DA0NBBondykqAAED//8BAv//AgP//wME//8BBAwaNjdzOjtAJXJvcHspBQYCBQAABwMGQAAEAAeAAAUBBMAABgUHAEABEAAAAQIBAQIDAgIDAAMDAAEABAUGAQQGBwIEBwQDBAQFAwABBQABAgYBAgMHAgMABP//Awj//wgJ//8JCv//CgH//wsMCwYaNjdzcm9wAAEF//8BAv//AgP//wME//8EBf//BQb//wYBCBpBQkNEf4CBggUGAgUAIAcDBkAtCAQHgCAFAQjALQYFBwBAAwsAAAECAQECAwICAwQDAwQBAAQFBgEEBgcCBAcIAwQIBQMAAQUAAQIGAQIDBwIDBAgKCBpBQkNEf4CBggUGAgUAIAcDBkAtCAQHgCAFAQjALQYFBwBAAQsAAAECAQECAwICAwQDAwQBAAQFBgEEBgcCBAcIAwQIBQMAAQUAAQIGAQIDBwIDBAgVCho2fTcoc3V7fDl3AAMK//+A//+B//+C//+D//+E//+F//+G//+H//+I//+J//+KAQV6KiN2fHcAAwX//4D//4H//4L//4P//4T//4UCDYNKS0xNTk9QUVKEVFWFCAIBB4AgAwQCwAAGBQMAIAcIBkAAAAkMGDAACgloHAALCpgcAAwL6DADEgEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcEBAwJBQUJCgYGCgsHBwsM//8MDQQFAAkFBgAKBgcACwcEAAwEEklKS0xNTk9QUVdYWVpbXF1eX4YIAgEHgCADBALAAAYFAwAgBwgGQAAMCwANAA4NDIAAEA8OwAAKCRAAEwMXAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQHCQoEBQsMBQYNDgYHDxAEBAkLBQULDQYGDQ8HBw8J//8KDP//DA7//w4Q//8QCv//ERL//4AHBRpEQUJDYAADAv//AQP//wIE//8ABQgFGkRBQkNhAAMC//8BA///AgT//wAFCQhiSktMTU5PUFEIAgEHgCADBALAAAYFAwAgBwgGQAAAAgeAOwADAsA2AAYDADYABwZANgMNAQEBBAEFAgMBAAECAQIDBAMHBgcDAwUIAgMFBgADBwgCBgMGAAQCBwQFAAIFBgADBgcABgQHAAcGBRojKHV7dwABBf//gP//gf//gv//g///hP//hRIHGjd7hygndykAAQX//4D//4H//4L//wME//8FBv//BgcUBRqHKCd3KQABAv//AQL//wME//8EBQkaY0RMZGVPQ2ZJBAIBB4AgAwQCwAAGBQMAAAcIBkAAAQwBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHAgIEBQAAAQj//wkAERoEMCO6IiAD//9ZJzIB//84KB0EDiSmIxsB//8HKDMB//84KDkAjCJOIjMD//+SKRwD//9ZJyIB//8HKBsBCiDzHxoAqiFeISIB//84KBsBLB8sHyABCiDzHxsC//9ZJx4B//8HKCABCiDzHxwAySDJIB8AnyCfIB0ARB9EHyAB//8HKCIB//84KB0B//8XKhsBCiDzHxwARCBEIB8ARCBEIB4BCiDzHxoAICLiISAB//8XKhwB//84KBsBCiDzHyIAeh96HyED//9sKiIB//8HKBsBLB8sHxwBCiDzHx0AFB/sHiAAeh96H2cB//8HKBwD//9sKikCACWqJBsAmx+bHyEA0x/THyIBCiDzHx4AyR7JHiAB//8HKB0D//9ZJxwAkB+QHx8AkB+QHyEAXiBeICIA/SD9IBsBCiDzHx4BCiDzHyAB//8HKCID//+SKRsAyR7JHhwAkB+QHx8AkB+QHyIBCiDzHx4BRB9EHx0AjCJOIjIB//8XKmgD//9ZJzcD//97KRsBCiDzHykBLB8sHxwAkB+QHx8AkB+QHzIB//84KB4BFyamJWgBiSRaJCEAhR+FHxwAkB+QHx0AhR+FHx8AFB/sHiIBCiDzHxoAjCJOIiED//9ZJyIB//8HKCAAph+mHx4AtR+1HxsBCiDzHxsD//9ZJyAB//8HKBsBCiDzHx4BCiDzHyEALyAvIB0ALyAvIBwANiE2IRsB//8HKCIB//84KCEAXiBeIB0AiyCLIBoBCiDzHx4BCiDzHzID//9ZJx4D//+SKRwA6CDoIB8AnyCfICIAGyAbIB0BCiDzHyEB//8HKB4D//+SKRsAciByIDkAFB/sHiIBCiDzH2kB//8HKDcCACWqJGgBiSRaJCABCiDzHyEAhR+FHxwA0x/THx0AhR+FHx8AkB+QHzcAqiFeITID//97KSIB//8HKBsBCiDzHyAAGyAbIDID//9sKiIB//8XKmoBVio0KjkBjSUYJTcCACWqJBoAXB9cHzIB//8XKiID//9sKmoD//+wJycCACWqJDkBVio0KjcAXB9cHxoAjCJOIhsD//9sKiEB//8XKh4B//8HKBwCACWqJCIBRB9EHx4AciByIBsD//+SKSIB//8HKDcCACWqJCkBiSRaJCABLB8sHxwBCiDzHzID//+SKR8B//84KCID//97KSkCriY+JhwBFyamJRsBCiDzHx4BCiDzHyABCiDzHyAD//97KRwB//84KB0D//+SKRoCriY+JiID//9ZJxsBCiDzHx8BCiDzHx4BRB9EHyEB//8HKDkD//97KR4BiSRaJBsBCiDzHyABLB8sHyIAFB/sHjIB//8HKBoD//9sKiIB//8XKhsAyR7JHjkBCiDzHx4BRB9EHyAB//84KB8B//8HKCID//97KSEAHCEcIR0ALyAvIBwBCiDzHx4BCiDzHxoAICLiIRsB//8XKiAD//9ZJyIB//8HKDIBjSUYJRwBCiDzHyAB//84KCkB//8HKB8CACWqJBsBCiDzHyIAyR7JHh4Amx+bHxsD//+SKR0BFyamJTcCACWqJCkBiSRaJDIBiSRaJCEAXiBeICIBCiDzHx4BCiDzHwkAAQIDBAUGBwgJBgAGB80SAAcJwBoACQhAGgAIBjMSBwgJgC8HBggAQAEN//8EAf//AQL//wID//8DBAADAAUAAwUGAAUGBwABAAcBBAcJAQIACQIECAkCAwAIAwUGCAQFBwhOLDEA8i9QAZdBMSxTTTqeS0WqMjE6jTY3MwAMMFEBl0ExLFNNOp5LRQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBuAAPDw8/Hg8HAAAAAAAODwIPHkP/v5+PDz8AAAAAAB8PQw54Hl8eDwMPAAAAAA4eRM9PQI9/j0yPAAAAAAAAD4/OAg9BnkZPgg8AAAAADw0fgA7Bgw9OD0GEAAAAAA4Bzk8+Qp8NwB/ePgAAAAAARwUMHx4/hw4P/wAAAAAAD04ezwMOHg0PgwIOAAAAAD2/wDt4AA+Hnw8+QAAAAAAAPs4EAg8EOw4HP58AAAAAAY8ADgGPPjgCAY4PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJCAMAQABfAA=="},{"id":"ca","v":"HBcAEPD6BgD+/v7+/v7/AQEAAAAAgAAAAPgIBvoA5AAA//8AAC8vLy8vL+8AEAD8BP8AAQj6/wAA//75IBoA8BAM+ugA/v7+/v7+AQEBAAAAgAAAAAj4DPT8BBgG+nj+AAD/AAD//wCvsLCwsLAAECAABPwAAf8IAP8A//8AAAD//9AKFBEIBAAAAAAAAAAAAQAoFIAgBPwQCAIAAAAAAAAAAAAAAAAAAAECAP8AAABqAAEAAgAAAAMEAAUGBwgJCgsMDQ4MDQ4MDQ4PEA8REQ8QEBESEhMQFA8SEg8RDw8PFQ8RFhQPExMPDw8UDxISExcYGBcXGBgXDxcXFxcYGBgYGQ8aDw8ZGRkZGhoaGg8PDw8XFxgYFhYbHBsEkAJMPBwAAAEAAgMDBAQFBgcICQoLDA0NDQ4ODg8PDxARERASEhIQERMTEBIUFBUUEBIVEBYQERASFRMTEBUQExQUFBMTFxcYGBkZGhobGBoZFxcZGhgQGBAcHR4cHx8fHx4cHh0ZHBoZGRoQIBESFE8JqQFtUQAAAAAAAQICAgADBAUGBwgJCgoKCgoKCgoKCwsLCwsLCwsLCwwNDAsLCwsODw8PCwsPDwsLCwsLCw0NDA0NDQ0LCwsLEBAQEBARCwsREQsLEQsLCwsQCxALEAsQCxALEhMUEREREQsLCwsLCKI+IF4oHhscHR4gISIfHSYdHx4sLS47ISAeGz1ERUZHSFJVXyEIDE4I8AYhAQEBAQEBAQEDAQIDAgEBAgEDAwMDAQEBAQEBAQEBAgUtdQnxDa0AAQEBAQAAAQAAAAABAAEAAAAAAAEAAAEAAAAAAAABAAAA4/UHJT1hi6nN9ydRgbHV/yNHZZWz1/slSXmpzfEbP2MAKiorKysrKysrKywsLCwsLC0tLS0tLS0uLi4uLi4vLy8AAgIEAwYHBAYHCAcHCAUHBgYFCAQGBgYGCAgGBgcFBgUA6fsNKz1hkanN9ydXgbfV/yNHZZuz1wElSXmpzfEhP2MAKiorKysrKysrKywsLCwsLC0tLS0tLS4uLi4uLi4vLy/CJAoD//+BLwsD/////wwD/////w0D/////w4D/////w8D/////xAD/////wYaa2xtbh9vAAIF//8BAv//AgP//wME//8EBf//BQb//wYBBxogHyFwa3FtAAIG//8DAf//AQL//wIA//8DB///BAX//wUG//8GBwMaIB8hAAID//8DAf//AQL//wIA//8DAANya2xvAAID//8DAf//AQL//wIA//8DAANrcW5vAAID//8AAf//AQL//wID//8DAAUaIh0fIBsAAQT//wEC//8CA///AwT//wQF//8FAQIaGx4AAQD//wECAhohHQABAP//AQICGhwfAAEA//8BAgIaICIAAQD//wECAhobHQABAf//AAH//wACAhohIgABAf//AAH//wACAhogHAABAf//AAH//wACAhocHgABAf//AQD//wIABBohHB0fAAEB//8BA///AgQGGiMkcyVvdAACAv//AQL//wME//8FBgMaI3NvAAIC//+B//+C//+DAxobch4AAwL//wAB//8AAv//AgMEGichbR0AAwL//wEC//8BA///AwQFGigcdSkfAAMD//8CAf//AwH//wME//8EBQN2ISgiAAMC//8BAP//AgD//wIDBCkgKm0iAAMD//8AAf//AAL//wID//8DBAN2Gx0gAAMC//8AAf//AAL//wADBBobbG4fAAMC//8BAv//AgP//wMEBBoiKncfAAMC//8BAv//AgP//wMEBhocayBydR0AAwT//wEC//8CA///AwT//wQF//8FBgQaHCp3IAADAv//AQL//wID//8DBAYaHGshKSceAAME//8BAv//AgT//wME//8EBf//BQYFGhwqIXIdAAMD//8BAv//AgP//wME//8EBQcaHGxwKXcdHwADBv//AQL//wID//8DBP//BAX//wUG//8FAv//BAcHGhwdHh8hK3gFBgEF4CwHAgYwMAcDAkAsBwQDgCwGBQeXJwIKAQEBAgICAgMDAwMEBAQEBQAABQEAAQEGAAQFBgECAgcCAwMHAwQEBwEEBgcHGhwdHh8hK3gFBgEF4CwHAgYwMAcDAkAsBwQDgCwGBQeXJwIFAAEBBgAEBQYBAgIHAgMDBwMEBAcBBAYHBRpxHh8heQQFAQTzKgUCATMxBQMCgDQFBAOgLwIHAQEBAgICAgMDAwMEAAAEAQABAQUAAwQFAQICBQIDAwUFGnEeHyF5BAUBBPMqBQIBMzEFAwKANAUEA6AvAgMAAQEFAAMEBQECAgUCAwMFBRprHW5vegQFAgENMAUDAmA4BQQDgDUFAQTANQIHAAABAgEBAgMCAgMEAwMBBAADBQEAAQUC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Ev//gAcFGkNAQUJfAAMC//8BA///AgT//wAFCAUaQ0BBQmAAAwL//wED//8CBP//AAUJCGFJSktMTU5PUAgCAQeAIAMEAsAABgUDACAHCAZAAAACB4A7AAMCwDYABgMANgAHBkA2Aw0BAQEEAQUCAwEAAQIBAgMEAwcGBwMDBQgCAwUGAAMHCAIGAwYABAIHBAUAAgUGAAMGBwAGBAcABwYFGiModX13AAEF//+A//+B//+C//+D//+E//+FEgcaNn2JKCd3KQABBf//gP//gf//gv//AwT//wUG//8GBxQFGokoJ3cpAAEC//8BAv//AwT//wQFCRpiQ0tjZE5CZUgEAgEHgCADBALAAAYFAwAABwgGQAABDAEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcCAgQFAAABCP//CQARGgQ6I8QiIAL//1goMwP//8kpHQQhJLAjGwL//ycoZgL//1goOACWIlgiZgP//7IpHAP//3UoIgL//ycoGwEKIPMfGgCvIV4hIgL//1goGwEsHywfIAEKIPMfGwL//3knHgL//ycoIAEKIPMfHADJIMkgHwCfIJ8gHQBEH0QfIAL//ycoIgL//1goHQL//zcqGwEKIPMfHABEIEQgHwBEIEQgHgEKIPMfGgAqIuwhIAL//zcqHAP//3UoGwEKIPMfIgB6H3ofIQL//1goIgP//8kpGwEsHywfHAEKIPMfHQAUH+weIAB6H3ofZwP///woHAP//4wqKQIgJcokGwCbH5sfIQDTH9MfIgEKIPMfHgDJHskeIAL//ycoHQP//3knHACQH5AfHwCQH5AfIQBeIF4gIgD9IP0gGwEKIPMfHgEKIPMfIAL//ycoIgP///woGwDJHskeHACQH5AfHwCQH5AfIgEKIPMfHgFEH0QfHQCWIlgiMwL//zcqaAP//3knNgP//3UoGwEKIPMfKQEsHywfHACQH5AfHwCQH5AfMwL//1goHgP//3UoaAGpJHokIQCFH4UfHACQH5AfHQCFH4UfHwAUH+weIgEKIPMfGgCWIlgiIQP//3knIgL//ycoIACmH6YfHgC1H7UfGwEKIPMfGwP//3knIAL//ycoGwEKIPMfHgEKIPMfIQAvIC8gHQAvIC8gHAA2ITYhGwL//ycoIgL//1goIQBeIF4gHQCLIIsgGgEKIPMfHgEKIPMfMwP//3knHgP//7IpHADoIOggHwCfIJ8gIgAbIBsgHQEKIPMfIQL//ycoHgP//7IpGwByIHIgOAAUH+weIgEKIPMfaQL//ycoNgIgJcokaAGpJHokIAEKIPMfIQCFH4UfHADTH9MfHQCFH4UfHwCQH5AfNgCvIV4hMwP//5spIgL//ycoGwEKIPMfIAAbIBsgMwP//4wqIgL//ycoagF2KlQqOAGtJTglNgIgJcokGgBcH1wfMwP//7IpIgL//ycoagP//9AnJwIgJcokOAF2KlQqNgBcH1wfGgCWIlgiGwP//4wqIQL//zcqHgL//ycoHAIgJcokIgFEH0QfHgByIHIgGwP//7IpIgL//ycoNgIgJcokKQGpJHokIAEsHywfHAEKIPMfMwP//3UoHwP//8kpIgP//5spKQFWJ+cmHAE3JsYlGwEKIPMfHgEKIPMfIAEKIPMfIAP//5spHAL//1goHQP//7IpGgLOJl4mIgFWJ+cmGwEKIPMfHwEKIPMfHgFEH0QfIQL//ycoOAP//5spHgGpJHokGwEKIPMfIAEsHywfIgAUH+weMwL//zcqGgP//4wqIgP//3UoGwDJHskeOAEKIPMfHgFEH0QfIAL//1goHwL//ycoIgP//5spIQAcIRwhHQAvIC8gHAEKIPMfHgEKIPMfGgAqIuwhGwL//ycoIAP//3UoIgL//zcqMwGtJTglHAEKIPMfIAP//3UoKQL//ycoHwIgJcokGwEKIPMfIgDJHskeHgCbH5sfKgP//7IpGgP//8kpNAP//5spKQP///woHwP//3UoCQABAgMEBQYHCAkGAAYHzRIABwnAGgAJCEAaAAgGMxIHCAmALwcGCABAAQ3//wQB//8BAv//AgP//wMEAAMABQADBQYABQYHAAEABwEEBwkBAgAJAgQICQIDAAgDBQYIBAUHCDqeS0WqMjE6jTY3MwAMMFEBl0ExLFNNOp5LRQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4DsROH4c4AA8DwAAAAAAHxEHCOB5Bww8ew0MAAAAADM9HTgAfTw8fA4MPAAAAAAAIDJ4P/0MPADgeRwAAAAAeD0QPA48OADtDD04AAAAADge/h0+/QDwCX30AAAAAAA4PHztBng4Owd6fhEAAAAADBw9Bww9ej1+/Qw4AAAAAP4/fnk8DDsAeDgceAAAAAB8FDAdETwpODx44DgAAAAAeCQ5MBw7PBQwHT4AAAAAADh4AD14AAYAPHkA6gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANlQ4AygBMAA=="},{"id":"me","v":"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AQIBAQIDAgIDBAMDBAEDAAEFAAECBQECAwUCAwQFBRp4HnodewQFAgENMQUDAm01BQQDkzUFAQTgOQIDAwABBQABAgUBAgMFAgMEBQUaeHYgHXsEBQIBADYFAwJNMQUEA6A5BQEE4DkCBwAAAQIBAQIDAgIDBAMDBAEDAAEFAAECBQECAwUCAwQFBRp4diAdewQFAgEANgUDAk0xBQQDoDkFAQTgOQIDAwABBQABAgUBAgMFAgMEBQgaGnxybSssLS4FBgIFwAAHAwYAAAgEB0AABQEIgAAGBQcAQAELAAABAgEBAgMCAgMEAwMEAQADAQUAAQIGAQIDBwIDBAgABAUGAQQGBwIEBwgDBAgFBBoafHJtAAED//8BAv//AgP//wME//8EAQgaGnwjdSssJCUFBgIFwAAHAwYAAAgEB0AABQEIgAAGBQcAQAELAAABAgEBAgMCAgMEAwMEAQADAQUAAQIGAQIDBwIDBAgABAUGAQQGBwIEBwgDBAgFBBoafHJ1AAED//8BAv//AgP//wME//8EAQAaAAMA//+AEH0afCN1KywkJXR9c35/enmABQYCBcAABwMGAAAIBAdAAAUBCIAABgUHAEABEgAAAQIBAQIDAgIDBAMDBAEAAwEFAAECBgECAwcCAwQIAAQFBgEEBgcCBAcIAwQIBf//CQv//woM//8EDf//DQ7//w4P//8PEP//EAITCH0afCN1f3p5gAABCP//AQL//wID//8DBP//BAH//wQF//8FBv//Bgf//wcI//8IAQ+BGnwjdSssJCVxgXR+eWuCBQYCBcAABwMGAAAIBAdAAAUBCIAABgUHAEABEgAAAQIBAQIDAgIDBAMDBAEAAwEFAAECBgECAwcCAwQIAAQFBgEEBgcCBAcIAwQIBf//if//iv//i///DA3//w0O//8OD///DwIMCIEafCN1fnlrggABB///AQL//wID//8DBP//BAH//wUG//8GB///Bwj//wgCDxoafHJtKywtLi8lg395a2wFBgIFwAAHAwYAAAgEB0AABQEIgAAGBQcAQAERAAABAgEBAgMCAgMEAwMEAQADAQUAAQIGAQIDBwIDBAgABAUGAQQGBwIEBwgDBAgF//8JCv//Cwz//wwN//8NDv//Dg///w8LDQkaGnxybYN/eWtsAAEI//8BAv//AgP//wME//8EAf//BQb//wYH//8HCP//CAn//wkFDRoafHJtKywtLnR5em5wBQYCBcAABwMGAAAIBAdAAAUBCIAABgUHAEABEAAAAQIBAQIDAgIDBAMDBAEAAwEFAAECBgECAwcCAwQIAAQFBgEEBgcCBAcIAwQIBf//CQr//wQL//8LDP//DA3//w0CCwcaGnxybXpucAABB///AQL//wID//8DBP//BAH//wQF//8FBv//Bgf//wcCCBowMTIzhIWGhwUGAgUAIAcDBkAtCAQHgCAFAQjALQYFBwBAAwsAAAECAQECAwICAwQDAwQBAAQFBgEEBgcCBAcIAwQIBQMAAQUAAQIGAQIDBwIDBAgKCRpxcoJtdXRzfn8AAwn//4D//4H//4L//4P//4T//4X//4b//4f//4j//4kBBxpxgnV0c35/AAEH//+A//+B//+C//+D//+E//+F//+G//+HEg04OTo7PD0+P0BBQkNERQgCAQeAIAMEAsAABgUDACAHCAZAAAAJDCArAAoJWhYACwqmFgAMC+ArAxIBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHBAQMCQUFCQoGBgoLBwcLDP//DA0EBQAJBQYACgYHAAsHBAAMAw2IOTo7PD0+P0BBiUNGiggCAQeAIAMEAsAABgUDACAHCAZAAAAJDBgwAAoJaBwACwqYHAAMC+gwAxIBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHBAQMCQUFCQoGBgoLBwcLDP//DA0EBQAJBQYACgYHAAsHBAAMBBI4OTo7PD0+P0BHSElKS0xNTkSLCAIBB4AgAwQCwAAGBQMAIAcIBkAADAsADQAODQyAABAPDsAACgkQABMDFwEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcEBwkKBAULDAUGDQ4GBw8QBAQJCwUFCw0GBg0PBwcPCf//Cgz//wwO//8OEP//EAr//xES//+ABw44UDM7UVI+MlNUVVZXWFkEAgEHgCADBALAAAYFAwAABwgGQAADEgEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcCAgQFAAABCP//CQr//wwN//8JDP//Cg3//wsO//8AC///AA4FBRozMDEyWgADAv//AQP//wIE//8ABQgIWzk6Ozw9Pj9ACAIBB4AgAwQCwAAGBQMAIAcIBkAAAAIHgDsAAwLANgAGAwA2AAcGQDYDDQEBAQQBBQIDAQABAgECAwQDBwYHAwMFCAIDBQYAAwcIAgYDBgAEAgcEBQACBQYAAwYHAAYEBwAHBhJEOTo7PD0+P0BBXIxdjV5fTmCKCQIBB4AgAwQCwAAGBQMAIAcIBkAACgkRIAAMCwpNAA4NDIAAEA8OuAARABDzAAEZAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQFCQoFBgsMBgcNDgcIDxAIBAARBQUJCwYGCw0HBw0PCAgPAAQEAAn//woM//8MDv//DhD//xAR//8RCv//ABIQEmE5Ojs8PT4/QEdIYmNkZU1OYEUJAgEHgCADBALAAAYFAwAgBwgGQAAKCRENEgwLCkAADg0MgAAQDw7AABEAEPMSARkBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHBAUJCgUGCwwGBw0OBwgPEAgEABEFBQkLBgYLDQcHDQ8ICA8ABAQACf//Cgz//wwO//8OEP//EBH//xEK//8AEg8eACciyCEbA///oSkdA///8CchAWQfZB9mAI4gUCAbA///aScfA///aSciAAQfBB8eAE8fTx8hAHUfdR8aABggzB8hA///aSccAWQfZB8aACciyCEgA///8CccA///DyobAWQfZB8cAWQfZB8aAPogvCAiA///vCpnA///DyocA///8CcbAWQfZB8hAHUfdR8jAIIhKCEiAf//FydoA///wCYbAN8e3x4gAMkeyR4eABgj2iIiAf//FycdA///iikgAZQmJCYbAHUfdR8hAWQfZB8jAKwibiIfAf//FycbA///oSkhAU8l2CQdAMkeyR4cANQe1B4jABgj2iIfAfIlfCUiA///8CceA///dygcAZQmJCYbAN8e3x4hAN8e3x4fAFofWh8jABggzB8bA///aScdA///DyohANQe1B4cANQe1B4iA///8CcaAf//RCchA///FikcA///DyobAGQfZB9nAHUfdR8gAWQfZB8aAI4gUCAfA///8CceAf//FycgA///aSchAWQfZB8iAHUfdR8iAf//FycaAZQmJCYhAU8l2CQcA///oSkbAGQfZB9nAHUfdR8gAWQfZB8dACciyCEeAf//RCchAf//FycgA///wCYcAGQfZB8iAWQfZB8hA///FikiA///aScaA///8CdpA///8CchA///dygcA///aSdnAHUfdR8hAHUfdR9pABgj2iIbA///aSdoA///aSciA///oSkgA///DyofAMkeyR4cAN8e3x4bA///8CciA///oSkaA///iikhAfIlfCUdAEUfRR8gAMkeyR4cAHUfdR8iAWQfZB8fA///DypnA///vCodAf//FycgA///wCYhADofOh8iAA4fDh8bAWQfZB8cAWQfZB8aAIIhKCEbA///DyoiA///8CcdAf//RCcgAackLCQiAHUfdR8hAWQfZB9qACciyCEbA///FikiA///wCYdAf//FycfAOoe6h4hAN8e3x4fAf//FyceA///wCYgA///iilnApwjRiNmArMfjh8iABkfGR8hADofOh8bAWQfZB8fA///8CcaA///8CcbA///dyghACkfKR9pAgsktSNmApwjRiMbAN8e3x4eAOoe6h4iA///8CccAU8l2CQhA///oSlmApwjRiMbAGQfZB8eADofOh8gAPUe9R4aACciyCEcA///aScgA///8CcbAFofWh8fADofOh8cAWQfZB8iA///DypoA///aSdpAf//FydqArMfjh8bANQe1B4cAN8e3x4eAMkeyR4bAHUfdR9mAKwibiJnA///8CdpA///aSchA///aSccA///vCoiANQe1B4bANQe1B4iAf//RCcdA///DyoaAackLCRpA///8CcbAHUfdR8eAWQfZB8hANQe1B4cANQe1B4jACciyCEgA///wCYcA///DyobAN8e3x4hAN8e3x4dA///RCcaA///FikgAackLCRoAGQfZB8iAN8e3x4cAN8e3x4hAWQfZB8hA///aSciA///aSdpA///aScaA///dygfAOoe6h4hAN8e3x4cAHUfdR8bA///dwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACDBgjGA0MAhsgcCAAAAAAcDBwGB1wNQQYwHBwAAAAAHAgGHAM+hzAcCBwIAAAAAAYcCDAHBsPGMB4IHAAAAAAcMB6H/n6+xgO9XhwAAAAACAYdyh4Aw0bwHDAIAAAAABwwCDADAxyGXggeHAAAAAAcHBwGHl4GxgiynDAAAAAAHDw8MAbGDAgeP5wIAAAAAAc+Pj5/wIMccgYwHAAAAAAePYieh/4/zUccnAgAAAAACB2wBgaGH8EfXIgwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHCA4AsIBfAA=="},{"id":"we","v":"HBcAEPD6BgD+/v7+/v7/AQEAAAAAAAAA+AgG+vwEgAAA//8AAL+/v7+/v+8AEAAE/P7/AQL/AAD//wD/IhwA8BAM+ugA/v7+/v7+AQEBAAAAAAAAAIAI+Az0/AYYBPoQgAD/AAD//wBPUFBQUFAAECAEAPwC/gH//wD/AP//AAAA/wAAFBEIBAAAAAAAAAAAAQAogAAUBPwQBgIAAAAAAAAAAAAAAAAAAQEAAP8AAABwAAEAAgAAAAMEAAUGBwgJCgsMDQ4MDQ4MDQ4PEBAQDw8RERISERMUEhQSFQ8PDxQVDxQPExMPDxMWFxcWFhcXFg8WFhYWFxcXFxgPGQ8PDxgYGBgZGRkZDxYWFxcaGhobGxsPDxgbGhkPDxgYGRkUHBMAAAEAAgMDBAQFBgcICQoLDA0NDQ4ODg8PDxAQERISERIRExQQFREUFRMUERETFhMVFREXFxcWFhgYGRkaGhsbHBkbGhgYGhsZERkRHR4fHR8gICAgHR8eGxoaGxgRHBgRHCEfESAgHx0YGRkZGRYiIgAAAAAAAQICAgADBAUGBwgJCgoKCgoKCgoKCwsLCwsLCwsLCwsMDAwLDQsNDg4ODQwMDAsPDw8PCwsLCxAQEBAQEQsLERELCxELCwsLEAsLEAsQCxALEBIRERERCxMLCxMLEhQQEBALEAsLEAsQCwsLJRobIRweJB0gJBscJh4gIBobMDEyHhocHSQdJR88PT4/QEpNV0dCAQEBAQEBAQECAgMBAgMCAwMBAQEDAgICAwMBAwEBAQEBAQEBAQEAAQEBAQEBAQEBAQABAAEAAAEAAQAAAAABAAEAAQEAAAAAvtb0BiRIbIqu0uoIJkpohrDU+BZAcJrE4gAeSGCEqMwAKysrLCwsLCwsLCwtLS0tLS0tLS4uLi4uLi8vLy8vLy8AAwQCBAUFBAUFAwUEBgQFBwUGBAcIBwcEBQQHAwUGBgYAxNz6DCpOcpC02OoOJlBohrbU/hZAcJrK4gYeTmaEqMwAKysrLCwsLCwsLCwtLS0tLS0tLS4uLi4uLi8vLy8vLy/jJAoD///wLwsD/////wwD/////w0D/////w4D/////w8D/////xAD/////wRxchwdHgACBP//AAH//wEC//8CA///AwT//wQABx8gHiFzInJ0AAIG//8DAf//AQL//wIA//8DB///BAX//wUG//8GBwMfIB4hAAID//8DAf//AQL//wIA//8DAAN1InEjAAID//8DAf//AQL//wIA//8DAAd1InEaGx0eIwACBv//BwH//wEC//8AB///Awb//wME//8EBf//BQYEHxobHR4AAgP//wEC//8CA///AwT//wEEA3Zyd3gAAgP//wAB//8BAv//AgP//wMAAh8kHQABAP//AQICHyEcAAEA//8BAgIfGh4AAQD//wECAh8gGwABAP//AQICHxodAAEB//8BAP//AgABHxoAAQD//wABAnkaIAABAP//AQIDHyAaHAABAf//AQL//wEDBB8hGhweAAEB//8BA///AgQCeSEbAAEA//8BAgEfJAABAP//AAECehodAAEA//8BAgEfIQABAP//AAEGH3kle3x4JwACAv//AQL//wME//8FBgMfeXt4AAIC//+B//+C//+DAx8kdR0AAwL//wAB//8AAv//AgMDKCF0HAADAv//AAH//wAC//8CAwR9cyEoHAADA///AgH//wEA//8AA///AwQEfnMkch0AAwP//wIB//8BAP//AAP//wMEBH8geXQbAAMD//8AAf//AAL//wID//8DBAYfJBscHiEpBQYCAQAmBgMCQDYGBANgNQYFBKAsBgEFwCYCCQAAAQIBAQIDAgIDBAMDBAUEBAUBAAQBBgABAgYBAgMGAgMEBgMEBQYGHyQbHB4hKQUGAgEAJgYDAkA2BgQDYDUGBQSgLAYBBcAmAgQABAEGAAECBgECAwYCAwQGAwQFBgYfGhsqICErBQYCAQAxBgMCTSoGBANzKgYFBMAxBgEF4CwCCQAAAQIBAQIDAgIDBAMDBAUEBAUBAAQBBgABAgYBAgMGAgMEBgMEBQYGHxobKiAhKwUGAgEAMQYDAk0qBgQDcyoGBQTAMQYBBeAsAgQABAEGAAECBgECAwYCAwQGAwQFBgUfIhwqIywEBQIBDSUFAwJgMgUEA4AtBQEEwC0CBwAAAQIBAQIDAgIDBAMDAQQAAwUBAAEFAgECBQMCAwUEBR8iHCojLAQFAgENJQUDAmAyBQQDgC0FAQTALQIDAAMFAQABBQIBAgUDAgMFBAcfGhwdf3YtLgYGAgEgJwcCBjM0BwMCQDMHBAOWIQYFBLMsBgEF4CcCCwAAAQICAgIDAwMDBAQEBAUFBQUBAAUGAQABBgIEBQYFAQIHAgIDBwMDBAcEAQQGBwcfGhwdf3YtLgYGAgEgJwcCBjM0BwMCQDMHBAOWIQYFBLMsBgEF4CcCBgAFBgEAAQYCBAUGBQECBwICAwcDAwQHBAEEBgcIHxobHCogIS8rBgcCAQAmBwMCQCYHBANgLAgFBHMqCAYFwDEIAQbgLAIMAAABAgEBAgMCAgMEAwMEBQQEBQYEBQYIAgUHCAUFAQYABQEHAAECBwECAwcCAwQIAwQFCAgfGhscKiAhLysGBwIBACYHAwJAJgcEA2AsCAUEcyoIBgXAMQgBBuAsAgYEBQYIAgUHCAAFAQcAAQIHAQIDBwIDBAgDBAUIB4CBex+Cg3yEBQUBBAAABgIFQAAHAwaAAAQAB8AABQQGAEABCwAAAAEBAQECAgICAwMDAwAABAQFAQQFBgIEBgcDBAcEAAMABAABAQUBAgIGAgMDBw4DgIF7HwABA///AAH//wEC//8CA///AwAJM4V9fzQ1Njd5egUFAQQAAAYCBUAABwMGgAAEAAfAAAUEBgBAAQ0AAAABAQEBAgICAgMDAwMAAAQEBQEEBQYCBAYHAwQHBAMAAAQAAQEFAQICBgIDAwf//wAI//8ICQUzhX1/eXoAAQX//wAB//8BAv//AgP//wMA//8ABP//BAUHhnqHHzAxJjIFBQEEAAAGAgVAAAcDBoAABAAHwAAFBAYAQAELAAAAAQEBAQICAgIDAwMDAAAEBAUBBAUGAgQGBwMEBwQDAAAEAAEBBQECAgYCAwMHA4Z6hx8AAQP//wAB//8BAv//AgP//wMAAB8AAwD//4APHzOFfX80NTY3eXqIiYGAHwUGAgUAAAcDBkAACAQHgAAFAQjAAAYFBwBAAREAAAECAQECAwICAwQDAwQBAAQFBgEEBgcCBAcIAwQIBQMAAQUAAQIGAQIDBwIDBAj//wEJ//8JCv//Cgv//wsD//8MDf//Dg8TBB96iH95AAED//8BAv//AgP//wME//8EAQ4feYaFMyUwNTR6iH2Be4oFBgIFAAAHAwZAAAgEB4AABQEIwAAGBQeAPgERAAABAgEBAgMCAgMEAwMEAQAEBQYBBAYHAgQHCAMECAUDAAEFAAECBgECAwcCAwQI//8CCf//CQr//woL//+M//+N//+ODAcfeYaFM3qIfQABBv//AQL//wID//8DBP//BAH//wIF//8FBv//BgcOH4CBex+Cg3yEeoh/eYmLBQYCBQAABwMGQAAIBAeAAAUBCMAABgUHAEABEAAAAQIBAQIDAgIDBAMDBAEABAUGAQQGBwIEBwgDBAgFAAMBBQABAgYBAgMHAgMECP//CQr//woL//8LDP//CQz//w0ODQQfeoh/eQABA///AQL//wID//8DBP//AQQOH4CBe4yCg3yEdXhzfjN/BQYCBQAABwMGQAAIBAeAAAUBCMAABgUHAEABEQAAAQIBAQIDAgIDBAMDBAEABAUGAQQGBwIEBwgDBAgFAwABBQABAgYBAgMHAgMECP//Awn//wkK//8KC///CwH//wwN//8NDgsGH4CBe3V4cwABBf//AQL//wID//8DBP//BAX//wUG//8GAQgfODk6O42Oj5AFBgIFACAHAwZALQgEB4AgBQEIwC0GBQcAQAMLAAABAgEBAgMCAgMEAwMEAQAEBQYBBAYHAgQHCAMECAUDAAEFAAECBgECAwcCAwQICgofgImBhnuHfop9iAADCv//gP//gf//gv//g///hP//hf//hv//h///iP//if//igENQEFCQ0RFRkdISUpLTE0IAgEHgCADBALAAAYFAwAgBwgGQAAACQwgKwAKCVoWAAsKphYADAvgKwMSAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQEDAkFBQkKBgYKCwcHCwz//wwNBAUACQUGAAoGBwALBwQADAMNkUFCQ0RFRkdISZJLTpMIAgEHgCADBALAAAYFAwAgBwgGQAAACQwYMAAKCWgcAAsKmBwADAvoMAMSAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQEDAkFBQkKBgYKCwcHCwz//wwNBAUACQUGAAoGBwALBwQADAQSQEFCQ0RFRkdIT1BRUlNUVVZMlAgCAQeAIAMEAsAABgUDACAHCAZAAAwLAA0ADg0MgAAQDw7AAAoJEAATAxcBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHBAcJCgQFCwwFBg0OBgcPEAQECQsFBQsNBgYNDwcHDwn//woM//8MDv//DhD//xAK//8REv//gAcOQFg7Q1laRjpbXF1eX2BhBAIBB4AgAwQCwAAGBQMAAAcIBkAAAxIBAQEE//8CAwEAAQIBAgME//8GBwMDBQgCAwUGAAMHCP//Awb//wIHAgIEBQAAAQj//wkK//8MDf//CQz//woN//8LDv//AAv//wAOBQUfOzg5OmIAAwL//wED//8CBP//AAUICGNBQkNERUZHSAgCAQeAIAMEAsAABgUDACAHCAZAAAACB4A7AAMCwDYABgMANgAHBkA2Aw0BAQEEAQUCAwEAAQIBAgMEAwcGBwMDBQgCAwUGAAMHCAIGAwYABAIHBAUAAgUGAAMGBwAGBAcABwYSTEFCQ0RFRkdISWSVZZZmZ1ZokwkCAQeAIAMEAsAABgUDACAHCAZAAAoJESAADAsKTQAODQyAABAPDrgAEQAQ8wABGQEBAQT//wIDAQABAgECAwT//wYHAwMFCAIDBQYAAwcI//8DBv//AgcEBQkKBQYLDAYHDQ4HCA8QCAQAEQUFCQsGBgsNBwcNDwgIDwAEBAAJ//8KDP//DA7//w4Q//8QEf//EQr//wASEBJpQUJDREVGR0hPUGprbG1VVmhNCQIBB4AgAwQCwAAGBQMAIAcIBkAACgkRDRIMCwpAAA4NDIAAEA8OwAARABDzEgEZAQEBBP//AgMBAAECAQIDBP//BgcDAwUIAgMFBgADBwj//wMG//8CBwQFCQoFBgsMBgcNDgcIDxAIBAARBQUJCwYGCw0HBw0PCAgPAAQEAAn//woM//8MDv//DhD//xAR//8RCv//ABIPHABAI+EiJAP///YpIAF/H38fGgFJIDIgHwCbIkEiJAP//74nGwDSH9IfHAAdIB0gIAFJIDIgHwAZIc0gIAP//74nHQFJIDIgHwCdIVEhHgP//0UoHAP//2QqJAFJIDIgHQFJIDIgKAATItUhGwP//xErHQP//2QqIwP//0UoJAFJIDIgIAFJIDIgKACbIkEiIgP//0UoIAP///YpGwP//74nJACtH60fHgCXH5cfHACdIVEhGgP//0UoIQP//0UoIAETJ54mJAEmHyYfKAATItUhJALsJXolIAETJ54mGwH//40nIQCXH5cfHQCiH6IfbgCbIkEiGwP//2QqGgP//0UoJACtH60fIACtH60fIQFJIDIgKAAZIc0gIQP//74nIACiH6IfHQCiH6IfGwP//0UoHwH//40nIACbIJsgJAFJIDIgHQFJIDIgHwATItUhJAP//74nHQP//zYnGwBaIFogIAFJIDIgJAP//zYnGwH//40nGgFJIDIgIQBuIG4gHACCIIIgHgAOH+YeIQBAI+EiHAP//74nHgH//40nHQC0ILQgGwFJIDIgIQP//0UoIAP//2spKgDJHskeJAC0ILQgGwFJIDIgGwP//0UoHgKFJhQmHABuIG4gGgCXH5cfHQCtH60fIAFJIDIgIQCCIIIgKAATItUhIAKFJhQmJAP//98pGwP//0UoIQATIBMgHgCXH5cfHAP//0UobgP//0UoJAF/H38fHQFJIDIgIAAIIAggGwDcH9wfHwCbIkEiIQH//40nJAP//2QqGwJhJeskIAFJIDIgIQP//2spIAP//0UoKALdI4cjJAFJIDIgHQFJIDIgGwDcH9wfHgDcH9wfHQP//74nHgP//0UoGgP//0UobgLLJHYkJAEmHyYfGwDnH+cfIAAIIAggbwLdI4cjGwP//8woHQP//0UoIAD3H/cfIwJUJPUjbgLdI4cjJACtH60fHAC4H7gfIAP//74nIwH//40nHQP//0UocALdI4cjJAF/H38fHAAIIAggHgDDH8MfbwCdIVEhHAP//74nJAAoICggGgAIIAggHQFJIDIgGwP//98pHQP//0UoIABmHz4fJACiH6IfHACXH5cfbgCbIkEiGwH//40nJACiH6IfGwCiH6IfIAFJIDIgbwJhJeskIQP//0UoGgP//zYnJAFJIDIgGwBmHz4fIACiH6IfHQCiH6IfKACdIVEhJACtH60fIACtH60fHQFJIDIgIQBAI+EiKgP//8woHgP//0UoGwH//40nGwCtH60fHQCtH60fJAP//74nGwP//74nIwP//74nGgC4H7gfIACtH60fKgBmHz4fHAP//74nbgP//74nJAP//8woIAB/H38fGgFJIDIgHQFJIDIgGwP///YpbgP//0UoHAC4H7gfJADJHskeHQFJIDIgIACiH6IfCQABAgMEBQYHCAkGAAYHzQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOPA4fDAMeDAYCCDwAAAAAfRwcBzsYeww8HAMPAAAAADgNPB8MPH8dPw09HAAAAAAYAjsNHAgHCA0cDg4AAAAAbA4YBn4ebw8cejwCAAAAAHgbCDkZAh4cAgx0DgAAAAAYDAIcBwY/Dh4GCA0AAAAAGAI4CnoCGzgMPB4MAAAAADgbBjgaCGwOOT8MHAAAAABwHHl4HAI/cA4bfg4AAAAAHAw8fBw7GRgIOBsYAAAAAAwcODgMH3UcPA4YDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCQYAPwCwAA=="}];
+const GS_FLY_ZP = { 0x12: 7, 0x14: 0x3f, 0x15: 1, 0x16: 0x15, 0x17: 0xe8, 0x2f: 0xff, 0x30: 0xff,
+  0x33: 0x1b, 0x38: 0x2a, 0xba: 1, 0xbf: 0x60, 0xff: 1 };
+function gsFlyMemory(ram, cockpit, theatre, view) {
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const m = ram.slice();
+  for (const r of cockpit.ram) m.set(b64(r.b), r.a);
+  const t = b64(theatre.b), v = b64(view.v);
+  m.set(t.subarray(0, 256), 0x1A86); m.set(t.subarray(2560, 3200), 0x5100);
+  m.set(v.subarray(0, 0x147A), 0x1B86); m.set(v.subarray(0x147A, 0x157A), 0xE200);
+  for (let a = 0; a < 256; a++) m[a] = GS_FLY_ZP[a] || 0;
+  m[0xA4D1] = 0x61; m[0x5105] = 0; m[0x81AC] = 0; m[0xF3] = 0x80;
+  const c = v.subarray(0x157A);
+  for (let row = 1; row <= 12; row++) for (let col = 4; col < 36; col++) m[0x7C00 + row * 40 + col] = c[1];
+  return { m, bg: c[0], screen: c[1], colour: c[2], start: { x: c[3] | c[4] << 8, y: c[5] | c[6] << 8, heading: c[7] } };
+}
+function gsFlyView(cpu, m, eye) {
+  const h = eye.height + 24, p = (-eye.pitch) & 255;
+  m[0x812D] = eye.x & 255; m[0x812E] = eye.x >> 8 & 255; m[0x812F] = eye.y & 255; m[0x8130] = eye.y >> 8 & 255;
+  m[0x8131] = h & 255; m[0x8132] = h >> 8 & 255;
+  m[0x8133] = (-eye.heading) & 255; m[0x8134] = p >> 1 | p & 0x80; m[0x8135] = (-eye.roll) & 255;
+  const c0 = cpu.cycles;
+  cpu.call(0x8F01, {}, { maxSteps: 2000000 });
+  return { squares: Array.from(m.subarray(0x826F, 0x8278)), cycles: cpu.cycles - c0 };
+}
+// end of gs-fly
+
 const $ = (id) => document.getElementById(id);
 const need = (name, el) => { if (el) el.textContent = name + ' did not load, so this widget cannot run here.'; };
 const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-const GS_COCKPIT = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[160,85,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,93,0,255,216,1,249,126,241,0,254,3,255,255,240,245,240,251,243,247,247,241,241,241,241,241,241,241,241],"cia2":[150,63],"cpu":[47,21],"writes":[[154,46,53277,0,0],[154,52,53272,185,184],[154,58,56576,148,148],[155,1,53281,240,0],[155,7,53271,0,0],[155,56,53276,0,0],[155,62,53264,96,96],[156,5,53248,100,100],[156,11,53250,179,179],[156,17,53252,48,48],[156,23,53254,68,68],[156,29,53256,110,110],[156,47,53262,36,36],[156,53,53249,217,217],[156,59,53251,190,190],[157,2,53253,235,235],[157,8,53255,235,235],[157,14,53257,162,162],[157,20,53259,182,182],[157,26,53261,207,207],[157,32,53263,215,215],[157,44,53288,240,0],[157,50,53289,253,13],[157,56,53290,250,10],[157,62,53291,247,7],[158,5,53292,247,7],[158,11,53293,247,7],[158,17,53294,247,7],[158,23,65534,6,6],[158,29,65535,146,146],[251,40,53281,245,5],[251,54,53271,1,1],[252,25,53277,3,3],[252,42,53272,249,248],[252,54,56576,150,150],[253,14,53276,254,254],[253,20,53264,0,0],[253,26,53248,160,160],[253,32,53250,0,0],[253,38,53252,0,0],[253,44,53254,0,0],[253,50,53256,0,0],[254,12,53262,0,0],[254,18,53249,85,85],[254,24,53251,0,0],[254,30,53253,0,0],[254,36,53255,0,0],[254,42,53257,0,0],[254,48,53259,0,0],[254,54,53261,0,0],[255,4,53263,0,0],[255,16,53288,241,1],[255,22,53289,241,1],[255,28,53290,241,1],[255,34,53291,241,1],[255,40,53292,241,1],[255,46,53293,241,1],[255,52,53294,241,1],[258,22,53269,8,8],[260,50,53251,0,0],[261,24,53248,0,0],[263,14,53266,80,80],[263,38,53263,48,48],[265,18,53254,28,28],[265,42,53251,2,2],[271,36,65534,184,184],[271,42,65535,148,148]],"colour":"AAAABQUABQUABQUFBQUFAAUFBQUFBQUFBQUFBQUFBQUFBQAFBQAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgAAAAAAAAAABgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAAAAAAAAAAFBQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEFBQAAAAAPDw8BAgIFBQEBAQEBAQEBAQEBAQEBAQEBAAEBAQEBAQULCwsBDw8PDw8BBQYCBwUBAQEBAQEBDQ0NDQ0NDQ0NDQABAQEBAQEBCwsLCwEPDw8PAQcHBwcBAQEBAQEBAQ0NDQ0NDQ0NDQ0BAQEBAQEBAQoKCwsBDw8PAQEHBwcHBQEBAQEBAQENDQ0NDQ0NDQ0NAAEBAQEFAQELCwsLAQEPDwEFBwcHBw8BAQEBAQ8BDQ0NDQ0NDQ0NDQ8PAQEBAQEPCwsLCwUBDwEMAgcHBwcPDwMDAwMPBQ0NDQ0NDQ0NDQ0PDwEBAQEPBQUBBQUBDwEFAQUFBwcHDwMDAwMDAwUNDQ0NDQ0NDQ0NAAEBAQEBAQ8FCgoKCgoPBQcHBQcHAQMDAwMDAwMDDg4ODg4ODg4ODgEBAQUFAQEPCgoKCgoKCgUFBQcHBwEDAwMDAwMDAw4ODg4ODg4ODg4BAQECAgEBDwoKCgoKCgoHBwEBBQUFAwMDAwMDAwUODg4BAQEBDg4OAQEBAQEBAQ8KCgoKCgoKDAUFBQUFBQ8DAwMDAwMFDg4OAQEBAQ4ODg8BAQEBAQEPCgoKCgoKDwgICAgICAgICAgICAgICAgICAgICAgICA==","ram":[{"a":20544,"b":"AAAAAAAAABAAABAAABAAABAAAAAAAAAAAAAAAAAA+AA+AAAAAAAAAAAAAAAAABAAABAAABAAABAAAAAAAAAA"},{"a":20608,"b":"cAAA2AAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24576,"b":"/9/3va+ruqr/////f9/3vf7V//X//f//r26ubq5ur6r+ru6+7u7+qqpV/lX/Vf//q1urW6tbq6r/77u7u+//qqqWqpaqlqqq//vu6u7u/6rq5erl6uXqqr+6u7u7ur+q+rn6ubq5+qqvbq5urm6vqv6u/r7+/v6qqqpWqlaqqqr/7u7q6u7/qurq5urm6uqq/+7u6uru/6rq5erl6uXqqqpWqlaqVqqq/+rv6+/q/6rq6uXq6uXqqr+6u7q7ur+q+rn6+fq5+qqrW6tbq1urqv+rv6+/v/+qqpaqlqqWqqr/++7u6u7/qurl6uXq5eqqv7u7u7u6v6r6+fr5+rn6qr+7u7u7ur+q+vn6+fq5+qqqVapVqlWqqr+6u7q7u7+q+rm6+bq5+qr/V/9f/3/////////9999+//fffvrqrqrruq6rqqquvq+ruqrruq7nf9/3va+ruqr7+/v7e9v7u//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v7+/v7efv7v3333766q6q+uququuuutvrrrrqqqq6vr6+vrq6ur7q5dnp2evb6dnren63tXV/ebu7u6vr6+vr/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+7u7urr6+vr66293l5d/W1bZ2tn6+drZ76+vq6urr6r6urq6+vr6+vp2evb6dnp2X+5v3m/eX+56+vr6/ubm6v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////6+vr6+/m5ur9bv5t/m39bmtn6+drZ2tnq6ur6+vr6+vp6e7rqqqqqutrWpbl+e7bv3m/ub95XZWbm6ubm6ubm//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////m5urm5urm5v5t/m7+bXVW6+mllltvu+dra7vrqqqqqurq6vr6+vr66t7u3u7e7t7nubu7e7u7u6ubm6ubm6ub/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+rm5urm5urm227u7u3u7u6rt7u3u7e7t6urq6+vr6+v+vr6+vr6+uru3u7e7t7u3ru7u7u7qampm6ubm6u7u7v/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////5urm5uru7u7u7u7u7mpqaru3u7e7t7u3r6+vr6+vr6vq6urqq6uvr+7e7t7u3q7eaampqalpubu7u7u7u5ubm6oAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgAAAAAAAADu7u7u7ubm5mlqampqaW7uu7e7t7u3urerq6ur6ur6+quuqq6qrqqu7t7u3u7e7t67u2mpqampqZubm5ubq6urAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAObm5ubm6urq7u5pampqamq7t7u3u7e7t+q6qrqquqq6qq6qrqquqq7u3u7e7t7u3qlpqalru7t7q6urq7urq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6urq6u7q6upqaWpq6e7u7bu3u7e7t7u3qrqquqq6qrqqrqquqq6qru7e7t7u3u7ee3t7e3t7e7urq6urq6urqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADq6urq6urq6u3t7e3t7e3uu7e7t7u3u7equqq6qrqquqququ7r+/b27t7+/v7+/v27u7u5t5t7+6ura/v729vrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOrq6e/v5+fr7u7ubt7m7e+7t5eXt7e3d6q6qrvr75+f9vb29vb29vb23n7+/v7+/ru7e3u7u3t7+/v7+/vb6+sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAggIAKqAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAoCAggICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQBAEAQAAAAAAAABAEAQBAAAAAAAAAABA7+/v7+/n6+vt7u3t7u7t7Ve3vb+3v7+/n5+fn5+fn58="},{"a":30208,"b":"AAAAAAAAAAAAAAAAAAAAAoCgAgAgAgAgAgAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAgAgAgAgAgAoCg"},{"a":31744,"b":"+/vw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8Pv7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+/v7+/sJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCfv7+/v7+/v7CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQn7+/v7+/v7+wkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJ+/v7+w=="},{"a":32760,"b":"QdhCQkJCQkI="},{"a":53248,"b":"EAAAEAAAGAAAGAAAGAAAEAAAEAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57344,"b":"AAAAAAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAAwAAA"},{"a":57408,"b":"8AAADwAAAPAAAA8AAADwAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":57472,"b":"AAAAAAAAAAAAAAAAADAAADAAAMAAAMAAAMAAAwAAAwAAAwAAAwAADAAADAAADAAAMAAAMAAAMAAAwAAAwAAA"},{"a":57536,"b":"wAAAwAAAwAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60672,"b":"P//wAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAP//w"},{"a":60736,"b":"/AAAeAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60800,"b":"AAAAAAAAAAAAAAAAMAAAeAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":60936,"b":"+/v7+/Hx8fv7+/v7+/v7+/v7+/v7+/v7+/v7+/v78fv7+/v7+/v7+8vL+/v7+/v7+/vLy/v7+/v7+/v7+/v7+/v7+/vLy/v7+/vL+/v7y8vLy/v7y/v7+8vLy8vLy/tXV1dXV1dXV1dX+8vLy8vLy/v7y/v7+8vL+/v7xsbG+8vLy3vLy8vLV1dXV1dXV1dXV8vLy8t7y/vL+8vLy/v7+/v7+2bGZvbLe3vLy8vLy1dXV1dXV1dXV1fLy1tbW1v7y/vL+8v7+/v7+/tmxmb2y8vLy8vLy8tXV1dXV1dXV1dXy8v7y/vL+8v7+/v7+/v7+/v7+8bG9vvLy8vLy/vLV1dXV1dXV1dXV8v7y8vLy8v7+/v7+/v7+/v7+/tmZvvLy8HBwcvLy1dXV1dXV1dXV1fLy8vLy8vLu7GxsbGxsbH7+/v7Zmb7y8vLwcHLy8vLy8tbW1tby8vLy3t7e8vLy7uxsbGxsbGx+/v7u7a2+8vHx8HBy8vLy8vLW1tbW8vLy8vLy3t7y8u7sbGxsbGxscvLy/vLy/vLy8HBwcvLy8vLy8vLy8vLy8vLy8vLy8vLu7GxsbGxsbH7+/v7+/v7y8vLy8vL+8vLy8vLy8vLy8vLy8vLy8vLy7uxsbGxsbGx"},{"a":61432,"b":"tEC1toCBgoM="},{"a":61504,"b":"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qqqqqqqqqqqAoKioqqqq6sDwzHAAsKCoAAADAwMAAwAAANAAwDDAAAwPAwMAAwIKAEIKCiqqqqqqqqqqqqqq6hMTExAQERERz8//AACZmZkPDwAAAJmZmcLCAAAAmZmZISAAAACZmZlYWHZ2VZ2XhQAAAACAgGBYl11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGCgKqqqgAAAAAAqqqqAAAKL78AqqoAqv///wKqqgCo/v//qqqqAACA4PioqqoAAAECAKqqqgoKCgoKVVVVVVVVVVVVVVVVVVVVVVVVVVV1+fntVVVVZallVVVVVVVVVVVVVVVVVVVVV19/VVVVVeXpqflVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVeqqqqgoKCgoCqqqgAAQIAAqqqqAAACCCCAqqoAKrAAMMCqqgCqAAAPqqqqAACgyAKqqqoAAAAAACqqqgICQoICEBEREBpVqgCImZkAqlWqAIiZmQCqVaoCiJmZAKpVqqqImZkAqlWqAIWRkACqVaoA1nVVHaVZqgKqVWVUVFBQUKpVMz8/MwAAqlUWBQUBAQGAQEBAQEBAQCIiIiIjMzMzICAgICAwMDAEBAQEBAQEBICAgICAgoKCAgsvL7/////////////////////////////////////+/////////wCA4OD4/v7+CgoKCgoKCgqVlZWVlZWVVVVVVVVVVVVVVVVVVVVVVVVVVVVlqWVVVVWpqampqVVVf25rWVVVVVW1pZVVVVVVVVVVpaWlpVVVVVVVVVVVVVVXV1dVVVVVVaCgoKCgoKCgAAILCCCAgIyAAAAA8MAw8DAwMAAAAAAAAwwPAAAAAAAAAAADAAMAA4AgCDjCAMADAgICAgKBgoIAIBAAAAABAQABBBBAQAAAFEAAAAAAAAAQEBAQEBAQEFAFAAAAAAAAAABAEAQEAQEBIREBAQEBAVBQUFBUVGVVAAAAAAAAAFUBAQEBBQUWVUBAQEBAQEBAMzMzMzMzMzMwMDAwMDAwMAQEBAQEBAQEi4uLi6+vr6////////////////////////////////////////////////////////////////+KioqK6urq6qo/Pz8wPz8/qv//PwA///+q//8PDw///6qPj4yPj4+Pqv/zD/P///+q/////AP8/6ry8vLy8vLyqv///PD8//+q//wAAwD8/6r8/Pz8/Pz8oqKioqioqKgAAAAAAAAAAAAAAAAAAAAAAAAAAAADDwAAAAAAwPD8AAAAAAAAAAAAAAAAAAAAAMAiIiIi6ggpiAQEEBAQUEBAAAAAAAAAAAEAAAUQEEBAABBUERAQEBAAAABAEBAEBAEAAAAAAAAAAEFBERERFQUFAPzMzMz8AKoA/MzMzPwAqgD8zMzM/ACqgICAgICAgKUzMzMzMwAAVTAwMDAwAABVBAQEBAQEBKSvoKCgoKCgqP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAAAAAAAOoqKioqKiqqqgAAAAAAAACqAA8ADwwPAKoAwMDAAMAAqoCAgICAgICqAAAAAAAAAKoA/AwMDAwAqgICAgICAgKqAAAAAAAAAKoADwwPDA8AqgDAwMDAwACoqqioqKioqgCqAAAAAAAAKKgoAAAAAAAAAAAADwMAAAAAAAD88MAAAwMDAAAAAAAAwjDAAAAAAImIiYgpCAnoQEBAVUBAQEABAQFVAQEBAQAAAFQAAAAAAAAAEAAAAAABAYFVAQEBAQAAAFUAAAAABQUFVQUFBQUAAAAAqgAAAAAAAACqAAAAAAMAAKoAAAAAV9wwmgAAAAAAAACqAAAAAAAAAKoAAAAEBAQEpAQEBKioqKqqqqqqAAAAAAAAgKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgoqqqqqqqqqqqqqPz88Pz88P6r/8//zPP/zqv8/z//zP/+qj4+Pj4+Pj6r///z8/P//qv//Pz8///+q8vLy8vLy8qr///P8////qv///wAA//+q/Pz8/Pz8/KqqqqqqqqqqAAAAgICMoKgAAPDAMPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwADAAAAAAAAwwLKKSgpqKmoqahAUFBQUFRUVQAAAAAAAAAAQEAQEAUAAAAQEBAQEVQQEAQEEBBAAAAAAAAAAAAAAAEFFRUVFVVVVQCqAERGRUdEAKoASURJQEUAqgBABIBEgACqAAMDAwMDAKoAPzA/Az8AqgA/Mz8DAwSkBAQEBAQEqqqqq6iqqqqgqKqqqqqqqgAAAICgqqqqAAAAAAAAqqoAAAAAAAKqqgAAAgoqqqqqKqqqqaiqqqqqqqqqqqqqqqoAAAAAAAAAqgDPzMzMzwCqAMDAwMDAAKqAgICAgICAqgD8wPzM/ACqAPzMzMz8AKoCAgICAgICqgAAAAAAAACqAM/MzMzPAKoAwMDAwMAAqqqqqqqqqqqrqqqq6iqqqgAAgKCoqqqqMDAwMACwqqoPAwwPAACqqgMAAALKqqqqOiqqqqqqqqqpqKmo6SipqFVVVVVlRVVVAEBAUFRVVVUAAAAAAEBUVRAQEBAQEBBVAAAAAAAFVVUBBQUVVVVVVVVVVVVVWVFV"},{"a":65535,"b":"lA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":130,"colour_cells_changed_during_frame":0}};
-const GS_MAPFRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[110,232,94,85,6,6,6,6,6,6,6,6,6,6,6,6,4,27,0,93,0,255,216,0,163,126,241,0,0,0,255,255,251,245,246,253,243,247,247,241,240,241,241,241,241,241,241],"cia2":[148,63],"cpu":[47,21],"writes":[[3,48,53266,16,16],[4,5,53263,16,16],[5,2,53254,24,24],[5,22,53251,0,0],[7,13,53266,80,80],[7,37,53263,48,48],[9,13,53254,28,28],[9,37,53251,2,2]],"colour":"BgYLCwMDCAgIAwgICAgLCwMJCQMPCAgICAgPDwgICAgICwsICwsGBgYGCwsJCQkDDwgDCA8PCwsJAg8PCAgIDwgICAgDCAsICAgICAsDBgYGBgkJAwgLCQkDCAkICQkJAwgDCAsLCAgLCw8ICwgDCAsLCAgLCwYGBgYIDw8ICwgPDwkJCAgIDw8PCAMLAggDCAgICwsPCAMLAggDCAgGBgYGDwgICAgIAwEPDwgICAsLCAsLCAgIDwgICAgICAsLDwgICAgIBgYGBggICA8ICAgICAgICAgICAgLCAgPDwgICAgLCAgICAgICAgLCAYGBgYICAgICwEICAsIAwgLCwgPCAsICAgICAsIAwgCAwgLCwMDCAgGBgYGCA8PAwgBDwsLDwgDCwsICAsLCAgICwsDDwgDDwgDCwsJCQkDBgYGBggLCwgLCwgDCAELCAMICAgLCwgLCwgDCAsLAwkDCAkJAwgLCQYGBgYICAsICwgPCAMICwsICAMICwgICAsPCAMLCwkPDwkIDw8ICwgGBgYGCwsICAsBCAsLCAsLCAsLCAgLCAgIDwgLCQkDCAgLCAsICAsLBgYGBgsLCAgLCwgLCAMICAgLAw8LCwgPDwgLCwIPDw8LCwgLCwgLAwYGBgYDCAgICwEPCAsIAwgICwsICwsICwgICwsICwsICwsPCAgICAgGBgYGCAgDAwgBCAsLDwgDCAgLCAsICAsLAwgICAsICAsDCAgICAsIBgYGBggICAgICAgLCwgLCw8ICAgICAgIAggICAgICAQIDw8ICAgLCwYGBgYICAgICwgICAgICAgICAgPCAgICAgICwgPCAgICAgICAMICwgGBgYGCAsLCAsLCAMICwsDAwgICAsICAsLCAsICAsLCAsLCAsBAQsBBgYGBggICwgLCA8IAwsLCQkJAwgLCwgLAwgLCwgEAwMECAgLAwgLCwYGBgYICAgLCwQJAwgECQMICwkJAwgJCAkDCAgEAwQLCwQJAwgDCAgGBgYGCA8PCwsJDw8JBA8PCAsIDw8JCQgICQkDDwQDCwsJDw8JCQkDBgYGBgkICQkJAwgLCwQICwgDBAgLCwMICAgLCQkDCAkJAwgLCwgLCQYGBgYJCAgIDw8DBAgPCwsPBAMDCAgICAMICwgPDwkIDw8ICwgICwgGBgYGCAsIDw8ICAgIBAsECAsLCAsLCAsICAsLCAgLCAsLDwgLCAMIBgYGBgMLCAgIAwgLCAQICAgLAwgLCAgLCwgLAw8LCwgLCAgLCw8IAwYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg==","ram":[{"a":49664,"b":"0N3KENqm/r24xBhlv2mAhaa98MOFpaX9KfwKkALmphhlpYWlkALmpqX9KQOF/QoKChhpCo3FwqnDaQCNxsKt"},{"a":51416,"b":"////4OXq5f8="},{"a":51432,"b":"////A1OrU/8="},{"a":51456,"b":"//////////8AAAAMPwwAAA=="},{"a":51488,"b":"AAwMDAwMPwAAADAMAww/AAD/z8/Dw8P/MDw/PDAwMAA="},{"a":51528,"b":"AAwMDAwMPwAAADAMAww/AA=="},{"a":51560,"b":"AAAADD8MAAA="},{"a":51584,"b":"w5mRiZmZw//n58fn5+eB/8OZ+fPPn4H/w5n54/mZw//58eGZgPn5/4Gfg/n5mcP/w5mfg5mZw/+BmfPn5+fn/8OZmcOZmcP/w5mZwfmZw/8="},{"a":51688,"b":"/+Hl6+Xh//8="},{"a":51712,"b":"AAAAAAAAAAAAAAAAAAACCgAAAAAsr7+rAD8/Pz8/AAAKDg8DAAAAALj8sAAAAAAAAAAAAAAAAAIAAAAAACCqr8DAMDAwDAwMAAAAAAAAAACr+z8/AAAAAIyDgwMAAAAAAAAAAAACAgIAAAAAqquvqwAAAAAAgMDAAgAAAAAAAACuvzwAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAAACiuvqwAAAAAAwAAAAgICAAAAAAC+v/zAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCsrLgAAAAAAwPCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwMDAwAAAAIKiorCwAAAAAAwODwDAMAAAAAAAAKAsAwDAwDA7DgwAAAAAAAADw8PDw8PAAAAAAAAAACCgAAAAA8v6+qAAAAAAAAAAAKDg8DAAAAALzs8AAAAAAAAAAAAMAwMAwAAAAAAAwrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDwAAAIAAAAD/AAAADAwMDAwMDAwAAAAAAAAoqwAAAAAAAACADAwMDAwMDAyqKwsCAAAAALDg8MAAAAAAAAAAAAAAAAAAAAA/vr67qwAAAIDw8OCwAAAAAP8AAAAqKggA/wAAAIAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAEQQAAAAAAEBAEBAQEAAAAAAAAAAAAAAAAAAAAAAEAQEAAAAguAAAAEAQEBAFAAAAAAAAAACvOAAAAAAAAAAAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAAAAAAAVAAAAAAMDAwNVAPz88PDw8BBAAAAAAAAAAAAAAAIKK64AAAAAgLDw8AAAAAAAAAAAr7u+MAAAAACwwAAAAAEBBAEBAVRAAAAAAAAABQQQEEAQEBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDw8PDw8AAAAAwMDAwAAAAAAAAAAAAFHAwDAwDAwDVwAAAAAAAABUBQAAAAAAAAAAAAAAAAAAAMEwMDAwMDAwAAAAAMAwMAwAAAAAAAgrKwAAAAAAAIDwAwAAAAAAAAAKwMAwDAMDAIAAAAAAAADAAAA8PDw8AAAAAAAAAAMDDDAwMDDAAAAAAAAAA/wAAAAwwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMPjvrwAAAAAAAACAAAAAAAAAAACqKwoCAAAAAMDAgAAAAAAAAAAAAAAAAAAAAAADAwwMDMDAwAAAADAwAAAAAAAAAwMwMDDAwMAAAAAAAAAAAAAAADw8PDw8PAAAAAMDMzMDDDDAAAADPMAAAAAAA/wAAAAMMDDAAAAAAMDAAAAAAAAADAwMDAwMDAwAAAAAAAAADAAAAAADDAwwDAwMDP8MDAwA88MM8AAAAMAAAAAAAAAAAAAAPDw8PAAAAAAAAAAAAwAAAAADDDDAAAAAAAAAAADPzAwMDAMDAwAAAAAAAAAAAAAD/AAAAAADPMAAAAAqqgAAAAAAAADAAgIDAwAAAAD/v7jggAAAAAAAAAAAAAAAAAAA/wAAAAAAAADwDAMDAAAAAAAAAADAAA8PPz8/Dw8AAAAAAAAAADAMDAMAAAAAAAAA/wAAAAIAAAD/AACgqgAAAP8AAAAAAgAAAAAAAACruz4OAAAAAICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8/Pz8/Pw8AAAAAAP8AAAAAAAAA/wAAAAAAAAD/AAAADAwMDAwMDAwAAAACCyqrqwAAAIDwwIDADAwMDAwMDAyvrDAAAAAAAAAAAAAAAAAAAAAAAAIKKqsAAAAAgLDwsDAwMDAwMDAwr7u+IAAAAADgwAAAAAAAADAwMDAwMDAwAAAAAAAAAwMAAAMMMMAAAMDAAAAAAAAADAwMDAwMDAwDAw8PDwMDAPDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAADAwMDAwAAAADAwMDAAAAAAAADDDDAAAAAAP8AAAADAwwM8AAAAAAAAAAAAAAAAAAAQAAAOAAAGAAAGAAAFAAAEgAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":58240,"b":"CQMICwkICwgJAwgPDwkLCwMLCwkJCQMIDw8JCAkJCAgICwsICAgPCAgICAMICwgICwsDCAgICAMPCAgICAgI"},{"a":59392,"b":"Gx2Oj5B8fX709fbu7/COj5CUlZbExcbQ0dL6+/zW19igoaJSU1QbHTEykZKTf4CB9/j58fLzkZKTJJiZx8jJ09TV/f7/2drbo6SlVVZXMTIbHZSVloKDhIiJipqbnJSVlvT19ujp6lhZWmRlZvT19ujp6lhZWhsdMTGXmJmFhoeLjI2dnp+XmJn3+PnrKu1bXF1naGn3+PnrKu1bXF0xMRsdxMXG0NHS3CbeuLm6oKGiTE1O7u/wxMXG1tfYamtsuLm61tfYGx0xMMfIydPU1d/g4bu8vaOkpU9QUfHy88fIydna221ub7u8vdna2zEwGx3u7/BYWSFAQUL09fbo6epkZWa+v8DKy8z09fYq9faOj5B8fX4bHTA58fLzW1whQ0RF9/j56+ztZ2hpwcLDzc7P9/j59/j5kZKTf4CBMDkbHV5fYExNTvT19iGtrrKztExNTl5fYPT19o6PkIiJipSVloKDhBsdMDhhYmNPUFH3+PmvsLG1trdPUFFhYmP3+PmRkpOLjI2XmJmFhocwOBsd6OnqrK0mTE1OWFla4uPkQEFC7u/wZGVmlJWWQEFCrK2uUlNUGx0wN+vs7a+wsU9QUVtcXeXm50NERfHy82doaSSYmUNERa+wsVVWVzA3Gx2ys7RYWSFkZWb09fZeX2BMTU5wcXJYWVpMTU5SU1TExcbW19gbHTA2tba3W1whZ2hp9/j5YWJjT1BRc3R1W1xdT1BRVVZXx8jJ2drbMDYbHb6/wNbX2GprbHZ3eLi5utDR0r6/KtbX2NDR0iHd3qanqExNThsdMDXBwsPZ2tttbm95enu7vL3T1NXBwsPZ2tvT1NXf4OGpqqtPUFEwNRsdXl9gTE1O9PX2jo+QfH1+rK2u4uPkrK2uUlNUWFlaUlMhIa0mGx0wNGFiY09QUff4+ZGSk3+Aga+wseXm56+wsVUhV1shXVVWV6+wsTA0Gx3u7/COjy2IiYohlZaCg4SIiYqam5x8fX4q9S2Ojy2IiYp8fX4bHTAz8fLzkZKTi4yNJJiZhYaHi4yNnZ6ff4CB9y35kZKTi4yNf4CBMDMbHZqbnJSVllhZWilBQvT1LVhZWrKztIKDhIiJipSVlkxNToKDhBsdMDKdnp+XmJlbIV1DREX3LflbXF21treFhoeLjI2XmJlPUFGFhocwMhsdRkdI+vv81tfYJaEhUlNUTE1OcHFyUlNUQEFCTE1OZGVm9PX2Gx0wMUlKS/3+/9na2yekpVVWV09QUXN0dVVWV0NERU9QUWdoaff4+TAxICAwMT0wMj0wMz0wND0wNT0wNj0wNz0wOD0wOT0xMD0xMT0xMj0gIA=="},{"a":60408,"b":"t0D9344I3z8="},{"a":60864,"b":"AYAAAYAAAYAAAYAAAYAAAAAA/D+AAAAAAYAAAYAAAYAAAYAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":63424,"b":"l11UcEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEBQQAIgAAQEAAQAAgBAQEBAQEBASoqqqAgIGC"},{"a":65344,"b":"//8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/////AAAAAP////8AAAAA/////wAAAAD/"},{"a":65535,"b":"lw=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19657,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":823,"colour_cells_changed_during_frame":0}};
 
 function gsMessage(ram, n) {
   // message n, from the tables at $7B04 (low bytes) and $7B26 (high bytes): 1-26 are A-Z, $1F a
@@ -419,6 +1676,168 @@ function shapes(ram, names) {
   show(first < 0 ? 0 : first);
 }
 
+function fly(L) {
+  const cv = $('gf-view'), mp = $('gf-map'), vctx = cv.getContext('2d'), mctx = mp.getContext('2d');
+  const img = vctx.createImageData(640, 224), rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const regs = new Uint8Array(0x1000), io = { read: (a) => regs[a & 0xFFF], write: (a, v) => { regs[a & 0xFFF] = v; } };
+  const pick = $('gf-pick');
+  pick.className = 'pick';
+  pick.innerHTML = '<a class="step" href="#" data-d="-1" aria-label="The theatre before">‹</a><select aria-label="Theatre"></select><a class="step" href="#" data-d="1" aria-label="The theatre after">›</a>';
+  const sel = pick.querySelector('select');
+  GS_THEATRES.forEach((t, i) => sel.add(new Option(t.name, i)));
+  // the helicopter as the flight keeps it: x and y (a square is 4096), height (the altimeter shows
+  // it times 1.25), heading in 256ths of a turn from north, pitch and roll
+  const S = { x: 0, y: 0, height: 0, heading: 0, pitch: 0, roll: 0 };
+  const ON_MAP = (v) => Math.max(0x1800, Math.min(0xD8FF, Math.round(v)));
+  let cur = -1, w, cpu, frame, chart, places = [], last = null;
+
+  function units(m) {
+    const list = [];
+    for (let i = 6; i < 128; i++) {
+      const k = m[0x5300 + i];
+      if (!k) continue;
+      const sq = m[0x5200 + i], ter = m[0x1A86 + sq], slot = m[0x5280 + i] & 7;
+      const e = (m[0x1E5B + ter] | m[0x1E7C + ter] << 8) + 6 * slot, near = m[e + 4] | m[e + 5] << 8;
+      const name = slot < m[0x1E3A + ter] && near >= 0x1EC9 && near < 0x3000 ? gsMessage(m, m[gsShape(m, near).end] + 11) : '';
+      list.push({ k, x: m[0x5100 + i] << 8, y: m[0x5180 + i] << 8, name });
+    }
+    return list;
+  }
+  function theatre(i) {
+    cur = (i + GS_THEATRES.length) % GS_THEATRES.length; sel.value = cur;
+    const t = GS_THEATRES[cur];
+    w = gsFlyMemory(L.ram, GS_COCKPIT, t, GS_VIEWS.find((v) => v.id === t.id));
+    cpu = new C64Cpu.CPU(w.m, { port: 0x35, io });
+    const colourMem = Uint8Array.from(atob(GS_COCKPIT.colour), (c) => c.charCodeAt(0)).slice(0, 1024);
+    for (let row = 1; row <= 12; row++) for (let col = 4; col < 36; col++) colourMem[row * 40 + col] = w.colour;
+    const vic = GS_COCKPIT.vic.slice(); vic[0x21] = w.bg;
+    const writes = GS_COCKPIT.writes.map((x) => x[0] === 251 && x[2] === 0xD021 ? [x[0], x[1], x[2], 0xF0 | w.bg, w.bg] : x);
+    frame = Object.assign({}, GS_COCKPIT, { mem: w.m, colourMem, vic, writes, keep: {} });
+    // the big map, drawn by draw_map as on the Maps page, every unit shown
+    const r = gsMapScreen(L.ram, GS_MAPFRAME, t, true, C64Cpu);
+    const mv = GS_MAPFRAME.vic.slice(); mv[0x15] = 0;
+    const px = C64.renderFrame(Object.assign({}, GS_MAPFRAME, { vic: mv, writes: [], mem: r.mem, colourMem: r.colour })).px;
+    chart = document.createElement('canvas'); chart.width = 320; chart.height = 200;
+    const cc = chart.getContext('2d'), ci = cc.createImageData(320, 200);
+    for (let y = 0; y < 200; y++) for (let x = 0; x < 320; x++) {
+      const c = rgb[px[(35 + y) * 384 + 32 + x]], o = (y * 320 + x) * 4;
+      ci.data[o] = c[0]; ci.data[o + 1] = c[1]; ci.data[o + 2] = c[2]; ci.data[o + 3] = 255;
+    }
+    cc.putImageData(ci, 0, 0);
+    // places to go: the start, and the mission's two targets seen from 200 to the south-west
+    const u = units(w.m), pri = u.find((v) => v.k & 0x80), sec = u.find((v) => v.k & 0x40 && !(v.k & 0x80));
+    places = [['Take-off', { x: w.start.x, y: w.start.y, height: 0, heading: w.start.heading }]];
+    for (const [what, v] of [['Primary target', pri], ['Secondary target', sec]]) {
+      if (v) places.push([what + ': ' + v.name, { x: v.x - 200, y: v.y - 200, height: 30, heading: 32 }]);
+    }
+    $('gf-presets').innerHTML = '';
+    places.forEach(([label, at]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'gs-btn'; b.textContent = label;
+      b.addEventListener('click', () => { go(at); cv.focus(); });
+      $('gf-presets').appendChild(b);
+    });
+    go(places[0][1]);
+    C64.renderFrame(frame);
+  }
+  function go(at) { Object.assign(S, { pitch: 0, roll: 0 }, at); draw(); }
+
+  function draw() {
+    const eye = { x: S.x, y: S.y, height: Math.round(S.height), heading: Math.round(S.heading) & 255, pitch: Math.round(S.pitch), roll: Math.round(S.roll) };
+    const r = gsFlyView(cpu, w.m, eye);
+    const px = C64.renderFrame(frame).px, d = img.data;
+    for (let y = 0; y < 224; y++) for (let x = 0; x < 640; x++) {
+      const c = rgb[px[(35 + (y >> 1)) * 384 + 32 + (x >> 1)]], o = (y * 640 + x) * 4;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+    vctx.putImageData(img, 0, 0);
+    // the map: the nine squares drawn, the helicopter and its heading
+    mctx.imageSmoothingEnabled = false;
+    mctx.drawImage(chart, 0, 0, 640, 400);
+    mctx.lineWidth = 2; mctx.strokeStyle = '#ffd040'; mctx.fillStyle = 'rgba(255,208,64,.18)';
+    for (const sq of r.squares) {
+      const row = sq >> 4, col = sq & 15;
+      if (row < 2 || row > 13 || col < 2 || col > 13) continue;
+      mctx.fillRect(((col - 2) * 24 + 16) * 2, (13 - row) * 32, 48, 32);
+      mctx.strokeRect(((col - 2) * 24 + 16) * 2 + 1, (13 - row) * 32 + 1, 46, 30);
+    }
+    const ex = (16 + (S.x - 0x1800) * 24 / 4096) * 2, ey = (0xD800 - S.y) / 128, a = eye.heading / 128 * Math.PI;
+    mctx.strokeStyle = '#ff3050'; mctx.lineWidth = 3;
+    mctx.beginPath(); mctx.moveTo(ex, ey); mctx.lineTo(ex + 22 * Math.sin(a), ey - 22 * Math.cos(a)); mctx.stroke();
+    mctx.fillStyle = '#ff3050'; mctx.strokeStyle = '#fff'; mctx.lineWidth = 2;
+    mctx.beginPath(); mctx.arc(ex, ey, 6, 0, 7); mctx.fill(); mctx.stroke();
+    const row = (S.y + 0x800) >> 12, col = (S.x + 0x800) >> 12, two = (n) => String(n).padStart(2, '0');
+    $('gf-where').textContent = `Square ${two(col - 1)} across, ${two(row - 1)} up, terrain ${w.m[0x1A86 + (row << 4 | col)]}. ` +
+      `Height ${eye.height} (the altimeter reads ${Math.round(eye.height * 1.25)}), heading ${Math.round(eye.heading * 360 / 256)}°.`;
+    $('gf-out').textContent = `view_frame ($8F01) drew this view in ${r.cycles.toLocaleString('en-GB')} cycles: ` +
+      `${Math.round(r.cycles / 985.248)} ms on a PAL C64, so the view changes about ${(985248 / r.cycles).toFixed(1)} times a second.`;
+  }
+
+  // held controls, from the buttons and the keyboard, as the Mercenary page's city viewer has them
+  const speed = $('gf-speed'), step = () => Math.round(Math.pow(2, speed.value / 12.5));
+  const showStep = () => { $('gf-speed-v').textContent = step() + ' a frame'; };
+  speed.addEventListener('input', showStep); showStep();
+  const held = new Set();
+  let cruise = false;
+  const KEYS = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'down', ArrowDown: 'up', w: 'fwd', s: 'back', r: 'climb', f: 'sink', q: 'rollL', e: 'rollR' };
+  const pad = $('gf-pad');
+  function press(act, on) {
+    if (act === 'level') { if (on) { S.pitch = 0; S.roll = 0; draw(); } return; }
+    if (on) held.add(act); else held.delete(act);
+    const b = pad.querySelector('[data-act="' + act + '"]'); if (b) b.classList.toggle('on', on);
+    if (on) kick();
+  }
+  pad.querySelectorAll('[data-act]').forEach((b) => {
+    const act = b.dataset.act;
+    b.addEventListener('pointerdown', (ev) => { ev.preventDefault(); b.setPointerCapture(ev.pointerId); press(act, true); });
+    const up = () => press(act, false);
+    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+    b.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); press(act, true); } });
+    b.addEventListener('keyup', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') press(act, false); });
+  });
+  $('gf-cruise').addEventListener('click', () => { cruise = !cruise; $('gf-cruise').setAttribute('aria-pressed', cruise); kick(); });
+  const key = (ev) => KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key];
+  cv.addEventListener('pointerdown', () => cv.focus());
+  cv.addEventListener('blur', () => [...held].forEach((a) => press(a, false)));
+  cv.addEventListener('keydown', (ev) => { const a = key(ev); if (a) { ev.preventDefault(); press(a, true); } });
+  cv.addEventListener('keyup', (ev) => { const a = key(ev); if (a) press(a, false); });
+  mp.addEventListener('click', (ev) => {
+    const b = mp.getBoundingClientRect(), x = (ev.clientX - b.left) * 320 / b.width, y = (ev.clientY - b.top) * 200 / b.height;
+    S.x = ON_MAP((x - 16) * 4096 / 24 + 0x1800); S.y = ON_MAP(0xD800 - y * 256);
+    draw();
+  });
+
+  // one frame of movement, k frames of 60 a second
+  function move(k) {
+    const turn = (held.has('right') ? 1 : 0) - (held.has('left') ? 1 : 0);
+    S.heading = (S.heading + turn * k + 256) % 256;
+    if (held.has('down')) S.pitch = Math.min(32, S.pitch + k);
+    if (held.has('up')) S.pitch = Math.max(-32, S.pitch - k);
+    if (held.has('rollR')) S.roll = Math.min(20, S.roll + k);
+    if (held.has('rollL')) S.roll = Math.max(-20, S.roll - k);
+    if (held.has('climb')) S.height = Math.min(4000, S.height + (2 + S.height * 0.03) * k);
+    if (held.has('sink')) S.height = Math.max(0, S.height - (2 + S.height * 0.03) * k);
+    const dir = (held.has('fwd') || cruise ? 1 : 0) - (held.has('back') ? 1 : 0);
+    if (dir) {
+      const a = S.heading / 128 * Math.PI, d = dir * step() * k;
+      S.x = ON_MAP(S.x + d * Math.sin(a)); S.y = ON_MAP(S.y + d * Math.cos(a));
+    }
+  }
+  let running = false, visible = true;
+  function tick(t) {
+    const k = Math.max(0, Math.min(6, (t - last) / (1000 / 60) || 1)); last = t;
+    const moving = held.size > 0 || cruise;
+    if (moving) { move(k); draw(); }
+    if (moving && visible) requestAnimationFrame(tick); else running = false;
+  }
+  function kick() { if (!running && visible) { running = true; last = performance.now(); requestAnimationFrame(tick); } }
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { visible = es[0].isIntersecting; if (visible) kick(); }).observe(cv);
+
+  sel.addEventListener('change', () => theatre(+sel.value));
+  pick.querySelectorAll('.step').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); theatre(cur + +b.dataset.d); }));
+  theatre(GS_THEATRES.length - 1);
+}
+
 function kinds(ram) {
   const MISSILE = { 0: 'Sidewinder', 1: 'FFAR', 2: 'Hellfire' };
   const tb = $('gs-kinds').querySelector('tbody');
@@ -448,13 +1867,83 @@ function frames() {
   C64.drawFrame($('gs-map'), GS_MAPFRAME, 1);
 }
 
+// ---- the title, played: gsIntroRun's frames drawn as they fall due, 50 a second, and their SID
+// writes queued for the site's model of the chip. Before Play, a frame from the tune, the title
+// complete.
+function intro(T) {
+  const cv = $('gi-screen'), ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const HZ = 985248 / 19656;                 // a PAL C64's frames a second
+  const STAGE = { [GsIntro.CP.riseReady]: 'The helicopter rises', [GsIntro.CP.riseShown]: 'The helicopter rises',
+    [GsIntro.CP.hoverReady]: 'It hovers, and GUNSHIP is written', [GsIntro.CP.hoverShown]: 'It hovers, and GUNSHIP is written',
+    [GsIntro.CP.showReady]: 'The tune', [GsIntro.CP.showShown]: 'The tune' };
+  const play = $('gi-play'), snd = $('gi-sound'), out = $('gi-out');
+  let R = null, host = null, raf = 0, t0 = 0, n = 0, stage = '';
+  function paint(F) {
+    const px = C64.renderFrame(F).px, d = img.data;
+    for (let i = 0; i < px.length; i++) { const c = rgb[px[i]]; d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255; }
+    ctx.putImageData(img, 0, 0);
+  }
+  const soundOn = () => snd.getAttribute('aria-pressed') === 'true';
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, R.sid[r]); return all; };
+  function stop(label) {
+    cancelAnimationFrame(raf); raf = 0; R = null;
+    play.textContent = label || '▶ Play';
+    if (host) host.ctx.suspend();
+  }
+  function tick(now) {
+    if (!R) return;
+    let due = Math.floor((now - t0) * HZ / 1000) + 1;
+    // a hidden tab or a slow machine: the title waits rather than racing to catch up
+    if (due - n > 10) { t0 = now - n * 1000 / HZ; due = n + 1; }
+    let F = null;
+    while (n < due) {
+      const f = R.next();
+      if (!f) { stop('▶ Play again'); return; }
+      n++; F = f;
+      if (host && soundOn()) host.push([f.sid]);
+    }
+    if (F) {
+      paint(F);
+      const s = Math.floor(n / HZ);
+      stage = STAGE[F.cp] || stage;
+      out.textContent = stage + ' · ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  play.addEventListener('click', async () => {
+    if (R) { stop(); return; }
+    if (soundOn() && !host && typeof C64Sid !== 'undefined') {
+      try { host = await C64Sid.host({ live: true, gain: 0.5 }); } catch (e) { snd.setAttribute('aria-pressed', 'false'); }
+    }
+    R = gsIntroRun(T.ram, { from: 'on' });
+    n = 0; t0 = performance.now(); stage = 'The screen comes on, and the rotor\'s sound fades in';
+    play.textContent = '■ Stop';
+    if (host) { host.ctx.resume(); if (soundOn()) host.push([registers()]); }
+    raf = requestAnimationFrame(tick);
+  });
+  snd.addEventListener('click', async () => {
+    const on = !soundOn();
+    snd.setAttribute('aria-pressed', String(on));
+    if (on && !host && typeof C64Sid !== 'undefined') {
+      try { host = await C64Sid.host({ live: true, gain: 0.5 }); } catch (e) { snd.setAttribute('aria-pressed', 'false'); return; }
+    }
+    if (!host) return;
+    if (!on) host.ctx.suspend();
+    else if (R) { host.ctx.resume(); host.push([registers()]); }
+  });
+  setTimeout(() => { if (!R) paint(gsIntroRun(T.ram, { from: 1500 }).next()); }, 0);
+}
+
 if (typeof C64 === 'undefined') {
-  ['gs-shape-out', 'gs-music', 'gs-sfx'].forEach((id) => need('The site\'s scripts', $(id)));
+  ['gs-shape-out', 'gs-music', 'gs-sfx', 'gi-out'].forEach((id) => need('The site\'s scripts', $(id)));
 } else {
   frames();
   Promise.all([C64.load('parts/flight/listing.json'), C64.load('parts/title/listing.json')]).then(([F, T]) => {
     shapes(F.ram, F.names);
     kinds(F.ram);
+    intro(T);
+    if (typeof C64Cpu === 'undefined') need('cpu6502.js', $('gf-out')); else fly(F);
     if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') ['gs-music', 'gs-sfx'].forEach((id) => need('sid.js', $(id)));
     else {
       const tmem = GS_TUNE_RANGES.map(([a, b]) => [a, T.ram.slice(a, b + 1)]);
