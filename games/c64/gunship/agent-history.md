@@ -92,3 +92,27 @@ eighth ($8281, $82D9) were described by symbols whose spans stop at 64
 bytes, so the listing had left out their last 8 bytes and the page read
 zeros there. Both tails, and the 65th entry of the quarter circle at
 $BF03, now have comments of their own, and the listing carries them.
+
+**The title sequence.** The How it works page plays the title: its main
+program from `title_setup` ($8132) to `title_end` and its raster
+interrupt, written again in JavaScript with each routine's cycle count,
+and run on a clock of 312 lines of 63 cycles with the video chip's
+fetches added as `kit/c64/machine.js` adds them. The start is the
+listing with 65 runs of bytes over it (`GsIntro.INIT`): what the title's
+file held as it loaded where the listing, saved at the end of the title,
+holds what the title wrote, the variables past its end as RAM held them,
+and $02A6, the flag for a PAL machine. They came from the emulator
+snapshot taken as the title began, which also showed the MicroProse logo
+still on screen: the title clears both its buffers behind a blank screen
+before it turns the screen on, so the page starts there. The lockstep
+held RAM, colour RAM and the chips equal at every one of the 1,025 rotor
+frames, every interrupt to the cycle, and every stretch without a wait to
+the cycle once four counts were put right: the JSR into `rotor_frame`
+counted after its checkpoint, the poll's last turn counted after the wait,
+and two branches that cross a page (the hover loop's BPL at $8301, and
+the turret's branches to $8904 in the interrupt). `$01` read in the
+interrupt has bit 4 high, the tape button's input, which the port first
+missed. With the clock's fetches on, the page takes each of the 1,027
+pictures in the same frame as the kit's C64 (`test_intro.js`). Playing it
+corrected the music section, which said the tune plays while the
+helicopter rises: it starts after GUNSHIP is written, 1,105 frames in.

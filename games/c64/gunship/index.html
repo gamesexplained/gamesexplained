@@ -135,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">02 · The world in wireframe</p>
+  <p class="fig">03 · The world in wireframe</p>
   <h2 class="t">The 3D world is made of wireframe shapes</h2>
   <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file.</p>
   <div class="plate">
@@ -154,9 +154,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="title">
-  <p class="fig">03 · Music: the title</p>
+  <p class="fig">04 · The title</p>
+  <h2 class="t">The title: the helicopter rises into view</h2>
+  <p class="lede">Before the menu, the title lifts an Apache up from below the screen to the sound of its rotor, writes GUNSHIP under it a letter at a time and plays the Ride of the Valkyries. Every picture is put together from two copies of the screen.</p>
+  <div class="plate">
+    <canvas id="gi-screen" class="gs-canvas" width="384" height="272" aria-label="The title screen: an Apache helicopter over the word GUNSHIP on red"></canvas>
+    <div class="gs-ctl" style="margin:12px 0 0">
+      <button type="button" class="gs-btn" id="gi-play">▶ Play</button>
+      <button type="button" class="gs-btn" id="gi-sound" aria-pressed="true">🔊 Sound</button>
+      <span id="gi-out" class="gi-out"></span>
+    </div>
+    <p class="cap">The title's main loop and its raster interrupt, written again in JavaScript routine by routine and run on the title's own bytes. The site's model of the video chip draws each frame as the beam would, and its model of the SID plays the sound. It starts where the title turns the screen on. Before that the screen is blank while the title clears both copies of it.</p>
+  </div>
+  <p>The title keeps two copies of the screen, two multicolour bitmaps: one at <code>$4000</code> in the video chip's bank 1 and one at <code>$C000</code> in bank 3, with their screen colours at <code>$6000</code> and <code>$E000</code>. The main loop draws the next picture into the copy the chip is not showing, sets <code>frame_ready</code> (<code>$8F62</code>) and waits. The raster interrupt (<code>irq</code>, <code>$8940</code>) takes the new picture at the top of the next frame. A new picture comes every other frame, 25 a second. The screen is split as well. Down to the line under the rotor's blades, the chip shows the copy with the newest rotor in it. From that line down (<code>irq_band</code>, <code>$8A6B</code>), it shows the copy with the newest helicopter. So the rotor can turn at every picture while the helicopter's body is only copied when it has to move.</p>
+  <p>The helicopter climbs with the video chip's fine scroll, the three low bits of <code>$D011</code>, which move the whole picture down by 0 to 7 lines. At each picture the title takes one line off (<code>fine_scroll</code>, <code>$8FBC</code>), so the helicopter rises a line without a byte of its bitmap moving. Meanwhile the title builds the helicopter a character row higher in the hidden copy, a few rows at each step: four of its character rows at a time, then its screen colours. When the scroll runs out and starts again at 7, the chip is switched to that copy, and the colour RAM, which both copies share, moves up a row (<code>title_rise_rows</code>, <code>$82A7</code>). Near the top the helicopter slows down: pictures without a step come in between, more and more of them, until it settles at character row 4.</p>
+  <p>The blades are drawn again at every picture (<code>rotor_frame</code>, <code>$8532</code>): one of four frames, two character rows tall, copied out of the GUNSHIP picture that comes with the title by eight copies of 80 bytes. The routine writes their addresses into its own instructions first. It clears the row under the blades, so they leave no trail as they climb. Three sprites make the mast and the rotor head, and the interrupt moves them with the blades at every frame. The interrupt also plays the rotor's sound, which fades in over about two and a half seconds before the helicopter appears and rises in pitch every fourth picture as it climbs.</p>
+  <p>Once the helicopter is up, the gun under its nose turns, one view every six pictures. Then GUNSHIP is written under it a letter at a time (<code>draw_letter</code>, <code>$8743</code>), each letter with a note and a glint, a sprite that sparkles on it. Each letter is drawn twice, into each copy of the screen, ten pictures apart. After a short pause the tune plays, below. A key pressed during the title ends it, and BASIC carries on from where it called the title.</p>
+</section>
+
+<section data-part="title">
+  <p class="fig">05 · Music: the title</p>
   <h2 class="t">Music: the Ride of the Valkyries</h2>
-  <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries while the helicopter rises over the hills. It is the only music in the game.</p>
+  <p class="lede">The title plays the opening of Wagner's Ride of the Valkyries once the helicopter has risen and GUNSHIP is written under it. It is the only music in the game.</p>
   <div class="plate">
     <div id="gs-music"></div>
     <p class="cap">The game's own player, <code>tune_play</code> (<code>$8E89</code>), run on the title's bytes by the site's copy of the 6502, the C64's processor. The title calls it once a frame from a raster interrupt, code that the video chip starts when it reaches a chosen line of the screen. A frame is one picture on the television, 50 a second in Europe. The notes go through the site's model of the SID, the C64's sound chip. Its three streams are set back to where they start when the file is loaded: <code>$9117</code>, <code>$91C7</code> and <code>$95D1</code>. A test beside the page runs the same calls on the title's whole memory and compares every write.</p>
@@ -166,7 +185,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">04 · Sound: the effects</p>
+  <p class="fig">06 · Sound: the effects</p>
   <h2 class="t">Sound: ten effects from one small table</h2>
   <p class="lede">Every sound in a flight but the rotor and the engines is one of ten effects. Each is a list of values to write into the SID's registers, the sound chip's settings, and the frame on which to write each one.</p>
   <div class="plate">
@@ -179,7 +198,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">05 · The cockpit</p>
+  <p class="fig">07 · The cockpit</p>
   <h2 class="t">Two pictures, one screen</h2>
   <p class="lede">The cockpit is two pictures, each a bitmap that sets every pixel, in two different 16 KB banks of memory. The video chip can see only one bank at a time, and a raster interrupt switches it from one bank to the other a third of the way down the screen.</p>
   <div class="plate">
@@ -196,7 +215,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">06 · The map</p>
+  <p class="fig">08 · The map</p>
   <h2 class="t">The theatre on one screen</h2>
   <p class="lede">Pressing Z shows the big map: the theatre's terrain in characters, the units you have seen, and the waypoint.</p>
   <div class="plate">
@@ -208,7 +227,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">07 · Flying it</p>
+  <p class="fig">09 · Flying it</p>
   <h2 class="t">Controls</h2>
   <p class="lede">The joystick is the cyclic, the stick that tilts the rotor to fly the helicopter forward, back or sideways. The keyboard does everything else.</p>
   <div class="plate">
@@ -238,7 +257,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="flight">
-  <p class="fig">08 · Weapons and hits</p>
+  <p class="fig">10 · Weapons and hits</p>
   <h2 class="t">Each ground unit falls to one kind of missile</h2>
   <p class="lede">A missile of the wrong kind that hits a ground unit does nothing at all. The flight engine names one missile kind for each of the sixteen kinds of unit, and only the Hind falls to any missile.</p>
   <div class="plate">
@@ -250,7 +269,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="">
-  <p class="fig">09 · Eight programs</p>
+  <p class="fig">11 · Eight programs</p>
   <h2 class="t">BASIC around a machine-code engine</h2>
   <p class="lede">The title, the front end, the debriefing and the base are BASIC programs. They call routines in a machine-code library through a table of jumps at <code>$7500</code>, one jump for each routine. Only the flight itself is machine code.</p>
   <div class="plate">
@@ -340,6 +359,1103 @@ function createDriver(D, C64Cpu) {
   };
 }
 // end of gs-music
+
+/* gs-intro */
+// The title sequence, written again in JavaScript: TITLE's main program from title_setup ($8132)
+// to title_end ($84AA) and its raster interrupt (irq, $8940), on the title's 64 KB. Each routine
+// writes what the game's writes, at the game's addresses, the operands the game rewrites in its
+// own code among them, and counts the processor cycles the game's takes, for the page's clock.
+// The main program is a generator that yields where the game's code has got to, as the kit's
+// lockstep reads it (kit/c64/lockstep.js): { cp } at a checkpoint, { cycles } for work done,
+// { wait } for scroll_cells's wait for line $30, and a bare yield for each turn of a loop that
+// waits for the interrupt. The chips are reached through io: vicRead, vicWrite, sidWrite,
+// colourRead, colourWrite, ciaRead, ciaWrite. games/c64/gunship/test_intro.js holds it against the
+// title's own code on the kit's C64.
+const GsIntro = (() => {
+  // The title as it starts: TITLE's bytes as the file loads them, where the listing (saved as the
+  // title ends) holds what the title has written over them; the variables past the file's end
+  // ($96C6-$96F0) as RAM holds them at power-on; and $02A6, the KERNAL's flag for a PAL machine.
+  const INIT = [
+    [0x2A6, [0x01]], [0x849D, [0x00]], [0x868B, [0xFF, 0xFF]], [0x868E, [0xFF, 0xFF]],
+    [0x8691, [0xFF, 0xFF]], [0x8694, [0xFF, 0xFF]], [0x8697, [0xFF, 0xFF]], [0x869A, [0xFF, 0xFF]],
+    [0x869D, [0xFF, 0xFF]], [0x86A0, [0xFF, 0xFF]], [0x86A3, [0xFF, 0xFF]], [0x86A6, [0xFF, 0xFF]],
+    [0x86A9, [0xFF, 0xFF]], [0x86AC, [0xFF, 0xFF]], [0x86AF, [0xFF, 0xFF]], [0x86B2, [0xFF, 0xFF]],
+    [0x86B5, [0xFF, 0xFF]], [0x86B8, [0xFF, 0xFF]], [0x8704, [0xFF, 0xFF]], [0x870D, [0xFF]],
+    [0x8788, [0x00]], [0x879A, [0x00]], [0x87A5, [0x00]], [0x87B7, [0x00]], [0x8A23, [0x00]],
+    [0x8A28, [0x00]], [0x8A2D, [0x00]], [0x8A64, [0x00]], [0x8A7D, [0x00]], [0x8AF4, [0x00]],
+    [0x8B89, [0xFF, 0xFF]], [0x8B8C, [0xFF, 0xFF]], [0x8B8F, [0xFF, 0xFF]], [0x8B92, [0xFF, 0xFF]],
+    [0x8B95, [0xFF, 0xFF]], [0x8B98, [0xFF, 0xFF]], [0x8B9B, [0xFF, 0xFF]], [0x8B9E, [0xFF, 0xFF]],
+    [0x8C22, [0xFF, 0xFF]], [0x8C6E, [0xFF, 0xFF]], [0x8CBE, [0xFF, 0xFF]], [0x8CC1, [0xFF, 0xFF]],
+    [0x8CE8, [0xFF, 0xFF]], [0x8E4A, [0x00]], [0x8E59, [0x9F]], [0x8E61, [0x00, 0x00]],
+    [0x8F19, [0xFF, 0xFF]], [0x8F49, [0x00]], [0x8F4C, [0x00, 0xFF]], [0x8F53, [0x17, 0xC7, 0xD1]],
+    [0x8F57, [0x91, 0x95, 0x00, 0x00, 0x00]], [0x8F5F, [0x01, 0x01, 0x01, 0x01, 0x00]],
+    [0x8F66, [0x00]], [0x8F6B, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]],
+    [0x8F7C, [0xDB, 0xDB]], [0x8F7F, [0x00, 0x00, 0x00, 0x00, 0x00]], [0x8F88, [0x1E, 0x03]],
+    [0x8F8D, [0x40]], [0x8FA1, [0x03, 0x00, 0x04, 0x00, 0x00]], [0x8FA8, [0x00]],
+    [0x8FAA, [0x00, 0x00, 0x00]], [0x8FB2, [0x00, 0x00, 0x00]],
+    [0x8FB7, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]], [0x9000, [0x03, 0x03, 0x03]],
+    [0x96C4, [0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00]]
+  ];
+  // The video chip's registers as the loader leaves them, for $D000-$D02E.
+  const VIC0 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x3B, 0x37, 0, 0, 0, 0xC8, 0, 0x68, 0, 0, 0,
+    0, 0, 0, 0, 6, 6, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 6, 7, 12];
+  // Checkpoints, as the lockstep names them: rotor_frame's entry (once a frame drawn), the three
+  // places a frame is marked ready, and start_irq's call at the end of the set-up
+  const CP = { rotor: 0x8532, riseReady: 0x82ED, hoverReady: 0x844C, showReady: 0x847A, irqOn: 0x81E5,
+    riseShown: 0x82F5, hoverShown: 0x8454, showShown: 0x8482 };
+  const WAIT = 0x8CB6;          // scroll_cells's wait for line $30: the instruction after it
+
+  function create(M, chips) {
+    const P = { M, io: chips, i: 0, hc: 0, ended: false };
+    // the chips are read through P.io when the code runs: a lockstep gives the port its own
+    const io = {
+      vicRead: (r) => P.io.vicRead(r), vicWrite: (r, v) => P.io.vicWrite(r, v), sidWrite: (r, v) => P.io.sidWrite(r, v),
+      colourRead: (i) => P.io.colourRead(i), colourWrite: (i, v) => P.io.colourWrite(i, v),
+      ciaRead: (r) => P.io.ciaRead(r), ciaWrite: (r, v) => P.io.ciaWrite(r, v), cia2Write: (r, v) => P.io.cia2Write(r, v),
+    };
+    let cyc = 0;                                 // the main program's cycles not yet yielded
+    const C = (n) => { cyc += n; };
+    const H = (n) => { P.hc += n; };             // the interrupt's cycles, counted as it runs
+    const cross = (base, x) => ((base & 0xFF) + x > 0xFF ? 1 : 0);
+    const w16 = (a) => M[a] | M[a + 1] << 8;
+    function* spent() { if (cyc) { const n = cyc; cyc = 0; yield { cycles: n }; } }
+    function* at(cp) { yield* spent(); yield { cp }; }
+
+    // ---- small_copy ($8003, JMP $80C9): $AA:$A9 bytes from ($A5) to ($A7), A in $01, interrupts off
+    function copyBytes(port) {
+      C(6 + 3 + 2 + 3 + 2);                      // JSR, JMP, SEI, STA $01, LDY #0
+      P.i = 1; M[1] = port;
+      for (;;) {
+        M[w16(0xA7)] = M[w16(0xA5)];
+        C(5 + 6 + 2 + 3 + 2 + 3);                // LDA (A5),Y STA (A7),Y SEC LDA A9 SBC #1 STA A9
+        const lo = M[0xA9];
+        M[0xA9] = (lo - 1) & 255;
+        if (lo === 0) { M[0xAA] = (M[0xAA] - 1) & 255; C(2 + 5); } else C(3);
+        C(3 + 3);                                // LDA A9 ORA AA
+        if (!(M[0xA9] | M[0xAA])) { C(3); break; }
+        C(2);
+        M[0xA5] = (M[0xA5] + 1) & 255; C(5);
+        if (M[0xA5]) C(3); else { M[0xA6] = (M[0xA6] + 1) & 255; C(2 + 5); }
+        M[0xA7] = (M[0xA7] + 1) & 255; C(5);
+        if (M[0xA7]) C(3); else { M[0xA8] = (M[0xA8] + 1) & 255; C(2 + 5 + 3); }
+      }
+      M[1] = 0x37; P.i = 0;
+      C(2 + 3 + 2 + 6);                          // LDA #$37 STA $01 CLI RTS
+    }
+    function pointers(src, dst, n) {             // the six LDA/STA pairs before each call
+      M[0xA5] = src & 255; M[0xA6] = src >> 8; M[0xA7] = dst & 255; M[0xA8] = dst >> 8;
+      M[0xA9] = n & 255; M[0xAA] = n >> 8;
+      C(6 * 5);
+    }
+
+    // ---- key_check ($849E): any key down ends the title
+    function keyCheck() {
+      io.ciaWrite(0, 0);
+      const k = io.ciaRead(1);
+      C(6 + 2 + 4 + 4 + 2 + 3);                  // JSR LDA STA LDX INX BNE (not taken: +2, RTS 6 below)
+      if (((k + 1) & 255) !== 0) return true;
+      C(-1 + 6);
+      return false;
+    }
+
+    // ---- flip ($8520): the other buffer is drawn next
+    function flip() {
+      const b = M[0x8F8C] ^ 1;
+      M[0x8F8C] = b; M[0x8F8D] = M[0x8F90 + b];
+      C(6 + 4 + 2 + 4 + 2 + 4 + 4 + 6);
+    }
+
+    // ---- delay ($871A): 2048 reads of $FFFF,X
+    function delay() { C(6 + 2 + 37 + 254 * 45 + 44 + 6); }
+
+    // ---- copy_row ($8AFD): row X of the helicopter's bitmap ($2000) to row Y of the buffer drawn
+    function copyRow(x, y) {
+      C(6);
+      // the sources: the four LDAs' operands at $8B89, $8B8F, $8B95, $8B9B
+      let hi = (M[0x8D5B + x] + 0x20) & 255;
+      M[0x8B8A] = M[0x8B90] = M[0x8B96] = M[0x8B9C] = hi;
+      let lo = M[0x8D42 + x];
+      M[0x8B89] = lo;
+      C(4 + 2 + 2 + 4 * 4 + 4 + 4 + 2 + 2 + 4);
+      for (const [l, h] of [[0x8B8F, [0x8B90, 0x8B96, 0x8B9C]], [0x8B95, [0x8B96, 0x8B9C]], [0x8B9B, [0x8B9C]]]) {
+        const s = lo + 0x50;
+        if (l !== 0x8B8F) C(2 + 4);              // ADC #$50 STA (the first is counted above)
+        lo = s & 255; M[l] = lo;
+        if (s > 255) { for (const a of h) M[a] = (M[a] + 1) & 255; C(2 + 6 * h.length + (h.length > 1 ? 2 : 0)); } else C(3);
+      }
+      // the destinations: the four STAs' operands at $8B8C, $8B92, $8B98, $8B9E
+      hi = (M[0x8D5B + y] + M[0x8F8D]) & 255;
+      M[0x8B8D] = M[0x8B93] = M[0x8B99] = M[0x8B9F] = hi;
+      lo = M[0x8D42 + y];
+      M[0x8B8C] = lo;
+      C(4 + 2 + 4 + 4 * 4 + 4 + 4 + 2 + 2 + 4);
+      for (const [l, h] of [[0x8B92, [0x8B93, 0x8B99, 0x8B9F]], [0x8B98, [0x8B99, 0x8B9F]], [0x8B9E, [0x8B9F]]]) {
+        const s = lo + 0x50;
+        if (l !== 0x8B92) C(2 + 4);
+        lo = s & 255; M[l] = lo;
+        if (s > 255) { for (const a of h) M[a] = (M[a] + 1) & 255; C(2 + 6 * h.length + (h.length > 1 ? 2 : 0)); } else C(3);
+      }
+      M[1] = 0; C(2 + 3 + 2);
+      const src = [w16(0x8B89), w16(0x8B8F), w16(0x8B95), w16(0x8B9B)];
+      const dst = [w16(0x8B8C), w16(0x8B92), w16(0x8B98), w16(0x8B9E)];
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 4; k++) { M[(dst[k] + i) & 0xFFFF] = M[(src[k] + i) & 0xFFFF]; C(4 + cross(src[k], i) + 5); }
+        C(2 + (i ? 3 : 2));
+      }
+      M[1] = 5; C(2 + 3 + 6);
+    }
+
+    // ---- scroll_colours ($8BA8): the buffer's screen colours up two rows, two new ones at the foot
+    const CROW = [0x78, 0xC8, 0x118, 0x168, 0x1B8, 0x208, 0x258, 0x2A8, 0x2F8, 0x348, 0x398];
+    function scrollColours() {
+      C(6 + 2 + 4 * 4 + 2 + 2 + 4 + 2);
+      M[0x8C22] = M[0x8C23] = M[0x8C6E] = M[0x8C6F] = 0x1C;
+      const x = (0x1C - M[0x8F88]) & 255;
+      if (x & 0x80) C(3);
+      else {
+        C(2 + 2);
+        if (x >= 0x19) C(3);
+        else {
+          const hi = (M[0x8D8D + x] + 0x18) & 255, lo = M[0x8D74 + x];
+          M[0x8C23] = M[0x8C6F] = hi; M[0x8C22] = M[0x8C6E] = lo;
+          C(2 + 4 + 2 + 2 + 4 + 4 + 4 + 4 + 4);
+        }
+      }
+      const bank1 = M[0x8F8C] !== 0, base = bank1 ? 0x6000 : 0xE000;
+      const src = bank1 ? w16(0x8C22) : w16(0x8C6E);
+      C(2 + 4 + (bank1 ? 2 : 4));
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 11; k++) { M[base + CROW[k] - 0x50 + i] = M[base + CROW[k] + i]; C(4 + cross(CROW[k], i) + 5); }
+        M[base + 0x398 + i] = M[(src + i) & 0xFFFF]; C(4 + cross(src, i) + 5);
+        C(2 + (i ? (bank1 ? 4 : 3) : 2));
+      }
+      C(6);
+    }
+
+    // ---- scroll_cells ($8C77), up to its wait for line $30, and after it
+    function cellsSetup() {
+      C(6 + 2 + 4 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2 + 2 + 4 + 2);
+      M[0x8CE8] = M[0x8CE9] = 0x1C; M[0x8CBE] = 0x28; M[0x8CBF] = 0xD8; M[0x8CC1] = 0; M[0x8CC2] = 0xD8;
+      const x = (0x1C - M[0x8F88]) & 255;
+      if (x & 0x80) C(3);
+      else {
+        C(2 + 2);
+        if (x >= 0x19) C(3);
+        else { M[0x8CE9] = (M[0x8D8D + x] + 0x1C) & 255; M[0x8CE8] = M[0x8D74 + x]; C(2 + 4 + 2 + 2 + 4 + 4 + 4); }
+      }
+    }
+    function cellsScroll() {
+      M[0x8F62] = (M[0x8F62] + 1) & 255;
+      C(6 + 2);
+      for (let y = 23; y >= 0; y--) {
+        const s = w16(0x8CBE) - 0xD800, d = w16(0x8CC1) - 0xD800;
+        C(2);
+        for (let i = 39; i >= 0; i--) { io.colourWrite(d + i, io.colourRead(s + i)); C(4 + cross(s, i) + 5 + 2 + (i ? 3 : 2)); }
+        let v = M[0x8CBE] + 0x28;
+        M[0x8CBE] = v & 255; C(4 + 2 + 2 + 4);
+        if (v > 255) { M[0x8CBF] = (M[0x8CBF] + 1) & 255; C(2 + 6 + 2); } else C(3);
+        v = M[0x8CC1] + 0x28;
+        M[0x8CC1] = v & 255; C(4 + 2 + 4);
+        if (v > 255) { M[0x8CC2] = (M[0x8CC2] + 1) & 255; C(2 + 6); } else C(3);
+        C(2 + (y ? 3 : 2));
+      }
+      const n = w16(0x8CE8);
+      C(2);
+      for (let i = 39; i >= 0; i--) { io.colourWrite(0x3C0 + i, M[(n + i) & 0xFFFF]); C(4 + cross(n, i) + 5 + 2 + (i ? 2 + 3 : 3)); }
+      C(6);
+    }
+
+    // ---- rotor_frame ($8532): the next rotor frame into one buffer, the row under it cleared
+    function rotorFrame() {
+      let f = (M[0x8F89] - 1) & 255;
+      if (f & 0x80) { f = 3; C(6 + 2 + 2 + 4); } else C(6 + 3);
+      M[0x8F89] = f;
+      M[1] = 0; C(2 + 3);
+      const x = (M[0x8F88] - 2) & 255;
+      C(4 + 2 + 2 + 2);
+      // the destinations: the eight STAs' operands, 80 bytes apart
+      const dst = [], src = [];
+      if (x >= 0x19) { dst[0] = 0x6464; C(2 + 2 + 4 + 3); }
+      else {
+        const b = M[0x8F90 + M[0x8F8B]];
+        dst[0] = ((M[0x8D5B + x] + b) & 255) << 8 | M[0x8D42 + x];
+        C(3 + 4 + 2 + 4 + 4 + 4 + 4);
+      }
+      C(4);                                      // STA rotor_dst1_lo
+      for (let k = 1; k < 8; k++) {
+        dst[k] = (dst[k - 1] + 0x50) & 0xFFFF;
+        C((k > 1 ? 4 : 0) + 2 + 2 + 4 + 4 + 2 + 4);
+        if (k === 3) {                           // after the fourth: the last two rows of the screen
+          C(2);
+          if (x >= 0x18) { dst[3] = 0x6464; C(2 + 2 + 4 + 4); } else C(3);
+        }
+      }
+      // the sources, the frame's strip of the GUNSHIP picture
+      M[0x96C6] = x; C(4 + 2);
+      if (x >= 0x19) { src[0] = 0x6464; C(2 + 2 + 4 + 3); }
+      else { src[0] = ((M[0x8716 + f] + 0xA0) & 255) << 8 | M[0x8712 + f]; C(3 + 4 + 4 + 2 + 2 + 4 + 4); }
+      C(4);
+      for (let k = 1; k < 8; k++) {
+        src[k] = (src[k - 1] + 0x50) & 0xFFFF;
+        C((k > 1 ? 4 : 0) + 2 + 2 + 4 + 4 + 2 + 4);
+        if (k === 3) {
+          C(4 + 2);
+          if (M[0x96C6] >= 0x18) { src[3] = 0x6464; C(2 + 2 + 4 + 4); } else C(3);
+        }
+      }
+      const OPS = [0x868B, 0x8691, 0x8697, 0x869D, 0x86A3, 0x86A9, 0x86AF, 0x86B5];
+      for (let k = 0; k < 8; k++) {
+        M[OPS[k]] = src[k] & 255; M[OPS[k] + 1] = src[k] >> 8;
+        M[OPS[k] + 3] = dst[k] & 255; M[OPS[k] + 4] = dst[k] >> 8;
+      }
+      C(2);
+      for (let i = 79; i >= 0; i--) {
+        for (let k = 0; k < 8; k++) { M[(dst[k] + i) & 0xFFFF] = M[(src[k] + i) & 0xFFFF]; C(4 + cross(src[k], i) + 5); }
+        C(2 + (i ? 3 : 2));
+      }
+      // rotor_clear_below and clear_row
+      let clr = 0x6000;
+      C(2 + 4 + 2 + 4 + 4 + 2);
+      if (M[0x8FBC] >= 6) { clr = (dst[7] + 0x50) & 0xFFFF; C(2 + 4 + 2 + 2 + 4 + 4 + 2 + 4); } else C(3);
+      M[0x8704] = clr & 255; M[0x8705] = clr >> 8;
+      const clr2 = (clr + 0xFF) & 0xFFFF;
+      M[0x870C] = clr2 & 255; M[0x870D] = clr2 >> 8;
+      C(6 + 4 + 2 + 2 + 4 + 4 + 2 + 4 + 2 + 2);
+      for (let i = 0; i < 256; i++) M[(clr + i) & 0xFFFF] = 0;
+      C(256 * 10 - 1);
+      for (let i = 1; i <= 0x40; i++) M[(clr2 + i) & 0xFFFF] = 0;
+      C(2 + 64 * 10 - 1 + 6);
+      M[1] = 5;
+      M[0x8F8B] ^= 1;
+      C(2 + 3 + 4 + 2 + 4 + 6);
+    }
+
+    // ---- draw_letter ($8743): letter $8FB7 of GUNSHIP into row 19 of the buffer drawn
+    function letterNote(x) {
+      io.sidWrite(x + 4, 0x80); io.sidWrite(x, 0); io.sidWrite(x + 6, 0); io.sidWrite(x + 1, 3);
+      io.sidWrite(x + 5, 0x0A); io.sidWrite(x + 4, 0x81);
+      C(6 + 2 + 5 + 2 + 5 + 5 + 2 + 5 + 2 + 5 + 2 + 5 + 6);
+    }
+    function drawLetter() {
+      C(6 + 2);
+      io.sidWrite(0x04, 0x80); io.sidWrite(0x0B, 0x80); io.sidWrite(0x12, 0x80);
+      M[1] = 0;
+      const n = M[0x8FB7];
+      C(4 * 3 + 2 + 3 + 4);
+      M[0x879A] = M[0x887C + n]; M[0x87B7] = M[0x8883 + n]; M[0x87A5] = M[0x8898 + n]; M[0x877D] = M[0x888A + n];
+      let s = M[0x888A + n];
+      M[0xA5] = s & 255;
+      M[0x8788] = M[0x8891 + n];
+      M[0xA6] = (M[0x8891 + n] + 0xAA) & 255;
+      C(4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2 + 2 + 3 + 4 + 4 + 2 + 3);
+      const b = M[0x8F8C];
+      s = M[0x877D] + M[0x88B5 + b];
+      M[0xA7] = s & 255;
+      M[0xA8] = (M[0x8788] + M[0x88B7 + b] + (s >> 8)) & 255;
+      M[0x8FB3] = 4;
+      C(2 + 2 + 4 + 4 + 3 + 2 + 4 + 3 + 2 + 4);
+      const ml = M[0x879A], mr = M[0x87B7], bytes = M[0x87A5];
+      for (;;) {
+        const a = w16(0xA5), d = w16(0xA7);
+        C(2);
+        for (let y = 7; y >= 0; y--) {
+          const v = M[(d + y) & 0xFFFF];
+          M[(d + y) & 0xFFFF] = ((M[(a + y) & 0xFFFF] ^ v) & ml) ^ v;
+          C(5 + cross(a, y) + 5 + cross(d, y) + 2 + 5 + cross(d, y) + 6 + 2 + (y ? 3 : 2));
+        }
+        C(2 + 2);
+        let y = 8;
+        if (!bytes) C(3);
+        else {
+          C(2);
+          for (let k = bytes; k > 0; k--, y++) { M[(d + y) & 0xFFFF] = M[(a + y) & 0xFFFF]; C(5 + cross(a, y) + 6 + 2 + 2 + (k > 1 ? 3 : 2)); }
+        }
+        C(2);
+        for (let k = 7; k >= 0; k--, y++) {
+          const v = M[(d + y) & 0xFFFF];
+          M[(d + y) & 0xFFFF] = ((M[(a + y) & 0xFFFF] ^ v) & mr) ^ v;
+          C(5 + cross(a, y) + 5 + cross(d, y) + 2 + 5 + cross(d, y) + 6 + 2 + 2 + (k ? 3 : 2));
+        }
+        const a2 = (a + 0x140) & 0xFFFF, d2 = (d + 0x140) & 0xFFFF;
+        M[0xA5] = a2 & 255; M[0xA6] = a2 >> 8; M[0xA7] = d2 & 255; M[0xA8] = d2 >> 8;
+        C(3 + 2 + 2 + 3 + 3 + 2 + 3 + 3 + 2 + 2 + 3 + 3 + 2 + 3 + 6);
+        const left = (M[0x8FB3] - 1) & 255;
+        M[0x8FB3] = left;
+        if (left & 0x80) { C(2); break; }
+        C(3);
+      }
+      // letter_done
+      M[1] = 5;
+      const x = M[0x8FB7];
+      M[0x8F63] = M[0x8F9A + x]; M[0x8FA6] = 3;
+      M[0x8FB8] = (M[0x8FB8] + 1) & 255;
+      C(2 + 3 + 4 + 4 + 4 + 2 + 4 + 2 + 3 + 6);
+      C(2); letterNote(0x0E); C(2); letterNote(0x07); C(2); letterNote(0x00);
+      C(4 + 2 + 2);
+      if (x === 6) { M[0x8F83] = 1; C(2 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 1) {
+        M[0x632C] = M[0xE32C] = 0xCB; M[0x632D] = M[0xE32D] = 0xBB; M[0x637C] = M[0xE37C] = 0xFC;
+        C(2 + 2 + 4 + 4 + 2 + 4 + 4 + 2 + 4 + 4);
+      } else C(3);
+      C(2);
+      if (x === 2) { M[0x632E] = M[0xE32E] = 0xBB; M[0x8F7C] = 0xE3; C(2 + 2 + 4 + 4 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 3) { M[0x8F7D] = 0xEB; C(2 + 2 + 4); } else C(3);
+      C(2);
+      if (x === 4) {
+        for (const a of [0x6339, 0xE339, 0x633A, 0xE33A, 0x633C, 0xE33C]) M[a] = 0xBB;
+        C(2 + 2 + 6 * 4);
+      } else C(3);
+      C(6);
+    }
+
+    // ---- the copies of four of the helicopter's rows, as the rise and the hover make them
+    function copyRows() {
+      for (;;) {
+        let x = M[0x8FAC], y = M[0x8FAB];
+        C(4 + 2);
+        if (x >= 0x19) { C(3); x = y = 0; C(4); }
+        else {
+          C(2 + 4 + 2);
+          if (y >= 0x19) { C(2); x = y = 0; C(4); } else C(3);
+        }
+        copyRow(x, y);
+        M[0x8FAC] = (M[0x8FAC] + 1) & 255; M[0x8FAB] = (M[0x8FAB] + 1) & 255;
+        const left = (M[0x8FB2] - 1) & 255;
+        M[0x8FB2] = left;
+        C(6 + 6 + 6);
+        if (left & 0x80) { C(2); return; }
+        C(3);
+      }
+    }
+
+    // ---- title_show_wait ($8477): flip, a frame marked ready, and the wait for the interrupt
+    function* showWait() {
+      C(6); flip();
+      yield* at(CP.showReady);
+      M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+      yield* spent();
+      while (M[0x8F62]) yield;
+      C(4 + 2);
+      yield* at(CP.showShown);
+      C(6);
+    }
+    // ---- title_pause ($8483): 20 frames, the rotor turning
+    function* pause() {
+      M[0x849D] = 0x14; C(6 + 2 + 4);           // the JSR, LDA #$14, STA
+      for (;;) {
+        const n = (M[0x849D] - 1) & 255;
+        M[0x849D] = n; C(6);
+        if (n & 0x80) { C(3 + 6); return false; }
+        C(2);
+        yield* showWait();
+        C(6); yield* at(CP.rotor); rotorFrame();
+        delay();
+        if (keyCheck()) return true;
+        C(3);
+      }
+    }
+
+    // ---- the main program
+    P.program = function* () {
+      // title_setup ($8132): the SID silenced, the GUNSHIP picture's top colours over the
+      // helicopter's, bank 1 cleared
+      C(2 + 2);
+      for (let x = 0x18; x >= 0; x--) { io.sidWrite(x, 0); C(5 + 2 + (x ? 3 : 2)); }
+      M[0x4000] = 0; C(4);
+      pointers(0x9800, 0x1800, 0x00A0); C(2); copyBytes(0x36);
+      pointers(0x9C00, 0x1C00, 0x00A0); C(2); copyBytes(0x36);
+      pointers(0x4000, 0x4001, 0x27FF); C(2); copyBytes(0x37);
+      yield* spent();
+      // title_sprites ($8196)
+      for (const [r, v] of [[0x11, 0], [0x26, 0], [0x15, 0xFF], [0x1C, 0xF6], [0x17, 1], [0x1D, 1], [0x1B, 0xF8], [0x25, 0x0C]]) io.vicWrite(r, v);
+      C(44);
+      pointers(0x4000, 0xC000, 0x4000); C(2); copyBytes(0x00);
+      // title_tempo ($81D7)
+      const tempo = M[0x8530 + M[0x02A6]];
+      M[0x9000] = M[0x9001] = M[0x9002] = tempo;
+      C(39);
+      // title_screen_on ($81E5): start_irq, a red screen, the volume faded in
+      yield* at(CP.irqOn);
+      C(6 + 2 + 2 + 4);
+      P.i = 1;
+      io.ciaWrite(0x0D, 1); io.ciaRead(0x0D); io.vicWrite(0x1A, 1);
+      M[0xFFFE] = M[0xFFFC] = 0x40; M[0xFFFF] = M[0xFFFD] = 0x89; M[0xFFFA] = 0xB9; M[0xFFFB] = 0x88;
+      C(4 + 2 + 4 + 32 + 4 + 2);
+      io.vicWrite(0x11, io.vicRead(0x11) & 0x7F);
+      io.vicWrite(0x12, 0);
+      M[1] = 5;
+      C(4 + 2 + 4 + 2 + 3 + 2);
+      yield* spent();
+      P.i = 0;                                   // the CLI: an interrupt waiting comes in after the RTS
+      C(6);
+      yield* spent();
+      for (const [r, v] of [[0x20, 2], [0x21, 2], [0x16, 0xD8], [0x18, 0x80], [0x11, 0x37]]) io.vicWrite(r, v);
+      C(2 + 4 + 4 + 2 + 4 + 2 + 4 + 2 + 4 + 2);
+      for (let x = 0; x < 16; x++) {
+        io.sidWrite(0x18, x); C(4);
+        for (;;) {
+          const a = M[0x96F0]; C(4);
+          yield* spent();
+          while (M[0x96F0] === a) yield;
+          C(4 + 2 + 2);
+          if ((a & 7) === 0) { C(2); break; }
+          C(3);
+        }
+        C(2 + 2 + (x < 15 ? 3 : 2));
+      }
+
+      // title_rise ($8215)
+      for (;;) {
+        if (keyCheck()) return yield* end();
+        M[0x96E8] = (M[0x96E8] + 1) & 255;
+        C(6 + 4 + 2);
+        if (!(M[0x96E8] & 3)) { M[0x8E59] = (M[0x8E59] + 1) & 255; C(2 + 6); } else C(3);
+        C(4 + 2);
+        if (M[0x8F88] === 4) { C(2 + 3); break; }
+        C(3 + 4 + 2);
+        const row = M[0x8F88];
+        let step = true;
+        if (row < 7) {
+          C(2 + 2);
+          if (row === 5) {
+            C(3);
+            const s = (M[0x8FA2] - 1) & 255; M[0x8FA2] = s; C(6);
+            if (s & 0x80) { M[0x8FA2] = M[0x8FA3]; M[0x8FA3] = (M[0x8FA3] + 1) & 255; C(2 + 4 + 4 + 6); }
+            else { C(3); step = false; }
+          } else {
+            C(2);
+            const s = (M[0x8FA2] - 1) & 255; M[0x8FA2] = s; C(6);
+            if (s & 0x80) {
+              C(2);
+              M[0x8FA2] = M[0x8FA3]; M[0x8FA3] >>= 1; C(4 + 4 + 6 + 4 + 2);
+              if (!M[0x8FA3]) { M[0x8FA3] = 1; C(6); } else C(1);
+              step = false;
+            } else C(3);
+          }
+        } else C(3);
+        if (!step) {                             // b_8250: a frame without a step
+          C(6); yield* at(CP.rotor); rotorFrame();
+          delay(); C(3);
+          yield* at(CP.riseReady);
+          M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+        } else {
+          // title_rise_step ($8267)
+          let fs = (M[0x8FBC] - 1) & 255; M[0x8FBC] = fs; C(6);
+          if (fs & 0x80) { M[0x8FBC] = fs = 7; M[0x8F88] = (M[0x8F88] - 1) & 255; C(2 + 2 + 4 + 6); } else C(3);
+          C(6); yield* at(CP.rotor); rotorFrame();
+          let y = ((M[0x8F88] << 3) & 255) + M[0x8FBC];
+          y = (y & 255) + 0x9E;
+          C(4 + 2 + 2 + 2 + 2 + 4 + 2 + 2);
+          if (y < 256) {
+            M[0x8F6F] = M[0x8F70] = y; C(2 + 4 + 4 + 2 + 2);
+            y += 0x15;
+            if (y < 256) { M[0x8F71] = M[0x8F72] = y; C(2 + 4 + 4); } else C(3);
+          } else C(3);
+          C(4 + 2);
+          if (fs === 7) {
+            C(2); flip();
+            cellsSetup();
+            yield* spent();
+            const ln = io.vicRead(0x12) | (io.vicRead(0x11) & 0x80) << 1;
+            C(4 + 2 + 2);                        // the poll's last turn, before the wait's exit
+            yield* spent();
+            // the line the loop leaves on, and the line its first read saw: the same when the loop
+            // found line $30 at once
+            yield { wait: (ln & 255) === 0x30 ? ln : ln < 0x30 ? 0x30 : ln < 0x130 ? 0x130 : 0x30, seen: ln };
+            cellsScroll();
+            C(3);
+          } else {
+            C(3 + 2);
+            if (fs === 0) { C(3); scrollColours(); }
+            else {
+              C(2);
+              const x = fs - 1;
+              M[0x8FAB] = ((x << 2) + M[0x8F88] - 1) & 255;
+              M[0x8FAC] = M[0x8FAD + x];
+              M[0x8FB2] = 3;
+              C(4 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 6 + 4 + 4 + 2 + 4);
+              copyRows();
+              C(3);
+            }
+            yield* at(CP.riseReady);
+            M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+          }
+        }
+        yield* spent();
+        while (M[0x8F62]) yield;
+        C(4 + 2);
+        yield* at(CP.riseShown);
+        C(3);
+      }
+
+      // title_hover ($82F8): sprites 0-3 to their places on the helicopter
+      for (let x = 3; x >= 0; x--) M[0x8F6B + x] = M[0x8F84 + x];
+      C(2 + 3 * 15 + 13);                       // the BPL at $8301 crosses to page $82
+      for (;;) {
+        // title_hover_loop ($8303)
+        if (keyCheck()) return yield* end();
+        C(6); yield* at(CP.rotor); rotorFrame();
+        M[0x8FB4] = (M[0x8FB4] + 1) & 255; C(6);
+        if (!M[0x8FB4]) { M[0x8FB5] = (M[0x8FB5] + 1) & 255; C(2 + 6); } else C(3);
+        M[0x8FAC] = M[0x8FAB] = 0x1A;
+        C(2 + 4 + 4 + 4);
+        let rows = true;
+        if (!M[0x8FB5]) {
+          C(2 + 4);
+          if (!(M[0x8FB4] & 0x80)) {
+            const n = (M[0x8FB4] & 0x7F) >> 3;
+            C(2 + 2 + 2 + 2 + 2 + 2);
+            if (n === 0) {
+              // the helicopter's screen colours into the buffer drawn
+              const bank1 = M[0x8F8C] !== 0, to = bank1 ? 0x6000 : 0xE000;
+              C(2 + 4 + (bank1 ? 2 : 3) + 2);
+              for (let x = 0; x < 256; x++) {
+                M[to + x] = M[0x1800 + x]; M[to + 0x100 + x] = M[0x1900 + x];
+                M[to + 0x200 + x] = M[0x1A00 + x]; M[to + 0x2F8 + x] = M[0x1AF8 + x];
+                C(4 + 5 + 4 + 5 + 4 + 5 + 4 + cross(0xF8, x) + 5 + 2 + (x < 255 ? 3 : 2));
+              }
+              C(3);
+              rows = false;
+            } else {
+              C(3);
+              const x = n - 1;
+              M[0x8FAB] = ((x << 2) + M[0x8F88]) & 255;
+              M[0x8FAC] = M[0x8FAD + x];
+              C(2 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 4 + 4);
+            }
+          } else C(3);
+        } else C(3);
+        if (rows) {
+          M[0x8FB2] = 3; C(2 + 4);
+          copyRows();
+        }
+        // title_stages ($83A9)
+        C(4);
+        let toLetter = false;
+        if (!M[0x8FBB]) {
+          C(2 + 4);
+          if (M[0x8FBA]) { C(3); toLetter = true; }
+          else {
+            C(2 + 4);
+            let go = true;
+            if (!M[0x8FA5]) {
+              C(2 + 4 + 2);
+              if (M[0x8FB4] < 0x82) { C(3); go = false; }
+              else { M[0x8FA5] = (M[0x8FA5] + 1) & 255; C(2 + 6); }
+            } else C(3);
+            if (go) {
+              const w = (M[0x8FA4] - 1) & 255; M[0x8FA4] = w; C(6);
+              if (w & 0x80) {
+                M[0x8FA4] = 5; C(2 + 2 + 4);
+                const v = (M[0x8FA1] - 1) & 255; M[0x8FA1] = v; C(6);
+                if (v & 0x80) { M[0x8FBA] = (M[0x8FBA] + 1) & 255; C(2 + 6); toLetter = true; } else C(3);
+              } else C(3);
+            }
+          }
+        } else C(3);
+        if (toLetter) {
+          // title_letter ($83D4)
+          C(4);
+          if (M[0x8FB6]) {
+            C(2);
+            drawLetter();
+            M[0x8FB6] = (M[0x8FB6] - 1) & 255; M[0x8FB9] = 0x0A;
+            M[0x8FB7] = (M[0x8FB7] + 1) & 255;
+            C(6 + 2 + 4 + 6 + 4 + 2);
+            if (M[0x8FB7] === 7) {
+              M[0x8FBB] = (M[0x8FBB] + 1) & 255; M[0x8DD0] = 2; M[0x8E4A] = (M[0x8E4A] + 1) & 255;
+              C(2 + 6 + 2 + 4 + 6 + 6);
+              for (let x = 6; x >= 0; x--) io.sidWrite(0x0E + x, 0);
+              C(2 + 2 + 6 * 10 + 9 + 6);
+            } else C(3);
+            C(3);
+          } else {
+            C(3);
+            const w = (M[0x8FB9] - 1) & 255; M[0x8FB9] = w; C(6);
+            if (w & 0x80) {
+              C(2); drawLetter();
+              M[0x8FB6] = (M[0x8FB6] + 1) & 255; C(6 + 3);
+            } else {
+              C(3);
+              const x = M[0x8FB9];
+              C(4 + 2);
+              if (x === 6) { M[0x8FA1] = (M[0x8FA1] + 1) & 255; C(2 + 6 + 3); }
+              else {
+                C(3 + 2);
+                if (x < 4) { M[0x8F7E] = M[0x88AD + x]; C(2 + 4 + 4); } else C(3);
+              }
+            }
+          }
+        } else C(3);
+        // title_glints ($8424)
+        const g = M[0x8FA6];
+        C(4);
+        let flipNow = true;
+        if (!(g & 0x80)) {
+          M[0x8F7B] = M[0x88B1 + g];
+          M[0x8FA6] = (g - 1) & 255;
+          C(2 + 4 + 4 + 6 + 3);
+        } else {
+          C(3 + 4 + 2);
+          if (M[0x8FB7] === 7) { C(2 + 3); break; }
+          C(3);
+        }
+        // title_flip ($843F)
+        C(4);
+        if (M[0x8FB4] & 0x80) C(3);
+        else { C(2 + 4); flipNow = M[0x8FB5] !== 0; C(flipNow ? 2 : 3); }
+        if (flipNow) flip();
+        yield* at(CP.hoverReady);
+        M[0x8F62] = (M[0x8F62] + 1) & 255; C(6);
+        yield* spent();
+        while (M[0x8F62]) yield;
+        C(4 + 2);
+        yield* at(CP.hoverShown);
+        C(3);
+      }
+
+      // title_tune ($8457): a pause, the tune, a pause
+      if (yield* pause()) return yield* end();
+      C(6 + 2);                                  // tune_start ($8E78)
+      for (let x = 0x18; x >= 0; x--) { io.sidWrite(x, M[0x90FE + x]); C(4 + cross(0xFE, x) + 5 + 2 + (x ? 3 : 2)); }
+      M[0x8F52] = 0; C(2 + 4 + 6);
+      yield* showWait();
+      for (;;) {
+        C(6); yield* at(CP.rotor); rotorFrame();
+        delay();
+        if (keyCheck()) return yield* end();
+        yield* showWait();
+        C(4);
+        if (M[0x8F52]) { C(2); break; }
+        C(3);
+      }
+      yield* pause();
+      C(6);
+      return yield* end();
+    };
+    // ---- title_end ($84AA): the interrupt off, the SID silenced; BASIC goes on to its next line
+    function* end() {
+      P.i = 1;
+      M[1] = 0x37;
+      io.vicWrite(0x1A, 0);
+      for (let x = 0x18; x >= 0; x--) io.sidWrite(x, 0);
+      io.vicWrite(0x19, 1);
+      P.i = 0;
+      C(4 + 4 + 2 + 2 + 3 + 2 + 4 + 2 + 25 * 10 - 1 + 2 + 4 + 2 + 6);
+      yield* spent();
+      P.ended = true;
+    }
+
+    // ---- the raster interrupt ($8940)
+    function spritesToShadow() {
+      for (let x = 7; x >= 0; x--) {
+        M[0x96C7 + x] = M[0x8F63 + x]; M[0x96CF + x] = M[0x8F6B + x];
+        M[0x96D7 + x] = M[0x8F73 + x]; M[0x96DF + x] = M[0x8F7B + x];
+      }
+      M[0x96E7] = M[0x8F83]; M[0x8FA8] = M[0x8F89];
+      H(6 + 2 + 41 * 7 + 40 + 4 + 4 + 4 + 4);
+      // turret_sprites ($88C0)
+      H(6 + 4);
+      const v = M[0x8FA1];
+      if (v & 0x80) H(4);                        // its three branches to r_8904 cross to page $89
+      else {
+        H(2);
+        M[0x8F66] = M[0x8F93 + v];
+        const s = (v + 0xCC) & 255;
+        M[0x8F7F] = s; M[0x8F80] = (s + 8) & 255; M[0x8F81] = (s + 16) & 255; M[0x8F82] = (s + 24) & 255;
+        H(4 + 4 + 2 + 2 + 2 + 4 + 2 + 2 + 4 + 2 + 2 + 4 + 2 + 2 + 4);
+        let y = ((M[0x8F88] << 3) & 255) + M[0x8FBC];
+        y = (y & 255) + 0x9E;
+        H(4 + 2 + 2 + 2 + 2 + 4 + 2 + 2);
+        if (y < 256) {
+          M[0x8F6F] = M[0x8F70] = y; H(2 + 4 + 4 + 2 + 2);
+          y += 0x15;
+          if (y < 256) { M[0x8F71] = M[0x8F72] = y; H(2 + 4 + 4); } else H(4);
+        } else H(4);
+      }
+      H(6);
+      // rotor_band ($84F1)
+      const h = ((M[0x8F88] << 3) & 255) + M[0x8FBC] & 255;
+      H(4 + 2 + 2 + 2 + 2 + 4 + 3 + 2 + 2);
+      if (h + 0x36 < 256) {
+        M[0x8A64] = h + 0x36; H(2 + 4 + 2);
+        if (h + 0x36 + 0x58 < 256) { M[0x8A7D] = h + 0x36 + 0x58; H(2 + 4); } else H(3);
+      } else H(3);
+      H(4 + 2 + 2);
+      if (h + 0x12 < 256) {
+        M[0x8A23] = h + 0x12; H(2 + 4 + 2 + 2);
+        if (h + 0x12 + 0x1D < 256) { M[0x8A28] = M[0x8A2D] = h + 0x12 + 0x1D; H(2 + 4 + 4); } else H(3);
+      } else H(3);
+      H(6);
+    }
+    function rotorSound() {
+      H(6 + 4);
+      if (M[0x8FB8]) { M[0x96F0] = (M[0x96F0] + 1) & 255; H(2 + 6 + 6); return; }
+      H(3 + 4);
+      if (!M[0x8E4A]) {
+        M[0x8E4A] = (M[0x8E4A] + 1) & 255;
+        for (let x = 0x14; x >= 0; x--) io.sidWrite(x, M[0x8E63 + x]);
+        M[0x8E51] = M[0x8E52] = 0x81; M[0x8E53] = 0x41;
+        H(2 + 6 + 2 + 20 * 14 + 13 + 2 + 4 + 4 + 2 + 4);
+      } else H(3);
+      M[0x96EF] = M[0x8DD0];
+      H(2 + 4);
+      for (;;) {
+        const x = M[0x96EF];
+        const t = (M[0x8E60 + x] - 1) & 255; M[0x8E60 + x] = t;
+        H(4 + 7);
+        if (t & 0x80) {
+          H(2);
+          const c = M[0x8E51 + x] ^ 1; M[0x8E51 + x] = c;
+          io.sidWrite(M[0x8E5D + x] + 4, c);
+          H(4 + 2 + 5 + 3 + 4 + 2 + 4 + 5 + 4 + 4 + 2);
+          if (c & 1) { M[0x8E60 + x] = M[0x8E4B + x]; H(2 + 4 + 3); } else { M[0x8E60 + x] = M[0x8E4E + x]; H(3 + 4); }
+          M[0x96E9 + x] = M[0x8E54 + x]; M[0x96EC + x] = M[0x8E57 + x];
+          H(5 + 4 + 5 + 3 + 4 + 5 + 3 + 3);
+          // j_8E39 with X the voice, not its offset: the pitch goes to $D401+X and $D400+X
+          io.sidWrite(x + 1, M[0x96EC + x]); io.sidWrite(x, M[0x96E9 + x]);
+        } else {
+          H(4);
+          const sw = M[0x8E5A + x], s = M[0x96E9 + x] + sw;
+          M[0x96E9 + x] = s & 255;
+          H(4 + 2 + 4 + 5 + 3 + 4);
+          if (sw & 0x80) { if (s > 255) H(3 + 3); else { M[0x96EC + x] = (M[0x96EC + x] - 1) & 255; H(3 + 2 + 7); } }
+          else if (s > 255) { M[0x96EC + x] = (M[0x96EC + x] + 1) & 255; H(2 + 2 + 7 + 3); } else H(2 + 3);
+          const o = M[0x8E5D + x];
+          H(4 + 3 + 4 + 2);
+          io.sidWrite(o + 1, M[0x96EC + x]); io.sidWrite(o, M[0x96E9 + x]);
+        }
+        H(4 + 5 + 4 + 5);
+        const v = (M[0x96EF] - 1) & 255; M[0x96EF] = v; H(6);
+        if (v & 0x80) { H(2); break; }
+        H(4);
+      }
+      M[0x96F0] = (M[0x96F0] + 1) & 255;
+      H(6 + 6);
+    }
+    function tuneRead() {
+      const a = w16(0x8F19), v = M[a];
+      const n = (a + 1) & 0xFFFF;
+      M[0x8F19] = n & 255; M[0x8F1A] = n >> 8;
+      H(6 + 4 + 6 + ((n & 255) ? 3 : 2 + 6) + 3 + 4 + 6);
+      return v;
+    }
+    function multiply(a, y) {
+      M[0x8F4E] = a; M[0x8F4D] = y; M[0x8F49] = 0;
+      H(6 + 4 + 4 + 2 + 4 + 2);
+      for (let k = 7; k >= 0; k--) {
+        const c = M[0x8F4E] & 1; M[0x8F4E] >>= 1;
+        H(6);
+        if (c) { M[0x8F49] = (M[0x8F49] + M[0x8F4D]) & 255; H(2 + 2 + 4 + 4 + 4); } else H(3);
+        M[0x8F4D] = (M[0x8F4D] << 1) & 255;
+        H(6 + 2 + (k ? 3 : 2));
+      }
+      H(2 + 6);
+      return M[0x8F49];
+    }
+    function tunePlay() {
+      H(6 + 4);
+      if (M[0x8F52]) { H(2 + 6); return; }
+      H(3 + 2 + 4);
+      M[0x8F4B] = 2;
+      for (;;) {
+        const x = M[0x8F4B];
+        H(4 + 4);
+        let next = true;
+        if (M[0x8F4F + x]) {
+          H(3);
+          const y = M[0x8E5D + x];
+          const left = (M[0x8F5F + x] - 1) & 255; M[0x8F5F + x] = left;
+          H(4 + 2 + 7);
+          if (!left) {
+            H(3);
+            io.sidWrite(y + 4, M[0x8F59 + x] & 0xFE);
+            M[0x8F19] = M[0x8F53 + x]; M[0x8F1A] = M[0x8F56 + x];
+            H(4 + 2 + 5 + 4 + 4 + 4 + 4);
+            const note = tuneRead();
+            M[0x8F4C] = note;
+            H(4);
+            if (note & 0x80) H(3);
+            else {
+              io.sidWrite(y, M[0x9006 + note]); io.sidWrite(y + 1, M[0x9082 + note]);
+              H(2 + 2 + 4 + cross(0x06, note) + 5 + 4 + cross(0x82, note) + 5);
+            }
+            const len = tuneRead();
+            H(2 + 4 + 4);
+            M[0x8F5F + x] = multiply(M[0x9000 + x], len);
+            M[0x8F59 + x] = M[0x9003 + x];
+            H(5 + 4 + 2 + 4 + 5 + 4);
+            if (M[0x8F4C] & 0x80) H(3);
+            else { io.sidWrite(y + 4, M[0x8F59 + x]); H(2 + 4 + 5); }
+            H(4 + 2);
+            if (M[0x8F4C] === 0x81) { M[0x8F52] = (M[0x8F52] + 1) & 255; H(2 + 6); } else H(3);
+            M[0x8F53 + x] = M[0x8F19]; M[0x8F56 + x] = M[0x8F1A];
+            H(4 + 5 + 4 + 5);
+            next = false;
+          } else H(2 + 3);
+        } else H(2 + 3);
+        if (next) { /* the JMP to tune_next_voice is counted above */ }
+        const v = (M[0x8F4B] - 1) & 255; M[0x8F4B] = v; H(6);
+        if (v & 0x80) { H(3 + 6); return; }
+        H(2 + 3);
+      }
+    }
+    P.irq = function () {
+      P.hc = 0;
+      M[0x8AF4] = (M[1] & 0x2F) | 0x10; M[1] = 5;   // $01 as the processor port reads it: bit 4 is the tape button's input, high
+      const line = io.vicRead(0x12);
+      H(7 + 3 + 2 + 3 + 2 + 3 + 3 + 4 + 2 + 3 + 4 + 2);
+      if (line >= 8) {
+        // irq_band ($8A6B): below the rotor's band, or below the letters
+        H(2 + 3 + 4);
+        if (!M[0x8F8A]) {
+          H(2);
+          io.cia2Write(0, M[0x8F8E + M[0x8FA9]]);
+          M[0x8F8A] = (M[0x8F8A] + 1) & 255;
+          io.vicWrite(0x12, M[0x8A7D]);
+          H(4 + 4 + 4 + 6 + 2 + 4 + 3);
+        } else {
+          H(3);
+          io.vicWrite(0x1C, 0xF6); io.vicWrite(0x17, 1); io.vicWrite(0x1D, 1); io.vicWrite(0x10, M[0x96E7]);
+          H(2 + 4 + 2 + 4 + 4 + 4 + 4);
+          for (let n = 0; n < 3; n++) { io.vicWrite(n * 2, M[0x96C7 + n]); H(8); }
+          for (let n = 0; n < 3; n++) { io.vicWrite(n * 2 + 1, M[0x96CF + n]); H(8); }
+          for (let n = 0; n < 3; n++) { io.vicWrite(0x27 + n, M[0x96D7 + n]); H(8); }
+          const to = M[0x8FA9] ? 0xE3F8 : 0x63F8;
+          H(2 + 4 + (M[0x8FA9] ? 2 : 3));
+          for (let x = 2; x >= 0; x--) { M[to + x] = M[0x96DF + x]; H(4 + 5 + 2 + (x ? 3 : 2)); }
+          if (M[0x8FA9]) H(3);
+          io.vicWrite(0x12, 0);
+          H(2 + 4);
+        }
+      } else {
+        // the top of the frame: a frame taken if one is ready, the rotor's band shown
+        H(3 + 2 + 4 + 4);
+        M[0x8F8A] = 0;
+        if (M[0x8F62]) {
+          H(3 + 2 + 4);
+          M[0x8F62] = 0;
+          io.vicWrite(0x11, io.vicRead(0x11) & 0xF8 | M[0x8FBC]);
+          M[0x8FA9] = M[0x8F8C]; M[0x8FAA] = M[0x8F8B];
+          H(4 + 2 + 4 + 4 + 4 + 4 + 4 + 4);
+          spritesToShadow();
+          for (let n = 3; n < 8; n++) { io.vicWrite(n * 2, M[0x96C7 + n]); H(8); }
+          for (let n = 3; n < 8; n++) { io.vicWrite(n * 2 + 1, M[0x96CF + n]); H(8); }
+          for (let n = 3; n < 8; n++) { io.vicWrite(0x27 + n, M[0x96D7 + n]); H(8); }
+          const to = M[0x8FA9] ? 0x63FB : 0xE3FB;
+          H(2 + 4 + (M[0x8FA9] ? 2 : 3));
+          for (let x = 4; x >= 0; x--) { M[to + x] = M[0x96E2 + x]; H(4 + 5 + 2 + (x ? 3 : 2)); }
+          if (M[0x8FA9]) H(3);
+        } else H(2 + 3);
+        io.cia2Write(0, M[0x8F8E + M[0x8FAA]]);
+        io.vicWrite(0x1C, 0xFF); io.vicWrite(0x1D, 0); io.vicWrite(0x17, 0); io.vicWrite(0x10, 0);
+        io.vicWrite(0x00, 0xAE); io.vicWrite(0x02, 0xA8); io.vicWrite(0x04, 0xC0);
+        io.vicWrite(0x01, M[0x8A23]); io.vicWrite(0x03, M[0x8A28]); io.vicWrite(0x05, M[0x8A2D]);
+        io.vicWrite(0x27, 0x0F); io.vicWrite(0x28, 0x0F); io.vicWrite(0x29, 0x0F);
+        const r = M[0x8FA8];
+        M[0x63F8] = M[0xE3F8] = (r + 0xC0) & 255;
+        const p = ((r << 1) + 0xC4) & 255;
+        M[0x63F9] = M[0xE3F9] = p; M[0x63FA] = M[0xE3FA] = (p + 1) & 255;
+        H(4 + 4 + 4 + 2 + 4 + 2 + 4 + 4 + 4 + 6 * 6 + 2 + 4 + 4 + 4 + 4 + 2 + 2 + 4 + 4 + 4 + 2 + 2 + 2 + 4 + 4 + 2 + 2 + 4 + 4);
+        rotorSound();
+        tunePlay();
+        io.vicWrite(0x12, M[0x8A64]);
+        H(2 + 4 + 3);
+      }
+      // j_8AEE: the video chip's interrupt acknowledged, $01 and the registers back
+      io.vicWrite(0x19, 1);
+      M[1] = M[0x8AF4];
+      H(2 + 4 + 2 + 3 + 4 + 2 + 4 + 2 + 4 + 6);
+    };
+    return P;
+  }
+  return { INIT, VIC0, CP, WAIT, create };
+})();
+// end of gs-intro
+
+/* gs-intro-run */
+// The title sequence on a PAL C64's clock, for the page: GsIntro's main program and its raster
+// interrupt run against the beam, 312 lines of 63 cycles. Each stretch of the main program moves
+// the clock on by the cycles the title's own code takes for it, and the video chip's (the 40 of a
+// bad line, and five for each sprite on each line it is fetched on, as kit/c64/machine.js has
+// them) are added as the beam passes the lines it takes them on. The interrupt comes at the start
+// of the line it was set for and runs whole; the clock is brought up to the cycles it has counted
+// each time it reads or writes a chip, so its writes land where the beam is by then. A turn of a
+// loop that waits for the interrupt moves the clock to the next line.
+//   gsIntroRun(ram, o)  ram: TITLE's 64 KB from its listing. o.from: the first frame handed out, a
+//             number, or 'on' for the first whole frame after the title turns the screen on (the
+//             frames before run without their pictures); o.render false leaves the pictures out
+//   .next()   the next frame finished, as C64.renderFrame takes it, with its SID writes in sid
+//             ([register, value, ...]) and in cp the last of GsIntro.CP the program passed, which
+//             says what stage the title is at; null once the title has ended
+//   .sid      the SID's 25 registers as last written, for a player starting part-way
+//   .takes    the frames in which the interrupt took a new picture
+function gsIntroRun(ram, o = {}) {
+  const LINE = 63, LINES = 312, FRAME = LINE * LINES;
+  const M = new Uint8Array(0x10000), colour = new Uint8Array(0x400).fill(14);
+  M.set(ram);
+  for (const [a, b] of GsIntro.INIT) M.set(b, a);
+  const vic = new Uint8Array(0x40);
+  vic.set(GsIntro.VIC0);
+  let cmp = vic[0x12] | (vic[0x11] & 0x80) << 1, latch = 0, enable = 0, pra2 = 0xC0, ddra2 = 0x3F;
+  let t = 0, lastLine = 0, inIrq = false, irqSpent = 0, offSeen = false, onAt = -1;
+  const sidw = new Uint8Array(25);
+  const lineOf = () => Math.floor(t / LINE) % LINES;
+
+  // ---- the frames, as the beam draws them
+  const C64 = o.render === false ? null : globalThis.C64;
+  const keep = {};
+  let vm = null, live = false, frameIdx = 0, cur = null, lastCp = 0;
+  const done = [];
+  // from the first frame handed out on, memory is followed for the pictures
+  function goLive() {
+    if (live || (o.from === 'on' ? onAt < 0 : frameIdx < (o.from || 0))) return;
+    live = true;
+    if (C64) vm = C64.videoMemory(M, colour, { keep, frames: 4 });
+  }
+  function begin() {
+    goLive();
+    const f = vm ? vm.begin() : { mem: null, colour: null };
+    cur = { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: f.mem, colourMem: f.colour, keep, sid: [] };
+  }
+  begin();
+  // the lines the clock has passed (the raster latch set on the compare's) and the frames finished
+  function roll() {
+    const ln = Math.floor(t / LINE);
+    while (lastLine < ln) { lastLine++; if (lastLine % LINES === cmp) latch |= 1; }
+    if (vm) vm.at(t, cur.writes);
+    while (t >= (frameIdx + 1) * FRAME) { if (live) { cur.cp = lastCp; done.push(cur); } frameIdx++; begin(); }
+  }
+
+  // ---- the video chip's fetches (kit/c64/machine.js, dmaNext and dmaCatchUp): its next look at
+  // its registers, at cycle 12 or 55 of a line, or the start of its next hold on the processor
+  const dma = { at: -1, holds: [], bad: false, rows: [0, 0, 0, 0, 0, 0, 0, 0] };
+  function dmaNext() {
+    const d = dma;
+    if (d.at < 0) {
+      const c = t % LINE;
+      d.at = t - c + (c <= 11 ? 11 : c <= 54 ? 54 : LINE + 11);
+      d.bad = (vic[0x11] & 0x10) !== 0;
+    }
+    return d.holds.length ? Math.min(d.at, d.holds[0][0]) : d.at;
+  }
+  function dmaEvent() {
+    const d = dma;
+    if (d.holds.length && d.holds[0][0] === dmaNext()) {
+      const [first, last] = d.holds.shift();
+      t += last - first + 1;
+      return;
+    }
+    const ls = d.at - d.at % LINE, ln = (ls / LINE) % LINES;
+    if (d.at % LINE === 11) {
+      if (ln === 0) d.bad = false;
+      if (ln === 48 && (vic[0x11] & 0x10)) d.bad = true;
+      if (d.bad && ln >= 48 && ln <= 247 && (ln & 7) === (vic[0x11] & 7)) d.holds.push([ls + 11, ls + 53]);
+      d.at = ls + 54;
+    } else {
+      let hold = null;
+      for (let n = 0; n < 8; n++) {
+        if (!d.rows[n] && (vic[0x15] >> n & 1) && vic[1 + 2 * n] === (ln & 255)) d.rows[n] = vic[0x17] >> n & 1 ? 42 : 21;
+        if (!d.rows[n]) continue;
+        d.rows[n]--;
+        const first = ls + 54 + 2 * n, last = first + 4;
+        if (hold && first <= hold[1]) hold[1] = last;
+        else { if (hold) d.holds.push(hold); hold = [first, last]; }
+      }
+      if (hold) d.holds.push(hold);
+      d.at = ls + LINE + 11;
+    }
+  }
+
+  // ---- the clock: own of the processor's cycles spent, or the clock taken to limit, the video
+  // chip's holds added, and outside the handler an interrupt taken where it falls due
+  function spend(own, limit) {
+    for (;;) {
+      const e = dmaNext();
+      if (e <= t) { dmaEvent(); continue; }
+      roll();
+      if (!inIrq && !P.i && (latch & enable & 15)) { irq(); continue; }
+      if (own <= 0 || t >= limit) return;
+      const s = Math.min(own, e - t, limit - t, LINE - t % LINE);
+      t += s; own -= s;
+    }
+  }
+  const nextLine = () => t - t % LINE + LINE;
+  // in the handler, the clock brought up to the cycles it has counted so far (its take's 7 among them)
+  function sync() {
+    if (inIrq && P.hc > irqSpent) { const own = P.hc - irqSpent; irqSpent = P.hc; spend(own, Infinity); }
+    roll();
+  }
+  const takes = [];
+  function irq() {
+    inIrq = true; irqSpent = 0;
+    if (M[0x8F62] && lineOf() < 8) takes.push(Math.floor(t / FRAME));
+    P.irq();
+    sync();
+    inIrq = false;
+  }
+
+  // ---- the chips, as the port reaches them
+  const io = {
+    vicRead(r) {
+      r &= 0x3F; sync();
+      const ln = lineOf();
+      if (r === 0x12) return ln & 255;
+      if (r === 0x11) return (vic[0x11] & 0x7F) | (ln >> 8) << 7;
+      if (r === 0x19) return latch | 0x70 | ((latch & enable) ? 0x80 : 0);
+      if (r === 0x1A) return enable | 0xF0;
+      return vic[r];
+    },
+    vicWrite(r, v) {
+      r &= 0x3F; v &= 255; sync();
+      if (r < 47 && r !== 0x19 && r !== 0x1A) cur.writes.push([lineOf(), t % LINE + 1, 0xD000 + r, v]);
+      if (r === 0x12) cmp = (cmp & 0x100) | v;
+      else if (r === 0x11) {
+        cmp = (cmp & 0xFF) | ((v & 0x80) << 1); vic[r] = v;
+        if (!(v & 0x10)) offSeen = true; else if (offSeen && onAt < 0) onAt = frameIdx;
+        if ((v & 0x10) && lineOf() === 48) dma.bad = true;
+      } else if (r === 0x19) latch &= ~v & 15;
+      else if (r === 0x1A) enable = v & 15;
+      else vic[r] = v;
+    },
+    sidWrite(r, v) { sync(); r &= 0x1F; v &= 255; if (r < 25) sidw[r] = v; cur.sid.push(r, v); },
+    colourRead: (i) => colour[i & 0x3FF],
+    colourWrite(i, v) { colour[i & 0x3FF] = v & 15; },
+    ciaRead: (r) => ((r & 15) === 1 ? 0xFF : 0),   // no key held, no timer's interrupt
+    ciaWrite() {},
+    cia2Write(r, v) {
+      r &= 15; v &= 255; sync();
+      if (r !== 0 && r !== 2) return;
+      if (r === 0) pra2 = v; else ddra2 = v;
+      cur.writes.push([lineOf(), t % LINE + 1, 0xDD00 + r, v]);
+    },
+  };
+
+  // ---- the main program, to its next yield, and the clock moved on as it says
+  const P = GsIntro.create(M, io);
+  const prog = P.program();
+  let ended = false;
+  function step() {
+    const r = prog.next();
+    if (r.done) { ended = true; return; }
+    const y = r.value;
+    if (!y) spend(Infinity, nextLine());                  // a turn of a loop waiting for the interrupt
+    else if (y.cycles) spend(y.cycles, Infinity);
+    else if (y.cp) lastCp = y.cp;
+    else if (y.wait !== undefined && y.seen !== y.wait) {
+      // scroll_cells's loop, which reads the raster until it is on line $30 (or $130)
+      while (lineOf() !== y.wait) spend(Infinity, nextLine());
+    }
+  }
+  function next() {
+    while (!done.length) { if (ended) return null; step(); }
+    return done.shift();
+  }
+  return { next, takes, sid: sidw, P, M };
+}
+// end of gs-intro-run
 
 /* gs-shapes */
 // The shapes of the terrain file as the flight's listing holds them (W3.WE): the points table and
@@ -751,13 +1867,82 @@ function frames() {
   C64.drawFrame($('gs-map'), GS_MAPFRAME, 1);
 }
 
+// ---- the title, played: gsIntroRun's frames drawn as they fall due, 50 a second, and their SID
+// writes queued for the site's model of the chip. Before Play, a frame from the tune, the title
+// complete.
+function intro(T) {
+  const cv = $('gi-screen'), ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const HZ = 985248 / 19656;                 // a PAL C64's frames a second
+  const STAGE = { [GsIntro.CP.riseReady]: 'The helicopter rises', [GsIntro.CP.riseShown]: 'The helicopter rises',
+    [GsIntro.CP.hoverReady]: 'It hovers, and GUNSHIP is written', [GsIntro.CP.hoverShown]: 'It hovers, and GUNSHIP is written',
+    [GsIntro.CP.showReady]: 'The tune', [GsIntro.CP.showShown]: 'The tune' };
+  const play = $('gi-play'), snd = $('gi-sound'), out = $('gi-out');
+  let R = null, host = null, raf = 0, t0 = 0, n = 0, stage = '';
+  function paint(F) {
+    const px = C64.renderFrame(F).px, d = img.data;
+    for (let i = 0; i < px.length; i++) { const c = rgb[px[i]]; d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255; }
+    ctx.putImageData(img, 0, 0);
+  }
+  const soundOn = () => snd.getAttribute('aria-pressed') === 'true';
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, R.sid[r]); return all; };
+  function stop(label) {
+    cancelAnimationFrame(raf); raf = 0; R = null;
+    play.textContent = label || '▶ Play';
+    if (host) host.ctx.suspend();
+  }
+  function tick(now) {
+    if (!R) return;
+    let due = Math.floor((now - t0) * HZ / 1000) + 1;
+    // a hidden tab or a slow machine: the title waits rather than racing to catch up
+    if (due - n > 10) { t0 = now - n * 1000 / HZ; due = n + 1; }
+    let F = null;
+    while (n < due) {
+      const f = R.next();
+      if (!f) { stop('▶ Play again'); return; }
+      n++; F = f;
+      if (host && soundOn()) host.push([f.sid]);
+    }
+    if (F) {
+      paint(F);
+      const s = Math.floor(n / HZ);
+      stage = STAGE[F.cp] || stage;
+      out.textContent = stage + ' · ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  play.addEventListener('click', async () => {
+    if (R) { stop(); return; }
+    if (soundOn() && !host && typeof C64Sid !== 'undefined') {
+      try { host = await C64Sid.host({ live: true, gain: 0.5 }); } catch (e) { snd.setAttribute('aria-pressed', 'false'); }
+    }
+    R = gsIntroRun(T.ram, { from: 'on' });
+    n = 0; t0 = performance.now(); stage = 'The screen comes on, and the rotor\'s sound fades in';
+    play.textContent = '■ Stop';
+    if (host) { host.ctx.resume(); if (soundOn()) host.push([registers()]); }
+    raf = requestAnimationFrame(tick);
+  });
+  snd.addEventListener('click', async () => {
+    const on = !soundOn();
+    snd.setAttribute('aria-pressed', String(on));
+    if (on && !host && typeof C64Sid !== 'undefined') {
+      try { host = await C64Sid.host({ live: true, gain: 0.5 }); } catch (e) { snd.setAttribute('aria-pressed', 'false'); return; }
+    }
+    if (!host) return;
+    if (!on) host.ctx.suspend();
+    else if (R) { host.ctx.resume(); host.push([registers()]); }
+  });
+  setTimeout(() => { if (!R) paint(gsIntroRun(T.ram, { from: 1500 }).next()); }, 0);
+}
+
 if (typeof C64 === 'undefined') {
-  ['gs-shape-out', 'gs-music', 'gs-sfx'].forEach((id) => need('The site\'s scripts', $(id)));
+  ['gs-shape-out', 'gs-music', 'gs-sfx', 'gi-out'].forEach((id) => need('The site\'s scripts', $(id)));
 } else {
   frames();
   Promise.all([C64.load('parts/flight/listing.json'), C64.load('parts/title/listing.json')]).then(([F, T]) => {
     shapes(F.ram, F.names);
     kinds(F.ram);
+    intro(T);
     if (typeof C64Cpu === 'undefined') need('cpu6502.js', $('gf-out')); else fly(F);
     if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') ['gs-music', 'gs-sfx'].forEach((id) => need('sid.js', $(id)));
     else {
