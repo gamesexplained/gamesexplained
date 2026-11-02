@@ -9,7 +9,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">The whole mine, 4,096 by 1,792 pixels, drawn from the map the game keeps under its operating system, with every object, danger, and restart point on it.</p>
+  <p class="sub">The game never loads a level. The whole mine is one 7 KB map, tucked into memory the Commodore's own operating system normally uses.</p>
 </header>
 <main class="wrap">
 <section id="mine">
@@ -30,24 +30,24 @@
     <canvas id="map" class="scr" hidden style="display:none" role="img" aria-label="The whole mine, reduced"></canvas>
     <canvas id="zoom" class="scr" style="max-width:100%;cursor:grab;touch-action:none" role="img" aria-label="The mine, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
-    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn as their own sprites when zoomed in from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">Blue</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the map to move around it, zoom with the buttons or the mouse wheel, and click a mark to select it.</p>
-    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
+    <p class="cap"><b style="color:#e8c547">● Yellow circles</b>: the objects where a new game puts them, drawn as their own sprites when zoomed in from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">◆ Green diamonds</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">✕ Red crosses</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">▲ Blue triangles</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the map to move around it, zoom with the buttons or the mouse wheel, and click a mark to select it.</p>
+    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange plus sign (+) is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
   </div>
-  <h3 id="objects">Where the objects work</h3>
-  <p>Choose an object above and press Where it is used to step through the points where it works. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). Why objects work only at these points, and what each is for, is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the <a href="https://www.c64-wiki.com/wiki/Kernal">KERNAL ROM</a>) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
+  <h3>Seven zones</h3>
+  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own, and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
+  <h3 id="objects">Where the objects work</h3>
+  <p>Choose an object above and press Where it is used to step through the points where it works. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). Why objects work only at these points, and what each is for, is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
 </section>
 <section id="scroll">
   <p class="fig">Scrolling</p>
-  <h2 class="t">Two screens, drawn in turn</h2>
+  <h2 class="t">The game draws the next view on a hidden screen, so the mine glides</h2>
   <p>The game keeps two copies of the play screen, at <code>$7800</code> and <code>$7C00</code>. While one is shown, the game builds the next position of the mine in the other, spread over three frames (<code>coarse_scroll_step</code>, <code>$8C32</code>), and then swaps them. Between those steps the video chip's fine scroll moves the picture a pixel at a time, so the view glides in all eight directions.</p>
-  <h3 style="margin-top:28px">Seven zones</h3>
-  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own, and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
 </section>
 <section id="restart">
   <p class="fig">Restart points</p>
-  <h2 class="t">Nine places to come back to</h2>
+  <h2 class="t">Every restart point but the first is a save booth (CSC)</h2>
   <p>The mine has nine restart points, stored as four tables of nine bytes at <code>$9059</code>-<code>$907C</code>. The first is beside the TARDIS. The other eight are the CSCs, the cryostasis chambers, which are also the only places where the game can be saved (<a href="discoveries.html#save-place">Discoveries</a>). When the Doctor comes close to one, that point becomes the current one (<code>check_restart_points</code>, <code>$907D</code>). After he loses a regeneration, the game puts him back at the current point.</p>
 </section>
 </main>
@@ -137,16 +137,24 @@
     for (const [v, t] of [['all', 'The whole solution']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
-  function marks(list, colour, round, sprites) {
+  function shape(ctx, x, y, r, s) {             // each kind of mark has its own shape, so colour is never the only cue
+    ctx.beginPath();
+    if (s === 'circle') ctx.arc(x, y, r, 0, 7);
+    else if (s === 'diamond') { ctx.moveTo(x, y - r * 1.25); ctx.lineTo(x + r * 1.25, y); ctx.lineTo(x, y + r * 1.25); ctx.lineTo(x - r * 1.25, y); ctx.closePath(); }
+    else if (s === 'tri') { ctx.moveTo(x, y - r * 1.3); ctx.lineTo(x + r * 1.2, y + r * 0.9); ctx.lineTo(x - r * 1.2, y + r * 0.9); ctx.closePath(); }
+    else { const a = r * 0.4, b = r * 1.1;          // a cross: an X of two bars
+      [[0, -a], [b - a, -b], [b, -b + a], [a, 0], [b, b - a], [b - a, b], [0, a], [-b + a, b], [-b, b - a], [-a, 0], [-b, -b + a], [-b + a, -b]].forEach(([dx, dy], i) => ctx[i ? 'lineTo' : 'moveTo'](x + dx, y + dy)); ctx.closePath(); }
+  }
+  function marks(list, colour, kind, sprites) {
     for (const k of list) {
       const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
-      mctx.beginPath(); if (round) mctx.arc(x / S, y / S, 4.5, 0, 7); else mctx.rect(x / S - 4.5, y / S - 4.5, 9, 9); mctx.fill(); mctx.stroke();
+      shape(mctx, x / S, y / S, 4.5, kind); mctx.fill(); mctx.stroke();
       const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
       if (zx > -40 && zx < ZW + 40 && zy > -20 && zy < ZH + 20) {
         // an object is drawn as its own sprite, standing on its point: starting frame $1D30, colour $1850
-        if (Z < 1) { zctx.fillStyle = colour; zctx.beginPath(); zctx.arc(zx, zy, 4, 0, 7); zctx.fill(); if (sprites) { zctx.font = 'bold 11px IBM Plex Mono, monospace'; zctx.lineWidth = 3; zctx.strokeStyle = '#000'; zctx.strokeText(k.t, zx + 6, zy + 4); zctx.fillText(k.t, zx + 6, zy + 4); } continue; }   // objects keep their names zoomed out
+        if (Z < 1) { zctx.fillStyle = colour; shape(zctx, zx, zy, 4, kind); zctx.fill(); if (sprites) { zctx.font = 'bold 11px IBM Plex Mono, monospace'; zctx.lineWidth = 3; zctx.strokeStyle = '#000'; zctx.strokeText(k.t, zx + 6, zy + 4); zctx.fillText(k.t, zx + 6, zy + 4); } continue; }   // objects keep their names zoomed out
         if (sprites) DW.sprite(zctx, DW.image(M, M[0x1D30 + k.o]), zx - 12 * Z, zy - 21 * Z, Z, [2, M[0x1850 + k.o], 8]);
-        else { zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 6 * Z, 0, 7); zctx.stroke(); }
+        else { zctx.strokeStyle = colour; zctx.lineWidth = 3; shape(zctx, zx, zy, 6 * Z, kind); zctx.stroke(); }
         zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; const lx = zx + (sprites ? 13 * Z : 16); zctx.strokeText(k.t, lx, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, lx, zy + 5);
       }
     }
@@ -161,10 +169,10 @@
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
     zctx.imageSmoothingEnabled = false; zctx.fillStyle = '#000'; zctx.fillRect(0, 0, ZW, ZH); zctx.drawImage(full, view[0], view[1], ZW / Z, ZH / Z, 0, 0, ZW, ZH);
     cross(zctx, (start[0] - view[0]) * Z, (start[1] - view[1]) * Z, 3, '#c25a00');
-    marks(dangers, '#ff6b5b', false);
-    marks(objs, '#e8c547', true, true);
-    marks(uses, '#5fd068', false);
-    marks(crs, '#6fc3ff', true);
+    marks(dangers, '#ff6b5b', 'cross');
+    marks(objs, '#e8c547', 'circle', true);
+    marks(uses, '#5fd068', 'diamond');
+    marks(crs, '#6fc3ff', 'tri');
     if (showRp) pts.forEach(([x, y], i) => {
       mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
       mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);

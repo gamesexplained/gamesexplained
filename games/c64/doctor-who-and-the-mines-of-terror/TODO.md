@@ -1,17 +1,13 @@
 # Doctor Who And The Mines Of Terror — TODO
 
-Tier: **Silver (claimed)**, steward unorig (100 % coverage, 56,515 tracked bytes; facts, features,
-minisite; copy `agent-draft`). The listing is built from the original
-disk (DWMT DISK MASTER).
+Tier: **Gold**, steward unorig (100 % coverage, 56,515 tracked bytes; facts, features,
+minisite; copy `human-edited`). The listing is built from the original
+disk (DWMT DISK MASTER). Every tab had a Gold pass on 2 November 2026:
+headings and summary lines now state findings, and the Maps and Music
+pictures no longer rely on colour alone.
 
-For Gold, a human pass over every tab (Overview, Gameplay, Controls, Maps,
-Solution, Graphics, Music, Discoveries), section by section. The review of
-8 October 2026 found headings and tab subtitles that list a section's
-contents instead of saying its finding (`kit/style.md`, "A heading is
-never an inventory"), and a few paragraphs under the wrong heading: on
-Maps, the paragraphs on where the map sits in memory and on colour RAM
-sit under "Where the objects work", and "Seven zones" sits under the
-scrolling section.
+For Diamond, a Play tab like Mercenary's that ports the whole game
+(Platinum), on top of this Gold.
 
 Worth doing, found in the run and not done:
 
@@ -19,10 +15,9 @@ Worth doing, found in the run and not done:
   eight save booths (block `$23`), every zone's own glyph set (`$ABCF`,
   `$2E00`), and the lift and carrier stops.
 - Live tests not run: the madrag; oxygen outside; what happens at `$E8` = 8
-  (rising level); a real end of the game and its bonus; whether a player
-  can reach the lift or the carrier at a height their exact tests
-  (`$A294`, `$A395`) refuse. The Solution route has not been played from
-  start to finish.
+  (rising level); a real end of the game and its bonus. Euan has missed the lift and the
+  carrier in play and boarded after a jump (2 November 2026). Euan played the Solution route through
+  (2 November 2026).
 - The C64 manual was not found online; check the story and controls
   against it when a scan turns up.
 - The sound effects (`$C677`, `$C7C7`) are not playable on the Music tab.
