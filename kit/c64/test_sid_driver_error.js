@@ -74,5 +74,31 @@ function works() {
   check(w.run(400) && errors(w).length === 0, 'a driver that works posts no error');
 }
 
+// A driver that decodes its bytes with atob, as a page's own copy of a game's file often does: the
+// page and node have atob and an AudioWorkletGlobalScope does not, so the worklet's module brings
+// its own, which must decode as the page's does (spaces and padding ignored).
+const BYTES = Array.from({ length: 300 }, (_, i) => (i * 97 + 13) & 255);
+const B64 = Buffer.from(BYTES).toString('base64');
+const DECODE_TESTS = [B64, B64.slice(0, 76) + '\n' + B64.slice(76), 'TQ==', 'TWE=', 'TWFu', ''];
+function decodes() {
+  const sid = new Uint8Array(25);
+  const bin = atob('$B64');
+  const out = Array.from(bin, (c) => c.charCodeAt(0));
+  return { sid, writes: [], out, init() {}, stop() {}, play() {}, playing: () => false };
+}
+{
+  const src = decodes.toString().replace('$B64', B64);
+  const w = worklet(new Function('return ' + src)());
+  check(errors(w).length === 0, 'a driver that decodes its bytes with atob starts in the worklet');
+  let Proc = null;
+  const scope = { sampleRate: 48000, currentTime: 0, registerProcessor: (n, c) => { Proc = c; },
+    AudioWorkletProcessor: class { constructor() { this.port = { postMessage() {} }; } } };
+  vm.runInNewContext(C64Sid.worklet(decodes) + '\nthis.decode = typeof atob === \'function\' ? atob : null;', scope);
+  const dec = scope.decode;
+  check(dec && DECODE_TESTS.every((t) => dec(t) === atob(t)), 'and the worklet\'s atob decodes as the page\'s does');
+  const d = dec && new Function('atob', 'return (' + src + ')')(dec)();
+  check(d && d.out.length === BYTES.length && d.out.every((v, i) => v === BYTES[i]), 'giving the driver its bytes');
+}
+
 console.log(fails ? fails + ' FAILED' : 'all ok');
 process.exitCode = fails ? 1 : 0;

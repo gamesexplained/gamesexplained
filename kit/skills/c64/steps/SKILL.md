@@ -114,6 +114,17 @@ the worklet makes it: one taken from the page's scope passes a driver
 that uses the page's other names, and on the page that driver is silent.
 Say in the caption that the page runs the game's own player.
 
+Writes that match the game's frame by frame can still be silent: the chip
+plays nothing while the low four bits of `$D418` are 0, and many games
+set the volume once, at start-up, outside the driver. Find who writes
+`$D418` (the register census) and run that step, or the call that makes
+it, before each button, as the game ran it before the sound; the test
+fails a frame that gates a voice on at volume 0. Then
+`node kit/c64/sid_check.js _site [<page> ...]` plays every button of the
+built pages through the player's own worklet and fails one that stays
+silent or whose driver stops there. A button the game leaves silent says
+so in its label, "(silent)". CI runs it over the whole site.
+
 The filter is off unless the page passes `filter: '6581'` (or `'8580'`)
 to `mount`, which also shows a switch to compare it with no filter; pass
 it when the game sets the filter, and say in the caption that the cutoff

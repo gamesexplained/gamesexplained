@@ -12,7 +12,7 @@
 <p class="lab-cap">The player models the Commodore 64’s SID sound chip, using its 6581 filter. Individual chips can sound different.</p>
 <h3 id="lab-music-where">Where each tune plays</h3>
 <ul>
-<li>The jingle is the short tune built into the resident code, header <a href="source-resident.html#2679"><code>$2679</code></a>. The <em>ADUMBRATE JARETH</em> handler starts it through <a href="source-resident.html#0869"><code>$0869</code></a>, and other area files call the same entry.</li>
+<li>The jingle is the short tune built into the resident code, header <a href="source-resident.html#2679"><code>$2679</code></a>. The <em>ADUMBRATE JARETH</em> handler starts it through <a href="source-resident.html#0869"><code>$0869</code></a>, and other area files call the same entry. The jingle sets the chip's volume only after four and a half seconds, because the game plays it after other sound has already turned the volume up; every other tune and effect sets it on its first frame. The player turns it up to 15 before the jingle starts.</li>
 <li>The opening menu tune has its header at <a href="source-opening.html#C05F"><code>$C05F</code></a>, and the opening's menu code starts it at <a href="source-opening.html#BC5C"><code>$BC5C</code></a>.</li>
 <li>The gate tune has its header at <a href="source-scene-01.html#9200"><code>$9200</code></a>, and the entrance gate starts it at <a href="source-scene-01.html#8D23"><code>$8D23</code></a>.</li>
 <li>The final duel tune has its header at <a href="source-scene-26.html#790D"><code>$790D</code></a>, loaded over the start of the costume block, and a starter at <a href="source-scene-26.html#7900"><code>$7900</code></a> waits for it to end.</li>
@@ -35,8 +35,12 @@ function createDriver(D, C64Cpu) {
   // over the bytes the game has in memory: the overlay stubs $0869 and $086F, the engine and the
   // short tune $1B88-$2690, the frequency tables under I/O $DD00-$DEFF, and the tune's own range.
   // init(n) starts tune n as the game does: $0869 for the jingle, else $086F with Y and X holding
-  // the header; a sound effect (fx) is the reset $1C6C and the request $1C0C, which queues it
-  // while no tune plays. play() makes one call of $253F and then $1C2D, as the interrupt $113A does.
+  // the header. Every other tune and effect sets $D418 on its first frame ($1F, $2F or $5F: volume
+  // 15 in each); the jingle sets it ($1F) only at frame 225, as the game plays it after other sound,
+  // so init first writes $1F, the jingle's own value, and the chip is not left at volume 0, which is
+  // silent. No voice goes through the filter before frame 225, so the filter bits make no
+  // difference. A sound effect (fx) is the reset $1C6C and the request $1C0C, which queues it while
+  // no tune plays. play() makes one call of $253F and then $1C2D, as the interrupt $113A does.
   const sid = new Uint8Array(25);
   let m = null, cpu = null, writes = [], on = false, fx = false;
   const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -53,7 +57,7 @@ function createDriver(D, C64Cpu) {
       sid.fill(0); writes = [];
       fx = t.fx != null;
       if (fx) { call(0x1C6C, {}); if (t.pitch) call(0x0860, { x: t.fx, a: t.pitch[0], y: t.pitch[1] }); else call(0x1C0C, { a: t.fx }); }
-      else if (t.jingle) call(0x0869, {}); else call(0x086F, { y: t.y, x: t.x });
+      else if (t.jingle) { W(0xD418, 0x1F); call(0x0869, {}); } else call(0x086F, { y: t.y, x: t.x });
       on = true;
     },
     stop() { on = false; },

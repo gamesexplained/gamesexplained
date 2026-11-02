@@ -2,12 +2,14 @@
 // Hold the page's two sound players against the game's own code. index.html's rb-music block
 // (createDriver) runs the music driver on the kit's 6502 over RB_DRIVER_RANGES, for every button of
 // the music player (RB_TUNES) and of the effects player (RB_EFFECTS). Here the same commands run on
-// the kit's simulator over the whole listing, as message_screen ($044D) sends them: command 1
-// (silence), command 26 with X = 7 (all voices for music), the button's command, then each frame
+// the kit's simulator over the whole listing, as the game sends them: command 25 with X = 15 (the
+// master volume, which the start-up sets at $C1BA), then, as message_screen ($044D) sends them,
+// command 1 (silence), command 26 with X = 7 (all voices for music), the button's command, then each frame
 // command 0 as music_tick ($1159) sends it and command 2 (cmd_status, $8466). Both must write the same
 // values to the same SID registers in the same order, frame by frame, for 3,000 frames a button, and
 // the page's button must stop on the frame cmd_status first returns zero. createDriver is made here
-// from its source text alone, in a context of its own, as the player's AudioWorklet makes it.
+// from its source text alone, in a context of its own, as the player's AudioWorklet makes it. A
+// button that gates a voice while the chip's volume is 0, which is silent, fails too.
 // It exits 1 on any difference.
 //   node games/c64/rambo-first-blood-part-ii/test_music.js [page.html]
 const path = require('path'), vm = require('vm'), ROOT = path.resolve(__dirname, '../../..');
@@ -32,17 +34,19 @@ for (const list of [RB_TUNES, RB_EFFECTS]) list.forEach((c, t) => {
   const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io });
   const cmd = (a, x) => cpu.call(0x8100, { a, x: x || 0 }, { maxSteps: 200000 });
   const drv = createDriver({ mem, list }, kit);
-  cmd(1); cmd(26, c.mask === undefined ? 7 : c.mask); cmd(c.cmd);
+  cmd(25, 15); cmd(1); cmd(26, c.mask === undefined ? 7 : c.mask); cmd(c.cmd);
   drv.init(t);
   if (frame.w.join() !== drv.writes.join()) fail(c.name, 'start', frame.w.join(), '|', drv.writes.join());
-  let done = -1, gate = false;
+  let done = -1, gate = false, quiet = 0;
   for (let f = 0; f < FRAMES && done < 0; f++) {
     frame.w = [];
     cmd(0);
-    for (let i = 0; i < frame.w.length; i += 2) if ([4, 11, 18].includes(frame.w[i]) && (frame.w[i + 1] & 1)) gate = true;
+    let on = false;
+    for (let i = 0; i < frame.w.length; i += 2) if ([4, 11, 18].includes(frame.w[i]) && (frame.w[i + 1] & 1)) on = gate = true;
     cmd(2);
     const over = cpu.a === 0;
     drv.play();
+    if (on && !(drv.sid[24] & 15) && !quiet) quiet = fail(c.name, 'frame ' + f, 'a voice gated on at volume 0, which is silent') || 1;
     if (frame.w.join() !== drv.writes.join()) fail(c.name, 'frame ' + f, frame.w.join(), '|', drv.writes.join());
     if (over) done = f;
     if (over === drv.playing()) fail(c.name, 'frame ' + f, 'game', over ? 'done' : 'playing', 'page', drv.playing() ? 'playing' : 'stopped');
