@@ -96,18 +96,49 @@ jobs:
     needs: check-and-build
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
     runs-on: ubuntu-latest
-    # one deployment at a time: kit-version.yml starts this again after its bump
+    # one deployment at a time
     concurrency:
       group: pages
       cancel-in-progress: false
     permissions:
       pages: write
       id-token: write
+      actions: read   # to list this workflow's runs, below
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Runs on main overlap, and an older one can finish its tests after a newer one has
+      # deployed: deploying it then would take the newer one's changes off the site. Deploy jobs
+      # run one at a time (the group above), so a run checks first whether a newer run's deploy
+      # job has finished, and if one has, the site already holds this run's changes and it skips
+      # its own deploy. A run that cannot ask deploys as before.
+      - name: Has a newer run on main deployed?
+        id: newer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_number }}
+        run: |
+          deploy=yes
+          if ids=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?branch=main&per_page=50" \
+              --jq ".workflow_runs[] | select(.event != \"pull_request\" and .run_number > $RUN) | .id"); then
+            for id in $ids; do
+              if ! n=$(gh api "repos/$REPO/actions/runs/$id/jobs" \
+                  --jq '[.jobs[] | select(.name == "deploy" and .conclusion == "success")] | length'); then
+                echo "::warning::Could not read run $id's jobs, so deploying as if it had not deployed."
+              elif [ "$n" != 0 ]; then
+                echo "Not deploying: newer run $id has deployed a site with this run's changes in it."
+                deploy=no
+                break
+              fi
+            done
+          else
+            echo "::warning::Could not list this workflow's runs, so deploying as if none were newer."
+          fi
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
       - id: deployment
+        if: steps.newer.outputs.deploy == 'yes'
         uses: actions/deploy-pages@v4
 
   # Post each newly added game to Discord once the site carrying it is live,

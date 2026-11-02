@@ -661,17 +661,17 @@ def banner_body(game, cons, tier, repo):
     """The banner's text before any line about the listing (banner)."""
     where = f'games/{game["platform"]}/{game["slug"]}'
     if tier in CURATED:
-        who = ", ".join(person_html(n, l) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l, _ in cons)
         body = f'This minisite was curated by {who}.' if who else 'This minisite was curated by hand.'
     elif tier == "silver" or (tier == "platinum" and not game.get("steward")):
-        who = ", ".join(person_html(n, l) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l, _ in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         prompt = f"Clone {repo} and follow kit/START.md to curate {where} with me to Gold."
         body = (lead + 'It\u2019s agent-generated and needs a human editor. '
                 f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
                 '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
     elif tier in ("silver-claimed", "platinum"):
-        who = ", ".join(person_html(n, l) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l, _ in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         st = game.get("steward") or ""
         if not st:
@@ -1014,13 +1014,44 @@ def person_html(name, login):
 
 
 def contributors(gdir):
-    """(commits, name, github login or None) per human author of this game folder (credit)."""
+    """(commits, name, github login or None, commits to this game alone) per human author of this
+    game folder, those who did most on this game first (credit)."""
     try:
         out = subprocess.run(["git", "log", "--no-merges", "--format=%aN\t%aE\t%H", "HEAD", "--", gdir],
                              cwd=ROOT, capture_output=True, text=True).stdout
     except Exception:
         out = ""
-    return credit(ln.split("\t") for ln in out.splitlines() if ln.count("\t") == 2)
+    key = os.path.relpath(os.path.abspath(gdir), ROOT).split(os.sep)[:3]
+    own = {sha for sha, games in game_folders().items() if games == {"/".join(key)}}
+    return credit((ln.split("\t") for ln in out.splitlines() if ln.count("\t") == 2), own)
+
+
+_game_folders = {}
+
+
+def game_folders():
+    """{commit: the game folders it changes, as games/<platform>/<slug>}, for every commit that
+    changes one: one git log a build."""
+    if not _game_folders:
+        try:
+            out = subprocess.run(["git", "log", "--no-merges", "--format=\x01%H", "--name-only", "HEAD", "--", "games"],
+                                 cwd=ROOT, capture_output=True, text=True).stdout
+        except Exception:
+            out = ""
+        for block in out.split("\x01")[1:]:
+            sha, *paths = block.split("\n")
+            _game_folders[sha] = {"/".join(p.split("/")[:3]) for p in paths if p.count("/") >= 3}
+    return _game_folders
+
+
+def commits_said(commits, own):
+    """A contributor's commits as the About tab counts them, and how many changed this game alone,
+    which is what puts them in the order they are listed (credit). A game with one contributor
+    has no order to explain, and gives own as commits."""
+    n = f"{commits} commit{'s' if commits != 1 else ''}"
+    if own == commits:
+        return n
+    return f"{n}, {own} to this game alone" if own else f"{n} that changed other games too"
 
 
 def credited(cons, game):
@@ -1036,9 +1067,14 @@ def uncredited(game, name, login):
     return (login or "").lower() in out or name.lower() in out
 
 
-def credit(authors):
-    """(commits, name, github login or None) per person among (name, address, commit) authors,
-    listed newest commit first as git log gives them.
+def credit(authors, own=()):
+    """(commits, name, github login or None, commits in own) per person among (name, address,
+    commit) authors, listed newest commit first as git log gives them.
+
+    Most commits in own first, then most commits. contributors() gives as own the commits that
+    change this game's folder and no other game's: a pull request on this minisite, squash-merged
+    into one commit. A change made to many games at once (a site-wide fix) counts after them, so
+    the person who made a minisite is named before the people who maintained the site around it.
 
     Git authors only, through .mailmap. Agents are co-authors in trailers, never authors,
     and one that authored a commit anyway is left out (is_agent). The login comes from the
@@ -1049,9 +1085,10 @@ def credit(authors):
     name is shown unlinked and the build says so, so a .mailmap line can be added; one it
     was not asked about is shown unlinked too, and main() says how many.
     """
-    counts, newest = {}, {}
+    counts, mine, newest = {}, {}, {}
     for name, email, sha in authors:
         counts[(name, email)] = counts.get((name, email), 0) + 1
+        mine[(name, email)] = mine.get((name, email), 0) + (sha in own)
         newest.setdefault(email, sha)
     rows = {}
     for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
@@ -1064,9 +1101,9 @@ def credit(authors):
                  "commit's author; add a .mailmap line mapping their address to <login>@users.noreply.github.com")
         elif not login and not _github_off:
             _unasked.add(name)
-        c, shown, _ = rows.get(login or (name, email), (0, name, login))   # the name of the alias with most commits
-        rows[login or (name, email)] = (c + n, shown, login)
-    return sorted(rows.values(), key=lambda r: -r[0])
+        c, shown, _, o = rows.get(login or (name, email), (0, name, login, 0))   # the name of the alias with most commits
+        rows[login or (name, email)] = (c + n, shown, login, o + mine[(name, email)])
+    return sorted(rows.values(), key=lambda r: (-r[3], -r[0]))
 
 
 def fill(tpl, **kw):
@@ -1483,7 +1520,7 @@ def build_game(gdir, out_root):
     cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
     site_contributor_items = "".join(
         (f'<li><a href="https://github.com/{html.escape(login)}">{html.escape(login)}</a>' if login else f"<li>{html.escape(n)}")
-        + f" <span class='mute'>({c} commit{'s' if c != 1 else ''})</span></li>" for c, n, login in cons)
+        + f" <span class='mute'>({commits_said(c, o if len(cons) > 1 else c)})</span></li>" for c, n, login, o in cons)
     game_credit_items = "".join(
         f"<li>{html.escape(c.get('by') or c.get('name', ''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>"
         for c in cred)
@@ -1802,11 +1839,11 @@ def card_html(g, root="", badge=True):
     cons = g["_cons"]
     words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
                                        PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g),
-                                       *(login or name for _, name, login in cons)) if x)
+                                       *(login or name for _, name, login, _ in cons)) if x)
     data = (f' data-platform="{html.escape(plat)}" data-platform-name="{html.escape(PLATFORM_NAMES.get(plat, plat))}"'
             f' data-tier="{tier_group(g)}" data-year="{g.get("year") or ""}" data-added="{html.escape(g.get("created") or "")}"'
             f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
-    who = names([person_html(name, login) for _, name, login in cons])
+    who = names([person_html(name, login) for _, name, login, _ in cons])
     made = " · ".join(str(x) for x in (g.get("year"), g.get("publisher")) if x)
     return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data, badge)
 
