@@ -161,6 +161,15 @@ rate). When two aims clash the higher wins:
   once a pace or a value to ease. The test holds the list with the reason
   for each, so a byte that joins it fails
   (`games/c64/mercenary/test_fast.js`).
+- **At a fixed pace, list the state, in most paces.** No loop is the
+  first of a pace, so list the bytes that change in a good share of the
+  paces, nearly always a whole number of paces apart, among what the game
+  carries from loop to loop (what a saved game keeps). The renderers' own
+  bytes follow a steady move at steady rates, and some of those rates are
+  a whole number of paces, but a view drawn afresh from the state steps
+  only where the state does. Break a move on purpose, a walk given whole
+  once a pace, and check that the listing finds it
+  (`games/c64/castle-master/test_fast.js`).
 - **Take the pace from the machine's timings.** Without a cost model, for
   the same pace K is the middle of its loops in play, or the pace the
   game itself aims at when it has one (a loop it allows a fixed number of
@@ -251,8 +260,8 @@ and the cap, the same keys giving the same memory at different refresh
 rates and settings, the clock's jobs at the same moments on and off, K
 shares ending where one step ends, the pace at each setting, switches
 once a press, stopping in the loop where the key comes up, a wait that only
-keeps something up, long random play, and each refresh showing its own
-last loop's frame. Measure what decides between Fast CPU and Smooth
+keeps something up, long random play, no state stepping once a pace, and
+each refresh showing its own last loop's frame. Measure what decides between Fast CPU and Smooth
 motion in node, with refreshes simulated at 50, 60 and 144 Hz: the delay
 from a key to the first frame that moves and from letting go to the
 last, against the machine's and Smooth motion's, because a headless
