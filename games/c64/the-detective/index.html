@@ -189,6 +189,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="td-scroll" style="background:#7b7b7b;border-radius:6px;overflow-x:auto"><canvas id="td-sp-dead" width="480" height="200" aria-label="The bodies and Snide's endings"></canvas></div>
     <p class="cap" id="td-sp-dead-cap">Drawn in the built site.</p>
   </div>
+  <h3 style="font-size:20px;margin:30px 0 10px">The title's portraits</h3>
+  <p>While the title waits for fire, it introduces Snide and the nine others one at a time in the picture box, each with a few lines in the panel beside it (<code>$9129</code>, from the list at <code>$8E65</code>). A portrait does not simply appear. The interrupt runs the introduction in phases, one every few frames (<code>$8CC8</code>, <code>$8B31</code>). After two single sprites, the portrait is wiped on in a buffer of two sprite shapes at <code>$58C0</code>, in five steps a little higher each time. Each step keeps what is inside the character's outline and adds one of five pictures, sprite shapes <code>$5E</code>-<code>$62</code> stretched to twice their height when the title starts (<code>$8DC0</code>). The outline is built from the character's own head and body (<code>$8D13</code>), so the pictures fill the shape of the person who is coming. The buffer then flashes through ten pairs of colours, and the character's real sprites take its place in four more, talk in their play colours for 254 frames, about five seconds, while the panel shows their lines, and fade out through eight. Every character takes 480 frames, eight counts of 60 (<code>$1E69</code>).</p>
+  <div class="plate">
+    <div class="td-row"><button type="button" id="td-ti-next">next character</button><button type="button" id="td-ti-pause" aria-pressed="false">pause</button></div>
+    <div class="td-row" style="align-items:flex-start;flex-wrap:wrap">
+      <div class="td-scroll" style="background:#000;border-radius:6px;overflow-x:auto"><canvas id="td-ti" width="448" height="280" aria-label="The title's picture box, with the portrait as the game draws it"></canvas></div>
+      <pre id="td-ti-bio" style="flex:1 1 220px;min-height:6em;margin:0;font-family:var(--fm);font-size:13px;white-space:pre-wrap;background:#000;color:#fff;border-radius:6px;padding:10px 12px"></pre>
+    </div>
+    <p class="cap" id="td-ti-cap">The title runs in the built site.</p>
+  </div>
+  <p class="td-note">The box is drawn as the title screen shows it (<code>reference/title.png</code>): the portrait's sprites go in front of the panel's grey. The port runs the game's three routines in the order the interrupt runs them, at 50 frames a second, and a test holds it against the game's own code for 5,200 frames, all ten characters (<code>test_title.js</code>). The outline's lower half is always taken from the fifth shape after the head (<code>$8D3E</code>, where the X register is always 0): that is Snide's body, but for the nine others it is a walking body, while their portrait shows the standing one.</p>
   <p>All 176 sprite shapes, <code>$40</code> to <code>$EF</code> at <code>$5000</code>-<code>$7BFF</code>, are below in the colours of play. Besides the people and the bodies, they hold the title's sprites and the menu's pointer. Hover over a shape, or tap it, for its number.</p>
   <div class="plate">
     <div class="td-scroll" style="background:#7b7b7b;border-radius:6px;overflow-x:auto"><canvas id="td-sheet" width="480" height="480" aria-label="Every sprite shape in the game"></canvas></div>
@@ -299,6 +310,108 @@ function tdScripts(ram) {
   return out;
 }
 // end of td-scripts
+</script>
+<script>
+/* td-title */
+// The title's cast introduction, ported from the game. tdTitleTables(ram) is title_tables ($8DC0):
+// $0D00 and $0E00, two tables over a byte's four bit pairs, and $0F00, five pictures (sprite shapes
+// $5E-$62 at $5780) each drawn twice as tall into 128 bytes, two shapes' worth. tdTitleNew() is the
+// state the title starts from, with the counter $1E69 at 8 so that the first portrait starts at
+// once. tdTitleFrame(ram, T, s) is one frame, in the order the interrupt runs them: title_cast_step
+// ($8CC8, raster stage 0), the frame counters ($2AAE, stage 1), and title_cast_frame ($8B31, stage
+// 2, just above the picture box), which sets the two sprites in s.vic. The phases ($1E66): 0 and 1
+// show one sprite, $5A then $5D; 2-6 wipe the portrait on in the buffer at $58C0 (shapes $63 and
+// $64), each step masking it with the character's outline and adding one of the five pictures
+// ($8B01); 7-16 change its colours; 17 on show the character's own shapes, which talk in phases 21
+// and 22, each held 127 steps; at 31 the sprites go off until the counter $1E69 reaches 8 and the
+// next character's outline is built ($8D13, $8D6E). Checked against the game's own code by
+// test_title.js.
+function tdTitleTables(ram) {
+  const d00 = new Uint8Array(256), e00 = new Uint8Array(256), f00 = new Uint8Array(640);
+  for (let y = 0; y < 256; y++) {
+    let n = 0;
+    for (let p = 0; p < 4; p++) n = (n << 1) | (((y << (2 * p)) & 0xC0) ? 1 : 0);
+    d00[y] = ram[0x8D90 + n];
+    const a = (y | ((y & 0x55) << 1)) & 0xFF;
+    e00[y] = a | (a >> 1);
+  }
+  for (let k = 0; k < 5; k++) {
+    const src = 0x5780 + k * 0x40, dst = k * 0x80;
+    const store = (i, v, col) => {
+      let base = 0;
+      if (i >= 21) { i -= 21; base = 0x40; }
+      f00[dst + ((base + ram[0x8DA0 + i] + col) & 0xFF)] = v;
+    };
+    for (let col = 2; col >= 0; col--) for (let x = 20; x >= 0; x--) {
+      const v = ram[src + ((col + ram[0x8DA0 + x]) & 0xFF)];
+      store(2 * x, v, col);
+      store(2 * x + 1, v, col);
+    }
+  }
+  return { d00, e00, f00 };
+}
+function tdTitleNew() {
+  return { ph: 0xFF, who: 0xFF, d: 1, e4e: 1, e4f: 0, e68: 0, e69: 8, y: 0, bb: 0,
+    buf: new Uint8Array(128), m1: new Uint8Array(128), m2: new Uint8Array(128),
+    vic: { en: 0, p0: 0, p1: 0, y0: 0, y1: 0, col: 1, mc0: 14 } };
+}
+function tdTitleFrame(ram, T, s) {
+  // title_cast_step ($8CC8)
+  if (!(s.ph & 0x80)) {
+    s.d = (s.d - 1) & 0xFF;
+    if (s.d === 0) {
+      s.d = 3;
+      const x = s.ph + 1;
+      if (x >= 31) s.ph = 0xFF;
+      else {
+        s.ph = x;
+        if (x === 2) s.bb = 0;
+        if (x >= 2 && x < 7) {
+          for (let i = 0x7E; i >= 0; i--) s.buf[i] = ((s.buf[i] & s.m2[i]) | T.f00[s.bb + i]) & s.m1[i];
+          s.bb += 0x80; s.y = (s.y - 1) & 0xFF;
+        } else if (x >= 7) s.d = x === 21 || x === 22 ? 0x7F : 2;
+      }
+    }
+  }
+  // the frame counters ($2AAE)
+  if (++s.e68 >= 60) { s.e68 = 0; if (++s.e69 >= 60) s.e69 = 0; }
+  // title_cast_frame ($8B31)
+  const v = s.vic;
+  if (s.ph === 0xFE) {
+    for (let i = 0x7E; i >= 0; i--) s.m2[i] = T.d00[s.m1[i]];
+    s.y = 0xCC; s.d = 0x7E; s.ph = 0;
+    return s;
+  }
+  if (s.e69 >= 8) {
+    s.e69 = 0;
+    s.who = s.who + 1 < 10 ? s.who + 1 : 0;
+    const a = 0x4000 + ram[0x8D09 + s.who] * 64;
+    for (let i = 0x3E; i >= 0; i--) { s.m1[i] = T.e00[ram[a + i]]; s.m1[0x40 + i] = T.e00[ram[a + 0x140 + i]]; }
+    s.ph = 0xFE; s.e4e = 1;
+    return s;
+  }
+  if (s.ph & 0x80) { v.en = 0; s.buf.fill(0, 0, 0x7F); return s; }
+  v.col = 1; v.mc0 = 0x0E;
+  let x = s.ph;
+  if (x < 2) { v.p0 = x ? 0x5D : 0x5A; v.en = 1; v.y0 = s.y; return s; }
+  x--;
+  v.en = 3; v.y0 = s.y; v.y1 = (s.y + 21) & 0xFF;
+  if (x < 16) {
+    v.p0 = 0x63; v.p1 = 0x64;
+    if (x >= 6) { v.col = ram[0x8C7B + x]; v.mc0 = ram[0x8C85 + x]; }
+    return s;
+  }
+  const base = ram[0x8D09 + s.who];
+  v.p0 = (ram[0x9239 + s.e4e] + base) & 0xFF;
+  v.p1 = (base + (s.who ? 3 : 5)) & 0xFF;
+  if (x < 20) { v.col = ram[0x8C85 + x]; v.mc0 = ram[0x8C89 + x]; }
+  else if (x < 22) {
+    v.mc0 = 1; v.col = 10;
+    if (++s.e4f >= 15) { s.e4e = (s.e4e + 1) & 3; s.e4f = 0; }
+  } else { v.col = ram[0x8C8F + x]; v.mc0 = ram[0x8C90 + x]; }
+  return s;
+}
+// end of td-title
 </script>
 <script>
 /* td-pointer */
@@ -536,6 +649,55 @@ function tdIconUnder(s, count) {
         $('td-sheet-cap').innerHTML = '<b>Shape ' + hex2(n) + '</b> at <code>$' + (0x4000 + n * 64).toString(16).toUpperCase() + '</code>' + (g ? ': ' + g + '.' : '.');
       };
       sh.addEventListener('pointermove', pick); sh.addEventListener('pointerdown', pick);
+    }
+    // the title's portraits: tdTitleFrame once a frame, drawn into the picture box. The view is sprite
+    // X 228-339 and Y 182-251; the box's frame and grey are where reference/title.png shows them
+    if (typeof tdTitleFrame === 'function') {
+      const tc = $('td-ti'), S = 4, X0 = 228, Y0 = 182, tctx = C64.canvas(tc, 112 * S, 70 * S);
+      const T = tdTitleTables(r);
+      let ts = tdTitleNew(), paused = false;
+      const bios = [];
+      for (let a = 0x8E65, i = 0; i < 10; i++) { let e = a; while (r[e]) e++; bios.push(String.fromCharCode(...r.subarray(a, e)).replace(/\r/g, '\n').replace(/\//g, '\'')); a = e + 1; }
+      const WHO = ['Snide'].concat(CAST);
+      const spr = (get, sx, sy, col, mc0) => {
+        const cols = [null, C64.PAL[mc0 & 15], C64.PAL[col & 15], C64.PAL[0]];   // $D026 is 0 from raster stage 2
+        for (let row = 0; row < 21; row++) for (let p = 0; p < 12; p++) {
+          const v = (get(row * 3 + (p >> 2)) >> (6 - 2 * (p & 3))) & 3;
+          if (!v) continue;
+          tctx.fillStyle = cols[v];
+          tctx.fillRect((sx - X0 + p * 2) * S, (sy - Y0 + row) * S, 2 * S, S);
+        }
+      };
+      const source = (n) => n === 0x63 ? (i) => ts.buf[i] : n === 0x64 ? (i) => ts.buf[0x40 + i] : (i) => r[0x4000 + n * 64 + i];
+      const box = (x0, y0, x1, y1, c) => { tctx.fillStyle = c; tctx.fillRect((x0 - X0) * S, (y0 - Y0) * S, (x1 - x0 + 1) * S, (y1 - y0 + 1) * S); };
+      const phaseText = (ph) => ph >= 0x80 ? 'between characters' : ph < 2 ? 'single sprite ' + (ph ? '$5D' : '$5A') :
+        ph < 7 ? 'wiping on, step ' + (ph - 1) + ' of 5' : ph < 17 ? 'the buffer\'s colours' : ph < 21 ? 'the real sprites, colouring in' :
+        ph < 23 ? 'talking' : 'fading out';
+      function paint() {
+        tctx.fillStyle = '#000'; tctx.fillRect(0, 0, tc.width, tc.height);
+        box(234, 188, 333, 247, C64.PAL[3]); box(238, 192, 329, 243, '#000'); box(240, 193, 327, 242, C64.PAL[12]);
+        const v = ts.vic;
+        if (v.en & 1) spr(source(v.p0), 265, v.y0, v.col, v.mc0);
+        if (v.en & 2) spr(source(v.p1), 265, v.y1, v.col, v.mc0);
+        const who = ts.who < 10 ? ts.who : 0;
+        $('td-ti-bio').textContent = ts.ph >= 21 && ts.ph < 27 ? bios[who] : '';
+        $('td-ti-cap').innerHTML = '<b>' + (ts.who < 10 ? WHO[who][0].toUpperCase() + WHO[who].slice(1) : 'Starting') + ', phase ' + (ts.ph >= 0x80 ? '-' : ts.ph) + ':</b> ' + phaseText(ts.ph) + '. ' +
+          (v.en ? 'Sprites ' + hex2(v.p0) + (v.en & 2 ? ' and ' + hex2(v.p1) : '') + ', colour ' + v.col + ', multicolour ' + v.mc0 + ', at line ' + v.y0 + '.' : 'Sprites off.');
+      }
+      let last = 0, acc = 0;
+      const tick = (t) => {
+        requestAnimationFrame(tick);
+        if (!last) last = t;
+        acc += t - last; last = t;
+        if (acc > 200) acc = 0;
+        if (paused) { acc = 0; return; }
+        let n = 0;
+        while (acc >= 20) { tdTitleFrame(r, T, ts); acc -= 20; n++; }
+        if (n) paint();
+      };
+      $('td-ti-next').onclick = () => { ts.ph = 0xFF; ts.vic.en = 0; ts.buf.fill(0); ts.e69 = 8; tdTitleFrame(r, T, ts); paint(); };
+      $('td-ti-pause').onclick = (e) => { paused = !paused; e.target.setAttribute('aria-pressed', String(paused)); e.target.textContent = paused ? 'run' : 'pause'; };
+      paint(); requestAnimationFrame(tick);
     }
     // the pointer stepper: the box in sprite coordinates, $E8-$14F across and $B8-$EF down, four times
     const menu = [];
