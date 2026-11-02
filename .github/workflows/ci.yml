@@ -96,18 +96,44 @@ jobs:
     needs: check-and-build
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
     runs-on: ubuntu-latest
-    # one deployment at a time: kit-version.yml starts this again after its bump
+    # one deployment at a time
     concurrency:
       group: pages
       cancel-in-progress: false
     permissions:
       pages: write
       id-token: write
+      actions: read   # to list this workflow's runs, below
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Runs on main overlap, and an older one can finish its tests after a newer one has
+      # deployed: deploying it then would take the newer one's changes off the site. So a run
+      # deploys only when no newer run on main has passed or is still going, since that run
+      # deploys a site with this one's changes in it. If a newer run fails, the site waits for
+      # the next run that passes.
+      - name: Is a newer run on main to deploy?
+        id: newer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.run_number }}
+        run: |
+          if ! newer=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?branch=main&per_page=50" --jq "
+              [.workflow_runs[] | select(.event != \"pull_request\" and .run_number > $RUN
+                and (.conclusion == null or .conclusion == \"success\")) | .run_number]
+              | sort | map(tostring) | join(\" \")"); then
+            echo "::warning::Could not list this workflow's runs, so deploying as if none were newer."
+            newer=""
+          fi
+          if [ -n "$newer" ]; then
+            echo "Not deploying: a newer run on main (run $newer) deploys this run's changes with its own."
+          else
+            echo "deploy=yes" >> "$GITHUB_OUTPUT"
+          fi
       - id: deployment
+        if: steps.newer.outputs.deploy == 'yes'
         uses: actions/deploy-pages@v4
 
   # Post each newly added game to Discord once the site carrying it is live,
