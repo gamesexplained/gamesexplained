@@ -149,9 +149,9 @@ const FISTMAP = (function () {
       return Math.abs(yb - ya) <= PITCH ? [[xa, ya], [xa, mid], [xb, mid], [xb, yb]] : [[xa, ya], [xa, mid], [xb, mid], [xb, mid2], [xb, yb]];
     }
     const P = (x, y) => [ox + s * x, oy + s * y];
-    function line(pts, col, w) {
-      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath();
-      pts.forEach(([x, y], i) => { const [a, b] = P(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke();
+    function line(pts, col, w, dash) {
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath();
+      pts.forEach(([x, y], i) => { const [a, b] = P(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke(); ctx.setLineDash([]);
     }
     function tag(x, y, text, bg, fg) {
       ctx.font = '600 12px IBM Plex Mono, monospace'; const w = ctx.measureText(text).width + 10;
@@ -179,14 +179,14 @@ const FISTMAP = (function () {
       if (route) route.hops.forEach(([r, c, t, v], i) => {
         const e = Wd.ex[r].find(x => x[1] === c && x[2] === v); if (!e || !(v in layout)) return;
         const p = path({ r, t, c, v, dc: e[3] }); const [hx, hy] = P(X0(r) + c, Y0(r) + 10);
-        if (p) line(p, '#59d3ff', 3.5);
+        if (p) line(p, '#59d3ff', 3.5, [9, 6]);
         if (s > 0.6) { ctx.fillStyle = '#59d3ff'; ctx.beginPath(); ctx.arc(hx, hy, 9, 0, 7); ctx.fill(); ctx.fillStyle = '#0b2530'; ctx.font = '700 11px IBM Plex Mono, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(i + 1, hx, hy + 1); ctx.textAlign = 'left'; }
       });
       // marks
       for (const r of rooms) {
         if (!on(r)) continue; const [x, y] = P(X0(r) + B[r][0], Y0(r));
         if (s > 1.2) { ctx.font = '600 11px IBM Plex Mono, monospace'; ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(x + 1, y + 1, 30, 14); ctx.fillStyle = '#fff'; ctx.textBaseline = 'top'; ctx.fillText(r, x + 4, y + 2); }
-        if (s > 0.9) Wd.enc.filter(e => e.room === r && (e.f & 0x60) !== 0x60).forEach(e => { const [ex_, ey] = P(X0(r) + e.pos, Y0(r) + 20); ctx.fillStyle = '#ff5b4a'; ctx.beginPath(); ctx.arc(ex_, ey - 4, 4, 0, 7); ctx.fill(); });
+        if (s > 0.9) Wd.enc.filter(e => e.room === r && (e.f & 0x60) !== 0x60).forEach(e => { const [ex_, ey] = P(X0(r) + e.pos, Y0(r) + 20); const dy = ey - 7; ctx.beginPath(); ctx.moveTo(ex_, dy - 8); ctx.lineTo(ex_ + 8, dy); ctx.lineTo(ex_, dy + 8); ctx.lineTo(ex_ - 8, dy); ctx.closePath(); ctx.fillStyle = '#ff5b4a'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffffff'; ctx.stroke(); ctx.fillStyle = '#ffffff'; ctx.font = '700 11px IBM Plex Mono, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('!', ex_, dy + 1); ctx.textAlign = 'left'; });
         const cx = P(X0(r) + (B[r][0] + B[r][1]) / 2, 0)[0];
         // zoomed out, the marks shrink to a number or a letter
         const big = s > 0.6, ty = y - (big ? 10 : 8);
