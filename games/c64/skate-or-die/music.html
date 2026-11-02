@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
   <h1>Skate or Die!</h1>
-  <p class="sub">Rob Hubbard's title music with sampled guitars, then one sound driver for every event, whose music never plays the same way twice in a row.</p>
+  <p class="sub">The SID chip cannot play recordings, so the title plays Rob Hubbard's guitars by changing the chip's master volume up to 6,700 times a second. Then one sound driver serves every event, and its music never plays the same way twice in a row.</p>
 </header>
 <main class="wrap" data-part="highjump">
 <section id="title" data-part="title">
@@ -24,7 +24,7 @@
   <p>The whole tune, guitars and all, plays below. The page runs the title's own code: <code>$457C</code> once a frame for the three voices, and, in between, the timer counted down cycle by cycle, with <code>$5106</code> run at each underflow to write the next four bits to the volume. The chip model gives every voice the small steady level a 6581 adds to its output, which is what a change of volume moves, so the volume writes are heard as the recording.</p>
   <div class="plate">
     <div id="sid-title"></div>
-    <p class="cap"><b>The title tune, played by the title's own driver and sample interrupt.</b> Checked against the kit's simulated C64 over 3,000 frames from the same memory, with music_play called from a raster interrupt as the title calls it: the voices' register writes are the same, in order. The volume writes are the same values in the same order for the first 6,787, and 202,632 here against 202,659 there over the whole run; after the first recording the music stops in mid-frame they drift by a sample or so, because the page plays each frame's music_play at the frame's start, where the machine lets the timer's interrupts fall inside it.</p>
+    <p class="cap"><b>The title tune, played by the title's own driver and sample interrupt.</b> Checked against the game, write for write.<sup class="fn"><a href="about.html#src-7" title="How the music players were checked">7</a></sup></p>
   </div>
 </section>
 <section id="music">
@@ -33,7 +33,7 @@
   <p class="lede">The <a href="levels.html#highjump">High Jump</a> music is not one long tune. The music is nine phrases for two voices, and each time one ends, the game picks the next at random from a short list (<code>$3549</code>). Press the music to hear it, played by the game's own code.</p>
   <div class="plate">
     <div id="sid"></div>
-    <p class="cap"><b>The game's own driver, run in the page.</b> The kit's 6502 simulator runs High Jump's sound code and scripts, <code>$2000</code>-<code>$3CFF</code> as the game loads them: <code>init_sound_driver</code> (<code>$22B7</code>), then <code>queue_sound_id</code> (<code>$22F5</code>) with the sound's number, then <code>update_sid_voices</code> (<code>$232C</code>) once a frame, as the main loop does. Checked against the game itself running in the kit's 6502 simulator from the High Jump snapshot: every one of 16,917 SID writes over five minutes matched, in order. The page starts the music from the random state the event's file brings from the disk (<code>$35AB</code>-<code>$35AD</code> = <code>$8F</code> <code>$D0</code> <code>$FF</code>), so it plays the phrases in the order the game plays them the first time after loading.</p>
+    <p class="cap"><b>High Jump's music, played by the game's own sound driver.</b> It takes the phrases in the order the game plays them the first time after loading. Checked against the game, write for write.<sup class="fn"><a href="about.html#src-7" title="How the music players were checked">7</a></sup></p>
   </div>
   <p>Phrase 0 always comes first (<code>$34E3</code>). After it, a table at <code>$3C6C</code> lists where each phrase may lead: phrase 0 to any of 1 to 4; phrases 1 to 4 to any of 1 to 8 but themselves; phrases 5 to 8 back to 1 to 4. The chooser also refuses the phrase that was just played (<code>$356F</code>). The two voices run their own copies of the phrase, and whichever voice finishes first makes the choice for both (<code>$35A8</code>); each voice's script then rewrites the address of the notes it will play next inside itself (<code>$3517</code>, <code>$3530</code>).</p>
   <p>The random numbers come from a byte at <code>$35AB</code> that High Jump never sets (<code>$357E</code>): its value comes from the disk with the event's code, so the music's first run after each load takes the same path, and later runs carry on from where the byte has got to.</p>
@@ -56,15 +56,15 @@
   <h2 class="t">Four more tunes, as they first play</h2>
   <p class="lede">Each player runs that event's own copy of the driver over the event's memory, and starts its music from the random bytes the disk brings, so each tune takes the phrases it takes the first time it plays after the event loads.</p>
   <div class="plate">
-    <p class="cap"><b><a href="levels.html#freestyle">Freestyle ramp</a></b>, sound 1, random bytes <span data-part="ramp"><code>$E13B</code></span> = <code>$99</code> <code>$C1</code> <code>$03</code>.</p>
+    <p class="cap"><b><a href="levels.html#freestyle">Freestyle ramp</a></b>, sound 1, as it first plays after the event loads.</p>
     <div id="sid-ramp"></div>
-    <p class="cap"><b><a href="levels.html#race">Downhill Race</a></b>, sound 4, random bytes <span data-part="downhill"><code>$7638</code></span> = <code>$38</code> <code>$F4</code> <code>$01</code>.</p>
+    <p class="cap"><b><a href="levels.html#race">Downhill Race</a></b>, sound 4, as it first plays after the event loads.</p>
     <div id="sid-downhill"></div>
-    <p class="cap"><b><a href="levels.html#jam">Downhill Jam</a></b>, sound <code>$15</code>, random bytes <span data-part="jam"><code>$AB3E</code></span> = <code>$0B</code> <code>$11</code> <code>$4C</code>.</p>
+    <p class="cap"><b><a href="levels.html#jam">Downhill Jam</a></b>, sound <code>$15</code>, as it first plays after the event loads.</p>
     <div id="sid-jam"></div>
-    <p class="cap"><b><a href="levels.html#joust">Pool Joust</a></b>, sound 1, random bytes <span data-part="joust"><code>$3493</code></span> = <code>$00</code> <code>$FF</code> <code>$00</code>, as the joust starts against Poseur Pete.</p>
+    <p class="cap"><b><a href="levels.html#joust">Pool Joust</a></b>, sound 1, as it first plays after the event loads, as the joust starts against Poseur Pete.</p>
     <div id="sid-joust"></div>
-    <p class="cap"><b>Checked against the game.</b> Each event ran in the kit's 6502 simulator from the moment it asks for its music, and its SID writes were compared, in order, with the page's over three minutes: 28,627 for the ramp, 7,297 for the race, 7,805 for the Jam, and 10,382 for the joust, every one the same. The simulator drops some of the Jam's frames, so that comparison covers the writes the game made. The race's listing is missing one byte the driver runs, the <code>RTS</code> at <span data-part="downhill"><code>$3329</code></span>, so the page puts it back.</p>
+    <p class="cap"><b>Checked against the game.</b> Each player's sound chip writes matched the game's, in order, over three minutes.<sup class="fn"><a href="about.html#src-7" title="How the music players were checked">7</a></sup></p>
   </div>
 </section>
 <section id="effects">
