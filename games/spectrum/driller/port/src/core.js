@@ -22,17 +22,18 @@
 //   halts.
 // - P.jump(a, r) runs the routine at a, for the game's jumps through a table: P.CODE names each
 //   routine's address.
-// - A new game, which the game starts by jumping back to $97CD, throws P.RESTART once the old one
-//   has ended; P.program catches it and starts the game afresh.
+// - The main program is P.program (g-main.js): a new game goes round its loop as the game's does.
+//   Three wrong answers to the security question wipe memory and jump to $0000, where the machine
+//   starts again: the port throws P.RESET there, for the page to start afresh.
 // - A byte the interrupt writes and the main program reads is read through P.irqByte(a): on the
 //   page that is M[a]; in the lockstep it is what the game's code read there.
 (function (root) {
 'use strict';
 const G = root.DRGroups = root.DRGroups || {};
-const RESTART = { restart: true, toString: () => 'new game' };
+const RESET = { reset: true, toString: () => 'the machine reset' };
 
 function makePort(M, io, opts = {}) {
-  const P = { M, GEN: new Set(), CODE: {}, RESTART };
+  const P = { M, GEN: new Set(), CODE: {}, RESET };
   const IO = Object.assign({}, io);
   Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
     set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
@@ -40,6 +41,10 @@ function makePort(M, io, opts = {}) {
   // (scripts/fit-cost.js, page/runtime.js)
   P.N = {};
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
+  // A tight loop on a byte the interrupt writes, until (byte AND mask) is 0: each turn yields the
+  // T-states the game's turn takes (LD A,(nn) / OR A / JR NZ, 29; BIT 0,(HL) / JR NZ, 24), so that
+  // the port reads the byte as often as the game does in the same time.
+  P.until0 = function* (a, mask, turn) { while (P.irqByte(a) & mask) yield { tstates: turn }; };
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };
   // name a routine: its address, its function; a generator is listed in GEN
@@ -66,5 +71,5 @@ function makePort(M, io, opts = {}) {
   if (opts.standIn) opts.standIn(P);
   return P;
 }
-root.DRPort = { makePort, RESTART };
+root.DRPort = { makePort, RESET };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -16,7 +16,7 @@ G.view = function (P) {
   // draw_view: the 3D view when bit 2 of $8920 asks for a redraw, the last one again when bit 3
   // of $8921 does.
   P.def(0x6B12, 'draw_view', () => {
-    M[(w(0x8BF3) + 1) & 0xFFFF] = P.irqByte(0x8A65);
+    M[(w(0x8BF3) + 1) & 0xFFFF] = M[0x8A65];
     if (M[0x8920] & 4) {
       P.bound_view_box({});
       P.make_view_matrix({});
@@ -25,9 +25,9 @@ G.view = function (P) {
       setw(0x8A62, 0x8A26);
       if (M[0x8863]) P.draw_object_list({ ix: w(0x8864), a: M[0x8863] });
       P.draw_object_list({ ix: 0x87A5, a: M[0x890F] });
-      M[(w(0x8BF3) + 2) & 0xFFFF] = P.irqByte(0x8A65);
+      M[(w(0x8BF3) + 2) & 0xFFFF] = M[0x8A65];
       P.sort_faces({});
-      M[(w(0x8BF3) + 3) & 0xFFFF] = P.irqByte(0x8A65);
+      M[(w(0x8BF3) + 3) & 0xFFFF] = M[0x8A65];
       P.draw_faces({});
     } else if (M[0x8921] & 8) P.draw_faces({});
     return {};

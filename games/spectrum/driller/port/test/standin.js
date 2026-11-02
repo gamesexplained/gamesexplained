@@ -57,12 +57,35 @@ function setRegs(cpu, r) {
 }
 
 class StandInCPU extends CPU {
-  constructor(P) { super(P.M, { io: { in: p => P.io.in(p), out: (p, v) => P.io.out(p, v) } }); }
+  constructor(P) { super(P.M, { io: { in: p => P.io.in(p), out: (p, v, cpu) => P.io.out(p, v, cpu) } }); }
   fetch() {
     if (this.pc < 0x4000) this.fail('a stand-in reached the ROM at $' + this.pc.toString(16), { address: this.pc });
     return super.fetch();
   }
   wr(a, v) { const n = this.resolve(a); this.tstates += 3; if (n >= 0x4000) this.m[n] = v & 0xFF; }
+  // P.countdown (the tests): a frame counter the interrupt would run down, one less after each read
+  rd(a) {
+    const n = this.resolve(a), v = this.m[n];
+    this.tstates += 3;
+    if (this.P && this.P.countdown === n && v) this.m[n] = v - 1;
+    return v;
+  }
+}
+
+// The ROM's tape routines, for a test that gives a tape (menu.js, P.io.tape): SA-BYTES ($04C6)
+// saves DE bytes from IX with the flag A; LD-BYTES entered at $0562 loads DE bytes to IX with the
+// flag in A' (its carry set, a load), and both give the carry set when they did.
+function romTape(cpu, tape) {
+  const ix = cpu.ix, de = cpu.d << 8 | cpu.e;
+  let ok;
+  if (cpu.pc === 0x04C6) {
+    ok = tape.save(cpu.a, cpu.m.slice(ix, ix + de));
+  } else {
+    const flag = cpu.af_ >> 8, b = tape.load(flag, de);
+    ok = !!b && b.flag === flag && b.bytes.length === de;
+    if (ok) for (let k = 0; k < de; k++) cpu.m[(ix + k) & 0xFFFF] = b.bytes[k];
+  }
+  cpu.f = ok ? cpu.f | C : cpu.f & ~C;
 }
 
 // Fill P with stand-ins for every label the port has not written. ported: the names P has as
@@ -101,12 +124,15 @@ function install(P) {
           cpu.pc = cpu.pop();
           continue;
         }
+        if ((cpu.pc === 0x04C6 || cpu.pc === 0x0562) && P.io.tape) { romTape(cpu, P.io.tape); cpu.pc = cpu.pop(); continue; }
         cpu.step();
         if (cpu.halted) throw new Error('standIn ' + label + ' halted at $' + cpu.pc.toString(16));
       }
     } finally { depth--; }
     const out = regsOf(cpu);
     if (saved) { setRegs(cpu, saved); cpu.sp = saved.sp; cpu.pc = saved.pc; }
+    // a port's generator calls its routines with yield*: a stand-in is iterable too, ending at once
+    Object.defineProperty(out, Symbol.iterator, { value: function* () { return out; } });
     return out;
   };
   for (const [label, a] of L.byName) {

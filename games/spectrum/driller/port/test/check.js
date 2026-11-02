@@ -13,7 +13,9 @@
 // Options: entry (an address, for a place that is not a label), states (a filter of state names),
 // per (cases taken from each state, default 4), passes (how far to run from each state, default
 // 40), play (how the player plays meanwhile: PLAY), most (how many states, spread over them,
-// default 60), ignore (addresses or [first, last] ranges), show (failures printed), port (P => ...,
+// default 60), from (a routine whose moments are taken instead), timed (the T-states between writes to
+// the ULA compared too, for the beeper), countdown (a frame counter run down at each read, for a routine
+// that waits on it), tape (c => a tape for each side, for the save and the load), ignore (addresses or [first, last] ranges), show (failures printed), port (P => ...,
 // run on the port's side before each case).
 const path = require('path');
 const lib = require('./lib.js');
@@ -22,9 +24,18 @@ const { loadPort } = require('./port.js');
 
 // The machine around the processor for one side of a case: the input as it stood, and a log of the
 // writes to the ULA.
+// c.seq, when a case has it, is the keys held as the keyboard is scanned: [{ keys, scans }], each
+// held for that many reads of the first half-row ($FEFE), the last for good.
 class CaseIO {
-  constructor(c) { this.keys = new Set(c.keys); this.joy = c.joy; this.ear = c.ear; this.border = c.border; this.log = []; }
+  constructor(c) {
+    this.keys = new Set(c.keys); this.joy = c.joy; this.ear = c.ear; this.border = c.border; this.log = []; this.times = [];
+    this.seq = c.seq ? c.seq.map(s => ({ keys: new Set(s.keys), scans: s.scans })) : null; this.scan = 0;
+  }
   in(port) {
+    if (this.seq && (port >> 8) === 0xFE) {
+      let n = this.scan++;
+      for (const s of this.seq) { this.keys = s.keys; if (n < s.scans) break; n -= s.scans; }
+    }
     if ((port & 0x20) === 0 && (port & 1)) return this.joy;
     if (port & 1) return 0xFF;
     const high = port >> 8;
@@ -32,10 +43,12 @@ class CaseIO {
     for (const k of this.keys) if (!(high & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
     return 0xA0 | (this.ear << 6) | v;
   }
-  out(port, v) {
+  // t: the T-state of the write (the game's processor, or the port's count P.T), kept in times
+  out(port, v, t) {
     if (port & 1) return;
     this.border = v & 7; this.ear = (v >> 4) & 1;
     this.log.push('FE=' + v);
+    this.times.push(typeof t === 'number' ? t : t && t.tstates !== undefined ? t.tstates : NaN);
   }
 }
 
@@ -57,13 +70,34 @@ const keyOf = (address, o, play) => address + ':' + (o.states || '') + ':' + (o.
 function entries(address, o = {}) {
   const play = o.play || 'mix';
   const key = keyOf(address, o, play);
+  if (!cache.has(key)) load(key);
   if (!cache.has(key)) gather([address], o);
   return cache.get(key);
+}
+// The cases gathered are kept in work/cases, one file a routine and set of options, until the
+// states change (CASES=fresh in the environment gathers again).
+const fs = require('fs');
+const CASES = path.join(lib.GAME, 'work', 'cases');
+const fileOf = key => path.join(CASES, key.replace(/[^0-9A-Za-z]+/g, '_') + '.bin');
+function load(key) {
+  const f = fileOf(key);
+  if (process.env.CASES === 'fresh' || !fs.existsSync(f)) return;
+  const buf = fs.readFileSync(f), n = buf.readUInt32LE(0), head = JSON.parse(buf.slice(4, 4 + n).toString());
+  let at = 4 + n;
+  cache.set(key, head.map(h => { const M = new Uint8Array(buf.buffer.slice(buf.byteOffset + at, buf.byteOffset + at + 65536)); at += 65536; return Object.assign(h, { M }); }));
+}
+function save(key, list) {
+  if (typeof list.filter !== 'function') return;
+  fs.mkdirSync(CASES, { recursive: true });
+  const head = Buffer.from(JSON.stringify(list.map(c => Object.assign({}, c, { M: undefined }))));
+  const n = Buffer.alloc(4); n.writeUInt32LE(head.length, 0);
+  fs.writeFileSync(fileOf(key), Buffer.concat([n, head, ...list.map(c => Buffer.from(c.M.buffer, c.M.byteOffset, 65536))]));
 }
 // The cases for several routines from one run of the sessions (each routine's are those it would
 // have alone: the first `per` calls from each state).
 function gather(where, o = {}) {
   const play = o.play || 'mix';
+  for (const a of where) if (!cache.has(keyOf(a, o, play))) load(keyOf(a, o, play));
   where = where.filter(a => !cache.has(keyOf(a, o, play)));
   if (!where.length) return;
   const outs = where.map(() => []);
@@ -95,6 +129,7 @@ function gather(where, o = {}) {
   where.forEach((address, j) => {
     const list = typeof o.states === 'function' ? outs[j].filter(o.states) : outs[j];
     cache.set(keyOf(address, o, play), list);
+    if (typeof o.states !== 'function') save(keyOf(address, o, play), list);
   });
 }
 // gather by names and entries: ['name', 0x9447, ...]
@@ -113,13 +148,20 @@ const hex = lib.hex, hex2 = v => '$' + (v & 255).toString(16).toUpperCase().padS
 const NAMES = ['a', 'f', 'b', 'c', 'd', 'e', 'h', 'l', 'ix', 'iy', 'af_', 'bc_', 'de_', 'hl_'];
 
 // One side of a case: P with the case's memory and machine; the game's side has no port.
-function side(c, port) {
+// countdown: the address of a frame counter, run down by one after each read on both sides, for a
+// routine that waits on it (the cases have no interrupt).
+// tape: a tape for the side (menu.js's P.io.tape), made afresh for each, which the game's side
+// reaches through the ROM's SA-BYTES and LD-BYTES (standin.js).
+function side(c, port, countdown, tape) {
   const DR = loadPort();
   const M = c.M.slice();
   const cio = new CaseIO(c);
-  const io = { in: p => cio.in(p), out: (p, v) => cio.out(p, v), irqByte: a => M[a], sp: (c.sp + 2) & 0xFFFF };
+  const irqByte = a => { const v = M[a]; if (a === countdown && v) M[a] = v - 1; return v; };
+  const io = { in: p => cio.in(p), out: (p, v, t) => cio.out(p, v, t), irqByte, sp: (c.sp + 2) & 0xFFFF };
+  if (tape) io.tape = tape(c);
   const P = port ? DR.makePort(M, io) : DR.makePort(M, io, { only: [] });
   standin.install(P);
+  P.countdown = countdown;
   return { P, M, log: cio.log, ioObj: cio };
 }
 
@@ -135,7 +177,8 @@ function check(o) {
     address = L.byName.get(o.name);
     if (address === undefined) throw new Error('check: no label ' + o.name);
   }
-  const list = o.cases0 || entries(address, o);
+  // from: the moments another routine is called, for one the sessions never reach
+  const list = o.cases0 || (o.from ? entries(L.byName.get(o.from), o) : entries(address, o));
   const rnd = lib.makeRnd(o.seed || 1);
   const outs = o.outs || [];
   const skip = new Uint8Array(65536);
@@ -151,7 +194,7 @@ function check(o) {
     // the stack below the entry's, never compared
     const sk = skip.slice();
     sk.fill(1, Math.max(0x4000, c.sp - 0x100), Math.min(0x10000, c.sp + 2));
-    const A = side(c, false), B = side(c, true);
+    const A = side(c, false, o.countdown, o.tape), B = side(c, true, o.countdown, o.tape);
     if (o.port) o.port(B.P);
     let rA, rB, eA = null, eB = null;
     try { rA = A.P.at(address, Object.assign({}, c.regs)); } catch (e) { eA = e; }
@@ -176,6 +219,12 @@ function check(o) {
         while (i < lA.length && lA[i] === lB[i]) i++;
         i = Math.max(0, lA.lastIndexOf(' ', i - 1));
         diffs.push('writes from ' + i + ': game [' + lA.slice(i, i + 200) + '] port [' + lB.slice(i, i + 200) + ']');
+      } else if (o.timed) {
+        // the T-states between one write and the next, the beeper's edges
+        const tA = A.ioObj.times, tB = B.ioObj.times;
+        for (let j = 1; j < tA.length; j++) {
+          if (tA[j] - tA[j - 1] !== tB[j] - tB[j - 1]) { diffs.push('write ' + j + ' of ' + tA.length + ': ' + (tA[j] - tA[j - 1]) + ' T-states after the last in the game, ' + (tB[j] - tB[j - 1]) + ' in the port'); break; }
+        }
       }
       const rg = standin.regsOf(Object.assign({}, rA));
       // what the port's routine leaves out it kept: the registers it was given

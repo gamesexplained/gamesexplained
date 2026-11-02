@@ -11,6 +11,25 @@ G.maths = function (P) {
   const s16 = v => (v & 0x8000 ? (v & 0xFFFF) - 0x10000 : v & 0xFFFF);
   // one step of the restoring divisions: ADC HL,HL (the next bit in), SBC HL,divisor (with the
   // carry out of the ADC), ADD HL,divisor back on a borrow; the quotient bit is no borrow
+  // Each routine here gives every register its callers read (A, the pairs and their halves), those
+  // it keeps as they came, so a caller can take q.hl from any of them.
+  const full = f => r => {
+    const o = f(r), x = {};
+    for (const [p, hi, lo] of [['bc', 'b', 'c'], ['de', 'd', 'e'], ['hl', 'h', 'l']]) {
+      let v;
+      if (o[p] !== undefined) v = o[p];
+      else if (o[hi] !== undefined || o[lo] !== undefined) {
+        const h0 = o[hi] !== undefined ? o[hi] : (r[p] !== undefined ? r[p] >> 8 : r[hi]);
+        const l0 = o[lo] !== undefined ? o[lo] : (r[p] !== undefined ? r[p] & 255 : r[lo]);
+        v = (h0 & 255) << 8 | (l0 & 255);
+      } else v = r[p] !== undefined ? r[p] : ((r[hi] & 255) << 8 | (r[lo] & 255));
+      v &= 0xFFFF;
+      x[p] = v; x[hi] = v >> 8; x[lo] = v & 255;
+    }
+    x.a = (o.a !== undefined ? o.a : r.a) & 255;
+    return x;
+  };
+  const def = (a, name, f) => P.def(a, name, full(f));
   const divStep = (rem, cy, d) => {
     const t = rem * 2 + cy, c1 = t > 0xFFFF ? 1 : 0;
     const v = (t & 0xFFFF) - d - c1;
@@ -19,7 +38,7 @@ G.maths = function (P) {
   };
 
   // mul_16x8: A:H:L = HL x A, both signed, the product as 24 bits; BC and DE kept.
-  P.def(0x910E, 'mul_16x8', r => {
+  def(0x910E, 'mul_16x8', r => {
     const a = r.a & 255, hl = r.hl !== undefined ? r.hl : (r.h << 8 | r.l);
     if (a === 0) return { a: 0, h: 0, l: 0, hl: 0 };
     if ((hl & 0xFFFF) === 0) return { a: 0, h: 0, l: 0, hl: 0 };
@@ -28,7 +47,7 @@ G.maths = function (P) {
   });
 
   // mul_16x16: DE:HL = HL x DE, both signed, the product as 32 bits; AF and BC kept.
-  P.def(0x9179, 'mul_16x16', r => {
+  def(0x9179, 'mul_16x16', r => {
     const hl = r.hl !== undefined ? r.hl : (r.h << 8 | r.l), de = r.de !== undefined ? r.de : (r.d << 8 | r.e);
     if ((hl & 0xFFFF) === 0) return { d: 0, e: 0, de: 0 };
     if ((de & 0xFFFF) === 0) return { h: 0, l: 0, hl: 0 };
@@ -41,7 +60,7 @@ G.maths = function (P) {
   // div_24_16: A:H:L = A:H:L / DE, both signed, the quotient truncated, by a restoring division of
   // the bits from the dividend's top set one; DE = the remainder of the magnitudes. $91EF holds the
   // sign, $91F0 the count of bits. A divisor of 0 gives the loop's own answer, all ones.
-  P.def(0x91F1, 'div_24_16', r => {
+  def(0x91F1, 'div_24_16', r => {
     let b = r.a & 255, hl = (r.hl !== undefined ? r.hl : (r.h << 8 | r.l)) & 0xFFFF, de = (r.de !== undefined ? r.de : (r.d << 8 | r.e)) & 0xFFFF;
     if (hl === 0 && b === 0) return { d: 0, e: 0, de: 0, a: 0 };
     let sign = 1;
@@ -76,7 +95,7 @@ G.maths = function (P) {
   });
 
   // mul_s8: HL = H x L, both signed bytes; AF, BC and DE kept.
-  P.def(0x928C, 'mul_s8', r => {
+  def(0x928C, 'mul_s8', r => {
     const h = r.h & 255, l = r.l & 255;
     if (l === 0) return { h: 0, hl: 0 };
     if (h === 0) return { l: 0, hl: 0 };
@@ -87,7 +106,7 @@ G.maths = function (P) {
   // div_32_16: DE:HL = DE:HL / BC, both signed, the quotient rounded half up on the magnitudes by
   // the sign of (remainder - divisor / 2) as a word; BC = the remainder of the magnitudes, which
   // $92D5 keeps. $92D4 holds the sign. AF kept.
-  P.def(0x92D7, 'div_32_16', r => {
+  def(0x92D7, 'div_32_16', r => {
     let hl = (r.hl !== undefined ? r.hl : (r.h << 8 | r.l)) & 0xFFFF, de = (r.de !== undefined ? r.de : (r.d << 8 | r.e)) & 0xFFFF;
     let bc = (r.bc !== undefined ? r.bc : (r.b << 8 | r.c)) & 0xFFFF;
     if (hl === 0 && de === 0) return { b: 0, c: 0, bc: 0 };
