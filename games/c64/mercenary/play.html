@@ -57,6 +57,8 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
+.pl-keys .pl-keys-tap{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-coords{font-family:var(--fm);font-size:13px;color:var(--ink-soft);white-space:nowrap}
@@ -83,8 +85,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <button type="button" data-act="skip" title="Run the intro at full speed to the crash landing, the frame where the game hands you control">Skip intro</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
@@ -98,13 +98,15 @@ section table{margin:6px 0 18px}
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys" id="pl-keys">
-      <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> the joystick</li>
-      <li><kbd>F</kbd> or right <kbd>Ctrl</kbd> fire</li>
-      <li><kbd>1</kbd>…<kbd>9</kbd> <kbd>0</kbd> thrust, <kbd>Shift</kbd> + digit reverse</li>
-      <li><kbd>=</kbd> <kbd>−</kbd> thrust up and down, <kbd>Space</kbd> stop</li>
-      <li><kbd>T</kbd> take, <kbd>D</kbd> drop, <kbd>B</kbd> board, <kbd>L</kbd> leave</li>
-      <li><kbd>E</kbd> the lift, <kbd>Y</kbd> yes</li>
-      <li><kbd>Esc</kbd> pause (CTRL + RETURN)</li>
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game. <b>Shift</b> stays down for the key you tap after it.</li>
+      <li><kbd data-key="ArrowLeft">←</kbd> <kbd data-key="ArrowRight">→</kbd> <kbd data-key="ArrowUp">↑</kbd> <kbd data-key="ArrowDown">↓</kbd> the joystick</li>
+      <li><kbd data-key="F">F</kbd> or right <kbd data-key="Ctrl">Ctrl</kbd> fire</li>
+      <li><kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> <kbd data-key="4">4</kbd> <kbd data-key="5">5</kbd> <kbd data-key="6">6</kbd> <kbd data-key="7">7</kbd> <kbd data-key="8">8</kbd> <kbd data-key="9">9</kbd> <kbd data-key="0">0</kbd> thrust</li>
+      <li><kbd data-key="Shift" data-mod>Shift</kbd> + digit reverse</li>
+      <li><kbd data-key="=">=</kbd> <kbd data-key="-">−</kbd> thrust up and down, <kbd data-key="Space">Space</kbd> stop</li>
+      <li><kbd data-key="T">T</kbd> take, <kbd data-key="D">D</kbd> drop, <kbd data-key="B">B</kbd> board, <kbd data-key="L">L</kbd> leave</li>
+      <li><kbd data-key="E">E</kbd> the lift, <kbd data-key="Y">Y</kbd> yes</li>
+      <li><kbd data-key="Esc">Esc</kbd> pause (CTRL + RETURN)</li>
       <li>CTRL + Q, CTRL + S and CTRL + L: the buttons</li>
       <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
@@ -5921,7 +5923,9 @@ function makeRuntime(P, opts) {
   const vic = new Uint8Array(0x40), sid = new Uint8Array(0x20), colour = new Uint8Array(0x400);
   let cmp = 0, latch = 0, enable = 0;
   let pra = 0xFF, ddra = 0, ddrb = 0;
-  const input = { joy: 0x1F, keys: new Set() };           // port 2 active low; key numbers held
+  // port 2 active low; key numbers held; how many times the game has read the stick's port (CIA 1
+  // port A) and the keyboard's columns (port B), for the page's keys tapped from the list
+  const input = { joy: 0x1F, keys: new Set(), reads: [0, 0] };
   let t = 0;                                              // cycles since power-on
   let lastTrigger = -1;                                   // absolute line of the last raster interrupt
   const lineNow = () => Math.floor(t / LINE);
@@ -5963,8 +5967,9 @@ function makeRuntime(P, opts) {
     ciaWrite(r, v) { r &= 15; if (r === 0) pra = v & 255; else if (r === 2) ddra = v & 255; else if (r === 3) ddrb = v & 255; },
     ciaRead(r) {
       r &= 15;
-      if (r === 0) return (ddra ? (pra | ~ddra) & 0xFF : 0xE0 | input.joy) & (0xE0 | input.joy);
+      if (r === 0) { input.reads[0]++; return (ddra ? (pra | ~ddra) & 0xFF : 0xE0 | input.joy) & (0xE0 | input.joy); }
       if (r === 1) {
+        input.reads[1]++;
         let v = 0xFF;
         const rows = ddra ? pra & ddra : 0xFF;
         for (const k of input.keys) if (!(rows & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
@@ -7118,7 +7123,7 @@ function makeDisplay(opts) {
   const ORIGINAL_7009 = [0x01, 0xFF, 0x20, 0x20, 0x4E, 0x4F, 0x56, 0x41, 0x44, 0x52, 0x49, 0x56, 0x45, 0x20,
     0x43, 0x4F, 0x55, 0x4E, 0x54, 0x44, 0x4F, 0x57, 0x4E, 0x20, 0xA0, 0x00];
 
-  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, skipping = false;
+  let image = null, rt = null, P = null, disp = null, running = false, native = false, skipping = false;
   let fx = null, fast = false;                     // Fast CPU (site/lib/fast-cpu.js), and whether it is on
   const INSTALL = window.MERC_INSTALL || [];
 
@@ -7182,14 +7187,14 @@ function makeDisplay(opts) {
   let acc = 0, last = 0;
   function tick(now) {
     requestAnimationFrame(tick);
-    if (skipping && running && !paused) { skipSlice(now); return; }
-    if (!running || paused) { last = now; return; }
+    if (skipping && running) { skipSlice(now); return; }
+    if (!running) { last = now; return; }
     if (fast) return tickFast(now);
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
     try {
       while (acc >= FRAME_MS && n < 10) { rt.runFrame(); taps(); sound.frame(); acc -= FRAME_MS; n++; }
-    } catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
+    } catch (e) { stopped(e); return; }
     if (n === 10) acc = 0;
     if (n) {
       compose(); skipButton();
@@ -7206,7 +7211,7 @@ function makeDisplay(opts) {
     const f0 = rt.frame;
     let n = 0;
     try { n = FastCPU.run(fx, ms); }
-    catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
+    catch (e) { stopped(e); return; }
     for (let f = f0; f < rt.frame; f++) taps();
     releases();
     sound.frame();
@@ -7224,7 +7229,6 @@ function makeDisplay(opts) {
     if (!rt) start();
     else if (!running) return;                     // the port stopped
     if (!rt.inOpening) return;
-    paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
     tapList.length = 0;
     sound.hold();
     skipping = true;
@@ -7233,7 +7237,7 @@ function makeDisplay(opts) {
     const t0 = performance.now();
     let over = false;
     try { do over = rt.skipOpening(25); while (!over && performance.now() - t0 < SKIP_MS); }
-    catch (e) { skipping = false; running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
+    catch (e) { skipping = false; stopped(e); return; }
     compose(); present();
     const at = Math.round(rt.frame * FRAME_MS / 1000) + ' s';
     if (!over) { say('Skipping the intro: ' + at + ' in…'); return; }
@@ -7255,7 +7259,7 @@ function makeDisplay(opts) {
   // With Fast CPU, what was let go before three video frames: event code -> { frame, joy, keys }
   const downAt = new Map(), late = new Map();
   let lateJoy = 0;
-  function joy() { if (rt) rt.input.joy = 0x1F & ~(joyBits | padBits | lateJoy); }
+  function joy() { if (rt) rt.input.joy = 0x1F & ~(joyBits | padBits | lateJoy | pressJoy); }
   function releases() {
     if (!late.size) return;
     let ch = false;
@@ -7271,6 +7275,7 @@ function makeDisplay(opts) {
     for (const ks of held.values()) for (const k of ks) s.add(k);
     for (const l of late.values()) for (const k of l.keys) s.add(k);
     for (const t of tapList) for (const k of t.keys) s.add(k);
+    for (const p of pressed.values()) for (const k of p.keys) s.add(k);
     rt.input.keys = s;
   }
   function c64Keys(e) {
@@ -7320,7 +7325,34 @@ function makeDisplay(opts) {
   // taps: keys held for a few frames from a button (CTRL + Q, the save and load dialogs)
   const tapList = [];
   function tap(keys, frames) { tapList.push({ keys, left: frames || 12 }); keysNow(); screen.focus(); }
-  function taps() { let ch = false; for (let i = tapList.length - 1; i >= 0; i--) if (--tapList[i].left <= 0) { tapList.splice(i, 1); ch = true; } if (ch) keysNow(); }
+  function taps() { lifted(); let ch = false; for (let i = tapList.length - 1; i >= 0; i--) if (--tapList[i].left <= 0) { tapList.splice(i, 1); ch = true; } if (ch) keysNow(); }
+  // keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+  // the finger is on it and, once it lifts, until the game has read it, the keyboard scanned (or,
+  // for the stick and fire, the joystick's port read) since it went down, so that a tap shorter than
+  // the game's pass still counts; with Fast CPU for three video frames at least too, as a key let go
+  // early is (hold). Shift tapped first goes down with the key after it
+  const PRESS = { ArrowUp: { joy: 1 }, ArrowDown: { joy: 2 }, ArrowLeft: { joy: 4 }, ArrowRight: { joy: 8 }, F: { joy: 16 }, Ctrl: { joy: 16 },
+    Space: { keys: [KEY.SPACE] }, Shift: { keys: [KEY.LSHIFT] }, Esc: { keys: [KEY.CTRL, KEY.RETURN] }, '=': { keys: [KEY['+']] } };
+  const pressed = new Map();                       // data-key -> { joy, keys, port, reads, frame, up }
+  let pressJoy = 0;
+  const pressOf = name => PRESS[name] || (KEY[name] !== undefined ? { keys: [KEY[name]] } : null);
+  function press(name, mods) {
+    const p = pressOf(name);
+    if (!p || !running || !rt) return;
+    const keys = (p.keys || []).slice();
+    for (const m of mods || []) { const q = pressOf(m); if (q && q.keys) keys.push(...q.keys); }
+    const port = p.joy ? 0 : 1;
+    pressed.set(name, { joy: p.joy || 0, keys, port, reads: rt.input.reads[port], frame: rt.frame, up: false });
+    pressedNow();
+  }
+  function lift(name) { const p = pressed.get(name); if (p) { p.up = true; lifted(); } }
+  function lifted() {
+    let ch = false;
+    for (const [n, p] of pressed) if (p.up && (!rt || (rt.input.reads[p.port] > p.reads && (!fast || rt.frame >= p.frame + 3)))) { pressed.delete(n); ch = true; }
+    if (ch) pressedNow();
+  }
+  function pressedNow() { pressJoy = 0; for (const p of pressed.values()) pressJoy |= p.joy; joy(); keysNow(); }
+  PlayControls.keys($('pl-keys'), { down: press, up: lift });
   // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
   PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; joy(); } });
 
@@ -7377,23 +7409,26 @@ function makeDisplay(opts) {
     if (fx) FastCPU.set(fx, v);
     if (!v) { late.clear(); lateJoy = 0; joy(); keysNow(); acc = 0; }
   }
-  function showOver(t, btn) {
+  function showOver(t, btn, then) {
     overMsg.textContent = t; over.hidden = false;
     const old = over.querySelector('button'); if (old) old.remove();
-    if (btn) { const b = document.createElement('button'); b.type = 'button'; b.textContent = btn; b.onclick = start; over.appendChild(b); }
+    if (btn) { const b = document.createElement('button'); b.type = 'button'; b.textContent = btn; b.onclick = then || start; over.appendChild(b); }
   }
   function start() {
     over.hidden = true;
     if (!rt) { boot(); sound.attach(); }
-    running = true; paused = false; last = 0; screen.focus();
+    running = true; last = 0; screen.focus();
+  }
+  // the port stopped: it says so, and starts again from the start-up on a new machine
+  function stopped(e) {
+    running = false; console.error(e);
+    showOver('The port stopped: ' + e.message, 'Start again', () => { rt = null; skipping = false; start(); skipButton(); });
   }
   const bar = $('pl-bar');
   bar.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     const act = b.dataset.act;
-    if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
-    else if (act === 'restart') { rt = null; skipping = false; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); skipButton(); screen.focus(); }
-    else if (act === 'skip') skip();
+    if (act === 'skip') skip();
     else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (native) crt.set(false); else cv.width = 1; draw(); screen.focus(); }
     else if (act === 'fast') { setFast(!fast); draw(); screen.focus(); }
     else if (act === 'ctrlq' && running) tap([KEY.CTRL, KEY.Q], 12);
