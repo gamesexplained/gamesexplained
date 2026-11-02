@@ -6,8 +6,10 @@ own class that site.css also styles is caught before the built site collapses it
 on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
 a skill names no game in the lines a branch adds, whatever it said before the game arrived, a
-core skill gains no dated record, and kit-feedback.md's placeholder fails only once the
-retrospective is reached or on a pull request."""
+core skill gains no dated record, kit-feedback.md's placeholder fails only once the
+retrospective is reached or on a pull request, and a game.json whose tools.host the status page
+cannot count, such as a WSL2 run that leaves out its processor, fails before the pull request
+rather than in its CI."""
 import contextlib
 import io
 import os
@@ -180,6 +182,36 @@ class PlatformNotes(unittest.TestCase):
     def test_one_section_per_system(self):
         self.assertEqual(notes('## macOS — known to work\n\n## Linux\n\n## Untried systems\n'), 0)
         self.assertEqual(notes('## Linux\n\n## Linux — Ubuntu 26.04 desktop, 6 October 2026\n'), 1)
+
+
+STATUS_HOSTS = [
+    {'id': 'linux-x64', 'name': 'Linux', 'arch': 'x86_64', 'match': '(Linux|Ubuntu|WSL).*x86_64',
+     'kits': {'c64': {'state': 'works'}}},
+    {'id': 'windows-x64', 'name': 'Windows', 'arch': 'x86_64', 'match': 'Windows',
+     'kits': {'c64': {'state': 'limited'}}},
+]
+
+
+def host(text, platform='c64'):
+    return check_docs.host_cell({'platform': platform, 'tools': {'host': text}}, STATUS_HOSTS)
+
+
+class HostCell(unittest.TestCase):
+    def test_a_wsl2_host_names_its_processor(self):
+        self.assertIsNone(host('Linux 6.18 x86_64 (WSL2) on Windows 11, Ubuntu 26.04.1'))
+        self.assertIsNone(host('Windows 11 Pro with WSL2 Ubuntu 26.04, x86_64'))
+        why = host('Windows 11 with WSL2 Ubuntu 26.04')
+        self.assertIn('Windows (x86_64), where the c64 kit is limited', why)
+
+    def test_a_host_no_row_finds(self):
+        self.assertIn('no kind of computer', host('Amiga 1200'))
+
+    def test_a_cell_nobody_has_tried(self):
+        self.assertIn('kit is untested', host('Ubuntu 24.04 x86_64', platform='nes'))
+
+    def test_no_host_is_left_alone(self):
+        self.assertIsNone(check_docs.host_cell({'platform': 'c64'}, STATUS_HOSTS))
+        self.assertIsNone(check_docs.host_cell({'platform': 'c64', 'tools': {'host': ''}}, STATUS_HOSTS))
 
 
 def steps(files):

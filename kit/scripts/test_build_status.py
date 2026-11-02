@@ -38,7 +38,9 @@ class StatusPage(unittest.TestCase):
             states = {h["id"]: (h["kits"].get(g["platform"]) or {}).get("state", "untested") for h in rows}
             self.assertIn("works", states.values(),
                           f'{g["platform"]}/{g["slug"]} was made on {host!r}, but its cell in site/status.json is {states}: '
-                          "set it to works, and say in its note which game was made there and when")
+                          "if tools.host leaves out the processor, name it there (a WSL2 run is Linux on x86_64 or "
+                          "arm64); only if the game was made on that kind of computer, set the cell to works and say "
+                          "in its note which game was made there and when")
 
     def test_a_cell_names_two_games_best_first_and_counts_the_rest(self):
         self.assertEqual(build.and_more([]), "")
