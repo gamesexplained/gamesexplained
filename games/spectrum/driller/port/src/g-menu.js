@@ -104,7 +104,7 @@ G.menu = function (P) {
     lines(0xC2B2, 0xC2AF, [6, 9]);
     yield* P.until0(0x8FC2, 0xFF, 29);
     let a;
-    for (;;) {
+    for (;; yield) {
       a = yield* keys();
       if (a !== 0x53 && a !== 0x4C) break;
       M[0xC3D2] = a;
@@ -295,7 +295,9 @@ G.menu = function (P) {
     }
     let rec = (0xC920 + 3 * M[0x8FC5]) & 0xFFFF;
     P.invert({ hl: rec });
-    for (;;) {
+    // a key held repeats at once when play's rate ($8FC4) is 0: each turn of the loop takes the
+    // game its time, a line here
+    for (;; yield) {
       const a = yield* keys();
       if (a === 0x0D) break;
       if (sgn8(a - 0x31) || !sgn8(a - 0x35)) continue;

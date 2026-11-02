@@ -107,8 +107,9 @@ G.panel = function (P) {
     M[0x8A21] |= 4;
     yield* P.until0(0x8A21, 1, 24);
     M[0x8A25] = M[0x8A24];
+    // the interrupt's counts, which it may have moved on in the frame that ended the wait
     for (let k = 0; k < 5; k++) {
-      const a = M[0x8A46 + 6 * k];
+      const a = P.irqByte(0x8A46 + 6 * k);
       M[0x8A28 + 6 * k] = !a || a === 1 ? 2 : a;
     }
     for (let k = 0; k < 0x1E; k++) M[0x8A44 + k] = M[0x8A26 + k];
