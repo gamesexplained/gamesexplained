@@ -8,24 +8,27 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">Every sprite in the game, the TARDIS landing, one frame rebuilt from two screens, and a status bar whose font hides in its own screen.</p>
+  <p class="sub">The status bar's font hides in rows of its own screen that are never shown. It is packed so tightly that the digit 9 borrows the letter Z's slot.</p>
 </header>
 <main class="wrap">
 <section id="cast">
   <p class="fig">The cast</p>
-  <h2 class="t">Every sprite in the mine</h2>
-  <p class="lede">The Doctor, Splinx, the controllers, the madrag, and every item, drawn from the bytes at <code>$5000</code>-<code>$73FF</code> in the colours the game gives them. Click one to see where it is stored and who shows it. The <a href="gameplay.html#pockets">Gameplay</a> tab says what each one is for.</p>
+  <h2 class="t">Every sprite the game draws, in its own colours</h2>
+  <p class="lede">The Doctor, Splinx, the controllers, the madrag, and every <a href="gameplay.html#pockets">item</a>, drawn from the bytes at <code>$5000</code>-<code>$73FF</code> in the colours the game gives them. Click one to see where it is stored and who shows it.</p>
   <div class="plate">
     <div class="gal" id="gal"></div>
     <p class="cap" id="galcap">Multicolour sprites in the colours the game gives them: the shared red and orange (<code>$D025</code>, <code>$D026</code>) and each object's own colour from <code>$1850</code>, for the object whose animation table or starting frame uses the image. Grey marks the few images no table names. The Doctor's own colour is black, which is why he shows only red and orange, as in the game.</p>
   </div>
+  <h3>Where the frames live</h3>
   <p>The game's sprite images sit in the second 16 KB of memory, which the video chip shows during play, so a frame number from <code>$40</code> to <code>$CF</code> points straight at 64 bytes from <code>$5000</code> to <code>$73FF</code>.</p>
+  <h3>Never more than eight at once</h3>
   <p>At most eight objects appear at once, because the C64 has eight hardware sprites. Each pass, the game collects the visible ones and leaves out any ninth (<code>sprite_list_add_object</code>, <code>$81DA</code>).</p>
+  <h3>Items painted onto the rock</h3>
   <p>Some items can be drawn into the scenery as well as flying as sprites. The game blends their shapes into 32 spare characters, pixel pair by pixel pair, so they sit on the rock without covering it (<code>charobj_composite_char</code>, <code>$8652</code>).</p>
 </section>
 <section id="doctor">
   <p class="fig">The Doctor</p>
-  <h2 class="t">Two sprites, and a frame for every two pixels</h2>
+  <h2 class="t">The Doctor's feet pick his frame, not a clock</h2>
   <p class="lede">The Doctor is drawn from two sprites, one above the other. Press a move to see the frames the game shows for it.</p>
   <div class="plate">
     <div class="row">
@@ -55,7 +58,7 @@
 </section>
 <section id="screen">
   <p class="fig">The screen</p>
-  <h2 class="t">One frame, rebuilt from memory</h2>
+  <h2 class="t">Each frame is two screens: the status bar, then the mine</h2>
   <p class="lede">The first screen of the game, drawn by this page from the game's memory and the video chip's settings. Show the raster bands to see where the picture changes mode.</p>
   <div class="plate">
     <div class="row"><button class="b" type="button" id="fbands" aria-pressed="false">Show the raster bands</button></div>
