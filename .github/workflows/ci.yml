@@ -109,29 +109,34 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       # Runs on main overlap, and an older one can finish its tests after a newer one has
-      # deployed: deploying it then would take the newer one's changes off the site. So a run
-      # deploys only when no newer run on main has passed or is still going, since that run
-      # deploys a site with this one's changes in it. If a newer run fails, the site waits for
-      # the next run that passes.
-      - name: Is a newer run on main to deploy?
+      # deployed: deploying it then would take the newer one's changes off the site. Deploy jobs
+      # run one at a time (the group above), so a run checks first whether a newer run's deploy
+      # job has finished, and if one has, the site already holds this run's changes and it skips
+      # its own deploy. A run that cannot ask deploys as before.
+      - name: Has a newer run on main deployed?
         id: newer
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN: ${{ github.run_number }}
         run: |
-          if ! newer=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?branch=main&per_page=50" --jq "
-              [.workflow_runs[] | select(.event != \"pull_request\" and .run_number > $RUN
-                and (.conclusion == null or .conclusion == \"success\")) | .run_number]
-              | sort | map(tostring) | join(\" \")"); then
-            echo "::warning::Could not list this workflow's runs, so deploying as if none were newer."
-            newer=""
-          fi
-          if [ -n "$newer" ]; then
-            echo "Not deploying: a newer run on main (run $newer) deploys this run's changes with its own."
+          deploy=yes
+          if ids=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?branch=main&per_page=50" \
+              --jq ".workflow_runs[] | select(.event != \"pull_request\" and .run_number > $RUN) | .id"); then
+            for id in $ids; do
+              if ! n=$(gh api "repos/$REPO/actions/runs/$id/jobs" \
+                  --jq '[.jobs[] | select(.name == "deploy" and .conclusion == "success")] | length'); then
+                echo "::warning::Could not read run $id's jobs, so deploying as if it had not deployed."
+              elif [ "$n" != 0 ]; then
+                echo "Not deploying: newer run $id has deployed a site with this run's changes in it."
+                deploy=no
+                break
+              fi
+            done
           else
-            echo "deploy=yes" >> "$GITHUB_OUTPUT"
+            echo "::warning::Could not list this workflow's runs, so deploying as if none were newer."
           fi
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
       - id: deployment
         if: steps.newer.outputs.deploy == 'yes'
         uses: actions/deploy-pages@v4
