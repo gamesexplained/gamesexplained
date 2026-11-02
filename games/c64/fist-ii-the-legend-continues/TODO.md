@@ -11,7 +11,16 @@ Worth doing, found in the run and not done:
 
 - A pose viewer: build each of the 73 poses from its nine images
   (`$B210`, `$1C0F`) and step through the 44 move scripts (`$AF46`).
-- The samples: play the ten samples (`$3DB8`).
+- symbols.json, the sample player (ported and checked on the Music tab,
+  `reference/fist-samples.js`): the 40 bytes at `$FFCB` are the samples'
+  start and end offsets from `$C8D0` (the listing calls them unknown);
+  bytes 1-3 of each `$BEC6` entry are the rise, hold and fall counts of
+  the loudness envelope; `step_level` (`$3EE8`) reports "there" in the Z
+  flag, not in A as its comment says. Fix them in the next annotation
+  session, which can rebuild the listing from a snapshot.
+- Sample 10 (`$2BCA`) reads its entry from `$FFEF`, where the table runs
+  into `$FF`/`$00` fill: check in the emulator what it sounds like in play,
+  and what the bytes at `$FFEF-$FFF2` are while the game runs.
 - Live tests not run: area 5 without scroll 8; the ending scene from room
   `$7A`; setting `$0455` to 0 for a second joystick; combination 8's store
   into the hero's slot; readers of the head sprites at `$B746`.

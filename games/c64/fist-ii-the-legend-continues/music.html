@@ -8,11 +8,12 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
-  <p class="sub">Neil Brennan's<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> three tunes, played by the game's own music driver, and the sound effects that play through the volume register.</p>
+  <p class="sub">One tune for each part of the world, played by the game’s own driver, where a slip means only the first voice restarts its vibrato. The sound effects are samples, clicked out through the volume register.</p>
 </header>
 <main class="wrap">
 <section id="music">
   <p class="fig">Music</p>
+  <p class="note">The tunes are by Neil Brennan.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup></p>
   <h2 class="t">Three tunes, one for each part of the world</h2>
   <p class="lede">The game plays one tune at a time, chosen by where the hero stands (<code>$1247</code>), and loops it for as long as he stays. Press a tune to hear it.</p>
   <div class="plate">
@@ -21,9 +22,9 @@
   </div>
   <table class="t" style="margin-top:24px">
     <tr><th>Tune</th><th>Where it plays</th><th>Speed</th><th>Instruments</th></tr>
-    <tr><td>1</td><td>areas 0-7 (scenery set 0, the caves), except the temples (<code>$11FC</code>)</td><td>a tick every 2 frames</td><td>8 (0-7)</td></tr>
-    <tr><td>2</td><td>areas 30-47 (scenery set 2), and the temples (<code>$11FC</code>)</td><td>a tick every 2 frames</td><td>3 (9-11)</td></tr>
-    <tr><td>3</td><td>areas 8-29 (scenery set 1), where the game starts (<code>$1247</code>)</td><td>a tick every 5 frames</td><td>5 (12-16)</td></tr>
+    <tr><td>1</td><td>areas 0-7 (<a href="graphics.html#scenery">scenery set 0, the caves</a>), except the <a href="gameplay.html#trigrams">temples</a> (<code>$11FC</code>)</td><td>a tick every 2 frames</td><td>8 (0-7)</td></tr>
+    <tr><td>2</td><td>areas 30-47 (<a href="graphics.html#scenery">scenery set 2</a>), and the <a href="gameplay.html#trigrams">temples</a> (<code>$11FC</code>)</td><td>a tick every 2 frames</td><td>3 (9-11)</td></tr>
+    <tr><td>3</td><td>areas 8-29 (<a href="graphics.html#scenery">scenery set 1</a>), where the game starts (<code>$1247</code>)</td><td>a tick every 5 frames</td><td>5 (12-16)</td></tr>
   </table>
   <p class="cap">Each zone's tune (<code>$1247</code>) comes from a three-byte table, and the temples, area 6, are given tune 2 (<code>$11FC</code>) on their own. The speeds are the tempo table (<code>$F42F</code>).</p>
   <p>Brennan has described how he worked at Beam: Fred Milgrom, one of the studio's two founders,<sup class="fn"><a href="about.html#src-6" title="Wikipedia, Beam Software">6</a></sup> talked him through a game's characters and artwork and "the kind of musical 'feel' that he was after", and Brennan would "head off to my little 4-track to put down as many themes as I could muster". Milgrom's "view of games was very cinematic", he says: "He would make me watch Fellini films, or study Chinese music".<sup class="fn"><a href="about.html#src-14" title="Remix64, interview with Neil Brennan">14</a></sup></p>
@@ -37,13 +38,31 @@
 <section id="effects">
   <p class="fig">Sound effects</p>
   <h2 class="t">Samples through the volume register</h2>
-  <p>The sound effects are samples, made by Bruce Bayley, the manual says.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> A timer interrupt (<code>$3D8B</code>) switches the SID's volume between two levels, and each byte of a sample sets how long until the next switch, through a table of 256 timer periods (<code>$0200</code>). Each switch of the volume makes a click, and the clicks at the right spacing make the sound. The site's model of the SID does not play samples, so they are not heard here.</p>
+  <p>The sound effects are samples, made by Bruce Bayley, the manual says.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> A timer interrupt (<code>$3D8B</code>) switches the SID's volume between two levels, and each byte of a sample sets how long until the next switch, through a table of 256 timer periods (<code>$0200</code>). Each switch of the volume makes a click, and the clicks at the right spacing make the sound.</p>
+  <p>Each sample has a rate and three counts in a table of four bytes a sample (<code>$BEC6</code>), and its start and end in a second table (<code>$FFCB</code>). The rate sets how fast the interrupt’s timer counts. The counts shape the loudness, once a frame (<code>$3E1A</code>): it rises from 1 to 15, holds at 15 while the sample repeats, and falls back to 1 (<code>$3F00</code>). The first and last counts set how slowly it rises and falls, and a count of 0 skips that stage; the middle one sets how many more times the sample plays at full loudness.</p>
+  <div class="plate">
+  <table class="t" id="samples">
+    <tr><th>Sample</th><th>When the game plays it</th></tr>
+    <tr><td><button class="b" type="button" data-sample="1" aria-label="Play sample 1">▶ 1</button></td><td>a blow lands (<code>$38E1</code>), or the hero knocks a hazard away (<code>$2A87</code>)</td></tr>
+    <tr><td><button class="b" type="button" data-sample="2" aria-label="Play sample 2">▶ 2</button></td><td>a blow lands (<code>$38C4</code>, <code>$38FE</code>), or a hazard hits the hero (<code>$2BAD</code>)</td></tr>
+    <tr><td><button class="b" type="button" data-sample="3" aria-label="Play sample 3">▶ 3</button></td><td>a fighter starts an attack (<code>$3751</code>), and once in the encounter code (<code>$28AD</code>)</td></tr>
+    <tr><td><button class="b" type="button" data-sample="4" aria-label="Play sample 4">▶ 4</button></td><td>a fighter’s death move starts (<code>$341D</code>)</td></tr>
+    <tr><td><button class="b" type="button" data-sample="5" aria-label="Play sample 5">▶ 5</button></td><td>no call with this number was found</td></tr>
+    <tr><td><button class="b" type="button" data-sample="6" aria-label="Play sample 6">▶ 6</button></td><td>no call with this number was found</td></tr>
+    <tr><td><button class="b" type="button" data-sample="7" aria-label="Play sample 7">▶ 7</button></td><td>no call with this number was found</td></tr>
+    <tr><td><button class="b" type="button" data-sample="8" aria-label="Play sample 8">▶ 8</button></td><td>a stone heap or a tree breaks (<code>$0A10</code>)</td></tr>
+    <tr><td><button class="b" type="button" data-sample="9" aria-label="Play sample 9">▶ 9</button></td><td>no call with this number was found</td></tr>
+    <tr><td><button class="b" type="button" data-sample="10" aria-label="Play sample 10">▶ 10</button></td><td>again and again while a two-part hazard moves, whenever no other sample is playing (<code>$2BCA</code>)</td></tr>
+  </table>
+  <p class="cap">Press a sample to hear it. The sample player (<code>$3D8B</code>, <code>$3DB8</code>, <code>$3E1A</code>) is ported to JavaScript, and the port was checked against the game’s own routines run in a 6502 simulator on the game’s bytes: every write to the volume register, and the frame and cycle it falls on, match for all ten. The timers are modelled from what the routines write to them, not emulated cycle by cycle. Samples 1 and 5 use the same bytes, as do 2, 6, and 9, and 4 and 8; each plays them at its own rate and loudness. Sample 10’s start and end lie past the last of the other nine, where the loaded bytes run into $FF and $00 (<code>$FFEF</code>), so it plays <code>$C840</code>-<code>$C9CF</code>, which holds the high bytes of the timer table and what follows. Whether that is meant is not known.</p>
+  </div>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="reference/fist-page.js"></script>
 <script src="reference/fist-music.js"></script>
+<script src="reference/fist-samples.js"></script>
 <script>
 (async function () {
   const root = document.getElementById('sid');
@@ -58,6 +77,22 @@
       { k: 'Instrument', f: (v) => v.instrument },
       { k: 'Note byte', f: (v) => v.note ? 'note ' + v.note + ' of 12, octave ' + v.octave : 'rest' },
     ],
+  });
+})();
+</script>
+<script>
+(async function () {
+  const tbl = document.getElementById('samples');
+  let G; try { G = await FIST.load(); } catch (e) { tbl.insertAdjacentText('afterend', e.message); return; }
+  let ctx = null, src = null;
+  tbl.addEventListener('click', e => {
+    const b = e.target.closest('[data-sample]'); if (!b) return;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ctx = ctx || new AC();
+    if (src) try { src.stop(); } catch (_) {}
+    const r = FISTSAMPLES.render(G.ram, +b.dataset.sample, ctx.sampleRate, 400);
+    const buf = ctx.createBuffer(1, r.samples.length, ctx.sampleRate); buf.copyToChannel(r.samples, 0);
+    src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.start();
   });
 })();
 </script>
