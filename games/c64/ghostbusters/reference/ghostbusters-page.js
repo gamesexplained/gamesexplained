@@ -782,7 +782,14 @@ return module.exports;
       for (const f of r.frames) {
         if (f.startTick == null) continue;
         ctx.fillStyle = f.pitchTicks ? '#1f5fa8' : '#c25a00';
-        ctx.fillRect(x(f.startTick), 150, Math.max(1, x(f.endTick) - x(f.startTick) - 1), 22);
+        const fx = x(f.startTick), fw = Math.max(1, x(f.endTick) - x(f.startTick) - 1);
+        ctx.fillRect(fx, 150, fw, 22);
+        if (!f.pitchTicks) {                           // noise frames are also striped, so colour is not the only cue
+          ctx.save(); ctx.beginPath(); ctx.rect(fx, 150, fw, 22); ctx.clip();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath();
+          for (let sx = fx - 22; sx < fx + fw; sx += 5) { ctx.moveTo(sx, 172); ctx.lineTo(sx + 22, 150); }
+          ctx.stroke(); ctx.restore();
+        }
       }
       // pitch
       ctx.fillStyle = '#2a8a4a';

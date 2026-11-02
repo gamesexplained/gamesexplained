@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The theme song with its bouncing ball, and five phrases of speech in 2,738 bytes. Both are played here by ports of the game's own players.</p>
+  <p class="sub">Stored as raw samples, the speech would fill two thirds of the machine. The game packs 8.7 seconds of it into 2,738 bytes.</p>
 </header>
 <main class="wrap">
 <section id="music">
@@ -32,7 +32,7 @@
     <div class="row" id="ph-buttons"></div>
     <canvas id="ph" width="900" height="260" style="width:100%;height:auto;display:block"></canvas>
     <p class="kv" id="ph-kv"></p>
-    <p class="cap">The game's speech player (<code>$F080</code>-<code>$F4E9</code>) ported to JavaScript and run on the stored phrases (<code>$F4EA</code>-<code>$FF9B</code>). The port writes the same 311,368 values to the volume register, at the same interrupts, as the game does in the simulator. Top: the four-bit level the player writes, 9,659 times a second. Middle: each frame of the phrase, blue where it is voiced and orange where it is noise. Bottom: the pitch of each voiced period. Heard here as a straight level; a real SID shapes it a little.</p>
+    <p class="cap">The game's speech player (<code>$F080</code>-<code>$F4E9</code>) ported to JavaScript and run on the stored phrases (<code>$F4EA</code>-<code>$FF9B</code>). The port writes the same 311,368 values to the volume register, at the same interrupts, as the game does in the simulator. Top: the four-bit level the player writes, 9,659 times a second. Middle: each frame of the phrase, solid blue where it is voiced and striped orange where it is noise. Bottom: the pitch of each voiced period. Heard here as a straight level; a real SID shapes it a little.</p>
   </div>
   <table class="t">
     <tr><th>Phrase</th><th class="n">Length</th><th>When the game plays it</th><th>What it says</th></tr>
@@ -42,7 +42,7 @@
     <tr><td>3</td><td class="n">2.68 s</td><td>start-up; a man caught at Zuul (<code>$8AB9</code>); the foreclosure (<code>$8D1F</code>)</td><td>a laugh: nine voiced syllables (by ear)</td></tr>
     <tr><td>4</td><td class="n">2.22 s</td><td>the portal closing (<code>$8C5A</code>)</td><td>a scream (by ear)</td></tr>
   </table>
-  <p>Speech on the C64 has no sound chip of its own. The player plays it through the SID's master volume register (<code>$D418</code>): a four-bit value written there moves the output level, and written fast enough it becomes a waveform. A timer in the second CIA chip interrupts the processor every 102 cycles, and each interrupt writes the next value. While a phrase plays the game does nothing else: the raster interrupt stands aside and the main loop waits (<code>$8DB9</code>).</p>
+  <p>The C64 has no speech chip. The player plays it through the SID's master volume register (<code>$D418</code>): a four-bit value written there moves the output level, and written fast enough it becomes a waveform. A timer in the second CIA chip interrupts the processor every 102 cycles, and each interrupt writes the next value. While a phrase plays the game does nothing else: the raster interrupt stands aside and the main loop waits (<code>$8DB9</code>).</p>
   <p>Stored as raw samples, the 8.7 seconds of speech would take 42,140 bytes, two thirds of the machine. The player stores 2,738. A voiced sound is a short waveform chunk played forwards, then backwards, then a silence whose length sets the pitch; each new chunk is blended halfway into the last. A hiss is a one-bit pattern slid along as a window, with no pitch at all. Each frame of a phrase is four bytes that say which, how long and where its samples are.</p>
 </section>
 </main>
