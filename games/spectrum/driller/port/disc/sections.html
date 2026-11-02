@@ -1,0 +1,70 @@
+<section class="pl-first" id="million">
+  <p class="fig">01 · Trachyte</p>
+  <h2 class="t">Secret: four shots in Trachyte are worth a million points</h2>
+  <p class="lede">At the north end of Trachyte, the last sector, four pyramids point at a shape inside a frame. Shoot them in the right order and the frame goes, with 1,000,000 points.</p>
+  <div class="plate">
+    <div class="hw-screen"><canvas id="ds-trachyte" width="208" height="105" aria-label="Trachyte's frame, as the probe sees it"></canvas></div>
+    <div class="hw-btns" id="ds-shots"></div>
+    <div class="hw-btns"><button type="button" class="hw-btn" id="ds-solve">Show the four shots</button><button type="button" class="hw-btn" id="ds-reset">Start again</button></div>
+    <p class="hw-out"><span id="ds-log"></span> <b id="ds-score"></b></p>
+    <p class="cap">Trachyte 17 cells north of its entrance, looking up, drawn by the Play tab's port after each shot has run the game's scripts through the port's <code>run_scripts</code>, as the game runs them after a pass that fired: first the script of the object hit, then the shared scripts, then the area's own. A shape that is hidden cannot be hit, so its button is off.</p>
+  </div>
+  <p>An invisible wall stands between the entrance and the frame: two cuboids with no colour on any face (objects 5 and 6), which flash the screen when the probe walks into them. A face with no colour is never drawn, so the frame shows through the wall and the laser, which can hit only what was drawn, goes through it too.</p>
+  <p>Each shape's script hides or shows some of the others. The lower pyramid shows the right one and hides the upper one; the shape in the middle hides the upper and lower pyramids and flips the left one; the right pyramid hides the shape in the middle; and a shot at the floor hides the left and right pyramids. Trachyte's own script checks after every shot whether all five are hidden while the frame still stands. When they are, it destroys the frame and the five shapes and adds 1,000,000 to the score, three bytes of <code>$0F4240</code> in a single instruction.</p>
+  <p>Twenty-one arrangements of the five shapes can be reached from the start, and the shortest way to the empty one is four shots: the lower pyramid, the shape in the middle, the right pyramid and the floor. The reward comes before the end of the game only for a player who gets into Trachyte and solves the puzzle before drilling there, because making the eighteenth sector safe ends the game at once.</p>
+</section>
+
+<section id="seventeen">
+  <p class="fig">02 · Obsidian</p>
+  <h2 class="t">Secret: the 17 on Obsidian's wall is a count of safe sectors</h2>
+  <div class="plate">
+    <div class="hw-two">
+      <div><div class="hw-screen"><canvas id="ds-obs16" width="208" height="105" aria-label="Obsidian's north wall with 16 sectors safe"></canvas></div><p class="cap">16 sectors safe</p></div>
+      <div><div class="hw-screen"><canvas id="ds-obs17" width="208" height="105" aria-label="Obsidian's north wall with 17 sectors safe"></canvas></div><p class="cap">17 sectors safe</p></div>
+    </div>
+    <p class="cap">Obsidian from its entrance 22, drawn by the port after a pass of the game's scripts with the count of safe sectors (<code>$889E</code>, the scripts' variable 32) at 16 and at 17.</p>
+  </div>
+  <p>The far wall of Obsidian carries a large 17, made of two rectangles and a four-cornered shape (objects 36 to 38). Obsidian's own script waits until 17 sectors are safe. Then the number goes and a panel with a switch takes its place (objects 39, 40 and 42).</p>
+  <p>The switch is one of four. The others are in the room named UNKNOWN AREA, which a doorway in Basalt leads to, in Ochre, and in Graphite, where the switch appears only after a rectangle on the north wall is shot (worth 50,000). When all four are thrown, a script that runs in every area takes down Obsidian's north wall and shows the edge behind it, the only way into Trachyte. The wall's number tells the player how many sectors the game wants before the way to the eighteenth will open.</p>
+</section>
+
+<section id="mitral">
+  <p class="fig">03 · Off the edge</p>
+  <h2 class="t">Secret: walking off the edge of the moon is a one-way trip</h2>
+  <div class="plate">
+    <div class="hw-screen" style="max-width:520px"><canvas id="ds-mitral" width="208" height="105" aria-label="The area named Mitral"></canvas></div>
+    <p class="cap">Area 32 from its entrance 7, where the probe lands on its side, drawn by the port. Walked through the port three steps forward, the probe went from 48 energy and 50 shield to 42 and 44.</p>
+  </div>
+  <p>Some sides of the sectors lead nowhere: the north and south sides of four sectors in the middle row, and the east and west sides of the rows above and below it. Each is a rectangle whose script sets flag 21. A script that runs in every area sees the flag and sends the probe to area 32, whose name is MITRAL, the name of the moon itself. The jet arrives at entrance 6, high in the air; the probe is sent on to entrance 7, on the floor, where it lands rolled a quarter turn onto its side (the entrance's roll is 18 seventy-seconds of a turn).</p>
+  <p>Mitral is a floor, a tower with a sensor on top, and nothing else. It has no edges and no doors, so there is no script anywhere that leads out of it. Its floor's script takes 2 of energy and 2 of shield each time the probe touches it, which is every step. A probe that walks off the moon ends its game there, unless the player loads a saved position from the information screen.</p>
+</section>
+
+<section id="trap">
+  <p class="fig">04 · Copy protection</p>
+  <h2 class="t">Secret: a copy that skips the security question hangs the first time it draws</h2>
+  <p>The tape loads the first two bytes of <code>draw_view</code> at <code>$6B12</code> as <code>$18 $FE</code>, <code>JR $6B12</code>, a jump to itself. <code>security</code> writes <code>$DD</code> over the first byte when it asks the question, and <code>$E5</code> over the second when the answer is right, which makes <code>PUSH IX</code>, the instruction the routine needs. A copy that jumps past the question into the game goes into the jump and stays there, with the screen still showing the cockpit (<a href="index.html#security">How it works</a>).</p>
+</section>
+
+<section id="refill">
+  <p class="fig">05 · Amethyst</p>
+  <h2 class="t">Secret: a block in the sky over Amethyst fills the energy and the shield</h2>
+  <p>Object 28 in Amethyst, the sector where the game starts, is a cuboid 36 cells above the ground, far out of reach of the walking probe, which stands at most four cells tall. Its script, when the vehicle walks or flies into it, gives 63 of energy and 63 of shield, which fills both to their limit, and destroys the block. Shooting it instead destroys it for 1,000 points.</p>
+</section>
+
+<section id="visitor">
+  <p class="fig">06 · Skanners</p>
+  <h2 class="t">Secret: the Skanners do not orbit; one appears over an area after eight minutes there</h2>
+  <p>The manual says Skanners orbit Mitral. Nothing in the game moves an object. Instead, the minutes since the probe entered an area are counted in the scripts' variable 31 (<code>$889D</code>, moved on by the interrupt each minute). At eight, two of the shared scripts at <code>$D04C</code> show three objects kept apart from every area (numbers 248 to 250, at <code>$87FE</code>): two pyramids round a sensor, high over the middle of the area, and play effect 11. At nine they go, and the count starts again.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">07 · Keys</p>
+  <h2 class="t">Secret: Y and T are in the key table and do nothing</h2>
+  <p>The table of keys at <code>$8FEC</code> gives Y the command <code>$5E</code> and T the command <code>$5B</code>, and <code>take_commands</code> carries out neither. The table's count at <code>$8FC7</code> is 24 for 20 entries, so a search for a key runs on into the bytes after the table, the probe's picture on the console, which match no key. The manual's key for the crosshair is +; the table has B (command <code>$15</code>), and + is in no table at all.</p>
+</section>
+
+<section id="text">
+  <p class="fig">08 · Text</p>
+  <h2 class="t">Secret: a copyright line written backwards, and a question about discs never asked</h2>
+  <p><code>INCENTIVE SOFTWARE LTD COPYRIGHT 1987</code> is stored backwards at <code>$D388</code>, where no instruction reads it. <code>TAPE OR DISC ?</code> is stored at <code>$C838</code>, and nothing prints it: this version saves and loads a position on tape only.</p>
+</section>
