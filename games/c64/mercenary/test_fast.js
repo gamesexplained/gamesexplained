@@ -70,7 +70,7 @@ const rnd = n => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^=
 const STICK = [0x1F, 0x1E, 0x1B, 0x17, 0x1A, 0x16, 0x1F, 0x1E];   // none, up, left, right, up-left, up-right
 const UP = 1, LEFT = 4, RIGHT = 8;
 
-// the page's machine at the crash site, past the black flash, with the modern view and Fast CPU
+// the page's machine at the crash site, past the black flash, with the native view and Fast CPU
 // loaded (off), as the page loads them, unless bare
 function machine(bare) {
   const M = image.slice();
@@ -260,7 +260,14 @@ if (part('bank')) {
 // --- the traffic --------------------------------------------------------------------------------
 if (part('traffic')) {
   const m = machine(false), { M, P, fx, rt } = m;
+  // the mod draws its vehicles in slot 9 after the game's own objects, in the order of its list:
+  // a mark between the two, under the mod's own wrapper, says which draw is whose
+  let mine = null;
+  const loopGame = P.object_loop;
+  P.object_loop = function (r) { const out = loopGame.call(this, r); mine = alive.mod.V.filter(v => !v.dead && !v.hidden); return out; };
   const alive = MercAlive.attach(rt);
+  const loopMod = P.object_loop;
+  P.object_loop = function (r) { mine = null; try { return loopMod.call(this, r); } finally { mine = null; } };
   alive.set(true);
   m.frames(8, 0);                                             // the traffic under way, on the C64
   FastCPU.set(fx, true);
@@ -270,7 +277,7 @@ if (part('traffic')) {
   const drawn = new Map(), last = new Map();
   const d0 = P.draw_object;
   P.draw_object = function (r) {
-    const v = P.drawTag;
+    const v = mine && r && r.x === 9 ? mine.shift() : null;
     if (v) drawn.set(v, { x: b3(0x2880, 0x2480, 0x2540), h: b3(0x28C0, 0x24C0, 0x2580), y: b3(0x2900, 0x2500, 0x25C0), head: M[0x802A + 9] });
     return d0.call(this, r);
   };
