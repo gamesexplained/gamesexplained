@@ -328,3 +328,24 @@ formula. `$BE9F` is the
 zero after `fill_row_left`'s `RTS`, which the routine's comment already
 called unread but which sits outside its block. No instruction names
 either address; both now have a comment of their own.
+
+## 2 November 2026: Fast CPU in place of smooth motion
+
+The Play tab gained Fast CPU: the main loop once a PAL video frame, at the
+C64's pace by the clock's cost model. Measured in node from the crash
+site, turning on foot first showed about 290 ms after the key went down
+on the C64, 125 ms with smooth motion and 30 ms with Fast CPU, and the
+view stood still 110, 130 and 10 ms after it came up. With those figures
+Aaron chose Fast CPU and had smooth motion taken out: its button, the
+text in sections 03 and 04, the motion code of the modern view, the
+runtime's checkpoint listeners, and the tag Targ Traffic set for it.
+Native resolution stays; in Chromium it drew six views from the crash
+site, on foot and with Fast CPU, pixel for pixel as it did before.
+
+Aaron then asked whether Fast CPU should copy the C64's slowdowns. A pass
+took 14 frames with seven keys dropped in view, 11 in low flight and 10
+at the crash site, against the game's own pace of 6.5 passes a second
+(780 passes for the interstellar ship's 2 MINS). He chose the C64's pace
+held to 8 frames a pass: the table's `most`, a new field in
+`site/lib/fast-cpu.js`. `test_fast.js` gained a part for it and its pace
+and repeats parts now compare with the C64's passes held to 8 frames.
