@@ -20,6 +20,20 @@
 //   pc.on, pc.bits, pc.touch, pc.enter(), pc.exit(), pc.toggle(), pc.hand('left' or 'right'),
 //   pc.row, pc.button
 //
+//   const ks = PlayControls.keys(list, { down, up })
+//     list      the page's list of keys and what each does: every <kbd data-key="..."> in it
+//               becomes a key to tap (or click), and a <kbd> without data-key stays text
+//     down      down(key, mods) as a finger or the mouse button goes down on one: key is its
+//               data-key, mods the data-key of each modifier tapped before it
+//     up        up(key) as it lifts, wherever it is by then
+//   ks.letGo(): every key held lets go, modifiers too
+//
+// A key with data-mod as well (Shift) is a modifier: a tap holds it for the next key, which gets
+// it in mods, and a second tap lets go of it. A touch that starts on a key presses it at once and
+// neither scrolls nor zooms the page; the page scrolls from the words between the keys. The keys
+// are bigger on a screen with touch. Off unless a page calls it: a page whose keys are worth
+// pressing from a phone opts in.
+//
 // The row is made just before screen, as wide as the picture and at its right: the page's own
 // sound switch ([data-sound]), then its CRT screen switch ([data-crt]), each moved there from
 // wherever the page has it, then the ⛶ Full screen switch, made here with the CRT switch's class
@@ -131,7 +145,11 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-wide .pc-slot>*>[aria-live]{display:none}
 .pc-wide .pc.pc-touch{display:contents}
 .pc-wide .pc-pad{grid-area:pad;align-self:end;justify-self:center;margin:0 0 18px}
-.pc-wide .pc-fires{grid-area:fire;align-self:end;justify-self:center;margin:0 0 18px}`;
+.pc-wide .pc-fires{grid-area:fire;align-self:end;justify-self:center;margin:0 0 18px}
+.pc-key{display:inline-block;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+@media (hover:hover){.pc-key:hover{border-color:var(--ink-mute,#8b8d93)}}
+.pc-key.on,.pc-key[aria-pressed="true"]{background:var(--ink,#2f3136);color:#fff;border-color:var(--ink,#2f3136)}
+.pc-keys-touch .pc-key{min-width:42px;padding:9px 10px;margin:3px 0;font-size:16px;line-height:20px;text-align:center}`;
 
   const ARROWS = '<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">' +
     '<polyline points="43,17 50,10 57,17"/><polyline points="43,83 50,90 57,83"/><polyline points="17,43 10,50 17,57"/><polyline points="83,43 90,50 83,57"/></g></svg>';
@@ -143,10 +161,14 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
   }
   const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
 
+  function style(doc) {
+    if (!doc.getElementById('pc-css')) { const s = doc.createElement('style'); s.id = 'pc-css'; s.textContent = CSS; doc.head.appendChild(s); }
+  }
+
   function attach(o) {
     const doc = document, screen = o.screen, canvas = o.canvas, bar = o.bar || null, usePad = !!o.pad;
     const fires = o.fire && o.fire.length ? o.fire : [{ label: 'Fire', bit: 16 }];
-    if (!doc.getElementById('pc-css')) { const s = doc.createElement('style'); s.id = 'pc-css'; s.textContent = CSS; doc.head.appendChild(s); }
+    style(doc);
     const el = (tag, cls, html) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
 
     // --- the controller
@@ -338,5 +360,48 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
     return api;
   }
 
-  root.PlayControls = { attach, direction, nearest, UP, DOWN, LEFT, RIGHT };
+  // The keys in a page's list of keys, to tap: see the header.
+  function keys(list, o) {
+    style(document);
+    list.classList.add('pc-keys');
+    list.classList.toggle('pc-keys-touch', hasTouch());
+    for (const k of list.querySelectorAll('kbd[data-key]')) k.classList.add('pc-key');
+    const held = new Map();                       // pointer -> the key it holds
+    const mods = new Set();                       // the modifiers tapped, waiting for a key
+    const keyAt = e => { const k = e.target && e.target.closest && e.target.closest('kbd[data-key]'); return k && list.contains(k) ? k : null; };
+    function lift(id) {
+      const k = held.get(id); if (!k) return;
+      held.delete(id);
+      if (![...held.values()].includes(k)) k.classList.remove('on');
+      if (o.up) o.up(k.dataset.key);
+    }
+    list.addEventListener('pointerdown', e => {
+      const k = keyAt(e); if (!k || e.button > 0) return;
+      e.preventDefault();
+      if (k.hasAttribute('data-mod')) {
+        const on = !mods.has(k);
+        if (on) mods.add(k); else mods.delete(k);
+        k.setAttribute('aria-pressed', String(on));
+        return;
+      }
+      lift(e.pointerId);
+      try { k.setPointerCapture(e.pointerId); } catch (x) { /* the pointer has gone already */ }
+      const m = [...mods].map(n => { n.setAttribute('aria-pressed', 'false'); return n.dataset.key; });
+      mods.clear();
+      held.set(e.pointerId, k); k.classList.add('on');
+      if (o.down) o.down(k.dataset.key, m);
+    });
+    for (const t of ['pointerup', 'pointercancel', 'lostpointercapture']) list.addEventListener(t, e => lift(e.pointerId));
+    for (const t of ['contextmenu', 'mousedown']) list.addEventListener(t, e => { if (keyAt(e)) e.preventDefault(); });
+    function letGo() {
+      for (const id of [...held.keys()]) lift(id);
+      for (const n of mods) n.setAttribute('aria-pressed', 'false');
+      mods.clear();
+    }
+    root.addEventListener('blur', letGo);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) letGo(); });
+    return { letGo };
+  }
+
+  root.PlayControls = { attach, keys, direction, nearest, UP, DOWN, LEFT, RIGHT };
 })(typeof window !== 'undefined' ? window : globalThis);

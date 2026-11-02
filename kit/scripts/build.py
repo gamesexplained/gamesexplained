@@ -429,7 +429,8 @@ def banner(game, cons):
 
     Gold and Diamond (Gold and Platinum both) name the humans (git authors, linked). Silver is
     agent-generated and asks for a human editor, and credits the contributor (git authors,
-    linked); so is Platinum, whose Play tab says nothing about its copy.
+    linked); so is Platinum, whose Play tab says nothing about its copy. Either names only the
+    people who changed this game alone (named), never everyone a site-wide change brought in.
     Silver (claimed) is a Silver a human has started editing, and a Platinum with a steward
     is a Platinum one: it names them (the steward in game.json) as editing it to a Gold
     standard, with no prompt, so nobody starts the same work twice.
@@ -443,7 +444,7 @@ def banner(game, cons):
     """
     tier = game.get("tier", "none")
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
-    body = banner_body(game, cons, tier, repo)
+    body = banner_body(game, named(cons), tier, repo)
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
@@ -1054,6 +1055,13 @@ def commits_said(commits, own):
     return f"{n}, {own} to this game alone" if own else f"{n} that changed other games too"
 
 
+def named(cons):
+    """The contributors a game's banner and its catalogue card name: those with a commit to this
+    game alone (credit), so a change made to many games at once names nobody. Everyone, when
+    nobody has one, as in a clone too shallow to tell. The About tab lists them all."""
+    return [c for c in cons if c[3]] or cons
+
+
 def credited(cons, game):
     """The contributors a game's pages name: cons less anyone listed in game.json's "uncredited",
     by GitHub login or by git author name, compared without case. A contributor who asks not to
@@ -1074,7 +1082,8 @@ def credit(authors, own=()):
     Most commits in own first, then most commits. contributors() gives as own the commits that
     change this game's folder and no other game's: a pull request on this minisite, squash-merged
     into one commit. A change made to many games at once (a site-wide fix) counts after them, so
-    the person who made a minisite is named before the people who maintained the site around it.
+    the About tab names the person who made a minisite before the people who maintained the site
+    around it, and the banner names only the first (named).
 
     Git authors only, through .mailmap. Agents are co-authors in trailers, never authors,
     and one that authored a commit anyway is left out (is_agent). The login comes from the
@@ -1833,10 +1842,10 @@ def tile_html(g, root, line, foot, data="", badge=True):
 
 def card_html(g, root="", badge=True):
     """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
-    as the About tab credits them, and the year and publisher. The data- attributes are what the
+    as its banner does (named), and the year and publisher. The data- attributes are what the
     catalogue's search, filters and sorts read (site.js)."""
     plat, slug = g["platform"], g["slug"]
-    cons = g["_cons"]
+    cons = named(g["_cons"])
     words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
                                        PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g),
                                        *(login or name for _, name, login, _ in cons)) if x)

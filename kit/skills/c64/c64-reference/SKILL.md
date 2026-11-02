@@ -309,9 +309,9 @@ timer A running with latch 16,421 (`$4025`) on a PAL machine: an
 interrupt each 16,422 cycles, 59.996 a second at 985,248 cycles a second
 (`games/c64/castle-master`). A game that takes the raster interrupt
 instead ticks once a video frame, 19,656 cycles, 50.12 a second on PAL
-(`games/c64/mercenary`, `games/c64/space-rogue`). Fast CPU's beat is 60 a
+(`games/c64/mercenary`, `games/c64/space-rogue`). Fast CPU's tick is 60 a
 second (`kit/skills/core/70-minisite/fast-cpu.md`): timer A's tick is
-that already, and for a game on the raster the page counts a beat of
+that already, and for a game on the raster the page counts a tick of
 16,422 cycles of its own.
 
 **Timer B can count timer A.** A control byte for timer B (`$DC0F`) with

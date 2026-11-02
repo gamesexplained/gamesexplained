@@ -290,8 +290,20 @@ G.vec = function (P) {
     }
     return { a: M[0x61], y: 9 };
   };
-  // linear: three 24-bit sums, differences and negations
+  // linear: three 24-bit sums, differences and negations. With r.share, Fast CPU's plug-in point
+  // step (core.js): the vector at (r.of), $74 or $76, taken as this pass's share of it, r.share + 0,
+  // 1, 2 its components' keys; the game passes none
+  const shared = (r, sign) => {
+    const s24 = (z, i) => ((rd(z, i) | rd(z, i + 1) << 8 | rd(z, i + 2) << 16) << 8) >> 8;
+    for (const i of [0, 3, 6]) {
+      const part = z => (z === r.of ? P.plug.step(r.share + i / 3, s24(z, i)) : s24(z, i));
+      const v = part(0x74) + sign * part(0x76);
+      for (let k = 0; k < 3; k++) wr(0x78, i + k, (v >> 8 * k) & 255);
+    }
+    return { a: rd(0x78, 8), x: r.x, y: 9 };
+  };
   P.vec_add_lin = function (r) {
+    if (r && r.share !== undefined) return shared(r, 1);
     for (const i of [0, 3, 6]) {
       let c = 0;
       for (let k = 0; k < 3; k++) { const s = rd(0x74, i + k) + rd(0x76, i + k) + c; wr(0x78, i + k, s); c = s >> 8; }
@@ -299,6 +311,7 @@ G.vec = function (P) {
     return { a: rd(0x78, 8), x: r && r.x, y: 9 };
   };
   P.vec_sub_lin = function (r) {
+    if (r && r.share !== undefined) return shared(r, -1);
     for (const i of [0, 3, 6]) {
       let b = 0;
       for (let k = 0; k < 3; k++) { const s = rd(0x74, i + k) - rd(0x76, i + k) - b; wr(0x78, i + k, s); b = s < 0 ? 1 : 0; }

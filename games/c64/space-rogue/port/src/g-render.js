@@ -323,6 +323,10 @@ G.render = function (P) {
       M[0x5F] = (M[0x5F] >> 1) | ((M[0x60] & 1) << 7);
       M[0x60] = (M[0x60] >> 1) | (M[0x60] & 0x80);
       M[0x60] = (M[0x60] - 7) & 255;
+      // with Fast CPU, this loop's share of the camera's move toward the ship: the factor less the
+      // log of the loops a C64 pass is shared over (plug-in point parts)
+      const d = Math.round(256 * Math.log2(P.plug.parts()));
+      if (d) { const v = (M[0x5F] | M[0x60] << 8) - d; M[0x5F] = v & 255; M[0x60] = (v >> 8) & 255; }
       setp(0x78, 0x0896);
       P.vec_scale_signed();
       setp(0x74, 0x0896);
@@ -1259,6 +1263,16 @@ G.render = function (P) {
       put16(0xFD08, sx - d); put16(0xFD0A, sy);
     }
     P.spark_pattern();
+    if (P.keepSpray) P.keepSpray();
+    M[0x55] = 3;
+    return P.fill_polygon();
+  };
+  P.keepSpray = null;                                   // sector_hazard's, while it sprays
+  // One of them drawn again from its corners and pattern as spray_triangle left them (Fast CPU's:
+  // plug-in point shown, in sector_hazard)
+  P.spray_again = function (r) {
+    P.set_colour({ x: 5 });
+    M.set(r.pts, 0xFD00); M[0x3D] = r.pat[0]; M[0x3E] = r.pat[1];
     M[0x55] = 3;
     return P.fill_polygon();
   };

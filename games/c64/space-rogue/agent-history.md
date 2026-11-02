@@ -240,3 +240,62 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   corner, and with the ships close the set distance cut them off. It
   now frames the ships alone and backs off just far enough to keep the
   box's corners on the canvas.
+
+## Fast CPU in space (2 November 2026)
+
+- Aaron asked for the Fast CPU worked out on Mercenary's Play tab for the
+  3D flight only, the stations and walking left as they are. The game
+  plans its own pace: `frame_skip3` allows three frames a pass and
+  leaves the drawing out until it is back to that, so Fast CPU follows
+  the C64 by the cost model, held to three frames a pass (`most: 3`).
+  On the cost model the C64 made 12.4 to 16.5 passes a second in nine
+  moments of flight and 8.1 to 10.3 in eight fights; Fast CPU made 16.7
+  in all of them.
+- The beat is line 60 of every frame, just after the interrupt at line
+  50 scans the keys. The first try showed the frame as the frame record
+  left it, which would show the old buffer above line 60; the game
+  splits nothing within a frame, so the page renders the screen as it
+  stands after the refresh's last pass.
+- Three plug-in points joined `site/lib/fast-cpu.js`: `parts` for a share
+  worked out in the game's logarithms (a ship's turning angle, the chase
+  camera's lag), `keep` for what the game works out once a pass from
+  where things stood (whether a ship turns, a cruising ship's thrust
+  toward its wanted velocity), and `shown`/`again` for a drawing made for
+  one pass. Without `shown`, the player's beam, drawn on the buffer on
+  show, would have been flipped away in the same pass and never seen.
+- The first version moved each object by its share in the plug-in point
+  itself and left out the game's `vec_add_lin`. The runtime's cost model
+  charges a stretch for the routines called in it, so with Fast CPU off
+  the clock was 463 cycles short of main's page after the first passes
+  of flight, and from there the play differed. The share now goes
+  through `vec_add_lin` and `vec_sub_lin` behind an argument the game
+  never passes, and 2,400 frames of play from power-on give main's memory
+  and clock at every frame.
+- The moments in this container's `work/states` are not the ones the
+  page's figures for Native resolution and Smooth motion came from:
+  `test_play.js` gives 2,654 passes drawn in 23,100 frames on main's page
+  and on this one alike, where the page says 2,686, and the C64's passes
+  a second differ too (8.1 to 10.3 in a fight here, 8.4 to 11.1 on the
+  page). The page keeps its Native resolution figures, and the Fast CPU
+  table gives the C64's from these moments; Fast CPU made 16.7 in all
+  23.
+- `test_fast.js` first counted a moving object as standing still on 148
+  of 899 checks: it looked once a refresh, and a 60 Hz refresh runs no
+  pass one time in six. It now looks after every pass.
+- The once-a-pass listing over all of memory found mostly the renderers'
+  scratch, from the cockpit's ship display drawn every seventh pass, so
+  it lists what a save keeps, $0403-$0801, as Castle Master's does.
+
+## Smooth motion taken out (2 November 2026)
+
+- Aaron asked for Smooth motion to go once Fast CPU was in, as on
+  Mercenary's Play tab. Out went its button and text, the poses between
+  passes in `port/page/modern.js` (the history of passes, the camera
+  placed for skipped passes, the turns between orientations), the second
+  copy of the port that painted a pose in the C64's pixels, and
+  `test_play.js`'s checks of the smooth view. Native resolution keeps
+  what it draws from: each drawn pass captured as `build_draw_list`
+  starts, and every pass still numbered, since the number seeds the
+  sparks it draws at random. The view Native resolution draws at every
+  frame of 1,500 frames of flight and 1,500 with Fast CPU was the same
+  before and after, and `test_play.js` gave the same counts.

@@ -5,12 +5,15 @@
 // direction a little past its edge so that it does not flicker; a thumb slides from one direction
 // to the next without lifting, off the disc too; fire buttons take a finger each, each on the
 // nearest button; a touch on the controller is the page's (the browser neither scrolls nor moves
-// the focus), and everything lets go when the window loses the focus. Full screen carries the
+// the focus), and everything lets go when the window loses the focus. A page's list of keys, for a
+// page that asks, has each key named with data-key pressed by a tap and let go as the finger lifts,
+// a modifier held for the key after it, and the words between left to scroll. Full screen carries the
 // page's screen, the row, its bar and the controller, keeps the row above the picture (beside it
 // where it would cost the picture height) with the switch showing ✕, and puts each back where it
 // was, by the switch, Escape or Back, adding one step to the history and taking it off again.
 // Every Play page with a canvas attaches it, and a page with the joystick keeps no touch pad of
-// its own beside it. Runs in node, on a stand-in for the page's document.
+// its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
+// each shows what it does. Runs in node, on a stand-in for the page's document.
 //   node kit/scripts/test_play_controls.js
 const fs = require('fs');
 const path = require('path');
@@ -33,7 +36,11 @@ function El(tag) {
       remove: c => { e.className = e.className.split(/\s+/).filter(x => x && x !== c).join(' '); },
       toggle: (c, on) => { if (on === undefined) on = !e.classList.contains(c); if (on) e.classList.add(c); else e.classList.remove(c); return on; },
     },
-    setAttribute(k, v) { e.attrs[k] = String(v); }, getAttribute: k => e.attrs[k],
+    setAttribute(k, v) { e.attrs[k] = String(v); }, getAttribute: k => e.attrs[k], hasAttribute: k => k in e.attrs,
+    get dataset() { const d = {}; for (const k in e.attrs) if (k.startsWith('data-')) d[k.slice(5)] = e.attrs[k]; return d; },
+    matches(q) { const m = /^([a-z]*)(?:\[([a-z-]+)\])?$/.exec(q); return !!m && (!m[1] || e.tagName === m[1]) && (!m[2] || m[2] in e.attrs); },
+    closest(q) { for (let n = e; n; n = n.parentElement) if (n.matches && n.matches(q)) return n; return null; },
+    querySelectorAll(q) { const out = []; (function walk(n) { for (const c of n.children) { if (c.matches(q)) out.push(c); walk(c); } })(e); return out; },
     addEventListener(t, f) { (e.on[t] = e.on[t] || []).push(f); },
     fire(t, props) { const ev = Object.assign({ type: t, target: e, button: 0, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } }, props); for (const f of e.on[t] || []) f(ev); return ev; },
     getBoundingClientRect: () => e.rect,
@@ -159,6 +166,38 @@ const pc3 = PC.attach({ screen: s3, canvas });
 check(!plate.contains(pc3.el) && plate.children.indexOf(pc3.row) === plate.children.indexOf(s3) - 1 && pc3.row.children.slice(-1)[0] === pc3.button,
   'a page that does not ask for the joystick has none, and still has the row with its Full screen switch');
 
+// --- a page's list of keys, to tap
+const list = El('ul'), li1 = El('li'), li2 = El('li'), note = El('li');
+const kbd = (key, mod) => { const k = El('kbd'); if (key !== undefined) k.setAttribute('data-key', key); if (mod) k.setAttribute('data-mod', ''); return k; };
+const kY = kbd('Y'), kB = kbd('B'), k5 = kbd('5'), kShift = kbd('Shift', true), kText = kbd();
+li1.append(kY, kB); li2.append(k5, kShift); note.append(kText); list.append(li1, li2, note); plate.appendChild(list);
+let keyLog = [];
+const ks = PC.keys(list, { down: (k, mods) => keyLog.push('down ' + k + (mods.length ? '+' + mods.join('+') : '')), up: k => keyLog.push('up ' + k) });
+check(list.classList.contains('pc-keys') && list.classList.contains('pc-keys-touch'), 'the list of keys has the bigger keys on a screen with touch');
+check([kY, kB, k5, kShift].every(k => k.classList.contains('pc-key')) && !kText.classList.contains('pc-key'), 'each key with data-key is one to tap, and a key named in the words stays words');
+check(/\.pc-key\{[^}]*touch-action:none/.test(document.getElementById('pc-css').textContent), 'a touch that starts on a key neither scrolls nor zooms the page');
+const kd = list.fire('pointerdown', { target: kY, pointerId: 11 });
+check(kd.defaultPrevented && kY.captured.has(11) && kY.classList.contains('on') && keyLog.join() === 'down Y', 'a tap on Y presses it at once: ' + keyLog.join());
+list.fire('pointerup', { target: kY, pointerId: 11 });
+check(keyLog.join() === 'down Y,up Y' && !kY.classList.contains('on'), 'and lets go of it as the finger lifts');
+keyLog = [];
+list.fire('pointerdown', { target: kShift, pointerId: 12 }); list.fire('pointerup', { target: kShift, pointerId: 12 });
+check(keyLog.length === 0 && kShift.attrs['aria-pressed'] === 'true', 'a tap on Shift holds it for the next key');
+list.fire('pointerdown', { target: k5, pointerId: 13 }); list.fire('pointerup', { target: k5, pointerId: 13 });
+check(keyLog.join() === 'down 5+Shift,up 5' && kShift.attrs['aria-pressed'] === 'false', 'which goes down with it, and the key after that without it: ' + keyLog.join());
+keyLog = [];
+for (const id of [14, 15]) { list.fire('pointerdown', { target: kShift, pointerId: id }); list.fire('pointerup', { target: kShift, pointerId: id }); }
+list.fire('pointerdown', { target: kB, pointerId: 16 });
+list.fire('pointerdown', { target: kY, pointerId: 17 });
+list.fire('pointerup', { target: kY, pointerId: 16 });
+check(kShift.attrs['aria-pressed'] === 'false' && keyLog.join() === 'down B,down Y,up B', 'Shift tapped twice lets go; two fingers hold two keys, each let go by its own finger: ' + keyLog.join());
+const td = list.fire('pointerdown', { target: li1, pointerId: 18 });
+check(!td.defaultPrevented && keyLog.length === 3, 'a touch on the words between the keys is the page\'s, to scroll it');
+check(list.fire('mousedown', { target: kB }).defaultPrevented && !list.fire('mousedown', { target: li1 }).defaultPrevented, 'a click on a key leaves the keyboard\'s focus with the game');
+fire('blur');
+check(keyLog.join() === 'down B,down Y,up B,up Y', 'the window losing the focus lets go of every key held');
+check(ks && typeof ks.letGo === 'function', 'and so does letGo');
+
 // --- the hands
 check(!ctl.classList.contains('pc-left'), 'right-handed to start with: the pad for the left thumb');
 pc.hand('left');
@@ -223,6 +262,9 @@ pc.hand('right');
       if (e.isDirectory()) { if (e.name !== 'work' && e.name !== 'node_modules') walk(p); continue; }
       if (!/^play(\.template)?\.html$/.test(e.name)) continue;
       const page = fs.readFileSync(p, 'utf8'), name = path.relative(ROOT, p);
+      const words = page.replace(/<(style|script)\b[\s\S]*?<\/\1>|<!--[\s\S]*?-->/g, ' ').replace(/<[^>]*>/g, '');
+      const help = words.match(/\bpad under the (picture|game)\b|\bslide your thumb\b|\bBack returns to the page\b|\bFull screen, over the\b/i);
+      check(!help, name + ' leaves the touch joystick and Full screen to explain themselves, with no text telling the reader how they work' + (help ? ': "' + help[0] + '"' : ''));
       if (!/<canvas\b/.test(page)) continue;
       pages++;
       check(page.includes('lib/play-controls.js') && /\bPlayControls\.attach\(/.test(page), name + ' loads site/lib/play-controls.js and calls PlayControls.attach');

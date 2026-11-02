@@ -92,8 +92,8 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart">Start again</button>
       <button type="button" data-act="skip" title="A new game, through the title and the story as fast as the page can run them">Skip to the cockpit</button>
       <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-act="fast" aria-pressed="false" title="Fly as a C64 with a much faster processor would: a new frame from the game every video frame, at the speed the game plans for">Fast CPU</button>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
-      <button type="button" data-act="smooth" aria-pressed="false" title="Draw the 3D view at the screen's own frame rate, moving between the game's passes">Smooth motion</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -107,9 +107,8 @@ section table{margin:6px 0 18px}
       <li><kbd>V</kbd> view, <kbd>I</kbd> TAC data, <kbd>L</kbd> automatic fire</li>
       <li><kbd>N</kbd> Navigation Control, <kbd>G</kbd> surrender, <kbd>J</kbd> jettison cargo</li>
       <li><kbd>Esc</kbd> or <kbd>F1</kbd> pause; <kbd>Tab</kbd> is the C64's CTRL: <kbd>Tab</kbd>+<kbd>S</kbd> saves in space</li>
-      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b>, over the picture's right corner, makes the picture and the pad as big as the screen allows; the same button, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. A save (<kbd>Tab</kbd>+<kbd>S</kbd> in space) is kept in this browser, and <b>O</b> at "Old or New Game?" loads it. Before an old game the game asks for a word from its manual; the page shows that word beside the buttons. <b>Skip to the cockpit</b> starts a new game and runs the title and the story as fast as it can, as pressing a key through them would. <b>Native resolution</b> draws the 3D view (the same ships, dots and arrows, from the same positions) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> draws the 3D view at the screen's own frame rate, moving it from each of the game's passes to the next (section 02).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. A save (<kbd>Tab</kbd>+<kbd>S</kbd> in space) is kept in this browser, and <b>O</b> at "Old or New Game?" loads it. Before an old game the game asks for a word from its manual; the page shows that word beside the buttons. <b>Skip to the cockpit</b> starts a new game and runs the title and the story as fast as it can, as pressing a key through them would. <b>Native resolution</b> draws the 3D view (the same ships, dots and arrows, from the same positions) as sharp shapes at the screen's own resolution. <b>Fast CPU</b> flies as a C64 with a much faster processor would: a new frame from the game's own code every video frame, at the speed the game plans for (section 02).</p>
   </div>
 </section>
 <section id="port">
@@ -128,8 +127,8 @@ section table{margin:6px 0 18px}
 </section>
 <section id="modern">
   <p class="fig">02 · The 3D view</p>
-  <h2 class="t">Native resolution and smooth motion</h2>
-  <p class="lede">The two switches beside the screen change how the page draws the 3D view, the window above the cockpit's panel, and nothing else. The game runs underneath as it does without them: two copies of it, one with both switches on, keep every byte of memory the same at every frame.</p>
+  <h2 class="t">Native resolution and Fast CPU</h2>
+  <p class="lede">Two switches beside the screen change the 3D view, the window above the cockpit's panel. Native resolution changes only how the page draws it: the game runs underneath as it does without the switch, and two copies of the game, one with Native resolution on, keep every byte of memory the same at every frame. Fast CPU changes how fast the C64's processor runs, in space.</p>
 <h3>Native resolution</h3>
 <p>The game draws the view into the cockpit's multicolour bitmap, 126 pixels across and 103 down, each pixel twice as wide as it is tall. Many of its colours are patterns: two of the C64's sixteen colours in alternating pixels, which the screen blurs into a shade between them.</p>
 <p>With <b>Native resolution</b> on, the page works the view out again from the numbers the game keeps at each pass it draws: where every object is and which way it faces, where the camera is, and how far the view is zoomed. It applies the game's own rules to them: which objects are in view, which are near enough for a model and which are drawn flat, the order from farthest to nearest, and which faces of each model turn towards the camera. Then it draws the same polygons, the same dots, rings and bursts, and the arrows that point to the target, as sharp shapes at the screen's own resolution. Each pattern becomes the shade the eye mixes from it.</p>
@@ -144,17 +143,22 @@ section table{margin:6px 0 18px}
   <tr><td>The corners of models: where, to within 2.5 pixels</td><td>36,315 of 36,315</td></tr>
 </table>
 <p>The passes are the 2,686 the game drew in 23,100 frames of play, from power-on and from 23 moments of flight, fights and docking, with the stick, the view and the target changed as the game ran. The game works out each corner with its tables of logarithms and rounds it to a whole pixel. The page works it out exactly, which moves a corner by up to 2.3 pixels.</p>
-<h3>Smooth motion</h3>
-<p>The game counts the frames its drawing takes and allows three for each pass. When a picture takes longer, the passes after it leave the drawing out, each paying back three frames, until the game has caught up (<code>frame_skip3</code>, $A470). So everything moves at every pass, and the view shows only some of the passes: in a fight it can change three times a second while the ships in it move nine times.</p>
+<h3>Fast CPU</h3>
+<p>With <b>Fast CPU</b> on, the page flies the game as a C64 with a much faster processor would. In space the main loop goes round once every video frame, 50 times a second, and each pass draws a new frame into the game's own buffers and puts it on show, so every frame on screen is one the game drew.</p>
+<p>A faster processor alone would make a faster game, since every pass moves everything in space a fixed step. Fast CPU keeps the game's speed instead, and the game says what that is: it allows three frames for each pass, and when its drawing takes longer it leaves the drawing out of the passes after, until it has caught up (<code>frame_skip3</code>, $A470). So it means to move at 16.7 passes a second. Three of Fast CPU's passes stand for one of the C64's, and each takes a third of every step: of each ship's and missile's move, of each turn, of a planet's pull and an engine's thrust. The thirds go through the game's own movement code and add up to the C64's step exactly.</p>
+<p>Where the C64 keeps up, cruising through empty space, Fast CPU flies at its speed or a little quicker. In a fight, with ships close by, the C64 falls behind its own three frames: it manages 8.1 to 10.3 passes a second, and everything in space slows down with it. A faster processor would not fall behind, so Fast CPU keeps the game's 16.7 there too.</p>
 <table>
-  <tr><th>Twenty seconds flying straight, from each moment</th><th>Passes a second</th><th>Pictures a second</th></tr>
-  <tr><td>Flight, 9 moments</td><td>12.5 to 16.5</td><td>5.7 to 16.5</td></tr>
-  <tr><td>Near a base, 6 moments</td><td>11.8 to 16.1</td><td>4.7 to 16.1</td></tr>
-  <tr><td>A fight, 8 moments</td><td>8.4 to 11.1</td><td>3.1 to 11.1</td></tr>
+  <tr><th>Twenty seconds flying straight, from each moment</th><th>C64</th><th>Fast CPU</th></tr>
+  <tr><td>Passes a second in flight</td><td>12.4 to 16.5</td><td>16.7</td></tr>
+  <tr><td>Passes a second near a base</td><td>11.0 to 13.5</td><td>16.7</td></tr>
+  <tr><td>Passes a second in a fight</td><td>8.1 to 10.3</td><td>16.7</td></tr>
+  <tr><td>Frames drawn a second</td><td>2.1 to 16.5</td><td>50</td></tr>
+  <tr><td>V pressed to the next view on screen, on average</td><td>299 ms</td><td>24 ms</td></tr>
+  <tr><td>The stick pushed to the view turning, on average</td><td>254 ms</td><td>193 ms</td></tr>
 </table>
-<p>With <b>Smooth motion</b> on, the page draws the view at the screen's own frame rate, 60, 120 or 144 times a second. It keeps the numbers of every pass, the passes the game drew and the passes it left out, and draws each frame of the screen between two of them: every object and the camera part of the way from one pass to the next, and every turn part of the way round. In the chase and cinematic views the game moves the camera only at a pass it draws. For a pass in between, the page places the camera as the game would have: the chase camera at the same distance behind the ship, the cinematic camera where it was, each turned to face the ship.</p>
-<p>The view keeps a little behind the game, so that the next pass is always there to move towards: by the longest gap between the last few passes. The C64's picture is behind the game too, since it shows the last pass drawn while the next one is being drawn, but by less. Over the same 23,100 frames the smooth view showed the game 44 milliseconds later than the C64's picture, on average.</p>
-<p>What the game changes at once stays sudden: another view, a jump through a gate, a ship that arrives or is destroyed, and the dust that the game puts back near the camera as you fly on. Without Native resolution the page paints each view in the C64's pixels with the game's own drawing routines, run on a copy of its memory with the positions in between. At a pass the game drew, that picture is the game's own: in 468 such views every pixel of the window was the same.</p>
+<p>What the game counts in passes happens once for each of the C64's passes: the computer ships' minds, the lifetimes of missiles and explosions, the cockpit's gauges, the hazards' dice, and the stick, which the game eases an eighth of the way toward where you hold it each pass. That easing is why a push of the stick still takes a moment to turn the ship. What the game times by its interrupt keeps its time, since the interrupt still comes 50.12 times a second: the sound, and the keyboard, which it reads into a buffer each frame with its own repeat. Each pass starts just after it, so a key shows in the next frame.</p>
+<p>Your beam is drawn on the frame on show, so the C64 shows it while the next frame is being drawn, about three frames. With Fast CPU it is drawn on each of the three frames that stand for that pass. A ship's beam, the window's flash when you are hit, and a hazard's burst stay up for the same three.</p>
+<p>Some things change with the finer steps. The game tests for contact after each third of a step rather than after each step, so a meeting the C64 would step past can count. The frames come at the C64's 50.12 a second: a display at 50 or 100 Hz shows each for the same time, and at 60 Hz one frame in five stays up for two refreshes. Navigation Control, the stations, docking and the jump through a gate run at the C64's own speed. Switched off, the game is the C64's again from where it stands.</p>
 </section>
 <section id="differences">
   <p class="fig">03 · Differences</p>
@@ -168,7 +172,7 @@ section table{margin:6px 0 18px}
   <li><b>Keys held for three frames.</b> The game reads the keyboard once a frame, so the page holds a key for at least three frames however briefly it is tapped.</li>
   <li><b>Sound a frame at a time.</b> The site's model of the sound chip takes each frame's register writes together, in the order the game made them.</li>
   <li><b>Native resolution.</b> A 3D view of sharp edges and solid shades never appears on a C64. The page draws it from the game's own positions and rules, the same shapes the game draws in its pixels (section 02).</li>
-  <li><b>Smooth motion.</b> A view between two of the game's passes never appears on a C64. The page draws it from the game's own positions, part of the way from one pass to the next, and a little later than the C64 shows its picture (section 02).</li>
+  <li><b>Fast CPU.</b> In space the frames between two of the C64's passes are the game's own, from passes that each take a third of the C64's step, and what the game tests once a pass, such as contact, it tests at each third. A pass the C64 takes more than three frames over takes three (section 02).</li>
 </ul>
 </section>
 </main>
@@ -177,6 +181,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/play-controls.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <script>
 /* port/src/core.js */
 // Space Rogue's port: P, the game's routines on the game's memory. Each group of routines is a file
@@ -207,6 +212,21 @@ section table{margin:6px 0 18px}
 //   game's own race.
 // - P.at maps a load address to the name of the file last loaded there ($A500: SEG0 or SEG1;
 //   $E400: a model or SEG1A), for the routines of an overlay.
+// - P.plug holds the plug-in points: the places in the routines of flight where the page's Fast CPU
+//   (site/lib/fast-cpu.js, with the table in page/fast-table.js) passes in a value or skips a job,
+//   each marked "plug-in point" where it is used. With nothing plugged in, each gives what the
+//   game's code does, so the lockstep holds the port and its plug-in points together:
+//     step(key, v)    a move's step v (a whole number, a 24-bit vector's component or a turn rate):
+//                     what of it this pass takes (all of it)
+//     parts()         the loops a step is shared over, for a share the port works out in the
+//                     game's logarithms (1)
+//     once(key)       whether a job that counts passes, or whose effect adds up, runs this time
+//                     (always)
+//     keep(key, v)    a value the game works out once a pass (v)
+//     read()          the controls are about to be read again
+//     shown(at, draw, mine)  a drawing the game makes for one pass (a beam, a flash), drawn again
+//                     at again(at): whether the game draws it where it is (always)
+//     again(at)       the drawings kept for this place (none)
 (function (root) {
 'use strict';
 const G = root.SRGroups = root.SRGroups || {};
@@ -263,6 +283,8 @@ function makePort(M, io, opts = {}) {
     return M[a];
   };
   P.wr = (a, v) => { if (a >= 0xD000 && a < 0xE000 && ioIn()) IO.write(a, v); else M[a] = v; };
+  P.plug = { step: (key, v) => v, parts: () => 1, once: key => true, keep: (key, v) => v, read: () => {},
+    shown: () => true, again: () => {} };
   const only = opts.only || (prog ? ['kernal', opts.program] : null);
   for (const name of Object.keys(G)) if (only ? only.includes(name) : !PROGRAMS[name]) G[name](P);
   if (opts.standIn) opts.standIn(P);
@@ -1750,26 +1772,30 @@ G.main = function (P) {
 
   // ---- the main loop of flight ($0DED): each pass moves everything, reads a key and checks the
   // collisions; then, unless the frames it took leave the drawing behind (frame_skip3's carry),
-  // draws the view and the arrows and shows the buffer just drawn
+  // draws the view and the arrows and shows the buffer just drawn. With Fast CPU a pass is a share
+  // of one of the C64's: what counts passes runs once a C64 pass (plug-in point once: the upkeep's
+  // counts, the lifetimes, the ships' minds, the stick and the hazards' dice), what moves takes its
+  // share in its own routine, and what the game draws for one pass is drawn again (plug-in point
+  // again: under the view's objects, under the arrows, and over everything)
   P.main_loop = function* () {
     for (;;) {
-      yield { cp: 0x0DED }; yield* P.frame_update();
-      yield { cp: 0x0DF0 }; P.age_objects();
-      yield { cp: 0x0DF3 }; yield* P.ship_ai();
+      yield { cp: 0x0DED }; if (P.plug.once('frame_update')) yield* P.frame_update();
+      yield { cp: 0x0DF0 }; if (P.plug.once('age_objects')) P.age_objects();
+      yield { cp: 0x0DF3 }; if (P.plug.once('ship_ai')) yield* P.ship_ai();
       yield { cp: 0x0DF6 }; P.turn_objects();
       yield { cp: 0x0DF9 }; P.apply_thrust();
       yield { cp: 0x0DFC }; yield* P.gravity();
       yield { cp: 0x0DFF }; P.move_objects();
-      yield { cp: 0x0E02 }; yield* P.do_key();
+      yield { cp: 0x0E02 }; P.plug.read(); yield* P.do_key();
       yield { cp: 0x0E05 }; yield* P.check_collisions();
       yield { cp: 0x0E08 };
       if (P.frame_skip3().c) continue;
       yield { cp: 0x0E0D }; P.update_camera();
       yield { cp: 0x0E10 }; P.place_particles();
-      yield { cp: 0x0E13 }; yield* P.draw_frame();
-      yield { cp: 0x0E16 }; P.sector_hazard();
-      yield { cp: 0x0E19 }; P.draw_target_arrows();
-      yield { cp: 0x0E1C }; P.flip_buffers();
+      yield { cp: 0x0E13 }; P.plug.again('objects'); yield* P.draw_frame();
+      yield { cp: 0x0E16 }; if (P.plug.once('sector_hazard')) P.sector_hazard();
+      yield { cp: 0x0E19 }; P.plug.again('arrows'); P.draw_target_arrows();
+      yield { cp: 0x0E1C }; P.plug.again('flip'); P.flip_buffers();
     }
   };
   P.MAIN_LOOP = [0x0DED, 0x0DF0, 0x0DF3, 0x0DF6, 0x0DF9, 0x0DFC, 0x0DFF, 0x0E02, 0x0E05, 0x0E08, 0x0E0D, 0x0E10,
@@ -3173,6 +3199,26 @@ G.objects = function (P) {
   // the pair at a/a+1 less b/b+1 (16 bits) has its top bit set: the game's CMP and SBC, then BMI
   const neg = (al, ah, bl, bh) => ((ah - bh - (al < bl ? 1 : 0)) & 0x80) !== 0;
   const dec16 = (a, d) => { const v = ((M[a] | M[a + 1] << 8) - d) & 0xFFFF; M[a] = v & 255; M[a + 1] = v >> 8; };
+  // Fast CPU's plug-in points for a move (core.js lists them). A 24-bit linear number, signed
+  const s24 = a => ((M[a] | M[a + 1] << 8 | M[a + 2] << 16) << 8) >> 8;
+  const put24 = (a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; M[a + 2] = (v >> 16) & 255; };
+  // the vector at a (three of them), each component this pass's share of it (plug-in point step;
+  // keep first, for a step the game works out once a pass): key + 0, 1, 2 its components' keys
+  const share = (a, key, kept) => {
+    for (let i = 0; i < 3; i++) {
+      let v = s24(a + 3 * i);
+      if (kept) v = P.plug.keep(key + i, v);
+      put24(a + 3 * i, P.plug.step(key + i, v));
+    }
+  };
+  // a number in the game's logarithms at lo/lo+1 (256ths, the whole part signed), less the log of
+  // the loops this step is shared over (plug-in point parts): this pass's share of it
+  const lessParts = lo => {
+    const d = Math.round(256 * Math.log2(P.plug.parts()));
+    if (!d) return;
+    const v = (M[lo] | M[lo + 1] << 8) - d;
+    M[lo] = v & 255; M[lo + 1] = (v >> 8) & 255;
+  };
 
   // ---- making and freeing objects
   // An object of type X in a free slot, at the position ($74); the slot comes back in Y, $FF when
@@ -3378,6 +3424,12 @@ G.objects = function (P) {
   };
   // The sector's hazards, while it has hazard entries: now and then a burst of triangles in the
   // window, and a large one jolts the ship
+  // each of the hazard's triangles, as spray_triangle fills it: drawn again before the arrows on
+  // the later loops of the C64's pass (plug-in point shown)
+  const keepSpray = () => {
+    const t = { pts: M.slice(0xFD00, 0xFD0C), pat: [M[0x3D], M[0x3E]] };
+    P.plug.shown('arrows', () => P.spray_again(t));
+  };
   P.sector_hazard = function () {
     if (!M[0x0782]) return {};
     if (!(P.random_upto({ a: 0x8B }).a & 0x80)) return {};
@@ -3386,7 +3438,8 @@ G.objects = function (P) {
     M[0x51] = P.random_upto({ a: M[0x41] }).a;
     M[0x53] = P.random_upto({ a: M[0x42] }).a;
     const n = (P.random_upto({ a: 0xBF }).a + 1) & 255;
-    P.spray_triangles({ a: n, x: 2, y: 9 });
+    P.keepSpray = keepSpray;
+    try { P.spray_triangles({ a: n, x: 2, y: 9 }); } finally { P.keepSpray = null; }
     if (n < 0xAD) return { a: n };
     P.sound_play({ a: 0x0B });
     return P.jolt_player();
@@ -3422,6 +3475,7 @@ G.objects = function (P) {
     M[0x61] = M[0x0D01]; M[0x5F] = M[0x0C04]; M[0x60] = M[0x0C05];
     P.engine_damage();
     P.forward_times();
+    share(0x0896, 0x140000);                            // plug-in point: step, the thrust's share
     setp(0x76, 0x0545);
     P.vec_add_lin();
     setp(0x78, 0x089F);
@@ -3450,14 +3504,23 @@ G.objects = function (P) {
     M[0x5F] = lo & 255;
     M[0x60] = (M[0x0C05 + y] - M[0x60] - (lo < 0 ? 1 : 0)) & 255;
     P.engine_damage();
+    // the change to the velocity, worked out once a C64 pass and given a share at a time (plug-in
+    // points keep and step): a thrust's worth toward the wanted velocity, or the rest of the way
+    const key = 0x110000 + x * 4;
     if (M[0x60] & 0x80) {
       P.vec_scale();
       P.vec_log_to_lin();
+      share(0x089F, key, true);
       M[0x78] = M[0x76]; M[0x79] = M[0x77];
       return P.vec_add_lin();
     }
     M[0x78] = M[0x76]; M[0x79] = M[0x77];
     setp(0x74, 0x0896);
+    const v = ptr(0x78);
+    for (let i = 0; i < 3; i++) {
+      const d = P.plug.keep(key + i, s24(0x0896 + 3 * i) - s24(v + 3 * i));
+      put24(0x0896 + 3 * i, s24(v + 3 * i) + P.plug.step(key + i, d));
+    }
     return P.copy9();
   };
   // Ship $94's nose (its third row) times the log-form number in $5F-$61, linear at $0896
@@ -3474,12 +3537,13 @@ G.objects = function (P) {
     if (M[0x0409 + x] & 4) M[0x60] = (M[0x60] - 2) & 255;
     return { a: M[0x0409 + x] & 4, x };
   };
-  // Every moving object (type flag bit 4) moved by its velocity
+  // Every moving object (type flag bit 4) moved by its velocity (with Fast CPU, a share of it:
+  // plug-in point step)
   P.move_objects = function () {
     for (let x = 0x13; x >= 0; x--) {
       if (!M[0x05F9 + x] || !(flags(x) & 0x10)) continue;
       setp(0x74, vel(x)); setp(0x76, pos(x)); setp(0x78, pos(x));
-      P.vec_add_lin();
+      P.vec_add_lin({ share: 0x100000 + x * 4, of: 0x74 });   // plug-in point: step, the velocity's share
     }
     return { x: 0xFF };
   };
@@ -3490,16 +3554,20 @@ G.objects = function (P) {
     M[0x94] = x;
     do {
       if (M[0x05F9 + x]) {
-        if (x >= 6) M[0x0516 + x] = (M[0x0516 + x] + 1) & 255;
-        if (M[0x050F + x] | M[0x0516 + x] | M[0x0508 + x]) P.turn_ship({ x });
+        if (x >= 6 && P.plug.once('spin')) M[0x0516 + x] = (M[0x0516 + x] + 1) & 255;   // plug-in point: once
+        // plug-in point: keep, whether it turns this pass, decided as the C64's pass begins
+        if (P.plug.keep(0x230000 + x, (M[0x050F + x] | M[0x0516 + x] | M[0x0508 + x]) !== 0)) P.turn_ship({ x });
       }
       M[0x94] = (M[0x94] - 1) & 255;
       x = M[0x94];
     } while (x);
     setp(0x74, 0x0095); setp(0x78, 0x044B);
-    P.rate_to_radians({ a: M[0x050F] }); M[0x9B] = M[0x5F]; M[0x9C] = M[0x60]; M[0x9D] = M[0x61];
-    P.rate_to_radians({ a: M[0x0516] }); M[0x98] = M[0x5F]; M[0x99] = M[0x60]; M[0x9A] = M[0x61];
-    P.rate_to_radians({ a: M[0x0508] }); M[0x95] = M[0x5F]; M[0x96] = M[0x60]; M[0x97] = M[0x61];
+    // the player's three rates, in 1,024ths of a turn: this pass's share, in whole 1,024ths (plug-in
+    // point step), so that each turn is one the game's own arithmetic makes
+    const rate = a => P.plug.step(a, (M[a] << 24) >> 24) & 255;
+    P.rate_to_radians({ a: rate(0x050F) }); M[0x9B] = M[0x5F]; M[0x9C] = M[0x60]; M[0x9D] = M[0x61];
+    P.rate_to_radians({ a: rate(0x0516) }); M[0x98] = M[0x5F]; M[0x99] = M[0x60]; M[0x9A] = M[0x61];
+    P.rate_to_radians({ a: rate(0x0508) }); M[0x95] = M[0x5F]; M[0x96] = M[0x60]; M[0x97] = M[0x61];
     P.turn_by_rates();
     M[0x74] = M[0x5A]; M[0x75] = M[0x5B]; setp(0x78, 0x0DCC);
     return P.mat_transpose();
@@ -3515,21 +3583,30 @@ G.objects = function (P) {
   };
   // Computer ship X turned one step of its type's turning on each axis whose rate is nonzero,
   // each rate moved a step toward zero
+  // (With Fast CPU, a share of the step: plug-in point parts; a share smaller than the least turn
+  // turn_by_rates makes, a whole part below -8, is given whole once a C64 pass instead. Whether an
+  // axis turns, and its count, are the C64 pass's: plug-in points keep and once.)
   P.turn_ship = function (r) {
     const x = r.x, t = (M[0x060D + x] << 1) & 255;
     const lo = M[0x0BE2 + t] - 0x59;
     M[0x9E] = lo & 255; M[0x9F] = (M[0x0BE3 + t] - 7 - (lo < 0 ? 1 : 0)) & 255;
+    const whole = M[0x9E] | M[0x9F] << 8;
+    lessParts(0x9E);
+    if (((M[0x9F] - 0xF8) & 0x80) && !(((whole >> 8) - 0xF8) & 0x80)) {
+      if (P.plug.once('least_turn')) { M[0x9E] = whole & 255; M[0x9F] = whole >> 8; }
+    }
     setp(0x78, 0x0095);
     P.copy9_from_0DAB();
-    const step = (rate, sign, to) => {
-      const v = M[rate + x];
-      if (!v) return;
-      if (v & 0x80) { M[rate + x] = (v + 1) & 255; M[sign] = 0xFF; } else { M[rate + x] = (v - 1) & 255; M[sign] = 0; }
+    const step = (rate, sign, to, i) => {
+      const v = M[rate + x], d = P.plug.keep(0x220000 + x * 4 + i, v ? (v & 0x80 ? -1 : 1) : 0);
+      if (!d) return;
+      if (v && P.plug.once('turn_count')) M[rate + x] = (v & 0x80 ? v + 1 : v - 1) & 255;
+      M[sign] = d < 0 ? 0xFF : 0;
       M[to] = M[0x9E]; M[to + 1] = M[0x9F];
     };
-    step(0x0508, 0x97, 0x95);
-    step(0x0516, 0x9A, 0x98);
-    step(0x050F, 0x9D, 0x9B);
+    step(0x0508, 0x97, 0x95, 0);
+    step(0x0516, 0x9A, 0x98, 1);
+    step(0x050F, 0x9D, 0x9B, 2);
     setp(0x78, orient(x)); setp(0x74, 0x0095);
     return P.turn_by_rates();
   };
@@ -3611,6 +3688,7 @@ G.objects = function (P) {
             setp(0x76, pos(s));
             P.slot_pos_ptr({ y: M[0x94] });
             yield* P.gravity_pull();
+            share(0x006B, 0x120000 + (M[0x94] * 8 + M[0x95]) * 4);   // plug-in point: step, the pull's share
             const v = vel(M[0x95]);
             setp(0x78, v); setp(0x76, v);
             P.vec_add_lin();
@@ -3763,7 +3841,7 @@ G.objects = function (P) {
         } while (!(b & 0x80));
       }
       x = M[0xC6];
-      if (M[0x040F + x]) M[0x040F + x]--;
+      if (M[0x040F + x] && P.plug.once('rammed')) M[0x040F + x]--;   // plug-in point: once, a count of passes
       x = (x - 1) & 255;
       M[0xC6] = x;
       if (x & 0x80) return { x };
@@ -3794,7 +3872,7 @@ G.objects = function (P) {
     if (M[0xB9] === 0x14 && !r.x) return yield* P.gate_contact();
     const fx = M[0x08D5 + M[0xB8]], fy = M[0x08D5 + M[0xB9]];
     if ((fx | fy) & 0x20) return yield* P.missile_hit({ x: M[0xB8], y: M[0xB9] });
-    if (fy & 0x40) return yield* P.hazard_hit();
+    if (fy & 0x40) return P.plug.once('hazard_hit') ? yield* P.hazard_hit() : {};   // plug-in point: once, the damage adds up
     return yield* P.ram();
   };
   // A shard (type $1B) explodes against the first object, and a new one starts at the origin
@@ -3810,8 +3888,9 @@ G.objects = function (P) {
     if (P.contact_cooldown({ x: M[0xB2] }).drop) return {};
     if (P.contact_cooldown({ x: M[0xB3] }).drop) return {};
     if (!M[0xB2] || !M[0xB3]) {
-      P.set_colour({ x: M[0x8C] });
-      P.fill_window();
+      const c = M[0x8C], flash = () => { P.set_colour({ x: c }); P.fill_window(); };
+      P.plug.shown('objects', flash);                         // plug-in point: shown, the window's flash
+      flash();
       P.sound_play({ a: 9 });
     }
     setp(0x74, vel(M[0xB2])); setp(0x76, vel(M[0xB3])); setp(0x78, 0x00BA);
@@ -3926,12 +4005,13 @@ G.objects = function (P) {
     setp(0x74, vel(r.y)); setp(0x78, vel(r.y));
     return P.vec_neg_lin();
   };
-  // Slot Y moved back a step: its position less its velocity
+  // Slot Y moved back a step: its position less its velocity (with Fast CPU, the share it last
+  // moved: plug-in point step)
   P.back_off = function (r) {
     P.slot_pos_ptr({ y: r.y });
     M[0x78] = M[0x74]; M[0x79] = M[0x75];
     setp(0x76, vel(r.y));
-    return P.vec_sub_lin();
+    return P.vec_sub_lin({ share: 0x130000 + r.y * 4, of: 0x76 });   // plug-in point: step
   };
   P.jolt_turn = function (r) {
     const y = r.y;
@@ -3946,8 +4026,9 @@ G.objects = function (P) {
   P.blow_up = function* (r) {
     M[0xAA] = r.a; M[0xA8] = r.x; M[0xA9] = r.y;
     if (!r.y) {
-      P.set_colour({ x: 0x12 });
-      P.fill_window();
+      const flash = () => { P.set_colour({ x: 0x12 }); P.fill_window(); };
+      P.plug.shown('objects', flash);                         // plug-in point: shown, the window's flash
+      flash();
       P.jolt_player();
       P.sound_play({ a: 5 });
     } else P.sound_play({ a: 6 });
@@ -4830,6 +4911,10 @@ G.render = function (P) {
       M[0x5F] = (M[0x5F] >> 1) | ((M[0x60] & 1) << 7);
       M[0x60] = (M[0x60] >> 1) | (M[0x60] & 0x80);
       M[0x60] = (M[0x60] - 7) & 255;
+      // with Fast CPU, this loop's share of the camera's move toward the ship: the factor less the
+      // log of the loops a C64 pass is shared over (plug-in point parts)
+      const d = Math.round(256 * Math.log2(P.plug.parts()));
+      if (d) { const v = (M[0x5F] | M[0x60] << 8) - d; M[0x5F] = v & 255; M[0x60] = (v >> 8) & 255; }
       setp(0x78, 0x0896);
       P.vec_scale_signed();
       setp(0x74, 0x0896);
@@ -5766,6 +5851,16 @@ G.render = function (P) {
       put16(0xFD08, sx - d); put16(0xFD0A, sy);
     }
     P.spark_pattern();
+    if (P.keepSpray) P.keepSpray();
+    M[0x55] = 3;
+    return P.fill_polygon();
+  };
+  P.keepSpray = null;                                   // sector_hazard's, while it sprays
+  // One of them drawn again from its corners and pattern as spray_triangle left them (Fast CPU's:
+  // plug-in point shown, in sector_hazard)
+  P.spray_again = function (r) {
+    P.set_colour({ x: 5 });
+    M.set(r.pts, 0xFD00); M[0x3D] = r.pat[0]; M[0x3E] = r.pat[1];
     M[0x55] = 3;
     return P.fill_polygon();
   };
@@ -6632,7 +6727,7 @@ G.ships = function (P) {
     0x392A: 'key_surrender'
   };
   P.do_key = function* () {
-    yield* P.joystick_flight();
+    if (P.plug.once('joystick_flight')) yield* P.joystick_flight();   // plug-in point: once, the stick eased a pass at a time
     const k = P.get_key();
     if (!k.c) return k;
     let y = M[0x0838] ? 0x18 : 0x24;
@@ -6960,6 +7055,18 @@ G.ships = function (P) {
     P.set_colour({ x: M[0x2410 + (r.a & 7)] });
     if (!M[0xB2]) {
       if (!M[0x0D3C]) {
+        // the two triangles from the guns, on the buffer on show, until the pass's flip. With Fast
+        // CPU, drawn instead on each loop's buffer before its flip, for the C64's pass (plug-in point
+        // shown, the beam the player's own)
+        const c = M[0x2410 + (r.a & 7)];
+        const guns = () => {
+          P.set_colour({ x: c });
+          for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x23F9 + i];
+          M[0x55] = 3; P.fill_polygon();
+          for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x2405 + i];
+          M[0x55] = 3; P.fill_polygon();
+        };
+        if (!P.plug.shown('flip', guns, true)) return {};
         P.flip_draw_buffer();
         for (let i = 11; i >= 0; i--) M[0xFD00 + i] = M[0x23F9 + i];
         M[0x55] = 3; P.fill_polygon();
@@ -6967,7 +7074,10 @@ G.ships = function (P) {
         M[0x55] = 3; P.fill_polygon();
         return P.flip_draw_buffer();
       }
-    } else if (!M[0xB3]) return P.fill_window();
+    } else if (!M[0xB3]) {
+      P.plug.shown('objects', () => { P.set_colour({ x: M[0x2410 + (r.a & 7)] }); P.fill_window(); });   // plug-in point: shown
+      return P.fill_window();
+    }
     P.slot_pos_ptr({ y: M[0xB2] });
     if (!P.project_point().n) return {};
     for (let i = 0; i < 4; i++) M[0xFD00 + i] = M[0x51 + i];
@@ -6996,6 +7106,9 @@ G.ships = function (P) {
     const add4 = (to, from) => { const s = M[from] + 4; M[to] = s & 255; M[to + 1] = (M[from + 1] + (s >> 8)) & 255; };
     if (across) { M[0xFD08] = M[0x51]; M[0xFD09] = M[0x52]; add4(0xFD0A, 0x53); } else { add4(0xFD08, 0x51); M[0xFD0A] = M[0x53]; M[0xFD0B] = M[0x54]; }
     M[0x55] = 3;
+    // with Fast CPU, the beam drawn again before each later loop's drawing (plug-in point shown)
+    const pts = M.slice(0xFD00, 0xFD0C), c = M[0x2410 + (r.a & 7)];
+    P.plug.shown('objects', () => { P.set_colour({ x: c }); M.set(pts, 0xFD00); M[0x55] = 3; P.fill_polygon(); });
     return P.fill_polygon();
   };
   // The point at ($74) on screen ($51-$54), as seen from the camera ($58, $5A); A and N its depth's
@@ -10641,8 +10754,20 @@ G.vec = function (P) {
     }
     return { a: M[0x61], y: 9 };
   };
-  // linear: three 24-bit sums, differences and negations
+  // linear: three 24-bit sums, differences and negations. With r.share, Fast CPU's plug-in point
+  // step (core.js): the vector at (r.of), $74 or $76, taken as this pass's share of it, r.share + 0,
+  // 1, 2 its components' keys; the game passes none
+  const shared = (r, sign) => {
+    const s24 = (z, i) => ((rd(z, i) | rd(z, i + 1) << 8 | rd(z, i + 2) << 16) << 8) >> 8;
+    for (const i of [0, 3, 6]) {
+      const part = z => (z === r.of ? P.plug.step(r.share + i / 3, s24(z, i)) : s24(z, i));
+      const v = part(0x74) + sign * part(0x76);
+      for (let k = 0; k < 3; k++) wr(0x78, i + k, (v >> 8 * k) & 255);
+    }
+    return { a: rd(0x78, 8), x: r.x, y: 9 };
+  };
   P.vec_add_lin = function (r) {
+    if (r && r.share !== undefined) return shared(r, 1);
     for (const i of [0, 3, 6]) {
       let c = 0;
       for (let k = 0; k < 3; k++) { const s = rd(0x74, i + k) + rd(0x76, i + k) + c; wr(0x78, i + k, s); c = s >> 8; }
@@ -10650,6 +10775,7 @@ G.vec = function (P) {
     return { a: rd(0x78, 8), x: r && r.x, y: 9 };
   };
   P.vec_sub_lin = function (r) {
+    if (r && r.share !== undefined) return shared(r, -1);
     for (const i of [0, 3, 6]) {
       let b = 0;
       for (let k = 0; k < 3; k++) { const s = rd(0x74, i + k) - rd(0x76, i + k) - b; wr(0x78, i + k, s); b = s < 0 ? 1 : 0; }
@@ -10867,6 +10993,13 @@ G.kernal = function (P) {
 //   rt.restore(machine, entry)   the machine of a moment saved by the tests (kit/c64/machine.js's
 //                      state: its memory, chips and clock), and the main program started at
 //                      entry(P), a generator (test/t-page.js)
+//   rt.snapshot()      the machine as restore takes it, for a test to start from again: taken
+//                      where the main program is about to start a pass of flight (rt.parked)
+//   rt.fast            Fast CPU's view of the machine (site/lib/fast-cpu.js, FastCPU.attach(rt.fast,
+//                      SR_FAST)): the main program's port, the beats so far, runTicks and
+//                      machineBeats (below)
+//   rt.fastFrame()     with Fast CPU, the frame to show after the loops a refresh ran: the screen as
+//                      it stands, or null outside flight (then rt.lastFrame())
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. Each stretch of the program moves the clock on
 // by its cost, and the raster interrupts that fall due on the way run on their lines, their own
@@ -11042,8 +11175,16 @@ function create(o) {
   };
 
   // ---- the programs
+  // Fast CPU's clock (runTicks, below): loop is its settings while it runs the clock, else null; free
+  // while a pass of flight runs on its beat, its own work taking no time; parked at a pass's start,
+  // waiting for the beat; away while a routine that leaves flight runs (AWAY), and spoiled once one
+  // has in this pass. W counts the cycles of a pass's work by the cost model, and lastW the last
+  // whole pass's: what one of the C64's passes takes
+  let loop = null, free = false, parked = false, away = 0, spoiled = false, W = 0, lastW = null, works = 0;
+  let lastBeat = -Infinity, beatT = -1, ticks = 0, fastPlug = null;
+  const AWAY = ['key_navigation', 'key_save', 'key_escape', 'key_surrender', 'ask_agree', 'dock', 'gate_jump'];
   const ports = {};
-  const port = name => ports[name] || (ports[name] = name === 'main' ? counted(SR.makePort(M, io, {})) : name === 'intro' ? asking(SR.makePort(M, io, { program: name })) : SR.makePort(M, io, { program: name }));
+  const port = name => ports[name] || (ports[name] = name === 'main' ? fastAware(counted(SR.makePort(M, io, {}))) : name === 'intro' ? asking(SR.makePort(M, io, { program: name })) : SR.makePort(M, io, { program: name }));
   // the manual's question: find_question leaves the page, paragraph, sentence and word at $2C-$2F
   // and the word's address at $2A/$2B
   function asking(P) {
@@ -11073,6 +11214,23 @@ function create(o) {
     }
     return P;
   }
+  // the main program's plug-in points: the game's own (src/core.js) except while a pass of Fast
+  // CPU's runs; and the routines that leave flight, counted in away
+  function fastAware(P) {
+    const gamePlug = P.plug;
+    Object.defineProperty(P, 'plug', {
+      get: () => (fastPlug && loop && free && !away ? fastPlug : gamePlug),
+      set: v => { fastPlug = v === gamePlug ? null : v; },
+    });
+    const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
+    for (const name of AWAY) {
+      const f = P[name];
+      P[name] = f instanceof GENERATOR
+        ? function* (...a) { away++; try { return yield* f.apply(this, a); } finally { if (!--away) spoiled = true; } }
+        : function (...a) { away++; try { return f.apply(this, a); } finally { if (!--away) spoiled = true; } };
+    }
+    return P;
+  }
   // the routines called since the clock last moved, at their cost
   function callsCost() {
     let c = 0;
@@ -11090,12 +11248,13 @@ function create(o) {
   // (frame_skip3); read at the stretch's start, it would never skip, and a busy view would run at
   // half the game's passes.
   function irqByte(a) {
-    if (program === 'main' && counting) { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
+    if (program === 'main' && counting) { const c = callsCost(); if (c >= 1) spend(Math.round(c)); }
     return M[a];
   }
   let program = null, P = null, it = null, lastCp = null;
   function start(name, entry) {
     program = name; P = port(name); it = entry(P); lastCp = null; calls = Object.create(null);
+    free = false; parked = false; away = 0;
   }
   function goto(g) {
     const from = program;
@@ -11109,6 +11268,11 @@ function create(o) {
     else throw new Error('the port went to $' + g.to.toString(16) + ' from ' + from);
   }
   start('title', p => p.title_start());
+  const toB64 = u => typeof Buffer !== 'undefined' ? Buffer.from(u).toString('base64') : btoa(String.fromCharCode.apply(null, Array.from(u)));
+  function snapshot() {
+    return { ram: toB64(M), colour: toB64(colour), cpu: { pdir: M[0], pdata: M[1], cycles: t }, vic: Array.from(vic),
+      cmp, latch, enable, pra, ddra, ddrb, pra2, ddra2, sidw: Array.from(sidw) };
+  }
   function restore(s, entry) {
     M.set(b64(s.ram)); colour.set(b64(s.colour).subarray(0, 0x400));
     M[0] = s.cpu.pdir; M[1] = s.cpu.pdata;
@@ -11120,6 +11284,7 @@ function create(o) {
     if (vm) vm.at(-1, [], 0);
     done.length = 0; begin();
     program = 'main'; P = port('main'); it = entry(P); lastCp = null; calls = Object.create(null);
+    free = false; parked = false; away = 0; lastBeat = -Infinity;
   }
 
   // ---- the interrupts: through the KERNAL's entry and $0314 while the KERNAL is banked in, through
@@ -11163,9 +11328,21 @@ function create(o) {
       if (dt === undefined) dt = lastCp === null ? 0 : cost(lastCp, y.cp);
       else calls = Object.create(null);
       lastCp = y.cp;
-      advance(dt);
+      spend(dt);
+      // with Fast CPU's clock, a pass of flight starts here: the loop before it is over, and the
+      // next waits for the beat
+      if (y.cp === 0x0DED && loop && program === 'main' && !away) {
+        if (free && !spoiled) { lastW = W; works++; }
+        free = false; parked = true;
+        if (loop.between) loop.between();
+      }
     } else if (y && y.cycles !== undefined) advance(y.cycles);
     else advance(LINE - t % LINE);                    // a turn of a polling loop: to the next line
+  }
+  // a stretch of the main program: its cost moves the clock on, or, in a loop of Fast CPU's, adds to
+  // the loop's work, which takes no time
+  function spend(dt) {
+    if (free && !away) W += dt; else advance(dt);
   }
   function runUntil(until) {
     let guard = 0;
@@ -11176,16 +11353,80 @@ function create(o) {
   }
 
   function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; }
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return done[done.length - 1];
   }
+
+  // ---- Fast CPU's clock (site/lib/fast-cpu.js): the real time owed, in cycles. The beat is line 60
+  // of each video frame, just after the interrupt at line $32 has counted the frame and scanned the
+  // keyboard: a pass of flight starts on each beat and its own work takes no time, as on a
+  // processor fast enough to finish it at once, so it reads the keys the interrupt has just put in
+  // the buffer and shows its frame in the refresh it runs in. A pass runs from one $0DED to the
+  // next. A wait inside one, a routine of those below that leaves flight (Navigation Control, a
+  // save, a dialog, docking and the stations, the gate's jump), and the program outside the main
+  // loop take the C64's time; the next pass starts on the first beat after. o.cap is the most passes
+  // one call runs (time owed past them is dropped), o.begin() is called as each starts and
+  // o.between() after it. Returns the passes run; ticks counts the beats.
+  const BEAT = 60 * LINE;
+  function nextBeat() {
+    let b = Math.ceil((t - BEAT) / FRAME) * FRAME + BEAT;
+    if (b <= lastBeat) b = lastBeat + FRAME;
+    return b;
+  }
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = false; parked = false; W = 0; }
+    if (target === null) target = t;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress in the ' + program + ' program');
+      if (!parked) {
+        // a pass's own work goes on at its beat's moment; a wait, or the program outside flight, as
+        // far as real time is owed
+        if (t >= target && !(free && !away && t === beatT)) break;
+        step();
+        continue;
+      }
+      const at = nextBeat();
+      if (at > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the wait for the beat, the frame's interrupts running on the way in their own time
+      for (;;) {
+        const L = nextTrigger();
+        if (L * LINE > at) break;
+        t = Math.max(t, L * LINE); rollFrames();
+        runIrq(L);
+      }
+      if (t < at) { t = at; rollFrames(); }
+      lastBeat = at; beatT = t; ticks++; loops++;
+      parked = false; free = true; spoiled = false; W = 0;
+      if (o.begin) o.begin();
+    }
+    return loops;
+  }
+  // the video frames one of the C64's passes takes for the work the last pass did (the interrupt's
+  // own time taken from each frame), before the page rounds it
+  function machineBeats() {
+    return lastW === null ? 3 : lastW / (FRAME - IRQ_COST);
+  }
+  const fast = { get P() { return port('main'); }, get ticks() { return ticks; }, runTicks, machineBeats };
+  // the screen as it stands after a pass of Fast CPU's (the game splits nothing within a frame), so
+  // the pass's frame shows in the refresh that ran it
+  const fastKeep = {};
+  function fastFrame() {
+    if (!loop || program !== 'main' || away || lastW === null) return null;
+    return { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: M, colourMem: colour, keep: fastKeep };
+  }
   return {
     M, colour, vic, sidw, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get program() { return program; }, get P() { return P; },
     get target() { return target; },
-    runFrame, runUntil, restore, lastFrame: () => done[done.length - 1],
+    get ticks() { return ticks; }, get lastW() { return lastW; }, get works() { return works; }, get parked() { return parked; },
+    fast, fastFrame, machineBeats,
+    runFrame, runUntil, restore, snapshot, lastFrame: () => done[done.length - 1],
     onSid: f => sidListeners.push(f),
     files,
   };
@@ -11195,9 +11436,9 @@ root.SRPage = { create, LINE, LINES, FRAME, KEY };
 </script>
 <script>
 /* port/page/modern.js */
-// The Play page's modern view of space: the 3D view drawn at the screen's own resolution, and, with
-// smooth motion, between the game's passes. The game is not changed: the routines below are
-// watched, and its memory is only read.
+// The Play page's modern view of space: the 3D view drawn at the screen's own resolution (Native
+// resolution). The game is not changed: the routines below are watched, and its memory is only
+// read.
 //
 // At each pass of the main loop, once everything has moved (the drawing about to start, or the
 // pass about to skip it), the pass is kept as the game's own numbers: the camera's position and
@@ -11211,19 +11452,11 @@ root.SRPage = { create, LINE, LINES, FRAME, KEY };
 // a checkerboard is drawn as their blend, and every polygon in its own colour: the C64's cells
 // give a cell's pixels of two colours the last one drawn there.
 //
-// Smooth motion draws a pose part of the way from one pass to the next: positions slide and
-// orientations turn, and the scene is drawn again from the pose. The way is a phase, a pass's
-// number and a fraction, which never runs ahead of the last pass the game has computed and moves
-// at the game's own rate of passes (smooth, below).
-//
 //   const st = SRModern.attach(rt)   watch the main program's port; again after a restore is harmless
-//   SRModern.onShow(st, F)            the picture on show in frame F, or null when the view shows
+//   SRModern.onShow(st, F)            the pass on show in frame F, or null when the view shows
 //                                     anything else
-//   SRModern.smooth(st, V, F)         the pose to draw at cycle V of the machine's clock, or null
 //   SRModern.render(scene)            a scene's drawing, in the window's coordinates
 //   SRModern.draw(cv, faithful, view) the faithful frame scaled up, the view over it
-//   SRModern.paint(px, st, view)      the view in the C64's own pixels, drawn by a second copy of
-//                                     the port from the pose, into a frame of palette indices
 (function (root) {
 'use strict';
 const LINE = 63, FRAME = 63 * 312;
@@ -11239,70 +11472,16 @@ const vecLin = (M, a) => [linAt(M, a), linAt(M, a + 3), linAt(M, a + 6)];
 const logPair = (M, a) => ((M[a + 1] << 24) >> 24) + M[a] / 256;
 const w16 = (M, a) => M[a] | M[a + 1] << 8;
 const s16 = v => (v << 16) >> 16;
-// and back, for the second copy of the port: zero is $EC.00, as lin_to_log makes it
-function putLog(M, a, v) {
-  const m = Math.abs(v);
-  let w = -20, f = 0;
-  if (m > 0) { const l = Math.log2(m); w = Math.floor(l); f = Math.round((l - w) * 256); if (f === 256) { f = 0; w++; } }
-  if (w < -20) { w = -20; f = 0; }
-  M[a] = f; M[a + 1] = w & 255; M[a + 2] = v < 0 && m > 0 ? 0xFF : 0;
-}
-function putLin(M, a, v) {
-  const n = Math.round(v * 256) & 0xFFFFFF;
-  M[a] = n & 255; M[a + 1] = (n >> 8) & 255; M[a + 2] = n >> 16;
-}
 
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const len = a => Math.sqrt(dot(a, a));
-const lerp = (a, b, f) => a + (b - a) * f;
-const lerp3 = (a, b, f) => [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f)];
 const times = (R, v) => [dot(R[0], v), dot(R[1], v), dot(R[2], v)];
 const transpose = R => [[R[0][0], R[1][0], R[2][0]], [R[0][1], R[1][1], R[2][1]], [R[0][2], R[1][2], R[2][2]]];
 // rows a and b: the rows of b applied to each row of a, as mat_times_mat makes them
 const rowsTimes = (a, b) => a.map(r => times(b, r));
-
-// ---- orientations between passes: three rows to a quaternion and back, and the turn between two
-function toQuat(R) {
-  const [[a, b, c], [d, e, f], [g, h, i]] = R, t = a + e + i;
-  let q;
-  if (t > 0) { const s = 2 * Math.sqrt(t + 1); q = [s / 4, (h - f) / s, (c - g) / s, (d - b) / s]; }
-  else if (a > e && a > i) { const s = 2 * Math.sqrt(1 + a - e - i); q = [(h - f) / s, s / 4, (b + d) / s, (c + g) / s]; }
-  else if (e > i) { const s = 2 * Math.sqrt(1 + e - a - i); q = [(c - g) / s, (b + d) / s, s / 4, (f + h) / s]; }
-  else { const s = 2 * Math.sqrt(1 + i - a - e); q = [(d - b) / s, (c + g) / s, (f + h) / s, s / 4]; }
-  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  return q.map(x => x / n);
-}
-function fromQuat(q) {
-  const [w, x, y, z] = q;
-  return [[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
-    [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
-    [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]];
-}
-// the turn from one set of rows to another, a fraction f of the way: the rows' lengths (about 1 in
-// the game's numbers) slide, their directions turn as one rotation
-function slerpRows(A, B, f) {
-  const la = A.map(len), lb = B.map(len);
-  const qa = toQuat(A.map((r, i) => r.map(x => x / (la[i] || 1)))), qb = toQuat(B.map((r, i) => r.map(x => x / (lb[i] || 1))));
-  let d = qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3];
-  if (d < 0) { for (let i = 0; i < 4; i++) qb[i] = -qb[i]; d = -d; }
-  let q;
-  if (d > 0.9995) q = qa.map((x, i) => lerp(x, qb[i], f));
-  else {
-    const th = Math.acos(Math.min(1, d)), s = Math.sin(th);
-    const u = Math.sin((1 - f) * th) / s, v = Math.sin(f * th) / s;
-    q = qa.map((x, i) => u * x + v * qb[i]);
-  }
-  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  return fromQuat(q.map(x => x / n)).map((r, i) => r.map(x => x * lerp(la[i], lb[i], f)));
-}
-// the cosine of half the turn between two orientations
-function turnCos(A, B) {
-  const qa = toQuat(A), qb = toQuat(B);
-  return Math.abs(qa[0] * qb[0] + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3]);
-}
 
 // ---- the draw routines a type's entry names ($08F8), and the models (src/g-render.js)
 const KIND = { 0x8834: 'disc', 0x88E4: 'ring', 0x89CF: 'burst', 0x8A08: 'annulus', 0x8A29: 'ragged', 0x8B1B: 'sparks', 0x8BEF: 'flicker' };
@@ -11374,10 +11553,10 @@ function pixelsOf(col, bg, ram) {
 }
 
 // ---- a pass, as the game's numbers stand once everything has moved
-function capture(M, how, chips) {
+function capture(M, chips) {
   const cam = w16(M, 0x58), ori = w16(M, 0x5A);
   const s = {
-    how, view: M[0x0D3C], gate: M[0x0838],
+    view: M[0x0D3C], gate: M[0x0838],
     cam: { pos: vecLin(M, cam), rows: rowsLog(M, ori), at: cam, oriAt: ori },
     player: { pos: vecLin(M, 0x065D), rows: rowsLog(M, 0x044B) },
     dcc: rowsLog(M, 0x0DCC),
@@ -11411,7 +11590,7 @@ function capture(M, how, chips) {
   return s;
 }
 
-// ---- the scene of a pass (or of a pose between two): the game's drawing, in double precision.
+// ---- the scene of a pass: the game's drawing, in double precision.
 // The camera's frame: x right, y up, z behind (the view looks along -z). A point's window position
 // is the centre plus x and y over twice its distance in front, scaled (project); the window's x
 // is the C64's hires pixel from its left edge, y the pixel row from its bottom.
@@ -11561,62 +11740,6 @@ function arrows(out, s) {
   for (const pts of a) out.push({ k: 'shape', pts, c: 0, arrow: true });
 }
 
-// ---- a pose between two passes: positions slid, orientations turned. An object that changed its
-// type, came or went, or jumped is not slid, nor is a particle (type flag bit 2), which stays where
-// it is until the game puts it back near the camera
-function pose(a, b, f) {
-  if (!b || f <= 0) return a;
-  if (f >= 1) return b;
-  const s = Object.assign({}, f < 0.5 ? a : b);
-  s.prims = null; s.dcc = null; s.hazard = a.hazard;
-  s.cam = { pos: lerp3(a.cam.pos, b.cam.pos, f), rows: slerpRows(a.cam.rows, b.cam.rows, f), at: b.cam.at, oriAt: b.cam.oriAt };
-  s.player = { pos: lerp3(a.player.pos, b.player.pos, f), rows: slerpRows(a.player.rows, b.player.rows, f) };
-  s.types = Object.assign({}, a.types, b.types); s.models = Object.assign({}, a.models, b.models);
-  s.objs = a.objs.map((oa, i) => {
-    const ob = b.objs[i], ty = s.types[oa.type];
-    if (!oa.used || !ob.used || oa.type !== ob.type || !ty || (ty.flags & 4) || len(sub(ob.pos, oa.pos)) > 32) return f < 0.5 ? oa : ob;
-    const o = { slot: oa.slot, used: oa.used, type: oa.type, pos: lerp3(oa.pos, ob.pos, f) };
-    if (oa.rows && ob.rows) o.rows = slerpRows(oa.rows, ob.rows, f);
-    return o;
-  });
-  return s;
-}
-// two passes the motion does not slide across: another view, the gate, a jump of the player or of
-// the camera against the player (an outside view's camera put back ahead of the ship), or a turn of
-// more than 60 degrees
-function cut(a, b) {
-  if (a.view !== b.view || a.gate !== b.gate || a.cam.at !== b.cam.at) return true;
-  const dp = sub(b.player.pos, a.player.pos);
-  if (len(dp) > 256 || len(sub(sub(b.cam.pos, a.cam.pos), dp)) > 24 + 2 * len(dp)) return true;
-  return turnCos(a.cam.rows, b.cam.rows) < Math.cos(Math.PI / 6);
-}
-// An outside view's camera at a pass the game does not draw. The game moves it only when it draws
-// (update_camera): the chase view's toward a point behind the ship, the cinematic view's not at
-// all, and each aims it at the ship with the world's up ($0DB1, the identity's second row). For a
-// pass in between, the chase camera keeps its offset from the ship, the offset sliding from one
-// drawn pass's to the next once that is known, the cinematic camera its place; both are aimed at
-// the ship as the game aims them.
-function aim(s, pos, like) {
-  const off = sub(pos, s.player.pos), l = len(off);
-  if (!(l > 1e-6)) return { pos, rows: like.rows, at: like.at, oriAt: like.oriAt };
-  const z = off.map(v => v / l), x0 = cross([0, 1, 0], z), lx = len(x0) || 1, x = x0.map(v => v / lx);
-  return { pos, rows: [x, cross(z, x), z], at: like.at, oriAt: like.oriAt };
-}
-function follow(H, s) {
-  let i = H.length - 1, D = null;
-  for (; i >= 0; i--) { if (H[i].how === 'draw') { D = H[i]; break; } if (H[i].cutBefore) return null; }
-  if (!D || D.view !== s.view) return null;
-  if (s.how === 'skip') s.cam = aim(s, s.view === 1 ? add(s.player.pos, sub(D.cam.pos, D.player.pos)) : D.cam.pos, D.cam);
-  return { D, i };
-}
-function refollow(H, D, i, s) {
-  const o0 = sub(D.cam.pos, D.player.pos), o1 = sub(s.cam.pos, s.player.pos);
-  for (let j = i + 1; j < H.length; j++) {
-    const q = H[j], f = (q.n - D.n) / (s.n - D.n);
-    q.cam = aim(q, s.view === 1 ? add(q.player.pos, lerp3(o0, o1, f)) : lerp3(D.cam.pos, s.cam.pos, f), D.cam);
-    q.prims = null; q.still = null;
-  }
-}
 
 // ---- watching the port
 // the view's bytes in one buffer: character rows 3-15, columns 4-35, the bitmap and the cells
@@ -11643,32 +11766,23 @@ function attach(rt) {
   const was = P.__srModern;
   if (was) {
     // a machine restored to another moment: what was kept belongs to another run
-    const last = was.hist[was.hist.length - 1];
-    if (last && last.t > rt.t) { was.hist = []; was.flips = []; was.bufs = { 0: null, 128: null }; was.drawing = null; was.clock.V = null; was.wait = 0; }
+    if (was.t > rt.t) { was.flips = []; was.bufs = { 0: null, 128: null }; was.drawing = null; }
+    was.t = rt.t;
     return was;
   }
   const M = P.M;
-  const st = { rt, P, hist: [], n: 0, clock: { V: null, phi: 0, v: 0 }, bufs: { 0: null, 128: null },
-    drawing: null, hazard: null, flips: [], wait: 0, port2: null };
+  const st = { rt, P, n: 0, t: rt.t, bufs: { 0: null, 128: null }, drawing: null, hazard: null, flips: [] };
   P.__srModern = st;
   const chips = () => ({ d021: rt.vic ? rt.vic[0x21] : 0, ram: rt.colour ? rt.colour[9 * 40 + 20] : 1 });
-  function push(s) {
-    const H = st.hist, last = H[H.length - 1];
-    s.n = ++st.n; s.t = rt.t;
-    const f = s.view && last ? follow(H, s) : null;
-    s.cutBefore = !last || cut(last, s);
-    if (f && s.how === 'draw' && !s.cutBefore) refollow(H, f.D, f.i, s);
-    H.push(s);
-    if (H.length > 80) H.shift();
-  }
-  // a pass that skips its drawing is kept as frame_skip leaves it; one that draws, as
-  // build_draw_list starts (the camera of an outside view, the particles and the flash colour set)
-  const skipped = (r, out) => { if (out && out.c) push(capture(M, 'skip', chips())); };
+  // every pass is numbered, drawn or not: the number seeds what the view draws at random (sparks)
+  const skipped = (r, out) => { if (out && out.c) { st.n++; st.t = rt.t; } };
   wrap(P, 'frame_skip3', null, skipped);
   wrap(P, 'frame_skip5', null, skipped);
+  // a pass that draws is kept as build_draw_list starts (the camera of an outside view, the
+  // particles and the flash colour set)
   wrap(P, 'build_draw_list', () => {
-    const s = capture(M, 'draw', chips());
-    push(s);
+    const s = capture(M, chips());
+    s.n = ++st.n; st.t = rt.t;
     st.drawing = s;
     const b = st.bufs[s.buf];
     s.layers = b ? b.concat([s]) : null;      // what the buffer holds once this is drawn; null: not known
@@ -11683,6 +11797,12 @@ function attach(rt) {
     if (!st.hazard) return;
     const p = i => s16(w16(M, 0xFD00 + i));
     st.hazard.push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: [M[0x3D], M[0x3E]], c: 5 });
+  });
+  // with Fast CPU, a hazard's triangle drawn again on a later pass of the C64's (spray_again)
+  wrap(P, 'spray_again', r => {
+    if (!st.drawing) return;
+    const p = i => s16(r.pts[i] | r.pts[i + 1] << 8);
+    (st.drawing.hazard = st.drawing.hazard || []).push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: r.pat.slice(), c: 5 });
   });
   wrap(P, 'view_clear_c000', () => { st.bufs[0] = []; });
   wrap(P, 'view_clear_4000', () => { st.bufs[128] = []; });
@@ -11731,60 +11851,6 @@ function onShow(st, F) {
   return null;
 }
 
-// a pass as smooth motion draws it, the world's axes from its camera
-const still = s => s.still || (s.still = Object.assign({}, s, { dcc: null, prims: null, still: null }));
-
-// ---- smooth motion. The game's passes each move everything a fixed step, but they come unevenly:
-// one that draws takes several frames, the ones that skip their drawing to catch up come close
-// behind it. Smooth motion draws the game as it stood a short while ago, D cycles before the moment
-// V on the clock: where the game was then is found from when each pass was computed, as a pass
-// number and a fraction, and drawn as a pose that far between the two passes. D is the longest
-// wait between two passes of late, so the pass after is always known when the phase gets there,
-// and the phase follows that point through a smoothing that takes out the unevenness: it moves at
-// the game's own rate of passes, eased toward the point over a few frames. On average the view is
-// no later than the C64's own picture, which shows a pass from when its drawing ends until the
-// next one's does.
-function smooth(st, V, F) {
-  const s = onShow(st, F), c = st.clock;
-  if (!s) { c.V = null; return null; }
-  if (!(V >= 0)) V = (F.frame + 1) * FRAME;
-  if (s.layers && s.layers.length > 1) { c.V = null; return { scene: s, layers: s.layers, shown: s }; }
-  const H = st.hist, last = H[H.length - 1], K = Math.min(12, H.length - 1);
-  if (K < 2) { c.V = V; c.phi = s.n; c.v = 0; return { scene: still(s), shown: s, phi: s.n }; }   // the smooth view starts from here
-  const first = H[H.length - 1 - K], rate = (last.n - first.n) / Math.max(FRAME, last.t - first.t);
-  let wait = 0;
-  for (let j = H.length - K; j < H.length; j++) wait = Math.max(wait, H[j].t - H[j - 1].t);
-  st.wait = st.wait ? (wait > st.wait ? wait : st.wait + (wait - st.wait) * 0.02) : wait;
-  // where the game was D cycles ago: between the two passes computed either side of then
-  const at = V - st.wait - FRAME / 2;
-  let g;
-  if (at >= last.t) g = last.n;
-  else if (at <= H[0].t) g = H[0].n;
-  else {
-    let j = H.length - 1;
-    while (j > 0 && H[j - 1].t > at) j--;
-    const a = H[j - 1], b = H[j];
-    g = a.n + (b.n - a.n) * (b.t > a.t ? (at - a.t) / (b.t - a.t) : 1);
-  }
-  let phi;
-  if (c.V === null || V < c.V || V - c.V > 8 * FRAME) { phi = g; c.v = rate; }
-  else {
-    const dV = V - c.V, want = rate + (g - c.phi) / (3 * FRAME);
-    c.v += (want - c.v) * (1 - Math.exp(-dV / FRAME));
-    phi = c.phi + Math.max(0, c.v) * dV;
-  }
-  phi = Math.max(H[0].n, Math.min(phi, last.n));
-  c.V = V; c.phi = phi;
-  // the passes either side of the phase. Every scene is drawn with the camera's own orientation
-  // for the world's axes: the game's $0DCC is the camera's of the pass before in an outside view
-  const n0 = Math.floor(phi), a = H.find(h => h.n === n0), b = H.find(h => h.n === n0 + 1);
-  if (!a) return { scene: still(s), shown: s, phi };
-  if (!b || b.cutBefore || phi === n0) return { scene: still(a), shown: s, phi };
-  const sc = pose(a, b, phi - n0);
-  sc.hazard = s.hazard;
-  return { scene: sc, shown: s, phi };
-}
-
 // ---- drawing on a canvas, at the screen's own resolution
 const SRGB = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
 const toLin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -11811,7 +11877,7 @@ function fillOf(s, p) {
 // 66 + x, its row y (from the bottom) at frame y 161 - y
 const VX = 66, VY = 162, VW = 252, VH = 103;
 // Draws the faithful frame (a canvas of 384 by 272) scaled to cv's pixels, and the view over it
-// from view (smooth's, or a picture's scene or its layers): cv is sized to its place on the page
+// from view (a pass's scene, or the layers of the gate's jump): cv is sized to its place on the page
 function draw(cv, faithful, view) {
   const dpr = root.devicePixelRatio || 1, css = cv.getBoundingClientRect();
   const W = Math.max(768, Math.round(css.width * dpr)), H = Math.round(W * 272 / 384);
@@ -11902,67 +11968,61 @@ function rng(seed) {
   return () => { a ^= a << 13; a >>>= 0; a ^= a >>> 17; a ^= a << 5; a >>>= 0; return a / 4294967296; };
 }
 
-// ---- smooth motion in the C64's own pixels: a second copy of the port, on a copy of the game's
-// memory with the pose written in, draws the view as the game would draw that pose, into the
-// $C000 buffer; its view then goes into px, a frame of palette indices (384 by 272)
-function port2(st) {
-  if (st.port2) return st.port2;
-  const M2 = new Uint8Array(0x10000);
-  const io = { read: () => 0, write: () => {}, vicRead: () => 0, vicWrite: () => {}, sidRead: () => 0, sidWrite: () => {},
-    colourRead: () => 0, colourWrite: () => {}, ciaRead: () => 0, ciaWrite: () => {}, cia2Read: () => 0, cia2Write: () => {},
-    irqByte: a => M2[a], load: () => null, block: () => null, save: () => {} };
-  st.port2 = { M: M2, P: root.SRPort.makePort(M2, io, {}) };
-  return st.port2;
+root.SRModern = { attach, onShow, render, draw, capture, readModel, colourOf, pixelsOf, blend,
+  logAt, vecLog, rowsLog, vecLin, FRAME, LINE, VIEW_RECT: { x: VX, y: VY - VH, w: VW, h: VH } };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/fast-table.js */
+// Space Rogue's table for Fast CPU (site/lib/fast-cpu.js, kit/skills/core/70-minisite/fast-cpu.md):
+// what Fast CPU knows about the game. Fast CPU plays flight in space, the main loop at $0DED; the
+// stations, Navigation Control, docking and the gate's jump keep the C64's speed (page/runtime.js,
+// AWAY).
+//
+// The beat is the C64's video frame, 50.12 a second, the clock the game counts its passes in: the
+// runtime starts a pass at line 60 of each frame, just after the interrupt has counted the frame
+// and scanned the keyboard. The game keeps its own pace (follow): one of the C64's passes takes as
+// many frames as the cost model gives for the work the last pass did, and each pass of Fast CPU's
+// takes that share of a pass's steps, so space moves as fast as on the C64. Where the C64 falls
+// behind, it is held to the pace the game plans for: the main loop skips the drawing of passes
+// until the frames they took come back to three a pass (frame_skip3, $2E), so the game moves at
+// 16.7 passes a second however long its drawing takes, and a C64 pass that takes longer than three
+// frames, in a fight with ships near, is the processor falling behind, not the game.
+//
+// The keys of steps are the plug-in points' in the port: a rate's address, or, for a vector of the
+// game's, 0x100000 + a number for the routine + 4 x the object's slot + the axis (src/g-objects.js).
+(function (root) {
+'use strict';
+const steps = {};
+// the player's pitch, turn and roll rates, in 1,024ths of a turn a pass (turn_objects)
+for (const k of [0x0508, 0x0516, 0x050F]) steps[k] = 'pace';
+// each object's move by its velocity (0x100000, move_objects) and back again on a hit (0x130000,
+// back_off), slots 0-19; the cruise thrust's change to a ship's velocity (0x110000, cruise_thrust),
+// slots 0-5; the Newtonian thrust (0x140000, apply_thrust)
+for (let x = 0; x < 0x14; x++) for (let a = 0; a < 3; a++) {
+  steps[0x100000 + x * 4 + a] = 'pace';
+  steps[0x130000 + x * 4 + a] = 'pace';
+  if (x < 6) steps[0x110000 + x * 4 + a] = 'pace';
 }
-function paint(px, st, view) {
-  if (!view || view.layers) return false;     // the gate's jump: what each buffer holds stays the game's
-  const sc = view.scene, { M: M2, P: P2 } = port2(st);
-  M2.set(st.rt.M);
-  M2[1] &= 0xFC;
-  // the pose in the game's numbers: every slot, the camera, the world's axes seen from it
-  const lin3 = (a, v) => v.forEach((x, j) => putLin(M2, a + 3 * j, x));
-  const log9 = (a, R) => R.forEach((r, i) => r.forEach((x, j) => putLog(M2, a + 9 * i + 3 * j, x)));
-  for (const o of sc.objs) {
-    const y = o.slot;
-    M2[0x0649 + y] = o.used; M2[0x060D + y] = o.type;
-    lin3(0x065D + 9 * y, o.pos);
-    if (o.rows && y < 7) log9(0x044B + M2[0x083C + y], o.rows);
-  }
-  lin3(0x065D, sc.player.pos); log9(0x044B, sc.player.rows);
-  const cam = sc.cam;
-  M2[0x58] = cam.at & 255; M2[0x59] = cam.at >> 8; M2[0x5A] = cam.oriAt & 255; M2[0x5B] = cam.oriAt >> 8;
-  if (cam.at !== 0x065D) lin3(cam.at, cam.pos);
-  if (cam.oriAt !== 0x044B) log9(cam.oriAt, cam.rows);
-  log9(0x0DCC, transpose(cam.rows));
-  M2[0x0445] = sc.target; M2[0x0837] = 0xFF; M2[0x99] = sc.z99; M2[0x8B0A] = sc.ragged;
-  M2[0x3A] = 0;
-  P2.window_view();
-  P2.set_colour({ x: 1 });
-  P2.view_clear_c000();
-  M2[0x9002] = view.shown.buf ? 0x70 : 0x80;
-  const it = P2.build_draw_list();
-  for (let r = it.next(), g = 0; !r.done; r = it.next()) if (++g > 1e5) throw new Error('paint: the draw list did not end');
-  if (sc.hazard) for (const h of sc.hazard) {
-    P2.set_colour({ x: 5 });
-    h.pts.forEach((q, i) => { const a = 0xFD00 + 4 * i; M2[a] = q[0] & 255; M2[a + 1] = (q[0] >> 8) & 255; M2[a + 2] = q[1] & 255; M2[a + 3] = (q[1] >> 8) & 255; });
-    M2[0x3D] = h.pat[0]; M2[0x3E] = h.pat[1]; M2[0x55] = 3;
-    P2.fill_polygon();
-  }
-  P2.draw_target_arrows();
-  const colour = st.rt.colour, bg = sc.d021;
-  for (let R = 24; R <= 126; R++) {
-    const o = (35 + R) * 384;
-    for (let X = 34; X <= 285; X++) {
-      const cell = (R >> 3) * 40 + (X >> 3), b = M2[0xC000 + (R >> 3) * 320 + (X >> 3) * 8 + (R & 7)];
-      const v = (b >> (6 - 2 * ((X & 7) >> 1))) & 3, c = M2[0xE000 + cell];
-      px[o + 32 + X] = v === 0 ? bg : v === 1 ? c >> 4 : v === 2 ? c & 15 : colour[cell] & 15;
-    }
-  }
-  return true;
-}
+for (let a = 0; a < 3; a++) steps[0x140000 + a] = 'pace';
+// a planet's or a star's pull on a ship (0x120000, gravity): the puller's slot x 8 + the ship's
+for (let y = 6; y < 0x14; y++) for (let x = 0; x < 6; x++) for (let a = 0; a < 3; a++) steps[0x120000 + (y * 8 + x) * 4 + a] = 'pace';
 
-root.SRModern = { attach, onShow, smooth, render, draw, paint, pose, capture, readModel, colourOf, pixelsOf, blend,
-  logAt, vecLog, rowsLog, vecLin, putLog, putLin, FRAME, LINE, VIEW_RECT: { x: VX, y: VY - VH, w: VW, h: VH } };
+root.SR_FAST = {
+  tick: 19656, hz: 985248,            // the beat: a PAL video frame, 312 lines of 63 cycles
+  cap: 4,                             // the most passes a refresh runs: real time on a 15 Hz display
+  follow: true,                       // the C64's own pace, view by view (rt.fast.machineBeats)
+  most: 3,                            // but never slower than the game's own: three frames a pass
+  steps,
+  // The rest the plug-in points ask for themselves, once a pass (once, by name in the port): the
+  // upkeep (frame_update: the missile's reload, the beam's automatic fire, the cockpit every seventh
+  // pass, the target's greeting and new ships every 256th, the beam cooled every 16th), the
+  // lifetimes (age_objects), the computer ships' minds (ship_ai), the stick eased toward where it is
+  // held (joystick_flight), the hazards' dice (sector_hazard) and their damage (hazard_hit), the
+  // count after a ram (rammed), the rates a computer ship turns by (spin, turn_count) and a turn too
+  // small to share (least_turn). Every key is taken once: the interrupt puts each in the buffer, and
+  // the game takes one a pass
+};
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -11978,40 +12038,36 @@ const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = SRPage.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 const SAVE_KEY = 'gamesexplained.space-rogue.saved';
-let disk = null, rt = null, running = false, paused = false, busy = null, native = false, smooth = false, crt = null;
+let disk = null, rt = null, running = false, paused = false, busy = null, native = false, crt = null;
+let fx = null, fast = false;                       // Fast CPU (site/lib/fast-cpu.js), and whether it is on
 
 // --- drawing: the frame the video chip would show, composed when the clock finishes one. With
-// native resolution or smooth motion the 3D view is drawn again over it (page/modern.js): with
-// smooth motion at every frame the browser paints, for a moment a frame behind the clock, in the
-// C64's pixels or, with native resolution too, at the screen's own
+// native resolution the 3D view is drawn again over it at the screen's own resolution
+// (page/modern.js). With Fast CPU, in flight, the screen as the last pass left it (rt.fastFrame):
+// the pass's frame in the refresh that ran it
 const off = document.createElement('canvas'); off.width = 384; off.height = 272;
 const offCtx = off.getContext('2d'), img = offCtx.createImageData(384, 272);
-let frame = null, px = null, work = null;
+let frame = null, px = null;
 function rgb(p) {
   const d = img.data;
   for (let i = 0, o = 0; i < p.length; i++, o += 4) { const c = RGB[p[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
   offCtx.putImageData(img, 0, 0);
 }
-// the modern view watches every pass of flight from the start, so that either switch has the
+// the modern view watches every pass of flight from the start, so that Native resolution has the
 // game's passes to draw from at once; it only reads the game's memory
 function compose() {
   if (window.SRModern && rt.program === 'main') SRModern.attach(rt);
-  frame = rt.lastFrame(); px = frame ? C64.renderFrame(frame).px : null;
+  frame = (fast && rt.fastFrame()) || rt.lastFrame(); px = frame ? C64.renderFrame(frame).px : null;
 }
-const viewTime = () => (rt.target === null ? null : rt.target - FRAME + Math.min(acc, FRAME_MS) / FRAME_MS * FRAME);
 function present() {
   if (!px) return;
   const MM = window.SRModern;
-  let view = null;
-  if (MM && (native || smooth) && rt.program === 'main') {
-    const st = MM.attach(rt);
-    if (smooth) view = MM.smooth(st, viewTime(), frame);
-    else { const s = MM.onShow(st, frame); if (s) view = { scene: s, shown: s, layers: s.layers && s.layers.length > 1 ? s.layers : null }; }
+  if (native && MM) {
+    let view = null;
+    if (rt.program === 'main') { const s = MM.onShow(MM.attach(rt), frame); if (s) view = { scene: s, layers: s.layers && s.layers.length > 1 ? s.layers : null }; }
+    rgb(px); MM.draw(cv, off, view); return;
   }
-  if (native && MM) { rgb(px); MM.draw(cv, off, view); return; }
-  let p = px;
-  if (smooth && view) { work = work || new Uint8Array(px.length); work.set(px); if (MM.paint(work, MM.attach(rt), view)) p = work; }
-  rgb(p);
+  rgb(px);
   if (cv.width !== 384) { cv.width = 384; cv.height = 272; cv.classList.remove('pl-native'); }
   cv.getContext('2d').drawImage(off, 0, 0);
 }
@@ -12073,6 +12129,7 @@ function boot() {
   rt = SRPage.create({ disk: makeDisk(), cost: window.SR_COST, onSave: saved,
     onQuestion: q => say('The manual, page ' + q.page + ', paragraph ' + q.paragraph + ', sentence ' + q.sentence + ', word ' + q.word + ': ' + q.answer) });
   sound.attach(); input();
+  if (window.FastCPU && window.SR_FAST) { fx = FastCPU.attach(rt.fast, window.SR_FAST); FastCPU.set(fx, fast); }
 }
 function tick(now) {
   requestAnimationFrame(tick);
@@ -12085,14 +12142,23 @@ function tick(now) {
       if (!busy) { over.hidden = true; acc = 0; last = now; draw(); }
       return;
     }
-    acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
-    if (n === 10) acc = 0;
-    if (n) compose();
+    if (fast && fx) {
+      // Fast CPU: the passes owed for the time since the last refresh (at most four), then the last
+      // one's frame; outside flight, the C64's own frames
+      const ms = Math.min(250, now - (last || now)), f0 = rt.frame; last = now;
+      n = FastCPU.run(fx, ms);
+      sound.frame(); if (letGo.size) release();
+      if (n || rt.frame !== f0) { n = 1; compose(); }
+    } else {
+      acc += Math.min(250, now - (last || now)); last = now;
+      while (acc >= FRAME_MS && n < 10) { rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+      if (n === 10) acc = 0;
+      if (n) compose();
+    }
   } catch (e) { running = false; busy = null; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
-  if (n || smooth) {
+  if (n) {
     try { present(); }
-    catch (e) { console.error(e); setModern(false, false); say('The modern view stopped: ' + e.message); present(); }   // the view, never the game
+    catch (e) { console.error(e); setModern(false); say('The modern view stopped: ' + e.message); present(); }   // the view, never the game
   }
 }
 // A new game as a player would start it: a key at the title, N, the name and RETURN, then a key
@@ -12161,12 +12227,19 @@ PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bit
 // --- controls ----------------------------------------------------------------------------------
 let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
-function setModern(n, s) {
-  native = n; smooth = s;
+// the switches: Native resolution, and Fast CPU (left as it is when f is not given)
+function setModern(n, f) {
+  if (f === undefined) f = fast;
+  native = n;
   if (native && crt) crt.set(false);
+  if (f !== fast) {
+    fast = f;
+    if (fx) FastCPU.set(fx, f);                    // off: the C64's clock again from where it stands
+    acc = 0;
+  }
   document.querySelector('[data-act="render"]').setAttribute('aria-pressed', String(native));
-  document.querySelector('[data-act="smooth"]').setAttribute('aria-pressed', String(smooth));
-  try { localStorage.setItem(VIEW_KEY, (native ? 'n' : '') + (smooth ? 's' : '')); } catch (e) { /* no storage: the switches last for this visit */ }
+  document.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(fast));
+  try { localStorage.setItem(VIEW_KEY, (native ? 'n' : '') + (fast ? 'f' : '')); } catch (e) { /* no storage: the switches last for this visit */ }
 }
 const VIEW_KEY = 'gamesexplained.space-rogue.view';
 function start(fast) {
@@ -12184,8 +12257,8 @@ $('pl-bar').addEventListener('click', e => {
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && disk) start(false);
   else if (act === 'skip' && disk) start(true);
-  else if (act === 'render') { setModern(!native, smooth); draw(); }
-  else if (act === 'smooth') { setModern(native, !smooth); draw(); }
+  else if (act === 'render') { setModern(!native); draw(); }
+  else if (act === 'fast') { setModern(native, !fast); draw(); }
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && disk) start(false); });
@@ -12195,15 +12268,15 @@ function showStart(t) {
   bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(false); };
   over.appendChild(bt);
 }
-try { const v = localStorage.getItem(VIEW_KEY) || ''; setModern(v.includes('n'), v.includes('s')); } catch (e) { /* the switches start off */ }
+try { const v = localStorage.getItem(VIEW_KEY) || ''; setModern(v.includes('n'), v.includes('f')); } catch (e) { /* the switches start off */ }
 // The CRT screen (site/lib/crt.js) draws the C64's pixels again, so native resolution goes off with it
-crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), onChange: on => { if (on && native) { setModern(false, smooth); draw(); } } });
-if (crt.on && native) setModern(false, smooth);
+crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), onChange: on => { if (on && native) { setModern(false); draw(); } } });
+if (crt.on && native) setModern(false);
 try {
   disk = JSON.parse(document.getElementById('sr-disk').textContent);
   showStart('Space Rogue, as the disk starts it: the title, then "Old or New Game?". Click, then use the keyboard.');
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.SRPlay = { get rt() { return rt; }, start };
+window.SRPlay = { get rt() { return rt; }, get fx() { return fx; }, start };
 })();
 </script>
