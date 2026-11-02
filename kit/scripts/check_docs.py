@@ -317,6 +317,25 @@ def untitled_links(game):
     return bad
 
 
+def host_cell(game, hosts):
+    """Why the status page cannot count a game under the computer its game.json names, else None.
+    The page finds the kind of computer in tools.host by site/status.json's hosts and counts the
+    game only in a cell that works for its platform. A host that leaves out its processor, as a
+    WSL2 run named "Windows 11 with WSL2 Ubuntu 26.04" did (#730), is found only as Windows, and
+    test_build_status.py fails it in CI, after the pull request is open and the run has ended."""
+    host = str((game.get("tools") or {}).get("host") or "")
+    if not host:
+        return None     # the page counts these under no computer
+    rows = [h for h in hosts if re.search(h["match"], host, re.I)]
+    if not rows:
+        return "no kind of computer in site/status.json's hosts finds it"
+    states = {f'{h["name"]} ({h["arch"]})': ((h.get("kits") or {}).get(game.get("platform")) or {}).get("state", "untested")
+              for h in rows}
+    if "works" in states.values():
+        return None
+    return "found only as " + ", ".join(f"{k}, where the {game.get('platform')} kit is {v}" for k, v in states.items())
+
+
 def platform_notes(paths=None, hosts=None):
     """A platform's INSTALL.md keeps one section per system and one measurements row per build
     on each kind of computer, the kinds being site/status.json's hosts. A run that measures
@@ -423,14 +442,22 @@ def main():
                     titles.append(pat)
         except Exception:
             pass
+    hosts = json.load(open(os.path.join(ROOT, "site", "status.json"), encoding="utf-8"))["hosts"]
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
         try:
-            bad = untitled_links(json.load(open(gj)))
+            game = json.load(open(gj))
+            bad = untitled_links(game)
         except Exception:
             continue
         if bad:
             print(f"  x  {os.path.relpath(gj, ROOT)}  links with no title: {', '.join(bad)}")
             print('        write each as {"title": "<the page\'s own title>", "url": "..."} (kit/skills/core/20-features)')
+            fails += 1
+        why = host_cell(game, hosts)
+        if why:
+            print(f"  x  {os.path.relpath(gj, ROOT)}  tools.host {game['tools']['host']!r}: {why}")
+            print("        name the operating system and the processor (kit/skills/core/80-retro, step 7); a WSL2 run")
+            print("        is Linux on x86_64 or arm64. A kind of computer new to the kit gets its cell (kit/INSTALL.md)")
             fails += 1
     fails += skill_game_paths()
     if titles:
