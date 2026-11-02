@@ -108,3 +108,12 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   The comment was corrected.
 - Which rooms use the animated characters 97 and 52-54 was found by
   building every room with the Maps page's tested room builder.
+- The title's portraits were ported next. title_cast_frame works with
+  the phase less one (`DEX` at `$8B72`), easy to miss in reading; a
+  frame-by-frame record from VICE (`work/titleprobe.py`) gave the phase
+  lengths, shapes and colours to check the port by. A first look at
+  VICE's screenshot suggested the wipe's two colours were swapped; the
+  pixel counts (222 light blue, 160 white for 111 and 80 bit pairs)
+  showed the port was right. Breaking the port on purpose (the outline's lower half from
+  the third shape instead of the fifth, the talking counter at 14) made
+  `test_title.js` fail, so the test does catch errors of that kind.

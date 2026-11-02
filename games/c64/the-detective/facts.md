@@ -344,6 +344,28 @@ The bodies are Cynthia `$D1` (type 3), Gabriel `$E0`/`$E1` (2), the
 Doctor `$DC`/`$DD` (1) and Dingle's pretence `$BF`/`$D9` (2); Snide's end
 is `$D7`/`$D8` (1, `$25D6`), after `$DA`/`$DB` for the bomb (`$C066`).
 
+The title introduces the ten (Snide first, `$8D09`) in the picture box,
+480 frames each: the counter `$1E69` counts to 8 in steps of 60 frames
+(`$2AAE`). Each frame the interrupt runs title_cast_step (`$8CC8`, stage
+0) and title_cast_frame (`$8B31`, stage 2 at line 185, just above the
+box, so its colours are the ones shown; stage 2 also sets `$D026` = 0).
+The phases `$1E66`: 0, sprite `$5A`, 126 frames; 1, sprite `$5D`; 2-6, 3
+frames each, the buffer at `$58C0` (shapes `$63`/`$64`) is wiped on, each
+step `((buffer AND $0C80) OR picture) AND $0C00` with the five pictures
+that `$8DC0` makes at `$0F00` from shapes `$5E`-`$62` drawn twice as tall,
+and the sprites move up a line; 7-16, 2 frames each, colours from
+`$8C81`; 17-20 the character's own shapes with colours from `$8C95`;
+21-22, 127 frames each, play colours and talking (the head steps through
+`$9239` every 15 frames); 23-30 fading (`$8C9F`); then off. The outline
+`$0C00` is the character's head and the shape five after it through
+`$0E00` (`$8D13`): the X register tested at `$8D3E` is always 0, so the
+lower half is the fifth shape for every character, Snide's body but a
+walking body for the cast. The biography (`$8E65`) is printed at phase 21
+and cleared at 27 (`$2287`). *live*, 2 November 2026: from
+`work/entry.vsf`, a frame-by-frame record in VICE gave these phase
+lengths, shapes and colours, the buffer at wipe step 2 matched the port
+byte for byte, and the screenshot's pixels matched the port's colours.
+
 Two characters of the room set are animated by the interrupt's jobs
 (`$2C57`). Character 97, a small flame in rooms 1, 2, 4, 6, 13, 14, 15
 and 20, gets frame 0, 1, 2, 1 of `$E800` every fourth frame (`$2C83`).
