@@ -1,4 +1,4 @@
-## next · 2026-11-01 · Mercenary (C64) · air with Claude
+## 0.0.292 · 2026-11-01 · Mercenary (C64) · air with Claude
 
 - **Follow the machine's pace view by view when the port has a cost model
   of its loop.** Mercenary moves the player a fixed step a pass, and a
