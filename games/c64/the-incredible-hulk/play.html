@@ -99,6 +99,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pl-tab{border-collapse:collapse;width:100%;font-size:15px;margin:6px 0 18px}
 .pl-tab th,.pl-tab td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 .pl-tab th{font-weight:700;color:var(--ink-soft)}
+.pl-part{margin:26px 0 0}
+.pl-parthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.pl-parthead h3{margin:0}
+.pl-parthead span{font:12.5px var(--fm);color:var(--ink-mute)}
+.pl-parthead button{font:12.5px var(--fm);padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.pl-parthead button:hover{border-color:var(--ink-mute)}
+.pl-part>p{margin:6px 0 8px}
+.pl-steps{margin:0;padding-left:22px}
+.pl-steps li{margin:0 0 10px;padding:2px 6px;border-radius:5px}
+.pl-steps li.pl-now{background:var(--hl)}
+.pl-cmds{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:0 0 3px}
+.pl-cmds code{font-size:12.5px;padding:1px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.pl-cmds code.pl-now{background:var(--accent);border-color:var(--accent);color:#fff}
+.pl-cmds .pl-until{font:12.5px var(--fm);color:var(--ink-mute)}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -108,6 +122,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </header>
 <main class="wrap">
 <section class="pl-first" id="game">
+  <p class="fig">01 · Play</p>
   <div class="plate pl-plate">
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then type.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of The Incredible Hulk"></canvas>
@@ -117,6 +132,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
       <button type="button" data-act="saves" title="Put back the four games saved on Commodore's disk, in place of any saved on this page">Disk's saved games</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Load and draw each picture at once, without waiting for the disk drive">⏩ Skip loading times</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
@@ -131,18 +147,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <li>At the start, <b>Y</b> restores a saved game and <b>D</b> plays the demonstration</li>
       <li>After six lines the game beeps and waits: press any key</li>
     </ul>
-    <p class="cap">The game's own screen, drawn from the port's memory as the video chip would draw it: the picture above the split, five lines of text below it, at the C64's own pace. The disk's four saved games are here too: answer Y at the start and choose an area.</p>
+    <p class="cap">The game's own screen, drawn from the port's memory as the video chip would draw it: the picture above the split, five lines of text below it, at the C64's own pace. <b>Skip loading times</b> puts each picture up at once. The disk's four saved games are here too: answer Y at the start and choose an area.</p>
   </div>
 </section>
 
+<section id="solution">
+  <p class="fig">02 · Solution</p>
+  <h2 class="t">The route from the chair to the password</h2>
+  <p class="lede">This route takes all seventeen gems to the fuzzy area and wins the game. Each part plays into the game above: it starts a new game, plays the parts before it at once, then types its own commands. Press a key in the game to take over. With <b>Skip loading times</b> on, a part takes a minute or two; without it, as long as on a C64.</p>
+  <p>The Hulk is needed to lift the domes, eat the egg, and survive outside, where the gravity crushes Bruce Banner. He lasts as long as his anger, which the game counts and the mirror shows (“very very mad”). Indoors, gas takes one point of anger every turn, and at none he is Bruce again. Outside there is no gas, and the anger stays. BITE LIP brings the Hulk out with no anger at all, so indoors the gas turns him back in the same turn, except in a tunnel with the delay switched on. REMEMBER NIGHTMARE adds two points, but past three he loses control and rampages off to the fuzzy area. The route uses the rampage as its way out of the caves.</p>
+  <div id="pl-walk"></div>
+  <script type="application/json" id="hulk-walk">[{"title":"Out of the chair","intro":"","groups":[{"cmds":["BITE LIP"],"note":"The pain brings out the Hulk, who breaks the ropes and lands in the dome next door. The dome is full of gas, and he is Bruce again before the turn ends."},{"cmds":["GET GEM"],"note":"The first of the seventeen gems lies in this dome."},{"cmds":["E","PUSH BUTTON"],"note":"The button in the tunnel switches on the delay (“Delay on”). With the delay on, a Hulk who appears in any of the three tunnels starts with two points of anger."},{"cmds":["BITE LIP","GO OUT"],"note":"The gas takes one point, and the Hulk who is left goes out through the dome into a field. Outside there is no gas, and the high gravity the signs warn about crushes only Bruce."}]},{"title":"The first field","intro":"","groups":[{"cmds":["GET GEM"],"note":"A gem lies in the field."},{"cmds":["LIFT DOME","GET GEM"],"note":"Only the Hulk can lift the dome, and there is a gem under it."},{"cmds":["DIG","GO HOLE","DIG","GET GEM","U"],"note":"DIG makes a hole in the field, and digging inside the hole goes deeper. Each field’s hole has a gem at a depth of its own: one dig in this one. The tenth dig reaches the molten core, which kills even the Hulk."},{"cmds":["N","DROP GEM","DROP GEM","DROP GEM","DROP GEM"],"note":"Every way out of a field leads through a warp to the fuzzy area, where a sign says to leave the gems. DROP GEM puts down one gem at a time."}]},{"title":"The egg, and the cavern under it","intro":"North of the fuzzy area is a small underground room with an egg and the bio gem. Only the Hulk can deal with the egg, and the room is full of gas, so the route stores up anger outside and tops it up between commands.","groups":[{"cmds":["REMEMBER NIGHTMARE"],"note":"Outside, the anger stays where it is put: three points."},{"cmds":["N","EAT EGG"],"note":"The egg starts to pulse as you arrive. On the next turn it explodes, taking the bio gem with it and killing Bruce. The Hulk eats it first."},{"cmds":["REMEMBER NIGHTMARE","SCRATCH WALL"],"note":"With a REMEMBER NIGHTMARE between commands, the anger stays at one or two. The Hulk’s scratches open a crack in the floor."},{"cmds":["REMEMBER NIGHTMARE","GO CRACK","REMEMBER NIGHTMARE","GET GEM"],"note":"The crack leads down to a cavern, where Ultron keeps Ant-Man in a cage. A gem lies beside them."},{"cmds":["REMEMBER NIGHTMARE","REMEMBER NIGHTMARE"],"note":"Two in a row take the anger past three, and the Hulk rampages off to the fuzzy area: the quickest way out of the caves."},{"cmds":["DROP GEM"],"note":"The bio gem stays in the small room until the last part. Once it has been moved, it vanishes on half the turns you are away from it, and the ants eat it."}]},{"title":"The Chief Examiner’s office","intro":"South, east and west of the fuzzy area is a warp. Each time you go in, the dice send you to one of the three fields or, one time in five until you have been there, to the Chief Examiner’s office.","groups":[{"cmds":["S","N"],"warp":19,"until":"the office","note":"From a field, N leads back to the fuzzy area to try again. In the field with tiny holes, leave at once: ants swarm out after your first command there."},{"cmds":["LOOK DESK","GET GEM"],"note":"The examiner is busy writing a program and does not notice you. A gem is on his desk."},{"cmds":["GO DOOR","DROP GEM"],"note":"At the door he notices you, and sends you back to the fuzzy area."}]},{"title":"The bees’ field, and the wax","intro":"","groups":[{"cmds":["S","N"],"warp":8,"until":"the field with a gem and no holes","note":"The first field has its large hole now, and the third has tiny holes."},{"cmds":["GET GEM","LIFT DOME","GET GEM"],"note":"A gem lies here and another is under the dome, as in the first field."},{"cmds":["DIG","GO HOLE","DIG","DIG","DIG","DIG","DIG","DIG","DIG","GET GEM","U"],"note":"This hole’s gem is seven digs down. From the ninth, the game warns “Getting warm!”."},{"cmds":["REMEMBER NIGHTMARE","GO DOME","W","GET WAX"],"note":"Through the dome and its tunnel is a dome where killer bees guard some wax. They sting Bruce before he can take it, so the Hulk goes in with three points of anger: the tunnel takes one, the dome another, and the last goes as he takes the wax."},{"cmds":["E","BITE LIP","GO OUT"],"note":"The delay works in this tunnel too."},{"cmds":["N","DROP GEM","DROP GEM","DROP GEM"],"note":""}]},{"title":"Past the ants to Dr Strange","intro":"In the field with tiny holes, alien army ants swarm out and attack. They kill Bruce, and they kill the Hulk unless his eyes are closed, his nose held and his ears plugged.","groups":[{"cmds":["HOLD NOSE","PLUG EARS","USE WAX"],"note":"The nose and the ears stay that way."},{"cmds":["S","N"],"warp":7,"until":"the field with tiny holes","note":""},{"cmds":["CLOSE EYES"],"note":"Arriving by the warp, your first command is safe: the ants swarm out after it. With the eyes closed it is dark, and the ants attack but find no opening. Everything else in the field works in the dark."},{"cmds":["GET GEM","LIFT DOME","GET GEM"],"note":""},{"cmds":["DIG","GO HOLE","DIG","DIG","DIG","DIG","GET GEM","U"],"note":"Four digs in this hole."},{"cmds":["REMEMBER NIGHTMARE","GO DOME","OPEN EYES"],"note":"The ants stay in their field, so in the tunnel the eyes can open."},{"cmds":["REMEMBER NIGHTMARE","W"],"note":"In the dome at the end of the tunnel, Dr Strange’s astral projection appears to the Hulk. He leaves if the Hulk turns back into Bruce."},{"cmds":["REMEMBER NIGHTMARE","ASK STRANGE","REMEMBER NIGHTMARE","ASK STRANGE","REMEMBER NIGHTMARE","ASK STRANGE"],"note":"He answers three times. The first answer is the hint this route has used all along: “Remember your worst enemy NIGHTMARE”. After the third he vanishes and leaves a gem. Hitting him loses that gem for good."},{"cmds":["GET GEM","GET GEM"],"note":"His gem and the dome’s own. The gas has turned the Hulk back into Bruce by now."},{"cmds":["E","GET GEM"],"note":"The tunnel has a gem too."},{"cmds":["BITE LIP","GO DOME","N"],"note":"Back in the field, the ants swarm at once, and with the eyes open they kill on the next turn, so leave straight away."},{"cmds":["DROP GEM","DROP GEM","DROP GEM","DROP GEM","DROP GEM","DROP GEM"],"note":""}]},{"title":"Ant-Man, the bio gem, and the password","intro":"","groups":[{"cmds":["S","N"],"warp":7,"until":"the field with tiny holes","note":""},{"cmds":["CLOSE EYES","GET ANTS"],"note":"Carried ants attack every turn, so the eyes stay closed until the cavern."},{"cmds":["REMEMBER NIGHTMARE","N","N","GO CRACK"],"note":"Three points of anger carry the ants through the small room to the cavern. There, Ant-Man takes control of his ants, and they free him from Ultron. He leaves a gem."},{"cmds":["REMEMBER NIGHTMARE","OPEN EYES","REMEMBER NIGHTMARE","GET GEM"],"note":""},{"cmds":["REMEMBER NIGHTMARE","GO CRACK","REMEMBER NIGHTMARE","GET BIO"],"note":"Back up in the small room, with the ants gone, the bio gem is safe to carry."},{"cmds":["REMEMBER NIGHTMARE","REMEMBER NIGHTMARE"],"note":"The rampage, to the fuzzy area."},{"cmds":["DROP GEM","DROP GEM","SCORE"],"note":"With all seventeen gems in the fuzzy area, SCORE brings the Chief Examiner with the password, ARIA, and the game is won. Type SCORE where the gems are: the examiner comes nowhere else (<a href=\"discoveries.html\">Discoveries<\/a>)."}]}]</script>
+  <p class="cap">The warp's dice decide where each S leads, so the parts with S and N take a few more commands than they list, and a different number each time.</p>
+</section>
+
 <section id="differences">
-  <p class="fig">01 · Differences</p>
+  <p class="fig">03 · Differences</p>
   <h2 class="t">What differs from a C64</h2>
   <p class="lede">The game plays as it does on a C64, at the C64's pace. These are the places where the page cannot be the machine, and what it does instead.</p>
   <table class="pl-tab">
     <tr><th>On a C64</th><th>On this page</th></tr>
     <tr><td>BASIC loads the game and its database from the disk, and the game sends its fast loader into the drive.</td><td>There is no loading at the start. The page begins at the cold start, <code>$657B</code>, with memory as the loader leaves it.</td></tr>
-    <tr><td>Each picture and each item's piece comes off the disk through the fast loader when a room needs it.</td><td>The pictures are the disk's own files, carried by the page. A load takes as long as it takes on a C64 with a 1541, measured in the emulator, and a name with no file gets the same answer as from the drive.</td></tr>
+    <tr><td>Each picture and each item's piece comes off the disk through the fast loader when a room needs it.</td><td>The pictures are the disk's own files, carried by the page. A load takes as long as it takes on a C64 with a 1541, measured in the emulator, and a name with no file gets the same answer as from the drive. With <b>Skip loading times</b> on, the load and the drawing of each picture take no time at all.</td></tr>
     <tr><td>SAVE GAME writes the game's 574 bytes of state, <code>$1C00</code>-<code>$1E3D</code>, to the disk as a file named for the area, and the restore question reads one back. Areas A and D share three of the disk's blocks, so a save in one can spoil the other (<a href="discoveries.html">Discoveries</a>).</td><td>The page keeps the same bytes in this browser, one file to an area, and starts with the four on Commodore's disk. The four areas are kept apart. <b>Disk's saved games</b> puts the disk's four back.</td></tr>
     <tr><td>Each instruction takes its cycles, and the video chip and the interrupt take some of the processor's time.</td><td>The port runs no instructions. A poll of the keyboard, a column of a picture, a fill, a copy and a delay each cost what the game's code costs, and the clock gives the game as many cycles a second as the emulator does: 111 polls of the keyboard a frame, as measured there. So a picture draws, and the cursor flashes, at the C64's pace.</td></tr>
     <tr><td>A raster interrupt splits the screen: the picture's bitmap above line 210, the C64's own characters below.</td><td>The site's model of the video chip draws each frame from the port's memory, with the interrupt's eight writes at the lines and cycles the emulator recorded. The letters come from the C64's character ROM (901225-01): the page carries its lower-case set, the 1,024 bytes at <code>$0800</code>-<code>$0BFF</code>, and the first reversed character, <code>$0C00</code>-<code>$0C07</code>, and makes the other reversed characters by inverting the set, as the ROM holds them.</td></tr>
@@ -197,7 +223,9 @@ const HULK_CHARS = 'PGZubmBiPAAAADwGPmY+AABgYHxmZnwAAAA8YGBgPAAABgY+ZmY+AAAAPGZ+
 // What the generator yields:
 //   { wait: 'getin', cycles }  GETIN: send back the key's PETSCII code with next(), or 0 for none; cycles,
 //                             what the poll costs the game, the KERNAL's GETIN included
-//   { wait: 'time', cycles }  the game counting time: a delay, the drive's load, a column drawn
+//   { wait: 'time', cycles }  the game counting time: a delay, the drive's load, a column drawn; a
+//                             picture's own waits say which with picture: 'load' for the drive's
+//                             load, 'draw' for clearing, copying, filling and drawing the picture
 //   { wait: 'exit' }          character $FF has left the game for BASIC
 globalThis.HulkPlay = (function () {
   // The game's variables
@@ -491,7 +519,7 @@ globalThis.HulkPlay = (function () {
           if (a === 0x58) { M[TESTER] = 0; continue; }
           if (a === 0x50) { M[TESTER] = 1; continue; }
           if (a === 0x5A) {
-            clear_bitmap(); yield { wait: 'time', cycles: COST.clear };
+            clear_bitmap(); yield { wait: 'time', cycles: COST.clear, picture: 'draw' };
             cls();
             if (M[PICTURE] !== 0) yield* graphics_off(); else yield* graphics_on();
             continue;
@@ -1092,10 +1120,10 @@ globalThis.HulkPlay = (function () {
       M[PICTURE_NUMBER] = room_picture(M[ROOM]);
       M[OWED] = 0;
       if (dark_test()) M[PICTURE_NUMBER] = 0;
-      clear_bitmap(); yield { wait: 'time', cycles: COST.clear };
+      clear_bitmap(); yield { wait: 'time', cycles: COST.clear, picture: 'draw' };
       if (M[PICTURE_NUMBER] === M[CACHED]) {
         M[HEIGHT] = M[PICTURE_BOTTOM];                    // restore_picture, $79A4
-        copy_picture(0x4000, 0x0800); yield { wait: 'time', cycles: COST.copy };
+        copy_picture(0x4000, 0x0800); yield { wait: 'time', cycles: COST.copy, picture: 'draw' };
         yield* decode_picture();
       } else {
         yield* load_picture(M[PICTURE_NUMBER], 0, 0);
@@ -1103,7 +1131,7 @@ globalThis.HulkPlay = (function () {
         if (M[PICTURE_NUMBER] < 0x50) {                   // cache_picture, $7984
           M[CACHED] = M[PICTURE_NUMBER];
           M[PICTURE_BOTTOM] = M[HEIGHT];
-          copy_picture(0x0800, 0x4000); yield { wait: 'time', cycles: COST.copy };
+          copy_picture(0x0800, 0x4000); yield { wait: 'time', cycles: COST.copy, picture: 'draw' };
         }
       }
       yield* draw_items_here();
@@ -1148,7 +1176,7 @@ globalThis.HulkPlay = (function () {
       M[NAME_INDEX] = 0;
       do { name.push(M[NAME + M[NAME_INDEX]]); inc(NAME_INDEX); } while (M[NAME_INDEX] !== 7);
       const file = io.disk(name);
-      yield { wait: 'time', cycles: file ? COST.loadName + file.length * COST.loadByte : COST.loadMissing };
+      yield { wait: 'time', cycles: file ? COST.loadName + file.length * COST.loadByte : COST.loadMissing, picture: 'load' };
       if (!file) {                                        // load_failed, $78CB
         if (M[NAME] === 0x42) M[MISSING + M[NUM_KEPT]] = 0x42;
         else yield* putz(T.diskError);
@@ -1184,10 +1212,10 @@ globalThis.HulkPlay = (function () {
       M[BACKGROUND] = colour_from_byte(next());
       io.vic(0xD021, M[BACKGROUND]);                      // fill_colour_ram, $7BB2
       for (let i = 0; i < 800; i++) C[i] = M[DEC + 8] & 15;
-      yield { wait: 'time', cycles: COST.fill };
+      yield { wait: 'time', cycles: COST.fill, picture: 'draw' };
       const s = (M[DEC + 6] << 4 | M[DEC + 7]) & 0xFF;    // fill_screen, $7BE5
       for (let i = 0; i < 800; i++) M[0x0400 + i] = s;
-      yield { wait: 'time', cycles: COST.fill };
+      yield { wait: 'time', cycles: COST.fill, picture: 'draw' };
       let de = bitmap_address(), pairs = 0, read = hl;
       const spent = () => { const c = pairs * COST.pair + ((hl - read) & 0xFFFF) * COST.decodeByte; pairs = 0; read = hl; return c; };
       function write_pair(b1, b2) {                       // $7B40: 1 a new column, 2 the end
@@ -1209,8 +1237,8 @@ globalThis.HulkPlay = (function () {
         for (let first = true; ; first = false) {
           if (first || !(n & 0x80)) { b1 = M[hl]; b2 = M[(hl + 1) & 0xFFFF]; hl = (hl + 2) & 0xFFFF; }
           const r = write_pair(b1, b2);
-          if (r === 2) { yield { wait: 'time', cycles: spent() }; return; }
-          if (r === 1) yield { wait: 'time', cycles: spent() };
+          if (r === 2) { yield { wait: 'time', cycles: spent(), picture: 'draw' }; return; }
+          if (r === 1) yield { wait: 'time', cycles: spent(), picture: 'draw' };
           M[DEC] = (M[DEC] - 1) & 0xFF;
           if (neg(M[DEC])) break;
         }
@@ -1535,7 +1563,14 @@ const HulkScreen = (function () {
   // The machine: the port on the game's memory, with the screen editor, the drive, the disk's
   // saved games and the keyboard round it
   let L = null, M = null, C = null, run = null, st = null, keys = [], waiting = 0, exited = false;
-  let running = false, paused = false;
+  let running = false, paused = false, quiet = false, tail = [];
+  // Skip loading times: the waits the port marks as a picture's (the drive's load, and the
+  // clearing, copying and drawing of the picture) take none of the C64's time
+  const FAST_KEY = 'gamesexplained.the-incredible-hulk.fast';
+  let fast = false;
+  try { fast = localStorage.getItem(FAST_KEY) === '1'; } catch (e) { /* no storage: off */ }
+  const fastButton = document.querySelector('[data-act="fast"]');
+  fastButton.setAttribute('aria-pressed', String(fast));
   // The clock: the main program's cycles in a second of the C64's time, as the emulator gives
   // them: 111 polls of the keyboard a frame (110.8, over 100 frames in VICE v3.14.0, at the
   // command prompt), each costing COST.poll cycles, 50.12 frames a second
@@ -1548,17 +1583,17 @@ const HulkScreen = (function () {
     readSaves();
     const io = {
       colour: C,
-      chrout: ed.chrout,
+      chrout(c) { ed.chrout(c); tail.push(c & 0xFF); if (tail.length > 400) tail.splice(0, 200); },
       plot: ed.plot,
       vic() { /* the interrupt sets the border and background each frame */ },
-      sid: sound.write,
+      sid(a, v) { if (!quiet) sound.write(a, v); },
       raster: () => Math.floor((cycles % 19656) / 63) & 0xFF,
       disk: findFile,
       save(name, bytes) { const a = area(name); if (!a) return false; keep(a, Uint8Array.from(bytes)); return true; },
       load(name) { const a = area(name); return a && saves[a] ? saves[a] : null; },
     };
     run = HulkPlay.machine(M, io).run();
-    st = run.next(); keys = []; waiting = 0; exited = false;
+    st = run.next(); keys = []; waiting = 0; exited = false; tail = [];
   }
   // Run the port for the C64 time that has passed: each poll of the keyboard and each wait costs
   // its cycles, scaled from the main program's share of the clock to the whole clock
@@ -1572,6 +1607,7 @@ const HulkScreen = (function () {
         budget -= w.cycles || HulkPlay.COST.poll; cycles += (w.cycles || HulkPlay.COST.poll) * SCALE;
         st = run.next(keys.length ? keys.shift() : 0);
       } else if (w.wait === 'time') {
+        if (fast && w.picture) { st = run.next(); continue; }
         if (w.left === undefined) w.left = w.cycles;
         const d = Math.min(w.left, budget);
         w.left -= d; budget -= d; cycles += d * SCALE;
@@ -1590,7 +1626,7 @@ const HulkScreen = (function () {
     const ms = last ? Math.min(100, now - last) : 0;
     last = now;
     if (!paused) {
-      try { advance(ms); } catch (e) { overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; running = false; return; }
+      try { advance(ms); typeOn(now); } catch (e) { overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; running = false; return; }
       const f = Math.floor(cycles / 19656);
       sound.tick(f - shownFrames); shownFrames = f;
     }
@@ -1626,6 +1662,7 @@ const HulkScreen = (function () {
     if (code < 0) return;
     e.preventDefault();
     if (!running) return;
+    if (typist && e.isTrusted) stopTyping('The solution stopped: the game is yours from here.');
     press(code);
   });
   screen.addEventListener('focus', () => screen.classList.add('pl-focus'));
@@ -1634,6 +1671,7 @@ const HulkScreen = (function () {
   const field = $('pl-type');
   field.value = ' ';
   field.addEventListener('input', () => {
+    if (typist) stopTyping('The solution stopped: the game is yours from here.');
     const v = field.value;
     if (v.length === 0) press(0x14);
     else for (const ch of v.slice(1)) { const c = petscii({ key: ch }); press(c); }
@@ -1657,7 +1695,11 @@ const HulkScreen = (function () {
     if (!b || !L) return;
     const act = b.dataset.act;
     if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); say(paused ? 'paused' : ''); sound.hold(); }
-    else if (act === 'restart') { start(); over.hidden = true; begin(); }
+    else if (act === 'fast') {
+      fast = !fast; b.setAttribute('aria-pressed', String(fast));
+      try { localStorage.setItem(FAST_KEY, fast ? '1' : '0'); } catch (e) { /* the choice lasts for this visit */ }
+    }
+    else if (act === 'restart') { stopTyping(''); start(); over.hidden = true; begin(); }
     else if (act === 'saves') {
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* nothing was kept */ }
       readSaves(); say('the disk’s four saved games are back');
@@ -1665,6 +1707,116 @@ const HulkScreen = (function () {
     screen.focus();
   });
   if (typeof PlayControls !== 'undefined') PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });
+
+  // The solution: each part as its commands and notes, and a button that starts a new game, plays
+  // the parts before it at once, then types its own commands at a reader's pace
+  const walk = JSON.parse($('hulk-walk').textContent);
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('pl-walk').innerHTML = walk.map((part, i) => {
+    const n = part.groups.reduce((a, g) => a + (g.warp ? 0 : g.cmds.length), 0);
+    return `<div class="pl-part"><div class="pl-parthead"><h3>${i + 1}. ${esc(part.title)}</h3><span>${n} commands${part.groups.some(g => g.warp) ? ', and the warp' : ''}</span>`
+      + `<button type="button" data-part="${i}">Play this part</button></div>`
+      + (part.intro ? `<p>${esc(part.intro)}</p>` : '')
+      + '<ol class="pl-steps">' + part.groups.map((g, k) => `<li data-g="${i}.${k}"><span class="pl-cmds">`
+        + g.cmds.map((c, j) => `<code data-c="${i}.${k}.${j}">${esc(c)}</code>`).join('')
+        + (g.warp ? `<span class="pl-until">until ${esc(g.until)}</span>` : '') + `</span>${g.note}</li>`).join('') + '</ol></div>';
+  }).join('');
+  // A part's steps: each command, and each warp, which is S from the fuzzy area and N from a field
+  // until the player is in the warp's room
+  const stepsOf = i => {
+    const out = [];
+    walk[i].groups.forEach((g, k) => { if (g.warp) out.push({ warp: g.warp, k }); else g.cmds.forEach((cmd, j) => out.push({ cmd, k, j })); });
+    return out;
+  };
+  // What the game last printed, as text
+  const said = () => tail.slice(-120).map(b => b === 0x0D ? '\n' : b >= 0x41 && b <= 0x5A ? String.fromCharCode(b + 0x20)
+    : b >= 0x61 && b <= 0x7A ? String.fromCharCode(b - 0x20) : b >= 0xC1 && b <= 0xDA ? String.fromCharCode(b - 0x80) : b >= 0x20 && b < 0x60 ? String.fromCharCode(b) : '').join('');
+  // The answer to what the game waits for, with no key to read: the next line of the steps at the
+  // prompt, a key at the page pause or a question; null when the steps are done
+  function reply(at) {
+    if (M[0x1F25] === 6) return { keys: [0, 0x20] };
+    const t = said();
+    if (/What shall I do\?\s*$/.test(t)) {
+      while (at.i < at.steps.length) {
+        const s = at.steps[at.i];
+        if (!s.warp) { at.i++; return { line: s.cmd, s }; }
+        if (M[0x1C22] === s.warp) { at.i++; continue; }
+        return { line: M[0x1C22] === 16 ? 'S' : 'N', s: { k: s.k, j: M[0x1C22] === 16 ? 0 : 1 } };
+      }
+      return null;
+    }
+    if (/Hit-Y\W*$/.test(t)) return null;
+    if (/Demo\)\s*$/.test(t)) return { keys: [0x4E, 0x0D] };
+    return { keys: [0, 0x0D] };
+  }
+  const codes = line => Array.from(line, c => c.charCodeAt(0)).concat(0x0D);
+  // The parts before one, at once: the port with no clock but the cycles it counts, until the
+  // steps are typed and the game waits again
+  function playAtOnce(steps) {
+    const at = { steps, i: 0 };
+    let q = [];
+    quiet = true;
+    try {
+      for (let n = 0; n < 2e7; n++) {
+        const w = st.value;
+        if (st.done || !w || w.wait === 'exit') return false;
+        if (w.wait === 'getin') {
+          cycles += (w.cycles || HulkPlay.COST.poll) * SCALE;
+          if (!q.length) {
+            const r = reply(at);
+            if (!r) return true;
+            q = r.keys ? r.keys.slice() : codes(r.line);
+          }
+          st = run.next(q.shift());
+        } else {
+          if (w.wait === 'time') cycles += w.cycles * SCALE;
+          st = run.next();
+        }
+      }
+      return false;
+    } finally { quiet = false; }
+  }
+  let typist = null;
+  const mark = (part, s) => {
+    document.querySelectorAll('#pl-walk .pl-now').forEach(e => e.classList.remove('pl-now'));
+    if (!s) return;
+    const li = document.querySelector(`#pl-walk [data-g="${part}.${s.k}"]`), chip = document.querySelector(`#pl-walk [data-c="${part}.${s.k}.${s.j}"]`);
+    if (li) li.classList.add('pl-now');
+    if (chip) chip.classList.add('pl-now');
+  };
+  function stopTyping(why) {
+    if (!typist) return;
+    typist = null; mark(0, null);
+    if (why) say(why);
+  }
+  // The part's own steps, a key at a time, when the game waits with no key to read
+  function typeOn(now) {
+    const T = typist;
+    if (!T || exited) { if (T) stopTyping(''); return; }
+    const w = st.value;
+    if (!w || w.wait !== 'getin' || keys.length || now < T.next) return;
+    if (T.q.length) { keys.push(T.q.shift()); T.next = now + (T.q.length ? 60 : 0); return; }
+    const r = reply(T.at);
+    if (!r) { stopTyping(walk[T.part].title + ': played. The game is yours from here.'); return; }
+    if (r.keys) { T.q = r.keys.slice(); T.next = now + 600; return; }
+    mark(T.part, r.s);
+    T.q = codes(r.line); T.next = now + 400;
+  }
+  function playPart(i) {
+    if (!L) return;
+    stopTyping('');
+    start();
+    const before = [];
+    for (let k = 0; k < i; k++) before.push(...stepsOf(k));
+    if (!playAtOnce(before)) { say('The parts before this one did not finish.'); return; }
+    shownFrames = Math.floor(cycles / 19656);
+    typist = { part: i, at: { steps: stepsOf(i), i: 0 }, q: [], next: 0 };
+    say(walk[i].title + ': playing.');
+    draw();
+    begin();
+    $('game').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  $('pl-walk').addEventListener('click', e => { const b = e.target.closest('button[data-part]'); if (b) playPart(+b.dataset.part); });
 
   C64.load('listing.json').then(got => {
     L = got;

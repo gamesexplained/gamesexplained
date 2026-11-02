@@ -18,7 +18,9 @@
 // conditions the database never uses; keys the line reader refuses; and seeded random sessions made
 // from the game's own words, with pokes now and then into both machines that reach what play seldom
 // does (another room, items moved, flags, every item in the fuzzy area before SCORE, the light
-// nearly out, the dark, the counter, a full hand). It exits 1 on any difference.
+// nearly out, the dark, the counter, a full hand); and the solution the Play tab publishes, played
+// part by part to the password and "YOU WON!", with the warp's dice falling two ways. It exits 1 on
+// any difference, and when the solution does not win.
 //   node games/c64/the-incredible-hulk/test_play.js [random sessions]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const fs = require('fs');
@@ -376,7 +378,40 @@ if (require.main === module) {
     { when: PROMPT, keys: [0x11, 0x1D, 0x93, 0xC1, 0xDA, 0x85, 0x22, 0x4C, 0x14, 0x14, 0x14, 0x4C, 0x4F, 0x4F, 0x4B, 0x0D] },
     { when: PROMPT, keys: typed('ABCDEFGHIJKLMNOP') }, { when: PROMPT, keys: typed('LOOK') }, { when: PROMPT, keys: [0x41, 0xFF, 0x0D] }],
     () => 'LOOK'));
-  // 5. random sessions from the start, some with pokes into both machines
+  // 5. the solution on the Play tab (its hulk-walk block), every part in turn, to the win: a warp
+  //    is S from the fuzzy area and N from a field until the player is in its room, so each seed
+  //    goes through the warp its own way
+  const WALK = JSON.parse(g.read('play.html').match(/<script type="application\/json" id="hulk-walk">([\s\S]*?)<\/script>/)[1]);
+  for (const seed of [1, 2]) {
+    const steps = [];
+    WALK.forEach(part => part.groups.forEach(gr => { if (gr.warp) steps.push({ warp: gr.warp }); else gr.cmds.forEach(cmd => steps.push({ cmd })); }));
+    let i = 0, end = false, answers = 0;
+    const next = (m, said) => {
+      if (end) return [];
+      answers++;
+      const t = tail(said, 200).replace(/\{[^}]*\}/g, '');
+      if (m[0x1F25] !== 6 && PROMPT.test(t)) {
+        while (i < steps.length) {
+          const st = steps[i];
+          if (st.cmd) { i++; return typed(st.cmd); }
+          if (m[0x1C22] === st.warp) { i++; continue; }
+          return typed(m[0x1C22] === 16 ? 'S' : 'N');
+        }
+        end = true; return [];
+      }
+      if (/Hit-Y/.test(t.slice(-40))) { end = true; return []; }
+      return answer(m, said, '');
+    };
+    const label = 'solution, seed ' + seed;
+    count++;
+    const same = session(label, Array.from({ length: 900 }, () => next), executed, { seed: 0x3000 + seed, after: (m, said) => {
+      const t = show(said);
+      if (!end || i < steps.length) fail(label, `stopped at step ${i} of ${steps.length}, in room ${m[0x1C22]}`);
+      else if (!/ARIA/.test(t) || !/YOU WON!/.test(t)) fail(label, 'ended without the password and "YOU WON!":', tail(said, 300));
+    } });
+    if (same) lines += answers;
+  }
+  // 6. random sessions from the start, some with pokes into both machines
   const sessions = +(process.argv[2] || 8);
   for (let s = 0; s < sessions && !bad; s++) {
     const chunks = [];
