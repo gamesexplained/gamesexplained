@@ -5,20 +5,12 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Platinum (claimed)** (22 October 2026): the Play tab is the whole game,
-and `test_play.js` holds the published page to the game's code in CI.
-Silver since 30 September 2026: coverage 100 %, every feature confirmed,
-traced or explicitly open (`features.md`), facts verified (`facts.md`),
-the Overview, focused tabs and Play tab built. The copy is `agent-draft`.
-The steward, unorig, has claimed the curation pass.
-
-## For Diamond
-
-- A human pass over every tab, section by section: rewrite, cut, expand,
-  add what the agent missed. Set `copy` to what the pass did.
-- A human pass over the Play tab's text in the same way.
-- `tier` stays `platinum` until every section has had its pass, then
-  becomes `diamond`.
+**Diamond** (2 November 2026): Platinum since 22 October 2026, and every
+tab has had the steward's curation pass (unorig, Gold pass 1). The copy is
+`human-edited`: each page's summary line now leads with a finding, vague
+paragraphs were cut, links to detail were added, and the speech chart no
+longer tells voiced and noise frames apart by colour alone. Play and About
+were read and left as they were.
 
 ## Open
 
