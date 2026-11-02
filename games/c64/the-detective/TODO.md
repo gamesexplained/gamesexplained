@@ -29,13 +29,11 @@ pointer and the order of the murders.
 
 ## Ideas
 
-- A recorded route through the whole game to the promotion, played from
-  the start with stick input only (`kit/skills/core/65-inputs`). The
-  ending is tested live from a state set by hand (`facts.md`, "Live
-  tests"); the route itself needs a bot that also walks Snide through
-  doors, opens the safe (the keyboard), names the library book, and waits
-  for each murder by being in the right rooms. `work/bot.py` already
-  drives the menus and the lists through the stick.
-- The doors' depth on the Maps tab: only their columns are marked; the
-  furniture's nearest and farthest depth (`$1B40`, `$1B60`) are not drawn.
-- How the lost fire presses depend on the room: measured only in the hall.
+- The won game (`route.json`) replays in VICE from the hand-over
+  snapshot, frame by frame. It is not recorded by the game's reads of
+  the stick (`kit/skills/core/65-inputs`), so it would not replay on
+  another emulator or a port; recording it again by reads would make a
+  "Watch the solution" button possible on a future Play tab.
+- Whether lost presses depend on the room or on the main loop's load:
+  40 presses in each of eight places did not show a difference
+  (`facts.md`, "Live tests"); a few hundred a place would.

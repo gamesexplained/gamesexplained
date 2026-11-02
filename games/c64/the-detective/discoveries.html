@@ -97,29 +97,38 @@ $BC68  jmp $2042      ; real bullets: the game is over</div>
   <h2 class="t">Bug: about one press of fire in three is lost</h2>
   <p>Fire in play opens the investigation menu, but often it does nothing and has to be pressed again. A press reaches the menu through a latch at <code>$0129</code>, which <code>read_joystick</code> (<code>$2200</code>) sets when it finds fire newly pressed. The same routine clears the latch every time it runs, and two callers run it: the main loop, once a pass, and the raster interrupt, once a frame (<code>$2A88</code>). The main loop also tests and throws away the latch at the top of every pass (<code>$2224</code>). The menu's own test (<code>$3FAE</code>) comes later in the pass. A latch set by one caller and cleared by another, or thrown away at the top of the pass, before that test reads it is a press lost.</p>
   <p>Measured in the emulator, in the hall: 60 presses of fire, each held for six frames and started at a random moment, opened the menu 37 times. In each of the other 23, the game read the press and set the latch once, and the menu's test never found it set.</p>
+  <p>It happens all over the house. Forty presses in each of eight places along a played game (the hall, the Major's, Dingle's and the Doctor's rooms, the corridor downstairs, the study, the library and the drawing room) opened the menu between 13 and 24 times, 143 of 320 in all. With forty presses a place, a spread that wide is about what chance alone gives, so these counts do not show that some rooms lose more presses than others.</p>
+</section>
+
+<section id="dingles-room">
+  <p class="fig">07 · Trap</p>
+  <h2 class="t">Dingle's room locks for good, with evidence inside</h2>
+  <p>Two of the ten pieces of evidence, the cravat and the small key that opens the briefcase with the note, lie on Dingle's "body". They appear only after he has faked his death (<code>$B1CF</code>), and his room is unlocked from then (<code>$B096</code>). Once the Doctor has reported the death, Dingle's script waits for Snide to walk into the corridor downstairs or the corridor upstairs (rooms 1 and 15), and then locks his room (<code>$B0A7</code>) and vanishes.</p>
+  <p>Nothing opens that door again. No script unlocks it, and the player can unlock a door only with an object whose menu offers the key icon: the bunch of keys and the big iron key are the only two (the icon masks at <code>$87A5</code>). The door's key byte is 0 (<code>$1F87</code>), and object 0, the hot water bottle, has no key icon. A player who walks into either corridor before searching the body can no longer win, and the game does not say so: the accusation just keeps answering "YOU DO NOT HAVE THE EVIDENCE TO PROVE IT."</p>
+  <p>The emulator showed both halves. In one game, Snide passed through the corridor downstairs before going to Dingle's room, and found its door locked with the hot water bottle's menu offering only look, put in and open. In another, he searched the body straight after the fake death, and that game was won.</p>
 </section>
 
 <section id="carry">
-  <p class="fig">07 · Quirk</p>
+  <p class="fig">08 · Quirk</p>
   <h2 class="t">Five things in Snide's hands, not six</h2>
   <p>Zzap!64's review says Snide can carry six items. The code counts what he holds and refuses the next one at five: "YOU CAN/T CARRY ANY MORE!" (<code>$30CF</code>, counting through <code>$883B</code>). Carrying more means putting things inside other things: a briefcase, a jacket or a bag holds five more (<code>$8856</code>), and the evidence envelopes hold ten.</p>
 </section>
 
 <section id="tenth">
-  <p class="fig">08 · Quirk</p>
+  <p class="fig">09 · Quirk</p>
   <h2 class="t">Ten script pointers from a table of nine</h2>
   <p>At the start of a game, <code>init_scripts</code> (<code>$A7E6</code>) copies each character's script start from the table at <code>$A7FB</code>. The loop counts from 9 down to 0, which is ten entries for nine characters. The tenth start is read from the two bytes after the table, the first instruction of the next routine (<code>$A80D</code>: <code>LDY #$01</code>), as the address <code>$01A0</code>. Its low byte lands in character 0's pointer high byte, which the loop's last pass then overwrites, and its high byte, 1, in character 0's chosen door (<code>$1E7F</code>), which the Reverend's script replaces before he first uses a door.</p>
 </section>
 
 <section id="leftovers">
-  <p class="fig">09 · Quirk</p>
+  <p class="fig">10 · Quirk</p>
   <h2 class="t">Old word lists under the icons</h2>
   <p>The icon characters at <code>$4E00</code>, where the panel's icon pictures are copied when a menu opens (<code>$873F</code>), hold leftovers of the game's development until then: two older copies of the word list, one spelling the vicar's title "THE REVERAND". The first menu overwrites them.</p>
   <p>Three pictures in the icon set are never given an action. Icons 4, 5 and 17 have pictures at <code>$FA00</code> like the others, but their entries in the table of icon handlers point at a lone <code>RTS</code> (<code>$883A</code>), so choosing one does nothing. The How it works page draws all eighteen.</p>
 </section>
 
 <section id="guest">
-  <p class="fig">10 · Quirk</p>
+  <p class="fig">11 · Quirk</p>
   <h2 class="t">"GUEST ERROR.."</h2>
   <p>When a script asks a character to walk to a room that no door leads to from where they stand, or to use a door it never chose, the screen flashes red and the game prints "GUEST ERROR.." in that character's voice (<code>$A618</code>). It is a check the author left in for his scripts.</p>
 </section>

@@ -76,6 +76,19 @@ by the frame starts every press at the same point of the frame, and that
 a game reading its controls from an interrupt can treat such presses
 differently from a player's. Only this game is known to have needed it.
 
+## Candidates (second follow-up session)
+
+A whole game won by a bot through the stick and keyboard took many
+tries, and each failure was found only late in the game. Saving a
+snapshot with the input log at the end of each phase let a failed phase
+be retried from the phase before it, and the logs joined into one
+recording that replays from the start. `kit/skills/core/65-inputs` could
+say to record a long route in phases this way. It could also say to
+check a replay's milestones by frame count rather than by position in
+the input log: our driver merged runs of frames into one entry, so a
+milestone's position fell inside a merged run. Only this game is known
+to have needed it.
+
 ## System
 
 Windows 11 Pro with WSL2 Ubuntu 26.04; the emulator built from source

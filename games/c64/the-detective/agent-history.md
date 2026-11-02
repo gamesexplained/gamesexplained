@@ -66,3 +66,32 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   which led to the measurement of the game's own lost presses.
 - Using the gun goes through the inventory (the gun's own menu offers
   icon 6), not the "use" icon.
+
+## Follow-ups, 1-2 November 2026
+
+- The contributor asked for the follow-ups left in TODO: the furniture's
+  depth on the Maps tab, the lost presses by room, and a whole game won
+  by play.
+- Drawing the depth showed that the listing had `$1B40` and `$1B60` the
+  wrong way round ("nearest" and "farthest"). Walking Snide in the hall
+  settled it: up adds to the depth, and under the stairs the back limit
+  became the staircase's `$1B60` value. Comments and labels were
+  corrected.
+- The won game took several tries. A first attempt collected the
+  evidence in an easy order and found Dingle's room locked after the
+  Doctor's report; the hot water bottle (key byte 0) had no unlock icon,
+  which led to the discovery that the room locks for good. The second
+  attempt waited upstairs for the fake death and searched the body at
+  once.
+- Things the bot had to learn, each from a failure: the study's door
+  shares its columns with the library's front door, so the door the game
+  has found (`$63`) must be checked, not just `$62`; Cynthia's body is
+  furniture and blocks the hall's front lane; the second tune (state 8)
+  holds play for about 200 frames; the library question comes from
+  taking the BOOKS; use starts from the main menu, tool first; a closed
+  secret passage gets the ordinary menu and is opened by investigating;
+  the gun is used from the inventory (as the earlier live test had
+  found, and the first accusation forgot).
+- Each phase saved a snapshot and its input log, so a failure was
+  retried from the phase before. `work/replay.py` plays the whole log
+  from the hand-over snapshot in one run.
