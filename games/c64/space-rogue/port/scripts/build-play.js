@@ -1,7 +1,8 @@
 'use strict';
 // Writes games/c64/space-rogue/play.html: port/play.template.html with, at <!-- port -->, the
 // port's sources (each file of port/src as a script of its own, core.js first), the page's
-// machine (page/runtime.js) and its modern view of space (page/modern.js), the pacing the fit
+// machine (page/runtime.js), its modern view of space (page/modern.js) and Fast CPU's table
+// (page/fast-table.js, for site/lib/fast-cpu.js, which the template loads), the pacing the fit
 // wrote (cost.json) and the game's data as the page carries it (scripts/pack-data.js: every file
 // the port loads, its code left out); and the sections that describe the port (port-results.html,
 // modern.html, differences.html).
@@ -15,7 +16,7 @@ let html = fs.readFileSync(path.join(ROOT, 'play.template.html'), 'utf8');
 const parts = [];
 const src = ['core.js'].concat(fs.readdirSync(path.join(ROOT, 'src')).filter(f => f.endsWith('.js') && f !== 'core.js').sort());
 for (const f of src) parts.push(script('src/' + f, fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')));
-for (const f of ['runtime.js', 'modern.js']) parts.push(script('page/' + f, fs.readFileSync(path.join(ROOT, 'page', f), 'utf8')));
+for (const f of ['runtime.js', 'modern.js', 'fast-table.js']) parts.push(script('page/' + f, fs.readFileSync(path.join(ROOT, 'page', f), 'utf8')));
 parts.push('<script>\nwindow.SR_COST = ' + fs.readFileSync(path.join(ROOT, 'cost.json'), 'utf8').trim() + ';\n</script>');
 let data;
 try {

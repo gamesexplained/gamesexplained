@@ -26,6 +26,21 @@
 //   game's own race.
 // - P.at maps a load address to the name of the file last loaded there ($A500: SEG0 or SEG1;
 //   $E400: a model or SEG1A), for the routines of an overlay.
+// - P.plug holds the plug-in points: the places in the routines of flight where the page's Fast CPU
+//   (site/lib/fast-cpu.js, with the table in page/fast-table.js) passes in a value or skips a job,
+//   each marked "plug-in point" where it is used. With nothing plugged in, each gives what the
+//   game's code does, so the lockstep holds the port and its plug-in points together:
+//     step(key, v)    a move's step v (a whole number, a 24-bit vector's component or a turn rate):
+//                     what of it this pass takes (all of it)
+//     parts()         the loops a step is shared over, for a share the port works out in the
+//                     game's logarithms (1)
+//     once(key)       whether a job that counts passes, or whose effect adds up, runs this time
+//                     (always)
+//     keep(key, v)    a value the game works out once a pass (v)
+//     read()          the controls are about to be read again
+//     shown(at, draw, mine)  a drawing the game makes for one pass (a beam, a flash), drawn again
+//                     at again(at): whether the game draws it where it is (always)
+//     again(at)       the drawings kept for this place (none)
 (function (root) {
 'use strict';
 const G = root.SRGroups = root.SRGroups || {};
@@ -82,6 +97,8 @@ function makePort(M, io, opts = {}) {
     return M[a];
   };
   P.wr = (a, v) => { if (a >= 0xD000 && a < 0xE000 && ioIn()) IO.write(a, v); else M[a] = v; };
+  P.plug = { step: (key, v) => v, parts: () => 1, once: key => true, keep: (key, v) => v, read: () => {},
+    shown: () => true, again: () => {} };
   const only = opts.only || (prog ? ['kernal', opts.program] : null);
   for (const name of Object.keys(G)) if (only ? only.includes(name) : !PROGRAMS[name]) G[name](P);
   if (opts.standIn) opts.standIn(P);

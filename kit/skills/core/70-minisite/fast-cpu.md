@@ -79,6 +79,10 @@ rate). When two aims clash the higher wins:
   frames a second (`games/c64/space-rogue`), gets a beat of its own
   counted in the machine's cycles, and its clock goes on counting its own
   ticks, so what it times keeps its time in seconds.
+- **Put a beat of its own just after the interrupt that reads the keys**
+  (`games/c64/space-rogue`, a line after its interrupt's). The loop then
+  takes the keys the interrupt has just read, and its frame shows in the
+  refresh that runs it.
 - **A game that waits for a line of its screen before each flip can beat
   on that line, once a video frame** (`games/c64/mercenary`). Its wait
   then ends at once, its flips fall where the machine's do against the
@@ -108,7 +112,11 @@ rate). When two aims clash the higher wins:
   loop's cost makes the game depend on something other than its code
   and the clock.
 - **Outside the main loop the machine keeps its own speed.** The title,
-  menus and loading are not play.
+  menus and loading are not play. So do the routines the loop calls that
+  leave play for a while (a menu, a dialog, docking): count them as they
+  run and give the port the game's own plug-in points meanwhile
+  (`games/c64/space-rogue/port/page/runtime.js`, `AWAY`), because their
+  waits and counts are the machine's.
 
 ## Step scaling
 
@@ -120,6 +128,16 @@ rate). When two aims clash the higher wins:
   through the game's own step code, the part of a unit left over carried
   to the next loop while the key is held, so in open space K shares end
   where one step ends.
+- **Share a number the game keeps as a logarithm by its logarithm.** Take
+  log2 K from it (`parts`). Where the share falls below the least the
+  game acts on (a turn too small to make), give the whole step once a
+  pace instead, or the move stops.
+- **Work out once a pace what the game works out from where things stood
+  as its loop began.** A change toward a target (an engine closing on a
+  wanted velocity, the rest of the way in one step) or a decision
+  (whether a craft turns) taken again each loop would act K times or
+  change partway through the pace; keep the first loop's value for the
+  pace's other loops and give it in shares (`keep`).
 - **List everything a loop does once, and give each a plug-in point.**
   The player's moves, every other object's move, every chance rolled,
   every count of loops, what is shown for one loop, every script a move
@@ -142,7 +160,9 @@ rate). When two aims clash the higher wins:
   does all its logic once a loop keeps working at a steadier pace, and
   what a quicker one changes is the time a player has to react. Find the
   planned pace in the game's own words (a countdown of so many loops that
-  it or its manual calls so many seconds), time the machine's loops in its
+  it or its manual calls so many seconds) or its code (a loop that leaves
+  out its drawing until it is back to so many frames a loop, which is
+  then the pace), time the machine's loops in its
   busiest and emptiest views, and set the most beats a loop may take to
   the whole number nearest that pace and no quicker (the table's `most`).
   Views quicker than the cap keep the machine's pace.
@@ -205,6 +225,9 @@ rate). When two aims clash the higher wins:
   reads it.
 - **Hold every key for at least three of the machine's video frames.** The
   first loop that reads it counts it, so no press goes missing.
+- **A key the game's interrupt puts in a buffer is taken once from it.**
+  The interrupt's repeat keeps its time in seconds, so such a key needs no
+  entry as a switch or a repeat.
 - **A pace of the game's own is kept as the machine's.** Something the
   machine moves in a loop that renders no view (a pointer) takes the same
   time everywhere; measure that loop on the game's code and move it by
@@ -227,6 +250,17 @@ rate). When two aims clash the higher wins:
 - **Show each frame on the first refresh after its loop.** Never render
   between two loops or hold a frame back: either shows the game late, in
   frames it never rendered.
+- **A game that splits nothing within a frame can be shown as its memory
+  stands after the loop** (`games/c64/space-rogue`, `rt.fastFrame`). A
+  loop run on a beat inside the frame flips there, and the frame the beam
+  drew would show the old buffer above that line.
+- **Draw again what the game draws for one loop.** The machine keeps a
+  drawing on the buffer on show (a beam drawn between two flips) until its
+  loop's flip, and one on the buffer it is drawing for a loop's frame; a
+  loop that flips at once would hide the first and show the second for a
+  beat. Keep each for the rest of the pace and draw it again on each
+  loop's buffer where the game would, the first before the flip (`shown`
+  and `again`).
 - **Fast CPU replaces Smooth motion once it is shown faithful on that
   game.** Its tests pass and the page states each measured difference;
   then it gives the frame rate Smooth motion gave, in frames the game
@@ -245,7 +279,15 @@ rate). When two aims clash the higher wins:
   CPU passes in a value or skips a job. Each gives the game's own value
   when nothing is plugged in, so the lockstep holds the port with them
   (`games/c64/castle-master/port/src/core.js` lists the kinds). Every
-  place Fast CPU changes a loop is one.
+  place Fast CPU changes a loop is one. A point also keeps every call
+  the routine makes, because a clock that costs a stretch by the
+  routines called in it would move differently with it off: a share
+  done in place of the game's routine goes inside that routine, behind
+  an argument the game never passes
+  (`games/c64/space-rogue/port/src/g-vec.js`, `vec_add_lin`). Check
+  off means off against the page as it was before the points went in,
+  frame by frame, memory and clock, as well as against the page with
+  Fast CPU unloaded.
 - **The renderers** are unchanged: each refresh they render the last
   loop's draw list, when it is new.
 - **Leave out** copies of the game's routines, code that writes into the

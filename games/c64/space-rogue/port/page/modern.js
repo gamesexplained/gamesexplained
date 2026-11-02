@@ -487,6 +487,12 @@ function attach(rt) {
     const p = i => s16(w16(M, 0xFD00 + i));
     st.hazard.push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: [M[0x3D], M[0x3E]], c: 5 });
   });
+  // with Fast CPU, a hazard's triangle drawn again on a later pass of the C64's (spray_again)
+  wrap(P, 'spray_again', r => {
+    if (!st.drawing) return;
+    const p = i => s16(r.pts[i] | r.pts[i + 1] << 8);
+    (st.drawing.hazard = st.drawing.hazard || []).push({ k: 'shape', pts: [[p(0), p(2)], [p(4), p(6)], [p(8), p(10)]], pat: r.pat.slice(), c: 5 });
+  });
   wrap(P, 'view_clear_c000', () => { st.bufs[0] = []; });
   wrap(P, 'view_clear_4000', () => { st.bufs[128] = []; });
   // the buffer just drawn goes on show

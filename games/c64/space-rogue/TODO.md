@@ -52,3 +52,10 @@ pages' ports against the game's code found three more, also corrected
   resolution and frame rate, as Mercenary's Play tab does, with the
   game's pace kept.
 - The talk scripts as a browser: who says what at which base.
+- Fast CPU for the gate's jump and the wormhole: they are 3D, but their
+  loop (in `gate_jump`, paced by `frame_skip5`) keeps the C64's speed.
+  It would need its own plug-in points, the wormhole's rings and steps
+  shared five frames to a pass.
+- Smooth motion beside Fast CPU: Mercenary's Play tab dropped Smooth
+  motion once Fast CPU was shown faithful there. Space Rogue keeps both,
+  one switching the other off, until a player has flown Fast CPU.
