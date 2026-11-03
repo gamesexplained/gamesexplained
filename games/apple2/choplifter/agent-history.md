@@ -116,3 +116,10 @@ in the blue and orange group. `facts.md` and the comments at `$008C`,
 `$1042` and `$10F8`, which said every routine ORs the bit in, are
 corrected. One shape draws nothing: the bar's corner (`$B01B`) is all
 clear dots, drawn opaque to cut a black line.
+
+air then asked for what How it works said twice to live only on the
+Graphics tab. The demonstration flight stays on How it works, but its
+two paragraphs on the erase lists, the planet and the stars, which the
+Graphics tab's third section repeats in more detail, are now one
+sentence and a link there; that section now names `draw_planet` and
+`store_stars1`.
