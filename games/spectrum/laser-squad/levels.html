@@ -61,6 +61,7 @@ th{font-weight:700;color:var(--ink-soft)}
 #mp-units td:first-child{white-space:nowrap}
 .mp-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .mp-key i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.mp-key i.k{width:24px;background:#000;position:relative}
 .mp-do{margin:8px 0 0;padding-left:20px;font-size:15px}
 .mp-do li{margin:0 0 5px}
 </style>
@@ -86,15 +87,33 @@ th{font-weight:700;color:var(--ink-soft)}
   <p>The computer places nothing. Against it, the second side's units all arrive in their patches, the ones a second player would have placed as well, so a patch of a single square is where that unit always starts.</p>
 </section>
 
+<section id="plan">
+  <p class="fig">02 · The computer's plan</p>
+  <h2 class="t">The computer walks its units between waypoints and scores its enemies by area</h2>
+  <div class="plate">
+    <div class="mp-screen"><canvas id="mp-plan" width="1280" height="800" aria-label="The computer's areas, waypoints and links on the scenario's map"></canvas></div>
+    <div class="hw-btns" id="mp-plan-units"></div>
+    <p class="hw-out" id="mp-plan-out"></p>
+    <p class="hw-out" id="mp-plan-at">Point at a square.</p>
+    <div class="mp-key"><span><i class="k"><b style="position:absolute;inset:2px 5px;border:1px solid #fff"></b></i>an area, with its number</span><span><i class="k"><b style="position:absolute;top:4px;left:3px;right:3px;height:3px;background:#0ff"></b></i>a link: a straight walk from one waypoint to another</span><span><i class="k"><b style="position:absolute;inset:2px 5px;background:rgba(255,200,0,.6)"></b></i>what an enemy there is worth to the unit picked</span><span><i class="k"><b style="position:absolute;top:4px;left:3px;right:3px;height:3px;background:#ff0"></b></i>the round of the unit picked, along the routes the computer finds</span><span><i class="k"><b style="position:absolute;top:5px;left:3px;right:3px;border-top:2px dashed #ff5050"></b></i>a leg it finds no route for</span><span><i class="k"><b style="position:absolute;inset:1px 6px;background:rgba(255,80,80,.35);border:2px solid #ff5050"></b></i>where the unit picked arrives</span></div>
+    <p class="cap">Drawn from the tables of the scenario's own copy of the computer player: its areas, its waypoints and the links between them, and for each unit of the second side that plays against the computer at some level, its orders, read from its record (<code>$1A</code>) and ten bytes of the table they number. Each leg of a round is drawn along the route the computer's own search finds, run here on the scenario's tables.</p>
+  </div>
+  <p>Each scenario carries its own copy of the computer player, and a map of its own for it. The map is cut into numbered areas, rectangles that can share a number, and strewn with waypoints, each linked to the waypoints a unit can walk to from it in a straight line, with what that walk costs. A unit of the computer's side has orders: a round of up to seven waypoints, a byte of flags, and a row of values that says what an enemy is worth to it in each area.</p>
+  <p>In the computer's turn each of its units fires at the enemies it can see, and steps out of their sight if it has the points. With none in sight it walks its round or, when it has seen one lately, goes after the enemy it scores highest, from waypoint to waypoint along the cheapest route the links give. Between waypoints it takes one step at a time, to whichever neighbouring square is nearest the next one and not already on its trail that turn.</p>
+  <p>The search, which the <a href="index.html#routes">How it works</a> tab runs between any two waypoints, keeps only a route cheaper than a rough guess at the cost between the two waypoints' areas. When it finds none, nothing clears the route the last search found, so the unit sets off along that one, often another unit's. In Moonbase Assault it finds none between Officer Neilson's two waypoints, at the far ends of the base, in either direction.</p>
+  <p>The Spectrum Games Database's notes on the game say that in The Cyber Hordes, at the higher levels, the computer's reinforcements do not start on the deployment squares but somewhere else on the map. The droids' records say why. Against the computer no unit of the second side is placed, and every droid's patch is a strip two columns wide down the map's left-hand side, columns 11 and 12 from row 1 to row 48 (to row 39 for the Battle Droids), which runs from the second side's squares for placing at the top of the map to the ones at the bottom. A droid that dies comes back in that strip three turns later, by a routine of the scenario's own at <code>$FF67</code>, and the higher the level the more droids there are.</p>
+  <p>The same notes say that in Paradise Valley the computer gains reinforcements of Venemous Splurges, which sit in a corner of the map and do not move unless a unit comes near them. Three of the five Splurges arrive in the map's top right-hand corner, rows 0 to 33 and columns 70 to 78, and come back there three turns after they die, by the scenario's routine at <code>$FEDF</code>. The round of one of them is two waypoints in that corner, 7 and 26, up and down column 76, and to every Splurge an enemy below row 33, outside areas 1 to 16, is worth nothing.</p>
+</section>
+
 <section id="units">
-  <p class="fig">02 · The units</p>
+  <p class="fig">03 · The units</p>
   <h2 class="t">Who plays, and where they come on</h2>
   <div id="mp-units"></div>
   <p class="cap">Read from the scenario's block: each unit's record at <code>$D39F</code> (40 bytes; its side in <code>$25</code>, the turn and the patch it arrives in from <code>$1C</code>), its flags at <code>$B6E4</code> and the games it plays in at <code>$B670</code>, a bit for two players and a bit for each level. A unit with no bit set never plays; its record is still in the block.</p>
 </section>
 
 <section id="levels">
-  <p class="fig">03 · The levels</p>
+  <p class="fig">04 · The levels</p>
   <h2 class="t">A higher level gives the computer more units and the player less money</h2>
   <div id="mp-levels"></div>
   <p>Against the computer the player picks a level, from 1 to the number the scenario allows. The level sets the computer's skill, which is how many of the player's half-turns it keeps a sighting of an enemy in mind (the count at <code>$B63A</code> for each unit), the credits the first side has to spend in the shop, and which of the computer's units play at all.</p>
@@ -6463,6 +6482,12 @@ G.unit = P => {
 //   LSPages.map(id, fire)     the scenario's whole map, 80 x 50 squares of 16 pixels, as drawn by
 //                             drawView view by view, through the table of squares for fire mode
 //                             ($E79F) when fire is set; a canvas
+//   LSPages.tile(a, colours)  the scenario's tile a, 16 x 16 pixels, drawn by the port's drawTile
+//   LSPages.film(run)         what run() shows on the view, a picture a frame, and its sound
+//   LSPages.play(film, show, done, quiet)  that film played at the game's pace, with its sound
+//   LSPages.plan()            the computer player's map of the scenario loaded: waypoints, areas,
+//                             links, the second side's orders, and its findRoute between two
+//                             waypoints
 //   LSPages.name(code)        the scenario's name for the map's byte code: its message of that number
 (function (root) {
 'use strict';
@@ -6541,6 +6566,113 @@ function map(id, fire) {
   for (const r of starts(ROWS, ROWS - 11)) for (const c of starts(COLS, COLS - 11)) g.putImageData(view(r, c), c * 16, r * 16);
   return cv;
 }
+// tile a of the scenario loaded in the colours at: the port's drawTile at the view's first square
+// (character row and column 1), as its 16 x 16 pixels
+function tile(a, at) {
+  M[P.V.PRINT_ROW] = 1; M[P.V.PRINT_COL] = 1; M[P.V.ATTR] = at;
+  P.drawTile({ a });
+  return image(8, 8, 16, 16);
+}
+// The computer player's map of the scenario loaded, from its own copy's tables (g-ai.js, TABLES):
+// the waypoints (POINTS, a row and a column each, NPOINTS of them), the areas (AREAS, five bytes:
+// the first row, the row after the last, the first column, the column after the last, the
+// number; $FF after the last), each waypoint's links as nextLink walks them (LINKS: each list its
+// length with bit 7 set, then two bytes a link, the waypoint and the cost), and the second side's
+// units: each one's orders (ORDERS + 10 x its $1A: the waypoints it walks round from byte 1 to a
+// 0, the flags at 8, the row of VALUES at 9), or for The Cyber Hordes' units from $9C the
+// terminal it goes for first ($1A of TERMINALS, three bytes each: the row, the column and the
+// waypoint).
+function plan() {
+  const t = root.LSGroups.ai.TABLES[loaded];
+  const n = M[t.NPOINTS], pts = [], areas = [], links = [], units = [];
+  for (let k = 1; k <= n; k++) { const a = t.POINTS + 2 * (k - 1); pts[k] = [M[a], M[a + 1]]; }
+  for (let hl = t.AREAS; ; hl += 5) { areas.push([...M.slice(hl, hl + 5)]); if (M[hl + 5] === 0xFF) break; }
+  for (let z = 1; z <= n; z++) {
+    let hl = t.LINKS;
+    for (let b = z; b; b--) hl += M[hl] & 0x7F;
+    for (let e = hl + 1; !(M[e] & 0x80); e += 2) links.push([z, M[e], M[e + 1]]);
+  }
+  const terminals = [];
+  if (t.TERMINALS) for (let k = 0; k < 7; k++) { const a = t.TERMINALS + 3 * k; terminals.push([M[a], M[a + 1], M[a + 2]]); }
+  for (let k = 0; k < 20; k++) {
+    const u = 0xD39F + 40 * k, code = 0x8C + k;
+    if (!(M[u + 0x25] & 1)) continue;
+    const alien = !!t.aliens && code >= 0x9C;
+    const o = t.ORDERS + 10 * M[u + 0x1A];
+    const way = [];
+    if (!alien) for (let i = 1; i < 8 && M[o + i]; i++) way.push(M[o + i]);
+    units.push({ k, code, alien, terminal: alien ? M[u + 0x1A] : -1, orders: alien ? -1 : M[u + 0x1A],
+      way, flags: alien ? 0 : M[o + 8], values: alien ? -1 : M[o + 9] });
+  }
+  // the value of each area to a unit of VALUES row v, as chooseTarget reads it (32 a row; 0
+  // leaves an enemy there out)
+  const value = (v, area) => (t.VALUES === undefined ? -1 : M[t.VALUES + 32 * v + area - 1 & 0xFFFF]);
+  // the route the computer finds from waypoint a to waypoint b: its own findRoute, run on FROM and
+  // TO, the waypoints it leaves at $5CF0 (ten at most, a first); null when it finds none cheaper
+  // than the bound it starts from
+  const route = (a, b) => {
+    M.fill(0xFF, 0x5CF0, 0x5CFA);
+    M[t.FROM] = a; M[t.TO] = b;
+    P.SC[loaded].ai.findRoute();
+    if (M[0x5CF0] !== a) return null;
+    const r = [];
+    for (let k = 0; k < 10 && M[0x5CF0 + k] !== 0xFF; k++) r.push(M[0x5CF0 + k]);
+    return r;
+  };
+  return { t, n, pts, areas, links, units, terminals, value, route };
+}
+// A film of what a routine shows on the view: run() runs it (a generator is run to its end), and
+// each time the port's clock (P.T, which P.spend moves on) passes a frame of a 48K's time, 69,888
+// T-states, the view's 176 x 176 pixels are taken; its writes to the beeper (port $FE, bit 4) are
+// caught with their T-states. { frames: [{ t, img }], edges: [[t, level]], T }, from the start.
+const FRAME = 69888;
+function film(run) {
+  const frames = [], edges = [], spend = P.spend, out = P.io.out, t0 = P.T;
+  let last = -FRAME;
+  const snap = () => { frames.push({ t: P.T - t0, img: image(8, 8, 176, 176) }); last = P.T - t0; };
+  P.spend = n => { if (P.T - t0 - last >= FRAME) snap(); spend(n); };
+  P.io.out = (port, v, t) => { if ((port & 255) === 0xFE) edges.push([(t === undefined ? P.T : t) - t0, v >> 4 & 1]); };
+  try { const r = run(); if (r && typeof r.next === 'function') for (let n = 0; n < 1e6 && !r.next().done; n++); }
+  finally { P.spend = spend; P.io.out = out; }
+  snap();
+  return { frames, edges, T: P.T - t0 };
+}
+// The beeper's clicks played by the site's model of it (site/lib/ay.js), from now: each frame's
+// edges at their place in it. A promise; a page without the model, or without sound, plays nothing.
+let host = null;
+async function beep(edges) {
+  if (!edges.length || typeof root.SpectrumAY === 'undefined') return false;
+  if (!host) host = await root.SpectrumAY.host({ gain: 0.5, most: 1000 });
+  await host.ctx.resume();
+  const SCALE = 70908 / FRAME, frames = [];
+  for (const [t, v] of edges) {
+    const k = Math.floor(t / FRAME);
+    while (frames.length <= k) frames.push([]);
+    frames[k].push(Math.round((t - k * FRAME) * SCALE), 16, v);
+  }
+  frames.push([0, 16, 0]);
+  host.push(frames);
+  return true;
+}
+// A film played at the game's own pace, with its sound unless quiet (a browser plays none before
+// the reader has pressed something): show(img) for each frame as its time comes, done() after the
+// last. Returns stop(), which ends it where it is.
+function play(f, show, done, quiet) {
+  let raf = 0, shown = -1;
+  const start = performance.now();
+  if (!quiet) beep(f.edges).catch(() => {});
+  const tick = now => {
+    const t = (now - start) * 3500;               // T-states at 3.5 MHz, from milliseconds
+    let i = shown < 0 ? 0 : shown;
+    while (i + 1 < f.frames.length && f.frames[i + 1].t <= t) i++;
+    if (i !== shown) { shown = i; show(f.frames[i].img, i); }
+    if (i + 1 < f.frames.length || t < f.T) raf = requestAnimationFrame(tick);
+    else if (done) done();
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+
 // the scenario's name for the map's byte code, as scenarioText ($68A3) prints it (message code + 1
 // of its list): printMessage's characters caught, the space after each word, and a new line, which
 // the game breaks a long word with after its hyphen, joined up
@@ -6558,7 +6690,7 @@ function name(code) {
 // a name as a title: "CORPORAL JONLAN" as "Corporal Jonlan"
 const title = s => s.toLowerCase().replace(/(^|[\s-])([a-z])/g, (m, p, c) => p + c.toUpperCase());
 const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 2, '0');
-root.LSPages = { M, P, data, ORDER, TITLES, PAL, RGB, load, inPlay, image, view, map, name, title, hex, $, get loaded() { return loaded; } };
+root.LSPages = { M, P, data, ORDER, TITLES, PAL, RGB, FRAME, load, inPlay, image, view, map, tile, plan, film, beep, play, name, title, hex, $, get loaded() { return loaded; } };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -6638,6 +6770,204 @@ function table(U) {
     '</table><p class="cap">Two players: the first side has ' + M[0xB6F8] + ' credits and the second ' + M[0xB6F9] + ', with ' +
     U.filter(u => u.side && u.modes & 1).length + ' units on the second side.</p>';
 }
+
+// ---- The computer's plan: the scenario's areas, waypoints and links as its own copy of the
+// computer player keeps them (LSPages.plan), and each of the second side's units with its orders:
+// the waypoints it walks round, what its flags make it do (unitMove, aiStep, aiCanGo in g-ai.js),
+// and how much an enemy is worth to it in each area (its row of VALUES, which chooseTarget adds to
+// an enemy's score; 0 scores the enemy nothing)
+const ai = (function () {
+  const cv = $('mp-plan'), g = cv.getContext('2d'), box = $('mp-plan-units'), out = $('mp-plan-out');
+  const PK = cv.width / 80;
+  const HUE = ['#ffff00', '#ff8040', '#ff40ff', '#40ff80', '#40c0ff', '#ffffff', '#ffa0a0', '#a0ffa0', '#a0a0ff', '#ffd040', '#40ffff', '#ff4080'];
+  let I = null, pick = -1, U2 = [];
+  const centre = p => [(p[1] + .5) * PK, (p[0] + .5) * PK];
+  function arrow(x0, y0, x1, y1) {
+    const a = Math.atan2(y1 - y0, x1 - x0), mx = (x0 + x1) / 2, my = (y0 + y1) / 2, s = 9;
+    g.beginPath(); g.moveTo(mx + s * Math.cos(a), my + s * Math.sin(a));
+    g.lineTo(mx + s * Math.cos(a + 2.5), my + s * Math.sin(a + 2.5));
+    g.lineTo(mx + s * Math.cos(a - 2.5), my + s * Math.sin(a - 2.5)); g.closePath(); g.fill();
+  }
+  // the unit's round as the computer walks it: from each waypoint of its orders to the next (the
+  // last back to the first), along the route its own findRoute gives, ten waypoints at a time, as
+  // moveOn asks for it again from where each route ends; null for a leg with no route
+  function legs(u) {
+    const out = [];
+    if (u.way.length < 2) return out;
+    for (let i = 0; i < u.way.length; i++) {
+      const a = u.way[i], b = u.way[(i + 1) % u.way.length];
+      if (a === b) continue;
+      const path = [a];
+      let at = a;
+      for (let n = 0; n < 8 && at !== b; n++) {
+        const r = I.route(at, b);
+        if (!r || r.length < 2) break;
+        path.push(...r.slice(1));
+        at = r[r.length - 1];
+      }
+      out.push({ a, b, path: at === b ? path : null });
+    }
+    return out;
+  }
+  function loop(u, colour, width) {
+    g.strokeStyle = colour; g.fillStyle = colour; g.lineWidth = width;
+    for (const l of u.legs) {
+      if (!l.path) {
+        g.save(); g.setLineDash([10, 8]); g.strokeStyle = '#ff5050'; g.fillStyle = '#ff5050';
+        g.beginPath(); g.moveTo(...centre(I.pts[l.a])); g.lineTo(...centre(I.pts[l.b])); g.stroke();
+        arrow(...centre(I.pts[l.a]), ...centre(I.pts[l.b]));
+        g.restore();
+        continue;
+      }
+      const p = l.path.map(z => centre(I.pts[z]));
+      g.beginPath();
+      p.forEach(([x, y], i) => { if (i) g.lineTo(x, y); else g.moveTo(x, y); });
+      g.stroke();
+      const m = Math.max(0, (p.length >> 1) - 1);
+      arrow(...p[m], ...p[m + 1]);
+    }
+  }
+  function draw() {
+    const key = id;
+    if (!maps[key]) maps[key] = L.map(id, false);
+    g.imageSmoothingEnabled = true;
+    g.drawImage(maps[key], 0, 0, cv.width, cv.height);
+    g.fillStyle = 'rgba(14,16,20,.72)'; g.fillRect(0, 0, cv.width, cv.height);
+    const sel = pick >= 0 ? U2[pick] : null;
+    // the areas, shaded by what an enemy in each is worth to the unit picked
+    let top = 1;
+    if (sel && I.t.VALUES !== undefined) for (const a of I.areas) top = Math.max(top, I.value(sel.values, a[4]));
+    g.font = 'bold 20px "IBM Plex Mono", monospace'; g.textAlign = 'left'; g.textBaseline = 'top';
+    for (const [r0, r1, c0, c1, n] of I.areas) {
+      if (sel && I.t.VALUES !== undefined) {
+        const v = I.value(sel.values, n);
+        if (v > 0) { g.fillStyle = 'rgba(255,200,0,' + (0.15 + 0.5 * v / top).toFixed(2) + ')'; g.fillRect(c0 * PK, r0 * PK, (c1 - c0) * PK, (r1 - r0) * PK); }
+      }
+      g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 1;
+      g.strokeRect(c0 * PK + .5, r0 * PK + .5, (c1 - c0) * PK - 1, (r1 - r0) * PK - 1);
+      g.fillStyle = 'rgba(255,255,255,.9)'; g.fillText(String(n), c0 * PK + 4, r0 * PK + 3);
+    }
+    // the links between waypoints
+    g.strokeStyle = 'rgba(0,255,255,.35)'; g.lineWidth = 1.5; g.beginPath();
+    for (const [a, b] of I.links) { const p = I.pts[a], q = I.pts[b]; if (!p || !q) continue; g.moveTo(...centre(p)); g.lineTo(...centre(q)); }
+    g.stroke();
+    // the units' rounds: all faint, the one picked bold
+    if (!sel) { g.globalAlpha = .8; U2.forEach((u, i) => loop(u, HUE[i % HUE.length], 2.5)); g.globalAlpha = 1; }
+    if (sel) {
+      const r = U.find(x => x.code === sel.code);
+      if (r && r.rows && r.cols) { g.fillStyle = 'rgba(255,80,80,.35)'; g.fillRect(r.c0 * PK, r.r0 * PK, r.cols * PK, r.rows * PK); g.strokeStyle = '#ff5050'; g.lineWidth = 4; g.strokeRect(r.c0 * PK + 2, r.r0 * PK + 2, r.cols * PK - 4, r.rows * PK - 4); }
+      loop(sel, '#ffff00', 5);
+    }
+    // the terminals of The Cyber Hordes
+    for (const [r, c, z] of I.terminals) {
+      g.strokeStyle = '#ff40ff'; g.lineWidth = 3; g.strokeRect(c * PK + 1, r * PK + 1, PK - 2, PK - 2);
+    }
+    // the waypoints, numbered
+    g.textAlign = 'center'; g.textBaseline = 'bottom'; g.font = 'bold 16px "IBM Plex Mono", monospace'; g.lineJoin = 'round';
+    const on = new Set(sel ? sel.way : []);
+    for (let z = 1; z <= I.n; z++) {
+      const [x, y] = centre(I.pts[z]);
+      g.fillStyle = on.has(z) ? '#ffff00' : '#ffffff';
+      g.beginPath(); g.arc(x, y, on.has(z) ? 6 : 3.5, 0, 7); g.fill();
+      if (on.has(z) || !sel) { g.strokeStyle = '#000'; g.lineWidth = 4; g.strokeText(String(z), x, y - 6); g.fillStyle = on.has(z) ? '#ffff00' : '#ffffff'; g.fillText(String(z), x, y - 6); }
+    }
+  }
+  // what the orders' flags (byte 8) make the unit do: unitMove's choice between hunting and its
+  // orders (bit 3), the reserve walk sets (bits 0 and 1, $B714 once an enemy or a shot is seen),
+  // aiStep's aiDanger (bit 2), and with charge, aiCanGo and peek (bit 4)
+  const FLAGS = u => {
+    const w = [];
+    if (u.flags & 8) w.push('With no enemy in sight it walks its orders, and never sets off after one it saw before.');
+    else w.push('With no enemy in sight it scores every enemy it knows of, by what it carries' + (I.t.VALUES !== undefined ? ', the area it stands in' : '') +
+      ', how near it is and how lately it was seen, and goes after the best by the cheapest route between waypoints; with none seen lately, it walks its orders.');
+    if (u.flags & 0x10 && I.t.charge) w.push('An enemy in sight it runs at without stopping to fire, and fights it hand to hand.');
+    if (u.flags & 1) w.push('Walking its orders, it spends all its points.');
+    else if (u.flags & 2) w.push('Walking its orders, it keeps half its points to fire in the other side\'s turn.');
+    else w.push('Walking its orders, it keeps half its points to fire in the other side\'s turn once the computer has seen an enemy or a shot.');
+    if (u.flags & 4) w.push('It never steps where an enemy that can still fire would see it.');
+    return w.join(' ');
+  };
+  function describe(u) {
+    const nm = u.label;
+    const lv = []; for (let k = 1; k <= M[0xB684]; k++) if (M[0xB670 + u.k] & 1 << k) lv.push(k);
+    const at = ' It plays at ' + (lv.length === M[0xB684] ? 'every level' : (lv.length > 1 ? 'levels ' : 'level ') + runs(lv)) + '.';
+    if (u.alien) {
+      const t = I.terminals[u.terminal];
+      return '<b>' + nm + '</b> has no orders. It walks to terminal ' + (u.terminal + 1) + (t ? ' (row ' + t[0] + ', column ' + t[1] + ')' : '') +
+        ', shooting any terminal it has a clear line to on the way, and fires at an enemy it sees instead. Once there, or when that terminal is gone, it picks one of the seven at random.' + at;
+    }
+    const way = u.way.length ? 'walks round waypoints <b>' + u.way.join(' → ') + '</b>' + (u.way.length > 1 ? ' and back to ' + u.way[0] : '') : 'has no waypoints to walk to';
+    let v = '';
+    if (I.t.VALUES !== undefined) {
+      const zero = [...new Set(I.areas.filter(a => !I.value(u.values, a[4])).map(a => a[4]))];
+      v = ' An enemy is worth more to it in the areas shaded darker' + (zero.length ? ', and nothing in ' + (zero.length === new Set(I.areas.map(a => a[4])).size ? 'any of them' :
+        (zero.length > 1 ? 'areas ' : 'area ') + runs(zero)) : '') + (zero.length && I.t.skipZero ? ', where it never goes after one' : '') + '.';
+    }
+    const lost = u.legs.filter(l => !l.path).map(l => 'from ' + l.a + ' to ' + l.b);
+    const none = lost.length ? ' On the way ' + lost.join(' and ') + ' the computer\'s search finds no route, and the unit follows whatever route the last search that found one left behind.' : '';
+    return '<b>' + nm + '</b> ' + way + '.' + none + ' ' + FLAGS(u) + v + at;
+  }
+  // 1, 2, 3, 5, 7, 8, 9 as "1–3, 5, 7–9"
+  function runs(list) {
+    const out = [];
+    for (let i = 0; i < list.length; ) {
+      let j = i; while (j + 1 < list.length && list[j + 1] === list[j] + 1) j++;
+      out.push(j > i + 1 ? list[i] + '–' + list[j] : j === i + 1 ? list[i] + ', ' + list[j] : String(list[i]));
+      i = j + 1;
+    }
+    return out.join(', ');
+  }
+  function buttons() {
+    box.textContent = '';
+    const all = document.createElement('button');
+    all.type = 'button'; all.className = 'hw-btn'; all.textContent = 'All';
+    all.addEventListener('click', () => choose(-1));
+    box.appendChild(all);
+    U2.forEach((u, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'hw-btn';
+      b.textContent = u.label;
+      if (!u.alien) b.style.borderLeft = '4px solid ' + HUE[i % HUE.length];
+      b.addEventListener('click', () => choose(i));
+      box.appendChild(b);
+    });
+  }
+  function choose(i) {
+    pick = i;
+    [...box.children].forEach((b, k) => b.setAttribute('aria-pressed', String(k === i + 1)));
+    draw();
+    out.innerHTML = i < 0 ? I.n + ' waypoints, ' + new Set(I.links.map(([a, b]) => Math.min(a, b) + ',' + Math.max(a, b))).size + ' links and ' + new Set(I.areas.map(a => a[4])).size + ' areas, and each unit\'s round in its colour' +
+      (I.terminals.length ? '; the seven terminals outlined in magenta' : '') + '. Pick a unit for its orders.' : describe(U2[i]);
+  }
+  function show() {
+    L.load(id);
+    I = L.plan();
+    // the second side's units that play against the computer at some level (bits 1 to 7 of
+    // $B670), each named as the scenario names it, with a number where several share a name
+    U2 = I.units.filter(u => M[0xB670 + u.k] & 0xFE);
+    const count = {}, seen = {};
+    for (const u of U2) { u.name = L.title(L.name(u.code)); count[u.name] = (count[u.name] || 0) + 1; }
+    for (const u of U2) u.legs = legs(u);
+    for (const u of U2) if (count[u.name] > 1) { seen[u.name] = (seen[u.name] || 0) + 1; u.label = u.name + ' ' + seen[u.name]; } else u.label = u.name;
+    buttons();
+    choose(-1);
+  }
+  const point = e => {
+    if (!I) return;
+    const b = cv.getBoundingClientRect();
+    const c = Math.floor((e.clientX - b.left) / b.width * 80), r = Math.floor((e.clientY - b.top) / b.height * 50);
+    if (r < 0 || r > 49 || c < 0 || c > 79) return;
+    const a = I.areas.find(([r0, r1, c0, c1]) => r >= r0 && r < r1 && c >= c0 && c < c1);
+    let best = 0, d = 1e9;
+    for (let z = 1; z <= I.n; z++) { const p = I.pts[z], dd = (p[0] - r) ** 2 + (p[1] - c) ** 2; if (dd < d) { d = dd; best = z; } }
+    const sel = pick >= 0 ? U2[pick] : null;
+    $('mp-plan-at').innerHTML = 'Row ' + r + ', column ' + c + ': ' + (a ? 'area ' + a[4] + (sel && I.t.VALUES !== undefined ? ', worth ' + I.value(sel.values, a[4]) + ' to ' + sel.label : '') : 'in no area, where an enemy scores nothing') +
+      '; the nearest waypoint is ' + best + '.';
+  };
+  cv.addEventListener('pointermove', point);
+  cv.addEventListener('pointerdown', point);
+  return { show };
+})();
 let U = [];
 function show() {
   U = units();
@@ -6646,6 +6976,7 @@ function show() {
   for (const b of box.children) b.setAttribute('aria-pressed', b.dataset.id === id);
   $('mp-title').textContent = L.TITLES[id];
   out.textContent = 'Point at a square.';
+  ai.show();
 }
 for (const s of L.ORDER) {
   const b = document.createElement('button');

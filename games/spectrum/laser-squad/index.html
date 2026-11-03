@@ -70,6 +70,24 @@ th{font-weight:700;color:var(--ink-soft)}
 .hw-amts span.on{background:var(--ink);color:#c9c9c9;border-color:var(--ink)}
 .hw-amts span.on b{color:#fff}
 .ls-code{font-family:var(--fm);font-size:13px;line-height:1.5;background:#1b1b1b;color:#e6e6e6;padding:12px 14px;border-radius:6px;overflow-x:auto;margin:0;white-space:pre}
+/* the Graphics tab */
+.gx-tile{display:block;image-rendering:pixelated;height:auto}
+.gx-scroll{overflow-x:auto;margin:0 0 14px}
+#gx-units h3{font-size:16px;margin:16px 0 6px}
+#gx-units h3:first-child{margin-top:0}
+#gx-units h3 span{font-weight:400;font-size:13px;color:var(--ink-mute)}
+table.gx-rows{width:auto;border-collapse:collapse;margin:0}
+table.gx-rows th{font-family:var(--fm);font-size:10.5px;font-weight:400;color:var(--ink-mute);padding:2px 3px;text-align:center;vertical-align:bottom;line-height:1.2;max-width:40px}
+table.gx-rows th:first-child{text-align:left;max-width:none}
+table.gx-rows td{padding:2px 3px;border:none;vertical-align:middle}
+table.gx-rows td:first-child{font-size:13px;line-height:1.3;min-width:150px;max-width:230px;padding-right:10px}
+table.gx-rows td:first-child span{display:block;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+table.gx-rows td .gx-tile{background:#000}
+.gx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.gx-card{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid var(--line-soft);border-radius:6px;padding:6px;background:var(--surface-2)}
+.gx-card p{flex-basis:100%;margin:0;font-size:13px;line-height:1.3}
+.gx-card p span{display:block;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+.gx-sheet canvas{display:block;width:100%;max-width:576px;height:auto;image-rendering:pixelated;border-radius:6px;cursor:crosshair;touch-action:none}
 .pl-list{padding-left:20px}
 .pl-list li{margin:0 0 8px}
 </style>
@@ -92,7 +110,7 @@ th{font-weight:700;color:var(--ink-soft)}
 <section id="view">
   <p class="fig">02 · The view</p>
   <h2 class="t">The map is one byte a square, and the screen shows 121 of them</h2>
-  <p class="lede">Pick a scenario and drag the view, or use the arrows. Point at a square to read it.</p>
+  <p class="lede">Pick a scenario and drag the view, or use the arrows. Point at a square to read it. Every scenario's whole map is on the <a href="levels.html">Maps</a> tab.</p>
   <div class="plate">
     <div class="pick"><select id="hw-scen" aria-label="Scenario"></select></div>
     <div class="hw-two">
@@ -113,7 +131,7 @@ th{font-weight:700;color:var(--ink-soft)}
   </div>
   <p>The map is 4,000 bytes at <code>$D6BF</code>, a byte for each square, 80 to a row. A byte below <code>$6E</code> is terrain, from <code>$6E</code> to <code>$8B</code> an object lying there, and from <code>$8C</code> to <code>$9F</code> one of the scenario's 20 units. Each byte has two bytes in the scenario's table of squares: its colours and its tile. A tile is 16 pixels by 16, two character cells by two, so each square has its own colours and nothing on the map ever clashes.</p>
   <p>The name of every square comes from the same number. The scenario's messages are a list, and the name of map byte <i>n</i> is message <i>n</i> + 1 of it, which is how the readout beside the view in the game says WALL, BUSH or CORPORAL JONLAN under the cursor. A message is mostly the numbers of words in a dictionary the scenario carries, so WALL AND CABINET is four bytes: three words and a new line.</p>
-  <p>Fire mode swaps in a second table of squares at <code>$E79F</code>, which draws the map as a plan: walls as thin lines, trees, plants and furniture as round blobs, floors bare, and each unit as a blob, so the line of a shot shows against plain ground. The units stand on the map the same way in both: as their own byte, in place of the floor, which the unit's record keeps until it moves off.</p>
+  <p>Fire mode swaps in a second table of squares at <code>$E79F</code>, which draws the map as a plan: walls as thin lines, trees, plants and furniture as round blobs, floors bare, and each unit as a blob, so the line of a shot shows against plain ground. The units stand on the map the same way in both: as their own byte, in place of the floor, which the unit's record keeps until it moves off. Every unit's tiles, in all eight facings and with each thing it can hold, are on the <a href="graphics.html">Graphics</a> tab, with every other tile each scenario carries.</p>
 </section>
 
 <section id="sound">
@@ -161,14 +179,14 @@ th{font-weight:700;color:var(--ink-soft)}
 <section id="blast">
   <p class="fig">05 · Blasts</p>
   <h2 class="t">A blast is eleven squares wide and loses strength at every square</h2>
-  <p class="lede">Pick what goes off, then click a square of the view. The numbers are the strength that reached each square; yellow is the whole of it.</p>
+  <p class="lede">Pick what goes off, then click a square of the view. It goes off as the game shows it, with its sound, and then the numbers are the strength that reached each square; yellow is the whole of it.</p>
   <div class="plate">
     <div class="pick"><select id="hw-bscen" aria-label="Scenario"></select></div>
     <div class="hw-btns" id="hw-kinds"></div>
     <div class="hw-screen" style="margin-top:10px"><canvas id="hw-blast" width="528" height="528" aria-label="The view, and the strength the blast left on each square" style="cursor:crosshair"></canvas></div>
     <div class="hw-btns"><button type="button" class="hw-btn" id="hw-blast-reset">Start again</button></div>
     <p class="hw-out" id="hw-blast-out"></p>
-    <p class="cap">The Play tab's port of <code>explode</code> (<code>$9696</code>) run whole on the scenario's map, with the table of strengths it fills at <code>$5B00</code> caught before the first square takes its blow, then the fires it lit, as the game sets off a primed grenade. The view is where the game puts it, centred on the blast; the squares left without a number got nothing. Blasts add up until Start again.</p>
+    <p class="cap">The Play tab's port of <code>explode</code> (<code>$9696</code>) run whole on the scenario's map, then the fires it lit, as the game sets off a primed grenade: a picture of the view each time the game's clock has moved on a frame, played at that rate with the routine's writes to the beeper, and the table of strengths it fills at <code>$5B00</code> caught before the first square takes its blow. The view is where the game puts it, centred on the blast; the squares left without a number got nothing. Blasts add up until Start again.</p>
   </div>
   <p>An explosion has the strength of what went off: 90 for an AP50 grenade, 160 for a rocket or an AP75 grenade, 170 for the miners' explosive. <code>explode</code> sets out a box five squares each way from the centre, cut at the map's edges, and draws a line from the centre to every square of the box's edge (<code>blastRay</code>, <code>$980E</code>). Along each line the strength falls by two sixteenths of the blast's own strength at every straight step and three sixteenths at every diagonal one, and each square it crosses takes a toll as well, its terrain's byte <code>$05</code>. A square keeps the most that reached it by any line.</p>
   <p>Then every square of the box takes the blow of its number. Terrain breaks when the blow is at least its byte <code>$03</code>, into the terrain its byte <code>$04</code> names, and goes on breaking while the blow lasts. A wall in The Assassins needs 120 and takes 120 off a blast that crosses it, so a grenade cannot break one and nothing of it reaches the room behind; a rocket can. Terrain whose byte <code>$08</code> is 7, a vidi-screen or a control console, catches fire as it breaks, and the fire goes off after the blast as a blast of its own. The first unit standing on a square is hurt through its armour, and an object lying there is destroyed by a blow of at least its kind's byte <code>$11</code>. A primed grenade goes off at the end of the half-turn its timer names, where it lies or wherever its carrier has walked to.</p>
@@ -6560,6 +6578,12 @@ G.unit = P => {
 //   LSPages.map(id, fire)     the scenario's whole map, 80 x 50 squares of 16 pixels, as drawn by
 //                             drawView view by view, through the table of squares for fire mode
 //                             ($E79F) when fire is set; a canvas
+//   LSPages.tile(a, colours)  the scenario's tile a, 16 x 16 pixels, drawn by the port's drawTile
+//   LSPages.film(run)         what run() shows on the view, a picture a frame, and its sound
+//   LSPages.play(film, show, done, quiet)  that film played at the game's pace, with its sound
+//   LSPages.plan()            the computer player's map of the scenario loaded: waypoints, areas,
+//                             links, the second side's orders, and its findRoute between two
+//                             waypoints
 //   LSPages.name(code)        the scenario's name for the map's byte code: its message of that number
 (function (root) {
 'use strict';
@@ -6638,6 +6662,113 @@ function map(id, fire) {
   for (const r of starts(ROWS, ROWS - 11)) for (const c of starts(COLS, COLS - 11)) g.putImageData(view(r, c), c * 16, r * 16);
   return cv;
 }
+// tile a of the scenario loaded in the colours at: the port's drawTile at the view's first square
+// (character row and column 1), as its 16 x 16 pixels
+function tile(a, at) {
+  M[P.V.PRINT_ROW] = 1; M[P.V.PRINT_COL] = 1; M[P.V.ATTR] = at;
+  P.drawTile({ a });
+  return image(8, 8, 16, 16);
+}
+// The computer player's map of the scenario loaded, from its own copy's tables (g-ai.js, TABLES):
+// the waypoints (POINTS, a row and a column each, NPOINTS of them), the areas (AREAS, five bytes:
+// the first row, the row after the last, the first column, the column after the last, the
+// number; $FF after the last), each waypoint's links as nextLink walks them (LINKS: each list its
+// length with bit 7 set, then two bytes a link, the waypoint and the cost), and the second side's
+// units: each one's orders (ORDERS + 10 x its $1A: the waypoints it walks round from byte 1 to a
+// 0, the flags at 8, the row of VALUES at 9), or for The Cyber Hordes' units from $9C the
+// terminal it goes for first ($1A of TERMINALS, three bytes each: the row, the column and the
+// waypoint).
+function plan() {
+  const t = root.LSGroups.ai.TABLES[loaded];
+  const n = M[t.NPOINTS], pts = [], areas = [], links = [], units = [];
+  for (let k = 1; k <= n; k++) { const a = t.POINTS + 2 * (k - 1); pts[k] = [M[a], M[a + 1]]; }
+  for (let hl = t.AREAS; ; hl += 5) { areas.push([...M.slice(hl, hl + 5)]); if (M[hl + 5] === 0xFF) break; }
+  for (let z = 1; z <= n; z++) {
+    let hl = t.LINKS;
+    for (let b = z; b; b--) hl += M[hl] & 0x7F;
+    for (let e = hl + 1; !(M[e] & 0x80); e += 2) links.push([z, M[e], M[e + 1]]);
+  }
+  const terminals = [];
+  if (t.TERMINALS) for (let k = 0; k < 7; k++) { const a = t.TERMINALS + 3 * k; terminals.push([M[a], M[a + 1], M[a + 2]]); }
+  for (let k = 0; k < 20; k++) {
+    const u = 0xD39F + 40 * k, code = 0x8C + k;
+    if (!(M[u + 0x25] & 1)) continue;
+    const alien = !!t.aliens && code >= 0x9C;
+    const o = t.ORDERS + 10 * M[u + 0x1A];
+    const way = [];
+    if (!alien) for (let i = 1; i < 8 && M[o + i]; i++) way.push(M[o + i]);
+    units.push({ k, code, alien, terminal: alien ? M[u + 0x1A] : -1, orders: alien ? -1 : M[u + 0x1A],
+      way, flags: alien ? 0 : M[o + 8], values: alien ? -1 : M[o + 9] });
+  }
+  // the value of each area to a unit of VALUES row v, as chooseTarget reads it (32 a row; 0
+  // leaves an enemy there out)
+  const value = (v, area) => (t.VALUES === undefined ? -1 : M[t.VALUES + 32 * v + area - 1 & 0xFFFF]);
+  // the route the computer finds from waypoint a to waypoint b: its own findRoute, run on FROM and
+  // TO, the waypoints it leaves at $5CF0 (ten at most, a first); null when it finds none cheaper
+  // than the bound it starts from
+  const route = (a, b) => {
+    M.fill(0xFF, 0x5CF0, 0x5CFA);
+    M[t.FROM] = a; M[t.TO] = b;
+    P.SC[loaded].ai.findRoute();
+    if (M[0x5CF0] !== a) return null;
+    const r = [];
+    for (let k = 0; k < 10 && M[0x5CF0 + k] !== 0xFF; k++) r.push(M[0x5CF0 + k]);
+    return r;
+  };
+  return { t, n, pts, areas, links, units, terminals, value, route };
+}
+// A film of what a routine shows on the view: run() runs it (a generator is run to its end), and
+// each time the port's clock (P.T, which P.spend moves on) passes a frame of a 48K's time, 69,888
+// T-states, the view's 176 x 176 pixels are taken; its writes to the beeper (port $FE, bit 4) are
+// caught with their T-states. { frames: [{ t, img }], edges: [[t, level]], T }, from the start.
+const FRAME = 69888;
+function film(run) {
+  const frames = [], edges = [], spend = P.spend, out = P.io.out, t0 = P.T;
+  let last = -FRAME;
+  const snap = () => { frames.push({ t: P.T - t0, img: image(8, 8, 176, 176) }); last = P.T - t0; };
+  P.spend = n => { if (P.T - t0 - last >= FRAME) snap(); spend(n); };
+  P.io.out = (port, v, t) => { if ((port & 255) === 0xFE) edges.push([(t === undefined ? P.T : t) - t0, v >> 4 & 1]); };
+  try { const r = run(); if (r && typeof r.next === 'function') for (let n = 0; n < 1e6 && !r.next().done; n++); }
+  finally { P.spend = spend; P.io.out = out; }
+  snap();
+  return { frames, edges, T: P.T - t0 };
+}
+// The beeper's clicks played by the site's model of it (site/lib/ay.js), from now: each frame's
+// edges at their place in it. A promise; a page without the model, or without sound, plays nothing.
+let host = null;
+async function beep(edges) {
+  if (!edges.length || typeof root.SpectrumAY === 'undefined') return false;
+  if (!host) host = await root.SpectrumAY.host({ gain: 0.5, most: 1000 });
+  await host.ctx.resume();
+  const SCALE = 70908 / FRAME, frames = [];
+  for (const [t, v] of edges) {
+    const k = Math.floor(t / FRAME);
+    while (frames.length <= k) frames.push([]);
+    frames[k].push(Math.round((t - k * FRAME) * SCALE), 16, v);
+  }
+  frames.push([0, 16, 0]);
+  host.push(frames);
+  return true;
+}
+// A film played at the game's own pace, with its sound unless quiet (a browser plays none before
+// the reader has pressed something): show(img) for each frame as its time comes, done() after the
+// last. Returns stop(), which ends it where it is.
+function play(f, show, done, quiet) {
+  let raf = 0, shown = -1;
+  const start = performance.now();
+  if (!quiet) beep(f.edges).catch(() => {});
+  const tick = now => {
+    const t = (now - start) * 3500;               // T-states at 3.5 MHz, from milliseconds
+    let i = shown < 0 ? 0 : shown;
+    while (i + 1 < f.frames.length && f.frames[i + 1].t <= t) i++;
+    if (i !== shown) { shown = i; show(f.frames[i].img, i); }
+    if (i + 1 < f.frames.length || t < f.T) raf = requestAnimationFrame(tick);
+    else if (done) done();
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+
 // the scenario's name for the map's byte code, as scenarioText ($68A3) prints it (message code + 1
 // of its list): printMessage's characters caught, the space after each word, and a new line, which
 // the game breaks a long word with after its hyphen, joined up
@@ -6655,7 +6786,7 @@ function name(code) {
 // a name as a title: "CORPORAL JONLAN" as "Corporal Jonlan"
 const title = s => s.toLowerCase().replace(/(^|[\s-])([a-z])/g, (m, p, c) => p + c.toUpperCase());
 const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 2, '0');
-root.LSPages = { M, P, data, ORDER, TITLES, PAL, RGB, load, inPlay, image, view, map, name, title, hex, $, get loaded() { return loaded; } };
+root.LSPages = { M, P, data, ORDER, TITLES, PAL, RGB, FRAME, load, inPlay, image, view, map, tile, plan, film, beep, play, name, title, hex, $, get loaded() { return loaded; } };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -6664,7 +6795,8 @@ root.LSPages = { M, P, data, ORDER, TITLES, PAL, RGB, load, inPlay, image, view,
 // game's own code (port/test), on the memory the page carries (page/pages.js). The view is the
 // port's drawView; the sound effects are sound's writes to port $FE at the T-states its loops
 // take, played by the site's model of the beeper (site/lib/ay.js); a blast is the port's explode,
-// run whole, with the table of strengths it fills caught as it starts on the squares; a route is
+// run whole, filmed with its sound (LSPages.film) and played, then the table of strengths it fills,
+// caught as it starts on the squares; a route is
 // the scenario's own findRoute (g-ai.js), run on its waypoints, links and areas.
 (function () {
 'use strict';
@@ -6737,7 +6869,6 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
 // ---- 2. The sound effects: sound(A), its writes to the beeper caught with their T-states
 (function () {
   const box = $('hw-fx'), cv = $('hw-wave'), g = cv.getContext('2d'), out = $('hw-fx-out');
-  const FRAME = 69888;                       // a 48K's frame, in T-states
   // what plays each effect, from the code (the listing's soundEffects, $B531)
   const USE = ['a key or fire answered, at the menus and the waits', 'the mark moved in a list, and an object sold',
     'a choice taken from a list, and an object bought', 'a step, a blow in close combat and a unit hit by a shot',
@@ -6771,7 +6902,6 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     for (const [t, v] of f.edges) { g.lineTo(X(t), Y(lv)); g.lineTo(X(t), Y(v)); lv = v; }
     g.lineTo(X(f.T), Y(lv)); g.stroke();
   }
-  let host = null;
   box.addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     const f = fx[+b.dataset.n];
@@ -6783,16 +6913,7 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
       [3, 5, 7, 9].map(k => t[k] || 256).join(', ') + '. ' + f.edges.length.toLocaleString('en-GB') + ' clicks of the speaker in ' +
       f.T.toLocaleString('en-GB') + ' T-states, ' + (f.T / 3500).toFixed(0) + ' ms with the game waiting.';
     if (typeof SpectrumAY === 'undefined') { out.innerHTML += ' The site\'s sound script (lib/ay.js) is missing, so it cannot be heard here.'; return; }
-    try { if (!host) host = await SpectrumAY.host({ gain: 0.5, most: 1000 }); await host.ctx.resume(); }
-    catch (err) { out.innerHTML += ' No sound: ' + err.message; return; }
-    const SCALE = 70908 / FRAME, frames = [];
-    for (const [t, v] of f.edges) {
-      const k = Math.floor(t / FRAME);
-      while (frames.length <= k) frames.push([]);
-      frames[k].push(Math.round((t - k * FRAME) * SCALE), 16, v);
-    }
-    frames.push([0, 16, 0]);
-    host.push(frames);
+    try { await L.beep(f.edges); } catch (err) { out.innerHTML += ' No sound: ' + err.message; }
   });
   draw(null);
 })();
@@ -6825,6 +6946,7 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     kinds.firstChild.click();
   }
   function reset() {
+    if (playing) { stop(); clearTimeout(hold); playing = false; }
     L.load(id);
     // the view where the game shows the first side's squares for placing, on the map as play starts
     const code = M[0xB65E];
@@ -6877,12 +6999,15 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     };
     P.checkEnd = function* () { return {}; };
     const before = M.slice(0xD6BF, 0xD6BF + 4000);
-    let fires = 0;
+    let fires = 0, f = null;
     try {
-      P.clearFires();
-      for (const g of [P.explode({}), (function* () { const keep = P.explode; P.explode = function* (r) { fires++; return yield* keep(r); }; try { return yield* P.spreadFires({}); } finally { P.explode = keep; } })()]) {
-        for (let n = 0; n < 1e5 && !g.next().done; n++);
-      }
+      // filmed (LSPages.film): what the game shows on the view as it goes off, and its sound
+      f = L.film(() => {
+        P.clearFires();
+        for (const g of [P.explode({}), (function* () { const keep = P.explode; P.explode = function* (r) { fires++; return yield* keep(r); }; try { return yield* P.spreadFires({}); } finally { P.explode = keep; } })()]) {
+          for (let n = 0; n < 1e5 && !g.next().done; n++);
+        }
+      });
     } catch (e) { out.textContent = 'The blast stopped: ' + e.message; }
     finally { P.cellDamage = keepCell; P.checkEnd = keepEnd; }
     if (caught) { table = caught; viewAt = caught.view; }
@@ -6895,14 +7020,25 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
       broke.set(k, (broke.get(k) || 0) + 1);
     }
     after = M.slice();
-    draw();
-    out.innerHTML = '<b>' + kindName + '</b>, strength ' + strength + ', at row ' + r + ', column ' + c + '. ' +
+    const text = '<b>' + kindName + '</b>, strength ' + strength + ', at row ' + r + ', column ' + c + '. ' +
       (broke.size ? 'Broken: ' + [...broke].map(([k, n]) => (n > 1 ? n + ' × ' : '') + k).join('; ') + '.' : 'Nothing broke.') +
       (fires ? ' ' + fires + (fires > 1 ? ' fires' : ' fire') + ' went off after it.' : '');
+    if (!f) { draw(); return; }
+    // the blast as the game shows it, at its pace and with its sound; then the numbers
+    const tmp = document.createElement('canvas'); tmp.width = 176; tmp.height = 176;
+    const tg = tmp.getContext('2d');
+    playing = true;
+    out.textContent = 'Strength ' + strength + ' going off at row ' + r + ', column ' + c + '…';
+    stop = L.play(f, img => { tg.putImageData(img, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(tmp, 0, 0, cv.width, cv.height); },
+      // the last picture held a moment, then the numbers
+      () => { hold = setTimeout(() => { playing = false; draw(); out.innerHTML = text; }, 700); }, quiet);
   }
+  let stop = () => {}, playing = false, quiet = false, hold = 0;
   cv.addEventListener('click', e => {
+    if (playing) { stop(); clearTimeout(hold); playing = false; }
     const b = cv.getBoundingClientRect();
     const x = (e.clientX - b.left) * cv.width / b.width / SCALE, y = (e.clientY - b.top) * cv.height / b.height / SCALE;
+    quiet = !e.isTrusted;
     blast(viewAt[0] + Math.floor(y / SQ), viewAt[1] + Math.floor(x / SQ));
   });
   sel.addEventListener('change', () => { id = sel.value; pickKinds(); reset(); });

@@ -57,3 +57,16 @@ it, whose own command line matched the pattern, so the edit after it
 never ran. A count of the Water Dwellers' charges found none in 12,000
 passes and was left out of the Discoveries page; the bug itself is read
 in the code (`TODO.md`).
+
+**The plan and the whole map (3 November 2026).** The Maps tab's plan
+first drew straight lines between a unit's waypoints, which crossed walls;
+running the scenario's own `findRoute` for each leg showed the legs with
+no route at all, and a lockstep run with the search hooked showed what a
+unit does then: it walks whatever route the last search left at `$5CF0`.
+The Play tab's whole map first sampled the machine once a displayed
+frame and missed the computer's half-turn, which the runtime runs up to
+4,000 frames ahead of the screen; it now samples as the runtime finishes
+each frame (`rt.onFrame`) and draws the frame on screen. A tapped arrow
+key moved the deploy cursor four squares because the page held each key
+for 16 reads and the cursor loop reads four times a move; the page now
+lets a key go once the game has read it and a frame has been shown.

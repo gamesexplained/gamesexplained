@@ -73,6 +73,9 @@ Found in the code, not in the manual. Each is in `facts.md`.
   and lets the computer know where that unit is (`$CBBB`, `$CBD7`).
 - Paradise Valley's Water Dwellers charge from a point above the map
   (`$BE60`).
+- When the computer finds no route between two waypoints its unit walks
+  the route an earlier search left (`findRoute`, `$B78C`); Officer
+  Neilson's round in Moonbase Assault has none either way.
 - Damage to terrain moves morale by the side of the last kill (`$9201`).
 - Armour is fitted whether or not it is paid for (`$9F5E`).
 - Six droids in The Assassins never play; three scenario blocks end with
@@ -80,6 +83,9 @@ Found in the code, not in the manual. Each is in `facts.md`.
 
 ## Open questions
 
-- The inlay text says scenario 4 and 5 misbehave at higher levels (the
-  computer's reinforcements appearing away from the deployment squares, or
-  sitting in a corner). To check against the code.
+- The Spectrum Games Database's notes say Paradise Valley's Venemous
+  Splurges sit in a corner and do not move unless a unit comes near. Three
+  of them arrive in the top right-hand corner and an enemy below row 33 is
+  worth nothing to them (`facts.md`, `TODO.md`); whether that is all of it
+  is open. The same notes' Cyber Hordes reinforcements, away from the
+  squares for placing, are the droids' patch down columns 11 and 12.

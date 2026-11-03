@@ -5,7 +5,7 @@ engine and all five scenarios, ported routine by routine and run in
 lockstep with the game's own code, and `test_play.js` holds the published
 page in CI. Coverage is 100 % over the engine and the five scenarios
 (`coverage.py`, each part), every feature in `features.md` is live,
-confirmed, traced, differs or open with what is missing, and the four
+confirmed, traced, differs or open with what is missing, and the five
 tabs are built and checked in a browser at desktop and phone width. The
 copy is `agent-draft`.
 
@@ -35,11 +35,16 @@ had one.
   combat's chance to hit.
 - Panic (the manual's units that drop what they hold) and the droids'
   morale that never falls: neither is traced.
-- The inlay text says scenarios 4 and 5 misbehave at higher levels, the
-  computer's reinforcements arriving away from the squares for placing or
-  sitting in a corner. The reinforcements come back in the patches their
-  records give (`cyberReinforce`, `$FF67`; `paradiseReinforce`, `$FEDF`);
-  whether those patches explain it is not checked.
+- The Spectrum Games Database's notes say that in Paradise Valley the
+  Venemous Splurges sit in a corner and do not move unless a unit comes
+  near. Three of the five arrive and come back (`paradiseReinforce`,
+  `$FEDF`) in the top right-hand corner, rows 0 to 33 and columns 70 to
+  78, one walks a round of two waypoints there (7 and 26), and an enemy
+  below row 33 is worth nothing to them (their values are non-zero only in
+  areas 1 to 16). Whether that is the whole of what the notes describe is
+  not checked: no game was played on to watch them stay. The same notes'
+  Cyber Hordes complaint is explained on the Maps tab: every droid's patch
+  is the strip down columns 11 and 12.
 - How often the Water Dwellers' charge picks a different enemy from the
   nearest. A count over 12,000 passes of Paradise Valley with the first
   side placed by the river found no charge at all, which more likely says

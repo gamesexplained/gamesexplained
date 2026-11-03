@@ -13,15 +13,33 @@
   <p>The computer places nothing. Against it, the second side's units all arrive in their patches, the ones a second player would have placed as well, so a patch of a single square is where that unit always starts.</p>
 </section>
 
+<section id="plan">
+  <p class="fig">02 · The computer's plan</p>
+  <h2 class="t">The computer walks its units between waypoints and scores its enemies by area</h2>
+  <div class="plate">
+    <div class="mp-screen"><canvas id="mp-plan" width="1280" height="800" aria-label="The computer's areas, waypoints and links on the scenario's map"></canvas></div>
+    <div class="hw-btns" id="mp-plan-units"></div>
+    <p class="hw-out" id="mp-plan-out"></p>
+    <p class="hw-out" id="mp-plan-at">Point at a square.</p>
+    <div class="mp-key"><span><i class="k"><b style="position:absolute;inset:2px 5px;border:1px solid #fff"></b></i>an area, with its number</span><span><i class="k"><b style="position:absolute;top:4px;left:3px;right:3px;height:3px;background:#0ff"></b></i>a link: a straight walk from one waypoint to another</span><span><i class="k"><b style="position:absolute;inset:2px 5px;background:rgba(255,200,0,.6)"></b></i>what an enemy there is worth to the unit picked</span><span><i class="k"><b style="position:absolute;top:4px;left:3px;right:3px;height:3px;background:#ff0"></b></i>the round of the unit picked, along the routes the computer finds</span><span><i class="k"><b style="position:absolute;top:5px;left:3px;right:3px;border-top:2px dashed #ff5050"></b></i>a leg it finds no route for</span><span><i class="k"><b style="position:absolute;inset:1px 6px;background:rgba(255,80,80,.35);border:2px solid #ff5050"></b></i>where the unit picked arrives</span></div>
+    <p class="cap">Drawn from the tables of the scenario's own copy of the computer player: its areas, its waypoints and the links between them, and for each unit of the second side that plays against the computer at some level, its orders, read from its record (<code>$1A</code>) and ten bytes of the table they number. Each leg of a round is drawn along the route the computer's own search finds, run here on the scenario's tables.</p>
+  </div>
+  <p>Each scenario carries its own copy of the computer player, and a map of its own for it. The map is cut into numbered areas, rectangles that can share a number, and strewn with waypoints, each linked to the waypoints a unit can walk to from it in a straight line, with what that walk costs. A unit of the computer's side has orders: a round of up to seven waypoints, a byte of flags, and a row of values that says what an enemy is worth to it in each area.</p>
+  <p>In the computer's turn each of its units fires at the enemies it can see, and steps out of their sight if it has the points. With none in sight it walks its round or, when it has seen one lately, goes after the enemy it scores highest, from waypoint to waypoint along the cheapest route the links give. Between waypoints it takes one step at a time, to whichever neighbouring square is nearest the next one and not already on its trail that turn.</p>
+  <p>The search, which the <a href="index.html#routes">How it works</a> tab runs between any two waypoints, keeps only a route cheaper than a rough guess at the cost between the two waypoints' areas. When it finds none, nothing clears the route the last search found, so the unit sets off along that one, often another unit's. In Moonbase Assault it finds none between Officer Neilson's two waypoints, at the far ends of the base, in either direction.</p>
+  <p>The Spectrum Games Database's notes on the game say that in The Cyber Hordes, at the higher levels, the computer's reinforcements do not start on the deployment squares but somewhere else on the map. The droids' records say why. Against the computer no unit of the second side is placed, and every droid's patch is a strip two columns wide down the map's left-hand side, columns 11 and 12 from row 1 to row 48 (to row 39 for the Battle Droids), which runs from the second side's squares for placing at the top of the map to the ones at the bottom. A droid that dies comes back in that strip three turns later, by a routine of the scenario's own at <code>$FF67</code>, and the higher the level the more droids there are.</p>
+  <p>The same notes say that in Paradise Valley the computer gains reinforcements of Venemous Splurges, which sit in a corner of the map and do not move unless a unit comes near them. Three of the five Splurges arrive in the map's top right-hand corner, rows 0 to 33 and columns 70 to 78, and come back there three turns after they die, by the scenario's routine at <code>$FEDF</code>. The round of one of them is two waypoints in that corner, 7 and 26, up and down column 76, and to every Splurge an enemy below row 33, outside areas 1 to 16, is worth nothing.</p>
+</section>
+
 <section id="units">
-  <p class="fig">02 · The units</p>
+  <p class="fig">03 · The units</p>
   <h2 class="t">Who plays, and where they come on</h2>
   <div id="mp-units"></div>
   <p class="cap">Read from the scenario's block: each unit's record at <code>$D39F</code> (40 bytes; its side in <code>$25</code>, the turn and the patch it arrives in from <code>$1C</code>), its flags at <code>$B6E4</code> and the games it plays in at <code>$B670</code>, a bit for two players and a bit for each level. A unit with no bit set never plays; its record is still in the block.</p>
 </section>
 
 <section id="levels">
-  <p class="fig">03 · The levels</p>
+  <p class="fig">04 · The levels</p>
   <h2 class="t">A higher level gives the computer more units and the player less money</h2>
   <div id="mp-levels"></div>
   <p>Against the computer the player picks a level, from 1 to the number the scenario allows. The level sets the computer's skill, which is how many of the player's half-turns it keeps a sighting of an enemy in mind (the count at <code>$B63A</code> for each unit), the credits the first side has to spend in the shop, and which of the computer's units play at all.</p>

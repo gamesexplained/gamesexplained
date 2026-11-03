@@ -189,6 +189,19 @@ half-turns count each byte down (`halfTurn`), the computer hunts a unit
 only while its byte is not 0 and adds it to the unit's score as a target
 (`chooseTarget`). Nothing else reads the skill.
 
+**Routes it cannot find.** `findRoute` keeps a route only when it costs
+less than the bound it starts with, the distance between the two
+waypoints' areas (`areaDistance`) or 25 when they share one, and copies
+ten of its waypoints to `$5CF0`. When it finds none, nothing clears
+`$5CF0`, and the unit walks the route an earlier search left there. In
+Moonbase Assault none is found between Officer Neilson's two waypoints,
+82 and 19, in either direction, nor from 79 to 82 (Trooper Kale's); in
+Rescue from the Mines none from 30 to 1 (Collins's). In a lockstep run
+of Moonbase Assault at level 1 (seed 3), Neilson's search in turn 2 from
+waypoint 21 to 82 found none, and he walked 37, 38, 77, 76, the route
+the search before his had left; from waypoint 20 in turn 3 the search
+found 20, 33, 32, 36, 80, 83, 81, 82.
+
 **Bugs.** Four, each read in the code and run in the port:
 
 - `takeDamage` (`$81FB`) never lowers morale for a wound: after `BIT

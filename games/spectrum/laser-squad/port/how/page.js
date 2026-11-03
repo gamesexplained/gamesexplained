@@ -2,7 +2,8 @@
 // game's own code (port/test), on the memory the page carries (page/pages.js). The view is the
 // port's drawView; the sound effects are sound's writes to port $FE at the T-states its loops
 // take, played by the site's model of the beeper (site/lib/ay.js); a blast is the port's explode,
-// run whole, with the table of strengths it fills caught as it starts on the squares; a route is
+// run whole, filmed with its sound (LSPages.film) and played, then the table of strengths it fills,
+// caught as it starts on the squares; a route is
 // the scenario's own findRoute (g-ai.js), run on its waypoints, links and areas.
 (function () {
 'use strict';
@@ -75,7 +76,6 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
 // ---- 2. The sound effects: sound(A), its writes to the beeper caught with their T-states
 (function () {
   const box = $('hw-fx'), cv = $('hw-wave'), g = cv.getContext('2d'), out = $('hw-fx-out');
-  const FRAME = 69888;                       // a 48K's frame, in T-states
   // what plays each effect, from the code (the listing's soundEffects, $B531)
   const USE = ['a key or fire answered, at the menus and the waits', 'the mark moved in a list, and an object sold',
     'a choice taken from a list, and an object bought', 'a step, a blow in close combat and a unit hit by a shot',
@@ -109,7 +109,6 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     for (const [t, v] of f.edges) { g.lineTo(X(t), Y(lv)); g.lineTo(X(t), Y(v)); lv = v; }
     g.lineTo(X(f.T), Y(lv)); g.stroke();
   }
-  let host = null;
   box.addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     const f = fx[+b.dataset.n];
@@ -121,16 +120,7 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
       [3, 5, 7, 9].map(k => t[k] || 256).join(', ') + '. ' + f.edges.length.toLocaleString('en-GB') + ' clicks of the speaker in ' +
       f.T.toLocaleString('en-GB') + ' T-states, ' + (f.T / 3500).toFixed(0) + ' ms with the game waiting.';
     if (typeof SpectrumAY === 'undefined') { out.innerHTML += ' The site\'s sound script (lib/ay.js) is missing, so it cannot be heard here.'; return; }
-    try { if (!host) host = await SpectrumAY.host({ gain: 0.5, most: 1000 }); await host.ctx.resume(); }
-    catch (err) { out.innerHTML += ' No sound: ' + err.message; return; }
-    const SCALE = 70908 / FRAME, frames = [];
-    for (const [t, v] of f.edges) {
-      const k = Math.floor(t / FRAME);
-      while (frames.length <= k) frames.push([]);
-      frames[k].push(Math.round((t - k * FRAME) * SCALE), 16, v);
-    }
-    frames.push([0, 16, 0]);
-    host.push(frames);
+    try { await L.beep(f.edges); } catch (err) { out.innerHTML += ' No sound: ' + err.message; }
   });
   draw(null);
 })();
@@ -163,6 +153,7 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     kinds.firstChild.click();
   }
   function reset() {
+    if (playing) { stop(); clearTimeout(hold); playing = false; }
     L.load(id);
     // the view where the game shows the first side's squares for placing, on the map as play starts
     const code = M[0xB65E];
@@ -215,12 +206,15 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
     };
     P.checkEnd = function* () { return {}; };
     const before = M.slice(0xD6BF, 0xD6BF + 4000);
-    let fires = 0;
+    let fires = 0, f = null;
     try {
-      P.clearFires();
-      for (const g of [P.explode({}), (function* () { const keep = P.explode; P.explode = function* (r) { fires++; return yield* keep(r); }; try { return yield* P.spreadFires({}); } finally { P.explode = keep; } })()]) {
-        for (let n = 0; n < 1e5 && !g.next().done; n++);
-      }
+      // filmed (LSPages.film): what the game shows on the view as it goes off, and its sound
+      f = L.film(() => {
+        P.clearFires();
+        for (const g of [P.explode({}), (function* () { const keep = P.explode; P.explode = function* (r) { fires++; return yield* keep(r); }; try { return yield* P.spreadFires({}); } finally { P.explode = keep; } })()]) {
+          for (let n = 0; n < 1e5 && !g.next().done; n++);
+        }
+      });
     } catch (e) { out.textContent = 'The blast stopped: ' + e.message; }
     finally { P.cellDamage = keepCell; P.checkEnd = keepEnd; }
     if (caught) { table = caught; viewAt = caught.view; }
@@ -233,14 +227,25 @@ const what = code => code >= 0x8C ? 'a unit' : code >= 0x6E ? 'an object' : 'ter
       broke.set(k, (broke.get(k) || 0) + 1);
     }
     after = M.slice();
-    draw();
-    out.innerHTML = '<b>' + kindName + '</b>, strength ' + strength + ', at row ' + r + ', column ' + c + '. ' +
+    const text = '<b>' + kindName + '</b>, strength ' + strength + ', at row ' + r + ', column ' + c + '. ' +
       (broke.size ? 'Broken: ' + [...broke].map(([k, n]) => (n > 1 ? n + ' × ' : '') + k).join('; ') + '.' : 'Nothing broke.') +
       (fires ? ' ' + fires + (fires > 1 ? ' fires' : ' fire') + ' went off after it.' : '');
+    if (!f) { draw(); return; }
+    // the blast as the game shows it, at its pace and with its sound; then the numbers
+    const tmp = document.createElement('canvas'); tmp.width = 176; tmp.height = 176;
+    const tg = tmp.getContext('2d');
+    playing = true;
+    out.textContent = 'Strength ' + strength + ' going off at row ' + r + ', column ' + c + '…';
+    stop = L.play(f, img => { tg.putImageData(img, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(tmp, 0, 0, cv.width, cv.height); },
+      // the last picture held a moment, then the numbers
+      () => { hold = setTimeout(() => { playing = false; draw(); out.innerHTML = text; }, 700); }, quiet);
   }
+  let stop = () => {}, playing = false, quiet = false, hold = 0;
   cv.addEventListener('click', e => {
+    if (playing) { stop(); clearTimeout(hold); playing = false; }
     const b = cv.getBoundingClientRect();
     const x = (e.clientX - b.left) * cv.width / b.width / SCALE, y = (e.clientY - b.top) * cv.height / b.height / SCALE;
+    quiet = !e.isTrusted;
     blast(viewAt[0] + Math.floor(y / SQ), viewAt[1] + Math.floor(x / SQ));
   });
   sel.addEventListener('change', () => { id = sel.value; pickKinds(); reset(); });

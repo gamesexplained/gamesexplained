@@ -1,0 +1,71 @@
+<section class="pl-first" id="units">
+  <p class="fig">01 · The units</p>
+  <h2 class="t">Every unit has eight facings, and what it holds changes its tile</h2>
+  <div class="pick"><button type="button" class="step" id="gx-prev" aria-label="The scenario before">‹</button><select id="gx-scen" aria-label="Scenario"></select><button type="button" class="step" id="gx-next" aria-label="The scenario after">›</button></div>
+  <p class="lede">Pick a scenario: every section of this page shows its shapes.</p>
+  <div class="plate">
+    <div id="gx-units"></div>
+    <p class="cap">Each tile drawn by the Play tab's port of <code>drawTile</code> (<code>$60AF</code>) from the scenario's own tiles at <code>$E8DF</code>, in the colours the scenario's table of squares gives the unit. A row lists the things a unit can hold that give it those tiles; point at a tile for its number.</p>
+  </div>
+  <p>A unit stands on the map as its own byte, <code>$8C</code> to <code>$9F</code>, and its entry in the scenario's table of squares holds its colours and its tile. Each time the unit turns, or takes something into its hands or puts it away, <code>setUnitTile</code> (<code>$6D10</code>) writes a new tile there. The unit's kind, its first byte, picks a list of 32 at the address in <code>$B71C</code>; the list gives a row for empty hands and one for each kind of object; and the row, eight bytes at the address in <code>$B71E</code>, gives the tile for each facing, from up round clockwise.</p>
+  <p>Many kinds of object share a row, so a scenario draws only a handful of ways of holding something. In Moonbase Assault and Rescue from the Mines every row of a kind has the same tiles for up, up and right, and up and left: turned away, a unit shows nothing of what it holds.</p>
+</section>
+
+<section id="moves">
+  <p class="fig">02 · What moves on the view</p>
+  <h2 class="t">A death, a blow, a hit and the sparks, each paced by its sound</h2>
+  <p class="lede">Pick one to play it on the scenario's map, with its sound, at the speed the game shows it.</p>
+  <div class="plate">
+    <div class="hw-two">
+      <div class="hw-screen"><canvas id="gx-film" width="176" height="176" aria-label="The view, 11 squares by 11"></canvas></div>
+      <div>
+        <div class="hw-btns" id="gx-acts"></div>
+        <div class="hw-btns"><button type="button" class="hw-btn" id="gx-again">Play it again</button></div>
+        <p class="hw-out" id="gx-film-out"></p>
+      </div>
+    </div>
+    <p class="cap">The Play tab's port of each routine (<code>deathShow</code> <code>$83A6</code>, <code>blowShow</code> <code>$7F98</code>, <code>hitShow</code> <code>$8371</code>, <code>sparks</code> <code>$9475</code> and <code>explode</code> <code>$9696</code>) run on the scenario as play starts, on the square in the middle of the view. A picture is taken each time the game's clock has moved on by one of the Spectrum's frames, fifty to the second, and the pictures are played at that rate, with the routine's writes to the beeper played by the site's model of it.</p>
+  </div>
+  <p>The game turns the Spectrum's interrupts off and never turns them on again, so nothing on the view moves by the frame. Each change is drawn and then held while a sound effect plays, and the length of the sound is the animation's pace. A dying unit turns on the spot a facing at a time to the sound of effect 12, and falls in three tiles from the scenario's table at the address in <code>$B720</code>. A blow flashes the scenario's list of tiles at <code>$B64E</code> over its target. A hit flashes two tiles in yellow, once for every four points of damage.</p>
+  <p>The sparks are not tiles. Each is a cross of five dots, flipped onto the screen and off again as it moves by its own step from a table at <code>$954E</code>, with a click from the beeper for every dot. A shot that stops throws 16 of them; a blast throws 49 or more, after flashing the view's colours three times, and fades them as the sparks fly.</p>
+</section>
+
+<section id="objects">
+  <p class="fig">03 · The objects</p>
+  <h2 class="t">Every object has a tile, and fire mode draws none of them</h2>
+  <div class="plate">
+    <div class="gx-cards" id="gx-objects"></div>
+    <p class="cap">Each kind of object, from <code>$6E</code> on, drawn from its entry in the scenario's table of squares at <code>$E65F</code>.</p>
+  </div>
+  <p>An object lying on the map is its kind's byte, <code>$6E</code> and up, in place of the floor, and the scenario's list of objects keeps the floor it lies on. In fire mode's table of squares every kind of object, in all five scenarios, has tile 0, which has no pixels set: on the plan a weapon on the floor is an empty square.</p>
+</section>
+
+<section id="fire">
+  <p class="fig">04 · Fire mode</p>
+  <h2 class="t">In fire mode a unit is a blob, and the crosshair is 21 dots</h2>
+  <div class="plate">
+    <div class="gx-cards" id="gx-fire"></div>
+    <p class="cap">The units' entries in fire mode's table of squares (<code>$E79F</code>), and the crosshair drawn by the port of <code>drawCrosshair</code> (<code>$8B7A</code>) on an empty view.</p>
+  </div>
+  <p>Fire mode draws the map through the second table of squares, in which the units are blobs, so the line of a shot shows against plain ground. The crosshair moves by pixels, sixteen to a square, and is no tile: <code>drawCrosshair</code> flips 21 dots, listed as steps from the crosshair's pixel in a table at <code>$8B50</code>, and flipping them again takes it off. The shot itself is a single dot drawn along its line one pixel at a time, each with its sound, and taken off again the same way.</p>
+</section>
+
+<section id="tiles">
+  <p class="fig">05 · Every tile</p>
+  <h2 class="t">A scenario carries up to 185 tiles of 32 bytes</h2>
+  <div class="plate">
+    <div class="gx-sheet"><canvas id="gx-sheet" width="288" height="216" aria-label="Every tile of the scenario"></canvas></div>
+    <p class="hw-out" id="gx-sheet-sum"></p>
+    <p class="hw-out" id="gx-sheet-out">Point at a tile.</p>
+    <p class="cap">Each tile in the colours of the first thing that draws it, and in white on black when nothing does.</p>
+  </div>
+  <p>The tiles fill the end of each scenario's block from <code>$E8DF</code>, 32 bytes each: the top left cell's eight bytes, then the top right, the bottom left and the bottom right. Terrain, objects, units, the falling bodies, the blows and the hits all draw from the same set, so each scenario has its own look. The sheet stops at the highest tile any table of the scenario names.</p>
+</section>
+
+<section id="screen">
+  <p class="fig">06 · The screen</p>
+  <h2 class="t">Tiles of two cells by two never clash</h2>
+  <p>The Spectrum has one screen mode: 256 pixels by 192, and a byte of colours for each cell of 8 by 8, an ink and a paper. Laser Squad lays its map on that grid. A square is a tile of two cells by two, and its entry in the table of squares gives all four cells the same colours, so nothing on the view ever bleeds into its neighbour (<code>drawSquare</code>, <code>$616E</code>).</p>
+  <p>The view is the 11 by 11 squares at character rows and columns 1 to 22, inside a frame whose bottom edge carries the turn and the victory points. The column to the right of it, from character column 24, holds the readout of what is under the cursor, the menus and the selected unit's panel. All text is the game's own font of 8 by 8 at <code>$B139</code>, one character at a time (<code>printChar</code>, <code>$6072</code>), and the large words of the readout are the same font at double height.</p>
+  <p>The scanner, option 3 of cursor mode, gives the whole screen to the map: it clears it to blue and draws every one of the 80 by 50 squares as a pattern of dots three pixels apart, the pattern each square's byte names in a table at <code>$D2FF</code>, with the units' squares and the view's frame flashing until fire is pressed.</p>
+</section>
