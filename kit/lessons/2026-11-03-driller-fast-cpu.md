@@ -1,4 +1,4 @@
-## next · 2026-11-03 · Driller (ZX Spectrum) · air with Claude
+## 0.0.305 · 2026-11-03 · Driller (ZX Spectrum) · air with Claude
 
 - **A sound the processor plays itself holds the loop, so count a repeat in
   loops.** The Spectrum's beeper is the processor's own work: while an
