@@ -9,8 +9,9 @@ G.sight = P => {
   const w = P.w, setw = P.setw;
   // The line's words, at $7091: the start's column and row, the end's column and row, the current
   // column ($7099) and row ($709B), the run across and down ($709D, $709F), the steps down and across
-  // ($70A1, $70A3, 1 or -1), the minor steps ($70A5, $70A7), the error ($70A9), the major and minor
-  // runs ($70AB, $70AD), and the distance, 2 a straight step and 3 a diagonal ($70B1).
+  // ($70A1, $70A3, 1 or -1, together on a diagonal step), the straight step along the major way
+  // ($70A5, $70A7, one of them 0), the error ($70A9), the major and minor runs ($70AB, $70AD), the
+  // range of a shot or a throw ($70AF), and the distance, 2 a straight step and 3 a diagonal ($70B1).
   const C0 = 0x7091, R0 = 0x7093, C1 = 0x7095, R1 = 0x7097, C = 0x7099, R = 0x709B;
 
   // $70B3: the error moves on by the minor run; NC (and the major run taken off) when it reaches

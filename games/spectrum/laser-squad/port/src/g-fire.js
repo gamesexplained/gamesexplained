@@ -412,9 +412,9 @@ G.fire = P => {
   });
   // $8EF3: option 6 of fire mode, cancel: nothing.
   P.def(0x8EF3, 'fireCancel', () => ({}));
-  // $8EF4: option 5, the end of fire mode: the cursor back on ($B71B), the tables of squares as
-  // they were ($B718, $B716), the view and the cursor put back and the view drawn. In a player's
-  // turn it returns past its caller, with Z.
+  // $8EF4: option 5, the end of fire mode: the cursor back on ($B71B), the table of squares as it
+  // was ($B716) and the cursor's limits in the view ($B718, $B719), the view and the cursor put
+  // back and the view drawn. In a player's turn it returns past its caller, with Z.
   P.def(0x8EF4, 'fireEnd', () => {
     M[0xB71B] = 0;
     M[0xB718] = 0x0A;

@@ -115,6 +115,26 @@ function fromSna(name, o = {}) {
   return new LSMachine(Object.assign({ ram, regs }, o));
 }
 
+// The same machine from the committed listings, for a clean checkout (../../test_play.js): the
+// engine's bytes from parts/engine/listing.json at $5E28-$B620 and zeros elsewhere, at the
+// engine's first instruction. The snapshot holds the loader's leftovers too (the loading screen,
+// BASIC's variables), which the game clears or never reads before it writes them.
+const PARTS = ['assassins', 'moonbase-assault', 'rescue-from-the-mines', 'cyber-hordes', 'paradise-valley'];
+const FLAGS = [0x64, 0x65, 0x66, 0x68, 0x69];
+function listingBytes(file, mem = new Uint8Array(0x10000)) {
+  for (const r of JSON.parse(fs.readFileSync(file, 'utf8')).records) if (r.b) mem.set(r.b, r.a);
+  return mem;
+}
+function fromListing(o = {}) {
+  const ram = listingBytes(path.join(GAME, 'parts', 'engine', 'listing.json'));
+  return new LSMachine(Object.assign({ ram, regs: { pc: 0x5E28, sp: 0x5E39, iff1: 0, iff2: 0, im: 1, i: 0x3F } }, o));
+}
+// The scenarios' blocks as the cassette holds them, from each part's listing ($B621-$FFFF).
+function listingTape() {
+  return PARTS.map((p, k) => ({ flag: FLAGS[k],
+    bytes: listingBytes(path.join(GAME, 'parts', p, 'listing.json')).slice(0xB621, 0x10000) }));
+}
+
 // The tape's blocks, from work/sideAB.tzx (both sides of the cassette, one after the other).
 function tapeBlocks() {
   const d = fs.readFileSync(path.join(GAME, 'work', 'sideAB.tzx'));
@@ -152,5 +172,5 @@ function makeSeq(seed) {
   return i => { while (v.length <= i) v.push(rnd(128)); return v[i]; };
 }
 
-module.exports = { GAME, ROOT, STATES, KEY, JOY, LSMachine, Machine, Tape, tapeBlocks, keyScan, keyScanOn, romTapeOn, fromSna, states, readState, writeState,
+module.exports = { GAME, ROOT, STATES, PARTS, FLAGS, fromListing, listingTape, listingBytes, KEY, JOY, LSMachine, Machine, Tape, tapeBlocks, keyScan, keyScanOn, romTapeOn, fromSna, states, readState, writeState,
   restore, hex, makeRnd, makeSeq, ZERO_ROM };

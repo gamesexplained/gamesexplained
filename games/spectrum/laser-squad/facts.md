@@ -113,8 +113,9 @@ plus the unit's strength over the kind's `$07`; bare-handed it is the
 unit's `$13` (`attackStats`, `$7FC1`). The blow is a random number from 0
 to the strength plus half the strength (`attackRoll`, `$8095`). The floor
 the defender stands on takes its `$06` off; then the armour of the side
-it lands on (front, side or rear, by `inView`) takes its value off the
-damage, and the damage is halved (`armourHit`, `$81A2`). A step into
+it lands on (front, right, rear or left, by `inView`) takes its value off
+the damage, and the armour loses half of the damage left, which goes on
+to the defender's health whole (`armourHit`, `$81A2`). A step into
 impassable terrain attacks the terrain (`attackTerrain`, `$7F0B`), which
 breaks into the next terrain type while the blow lasts (`breakTerrain`,
 `$8030`).
@@ -130,8 +131,9 @@ rounds to as many as the points pay for along the line between them
 
 **Blasts.** An explosion of strength S fills a box five squares round its
 centre with the strength reaching each square, along a line from the
-centre to every square of the box's edge, each step costing a sixteenth
-of S and each terrain on the way its `$05` (`explode`, `$9696`;
+centre to every square of the box's edge, each straight step costing two
+sixteenths of S, each diagonal step three, and each terrain on the way
+its `$05` (`explode`, `$9696`;
 `blastRay`, `$980E`). Each square then takes its blow: the terrain
 broken and the first unit there hit (`cellDamage`, `$98AF`). Primed
 objects go off at the end of the half-turn their timer names, where they
@@ -149,8 +151,11 @@ has not reacted this turn may fire: the computer's through the hook at
 
 **Deaths and morale.** A unit left with no health dies; its square
 becomes its body, what it carries drops, the other side scores its `$27`
-in victory points, and each side's morale moves by the dead unit's `$01`
-(`unitDies`, `$8229`; `moraleShock`, `$829E`).
+in victory points, and each side's morale moves by the dead unit's `$01`:
+the scoring side's up, the other's down (`unitDies`, `$8229`, which keeps
+the scoring side in `$5DA0`; `moraleShock`, `$829E`). Damage to terrain
+in the scenarios that score it shakes morale the same way, by `$5DA0`
+as the last kill left it (`$9201`).
 
 **The end.** A side with 100 victory points, or the last turn played,
 ends the game; a side with no units left gives the other the scenario's
@@ -199,6 +204,34 @@ closer each time and a noise from the refresh register (`shotSound`,
 `$8F2C`).
 
 ## The listing's error rate
+
+A sample of 80 of the listing's 7,482 comments over its six parts, drawn
+with seed 3112026 (`kit/scripts/sample.py`): 20 of the 5,551 comments
+made from the game's tables (the maps' rows, the units, the waypoints
+and their links, the words) and 60 of the 1,931 written by hand, marked
+by a checker on claude-opus-5-5 that wrote none of them. None of the 20
+was wrong. Of the 60, 9 were wrong in a detail and one wrong outright:
+12.5 % (95 % interval 6.9 % to 21.5 %), 4.3 % weighted by the two
+groups' sizes. The wrong one read a word of the engine's dictionary as
+the letters ED, where its bytes are two colour codes round the arrow
+the font draws for `$3E`. The details: the tiles of a hit are drawn for
+a blow in close combat too, not only for a shot; findRoute's depth
+counts the links on a route, one less than its waypoints, and
+visiblePoints uses it too; the line's `$70AF` is the range of a shot or
+a throw, not unused, and `$70A5` and `$70A7` the straight step along the
+major way; the blow lands on any of four sides, the left (`$10`) too;
+`$B718` is the cursor's limit in the view, not part of the table of
+squares; `$5DA0` is the side that scored the last kill, not the side of
+the unit killed; a blast's step costs two sixteenths of its strength,
+or three on a diagonal, not one; sound effect 0 is played by the menus
+and waitFire as well as waitKey; and the computer keeps points in hand
+when its side is alerted as well as when the orders say so. All 10 were
+corrected, with every other comment that made the same claims (seven
+more words of the dictionary, read as letters where they hold codes)
+and the same claims in this file. One more comment guessed that a
+`NOP` was left where an instruction was taken out, which the bytes
+cannot show; it now says only what they do. The listing has not had a
+full audit.
 
 ## Live tests
 

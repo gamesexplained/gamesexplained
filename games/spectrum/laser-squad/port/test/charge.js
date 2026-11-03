@@ -7,23 +7,29 @@
 //   node charge.js [passes] [seed] [level]
 const path = require('path');
 const lib = require('./lib.js');
-const tb = lib.tapeBlocks;
-lib.tapeBlocks = () => {
-  const blocks = tb();
+// the cassette's Paradise Valley with the first side's placing squares by the river (the squares
+// of terrain $31 and $32 in rows 3 to 15, columns 70 to 75 made $3D, and the old $3D plain)
+function riverside(blocks) {
   for (const b of blocks) {
     const x = b.bytes;
     if (x.length !== 18911 || x[0] !== 0xC3 || x[1] !== 0xD3 || x[2] !== 0xB8) continue;
     const map = 0xD6BF - 0xB621;
-    let n = 0;
     for (let i = 0; i < 4000; i++) if (x[map + i] === 0x3D) x[map + i] = 0x01;
     for (let r = 3; r < 16; r++) for (let c = 70; c < 76; c++) {
       const v = x[map + 80 * r + c];
-      if (v === 0x31 || v === 0x32) { x[map + 80 * r + c] = 0x3D; n++; }
+      if (v === 0x31 || v === 0x32) x[map + 80 * r + c] = 0x3D;
     }
-    if (process.env.LS8_LOG) console.log('placing squares by the river:', n);
   }
   return blocks;
-};
+}
+// the tests' tape and the clean one, both with the squares moved
+function moveSquares() {
+  for (const k of ['tapeBlocks', 'listingTape']) { const f = lib[k]; lib[k] = () => riverside(f()); }
+}
+module.exports = { riverside, moveSquares };
+if (require.main === module) main();
+function main() {
+moveSquares();
 const lsm = require('./lockstep.js');
 const [passes, seed, level] = [6000, 3, 3].map((d, i) => +(process.argv[2 + i] || d));
 const counts = {};
@@ -51,3 +57,4 @@ const { describe } = require(path.join(lib.ROOT, 'kit/spectrum/lockstep.js'));
 if (out) console.log('paradise by the river, seed ' + seed + ' level ' + level + ' (' + (Date.now() - t0) + ' ms, turn ' + out.m.ram[0xB711] + '): ' + describe(out.res));
 console.log(JSON.stringify(counts));
 process.exitCode = out.res.ok ? 0 : 1;
+}

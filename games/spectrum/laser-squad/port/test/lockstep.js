@@ -10,7 +10,7 @@
 // The game reads the refresh register for its random numbers and its noise, which no port can
 // keep: both read the same made-up values instead, in the order they read them, so a port that
 // reads R once too often or too seldom is out of step at once.
-//   node lockstep.js [passes] [scenario 1-6] [seed] [players 1-2] [level]
+//   node lockstep.js [passes] [scenario 1-6] [seed] [players 1-2] [level] [clean]
 const path = require('path');
 const lib = require('./lib.js');
 const { Lockstep, describe } = require(path.join(lib.ROOT, 'kit/spectrum/lockstep.js'));
@@ -38,8 +38,9 @@ function keys(o) {
 
 function run(o = {}) {
   const LS = loadPort();
-  const m = o.state ? lib.restore(lib.readState(o.state)) : lib.fromSna('entry');
-  const blocks = lib.tapeBlocks();
+  // o.clean: the machine and the tape from the committed listings, with nothing from work/
+  const m = o.state ? lib.restore(lib.readState(o.state)) : o.clean ? lib.fromListing() : lib.fromSna('entry');
+  const blocks = o.clean ? lib.listingTape() : lib.tapeBlocks();
   m.tape = new lib.Tape(blocks);
   // the refresh register, as both read it; each side's reads counted, so a side that reads it
   // once too often is named at the pass it does, before the numbers it draws differ
@@ -71,10 +72,10 @@ function run(o = {}) {
 
 if (require.main === module) {
   const passes = +(process.argv[2] || 2000), scenario = +(process.argv[3] || 1), seed = +(process.argv[4] || 1);
-  const players = +(process.argv[5] || 2), level = +(process.argv[6] || 1);
+  const players = +(process.argv[5] || 2), level = +(process.argv[6] || 1), clean = process.argv[7] === 'clean';
   const t = Date.now();
   let out;
-  try { out = run({ passes, scenario, seed, players, level, maxFrames: players === 1 ? 40000 : 2000 }); } catch (e) { console.log((e.stack || e.message).split('\n').slice(0, 10).join('\n')); process.exit(1); }
+  try { out = run({ passes, scenario, seed, players, level, clean, maxFrames: players === 1 ? 40000 : 2000 }); } catch (e) { console.log((e.stack || e.message).split('\n').slice(0, 10).join('\n')); process.exit(1); }
   const used = [...out.P.standInsUsed];
   console.log('scenario ' + scenario + ', seed ' + seed + ' (' + (Date.now() - t) + ' ms, turn ' + out.m.ram[0xB711] + ', ' + used.length +
     ' routines stood in' + (used.length ? ': ' + used.join(' ') : '') + '): ' + describe(out.res).split('\n').join('\n  '));

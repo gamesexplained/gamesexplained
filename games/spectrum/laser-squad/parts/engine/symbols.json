@@ -18,6 +18,16 @@
     "screen RAM"
    ],
    [
+    16384,
+    23295,
+    "runtime: the screen. In the snapshot taken at the engine's first instruction it holds the loading picture, which the main menu clears (mainMenu at $B1C3 calls clearScreen) before it draws anything; the engine never reads it"
+   ],
+   [
+    23296,
+    24103,
+    "runtime: the engine's variables at $5B00-$5E25, which start ($5E28) clears before anything reads them, and the bottom of the stack: start sets it at $5E39, and it grows down over $5E26 to $5E38, start's own code included"
+   ],
+   [
     46625,
     65535,
     "5 parts: Moonbase Assault, Paradise Valley, Rescue from the Mines and others"
@@ -5826,7 +5836,7 @@
   {
    "address": 28817,
    "type": "line",
-   "text": "A line across the map, words: the start's column ($7091) and row ($7093), the end's column ($7095) and row ($7097), the current column ($7099) and row ($709B), the run across ($709D) and down ($709F), the steps down ($70A1) and across ($70A3), 1 or -1, the minor steps down ($70A5) and across ($70A7), the error ($70A9), the major run ($70AB), the minor run ($70AD), a word unused ($70AF), and the distance so far ($70B1), 2 for each straight step and 3 for each diagonal."
+   "text": "A line across the map, words: the start's column ($7091) and row ($7093), the end's column ($7095) and row ($7097), the current column ($7099) and row ($709B), the run across ($709D) and down ($709F), the steps down ($70A1) and across ($70A3), 1 or -1, taken together on a diagonal step, the straight step along the major way down ($70A5) and across ($70A7), one of them 0, the error ($70A9), the major run ($70AB), the minor run ($70AD), the range of a shot or a throw ($70AF: shotRange, $8FF0, and the throw, $9AF7, set it; inRange, $8A18, compares the distance with it), and the distance so far ($70B1), 2 for each straight step and 3 for each diagonal."
   },
   {
    "address": 28851,
@@ -6201,7 +6211,7 @@
   {
    "address": 33186,
    "type": "line",
-   "text": "The blow against the defender ($5D3C). The floor it stands on takes its $06 off the strength: none left, no damage, and IX stays the attacker. Then the side of the defender it lands on, $5D9F (inView from the attacker's square $5D24: 0 the front, 1 a side, 2 behind); the defender's armour on that side ($0D, $0E or $0F) takes its value off the damage, and loses half of what is left. The damage is at most the defender's health ($08). IX = the defender."
+   "text": "The blow against the defender ($5D3C). The floor it stands on takes its $06 off the strength: below nothing, no damage, and IX stays the attacker. Then the side of the defender it lands on, $5D9F (inView from the attacker's square $5D24: 0 the front, 1 the right, 2 behind, 3 the left); the defender's armour on that side ($0D, $0E, $0F or $10) takes its value off the damage, and loses half of what is left. The damage is at most the defender's health ($08). IX = the defender."
   },
   {
    "address": 33270,
@@ -6476,7 +6486,7 @@
   {
    "address": 36596,
    "type": "line",
-   "text": "Option 5, the end of fire mode: the cursor back on ($B71B), the table of squares as it was ($B718, $B716), the view and the cursor put back and the view drawn. In a player's turn it returns past its caller, with Z."
+   "text": "Option 5, the end of fire mode: the cursor back on ($B71B), the table of squares as it was ($B716) and the cursor's limits in the view ($B718, $B719: 10 and 0 again, from the crosshair's $A7 and 8), the view and the cursor put back and the view drawn. In a player's turn it returns past its caller, with Z."
   },
   {
    "address": 36641,
@@ -6561,7 +6571,7 @@
   {
    "address": 37377,
    "type": "line",
-   "text": "Victory points for the damage done to terrain ($5D8C): to side 0 when the scenario's $B704 is set, to side 1 when $B705 is, each with the morale shock of it ($829E). $5D4D is set to the side, but moraleShock goes by $5DA0, the side of the last unit killed."
+   "text": "Victory points for the damage done to terrain ($5D8C): to side 0 when the scenario's $B704 is set, to side 1 when $B705 is, each with the morale shock of it ($829E). $5D4D is set to the side, but moraleShock goes by $5DA0, the side that scored the last kill (unitDies, $827C)."
   },
   {
    "address": 37426,
@@ -6626,7 +6636,7 @@
   {
    "address": 38926,
    "type": "line",
-   "text": "The blast along the line from its centre ($7091 across, $7093 down) to ($7095, $7097). At each square ($5D3A) the strength left ($968F) is kept in the table where it is the most so far, and the terrain there takes its toll ($9868). Each step costs a sixteenth of the blast's strength, and the line ends when nothing is left."
+   "text": "The blast along the line from its centre ($7091 across, $7093 down) to ($7095, $7097). At each square ($5D3A) the strength left ($968F) is kept in the table where it is the most so far, and the terrain there takes its toll ($9868). Each step costs two sixteenths of the blast's strength when it is straight and three when it is diagonal (the distance lineStep adds, $70B1), and the line ends when nothing is left."
   },
   {
    "address": 39016,
@@ -6716,7 +6726,7 @@
   {
    "address": 39931,
    "type": "line",
-   "text": "A NOP: one byte left where an instruction was taken out."
+   "text": "A NOP that nothing jumps to: the jump at $9B65 goes past it to $9BFC."
   },
   {
    "address": 39932,
@@ -7511,7 +7521,7 @@
   {
    "address": 44071,
    "type": "line",
-   "text": "Word $07: ED"
+   "text": "Word $07: [colours $45]\u25b6[colours $44]"
   },
   {
    "address": 44077,
@@ -7561,7 +7571,7 @@
   {
    "address": 44134,
    "type": "line",
-   "text": "Word $11: APS"
+   "text": "Word $11: AP[single height][to row 5, column 26]S"
   },
   {
    "address": 44142,
@@ -7616,12 +7626,12 @@
   {
    "address": 44205,
    "type": "line",
-   "text": "Word $1C: F"
+   "text": "Word $1C: [colours $46](the left end of a bar)[colours $72]"
   },
   {
    "address": 44211,
    "type": "line",
-   "text": "Word $1D: F"
+   "text": "Word $1D: [colours $46](the right end of a bar)"
   },
   {
    "address": 44215,
@@ -7681,7 +7691,7 @@
   {
    "address": 44272,
    "type": "line",
-   "text": "Word $29: ENEMY"
+   "text": "Word $29: \u25c0ENEMY"
   },
   {
    "address": 44279,
@@ -7936,7 +7946,7 @@
   {
    "address": 44555,
    "type": "line",
-   "text": "Word $5C: EEDD"
+   "text": "Word $5C: [colours $45, $45]\u25c0[colours $44, $44], printed in double height, where a colour code takes two bytes"
   },
   {
    "address": 44563,
@@ -7971,7 +7981,7 @@
   {
    "address": 44624,
    "type": "line",
-   "text": "Word $63: EEDD"
+   "text": "Word $63: [colours $45, $45]\u25b6[colours $44, $44], printed in double height, where a colour code takes two bytes"
   },
   {
    "address": 44632,
@@ -8011,7 +8021,7 @@
   {
    "address": 44665,
    "type": "line",
-   "text": "Word $6B: DACCFD APFE"
+   "text": "Word $6B: [colours $44]ACC[colours $46]\u25b6[colours $44] AP[colours $46]\u25b6[colours $45]"
   },
   {
    "address": 44684,
@@ -8411,7 +8421,7 @@
   {
    "address": 46385,
    "type": "line",
-   "text": "The sound effects, ten bytes each, 0 to 12, for sound ($B5BE): how many times, the passes each time, then four tones of two bytes, how far its pitch moves each time and the pitch (playSound, $B5D5). First, effect 0: 15 times, 1 pass each, tones 10 (moving 8), 10 (moving 8), 10 (moving 5), 10 (moving 5); played by waitKey"
+   "text": "The sound effects, ten bytes each, 0 to 12, for sound ($B5BE): how many times, the passes each time, then four tones of two bytes, how far its pitch moves each time and the pitch (playSound, $B5D5). First, effect 0: 15 times, 1 pass each, tones 10 (moving 8), 10 (moving 8), 10 (moving 5), 10 (moving 5); played by waitKey ($6B08), waitFire ($77F7) and the menus' choice (menuChoice, $A276, and menuFireChoice, $A26F)"
   },
   {
    "address": 46395,

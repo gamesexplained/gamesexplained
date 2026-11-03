@@ -75,8 +75,9 @@ G.blast = P => {
   });
   // $980E: the blast along the line from its centre ($7091 across, $7093 down) to ($7095, $7097): at
   // each square ($5D3A) the strength left ($968F) is kept in the table where it is the most so far
-  // ($9868), and the terrain there takes its toll; each step costs a sixteenth of the blast's
-  // strength, and the line ends when nothing is left.
+  // ($9868), and the terrain there takes its toll; each step costs two sixteenths of the blast's
+  // strength when straight and three when diagonal (the distance lineStep adds, $70B1), and the
+  // line ends when nothing is left.
   P.def(0x980E, 'blastRay', () => {
     M[0x968F] = M[0x968E];
     M[0x7099] = M[0x7091];

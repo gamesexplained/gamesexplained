@@ -153,7 +153,9 @@ G.combat = P => {
   // game never meets: the limits it gives are 1 and more).
   // The byte walks all of memory, the stack ($5E00-$5E38) too, whose bytes the port does not
   // keep: it reads those through P.io.irqByte, which the tests give as the game read them, and
-  // which on the page is noise like the refresh register.
+  // which on the page is noise like the refresh register. The page carries none of the game's
+  // code and no ROM, which the walk reads as well: it reads every byte through P.io.walkByte,
+  // which gives noise for those (runtime.js), where the tests have none.
   const STACK_LO = 0x5E00, STACK_HI = 0x5E38;
   P.def(0x80B1, 'random', r => {
     const lim = M[0x5D9B];
@@ -162,7 +164,7 @@ G.combat = P => {
       let a = P.io.r() & 255;
       const hl = w(0x5D9D) + 1 & 0xFFFF;
       setw(0x5D9D, hl);
-      const b = hl >= STACK_LO && hl <= STACK_HI && P.io.irqByte ? P.io.irqByte(hl) : M[hl];
+      const b = hl >= STACK_LO && hl <= STACK_HI && P.io.irqByte ? P.io.irqByte(hl) : P.io.walkByte ? P.io.walkByte(hl) : M[hl];
       a = a + b + M[0x5D9C] & 255;
       if (a < lim) return { a, cf: true, zf: false, hl: r && r.hl };
     }
@@ -229,9 +231,9 @@ G.combat = P => {
     return yield* P.checkEnd({ ix });
   });
   // $81A2: the blow against the defender ($5D3C): the floor it stands on ($5D3A) takes its $06 off
-  // the strength (none left: no damage); the side of the defender it lands on, $5D9F (inView from
-  // the attacker's square, $5D24: 0 the front, 1 a side, 2 behind), and the defender's armour on
-  // that side ($0D + $5D9F) takes off its value, and loses half of what is left; the damage is at
+  // the strength (below nothing: no damage); the side of the defender it lands on, $5D9F (inView
+  // from the attacker's square, $5D24: 0 the front, 1 the right, 2 behind, 3 the left), and the
+  // defender's armour on that side ($0D + $5D9F) takes off its value, and loses half of what is left; the damage is at
   // most the defender's health ($08). IX = the defender, but when the floor stops it all.
   P.def(0x81A2, 'armourHit', r => {
     const t = P.terrainPtr({ a: P.floorAt().a }).iy;
