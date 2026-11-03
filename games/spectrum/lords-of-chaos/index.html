@@ -55,6 +55,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .loc-shots figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
 .loc-meter{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin:4px 0 10px}
 .loc-meter i{display:block;height:100%;background:var(--coral)}
+.loc-pic{width:48px;height:48px;image-rendering:pixelated;display:block;border-radius:3px}
+.loc-tab.pics td{vertical-align:middle}
+.loc-tab td.p{padding:3px 6px 3px 0;width:48px;height:54px}
+.loc-vs{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.loc-vs span{color:var(--ink-mute)}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -107,8 +112,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Five bytes for each of 78 terrains (<code>$D208</code>) decide how much a step costs, how hard the terrain is to break, and how the area spells take on it.</p>
   <div class="plate">
     <div class="loc-bar"><select id="tr-scen" aria-label="Scenario"><option value="1">Scenario 1</option><option value="2">Scenario 2</option><option value="3">Scenario 3</option></select></div>
-    <div class="loc-scroll" style="max-height:420px;overflow-y:auto"><table class="loc-tab" id="tr-tab"></table></div>
-    <p class="cap">From each scenario's terrain records at <code>$D208</code> and its flags at <code>$D38E</code>, named by the scenario's own messages. "–" in the step column is <code>$FF</code>, a square nothing can walk into.</p>
+    <div class="loc-scroll" style="max-height:560px;overflow-y:auto"><table class="loc-tab pics" id="tr-tab"></table></div>
+    <p class="cap">From each scenario's terrain records at <code>$D208</code> and its flags at <code>$D38E</code>, named by the scenario's own messages. Each picture is the terrain's square drawn from the scenario's table of things as the map starts; on the <a href="graphics.html">Graphics</a> tab they move. A plain square is a terrain the scenario never puts on its map. "–" in the step column is <code>$FF</code>, a square nothing can walk into.</p>
   </div>
   <p>The first byte is the cost of a step in action points (<code>$CA2B</code>). A diagonal step costs half as much again. A flying creature, a ghost, and a creature whose type matches the terrain (a swimmer in water) always pay 4. A step also costs half its cost in stamina (<code>$B4EB</code>).</p>
   <p>The second byte is the terrain's toughness. A creature that walks into a square it cannot enter attacks the terrain instead, for 6 action points and 6 stamina, and breaks it when a random number beats the toughness (<code>$6862</code>). The top two bits of the fifth byte say what the broken square becomes. Magic lightning breaks terrain the same way.</p>
@@ -126,8 +131,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <label>Defender <select id="cb-d"></select></label>
     </div>
     <div id="cb-out" class="loc-info"></div>
-    <div class="loc-scroll" style="margin-top:14px"><table class="loc-tab" id="cb-tab"></table></div>
-    <p class="cap">The table is each scenario's creature types (the pointer at <code>$D003</code>, twelve bytes a type from <code>$90</code>). The blow follows <code>$8645</code>; <b>test_combat.js</b> runs the game's code for every combat and defence from 0 to 255 with the random number fixed at each value it can take, and compares the damage with the page's.</p>
+    <div class="loc-scroll" style="margin-top:14px"><table class="loc-tab pics" id="cb-tab"></table></div>
+    <p class="cap">The table is each scenario's creature types (the pointer at <code>$D003</code>, twelve bytes a type from <code>$90</code>), each drawn as it stands on the map when the scenario starts. The blow follows <code>$8645</code>; <b>test_combat.js</b> runs the game's code for every combat and defence from 0 to 255 with the random number fixed at each value it can take, and compares the damage with the page's.</p>
   </div>
   <p>An attack costs 8 action points and 8 stamina (<code>$84EC</code>). The blow is a random number below twice the attacker's combat plus 2, less the defender's defence. Anything left comes off the defender's constitution. If the defender survives with 4 action points and 4 stamina it strikes back at once.</p>
   <p>The figures in the table are the type's own. In play they move: a strength potion adds 20 to combat, a protection potion 25 to defence, a weapon in use adds its combat, and the best defence among the weapons carried counts. Then both are divided by the number of times the creature's constitution goes into its most (<code>$9342</code>): nothing changes until it is down to half, when they halve, and at a third they are a third.</p>
@@ -139,11 +144,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Forty-five spells, priced by level</h2>
   <p class="lede">A spell costs its base price times its level plus one, and every cast lowers its level by one.</p>
   <div class="plate">
-    <div class="loc-bar"><label>Level <input type="range" id="sp-lv" min="1" max="8" value="3"> <b id="sp-lvn">3</b></label></div>
-    <div class="loc-scroll"><table class="loc-tab" id="sp-tab"></table></div>
-    <p class="cap">Base costs from <code>$B4BE</code>, names from scenario 1's messages through <code>$80A0</code>. The cost is worked out by <code>$81D4</code>.</p>
+    <div class="loc-bar"><select id="sp-scen" aria-label="Scenario"><option value="1">Scenario 1</option><option value="2">Scenario 2</option><option value="3">Scenario 3</option></select><label>Level <input type="range" id="sp-lv" min="1" max="8" value="3"> <b id="sp-lvn">3</b></label></div>
+    <div class="loc-scroll" style="max-height:560px;overflow-y:auto"><table class="loc-tab pics" id="sp-tab"></table></div>
+    <p class="cap">Base costs from <code>$B4BE</code>, names from the scenario's messages through spell_name (<code>$80A0</code>). The cost is worked out by <code>$81D4</code>. The picture is what the spell leaves on the map: the creature it summons, the potion it brews, the ground it spreads (magic fire and gooey blob in the first wizard's own). A spell with nothing to leave shows its flight, the missile drawn in its colour. <b>test_spells.js</b> runs every spell's routine in the game's own code, in all three scenarios, and checks that it puts on the screen what this table says.</p>
   </div>
   <p>A wizard's record holds a byte for each of the 45 spells: the level it was designed with in the high four bits and the level left in the low four (<code>$CEEA</code>). Casting needs 8 action points and the mana, and takes one level off (<code>$82A2</code>). A summon spell brings as many creatures as its level, on free squares round the wizard (<code>$8342</code>). Mana comes back by a 25th of the starting mana each turn (<code>$7560</code>).</p>
+  <p>A spell cast at a square or a creature flies there first, as a cross or a star of pixels in its own colour, and ends in the burst a blow makes (<code>$AEBE</code>): magic fire, gooey blob, tangle vine and flood on their way to the ground they spread, ENCHANT, SUBVERSION and CURSE in one colour, MAGIC BOLT and MAGIC LIGHTNING in colours of their own. MAGIC ATTACK bursts again on every creature it kills. A summons shows the sparkle where the creatures appear, a brew where the potion is, and MAGIC SHIELD on the wizard. TELEPORT and MAGIC EYE draw nothing of their own: one moves the wizard, the other shows the map as a creature on the target square would see it.</p>
   <p>Potions are brewed rather than cast at a creature: an empty cauldron, the right ingredient and the wizard on one square, and the spell turns the cauldron into the potion with the level plus 3 gulps in it (<code>$848A</code>). Dragons need a dragon potion made the same way from dragon herb before the summon works (<code>$8320</code>).</p>
 </section>
 
@@ -277,6 +283,121 @@ var LOCMap = (function () {
 // end of loc-map
 </script>
 <script>
+/* loc-gfx */
+// The Graphics page's drawing, on a 64 KB memory M laid out as the game's (the block loc-map draws
+// the squares). Everything here writes into M's own screen or its things table, the way the game's
+// routines do, so test_graphics.js can hold each to the game's own code run on the kit's Z80.
+//   LOCGfx.tick(M)               one working frame of the interrupt's animation (interrupt_work
+//                                $A8B2-$A8CF, next_frame $A936): each of the 170 things whose count
+//                                is not $FF counts down, and at 0 takes graphic, colour set, count
+//                                and next frame from the frame table
+//   LOCGfx.cycle(M, v, next)     the frames thing v shows from its entry as it stands (or, given
+//                                next, from that frame on): [{ frame, graphic, colours, count }],
+//                                frame null for the entry itself, ending before the first frame seen
+//                                twice or after a count of $FF
+//   LOCGfx.sparkle(M)            starts the sparkle on thing $4F as the game does (show_hit $79DF,
+//                                summon_display $8447): its next frame becomes $A5
+//   LOCGfx.CURSORS               the cursor's four looks, [graphic, colour set, what it means]: drawn
+//                                by draw_map ($A997) in character set 0 from $FF86 and $FF87
+//   LOCGfx.cursor(M, row, col, k) draws cursor k at character row and column
+//   LOCGfx.deathStep(M, type, f, k) step k (0-9) of frame f (0-6) of a wizard's death
+//                                (death_animation_frame $8C6A): wizard type's figure as it stands,
+//                                in colour set f, at the eight places k characters out from the
+//                                middle of the window
+//   LOCGfx.hitStep(M, row, col, k) graphic k (0-2) of the burst draw_hit ($AEC2) draws at a
+//                                square's character row and column: graphic $53 + k, colour set 0,
+//                                character set 1 ($BE3C)
+//   LOCGfx.hitPlace(M, e, d)     the character row and column draw_hit works out for square E, D
+//   LOCGfx.SHAPES                the missile shapes as shapes ($AD4E) lists them, [line, column]
+//   LOCGfx.shape(M, s, y, x, attr) plots shape s with its middle at pixel line y, column x of the map
+//                                window as draw_shape ($AD1D) does: a point is skipped unless both
+//                                its line and column, in eight bits, are below $A8; plot ($ACC9)
+//                                sets the pixel and, when attr is not $FF, gives the cell attr
+//   LOCGfx.styles(M)             the seven missile styles, eight bytes each from missile_styles
+//                                ($B60E): shape, pixels a frame, tail, reach, attribute, combat,
+//                                magic, sound
+//   LOCGfx.DEATH_T, HIT_T        T-states from each step's sound to the next (the last to the map's
+//                                redraw), measured on the game's code on the kit's Z80
+var LOCGfx = (function () {
+  const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
+  const pix = (r, c, k) => 0x4000 + ((r & 0x18) << 8) + ((r & 7) << 5) + (k << 8) + c;
+  function tick(M) {
+    const T = w(M, 0xD032), F = w(M, 0xD034);
+    for (let v = 0; v < 170; v++) {
+      const e = (T + 5 * v + 3) & 0xFFFF;
+      if (M[e] === 0xFF) continue;
+      M[e] = (M[e] - 1) & 255;
+      if (M[e] === 0) {
+        const f = (F + 4 * M[e + 1]) & 0xFFFF;
+        for (let i = 0; i < 4; i++) M[e - 2 + i] = M[(f + i) & 0xFFFF];
+      }
+    }
+  }
+  function cycle(M, v, next) {
+    const T = w(M, 0xD032) + 5 * v, F = w(M, 0xD034), out = [];
+    let count;
+    if (next === undefined) {
+      out.push({ frame: null, graphic: M[T + 1], colours: M[T + 2], count: M[T + 3] });
+      count = M[T + 3]; next = M[T + 4];
+    } else count = 0;
+    const seen = new Set();
+    while (count !== 0xFF && !seen.has(next)) {
+      seen.add(next);
+      const f = F + 4 * next;
+      out.push({ frame: next, graphic: M[f], colours: M[f + 1], count: M[f + 2] });
+      count = M[f + 2]; next = M[f + 3];
+    }
+    return out;
+  }
+  function sparkle(M) { M[(w(M, 0xD032) + 0x18F) & 0xFFFF] = 0xA5; }
+  const CURSORS = [[1, 0, 'looking round'], [2, 3, 'a creature on the ground selected'],
+                   [4, 2, 'a creature in the air selected'], [3, 1, 'choosing a target']];
+  function cursor(M, row, col, k) { LOCMap.block(M, 0, row, col, 0, CURSORS[k][0], CURSORS[k][1]); }
+  function deathStep(M, type, f, k) {
+    const t = LOCMap.thing(M, type);
+    const at = [[9 - k, 9], [9 - k, k + 9], [9, k + 9], [k + 9, k + 9],
+                [k + 9, 9], [k + 9, 9 - k], [9, 9 - k], [9 - k, 9 - k]];
+    for (const [r, c] of at) LOCMap.block(M, type, r, c, t.set, t.graphic, f);
+  }
+  function hitPlace(M, e, d) {
+    let r = (e - M[0xD0C8]) & 255; if (e < M[0xD0C8]) r = (r + 0x24) & 255;
+    let c = (d - M[0xD0C9]) & 255; if (d < M[0xD0C9]) c = (c + 0x24) & 255;
+    return [(3 * r) & 255, (3 * c) & 255];
+  }
+  function hitStep(M, row, col, k) { LOCMap.block(M, 0, row, col, 1, 0x53 + k, 0); }
+  const SHAPES = [[[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]],
+                  [[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2], [3, 3], [-3, -3], [3, -3], [-3, 3],
+                   [4, 0], [-4, 0], [0, 4], [0, -4]]];
+  function shape(M, s, y, x, attr) {
+    for (const [dy, dx] of SHAPES[s]) {
+      const py = (y + dy) & 255, px = (x + dx) & 255;
+      if (py >= 0xA8 || px >= 0xA8) continue;
+      const a = pix(py >> 3, px >> 3, py & 7);
+      if (attr !== undefined && attr !== 0xFF) M[0x5800 + 32 * (py >> 3) + (px >> 3)] = attr;
+      M[a] |= 0x80 >> (px & 7);
+    }
+  }
+  function styles(M) {
+    const out = [];
+    for (let i = 0; i < 7; i++) {
+      const b = Array.from(M.slice(0xB60E + 8 * i, 0xB616 + 8 * i));
+      out.push({ shape: b[0], speed: b[1], tail: b[2], reach: b[3], attr: b[4], combat: b[5], magic: b[6], sound: b[7] });
+    }
+    return out;
+  }
+  const DEATH_T = [97463, 59813, 60563, 61313, 62063, 62813, 63563, 64313, 65063, 65914,
+                   66563, 67313, 68063, 68813, 69563, 70313, 71063, 71813, 72563, 73414,
+                   74063, 74813, 62763, 63513, 64263, 65013, 65763, 66513, 67263, 68114,
+                   68763, 69513, 70263, 71013, 71763, 72513, 73263, 74013, 74763, 75614,
+                   76263, 77013, 77763, 65713, 66463, 67213, 67963, 68713, 69463, 70314,
+                   70963, 71713, 72463, 73213, 73963, 74713, 75463, 76213, 76963, 77814,
+                   78463, 79213, 79963, 80713, 81463, 69413, 70163, 70913, 71663, 14324];
+  const HIT_T = [139601, 213226, 196667];
+  return { tick, cycle, sparkle, CURSORS, cursor, deathStep, hitPlace, hitStep, SHAPES, shape, styles, DEATH_T, HIT_T };
+})();
+// end of loc-gfx
+</script>
+<script>
 /* loc-sight */
 // Lines across the wrapping map, as the game traces them (line_setup $B045, line_step $B0D0,
 // trace_line $B41B), and the distance in half squares (distance $724D), on a memory M holding a
@@ -355,6 +476,66 @@ var LOCCombat = (function () {
 // end of loc-combat
 </script>
 <script>
+/* loc-spells */
+// What each of the 45 spells shows, from the routine cast_spell ($82D7) sends it to. test_spells.js
+// runs each routine of the game's on the kit's Z80 and holds shows() to what it does.
+//   LOCSpells.message(s)   the number of the spell's name among the scenario's messages (spell_name
+//                          $80A0); LOCSpells.name(M, s) that message as text
+//   LOCSpells.shows(s)     what the spell puts on the screen, each kind once, in the order it first
+//                          comes, as { what, v, style }:
+//     'flight'    the spell's flight to its target in missile style 4 (draw_spell_bolt $868C, for
+//                 the area spells and the spells cast at one creature, pick_creature_target $89EA),
+//                 or MAGIC BOLT's own, style 5 ($886A), or MAGIC LIGHTNING's, style 6 ($88CA)
+//     'burst'     draw_hit ($AEC2), where every flight ends (draw_missile $AEBE), and on each
+//                 creature MAGIC ATTACK kills ($8A6B)
+//     'creature'  creature type v = $90 + s, as many as the level (summon_creature $8389; the
+//                 dragons through summon_dragon, over their potion)
+//     'potion'    object v = $52 + s, which the empty cauldron becomes (brew_potion $8478)
+//     'ground'    terrain v: water $36 or tangle vine $37 (flood_area $7F67), the caster's magic
+//                 fire or gooey blob, $38 or $40 plus twice its number (set_spread_types $7DA4):
+//                 here the first wizard's, $3A and $42
+//     'sparkle'   thing $4F's sparkle, which summon_display ($8436) plays after a spell that sets
+//                 $5B25: a summons, a brew and MAGIC SHIELD ($8BFD)
+//                 TELEPORT and MAGIC EYE show nothing of their own
+//   LOCSpells.draw(M, s, row, col)  draws the spell's picture at character row and column, three
+//                 cells by three: the first thing it shows that is neither a flight nor a burst,
+//                 else its flight (the missile's shape in its colour, in the middle); false when it
+//                 shows nothing
+var LOCSpells = (function () {
+  const pix = (r, c, k) => 0x4000 + ((r & 0x18) << 8) + ((r & 7) << 5) + (k << 8) + c;
+  const message = s => s < 0x19 ? 0x91 + s : s < 0x20 ? 0x53 + s : s < 0x22 ? 0x22 + s : s === 0x22 ? 0x38 : 0xB0 + s;
+  const name = (M, s) => LOCMap.text(M, message(s));
+  const SPARKLE = { what: 'sparkle' }, BURST = { what: 'burst' }, flight = style => ({ what: 'flight', style });
+  function shows(s) {
+    if (s < 0x19) return [{ what: 'creature', v: 0x90 + s }, SPARKLE];
+    if (s < 0x20) return [{ what: 'potion', v: 0x52 + s }, SPARKLE];
+    if (s < 0x24) return [flight(4), BURST, { what: 'ground', v: [0x3A, 0x42, 0x37, 0x36][s - 0x20] }];
+    return [[flight(4), BURST], [flight(4), BURST], [flight(4), BURST], [flight(4), BURST],
+            [flight(5), BURST], [flight(6), BURST], [], [], [SPARKLE]][s - 0x24];
+  }
+  function draw(M, s, row, col) {
+    const list = shows(s), k = list.find(x => x.what !== 'flight' && x.what !== 'burst') || list[0];
+    for (let r = row; r < row + 3; r++) for (let c = col; c < col + 3; c++) {
+      for (let i = 0; i < 8; i++) M[pix(r, c, i)] = 0;
+      M[0x5800 + 32 * r + c] = 0;
+    }
+    if (!k) return false;
+    if (k.v !== undefined) LOCMap.block(M, k.v, row, col);
+    else if (k.what === 'flight') {
+      const st = LOCGfx.styles(M)[k.style];
+      LOCGfx.shape(M, st.shape, 8 * row + 12, 8 * col + 12, st.attr);
+    } else if (k.what === 'burst') LOCGfx.hitStep(M, row, col, 1);
+    else {
+      const f = LOCGfx.cycle(M, 0x4F, 0xA5)[0];
+      LOCMap.block(M, 0x4F, row, col, LOCMap.thing(M, 0x4F).set, f.graphic, f.colours);
+    }
+    return true;
+  }
+  return { message, name, shows, draw };
+})();
+// end of loc-spells
+</script>
+<script>
 /* loc-sound */
 // The game's sixteen sound effects as its beeper plays them (set_sound $C83A, play_sound $C856):
 // each a number of groups, each group its three notes played over a number of times, each note an
@@ -428,6 +609,27 @@ function memory(n) {
 const name = (M, v) => LOCMap.text(M, v + 1);
 const typeAt = (M, t) => w16(M, 0xD003) + 12 * (t - 0x90);
 
+// ---- pictures for the tables: a square drawn as the game draws it, into a scratch copy of the
+// scenario's memory, painted from its screen into a 24 x 24 image
+const pics = {}, scratch = {}, cv24 = document.createElement('canvas');
+cv24.width = cv24.height = 24;
+function pic(n, M, key, draw) {
+  const k = n + ':' + key;
+  if (!(k in pics)) {
+    const S = scratch[n] || (scratch[n] = M.slice());
+    if (draw(S) === false) pics[k] = '';
+    else {
+      const img = new ImageData(24, 24);
+      LOCMap.paint(S, img, 0, 0, 3, 3, 0, 0);
+      cv24.getContext('2d').putImageData(img, 0, 0);
+      pics[k] = cv24.toDataURL();
+    }
+  }
+  return pics[k] ? '<img class="loc-pic" src="' + pics[k] + '" alt="">' : '';
+}
+const thingPic = (n, M, v) => pic(n, M, 'thing ' + v, S => LOCMap.block(S, v, 0, 0));
+const spellPic = (n, M, s) => pic(n, M, 'spell ' + s, S => LOCSpells.draw(S, s, 0, 0));
+
 // ---- 02 the map window
 const mw = { n: 1, r: 6, c: 6, sel: [3, 3], sight: false };
 const cv = $('mw-cv'), ctx = cv.getContext('2d');
@@ -472,11 +674,11 @@ cv.addEventListener('click', e => {
 
 // ---- 03 terrain
 async function drawTerrain() {
-  const M = await memory(+$('tr-scen').value);
-  let h = '<tr><th>terrain</th><th>name</th><th class="n">step</th><th class="n">tough</th><th class="n">flood</th><th class="n">vine</th><th class="n">fire</th><th class="n">blob</th><th>breaks into</th><th>sight</th></tr>';
+  const n = +$('tr-scen').value, M = await memory(n);
+  let h = '<tr><th></th><th>terrain</th><th>name</th><th class="n">step</th><th class="n">tough</th><th class="n">flood</th><th class="n">vine</th><th class="n">fire</th><th class="n">blob</th><th>breaks into</th><th>sight</th></tr>';
   for (let v = 0; v < 78; v++) {
     const t = 0xD208 + 5 * v;
-    h += '<tr><td>' + hex(v) + '</td><td>' + name(M, v) + '</td><td class="n">' + (M[t] === 255 ? '–' : M[t]) + '</td><td class="n">' + M[t + 1] +
+    h += '<tr><td class="p">' + thingPic(n, M, v) + '</td><td>' + hex(v) + '</td><td>' + name(M, v) + '</td><td class="n">' + (M[t] === 255 ? '–' : M[t]) + '</td><td class="n">' + M[t + 1] +
       '</td><td class="n">' + (M[t + 2] & 15) + '</td><td class="n">' + (M[t + 2] >> 4) + '</td><td class="n">' + (M[t + 3] & 15) + '</td><td class="n">' + (M[t + 3] >> 4) +
       '</td><td>' + name(M, M[t + 4] >> 6) + '</td><td>' + (M[0xD38E + v] & 1 ? 'blocks' : '') + '</td></tr>';
   }
@@ -488,14 +690,14 @@ $('tr-scen').addEventListener('change', drawTerrain);
 const FLAGS = ['mount', 'undead', 'weapons', 'rides', 'f4', 'swims', 'f6', 'USE'];
 let cbM;
 async function drawCreatures() {
-  const M = cbM = await memory(+$('cb-scen').value);
-  let h = '<tr><th>type</th><th>name</th><th class="n">AP</th><th class="n">fly</th><th class="n">stam</th><th class="n">con</th><th class="n">comb</th><th class="n">def</th><th class="n">res</th><th class="n">carry</th><th class="n">VP</th><th>flags</th></tr>';
+  const n = +$('cb-scen').value, M = cbM = await memory(n);
+  let h = '<tr><th></th><th>type</th><th>name</th><th class="n">AP</th><th class="n">fly</th><th class="n">stam</th><th class="n">con</th><th class="n">comb</th><th class="n">def</th><th class="n">res</th><th class="n">carry</th><th class="n">VP</th><th>flags</th></tr>';
   const opts = [];
   for (let k = 0x90; k < 0xAA; k++) {
     const nm = name(M, k).trim();
     if (!nm) continue;
     const a = typeAt(M, k), f = M[a + 11];
-    h += '<tr><td>' + hex(k) + '</td><td>' + nm + '</td>' + [0, 1, 2, 3, 4, 5, 6, 7, 10].map(i => '<td class="n">' + M[a + i] + '</td>').join('') +
+    h += '<tr><td class="p">' + thingPic(n, M, k) + '</td><td>' + hex(k) + '</td><td>' + nm + '</td>' + [0, 1, 2, 3, 4, 5, 6, 7, 10].map(i => '<td class="n">' + M[a + i] + '</td>').join('') +
       '<td>' + FLAGS.filter((_, i) => f & (1 << i)).join(' ') + '</td></tr>';
     opts.push('<option value="' + k + '">' + nm + '</option>');
   }
@@ -509,8 +711,8 @@ async function drawCreatures() {
 function drawBlow() {
   const M = cbM, A = +$('cb-a').value, D = +$('cb-d').value;
   const ca = M[typeAt(M, A) + 4], dd = M[typeAt(M, D) + 5], con = M[typeAt(M, D) + 3];
-  const o = LOCCombat.odds(ca, dd);
-  $('cb-out').innerHTML = 'combat ' + ca + ' against defence ' + dd + ': a random number from 0 to ' + (LOCCombat.limit(ca) - 1) + ', less ' + dd +
+  const o = LOCCombat.odds(ca, dd), n = +$('cb-scen').value;
+  $('cb-out').innerHTML = '<div class="loc-vs">' + thingPic(n, M, A) + '<span>against</span>' + thingPic(n, M, D) + '</div>' + 'combat ' + ca + ' against defence ' + dd + ': a random number from 0 to ' + (LOCCombat.limit(ca) - 1) + ', less ' + dd +
     '<div class="loc-meter"><i style="width:' + (100 * o.hit).toFixed(1) + '%"></i></div>' +
     'a blow does damage ' + (100 * o.hit).toFixed(0) + '% of the time, ' + o.mean.toFixed(1) + ' points on average and ' + o.most + ' at most; the defender has ' + con + ' constitution' +
     (o.mean > 0 ? ', about ' + Math.ceil(con / o.mean) + ' blows' : ', so it cannot be hurt this way');
@@ -520,18 +722,15 @@ $('cb-a').addEventListener('change', drawBlow);
 $('cb-d').addEventListener('change', drawBlow);
 
 // ---- 05 spells
-function spellName(M, s) {          // spell_name $80A0
-  const m = s < 0x19 ? 0x91 + s : s < 0x20 ? 0x6C + s - 0x19 : s < 0x22 ? 0x42 + s - 0x20 : s === 0x22 ? 0x38 : 0xD3 + s - 0x23;
-  return LOCMap.text(M, m);
-}
 async function drawSpells() {
-  const M = await memory(1), lv = +$('sp-lv').value;
+  const n = +$('sp-scen').value, M = await memory(n), lv = +$('sp-lv').value;
   $('sp-lvn').textContent = lv;
-  let h = '<tr><th>spell</th><th>name</th><th class="n">base</th><th class="n">cost at level ' + lv + '</th></tr>';
-  for (let s = 0; s < 45; s++) h += '<tr><td>' + hex(s) + '</td><td>' + spellName(M, s) + '</td><td class="n">' + M[0xB4BE + s] + '</td><td class="n">' + M[0xB4BE + s] * (lv + 1) + '</td></tr>';
+  let h = '<tr><th></th><th>spell</th><th>name</th><th class="n">base</th><th class="n">cost at level ' + lv + '</th></tr>';
+  for (let s = 0; s < 45; s++) h += '<tr><td class="p">' + spellPic(n, M, s) + '</td><td>' + hex(s) + '</td><td>' + LOCSpells.name(M, s) + '</td><td class="n">' + M[0xB4BE + s] + '</td><td class="n">' + M[0xB4BE + s] * (lv + 1) + '</td></tr>';
   $('sp-tab').innerHTML = h;
 }
 $('sp-lv').addEventListener('input', drawSpells);
+$('sp-scen').addEventListener('change', drawSpells);
 
 // ---- 06 sound
 let actx;

@@ -46,8 +46,10 @@
 // the routines are called, not once at the stretch's end.
 //
 // The cassette. A load plays the next block; past the last it goes back to the first, as a player
-// rewinding to look for a file. A save puts its block at the end. The tape is never at its end, so
-// the ROM's wait for a signal never comes.
+// rewinding to look for a file. A search that has read more blocks than the cassette holds since a
+// file last loaded (a name no file on it starts with) stops at the end of the tape, and the ROM's
+// wait for a signal comes, until SPACE is held; the tape is then wound back to its start. A save
+// puts its block at the end.
 //
 // The refresh register, which random_below reads ($A738), counts the instructions the processor
 // has run: no port can know it, so the page draws a byte of its own each time.
@@ -97,24 +99,32 @@ function create(o) {
   }
 
   // ---- the cassette
+  // run counts the blocks played since a file's data last loaded (a load asking for a data block,
+  // flag $C8, that got one); ended, the tape at its end, makes pos the end, where the port's LD-BYTES
+  // waits for SPACE, and SPACE held (io.in) winds it back to the start.
   const tape = {
     blocks: (o.data.tape || []).map(b => ({ flag: b.flag, bytes: b64(b.bytes) })),
-    at: 0, saved: [],
-    get pos() { return this.blocks.length ? this.at % this.blocks.length : 0; },
+    at: 0, saved: [], run: 0, ended: false,
+    get pos() {
+      if (!this.blocks.length) return 0;
+      if (this.run > this.blocks.length) this.ended = true;
+      return this.ended ? this.blocks.length : this.at % this.blocks.length;
+    },
     set pos(v) { this.at = v; },
-    load() {
+    load(flag) {
       if (!this.blocks.length) return null;
-      const b = this.blocks[this.pos];
-      this.at = (this.pos + 1) % this.blocks.length;
+      const at = this.at % this.blocks.length, b = this.blocks[at];
+      this.at = (at + 1) % this.blocks.length;
+      if (flag === 0xC8 && b.flag === 0xC8) this.run = 0; else this.run++;
       return b;
     },
     save(flag, bytes) {
       const b = { flag, bytes: Uint8Array.from(bytes) };
-      this.blocks.push(b); this.at = 0;
+      this.blocks.push(b); this.at = 0; this.run = 0; this.ended = false;
       for (const f of this.saved) f(b);
       return true;
     },
-    rewind() { this.at = 0; },
+    rewind() { this.at = 0; this.run = 0; this.ended = false; },
     add(list) { for (const b of list) this.blocks.push({ flag: b.flag, bytes: Uint8Array.from(b.bytes) }); },
     onSave(f) { this.saved.push(f); },
   };
@@ -133,6 +143,9 @@ function create(o) {
         const k = KEY[name];
         if (k !== undefined && !(high & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
       }
+      // SPACE held at the end of the tape: the player stops the search and winds the tape back to
+      // its start, so that the next search reads each file's header before its data
+      if (tape.ended && !(high & 0x80) && !(v & 1)) tape.rewind();
       return 0xA0 | v;
     },
     out(port, v, T) {

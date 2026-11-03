@@ -129,5 +129,25 @@ animation, the burst and the missile shapes are drawn by ports held to
 the game's routines (test_graphics.js), and the pauses come from the
 game's own T-states for each step's sound.
 
+**Pictures in the tables, and a search that never ends.** Aaron asked
+for the terrain, creature and spell tables to carry their pictures, and
+how a game starts, since LOAD SCENARIO never came back. It never came
+back because the name typed was SCENARIO: find_file loads the first file
+whose name starts with the letter typed, and no file starts with S. The
+game searches on, as it would on a Spectrum, but the page's cassette
+wound round to its first block at once and for ever. It now stops at the
+end of the tape after one round without a file, says so under the
+screen, and SPACE winds it back to the start; test_play.js loads
+scenario 1 after such a search. Stopping it with the tape left on a data
+block put the next search out of step, header against data, which the
+same test showed.
+
+For the spells, a search of the listing for callers of draw_spell_bolt
+found only ENCHANT and the area spells. Running each spell's routine on
+the kit's Z80 (test_spells.js) found SUBVERSION, CURSE and MAGIC ATTACK
+flying the bolt too, through pick_creature_target, and every flight
+ending in the burst, because draw_missile runs on into draw_hit with no
+call to find.
+
 **Left open.** Nothing for Platinum. Gold needs a person's pass over the
 copy.

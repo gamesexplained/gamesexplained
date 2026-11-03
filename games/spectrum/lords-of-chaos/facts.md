@@ -337,6 +337,31 @@ by the caster's strength for them (spread_magic). The ranges are twice
 the level plus 7 for most spells (pick_spell_target), three times the
 level plus 10 for magic eye, twice the level plus 30 for teleport.
 
+What each spell puts on the screen (test_spells.js runs every spell's
+routine from cast_spell, in all three scenarios):
+
+- **Summons** (0 to `$18`) make creature type `$90` plus the spell
+  (summon_creature `$8389`); on a human's turn the new creature's square
+  shows thing `$4F` until the sparkle has played (`$8398`).
+- **Potions** (`$19` to `$1F`) turn the empty cauldron into object `$52`
+  plus the spell (brew_potion `$8478`), and its square shows `$4F` the
+  same way (`$84CB`).
+- **The area spells** fly to the target in missile style 4
+  (draw_spell_bolt), burst, and put down magic fire `$38` or gooey blob
+  `$40` plus twice the caster's number (set_spread_types), tangle vine
+  `$37` or water `$36` (flood_area `$7F67`, `$36` plus `$5B21`).
+- **ENCHANT, SUBVERSION, CURSE and MAGIC ATTACK** fly in style 4 and
+  burst, CURSE, SUBVERSION and MAGIC ATTACK through pick_creature_target
+  (`$89EA`); MAGIC ATTACK bursts again on every creature it kills
+  (`$8A6B`).
+- **MAGIC BOLT and MAGIC LIGHTNING** fly in styles 5 and 6 (`$886A`,
+  `$88CA`) and burst.
+- **MAGIC SHIELD** sets `$5B25` (`$8BFD`), so summon_display plays the
+  sparkle, as it does after a summons and a brew. **TELEPORT and MAGIC
+  EYE** pick their square with pick_target and draw nothing of their own.
+- Every flight ends in the burst: draw_missile runs on into draw_hit
+  (`$AEBE`), and a flight of no length goes straight there (`$AE1A`).
+
 ### The portal and the end
 
 set_up_game picks the portal's turn, `$D040` plus a random number below
@@ -385,7 +410,10 @@ computer wizard tries spells by the scenario's priorities
 - find_file compares only the first character of a file name (`B` is
   loaded with 12 and never counted down), so LOAD takes the first file
   on the tape whose name starts with the same character, whatever its
-  extension.
+  extension. A name no file starts with is never found: find_file reads
+  header after header until the tape runs out, and then the ROM's
+  LD-BYTES waits for a signal until SPACE is held, which breaks off the
+  load and brings back the panel the load was chosen from.
 - interrupt_work restores its drawing state with a read where it means a
   write (`$A914`), so a block the main program is drawing when the
   interrupt comes takes the rest of its attributes from where the
