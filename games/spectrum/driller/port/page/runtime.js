@@ -18,6 +18,16 @@
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, { frame, screen (the 6,912 bytes shown),
 //                      border, flash, at (the clock's time when the picture was taken) }
+//   rt.runTicks(tstates, loop)   Fast CPU's clock (site/lib/fast-cpu.js), in place of runFrame: real
+//                      time owed, in T-states. The main loop goes round once on each tick, 60 a
+//                      second, its own work taking no time: loop.start is the checkpoint
+//                      where a loop starts, loop.work the checkpoints its stretches start at, loop.cap
+//                      the most loops a call runs (time owed past them is dropped), loop.between()
+//                      called after each. A wait inside a loop, a sound, the interrupt, and the
+//                      program outside the loop (the start, the demonstration, the information
+//                      screen, drilling, a game's end) take the Spectrum's time. Returns the loops run
+//   rt.now()           the screen as memory stands now, in runFrame's form
+//   rt.ticks           Fast CPU's ticks so far: 60 a second, 58,333⅓ T-states apart
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
@@ -45,6 +55,15 @@
 // fall due meanwhile are lost, as on the Spectrum (the game's clock loses them too). The sensors'
 // hit, which the interrupt itself plays, lengthens that interrupt by its sound, and a beam it draws
 // by the beam's cost.
+//
+// Fast CPU's clock is the same clock with the main loop's own work free: as a Spectrum with a much
+// faster processor would, the game goes round its loop as soon as the loop starts and then waits, at
+// the loop's start, for the next tick. The ticks are Fast CPU's own, 60 a second, counted in
+// T-states: the game counts its time by the frame's interrupt, 50 a second, which goes on at its
+// own rate and keeps all the game counts by it (the clock, the wait counter, the sensors) to the
+// Spectrum's time. Away from the loop's own work (the
+// routines that leave play, AWAY, the demonstration, a new game's start and a game's end) the
+// program takes the Spectrum's time and the port keeps its own plug-in points.
 (function (root) {
 'use strict';
 const LINE = 224, LINES = 312, FRAME = LINE * LINES;
@@ -61,6 +80,10 @@ const KEY = {
   ENTER: 0x30, L: 0x31, K: 0x32, J: 0x33, H: 0x34,
   SPACE: 0x38, SYMBOL: 0x39, M: 0x3A, N: 0x3B, B: 0x3C,
 };
+// Fast CPU's ticks: tick k at T-state ceil(k x 3,500,000 / 60), so the number of ticks by T-state t
+// is floor(t x 60 / 3,500,000)
+const TICK_NUM = 60, TICK_DEN = 3500000;
+const ticksAt = t => Math.floor(t * TICK_NUM / TICK_DEN), tickAt = k => Math.ceil(k * TICK_DEN / TICK_NUM);
 // the frames kept ahead of the one shown, and the least a stretch between two checkpoints costs
 const AHEAD = 200, MIN_STRETCH = 10;
 const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -74,6 +97,14 @@ function create(o) {
   // ---- the clock, and the frames as the beam shows them
   let t = 0, nextInt = 1, frameIdx = 0, taken = false, cur = null, target = null;
   let irqsOn = false, di = false, wiped = false;
+  // Fast CPU's clock (runTicks): loop is its settings while it runs the clock, else null; free while
+  // the main loop's own work runs, taking no time; parked at a loop's start, waiting for the tick;
+  // inLoop from a loop's first checkpoint to a game's end or start; away while a routine that
+  // leaves play runs
+  let loop = null, free = false, parked = false, going = false, inLoop = false, away = 0, atCp = false;
+  const AWAY = ['info_screen', 'drill'];
+  const MAIN = new Set([0x9807, 0x9815, 0x9822, 0x9825, 0x9828]), START = new Set([0x97B5, 0x97BA, 0x97CA, 0x97D3,
+    0x97D6, 0x97E0, 0x97E8, 0x97EB, 0x97FD, 0x9833, 0x9ABB, 0x9AC1]);
   const done = [];
   const frameNow = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
   // the frames the clock has finished, each with the picture as the beam reached the paper
@@ -122,6 +153,18 @@ function create(o) {
   // ---- the program, and what its stretches cost
   const P = D.makePort(M, io, {});
   P.T = P.T || 0;
+  // the plug-in points: the game's own (src/core.js) but while the main loop's own work runs under
+  // Fast CPU's clock; the routines that leave play counted in away
+  const gamePlug = P.plug;
+  let fastPlug = null;
+  Object.defineProperty(P, 'plug', {
+    get: () => (fastPlug && loop && free && !away ? fastPlug : gamePlug),
+    set: v => { fastPlug = v === gamePlug ? null : v; },
+  });
+  for (const name of AWAY) {
+    const f = P[name];
+    P[name] = function* (...a) { away++; try { return yield* f.apply(this, a); } finally { away--; } };
+  }
   const ROM = o.data.rom ? { from: o.data.rom.from, bytes: b64(o.data.rom.bytes) } : null;
   const model = o.cost || { seg: {}, call: {} };
   const IRQ = model.irq || 0, IRQN = model.irqN || {};
@@ -148,7 +191,7 @@ function create(o) {
     for (const k in P.N) { if (P.N[k]) c += (model.call['#' + k] || 0) * P.N[k]; P.N[k] = 0; }
     return c;
   }
-  function pay() { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
+  function pay() { const c = callsCost(); if (c >= 1 && !(free && !away)) advance(Math.round(c)); }
   // a stretch the fit never saw costs only its calls: test/t-page.js fails on any it meets
   const missing = new Set();
   function cost(from, to) {
@@ -156,6 +199,8 @@ function create(o) {
     if (!(k in model.seg)) missing.add(k);
     return Math.round((model.seg[k] || 0) + callsCost());
   }
+  // the demonstration plays the recording one command a loop at the Spectrum's own speed
+  const demo = () => M[0x891F] === 3;
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) { if (counting) pay(); return M[a]; }
@@ -212,15 +257,19 @@ function create(o) {
     const y = r.value;
     if (y && y.cp !== undefined) {
       // a stretch takes the game some T-states, whatever the fit gave it: a loop of nothing the
-      // fit knows still lets the clock, and with it the keys, move on
-      const dt = lastCp === null ? 0 : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
-      lastCp = y.cp;
+      // fit knows still lets the clock, and with it the keys, move on; the main loop's own, none
+      // with Fast CPU's clock
+      const dt = lastCp === null ? 0 : free && !away ? (callsCost(), 0) : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
+      lastCp = y.cp; atCp = true;
       advance(dt);
+      if (MAIN.has(y.cp)) inLoop = true; else if (START.has(y.cp)) inLoop = false;
+      free = !!loop && inLoop && !away && !demo() && loop.work.has(y.cp);
+      parked = free && y.cp === loop.start;
     } else if (y && y.tstates !== undefined) {
-      pay(); advance(y.tstates);
+      pay(); atCp = false; advance(y.tstates);
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
-      pay(); advance(LINE - t % LINE);
+      pay(); atCp = false; advance(LINE - t % LINE);
     }
   }
   function runUntil(until) {
@@ -238,11 +287,45 @@ function create(o) {
     return done[Math.max(0, Math.min(done.length - 1, i))];
   }
   function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; going = false; }
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
+
+  // Fast CPU's clock: the real time owed banked, and a loop run on each tick it reaches, up to the
+  // cap; less than a tick stays in the bank, and what is owed past the cap is dropped
+  function runTicks(tstates, o) {
+    if (loop !== o) {
+      loop = o;
+      // switched on in the loop's work, even in its wait for a key: free from here on
+      free = inLoop && !away && !demo() && o.work.has(lastCp);
+      parked = free && atCp && lastCp === o.start;
+    }
+    if (target === null) target = t;
+    target += tstates;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // in a loop's wait, or outside the loop: the Spectrum's time, as far as is owed
+        if (t >= target) break;
+        if (!it) { advance(target - t); break; }    // wiped: the clock runs on, the screen as it is
+        step();
+        if (parked && going) { going = false; if (o.between) o.between(); }
+        continue;
+      }
+      const tick = tickAt(ticksAt(t) + 1);
+      if (tick > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the tick, the interrupts due by then run, then the loop
+      advance(tick - t);
+      parked = false; going = true; loops++;
+    }
+    return loops;
+  }
+  const now = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
 
   // a machine: the hand-over (data) or a test's moment, the program started at entry(P)
   function restore(s, entry) {
@@ -256,12 +339,14 @@ function create(o) {
     if (taken) cur = frameNow();
     done.length = 0;
     it = entry(P); lastCp = null; calls = Object.create(null); owed = 0;
+    free = false; parked = false; going = false; inLoop = false; away = 0; atCp = false;
     for (const k in P.N) P.N[k] = 0;
   }
   restore(o.data, p => p.program(true));
   return {
     M, P, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
+    get ticks() { return ticksAt(t); }, runTicks, now,
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
     get border() { return border; }, get wiped() { return wiped; }, missing,
     runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),

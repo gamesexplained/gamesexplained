@@ -15,7 +15,7 @@ platform's reference skill says what the machine's clocks are.
   limiter" says how often the ticks come.
 - **Step**: what one of the machine's loops does to the game, such as
   how far it moves you. Fast CPU spreads each step over K loops, a share
-  in each. "Once a step" means once every K ticks.
+  in each. "Once a step" means once every K loops.
 - **K**: the whole number of ticks one step takes. The game's table fixes
   it for each Speed setting, or the page's cost model gives it afresh for
   each step.
@@ -119,18 +119,23 @@ two aims clash, the higher one wins.
 
 ## The frame limiter
 
-- **Tick 60 times a second, and start at most one loop a tick.** Sixty is
-  a rate the machine's screen shows on some model. Most displays refresh
-  at it too. So each frame stays up for one refresh. A loop's own work
+- **Tick 60 times a second, and start at most one loop a tick.** Most
+  displays refresh 60 times a second. So each frame stays up for one
+  refresh. A loop's own work
   takes no time. A processor that fast would finish it long before the
   next tick.
 - **Tick on the game's own clock when that clock runs 60 times a
   second.** Then the loops and the clock line up one to one
-  (`games/c64/castle-master`'s timer). Some games time play by a slower
-  clock, such as the screen's 50 video frames a second
-  (`games/c64/space-rogue`). Such a game gets ticks of its own, counted in
-  the machine's cycles. Its own clock goes on counting at its own rate.
-  So what it times keeps its time in seconds.
+  (`games/c64/castle-master`'s timer). A game that times play by a slower
+  clock, such as its screen's 50 video frames a second, gets ticks of its
+  own, 60 a second, counted in the machine's cycles
+  (`games/spectrum/driller`). A loop on each of those video frames would
+  show unevenly: a 60 Hz display holds one in five for two refreshes. Its
+  own clock goes on counting at its own rate. So what it times keeps its
+  time in seconds.
+- **A game kept at its own speed ticks once a video frame.** It counts its
+  speed in video frames, so a step is a whole number of such ticks
+  (`games/c64/space-rogue`).
 - **Put such a tick just after the interrupt that reads the keys**
   (`games/c64/space-rogue`, a line after its interrupt's). Each loop then
   takes the keys the interrupt has just read. Its frame shows in the
@@ -284,8 +289,13 @@ two aims clash, the higher one wins.
   share each loop. It takes nothing once the key is up. So the player
   stops in the loop where the key comes up. A switch acts once, when the
   key goes down. Repeating it would undo it. A repeat acts at the press
-  and then every K ticks. A modifier key can make a move repeat. Read that
+  and then every K loops. A modifier key can make a move repeat. Read that
   modifier as the game reads it.
+- **Count a repeat, and every job run once a step, in loops.** A wait
+  inside a loop can hold it longer than K ticks: a pause after a throw
+  (`games/c64/castle-master`), or a sound the processor plays itself
+  (`games/spectrum/driller`). Counted in ticks, a held repeat would act
+  on every such loop, and each move would wait for it.
 - **Hold every key down for at least three of the machine's video
   frames.** The first loop that reads the key counts it. So no press goes
   missing.
@@ -374,7 +384,7 @@ Test every rule on the published page, in node
 - the clock's jobs at the same moments with Fast CPU on and off;
 - K shares ending where one step ends;
 - the speed at each Speed setting;
-- a switch acting once a press;
+- a switch acting once a press, and a repeat once a step;
 - stopping in the loop where the key comes up;
 - a wait that only keeps something on screen;
 - long random play;

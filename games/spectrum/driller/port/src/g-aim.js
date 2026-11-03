@@ -122,7 +122,8 @@ G.aim = function (P) {
       return {};
     }
     if (!M[0x88A2]) return {};
-    const moveBy = f => { P.crosshair({}); f(); P.crosshair({}); P.N.delay = (P.N.delay || 0) + 1; };
+    // a pixel a pass; plug-in point: the pixels of it this pass takes
+    const moveBy = f => { for (let n = P.plug.step(a, 1); n > 0; n--) { P.crosshair({}); f(); P.crosshair({}); P.N.delay = (P.N.delay || 0) + 1; } };
     if (a === 0x18) moveBy(() => { if (M[0x88A0] !== 1) M[0x88A0]--; });
     else if (a === 0x17) moveBy(() => { if (((M[0x88D9] * 2) & 255) !== M[0x88A0]) M[0x88A0]++; });
     else if (a === 0x1A) moveBy(() => { if (((M[0x88DA] * 2) & 255) !== M[0x88A1]) M[0x88A1]++; });

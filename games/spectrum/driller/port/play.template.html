@@ -52,6 +52,10 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-bar button:hover{border-color:var(--ink-mute)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-speed{display:inline-flex;align-items:center;gap:6px;font-family:var(--fb);font-size:14px;font-weight:700;color:var(--ink)}
+.pl-speed input{width:76px;accent-color:var(--ink);cursor:pointer}
+.pl-speed output{font-family:var(--fm);font-size:12px;font-weight:400;min-width:2.4em}
+.pl-speed[aria-disabled="true"]{color:var(--ink-mute)}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys .pl-keys-tap{display:none}
@@ -86,6 +90,8 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a Spectrum with a much faster processor would: a new frame 60 times a second, as fast as the Speed sets">Fast CPU</button>
+      <label class="pl-speed" title="How fast you move with Fast CPU: 1× as fast as a Spectrum at its quickest, 2× and 4× faster still">Speed <input type="range" id="pl-speed" min="0" max="2" step="1" value="0"><output id="pl-speed-v">1×</output></label>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -108,7 +114,7 @@ section table{margin:6px 0 18px}
       <li><kbd data-key="U">U</kbd> turns round</li>
     </ul>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the game draws each view into a buffer of its own and then copies it to the screen. The sound is the port's writes to the beeper, each edge at the T-state the game's loops make it, played by the site's model of it as each frame is shown.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own speed: the game draws each view into a buffer of its own and then copies it to the screen. <b>Fast CPU</b> plays the game as a Spectrum with a much faster processor would, with a new frame 60 times a second, and <b>Speed</b> sets how fast you move: 1× as fast as a Spectrum at its quickest, and 2× and 4× faster still (section 02). The sound is the port's writes to the beeper, each edge at the T-state the game's loops make it, played by the site's model of it as each frame is shown.</p>
   </div>
 </section>
 <section id="port">
@@ -116,8 +122,13 @@ section table{margin:6px 0 18px}
   <h2 class="t">Every routine of the game, checked against the original</h2>
 <!-- port-results -->
 </section>
+<section id="fast">
+  <p class="fig">02 · Fast CPU</p>
+  <h2 class="t">The game on a much faster processor</h2>
+<!-- fast -->
+</section>
 <section id="differences">
-  <p class="fig">02 · Differences</p>
+  <p class="fig">03 · Differences</p>
   <h2 class="t">What differs from a Spectrum</h2>
 <!-- differences -->
 </section>
@@ -127,6 +138,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/play-controls.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <!-- port -->
 <script>
 /* the page: the port on a virtual 48K clock, drawn each frame, the keyboard, the joystick and the tape */
@@ -140,7 +152,7 @@ const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16
 const FRAME = DRPage.FRAME, FRAME_MS = 1000 * FRAME / 3500000;
 // the picture: the paper, 256 by 192, inside a border of 32 pixels
 const W = 320, H = 256, BX = 32, BY = 32;
-let data = null, rt = null, running = false, paused = false;
+let data = null, rt = null, fx = null, running = false, paused = false, fast = false, speed = 0;
 
 // --- drawing: the frame the clock finished last, the screen as the beam reached the paper
 const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
@@ -295,7 +307,10 @@ const tape = (function () {
   };
 })();
 
-// --- the loop: one frame of 48K time per frame of real time
+// --- the loop: one frame of 48K time per frame of real time; with Fast CPU (site/lib/fast-cpu.js), a
+// loop of the game for each of its ticks, 60 a second, that real time has reached, at most four a
+// refresh (a computer too slow for them plays slower than the Spectrum), and the screen as the last
+// one left it drawn in the same refresh
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
@@ -306,6 +321,8 @@ function boot() {
   const security = rt.P.security;
   rt.P.security = function* (r) { asking = true; try { return yield* security.call(this, r); } finally { asking = false; } };
   asking = false;
+  fx = window.FastCPU ? FastCPU.attach(rt, window.DR_FAST) : null;
+  if (fx) FastCPU.set(fx, fast, speed);
   sound.attach(); input();
 }
 function tick(now) {
@@ -313,9 +330,16 @@ function tick(now) {
   if (!running || paused || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
-    acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
-    if (n === 10) acc = 0;
+    const dt = Math.min(250, now - (last || now)); last = now;
+    if (fast && fx) {
+      FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
+      sound.frame(); tape.frame(); typeStep();
+      F = rt.now(); n = 1;
+    } else {
+      acc += dt;
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
+      if (n === 10) acc = 0;
+    }
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) { draw(F); showAnswer(); }
   if (rt.wiped) {
@@ -336,15 +360,15 @@ const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 // A key is held for at least eight frames of the game's time: the game looks at the keys once a
-// pass, which can be a few frames apart, and a shorter tap could fall between two looks. A key
-// tapped in the list (tap:, below) is held until the game has looked at the keys since it went
-// down as well
+// pass, which can be a few frames apart, and a shorter tap could fall between two looks. With Fast
+// CPU it looks each tick, and three frames are enough. A key tapped in the list (tap:, below) is
+// held until the game has looked at the keys since it went down as well
 const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
-const HOLD = 8;
+const HOLD = 8, HOLD_FAST = 3;
 let padBits = 0;
 function release() {
   for (const c of letGo) {
-    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    if (rt && (rt.shown - (since.get(c) || 0) < (fast ? HOLD_FAST : HOLD) || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
     letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
   }
   input();
@@ -433,6 +457,20 @@ const controls = PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), key
 // --- controls
 let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
+const VIEW_KEY = 'gamesexplained.driller.view';
+// the Speed: a stop of the slider, an index into Fast CPU's table (DR_FAST.speeds)
+const SPEEDS = window.DR_FAST ? DR_FAST.speeds : [{ name: '1×' }, { name: '2×' }, { name: '4×' }];
+const speedIn = $('pl-speed'), speedOut = $('pl-speed-v');
+function setFast(f, s = speed) {
+  fast = f; speed = Math.max(0, Math.min(SPEEDS.length - 1, s | 0));
+  if (fx) FastCPU.set(fx, fast, speed);
+  acc = 0;
+  document.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(fast));
+  speedIn.value = String(speed); speedOut.textContent = SPEEDS[speed].name;
+  speedIn.setAttribute('aria-valuetext', SPEEDS[speed].name);
+  speedIn.closest('.pl-speed').setAttribute('aria-disabled', String(!fast));
+  try { localStorage.setItem(VIEW_KEY, (fast ? 'f' : '') + speed); } catch (e) { /* no storage: the switches last for this visit */ }
+}
 function start() {
   over.hidden = true;
   boot();
@@ -445,8 +483,13 @@ $('pl-bar').addEventListener('click', e => {
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && data) start();
+  else if (act === 'fast') setFast(!fast);
   screen.focus();
 });
+// the slider sets the Speed, and turns Fast CPU on if it was off
+speedIn.addEventListener('input', () => setFast(true, +speedIn.value));
+speedIn.addEventListener('change', () => screen.focus());
+try { const v = localStorage.getItem(VIEW_KEY) || ''; setFast(v.includes('f'), +(v.match(/[0-2]/) || [0])[0]); } catch (e) { /* the switches start off */ }
 screen.addEventListener('click', () => { if (!running && data) start(); });
 // the CRT screen (site/lib/crt.js), on until the viewer switches it off
 CRT.attach(cv, { button: document.querySelector('[data-crt]') });
@@ -458,6 +501,6 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.DRPlay = { get rt() { return rt; }, start, tape };
+window.DRPlay = { get rt() { return rt; }, get fx() { return fx; }, start, tape, setFast };
 })();
 </script>

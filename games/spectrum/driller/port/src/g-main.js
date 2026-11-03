@@ -107,6 +107,9 @@ G.main = function (P) {
         if (end) { yield* gameOver(end); return {}; }
         const minute = P.irqByte(0x889D);
         if (M[0x88AE] !== minute) { M[0x88AE] = minute; M[0x8A64] = 1; return {}; }
+        // plug-in point: the keys read again, for their commands (a pass for the clock's minute
+        // reads none)
+        P.plug.read();
         if (k.cf) break;
         yield;
       }
@@ -133,7 +136,11 @@ G.main = function (P) {
     }
     M[w(0x8BF3)] = M[0x8A65];
     for (;;) {
-      if (!sgn8(a - 1) && sgn8(a - 0x15)) yield* P.move_command({ a });
+      // plug-in point: whether a held key's command is carried out again; a rise or a fall on foot,
+      // a whole cell, is $80 more than the jet's, which moves by the step
+      const act = (a === 1 || a === 2) && !M[0x877A] ? a | 0x80 : a;
+      if (!P.plug.take(act)) { /* passed over */ }
+      else if (!sgn8(a - 1) && sgn8(a - 0x15)) yield* P.move_command({ a });
       else if (!sgn8(a - 0x15) && sgn8(a - 0x1F)) yield* P.aim_command({ a });
       else if (a === 0x28 || a === 0x2A) { yield* P.drill({ a }); return {}; }
       else if (a === 0x29) { yield* P.info_screen({}); return {}; }
@@ -188,7 +195,9 @@ G.main = function (P) {
   // a count, then each script's length and bytes.
   P.def(0x9B6E, 'run_scripts', function* () {
     if (!M[0x8A64]) return {};
-    if (M[0x8A69]) {
+    // plug-in point: the script of an object a step alone runs into, or the bump when it has none,
+    // which adds up with each run (a shot's runs with the shot)
+    if (M[0x8A69] && (M[0x8BF1] || P.plug.once(0x8A69))) {
       M[0x8916] = M[0x8A69];
       const f = P.find_object({ a: 0 });
       if (!(f.a & 255)) {
@@ -289,6 +298,7 @@ G.main = function (P) {
     if (!M[0x877A]) h = (h + M[0x8776] - 1) & 255;
     setw(0x8764, fine(h));
     M[0x876C] = o(4); M[0x876D] = o(5); M[0x876E] = o(6);
+    for (const a of [0x876C, 0x876D, 0x876E]) P.plug.whole(a);
     return {};
   });
 };

@@ -50,6 +50,31 @@ function makePort(M, io, opts = {}) {
   P.until0 = function* (a, mask, turn) { while (P.irqByte(a) & mask) yield { tstates: turn }; };
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };
+  // The plug-in points: the places in the routines where the page's Fast CPU (site/lib/fast-cpu.js)
+  // passes in a value or skips a job, each marked "plug-in point" where it is used. These are the
+  // game's own: with nothing plugged in, each gives the value the game's code gives, so the
+  // lockstep holds the port and its plug-in points together. Fast CPU replaces them.
+  //   step(key, v)     a move's step, or a pixel of the crosshair's: what of it this pass takes (all)
+  //   turn(a, by)      a turn of the angle at a by `by` seventy-seconds: how many whole ones it
+  //                    turns this pass (all of them)
+  //   frac(a)          the share of a seventy-second the angle at a stands past M[a] (none)
+  //   whole(a)         the game has set the angle at a itself, to a whole seventy-second
+  //   read()           the keys have been read again
+  //   take(act)        whether the command a key asks for is carried out (always)
+  //   once(key)        whether a job whose effect adds up with each run runs this time (always)
+  P.plug = {
+    step: (key, v) => v, turn: (a, by) => Math.abs(by), frac: a => 0, whole: a => {}, read: () => {},
+    take: act => true, once: key => true,
+  };
+  // The sine (k 0) or cosine (k 1) of the angle at a, from the table at $8E78 (two bytes an angle,
+  // 72 to a turn, 64 for 1), a signed byte; between two angles (plug-in point: frac) the same
+  // share of the way from one's to the next's
+  P.trig = (a, k) => {
+    const x = M[a], f = P.plug.frac(a), at = 0x8E78 + 2 * x + k;
+    if (!f) return M[at & 0xFFFF];
+    const sb = v => (v << 24) >> 24, y = x + 1 >= 0x48 ? 0 : x + 1;
+    return Math.round(sb(M[at & 0xFFFF]) * (1 - f) + sb(M[(0x8E78 + 2 * y + k) & 0xFFFF]) * f) & 255;
+  };
   // name a routine: its address, its function; a generator is listed in GEN
   P.def = (a, name, f) => {
     P[name] = f;

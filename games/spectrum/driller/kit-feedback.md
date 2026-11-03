@@ -17,10 +17,15 @@ time, operating system and tool versions.
 
 - `kit/skills/core/70-minisite/play.md`, "A clock, not a frame loop": a frame start that passes while the interrupts are off is lost, and a page that runs the lost ones back to back freezes when the handler is longer than a frame. Driller's Play tab froze that way after a sensor's hit, and `games/spectrum/where-time-stood-still` already loses, in its page's machine, the interrupt its long view copy passes over.
 - `kit/lessons/2026-11-02-driller.md`: what the run learned about reading a game's object scripts, and the frozen page (below).
+- `kit/skills/core/70-minisite/fast-cpu.md`, "The frame limiter": the reason for 60 ticks is the displays, not the machine's screen, and a game kept at its own speed ticks once a video frame. Driller's frame interrupt, 50 a second, gets ticks of its own at 60; `games/c64/space-rogue` and `games/c64/mercenary`, which the guide named for ticks of their own, tick once a video frame.
+- `kit/skills/core/70-minisite/fast-cpu.md`, "Controls", and `site/lib/fast-cpu.js`: a repeat and every job run once a step count loops, not ticks. Driller's laser sound holds the loop that fires 12 ticks, more than K at every Speed, so a held laser fired every loop and a walk with it held took 96 ticks a step against the Spectrum's 51. `games/c64/castle-master` waits inside a loop after a throw, its one repeat.
+- `kit/lessons/2026-11-03-driller-fast-cpu.md`: what adding Fast CPU to a Spectrum game taught.
 
 ## Candidates
 
 - `kit/skills/core/70-minisite/play.md`, "Pace it by the machine's clock": to find what the fit does not count, hook the machine at each routine's entry and its return and take each routine's own cycles a call, its callees and the interrupts left out; price from those measurements the routines whose cost a call is steady, give a routine whose cost a call varies widely a count of its own work, and fit the rest around them. Driller's face sort is a bubble sort that cost 14,000 T-states a call in one scene and 473,000 in another; uncounted, the fit put its cost on the drawing routines and the page ran 13 % fast in a view full of faces, and keys held for several passes, as well as random ones, found the scene (`port/scripts/own-cycles.js`, `port/scripts/price-routines.js`). It waits for a second game that shows it before it goes into the skill.
+
+- `kit/skills/core/70-minisite/fast-cpu.md`, "The frame limiter" and "Controls": a delay loop in a pass that moves a pointer sets a speed of the game's own, so share the pass's time rather than time the delay as on the machine (timed as on the machine, Driller's crosshair went 60 pixels a second against the Spectrum's 94). And a main loop that waits inside itself for a key starts at the key read, with Fast CPU switched on during that wait taking the wait's loop as its own. Both wait for a second game with Fast CPU that shows them.
 
 ## Maintainer asks
 

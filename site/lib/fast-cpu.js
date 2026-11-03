@@ -9,7 +9,7 @@
 //   of the machine's loops, so the pace that is set, not the frame rate, decides how fast you
 //   move. A move takes 1/K of its step each loop through the game's own code, the leftover carried
 //   while the key is held; a share of a turn leaves an angle between two of the game's; a switch
-//   is taken once a press, a repeat at the press and every K beats; a job whose effect adds up
+//   is taken once a press, a repeat at the press and every K loops; a job whose effect adds up
 //   runs once a pace; what the game shows for one loop is shown for a pace; a wait that only keeps
 //   a message up does not hold play.
 // What the game counts in time is left alone, so it keeps its time in seconds.
@@ -45,7 +45,7 @@
 //                    in a loop that draws no view), for that loop's share of it
 //   turn             the steps of a whole turn, for the angles the plug-in point turn moves
 //   switches         the actions taken once a press
-//   repeats          the actions taken at the press and every K beats while held
+//   repeats          the actions taken at the press and every K loops while held
 //   ctrl, ctrlRepeats  a byte the game sets while a modifier key is down, and the actions that
 //                    repeat while it is (a move without it)
 //   held             what the game shows for one loop, shown for a pace: [{ at, shown, gone, with }],
@@ -56,7 +56,7 @@
 //                    machine's loops would take for the work the last loop did, by its cost model,
 //                    and calls loop.begin() as each loop starts. A machine's loop of K beats (a
 //                    shadow loop) is K loops of Fast CPU: each takes 1/K of its steps, the jobs
-//                    once a pace run on the first, and a repeat every K beats; a value the game sets
+//                    once a pace run on the first, and a repeat every K loops; a value the game sets
 //                    once a pace from the whole step (plug-in point ease) moves to it in K shares
 //                    from where it stood. K is read again as the next
 //                    shadow loop starts, so the pace follows the machine's, view by view, and the
@@ -82,9 +82,11 @@
 function attach(rt, table) {
   const P = rt.P, M = P.M, T = Object.assign({ switches: [], repeats: [], ctrl: null, ctrlRepeats: [], held: [], speeds: [{ name: '', K: 1 }] }, table);
   const fx = {
-    rt, T, on: false, speed: 0, K: T.speeds[0].K, game: P.plug,
-    loop: { start: T.start, work: new Set(T.work), cap: T.cap, between: null, begin: T.follow ? () => begin(fx) : null },
+    rt, T, on: false, speed: 0, K: T.speeds[0].K, game: P.plug, loops: 0, between: null,
+    loop: { start: T.start, work: new Set(T.work), cap: T.cap, begin: T.follow ? () => begin(fx) : null },
   };
+  // the loops so far: a loop is counted as it ends, so every job in one loop sees the same count
+  fx.loop.between = () => { fx.loops++; if (fx.between) fx.between(); };
   const tick = () => rt.ticks;
   // an angle: the whole step the game holds, and the share of a step past it in K-ths; the game
   // setting the angle itself (a whole step, plug-in point whole, or another value) ends the share
@@ -125,13 +127,15 @@ function attach(rt, table) {
       fx.stepped.clear();
       fx.before = fx.now; fx.now = new Set();
     },
-    // a move each loop; a switch when its key goes down; a repeat then and every K ticks
+    // a move each loop; a switch when its key goes down; a repeat then and once a step, every K
+    // loops (K ticks, but for the loops a wait inside holds longer, as a sound that holds the
+    // processor: counted in ticks, such a repeat would come every loop and hold every share)
     take(act) {
-      const k = kind(act), id = k === 'repeat' && !T.repeats.includes(act) ? act + 0x100 : act, t = tick();
+      const k = kind(act), id = k === 'repeat' && !T.repeats.includes(act) ? act + 0x100 : act, n = fx.loops;
       fx.now.add(id);
       if (k === 'move') return true;
-      if (!fx.before.has(id)) { fx.last.set(id, t); return true; }
-      if (k === 'repeat' && fx.last.has(id) && t - fx.last.get(id) >= fx.K) { fx.last.set(id, t); return true; }
+      if (!fx.before.has(id)) { fx.last.set(id, n); return true; }
+      if (k === 'repeat' && fx.last.has(id) && n - fx.last.get(id) >= fx.K) { fx.last.set(id, n); return true; }
       return false;
     },
     // a value the game sets once a pace from what it worked out for the whole step (a craft's
@@ -149,11 +153,12 @@ function attach(rt, table) {
       e.wrote = e.from + Math.round((to - e.from) * done / fx.K);
       return e.wrote;
     },
+    // a job whose effect adds up: once a step, every K loops as a repeat is
     once(key) {
-      if (T.follow) { if (fx.first) fx.onceAt.set(key, { t: tick(), K: fx.K }); return fx.first; }
-      const t = tick(), l = fx.onceAt.get(key);
-      if (l !== undefined && t - l.t < fx.K) return false;
-      fx.onceAt.set(key, { t, K: fx.K });
+      if (T.follow) { if (fx.first) fx.onceAt.set(key, { t: tick(), n: fx.loops, K: fx.K }); return fx.first; }
+      const n = fx.loops, l = fx.onceAt.get(key);
+      if (l !== undefined && n - l.n < fx.K) return false;
+      fx.onceAt.set(key, { t: tick(), n, K: fx.K });
       return true;
     },
     // the share of a pace gone since the job once a pace `key` last ran (plug-in point once), at
@@ -236,7 +241,7 @@ function set(fx, on, speed) {
 }
 
 function run(fx, ms, between) {
-  fx.loop.between = between || null;
+  fx.between = between || null;
   return fx.rt.runTicks(ms * fx.T.hz / 1000, fx.loop);
 }
 
