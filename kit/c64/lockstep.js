@@ -74,9 +74,13 @@
 //   the raster and a CIA's timer, as many games have, takes the branch the game's took, and one
 //   that gathers the collisions gathers the game's. At the next checkpoint or wait's exit, where the two stand at the same
 //   place, a byte an interrupt wrote and the game's main program wrote again afterwards gets back
-//   the port's own value: the last writer of each byte is the game's. What no replay can give is
-//   the main program reading, in the middle of a stretch, what an interrupt wrote there: those are
-//   the game's own races (the skill says how to show one). Colour RAM and the chips' registers are
+//   the port's own value: the last writer of each byte is the game's. A write of the value the
+//   byte already holds cannot be seen in M, so the main program writes such a byte (one that may
+//   get the value the interrupt left there) through P.io.store(a, v), which the lockstep follows;
+//   a byte put back that then differs is listed with restored: true. On the page store is
+//   M[a] = v. What no replay can give is the main program reading, in the middle of a stretch,
+//   what an interrupt wrote there: those are the game's own races (the skill says how to show
+//   one). Colour RAM and the chips' registers are
 //   replayed as they are: a handler reads the port's, and its writes stand. So a register the main
 //   program writes after an interrupt has written it in the same stretch (a title's SEI and its
 //   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
@@ -238,6 +242,16 @@ const flagRegister = a => (a >= 0xD000 && a < 0xD400 && ((a & 0x3F) === 0x19 || 
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
 const LIST = 64;                                   // differing bytes kept per pass
+// A pass's differing bytes of RAM that lastWriters gave back unlike the game's, marked restored
+// (the set is emptied for the next pass).
+function restored(bytes, set) {
+  if (set.size) for (const b of bytes) if (!b.chip && set.has(b.address)) b.restored = true;
+  set.clear();
+  return bytes;
+}
+const STORE_HINT = ': given back the port\'s value from before an interrupt\'s replay; if the port\'s program wrote the value ' +
+  'the interrupt left there, write it through P.io.store(a, v)';
+
 const CHIPS = ['colour', 'vic', 'sid', 'cia'];
 
 // The RAM compared, compare's ranges less ignore's (the header), as runs [first, last].
@@ -396,6 +410,8 @@ class Lockstep {
     this.polled = false;                           // the main program has read the raster since its last stop
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
+    this.stored = new Set();                       // bytes the port's program stored since their replay
+    this.restored = new Set();                     // bytes lastWriters put back unlike the game's
     this.irq = null;                               // the one running on the machine (with nest, the innermost)
     this.wseq = 0;                                 // with nest, the interrupts' writes numbered
     this.applied = new Map();                      // and the last of each byte's the port has run, until the next checkpoint
@@ -413,7 +429,8 @@ class Lockstep {
   // --- the port's chips ---
   makeIO() {
     return Object.assign(chipIO(this.chips, a => this.portRead(a & 0xFFFF)), {
-      colourRead: i => this.portRead(0xD800 | (i & 0x3FF)) & 15, irqByte: a => this.irqByte(a & 0xFFFF), irqBytes: this.m.nest ? this.irqBytes : null });
+      colourRead: i => this.portRead(0xD800 | (i & 0x3FF)) & 15, irqByte: a => this.irqByte(a & 0xFFFF), irqBytes: this.m.nest ? this.irqBytes : null,
+      store: (a, v) => { a &= 0xFFFF; this.P.M[a] = v & 0xFF; if (this.replaying === null) this.stored.add(a); } });
   }
   // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
   irqByte(a) {
@@ -712,7 +729,9 @@ class Lockstep {
   // Run in the port the interrupts the game has taken since the last yield, then give the port the
   // game's raster line. Each runs on the bytes the game's handler read, as it read them, which go
   // back to the port's values after unless it wrote them. What each wrote is kept in fix for
-  // lastWriters: the port's value before (b), the handler's (h) and the game's handler's (v).
+  // lastWriters: the port's value before (b), the handler's (h) and the game's handler's (v). The
+  // port's program has written a byte since its last replay when its value changed, or when it
+  // stored it.
   // With nest they come in the order they ended, an inner one before the one it interrupted, and a
   // byte both wrote keeps the value of the one that wrote it last in the game: a handler's write
   // that came before one the port has already run is put back.
@@ -738,7 +757,8 @@ class Lockstep {
             if (kept(a)) continue;
             const x = fix.get(a);
             if (!x) fix.set(a, { b: M[a], h: -1, v: -1 });
-            else if (M[a] !== x.h) x.b = M[a];                  // the port's program has written it since
+            else if (M[a] !== x.h || this.stored.has(a)) x.b = M[a];   // the port's program has written it since
+            this.stored.delete(a);
           }
           const later = a => q.seq.has(a) && (this.applied.get(a) || 0) > q.seq.get(a);
           const older = [];
@@ -781,11 +801,15 @@ class Lockstep {
   }
   // At a checkpoint or a wait's exit, where the game and the port stand at the same place: a byte
   // an interrupt wrote that the game's main program then wrote again, and the port's has not since
-  // the replay, gets back the port's own value. The last writer of each byte is the game's.
+  // the replay, gets back the port's own value. The last writer of each byte is the game's. One put
+  // back unlike the game's is kept in restored, for compare to name.
   lastWriters() {
     const M = this.P.M, R = this.m.ram;
-    for (const [a, x] of this.fix) if (R[a] !== x.v && M[a] === x.h) M[a] = x.b;
+    for (const [a, x] of this.fix) {
+      if (R[a] !== x.v && M[a] === x.h && !this.stored.has(a)) { M[a] = x.b; if (x.b !== R[a]) this.restored.add(a); }
+    }
     this.fix.clear();
+    this.stored.clear();
     const c = this.chips;
     for (const [a, x] of this.fixChip) if (asWritten(this.m, a) !== x.v && asWritten(c, a) === x.h) c.ioWrite(a, x.b);
     this.fixChip.clear();
@@ -908,7 +932,11 @@ class Lockstep {
   }
 
   // --- comparing ---
-  compare() { return differ(this.m.ram, this.m, this.P.M, this.chips, this.runs, this.chipList); }
+  compare() {
+    const d = differ(this.m.ram, this.m, this.P.M, this.chips, this.runs, this.chipList);
+    if (d) restored(d.bytes, this.restored); else this.restored.clear();
+    return d;
+  }
   // The port's compared memory and chips made the game's again.
   resync() {
     const M = this.P.M, R = this.m.ram, g = this.m, p = this.chips;
@@ -1100,7 +1128,7 @@ function checkGen(P, routine, address, opts = {}) {
   const portChips = new PortChips(), gameChips = new PortChips();
   let line = (opts.line || 0) % LINES, frames = 0;
   portChips.raster = gameChips.raster = line;
-  P.io = Object.assign({}, P.io, chipIO(portChips), { irqByte: a => P.M[a & 0xFFFF] });
+  P.io = Object.assign({}, P.io, chipIO(portChips), { irqByte: a => P.M[a & 0xFFFF], store: (a, v) => { P.M[a & 0xFFFF] = v & 0xFF; } });
   const G = { M: Uint8Array.from(P.M), io: chipIO(gameChips) };
   const game = standInGen(G, address, { polls: raster ? opts.polls : [frame, ...(opts.polls || [])], port: opts.port, maxSteps: opts.maxSteps })(regs);
   const port = f.call(P, regs);
@@ -1146,7 +1174,11 @@ function checkGen(P, routine, address, opts = {}) {
 // A run's result as lines to print.
 function describe(r) {
   const out = [];
-  for (const d of r.diffs) out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + bytesLine(d));
+  for (const d of r.diffs) {
+    out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + bytesLine(d));
+    const back = d.bytes.filter(b => b.restored).map(b => hex(b.address));
+    if (back.length) out.push('  ' + back.join(', ') + STORE_HINT);
+  }
   if (r.diverged) out.push('pass ' + r.diverged.pass + (r.diverged.after >= 0 ? ', after ' + hex(r.diverged.after) : '') + ' (frame ' + r.diverged.frame + '): ' + r.diverged.why);
   out.push(r.passes + (r.passes === 1 ? ' pass' : ' passes') + ' in ' + r.frames + ' frames: ' +
     (r.ok ? 'identical' : (r.diffs.length ? r.diffs.length + ' with differences' : '') + (r.diffs.length && r.diverged ? ', then ' : '') + (r.diverged ? 'out of step' : '')));

@@ -94,6 +94,14 @@ demonstration.
   says how, and what it cannot see). On the page, `irqByte` is
   `a => M[a]`. Handing the port only the first value leaves every later
   read stale.
+- **Write it through one function too, when the value may repeat.**
+  When the main program gives such a byte the value the interrupt left
+  there, its write changes nothing the lockstep can see, and at the next
+  checkpoint the lockstep puts back the port's value from before the
+  interrupt: a difference the game does not have. Write those bytes
+  through `P.io.store(a, v)`, which the lockstep follows. A byte it put
+  back that then differs is named, with this fix. On the page, `store`
+  is `M[a] = v`.
 - **Pace it by the machine's clock.** A game that moves a fixed step per
   pass is only the same game at the same passes per second. The port
   executes no instructions, so fit their cost: the lockstep's `timing`

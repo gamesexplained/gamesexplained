@@ -481,4 +481,54 @@ for (const fault of [false, true]) {
   }
 }
 
+// 7. The main program writes the value an interrupt has just left (#729). It waits for the frame's
+// interrupt, keeps the byte the handler wrote ($C010) in $C011, waits for the next interrupt and
+// puts the kept value back. In the port that last write comes before the second interrupt's replay,
+// and it writes what the first interrupt's replay left there, so the value does not change. Written
+// to M, it looks like no write, and the byte gets back the port's value from before the first
+// replay; written through P.io.store, it is the port's own, and the byte is the game's.
+function programSame() {
+  const ram = new Uint8Array(65536);
+  const at = (a, bytes) => bytes.forEach((b, i) => { ram[a + i] = b; });
+  // DI; LD SP,$FF00; LD A,$90; LD I,A; IM 2; LD HL,$A000; LD ($90FF),HL; EI; JP $8020
+  at(0x8000, [0xF3, 0x31, 0x00, 0xFF, 0x3E, 0x90, 0xED, 0x47, 0xED, 0x5E, 0x21, 0x00, 0xA0, 0x22, 0xFF, 0x90, 0xFB, 0xC3, 0x20, 0x80]);
+  // $8020 CALL $8100; JP $8020
+  at(0x8020, [0xCD, 0x00, 0x81, 0xC3, 0x20, 0x80]);
+  // $8100 LD HL,$C000; LD B,(HL); $8104 LD A,(HL); CP B; JR Z,$8104 (23 T-states a turn)
+  // LD A,($C010); LD ($C011),A; LD B,(HL); $810E LD A,(HL); CP B; JR Z,$810E
+  // LD A,($C011); LD ($C010),A; RET
+  at(0x8100, [0x21, 0x00, 0xC0, 0x46, 0x7E, 0xB8, 0x28, 0xFC, 0x3A, 0x10, 0xC0, 0x32, 0x11, 0xC0, 0x46,
+    0x7E, 0xB8, 0x28, 0xFC, 0x3A, 0x11, 0xC0, 0x32, 0x10, 0xC0, 0xC9]);
+  // handler: PUSH AF; PUSH HL; LD HL,$C000; INC (HL); LD A,(HL); LD ($C010),A; POP HL; POP AF; EI; RETI
+  at(0xA000, [0xF5, 0xE5, 0x21, 0x00, 0xC0, 0x34, 0x7E, 0x32, 0x10, 0xC0, 0xE1, 0xF1, 0xFB, 0xED, 0x4D]);
+  return ram;
+}
+function portSame(store) {
+  const M = new Uint8Array(65536), P = { M };
+  const put = (a, v) => (store ? P.io.store(a, v) : (M[a] = v));
+  const until = function* (b) { while (P.io.irqByte(0xC000) === b) yield { tstates: 23 }; };
+  P.wait = function* () {                                  // $8100
+    yield* until(P.io.irqByte(0xC000));
+    M[0xC011] = P.io.irqByte(0xC010);
+    yield* until(P.io.irqByte(0xC000));
+    put(0xC010, M[0xC011]);
+  };
+  P.irq = function () { M[0xC000] = (M[0xC000] + 1) & 255; M[0xC010] = M[0xC000]; };
+  P.main = function* () { for (;;) { yield { cp: 0x8020 }; yield* P.wait(); } };
+  return P;
+}
+{
+  const m0 = new Machine({ ram: programSame(), pc: 0x8000, passAt: 0x8020 });
+  m0.runUntilPass(q => q.passes >= 2);
+  const SAME = m0.save();
+  const same = store => new Lockstep({ machine: Machine.restore(SAME), port: portSame(store), program: P => P.main(),
+    irqs: { 0xA000: 'irq' }, irqBytes: [0xC000, 0xC010] }).run({ passes: 20, stopOnDiff: false });
+  const r = same(false);
+  check('a write of the value the interrupt left, to M: $C010 put back from before the first replay',
+    r.diffs.length > 0 && r.diffs.every(d => d.count === 1 && d.bytes[0].address === 0xC010), true);
+  check('and the difference says how to write it', r.diffs[0] && r.diffs[0].bytes[0].restored === true && /P\.io\.store/.test(describe(r)), true);
+  const s = same(true);
+  check('the same write through P.io.store: 20 passes identical', s.ok && s.passes === 20, true);
+}
+
 process.exit(fails ? 1 : 0);

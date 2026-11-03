@@ -681,4 +681,47 @@ const TICK = (() => {
   check('a handler\'s read of the SID\'s faded bus: the game read $' + m.ram[0x2010].toString(16) + ', and so did the port, 3000 passes identical', r.ok && r.passes === 3000 && m.ram[0x2010] !== 0xFF, true);
 }
 
+// The main program writes the value an interrupt has just left (#729). A delay of a frame and a
+// half takes the raster interrupt, the program keeps the byte the handler wrote ($A3) in $A4,
+// waits for the next interrupt and puts the kept value back. The port's wait polls without
+// yielding, so its last write comes before the second interrupt's replay, and it writes what the
+// first interrupt's replay left there: the value does not change. Written to M, it looks like no
+// write, and the byte gets back the port's value from before the first replay; written through
+// P.io.store, it is the port's own, and the byte is the game's.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x20, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0x4C, 0x20, 0x10);   // set up, CLI, JMP $1020
+  put(0x1020, 0x20, 0x40, 0x10, 0x4C, 0x20, 0x10);                                       // JSR wait; JMP $1020
+  put(0x1040, 0xA0, 0x16, 0xA2, 0x00, 0xCA, 0xD0, 0xFD, 0x88, 0xD0, 0xF8,               // LDY #22; LDX #0; DEX; BNE; DEY; BNE
+    0xA5, 0xA3, 0x85, 0xA4, 0xA5, 0xA2, 0xC5, 0xA2, 0xF0, 0xFC,                          // LDA $A3; STA $A4; LDA $A2; CMP $A2; BEQ
+    0xA5, 0xA4, 0x85, 0xA3, 0x60);                                                       // LDA $A4; STA $A3; RTS
+  put(0x1100, 0x48, 0xE6, 0xA2, 0xA5, 0xA2, 0x85, 0xA3, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40);   // INC $A2; $A3 = $A2
+  const m0 = new Machine({ ram, pc: 0x1000, passAt: 0x1020, port: { dir: 0x2F, data: 0x35 } });
+  m0.runUntilPass(q => q.passes >= 2);
+  const SAME = m0.save();
+  const samePort = store => {
+    const M = new Uint8Array(65536), P = { M };
+    P.wait = function* () {                              // $1040
+      yield { cycles: 2 + 22 * 1286 - 1 };
+      M[0xA4] = P.io.irqByte(0xA3);
+      const b = P.io.irqByte(0xA2);
+      while (P.io.irqByte(0xA2) === b);
+      if (store) P.io.store(0xA3, M[0xA4]); else M[0xA3] = M[0xA4];
+    };
+    P.irq = function () { M[0xA2] = (M[0xA2] + 1) & 255; M[0xA3] = M[0xA2]; P.io.vicWrite(0x19, 0xFF); };
+    P.main_loop = function* () { for (;;) { yield { cp: 0x1020 }; yield* P.wait(); } };
+    return P;
+  };
+  const same = store => new Lockstep({ machine: Machine.restore(SAME), port: samePort(store), program: p => p.main_loop(), checkpoints: [0x1020],
+    irqs: { 0x1100: 'irq' }, irqBytes: [0xA2, 0xA3] }).run({ passes: 20, stopOnDiff: false });
+  const r = same(false);
+  check('a write of the value the interrupt left, to M: $A3 put back from before the first replay',
+    r.diffs.length === 20 && r.diffs.every(d => d.count === 1 && d.bytes[0].address === 0xA3 && d.bytes[0].restored === true), true);
+  check('and the difference says how to write it', /\$00A3: .*P\.io\.store/.test(describe(r)), true);
+  const t = same(true);
+  check('the same write through P.io.store: 20 passes identical', t.ok && t.passes === 20, true);
+}
+
 process.exit(fails ? 1 : 0);
