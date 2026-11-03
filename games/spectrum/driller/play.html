@@ -52,6 +52,10 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-bar button:hover{border-color:var(--ink-mute)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-speed{display:inline-flex;align-items:center;gap:6px;font-family:var(--fb);font-size:14px;font-weight:700;color:var(--ink)}
+.pl-speed input{width:76px;accent-color:var(--ink);cursor:pointer}
+.pl-speed output{font-family:var(--fm);font-size:12px;font-weight:400;min-width:2.4em}
+.pl-speed[aria-disabled="true"]{color:var(--ink-mute)}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys .pl-keys-tap{display:none}
@@ -86,6 +90,8 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a Spectrum with a much faster processor would: a new frame 60 times a second, as fast as the Speed sets">Fast CPU</button>
+      <label class="pl-speed" title="How fast you move with Fast CPU: 1× as fast as a Spectrum at its quickest, 2× and 4× faster still">Speed <input type="range" id="pl-speed" min="0" max="2" step="1" value="0"><output id="pl-speed-v">1×</output></label>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -108,7 +114,7 @@ section table{margin:6px 0 18px}
       <li><kbd data-key="U">U</kbd> turns round</li>
     </ul>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the game draws each view into a buffer of its own and then copies it to the screen. The sound is the port's writes to the beeper, each edge at the T-state the game's loops make it, played by the site's model of it as each frame is shown.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own speed: the game draws each view into a buffer of its own and then copies it to the screen. <b>Fast CPU</b> plays the game as a Spectrum with a much faster processor would, with a new frame 60 times a second, and <b>Speed</b> sets how fast you move: 1× as fast as a Spectrum at its quickest, and 2× and 4× faster still (section 02). The sound is the port's writes to the beeper, each edge at the T-state the game's loops make it, played by the site's model of it as each frame is shown.</p>
   </div>
 </section>
 <section id="port">
@@ -125,10 +131,54 @@ section table{margin:6px 0 18px}
   <tr><td>The listing</td><td>The port was written before the listing's comments on the code, and they were written from it, so porting found none of them wrong.</td></tr>
 </table>
 </section>
+<section id="fast">
+  <p class="fig">02 · Fast CPU</p>
+  <h2 class="t">The game on a much faster processor</h2>
+<p class="lede">Driller moves you a fixed step each time its main loop goes round, a pass. On a Spectrum a pass takes from a seventh of a second to nearly two, most of it spent drawing the view, and close to half a second in the middle, so in Amethyst you walk in steps of 250 of the game's units and turn 15 degrees at a time. A Spectrum with a much faster processor would make dozens of passes a second and take a whole step each time. With <b>Fast CPU</b> on, the page plays the game as such a machine would if it were built to stay playable: a new frame 60 times a second, and you move as fast as the <b>Speed</b> sets, whatever is in view.</p>
+<h3>A pass on each tick, 60 a second</h3>
+<p>The game keeps its time by the Spectrum's frame interrupt, 50 a second: it takes a second off the clock to the meteor strike every 50 frames, a unit of energy every minute, and fires the laser beacons. Fast CPU counts ticks of its own, 60 a second, in the Spectrum's T-states: 58,333⅓ of them to a tick. With Fast CPU on, each pass starts on a tick, and never more than one pass on the same tick. The pass's own work takes no time, as on a processor fast enough to finish it long before the next tick.</p>
+<p>Sixty is the refresh rate of most displays. A Spectrum's screen shows 50 frames a second, and a pass on each of those would show unevenly on a 60 Hz display, one frame in five held for two refreshes. Each refresh of your display, the page runs the passes it owes the game for the time since the last refresh, and shows the screen as the last of them left it in the same refresh, so the screen is always the game's newest. When no key is down the game waits for one, as on a Spectrum, and a key that goes down is taken at once.</p>
+<p>A refresh runs at most four passes. A display as slow as 15 Hz still keeps up with the clock, and a refresh that comes late, while the browser was busy elsewhere, starts the game again from where it stopped rather than racing to catch up. Counted in the Spectrum's T-states, the same keys pressed on the same passes make the same game on any display.</p>
+<h3>The clock keeps absolute time</h3>
+<p>The interrupt runs in the Spectrum's time with Fast CPU on or off, so everything it counts runs as on a Spectrum, in seconds: the clock, the energy a minute, the laser beacons' shots. So does every wait inside a pass, such as the game's pause after a change of the turn size, and every sound. The processor drives the beeper itself, and while an effect plays the game does nothing else, so the laser's sound, about a fifth of a second, holds the pass that fires as it holds a Spectrum's. The next pass starts on the first tick after. The security question, the control options, the information screen, drilling, the end of a game and the demonstration run at the Spectrum's speed. A minute of play is a minute on either machine.</p>
+<h3>The Speed sets how far each pass takes you</h3>
+<p>Fast CPU makes many passes where the Spectrum made one. Anything the game counts in passes would happen that many times as often, so each pass takes only a share of a step. The <b>Speed</b> slider sets how many ticks one Spectrum step takes, K. Each pass walks, turns, looks or rolls 1/K of the Spectrum's step, through the game's own code for a step, and carries the part of a unit left over to the next pass. Holding a key for K ticks moves you exactly one Spectrum step, whatever is on screen. You travel as fast as a Spectrum that made 60/K passes a second, and see 60 frames.</p>
+<table>
+  <tr><th>Speed</th><th>K, in ticks</th><th>One step takes</th><th>Against a real Spectrum</th></tr>
+  <tr><td>1×</td><td>8</td><td>0.133 s</td><td>a little faster than a Spectrum at its quickest, turning with little in view</td></tr>
+  <tr><td>2×</td><td>4</td><td>0.067 s</td><td>twice as fast as a Spectrum ever goes</td></tr>
+  <tr><td>4×</td><td>2</td><td>0.033 s</td><td>four times as fast as a Spectrum ever goes</td></tr>
+</table>
+<p>A Spectrum with a faster processor would be nowhere slower than a Spectrum, so even 1× keeps up with a Spectrum at its quickest. Timed on the game's own code from 89 moments of play, a Spectrum's quickest pass takes 7.2 of its frames, 0.144 s, turning in Fluorite while looking down at the ground. A quarter turn is six steps: 0.8 s at 1× anywhere, where a Spectrum takes about two and a half seconds with a pass in the middle of its range.</p>
+<p>What the game counts in interrupts stays as it is. So at any one Speed you cover the same ground in each second of the clock whichever way you face, where on a Spectrum you cover less while the view is slow to draw. A faster Speed covers more ground before the meteor strikes, as a faster Spectrum would. Moving the slider turns Fast CPU on, and the page remembers the Speed.</p>
+<h3>What each pass does</h3>
+<table>
+  <tr><th>In each pass</th><th>On a Spectrum</th><th>With Fast CPU</th></tr>
+  <tr><td>Walking forward and back; up and down in the jet</td><td>A whole step</td><td>1/K of a step, the part of a unit left over carried to the next pass while the key is held. You stop in the pass where the key comes up</td></tr>
+  <tr><td>Turning, looking up and down, tilting</td><td>The turn size, 3 of the 72 steps of a turn unless you change it</td><td>1/K of it, the view built at the fractional angle in between</td></tr>
+  <tr><td>Moving the crosshair</td><td>A pixel, in a pass that draws no view and so takes the same time anywhere: 37,250 T-states</td><td>The pass's share of a pixel at that speed, so the crosshair moves as fast as on a Spectrum at any Speed, 94 pixels a second</td></tr>
+  <tr><td>A key that switches something: the turn size and the step size (<kbd>A</kbd>, <kbd>Z</kbd>, <kbd>S</kbd>, <kbd>X</kbd>), turning round (<kbd>U</kbd>), the crosshair on or off (<kbd>B</kbd>), the keys to the crosshair and back (<kbd>SPACE</kbd>), drilling (<kbd>D</kbd>), collecting a rig (<kbd>C</kbd>) and the information screen (<kbd>I</kbd>)</td><td>Again each pass the key is held</td><td>Once, when the key goes down. One ordinary press of <kbd>U</kbd> turns you round once at any Speed</td></tr>
+  <tr><td>A key that repeats: the laser (<kbd>0</kbd>), and standing up or crouching on foot (<kbd>R</kbd>, <kbd>F</kbd>)</td><td>Again each pass the key is held</td><td>When the key goes down, then again once a step, every K passes, while it is held</td></tr>
+  <tr><td>Walking into an object: its script, such as Mitral's floor taking 2 of energy and 2 of shield, or the bump's sound when it has none</td><td>Each pass</td><td>Once a step, every K passes</td></tr>
+  <tr><td>The game's own scripts and the area's</td><td>Each pass</td><td>Each pass, as on a Spectrum: each acts once, on a change of the flags, counts or objects it tests, and comes out the same however often it runs</td></tr>
+</table>
+<p>Held down, the laser fires once a step. Its sound holds the pass that fires, so it fires a shot every 0.32 s at 1×, where a Spectrum fires every 0.33 s, every 0.25 s at 2× and every 0.22 s at 4×. The page holds every key down for at least three of the Spectrum's frames, so that a pass reads it.</p>
+<h3>The view between two of the game's angles</h3>
+<p>A share of a turn leaves you at a fractional angle, between two of the game's 72. The game keeps a sine and a cosine for each of its angles, in 64ths. Between two angles the page takes each of them part of the way to the next angle's, rounded to the nearest 64th, and the game builds its view from them with its own code. A walk at a fractional heading goes along that heading. At the game's own angles the screen shows the game's own frame.</p>
+<h3>Walls stop you as they stop a Spectrum</h3>
+<p>When a step runs into an object, the game cuts the step short. With Fast CPU each share of a step is cut on its own, so a walk into a wall at an angle could creep along it where a Spectrum stops. In Driller it rarely does.</p>
+<table>
+  <tr><th>201 walks of three steps, forward or back from 144 moments of play in three areas, and forward facing four ways from the nine places the game's own scripts send you to</th><th>With Fast CPU at 1×</th></tr>
+  <tr><td>Ended exactly where the Spectrum's three steps end</td><td>186 (93 %)</td></tr>
+  <tr><td>Ended more than 64 units from it</td><td>4 (2 %)</td></tr>
+  <tr><td>Ended at another height</td><td>none</td></tr>
+</table>
+<p>In open space the shares of a step end exactly where the Spectrum's step ends, at every Speed.</p>
+</section>
 <section id="differences">
-  <p class="fig">02 · Differences</p>
+  <p class="fig">03 · Differences</p>
   <h2 class="t">What differs from a Spectrum</h2>
-<p class="lede">The game plays as it does on a 48K Spectrum, at the 48K's pace. These are the places where the page cannot be the machine, and what it does instead.</p>
+<p class="lede">With Fast CPU off, the game plays as it does on a 48K Spectrum, at the 48K's own speed. These are the places where the page cannot be the machine, and what it does instead.</p>
 <table>
   <tr><th>On a Spectrum</th><th>On this page</th></tr>
   <tr><td>The interrupt can fall between any two instructions of the main program.</td><td>The interrupt runs between two of the port's routines, at the clock's time for it. The bytes the interrupt changes and the main program reads in the middle of a routine (the wait counter, the clock's frame count, the minutes, the energy and the shield, and the sensors' beams) are read after the interrupts due by then have run.</td></tr>
@@ -146,6 +196,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/play-controls.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <script>
 /* port/src/core.js */
 // Driller's port: P, the game's routines on the game's memory. Each group of routines is a file of
@@ -200,6 +251,31 @@ function makePort(M, io, opts = {}) {
   P.until0 = function* (a, mask, turn) { while (P.irqByte(a) & mask) yield { tstates: turn }; };
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };
+  // The plug-in points: the places in the routines where the page's Fast CPU (site/lib/fast-cpu.js)
+  // passes in a value or skips a job, each marked "plug-in point" where it is used. These are the
+  // game's own: with nothing plugged in, each gives the value the game's code gives, so the
+  // lockstep holds the port and its plug-in points together. Fast CPU replaces them.
+  //   step(key, v)     a move's step, or a pixel of the crosshair's: what of it this pass takes (all)
+  //   turn(a, by)      a turn of the angle at a by `by` seventy-seconds: how many whole ones it
+  //                    turns this pass (all of them)
+  //   frac(a)          the share of a seventy-second the angle at a stands past M[a] (none)
+  //   whole(a)         the game has set the angle at a itself, to a whole seventy-second
+  //   read()           the keys have been read again
+  //   take(act)        whether the command a key asks for is carried out (always)
+  //   once(key)        whether a job whose effect adds up with each run runs this time (always)
+  P.plug = {
+    step: (key, v) => v, turn: (a, by) => Math.abs(by), frac: a => 0, whole: a => {}, read: () => {},
+    take: act => true, once: key => true,
+  };
+  // The sine (k 0) or cosine (k 1) of the angle at a, from the table at $8E78 (two bytes an angle,
+  // 72 to a turn, 64 for 1), a signed byte; between two angles (plug-in point: frac) the same
+  // share of the way from one's to the next's
+  P.trig = (a, k) => {
+    const x = M[a], f = P.plug.frac(a), at = 0x8E78 + 2 * x + k;
+    if (!f) return M[at & 0xFFFF];
+    const sb = v => (v << 24) >> 24, y = x + 1 >= 0x48 ? 0 : x + 1;
+    return Math.round(sb(M[at & 0xFFFF]) * (1 - f) + sb(M[(0x8E78 + 2 * y + k) & 0xFFFF]) * f) & 255;
+  };
   // name a routine: its address, its function; a generator is listed in GEN
   P.def = (a, name, f) => {
     P[name] = f;
@@ -353,7 +429,8 @@ G.aim = function (P) {
       return {};
     }
     if (!M[0x88A2]) return {};
-    const moveBy = f => { P.crosshair({}); f(); P.crosshair({}); P.N.delay = (P.N.delay || 0) + 1; };
+    // a pixel a pass; plug-in point: the pixels of it this pass takes
+    const moveBy = f => { for (let n = P.plug.step(a, 1); n > 0; n--) { P.crosshair({}); f(); P.crosshair({}); P.N.delay = (P.N.delay || 0) + 1; } };
     if (a === 0x18) moveBy(() => { if (M[0x88A0] !== 1) M[0x88A0]--; });
     else if (a === 0x17) moveBy(() => { if (((M[0x88D9] * 2) & 255) !== M[0x88A0]) M[0x88A0]++; });
     else if (a === 0x1A) moveBy(() => { if (((M[0x88DA] * 2) & 255) !== M[0x88A1]) M[0x88A1]++; });
@@ -977,6 +1054,9 @@ G.main = function (P) {
         if (end) { yield* gameOver(end); return {}; }
         const minute = P.irqByte(0x889D);
         if (M[0x88AE] !== minute) { M[0x88AE] = minute; M[0x8A64] = 1; return {}; }
+        // plug-in point: the keys read again, for their commands (a pass for the clock's minute
+        // reads none)
+        P.plug.read();
         if (k.cf) break;
         yield;
       }
@@ -1003,7 +1083,11 @@ G.main = function (P) {
     }
     M[w(0x8BF3)] = M[0x8A65];
     for (;;) {
-      if (!sgn8(a - 1) && sgn8(a - 0x15)) yield* P.move_command({ a });
+      // plug-in point: whether a held key's command is carried out again; a rise or a fall on foot,
+      // a whole cell, is $80 more than the jet's, which moves by the step
+      const act = (a === 1 || a === 2) && !M[0x877A] ? a | 0x80 : a;
+      if (!P.plug.take(act)) { /* passed over */ }
+      else if (!sgn8(a - 1) && sgn8(a - 0x15)) yield* P.move_command({ a });
       else if (!sgn8(a - 0x15) && sgn8(a - 0x1F)) yield* P.aim_command({ a });
       else if (a === 0x28 || a === 0x2A) { yield* P.drill({ a }); return {}; }
       else if (a === 0x29) { yield* P.info_screen({}); return {}; }
@@ -1058,7 +1142,9 @@ G.main = function (P) {
   // a count, then each script's length and bytes.
   P.def(0x9B6E, 'run_scripts', function* () {
     if (!M[0x8A64]) return {};
-    if (M[0x8A69]) {
+    // plug-in point: the script of an object a step alone runs into, or the bump when it has none,
+    // which adds up with each run (a shot's runs with the shot)
+    if (M[0x8A69] && (M[0x8BF1] || P.plug.once(0x8A69))) {
       M[0x8916] = M[0x8A69];
       const f = P.find_object({ a: 0 });
       if (!(f.a & 255)) {
@@ -1159,6 +1245,7 @@ G.main = function (P) {
     if (!M[0x877A]) h = (h + M[0x8776] - 1) & 255;
     setw(0x8764, fine(h));
     M[0x876C] = o(4); M[0x876D] = o(5); M[0x876E] = o(6);
+    for (const a of [0x876C, 0x876D, 0x876E]) P.plug.whole(a);
     return {};
   });
 };
@@ -1801,6 +1888,7 @@ G.move = function (P) {
     setw(0x88B1, w(0x88B1) - fine(d));
     if (!sgn8(M[0x8777] - d)) return { a: 2 };
     M[0x876E] = 0x12; M[0x876C] = 0; M[0x8BF2] = 4;
+    P.plug.whole(0x876E); P.plug.whole(0x876C);
     return { a: 2 };
   });
 
@@ -1941,7 +2029,8 @@ G.move = function (P) {
     if (a === 1 || a === 2) {
       if (a === 1 || M[0x877A]) { setw(0x88AF, w(0x8762)); setw(0x88B3, w(0x8766)); }
       if (M[0x877A]) {
-        setw(0x88B1, a === 1 ? w(0x8764) + w(0x8768) : w(0x8764) - w(0x8768));
+        // plug-in point: the share of the step this pass takes
+        setw(0x88B1, w(0x8764) + P.plug.step(0x88B1, a === 1 ? w(0x8768) : -w(0x8768)));
         if (P.move_to({}).a & 255) bc = 0x14;
       } else if (a === 1) {
         if (!sgn8(M[0x8772] - M[0x8771])) moved = true;
@@ -1969,19 +2058,20 @@ G.move = function (P) {
     } else if (a === 3 || a === 4) {
       if (M[0x8FBC] === 1) M[0x8BF0] = 1;
       const fwd = a === 3, sign = v => fwd ? v : (-v) & 0xFFFF;
+      // the sines and cosines of the pitch and the heading, between two angles when one stands
+      // between them (P.trig); plug-in point: the share of the step this pass takes, along each axis
+      const share = (key, v) => P.plug.step(key, (v << 16) >> 16);
       let hl = w(0x8768);
       if (M[0x877A]) {
-        const ix = (0x8E78 + 2 * M[0x876C]) & 0xFFFF;
-        hl = sign(mulShift(hl, -M[ix]));
-        setw(0x88B1, w(0x8764) + hl);
-        let x = M[ix + 1];
+        hl = sign(mulShift(hl, -P.trig(0x876C, 0)));
+        setw(0x88B1, w(0x8764) + share(0x88B1, hl));
+        let x = P.trig(0x876C, 1);
         if (x & 0x80) x = (-x) & 255;
         hl = mulShift(w(0x8768), x);
       }
       const step = hl;
-      const iy = (0x8E78 + 2 * M[0x876D]) & 0xFFFF;
-      setw(0x88B3, w(0x8766) + sign(mulShift(step, M[iy + 1])));
-      setw(0x88AF, w(0x8762) + sign(mulShift(step, M[iy])));
+      setw(0x88B3, w(0x8766) + share(0x88B3, sign(mulShift(step, P.trig(0x876D, 1)))));
+      setw(0x88AF, w(0x8762) + share(0x88AF, sign(mulShift(step, P.trig(0x876D, 0)))));
       let de = 0;
       if (!M[0x877A]) {
         de = fine((M[0x8776] - 1) & 255);
@@ -1994,9 +2084,11 @@ G.move = function (P) {
       const [at, c, add] = { 5: [0x876D, 0x24, false], 6: [0x876D, 0x24, true], 7: [0x876C, 0x44, false],
         8: [0x876C, 0x44, true], 9: [0x876E, 4, true], 10: [0x876E, 4, false] }[a];
       bc = c;
+      // plug-in point: the share of the turn step this pass takes
+      const by = P.plug.turn(at, add ? M[0x876F] : -M[0x876F]);
       let x;
-      if (add) { x = (M[at] + M[0x876F]) & 255; if (!sgn8(x - 0x48)) x = (x - 0x48) & 255; }
-      else { x = (M[at] - M[0x876F]) & 255; if (sgn8(x)) x = (x + 0x48) & 255; }
+      if (add) { x = (M[at] + by) & 255; if (!sgn8(x - 0x48)) x = (x - 0x48) & 255; }
+      else { x = (M[at] - by) & 255; if (sgn8(x)) x = (x + 0x48) & 255; }
       M[at] = x;
     } else if (a === 0x0D) {
       bc = 0x24;
@@ -3128,14 +3220,15 @@ G.view = function (P) {
   // by $88D2-$88D4; then the buffers' pointers are reset for a new picture.
   P.def(0x6EE4, 'make_view_matrix', () => {
     copy(0x6EDB, 0x5E55, 9);
+    // the sine and cosine of each angle (P.trig); plug-in point: an angle between two of the
+    // game's, which turns the matrix at angle 0 too
     const turn = (angle, cosAt, sinAt, negAt) => {
-      const a = M[angle];
-      if (!a) return;
+      if (!M[angle] && !P.plug.frac(angle)) return;
       copy(0x6EDB, 0x5E4C, 9);
-      const iy = 0x8E78 + 2 * a;
-      M[cosAt[0]] = M[iy + 1]; M[cosAt[1]] = M[iy + 1];
-      M[sinAt] = M[iy];
-      M[negAt] = (-M[iy]) & 255;
+      const c = P.trig(angle, 1), s = P.trig(angle, 0);
+      M[cosAt[0]] = c; M[cosAt[1]] = c;
+      M[sinAt] = s;
+      M[negAt] = (-s) & 255;
       P.mul_matrix({});
     };
     turn(0x876D, [0x5E4C, 0x5E54], 0x5E52, 0x5E4E);
@@ -4061,6 +4154,16 @@ G.view = function (P) {
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, { frame, screen (the 6,912 bytes shown),
 //                      border, flash, at (the clock's time when the picture was taken) }
+//   rt.runTicks(tstates, loop)   Fast CPU's clock (site/lib/fast-cpu.js), in place of runFrame: real
+//                      time owed, in T-states. The main loop goes round once on each tick, 60 a
+//                      second, its own work taking no time: loop.start is the checkpoint
+//                      where a loop starts, loop.work the checkpoints its stretches start at, loop.cap
+//                      the most loops a call runs (time owed past them is dropped), loop.between()
+//                      called after each. A wait inside a loop, a sound, the interrupt, and the
+//                      program outside the loop (the start, the demonstration, the information
+//                      screen, drilling, a game's end) take the Spectrum's time. Returns the loops run
+//   rt.now()           the screen as memory stands now, in runFrame's form
+//   rt.ticks           Fast CPU's ticks so far: 60 a second, 58,333⅓ T-states apart
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
@@ -4088,6 +4191,15 @@ G.view = function (P) {
 // fall due meanwhile are lost, as on the Spectrum (the game's clock loses them too). The sensors'
 // hit, which the interrupt itself plays, lengthens that interrupt by its sound, and a beam it draws
 // by the beam's cost.
+//
+// Fast CPU's clock is the same clock with the main loop's own work free: as a Spectrum with a much
+// faster processor would, the game goes round its loop as soon as the loop starts and then waits, at
+// the loop's start, for the next tick. The ticks are Fast CPU's own, 60 a second, counted in
+// T-states: the game counts its time by the frame's interrupt, 50 a second, which goes on at its
+// own rate and keeps all the game counts by it (the clock, the wait counter, the sensors) to the
+// Spectrum's time. Away from the loop's own work (the
+// routines that leave play, AWAY, the demonstration, a new game's start and a game's end) the
+// program takes the Spectrum's time and the port keeps its own plug-in points.
 (function (root) {
 'use strict';
 const LINE = 224, LINES = 312, FRAME = LINE * LINES;
@@ -4104,6 +4216,10 @@ const KEY = {
   ENTER: 0x30, L: 0x31, K: 0x32, J: 0x33, H: 0x34,
   SPACE: 0x38, SYMBOL: 0x39, M: 0x3A, N: 0x3B, B: 0x3C,
 };
+// Fast CPU's ticks: tick k at T-state ceil(k x 3,500,000 / 60), so the number of ticks by T-state t
+// is floor(t x 60 / 3,500,000)
+const TICK_NUM = 60, TICK_DEN = 3500000;
+const ticksAt = t => Math.floor(t * TICK_NUM / TICK_DEN), tickAt = k => Math.ceil(k * TICK_DEN / TICK_NUM);
 // the frames kept ahead of the one shown, and the least a stretch between two checkpoints costs
 const AHEAD = 200, MIN_STRETCH = 10;
 const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -4117,6 +4233,14 @@ function create(o) {
   // ---- the clock, and the frames as the beam shows them
   let t = 0, nextInt = 1, frameIdx = 0, taken = false, cur = null, target = null;
   let irqsOn = false, di = false, wiped = false;
+  // Fast CPU's clock (runTicks): loop is its settings while it runs the clock, else null; free while
+  // the main loop's own work runs, taking no time; parked at a loop's start, waiting for the tick;
+  // inLoop from a loop's first checkpoint to a game's end or start; away while a routine that
+  // leaves play runs
+  let loop = null, free = false, parked = false, going = false, inLoop = false, away = 0, atCp = false;
+  const AWAY = ['info_screen', 'drill'];
+  const MAIN = new Set([0x9807, 0x9815, 0x9822, 0x9825, 0x9828]), START = new Set([0x97B5, 0x97BA, 0x97CA, 0x97D3,
+    0x97D6, 0x97E0, 0x97E8, 0x97EB, 0x97FD, 0x9833, 0x9ABB, 0x9AC1]);
   const done = [];
   const frameNow = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
   // the frames the clock has finished, each with the picture as the beam reached the paper
@@ -4165,6 +4289,18 @@ function create(o) {
   // ---- the program, and what its stretches cost
   const P = D.makePort(M, io, {});
   P.T = P.T || 0;
+  // the plug-in points: the game's own (src/core.js) but while the main loop's own work runs under
+  // Fast CPU's clock; the routines that leave play counted in away
+  const gamePlug = P.plug;
+  let fastPlug = null;
+  Object.defineProperty(P, 'plug', {
+    get: () => (fastPlug && loop && free && !away ? fastPlug : gamePlug),
+    set: v => { fastPlug = v === gamePlug ? null : v; },
+  });
+  for (const name of AWAY) {
+    const f = P[name];
+    P[name] = function* (...a) { away++; try { return yield* f.apply(this, a); } finally { away--; } };
+  }
   const ROM = o.data.rom ? { from: o.data.rom.from, bytes: b64(o.data.rom.bytes) } : null;
   const model = o.cost || { seg: {}, call: {} };
   const IRQ = model.irq || 0, IRQN = model.irqN || {};
@@ -4191,7 +4327,7 @@ function create(o) {
     for (const k in P.N) { if (P.N[k]) c += (model.call['#' + k] || 0) * P.N[k]; P.N[k] = 0; }
     return c;
   }
-  function pay() { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
+  function pay() { const c = callsCost(); if (c >= 1 && !(free && !away)) advance(Math.round(c)); }
   // a stretch the fit never saw costs only its calls: test/t-page.js fails on any it meets
   const missing = new Set();
   function cost(from, to) {
@@ -4199,6 +4335,8 @@ function create(o) {
     if (!(k in model.seg)) missing.add(k);
     return Math.round((model.seg[k] || 0) + callsCost());
   }
+  // the demonstration plays the recording one command a loop at the Spectrum's own speed
+  const demo = () => M[0x891F] === 3;
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) { if (counting) pay(); return M[a]; }
@@ -4255,15 +4393,19 @@ function create(o) {
     const y = r.value;
     if (y && y.cp !== undefined) {
       // a stretch takes the game some T-states, whatever the fit gave it: a loop of nothing the
-      // fit knows still lets the clock, and with it the keys, move on
-      const dt = lastCp === null ? 0 : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
-      lastCp = y.cp;
+      // fit knows still lets the clock, and with it the keys, move on; the main loop's own, none
+      // with Fast CPU's clock
+      const dt = lastCp === null ? 0 : free && !away ? (callsCost(), 0) : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
+      lastCp = y.cp; atCp = true;
       advance(dt);
+      if (MAIN.has(y.cp)) inLoop = true; else if (START.has(y.cp)) inLoop = false;
+      free = !!loop && inLoop && !away && !demo() && loop.work.has(y.cp);
+      parked = free && y.cp === loop.start;
     } else if (y && y.tstates !== undefined) {
-      pay(); advance(y.tstates);
+      pay(); atCp = false; advance(y.tstates);
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
-      pay(); advance(LINE - t % LINE);
+      pay(); atCp = false; advance(LINE - t % LINE);
     }
   }
   function runUntil(until) {
@@ -4281,11 +4423,45 @@ function create(o) {
     return done[Math.max(0, Math.min(done.length - 1, i))];
   }
   function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; going = false; }
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
+
+  // Fast CPU's clock: the real time owed banked, and a loop run on each tick it reaches, up to the
+  // cap; less than a tick stays in the bank, and what is owed past the cap is dropped
+  function runTicks(tstates, o) {
+    if (loop !== o) {
+      loop = o;
+      // switched on in the loop's work, even in its wait for a key: free from here on
+      free = inLoop && !away && !demo() && o.work.has(lastCp);
+      parked = free && atCp && lastCp === o.start;
+    }
+    if (target === null) target = t;
+    target += tstates;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // in a loop's wait, or outside the loop: the Spectrum's time, as far as is owed
+        if (t >= target) break;
+        if (!it) { advance(target - t); break; }    // wiped: the clock runs on, the screen as it is
+        step();
+        if (parked && going) { going = false; if (o.between) o.between(); }
+        continue;
+      }
+      const tick = tickAt(ticksAt(t) + 1);
+      if (tick > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the tick, the interrupts due by then run, then the loop
+      advance(tick - t);
+      parked = false; going = true; loops++;
+    }
+    return loops;
+  }
+  const now = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
 
   // a machine: the hand-over (data) or a test's moment, the program started at entry(P)
   function restore(s, entry) {
@@ -4299,12 +4475,14 @@ function create(o) {
     if (taken) cur = frameNow();
     done.length = 0;
     it = entry(P); lastCp = null; calls = Object.create(null); owed = 0;
+    free = false; parked = false; going = false; inLoop = false; away = 0; atCp = false;
     for (const k in P.N) P.N[k] = 0;
   }
   restore(o.data, p => p.program(true));
   return {
     M, P, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
+    get ticks() { return ticksAt(t); }, runTicks, now,
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
     get border() { return border; }, get wiped() { return wiped; }, missing,
     runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
@@ -4312,6 +4490,57 @@ function create(o) {
   };
 }
 root.DRPage = { create, LINE, LINES, FRAME, KEY };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/fast-table.js */
+// Driller's table for Fast CPU (site/lib/fast-cpu.js, kit/skills/core/70-minisite/fast-cpu.md): what
+// Fast CPU knows about the game. The names are the game's routines (src/), the numbers places in
+// its memory or the commands its key table gives.
+(function (root) {
+'use strict';
+// the crosshair's own speed: a pass that moves it draws no view, and takes 37,250 T-states on the
+// game's code wherever it is (the middle of 688 such passes from 89 moments of play)
+const CROSSHAIR = 37250;
+root.DR_FAST = {
+  // the tick: Fast CPU's own, 60 a second, counted in the 48K's T-states. The game counts its time
+  // by the frame's interrupt, 50 a second (the clock, the wait counter, the sensors), which goes on
+  // at its own rate; it waits for no line of the screen and plans no speed in frames
+  tick: 3500000 / 60, hz: 3500000,
+  // the most loops one refresh runs, 60 / 15: real time on a display as slow as 15 Hz
+  cap: 4,
+  // the main loop's checkpoints (src/g-main.js): a loop starts at take_commands's call ($9825), which
+  // reads the keys; the stretches that start at these are the loop's own work, the waits on the
+  // sensors' beam ($9931-$9937, $B47A-$B481) between them
+  start: 0x9825, work: [0x9807, 0x9815, 0x9822, 0x9825, 0x9828, 0x9931, 0x9937, 0xB47A, 0xB481],
+  // the Speed: K, the ticks the step of one of the Spectrum's passes takes. A Spectrum with a faster
+  // processor is nowhere slower than a Spectrum, so 1x is the Spectrum's quickest pass in play:
+  // 7.21 of its frames, 0.144 s, turning in Fluorite (area 9) looking down, from 89 moments of play
+  // timed on the game's code; 8 ticks is 0.133 s. 2x and 4x faster still
+  speeds: [{ name: '1×', K: 8 }, { name: '2×', K: 4 }, { name: '4×', K: 2 }],
+  // the steps (plug-in point step), by the key the port gives each: a step forward or back along x,
+  // the height and z (the target it sets at $88AF, $88B1 and $88B3, move_command) and the jet's rise
+  // and fall (the height), 1/K of each a loop; and the crosshair (commands $17-$1A, aim_command),
+  // whose pass draws no view, so it goes at the Spectrum's own speed whatever the Speed
+  steps: { 0x88AF: 'pace', 0x88B1: 'pace', 0x88B3: 'pace', 0x17: CROSSHAIR, 0x18: CROSSHAIR, 0x19: CROSSHAIR, 0x1A: CROSSHAIR },
+  // the angles the plug-in points turn, frac and whole are given: the pitch, the heading and the
+  // roll ($876C-$876E), 72 seventy-seconds to a turn
+  turn: 72,
+  // the commands taken once a press: the turn's angle and the step's size ($0B, $0C, $11, $12, each
+  // with the game's pause of 7 frames), turning round ($0D), the crosshair shown or hidden ($15),
+  // the keys given to the crosshair or back ($1E), drilling and collecting a rig ($28, $2A) and the
+  // information screen ($29). Those taken at the press and every K ticks while held: the laser
+  // ($16), and a rise or fall on foot, which stands the probe up or crouches it a whole cell ($81,
+  // $82: take_commands adds $80 to commands 1 and 2 when the probe walks). The rest are moves
+  switches: [0x0B, 0x0C, 0x0D, 0x11, 0x12, 0x15, 0x1E, 0x28, 0x29, 0x2A], repeats: [0x16, 0x81, 0x82],
+  // The plug-in points give Fast CPU the rest themselves. A job whose effect adds up with each run,
+  // once a step (once, given $8A69): the script of the object a step runs into, or the bump's sound
+  // when it has none (run_scripts); Mitral's floor takes 2 of energy and 2 of shield by its script
+  // at each step. The game's shared scripts and the areas' run each loop: each acts once on a
+  // change of the flags, variables or objects it tests and then no longer passes its test (the
+  // shared scripts' tests of variable 31, flag 21's trip to Mitral, Obsidian's 17 and Trachyte's
+  // tour at 17 and 18 safe sectors, flag 23's switches in area 27, Mitral's flag 21 cleared)
+};
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -4330,7 +4559,7 @@ const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16
 const FRAME = DRPage.FRAME, FRAME_MS = 1000 * FRAME / 3500000;
 // the picture: the paper, 256 by 192, inside a border of 32 pixels
 const W = 320, H = 256, BX = 32, BY = 32;
-let data = null, rt = null, running = false, paused = false;
+let data = null, rt = null, fx = null, running = false, paused = false, fast = false, speed = 0;
 
 // --- drawing: the frame the clock finished last, the screen as the beam reached the paper
 const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
@@ -4485,7 +4714,10 @@ const tape = (function () {
   };
 })();
 
-// --- the loop: one frame of 48K time per frame of real time
+// --- the loop: one frame of 48K time per frame of real time; with Fast CPU (site/lib/fast-cpu.js), a
+// loop of the game for each of its ticks, 60 a second, that real time has reached, at most four a
+// refresh (a computer too slow for them plays slower than the Spectrum), and the screen as the last
+// one left it drawn in the same refresh
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
@@ -4496,6 +4728,8 @@ function boot() {
   const security = rt.P.security;
   rt.P.security = function* (r) { asking = true; try { return yield* security.call(this, r); } finally { asking = false; } };
   asking = false;
+  fx = window.FastCPU ? FastCPU.attach(rt, window.DR_FAST) : null;
+  if (fx) FastCPU.set(fx, fast, speed);
   sound.attach(); input();
 }
 function tick(now) {
@@ -4503,9 +4737,16 @@ function tick(now) {
   if (!running || paused || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
-    acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
-    if (n === 10) acc = 0;
+    const dt = Math.min(250, now - (last || now)); last = now;
+    if (fast && fx) {
+      FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
+      sound.frame(); tape.frame(); typeStep();
+      F = rt.now(); n = 1;
+    } else {
+      acc += dt;
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
+      if (n === 10) acc = 0;
+    }
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) { draw(F); showAnswer(); }
   if (rt.wiped) {
@@ -4526,15 +4767,15 @@ const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 // A key is held for at least eight frames of the game's time: the game looks at the keys once a
-// pass, which can be a few frames apart, and a shorter tap could fall between two looks. A key
-// tapped in the list (tap:, below) is held until the game has looked at the keys since it went
-// down as well
+// pass, which can be a few frames apart, and a shorter tap could fall between two looks. With Fast
+// CPU it looks each tick, and three frames are enough. A key tapped in the list (tap:, below) is
+// held until the game has looked at the keys since it went down as well
 const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
-const HOLD = 8;
+const HOLD = 8, HOLD_FAST = 3;
 let padBits = 0;
 function release() {
   for (const c of letGo) {
-    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    if (rt && (rt.shown - (since.get(c) || 0) < (fast ? HOLD_FAST : HOLD) || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
     letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
   }
   input();
@@ -4623,6 +4864,20 @@ const controls = PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), key
 // --- controls
 let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
+const VIEW_KEY = 'gamesexplained.driller.view';
+// the Speed: a stop of the slider, an index into Fast CPU's table (DR_FAST.speeds)
+const SPEEDS = window.DR_FAST ? DR_FAST.speeds : [{ name: '1×' }, { name: '2×' }, { name: '4×' }];
+const speedIn = $('pl-speed'), speedOut = $('pl-speed-v');
+function setFast(f, s = speed) {
+  fast = f; speed = Math.max(0, Math.min(SPEEDS.length - 1, s | 0));
+  if (fx) FastCPU.set(fx, fast, speed);
+  acc = 0;
+  document.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(fast));
+  speedIn.value = String(speed); speedOut.textContent = SPEEDS[speed].name;
+  speedIn.setAttribute('aria-valuetext', SPEEDS[speed].name);
+  speedIn.closest('.pl-speed').setAttribute('aria-disabled', String(!fast));
+  try { localStorage.setItem(VIEW_KEY, (fast ? 'f' : '') + speed); } catch (e) { /* no storage: the switches last for this visit */ }
+}
 function start() {
   over.hidden = true;
   boot();
@@ -4635,8 +4890,13 @@ $('pl-bar').addEventListener('click', e => {
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && data) start();
+  else if (act === 'fast') setFast(!fast);
   screen.focus();
 });
+// the slider sets the Speed, and turns Fast CPU on if it was off
+speedIn.addEventListener('input', () => setFast(true, +speedIn.value));
+speedIn.addEventListener('change', () => screen.focus());
+try { const v = localStorage.getItem(VIEW_KEY) || ''; setFast(v.includes('f'), +(v.match(/[0-2]/) || [0])[0]); } catch (e) { /* the switches start off */ }
 screen.addEventListener('click', () => { if (!running && data) start(); });
 // the CRT screen (site/lib/crt.js), on until the viewer switches it off
 CRT.attach(cv, { button: document.querySelector('[data-crt]') });
@@ -4648,6 +4908,6 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.DRPlay = { get rt() { return rt; }, start, tape };
+window.DRPlay = { get rt() { return rt; }, get fx() { return fx; }, start, tape, setFast };
 })();
 </script>

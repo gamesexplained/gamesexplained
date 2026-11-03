@@ -174,14 +174,15 @@ G.view = function (P) {
   // by $88D2-$88D4; then the buffers' pointers are reset for a new picture.
   P.def(0x6EE4, 'make_view_matrix', () => {
     copy(0x6EDB, 0x5E55, 9);
+    // the sine and cosine of each angle (P.trig); plug-in point: an angle between two of the
+    // game's, which turns the matrix at angle 0 too
     const turn = (angle, cosAt, sinAt, negAt) => {
-      const a = M[angle];
-      if (!a) return;
+      if (!M[angle] && !P.plug.frac(angle)) return;
       copy(0x6EDB, 0x5E4C, 9);
-      const iy = 0x8E78 + 2 * a;
-      M[cosAt[0]] = M[iy + 1]; M[cosAt[1]] = M[iy + 1];
-      M[sinAt] = M[iy];
-      M[negAt] = (-M[iy]) & 255;
+      const c = P.trig(angle, 1), s = P.trig(angle, 0);
+      M[cosAt[0]] = c; M[cosAt[1]] = c;
+      M[sinAt] = s;
+      M[negAt] = (-s) & 255;
       P.mul_matrix({});
     };
     turn(0x876D, [0x5E4C, 0x5E54], 0x5E52, 0x5E4E);

@@ -1,9 +1,11 @@
 'use strict';
 // Writes games/spectrum/driller/play.html: port/play.template.html with, at <!-- port -->, the
 // port's sources (each file of port/src as a script of its own, core.js first), the page's machine
-// (page/runtime.js), the pacing the fit wrote (cost.json) and the machine as the page carries it
+// (page/runtime.js), the game's table for Fast CPU (page/fast-table.js; the page loads Fast CPU itself,
+// site/lib/fast-cpu.js), the pacing the fit wrote (cost.json) and the machine as the page carries it
 // (scripts/pack-data.js: the 48 KB at the hand-over, the code left out, and the ROM's bytes the
-// game reads); and the sections that describe the port (page/port-results.html, differences.html).
+// game reads); and the sections that describe the port (page/port-results.html, fast.html,
+// differences.html).
 //   node build-play.js
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..'), OUT = path.join(ROOT, '../play.html');
@@ -12,11 +14,11 @@ let html = fs.readFileSync(path.join(ROOT, 'play.template.html'), 'utf8');
 const parts = [];
 const src = ['core.js'].concat(fs.readdirSync(path.join(ROOT, 'src')).filter(f => /^g-.*\.js$/.test(f)).sort());
 for (const f of src) parts.push(script('src/' + f, fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')));
-parts.push(script('page/runtime.js', fs.readFileSync(path.join(ROOT, 'page', 'runtime.js'), 'utf8')));
+for (const f of ['runtime.js', 'fast-table.js']) parts.push(script('page/' + f, fs.readFileSync(path.join(ROOT, 'page', f), 'utf8')));
 parts.push('<script>\nwindow.DR_COST = ' + fs.readFileSync(path.join(ROOT, 'cost.json'), 'utf8').trim() + ';\n</script>');
 parts.push('<script type="application/json" id="dr-data">' + JSON.stringify(require('./pack-data.js').pack().state) + '</script>');
 html = html.replace('<!-- port -->', () => parts.join('\n'));   // a function, so that $' in the code stays as it is
-for (const f of ['port-results', 'differences']) {
+for (const f of ['port-results', 'fast', 'differences']) {
   const p = path.join(ROOT, 'page', f + '.html');
   if (fs.existsSync(p)) html = html.replace('<!-- ' + f + ' -->', () => fs.readFileSync(p, 'utf8').trim());
 }

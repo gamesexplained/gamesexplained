@@ -78,6 +78,7 @@ G.move = function (P) {
     setw(0x88B1, w(0x88B1) - fine(d));
     if (!sgn8(M[0x8777] - d)) return { a: 2 };
     M[0x876E] = 0x12; M[0x876C] = 0; M[0x8BF2] = 4;
+    P.plug.whole(0x876E); P.plug.whole(0x876C);
     return { a: 2 };
   });
 
@@ -218,7 +219,8 @@ G.move = function (P) {
     if (a === 1 || a === 2) {
       if (a === 1 || M[0x877A]) { setw(0x88AF, w(0x8762)); setw(0x88B3, w(0x8766)); }
       if (M[0x877A]) {
-        setw(0x88B1, a === 1 ? w(0x8764) + w(0x8768) : w(0x8764) - w(0x8768));
+        // plug-in point: the share of the step this pass takes
+        setw(0x88B1, w(0x8764) + P.plug.step(0x88B1, a === 1 ? w(0x8768) : -w(0x8768)));
         if (P.move_to({}).a & 255) bc = 0x14;
       } else if (a === 1) {
         if (!sgn8(M[0x8772] - M[0x8771])) moved = true;
@@ -246,19 +248,20 @@ G.move = function (P) {
     } else if (a === 3 || a === 4) {
       if (M[0x8FBC] === 1) M[0x8BF0] = 1;
       const fwd = a === 3, sign = v => fwd ? v : (-v) & 0xFFFF;
+      // the sines and cosines of the pitch and the heading, between two angles when one stands
+      // between them (P.trig); plug-in point: the share of the step this pass takes, along each axis
+      const share = (key, v) => P.plug.step(key, (v << 16) >> 16);
       let hl = w(0x8768);
       if (M[0x877A]) {
-        const ix = (0x8E78 + 2 * M[0x876C]) & 0xFFFF;
-        hl = sign(mulShift(hl, -M[ix]));
-        setw(0x88B1, w(0x8764) + hl);
-        let x = M[ix + 1];
+        hl = sign(mulShift(hl, -P.trig(0x876C, 0)));
+        setw(0x88B1, w(0x8764) + share(0x88B1, hl));
+        let x = P.trig(0x876C, 1);
         if (x & 0x80) x = (-x) & 255;
         hl = mulShift(w(0x8768), x);
       }
       const step = hl;
-      const iy = (0x8E78 + 2 * M[0x876D]) & 0xFFFF;
-      setw(0x88B3, w(0x8766) + sign(mulShift(step, M[iy + 1])));
-      setw(0x88AF, w(0x8762) + sign(mulShift(step, M[iy])));
+      setw(0x88B3, w(0x8766) + share(0x88B3, sign(mulShift(step, P.trig(0x876D, 1)))));
+      setw(0x88AF, w(0x8762) + share(0x88AF, sign(mulShift(step, P.trig(0x876D, 0)))));
       let de = 0;
       if (!M[0x877A]) {
         de = fine((M[0x8776] - 1) & 255);
@@ -271,9 +274,11 @@ G.move = function (P) {
       const [at, c, add] = { 5: [0x876D, 0x24, false], 6: [0x876D, 0x24, true], 7: [0x876C, 0x44, false],
         8: [0x876C, 0x44, true], 9: [0x876E, 4, true], 10: [0x876E, 4, false] }[a];
       bc = c;
+      // plug-in point: the share of the turn step this pass takes
+      const by = P.plug.turn(at, add ? M[0x876F] : -M[0x876F]);
       let x;
-      if (add) { x = (M[at] + M[0x876F]) & 255; if (!sgn8(x - 0x48)) x = (x - 0x48) & 255; }
-      else { x = (M[at] - M[0x876F]) & 255; if (sgn8(x)) x = (x + 0x48) & 255; }
+      if (add) { x = (M[at] + by) & 255; if (!sgn8(x - 0x48)) x = (x - 0x48) & 255; }
+      else { x = (M[at] - by) & 255; if (sgn8(x)) x = (x + 0x48) & 255; }
       M[at] = x;
     } else if (a === 0x0D) {
       bc = 0x24;

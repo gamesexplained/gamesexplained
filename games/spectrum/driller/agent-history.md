@@ -128,3 +128,38 @@ full-page screenshot in Playwright left the first section blank, which is
 `content-visibility` in the screenshot only; and a hook on `io.out` did
 nothing, because the port keeps a copy of the `io` it is given, so a page
 hooks `P.io.out`.
+
+## 3 November 2026: Fast CPU
+
+Aaron asked for Fast CPU on the Play tab, and for a reading of whether
+the Fast CPU guide (`kit/skills/core/70-minisite/fast-cpu.md`) fits a
+Spectrum game and still reads clearly after its rewrite.
+
+**What was built.** Plug-in points in the port (`port/src/core.js` lists
+them): a step's share for the walk and the jet's rise and fall, a turn's
+share with the view built at a fractional angle from the game's own sine
+table, the crosshair's pixels by the pass's time, the keys read, a
+command taken or passed over, and the script of an object walked into
+run once a step. The page's machine (`port/page/runtime.js`) runs the
+main loop's own work free on Fast CPU's ticks, 60 a second in T-states,
+with the waits, the sounds and the interrupt in the Spectrum's time, and
+everything outside play at the Spectrum's speed. The table is
+`port/page/fast-table.js`; `test_fast.js` holds the page.
+
+**What the tests caught.** Switched on while the main loop waited for a
+key, the first step went through whole; the runtime now takes the loop's
+own work from the last checkpoint passed. The keys-read plug-in point
+ran before the check for the clock's minute, so a held switch could act
+again after the minute's pass; it now runs after it. The laser's sound
+holds the loop 12 ticks, longer than K at every Speed, so a repeat
+counted in ticks fired every loop and slowed a walk with the laser held
+to 96 ticks a step against the Spectrum's 51; `site/lib/fast-cpu.js` now
+counts repeats and once-a-step jobs in loops. Entrance numbers found by
+searching an area's objects were not entrances (their angles read 127);
+the tests jump only to the places the game's own scripts name.
+
+**Measured for the page.** The quickest Spectrum pass in play, 7.21
+frames, set 1× at K 8. Walls: 186 of 201 three-step walks ended where the
+Spectrum's did, 4 more than 64 units away, none at another height. The
+crosshair went 60 pixels in 0.609 s against the Spectrum's 0.633 s. The
+laser held fired every 0.317 s at 1× against 0.334 s.
