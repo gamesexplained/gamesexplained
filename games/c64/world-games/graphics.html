@@ -1,0 +1,494 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.wg-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.wg-stack{position:relative}
+.wg-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;background:transparent;pointer-events:none}
+.wg-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.wg-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.wg-btn:hover{border-color:var(--ink-mute)}
+.wg-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.wg-out b{font-weight:700}
+.wg-intro{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:10px 28px;align-items:start;margin:0 0 30px}
+.wg-intro .lede{margin:0}
+.wg-intro figure{margin:0}
+.wg-intro img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.wg-intro figcaption{font-size:13px;color:var(--ink-mute);margin-top:5px;line-height:1.4}
+.wg-pics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.wg-pics.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wg-pics.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.wg-pics figure{margin:0}
+.wg-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.wg-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:5px;line-height:1.4}
+.wg-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.wg-tbl th,.wg-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.wg-tbl th{font-weight:700;color:var(--ink-soft)}
+.wg-tbl td.wg-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.wg-tbl tr.wg-on td{background:var(--hl)}
+.wg-wrapx{overflow-x:auto}
+.wg-field{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px;margin:0 0 12px}
+.wg-field label{color:var(--ink-soft)}
+.wg-range{width:100%;max-width:360px;accent-color:var(--accent)}
+.wg-mono{font-family:var(--fm);font-size:13px}
+.wg-sub{font-size:14px;font-weight:700;color:var(--ink-soft);margin:16px 0 6px}
+.wg-wl-meta{display:flex;justify-content:space-between;gap:12px;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:12px 0 4px;min-height:1.4em}
+.wg-wl-meter{position:relative;height:22px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.wg-wl-meter b{position:absolute;top:0;bottom:0;right:0;width:0;background:var(--green)}
+.wg-wl-meter i{position:absolute;top:0;bottom:0;left:0;width:0;background:rgba(31,95,168,.3);border-right:3px solid var(--accent);box-sizing:border-box}
+.wg-wl-meter s{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--ink);display:none}
+.wg-wl-meter.hold{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--line) 6px 12px)}
+.wg-wl-pad{margin-top:12px}
+.wg-wl-pad .wg-btn{touch-action:none;user-select:none;-webkit-user-select:none;padding:8px 16px;font-size:14px}
+.wg-wl-pad .wg-btn.held{background:var(--ink);border-color:var(--ink);color:#fff}
+.wg-win{display:flex;gap:10px;margin:4px 0;align-items:center}
+.wg-win em{font-style:normal;font-family:var(--fm);font-size:12px;color:var(--ink-soft);width:210px;flex:none}
+.wg-win span{flex:1;min-width:0;height:16px}
+.wg-win span i{display:flex;justify-content:flex-end;height:100%;background:var(--line);border-radius:3px;overflow:hidden}
+.wg-win span b{display:block;height:100%;background:var(--green);min-width:2px}
+.wg-win span i.hold{background:repeating-linear-gradient(135deg,var(--line) 0 5px,var(--surface-2) 5px 10px)}
+.wg-bars{display:flex;gap:3px;align-items:flex-end;height:120px;margin:8px 0 0}
+.wg-bars div{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;cursor:pointer}
+.wg-bars i{display:block;width:100%;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px}
+.wg-bars b{font-family:var(--fm);font-size:10.5px;font-weight:500;color:var(--ink-mute);margin-top:3px}
+.wg-bars div.on i{background:var(--amber)}
+.wg-bars div.over i{background:var(--coral)}
+.wg-strip{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.wg-strip button{font:inherit;font-family:var(--fm);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:4px 0;cursor:pointer;color:var(--ink)}
+.wg-strip button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.wg-mem{position:relative;height:34px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;margin:6px 0 4px;overflow:hidden}
+.wg-mem i{position:absolute;top:0;bottom:0;border-right:1px solid rgba(255,255,255,.7)}
+.wg-memx{display:flex;justify-content:space-between;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
+.wg-key{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.wg-chart{display:block;width:100%;height:auto}
+@media (max-width:720px){:root{--gx:16px;--h1:34px;--pp:16px}.wg-intro{grid-template-columns:minmax(0,1fr)}.wg-pics.five{grid-template-columns:repeat(3,minmax(0,1fr))}.wg-intro figure{order:-1;max-width:384px}.wg-pics{grid-template-columns:repeat(2,minmax(0,1fr))}.wg-strip{grid-template-columns:repeat(5,minmax(0,1fr))}.wg-win{flex-wrap:wrap;gap:2px}.wg-win em{width:100%}.wg-win span{flex:1 1 100%}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-sheet{width:auto;max-width:100%;background:none;border-radius:2px}
+.gx-box{position:relative;width:max-content;max-width:100%}
+.gx-hi{position:absolute;outline:2px solid #ffd600;outline-offset:-1px;border-radius:2px;pointer-events:none}
+.gx-group .gx-read{min-height:3em;margin:8px 0 0;font-size:12.5px}
+.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-bar input[type=range]{flex:1 1 200px;max-width:420px}
+.gx-stack{position:relative;width:max-content;max-width:100%;margin:0 0 14px}
+.gx-stack canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:3px}
+.gx-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:auto;pointer-events:none}
+.gx-sw{display:inline-block;width:11px;height:11px;border:1px solid var(--line);border-radius:2px;margin-right:6px;vertical-align:-1px}
+.gx-tbl td,.gx-tbl th{font-size:13.5px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Epyx</p>
+  <h1>World Games</h1>
+  <p class="sub">The lifter, the diver, the skier, the lumberjacks, the wrestlers, the bull and the caber are all drawn in poses: a short list of sprites, each with its place and the address of its shape. Each event has its own poses and its own copy of the code that places them.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every pose of every event, placed by the event's own code</h2>
+  <p class="lede">Each event is a program of its own, loaded over the last, with its own poses. Here are all 940 of them, each placed by its event's own routine and drawn in its colours. Choose an event, and point at a pose for what it is.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-events"></div>
+    <div class="gx-bar">
+      <span class="gx-lab"><label for="gx-bg">Behind them</label></span>
+      <select id="gx-bg" class="gx-sel"><option value="14">Light blue</option><option value="1">White</option><option value="0">Black</option></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The poses are drawn by the game's own code in the built site.</p>
+    <div class="gx-group" id="gx-group" data-part="">
+      <p id="gx-about"></p>
+      <div class="gx-box"><canvas class="gx-sheet" id="gx-sheet" width="1" height="1" aria-label="Every pose of the chosen event"></canvas><div class="gx-hi" id="gx-hi" hidden></div></div>
+      <p class="gx-read" id="gx-sheet-read"></p>
+    </div>
+    <p class="cap">Every pose is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page, with the video chip's registers caught as the code writes them. The routines are <span data-part="weightlifting"><code>wl_pose_shapes</code> (<code>$1E3A</code>) and <code>wl_pose_place</code> (<code>$1E8B</code>)</span> in weightlifting, <span data-part="barrel-jumping"><code>bj_draw_skater</code> (<code>$2394</code>)</span>, <span data-part="cliff-diving"><code>cd_draw_diver</code> (<code>$21C8</code>)</span>, <span data-part="slalom"><code>sl_draw_frame</code> (<code>$8EC6</code>)</span>, <span data-part="log-rolling"><code>lr_build_sprites</code> (<code>$2445</code>)</span>, <span data-part="caber-toss"><code>ct_draw_thrower</code> (<code>$12F6</code>)</span>, <span data-part="bull-riding"><code>br_draw_bull</code> (<code>$1E16</code>)</span> and <span data-part="sumo"><code>su_pose_right</code> (<code>$1DB6</code>)</span>. Where an event changes its shapes during play, the page runs its own routine for that first: <span data-part="cliff-diving"><code>cd_sprite_set</code> (<code>$10B3</code>)</span>, <span data-part="slalom"><code>sl_swap_shapes</code> (<code>$C25E</code>)</span>, <span data-part="log-rolling"><code>lr_unpack_set</code> (<code>$2992</code>)</span> and <span data-part="caber-toss"><code>ct_swap_shapes</code> (<code>$1EB2</code>)</span>. A pose drawn faint is one that no list in its event shows.</p>
+  </div>
+</section>
+
+<section id="pose">
+  <p class="fig">02 · One pose</p>
+  <h2 class="t">A pose is a list of sprites</h2>
+  <p class="lede">A pose names each sprite's place against the pose's own and the shape it shows. Choose a pose to see its sprites one by one.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-p-events"></div>
+    <div class="gx-bar"><label for="gx-p-pose" class="gx-lab">Pose</label><input type="range" id="gx-p-pose" min="0" max="96" value="0"><span class="gx-stat" id="gx-p-stat"></span></div>
+    <div class="gx-pose" id="gx-p-group" data-part=""><div class="gx-stack"><canvas id="gx-p-cv" width="1" height="1" aria-label="The chosen pose, each sprite boxed and numbered"></canvas><canvas id="gx-p-box" width="1" height="1"></canvas></div>
+      <div class="wg-wrapx"><table class="wg-tbl gx-tbl" id="gx-p-tbl"></table></div></div>
+    <p class="cap">The places are counted from the place the page gives the event's routine, which is where the pose stands in play. Each sprite is boxed at its size, numbered as the video chip numbers it; sprite 0 is drawn in front.</p>
+  </div>
+  <p>In six of the eight events, weightlifting, barrel jumping, cliff diving, slalom, the caber toss and bull riding, a pose is a count of sprites and then, for each, its place from the pose's and the address of its shape. Placing a pose is a loop over them that writes each sprite's place to the video chip and points the sprite at its shape. A shape is 63 bytes, 21 rows of three, and the same six keep the rest of what a sprite needs in the 64th byte, which the chip never reads: the colour in its low four bits, multicolour in bit 7, double width in bit 6 and double height in bit 5 (<span data-part="weightlifting"><code>$1E8B</code></span>, <span data-part="barrel-jumping"><code>$23C9</code></span>). Sumo makes every sprite multicolour and gives each wrestler one colour of its own.</p>
+  <p>The video chip finds a sprite's shape through a pointer of one byte, so it can only show the 256 shapes in the 16 kilobytes it is looking at, and the screen and its pictures take some of those. The events have more, and each makes room its own way. Weightlifting copies a pose's eight shapes to <span data-part="weightlifting"><code>$4000</code></span> each time it shows one, from 206 kept higher up. Bull riding copies its eight to <span data-part="bull-riding"><code>$5400</code></span>, and turns each row round on the way when the bull faces right, so its frames are stored facing left only. Cliff diving keeps three sets of shapes and copies one to <span data-part="cliff-diving"><code>$7000</code></span>: the dive's, the water's once the diver is in, and the pelican's extra turns. Slalom swaps the falls' shapes in over the push-off's, and the caber toss a second set for walking off. Log rolling keeps its pictures packed and unpacks a set at a time over the last, the standing lumberjacks' to start and a fall's when someone falls.</p>
+  <p>Sumo and log rolling need more than eight sprites. The two wrestlers are eight sprites each, and the left one is the right one's poses turned round, each shape mirrored as it is copied (<span data-part="sumo"><code>$119B</code></span>); a multiplexer moves sprites down the screen as the beam passes the ones above (<span data-part="sumo"><code>$1581</code></span>). Log rolling sorts its sprites by height (<span data-part="log-rolling"><code>$25D2</code></span>) and reloads those past the eighth into sprites that have finished, in up to three bands down the screen (<span data-part="log-rolling"><code>$26DF</code></span>). How one frame of the caber toss is put together, scenery and sprites, is on <a href="index.html#frame">How it works</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* wog-poses */
+// wogPoses(P, C64Cpu, id): every pose of one event, each drawn by that event's own routine on the
+// kit's 6502 over a copy of the part's listing (P[part] is C64.load's result), with the video chip's
+// registers caught as the routine writes them. A pose comes back as its sprites, front first:
+// { d: 63 bytes, x, y (the chip's own coordinates), multi, c, ex, ey }. The places are the chip's:
+// each event draws at a fixed place here (org), so that a pose's offsets show as they do in play.
+const WOG_EVENTS = {
+  weightlifting: { n: 97, org: [0xA0, 0x68], mc: [1, 9], ptrs: 0x5FF8, bank: 0x4000,
+    src: (m, p, i) => { const r = m[0x8100 + 2 * p] | m[0x8101 + 2 * p] << 8; return m[r + 3 + 4 * i] | m[r + 4 + 4 * i] << 8; },
+    // wl_pose_shapes ($1E3A) copies the pose's shapes to $4000, wl_pose_place ($1E8B) places them
+    run: (m, cpu, p) => { m[0xF0] = p; m[0xF7] = 0x00; m[0xF8] = 0x40; m[0xFA] = 0xA0; m[0xF9] = 0x68; cpu.call(0x1E3A, {}, { maxSteps: 1e5 }); cpu.call(0x1E8B, {}, { maxSteps: 1e5 }); },
+    // all eight sprites stay on in the arena (the pose always has eight)
+    on: 0xFF },
+  'barrel-jumping': { n: 120, org: [120, 120], mc: [0, 12], ptrs: 0x4BF8, bank: 0x4000,
+    // bj_draw_skater ($2394), stopped before $247A, which moves sprite 3 to the ice in poses 13-18
+    run: (m, cpu, p) => { m[0x3C] = p; m[0x43] = 120; m[0x44] = 0; m[0x42] = 120; cpu.call(0x2394, {}, { maxSteps: 1e5, hooks: { 0x247A: () => true } }); } },
+  'cliff-diving': { n: 175, org: [120, 120], mc: [1, 0], bank: 0x4000,
+    // cd_draw_diver ($21C8) into the copies in zero page that the raster interrupt hands the chip ($1292)
+    run: (m, cpu, p) => { m[0x15] = p; m[0x63] = 120; m[0x64] = 0; m[0x62] = 120; cpu.call(0x21C8, {}, { maxSteps: 1e5 }); },
+    // the shapes at $7000-$7DFF are one of three sets, copied in by cd_sprite_set ($10B3): set 0 for
+    // the dive (79-112), set 1 once the diver is in the water (the end's poses and touching the
+    // bottom, 113-150), set 2 for the pelican's extra turns (151 on)
+    prep: (m, cpu, p) => { const k = { 0: 0, 113: 1, 151: 2 }[p]; if (k !== undefined) cpu.call(0x10B3, { a: k }, { maxSteps: 1e5 }); },
+    state: (m) => ({ en: m[0xAA], msb: m[0xA6], mc: m[0xA7], ex: m[0xA8], ey: m[0xA9], x: (i) => m[0x96 + 2 * i], y: (i) => m[0x97 + 2 * i], ptr: (i) => m[0x86 + i], col: (i) => m[0x8E + i] }) },
+  slalom: { n: 67, org: [120, 120], mc: [0, 0], ptrs: 0x4BF8, bank: 0x4000,
+    // sl_draw_frame ($8EC6), frame A, from sprite 2 as the skier is drawn
+    run: (m, cpu, p) => { m[0x8C] = 120; m[0x8B] = 120; m[0xA0] = 0; cpu.call(0x8EC6, { a: p }, { maxSteps: 1e5 }); },
+    // the falls' shapes ($E000-$ECFF) swapped into $7000-$7CFF over the push-off's by sl_swap_shapes
+    // ($C25E), a shape a call from $85 = 2 until $85 is 0 again
+    prep: (m, cpu, p) => { if (p === 0x38) { m[0x85] = 2; for (let k = 0; k < 60 && m[0x85]; k++) cpu.call(0xC25E, {}, { maxSteps: 1e4 }); } } },
+  'caber-toss': { n: 119, org: [120, 120], mc: [8, 0], ptrs: 0x43F8, bank: 0x4000,
+    // ct_draw_thrower ($12F6): pose $2A at x $50-$51 plus $58, y $52
+    run: (m, cpu, p) => { m[0x2A] = p; m[0x50] = 120; m[0x51] = 0; m[0x58] = 0; m[0x52] = 120; m[0x5F] = 0; cpu.call(0x12F6, {}, { maxSteps: 1e5 }); },
+    // the walk off ($66-$76) uses the second set of shapes, which ct_swap_shapes ($1EB2) swaps in a
+    // page a call from $A000 over $6640 until its page counter reaches $B2
+    prep: (m, cpu, p) => { if (p === 0x66) for (let k = 0; k < 18 && m[0x1EC9] !== 0xB2; k++) cpu.call(0x1EB2, {}, { maxSteps: 1e4 }); } },
+  sumo: { n: 90, org: [160, 120], mc: [10, 0],
+    // su_pose_right ($1DB6): the right wrestler's sprites into $0F42-$0F63 for the multiplexer, its
+    // shapes as they are (the left wrestler's are the same turned round); every sprite multicolour,
+    // the right wrestler's red ($134C)
+    run: (m, cpu, p) => { m[0x6F] = p; m[0x71] = 160; m[0x72] = 0; m[0x73] = 120; cpu.call(0x1DB6, {}, { maxSteps: 1e5 }); },
+    list: (m) => { const o = []; for (let i = 0; i < 8; i++) if (m[0x0F62] >> i & 1) o.push({ i, a: m[0x0F42 + 2 * i] | m[0x0F43 + 2 * i] << 8, x: m[0x0F52 + 2 * i] + (m[0x0F63] >> i & 1 ? 256 : 0), y: m[0x0F53 + 2 * i], multi: true, c: 2, ex: false, ey: false }); return o; } },
+  'log-rolling': { n: 220, org: [120, 120], mc: [10, 0],
+    // lr_unpack_set ($2992) unpacks a set of pictures, shapes to $4000 and records to $8000: 20 of
+    // the lumberjacks standing ($0F42 = 0), then 100 for lumberjack 2's fall ($0C) and 100 for
+    // lumberjack 1's ($18); lr_build_sprites ($2445) lists picture $0C's sprites, stopped before
+    // it goes on to the other lumberjack's ($24F6)
+    sets: [[0, 0, 20], [20, 0x0C, 100], [120, 0x18, 100]],
+    prep: (m, cpu, p) => { for (const [at, set] of WOG_EVENTS['log-rolling'].sets) if (p === at) { m[0x0F42] = set; cpu.call(0x2992, {}, { maxSteps: 5e7 }); } },
+    run: (m, cpu, p) => { const S = WOG_EVENTS['log-rolling'].sets; let k = S.length - 1; while (p < S[k][0]) k--; m[0x0C] = p - S[k][0]; m[0x0F] = 120; m[0x10] = 0; m[0x0E] = 120; cpu.call(0x2445, {}, { maxSteps: 1e5, hooks: { 0x24F6: () => true } }); },
+    list: (m) => { const o = []; for (let i = 0; i < m[0xC4]; i++) { const f = m[0xA0 + i]; o.push({ i, a: 0x4000 + 64 * m[0x91 + i], x: m[0x73 + i] + (i < 8 && m[0xB3] >> i & 1 ? 256 : 0), y: m[0x82 + i], multi: !!(f & 0x80), c: f & 15, ex: !!(f & 0x40), ey: !!(f & 0x20) }); } return o; } },
+  'bull-riding': { n: 52, org: [160, 120], mc: [1, 0], ptrs: 0x4FF8, bank: 0x4000, src: (m, p, i) => m[0x48 + 2 * i] | m[0x49 + 2 * i] << 8,
+    // br_draw_bull ($1E16), frame $10 (bit 7: facing right), the shapes copied to $5400 ($288B)
+    run: (m, cpu, p) => { m[0x10] = p; m[0x11] = 160; m[0x12] = 0; m[0x13] = 120; cpu.call(0x1E16, {}, { maxSteps: 2e5 }); } },
+};
+function wogPoses(P, C64Cpu, id) {
+  const E = WOG_EVENTS[id], m = P[id].ram.slice(), vic = new Uint8Array(0x30);
+  const io = { read(a) { return a >= 0xD000 && a < 0xD030 ? vic[a - 0xD000] : 0; }, write(a, v) { if (a >= 0xD000 && a < 0xD030) vic[a - 0xD000] = v; } };
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+  const fromVic = () => ({ en: E.on || vic[0x15], msb: vic[0x10], mc: vic[0x1C], ex: vic[0x1D], ey: vic[0x17], x: (i) => vic[2 * i], y: (i) => vic[2 * i + 1], ptr: (i) => m[E.ptrs + i], col: (i) => vic[0x27 + i] });
+  const out = [];
+  for (let p = 0; p < E.n; p++) {
+    vic.fill(0);
+    if (E.prep) E.prep(m, cpu, p);
+    E.run(m, cpu, p);
+    const s = E.state ? E.state(m) : fromVic(), spr = E.list ? E.list(m) : [];
+    if (!E.list) for (let i = 0; i < 8; i++) if (s.en >> i & 1) {
+      const a = E.bank + 64 * s.ptr(i);
+      spr.push({ i, a, d: m.slice(a, a + 63), x: s.x(i) + (s.msb >> i & 1 ? 256 : 0), y: s.y(i), multi: !!(s.mc >> i & 1), c: s.col(i) & 15, ex: !!(s.ex >> i & 1), ey: !!(s.ey >> i & 1) });
+    }
+    spr.forEach((S, k) => { if (!S.d) S.d = m.slice(S.a, S.a + 63); S.f = m[S.a + 63]; S.src = E.src ? E.src(m, p, k) : S.a; });
+    // the chip's places wrap (y in 8 bits, x in 9), so a sprite placed just above or left of the
+    // others reads as far below or right: each is taken as the nearest to the first sprite's place
+    if (spr.length) { const x0 = spr[0].x, y0 = spr[0].y; for (const S of spr) { S.x = x0 + ((S.x - x0) % 512 + 768) % 512 - 256; S.y = y0 + ((S.y - y0) % 256 + 384) % 256 - 128; } }
+    out.push({ p, spr });
+  }
+  return out;
+}
+// The box round a pose's drawn pixels, [x0, y0, x1, y1] in the chip's places, or null for none.
+function wogBox(spr) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const S of spr) for (let r = 0; r < 21; r++) for (let b = 0; b < 24; b++) {
+    const v = S.d[3 * r + (b >> 3)], on = S.multi ? v >> (6 - 2 * ((b & 7) >> 1)) & 3 : v >> (7 - (b & 7)) & 1;
+    if (!on) continue;
+    const sx = S.ex ? 2 : 1, sy = S.ey ? 2 : 1, x = S.x + b * sx, y = S.y + r * sy;
+    x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x + sx); y1 = Math.max(y1, y + sy);
+  }
+  return x1 === -1e9 ? null : [x0, y0, x1, y1];
+}
+// Paints a pose's sprites into RGBA pixels (w x h): the chip's place (x, y) lands at (ox + x, oy + y);
+// sprite 0 in front, so they are painted from the last to the first. rgb is the palette; clip, if
+// given, is the box [x0, y0, x1, y1] of the pixels it may paint.
+function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
+  const [cx0, cy0, cx1, cy1] = clip || [0, 0, w, h];
+  const put = (x, y, c) => { if (x < cx0 || y < cy0 || x >= cx1 || y >= cy1 || x < 0 || y < 0 || x >= w || y >= h) return; const o = 4 * (y * w + x), k = rgb[c]; px[o] = k[0]; px[o + 1] = k[1]; px[o + 2] = k[2]; px[o + 3] = 255; };
+  for (let k = spr.length - 1; k >= 0; k--) {
+    const S = spr[k], sx = S.ex ? 2 : 1, sy = S.ey ? 2 : 1;
+    for (let r = 0; r < 21; r++) for (let b = 0; b < 24; b++) {
+      const v = S.d[3 * r + (b >> 3)];
+      let c = -1;
+      if (S.multi) { const q = v >> (6 - 2 * ((b & 7) >> 1)) & 3; if (q) c = [0, mc[0], S.c, mc[1]][q]; }
+      else if (v >> (7 - (b & 7)) & 1) c = S.c;
+      if (c >= 0) for (let yy = 0; yy < sy; yy++) for (let xx = 0; xx < sx; xx++) put(ox + S.x + b * sx + xx, oy + S.y + r * sy + yy, c);
+    }
+  }
+}
+</script>
+<script>
+// Graphics tab. wogPoses (above) places every pose with each event's own code on the kit's 6502 over
+// the part's listing; this script lays them out. What a pose is comes from the listings' notes on the
+// lists and scripts that show it.
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const wait = $('gx-wait');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  wait.textContent = 'Loading the event\'s listing…';
+  const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const h4 = (v) => '$' + v.toString(16).toUpperCase().padStart(4, '0');
+  const h2 = (v) => '$' + v.toString(16).toUpperCase().padStart(2, '0');
+  const at = (id, v) => '<a href="source-' + id + '.html#' + h4(v).slice(1) + '"><code>' + h4(v) + '</code></a>';
+
+  // What each event's poses are, from the lists in its listing: [first, last, what]
+  const EV = [
+    { id: 'weightlifting', name: 'Weightlifting', what: 'pose',
+      about: 'The lifter and the bar in 97 poses, eight sprites each, for every step of the snatch and the clean and jerk. A lift is a script of these poses with windows for the joystick.',
+      names: [] },
+    { id: 'barrel-jumping', name: 'Barrel jumping', what: 'pose',
+      about: 'The skater in 120 poses, from the stride and the jump to the falls, and the barrels themselves, knocked and rolling.',
+      names: [[0, 7, 'the stride, one pose for each of its eight states'], [22, 30, 'the opening\'s end'], [31, 42, 'the longer opening, coming down before the barrels'],
+        [66, 66, 'its sprites point at the character set at $4000, and no list in the event shows it'], [87, 87, 'its sprites point at the character set at $4000, and no list in the event shows it'],
+        [103, 109, 'the knocked barrel'], [110, 110, 'its sprites point at the character set at $4000, and no list in the event shows it'], [111, 119, 'the rolling barrel']],
+      faint: [66, 87, 110] },
+    { id: 'cliff-diving', name: 'Cliff diving', what: 'pose',
+      about: 'The diver on the cliff, in the air and under the water, the splashes, the pelican on its rock and the gull: 175 poses. Three sets of shapes take turns at $7000, so the dive, the water and the pelican\'s extra turns each have room for their own.',
+      names: [[0, 4, 'under the water after a clean entry'], [5, 8, 'under the water, coming up'], [9, 14, 'surfaced'], [15, 17, 'the end, after the result'], [18, 26, 'the splash'],
+        [27, 28, 'a bad entry'], [34, 38, 'a bad entry'], [43, 52, 'a crash\'s splash'], [53, 60, 'hitting the cliff'], [61, 61, 'the pelican on its rock, the diver well above it'],
+        [62, 63, 'the pelican on its rock'], [65, 66, 'the pelican, after a bad entry or a crash'], [68, 69, 'the pelican, after the diver has touched the bottom'], [76, 78, 'the gull\'s wingbeats'],
+        [79, 81, 'standing at the edge'], [82, 82, 'ready to dive'], [83, 94, 'the jump'], [95, 95, 'the jump, held while the stick sets the body position'],
+        [96, 102, 'a body position in the air, tucked at 96 to straight at 102'], [103, 112, 'idle at the edge, waiting'], [113, 124, 'the end after a good dive'], [125, 130, 'the end after a fault'],
+        [133, 150, 'touching the bottom'], [151, 162, 'the pelican\'s extra turns'], [163, 172, 'the pelican flying off']] },
+    { id: 'slalom', name: 'Slalom', what: 'frame',
+      about: 'The skier\'s 67 frames: each stance and step of a turn, the gate\'s flag bending as the skier passes it, the push-off at the start and the falls, whose shapes are swapped in over the push-off\'s.',
+      names: [[0, 13, 'the skier, a stance or a step of a turn'], [14, 27, 'the flag bending'], [44, 55, 'the push-off at the start'], [56, 66, 'a fall, from the swapped-in shapes']] },
+    { id: 'log-rolling', name: 'Log rolling', what: 'picture',
+      about: 'The lumberjacks\' 220 pictures, in three sets: standing and running on the log, then lumberjack 2\'s fall and lumberjack 1\'s, each with its splash. Only one set is in memory at a time.',
+      names: [[0, 19, 'standing and running on the log, from the first set'], [20, 119, 'from the set for lumberjack 2\'s fall'], [120, 219, 'from the set for lumberjack 1\'s fall']] },
+    { id: 'caber-toss', name: 'Caber toss', what: 'pose',
+      about: 'The thrower and the caber in 119 poses: lifting it, the run, the toss, walking off, dropping it and falling, and the caber on its own. The walk off is drawn from a second set of shapes swapped in after the toss.',
+      names: [[0x0C, 0x0C, 'the caber fallen short'], [0x10, 0x10, 'the caber after a good toss'], [0x16, 0x1B, 'the run'], [0x1E, 0x24, 'the toss begun'], [0x32, 0x37, 'the throw'],
+        [0x38, 0x3A, 'lifting the caber'], [0x41, 0x46, 'out of stamina'], [0x47, 0x56, 'dropping the caber'], [0x57, 0x65, 'falling'], [0x66, 0x76, 'walking off, from the second set of shapes']] },
+    { id: 'bull-riding', name: 'Bull riding', what: 'frame',
+      about: 'The bull and its rider in 52 frames: bucking, running and spinning, and the rider thrown off. They are stored facing left; the event mirrors each shape as it copies it when the bull faces right.',
+      names: [] },
+    { id: 'sumo', name: 'Sumo', what: 'pose',
+      about: 'The wrestler on the right in 90 poses, in red, as the event keeps them. The wrestler on the left is the same poses turned round, in white.',
+      names: [] },
+  ];
+  const named = (E, p) => { const n = E.names.find(([a, b]) => p >= a && p <= b); return n ? n[2] : ''; };
+
+  // Listings and poses, each made once, when an event is first chosen
+  const listings = {}, posed = {};
+  async function poses(id) {
+    if (posed[id]) return posed[id];
+    if (!listings[id]) listings[id] = await C64.load('parts/' + id + '/listing.json');
+    const P = { [id]: listings[id] }, q = wogPoses(P, C64Cpu, id);
+    q.forEach((x) => { x.box = wogBox(x.spr); });
+    return (posed[id] = q);
+  }
+
+  const bgSel = $('gx-bg');
+  const bg = () => +bgSel.value;
+  const fill = (px, n, c) => { for (let i = 0; i < n; i++) { px[4 * i] = c[0]; px[4 * i + 1] = c[1]; px[4 * i + 2] = c[2]; px[4 * i + 3] = 255; } };
+
+  // ---- 01: the sheet, poses in rows as wide as the plate at twice the size, each row's poses
+  // standing on its foot
+  const sheet = $('gx-sheet'), sctx = sheet.getContext('2d'), hi = $('gx-hi'), read = $('gx-sheet-read'), group = $('gx-group');
+  let cur = 0, cells = [];
+  const CAPW = 128, CAPH = 112, PAD = 3;
+  function drawSheet() {
+    const E = EV[cur], q = posed[E.id];
+    if (!q) return;
+    const avail = Math.max(Math.floor(group.clientWidth / 2), 100);
+    cells = []; let x = 0, y = 0, row = [];
+    const end = () => { const h = Math.max(...row.map((c) => c.h)); row.forEach((c) => { c.y = y + h - c.h; }); y += h; row = []; x = 0; };
+    q.forEach((p, i) => {
+      const b = p.box || [0, 0, 8, 8], w = Math.min(b[2] - b[0], CAPW) + 2 * PAD, h = Math.min(b[3] - b[1], CAPH) + 2 * PAD;
+      if (x + w > avail && row.length) end();
+      const c = { i, p, x, w, h }; row.push(c); cells.push(c); x += w;
+    });
+    end();
+    sheet.width = avail; sheet.height = y; sheet.style.width = 2 * avail + 'px';
+    const img = sctx.createImageData(avail, y), px = img.data, back = RGB[bg()];
+    fill(px, avail * y, back);
+    const faint = E.faint || [];
+    for (const c of cells) {
+      if (!c.p.box) continue;
+      const b = c.p.box;
+      wogPaint(px, avail, y, c.p.spr, WOG_EVENTS[E.id].mc, RGB, c.x + PAD - b[0], c.y + PAD - b[1], [c.x, c.y, c.x + c.w, c.y + c.h]);
+      if (faint.includes(c.i)) for (let yy = c.y; yy < c.y + c.h; yy++) for (let xx = c.x; xx < c.x + c.w; xx++) {
+        const o = 4 * (yy * avail + xx); for (let k = 0; k < 3; k++) px[o + k] = (px[o + k] + 2 * back[k]) / 3;
+      }
+    }
+    sctx.putImageData(img, 0, 0);
+    hi.hidden = true;
+  }
+  const say = (E, p) => {
+    const q = posed[E.id][p], n = named(E, p), s = q.spr.length;
+    const shapes = [...new Set(q.spr.map((S) => S.src))].sort((a, b) => a - b);
+    return (E.what[0].toUpperCase() + E.what.slice(1)) + ' ' + p + ' (' + h2(p) + '), ' + s + ' sprite' + (s === 1 ? '' : 's') + (n ? ': ' + n.replace('$4000', at(E.id, 0x4000)) : '') +
+      '. Its shapes are at ' + shapes.slice(0, 4).map((a) => at(E.id, a)).join(', ') + (shapes.length > 4 ? ' and ' + (shapes.length - 4) + ' more' : '') + '.';
+  };
+  function pointAt(e) {
+    const r = sheet.getBoundingClientRect(), x = (e.clientX - r.left) * sheet.width / r.width, y = (e.clientY - r.top) * sheet.height / r.height;
+    const c = cells.find((k) => x >= k.x && x < k.x + k.w && y >= k.y && y < k.y + k.h);
+    if (!c) { hi.hidden = true; return; }
+    const k = r.width / sheet.width;
+    hi.hidden = false; hi.style.left = c.x * k + 'px'; hi.style.top = c.y * k + 'px'; hi.style.width = c.w * k + 'px'; hi.style.height = c.h * k + 'px';
+    read.innerHTML = say(EV[cur], c.i);
+  }
+  sheet.addEventListener('pointermove', pointAt);
+  sheet.addEventListener('pointerdown', pointAt);
+  sheet.addEventListener('pointerleave', () => { hi.hidden = true; });
+
+  const btns = EV.map((E, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = E.name;
+    b.addEventListener('click', () => choose(i)); $('gx-events').appendChild(b); return b;
+  });
+  async function choose(i) {
+    cur = i; const E = EV[i];
+    btns.forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+    group.dataset.part = E.id;
+    $('gx-about').innerHTML = E.about.replace('$4000', at(E.id, 0x4000)).replace('$7000', at(E.id, 0x7000));
+    read.textContent = '';
+    try { await poses(E.id); } catch (e) { wait.hidden = false; wait.textContent = 'The listing could not be loaded: ' + e.message; return; }
+    if (cur !== i) return;
+    wait.hidden = true;
+    drawSheet();
+    const q = posed[E.id];
+    $('gx-stat').textContent = q.length + ' ' + E.what + 's, ' + q.reduce((n, p) => n + p.spr.length, 0) + ' sprites';
+    read.textContent = 'Point at a ' + E.what + ' for what it is.';
+  }
+
+  // ---- 02: one pose, its sprites boxed and listed
+  const pcv = $('gx-p-cv'), pbox = $('gx-p-box'), range = $('gx-p-pose'), ptbl = $('gx-p-tbl'), pgroup = $('gx-p-group');
+  let pe = 6;
+  const pbtns = EV.map((E, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = E.name;
+    b.addEventListener('click', () => pchoose(i, 0)); $('gx-p-events').appendChild(b); return b;
+  });
+  async function pchoose(i, p) {
+    pe = i; const E = EV[i];
+    pbtns.forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+    pgroup.dataset.part = E.id;
+    try { await poses(E.id); } catch (e) { $('gx-p-stat').textContent = 'The listing could not be loaded.'; return; }
+    if (pe !== i) return;
+    range.max = posed[E.id].length - 1; range.value = p;
+    poseDraw();
+  }
+  range.addEventListener('input', poseDraw);
+  const S3 = 3;
+  function poseDraw() {
+    const E = EV[pe], q = posed[E.id];
+    if (!q) return;
+    const p = +range.value, pose = q[p], org = WOG_EVENTS[E.id].org;
+    // the frame: every sprite's whole box, with a margin
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const S of pose.spr) { x0 = Math.min(x0, S.x); y0 = Math.min(y0, S.y); x1 = Math.max(x1, S.x + (S.ex ? 48 : 24)); y1 = Math.max(y1, S.y + (S.ey ? 42 : 21)); }
+    if (!pose.spr.length) { x0 = y0 = 0; x1 = y1 = 24; }
+    const M = 6, w = x1 - x0 + 2 * M, h = y1 - y0 + 2 * M;
+    pcv.width = w; pcv.height = h; pcv.style.width = S3 * w + 'px';
+    const ctx = pcv.getContext('2d'), img = ctx.createImageData(w, h), back = RGB[bg()];
+    fill(img.data, w * h, back);
+    wogPaint(img.data, w, h, pose.spr, WOG_EVENTS[E.id].mc, RGB, M - x0, M - y0);
+    ctx.putImageData(img, 0, 0);
+    // the boxes, drawn sharp over it
+    const d = window.devicePixelRatio || 1, k = S3 * d;
+    pbox.width = w * k; pbox.height = h * k;
+    const b = pbox.getContext('2d');
+    b.lineWidth = Math.max(1, d); b.font = (11 * d) + 'px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+    b.textBaseline = 'top';
+    const tags = [];
+    pose.spr.forEach((S) => {
+      const bx = (S.x - x0 + M) * k, by = (S.y - y0 + M) * k, bw = (S.ex ? 48 : 24) * k, bh = (S.ey ? 42 : 21) * k;
+      b.strokeStyle = 'rgba(255,214,0,.95)'; b.strokeRect(bx + .5, by + .5, bw - 1, bh - 1);
+      const t = String(S.i), tw = b.measureText(t).width + 4 * d, th = 13 * d;
+      // a number where another sprite's already is moves along to the right
+      let tx = bx;
+      while (tags.some(([x, y, w]) => tx < x + w && tx + tw > x && Math.abs(by - y) < th)) tx += tw;
+      tags.push([tx, by, tw]);
+      b.fillStyle = 'rgba(255,214,0,.95)'; b.fillRect(tx, by, tw, th);
+      b.fillStyle = '#1b1c20'; b.fillText(t, tx + 2 * d, by + 1 * d);
+    });
+    const mc = WOG_EVENTS[E.id].mc;
+    const sw = (c) => '<i class="gx-sw" style="background:' + C64.PAL[c] + '"></i>' + NAMES[c];
+    ptbl.innerHTML = '<tr><th>Sprite</th><th>Across</th><th>Down</th><th>Shape</th><th>Colour</th><th>Size</th></tr>' + pose.spr.map((S) =>
+      '<tr><td class="wg-n">' + S.i + '</td><td class="wg-n">' + (S.x - org[0]) + '</td><td class="wg-n">' + (S.y - org[1]) + '</td><td class="wg-n">' + at(E.id, S.src) + '</td><td>' +
+      (S.multi ? sw(S.c) + ', with ' + NAMES[mc[0]] + ' and ' + NAMES[mc[1]] : sw(S.c)) + '</td><td>' + (S.ex && S.ey ? 'double width and height' : S.ex ? 'double width' : S.ey ? 'double height' : 'normal') + '</td></tr>').join('');
+    const n = named(E, p);
+    $('gx-p-stat').innerHTML = E.name + ', ' + E.what + ' ' + p + (n ? ': ' + n.replace(/ at \$4000/, '') : '');
+  }
+  bgSel.addEventListener('input', () => { drawSheet(); poseDraw(); });
+  let rw = 0;
+  window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(drawSheet, 150); });
+
+  // Start when the section comes near the screen, so the page opens without the work
+  let started = false;
+  const start = () => { if (started) return; started = true; choose(0); pchoose(6, 0); };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '400px' });
+    io.observe($('cast')); io.observe($('pose'));
+  } else start();
+})();
+</script>

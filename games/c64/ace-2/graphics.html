@@ -1,0 +1,347 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACE 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+.a2-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.a2-wide{width:100%}
+.a2-stack{position:relative;line-height:0}
+.a2-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
+.a2-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.a2-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.a2-btn:hover{border-color:var(--ink-mute)}
+.a2-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.a2-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.a2-shots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.a2-shots figure{margin:0}
+.a2-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.a2-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.a2-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.a2-tbl th,.a2-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.a2-tbl th{font-weight:700;color:var(--ink-soft)}
+.a2-tbl td.a2-n,.a2-tbl th.a2-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.a2-tbl tr.a2-on td{background:var(--hl)}
+.a2-tbl tr.a2-off td{color:var(--ink-mute)}
+.a2-scroll{overflow-x:auto}
+.a2-msgs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.a2-panel{background:#000;border-radius:6px;padding:10px}
+.a2-grid{display:grid;grid-template-columns:28px repeat(32,minmax(0,1fr));gap:1px;font-family:var(--fm);font-size:9px;color:var(--ink-mute);user-select:none}
+.a2-grid span{text-align:center;line-height:14px;height:14px}
+.a2-grid i{display:block;height:14px;border-radius:2px;background:var(--surface-2);cursor:pointer}
+.a2-grid i.a2-ask{outline:3px solid var(--coral);outline-offset:1px}
+.a2-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid var(--line)}
+@media (max-width:760px){
+  :root{--gx:16px;--h1:36px;--pp:16px}
+  .a2-shots,.a2-msgs{grid-template-columns:minmax(0,1fr)}
+  .a2-grid{font-size:7px}
+}
+.gx-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:22px 18px;align-items:end}
+.gx-cast figure{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+.gx-cast canvas{image-rendering:pixelated;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
+.gx-cast figure.wide{grid-column:span 2}
+.gx-cast b{color:var(--ink);font-weight:700}
+.gx-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.gx-row .a2-btn{font-size:11.5px;padding:3px 8px}
+.gx-group{margin:0 0 18px}
+.gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
+.gx-tiles button.on{border-color:var(--amber)}
+.gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
+.gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
+.gx-msg{color:var(--coral);font-size:14px}
+.gx-place{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
+.gx-place canvas{image-rendering:pixelated;border-radius:4px;display:block;max-width:100%}
+.gx-place label{display:block;font-size:13.5px;color:var(--ink-soft);margin:0 0 10px}
+.gx-place input[type=range]{width:100%}
+@media (max-width:760px){.gx-cast figure.wide{grid-column:auto}.gx-place{grid-template-columns:minmax(0,1fr)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Cascade Games</p>
+  <h1>ACE 2</h1>
+  <p class="sub">The enemy jet, the missiles and the targets on the ground are not sprites. They are pictures the game builds into fresh characters of the view's own character set, a few bytes at a time, on every pass of its main loop. Only the explosions are sprites.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every moving shape, a picture a pass</h2>
+  <p class="lede">The game draws each pilot's view once a pass of its main loop, about 16 passes a second. Here each thing moves at that rate, chosen and built by the game's own code, in the colours of plane one's view over the sea.</p>
+  <div class="plate">
+    <div class="a2-bar">
+      <button type="button" class="a2-btn" id="gx-run" aria-pressed="true">❚❚ Pause</button>
+      <button type="button" class="a2-btn" id="gx-step">One pass</button>
+      <button type="button" class="a2-btn" id="gx-land" aria-pressed="false">Over land</button>
+      <span class="a2-out" id="gx-stat" style="margin:0;min-height:0;font-family:var(--fm);font-size:12.5px"></span>
+    </div>
+    <p class="gx-msg" id="gx-castmsg"></p>
+    <div class="gx-cast" id="gx-cast"></div>
+    <p class="cap">The enemy's pictures are chosen by the game's own code from <code>enemy_in_view</code> (<code>$2C86</code>), for its heading against ours turning a full circle, with both planes' roll and our pitch level, then built by <code>shape_build</code> (<code>$1581</code>) and <code>shape_shift</code> (<code>$15DB</code>), all run on the kit's 6502 over the listing. The distant dots and the missile are <code>dot_shape</code> (<code>$5FD4</code>); the targets' pictures are chosen by our roll through <code>target_picture_by_roll</code> (<code>$7570</code>); the explosion steps through <code>explosion_sequence</code> (<code>$4DD1</code>) as <code>step_explosion</code> (<code>$214A</code>) counts. The colours are the view's: black, light blue (<code>$D022</code>), white (<code>$D023</code>) and the cells' own colour, blue over the sea and yellow over land.</p>
+  </div>
+  <p>The enemy has four looks by its distance. At range 6 or more its cell is left empty. At 2 to 5 it is a single dot, or two rows of one when it comes to range 2. Nearer, it is a medium picture of a single cell's eight bytes, drawn into two cells by two so it can move a pixel at a time, and nearest, within <code>$78</code> across and <code>$13</code> in height, a large picture of two columns of 16 rows, spread over three by three cells. The large picture is chosen through four tables from the enemy's pitch, roll and heading against ours, and our own roll and pitch (<code>large_view_step_one</code> to <code>large_view_pictures</code>), and comes out as one of fifteen pictures in one of four frames.</p>
+  <p>Every picture is drawn in the fourth colour of a multicolour cell, the colour held for the cell itself. The game sets that colour for the whole view when the ground under the plane changes, blue over the sea and yellow over land (<code>map_square_check</code>, <code>$14AF</code>), so the enemy jet turns yellow when its pilot's view is over land. A dot in the view's light blue (<code>$55</code>) is lost against the sky, which is why the targets' far dots are drawn in it, over the ground only, and the enemy's in the cell colour (<code>$FF</code>). A missile's dot takes one or the other by the screen being drawn (<code>$59</code>), which changes every pass, so a missile against the sky flickers.</p>
+</section>
+
+<section id="pictures">
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Fifteen pictures and four frames make every angle of the enemy</h2>
+  <p class="lede">Every picture the cockpit views and the explosion use, each built alone by the game's code. Pick one to see what the listing says it is.</p>
+  <div class="plate">
+    <p class="gx-msg" id="gx-tablemsg"></p>
+    <div id="gx-table"></div>
+    <p class="a2-out" id="gx-info">Pick a picture.</p>
+    <p class="cap">A frame is a picture drawn as stored, mirrored left to right, upside down, or turned half round: <code>shape_build</code> reads the picture's bytes in one of four orders (<code>shape_orders</code>, <code>$7241</code>) and, for the mirrored frames, turns each byte round through <code>mirror_table</code> (<code>$9000</code>). The large pictures are listed by the codes <code>large_view_pictures</code> holds, the medium ones by the codes at <code>medium_picture_codes</code> (<code>$9358</code>) that the game reads. The explosion's are sprites, twelve windows of 63 bytes on one run of bytes from <code>$F026</code>, so some share bytes. The targets' pictures are drawn in light blue over the ground's colour, the spy ship over the sea and the radar station over land, the only ground each is shown over; the sights, also light blue, are shown over the sea.</p>
+  </div>
+  <p>The fifteen large pictures fill only 480 bytes at <code>$FE00</code>-<code>$FFDF</code>, the top of memory, under the KERNAL ROM. The four frames make sixty drawings of them, and the tables pick 39 of those for the angles the enemy can be seen from. The spy ship and the radar station each have eight pictures in two sizes, chosen by our own roll alone, and turned half round for the half of the roll that turns the view over. The explosion has twelve pictures, but its sequence never goes past picture 10, so picture 11 is never seen.</p>
+</section>
+
+<section id="place">
+  <p class="fig">03 · How a picture is placed</p>
+  <h2 class="t">A picture moves inside its cells two pixels and one row at a time</h2>
+  <p class="lede">The enemy's large picture at each fine position. Move it across and down to see it shifted inside the three by three cells it is drawn into.</p>
+  <div class="plate">
+    <div class="gx-place">
+      <canvas id="pl-cv" width="192" height="192" aria-label="The enemy's large picture shifted inside nine character cells"></canvas>
+      <div>
+        <label>Across, in double-width pixels: <b id="pl-xv">0</b><input type="range" id="pl-x" min="0" max="3" value="0"></label>
+        <label>Down, in rows: <b id="pl-yv">0</b><input type="range" id="pl-y" min="0" max="7" value="0"></label>
+        <p class="a2-out" id="pl-out"></p>
+      </div>
+    </div>
+    <p class="cap"><code>shape_shift</code> (<code>$15DB</code>) run on the kit's 6502 over the picture <code>shape_build</code> made, with the fine position in the top bits of <code>$05</code> (down) and <code>$06</code> (across), as <code>project_to_view</code> (<code>$3948</code>) leaves them. The lines mark the character cells.</p>
+  </div>
+  <p>The view is characters, so a picture can only go where there are characters to draw it in. <code>project_to_view</code> gives each object a cell and a fine position inside it. <code>shape_shift</code> moves the picture down by the fine row, 0 to 7, and right by 0 to 3 double-width pixels, one bit pair at a time, through the cells to its right. To do it fast for the large size it swaps the 72-byte picture into zero page and back. <code>shape_draw</code> (<code>$16A7</code>) then gives each cell the picture touches a character of its own, from <code>$E5</code> up for the enemy: the eight bytes of the view character already in that cell, with the picture laid over them through a mask (<code>$9F00</code>), so the sky or the horizon shows round the jet. The finished view is drawn into the character set that is not on show, and the interrupt swaps the two (<code>flip_screens</code>, <code>$4C5C</code>), so the picture is never seen half built.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+(async function () {
+  const $ = id => document.getElementById(id);
+  const say = msg => { for (const id of ['gx-castmsg', 'gx-tablemsg', 'pl-out']) $(id).textContent = msg; };
+  const missing = [['c64.js', typeof C64], ['cpu6502.js', typeof C64Cpu]].filter(([, t]) => t === 'undefined').map(([f]) => f);
+  if (missing.length) return say('These pictures need the built site (missing: ' + missing.join(', ') + ').');
+  let G;
+  try { G = await C64.load('listing.json'); } catch (e) { return say('The listing did not load: ' + e.message); }
+  const hex = C64.hex, m = G.ram.slice(), cpu = new C64Cpu.CPU(m);
+  const call = (pc, regs = {}, hooks) => cpu.call(pc, Object.assign({ sp: 0xF0 }, regs), hooks ? { hooks } : undefined);
+  const rgb = c => [1, 3, 5].map(i => parseInt(C64.PAL[c].slice(i, i + 2), 16));
+  let land = false;
+  const view = (cell = land ? 7 : 6) => [0, 14, 1, cell].map(rgb);   // $D021, $D022, $D023 and the cell colour
+
+  // a multicolour picture held column by column (rows bytes a column), onto a canvas: bit pair 0 shows bg
+  function mc(buf, cols, rows, bg = 1, cell) {
+    const cs = view(cell), img = new ImageData(cols * 8, rows);
+    for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) {
+      const b = buf[c * rows + r];
+      for (let k = 0; k < 4; k++) {
+        const p = (b >> (6 - 2 * k)) & 3, col = cs[p || bg];
+        for (const dx of [0, 1]) { const i = (r * cols * 8 + c * 8 + k * 2 + dx) * 4; img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2]; img.data[i + 3] = 255; }
+      }
+    }
+    return img;
+  }
+  // the zero page and records enemy_in_view reads: our plane 0 ($D1), the enemy 1 ($55); headings $02EA,
+  // rolls $0272 and pitches $0274 (0-63 and signed)
+  function aim(h, er, ep, our = 0, op = 0) {
+    m[0xD1] = 0; m[0x55] = 1; m[0x02EA] = 0; m[0x02EB] = h & 255; m[0x0272] = our & 255; m[0x0273] = er & 255;
+    m[0x0274] = op & 255; m[0x0275] = ep & 255; m[5] = m[6] = m[7] = m[8] = 0;
+  }
+  const fine = (x, y) => { m[6] = x << 6; m[5] = y << 5; };
+  // the large picture: enemy_in_view from its lookup ($2D0D) to the call of shape_build ($2DED)
+  function large(h, er, ep, fx = 0, fy = 0) {
+    aim(h, er, ep); m[0x5E] = 1;
+    let at = null;
+    call(0x2D0D, {}, { 0x2DED: c => { at = { a: c.a, y: c.y, x: c.x }; return true; } });
+    fine(fx, fy); call(0x1581, at); call(0x15DB);
+    return { buf: m.slice(0x0420, 0x0468), ptr: at.a | at.y << 8, frame: at.x, code: m[0xA0] };
+  }
+  // the medium picture: from the call of medium_view ($2E09) to the call of shape_build ($2E1A)
+  function medium(h, er, ep) {
+    aim(h, er, ep); m[0x5E] = 0;
+    let at = null;
+    call(0x2E09, {}, { 0x2E1A: c => { at = { a: c.a, y: c.y, x: c.x }; return true; } });
+    call(0x1581, at); call(0x15DB);
+    return { buf: m.slice(0x0420, 0x0440), ptr: at.a | at.y << 8, frame: at.x, code: m[0xA0] };
+  }
+  const dot = (size, colour) => { m[5] = m[6] = 0; call(0x5FD4, { a: size, x: colour }); return m.slice(0xEC, 0xF4); };
+  // a picture from a pointer and a frame, at size $5E, built and shifted as the game does
+  function built(ptr, frame, size) {
+    m[0x5E] = size; m[5] = m[6] = 0;
+    call(0x1581, { a: ptr & 255, y: ptr >> 8, x: frame }); call(0x15DB);
+    return size ? { buf: m.slice(0x0420, 0x0468), cols: 3, rows: 24 } : { buf: m.slice(0x0420, 0x0440), cols: 2, rows: 16 };
+  }
+  // the explosion's sprite pictures: multicolour, $D025 orange, $D026 yellow, the sprite brown
+  const SPR = [null, rgb(8), rgb(9), rgb(7)];
+  function sprite(a) {
+    const img = new ImageData(24, 21), sky = view()[1];
+    for (let r = 0; r < 21; r++) for (let x = 0; x < 12; x++) {
+      const b = m[a + r * 3 + (x >> 2)], p = (b >> (6 - 2 * (x & 3))) & 3, col = p === 1 ? SPR[1] : p === 2 ? SPR[2] : p === 3 ? SPR[3] : sky;
+      for (const dx of [0, 1]) { const i = (r * 24 + x * 2 + dx) * 4; img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2]; img.data[i + 3] = 255; }
+    }
+    return img;
+  }
+  // the first cols columns and rows rows of a picture held in columns of colRows bytes
+  const crop = (buf, colRows, cols, rows) => { const out = new Uint8Array(cols * rows); for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) out[c * rows + r] = buf[c * colRows + r]; return out; };
+  const word = (lo, k) => m[lo + 2 * k] | m[lo + 2 * k + 1] << 8;
+  const name = a => G.names.get(a) || hex(a);
+  const about = a => { const r = G.listing.records.find(r => r.a === a); return r && r.c ? r.c : ''; };
+
+  // --- 01: everything that moves --------------------------------------------------------------------------
+  const PITCH = [['level', 0], ['climbing', 0x10], ['steep climb', 0x20], ['diving', 0xF0], ['steep dive', 0xD0]];
+  const cast = $('gx-cast'), shown = [];
+  function figure(cap, px, opts = {}) {
+    const fig = document.createElement('figure'), cv = document.createElement('canvas');
+    if (opts.wide) fig.className = 'wide';
+    if (opts.bar) fig.append(opts.bar);
+    fig.append(cv); fig.insertAdjacentHTML('beforeend', cap); cast.append(fig);
+    const f = { cv, ctx: cv.getContext('2d'), px, frames: [], says: [] };
+    f.show = k => { const img = f.frames[k % f.frames.length]; if (cv.width !== img.width || cv.height !== img.height) { cv.width = img.width; cv.height = img.height; cv.style.width = img.width * px + 'px'; } f.ctx.putImageData(img, 0, 0); };
+    shown.push(f); return f;
+  }
+  const bar = (labels, on, pick) => {
+    const d = document.createElement('div'); d.className = 'gx-row';
+    labels.forEach((l, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'a2-btn'; b.textContent = l; b.setAttribute('aria-pressed', i === on); b.onclick = () => { d.querySelectorAll('button').forEach((x, j) => x.setAttribute('aria-pressed', j === i)); pick(i); }; d.append(b); });
+    return d;
+  };
+  let bigPitch = 0, midPitch = 0;
+  const big = figure('<b>The enemy, nearest</b>: its heading against ours turning a full circle, eight steps an eighth, each step a large picture chosen by <code>enemy_in_view</code>.', 5,
+    { wide: true, bar: bar(PITCH.map(p => p[0]), 0, i => { bigPitch = i; makeAll(); }) });
+  const mid = figure('<b>The enemy, nearer</b>: the medium picture for the same circle, by <code>medium_view</code> (<code>$352C</code>).', 5,
+    { wide: true, bar: bar(PITCH.slice(0, 4).map(p => p[0]), 0, i => { midPitch = i; makeAll(); }) });
+  const far = figure('<b>The enemy, far off</b>: a dot at range 3 to 5, two rows at range 2, in the cell colour.', 6);
+  const mis = figure('<b>A missile</b> coming in: a dot, then two blocks as its range falls, light blue and the cell colour on alternate passes.', 6);
+  const ship = figure('<b>The spy ship</b>, close, drawn over the sea, as our roll turns the view right round.', 5);
+  const radar = figure('<b>The radar station</b>, close, drawn over land, for the same roll.', 5);
+  const boom = figure('<b>An explosion near at hand</b>, closer than range 6: the counter runs from 1 to <code>$1F</code>, pictures 1, 2, 1 and 0 five times, then out to 4, back, and on to 5.', 4);
+  const hit = figure('<b>An explosion farther off</b>, or a missile\'s hit: the counter runs from <code>$20</code> to <code>$27</code>, pictures 6 to 10 and back to 9.', 4);
+  const box = figure('<b>The missile sight\'s box</b>: one of four pictures by which way the enemy sits in its cell (<code>lock_box_shapes</code>, <code>$71E8</code>), in light blue, which shows against the ground and the enemy but not the sky.', 4);
+  function makeAll() {
+    big.frames = []; big.says = []; mid.frames = []; mid.says = [];
+    for (let h = 0; h < 256; h += 4) {
+      const L = large(h, 0, PITCH[bigPitch][1]); big.frames.push(mc(crop(L.buf, 24, 2, 16), 2, 16));
+      big.says.push(`heading ${h * 360 / 256 | 0}°: picture ${(L.ptr - 0xFE00) / 32} (${hex(L.ptr)}), frame ${L.frame}`);
+      const M = medium(h, 0, PITCH[midPitch][1]); mid.frames.push(mc(crop(M.buf, 16, 1, 8), 1, 8));
+    }
+    far.frames = [0, 0, 0, 0, 1, 1, 1, 1].map(s => mc(dot(s, 1), 1, 8));
+    mis.frames = []; for (let d = 255; d >= 0; d -= 8) { const s = m[0x6596 + (d >> 5)]; mis.frames.push(mc(dot(s, (d >> 3) & 1), 1, 8)); }
+    ship.frames = []; radar.frames = [];
+    for (let r = 0; r < 64; r += 2) {
+      const code = m[0x7570 + r], k = code & 15, fr = code >> 4;
+      const S = built(word(0x7830, k), fr, 1); ship.frames.push(mc(crop(S.buf, 24, 2, 16), 2, 16, 3, 6));
+      const R = built(word(0x7850, k), fr, 1); radar.frames.push(mc(crop(R.buf, 24, 2, 16), 2, 16, 3, 7));
+    }
+    const seq = from => { const out = []; for (let c = from; c <= (from === 1 ? 0x1F : 0x27); c++) out.push(sprite(word(0x4DB9, m[0x4DD1 + c]))); return out; };
+    boom.frames = seq(1); hit.frames = seq(0x20);
+    box.frames = [0, 1, 2, 3].map(k => mc(m.slice(word(0x71E8, k), word(0x71E8, k) + 72), 3, 24, 3));
+    for (const f of shown) f.show(pass);
+  }
+  let pass = 0, running = true;
+  const tick = () => { pass++; for (const f of shown) f.show(pass); $('gx-stat').textContent = big.says[pass % big.says.length]; };
+  makeAll(); tick();
+  const RATE = 1000 * 500 / 50 / 156;                 // 156 passes in 500 frames of play
+  let timer = setInterval(tick, RATE);
+  $('gx-run').onclick = () => { running = !running; $('gx-run').textContent = running ? '❚❚ Pause' : '▶ Play'; $('gx-run').setAttribute('aria-pressed', running); clearInterval(timer); if (running) timer = setInterval(tick, RATE); };
+  $('gx-step').onclick = () => { if (running) $('gx-run').onclick(); tick(); };
+  $('gx-land').onclick = () => { land = !land; $('gx-land').setAttribute('aria-pressed', land); makeAll(); drawTable(); place(); };
+
+  // --- 02: the pictures --------------------------------------------------------------------------------------
+  const FRAME = ['as stored', 'mirrored', 'upside down', 'turned half round'];
+  const tiles = $('gx-table');
+  function group(title, items) {
+    const g = document.createElement('div'); g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
+    for (const it of items) {
+      const b = document.createElement('button'), cv = document.createElement('canvas'), img = it.img();
+      b.type = 'button'; cv.width = img.width; cv.height = img.height; cv.style.width = img.width * (it.px || 3) + 'px';
+      cv.getContext('2d').putImageData(img, 0, 0);
+      const s = document.createElement('span'); s.textContent = it.short; b.append(cv, s);
+      b.onclick = () => { tiles.querySelectorAll('button.on').forEach(e => e.classList.remove('on')); b.classList.add('on'); $('gx-info').innerHTML = it.info(); };
+      g.lastChild.append(b);
+    }
+    tiles.append(g);
+  }
+  const DESC = (a, extra) => { const n = G.names.get(a); return `<code>${hex(a)}</code>${n ? ` (<code>${n}</code>)` : ''}${extra}`; };
+  function drawTable() {
+    tiles.textContent = '';
+    // the large pictures by the codes the lookup can give
+    const codes = [...new Set(Array.from(m.slice(0x75B0, 0x75B0 + 88)))].sort((a, b) => (a & 15) - (b & 15) || (a >> 4) - (b >> 4));
+    group('The enemy, nearest: each picture and frame the lookup can give', codes.map(c => ({
+      short: `${c & 15}.${c >> 4}`, px: 3,
+      img: () => { const B = built(word(0x77F8, c & 15), c >> 4, 1); return mc(crop(B.buf, 24, 2, 16), 2, 16); },
+      info: () => `<b>Large picture ${c & 15}, ${FRAME[c >> 4]}</b> (code ${hex(c, 2)}): ${DESC(word(0x77F8, c & 15), '')}, two columns of 16 rows, built three cells by three.`,
+    })));
+    const mids = [...new Set(Array.from({ length: 20 }, (_, k) => m[0x9358 + m[0x66D7 + k]]))].sort((a, b) => a - b);
+    group('The enemy, nearer: each medium picture the game reads', mids.map(c => ({
+      short: `${c >> 4}.${c & 15}`, px: 4,
+      img: () => { const B = built(word(0x6576, c >> 4), c & 15, 0); return mc(crop(B.buf, 16, 1, 8), 1, 8); },
+      info: () => `<b>Medium picture ${c >> 4}, ${FRAME[c & 15]}</b> (code ${hex(c, 2)}): the byte set ${DESC(word(0x6576, c >> 4), '')}, one cell of eight bytes.`,
+    })));
+    for (const [title, lo, size, cell] of [['The spy ship, one cell', 0x7820, 0, 6], ['The spy ship, close', 0x7830, 1, 6], ['The radar station, one cell', 0x7840, 0, 7], ['The radar station, close', 0x7850, 1, 7]])
+      group(title, Array.from({ length: 8 }, (_, k) => ({
+        short: String(k), px: size ? 3 : 4,
+        img: () => { const B = built(word(lo, k), 0, size); return size ? mc(crop(B.buf, 24, 2, 16), 2, 16, 3, cell) : mc(crop(B.buf, 16, 1, 8), 1, 8, 3, cell); },
+        info: () => `<b>${title}, picture ${k}</b>: ${DESC(word(lo, k), '')}${size ? ', 32 bytes' : ', 8 bytes'}. ${about(lo)}`,
+      })));
+    group('The explosion\'s sprite pictures', Array.from({ length: 12 }, (_, k) => ({
+      short: String(k), px: 3, img: () => sprite(word(0x4DB9, k)),
+      info: () => `<b>Explosion picture ${k}</b>: the 63 bytes from <code>${hex(word(0x4DB9, k))}</code>${k === 11 ? ', which no step of the sequence chooses' : ''}.`,
+    })));
+    group('The sights', [
+      ...[0, 1, 2, 3].map(k => ({ short: 'box ' + k, px: 3, img: () => mc(m.slice(word(0x71E8, k), word(0x71E8, k) + 72), 3, 24, 3),
+        info: () => `<b>The missile sight's box ${k}</b>: ${DESC(word(0x71E8, k), '')}, three cells by three. ${about(0x71E8)}` })),
+      { short: 'gun sight', px: 3, img: () => mc(m.slice(0x95C8, 0x95E8), 2, 16, 3), info: () => `<b>The gun sight</b>: ${DESC(0x95C8, '')}. ${about(0x95C8)}` },
+    ]);
+  }
+  drawTable();
+
+  // --- 03: how a picture is placed ------------------------------------------------------------------------------
+  const pcv = $('pl-cv'), pctx = pcv.getContext('2d');
+  function place() {
+    const x = +$('pl-x').value, y = +$('pl-y').value;
+    $('pl-xv').textContent = x; $('pl-yv').textContent = y;
+    const L = large(0x30, 0, 0, x, y), img = mc(L.buf, 3, 24), S = 8;
+    pcv.width = 24 * S; pcv.height = 24 * S;
+    const tmp = document.createElement('canvas'); tmp.width = 24; tmp.height = 24; tmp.getContext('2d').putImageData(img, 0, 0);
+    pctx.imageSmoothingEnabled = false; pctx.drawImage(tmp, 0, 0, 24 * S, 24 * S);
+    pctx.strokeStyle = 'rgba(255,255,255,0.7)'; pctx.lineWidth = 1;
+    for (let k = 1; k < 3; k++) { pctx.beginPath(); pctx.moveTo(k * 8 * S + 0.5, 0); pctx.lineTo(k * 8 * S + 0.5, 24 * S); pctx.stroke(); pctx.beginPath(); pctx.moveTo(0, k * 8 * S + 0.5); pctx.lineTo(24 * S, k * 8 * S + 0.5); pctx.stroke(); }
+    $('pl-out').textContent = `$06 = ${hex(x << 6, 2)} and $05 = ${hex(y << 5, 2)}: the picture ${x} double-width pixel${x === 1 ? '' : 's'} right and ${y} row${y === 1 ? '' : 's'} down of its cell.`;
+  }
+  $('pl-x').oninput = place; $('pl-y').oninput = place; place();
+})();
+</script>

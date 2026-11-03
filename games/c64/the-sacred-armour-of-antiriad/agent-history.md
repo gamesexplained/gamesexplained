@@ -293,3 +293,19 @@ the collision's interrupt now comes at `$8A25`, outside `scenery_hits`.
 From the 1,187th to the 1,267th, in room `$09`, the suit has 2 points
 less: a collision at the top of the play area that the old machine
 never raised. What VICE did there was not checked.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab, to the standard every game with moving figures now has.
+It runs all 95 animations in `anim_ptrs` at once, each stepped as
+`step_animation` steps it, with the panel's sprites as `panel_sprites`
+sets them; draws all 176 sprite pictures, `$10`-`$BF`, with what shows
+each (every one is shown by something); and shows a picture dissolving
+through the nine `dissolve_masks` and appearing again. A switch sets the
+shared multicolours to Tal's on foot or in the suit, so the creatures in
+multicolour change as they do in the game.
+
+How it works had a viewer of Tal's and the suit's animations and a grid
+of the 25 creatures with their points and damage. Both moved to the new
+tab, which now has every animation rather than the left-facing half, and
+How it works keeps the rules in its prose, with a link.

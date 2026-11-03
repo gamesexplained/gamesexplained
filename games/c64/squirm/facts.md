@@ -111,6 +111,7 @@ above `$3F48` is written.
 | `$4B`, `$4C`, `$4D` | the value of a collected treasure: 100, 10, nothing | |
 | `$4E`-`$55` | eight frames of a spinning figure; `$51` is the player, `$4E`-`$50` the lives | `rotate_spinner`, `$2508` |
 | `$5A` | TK | |
+| `$A0` | a solid block, the block alphabet's space, in the title and the status lines | |
 | `$5B` | a box, for the name entry | |
 | `$5E`-`$7F`, `$9B`-`$9F`, `$A1`-`$AF` | the leftover assembler's opcode table, never drawn | |
 

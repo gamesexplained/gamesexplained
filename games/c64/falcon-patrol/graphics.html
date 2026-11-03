@@ -1,0 +1,337 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Falcon Patrol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+p{max-width:64ch}
+.hero .eyebrow{max-width:none}   /* the eyebrow is a <p>; the measure cap would box it left of centre */
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+button,.tog{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;user-select:none}
+button:hover,.tog:hover{border-color:var(--violet);color:var(--ink)}
+button.on,.tog.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+canvas{display:block;image-rendering:pixelated;max-width:100%;border-radius:6px}
+table{border-collapse:collapse;font-family:var(--fm);font-size:13px;margin:6px 0 0;width:100%}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft)}
+th{color:var(--ink-mute);font-weight:500;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
+td.n{color:var(--amber)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.byte{font-family:var(--fm);font-size:20px;letter-spacing:.14em;color:var(--amber)}
+.bits{display:flex;gap:5px;margin:10px 0 0;flex-wrap:wrap}
+.bit{font-family:var(--fm);font-size:11px;width:58px;text-align:center;padding:6px 0;border-radius:6px;
+ border:1px solid var(--line);background:var(--surface-2);color:var(--ink-mute)}
+.bit.set{background:#2a1f10;border-color:var(--amber);color:var(--amber)}
+.bit.forced{background:#3a1520;border-color:var(--coral);color:var(--coral)}
+.note{font-size:14px;color:var(--ink-soft);margin-top:14px}
+.tag{font-family:var(--fm);font-size:11px;padding:2px 7px;border-radius:5px;background:var(--surface-2);
+ border:1px solid var(--line);color:var(--ink-mute);margin-left:6px}
+.glyphcv{cursor:crosshair}
+ul{color:var(--ink-soft);max-width:64ch;font-size:15.5px}
+li{margin:0 0 10px}
+.q{border-left:2px solid var(--violet);padding:2px 0 2px 16px;margin:18px 0;color:var(--ink-soft);font-style:normal}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile .gx-cvs{display:flex;gap:4px;flex-wrap:wrap}
+.gx-tile canvas{display:block;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:140px;contain:inline-size}
+.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1983 · Virgin Games</p>
+  <h1>Falcon Patrol</h1>
+  <p class="sub">Eight sprites carry everything that flies: the player's jet, four enemy jets, two bombs and a puff of smoke. The jet turns by stepping through seven frames, and at full speed the game copies one of ten more into the end of that row as it climbs and dives.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every sprite, at the game's thirty ticks a second</h2>
+  <p class="lede">The game moves on a timer, not the screen: about 30 ticks a second. Here each shape steps as the game's own code steps it, in the colours the game gives it, over the sky's light blue.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One tick</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"></div>
+    <p class="cap">Drawn from the sprite blocks in the listing (<code>$2000</code>-<code>$27FF</code>, blocks <code>$80</code>-<code>$9F</code>) and the bank at <code>$2B00</code>, in the colours of the sprite register image at <code>$4310</code>: the player blue, the enemies red, the bombs black. A wreck turns white and multicolour, and sprite 7, the smoke, is the one sprite that is multicolour from the start (<code>$D01C</code> = <code>$80</code>). The turns, the stick and the random frames are played here by a script, since a page has no pilot.</p>
+  </div>
+  <p>The player's jet stays in the middle of the screen while the world moves round it, so the jet's whole repertoire is about facing. Frames <code>$80</code> to <code>$86</code> run from nose-left through head-on to nose-right, and <code>animate_bank_attitude</code> (<code>$5600</code>) steps the sprite pointer one frame every fourth tick towards the way the jet is moving. At full speed, <code>animate_player_bank</code> (<code>$5A20</code>) copies one of five pictures from the bank at <code>$2B00</code> over the end frame, <code>$80</code> or <code>$86</code>, a picture every eighth tick, so the side view rolls its wings as the jet climbs or dives. The bank is never pointed at; its frames reach the screen only by being copied.</p>
+  <p>An enemy jet has the same idea in five frames a side: <code>enemy_update_slot</code> (<code>$4340</code>) moves its pointer one step every eighth tick, towards level flight at <code>$96</code> or <code>$9B</code> or away from it as its manoeuvre wants. Shot down, it turns white and multicolour and shows one of the first four debris frames, chosen afresh every tick from the sound chip's noise (<code>$43BC</code>). The player's own wreck falls with smoke over it, then flickers through all eight debris frames the same way and thins out to nothing (<code>crash_sequence</code>, <code>$5690</code>).</p>
+</section>
+
+<section id="blocks">
+  <p class="fig">02 · The sprite blocks</p>
+  <h2 class="t">Thirty-two sprite blocks, and ten pictures the game copies in</h2>
+  <p class="lede">All the shapes sit together in the first 16K the video chip sees. Two of the 32 blocks are never shown.</p>
+  <div class="plate">
+    <canvas id="gx-sheet" class="gx-sheet" width="832" height="152" aria-label="Sprite blocks $80 to $9F, then the ten pictures of the bank at $2B00"></canvas>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a block to see what uses it.</p>
+    <p class="cap">Blocks <code>$80</code>-<code>$9F</code> (<code>$2000</code>-<code>$27FF</code>), sixteen to a row, then the bank's ten pictures (<code>$2B00</code>-<code>$2D7F</code>), each drawn as the game shows it. The bar under a picture says what uses it; a picture with no bar is never shown.</p>
+  </div>
+  <p>The video chip looks at the bottom 16K of memory (<code>$DD00</code> = <code>$C7</code>): the screen at <code>$0400</code>, the 256 characters at <code>$3000</code> (<code>$D018</code> = <code>$1C</code>), and these sprite blocks between them. The scenery, the radar and the panel are all characters, in three bands of colour that a raster interrupt sets three times a frame; the <a href="index.html">How it works</a> tab draws the screen and every character. The player's missiles are characters too, glyphs <code>$12</code> and <code>$13</code>, which is why hitting anything with them depends on the video chip's sprite-to-background collision rather than on two sprites meeting.</p>
+  <p>Block <code>$87</code> is a scatter of dots like the debris frames, but nothing points a sprite at it: the turn stops at <code>$86</code> and the debris starts at <code>$88</code>. Block <code>$9F</code> holds a single stray byte. Block <code>$90</code>, the first of the smoke's four, is blank, and the game also uses it as a signal: the player's life ends once the wreck's pointer has counted up to it (<code>$5640</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+'use strict';
+const HAS = typeof C64 !== 'undefined';
+const $ = id => document.getElementById(id);
+const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+const TICK_HZ = 985248 / 32768;   // CIA 2 timer B: about 30.1 ticks a second
+function missing(el) {
+  el.insertAdjacentHTML('afterend', '<p class="gx-miss">These pictures are drawn by the site\'s shared script, which the built site serves.</p>');
+}
+if (!HAS) { missing($('gx-cast')); missing($('gx-sheet')); return; }
+const PAL = C64.PAL;
+
+// The machine's memory as a life starts: reset_player_sprite_shapes ($5BA0) puts the level-flight
+// pictures from the bank ($2B80, $2CC0) into blocks $80 and $86
+let m, V;
+// V: the sprite register image at $4310 ($D000-$D02E) that load_sprite_registers ($5032) copies
+const SKY = () => V[0x21], MC1 = () => V[0x25], MC2 = () => V[0x26];
+// a shape: hi-res in one colour, or multicolour with the shared colours, over the sky
+const shapes = new Map();
+function shape(addr, colour, multi, sc = 2) {
+  const key = addr + ':' + colour + ':' + (multi ? 1 : 0) + ':' + sc;
+  if (!shapes.has(key)) {
+    const cv = document.createElement('canvas'); cv.width = 24 * sc; cv.height = 21 * sc;
+    const x = cv.getContext('2d'), d = m.subarray(addr, addr + 63);
+    x.fillStyle = PAL[SKY()]; x.fillRect(0, 0, cv.width, cv.height);
+    if (multi) C64.drawSpriteMC(x, d, 0, 0, sc, PAL[colour], PAL[MC1()], PAL[MC2()]);
+    else C64.drawSprite(x, d, 0, 0, sc, PAL[colour]);
+    shapes.set(key, cv);
+  }
+  return shapes.get(key);
+}
+const block = b => 0x2000 + 64 * (b - 0x80);
+
+// ---- how each one steps, a tick at a time ----
+// a list of pictures, one every n ticks
+function seq(list, n) {
+  let i = 0, k = 0;
+  return { pic: () => list[i], step() { if (++k >= n) { k = 0; i = (i + 1) % list.length; } } };
+}
+// animate_bank_attitude ($5600): every fourth tick, one block towards $80, $83 or $86 by vel_x;
+// here the stick is pushed right, let go, pushed left and let go
+function yaw(colour) {
+  let b = 0x83, t = 0;
+  return {
+    pic: () => [block(b), colour, false],
+    step() {
+      const ph = Math.floor(t / 45) % 4, v = ph === 0 ? 1 : ph === 2 ? -1 : 0;
+      if (!(t++ & 3)) {
+        const to = v > 0 ? 0x86 : v < 0 ? 0x80 : 0x83;
+        if (b < to) b++; else if (b > to) b--;
+      }
+    },
+  };
+}
+// animate_player_bank ($5A20): every eighth tick at full speed, attitude_step ($99) one towards +2
+// climbing, -2 diving or 0 level, and the picture at the set's level frame + $40 a step copied in
+function bank(level, colour) {
+  let s = 0, t = 0;
+  return {
+    pic: () => [level + 64 * s, colour, false],
+    step() {
+      const ph = Math.floor(t / 48) % 4, to = ph === 0 ? 2 : ph === 2 ? -2 : 0;
+      if (!(t++ & 7)) { if (s < to) s++; else if (s > to) s--; }
+    },
+  };
+}
+// crash_sequence ($5690) once the wreck is down: a debris block $88 + (noise AND 7) every tick,
+// then, once the crash sound has reached its end, one block on every eighth tick until $90
+function wreck() {
+  let b = 0x88, t = 0;
+  return {
+    pic: () => [block(b), 1, true],
+    step() {
+      const p = t++ % 120;
+      if (p < 48) b = 0x88 + (Math.random() * 8 | 0);
+      else if (b < 0x90 && !(t & 7)) b++;
+      else if (p === 119) b = 0x88;
+    },
+  };
+}
+// enemy_update_slot ($4340): every eighth tick, one block towards the attitude it wants
+function enemy(lo, colour) {
+  const path = [2, 3, 4, 3, 2, 1, 0, 1];
+  let i = 0, t = 0;
+  return { pic: () => [block(lo + path[i]), colour, false], step() { if (!(++t & 7)) i = (i + 1) % path.length; } };
+}
+
+function cast() {
+  const P = V[0x27], E = V[0x28], B = V[0x2C], S = V[0x2E];
+  return [
+    { title: 'The player\'s jet', note: 'Sprite 0, always in the middle of the screen.', tiles: [
+      { label: 'turning: blocks $80-$86, a step every 4 ticks', a: yaw(P) },
+      { label: 'at full speed nose-left: block $80 redrawn from $2B00-$2C00, a picture every 8 ticks', a: bank(0x2B80, P) },
+      { label: 'at full speed nose-right: block $86 redrawn from $2C40-$2D40', a: bank(0x2CC0, P) },
+      { label: 'shot down: debris $88-$8F, then thinning to $90', a: wreck() },
+      { label: 'the smoke over a falling wreck: sprite 7, $90-$93 a tick each', a: { ...seq([0x90, 0x91, 0x92, 0x93].map(b => [block(b), S, true]), 1) } },
+    ]},
+    { title: 'Enemy jets', note: 'Sprites 1 to 4. A wave flies one way, so all its jets use one set of five.', tiles: [
+      { label: 'nose left: blocks $94-$98, level at $96, a step every 8 ticks', a: enemy(0x94, E) },
+      { label: 'nose right: blocks $99-$9D, level at $9B', a: enemy(0x99, E) },
+      { label: 'shot down: $88-$8B, one picked by noise every tick', a: { pic: () => [block(0x88 + (Math.random() * 4 | 0)), 1, true], step() {} } },
+    ]},
+    { title: 'Bombs', note: 'Sprites 5 and 6, both pointed at one block at the cold start and never changed.', tiles: [
+      { label: 'block $9E', a: seq([[block(0x9E), B, false]], 1) },
+    ]},
+    { title: 'Blocks nothing shows', note: 'In white here; no sprite is ever pointed at them.', tiles: [
+      { label: 'block $87, a scatter of dots', a: seq([[block(0x87), 1, false]], 1) },
+      { label: 'block $9F, one stray byte', a: seq([[block(0x9F), 1, false]], 1) },
+    ]},
+  ];
+}
+
+// ---- section 01, running ----
+const view = { tiles: [], t: 0, playing: true, last: 0, acc: 0 };
+function build() {
+  const box = $('gx-cast'); box.innerHTML = ''; view.tiles = [];
+  for (const g of cast()) {
+    const d = document.createElement('div'); d.className = 'gx-group';
+    d.innerHTML = '<h3>' + g.title + '</h3><p>' + g.note + '</p>';
+    const row = document.createElement('div'); row.className = 'gx-tiles';
+    for (const t of g.tiles) {
+      const tile = document.createElement('div'); tile.className = 'gx-tile';
+      const cvs = document.createElement('div'); cvs.className = 'gx-cvs';
+      const cv = document.createElement('canvas'); cv.width = 72; cv.height = 63; cvs.appendChild(cv);
+      tile.appendChild(cvs);
+      const s = document.createElement('span'); s.textContent = t.label; tile.appendChild(s);
+      row.appendChild(tile);
+      view.tiles.push({ a: t.a, ctx: cv.getContext('2d'), shown: '' });
+    }
+    d.appendChild(row); box.appendChild(d);
+  }
+  draw();
+}
+function draw() {
+  for (const t of view.tiles) {
+    const p = t.a.pic(), k = p.join(':');
+    if (k === t.shown) continue;
+    t.shown = k; t.ctx.drawImage(shape(p[0], p[1], p[2], 3), 0, 0);
+  }
+  $('gx-stat').textContent = 'tick ' + view.t;
+}
+function step() { for (const t of view.tiles) t.a.step(); view.t++; }
+function tick(t) {
+  if (!view.playing) return;
+  view.acc += Math.min(0.25, (t - view.last) / 1000) * TICK_HZ; view.last = t;
+  while (view.acc >= 1) { step(); view.acc--; }
+  draw();
+  requestAnimationFrame(tick);
+}
+function play(on) {
+  view.playing = on; $('gx-run').textContent = on ? 'Pause' : 'Play';
+  if (on) { view.last = performance.now(); view.acc = 0; requestAnimationFrame(tick); }
+}
+$('gx-run').onclick = () => play(!view.playing);
+$('gx-step').onclick = () => { play(false); step(); draw(); };
+
+// ---- section 02: every block and what uses it ----
+const KINDS = {
+  player: ['#5b8def', 'the player\'s jet'], bank: ['#56d4dd', 'copied into the jet at full speed'], debris: ['#f0a020', 'wrecks'],
+  smoke: ['#a0a0a0', 'the smoke'], enemy: ['#ff7a6b', 'enemy jets'], bomb: ['#c678dd', 'bombs'],
+};
+$('gx-key').innerHTML = Object.values(KINDS).map(([c, s]) => '<span><i style="background:' + c + '"></i>' + s + '</span>').join('');
+function uses() {
+  const P = V[0x27], E = V[0x28], B = V[0x2C], S = V[0x2E], out = [];
+  for (let b = 0x80; b <= 0x9F; b++) {
+    const u = { addr: block(b), name: 'block ' + hex(b) + ', at ' + hex(block(b), 4), kinds: [], text: '', colour: 1, multi: false };
+    if (b <= 0x86) { u.kinds = ['player']; u.colour = P; u.text = 'the player\'s jet turning' + (b === 0x80 || b === 0x86 ? ', redrawn from the bank at full speed' : b === 0x83 ? ', head-on' : ''); }
+    else if (b >= 0x88 && b <= 0x8F) { u.kinds = ['debris']; u.colour = 1; u.multi = true; u.text = b <= 0x8B ? 'debris of an enemy or of the player' : 'debris of the player\'s wreck'; }
+    else if (b >= 0x90 && b <= 0x93) { u.kinds = ['smoke']; u.colour = S; u.multi = true; u.text = b === 0x90 ? 'the smoke, blank; also where the player\'s wreck ends' : 'the smoke over a falling wreck'; if (b === 0x90) u.kinds.push('debris'); }
+    else if (b >= 0x94 && b <= 0x9D) { u.kinds = ['enemy']; u.colour = E; u.text = 'an enemy jet, nose ' + (b <= 0x98 ? 'left' : 'right') + (b === 0x96 || b === 0x9B ? ', level' : ''); }
+    else if (b === 0x9E) { u.kinds = ['bomb']; u.colour = B; u.text = 'the bombs'; }
+    else u.text = 'never shown';
+    out.push(u);
+  }
+  for (let k = 0; k < 10; k++) {
+    const a = 0x2B00 + 64 * k, s = (k % 5) - 2;
+    out.push({ addr: a, name: 'the bank picture at ' + hex(a, 4), kinds: ['bank'], colour: P, multi: false,
+      text: 'copied into block ' + (k < 5 ? '$80, nose left' : '$86, nose right') + ', ' + (s ? (s > 0 ? 'climbing' : 'diving') + ' ' + Math.abs(s) : 'level') });
+  }
+  return out;
+}
+const sheet = $('gx-sheet'), sx = sheet.getContext('2d');
+let U = [];
+const at = i => i < 32 ? [(i % 16) * 52, Math.floor(i / 16) * 48] : [(i - 32) * 52, 104];
+function drawSheet() {
+  sx.clearRect(0, 0, 832, 152);
+  U.forEach((u, i) => {
+    const [x, y] = at(i);
+    sx.globalAlpha = u.kinds.length ? 1 : 0.4;
+    sx.drawImage(shape(u.addr, u.colour, u.multi), x + 2, y + 1);
+    sx.globalAlpha = 1;
+    u.kinds.forEach((k, j) => { const w = 48 / u.kinds.length; sx.fillStyle = KINDS[k][0]; sx.fillRect(x + 2 + j * w, y + 44, w - (j < u.kinds.length - 1 ? 1 : 0), 3); });
+  });
+}
+function readAt(ev) {
+  const b = sheet.getBoundingClientRect();
+  const x = (ev.clientX - b.left) * 832 / b.width, y = (ev.clientY - b.top) * 152 / b.height;
+  const c = Math.floor(x / 52);
+  const i = y < 96 ? Math.floor(y / 48) * 16 + c : y >= 104 && c < 10 ? 32 + c : -1;
+  if (i < 0 || !U[i]) return;
+  $('gx-read').textContent = U[i].name + ': ' + U[i].text + '.';
+}
+sheet.addEventListener('mousemove', readAt);
+sheet.addEventListener('click', readAt);
+
+C64.load('listing.json').then(L => {
+  m = L.ram.slice();
+  V = m.slice(0x4310, 0x4310 + 47);
+  m.copyWithin(0x2000, 0x2B80, 0x2BC0); m.copyWithin(0x2180, 0x2CC0, 0x2D00);
+  build(); U = uses(); drawSheet(); play(true);
+}).catch(e => { $('gx-cast').textContent = 'The listing did not load (' + e.message + ').'; });
+})();
+</script>

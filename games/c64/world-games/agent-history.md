@@ -92,3 +92,21 @@ bar now stripes that window with no green and asks the player to hold,
 and during the judges it turns green once all three lamps are lit.
 `wlHolds` marks the window, and `test_widgets.js` plays every frame of
 it on the game's code at every weight.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+Added `graphics.html`, which draws every pose of the eight events by
+each event's own placing routine on the kit's 6502, then shows one
+pose sprite by sprite. Most events placed their poses straight away;
+four change their shapes during play, and drawing those poses needed
+the event's own routine run first: cliff diving's poses 79 to 174 came
+out blank until `cd_sprite_set` put the right one of its three sets at
+`$7000`, and the end's poses 113 to 130 came out in pieces with the
+dive's set until the water's was used. Slalom's falls and the caber
+toss's walk off were broken the same way until `sl_swap_shapes` and
+`ct_swap_shapes` ran, and log rolling's falls need `lr_unpack_set`.
+Weightlifting drew nothing at first, because `wl_pose_place` never
+turns sprites on; the page turns all eight on, as the arena has them.
+Log rolling's falls place sprites above the lumberjack's place, and the
+chip's y wraps at 256, so the page takes each sprite's place as the
+one nearest the pose's first sprite.

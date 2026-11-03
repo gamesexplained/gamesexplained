@@ -34,3 +34,23 @@ The second is the cheap test that would have caught it in one call:
 sample the program counter several times. A live machine returns a
 scatter of addresses. Mine returned `$41C5` six times in a row, and I read
 that as evidence about the game rather than about the machine.
+
+## 3 November 2026: the Graphics tab
+
+- Aaron Bell asked for Graphics tabs on the older pages that no
+  contributor had shaped. `graphics.html` draws every sprite block from
+  the listing in the colours of the register image at `$4310`, and steps
+  each one at the game's 30.1 ticks a second as the code does: the turn
+  `$80`-`$86` every fourth tick (`$5600`), the bank's ten pictures copied
+  over `$80` and `$86` every eighth tick at full speed (`$5A20`), the
+  enemies' two sets of five every eighth tick (`$4340`), the debris picked
+  from the noise generator every tick (`$43BC`, `$5690`) and the smoke on
+  sprite 7. A sheet of the 32 blocks and the bank marks what uses each.
+- Building it corrected three sets of notes. Blocks `$90`-`$93` were
+  called an exhaust plume: `crash_sequence` (`$5690`) shows them on
+  sprite 7 only while a shot-down aircraft falls, so they are smoke, and
+  the labels are now `sprite_smoke_N`. The debris blocks `$88`-`$8F` and
+  the smoke are shown multicolour (`$D01C` = `$80` from the start, and the
+  code that points a sprite at the debris sets its bit at `$43B4` and
+  `$56B9`), where the notes had them hires. The bomb's note still had a
+  template's placeholders; it now says what the block holds.

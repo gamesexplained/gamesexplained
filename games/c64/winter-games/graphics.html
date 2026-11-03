@@ -1,0 +1,532 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Winter Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.wg-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.wg-shots figure{margin:0}
+.wg-shots img,.wg-pic{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.wg-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:4px}
+.wg-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.wg-tab{border-collapse:collapse;width:100%;font-size:15px}
+.wg-tab th,.wg-tab td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.wg-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.wg-tab td.n{font-family:var(--fm);text-align:right}
+.wg-canvas{width:100%;height:auto;image-rendering:pixelated;display:block;background:#000;border-radius:4px}
+.wg-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
+.wg-ctl label{display:flex;gap:6px;align-items:center}
+.wg-ctl input[type=range]{width:180px}
+.wg-out{font-family:var(--fm);font-size:15px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px}
+.wg-big{font-size:28px;font-weight:700;color:var(--ink)}
+.wg-key{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+.wg-btn{font:inherit;font-size:14px;padding:3px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);cursor:pointer}
+.wg-moves{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.wg-move{display:flex;flex-direction:column;gap:3px;padding:6px 6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink);text-align:center}
+.wg-move:hover{border-color:var(--accent)}
+.wg-move:disabled{opacity:.45;cursor:default}
+.wg-move canvas{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+.wg-move .nm{font-size:14px;font-weight:700;line-height:1.25}
+.wg-move .dl{font-family:var(--fm);font-size:13px;color:var(--ink-mute)}
+.wg-move .dl.up{color:var(--green)}
+.wg-move .dl.down{color:var(--coral)}
+.wg-run{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-family:var(--fb);font-size:14px;color:var(--ink-mute)}
+.wg-chip{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:1px 9px;color:var(--ink)}
+.wg-scroll{overflow-x:auto}
+.wg-bandtab{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+.wg-bandtab th{text-align:left;font-weight:700;font-size:13px;color:var(--ink-soft);padding:4px 8px 4px 0;width:110px;line-height:1.3}
+.wg-bandtab td{text-align:center;padding:3px;font-family:var(--fm);vertical-align:bottom}
+.wg-bandtab td.mid{background:#eaf5ee}
+.wg-bandtab td.bn{font-size:12px;color:var(--ink-mute)}
+.wg-bandtab td.pen{color:var(--coral)}
+.wg-bandtab canvas{width:100%;height:auto;image-rendering:pixelated;display:block}
+.wg-bar{height:60px;display:flex;align-items:flex-end;justify-content:center}
+.wg-bar i{display:block;width:60%;background:var(--accent);border-radius:2px 2px 0 0}
+.wg-bandtab td.mid .wg-bar i{background:var(--green)}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}.wg-shots{grid-template-columns:repeat(2,1fr)}.wg-two{grid-template-columns:1fr}.wg-moves{grid-template-columns:repeat(3,1fr)}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-sheet{width:auto;max-width:100%;background:none;border-radius:2px}
+.gx-group .gx-read{min-height:3em;margin:6px 0 0;font-size:12.5px}
+.gx-group .gx-sheet+.gx-read+.gx-sheet{margin-top:12px}
+.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-bar input[type=range]{flex:1 1 200px;max-width:420px}
+.gx-layers{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.gx-layers figure{margin:0;max-width:100%}
+.gx-layers canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:3px}
+.gx-layers figcaption{font-size:13px;color:var(--ink-mute);margin:4px 0 0}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Epyx</p>
+  <h1>Winter Games</h1>
+  <p class="sub">The skiers, the skaters and the sled are each eight sprites in four pairs: a multicolour sprite for the colours, and a sprite of one colour at the same place for the fine edges. Each event carries its own pictures and the code that draws them, and most keep their frames packed until the moment they are shown.</p>
+</header>
+<main class="wrap" data-part="">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every frame of every event, drawn by the event's own code</h2>
+  <p class="lede">Each event is a program of its own, loaded over the menu, with its own pictures. Here are all of them, unpacked by each event's own routine and drawn in its colours. Point at a frame for what it is.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <span class="gx-lab"><label for="gx-bg">Behind them</label></span>
+      <select id="gx-bg" class="gx-sel"><option value="14">Light blue, the sky</option><option value="1">White, the snow and the ice</option><option value="0">Black</option></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The frames are drawn by the game's own code in the built site.</p>
+
+    <div class="gx-group" data-part="opening">
+      <h3>The opening ceremony</h3>
+      <p>Seven animations, each a list of frames and how long to show each one, playing here at the game's rate of fifty steps a second. The flags are one sprite each, the flame two side by side, and the torch bearer eight, his head and body over his legs.</p>
+      <div class="gx-tiles" id="gx-opening"></div>
+    </div>
+
+    <div class="gx-group" data-part="hot-dog">
+      <h3>Hot Dog Aerials</h3>
+      <p>The skier's 58 frames: the stunts, the flips, the awkward poses and the four falls.</p>
+      <canvas class="gx-sheet" id="gx-hot-dog" width="1" height="1" aria-label="The Hot Dog skier's 58 frames"></canvas>
+      <p class="gx-read" id="gx-hot-dog-read"></p>
+    </div>
+
+    <div class="gx-group" data-part="biathlon">
+      <h3>Biathlon</h3>
+      <p>The skier's 16 frames, then the rifle's sight, a sprite of its own.</p>
+      <canvas class="gx-sheet" id="gx-biathlon" width="1" height="1" aria-label="The Biathlon skier's 16 frames and the sight"></canvas>
+      <p class="gx-read" id="gx-biathlon-read"></p>
+    </div>
+
+    <div class="gx-group" data-part="speed-skating">
+      <h3>Speed Skating</h3>
+      <p>A frame for each state of the stride, drawn in each skater's colour, blue and then red. Speed Skating is the one event that keeps its frames whole rather than packed.</p>
+      <canvas class="gx-sheet" id="gx-speed-skating" width="1" height="1" aria-label="The speed skater's twelve frames, in blue and in red"></canvas>
+      <p class="gx-read" id="gx-speed-skating-read"></p>
+    </div>
+
+    <div class="gx-group" data-part="skating">
+      <h3>Figure and Free Skating</h3>
+      <p>The skater's 60 frames. The sprites in front are white like the ice, solid but for a hole the skater shows through. On the ice only their edge can be seen: pick white behind them to see her as the game shows her.</p>
+      <canvas class="gx-sheet" id="gx-skating" width="1" height="1" aria-label="The skater's 60 frames"></canvas>
+      <p class="gx-read" id="gx-skating-read"></p>
+    </div>
+
+    <div class="gx-group" data-part="ski-jump">
+      <h3>Ski Jump</h3>
+      <p>The small skier on the hill is a single black sprite, with 24 shapes; three of them no frame uses, drawn faint here. From the take-off, a close-up in the corner of the screen shows the jumper large, for the 26 frames from 5 to 30.</p>
+      <canvas class="gx-sheet" id="gx-small" width="1" height="1" aria-label="The small ski jumper's 24 shapes"></canvas>
+      <p class="gx-read" id="gx-small-read"></p>
+      <canvas class="gx-sheet" id="gx-close" width="1" height="1" aria-label="The close-up's 26 frames"></canvas>
+      <p class="gx-read" id="gx-close-read"></p>
+    </div>
+
+    <div class="gx-group" data-part="bobsled">
+      <h3>Bobsled</h3>
+      <p>The sled's 13 frames, in the order of its place across the chute: from high on the left wall, through the middle, to high on the right, then the crashes over each wall.</p>
+      <canvas class="gx-sheet" id="gx-bobsled" width="1" height="1" aria-label="The bobsled's 13 frames"></canvas>
+      <p class="gx-read" id="gx-bobsled-read"></p>
+    </div>
+
+    <p class="cap">Every frame is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page. The packed frames are unpacked by each event's <code>draw_frame</code>: <span data-part="hot-dog"><code>$1632</code></span> in Hot Dog, <span data-part="biathlon"><code>$2EF1</code></span> in Biathlon, <span data-part="skating"><code>$1BBB</code></span> in the skating, and <span data-part="bobsled"><code>build_sled</code> (<code>$4E45</code>)</span> in Bobsled. Speed Skating's frames are read where they lie, from <span data-part="speed-skating"><code>frame_bases</code> (<code>$A154</code>)</span>. Ski Jump's close-up is drawn by its <span data-part="ski-jump"><code>draw_frame</code> (<code>$1973</code>) over the landing slope's picture, which <code>unpack_list</code> (<code>$1273</code>) unpacks</span>. The colours are each event's own, from the tables its start-up writes to the video chip; the opening's come from its raster interrupts, which set them three times down the screen (<span data-part="opening"><code>$AB3F</code>, <code>irq_flame</code> and <code>irq_bearer</code></span>).</p>
+  </div>
+</section>
+
+<section id="pairs">
+  <p class="fig">02 · Two sprites at every place</p>
+  <h2 class="t">Eight sprites, four pairs</h2>
+  <p class="lede">A multicolour sprite's dots are two wide. Winter Games puts a sprite of one colour, with dots one wide, at the same place in front of each, and the pair draws finer than either could alone.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-p-events"></div>
+    <div class="gx-bar"><label for="gx-p-frame" class="gx-lab">Frame</label><input type="range" id="gx-p-frame" min="0" max="57" value="0"><span class="gx-stat" id="gx-p-stat"></span></div>
+    <div class="gx-layers">
+      <figure><canvas id="gx-p-mc" width="48" height="42"></canvas><figcaption>The four multicolour sprites</figcaption></figure>
+      <figure><canvas id="gx-p-hi" width="48" height="42"></canvas><figcaption>The four sprites of one colour</figcaption></figure>
+      <figure><canvas id="gx-p-both" width="48" height="42"></canvas><figcaption>Both, as the game shows them</figcaption></figure>
+    </div>
+    <p class="cap">Drawn over light blue, a colour none of the events' sprites use. The sprite of one colour is drawn in front because its number is the lower: the video chip puts sprite 0 in front of sprite 1, and the events give the even sprites the single colour and the odd ones the multicolour.</p>
+  </div>
+  <p>Each event shows its skier, skater or sled as a square of four places, two across and two down, with two sprites at each place, one over the other. The one behind is multicolour: each of its dots, two pixels wide, is one of three colours, two that every multicolour sprite on the screen shares and one of its own. The one in front has one colour and dots a pixel wide. Hot Dog, Biathlon, Speed Skating and Bobsled draw outlines and fine lines with it: black round the Hot Dog skier, grey in Biathlon, dark grey in Speed Skating and orange in Bobsled.</p>
+  <p>Figure and Free Skating turn it round. The sprite in front is white like the ice and solid, but for a hole in the skater's shape. Its edge trims the multicolour dots where they stick out, so the skater's outline is finer than a multicolour sprite can draw alone. The skating's <a href="index.html#wg-moves">moves</a> on How it works have a switch to take the white sprites away.</p>
+  <p>A frame is eight sprite shapes, 512 bytes. Every event but Speed Skating keeps its frames packed: a frame is 64 cells of eight bytes, and each cell starts with a mask byte whose set bits stand for the bytes that follow. The bytes without a bit are filled with 0, or, in the skating's white sprites, with <code>$FF</code>, which is what makes them solid. Each <code>draw_frame</code> unpacks a frame into the set of eight shapes the video chip is not showing, then points the sprites at it, two sets in turn, so that a frame never changes while it is being drawn on the screen. Speed Skating keeps its twelve frames whole, 6,144 bytes, and only points the sprites at them.</p>
+  <p>Ski Jump's close-up is drawn another way: 30 cells of the bitmap and four black sprites over them, each eight-byte cell stored whole, or as the single byte <span data-part="ski-jump"><code>$33</code></span> where it is plain. How the bobsled screen puts the sled over its bitmap, one frame rebuilt from memory, is on <a href="index.html#wg-frame">How it works</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* wg-sprites */
+// wgSprites(P, C64Cpu): every sprite shape of the events, built by each event's own code on the kit's
+// 6502 over a copy of that part's listing (P[part] is C64.load's result: ram and sym). A picture is
+// a list of layers, back to front, each one sprite: { d: its 63 bytes, x, y, multi, c: its colour,
+// mc0, mc1: $D025 and $D026 }. wgPaint draws one into RGBA pixels.
+function wgSprites(P, C64Cpu) {
+  const io = { read() { return 0; }, write() {} };
+  const machine = (ram) => { const m = ram.slice(); return { m, cpu: new C64Cpu.CPU(m, { port: 0x35, io }) }; };
+  const shape = (m, a) => m.slice(a, a + 63);
+  // Eight sprites in four pairs, a multicolour sprite with a high-resolution one in front of it at
+  // the same place: shapes(p) gives the pair's [multicolour, hires] addresses, at[p] its place.
+  function pairs(m, shapes, at, col) {
+    const L = [];
+    for (let p = 0; p < 4; p++) L.push({ d: shape(m, shapes(p)[0]), x: at[p][0], y: at[p][1], multi: true, c: col.multi, mc0: col.mc0, mc1: col.mc1 });
+    for (let p = 0; p < 4; p++) L.push({ d: shape(m, shapes(p)[1]), x: at[p][0], y: at[p][1], multi: false, c: col.hires });
+    return L;
+  }
+  const SQUARE = [[0, 0], [24, 0], [0, 21], [24, 21]];   // sprites 0-1, 2-3, 4-5, 6-7: place_sprites and its like
+  // $D025-$D02E from a table of ten: the even sprites are the hires outlines, the odd the multicolour
+  const tableColours = (ram, t) => ({ mc0: ram[t], mc1: ram[t + 1], hires: ram[t + 2], multi: ram[t + 3] });
+  // draw_frame's two buffers: shapes $30-$37 at $8C00 or $38-$3F at $8E00; the multicolour sprite of
+  // each pair takes the even shape and the outline the odd (show_frame_ptrs)
+  const buffer = (m, first) => (p) => [(first === 0x38 ? 0x8E00 : 0x8C00) + 128 * p, (first === 0x38 ? 0x8E00 : 0x8C00) + 128 * p + 64];
+
+  const out = {};
+  { // Hot Dog: draw_frame ($1632) unpacks frame $3A; 58 in frame_table
+    const L = P['hot-dog'], { m, cpu } = machine(L.ram), col = tableColours(L.ram, L.sym('hd_sprite_colours'));
+    out.hotDog = [];
+    for (let f = 0; f < 58; f++) {
+      m[0x3A] = f; cpu.call(L.sym('draw_frame'), {}, { maxSteps: 2e5 });
+      out.hotDog.push({ f, a: L.ram[L.sym('frame_table') + 2 * f] | L.ram[L.sym('frame_table') + 2 * f + 1] << 8, layers: pairs(m, buffer(m, m[0x3B]), SQUARE, col) });
+    }
+  }
+  { // Biathlon: draw_frame ($2EF1) unpacks frame Y; 16 in frame_table; the sight, hires, black at the range
+    const L = P.biathlon, { m, cpu } = machine(L.ram), col = tableColours(L.ram, L.sym('bi_sprite_colours'));
+    out.biathlon = [];
+    for (let f = 0; f < 16; f++) {
+      cpu.call(L.sym('draw_frame'), { y: f }, { maxSteps: 2e5 });
+      out.biathlon.push({ f, a: L.ram[L.sym('frame_table') + 2 * f] | L.ram[L.sym('frame_table') + 2 * f + 1] << 8, layers: pairs(m, buffer(m, m[0x4F]), SQUARE, col) });
+    }
+    out.sight = [{ d: shape(L.ram, L.sym('sight_shape')), x: 0, y: 0, multi: false, c: 0 }];
+  }
+  { // Speed Skating: whole frames of eight blocks from frame_bases, sprite n taking the block base + n:
+    // the even sprites the outlines, dark grey; the odd multicolour, blue far and red near ($968C,
+    // $96D5), with orange and grey shared (setup_sprites)
+    const L = P['speed-skating'], ram = L.ram, xs = L.sym('sprite_xs'), fb = L.sym('frame_bases');
+    const at = [0, 1, 2, 3].map((p) => [ram[xs + 4 * p] - ram[xs], ram[xs + 4 * p + 1] - ram[xs + 1]]);
+    out.speed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17].map((s) => {
+      const b = 0x4000 + 64 * ram[fb + s];
+      return { s, a: b, layers: (far) => pairs(ram, (p) => [b + 128 * p + 64, b + 128 * p], at, { mc0: 8, mc1: 12, hires: 11, multi: far ? 6 : 2 }) };
+    });
+  }
+  { // Figure and Free Skating: draw_frame ($1BBB) unpacks frame Y into $BC00 ($3A = $F0) with its x
+    // offset in $32; shapes 0, 2, 4, 6 multicolour, 1, 3, 5, 7 the white ones in front; sprite_places
+    const L = P.skating, ram = L.ram, { m, cpu } = machine(ram), pl = L.sym('sprite_places');
+    const c = L.sym('sprite_colours'), col = { mc0: ram[c], mc1: ram[c + 1], hires: ram[c + 2], multi: ram[c + 3] };
+    const at = [0, 1, 2, 3].map((p) => [ram[pl + 4 * p] - ram[pl], ram[pl + 4 * p + 1] - ram[pl + 1]]);
+    out.skating = [];
+    for (let f = 0; f < 60; f++) {
+      m[0x3A] = 0xF0; cpu.call(L.sym('draw_frame'), { y: f }, { maxSteps: 2e5 });
+      const off = m[0x32] << 24 >> 24;
+      out.skating.push({ f, off, layers: pairs(m, (p) => [0xBC00 + 128 * p, 0xBC00 + 128 * p + 64], at.map(([x, y]) => [x + off, y]), col) });
+    }
+  }
+  { // Ski Jump: the small skier is one hires sprite, black, its shape from frame_sprites (the start-up
+    // copies the 24 shapes from $7488 to $8400, pointers $10-$27); the close-up
+    // is drawn by draw_frame ($1973) into the bitmap and four black sprites (as How it works draws it)
+    const L = P['ski-jump'], ram = L.ram, fs = L.sym('frame_sprites'), used = new Set();
+    for (let f = 0; f < 31; f++) used.add(ram[fs + f]);
+    out.small = [];
+    for (let s = 0x10; s <= 0x27; s++) out.small.push({ s, used: used.has(s), frames: [...Array(31).keys()].filter((f) => ram[fs + f] === s), layers: [{ d: shape(ram, 0x7488 + 64 * (s - 0x10)), x: 0, y: 0, multi: false, c: ram[L.sym('setup_colours') + 2] }] });
+    // The close-up: the landing slope's picture unpacked by unpack_list ($1273) from flight_list, as
+    // show_flight does, its colours caught on their way to the colour RAM; then draw_frame for frames
+    // 5 to 30 (frames 0 to 4, on the in-run, draw none). A close-up is the corner of the multicolour
+    // bitmap (black behind, $D021) from x 230 and y 6, 68 by 58, and sprites 1-4 from $8F00 in black
+    // (setup_colours), placed by setup_positions. px holds a palette index for each pixel.
+    const colour = new Uint8Array(1000), m = ram.slice();
+    const cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read() { return 0; }, write(a, v) { if (a >= 0xD800 && a < 0xDBE8) colour[a - 0xD800] = v & 15; } } });
+    const list = L.sym('flight_list'); m[0x16] = list & 255; m[0x17] = list >> 8;
+    cpu.call(L.sym('unpack_list'), {}, { maxSteps: 5e6 });
+    const sp = L.sym('setup_positions'), sc = L.sym('setup_colours'), X = 230, Y = 6, W = 68, H = 58;
+    out.closeUps = [];
+    for (let f = 5; f <= 30; f++) {
+      m[0x41] = f; m[0x43] = 0; cpu.call(L.sym('draw_frame'), {}, { maxSteps: 2e5 });
+      const px = new Uint8Array(W * H), put = (x, y, c) => { if (x >= 0 && y >= 0 && x < W && y < H) px[y * W + x] = c; };
+      for (let r = 0; r < 8; r++) for (let col = 28; col < 38; col++) {
+        const i = r * 40 + col, s = m[0x8000 + i];
+        for (let y = 0; y < 8; y++) { const v = m[0xA000 + 8 * i + y]; for (let k = 0; k < 4; k++) { const c = [0, s >> 4, s & 15, colour[i]][v >> (6 - 2 * k) & 3]; put(col * 8 - X + 2 * k, r * 8 + y - Y, c); put(col * 8 - X + 2 * k + 1, r * 8 + y - Y, c); } }
+      }
+      for (let s = 1; s <= 4; s++) {
+        const x = ram[sp + 2 * s] + ((ram[sp + 16] >> s) & 1) * 256 - 24 - X, y = ram[sp + 2 * s + 1] - 50 - Y;
+        for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) { const v = m[0x8F00 + 64 * (s - 1) + 3 * r + b]; for (let k = 0; k < 8; k++) if (v >> (7 - k) & 1) put(x + 8 * b + k, y + r, ram[sc + 2 + s]); }
+      }
+      out.closeUps.push({ f, s: ram[fs + f], w: W, h: H, px });
+    }
+  }
+  { // Bobsled: build_sled ($4E45) unpacks frame $2D; 13 in sled_frames
+    const L = P.bobsled, { m, cpu } = machine(L.ram), col = tableColours(L.ram, L.sym('bs_sprite_colours'));
+    out.bobsled = [];
+    for (let f = 0; f < 13; f++) {
+      m[0x2D] = f; cpu.call(L.sym('build_sled'), {}, { maxSteps: 2e5 });
+      out.bobsled.push({ f, a: L.ram[L.sym('sled_frames') + 2 * f] | L.ram[L.sym('sled_frames') + 2 * f + 1] << 8, layers: pairs(m, buffer(m, m[0x42]), SQUARE, col) });
+    }
+  }
+  { // The opening ceremony: its animations, each a flags byte, the last frame's number, then five
+    // bytes a frame: shape, second shape or 0, length in steps (a step is a frame here). Shapes from
+    // $90 are at $6400; bearer_run copies the big flame and the doves over $F9-$FF from $A711.
+    const L = P.opening, ram = L.ram, after = ram.slice();
+    after.set(ram.slice(0xA711, 0xA711 + 7 * 64), 0x4000 + 64 * 0xF9);
+    const anim = (a) => { const fr = []; for (let i = 0; i <= ram[a + 1]; i++) { const o = a + 2 + 5 * i; fr.push([ram[o], ram[o + 1], ram[o + 2] | ram[o + 3] << 8]); } return fr; };
+    const sc = L.sym('spr_colours');
+    const A = (n) => L.sym(n);
+    // The top of the screen: sprites 0-2 multicolour, red and blue shared ($A9B9-$A9D4), and the
+    // colours eight_sprites fixes when the eight are drawn ($AB3F): black, white, orange, then white.
+    const flag = (name, colour) => anim(A(name)).map(([s, , n]) => ({ n, layers: [{ d: shape(ram, 0x4000 + 64 * s), x: 0, y: 0, multi: true, c: colour, mc0: 2, mc1: 6 }] }));
+    // irq_flame: both sprites multicolour, red and orange shared, each its colour from spr_colours
+    const flame = (name) => anim(A(name)).map(([s, t, n]) => ({ n, layers: [s, t].map((k, i) => ({ d: shape(after, 0x4000 + 64 * k), x: 23 * i, y: 0, multi: true, c: ram[sc + k - 0x90], mc0: 2, mc1: 8 })) }));
+    // irq_bearer: the multicolour sprites yellow with light blue and orange, under hires outlines in
+    // blue, each outline the next shape up; the legs 21 lines under the upper half, each half's
+    // second sprite 23 pixels to the right of its first ($AA6F)
+    const bearer = (top, legs, mem) => { const a = anim(A(top)), b = anim(A(legs)); return a.map(([s, t, n], i) => {
+      const L2 = [], four = [[s, 0, 0], [t, 23, 0], [b[i][0], 0, 21], [b[i][1], 23, 21]];
+      for (const [k, x, y] of four) L2.push({ d: shape(mem, 0x4000 + 64 * k), x, y, multi: true, c: 7, mc0: 14, mc1: 8 });
+      for (const [k, x, y] of four) L2.push({ d: shape(mem, 0x4000 + 64 * (k + 1)), x, y, multi: false, c: 6 });
+      return { n, layers: L2 };
+    }); };
+    out.opening = [
+      { name: 'The flag on the first pole', frames: flag('anim_flag_2', 0), loop: true },
+      { name: 'The flag on the second pole', frames: flag('anim_flag_3', 1), loop: true },
+      { name: 'The flag on the third pole', frames: flag('anim_flag_1', 8), loop: true },
+      { name: 'A dove', frames: anim(A('anim_dove')).map(([s, , n]) => ({ n, layers: [{ d: shape(after, 0x4000 + 64 * s), x: 0, y: 0, multi: false, c: 1 }] })), loop: true },
+      { name: 'The flame catching, then burning', frames: flame('anim_flame_grow').concat(flame('anim_flame_flicker')), loop: 4 },
+      { name: 'The torch bearer running', frames: bearer('anim_bearer_run_top', 'anim_bearer_run_legs', ram), loop: true },
+      { name: 'The torch bearer at the top of the steps', frames: bearer('anim_bearer_pose_top', 'anim_bearer_pose_legs', ram).slice(0, 3), loop: true },
+    ];
+  }
+  return out;
+}
+// Paints layers into RGBA pixels (w x h) at (ox, oy), each sprite pixel one pixel; rgb is the palette.
+function wgPaint(px, w, h, layers, rgb, ox, oy) {
+  const put = (x, y, c) => { if (x < 0 || y < 0 || x >= w || y >= h) return; const o = (y * w + x) * 4, k = rgb[c]; px[o] = k[0]; px[o + 1] = k[1]; px[o + 2] = k[2]; px[o + 3] = 255; };
+  for (const L of layers) for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) {
+    const v = L.d[r * 3 + b], X = ox + L.x + 8 * b, Y = oy + L.y + r;
+    if (L.multi) for (let k = 0; k < 4; k++) { const c = v >> (6 - 2 * k) & 3; if (c) { const col = [0, L.mc0, L.c, L.mc1][c]; put(X + 2 * k, Y, col); put(X + 2 * k + 1, Y, col); } }
+    else for (let k = 0; k < 8; k++) if (v >> (7 - k) & 1) put(X + k, Y, L.c);
+  }
+}
+</script>
+<script>
+// Graphics tab. wgSprites (above) makes every frame with each event's own code on the kit's 6502
+// over the listings' bytes; this script lays them out. What each frame is comes from the listings'
+// notes on the scripts and tables that show it.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const wait = $('gx-wait');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  const PARTS = ['opening', 'hot-dog', 'biathlon', 'speed-skating', 'skating', 'ski-jump', 'bobsled'];
+  let P = {};
+  try {
+    const ls = await Promise.all(PARTS.map((p) => C64.load('parts/' + p + '/listing.json')));
+    PARTS.forEach((p, i) => { P[p] = ls[i]; });
+  } catch (e) { wait.textContent = 'The listings could not be loaded: ' + e.message; return; }
+  const S = wgSprites(P, C64Cpu);
+  wait.remove();
+  const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const hex = (v, n = 4) => '<code>$' + v.toString(16).toUpperCase().padStart(n, '0') + '</code>';
+  const bgSel = $('gx-bg');
+  const bg = () => +bgSel.value;
+
+  // A sheet: cells of cw x ch pixels, as many across as fit the plate at twice the size, each cell
+  // painted by paint(px, w, h, item, ox, oy); faint cells (item.faint) drawn at a third. read(item)
+  // gives the line under the sheet for the cell pointed at.
+  const sheets = [];
+  function sheet(id, items, cw, ch, paint, read, opts = {}) {
+    const cv = $(id), out = $(id + '-read'), ctx = cv.getContext('2d');
+    const s = { cv, items, cw, ch, paint, opts };
+    s.draw = () => {
+      const avail = Math.max(cv.parentNode.clientWidth, 200);
+      const per = Math.max(1, Math.min(items.length, Math.floor(avail / (2 * cw)))), rows = Math.ceil(items.length / per);
+      s.per = per;
+      const w = per * cw, h = rows * ch;
+      cv.width = w; cv.height = h; cv.style.width = 2 * w + 'px';
+      const img = ctx.createImageData(w, h), px = img.data, back = RGB[opts.bg !== undefined ? opts.bg : bg()];
+      for (let i = 0; i < w * h; i++) { px[4 * i] = back[0]; px[4 * i + 1] = back[1]; px[4 * i + 2] = back[2]; px[4 * i + 3] = 255; }
+      items.forEach((it, i) => {
+        const ox = (i % per) * cw, oy = (i / per | 0) * ch;
+        paint(px, w, h, it, ox, oy);
+        if (it.faint) for (let y = oy; y < oy + ch; y++) for (let x = ox; x < ox + cw; x++) {
+          const o = 4 * (y * w + x); for (let k = 0; k < 3; k++) px[o + k] = (px[o + k] + 2 * back[k]) / 3;
+        }
+      });
+      ctx.putImageData(img, 0, 0);
+    };
+    const at = (e) => {
+      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * cv.width / r.width, y = (e.clientY - r.top) * cv.height / r.height;
+      const i = Math.floor(y / ch) * s.per + Math.floor(x / cw);
+      return x >= 0 && x < s.per * cw && i >= 0 && i < items.length ? items[i] : null;
+    };
+    const show = (it) => { out.innerHTML = it ? read(it) : opts.hint || 'Point at a frame for what it is.'; };
+    cv.addEventListener('pointermove', (e) => show(at(e)));
+    cv.addEventListener('pointerdown', (e) => show(at(e)));
+    show(null);
+    s.draw();
+    sheets.push(s);
+    return s;
+  }
+  const layers = (cw, ch, dx = 2, dy = 2) => (px, w, h, it, ox, oy) => wgPaint(px, w, h, it.layers, RGB, ox + dx + (it.dx || 0), oy + dy);
+
+  // ---- Hot Dog: frame_table ($16B7); the notes on frames 9, 24 and 47 are the listing's
+  const HD = { 9: 'arms up with the skis level, the pose between moves and the only one to land in', 24: 'a crouch in the air with the skis pointing down, which no script shows' };
+  sheet('gx-hot-dog', S.hotDog, 52, 46, layers(), (it) => 'Frame ' + it.f + ', packed at ' + hex(it.a) +
+    (it.f === 47 ? ': no script shows it, and its bytes are not a whole frame. Unpacked, they run on into frame 48\'s and draw scattered dots.' : HD[it.f] ? ': ' + HD[it.f] + '.' : '.'));
+
+  // ---- Biathlon: frame_table ($2E59), the scripts at $2E79-$2EA3; the sight at $318B
+  const BI = (f) => f < 6 ? 'the diagonal stride on the flat' : f === 8 ? 'downhill, the poles planted, waiting for a stroke' : f < 8 ? 'downhill, the push with both poles' : f === 9 ? 'downhill, the tuck' : 'the stride uphill';
+  sheet('gx-biathlon', S.biathlon.concat([{ sight: true, layers: S.sight }]), 52, 46, layers(), (it) => it.sight
+    ? 'The rifle\'s sight, a ring with a cross in it: sprite shape <code>$2F</code>, copied there from ' + hex(0x318B) + ', in one colour, black at the range.'
+    : 'Frame ' + it.f + ', packed at ' + hex(it.a) + ': ' + BI(it.f) + '.');
+
+  // ---- Speed Skating: frame_bases ($A154), in blue and in red
+  const SS = { 16: 'standing, before the start and after the finish', 17: 'the winner' };
+  const speed = [true, false].flatMap((far) => S.speed.map((f) => ({ s: f.s, a: f.a, far, layers: f.layers(far) })));
+  sheet('gx-speed-skating', speed, 52, 46, layers(), (it) => 'Stride state ' + it.s + (SS[it.s] ? ', ' + SS[it.s] : '') + ': eight sprite shapes, whole, from ' + hex(it.a) + ', in ' + (it.far ? 'blue' : 'red') + '.');
+
+  // ---- Figure and Free Skating: each frame moved by its own x offset ($32)
+  const SK = { 55: 'a shaky take-off, held for 30 frames', 59: 'an awkward landing, held for 30 frames' };
+  sheet('gx-skating', S.skating.map((f) => Object.assign({ dx: 15 }, f)), 78, 46, layers(), (it) => 'Frame ' + it.f + (it.off ? ', moved ' + Math.abs(it.off) + ' pixels to the ' + (it.off < 0 ? 'left' : 'right') : '') + (SK[it.f] ? ': ' + SK[it.f] : '') + '.');
+
+  // ---- Ski Jump: the small skier's shapes ($7488, copied to $8400), then the close-ups
+  const SJ = { 0x1E: 'crouched on the in-run', 0x10: 'down the in-run', 0x11: 'down the in-run', 0x12: 'down the in-run', 0x13: 'down the in-run', 0x14: 'the take-off', 0x15: 'flying', 0x18: 'a fall', 0x19: 'a fall', 0x1A: 'a fall', 0x1B: 'the landing', 0x1C: 'the landing', 0x1D: 'arms up' };
+  sheet('gx-small', S.small.map((s) => Object.assign({ faint: !s.used }, s)), 28, 25, layers(28, 25, 2, 2), (it) => 'Shape ' + hex(it.s, 2) + ', copied from ' + hex(0x7488 + 64 * (it.s - 0x10)) + ' to ' + hex(0x8000 + 64 * it.s) + ': ' +
+    (it.used ? (SJ[it.s] ? SJ[it.s] + ', ' : 'a lean, ') + 'shown for frame' + (it.frames.length > 1 ? 's ' : ' ') + it.frames.join(', ') : 'no frame shows it') + '.', { hint: 'Point at a shape for the frames that show it.' });
+  sheet('gx-close', S.closeUps, 70, 60, (px, w, h, u, ox, oy) => {
+    for (let y = 0; y < u.h; y++) for (let x = 0; x < u.w; x++) { const c = RGB[u.px[y * u.w + x]], o = 4 * ((oy + 1 + y) * w + ox + 1 + x); px[o] = c[0]; px[o + 1] = c[1]; px[o + 2] = c[2]; }
+  }, (u) => 'Frame ' + u.f + ': the close-up, while the small skier on the hill shows shape ' + hex(u.s, 2) + '.', { hint: 'Point at a close-up for its frame.' });
+
+  // ---- Bobsled: sled_places ($4AC6) gives each place's frame; the frames in the order of the places
+  const bs = P.bobsled.ram, places = {};
+  for (let p = 0; p < 41; p++) (places[bs[0x4AC6 + 4 * p + 3]] = places[bs[0x4AC6 + 4 * p + 3]] || []).push(p);
+  const where = (ps) => {
+    const a = ps[0], b = ps[ps.length - 1], r = a === b ? 'place ' + a : 'places ' + a + ' to ' + b;
+    if (a >= 36) return r + ', crashing over the right wall';
+    if (a >= 31) return r + ', crashing over the left wall';
+    if (a <= 15 && b >= 15) return r + ', in the middle of the chute';
+    return r + ', ' + (b < 15 ? (a === 0 ? 'high on' : b >= 10 ? 'low on' : 'on') + ' the left wall' : (b === 30 ? 'high on' : a <= 20 ? 'low on' : 'on') + ' the right wall');
+  };
+  const sled = [6, 2, 5, 0, 3, 1, 4, 7, 8, 9, 10, 11, 12].map((f) => S.bobsled[f]);
+  sheet('gx-bobsled', sled, 52, 46, layers(), (it) => 'Frame ' + it.f + ', packed at ' + hex(it.a) + ', for ' + where(places[it.f] || []) + '.');
+
+  bgSel.addEventListener('input', () => { sheets.forEach((s) => s.draw()); openingBack(); pairsDraw(); });
+  let rw = 0;
+  window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => sheets.forEach((s) => s.draw()), 150); });
+
+  // ---- The opening's animations, a step a frame at 50 a second
+  const tiles = S.opening.map((a) => {
+    let w = 0, h = 0;
+    for (const f of a.frames) for (const L of f.layers) { w = Math.max(w, L.x + 24); h = Math.max(h, L.y + 21); }
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w + 4; cv.height = h + 4; cv.style.width = 2 * (w + 4) + 'px';
+    t.appendChild(cv); t.appendChild(sp); $('gx-opening').appendChild(t);
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
+    const o = { a, i: 0, left: a.frames[0].n, cv, sp, t };
+    o.draw = () => {
+      const px = img.data, back = RGB[bg()];
+      for (let k = 0; k < cv.width * cv.height; k++) { px[4 * k] = back[0]; px[4 * k + 1] = back[1]; px[4 * k + 2] = back[2]; px[4 * k + 3] = 255; }
+      wgPaint(px, cv.width, cv.height, a.frames[o.i].layers, RGB, 2, 2);
+      ctx.putImageData(img, 0, 0);
+      sp.innerHTML = a.name + '<br>frame ' + (o.i + 1) + ' of ' + a.frames.length + ', ' + a.frames[o.i].n + ' step' + (a.frames[o.i].n === 1 ? '' : 's');
+    };
+    o.step = () => {
+      if (--o.left > 0) return false;
+      o.i = o.i + 1 < a.frames.length ? o.i + 1 : (a.loop === true ? 0 : a.loop);
+      o.left = a.frames[o.i].n; return true;
+    };
+    o.draw();
+    return o;
+  });
+  function openingBack() { tiles.forEach((o) => o.draw()); }
+
+  let running = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), seen = false, last = 0, acc = 0, steps = 0;
+  const run = $('gx-run');
+  run.textContent = running ? 'Pause' : 'Play';
+  run.addEventListener('click', () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; last = 0; });
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { seen = es[0].isIntersecting; last = 0; }).observe($('gx-opening'));
+  else seen = true;
+  const loop = (now) => {
+    requestAnimationFrame(loop);
+    if (!running || !seen) return;
+    acc = Math.min(acc + (last ? now - last : 0), 200); last = now;
+    while (acc >= 20) { acc -= 20; steps++; tiles.forEach((o) => { if (o.step()) o.draw(); }); }
+    $('gx-stat').textContent = 'step ' + steps;
+  };
+  requestAnimationFrame(loop);
+
+  // ---- 02: one frame's two layers
+  const PE = [
+    ['Hot Dog', S.hotDog.map((f) => f.layers)],
+    ['Biathlon', S.biathlon.map((f) => f.layers)],
+    ['Speed Skating', S.speed.map((f) => f.layers(true))],
+    ['Skating', S.skating.map((f) => f.layers.map((L) => Object.assign({}, L, { x: L.x + 15 })))],
+    ['Bobsled', S.bobsled.map((f) => f.layers)],
+  ];
+  let pe = 0;
+  const range = $('gx-p-frame');
+  const pbtn = PE.map(([name], i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = name;
+    b.addEventListener('click', () => { pe = i; range.max = PE[i][1].length - 1; range.value = 0; pairsDraw(); });
+    $('gx-p-events').appendChild(b); return b;
+  });
+  range.addEventListener('input', pairsDraw);
+  const BLUE = 14;
+  function pairsDraw() {
+    pbtn.forEach((b, i) => b.setAttribute('aria-pressed', i === pe));
+    const L = PE[pe][1][+range.value], wide = pe === 3 ? 78 : 52;
+    [['gx-p-mc', L.slice(0, 4)], ['gx-p-hi', L.slice(4)], ['gx-p-both', L]].forEach(([id, ls]) => {
+      const cv = $(id); cv.width = wide; cv.height = 46; cv.style.width = 3 * wide + 'px';
+      const ctx = cv.getContext('2d'), img = ctx.createImageData(wide, 46), px = img.data, back = RGB[BLUE];
+      for (let k = 0; k < wide * 46; k++) { px[4 * k] = back[0]; px[4 * k + 1] = back[1]; px[4 * k + 2] = back[2]; px[4 * k + 3] = 255; }
+      wgPaint(px, wide, 46, ls, RGB, 2, 2);
+      ctx.putImageData(img, 0, 0);
+    });
+    $('gx-p-stat').textContent = PE[pe][0] + ', frame ' + (pe === 2 ? 'for stride state ' + S.speed[+range.value].s : range.value);
+  }
+  pairsDraw();
+})();
+</script>

@@ -36,7 +36,7 @@ Sources:
 | Two characters: Storm the warrior (blue) and the wizard Agravain Undead (red); two joysticks for a two-player game | confirmed | two player records copied in and out of one work copy (`load_a`, `load_b`, `save_a`, `save_b`); the colours were not checked |
 | Agravain on joystick 1, Storm on joystick 2 (the game's own instructions; the manual says the opposite, and the review says the game is right) | confirmed | `load_a` reads `$DC01` (port 1), `load_b` reads `$DC00` (port 2) |
 | A one-player game is always Agravain (review) | live | `game_init` gives player B no energy in a one-player game; every live test played Agravain alone |
-| Rotational controls: left and right turn the character, forward moves it the way it faces | confirmed | `joystick`, `walk`; a turn at most every two passes (`turn_delay`) |
+| Rotational controls: left and right turn the character, forward moves it the way it faces | confirmed | `joystick`, `walk`; a turn at most every four passes (`turn_delay`) |
 | Fire shoots, for both characters | confirmed | `control`: fire without down, one shot each in flight (characters `$FE` and `$FF`) |
 | Storm: down and fire fires an amulet | confirmed | `joystick` |
 | Agravain: down uses a mask, down and fire uses a scroll | live | `joystick`; a scroll was cast with the joystick in the magic test (`facts.md`, "Live tests"); the mask is traced |

@@ -4,7 +4,8 @@ Current truth for this game. The workflow lives in `kit/skills/`; how this
 understanding developed lives in `agent-history.md`. Every fact names
 the routine or table it comes from. Unless marked *live*, a fact comes
 from reading the code in `work/entry.vsf`, the hand-over image named in
-`orientation.md`.
+`orientation.md`. A fact marked *run* comes from running the game's own
+routines on the kit's 6502 simulator over the listing's bytes.
 
 ## Build
 
@@ -217,6 +218,9 @@ The sights move within x `$10`-`$8F` and y `$20`-`$9F` (`$0CC6`,
 - **The sights are sprite 0**: an 11 × 11 cross at `$7000` (pointer
   `$C0`), placed at x = 2 × `$9B` + 14, y = `$F9` − `$9C` (`$99DC`),
   hidden by `$9A3C`. The BBC drew them into the screen.
+- **Sprite colours**: the sights white (`$9902`), the scanner white
+  (`$3F8B`), multicolour 0 black (`$9907`), multicolour 1 green
+  (`$9AA7`, in play).
 - **The scanner is sprites 1-3** (`$7040`-`$70FF`) at x = 264, 288, 312,
   y = 51 (`$3F62`-`$3F93`). `$163F` fills four rows of them: state 0 off,
   4 static, 8 solid (pause). The static comes from the page of random
@@ -234,6 +238,41 @@ The sights move within x `$10`-`$8F` and y `$20`-`$9F` (`$0CC6`,
   three times (120 stars; the BBC drew 240).
 - **Game-over fade**: `$945F` scatters dots straight into the character
   sets; the decay loop at `$8801` makes 900 calls of 27 dots.
+
+### Objects
+
+Every object is drawn by `draw_object` (`$8533`) from its points and
+faces. Run on a 6502 simulator over the analysed image, through
+`place_title_object` (`$8819`), `draw_object` and `draw_title_pair`
+(`$887E`), with a hook on the call to `draw_polygon` at `$859F` (*run*):
+
+| Type | Object | Points | Faces | Passes (`$9CB6`) |
+|---|---|---|---|---|
+| 0 | robot | 0-28 | 0-26 | two when above the viewer |
+| 1 | sentry | 29-50 | 27-51 | two when above the viewer |
+| 2 | tree | 51-67 | 52-66 | one |
+| 3 | boulder | 68-75 | 67-76 | one |
+| 4 | meanie | 76-93 | 77-101 | two, chosen by its yaw |
+| 5 | the Sentinel | 94-123 | 102-136 | two when above the viewer |
+| 6 | tower | 124-135 | 137-147 | one |
+| 7-9 | title blocks (right pixel, left pixel, both) | 136-159, 8 each | 148-159, 4 each | one |
+
+- **Two passes** draw the faces with bit 7 of `$A1A0` clear, then those
+  with it set (`$857E`-`$85B4`). *Run*: on the title (configuration 1,
+  a unit above the viewer) the Sentinel's faces go 102-104 and 126-136,
+  then 105-125; the secret-code screen's robot goes 0-2 and 19-26, then
+  3-18; the tower, 137-147 in order.
+- **A face turned away draws nothing.** *Run*: a boulder 10 tiles in
+  front of the viewer and a unit below it, at yaw 0, 64, 128 and 192:
+  six of its ten faces change no byte of the bitmap each time; from yaw 0
+  to 128, faces 67, 71 and 74 swap with 69, 72 and 73, and face 75 draws
+  nothing at all four.
+- **The title blocks have four faces**: three sides and the top (point
+  lists at `$A6A0`: 0-4-7-3, 2-6-5-1, 1-5-4-0, 5-6-7-4). There is no
+  fourth side and no bottom; seen from the missing side, a block shows
+  little more than its edges (*run*, yaw 0 from the viewpoint above).
+- Turning an object is its yaw byte (`$09C0` + n): `$848C` adds it to
+  each point's angle at `$9DE0`.
 
 ### Text
 

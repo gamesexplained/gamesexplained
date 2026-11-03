@@ -1,0 +1,328 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool of Radiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.por-shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.por-shots figure{margin:0}
+.por-shots img{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
+.por-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.4}
+.por-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:10px 0}
+.por-tbl th,.por-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.por-tbl th{font-family:var(--fm);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.por-m{font-family:var(--fm);font-size:.86em}
+.por-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.por-map{width:100%;max-width:420px;image-rendering:pixelated;cursor:crosshair;display:block;border-radius:4px}
+.por-frame{width:100%;max-width:768px;image-rendering:pixelated;display:block;border-radius:4px}
+.por-area{width:100%;max-width:420px;image-rendering:pixelated;display:block;border-radius:4px}
+.por-out{font-family:var(--fm);font-size:13px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin-top:12px;min-height:3.2em;white-space:pre-wrap}
+.por-btns{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.por-btn{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:5px 10px;cursor:pointer}
+.por-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.por-ecl{font-family:var(--fm);font-size:12.5px;line-height:1.55;background:#1d1f24;color:#e6e3da;border-radius:8px;padding:12px 14px;max-height:420px;overflow:auto;white-space:pre}
+.por-ecl .a{color:#8f949c}.por-ecl .c{color:#ffd37a}.por-ecl .s{color:#9fd99a}.por-ecl .v{color:#9cc7ff}
+.por-dice{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.por-die{font-family:var(--fm);font-size:14px;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--surface-2);min-width:4.2em;text-align:center}
+.por-die.best{background:var(--hl);border-color:var(--amber);font-weight:700}
+.por-strip{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:3px;margin:12px 0 4px}
+.por-strip span{font-family:var(--fm);font-size:11.5px;text-align:center;padding:6px 0;border-radius:4px;background:#e4e1da;color:var(--ink-mute)}
+.por-strip span.hit{background:var(--green);color:#fff}
+.por-row{display:flex;flex-wrap:wrap;gap:18px;align-items:center;font-family:var(--fm);font-size:13px}
+.por-row input[type=range]{width:200px}
+@media (max-width:760px){.por-shots{grid-template-columns:1fr}.por-two{grid-template-columns:1fr}:root{--gx:18px}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-tile canvas{background:#000}
+.gx-panels{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin:0 0 14px}
+.gx-panels .gx-tile span{min-width:0}
+.gx-cells{border-collapse:collapse;font-size:13.5px;min-width:520px}
+.gx-cells th,.gx-cells td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.gx-cells th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.sp-wrapx{overflow-x:auto}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · SSI</p>
+  <h1>Pool of Radiance</h1>
+  <p class="sub">In a battle every combatant is a little figure of nine characters with two poses, ready and attacking. A party member's figure is put together from a head and a weapon in the game's own editor.</p>
+</header>
+<main class="wrap">
+
+<section id="cast" data-part="icons">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every figure the icon editor makes, and the sprites around them</h2>
+  <p class="lede">A party member's figure in a battle is three characters by three, drawn in two poses. The combat icon editor builds it from a weapon and a head, and every choice it offers is laid out here by its own code, in the ready pose and then the attacking one. The monsters' figures come from a file for each kind of monster, loaded for the battle.</p>
+  <div class="plate">
+    <div id="gx-cast"><p class="gx-miss">The figures are drawn by the game's own code in the built site.</p></div>
+    <p class="gx-read" id="gx-read">Point at a figure for its pieces.</p>
+    <p class="cap">Each figure is laid out by the editor's own lines for a choice (<code>save_head</code>, <code>$B26F</code>, then <code>pick_piece</code> from <code>$B14C</code>), run on the kit's 6502 in the page over the bytes of the icons part, starting from the editor's own icon with the size's first weapon and first head. The cells are drawn as the video chip shows the characters <code>draw_figure</code> (<code>$B361</code>) makes from the pieces' pictures, on the battle's colours: dark grey, light red and black (<span data-part="com-prep"><code>combat_colours</code>, <code>$146A</code></span>).</p>
+  </div>
+  <p>A figure has nine cells in each pose. A weapon choice fills the cells below the head from a string of codes kept for that choice (<code>cell_strings</code>, <code>$ABC0</code>), and a head choice fills the top middle cell, and for some heads the cells beside it. A cap or a lock of hair never takes a top cell from a piece of another kind. The large figures are for the man-sized races, and the small ones for dwarves, gnomes and halflings.</p>
+  <p>The battle's sprites are few. The cursor that marks the square in hand is a hollow box built by code, 24 pixels wide and 12 tall, doubled in height and drawn behind the characters (<span data-part="com-prep"><code>set_sprites</code>, <code>$147D</code></span>). A fallen combatant is covered by two sprites, a red one in front of a black one, stretched for its size (<span data-part="combat"><code>lie_down</code>, <code>$1BF9</code></span>). A missile is sprite 6, given one of twenty pictures for the kind of shot and the way it flies, with a colour pair for each picture (<span data-part="combat-set"><code>load_missile_picture</code>, <code>$6A57</code></span>). The battle copies those twenty pictures under the input and output chips, and only the first four are among the bytes the Source tab lists.</p>
+  <p>The title has the remaining sprites: three red pieces that fill the TSR logo from behind the picture, and three white sparkles. Each sparkle grows from a dot to a four-pointed star and shrinks again over fifteen steps of <span data-part="title"><code>sparkle_frames</code></span>, taking a step at random, 15 times in 256, and then jumps to a random place on the picture.</p>
+</section>
+
+<section id="figure" data-part="icons">
+  <p class="fig">02 · A figure</p>
+  <h2 class="t">Nine characters, each a piece with its own colour</h2>
+  <p class="lede">The large figure the editor starts from, cell by cell. Each cell's code names a piece in CHARPIC00, and the piece's kind gives it a colour.</p>
+  <div class="plate">
+    <div class="gx-panels" id="gx-fig"></div>
+    <div class="sp-wrapx"><table class="gx-cells" id="gx-cells"></table></div>
+    <p class="cap">The editor's starting icon with the first large weapon and the first large head laid out by its own code. The kinds come from <code>piece_types</code> (<code>$A700</code>), the colours from <code>kind_colors</code> (<code>$B645</code>) plus 8 for a multicolour piece, as <code>put_piece</code> (<code>$B209</code>) gives them.</p>
+  </div>
+  <p>A figure is 36 bytes: the ready pose's nine character codes, the attacking pose's nine, and a colour for each of the eighteen cells. The party's are kept at <span data-part="resident"><code>$4BE0</code></span>, 36 bytes for each of the eight slots. Each code names a piece, eight bytes of picture at <code>$9900</code> + 8 times the code in CHARPIC00. <code>piece_types</code> tells the editor what each piece is, weapon, body, cap, hair, shield, arm or leg, and whether it is drawn in multicolour, with wide pixels in three colours, or in hires, with narrow pixels in one.</p>
+  <p>The colours are one to a kind of piece, so a figure's whole body takes one colour and its legs another; the editor's COLOR menu changes them a kind at a time. Rather than put the pieces' codes on the screen, <code>draw_figure</code> copies each piece's picture into a character of the figure's own, <code>$60</code> plus the cell's number among the 36 the editor shows, and puts that character on the screen. A battle does the same with all twelve slots: <span data-part="com-prep"><code>assign_icon_codes</code> (<code>$0942</code>)</span> gives each slot's two poses, and a mirror image of each for facing the other way, codes of their own in the battle's character set.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* por-figures */
+// porFigures(icons, comPrep, C64Cpu): the battle's figures and sprites, made by the game's own code on
+// the kit's 6502. icons is the icons part's memory (CHARPIC00, the pieces' pictures, at $9900;
+// SPELLE64's tables at $A700; the combat icon editor at $AF00), comPrep the com-prep part's.
+// layout(mem, set, choice) runs the editor for choice `choice` of piece set `set` (0 small weapons,
+// 1 small heads, 2 large weapons, 3 large heads): save_head ($B26F), then the lines of pick_piece that
+// lay a choice out in both poses ($B14C-$B1F2, ending with restore_head), on the new icon's codes
+// ($B5F4) and colours ($B618). figure(set, choice) lays the choice out on the editor's own starting
+// icon after the first weapon and the first head of the set's size; with choice null it is that
+// figure alone. cursor() runs set_sprites ($147D-$14C5) and returns the 63 bytes it builds at $E280,
+// with the resident's banking routines ($3AAB, $3AB1) stood in for, as they only switch memory in.
+function porFigures(icons, comPrep, C64Cpu) {
+  const io = { read() { return 0; }, write() {} };
+  function layout(mem, set, choice) {
+    const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });
+    mem[0xB63C] = set; mem[0xB5F1] = set >> 1; mem[0xB5F3] = set & 1; mem[0xB63D] = mem[0xB0DA + set];
+    cpu.call(0xB26F, {}, { maxSteps: 1e5 });
+    mem[0xB63E] = choice; mem[0xB63F] = choice;
+    cpu.pc = 0xB14C; cpu.sp = 0xF0;
+    cpu.run({ until: 0xB1F5, maxSteps: 1e6 });
+  }
+  const counts = [0, 1, 2, 3].map((s) => icons[0xB0DA + s]);          // piece_counts
+  function figure(set, choice) {
+    const m = icons.slice(), size = set >> 1;
+    layout(m, size * 2, 0); layout(m, size * 2 + 1, 0);
+    if (choice !== null) layout(m, set, choice);
+    return { mem: m, codes: Array.from(m.slice(0xB5F4, 0xB606)), colours: Array.from(m.slice(0xB618, 0xB62A)) };
+  }
+  function cursor() {
+    const m = comPrep.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+    const out = (c) => { c.rts(); };
+    cpu.pc = 0x147D; cpu.sp = 0xF0;
+    cpu.run({ until: 0x14C6, maxSteps: 1e5, hooks: { 0x3AAB: out, 0x3AB1: out } });
+    return m.slice(0xE280, 0xE2BF);
+  }
+  return { counts, figure, cursor };
+}
+// porPaintCells(px, w, ox, oy, pics, codes, colours, rgb, bg, mc1, mc2): three by three characters at
+// (ox, oy) in an RGBA buffer w wide, each code's picture eight bytes at pics + 8 x code, as the video
+// chip shows them in multicolour character mode: a colour with bit 3 set makes a multicolour cell,
+// %00 the background bg ($D021), %01 mc1 ($D022), %10 mc2 ($D023), %11 the colour's low three bits;
+// a colour below 8 makes a hires cell, set bits in that colour on the background.
+function porPaintCells(px, w, ox, oy, mem, pics, codes, colours, rgb, bg, mc1, mc2) {
+  const set = (x, y, c) => { const o = (y * w + x) * 4, k = rgb[c]; px[o] = k[0]; px[o + 1] = k[1]; px[o + 2] = k[2]; px[o + 3] = 255; };
+  for (let c = 0; c < 9; c++) {
+    const code = codes[c], col = colours[c], cx = ox + (c % 3) * 8, cy = oy + Math.floor(c / 3) * 8;
+    for (let r = 0; r < 8; r++) {
+      const v = mem[pics + code * 8 + r];
+      if (col & 8) for (let p = 0; p < 4; p++) { const k = [bg, mc1, mc2, col & 7][v >> (6 - 2 * p) & 3]; set(cx + 2 * p, cy + r, k); set(cx + 2 * p + 1, cy + r, k); }
+      else for (let p = 0; p < 8; p++) set(cx + p, cy + r, v >> (7 - p) & 1 ? col & 7 : bg);
+    }
+  }
+}
+// end of por-figures
+</script>
+<script>
+// Graphics tab. The figures and the battle's cursor are made by the game's own code (porFigures) on
+// the kit's 6502, C64Cpu from ../../lib/cpu6502.js, over the parts' bytes; the other sprites are their
+// bytes as the listing holds them, painted as the video chip paints a sprite.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const fail = (t) => { $('gx-cast').innerHTML = '<p class="gx-miss">' + t + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { fail('These figures are drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  let I, P, S, T;
+  try { [I, P, S, T] = await Promise.all(['icons', 'com-prep', 'combat-set', 'title'].map((p) => C64.load('parts/' + p + '/listing.json'))); } catch (e) { fail('The listing did not load, so nothing can be drawn.'); return; }
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const KIND = ['weapon', 'body', 'cap', 'hair', 'shield', 'arm', 'leg', 'blank'];
+  const BG = 11, MC1 = 10, MC2 = 0;
+  const F = porFigures(I.ram, P.ram, C64Cpu);
+  const hx = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const off = document.createElement('canvas'), offx = off.getContext('2d');
+  function show(cv, img, s) {
+    off.width = img.width; off.height = img.height; offx.putImageData(img, 0, 0);
+    const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(off, 0, 0, img.width * s, img.height * s);
+  }
+  function fill(img, c) { const k = rgb[c]; for (let i = 0; i < img.data.length; i += 4) { img.data[i] = k[0]; img.data[i + 1] = k[1]; img.data[i + 2] = k[2]; img.data[i + 3] = 255; } }
+  function box(img, x, y, w, h, c) { const k = rgb[c]; for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) { const o = (j * img.width + i) * 4; img.data[o] = k[0]; img.data[o + 1] = k[1]; img.data[o + 2] = k[2]; } }
+  // A sprite of `rows` rows from mem at a, as the video chip paints it: multicolour pairs %01 mc0
+  // ($D025), %10 its colour, %11 mc1 ($D026); hires set bits in its colour; ys 2 when doubled in height.
+  function sprite(img, ox, oy, mem, a, rows, colour, multi, mc0, mc1, ys = 1) {
+    const set = (x, y, c) => { const o = (y * img.width + x) * 4, k = rgb[c]; img.data[o] = k[0]; img.data[o + 1] = k[1]; img.data[o + 2] = k[2]; };
+    for (let r = 0; r < rows; r++) for (let b = 0; b < 3; b++) {
+      const v = mem[a + r * 3 + b];
+      for (let yy = 0; yy < ys; yy++) {
+        const y = oy + r * ys + yy, x = ox + b * 8;
+        if (multi) for (let p = 0; p < 4; p++) { const bits = v >> (6 - 2 * p) & 3; if (bits) { const c = [0, mc0, colour, mc1][bits]; set(x + 2 * p, y, c); set(x + 2 * p + 1, y, c); } }
+        else for (let p = 0; p < 8; p++) if (v >> (7 - p) & 1) set(x + p, y, colour);
+      }
+    }
+  }
+  function group(boxEl, title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3>' + (text ? '<p>' + text + '</p>' : '') + '<div class="gx-tiles"></div>';
+    boxEl.appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, s, label, part) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; if (part) t.dataset.part = part; cv.width = w * s; cv.height = h * s; sp.innerHTML = label;
+    t.appendChild(cv); t.appendChild(sp); tiles.appendChild(t);
+    return cv;
+  }
+
+  // 01: every choice, laid out by the editor
+  const cast = $('gx-cast'), read = $('gx-read');
+  cast.innerHTML = '';
+  const codesText = (c) => [0, 3, 6].map((i) => c.slice(i, i + 3).map((n) => hx(n)).join(' ')).join(' / ');
+  function sheet(title, text, set, what) {
+    const n = F.counts[set], per = 8, cw = 60, ch = 30, rows = Math.ceil(n / per);
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><p>' + text + '</p>';
+    const cv = document.createElement('canvas');
+    cv.className = 'gx-sheet'; cv.width = per * cw * 2; cv.height = rows * ch * 2;
+    g.appendChild(cv); cast.appendChild(g);
+    const img = new ImageData(per * cw, rows * ch), figs = [];
+    fill(img, 0);
+    const k = [27, 28, 32];
+    for (let i = 0; i < img.data.length; i += 4) { img.data[i] = k[0]; img.data[i + 1] = k[1]; img.data[i + 2] = k[2]; }
+    for (let i = 0; i < n; i++) {
+      const f = F.figure(set, i), x = (i % per) * cw + 4, y = Math.floor(i / per) * ch + 3;
+      box(img, x - 2, y - 2, 52, 28, BG);
+      porPaintCells(img.data, img.width, x, y, f.mem, 0x9900, f.codes.slice(0, 9), f.colours.slice(0, 9), rgb, BG, MC1, MC2);
+      porPaintCells(img.data, img.width, x + 24, y, f.mem, 0x9900, f.codes.slice(9), f.colours.slice(9), rgb, BG, MC1, MC2);
+      figs.push(f);
+    }
+    show(cv, img, 2);
+    cv.addEventListener('mousemove', (e) => {
+      const r = cv.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * per * cw, sy = (e.clientY - r.top) / r.height * rows * ch;
+      const i = Math.floor(sy / ch) * per + Math.floor(sx / cw);
+      if (i < 0 || i >= n) return;
+      read.innerHTML = '<b>' + what + ' ' + (i + 1) + ' of ' + n + '</b>: ready ' + codesText(figs[i].codes.slice(0, 9)) + '; attacking ' + codesText(figs[i].codes.slice(9));
+    });
+  }
+  sheet('Large figures: every head', 'For the man-sized races: 23 heads, from <code>large_head_first</code> (<code>$A8F0</code>).', 3, 'Large head');
+  sheet('Large figures: every weapon', '35 weapons, from <code>large_weapon_first</code> (<code>$A800</code>).', 2, 'Large weapon');
+  sheet('Small figures: every head', 'For dwarves, gnomes and halflings: 14 heads, from <code>small_head_first</code> (<code>$AAD0</code>).', 1, 'Small head');
+  sheet('Small figures: every weapon', '28 weapons, from <code>small_weapon_first</code> (<code>$A9E0</code>).', 0, 'Small weapon');
+
+  cast.appendChild(read);
+
+  // the battle's sprites
+  const g5 = group(cast, 'The battle\'s sprites', '');
+  {
+    const img = new ImageData(32, 30); fill(img, BG);
+    sprite(img, 4, 3, F.cursor(), 0, 21, 0, 0, 0, 0, 2);
+    show(tile(g5, 32, 30, 3, 'The cursor, built by <code>set_sprites</code>: black, doubled in height', 'com-prep'), img, 3);
+  }
+  {
+    const img = new ImageData(32, 27); fill(img, BG);
+    sprite(img, 4, 3, S.ram, 0xA8B6, 21, 0, 0, 0, 0);
+    sprite(img, 4, 3, S.ram, 0xA876, 21, 2, 0, 0, 0);
+    show(tile(g5, 32, 27, 3, 'A fallen body: <code>$A876</code> in red over <code>$A8B6</code> in black', 'combat-set'), img, 3);
+  }
+  for (let i = 0; i < 4; i++) {
+    const pair = S.ram[0xADD7 + i], c1 = S.ram[0xADE4 + 2 * pair], c2 = S.ram[0xADE5 + 2 * pair];
+    const img = new ImageData(32, 27); fill(img, BG);
+    sprite(img, 4, 3, S.ram, 0xADF6 + 64 * i, 21, c1 & 15, c1 & 0x40, c2 & 15, c2 >> 4);
+    show(tile(g5, 32, 27, 3, 'Missile picture ' + i + ', colour pair ' + pair + ': ' + NAMES[c1 & 15] + ((c1 & 0x40) ? ' with ' + NAMES[c2 & 15] + ' and ' + NAMES[c2 >> 4] : ''), 'combat-set'), img, 3);
+  }
+  // the title's sprites
+  const g6 = group(cast, 'The title\'s sprites', '');
+  {
+    const img = new ImageData(72, 27); fill(img, 0);
+    [0, 1, 2].forEach((n) => sprite(img, 4 + [0, 18, 41][n], 3, T.ram, 0xC000 + 64 * n, 21, T.ram[0xC03F + 64 * n] & 15, 0, 0, 0));
+    show(tile(g6, 72, 27, 3, 'The red behind the TSR logo: <code>$C000</code>-<code>$C0BF</code>, at their X places, 156, 174 and 197', 'title'), img, 3);
+  }
+  {
+    const seq = Array.from(T.ram.slice(0x0D30, 0x0D40)), img = new ImageData(16 * 26 + 4, 27); fill(img, 0);
+    seq.forEach((p, i) => { if (p < 0x80) sprite(img, 4 + i * 26, 3, T.ram, 0xC000 + 64 * p, 21, T.ram[0xC03F + 64 * p] & 15, 0, 0, 0); });
+    show(tile(g6, 16 * 26 + 4, 27, 2, 'A sparkle\'s sixteen steps, <code>sparkle_frames</code> (<code>$0D30</code>): pointers ' + seq.map((p) => p.toString(16).toUpperCase()).join(' ') + ', the last hiding it to move', 'title'), img, 2);
+  }
+
+  // 02: one figure, cell by cell
+  {
+    const f = F.figure(3, 0), img = new ImageData(56, 30); fill(img, BG);
+    porPaintCells(img.data, 56, 3, 3, f.mem, 0x9900, f.codes.slice(0, 9), f.colours.slice(0, 9), rgb, BG, MC1, MC2);
+    porPaintCells(img.data, 56, 29, 3, f.mem, 0x9900, f.codes.slice(9), f.colours.slice(9), rgb, BG, MC1, MC2);
+    const cv = tile($('gx-fig'), 56, 30, 6, 'Ready, then attacking');
+    show(cv, img, 6);
+    const ctx = cv.getContext('2d');
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1;
+    for (const ox of [3, 29]) for (let i = 0; i <= 3; i++) {
+      ctx.beginPath(); ctx.moveTo((ox + i * 8) * 6 + .5, 18); ctx.lineTo((ox + i * 8) * 6 + .5, 27 * 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ox * 6, (3 + i * 8) * 6 + .5); ctx.lineTo((ox + 24) * 6, (3 + i * 8) * 6 + .5); ctx.stroke();
+    }
+    let html = '<tr><th>Cell</th><th>Ready</th><th>Attacking</th></tr>';
+    const cell = (code, col) => { const t = I.ram[0xA700 + code]; return '<code>' + hx(code) + '</code> ' + (KIND[t & 0x7F] || 'unused') + ', ' + ((col & 8) ? 'multicolour, ' : 'hires, ') + NAMES[col & 7]; };
+    for (let c = 0; c < 9; c++) html += '<tr><td>' + ['top left', 'top', 'top right', 'left', 'middle', 'right', 'bottom left', 'bottom', 'bottom right'][c] + '</td><td>' + cell(f.codes[c], f.colours[c]) + '</td><td>' + cell(f.codes[9 + c], f.colours[9 + c]) + '</td></tr>';
+    $('gx-cells').innerHTML = html;
+  }
+})();
+</script>

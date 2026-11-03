@@ -1,0 +1,455 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armalyte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.ar-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.ar-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.ar-row button,.ar-tabs button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.ar-row button:hover,.ar-tabs button:hover{border-color:var(--ink-mute)}
+.ar-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;font-family:var(--fm);font-size:13px}
+.ar-tabs button.ar-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.ar-range{flex:1;min-width:200px}
+.ar-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-width:12em}
+.ar-tbl{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 0}
+.ar-tbl th,.ar-tbl td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.ar-tbl th{font-family:var(--fm);font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.ar-tbl td.ar-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.ar-pods{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.ar-pod{text-align:center;font-size:13px;line-height:1.35;color:var(--ink-soft)}
+.ar-pod canvas{width:96px;height:84px;image-rendering:pixelated;background:#000;border-radius:4px;display:block;margin:0 auto 6px}
+.ar-pod b{display:block;color:var(--ink);font-size:13.5px}
+.ar-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.ar-key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:-1px}
+.ar-scroll{overflow-x:auto}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button.ar-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.gx-bar .gx-sep{width:10px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#000;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile .gx-cvs{display:flex;gap:4px;flex-wrap:wrap}
+.gx-tile canvas{display:block;image-rendering:pixelated}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-mem{display:flex;height:46px;border-radius:5px;overflow:hidden;font-family:var(--fm);font-size:11.5px;line-height:1.25;color:#fff}
+.gx-mem div{padding:6px 7px;overflow:hidden;border-right:1px solid rgba(255,255,255,.5)}
+.gx-addr{display:flex;font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin:4px 0 0}
+.gx-addr span{flex:0 0 auto}
+@media (max-width:700px){.gx-mem{height:64px;font-size:10px}.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · Thalamus</p>
+  <h1>Armalyte</h1>
+  <p class="sub">The ships, the enemies, the bosses and their shots are all sprites; only the players' own fire is drawn into the screen as characters. Each level brings its own 192 sprite frames into the same place in memory, and every enemy, boss and shot is a short run of those frames played in a colour of its own.</p>
+</header>
+<main class="wrap">
+
+<section id="cast" data-part="engine">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every sprite of a level, played at the game's rate</h2>
+  <p class="lede">The ships, the drone and the pods are the same on every level. The enemies, their shots and the bosses come with the level's file. Here each one plays its frames as the game's own tables say, at 50 frames a second.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-levels"></div>
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"></div>
+    <p class="cap">Drawn from the level's sprite frames (<code>$4000</code> + 64 × the frame number in its listing) and the engine's tables. Every sprite is multicolour, with white and dark grey shared by all of them (<code>video_setup_play</code>, <code>$AB0F</code>) and its own colour from its object type (<code>$03E6</code> in the level). An enemy moves on through its frames once every second frame, held for the delay its type gives (<code>objects_animate</code>, <code>$F022</code>), and only while the step of its path is marked for animation. Here every enemy animates all the time.</p>
+  </div>
+  <p>An enemy's look is five bytes in five tables, one entry per object type (<code>objects_init_new</code>, <code>$E3AA</code>): its first and last frame, a byte holding its firing mode, its frame delay and whether it plays back and forth, its colour, and its hit points. The tables hold 162 types, and many enemies share their frames with other types that differ only in colour or behaviour. A run of frames is played forwards and starts again, or plays to its last frame and back, holding each end for one more step.</p>
+  <p>A boss is built from the same objects as a wave. Its table names an object type for each of up to 16 parts, and most parts show a single frame, so a boss is a picture cut into sprite-sized pieces that fly in formation. The <a href="bosses.html">Bosses</a> tab runs every boss fight with these parts in place.</p>
+  <p>The ships tilt rather than turn. Player 1's ship has seven frames with level flight in the middle. Every fifth frame the game moves it one frame towards one end while the stick is pushed up, towards the other while it is pulled down, and back towards the middle when the stick is let go (<code>ship1_bank</code>, <code>$F407</code>). A second player's ship does the same with frames <code>$07</code>-<code>$0D</code>. The drone has no tilt at all: it turns through eight frames of its own, a step every fourth frame while it is attached and every second frame when it is set loose (<code>drone_spin</code>, <code>$9F0E</code>).</p>
+</section>
+
+<section id="bank" data-part="engine">
+  <p class="fig">02 · The sprite frames</p>
+  <h2 class="t">A level's 192 sprite frames, and what uses each one</h2>
+  <p class="lede">The ships, the drone, the scoreboard, the pods and the bursts have the same frames in every level's file. The rest belong to the level, and a few of them nothing ever shows.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-levels2"></div>
+    <canvas id="gx-sheet" class="gx-sheet" width="832" height="576" aria-label="The level's sprite frames, sixteen to a row"></canvas>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a frame to see what uses it.</p>
+    <p class="cap">Frames <code>$00</code>-<code>$BF</code>, sixteen to a row, from <code>$4000</code> to <code>$6FFF</code> in the level's listing, each in the colour of the first thing that uses it. The bar under a frame says what uses it; a frame with no bar is never shown. What uses a frame comes from the level's object types, those its waves place, its bosses are built from and its bosses let loose, and from the engine's fixed frames.</p>
+  </div>
+  <p>The scoreboard's eight frames are drawn into while the game runs: <code>panel_update</code> (<code>$99FA</code>) writes the score and each player's figures into them from the engine's font, one changed item a frame, so what the level file holds there is only a starting picture. Frame <code>$BF</code> is blank in every level and is what an exploding ship shows after its last burst frame (<code>$EA18</code>).</p>
+</section>
+
+<section id="screen" data-part="engine">
+  <p class="fig">03 · The screen</p>
+  <h2 class="t">One bank of the video chip's memory holds the sprites, both screens and the characters</h2>
+  <p class="lede">The video chip sees 16K of memory at a time. In play it sees <code>$4000</code>-<code>$7FFF</code> (<code>$DD00</code> = 2), and most of what it holds comes from the level's file.</p>
+  <div class="plate">
+    <div class="gx-mem" role="img" aria-label="The video bank from $4000 to $7FFF: sprite frames, two screens, then the characters">
+      <div style="flex:12;background:#3d6fb0">192 sprite frames, <code style="background:none;padding:0">$4000</code>-<code style="background:none;padding:0">$6FFF</code></div>
+      <div style="flex:1;background:#2a8a4a">screen</div>
+      <div style="flex:1;background:#21703c">screen</div>
+      <div style="flex:2;background:#c25a00;border-right:none">characters</div>
+    </div>
+    <div class="gx-addr"><span style="flex:12">$4000</span><span style="flex:1">$7000</span><span style="flex:1">$7400</span><span style="flex:2">$7800-$7FFF</span></div>
+    <p class="cap">The sprite frames come from the level file. The two screens at <code>$7000</code> and <code>$7400</code> are drawn by the scroll, each ending in its eight sprite pointers (<code>$73F8</code>, <code>$77F8</code>). Characters <code>$20</code>-<code>$FF</code> are the level's own set, copied to <code>$7900</code> from <code>$D000</code> in its file at the level's start, and the game builds the stars' characters below them.</p>
+  </div>
+  <p>The playfield is a multicolour character screen, and the map is drawn into whichever of the two screens is hidden, one column on over the eight frames of a scroll step. At line 0 the interrupt shows the finished one (<code>$D018</code> = <code>$CE</code> or <code>$DE</code>, from <code>$24</code>), so the map moves a character left with no redrawing seen. The <a href="index.html">How it works</a> tab draws the screen from a frame of the game's memory and shows every level scrolling.</p>
+  <p>Characters <code>$F6</code> to <code>$FF</code> of each level's set are the players' fire, written into the screen (<a href="index.html#weapons">How it works</a>), and the stars are characters too. Everything else that moves is a sprite, and the How it works tab shows how the game gets up to thirty of them out of the machine's eight (<a href="index.html#sprites">Sprites</a>). The eight that make the scoreboard below the playfield are grey (<code>panel_sprites_setup</code>, <code>$9D6C</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+'use strict';
+const HAS = typeof C64 !== 'undefined';
+const $ = id => document.getElementById(id);
+const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+const PAL_HZ = 50.125;
+function missing(el) {
+  el.insertAdjacentHTML('afterend', '<p class="ar-miss">These pictures are drawn by the site\'s shared script, which the built site serves.</p>');
+}
+if (!HAS) { missing($('gx-cast')); missing($('gx-sheet')); return; }
+const PAL = C64.PAL;
+const part = id => C64.load('parts/' + id + '/listing.json');
+const list = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+
+// One sprite frame of a level, in one colour, drawn once: multicolour, with white ($D025) and dark
+// grey ($D026) shared by every sprite, as video_setup_play ($AB0F) sets them
+const shapes = new Map();
+function shape(L, f, c) {
+  const key = L.n + ':' + f + ':' + c;
+  if (!shapes.has(key)) {
+    const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42;
+    C64.drawSpriteMC(cv.getContext('2d'), L.r.subarray(0x4000 + 64 * f, 0x4000 + 64 * f + 63), 0, 0, 2, PAL[c], PAL[1], PAL[11]);
+    shapes.set(key, cv);
+  }
+  return shapes.get(key);
+}
+
+// ---- what moves, and how each one steps from frame to frame ----
+// objects_animate ($F022), every second frame: an object's frame moves on once its delay has run
+// out; at the last frame it starts again, or turns back and holds the end for a step
+function typeAnim(r, t) {
+  const m = r[0x0344 + t], d = (m & 0x3C) >> 2;
+  const s = { first: r[0x0200 + t], last: r[0x02A2 + t], pp: m & 0x40, fdel: d, dir: 0 };
+  s.frame = s.first;
+  return {
+    colour: () => r[0x03E6 + t] & 15, frame: () => s.frame,
+    step(f) {
+      if (!(f & 1)) return;
+      if (s.fdel) { s.fdel--; return; }
+      s.fdel = d;
+      if (!s.dir) {
+        if (s.frame < s.last) s.frame++;
+        else if (!s.pp) s.frame = s.first;
+        else s.dir = 1;
+      } else if (s.frame === s.first) s.dir = 0;
+      else s.frame--;
+    },
+  };
+}
+// a list of frames, one every n frames; null shows nothing
+function seqAnim(frames, n, colour) {
+  let i = 0, k = 0;
+  return { colour: () => colour, frame: () => frames[i], step() { if (++k >= n) { k = 0; i = (i + 1) % frames.length; } } };
+}
+// ship1_bank ($F407) and ship2_bank ($F43A): every fifth frame one frame towards the end the stick
+// points to, or back towards level flight; here the stick is held up, let go, held down, let go
+function tiltAnim(lo, colour) {
+  let fr = lo + 3, t = 4, f = 0;
+  return {
+    colour: () => colour, frame: () => fr,
+    step() {
+      const ph = Math.floor(f++ / 60) % 4;
+      if (--t >= 0) return;
+      t = 4;
+      if (ph === 0) { if (fr !== lo + 6) fr++; }
+      else if (ph === 2) { if (fr !== lo) fr--; }
+      else if (fr < lo + 3) fr++;
+      else if (fr > lo + 3) fr--;
+    },
+  };
+}
+// ship1_invulnerable ($EA77): one colour a frame from the six at $EAA3 (ship 2: $EAAA)
+function flashAnim(e, tab, frame) {
+  let x58 = 0, c = e[tab];
+  return { colour: () => c, frame: () => frame, step() { const x = x58; if (!x) x58 = 6; x58--; c = e[tab + x]; } };
+}
+
+// ---- a level's cast, from its waves, its bosses and the engine's fixed frames ----
+function waveTypes(r) {
+  const out = [];
+  for (let col = 0; col < 256; col++) {
+    if (!r[0x142C + col]) continue;
+    const w = r[0x152C + col], a = r[0x182C + w] | r[0x172C + w] << 8;
+    for (let e = 0; e <= r[0x162C + col]; e++) out.push(r[a + 5 * e + 2]);
+  }
+  return out;
+}
+// the bosses the script starts (events 0-10, $9754) and their tables ($9778 end, $97D8 mid-level)
+function bosses(r) {
+  const out = [];
+  for (let e = 0; e <= 10; e++) {
+    const b = r[0x9754 + e];
+    if ((b === 1 || b === 2) && !out.some(o => o.which === b)) {
+      const t = b === 1 ? 0x9778 : 0x97D8, set = r[t + 3], parts = [], spawn = [];
+      for (let i = 0; i < 16; i++) if (r[t + 0x0C + i]) parts.push({ i, type: r[t + 0x0C + i] });
+      // boss_spawn ($AD89): the spawn list's entries in turn, none when the setting is $FF
+      if (set !== 0xFF) for (let y = 0; y <= (set & 3); y++) spawn.push(r[t + 0x4C + 12 + y]);
+      out.push({ which: b, guards: r[t], parts, spawn });
+    }
+  }
+  return out.sort((a, b) => b.which - a.which);
+}
+
+function castOf(L, E) {
+  const r = L.r, e = E.ram, groups = [];
+  const ship1 = e[0x9D34], ship2 = e[0x9D38], drone = e[0x9D59];   // players_start_positions ($9D0F): the ships' colours $08 and $09, the drone's $09
+  // ship_explosion_frames ($EA18), read from the end, one every fourth frame
+  const boom = []; for (let x = 12; x >= 0; x--) boom.push(e[0xEA18 + x]);
+  groups.push({ title: 'The ships and the drone', note: 'The same frames on every level.', tiles: [
+    { label: 'player 1, frames $00-$06', anims: [tiltAnim(0, ship1)] },
+    { label: 'player 2, frames $07-$0D', anims: [tiltAnim(7, ship2)] },
+    { label: 'the drone, frames $0E-$15', anims: [seqAnim([0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x0E], 4, drone)] },
+    { label: 'flashing while invulnerable', anims: [flashAnim(e, 0xEAA3, 3), flashAnim(e, 0xEAAA, 10)] },
+    { label: 'a ship exploding', anims: [seqAnim(boom.concat([null, null, null, null]), 4, ship1)] },
+  ]});
+  // pods: types 5 and 6 unshot, then pod_next_type's seven looks ($A64C frames, $A65C colours)
+  const names = ['forward fire', 'the tail gun', 'the vertical cannon', 'the trident', 'converge', 'a generator', 'a battery'];
+  groups.push({ title: 'Munitions pods', note: 'An unshot pod is type 5, or 6 in a two-player game only. Shot enough, it shows the enhancement it gives.', tiles: [
+    { label: 'unshot, types 5 and 6', anims: [typeAnim(r, 5), typeAnim(r, 6)] },
+  ].concat(names.map((nm, k) => ({ label: nm, anims: [seqAnim([e[0xA64C + k + 1]], 1, e[0xA65C + k + 1])] })))});
+  // enemies: one tile per run of frames, with each colour and delay the types give it
+  const B = bosses(r), seen = new Set([0, 3, 4, 5, 6]), from = new Map();
+  const note = (t, s) => { if (!seen.has(t) && !from.has(t)) from.set(t, s); };
+  waveTypes(r).forEach(t => note(t, ''));
+  for (const b of B) b.spawn.forEach(t => note(t, b.which === 1 ? 'end boss' : 'mid-level boss'));
+  const runs = new Map();
+  for (const [t, s] of from) {
+    const key = r[0x200 + t] + ':' + r[0x2A2 + t] + ':' + (r[0x344 + t] & 0x40);
+    if (!runs.has(key)) runs.set(key, { first: r[0x200 + t], last: r[0x2A2 + t], pp: r[0x344 + t] & 0x40, types: [], looks: new Map(), by: new Set() });
+    const g = runs.get(key), look = (r[0x3E6 + t] & 15) + ':' + ((r[0x344 + t] & 0x3C) >> 2);
+    g.types.push(t); if (s) g.by.add(s);
+    if (!g.looks.has(look)) g.looks.set(look, t);
+  }
+  const span = g => g.first === g.last ? 'frame ' + hex(g.first) : 'frames ' + hex(g.first) + '-' + hex(g.last) + (g.pp ? ', back and forth' : '');
+  const enemyTile = g => ({
+    label: (g.types.length > 1 ? 'types ' : 'type ') + list(g.types.sort((a, b) => a - b)) + ' · ' + span(g) + (g.by.size ? ' · let loose by the ' + [...g.by].join(' and ') : ''),
+    anims: [...g.looks.values()].map(t => typeAnim(r, t)),
+  });
+  const ens = [...runs.values()].sort((a, b) => a.first - b.first || a.last - b.last);
+  groups.push({ title: 'The enemies', note: 'Every enemy the level\'s waves place and its bosses let loose, one tile for each run of frames, in every colour its types give it.', tiles: ens.map(enemyTile) });
+  groups.push({ title: 'Enemy shots', note: 'A shot aimed at player 1 is type 3, one aimed at the second ship or the drone type 4 (<code>enemies_fire</code>, <code>$A664</code>).', tiles: [
+    { label: 'type 3 · ' + span({ first: r[0x203], last: r[0x2A5], pp: r[0x347] & 0x40 }), anims: [typeAnim(r, 3)] },
+    { label: 'type 4 · ' + span({ first: r[0x204], last: r[0x2A6], pp: r[0x348] & 0x40 }), anims: [typeAnim(r, 4)] },
+  ]});
+  for (const b of B) {
+    groups.push({ title: b.which === 1 ? 'The boss at the end of the level' : 'The mid-level boss',
+      note: b.parts.length + ' parts, numbered as the boss table places them: the core is part 0' + (b.guards ? ', and parts 1' + (b.guards > 1 ? '-' + b.guards : '') + ' are the guards that shield it' : '') + '.',
+      tiles: b.parts.map(p => ({ label: (p.i === 0 ? 'the core' : p.i <= b.guards ? 'guard ' + p.i : 'part ' + p.i) + ' · type ' + p.type + ' · ' + span({ first: r[0x200 + p.type], last: r[0x2A2 + p.type], pp: r[0x344 + p.type] & 0x40 }), anims: [typeAnim(r, p.type)] })) });
+  }
+  // object_burst_step ($EFE8): $2E-$37, a step every second call for an enemy, every call for a shot
+  const burst = [0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37];
+  const ex = ens.length ? Math.min(...ens[0].types) : 5;
+  groups.push({ title: 'Bursts', note: 'Anything shot bursts through the same ten frames in its own colour.', tiles: [
+    { label: 'an enemy of type ' + ex + ' bursting, a frame every 4', anims: [seqAnim(burst.concat(Array(15).fill(null)), 4, r[0x3E6 + ex] & 15)] },
+    { label: 'an enemy shot bursting, a frame every 2', anims: [seqAnim(burst.concat(Array(30).fill(null)), 2, r[0x3E6 + 3] & 15)] },
+  ]});
+  return groups;
+}
+
+// The players' fire: characters $F6-$FF of the level's set ($D000 in its file, from character $20),
+// multicolour, in the colours of the level's first event: 00 $D021, 01 $D022, 10 $D023, 11 colour RAM 8
+function fireTiles(r) {
+  const names = { 0xF6: 'forward fire', 0xF7: 'the vertical cannon, up', 0xF8: 'the vertical cannon, down', 0xF9: 'tail fire', 0xFA: 'the trident', 0xFB: 'the drone\'s line', 0xFC: 'super weapons', 0xFD: 'super weapons', 0xFE: 'super weapons', 0xFF: 'super weapons' };
+  const cs = [r[0x970C], r[0x9718], r[0x9724], 0].map(c => PAL[c & 15]);
+  const box = document.createElement('div'); box.className = 'gx-tiles';
+  for (let ch = 0xF6; ch <= 0xFF; ch++) {
+    const cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+    const x = cv.getContext('2d');
+    for (let y = 0; y < 8; y++) {
+      const b = r[0xD000 + (ch - 0x20) * 8 + y];
+      for (let p = 0; p < 4; p++) { x.fillStyle = cs[(b >> (6 - 2 * p)) & 3]; x.fillRect(p * 8, y * 4, 8, 4); }
+    }
+    const t = document.createElement('div'); t.className = 'gx-tile';
+    const w = document.createElement('div'); w.className = 'gx-cvs'; w.appendChild(cv); t.appendChild(w);
+    t.insertAdjacentHTML('beforeend', '<span>' + hex(ch) + ' ' + names[ch] + '</span>');
+    box.appendChild(t);
+  }
+  return box;
+}
+
+// ---- section 01: the cast, running ----
+const view = { L: null, E: null, tiles: [], f: 0, playing: true, last: 0, acc: 0, n: 1 };
+function buildCast() {
+  const L = view.L, box = $('gx-cast');
+  box.innerHTML = ''; view.tiles = [];
+  for (const g of castOf(L, view.E)) {
+    const d = document.createElement('div'); d.className = 'gx-group';
+    d.innerHTML = '<h3>' + g.title + '</h3><p>' + g.note + '</p>';
+    const row = document.createElement('div'); row.className = 'gx-tiles';
+    for (const t of g.tiles) {
+      const tile = document.createElement('div'); tile.className = 'gx-tile';
+      const cvs = document.createElement('div'); cvs.className = 'gx-cvs';
+      for (const a of t.anims) {
+        const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42;
+        cvs.appendChild(cv); view.tiles.push({ a, ctx: cv.getContext('2d'), shown: '' });
+      }
+      tile.appendChild(cvs);
+      const s = document.createElement('span'); s.textContent = t.label; tile.appendChild(s);
+      row.appendChild(tile);
+    }
+    d.appendChild(row); box.appendChild(d);
+  }
+  const d = document.createElement('div'); d.className = 'gx-group';
+  d.innerHTML = '<h3>The players\' fire</h3><p>Not sprites: characters of the level\'s own set, written into the screen, here in the colours of the level\'s first stretch.</p>';
+  d.appendChild(fireTiles(L.r)); box.appendChild(d);
+  draw();
+}
+function draw() {
+  for (const t of view.tiles) {
+    const f = t.a.frame(), c = t.a.colour(), k = f + ':' + c;
+    if (k === t.shown) continue;
+    t.shown = k;
+    t.ctx.clearRect(0, 0, 48, 42);
+    if (f !== null) t.ctx.drawImage(shape(view.L, f, c), 0, 0);
+  }
+  $('gx-stat').textContent = 'level ' + view.n + ' · frame ' + view.f;
+}
+function step() { for (const t of view.tiles) t.a.step(view.f); view.f++; }
+function tick(t) {
+  if (!view.playing) return;
+  view.acc += Math.min(0.25, (t - view.last) / 1000) * PAL_HZ; view.last = t;
+  while (view.acc >= 1) { step(); view.acc--; }
+  draw();
+  requestAnimationFrame(tick);
+}
+function play(on) {
+  view.playing = on; $('gx-run').textContent = on ? 'Pause' : 'Play';
+  if (on) { view.last = performance.now(); view.acc = 0; requestAnimationFrame(tick); }
+}
+$('gx-run').onclick = () => play(!view.playing);
+$('gx-step').onclick = () => { play(false); step(); draw(); };
+
+// ---- section 02: the level's 192 frames, and what uses each ----
+const KINDS = {
+  ship: ['#5b8def', 'the ships and the drone'], board: ['#a0a0a0', 'the scoreboard'], pod: ['#3fb950', 'the pods'],
+  burst: ['#ff7a6b', 'bursts'], enemy: ['#f0a020', 'enemies'], shot: ['#c678dd', 'enemy shots'], boss: ['#56d4dd', 'boss parts'],
+};
+$('gx-key').innerHTML = Object.values(KINDS).map(([c, s]) => '<span><i style="background:' + c + '"></i>' + s + '</span>').join('');
+function usesOf(L, E) {
+  const r = L.r, e = E.ram, use = Array.from({ length: 192 }, () => []);
+  const add = (lo, hi, kind, text, colour) => { for (let f = lo; f <= hi && f < 192; f++) use[f].push({ kind, text, colour }); };
+  add(0, 6, 'ship', 'player 1\'s ship', e[0x9D34]);
+  add(7, 13, 'ship', 'player 2\'s ship', e[0x9D38]);
+  add(14, 21, 'ship', 'the drone', e[0x9D59]);
+  add(22, 29, 'board', 'the scoreboard, drawn into while the game runs', 12);
+  for (let k = 1; k <= 7; k++) add(e[0xA64C + k], e[0xA64C + k], 'pod', 'a shot pod showing its enhancement', e[0xA65C + k]);
+  add(0x2E, 0x37, 'burst', 'bursts, of ships, enemies and shots', e[0x9D34]);
+  add(0xBF, 0xBF, 'burst', 'an exploding ship, after its last burst frame', e[0x9D34]);
+  const byKind = new Map();
+  const type = (t, kind) => { if (!byKind.has(kind)) byKind.set(kind, new Map()); const m = byKind.get(kind); if (!m.has(t)) m.set(t, 1); };
+  type(5, 'pod'); type(6, 'pod'); type(3, 'shot'); type(4, 'shot');
+  const B = bosses(r);
+  for (const b of B) b.parts.forEach(p => type(p.type, 'boss'));
+  waveTypes(r).forEach(t => { if (t > 6) type(t, 'enemy'); });
+  for (const b of B) b.spawn.forEach(t => type(t, 'enemy'));
+  for (const [kind, m] of byKind) {
+    const per = new Map();
+    for (const t of m.keys()) for (let f = r[0x200 + t]; f <= r[0x2A2 + t]; f++) {
+      if (!per.has(f)) per.set(f, []);
+      per.get(f).push(t);
+    }
+    for (const [f, ts] of per) {
+      ts.sort((a, b) => a - b);
+      add(f, f, kind, (kind === 'pod' ? 'unshot pods' : kind === 'shot' ? 'enemy shots' : kind === 'boss' ? 'boss parts' : 'enemies') + ', type' + (ts.length > 1 ? 's ' : ' ') + list(ts), r[0x3E6 + ts[0]] & 15);
+    }
+  }
+  return use;
+}
+const sheet = $('gx-sheet'), sx = sheet.getContext('2d');
+function drawSheet() {
+  const L = view.L, use = view.use;
+  sx.clearRect(0, 0, 832, 576);
+  for (let f = 0; f < 192; f++) {
+    const x = (f % 16) * 52, y = Math.floor(f / 16) * 48, u = use[f];
+    sx.fillStyle = '#000'; sx.fillRect(x + 2, y + 1, 48, 42);
+    sx.globalAlpha = u.length ? 1 : 0.4;
+    sx.drawImage(shape(L, f, u.length ? u[0].colour : 12), x + 2, y + 1);
+    sx.globalAlpha = 1;
+    const kinds = [...new Set(u.map(v => v.kind))];
+    kinds.forEach((k, i) => { sx.fillStyle = KINDS[k][0]; sx.fillRect(x + 2 + i * 48 / kinds.length, y + 44, 48 / kinds.length - (i < kinds.length - 1 ? 1 : 0), 3); });
+  }
+}
+function readAt(ev) {
+  const b = sheet.getBoundingClientRect();
+  const x = (ev.clientX - b.left) * 832 / b.width, y = (ev.clientY - b.top) * 576 / b.height;
+  const f = Math.floor(y / 48) * 16 + Math.floor(x / 52);
+  if (f < 0 || f > 191) return;
+  const u = view.use[f];
+  $('gx-read').textContent = 'Frame ' + hex(f) + ', at ' + hex(0x4000 + 64 * f, 4) + ': ' + (u.length ? [...new Set(u.map(v => v.text))].join('; ') : 'nothing in this level shows it') + '.';
+}
+sheet.addEventListener('mousemove', readAt);
+sheet.addEventListener('click', readAt);
+
+// ---- the level buttons, shared by both sections ----
+async function show(n) {
+  view.n = n;
+  for (const id of ['gx-levels', 'gx-levels2']) $(id).querySelectorAll('button').forEach(b => b.classList.toggle('ar-on', +b.dataset.n === n));
+  try {
+    const [E, L] = await Promise.all([part('engine'), part('level-' + n)]);
+    view.E = E; view.L = { n, r: L.ram }; view.f = 0;
+    buildCast();
+    view.use = usesOf(view.L, E); drawSheet();
+    $('gx-read').textContent = 'Point at a frame to see what uses it.';
+  } catch (e) { $('gx-cast').textContent = 'The level\'s listing did not load (' + e.message + ').'; }
+}
+for (const id of ['gx-levels', 'gx-levels2']) {
+  for (let n = 1; n <= 8; n++) $(id).insertAdjacentHTML('beforeend', '<button type="button" data-n="' + n + '">Level ' + n + '</button>');
+  $(id).querySelectorAll('button').forEach(b => b.onclick = () => show(+b.dataset.n));
+}
+show(1).then(() => play(true));
+})();
+</script>

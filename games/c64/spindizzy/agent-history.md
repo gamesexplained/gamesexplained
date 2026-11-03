@@ -87,3 +87,24 @@ routine tests the sign, and it was corrected.
 The contributor asked during the run for sound effect sections to sit
 high on the page; with no music, the effects section follows the
 opening section.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+Added `graphics.html`. Its cast runs the game's own routines on the
+kit's 6502: Gerald and both inhabitant kinds through `project` and
+`draw_object`, the jewel and a lift for each switch number through the
+game's piece builder and `run_pieces`, and the I button through
+`change_shape`. A second section rolls Gerald past the block in room
+(53, 61) with the room's tile buffer in place, and shows the mask
+`build_sprite_mask` leaves. The sprite paragraph on How it works now
+links there.
+
+Corrected four comments on the way: `draw_object` picks its frame by
+bits 5-6 of $FE, not 6-7 (the ROLs bring bits 5 and 6 down; checked by
+running it, the frame moves on every 32 of the column); it gives the
+hires sprite black and leaves the multicolour one's colour alone;
+`build_sprite_mask` and `mask_place` start from the first tile whose
+depth is above the object's, not below; `sort_sprites` puts the deepest
+(nearest) first. The snapshot's $C2A9 is 0; `init_and_title` sets it to
+3, Gerald's cyan, which the page sets as the game does.
+

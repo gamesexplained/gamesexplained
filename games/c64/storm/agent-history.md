@@ -153,3 +153,22 @@ memory as each frame began and logs each later change where the game
 made it, and `renderFrame` applies it there. `test_screen.js` holds the
 message to 0 or 2 pixels left a drawing. The Ghostbusters Play tab drew
 the same way, and its car jumped on the drive for the same reason.
+
+## The Graphics tab (3 November 2026)
+
+A Graphics tab, to the standard every game with moving figures now has.
+Each tile of its cast is a machine of its own running the game's code:
+`players_update` with a held stick walks a player round a square,
+`move_monster` chases a target round a square, `shots_update` flies both
+shots into a wall. The picture block is drawn by `draw_actor` in address
+order, the three unused pieces as plain characters, and a figure is
+built step by step over room 1's floor piece `$2A`, with the masks
+`compose` reads. The paragraph on `compose` moved there from the
+monsters section of How it works, which now links to it.
+
+Holding right on the kit's 6502 over `players_update` turned Agravain on
+passes 2, 6, 10 and so on: once every four passes, where the notes, the
+controls table and the comment on `joystick` said two. `turn_delay` is
+counted down once per run of the controls, which run every other pass.
+With both sticks held, Storm never turned, because the counter is
+shared. All three are corrected, and `facts.md` records the sharing.

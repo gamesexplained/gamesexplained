@@ -75,3 +75,29 @@ matches in every pixel.
 
 **Open.** The older build at `$8010` and `$3F3A` was not compared with
 the code that runs, and one arrow taking two ducks was not seen live.
+
+## 3 November 2026: the Graphics tab
+
+Aaron Bell asked for Graphics tabs on the minisites a human had not yet
+edited, following the site's standard for them.
+
+- `graphics.html` runs the canyon's loop (`duck_loop`, `$1950`) and the
+  shoot-out's (`$35FA`) on the kit's 6502 over the listing's bytes, from
+  `start_play` (`$34AF`), stopping at `delay_count` (`$380B`) to draw each
+  pass at the measured 3.7 and 2.8 frames a pass. The page keeps what
+  `irq_bottom` keeps: the sight's colour, flipped every frame, and the
+  sprite collision register, worked out from the shapes, which the ducks
+  read to know they are hit. A script plays the stick and keeps the
+  arrows, bullets and tokens up. The four kinds of gunman run through
+  `gunman_step` (`$8810`) at a place of each kind, shot every other time.
+  The rides are drawn from the frame lists at `$1038`-`$1074` a step every
+  fourth frame, and the rider thrown is the fall at `$23C2` run on the
+  6502. A sheet shows the stages' 96 shapes and the rides' 208, with what
+  shows each.
+- To aim the Marshall's shots the script needed `check_shot`'s boxes
+  (`hit_boxes`, `$91CA`): a hit needs the sight within about four pixels
+  of the place, by kind. A gunman of kind 0 is four bytes of figure, so
+  the script counts a gunman as out once three are drawn.
+- Nothing shows stage shapes `$3C`-`$3E`, `$55`-`$57` (three small
+  arrows) or `$5C`-`$7F` (empty but for stray bytes), nor ride shapes
+  `$CF`-`$DF`: no pointer write or table in the code names them.

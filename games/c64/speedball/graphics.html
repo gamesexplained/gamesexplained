@@ -1,0 +1,503 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speedball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.sb-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.sb-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.sb-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.sb-btn:hover{border-color:var(--ink-mute)}
+.sb-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sb-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.sb-pics{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.sb-pics figure{margin:0}
+.sb-pics img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.sb-pics figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.sb-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.sb-tbl th,.sb-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.sb-tbl th{font-weight:700;color:var(--ink-soft)}
+.sb-tbl td.sb-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.sb-tbl tr.sb-warn td{background:var(--hl)}
+.sb-wrapx{overflow-x:auto}
+.sb-hist{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;align-items:end;height:150px;margin:8px 0 0}
+.sb-hist div{display:flex;flex-direction:column;justify-content:flex-end;height:100%;text-align:center;font-family:var(--fm);font-size:12px}
+.sb-hist i{display:block;background:var(--accent);border-radius:2px 2px 0 0;min-height:1px}
+.sb-hist b{display:block;font-weight:500;margin-top:4px}
+.sb-hist span{color:var(--ink-mute);font-size:11px}
+.sb-hist div.sb-none b{color:var(--coral)}
+@media (max-width:640px){:root{--gx:16px;--h1:36px;--pp:14px}.sb-pics{grid-template-columns:minmax(0,1fr)}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Image Works</p>
+  <h1>Speedball</h1>
+  <p class="sub">Every player is a multicolour sprite whose shape comes from a frame list, one for each move and each of the eight ways he can face. The ball launcher opens a hatch drawn in characters, and the team choice screen moves its pictures by copying bytes into the bitmap.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every move a player makes, at the game's pace</h2>
+  <p class="lede">In a match the game moves everything once every two frames, a pass, 25 times a second. The players here are moved by the game's own animation code, run a pass at a time on the kit's 6502 in this page, and so is the team choice screen.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="gx-lab">Side</span>
+      <button type="button" id="gx-green" aria-pressed="true">Green</button>
+      <button type="button" id="gx-red" aria-pressed="false">Red</button>
+      <button type="button" id="gx-you" aria-pressed="false">Under your control</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"></div>
+    <p class="cap">The players are <code>action_set_now</code> (<code>$A0C7</code>), which starts a move from the tables at <code>$BB30</code>-<code>$BBE2</code>, then each pass <code>player_frame_set</code> (<code>$8B0B</code>) for the shape and the step at <code>$A02E</code> for the next frame, in that order, as <code>player_dir_step</code> (<code>$9F98</code>) runs them in a match. Their colours are <code>player_colours</code> (<code>$370F</code>), run each pass too. Sprites share black and white as their two common colours (<code>play_sprites_init</code>, <code>$9123</code>), and are drawn over the pitch's light blue. The team choice is <code>team_select</code> (<code>$3D4C</code>) and the part of <code>team_choose</code> from <code>$3E4D</code> that plays a team's animation. When a player's move or the launcher's spin would wait on a joystick or a random number, the page decides.</p>
+  </div>
+  <p>A move, which the game calls an action, is a frame list for each of the eight ways a player faces, the number of frames, and how many passes each frame is held. Running holds each of its eight frames for two passes, and loops; a slide is one frame held for thirteen passes; a fall plays fourteen frames, the last nine all the same. A move that ends hands the player to the action in <code>action_next</code> (<code>$BB57</code>): standing, after a jump, a throw, a slide, a fall, a tackle won or a dive, while running and the keepers' punches go round again. Standing is the middle one of the run's five shapes, so it needs no shapes of its own.</p>
+  <p>Some moves share their shapes. A tackle won is a throw without its first frame, and both keepers stand, between punches, on the field players' standing frames for up and down. A throw starts from the standing frame in seven of the eight directions; facing down, it starts from <code>$66</code>, a running frame, instead of <code>$67</code>.</p>
+  <p>The player under your control flashes light green, or light red on the other side, for four passes in every eight, while bit 2 of the pass counter <code>$62</code> is clear. The ball has four sizes. A player's throw keeps it on the ground, at the smallest size, unless fire is held for five passes after it; then, as after every keeper's throw, the ball goes up, a size larger every eight passes, stays at the largest for twenty and shrinks again on the way down (<code>ball_move</code>, <code>$380E</code>).</p>
+  <p>The launcher is two sets of shapes. Its body is six characters by six in the pitch map, and the four characters that fill its middle are a hatch. At a kick-off <code>launcher_step</code> (<code>$B2B9</code>) opens it a line a frame, sliding its top half up and its bottom half down over a black hole, and after the shot closes it again a line a pass. While it is open, four sprites make a frame round the ball, and the ball's own sprite shows an arrow that turns anticlockwise a step every six frames, seventeen to forty-nine times, before the ball is shot out the way it points (<code>launcher_sequence</code>, <code>$3739</code>). While it turns, the game sets the sprites' shared black to dark grey at line <code>$6E</code> of the screen and back to black at line <code>$9E</code>.</p>
+</section>
+
+<section id="shapes">
+  <p class="fig">02 · The sprite shapes</p>
+  <h2 class="t">Every sprite shape, and what shows it</h2>
+  <p class="lede">The video chip finds its sprites in the second bank of memory, <code>$4000</code>-<code>$7FFF</code>, where a pointer names a shape of 64 bytes. The game uses shapes <code>$00</code>-<code>$9F</code>.</p>
+  <div class="plate">
+    <canvas id="gx-sheet" class="gx-sheet" width="832" height="540" aria-label="Sprite shapes $00 to $9F, sixteen to a row"></canvas>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a shape to see what shows it.</p>
+    <p class="cap">Shapes <code>$00</code>-<code>$9F</code>, sixteen to a row, from the listing's bytes, each as the game shows it: the menus' shapes in one colour on black, the countdown's digits on the panel's light grey, and the rest in multicolour on the pitch's light blue, the players in green. The bar under a shape says what shows it, from the game's frame lists and pointer tables; a shape with no bar is in none of them.</p>
+  </div>
+  <p>Three of the menus' shapes are never shown: two corner pieces, <code>$08</code> and <code>$09</code>, and a block of upright stripes, <code>$0B</code>. Nor are the last ten, <code>$96</code>-<code>$9F</code>, which are alternately filled and empty. The launcher's table at <code>$2D21</code>-<code>$2D58</code> has room for two sets of four parts, but <code>launcher_sequence</code> only ever sets up the first; the second would be four light red copies of the second-smallest ball, <code>$36</code>.</p>
+  <p>The menus' highlight bar and the shop's cursor are each a row of sprites, a left end, middles and a right end, loaded with every other setting of the video chip from the sprite blocks at <code>$2D72</code> and <code>$2D9A</code> (<code>sprite_block_load</code>, <code>$8917</code>). Moving one is writing a new height into every other byte of its block.</p>
+</section>
+
+<section id="memory">
+  <p class="fig">03 · Where the shapes live</p>
+  <h2 class="t">The match's sprites move into the menus' colour screen</h2>
+  <p class="lede">Shapes <code>$00</code>-<code>$6F</code> stay at <code>$4000</code>-<code>$5BFF</code> for good. The other forty-eight share <code>$5C00</code>-<code>$67FF</code> with the menus' bitmap, and are kept between matches where the pitch's map is built during one.</p>
+  <p>On the menus, <code>$5C00</code> is the colour screen of the bitmap at <code>$6000</code>, and the shapes <code>$70</code>-<code>$9F</code> wait at <code>$F300</code>-<code>$FEFF</code>. Before a match <code>pitch_setup</code> (<code>$90C8</code>) copies them down to <code>$5C00</code> (<code>play_sprites_in</code>, <code>$916A</code>) and then builds the pitch's map where they were (<code>pitch_map_build</code>, <code>$917D</code>). After the match <code>play_sprites_out</code> (<code>$9147</code>) copies them back up over the map, and the menus draw their colours over <code>$5C00</code> again.</p>
+  <p>In a match the pitch is two character screens at <code>$6C00</code> and <code>$7400</code>, with its characters at <code>$7800</code>, all in the same bank as the sprites. How the chip's eight sprites are shared out among the players, the ball and the launcher is on the <a href="index.html#one-frame">How it works</a> tab, with a frame of a match rebuilt from memory.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// Graphics tab. The players are the game's own animation code, run on the kit's 6502 (C64Cpu, from
+// ../../lib/cpu6502.js) over the listing's bytes: action_set_now ($A0C7) starts a move, and each pass
+// player_frame_set ($8B0B) sets the shape for each of the eight facings, then the step at $A02E moves
+// the frame on, as player_dir_step ($9F98) runs them; player_colours ($370F) colours them each pass.
+// The team choice is team_select ($3D4C) run until it calls team_choose ($3DCD), then the part of
+// team_choose from $3E4D that plays a team's animation, a picture at each wait_frame ($B179). The
+// launcher's hatch is launcher_step ($B2B9) over the play character set that block_copy ($9578, entry 1)
+// puts at $7800. The ball's height (ball_move, $384A-$3882), the launcher's spin (launcher_sequence,
+// $3739), the countdown (countdown_step, $9B4B) and the menu bars (sprite blocks at $2D72 and $2D9A)
+// follow the game's code and tables, written again here. What would come from a joystick or the
+// game's random numbers, the page chooses.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+    $('gx-cast').innerHTML = '<p class="gx-miss">These pictures are drawn by the site\'s shared scripts, which the built site serves.</p>';
+    return;
+  }
+  const PAL = C64.PAL, FPS = 985248 / 19656;
+  const RGB = PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) {
+    $('gx-cast').innerHTML = '<p class="gx-miss">The listing did not load, so nothing can be drawn.</p>';
+    return;
+  }
+  const ram = L.ram;
+  const shape = (m, p) => m.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+  const FACING = ['up', 'up and right', 'right', 'down and right', 'down', 'down and left', 'left', 'up and left'];
+
+  // a machine: the listing's memory, all RAM ($01 = $30, as io_out leaves it), with colour RAM and the
+  // video chip's registers kept for the page to read
+  function machine() {
+    const m = ram.slice(), colour = new Uint8Array(1024), vic = new Uint8Array(64);
+    const io = {
+      read(a) {
+        if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800];
+        if (a === 0xDC00 || a === 0xDC01) return 0xFF;               // no stick moved, no key down
+        if (a >= 0xD000 && a < 0xD040 && a !== 0xD012) return vic[a - 0xD000];
+        return 0;
+      },
+      write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; else if (a >= 0xD000 && a < 0xD040) vic[a - 0xD000] = v; },
+    };
+    return { m, colour, vic, cpu: new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x30 }, io }) };
+  }
+  const call = (M, at, r, hooks) => M.cpu.call(at, r || {}, { hooks: hooks || {}, maxSteps: 2e6 });
+
+  function group(title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><p>' + text + '</p><div class="gx-tiles"></div>';
+    $('gx-cast').appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h; sp.innerHTML = label;
+    t.appendChild(cv); t.appendChild(sp); tiles.appendChild(t);
+    const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    return { ctx, sp, w, h };
+  }
+  function fill(t, c) { t.ctx.fillStyle = PAL[c]; t.ctx.fillRect(0, 0, t.w, t.h); }
+  const mc = (ctx, m, p, x, y, s, c) => C64.drawSpriteMC(ctx, shape(m, p), x, y, s, PAL[c], PAL[0], PAL[1]);
+
+  // ---- the players
+  const P = machine();
+  const ACT = 0x1D9B, FACE = 0x1D0F, PTR = 0x2D01, COLR = 0x2CF1;
+  const frames = (a) => P.m[0xBB30 + a], held = (a) => P.m[0xBB4A + a] + 1;
+  function startMove(slot, act, facing) { P.m[FACE + slot] = facing; call(P, 0xA0C7, { x: slot, y: act }); }
+  function shapesNow(slot, facings) {
+    const keep = P.m[FACE + slot], out = [];
+    for (const f of facings) { P.m[FACE + slot] = f; call(P, 0x8B0B, { x: slot }); out.push(P.m[PTR + slot]); }
+    P.m[FACE + slot] = keep;
+    return out;
+  }
+  let side = 0, yours = false, colours = { g: 5, gy: 5, r: 2, ry: 2 };
+  function colourPass(pass) {
+    P.m[0x60] = 0; P.m[0x61] = 5; P.m[0x77] = 0; P.m[0x78] = 0; P.m[0x62] = pass & 0xFF;
+    call(P, 0x370F);
+    colours = { g: P.m[COLR + 1], gy: P.m[COLR], r: P.m[COLR + 6], ry: P.m[COLR + 5] };
+  }
+  const sideColour = (s) => s === 0 ? (yours ? colours.gy : colours.g) : (yours ? colours.ry : colours.r);
+
+  const tPlayers = group('The players', 'One tile for each move: a player facing each of the eight ways in turn, from up round to up and left. A move that ends leaves him standing, and here he starts it again after a second.');
+  const FIELD = [[0, 'Running'], [1, 'Jumping for the ball'], [3, 'Throwing'], [4, 'Sliding into a tackle'], [5, 'Knocked down'], [6, 'Winning a tackle']];
+  const PS = 2, CW = 24 * PS + 4;
+  const field = FIELD.map(([act, name], slot) => {
+    const t = tile(tPlayers, CW * 8 - 4, 21 * PS + 4, name + ' · action ' + act + ': ' + frames(act) + (frames(act) > 1 ? ' frames, each' : ' frame,') + ' held ' + held(act) + ' passes');
+    startMove(slot, act, 0);
+    return { t, act, slot, rest: 0, ptrs: shapesNow(slot, [0, 1, 2, 3, 4, 5, 6, 7]) };
+  });
+  // the keepers: a script of moves, each [action, facing, passes]
+  const KEEP = [
+    { slot: 6, side: 0, script: [[9, 0, 20], [7, 2, 30], [9, 0, 12], [7, 6, 30], [9, 0, 12], [8, 0, 36]] },
+    { slot: 7, side: 1, script: [[12, 4, 20], [10, 2, 30], [12, 4, 12], [10, 6, 30], [12, 4, 12], [11, 4, 36]] },
+  ];
+  const tKeep = tile(tPlayers, CW * 2 - 4, 21 * PS + 4, 'The keepers · actions 7-12: green\'s and red\'s, diving right, diving left and punching');
+  for (const k of KEEP) { k.i = 0; k.n = 0; startMove(k.slot, k.script[0][0], k.script[0][1]); k.ptr = shapesNow(k.slot, [k.script[0][1]])[0]; }
+
+  function playersPass() {
+    for (const f of field) {
+      f.ptrs = shapesNow(f.slot, [0, 1, 2, 3, 4, 5, 6, 7]);
+      call(P, 0xA02E, { x: f.slot });
+      if (P.m[ACT + f.slot] !== f.act && ++f.rest >= 25) { f.rest = 0; startMove(f.slot, f.act, 0); }
+    }
+    for (const k of KEEP) {
+      k.ptr = shapesNow(k.slot, [P.m[FACE + k.slot]])[0];
+      call(P, 0xA02E, { x: k.slot });
+      if (++k.n >= k.script[k.i][2]) {
+        k.n = 0; k.i = (k.i + 1) % k.script.length;
+        startMove(k.slot, k.script[k.i][0], k.script[k.i][1]);
+      }
+    }
+  }
+  function drawPlayers() {
+    for (const f of field) {
+      fill(f.t, 14);
+      f.ptrs.forEach((p, i) => mc(f.t.ctx, P.m, p, i * CW, 2, PS, sideColour(side)));
+    }
+    fill(tKeep, 14);
+    KEEP.forEach((k, i) => mc(tKeep.ctx, P.m, k.ptr, i * CW, 2, PS, sideColour(k.side)));
+  }
+
+  // ---- the ball, the launcher and the countdown
+  const tBall = group('The ball, the launcher and the countdown', 'The ball grows as it rises. The launcher opens a hatch in its characters, then frames the ball with four sprites while the ball\'s own sprite turns as an arrow. The countdown is a power-up\'s ten stages, a digit in the panel.');
+  const BS = 3;
+  const ball = { h: 0, c: 0, rest: 20 };
+  const tB = tile(tBall, (24 * BS + 8) * 2 - 8, 21 * BS + 6, 'The ball thrown high (<code>$34</code>-<code>$37</code>), and the electric ball of power-up W');
+  function ballPass() {                                         // ball_move's height, $384A-$3882
+    if (ball.h === 0) { if (++ball.rest >= 25) { ball.rest = 0; ball.h = 1; ball.c = 4; } return; }
+    if (--ball.c) return;
+    if (ball.h > 0) { if (ball.h === 7) { ball.c = 8; ball.h = -7; return; } ball.c = 4; ball.h++; return; }
+    if (ball.h + 1 !== 0) { ball.c = 4; ball.h++; return; }
+    ball.h = 0;
+  }
+  function drawBall() {
+    fill(tB, 14);
+    mc(tB.ctx, ram, ram[0x2D69 + Math.abs(ball.h)], 0, 3, BS, ram[0x37FE]);
+    mc(tB.ctx, ram, ram[0x3804], 24 * BS + 8, 3, BS, ram[0x3809]);
+  }
+
+  // the launcher's body: block 2 of the pitch ($DBBD, six by six codes) in the play characters
+  const LM = machine();
+  call(LM, 0x9578, { y: 1 });                                    // block_copy 1: $DF55 to $7800
+  const LS = 3, BG = [ram[0x2251 + 5], ram[0x2257 + 5], ram[0x225D + 5]]; // play colours, set 5
+  const tBody = tile(tBall, 48 * LS, 48 * LS, 'The launcher\'s body, six characters by six, its hatch opening and closing (<code>launcher_step</code>)');
+  const bodyImg = tBody.ctx.createImageData(48 * LS, 48 * LS);
+  function drawBody() {
+    const d = bodyImg.data;
+    for (let cy = 0; cy < 6; cy++) for (let cx = 0; cx < 6; cx++) {
+      const g = 0x7800 + ram[0xDBBD + cy * 6 + cx] * 8;
+      for (let ln = 0; ln < 8; ln++) {
+        const b = LM.m[g + ln];
+        for (let px = 0; px < 4; px++) {
+          const v = (b >> (6 - 2 * px)) & 3, k = RGB[[BG[0], BG[1], BG[2], 8 & 7][v]];
+          for (let sy = 0; sy < LS; sy++) for (let sx = 0; sx < 2 * LS; sx++) {
+            const o = (((cy * 8 + ln) * LS + sy) * 48 * LS + (cx * 8 + px * 2) * LS + sx) * 4;
+            d[o] = k[0]; d[o + 1] = k[1]; d[o + 2] = k[2]; d[o + 3] = 255;
+          }
+        }
+      }
+    }
+    tBody.ctx.putImageData(bodyImg, 0, 0);
+  }
+  // its sprites: parts 0-3 of the table at $2D21 (launcher_objects_set, row 3), and the ball at
+  // ($94, $10E) showing the arrow $7A + its direction
+  const parts = [0, 1, 2, 3].map((i) => ({ x: ram[0x2D21 + i] + ram[0x2D29 + i] * 256, y: ram[0x2D31 + i] + ram[0x2D39 + i] * 256, c: ram[0x2D41 + i], p: ram[0x2D49 + i] }));
+  const px0 = Math.min(...parts.map((q) => q.x)), py0 = Math.min(...parts.map((q) => q.y));
+  const tSpin = tile(tBall, 48 * LS + 12, 42 * LS + 12, 'The launcher\'s frame, four sprites, and the arrow turning (<code>launcher_sequence</code>)');
+  const L8 = { phase: 'rest', n: 30, dir: 0, turns: 0 };
+  function launcherFrame() {                                      // once a frame
+    if (L8.phase === 'rest') { if (--L8.n <= 0) { L8.phase = 'open'; LM.m[0x1EF2] = 0; LM.m[0x1EF3] = 1; } return; }
+    if (L8.phase === 'open') {
+      call(LM, 0xB2B9);
+      if (!LM.m[0x1EF3]) { L8.phase = 'spin'; L8.dir = 0; L8.n = 0; L8.turns = 17 + Math.floor(Math.random() * 33); }
+      return;
+    }
+    if (L8.phase === 'spin') {
+      if (++L8.n === 6) { L8.n = 0; L8.dir = (L8.dir + 7) & 7; if (--L8.turns === 0) { L8.phase = 'close'; LM.m[0x1EF3] = 0xFF; } }
+    }
+  }
+  function launcherPass() { if (L8.phase === 'close') { call(LM, 0xB2B9); if (!LM.m[0x1EF3]) { L8.phase = 'rest'; L8.n = 50; } } }
+  function drawSpin() {
+    fill(tSpin, 14);
+    if (L8.phase !== 'spin') return;
+    for (const q of parts) mc(tSpin.ctx, ram, q.p, 6 + (q.x - px0) * LS, 6 + (q.y - py0) * LS, LS, q.c);
+    mc(tSpin.ctx, ram, ram[0x37D9] + L8.dir, 6 + (0x94 - px0) * LS, 6 + (0x10E - py0) * LS, LS, ram[0x37DE]);
+  }
+
+  // the countdown, a hires sprite in the panel: stages 10 down to 0, each held countdown_pace passes
+  const tCount = tile(tBall, 24 * LS + 12, 21 * LS + 12, 'The power-up countdown (<code>countdown_step</code>)');
+  const cd = { stage: 0, n: 0, rest: 0 }, PACE = ram[0x1EC9];
+  function countPass() {
+    if (!cd.stage) { if (++cd.rest >= 25) { cd.rest = 0; cd.stage = 10; cd.n = PACE; } return; }
+    if (--cd.n === 0) { cd.n = PACE; cd.stage--; }
+  }
+  function drawCount() {
+    fill(tCount, 15);
+    const p = ram[0x2CAC + cd.stage];
+    if (p) C64.drawSprite(tCount.ctx, shape(ram, p), 6, 6, LS, PAL[ram[0x2DC6 + side]]);
+  }
+
+  // ---- the team choice: the game's own screen, and its animations a picture a frame
+  const tTeams = group('The team choice', 'Fire on a team plays its animation, bytes copied into the bitmap, four frames to a picture; four black sprites, stretched to twice their size, frame the team the cursor is on.');
+  const TM = machine();
+  const rts = (c) => { c.rts(); };
+  let built = true;
+  try {
+    call(TM, 0x3D4C, {}, { 0xB179: rts, 0x8B2F: rts, 0x8B25: rts, 0x8B4C: rts, 0x8B80: rts, 0x3DCD: () => true });
+  } catch (e) { built = false; }
+  const R0 = 3, R1 = 16, snap = () => TM.m.slice(0x6000 + R0 * 320, 0x6000 + R1 * 320);
+  const anims = [0, 1, 2].map((t) => {
+    const pics = [];
+    if (!built) return pics;
+    TM.m[0x1EE8] = t;
+    try { call(TM, 0x3E4D, {}, { 0xB179: (c) => { pics.push(snap()); c.rts(); } }); } catch (e) { /* drawn as far as it got */ }
+    return pics;
+  });
+  const still = snap();
+  const TS = 2, tTeam = tile(tTeams, 320 * TS, (R1 - R0) * 8 * TS, 'PLAYER 1 SELECT: <code>team_select</code>, then <code>team_choose</code> for each team in turn');
+  const teamImg = tTeam.ctx.createImageData(320 * TS, (R1 - R0) * 8 * TS);
+  const tc = { team: 0, k: -60, phase: 'wait' };
+  function teamFrame() {
+    if (tc.phase === 'wait') { if (++tc.k >= 0) { tc.phase = 'play'; tc.k = 0; } return; }
+    if (++tc.k >= anims[tc.team].length) { tc.phase = 'wait'; tc.k = -50; tc.team = (tc.team + 1) % 3; }
+  }
+  function drawTeam() {
+    const bm = tc.phase === 'play' && anims[tc.team].length ? anims[tc.team][tc.k] : (anims[(tc.team + 2) % 3].slice(-1)[0] || still);
+    const d = teamImg.data, W = 320 * TS, bg = TM.vic[0x21] & 15;
+    for (let row = R0; row < R1; row++) for (let col = 0; col < 40; col++) {
+      const s = TM.m[0x5C00 + row * 40 + col], cr = TM.colour[row * 40 + col];
+      const cols = [bg, s >> 4, s & 15, cr];
+      for (let ln = 0; ln < 8; ln++) {
+        const b = bm[(row - R0) * 320 + col * 8 + ln];
+        for (let px = 0; px < 4; px++) {
+          const k = RGB[cols[(b >> (6 - 2 * px)) & 3]];
+          for (let sy = 0; sy < TS; sy++) for (let sx = 0; sx < 2 * TS; sx++) {
+            const o = ((((row - R0) * 8 + ln) * TS + sy) * W + (col * 8 + px * 2) * TS + sx) * 4;
+            d[o] = k[0]; d[o + 1] = k[1]; d[o + 2] = k[2]; d[o + 3] = 255;
+          }
+        }
+      }
+    }
+    tTeam.ctx.putImageData(teamImg, 0, 0);
+    // irq_slot_shop_sprites: four sprites for the team at the cursor, from $2F36, $2F42, $2F45, $2F59
+    const t = tc.team;
+    for (let i = 0; i < 4; i++) {
+      const e = t * 4 + i, x = ram[0x2F45 + e] + ((ram[0x2F42 + t] >> i) & 1) * 256, y = ram[0x2F59 + e];
+      C64.drawSprite(tTeam.ctx, shape(ram, ram[0x2F36 + e]), (x - 24) * TS, (y - 50 - R0 * 8) * TS, TS, PAL[0], 2, 2);
+    }
+  }
+
+  // ---- the menus' bars: sprite blocks 0 and 1, moved a row at a time as menu_bar_y and
+  // shop_cursor_y move them
+  const tMenus = group('The menus', 'The SELECT GAME menu\'s highlight bar and the shop\'s cursor, each a row of one-colour sprites from a block of settings that the game loads into the video chip whole. Here each moves down a line every half second.');
+  function blockOf(at) {
+    const b = ram.subarray(at, at + 42), out = [];
+    for (let i = 0; i < 8; i++) if (b[17] >> i & 1 && b[32 + i]) out.push({ x: b[i * 2] + (b[16] >> i & 1) * 256, p: b[32 + i], c: b[24 + i] });
+    return out;
+  }
+  const MS = 2;
+  const bars = [
+    { sprites: blockOf(0x2D72), rows: Array.from(ram.subarray(0x2BFB, 0x2C05)), label: 'The menu\'s highlight bar, block 0 (<code>$2D72</code>), at the rows in <code>$2BFB</code>' },
+    { sprites: blockOf(0x2D9A), rows: Array.from(ram.subarray(0x2C05, 0x2C10)), label: 'The shop\'s cursor, block 1 (<code>$2D9A</code>), at the rows in <code>$2C05</code>' },
+  ].map((b) => {
+    b.x0 = Math.min(...b.sprites.map((s) => s.x)); b.x1 = Math.max(...b.sprites.map((s) => s.x)) + 24;
+    b.y0 = b.rows[0]; b.y1 = b.rows[b.rows.length - 1] + 21; b.i = 0;
+    b.t = tile(tMenus, Math.ceil((b.x1 - b.x0) * MS) + 8, Math.ceil((b.y1 - b.y0) * MS) + 8, b.label);
+    return b;
+  });
+  function drawBars(frame) {
+    for (const b of bars) {
+      if (frame % 25 === 0) b.i = (b.i + 1) % b.rows.length;
+      fill(b.t, 0);
+      for (const s of b.sprites) C64.drawSprite(b.t.ctx, shape(ram, s.p), 4 + (s.x - b.x0) * MS, 4 + (b.rows[b.i] - b.y0) * MS, MS, PAL[s.c]);
+    }
+  }
+
+  // ---- the clock: a frame at a time, a pass every second frame
+  let frame = 0, pass = 0, running = true, last = 0, acc = 0;
+  function tick(n) {
+    for (let i = 0; i < n; i++) {
+      frame++;
+      launcherFrame(); teamFrame();
+      if (frame % 2 === 0) { pass++; colourPass(pass); playersPass(); ballPass(); launcherPass(); countPass(); }
+    }
+    drawPlayers(); drawBall(); drawBody(); drawSpin(); drawCount(); drawTeam(); drawBars(frame);
+    $('gx-stat').textContent = 'frame ' + frame + ' · pass ' + pass + ' · ' + (frame / FPS).toFixed(1) + ' s';
+  }
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * FPS;
+      const n = Math.floor(acc); acc -= n;
+      if (n) tick(n);
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Play'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Play'; tick(1); });
+  const press = () => { $('gx-green').setAttribute('aria-pressed', side === 0); $('gx-red').setAttribute('aria-pressed', side === 1); $('gx-you').setAttribute('aria-pressed', yours); };
+  $('gx-green').addEventListener('click', () => { side = 0; press(); tick(0); });
+  $('gx-red').addEventListener('click', () => { side = 1; press(); tick(0); });
+  $('gx-you').addEventListener('click', () => { yours = !yours; press(); tick(0); });
+  tick(1);
+  requestAnimationFrame(loop);
+
+  // ---- 02: the sheet, every shape and what shows it, from the game's tables
+  const CAT = {
+    menu: ['#c07a2c', 'the menus'], count: ['#3aa76d', 'the countdown'], run: ['#4f8cc9', 'running and standing'],
+    jump: ['#a070c0', 'jumping'], throw: ['#e0a030', 'throwing, and a tackle won'], slide: ['#5aa05a', 'sliding'],
+    down: ['#d0503c', 'knocked down'], keeper: ['#2fa8b0', 'the keepers'], ball: ['#9a9a9a', 'the ball'], launcher: ['#7a5fd0', 'the launcher'],
+  };
+  const NAMES = ['running', 'jumping', 'standing', 'throwing', 'sliding', 'knocked down', 'winning a tackle', 'green\'s keeper diving',
+    'green\'s keeper punching', 'green\'s keeper standing', 'red\'s keeper diving', 'red\'s keeper punching', 'red\'s keeper standing'];
+  const KIND = ['run', 'jump', 'run', 'throw', 'slide', 'down', 'throw', 'keeper', 'keeper', 'keeper', 'keeper', 'keeper', 'keeper'];
+  const uses = Array.from({ length: 160 }, () => ({ cat: null, what: [] }));
+  const use = (p, cat, what) => { const u = uses[p]; if (!u) return; if (!u.cat) u.cat = cat; if (!u.what.includes(what)) u.what.push(what); };
+  for (let a = 0; a < 13; a++) {
+    const list = ram[0xBBD5 + a] | ram[0xBBE2 + a] << 8, by = new Map();
+    for (let f = 0; f < 8; f++) for (let k = 0; k < ram[0xBB30 + a]; k++) {
+      const p = ram[list + ram[list + f] + k];
+      if (!by.has(p)) by.set(p, []);
+      if (!by.get(p).includes(FACING[f])) by.get(p).push(FACING[f]);
+    }
+    for (const [p, fs] of by) use(p, KIND[a], NAMES[a] + (a < 7 && fs.length < 8 ? ' (' + fs.join(', ') + ')' : ''));
+  }
+  for (let h = 0; h < 8; h++) use(ram[0x2D69 + h], 'ball', h ? 'the ball in the air' : 'the ball on the ground');
+  use(ram[0x3804], 'ball', 'the electric ball of power-up W');
+  for (let d = 0; d < 8; d++) use(ram[0x37D9] + d, 'launcher', 'the launcher\'s arrow, pointing ' + FACING[d]);
+  for (const q of parts) use(q.p, 'launcher', 'a corner of the frame round the launcher');
+  for (let s = 1; s <= 10; s++) use(ram[0x2CAC + s], 'count', 'the countdown\'s digit ' + (s - 1));
+  for (const [at, what] of [[0x2D72, 'the menu\'s highlight bar'], [0x2D9A, 'the shop\'s cursor']]) {
+    for (let i = 0; i < 8; i++) { const p = ram[at + 32 + i]; use(p, 'menu', p ? what : 'nothing: an empty shape for the spare sprites of a menu'); }
+  }
+  for (let e = 0; e < 12; e++) use(ram[0x2F36 + e], 'menu', 'the frame round the team being chosen');
+  use(ram[0x8822], 'menu', 'the row of eight across the prematch screens');
+
+  const sheet = $('gx-sheet'), sctx = sheet.getContext('2d'), SW = 52, SH = 54;
+  sctx.imageSmoothingEnabled = false;
+  for (let p = 0; p < 160; p++) {
+    const x = (p % 16) * SW, y = Math.floor(p / 16) * SH, u = uses[p];
+    let bg = 14, draw;
+    if (p < 0x0C) {
+      const black = u.what.some((w) => /frame round|row of eight/.test(w));
+      bg = black ? 15 : 0;
+      draw = () => C64.drawSprite(sctx, shape(ram, p), x, y, 2, PAL[u.cat ? (black ? 0 : ram[0x2D72 + 24]) : 15]);
+    } else if (u.cat === 'count') {
+      bg = 15; draw = () => C64.drawSprite(sctx, shape(ram, p), x, y, 2, PAL[ram[0x2DC6]]);
+    } else {
+      const c = !u.cat || u.cat === 'ball' || u.cat === 'launcher' ? 15 : 5;
+      draw = () => mc(sctx, ram, p, x, y, 2, c);
+    }
+    sctx.fillStyle = PAL[bg]; sctx.fillRect(x, y, 48, 42);
+    draw();
+    if (u.cat) { sctx.fillStyle = CAT[u.cat][0]; sctx.fillRect(x, y + 44, 48, 4); }
+  }
+  $('gx-key').innerHTML = Object.values(CAT).map(([c, t]) => '<span><i style="background:' + c + '"></i>' + t + '</span>').join('');
+  function readout(e) {
+    const r = sheet.getBoundingClientRect(), k = sheet.width / r.width;
+    const cx = Math.floor((e.clientX - r.left) * k / SW), cy = Math.floor((e.clientY - r.top) * k / SH), p = cy * 16 + cx;
+    if (cx < 0 || cx > 15 || p < 0 || p > 159) return;
+    const u = uses[p];
+    $('gx-read').innerHTML = '<b>' + hex(p) + '</b> at ' + hex(0x4000 + p * 64, 4) + ': ' + (u.what.length ? u.what.join('; ') : 'nothing in the game\'s frame lists or pointer tables shows it') + '.';
+  }
+  sheet.addEventListener('mousemove', readout);
+  sheet.addEventListener('click', readout);
+})();
+</script>

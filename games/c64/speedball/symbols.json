@@ -3279,13 +3279,13 @@
   },
   {
    "address": 7922,
-   "name": "launcher_lift",
+   "name": "hatch_open",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 7923,
-   "name": "launcher_dir",
+   "name": "hatch_dir",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -9657,7 +9657,7 @@
   },
   {
    "address": 41121,
-   "name": "action_run",
+   "name": "action_stand",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -12147,13 +12147,13 @@
   },
   {
    "address": 56317,
-   "name": "launcher_rise_a",
+   "name": "hatch_top",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 56349,
-   "name": "launcher_rise_b",
+   "name": "hatch_bottom",
    "type": "Field",
    "kind": "user"
   },
@@ -14189,7 +14189,7 @@
   {
    "address": 7579,
    "type": "line",
-   "text": "Each player's action: 1 a jump, 2 running, 3 a throw, 4 a slide, 5 knocked down; it picks his animation and speed (action_set)."
+   "text": "Each player's action: 0 running, 1 a jump, 2 standing, 3 a throw, 4 a slide, 5 knocked down, 6 a tackle won, 7-12 the keepers' dives, punches and stands; it picks his animation and speed (action_set)."
   },
   {
    "address": 7589,
@@ -14649,12 +14649,12 @@
   {
    "address": 7922,
    "type": "line",
-   "text": "How far the launcher has risen, 0-16, drawn into its characters (launcher_lift)."
+   "text": "How far the launcher's hatch has opened, 0 shut to 16 open, drawn into its characters (launcher_step)."
   },
   {
    "address": 7923,
    "type": "line",
-   "text": "The launcher's movement: 1 rising, $FF sinking, 0 still."
+   "text": "The launcher's hatch: 1 opening, $FF closing, 0 still."
   },
   {
    "address": 7924,
@@ -15934,7 +15934,7 @@
   {
    "address": 13011,
    "type": "line",
-   "text": "The rest of every pass: flags a sprite update ($4F), waits a frame, counts $62, the tile (tile_step), the launcher's lift (launcher_lift), the power-up countdown, the ball-holder markers in the panel (holder_markers), the scroll (scroll_update), then match_loop again."
+   "text": "The rest of every pass: flags a sprite update ($4F), waits a frame, counts $62, the tile (tile_step), the launcher's hatch (launcher_step), the power-up countdown, the ball-holder markers in the panel (holder_markers), the scroll (scroll_update), then match_loop again."
   },
   {
    "address": 13038,
@@ -16054,12 +16054,12 @@
   {
    "address": 14095,
    "type": "line",
-   "text": "Sprite colours: players 0-4 green (5), 5-9 red (2). Unless a countdown is running, every fourth frame ($62 bit 2) the controlled players show light green ($0D) and light red ($0A)."
+   "text": "Sprite colours: players 0-4 green (5), 5-9 red (2). Unless the pause after a goal or at full time is running, for four passes in every eight (while $62 bit 2 is clear) the controlled players show light green ($0D) and light red ($0A)."
   },
   {
    "address": 14137,
    "type": "line",
-   "text": "The ball launcher at a kick-off: waits for it to rise (launcher_lift, $1EF3), puts the ball on it at ($94, $0E low bytes), starts its sound ($FE), sets up its parts (launcher_objects_set, row 3) and spins it a random 16-48 turns: its direction $19 steps round the eight directions, shown as the ball's sprite (launcher_frame), with sprite multicolour 0 flashed at the raster lines in $BB2C. Then shoots the ball out in the last direction at a random strength 1-4 ($BA61, $BAB1), sounds $FF and 0, hides the launcher, puts the ball back on the centre, lets the camera follow, and lowers the launcher ($1EF3 = $FF)."
+   "text": "The ball launcher at a kick-off: opens its hatch a line a frame (launcher_step, until $1EF3 is 0), puts the ball on it at ($94, $0E low bytes), starts its sound ($FE), sets up its parts (launcher_objects_set, row 3) and turns it: its direction $19 steps back round the eight directions, anticlockwise, every six frames, shown as the ball's sprite (launcher_frame), a random 16-48 steps and one more. In each of those frames sprite multicolour 0 is set to dark grey at raster line $6E and back to black at $9E ($BB2C, $BB2E). Then shoots the ball out in the last direction at a random strength 1-4 ($BA61, $BAB1), sounds $FF and 0, hides the launcher, puts the ball back on the centre, lets the camera follow, and closes the hatch ($1EF3 = $FF, a line a pass from match_frame_tail)."
   },
   {
    "address": 14293,
@@ -17429,7 +17429,7 @@
   {
    "address": 41121,
    "type": "line",
-   "text": "Player X to action 2 (running), unless he is in it already."
+   "text": "Player X to action 2, standing, unless he is in it already: what a player does with no stick held (player_move), and a keeper back on his spot."
   },
   {
    "address": 41134,
@@ -17899,7 +17899,7 @@
   {
    "address": 45753,
    "type": "line",
-   "text": "Moves the launcher a step up or down: $1EF2 goes up or down by the step $1EF3 until 0 or 16, when the step is cleared. The launcher's two character columns are redrawn from the frames at $DBFD (16 bytes from $1EF2 + 15 down, into $7DE8) and $DC1D (from 31 less $1EF2 down, into $7DF8): the launcher's characters slide up out of the floor or back down."
+   "text": "Opens or closes the launcher's hatch a line: $1EF2 goes up or down by the step $1EF3 until 16 or 0, when the step is cleared. The four glyphs that fill the launcher's middle are redrawn, the top two from $DBFD (16 bytes from $1EF2 + 15 down, into $7DE8) and the bottom two from $DC1D (from 31 less $1EF2 down, into $7DF8), so the hatch's top half slides up and its bottom half down, uncovering a black hole, or back together."
   },
   {
    "address": 45815,
@@ -18599,12 +18599,12 @@
   {
    "address": 56317,
    "type": "line",
-   "text": "The launcher's first character column as it rises, 32 bytes: launcher_step copies sixteen of them into its glyphs at $7DE8."
+   "text": "The top half of the launcher's hatch and the black above it, 32 bytes: launcher_step copies sixteen of them, from further on the wider the hatch is open, into the two glyphs at $7DE8."
   },
   {
    "address": 56349,
    "type": "line",
-   "text": "The launcher's second column as it rises, 32 bytes, into $7DF8."
+   "text": "The black below the hatch's bottom half, then the half itself, 32 bytes: launcher_step copies sixteen of them into the two glyphs at $7DF8."
   },
   {
    "address": 56381,

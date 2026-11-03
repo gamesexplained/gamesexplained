@@ -1,0 +1,523 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spindizzy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.sp-shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.sp-shots figure{margin:0}
+.sp-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.sp-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.sp-cv{display:block;width:100%;max-width:640px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.sp-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.sp-bar button{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.sp-bar button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.sp-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
+.sp-tab th,.sp-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.sp-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.sp-tab td.n{font-family:var(--fm);text-align:right}
+.sp-tab th.n{text-align:right}
+.sp-wrapx{overflow-x:auto}
+.sp-bytes{font-family:var(--fm);font-size:13px;line-height:1.9;word-break:break-word}
+.sp-bytes span{display:inline-block;padding:0 3px;border-radius:3px;margin:0 2px 3px 0}
+.sp-k0{background:#e4e1f7}.sp-k1{background:#fde7c8}.sp-k2{background:#d7efd9}.sp-k3{background:#f6d6d2}.sp-k4{background:#d6e6f5}
+.sp-note{font-size:14px;color:var(--ink-mute)}
+.sp-map{display:block;max-width:100%;height:auto;cursor:pointer;background:#1b1c20;border-radius:4px}
+.sp-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft);margin-top:10px}
+.sp-legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sp-split{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.sp-split > div{flex:1;min-width:280px}
+.sp-plot{display:block;width:100%;max-width:640px;height:auto;background:#fbfaf7;border:1px solid var(--line-soft);border-radius:4px}
+.sp-in{font-family:var(--fm);font-size:15px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;width:12em}
+.sp-out{font-family:var(--fm);font-size:14px;margin-left:10px}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-tile canvas{background:#000}
+.gx-panels{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.gx-panels .gx-tile span{min-width:0}
+#gx-room{display:block;width:100%;max-width:600px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;margin:0 0 12px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Electric Dreams Software</p>
+  <h1>Spindizzy</h1>
+  <p class="sub">Everything that moves in Spindizzy is a sprite the game builds again as it moves: Gerald, the inhabitants, the jewels and the lifts. Before the video chip shows one, the game cuts away whatever scenery stands in front of it.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every shape, built by the game's own code</h2>
+  <p class="lede">Gerald and the two kinds of inhabitant, the jewel, and a lift for each of the twelve switch numbers. The game builds their sprites again on every other pass of its main loop, about 30 times a second at the slow speed. The I button swaps Gerald's shape, as the I key does in play.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">Two passes</button>
+      <button type="button" id="gx-i">I: the next shape</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"><p class="gx-miss">The shapes are drawn by the game's own code in the built site.</p></div>
+    <p class="cap">Each tile is a machine of its own: the game's routines on the kit's 6502 in the page, over the listing's bytes, with nothing in front to hide what they draw. Gerald and the inhabitants are drawn by <code>project</code> and <code>draw_object</code> (<code>$A835</code>, <code>$A535</code>) as the main loop draws Gerald. The jewel and the lifts are built into the piece table by the game's own piece builder from a room record of three bytes each and run by <code>run_pieces</code> (<code>$A0D3</code>). The I button runs <code>change_shape</code> (<code>$7223</code>) on every tile's memory. The sprites take the colours the game gives them: purple and yellow for every sprite (<code>$D025</code> and <code>$D026</code>, set by <code>init_and_title</code>), and the sprite's own colour.</p>
+  </div>
+  <p>Gerald is two sprites laid one over the other: a multicolour one for his body in purple, yellow and his own cyan, and a hires one in black for his outline, which the video chip draws in front. Their shapes come from a set of 384 bytes, four frames of 48 bytes for each sprite, 16 rows of 3 bytes. The game keeps three sets. The one Gerald uses is at <code>$C800</code>, and <code>change_shape</code> rotates all three through it when I is pressed: the top, then the ball, then the disc on an axle, then the top again.</p>
+  <p>The inhabitants are drawn by the same routine from the two sets Gerald is not using, kind 0 from <code>$7800</code> and kind 1 from <code>$7980</code>, in light red. So an inhabitant never has Gerald's shape, and pressing I changes theirs along with his.</p>
+  <p>Which of the four frames <code>draw_object</code> takes depends on where Gerald is across the screen: bits 5 and 6 of his screen column, which is his X minus his Y. The frame moves on at every 32 of the column, and his sprites step 8 pixels across at every 128, so he turns through all four frames between one step and the next. He spins only while he moves across the screen. Standing still, or rolling straight down it with X and Y rising together, he holds one frame.</p>
+  <p>A jewel is one multicolour sprite, built once from the 48 bytes of <code>jewel_picture</code> (<code>$C180</code>) when the room is entered. After that <code>jewel_piece</code> only adds 1 to its colour on each run of the pieces, so it flashes through all sixteen colours about twice a second. A lift is two multicolour sprites in black, purple and yellow, each made from a piece of 32 bytes in <code>symbol_pieces</code> (<code>$C000</code>-<code>$C17F</code>). The two pieces are chosen from the bits of the lift's switch number in the same way <code>draw_switch_symbol</code> chooses them for the box in the panel, so a lift carries the symbol of the pad that works it. A lift with no switch carries the symbol for 0, which the box never shows: for switch 0 it draws nothing.</p>
+</section>
+
+<section id="behind">
+  <p class="fig">02 · Behind the scenery</p>
+  <h2 class="t">A sprite is cut to fit behind what stands in front of it</h2>
+  <p class="lede">Gerald rolls past a block in room (53, 61), seen in the F7 view. The video chip would draw him over the block. The game cuts him first.</p>
+  <div class="plate">
+    <canvas id="gx-room" width="400" height="260" aria-label="Gerald rolling past a block in room 53, 61"></canvas>
+    <div class="gx-panels" id="gx-panels"></div>
+    <p class="cap" id="gx-room-cap">Room (53, 61), built by the game's routines on the kit's 6502 as the Map tab builds it, with Gerald moved to and fro along a line one cell from its front edge. On every other pass <code>run_pieces</code> runs the room's two lifts, then <code>project</code> and <code>draw_object</code> draw Gerald, then <code>sort_sprites</code> orders the sprites, as the main loop does. The mask is <code>$C300</code>-<code>$C37F</code> as <code>build_sprite_mask</code> leaves it, light where Gerald may show. The outline marks the part <code>draw_object</code> reads.</p>
+  </div>
+  <p>The room is a bitmap and Gerald is a pair of sprites over it, so on its own the video chip would show him in front of every block. Before he is drawn, <code>build_sprite_mask</code> (<code>$9D18</code>) makes a mask 4 bytes wide and 24 rows tall over the six screen places he covers, with every bit set. When the room was drawn, each place kept a list of up to four tiles with how near each is. For each place the routine finds the first tile nearer than Gerald and ANDs its mask, and the masks of the tiles queued after it, into his. These are the masks <code>draw_picture</code> uses to cut a hole for a tile's picture, so where a nearer block covers the place, the mask is cleared.</p>
+  <p><code>draw_object</code> then ANDs each byte of his frame with the mask on its way into the sprite. Which rows and which three of the four bytes it reads depend on the fine part of his row and column, so the mask lines up with where he is drawn. The jewels and the lifts are cut the same way, by the same mask routine.</p>
+  <p>Nearer is a number. <code>project</code> gives Gerald a depth from his X and Y doubled plus his height, and each tile in a place's list carries one too, set when the room was drawn. A larger depth is nearer the viewer. <code>sort_sprites</code> (<code>$A2F2</code>) uses the same depths to choose which sprite the video chip draws in front when two overlap: it hands the lowest-numbered sprites, which the chip draws on top, to the deepest.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* sp-room */
+// spRoom(ram, row, col, view, C64Cpu): the room at map row `row`, column `col`, seen from view turn
+// `view` (0-3, as F1, F3, F7 and F5 set $28), drawn by the game's own code on the kit's 6502 over a
+// copy of the listing's memory. Runs the start of new_game ($84D1-$84F8), which colours the screen
+// and colour RAM, and sets what start_game_image and new_game leave for the room code: the colour
+// mask $61 = $0F and the bitmap address $6F/$70 = $E040. Runs enter_room ($8B00), which
+// finds the record, builds the room grid and the piece table and draws the picture, colours and
+// switch box; then one pass of the pieces as the main loop runs them (run_pieces, $9D09, and
+// sort_sprites, $9D03) and apply_sprites ($9D06), as raster_irq runs it, for the video chip's
+// sprite registers. Gerald's own two sprites are left off. The chips are answered here: colour RAM,
+// the video chip's registers, the SID (ignored) and CIA 2's timer (its count reads 0). Returns
+// { mem, colour, vic, pieces }: the memory as the video chip would read it, the 1,024 colour
+// nibbles, the 47 video registers, and the piece table's records.
+function spRoom(ram, row, col, view, C64Cpu) {
+  const mem = ram.slice(), colour = new Uint8Array(1024), vic = new Uint8Array(64);
+  const io = {
+    read(a) {
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800] | 0xF0;
+      if (a >= 0xD000 && a < 0xD400) return vic[a & 63];
+      if (a >= 0xD400 && a < 0xD800) return 0;
+      if (a >= 0xDD00 && a < 0xDE00) return 0;
+      throw new Error('read $' + a.toString(16));
+    },
+    write(a, v) {
+      if (a >= 0xD800 && a < 0xDC00) { colour[a - 0xD800] = v & 15; return; }
+      if (a >= 0xD000 && a < 0xD400) { vic[a & 63] = v; return; }
+      if (a >= 0xD400 && a < 0xD800) return;
+      if (a >= 0xDD00 && a < 0xDE00) return;
+      throw new Error('write $' + a.toString(16));
+    },
+  };
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });
+  cpu.call(0x84D1, {}, { maxSteps: 1e5, hooks: { 0x84F9: () => true } });
+  mem[0x61] = 0x0F; mem[0x6F] = 0x40; mem[0x70] = 0xE0;
+  mem[0x44] = row; mem[0x45] = col; mem[0x28] = view & 3;
+  cpu.call(0x8B00, {}, { maxSteps: 3e6 });
+  cpu.call(0x9D09, {}, { maxSteps: 1e6 });
+  cpu.call(0x9D03, {}, { maxSteps: 1e6 });
+  cpu.call(0x9D06, {}, { maxSteps: 1e6 });
+  vic[0x11] = 0x3B; vic[0x16] = 0xD8; vic[0x18] = 0x18;
+  return { mem, colour, vic };
+}
+// end of sp-room
+</script>
+<script>
+/* sp-world */
+// spWorld(ram): the room directory at $0A00 and the structure list at $0400, read as find_room,
+// build_room_grid, build_pieces and find_structure read them. A room record: its length, the map row
+// (bit 7: visited), the map column (bit 7: a jewel left in a visited room), the flags (low nibble the
+// colour scheme, bit 4 the slow clock), the floor's block word, block words to $0000 (a word of type 2
+// is followed by a structure number), then moving pieces of three bytes to a 0. A structure: its
+// number, its length, block words to $0000.
+function spWorld(ram) {
+  const words = (p, out) => {
+    while (ram[p] || ram[p + 1]) {
+      const w = [ram[p], ram[p + 1], null]; p += 2;
+      if ((w[0] & 0x1F) === 2) w[2] = ram[p++];
+      out.push(w);
+    }
+    return p + 2;
+  };
+  const rooms = [];
+  for (let a = 0x0A00; ram[a]; a += ram[a]) {
+    const r = { addr: a, length: ram[a], row: ram[a + 1] & 0x7F, col: ram[a + 2] & 0x7F, flags: ram[a + 3],
+      floor: [ram[a + 4], ram[a + 5]], blocks: [], pieces: [] };
+    let p = words(a + 6, r.blocks);
+    r.blocksEnd = p;
+    for (; ram[p]; p += 3) {
+      const t = ram[p], third = ram[p + 2], n = (t >> 3) & 15;
+      const kind = (t & 0x7F) === 1 ? 'jewel' : (t & 7) === 2 ? 'lift' : (t & 7) === 3 ? 'inhabitant' : 'block';
+      r.pieces.push({ kind, t, pos: ram[p + 1], third, n, x: (ram[p + 1] >> 2) & 7, y: ram[p + 1] >> 5, level: ((ram[p + 1] & 3) << 1) | (t >> 7) });
+    }
+    rooms.push(r);
+  }
+  const structures = [];
+  for (let a = 0x0400; ram[a + 1]; a += ram[a + 1]) {
+    const s = { addr: a, num: ram[a], length: ram[a + 1], blocks: [] };
+    words(a + 2, s.blocks);
+    structures.push(s);
+  }
+  return { rooms, structures };
+}
+// end of sp-world
+</script>
+<script>
+/* sp-draw */
+// spDraw(canvas, r, C64): the room picture of spRoom's result, columns 8-39 and rows 0-24 of the
+// screen, drawn twice the size by the site's model of the video chip, sprites included.
+function spDraw(canvas, r, C64) {
+  const out = C64.renderFrame({ vic: Array.from(r.vic.subarray(0, 47)), cia2: [0xC0, 0x3F], writes: [], mem: r.mem, colourMem: r.colour });
+  const ctx = canvas.getContext('2d'), img = ctx.createImageData(512, 400);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  for (let y = 0; y < 400; y++) for (let x = 0; x < 512; x++) {
+    const c = rgb[out.px[(35 + (y >> 1)) * out.w + 96 + (x >> 1)]], o = (y * 512 + x) * 4;
+    img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+// end of sp-draw
+</script>
+<script>
+/* sp-cast */
+// spCast(ram, C64Cpu): the Graphics tab's stages, each a copy of the listing's memory with the game's
+// own routines run on the kit's 6502. A stage's pass() is one pass of the main loop's piece work,
+// which draws on every other pass ($8E30); sprites() reads the shadow registers that sort_sprites
+// ($A2F2) leaves and apply_sprites ($A2BE) copies to the video chip, highest priority first.
+// The cast's stages have their tile buffer ($AA80-$B6FF) emptied to $FF, no tile, so nothing in front
+// masks a sprite (build_sprite_mask, $9D18, passes over an empty pair).
+function spCast(ram, C64Cpu) {
+  function machine(mem, io) {
+    const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: io || { read() { return 0; }, write() {} } });
+    const call = (pc) => cpu.call(pc, {}, { maxSteps: 1e6 });
+    const sprites = () => {
+      const out = [];
+      for (let i = 0; i < 8; i++) if (mem[0xA2B5] >> i & 1) out.push({
+        n: i, data: 0xC000 + mem[0xA29B + i] * 64, x: mem[0xA2A3 + i] | (mem[0xA2B3] >> i & 1) << 8,
+        y: mem[0xA2AB + i], colour: mem[0xA2B6 + i] & 15, multi: mem[0xA2B4] >> i & 1 });
+      return out;
+    };
+    return { mem, cpu, call, sprites, passes: 0 };
+  }
+  function bare() {
+    const mem = ram.slice();
+    mem.fill(0xFF, 0xAA80, 0xB700);
+    mem[0x6F] = 0x40; mem[0x70] = 0xE0;              // the play screen's bitmap, as new_game leaves it
+    mem[0x9E84] = 0x30; mem[0x3C] = 0x30;              // next_shape_pointer, as build_pieces leaves it
+    mem[0x47] = 0xFF; mem[0x49] = 0xFF; mem[0x4B] = 0xFF;   // Gerald in no cell
+    return machine(mem);
+  }
+  const place = (m, x, y, h) => { m[0x46] = x & 255; m[0x47] = x >> 8; m[0x48] = y & 255; m[0x49] = y >> 8; m[0x4A] = h & 255; m[0x4B] = h >> 8; };
+  // Draws Gerald as the main loop does ($8E39-$8E4B): project ($A835), then draw_object ($A535)
+  // with the shape set `set` ($C800 for Gerald), into sprite slots 0 and 1.
+  function drawObject(s, set) {
+    const m = s.mem;
+    m[0x43] = 0; s.call(0xA835);
+    m[0x2A] = set & 255; m[0x2B] = set >> 8;
+    s.call(0xA535);
+    s.frame = m[0xFE] >> 5 & 3;
+  }
+  // Gerald (set $C800) or an inhabitant (set $7800 or $7980) in the colour `colour`, sliding along X
+  // and against Y at `speed` a pass each, which moves him straight across the screen, and turning
+  // back every `span` passes.
+  function object(set, colour, speed, span) {
+    const s = bare(), m = s.mem;
+    m[0x3D] = 2; m[0xC2A9] = colour;
+    let x = 0x0380, y = 0x0380, d = 1, t = 0;
+    s.pass = () => {
+      if (t === span) { d = -d; t = 0; }
+      t++; x += d * speed; y -= d * speed;
+      place(m, x, y, 0);
+      if (s.passes++ & 1) return;
+      drawObject(s, set); s.call(0xA2F2);
+    };
+    s.pass();
+    return s;
+  }
+  // Frame f of the set `set`, after `presses` presses of I: draw_object with the column's bits 5-6 at f.
+  function frame(set, colour, f, presses) {
+    const s = bare(), m = s.mem;
+    for (let i = 0; i < presses; i++) s.call(0x7223);
+    m[0x3D] = 2; m[0xC2A9] = colour;
+    place(m, 0x0380 + f * 16, 0x0380 - f * 16, 0);
+    drawObject(s, set); s.call(0xA2F2);
+    return s;
+  }
+  // The moving pieces of a room record (`list`: three bytes a piece, ending in 0), built into the
+  // piece table by the game's own piece builder (next_piece, $9EA2, set up as build_pieces sets it up)
+  // and run by run_pieces ($A0D3) and sort_sprites on every other pass. Switch `on` is held on ($36).
+  function pieces(list, on) {
+    const s = bare(), m = s.mem;
+    list.forEach((b, i) => { m[0xCB40 + i] = b; });
+    m[0x26] = 0x40; m[0x27] = 0xCB; m[0x28] = 0;
+    m[0x3D] = 2; m[0x31] = 0; m[0x29] = 0; m[0x32] = 0; m[0x36] = on; m[0x37] = on;
+    m.fill(0, 0xC2B0, 0xC2B8);
+    s.cpu.call(0x9EA2, { x: 0, y: 0 }, { maxSteps: 1e6 });
+    s.pass = () => {
+      if (s.passes++ & 1) return;
+      s.call(0xA0D3); s.call(0xA2F2);
+    };
+    s.pass();
+    return s;
+  }
+  // Gerald in a room spRoom has built, with its tile buffer: on every other pass run_pieces, then
+  // Gerald drawn from $C800 in cyan ($C2A9 = 3, as init_and_title sets it), then sort_sprites, the
+  // main loop's order ($8E36-$8E4B). path(t) gives his X, Y and height at pass t.
+  function inRoom(r, path) {
+    const m = r.mem;
+    const s = machine(m, {
+      read(a) { return a >= 0xD000 && a < 0xD400 ? r.vic[a & 63] : a >= 0xD800 && a < 0xDC00 ? r.colour[a - 0xD800] | 0xF0 : 0; },
+      write(a, v) { if (a >= 0xD000 && a < 0xD400) r.vic[a & 63] = v; },
+    });
+    m[0xC2A9] = 3;
+    s.pass = () => {
+      place(m, ...path(s.passes));
+      if (s.passes++ & 1) return;
+      s.call(0xA0D3); drawObject(s, 0xC800); s.call(0xA2F2);
+    };
+    s.pass();
+    return s;
+  }
+  // change_shape ($7223), the I key, on a stage's memory.
+  const changeShape = (s) => s.call(0x7223);
+  return { object, frame, pieces, inRoom, changeShape };
+}
+// spPaint(px, w, h, mem, sprites, x0, y0, rgb, mc0, mc1): the sprites, as sprites() lists them, painted
+// into an RGBA buffer w by h whose top left is sprite place (x0, y0): lowest priority first, each 24
+// pixels wide and 21 rows tall (or sp.rows), a multicolour pair %01 in mc0 ($D025), %10 in the
+// sprite's colour, %11 in mc1 ($D026).
+function spPaint(px, w, h, mem, sprites, x0, y0, rgb, mc0, mc1) {
+  const set = (x, y, c) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    const o = (y * w + x) * 4, k = rgb[c];
+    px[o] = k[0]; px[o + 1] = k[1]; px[o + 2] = k[2]; px[o + 3] = 255;
+  };
+  for (const sp of sprites.slice().sort((a, b) => b.n - a.n)) {
+    for (let r = 0; r < (sp.rows || 21); r++) for (let b = 0; b < 3; b++) {
+      const v = mem[sp.data + r * 3 + b], x = sp.x - x0 + b * 8, y = sp.y - y0 + r;
+      if (sp.multi) {
+        for (let p = 0; p < 4; p++) {
+          const bits = v >> (6 - 2 * p) & 3;
+          if (bits) { const c = bits === 1 ? mc0 : bits === 2 ? sp.colour : mc1; set(x + 2 * p, y, c); set(x + 2 * p + 1, y, c); }
+        }
+      } else for (let p = 0; p < 8; p++) if (v >> (7 - p) & 1) set(x + p, y, sp.colour);
+    }
+  }
+}
+// end of sp-cast
+</script>
+<script>
+// Graphics tab. Every sprite is built by the game's own routines (spCast, and spRoom for the room)
+// on the kit's 6502, C64Cpu from ../../lib/cpu6502.js, over the bytes of the listing, and painted by
+// spPaint. A pass of the main loop is 1,504 / 1,838 frames, the rate counted in the emulator at the
+// slow speed; the pieces and Gerald's sprites are built on every other pass.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const fail = (t) => { $('gx-cast').innerHTML = '<p class="gx-miss">' + t + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { fail('These shapes are drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) { fail('The listing did not load, so nothing can be drawn.'); return; }
+  const ram = L.ram, PASSES = 985248 / 19656 * 1838 / 1504, MC0 = 4, MC1 = 7, BLUE = 6;
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const C = spCast(ram, C64Cpu);
+  const H = (n) => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+  const off = document.createElement('canvas'), offx = off.getContext('2d');
+  function group(box, title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = (title ? '<h3>' + title + '</h3>' : '') + (text ? '<p>' + text + '</p>' : '') + '<div class="gx-tiles"></div>';
+    box.appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, s, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w * s; cv.height = h * s; sp.innerHTML = label;
+    t.appendChild(cv); t.appendChild(sp); tiles.appendChild(t);
+    const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    return { ctx, s, w, h, cv, sp };
+  }
+  // Paints layers [mem, sprites, x0, y0] over the start room's blue into tile t.
+  function paint(t, layers) {
+    const img = new ImageData(t.w, t.h), k = rgb[BLUE];
+    for (let i = 0; i < img.data.length; i += 4) { img.data[i] = k[0]; img.data[i + 1] = k[1]; img.data[i + 2] = k[2]; img.data[i + 3] = 255; }
+    for (const [mem, sprites, x0, y0] of layers) spPaint(img.data, t.w, t.h, mem, sprites, x0, y0, rgb, MC0, MC1);
+    off.width = t.w; off.height = t.h; offx.putImageData(img, 0, 0);
+    t.ctx.imageSmoothingEnabled = false;
+    t.ctx.drawImage(off, 0, 0, t.w * t.s, t.h * t.s);
+  }
+
+  let room = null;
+
+  // 01: the cast
+  const box = $('gx-cast');
+  box.innerHTML = '';
+  const SETS = [0xC800, 0x7800, 0x7980];
+  let names = { 0xC800: 'the top', 0x7980: 'the ball', 0x7800: 'the disc' }, presses = 0;
+  const live = [];
+  const g1 = group(box, 'Gerald and the inhabitants', 'Each rolls straight across the screen at 8 a pass on X and on Y, and turns back every 64 passes. The frame follows its place across the screen, so it spins as it goes.');
+  const objs = [[0xC800, 3, 'Gerald'], [0x7800, 10, 'Inhabitants of kind 0'], [0x7980, 10, 'Inhabitants of kind 1']].map(([set, colour, who]) => {
+    const s = C.object(set, colour, 8, 64), first = s.sprites()[0];
+    const t = tile(g1, 96, 22, 3, '');
+    const o = { s, t, set, who, x0: first.x - 4, y0: first.y - 3 };
+    o.draw = () => paint(t, [[s.mem, s.sprites(), o.x0, o.y0]]);
+    live.push(o);
+    return o;
+  });
+  const g2 = group(box, 'The four frames of each set', 'Frames 0 to 3 of each set, as <code>draw_object</code> takes them with bits 5 and 6 of the column at 0, 1, 2 and 3. The first sprite\'s frames are the 192 bytes from the set\'s start, the outline\'s the 192 after.');
+  const frameTiles = SETS.map((set) => ({ set, t: tile(g2, 4 * 28 + 4, 22, 3, '') }));
+  function drawFrames() {
+    for (const { set, t } of frameTiles) {
+      const colour = set === 0xC800 ? 3 : 10;
+      paint(t, [0, 1, 2, 3].map((f) => { const s = C.frame(set, colour, f, presses), sp = s.sprites(); return [s.mem, sp, sp[0].x - 4 - f * 28, sp[0].y - 3]; }));
+      t.sp.innerHTML = '<code>' + H(set) + '</code>-<code>' + H(set + 383) + '</code>: ' + names[set] + (set === 0xC800 ? ', Gerald\'s' : set === 0x7800 ? ', kind 0\'s' : ', kind 1\'s');
+    }
+    for (const o of objs) o.t.sp.innerHTML = o.who + ': ' + names[o.set] + ', from the set at <code>' + H(o.set) + '</code>, in ' + (o.set === 0xC800 ? 'cyan' : 'light red');
+  }
+  const g3 = group(box, 'A jewel', '');
+  const jewel = C.pieces([0x01, 0x6C, 0x00, 0x00], 0), jfirst = jewel.sprites()[0];
+  const jt = tile(g3, 32, 22, 3, 'Built once from <code>jewel_picture</code> (<code>$C180</code>), its colour one on at each run of the pieces');
+  live.push({ s: jewel, draw: () => paint(jt, [[jewel.mem, jewel.sprites(), jfirst.x - 4, jfirst.y - 3]]) });
+  // lifts on each switch, counted from the room records at $0A00
+  const count = new Array(16).fill(0);
+  for (const r of spWorld(ram).rooms) for (const p of r.pieces) if (p.kind === 'lift') count[p.n]++;
+  const g4 = group(box, 'The lifts', 'One for each switch number, rising two levels and coming down again, 8 a run of the pieces, so a level takes 32 runs. Each is shown with its switch on, and starts a little after the one before.');
+  for (let n = 0; n < 12; n++) {
+    const s = C.pieces([0x02 | n << 3, 0x6C, 0x10, 0x00], n), first = s.sprites()[0];
+    for (let i = 0; i < n * 8; i++) s.pass();
+    const a = (n & 12) | (n & 1) << 1, b = (n | 1) & 15;
+    const what = n === 0 ? 'No switch: ' + count[0] + ' lifts, always moving' : 'Switch ' + n + ': ' + (count[n] ? count[n] + ' lift' + (count[n] > 1 ? 's' : '') : 'no lift has it');
+    const t = tile(g4, 40, 40, 3, what + '; pieces <code>' + H(0xC000 + a * 32) + '</code> and <code>' + H(0xC000 + b * 32) + '</code>');
+    const x0 = first.x - 4, y0 = first.y - 16 - 3;
+    live.push({ s, draw: () => paint(t, [[s.mem, s.sprites(), x0, y0]]) });
+  }
+  drawFrames();
+
+  function drawCast() {
+    for (const o of live) o.draw();
+    $('gx-stat').textContent = 'pass ' + live[0].s.passes + ' · ' + (live[0].s.passes / PASSES).toFixed(1) + ' s';
+  }
+  function pass() { for (const o of live) o.s.pass(); room && room.pass(); }
+  $('gx-i').addEventListener('click', () => {
+    presses = (presses + 1) % 3;
+    const n = names;
+    names = { 0xC800: n[0x7980], 0x7980: n[0x7800], 0x7800: n[0xC800] };
+    for (const o of objs) C.changeShape(o.s);
+    drawFrames(); drawCast();
+  });
+
+  // 02: behind the scenery
+  try {
+    const r = spRoom(ram, 53, 61, 2, C64Cpu), vic = r.vic.slice();
+    vic[0x15] = 0;
+    const bg = document.createElement('canvas');
+    bg.width = 512; bg.height = 400;
+    spDraw(bg, { mem: r.mem, colour: r.colour, vic }, C64);
+    const N = 96, path = (t) => { const k = t % (2 * N), u = k < N ? k : 2 * N - k; return [0x0080 + 16 * u, 0x0680, 0]; };
+    const s = C.inRoom(r, path), m = r.mem;
+    const cv = $('gx-room'), ctx = cv.getContext('2d'), CX = 0, CY = 70, W = 200, Hh = 130;
+    const panels = $('gx-panels');
+    const pFrame = tile(panels, 32, 22, 4, 'His frame, as the set holds it');
+    const pMask = tile(panels, 32, 24, 4, 'The mask');
+    const pOut = tile(panels, 32, 22, 4, 'The two sprites the chip gets');
+    room = {
+      pass: s.pass,
+      draw() {
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(bg, CX * 2, CY * 2, W * 2, Hh * 2, 0, 0, W * 2, Hh * 2);
+        const img = new ImageData(W, Hh);
+        spPaint(img.data, W, Hh, m, s.sprites(), CX + 88, CY + 50, rgb, MC0, MC1);
+        off.width = W; off.height = Hh; offx.putImageData(img, 0, 0);
+        ctx.drawImage(off, 0, 0, W * 2, Hh * 2);
+        const f = s.frame;
+        paint(pFrame, [[m, [{ n: 0, data: 0xC8C0 + f * 48, x: 0, y: 0, colour: 0, multi: 0, rows: 16 }, { n: 1, data: 0xC800 + f * 48, x: 0, y: 0, colour: 3, multi: 1, rows: 16 }], -4, -3]]);
+        paint(pOut, [[m, [{ n: 0, data: 0xC000 + m[0xC280] * 64, x: 0, y: 0, colour: 0, multi: 0, rows: 16 }, { n: 1, data: 0xC000 + m[0xC281] * 64, x: 0, y: 0, colour: 3, multi: 1, rows: 16 }], -4, -3]]);
+        const mk = new ImageData(32, 24), row = (m[0xC298] - 0x32) & 7, col = m[0xFE] >> 7;
+        for (let c = 0; c < 4; c++) for (let y = 0; y < 24; y++) for (let b = 0; b < 8; b++) {
+          const on = m[0xC300 + c * 32 + y] >> (7 - b) & 1, o = (y * 32 + c * 8 + b) * 4, v = on ? 214 : 52;
+          mk.data[o] = v; mk.data[o + 1] = v; mk.data[o + 2] = v; mk.data[o + 3] = 255;
+        }
+        off.width = 32; off.height = 24; offx.putImageData(mk, 0, 0);
+        pMask.ctx.imageSmoothingEnabled = false;
+        pMask.ctx.drawImage(off, 0, 0, 128, 96);
+        pMask.ctx.strokeStyle = '#f0a020'; pMask.ctx.lineWidth = 2;
+        pMask.ctx.strokeRect(col * 32 + 1, row * 4 + 1, 96 - 2, 64 - 2);
+      },
+    };
+  } catch (e) {
+    console.error(e);
+    $('gx-room-cap').textContent = 'The room could not be drawn: ' + e.message;
+  }
+
+  function drawAll() { drawCast(); if (room) room.draw(); }
+  let running = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = 0, acc = 0;
+  $('gx-run').textContent = running ? 'Pause' : 'Run';
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Run'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Run'; pass(); pass(); drawAll(); });
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * PASSES;
+      let n = Math.floor(acc); acc -= n;
+      if (n) { while (n--) pass(); drawAll(); }
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  drawAll();
+  requestAnimationFrame(loop);
+})();
+</script>

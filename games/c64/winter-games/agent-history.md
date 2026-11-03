@@ -114,3 +114,20 @@ recorded Bobsled frame turned out to show far piece 24, and `draw_far` on
 the listing matched it in every cell but the rumble's, which held `$02`
 where the panorama has `$69`: the change is a black dash in the sky, not
 a hidden byte.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab now draws every frame of every event with that event's own
+code on the kit's 6502 over the part's listing: `draw_frame` in Hot Dog,
+Biathlon and the skating, `build_sled` in Bobsled, Speed Skating's whole
+frames where `frame_bases` points, Ski Jump's small skier and its
+close-ups (the close-up's `draw_frame` over the landing slope that
+`unpack_list` unpacks, as How it works already did for the lean bands),
+and the opening's seven animations at their own lengths. The colours were
+traced in each event's start-up tables and, for the opening, in its three
+raster interrupts. Two things came out of it. Ski Jump's small skier
+shapes are copied from `$7488` to `$8400` at start-up, so reading `$8400`
+in the listing gives nothing. Hot Dog's frame 47 reads 11 bytes past its
+own, into frame 48's: every other packed frame ends exactly where the next
+begins. The drawing paragraph under Skating on How it works moved to the
+new tab's second part, which shows a frame's two layers apart.

@@ -1,0 +1,597 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:34px;--h2:22px;--fs:16px}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-tile canvas{background:#000}
+.gx-panels{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.gx-panels .gx-tile span{min-width:0}
+#gx-pics{display:flex;flex-wrap:wrap;column-gap:26px}
+#gx-pics .gx-group{margin-bottom:16px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Mastertronic</p>
+  <h1>Storm</h1>
+  <p class="sub">Nothing in Storm is a sprite. Every figure is a block of characters that the game builds again, from its picture and the floor beneath it, each time it moves.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every figure, moved by the game's own code</h2>
+  <p class="lede">Storm and Agravain, the six kinds of monster, the generators they come out of, and the two shots. A player can take a step every other pass of the game's main loop, a monster takes one every ten passes, and a shot flies two columns a pass.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One pass</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"><p class="gx-miss">The figures are drawn by the game's own code in the built site.</p></div>
+    <p class="cap">Each tile is a machine of its own: the game's routines on the kit's 6502 in the page, over the listing's bytes, with the play area cleared. Each player is moved by <code>players_update</code> (<code>$6871</code>) on every other pass, as the main loop calls it, with his joystick held up, up and right in turn, so he walks a square. Each monster is moved by <code>move_monster</code> (<code>$5FB6</code>), which takes one of the ten monster slots a pass, toward a target that moves round the corners of a square whenever the monster reaches it. The shots are both players' fire held, with <code>shots_update</code> (<code>$7B8A</code>) run twice a pass. A pass here takes 2.6 frames, the rate counted in the emulator with six monsters out.</p>
+  </div>
+  <p>A player has a picture for each of the four ways he can face, and his step and his turn both go through <code>redraw_player</code>. The players' controls run every other pass, so a player walks at most a cell every two passes, about ten cells a second. A turn sets <code>turn_delay</code> to 2 and each run of the controls counts it down before it reads the joystick, so a held turn turns him once every four passes. Agravain's own colour is always red. Storm's colours come from a different row of <code>colour_rows</code> for each way he faces.</p>
+  <p>Each kind of monster has its own drawing routine, <code>draw_kind1</code> to <code>draw_kind6</code> (<code>$6187</code>-<code>$62A3</code>). Kinds 1, 3 and 6 have a picture for each way they face, and a monster faces the way it last stepped, across rather than up or down when it steps both ways at once. Kind 6 also takes the colours of the way it faces. Kinds 2 and 4 have two pictures and swap them at every step, using the top bit of the monster's kind byte to remember which is showing. Kind 5 has four and moves to the next at every step, counting in the kind byte's top four bits. The routine runs even when a monster has nowhere to go, so these three go on changing while they stand still.</p>
+  <p>A shot is one character, Agravain's <code>$FE</code> and Storm's <code>$FF</code>. At each step <code>shot_step</code> puts back what the shot covered and builds the character again over the next cell's floor from character 7, the shot's pattern. It stops at a wall, a player, an object or the edge of the play area, and hits a generator or a monster. The generators do not move: <code>draw_generators</code> draws each one once, in one of two looks, as the room is drawn.</p>
+</section>
+
+<section id="pictures">
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Every picture, in the order the game keeps them</h2>
+  <p class="lede">The players', the monsters' and the generators' pictures are 1,998 bytes at <code>$4E64</code>-<code>$5631</code>, eight bytes to a character. Three pieces of it are pictures nothing draws.</p>
+  <div class="plate">
+    <div id="gx-pics"></div>
+    <p class="cap">Each picture drawn by the game's <code>draw_actor</code> (<code>$5E04</code>) on the page's 6502 over a cleared screen, in the colours the routine that uses it chooses. The pieces nothing uses are drawn as characters in light blue, the colours of the first row of <code>colour_rows</code>.</p>
+  </div>
+  <p>A picture is a block of characters, read across and then down: a player's or a facing monster's is four characters by two rows, 64 bytes, and a kind 2 or kind 4 monster's or a generator's is three by two, 48 bytes. In multicolour each pair of bits is one wide pixel: black, the orange and yellow every character shares, or the character's own colour, which is what changes from row to row of <code>colour_rows</code>.</p>
+  <p>Nothing points at three pieces of the block. The 30 bytes at <code>$4E64</code> sit between the last object's picture and Storm's, and are not a whole picture. The 128 bytes at <code>$5142</code>, after the generators, make two pictures four characters wide. The 16 bytes at <code>$5422</code>, between Agravain and kind 6, are two characters. The objects' 28 pictures are kept in a block of their own before these, and How it works draws each of them <a href="index.html#objects">with what touching it does</a>.</p>
+</section>
+
+<section id="build">
+  <p class="fig">03 · Building a figure</p>
+  <h2 class="t">A picture, cut by the floor's mask and laid over it</h2>
+  <p class="lede">The floor's patterns stay on top of whoever stands on them. The game does it a character at a time, with a mask for every floor character.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-dirs"><span class="gx-lab">Agravain facing</span></div>
+    <div class="gx-panels" id="gx-panels"></div>
+    <p class="cap">Room 1, drawn by the game's routines on the page's 6502, with Agravain put over the floor piece made of characters <code>$2A</code>-<code>$31</code> by <code>load_a</code>, <code>put_player</code> and <code>save_a</code>, as the game puts him in a room. The mask is the eight bytes <code>compose</code> reads from <code>floor_masks</code> (<code>$87CE</code>) for each character under him: light where his picture shows, dark where the floor stays.</p>
+  </div>
+  <p>A figure owns its characters. Storm has <code>$32</code>-<code>$39</code> and Agravain <code>$3A</code>-<code>$41</code>, the room's eight objects have eight each from <code>$42</code>, its five generators six each from <code>$82</code>, and the ten monster slots eight each from <code>$A0</code>. When a figure moves, <code>restore_bg</code> puts back the characters it saved from under it, after waiting for raster line <code>$F0</code> so the change is not seen half done. <code>compose</code> then saves the characters at the new place and builds the figure's own: for every byte it ANDs the picture with the mask for the floor character beneath and ORs in that floor character, so floor decorations stay on top and the figure fills the gaps. <code>put_actor</code> writes the figure's characters to the screen with the colours of its row of <code>colour_rows</code>.</p>
+  <p>The mask for a character is found at (character − <code>$11</code>) × 8 into the table, counted in a single byte. For <code>$31</code>, the bottom right corner of this floor piece, that comes to <code>$100</code>, which wraps to 0: the mask for an empty cell, every bit set. Over that one character nothing is cut out of a figure, so where its pixels meet the floor's, the two patterns are ORed together and the colours mix. The mask that should have been used, eight bytes at <code>$88CE</code>, is never read.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">gamesexplained</a></footer><script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* storm-machine */
+// The game's own code at work in the page: a 6502 (stormCore), the room drawing and the monsters
+// run on it (stormRooms), and a painter for the play area (stormPaint). Checked against the kit's
+// 6502 simulator by test_machine.js beside this page.
+// The 6502 is the kit's (C64Cpu, from ../../lib/cpu6502.js), running Storm's own routines on the
+// bytes of the listing. m is 64 KB of RAM; io answers $D000-$DFFF (the chips), except colour RAM
+// ($D800-$DBFF), which is kept in m. call(entry, regs, hooks) runs from entry to the routine's
+// return, starting with A, X and Y as regs gives them (0 otherwise) and every flag clear. A hook at
+// an address runs before the instruction there: returning 'rts' returns from the subroutine it
+// stands in for, returning true ends the call there.
+function stormCore(m, io) {
+  'use strict';
+  const colour = (ad) => ad >= 0xD800 && ad < 0xDC00;
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+    read: (ad) => (colour(ad) ? m[ad] : io.read(ad)),
+    write: (ad, val) => { if (colour(ad)) m[ad] = val; else io.write(ad, val); },
+  } });
+  function call(entry, regs, hooks) {
+    regs = regs || {};
+    let on = null;
+    if (hooks) {
+      on = {};
+      for (const ad of Object.keys(hooks)) on[ad] = (c) => {
+        const h = hooks[ad]({ a: c.a, x: c.x, y: c.y });
+        if (h === 'rts') c.rts();
+        return h === true;
+      };
+    }
+    cpu.call(entry, { a: regs.a || 0, x: regs.x || 0, y: regs.y || 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { hooks: on, maxSteps: 2e6 });
+  }
+  return { call, get a() { return cpu.a; }, get x() { return cpu.x; }, get y() { return cpu.y; }, get pc() { return cpu.pc; } };
+}
+
+// stormRooms(ram, asLoaded) keeps its own copy of the listing's memory. reset_walls and reset_objects
+// ($7EA2, $7EFF) first put back the rooms the file left half played, unless asLoaded is set. room(r, layers)
+// then does what enter_room ($77CC) does before it draws the players: clear_screen, the room's
+// counters, and draw_floor, draw_walls, draw_border, draw_generators and draw_objects, each
+// unless layers turns it off. enter(r) adds Agravain at his starting place (start_places,
+// draw_players), and pass() is the main loop's monster work for one pass ($78D7): the drains
+// cleared, then move_monster and spawn. hit(slot) is a shot reaching a monster (shot_hit's monster
+// branch, $7D0C) and spell() a scroll's or an amulet's magic ($69C0). The sound effect each would
+// start (sfx_start, $5645) is left out.
+function stormRooms(ram, asLoaded) {
+  const m = ram.slice();
+  const io = {
+    read(ad) {
+      if (ad === 0xD012) return 0xF0;                   // the raster line clear_screen and restore_bg wait for
+      if (ad === 0xDC00 || ad === 0xDC01) return 0xFF;  // the joysticks, at rest
+      throw new Error('read $' + ad.toString(16));
+    },
+    write(ad) { throw new Error('write $' + ad.toString(16)); },
+  };
+  const cpu = stormCore(m, io);
+  if (!asLoaded) { cpu.call(0x7EA2); cpu.call(0x7EFF); }
+  const start = m.slice(), quiet = { 0x5645: () => 'rts' };
+  const DRAW = [0x5984, 0x5A21, 0x5AD1, 0x5BF8, 0x5CD1];
+  const view = { m, screen: m.subarray(0x0400, 0x0800), colour: m.subarray(0xD800, 0xDC00), charset: m.subarray(0x0800, 0x1000) };
+  function room(r, layers) {
+    m.set(start);
+    m[0x8118] = r;
+    for (const ad of [0x814C, 0x8141, 0x8142, 0x8143, 0x8145, 0x8147, 0x8107, 0x8125]) m[ad] = 0;
+    m.fill(0, 0x8742, 0x874C);
+    m[0x8643] = m[0x863F] = 0xFF;
+    cpu.call(0x5938);
+    DRAW.forEach((entry, i) => { if (!layers || layers[i]) cpu.call(entry); });
+    return view;
+  }
+  function enter(r) {
+    room(r);
+    m[0x8106] = 0; m[0x8137] = 1;
+    cpu.call(0x65C2); cpu.call(0x65E1);
+    return view;
+  }
+  function pass() { m[0x8149] = m[0x814A] = 0; cpu.call(0x5FB6, {}, quiet); cpu.call(0x5E11, {}, quiet); return view; }
+  function hit(slot) { cpu.call(0x7D0C, { a: 0xA0 + 8 * slot }, quiet); return view; }
+  function spell() { cpu.call(0x69C0, {}, quiet); return view; }
+  return { m, cpu, quiet, view, room, enter, pass, hit, spell };
+}
+
+// A room's lists, read from the tables as draw_floor, draw_walls, draw_generators and draw_objects
+// read them (wall_ptrs $1000, gen_ptrs $1E8E, obj_ptrs $17CD, floor_ptrs $244F: three bytes a
+// record, a list ending early at a zero byte), its doorways from exit_bits ($179B, the even room
+// in the high nibble) and its description from room_msgs ($294E).
+function roomRecords(ram, r) {
+  const w = (a) => ram[a] | ram[a + 1] << 8;
+  const list = (tab, n) => {
+    const p = w(tab + 2 * r), out = [];
+    for (let i = 0; i < n && ram[p + 3 * i]; i++) out.push([ram[p + 3 * i], ram[p + 3 * i + 1], ram[p + 3 * i + 2]]);
+    return out;
+  };
+  let text = '';
+  for (let p = w(0x294E + 2 * r); ram[p] && text.length < 80; p++) text += String.fromCharCode(ram[p]);
+  const e = ram[0x179B + (r >> 1)];
+  return { walls: list(0x1000, 10), floor: list(0x244F, 5), gens: list(0x1E8E, 5), objs: list(0x17CD, 8),
+    exits: r & 1 ? e & 15 : e >> 4, text };
+}
+
+// The map (room_map, $471C): 16 places across and 12 down, each holding a room number in decimal,
+// tens and units, or $FF for none. place[i] is the room at place i (row i >> 4, column i & 15) or
+// -1; at[r] is room r's place. Leaving by a side moves one place, by the top or the bottom sixteen.
+function roomMap(ram) {
+  const place = [], at = [];
+  for (let i = 0; i < 192; i++) {
+    const b = ram[0x471C + i];
+    place.push(b === 0xFF ? -1 : (b >> 4) * 10 + (b & 15));
+    if (b !== 0xFF) at[place[i]] = i;
+  }
+  return { place, at };
+}
+
+// The rooms the monster widget offers: those with generators where Agravain's starting cells
+// (screen rows 13-14, columns 16-19) hold nothing but floor, so he stands where a new game puts him.
+function monsterRooms(R) {
+  const out = [];
+  for (let r = 0; r < 100; r++) {
+    if (!roomRecords(R.m, r).gens.length) continue;
+    const v = R.room(r);
+    let clear = true;
+    for (const row of [13, 14]) for (let c = 16; c < 20; c++) { const k = v.screen[row * 40 + c]; if (k && (k < 0x12 || k > 0x31)) clear = false; }
+    if (clear) out.push(r);
+  }
+  return out;
+}
+
+// lose_energy ($7FB6) for one player, as the main loop calls it between load_a or load_b and
+// save_a or save_b: the work copy holds the player (cur_player $8138, p_dead $861A, p_armour $8120,
+// p_energy $8616-$8617, p_warn $861D) and drain ($814B) the damage, all decimal. take(state, drain)
+// returns the state after, with died when player_dies ($804E) is reached and sound when the
+// warning's sfx_start is.
+function stormEnergy(ram) {
+  const m = ram.slice();
+  const cpu = stormCore(m, { read(ad) { throw new Error('read $' + ad.toString(16)); }, write(ad) { throw new Error('write $' + ad.toString(16)); } });
+  const bcd = (n) => ((n / 10 | 0) % 10) << 4 | n % 10, dec = (b) => (b >> 4) * 10 + (b & 15);
+  function take(s, drain) {
+    m[0x8138] = s.who; m[0x861A] = 0; m[0x8120] = bcd(s.arm); m[0x814B] = bcd(drain);
+    m[0x8616] = bcd(s.nrg % 100); m[0x8617] = bcd(s.nrg / 100 | 0); m[0x861D] = s.warn;
+    let died = false, sound = false;
+    cpu.call(0x7FB6, {}, { 0x5645: () => { sound = true; return 'rts'; }, 0x804E: () => { died = true; return true; } });
+    return { who: s.who, arm: dec(m[0x8120]), nrg: died ? 0 : dec(m[0x8617]) * 100 + dec(m[0x8616]), warn: m[0x861D], died, sound };
+  }
+  return { m, take };
+}
+
+// One object's picture, drawn by draw_object ($5D67) as draw_objects sets it up for the room's first
+// object (actor_char $42, char_step 8, the save buffer obj_save at $8665), at cell (1, 1) of a
+// cleared screen: screen rows 7-8, columns 4-7.
+function stormObjects(ram) {
+  const m = ram.slice();
+  const cpu = stormCore(m, { read(ad) { if (ad === 0xD012) return 0xF0; throw new Error('read $' + ad.toString(16)); }, write(ad) { throw new Error('write $' + ad.toString(16)); } });
+  const view = { m, screen: m.subarray(0x0400, 0x0800), colour: m.subarray(0xD800, 0xDC00), charset: m.subarray(0x0800, 0x1000) };
+  function draw(t) {
+    cpu.call(0x5938);
+    m[0x8124] = 0x42; m[0x8131] = 8; m[0x6513] = 0x65; m[0x6514] = 0x86;
+    m[0x810D] = t; m[0x8115] = 1; m[0x8116] = 1;
+    cpu.call(0x5D67);
+    return view;
+  }
+  return { m, draw };
+}
+
+// touch_damage ($62A4) for a monster whose kind byte is k touching Agravain (player_hit $3A, one of
+// his characters): mon_damage doubles the byte twice in decimal mode and touch_damage adds it to
+// drain_a ($8149), all with the carries the additions leave. Returns drain_a, decimal.
+function stormTouch(ram) {
+  const m = ram.slice();
+  const cpu = stormCore(m, { read(ad) { throw new Error('read $' + ad.toString(16)); }, write(ad) { throw new Error('write $' + ad.toString(16)); } });
+  function damage(k) {
+    m[0x812A] = 0; m[0x876A] = k; m[0x8125] = 0x3A; m[0x8149] = 0;
+    cpu.call(0x62A4);
+    return (m[0x8149] >> 4) * 10 + (m[0x8149] & 15);
+  }
+  return { m, damage };
+}
+
+// Paints the play area (screen rows 6-23) of a drawn room into an RGBA buffer: multicolour
+// characters on black, the shared colours orange (8) and yellow (7) as game_init sets them.
+const STORM_PAL = [[0,0,0],[255,255,255],[129,51,56],[117,206,200],[142,60,151],[86,172,77],[46,44,155],[237,241,113],
+  [142,80,41],[85,56,0],[196,108,113],[74,74,74],[123,123,123],[169,255,159],[112,109,235],[178,178,178]];
+function stormPaint(d, rows, cols) {
+  rows = rows || [6, 24]; cols = cols || [0, 40];
+  const W = (cols[1] - cols[0]) * 8, H = (rows[1] - rows[0]) * 8, px = new Uint8ClampedArray(W * H * 4);
+  for (let r = rows[0]; r < rows[1]; r++) for (let c = cols[0]; c < cols[1]; c++) {
+    const code = d.screen[r * 40 + c], col = d.colour[r * 40 + c] & 15, mc = col >= 8;
+    for (let yy = 0; yy < 8; yy++) {
+      const bits = d.charset[code * 8 + yy];
+      for (let xx = 0; xx < 8; xx++) {
+        let ci;
+        if (mc) { const v = (bits >> (6 - (xx & 6))) & 3; ci = [0, 8, 7, col & 7][v]; }
+        else ci = (bits & (0x80 >> xx)) ? col : 0;
+        const o = (((r - rows[0]) * 8 + yy) * W + (c - cols[0]) * 8 + xx) * 4, p = STORM_PAL[ci];
+        px[o] = p[0]; px[o + 1] = p[1]; px[o + 2] = p[2]; px[o + 3] = 255;
+      }
+    }
+  }
+  return { w: W, h: H, px };
+}
+// end of storm-machine
+
+/* storm-cast */
+// The cast's stages. Each is a machine of its own (stormCore over a copy of the listing's memory)
+// with the play area cleared by clear_screen ($5938) and its actors moved by the game's own routines,
+// one pass of main_loop at a time. The sound effects they would start (sfx_start) are left out.
+// - player(who, x, y): Agravain (0) or Storm (1) alone, drawn by draw_players ($65E1) as enter_room
+//   draws him. On every other pass, as main_loop does,
+//   players_update ($6871) reads the stick the page holds (up, up, right, over and over) and turns him
+//   (joystick) or walks him (walk), and redraw_player draws him: a square, clockwise.
+// - monster(kind, x, y): one monster in slot kind - 1, drawn first as spawn draws a new one ($5EAE:
+//   the kind's first picture, through draw_actor), then moved each pass by move_monster ($5FB6),
+//   which takes one slot a pass, toward Agravain's record: never drawn, it hops round the corners of
+//   a square whenever the monster reaches it.
+// - gens(x, y): the two generator looks, drawn as draw_generators draws them ($5C5A-$5CBF).
+// - shots(x, y, wall): both players facing right with fire held. players_update starts a shot when
+//   neither is in flight, and shots_update ($7B8A), twice a pass, moves both until each meets the
+//   wall piece placed in column wall.
+function stormCast(ram) {
+  'use strict';
+  const quiet = { 0x5645: () => 'rts' };
+  function stage(sticks) {
+    const m = ram.slice();
+    const cpu = stormCore(m, {
+      read(ad) {
+        if (ad === 0xD012) return 0xF0;                   // the raster line restore_bg waits for
+        if (ad === 0xDC01) return sticks ? sticks[0] : 0xFF;
+        if (ad === 0xDC00) return sticks ? sticks[1] : 0xFF;
+        throw new Error('read $' + ad.toString(16));
+      },
+      write(ad) { throw new Error('write $' + ad.toString(16)); },
+    });
+    cpu.call(0x5938);
+    m[0x8142] = m[0x8143] = 0; m.fill(0, 0x8742, 0x874C);      // mon_count, mon_next, mon_hp
+    m[0x861E] = m[0x8629] = 0xFF;                               // b_x, a_x: nobody in the room
+    m[0x8618] = m[0x8619] = 0;                                  // a_dead, b_dead
+    m[0x863F] = m[0x8643] = 0xFF;                               // shot_a, shot_b: none in flight
+    m[0x8107] = m[0x814C] = 0;                                  // pass_count, turn_delay
+    m[0x8137] = 1;                                              // players
+    return { m, cpu, sticks, passes: 0, view: { m, screen: m.subarray(0x0400, 0x0800), colour: m.subarray(0xD800, 0xDC00), charset: m.subarray(0x0800, 0x1000) } };
+  }
+  // Puts a player in his record (position and direction); draw_players ($65E1) then draws whoever
+  // is alive, as enter_room does.
+  function place(s, who, x, y, dir) {
+    const rec = who ? 0x861E : 0x8629;
+    s.m[rec] = x; s.m[rec + 1] = y; s.m[rec + 2] = dir;
+  }
+  // main_loop's player work for one pass: pass_count, and players_update when it is even.
+  function controls(s) {
+    s.m[0x8107] = (s.m[0x8107] + 1) & 255;
+    const run = !(s.m[0x8107] & 1);
+    if (run) s.cpu.call(0x6871, {}, quiet);
+    return run;
+  }
+  function player(who, x, y) {
+    const sticks = [0xFF, 0xFF], s = stage(sticks), SQUARE = [0xFE, 0xFE, 0xF7];
+    if (who) { s.m[0x8137] = 2; s.m[0x8618] = 1; }            // Storm alone: two players, Agravain dead
+    place(s, who, x, y + 2, 0);
+    s.cpu.call(0x65E1);
+    let n = 0;
+    s.pass = () => {
+      sticks[who] = SQUARE[n % 3];
+      if (controls(s)) n++;
+      s.passes++;
+    };
+    return s;
+  }
+  // The new monster's first picture, width and colour row, as spawn sets them ($5EAE-$5F34)
+  const FIRST = { 1: [0x4F82, 4, 0x00], 2: [0x5082, 3, 0x10], 3: [0x51C2, 4, 0x00], 4: [0x52C2, 3, 0x08], 5: [0x5532, 4, 0x10], 6: [0x5432, 4, 0x30] };
+  function monster(kind, x, y) {
+    const s = stage(null), m = s.m, slot = kind - 1, [shape, w, row] = FIRST[kind];
+    m[0x8111] = m[0x8112] = w; m[0x8113] = m[0x8114] = 2;     // blk_w, mon_w, blk_h, mon_h
+    m[0x812F] = row; m[0x6585] = shape & 255; m[0x6586] = shape >> 8;
+    m[0x8115] = x; m[0x8116] = y + 2;
+    m[0x6513] = 0x7E + 8 * slot; m[0x6514] = 0x87;              // its save buffer, mon_save + 8n
+    m[0x8124] = 0xA0 + 8 * slot;                                // its characters
+    s.cpu.call(0x5E04);
+    m[0x874C + slot] = x; m[0x8756 + slot] = y + 2;             // mon_x, mon_y
+    m[0x876A + slot] = kind; m[0x8774 + slot] = 0; m[0x8742 + slot] = kind; m[0x8142] = slot + 1;
+    m[0x8143] = slot;                                           // mon_next: its turn first
+    const CORNERS = [[x, y], [x + 2, y], [x + 2, y + 2], [x, y + 2]];
+    let c = 0;
+    m[0x8629] = x; m[0x862A] = y;
+    s.pass = () => {
+      if (m[0x874C + slot] === m[0x8629] && m[0x8756 + slot] === m[0x862A]) {
+        c = (c + 1) % 4; m[0x8629] = CORNERS[c][0]; m[0x862A] = CORNERS[c][1];
+      }
+      const moves = m[0x8143] === slot;
+      s.cpu.call(0x5FB6, {}, quiet);
+      s.passes++;
+      return moves;
+    };
+    return s;
+  }
+  function gens(x, y) {
+    const s = stage(null), m = s.m;
+    [0x50E2, 0x5112].forEach((shape, n) => {
+      m[0x812F] = 0; m[0x8111] = 3; m[0x8113] = 2;
+      m[0x8115] = x + 3 * n; m[0x8116] = y;
+      m[0x6585] = shape & 255; m[0x6586] = shape >> 8;
+      m[0x6513] = 0xA5 + 6 * n; m[0x6514] = 0x86;               // gen_save + 6n
+      m[0x8124] = 0x82 + 6 * n; m[0x8131] = 6;                  // actor_char, char_step
+      s.cpu.call(0x5E04);
+    });
+    s.pass = () => { s.passes++; };
+    return s;
+  }
+  function shots(x, y, wall) {
+    const sticks = [0xEF, 0xEF], s = stage(sticks), m = s.m;
+    m[0x8137] = 2;
+    place(s, 0, x, y, 1); place(s, 1, x, y + 3, 1);
+    s.cpu.call(0x65E1);
+    for (const r of [y + 1, y + 4]) { m[0x0400 + (r + 6) * 40 + wall] = 1; m[0xD800 + (r + 6) * 40 + wall] = 0x0E; }
+    s.pass = () => {
+      controls(s);
+      s.cpu.call(0x7B8A, {}, quiet);
+      s.cpu.call(0x7B8A, {}, quiet);
+      s.passes++;
+    };
+    return s;
+  }
+  return { stage, place, player, monster, gens, shots };
+}
+// end of storm-cast
+</script>
+<script>
+// Graphics tab. Every picture is drawn by the game's own routines (the storm-machine block, run on
+// the kit's 6502, C64Cpu from ../../lib/cpu6502.js) over the bytes of the listing, and painted by
+// stormPaint. The cast's tiles are stormCast's stages; a pass is 1,000 / 384 frames, the rate counted
+// in the emulator with six monsters out.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const fail = (t) => { $('gx-cast').innerHTML = '<p class="gx-miss">' + t + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { fail('These figures are drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) { fail('The listing did not load, so nothing can be drawn.'); return; }
+  const ram = L.ram, PASSES = 985248 / 19656 * 384 / 1000;
+  const off = document.createElement('canvas'), offx = off.getContext('2d');
+  function paint(t, view, rows, cols, x = 0, y = 0) {
+    const p = stormPaint(view, rows, cols);
+    off.width = p.w; off.height = p.h; offx.putImageData(new ImageData(p.px, p.w, p.h), 0, 0);
+    t.ctx.drawImage(off, x, y, p.w * t.s, p.h * t.s);
+  }
+  function group(box, title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = (title ? '<h3>' + title + '</h3>' : '') + (text ? '<p>' + text + '</p>' : '') + '<div class="gx-tiles"></div>';
+    box.appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, s, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w * s; cv.height = h * s; sp.innerHTML = label;
+    t.appendChild(cv); t.appendChild(sp); tiles.appendChild(t);
+    const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    return { ctx, s, cv };
+  }
+
+  // 01: the cast
+  const C = stormCast(ram), box = $('gx-cast');
+  box.innerHTML = '';
+  const SQ = { rows: [6, 11], cols: [3, 13] }, cast = [];
+  const add = (tiles, s, label, area = SQ) => cast.push({ s, area, t: tile(tiles, (area.cols[1] - area.cols[0]) * 8, (area.rows[1] - area.rows[0]) * 8, 3, label) });
+  const g1 = group(box, 'The players', 'Each walks a square, a step every other pass, and turns at its corners.');
+  add(g1, C.player(0, 1, 1), 'Agravain: four pictures from <code>$5322</code>, one for each way he faces');
+  add(g1, C.player(1, 1, 1), 'Storm: four pictures from <code>$4E82</code>, his colours changing with the way he faces');
+  const g2 = group(box, 'The monsters', 'Each takes one step every ten passes, toward a target that moves round the corners of a square.');
+  [
+    'Kind 1: four facings from <code>$4F82</code>',
+    'Kind 2: two pictures, <code>$5082</code> and <code>$50B2</code>, swapped at every step',
+    'Kind 3: four facings from <code>$51C2</code>',
+    'Kind 4: two pictures, <code>$52C2</code> and <code>$52F2</code>, swapped at every step',
+    'Kind 5: four pictures from <code>$5532</code>, the next at every step',
+    'Kind 6: four facings from <code>$5432</code>, each in its own colours',
+  ].forEach((label, i) => add(g2, C.monster(i + 1, 1, 1), label));
+  const g3 = group(box, 'Generators and shots', '');
+  add(g3, C.gens(1, 1), 'The two looks of a generator, <code>$50E2</code> and <code>$5112</code>', { rows: [6, 10], cols: [3, 14] });
+  add(g3, C.shots(1, 1, 20), 'Agravain\'s shot, character <code>$FE</code>, and Storm\'s, <code>$FF</code>, each stopped by a wall', { rows: [6, 13], cols: [3, 22] });
+
+  function drawCast() {
+    for (const a of cast) paint(a.t, a.s.view, a.area.rows, a.area.cols);
+    $('gx-stat').textContent = 'pass ' + cast[0].s.passes + ' · ' + (cast[0].s.passes / PASSES).toFixed(1) + ' s';
+  }
+  function pass() { for (const a of cast) a.s.pass(); }
+  let running = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = 0, acc = 0;
+  $('gx-run').textContent = running ? 'Pause' : 'Run';
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Run'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Run'; pass(); drawCast(); });
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * PASSES;
+      let n = Math.floor(acc); acc -= n;
+      if (n) { while (n--) pass(); drawCast(); }
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  drawCast();
+  requestAnimationFrame(loop);
+
+  // 02: every picture, in address order
+  const P = C.stage(null), pm = P.m, picBox = $('gx-pics');
+  function actor(shape, w, row) {
+    for (const r of [7, 8]) for (let c = 4; c < 8; c++) pm[0x0400 + r * 40 + c] = 0;
+    pm[0x6585] = shape & 255; pm[0x6586] = shape >> 8;
+    pm[0x8124] = 0xA0; pm[0x8131] = 8; pm[0x6513] = 0x7E; pm[0x6514] = 0x87;
+    pm[0x812F] = row; pm[0x8111] = w; pm[0x8113] = 2; pm[0x8115] = 1; pm[0x8116] = 1;
+    P.cpu.call(0x5E04);
+    return P.view;
+  }
+  // A piece nothing draws: its bytes as characters across one row, coloured as colour_rows' first row
+  function chars(bytes, n, col) {
+    const charset = new Uint8Array(2048), screen = new Uint8Array(1000), colour = new Uint8Array(1000).fill(col);
+    charset.set(bytes);
+    for (let c = 0; c < n; c++) screen[c] = c;
+    return { screen, colour, charset };
+  }
+  const hx = (v) => '$' + v.toString(16).toUpperCase();
+  const FACE = ['up', 'right', 'down', 'left'];
+  const SHEET = [
+    ['Nothing points at these 30 bytes', [[0x4E64, 'spare', 4, 0x0E, 30]]],
+    ['Storm', FACE.map((f, d) => [0x4E82 + 64 * d, f, 4, 0x50 + 8 * d])],
+    ['Kind 1', FACE.map((f, d) => [0x4F82 + 64 * d, f, 4, 0x00])],
+    ['Kind 2', [[0x5082, 'first', 3, 0x10], [0x50B2, 'second', 3, 0x10]]],
+    ['Generators', [[0x50E2, 'look 1', 3, 0x00], [0x5112, 'look 2', 3, 0x00]]],
+    ['Nothing points at these two', [[0x5142, '', 4, 0x00], [0x5182, '', 4, 0x00]]],
+    ['Kind 3', FACE.map((f, d) => [0x51C2 + 64 * d, f, 4, 0x00])],
+    ['Kind 4', [[0x52C2, 'first', 3, 0x08], [0x52F2, 'second', 3, 0x08]]],
+    ['Agravain', FACE.map((f, d) => [0x5322 + 64 * d, f, 4, 0x08])],
+    ['Nothing points at these 16 bytes', [[0x5422, 'spare', 2, 0x0E, 16]]],
+    ['Kind 6', FACE.map((f, d) => [0x5432 + 64 * d, f, 4, 0x30 + 8 * d])],
+    ['Kind 5', [0, 1, 2, 3].map((k) => [0x5532 + 64 * k, 'frame ' + (k + 1), 4, 0x10])],
+  ];
+  for (const [title, pics] of SHEET) {
+    const tiles = group(picBox, title, '');
+    for (const [a, what, w, row, n] of pics) {
+      const t = tile(tiles, 32, n ? 8 : 16, 3, '<code>' + hx(a) + '</code>' + (what && what !== 'spare' ? ' ' + what : n ? ', ' + n + ' bytes' : ''));
+      if (n) paint(t, chars(ram.slice(a, a + n), w, row), [0, 1], [0, w]);
+      else paint(t, actor(a, w, row), [7, 9], [4, 4 + w]);
+    }
+  }
+  const shotTiles = group(picBox, 'The shot', 'Not part of the block: character 7 of the play area\'s set, which every shot is built from.');
+  paint(tile(shotTiles, 8, 8, 3, 'character 7'), chars(ram.slice(0x0838, 0x0840), 1, 0x0A), [0, 1], [0, 1]);
+
+  // 03: building a figure, in room 1 over the floor piece at cell (9, 5)
+  const R = stormRooms(ram), CX = 9, CY = 5, ROWS = [CY + 6, CY + 8], COLS = [2 * CX + 2, 2 * CX + 6];
+  const panels = $('gx-panels');
+  const pBg = tile(panels, 32, 16, 6, 'The floor under him');
+  const pPic = tile(panels, 32, 16, 6, 'His picture');
+  const pMask = tile(panels, 32, 16, 6, 'The masks for <code>$2A</code>-<code>$31</code>, the last one the empty cell\'s');
+  const pOut = tile(panels, 32, 16, 6, 'What the screen shows');
+  const maskAt = (c) => 0x87CE + (c === 0 || c >= 0xFE ? 0 : ((c - 0x11) * 8) & 255);
+  function build(dir) {
+    const v = R.room(1), under = [];
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) under.push(v.screen[(ROWS[0] + r) * 40 + COLS[0] + c]);
+    paint(pBg, v, ROWS, COLS);
+    const m = R.m;
+    m[0x8137] = 1; m[0x8618] = 0; m[0x8629] = CX; m[0x862A] = CY; m[0x862B] = dir;
+    R.cpu.call(0x65E1);
+    paint(pOut, v, ROWS, COLS);
+    const B = C.stage(null);
+    C.place(B, 0, CX, CY, dir); B.cpu.call(0x65E1);
+    paint(pPic, B.view, ROWS, COLS);
+    const x = pMask.ctx, s = pMask.s;
+    x.fillStyle = '#000'; x.fillRect(0, 0, 32 * s, 16 * s);
+    under.forEach((c, k) => {
+      const a = maskAt(c);
+      for (let yy = 0; yy < 8; yy++) for (let xx = 0; xx < 8; xx++) {
+        x.fillStyle = (ram[a + yy] >> (7 - xx)) & 1 ? '#e9e7e1' : '#3c3d42';
+        x.fillRect(((k & 3) * 8 + xx) * s, ((k >> 2) * 8 + yy) * s, s, s);
+      }
+    });
+    for (const b of document.querySelectorAll('#gx-dirs button')) b.setAttribute('aria-pressed', String(+b.dataset.d === dir));
+  }
+  FACE.forEach((f, d) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = f[0].toUpperCase() + f.slice(1); b.dataset.d = d;
+    b.addEventListener('click', () => build(d));
+    $('gx-dirs').appendChild(b);
+  });
+  build(1);
+})();
+</script>

@@ -97,6 +97,39 @@ they copy each shape: bull riding through tables at `$C100` and `$C200`
 (`br_copy_shapes`, `$288B`), sumo through one at `$CC00`
 (`su_copy_mirrored`, `$119B`).
 
+Every pose of the eight events, 940 in all, is drawn on the Graphics
+tab by each event's own placing routine on the kit's 6502 over its
+listing (traced, 3 November 2026):
+
+| Event | Poses | Placed by | Shapes changed during play |
+|---|---|---|---|
+| weightlifting | 97, eight sprites each | `wl_pose_shapes` `$1E3A`, `wl_pose_place` `$1E8B` | each pose's eight copied to `$4000` |
+| barrel jumping | 120 | `bj_draw_skater` `$2394` | none |
+| cliff diving | 175 | `cd_draw_diver` `$21C8` | one of three sets copied to `$7000` by `cd_sprite_set` `$10B3` |
+| slalom | 67 | `sl_draw_frame` `$8EC6` | the falls' swapped in by `sl_swap_shapes` `$C25E` |
+| log rolling | 220 in three sets of 20, 100 and 100 | `lr_build_sprites` `$2445` | a set unpacked by `lr_unpack_set` `$2992` |
+| caber toss | 119 | `ct_draw_thrower` `$12F6` | a second set swapped in by `ct_swap_shapes` `$1EB2` |
+| bull riding | 52 | `br_draw_bull` `$1E16` | eight copied to `$5400`, mirrored facing right |
+| sumo | 90 | `su_pose_right` `$1DB6` | eight copied to `$6C00`-`$6FFF`, the left wrestler's mirrored |
+
+- In weightlifting, barrel jumping, cliff diving, slalom, the caber
+  toss and bull riding each sprite's colour, multicolour, double width
+  and double height are bits 0-3, 7, 6 and 5 of its shape's 64th
+  byte: of the 3,135 sprites in their poses all match but the 24 of
+  the three barrel-jumping poses below (bull riding's read from the
+  shape before it is copied). Log rolling's 1,029 match too. Sumo's do not: every
+  sprite is multicolour, in the wrestler's colour.
+- Cliff diving's sets: set 0 holds the dive's shapes (poses 79 to 112),
+  set 1 the water's, in place from the entry (the end's poses 113 to
+  130 and touching the bottom, 133 to 150), set 2 the pelican's extra
+  turns (151 on). Drawn with any other set in place, those poses are
+  blank or broken.
+- Barrel jumping's poses 66, 87 and 110 point their sprites at `$4000`,
+  the character set, with 64th bytes that are not a sprite's; no list
+  in the event shows them.
+- Weightlifting's poses always have eight sprites; a pose that needs
+  fewer points the rest at blank shapes such as `$BE80`.
+
 ## Mechanics
 
 - The same hidden test in two events: with the first two players named
