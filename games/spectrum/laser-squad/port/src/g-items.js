@@ -13,16 +13,16 @@ G.items = P => {
   // hands (from 1), $23 its kind and $24 its ammunition.
 
   // $7811: after a turn or a step: sound effect 4 in a player's turn, the panel, and the place kept
-  // unless the unit is spotted ($9A16). With no action points left and spotted, the unit goes back
+  // unless another unit of its side shares its square ($9A16). With no action points left on a shared square, the unit goes back
   // (undoMove). NZ while it has points.
   P.def(0x7811, 'afterAction', function* (r) {
     if (!M[0x5DF7]) P.sound({ a: 4 });
     let ix = ixOf(P.unitPanel(), w(0x5D33));
-    let s = P.spotted({ ix });
+    let s = P.shared({ ix });
     ix = ixOf(s, ix);
     if (s.zf) P.keepPlace({ ix });
     if (M[ix + 6]) return { ix, a: M[ix + 6], zf: false };
-    s = P.spotted({ ix });
+    s = P.shared({ ix });
     ix = ixOf(s, ix);
     if (!s.zf) return yield* P.undoMove({ ix });
     return { ix, a: 0, zf: true };
@@ -132,10 +132,10 @@ G.items = P => {
     return { ix, zf: false };
   });
 
-  // $79ED: option 0, done: the unit is let go (Z, past the menu), unless it is spotted with no points
+  // $79ED: option 0, done: the unit is let go (Z, past the menu), unless it shares a square with no points
   // left, when it goes back (undoMove).
   P.def(0x79ED, 'doneOption', function* (r) {
-    const s = P.spotted({ ix: r.ix });
+    const s = P.shared({ ix: r.ix });
     if (!s.zf) return yield* P.undoMove({ ix: ixOf(s, r.ix) });
     return { ix: ixOf(s, r.ix), pops: 1, a: 0, zf: true };
   });
@@ -428,7 +428,7 @@ G.items = P => {
     if (M[0x5D38] && why < 2) return { ix, a: 1, zf: false };
     if (why === 3) return { ix, a: 1, zf: false };
     if (why === 0) return yield* P.closeCombat({ ix });
-    if (why === 1) return yield* P.moveOther({ ix });
+    if (why === 1) return yield* P.attackTerrain({ ix });
     if (why === 5) {
       const s = yield* P.makeStep({ ix });
       P.unitPanel();

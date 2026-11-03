@@ -262,7 +262,7 @@ class Lockstep {
     this.ints = null;                              // the machine's interrupts, followed while it runs
     this.irqTstates = 0; this.irqCount = 0;
     this.tstates0 = m.cpu.tstates;
-    this.passes = 0; this.syncs = 0; this.last = -1; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
+    this.passes = 0; this.syncs = 0; this.last = -1; this.lastAt = false; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
     this.halted = null; this.stopped = false; this.saved = null; this.res = null;
     this.from = -1; this.t0 = m.cpu.tstates; this.it0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
   }
@@ -486,13 +486,16 @@ class Lockstep {
     if (y.tstates !== undefined) this.estimate += y.tstates;
     // the place just reached, named again with nothing run between (a start-up's last { tstates, at }
     // and the main loop's first checkpoint, say): one place
-    if (a === this.last && this.at === a && this.matched && this.since === 1) return;
+    // A polling loop that names one checkpoint and nothing else (a KEY-SCAN until a key) names it
+    // twice running with its own work between: only a place named by { tstates, at } may be one
+    if (a === this.last && this.at === a && this.matched && this.since === 1 && this.lastAt) return;
     const at = this.toStop();
     if (at !== a) {
       return this.diverge(at < 0 ? this.lost('checkpoint ' + hex(a))
         : 'the game went to ' + hex(at) + (this.halts.has(at) ? ' (a HALT\'s exit)' : '') + ', the port to ' + hex(a), { game: at, port: a });
     }
     this.sync(a, false);
+    this.lastAt = y.cp === undefined;                 // named by { tstates, at }: may be named again as a { cp }
     if (a === this.passAt) this.passStart();
     this.frameInput();
   }

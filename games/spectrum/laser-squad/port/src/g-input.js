@@ -134,14 +134,14 @@ G.input = P => {
     return { b: 0 };
   });
 
-  // $77F7: in a player's turn, wait until fire is let go, counting the turns in $5D9C; then sound
-  // effect 0.
-  P.def(0x77F7, 'waitFireUp', function* () {
+  // $77F7: in a player's turn, wait for fire, counting the turns in $5D9C; then sound effect 0.
+  // BC is kept.
+  P.def(0x77F7, 'waitFire', function* () {
     if (M[0x5DF7]) return {};
     do {
       yield* P.readControls();
       M[0x5D9C] = M[0x5D9C] + 1 & 255;
-    } while (!(M[0x5D2A] & 1));
+    } while (M[0x5D2A] & 1);
     return P.sound({ a: 0 });
   });
 

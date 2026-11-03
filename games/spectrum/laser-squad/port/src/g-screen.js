@@ -86,7 +86,7 @@ G.screen = P => {
       M[V.PRINT_ROW] += 2;
     }
     P.count('view');
-    return { b: 0 };
+    return { b: 0, zf: false };
   });
 
   // $6181: the same, column by column (after the view has scrolled).
@@ -106,7 +106,7 @@ G.screen = P => {
       M[V.PRINT_COL] += 2;
     }
     P.count('view');
-    return { b: 0, c: 0 };
+    return { b: 0, c: 0, zf: true };
   });
 };
 })(typeof window !== 'undefined' ? window : globalThis);

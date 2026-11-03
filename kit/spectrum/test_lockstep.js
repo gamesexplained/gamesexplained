@@ -481,4 +481,19 @@ for (const fault of [false, true]) {
   }
 }
 
+// 13. A polling loop with one checkpoint and its own work between (a KEY-SCAN until a key, a count
+// kept each turn): the checkpoint named twice running is two turns of the loop, not one place.
+// $8000 DI; LD SP,$FF00; $8004 CALL $8100; LD HL,$C000; INC (HL); JR $8004. $8100 IN A,($FE); RET
+{
+  const ram = new Uint8Array(65536);
+  ram.set([0xF3, 0x31, 0x00, 0xFF, 0xCD, 0x00, 0x81, 0x21, 0x00, 0xC0, 0x34, 0x18, 0xF7], 0x8000);
+  ram.set([0xDB, 0xFE, 0xC9], 0x8100);
+  const m = new Machine({ ram, pc: 0x8000, passAt: 0x8100 });
+  const P = { M: new Uint8Array(65536) };
+  const ls = new Lockstep({ machine: m, port: P, checkpoints: [0x8100], stack: [0xFE00, 0xFEFF],
+    program: Q => (function* () { for (;;) { yield { cp: 0x8100 }; Q.io.in(0xFEFE); Q.M[0xC000] = Q.M[0xC000] + 1 & 255; } })() });
+  const r = ls.run({ passes: 20 });
+  check('a loop of one checkpoint: twenty turns, identical', r.ok && r.passes === 20 && P.M[0xC000] === m.ram[0xC000], true);
+}
+
 process.exit(fails ? 1 : 0);

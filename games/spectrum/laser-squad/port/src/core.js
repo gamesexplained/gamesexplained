@@ -53,6 +53,7 @@ function makePort(M, io, opts = {}) {
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };
   // name a routine: its address, its function; a generator is listed in GEN
   P.def = (a, name, f) => {
+    if (P[name] !== undefined) throw new Error('P.def: ' + name + ' is taken');
     P[name] = f;
     P.CODE[a] = name;
     if (f.constructor.name === 'GeneratorFunction') P.GEN.add(name);
@@ -70,6 +71,15 @@ function makePort(M, io, opts = {}) {
     if (name && P.GEN.has(name)) return yield* P[name](r || {});
     return P.jump(a, r);
   };
+  // a routine by name, generator or not, from a generator
+  P.run = function* (name, r) {
+    const f = P[name];
+    if (typeof f !== 'function') throw new Error('the port has no routine ' + name);
+    return P.GEN.has(name) ? yield* f(r || {}) : f(r || {});
+  };
+  // the game's restarts: the stack set again and a jump (to $B1C3, the menu after a game ends)
+  P.Restart = class Restart { constructor(at) { this.at = at; } };
+  P.restart = at => { throw new P.Restart(at); };
   const only = opts.only || null;
   for (const name of Object.keys(G)) if (!only || only.includes(name)) G[name](P);
   if (opts.standIn) opts.standIn(P);

@@ -181,7 +181,7 @@ G.cursor = P => {
       M[V.PRINT_ROW] -= 2;
     }
     P.count('view');
-    return { b: 0, hl: V.PRINT_ROW };
+    return { b: 0, hl: V.PRINT_ROW, zf: false };
   });
   // $64B0: draw the view from its right-hand column leftwards.
   P.def(0x64B0, 'drawViewLeft', () => {
@@ -199,7 +199,7 @@ G.cursor = P => {
       M[V.PRINT_COL] -= 2;
     }
     P.count('view');
-    return { b: 0, hl: V.PRINT_COL };
+    return { b: 0, hl: V.PRINT_COL, zf: false };
   });
 };
 })(typeof window !== 'undefined' ? window : globalThis);

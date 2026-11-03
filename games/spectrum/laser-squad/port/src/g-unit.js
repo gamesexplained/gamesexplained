@@ -39,7 +39,7 @@ G.unit = P => {
     ix = ixOf(P.unitStats({ ix }), ix);
     P.setw(0x5D69, P.w(V.VIEW_ROW) + 0x0505);
     P.setw(0x5D6B, P.w(0x5D24));
-    if (!M[0x5D5D]) ix = ixOf(P.startReaction({ ix }), ix);
+    if (!M[0x5D5D]) P.panView();
     P.centreOnUnit();
     P.keepPlace({ ix });
     yield* P.waitRelease();
@@ -270,19 +270,19 @@ G.unit = P => {
     P.centreOn();
     if (!M[0x5DF7]) P.sound({ a: 3 });
     if (!M[ix + 6]) {
-      const s = P.spotted({ ix });
+      const s = P.shared({ ix });
       ix = ixOf(s, ix);
       if (!s.zf) return yield* P.undoMove({ ix });
     }
-    const s = P.spotted({ ix });
+    const s = P.shared({ ix });
     ix = ixOf(s, ix);
     if (s.zf) P.keepPlace({ ix });
-    if (!M[0x5D5D]) ix = ixOf(P.startReaction({ ix }), ix);
+    if (!M[0x5D5D]) ix = ixOf(yield* P.startReaction({ ix }), ix);
     if (M[0x5DF7]) {
       if (M[0x5D36]) ix = ixOf(P.jump(0xB62A, { ix }), ix);
       else if (M[0xB715]) {
         M[0xB712] = 0;
-        ix = ixOf(P.hideView({ ix }), ix);
+        ix = ixOf(P.sideView({ ix }), ix);
         M[0xB712] = 1;
         P.drawView();
         ix = ixOf(P.findSeen({ ix }), ix);

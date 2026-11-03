@@ -317,7 +317,7 @@ G.sight = P => {
         M[P.mapAddr(de2 & 255, de2 >> 8)] = M[0x5D26];
         P.centreOn();
         yield* P.waitRelease();
-        yield* P.waitFireUp();
+        yield* P.waitFire();
         P.text({ a: 0x18 });
         de2 = w(0x5D24);
         setw(V.VIEW_ROW, de2);
@@ -333,7 +333,12 @@ G.sight = P => {
             P.findSeen();
             ix = ixOf(P.showSeen({ ix }), ix);
             if (M[0x5D59]) { ix = ixOf(yield* P.jumpGen(0xB624, { ix }), ix); ix = w(0x5D33); }
-          } else ix = ixOf(yield* P.reactFire({ ix }), ix);
+          } else {
+            // fire mode; a unit that dies in it ends it past this routine too ($8EDC)
+            const d = yield* P.fireMode({ ix });
+            if (d && d.pops) return Object.assign({}, d, { pops: d.pops - 1 });
+            ix = ixOf(d, ix);
+          }
         }
         M[0x5D62] = 1;
         setw(0x5D69, w(0x5D24));
@@ -361,7 +366,7 @@ G.sight = P => {
     ix = ixOf(P.sideView({ ix }), ix);
     if (M[0x5DF7]) P.hideSide({ a: M[0x5DF7] });
     yield* P.waitRelease();
-    yield* P.waitFireUp();
+    yield* P.waitFire();
     P.centreOnUnit();
     P.findSeen();
     if (M[ix + 8]) {
