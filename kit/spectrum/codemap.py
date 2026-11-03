@@ -75,7 +75,12 @@ def instruction(mem, a):
     if d is None:
         return None
     m, t, n = d
-    text, target = z80.operand(a, m, t, bytes(mem[a:a + n]), {}, {}, lambda *_: False)
+    # an instruction at the top of memory takes its operand from $0000 on, as the Z80 does
+    # (an IM 2 vector at $FFFF holding JR, its offset the ROM's first byte)
+    bs = bytes(mem[(a + i) % len(mem)] for i in range(n))
+    text, target = z80.operand(a, m, t, bs, {}, {}, lambda *_: False)
+    if target is not None:
+        target &= 0xFFFF
     targets, stops = [], False
     if m in ("jp", "jr", "djnz", "call"):
         if t and t.startswith("("):                    # jp (hl), (ix), (iy)
@@ -106,7 +111,7 @@ def trace(mem, entries, inline=None, high=None, unfollowed=None, skip=()):
                 break
             n, text, targets, stops = ins
             starts.add(a)
-            code.update(range(a, a + n))
+            code.update(x for x in range(a, a + n) if x < 0x10000)
             for t in targets:
                 if not RAM_LO <= t < 0x10000 or t in starts:
                     continue
@@ -323,6 +328,11 @@ def test():
     assert not code & set(range(0x8010, 0x8014)) and 0x8000 in starts, sorted(code)
     starts, code = trace(mem, [0x8060], {0x8070: 2})
     assert code == {0x8060, 0x8061, 0x8062, 0x8065, 0x8070}, sorted(code)
+    top = bytearray(mem)                                   # an IM 2 vector: jr at $FFFF, its
+    top[0xFFFF], top[0x0000] = 0x18, 0xF3                  # offset the ROM's $F3 at $0000
+    top[0xFFF4:0xFFF7] = bytes([0xC3, 0x00, 0x80])         # $FFF4: jp $8000
+    starts, code = trace(top, [0xFFFF])
+    assert {0xFFFF, 0xFFF4, 0x8000} <= starts and max(code) == 0xFFFF, sorted(starts)
     with tempfile.TemporaryDirectory() as d:
         game = os.path.join(d, "g")
         os.makedirs(os.path.join(game, "work"))
@@ -355,7 +365,7 @@ def test():
         assert "$9000  data" in out.getvalue(), out.getvalue()                       # the table entry
     print("ok - codemap.py self-check: the trace stops where it must, a map adds what it cannot see, "
           "code typed as data is reported, refs finds operands and stored words, "
-          "--inline skips a call's arguments")
+          "--inline skips a call's arguments, an instruction at $FFFF takes its operand from $0000")
 
 
 def main():

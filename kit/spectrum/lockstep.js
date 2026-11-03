@@ -103,6 +103,23 @@
 //   as noise, irqRead names the instruction that reads it (cpu.pc is past the whole instruction
 //   then: $80C1 for an ADD A,(HL) at $80C0).
 //
+// - readsR: the address of each LD A,R in the game's main program, for a game whose random numbers
+//   come from the refresh register, which counts the instructions the processor has run and so has
+//   no value a port could work out. The port reads it through P.io.readR() and gets, in turn, the
+//   values the game's main program loaded at those addresses in the same stretch, as irqBytes hands
+//   over a byte (a read past those gives 0, and the difference shows). The value is taken when the
+//   game reaches the LD A,R: R as its two opcode fetches leave it. On the page, outside the
+//   lockstep, the port's io gives readR a value of its own.
+// - readsAt: the address of each instruction of the game's main program that reads one byte of RAM
+//   (or ROM) the port's memory may not hold the same: a random number generator that walks through
+//   all of memory reads the stack's bytes too, which are never compared and which a port does not
+//   keep. The port reads each such byte through P.io.readAt(a) and gets, in turn, the values the
+//   game's instructions read there in the same stretch, as irqBytes hands over a byte (past those,
+//   its own byte); a read of another address than the game's stops the run. The byte is the
+//   instruction's first read past its operands, so an indexed load (LD A,(IX+d)), which reads its
+//   displacement first, and LD A,(nn) can be one. On the page, outside the lockstep, the port's io
+//   gives readAt: a => M[a].
+//
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
 // interrupts have run, memory is compared, and then onPass(n, machine, lockstep) runs: the place
@@ -147,6 +164,20 @@ const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const LIST = 64;                                   // differing bytes kept per pass
 const ULA = 0xFE;                                  // the address a chip's difference is listed at
 const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
+const R_KEY = -1;                                  // the refresh register's values, kept with irqBytes'
+// R as LD A,R loads it, from R before the instruction: its two opcode fetches each count R's low
+// seven bits on
+const rLoaded = r => (r & 0x80) | ((r + 2) & 0x7F);
+const AT_KEY = -2;                                 // readsAt's bytes, address x 256 + value
+// The operand bytes an instruction at a reads before its byte of memory, as the kit's Z80 reads
+// them (operand()): an indexed instruction's displacement, and its opcode too after DD CB or FD CB;
+// LD A,(nn)'s address
+function operandReads(ram, a) {
+  let k = a & 0xFFFF, prefixed = false;
+  while (ram[k] === 0xDD || ram[k] === 0xFD) { prefixed = true; k = (k + 1) & 0xFFFF; }
+  if (prefixed) return ram[k] === 0xCB ? 2 : 1;
+  return ram[k] === 0x3A ? 2 : 0;
+}
 // A pass's differing bytes of RAM in view that lastWriters gave back unlike the game's, marked
 // restored (the set is emptied for the next pass).
 function restored(bytes, set) {
@@ -260,6 +291,8 @@ class Lockstep {
     this.ula = new PortULA(m, m128 ? P.mem : null);
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
     this.irqRead = o.irqRead || null;
+    this.readsR = new Set((o.readsR || []).map(a => a & 0xFFFF));
+    this.readsAt = new Set((o.readsAt || []).map(a => a & 0xFFFF));
     this.ib = { live: new Map(), list: null, used: new Map() };   // the stretch's reads of them
     this.io = this.makeIO(top);
     P.io = Object.assign({}, P.io, this.io);
@@ -296,6 +329,8 @@ class Lockstep {
       in: port => u.in(port & 0xFFFF),
       out: (port, v) => u.out(port & 0xFFFF, v & 0xFF),
       irqByte: a => this.irqByte(a & 0xFFFF),
+      readR: () => this.readR(),
+      readAt: a => this.readAt(a & 0xFFFF),
       store: (a, v) => { a &= 0xFFFF; this.P.M[a] = v & 0xFF; if (!this.replaying) this.stored.add(a); },
       sp,
       get ay() { return u.ay; },
@@ -305,18 +340,34 @@ class Lockstep {
   // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
   irqByte(a) {
     if (!this.irqBytes.has(a)) throw this.annotate(new Error('Lockstep: the port read ' + hex(a) + ' through irqByte, and it is not in irqBytes'));
+    return this.handed(a);
+  }
+  // The refresh register, as the game's main program loaded it at this point of the stretch.
+  readR() {
+    if (!this.readsR.size) throw this.annotate(new Error('Lockstep: the port read the refresh register, and readsR names no LD A,R'));
+    return this.handed(R_KEY);
+  }
+  // A byte one of readsAt's instructions read, as the game read it at this point of the stretch.
+  readAt(a) {
+    if (!this.readsAt.size) throw this.annotate(new Error('Lockstep: the port read ' + hex(a) + ' through readAt, and readsAt names no instruction'));
+    const x = this.handed(AT_KEY);
+    if (x < 0) return this.P.M[a];
+    if ((x >> 8) !== a) throw this.annotate(new Error('Lockstep: the port read ' + hex(a) + ' through readAt where the game read ' + hex(x >> 8)));
+    return x & 255;
+  }
+  handed(a) {
     const s = this.ib, i = s.used.get(a) || 0;
     s.used.set(a, i + 1);
     let vs = (s.list || s.live).get(a) || [];
     // the game waiting at a stop the port has not reached has read all it will in the stretch
     if (i >= vs.length && !s.list && !(this.at >= 0 && !this.matched)) { s.list = this.lookahead(); vs = s.list.get(a) || []; }
-    return i < vs.length ? vs[i] : this.P.M[a];
+    return i < vs.length ? vs[i] : a === R_KEY ? 0 : a === AT_KEY ? -1 : this.P.M[a];
   }
   // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
   // then a copy's, run on from here to the next stop outside its interrupts.
   lookahead() {
     const ls = this, m = this.m, hooks = Object.assign({}, m.hooks);
-    for (const a of [...this.cps, ...this.halts]) { const h = this.saved.hooks[a]; if (h) hooks[a] = h; else delete hooks[a]; }
+    for (const a of [...this.cps, ...this.halts, ...this.readsR, ...this.readsAt]) { const h = this.saved.hooks[a]; if (h) hooks[a] = h; else delete hooks[a]; }
     const g = m.constructor.restore(m.save(), { rom: m.rom || undefined, romRanges: m.romRanges || undefined, hooks, passAt: null });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
     if (own(m, 'portIn')) g.portIn = m.portIn;
@@ -334,22 +385,37 @@ class Lockstep {
       };
     }
     const rd = cpu.rd;
+    let atNext = false, atSkip = 0;
     cpu.rd = function (x) {
       const v = rd.call(this, x), a = this.bus;
+      if (!ints.open.length && atNext && !atSkip--) { atNext = false; if (!out.has(AT_KEY)) out.set(AT_KEY, []); out.get(AT_KEY).push(a << 8 | v); }
       if (!ints.open.length && B.has(a) && (!ls.irqRead || ls.irqRead(this, a))) { if (!out.has(a)) out.set(a, []); out.get(a).push(v); }
       return v;
     };
+    for (const a of this.readsAt) {
+      const prev = g.hooks[a];
+      g.hooks[a] = q => { ints.close(); if (!ints.open.length) { atNext = true; atSkip = operandReads(g.ram, a); } return prev ? prev(q) : false; };
+    }
+    for (const a of this.readsR) {
+      const prev = g.hooks[a];
+      g.hooks[a] = q => {
+        ints.close();
+        if (!ints.open.length) { if (!out.has(R_KEY)) out.set(R_KEY, []); out.get(R_KEY).push(rLoaded(cpu.r)); }
+        return prev ? prev(q) : false;
+      };
+    }
     const end = g.frames + this.maxFrames;
     while (!stop && g.frames < end) g.runTStates(g.FRAME);
     return out;
   }
 
-  // Count the calls of every one of P's functions (for timing).
+  // Count the calls of every one of P's functions (for timing). A class on P (an error the port
+  // throws, say) is left as it is: wrapped, new could not make one, and instanceof would know none.
   countCalls() {
     const P = this.P, ls = this;
     for (const name of Object.keys(P)) {
       const f = P[name];
-      if (typeof f !== 'function') continue;
+      if (typeof f !== 'function' || /^class\b/.test(Function.prototype.toString.call(f))) continue;
       P[name] = f instanceof GENERATOR
         ? function* (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return yield* f.apply(this, a); }
         : function (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return f.apply(this, a); };
@@ -386,10 +452,29 @@ class Lockstep {
         return true;
       };
     }
+    // the refresh register loaded by the main program
+    for (const a of this.readsR) {
+      const prev = m.hooks[a];
+      if (!Object.prototype.hasOwnProperty.call(s.hooks, a)) s.hooks[a] = prev;
+      m.hooks[a] = q => {
+        ints.close();
+        if (ls.irq === null && !ls.ib.list) { const L = ls.ib.live; if (!L.has(R_KEY)) L.set(R_KEY, []); L.get(R_KEY).push(rLoaded(cpu.r)); }
+        return prev ? prev(q) : false;
+      };
+    }
+    // the bytes readsAt's instructions read: the main program's next read after one is reached,
+    // past the instruction's operands (an indexed load reads its displacement first)
+    let atNext = false, atSkip = 0;
+    for (const a of this.readsAt) {
+      const prev = m.hooks[a];
+      if (!Object.prototype.hasOwnProperty.call(s.hooks, a)) s.hooks[a] = prev;
+      m.hooks[a] = q => { ints.close(); if (ls.irq === null && !ls.ib.list) { atNext = true; atSkip = operandReads(m.ram, a); } return prev ? prev(q) : false; };
+    }
     // RAM read and written, by the main program and by the handlers
     const rd = cpu.rd, wr = cpu.wr, B = this.irqBytes;
     cpu.rd = function (x) {
       const v = rd.call(this, x), a = this.bus;
+      if (atNext && ls.irq === null && !atSkip--) { atNext = false; const L = ls.ib.live; if (!L.has(AT_KEY)) L.set(AT_KEY, []); L.get(AT_KEY).push(a << 8 | v); }
       if (a < 0x4000) return v;
       const q = ls.irq;
       if (q !== null) { if (!q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, v); }
