@@ -7,35 +7,28 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "Leave a polling loop's cycles out of what is fitted": the wait for SPACE after the tape is left out of the pace fit, and the page's clock runs its turns.
+- `70-minisite`: "Check the fit on sessions it was not fitted on": five games of 18,995 passes were held back from the fit, which is how the weighting's gain was measured.
+- `70-minisite`: "Give the lockstep every key the game reads": games with each of the four controls, and a save between turns that the page loads again, are in the runs and in `test_play.js`.
+- `60-verify`: "An audit of every comment, and a second sample after it, are later work that the run recommends and does not do": the sample was over the mark, the ten wrong comments and their kind were corrected, and the audit is recommended in `TODO.md`.
+- `70-minisite`: "Test each routine alone first": 201 routines were checked alone on 8,476 moments before the whole program ran in lockstep.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/skills/core/70-minisite` (SKILL.md, "Start each case where the game starts it"): a widget does first what the game's code does before it calls the routine; it would have mattered in `games/c64/chiller`, whose level jump left the skipped level's state on screen. Lesson: `kit/lessons/2026-11-03-laser-squad.md`.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **A pace fit weighed by stretch length.** Fitted unweighted, the long stretches of the computer's turns set the prices and the many short passes (menus, the cursor) ran more than 6 % off; weighing each stretch by W / (T + W) fixed it (`port/scripts/fit-cost.js`, `kit/lessons/2026-11-03-laser-squad.md`). No other game's notes show the same failure: Driller's fit went wrong on one heavy routine instead. A run whose pace test fails on short passes adds it to `play.md`, "Pace it by the machine's clock".
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A shared pace-fitting script in `kit/` (the non-negative least squares, the held-back test and the weighting), which this port copied from Driller's and then had to change, would have saved the most time.
+
+## Operating system and tools
+
+Linux x86_64 (Ubuntu 24.04, no display) in a hosted cloud session; ZEsarUX 13.0 (47 of 50 in check-emulator, the three failures the Spectrum notes already record), SkoolKit 10.1, Python 3.13, Node 22. A `pkill -f` whose pattern matched its own shell command killed that command (exit 144): name the process by something its own command line does not contain, or stop a background task by its id.

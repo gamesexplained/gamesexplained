@@ -179,8 +179,41 @@ links with their costs (`LINKS`). The five copies differ: a route is never
 deeper than 9 waypoints in Rescue from the Mines, 15 in The Cyber Hordes
 and 20 in Paradise Valley (`findRoute`); The Cyber Hordes' aliens go for
 the seven terminals in `TERMINALS` and shoot them (`terminalAttack`,
-`$CA41`); Paradise Valley's Water Dwellers run at the nearest enemy in
-sight (`aiCanGo`, `$BE26`) and fight it hand to hand.
+`$CA41`); Paradise Valley's Water Dwellers run at an enemy in sight
+(`aiCanGo`, `$BE26`) and fight it hand to hand. The skill (`$5DF8`, from
+`$B655` by level) is the number a unit's byte at `$B63A` is set to when
+the computer sees it in its own turn (`showSeen`, `$7422`), sees its shot
+(`shotSeen`, the hook at `$B627`) or, in Rescue from the Mines, when it
+turns on the video cameras (option `$0D`, `$CBD7`); the player's
+half-turns count each byte down (`halfTurn`), the computer hunts a unit
+only while its byte is not 0 and adds it to the unit's score as a target
+(`chooseTarget`). Nothing else reads the skill.
+
+**Bugs.** Four, each read in the code and run in the port:
+
+- `takeDamage` (`$81FB`) never lowers morale for a wound: after `BIT
+  4,(IX+$25)` an `OR A` sets the flags again from the damage, which is
+  not 0 there, so the `RET NZ` at `$8212` is always taken and the 22
+  bytes from `$8213` (morale less morale x damage / most health) never
+  run.
+- Paradise Valley's charge (`$BE60`) stores A (`$FF`) at `$A54B` where
+  HL, the unit's square, was meant (`$32` for `$22`), so `distance`
+  (`$A550`) measures from row 255, which its signed test reads as row
+  -1, and the column left at `$A54C`: with two or more enemies in sight
+  the Water Dweller runs at the one nearest that point.
+- `scoreDamage` (`$9201`) puts the side that scores for terrain damage
+  in `$5D4D`, which `moraleShock` does not read: the morale goes by
+  `$5DA0`, the side that made the last kill, never cleared for a new
+  game (0 at the engine's first instruction).
+- `chooseArmour` (`$9F5E`) fits the armour before `payCredits` (`$9E27`)
+  and never tests its carry: armour the credits do not cover is fitted
+  free. `buy` (`$A0EE`) tests it.
+
+**Leftovers.** Six of The Assassins' twenty units (all COMBAT DROID)
+have no bit at `$B670`, so `gameMode` (`$A2BA`) takes them out of every
+game. Rescue from the Mines ends with 61 bytes, Paradise Valley with 18
+and The Cyber Hordes with 11 that are the 48K ROM's character set (part
+of the letters N to U); only `random`'s walk reads them.
 
 ## Data tables
 
