@@ -39,11 +39,15 @@ G.sight = function (P) {
     M[0x5B41] = M[0x5B40] = M[0x5B1F] = 0;
     const apart = (a, b) => { let d = Math.abs(a - b); if (d >= 0x12) d = (0x24 - d) & 255; return d; };
     let ix = 0x5B5A;
+    // (P.N counts the entries in use and those near enough by row, for the page's clock)
     for (let b = 0x91; b; b--, ix += 6, M[0x5B1F] = (M[0x5B1F] + 1) & 255) {
-      if (M[ix + 2] === 0xFF || carried(ix) || (M[ix + 1] & 0x40)) continue;
+      if (M[ix + 2] === 0xFF) continue;
+      P.N.sightUsed = (P.N.sightUsed || 0) + 1;
+      if (carried(ix) || (M[ix + 1] & 0x40)) continue;
       const dr = apart(M[ix], M[0xFF88]);
       M[0xFF44] = dr;
       if (((2 * dr) & 255) >= M[0xFF50]) continue;
+      P.N.sightRow = (P.N.sightRow || 0) + 1;
       const dc = apart(H.column(ix), M[0xFF89]);
       M[0xFF43] = dc;
       if (((2 * dc) & 255) >= M[0xFF50]) continue;
@@ -67,8 +71,15 @@ G.sight = function (P) {
     M[0x5B20] = M[0x5B1F];
     let ix = r.ix;
     for (let b = r.b; b; b = (b - 1) & 255, ix += 6, M[0x5B20] = (M[0x5B20] + 1) & 255) {
-      if (M[ix + 2] === 0xFF || carried(ix) || (M[ix + 1] & 0x40)) continue;
-      if (M[ix] !== M[0xFF4D] || H.column(ix) !== M[0xFF4E]) continue;
+      // (P.N counts the entries looked at, those in use, those on the row and those on the square,
+      // for the page's clock: each costs the game more)
+      P.N.seen = (P.N.seen || 0) + 1;
+      if (M[ix + 2] === 0xFF) continue;
+      P.N.seenUsed = (P.N.seenUsed || 0) + 1;
+      if (carried(ix) || (M[ix + 1] & 0x40) || M[ix] !== M[0xFF4D]) continue;
+      P.N.seenRow = (P.N.seenRow || 0) + 1;
+      if (H.column(ix) !== M[0xFF4E]) continue;
+      P.N.seenHit = (P.N.seenHit || 0) + 1;
       P.see_entry({ ix });
       const hl = P.map_address({ hl: w(0xFF4D) }).hl;
       if (M[0x5B2C]) M[hl] = M[0x5B2C];

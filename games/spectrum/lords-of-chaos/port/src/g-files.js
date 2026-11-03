@@ -5,7 +5,7 @@
 //
 // The ROM's LD-BYTES and SA-BYTES are the cassette's (P.io.tape): load(flag, length) gives the next
 // block ({ flag, bytes }), save(flag, bytes) writes one; a load past the last block waits for SPACE,
-// as the ROM's loop does when no signal comes.
+// as the ROM's loop does when no signal comes, and SPACE held breaks a load or a save off.
 (function (root) {
 'use strict';
 const G = root.LOCGroups = root.LOCGroups || {};
@@ -22,14 +22,21 @@ G.files = function (P) {
     M[TAPE_ERROR] = 1;
     const flag = r.b & 255, tape = P.io.tape;
     let ix = r.ix & 0xFFFF, de = (r.de !== undefined ? r.de : (r.d << 8 | r.e)) & 0xFFFF, ok;
+    // SPACE held: the ROM's SA-BYTES writes the leader and the flag byte and stops; LD-BYTES stops
+    // before it loads a byte, and the tape stays where it stands
+    const broken = !(P.io.in(0x7FFE) & 1);
     if (!load) {
-      const bytes = new Uint8Array(de);
-      for (let i = 0; i < de; i++) bytes[i] = M[(ix + i) & 0xFFFF];
-      ok = tape.save(flag, bytes);
-      ix = (ix + de) & 0xFFFF; de = 0;
+      if (broken) { tape.save(flag, new Uint8Array(0)); ok = false; }
+      else {
+        const bytes = new Uint8Array(de);
+        for (let i = 0; i < de; i++) bytes[i] = M[(ix + i) & 0xFFFF];
+        ok = tape.save(flag, bytes);
+        ix = (ix + de) & 0xFFFF; de = 0;
+      }
     } else {
       P.io.out(0xFE, 0x0F);
-      if (tape.pos >= tape.blocks.length) {
+      if (broken) ok = false;
+      else if (tape.pos >= tape.blocks.length) {
         // no signal: the ROM's loop waits for SPACE
         while (P.io.in(0x7FFE) & 1) yield;
         ok = false;

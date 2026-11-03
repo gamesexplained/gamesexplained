@@ -52,8 +52,12 @@ function makePort(M, io, opts = {}) {
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };
   // name a routine: its address, its function; a generator is listed in GEN. An address from $D003
-  // up belongs to the parts given (0 the designer, 1 to 3 the scenarios).
+  // up belongs to the parts given (0 the designer, 1 to 3 the scenarios). P has one function to a
+  // name, so a name given to two routines is an error: the second would stand for both.
+  const named = new Map();
   P.def = (a, name, f, parts) => {
+    if (named.has(name) && named.get(name) !== f) throw new Error('P.def: two routines named ' + name);
+    named.set(name, f);
     P[name] = f;
     if (a >= 0xD003 && parts) for (const n of parts) P.UP[n][a] = name;
     else P.CODE[a] = name;
@@ -95,6 +99,11 @@ function makePort(M, io, opts = {}) {
   // P.frame.
   P.Unwind = class Unwind { constructor(n, r, then) { this.n = n; this.r = r || {}; this.then = then; } };
   P.unwind = (n, r, then) => { throw new P.Unwind(n, r, then); };
+  // A loop the game never leaves and that reads no input (random_below given a limit of 0,
+  // computer_pick_up's search when the type is nowhere in memory) throws P.Hang: on the Spectrum the
+  // main program goes round it for ever while the interrupt goes on, which is what the page does
+  // with the program from then on (page/runtime.js), rather than freeze in a loop of its own.
+  P.Hang = class Hang extends Error {};
   const caught = e => { if (e instanceof P.Unwind && --e.n === 0) return e; throw e; };
   P.frame = f => (f.constructor.name === 'GeneratorFunction'
     ? function* (r) {

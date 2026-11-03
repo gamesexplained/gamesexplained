@@ -56,4 +56,55 @@ routes the way waypoint_square does, with no check on the number, put
 waypoint 28 of three of scenario 2's routes on a rock wall: an eighth
 discovery, tested by running computer_choose_target on the game's code.
 
-**Left open.** The Play tab, a port of the whole game for Platinum.
+**Play (Platinum).** The port was written group by group, 412 routines
+in all, each group's routines checked alone against the game's on the
+moments the sessions' player reached (`port/test/check.js`), then the
+whole program run beside the game in the kit's lockstep. Two things in
+the kit's lockstep had to change: a byte that `readsAt` hands over is the
+instruction's first read past its operands, which an indexed load and
+`LD A,(nn)` had been getting wrong, and `countCalls` wrapped a class the
+port throws and broke `new` on it; both have a test in
+`kit/spectrum/test_lockstep.js`.
+
+The longest lockstep, from the hand-over with seed 1, stopped at pass
+93,557 with the game going round its turn loop for ever.
+computer_pick_up searches its list of objects for the target's type with
+no end; the list holds ten objects and the computer's wizard stood on
+fifteen, wanting the twelfth, so the search ran on through memory, and
+the write it makes at the byte it found landed on the operand of
+`LD HL,$5B11` in the turn loop, so the player number's increment went to
+the ROM. I first took the object to be missing from the square; hooks
+on the object's entry showed it was there, seen and on the ground, and
+the list's count was 10. The port now reads that operand from memory,
+as the game does, and the lockstep counts the hang as in step.
+
+The designer's save-and-load session drifted at the end of the cassette:
+the test machine's instant cassette loaded a block while SPACE was held,
+which the ROM's LD-BYTES never does (it looks at the keyboard before the
+first byte and returns). Both the test machine and the port now break
+off a load, and a save after its flag byte, when SPACE is held.
+
+The last run of the routine tests stuck on strike_hit's case 32: a
+random combat of 255 gives random_below a limit of 0, which the game
+spins in for ever, and so did the port's loop, in JavaScript, where on
+the page it would have locked the tab. random_below and
+computer_pick_up's search now throw `P.Hang` where the game would never
+leave, the page then runs only the clock and the interrupt, and
+`test_play.js` checks that it does. The routine tests count those cases
+as waiting on both sides.
+
+The page's pacing is fitted on the game's own T-states. A routine's own
+time is credited to the innermost routine the port also calls, so that
+small routines the port does inside their callers do not leave their
+time unpriced; the routines whose cost varies most from call to call are
+priced by the work counted inside them (squares a creature looks at,
+entries and words printed, numbers drawn). The first fit had no rows from
+the hand-over's menus and was a fifth fast there; another had none for
+the 20-frame pause after some spells. Rows from the boot, the designer
+and seed-11 moments filled both. Two page machines, one on the whole
+memory and one on the page's blanked memory, diverged only once a page
+drew more random numbers than the recorded session held; the replay now
+gives both the same bytes past the end and compares them up to it.
+
+**Left open.** Nothing for Platinum. Gold needs a person's pass over the
+copy.

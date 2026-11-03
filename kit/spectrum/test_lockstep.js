@@ -271,6 +271,16 @@ for (const lines of [40, 320]) {
   check('no interrupt handler counted', rows.some(s => s.calls.irq_a || s.calls.irq_b), false);
 }
 
+// 3b. A class on P (an error the port throws) is left as it is when the calls are counted: new still
+// makes one, and instanceof still knows it.
+{
+  const P = port();
+  class Oops {}
+  P.Oops = Oops;
+  const r = lockstep(P, { ignore: [0xC00A], timing: () => {} }).run({ passes: 5, onPass: input });
+  check('timing: a class on P left as it is', r.ok && P.Oops === Oops && new P.Oops() instanceof Oops, true);
+}
+
 // 4. A port that sums wrongly when CAPS SHIFT is held: found at the next pass's start, and the run stops.
 {
   const P = port(), M = P.M, work = P.work;
@@ -503,6 +513,31 @@ for (const lines of [40, 320]) {
   check('readsAt: a read of another address stops the run', /through readAt where the game read/.test(wrong.msg), true);
   const none = run((P, p) => P.io.readAt(p));
   check('readAt with no readsAt', /readsAt names no instruction/.test(none.msg), true);
+}
+// The same read made by an indexed load, which reads its displacement before the byte: $81E0 LD
+// HL,($C010); INC HL; LD ($C010),HL; PUSH HL; POP IX; LD A,(IX+0); LD ($C00E),A; LD B,100; DJNZ
+// $81F2; RET, with $81EA in readsAt.
+{
+  const ram = program();
+  ram.set([0xC3, 0xE0, 0x81], 0x8120);
+  ram.set([0x2A, 0x10, 0xC0, 0x23, 0x22, 0x10, 0xC0, 0xE5, 0xDD, 0xE1, 0xDD, 0x7E, 0x00, 0x32, 0x0E, 0xC0, 0x06, 0x64, 0x10, 0xFE, 0xC9], 0x81E0);
+  ram[0xC010] = 0xF0; ram[0xC011] = 0xFE;
+  const m0 = new Machine({ ram, pc: ADDR.ENTRY, passAt: ADDR.MAIN });
+  m0.runUntilPass(q => q.passes >= 3);
+  const state = m0.save();
+  const P = port(), M = P.M;
+  P.delay = function* () {
+    const p = (M[0xC010] | M[0xC011] << 8) + 1;
+    M[0xC010] = p & 255; M[0xC011] = p >> 8;
+    M[0xC00E] = P.io.readAt(p);
+    yield { tstates: 1400 };
+  };
+  const ls = new Lockstep(Object.assign({ machine: kempston(Machine.restore(state)), port: P, program: q => q.main_loop() }, OPTS,
+    { readsAt: [0x81EA], ignore: [0xC00A] }));
+  P.M.fill(0, 0xFE00, 0xFF00);
+  let msg = '', r = null;
+  try { r = ls.run({ passes: 40, onPass: input, stopOnDiff: false }); } catch (e) { msg = e.message; }
+  check('readsAt: an indexed load, $C00E the game\'s in 40 passes', !!r && !msg && !r.diffs.some(d => d.bytes.some(b => b.address === 0xC00E)), true);
 }
 
 // The 128: a pass pages bank 3 or 4 in by its count, counts in the bank's $C000, writes the count to

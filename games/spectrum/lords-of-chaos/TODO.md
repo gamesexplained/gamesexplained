@@ -1,7 +1,9 @@
 # Lords of Chaos — TODO
 
-Tier: Silver. Coverage 100 % in all five parts; every feature traced;
-the minisite built (How it works, Discoveries, Maps, Source code).
+Tier: Platinum. Coverage 100 % in all five parts; every feature traced;
+the minisite built (How it works, Play, Discoveries, Maps, Source code).
+The Play tab is a port of every routine, held to the game's code in
+lockstep (`port/test`), with `test_play.js` holding the published page.
 
 ## The listing's sample
 
@@ -12,17 +14,11 @@ listing on a proven model is recommended (`kit/CHECKING.md`): with that
 rate in the sample, more wrong comments are likely among the 1,049 the
 checker did not read.
 
-## For Platinum
-
-- A Play tab that is the whole game: every routine of the engine and of
-  the three scenarios' hooks ported to JavaScript and run in lockstep
-  with the game's code (`kit/skills/core/70-minisite/play.md`), with
-  `test_play.js` beside the page.
-
-## For Gold
+## For Gold, and then Diamond
 
 - A human pass over each page's copy, section by section (`copy` in
-  `game.json`).
+  `game.json`). With the Play tab already Platinum, that makes the game
+  Diamond.
 
 ## Ideas
 
@@ -30,3 +26,8 @@ checker did not read.
   computer, watching a creature on route 0, 2 or 6 stop beside row 8,
   column 7.
 - The sound pads on How it works could be named by what plays each sound.
+- A Discoveries section on the game's hang (facts.md, "Corner cases"): a
+  computer creature that wants an object past the tenth on its square
+  searches on through memory and can write over the turn loop. A live
+  check in ZEsarUX would pile eleven objects on one square in a game
+  against the computer.

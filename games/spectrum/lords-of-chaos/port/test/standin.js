@@ -141,14 +141,20 @@ class StandInCPU extends CPU {
 }
 
 // LD-BYTES and SA-BYTES on the port's tape (lib.js's tapeHook): false when the tape has ended, and
-// the ROM's own loop waits for SPACE.
+// the ROM's own loop waits for SPACE. With SPACE held the ROM breaks off as lib.js says: a save
+// leaves an empty block, a load is left to the ROM, which returns at its first look at the keys.
 function romTape(cpu, tape, at) {
   const ix = cpu.ix, de = cpu.d << 8 | cpu.e;
+  const spaceHeld = !(cpu.P.io.in(0x7FFE) & 1);
   let ok;
   if (at === 0x04C6) {
-    ok = tape.save(cpu.a, cpu.m.slice(ix, ix + de));
-    cpu.ix = (ix + de) & 0xFFFF; cpu.d = cpu.e = 0;
+    if (spaceHeld) { tape.save(cpu.a, new Uint8Array(0)); ok = false; }
+    else {
+      ok = tape.save(cpu.a, cpu.m.slice(ix, ix + de));
+      cpu.ix = (ix + de) & 0xFFFF; cpu.d = cpu.e = 0;
+    }
   } else {
+    if (spaceHeld) return false;
     if (tape.pos >= tape.blocks.length) return false;
     const flag = cpu.af_ >> 8, b = tape.load(flag, de);
     if (b.flag !== flag) ok = false;

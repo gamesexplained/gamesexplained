@@ -3,8 +3,12 @@
 // (SELECT CONTROLS, LOAD SCENARIO n, PLAY GAME, the number of players), then a seeded player that
 // moves the cursor with Q, A, O and P, taps SPACE to open menus and choose in them, and now and then
 // presses a digit or ENTER; and the script that saves moments of play to work/states from it, each
-// where a human turn's loop is about to read the controls ($61E6).
-//   node sessions.js [sessions] [frames] [every]     saves work/states/s<scenario>-<k>-f<n>.json
+// where a human turn's loop is about to read the controls ($61E6); with `ai` where the computer
+// starts to move a creature ($974E), for the tests of the computer's play; with `designer` at the
+// wizard designer's reads of the controls and keyboard, the player going into it first.
+//   node sessions.js [sessions] [frames] [every] [ai|designer]
+// (player's o.designer: true, or 'load' to save a wizard and load it back first)
+//   saves work/states/[ai-]s<scenario>-<k>-f<n>.json, or dz-<k>-f<n>.json
 const lib = require('./lib.js');
 
 // [keys, frames held, weight]
@@ -30,8 +34,10 @@ function menuMacro(rnd) {
   }
   return s;
 }
-// The start, frame by frame from the hand-over: [frame, keys held from it]
+// The start, frame by frame from the hand-over: [frame, keys held from it]. With o.designer only
+// SELECT CONTROLS: the player goes on into the wizard designer before it loads a scenario.
 function startScript(o) {
+  if (o.designer) return { steps: [[120, ['SPACE']], [130, []]], end: 150 };
   const s = [[120, ['SPACE']], [130, []]];
   let f = 150;
   for (let i = 0; i < 4; i++) { s.push([f, ['A']], [f + 10, []]); f += 30; }
@@ -69,7 +75,8 @@ function routineAt(a, part) {
 const MENUS = { cursor: 0x9334, select: 0x6D8E, endturn: 0x7557, file: 0xCC7C };
 function agent(rnd, o) {
   const st = { held: [], turn: -1, player: -1, tried: new Set(), acts: 0, actsMax: 3, steps: 0, menuFor: null, menuIndex: undefined,
-    menuNext: null, goal: null, spell: -1, stuck: 0, lastCursor: -1, typed: 0 };
+    menuNext: null, goal: null, spell: -1, stuck: 0, lastCursor: -1, typed: 0,
+    dz: { acts: 0, most: o.designer ? 2 + rnd(6) : 0, want: -1, keys: 0, opts: 0, saved: null, loading: false, saving: false, name: 0 } };
   const ram = m => m.ram, w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
   const wrapd = (a, b) => { let d = (b - a) % 36; if (d > 18) d -= 36; if (d < -18) d += 36; return d; };
   const dist = (r1, c1, r2, c2) => Math.max(Math.abs(wrapd(r1, r2)), Math.abs(wrapd(c1, c2)));
@@ -110,11 +117,63 @@ function agent(rnd, o) {
     }
     return idx.length ? idx[rnd(idx.length)] : rnd(Math.max(1, n));
   };
+  // In the wizard designer (o.designer): the panel's options at random (DESIGN WIZARD most, SAVE,
+  // DELETE, and LOAD WIZARD once a wizard has been saved, typing its name), NAME, CHARACTER and
+  // SPELLS with a few keys each, then EXIT; after a few, LOAD SCENARIO as at the start.
+  const dz = st.dz;
+  const ch = c => (c === 0x20 ? 'SPACE' : String.fromCharCode(c));
+  function designer(M, pc, ctx) {
+    if (pc === 0x028E) {
+      if (ctx === 'name_screen') {
+        if (dz.keys++ > 3 + rnd(10)) { dz.keys = 0; return press('ENTER'); }
+        const x = rnd(10);
+        return press(x < 2 ? '0' : x < 3 ? 'SPACE' : String.fromCharCode(0x41 + rnd(26)));
+      }
+      if (ctx === 'ask_file_name' && dz.loading) {
+        const n = dz.saved || '';
+        if (dz.name < n.length) return press(ch(n.charCodeAt(dz.name++)));
+        dz.name = 0; dz.loading = false; return press('ENTER');
+      }
+      return undefined;
+    }
+    if (pc !== 0x622B) return undefined;
+    if (ctx === 'run_file_menu') {
+      const layout = M[0x5B0B];
+      if (layout === 3) return press(M[0xC662] === 0 ? KEY.fire : KEY.down);
+      if (layout === 2) { if (dz.want < 0) dz.want = o.designer === 'load' ? 0 : rnd(4); }
+      else if (dz.want < 0) {
+        // after a save, the first character of the name it went under (all find_file compares)
+        if (dz.saving) { dz.saving = false; if (M[0xC637] !== 0x20) dz.saved = String.fromCharCode(M[0xC637]); }
+        const x = rnd(10);
+        // (designer: 'load' designs a wizard in the first slot, saves it and loads it back first)
+        const load = o.designer === 'load' && !dz.loaded;
+        dz.want = load ? (dz.saved ? 1 : dz.designed ? 2 : 0) : dz.acts >= dz.most ? 4 : x < 5 ? 0 : x < 7 ? 2 : x < 8 ? 3 : dz.saved ? 1 : 0;
+        if (dz.want === 1) dz.loaded = true;
+        if (dz.want === 0) dz.designed = true;
+        dz.acts++;
+        if (dz.want === 1) { dz.loading = true; dz.name = 0; }
+        if (dz.want === 2) dz.saving = true;
+      }
+      if (M[0xC662] === dz.want) { dz.want = -1; return press(KEY.fire); }
+      return press(M[0xC662] < dz.want ? KEY.down : KEY.up);
+    }
+    if (ctx === 'design_wizard') {
+      if (dz.want < 0) { dz.want = dz.opts > 2 ? 3 : rnd(3); dz.opts++; }
+      if (M[0xE1EC] === dz.want) { if (dz.want === 3) dz.opts = 0; dz.want = -1; return press(KEY.fire); }
+      return press(KEY.down);
+    }
+    if (ctx === 'character_screen' || ctx === 'spells_edit') {
+      if (rnd(12) === 0) return press(KEY.fire);
+      return press([KEY.up, KEY.down, KEY.left, KEY.right, KEY.right][rnd(5)]);
+    }
+    return undefined;
+  }
   function decide(m, part) {
     const M = ram(m), pc = m.cpu.pc, ret = w(M, m.cpu.sp), ctx = routineAt(ret, part) || '';
     if (M[0x5B11] !== st.player || M[0xD065] !== st.turn) {
       st.player = M[0x5B11]; st.turn = M[0xD065]; st.tried.clear(); st.acts = 0; st.actsMax = 1 + rnd(4); st.goal = null;
     }
+    if (part === 0 && o.designer) { const k = designer(M, pc, ctx); if (k !== undefined) return k; }
     if (pc === 0x028E) {
       if (ctx === 'start_game') return press(String(o.players));
       if (ctx === 'ask_file_name') {
@@ -258,25 +317,32 @@ function player(rnd, m0, o = {}) {
 
 if (require.main === module) {
   const sessions = +(process.argv[2] || 6), frames = +(process.argv[3] || 6000), every = +(process.argv[4] || 300);
+  const mode = process.argv[5] || '', ai = mode === 'ai', dzm = mode === 'designer';
+  const at = ai ? 0x974E : 0x61E6, pre = ai ? 'ai-' : dzm ? 'dz-' : '';
   for (let s = 1; s <= sessions; s++) {
     const scen = 1 + (s - 1) % 3, players = 1 + ((s - 1) >> 1) % 2;
     const m = lib.boot();
-    const input = player(lib.makeRnd(s * 7919), m, { scenario: scen, players });
+    const input = player(lib.makeRnd(s * 7919), m, { scenario: scen, players, designer: dzm });
     const t = Date.now();
     let saved = 0, want = false, last = -every;
-    m.hooks[0x61E6] = q => {
-      if (!want || q !== m) return false;
+    m.hooks[at] = q => {
+      if (!want || q !== m || dzm) return false;
       want = false;
-      lib.writeState('s' + scen + '-' + s + '-f' + String(m.frames).padStart(6, '0'), m);
+      lib.writeState(pre + 's' + scen + '-' + s + '-f' + String(m.frames).padStart(6, '0'), m);
       saved++;
       return false;
     };
-    m.hooks[0x622B] = m.hooks[0x028E] = q => { if (q === m) input.check(m); return false; };
+    m.hooks[0x622B] = m.hooks[0x028E] = q => {
+      if (q !== m) return false;
+      if (dzm && want && lib.partOf(m.ram) === 0) { want = false; lib.writeState(pre + s + '-f' + String(m.frames).padStart(6, '0'), m); saved++; }
+      input.check(m);
+      return false;
+    };
     for (let f = 0; f < frames; f++) {
       input.frame(f, m);
       input.check(m);
       m.runFrames(1);
-      if (m.frames - last >= every && lib.partOf(m.ram) === scen) { want = true; last = m.frames; }
+      if (m.frames - last >= every && lib.partOf(m.ram) === (dzm ? 0 : scen)) { want = true; last = m.frames; }
     }
     console.log('session ' + s + ' (scenario ' + scen + ', ' + players + ' players): ' + frames + ' frames, ' + saved + ' states, ' + (Date.now() - t) + ' ms');
   }

@@ -51,8 +51,9 @@ G.loop = function (P) {
       M.copyWithin(0xCF30, 0xD082, 0xD082 + 0x46);
       M[0x5B11] = 1;
     }
-    yield* P.jumpGen(0xD01B, {});
-    yield* P.jumpGen(0xFE03, {});
+    // IX is still the last wizard's record, which the start-up keeps until it places an object
+    yield* P.jumpGen(0xD01B, { ix: w(0x5B04) });
+    yield* P.jumpGen(0xFE03, { ix: w(0x5B04) });
     yield* P.cw('set_up_game', {});
     M.fill(0xFF, 0xFE00, 0xFF01);
     // the stack moved to $FFF3 at the start: the turn loop is never left by a return
@@ -79,7 +80,13 @@ G.loop = function (P) {
         at = 0x6156;
       }
       if (at === 0x6156) {
-        M[0x5B11] = (M[0x5B11] + 1) & 255;
+        // LD HL,$5B11 / INC (HL): the address is read from the instruction, because the game can
+        // write over it (computer_pick_up, given an object its list does not hold, searches on past
+        // the list and marks whatever entry the byte before the match names); in the ROM the
+        // increment does nothing, the next player never comes, and the game goes round this loop for
+        // ever, as the port does
+        const hl = w(0x6157);
+        if (hl >= 0x4000) M[hl] = (M[hl] + 1) & 255;
         if (P.player_has_creature({}).zf) {
           yield* P.cw('start_of_turn', {});
           if (P.player_has_creature({}).zf) {
@@ -95,7 +102,13 @@ G.loop = function (P) {
       P.clear_map_things({});
       P.spread_magic({});
       P.destroy_lost_objects({});
-      if (M[0x5B11] !== M[0xD067]) { at = 0x6156; continue; }
+      if (M[0x5B11] !== M[0xD067]) {
+        at = 0x6156;
+        // (the loop with its address written over: a turn of a polling loop, so that the page's
+        // clock and the interrupt go on while it does)
+        if (w(0x6157) !== 0x5B11) yield;
+        continue;
+      }
       M[0xD065] = (M[0xD065] + 1) & 255;
       yield* P.cw('end_of_turn_menu', {});
       at = 0x6134;

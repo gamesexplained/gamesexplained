@@ -27,3 +27,49 @@
   the bits a routine clears. Before writing "everything else goes to" or
   "used by", list the branches or the references from the code, not from
   memory of it.
+- **Price the routines the port calls, with the time of what it does
+  inside them.** The Play tab's pacing was first fitted the way
+  `70-minisite/play.md` says, every routine's cost by non-negative least
+  squares over the stretches, and then from each routine's own T-states
+  measured on the game. Both left time unpriced: 43 small routines the
+  game enters (a map address, a line step) the port does inside their
+  callers, so their T-states belonged to no call the page makes, and on
+  sessions the fit had not seen the waits came out 8 to 9 % short.
+  Crediting each instruction's T-states to the innermost routine whose
+  frame is open and which the port also calls (`port/scripts/time-stretches.js`,
+  `--inlined`) closed most of it. The rest was routines whose cost per
+  call varies with the board: see_square, print_message, work_out_sight
+  and random_below priced by the work counted inside them (entries
+  looked at, words and letters printed, numbers drawn) took the waits'
+  mean error from 6 % to 1.5 % on 41 minutes of play held out of the fit.
+- **Give the fit rows from every path the page starts on.** The first
+  fit had rows only from moments of play and ran a fifth fast from the
+  hand-over, where SELECT CONTROLS and the designer's panel spin in tight
+  loops it had never timed; a 20-frame HALT pause after some spells was
+  in no row until a run of other moments cast them. Rows from the boot,
+  the designer and those moments brought every one of 26 replayed
+  sessions within 3.2 %.
+- **An instant cassette still breaks off with SPACE.** The test machine
+  played a block at once wherever the game called LD-BYTES, whatever was
+  held. The ROM looks at the keyboard before the first byte and returns
+  when SPACE is down, so a player who broke off a search with SPACE and
+  kept it held loaded nothing; the instant cassette loaded the next
+  scenario over the designer's code, and the lockstep lost step there
+  after 15,042 passes. A cassette that stands in for the ROM keeps its
+  BREAK test: no byte loaded with SPACE held, and a save cut off after
+  its flag byte.
+- **Read a constant from the instruction that holds it.** The game's turn
+  loop increments the player number through `LD HL,$5B11`. In one game
+  against the computer, computer_pick_up's search with no end wrote over
+  that operand and the game went round its turn for ever (pass 93,557 of
+  a lockstep from the hand-over). A port that used the constant would
+  have gone on and lost step; reading the operand from memory, as the
+  instruction does, keeps it beside the game into the hang.
+- **A loop with no way out must not freeze the page.** random_below
+  draws until a byte is below its limit, so a limit of 0 spins for ever.
+  On the Spectrum the interrupt goes on; the port's plain JavaScript loop
+  locked the browser's tab instead, and a routine test with random
+  inputs hung on the first case that gave strike_hit a combat of 255. A
+  port throws at such a loop (and at a search with no end that has gone
+  round the whole memory), and the page runs only the clock and the
+  interrupt from there.

@@ -20,6 +20,8 @@ G.draw = function (P) {
   def(0xA734, 'random_below_a', r => { M[0x5B22] = r.a; return P.random_below(r); });
   def(0xA737, 'random_below', r => {
     const lim = M[0x5B22];
+    // a limit of 0: no number is below it, and the game draws for ever
+    if (!lim) throw new P.Hang('random_below: a limit of 0 never ended');
     let a;
     do {
       a = P.readR() & 255;
@@ -262,12 +264,14 @@ G.draw = function (P) {
   });
 
   // slide_bars: each of the five bars ($D1F6 on, drawn lengths; $D1FB on, values) one pixel toward
-  // its value (at most $5F), one pixel line filled or cleared (bar_fill_line, D the column).
+  // its value (at most $5F), one pixel line filled or cleared (bar_fill_line, D the column). The
+  // interrupt runs it too: the main program reads each length through P.readAt, as the game's
+  // instruction at $AB1D read it.
   def(0xAB0E, 'slide_bars', r => {
     let d = 0x16;
     for (let i = 0; i < 5; i++, d += 2) {
       const ix = 0xD1F6 + i;
-      let a = P.ib(ix);
+      let a = P.inIrq ? M[ix] : P.readAt(ix);
       if (a === M[ix + 5]) continue;
       if (a < M[ix + 5]) {
         if (a === 0x5F) continue;
@@ -305,7 +309,8 @@ G.draw = function (P) {
   });
 
   // find_entry: HL = entry B (from 1) of a list of entries that start with their length; B its length.
-  const findEntry = (hl, b) => { b &= 255; while (--b & 255 ? true : false) { hl = (hl + M[hl]) & 0xFFFF; b &= 255; } return hl; };
+  // (P.N.entries counts the entries passed over, for the page's clock)
+  const findEntry = (hl, b) => { b &= 255; while (--b & 255 ? true : false) { hl = (hl + M[hl]) & 0xFFFF; b &= 255; P.N.entries = (P.N.entries || 0) + 1; } return hl; };
   def(0xABF4, 'find_entry', r => { const hl = findEntry(r.hl, r.b); return { hl, b: M[hl], d: 0, e: 0 }; });
 
   // print_message: message A of the tables at ($FFFB) and ($FFFD), from the start of the line
@@ -320,13 +325,15 @@ G.draw = function (P) {
       st.hl = (st.hl + 1) & 0xFFFF;
       const a = M[st.hl];
       if (a >= 0xFB) { textControl(st, a); continue; }
-      // a word
+      // a word (P.N.words and P.N.letters count them, for the page's clock)
       const wd = { hl: findEntry(w(0xFFFD), a) };
       wd.b = M[wd.hl];
+      P.N.words = (P.N.words || 0) + 1;
       for (;;) {
         wd.b = (wd.b - 1) & 255;
         wd.hl = (wd.hl + 1) & 0xFFFF;
         if (!wd.b) break;
+        P.N.letters = (P.N.letters || 0) + 1;
         const ch = M[wd.hl];
         if (ch === 0xFA) continue;
         if (ch >= 0xFB) { textControl(wd, ch); continue; }

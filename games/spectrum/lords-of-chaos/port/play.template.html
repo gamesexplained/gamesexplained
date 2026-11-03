@@ -1,0 +1,354 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+.pl-tape{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--ink-soft)}
+.pl-tape[hidden]{display:none}
+.pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
+.pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-answer{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px}
+.pl-answer[hidden]{display:none}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}: play</h1>
+  <p class="sub">The whole game, playable in the browser from where its loader hands over: SELECT CONTROLS, the wizard designer, the three scenarios loaded from the cassette, one to four wizards, the computer's own wizard and creatures, every spell, battle and treasure, the portal and the end of turn menu, with saving and loading to a tape file. Every routine is ported from the game's own Z80 code and was run beside it until the two agreed.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="320" height="256" role="img" aria-label="The ZX Spectrum screen of Lords of Chaos"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <button type="button" data-act="tape" title="Put a .tap file saved from this page on the cassette, after the game's own files">Add a tape file…</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-tape" id="pl-tape" hidden></div>
+    <ul class="pl-keys">
+      <li>SELECT CONTROLS, and every menu: <kbd>Q</kbd> <kbd>A</kbd> move the bar, <kbd>Space</kbd> chooses</li>
+      <li>In play: <kbd>Q</kbd> <kbd>A</kbd> <kbd>O</kbd> <kbd>P</kbd> move the cursor, <kbd>Space</kbd> opens the menu for the square under it</li>
+      <li>The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
+      <li>A file name or a wizard's name: type it, <kbd>0</kbd> rubs out, <kbd>Enter</kbd> ends it; HOW MANY PLAYERS? takes <kbd>1</kbd> to <kbd>4</kbd></li>
+      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added; it winds back to the start after the last file. Hold <kbd>Space</kbd> to stop a search</li>
+      <li>Saving (SAVE GAME at the end of a turn, SAVE WIZARD in the designer) puts the files on the cassette and offers them as a .tap file to keep</li>
+    </ul>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the interrupt animates the creatures and slides the bars every frame, and the computer's wizard takes as long to think as it does on the machine. The sound is the port's writes to the beeper, each edge at the T-state the game's delay loops make it.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+<!-- port-results -->
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a Spectrum</h2>
+<!-- differences -->
+</section>
+</main>
+<script src="../../lib/spectrum.js"></script>
+<script src="../../lib/ay.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script src="../../lib/play-controls.js"></script>
+<!-- port -->
+<script>
+/* the page: the port on a virtual 48K clock, drawn each frame, the keyboard, the joystick and the cassette */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const tapeEl = $('pl-tape');
+const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+// a 48K's frame is 69,888 T-states of its 3.5 MHz clock
+const FRAME = LOCPage.FRAME, FRAME_MS = 1000 * FRAME / 3500000;
+// the picture: the paper, 256 by 192, inside a border of 32 pixels
+const W = 320, H = 256, BX = 32, BY = 32;
+let data = null, rt = null, running = false, paused = false;
+
+// --- drawing: the frame the clock finished last, the screen as the beam reached the paper
+const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
+function draw(F) {
+  F = F || (rt && rt.lastFrame());
+  if (!F) return;
+  const d = img.data, s = F.screen, b = RGB[F.border & 7];
+  for (let o = 0; o < d.length; o += 4) { d[o] = b[0]; d[o + 1] = b[1]; d[o + 2] = b[2]; d[o + 3] = 255; }
+  for (let y = 0; y < 192; y++) {
+    const row = ((y & 0xC0) << 5) | ((y & 7) << 8) | ((y & 0x38) << 2), at = 6144 + (y >> 3) * 32;
+    let o = ((y + BY) * W + BX) * 4;
+    for (let x = 0; x < 32; x++) {
+      const a = s[at + x], bright = (a >> 3) & 8;
+      let bits = s[row + x];
+      if ((a & 0x80) && F.flash) bits ^= 0xFF;
+      const ink = RGB[(a & 7) | bright], paper = RGB[((a >> 3) & 7) | bright];
+      for (let k = 7; k >= 0; k--, o += 4) { const c = (bits >> k) & 1 ? ink : paper; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: the beeper's edges in each frame of 48K time, streamed to the site's model of it
+// (site/lib/ay.js, register 16) as each frame is shown; its frames are the 128's 70,908 T-states,
+// so each edge's T-state in the 48K's frame is scaled to the same place in it
+const sound = (function () {
+  let host = null, on = false, pending = new Map(), sent = 0;
+  const SCALE = SpectrumAY.FRAME_T / FRAME;
+  function attach() {
+    if (!rt) return;
+    pending.clear(); sent = rt.shown + 1;
+    rt.onBeep((v, t) => {
+      if (!on) return;
+      const f = Math.max(sent, Math.floor(t / FRAME));
+      let w = pending.get(f); if (!w) pending.set(f, w = []);
+      w.push(Math.max(0, Math.round((t - f * FRAME) * SCALE)), 16, v);
+    });
+  }
+  async function set(want) {
+    if (want && !on) { pending.clear(); sent = rt ? rt.shown + 1 : 0; }
+    on = want;
+    if (on && !host) {
+      try { host = await SpectrumAY.host({ gain: 0.5 }); }
+      catch (e) { on = false; say('No sound: ' + e.message); }
+    }
+    if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
+    return on;
+  }
+  function frame() {
+    if (!on || !host || !rt) return;
+    const frames = [];
+    for (; sent <= rt.shown; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    if (frames.length) host.push(frames);
+  }
+  return { attach, set, frame, get on() { return on; } };
+})();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+
+// --- the cassette: the page's machine holds the game's files and plays them in turn, winding
+// back after the last. What the game saves goes on after them, and is offered as a .tap file to
+// keep; a .tap file added goes on after them too, so that LOAD GAME and LOAD WIZARD find it
+const tap = list => {
+  const parts = [];
+  for (const { flag, bytes } of list) {
+    const n = bytes.length + 2, b = new Uint8Array(n + 2);
+    b[0] = n & 255; b[1] = n >> 8; b[2] = flag;
+    let x = flag;
+    for (let i = 0; i < bytes.length; i++) { b[3 + i] = bytes[i]; x ^= bytes[i]; }
+    b[n + 1] = x;
+    parts.push(b);
+  }
+  return new Blob(parts, { type: 'application/octet-stream' });
+};
+const parse = buf => {
+  const u = new Uint8Array(buf), out = [];
+  for (let p = 0; p + 2 <= u.length;) {
+    const n = u[p] | u[p + 1] << 8;
+    if (n < 2 || p + 2 + n > u.length) break;
+    out.push({ flag: u[p + 2], bytes: u.slice(p + 3, p + 1 + n) });
+    p += 2 + n;
+  }
+  return out;
+};
+// a header is 12 bytes, flag $64: the file's name; the blocks after it, flag $C8, are its data
+let saving = [], url = null, added = [];
+const nameOf = b => String.fromCharCode(...b.bytes.subarray(0, 12)).trim();
+function saved(b) {
+  if (b.flag === 0x64) saving = [];
+  saving.push(b);
+  const head = saving[0], name = head && head.flag === 0x64 ? nameOf(head) : 'file';
+  // a save game is a header and two blocks, a wizard a header and one; offer what there is so far
+  const done = saving.length > 1 && (name.endsWith('.WIZ') ? saving.length === 2 : saving.length === 3);
+  if (!done) return;
+  if (url) URL.revokeObjectURL(url);
+  url = URL.createObjectURL(tap(saving));
+  const file = 'lords-of-chaos-' + name.replace(/[^\w.-]+/g, '-').toLowerCase() + '.tap';
+  tapeEl.innerHTML = '<span>Saved ' + name.replace(/[<&]/g, '') + ' on the cassette.</span><a download="' + file + '" href="' + url + '">Download ' + file + '</a>';
+  tapeEl.hidden = false;
+}
+function addTape() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.tap';
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    f.arrayBuffer().then(buf => {
+      const blocks = parse(buf);
+      if (!blocks.length) { say(f.name + ' holds no tape blocks'); return; }
+      added.push(...blocks);
+      if (rt) rt.tape.add(blocks);
+      const names = blocks.filter(b => b.flag === 0x64 && b.bytes.length >= 12).map(nameOf);
+      say('On the cassette: ' + (names.length ? names.join(', ') : f.name));
+    });
+  };
+  inp.click();
+}
+
+// --- the loop: one frame of 48K time per frame of real time
+let acc = 0, last = 0;
+function boot() {
+  rt = LOCPage.create({ data, cost: window.LOC_COST });
+  if (added.length) rt.tape.add(added);
+  rt.tape.onSave(saved);
+  sound.attach(); input();
+}
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  let n = 0, F = null;
+  try {
+    acc += Math.min(250, now - (last || now)); last = now;
+    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+    if (n === 10) acc = 0;
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
+  if (n) draw(F);
+}
+
+// --- input: the arrow keys and fire are the controls the game was set to at SELECT CONTROLS
+// (control_type, $622A): the keyboard (Q, A, O, P and SPACE), the Kempston stick or the Sinclair
+// stick's keys (6 left, 7 right, 8 down, 9 up, 0 fire); every other key is the Spectrum's own
+const CODE = { Space: 'SPACE', Enter: 'ENTER', ShiftLeft: 'CAPS', ShiftRight: 'CAPS', ControlRight: 'SYMBOL', AltRight: 'SYMBOL', Backspace: '0' };
+// the directions and fire as the pad's bits: 1 up, 2 down, 4 left, 8 right, 16 fire
+const DIR = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, ControlLeft: 16, NumpadEnter: 16, Numpad0: 16 };
+const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
+const KEYBOARD = [[1, 'Q'], [2, 'A'], [4, 'O'], [8, 'P'], [16, 'SPACE']];
+const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
+// A key is held for at least four frames of the game's time: the game reads the controls once a
+// pass, and a shorter tap could fall between two reads
+const held = new Map(), since = new Map(), letGo = new Set();
+const HOLD = 4;
+let padBits = 0;
+function release() {
+  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  input();
+}
+function input() {
+  if (!rt) return;
+  let dir = padBits;
+  const keys = new Set();
+  for (const ks of held.values()) for (const k of ks) if (typeof k === 'number') dir |= k; else keys.add(k);
+  let joy = 0;
+  const mode = rt.M[0x622A];
+  if (mode === 1) { for (const [b, k] of KEMPSTON) if (dir & b) joy |= k; }
+  else for (const [b, k] of mode === 2 ? SINCLAIR : KEYBOARD) if (dir & b) keys.add(k);
+  rt.input.joy = joy;
+  rt.input.keys = keys;
+}
+function zxKey(e) {
+  const c = e.code;
+  if (/^Key[A-Z]$/.test(c)) return [c.slice(3)];
+  if (/^Digit[0-9]$/.test(c)) return [c.slice(-1)];
+  const k = CODE[c];
+  return k ? [].concat(k) : null;
+}
+function onKey(e, down) {
+  if (!running || e.metaKey) return;
+  const k = [];
+  if (DIR[e.code] !== undefined) k.push(DIR[e.code]);
+  const z = zxKey(e); if (z) k.push(...z);
+  if (!k.length) return;
+  e.preventDefault();
+  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
+  else letGo.add(e.code);
+  release();
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
+
+// --- controls
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
+function start() {
+  over.hidden = true;
+  boot();
+  running = true; paused = false; last = 0; acc = 0;
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  screen.focus();
+}
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
+  else if (act === 'restart' && data) start();
+  else if (act === 'tape') addTape();
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && data) start(); });
+// the CRT screen (site/lib/crt.js), on until the viewer switches it off
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });
+try {
+  data = JSON.parse(document.getElementById('loc-data').textContent);
+  overMsg.textContent = 'Lords of Chaos from where its loader hands over: SELECT CONTROLS, then the file panel, where LOAD SCENARIO and a scenario number load it from the cassette. Click, then use the keyboard.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(); };
+  over.appendChild(bt);
+  requestAnimationFrame(tick);
+} catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
+window.LOCPlay = { get rt() { return rt; }, start };
+})();
+</script>

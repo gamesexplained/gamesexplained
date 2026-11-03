@@ -58,7 +58,7 @@ G.select = function (P) {
             if (M[0xD065] === 1) menu = true;
             else {
               keep(P.move_selected({}));
-              keep(yield* P.jumpGen(0xD021, Object.assign({}, rg)));
+              keep(yield* P.jumpGen(0xD021, Object.assign({}, rg, { ret: 0x69AC })));
               keep(P.start_sound({ a: 4 }));
               keep(yield* P.cw('step_effects', { ret: 0x69B4 }));
               if (M[0xFF30]) return { a: M[0xFF30], zf: false };

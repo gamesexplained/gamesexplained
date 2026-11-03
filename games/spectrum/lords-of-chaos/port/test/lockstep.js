@@ -4,7 +4,9 @@
 // in work/states, each saved where a human turn's loop reads the controls ($61E6), with the
 // sessions' input (sessions.js's player) given pass by pass. The game runs on the 48K machine
 // (lib.js); routines the port has not written are the game's own code (standin.js).
-//   node lockstep.js [passes] [state name filter, or "boot"] [seed]
+//   node lockstep.js [passes] [state name filter, ^pattern, or "boot"] [seed] [designer|load]
+// (with designer, the player from the hand-over goes into the wizard designer first, and with load
+// saves a wizard there and loads it back: sessions.js)
 const path = require('path');
 const lib = require('./lib.js');
 const { Lockstep, describe } = require(path.join(lib.ROOT, 'kit/spectrum/lockstep.js'));
@@ -30,15 +32,18 @@ for (const n of [1, 2, 3]) {
   IRQ_BYTES.push(t + 0x18F);    // and the summoning animation's frame, which summon_display waits on
 }
 // and the sound's bytes ($C830-$C838), which the interrupt's map drawing plays a step of after each
-// row while the main program plays the summoning sound (g-sound.js); the cursor's blink ($D0D0),
-// the flashing colour ($FF53) and the five bars' heights ($D1F6-$D1FA), which the main program's
-// drawing reads (P.ib)
-const IRQ_FIXED = [0xD0D0, 0xFF53, 0xD1F6, 0xD1F7, 0xD1F8, 0xD1F9, 0xD1FA];
+// row while the main program plays the summoning sound (g-sound.js); the cursor's blink ($D0D0) and
+// the flashing colour ($FF53), which the main program's drawing reads (P.ib)
+const IRQ_FIXED = [0xD0D0, 0xFF53];
 for (let a = 0xC830; a <= 0xC838; a++) IRQ_FIXED.push(a);
 IRQ_BYTES.push(...IRQ_FIXED);
 const IRQ_FIXED_SET = new Set(IRQ_FIXED);
-// the one LD A,R, in random_below, and its seven reads of memory, which walk through the stacks too
-const READS_R = [0xA738], READS_AT = [0xA741, 0xA743, 0xA745, 0xA74D, 0xA74F, 0xA751, 0xA755];
+// the one LD A,R, in random_below, and its seven reads of memory, which walk through the stacks too;
+// and slide_bars' read of each bar's drawn length ($D1F6-$D1FA, at $AB1D), which the interrupt
+// slides too. They are read by the instruction, not as the interrupt's bytes, because a list of
+// more than 26 objects carried or found ($D1C0 on) runs over them, and a dozen routines read the
+// list there as their own.
+const READS_R = [0xA738], READS_AT = [0xA741, 0xA743, 0xA745, 0xA74D, 0xA74F, 0xA751, 0xA755, 0xAB1D];
 
 // The port's main program: from the hand-over the port's program_start; from a moment of play the
 // human turn's loop at $61E6, then the turn loop from its return ($617F).
@@ -85,12 +90,22 @@ function run(o) {
   return { ls, m, P };
 }
 
-module.exports = { run, CHECKPOINTS, HALTS, IRQ_BYTES, READS_R, READS_AT, STACK_PLAY, STACK_BOOT, describe };
+// The game's own hang (src/g-loop.js, turnLoop): the address in the turn loop's LD HL,$5B11 written
+// over, the same on both, and neither reaching a checkpoint again.
+const hangs = (out, res) => {
+  const g = out.m.ram[0x6157] | out.m.ram[0x6158] << 8, p = out.P.M[0x6157] | out.P.M[0x6158] << 8;
+  return g !== 0x5B11 && g === p && /reached no checkpoint/.test(describe(res));
+};
+
+module.exports = { run, hangs, CHECKPOINTS, HALTS, IRQ_BYTES, READS_R, READS_AT, STACK_PLAY, STACK_BOOT, describe };
 
 if (require.main === module) {
   const passes = +(process.argv[2] || 200), filter = process.argv[3] || 'boot', seed = +(process.argv[4] || 1);
+  const designer = process.argv[5] === 'load' ? 'load' : process.argv[5] === 'designer';
   const { player } = require('./sessions.js');
-  const list = filter === 'boot' ? [null] : lib.states(filter);
+  // a filter that starts with ^ is a pattern the state's name must match (^s\d- the moments of play
+  // the sessions saved, and not the computer's, whose names hold the same)
+  const list = filter === 'boot' ? [null] : filter[0] === '^' ? lib.states().filter(f => new RegExp(filter).test(f)) : lib.states(filter);
   let ok = 0, n = 0;
   for (const f of list) {
     n++;
@@ -99,13 +114,14 @@ if (require.main === module) {
     try {
       let input = null;
       out = run({ state: f, onCheckpoint: (a, mm) => input.check(mm) });
-      input = player(lib.makeRnd(seed), out.m, { onRewind: () => out.P.io.tape.rewind() });
+      input = player(lib.makeRnd(seed), out.m, { designer, onRewind: () => out.P.io.tape.rewind() });
       res = out.ls.run({ passes, stopOnDiff: true, onPass: (k, mm) => input.pass(k, mm), onFrame: (fr, mm) => input.frame(fr, mm) });
     } catch (e) { console.log((f || 'boot') + ': ' + (e && e.constructor ? e.constructor.name + ' ' + JSON.stringify(e).slice(0, 300) + ' ' : '') + String(e && (e.stack || e.message) || e).split('\n').slice(0, 10).join('\n  ')); continue; }
     const used = [...out.P.standInsUsed];
     console.log((f || 'boot') + ' (' + (Date.now() - t) + ' ms, ' + out.m.frames + ' frames, ' + used.length + ' routines stood in): ' +
       describe(res).split('\n').join('\n  '));
     if (res.ok) ok++;
+    else if (hangs(out, res)) { console.log('  the game goes round its turn loop for ever, its LD HL,$5B11 written over, and so does the port: the session ends there'); ok++; }
   }
   console.log(ok + '/' + n + ' runs in step');
   process.exitCode = ok === n ? 0 : 1;

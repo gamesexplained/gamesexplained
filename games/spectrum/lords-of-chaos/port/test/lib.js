@@ -86,15 +86,23 @@ function gameTape() {
 // LD-BYTES and SA-BYTES as the game calls them (call_ld_bytes, call_sa_bytes: entered past their
 // own set-up, the game's tape_check pushed as the return): IX the address, DE the length, the flag
 // in A' (LD) or A (SA); carry set when it worked. A load at the end of the tape runs the ROM's own
-// loop, which finds no edge and returns when SPACE is pressed.
+// loop, which finds no edge and returns when SPACE is pressed. SPACE held breaks both off as the
+// ROM does: SA-BYTES writes its leader and the flag byte and stops at its first look at the
+// keyboard, leaving a block that holds only the flag; LD-BYTES returns at its first, having loaded
+// nothing (the ROM's own code runs), and the tape stays where it stands.
+const spaceHeld = m => !(m.portIn(0x7FFE) & 1);
 function tapeHook(m, at) {
   const cpu = m.cpu, tape = m.tape;
   const ix = cpu.ix, de = cpu.d << 8 | cpu.e;
   let ok;
   if (at === 0x04C6) {
-    ok = tape.save(cpu.a, m.ram.slice(ix, ix + de));
-    cpu.ix = (ix + de) & 0xFFFF; cpu.d = cpu.e = 0;
+    if (spaceHeld(m)) { tape.save(cpu.a, new Uint8Array(0)); ok = false; }
+    else {
+      ok = tape.save(cpu.a, m.ram.slice(ix, ix + de));
+      cpu.ix = (ix + de) & 0xFFFF; cpu.d = cpu.e = 0;
+    }
   } else {
+    if (spaceHeld(m)) return false;                             // the ROM breaks off
     if (tape.pos >= tape.blocks.length) return false;           // the ROM waits, for SPACE
     const flag = cpu.af_ >> 8, b = tape.load(flag, de);
     if (b.flag !== flag) ok = false;
@@ -151,8 +159,17 @@ function boot(opts = {}) {
 const restore = (s, o = {}) => LMachine.restore(s, Object.assign({ passAt: PASS_AT, rom: rom() }, o));
 
 // Which part's code is at $D003 up: the designer (0) or scenario 1 to 3, by its first instruction
-// ($D3DC is the designer's DI) and the scenario's number ($D03F).
-const partOf = M => (M[0xD3DC] === 0xF3 && M[0xE1ED] === 0xF3 ? 0 : M[0xD03F]);
+// ($D3DC is the designer's DI) and the scenario's table of things ($D032), which is in a place of
+// its own in each. Not by the scenario's number ($D03F): ABANDON clears it and leaves the code.
+let tables = null;
+function partOf(M) {
+  if (M[0xD3DC] === 0xF3 && M[0xE1ED] === 0xF3) return 0;
+  if (!tables) {
+    tables = new Map();
+    for (const n of [1, 2, 3]) { const S = listing('scenario-' + n).M; tables.set(S[0xD032] | S[0xD033] << 8, n); }
+  }
+  return tables.get(M[0xD032] | M[0xD033] << 8) || M[0xD03F];
+}
 
 // Keys held for frames, then released for frames: [[keys, held, released], ...]
 function keys(m, seq) {

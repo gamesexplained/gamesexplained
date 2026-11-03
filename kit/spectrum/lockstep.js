@@ -106,8 +106,10 @@
 //   all of memory reads the stack's bytes too, which are never compared and which a port does not
 //   keep. The port reads each such byte through P.io.readAt(a) and gets, in turn, the values the
 //   game's instructions read there in the same stretch, as irqBytes hands over a byte (past those,
-//   its own byte); a read of another address than the game's stops the run. On the page, outside
-//   the lockstep, the port's io gives readAt: a => M[a].
+//   its own byte); a read of another address than the game's stops the run. The byte is the
+//   instruction's first read past its operands, so an indexed load (LD A,(IX+d)), which reads its
+//   displacement first, and LD A,(nn) can be one. On the page, outside the lockstep, the port's io
+//   gives readAt: a => M[a].
 //
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
@@ -158,6 +160,15 @@ const R_KEY = -1;                                  // the refresh register's val
 // seven bits on
 const rLoaded = r => (r & 0x80) | ((r + 2) & 0x7F);
 const AT_KEY = -2;                                 // readsAt's bytes, address x 256 + value
+// The operand bytes an instruction at a reads before its byte of memory, as the kit's Z80 reads
+// them (operand()): an indexed instruction's displacement, and its opcode too after DD CB or FD CB;
+// LD A,(nn)'s address
+function operandReads(ram, a) {
+  let k = a & 0xFFFF, prefixed = false;
+  while (ram[k] === 0xDD || ram[k] === 0xFD) { prefixed = true; k = (k + 1) & 0xFFFF; }
+  if (prefixed) return ram[k] === 0xCB ? 2 : 1;
+  return ram[k] === 0x3A ? 2 : 0;
+}
 
 // The port's ULA: its own border and EAR output, and the game's keyboard, read through the game's
 // machine (and so through any portIn a page or a test wraps there) with the port's EAR bit.
@@ -351,16 +362,16 @@ class Lockstep {
       };
     }
     const rd = cpu.rd;
-    let atNext = false;
+    let atNext = false, atSkip = 0;
     cpu.rd = function (x) {
       const v = rd.call(this, x), a = this.bus;
-      if (!ints.open.length && atNext) { atNext = false; if (!out.has(AT_KEY)) out.set(AT_KEY, []); out.get(AT_KEY).push(a << 8 | v); }
+      if (!ints.open.length && atNext && !atSkip--) { atNext = false; if (!out.has(AT_KEY)) out.set(AT_KEY, []); out.get(AT_KEY).push(a << 8 | v); }
       if (!ints.open.length && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(v); }
       return v;
     };
     for (const a of this.readsAt) {
       const prev = g.hooks[a];
-      g.hooks[a] = q => { ints.close(); if (!ints.open.length) atNext = true; return prev ? prev(q) : false; };
+      g.hooks[a] = q => { ints.close(); if (!ints.open.length) { atNext = true; atSkip = operandReads(g.ram, a); } return prev ? prev(q) : false; };
     }
     for (const a of this.readsR) {
       const prev = g.hooks[a];
@@ -375,12 +386,13 @@ class Lockstep {
     return out;
   }
 
-  // Count the calls of every one of P's functions (for timing).
+  // Count the calls of every one of P's functions (for timing). A class on P (an error the port
+  // throws, say) is left as it is: wrapped, new could not make one, and instanceof would know none.
   countCalls() {
     const P = this.P, ls = this;
     for (const name of Object.keys(P)) {
       const f = P[name];
-      if (typeof f !== 'function') continue;
+      if (typeof f !== 'function' || /^class\b/.test(Function.prototype.toString.call(f))) continue;
       P[name] = f instanceof GENERATOR
         ? function* (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return yield* f.apply(this, a); }
         : function (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return f.apply(this, a); };
@@ -427,18 +439,19 @@ class Lockstep {
         return prev ? prev(q) : false;
       };
     }
-    // the bytes readsAt's instructions read: the main program's next read after one is reached
-    let atNext = false;
+    // the bytes readsAt's instructions read: the main program's next read after one is reached,
+    // past the instruction's operands (an indexed load reads its displacement first)
+    let atNext = false, atSkip = 0;
     for (const a of this.readsAt) {
       const prev = m.hooks[a];
       if (!Object.prototype.hasOwnProperty.call(s.hooks, a)) s.hooks[a] = prev;
-      m.hooks[a] = q => { ints.close(); if (ls.irq === null && !ls.ib.list) atNext = true; return prev ? prev(q) : false; };
+      m.hooks[a] = q => { ints.close(); if (ls.irq === null && !ls.ib.list) { atNext = true; atSkip = operandReads(m.ram, a); } return prev ? prev(q) : false; };
     }
     // RAM read and written, by the main program and by the handlers
     const rd = cpu.rd, wr = cpu.wr, B = this.irqBytes;
     cpu.rd = function (x) {
       const v = rd.call(this, x), a = this.bus;
-      if (atNext && ls.irq === null) { atNext = false; const L = ls.ib.live; if (!L.has(AT_KEY)) L.set(AT_KEY, []); L.get(AT_KEY).push(a << 8 | v); }
+      if (atNext && ls.irq === null && !atSkip--) { atNext = false; const L = ls.ib.live; if (!L.has(AT_KEY)) L.set(AT_KEY, []); L.get(AT_KEY).push(a << 8 | v); }
       if (a < 0x4000) return v;
       const q = ls.irq;
       if (q !== null) { if (!q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, v); }

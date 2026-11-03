@@ -74,7 +74,10 @@ controls counts on (wait_release, wait_press, wait_fire), and draws
 again until the result is below the limit in `$5B22`. `R` counts the
 instructions the processor has run, so every random number depends on
 exactly how long everything before it took, and on how long the player
-held a key.
+held a key. A limit of 0 never returns: no byte is below it. strike_hit
+asks for a number below twice the attacker's combat plus 2 (`$FF62`,
+255 from a combat of 127 up), which is 0 for a combat of 255; whether a
+creature's combat can reach 255 in play is unknown.
 
 ## Controls
 
@@ -357,6 +360,27 @@ computer wizard tries spells by the scenario's priorities
 - A step costs 254 on scenario 3's terrain 9, the squares four of its
   teleports lead to; a teleport moves the creature there at no cost
   (floor_traps sets the cost, `$FF8E`, to 0).
+- list_objects_at lists at most ten of the objects lying on a square,
+  and computer_pick_up looks for the type it wants in that list with no
+  end to the search (`$A143`, every second byte from `$D1D5`). When a
+  computer creature wants an object past the tenth, the search runs on
+  through memory to the first byte of that type, takes the byte before
+  it as the object's entry, sets bit 7 of that entry's byte 3 and writes
+  the creature into its byte 4. Seen on the kit's 48K in a game of
+  scenario 1 against the computer (the port's lockstep from the
+  hand-over, seed 1): the computer's wizard (entry 1) stood on fifteen
+  objects at row 24, column 17 and wanted the twelfth in table order,
+  type `$82` (entry `$2C`). At pass 92,940 the search stopped at
+  `$E8F1`, the byte before was 0 and the marks went on entry 0, the
+  first wizard (`$8C`); the object stayed where it was. At pass 93,557,
+  a turn later, it stopped at `$D3F9`, the byte before was `$FF`, and
+  entry 255's bytes 3 and 4 are `$6157` and `$6158`, the operand of
+  `LD HL,$5B11` in game_turn_loop (`$6156`), which became `$0191`. The turn
+  loop then increments a byte of the ROM: after the end-of-turn menu the
+  player number stays 0 and the loop goes round for ever, about 2.7
+  times a second, with the screen blank and no read of the controls (32
+  times in 600 frames, run on from the machine saved at pass 93,558 with
+  SPACE pressed in the menu).
 
 ## The listing's error rate
 
