@@ -81,15 +81,41 @@ function makePort(M, io, opts = {}) {
       catch (e) { if (!(e instanceof P.Restart)) throw e; to = e.to; r = e.r; }
     }
   };
+  // A routine that drops return addresses from the stack to leave its callers (END MOVE leaving
+  // select mode, END TURN leaving the turn's loop) throws P.Unwind: n the addresses dropped, its
+  // own first, and the registers it leaves. A routine the game calls, and which such a drop can
+  // pass through, is made with P.frame: each drop takes one, and the routine whose address is the
+  // last dropped returns to its caller with those registers, or, when the drop ends in a jump
+  // (then, an address: RIDE starting select mode again), goes there instead. A routine reached by a
+  // jump (P.jump, a table) is part of the frame of the routine that jumped, and is not made with
+  // P.frame.
+  P.Unwind = class Unwind { constructor(n, r, then) { this.n = n; this.r = r || {}; this.then = then; } };
+  P.unwind = (n, r, then) => { throw new P.Unwind(n, r, then); };
+  const caught = e => { if (e instanceof P.Unwind && --e.n === 0) return e; throw e; };
+  P.frame = f => (f.constructor.name === 'GeneratorFunction'
+    ? function* (r) {
+      let e;
+      try { return yield* f(r); } catch (x) { e = caught(x); }
+      return e.then === undefined ? e.r : yield* P.jumpGen(e.then, e.r);
+    }
+    : function (r) {
+      let e;
+      try { return f(r); } catch (x) { e = caught(x); }
+      return e.then === undefined ? e.r : P.jump(e.then, e.r);
+    });
   P.addressOf = name => {
     for (const [a, n] of Object.entries(P.CODE)) if (n === name) return +a;
     for (const [a, n] of Object.entries(P.UP[P.part])) if (n === name) return +a;
     throw new Error('the port has no routine ' + name);
   };
+  // call a routine by name, with yield* when it waits
+  P.cw = function* (name, r) { return P.GEN.has(name) ? yield* P[name](r || {}) : P[name](r || {}); };
   // run a routine that waits as one that cannot: it must not yield
   P.sync = g => { const y = g.next(); if (!y.done) throw new Error('P.sync: it yielded'); return y.value; };
   // the T-states of the game's own work in a routine that cannot yield (a delay loop, a sound), for
-  // the page's clock
+  // the page's clock. A routine that yields time already counted here (a sound played in a wait)
+  // yields { tstates, clocked: true }, which the lockstep runs the game for and the page does not
+  // count again.
   P.T = 0;
   P.clock = n => { P.T += n; };
   const only = opts.only || null;

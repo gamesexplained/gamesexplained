@@ -62,7 +62,9 @@ let WAITS = null;
 function waits() {
   if (WAITS) return WAITS;
   const I = info();
-  const seed = new Set(['read_controls', 'key_scan']);
+  // the controls, the keyboard, and show_hit's and summon_display's waits for the interrupt to move
+  // an animation on
+  const seed = new Set(['read_controls', 'key_scan', 'show_hit', 'summon_display']);
   const edges = new Map();            // label -> labels it reaches
   const add = (from, to) => { if (!edges.has(to)) edges.set(to, new Set()); edges.get(to).add(from); };
   for (const p of PARTS.slice(1)) {
@@ -186,6 +188,7 @@ function install(P) {
     cpu.t0 = cpu.tstates;
     cpu.pc = a;
     active.push(cpu);
+    let beyond = 0;                   // return addresses past this run's own the code has popped
     try {
       for (let n = 0; cpu.pc !== 0 || cpu.sp !== sp0; n++) {
         if (n > 2e7) throw new Error('standIn ' + label + ': no return in 20,000,000 instructions');
@@ -193,14 +196,45 @@ function install(P) {
         const k = pc !== a || n ? portedAt(pc) : null;
         if (k !== null) {
           let out;
-          if (P.GEN.has(k)) {
-            if (sync) throw new Error('standIn ' + label + ' reached ' + k + ', which waits');
-            out = yield* P[k](regsOf(cpu));
-            cpu.t0 = cpu.tstates;
-          } else out = P[k](regsOf(cpu));
+          try {
+            if (P.GEN.has(k)) {
+              if (sync) throw new Error('standIn ' + label + ' reached ' + k + ', which waits');
+              out = yield* P[k](regsOf(cpu));
+              cpu.t0 = cpu.tstates;
+            } else out = P[k](regsOf(cpu));
+          } catch (e) {
+            if (!(P.Unwind && e instanceof P.Unwind)) throw e;
+            // the port's routine dropped return addresses: its own first, then this code's, and
+            // past this run's own the drop goes on in the port's routines that called it
+            setRegs(cpu, e.r);
+            let n = e.n;
+            for (; n > 0; n--) {
+              if (cpu.sp === ((sp0 - 2) & 0xFFFF)) throw new P.Unwind(n, regsOf(cpu), e.then);
+              cpu.sp = (cpu.sp + 2) & 0xFFFF;
+            }
+            cpu.pc = e.then === undefined ? cpu.pop() : e.then;
+            continue;
+          }
           setRegs(cpu, out || {});
           cpu.pc = cpu.pop();
           continue;
+        }
+        // the game's code has popped this run's own return address, and pops or returns past it:
+        // each POP drops a return address of the port's routines that called it, and the RET
+        // returns from the last of them
+        if (beyond) {
+          if (cpu.sp !== sp0) throw new Error('standIn ' + label + ': the stack moved after popping past its return');
+          const op = P.M[pc], op2 = P.M[(pc + 1) & 0xFFFF];
+          if (op === 0xC9) throw new P.Unwind(beyond, regsOf(cpu));
+          if (op === 0xC3) throw new P.Unwind(beyond, regsOf(cpu), op2 | P.M[(pc + 2) & 0xFFFF] << 8);
+          const pop = [0xC1, 0xD1, 0xE1, 0xF1].indexOf(op);
+          if (pop >= 0) { setRegs(cpu, { [['bc', 'de', 'hl', 'af'][pop]]: 0 }); beyond++; cpu.pc = (pc + 1) & 0xFFFF; continue; }
+          if ((op === 0xDD || op === 0xFD) && op2 === 0xE1) { setRegs(cpu, { [op === 0xDD ? 'ix' : 'iy']: 0 }); beyond++; cpu.pc = (pc + 2) & 0xFFFF; continue; }
+          // other instructions run, unless they use the stack
+          const stacky = [0xC5, 0xD5, 0xE5, 0xF5, 0xCD, 0xC4, 0xCC, 0xD4, 0xDC, 0xE4, 0xEC, 0xF4, 0xFC, 0xC0, 0xC8, 0xD0, 0xD8,
+            0xE0, 0xE8, 0xF0, 0xF8, 0xC7, 0xCF, 0xD7, 0xDF, 0xE7, 0xEF, 0xF7, 0xFF, 0xE3, 0xF9, 0xE9];
+          if (stacky.includes(op) || ((op === 0xDD || op === 0xFD) && [0xE5, 0xE3, 0xF9, 0xE9].includes(op2)))
+            throw new Error('standIn ' + label + ': ' + lib.hex(pc) + ' after popping past its return');
         }
         if (pc === READ_CONTROLS || pc === KEY_SCAN) {
           if (sync) throw new Error('standIn ' + label + ' reached ' + lib.hex(pc) + ', which waits');
@@ -214,6 +248,7 @@ function install(P) {
         if ((pc === 0x0562 || pc === 0x04C6) && P.io.tape && romTape(cpu, P.io.tape, pc)) continue;
         if (pc === R_READ) { cpu.a = P.readR() & 255; cpu.pc = R_READ + 2; continue; }
         cpu.step();
+        if (!beyond && cpu.sp === sp0 && cpu.pc !== 0) beyond = 1;
         if (cpu.halted) {
           if (sync) throw new Error('standIn ' + label + ' halted at ' + lib.hex(cpu.pc));
           cpu.halted = 0;

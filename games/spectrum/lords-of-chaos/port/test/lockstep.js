@@ -12,8 +12,9 @@ const standin = require('./standin.js');
 const { loadPort } = require('./port.js');
 
 // Every read of the controls ($622B) and of the keyboard through the ROM ($028E) is a checkpoint,
-// and the one HALT goes on at $829B.
-const CHECKPOINTS = [0x622B, 0x028E];
+// and so is the summoning wait's return from each sound it plays ($8456, a wait on a counter the
+// interrupt moves on, with a sound played between the reads); the one HALT goes on at $829B.
+const CHECKPOINTS = [0x622B, 0x028E, 0x8456];
 const HALTS = [0x829B];
 // The stacks: the game's own from $FFF3 in play, the loader's from $5DA8 before (in the object
 // table, unused until a scenario starts).

@@ -164,7 +164,7 @@ function check(o) {
   const outs = o.outs || [];
   const skip = new Uint8Array(65536);
   for (const x of o.ignore || []) if (Array.isArray(x)) skip.fill(1, x[0], x[1] + 1); else skip[x] = 1;
-  let fails = 0, shown = 0, n = 0;
+  let fails = 0, shown = 0, n = 0, endlessN = 0;
   const limit = o.limit || 200000;
   const cases = Math.min(o.cases || 300, o.setup ? Infinity : list.length);
   for (let k = 0; k < cases && list.length; k++) {
@@ -186,6 +186,16 @@ function check(o) {
     } catch (e) { eB = e; }
     const diffs = [];
     const said = e => (e.stack || e.message || String(e)).split('\n').slice(0, 5).join(' | ');
+    // a drop of return addresses (P.Unwind) ends a routine as a return does: the drops and where
+    // they end must agree, then the memory and registers are compared as for a return
+    const unw = e => e && A.P.Unwind && (e instanceof A.P.Unwind || e instanceof B.P.Unwind || e.constructor.name === 'Unwind');
+    if (unw(eA) && unw(eB)) {
+      if (eA.n !== eB.n || eA.then !== eB.then) diffs.push('game drops ' + eA.n + ' to ' + eA.then + ', port ' + eB.n + ' to ' + eB.then);
+      rA = eA.r; rB = eB.r; eA = eB = null;
+    }
+    // waiting on input that never comes, on both sides: not compared
+    const endless = e => e && /never ended|no return in/.test(e.message || '');
+    if (endless(eA) && endless(eB)) { endlessN++; continue; }
     if (eA || eB) diffs.push('game ' + (eA ? 'threw: ' + said(eA) : 'ran') + '; port ' + (eB ? 'threw: ' + said(eB) : 'ran'));
     else {
       let nd = 0;
@@ -229,7 +239,8 @@ function check(o) {
       }
     }
   }
-  console.log((fails ? 'FAIL ' : 'ok   ') + (o.name || hex(address)) + ': ' + (n - fails) + '/' + n + ' cases identical' + (n ? '' : ' (no cases: the sessions never called it)'));
+  console.log((fails ? 'FAIL ' : 'ok   ') + (o.name || hex(address)) + ': ' + (n - fails - endlessN) + '/' + (n - endlessN) + ' cases identical' +
+    (endlessN ? ' (' + endlessN + ' waiting for input on both sides, not compared)' : '') + (n ? '' : ' (no cases: the sessions never called it)'));
   return { fails, cases: n };
 }
 

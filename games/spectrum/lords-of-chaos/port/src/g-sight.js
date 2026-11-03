@@ -6,7 +6,7 @@
 const G = root.LOCGroups = root.LOCGroups || {};
 
 G.sight = function (P) {
-  const M = P.M, w = P.w, setw = P.setw, def = P.def, H = P.H;
+  const M = P.M, w = P.w, setw = P.setw, def = P.def, H = P.H = P.H || {};
   const flags = t => M[(0xD38E + t) & 0xFFFF];
   const carried = ix => M[ix + 4] < 0xFE;
 
@@ -152,9 +152,9 @@ G.sight = function (P) {
     P.line_setup({});
     for (;;) {
       P.line_step({});
-      if (M[0xFF3B] === M[0xFF3D] && M[0xFF3C] === M[0xFF3E]) return { zf: true, a: M[0xFF3C] };
+      if (M[0xFF3B] === M[0xFF3D] && M[0xFF3C] === M[0xFF3E]) return { zf: true, cf: false, a: M[0xFF3C] };
       const a = P.what_is_at({ hl: w(0xFF3B) }).a;
-      if (M[0x5B2B] & flags(a)) { M[0xFF49] = 1; return { a: 1, zf: false }; }
+      if (M[0x5B2B] & flags(a)) { M[0xFF49] = 1; return { a: 1, zf: false, cf: false }; }
     }
   };
   def(0xB401, 'unused_trace_20', r => trace(0x20));
