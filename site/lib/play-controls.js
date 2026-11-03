@@ -14,6 +14,10 @@
 //     fire      the fire buttons, left to right: [{ label, bit }] (default one, 'Fire', bit 16); two
 //               for a game with two, such as [{ label: 'B', bit: 32 }, { label: 'A', bit: 16 }]
 //     dock      the element the docked controller is put at the end of (default: just after screen)
+//     keys      the page's keys to tap: the element that holds its list (PlayControls.keys) and
+//               whatever the page keeps with it (optional). On a screen with touch it is moved to
+//               just under the joystick (under the screen, without one), closer to the picture than
+//               the bar, and full screen carries it too
 //     onPad     onPad(bits) each time the controller's bits change: 1 up, 2 down, 4 left, 8 right
 //               (the C64 joystick's bits, set for a direction pressed), and each fire button's bit
 //     onChange  onChange(on) when full screen starts or ends
@@ -50,11 +54,14 @@
 // docked controller shows only on a screen that has touch; a mouse and the keyboard play as before.
 // A page without pad has no controller, on the page or in full screen.
 //
-// Full screen lays the page's screen, the row above it, its bar and the controller over the whole
-// window. The row stays just above the picture, as wide as it, with ⇄ at its left when the
-// joystick shows, so its buttons keep their places against the picture. Upright, the page's bar
-// is under the picture and the controller at the bottom. On its side the picture is between two
-// bands, the pad at the foot of the left one, the bar and the fire buttons in the right; where the
+// Full screen lays the page's screen, the row above it, its keys, its bar and the controller over
+// the whole window. The row stays just above the picture, as wide as it, with ⇄ at its left when
+// the joystick shows, so its buttons keep their places against the picture. Upright, the page's
+// bar is under the picture and the controller at the bottom; a page with keys has them between the
+// picture and the bar, the two scrolling in what the picture, as wide as the window, leaves them (a
+// row of keys at least), so that the list's first keys are nearest the picture. Only the lines of
+// the list with a key to tap come into full screen. On its side the picture is between two bands,
+// the keys and the pad in the left one, the bar and the fire buttons in the right; where the
 // row would take height from the picture (a phone on its side), its buttons go to the top of the
 // right band instead, beside the picture's top corner, and ⇄ to the top of the left. The
 // browser's own full screen is asked for too where it has one (a phone's browser hides its bars
@@ -72,6 +79,7 @@
   const DEAD = 0.25;    // the dead centre, as a share of the disc's radius
   const KEEP = 8;       // degrees past a sector's edge that a direction held is kept, so it does not flicker
   const ROW = 56;       // the height the row of buttons above the picture takes in full screen, px
+  const KEYS = 72;      // the least height the keys to tap keep under the picture in full screen, upright, px
 
   // The direction a touch at (dx, dy) from the centre of a disc of radius r gives, held is the
   // direction given last: its bits, or 0 in the dead centre.
@@ -127,10 +135,12 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-full .pc-pad{color:rgba(233,231,225,.6);background:radial-gradient(circle,rgba(255,255,255,.03) 0 24%,rgba(255,255,255,.08) 25% 100%);border-color:rgba(233,231,225,.32)}
 .pc-full .pc-knob{background:#e9e7e1}
 .pc-wide{display:grid;grid-template-columns:var(--pc-band) minmax(0,1fr) var(--pc-band);grid-template-rows:auto minmax(0,1fr) auto;
-  grid-template-areas:"swap stage above" ". stage bar" "pad stage fire"}
-.pc-wide.pc-left{grid-template-areas:"swap stage above" ". stage bar" "fire stage pad"}
-.pc-wide.pc-roomy{grid-template-areas:". top bar" ". stage bar" "pad stage fire"}
-.pc-wide.pc-roomy.pc-left{grid-template-areas:". top bar" ". stage bar" "fire stage pad"}
+  grid-template-areas:"swap stage above" "keys stage bar" "pad stage fire"}
+.pc-wide.pc-left{grid-template-areas:"swap stage above" "keys stage bar" "fire stage pad"}
+.pc-wide.pc-keyed:not(.pc-roomy){grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"swap stage above" "keys stage above" "keys stage bar" "pad stage fire"}
+.pc-wide.pc-keyed.pc-left:not(.pc-roomy){grid-template-areas:"swap stage above" "keys stage above" "keys stage bar" "fire stage pad"}
+.pc-wide.pc-roomy{grid-template-areas:"keys top bar" "keys stage bar" "pad stage fire"}
+.pc-wide.pc-roomy.pc-left{grid-template-areas:"keys top bar" "keys stage bar" "fire stage pad"}
 .pc-roomy .pc-top{grid-area:top;justify-self:center;padding-top:4px}
 .pc-wide:not(.pc-roomy) .pc-top{display:contents}
 .pc-wide:not(.pc-roomy) .pc-top>.pc-swap{grid-area:swap;justify-self:start;align-self:start;margin:8px}
@@ -146,6 +156,19 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-wide .pc.pc-touch{display:contents}
 .pc-wide .pc-pad{grid-area:pad;align-self:end;justify-self:center;margin:0 0 18px}
 .pc-wide .pc-fires{grid-area:fire;align-self:end;justify-self:center;margin:0 0 18px}
+.pc-scroll{display:contents}
+.pc-keyed:not(.pc-wide) .pc-scroll{display:block;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.pc-kslot{padding:8px 8px 0;color:#c9cbd0}
+.pc-kslot:empty{display:none}
+.pc-kslot>*{margin:0!important}
+.pc-kslot :is(ul,ol,li,p,div,span){color:inherit}
+.pc-kslot li:not(:has(.pc-key)){display:none!important}
+.pc-kslot kbd{color:#2f3136}
+.pc-kslot .pc-key.on,.pc-kslot .pc-key[aria-pressed="true"]{background:#c8463a;color:#fff;border-color:#c8463a}
+.pc-wide .pc-kslot{grid-area:keys;align-self:stretch;min-height:0;padding:8px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.pc-wide .pc-kslot .pc-keys{display:block;font-size:12px;line-height:1.3}
+.pc-wide .pc-kslot li+li{margin-top:6px}
+.pc-wide .pc-kslot .pc-key{min-width:34px;padding:6px 7px;margin:2px 0;font-size:14px;line-height:18px}
 .pc-key{display:inline-block;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 @media (hover:hover){.pc-key:hover{border-color:var(--ink-mute,#8b8d93)}}
 .pc-key.on,.pc-key[aria-pressed="true"]{background:var(--ink,#2f3136);color:#fff;border-color:var(--ink,#2f3136)}
@@ -166,7 +189,7 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
   }
 
   function attach(o) {
-    const doc = document, screen = o.screen, canvas = o.canvas, bar = o.bar || null, usePad = !!o.pad;
+    const doc = document, screen = o.screen, canvas = o.canvas, bar = o.bar || null, usePad = !!o.pad, keysEl = o.keys || null;
     const fires = o.fire && o.fire.length ? o.fire : [{ label: 'Fire', bit: 16 }];
     style(doc);
     const el = (tag, cls, html) => { const e = doc.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
@@ -182,6 +205,8 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
     if (usePad) { if (o.dock) o.dock.appendChild(pc); else screen.insertAdjacentElement('afterend', pc); }
     const touch = hasTouch();
     pc.classList.toggle('pc-touch', touch);
+    // the keys to tap, on a touch screen, just under the joystick: nearer the picture than the bar
+    if (keysEl && touch) (usePad ? pc : screen).insertAdjacentElement('afterend', keysEl);
     for (const t of ['contextmenu', 'mousedown']) pc.addEventListener(t, e => e.preventDefault());
     pc.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
@@ -228,9 +253,12 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 
     // --- full screen
     const full = el('div', 'pc-full'), top = el('div', 'pc-top'), stage = el('div', 'pc-stage'), slot = el('div', 'pc-slot');
+    const scroll = el('div', 'pc-scroll'), kslot = el('div', 'pc-kslot');
     full.setAttribute('role', 'dialog'); full.setAttribute('aria-label', 'The game, full screen');
     if (usePad && touch) top.appendChild(swap());
-    full.append(top, stage, slot);
+    scroll.append(kslot, slot);
+    full.append(top, stage, scroll);
+    full.classList.toggle('pc-keyed', !!keysEl);
 
     // the keyboard to the game: its screen, or its canvas, whichever takes the focus; on a page whose
     // game takes neither, away from the button, to the page
@@ -266,7 +294,7 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
     }
     if (root.ResizeObserver) { const ro = new ResizeObserver(align); ro.observe(canvas); ro.observe(screen.parentElement || screen); }
     for (const t of ['contextmenu']) full.addEventListener(t, e => e.preventDefault());
-    full.addEventListener('touchmove', e => { if (!slot.contains(e.target)) e.preventDefault(); }, { passive: false });
+    full.addEventListener('touchmove', e => { if (!scroll.contains(e.target)) e.preventDefault(); }, { passive: false });
     showHand();
 
     let on = false, real = false, pushed = false, popping = false, lock = null, marks = null, ro = null;
@@ -290,9 +318,12 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
       } else size = Math.min(W * 0.42, H * 0.25, 200);
       pc.style.setProperty('--pc-pad', Math.round(size) + 'px');
       pc.style.setProperty('--pc-fire', Math.round(size * (fires.length > 1 ? 0.48 : 0.6)) + 'px');
-      // the picture: as big as its shape allows in what the rest leaves
+      // the picture: as big as its shape allows in what the rest leaves. Upright, with keys, the
+      // keys and then the bar scroll in what the picture, as wide as the window, leaves them, a
+      // row of keys at least
       const pw = wide ? stage.clientWidth : W - 16;
-      const ph = wide ? stage.clientHeight - 8 : H - top.offsetHeight - slot.offsetHeight - (usePad && touch ? pc.offsetHeight : 0) - 24;
+      const under = keysEl ? Math.min(scroll.scrollHeight || scroll.offsetHeight, KEYS) : slot.offsetHeight;
+      const ph = wide ? stage.clientHeight - 8 : H - top.offsetHeight - under - (usePad && touch ? pc.offsetHeight : 0) - 24;
       const w = Math.max(64, Math.floor(Math.min(pw, ph * aspect)));
       screen.style.width = w + 'px';
       top.style.width = wide && !full.classList.contains('pc-roomy') ? '' : w + 'px';   // the row as wide as the picture
@@ -302,10 +333,11 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
       if (on) return;
       on = true; letGo();
       // each node carried leaves a mark where it was, to go back to
-      marks = [screen, row, bar, usePad && pc].filter(Boolean).map(n => { const m = doc.createComment('full screen'); n.before(m); return [n, m]; });
+      marks = [screen, row, keysEl, bar, usePad && pc].filter(Boolean).map(n => { const m = doc.createComment('full screen'); n.before(m); return [n, m]; });
       stage.appendChild(screen);
       top.appendChild(row);
       align();
+      if (keysEl) kslot.appendChild(keysEl);
       if (bar) slot.appendChild(bar);
       if (usePad) full.appendChild(pc);
       doc.documentElement.classList.add('pc-lock');
