@@ -57,15 +57,16 @@ beside the claim; the explanation is in terms of what the player sees.
 
 **Interactivity is the point.** A page you can play with beats a page you
 read. Every section should have something to press: step a mechanic,
-scrub a tune, flip through the level data, toggle an overlay on a
-reconstructed screen.
+scrub a tune, flip through the level data or the sprites, turn a 3D
+model, toggle an overlay on a reconstructed screen.
 
 ## Sections
 
 Every page opens with the first section below. Not every game has the
 rest, and they are in no order: each page chooses its own ("The order",
-below). The sound is the exception: a game with music gets its player,
-at every tier above Bronze.
+below). The sound and the shapes are the exceptions: a game with music
+gets its player, and a game with things that move gets its viewer, at
+every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
@@ -92,7 +93,25 @@ address links into the Source tab, and the house style in `kit/style.md`.
    extend it in the site's library and in its test, so that the next game
    has it too.
 - **The player and the enemies.** What they are drawn with (character
-   graphics, sprites, both), how they move, how they collide.
+   graphics, sprites, both), how they move, how they collide. Show them
+   in a viewer, required like the music player, since a reader sees at
+   a glance what a table of addresses only lists, and a viewer that asks
+   for every frame finds the shapes the listing missed. It draws every
+   shape the game stores for the things that move (the player, the
+   enemies, the shots, the pickups, unused ones too) from the listing's
+   bytes, in the game's colours, with one control to step through them
+   ("Stepping through things of one kind", below). A shape the game
+   animates plays at the game's rate, from its own animation tables. A
+   shape the game paints into the screen itself is drawn by the game's
+   own routine on the kit's processor, or by a port of it. A 3D game's
+   models are drawn the way the game draws them, edge by edge or face by
+   face, and turn when the reader drags them or presses the buttons
+   beside them (games/c64/gunship). A long cast, or one with stats and
+   behaviour to show, gets a tab of its own (games/c64/encounter,
+   `enemies.html`). A run that describes the shapes in a table, or
+   leaves the pictures to `TODO.md`, has not built the page. Only a game
+   with nothing drawn that moves (a text adventure, a board of fixed
+   squares) leaves the viewer out, and says why in `agent-history.md`.
 - **Controls.** What the game reads and how, including anything the
    manual never mentioned.
 - **Levels and data.** Where the level lives and what format, shown on
