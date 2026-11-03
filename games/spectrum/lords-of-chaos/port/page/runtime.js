@@ -20,7 +20,8 @@
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
-//                      held) }
+//                      held), reads: the game's reads of the keyboard and of the Kempston
+//                      interface, one for each IN }
 //   rt.tape            the cassette: blocks ({ flag, bytes }), the game's files and then whatever
 //                      is saved or added, and pos, the next to play; add(blocks) puts blocks at the
 //                      end, onSave(f) calls f(block) for each block the game saves
@@ -80,7 +81,7 @@ const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, '
 function create(o) {
   const D = root.LOCPort;
   const M = new Uint8Array(0x10000);
-  const input = { keys: new Set(), joy: 0 }, beepers = [];
+  const input = { keys: new Set(), joy: 0, reads: 0 }, beepers = [];
   let border = 7, ear = 0;
 
   // ---- the clock, and the frames as the beam shows them
@@ -135,8 +136,9 @@ function create(o) {
   let lastT = 0;
   const io = {
     in(port) {
-      if ((port & 0x20) === 0 && (port & 1)) return input.joy & 0x1F;
+      if ((port & 0x20) === 0 && (port & 1)) { input.reads++; return input.joy & 0x1F; }
       if (port & 1) return 0xFF;
+      input.reads++;
       const high = port >> 8;
       let v = 0x1F;
       for (const name of input.keys) {

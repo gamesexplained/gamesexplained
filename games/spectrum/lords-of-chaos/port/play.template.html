@@ -54,7 +54,11 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-start{margin:16px 0 0;font-size:15px;color:var(--ink)}
+.pl-keys .pl-keys-tap,.pl-keys .pl-keys-letters{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap,.pl-keys.pc-keys-touch .pl-keys-letters{display:list-item}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
+.pl-keys .pl-start{grid-column:1/-1}
+.pl-plate .pl-keys .pl-start{font-size:15px;color:var(--ink)}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -89,14 +93,17 @@ section table{margin:6px 0 18px}
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-tape" id="pl-tape" hidden></div>
-    <p class="pl-start"><b>To start a game:</b> choose KEYBOARD at SELECT CONTROLS, then LOAD SCENARIO, type <kbd>1</kbd>, <kbd>2</kbd> or <kbd>3</kbd> for the scenario and press <kbd>Enter</kbd>. When it has loaded, choose PLAY GAME.</p>
-    <ul class="pl-keys">
-      <li>SELECT CONTROLS, and every menu: <kbd>Q</kbd> <kbd>A</kbd> move the bar, <kbd>Space</kbd> chooses</li>
-      <li>In play: <kbd>Q</kbd> <kbd>A</kbd> <kbd>O</kbd> <kbd>P</kbd> move the cursor, <kbd>Space</kbd> opens the menu for the square under it</li>
-      <li>The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
-      <li>A file name or a wizard's name: type it, <kbd>0</kbd> rubs out, <kbd>Enter</kbd> ends it; HOW MANY PLAYERS? takes <kbd>1</kbd> to <kbd>4</kbd></li>
-      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added, and the game loads the first file whose name starts with the letter typed. It winds back to the start after the last file; a search that finds nothing stops at the end of the tape. Hold <kbd>Space</kbd> to stop a search</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
+      <li class="pl-start"><b>To start a game:</b> choose KEYBOARD at SELECT CONTROLS, then LOAD SCENARIO, type <kbd data-key="1">1</kbd>, <kbd data-key="2">2</kbd> or <kbd data-key="3">3</kbd> for the scenario and press <kbd data-key="ENTER">Enter</kbd>. When it has loaded, choose PLAY GAME.</li>
+      <li>HOW MANY PLAYERS? takes <kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> or <kbd data-key="4">4</kbd>; scenario 3 is for one player and does not ask</li>
+      <li>A file name or a wizard's name: type it, <kbd data-key="0">0</kbd> rubs out, <kbd data-key="ENTER">Enter</kbd> ends it</li>
+      <li class="pl-keys-letters">The letters for a name: <kbd data-key="A">A</kbd> <kbd data-key="B">B</kbd> <kbd data-key="C">C</kbd> <kbd data-key="D">D</kbd> <kbd data-key="E">E</kbd> <kbd data-key="F">F</kbd> <kbd data-key="G">G</kbd> <kbd data-key="H">H</kbd> <kbd data-key="I">I</kbd> <kbd data-key="J">J</kbd> <kbd data-key="K">K</kbd> <kbd data-key="L">L</kbd> <kbd data-key="M">M</kbd> <kbd data-key="N">N</kbd> <kbd data-key="O">O</kbd> <kbd data-key="P">P</kbd> <kbd data-key="Q">Q</kbd> <kbd data-key="R">R</kbd> <kbd data-key="S">S</kbd> <kbd data-key="T">T</kbd> <kbd data-key="U">U</kbd> <kbd data-key="V">V</kbd> <kbd data-key="W">W</kbd> <kbd data-key="X">X</kbd> <kbd data-key="Y">Y</kbd> <kbd data-key="Z">Z</kbd> <kbd data-key="SPACE">Space</kbd></li>
+      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added, and the game loads the first file whose name starts with the letter typed. It winds back to the start after the last file; a search that finds nothing stops at the end of the tape. Hold <kbd data-key="SPACE">Space</kbd> to stop a search</li>
       <li>Saving (SAVE GAME at the end of a turn, SAVE WIZARD in the designer) puts the files on the cassette and offers them as a .tap file to keep</li>
+      <li class="pl-keys-pad">SELECT CONTROLS, and every menu: <kbd data-key="Q">Q</kbd> <kbd data-key="A">A</kbd> move the bar, <kbd data-key="SPACE">Space</kbd> chooses</li>
+      <li class="pl-keys-pad">In play: <kbd data-key="Q">Q</kbd> <kbd data-key="A">A</kbd> <kbd data-key="O">O</kbd> <kbd data-key="P">P</kbd> move the cursor, <kbd data-key="SPACE">Space</kbd> opens the menu for the square under it</li>
+      <li class="pl-keys-pad">The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
     </ul>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the interrupt animates the creatures and slides the bars every frame, and the computer's wizard takes as long to think as it does on the machine. The sound is the port's writes to the beeper, each edge at the T-state the game's delay loops make it.</p>
   </div>
@@ -282,12 +289,16 @@ const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const KEYBOARD = [[1, 'Q'], [2, 'A'], [4, 'O'], [8, 'P'], [16, 'SPACE']];
 const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 // A key is held for at least four frames of the game's time: the game reads the controls once a
-// pass, and a shorter tap could fall between two reads
-const held = new Map(), since = new Map(), letGo = new Set();
+// pass, and a shorter tap could fall between two reads. A key tapped in the list (tap:, below) is
+// held until the game has read the controls since it went down as well
+const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
 const HOLD = 4;
 let padBits = 0;
 function release() {
-  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  for (const c of letGo) {
+    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
+  }
   input();
 }
 function input() {
@@ -322,11 +333,27 @@ function onKey(e, down) {
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+screen.addEventListener('blur', () => {
+  active = false; screen.classList.remove('pl-focus');
+  for (const c of [...held.keys()]) if (!c.startsWith('tap:')) { held.delete(c); since.delete(c); letGo.delete(c); }
+  input();
+});
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
-PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
+// keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+// the finger is on it and, once it lifts, until the game has read the controls since it went down,
+// so that a tap the game is too busy to see still counts. data-key is the Spectrum's key
+function press(name) {
+  if (!running || !rt) return;
+  const c = 'tap:' + name;
+  held.set(c, [name]); since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
+  input();
+}
+function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+PlayControls.keys($('pl-keys'), { down: press, up: lift });
+// the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
+// (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- controls
 let sayTimer = 0;
