@@ -164,15 +164,63 @@ colours, which draw the information display.
 - **Four character sets**, named by the scenario's table at `$D07A`
   (charset_table): sets 0 and 1 are in the engine (charset_0 at `$B646`,
   charset_1 at `$BE3C`, 245 characters), sets 2 and 3 in each scenario.
-- **Animation** is the interrupt's: 170 things, each counting down and
-  taking its next frame from the scenario's frame table (next_frame).
-- **The cursor** blinks, three calls on, two off (blink_cursor), drawn
-  from charset_0 in the colours `$FF86` holds: `$0302` on the ground,
-  `$0204` in the air.
+- **Animation** is the interrupt's: on every second frame, 170 things,
+  each whose count is not `$FF` counting down and at 0 taking graphic,
+  colour set, count and next frame from the scenario's frame table
+  (interrupt_work `$A8B2`-`$A8CF`, next_frame). The animation belongs to
+  the map byte, so every creature of one type moves in step. The page's
+  port of the loop matches the game's on 300 working frames in each
+  scenario (test_graphics.js).
+- **The cursor** blinks, three calls on, two off (blink_cursor).
+  draw_map draws it in place of the square under it, from charset_0,
+  graphic in `$FF86` and colour set in `$FF87`: graphic 1 in colour set
+  0 for looking round (reset_ff86, `$78A8`), 2 in set 3 with a creature
+  on the ground selected (land `$6E45`, make_selected `$901A`), 4 in set
+  2 in the air (fly `$6E80`, make_selected `$9033`), 3 in set 1 choosing
+  a target (pick_target `$7209`). No scenario's thing uses graphics 1 to
+  4.
+- **Two things are effects.** show_hit (`$798B`) puts `$4E` on a wounded
+  creature's square, graphics 89 and 90 taking turns. `$4F`, the
+  sparkle, stands on frame 168 (graphic 0, leading back to itself) until
+  the game writes `$A5` into its next frame (show_hit `$79DF` when the
+  creature died; summon_display `$8447` after a spell that sets `$5B25`:
+  a summons, a brew, MAGIC SHIELD); it then shows frames 165 to 167
+  (graphics 86 to 88, one working frame each) and the game waits until
+  its next frame reads `$A8`. No entry in the things table leads to
+  frames 165 to 167 on its own.
+- **The burst** (draw_hit `$AEC2`) draws graphics `$53` to `$55` in
+  colour set 0 from charset_1, at the square's place in the window, a
+  step of sound 8 after each, when a blow lands (strike_hit), a missile
+  reaches its target (draw_missile), a creature attacks terrain
+  (attack_terrain) and MAGIC ATTACK kills (magic_attack). From each
+  graphic's sound to the next, and from the last to the return: 139,601,
+  213,226 and 196,667 T-states on the kit's Z80 with no contention,
+  about 159 ms in all. In scenarios 1 and 2 no thing uses those
+  graphics; scenario 3's map byte 8, unnamed, cycles through them in
+  colour sets 5, 4 and 8.
+- **A wizard's death** (wizard_gone `$8C0C`): with the interrupts off,
+  the window centres on its square and death_animation_frame (`$8C6A`)
+  runs seven times with `$FF07` = 0 to 6, each ten steps: the wizard's
+  graphic as it stands, in colour set `$FF07`, at the eight points k
+  characters from the middle (k = 0 to 9), a sound step after each, the
+  figures left in place; then draw_map. 70 steps, about 4.9 million
+  T-states, 1.4 s.
+- **Unused graphics.** Every graphic of scenario 1's table is shown by a
+  thing, a frame, the cursor or the burst; scenario 2 leaves graphics
+  113 and 164 unshown, scenario 3 graphic 145, and scenario 3's frame
+  143 (graphic 137, colour set 41, the same as frame 141) is reached by
+  nothing.
 - **Missiles** fly a pixel line at a time from the selected creature to
   the target, with a tail (draw_missile, missile_step), in one of the
-  shapes in shapes; a missile that leaves the window moves the view
-  seven squares (scroll_down and its three relatives).
+  two shapes in shapes (`$AD4E`): a cross of five pixels and a star of
+  thirteen, plotted by draw_shape where both coordinates are below
+  `$A8`; a missile that leaves the window moves the view seven squares
+  (scroll_down and its three relatives). set_missile copies one of seven
+  eight-byte styles from missile_styles (`$B60E`) to `$FF5D` on: shape,
+  pixels a frame, tail, reach, attribute, combat, magic, sound. Style 0
+  is the dragons' flame ($90 to $92), 1 an arrow from a bow, 2 an arrow
+  from anything else, 3 a thrown object, 4 draw_spell_bolt, 5
+  magic_bolt_at, 6 magic_lightning_at.
 - **The information display** on the right: eight pictures (the terrain,
   the creature, six objects; pictures), five flashing icons (undead,
   flying, mount, fatal wound, invisible) and five bars (action points,

@@ -10,6 +10,7 @@ time, operating system and tool versions.
 - `60-verify`: "search the listing for every comment that says the same, and correct them together": the sampled weapon record that read a weapon's combat and defence as healing and mana had the same reading in all three scenarios' object records and the header's pointer, and the magic bow was called a shield in an engine comment and in facts.md; all were corrected with it.
 - `70-minisite`: "Draw every one of them as a picture from the extracted bytes": the Maps page draws the three scenarios whole from their files with the How it works page's renderer, and drawing each route from its bytes put three of scenario 2's routes into a rock wall.
 - `60-verify`: "In a game of several parts search every part's listing": the object records' wrong comments were in the three scenario parts as well as the designer's header, and were found there.
+- `70-minisite`: "a viewer that asks for every frame finds the shapes the listing missed". Drawing every shape for the Graphics tab left graphics 1 to 4 and frames 165 to 167 with no thing to show them; the search that followed found the cursor's four looks and the sparkle the code starts by writing a frame number, and corrected four engine comments (draw_hit called its graphics things, and the cursor's colour set was not named).
 
 ## What was changed in the kit
 

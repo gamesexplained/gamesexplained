@@ -73,3 +73,13 @@
   port throws at such a loop (and at a search with no end that has gone
   round the whole memory), and the page runs only the clock and the
   interrupt from there.
+- **Before calling a shape unused, search the code for its number.**
+  Following each thing's animation from the things table left frames 165
+  to 167 and graphics 1 to 4 unreached in all three scenarios, which
+  looked like leftovers. Searching the code for the frame's number found
+  show_hit and summon_display writing `$A5` (165) into thing `$4F`'s
+  next-frame byte, the sparkle a dying or summoned creature shows; the
+  search for writes to the cursor's graphic (`$FF86`) found graphics 1
+  to 4 are its four looks. Only three graphics were left that nothing
+  shows. A viewer that draws every shape asks the question, and the
+  answer is in the immediate operands and the writes, not the tables.

@@ -117,5 +117,17 @@ lockstep's pass number had not told the tries apart, since the computer's
 whole turn is one pass. ZEsarUX showed the operand rewritten, the
 end-of-turn menu, and then the blank screen that no key ends.
 
+**The Graphics tab.** The tab came after the kit asked for one at every
+tier above Bronze. Following each thing's frames from the things table
+left graphics 1 to 4 and frames 165 to 167 with nothing to show them, in
+all three scenarios. A search for writes to `$FF86` found the four
+cursors in graphics 1 to 4, and a search for the frame's number found
+show_hit and summon_display writing `$A5` into thing `$4F`'s next frame:
+the sparkle. That left graphics 113 and 164 of scenario 2 and 145 of
+scenario 3, which the page shows under their own heading. The death
+animation, the burst and the missile shapes are drawn by ports held to
+the game's routines (test_graphics.js), and the pauses come from the
+game's own T-states for each step's sound.
+
 **Left open.** Nothing for Platinum. Gold needs a person's pass over the
 copy.

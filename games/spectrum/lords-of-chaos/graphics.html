@@ -1,0 +1,711 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.loc-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.loc-row>div{min-width:0}
+.loc-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:4px}
+.loc-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
+.loc-bar button,.loc-bar select{font:inherit;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.loc-bar button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.loc-info{font-family:var(--fm);font-size:13px;line-height:1.55;min-width:260px;flex:1}
+.loc-info table,.loc-tab{border-collapse:collapse;font-family:var(--fm);font-size:13px}
+.loc-info td,.loc-tab td,.loc-tab th{padding:3px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+.loc-tab th{color:var(--ink-mute);font-weight:500}
+.loc-tab td.n,.loc-tab th.n{text-align:right}
+.loc-scroll{overflow-x:auto;max-width:100%}
+.loc-pads{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:start}
+.loc-pads button{font-family:var(--fm);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer;text-align:left}
+.loc-pads button:hover{background:var(--hl)}
+.loc-shots{display:flex;flex-wrap:wrap;gap:14px}
+.loc-shots figure{margin:0;flex:1;min-width:220px}
+.loc-shots img{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
+.loc-shots figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+.loc-meter{height:10px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin:4px 0 10px}
+.gx-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.gx-tile{font:inherit;margin:0;cursor:pointer;text-align:center;border-radius:6px;padding:6px 2px 5px;border:1px solid transparent;background:none;color:inherit;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.gx-tile:hover{background:var(--surface-2)}
+.gx-tile[aria-pressed="true"]{border-color:var(--ink);background:var(--surface-2)}
+.gx-tile canvas{width:48px;height:48px;image-rendering:pixelated;display:block;margin:0 auto 4px;background:#000}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;line-height:1.3;color:var(--ink-soft);overflow-wrap:anywhere}
+.gx-group{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:20px 0 8px}
+.gx-group:first-child{margin-top:4px}
+.gx-strip{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.gx-strip figure{margin:0;text-align:center}
+.gx-strip canvas{width:72px;height:72px;image-rendering:pixelated;background:#000;display:block}
+.gx-strip figcaption{font-family:var(--fm);font-size:11px;line-height:1.35;color:var(--ink-mute);margin-top:4px;white-space:pre-line}
+.gx-detail{margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:15px;line-height:1.55}
+.gx-cells{display:grid;grid-template-columns:repeat(3,auto);gap:4px;justify-content:start}
+.gx-cells div{font-family:var(--fm);font-size:11px;line-height:1.35;padding:4px 6px;border:1px solid var(--line-soft);border-radius:4px;min-width:84px}
+.gx-sw{display:inline-block;width:10px;height:10px;border:1px solid var(--line);vertical-align:-1px;margin-right:3px}
+.gx-sets canvas{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:4px}
+.gx-sets figure{margin:0 0 16px}
+.gx-sets figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+.gx-shape{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;margin-bottom:14px}
+.gx-shape figure{margin:0}
+.gx-shape canvas{image-rendering:pixelated;background:#000;border-radius:4px;display:block}
+.gx-shape figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Everything on the map is drawn in squares of three characters by three, from tables each scenario brings with it. Every creature, object and piece of ground has its own loop of frames, which the interrupt steps through twenty-five times a second.</p>
+</header>
+<main class="wrap">
+
+<section id="things">
+  <p class="fig">01 · The things on the map</p>
+  <h2 class="t">Every square shows one of 170 things, each with its own animation</h2>
+  <p class="lede">A byte of the map says what a square shows: below <code>$50</code> a kind of ground, from <code>$50</code> an object, from <code>$8C</code> a wizard or a creature. Each scenario has its own table of these things, so the same number can look different in another scenario. Here is every one, moving as the game moves it. Choose one to see its frames.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="gx-prev" aria-label="previous scenario">‹</a><select id="gx-scen" aria-label="scenario"><option value="1">Scenario 1, The Many Coloured Land</option><option value="2">Scenario 2, Slayer's Dungeon</option><option value="3">Scenario 3, Ragaril's Domain</option></select><a class="step" id="gx-next" aria-label="next scenario">›</a></div>
+    <div id="gx-sheet"><p class="cap">Loading the scenario…</p></div>
+    <div class="gx-detail" id="gx-detail"></div>
+    <p class="cap">Drawn from the listings the way draw_block (<code>$A7B6</code>) draws a square, and animated the way the interrupt animates them (<code>$A891</code>, next_frame <code>$A936</code>), one working frame every second frame of the 48K's picture. <b>test_graphics.js</b> holds both to the game's own code in all three scenarios: every frame of every thing, the sparkle's too, drawn by the game's draw_thing_at (<code>$A843</code>), the four cursors drawn by its draw_map (<code>$A94C</code>), and 300 working frames of its interrupt.</p>
+  </div>
+  <p>Each thing has five bytes in the scenario's table (<code>$D032</code>): the character set its characters come from, the graphic (nine character numbers, three rows of three), the colour set (nine attributes, one for each character), and two bytes of animation, a count and the number of the next frame. On every second frame the interrupt counts each thing's count down, and when it reaches 0 the thing takes the next frame's four bytes from the frame table (<code>$D034</code>): a new graphic, a new colour set, how long to show them and which frame comes after. A count of 255 is never counted, so a thing with 255 stands still.</p>
+  <p>The animation belongs to the number, not to the creature. Every goblin on the map is the same map byte, <code>$95</code>, so all the goblins step in time together. The four wizards are one figure of four frames in four sets of colours. A few entries draw graphic 0 of set 0 in colour set 0, the look of nothing in particular: a thing that scenario never puts on its map.</p>
+  <p>Two of the numbers below the objects are effects. When a blow wounds a creature, show_hit (<code>$798B</code>) puts <code>$4E</code> on its square for a moment, two graphics taking turns. <code>$4F</code> is the sparkle: it stands on graphic 0 until the game points its next frame at frame 165, and then it plays three graphics and stops. The cursor is not a thing at all. draw_map draws it in place of the square under it, in character set 0, with one of four graphics and colour sets that say what the player is doing.</p>
+</section>
+
+<section id="death">
+  <p class="fig">02 · A wizard's death</p>
+  <h2 class="t">A dying wizard flies apart in eight directions</h2>
+  <p class="lede">When a wizard dies or escapes, the window centres on its square and the game draws the wizard's own figure flying out from the middle in eight directions, seven times over, in seven colour sets, with a falling sound.</p>
+  <div class="plate">
+    <div class="loc-bar"><label>Wizard <select id="dx-who"></select></label><button id="dx-play">Play</button><button id="dx-slow" aria-pressed="false">Four times slower</button></div>
+    <div class="loc-row"><div><canvas id="dx-cv" class="gx-cv" width="168" height="168" style="width:336px" aria-label="The map window during a wizard's death animation"></canvas></div>
+      <div class="loc-info" id="dx-info"></div></div>
+    <p class="cap">A port of the game's routine (<code>$8C0C</code>, death_animation_frame <code>$8C6A</code>), held to the game's code by <b>test_graphics.js</b>, which compares the screen after every step. The pause after each step is the time the game's sound takes, counted in T-states on the kit's Z80 running the game's code, without the slowing a 48K's screen memory adds.</p>
+  </div>
+  <p>The figure is the wizard's graphic as it stood when the wizard died, since the interrupts are off from then on. death_animation_frame draws it at eight places round the middle of the window, one character further out each time, ten times, with a sound after each step, and draws over what it drew before, so the figures leave trails. Frame number <i>n</i> of the seven uses colour set <i>n</i> of the scenario, the first seven colour sets in the table, whatever the wizard's own colours are. Then the map is drawn again and the trails are gone.</p>
+</section>
+
+<section id="hit">
+  <p class="fig">03 · A hit</p>
+  <h2 class="t">A hit flashes three graphics over the square</h2>
+  <p class="lede">When a blow lands, a missile reaches its target or a creature attacks a wall, the square shows a burst: graphics <code>$53</code>, <code>$54</code> and <code>$55</code> one after the other, in about a sixth of a second.</p>
+  <div class="plate">
+    <div class="loc-bar"><button id="hx-play">Hit</button><button id="hx-slow" aria-pressed="true">Eight times slower</button></div>
+    <div class="loc-row"><div><canvas id="hx-cv" class="gx-cv" width="168" height="168" style="width:336px" aria-label="The map window with the hit's burst on the middle square"></canvas></div>
+      <div class="gx-strip" id="hx-strip"></div></div>
+    <p class="cap">A port of draw_hit (<code>$AEC2</code>), held to the game's code by <b>test_graphics.js</b>. Each graphic stays for the time the game's sound after it takes, counted on the kit's Z80.</p>
+  </div>
+  <p>draw_hit does not go through the table of things. It points the drawing at character set 1 (<code>$BE3C</code>), which is in the program rather than the scenario, and draws graphics <code>$53</code> to <code>$55</code> straight from the scenario's graphics table in colour set 0, playing a little of sound 8 after each. When a creature strikes another, the map is drawn again straight after, and the wounded square shows <code>$4E</code>, then the sparkle if the creature died. Scenario 3 gives the same three graphics, in other colours, to one of its own squares: map byte 8, which has no name and lies on four squares of its map.</p>
+</section>
+
+<section id="missiles">
+  <p class="fig">04 · Missiles</p>
+  <h2 class="t">A missile is a cross or a star of pixels</h2>
+  <p class="lede">Flame, arrows, thrown objects and spells fly as a handful of pixels, drawn a pixel line at a time from the shooter to the target, with a tail that wipes itself out behind them.</p>
+  <div class="plate">
+    <div class="gx-shape" id="mx-shapes"></div>
+    <div class="loc-scroll"><table class="loc-tab" id="mx-tab"></table></div>
+    <p class="cap">The two shapes as shapes (<code>$AD4E</code>) lists them, line and column offsets from the missile's place, and the seven styles in missile_styles (<code>$B60E</code>), eight bytes each. <b>test_graphics.js</b> plots each shape with the game's draw_shape (<code>$AD1D</code>) and compares the pixels.</p>
+  </div>
+  <p>set_missile copies a style's eight bytes into place before the flight: the shape, how many pixels it moves a frame, how long its tail is, how far it reaches, its colour, its combat strength, whether it is magic, and its sound. draw_missile then steps along the line from the middle of the window and plots the shape at each place, keeping the last places in its tail and wiping the oldest. A missile that leaves the window moves the view seven squares that way and carries on.</p>
+</section>
+
+<section id="cells">
+  <p class="fig">05 · The screen</p>
+  <h2 class="t">Nine character cells to a square, each with its own colours</h2>
+  <p class="lede">The map window is seven squares by seven at the top left of the screen, and every square is nine of the Spectrum's character cells. Each cell has its own attribute, so a square can carry up to nine pairs of colours without them bleeding into each other.</p>
+  <div class="plate">
+    <div class="loc-row"><div><canvas id="cx-cv" class="gx-cv" width="24" height="24" style="width:192px" aria-label="The chosen thing's square, enlarged, with its nine cells"></canvas></div>
+      <div style="flex:1;min-width:260px"><p class="cap" style="margin:0 0 8px" id="cx-name"></p><div class="gx-cells" id="cx-cells"></div></div></div>
+    <p class="cap">The thing chosen above, one cell to each box: the character it shows and its attribute, ink on paper. A Spectrum cell has one ink and one paper, which is why the game's figures are cut into cells of their own colours.</p>
+  </div>
+  <p>The rest of the screen is the game's own: the information display on the right, with the pictures of the square under the cursor (drawn as squares too, by the same routine), its icons and its bars, and the message lines at the bottom. The big map shrinks each square to one character of the scenario's small font.</p>
+</section>
+
+<section id="sets">
+  <p class="fig">06 · Character sets</p>
+  <h2 class="t">Two character sets in the program, two in each scenario</h2>
+  <p class="lede">A thing's first byte picks one of four character sets from the scenario's table (<code>$D07A</code>). Sets 0 and 1 are in the program, the same in every scenario: set 0 holds most of the creatures and the cursors, set 1 the wizards, the bursts and a share of the creatures, objects and ground. Sets 2 and 3 come with the scenario and hold most of its objects and its ground.</p>
+  <div class="plate gx-sets" id="sx-sets"></div>
+</section>
+
+</main>
+
+<script src="../../lib/spectrum.js"></script>
+<script>
+/* loc-map */
+// The map window as the game draws it (draw_map $A94C, draw_block $A7B6, thing_graphic $A84A),
+// on a 64 KB memory M laid out as the game's: the engine (character sets 0 and 1) under a scenario
+// ($D003 up). Every drawing goes into M's own screen ($4000 bitmap, $5800 attributes), byte for
+// byte as the game's routines leave it, so Spectrum.drawScreen shows it and a test can hold it to
+// the game's own code run on the kit's Z80 (test_map.js).
+//   LOCMap.thing(M, v)           { set, graphic, colours } of map byte v, from the things table
+//   LOCMap.block(M, v, row, col) draws thing v as a square at character row and column (3 x 3 cells)
+//   LOCMap.window(M, r0, c0)     draws the 7 x 7 window whose top left square is row r0, column c0,
+//                                wrapping at 36, at the top left of the screen
+//   LOCMap.square(M, r, c)       the map byte at row r, column c
+//   LOCMap.text(M, n)            the scenario's message n as text (word numbers, control codes skipped;
+//                                a new line, $FF, inside a word reads as a space)
+var LOCMap = (function () {
+  const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
+  // the screen address of character row r, column c, pixel line k (screen_rows $AF61)
+  const pix = (r, c, k) => 0x4000 + ((r & 0x18) << 8) + ((r & 7) << 5) + (k << 8) + c;
+  function thing(M, v) {
+    const t = w(M, 0xD032) + 5 * v;
+    return { set: M[t], graphic: M[t + 1], colours: M[t + 2] };
+  }
+  function block(M, v, row, col, set, graphic, colours) {
+    if (set === undefined) ({ set, graphic, colours } = thing(M, v));
+    const font = w(M, 0xD07A + 2 * set);
+    const g = w(M, 0xD038) + 9 * graphic, cs = w(M, 0xD036) + 9 * colours;
+    for (let i = 0; i < 9; i++) {
+      const r = row + ((i / 3) | 0), c = col + i % 3, ch = M[g + i];
+      for (let k = 0; k < 8; k++) M[pix(r, c, k)] = M[(font + 8 * ch + k) & 0xFFFF];
+      M[0x5800 + 32 * r + c] = M[cs + i];
+    }
+  }
+  const square = (M, r, c) => M[w(M, 0xD030) + 36 * (r % 36) + (c % 36)];
+  function window(M, r0, c0) {
+    for (let y = 0; y < 7; y++)
+      for (let x = 0; x < 7; x++) block(M, square(M, r0 + y, c0 + x), 3 * y, 3 * x);
+  }
+  // entry n (from 1) of a list whose entries start with their length (find_entry $ABF4)
+  function entry(M, base, n) { let a = base; for (let i = 1; i < n; i++) a += M[a]; return a; }
+  function word(M, n) {
+    const a = entry(M, w(M, 0xD00D), n);
+    let s = '';
+    for (let i = 1; i < M[a]; i++) { const ch = M[a + i]; s += ch === 0xFA || ch === 0xFF ? ' ' : ch < 0x80 ? String.fromCharCode(ch) : ''; }
+    return s;
+  }
+  function text(M, n) {
+    const a = entry(M, w(M, 0xD00B), n), out = [];
+    for (let i = 1; i < M[a]; i++) {
+      const c = M[a + i];
+      if (c === 0xFF || c === 0xFD || c === 0xFC) continue;
+      if (c === 0xFE) { i += 1; continue; }
+      if (c === 0xFB) { i += 2; continue; }
+      out.push(word(M, c));
+    }
+    return out.join(' ').replace(/\s+/g, ' ').trim();
+  }
+  // The ULA's colours, 0-7 normal and 8-15 bright (site/lib/spectrum.js's PAL)
+  const PAL = [[0,0,0],[0,0,215],[215,0,0],[215,0,215],[0,215,0],[0,215,215],[215,215,0],[215,215,215],
+               [0,0,0],[0,0,255],[255,0,0],[255,0,255],[0,255,0],[0,255,255],[255,255,0],[255,255,255]];
+  // Copies the screen's character cells, rows r0 to r0 + rows - 1 and columns c0 on, from M into the
+  // ImageData img at pixel (dx, dy), as the Spectrum shows them (flash off).
+  function paint(M, img, r0, c0, rows, cols, dx, dy) {
+    const W = img.width, d = img.data;
+    for (let r = r0; r < r0 + rows; r++) for (let c = c0; c < c0 + cols; c++) {
+      const at = M[0x5800 + 32 * r + c], br = (at >> 6 & 1) << 3;
+      const ink = PAL[(at & 7) | br], paper = PAL[(at >> 3 & 7) | br];
+      for (let k = 0; k < 8; k++) {
+        const b = M[pix(r, c, k)];
+        for (let x = 0; x < 8; x++) {
+          const col = b & (0x80 >> x) ? ink : paper;
+          const o = 4 * ((dy + 8 * (r - r0) + k) * W + dx + 8 * (c - c0) + x);
+          d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255;
+        }
+      }
+    }
+  }
+  // The whole 36 x 36 map into img (864 x 864 pixels), each square drawn by block() in a scratch
+  // copy of M and painted from its screen. over(v, r, c) may give another map byte to draw.
+  function whole(M, img, over) {
+    const S = M.slice();
+    for (let r = 0; r < 36; r++) for (let c = 0; c < 36; c++) {
+      const v = over ? over(square(M, r, c), r, c) : square(M, r, c);
+      block(S, v, 0, 0);
+      paint(S, img, 0, 0, 3, 3, 24 * c, 24 * r);
+    }
+  }
+  return { thing, block, window, square, text, word, entry, paint, whole, PAL };
+})();
+// end of loc-map
+</script>
+<script>
+/* loc-gfx */
+// The Graphics page's drawing, on a 64 KB memory M laid out as the game's (the block loc-map draws
+// the squares). Everything here writes into M's own screen or its things table, the way the game's
+// routines do, so test_graphics.js can hold each to the game's own code run on the kit's Z80.
+//   LOCGfx.tick(M)               one working frame of the interrupt's animation (interrupt_work
+//                                $A8B2-$A8CF, next_frame $A936): each of the 170 things whose count
+//                                is not $FF counts down, and at 0 takes graphic, colour set, count
+//                                and next frame from the frame table
+//   LOCGfx.cycle(M, v, next)     the frames thing v shows from its entry as it stands (or, given
+//                                next, from that frame on): [{ frame, graphic, colours, count }],
+//                                frame null for the entry itself, ending before the first frame seen
+//                                twice or after a count of $FF
+//   LOCGfx.sparkle(M)            starts the sparkle on thing $4F as the game does (show_hit $79DF,
+//                                summon_display $8447): its next frame becomes $A5
+//   LOCGfx.CURSORS               the cursor's four looks, [graphic, colour set, what it means]: drawn
+//                                by draw_map ($A997) in character set 0 from $FF86 and $FF87
+//   LOCGfx.cursor(M, row, col, k) draws cursor k at character row and column
+//   LOCGfx.deathStep(M, type, f, k) step k (0-9) of frame f (0-6) of a wizard's death
+//                                (death_animation_frame $8C6A): wizard type's figure as it stands,
+//                                in colour set f, at the eight places k characters out from the
+//                                middle of the window
+//   LOCGfx.hitStep(M, row, col, k) graphic k (0-2) of the burst draw_hit ($AEC2) draws at a
+//                                square's character row and column: graphic $53 + k, colour set 0,
+//                                character set 1 ($BE3C)
+//   LOCGfx.hitPlace(M, e, d)     the character row and column draw_hit works out for square E, D
+//   LOCGfx.SHAPES                the missile shapes as shapes ($AD4E) lists them, [line, column]
+//   LOCGfx.shape(M, s, y, x, attr) plots shape s with its middle at pixel line y, column x of the map
+//                                window as draw_shape ($AD1D) does: a point is skipped unless both
+//                                its line and column, in eight bits, are below $A8; plot ($ACC9)
+//                                sets the pixel and, when attr is not $FF, gives the cell attr
+//   LOCGfx.styles(M)             the seven missile styles, eight bytes each from missile_styles
+//                                ($B60E): shape, pixels a frame, tail, reach, attribute, combat,
+//                                magic, sound
+//   LOCGfx.DEATH_T, HIT_T        T-states from each step's sound to the next (the last to the map's
+//                                redraw), measured on the game's code on the kit's Z80
+var LOCGfx = (function () {
+  const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
+  const pix = (r, c, k) => 0x4000 + ((r & 0x18) << 8) + ((r & 7) << 5) + (k << 8) + c;
+  function tick(M) {
+    const T = w(M, 0xD032), F = w(M, 0xD034);
+    for (let v = 0; v < 170; v++) {
+      const e = (T + 5 * v + 3) & 0xFFFF;
+      if (M[e] === 0xFF) continue;
+      M[e] = (M[e] - 1) & 255;
+      if (M[e] === 0) {
+        const f = (F + 4 * M[e + 1]) & 0xFFFF;
+        for (let i = 0; i < 4; i++) M[e - 2 + i] = M[(f + i) & 0xFFFF];
+      }
+    }
+  }
+  function cycle(M, v, next) {
+    const T = w(M, 0xD032) + 5 * v, F = w(M, 0xD034), out = [];
+    let count;
+    if (next === undefined) {
+      out.push({ frame: null, graphic: M[T + 1], colours: M[T + 2], count: M[T + 3] });
+      count = M[T + 3]; next = M[T + 4];
+    } else count = 0;
+    const seen = new Set();
+    while (count !== 0xFF && !seen.has(next)) {
+      seen.add(next);
+      const f = F + 4 * next;
+      out.push({ frame: next, graphic: M[f], colours: M[f + 1], count: M[f + 2] });
+      count = M[f + 2]; next = M[f + 3];
+    }
+    return out;
+  }
+  function sparkle(M) { M[(w(M, 0xD032) + 0x18F) & 0xFFFF] = 0xA5; }
+  const CURSORS = [[1, 0, 'looking round'], [2, 3, 'a creature on the ground selected'],
+                   [4, 2, 'a creature in the air selected'], [3, 1, 'choosing a target']];
+  function cursor(M, row, col, k) { LOCMap.block(M, 0, row, col, 0, CURSORS[k][0], CURSORS[k][1]); }
+  function deathStep(M, type, f, k) {
+    const t = LOCMap.thing(M, type);
+    const at = [[9 - k, 9], [9 - k, k + 9], [9, k + 9], [k + 9, k + 9],
+                [k + 9, 9], [k + 9, 9 - k], [9, 9 - k], [9 - k, 9 - k]];
+    for (const [r, c] of at) LOCMap.block(M, type, r, c, t.set, t.graphic, f);
+  }
+  function hitPlace(M, e, d) {
+    let r = (e - M[0xD0C8]) & 255; if (e < M[0xD0C8]) r = (r + 0x24) & 255;
+    let c = (d - M[0xD0C9]) & 255; if (d < M[0xD0C9]) c = (c + 0x24) & 255;
+    return [(3 * r) & 255, (3 * c) & 255];
+  }
+  function hitStep(M, row, col, k) { LOCMap.block(M, 0, row, col, 1, 0x53 + k, 0); }
+  const SHAPES = [[[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]],
+                  [[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2], [3, 3], [-3, -3], [3, -3], [-3, 3],
+                   [4, 0], [-4, 0], [0, 4], [0, -4]]];
+  function shape(M, s, y, x, attr) {
+    for (const [dy, dx] of SHAPES[s]) {
+      const py = (y + dy) & 255, px = (x + dx) & 255;
+      if (py >= 0xA8 || px >= 0xA8) continue;
+      const a = pix(py >> 3, px >> 3, py & 7);
+      if (attr !== undefined && attr !== 0xFF) M[0x5800 + 32 * (py >> 3) + (px >> 3)] = attr;
+      M[a] |= 0x80 >> (px & 7);
+    }
+  }
+  function styles(M) {
+    const out = [];
+    for (let i = 0; i < 7; i++) {
+      const b = Array.from(M.slice(0xB60E + 8 * i, 0xB616 + 8 * i));
+      out.push({ shape: b[0], speed: b[1], tail: b[2], reach: b[3], attr: b[4], combat: b[5], magic: b[6], sound: b[7] });
+    }
+    return out;
+  }
+  const DEATH_T = [97463, 59813, 60563, 61313, 62063, 62813, 63563, 64313, 65063, 65914,
+                   66563, 67313, 68063, 68813, 69563, 70313, 71063, 71813, 72563, 73414,
+                   74063, 74813, 62763, 63513, 64263, 65013, 65763, 66513, 67263, 68114,
+                   68763, 69513, 70263, 71013, 71763, 72513, 73263, 74013, 74763, 75614,
+                   76263, 77013, 77763, 65713, 66463, 67213, 67963, 68713, 69463, 70314,
+                   70963, 71713, 72463, 73213, 73963, 74713, 75463, 76213, 76963, 77814,
+                   78463, 79213, 79963, 80713, 81463, 69413, 70163, 70913, 71663, 14324];
+  const HIT_T = [139601, 213226, 196667];
+  return { tick, cycle, sparkle, CURSORS, cursor, deathStep, hitPlace, hitStep, SHAPES, shape, styles, DEATH_T, HIT_T };
+})();
+// end of loc-gfx
+</script>
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 2, '0');
+const w16 = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
+const range = (a, b) => Array.from({ length: b - a }, (_, i) => a + i);
+// The interrupt does its work on every second frame of the 48K's 69,888 T-states at 3.5 MHz.
+const TICK = 2 * 69888 / 3500;              // milliseconds a working frame, about 39.94
+const MS = t => t / 3500;                   // T-states to milliseconds
+
+if (typeof Spectrum === 'undefined') { $('gx-sheet').innerHTML = '<p class="cap">This page needs the site\'s spectrum.js, which is served with the built site.</p>'; return; }
+
+let engine = null;
+const scen = {};                            // n: { M, starts, tiles, ... }
+let cur = null, sel = { kind: 'thing', v: 0x8C }, unusedSet = null;
+
+function load(n) {
+  if (scen[n]) return Promise.resolve(scen[n]);
+  const e = engine || Spectrum.load('parts/engine/listing.json').then(x => (engine = x));
+  return Promise.all([Promise.resolve(e), Spectrum.load('parts/scenario-' + n + '/listing.json')]).then(([e, s]) => {
+    const M = e.ram.slice();
+    for (let a = 0xD003; a < 0x10000; a++) if (s.has[a]) M[a] = s.ram[a];
+    const starts = [];
+    for (let i = 0; i < M[0xD043]; i++) starts.push([M[0xD072 + 2 * i], M[0xD073 + 2 * i]]);
+    return (scen[n] = { n, M, starts, blink: 0, on: true, spark: 0 });
+  });
+}
+
+// ---- drawing a square into a canvas: the block drawn into M's screen at the top left, then painted
+function square(M, cv, draw) {
+  draw(M);
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(24, 24);
+  LOCMap.paint(M, img, 0, 0, 3, 3, 0, 0);
+  ctx.putImageData(img, 0, 0);
+}
+function blank(cv) { const ctx = cv.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height); }
+
+// ---- the graphics no thing, frame, cursor or burst shows
+function graphicCount(M) {
+  const G = w16(M, 0xD038), above = [0, 1, 2, 3].map(k => w16(M, 0xD07A + 2 * k)).filter(a => a > G);
+  return Math.floor(((above.length ? Math.min(...above) : 0x10000) - G) / 9);
+}
+function unused(S) {
+  const M = S.M, T = w16(M, 0xD032), used = new Map();
+  const use = (g, set) => { if (!used.has(g)) used.set(g, set); };
+  for (let v = 0; v < 170; v++) for (const f of LOCGfx.cycle(M, v)) use(f.graphic, M[T + 5 * v]);
+  for (const f of LOCGfx.cycle(M, 0x4F, 0xA5)) use(f.graphic, 1);
+  LOCGfx.CURSORS.forEach(c => use(c[0], 0));
+  [0x53, 0x54, 0x55].forEach(g => use(g, 1));
+  const out = [];
+  for (let g = 0; g < graphicCount(M); g++) if (!used.has(g)) {
+    let k = g - 1; while (k >= 0 && !used.has(k)) k--;
+    out.push({ graphic: g, set: k >= 0 ? used.get(k) : 0 });
+  }
+  return out;
+}
+
+// ---- 01 the sheet
+function name(S, v) {
+  if (v >= 0x8C && v < 0x90) return 'wizard ' + (v - 0x8B);
+  const t = LOCMap.text(S.M, v + 1).trim();
+  return t ? t.toLowerCase() : 'no name';
+}
+function tiles(S) {
+  const groups = [
+    ['Wizards', range(0x8C, 0x90).map(v => ({ kind: 'thing', v }))],
+    ['Creatures', range(0x90, 0xA9).map(v => ({ kind: 'thing', v }))],
+    ['Objects', range(0x50, 0x8C).map(v => ({ kind: 'thing', v }))],
+    ['Ground', range(0x00, 0x4E).map(v => ({ kind: 'thing', v }))],
+    ['Effects', [{ kind: 'thing', v: 0x4E, label: 'the wound' }, { kind: 'thing', v: 0x4F, label: 'the sparkle' }]
+      .concat(LOCGfx.CURSORS.map((c, k) => ({ kind: 'cursor', k, label: 'cursor: ' + c[2] })))],
+    ['Graphics no thing shows', unused(S).map(u => ({ kind: 'unused', graphic: u.graphic, set: u.set }))]
+  ];
+  let h = '';
+  S.list = [];
+  for (const [title, list] of groups) {
+    h += '<p class="gx-group">' + esc(title) + '</p>';
+    if (title.startsWith('Graphics') && !list.length) {
+      h += '<p class="cap" style="margin-top:0">In this scenario every graphic in the table is shown by a thing, one of its frames, the cursor or the burst.</p>';
+      continue;
+    }
+    if (title.startsWith('Graphics')) h += '<div class="loc-bar" id="gx-uset">Character set ' + [0, 1, 2, 3].map(k => '<button data-set="' + k + '">' + k + '</button>').join('') + '</div>';
+    h += '<div class="gx-sheet">';
+    for (const t of list) {
+      t.i = S.list.length; S.list.push(t);
+      const lab = t.kind === 'thing' ? (t.label || name(S, t.v)) + ' ' + hex(t.v) : t.kind === 'cursor' ? t.label : 'graphic ' + t.graphic;
+      h += '<button class="gx-tile" data-i="' + t.i + '" aria-pressed="false"><canvas width="24" height="24"></canvas><span>' + esc(lab) + '</span></button>';
+    }
+    h += '</div>';
+  }
+  $('gx-sheet').innerHTML = h;
+  for (const b of $('gx-sheet').querySelectorAll('.gx-tile')) {
+    const t = S.list[+b.dataset.i]; t.cv = b.querySelector('canvas'); t.btn = b; t.key = '';
+    b.addEventListener('click', () => choose(t));
+  }
+  const us = $('gx-uset');
+  if (us) for (const b of us.querySelectorAll('button')) b.addEventListener('click', () => {
+    unusedSet = unusedSet === +b.dataset.set ? null : +b.dataset.set; redraw(true); detail();
+  });
+}
+function look(S, t) {                        // what the tile shows now: [set, graphic, colours] or null
+  const M = S.M;
+  if (t.kind === 'thing') { const e = w16(M, 0xD032) + 5 * t.v; return [M[e], M[e + 1], M[e + 2]]; }
+  if (t.kind === 'cursor') return S.on ? [0, LOCGfx.CURSORS[t.k][0], LOCGfx.CURSORS[t.k][1]] : null;
+  return [unusedSet === null ? t.set : unusedSet, t.graphic, 0];
+}
+function redraw(all) {
+  const S = cur;
+  for (const t of S.list) {
+    const l = look(S, t), key = l ? l.join(',') : 'off';
+    if (!all && key === t.key) continue;
+    t.key = key;
+    if (!l) blank(t.cv); else square(S.M, t.cv, M => LOCMap.block(M, 0, 0, 0, l[0], l[1], l[2]));
+  }
+  const us = $('gx-uset');
+  if (us) for (const b of us.querySelectorAll('button')) b.setAttribute('aria-pressed', unusedSet === +b.dataset.set);
+}
+function choose(t) {
+  for (const x of cur.list) x.btn.setAttribute('aria-pressed', x === t);
+  sel = t.kind === 'thing' ? { kind: 'thing', v: t.v } : t.kind === 'cursor' ? { kind: 'cursor', k: t.k } : { kind: 'unused', graphic: t.graphic };
+  detail();
+}
+function selected() {
+  return cur.list.find(t => t.kind === sel.kind && (t.kind === 'thing' ? t.v === sel.v : t.kind === 'cursor' ? t.k === sel.k : t.graphic === sel.graphic)) || cur.list[0];
+}
+function strip(frames, S, setOf) {
+  let h = '<div class="gx-strip">';
+  frames.forEach((f, i) => {
+    h += '<figure><canvas width="24" height="24" data-k="' + i + '"></canvas><figcaption>' + esc(f.cap) + '</figcaption></figure>';
+  });
+  h += '</div>';
+  return { h, draw: el => el.querySelectorAll('canvas').forEach(cv => {
+    const f = frames[+cv.dataset.k];
+    if (f.off) blank(cv); else square(S.M.slice(), cv, M => LOCMap.block(M, 0, 0, 0, setOf(f), f.graphic, f.colours));
+  }) };
+}
+function detail() {
+  const S = cur, M = S.M, t = selected();
+  let h = '', st = null;
+  if (t.kind === 'thing') {
+    const e = w16(M, 0xD032) + 5 * t.v, set = M[e];
+    h += '<b>' + esc(t.label || name(S, t.v)) + '</b>, map byte ' + hex(t.v) + ': character set ' + set + ', entry at ' + hex(e, 4) + '. ';
+    let frames;
+    if (t.v === 0x4F) {
+      frames = LOCGfx.cycle(M, 0x4F, 0xA5);
+      h += 'It shows graphic 0, nothing, until the game sets its next frame to ' + hex(0xA5) + ' (165): then it plays frames 165 to 167 and comes to rest on frame 168, which shows graphic 0 again and leads back to itself. The game starts it, and waits for it, when it shows a creature dying, and after a spell that summons creatures, brews a potion or casts MAGIC SHIELD. The sheet starts it about once a second.';
+    } else {
+      frames = LOCGfx.cycle(M, t.v);
+      if (frames.length > 1) frames = frames.slice(1);   // the entry holds a copy of one frame, part counted
+      h += frames[0].frame === null ? 'Its count is 255, so it never changes.' : 'It goes round ' + frames.length + ' frame' + (frames.length > 1 ? 's' : '') + ' of the frame table, each shown for its count of working frames, about 40 ms each.';
+    }
+    st = strip(frames.map(f => ({ graphic: f.graphic, colours: f.colours,
+      cap: (f.frame === null ? 'entry' : 'frame ' + f.frame) + '\n' + (f.count === 0xFF ? 'still' : f.count + ' × 40 ms') })), S, () => set);
+  } else if (t.kind === 'cursor') {
+    const c = LOCGfx.CURSORS[t.k];
+    h += '<b>The cursor</b>, ' + esc(c[2]) + ': graphic ' + c[0] + ' in colour set ' + c[1] + ', from character set 0 whatever the square holds. draw_map draws it in place of the square under it while the cursor is on; blink_cursor (<code>$AA83</code>) turns it on for three working frames and off for two.';
+    st = strip(LOCGfx.CURSORS.map(x => ({ graphic: x[0], colours: x[1], cap: 'graphic ' + x[0] + '\ncolours ' + x[1] })), S, () => 0);
+  } else {
+    const set = unusedSet === null ? t.set : unusedSet;
+    h += '<b>Graphic ' + t.graphic + '</b>: no thing, frame, cursor or burst shows it. A graphic is nine character numbers and nothing more, and the thing that shows it names the character set, so the sheet draws it in the set of the graphic before it, set ' + t.set + ', or the set chosen above. Here it is in set ' + set + ', colour set 0.';
+  }
+  $('gx-detail').innerHTML = h + (st ? st.h : '');
+  if (st) st.draw($('gx-detail'));
+  cells(t);
+}
+
+// ---- 05 one square's nine cells
+const ATTR = a => {
+  const br = (a >> 6 & 1) << 3, ink = LOCMap.PAL[(a & 7) | br], paper = LOCMap.PAL[(a >> 3 & 7) | br];
+  const css = c => 'rgb(' + c.join(',') + ')';
+  return '<i class="gx-sw" style="background:' + css(ink) + '"></i>on <i class="gx-sw" style="background:' + css(paper) + '"></i>';
+};
+function cells(t) {
+  const S = cur, M = S.M.slice(), l = look(S, t) || [0, LOCGfx.CURSORS[t.k][0], LOCGfx.CURSORS[t.k][1]];
+  const cv = $('cx-cv');
+  square(M, cv, X => LOCMap.block(X, 0, 0, 0, l[0], l[1], l[2]));
+  const g = w16(M, 0xD038) + 9 * l[1], cs = w16(M, 0xD036) + 9 * l[2];
+  let h = '';
+  for (let i = 0; i < 9; i++) h += '<div>char ' + M[g + i] + '<br>' + ATTR(M[cs + i]) + ' ' + hex(M[cs + i]) + '</div>';
+  $('cx-cells').innerHTML = h;
+  $('cx-name').textContent = 'Graphic ' + l[1] + ', character set ' + l[0] + ', colour set ' + l[2] + ':';
+}
+
+// ---- the clock: the interrupt's work every second frame
+let last = 0, acc = 0;
+function frame(now) {
+  if (cur) {
+    acc += Math.min(now - (last || now), 500);
+    let n = 0;
+    while (acc >= TICK) {
+      acc -= TICK; n++;
+      LOCGfx.tick(cur.M);
+      if (--cur.blink <= 0) { cur.on = !cur.on; cur.blink = cur.on ? 3 : 2; }
+      if (++cur.spark >= 25) { cur.spark = 0; LOCGfx.sparkle(cur.M); }
+    }
+    if (n) redraw(false);
+  }
+  last = now;
+  requestAnimationFrame(frame);
+}
+
+// ---- 02 a wizard's death and 03 the hit, on the window round the first start square
+function windowAt(S, M, put) {
+  const [r, c] = S.starts[0] || [18, 18];
+  if (put !== undefined) M[w16(M, 0xD030) + 36 * r + c] = put;
+  const r0 = (r + 33) % 36, c0 = (c + 33) % 36;
+  LOCMap.window(M, r0, c0);
+  return { r, c, r0, c0 };
+}
+function show(M, id) {
+  const cv = $(id), ctx = cv.getContext('2d'), img = ctx.createImageData(168, 168);
+  LOCMap.paint(M, img, 0, 0, 21, 21, 0, 0);
+  ctx.putImageData(img, 0, 0);
+}
+let deathRun = 0;
+function death() {
+  const S = cur, type = +$('dx-who').value, M = S.M.slice(), run = ++deathRun;
+  const slow = $('dx-slow').getAttribute('aria-pressed') === 'true' ? 4 : 1;
+  windowAt(S, M, type);
+  show(M, 'dx-cv');
+  const t = LOCMap.thing(M, type);
+  let i = 0;
+  const step = () => {
+    if (run !== deathRun) return;
+    if (i === 70) { windowAt(S, M, type); show(M, 'dx-cv'); $('dx-info').innerHTML = 'The map is drawn again.'; return; }
+    const f = Math.floor(i / 10), k = i % 10;
+    LOCGfx.deathStep(M, type, f, k);
+    show(M, 'dx-cv');
+    $('dx-info').innerHTML = 'Frame ' + (f + 1) + ' of 7, colour set ' + f + '<br>step ' + (k + 1) + ' of 10, ' + k + ' character' + (k === 1 ? '' : 's') + ' out<br>graphic ' + t.graphic + ', character set ' + t.set;
+    setTimeout(step, MS(LOCGfx.DEATH_T[i]) * slow);
+    i++;
+  };
+  step();
+}
+let hitRun = 0;
+function hit() {
+  const S = cur, M = S.M.slice(), run = ++hitRun;
+  const slow = $('hx-slow').getAttribute('aria-pressed') === 'true' ? 8 : 1;
+  const p = windowAt(S, M, 0x95);
+  M[0xD0C8] = p.r0; M[0xD0C9] = p.c0;
+  const [row, col] = LOCGfx.hitPlace(M, p.r, p.c);
+  show(M, 'hx-cv');
+  let k = 0;
+  const step = () => {
+    if (run !== hitRun) return;
+    if (k === 3) { windowAt(S, M); show(M, 'hx-cv'); return; }
+    LOCGfx.hitStep(M, row, col, k);
+    show(M, 'hx-cv');
+    setTimeout(step, MS(LOCGfx.HIT_T[k]) * slow);
+    k++;
+  };
+  setTimeout(step, 300);
+}
+function hitStrip() {
+  const S = cur;
+  const st = strip([0, 1, 2].map(k => ({ graphic: 0x53 + k, colours: 0, cap: 'graphic ' + hex(0x53 + k) + '\n' + Math.round(MS(LOCGfx.HIT_T[k])) + ' ms' })), S, () => 1);
+  $('hx-strip').innerHTML = st.h; st.draw($('hx-strip'));
+}
+
+// ---- 04 missiles
+const USES = ["a dragon's flame (GOLD, GREEN and RED DRAGON)", 'an arrow from a bow', 'an arrow from anything else, the magic bow',
+              'a thrown object', 'a spell on its way to its target', 'MAGIC BOLT', 'MAGIC LIGHTNING'];
+function missiles() {
+  const ss = LOCGfx.styles(cur.M);
+  const shapes = [0, 1].map(s => {
+    const i = ss.findIndex(x => x.shape === s), M = cur.M.slice();
+    M.fill(0, 0x4000, 0x5B00);
+    LOCGfx.shape(M, s, 12, 12, ss[i].attr);
+    const img = new ImageData(24, 24);
+    LOCMap.paint(M, img, 0, 0, 3, 3, 0, 0);
+    return { s, i, img };
+  });
+  $('mx-shapes').innerHTML = shapes.map(x => '<figure><canvas width="24" height="24" style="width:192px;height:192px"></canvas><figcaption>' +
+    (x.s ? 'The star, thirteen pixels' : 'The cross, five pixels') + ', in the colour of ' + esc(USES[x.i].replace(/ \(.*/, '')) + '</figcaption></figure>').join('');
+  $('mx-shapes').querySelectorAll('canvas').forEach((cv, j) => cv.getContext('2d').putImageData(shapes[j].img, 0, 0));
+  let t = '<tr><th class="n">style</th><th>used for</th><th>shape</th><th class="n">pixels a frame</th><th class="n">tail</th><th class="n">reach</th><th>colour</th><th class="n">combat</th><th>magic</th></tr>';
+  ss.forEach((s, i) => {
+    t += '<tr><td class="n">' + i + '</td><td>' + esc(USES[i]) + '</td><td>' + (s.shape ? 'star' : 'cross') + '</td><td class="n">' + s.speed + '</td><td class="n">' + s.tail + '</td><td class="n">' + s.reach + '</td><td style="white-space:nowrap">' + ATTR(s.attr) + ' ' + hex(s.attr) + '</td><td class="n">' + s.combat + '</td><td>' + (s.magic ? 'yes' : 'no') + '</td></tr>';
+  });
+  $('mx-tab').innerHTML = t;
+}
+
+// ---- 06 the character sets, as far as the scenario's graphics reach into each
+function sets() {
+  const S = cur, M = S.M, T = w16(M, 0xD032), G = w16(M, 0xD038), top = [0, 0, 0, 0];
+  const reach = (set, g) => { for (let i = 0; i < 9; i++) top[set] = Math.max(top[set], M[G + 9 * g + i]); };
+  for (let v = 0; v < 170; v++) { if (v === 0xA9) continue; for (const f of LOCGfx.cycle(M, v)) reach(M[T + 5 * v], f.graphic); }
+  for (const f of LOCGfx.cycle(M, 0x4F, 0xA5)) reach(1, f.graphic);
+  LOCGfx.CURSORS.forEach(c => reach(0, c[0]));
+  [0x53, 0x54, 0x55].forEach(g => reach(1, g));
+  const where = ['in the program', 'in the program', 'in the scenario', 'in the scenario'];
+  let h = '';
+  for (let s = 0; s < 4; s++) {
+    const n = top[s] + 1, rows = Math.ceil(n / 32);
+    h += '<figure><canvas width="287" height="' + (9 * rows - 1) + '" data-s="' + s + '" style="width:861px"></canvas><figcaption>Set ' + s + ', at ' + hex(w16(M, 0xD07A + 2 * s), 4) + ' ' + where[s] + ': characters 0 to ' + top[s] + ', as far as this scenario\'s graphics reach into it.</figcaption></figure>';
+  }
+  $('sx-sets').innerHTML = h;
+  for (const cv of $('sx-sets').querySelectorAll('canvas')) {
+    const s = +cv.dataset.s, font = w16(M, 0xD07A + 2 * s), n = top[s] + 1;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#3a3d44'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const img = ctx.getImageData(0, 0, cv.width, cv.height), d = img.data;
+    for (let ch = 0; ch < n; ch++) for (let k = 0; k < 8; k++) {
+      const b = M[(font + 8 * ch + k) & 0xFFFF];
+      for (let x = 0; x < 8; x++) {
+        const o = 4 * ((9 * (ch >> 5) + k) * cv.width + 9 * (ch & 31) + x);
+        d[o] = d[o + 1] = d[o + 2] = b & (0x80 >> x) ? 255 : 0; d[o + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+}
+
+// ---- the scenario control
+function pick(n) {
+  $('gx-scen').value = String(n);
+  unusedSet = null; deathRun++; hitRun++;
+  $('gx-sheet').innerHTML = '<p class="cap">Loading the scenario…</p>';
+  load(n).then(S => {
+    cur = S;
+    tiles(S); redraw(true);
+    const t = selected(); choose(t);
+    $('dx-who').innerHTML = range(0x8C, 0x90).map(v => '<option value="' + v + '">wizard ' + (v - 0x8B) + ' (' + hex(v) + ')</option>').join('');
+    const M = S.M.slice(); windowAt(S, M, 0x8C); show(M, 'dx-cv');
+    $('dx-info').innerHTML = 'Press Play.';
+    const H = S.M.slice(); windowAt(S, H, 0x95); show(H, 'hx-cv');
+    hitStrip(); missiles(); sets();
+  }).catch(err => { $('gx-sheet').innerHTML = '<p class="cap">Could not load the listings: ' + esc(err.message) + '</p>'; });
+}
+$('gx-scen').addEventListener('change', () => pick(+$('gx-scen').value));
+$('gx-prev').addEventListener('click', () => pick(((+$('gx-scen').value + 1) % 3) + 1));
+$('gx-next').addEventListener('click', () => pick((+$('gx-scen').value % 3) + 1));
+$('dx-play').addEventListener('click', death);
+$('hx-play').addEventListener('click', hit);
+for (const id of ['dx-slow', 'hx-slow']) $(id).addEventListener('click', () => {
+  const b = $(id); b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
+});
+pick(1);
+requestAnimationFrame(frame);
+})();
+</script>
