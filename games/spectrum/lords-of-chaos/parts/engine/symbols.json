@@ -2182,11 +2182,6 @@
    "start": 53180,
    "end": 53249,
    "type": "Byte"
-  },
-  {
-   "start": 53250,
-   "end": 53250,
-   "type": "Byte"
   }
  ],
  "symbols": [
@@ -5105,7 +5100,7 @@
   {
    "address": 25159,
    "type": "line",
-   "text": "The Sinclair joystick (Interface 2's left port, the keys 6 to 0): reads half-rows $EF (6 to 0) and $F7 (1 to 5), reverses the order of the first five bits of the second and combines the two, so that either joystick reads as fire, up, down, right, left in bits 0 to 4, 0 when pressed."
+   "text": "The Sinclair joysticks of Interface 2, which read as the keys 6 to 0 and 1 to 5: reads half-rows $EF (6 to 0) and $F7 (1 to 5), reverses the order of the first five bits of the second and combines the two, so that either joystick reads as fire, up, down, right, left in bits 0 to 4, 0 when pressed."
   },
   {
    "address": 25180,
@@ -5400,7 +5395,7 @@
   {
    "address": 29014,
    "type": "line",
-   "text": "Looks for another creature on the selected creature's square at the same height ($5B2F against byte 4 of its entry): a mount it rides or a rider on it. Returns Z set with its entry in IX and its index in $D1A3 when there is one, Z clear when not."
+   "text": "Looks for another creature on the selected creature's square at the same height ($5B2F against byte 4 of its entry) that rides nothing, since find_others_at skips riders: a mount the selected creature could climb onto, or a rider that has just got off. Returns Z set with its entry in IX and its index in $D1A3 when there is one, Z clear when not."
   },
   {
    "address": 29070,
@@ -5435,7 +5430,7 @@
   {
    "address": 29292,
    "type": "line",
-   "text": "Uses the object in use on the cursor's square: a key on a locked door ($1F-$21) opens it into a closed door (+3) and the key ($7D) is used up; a closed door ($22-$24) opens (+3); an open door ($25-$27) closes (-3) when no object lies in it; a chest key ($7E) on a locked chest ($7A) unlocks it into a closed chest; a closed chest ($7B) opens into an open chest and the objects in it ($7C entries whose byte 4 is the chest's index) fall out ($A716). Anything else, and any square with a creature or the flying creature's own, goes to the scenario's hook at $D024. A change of terrain costs 4 action points, redraws the map and plays a sound."
+   "text": "Uses the object in use on the cursor's square: a key on a locked door ($1F-$21) opens it into a closed door (+3) and the key ($7D) is used up; a closed door ($22-$24) opens (+3); an open door ($25-$27) closes (-3) when no object lies in it; a chest key ($7E) on a locked chest ($7A) unlocks it into a closed chest; a closed chest ($7B) opens into an open chest and the objects in it ($7C entries whose byte 4 is the chest's index) fall out ($A716). Everything else goes to the scenario's hook at $D024: USE by a creature in the air ($5B2F = $FE), a square where a creature stands on the ground or two creatures stand, and a door or chest that does not open, close or unlock (a locked one without its key, an open door with an object in it, an open chest). A change of terrain costs 4 action points, redraws the map and plays a sound."
   },
   {
    "address": 29569,
@@ -5495,7 +5490,7 @@
   {
    "address": 30048,
    "type": "line",
-   "text": "The upkeep at the start of a player's turn (player $5B11, 0 for the independent creatures). For each of the player's creatures: it is shown (bit 7 of byte 1), its potion counts down a turn (byte 3) and an invisibility potion or being a pixie ($93) keeps it invisible; on the ground it takes damage from what it stands on (8 in tangle vine, $37; another player's or the wild fire, $38-$41, by that fire's strength at $D04B; another player's gooey blob, $42-$49, by $D050) plus twice its fatal wound, through damage_and_rider. A survivor gets its action points back ($D200; halved when its stamina is under a sixth of the most, and scaled by its constitution against the most; flying first costs stamina, half its action points), and stamina back, a sixth of the most (a half under a speed or super potion), up to the most. It is made the selected creature, put back on the map and its engaged bit cleared, and the scenario's hook at $D027 runs. Then for a wizard's player: mana goes up by a 25th of the starting mana ($84D5), $D054 counts down, and a human player gets PRESS FIRE TO CONTINUE."
+   "text": "The upkeep at the start of a player's turn (player $5B11, 0 for the independent creatures). For each of the player's creatures: it is shown (bit 7 of byte 1), its potion counts down a turn (byte 3) and an invisibility potion or being a pixie ($93) keeps it invisible; on the ground it takes damage from what it stands on (8 in tangle vine, $37; another player's or the wild fire, $38-$41, by that fire's strength at $D04B; another player's gooey blob, $42-$49, by $D050) plus twice its fatal wound, through damage_and_rider. A survivor gets its action points back ($D200; halved when its stamina is under a sixth of the most, and divided by the number of times its constitution goes into the most, so whole above half, halved at half or below, a third at a third or below; flying first costs stamina, half its action points), and stamina back, a sixth of the most (a half under a speed or super potion), up to the most. It is made the selected creature, put back on the map and its engaged bit cleared, and the scenario's hook at $D027 runs. Then for a wizard's player: mana goes up by a 25th of the starting mana ($84D5), $D054 counts down, and a human player gets PRESS FIRE TO CONTINUE."
   },
   {
    "address": 30519,
@@ -5505,7 +5500,7 @@
   {
    "address": 30549,
    "type": "line",
-   "text": "Takes A ($FF2D) from the constitution of creature $FF2B. A blow of more than a quarter of the starting constitution adds one to the fatal wound (top three bits of byte 4, at most 7). If the creature dies: its death is shown ($973C), constitution 0, action points $FF; in a game against the computer a dead computer creature is struck from its list ($994B); it leaves the object table (type $FF) and the map (the terrain under it put back), $FF30 is set, and the player who killed it ($5B26 + 1, when not its owner) gets its victory points (byte 10 of its type, halved unless a wizard struck the blow, $5B27) in $D058, up to 255. What it carried falls to the ground; a rider is shown on the square. A dead computer wizard ($8D) zeroes the computer's points ($D059); a dead wizard is handled by $8C0C. Returns with $FF2E the rider's index when the dead creature was flying, $FF otherwise."
+   "text": "Takes A ($FF2D) from the constitution of creature $FF2B. A blow of more than a quarter of the starting constitution adds one to the fatal wound (top three bits of byte 4, at most 7). If the creature dies: its death is shown ($973C), constitution 0, action points $FF; in a game against the computer a dead computer creature is struck from its list ($994B); it leaves the object table (type $FF) and the map (the terrain under it put back), $FF30 is set, and the player who killed it ($5B26 + 1, when not its owner) gets its victory points (byte 10 of its type, halved unless a wizard struck the blow, $5B27) in $D058, up to 255. What it carried falls to the ground; a rider it carried takes the square on the map when the rider is shown (bit 7 of byte 1 of its entry). A dead computer wizard ($8D) zeroes the computer's points ($D059); a dead wizard is handled by $8C0C. Returns with $FF2E the rider's index when the dead creature was flying, $FF otherwise."
   },
   {
    "address": 30851,
@@ -5590,7 +5585,7 @@
   {
    "address": 31082,
    "type": "line",
-   "text": "TODO Takes every entry of the object table off the map: its byte 1 is worked out again ($8C62) and its map square gets back the terrain under it (byte 3)."
+   "text": "Takes every entry of the object table off the map: bits 6 and 7 of its byte 1 are cleared (entry_square, $8C62, leaves the column without them; bit 7 is the shown flag the sight code sets) and its map square gets back the terrain under it (byte 3). Run after each player's turn."
   },
   {
    "address": 31115,
@@ -5865,7 +5860,7 @@
   {
    "address": 34289,
    "type": "line",
-   "text": "Entered here for a thrown or fired blow: a magic weapon in use ($60-$66 but not $63, the magic shield) counts as magic."
+   "text": "Entered here for a thrown or fired blow: a magic weapon in use ($60-$66 but not $63, the magic bow) counts as magic."
   },
   {
    "address": 34309,
@@ -6220,7 +6215,7 @@
   {
    "address": 37533,
    "type": "line",
-   "text": "Layout 3, the designer's menu: seventeen cells wide from column 7."
+   "text": "Layout 3, the SELECT CONTROLS menu at start-up (program_start, in the designer's block): seventeen cells wide from column 7."
   },
   {
    "address": 37543,
@@ -6255,12 +6250,12 @@
   {
    "address": 37698,
    "type": "line",
-   "text": "Works out the figures of the creature at IX (record) and IY (type) into $D1FB on: action points ($D1FB); flying and ground action points ($FF59, $FF5A; a flying potion gives a creature with no wings twice its ground points to fly with, a speed or super potion doubles both) and the most for its height ($D200); stamina and its most ($D1FC, $D201); constitution and its most ($D1FD, $D202); combat (type byte 4, plus 20 under a strength or super potion, plus the weapon in use's byte 2 for a creature that uses weapons, $D203) cut by the share of constitution lost ($D1FE, at least 1); defence (type byte 5, plus 25 under a protection or super potion, $D204) and the best defence of the weapons it carries."
+   "text": "Works out the figures of the creature at IX (record) and IY (type) into $D1FB on: action points ($D1FB); flying and ground action points ($FF59, $FF5A; a flying potion gives a creature with no wings twice its ground points to fly with, a speed or super potion doubles both) and the most for its height ($D200); stamina and its most ($D1FC, $D201); constitution and its most ($D1FD, $D202); combat (type byte 4, plus 20 under a strength or super potion, plus the weapon in use's byte 2 for a creature that uses weapons, $D203) divided by the number of times constitution goes into its most, a whole number, so cut only at half or below ($D1FE, at least 1); defence (type byte 5, plus 25 under a protection or super potion, $D204) and the best defence of the weapons it carries."
   },
   {
    "address": 37975,
    "type": "line",
-   "text": "A wizard under a magic shield ($D054, by wizard) gets four times the shield plus 12 more defence, up to 255. The defence is then cut by the share of constitution lost, like combat, into $D1FF (at least 1). $5B44 is the index of the creature it carries as rider, or $FD."
+   "text": "A wizard under a magic shield ($D054, by wizard) gets four times the shield plus 12 more defence, up to 255. The defence is then divided by the same number as combat, into $D1FF (at least 1). $5B44 is the index of the creature it carries as rider, or $FD."
   },
   {
    "address": 38045,
@@ -6325,7 +6320,7 @@
   {
    "address": 38586,
    "type": "line",
-   "text": "A routine nothing calls, left in by the authors: it counts debug_count up, prints it at the top right in the ROM's font and waits for the controls to be let go and fire pressed, keeping every register. A breakpoint they could drop into any routine with a CALL."
+   "text": "A routine nothing calls, left in by the authors: it counts debug_count up, prints it at row 21, column 0, just above the message line, in the ROM's font, yellow on red and waits for the controls to be let go and fire pressed, keeping every register. A breakpoint they could drop into any routine with a CALL."
   },
   {
    "address": 38635,
@@ -6340,7 +6335,7 @@
   {
    "address": 38734,
    "type": "line",
-   "text": "Plays one computer creature ($D186): loads it ($98E4) and finds its entry in the computer's list ($994E, into $D182; bit 7 of byte 3 into $D1BA), skipping it when bit 6 of that byte is set. Then up to 50 steps ($9849), each deciding what to do: with no partner on its square, the checks for drinking, eating, using, picking up and spells ($A196, $A382, $A0F0, $A279, $A2FC, $A5BD, $A22B, $9E3A); then the fight and move choices ($9CC5, $9E7D, $9DAD, $A021, $9992, $9A0D, $9858, $A1ED, $9AF3), until $D181 says it is done. Fifty steps turn the border red, a check left in. Then END MOVE."
+   "text": "Plays one computer creature ($D186): loads it ($98E4) and finds its entry in the computer's list ($994E, into $D182; bit 7 of byte 3 into $D1BA), skipping it when bit 6 of that byte is set (an order to wait), unless it noted an enemy when it was loaded ($D188), which clears the bit. Then up to 50 steps ($9849), each deciding what to do: with no partner on its square, the checks for drinking, eating, using, picking up and spells ($A196, $A382, $A0F0, $A279, $A2FC, $A5BD, $A22B, $9E3A); then the fight and move choices ($9CC5, $9E7D, $9DAD, $A021, $9992, $9A0D, $9858, $A1ED, $9AF3), until $D181 says it is done. Fifty steps turn the border red, a check left in. Then END MOVE."
   },
   {
    "address": 38985,
@@ -6395,7 +6390,7 @@
   {
    "address": 39281,
    "type": "line",
-   "text": "DE = square A of the scenario's waypoint table at ($D013), two bytes each."
+   "text": "DE = square A of the scenario's waypoint table at ($D013), two bytes each, row in E. A is not checked against the table's length: a route naming a waypoint past the end gets the bytes that follow the table."
   },
   {
    "address": 39295,
@@ -6415,7 +6410,7 @@
   {
    "address": 39493,
    "type": "line",
-   "text": "The passes left of sort_neighbours."
+   "text": "The number of comparisons in each pass of sort_neighbours, 7, written once; the passes are counted in B."
   },
   {
    "address": 39494,
@@ -6715,12 +6710,12 @@
   {
    "address": 43318,
    "type": "line",
-   "text": "The thing whose animation count (at DE) has run out takes its next frame: graphic, colour set, count and next frame, four bytes from the scenario's frame table at ($D034)."
+   "text": "The thing whose animation count (its address in HL) has run out takes its next frame: graphic, colour set, count and next frame, four bytes from the scenario's frame table at ($D034)."
   },
   {
    "address": 43340,
    "type": "line",
-   "text": "Draws the map window, seven squares by seven from the top left square ($D0C8, row and column, wrapping at 36): each square's thing (map byte, through thing_graphic), except the cursor's square while the cursor is on ($D0D0), which shows the cursor (graphic and colours in $FF86, characters at $B646). A sound in progress ($C839) gets a step after each row."
+   "text": "Draws the map window, seven squares by seven from the top left square ($D0C8, row and column, wrapping at 36): each square's thing (map byte), looked up as thing_graphic does, the same steps written out again, except the cursor's square while the cursor is on ($D0D0), which shows the cursor (graphic and colours in $FF86, characters at $B646). A sound in progress ($C839) gets a step after each row."
   },
   {
    "address": 43613,

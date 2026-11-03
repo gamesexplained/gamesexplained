@@ -415,16 +415,26 @@
   },
   {
    "start": 53536,
+   "end": 53553,
+   "type": "Byte"
+  },
+  {
+   "start": 53554,
    "end": 53575,
    "type": "Byte"
   },
   {
    "start": 53576,
-   "end": 53623,
+   "end": 53605,
    "type": "Byte"
   },
   {
-   "start": 53624,
+   "start": 53606,
+   "end": 53607,
+   "type": "Byte"
+  },
+  {
+   "start": 53608,
    "end": 53625,
    "type": "Byte"
   },
@@ -1078,7 +1088,7 @@
   },
   {
    "address": 53448,
-   "name": "window_origin",
+   "name": "placement_chances",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1191,14 +1201,26 @@
    "kind": "user"
   },
   {
+   "address": 53554,
+   "name": "object_counts",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 53576,
    "name": "objects_seen",
    "type": "UserDefined",
    "kind": "user"
   },
   {
-   "address": 53624,
-   "name": "unused_D178",
+   "address": 53606,
+   "name": "unused_D166",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 53608,
+   "name": "object_lists",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1590,7 +1612,7 @@
   {
    "address": 53253,
    "type": "line",
-   "text": "Pointer to the scenario's object records, six bytes for each object type from $50 (object_record): its worth, weight, healing, mana, thrown damage and flags."
+   "text": "Pointer to the scenario's object records, six bytes for each object type from $50 (object_record): its worth, weight, two figures that are combat and defence for a weapon and healing and mana for something to eat, thrown damage and flags."
   },
   {
    "address": 53255,
@@ -1635,7 +1657,7 @@
   {
    "address": 53271,
    "type": "line",
-   "text": "Pointer to the trip squares: three bytes each, row, column and the group of waiting creatures a step there releases, ending with $FE (trip_square)."
+   "text": "Pointer to the trip squares: three bytes each, row, column and the group of waiting creatures released when the square changes (a door there unlocked, opened or closed, a chest there opened, its terrain set), ending with $FE (trip_square)."
   },
   {
    "address": 53273,
@@ -1660,7 +1682,7 @@
   {
    "address": 53284,
    "type": "line",
-   "text": "Three bytes: USE on a square that is not a door or a chest, or that has a creature on it, ends up here (use_square)."
+   "text": "Three bytes, the hook use_square ends at for everything it does not do itself: USE by a creature in the air, on a square where a creature stands on the ground or two creatures stand, and on anything but a door or chest that opens, closes or unlocks."
   },
   {
    "address": 53287,
@@ -1865,112 +1887,122 @@
   {
    "address": 53448,
    "type": "line",
-   "text": "Working storage for play from here to $D207; the bytes a file carries here are whatever the game held when the file was saved. The map window's top left square, row then column, the saved copy of the cursor's window (draw_map, restore_cursor)."
+   "text": "Read once, by the scenario's start-up routine at $FE03, before set_up_game: for each terrain from 0 to $34, two bytes, the chance in 200 that the routine puts objects on a square of that terrain and the number of the list in object_lists it takes them from. From set_up_game on, everything from here to $D207 is working storage for play, and these first two bytes hold the map window's top left square, row then column, the saved copy of the cursor's window (draw_map, restore_cursor)."
   },
   {
    "address": 53450,
    "type": "line",
-   "text": "draw_map's screen position as it works across the window."
+   "text": "In play: draw_map's screen position as it works across the window."
   },
   {
    "address": 53452,
    "type": "line",
-   "text": "A square, row then column, that several routines step across the map with (spread_to_neighbours, big_map, map_address_window)."
+   "text": "In play: a square, row then column, that several routines step across the map with: draw_map across the window, spread_magic and big_map across the whole map, and spread_to_neighbours from it; map_address_window reads it."
   },
   {
    "address": 53454,
    "type": "line",
-   "text": "draw_map's map position as it works across the window."
+   "text": "In play: draw_map's map position as it works across the window."
   },
   {
    "address": 53456,
    "type": "line",
-   "text": "Not 0 while the blinking cursor shows on the map window."
+   "text": "In play: not 0 while the blinking cursor shows on the map window."
   },
   {
    "address": 53457,
    "type": "line",
-   "text": "The saved copy of the cursor's offset in the window, row then column."
+   "text": "In play: the saved copy of the cursor's offset in the window, row then column."
   },
   {
    "address": 53459,
    "type": "line",
-   "text": "The square under the cursor, row then column."
+   "text": "In play: the square under the cursor, row then column."
   },
   {
    "address": 53461,
    "type": "line",
-   "text": "The character row and column (two bytes) at which draw_block_at draws."
+   "text": "In play: the character row and column (two bytes) at which draw_block_at draws."
   },
   {
    "address": 53463,
    "type": "line",
-   "text": "Set while the information display is clear because the cursor is moving."
+   "text": "In play: set while the information display is clear because the cursor is moving."
   },
   {
    "address": 53464,
    "type": "line",
-   "text": "Set when the cursor has moved."
+   "text": "In play: set when the cursor has moved."
   },
   {
    "address": 53465,
    "type": "line",
-   "text": "The type of the object the creature being described has in use."
+   "text": "In play: the type of the object the creature being described has in use."
   },
   {
    "address": 53466,
    "type": "line",
-   "text": "Its index in the object table."
+   "text": "In play: its index in the object table."
   },
   {
    "address": 53467,
    "type": "line",
-   "text": "Its entry in the object table."
+   "text": "In play: its entry in the object table."
   },
   {
    "address": 53469,
    "type": "line",
-   "text": "How many objects lie on the square, listed at objects_here."
+   "text": "In play: how many objects lie on the square, listed at objects_here."
   },
   {
    "address": 53470,
    "type": "line",
-   "text": "How many objects the creature carries, listed at carried_list."
+   "text": "In play: how many objects the creature carries, listed at carried_list."
   },
   {
    "address": 53471,
    "type": "line",
-   "text": "What the interrupt does on its working frames: bit 0 redraws the map window, bit 1 the menu's pictures, bit 2 the first two pictures only, bit 3 the menu bar; bit 4 slides the bars, on every frame."
+   "text": "In play: what the interrupt does on its working frames: bit 0 redraws the map window, bit 1 the information display's pictures and icons, bit 2 the first two pictures only, bit 3 the menu bar; bit 4 slides the bars, on every frame."
   },
   {
    "address": 53472,
    "type": "line",
-   "text": "Each player's mana, players 1 to 4."
+   "text": "In play: each player's mana, players 1 to 4."
   },
   {
    "address": 53476,
    "type": "line",
-   "text": "The computer's list of enemies its creature has seen, three bytes each (the creature, its combat, its defence), up to 20; cleared to $FF by clear_plan."
+   "text": "In play: the computer's list of the enemies its creature has seen, three bytes each (the creature, its combat, its defence), up to 20; cleared to $FF by clear_plan."
   },
   {
    "address": 53536,
    "type": "line",
-   "text": "The squares of the enemies a fleeing computer creature runs from, two bytes each (computer_flee)."
+   "text": "In play: the squares of the enemies a fleeing computer creature runs from, two bytes each (computer_flee)."
+  },
+  {
+   "address": 53554,
+   "type": "line",
+   "text": "Read by the start-up routine: for each object type from $50 to $83, how many more of it may be placed; each one placed counts one off. In play these bytes are the end of flee_squares and the start of objects_seen."
   },
   {
    "address": 53576,
    "type": "line",
-   "text": "The entries of the objects a computer creature has seen, two bytes each, up to 24 (see_entry)."
+   "text": "In play: the entries of the objects a computer creature has seen, two bytes each, up to 24 (see_entry)."
   },
   {
-   "address": 53624,
+   "address": 53606,
    "type": "line",
-   "text": "Two bytes the engine never reads."
+   "text": "Two bytes between the object counts and the lists that the start-up routine does not read; in play the middle of objects_seen."
+  },
+  {
+   "address": 53608,
+   "type": "line",
+   "text": "Read by the start-up routine: ten lists of sixteen object types, from which it draws at random (0 places nothing); list 0 also fills each locked chest and list 1 each closed one. In play these bytes are the end of objects_seen and the computer's working figures below."
   },
   {
    "address": 53626,
    "type": "line",
-   "text": "The computer's working figures for the creature it moves: the weight it can still carry ($D17A), the ranged combat and range of its weapon ($D17B, $D17C), its combat and defence ($D17D, $D17E), its type's weapon and USE bits ($D17F, $D180), why its move ended ($D181), its entry in the computer's list ($D182), the object table pointer and count of the computer's turn ($D184, $D186), and flags and counts for enemies, objects and steps ($D187-$D19F) that computer_find_prey, computer_flee and computer_seek_object keep."
+   "text": "The computer's working figures for the creature it moves: the weight it can still carry ($D17A), the ranged combat and range of its weapon ($D17B, $D17C), its combat and defence ($D17D, $D17E), its type's weapon and USE bits ($D17F, $D180), why its move ended ($D181), its entry in the computer's list ($D182), the object table pointer and count of the computer's turn ($D184, $D186), then $D187-$D19F, bytes many routines keep: the enemies and objects a creature has noted (note_enemy, update_view, see_entry), the targets, flight and steps the computer's choices work with (computer_find_prey, computer_flee, computer_seek_object, computer_shoot, rank_neighbours, computer_cast), and a few that are not the computer's: $D190 and $D191, which can_fly_or_land sets for select_menu, and $D19F, the owner of the creature under the cursor (print_square_name)."
   },
   {
    "address": 53664,
@@ -1990,7 +2022,7 @@
   {
    "address": 53688,
    "type": "line",
-   "text": "More of the computer's working bytes: flee state ($D1B8), the spell it is trying ($D1B9), guard orders ($D1BA), the player whose turn starts ($D1BB), treasure for the wizard ($D1BC) and the brewing state ($D1BD, $D1BE)."
+   "text": "More of the computer's working bytes: flee state ($D1B8), the spell it is trying ($D1B9), guard orders ($D1BA), the player whose turn starts ($D1BB), treasure for the wizard ($D1BC) the brewing state ($D1BD, $D1BE), and a distance the scenario's spell routines keep ($D1BF)."
   },
   {
    "address": 53696,
@@ -2015,7 +2047,7 @@
   {
    "address": 53755,
    "type": "line",
-   "text": "The selected creature's figures (load_figures): action points, stamina, constitution, combat, defence; then the most of each ($D200-$D204). The engine never reads the last three bytes."
+   "text": "The selected creature's figures (load_figures): action points, stamina, constitution, combat, defence; then the most of each ($D200-$D204). Nothing reads the last three in play; in the file they are the end of object_lists."
   },
   {
    "address": 53768,

@@ -1909,7 +1909,7 @@
   {
    "address": 53253,
    "type": "line",
-   "text": "Pointer to the scenario's object records, six bytes for each object type from $50 (object_record): its worth, weight, healing, mana, thrown damage and flags."
+   "text": "Pointer to the scenario's object records, six bytes for each object type from $50 (object_record): its worth, weight, two figures that are combat and defence for a weapon and healing and mana for something to eat, thrown damage and flags."
   },
   {
    "address": 53255,
@@ -1954,7 +1954,7 @@
   {
    "address": 53271,
    "type": "line",
-   "text": "Pointer to the trip squares: three bytes each, row, column and the group of waiting creatures a step there releases, ending with $FE (trip_square)."
+   "text": "Pointer to the trip squares: three bytes each, row, column and the group of waiting creatures released when the square changes (a door there unlocked, opened or closed, a chest there opened, its terrain set), ending with $FE (trip_square)."
   },
   {
    "address": 53273,
@@ -1979,7 +1979,7 @@
   {
    "address": 53284,
    "type": "line",
-   "text": "Three bytes: USE on a square that is not a door or a chest, or that has a creature on it, ends up here (use_square)."
+   "text": "Three bytes, the hook use_square ends at for everything it does not do itself: USE by a creature in the air, on a square where a creature stands on the ground or two creatures stand, and on anything but a door or chest that opens, closes or unlocks."
   },
   {
    "address": 53287,
@@ -2194,7 +2194,7 @@
   {
    "address": 53452,
    "type": "line",
-   "text": "In play: a square, row then column, that several routines step across the map with (spread_to_neighbours, big_map, map_address_window)."
+   "text": "In play: a square, row then column, that several routines step across the map with: draw_map across the window, spread_magic and big_map across the whole map, and spread_to_neighbours from it; map_address_window reads it."
   },
   {
    "address": 53454,
@@ -2299,7 +2299,7 @@
   {
    "address": 53626,
    "type": "line",
-   "text": "The computer's working figures for the creature it moves: the weight it can still carry ($D17A), the ranged combat and range of its weapon ($D17B, $D17C), its combat and defence ($D17D, $D17E), its type's weapon and USE bits ($D17F, $D180), why its move ended ($D181), its entry in the computer's list ($D182), the object table pointer and count of the computer's turn ($D184, $D186), and flags and counts for enemies, objects and steps ($D187-$D19F) that computer_find_prey, computer_flee and computer_seek_object keep."
+   "text": "The computer's working figures for the creature it moves: the weight it can still carry ($D17A), the ranged combat and range of its weapon ($D17B, $D17C), its combat and defence ($D17D, $D17E), its type's weapon and USE bits ($D17F, $D180), why its move ended ($D181), its entry in the computer's list ($D182), the object table pointer and count of the computer's turn ($D184, $D186), then $D187-$D19F, bytes many routines keep: the enemies and objects a creature has noted (note_enemy, update_view, see_entry), the targets, flight and steps the computer's choices work with (computer_find_prey, computer_flee, computer_seek_object, computer_shoot, rank_neighbours, computer_cast), and a few that are not the computer's: $D190 and $D191, which can_fly_or_land sets for select_menu, and $D19F, the owner of the creature under the cursor (print_square_name)."
   },
   {
    "address": 53664,
@@ -2369,7 +2369,7 @@
   {
    "address": 54333,
    "type": "line",
-   "text": "The computer's 10 routes, each a length byte (bit 7 set, the low seven bits counting itself) and the numbers of its waypoints, ending with $80: route 0: 0 13 14 16 1 8 2 17 14 28 3 4; route 1: 0 4 3 7 2 8 1; route 2: 11 9 8 15 16 14 28 3 7 19 17 11; route 3: 0 12 24 22 4; route 4: 17 16 15 8 2 21; route 5: 3 7 21 17 15 5 12 24 23; route 6: 4 3 28 14 17 2 8 1 16 14 13 0; route 7: 27 26 25 18 2 1 0 3; route 8: 22 6 7 20 17 15 1 5 0 4 3; route 9: 0 5 1 8 2 21 2 7 6 3 22 4."
+   "text": "The computer's 10 routes, each a length byte (bit 7 set, the low seven bits counting itself) and the numbers of its waypoints, ending with $80: route 0: 0 13 14 16 1 8 2 17 14 28 3 4; route 1: 0 4 3 7 2 8 1; route 2: 11 9 8 15 16 14 28 3 7 19 17 11; route 3: 0 12 24 22 4; route 4: 17 16 15 8 2 21; route 5: 3 7 21 17 15 5 12 24 23; route 6: 4 3 28 14 17 2 8 1 16 14 13 0; route 7: 27 26 25 18 2 1 0 3; route 8: 22 6 7 20 17 15 1 5 0 4 3; route 9: 0 5 1 8 2 21 2 7 6 3 22 4. Routes 0, 2, 6 name waypoint 28, past the end of the 28 in the table: waypoint_square reads the bytes after it, row 8, column 7."
   },
   {
    "address": 54438,
@@ -2389,7 +2389,7 @@
   {
    "address": 54558,
    "type": "line",
-   "text": "The 11 trip squares, row, column and the group of waiting creatures a step there releases; $FE ends the list."
+   "text": "The 11 trip squares, row, column and the group of waiting creatures released when the square changes (trip_square: a door there unlocked, opened or closed, a chest there opened, its terrain set); $FE ends the list."
   },
   {
    "address": 54592,
@@ -2524,42 +2524,42 @@
   {
    "address": 54904,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): GOLD ($50) worth 16, weight 6, flags $08; RUBY ($51) worth 12, weight 3, flags $08; EMERALD ($52) worth 8, weight 3, flags $08."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): GOLD ($50) worth 16, weight 6, flags $08; RUBY ($51) worth 12, weight 3, flags $08; EMERALD ($52) worth 8, weight 3, flags $08."
   },
   {
    "address": 54922,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): DRAGON HERB ($53) worth 2, weight 2, flags $00; MISTLETOE ($54) worth 1, weight 4, flags $00; AMBERGRIS ($55) worth 1, weight 4, flags $00; SULPH ($56) worth 1, weight 3, flags $00; CLOVER ($57) worth 1, weight 2, flags $00; FAIRY WING ($58) worth 1, weight 1, flags $00."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): DRAGON HERB ($53) worth 2, weight 2, flags $00; MISTLETOE ($54) worth 1, weight 4, flags $00; AMBERGRIS ($55) worth 1, weight 4, flags $00; SULPH ($56) worth 1, weight 3, flags $00; CLOVER ($57) worth 1, weight 2, flags $00; FAIRY WING ($58) worth 1, weight 1, flags $00."
   },
   {
    "address": 54958,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): SWORD ($59) worth 2, weight 10, heals 10, mana 4, thrown 16, flags $01; KNIFE ($5A) worth 1, weight 3, heals 4, mana 1, thrown 20, flags $01; SHIELD ($5B) worth 2, weight 8, mana 13, flags $01; BOW ($5C) worth 1, weight 4, flags $02; SPEAR ($5D) worth 1, weight 5, heals 8, mana 4, thrown 23, flags $01; SLAYER ($5E) worth 30, weight 9, heals 12, mana 4, thrown 8, flags $01; AXE ($5F) worth 1, weight 7, heals 9, thrown 28, flags $01."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): SWORD ($59) worth 2, weight 10, combat +10, defence +4, thrown 16, flags $01; KNIFE ($5A) worth 1, weight 3, combat +4, defence +1, thrown 20, flags $01; SHIELD ($5B) worth 2, weight 8, defence +13, flags $01; BOW ($5C) worth 1, weight 4, flags $02; SPEAR ($5D) worth 1, weight 5, combat +8, defence +4, thrown 23, flags $01; SLAYER ($5E) worth 30, weight 9, combat +12, defence +4, thrown 8, flags $01; AXE ($5F) worth 1, weight 7, combat +9, thrown 28, flags $01."
   },
   {
    "address": 55000,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): MAGIC SWORD ($60) worth 2, weight 10, heals 20, mana 8, thrown 32, flags $09; MAGIC KNIFE ($61) worth 1, weight 3, heals 8, mana 2, thrown 40, flags $09; MAGIC SHIELD ($62) worth 2, weight 8, mana 26, flags $09; MAGIC BOW ($63) worth 1, weight 4, flags $0A; MAGIC SPEAR ($64) worth 1, weight 5, heals 16, mana 8, thrown 46, flags $09; MAGIC SLAYER ($65) worth 30, weight 9, heals 30, mana 12, thrown 16, flags $09; MAGIC AXE ($66) worth 1, weight 7, heals 18, thrown 56, flags $09."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): MAGIC SWORD ($60) worth 2, weight 10, combat +20, defence +8, thrown 32, flags $09; MAGIC KNIFE ($61) worth 1, weight 3, combat +8, defence +2, thrown 40, flags $09; MAGIC SHIELD ($62) worth 2, weight 8, defence +26, flags $09; MAGIC BOW ($63) worth 1, weight 4, flags $0A; MAGIC SPEAR ($64) worth 1, weight 5, combat +16, defence +8, thrown 46, flags $09; MAGIC SLAYER ($65) worth 30, weight 9, combat +30, defence +12, thrown 16, flags $09; MAGIC AXE ($66) worth 1, weight 7, combat +18, thrown 56, flags $09."
   },
   {
    "address": 55042,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): CAULDRON ($67) worth 0, weight 15, flags $08; GOLD DRAGON POTION ($68) worth 0, weight 255, flags $00; GREEN DRAGON POTION ($69) worth 0, weight 255, flags $00; RED DRAGON POTION ($6A) worth 0, weight 255, flags $00; STRENGTH POTION ($6B) worth 0, weight 255, flags $00; PROTECTION POTION ($6C) worth 0, weight 255, flags $00; INVISIBILITY POTION ($6D) worth 0, weight 255, flags $00; SPEED POTION ($6E) worth 0, weight 255, flags $00; FLYING POTION ($6F) worth 0, weight 255, flags $00; SUPER POTION ($70) worth 0, weight 255, flags $00; HEALING POTION ($71) worth 0, weight 255, flags $00."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): CAULDRON ($67) worth 0, weight 15, flags $08; GOLD DRAGON POTION ($68) worth 0, weight 255, flags $00; GREEN DRAGON POTION ($69) worth 0, weight 255, flags $00; RED DRAGON POTION ($6A) worth 0, weight 255, flags $00; STRENGTH POTION ($6B) worth 0, weight 255, flags $00; PROTECTION POTION ($6C) worth 0, weight 255, flags $00; INVISIBILITY POTION ($6D) worth 0, weight 255, flags $00; SPEED POTION ($6E) worth 0, weight 255, flags $00; FLYING POTION ($6F) worth 0, weight 255, flags $00; SUPER POTION ($70) worth 0, weight 255, flags $00; HEALING POTION ($71) worth 0, weight 255, flags $00."
   },
   {
    "address": 55108,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): VIAL ($72) worth 1, weight 2, flags $00; STRENGTH VIAL ($73) worth 2, weight 4, flags $00; PROTECTION VIAL ($74) worth 2, weight 4, flags $00; INVISIBILITY VIAL ($75) worth 2, weight 4, flags $00; SPEED VIAL ($76) worth 2, weight 4, flags $00; FLYING VIAL ($77) worth 2, weight 4, flags $00; SUPER VIAL ($78) worth 2, weight 4, flags $00; HEALING VIAL ($79) worth 2, weight 4, flags $00."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): VIAL ($72) worth 1, weight 2, flags $00; STRENGTH VIAL ($73) worth 2, weight 4, flags $00; PROTECTION VIAL ($74) worth 2, weight 4, flags $00; INVISIBILITY VIAL ($75) worth 2, weight 4, flags $00; SPEED VIAL ($76) worth 2, weight 4, flags $00; FLYING VIAL ($77) worth 2, weight 4, flags $00; SUPER VIAL ($78) worth 2, weight 4, flags $00; HEALING VIAL ($79) worth 2, weight 4, flags $00."
   },
   {
    "address": 55156,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): LOCKED CHEST ($7A) worth 0, weight 255, heals 2, mana 128, thrown 40, flags $08; CLOSED CHEST ($7B) worth 0, weight 255, heals 1, mana 128, thrown 40, flags $08; OPEN CHEST ($7C) worth 0, weight 255, mana 128, thrown 40, flags $08; DOOR KEY ($7D) worth 1, weight 1, flags $08; CHEST KEY ($7E) worth 1, weight 1, flags $08."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): LOCKED CHEST ($7A) worth 0, weight 255, bytes 2 and 3 hold 2 and 128, thrown 40, flags $08; CLOSED CHEST ($7B) worth 0, weight 255, bytes 2 and 3 hold 1 and 128, thrown 40, flags $08; OPEN CHEST ($7C) worth 0, weight 255, bytes 2 and 3 hold 0 and 128, thrown 40, flags $08; DOOR KEY ($7D) worth 1, weight 1, flags $08; CHEST KEY ($7E) worth 1, weight 1, flags $08."
   },
   {
    "address": 55186,
    "type": "line",
-   "text": "Object records, six bytes each (worth in victory points, weight, healing, mana, thrown damage, flags with bit 2 for something to eat): APPLE ($7F) worth 1, weight 2, heals 10, flags $04; MAGIC APPLE ($80) worth 2, weight 2, heals 20, mana 5, flags $04; CRYSTAL ($81) worth 2, weight 2, flags $08; MAGIC ELIXIR ($82) worth 1, weight 2, heals 25, mana 25, flags $04."
+   "text": "Object records, six bytes each: worth in victory points, weight, two figures (the combat and defence a weapon adds, flags bit 0; the healing and mana in something to eat, bit 2), thrown damage and flags (bit 3 fireproof): APPLE ($7F) worth 1, weight 2, heals 10, flags $04; MAGIC APPLE ($80) worth 2, weight 2, heals 20, mana 5, flags $04; CRYSTAL ($81) worth 2, weight 2, flags $08; MAGIC ELIXIR ($82) worth 1, weight 2, heals 25, mana 25, flags $04."
   },
   {
    "address": 55210,

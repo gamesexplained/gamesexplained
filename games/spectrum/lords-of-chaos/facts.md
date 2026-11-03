@@ -205,15 +205,17 @@ down; on the ground it takes damage from tangle vine (8), another
 player's magic fire or the wild fire (that fire's strength,
 fire_strength) or another player's gooey blob (blob_strength), plus
 twice its fatal wound. A survivor gets its action points back (halved
-when its stamina is under a sixth of its most, scaled by its
-constitution against its most; a flyer first pays stamina) and a sixth
+when its stamina is under a sixth of its most, divided by the number
+of times its constitution goes into its most; a flyer first pays
+stamina) and a sixth
 of its most stamina (half under a speed or super potion). A wizard's
 player gains a 25th of the starting mana.
 
 ### Movement
 
 classify_step decides what a step to a neighbouring square means
-(`$FF8F`): 4 an enemy there, 3 a partner (mount or rider), 0 a square
+(`$FF8F`): 4 an enemy there (3 when the creature shares its own square
+with a partner, another creature riding nothing), 0 a square
 it cannot enter, 1 too few action points, 2 too little stamina, 5 free,
 6 free but engaged, 7 just dismounted in the air. The cost is the
 terrain's (byte 0 of its record, `$FF` impassable), half as much again
@@ -248,13 +250,16 @@ more than a quarter of the starting constitution adds one to the fatal
 wound (top three bits of byte 4 of the record, at most 7), which costs
 twice its value in constitution every turn. Undead take damage only from
 magic: an undead attacker, a magic weapon (`$60`-`$66` but the magic
-shield `$63`) or a spell (strike_hit).
+bow `$63`) or a spell (strike_hit).
 
 Combat and defence (load_figures) are the type's, plus 20 combat under
 a strength or super potion and 25 defence under a protection or super
 potion, plus the weapon in use's combat and the best defence among the
 weapons carried, plus four times a wizard's magic shield and 12; both
-are cut by the share of constitution lost.
+are divided by the number of times the creature's constitution goes
+into its most, rounded down: whole above half, halved at half or below,
+a third at a third or below. Action points at the start of a turn are
+divided the same way (start_of_turn).
 
 The victor's player gets the dead creature's victory points (byte 10 of
 its type), halved unless a wizard struck the blow (damage_creature).
@@ -299,9 +304,16 @@ steps each (computer_move_creature): drink, eat, use, pick up, cast,
 shoot, hunt, flee, follow its route. Routes and waypoints are the
 scenario's (`$D00F`, `$D013`); a creature joins a route that suits its
 type (add_to_wizard_list), and some guard the wizard (byte 8 of the
-type). Independent creatures follow the scenario's own orders
-(`$D015`), and some wait until a trip square wakes them (trip_square).
-The computer wizard tries spells by the scenario's priorities
+type). A creature moves on to its route's next waypoint only when it
+stands on the one it is heading for (computer_choose_target), and
+waypoint_square takes a waypoint's number without checking it against
+the table. Independent creatures follow the scenario's own orders
+(`$D015`), and some wait until a trip square wakes them. A trip square
+(`$D017`) wakes its group when the square changes: a door there is
+unlocked, opened or closed (use_square), a chest there is opened, or
+its terrain is set by anything else (set_terrain_under, which every
+change of terrain goes through). Stepping onto it does nothing. The
+computer wizard tries spells by the scenario's priorities
 (computer_cast).
 
 ## Data tables
@@ -310,7 +322,7 @@ The computer wizard tries spells by the scenario's priorities
 |---|---|---|
 | Creature types (from `$90`) | scenario, `$D003` pointer | 12 bytes: ground and flying action points, stamina, constitution, combat, defence, magic resistance, carry limit, bodyguard chance, potion consumption, victory points, flags |
 | Wizard types (`$8C`-`$8F`) | the 23 bytes from byte 47 of each wizard record | the same twelve figures (type_record) |
-| Object types (`$50`-`$83`) | scenario, `$D005` pointer | 6 bytes: worth, weight, heals, mana, thrown damage, flags (bit 2 edible, bit 3 fireproof) |
+| Object types (`$50`-`$83`) | scenario, `$D005` pointer | 6 bytes: worth, weight, two figures (combat and defence added by a weapon; healing and mana from food), thrown damage, flags (bit 0 weapon, bit 2 edible, bit 3 fireproof) |
 | Terrains (0 to 77) | scenario `$D208` | 5 bytes: step cost (`$FF` impassable), toughness, vine and flood resistance, blob and fire susceptibility, flags (top two bits: what it breaks into) |
 | Terrain flags | scenario `$D38E` | one byte a terrain: what blocks sight on the ground and in the air, cover, what lightning cannot target |
 | Spell costs | spell_base_costs, `$B4BE` | 45 base costs |
@@ -335,7 +347,73 @@ The computer wizard tries spells by the scenario's priorities
   engine's own menu forbids it.
 - debug_probe and unused_trace_20, unused_trace_40 are code nothing
   calls.
+- Scenario 2's routes 0, 2 and 6, three of the seven the computer's
+  creatures choose from, name waypoint 28, and its table (`$D4AD`)
+  holds waypoints 0 to 27. waypoint_square reads the first two bytes of
+  the independent creatures' orders after it, row 8, column 7, which is
+  ROCK WALL (step cost 255). Only a ghost (`$A5`), which classify_step
+  charges 4 for any square, could stand there, so a creature on those
+  routes never passes that waypoint.
+- A step costs 254 on scenario 3's terrain 9, the squares four of its
+  teleports lead to; a teleport moves the creature there at no cost
+  (floor_traps sets the cost, `$FF8E`, to 0).
 
 ## The listing's error rate
 
+Sample `sample-7061` (seed 7061): 80 comments drawn from the 1,129 in
+the five parts' listings, in two strata: 20 from the 76 generated
+descriptions of creature types (the stratum `generated`, matched by
+"action points on the ground, \d+ flying") and 60 from the 1,053
+written ones. The checker was `claude-opus-5-5`, an agent that wrote
+none of the comments. It found 12 wrong, all 12 confirmed against the
+code: 0 of 20 generated and 12 of 60 written, 15.0 % plain (95 %
+interval 8.8 % to 24.4 %, Wilson) and 18.7 % weighted by the strata's
+sizes, which is over the mark. One more it could not settle (which
+Interface 2 socket is the keys 6 to 0); the comment no longer says. The
+twelve: a byte called a count of passes that holds the comparisons in
+a pass (`$9A45`); find_partner said to find a mount or rider, when it
+skips riders (`$7156`); the weapons' second and third bytes read as
+healing and mana, when they are the combat and defence a weapon adds
+(`$D667`, and every scenario's weapon records with it); draw_map said
+to call thing_graphic, which it copies inline (`$A94C`); layout 3 said
+to be the designer's, when it is the start-up SELECT CONTROLS menu
+(`$929D`); an argument said to be in DE that arrives in HL (`$A936`);
+and six lists of cases or users left short (the USE hook `$D024`, a
+rider shown on a death `$7755`, the bits clear_map_things clears
+`$796A`, the waiting computer creature `$974E`, the users of `$D0CC`
+and of the computer's bytes `$D17A`). All twelve were corrected, with
+the comments that said the same: the object records of all three
+scenarios and their header pointer, and the magic bow (`$63`), which an
+engine comment and this file had called the magic shield.
+
 ## Live tests
+
+Run in ZEsarUX 13.0 from snapshots of the game in play (`work/`, not
+committed), driven through its remote port by the run's scripts.
+
+- The map window: LOCMap.window, drawing from the snapshots of play in
+  scenarios 1, 2 and 3 with their creatures and objects, matches the
+  emulator's screen with 0 pixels different (test_map.js holds the same
+  drawing to draw_map on the kit's Z80, 864 windows).
+- Execution maps: ending turn after turn from each scenario's play
+  snapshot (30 turns in scenarios 2 and 3), and a session in the
+  designer, with the emulator recording every address the processor
+  ran. Scenario 1: 6,757 addresses, 6,566 of them in the engine and 191
+  in the scenario. Scenario 2: 5,884, 5,853 and 31. Scenario 3: 5,466,
+  5,383 and 83. The designer: 1,626, 675 in the engine, 859 in the
+  designer and 92 in the ROM. The maps decided code from data where the
+  static reading could not.
+- find_file: a tape of two wizard files, MORDRED2.WIZ then MERLIN1.WIZ.
+  LOAD WIZARD with the name MERLIN1 printed LOADING: MORDRED2.WIZ and
+  put MORDRED, level 2, in the first slot
+  (`reference/load-*.png`).
+- design_exit: a wizard designed with 597 experience points left, saved
+  with EXIT and designed again, started with 596
+  (`reference/designer-*.png`).
+- debug_probe: called from the main loop of scenario 1's play snapshot
+  with a CALL pushed by hand, it printed 1 at row 21, column 0, in the
+  ROM's font, yellow on red, and waited until fire was pressed, then
+  returned (`reference/debug-probe.png`).
+- The strength vials: in a game of scenario 2 started in the emulator,
+  the two strength vials (`$73`) on the map held 255 in byte 5 and the
+  other vials 4 to 7.

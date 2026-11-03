@@ -66,8 +66,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">01 · The game</p>
-  <h2 class="t">Wizards, creatures and a portal</h2>
-  <p class="lede">Each player is a wizard. A turn is a budget of action points, spent on steps, blows, spells and picking things up.</p>
+  <h2 class="t">Each player is a wizard, playing for points</h2>
+  <p class="lede">A turn is a budget of action points, spent on steps, blows, spells and picking things up.</p>
   <div class="loc-shots">
     <figure><img src="reference/play-wizard-house.png" alt="The play screen: the map window on the left, the information display on the right"><figcaption>A wizard at home in scenario 1. The map window shows seven squares by seven; the information display on the right shows what stands on the square under the cursor.</figcaption></figure>
     <figure><img src="reference/turn-panel.png" alt="The panel shown before a wizard's turn"><figcaption>The panel before each turn: whose turn it is, the turn number and each wizard's victory points.</figcaption></figure>
@@ -117,7 +117,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">04 · Creatures and combat</p>
-  <h2 class="t">Twelve bytes a creature, and one roll a blow</h2>
+  <h2 class="t">What one blow does</h2>
   <p class="lede">The scenario holds the figures of every creature it uses. Choose an attacker and a defender to see what one blow does.</p>
   <div class="plate">
     <div class="loc-bar">
@@ -130,7 +130,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The table is each scenario's creature types (the pointer at <code>$D003</code>, twelve bytes a type from <code>$90</code>). The blow follows <code>$8645</code>; <b>test_combat.js</b> runs the game's code for every combat and defence from 0 to 255 with the random number fixed at each value it can take, and compares the damage with the page's.</p>
   </div>
   <p>An attack costs 8 action points and 8 stamina (<code>$84EC</code>). The blow is a random number below twice the attacker's combat plus 2, less the defender's defence. Anything left comes off the defender's constitution. If the defender survives with 4 action points and 4 stamina it strikes back at once.</p>
-  <p>The figures in the table are the type's own. In play they move: a strength potion adds 20 to combat, a protection potion 25 to defence, a weapon in use adds its combat, and the best defence among the weapons carried counts. Then both are cut by the share of constitution the creature has lost (<code>$9342</code>), so a wounded creature fights worse.</p>
+  <p>The figures in the table are the type's own. In play they move: a strength potion adds 20 to combat, a protection potion 25 to defence, a weapon in use adds its combat, and the best defence among the weapons carried counts. Then both are divided by the number of times the creature's constitution goes into its most (<code>$9342</code>): nothing changes until it is down to half, when they halve, and at a third they are a third.</p>
   <p>A blow of more than a quarter of the creature's starting constitution adds one to its fatal wound, up to 7, and every turn after that it loses twice the wound in constitution (<code>$7755</code>, <code>$7560</code>). Undead creatures take damage only from magic: another undead creature, a magic weapon or a spell (<code>$8605</code>).</p>
 </section>
 
@@ -168,7 +168,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">08 · The computer's turn</p>
-  <h2 class="t">Routes, guards and a list of enemies</h2>
+  <h2 class="t">How the computer moves its creatures</h2>
   <p class="lede">The computer moves each of its creatures up to 50 times, choosing at each step from a fixed order of checks.</p>
   <p>computer_move_creature (<code>$974E</code>) loads a creature and asks, in order, whether it should drink a potion, eat, use a vial, pick something up, cast a spell, shoot, chase an enemy it can beat, run from one it cannot, or walk on along its route. Each test sets a reason it is done (<code>$D181</code>) when it ends the creature's move.</p>
   <p>Routes and waypoints belong to the scenario (<code>$D00F</code>, <code>$D013</code>). A creature the computer summons gets a route that suits it: flyers, carriers, swimmers or wizards, by the route's flags (<code>$A4FA</code>). Some are made guards and stay by their wizard, by the type's bodyguard chance. Creatures the computer cannot see do not exist for it: each creature keeps a list of up to twenty enemies it has seen, with their combat and defence (<code>$9C8C</code>), and chooses its prey from that list (<code>$9DAD</code>). The <a href="levels.html">Levels</a> tab draws each scenario's routes on its map.</p>
@@ -177,7 +177,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">09 · Saving to tape</p>
-  <h2 class="t">Wizards, scenarios and saved games on the same tape</h2>
+  <h2 class="t">Every file goes through the ROM's tape routines</h2>
   <p class="lede">Every file the game reads or writes goes through the ROM's own tape routines, with a twelve-character header of its own.</p>
   <p>A wizard is saved as its 70-byte record, named after the first word of its name and its level: MERLIN at level 2 becomes <code>MERLIN2</code> with the extension WIZ (<code>$CCBD</code>). A saved game is the object table and creature records, then everything from the wizard records to the top of memory, with the extension SVG (<code>$C74D</code>). A scenario is 12,285 bytes loaded at <code>$D003</code> with the extension GAM (<code>$C708</code>).</p>
   <p>Loading reads headers until one matches, and the match looks only at the first character of the name, whatever the extension (<code>$C675</code>). The <a href="discoveries.html">Discoveries</a> tab has what that does. In a game against the computer, the end of turn menu lets a player save only five times (<code>$C8E4</code>).</p>
@@ -198,7 +198,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 //   LOCMap.window(M, r0, c0)     draws the 7 x 7 window whose top left square is row r0, column c0,
 //                                wrapping at 36, at the top left of the screen
 //   LOCMap.square(M, r, c)       the map byte at row r, column c
-//   LOCMap.text(M, n)            the scenario's message n as text (word numbers, control codes skipped)
+//   LOCMap.text(M, n)            the scenario's message n as text (word numbers, control codes skipped;
+//                                a new line, $FF, inside a word reads as a space)
 var LOCMap = (function () {
   const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
   // the screen address of character row r, column c, pixel line k (screen_rows $AF61)
@@ -227,7 +228,7 @@ var LOCMap = (function () {
   function word(M, n) {
     const a = entry(M, w(M, 0xD00D), n);
     let s = '';
-    for (let i = 1; i < M[a]; i++) { const ch = M[a + i]; s += ch === 0xFA ? ' ' : ch < 0x80 ? String.fromCharCode(ch) : ''; }
+    for (let i = 1; i < M[a]; i++) { const ch = M[a + i]; s += ch === 0xFA || ch === 0xFF ? ' ' : ch < 0x80 ? String.fromCharCode(ch) : ''; }
     return s;
   }
   function text(M, n) {

@@ -9,7 +9,8 @@
 //   LOCMap.window(M, r0, c0)     draws the 7 x 7 window whose top left square is row r0, column c0,
 //                                wrapping at 36, at the top left of the screen
 //   LOCMap.square(M, r, c)       the map byte at row r, column c
-//   LOCMap.text(M, n)            the scenario's message n as text (word numbers, control codes skipped)
+//   LOCMap.text(M, n)            the scenario's message n as text (word numbers, control codes skipped;
+//                                a new line, $FF, inside a word reads as a space)
 var LOCMap = (function () {
   const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
   // the screen address of character row r, column c, pixel line k (screen_rows $AF61)
@@ -38,7 +39,7 @@ var LOCMap = (function () {
   function word(M, n) {
     const a = entry(M, w(M, 0xD00D), n);
     let s = '';
-    for (let i = 1; i < M[a]; i++) { const ch = M[a + i]; s += ch === 0xFA ? ' ' : ch < 0x80 ? String.fromCharCode(ch) : ''; }
+    for (let i = 1; i < M[a]; i++) { const ch = M[a + i]; s += ch === 0xFA || ch === 0xFF ? ' ' : ch < 0x80 ? String.fromCharCode(ch) : ''; }
     return s;
   }
   function text(M, n) {
