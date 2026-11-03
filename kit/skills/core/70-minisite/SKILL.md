@@ -355,7 +355,11 @@ checklist mechanically, paragraph by paragraph:
    or more things joined by commas or "and", with no verb saying what they
    do, is an inventory of the section ("Five digits, one key and one
    column: how the bomb is defused"). Rewrite it as the one finding, or as
-   the plain name of the subject (`kit/style.md`, "Section headings").
+   the plain name of the subject. Then read each heading alone, as the
+   section list shows it, and wherever it needs the section to make sense
+   ("Secret: the dungeon's hawk can be killed, the palace's only driven
+   off"), put back the words it squeezed out: who acts, on what, with a
+   plain verb (`kit/style.md`, "Section headings").
 5. Collapse triplets written for rhythm into a plain list or two sentences.
    Three genuine items are fine; three arranged for a drumbeat are not.
 6. State it positively. A one-beat correction is fine when the reader would
