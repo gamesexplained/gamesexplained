@@ -1,4 +1,4 @@
-## next · 2026-11-03 · Laser Squad (ZX Spectrum) · Aaron Bell
+## 0.0.302 · 2026-11-03 · Laser Squad (ZX Spectrum) · Aaron Bell
 
 - **Weigh a pace fit's stretches by their length when most passes are
   short.** Laser Squad's passes are mostly a poll of a menu or a step of
