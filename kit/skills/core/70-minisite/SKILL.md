@@ -99,8 +99,8 @@ address links into the Source tab, and the house style in `kit/style.md`.
    for every frame finds the shapes the listing missed. It draws every
    shape the game stores for the things that move (the player, the
    enemies, the shots, the pickups, unused ones too) from the listing's
-   bytes, in the game's colours, with one control to step through them
-   ("Stepping through things of one kind", below). A shape the game
+   bytes, in the game's colours, on one sheet or with one control to
+   step through them ("Stepping through things of one kind", below). A shape the game
    animates plays at the game's rate, from its own animation tables. A
    shape the game paints into the screen itself is drawn by the game's
    own routine on the kit's processor, or by a port of it. A 3D game's
