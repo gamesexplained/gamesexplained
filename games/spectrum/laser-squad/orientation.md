@@ -117,13 +117,16 @@ the engine's listing is built from the hand-over, which still holds them.
 
 ## Steady state
 
-During play the interrupts are off (IFF2 is 0 in `s1-play.sna`): the
-game paces itself with its own delay loops and reads the keyboard itself
-(`IN` from port `$FE`, the routines at `$B0E8-$B15A`, one for each
-control option, picked through the table at `$B0E0`). The menus between
-turns turn them on: interrupt mode 1, `I` = `$3F`, the ROM's handler at
-`$0038`, and the menu waits in the ROM's `KEY-SCAN` (`$028E`) with `IY`
-back at `$5C3A`. In play `IY` points into the game's own data
+The interrupts are off for the whole game: the engine's first instruction
+is `DI`, and nothing turns them on again (IFF2 is 0 in every snapshot from
+`menu.sna` on). The ROM's tape routines are entered past their own `DI`
+and their exit through `SA/LD-RET`, which would turn them on: `LD-BYTES`
+at `$0562` and `SA-BYTES` at `$04C6`, each with the game's own return
+address (`$B1AE`) pushed first. So the game paces itself with its own
+delay loops and reads the keyboard itself: in play with `IN` from port
+`$FE` (the routines at `$B0E8-$B15A`, one for each control option, picked
+through the table at `$B0E0`), in the menus by calling the ROM's
+`KEY-SCAN` (`$028E`) directly. `IY` is free for the game's own use
 (`$D2B4` in `s1-play.sna`). There is no banking: 48K.
 
 The game's memory: the ROM's system variables and the game's own
