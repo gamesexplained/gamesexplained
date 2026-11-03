@@ -118,3 +118,11 @@ game's own `animate_chars` and `rotate_vitamin_chars` run on the kit's
 6502, Mr Puniverse's walk is `copy_under_glyphs` and `merge_player`, and
 the crusher's and crumbling floor's stages follow `update_crusher` and
 `crumble_step`. A second section draws the whole set of 256 characters.
+
+air then asked for what How it works drew twice to live only on the
+Graphics tab. The room whose objects run, Mr Puniverse's block with its
+poses and scenery, and the frame rebuilt from memory with TED's colour
+split moved there, with their scripts, after the cast and before the
+character set's explanation of multicolour cells, which now points at the
+frame. How it works keeps the objects' table, what each kind does and how
+a room's record makes it, and links to the Graphics tab for the rest.
