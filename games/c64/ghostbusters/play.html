@@ -56,10 +56,9 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-keys .pl-keys-tap{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-coords{font-family:var(--fm);font-size:13px;color:var(--ink-soft);white-space:nowrap}
@@ -96,20 +95,16 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restore" title="RUN/STOP + RESTORE: back to the title">RUN/STOP + RESTORE</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
-    <ul class="pl-keys">
-      <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> the joystick</li>
-      <li><kbd>Alt</kbd>, right <kbd>Ctrl</kbd> or <kbd>Numpad 0</kbd> fire</li>
-      <li><kbd>F1</kbd> <kbd>F3</kbd> on the title (or the buttons)</li>
-      <li><kbd>Space</kbd> the status report, on the map</li>
-      <li><kbd>B</kbd> bait, on the map; <kbd>1</kbd>-<kbd>3</kbd>, <kbd>E</kbd> in the shop</li>
-      <li><kbd>Esc</kbd> RUN/STOP: pause, on the map</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
+      <li><kbd data-key="SPACE">Space</kbd> the status report, on the map</li>
+      <li><kbd data-key="B">B</kbd> bait, on the map; <kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd>, <kbd data-key="E">E</kbd> in the shop</li>
+      <li><kbd data-key="STOP">Esc</kbd> RUN/STOP: pause, on the map</li>
+      <li><kbd data-key="F1">F1</kbd> <kbd data-key="F3">F3</kbd> on the title (or the buttons)</li>
       <li>Letters, digits, <kbd>,</kbd> <kbd>Enter</kbd> <kbd>Backspace</kbd>: the interview</li>
+      <li class="pl-keys-pad"><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> the joystick</li>
+      <li class="pl-keys-pad"><kbd>Alt</kbd>, right <kbd>Ctrl</kbd> or <kbd>Numpad 0</kbd> fire</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <div class="pl-mod" id="pl-start" aria-label="Where to start">
       <span class="pl-lab">Start at</span>
       <button type="button" data-start="title" aria-pressed="true" title="Switched on: the start-up, the title and the sing-along">The title</button>
@@ -5183,7 +5178,11 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   }
   let active = false;
   screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-  screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); joyBits = 0; joy(); keysNow(); });
+  screen.addEventListener('blur', () => {
+    active = false; screen.classList.remove('pl-focus');
+    for (const c of [...held.keys()]) if (!c.startsWith('tap:')) held.delete(c);
+    joyBits = 0; joy(); keysNow();
+  });
   document.addEventListener('keydown', e => { if (active) onKey(e, true); });
   document.addEventListener('keyup', e => { if (active) onKey(e, false); });
   // taps: keys held for a few frames from a button
@@ -5203,11 +5202,19 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
     tapList.push({ keys: [KEY.STOP], left: 4, then: () => { if (P.nmi()) rt.throwIn(P.RESTART); } });
     keysNow(); screen.focus();
   }
-  document.querySelectorAll('#pl-pad button').forEach(b => {
-    const bits = +b.dataset.pad;
-    const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); joy(); screen.focus(); };
-    const off = () => { padBits &= ~bits; b.classList.remove('on'); joy(); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+  // keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+  // the finger is on it and for six frames at least, as a button's tap is
+  const tapAt = new Map();
+  PlayControls.keys($('pl-keys'), {
+    down(name) { if (!rt) return; held.set('tap:' + name, [KEY[name]]); tapAt.set(name, rt.frame); keysNow(); },
+    up(name) {
+      const ks = held.get('tap:' + name);
+      if (!ks) return;
+      held.delete('tap:' + name);
+      const d = rt ? rt.frame - tapAt.get(name) : -1;
+      if (d >= 0 && d < 6) tapList.push({ keys: ks, left: 6 - d });
+      keysNow();
+    },
   });
 
   // --- speech: each phrase the port's speak_phrase starts, played from the game's own data --------
@@ -5281,7 +5288,9 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
     return { attach, set, frame, reset, get on() { return on; } };
   })();
   Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
-  PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
+  // the row of switches over the screen, full screen, the touch joystick (port 1) and the keys to tap
+  // with it (site/lib/play-controls.js)
+  PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true, onPad(bits) { padBits = bits; joy(); } });
 
   // --- controls ----------------------------------------------------------------------------------
   let sayTimer = 0;
