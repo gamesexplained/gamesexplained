@@ -7,9 +7,11 @@
 // nearest button; a touch on the controller is the page's (the browser neither scrolls nor moves
 // the focus), and everything lets go when the window loses the focus. A page's list of keys, for a
 // page that asks, has each key named with data-key pressed by a tap and let go as the finger lifts,
-// a modifier held for the key after it, and the words between left to scroll. Full screen carries the
-// page's screen, the row, its bar and the controller, keeps the row above the picture (beside it
-// where it would cost the picture height) with the switch showing ✕, and puts each back where it
+// a modifier held for the key after it, and the words between left to scroll; a page that passes
+// its keys to attach has them, on a touch screen, just under the joystick, nearer the picture than
+// the bar. Full screen carries the page's screen, the row, its keys, its bar and the controller,
+// keeps the row above the picture (beside it where it would cost the picture height) with the
+// switch showing ✕, puts the keys between the picture and the bar, and puts each back where it
 // was, by the switch, Escape or Back, adding one step to the history and taking it off again.
 // Every Play page with a canvas attaches it, and a page with the joystick keeps no touch pad of
 // its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
@@ -252,6 +254,24 @@ pc.hand('right');
   pc3.button.fire('click');
   await new Promise(r => setTimeout(r, 5));
   check(!pc3.on && backs === 3 && plate.children.indexOf(pc3.row) === plate.children.indexOf(s3) - 1, 'and its switch puts it back');
+
+  // --- a page's keys, passed to attach: under the joystick on a touch screen, and into full screen
+  const kPlate = El('div'), kScreen = El('div'), kBar = El('div'), kList = El('ul');
+  kPlate.append(kScreen, kBar, kList); body.appendChild(kPlate);
+  const pk = PC.attach({ screen: kScreen, canvas, bar: kBar, keys: kList, pad: true });
+  const kOrder = () => kPlate.children.filter(n => n.tagName !== '#comment' && n !== pk.row);
+  check(kOrder()[0] === kScreen && kOrder()[1] === pk.el && kOrder()[2] === kList && kOrder()[3] === kBar,
+    'on a touch screen the keys go just under the joystick, nearer the picture than the bar');
+  pk.enter();
+  const kFull = body.children.find(n => n.className.split(' ').includes('pc-full') && n.contains(kScreen));
+  const kScroll = kFull && kFull.children[2], kSlot = kScroll && kScroll.children[0];
+  check(!!kFull && kFull.classList.contains('pc-keyed') && kScroll.className === 'pc-scroll' && kSlot.className === 'pc-kslot' && kSlot.children[0] === kList
+    && kScroll.children[1].children[0] === kBar && kFull.children[1].children[0] === kScreen,
+    'full screen carries the keys, between the picture and the bar, the two in one place to scroll');
+  pk.button.fire('click');
+  await new Promise(r => setTimeout(r, 5));
+  check(!pk.on && kOrder()[2] === kList && kOrder()[3] === kBar && kPlate.children.every(n => n.tagName !== '#comment'), 'and puts them back under the joystick');
+  check(!full3.classList.contains('pc-keyed'), 'a page without keys has no place for them in full screen');
 
   // --- the Play pages: each with a canvas attaches it, a port's template as well as the page
   let pages = 0, pads = 0;

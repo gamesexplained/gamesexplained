@@ -66,10 +66,9 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-keys .pl-keys-tap{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -99,22 +98,19 @@ section table{margin:6px 0 18px}
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
-    <ul class="pl-keys">
-      <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> and <kbd>Enter</kbd>: the language, then the prince or the princess</li>
-      <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> the joystick: turn, walk forward and back</li>
-      <li><kbd>Right Ctrl</kbd>, <kbd>Right Alt</kbd> or <kbd>Shift</kbd>: throw a rock</li>
-      <li><kbd>Z</kbd> <kbd>X</kbd> turn, <kbd>Left Ctrl</kbd> with a turn: a quarter turn, <kbd>U</kbd> turn about</li>
-      <li><kbd>P</kbd> <kbd>L</kbd> look up and down, <kbd>F</kbd> face forward</li>
-      <li><kbd>C</kbd> <kbd>W</kbd> <kbd>R</kbd> crawl, walk, run</li>
-      <li><kbd>A</kbd> act: eat, drink, read, push, open, collect</li>
-      <li><kbd>Space</kbd> the pointer on and off, <kbd>-</kbd> the sight</li>
-      <li><kbd>I</kbd> the information screen: <kbd>S</kbd> save, <kbd>L</kbd> load, <kbd>F</kbd> music or effects, <kbd>K</kbd> keys, <kbd>Q</kbd> quit</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game. <b>Left Ctrl</b> stays down for the key you tap after it.</li>
+      <li><kbd data-key="A">A</kbd> act: eat, drink, read, push, open, collect</li>
+      <li><kbd data-key="P">P</kbd> <kbd data-key="L">L</kbd> look up and down, <kbd data-key="F">F</kbd> face forward</li>
+      <li><kbd data-key="C">C</kbd> <kbd data-key="W">W</kbd> <kbd data-key="R">R</kbd> crawl, walk, run</li>
+      <li><kbd data-key="SPACE">Space</kbd> the pointer on and off, <kbd data-key="+">-</kbd> the sight</li>
+      <li><kbd data-key="I">I</kbd> the information screen: <kbd data-key="S">S</kbd> save, <kbd data-key="L">L</kbd> load, <kbd data-key="F">F</kbd> music or effects, <kbd data-key="K">K</kbd> keys, <kbd data-key="Q">Q</kbd> quit</li>
+      <li><kbd data-key="T">T</kbd> tape or <kbd data-key="D">D</kbd> disk, a name and <kbd data-key="RETURN">Enter</kbd>: where to save or load</li>
+      <li><kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> and <kbd data-key="RETURN">Enter</kbd>: the language, then the prince or the princess</li>
+      <li class="pl-keys-pad"><kbd data-key="left">←</kbd> <kbd data-key="right">→</kbd> <kbd data-key="up">↑</kbd> <kbd data-key="down">↓</kbd> the joystick: turn, walk forward and back</li>
+      <li class="pl-keys-pad"><kbd data-key="fire">Right Ctrl</kbd>, <kbd data-key="fire">Right Alt</kbd> or <kbd data-key="LSHIFT">Shift</kbd>: throw a rock</li>
+      <li><kbd data-key="Z">Z</kbd> <kbd data-key="X">X</kbd> turn, <kbd data-key="CBM" data-mod>Left Ctrl</kbd> with a turn: a quarter turn, <kbd data-key="U">U</kbd> turn about</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would, with a new frame 60 times a second, and <b>Speed</b> sets how fast you move: 1× as fast as a C64 at its quickest, with little in view, and 2× and 5× faster still (section 03).</p>
   </div>
 </section>
@@ -230,7 +226,6 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
-PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
 
 // --- the saved games, kept in this browser by the name the game was given
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -292,19 +287,23 @@ const CODE = { Space: 'SPACE', Enter: 'RETURN', Backspace: 'DEL', ShiftLeft: 'LS
   Equal: '=', Minus: '+', NumpadAdd: '+', NumpadSubtract: '-', NumpadMultiply: '*', BracketRight: '*', Period: '.', Comma: ',',
   Slash: '/', Semicolon: ';', Quote: ':', BracketLeft: '@', Backquote: '£', Home: 'HOME', F1: 'F1', F3: 'F3', F5: 'F5', F7: 'F7' };
 // A key is held for at least three frames of the game's time: a tap shorter than the game's
-// wait between two looks at the keyboard would never reach it
-const held = new Map(), since = new Map(), letGo = new Set();
+// wait between two looks at the keyboard would never reach it. A key tapped in the list (tap:,
+// below) is held until the game has read the controls since it went down as well
+const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
 const HOLD = 3;
 let padBits = 0;
 function release() {
-  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  for (const c of letGo) {
+    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
+  }
   input();
 }
 function input() {
   if (!rt) return;
   let bits = padBits;
   const keys = new Set();
-  for (const k of held.values()) if (typeof k === 'number') bits |= k; else keys.add(k);
+  for (const v of held.values()) for (const k of [].concat(v)) if (typeof k === 'number') bits |= k; else keys.add(k);
   rt.input.joy = 0x1F & ~bits;
   rt.input.keys = keys;
 }
@@ -325,15 +324,31 @@ function onKey(e, down) {
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+screen.addEventListener('blur', () => {
+  active = false; screen.classList.remove('pl-focus');
+  for (const c of [...held.keys()]) if (!c.startsWith('tap:')) { held.delete(c); since.delete(c); letGo.delete(c); }
+  input();
+});
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+// the finger is on it and, once it lifts, until the game has read the controls since it went down
+// (READ_CONTROL_INPUT, once a pass), so that a tap shorter than a pass still counts. data-key is
+// the C64's key, or the joystick's direction or fire; Left Ctrl, the Commodore key, tapped first
+// goes down with the key after it
+const TAP_JOY = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
+function press(name, mods) {
+  if (!running || !rt) return;
+  const c = 'tap:' + name;
+  held.set(c, [name].concat(mods).map(n => (TAP_JOY[n] !== undefined ? TAP_JOY[n] : n)));
+  since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
+  input();
+}
+function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+PlayControls.keys($('pl-keys'), { down: press, up: lift });
+// the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
+// (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- controls
 let sayTimer = 0;

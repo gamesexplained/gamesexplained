@@ -15,9 +15,10 @@
 // - P.io, the ULA, which the lockstep sets (members it does not define, such as a save file's, are
 //   kept): in(port), a read of an I/O port, the game's keyboard (and anything else the game's
 //   machine answers in portIn, such as a joystick interface a page adds there) with the port's own
-//   EAR bit; out(port, v), a write, which sets the port's own border and EAR output; and sp, the
-//   stack pointer a stand-in starts with (standIn below). The port reads P.io when it runs, not
-//   when it is built.
+//   EAR bit; out(port, v), a write, which sets the port's own border and EAR output; store(a, v),
+//   the main program's write of a byte an interrupt writes (irqs below); and sp, the stack pointer
+//   a stand-in starts with (standIn below). The port reads P.io when it runs, not when it is
+//   built.
 // - The main program, a generator (program below), which yields where the game's code has got to:
 //     { cp: a }       the game's program counter has reached a checkpoint a, where the main loop
 //                     calls a routine (the CALL, which is also where the call before returns to);
@@ -60,11 +61,15 @@
 //   the memory the game's handler saw: the bytes it read are set to the values it read, and go back
 //   to the port's after unless it wrote them. At the next checkpoint or HALT's exit, where the two
 //   stand at the same place, a byte an interrupt wrote and the game's main program wrote again
-//   afterwards gets back the port's own value: the last writer of each byte is the game's. What no
-//   replay can give is the main program reading, in the middle of a stretch, what an interrupt
-//   wrote there: those are the game's own races (the skill says how to show one). A handler reads
-//   the keyboard the game's did: input changes only at a yield. The reads and writes followed are
-//   those of RAM, $4000 up; what a hook standing in for a handler reads or writes is not.
+//   afterwards gets back the port's own value: the last writer of each byte is the game's. A write
+//   of the value the byte already holds cannot be seen in M, so the main program writes such a byte
+//   (one that may get the value the interrupt left there) through P.io.store(a, v), which the
+//   lockstep follows; a byte put back that then differs is listed with restored: true. On the page
+//   store is M[a] = v. What no replay can give is the main program reading, in the middle of a
+//   stretch, what an interrupt wrote there: those are the game's own races (the skill says how to
+//   show one). A handler reads the keyboard the game's did: input changes only at a yield. The
+//   reads and writes followed are those of RAM, $4000 up; what a hook standing in for a handler
+//   reads or writes is not.
 // - stack: [first, last], the bytes the game's stack uses, which a port does not keep: never
 //   compared. The default is the 256 bytes below the machine's stack pointer when the lockstep is
 //   made, which is right for a machine stopped in its main loop. A lockstep made before the game
@@ -142,6 +147,15 @@ const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const LIST = 64;                                   // differing bytes kept per pass
 const ULA = 0xFE;                                  // the address a chip's difference is listed at
 const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
+// A pass's differing bytes of RAM in view that lastWriters gave back unlike the game's, marked
+// restored (the set is emptied for the next pass).
+function restored(bytes, set) {
+  if (set.size) for (const b of bytes) if (!b.chip && b.bank === undefined && set.has(b.address)) b.restored = true;
+  set.clear();
+  return bytes;
+}
+const STORE_HINT = ': given back the port\'s value from before an interrupt\'s replay; if the port\'s program wrote the value ' +
+  'the interrupt left there, write it through P.io.store(a, v)';
 
 // The port's ULA: its own border and EAR output, and the game's keyboard, read through the game's
 // machine (and so through any portIn a page or a test wraps there) with the port's EAR bit.
@@ -263,6 +277,9 @@ class Lockstep {
     this.resume = -1;
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
+    this.stored = new Set();                       // bytes the port's program stored since their replay
+    this.restored = new Set();                     // bytes lastWriters put back unlike the game's
+    this.replaying = false;
     this.irq = null;                               // the innermost one running on the machine
     this.ints = null;                              // the machine's interrupts, followed while it runs
     this.irqTstates = 0; this.irqCount = 0;
@@ -279,6 +296,7 @@ class Lockstep {
       in: port => u.in(port & 0xFFFF),
       out: (port, v) => u.out(port & 0xFFFF, v & 0xFF),
       irqByte: a => this.irqByte(a & 0xFFFF),
+      store: (a, v) => { a &= 0xFFFF; this.P.M[a] = v & 0xFF; if (!this.replaying) this.stored.add(a); },
       sp,
       get ay() { return u.ay; },
       get paging() { return u.paging; },
@@ -422,9 +440,10 @@ class Lockstep {
   // Run in the port the interrupts the game has taken since the last yield. Each runs on the bytes
   // the game's handler read, as it read them, which go back to the port's values after unless it
   // wrote them. What each wrote is kept in fix for lastWriters: the port's value before (b), the
-  // handler's (h) and the game's handler's (v).
+  // handler's (h) and the game's handler's (v). The port's program has written a byte since its last
+  // replay when its value changed, or when it stored it.
   settle() {
-    const list = this.pending, P = this.P, M = P.M, fix = this.fix;
+    const list = this.pending, P = this.P, M = P.M, fix = this.fix, stored = this.stored;
     if (!list.length) return;
     this.pending = [];
     const counting = this.counting;
@@ -437,25 +456,32 @@ class Lockstep {
         for (const a of q.wrote.keys()) {
           const x = fix.get(a);
           if (!x) fix.set(a, { b: M[a], h: -1, v: -1 });
-          else if (M[a] !== x.h) x.b = M[a];                  // the port's program has written it since
+          else if (M[a] !== x.h || stored.has(a)) x.b = M[a];   // the port's program has written it since
+          stored.delete(a);
         }
         const put = [];
         for (const [a, v] of q.seen) if (M[a] !== v) { put.push(a, M[a]); M[a] = v; }
+        this.replaying = true;
         const r = f.call(P);
+        this.replaying = false;
         if (r && typeof r.next === 'function') throw new Error('Lockstep: the handler for ' + hex(q.at) + ' is a generator; an interrupt runs to its end');
         for (let i = 0; i < put.length; i += 2) if (!q.wrote.has(put[i])) M[put[i]] = put[i + 1];
         for (const [a, v] of q.wrote) { const x = fix.get(a); x.v = v; x.h = M[a]; }
       }
     } catch (e) { throw this.annotate(e); }
-    finally { this.counting = counting; }
+    finally { this.counting = counting; this.replaying = false; }
   }
   // At a checkpoint or a HALT's exit, where the game and the port stand at the same place: a byte
   // an interrupt wrote that the game's main program then wrote again, and the port's has not since
-  // the replay, gets back the port's own value. The last writer of each byte is the game's.
+  // the replay, gets back the port's own value. The last writer of each byte is the game's. One put
+  // back unlike the game's is kept in restored, for compare to name.
   lastWriters() {
     const M = this.P.M, R = this.m.ram;
-    for (const [a, x] of this.fix) if (R[a] !== x.v && M[a] === x.h) M[a] = x.b;
+    for (const [a, x] of this.fix) {
+      if (R[a] !== x.v && M[a] === x.h && !this.stored.has(a)) { M[a] = x.b; if (x.b !== R[a]) this.restored.add(a); }
+    }
     this.fix.clear();
+    this.stored.clear();
   }
 
   // --- one yield of the port's program ---
@@ -578,7 +604,7 @@ class Lockstep {
         for (let r = 0; r < 14; r++) if (this.m.ay.regs[r] !== this.ula.ay.regs[r]) add(r, this.m.ay.regs[r], this.ula.ay.regs[r], 'ay');
       } else if (this.m[chip] !== this.ula[chip]) add(chip === 'paging' ? 0x7FFD : ULA, this.m[chip], this.ula[chip], chip);
     }
-    return count ? { count, bytes } : null;
+    return count ? { count, bytes: restored(bytes, this.restored) } : null;
   }
   // The port's compared memory and ULA made the game's again.
   resync() {
@@ -681,6 +707,8 @@ function describe(r) {
       hex(b.address) + ' game ' + hex(b.game, 2) + ' port ' + hex(b.port, 2));
     out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + d.count + (d.count === 1 ? ' byte differs: ' : ' bytes differ: ') +
       shown.join(', ') + (d.count > shown.length ? ', ...' : ''));
+    const back = d.bytes.filter(b => b.restored).map(b => hex(b.address));
+    if (back.length) out.push('  ' + back.join(', ') + STORE_HINT);
   }
   if (r.diverged) out.push('pass ' + r.diverged.pass + (r.diverged.after >= 0 ? ', after ' + hex(r.diverged.after) : '') + ' (frame ' + r.diverged.frame + '): ' + r.diverged.why);
   out.push(r.passes + (r.passes === 1 ? ' pass' : ' passes') + ' in ' + r.frames + ' frames: ' +

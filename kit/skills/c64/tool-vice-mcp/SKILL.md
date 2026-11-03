@@ -217,7 +217,10 @@ in-game input hook below does the same job.
   before the next key; doubled letters need that gap.
 - **Snapshot, load, step.** A load on a stopped machine leaves it stopped
   at the loaded state's program counter, with every checkpoint still armed
-  (`load-held`, `checkpoints-survive-load`). The same snapshot plus the
+  (`load-held`, `checkpoints-survive-load`), until `vice_execution_run`.
+  A snapshot saved after `pause()` and loaded at once is such a load: the
+  joystick does nothing and the clock does not move until the run, and
+  `vice_ping` answers `paused`. The same snapshot plus the
   same inputs gives the same machine, byte for byte (`determinism`). This
   is how to reach a corner case and try it a hundred ways.
 - **Choose from a menu by its text, not its position.** A game whose menu

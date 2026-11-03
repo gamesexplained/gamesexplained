@@ -5,8 +5,9 @@
 // contributor's moments of play and the scenarios that force each way out of play); this one holds
 // the page that is published, with nothing from work/.
 // - the security question is asked, and its word, looked up in the game's own table as the page
-//   shows it, answered; ENTER at the control options (the keyboard) reaches play in Amethyst, with
-//   the clock at four hours and running;
+//   shows it, typed as the page's Type it types it, each key down until the game has looked at the
+//   keys since; ENTER at the control options (the keyboard) reaches play in Amethyst, with the
+//   clock at four hours and running;
 // - O walks the probe forward, W turns it, P looks up, SPACE gives the keys to the crosshair and
 //   back, 0 fires, D drills (or says why not) and I opens the information screen, which another key
 //   closes;
@@ -69,9 +70,18 @@ function machine() {
       try { rt.runFrame(); } catch (e) { threw = e; fail('frame ' + f + ': ' + e.message); }
     }
   };
-  // wait for the question's prompt, then type a word, each letter held 6 frames and let go for 6
+  // wait for the question's prompt, then type a word and ENTER as the page's Type it does: each key
+  // down until the game has looked at the keys since (rt.input.reads), eight frames at least, then
+  // a look with no key down, so that a letter twice running is two
   const ask = () => { let n = 0; while (!threw && !(at.asking && rt.M[0xCB6F] === 0x23 && answer(rt.M)) && n++ < 3000) run(1); return n < 3000; };
-  const type = w => { for (const ch of w) { run(6, [ch]); run(6); } run(6, ['ENTER']); run(6); };
+  const type = w => {
+    for (const ch of w.split('').concat('ENTER')) {
+      let r = rt.input.reads, n = 0;
+      while (!threw && (rt.input.reads <= r || n < 8) && n < 200) { run(1, [ch]); n++; }
+      r = rt.input.reads; n = 0;
+      while (!threw && rt.input.reads <= r && n < 200) { run(1); n++; }
+    }
+  };
   return { rt, at, run, ask, type, get f() { return f; }, get threw() { return threw; } };
 }
 

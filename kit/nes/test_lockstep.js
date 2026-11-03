@@ -4,7 +4,7 @@
 // Exits 1 on any failure. node kit/nes/test_lockstep.js
 const { Machine } = require('./machine.js');
 const { Lockstep, standIn, standInGen, checkGen, describe } = require('./lockstep.js');
-const { program, ADDR } = require('./test_machine.js');
+const { program, ADDR, assemble } = require('./test_machine.js');
 
 let fails = 0;
 const check = (what, got, want) => { if (got !== want) { fails++; console.log('FAIL', what, 'got', got, 'want', want); } else console.log('ok  ', what); };
@@ -198,6 +198,51 @@ const input = (n, m) => {
   P.wait_flag = function* () { while (P.M[0x02] === 0) yield; P.M[0x02] = 0; };   // $05 not counted
   const r2 = checkGen(P, 'wait_flag', ADDR.WAIT_FLAG, { frame: 0x02 });
   check('checkGen: a wrong routine named', !r2.ok && /\$0005 game/.test(r2.diff.why), true);
+}
+
+// The main program writes the value the NMI has just left (#729). A delay of a frame and a half
+// takes the NMI, the program keeps the byte the handler wrote ($A3) in $A4, waits for the next NMI
+// and puts the kept value back. The port's wait polls without yielding, so its last write comes
+// before the second NMI's replay, and it writes what the first replay left there: the value does
+// not change. Written to M, it looks like no write, and the byte gets back the port's value from
+// before the first replay; written through P.io.store, it is the port's own, and the byte is the
+// game's.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, b) => ram.set(b, a);
+  put(0xC000, assemble(0xC000, [['sei', 'imp'], ['cld', 'imp'], ['ldx', 'imm', 0xFF], ['txs', 'imp'],
+    ['lda', 'imm', 0x80], ['sta', 'abs', 0x2000], ['jmp', 'abs', 0xC020]]).bytes);
+  put(0xC020, assemble(0xC020, [['jsr', 'abs', 0xC040], ['jmp', 'abs', 0xC020]]).bytes);
+  put(0xC040, assemble(0xC040, [
+    ['ldy', 'imm', 35], 'o:', ['ldx', 'imm', 0], 'i:', ['dex', 'imp'], ['bne', 'rel', 'i'], ['dey', 'imp'], ['bne', 'rel', 'o'],
+    ['lda', 'zp', 0xA3], ['sta', 'zp', 0xA4], ['lda', 'zp', 0xA2], 'w:', ['cmp', 'zp', 0xA2], ['beq', 'rel', 'w'],
+    ['lda', 'zp', 0xA4], ['sta', 'zp', 0xA3], ['rts', 'imp']]).bytes);
+  put(0xC100, assemble(0xC100, [['pha', 'imp'], ['inc', 'zp', 0xA2], ['lda', 'zp', 0xA2], ['sta', 'zp', 0xA3], ['pla', 'imp'], ['rti', 'imp']]).bytes);
+  put(0xFFFA, [0x00, 0xC1, 0x00, 0xC0, 0x00, 0xC0]);
+  const m0 = new Machine({ ram, chr: new Uint8Array(0x2000), pc: 0xC000, passAt: 0xC020 });
+  m0.runPasses(3);
+  const SAME = m0.save();
+  const samePort = store => {
+    const M = new Uint8Array(65536), P = { M };
+    P.wait = function* () {                              // $C040
+      yield { cycles: 2 + 35 * 1286 - 1 };
+      M[0xA4] = P.io.irqByte(0xA3);
+      const b = P.io.irqByte(0xA2);
+      while (P.io.irqByte(0xA2) === b);
+      if (store) P.io.store(0xA3, M[0xA4]); else M[0xA3] = M[0xA4];
+    };
+    P.nmi = function () { M[0xA2] = (M[0xA2] + 1) & 255; M[0xA3] = M[0xA2]; };
+    P.main = function* () { for (;;) { yield { cp: 0xC020 }; yield* P.wait(); } };
+    return P;
+  };
+  const same = store => new Lockstep({ machine: Machine.restore(SAME), port: samePort(store), program: p => p.main(), checkpoints: [0xC020],
+    nmis: { 0xC100: 'nmi' }, irqBytes: [0xA2, 0xA3] }).run({ passes: 20, stopOnDiff: false });
+  const r = same(false);
+  check('a write of the value the NMI left, to M: $A3 put back from before the first replay',
+    r.diffs.length === 20 && r.diffs.every(d => d.count === 1 && d.bytes[0].address === 0xA3 && d.bytes[0].restored === true), true);
+  check('and the difference says how to write it', /\$00A3: .*P\.io\.store/.test(describe(r)), true);
+  const t = same(true);
+  check('the same write through P.io.store: 20 passes identical', t.ok && t.passes === 20, true);
 }
 
 console.log(fails ? fails + ' FAILED' : 'all lockstep checks pass');
