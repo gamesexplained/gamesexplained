@@ -12950,12 +12950,12 @@
   {
    "address": 40428,
    "type": "line",
-   "text": "PAL check. lda $CFF9,x with X=$19 reads $D012: keeps the last non-zero raster low byte until a zero is read, i.e. the value just before the counter wraps. >= $F0 (the wrap at line 256) retry; >= $30 (PAL, 312 lines: $37) continue; else (NTSC, 263 lines: $06) jmp ($F7) where $F7/$F8 = $DBE8 (past the end of colour RAM): effectively a crash on NTSC machines."
+   "text": "PAL check. lda $CFF9,x with X=$19 reads $D012 and stores each non-zero raster low byte in $FF until a zero is read, so $FF holds the value just before the counter reads 0. $F0 or more (line 255, before line 256) tries again; $30 or more (PAL, 312 lines: $37) continues; less (NTSC, 263 lines: $06) jumps through ($F7), where $F7/$F8 = $DBE8, in colour RAM just past the screen's 1,000 cells: effectively a crash on NTSC machines. When the very first read finds 0 (line 0 or 256), $FF still holds what was there before: after a game over that is 0, from the countdown at $9CAD, and a PAL machine takes the same jump (seen on the kit's C64 with the check started on line 0)."
   },
   {
    "address": 40450,
    "type": "line",
-   "text": "Sprite 3 parked at X=$1F7 (503, off the visible area), Y=$40, enabled alone, expanded both ways, colour 1 (white); reads $D01F to clear the collision latch. start_game_from_title later samples sprite 3's background-collision bit into $C0."
+   "text": "Sprite 3 parked at X=$1F7 (503, the last X the chip draws: expanded to 48 pixels it runs past the line's end into X 0-46, under the left border and the first columns, where it can meet the graphics; on the kit's C64 $C0 is 8 when a game starts), Y=$40, enabled alone, expanded both ways, colour 1 (white); reads $D01F to clear the collision latch. start_game_from_title later samples sprite 3's background-collision bit into $C0."
   },
   {
    "address": 40483,
@@ -12995,7 +12995,7 @@
   {
    "address": 40953,
    "type": "line",
-   "text": "Seven bytes A9 4B 53 54 41 3A 2A executed in line: LDA #$4B, SRE ($54),Y (illegal: shifts the byte at ($54)+Y and EORs it into A), EOR ($3A,X), ROL A. Read as ASCII they spell 'KSTA:*' preceded by $A9. Meaning unknown; flagged, not explained."
+   "text": "Seven bytes A9 4B 53 54 41 3A 2A executed in line: LDA #$4B, SRE ($54),Y (illegal: shifts right the byte at ($54)+Y and EORs it into A; with Y = $FF and $54/$55 = $0012 that byte is $0111, in the stack page), EOR ($3A,X), ROL A. A is loaded again at $A000, so the shifted byte is all they leave. Read as ASCII they spell 'KSTA:*' preceded by $A9. Why they are here is unknown."
   },
   {
    "address": 40960,

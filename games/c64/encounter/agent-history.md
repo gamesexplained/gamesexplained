@@ -149,3 +149,34 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   set up; the routines read $3EED, a byte the listing does not hold.
   facts.md has each.
 
+## 2026-11-03, Play tab (Claude Opus 5.5)
+
+- The contributor asked for a Play tab. The port is in port/src: every
+  routine of the game written again in JavaScript, the title, the
+  demonstration, play, the stargates and warps, the game over, the
+  seven raster interrupts and the sound. port/test/lockstep.js runs it
+  beside the game's code from listing.json on kit/c64/machine.js: five
+  sessions (the title left cold, the demonstration, a warp, level 8, a
+  game over) of 3,000 passes each, every byte the same at every
+  checkpoint. port/test/t-irq.js holds each interrupt's writes to the
+  cycle of its line, 11,889 of them.
+- The page's pacing is a cost model (port/cost.json) fitted on the
+  machine's timings of each stretch between checkpoints, with the busy
+  loops' own cycles taken out first; on sessions it was not fitted on
+  a pass costs what the game's does within 0.5 % on average. The
+  interrupts are counted exactly, not fitted.
+- The kit machine booted with $D011 at 0, which left the title blank:
+  the game, run from BASIC, never sets it before play. lib.boot sets
+  $1B. kit/c64/lockstep.js now accepts a raster wait's exit on the line
+  of the game's last read of the raster, when an interrupt comes
+  between the read and the exit.
+- test_play.js holds the published page beside the C64: the title and
+  the demonstration's first 2,600 frames, three moments of a level 5
+  game for 600 frames each, the keys, the pause, F1 and the interrupts.
+- Corrected in the listing: the PAL check also stops a PAL machine
+  after a game over whenever its first read lands on line 0 or 256,
+  since the countdown leaves $FF at 0 (seen on the kit's C64 with the
+  clock moved); $DBE8 is past the screen's 1,000 cells in colour RAM,
+  not past colour RAM; the sprite parked at X 503 runs on into the left
+  of the screen and collides there ($C0 is 8); the seven junk bytes
+  shift $0111, in the stack page.

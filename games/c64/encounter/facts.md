@@ -579,6 +579,15 @@ a missile's passes and the warp's came 1 to 4 frames apart.
   counter samples over three seconds all read $DBE8). On PAL, $9DFF never
   runs and $9E02 runs once. The game is PAL-only by construction; an NTSC
   machine shows the title and hangs (reference/ntsc-hang-title.png).
+  The previous value is kept in $FF, and the loop stores there only what
+  it reads, so when the very first read already finds 0 (line 0 or 256)
+  the branch judges whatever $FF held before. After a game over that is
+  0, from the countdown at $9CAD, and a PAL machine takes the NTSC jump
+  to $DBE8: on the kit's C64, stopped at the check after a game over with
+  $FF = 0 and its clock moved so that the first read lands on line 0, the
+  processor goes to $DBE8. In play the check starts wherever the game
+  over left the beam, so it takes the first read landing on one of those
+  two lines of the frame's 312.
 - **A read past the shape scripts.** Drawing explosion fragments, the
   view's routines read $3EED, two bytes past the one-byte shape script at
   $3EEB (fragment C, size step 0), in the tail that the coverage counts

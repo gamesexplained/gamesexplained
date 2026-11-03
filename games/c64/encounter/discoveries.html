@@ -91,6 +91,7 @@ td.m{font-family:var(--fm);font-size:13px}
   <p class="fig">02 · PAL only</p>
   <h2 class="t">Secret: the game stops dead on an NTSC machine</h2>
   <p><code>$9DEC</code> reads the raster line through the odd address <code>$CFF9,X</code> with X = 25, which lands on <code>$D012</code>, and spins until the line reads 0. It then looks at the previous non-zero value. On PAL that is <code>$37</code> (line 311 wrapping to 0) and the game continues. On NTSC it is <code>$06</code>, and the code jumps through a pointer that by then holds <code>$DBE8</code>, an address in colour memory. Tested with the emulator set to NTSC: the title screen is drawn and the processor parks at <code>$DBE8</code> for good.</p>
+  <p>A PAL machine can stop there too. The loop keeps the previous value in <code>$FF</code> and stores only what it reads, so when its very first read already finds line 0 (or 256, which also reads as 0) the code judges whatever <code>$FF</code> held before. After a game over that is 0, left by the countdown that holds the game-over screen, and 0 is an NTSC answer: the title comes back and the processor parks at <code>$DBE8</code>. It needs the first read to land on one of two lines in the frame's 312, so it is rare.</p>
 </section>
 
 <section id="quirks">
