@@ -155,22 +155,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The first line of the skyline is drawn half set up. <code>irq_skyline</code> changes the character set and the scroll first and the colours after, and the beam draws that line in between: the skyline's characters in the colours of the bars. The rebuilt frame draws it so, as plus4emu does.</p>
 </section>
 
-<section id="tex">
-  <p class="fig">05 · Tex</p>
-  <h2 class="t">Tex is fifteen characters</h2>
-  <p class="lede">Tex is three characters across and five down, drawn into the play field like the letters of the score. His legs are the bottom two rows, redrawn as he runs. Everything else that moves, in every scene, is on the <a href="graphics.html">Graphics</a> tab.</p>
-  <div class="plate">
-    <div class="tt-bar" id="tt-tbar"><span style="color:var(--ink-soft)">Speed</span></div>
-    <div class="tt-small" id="tt-legs"></div>
-    <p class="tt-state" id="tt-tstate"></p>
-    <p class="cap">Drawn from the listing's characters <code>$40</code>-<code>$4E</code> in the desert's colours, at four times their size. The pictures of his legs are put in by the game's <code>animate_legs</code> on the kit's 6502, every <code>leg_delays</code> frames at the speed chosen. Lying down is <code>turn_tex</code>, run once, drawn with <code>tex_lying_layout</code>.</p>
-  </div>
-  <p><code>draw_tex</code> puts characters <code>$40</code> to <code>$4E</code> on the screen at Tex's cell, row by row from <code>tex_layout</code>, and looks at the pipe under him on the way (<code>check_hole</code>). <code>animate_legs</code> copies one of four pictures from <code>leg_frames</code> over characters <code>$49</code> to <code>$4E</code>, his bottom two rows, in the order 1, 3, 0, 2 (<code>leg_frame_order</code>): every 22 frames at speed 1 and every frame at speed 7.</p>
-  <p>When Tex dies, <code>tex_death</code> saves his characters at <code>$0400</code>, and <code>turn_tex</code> turns each of them a quarter turn: its eight rows become its eight columns. Both <code>draw_tex</code> and <code>erase_tex</code> are patched to read <code>tex_lying_layout</code>, five columns by three rows, so that he lies on his side. Then <code>sink_tex</code> slides his characters down a pixel every second frame, 23 times, while the pipe slows to a stop. His characters are put back, a life goes, and he starts again at column 1 on a new stretch of pipe.</p>
-</section>
-
 <section id="pipe">
-  <p class="fig">06 · The pipeline</p>
+  <p class="fig">05 · The pipeline</p>
   <h2 class="t">A break is one more piece of pipe</h2>
   <p class="lede">The pipe comes in at the right edge one column at a time, from pieces chosen at random. A break is a piece too, and the columns that kill are decided by the character under Tex's feet.</p>
   <div class="plate">
@@ -190,7 +176,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="pressure">
-  <p class="fig">07 · Oil pressure</p>
+  <p class="fig">06 · Oil pressure</p>
   <h2 class="t">The pressure only ever falls</h2>
   <p class="lede">The inlay says the faster Tex runs, the quicker the pressure builds. Nothing in the code raises it during a level: it falls an eighth of a cell at a steady pace, faster on the harder settings, and when it runs out the game ends.</p>
   <div class="plate">
@@ -210,14 +196,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="enemies">
-  <p class="fig">08 · The enemies</p>
+  <p class="fig">07 · The enemies</p>
   <h2 class="t">Three of the four enemies change with the scene</h2>
-  <p class="lede">Every enemy is a few characters drawn into the play field. The arrow, the bouncing bomb and the crash explosive are redrawn for each scene; the jet and its bomb are the same everywhere.</p>
-  <div class="plate">
-    <div class="tt-scroll" id="tt-enemies"></div>
-    <p class="cap">Each enemy's characters as <code>set_scene_graphics</code> copies them in at the start of a level in each scene, run on the kit's 6502, laid out by the game's own tables (<code>arrow_cells</code>, <code>jet_cells</code>, <code>bouncy_cells</code>, <code>explosive_cells</code>) in that scene's colours for the play field.</p>
-  </div>
-  <div class="tt-scroll"><table class="tt-table tt-left" style="margin-top:22px">
+  <p class="lede">Every enemy is a few characters drawn into the play field. The arrow, the bouncing bomb and the crash explosive are redrawn for each scene; the jet and its bomb are the same everywhere. Each of them, in every scene, is on the <a href="graphics.html">Graphics</a> tab.</p>
+  <div class="tt-scroll"><table class="tt-table tt-left">
     <tr><th>Enemy</th><th>How it moves</th><th>Moved by</th><th>Points</th></tr>
     <tr><td>Arrow</td><td>right to left at Tex's height, a column a frame, from column 36</td><td><code>move_arrow_and_jet</code>, in the interrupt</td><td>25</td></tr>
     <tr><td>Jet</td><td>left to right across rows 8 and 9, a column every second frame, dropping a bomb</td><td><code>move_arrow_and_jet</code></td><td>out of reach</td></tr>
@@ -229,7 +211,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="levels">
-  <p class="fig">09 · Levels</p>
+  <p class="fig">08 · Levels</p>
   <h2 class="t">A level chooses its enemies</h2>
   <p class="lede">Each level is a stretch of pipe in its scene. What changes from one to the next is which enemies come, how soon they come back, and how often their timers count.</p>
   <div class="plate">
@@ -241,7 +223,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="controls">
-  <p class="fig">10 · Controls</p>
+  <p class="fig">09 · Controls</p>
   <h2 class="t">A joystick in either port, or five keys</h2>
   <p class="lede">K and J on the menu choose the keyboard or the joystick, and the picture between the two boxes shows which. The game reads both through TED itself, never through the KERNAL.</p>
   <div class="plate">
@@ -261,7 +243,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="score">
-  <p class="fig">11 · Score and lives</p>
+  <p class="fig">10 · Score and lives</p>
   <h2 class="t">A life for every 10,000 points</h2>
   <p class="lede">The score lives on the screen itself, six digits at <code>$0C56</code>-<code>$0C5B</code>, and the lives come from watching one of them.</p>
   <div class="plate">
@@ -287,7 +269,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 (function () {
   const $ = id => document.getElementById(id);
   if (!window.C16 || !window.C64Cpu || !window.Tex || !window.TEDSound) {
-    for (const id of ['tt-run', 'tt-frame', 'tt-legs', 'tt-break', 'tt-bar', 'tt-enemies', 'tt-ltable', 'tt-sfxroll', 'tt-ctl']) {
+    for (const id of ['tt-run', 'tt-frame', 'tt-break', 'tt-bar', 'tt-ltable', 'tt-sfxroll', 'tt-ctl']) {
       const el = $(id); if (!el) continue;
       const p = document.createElement('p'); p.className = 'tt-need';
       p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js, lib/ted-sound.js): open the page from the built site.';
@@ -428,47 +410,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       draw();
     })();
 
-    /* Tex */
-    (function () {
-      const m = scenes[0].slice(), box = $('tt-legs'), bar = $('tt-tbar'), out = $('tt-tstate');
-      const cpu = Tex.cpuFor(m);
-      const texAt = 0x0EA9;
-      const tex = mem => cells(mem, FIELD(mem), 3, 5, (c, r) => [mem[texAt + r * 40 + c], mem[texAt - 0x0400 + r * 40 + c]]);
-      // the four pictures of his legs, in the order animate_legs shows them
-      const figs = [];
-      for (let k = 0; k < 4; k++) {
-        m[0x70] = 1; m[0x8B] = 0; m[0xD9] = 0; m[0x79] = 1; m[0x21] = (k + 3) % 4;
-        cpu.call(0x1EF2);
-        const f = document.createElement('figure'), c = document.createElement('canvas');
-        Tex.draw(c, tex(m), 4);
-        f.append(c, document.createTextNode(`frame ${L.ram[0x19B3 + k]}`));
-        box.appendChild(f); figs.push(f);
-      }
-      // lying down: tex_death's turn and its layout, $243F-$245C
-      const lying = scenes[0].slice(), c2 = Tex.cpuFor(lying);
-      c2.call(0x1ECA); c2.call(0x23CE);
-      lying[0x1EAE] = 0x97; lying[0x1ECF] = 0x97;
-      c2.call(0x1E99);
-      const f = document.createElement('figure'), cl = document.createElement('canvas');
-      Tex.draw(cl, cells(lying, FIELD(lying), 5, 3, (c, r) => [lying[texAt + 0x50 + r * 40 + c], lying[texAt - 0x0400 + 0x50 + r * 40 + c]]), 4);
-      f.append(cl, document.createTextNode('lying down'));
-      box.appendChild(f);
-      let speed = 7, step = 0;
-      for (let s = 1; s < 8; s++) {
-        const b = document.createElement('button'); b.textContent = s; b.dataset.s = s;
-        b.onclick = () => { speed = s; for (const x of bar.querySelectorAll('button')) x.classList.toggle('on', x === b); };
-        if (s === speed) b.classList.add('on');
-        bar.appendChild(b);
-      }
-      let t = 0;
-      setInterval(() => {
-        if (++t < L.ram[0x1E91 + speed]) return;
-        t = 0; step = (step + 1) % 4;
-        figs.forEach((x, i) => x.classList.toggle('on', i === step));
-        out.textContent = `Speed ${speed}: a new picture every ${L.ram[0x1E91 + speed]} frame${L.ram[0x1E91 + speed] > 1 ? 's' : ''}, now frame ${L.ram[0x19B3 + step]} of leg_frames`;
-      }, 1000 / 49.86);
-    })();
-
     /* The pipeline */
     (function () {
       const box = $('tt-pieces'), cv = $('tt-break'), out = $('tt-pstate');
@@ -555,33 +496,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
           : `Lost ${before - after} eighth${before - after > 1 ? 's' : ''}` + (before - after !== 4 ? `, not 4: the part cell held ${before & 7}, so lose_pressure took the cell and left 7.` : '.');
       };
       draw();
-    })();
-
-    /* The enemies */
-    (function () {
-      const box = $('tt-enemies');
-      const at = (chars, offs) => offs.map((o, i) => [o % 40, o / 40 | 0, chars[i]]);
-      const E = [
-        ['arrow', at([...L.ram.subarray(0x2EE0, 0x2EE8)], [...L.ram.subarray(0x2EE8, 0x2EF0)])],
-        ['jet', at([...L.ram.subarray(0x2F2C, 0x2F38)], [...L.ram.subarray(0x2F38, 0x2F44)])],
-        ['jet\'s bomb', [[0, 0, 0x73], [1, 0, 0x74]]],
-        ['bouncing bomb', at([0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72], [...L.ram.subarray(0x2FD4, 0x2FDA)])],
-        ['crash explosive', at([0x75, 0x76, 0x77, 0x78, 0x79, 0x7A], [...L.ram.subarray(0x323F, 0x3245)])]];
-      const t = document.createElement('table'); t.className = 'tt-table tt-left';
-      t.innerHTML = '<tr><th>Scene</th>' + E.map(e => `<th>${e[0]}</th>`).join('') + '</tr>';
-      scenes.forEach((m, s) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${SCENES[s]}</td>`;
-        for (const [name, list] of E) {
-          const w = Math.max(...list.map(x => x[0])) + 1, h = Math.max(...list.map(x => x[1])) + 1;
-          const map = new Map(list.map(([c, r, ch]) => [r * 40 + c, ch]));
-          const c = document.createElement('canvas');
-          Tex.draw(c, cells(m, FIELD(m), w, h, (x, y) => map.has(y * 40 + x) ? [map.get(y * 40 + x), m[0xAA]] : null), 3);
-          const td = document.createElement('td'); td.appendChild(c); tr.appendChild(td);
-        }
-        t.appendChild(tr);
-      });
-      box.appendChild(t);
     })();
 
     /* Levels */

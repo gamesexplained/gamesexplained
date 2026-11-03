@@ -73,6 +73,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-cast canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
 .gx-cast figure.wide{grid-column:1/-1}
 .gx-cast b{color:var(--ink);font-weight:700}
+.gx-cast figure.on canvas{outline:3px solid #ffd23f;outline-offset:2px}
 .gx-sets{display:grid;grid-template-columns:1fr 2fr;gap:22px;align-items:start}
 .gx-set{display:block;image-rendering:pixelated;background:#000;border-radius:4px;width:100%;cursor:crosshair}
 @media (max-width:720px){.gx-cast{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}.gx-sets{grid-template-columns:1fr}}
@@ -97,10 +98,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <div class="gx-cast" id="gx-cast"></div>
     <p class="tt-state" id="gx-state"></p>
-    <p class="cap">Tex's legs are the game's <code>animate_legs</code> (<code>$1EF2</code>) on the kit's 6502, every <code>leg_delays</code> frames at the speed chosen. His death is <code>turn_tex</code> (<code>$23CE</code>), run once, then <code>sink_tex</code> (<code>$24CD</code>) every second frame, 24 times. The explosion is <code>start_explosion</code>, then <code>tick_explosion</code> and <code>draw_explosion</code> every frame. The bullet is character <code>$52</code> moved a cell a frame, as <code>move_bullet</code> moves it. The enemies are each scene's shapes as <code>set_scene_graphics</code> (<code>$36B6</code>) copies them in at the start of a level, laid out by <code>arrow_cells</code>, <code>jet_cells</code>, <code>bouncy_cells</code> and <code>explosive_cells</code>. The star is <code>twinkle_star</code> (<code>$2C68</code>), every fourth frame. Everything is drawn in the play field's colours for the scene, the play field being TED's multicolour text mode.</p>
+    <p class="cap">Tex's legs are the game's <code>animate_legs</code> (<code>$1EF2</code>) on the kit's 6502, every <code>leg_delays</code> frames at the speed chosen. His death is <code>turn_tex</code> (<code>$23CE</code>), run once, then <code>sink_tex</code> (<code>$24CD</code>) every second frame, 23 times, as <code>tex_death</code> counts <code>sink_steps</code> down from 24. The explosion is <code>start_explosion</code>, then <code>tick_explosion</code> and <code>draw_explosion</code> every frame. The bullet is character <code>$52</code> moved a cell a frame, as <code>move_bullet</code> moves it. The enemies are each scene's shapes as <code>set_scene_graphics</code> (<code>$36B6</code>) copies them in at the start of a level, laid out by <code>arrow_cells</code>, <code>jet_cells</code>, <code>bouncy_cells</code> and <code>explosive_cells</code>. The star is <code>twinkle_star</code> (<code>$2C68</code>), every fourth frame. Everything is drawn in the play field's colours for the scene, the play field being TED's multicolour text mode.</p>
   </div>
   <p>None of the enemies is animated: each is a block of characters moved across the field a column at a time, the arrow and the jet by the interrupt and the bouncing bomb and the crash explosive by the main loop (<a href="index.html#enemies">How it works</a>). What changes is the scene. At the start of every level <code>set_scene_graphics</code> copies the arrow, the bouncing bomb and the crash explosive for the desert, the ice or the surface pipe into the character set, so the same characters are a different picture in each. The jet and its bomb are the same in all three.</p>
-  <p>Tex himself is 15 characters, <code>$40</code> to <code>$4E</code>, and only his bottom two rows ever change while he runs. When he dies, <code>turn_tex</code> turns each of his characters a quarter turn in place, and the game draws them five across and three down, so he lies on his side, then slides each of the five columns down a pixel at a time into the ground.</p>
+  <p>Tex himself is 15 characters, <code>$40</code> to <code>$4E</code>, three across and five down, drawn into the play field like the letters of the score. <code>draw_tex</code> puts them on the screen at his cell, row by row from <code>tex_layout</code>, and looks at the pipe under him on the way (<code>check_hole</code>). Only his bottom two rows ever change while he runs: <code>animate_legs</code> copies one of four pictures from <code>leg_frames</code> over characters <code>$49</code> to <code>$4E</code>, in the order 1, 3, 0, 2 (<code>leg_frame_order</code>), every 22 frames at speed 1 and every frame at speed 7.</p>
+  <p>When he dies, <code>tex_death</code> saves his characters at <code>$0400</code>, and <code>turn_tex</code> turns each of them a quarter turn in place: its eight rows become its eight columns. <code>draw_tex</code> and <code>erase_tex</code> are switched to <code>tex_lying_layout</code>, five columns by three rows, so that he lies on his side. Then <code>sink_tex</code> slides the five columns down a pixel every second frame, 23 times, while the pipe slows to a stop. His characters are put back, a life goes, and he starts again at column 1 on a new stretch of pipe.</p>
 </section>
 
 <section id="charset">
@@ -173,12 +175,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
     // Tex running: animate_legs on the desert's level 1, at the speed chosen
     const run = scenes[0].slice(), rc = Tex.cpuFor(run);
-    const runCv = figure('', '<b>Tex</b>, characters <code>$40</code>-<code>$4E</code>, running: <code>animate_legs</code> copies one of four frames of <code>leg_frames</code> over his bottom two rows');
+    run[0x79] = 1;                                // leg_timer, so the legs move on the first frame, not 256 frames in
+    const runCv = figure('', '<b>Tex</b>, characters <code>$40</code>-<code>$4E</code>, running: <code>animate_legs</code> copies one of four frames of <code>leg_frames</code> over his bottom two rows, in the order the four beside him show, the one on show outlined');
     function runFrame() {
       run[0x70] = speed; run[0x8B] = 0; run[0xD9] = 0; run[0x20] = L.ram[0x1E91 + speed];
       rc.call(0x1EF2);
     }
     const drawRun = () => Tex.draw(runCv, cells(run, FIELD(run), 3, 5, (c, r) => [run[texAt + r * 40 + c], run[texAt - 0x0400 + r * 40 + c]]), 4);
+
+    // his legs' four pictures, in the order animate_legs shows them: with $21 one before, the call
+    // moves it on and copies that picture in. The one on show as he runs is outlined.
+    const legs = scenes[0].slice(), lc = Tex.cpuFor(legs), legFigs = [];
+    for (let k = 0; k < 4; k++) {
+      legs[0x70] = 1; legs[0x8B] = 0; legs[0xD9] = 0; legs[0x79] = 1; legs[0x21] = (k + 3) % 4;
+      lc.call(0x1EF2);
+      const cv = figure('', `His legs, picture ${L.ram[0x19B3 + k]} of <code>leg_frames</code>`);
+      Tex.draw(cv, cells(legs, FIELD(legs), 3, 5, (c, r) => [legs[texAt + r * 40 + c], legs[texAt - 0x0400 + r * 40 + c]]), 4);
+      legFigs.push(cv.parentNode);
+    }
 
     // Tex dying: tex_death's turn and its layout ($243F-$245C), then sink_tex every second frame
     const lieAt = texAt + 0x50;
@@ -194,7 +208,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     const deadCv = figure('', '<b>Tex dying</b>: his characters turned a quarter turn by <code>turn_tex</code>, laid out five across by <code>tex_lying_layout</code>, then sunk a pixel every second frame by <code>sink_tex</code>');
     function deadFrame() {
       if (frame % 2) return;
-      if (sunk < 24) { dc.call(0x24CD); sunk++; }
+      // tex_death counts sink_steps down from 24 and calls sink_tex while it is not yet 0: 23 times
+      if (sunk < 23) { dc.call(0x24CD); sunk++; }
       else if (++sunk > 40) lieDown();
     }
     const drawDead = () => Tex.draw(deadCv, cells(dead, FIELD(dead), 5, 3, (c, r) => [dead[lieAt + r * 40 + c], dead[lieAt - 0x0400 + r * 40 + c]]), 4);
@@ -288,6 +303,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
     function draw() {
       drawRun(); drawDead(); drawShot(); drawBoom(); drawStar(); drawSets();
+      legFigs.forEach((f, i) => f.classList.toggle('on', i === (run[0x21] & 3)));
       $('gx-state').textContent = `Frame ${frame}. Speed ${speed}: a new frame of his legs every ${L.ram[0x1E91 + speed]} frame${L.ram[0x1E91 + speed] > 1 ? 's' : ''}.`;
     }
     function step() {

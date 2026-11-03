@@ -129,3 +129,14 @@ and the explosion (`start_explosion`, `tick_explosion`, `draw_explosion`)
 on the kit's 6502, shows the bullet and the menu's star, lays out every
 enemy in each of the three scenes as `set_scene_graphics` leaves them, and
 draws both character sets, each character named from the listing.
+
+air then asked for what How it works drew twice to live only on the
+Graphics tab. The Tex section's text moved into the cast, and its four
+leg pictures now sit beside the running Tex, the one on show outlined;
+the enemies' pictures for each scene left How it works, which keeps the
+table of how each enemy moves. Checking that the outline followed the
+legs showed the running Tex stood still for 256 frames after the page
+loaded: the page left `leg_timer` (`$79`) at 0, so `animate_legs`
+counted it down from 256. It now starts at 1. The death also sank 24
+times where the game sinks 23: `tex_death` counts `sink_steps` down from
+24 and calls `sink_tex` while it has not reached 0.
