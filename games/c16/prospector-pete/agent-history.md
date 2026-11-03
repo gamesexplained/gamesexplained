@@ -69,3 +69,16 @@ line comment at `$2970` now describes them. The route in
 snapshot with the same SHA-256 as the first run's, so the listing's
 bytes are unchanged.
 
+
+## 3 November 2026: the Graphics tab
+
+The kit's minisite skill made a Graphics tab standard after this run, and
+air asked for it on the games no contributor had shaped. `graphics.html`
+runs Pete digging through earth with the game's own `move_pete`, and the
+figures with `stamp_figures`, `draw_figures` and `unstamp_figures`, over a
+mine `start_level` built; it draws every step of every move from
+`build_figures`' pages, the water's and the digging's stages, the fuse and
+the blast as `irq_play` changes them, and the goodies. A second section
+draws the whole character set. One thing found on the way: `$4A`, Pete's
+direction, keeps its value after a move ends, and the call that ends a
+move ($27 = 3) also reads the stick and starts the next.

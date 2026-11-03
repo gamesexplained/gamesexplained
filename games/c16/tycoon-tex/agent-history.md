@@ -119,3 +119,13 @@ page links to it twice. Plus/4 World does not say who gave it the zip; Games Tha
 Weren't says Anthony Clarke donated his source files to Mark Hardisty,
 and his own comments there (June 2016) describe assembling on a C64 and
 sending the code to the C16, which the disk bears out.
+
+## 3 November 2026: the Graphics tab
+
+The kit's minisite skill made a Graphics tab standard after this run, and
+air asked for it on the games no contributor had shaped. `graphics.html`
+runs Tex's legs (`animate_legs`), his death (`turn_tex`, then `sink_tex`)
+and the explosion (`start_explosion`, `tick_explosion`, `draw_explosion`)
+on the kit's 6502, shows the bullet and the menu's star, lays out every
+enemy in each of the three scenes as `set_scene_graphics` leaves them, and
+draws both character sets, each character named from the listing.

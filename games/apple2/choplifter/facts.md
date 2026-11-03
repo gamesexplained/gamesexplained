@@ -129,11 +129,17 @@ office and the barracks, closed and open) are instead seven copies of the
 picture, one for each dot a byte can start at, already in screen bytes.
 
 **Colour.** A hi-res byte's bit 7 picks one of two colour groups, violet
-and green or blue and orange. The library ORs `g_colour` (`$8C`), `$00` or
-`$80`, into every byte it draws (`gfx_colour`). So a shape's colours come
-from its dots' columns and from which group it is drawn in, and the jets,
-the explosions and the drones' bodies are drawn with the bit set, the
-tanks' hulls and the drones' spinning parts with it clear.
+and green or blue and orange. `gfx_draw`, `gfx_draw_opaque` and their
+mirrors put `g_colour` (`$8C`), `$00` or `$80`, into every byte they write
+(`gfx_colour`). `gfx_draw_or` and `gfx_draw_slant` never read it: they keep
+each byte's bit as the screen had it (the library run on the kit's 6502 on
+backgrounds of `$00` and `$80`, both values of `$8C`, `graphics.html`).
+So the jets, the explosions, the muzzle flash, the drones' bodies, the
+flag and the fire are drawn with the bit set, the tanks and the drones'
+spinning parts with it clear, and the helicopter, its rotors, the
+hostages and the shots, all drawn by OR, take the bit of the screen under
+them: set over the sky, which is `$80` as loaded and as `erase_old`
+refills it (`erase_sky`, `$9C5D`), clear over the ground band's `$55 $2A`.
 
 **Ways of drawing.** OR, opaque (every dot inside the box cleared first,
 with edge masks at `$1D82` and `$1D8A`), mirrored either way, a copy of

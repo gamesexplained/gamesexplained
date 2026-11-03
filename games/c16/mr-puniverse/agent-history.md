@@ -107,3 +107,14 @@ make the letter look closed. The screen memory plus4emu saved for the
 room shows an R: no wall across its foot, the same shape as the R of
 ROOM below it. The Discoveries entry, `facts.md` and `features.md` now
 say REST ROOM.
+
+## 3 November 2026: the Graphics tab
+
+The kit's minisite skill made a Graphics tab standard after this run, and
+air asked for it on the games no contributor had shaped. `graphics.html`
+draws every shape that moves from the listing's character set, in the
+colours of the first room cell that shows it: the glyph animations are the
+game's own `animate_chars` and `rotate_vitamin_chars` run on the kit's
+6502, Mr Puniverse's walk is `copy_under_glyphs` and `merge_player`, and
+the crusher's and crumbling floor's stages follow `update_crusher` and
+`crumble_step`. A second section draws the whole set of 256 characters.

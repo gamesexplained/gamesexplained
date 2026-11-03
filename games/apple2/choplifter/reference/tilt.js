@@ -12,7 +12,10 @@
 //                                    -1 (left), and drawn: { m, page, x, height, tilt, changed }
 //   ChopTilt.place(st, at)           drawn alone on a black page, as given: at = { x, height, tilt,
 //                                    facing, bounce, view, rotor, tail }, as the game holds them when
-//                                    heli_object starts
+//                                    heli_object starts; at.pose (-5 to +5), when given, is the pose
+//                                    instead of side-on to the facing, and at.sky, when given, the byte
+//                                    the page is filled with first ($80, the sky's black, as loaded)
+//                                    instead of 0 (graphics.html uses both)
 // page is the hi-res page drawn on ($2000 or $4000); changed lists the page's bytes the drawing
 // changed, by their offset in the page.
 globalThis.ChopTilt = (function () {
@@ -57,11 +60,11 @@ globalThis.ChopTilt = (function () {
   function place(st, at) {
     const { m, cpu } = machine(st);
     m[X] = at.x & 0xFF; m[X + 1] = at.x >> 8; m[HEIGHT] = at.height; m[TILT] = at.tilt & 0xFF;
-    m[POSE] = at.facing < 0 ? 0xFB : 5; m[VIEW] = m[G_VIEW] = at.view & 0xFF; m[VIEW + 1] = m[G_VIEW + 1] = at.view >> 8;
+    m[POSE] = at.pose !== undefined ? at.pose & 0xFF : at.facing < 0 ? 0xFB : 5; m[VIEW] = m[G_VIEW] = at.view & 0xFF; m[VIEW + 1] = m[G_VIEW + 1] = at.view >> 8;
     m[BOUNCE] = at.bounce;                            // a bounce draws the squashed picture
     m[ROTOR] = at.rotor; m[TAIL] = at.tail;           // each rotor steps its picture on as it draws
     const page = m[G_PAGE] ? 0x4000 : 0x2000;
-    m.fill(0, page, page + 0x2000);
+    m.fill(at.sky === undefined ? 0 : at.sky, page, page + 0x2000);
     return drawHeli(st, m, cpu);
   }
 

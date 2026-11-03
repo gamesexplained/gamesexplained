@@ -1,0 +1,467 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karateka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.ka-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.ka-pair img,.ka-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.ka-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ka-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
+.ka-bar button.on,.ka-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ka-scrub{display:flex;gap:10px;align-items:center;margin:10px 0 0;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.ka-scrub input{flex:1;min-width:0;accent-color:var(--accent)}
+.ka-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+.ka-bar label[hidden]{display:none}
+.ka-bar select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.ka-stat{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.ka-tbl{border-collapse:collapse;font-size:14px;width:100%}
+.ka-tbl th,.ka-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.ka-tbl th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.ka-tbl td.n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.ka-scroll{overflow-x:auto;margin:0 0 16px}
+.ka-note{font-size:14px;color:var(--ink-soft)}
+.ka-err{color:var(--coral);font-size:14px}
+.ka-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
+.ka-bytes{font-family:var(--fm);font-size:12px;line-height:1.9;color:#bbb;margin-top:10px;word-break:break-word}
+.ka-bytes span{padding:1px 3px;border-radius:3px;margin-right:4px;white-space:nowrap}
+.ka-bytes .hd{color:#9fd3ff}
+.ka-bytes .cmd{color:#c9b3ff}
+.ka-bytes .rest{color:#777}
+.ka-bytes .on{background:#e8a33d;color:#111}
+.ka-brain{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.ka-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;font-family:var(--fm);font-size:10px}
+.ka-grid div{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:2px;color:#fff;cursor:default}
+.ka-k{background:#c0392b}.ka-p{background:#d97f1a}.ka-s{background:#2e6fb7}.ka-h{background:#b9b6ae}.ka-w{background:#6c6a65}
+.ka-key{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.ka-dist button{min-width:34px}
+@media (max-width:760px){:root{--gx:16px;--pp:14px}.ka-pair,.ka-brain{grid-template-columns:1fr}.ka-stat{margin-left:0}}
+.gx-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px 16px;align-items:end}
+.gx-cast figure{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.gx-cast canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
+.gx-cast figure.wide{grid-column:1/-1}
+.gx-cast b{color:var(--ink);font-weight:700}
+.gx-cast .ka-bar{margin:6px 0 4px}
+.gx-group{margin:0 0 18px}
+.gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
+.gx-tiles button.on{border-color:var(--amber)}
+.gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
+.gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
+.gx-info{font-size:14px;color:var(--ink);min-height:3em;margin:12px 0 0}
+.gx-build{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:20px;align-items:start}
+.gx-build canvas{width:100%;display:block;image-rendering:pixelated;background:#000;border-radius:4px}
+@media (max-width:760px){.gx-build{grid-template-columns:1fr}.gx-cast{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · Brøderbund Software · Apple II</p>
+  <h1>Karateka</h1>
+  <p class="sub">The Apple II has no sprites. Every fighter in Karateka is three pictures, his legs, his torso and his head, put together on the hidden hi-res page each frame by the engine's <code>draw_figure</code>. On this page they move by the game's own routines, from the listings, on the kit's 6502.</p>
+</header>
+<main class="wrap">
+
+<section id="cast" data-part="engine">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every fighter moves through the same poses, by the same routines</h2>
+  <p class="lede">The game has no timer: a frame lasts as long as its drawing takes, about eight a second on the cliff with the hero standing. Here every figure takes a frame eight times a second.</p>
+  <div class="plate">
+    <div class="ka-bar">
+      <button type="button" id="gx-run" class="on">❚❚ Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="ka-stat" id="gx-stat">loading the listings</span>
+    </div>
+    <p class="ka-err" id="gx-castmsg"></p>
+    <div class="gx-cast" id="gx-cast"></div>
+    <p class="cap">The hero, the guards and Akuma are each the working figure (<code>$20</code>-<code>$2F</code>) given a command (<code>command</code>, <code>$6540</code>), moved a frame along its sequences (<code>animate</code>, <code>$6400</code>) and drawn (<code>draw_figure</code>, <code>$6811</code>), as a stage's main loop does, over the engine's listing with the stage's laid over it: the cliff's for the hero, the stage's for a guard, the last stage's for Akuma, whose figure its own routine draws (<a href="source-akuma.html#BC00"><code data-part="">$BC00</code></a>). The commands are the ones the keys and the guards' brain send: the bow, the stance, a step, a kick or a punch at a height, a fall. Mariko walks by the engine's <code>$7E33</code>, over the title's pictures. The hawk's six pictures are drawn by the stage's shape routine (<code data-part="">$1903</code>), at the rows the palace's <code>hawk_draw</code> gives them (<a href="source-palace.html#BD57"><code data-part="">$BD57</code></a>). The page is cleared with <code>$80</code> each frame, black, as the stage's <code data-part="">$1900</code> clears it.</p>
+  </div>
+  <p>A fighter's moves are two lists of poses, one for the legs (<code>legs_seq</code>, <code>$6300</code>) and one for the torso (<code>torso_seq</code>, <code>$63BE</code>), stepped a pose a frame, forwards or backwards. A command only chooses where in the lists to start and which way to step: the bow, the stance and standing up are the same few poses run forwards and back, and a step back is the step forward run backwards. Each entry of the legs' list also says how many columns the figure moves on that frame (<code>legs_step</code>, <code>$6360</code>), so the feet carry the figure along. Codes in the lists start the blows: at a kick's code the legs and torso take the kick's pose for the height asked for, and at a punch's the torso takes the punch's.</p>
+  <p>The guards are the hero drawn the other way round, each byte of every picture turned round through a table of 256 reversed bytes (<code>bit_reverse</code>, <code>$0980</code>), with headgear in place of his head. Akuma moves by the same lists, but the last stage draws him from pictures of its own: his robe and legs, his body and arms and his head, for every pose he takes. He never stands or bows, and the pictures for those poses point at the start of the engine's.</p>
+  <p>The hero is orange and white and the guards blue and white, from the same pictures. A dot lit on its own shows blue or orange by whether it falls on an even or an odd dot across the screen, so a fighter's colours come from where he stands: his byte column and the scene's dot offset (<code>$50</code>) added together. A column further along, the hero would be blue and a guard orange. The standing pictures are drawn a dot out of step with the stance's, so the column a fighter moves as he takes the stance keeps his colours. Before a fall the game moves a fighter back a column when the sum is the wrong way for the falling pictures: odd is right for the hero, even for anyone else (<code>$6717</code>).</p>
+</section>
+
+<section id="pieces" data-part="engine">
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Legs, torsos and heads, and the pictures only one figure uses</h2>
+  <p class="lede">Every picture a figure is built from, each drawn alone by the stage's shape routine. Pick one to see what the listing says it is.</p>
+  <div class="plate">
+    <p class="ka-err" id="gx-tablemsg"></p>
+    <div id="gx-table"></div>
+    <p class="gx-info" id="gx-info">Pick a picture.</p>
+    <p class="cap">Each picture is two bytes, its height in rows and its width in bytes, then its rows, top first, each byte seven dots and the colour bit, already as the screen holds them. The legs, the torsos, the hero's head and headgear types 0 and 6 are the engine's (<code>$8000</code>-<code>$9FFF</code>), with the masks and the stars; headgear types 1 to 5 are each stage's own at <code data-part="">$BE00</code>; Mariko's are each load's own, from <code data-part="">$1530</code>, one set in the title and the cliff, another in the palace and the dungeon, and a third in the last stage; the hawk's are the palace's; Akuma's for the fight are the last stage's, and those for his chamber the engine's. A picture that serves several poses is shown once. Each is drawn at byte column 1, where most of the hero's come out orange; a column along, their lone dots would turn blue. Masks are drawn here as they are stored, their set dots lit: the game ANDs them on, so where a mask is clear it cuts a dark hole for the picture after it.</p>
+  </div>
+  <p>The second half of the long step forward has no pictures of its own: legs poses <code>$1C</code>-<code>$20</code> are poses <code>$1B</code>-<code>$17</code> drawn mirrored, the other foot forward (<code>legs_mirror</code>, <code>$62BE</code>). Every legs pose also has a mask, a picture of mostly set dots with the feet left clear, drawn with AND under a fighter's feet so the floor's pattern does not show through him (<code>feet_mask_lo</code>, <code>$60A8</code>).</p>
+</section>
+
+<section id="build" data-part="engine">
+  <p class="fig">03 · How a fighter is drawn</p>
+  <h2 class="t">Masks first, then the legs, the head and the torso</h2>
+  <p class="lede">One fighter's part of a frame, as a stage's loop draws it: the band he stands in cleared, the mask under his feet, then <code>draw_figure</code>, stopped at each picture.</p>
+  <div class="plate">
+    <div class="ka-bar" id="bd-who"></div>
+    <div class="gx-build">
+      <canvas id="bd-cv" aria-label="A fighter being drawn piece by piece"></canvas>
+      <div>
+        <div class="ka-bar">
+          <button type="button" id="bd-prev">◀</button>
+          <button type="button" id="bd-next">▶</button>
+          <button type="button" id="bd-play">▶ Play</button>
+        </div>
+        <p class="gx-info" id="bd-stat"></p>
+      </div>
+    </div>
+    <p class="cap">The stage's three calls for one fighter (<code>$6780</code> or <code>$678C</code>, <code>$6786</code> or <code>$6789</code>, then <code>$6783</code>) run on the kit's 6502 for the pose shown, stopped at each call to the stage's shape routines (<code data-part="">$1903</code>, <code data-part="">$1906</code>, <code data-part="">$1909</code> and <code data-part="">$190C</code>), with the bytes each step changed in yellow. The drawing mode is <code>$0F</code>: 0 ORs the picture onto the screen, <code>$FF</code> ANDs it, which is how a mask cuts.</p>
+  </div>
+  <p>For the stance's arms, the punches and the guards' poses <code>draw_figure</code> draws a mask first, and a smaller one for standing and bowing (<code>$69DC</code>). Then the legs, the head's mask and the head or the headgear, and the torso last, on top. Every picture is ORed onto the screen, so the black around a figure never hides what is behind it; only the masks clear anything. Before a fighter is drawn again, the band he stood in two frames before is cleared to black and the floor's pattern put back (<code>erase_strip</code>, <code>$6797</code>), and how the whole frame is drawn on the hidden page and shown is on <a href="index.html#demo">How it works</a>.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/apple2.js"></script>
+<script>
+(async function () {
+  const $ = id => document.getElementById(id);
+  const say = msg => { for (const id of ['gx-castmsg', 'gx-tablemsg', 'bd-stat']) $(id).textContent = msg; $('gx-stat').textContent = ''; };
+  const missing = [['cpu6502.js', typeof C64Cpu], ['apple2.js', typeof Apple2]].filter(([, t]) => t === 'undefined').map(([f]) => f);
+  if (missing.length) return say('These pictures need the built site (missing: ' + missing.join(', ') + ').');
+  const PARTS = ['engine', 'title', 'cliff', 'palace', 'dungeon', 'akuma'], Ls = {};
+  try { await Promise.all(PARTS.map(async p => { Ls[p] = await Apple2.load(`parts/${p}/listing.json`); })); }
+  catch (e) { return say('The listings did not load: ' + e.message); }
+  const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+  // --- a machine: the engine's listing with a stage's laid over it, as the stage's load lays it ----------
+  const IO = { read() { return 0; }, write() {} };
+  function machine(part) {
+    const m = Ls.engine.ram.slice(), t = Ls[part];
+    for (let a = 0; a < 0x10000; a++) if (t.has[a]) m[a] = t.ram[a];
+    const cpu = new C64Cpu.CPU(m, { io: IO, ioPages: [0xC0] });
+    const M = { m, cpu, part, call: (pc, regs = {}) => cpu.call(pc, Object.assign({ sp: 0xFF }, regs), { hooks: Apple2.monitor }) };
+    m[0x07] = 0x20; m[0x36] = 0; m[0x33] = 0xFF; m[0x50] = 0;   // draw on page 1; in play; the opponent far off; the scene's dot offset 0
+    return M;
+  }
+  const clear = M => M.m.fill(0x80, 0x2000, 0x4000);         // black, as $1900 clears the page
+  const pageOf = M => M.m.slice(0x2000, 0x4000);
+  const word = (L, lo, hi, k) => L.ram[lo + k] | L.ram[hi + k] << 8;
+  // a picture drawn by the stage's shape routine: at byte column col, row row, in mode (0 OR, $FF AND, 1 store)
+  function shape(M, a, col, row, mode = 0, mirrored = false) {
+    const m = M.m; m[3] = a & 255; m[4] = a >> 8; m[5] = col; m[6] = row; m[0x10] = 0; m[0x0F] = mode;
+    M.call(mirrored ? 0x1909 : 0x1903);
+  }
+
+  // --- pictures: a page's lit dots, cropped and drawn as the screen shows them ---------------------------
+  const scratch = new Uint8Array(0x10000), lineAt = y => Apple2.hiresBase(y) - 0x2000;
+  function litBox(pages) {
+    const box = { x0: 280, x1: -1, y0: 192, y1: -1 };
+    for (const pg of pages) for (let y = 0; y < 192; y++) {
+      const o = lineAt(y);
+      for (let c = 0; c < 40; c++) {
+        const v = pg[o + c] & 0x7F;
+        if (!v) continue;
+        for (let k = 0; k < 7; k++) if (v >> k & 1) { const x = c * 7 + k; if (x < box.x0) box.x0 = x; if (x > box.x1) box.x1 = x; }
+        if (y < box.y0) box.y0 = y; if (y > box.y1) box.y1 = y;
+      }
+    }
+    return box;
+  }
+  function picture(pg, box, mg = 2) {
+    scratch.set(pg, 0x2000);
+    const data = Apple2.render(scratch, null, { hires: true }, 'hires').data;
+    const x0 = Math.max(0, box.x0 - mg), x1 = Math.min(279, box.x1 + mg), y0 = Math.max(0, box.y0 - mg), y1 = Math.min(191, box.y1 + mg);
+    const w = (x1 - x0 + 1) * 2, h = (y1 - y0 + 1) * 2, img = new ImageData(w, h);
+    for (let y = 0; y < h; y++) img.data.set(data.subarray(((y0 * 2 + y) * 560 + x0 * 2) * 4, ((y0 * 2 + y) * 560 + x0 * 2 + w) * 4), y * w * 4);
+    return img;
+  }
+  const pictures = pages => { const bx = litBox(pages); return pages.map(pg => picture(pg, bx)); };
+
+  // --- 01: everything that moves ---------------------------------------------------------------------------
+  // [what, command, stick, height, frames]: the stick forward 1 or back $FF, the height up $FF, centre 0, down 1
+  const MOVES = {
+    standing: ['standing', 0, 0, 0, 4], bow: ['bowing', 0xC2, 0, 0, 10], stance: ['taking the stance', 0x9B, 0, 0, 5],
+    fwd: ['stepping forward', 0, 1, 0, 8], back: ['stepping back', 0, 0xFF, 0, 8], up: ['standing up', 0x9B, 0, 0, 5],
+    kh: ['a high kick', 0xC5, 0, 0xFF, 8], km: ['a middle kick', 0xC5, 0, 0, 8], kl: ['a low kick', 0xC5, 0, 1, 8],
+    ph: ['a high punch', 0xD7, 0, 0xFF, 5], pm: ['a middle punch', 0xD7, 0, 0, 5], pl: ['a low punch', 0xD7, 0, 1, 5],
+    run: ['running', 0, 1, 0, 12], stop: ['stopping', 0, 0, 0, 4], fall: ['falling dead', 0xC6, 0, 0, 16],
+  };
+  const script = keys => keys.split(' ').map(k => MOVES[k]);
+  function fight(M, moves) {
+    const pages = [], said = [], m = M.m;
+    const frame = (cmd, stick, height, what) => {
+      m[0x29] = stick; m[0x2A] = height; m[0x46] = 0; m[0x47] = 0;
+      M.call(0x6540, { a: cmd }); M.call(0x6400);
+      clear(M); M.call(0x6811);
+      pages.push(pageOf(M)); said.push(`${what}: legs pose ${hex(m[0x20], 2)}, torso pose ${hex(m[0x21], 2)}`);
+    };
+    for (const [what, cmd, stick, height, n] of moves) {
+      // a new command waits for the last move to end, in the stance or standing, as a held key would
+      if (cmd) for (let k = 0; k < 12 && !((m[0x20] === 6 || m[0x20] === 7) && !m[0x27] && !m[0x28]); k++) frame(0, 0, 0, said.length ? said[said.length - 1].split(':')[0] : what);
+      for (let k = 0; k < n; k++) frame(k ? 0 : cmd, stick, height, what);
+    }
+    return { pages, said };
+  }
+  function hero() { const M = machine('cliff'); M.call(0x7000); M.call(0x700F); M.m[0x22] = 10; return fight(M, script('standing bow stance fwd kh km kl ph pm pl back up run stop stance fall')); }
+  function guard(part, hat) {
+    const M = machine(part); M.call(0x7003); M.call(0x7009); M.m[0x3E] = hat; M.m[0x4D] = 0; M.m[0x22] = 31;
+    return fight(M, script('standing bow stance fwd kh km kl ph pm pl back fall'));
+  }
+  function akuma() {
+    const M = machine('akuma'); M.call(0x7003); M.call(0x7009); M.m[0x4D] = 1; M.m[0x22] = 30;
+    M.m[0x20] = M.m[0x21] = 6; M.m[0x2F] = 0;                 // in the stance: he never stands or bows
+    return fight(M, script('fwd kh km kl ph pm pl back fall'));
+  }
+  function mariko() {
+    const M = machine('title'), pages = [];
+    M.m[0x39] = 1; M.m[0x3A] = 0; M.m[0x3B] = 11;
+    for (let k = 0; k < 32; k++) { clear(M); M.call(0x7E33); pages.push(pageOf(M)); }
+    return { pages };
+  }
+  function hawk() {
+    const M = machine('palace'), L = Ls.palace, pages = [];
+    for (const k of [0, 1, 2, 0, 1, 2, 0, 1, 2, 3, 4, 5, 4, 5, 4, 5]) {
+      clear(M); shape(M, word(L, 0xBDD8, 0xBDDE, k), 19, 0x6C + L.ram[0xBDE4 + k]); pages.push(pageOf(M));
+    }
+    return { pages };
+  }
+  function stars() {
+    const M = machine('cliff'), pages = [];
+    M.call(0x7000); M.call(0x700F); M.m[0x22] = 10; M.m[0x2C] = 1;
+    for (const [x, h] of [[2, 0xFF], [2, 0], [2, 1], [3, 0xFF], [3, 0], [3, 1]]) {
+      M.m[0x2A] = h; clear(M); M.call(0x74C0, { x });
+      for (let k = 0; k < 4; k++) pages.push(pageOf(M));
+    }
+    return { pages };
+  }
+
+  const cast = $('gx-cast'), shown = [];
+  function figure(name, cap, made, opts = {}) {
+    const fig = document.createElement('figure'), cv = document.createElement('canvas'), ctx = cv.getContext('2d');
+    if (opts.wide) fig.className = 'wide';
+    fig.append(cv);
+    if (opts.bar) fig.append(opts.bar);
+    fig.insertAdjacentHTML('beforeend', '<b>' + name + '</b>: ' + cap);
+    cast.append(fig);
+    const f = { ctx, cv, imgs: [], said: null, px: opts.px || 3, stat: opts.stat };
+    f.set = got => {
+      f.imgs = pictures(got.pages); f.said = got.said || null;
+      cv.width = f.imgs[0].width; cv.height = f.imgs[0].height; cv.style.width = f.imgs[0].width / 2 * f.px + 'px';
+      ctx.putImageData(f.imgs[0], 0, 0);
+    };
+    f.set(made);
+    shown.push(f);
+    return f;
+  }
+  const heroFig = figure('The hero', 'bows, takes the stance, steps in, kicks and punches high, middle and low, steps back, stands, runs and falls, by the game\'s own <code>command</code>, <code>animate</code> and <code>draw_figure</code>.', hero(), { wide: true, px: 4, stat: true });
+
+  // the guard: a stage and a headgear, types 1-5 the stage's own pictures and 0 and 6 the engine's
+  const gbar = document.createElement('div'); gbar.className = 'ka-bar';
+  let gPart = 'palace', gHat = 1;
+  const guardFig = { set: null };
+  const stageNames = { cliff: 'Cliff', palace: 'Palace', dungeon: 'Dungeon' };
+  for (const p of Object.keys(stageNames)) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = stageNames[p]; b.dataset.p = p;
+    b.onclick = () => { gPart = p; redoGuard(); }; gbar.append(b);
+  }
+  const sel = document.createElement('label'); sel.innerHTML = 'Headgear <select id="gx-hat">' + [0, 1, 2, 3, 4, 5, 6].map(h => `<option value="${h}">${h}</option>`).join('') + '</select>';
+  gbar.append(sel);
+  const gFig = figure('A guard', 'the same routines and the same moves, facing left: the hero\'s pictures mirrored, with the headgear asked for.', guard(gPart, gHat), { wide: true, px: 4, bar: gbar, stat: true });
+  function redoGuard() {
+    gbar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.p === gPart));
+    gFig.set(guard(gPart, gHat));
+  }
+  $('gx-hat').value = gHat; $('gx-hat').onchange = () => { gHat = +$('gx-hat').value; redoGuard(); };
+  redoGuard();
+  figure('Akuma', 'the same moves from the stance, drawn by the last stage\'s own figure routine (<a href="source-akuma.html#BC06"><code data-part="">$BC06</code></a>).', akuma(), { wide: true, px: 4, stat: true });
+  figure('Mariko', 'walking, a pose a step and a column every fourth, by the engine\'s <code>$7E33</code> over the title\'s pictures.', mariko(), { px: 3 });
+  figure('The hawk', 'its wings beating through pictures 0 to 2, then swooping through 3, 4 and 5, from the palace.', hawk(), { px: 3 });
+  figure('The star', 'where a punch or a kick lands, high, middle and low, by <code>draw_impact</code> (<code>$74C0</code>): a mask, then the star.', stars(), { px: 3 });
+
+  let frame = 0, running = true;
+  function tick() {
+    frame++;
+    const lines = [];
+    for (const f of shown) {
+      if (f.imgs.length > 1) f.ctx.putImageData(f.imgs[frame % f.imgs.length], 0, 0);
+      if (f.stat && f.said) lines.push(f.said[frame % f.said.length]);
+    }
+    $('gx-stat').textContent = 'hero ' + lines[0];
+  }
+  let timer = setInterval(tick, 125);
+  $('gx-run').onclick = () => {
+    running = !running; $('gx-run').textContent = running ? '❚❚ Pause' : '▶ Play'; $('gx-run').classList.toggle('on', running);
+    clearInterval(timer); if (running) timer = setInterval(tick, 125);
+  };
+  $('gx-step').onclick = () => { if (running) $('gx-run').onclick(); tick(); };
+  tick();
+
+  // --- 02: the pictures ------------------------------------------------------------------------------------
+  const about = (L, a) => { const r = L.listing.records.find(r => r.a === a); return r ? (r.c || '').replace(/[:.]?\s*\d+ rows? of \d+ bytes?\.?\s*$/, '') : ''; };
+  // [title, the load drawn on, the listing holding the table, its low and high bytes, entries, what an entry is]
+  // The engine has no shape routine of its own, so its pictures are drawn on the cliff's load, which leaves them be.
+  const GROUPS = [
+    ['Legs, one picture a pose', 'cliff', 'engine', 0x6000, 0x602A, 42, 'legs pose'],
+    ['Torsos, one picture a pose', 'cliff', 'engine', 0x6226, 0x624C, 38, 'torso pose'],
+    ['The hero\'s head', 'cliff', 'engine', 0x61CD, 0x61CA, 3, 'drawing'],
+    ['Headgear 0, the engine\'s', 'cliff', 'engine', 0x61D3, 0x61D0, 3, 'drawing'],
+    ['Headgear 6, the engine\'s', 'cliff', 'engine', 0x6AF3, 0x6AF0, 3, 'drawing'],
+    ...['cliff', 'palace', 'dungeon'].map(p => [`Headgear 1 to 5, the ${p}'s`, p, 'hats', 0, 0, 15, 'type']),
+    ['Akuma\'s robe and legs, the last stage\'s', 'akuma', 'akuma', 0xBE00, 0xBE22, 34, 'legs pose'],
+    ['Akuma\'s body and arms', 'akuma', 'akuma', 0xBEF4, 0xBF0F, 27, 'torso pose'],
+    ['Akuma\'s head', 'akuma', 'akuma', 0xBE88, 0xBEA3, 27, 'torso pose'],
+    ['Akuma in his chamber, the engine\'s', 'cliff', 'engine', 0x7D0C, 0x7D1D, 17, 'part'],
+    ['Mariko, each load\'s own', 'mariko'],
+    ['The hawk, the palace\'s', 'palace', 'palace', 0xBDD8, 0xBDDE, 6, 'picture'],
+    ['Masks under the feet, one a legs pose', 'labels', /^feet_mask_([0-9A-F]{2})$/i, k => 'legs pose $' + k.toUpperCase()],
+    ['Masks under the head and the arms, and the stars', 'labels', /^(face_mask|standing_mask|stance_mask|star_mask|star|quick_star_mask|quick_star)$/, k => k.replace(/_/g, ' ')],
+    ['Headgear that no table points at', 'labels', /^spare_hat_(\d)$/, k => 'drawing ' + (+k + 1)],
+    ['Masks that nothing points at', 'labels', /^spare_mask_(\d)$/, k => 'drawing ' + (+k + 1)],
+  ];
+  const HATS = [[0x62EB, 0x62E8], [0x62F1, 0x62EE], [0x62F7, 0x62F4], [0x62FD, 0x62FA], [0x6AED, 0x6AEA]];
+  // Mariko's pictures sit at $1530 to $1FFF in each load, a different set in each: the title's and the cliff's
+  // are the same bytes, and so are the palace's and the dungeon's. Each is shown once, by its label's number.
+  const LOADS = { title: 'the title and the cliff', palace: 'the palace and the dungeon', akuma: 'the last stage' };
+  const tiles = $('gx-table');
+  const picBytes = (m, a) => Array.from(m.subarray(a, a + 2 + m[a] * m[a + 1])).join(',');
+  for (const [title, part, tablePart, lo, hi, n, unit] of GROUPS) {
+    const entries = [], seen = new Map();             // [load, address, [what]]
+    if (part === 'mariko') {
+      for (const p of Object.keys(LOADS)) for (const r of Ls[p].listing.records) {
+        const k = /^mariko_(\d+)$/.exec(r.l || '');
+        if (!k) continue;
+        const key = picBytes(Ls[p].ram, r.a);
+        if (seen.has(key)) { seen.get(key).ins.push(LOADS[p]); continue; }
+        const e = { p, a: r.a, whats: ['pose ' + k[1]], ins: [LOADS[p]], n: +k[1] };
+        seen.set(key, e); entries.push(e);
+      }
+      entries.sort((x, y) => x.n - y.n);
+    } else if (part === 'labels') {
+      // pictures no table lists in full, found by their labels in the engine's listing; drawn on the cliff's load
+      for (const r of Ls.engine.listing.records) {
+        const k = tablePart.exec(r.l || '');
+        if (k) { const e = { p: 'cliff', a: r.a, whats: [lo(k[1])], short: k[1].replace(/_/g, ' ') }; entries.push(e); }
+      }
+      if (/\d/.test(entries[0].short)) entries.forEach(e => { e.short = e.whats[0].replace(/^\D+/, ''); });
+    } else {
+      const T = tablePart === 'hats' ? Ls.engine : Ls[tablePart];
+      for (let k = 0; k < n; k++) {
+        const a = tablePart === 'hats' ? word(T, HATS[Math.floor(k / 3)][0], HATS[Math.floor(k / 3)][1], k % 3) : word(T, lo, hi, k);
+        if (part === 'akuma' && a === 0x8000) continue;           // the poses Akuma never takes
+        const what = tablePart === 'hats' ? `type ${Math.floor(k / 3) + 1}, drawing ${k % 3 + 1}` : `${unit} ${unit.endsWith('pose') ? hex(k, 2) : k}`;
+        const short = tablePart === 'hats' ? `${Math.floor(k / 3) + 1}.${k % 3 + 1}` : what.replace(/^\D+/, '');
+        if (seen.has(a)) seen.get(a).whats.push(what); else { const e = { p: part, a, whats: [what], short }; seen.set(a, e); entries.push(e); }
+      }
+    }
+    const g = document.createElement('div'); g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
+    const row = g.lastChild, machines = {};
+    for (const { p, a, whats, ins, short } of entries) {
+      const M = machines[p] = machines[p] || machine(p), L = Ls[p];
+      clear(M); shape(M, a, 1, 4);
+      const pg = pageOf(M), lit = litBox([pg]);
+      if (lit.x1 < 0) continue;
+      const img = picture(pg, lit, 1), btn = document.createElement('button'), cv = document.createElement('canvas');
+      btn.type = 'button'; cv.width = img.width; cv.height = img.height; cv.style.width = img.width * 1.25 + 'px';
+      cv.getContext('2d').putImageData(img, 0, 0);
+      const span = document.createElement('span'); span.textContent = short || whats[0].replace(/^\D+/, '');
+      btn.append(cv, span);
+      const rows = M.m[a], bytes = M.m[a + 1], name = L.names.get(a) || Ls.engine.names.get(a) || '';
+      const where = ins ? ` In ${ins.join(' and in ')}.` : '';
+      btn.onclick = () => {
+        tiles.querySelectorAll('button.on').forEach(e => e.classList.remove('on')); btn.classList.add('on');
+        $('gx-info').innerHTML = `<b>${whats.join(', ')}</b>: <code>${hex(a)}</code>${name ? ` (<code>${name}</code>)` : ''}, ${rows} rows of ${bytes} byte${bytes === 1 ? '' : 's'}. ${(about(L, a) || about(Ls.engine, a)).replace(/\.?$/, '.')}${where}`;
+      };
+      row.append(btn);
+    }
+    tiles.append(g);
+  }
+
+  // --- 03: one fighter, piece by piece ------------------------------------------------------------------------
+  // [name, the load, set the working figure up, hero or opponent]
+  const WHO = [
+    ['The hero, a high punch', 'cliff', M => { M.call(0x7000); M.call(0x700F); M.m[0x22] = 13; M.m[0x20] = 0x16; M.m[0x21] = 0x16; }, 'hero'],
+    ['A guard, a middle kick', 'palace', M => { M.call(0x7003); M.call(0x7009); M.m[0x22] = 26; M.m[0x3E] = 2; M.m[0x4D] = 0; M.m[0x20] = 3; M.m[0x21] = 3; }, 'opp'],
+    ['Akuma, in the stance', 'akuma', M => { M.call(0x7003); M.call(0x7009); M.m[0x22] = 26; M.m[0x4D] = 1; M.m[0x20] = 6; M.m[0x21] = 6; M.m[0x2F] = 0; M.m[0x29] = M.m[0x2A] = M.m[0x46] = M.m[0x47] = 0; M.call(0x6540, { a: 0 }); M.call(0x6400); }, 'opp'],
+  ];
+  const MODES = { 0: 'ORed on', 0xFF: 'ANDed on, a mask', 1: 'stored' };
+  const SHAPE = { 0x1903: '', 0x1906: ', its right edge at the column', 0x1909: ', mirrored', 0x190C: ', mirrored, its right edge at the column' };
+  const bcv = $('bd-cv'), bctx = bcv.getContext('2d');
+  let marks = [], at = 0, playing = null, box = null;
+  function build(k) {
+    const [, part, set, side] = WHO[k], M = machine(part), m = M.m, hero = side === 'hero';
+    set(M);
+    // the fighter's record, which the band and the feet mask read: $60-$6F for the hero, $70-$7F for his opponent,
+    // and the column two frames before, here the same
+    m.copyWithin(hero ? 0x60 : 0x70, 0x20, 0x30); m[hero ? 0xE3 : 0xE5] = m[0x22];
+    clear(M);
+    marks = [{ what: hero
+      ? 'the band the hero stands in cleared (<code>$678C</code>, as <code>erase_strip</code>): rows 114 to 152 black and rows 153 to 163 the floor\'s pattern, rows of <code>$D5</code> and <code>$AA</code> in turn.'
+      : 'the band his opponent stands in cleared (<code>erase_strip</code>, <code>$6797</code>): rows 114 to 152 black and rows 153 to 163 the floor\'s pattern, rows of <code>$D5</code> and <code>$AA</code> in turn.', pg: pageOf(M) }];
+    const hooks = Object.assign({}, Apple2.monitor);
+    for (const e of Object.keys(SHAPE)) hooks[e] = () => {
+      const a = m[3] | m[4] << 8, L = Ls[part];
+      const name = L.names.get(a) || Ls.engine.names.get(a) || hex(a);
+      marks.push({ what: `<code>${name}</code>, ${MODES[m[0x0F]] || 'mode ' + hex(m[0x0F], 2)}${SHAPE[e]}. ${about(L, a) || about(Ls.engine, a)}.`, pg: pageOf(M) });
+    };
+    // as the stage's loop does it: the band, the feet mask, then the figure
+    for (const pc of hero ? [0x678C, 0x6789, 0x6783] : [0x6780, 0x6786, 0x6783]) M.cpu.call(pc, { sp: 0xFF }, { hooks });
+    marks.push({ what: 'Drawn.', pg: pageOf(M) });
+    // crop to where the drawing changed anything
+    const diff = new Uint8Array(0x2000), first = marks[0].pg, last = marks[marks.length - 1].pg;
+    for (let i = 0; i < 0x2000; i++) diff[i] = first[i] !== last[i] ? 0x7F : 0;
+    box = litBox([diff]); box.x0 -= 7; box.x1 += 7; box.y0 -= 4; box.y1 += 4;
+    $('bd-who').querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === k));
+    go(0);
+  }
+  function draw() {
+    const before = marks[at].pg, after = marks[at + 1].pg, img = picture(after, box, 0);
+    bcv.width = img.width; bcv.height = img.height; bctx.putImageData(img, 0, 0);
+    bctx.fillStyle = 'rgba(255, 220, 0, 0.5)';
+    const x0 = Math.max(0, box.x0), y0 = Math.max(0, box.y0);
+    for (let y = y0; y <= Math.min(191, box.y1); y++) { const o = lineAt(y); for (let c = 0; c < 40; c++) if (before[o + c] !== after[o + c]) bctx.fillRect((c * 7 - x0) * 2, (y - y0) * 2, 14, 2); }
+    $('bd-stat').innerHTML = `Step ${at + 1} of ${marks.length - 1}: ${marks[at].what}`;
+  }
+  const go = k => { at = Math.max(0, Math.min(marks.length - 2, k)); draw(); };
+  const stop = () => { clearInterval(playing); playing = null; $('bd-play').textContent = '▶ Play'; $('bd-play').classList.remove('on'); };
+  WHO.forEach(([name], k) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = name; b.onclick = () => { stop(); build(k); }; $('bd-who').append(b); });
+  $('bd-prev').onclick = () => { stop(); go(at - 1); };
+  $('bd-next').onclick = () => { stop(); go(at + 1); };
+  $('bd-play').onclick = () => {
+    if (playing) return stop();
+    if (at >= marks.length - 2) at = -1;
+    $('bd-play').textContent = '❚❚ Pause'; $('bd-play').classList.add('on');
+    playing = setInterval(() => { if (at >= marks.length - 2) return stop(); go(at + 1); }, 700);
+  };
+  build(0);
+})();
+</script>
