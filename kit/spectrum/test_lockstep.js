@@ -283,6 +283,16 @@ for (const lines of [40, 320]) {
   check('no interrupt handler counted', rows.some(s => s.calls.irq_a || s.calls.irq_b), false);
 }
 
+// 3b. A class on P (an error the port throws) is left as it is when the calls are counted: new still
+// makes one, and instanceof still knows it.
+{
+  const P = port();
+  class Oops {}
+  P.Oops = Oops;
+  const r = lockstep(P, { ignore: [0xC00A], timing: () => {} }).run({ passes: 5, onPass: input });
+  check('timing: a class on P left as it is', r.ok && P.Oops === Oops && new P.Oops() instanceof Oops, true);
+}
+
 // 4. A port that sums wrongly when CAPS SHIFT is held: found at the next pass's start, and the run stops.
 {
   const P = port(), M = P.M, work = P.work;
@@ -440,6 +450,106 @@ for (const lines of [40, 320]) {
   check('IM 1 through a hook at $0038: 20 passes identical', r.ok && r.passes === 20, true);
   check('the port\'s handler for $0038 ran once a frame', frames, r.frames);
   check('and the machine\'s own hook is back', m.hooks[0x38], rom);
+}
+
+// 13. The refresh register: the delay loads R before its loop and after it ($8120 JP $81E0; $81E0
+// LD A,R; LD ($C00E),A; LD B,100; DJNZ $81E7; LD A,R; LD ($C00F),A; RET), values no port can work
+// out. The port reads them through readR and gets the game's: both at once, before the game has
+// run any of the stretch (from the copy run on ahead), or the second after the loop's time, which
+// handler A may come inside (from the game's own run). Unnamed in readsR, the read stops the run.
+{
+  const ram = program();
+  ram.set([0xC3, 0xE0, 0x81], 0x8120);
+  ram.set([0xED, 0x5F, 0x32, 0x0E, 0xC0, 0x06, 0x64, 0x10, 0xFE, 0xED, 0x5F, 0x32, 0x0F, 0xC0, 0xC9], 0x81E0);
+  const m0 = new Machine({ ram, pc: ADDR.ENTRY, passAt: ADDR.MAIN });
+  m0.runUntilPass(q => q.passes >= 3);
+  const state = m0.save();
+  for (const split of [false, true]) {
+    const P = port(), M = P.M, seen = new Set();
+    P.delay = function* () {
+      M[0xC00E] = P.io.readR();
+      seen.add(M[0xC00E]);
+      if (split) yield { tstates: 1300 };
+      M[0xC00F] = P.io.readR();
+      if (!split) yield { tstates: 1400 };
+    };
+    const ls = new Lockstep(Object.assign({ machine: kempston(Machine.restore(state)), port: P, program: p => p.main_loop() }, OPTS,
+      { readsR: [0x81E0, 0x81E9], ignore: [0xC00A] }));
+    const r = ls.run({ passes: 40, onPass: input, stopOnDiff: false });
+    check('readsR' + (split ? ', the second read after the loop' : ', both reads at once') + ': $C00E and $C00F the game\'s in 40 passes',
+      r.diffs.some(d => d.bytes.some(b => b.address === 0xC00E || b.address === 0xC00F)), false);
+    check('readsR: and they change from pass to pass', seen.size > 10, true);
+    check('readsR: the machine\'s hooks its own again', Object.keys(ls.m.hooks).join(), String(ADDR.MAIN));
+  }
+  let msg = '';
+  const P = port(); P.delay = function* () { P.M[0xC00E] = P.io.readR(); yield { tstates: 1400 }; };
+  try { new Lockstep(Object.assign({ machine: kempston(Machine.restore(state)), port: P, program: p => p.main_loop() }, OPTS)).run({ passes: 2 }); } catch (e) { msg = e.message; }
+  check('readR with no readsR', /readsR names no LD A,R/.test(msg), true);
+}
+
+// 14. Bytes the port does not keep: the delay reads the byte at a pointer it moves on one a pass
+// ($8120 JP $81E0; $81E0 LD HL,($C010); INC HL; LD ($C010),HL; LD A,(HL); LD ($C00E),A; LD B,100;
+// DJNZ $81ED; RET), from $FEF0 up through the stack, which is never compared and which the port's
+// copy does not hold (zeroed here). Reading its own memory the port gets $C00E wrong; reading
+// through readAt, with $81E7 in readsAt, it gets the game's bytes; a read of another address than
+// the game's stops the run, and so does readAt with no readsAt.
+{
+  const ram = program();
+  ram.set([0xC3, 0xE0, 0x81], 0x8120);
+  ram.set([0x2A, 0x10, 0xC0, 0x23, 0x22, 0x10, 0xC0, 0x7E, 0x32, 0x0E, 0xC0, 0x06, 0x64, 0x10, 0xFE, 0xC9], 0x81E0);
+  ram[0xC010] = 0xF0; ram[0xC011] = 0xFE;
+  const m0 = new Machine({ ram, pc: ADDR.ENTRY, passAt: ADDR.MAIN });
+  m0.runUntilPass(q => q.passes >= 3);
+  const state = m0.save();
+  const run = (read, readsAt) => {
+    const P = port(), M = P.M;
+    P.delay = function* () {
+      const p = (M[0xC010] | M[0xC011] << 8) + 1;
+      M[0xC010] = p & 255; M[0xC011] = p >> 8;
+      M[0xC00E] = read(P, p);
+      yield { tstates: 1400 };
+    };
+    const ls = new Lockstep(Object.assign({ machine: kempston(Machine.restore(state)), port: P, program: q => q.main_loop() }, OPTS,
+      readsAt ? { readsAt, ignore: [0xC00A] } : { ignore: [0xC00A] }));
+    P.M.fill(0, 0xFE00, 0xFF00);
+    let msg = '', r = null;
+    try { r = ls.run({ passes: 40, onPass: input, stopOnDiff: false }); } catch (e) { msg = e.message; }
+    return { r, msg, ls };
+  };
+  const own = run((P, p) => P.M[p]);
+  check('readsAt: reading its own memory the port gets $C00E wrong', own.r.diffs.some(d => d.bytes.some(b => b.address === 0xC00E)), true);
+  const at = run((P, p) => P.io.readAt(p), [0x81E7]);
+  check('readsAt: through readAt, $C00E the game\'s in 40 passes', !!at.r && !at.r.diffs.some(d => d.bytes.some(b => b.address === 0xC00E)), true);
+  check('readsAt: the machine\'s hooks its own again', Object.keys(at.ls.m.hooks).join(), String(ADDR.MAIN));
+  const wrong = run((P, p) => P.io.readAt(p + 1), [0x81E7]);
+  check('readsAt: a read of another address stops the run', /through readAt where the game read/.test(wrong.msg), true);
+  const none = run((P, p) => P.io.readAt(p));
+  check('readAt with no readsAt', /readsAt names no instruction/.test(none.msg), true);
+}
+// The same read made by an indexed load, which reads its displacement before the byte: $81E0 LD
+// HL,($C010); INC HL; LD ($C010),HL; PUSH HL; POP IX; LD A,(IX+0); LD ($C00E),A; LD B,100; DJNZ
+// $81F2; RET, with $81EA in readsAt.
+{
+  const ram = program();
+  ram.set([0xC3, 0xE0, 0x81], 0x8120);
+  ram.set([0x2A, 0x10, 0xC0, 0x23, 0x22, 0x10, 0xC0, 0xE5, 0xDD, 0xE1, 0xDD, 0x7E, 0x00, 0x32, 0x0E, 0xC0, 0x06, 0x64, 0x10, 0xFE, 0xC9], 0x81E0);
+  ram[0xC010] = 0xF0; ram[0xC011] = 0xFE;
+  const m0 = new Machine({ ram, pc: ADDR.ENTRY, passAt: ADDR.MAIN });
+  m0.runUntilPass(q => q.passes >= 3);
+  const state = m0.save();
+  const P = port(), M = P.M;
+  P.delay = function* () {
+    const p = (M[0xC010] | M[0xC011] << 8) + 1;
+    M[0xC010] = p & 255; M[0xC011] = p >> 8;
+    M[0xC00E] = P.io.readAt(p);
+    yield { tstates: 1400 };
+  };
+  const ls = new Lockstep(Object.assign({ machine: kempston(Machine.restore(state)), port: P, program: q => q.main_loop() }, OPTS,
+    { readsAt: [0x81EA], ignore: [0xC00A] }));
+  P.M.fill(0, 0xFE00, 0xFF00);
+  let msg = '', r = null;
+  try { r = ls.run({ passes: 40, onPass: input, stopOnDiff: false }); } catch (e) { msg = e.message; }
+  check('readsAt: an indexed load, $C00E the game\'s in 40 passes', !!r && !msg && !r.diffs.some(d => d.bytes.some(b => b.address === 0xC00E)), true);
 }
 
 // The 128: a pass pages bank 3 or 4 in by its count, counts in the bank's $C000, writes the count to

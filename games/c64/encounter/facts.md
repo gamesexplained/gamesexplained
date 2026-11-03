@@ -325,13 +325,16 @@ range through $8800.
 
 **Enemies.** Between enemies ($A28A) a countdown $4D (random 8-39
 passes, $A962) spawns the next: a homing missile ($A3A5) when $33 says
-one is pending, when the player has idled 24 × 256 frames, or one time
-in four while a saucer flag is set; otherwise a saucer ($A42C), which
+one is pending, when the clock $58 reaches 24 (24 × 256 frames), or one
+time in four while a saucer flag is set; otherwise a saucer ($A42C), which
 warps in for 48 passes ($78) before its handler starts. Saucer type $7A
 is random in 0..2×level-1 (16 types at level 8), except that the first
 two spawns after a level-up are the two newly unlocked types ($9E). Each
 type has a fire script at $8C00 and one of four behaviour routines
-($AAB5 table); saucers leave after 24 × 256 frames ($58).
+($AAB5 table); a saucer leaves when $58 reaches 24 ($A5F2). $58 counts
+256-frame periods ($B465) and is cleared by the level reset at the start
+of a level and after every death ($9FD4), a kill ($A8B4), a missile's
+spawn ($A3D7), the warp ($A728) and leaving the pause ($A14D).
 
 - *Fire script.* Pairs of (delay, spread) from $8C00 + $8C00[type],
   ended by $FF and a restart offset. $A97A fires when the delay $5E has

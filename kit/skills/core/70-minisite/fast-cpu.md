@@ -25,6 +25,33 @@ platform's reference skill says what the machine's clocks are.
 - **Refresh**: one refresh of the player's display.
 - **Video frame**: one frame of the machine's own screen.
 
+The picture puts the machine and Fast CPU on one time scale, with K = 4.
+The step ties the two together: one loop does it on the machine, and K
+loops share it under Fast CPU.
+
+```
+THE MACHINE  (slow processor)
+video frame  |.....|.....|.....|.....|.....|.....|     its screen, here 50 a second
+loop         [========== one loop =========]           here 5 video frames
+             \_______ does one STEP _______/           e.g. moves you 1 unit
+
+FAST CPU  (same code, fast processor), K = 4
+tick         ^    ^    ^    ^    ^    ^    ^    ^      60 a second
+loop         L    L    L    L    L    L    L    L      at most 1 a tick
+share        1/4  1/4  1/4  1/4  1/4  1/4  1/4  1/4    1/K of a step each
+             \___ one STEP ____/ \___ one STEP ____/
+frame        F    F    F    F    F    F    F    F      the view a loop renders
+refresh      R    R    R    R    R    R    R    R      player's display: shows
+                                                       the newest frame
+
+SPEED = steps a second = 60 ticks / K = 15 here
+        (the machine made 10)
+```
+
+The picture shows a 60 Hz display, so each refresh has one tick. A slower
+display runs the loops owed at each refresh, up to the cap, and shows the
+last one's frame ("The frame limiter").
+
 ## Which games
 
 - **A game whose speed rides on its render qualifies.** It moves you a

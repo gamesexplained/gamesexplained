@@ -55,10 +55,12 @@ function turn(r, br, dead) {
   return rel > dead && rel < 1024 ? JOY.right : (rel >= 1024 && rel < 2048 - dead ? JOY.left : 0);
 }
 const facing = (r, within) => { const rel = (toEnemy(r) - heading(r, 0) + 2048) % 2048; return rel < within || rel > 2048 - within; };
-// The players: face the enemy and close to a range code, never firing; face it and stand; face it,
-// back away and shoot once it is nearer than a range code.
+// The players: face the enemy and close to a range code, never firing; face it and keep it between
+// two range codes, never firing; face it and stand; face it, back away and shoot once it is nearer
+// than a range code.
 const PLAYERS = {
   close(r, o) { if (!r[0x83E2]) return 0; let j = turn(r, toEnemy(r), 10); if (facing(r, 128) && r[0x31] > o.range) j |= JOY.up; return j; },
+  hold(r, o) { if (!r[0x83E2]) return 0; let j = turn(r, toEnemy(r), 10); if (facing(r, 128)) { if (r[0x31] > o.far) j |= JOY.up; else if (r[0x31] < o.near) j |= JOY.down; } return j; },
   stand(r) { if (!r[0x83E2]) return 0; return turn(r, toEnemy(r), 10); },
   back(r, o) { if (!r[0x83E2]) return 0; let j = turn(r, toEnemy(r), 10); if (facing(r, 64)) { j |= JOY.down; if (r[0x31] < o.fireAt) j |= JOY.fire; } return j; },
   still() { return 0; },
@@ -169,14 +171,21 @@ function clip(spec, S) {
 // Under fire: each saucer type, forced at every spawn, on the first level that has it (level 2
 // for types 0 and 1: on level 1 at Novice a saucer rarely attacks), against a player who turns to
 // face it and closes to a medium range code ($C8) without firing. The window is the stretch of
-// play with the most shots fired at that range.
+// play with the most shots fired at that range. The burst-fire saucers (types 5 and 11) fire once,
+// a fan of 16 shots, and a player who closes in meets it point blank, where the fan has no room to
+// open: their player keeps the saucer between range codes $D8 and $DE, about 45 to 60 units off,
+// and their window starts 80 passes before the burst.
 const UNDER_FIRE = [
-  [0, 63, 730], [1, 63, 730], [2, 42, 80], [3, 42, 240], [4, 70, 440], [5, 63, 520], [6, 42, 90], [7, 21, 360],
-  [8, 42, 140], [9, 49, 150], [10, 0, 360], [11, 49, 160], [12, 7, 160], [13, 21, 360], [14, 70, 550], [15, 28, 540],
+  [0, 63, 730], [1, 63, 730], [2, 42, 80], [3, 42, 240], [4, 70, 440], [5, 42, 274], [6, 42, 90], [7, 21, 360],
+  [8, 42, 140], [9, 49, 150], [10, 0, 360], [11, 35, 633], [12, 7, 160], [13, 21, 360], [14, 70, 550], [15, 28, 540],
 ];
+const BURST = [5, 11];
 const SPECS = {};
 for (const [type, wait, from] of UNDER_FIRE) {
-  SPECS['type' + type] = { level: Math.max(2, (type >> 1) + 1), skill: 2, type, player: 'close', range: 0xC8, wait, from, passes: 360 };
+  const level = Math.max(2, (type >> 1) + 1);
+  SPECS['type' + type] = BURST.includes(type)
+    ? { level, skill: 2, type, player: 'hold', near: 0xD8, far: 0xDE, wait, from, passes: 360 }
+    : { level, skill: 2, type, player: 'close', range: 0xC8, wait, from, passes: 360 };
 }
 // The missile: one forced at the first chance on level 1, met by a player who backs away and shoots,
 // and by one who only turns to face it.
