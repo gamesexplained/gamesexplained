@@ -806,6 +806,14 @@ def main():
         t = TYPES[btype[a]]
         if code[a]:
             d = cpu.decode(ram, a)
+            if d and a + d[2] > SIZE:
+                # an instruction at the top of memory whose operand is at the bottom, which the
+                # snapshot may not hold (a Spectrum's ROM): its bytes here, and what it is, in words
+                rec.update({"t": "byte", "b": list(ram[a:SIZE]),
+                            "note": f"{d[0]}, whose operand is the byte{'s' if a + d[2] - SIZE > 1 else ''} "
+                                    f"at $0000, past the top of memory"})
+                records.append(rec); a = SIZE
+                continue
             if d and not all(have[a:a + d[2]]):
                 sys.exit(f"${a:04X}: the listing holds only part of the instruction there: "
                          "rebuild it from the snapshot")

@@ -18,6 +18,11 @@
     "screen RAM"
    ],
    [
+    16384,
+    23295,
+    "the loading screen, which the loader LOC2 loads from the tape and copies to the screen before the program arrives; the program never reads it and draws over it from its first screen (reference/loading-screen.png is a picture of it)"
+   ],
+   [
     23296,
     24685,
     "the game's variables ($5B00-$5B59), its object table ($5B5A-$5EBF, 145 entries of six bytes) and the creature records ($5EC0-$606D, 86 of five bytes), all written in play from the scenario or a saved game; at the hand-over they still hold the ROM's system variables, the BASIC and the loader LOC2"
@@ -1386,7 +1391,7 @@
   {
    "start": 42079,
    "end": 42079,
-   "type": "Byte"
+   "type": "Code"
   },
   {
    "start": 42080,
@@ -3213,6 +3218,12 @@
    "kind": "user"
   },
   {
+   "address": 34918,
+   "name": "magic_bolt_at",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 34959,
    "name": "creature_at_height",
    "type": "UserDefined",
@@ -3221,6 +3232,12 @@
   {
    "address": 34987,
    "name": "magic_lightning",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 35000,
+   "name": "magic_lightning_at",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3976,13 +3993,19 @@
   },
   {
    "address": 42079,
-   "name": "unused_ret",
+   "name": "no_scenario_spell",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 42080,
    "name": "computer_summon",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42176,
+   "name": "computer_spell_done",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5287,7 +5310,7 @@
   {
    "address": 27441,
    "type": "line",
-   "text": "The select mode menu, opened by fire away from the creature's neighbouring squares: builds the list of options this creature can take now ($9315 adds one, its name printed in the menu) and dispatches the choice through select_actions. Always END MOVE, CENTRE and BIG MAP; RIDE and RIDER for a mount and a rider; CAST-A and CAST-G for a wizard (type below $90); LAND and FLY when it can fly ($D190, $D191); DROP, CHANGE and PICK UP by what it holds and what lies there (8 action points for PICK UP, 4 for the rest); USE, DRINK, FILL and EAT by the object in use ($73AA, $747E, $74D2); THROW, FIRE and READ by bits of its type record; and CANCEL."
+   "text": "The select mode menu, opened by fire away from the creature's neighbouring squares: builds the list of options this creature can take now ($9315 adds one, its name printed in the menu) and dispatches the choice through select_actions. Always END MOVE, CENTRE and BIG MAP; RIDE and RIDER for a mount and a rider; CAST-A and CAST-G for a wizard (type below $90); LAND and FLY when it can fly ($D190, $D191); DROP, CHANGE and PICK UP by what it holds and what lies there (8 action points for PICK UP, 4 for the rest); USE, DRINK, FILL and EAT by the object in use ($73AA, $747E, $74D2); THROW, FIRE and READ by bits of its type record; then the scenario's hook at $D02A, which may add options of its own; and CANCEL."
   },
   {
    "address": 28046,
@@ -5885,6 +5908,11 @@
    "text": "MAGIC BOLT (spell $28): the bolt flies (projectile 5) and the creature at the target's height takes a magic blow of strength four times the level plus $19."
   },
   {
+   "address": 34918,
+   "type": "line",
+   "text": "The bolt at the target already in the cursor's square ($D0D3): where the scenarios' spell routines for the computer enter, having chosen the target themselves."
+  },
+  {
    "address": 34959,
    "type": "line",
    "text": "A = the index of the creature at square HL at the height $FF31 asks for ($FF when there is none), IX its entry."
@@ -5892,7 +5920,12 @@
   {
    "address": 34987,
    "type": "line",
-   "text": "MAGIC LIGHTNING (spell $29), refused to the computer: a square whose terrain has bit 3 of its flags ($D38E) set cannot be the target. The lightning flies (projectile 6) and strikes the target and its eight neighbours ($90AB) with strength four times the level plus $1E: each square's terrain breaks into its remains when a random number below twice the strength reaches its toughness (byte 1 of its record), and a creature at the target height there takes a magic blow. A wizard caught in its own lightning that dies ends its select mode."
+   "text": "MAGIC LIGHTNING (spell $29), refused to the computer when entered here (the scenarios' own routines enter at magic_lightning_at, past the refusal): a square whose terrain has bit 3 of its flags ($D38E) set cannot be the target. The lightning flies (projectile 6) and strikes the target and its eight neighbours ($90AB) with strength four times the level plus $1E: each square's terrain breaks into its remains when a random number below twice the strength reaches its toughness (byte 1 of its record), and a creature at the target height there takes a magic blow. A wizard caught in its own lightning that dies ends its select mode."
+  },
+  {
+   "address": 35000,
+   "type": "line",
+   "text": "The lightning once the target is picked (by the player, or by a scenario's routine for the computer, which sets the cursor's square and comes in here)."
   },
   {
    "address": 35162,
@@ -6552,12 +6585,17 @@
   {
    "address": 42079,
    "type": "line",
-   "text": "A RET that nothing reaches."
+   "text": "A RET: the scenarios' tables of computer spell routines (scenario_spell) name it for the spells the computer's wizard never casts."
   },
   {
    "address": 42080,
    "type": "line",
    "text": "Casts a summon spell when it leaves at least the scenario's reserve of mana ($D046) or enemies are in view, and there are at least as many free squares round the wizard as the spell's level. A flying wizard lands first. Dragons go to summon_dragon, the rest to summon_creature. After a cast the view is centred, the map redrawn when shown, the spell's priority halved, the spell paid for ($82A2) and the panel redrawn; the step ends."
+  },
+  {
+   "address": 42176,
+   "type": "line",
+   "text": "The end of every spell the computer's wizard casts, where the scenarios' own spell routines jump too: the view is centred, the map redrawn when the turn is shown, the creature loaded again, the spell's priority halved, the spell paid for ($82A2), and the step ends (three return addresses dropped, back into computer_move_creature at $9817)."
   },
   {
    "address": 42234,
