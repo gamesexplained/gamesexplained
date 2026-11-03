@@ -102,12 +102,32 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="gx-cast" id="gx-cast"></div>
     <p class="cap">Pete digging is the game's <code>move_pete</code> (<code>$1F89</code>), called every other frame with the joystick held right and then left, and the figures are drawn by <code>stamp_figures</code>, <code>draw_figures</code> and <code>unstamp_figures</code>, all run on the kit's 6502 over a mine that <code>start_level</code> built. The creature is drawn the same way and moved a step every four frames, as level 1 moves it by day; the page chooses its way. Every step of every move is from the frames <code>build_figures</code> (<code>$2236</code>) shifts at start-up into <code>$0400</code>-<code>$06FF</code>. The fuse and the blast change as <code>irq_play</code> changes them, the fuse every fourth frame and the blast every frame, with the page's random numbers in place of TED's timers. The water steps as <code>water_fill</code> steps a cell, once every five frames on level 1.</p>
   </div>
-  <p>Pete and a creature each have two frames for each way they move, a picture character and a mask character, stored at <code>$1600</code>-<code>$16BF</code>, and Pete one more for standing still (<code>$A0</code>, with its mask <code>$A1</code>). At start-up <code>build_figures</code> turns them into four steps for each way, the left and right ones shifted a multicolour pixel apart and the up and down ones two rows apart, so a figure glides across a cell in four steps. Each frame <code>draw_figures</code> builds a figure's two characters from what is behind it, ANDed with the mask and ORed with the picture (<a href="index.html#figures">How it works</a>).</p>
+  <p>Pete and a creature each have two frames for each way they move, a picture character and a mask character, stored at <code>$1600</code>-<code>$16BF</code>, and Pete one more for standing still (<code>$A0</code>, with its mask <code>$A1</code>). At start-up <code>build_figures</code> turns them into four steps for each way, and every frame <code>draw_figures</code> lays the step over what is behind the figure (<a href="#figures">below</a>).</p>
   <p>The rest moves by changing characters. A cell Pete digs goes through three stages of earth eaten away, drawn for each way he can come at it and for each of the four characters the earth is tiled with: 48 characters. The water has four stages for each way it can come into a cell, and a seventeenth for a full cell. The fuse of a stick of dynamite is one character whose two top rows <code>irq_play</code> swaps every fourth frame, and the blast is one character it fills with random bits every frame.</p>
 </section>
 
+<section id="figures">
+  <p class="fig">02 · Pete and the creatures</p>
+  <h2 class="t">Moving figures are characters redrawn every frame</h2>
+  <p class="lede">Pete and each creature are two characters of their own, rebuilt every frame from the earth or tunnel behind them, so they glide between cells. Here one of them moves along a tunnel, a step at a time.</p>
+  <div class="plate">
+    <div class="pp-bar">
+      <button type="button" class="on" data-who="0">Pete</button><button type="button" data-who="1">A creature</button>
+      <span style="width:8px"></span>
+      <button type="button" data-dir="4" class="on">Right</button><button type="button" data-dir="3">Left</button><button type="button" data-dir="1">Up</button><button type="button" data-dir="2">Down</button><button type="button" data-dir="0">Standing</button>
+      <button type="button" id="pp-gstep">Step</button>
+      <label><input type="checkbox" id="pp-gplay" checked> Play</label>
+    </div>
+    <div class="pp-small"><canvas id="pp-fig" width="288" height="160" aria-label="A figure moving along a tunnel."></canvas><canvas id="pp-figch" width="160" height="160" aria-label="The figure's two characters, enlarged."></canvas></div>
+    <p class="pp-state" id="pp-gstate"></p>
+    <p class="cap">The game's <code>stamp_figures</code>, <code>draw_figures</code> and <code>unstamp_figures</code>, as <code>irq_play</code> calls them before and after copying the view, run on the kit's 6502 over frames that <code>build_figures</code> made at start-up. On the right, the figure's two characters as <code>draw_figures</code> left them, four times the size.</p>
+  </div>
+  <p>Each figure has two characters, Pete's <code>$CE</code> and <code>$CF</code> and the creatures' the pairs after them. Before the view is copied to the screen, <code>stamp_figures</code> puts a figure's pair into the map over the cell it is leaving and the cell it is entering, saving what was there. <code>draw_figures</code> then builds each of the two characters' eight rows from the saved character's row, ANDed with a mask and ORed with a picture, so the earth or tunnel shows round the figure. Once the view is copied, <code>unstamp_figures</code> puts the map back.</p>
+  <p>A move from one cell to the next takes four steps: one multicolour pixel (two screen pixels) a step across, or two rows a step up and down. The pictures and masks for every step are shifted once, at start-up, from the frames stored in the character set (<code>build_figures</code>, <code>shift_frames</code>): pages <code>$0400</code> for up and down, <code>$0500</code> for left, and <code>$0600</code> for right, Pete's in the first half of each page and a creature's in the second. Pete standing still is one character, his standing picture over the cell he is in (<code>draw_standing</code>).</p>
+</section>
+
 <section id="charset">
-  <p class="fig">02 · The character set</p>
+  <p class="fig">03 · The character set</p>
   <h2 class="t">One set of 256 characters draws the mine, the title and everything that moves</h2>
   <p class="lede">The screen is TED's multicolour text mode, every cell one of these characters. Point at a character to see what it is.</p>
   <div class="plate">
@@ -128,7 +148,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 (function () {
   const $ = id => document.getElementById(id);
   if (typeof C16 === 'undefined' || typeof C64Cpu === 'undefined' || typeof Pete === 'undefined') {
-    for (const id of ['gx-cast', 'gx-set']) {
+    for (const id of ['gx-cast', 'pp-fig', 'gx-set']) {
       const el = $(id), p = document.createElement('p'); p.className = 'pp-need';
       p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js): open the page from the built site.';
       el.replaceWith(p);
@@ -305,6 +325,58 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     run.onclick = () => play(!timer);
     $('gx-step').onclick = () => { play(false); step(); };
     draw(); play(true);
+
+    /* Pete and the creatures */
+    (function () {
+      const m = base.slice(), cv = $('pp-fig'), ch = $('pp-figch');
+      const C0 = 40, R0 = 10, W = 9, H = 5;
+      // a patch of a built mine, earth with a tunnel across its middle row and down its middle column
+      Pete.startLevel(m, 0);
+      for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+        const a = Pete.at(C0 + c, R0 + r);
+        m[a] = r === 2 || c === 4 ? 0 : earthAt(C0 + c, R0 + r);
+      }
+      let who = 0, dir = 4, step = 0, pos = 0;
+      const plus = () => dir === 4 || dir === 2, K = () => dir >= 3 ? W : H;
+      // the cell the figure is leaving and the one it is entering, along the tunnel's row or column
+      const cellXY = i => dir >= 3 ? [C0 + i, R0 + 2] : [C0 + 4, R0 + i];
+      function place() {
+        for (let n = 0; n < 5; n++) m[0x22 + n] = 0;
+        m[0x22 + who] = 1;
+        const from = cellXY(pos), to = dir ? cellXY(plus() ? pos + 1 : pos - 1) : from;
+        const a = Pete.at(...to), b = Pete.at(...from), o = 4 * who;
+        m[0x2C + o] = a & 255; m[0x2D + o] = a >> 8; m[0x2E + o] = b & 255; m[0x2F + o] = b >> 8;
+        m[0x27 + who] = dir ? step : 0; m[0x4A + who] = dir;
+        return [from, to];
+      }
+      function draw() {
+        const [from, to] = place();
+        Pete.withFigures(m, () => {
+          Pete.grid(cv, m, W, H, (c, r) => m[Pete.at(C0 + c, R0 + r)], () => false, { s: 4 });
+          const c0 = Math.min(from[0], to[0]), r0 = Math.min(from[1], to[1]);
+          Pete.grid(ch, m, Math.abs(to[0] - from[0]) + 1, Math.abs(to[1] - from[1]) + 1, (c, r) => m[Pete.at(c0 + c, r0 + r)], () => false, { s: 10 });
+        });
+        $('pp-gstate').textContent = (who ? 'A creature' : 'Pete') + (dir ? `, moving ${['', 'up', 'down', 'left', 'right'][dir]}, step ${step} of 0 to 3: characters ${hex(0xCE + 2 * who)} and ${hex(0xCF + 2 * who)}` : `, standing: character ${hex(0xCE)}`);
+      }
+      function reset() { step = 0; pos = !dir ? 2 : plus() ? 0 : K() - 1; }
+      function next() {
+        if (!dir) return draw();
+        if (++step > 3) {
+          step = 0; pos += plus() ? 1 : -1;
+          if (plus() && pos > K() - 2) pos = 0;
+          if (!plus() && pos < 1) pos = K() - 1;
+        }
+        draw();
+      }
+      const bar = cv.closest('.plate').querySelector('.pp-bar');
+      for (const b of bar.querySelectorAll('[data-who]')) b.onclick = () => { who = +b.dataset.who; if (who && !dir) { dir = 4; reset(); } for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x === b); syncDir(); draw(); };
+      function syncDir() { for (const x of bar.querySelectorAll('[data-dir]')) x.classList.toggle('on', +x.dataset.dir === dir); }
+      for (const b of bar.querySelectorAll('[data-dir]')) b.onclick = () => { dir = +b.dataset.dir; if (who && !dir) { who = 0; for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x.dataset.who === '0'); } reset(); syncDir(); draw(); };
+      $('pp-gstep').onclick = next;
+      reset();
+      setInterval(() => { if ($('pp-gplay').checked) next(); }, 160);
+      draw();
+    })();
   });
 })();
 </script>

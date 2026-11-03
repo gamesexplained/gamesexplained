@@ -82,3 +82,10 @@ the blast as `irq_play` changes them, and the goodies. A second section
 draws the whole character set. One thing found on the way: `$4A`, Pete's
 direction, keeps its value after a move ends, and the call that ends a
 move ($27 = 3) also reads the stick and starts the next.
+
+air then asked for what How it works drew twice to live only on the
+Graphics tab. The section on how Pete and the creatures are drawn, with
+its tunnel, its step control and the figure's two characters enlarged,
+moved there as the second section, with its script. How it works keeps the
+frame rebuilt from memory, which now says the figures are characters too
+and links to that section.
