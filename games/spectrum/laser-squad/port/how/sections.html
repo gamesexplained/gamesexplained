@@ -1,0 +1,115 @@
+<section class="pl-first" id="game">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">One engine, five battles loaded from tape</h2>
+  <div class="hw-shots"><img src="reference/equipment-weapons.png" alt="The shop before The Assassins: the assassin squad's five men, each with an M4000 auto-gun, and 150 credits to spend"><img src="reference/cursor-mode.png" alt="A turn in The Assassins: the view of the house, with the readout of the square under the cursor at the right"></div>
+  <p>Two sides take turns on a map of 80 squares by 50. In each turn a side moves all of its units, one at a time, and every step, turn, shot and door costs the unit action points from an allowance that comes back at the start of the side's next turn. The game ends when a side reaches 100 victory points, which come from killing enemies and from whatever the scenario values, or when the last turn has been played.</p>
+  <p>The program on the tape is the engine: the rules, the drawing, the menus and the shop, 22,521 bytes at <code>$5E28</code>. Each battle is a scenario of 18,911 bytes loaded on top of it at <code>$B621</code>: its map, its units, its terrain and its messages, and its own code. Every scenario carries its own copy of the computer player, with changes for its battle, and eight hooks at its start that the engine calls at fixed moments, where a scenario adds its lifts, its prisoners, its terminals and its reinforcements.</p>
+  <p>Before a battle each side spends credits on armour and weapons for its units in the shop, and places them on the squares its scenario marks for it. The <a href="levels.html">Maps</a> tab has every scenario's map, its squares for placing and its units.</p>
+</section>
+
+<section id="view">
+  <p class="fig">02 · The view</p>
+  <h2 class="t">The map is one byte a square, and the screen shows 121 of them</h2>
+  <p class="lede">Pick a scenario and drag the view, or use the arrows. Point at a square to read it.</p>
+  <div class="plate">
+    <div class="pick"><select id="hw-scen" aria-label="Scenario"></select></div>
+    <div class="hw-two">
+      <div class="hw-screen"><canvas id="hw-view" width="176" height="176" tabindex="0" aria-label="The view: 11 squares by 11 of the map" style="cursor:grab;touch-action:none"></canvas></div>
+      <div>
+        <div class="hw-btns" id="hw-pad">
+          <button type="button" class="hw-btn" data-d="-1,0" aria-label="Up">↑</button>
+          <button type="button" class="hw-btn" data-d="1,0" aria-label="Down">↓</button>
+          <button type="button" class="hw-btn" data-d="0,-1" aria-label="Left">←</button>
+          <button type="button" class="hw-btn" data-d="0,1" aria-label="Right">→</button>
+          <button type="button" class="hw-btn" id="hw-fire" aria-pressed="false">Fire mode</button>
+        </div>
+        <p class="hw-out" id="hw-view-at"></p>
+        <p class="hw-out" id="hw-view-out">Point at a square.</p>
+      </div>
+    </div>
+    <p class="cap">The view drawn by the Play tab's port of <code>drawView</code> (<code>$612A</code>) on the scenario as the tape loads it, before any unit is placed. Fire mode draws through the scenario's second table of squares, as the game does while a unit aims.</p>
+  </div>
+  <p>The map is 4,000 bytes at <code>$D6BF</code>, a byte for each square, 80 to a row. A byte below <code>$6E</code> is terrain, from <code>$6E</code> to <code>$8B</code> an object lying there, and from <code>$8C</code> to <code>$9F</code> one of the scenario's 20 units. Each byte has two bytes in the scenario's table of squares: its colours and its tile. A tile is 16 pixels by 16, two character cells by two, so each square has its own colours and nothing on the map ever clashes.</p>
+  <p>The name of every square comes from the same number. The scenario's messages are a list, and the name of map byte <i>n</i> is message <i>n</i> + 1 of it, which is how the readout beside the view in the game says WALL, BUSH or CORPORAL JONLAN under the cursor. A message is mostly the numbers of words in a dictionary the scenario carries, so WALL AND CABINET is four bytes: three words and a new line.</p>
+  <p>Fire mode swaps in a second table of squares at <code>$E79F</code>, which draws the map as a plan: walls as thin lines, trees, plants and furniture as round blobs, floors bare, and each unit as a blob, so the line of a shot shows against plain ground. The units stand on the map the same way in both: as their own byte, in place of the floor, which the unit's record keeps until it moves off.</p>
+</section>
+
+<section id="sound">
+  <p class="fig">03 · Sound effects</p>
+  <h2 class="t">Sound: thirteen effects from ten bytes each</h2>
+  <p class="lede">Press an effect to hear it. There is no music: the game has thirteen effects, all on the beeper.</p>
+  <div class="plate">
+    <div class="hw-fx" id="hw-fx"></div>
+    <div class="hw-wave"><canvas id="hw-wave" width="960" height="70" aria-label="The beeper's level over the effect"></canvas></div>
+    <p class="hw-out" id="hw-fx-out">Pick an effect.</p>
+    <p class="cap">Each effect is the Play tab's port of <code>sound</code> (<code>$B5BE</code>), run when the button is pressed: its writes to port <code>$FE</code> at the T-states the game's loops take, played by the site's model of the beeper. The line above is the beeper's level over the whole effect. What plays each one is read from the code.</p>
+  </div>
+  <p>One routine makes every sound. <code>sound</code> copies the effect's ten bytes from the table at <code>$B531</code> and <code>playSound</code> plays them: four tones, each a wait of its pitch byte and then a click of the speaker, round and round for the number of passes, and the whole repeated the number of times, with each pitch moved on by its own step after each time. A step of 0 holds a note.</p>
+  <p>The interrupts are off for the whole game, so nothing else happens while an effect plays. A shot's flight has a sound of its own, clicks that come closer together as it goes, with noise from the refresh register.</p>
+</section>
+
+<section id="steps">
+  <p class="fig">04 · Action points</p>
+  <h2 class="t">Every step is priced by the ground and by who walks on it</h2>
+  <p>A unit's action points come back at the start of its side's turn: its own allowance, less what its load costs, less a share for its wounds and its armour. The load costs half the allowance times the weight carried over the unit's strength, so a load as heavy as the unit is strong takes half its points. A unit that spent more than half its points last turn loses stamina, one that rested gets it back, and under 32 stamina it moves on half its points.</p>
+  <p>A step costs the ground's price for the unit's kind, plus the price of an object lying there, plus 2 for a diagonal, and the lot doubled for a step backwards; a turn of an eighth costs 1. Each terrain's record in the scenario has three prices, one for each kind of mover, and 255 means the kind cannot go there. In Paradise Valley the three kinds are the troopers, the Sectoids and Venomous Splurges, and the Water Dwellers:</p>
+  <div class="plate">
+    <table>
+      <tr><th>Paradise Valley's ground</th><th>Troopers</th><th>Sectoids, Splurges</th><th>Water Dwellers</th></tr>
+      <tr><td>Ground</td><td>4</td><td>4</td><td>4</td></tr>
+      <tr><td>Water</td><td>8</td><td>6</td><td>4</td></tr>
+      <tr><td>River bank</td><td>4</td><td>4</td><td>cannot</td></tr>
+      <tr><td>Marsh</td><td>8</td><td>4</td><td>cannot</td></tr>
+      <tr><td>Big bush</td><td>cannot</td><td>6</td><td>cannot</td></tr>
+      <tr><td>Little bush</td><td>cannot</td><td>5</td><td>cannot</td></tr>
+    </table>
+    <p class="cap">Bytes 0 to 2 of each terrain's twelve at the scenario's table of terrain (<code>$B726</code> points to it), read by <code>stepCost</code> (<code>$6EBF</code>) with the unit's byte <code>$04</code>.</p>
+  </div>
+  <p>The menus charge a share of the unit's whole allowance rather than a fixed price, so a slow unit pays fewer points for the same job. <code>divRound</code> works the share out, rounding to the nearest.</p>
+  <table>
+    <tr><th>Action</th><th>Price</th></tr>
+    <tr><td>Open or close a door, prime a grenade</td><td>a fifth of the allowance</td></tr>
+    <tr><td>Lock or unlock a door, change what is in the hands, pick up</td><td>a quarter (a half to pick up with the hands full)</td></tr>
+    <tr><td>Drop</td><td>a tenth</td></tr>
+    <tr><td>Reload</td><td>a half</td></tr>
+    <tr><td>Fire</td><td>the weapon's own price for each kind of shot</td></tr>
+  </table>
+</section>
+
+<section id="blast">
+  <p class="fig">05 · Blasts</p>
+  <h2 class="t">A blast is eleven squares wide and loses strength at every square</h2>
+  <p class="lede">Pick what goes off, then click a square of the view. The numbers are the strength that reached each square; yellow is the whole of it.</p>
+  <div class="plate">
+    <div class="pick"><select id="hw-bscen" aria-label="Scenario"></select></div>
+    <div class="hw-btns" id="hw-kinds"></div>
+    <div class="hw-screen" style="margin-top:10px"><canvas id="hw-blast" width="528" height="528" aria-label="The view, and the strength the blast left on each square" style="cursor:crosshair"></canvas></div>
+    <div class="hw-btns"><button type="button" class="hw-btn" id="hw-blast-reset">Start again</button></div>
+    <p class="hw-out" id="hw-blast-out"></p>
+    <p class="cap">The Play tab's port of <code>explode</code> (<code>$9696</code>) run whole on the scenario's map, with the table of strengths it fills at <code>$5B00</code> caught before the first square takes its blow, then the fires it lit, as the game sets off a primed grenade. The view is where the game puts it, centred on the blast; the squares left without a number got nothing. Blasts add up until Start again.</p>
+  </div>
+  <p>An explosion has the strength of what went off: 90 for an AP50 grenade, 160 for a rocket or an AP75 grenade, 170 for the miners' explosive. <code>explode</code> sets out a box five squares each way from the centre, cut at the map's edges, and draws a line from the centre to every square of the box's edge (<code>blastRay</code>, <code>$980E</code>). Along each line the strength falls by two sixteenths of the blast's own strength at every straight step and three sixteenths at every diagonal one, and each square it crosses takes a toll as well, its terrain's byte <code>$05</code>. A square keeps the most that reached it by any line.</p>
+  <p>Then every square of the box takes the blow of its number. Terrain breaks when the blow is at least its byte <code>$03</code>, into the terrain its byte <code>$04</code> names, and goes on breaking while the blow lasts. A wall in The Assassins needs 120 and takes 120 off a blast that crosses it, so a grenade cannot break one and nothing of it reaches the room behind; a rocket can. Terrain whose byte <code>$08</code> is 7, a vidi-screen or a control console, catches fire as it breaks, and the fire goes off after the blast as a blast of its own. The first unit standing on a square is hurt through its armour, and an object lying there is destroyed by a blow of at least its kind's byte <code>$11</code>. A primed grenade goes off at the end of the half-turn its timer names, where it lies or wherever its carrier has walked to.</p>
+</section>
+
+<section id="routes">
+  <p class="fig">06 · The computer player</p>
+  <h2 class="t">The computer walks the map by waypoints, and gives up on long routes</h2>
+  <p class="lede">Pick a waypoint, then another: the scenario's own route search runs between them.</p>
+  <div class="plate">
+    <div class="pick"><select id="hw-rscen" aria-label="Scenario"></select></div>
+    <div class="hw-plan"><canvas id="hw-route" width="960" height="600" aria-label="The scenario's map with its waypoints, links and areas" style="cursor:pointer"></canvas></div>
+    <p class="hw-out" id="hw-route-out"></p>
+    <p class="cap">The map, darkened, with the scenario's areas (white rectangles), waypoints (dots) and the links between them (cyan), read from its tables as the computer reads them. The route is the scenario's own <code>findRoute</code>, ported, run on them.</p>
+  </div>
+  <p>The computer does not see the map square by square. Each scenario cuts its map into rectangular areas and strews it with waypoints, up to 94 of them, each with a list of links to its neighbours and what each link costs. When one of the computer's units hunts an enemy it has seen, it takes the waypoints from which that enemy can be seen, searches for the cheapest route to each from the waypoint nearest itself, and walks the cheapest. A route is kept as at most ten waypoints.</p>
+  <p><code>findRoute</code> tries every route link by link, deepest first, and abandons one as soon as it costs more than the best so far. The first "best so far" is not a route at all: it is the cost the scenario's table of areas gives between the two waypoints' areas, or 25 when they share one, and a route dearer than that is never kept.</p>
+  <p>Three scenarios also stop the search at a depth: Rescue from the Mines tries no route of more than 9 links, The Cyber Hordes 15 and Paradise Valley 20. In Rescue from the Mines that limit leaves 1,858 of the 8,742 pairs of waypoints with no route at all, one in five. Paradise Valley's map is two maps, the valley and the caves under it, and no link joins a waypoint of one to a waypoint of the other, so the computer's units never plan a way between them.</p>
+</section>
+
+<section id="random">
+  <p class="fig">07 · Random numbers</p>
+  <h2 class="t">The dice read the whole of memory</h2>
+  <p>Every chance in the game, a shot, a blow, a morale test, a scatter, goes through <code>random</code> (<code>$80B1</code>). It adds three things: the Z80's refresh register R, which counts the instructions the processor has fetched; the byte at a pointer that moves on one byte each time and walks through the whole of memory, the ROM, the screen and the game's own code included; and a count of how long the game has spent waiting for a key. The sum is tried again until it is below the limit asked for.</p>
+  <p>The count of the waits is the player's part. Each turn of the loops that wait for a key or for fire to be let go adds one to it, so the moment a player presses a key changes every number that follows.</p>
+</section>
