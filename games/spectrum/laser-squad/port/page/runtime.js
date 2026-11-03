@@ -21,10 +21,15 @@
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (KEY, below), joy: the Kempston interface's bits
 //                      (right, left, down, up and fire in bits 0 to 4, set when held), reads: how
-//                      often the program has read the keyboard and the joystick }
+//                      often the program has read the keyboard and the joystick, seen: the key
+//                      names a read has found held, seenJoy: the stick's bits a read has found
+//                      held (the page clears a key's when it goes down) }
 //   rt.onBeep(f)       f(value, T-state) for each change of the beeper (bit 4 of the byte written
 //                      to port $FE)
 //   rt.onCheckpoint(f) f(address, T-state) as the clock reaches each checkpoint, its stretch paid
+//   rt.onFrame(f)      f(frame number) as the clock finishes each frame, the memory as it is then:
+//                      the clock runs ahead of the frame on show (rt.shown) while the program does
+//                      not wait, as in the computer's turn
 //   rt.missing         the stretches met that the cost model has no figure for, 'from>to' in hex
 //   rt.blank           the bytes the page does not carry: 1 for each, the ROM's too
 //
@@ -95,7 +100,7 @@ function runs(list, into, v = 1) { for (const [a, n] of list || []) into.fill(v,
 function create(o) {
   const D = root.LSPort;
   const M = new Uint8Array(0x10000);
-  const input = { keys: new Set(), joy: 0, reads: 0 }, beepers = [], checkpoints = [];
+  const input = { keys: new Set(), joy: 0, reads: 0, seen: new Set(), seenJoy: 0 }, beepers = [], checkpoints = [], framers = [];
   let border = 0, ear = 0;
 
   // ---- the noise: R, and the bytes the page does not carry
@@ -121,6 +126,7 @@ function create(o) {
       if (t < (frameIdx + 1) * FRAME) break;
       if (!taken) cur = frameNow();
       done.push(cur); if (done.length > AHEAD) done.shift();
+      for (const f of framers) f(cur.frame);
       frameIdx++; taken = false;
     }
   }
@@ -131,13 +137,13 @@ function create(o) {
   const io = {
     in(port) {
       input.reads++;
-      if ((port & 0x20) === 0 && (port & 1)) return input.joy & 0x1F;
+      if ((port & 0x20) === 0 && (port & 1)) { input.seenJoy |= input.joy; return input.joy & 0x1F; }
       if (port & 1) return 0xFF;
       const high = port >> 8;
       let v = 0x1F;
       for (const name of input.keys) {
         const k = KEY[name];
-        if (k !== undefined && !(high & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+        if (k !== undefined && !(high & (1 << (k >> 3)))) { v &= ~(1 << (k & 7)); input.seen.add(name); }
       }
       return 0xA0 | v;
     },
@@ -243,6 +249,7 @@ function create(o) {
     runFrame, runUntil, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onBeep: f => beepers.push(f),
     onCheckpoint: f => checkpoints.push(f),
+    onFrame: f => framers.push(f),
     scenarios,
   };
 }

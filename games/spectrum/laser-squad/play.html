@@ -64,6 +64,15 @@ section table{margin:6px 0 18px}
 .pl-tape[hidden]{display:none}
 .pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
 .pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-watch{margin-top:14px}
+.pl-watch[hidden]{display:none}
+.pl-watch canvas{display:block;width:100%;height:auto;background:#000;border-radius:6px;image-rendering:pixelated}
+.pl-watch-out{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin:8px 0 0}
+.pl-watch-units{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:3px 18px;margin:8px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-watch-units i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.pl-watch-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.pl-watch-key i{display:inline-block;width:24px;height:10px;background:#000;border-radius:2px;vertical-align:-1px;margin-right:6px;position:relative}
+.pl-watch-key b{position:absolute;left:3px;right:3px;top:4px}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
 <!-- tabs -->
@@ -85,9 +94,17 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-watch aria-pressed="false" title="Show the whole map under the screen, with every unit on it, hidden ones too, and in a game against the computer where each of its units is going">🗺 Whole map</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-tape" id="pl-tape"></div>
+    <div class="pl-watch" id="pl-watch" hidden>
+      <canvas id="pl-watch-cv" width="960" height="600" aria-label="The whole map, every unit on it, and the computer's units' routes"></canvas>
+      <p class="pl-watch-out" id="pl-watch-out"></p>
+      <ul class="pl-watch-units" id="pl-watch-units"></ul>
+      <div class="pl-watch-key"><span><i><b style="border-top:2px solid #40c0ff"></b></i>the first side's units</span><span><i><b style="border-top:2px solid #ff5050"></b></i>the second side's; dashed where the player cannot see one</span><span><i><b style="border-top:2px dashed #fff"></b></i>the player's view</span><span><i><b style="border-top:2px dotted #ccc"></b></i>in each unit's own colour, its round, from its orders</span><span><i><b style="border-top:3px solid #ccc"></b></i>where it went in the computer's last half-turn</span><span><i><b style="border-top:2px dashed #ccc"></b></i>the route it was walking, to the waypoint ringed</span><span><i><b style="border-top:2px dashed #ff3030"></b></i>the enemy it went after</span></div>
+      <p class="cap">The map as the port's memory holds it, drawn each moment from the scenario's own tiles. The computer's units are read from their orders and from the computer player's own variables as it moves each one. It shows the units the player is not meant to see.</p>
+    </div>
     <ul class="pl-keys" id="pl-keys">
       <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
       <li><kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> <kbd data-key="4">4</kbd> <kbd data-key="5">5</kbd> <kbd data-key="6">6</kbd> <kbd data-key="7">7</kbd> answer the menus: the scenario, the controls, one player or two, the level</li>
@@ -124,6 +141,7 @@ section table{margin:6px 0 18px}
   <tr><td>The beeper is toggled from the effects' timing loops, with the game stopped while each plays.</td><td>The site's model of the beeper plays the port's writes to it, each at the T-state the game's loops give it, and the game waits for the effect as it does on the Spectrum.</td></tr>
   <tr><td>Choosing a scenario plays its block of 18,913 bytes from the cassette at the ROM's speed, which takes nearly two minutes.</td><td>The page carries the five scenarios' blocks, and a scenario loads at once.</td></tr>
   <tr><td>Save Game, in the menu between turns, saves the game to tape; Load Saved Game, at the first menu, loads it back.</td><td>A saved game is kept in the browser, and offered as a .tap file to download. Load Saved Game loads the one kept, or a .tap file given to the page.</td></tr>
+  <tr><td>A key stays down as long as a finger holds it, and the game reads it as often as its loops come round.</td><td>A tapped key stays down until the game has read it and the screen has shown what it did, however short the tap, so a tap moves the cursor one square. A key held down repeats as it does on the Spectrum.</td></tr>
   <tr><td>The controls are the keys, a Kempston joystick, a Sinclair stick or the cursor keys, as the first menus choose.</td><td>The arrow keys, and the pad under the screen, are whichever the menus chose, with Space, Enter or Ctrl for fire; every other key is the Spectrum's own.</td></tr>
 </table>
 </section>
@@ -6505,10 +6523,15 @@ G.unit = P => {
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (KEY, below), joy: the Kempston interface's bits
 //                      (right, left, down, up and fire in bits 0 to 4, set when held), reads: how
-//                      often the program has read the keyboard and the joystick }
+//                      often the program has read the keyboard and the joystick, seen: the key
+//                      names a read has found held, seenJoy: the stick's bits a read has found
+//                      held (the page clears a key's when it goes down) }
 //   rt.onBeep(f)       f(value, T-state) for each change of the beeper (bit 4 of the byte written
 //                      to port $FE)
 //   rt.onCheckpoint(f) f(address, T-state) as the clock reaches each checkpoint, its stretch paid
+//   rt.onFrame(f)      f(frame number) as the clock finishes each frame, the memory as it is then:
+//                      the clock runs ahead of the frame on show (rt.shown) while the program does
+//                      not wait, as in the computer's turn
 //   rt.missing         the stretches met that the cost model has no figure for, 'from>to' in hex
 //   rt.blank           the bytes the page does not carry: 1 for each, the ROM's too
 //
@@ -6579,7 +6602,7 @@ function runs(list, into, v = 1) { for (const [a, n] of list || []) into.fill(v,
 function create(o) {
   const D = root.LSPort;
   const M = new Uint8Array(0x10000);
-  const input = { keys: new Set(), joy: 0, reads: 0 }, beepers = [], checkpoints = [];
+  const input = { keys: new Set(), joy: 0, reads: 0, seen: new Set(), seenJoy: 0 }, beepers = [], checkpoints = [], framers = [];
   let border = 0, ear = 0;
 
   // ---- the noise: R, and the bytes the page does not carry
@@ -6605,6 +6628,7 @@ function create(o) {
       if (t < (frameIdx + 1) * FRAME) break;
       if (!taken) cur = frameNow();
       done.push(cur); if (done.length > AHEAD) done.shift();
+      for (const f of framers) f(cur.frame);
       frameIdx++; taken = false;
     }
   }
@@ -6615,13 +6639,13 @@ function create(o) {
   const io = {
     in(port) {
       input.reads++;
-      if ((port & 0x20) === 0 && (port & 1)) return input.joy & 0x1F;
+      if ((port & 0x20) === 0 && (port & 1)) { input.seenJoy |= input.joy; return input.joy & 0x1F; }
       if (port & 1) return 0xFF;
       const high = port >> 8;
       let v = 0x1F;
       for (const name of input.keys) {
         const k = KEY[name];
-        if (k !== undefined && !(high & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+        if (k !== undefined && !(high & (1 << (k >> 3)))) { v &= ~(1 << (k & 7)); input.seen.add(name); }
       }
       return 0xA0 | v;
     },
@@ -6727,11 +6751,239 @@ function create(o) {
     runFrame, runUntil, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onBeep: f => beepers.push(f),
     onCheckpoint: f => checkpoints.push(f),
+    onFrame: f => framers.push(f),
     scenarios,
   };
 }
 root.LSPage = { create, countScenario, HELPERS, LINE, LINES, FRAME, KEY };
 })(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* the page: the whole map (page/watch.js) */
+// The Play tab's whole map (play.template.html, its "Whole map" switch): the map as the port's
+// memory holds it, every unit on it, the ones hidden from the player too, and in a game against the
+// computer ($B706) what each of the computer's units is doing: its round of waypoints from its
+// orders (ORDERS + 10 x its $1A, g-ai.js), and as it moves ($5D36 set, its code at $5D26), the
+// route it walks ($5CF0: the next waypoint ZONE, the rest from STACK), the waypoint it makes for
+// (GOAL), the enemy it is after (TARGET, or CHARGE where it runs at one), and the squares it has
+// stood on in the computer's half-turn ($5DF7 set).
+// The computer's turn runs ahead of the screen: the program does not wait for the player, so the
+// clock finishes frames faster than the page shows them. So each frame's units and plan are kept
+// as the clock finishes it (rt.onFrame), and the map shows the frame on screen (rt.shown).
+// It only reads the game's memory. The units' names come from a second port on a copy of it, which
+// printMessage writes to.
+//   const w = LSWatch.create({ rt: () => rt, canvas, list, out })
+//   w.reset()   a new machine: its frames followed from now
+//   w.draw()    the map and the plans for the frame on screen
+(function (root) {
+'use strict';
+const PAL = ['#000000', '#0000d7', '#d70000', '#d700d7', '#00d700', '#00d7d7', '#d7d700', '#d7d7d7',
+  '#000000', '#0000ff', '#ff0000', '#ff00ff', '#00ff00', '#00ffff', '#ffff00', '#ffffff'];
+const RGB = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+const HUE = ['#ffff00', '#ff8040', '#ff40ff', '#40ff80', '#40c0ff', '#ffffff', '#ffa0a0', '#a0ffa0', '#a0a0ff', '#ffd040', '#40ffff', '#ff4080'];
+const ROWS = 50, COLS = 80, MAP = 0xD6BF, SQUARES = 0xE65F, TILES = 0xE8DF, TABLE = 0x5C50;
+const KEEP = 4000;                                // frames kept: the runtime keeps as many ahead
+const title = s => s.toLowerCase().replace(/(^|[\s-])([a-z])/g, (m, p, c) => p + c.toUpperCase());
+
+function create(o) {
+  const cv = o.canvas, g = cv.getContext('2d');
+  const K = cv.width / COLS;
+  const base = document.createElement('canvas');
+  base.width = COLS * 16; base.height = ROWS * 16;
+  const bg = base.getContext('2d');
+  const img = bg.createImageData(COLS * 16, ROWS * 16);
+  const keys = new Int32Array(ROWS * COLS).fill(-1);
+  const one = document.createElement('canvas');
+  one.width = one.height = 16;
+  const og = one.getContext('2d'), oimg = og.createImageData(16, 16);
+  let id = null, T = null, names = [], frames = [], listed = '', followed = null;
+
+  // tile `t` in the colours `at`, 16 x 16 pixels from (x0, y0) of `im`, as drawTile lays out its
+  // 32 bytes (top left, top right, bottom left, bottom right, eight rows each)
+  function tile(M, im, x0, y0, t, at) {
+    const br = at & 0x40 ? 8 : 0, ink = RGB[(at & 7) + br], paper = RGB[(at >> 3 & 7) + br];
+    const gfx = TILES + 32 * t & 0xFFFF;
+    for (let c = 0; c < 4; c++) {
+      const cx = x0 + (c & 1) * 8, cy = y0 + (c >> 1) * 8;
+      for (let j = 0; j < 8; j++) {
+        const byte = M[gfx + 8 * c + j & 0xFFFF];
+        for (let i = 0; i < 8; i++) {
+          const col = byte >> (7 - i) & 1 ? ink : paper, k = ((cy + j) * im.width + cx + i) * 4;
+          im.data[k] = col[0]; im.data[k + 1] = col[1]; im.data[k + 2] = col[2]; im.data[k + 3] = 255;
+        }
+      }
+    }
+  }
+  // the map with no unit on it: a unit's square drawn as the floor under it (the fourth byte of
+  // its entry in the table of units), each square through the table of squares at $E65F, its
+  // colours and its tile; only the squares that changed since the last look
+  function terrain(M) {
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      let sq = M[MAP + COLS * r + c];
+      if (sq >= 0x8C && sq < 0xA0) sq = M[TABLE + 4 * (sq - 0x8C) + 3];
+      const at = M[SQUARES + 2 * sq], t = M[SQUARES + 2 * sq + 1 & 0xFFFF], key = at << 8 | t, n = COLS * r + c;
+      if (keys[n] === key) continue;
+      keys[n] = key;
+      tile(M, img, c * 16, r * 16, t, at);
+      bg.putImageData(img, 0, 0, c * 16, r * 16, 16, 16);
+    }
+  }
+  // the units' names, as the scenario's messages print them: printMessage on a copy of the memory
+  function nameAll(M) {
+    const M2 = new Uint8Array(M);
+    const P2 = root.LSPort.makePort(M2, { in: () => 0xFF, out() {}, r: () => 0, irqByte: a => M2[a], tape: null });
+    P2.useScenario(id);
+    const out = [];
+    for (let k = 0; k < 20; k++) {
+      const s = [];
+      P2.setw(0x5D1F, P2.w(0xB722)); P2.setw(0x5D07, P2.w(0xB724)); M2[0x5D09] = 0;
+      P2.putChar = r => { s.push(String.fromCharCode(r.a)); return {}; };
+      P2.advance = () => { s.push(' '); return {}; };
+      P2.newLine = () => { s.push('\n'); return {}; };
+      try { P2.printMessage({ a: 0x8D + k & 255 }); } catch (e) { s.length = 0; }
+      out.push(title(s.join('').replace(/\s+/g, ' ').replace(/- /g, '-').trim()) || 'Unit ' + (k + 1));
+    }
+    return out;
+  }
+  const point = (M, z) => (z && T && z <= M[T.NPOINTS] ? [M[T.POINTS + 2 * (z - 1)], M[T.POINTS + 2 * (z - 1) + 1]] : null);
+  const centre = p => [(p[1] + .5) * K, (p[0] + .5) * K];
+
+  // a frame as the clock finishes it: the table of units, the view, whether the computer is
+  // playing its half-turn, and the plan of the unit it is moving
+  function sample(n) {
+    const rt = o.rt();
+    if (!rt) return;
+    const M = rt.M, sid = rt.P.scenarioId();
+    if (sid !== id) { id = sid; T = sid ? root.LSGroups.ai.TABLES[sid] : null; names = sid ? nameAll(M) : []; frames = []; keys.fill(-1); }
+    if (!T) return;
+    const f = { n, units: M.slice(TABLE, TABLE + 80), view: [M[0x5CFC], M[0x5CFD]], ai: !!(M[0xB706] && M[0x5DF7]), turn: M[0xB711], plan: null };
+    if (f.ai && M[0x5D36]) {
+      const k = M[0x5D26] - 0x8C;
+      if (k >= 0 && k < 20) {
+        const stack = M[T.STACK] | M[T.STACK + 1] << 8, route = [];
+        for (let a = stack; a >= 0x5CF0 && a < 0x5CFA && M[a] && M[a] !== 0xFF; a++) route.push(M[a]);
+        f.plan = { k, zone: M[T.ZONE], route, goal: M[T.GOAL], target: M[T.TARGET], charge: T.charge ? M[T.CHARGE] : 0 };
+      }
+    }
+    frames.push(f);
+    if (frames.length > KEEP) frames.splice(0, frames.length - KEEP);
+  }
+
+  function round(M, k) {
+    const u = 0xD39F + 40 * k, way = [];
+    if (T.aliens && k >= 16) return { alien: true, terminal: M[u + 0x1A], way };
+    const ord = T.ORDERS + 10 * M[u + 0x1A];
+    for (let i = 1; i < 8 && M[ord + i]; i++) way.push(M[ord + i]);
+    return { way, next: M[ord + M[ord]] || way[0] };
+  }
+  function line(pts, colour, width, dash) {
+    if (pts.length < 2) return;
+    g.strokeStyle = colour; g.lineWidth = width; g.setLineDash(dash || []);
+    g.beginPath();
+    pts.forEach((p, i) => { const [x, y] = centre(p); if (i) g.lineTo(x, y); else g.moveTo(x, y); });
+    g.stroke(); g.setLineDash([]);
+  }
+  function ring(p, colour, r) {
+    const [x, y] = centre(p);
+    g.strokeStyle = colour; g.lineWidth = 3; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
+  }
+
+  function draw() {
+    const rt = o.rt();
+    if (!rt || !id || !frames.length) {
+      g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height);
+      if (o.out) o.out.textContent = 'The map appears once a scenario has loaded.';
+      return;
+    }
+    const M = rt.M;
+    // the frame on screen, and the computer's half-turn it is in or follows
+    let i = frames.length - 1;
+    while (i > 0 && frames[i].n > rt.shown) i--;
+    const now = frames[i];
+    let end = i;
+    while (end >= 0 && !frames[end].ai) end--;
+    let start = end;
+    while (start > 0 && frames[start - 1].ai && frames[start - 1].turn === frames[end].turn) start--;
+    const trails = {}, plans = {};
+    if (end >= 0) for (let j = start; j <= end; j++) {
+      const f = frames[j];
+      for (let k = 0; k < 20; k++) {
+        if (f.units[4 * k] !== 1) continue;
+        const p = [f.units[4 * k + 1], f.units[4 * k + 2]], tr = trails[k] || (trails[k] = []), l = tr[tr.length - 1];
+        if (!l || l[0] !== p[0] || l[1] !== p[1]) tr.push(p);
+      }
+      if (f.plan) plans[f.plan.k] = f.plan;
+    }
+    const at = k => [now.units[4 * k + 1], now.units[4 * k + 2]];
+    terrain(M);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(base, 0, 0, cv.width, cv.height);
+    const vs = !!M[0xB706];
+    if (vs) { g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(0, 0, cv.width, cv.height); }
+    // the player's view: 11 squares by 11
+    g.strokeStyle = '#fff'; g.lineWidth = 2; g.setLineDash([6, 4]);
+    g.strokeRect(now.view[1] * K, now.view[0] * K, 11 * K, 11 * K); g.setLineDash([]);
+    const lines = [];
+    if (vs) {
+      // each of the computer's units: its round, thin; its trail in the half-turn; and, for the
+      // ones it has moved, the route, the goal and the enemy
+      for (let k = 0; k < 20; k++) {
+        if (now.units[4 * k] !== 1) continue;
+        const hue = HUE[k % HUE.length], rd = round(M, k), pl = plans[k];
+        if (!rd.alien) {
+          const pts = rd.way.map(z => point(M, z)).filter(Boolean);
+          if (pts.length > 2) pts.push(pts[0]);
+          g.globalAlpha = .55; line(pts, hue, 1.5, [3, 4]); g.globalAlpha = 1;
+          for (const p of pts) { const [x, y] = centre(p); g.fillStyle = hue; g.fillRect(x - 2, y - 2, 4, 4); }
+        }
+        if (trails[k]) line(trails[k], hue, 3);
+        const foe = pl && (pl.charge || pl.target);
+        if (pl) {
+          const rest = [];
+          for (const z of [pl.zone].concat(pl.route)) { const p = point(M, z); if (p && (!rest.length || rest[rest.length - 1] !== p)) rest.push(p); if (z === pl.goal) break; }
+          if (!pl.charge) line([at(k)].concat(rest), hue, 2, [8, 5]);
+          const goal = point(M, pl.goal);
+          if (goal && !pl.charge) ring(goal, hue, 7);
+          if (foe >= 0x8C && foe < 0xA0) { line([at(k), at(foe - 0x8C)], '#ff3030', 2.5, [4, 3]); ring(at(foe - 0x8C), '#ff3030', 10); }
+        }
+        // what it is doing, in words
+        let doing;
+        if (rd.alien && T.TERMINALS) doing = rd.terminal === 0xFF ? 'choosing a terminal' : 'making for terminal ' + (rd.terminal + 1);
+        else if (foe >= 0x8C && foe < 0xA0) doing = (pl.charge ? 'running at ' : 'going after ') + (names[foe - 0x8C] || 'an enemy');
+        else if (pl) doing = 'walking its round, to waypoint ' + pl.goal;
+        else doing = 'not moved; next on its round, waypoint ' + rd.next;
+        lines.push('<li><i style="background:' + hue + '"></i><b>' + (names[k] || 'Unit ' + (k + 1)) + '</b> ' + doing + '</li>');
+      }
+    }
+    // every unit on the map, the hidden ones too: its tile from the table of squares (setUnitTile
+    // keeps it there), ringed in its side's colour, dashed when the player cannot see it
+    for (let k = 0; k < 20; k++) {
+      const s = now.units[4 * k];
+      if (s > 1) continue;
+      const [r, c] = at(k), code = 0x8C + k;
+      tile(M, oimg, 0, 0, M[SQUARES + 2 * code + 1 & 0xFFFF], M[SQUARES + 2 * code]);
+      og.putImageData(oimg, 0, 0);
+      g.drawImage(one, c * K, r * K, K, K);
+      g.strokeStyle = s ? '#ff5050' : '#40c0ff'; g.lineWidth = 2;
+      g.setLineDash(M[MAP + COLS * r + c] === code ? [] : [3, 3]);
+      g.strokeRect(c * K + 1, r * K + 1, K - 2, K - 2); g.setLineDash([]);
+    }
+    if (o.list) {
+      const html = lines.join('');
+      if (html !== listed) { listed = html; o.list.innerHTML = html; }
+    }
+    if (o.out) o.out.textContent = !vs ? 'In a game against the computer, its units\' plans appear here as it moves them.' :
+      'Turn ' + now.turn + (now.ai ? ', the computer\'s half-turn' : end >= 0 ? ': the computer\'s last half-turn' : '');
+  }
+  function reset() {
+    id = null; T = null; frames = []; keys.fill(-1); listed = '';
+    const rt = o.rt();
+    if (rt && rt !== followed) { followed = rt; rt.onFrame(n => { if (o.rt() === rt) sample(n); }); }
+  }
+  return { draw, reset };
+}
+root.LSWatch = { create };
+})(window);
 </script>
 <script>
 window.LS_COST = {"seg":{"28e>28e":45.7,"28e>b0c8":149.3,"28e>b15c":0,"6b08>28e":219658.8,"6b08>6b08":0,"b0c8>28e":0,"b0c8>b0c8":0,"b15c>28e":0,"b15c>6b08":0},"call":{"#choiceFireTurn":238.6,"#choiceTurn":247.5,"#crosshairTurn":39.9,"#fireTurn":389.4,"#keyTurn":59,"#line":1177.3,"#menuTurn":522.4,"#reader0":81.4,"#reader2":13.2,"#reader3":11.5,"#releaseReadTurn":258.3,"#releaseTurn":236.8,"#repeatTurn":375.5,"#roundsTurn":254.2,"#shopTurn":456.7,"#shopWaitTurn":343.8,"#unitTurn":680,"#words":9.7,"addLine":17116.7,"afterAction":3518.9,"ai.moveOn":31887,"ai.nextLink":3907.2,"ai.onPath":430.5,"ai.shotSeen":43599.9,"arrivals":16095.8,"autoOne":63021.1,"buy":10696.5,"carriedLoad":18966.9,"carriedPtr":17583.6,"centreAt":1797.3,"centreOn":8052,"chooseControls":412071.8,"chooseGame":239616.9,"clearDeploy":1250497.5,"clearScreen":186328.2,"clearScreenA":414785.5,"closeCombat":512.7,"crossSquare":26519.2,"crosshairBlink":3488.8,"crosshairLoop":114274.5,"crosshairMove":3031.9,"cursorDown":164.5,"cursorLeft":1025.1,"cursorRight":852.3,"cursorStep":826,"cursorUp":480.6,"delay1":902.4,"delay200":190694.9,"delay3":968.3,"delay40":35356.6,"div32":5679.9,"doneOption":1812.7,"drawCrosshair":10169.4,"drawCursor":513.3,"drawSquareAt":1917,"drawTile":1346,"drawView":142538.3,"drawViewColumns":141889.7,"drawViewLeft":141966,"drawViewUp":140803.5,"edgeUp":136444.5,"emptyGrid":257464.9,"endTurnMenu":18675.6,"findSeenAll":36131.9,"fireAP":283916.8,"floorUnder":5082.6,"gameMode":344314.4,"gameOver":342535.8,"healthShare":1857.2,"hideSide":39530.4,"infoText":19142.4,"keepPlace":317,"keyScan":102.2,"lightLine":2537.9,"lineClear":2352.9,"listCarried":66939.5,"mainMenu":215834.7,"makeStep":621.9,"mapSquare":61772.3,"menuFireChoice":249701.9,"noPoints":56610.4,"objectPtr":1129.1,"panelLine":52423.8,"pause":99499.4,"placeUnits":129249.9,"printChar":938.6,"printCharDouble":1275.6,"putChar":346.3,"readMove":440.2,"repeatDelay":171.7,"revealBehind":3016,"sc.cyberReinforce":23406.5,"sc.doorOpen":4240.8,"sc.doorsShut":405942.9,"sc.paradiseReinforce":49164,"sc.rescueEnd":18536.9,"sc.wayOut":11926.5,"scenarioMessageAt":158808.6,"scenarioText":20428,"sellBack":10225.8,"shared":1680,"shotSound":790.7,"shotSquare":962914.2,"shotUnit":150172.6,"showKind":10041.5,"showMove":4498.9,"showSeen":3421.1,"sideView":46682.5,"sound":836.5,"stillAble":2794.5,"tableUnits":1484274.1,"textCode":1753.7,"turns":784659.6,"twoDigits":819.9,"undoMove":4920.4,"unitInput":49.7,"unitMode":5987.6,"unitObjects":13624.9,"unitStats":114888.4,"upTo100":9799.7,"waitControls":43313.1,"waitFire":170.8,"waitRelease":115.1,"walkForward":1335.4}};
@@ -6877,11 +7129,23 @@ const tape = (function () {
   };
 })();
 
+// --- the whole map (page/watch.js), under the screen while its switch is on
+const watch = (function () {
+  const box = $('pl-watch'), btn = document.querySelector('[data-watch]');
+  const w = LSWatch.create({ rt: () => rt, canvas: $('pl-watch-cv'), list: $('pl-watch-units'), out: $('pl-watch-out') });
+  const o = { on: false, drawn: 0, draw: w.draw, reset: w.reset };
+  btn.addEventListener('click', () => {
+    o.on = !o.on; btn.setAttribute('aria-pressed', String(o.on)); box.hidden = !o.on;
+    if (o.on) w.draw();
+  });
+  return o;
+})();
+
 // --- the loop: one frame of 48K time per frame of real time
 let acc = 0, last = 0;
 function boot() {
   rt = LSPage.create({ data, cost: window.LS_COST, tape });
-  sound.attach(); input();
+  sound.attach(); input(); watch.reset();
 }
 function tick(now) {
   requestAnimationFrame(tick);
@@ -6893,6 +7157,7 @@ function tick(now) {
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
+  if (watch.on && now - watch.drawn > 150) { watch.drawn = now; watch.draw(); }
 }
 
 // --- input: the arrow keys and fire are the controls the game was set to at its first question
@@ -6906,15 +7171,29 @@ const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 const QAOP = [[1, 'Q'], [2, 'A'], [4, 'O'], [8, 'P'], [16, 'SPACE']];
-// A key is held for at least eight frames of the game's time and until the game has read the
-// keyboard twice over since it went down: a shorter tap could fall between two looks
+// A key let go is held on until the game has read it held (rt.input.seen, the Spectrum's key
+// names, and seenJoy, the stick's bits) and one more frame has run: a shorter tap could fall
+// between two looks, and a longer one moves the cursor again at its next look, as a held key does
+// (an arrow tapped while units are placed moved the cursor four squares when a key was held for
+// eight frames and sixteen reads)
 const held = new Map(), since = new Map(), letGo = new Set();
-const HOLD = 8, READS = 16;
 let padBits = 0;
+// what a key of the page's gives the game: the Spectrum's key names, and the stick's bits
+function gives(ks) {
+  const names = [];
+  let dir = 0, joy = 0;
+  for (const k of ks) if (typeof k === 'number') dir |= k; else names.push(k);
+  const mode = rt.M[0xB0C7];
+  if (mode === 1) { for (const [b, k] of KEMPSTON) if (dir & b) joy |= k; }
+  else for (const [b, k] of mode === 0 ? SINCLAIR : mode === 2 ? CURSOR : QAOP) if (dir & b) names.push(k);
+  return { names, joy };
+}
+const seenBy = ks => { const g = gives(ks); return g.names.some(n => rt.input.seen.has(n)) || !!(rt.input.seenJoy & g.joy); };
 function release() {
   for (const c of letGo) {
-    const s = since.get(c);
-    if (!rt || !s || (rt.shown - s.frame >= HOLD && rt.input.reads - s.reads >= READS)) { letGo.delete(c); held.delete(c); since.delete(c); }
+    const s = since.get(c), ks = held.get(c);
+    if (rt && s && ks && seenBy(ks) && s.seen === undefined) s.seen = rt.shown;
+    if (!rt || !s || !ks || (s.seen !== undefined && rt.shown > s.seen)) { letGo.delete(c); held.delete(c); since.delete(c); }
   }
   input();
 }
@@ -6938,7 +7217,11 @@ function zxKey(e) {
   return k ? [].concat(k) : null;
 }
 function down(code, k) {
-  if (!held.has(code)) since.set(code, { frame: rt ? rt.shown : 0, reads: rt ? rt.input.reads : 0 });
+  if (!held.has(code)) {
+    since.set(code, {});
+    // what the game has seen of this key before is forgotten
+    if (rt) { const g = gives(k); for (const n of g.names) rt.input.seen.delete(n); rt.input.seenJoy &= ~g.joy; }
+  }
   held.set(code, k); letGo.delete(code);
   release();
 }
@@ -6991,6 +7274,9 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.LSPlay = { get rt() { return rt; }, start, tape };
+// step(n): n frames run while paused, as the loop runs them (for a test to time keys in the game's
+// own frames)
+function step(n) { for (let i = 0; i < n; i++) { rt.runFrame(); sound.frame(); release(); } draw(); if (watch.on) watch.draw(); }
+window.LSPlay = { get rt() { return rt; }, start, tape, step };
 })();
 </script>

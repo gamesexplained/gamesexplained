@@ -10,7 +10,7 @@
 <section id="view">
   <p class="fig">02 · The view</p>
   <h2 class="t">The map is one byte a square, and the screen shows 121 of them</h2>
-  <p class="lede">Pick a scenario and drag the view, or use the arrows. Point at a square to read it.</p>
+  <p class="lede">Pick a scenario and drag the view, or use the arrows. Point at a square to read it. Every scenario's whole map is on the <a href="levels.html">Maps</a> tab.</p>
   <div class="plate">
     <div class="pick"><select id="hw-scen" aria-label="Scenario"></select></div>
     <div class="hw-two">
@@ -31,7 +31,7 @@
   </div>
   <p>The map is 4,000 bytes at <code>$D6BF</code>, a byte for each square, 80 to a row. A byte below <code>$6E</code> is terrain, from <code>$6E</code> to <code>$8B</code> an object lying there, and from <code>$8C</code> to <code>$9F</code> one of the scenario's 20 units. Each byte has two bytes in the scenario's table of squares: its colours and its tile. A tile is 16 pixels by 16, two character cells by two, so each square has its own colours and nothing on the map ever clashes.</p>
   <p>The name of every square comes from the same number. The scenario's messages are a list, and the name of map byte <i>n</i> is message <i>n</i> + 1 of it, which is how the readout beside the view in the game says WALL, BUSH or CORPORAL JONLAN under the cursor. A message is mostly the numbers of words in a dictionary the scenario carries, so WALL AND CABINET is four bytes: three words and a new line.</p>
-  <p>Fire mode swaps in a second table of squares at <code>$E79F</code>, which draws the map as a plan: walls as thin lines, trees, plants and furniture as round blobs, floors bare, and each unit as a blob, so the line of a shot shows against plain ground. The units stand on the map the same way in both: as their own byte, in place of the floor, which the unit's record keeps until it moves off.</p>
+  <p>Fire mode swaps in a second table of squares at <code>$E79F</code>, which draws the map as a plan: walls as thin lines, trees, plants and furniture as round blobs, floors bare, and each unit as a blob, so the line of a shot shows against plain ground. The units stand on the map the same way in both: as their own byte, in place of the floor, which the unit's record keeps until it moves off. Every unit's tiles, in all eight facings and with each thing it can hold, are on the <a href="graphics.html">Graphics</a> tab, with every other tile each scenario carries.</p>
 </section>
 
 <section id="sound">
@@ -79,14 +79,14 @@
 <section id="blast">
   <p class="fig">05 · Blasts</p>
   <h2 class="t">A blast is eleven squares wide and loses strength at every square</h2>
-  <p class="lede">Pick what goes off, then click a square of the view. The numbers are the strength that reached each square; yellow is the whole of it.</p>
+  <p class="lede">Pick what goes off, then click a square of the view. It goes off as the game shows it, with its sound, and then the numbers are the strength that reached each square; yellow is the whole of it.</p>
   <div class="plate">
     <div class="pick"><select id="hw-bscen" aria-label="Scenario"></select></div>
     <div class="hw-btns" id="hw-kinds"></div>
     <div class="hw-screen" style="margin-top:10px"><canvas id="hw-blast" width="528" height="528" aria-label="The view, and the strength the blast left on each square" style="cursor:crosshair"></canvas></div>
     <div class="hw-btns"><button type="button" class="hw-btn" id="hw-blast-reset">Start again</button></div>
     <p class="hw-out" id="hw-blast-out"></p>
-    <p class="cap">The Play tab's port of <code>explode</code> (<code>$9696</code>) run whole on the scenario's map, with the table of strengths it fills at <code>$5B00</code> caught before the first square takes its blow, then the fires it lit, as the game sets off a primed grenade. The view is where the game puts it, centred on the blast; the squares left without a number got nothing. Blasts add up until Start again.</p>
+    <p class="cap">The Play tab's port of <code>explode</code> (<code>$9696</code>) run whole on the scenario's map, then the fires it lit, as the game sets off a primed grenade: a picture of the view each time the game's clock has moved on a frame, played at that rate with the routine's writes to the beeper, and the table of strengths it fills at <code>$5B00</code> caught before the first square takes its blow. The view is where the game puts it, centred on the blast; the squares left without a number got nothing. Blasts add up until Start again.</p>
   </div>
   <p>An explosion has the strength of what went off: 90 for an AP50 grenade, 160 for a rocket or an AP75 grenade, 170 for the miners' explosive. <code>explode</code> sets out a box five squares each way from the centre, cut at the map's edges, and draws a line from the centre to every square of the box's edge (<code>blastRay</code>, <code>$980E</code>). Along each line the strength falls by two sixteenths of the blast's own strength at every straight step and three sixteenths at every diagonal one, and each square it crosses takes a toll as well, its terrain's byte <code>$05</code>. A square keeps the most that reached it by any line.</p>
   <p>Then every square of the box takes the blow of its number. Terrain breaks when the blow is at least its byte <code>$03</code>, into the terrain its byte <code>$04</code> names, and goes on breaking while the blow lasts. A wall in The Assassins needs 120 and takes 120 off a blast that crosses it, so a grenade cannot break one and nothing of it reaches the room behind; a rocket can. Terrain whose byte <code>$08</code> is 7, a vidi-screen or a control console, catches fire as it breaks, and the fire goes off after the blast as a blast of its own. The first unit standing on a square is hurt through its armour, and an object lying there is destroyed by a blow of at least its kind's byte <code>$11</code>. A primed grenade goes off at the end of the half-turn its timer names, where it lies or wherever its carrier has walked to.</p>

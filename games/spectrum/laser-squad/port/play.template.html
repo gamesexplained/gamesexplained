@@ -64,6 +64,15 @@ section table{margin:6px 0 18px}
 .pl-tape[hidden]{display:none}
 .pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
 .pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-watch{margin-top:14px}
+.pl-watch[hidden]{display:none}
+.pl-watch canvas{display:block;width:100%;height:auto;background:#000;border-radius:6px;image-rendering:pixelated}
+.pl-watch-out{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin:8px 0 0}
+.pl-watch-units{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:3px 18px;margin:8px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-watch-units i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.pl-watch-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.pl-watch-key i{display:inline-block;width:24px;height:10px;background:#000;border-radius:2px;vertical-align:-1px;margin-right:6px;position:relative}
+.pl-watch-key b{position:absolute;left:3px;right:3px;top:4px}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
 <!-- tabs -->
@@ -85,9 +94,17 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-watch aria-pressed="false" title="Show the whole map under the screen, with every unit on it, hidden ones too, and in a game against the computer where each of its units is going">🗺 Whole map</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-tape" id="pl-tape"></div>
+    <div class="pl-watch" id="pl-watch" hidden>
+      <canvas id="pl-watch-cv" width="960" height="600" aria-label="The whole map, every unit on it, and the computer's units' routes"></canvas>
+      <p class="pl-watch-out" id="pl-watch-out"></p>
+      <ul class="pl-watch-units" id="pl-watch-units"></ul>
+      <div class="pl-watch-key"><span><i><b style="border-top:2px solid #40c0ff"></b></i>the first side's units</span><span><i><b style="border-top:2px solid #ff5050"></b></i>the second side's; dashed where the player cannot see one</span><span><i><b style="border-top:2px dashed #fff"></b></i>the player's view</span><span><i><b style="border-top:2px dotted #ccc"></b></i>in each unit's own colour, its round, from its orders</span><span><i><b style="border-top:3px solid #ccc"></b></i>where it went in the computer's last half-turn</span><span><i><b style="border-top:2px dashed #ccc"></b></i>the route it was walking, to the waypoint ringed</span><span><i><b style="border-top:2px dashed #ff3030"></b></i>the enemy it went after</span></div>
+      <p class="cap">The map as the port's memory holds it, drawn each moment from the scenario's own tiles. The computer's units are read from their orders and from the computer player's own variables as it moves each one. It shows the units the player is not meant to see.</p>
+    </div>
     <ul class="pl-keys" id="pl-keys">
       <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
       <li><kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> <kbd data-key="4">4</kbd> <kbd data-key="5">5</kbd> <kbd data-key="6">6</kbd> <kbd data-key="7">7</kbd> answer the menus: the scenario, the controls, one player or two, the level</li>
@@ -254,11 +271,23 @@ const tape = (function () {
   };
 })();
 
+// --- the whole map (page/watch.js), under the screen while its switch is on
+const watch = (function () {
+  const box = $('pl-watch'), btn = document.querySelector('[data-watch]');
+  const w = LSWatch.create({ rt: () => rt, canvas: $('pl-watch-cv'), list: $('pl-watch-units'), out: $('pl-watch-out') });
+  const o = { on: false, drawn: 0, draw: w.draw, reset: w.reset };
+  btn.addEventListener('click', () => {
+    o.on = !o.on; btn.setAttribute('aria-pressed', String(o.on)); box.hidden = !o.on;
+    if (o.on) w.draw();
+  });
+  return o;
+})();
+
 // --- the loop: one frame of 48K time per frame of real time
 let acc = 0, last = 0;
 function boot() {
   rt = LSPage.create({ data, cost: window.LS_COST, tape });
-  sound.attach(); input();
+  sound.attach(); input(); watch.reset();
 }
 function tick(now) {
   requestAnimationFrame(tick);
@@ -270,6 +299,7 @@ function tick(now) {
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
+  if (watch.on && now - watch.drawn > 150) { watch.drawn = now; watch.draw(); }
 }
 
 // --- input: the arrow keys and fire are the controls the game was set to at its first question
@@ -283,15 +313,29 @@ const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 const QAOP = [[1, 'Q'], [2, 'A'], [4, 'O'], [8, 'P'], [16, 'SPACE']];
-// A key is held for at least eight frames of the game's time and until the game has read the
-// keyboard twice over since it went down: a shorter tap could fall between two looks
+// A key let go is held on until the game has read it held (rt.input.seen, the Spectrum's key
+// names, and seenJoy, the stick's bits) and one more frame has run: a shorter tap could fall
+// between two looks, and a longer one moves the cursor again at its next look, as a held key does
+// (an arrow tapped while units are placed moved the cursor four squares when a key was held for
+// eight frames and sixteen reads)
 const held = new Map(), since = new Map(), letGo = new Set();
-const HOLD = 8, READS = 16;
 let padBits = 0;
+// what a key of the page's gives the game: the Spectrum's key names, and the stick's bits
+function gives(ks) {
+  const names = [];
+  let dir = 0, joy = 0;
+  for (const k of ks) if (typeof k === 'number') dir |= k; else names.push(k);
+  const mode = rt.M[0xB0C7];
+  if (mode === 1) { for (const [b, k] of KEMPSTON) if (dir & b) joy |= k; }
+  else for (const [b, k] of mode === 0 ? SINCLAIR : mode === 2 ? CURSOR : QAOP) if (dir & b) names.push(k);
+  return { names, joy };
+}
+const seenBy = ks => { const g = gives(ks); return g.names.some(n => rt.input.seen.has(n)) || !!(rt.input.seenJoy & g.joy); };
 function release() {
   for (const c of letGo) {
-    const s = since.get(c);
-    if (!rt || !s || (rt.shown - s.frame >= HOLD && rt.input.reads - s.reads >= READS)) { letGo.delete(c); held.delete(c); since.delete(c); }
+    const s = since.get(c), ks = held.get(c);
+    if (rt && s && ks && seenBy(ks) && s.seen === undefined) s.seen = rt.shown;
+    if (!rt || !s || !ks || (s.seen !== undefined && rt.shown > s.seen)) { letGo.delete(c); held.delete(c); since.delete(c); }
   }
   input();
 }
@@ -315,7 +359,11 @@ function zxKey(e) {
   return k ? [].concat(k) : null;
 }
 function down(code, k) {
-  if (!held.has(code)) since.set(code, { frame: rt ? rt.shown : 0, reads: rt ? rt.input.reads : 0 });
+  if (!held.has(code)) {
+    since.set(code, {});
+    // what the game has seen of this key before is forgotten
+    if (rt) { const g = gives(k); for (const n of g.names) rt.input.seen.delete(n); rt.input.seenJoy &= ~g.joy; }
+  }
   held.set(code, k); letGo.delete(code);
   release();
 }
@@ -368,6 +416,9 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.LSPlay = { get rt() { return rt; }, start, tape };
+// step(n): n frames run while paused, as the loop runs them (for a test to time keys in the game's
+// own frames)
+function step(n) { for (let i = 0; i < n; i++) { rt.runFrame(); sound.frame(); release(); } draw(); if (watch.on) watch.draw(); }
+window.LSPlay = { get rt() { return rt; }, start, tape, step };
 })();
 </script>
