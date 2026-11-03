@@ -56,10 +56,9 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-keys .pl-keys-tap{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-fig{margin:6px 0 18px;max-width:420px}
@@ -100,17 +99,13 @@ section table{margin:6px 0 18px}
       <button type="button" id="pl-round-go">Go</button>
       <span id="pl-round-quick"></span>
     </div>
-    <ul class="pl-keys">
-      <li><kbd>←</kbd> <kbd>→</kbd> walk, <kbd>↑</kbd> jump, <kbd>Space</kbd> blow a bubble (player 1, joystick port 2)</li>
-      <li><kbd>A</kbd> <kbd>D</kbd> walk, <kbd>W</kbd> jump, <kbd>F</kbd> blow (player 2, port 1; fire to join)</li>
-      <li><kbd>1</kbd> or <kbd>2</kbd> on the score table: one or two players. <kbd>Space</kbd> (fire) on the title page</li>
-      <li><kbd>Esc</kbd> is RUN/STOP: pause and resume. <kbd>Q</kbd> quits to the score table</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
+      <li><kbd data-key="STOP">Esc</kbd> is RUN/STOP: pause and resume. <kbd data-key="Q">Q</kbd> quits to the score table</li>
+      <li><kbd data-key="1">1</kbd> or <kbd data-key="2">2</kbd> on the score table: one or two players. <kbd>Space</kbd> (fire) on the title page</li>
+      <li class="pl-keys-pad"><kbd>←</kbd> <kbd>→</kbd> walk, <kbd>↑</kbd> jump, <kbd>Space</kbd> blow a bubble (player 1, joystick port 2)</li>
+      <li class="pl-keys-pad"><kbd>A</kbd> <kbd>D</kbd> walk, <kbd>W</kbd> jump, <kbd>F</kbd> blow (player 2, port 1; fire to join)</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on round</b> does what the cracked disk's own menu does: it stores the round in the game's start-up code and starts a new game, with the opening story run at full speed. The game arrives there as a new game does, with three lives and nine credits.</p>
   </div>
 </section>
@@ -8389,7 +8384,9 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
-PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
+// the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
+// (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
@@ -8426,7 +8423,7 @@ function tick(now) {
     }
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
-    while (acc >= FRAME_MS && n < 10) { rt.runTo((rt.frame + 1) * FRAME); sound.frame(); acc -= FRAME_MS; n++; }
+    while (acc >= FRAME_MS && n < 10) { rt.runTo((rt.frame + 1) * FRAME); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
     if (n === 10) acc = 0;
     if (n) draw();
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
@@ -8467,15 +8464,32 @@ function onKey(e, down) {
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); joyBits = 0; joy1Bits = 0; input(); });
+screen.addEventListener('blur', () => {
+  active = false; screen.classList.remove('pl-focus');
+  for (const c of [...held.keys()]) if (!c.startsWith('tap:')) held.delete(c);
+  joyBits = 0; joy1Bits = 0; input();
+});
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
+// keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+// the finger is on it and for TAP frames of the game's at least, so that a quick tap still reaches
+// the game
+const TAP = 6, tapAt = new Map(), letGo = new Set();
+function press(name) {
+  if (!running || !rt) return;
+  const c = 'tap:' + name;
+  held.set(c, KEY[name]); tapAt.set(c, rt.frame); letGo.delete(c);
+  input();
+}
+function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+function release() {
+  for (const c of letGo) {
+    const at = tapAt.get(c);
+    if (!rt || rt.frame - at >= TAP || rt.frame < at) { letGo.delete(c); held.delete(c); tapAt.delete(c); }
+  }
+  input();
+}
+PlayControls.keys($('pl-keys'), { down: press, up: lift });
 
 // --- controls ----------------------------------------------------------------------------------
 let sayTimer = 0;

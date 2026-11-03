@@ -25,8 +25,9 @@
 //   pc.row, pc.button
 //
 //   const ks = PlayControls.keys(list, { down, up })
-//     list      the page's list of keys and what each does: every <kbd data-key="..."> in it
-//               becomes a key to tap (or click), and a <kbd> without data-key stays text
+//     list      the page's list of keys and what each does, a list or a table: every
+//               <kbd data-key="..."> in it becomes a key to tap (or click), and a <kbd> without
+//               data-key stays text
 //     down      down(key, mods) as a finger or the mouse button goes down on one: key is its
 //               data-key, mods the data-key of each modifier tapped before it
 //     up        up(key) as it lifts, wherever it is by then
@@ -60,10 +61,11 @@
 // bar is under the picture and the controller at the bottom; a page with keys has them between the
 // picture and the bar, the two scrolling in what the picture, as wide as the window, leaves them (a
 // row of keys at least), so that the list's first keys are nearest the picture. Only the lines of
-// the list with a key to tap come into full screen. On its side the picture is between two bands,
-// the keys and the pad in the left one, the bar and the fire buttons in the right; where the
-// row would take height from the picture (a phone on its side), its buttons go to the top of the
-// right band instead, beside the picture's top corner, and ⇄ to the top of the left. The
+// the list (or the rows of the table) with a key to tap come into full screen. On its side the
+// picture is between two bands, the keys and the pad in the left one (a table's rows read as lines
+// there, each cell after the last), the bar and the fire buttons in the right; where the row would
+// take height from the picture (a phone on its side), its buttons go to the top of the right band
+// instead, beside the picture's top corner, and ⇄ to the top of the left. The
 // browser's own full screen is asked for too where it has one (a phone's browser hides its bars
 // then), and the window is covered where it has none (an iPhone's Safari). Every way out works and
 // puts the page back as it was: the switch again, its ⛶ a ✕ while full screen lasts, Escape, the
@@ -161,12 +163,16 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-kslot{padding:8px 8px 0;color:#c9cbd0}
 .pc-kslot:empty{display:none}
 .pc-kslot>*{margin:0!important}
-.pc-kslot :is(ul,ol,li,p,div,span){color:inherit}
-.pc-kslot li:not(:has(.pc-key)){display:none!important}
+.pc-kslot :is(ul,ol,li,p,div,span,table,tr,th,td){color:inherit}
+.pc-kslot :is(li,tr):not(:has(.pc-key)){display:none!important}
 .pc-kslot kbd{color:#2f3136}
 .pc-kslot .pc-key.on,.pc-kslot .pc-key[aria-pressed="true"]{background:#c8463a;color:#fff;border-color:#c8463a}
 .pc-wide .pc-kslot{grid-area:keys;align-self:stretch;min-height:0;padding:8px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
-.pc-wide .pc-kslot .pc-keys{display:block;font-size:12px;line-height:1.3}
+.pc-wide .pc-kslot .pc-keys{font-size:12px;line-height:1.3}
+.pc-wide .pc-kslot .pc-keys:not(table){display:block}
+.pc-wide .pc-kslot table.pc-keys,.pc-wide .pc-kslot table.pc-keys :is(thead,tbody,tr){display:block}
+.pc-wide .pc-kslot table.pc-keys :is(td,th){display:inline;padding:0 4px 0 0;border:0}
+.pc-wide .pc-kslot tr+tr{margin-top:6px}
 .pc-wide .pc-kslot li+li{margin-top:6px}
 .pc-wide .pc-kslot .pc-key{min-width:34px;padding:6px 7px;margin:2px 0;font-size:14px;line-height:18px}
 .pc-key{display:inline-block;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}

@@ -42,10 +42,10 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 .jw-out{font-family:var(--fm);font-size:13.5px;color:var(--ink-soft)}
 .jw-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 #jw-screen{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:none}
-.jw-pad{display:none;gap:8px;margin:14px 0 0;user-select:none;-webkit-user-select:none;touch-action:none}
-.jw-pad button{font:inherit;font-family:var(--fm);font-size:14px;min-width:64px;height:52px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;color:var(--ink);touch-action:none}
-.jw-pad button.on{background:var(--chip);color:var(--chip-ink)}
-@media (pointer:coarse),(max-width:700px){.jw-pad{display:flex;flex-wrap:wrap}}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+#jw-keys .jw-keys-tap{display:none}
+#jw-keys.pc-keys-touch .jw-keys-tap{display:table-row}
+#jw-keys.pc-keys-touch .jw-keys-pad{display:none}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
 </style>
 
@@ -70,21 +70,16 @@ button.jw-b:hover{border-color:var(--ink-mute)}
       <span class="jw-out" id="jw-out"></span>
     </div>
     <div><canvas id="jw-screen" width="768" height="544" aria-label="The game"></canvas></div>
-    <div class="jw-pad" id="jw-pad" aria-label="Joystick">
-      <button type="button" data-j="4">left</button>
-      <button type="button" data-j="8">right</button>
-      <button type="button" data-j="16">jump</button>
-      <button type="button" data-k="1">Enter</button>
-    </div>
-    <table class="jw-t">
+    <table class="jw-t" id="jw-keys">
       <tr><th>Keys</th><th>On the C64</th><th>Does</th></tr>
-      <tr><td><code>Q</code> <code>E</code> <code>T</code> <code>U</code> <code>O</code> or <code>←</code></td><td>Q E T U O @ 1 3 5 7 9, or the joystick</td><td>walk left</td></tr>
-      <tr><td><code>W</code> <code>R</code> <code>Y</code> <code>I</code> <code>P</code> or <code>→</code></td><td>W R Y I P * 2 4 6 8 0, or the joystick</td><td>walk right</td></tr>
-      <tr><td><code>Z</code> to <code>/</code>, <code>Space</code> or <code>↑</code></td><td>Z X C V B N M , . / and Space, or fire</td><td>jump</td></tr>
-      <tr><td><code>A</code> to <code>L</code></td><td>A S D F G H J K L : ;</td><td>pause; any other key goes on</td></tr>
-      <tr><td><code>Enter</code></td><td>Return</td><td>start a game on the title; the tune off or on in play</td></tr>
-      <tr><td><code>=</code> <code>-</code></td><td>+ and −</td><td>the tune louder or quieter</td></tr>
-      <tr><td><code>Esc</code></td><td>RUN/STOP</td><td>end the game</td></tr>
+      <tr class="jw-keys-tap"><td colspan="3">Tap a key in this table to press it in the game.</td></tr>
+      <tr><td><kbd data-key="Enter">Enter</kbd></td><td>Return</td><td>start a game on the title; the tune off or on in play</td></tr>
+      <tr><td><kbd data-key="KeyA">A</kbd> to <kbd data-key="KeyL">L</kbd></td><td>A S D F G H J K L : ;</td><td>pause; any other key goes on</td></tr>
+      <tr><td><kbd data-key="Equal">=</kbd> <kbd data-key="Minus">-</kbd></td><td>+ and −</td><td>the tune louder or quieter</td></tr>
+      <tr><td><kbd data-key="Escape">Esc</kbd></td><td>RUN/STOP</td><td>end the game</td></tr>
+      <tr class="jw-keys-pad"><td><kbd>Q</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>U</kbd> <kbd>O</kbd> or <kbd>←</kbd></td><td>Q E T U O @ 1 3 5 7 9, or the joystick</td><td>walk left</td></tr>
+      <tr class="jw-keys-pad"><td><kbd>W</kbd> <kbd>R</kbd> <kbd>Y</kbd> <kbd>I</kbd> <kbd>P</kbd> or <kbd>→</kbd></td><td>W R Y I P * 2 4 6 8 0, or the joystick</td><td>walk right</td></tr>
+      <tr class="jw-keys-pad"><td><kbd>Z</kbd> to <kbd>/</kbd>, <kbd>Space</kbd> or <kbd>↑</kbd></td><td>Z X C V B N M , . / and Space, or fire</td><td>jump</td></tr>
     </table>
     <p class="cap"><b>The game as the port runs it</b>, from the BCS crackers' start-up to the title and on. Every key of the C64's top two rows and its bottom row works as the game reads it, from the tables at <code>$2C2B</code> to <code>$2C4C</code>, and the keys of a PC keyboard stand where the C64's do.</p>
   </div>
@@ -138,7 +133,8 @@ function start(D) {
   boot();
 
   // ---- the keys and the joystick, while the game is on the screen
-  const cv = $('jw-screen'), held = new Set(), pad = { joy: 0, keys: new Set() };
+  const cv = $('jw-screen'), held = new Set();
+  let padBits = 0;
   const inView = () => { const r = cv.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
   addEventListener('keydown', (e) => {
     if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
@@ -147,18 +143,20 @@ function start(D) {
   });
   addEventListener('keyup', (e) => { if (held.delete(e.code)) e.preventDefault(); });
   addEventListener('blur', () => held.clear());
-  for (const b of $('jw-pad').querySelectorAll('button')) {
-    const j = +b.dataset.j || 0, k = b.dataset.k === undefined ? -1 : +b.dataset.k;
-    const on = (e) => { if (j) pad.joy |= j; else pad.keys.add(k); b.classList.add('on'); e.preventDefault(); };
-    const off = () => { if (j) pad.joy &= ~j; else pad.keys.delete(k); b.classList.remove('on'); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-    b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-    b.addEventListener('contextmenu', (e) => e.preventDefault());
-  }
+  // keys tapped in the table under the picture (site/lib/play-controls.js, keys), named by the PC's
+  // key that stands for each: down while the finger is on it and for TAP frames of the game's at
+  // least, so that a quick tap still reaches the game
+  const TAP = 6, taps = new Map();   // the key -> { at: the frame it went down, up: lifted }
+  PlayControls.keys($('jw-keys'), {
+    down: (k) => { taps.set(k, { at: play.frames, up: false }); },
+    up: (k) => { const t = taps.get(k); if (t) t.up = true; },
+  });
   function input() {
-    let joy = pad.joy;
+    let joy = padBits;
     play.keys.clear();
-    for (const k of pad.keys) play.keys.add(k);
+    for (const [k, t] of taps) {
+      if (t.up && (play.frames - t.at >= TAP || play.frames < t.at)) taps.delete(k); else play.keys.add(KEYS[k]);
+    }
     for (const c of held) { if (STICK[c]) joy |= STICK[c]; else play.keys.add(KEYS[c]); }
     play.joy = 0x1F & ~joy;
   }
@@ -167,9 +165,10 @@ function start(D) {
   // crackers' start-up shows the KERNAL's screen, whose glyphs are in the character ROM
   const g = cv.getContext('2d');
   const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
-  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
-  // carried into full screen with them
-  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
+  // the row of switches over the screen, full screen, the touch joystick with fire as Jump, and the
+  // keys to tap with it (site/lib/play-controls.js), the bar above carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling, keys: $('jw-keys'),
+    pad: true, fire: [{ label: 'Jump', bit: 16 }], onPad(bits) { padBits = bits; } });
   function draw() {
     const f = play.shown;
     if (!f) return;

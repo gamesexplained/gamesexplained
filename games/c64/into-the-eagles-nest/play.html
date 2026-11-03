@@ -44,10 +44,10 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
 .en-lab{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
 .en-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 #en-screen{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:none}
-.en-pad{display:none;gap:8px;margin:14px 0 0;user-select:none;-webkit-user-select:none;touch-action:none}
-.en-pad button{font:inherit;font-family:var(--fm);font-size:14px;min-width:64px;height:52px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;color:var(--ink);touch-action:none}
-.en-pad button.on{background:var(--chip);color:var(--chip-ink)}
-@media (pointer:coarse),(max-width:700px){.en-pad{display:flex;flex-wrap:wrap}}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+#en-keys .en-keys-tap{display:none}
+#en-keys.pc-keys-touch .en-keys-tap{display:table-row}
+#en-keys.pc-keys-touch .en-keys-pad{display:none}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
 </style>
 
@@ -72,15 +72,6 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
       <span class="en-out" id="en-out"></span>
     </div>
     <div><canvas id="en-screen" width="768" height="544" aria-label="The game"></canvas></div>
-    <div class="en-pad" id="en-pad" aria-label="Joystick">
-      <button type="button" data-j="1">up</button>
-      <button type="button" data-j="2">down</button>
-      <button type="button" data-j="4">left</button>
-      <button type="button" data-j="8">right</button>
-      <button type="button" data-j="16">fire</button>
-      <button type="button" data-k="60">SPACE</button>
-      <button type="button" data-r="1">RESTORE</button>
-    </div>
     <div class="en-bar en-cheats" id="en-cheats" aria-label="Cheats">
       <span class="en-lab">Cheats</span>
       <button class="en-btn" type="button" data-cheat="word" aria-pressed="false" title="The game's own cheat: its flag $603F set, as a name of %MAGGOTS!& sets it when a floor is built">%MAGGOTS!&amp;</button>
@@ -88,12 +79,13 @@ table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-t
       <button class="en-btn" type="button" data-cheat="ammo" aria-pressed="false" title="The rounds ($02BD) are put back to 99 where the game's cheat does it, at the end of $5B1B">Full ammunition</button>
       <button class="en-btn" type="button" data-cheat="key" aria-pressed="false" title="A door key in hand ($02AC = 1) every frame of play, where the game's cheat writes it in $5BBA">Always a key</button>
     </div>
-    <table class="en-tab">
+    <table class="en-tab" id="en-keys">
       <tr><th>Keys</th><th>On the C64</th><th>Does</th></tr>
-      <tr><td><code>←</code> <code>→</code> <code>↑</code> <code>↓</code></td><td>the joystick in port 2</td><td>walk, a tile every four frames, and aim</td></tr>
-      <tr><td><code>Z</code> or <code>Enter</code></td><td>fire</td><td>shoot; leave the title, pick a mission or a floor, take a letter of your name</td></tr>
-      <tr><td><code>Space</code></td><td>SPACE</td><td>pause; SPACE, the stick or fire goes on</td></tr>
-      <tr><td><code>Esc</code></td><td>RESTORE</td><td>give up the game for the high score check and the attract loop</td></tr>
+      <tr class="en-keys-tap"><td colspan="3">Tap a key in this table to press it in the game.</td></tr>
+      <tr><td><kbd data-key="Space">Space</kbd></td><td>SPACE</td><td>pause; SPACE, the stick or fire goes on</td></tr>
+      <tr><td><kbd data-key="RESTORE">Esc</kbd></td><td>RESTORE</td><td>give up the game for the high score check and the attract loop</td></tr>
+      <tr class="en-keys-pad"><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>the joystick in port 2</td><td>walk, a tile every four frames, and aim</td></tr>
+      <tr class="en-keys-pad"><td><kbd>Z</kbd> or <kbd>Enter</kbd></td><td>fire</td><td>shoot; leave the title, pick a mission or a floor, take a letter of your name</td></tr>
     </table>
     <p class="cap"><b>The game as the port runs it</b>, from the tape loader's hand-over to the title and on. The game reads one key, SPACE, by driving one row of the keyboard and reading one column (<code>$5FCB</code>), and the port reads it the same way. RESTORE runs the game's warm start at <code>$8031</code>, which the KERNAL's NMI handler reaches through the signature at <code>$8004</code>. The page takes it only while the game has the KERNAL switched in. With the KERNAL out, the C64 would take the vector in RAM at <code>$FFFA</code>, which holds 0.</p>
   </div>
@@ -170,7 +162,8 @@ function start(D) {
   });
 
   // ---- the keys and the joystick, while the game is on the screen
-  const cv = $('en-screen'), held = new Set(), pad = { joy: 0, keys: new Set() };
+  const cv = $('en-screen'), held = new Set();
+  let padBits = 0;
   const inView = () => { const r = cv.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
   addEventListener('keydown', (e) => {
     if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
@@ -181,27 +174,30 @@ function start(D) {
   });
   addEventListener('keyup', (e) => { if (held.delete(e.code)) e.preventDefault(); });
   addEventListener('blur', () => held.clear());
-  for (const b of $('en-pad').querySelectorAll('button')) {
-    const j = +b.dataset.j || 0, k = b.dataset.k === undefined ? -1 : +b.dataset.k, r = !!b.dataset.r;
-    const on = (e) => { if (r) play.restore(); else if (j) pad.joy |= j; else pad.keys.add(k); b.classList.add('on'); e.preventDefault(); };
-    const off = () => { if (j) pad.joy &= ~j; else if (k >= 0) pad.keys.delete(k); b.classList.remove('on'); };
-    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
-    b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-    b.addEventListener('contextmenu', (e) => e.preventDefault());
-  }
+  // keys tapped in the table under the picture (site/lib/play-controls.js, keys): SPACE is down
+  // while the finger is on it and for TAP frames of the game's at least, so that a quick tap still
+  // reaches the game; RESTORE goes as it is tapped, as Esc does
+  const TAP = 6, taps = new Map();   // the key -> { at: the frame it went down, up: lifted }
+  PlayControls.keys($('en-keys'), {
+    down: (k) => { if (k === 'RESTORE') play.restore(); else taps.set(k, { at: play.frames, up: false }); },
+    up: (k) => { const t = taps.get(k); if (t) t.up = true; },
+  });
   function input() {
-    let joy = pad.joy;
+    let joy = padBits;
     play.keys.clear();
-    for (const k of pad.keys) play.keys.add(k);
+    for (const [k, t] of taps) {
+      if (t.up && (play.frames - t.at >= TAP || play.frames < t.at)) taps.delete(k); else play.keys.add(KEYS[k]);
+    }
     for (const c of held) { if (STICK[c]) joy |= STICK[c]; else play.keys.add(KEYS[c]); }
     play.joy = 0x1F & ~joy;
   }
 
   // ---- the screen: the port's memory through the site's model of the video chip
   const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
-  // the row of switches over the screen, and full screen (site/lib/play-controls.js), the bar above
-  // carried into full screen with them
-  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling });
+  // the row of switches over the screen, full screen, the touch joystick and the keys to tap with
+  // it (site/lib/play-controls.js), the bar above carried into full screen with them
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling, keys: $('en-keys'),
+    pad: true, onPad(bits) { padBits = bits; } });
   function draw() {
     const f = play.shown;
     if (!f) return;

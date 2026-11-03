@@ -81,10 +81,6 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
 .pl-fig{margin:6px 0 18px;max-width:420px}
@@ -277,15 +273,10 @@ section table{margin:6px 0 18px}
     </div>
     <ul class="pl-keys">
       <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
-      <li><kbd>↑</kbd>, <kbd>Space</kbd> or <kbd>Shift</kbd> jump</li>
-      <li><kbd>?</kbd> or <kbd>/</kbd> swap to the girl and back, on the way home</li>
+      <li><kbd>↑</kbd> or <kbd>Shift</kbd> jump</li>
+      <li><kbd>Space</kbd> (fire), <kbd>?</kbd> or <kbd>/</kbd> swap to the girl and back, on the way home</li>
       <li>Any key or <kbd>Space</kbd> after GAME OVER starts again</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
-      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
-      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
-    </div>
     <p class="cap" id="pl-cap">The game's screen, drawn from the port’s memory each frame as the C64’s video chip would draw it. The optional forest artwork is an imagined variation; collisions still follow the original map.</p>
   </div>
 </section>
@@ -3960,7 +3951,8 @@ const sound = (function () {
   return { attach, set, frame, get on() { return on; } };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
-PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar') });   // the row of switches over the screen, and full screen (site/lib/play-controls.js)
+// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
@@ -4050,12 +4042,6 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); joyBits = 0; input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
-  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
-});
 
 // --- controls ----------------------------------------------------------------------------------
 let sayTimer = 0;
