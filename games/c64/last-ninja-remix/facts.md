@@ -145,6 +145,46 @@ bitmap `$2000`.
 - Items: the flags at `$03D8`, indexed by item number. The levels'
   object records say where each item lies and what taking it does; some
   call a routine first, which may refuse unless a given item is selected.
+- Weapons are items 1 to 4: sword, staff, nunchakus, shuriken. Space or
+  the second button selects the next one held (`$89`, at once in the
+  USING box, `$951B`), refused while a star flies; the hand (`$70`) takes
+  it at the middle frame of a short animation the next time the player
+  stands still (`EventCopyState89To70`, `$AAA4`). Taking the shuriken
+  gives nine stars (`$C028`); the last star thrown sets the hand back to
+  fists and empties the box (`$B70B`). Nothing takes a weapon away.
+- Where they are: Central Park area 12 the staff (drawn), area 5 and
+  area 7 the two halves of the nunchakus (items 5 and 6, not drawn;
+  taking one while holding the other gives item 3,
+  `ObjectLinkState03DEToPair`, `$C1B0`), area 9 the shuriken (not
+  drawn, facing up and right); The Street area 15 the sword (drawn, facing
+  up and left). Each object record (`object_record_00`, 14 bytes) holds
+  the area, a box the player's position must be in, the heading (0 for
+  any) and the crouch frame (0 to 2, events 9 to 11) on which it is taken
+  (`ObjectEngine`, `$BFC3`). Each weapon adds 500 points.
+- Moves: with fire held, the stick direction d (0 up, clockwise to 7)
+  gives action d*4+8, plus `$20` when the hand is empty or holds the
+  shuriken (`InterpretNormalizedControls`, `$A640`). The mode (`$6D`) is
+  `player_action_mode_bases` at action/4 plus heading/2; the animation is
+  a word from the table `SelectPlayerAnimationForAction` points at.
+  Armed: up a thrust, right a low thrust, down a kick, left a swing;
+  unarmed: up, right and left a punch (right and left also throw a star
+  with the shuriken), down a kick; up-diagonals block, down-diagonals
+  crouch. A move starts after 4 ticks in one direction, 8 on a diagonal
+  (`player_action_delay_by_heading`, `$A694`).
+- Blows: the move's animation raises an event on one frame, and only
+  then the game tests the enemy (`TestActorCombatOverlap`, `$AC7A`). The
+  row is ((mode - `$14`) / 4) + 4 * weapon (weapon 0 for the shuriken)
+  into `combat_horizontal_min` (`$AD46`) and the three tables after it:
+  facing right the across distance is enemy x - player x - 2 (`$ACA2`),
+  facing left player x - enemy x. A blocking enemy facing the other way
+  takes nothing (`$AD16`). Damage is `player_attack_enemy_damage`
+  (`$ABBA`), from the enemy's 44, ten points to the score for each.
+  Fists 2 2 3 2 (up, right, down, left), sword 5 9 3 8, staff 3 7 3 6,
+  nunchakus 5 8 3 7 in the first four levels; The Office and The Mansion
+  2 2 3 2, 4 7 3 6, 3 5 3 4, 4 6 3 5; the Final Battle 1 1 1 1, then
+  2 3 1 3 for each weapon.
+- A star takes 44 from any enemy it reaches, in every level (`LDA #$2C`
+  before `DamageEnemy`, `$B8B9`); only one flies at a time (`$B6E0`).
 - A level ends through `ResolveLevelCompletion`: it checks the items the
   level asks for (Central Park four, The Street two, the rest none), and
   if one is missing asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT
