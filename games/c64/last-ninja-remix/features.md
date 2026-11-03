@@ -17,13 +17,13 @@ Sources:
 | Feature | Status | Where |
 |---|---|---|
 | Seven levels, each one load: Central Park, The Street, The Sewers, The Basement, The Office, The Mansion, The Final Battle (the manual lists six loads, by other names) | live | every level reached and played in the emulator; each level file is unpacked in two segments by engine `$1000`; the Maps tab draws every area of all seven, and `test_levels.js` holds each play window against the emulator |
-| Isometric areas drawn from pieces | confirmed | the scene renderer (`$8A52` in Central Park); 13,297 pictures over the seven levels, each inside its box (`index.html`, section 04) |
+| Isometric areas drawn from pieces | confirmed | the scene renderer (`$8A52` in Central Park); 13,297 pictures over the seven levels, each inside its box (`index.html`, section 05) |
 | Movement relative to the way the ninja faces; J turns the stick's directions an eighth of a turn | traced | `ScanAndNormalizeInput` (`$9418` in Central Park); J steps `$03F3` from 0 to 2, added to the heading at `$A50D` |
 | Keys: F1 sound, F3 and F5 the items, F7 pause, Space the weapons, RUN/STOP kills the ninja | traced | engine `$1EEA` (F1, `$AA`), `$02B7` (pause), `$0267` and `$B6` (RUN/STOP); see `facts.md`, "Controls" |
 | A joystick with a second button (the C64GS's pad): whichever starts the level fires, the other selects the weapon, both together the item | live | POTX of port 2 (`$D419`) with `$DC00` = `$80`; `$8EE8`-`$8EF9`, `$951B`, `$9497` in Central Park |
-| Picking an item up (fire with the stick down and to one side) | open | the object records (`object_record_00`, `$C0D0` in Central Park) and their scripts are traced; the move that takes an item is not |
+| Picking an item up (fire with the stick down and to one side) | traced | either down-diagonal crouches (`InterpretNormalizedControls`, `$A640`); the crouch raises events 9, 10 and 11 on its three frames, and an object record (`object_record_00`, `$C0D0` in Central Park) names the frame, the box and the heading at which its item is taken (`ObjectEngine`, `$BFC3`); `index.html`, section 03, draws each weapon's box |
 | Somersaults | open | not found |
-| Fighting moves, unarmed, armed and thrown | open | combat overlap (`ResolveCombatOverlapForActorSlotX`, `$AB67`), damage (`DamagePlayer`, `$B54A`) and projectile hits (`$B767`) are traced; the table from stick to move is not |
+| Fighting moves, unarmed, armed and thrown | confirmed | stick to move (`InterpretNormalizedControls`, `$A640`), reach (`TestActorCombatOverlap`, `$AC7A`), damage (`player_attack_enemy_damage`, `$ABBA`, a table for levels 1 to 4, one for The Office and The Mansion, one for the Final Battle), a star's 44 (`$B8B9`); `test_index.js` holds the ports in `index.html`, section 03, against the game's routines in all seven levels |
 | Weapons and items: keys, map, nunchakus, shuriken, staff, bottle, sword, hamburger, credit card, terminal | traced | 40 item flags at `$03D8`; each level's object records say where an item lies and what taking it does |
 | The player's and the enemy's energy | confirmed | `$0229` and `$022A`, 44 each, shown as two spirals (engine `$1D4B`, `$1D78`); `test_index.js` holds the spiral against engine `$1E67` |
 | Lives | traced | item 26's flag (`$03F2`), four at the start (engine `$0EAF`); `LoseLife` (`$93C4` in Central Park) |
@@ -54,5 +54,5 @@ Sources:
 - Who wrote the intro's tune: its driver is not the levels' and it
   carries no credit.
 - The 15 bytes at intro `$1797`, which nothing reads.
-- The moves listed above as open: picking up, somersaults, the fighting
-  moves.
+- Somersaults: their animations are in the player's table, but what
+  starts one is not traced.

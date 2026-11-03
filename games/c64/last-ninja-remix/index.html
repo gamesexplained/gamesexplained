@@ -61,6 +61,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 .ln-gal button[aria-pressed="true"]{border-color:var(--amber)}
 .ln-gal canvas{width:100%;height:auto;image-rendering:pixelated}
 .ln-big{display:block;width:100%;max-width:288px;height:auto;image-rendering:pixelated;background:#b2b2b2;border-radius:4px}
+.ln-using{max-width:192px}
 .ln-toks{font-family:var(--fm);font-size:12.5px;line-height:1.9;word-break:break-all;margin:0}
 .ln-toks span{padding:1px 3px;border-radius:3px}
 .ln-toks .lit{background:var(--surface-2);color:var(--ink)}
@@ -116,8 +117,73 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   </div>
 </section>
 
+<section id="weapons">
+  <p class="fig">03 · Weapons</p>
+  <h2 class="t">One throwing star knocks any enemy down</h2>
+  <p class="lede">Armakuni starts with his fists. Central Park hides a staff, a pair of nunchakus in two halves and nine throwing stars, and The Street a sword. Whatever he holds, fire and the stick give the same moves, but each weapon changes how hard a blow lands and how far it reaches.</p>
+  <div class="plate" id="ln-wpn">
+    <div class="ln-bar" id="ln-wpn-pick"></div>
+    <div class="ln-two">
+      <div class="ln-stack"><canvas id="ln-wpn-cv" class="ln-cv" width="448" height="336"></canvas><canvas id="ln-wpn-hi" class="ln-cv" width="448" height="336"></canvas></div>
+      <div>
+        <canvas id="ln-wpn-using" class="ln-cv ln-using" width="192" height="160"></canvas>
+        <p class="ln-out" id="ln-wpn-out">The blows are drawn in the built site, which serves the listings they come from.</p>
+      </div>
+    </div>
+    <div class="ln-bar" id="ln-wpn-blows" style="margin:14px 0 0"></div>
+    <div class="ln-bar" id="ln-wpn-face" style="margin:8px 0 0"></div>
+    <p class="cap">Armakuni's frames are built by a port of <code>ComposeSprites</code> (<code>$BBC0</code> in Central Park) and timed by a port of <code>AnimationInterpreter</code> (<code>$A802</code>), one game tick to about a fiftieth of a second; the move each button picks comes from a port of <code>InterpretNormalizedControls</code> (<code>$A640</code>). The box is where the enemy's position must be when the blow lands, from a port of <code>TestActorCombatOverlap</code> (<code>$AC7A</code>), and the grey figure is Armakuni's own standing frame at the furthest reach. The blue cross marks his position. The picture beside them is the panel's USING box, drawn by the level's own <code>DrawUiImageRecord</code> (<code>$B411</code>) on the kit's 6502 into the frame of section 04. The cells a picture leaves empty show the screen's background colour, which each area sets: the bandstand's light grey here, the colour of the letters of USING too. <code>test_index.js</code> holds each port against the game's routine in all seven levels: every stick direction and heading with every weapon, each of the player's 36 animations record by record, every frame they show with each weapon, and 41,520 placings of the two fighters in each level.</p>
+  </div>
+  <p>The weapons are four of the game's items, numbered 1 to 4: the sword, the staff, the nunchakus and the shuriken. Space, or the second fire button, picks the next one Armakuni has and shows its picture in the panel's USING box at once (<code>$951B</code>), but not while a star is in flight. The next time he stands still he plays a short animation, and the weapon in his hand (<code>$70</code>) changes at its middle frame (event 1, <code>$AAA4</code>). Nothing takes a weapon away. The shuriken's item holds the number of stars left, nine when it is picked up (<code>$C028</code>); each throw takes one, and the last puts Armakuni back to his fists and empties the USING box (<code>$B70B</code>). Space passes over a shuriken with no stars left.</p>
+  <p>With fire held, the stick picks a move by its direction on the screen, whichever way Armakuni faces (<code>normalized_control_direction</code>, <code>$A69C</code>): up a thrust, right a low thrust, down a kick, left a swing over the shoulder, each struck the way he faces. Without a weapon, or with the shuriken, up, right and left all punch, and with the shuriken right and left also throw a star. Either diagonal up blocks; either diagonal down crouches, the move that picks things up. The game starts the move once the stick has stayed in one direction for 4 ticks, or 8 for a diagonal (<code>player_action_delay_by_heading</code>, <code>$A694</code>).</p>
+  <p>Each move's animation raises an event on one frame, and only then does the game look for the enemy. The move and the way Armakuni faces give his mode (<code>$6D</code>), and the mode's class with the weapon picks a row of four small tables (<code>combat_horizontal_min</code>, <code>$AD46</code>, and the three after it): the enemy must stand inside them, across and up or down the screen, measured between the two fighters' positions. A hit takes the row's number from the enemy's 44 (<code>player_attack_enemy_damage</code>, <code>$ABBA</code>) and adds ten points for each to the score. An enemy who is blocking, facing the other way, turns it aside (<code>$AD16</code>).</p>
+  <div class="plate" id="ln-where">
+    <div class="ln-bar" id="ln-where-pick"></div>
+    <div class="ln-stack"><canvas id="ln-where-cv" class="ln-cv" width="480" height="288"></canvas><canvas id="ln-where-hi" class="ln-cv" width="480" height="288"></canvas></div>
+    <p class="ln-out" id="ln-where-out">The areas are drawn in the built site, which serves the listings they are drawn from.</p>
+    <p class="cap">Each area is drawn by the level's own renderer on the kit's 6502, with the objects not yet taken (<code>DrawInactiveObject</code>), as in section 05. The box is the object record's: the position Armakuni must stand at as he takes the weapon (<code>object_record_00</code>, <code>$C0D0</code> in Central Park, <code data-part="street">$B9B3</code> in The Street). Where the box is small he is drawn in it, from his own frames, at the moment the weapon is taken, in front of everything in the area.</p>
+  </div>
+  <p>Each level's object records list what can be taken in each area: a box Armakuni must stand in, the heading he must face, if any, and the frame of the crouch at which the item is taken (<code>ObjectEngine</code>, <code>$BFC3</code>). The staff and the sword lie in plain sight. Nothing is drawn where the shuriken and the halves of the nunchakus are: only the boxes say where they are. Taking either half when the other is already held gives the nunchakus (<code>$C1B0</code>). Every weapon taken adds 500 points. As Armakuni leaves Central Park the game checks for the staff, the nunchakus, the shuriken and one other object, and as he leaves The Street for the sword and one other; without them it asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT LEVEL (<code>ResolveLevelCompletion</code>, <code>$904F</code>).</p>
+  <p>With the sword, the staff or the nunchakus the low thrust lands hardest; with bare fists the kick does. The later levels have tables of their own, and their blows are weaker. In The Office and The Mansion a weapon's thrusts and swing take up to 2 less, while punches and kicks take the same. In the Final Battle every blow takes 1 to 3. The tables give what one blow takes from the enemy's 44:</p>
+  <div class="plate ln-scroll">
+    <table class="ln-table" id="ln-wpn-damage">
+      <thead><tr><th>Weapon</th><th>Fire and up</th><th>Fire and right</th><th>Fire and down</th><th>Fire and left</th></tr></thead>
+      <tbody>
+        <tr><th colspan="5">Central Park, The Street, The Sewers, The Basement</th></tr>
+        <tr><td>Fists or shuriken</td><td>2</td><td>2</td><td>3</td><td>2</td></tr>
+        <tr><td>Sword</td><td>5</td><td>9</td><td>3</td><td>8</td></tr>
+        <tr><td>Staff</td><td>3</td><td>7</td><td>3</td><td>6</td></tr>
+        <tr><td>Nunchakus</td><td>5</td><td>8</td><td>3</td><td>7</td></tr>
+        <tr><th colspan="5">The Office, The Mansion</th></tr>
+        <tr><td>Fists or shuriken</td><td>2</td><td>2</td><td>3</td><td>2</td></tr>
+        <tr><td>Sword</td><td>4</td><td>7</td><td>3</td><td>6</td></tr>
+        <tr><td>Staff</td><td>3</td><td>5</td><td>3</td><td>4</td></tr>
+        <tr><td>Nunchakus</td><td>4</td><td>6</td><td>3</td><td>5</td></tr>
+        <tr><th colspan="5">The Final Battle</th></tr>
+        <tr><td>Fists or shuriken</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+        <tr><td>Sword</td><td>2</td><td>3</td><td>1</td><td>3</td></tr>
+        <tr><td>Staff</td><td>2</td><td>3</td><td>1</td><td>3</td></tr>
+        <tr><td>Nunchakus</td><td>2</td><td>3</td><td>1</td><td>3</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The reach is the same in every level. The staff reaches furthest, but both its thrusts miss an enemy closer than 18 pixels. The distances below are across the screen, in the sprites' pixels, from Armakuni's position to the enemy's when he faces right; facing left, the game measures them 2 pixels shorter (<code>$ACA2</code>):</p>
+  <div class="plate ln-scroll">
+    <table class="ln-table" id="ln-wpn-reach">
+      <thead><tr><th>Weapon</th><th>Fire and up</th><th>Fire and right</th><th>Fire and down</th><th>Fire and left</th></tr></thead>
+      <tbody>
+        <tr><td>Fists or shuriken</td><td>9 to 22</td><td>9 to 22</td><td>9 to 22</td><td>9 to 22</td></tr>
+        <tr><td>Sword</td><td>14 to 37</td><td>14 to 38</td><td>9 to 22</td><td>9 to 32</td></tr>
+        <tr><td>Staff</td><td>20 to 45</td><td>18 to 47</td><td>9 to 22</td><td>10 to 39</td></tr>
+        <tr><td>Nunchakus</td><td>15 to 35</td><td>16 to 38</td><td>9 to 22</td><td>10 to 31</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A star thrown with the shuriken flies on by itself, and when it reaches an enemy it takes 44, his whole spiral, in every level (<code>UpdateProjectiles</code>, <code>$B8B9</code>): one star knocks him down, unless he is already down or somersaulting. Only one star flies at a time (<code>$B6E0</code>).</p>
+</section>
+
 <section id="screen">
-  <p class="fig">03 · The screen</p>
+  <p class="fig">04 · The screen</p>
   <h2 class="t">A window for the city, framed by the status panel</h2>
   <p class="lede">The whole screen is one multicolour bitmap, in the same mode from top to bottom. The game draws each area into a window of 30 by 18 cells at the top left. The rest is the status panel, which arrives with the engine and stays in memory through every level.</p>
   <div class="plate">
@@ -129,7 +195,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 </section>
 
 <section id="room">
-  <p class="fig">04 · Drawing an area</p>
+  <p class="fig">05 · Drawing an area</p>
   <h2 class="t">An area is drawn one small picture at a time</h2>
   <p class="lede">A level stores no finished screens. Each area is a scene: a list of pieces, each placed at a column and a row, and each either a small picture or another scene. The level's renderer walks that tree and draws every picture into the window at its place. The slider replays the drawing of one area.</p>
   <div class="plate" id="ln-room">
@@ -145,7 +211,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 </section>
 
 <section id="loads">
-  <p class="fig">05 · The levels</p>
+  <p class="fig">06 · The levels</p>
   <h2 class="t">A level is unpacked behind its title card</h2>
   <p class="lede">Each level is one packed file on the disk, which the engine's loader unpacks backwards, from the end, in two pieces. The first is the title card and the tune; the second, unpacked after the player presses Space or fire, is the level itself.</p>
   <div class="plate" id="ln-titles">
@@ -158,7 +224,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 </section>
 
 <section id="sprites">
-  <p class="fig">06 · The ninja and his enemies</p>
+  <p class="fig">07 · The ninja and his enemies</p>
   <h2 class="t">Sprites with the zeros squeezed out</h2>
   <p class="lede">Armakuni and his enemies are drawn from parts. Each frame of an animation lists packed sprites, which the game unpacks one at a time into a 63-byte buffer and merges, mirrored when the fighter faces the other way, into the hardware sprites not on show.</p>
   <div class="plate" id="ln-spr">
@@ -171,18 +237,18 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <p class="cap">Central Park's 242 packed sprites: the 162 of the main pool (<code>SpriteSourcePointers</code>, <code>$CE54</code>) and the 40 of each of the two groups of extra pictures some enemies' figures are drawn with (<code>$E979</code> and <code>$F1B2</code>). The unpacker on this page is ported from <code>DecodeSpriteMaskRle63</code> (<code>$BF3F</code>); <code>test_index.js</code> unpacks all 242 with the port and with the game's routine on the kit's 6502, and they agree in every byte.</p>
   </div>
   <p>Most of a sprite is empty, so the packing removes zeros. A byte from <code>$69</code> to <code>$6F</code> stands for a run of one to seven zero bytes. A <code>$68</code> says that the byte after it is to be copied as it is, which lets a sprite hold a byte from <code>$68</code> to <code>$6F</code> of its own. Every other byte is copied as it is. Packed, the main pool takes 6,544 bytes, where its 162 sprites take 10,206 unpacked.</p>
-  <p>In the frame in section 03, Armakuni is three of the machine's eight sprites: two black ones, one above the other, and a third laid over the upper one that adds a few light red pixels.</p>
+  <p>In the frame in section 04, Armakuni is three of the machine's eight sprites: two black ones, one above the other, and a third laid over the upper one that adds a few light red pixels.</p>
 </section>
 
 <section id="energy">
-  <p class="fig">07 · The enemy's energy</p>
+  <p class="fig">08 · The enemy's energy</p>
   <h2 class="t">A beaten enemy gets its strength back while the player is away</h2>
   <p class="lede">Each area remembers when its enemy was knocked down. When Armakuni comes back, the game gives the enemy back energy for the time that has passed: none for the first two seconds, then a half-cell of the spiral for every 32 ticks of the game's clock, and the whole spiral after about 29 seconds.</p>
   <div class="plate" id="ln-energy">
     <canvas id="ln-energy-cv" class="ln-cv" width="336" height="168" style="max-width:504px"></canvas>
     <div class="ln-row"><label for="ln-energy-t">Ticks since the enemy fell</label><input type="range" id="ln-energy-t" min="0" max="1600" value="700"></div>
     <p class="ln-out" id="ln-energy-out">The spiral is drawn in the built site, which serves the listings it comes from.</p>
-    <p class="cap">The energy is worked out by a port of <code>RebuildEnemyMeterFromElapsedTicks</code> (<code>$B3D6</code>), and the spiral coloured as the engine's interrupt leaves it (<code data-part="engine">$1E69</code>-<code data-part="engine">$1EBA</code>), in the panel of the frame in section 03. <code>test_index.js</code> runs the port and the game's routine on the kit's 6502 over 4,378 pairs of times, every boundary and wrap of the counter among them, and the spiral port against the engine's code for every energy, counting up and counting down; they agree on every one.</p>
+    <p class="cap">The energy is worked out by a port of <code>RebuildEnemyMeterFromElapsedTicks</code> (<code>$B3D6</code>), and the spiral coloured as the engine's interrupt leaves it (<code data-part="engine">$1E69</code>-<code data-part="engine">$1EBA</code>), in the panel of the frame in section 04. <code>test_index.js</code> runs the port and the game's routine on the kit's 6502 over 4,378 pairs of times, every boundary and wrap of the counter among them, and the spiral port against the engine's code for every energy, counting up and counting down; they agree on every one.</p>
   </div>
   <p>When the enemy's energy reaches zero, <code>DamageEnemy</code> (<code>$B568</code>) keeps where it fell and the game's tick, the 16-bit count at <code>$F0</code>:<code>$E2</code> that CIA 1's timer advances about 50.6 times a second, in tables with an entry for each area (<code data-part="">$0175</code> and <code data-part="">$0187</code>). On entering an area whose enemy is down but will get up again, the game takes the ticks since then, counted round 65,536, divides them by 32 and takes away 2, keeping the result between 0 and 44 (<code>$8F0B</code>).</p>
   <p>An enemy gets up only so many times. Each area's entry in the enemy tables gives, in its high four bits, how many knock-downs put its enemy down for good (<code>enemy_heading_profile</code>, <code>$B6B5</code>, read at <code>$B641</code>); <code>DamageEnemy</code> counts them in the area's byte at <code data-part="">$012D</code>, and at the last one marks the area <code>$FF</code>, an enemy that no longer comes back, and adds to the score a second time. The number rises level by level, and in the Final Battle, where it is 15, the game never puts an enemy down for good (<code>$B5A5</code>):</p>
@@ -204,7 +270,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 </section>
 
 <section id="controls">
-  <p class="fig">08 · Controls</p>
+  <p class="fig">09 · Controls</p>
   <h2 class="t">A second fire button picks weapons without the keyboard</h2>
   <p class="lede">The game reads a joystick in port 2 and a few keys. It also reads a second fire button, wired as on the three-button pad of Commodore's C64GS console, which picks weapons and objects without the keyboard.</p>
   <div class="plate ln-scroll">
@@ -227,7 +293,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 </section>
 
 <section id="lock">
-  <p class="fig">09 · The last lock</p>
+  <p class="fig">10 · The last lock</p>
   <h2 class="t">The code for the last door is read from the clock</h2>
   <p class="lede">The Final Battle's lock asks for four digits. They are the minutes and seconds the clock showed when the player finished The Basement, and The Office shows them on a note for anyone who picks it up.</p>
   <div class="plate" id="ln-lock">
@@ -455,6 +521,117 @@ function lnrCode(m) {
   return [10, 11, 20, 21].map((o) => m[0x1C77 + o] - 0x1B);
 }
 // end of lnr-code
+/* lnr-blow */
+// Armakuni's blows, ported from a level's own code. m is the memory of the level in play (the
+// engine's listing under the level's), S the addresses of its tables: lnrTables(m, P) finds them
+// from the level's listing P (C64.load's), the animation pointers from the operand of the LDX in
+// SelectPlayerAnimationForAction ($A619 in Central Park), as only Central Park's listing names them.
+// lnrMove(m, S, w, d, h): the move InterpretNormalizedControls ($A640) starts when fire is held and
+// the stick has been in direction d (0 up, 1 up and right, ... 7 up and left) long enough, with
+// weapon w in hand ($70: 0 none, 1 sword, 2 staff, 3 nunchakus, 4 shuriken) and heading h ($69, the
+// same eight directions): the action d * 4 + 8, plus $20 with no weapon or the shuriken; the mode
+// $6D, the action's base (player_action_mode_bases) plus h / 2; the animation, the action's pair
+// of pointers, the second when h is 2 to 5 (SelectPlayerAnimationForAction, $A600); and the mirror
+// flag h & 2 (InstallAnimation, $A61F).
+// lnrAnim(m, at): the animation at at, as AnimationInterpreter ($A802) reads it, one step a record:
+// { at, control, delay, frame, dx, dy, event }. Bit 1 of the control byte brings a new delay, in
+// the game's ticks, and without it the last one holds; bit 7 a move in X and Y; bit 0 an event for
+// EventDispatch ($AA25); bit 5 a pointer to the next record, which ends the animation when it is 0.
+// lnrFrame(m, S, f, w, mirror, x, y, clip): the sprites ComposeSprites ($BBC0) builds for frame f of
+// the player standing at x, y ($54, $55) with weapon w and the mirror flag ($F1), and the depth
+// line clip ($9E, $FF for none), with no thrown star in flight: { hdr, width, parts }, a part for
+// each logical sprite the frame fills, { slot, sprite, x, y, colour, bytes }. A frame lists three
+// parts of the body and one of each weapon, each a packed sprite, an X (its low seven bits less
+// $30, taken from the frame's width when mirrored) and a Y from the player's position, and an
+// attribute: the sprite's colour, multicolour in bit 7. A packed sprite's pointer is a word of
+// SpriteSourcePointers plus the table's address less $C000 (DecodeCompressedSprite63, $BF1E: $0E54 in
+// Central Park). Parts are unpacked as DecodeSpriteMaskRle63 does (lnrUnpack) and copied as BlitCachedSpriteMask ($BED7) copies them: each byte through
+// reverse_hires_bits ($1300 in the engine) and the row's three bytes swapped when mirrored, every
+// column masked by the play window's right edge (the masks at $1695, $159D and $15A5), and the rows
+// below the depth line cleared ($BE99). The player has no extra sprite ($7D = 0). Frames whose
+// header has bit 5 or 7 set, which only the somersaults use, give null.
+// lnrBlow(m, S, a, v, cb, t): whether the player's blow lands at the moment its animation's event
+// comes (TestActorCombatOverlap, $AC7A) and what it takes from the enemy's 44
+// (EventResolveCombatFromActorState, $AB70). a is the player { x, y, mode, w } ($54, $55, $6D, $70),
+// v the enemy { x, y, mode } ($56, $57, $6F); cb is $CB, whose bit 7 says there is an enemy, t the
+// counter at $02BD. The blow's row of the tables is the mode's class ((mode - $14) / 4) with the
+// weapon, the shuriken's as no weapon's, times four. Facing right (mode bits 0-1 below 2) the enemy
+// must stand at least 2 pixels to the right and h is the distance less 2; facing left h is the
+// distance to the left. The vertical distance d is taken up the screen for modes ending 0 and 3,
+// down for 1 and 2, and with h it must fall inside the row's limits: hmin <= h < hmax and
+// vmin <= d + 8 < vmax. An enemy in mode class $0C is out of reach; one blocking (class $10) and
+// facing the other way stops it while t is below 4; one already down (class $24) loses nothing.
+function lnrTables(m, P) {
+  const sel = P.sym('SelectPlayerAnimationForAction');
+  return {
+    bases: P.sym('player_action_mode_bases'), anims: m[sel + 0x1A] | m[sel + 0x1B] << 8,
+    frames: P.sym('FramePointers'), sprites: P.sym('SpriteSourcePointers'),
+    hmin: P.sym('combat_horizontal_min'), hmax: P.sym('combat_horizontal_max'),
+    vmin: P.sym('combat_vertical_min'), vmax: P.sym('combat_vertical_max'),
+    damage: P.sym('player_attack_enemy_damage') };
+}
+function lnrMove(m, S, w, d, h) {
+  const action = d * 4 + 8 + (w === 0 || w >= 4 ? 0x20 : 0), y = action + (((h + 2) & 4) >> 1);
+  return { action, mode: (m[S.bases + (action >> 2)] + (h >> 1)) & 0xFF,
+    anim: m[S.anims + y] | m[S.anims + y + 1] << 8, mirror: h & 2 };
+}
+function lnrAnim(m, at) {
+  const steps = [], seen = new Set();
+  let delay = null;
+  while (at && !seen.has(at) && steps.length < 64) {
+    seen.add(at);
+    const c = m[at];
+    let y = 1;
+    if (c & 2) delay = m[at + y++];
+    const s = { at, control: c, delay, frame: m[at + y++], dx: 0, dy: 0, event: 0 };
+    if (c & 0x80) { s.dx = m[at + y] << 24 >> 24; s.dy = m[at + y + 1] << 24 >> 24; y += 2; }
+    if (c & 1) s.event = m[at + y++];
+    steps.push(s);
+    at = c & 0x20 ? m[at + y] | m[at + y + 1] << 8 : (at + y) & 0xFFFF;
+  }
+  return steps;
+}
+function lnrFrame(m, S, f, w, mirror, x, y, clip = 0xFF) {
+  const p = m[S.frames + 2 * f] | m[S.frames + 2 * f + 1] << 8, hdr = m[p], width = (m[p + 1] << 1) & 0xFF;
+  if (hdr & 0xA0) return null;
+  const parts = [], offs = [2, 6, 10, w > 0 && w < 4 ? 10 + 4 * w : -1];
+  offs.forEach((o, slot) => {
+    if (o < 0 || m[p + o] === 0xFF) return;
+    const sprite = m[p + o];
+    let dx = ((m[p + o + 1] & 0x7F) - 0x30) & 0xFFFF;
+    if (mirror) dx = (width - dx) & 0xFFFF;
+    const X = (x + dx) & 0xFFFF, lo = X & 0xFF, Y = (y + m[p + o + 2]) & 0xFF;
+    let k = [0xFF, 0xFF, 0xFF];
+    if (X >> 8) k = [lo < 8 ? m[0x1695 + lo] : 0, 0, 0];
+    else if (lo >= 0xF8) k = [0xFF, m[0x159D + lo], 0];
+    else if (lo >= 0xF0) k = [0xFF, 0xFF, m[0x15A5 + lo]];
+    const at = ((m[S.sprites + 2 * sprite] | m[S.sprites + 2 * sprite + 1] << 8) + S.sprites - 0xC000) & 0xFFFF;
+    const src = lnrUnpack(m, at).bytes, bytes = new Uint8Array(63);
+    for (let r = 0; r < 63; r += 3) for (let c = 0; c < 3; c++)
+      bytes[r + c] = (mirror ? m[0x1300 + src[r + 2 - c]] : src[r + c]) & k[c];
+    const below = Y - clip;
+    if (below > 0) bytes.fill(0, 63 - 3 * Math.min(21, below));
+    parts.push({ slot, sprite, x: X, y: Y, colour: m[p + o + 3], bytes });
+  });
+  return { hdr, width, parts };
+}
+function lnrBlow(m, S, a, v, cb = 0x80, t = 0) {
+  const miss = { hit: false, index: -1, damage: 0 };
+  if (!(cb & 0x80) || (v.mode & 0xFC) === 0x0C) return miss;
+  let h;
+  if ((a.mode & 3) >= 2) h = a.x - v.x;
+  else h = v.x < a.x ? -1 : v.x - a.x - 2;
+  if (h < 0) return miss;
+  const index = (((a.mode - 0x14) & 0xFF) >> 2 | (a.w < 4 ? a.w : 0) << 2) & 0xFF;
+  const d = (a.mode & 3) === 0 || (a.mode & 3) === 3 ? a.y - v.y : v.y - a.y, u = d + 8;
+  const out = { hit: false, index, damage: 0 };
+  if (h < m[S.hmin + index] || h >= m[S.hmax + index] || u < m[S.vmin + index] || u >= m[S.vmax + index]) return out;
+  if ((v.mode & 0xFC) === 0x10 && ((v.mode ^ a.mode) & 2) && t < 4) return Object.assign(out, { blocked: true });
+  out.hit = true;
+  if ((v.mode & 0xFC) !== 0x24) out.damage = m[S.damage + index];
+  return out;
+}
+// end of lnr-blow
 </script>
 <script>
 /* lnr-frame */
@@ -501,16 +678,16 @@ async function music() {
   C64Sid.mount(el, { driver: createDriver, data: { tunes }, tunes: LNR_TUNES.map((t) => t.name), filter: '6581' });
 }
 
-// ---- 03 the screen
+// ---- 04 the screen
 const cell = (c, r, w, h) => [32 + 8 * c, 35 + 8 * r, 8 * w, 8 * h];
 const REGIONS = [
-  ['Play window', cell(0, 0, 30, 18), 'Columns 0 to 29 of rows 0 to 17. <code data-part="engine">ClearPlayWindow</code> (<code data-part="engine">$1478</code>) empties it each time Armakuni enters an area, and the level\'s renderer draws the area into it from small pictures (section 04).'],
-  ['Armakuni', [108, 78, 24, 42], 'Three of the eight hardware sprites, filled each frame from packed parts (section 06). The game builds the next frame\'s sprites in one half of <code data-part="engine">$0C00</code>-<code data-part="engine">$0FFF</code> while the chip shows the other.'],
-  ['Enemy\'s energy', cell(2, 19, 5, 5), 'A square spiral of 22 cells, each lit in two halves: 44 steps of energy, full here. The raster interrupt moves it a step at a time toward the enemy\'s energy (section 07).'],
+  ['Play window', cell(0, 0, 30, 18), 'Columns 0 to 29 of rows 0 to 17. <code data-part="engine">ClearPlayWindow</code> (<code data-part="engine">$1478</code>) empties it each time Armakuni enters an area, and the level\'s renderer draws the area into it from small pictures (section 05).'],
+  ['Armakuni', [108, 78, 24, 42], 'Three of the eight hardware sprites, filled each frame from packed parts (section 07). The game builds the next frame\'s sprites in one half of <code data-part="engine">$0C00</code>-<code data-part="engine">$0FFF</code> while the chip shows the other.'],
+  ['Enemy\'s energy', cell(2, 19, 5, 5), 'A square spiral of 22 cells, each lit in two halves: 44 steps of energy, full here. The raster interrupt moves it a step at a time toward the enemy\'s energy (section 08).'],
   ['Player\'s energy', cell(8, 19, 5, 5), 'Armakuni\'s 44 steps of energy, the enemy\'s spiral mirrored, in red and light red.'],
   ['Score', cell(17, 20, 6, 1), 'Six digits in the engine\'s glyphs, a text record at <code data-part="engine">$1C9C</code>, added to with decimal carries (<code data-part="engine">$1189</code>) and drawn again when <code>$0292</code> asks for it.'],
-  ['Clock', cell(16, 22, 8, 1), 'Hours, minutes and seconds, three text records from <code data-part="engine">$1C73</code>. The raster interrupt adds a second every 50 frames, so on an NTSC machine, where it comes 60 times a second, the clock runs fast by a fifth. The time goes with the player into the next level, and becomes the code of the last lock (section 09).'],
-  ['Weapon', cell(33, 3, 4, 2), 'Under USING, the weapon Armakuni holds, a picture four cells by two from the level\'s panel pictures, drawn again when Space or the second button picks the next one.'],
+  ['Clock', cell(16, 22, 8, 1), 'Hours, minutes and seconds, three text records from <code data-part="engine">$1C73</code>. The raster interrupt adds a second every 50 frames, so on an NTSC machine, where it comes 60 times a second, the clock runs fast by a fifth. The time goes with the player into the next level, and becomes the code of the last lock (section 10).'],
+  ['Weapon', cell(33, 3, 4, 2), 'Under USING, the weapon Armakuni holds, a picture four cells by two from the level\'s panel pictures, drawn again when Space or the second button picks the next one (section 03).'],
   ['Object', cell(33, 9, 4, 2), 'Under FOUND, the object chosen, or the one just picked up.'],
 ];
 function screen() {
@@ -531,7 +708,7 @@ function screen() {
   }
 }
 
-// ---- 04 drawing an area, and 05 the title cards
+// ---- 05 drawing an area, and 06 the title cards
 const levels = new Map();
 function level(i) {
   if (!levels.has(i)) {
@@ -614,7 +791,7 @@ async function titleCard(i) {
   C64.drawFrame($('ln-title'), lnrTitle(D.E, D.T), 1);
 }
 
-// ---- 06 the sprites
+// ---- 07 the sprites
 async function sprites() {
   const P = await load('central-park'), list = lnrSprites(P.ram, P), gal = $('ln-spr-gal');
   const draw = (cv, bytes, s) => {
@@ -642,7 +819,7 @@ async function sprites() {
   show(0, gal.firstChild);
 }
 
-// ---- 07 the enemy's energy
+// ---- 08 the enemy's energy
 async function energy() {
   const E = await load('engine');
   const mem = new Uint8Array(0x10000), colour = Uint8Array.from(atob(LNR_FRAME.colour), (c) => c.charCodeAt(0));
@@ -663,7 +840,188 @@ async function energy() {
   show();
 }
 
-// ---- 09 the lock
+// ---- 03 the weapons
+const WEAPONS = ['Fists', 'Sword', 'Staff', 'Nunchakus', 'Shuriken'];
+const STICK = [  // fire and the stick: its direction (0 up, 1 up and right, ... 7 up and left), and the move
+  { d: 0, label: 'Fire and up', armed: 'a thrust', bare: 'a punch' },
+  { d: 2, label: 'Fire and right', armed: 'a low thrust', bare: 'a punch' },
+  { d: 4, label: 'Fire and down', armed: 'a kick', bare: 'a kick' },
+  { d: 6, label: 'Fire and left', armed: 'a swing over the shoulder', bare: 'a punch' },
+  { d: 1, label: 'Fire and up, diagonally', armed: 'a block', bare: 'a block' },
+  { d: 3, label: 'Fire and down, diagonally', armed: 'a crouch, which picks things up', bare: 'a crouch, which picks things up' }];
+const FACING = [{ h: 1, label: 'Facing up and right' }, { h: 3, label: 'Facing down and right' }];
+const BLOW_EVENTS = [4, 5, 6, 7, 8];          // the events whose handlers look for the enemy (EventDispatchTable)
+const TICK = 1000 / 50.64;                    // a game tick in milliseconds
+// the level in play: the engine, the level's title load below $4E00 and the level above
+function levelMem(D) {
+  if (!D.mem) {
+    const m = new Uint8Array(0x10000);
+    for (let a = 0; a < 0x10000; a++) m[a] = D.E.has[a] ? D.E.ram[a] : 0;
+    for (let a = 0; a < 0x4E00; a++) if (D.T.has[a]) m[a] = D.T.ram[a];
+    for (let a = 0x4E00; a < 0x10000; a++) if (D.P.has[a]) m[a] = D.P.ram[a];
+    D.mem = m; D.S = lnrTables(m, D.P);
+  }
+  return D.mem;
+}
+// sprite parts (lnrFrame's) onto palette indices px, w by h, whose top left is window pixel (x0, y0);
+// slot 0 in front, as the chip puts sprite 0; colour replaces every set pixel when given
+function drawParts(px, w, h, parts, x0, y0, colour) {
+  const vic = LNR_FRAME.vic;
+  for (const p of parts.slice().sort((a, b) => b.slot - a.slot)) {
+    const multi = p.colour & 0x80, own = colour != null ? colour : p.colour & 15;
+    for (let r = 0; r < 21; r++) for (let c = 0; c < 24; c++) {
+      let v;
+      if (multi) { const q = c >> 1; v = [-1, vic[0x25] & 15, own, vic[0x26] & 15][p.bytes[r * 3 + (q >> 2)] >> (6 - 2 * (q & 3)) & 3]; }
+      else v = p.bytes[r * 3 + (c >> 3)] >> (7 - (c & 7)) & 1 ? own : -1;
+      const x = p.x - 24 + c - x0, y = p.y - 50 + r - y0;
+      if (v >= 0 && x >= 0 && x < w && y >= 0 && y < h) px[y * w + x] = colour != null ? colour : v;
+    }
+  }
+}
+// the panel's USING box with item's picture, drawn by the level's DrawUiImageRecord into the frame of section 04
+function usingBox(D, item) {
+  const m = levelMem(D).slice(), colour = new Uint8Array(1024);
+  for (let k = 0; k < 1000; k++) colour[k] = m[0x0800 + k] & 15;
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+    read: (a) => { if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800]; if (a === 0xD011) return 0x80; throw new Error('read of ' + a.toString(16)); },
+    write: (a, v) => { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; else throw new Error('write to ' + a.toString(16)); } } });
+  cpu.call(D.P.sym('DrawUiImageRecord'), { a: item, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 1e6 });
+  const mem = new Uint8Array(0x10000), col = Uint8Array.from(atob(LNR_FRAME.colour), (c) => c.charCodeAt(0));
+  for (const r of LNR_FRAME.ram) mem.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  for (let r = 3; r < 5; r++) for (let c = 33; c < 37; c++) {
+    const k = r * 40 + c;
+    mem.set(m.subarray(0x2000 + 8 * k, 0x2008 + 8 * k), 0x2000 + 8 * k);
+    mem[0x0400 + k] = m[0x0400 + k]; col[k] = colour[k];
+  }
+  return C64.renderFrame(Object.assign({}, LNR_FRAME, { mem, colourMem: col }));
+}
+const wpn = { w: 2, s: 1, f: 0, timer: 0, token: 0, where: 0 };
+const STAGE = { w: 112, h: 84, x: 36, y: 66, s: 4 };   // window pixels around Armakuni's position, and the scale
+const AT = { x: 100, y: 120 };                          // his position, $54 and $55
+async function weaponShow() {
+  const t = ++wpn.token, w = wpn.w, st = STICK[wpn.s], h = FACING[wpn.f].h;
+  clearTimeout(wpn.timer);
+  const D = await level(0);
+  if (t !== wpn.token) return;
+  const m = levelMem(D), S = D.S, mv = lnrMove(m, S, w, st.d, h), steps = lnrAnim(m, mv.anim);
+  const ev = steps.findIndex((x) => BLOW_EVENTS.includes(x.event)), lands = ev >= 0;
+  const a = { x: AT.x, y: AT.y, mode: mv.mode, w };
+  // the box of enemy positions the blow reaches, from the port: every place that hits
+  let box = null;
+  if (lands) for (let dy = -40; dy <= 40; dy++) for (let dx = -80; dx <= 80; dx++) {
+    const r = lnrBlow(m, S, a, { x: AT.x + dx, y: AT.y + dy, mode: 0x08 }, 0x80, 0);
+    if (!r.hit) continue;
+    box = box || { x0: dx, x1: dx, y0: dy, y1: dy, damage: r.damage };
+    box.x0 = Math.min(box.x0, dx); box.x1 = Math.max(box.x1, dx); box.y0 = Math.min(box.y0, dy); box.y1 = Math.max(box.y1, dy);
+  }
+  const ghost = box && lnrFrame(m, S, 16, 0, 2, AT.x + box.x1, AT.y);
+  const cv = $('ln-wpn-cv'), hi = $('ln-wpn-hi'), { w: W, h: H, s: Z } = STAGE, X0 = AT.x - STAGE.x, Y0 = AT.y - STAGE.y;
+  cv.width = hi.width = W * Z; cv.height = hi.height = H * Z;
+  const g = hi.getContext('2d');
+  function draw(k) {
+    const px = new Uint8Array(W * H).fill(15), F = lnrFrame(m, S, steps[k].frame, w, mv.mirror, AT.x, AT.y);
+    if (ghost) drawParts(px, W, H, ghost.parts, X0, Y0, 12);
+    drawParts(px, W, H, F.parts, X0, Y0);
+    paint(cv, px, W, H, Z);
+    g.clearRect(0, 0, W * Z, H * Z);
+    if (box) {
+      const now = k === ev;
+      g.fillStyle = now ? 'rgba(208,74,58,.55)' : 'rgba(194,90,0,.18)';
+      g.strokeStyle = now ? '#d04a3a' : '#c25a00'; g.lineWidth = 2;
+      const bx = (STAGE.x + box.x0) * Z, by = (STAGE.y + box.y0) * Z, bw = (box.x1 - box.x0 + 1) * Z, bh = (box.y1 - box.y0 + 1) * Z;
+      g.fillRect(bx, by, bw, bh); g.strokeRect(bx + 1, by + 1, bw - 2, bh - 2);
+    }
+    g.fillStyle = '#2e2c9b'; g.fillRect(STAGE.x * Z - Z, STAGE.y * Z - 1, 3 * Z, 2); g.fillRect(STAGE.x * Z, STAGE.y * Z - Z, 2, 3 * Z);
+  }
+  let k = 0;
+  const run = () => {
+    draw(k);
+    const last = k === steps.length - 1, wait = (steps[k].delay || 4) * TICK + (last ? 900 : 0);
+    k = last ? 0 : k + 1;
+    wpn.timer = setTimeout(run, wait);
+  };
+  run();
+  // the text
+  const bare = w === 0 || w === 4, move = bare ? st.bare : st.armed;
+  const ticks = lands ? steps.slice(0, ev).reduce((n, x) => n + x.delay, 0) : 0;
+  let text = `<b>${WEAPONS[w]}, ${st.label.toLowerCase()}</b>: ${move}, frames ${steps.map((x) => x.frame).join(', ')}. `;
+  if (lands && box) {
+    const up = (n) => n < 0 ? `${-n} above` : n > 0 ? `${n} below` : 'level';
+    text += `The game looks for the enemy on frame ${ev + 1}, ${ticks} ticks in. The blow lands if his position is ${box.x0} to ${box.x1} pixels to the right and from ${up(box.y0)} to ${up(box.y1)}, the box, which turns red on that frame, and takes <b>${box.damage}</b> of his 44 in Central Park.`;
+    if (w === 4 && steps[ev].event === 6) text += ' The punch also throws a star, which flies on by itself.';
+  } else if (st.d === 1) text += 'It strikes nothing: it turns aside a blow from an enemy facing the other way.';
+  else text += 'It strikes nothing: its frames raise the events that take what lies in the area.';
+  $('ln-wpn-out').innerHTML = text;
+}
+async function weaponPick(w) {
+  wpn.w = w;
+  pressed($('ln-wpn-pick'), $('ln-wpn-pick').children[w]);
+  const t = wpn.token;
+  weaponShow();
+  const cv = $('ln-wpn-using');
+  try {
+    const D = await level(w === 1 ? 1 : 0);      // the sword's picture is The Street's: Central Park has none
+    if (wpn.w !== w) return;
+    const r = usingBox(D, w);
+    paint(cv, r.px, 48, 40, 4, 32 + 8 * 32, 35 + 8, r.w);
+  } catch (e) { if (t === wpn.token) $('ln-wpn-out').textContent = 'The listings did not load: ' + e.message; }
+}
+function weapons() {
+  const pick = $('ln-wpn-pick'), blows = $('ln-wpn-blows'), face = $('ln-wpn-face');
+  const button = (box, label, go) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ln-btn'; b.textContent = label; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => { pressed(box, b); go(); };
+    box.appendChild(b);
+    return b;
+  };
+  WEAPONS.forEach((name, w) => button(pick, name, () => weaponPick(w)));
+  STICK.forEach((st, s) => button(blows, st.label, () => { wpn.s = s; weaponShow(); }));
+  FACING.forEach((f, i) => button(face, f.label, () => { wpn.f = i; weaponShow(); }));
+  pressed(blows, blows.children[wpn.s]); pressed(face, face.children[wpn.f]);
+  return weaponPick(wpn.w);
+}
+// where each weapon lies: [level, item, what the button says]
+const WHERE = [[1, 1, 'Sword'], [0, 2, 'Staff'], [0, 5, 'Nunchakus, one half'], [0, 6, 'Nunchakus, the other half'], [0, 4, 'Shuriken']];
+const HEADINGS = ['up', 'up and to the right', 'to the right', 'down and to the right', 'down', 'down and to the left', 'to the left', 'up and to the left'];
+async function whereShow(k) {
+  const [li, item, name] = WHERE[k], t = ++wpn.where;
+  $('ln-where-out').textContent = 'Loading ' + LEVELS[li].name + '…';
+  const D = await level(li);
+  if (t !== wpn.where) return;
+  const m = levelMem(D);
+  let at = D.P.sym('object_record_00');
+  while (m[at] !== 0xFF && m[at + 11] !== item) at += 14;
+  const [area, x0, y0, x1, y1] = m.subarray(at, at + 5), mode = m[at + 12], heading = m[at + 13];
+  const drawn = (m[at + 5] | m[at + 6]) !== 0, small = x1 - x0 <= 40 && y1 - y0 <= 40;
+  const px = D.R.area(area, true);
+  let face = heading || 1;
+  if (small) {           // Armakuni in the box, at the frame of the crouch that takes it
+    const mv = lnrMove(m, D.S, 0, 3, face), take = lnrAnim(m, mv.anim).find((x) => x.event === 9 + mode);
+    const F = lnrFrame(m, D.S, take.frame, 0, mv.mirror, (x0 + x1) >> 1, (y0 + y1) >> 1);
+    drawParts(px, 240, 144, F.parts, 0, 0);
+  }
+  paint($('ln-where-cv'), px, 240, 144, 2);
+  const g = $('ln-where-hi').getContext('2d');
+  g.clearRect(0, 0, 480, 288); g.strokeStyle = '#ffd34d'; g.lineWidth = 2;
+  g.strokeRect(2 * x0 - 1, 2 * y0 - 1, 2 * (Math.min(x1, 240) - x0) + 2, 2 * (Math.min(y1, 144) - y0) + 2);
+  const nth = ['first', 'second', 'third'][mode];
+  $('ln-where-out').innerHTML = `<b>${name}</b>: area ${area} of ${LEVELS[li].name}, ` + (drawn ? 'where it lies in sight. ' : 'where nothing shows it. ') +
+    `Armakuni takes it standing in the box (X ${x0} to ${x1 - 1}, Y ${y0} to ${y1 - 1})` + (heading ? `, facing ${HEADINGS[heading]},` : ', facing any way,') +
+    ` on the ${nth} frame of a crouch.` + (item === 4 ? ' It brings nine stars.' : item > 4 ? ' With the other half it makes the nunchakus.' : '');
+}
+function where() {
+  const box = $('ln-where-pick');
+  WHERE.forEach(([, , name], k) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ln-btn'; b.textContent = name; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => { pressed(box, b); whereShow(k).catch((e) => { $('ln-where-out').textContent = 'The listings did not load: ' + e.message; }); };
+    box.appendChild(b);
+  });
+  box.children[1].click();
+}
+
+// ---- 10 the lock
 async function lock() {
   const E = await load('engine'), m = E.ram.slice(), mi = $('ln-lock-m'), s = $('ln-lock-s');
   function show() {
@@ -691,6 +1049,8 @@ if (LIB) {
   $('ln-room-play').onclick = playRoom;
   picker(tl.parentNode, tl, LEVELS.length, titleCard);
   roomLevel(0).then(() => titleCard(0)).catch((e) => { $('ln-room-out').textContent = 'The listings did not load: ' + e.message; });
+  weapons().catch((e) => { $('ln-wpn-out').textContent = 'The listings did not load: ' + e.message; });
+  where();
   sprites().catch((e) => { $('ln-spr-out').textContent = 'The listing did not load: ' + e.message; });
   energy().catch((e) => { $('ln-energy-out').textContent = 'The listings did not load: ' + e.message; });
   lock().catch((e) => { $('ln-lock-out').textContent = 'The listing did not load: ' + e.message; });
