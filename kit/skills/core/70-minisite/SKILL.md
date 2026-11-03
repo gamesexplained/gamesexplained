@@ -293,6 +293,13 @@ its music or its maps can put that first instead.
   same frame. One animation port matched the engine on every script while
   the page ran two enemies that stand still until shot: the test started
   every object running, and their spawn records start them stopped.
+  The page's own state counts the same way: before a widget calls the
+  routine, do what the game's code does before it calls it (a table it
+  builds from the map, squares it clears, a level it finishes), the way
+  the game does it. One blast widget, its routine in lockstep with the
+  game, ran on the map as the tape loads it, and its readout turned a
+  bush into a unit and a square for placing units into an object: the
+  map no player ever plays on.
 - **Draw from the memory the game draws from.** A renderer fed from the
   listing reads the hand-over image, and a game that swaps character
   shapes per area or per level has different glyphs there than in play:

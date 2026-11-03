@@ -198,6 +198,18 @@ for (const lines of [40, 320]) {
   check('a poll by T-states: 30 passes identical', r.ok && r.passes === 30, true);
 }
 
+// 1e. irqRead: the port reads the count through irqByte once, where work reads it after handler B
+// ($8183, LD A,($C005); the processor's pc is past the whole instruction at the read), and takes its
+// first read from its own byte. Only the second of the game's reads counted, the port gets the value
+// after handler B; with both counted, it gets the first, and the byte it stores differs.
+{
+  const second = () => { const P = port(), work = P.work; P.work = function () { work(); P.M[0xC00A] = P.io.irqByte(0xC005); }; return P; };
+  const r = lockstep(second(), { irqBytes: [0xC005], irqRead: cpu => cpu.pc === 0x8186 }).run({ passes: 40, onPass: input });
+  check('irqRead: the read after handler B alone counted, 40 passes identical', r.ok && r.passes === 40, true);
+  const r2 = lockstep(second(), { irqBytes: [0xC005] }).run({ passes: 5, onPass: input, stopOnDiff: false });
+  check('both counted: the port\'s byte the first read\'s', [...new Set(r2.diffs.flatMap(d => d.bytes.map(b => b.address)))].join(), String(0xC00A));
+}
+
 // 2. With the race's byte left out, every pass matches, the border and EAR included, and the keys
 // read back after the border with the port's own EAR; the game is never left inside a handler at a
 // yield; and the machine is given back as it was.
@@ -529,6 +541,21 @@ function portSame(store) {
   check('and the difference says how to write it', r.diffs[0] && r.diffs[0].bytes[0].restored === true && /P\.io\.store/.test(describe(r)), true);
   const s = same(true);
   check('the same write through P.io.store: 20 passes identical', s.ok && s.passes === 20, true);
+}
+
+// 13. A polling loop with one checkpoint and its own work between (a KEY-SCAN until a key, a count
+// kept each turn): the checkpoint named twice running is two turns of the loop, not one place.
+// $8000 DI; LD SP,$FF00; $8004 CALL $8100; LD HL,$C000; INC (HL); JR $8004. $8100 IN A,($FE); RET
+{
+  const ram = new Uint8Array(65536);
+  ram.set([0xF3, 0x31, 0x00, 0xFF, 0xCD, 0x00, 0x81, 0x21, 0x00, 0xC0, 0x34, 0x18, 0xF7], 0x8000);
+  ram.set([0xDB, 0xFE, 0xC9], 0x8100);
+  const m = new Machine({ ram, pc: 0x8000, passAt: 0x8100 });
+  const P = { M: new Uint8Array(65536) };
+  const ls = new Lockstep({ machine: m, port: P, checkpoints: [0x8100], stack: [0xFE00, 0xFEFF],
+    program: Q => (function* () { for (;;) { yield { cp: 0x8100 }; Q.io.in(0xFEFE); Q.M[0xC000] = Q.M[0xC000] + 1 & 255; } })() });
+  const r = ls.run({ passes: 20 });
+  check('a loop of one checkpoint: twenty turns, identical', r.ok && r.passes === 20 && P.M[0xC000] === m.ram[0xC000], true);
 }
 
 process.exit(fails ? 1 : 0);
