@@ -122,7 +122,9 @@ function setRegs(cpu, r) {
 }
 
 class StandInCPU extends CPU {
-  constructor(P) { super(P.M, { io: { in: p => P.io.in(p), out: (p, v) => P.io.out(p, v) } }); this.P = P; }
+  // a write to the ULA carries the T-states the processor has counted, for the check of a sound's
+  // timing (check.js, timed)
+  constructor(P) { let self = null; super(P.M, { io: { in: p => P.io.in(p), out: (p, v) => P.io.out(p, v, self ? self.tstates : NaN) } }); self = this; this.P = P; }
   wr(a, v) { const n = this.resolve(a); this.tstates += 3; if (n >= 0x4000) this.m[n] = v & 0xFF; }
   // a byte the interrupt writes, as the game read it (P.io.irqByte); P.countdown, for a test of a
   // routine that waits on a counter the interrupt runs down
@@ -258,7 +260,7 @@ function install(P) {
     for (const n of [0, 1, 2, 3]) { const a = L.up[n].get(label); if (a !== undefined) P.UP[n][a] = label; }
   }
   // KEY-SCAN, the ROM's
-  if (!ported('key_scan')) { P.standIns.add('key_scan'); P.key_scan = genCall('key_scan', KEY_SCAN); P.GEN.add('key_scan'); }
+  if (!ported('key_scan')) { P.standIns.add('key_scan'); P.key_scan = genCall('key_scan', KEY_SCAN); P.GEN.add('key_scan'); P.CODE[KEY_SCAN] = 'key_scan'; }
   // an entry that is not a label
   P.at = (a, r) => syncCall('$' + a.toString(16), a)(r);
   P.atGen = function* (a, r) { return yield* run('$' + a.toString(16), a, r, false); };

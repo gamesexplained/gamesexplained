@@ -37,7 +37,10 @@ function makePort(M, io, opts = {}) {
   P.N = {};
   // the interrupts on or off (the game's EI and DI), for the page, which runs the interrupt only
   // while they are on
-  P.IFF = true;
+  P.IFF = false;
+  // the interrupt mode: 1 at the hand-over and in the file panels (the ROM's handler, which the game
+  // never lets run), 2 in play (the vector table at $FE00, to $FFFF)
+  P.IM = 1;
   P.NI = {};
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
   P.readR = () => (IO.readR ? IO.readR() : 0);
@@ -67,6 +70,28 @@ function makePort(M, io, opts = {}) {
     if (!name && P.atGen) return yield* P.atGen(a, r || {});
     return P.jump(a, r);
   };
+  // A routine that moves the stack to start again (the file panel, the turn loop, the designer)
+  // throws P.Restart, with the routine to run; P.run runs a routine, and the one each throw names,
+  // for ever, as the page's main program does.
+  P.Restart = class Restart { constructor(to, r) { this.to = to; this.r = r || {}; } };
+  P.restart = (to, r) => { throw new P.Restart(to, r); };
+  P.run = function* (to, r) {
+    for (;;) {
+      try { return yield* P.jumpGen(typeof to === 'number' ? to : P.addressOf(to), r || {}); }
+      catch (e) { if (!(e instanceof P.Restart)) throw e; to = e.to; r = e.r; }
+    }
+  };
+  P.addressOf = name => {
+    for (const [a, n] of Object.entries(P.CODE)) if (n === name) return +a;
+    for (const [a, n] of Object.entries(P.UP[P.part])) if (n === name) return +a;
+    throw new Error('the port has no routine ' + name);
+  };
+  // run a routine that waits as one that cannot: it must not yield
+  P.sync = g => { const y = g.next(); if (!y.done) throw new Error('P.sync: it yielded'); return y.value; };
+  // the T-states of the game's own work in a routine that cannot yield (a delay loop, a sound), for
+  // the page's clock
+  P.T = 0;
+  P.clock = n => { P.T += n; };
   const only = opts.only || null;
   for (const name of Object.keys(G)) if (!only || only.includes(name)) G[name](P);
   if (opts.standIn) opts.standIn(P);

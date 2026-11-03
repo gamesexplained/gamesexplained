@@ -170,7 +170,8 @@ G.draw = function (P) {
         P.draw_block({ a: g, b });
         setw(BLOCK_ATTR, (w(BLOCK_ATTR) - 0x5D) & 0xFFFF);
         let c = (M[0xD0CD] + 1) & 255;
-        if (c === 0x24) { ma = (ma - 0x24) & 0xFFFF; setw(0xD0CE, ma); }
+        // wrapped: the column back to 0 (the XOR before the SBC clears A as well as the carry)
+        if (c === 0x24) { c = 0; ma = (ma - 0x24) & 0xFFFF; setw(0xD0CE, ma); }
         M[0xD0CD] = c;
       }
       // the next row of the map: past the rest of this one (29), or wrapped (65)
@@ -229,7 +230,7 @@ G.draw = function (P) {
 
   // delay_50: 50 x 255 turns of an empty loop, about 167,600 T-states; called only inside the
   // interrupt (flash_menu_bar), so it is time and nothing else. BC kept.
-  def(0x9524, 'delay_50', r => { P.NI.t = (P.NI.t || 0) + 167583; return {}; });
+  def(0x9524, 'delay_50', r => { P.clock(167583); return {}; });
 
   // draw_thing_list: B things from a list of three bytes at HL (thing, row, column), skipping one
   // equal to C (C is 0 after the first).

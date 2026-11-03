@@ -27,10 +27,10 @@ const READS_R = [0xA738], READS_AT = [0xA741, 0xA743, 0xA745, 0xA74D, 0xA74F, 0x
 // human turn's loop at $61E6, then the turn loop from its return ($617F).
 function program(boot) {
   return P => (function* () {
-    if (boot) { P.part = 0; return yield* (P.program ? P.program() : P.atGen(0xE1ED, {})); }
+    if (boot) { P.part = 0; return yield* (P.program ? P.program() : P.run(0xE1ED)); }
     if (P.resume) return yield* P.resume();
-    yield* P.atGen(0x61E6, {});
-    return yield* P.atGen(0x617F, {});
+    yield* P.run(0x61E6);
+    return yield* P.run(0x617F);
   })();
 }
 

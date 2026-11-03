@@ -198,6 +198,13 @@ function check(o) {
         i = Math.max(0, lA.lastIndexOf(' ', i - 1));
         diffs.push('writes from ' + i + ': game [' + lA.slice(i, i + 200) + '] port [' + lB.slice(i, i + 200) + ']');
       }
+      if (o.timed && !diffs.length) {
+        const tA = A.ioObj.times, tB = B.ioObj.times;
+        for (let i = 1; i < tA.length && i < tB.length; i++) {
+          const dA = tA[i] - tA[i - 1], dB = tB[i] - tB[i - 1];
+          if (dA !== dB) { diffs.push('write ' + i + ' of ' + tA.length + ': ' + dA + ' T-states after the one before in the game, ' + dB + ' in the port'); break; }
+        }
+      }
       if (o.tapeOut && JSON.stringify(A.P.io.tape.save_()) !== JSON.stringify(B.P.io.tape.save_())) diffs.push('the tapes differ');
       const rg = standin.regsOf(Object.assign({}, rA));
       const kept = standin.regsOf(Object.assign({}, c.regs));
