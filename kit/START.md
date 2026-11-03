@@ -75,9 +75,13 @@ step needs something only they have.
    have used up a session's allowance in minutes and left runs waiting
    hours for the reset. It still starts the checker `60-verify` gives a
    sample of the listing's comments to, without asking: one agent with a
-   short brief is not a fan-out. A contributor may say, in the message
-   that starts the run, that it may use helpers ("you may use two helper
-   agents"); then the annotation is split as
+   short brief is not a fan-out. The run waits for the checker's verdicts
+   and does nothing else meanwhile, so one agent works at a time: a
+   contributor who asks for one agent at a time, or for no subagents,
+   still has the sample checked. Only one who forbids the checker itself
+   leaves it unchecked and the game at Bronze. A contributor may say, in
+   the message that starts the run, that it may use helpers ("you may
+   use two helper agents"); then the annotation is split as
    `kit/skills/core/50-coverage` says ("Splitting the work across
    subagents"), never across more than four at once. Helpers buy a more
    accurate listing with tokens. In a controlled test on 18 October 2026

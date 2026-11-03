@@ -152,10 +152,14 @@ original worth checking.
   your test rig rather than the game. A running interrupt does not prove
   the game is running: the interrupt can fire, the screen can be drawn and
   every read can look sensible while the main loop has not advanced once.
-- A loaded snapshot **starts running immediately**. If you want the state
-  you saved, stop the machine in the same breath as the load; otherwise the
-  screen you compare against has already moved on and every check fails for
-  the wrong reason.
+- **Ask the emulator whether a loaded snapshot is running.** Some leave
+  every load stopped; others keep the machine as it was, so a load on a
+  running machine runs on at once and one on a stopped machine stays
+  stopped. The platform's tool notes say which. A load that runs moves on
+  from the state you saved: stop it in the same breath as the load, or
+  the screen you compare against has changed and every check fails for
+  the wrong reason. One that stays stopped ignores the joystick and its
+  clock stands still until you resume it, which looks like a dead game.
 - Save snapshots **without** ROMs. The offsets in the platform reference
   assume it, the file is smaller, and a game that banks the ROMs out does
   not need them.

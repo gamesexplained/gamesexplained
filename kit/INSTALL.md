@@ -182,11 +182,12 @@ Fight run started it with `--headless=new` and a profile of its own under
 over CDP for keys and the console, and saw every widget draw. Whether that
 Chrome wrote outside `tools/` was not checked.
 
-On Windows 11 with the kit under WSL2, where WSL had no browser, the
-Microsoft Edge that Windows ships did the page check on 12 October 2026
-without installing anything: the site served from WSL with
+On Windows 11 with the kit under WSL2, where WSL had no browser, a
+browser on the Windows host does the page check without installing
+anything. Serve the site from WSL with
 `python3 -m http.server -d _site <port>`, which Windows reaches as
-`http://localhost:<port>/`, and `msedge.exe --headless=new --disable-gpu
+`http://localhost:<port>/`. The Microsoft Edge that Windows ships did it
+on 12 October 2026, with `msedge.exe --headless=new --disable-gpu
 --no-first-run --user-data-dir=<a new folder in the session's temporary
 space> --window-size=1100,7200 --virtual-time-budget=8000
 --enable-logging=stderr --screenshot=<file.png> <url>` run from Windows.
@@ -194,7 +195,14 @@ The page's console messages come out on stderr as `CONSOLE` lines among
 Edge's own. A screenshot of a URL with a `#fragment` came out blank, so
 take the whole page in one tall window and crop it. Edge was not driven
 (no clicks); the profile went to the folder given, and whether Edge wrote
-anywhere else was not checked.
+anywhere else was not checked. Google Chrome on the Windows host did the
+same on 1 November 2026, in The Detective's run:
+`chrome.exe --headless=new --virtual-time-budget=15000 --dump-dom <url>`
+prints the page as its scripts left it, so a widget that never filled in
+shows as its empty element, and `--screenshot=<file.png> <url>` shows
+what drew. Neither way presses a button or plays a sound, so a control
+or a player is checked only in a browser the kit drives over CDP, as
+above.
 
 The launcher uses `pkill` to stop the process whose command names this
 clone's exact profile. The recorded host test is Linux; verify containment

@@ -21,7 +21,8 @@
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
-//                      held) }
+//                      held), reads: the game's reads of the keyboard's first half-row, once a
+//                      look at the keys }
 //   rt.onBeep(f)       f(value, T-state) for each change of the beeper (bit 4 of the byte written
 //                      to port $FE)
 //   rt.missing         the stretches met that the cost model has no figure for, 'from>to' in hex
@@ -67,7 +68,7 @@ const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, '
 function create(o) {
   const D = root.DRPort;
   const M = new Uint8Array(0x10000);
-  const input = { keys: new Set(), joy: 0 }, beepers = [];
+  const input = { keys: new Set(), joy: 0, reads: 0 }, beepers = [];
   let border = 7, ear = 0;
 
   // ---- the clock, and the frames as the beam shows them
@@ -95,6 +96,7 @@ function create(o) {
       if ((port & 0x20) === 0 && (port & 1)) return input.joy & 0x1F;
       if (port & 1) return 0xFF;
       const high = port >> 8;
+      if (high === 0xFE) input.reads++;             // read_keys begins its scan with this half-row
       let v = 0x1F;
       for (const name of input.keys) {
         const k = KEY[name];

@@ -6,7 +6,8 @@
 // In each language:
 // - the title, the language, the character and Space reach the first view of the Wilderness, as
 //   the C64 does in about nine seconds (port/test/t-page.js times it against the game);
-// - a walk and a turn move the player and turn the view;
+// - a walk and a turn move the player and turn the view, and so does a tap held as the page holds
+//   a key tapped in its list: until the game has looked at the controls since (rt.input.reads);
 // - the information screen saves under a typed name, the browser's file has the game's layout
 //   (the marker $EA, 106 bytes of state, a byte for each object), and after a walk a load of the
 //   name puts the position back; a name with no file loads nothing and the game goes on.
@@ -64,6 +65,16 @@ for (const lang of ['1', '2', '3']) {
   run(100, ['UP']); run(30); run(40, ['X']); run(30);
   const p1 = position(rt.M);
   if (p0.join() === p1.join()) fail(what + ': walking and turning left the position at ' + p0);
+  // a tap while the game draws a turn, its next look at the controls a pass away: held, as the
+  // page holds a key tapped in its list, until the game has read the controls since it went down
+  let r0 = rt.input.reads, n = 0;
+  while (rt.input.reads === r0 && n < 400 && !threw) { run(1, ['X']); n++; }
+  const p1t = position(rt.M);
+  r0 = rt.input.reads;
+  let held = 0;
+  while ((rt.input.reads <= r0 || held < 3) && held < 400 && !threw) { run(1, ['UP']); held++; }
+  run(120);
+  if (held <= 3 || position(rt.M).join() === p1t.join()) fail(what + ': a tap of the walk held ' + held + ' frames, until the game read the controls, left the position at ' + p1t);
   // save to disk under a name, walk on, load it back
   info(); tap('S', 3, 40); tap('D', 3, 40);
   for (const c of 'TOWER') tap(c, 3, 12);

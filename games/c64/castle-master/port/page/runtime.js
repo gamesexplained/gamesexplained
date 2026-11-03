@@ -24,7 +24,8 @@
 //   rt.now()           the screen as memory and the chips stand now, for C64.renderFrame
 //   rt.ticks           how many times timer A has counted down
 //   rt.shown           that frame's number: the clock can be ahead of it (below)
-//   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
+//   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low,
+//                      reads: the game's reads of port 2, once a look at the controls }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
 //   rt.restore(state, entry)   a machine saved by the tests (kit/c64/machine.js's save()), and the
@@ -87,7 +88,9 @@ function create(o) {
   // CIA 1's timer A, the only timer the game counts on
   const ta = { lat: 0xFFFF, cnt: 0xFFFF, cr: 0, mask: 0, icr: 0 };
   const bus = root.C64Sid ? root.C64Sid.engine().createBus('8580') : null;
-  const input = { keys: new Set(), joy: 0x1F, joy1: 0x1F };
+  // reads: how many times the game has read the joystick's port ($DC00), once a look at the
+  // controls (READ_CONTROL_INPUT), so that the page can hold a key tapped until the game has seen it
+  const input = { keys: new Set(), joy: 0x1F, joy1: 0x1F, reads: 0 };
 
   // ---- the clock, and the frames as the beam draws them
   let t = 0, lastLine = -1, ciaAt = 0, irqsOn = false, ticks = 0;
@@ -137,7 +140,7 @@ function create(o) {
     if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800] | 0xF0;
     if (a >= 0xDC00 && a < 0xDD00) {
       const r = a & 15;
-      if (r === 0) return (ddra ? (pra | ~ddra) & 0xFF : 0xE0 | input.joy) & (0xE0 | input.joy);
+      if (r === 0) { input.reads++; return (ddra ? (pra | ~ddra) & 0xFF : 0xE0 | input.joy) & (0xE0 | input.joy); }
       if (r === 1) {
         let v = 0xFF;
         const rows = ddra ? pra & ddra : 0xFF;

@@ -71,8 +71,11 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(r2000._port(str(street)), 3009)
 
     def test_snapshot_conversion_preserves_ram_and_previous_project(self):
-        with tempfile.TemporaryDirectory() as folder:
-            snapshot = Path(folder) / "entry.vsf"
+        with tempfile.TemporaryDirectory() as real, tempfile.TemporaryDirectory() as links:
+            # Reached through a link, as macOS's temporary folder is.
+            folder = Path(links) / "tmp"
+            folder.symlink_to(real, target_is_directory=True)
+            snapshot = folder / "entry.vsf"
             ram = bytes(range(256)) * 256
             header = b"VICE Snapshot File\x1a" + b"\0\0" + b"C64".ljust(16, b"\0")
             module = b"C64MEM".ljust(16, b"\0") + b"\0\1" + (26 + len(ram)).to_bytes(4, "little")
