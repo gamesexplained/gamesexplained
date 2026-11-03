@@ -43,11 +43,12 @@ function run(o = {}) {
   m.tape = new lib.Tape(blocks);
   // the refresh register, as both read it; each side's reads counted, so a side that reads it
   // once too often is named at the pass it does, before the numbers it draws differ
-  const rA = lib.makeRnd(o.rseed || 11), rB = lib.makeRnd(o.rseed || 11);
-  const reads = { game: 0, port: 0 };
-  const readreg = m.cpu.readreg.bind(m.cpu);
-  m.cpu.readreg = what => (what === 'R' ? (reads.game++, rA(128)) : readreg(what));
-  const P = LS.makePort(new Uint8Array(65536), { tape: new lib.Tape(blocks), r: () => (reads.port++, rB(128)) });
+  // (the machine's copies, which the lockstep runs on ahead for the stack's bytes, read on from
+  // the game's place in the sequence)
+  const seq = lib.makeSeq(o.rseed || 11);
+  m.useR(seq);
+  const reads = { get game() { return m.rAt; }, port: 0 };
+  const P = LS.makePort(new Uint8Array(65536), { tape: new lib.Tape(blocks), r: () => seq(reads.port++) });
   standin.install(P);
   if (o.onPort) o.onPort(P, m);
   bot.attach(m, o.seed || 1, { hooks: false, key: keys(o), hunt: o.hunt });

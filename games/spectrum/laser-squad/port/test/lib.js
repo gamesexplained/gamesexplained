@@ -90,10 +90,20 @@ class LSMachine extends Machine {
     if (pc < 0x4000 && !this.hooks[pc] && !this.cpu.halted) throw new Error('LSMachine: the program counter reached the ROM at ' + hex(pc));
     return super.step();
   }
-  save() { return Object.assign(super.save(), { joy: this.joy }); }
+  // The refresh register read from a made-up sequence (makeSeq), the reads counted in rAt; a
+  // copy of the machine (save, restore) reads on from the same place, as the lockstep's copy run on
+  // ahead must (kit/spectrum/lockstep.js, irqBytes).
+  useR(seq, at = 0) {
+    const readreg = this.cpu.readreg.bind(this.cpu);
+    this.rsrc = seq; this.rAt = at;
+    this.cpu.readreg = what => (what === 'R' ? seq(this.rAt++) : readreg(what));
+    return this;
+  }
+  save() { return Object.assign(super.save(), { joy: this.joy, rAt: this.rAt, rsrc: this.rsrc }); }
   static restore(s, o = {}) {
     const m = super.restore(s, Object.assign({ rom: ZERO_ROM.slice() }, o));
     m.joy = s.joy || 0;
+    if (typeof s.rsrc === 'function') m.useR(s.rsrc, s.rAt);
     return m;
   }
 }
@@ -136,6 +146,11 @@ function makeRnd(seed) {
   let s = seed >>> 0 || 1;
   return n => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; const x = s / 4294967296; return n === undefined ? x : Math.floor(x * n); };
 }
+// The same numbers from 0 to 127 by their place in the sequence: seq(i), for any number of readers.
+function makeSeq(seed) {
+  const rnd = makeRnd(seed), v = [];
+  return i => { while (v.length <= i) v.push(rnd(128)); return v[i]; };
+}
 
 module.exports = { GAME, ROOT, STATES, KEY, JOY, LSMachine, Machine, Tape, tapeBlocks, keyScan, keyScanOn, romTapeOn, fromSna, states, readState, writeState,
-  restore, hex, makeRnd, ZERO_ROM };
+  restore, hex, makeRnd, makeSeq, ZERO_ROM };
