@@ -122,9 +122,14 @@ audit of some of the comments says how many of how many, and a second
 model is a row of its own.
 
 Start the sample check without asking: one checker is not a fan-out
-(`kit/START.md`), and by this step the run is meant to be unattended. An
-audit, in a run asked for one, gives its ranges to fresh checkers one at
-a time, unless whoever asked for it allowed several at once.
+(`kit/START.md`), and by this step the run is meant to be unattended.
+Run each checker alone and wait for its verdicts before going on, so
+that one agent works at a time: that keeps to a contributor's "one agent
+at a time" or "no subagents", and their sample is checked too. Only a
+contributor who forbids the checker itself leaves it unchecked, as
+below. An audit, in a run asked for one, gives its ranges to fresh
+checkers one at a time, unless whoever asked for it allowed several at
+once.
 
 Any proven model may check (`models.py`), but a checker finds only what
 its model can see: on the weakest model tried, a listing with 10 % of
@@ -177,8 +182,9 @@ in the decoder too, or its next run puts the errors back.
 
 If the checking agent cannot run (its provider is out of credit, say:
 `50-coverage`, "Splitting the work across subagents"), run it on another
-proven model, or through another provider. If none can run it, the
-listing is unmeasured, and that is a gap, not a pass: draw the sample
+proven model, or through another provider. If none can run it, or the
+contributor forbade the checker, the listing is unmeasured, and that is
+a gap, not a pass: draw the sample
 anyway, write in `facts.md`, where the error rate would go, the seed and
 the size and that the sample is not checked yet, say so in the pull
 request, and leave `tier` where it was before this step.
