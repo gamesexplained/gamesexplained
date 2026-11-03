@@ -1,4 +1,4 @@
-## next · 2026-11-03 · Lords of Chaos (ZX Spectrum) · air with Claude
+## 0.0.304 · 2026-11-03 · Lords of Chaos (ZX Spectrum) · air with Claude
 
 - **Trace a routine's callers before saying what sets it off.** The
   scenarios' trip squares were annotated as releasing their waiting
