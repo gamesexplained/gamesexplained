@@ -70,3 +70,42 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   within every flip; only the first click after a flip, in 52 flips,
   came 4 cycles apart, and the flips came later on the IIe, which waits
   for the vertical blank (`work/verify/demo_sound_live.py`).
+
+## 3 November 2026, the Graphics tab
+
+- Aaron asked for a Graphics tab on the agent-made minisites. Its
+  pictures are all drawn by the game's own routines on the kit's 6502:
+  the fighters by `command`, `animate` and `draw_figure`, each picture
+  alone by a stage's shape routine at $1903.
+- The engine has no shape routine of its own: $1903 is in each stage's
+  load, so a picture of the engine's drawn on the engine alone ran into
+  zeros. The engine's pictures are drawn on the cliff's load, which
+  leaves $6000-$9FFF alone.
+- Mariko's pictures are each load's own, from $1530: the title's and
+  the cliff's are the same bytes, the palace's and the dungeon's the
+  same, and the last stage's a third set. The engine's tables ($7E3F)
+  point into whichever is loaded, so in the title some entries point at
+  bytes that are not pictures. The page shows each picture by its label
+  instead, once.
+- Akuma never stands or bows: started from the standing pose, his own
+  routine drew garbage, so his moves start from the stance.
+- A kick or a punch asked for in the middle of a step is refused, so the
+  page waits up to 12 frames for the stance and no move under way
+  before each command.
+- The first piece-by-piece picture drew a fighter over the floor's
+  pattern on the whole page. ORed onto those dots, Akuma's orange came
+  out white and blue. The stages draw a fighter in three calls: the band
+  he stands in ($6780 or $678C: rows 114-152 black, 153-163 the floor),
+  his feet mask ($6786 or $6789), then `draw_figure` ($6783), as the
+  stages' loops call them (the cliff's at $B457-$B475 and $B9AC-$BA69).
+  The page now runs those three.
+- The first cast drew the hero with blue trim and Akuma blue, where the
+  reference screenshots have them orange. A lone dot's colour follows the
+  evenness of its dot across the screen, so a fighter's colours follow
+  his column plus the scene's dot offset ($50). Drawn at each evenness,
+  the hero's stance pictures are orange at an odd sum and his standing
+  ones at an even one, a guard's the other way, which matches $6717's
+  rule for the falling pictures (odd for the hero, even for anyone
+  else). The cast now uses $50 = 0, as the stages' set-up leaves it, the
+  hero at column 10 standing, a guard at 31, Akuma at 30, Mariko at 11
+  and the hawk at 19, which gives the screenshots' colours.

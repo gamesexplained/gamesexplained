@@ -1,0 +1,479 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mr Puniverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.pu-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.pu-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.pu-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:14px}
+.pu-bar button,.pu-table button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;touch-action:manipulation;user-select:none;white-space:nowrap}
+.pu-bar button:hover,.pu-table button:hover{border-color:var(--ink-mute)}
+.pu-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pu-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
+.pu-screen{width:100%;max-width:640px;display:block;image-rendering:pixelated;background:#000;margin:0 auto;border-radius:4px}
+.pu-wrapf{position:relative;max-width:640px;margin:0 auto}
+.pu-mark{position:absolute;pointer-events:none}
+.pu-line{left:0;right:0;border-top:2px dashed #ffd23f}
+.pu-line span{position:absolute;right:4px;top:2px;font-family:var(--fm);font-size:11px;color:#ffd23f;background:rgba(0,0,0,.65);padding:0 4px;border-radius:3px}
+.pu-box{border:2px solid #ffd23f;border-radius:2px}
+.pu-exit{border:2px solid #4ad1ff}
+.pu-state{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.5em}
+.pu-small{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.pu-small canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block}
+.pu-small figure{margin:0;text-align:center;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
+.pu-small figure.on canvas{outline:3px solid #ffd23f;outline-offset:2px}
+.pu-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
+.pu-table th,.pu-table td{border-bottom:1px solid var(--line-soft);padding:4px 7px;text-align:left;vertical-align:top}
+.pu-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.pu-table td.n,.pu-table th.n{text-align:right}
+.pu-table tr.now td,.pu-table td.now{background:var(--hl)}
+.pu-table canvas{image-rendering:pixelated;display:block;border-radius:2px}
+.pu-scroll{overflow-x:auto}
+.pu-strip{display:block;image-rendering:pixelated;background:#000;border-radius:3px;max-width:100%}
+.pu-tune{border-collapse:collapse;font-family:var(--fm);font-size:11.5px;margin:12px 0 0}
+.pu-tune td{border:1px solid var(--line-soft);padding:1px 3px;text-align:center;min-width:2.1em;line-height:1.25}
+.pu-tune td.drum{background:#f3efe4}
+.pu-tune td.now{background:#ffd23f}
+.pu-tune td.lab{border:none;color:var(--ink-mute);text-align:right;padding-right:6px}
+.pu-need{font-size:14px;color:var(--coral)}
+.pu-side{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+.pu-bytes{font-family:var(--fm);font-size:12.5px;word-break:break-all}
+.pu-bytes span{padding:0 1px;border-radius:2px}
+@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pu-pair,.pu-side{grid-template-columns:1fr}}
+.pu-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px 16px;align-items:end}
+.pu-cast figure{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.pu-cast canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
+.pu-cast figure.wide{grid-column:1/-1}
+.pu-cast b{color:var(--ink);font-weight:700}
+.pu-set{display:block;image-rendering:pixelated;background:#000;border-radius:4px;max-width:100%;cursor:crosshair;margin:0 auto}
+@media (max-width:720px){.pu-cast{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Mastertronic</p>
+  <h1>Mr Puniverse</h1>
+  <p class="sub">The C16 has no sprites, so every shape that moves is one of the game's 256 characters. The game moves them by rewriting a character's picture, or by writing a different character into the cell. Here is each of them, from the listing's bytes, moved by the game's own routines.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every moving shape, at the speed of the main loop</h2>
+  <p class="lede">Each picture below is drawn from the character set at <code>$3800</code>, in the colours a room gives it, and moves at 20 passes of the main loop a second, about as fast as the game runs it.</p>
+  <div class="plate">
+    <div class="pu-bar">
+      <button type="button" id="gx-run" class="on">Pause</button>
+      <button type="button" id="gx-step">One pass</button>
+      <span class="pu-state" id="gx-state" style="margin:0"></span>
+    </div>
+    <div class="pu-cast" id="gx-cast"></div>
+    <p class="cap">The spinning head, the conveyor belt, the force field, the lift and the vitamin are the game's <code>animate_chars</code> (<code>$1D13</code>) and <code>rotate_vitamin_chars</code> (<code>$2844</code>), run on the kit's 6502 over the listing's memory once a pass. They rewrite the characters' pictures, and the page draws whatever those routines leave there. Mr Puniverse is the game's <code>copy_under_glyphs</code> and <code>merge_player</code> on the same 6502, a pose a pass and a column every four. The crusher's head takes the stages <code>update_crusher</code> (<code>$2F63</code>) gives it, a stage a pass, and the crumbling floor the ones <code>crumble_step</code> (<code>$23A5</code>) gives it, a stage for each pass he stands on it. Each takes the colour of the first cell holding it in rooms 0 to 24. No room has a lift or a bridge, so the lift is drawn in the conveyor's colours.</p>
+  </div>
+  <p>Two kinds of animation run here. Some characters stay in place on the screen while the game rewrites their pictures. The vitamin's four frames, <code>$D7</code> to <code>$DA</code>, swap pictures on every pass, so the vitamin turns wherever it is. Every third pass <code>animate_chars</code> does one of three jobs: it spins the random cannon's head, rolls the conveyor belt a pixel left, or scrolls the lift and the force field up a line. One rewritten picture changes every cell that shows that character, all over the room.</p>
+  <p>Everything else moves by putting a different character in a cell. A cannon's shot is one character, <code>$C5</code>, rubbed out and written again a cell further on, in the cannon's colour. A crusher's head has four pictures for its four heights in a cell, <code>$CD</code> to <code>$D0</code> beside <code>$D2</code> to <code>$D5</code>, and leaves its shaft, <code>$CC</code> beside <code>$D1</code>, behind it as it comes down. The crumbling floor goes through eight pairs of characters, two cells wide, and is gone after the eighth.</p>
+  <p>Mr Puniverse is the exception. His eight poses are not characters at all, and the game draws him afresh on every pass into six characters of his own (<a href="#him">Mr Puniverse</a>).</p>
+</section>
+
+<section id="objects">
+  <p class="fig">02 · The objects</p>
+  <h2 class="t">A room's objects, run by the game's own routines</h2>
+  <p class="lede">The C16's screen is a grid of characters, small square pictures picked from a set of 256. The C16 has no sprites, the moving pictures that other machines' hardware draws over the screen, so everything that moves is drawn into the grid as characters. Pick a room and watch its objects run.</p>
+  <div class="plate">
+    <div class="pu-bar">
+      <div class="pick"><a class="step" id="pu-oprev" aria-label="Previous room">‹</a><select id="pu-oroom" aria-label="Room"></select><a class="step" id="pu-onext" aria-label="Next room">›</a></div>
+      <button type="button" id="pu-orun" class="on">Pause</button>
+      <button type="button" id="pu-ostep">One pass</button>
+    </div>
+    <canvas id="pu-objects" class="pu-screen" width="640" height="400" aria-label="The room chosen, its objects moving."></canvas>
+    <p class="pu-state" id="pu-ostate"></p>
+    <p class="cap">The room is drawn by the game's <code>draw_room</code>. Then three routines of <code>main_loop</code>, the loop the game runs over and over in play, move everything except him: <code>animate_chars</code>, <code>rotate_vitamin_chars</code> and <code>update_objects</code>. They run on the page's 6502 twenty times a second, about as often as the game runs its main loop. A random cannon picks which way to fire from bit 0 of <code>$FF1F</code>, one of TED's registers, which gives the line of the character row that TED is drawing. Here the page picks it at random.</p>
+  </div>
+  <p>What each kind of object does, and how a room's record makes it, is on the <a href="index.html#objects">How it works</a> tab.</p>
+</section>
+
+<section id="him">
+  <p class="fig">03 · Mr Puniverse</p>
+  <h2 class="t">Mr Puniverse is six characters, redrawn on every pass</h2>
+  <p class="lede">He moves a pixel at a time inside a block two characters wide and three high. The six characters of the block are used for nothing else. The game draws him into them, over a copy of whatever scenery is behind him.</p>
+  <div class="plate">
+    <div class="pu-small" id="pu-frames"></div>
+    <div class="pu-bar" style="margin-top:16px">
+      <label>Height in the block <input type="range" id="pu-hy" min="0" max="8" value="6" style="width:150px"></label>
+      <label>Behind him <select id="pu-hbg"></select></label>
+    </div>
+    <div class="pu-side">
+      <canvas id="pu-block" class="pu-strip" width="128" height="192" aria-label="His block, the six characters as merge_player draws them, eight times their size."></canvas>
+      <div>
+        <p class="pu-state" id="pu-hstate" style="margin-top:0"></p>
+        <p class="cap">His eight poses are <code>player_frames</code> (<code>$3A68</code>), 32 bytes each. The block is the game's <code>copy_under_glyphs</code> and <code>merge_player</code> run on the kit's 6502, with the scenery chosen in <code>under_player</code> (<code>$0333</code>-<code>$0338</code>), then drawn as <code>draw_player</code> puts characters <code>$78</code>-<code>$7D</code> on the screen, in room 0's colours.</p>
+      </div>
+    </div>
+  </div>
+  <p>The block's place is kept as a screen address, where in the screen's memory the block starts, in two bytes at <code>$3F</code> and <code>$40</code>. Inside the block, <code>player_x</code> (<code>$41</code>) picks one of his eight poses. Four face right and four face left, and each is a multicolour pixel further across than the one before. Walking right, he steps through the four poses, one each pass. After the fourth, the block moves a column and the poses start again. The block is 24 lines high, and <code>player_y</code> (<code>$42</code>) is the line where the figure's 16 lines begin. A fall or a jump moves him two lines a pass, and after four passes the block moves a row.</p>
+  <p>The game keeps the six characters behind the block in <code>under_player</code>. Each pass, <code>copy_under_glyphs</code> copies their pictures into a buffer, a scratch area of two columns of 24 lines at <code>$3FD0</code>. <code>merge_player</code> draws his pose over them a pixel at a time. Where the pose has a pixel of 0, the scenery shows through. <code>merge_player</code> then copies the result into characters <code>$78</code> to <code>$7D</code>. The block's cells keep the colours the room gave them, so Mr Puniverse takes the colour of whatever he stands in front of.</p>
+</section>
+
+<section id="charset">
+  <p class="fig">04 · The character set</p>
+  <h2 class="t">One set of 256 characters draws the rooms, the panel and everything that moves</h2>
+  <p class="lede">The screen is TED's multicolour text mode: 40 columns and 25 rows of characters, every one from this set. Point at a character to see what it is.</p>
+  <div class="plate">
+    <canvas id="gx-set" class="pu-set" width="512" height="512" aria-label="The game's 256 characters, sixteen to a row, the animated ones moving."></canvas>
+    <p class="pu-state" id="gx-setstate">Point at a character.</p>
+    <p class="cap">The set at <code>$3800</code>-<code>$3FFF</code> as the listing has it, sixteen characters to a row from <code>$00</code> at the top left, each in the colour of the first cell that shows it in rooms 0 to 24, or else on the panel. His poses are in his colour, and a character nothing shows is plain white. It moves with the cast above: the characters the game animates are the same ones here.</p>
+  </div>
+  <p>A character is eight bytes, one for each of its rows. How TED turns them into pixels is below (<a href="#frame">One frame</a>). Characters <code>$00</code> to <code>$4C</code> are the panel's letters and digits, <code>$4D</code> to <code>$6C</code> hold his poses instead, <code>$78</code> to <code>$7D</code> are his six, and <code>$7E</code> to <code>$DA</code> build the rooms and everything in them. The last 48 bytes, where <code>$FA</code> to <code>$FF</code> would be, are <code>merge_player</code>'s buffer, so those characters change every pass.</p>
+</section>
+
+<section id="frame">
+  <p class="fig">05 · One frame, rebuilt from memory</p>
+  <h2 class="t">The colours change under the room, every frame</h2>
+  <p class="lede">The room and the panel below it each have three colours of their own, shared by the whole area. Twice a frame, the game's raster interrupt switches TED's colour registers from one set to the other. A raster interrupt stops the program when TED's beam reaches a chosen line of the picture, and runs a short routine.</p>
+  <div class="plate">
+    <div class="pu-bar">
+      <label><input type="checkbox" id="pu-fline" checked> Mark the change</label>
+      <label><input type="checkbox" id="pu-fone"> Draw with one set of colours</label>
+      <label><input type="checkbox" id="pu-fblock"> His block</label>
+      <label><input type="checkbox" id="pu-fexits"> The exits</label>
+    </div>
+    <div class="pu-wrapf"><canvas id="pu-frame" class="pu-screen" width="640" height="400"></canvas><div id="pu-fmarks"></div></div>
+    <p class="cap" id="pu-fcap">Room 0 at the first pass of a game started with F1, drawn from memory by the site's TED renderer: the screen at <code>$0C00</code>, its colours at <code>$0800</code> and the character set at <code>$3800</code>, all as the game's <code>start_turn</code> leaves them, run on the kit's 6502. The screen's lines 0 to 143 take the room's three colours (<code>$0339</code>-<code>$033B</code>) and lines 144 to 199, from the top of row 18, the panel's. Against plus4emu's picture of the same moment, <b>0 of the 64,000 pixels</b> differ; drawn with one set of colours, 38,408 do.</p>
+  </div>
+  <p>The screen uses TED's multicolour text mode. It has 40 columns and 25 rows of characters, picked from a set of 256 at <code>$3800</code>. The game brings that set with it and points TED at it (<code>setup_machine</code>). In a multicolour character, each byte of the picture is a row four pixels across, two bits to a pixel. A cell is multicolour when its colour byte has bit 3 set. A pixel's two bits make one of four values. One value picks the cell's own colour, from the colour memory at <code>$0800</code>. The other three pick from three colours that the whole screen shares, held in TED's registers <code>$FF15</code> to <code>$FF17</code>.</p>
+  <p>The play area is rows 0 to 17, and the panel is rows 19 to 24. Every room's record gives black, a grey and a dark red for its three shared colours (<code>$00</code>, <code>$31</code> and <code>$32</code>). The panel uses dark blue, a light yellow and black (<code>$06</code>, <code>$77</code> and <code>$F0</code>). <code>irq</code>, the game's interrupt routine, sets the raster interrupt for TED's line 146. That is line 142 of the screen, since TED counts its lines from four lines above the screen's top. At line 146, <code>irq</code> writes the panel's colours. They take hold two lines later, at the top of row 18, the blank row between the room and the panel. Then <code>irq</code> sets the next interrupt for line 250, below the screen. There it writes the room's colours, ready for the top of the next frame.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/puni.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C16 === 'undefined' || typeof C64Cpu === 'undefined' || typeof Puni === 'undefined') {
+    for (const id of ['gx-cast', 'pu-objects', 'pu-frames', 'gx-set', 'pu-frame']) {
+      const el = $(id), p = document.createElement('p'); p.className = 'pu-need';
+      p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js): open the page from the built site.';
+      el.replaceWith(p);
+    }
+    return;
+  }
+  const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const PASS = 1000 / 20;                                   // 20 passes of the main loop a second
+  const R = { animateChars: 0x1D13, rotateVitamin: 0x2844, copyUnder: 0x1E1E, merge: 0x1E48 };
+  const BLANK = 0xD6;
+  function pick(prev, sel, next, n, label, on) {
+    for (let i = 0; i < n; i++) { const o = document.createElement('option'); o.value = i; o.textContent = label(i); sel.appendChild(o); }
+    const go = i => { i = Math.max(0, Math.min(n - 1, i)); sel.value = i; prev.classList.toggle('off', i === 0); next.classList.toggle('off', i === n - 1); on(i); };
+    prev.onclick = () => go(+sel.value - 1); next.onclick = () => go(+sel.value + 1); sel.onchange = () => go(+sel.value);
+    return go;
+  }
+  const crop = (pic, x, y, w, h) => {
+    const px = new Uint8Array(w * h);
+    for (let j = 0; j < h; j++) px.set(pic.px.subarray((y + j) * pic.w + x, (y + j) * pic.w + x + w), j * w);
+    return { w, h, px };
+  };
+  // cells drawn on a copy of m: put(col, row) gives [character, colour] for each cell of a w by h
+  // block at the screen's top left, in the room's colours
+  function cells(m, w, h, put) {
+    const s = m.slice();
+    s.fill(BLANK, 0x0C00, 0x0FE8); s.fill(0, 0x0800, 0x0BE8);
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      const v = put(c, r);
+      if (v) { s[0x0C00 + r * 40 + c] = v[0]; s[0x0800 + r * 40 + c] = v[1]; }
+    }
+    return crop(Puni.picture(s), 0, 0, w * 8, h * 8);
+  }
+
+  const roomName = r => `Room ${r} (row ${r / 5 | 0}, column ${r % 5})`;
+
+  C16.load('listing.json').then(L => {
+    const base = Puni.fresh(L);
+    const first = Puni.start(base.slice());
+    const records = Array.from({ length: 25 }, (_, r) => Puni.record(L.ram, r));
+
+    /* A room's objects, running */
+    (function () {
+      const cv = $('pu-objects'), out = $('pu-ostate');
+      let run, room = 0, running = true, acc = 0, last = 0;
+      let seed = 1;
+      const rnd = () => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed & 7; };
+      function start(r) { room = r; run = Puni.Room(Puni.room(base.slice(), r), rnd); draw(); }
+      function draw() {
+        Puni.draw(cv, crop(Puni.picture(run.m), 0, 0, 320, 144), 2);
+        const o = records[room];
+        const kinds = {};
+        for (const ob of o.objects) kinds[ob.name] = (kinds[ob.name] || 0) + 1;
+        const list = Object.entries(kinds).map(([n, k]) => `${k} ${n}${k > 1 ? (n === 'switch' ? 'es' : n === 'scenery' ? '' : 's') : ''}`).join(', ');
+        out.textContent = `Pass ${run.passes} · ${list || 'no objects'}`;
+      }
+      function loop(t) {
+        if (running) {
+          acc += Math.min(200, t - (last || t));
+          let n = 0;
+          while (acc >= PASS && n++ < 4) { run.pass(); acc -= PASS; }
+          if (n) draw();
+        }
+        last = t; requestAnimationFrame(loop);
+      }
+      pick($('pu-oprev'), $('pu-oroom'), $('pu-onext'), 25, roomName, start)(14);
+      $('pu-orun').onclick = e => { running = !running; e.target.textContent = running ? 'Pause' : 'Run'; e.target.classList.toggle('on', running); };
+      $('pu-ostep').onclick = () => { run.pass(); draw(); };
+      requestAnimationFrame(loop);
+    })();
+
+    /* One frame, rebuilt from memory */
+    (function () {
+      const cv = $('pu-frame'), marks = $('pu-fmarks');
+      const block = first[0x3F] | first[0x40] << 8;
+      const mark = (cls, x, y, w, h, label) => {
+        const d = document.createElement('div'); d.className = 'pu-mark ' + cls;
+        Object.assign(d.style, { left: x / 320 * 100 + '%', top: y / 200 * 100 + '%', width: w / 320 * 100 + '%', height: h / 200 * 100 + '%' });
+        if (label) { const s = document.createElement('span'); s.textContent = label; d.appendChild(s); }
+        marks.appendChild(d);
+      };
+      function draw() {
+        Puni.draw(cv, Puni.picture(first, { one: $('pu-fone').checked }), 2);
+        marks.innerHTML = '';
+        if ($('pu-fline').checked && !$('pu-fone').checked) mark('pu-line', 0, Puni.SPLIT, 320, 0, 'row 18: the panel\'s colours');
+        if ($('pu-fblock').checked) { const a = block - 0x0C00; mark('pu-box', a % 40 * 8, (a / 40 | 0) * 8, 16, 24); }
+        if ($('pu-fexits').checked) for (let a = 0; a < 720; a++) if (first[0x0C00 + a] >= 0xC1 && first[0x0C00 + a] <= 0xC4) mark('pu-exit', a % 40 * 8, (a / 40 | 0) * 8, 8, 8);
+      }
+      for (const id of ['pu-fline', 'pu-fone', 'pu-fblock', 'pu-fexits']) $(id).addEventListener('input', draw);
+      draw();
+    })();
+
+    /* Mr Puniverse */
+    (function () {
+      const box = $('pu-frames'), cv = $('pu-block'), out = $('pu-hstate'), hy = $('pu-hy'), bg = $('pu-hbg');
+      const m = first.slice(), c = Puni.cpuFor(m);
+      const colour = m[0x0800 + (first[0x3F] | first[0x40] << 8) - 0x0C00];
+      // what stands behind him: the six cells of under_player, left column then right, top to bottom
+      const BEHIND = [['nothing', [0xD6, 0xD6, 0xD6, 0xD6, 0xD6, 0xD6]], ['a ladder', [0x80, 0x80, 0x80, 0x84, 0x84, 0x84]],
+        ['a wall top', [0xD6, 0xD6, 0x7E, 0xD6, 0xD6, 0x7F]], ['a force field', [0xC6, 0xC6, 0xC6, 0xC7, 0xC7, 0xC7]], ['a conveyor belt', [0xD6, 0xD6, 0xB8, 0xD6, 0xD6, 0xB9]]];
+      for (const [i, [name]] of BEHIND.entries()) { const o = document.createElement('option'); o.value = i; o.textContent = name; bg.appendChild(o); }
+      let frame = 0;
+      // the block as merge_player makes it, for player_x x and player_y y, the scenery k behind
+      function merged(x, y, k) {
+        m.set(BEHIND[k][1], 0x0333); m[0x41] = x; m[0x42] = y;
+        c.call(0x1E1E); c.call(0x1E48);
+        return cells(m, 2, 3, (col, row) => [0x78 + col * 3 + row, colour]);
+      }
+      const figs = [];
+      for (let k = 0; k < 8; k++) {
+        const f = document.createElement('figure'), fc = document.createElement('canvas');
+        Puni.draw(fc, merged(4 * k, 4, 0), 3);
+        f.append(fc, document.createTextNode(`player_x ${hex(4 * k)}`));
+        f.onclick = () => { frame = k; draw(); };
+        box.appendChild(f); figs.push(f);
+      }
+      function draw() {
+        const y = +hy.value, k = +bg.value;
+        Puni.draw(cv, merged(4 * frame, y, k), 8);
+        const ctx = cv.getContext('2d');
+        ctx.strokeStyle = 'rgba(255,210,63,.6)'; ctx.lineWidth = 1;
+        for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(0, i * 64 + .5); ctx.lineTo(128, i * 64 + .5); ctx.stroke(); }
+        ctx.beginPath(); ctx.moveTo(64.5, 0); ctx.lineTo(64.5, 192); ctx.stroke();
+        figs.forEach((f, i) => f.classList.toggle('on', i === frame));
+        out.textContent = `Pose ${frame + 1} of 8, facing ${frame < 4 ? 'right' : 'left'}, ${frame % 4} pixel${frame % 4 === 1 ? '' : 's'} across: player_x ${hex(4 * frame)}, player_y ${y}${y === 6 ? ', standing' : ''}`;
+      }
+      hy.oninput = draw; bg.onchange = draw;
+      draw();
+    })();
+
+    // the colour of the first cell holding each character, over the 25 rooms as draw_room leaves them
+    const colourOf = new Map();
+    for (let r = 0; r < 25; r++) {
+      const s = Puni.room(base.slice(), r);
+      for (let i = 0; i < 18 * 40; i++) { const ch = s[0x0C00 + i]; if (!colourOf.has(ch)) colourOf.set(ch, s[0x0800 + i]); }
+    }
+    const him = first[0x0800 + (first[0x3F] | first[0x40] << 8) - 0x0C00];
+    const col = ch => colourOf.has(ch) ? colourOf.get(ch) : 0x71 | 8;
+    // the set's own colours: a room's, else the panel's (rows 19 to 24 as setup_machine colours them),
+    // his for his poses, and plain white for a character nothing shows
+    const panelOf = new Map();
+    for (let i = 19 * 40; i < 25 * 40; i++) { const ch = first[0x0C00 + i]; if (!panelOf.has(ch)) panelOf.set(ch, first[0x0800 + i]); }
+    const setCol = ch => colourOf.has(ch) ? colourOf.get(ch) : panelOf.has(ch) ? panelOf.get(ch) : ch >= 0x4D && ch <= 0x6C ? him : 0x71;
+
+    // one memory, as a room leaves it, whose glyphs the game's own routines rewrite once a pass
+    const m = first.slice(), c = Puni.cpuFor(m);
+    let pass = 0, timer = 0;
+
+    function figure(cls, html, w, h, s) {
+      const f = document.createElement('figure'), cv = document.createElement('canvas');
+      if (cls) f.className = cls;
+      cv.width = w * 8 * s; cv.height = h * 8 * s;
+      const cap = document.createElement('div'); cap.innerHTML = html;
+      f.append(cv, cap); $('gx-cast').appendChild(f);
+      return cv;
+    }
+
+    // Mr Puniverse: his block as merge_player makes it over blank scenery, walking right across
+    // nine columns and back, a pose a pass and a column every four passes (move_right, move_left)
+    const WALK = 9;
+    const himCv = figure('wide', '<b>Mr Puniverse</b>, characters <code>$78</code>-<code>$7D</code>, walking: a pose a pass, a column every four passes', WALK + 2, 4, 3);
+    function merged(x, y) {
+      m.fill(BLANK, 0x0333, 0x0339); m[0x41] = x; m[0x42] = y;
+      c.call(R.copyUnder); c.call(R.merge);
+    }
+    const floor = (cc, r) => r === 3 ? [cc & 1 ? 0x8C : 0x88, col(0x88)] : null;
+    function drawHim() {
+      const lap = WALK * 4 * 2, p = pass % lap, right = p < WALK * 4;
+      const q = right ? p : p - WALK * 4;
+      // walking right he stands at column q>>2 in pose q&3; walking left he goes back from the far end
+      const colN = right ? q >> 2 : WALK - (q >> 2), pose = right ? q & 3 : 4 + (3 - (q & 3));
+      merged(pose * 4, 6);
+      Puni.draw(himCv, cells(m, WALK + 2, 4, (cc, r) => {
+        if (r < 3 && (cc === colN || cc === colN + 1)) return [0x78 + (cc - colN) * 3 + r, him];
+        return floor(cc, r);
+      }), 3);
+    }
+    // the scenery and the objects: [name, w, h, cells(col, row, pass) -> [character, colour]]
+    const pair = (l, r) => (cc) => cc ? r : l;
+    const things = [
+      ['<b>The vitamin</b>, <code>$D7</code>, whose picture <code>rotate_vitamin_chars</code> turns every pass; its four frames <code>$D7</code>-<code>$DA</code> beside it', 6, 1,
+        cc => cc === 0 ? [0xD7, col(0xD7)] : cc >= 2 ? [0xD7 + cc - 2, col(0xD7)] : null],
+      ['<b>The random cannon</b>: its head, <code>$98</code> beside <code>$9C</code>, spins every third pass, over the base <code>$92</code> beside <code>$93</code>', 2, 2,
+        (cc, r) => [r ? pair(0x92, 0x93)(cc) : pair(0x98, 0x9C)(cc), col(r ? 0x92 : 0x98)]],
+      ['<b>A cannon</b> facing left, <code>$94</code> beside <code>$95</code>, and right, <code>$96</code> beside <code>$97</code>, each with its shot, <code>$C5</code>', 7, 2,
+        (cc, r) => cc === 0 && r === 0 ? [0xC5, col(0x94)] : cc === 6 && r === 0 ? [0xC5, col(0x96)] :
+          cc === 1 || cc === 2 ? [r ? pair(0x92, 0x93)(cc - 1) : pair(0x94, 0x95)(cc - 1), col(0x94)] :
+          cc === 3 || cc === 4 ? [r ? pair(0x92, 0x93)(cc - 3) : pair(0x96, 0x97)(cc - 3), col(0x96)] : null],
+      ['<b>A force field</b>, <code>$C6</code> beside <code>$C7</code>, scrolled up a line every third pass, on its base, <code>$90</code> beside <code>$91</code>', 2, 4,
+        (cc, r) => r === 3 ? [pair(0x90, 0x91)(cc), col(0x90)] : [pair(0xC6, 0xC7)(cc), col(cc ? 0xC7 : 0xC6)]],
+      ['<b>A conveyor belt</b>, <code>$B8</code> beside <code>$B9</code> over <code>$BA</code> beside <code>$BB</code>, rolled a pixel left every third pass', 6, 2,
+        (cc, r) => [(r ? 0xBA : 0xB8) + (cc & 1), col(r ? 0xBA : 0xB8)]],
+      ['<b>The lift</b>, <code>$BC</code>, scrolled up a line every third pass. No room has one', 1, 3,
+        () => [0xBC, col(0xB8)]],
+    ];
+    const thingCvs = things.map(([html, w, h]) => figure('', html, w, h, 4));
+
+    // the crusher: two cells of shaft over the head, coming down into three blank cells to a wall and
+    // going back, a stage a pass, in the order update_crusher ($2F63) steps it: down, the head goes a
+    // stage back ($D0 to $CD), and from $CD its cell becomes shaft and it goes on as $D0 in the cell
+    // below if that is blank; up, a stage on, and from $D0 its cell is blanked and it goes on as $CD in
+    // the cell above if that is shaft. Each end turns it round.
+    const CR = { top: 0, rows: 7 };
+    const crusher = { row: 3, stage: 0, down: true, shaft: new Set([1, 2]) };
+    function crusherStep() {
+      const k = crusher;
+      if (k.down) {
+        if (k.stage > 0) k.stage--;
+        else if (k.row + 1 < CR.rows - 1) { k.shaft.add(k.row); k.row++; k.stage = 3; }
+        else k.down = false;
+      } else {
+        if (k.stage < 3) k.stage++;
+        else if (k.shaft.has(k.row - 1)) { k.row--; k.shaft.delete(k.row); k.stage = 0; }
+        else k.down = true;
+      }
+    }
+    const crushCv = figure('', '<b>A crusher</b>: its shaft, <code>$CC</code> beside <code>$D1</code>, and its head at four heights in a cell, <code>$CD</code>-<code>$D0</code> beside <code>$D2</code>-<code>$D5</code>, a stage a pass', 2, CR.rows, 4);
+    function drawCrusher() {
+      const k = crusher, cl = col(0xCD), cr = col(0xD2);
+      Puni.draw(crushCv, cells(m, 2, CR.rows, (cc, r) => {
+        if (r === 0 || r === CR.rows - 1) return [cc ? 0x8C : 0x88, col(0x88)];
+        if (r === k.row) return [cc ? 0xD2 + k.stage : 0xCD + k.stage, cc ? cr : cl];
+        if (k.shaft.has(r)) return [cc ? 0xD1 : 0xCC, cc ? cr : cl];
+        return null;
+      }), 4);
+    }
+
+    // the crumbling floor: crumble_step ($23A5) moves the pair under his feet two characters on each
+    // pass he stands on it, $A8 to $B6, each below $B0 with a top of its own (the character less 8);
+    // at $B8 both cells go blank. Here the eight stages, then the one he is wearing away.
+    const crumbleCv = figure('wide', '<b>The crumbling floor</b>: its eight stages, <code>$A8</code> to <code>$B6</code>, each two cells wide, the first four with a top of their own (<code>$A0</code>-<code>$A7</code>); on the right, a stage for each pass he stands on it', 21, 2, 3);
+    function drawCrumble() {
+      const now = pass % 10;                    // eight stages, then gone for two passes
+      Puni.draw(crumbleCv, cells(m, 21, 2, (cc, r) => {
+        let ch;
+        if (cc < 16) ch = 0xA8 + (cc >> 1) * 2 + (cc & 1);
+        else if (cc >= 19) { if (now >= 8) return null; ch = 0xA8 + now * 2 + (cc - 19); }
+        else return null;
+        if (r === 0) return ch < 0xB0 ? [ch - 8, col(0xA0)] : null;
+        return [ch, col(0xA8)];
+      }), 3);
+    }
+
+    function drawThings() {
+      things.forEach(([, w, h, put], i) => Puni.draw(thingCvs[i], cells(m, w, h, put), 4));
+    }
+
+    // the character set, sixteen to a row, in each character's colour
+    const set = $('gx-set'), setOut = $('gx-setstate');
+    function drawSet() {
+      Puni.draw(set, cells(m, 16, 16, (cc, r) => { const ch = r * 16 + cc; return [ch, setCol(ch)]; }), 4);
+    }
+    const ROLE = [
+      [0x00, 0x4C, 'the panel\'s letters, digits and big digits'], [0x4D, 0x6C, 'not characters: player_frames, his eight poses'],
+      [0x6D, 0x77, 'the panel\'s own characters'], [0x78, 0x7D, 'his six characters, rebuilt every pass by merge_player'],
+      [0x7E, 0x7F, 'a wall top'], [0x80, 0x87, 'a ladder'], [0x88, 0x8F, 'the walls, four pairs'],
+      [0x90, 0x91, 'a force field\'s base'], [0x92, 0x93, 'a cannon\'s base'], [0x94, 0x95, 'a cannon\'s head, facing left'],
+      [0x96, 0x97, 'a cannon\'s head, facing right'], [0x98, 0x9F, 'the random cannon\'s head, spun by animate_chars'],
+      [0xA0, 0xA7, 'the crumbling floor\'s tops'], [0xA8, 0xB7, 'the crumbling floor\'s eight stages'],
+      [0xB8, 0xBB, 'the conveyor belt, rolled by animate_chars'], [0xBC, 0xBC, 'the lift, scrolled by animate_chars'],
+      [0xBD, 0xBE, 'a lit switch'], [0xBF, 0xC0, 'an unlit switch'], [0xC1, 0xC4, 'the exits: top, bottom, left, right'],
+      [0xC5, 0xC5, 'a cannon\'s shot'], [0xC6, 0xC7, 'the force field, scrolled by animate_chars'], [0xC8, 0xCB, 'the deadly floor'],
+      [0xCC, 0xD5, 'a crusher: shaft and the head\'s four stages'], [0xD6, 0xD6, 'the blank'],
+      [0xD7, 0xDA, 'the vitamin\'s four frames, turned by rotate_vitamin_chars'], [0xDB, 0xDB, 'drawn by nothing'],
+      [0xDC, 0xF9, 'the panel\'s layout, panel_layout, read as pictures'], [0xFA, 0xFF, 'merge_player\'s buffer, read as pictures'],
+    ];
+    set.addEventListener('mousemove', e => {
+      const b = set.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 16 | 0, y = (e.clientY - b.top) / b.height * 16 | 0;
+      const ch = Math.max(0, Math.min(255, y * 16 + x)), role = ROLE.find(([a, z]) => ch >= a && ch <= z);
+      setOut.textContent = `Character ${hex(ch)}, at ${hex(0x3800 + ch * 8, 4)}: ${role ? role[2] : ''}`;
+    });
+
+    function draw() {
+      drawHim(); drawThings(); drawCrusher(); drawCrumble(); drawSet();
+      $('gx-state').textContent = `pass ${pass}`;
+    }
+    function step() {
+      c.call(R.animateChars); c.call(R.rotateVitamin);
+      crusherStep(); pass++;
+      draw();
+    }
+    const run = $('gx-run');
+    function play(on) {
+      clearInterval(timer); timer = 0;
+      if (on) timer = setInterval(step, PASS);
+      run.textContent = on ? 'Pause' : 'Play'; run.classList.toggle('on', on);
+    }
+    run.onclick = () => play(!timer);
+    $('gx-step').onclick = () => { play(false); step(); };
+    draw(); play(true);
+  });
+})();
+</script>

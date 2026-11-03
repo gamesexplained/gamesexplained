@@ -94,3 +94,32 @@ down up to three rows higher. The tilted pictures are taller than the
 level one, and the heights only lift each so the end of a skid stays on
 the ground: the lowest dots are on line 167 or 168 at every tilt, facing
 either way. `$7895`, `$0006` and `facts.md` are corrected.
+
+## 3 November 2026, the Graphics tab
+
+`graphics.html` was added under the kit's new Graphics tab guidance. It
+draws every moving thing by calling the game's graphics library through
+its jump table, on the kit's 6502, as the game's own routines call it,
+and the helicopter whole by `heli_object` through `reference/tilt.js`,
+whose `place` now also takes a pose and the byte to fill the page with.
+The second section is the whole shape table at `$A000`; the third steps
+through one frame of the demonstration flight, stopped at each drawing
+call.
+
+Drawing the shapes on a black page of `$00` gave the jets and the logo
+in violet where the game shows them blue. Run on backgrounds of `$00`
+and `$80` with both values of `g_colour`, the library showed that only
+`gfx_draw`, `gfx_draw_opaque` and their mirrors put the colour bit into
+the bytes they write; `gfx_draw_or` and `gfx_draw_slant` keep the bit
+the screen had. The sky is `$80`, so everything drawn by OR over it is
+in the blue and orange group. `facts.md` and the comments at `$008C`,
+`$1042` and `$10F8`, which said every routine ORs the bit in, are
+corrected. One shape draws nothing: the bar's corner (`$B01B`) is all
+clear dots, drawn opaque to cut a black line.
+
+air then asked for what How it works said twice to live only on the
+Graphics tab. The demonstration flight stays on How it works, but its
+two paragraphs on the erase lists, the planet and the stars, which the
+Graphics tab's third section repeats in more detail, are now one
+sentence and a link there; that section now names `draw_planet` and
+`store_stars1`.

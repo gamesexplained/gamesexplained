@@ -1,0 +1,382 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prospector Pete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.pp-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.pp-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.pp-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:14px}
+.pp-bar>div{margin:0;min-width:150px}
+.pp-bar button,.pp-pad button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;touch-action:manipulation;user-select:none}
+.pp-bar button:hover,.pp-pad button:hover{border-color:var(--ink-mute)}
+.pp-bar button.on,.pp-pad button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pp-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
+.pp-map{width:100%;display:block;image-rendering:pixelated;background:#000;border-radius:4px}
+.pp-map:focus{outline:2px solid var(--accent);outline-offset:2px}
+.pp-pad{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 0}
+.pp-pad button{min-width:42px;font-size:15px}
+.pp-state{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.5em}
+.pp-note{font-size:14px;color:var(--amber);margin:6px 0 0;min-height:1.4em}
+.pp-frame{width:100%;max-width:640px;display:block;image-rendering:pixelated;background:#000;margin:0 auto}
+.pp-wrapf{position:relative;max-width:640px;margin:0 auto}
+.pp-band{position:absolute;left:0;right:0;border-top:2px dashed #ffd23f;pointer-events:none}
+.pp-band span{position:absolute;right:4px;top:2px;font-family:var(--fm);font-size:11px;color:#ffd23f;background:rgba(0,0,0,.6);padding:0 4px;border-radius:3px}
+.pp-small{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.pp-small canvas{image-rendering:pixelated;background:#000;border-radius:4px;display:block}
+.pp-ring{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);gap:0;cursor:pointer}
+.pp-verdict{font-family:var(--fm);font-size:15px;background:#1b1b1b;color:#c8c870;padding:10px 14px;border-radius:6px;margin:10px 0 0;min-height:2.6em}
+.pp-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
+.pp-table th,.pp-table td{border-bottom:1px solid var(--line-soft);padding:4px 7px;text-align:right;vertical-align:top}
+.pp-table th:first-child,.pp-table td:first-child{text-align:left}
+.pp-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.pp-table tr.now td{background:var(--hl)}
+#pp-sfx th,#pp-sfx td{text-align:left}
+#pp-sfx button{font:inherit;font-size:13px;padding:3px 10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;white-space:nowrap}
+#pp-sfx button:hover{border-color:var(--ink-mute)}
+.pp-scroll{overflow-x:auto}
+.pp-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.pp-legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.pp-goods{display:flex;flex-wrap:wrap;gap:14px;margin:4px 0 0}
+.pp-good{text-align:center;font-size:12.5px;color:var(--ink-soft);width:74px}
+.pp-good canvas{display:block;margin:0 auto 4px;image-rendering:pixelated;background:#000;border-radius:3px}
+.pp-good b{display:block;color:var(--ink);font-size:14px}
+.pp-need{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pp-pair{grid-template-columns:1fr}}
+.gx-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px 16px;align-items:end}
+.gx-cast figure{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.gx-cast canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
+.gx-cast figure.wide{grid-column:1/-1}
+.gx-cast b{color:var(--ink);font-weight:700}
+.gx-set{display:block;image-rendering:pixelated;background:#000;border-radius:4px;max-width:100%;cursor:crosshair;margin:0 auto}
+@media (max-width:720px){.gx-cast{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Mastertronic</p>
+  <h1>Prospector Pete</h1>
+  <p class="sub">Everything on the screen is one of the game's 256 characters. Pete and the creatures are pictures ANDed and ORed into characters of their own every frame; the water, the digging, the fuse and the blast change by swapping or rewriting characters. Here is each of them, drawn from the listing and moved by the game's own routines.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every moving shape, frame by frame</h2>
+  <p class="lede">Each picture runs at the game's 50 frames a second, at the speeds of level 1, in the mine's colours.</p>
+  <div class="plate">
+    <div class="pp-bar">
+      <button type="button" id="gx-run" class="on">Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="pp-state" id="gx-state" style="margin:0"></span>
+    </div>
+    <div class="gx-cast" id="gx-cast"></div>
+    <p class="cap">Pete digging is the game's <code>move_pete</code> (<code>$1F89</code>), called every other frame with the joystick held right and then left, and the figures are drawn by <code>stamp_figures</code>, <code>draw_figures</code> and <code>unstamp_figures</code>, all run on the kit's 6502 over a mine that <code>start_level</code> built. The creature is drawn the same way and moved a step every four frames, as level 1 moves it by day; the page chooses its way. Every step of every move is from the frames <code>build_figures</code> (<code>$2236</code>) shifts at start-up into <code>$0400</code>-<code>$06FF</code>. The fuse and the blast change as <code>irq_play</code> changes them, the fuse every fourth frame and the blast every frame, with the page's random numbers in place of TED's timers. The water steps as <code>water_fill</code> steps a cell, once every five frames on level 1.</p>
+  </div>
+  <p>Pete and a creature each have two frames for each way they move, a picture character and a mask character, stored at <code>$1600</code>-<code>$16BF</code>, and Pete one more for standing still (<code>$A0</code>, with its mask <code>$A1</code>). At start-up <code>build_figures</code> turns them into four steps for each way, and every frame <code>draw_figures</code> lays the step over what is behind the figure (<a href="#figures">below</a>).</p>
+  <p>The rest moves by changing characters. A cell Pete digs goes through three stages of earth eaten away, drawn for each way he can come at it and for each of the four characters the earth is tiled with: 48 characters. The water has four stages for each way it can come into a cell, and a seventeenth for a full cell. The fuse of a stick of dynamite is one character whose two top rows <code>irq_play</code> swaps every fourth frame, and the blast is one character it fills with random bits every frame.</p>
+</section>
+
+<section id="figures">
+  <p class="fig">02 · Pete and the creatures</p>
+  <h2 class="t">Moving figures are characters redrawn every frame</h2>
+  <p class="lede">Pete and each creature are two characters of their own, rebuilt every frame from the earth or tunnel behind them, so they glide between cells. Here one of them moves along a tunnel, a step at a time.</p>
+  <div class="plate">
+    <div class="pp-bar">
+      <button type="button" class="on" data-who="0">Pete</button><button type="button" data-who="1">A creature</button>
+      <span style="width:8px"></span>
+      <button type="button" data-dir="4" class="on">Right</button><button type="button" data-dir="3">Left</button><button type="button" data-dir="1">Up</button><button type="button" data-dir="2">Down</button><button type="button" data-dir="0">Standing</button>
+      <button type="button" id="pp-gstep">Step</button>
+      <label><input type="checkbox" id="pp-gplay" checked> Play</label>
+    </div>
+    <div class="pp-small"><canvas id="pp-fig" width="288" height="160" aria-label="A figure moving along a tunnel."></canvas><canvas id="pp-figch" width="160" height="160" aria-label="The figure's two characters, enlarged."></canvas></div>
+    <p class="pp-state" id="pp-gstate"></p>
+    <p class="cap">The game's <code>stamp_figures</code>, <code>draw_figures</code> and <code>unstamp_figures</code>, as <code>irq_play</code> calls them before and after copying the view, run on the kit's 6502 over frames that <code>build_figures</code> made at start-up. On the right, the figure's two characters as <code>draw_figures</code> left them, four times the size.</p>
+  </div>
+  <p>Each figure has two characters, Pete's <code>$CE</code> and <code>$CF</code> and the creatures' the pairs after them. Before the view is copied to the screen, <code>stamp_figures</code> puts a figure's pair into the map over the cell it is leaving and the cell it is entering, saving what was there. <code>draw_figures</code> then builds each of the two characters' eight rows from the saved character's row, ANDed with a mask and ORed with a picture, so the earth or tunnel shows round the figure. Once the view is copied, <code>unstamp_figures</code> puts the map back.</p>
+  <p>A move from one cell to the next takes four steps: one multicolour pixel (two screen pixels) a step across, or two rows a step up and down. The pictures and masks for every step are shifted once, at start-up, from the frames stored in the character set (<code>build_figures</code>, <code>shift_frames</code>): pages <code>$0400</code> for up and down, <code>$0500</code> for left, and <code>$0600</code> for right, Pete's in the first half of each page and a creature's in the second. Pete standing still is one character, his standing picture over the cell he is in (<code>draw_standing</code>).</p>
+</section>
+
+<section id="charset">
+  <p class="fig">03 · The character set</p>
+  <h2 class="t">One set of 256 characters draws the mine, the title and everything that moves</h2>
+  <p class="lede">The screen is TED's multicolour text mode, every cell one of these characters. Point at a character to see what it is.</p>
+  <div class="plate">
+    <canvas id="gx-set" class="gx-set" width="512" height="512" aria-label="The game's 256 characters, sixteen to a row."></canvas>
+    <p class="pp-state" id="gx-setstate">Point at a character.</p>
+    <p class="cap">The set at <code>$1000</code>-<code>$17FF</code>, sixteen characters to a row from <code>$00</code> at the top left, in the mine's colours, as the listing has it before the title and play have rewritten any of it. The fuse and the blast move with the cast above.</p>
+  </div>
+  <p>A character is eight bytes, one for each of its rows, and in a multicolour cell each byte is four pixels, two bits each: the background, one of two colours shared by the band, or the cell's own (<a href="index.html#frame">How it works</a>). The surface's three colours step through the day, from light blue by day to black at night, while the mine's three never change. The characters for the figures do two jobs: as loaded, <code>$C0</code> to <code>$D7</code> hold the frames <code>build_figures</code> reads, and once it has read them the title uses some for its scroller and play uses <code>$CE</code> to <code>$D7</code> for the figures as drawn.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/pete.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C16 === 'undefined' || typeof C64Cpu === 'undefined' || typeof Pete === 'undefined') {
+    for (const id of ['gx-cast', 'pp-fig', 'gx-set']) {
+      const el = $(id), p = document.createElement('p'); p.className = 'pp-need';
+      p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js): open the page from the built site.';
+      el.replaceWith(p);
+    }
+    return;
+  }
+  const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const FRAME = 1000 / 50;
+  const mine = () => false;
+  // The earth's two-by-two tiling as start_level lays it (put_square)
+  const earthAt = (c, r) => 1 + (c & 1 ? 0 : 1) + (r & 1 ? 0 : 2);
+
+  C16.load('listing.json').then(L => {
+    const base = Pete.fresh(L);                      // the listing's memory after build_figures
+    const m = base.slice();
+    Pete.startLevel(m, 0, () => 0x5A);
+    const cpu = new C64Cpu.CPU(m, { ramSize: 0x4000 }); cpu.sp = 0xFF;
+    let frame = 0, timer = 0;
+    const box = $('gx-cast');
+    function figure(cls, html) {
+      const f = document.createElement('figure'), cv = document.createElement('canvas');
+      if (cls) f.className = cls;
+      const cap = document.createElement('div'); cap.innerHTML = html;
+      f.append(cv, cap); box.appendChild(f);
+      return cv;
+    }
+
+    // Two patches of the mine: one of earth that Pete digs a tunnel through, and a tunnel below it that
+    // a creature walks along
+    const C0 = 40, R0 = 8, W = 10;
+    const PR = R0 + 1, CR = R0 + 4;                  // Pete's row and the creature's
+    for (let r = R0; r < R0 + 6; r++) for (let c = C0; c < C0 + W; c++) m[Pete.at(c, r)] = r === CR ? 0 : earthAt(c, r);
+    m[Pete.at(C0, PR)] = 0;
+    const setCell = (n, k, col, row) => { const a = Pete.at(col, row); m[n + 4 * k] = a & 255; m[n + 1 + 4 * k] = a >> 8; };
+    for (let k = 0; k < 5; k++) m[0x22 + k] = 0;
+    m[0x22] = 1; m[0x06] = C0; m[0x07] = PR; m[0x4A] = 0; m[0x27] = 0; m[0x83] = 0;
+    setCell(0x2C, 0, C0, PR); setCell(0x2E, 0, C0, PR);
+    let joy = 1;                                      // right, then left (255)
+    function peteFrame() {
+      // read_controls, as irq_play does it at line $1A every frame
+      m[0xA6] = m[0x09]; m[0x09] = joy; m[0x0A] = 0; m[0x0C] = m[0x0B]; m[0x0B] = 0;
+      if (frame % 2) return;
+      // a call that ends a move ($27 = 3) starts the next from the stick: turn him round at each end,
+      // and put the earth back once he is home
+      let refill = false;
+      if (m[0x27] === 3) {
+        const col = m[0x06];
+        if (joy === 1 && col >= C0 + W - 1) joy = 255;
+        else if (joy === 255 && col <= C0) { joy = 1; refill = true; }
+        m[0x09] = joy;
+      }
+      cpu.call(0x1F89);
+      if (refill) for (let c = C0 + 1; c < C0 + W; c++) m[Pete.at(c, PR)] = earthAt(c, PR);
+    }
+    // the creature: figure 1, a step every four frames, along the lower tunnel and back
+    const cr = { pos: 0, step: 0, dir: 4 };
+    function creaturePlace() {
+      const from = C0 + cr.pos, to = cr.dir === 4 ? from + 1 : from - 1;
+      m[0x23] = 1; m[0x28] = cr.step; m[0x4B] = cr.dir;
+      setCell(0x2C, 1, to, CR); setCell(0x2E, 1, from, CR);
+    }
+    function creatureFrame() {
+      if (frame % 4) return;
+      if (++cr.step > 3) {
+        cr.step = 0; cr.pos += cr.dir === 4 ? 1 : -1;
+        if (cr.dir === 4 && cr.pos >= W - 1) cr.dir = 3;
+        else if (cr.dir === 3 && cr.pos <= 0) cr.dir = 4;
+      }
+    }
+    const digCv = figure('wide', '<b>Pete</b> digging right through earth and walking back, a step every other frame; <b>a creature</b> below, a step every four frames: each is two characters of its own (<code>$CE</code> beside <code>$CF</code>, and <code>$D0</code> beside <code>$D1</code>), built every frame');
+
+    // every step of every move, as build_figures leaves them in $0400-$06FF: a page for up and down,
+    // one for left and one for right, Pete's four steps then a creature's, two picture characters and
+    // two mask characters a step. Each is put into a spare copy of the set and drawn over tunnel.
+    const steps = base.slice();
+    const STEP_ROWS = [['up and down', 0x04, true], ['left', 0x05, false], ['right', 0x06, false]];
+    const stepsCv = figure('wide', 'Every step of every move, from <code>build_figures</code>\'s pages <code>$0400</code> (up and down, top row), <code>$0500</code> (left) and <code>$0600</code> (right): Pete\'s four steps on the left, a creature\'s on the right, each pair of characters drawn over tunnel');
+    function drawSteps() {
+      // each row two cells high, up and down stacked: [row, column] of each cell, and its 8 picture bytes
+      const pic = { w: 19 * 8, h: 6 * 8, px: new Uint8Array(19 * 8 * 6 * 8) }, tmp = document.createElement('canvas');
+      STEP_ROWS.forEach(([, page, tall], row) => {
+        for (let fig = 0; fig < 2; fig++) for (let s = 0; s < 4; s++) for (let half = 0; half < 2; half++) {
+          const at = page << 8 | fig * 0x80 | s * 0x20 | half * 8;
+          const r = row * 2 + (tall ? half : 0), c = fig * 10 + s * 2 + (tall ? 0 : half);
+          // over tunnel the mask keeps nothing ((0 AND mask) OR picture): the picture alone, put into
+          // a blank character ($B9) of a copy of the set and drawn
+          steps.set(steps.subarray(at, at + 8), 0x1000 + 0xB9 * 8);
+          const p = Pete.grid(tmp, steps, 1, 1, () => 0xB9, mine);
+          for (let y = 0; y < 8; y++) pic.px.set(p.px.subarray(y * 8, y * 8 + 8), (r * 8 + y) * pic.w + c * 8);
+        }
+      });
+      const s = 3, t = document.createElement('canvas');
+      stepsCv.width = pic.w * s; stepsCv.height = pic.h * s; t.width = pic.w; t.height = pic.h;
+      t.getContext('2d').putImageData(new ImageData(C16.rgba(pic), pic.w, pic.h), 0, 0);
+      const ctx = stepsCv.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, pic.w * s, pic.h * s);
+    }
+    drawSteps();
+
+    // characters drawn as they are now in m: name, columns, rows, cell(col, row)
+    const things = [
+      ['<b>Pete standing still</b>, <code>$A0</code>, drawn through its mask, <code>$A1</code>', '', 1, 1, () => 0xA0, base],
+      ['<b>A stick of dynamite</b>, <code>$6F</code>: its fuse flickers every fourth frame', '', 1, 1, () => 0x6F, m],
+      ['<b>The blast</b>, <code>$A2</code>, new random bits every frame, and the <b>debris</b> it leaves, <code>$A3</code>', '', 3, 1, c => [0xA2, 0, 0xA3][c], m],
+      ['<b>The water</b>: rising <code>$5C</code>-<code>$5F</code>, falling <code>$60</code>-<code>$63</code>, flowing left <code>$64</code>-<code>$67</code> and right <code>$68</code>-<code>$6B</code>, then full, <code>$6C</code>; the right-hand column steps through them', 'wide', 8, 4,
+        (c, r) => c < 4 ? 0x5C + r * 4 + c : c === 4 ? 0x6C : c === 6 ? (wstage < 4 ? 0x5C + r * 4 + wstage : 0x6C) : 0, m],
+      ['<b>Digging</b>: the three stages of earth eaten away, for Pete moving up <code>$05</code>-<code>$10</code>, down <code>$11</code>-<code>$1C</code>, left <code>$1D</code>-<code>$28</code> and right <code>$29</code>-<code>$34</code>, each in the four characters of the earth\'s tiling', 'wide', 16, 3,
+        (c, r) => 0x05 + (c >> 2) * 12 + r * 4 + (c & 3), m],
+      ['<b>The goodies</b>, <code>$70</code>-<code>$9F</code>: from level 6 one large goodie turns into the grinning face, <code>$94</code>-<code>$97</code>, and back, every 32 to 47 frames', 'wide', 23, 2,
+        (c, r) => GOODS[c] === undefined ? 0 : GOODS[c](r), m],
+    ];
+    // the goodies laid out left to right: four small, four wide, four tall, seven large
+    const GOODS = [];
+    for (let g = 0x70; g <= 0x73; g++) { GOODS.push(r => r ? 0 : g); }
+    GOODS.push(null);
+    for (let g = 0x74; g <= 0x7A; g += 2) { GOODS.push(r => r ? 0 : g); GOODS.push(r => r ? 0 : g + 1); }
+    GOODS.push(null);
+    for (let g = 0x7C; g <= 0x82; g += 2) GOODS.push(r => g + r);
+    for (let g = 0x84; g <= 0x9C; g += 4) { GOODS.push(r => g + r * 2); GOODS.push(r => g + r * 2 + 1); }
+    for (let i = 0; i < GOODS.length; i++) if (GOODS[i] === null) GOODS[i] = undefined;
+    let wstage = 0;
+    const thingCvs = things.map(([html, cls]) => figure(cls, html));
+
+    function irqFrame() {
+      // irq_play ($19ED-$19FD): every fourth frame the fuse's two top rows trade places
+      if ((frame & 3) === 3) { m[0x1379] = m[0x1378]; m[0x1378] ^= 0x3C; }
+      // ($19CC-$19E7) the explosion's character, $A2, filled with random bits every frame
+      for (let i = 0; i < 7; i++) m[0x1510 + i] = (Math.random() * 256 | 0) & m[0x1511 + i];
+      m[0x1517] = Math.random() * 256 | 0;
+    }
+
+    const set = $('gx-set'), setOut = $('gx-setstate');
+    const ROLE = [
+      [0x00, 0x00, 'the tunnel and the sky: blank'], [0x01, 0x04, 'the earth, tiled two by two'],
+      [0x05, 0x34, 'earth being dug: three stages for each way Pete moves'], [0x35, 0x39, 'the mine\'s walls and floor, and the broken floor'],
+      [0x3A, 0x4F, 'the surface: mountains, the hut and the pithead'], [0x50, 0x50, 'the ladder that ends the level'],
+      [0x51, 0x5B, 'the clouds, a mountain and the pithead'], [0x5C, 0x6C, 'the water: four stages each way, then full'],
+      [0x6D, 0x6E, 'Pete standing, copied for draw_figures'], [0x6F, 0x6F, 'a stick of dynamite, its fuse flickering'],
+      [0x70, 0x9F, 'the goodies, the face among them'], [0xA0, 0xA1, 'Pete standing still: picture and mask'],
+      [0xA2, 0xA2, 'the blast, random every frame'], [0xA3, 0xA3, 'debris'], [0xA4, 0xA4, 'the title\'s rolling pattern'],
+      [0xA5, 0xAD, 'the title\'s box lines and shadow'], [0xAE, 0xB5, 'the title\'s frame, built from the pattern'],
+      [0xB6, 0xBF, 'the title\'s bar, brackets and blanks'], [0xC0, 0xD7, 'the figures\' frames as loaded; in play $CE-$D7 are the figures as drawn'],
+      [0xD8, 0xFF, 'the alphabet: . ! ? space, A to Z, 0 to 9'],
+    ];
+    set.addEventListener('mousemove', e => {
+      const b = set.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * 16 | 0, y = (e.clientY - b.top) / b.height * 16 | 0;
+      const ch = Math.max(0, Math.min(255, y * 16 + x)), role = ROLE.find(([a, z]) => ch >= a && ch <= z);
+      setOut.textContent = `Character ${hex(ch)}, at ${hex(0x1000 + ch * 8, 4)}: ${role ? role[2] : ''}`;
+    });
+    const setMem = base.slice();
+    function drawSet() {
+      setMem.set(m.subarray(0x1378, 0x1380), 0x1378); setMem.set(m.subarray(0x1510, 0x1518), 0x1510);
+      Pete.grid(set, setMem, 16, 16, (c, r) => r * 16 + c, mine, { s: 4 });
+    }
+
+    function draw() {
+      creaturePlace();
+      Pete.withFigures(m, () => Pete.grid(digCv, m, W, 6, (c, r) => m[Pete.at(C0 + c, R0 + r)], mine, { s: 3 }));
+      things.forEach(([, , w, h, cell, mem], i) => Pete.grid(thingCvs[i], mem, w, h, (c, r) => cell(c, r) || 0, mine, { s: 3 }));
+      drawSet();
+      $('gx-state').textContent = `frame ${frame}`;
+    }
+    function step() {
+      frame++;
+      irqFrame(); peteFrame(); creatureFrame();
+      if (frame % 5 === 0) wstage = (wstage + 1) % 6;
+      draw();
+    }
+    const run = $('gx-run');
+    function play(on) {
+      clearInterval(timer); timer = 0;
+      if (on) timer = setInterval(step, FRAME);
+      run.textContent = on ? 'Pause' : 'Play'; run.classList.toggle('on', on);
+    }
+    run.onclick = () => play(!timer);
+    $('gx-step').onclick = () => { play(false); step(); };
+    draw(); play(true);
+
+    /* Pete and the creatures */
+    (function () {
+      const m = base.slice(), cv = $('pp-fig'), ch = $('pp-figch');
+      const C0 = 40, R0 = 10, W = 9, H = 5;
+      // a patch of a built mine, earth with a tunnel across its middle row and down its middle column
+      Pete.startLevel(m, 0);
+      for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+        const a = Pete.at(C0 + c, R0 + r);
+        m[a] = r === 2 || c === 4 ? 0 : earthAt(C0 + c, R0 + r);
+      }
+      let who = 0, dir = 4, step = 0, pos = 0;
+      const plus = () => dir === 4 || dir === 2, K = () => dir >= 3 ? W : H;
+      // the cell the figure is leaving and the one it is entering, along the tunnel's row or column
+      const cellXY = i => dir >= 3 ? [C0 + i, R0 + 2] : [C0 + 4, R0 + i];
+      function place() {
+        for (let n = 0; n < 5; n++) m[0x22 + n] = 0;
+        m[0x22 + who] = 1;
+        const from = cellXY(pos), to = dir ? cellXY(plus() ? pos + 1 : pos - 1) : from;
+        const a = Pete.at(...to), b = Pete.at(...from), o = 4 * who;
+        m[0x2C + o] = a & 255; m[0x2D + o] = a >> 8; m[0x2E + o] = b & 255; m[0x2F + o] = b >> 8;
+        m[0x27 + who] = dir ? step : 0; m[0x4A + who] = dir;
+        return [from, to];
+      }
+      function draw() {
+        const [from, to] = place();
+        Pete.withFigures(m, () => {
+          Pete.grid(cv, m, W, H, (c, r) => m[Pete.at(C0 + c, R0 + r)], () => false, { s: 4 });
+          const c0 = Math.min(from[0], to[0]), r0 = Math.min(from[1], to[1]);
+          Pete.grid(ch, m, Math.abs(to[0] - from[0]) + 1, Math.abs(to[1] - from[1]) + 1, (c, r) => m[Pete.at(c0 + c, r0 + r)], () => false, { s: 10 });
+        });
+        $('pp-gstate').textContent = (who ? 'A creature' : 'Pete') + (dir ? `, moving ${['', 'up', 'down', 'left', 'right'][dir]}, step ${step} of 0 to 3: characters ${hex(0xCE + 2 * who)} and ${hex(0xCF + 2 * who)}` : `, standing: character ${hex(0xCE)}`);
+      }
+      function reset() { step = 0; pos = !dir ? 2 : plus() ? 0 : K() - 1; }
+      function next() {
+        if (!dir) return draw();
+        if (++step > 3) {
+          step = 0; pos += plus() ? 1 : -1;
+          if (plus() && pos > K() - 2) pos = 0;
+          if (!plus() && pos < 1) pos = K() - 1;
+        }
+        draw();
+      }
+      const bar = cv.closest('.plate').querySelector('.pp-bar');
+      for (const b of bar.querySelectorAll('[data-who]')) b.onclick = () => { who = +b.dataset.who; if (who && !dir) { dir = 4; reset(); } for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x === b); syncDir(); draw(); };
+      function syncDir() { for (const x of bar.querySelectorAll('[data-dir]')) x.classList.toggle('on', +x.dataset.dir === dir); }
+      for (const b of bar.querySelectorAll('[data-dir]')) b.onclick = () => { dir = +b.dataset.dir; if (who && !dir) { who = 0; for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x.dataset.who === '0'); } reset(); syncDir(); draw(); };
+      $('pp-gstep').onclick = next;
+      reset();
+      setInterval(() => { if ($('pp-gplay').checked) next(); }, 160);
+      draw();
+    })();
+  });
+})();
+</script>

@@ -153,32 +153,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pp-wrapf"><canvas id="pp-frame" class="pp-frame" width="640" height="400"></canvas><div id="pp-fmarks"></div></div>
     <p class="cap" id="pp-fcap">A frame of play on level 1, drawn from the screen memory the game left (<code>$0800</code> colours, <code>$0C00</code> characters) and the character set, with the characters the game had redrawn for Pete and a creature, by the site's TED renderer. Against plus4emu's own picture of the same frame, <b>0 of the 64,000 pixels</b> differ; drawn with one set of registers, as they stand at the end of the frame, 30,259 differ: the mine slides back seven pixels and the sky takes the mine's colours.</p>
   </div>
-  <p>Everything on the screen is a character: the C16 has no sprites. TED shows the game's own 256 characters at <code>$1000</code> in multicolour mode, where each character is 4 pixels across, each two pixels wide, in one of four colours: the background, two colours shared by the whole screen, and a fourth from the cell's colour byte. The interrupt (<code>irq_play</code>) changes those shared colours twice during each frame. At line 0 it sets the surface's three colours for the time of day; at line <code>$1A</code>, just below the third row, it sets the mine's black, grey, and brown; at line <code>$BA</code>, above the status line, it turns off the sideways scroll and widens the window back to 40 columns, so that the score does not slide with the mine.</p>
+  <p>Everything on the screen is a character: the C16 has no sprites. Pete and the creatures are characters too, rebuilt every frame from the earth or tunnel behind them (<a href="graphics.html#figures">Graphics</a>). TED shows the game's own 256 characters at <code>$1000</code> in multicolour mode, where each character is 4 pixels across, each two pixels wide, in one of four colours: the background, two colours shared by the whole screen, and a fourth from the cell's colour byte. The interrupt (<code>irq_play</code>) changes those shared colours twice during each frame. At line 0 it sets the surface's three colours for the time of day; at line <code>$1A</code>, just below the third row, it sets the mine's black, grey, and brown; at line <code>$BA</code>, above the status line, it turns off the sideways scroll and widens the window back to 40 columns, so that the score does not slide with the mine.</p>
   <p>The view is 39 columns of the 90-column map, copied to the screen every frame (<code>draw_view</code>), and moved sideways a pixel at a time with TED's fine scroll (<code>scroll_view</code>), whose value the game keeps in <code>$03</code>. The surface darkens through the day: the interrupt moves the day on one of 16 steps every 256 frames, from light blue through grey to black and back, about 82 seconds a day (<code>sky_background</code>, <code>sky_colour1</code>, <code>sky_colour2</code>). The day starts again with every life.</p>
 </section>
 
-<section id="figures">
-  <p class="fig">05 · Pete and the creatures</p>
-  <h2 class="t">Moving figures are characters redrawn every frame</h2>
-  <p class="lede">Pete and each creature are two characters of their own, rebuilt every frame from the earth or tunnel behind them, so they glide between cells.</p>
-  <div class="plate">
-    <div class="pp-bar">
-      <button type="button" class="on" data-who="0">Pete</button><button type="button" data-who="1">A creature</button>
-      <span style="width:8px"></span>
-      <button type="button" data-dir="4" class="on">Right</button><button type="button" data-dir="3">Left</button><button type="button" data-dir="1">Up</button><button type="button" data-dir="2">Down</button><button type="button" data-dir="0">Standing</button>
-      <button type="button" id="pp-gstep">Step</button>
-      <label><input type="checkbox" id="pp-gplay" checked> Play</label>
-    </div>
-    <div class="pp-small"><canvas id="pp-fig" width="288" height="160" aria-label="A figure moving along a tunnel."></canvas><canvas id="pp-figch" width="160" height="160" aria-label="The figure's two characters, enlarged."></canvas></div>
-    <p class="pp-state" id="pp-gstate"></p>
-    <p class="cap">The game's <code>stamp_figures</code>, <code>draw_figures</code> and <code>unstamp_figures</code>, as <code>irq_play</code> calls them before and after copying the view, run on the kit's 6502 over frames that <code>build_figures</code> made at start-up. On the right, the figure's two characters as <code>draw_figures</code> left them, four times the size.</p>
-  </div>
-  <p>Each figure has two characters, Pete's <code>$CE</code> and <code>$CF</code> and the creatures' the pairs after them. Before the view is copied to the screen, <code>stamp_figures</code> puts a figure's pair into the map over the cell it is leaving and the cell it is entering, saving what was there. <code>draw_figures</code> then builds each of the two characters' eight rows from the saved character's row, ANDed with a mask and ORed with a picture, so the earth or tunnel shows round the figure. Once the view is copied, <code>unstamp_figures</code> puts the map back.</p>
-  <p>A move from one cell to the next takes four steps, one multicolour pixel (two screen pixels) a step. The pictures and masks for every step are shifted once, at start-up, from the frames stored in the character set (<code>build_figures</code>, <code>shift_frames</code>): pages <code>$0400</code> for up and down, <code>$0500</code> for left, and <code>$0600</code> for right, Pete's in the first half of each page and a creature's in the second. Pete standing still is one character, his standing picture over the cell he is in (<code>draw_standing</code>).</p>
-</section>
-
 <section id="digging">
-  <p class="fig">06 · Digging</p>
+  <p class="fig">05 · Digging</p>
   <h2 class="t">Every tunnel is one cell wide</h2>
   <p class="lede">Pete may dig anywhere below the surface, except where the move would open a hole two cells square.</p>
   <div class="plate">
@@ -192,7 +172,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="creatures">
-  <p class="fig">07 · The creatures</p>
+  <p class="fig">06 · The creatures</p>
   <h2 class="t">Where a creature heads next</h2>
   <p class="lede">Each time a creature reaches the middle of a cell it chooses again. Click the map to move the creature and see, for every place Pete could stand, which way it would go.</p>
   <div class="plate">
@@ -209,7 +189,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="goodies">
-  <p class="fig">08 · Goodies</p>
+  <p class="fig">07 · Goodies</p>
   <h2 class="t">One of the goodies kills Pete</h2>
   <p class="lede">The goodies as the character set draws them, with what each is worth. Click one to have the game score it.</p>
   <div class="plate">
@@ -222,7 +202,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="levels">
-  <p class="fig">09 · Progression</p>
+  <p class="fig">08 · Progression</p>
   <h2 class="t">A later level is the same mine, faster and fuller</h2>
   <p class="lede">Each level is a column across twelve tables of 16 bytes at <code>$1EC9</code>-<code>$1F88</code>, read by <code>start_level</code>. Pick a level to see its row.</p>
   <div class="plate">
@@ -234,7 +214,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="controls">
-  <p class="fig">10 · Controls</p>
+  <p class="fig">09 · Controls</p>
   <h2 class="t">A joystick in port 2, or five keys</h2>
   <p class="lede">The game reads the joystick and the keyboard through TED, never through the KERNAL.</p>
   <div class="plate">
@@ -247,7 +227,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="title">
-  <p class="fig">11 · The title screen</p>
+  <p class="fig">10 · The title screen</p>
   <h2 class="t">The scroller passes judgement on your score</h2>
   <p class="lede">After a game the title's scrolling message begins with a verdict chosen by the score. Type a score to see which.</p>
   <div class="plate">
@@ -271,7 +251,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 (function () {
   const $ = id => document.getElementById(id);
   if (!window.C16 || !window.C64Cpu || !window.Pete || !window.TEDSound) {
-    for (const id of ['pp-mine', 'pp-frame', 'pp-fig', 'pp-ring', 'pp-heads', 'pp-goods', 'pp-ltable', 'pp-tverdict', 'pp-sfxroll']) {
+    for (const id of ['pp-mine', 'pp-frame', 'pp-ring', 'pp-heads', 'pp-goods', 'pp-ltable', 'pp-tverdict', 'pp-sfxroll']) {
       const el = $(id); if (!el) continue;
       const p = document.createElement('p'); p.className = 'pp-need';
       p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js, lib/ted-sound.js): open the page from the built site.';
@@ -372,58 +352,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
           }
       }
       for (const id of ['pp-fday', 'pp-fbands', 'pp-fone']) $(id).addEventListener('input', draw);
-      draw();
-    })();
-
-    /* Pete and the creatures */
-    (function () {
-      const m = base.slice(), cv = $('pp-fig'), ch = $('pp-figch');
-      const C0 = 40, R0 = 10, W = 9, H = 5;
-      // a patch of a built mine, earth with a tunnel across its middle row and down its middle column
-      Pete.startLevel(m, 0);
-      for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
-        const a = Pete.at(C0 + c, R0 + r);
-        m[a] = r === 2 || c === 4 ? 0 : earthAt(C0 + c, R0 + r);
-      }
-      let who = 0, dir = 4, step = 0, pos = 0;
-      const plus = () => dir === 4 || dir === 2, K = () => dir >= 3 ? W : H;
-      // the cell the figure is leaving and the one it is entering, along the tunnel's row or column
-      const cellXY = i => dir >= 3 ? [C0 + i, R0 + 2] : [C0 + 4, R0 + i];
-      function place() {
-        for (let n = 0; n < 5; n++) m[0x22 + n] = 0;
-        m[0x22 + who] = 1;
-        const from = cellXY(pos), to = dir ? cellXY(plus() ? pos + 1 : pos - 1) : from;
-        const a = Pete.at(...to), b = Pete.at(...from), o = 4 * who;
-        m[0x2C + o] = a & 255; m[0x2D + o] = a >> 8; m[0x2E + o] = b & 255; m[0x2F + o] = b >> 8;
-        m[0x27 + who] = dir ? step : 0; m[0x4A + who] = dir;
-        return [from, to];
-      }
-      function draw() {
-        const [from, to] = place();
-        Pete.withFigures(m, () => {
-          Pete.grid(cv, m, W, H, (c, r) => m[Pete.at(C0 + c, R0 + r)], () => false, { s: 4 });
-          const c0 = Math.min(from[0], to[0]), r0 = Math.min(from[1], to[1]);
-          Pete.grid(ch, m, Math.abs(to[0] - from[0]) + 1, Math.abs(to[1] - from[1]) + 1, (c, r) => m[Pete.at(c0 + c, r0 + r)], () => false, { s: 10 });
-        });
-        $('pp-gstate').textContent = (who ? 'A creature' : 'Pete') + (dir ? `, moving ${['', 'up', 'down', 'left', 'right'][dir]}, step ${step} of 0 to 3: characters ${hex(0xCE + 2 * who)} and ${hex(0xCF + 2 * who)}` : `, standing: character ${hex(0xCE)}`);
-      }
-      function reset() { step = 0; pos = !dir ? 2 : plus() ? 0 : K() - 1; }
-      function next() {
-        if (!dir) return draw();
-        if (++step > 3) {
-          step = 0; pos += plus() ? 1 : -1;
-          if (plus() && pos > K() - 2) pos = 0;
-          if (!plus() && pos < 1) pos = K() - 1;
-        }
-        draw();
-      }
-      const bar = cv.closest('.plate').querySelector('.pp-bar');
-      for (const b of bar.querySelectorAll('[data-who]')) b.onclick = () => { who = +b.dataset.who; if (who && !dir) { dir = 4; reset(); } for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x === b); syncDir(); draw(); };
-      function syncDir() { for (const x of bar.querySelectorAll('[data-dir]')) x.classList.toggle('on', +x.dataset.dir === dir); }
-      for (const b of bar.querySelectorAll('[data-dir]')) b.onclick = () => { dir = +b.dataset.dir; if (who && !dir) { who = 0; for (const x of bar.querySelectorAll('[data-who]')) x.classList.toggle('on', x.dataset.who === '0'); } reset(); syncDir(); draw(); };
-      $('pp-gstep').onclick = next;
-      reset();
-      setInterval(() => { if ($('pp-gplay').checked) next(); }, 160);
       draw();
     })();
 

@@ -1,0 +1,445 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choplifter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.ch-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.ch-pair img,.ch-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.ch-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ch-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
+.ch-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ch-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+.ch-bar input[type=range]{width:200px}
+.ch-stat{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.ch-tbl{border-collapse:collapse;font-size:14px;width:100%}
+.ch-tbl th,.ch-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.ch-tbl th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.ch-tbl td.n{font-family:var(--fm);text-align:right}
+.ch-tbl tr.on td{background:var(--hl)}
+.ch-scroll{overflow-x:auto}
+.ch-note{font-size:14px;color:var(--ink-soft)}
+.ch-tilts{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:10px 0 0}
+.ch-tilts button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
+.ch-tilts button.on{border-color:var(--amber)}
+.ch-tilts canvas{width:100%;display:block;image-rendering:pixelated}
+.ch-tilts span{display:block;font-family:var(--fm);font-size:11px;color:#ccc;text-align:center}
+.ch-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
+.ch-err{color:var(--coral);font-size:14px}
+@media (max-width:760px){:root{--gx:16px;--pp:14px}.ch-pair{grid-template-columns:1fr}.ch-stat{margin-left:0}.ch-tilts{grid-template-columns:repeat(6,1fr)}}
+.gx-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px 16px;align-items:end}
+.gx-cast figure{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.gx-cast canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block;margin:0 0 6px;max-width:100%}
+.gx-cast figure.wide{grid-column:1/-1}
+.gx-cast b{color:var(--ink);font-weight:700}
+.gx-group{margin:0 0 18px}
+.gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
+.gx-tiles button.on{border-color:var(--amber)}
+.gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
+.gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
+.gx-info{font-size:14px;color:var(--ink);min-height:3em;margin:12px 0 0}
+.gx-frame{width:100%;display:block;image-rendering:pixelated;background:#000;border-radius:4px}
+.gx-msg{color:var(--coral);font-size:14px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1982 · Broderbund Software · Apple II</p>
+  <h1>Choplifter</h1>
+  <p class="sub">The Apple II has no sprites. The helicopter, the hostages, the tanks and the jets are pictures from one table of 128 shapes, drawn dot by dot onto the hi-res screen by a graphics library of the game's own at <code>$1000</code>. Every picture on this page is drawn by that library, from the listing, on the kit's 6502.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every moving shape, at the game's twelve frames a second</h2>
+  <p class="lede">The game draws a whole new picture about twelve times a second, and each thing that moves takes its next picture once a frame. Here each one moves as the code moves it, in the colours the code draws it in.</p>
+  <div class="plate">
+    <div class="ch-bar">
+      <button type="button" id="gx-run" class="on">❚❚ Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="ch-stat" id="gx-heli"></span>
+    </div>
+    <p class="gx-msg" id="gx-castmsg"></p>
+    <div class="gx-cast" id="gx-cast"></div>
+    <p class="cap">The helicopter is drawn whole by its object's routine (<code>heli_object</code>, <code>$8276</code>), which draws the body, the main rotor and the tail rotor and steps each rotor's picture on. Everything else is drawn by calling the graphics library as the game calls it: <code>gfx_colour</code>, <code>gfx_place</code>, <code>gfx_shape</code>, <code>gfx_clip_to_window</code>, then the drawing routine the game uses for that shape, at the offsets and in the order the game's own routine for it uses (<code>tank_impl</code>, <code>drone</code>, <code>draw_hostage</code>, <code>barracks</code>, the flag and the jets' scripts). Each is drawn on the column the game would draw it on where the game fixes that column's evenness, because the hi-res screen colours a lone dot by its column.</p>
+  </div>
+  <p>Nothing on the screen has a colour of its own. A hi-res byte holds seven dots and one bit that picks a pair of colours: violet and green, or blue and orange. A dot lit alone shows the colour of its column, odd or even, in that pair; dots lit side by side show white. The library's whole and opaque drawing routines put one colour bit, <code>g_colour</code> (<code>$8C</code>), into every byte they write. The jets, the explosions, the muzzle flash, the drones' bodies, the flag and the fire are drawn that way with it set, in blue and orange; the tanks and the drones' spinning parts with it clear, in violet and green. The helicopter, its rotors, the hostages and the shots are drawn by OR, which leaves each byte's bit as the screen had it. The sky is black bytes with the bit set, <code>$80</code>, so over the sky they come out in blue and orange too, and where a hostage's feet reach the ground band, whose bytes have it clear, they turn violet and green.</p>
+  <p>Where a shape lands matters for the same reason. A shape one dot along shows its lone dots in the other colour of the pair, so the routine that places a jet, a drone, a tank or an explosion (<code>object_place</code>, <code>$7B59</code>) can push it one dot right to keep it on even columns or on odd ones, whatever the scrolling does. The hostages are placed so each keeps its own colours as the view scrolls.</p>
+  <p>The helicopter turning to face the viewer is drawn sheared, a row up or down every few dots (<code>gfx_draw_slant</code>), so five turning pictures and eleven side-on ones cover every pose at every tilt. How the tilt rocks it on its skids is on <a href="index.html#flight">How it works</a>.</p>
+</section>
+
+<section id="table">
+  <p class="fig">02 · The shape table</p>
+  <h2 class="t">One table of shapes draws everything, the lettering too</h2>
+  <p class="lede">The 128 pointers at <code>$A000</code>, in their order, each shape drawn alone. Pick one to see what the listing says it is.</p>
+  <div class="plate">
+    <p class="gx-msg" id="gx-tablemsg"></p>
+    <div id="gx-table"></div>
+    <p class="gx-info" id="gx-info">Pick a shape.</p>
+    <p class="cap">Each shape is drawn by the library on the sky's black the way the game draws it: whole or opaque with the colour bit the game gives it, copied as bytes, or by OR, which keeps the sky's bit. A shape starts with its width in dots and its height in rows, then its rows, top first, one bit a dot (<code>gfx_shape</code>). Seven, the four stretches of hills, the post office and the two barracks, are stored instead as seven copies already cut into screen bytes, one for each dot a byte can start at, and are copied straight onto the screen (<code>gfx_copy_bytes</code>, <code>$1039</code>).</p>
+  </div>
+  <p>The same table holds the title's lettering, the counters' digits and the three sortie messages, so the whole game, from "Broderbund Software presents..." to "THE END", is drawn by one set of routines. The library draws a shape in one of several ways: by OR onto what is there, opaque (every dot inside its box cleared first), mirrored left to right, sheared, or as a copy of ready-made screen bytes. The jets flying left, the hostages running left and the tank's shells are the same pictures drawn mirrored. A version that reports the first dot it lands on an already lit one is in the library too, and the game never calls it.</p>
+</section>
+
+<section id="frame">
+  <p class="fig">03 · How the screen is built</p>
+  <h2 class="t">Each frame is erased box by box and drawn again on the page nobody sees</h2>
+  <p class="lede">One frame of the demonstration flight, stopped before each thing the game draws. Step through it to watch the hidden page being built.</p>
+  <div class="plate">
+    <div class="ch-bar">
+      <button type="button" id="fr-prev">◀</button>
+      <button type="button" id="fr-next">▶</button>
+      <button type="button" id="fr-play">▶ Play</button>
+      <input type="range" id="fr-step" min="0" max="0" value="0" aria-label="Step">
+      <label><input type="checkbox" id="fr-hl" checked> Show what this step changed</label>
+    </div>
+    <canvas id="fr-cv" class="gx-frame" width="560" height="384" aria-label="The hidden hi-res page as one frame is drawn"></canvas>
+    <p class="gx-info" id="fr-stat"></p>
+    <p class="cap">The demonstration flight is the game's own code run from <code>start</code> on the kit's 6502 (<code>reference/demo.js</code>), to its 268th frame. That frame is then run again stopped at each call to the library's drawing routines, at <code>erase_old</code> (<code>$9B4C</code>), <code>twinkle_stars</code> (<code>$96AE</code>) and <code>draw_planet</code> (<code>$9411</code>), and at <code>gfx_show_page</code>, which ends it. Each step shows the page after it, with the bytes it changed in yellow.</p>
+  </div>
+  <p>There are two hi-res pages, and the game draws on the one that is not being shown, then shows it and starts on the other (<code>gfx_flip_page</code>). The library EORs <code>$60</code> into the high byte of every line address on page 2, which turns <code>$20</code>-<code>$3F</code> into <code>$40</code>-<code>$5F</code>, so every drawing routine serves both pages.</p>
+  <p>Nothing is cleared. Every shape drawn records a box in its page's erase list: a kind, its X and its row (<code>add_erase</code>, <code>$7BF8</code>). At the start of the next frame on that page, two frames later, <code>erase_old</code> fills each of those boxes, black above the ground line and the ground's pattern below it, so only what moved is touched. The ground band itself is never drawn: it is in the picture the disk loads onto both pages, and the erase boxes refill it with the same pattern, <code>$55 $2A</code>.</p>
+  <p>Two things are not shapes at all. The planet is <code>draw_planet</code> (<code>$9411</code>), 66 <code>LDA #</code> and <code>STA</code> pairs that store its bytes straight into screen memory, so the picture is in the code. The stars are fourteen bytes stored at 77 fixed places (<code>store_stars1</code>, <code>$972D</code>), two of them the same byte, and each frame <code>twinkle_stars</code> makes the bytes from two random numbers with each bit kept one time in four, so the sky twinkles.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/apple2.js"></script>
+<script src="reference/demo.js"></script>
+<script src="reference/tilt.js"></script>
+<script>
+(async function () {
+  const $ = id => document.getElementById(id);
+  const say = msg => { for (const id of ['gx-castmsg', 'gx-tablemsg', 'fr-stat']) $(id).textContent = msg; };
+  const missing = [['cpu6502.js', typeof C64Cpu], ['apple2.js', typeof Apple2], ['reference/demo.js', typeof ChopDemo],
+    ['reference/tilt.js', typeof ChopTilt]].filter(([, t]) => t === 'undefined').map(([f]) => f);
+  if (missing.length) return say('These pictures need the built site (missing: ' + missing.join(', ') + ').');
+  let L;
+  try { L = await Apple2.load('listing.json'); } catch (e) { return say('The listing did not load: ' + e.message); }
+  const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+  // --- the game's graphics library, called as the game calls it -----------------------------------
+  // A few JSRs to its jump table with their inline bytes, put at $0300 (no byte of the game is
+  // there) and run on the kit's 6502: gfx_reset, gfx_clear_page and gfx_fill_rows with $80, the
+  // sky's black as the disk loads it and erase_old refills it; then for each shape gfx_colour,
+  // gfx_place_direct (world X and row; the view stays at 0, so world X is the screen's X),
+  // gfx_shape_direct, gfx_clip_to_window and the drawing routine. Rows count up from the bottom.
+  // The sky's colour bit matters: drawing by OR keeps the bit of the byte under it.
+  const IO = { read() { return 0; }, write() {} };
+  const lm = L.ram.slice(), lcpu = new C64Cpu.CPU(lm, { io: IO, ioPages: [0xC0] });
+  const HOW = { or: 0x1021, or_m: 0x1024, draw: 0x1027, opq: 0x101B, opq_m: 0x101E, copy: 0x1039 };
+  const shape = i => L.ram[0xA000 + 2 * i] | L.ram[0xA001 + 2 * i] << 8;   // the table at $A000
+  const run = b => { b.push(0x60); lm.set(b, 0x0300); lcpu.call(0x0300, { sp: 0xFF }); };
+  const GROUND = 25;                                         // rows 0-25 are the ground band, $55 $2A as loaded
+  function libDraw(items, ground) {
+    run([0x20, 0x03, 0x10, 0x20, 0x09, 0x10, 0xA9, 0x80, 0xA2, 0, 0xA0, 191, 0x20, 0x0C, 0x10]);
+    if (ground) for (let r = 0; r <= GROUND; r++) { const o = Apple2.hiresBase(191 - r); for (let c = 0; c < 40; c++) lm[o + c] = c & 1 ? 0x2A : 0x55; }
+    const b = [];
+    for (const it of items) {
+      const s = shape(it.i), h = HOW[it.how || 'or'];
+      b.push(0xA9, it.col || 0, 0x20, 0x42, 0x10, 0x20, 0x51, 0x10, it.x & 255, (it.x >> 8) & 255, it.row,
+        0x20, 0x4B, 0x10, s & 255, s >> 8, 0x20, 0x60, 0x10, 0xB0, 0x03, 0x20, h & 255, h >> 8);
+    }
+    run(b);
+    return lm.slice(0x2000, 0x4000);
+  }
+
+  // --- pictures: a page's lit dots, cropped and drawn as the screen shows them ---------------------
+  const scratch = new Uint8Array(0x10000), lineAt = y => Apple2.hiresBase(y) - 0x2000;
+  function litBox(pages, box) {
+    box = box || { x0: 280, x1: -1, y0: 192, y1: -1 };
+    for (const pg of pages) for (let y = 0; y < 192; y++) {
+      const o = lineAt(y);
+      for (let c = 0; c < 40; c++) {
+        const v = pg[o + c] & 0x7F;
+        if (!v) continue;
+        for (let k = 0; k < 7; k++) if (v >> k & 1) {
+          const x = c * 7 + k;
+          if (x < box.x0) box.x0 = x; if (x > box.x1) box.x1 = x;
+        }
+        if (y < box.y0) box.y0 = y; if (y > box.y1) box.y1 = y;
+      }
+    }
+    return box;
+  }
+  function picture(pg, box, m = 2) {
+    scratch.set(pg, 0x2000);
+    const data = Apple2.render(scratch, null, { hires: true }, 'hires').data;
+    const x0 = Math.max(0, box.x0 - m), x1 = Math.min(279, box.x1 + m), y0 = Math.max(0, box.y0 - m), y1 = Math.min(191, box.y1 + m);
+    const w = (x1 - x0 + 1) * 2, h = (y1 - y0 + 1) * 2, img = new ImageData(w, h);
+    for (let y = 0; y < h; y++) img.data.set(data.subarray(((y0 * 2 + y) * 560 + x0 * 2) * 4, ((y0 * 2 + y) * 560 + x0 * 2 + w) * 4), y * w * 4);
+    return img;
+  }
+
+  // --- 01: everything that moves ---------------------------------------------------------------------
+  const B = 0x80;                                            // the colour bit set: blue and orange
+  const odd = x => x | 1, even = x => (x + 1) & ~1;          // object_place's A = 2 and A = 1
+  const s8 = v => (v << 24) >> 24;
+  const size = i => [L.ram[shape(i)], L.ram[shape(i) + 1]];
+  const cast = [];
+  const add = (name, cap, frames, opts = {}) => cast.push(Object.assign({ name, cap, frames }, opts));
+
+  // the helicopter, by heli_object: level, tilted, turned to face the viewer and away, landed with a bounce
+  const st = ChopTilt.start(L);
+  const heli = [];
+  {
+    let pose = 5, tilt = 0, height = 30;
+    const hold = (n, bounce = 0) => { for (let k = 0; k < n; k++) heli.push({ pose, tilt, height, bounce }); };
+    const tiltTo = t => { while (tilt !== t) { tilt += Math.sign(t - tilt); hold(1); } };
+    // turn_step: a step a frame towards the pose asked for, two when more than one away (facts.md)
+    const turnTo = p => { while (pose !== p) { const d = p - pose; pose += Math.sign(d) * (Math.abs(d) > 1 ? 2 : 1); hold(1); } };
+    const climbTo = h => { while (height !== h) { height += Math.max(-3, Math.min(3, h - height)); hold(1); } };
+    hold(10); tiltTo(-5); hold(6); tiltTo(5); hold(6); tiltTo(0); hold(4);
+    turnTo(0); hold(10); turnTo(-5); hold(4); tiltTo(5); hold(6); tiltTo(-5); hold(6); tiltTo(0); hold(4);
+    turnTo(0); hold(6); turnTo(5); hold(4);
+    climbTo(7); height = 6; hold(1, 1); height = 7; hold(14); climbTo(30);
+  }
+  {
+    let rotor = 4, tail = 6;
+    const pages = heli.map(h => {
+      const d = ChopTilt.place(st, { x: 0x1293, height: h.height, tilt: h.tilt, facing: 1, pose: h.pose, bounce: h.bounce, view: 0x1293 - 140, rotor, tail, sky: 0x80 });
+      rotor = d.m[0x7E38]; tail = d.m[0x7EE3];
+      return d.m.slice(d.page, d.page + 0x2000);
+    });
+    add('The helicopter', 'drawn whole by <code>heli_object</code>: it leans, turns to face you and away, then lands with a bounce.', pages, { wide: true, px: 4, heli: true });
+  }
+  const R = 150;                                             // in the sky: rows count up from the bottom
+  const H = 22 + 11;                                         // draw_hostage: the ground's row plus 11
+  add('Main rotor', 'three pictures (<code>$A024</code>), 4, 2, 0, one a frame.', [20, 19, 18].map(i => libDraw([{ i, x: 60, row: R }])));
+  add('Tail rotor', 'four pictures side-on (<code>$A02A</code>), 6, 4, 2, 0; end-on it is a dot two rows tall.', [24, 23, 22, 21].map(i => libDraw([{ i, x: 60, row: R }])));
+  {
+    const run = [];
+    for (let k = 0; k < 16; k++) run.push([{ i: 74 + (k & 3), x: odd(41) + 2 * k, row: H }]);
+    for (let k = 0; k < 16; k++) run.push([{ i: 74 + (k & 3), x: odd(41) + 30 - 2 * k, row: H, how: 'or_m' }]);
+    add('Hostage running', 'four pictures (<code>$A094</code>), a step and 2 dots a frame, mirrored to run left.', run, { ground: true });
+  }
+  add('Hostage waving', 'pictures 0, 1, 2, 1 (<code>$A09C</code>).', [78, 79, 80, 79].map(i => [{ i, x: odd(60), row: H }]), { ground: true });
+  add('Hostage climbing in', 'two pictures (<code>$A0A2</code>); at the fourth step it is aboard.', [81, 82, 81, 82, null, null, null, null].map(i => i === null ? [] : [{ i, x: odd(60), row: H }]), { ground: true });
+  add('Hostage crushed', 'under a landing helicopter, drawn whole with the colour bit set (<code>$A092</code>).', [[{ i: 73, x: odd(60), row: H, col: B, how: 'draw' }]], { ground: true });
+  {
+    // tank_impl: the hull 15 dots left of the tank's X, by bit 2 of the X; the turret 7 left and 3 up;
+    // the gun gun_x_table's offset left and 7 up; each put on an odd column; the gun turns a step a frame
+    const gunX = [0, 1, 2, 3, 4].map(a => s8(L.ram[0x6757 + a])), aims = [0, 1, 2, 3, 4, 3, 2, 1];
+    const frames = [];
+    for (let k = 0; k < 48; k++) {
+      const X = 90 + (k < 24 ? k : 48 - k), aim = aims[k % 8];
+      frames.push([                                         // on the ground: its depth is the ground's, row 22
+        { i: X & 4 ? 51 : 52, x: odd(X - 15), row: 22, how: 'draw' },
+        { i: 50, x: odd(X - 7), row: 22 + 3, how: 'draw' },
+        { i: 53 + aim, x: odd(X - gunX[aim]), row: 22 + 7, how: 'draw' }]);
+    }
+    add('Tank', 'hull, turret and gun (<code>$A064</code>-<code>$A072</code>); the tracks turn every 4 dots it drives, and the gun turns a step a frame through its five aims. Driven here a dot a frame.', frames, { ground: true });
+  }
+  {
+    // the jets' scripts: each step's first byte is the picture, drawn centred on an even column with the bit set
+    const word = a => L.ram[a] | L.ram[a + 1] << 8;
+    const names = ['Jet cruising', 'Jet turning towards you', 'Jet coming forward', 'Jet on its attack run', 'Jet on its bombing run'];
+    const caps = ['one picture (<code>$A032</code>) at 8 dots a frame.', 'seven pictures over 18 steps (<code>$A034</code>), then it flies the other way.',
+      'five pictures over 15 steps (<code>$A042</code>), out of the background.', 'six pictures over 24 steps (<code>$A04C</code>), climbing away after its missiles.',
+      'six pictures over 24 steps (<code>$A058</code>), climbing away after its bomb.'];
+    for (let k = 0; k < 5; k++) {
+      const script = word(0x8262 + 2 * k), table = (word(0x826C + 2 * k) - 0xA000) / 2, n = Math.max(1, L.ram[0x6CE9 + k]);
+      const steps = [];
+      for (let s = 0; s < n; s++) steps.push(table + L.ram[script + 4 * s]);
+      for (let s = 0; s < 6; s++) steps.push(steps[steps.length - 1]);
+      add(names[k], caps[k], steps.map(i => { const [w, h] = size(i); return libDraw([{ i, x: even(80 - (w >> 1)), row: R + (h >> 1), col: B, how: 'draw' }]); }));
+    }
+  }
+  {
+    // drone: the body 6 left and 7 up of its X, on an even column, with the bit set; the spinning part
+    // 6 rows below and a dot right, opaque with the bit clear, a picture a frame
+    const X = 80;
+    add('Drone', 'body (<code>$A07E</code>) and its spinning part, three pictures one a frame (<code>$A080</code>).', [64, 65, 66].map(i => libDraw([
+      { i: 63, x: even(X - 6), row: R + 7, col: B, how: 'draw' },
+      { i, x: even(X - 6) + 1, row: R + 1, col: 0, how: 'opq' }])));
+  }
+  add('Explosion', 'five pictures, one a frame, centred, with the bit set (<code>$A086</code>).', [67, 68, 69, 70, 71, null, null, null, null, null].map(i => {
+    if (i === null) return libDraw([]);
+    const [w, h] = size(i); return libDraw([{ i, x: even(80 - (w >> 1)), row: R + (h >> 1), col: B, how: 'draw' }]);
+  }));
+  add('Flash on the ground', 'where an explosion meets the ground (<code>$A090</code>).', [libDraw([{ i: 72, x: even(80), row: R, col: B, how: 'draw' }])]);
+  add('Muzzle flash', 'at the helicopter\'s gun as it fires (<code>$A07C</code>).', [libDraw([{ i: 62, x: odd(80), row: R, col: B, how: 'draw' }])]);
+  add('Shots', 'the helicopter\'s shot, a shell, a missile and a bomb (<code>$A074</code>-<code>$A07A</code>).', [libDraw([
+    { i: 58, x: 40, row: R }, { i: 59, x: 52, row: R }, { i: 60, x: even(62), row: R }, { i: 61, x: 82, row: R - 1 }])]);
+  {
+    // barracks: the building copied at row 36, the strip at its foot at row 25; an open one's fire
+    // 6 dots in at row 28, by the frame's parity, mirrored every other two frames; the rubble 1 left and 6 below it
+    const X = 70;
+    add('Barracks', 'closed, copied onto the screen as ready-made bytes (<code>$A0CA</code>).', [[{ i: 101, x: X, row: 36, how: 'copy' }, { i: 103, x: X, row: 25 }]], { ground: true });
+    add('Barracks, open', 'its fire two pictures by the frame, mirrored every other two frames (<code>$A0D2</code>).', [0, 1, 2, 3].map(f => [
+      { i: 102, x: X, row: 36, how: 'copy' }, { i: 103, x: X, row: 25 },
+      { i: 105 + (f & 1), x: X + 6, row: 28, col: B, how: f & 2 ? 'opq_m' : 'opq' },
+      { i: 104, x: X + 5, row: 22, col: B }]), { ground: true });
+  }
+  add('Flag', 'two pictures, one a frame, on its pole (<code>$A0B6</code>-<code>$A0BA</code>).', [0, 1].map(f => libDraw([
+    { i: 91, x: odd(80), row: 40, col: B, how: 'opq' }, { i: 92 + f, x: odd(80) + 2, row: 40, col: B, how: 'opq' }])));
+
+  const box = $('gx-cast'), shown = [];
+  for (const c of cast) {
+    // frames are pages, or lists of shapes to draw; one on the ground is cropped to the box its shapes
+    // light on the sky alone, a few lines lower, and drawn over the ground band
+    const lists = !(c.frames[0] instanceof Uint8Array), plain = lists ? c.frames.map(f => libDraw(f)) : c.frames;
+    const bx = litBox(plain);
+    if (c.ground) bx.y1 = Math.min(191, bx.y1 + 4);
+    const imgs = (c.ground ? c.frames.map(f => libDraw(f, true)) : plain).map(pg => picture(pg, bx));
+    const fig = document.createElement('figure'), cv = document.createElement('canvas');
+    cv.width = imgs[0].width; cv.height = imgs[0].height;
+    cv.style.width = imgs[0].width / 2 * (c.px || 3) + 'px';
+    cv.getContext('2d').putImageData(imgs[0], 0, 0);
+    if (c.wide) fig.className = 'wide';
+    fig.append(cv); fig.insertAdjacentHTML('beforeend', '<b>' + c.name + '</b>: ' + c.cap);
+    box.append(fig);
+    shown.push({ c, imgs, ctx: cv.getContext('2d') });
+  }
+  const poseWords = p => p === 5 ? 'side-on, facing right' : p === -5 ? 'side-on, facing left' : p === 0 ? 'facing you' : 'turning';
+  let frame = 0, running = true;
+  function tick() {
+    frame++;
+    for (const s of shown) if (s.imgs.length > 1) s.ctx.putImageData(s.imgs[frame % s.imgs.length], 0, 0);
+    const h = heli[frame % heli.length];
+    $('gx-heli').textContent = `helicopter: pose ${h.pose > 0 ? '+' : ''}${h.pose} (${poseWords(h.pose)}), tilt ${h.tilt > 0 ? '+' : ''}${h.tilt}${h.bounce ? ', bouncing' : h.height === 7 ? ', landed' : ''}`;
+  }
+  let timer = setInterval(tick, 1000 / 12);
+  $('gx-run').onclick = () => {
+    running = !running; $('gx-run').textContent = running ? '❚❚ Pause' : '▶ Play'; $('gx-run').classList.toggle('on', running);
+    clearInterval(timer); if (running) timer = setInterval(tick, 1000 / 12);
+  };
+  $('gx-step').onclick = () => { if (running) $('gx-run').onclick(); tick(); };
+  tick();
+
+  // --- 02: the shape table ---------------------------------------------------------------------------
+  // how the game draws each shape: whole (gfx_draw) or opaque with the colour bit it sets, copied as
+  // bytes, or by OR (the rest), which keeps the sky's bit; and the column's evenness where its placing
+  // fixes it (object_place) or the attract mode always drew it there
+  function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
+  const DRAW = new Map([...range(25, 49).map(i => [i, ['draw', B]]), ...range(50, 57).map(i => [i, ['draw', 0]]),
+    [62, ['draw', B]], [63, ['draw', B]], ...range(64, 66).map(i => [i, ['opq', 0]]), ...range(67, 73).map(i => [i, ['draw', B]]),
+    ...[83, 84, 85, 86, 89, 101, 102].map(i => [i, ['copy', 0]]), [87, ['opq', 0]], [88, ['opq', B]], [90, ['opq', 0]],
+    ...[91, 92, 93, 105, 106].map(i => [i, ['opq', B]]), ...range(107, 127).map(i => [i, ['opq', B]])]);
+  const ODD = new Set([...range(50, 57), 62, ...range(64, 66), ...range(73, 82), 89, ...range(91, 95), 121]);
+  const GROUPS = [['The helicopter', 0, 24], ['The jets', 25, 49], ['The tanks', 50, 57], ['Shots and the muzzle flash', 58, 62],
+    ['The drones', 63, 66], ['Explosions', 67, 72], ['The hostages', 73, 82], ['The scenery', 83, 106], ['The counters', 107, 118], ['Lettering', 119, 127]];
+  const about = a => {
+    const c = (L.listing.records.find(r => r.a === a) || {}).c || '';
+    const m = c.match(/^(.*?),? \d+ dots wide/);
+    return m ? m[1] : c.split(':')[0];
+  };
+  const tiles = $('gx-table');
+  for (const [title, a, b] of GROUPS) {
+    const g = document.createElement('div'); g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
+    const row = g.lastChild;
+    for (let i = a; i <= b; i++) {
+      const [how, col] = DRAW.get(i) || ['or', 0];
+      const pg = libDraw([{ i, x: ODD.has(i) ? 15 : 14, row: 183, col, how }]);
+      // a shape with no dot lit (the bar's corner) is drawn opaque to cut a black line: shown as its box
+      const lit = litBox([pg]), clear = lit.x1 < 0, [w0, h0] = size(i);
+      const img = picture(pg, clear ? { x0: 14, x1: 14 + w0 - 1, y0: 8, y1: 8 + h0 - 1 } : lit, 1);
+      const btn = document.createElement('button'), cv = document.createElement('canvas');
+      btn.type = 'button'; cv.width = img.width; cv.height = img.height; cv.style.width = img.width * 1.5 + 'px';
+      const cx = cv.getContext('2d'); cx.putImageData(img, 0, 0);
+      if (clear) { cx.strokeStyle = '#666'; cx.setLineDash([2, 2]); cx.strokeRect(1.5, 1.5, img.width - 3, img.height - 3); }
+      const n = document.createElement('span'); n.textContent = i;
+      btn.append(cv, n);
+      const a0 = shape(i), [w, h] = size(i);
+      btn.onclick = () => {
+        tiles.querySelectorAll('button.on').forEach(e => e.classList.remove('on')); btn.classList.add('on');
+        $('gx-info').innerHTML = `<b>Shape ${i}</b>, pointer at <code>${hex(0xA000 + 2 * i)}</code>, shape at <code>${hex(a0)}</code> (<code>${L.names.get(a0) || ''}</code>), ${w} dots by ${h} rows${how === 'copy' ? ', stored as screen bytes' : ''}. ${about(a0)}.${clear ? ' Every dot of it is clear: drawn opaque, it cuts a black line down the bar\'s right end (<code>bar_corner_draw</code>).' : ''}`;
+      };
+      row.append(btn);
+    }
+    tiles.append(g);
+  }
+
+  // --- 03: one frame, step by step -----------------------------------------------------------------------
+  const s = ChopDemo.start(L);
+  for (let f = 0; f < 267; f++) ChopDemo.next(s);
+  if (s.cpu.pc === 0x12E3) s.cpu.step();
+  const routines = L.listing.records.filter(r => r.l && r.t === 'code' && !/^(b|j|r)_/.test(r.l)).map(r => [r.a, r.l]).sort((p, q) => p[0] - q[0]);
+  const routineOf = a => { let best = null; for (const r of routines) { if (r[0] > a) break; best = r; } return best; };
+  const drawing = () => (s.m[0x8D] ? 0x4000 : 0x2000);
+  const marks = [];
+  const mark = (what, from) => marks.push({ what, from, pg: s.m.slice(drawing(), drawing() + 0x2000) });
+  const caller = () => (((s.m[0x100 + ((s.cpu.sp + 1) & 0xFF)] | s.m[0x100 + ((s.cpu.sp + 2) & 0xFF)] << 8) - 2) & 0xFFFF);
+  const named = { 0x101B: 'opaque', 0x101E: 'opaque, mirrored', 0x1021: 'by OR', 0x1024: 'by OR, mirrored', 0x1027: 'whole', 0x102A: 'whole, mirrored', 0x1033: 'sheared', 0x1036: 'sheared, mirrored', 0x1039: 'copied as bytes' };
+  const hooks = {
+    0x9B4C: () => { mark('Erasing every box this page recorded two frames ago', 0x9B4C); },
+    0x96AE: () => { mark('The stars, stored at their fixed places', 0x96AE); },
+    0x9411: () => { mark('The planet, stored straight from the code', 0x9411); },
+    0x1000: () => {
+      const a = s.m[0xC3] | s.m[0xC4] << 8, n = L.names.get(a) || '';
+      if (/^erase_/.test(n) && marks.length && marks[marks.length - 1].from === 0x9B4C) return;
+      mark('A box filled with a pattern (' + n + ')', caller());
+    },
+    0x12E3: () => true,
+  };
+  for (const k of Object.keys(named)) hooks[k] = () => {
+    const a = s.m[0xC3] | s.m[0xC4] << 8, how = named[k];
+    mark(about(a) + (how ? ', ' + how : ''), caller());
+  };
+  s.cpu.run({ cycles: 20e6, hooks });
+  mark('Shown', 0x12E3);
+  const fr = $('fr-cv'), fx = fr.getContext('2d');
+  let at = 0, playing = null;
+  $('fr-step').max = marks.length - 2;
+  function showStep() {
+    const before = marks[at].pg, after = marks[at + 1].pg;
+    scratch.set(after, 0x2000);
+    Apple2.draw(fr, scratch, null, { hires: true }, 'hires');
+    if ($('fr-hl').checked) {
+      fx.fillStyle = 'rgba(255, 220, 0, 0.5)';
+      for (let y = 0; y < 192; y++) { const o = lineAt(y); for (let c = 0; c < 40; c++) if (before[o + c] !== after[o + c]) fx.fillRect(c * 14, y * 2, 14, 2); }
+    }
+    const m = marks[at], r = routineOf(m.from);
+    $('fr-stat').innerHTML = `Step ${at + 1} of ${marks.length - 1} · ${m.what}${r ? `, from <code>${r[1]}</code> (<code>${hex(m.from)}</code>)` : ''}.`;
+    $('fr-step').value = at;
+  }
+  const go = k => { at = Math.max(0, Math.min(marks.length - 2, k)); showStep(); };
+  const stop = () => { clearInterval(playing); playing = null; $('fr-play').textContent = '▶ Play'; $('fr-play').classList.remove('on'); };
+  $('fr-prev').onclick = () => { stop(); go(at - 1); };
+  $('fr-next').onclick = () => { stop(); go(at + 1); };
+  $('fr-step').oninput = () => { stop(); go(+$('fr-step').value); };
+  $('fr-hl').onchange = showStep;
+  $('fr-play').onclick = () => {
+    if (playing) return stop();
+    if (at >= marks.length - 2) at = -1;
+    $('fr-play').textContent = '❚❚ Pause'; $('fr-play').classList.add('on');
+    playing = setInterval(() => { if (at >= marks.length - 2) return stop(); go(at + 1); }, 400);
+  };
+  go(0);
+})();
+</script>

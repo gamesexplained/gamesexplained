@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold reference/puni.js, the engine index.html, discoveries.html and levels.html run, to the game's
+// Hold reference/puni.js, the engine index.html, graphics.html, discoveries.html and levels.html run, to the game's
 // own code in the committed listing and to what the game did in plus4emu (facts.md, "Live tests").
 // The engine runs the game's routines on the kit's 6502; what it adds is how it calls them and how
 // it draws, and that is what this checks.
