@@ -53,6 +53,7 @@ G.input = P => {
     const f = READERS[at];
     if (!f) throw new Error('readControls: no reader at $' + at.toString(16));
     const r = f({ a: 2 * M[0xB0C7] & 255, c: 0 });
+    P.count('reader' + (M[0xB0C7] & 3));
     M[0x5D2A] = r.a;
     return Object.assign(r, { h: at >> 8, l: at & 255, hl: at, d: 0xB0, e: r.e === undefined ? 0xDC : r.e });
   });
@@ -100,9 +101,11 @@ G.input = P => {
     if (M[0x5DF7]) return {};
     for (;;) {
       const k = yield* P.keyScan();
+      P.count('releaseTurn');
       M[0x5D9C] = M[0x5D9C] + 1 & 255;
       if (k.e !== 0xFF) continue;
       yield* P.readControls();
+      P.count('releaseReadTurn');
       if (M[0x5D2A] === 0xFF) break;
     }
     return {};
@@ -113,6 +116,7 @@ G.input = P => {
   P.def(0x6B08, 'waitKey', function* () {
     for (;;) {
       yield { cp: 0x6B08 };
+      P.count('keyTurn');
       M[0x5D9C] = M[0x5D9C] + 1 & 255;
       if (((IN(0x00FE) | 0xE0) + 1 & 255) !== 0) break;
     }
@@ -130,6 +134,7 @@ G.input = P => {
       if (M[0x5D2A] === 0xFF) return {};
       P.delay3();
       yield* P.readControls();
+      P.count('repeatTurn');
     }
     return { b: 0 };
   });
@@ -140,6 +145,7 @@ G.input = P => {
     if (M[0x5DF7]) return {};
     do {
       yield* P.readControls();
+      P.count('fireTurn');
       M[0x5D9C] = M[0x5D9C] + 1 & 255;
     } while (M[0x5D2A] & 1);
     return P.sound({ a: 0 });

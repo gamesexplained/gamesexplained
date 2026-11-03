@@ -17,13 +17,16 @@ if (missing.length) console.log('no label in the listing for: ' + missing.join('
 // for both first.
 {
   const fs = require('fs'), path = require('path'), src = path.join(__dirname, '..', 'src');
+  // the scenarios' own routines are in P only while their scenario is in memory
+  const inScenario = new Set();
+  for (const s of Object.values(P.SC)) for (const [name] of s.values()) inScenario.add(name);
   let bad = 0;
   for (const f of fs.readdirSync(src).filter(f => f.endsWith('.js'))) {
     fs.readFileSync(path.join(src, f), 'utf8').split('\n').forEach((l, i) => {
       const re = /(yield\* )?P\.(\w+)\(/g;
       for (let m; (m = re.exec(l));) {
         if (P.GEN.has(m[2]) && !m[1]) { console.log('FAIL ' + f + ':' + (i + 1) + ': ' + m[2] + ' waits, and is called without yield*'); bad++; }
-        if (P[m[2]] === undefined && !L.byName.has(m[2]) && m[2] !== 'at') { console.log('FAIL ' + f + ':' + (i + 1) + ': P.' + m[2] + ' is neither the port\'s nor a label of the game'); bad++; }
+        if (P[m[2]] === undefined && !inScenario.has(m[2]) && !L.byName.has(m[2]) && m[2] !== 'at') { console.log('FAIL ' + f + ':' + (i + 1) + ': P.' + m[2] + ' is neither the port\'s nor a label of the game'); bad++; }
       }
     });
   }

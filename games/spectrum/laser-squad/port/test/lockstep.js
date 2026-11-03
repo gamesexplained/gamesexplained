@@ -4,8 +4,8 @@
 // the placing of the units, into the turns, with the bot's input (bot.js) set at every read of the
 // controls and the keyboard, where the game and the port stand at the same place. The game runs on
 // the tests' 48K machine (lib.js), its ROM's KEY-SCAN and tape routines stood in for; the port's
-// tape is a copy of the same cassette. Routines the port has not written (the scenario's) are the
-// game's own code (standin.js).
+// tape is a copy of the same cassette. A routine the port had not written would run as the game's
+// own code (standin.js), and the run names every one it stood in for; the port has them all.
 //
 // The game reads the refresh register for its random numbers and its noise, which no port can
 // keep: both read the same made-up values instead, in the order they read them, so a port that
@@ -41,7 +41,9 @@ function run(o = {}) {
   // o.clean: the machine and the tape from the committed listings, with nothing from work/
   const m = o.state ? lib.restore(lib.readState(o.state)) : o.clean ? lib.fromListing() : lib.fromSna('entry');
   const blocks = o.clean ? lib.listingTape() : lib.tapeBlocks();
-  m.tape = new lib.Tape(blocks);
+  // o.Tape: the cassette's class (lib.Tape, whose blocks come in order, by default)
+  const Tape = o.Tape || lib.Tape;
+  m.tape = new Tape(blocks);
   // the refresh register, as both read it; each side's reads counted, so a side that reads it
   // once too often is named at the pass it does, before the numbers it draws differ
   // (the machine's copies, which the lockstep runs on ahead for the stack's bytes, read on from
@@ -49,21 +51,26 @@ function run(o = {}) {
   const seq = lib.makeSeq(o.rseed || 11);
   m.useR(seq);
   const reads = { get game() { return m.rAt; }, port: 0 };
-  const P = LS.makePort(new Uint8Array(65536), { tape: new lib.Tape(blocks), r: () => seq(reads.port++) });
+  const P = LS.makePort(new Uint8Array(65536), { tape: new Tape(blocks), r: () => seq(reads.port++) });
   standin.install(P);
   if (o.onPort) o.onPort(P, m);
-  bot.attach(m, o.seed || 1, { hooks: false, key: keys(o), hunt: o.hunt });
+  // o.key(k): the keys the menus are answered with, given the usual ones (keys, above); o.stay(M):
+  // the menu between turns waits for a key rather than playing on
+  bot.attach(m, o.seed || 1, { hooks: false, key: o.key ? o.key(keys(o)) : keys(o), hunt: o.hunt, stay: o.stay });
   const ls = new Lockstep({ machine: m, port: P, program: P => P.program(o.state ? 0xB1C3 : 0x5E28), passAt: 0xB0C8,
     checkpoints: P.CHECKPOINTS, chips: ['border'], stack: STACK, ignore: o.ignore || [], maxFrames: o.maxFrames || 2000,
     // the stack's bytes as the random numbers read them ($80C0, ADD A,(HL))
     irqBytes: STACK_BYTES, irqRead: cpu => cpu.pc === 0x80C1,
     timing: o.timing });
+  // o.onLockstep(ls, P): the lockstep made, P.io as it will run (../../test_play.js records it)
+  if (o.onLockstep) o.onLockstep(ls, P);
   const res = ls.run({ passes: o.passes || 2000, stopOnDiff: o.stopOnDiff !== false,
     onPass: (n, mm) => {
       if (reads.game !== reads.port) {
         throw new Error('pass ' + n + ': the refresh register read ' + reads.game + ' times by the game, ' + reads.port + ' by the port');
       }
       if (P.__clear) P.__clear();
+      if (o.onPass) o.onPass(n, mm, P);
       mm.bot.decide(mm);
     },
     onFrame: (f, mm) => { if (mm.cpu.pc !== 0xB0C8) mm.bot.decide(mm); } });

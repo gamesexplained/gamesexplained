@@ -51,6 +51,7 @@ G.scanner = P => {
     for (;;) {
       for (let b = 100; b; b--) {
         yield* P.readControls();
+        P.count('scannerTurn');
         P.delay1();
         if (!(M[0x5D2A] & 1)) {
           P.clearScreen();

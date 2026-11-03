@@ -94,8 +94,8 @@ G.scenario = P => {
   // Rescue from the Mines.
   const RM = 'rescue-from-the-mines';
   // $FF88: a step onto squares $1A-$1D is never made: the step's routine ends there ($6F89 too).
-  // A unit of kind $18 ($27) that tries it leaves the map: its square as it was, 3 in the table of
-  // units, and 34 victory points to the first side.
+  // A unit whose $27 is $18 (the three prisoners) that tries it leaves the map: its square as it
+  // was, 3 in the table of units, and 34 victory points to the first side.
   P.defIn(RM, 0xFF88, 'wayOut', function* (r) {
     const sq = M[w(0x5D3E)];
     if (sq < 0x1A) return { a: sq, cf: true, zf: false };

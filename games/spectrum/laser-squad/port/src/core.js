@@ -41,7 +41,8 @@ function makePort(M, io, opts = {}) {
   const IO = Object.assign({}, io);
   Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
     set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
-  // counts of the work inside routines whose length varies, for the page's pacing
+  // counts of the work inside routines whose length varies, and of each turn of the loops that
+  // read the controls, for the page's pacing
   P.N = {};
   P.count = (k, n = 1) => { P.N[k] = (P.N[k] || 0) + n; };
   // the T-states the port has spent in the game's delay loops and its sound, for the page's clock:

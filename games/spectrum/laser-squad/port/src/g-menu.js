@@ -96,6 +96,7 @@ G.menu = P => {
     P.lightLine();
     for (;;) {
       yield* P.readControls();
+      P.count('menuTurn');
       const a = M[0x5D2A];
       if (!(a & 1)) {
         for (let i = 0; i < 4; i++) { P.lightLine(); P.sound({ a: 5 }); P.lightLine(); P.playSound(); }

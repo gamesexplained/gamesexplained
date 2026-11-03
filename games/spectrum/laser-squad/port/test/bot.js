@@ -182,7 +182,8 @@ function attach(m, seed = 1, o = {}) {
       if (!line) return toggle ? hold(r < 0.5 ? 'right' : r < 0.6 ? 'left' : 'down') : hold();
       return toggle ? hold(r < 0.55 ? 'right' : r < 0.65 ? 'left' : r < 0.85 ? 'down' : 'up') : hold();
     }
-    if (at === 0xA287) return rnd() < 0.5 ? hold('fire') : hold();   // the menu between turns: play on
+    // the menu between turns: play on, unless o.stay(M) holds it for the keys (o.key)
+    if (at === 0xA287) return o.stay && o.stay(M) ? hold() : rnd() < 0.5 ? hold('fire') : hold();
     // any other wait: fire now and then, and a way
     const r = rnd();
     if (r < 0.3) return hold('fire');

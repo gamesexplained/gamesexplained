@@ -22,6 +22,7 @@ G.cursor = P => {
         else { P.eraseCursor(); M[0x5D16] = 0; M[0xB71A] = 0x8C; }
       }
       yield* P.readControls();
+      P.count('cursorTurn');
       P.spend(119 * 13 + 8 + 7);
       P.moveCursor();
       P.squareReadout();
@@ -36,6 +37,7 @@ G.cursor = P => {
     for (;;) {
       if (dec(0x5D17) === 0) P.crosshairBlink();
       yield* P.readControls();
+      P.count('crosshairTurn');
       const a = M[0x5D2A];
       if (!(a & 1)) return {};
       if ((a | 0xE1) === 0xFF) { M[0x5D18] = 0; M[0x5D1B] = 0; }

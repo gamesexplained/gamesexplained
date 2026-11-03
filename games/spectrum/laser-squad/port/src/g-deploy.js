@@ -32,6 +32,7 @@ G.deploy = P => {
     for (;;) {
       yield* P.repeatDelay();
       yield* P.readControls();
+      P.count('shopTurn');
       let a = M[0x5D2A];
       if (a & 1) {
         if (!(a & 2)) {
@@ -55,7 +56,7 @@ G.deploy = P => {
       P.lightLine();
       P.infoText({ a: 0x59 });
       yield* P.waitRelease();
-      do yield* P.readControls(); while (M[0x5D2A] === 0xFF);
+      do { yield* P.readControls(); P.count('shopWaitTurn'); } while (M[0x5D2A] === 0xFF);
       if (!(M[0x5D2A] & 1)) return { a: M[0x5D2A], zf: true };
       P.infoText({ a: 0x5B });
       P.showKind();
@@ -352,9 +353,11 @@ G.deploy = P => {
     for (;;) {
       if (!M[0x5DF9]) {
         yield* P.readControls();
+        P.count('choiceFireTurn');
         if (!(M[0x5D2A] & 1)) { P.sound({ a: 0 }); return { a: 0, zf: true }; }
       }
       const k = yield* P.keyScan();
+      P.count('choiceTurn');
       if (k.e === 0xFF) continue;
       let n = 0;
       for (let b = M[0x5DF6] || 256; b && M[0xA2B3 + n & 0xFFFF] !== k.e; b--) n++;

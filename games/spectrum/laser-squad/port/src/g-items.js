@@ -235,6 +235,7 @@ G.items = P => {
   P.def(0x7B95, 'chooseLoop', function* () {
     for (;;) {
       yield* P.readControls();
+      P.count('chooseTurn');
       const a = M[0x5D2A];
       if (!(a & 1)) return P.sound({ a: 2 });
       let moved = false;

@@ -74,6 +74,7 @@ G.unit = P => {
   // forwards, down a step back, right and left a turn. With none, Z if it is dead ($08 is 0).
   P.def(0x6CE9, 'unitInput', function* (r) {
     yield* P.readControls();
+    P.count('unitTurn');
     P.spend(117 * 13 + 8 + 7);
     const a = M[0x5D2A];
     if (!(a & 1)) return yield* P.unitMenu({ ix: r.ix });
@@ -132,6 +133,7 @@ G.unit = P => {
     if (M[0x5DF7]) return {};
     for (let b = 0x41; b; b--) {
       yield* P.readControls();
+      P.count('waitControlsTurn');
       P.delay40();
       if (M[0x5D2A] !== 0xFF) return { b };
     }

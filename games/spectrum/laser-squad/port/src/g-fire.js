@@ -708,6 +708,7 @@ G.fire = P => {
       for (;;) {
         yield* P.repeatDelay();
         yield* P.readControls();
+        P.count('roundsTurn');
         a = M[0x5D2A];
         if (!(a & 1)) return P.sound({ a: 2 });
         if (!(a & 2) || !(a & 4)) break;
