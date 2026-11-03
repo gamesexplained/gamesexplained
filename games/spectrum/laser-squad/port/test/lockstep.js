@@ -20,6 +20,7 @@ const bot = require('./bot.js');
 
 // the game's stack: set at $5E39 and growing down, below it the engine's variables end at $5DFF
 const STACK = [0x5E00, 0x5E38];
+const STACK_BYTES = Array.from({ length: STACK[1] - STACK[0] + 1 }, (_, k) => STACK[0] + k);
 
 // The keys the menus are answered with: the scenario, the keyboard's controls (4), one player or
 // two, the computer's level; between turns, mostly fire (bot.js), now and then 1 (the controls
@@ -40,21 +41,31 @@ function run(o = {}) {
   const m = o.state ? lib.restore(lib.readState(o.state)) : lib.fromSna('entry');
   const blocks = lib.tapeBlocks();
   m.tape = new lib.Tape(blocks);
-  // the refresh register, as both read it
+  // the refresh register, as both read it; each side's reads counted, so a side that reads it
+  // once too often is named at the pass it does, before the numbers it draws differ
   const rA = lib.makeRnd(o.rseed || 11), rB = lib.makeRnd(o.rseed || 11);
+  const reads = { game: 0, port: 0 };
   const readreg = m.cpu.readreg.bind(m.cpu);
-  m.cpu.readreg = what => (what === 'R' ? rA(128) : readreg(what));
-  const P = LS.makePort(new Uint8Array(65536), { tape: new lib.Tape(blocks), r: () => rB(128) });
+  m.cpu.readreg = what => (what === 'R' ? (reads.game++, rA(128)) : readreg(what));
+  const P = LS.makePort(new Uint8Array(65536), { tape: new lib.Tape(blocks), r: () => (reads.port++, rB(128)) });
   standin.install(P);
   if (o.onPort) o.onPort(P, m);
   bot.attach(m, o.seed || 1, { hooks: false, key: keys(o), hunt: o.hunt });
   const ls = new Lockstep({ machine: m, port: P, program: P => P.program(o.state ? 0xB1C3 : 0x5E28), passAt: 0xB0C8,
     checkpoints: P.CHECKPOINTS, chips: ['border'], stack: STACK, ignore: o.ignore || [], maxFrames: o.maxFrames || 2000,
+    // the stack's bytes as the random numbers read them ($80C0, ADD A,(HL))
+    irqBytes: STACK_BYTES, irqRead: cpu => cpu.pc === 0x80C1,
     timing: o.timing });
   const res = ls.run({ passes: o.passes || 2000, stopOnDiff: o.stopOnDiff !== false,
-    onPass: (n, mm) => { if (P.__clear) P.__clear(); mm.bot.decide(mm); },
+    onPass: (n, mm) => {
+      if (reads.game !== reads.port) {
+        throw new Error('pass ' + n + ': the refresh register read ' + reads.game + ' times by the game, ' + reads.port + ' by the port');
+      }
+      if (P.__clear) P.__clear();
+      mm.bot.decide(mm);
+    },
     onFrame: (f, mm) => { if (mm.cpu.pc !== 0xB0C8) mm.bot.decide(mm); } });
-  return { res, ls, m, P };
+  return { res, ls, m, P, reads };
 }
 
 if (require.main === module) {
@@ -62,7 +73,7 @@ if (require.main === module) {
   const players = +(process.argv[5] || 2), level = +(process.argv[6] || 1);
   const t = Date.now();
   let out;
-  try { out = run({ passes, scenario, seed, players, level }); } catch (e) { console.log((e.stack || e.message).split('\n').slice(0, 10).join('\n')); process.exit(1); }
+  try { out = run({ passes, scenario, seed, players, level, maxFrames: players === 1 ? 40000 : 2000 }); } catch (e) { console.log((e.stack || e.message).split('\n').slice(0, 10).join('\n')); process.exit(1); }
   const used = [...out.P.standInsUsed];
   console.log('scenario ' + scenario + ', seed ' + seed + ' (' + (Date.now() - t) + ' ms, turn ' + out.m.ram[0xB711] + ', ' + used.length +
     ' routines stood in' + (used.length ? ': ' + used.join(' ') : '') + '): ' + describe(out.res).split('\n').join('\n  '));

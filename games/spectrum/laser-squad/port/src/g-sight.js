@@ -332,7 +332,7 @@ G.sight = P => {
           if (M[0x5DF7]) {
             P.findSeen();
             ix = ixOf(P.showSeen({ ix }), ix);
-            if (M[0x5D59]) { ix = ixOf(yield* P.jumpGen(0xB624, { ix }), ix); ix = w(0x5D33); }
+            if (M[0x5D59]) { ix = ixOf(yield* P.computerReaction({ ix }), ix); ix = w(0x5D33); }
           } else {
             // fire mode; a unit that dies in it ends it past this routine too ($8EDC)
             const d = yield* P.fireMode({ ix });

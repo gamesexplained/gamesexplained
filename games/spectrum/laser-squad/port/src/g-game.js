@@ -110,7 +110,7 @@ G.game = P => {
     M[V.VIEW_ROW] = M[hl]; M[V.VIEW_COL] = M[hl + 1];
     M[V.CURSOR_ROW] = M[hl + 2]; M[V.CURSOR_COL] = M[hl + 3];
     P.computerSide();
-    if (M[0x5DF7]) yield* P.jumpGen(0xB621);
+    if (M[0x5DF7]) yield* P.computerTurn();
     else {
       yield* P.turnScreen();
       yield* P.cursorMode();
@@ -118,7 +118,7 @@ G.game = P => {
     hl = P.viewSlot().hl;
     M[hl] = M[V.VIEW_ROW]; M[hl + 1] = M[V.VIEW_COL];
     M[hl + 2] = M[V.CURSOR_ROW]; M[hl + 3] = M[V.CURSOR_COL];
-    yield* P.jumpGen(0xB630);
+    yield* P.scenarioHalfTurn();
     yield* P.fuses();
     M[0xB712] = M[0xB712] + 1 & 255;
     return { a: M[0xB712] };
@@ -180,7 +180,10 @@ G.game = P => {
     P.io.out(0xFE, 0x0F, P.T);
     const b = tape ? tape.load(flag, len) : null;
     let ok = !!b && b.bytes.length === len;
-    if (ok && op === 1) for (let k = 0; k < len; k++) M[at + k] = b.bytes[k];
+    if (ok && op === 1) {
+      for (let k = 0; k < len; k++) M[at + k] = b.bytes[k];
+      P.useScenario();
+    }
     if (ok && op === 2) for (let k = 0; k < len; k++) if (M[at + k] !== b.bytes[k]) { ok = false; break; }
     if (yield* breakKey()) return { a: 0xB1 };
     let msg = 0x6A;
@@ -244,6 +247,7 @@ G.game = P => {
   // The whole game, the page's main loop: from $5E28, and from the menu again at each restart.
   P.CHECKPOINTS = [0xB0C8, 0x028E, 0x6B08, 0xB15C];
   P.program = function* (at = 0x5E28) {
+    P.useScenario();
     for (;;) {
       try {
         if (at === 0x5E28) yield* P.start();

@@ -93,6 +93,10 @@
 //   than Machine does extends save() and restore(), or the copy is not the game. Input onFrame
 //   gives inside the stretch, after the copy is made, is not in it. On the page, outside the
 //   lockstep, the port's io gives irqByte: a => M[a].
+// - irqRead(cpu, a): which of the game's reads of irqBytes count (all, without it): for a byte the
+//   main program itself writes that the port cannot keep, such as the stack, which a game may read
+//   as noise, irqRead names the instruction that reads it (cpu.pc is past the whole instruction
+//   then: $80C1 for an ADD A,(HL) at $80C0).
 //
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
@@ -241,6 +245,7 @@ class Lockstep {
     if (m128) P.mem = new Banks128(P.M, [0, 1, 2, 3, 4, 5, 6, 7].map(n => m.bank(n)), m.mem.paged);
     this.ula = new PortULA(m, m128 ? P.mem : null);
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
+    this.irqRead = o.irqRead || null;
     this.ib = { live: new Map(), list: null, used: new Map() };   // the stretch's reads of them
     this.io = this.makeIO(top);
     P.io = Object.assign({}, P.io, this.io);
@@ -292,7 +297,7 @@ class Lockstep {
   // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
   // then a copy's, run on from here to the next stop outside its interrupts.
   lookahead() {
-    const m = this.m, hooks = Object.assign({}, m.hooks);
+    const ls = this, m = this.m, hooks = Object.assign({}, m.hooks);
     for (const a of [...this.cps, ...this.halts]) { const h = this.saved.hooks[a]; if (h) hooks[a] = h; else delete hooks[a]; }
     const g = m.constructor.restore(m.save(), { rom: m.rom || undefined, romRanges: m.romRanges || undefined, hooks, passAt: null });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
@@ -313,7 +318,7 @@ class Lockstep {
     const rd = cpu.rd;
     cpu.rd = function (x) {
       const v = rd.call(this, x), a = this.bus;
-      if (!ints.open.length && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(v); }
+      if (!ints.open.length && B.has(a) && (!ls.irqRead || ls.irqRead(this, a))) { if (!out.has(a)) out.set(a, []); out.get(a).push(v); }
       return v;
     };
     const end = g.frames + this.maxFrames;
@@ -370,7 +375,7 @@ class Lockstep {
       if (a < 0x4000) return v;
       const q = ls.irq;
       if (q !== null) { if (!q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, v); }
-      else if (B.has(a) && !ls.ib.list) { const L = ls.ib.live; if (!L.has(a)) L.set(a, []); L.get(a).push(v); }
+      else if (B.has(a) && !ls.ib.list && (!ls.irqRead || ls.irqRead(this, a))) { const L = ls.ib.live; if (!L.has(a)) L.set(a, []); L.get(a).push(v); }
       return v;
     };
     cpu.wr = function (x, v) {

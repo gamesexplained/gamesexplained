@@ -248,13 +248,15 @@ G.menu = P => {
   });
 
   // $6B08: waitKey (g-input.js). $6B19: C = A / B, rounded to the nearest; A the remainder.
+  // A B of 255 rounds every A up: 0 / 255 is 1.
   P.def(0x6B19, 'divRound', r => {
     let a = r.a, c = 0;
     const b = r.b;
     if (!b) throw new Error('divRound: B is 0, and the game would never return');
-    while (a >= b) { a -= b; c++; }
-    const h = b + 1 >> 1;
-    if (a >= h) c++;
+    while (a >= b) { a -= b; c = c + 1 & 255; }
+    // the half is B + 1 in eight bits, halved: 0 for a B of 255, and every remainder rounds up
+    const h = (b + 1 & 255) >> 1;
+    if (a >= h) c = c + 1 & 255;
     return { a, b: h, c, cf: a < h };
   });
   // $6B29: A = ($07) less ($08), by ($18), rounded.

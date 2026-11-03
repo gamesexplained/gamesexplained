@@ -255,8 +255,13 @@ G.unit = P => {
   // back where it was kept ($7042). Then in the computer's turn ...; NZ if the unit can go on (alive,
   // with points left).
   P.def(0x6F89, 'makeStep', function* (r) {
-    let ix = ixOf(P.jump(0xB62D, { ix: r.ix }), r.ix);
-    ix = P.w(0x5D33);
+    const h = yield* P.scenarioStep({ ix: r.ix });
+    if (h && h.pops) return Object.assign({}, h, { pops: h.pops - 1 });
+    return yield* P.stepOn();
+  });
+  // $6F8C: the step itself, for the unit at ($5D33), which a scenario's hook may make too.
+  P.def(0x6F8C, 'stepOn', function* () {
+    let ix = P.w(0x5D33);
     M[ix + 6] = M[ix + 6] - M[0x5D28] & 255;
     M[ix + 0x22] = M[ix + 0x22] + M[0x5D28] & 255;
     M[P.w(0x5D2F)] = M[ix + 0x16];
@@ -279,7 +284,7 @@ G.unit = P => {
     if (s.zf) P.keepPlace({ ix });
     if (!M[0x5D5D]) ix = ixOf(yield* P.startReaction({ ix }), ix);
     if (M[0x5DF7]) {
-      if (M[0x5D36]) ix = ixOf(P.jump(0xB62A, { ix }), ix);
+      if (M[0x5D36]) ix = ixOf(yield* P.computerStep({ ix }), ix);
       else if (M[0xB715]) {
         M[0xB712] = 0;
         ix = ixOf(P.sideView({ ix }), ix);

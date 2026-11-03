@@ -80,6 +80,23 @@ function makePort(M, io, opts = {}) {
   // the game's restarts: the stack set again and a jump (to $B1C3, the menu after a game ends)
   P.Restart = class Restart { constructor(at) { this.at = at; } };
   P.restart = at => { throw new P.Restart(at); };
+  // The scenario's own routines, loaded from tape with its map at $B621 to $FFFF: each is named
+  // for its scenario (P.defIn(id, a, name, f)), and is in P, at its address, while that scenario
+  // is in memory: P.useScenario() after each load (P.scenarioId(), g-scenario.js, says which).
+  P.SC = {};
+  P.defIn = (id, a, name, f) => {
+    const s = P.SC[id] = P.SC[id] || new Map();
+    s.set(a, [name, f]);
+    return f;
+  };
+  let inUse = null;
+  P.useScenario = (id = P.scenarioId()) => {
+    if (id === inUse) return id;
+    if (inUse) for (const [a, [name]] of P.SC[inUse] || []) { delete P[name]; delete P.CODE[a]; P.GEN.delete(name); }
+    inUse = id;
+    if (id) for (const [a, [name, f]] of P.SC[id] || []) P.def(a, name, f);
+    return id;
+  };
   const only = opts.only || null;
   for (const name of Object.keys(G)) if (!only || only.includes(name)) G[name](P);
   if (opts.standIn) opts.standIn(P);

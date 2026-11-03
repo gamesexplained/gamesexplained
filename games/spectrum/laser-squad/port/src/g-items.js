@@ -117,7 +117,7 @@ G.items = P => {
       P.addLine({ a: 0x0B });
     }
     P.addLine({ a: 0x0C });
-    ix = ixOf(P.jump(0xB633, { ix, iy }), ix);
+    ix = ixOf(yield* P.scenarioMenu({ ix, iy }), ix);
     yield* P.waitRelease();
     yield* P.menuSelect();
     const d = yield* P.dispatch({ hl: 0x79D1, ix, iy });
@@ -142,15 +142,16 @@ G.items = P => {
   P.def(0x79F6, 'cancelOption', r => ({ ix: r.ix }));
   // $79F7: options 7 and 9, open or close the door in front: a fifth of the unit's most action
   // points ($05), and the square becomes the terrain's $09 (IY its record). $7A19: options 8 and 10,
-  // lock or unlock with the key held: a quarter, and the terrain's $0B.
+  // lock or unlock with the key held: a quarter, and the terrain's $0B. Carry when the points do
+  // not pay for it (the computer's units stop there).
   const work = (at, name, part, field, always) => P.def(at, name, function* (r) {
     const ix = r.ix, iy = r.iy;
     const p = yield* P.payAP({ ix, b: P.divRound({ a: M[ix + 5], b: part }).c });
-    if (p.cf) return { ix };
+    if (p.cf) return { ix, cf: true };
     M[ix + 6] = M[0x5D35];
     M[w(0x5D3E)] = M[iy + field];
     if (always || !M[0x5D36]) P.drawView();
-    return { ix };
+    return { ix, cf: false };
   });
   work(0x79F7, 'openDoor', 5, 9, false);
   work(0x7A19, 'lockDoor', 4, 0x0B, true);

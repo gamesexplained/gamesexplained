@@ -151,6 +151,10 @@ G.combat = P => {
   // which moves on a byte each try, plus $5D9C, the turns of the waits for a key; tried again until
   // it is below. HL is kept. With ($5D9B) 0 the game returns to the address in HL (a fault the
   // game never meets: the limits it gives are 1 and more).
+  // The byte walks all of memory, the stack ($5E00-$5E38) too, whose bytes the port does not
+  // keep: it reads those through P.io.irqByte, which the tests give as the game read them, and
+  // which on the page is noise like the refresh register.
+  const STACK_LO = 0x5E00, STACK_HI = 0x5E38;
   P.def(0x80B1, 'random', r => {
     const lim = M[0x5D9B];
     if (!lim) throw new Error('random: limit 0, and the game would return to HL');
@@ -158,7 +162,8 @@ G.combat = P => {
       let a = P.io.r() & 255;
       const hl = w(0x5D9D) + 1 & 0xFFFF;
       setw(0x5D9D, hl);
-      a = a + M[hl] + M[0x5D9C] & 255;
+      const b = hl >= STACK_LO && hl <= STACK_HI && P.io.irqByte ? P.io.irqByte(hl) : M[hl];
+      a = a + b + M[0x5D9C] & 255;
       if (a < lim) return { a, cf: true, zf: false, hl: r && r.hl };
     }
   });
@@ -319,8 +324,8 @@ G.combat = P => {
   // $830B: add an object of kind A at ($5D3A) on floor $5D23, carried by C, in the first free
   // entry of the scenario's objects; none free, A = 0 and Z.
   P.def(0x830B, 'addObject', r => {
-    let hl = w(0xB72A);
-    for (let b = M[0xB639] || 256; b; b--, hl = hl + 6 & 0xFFFF) {
+    let hl = w(0xB72A), b = M[0xB639] || 256;
+    for (; b; b--, hl = hl + 6 & 0xFFFF) {
       if (M[hl]) continue;
       M[hl] = r.a;
       M[hl + 1] = M[0x5D3A];
@@ -328,9 +333,9 @@ G.combat = P => {
       M[hl + 3] = M[0x5D23];
       M[hl + 4] = 0;
       M[hl + 5] = r.c;
-      return { a: M[0x5D23], hl: hl + 5 & 0xFFFF };
+      return { a: M[0x5D23], hl: hl + 5 & 0xFFFF, b, de: 6 };
     }
-    return { a: 0, zf: true, b: 0 };
+    return { a: 0, zf: true, b: 0, hl, de: 6 };
   });
   // $8337: A at the place in HL, and a '%' after it, in double height when $5D09 has bit 3 set.
   P.def(0x8337, 'printPercent', r => {
@@ -440,15 +445,19 @@ G.combat = P => {
 
   // $A4A4: the end of the game: when a side has no units left the other scores the scenario's
   // $B65C (side 1) or $B65D (side 0). A side with 100 victory points, or the last turn ($B701)
-  // played, ends it: the screen cleared, the winner's message (the scenario's $A0 or $A1 with
-  // message $62) or message $64 for none, the points (most 100), message $63 and the scores
-  // ($5FFE), and a key; then the game starts again at $B1C3.
+  // played, ends it ($A4D9).
   P.def(0xA4A4, 'checkEnd', function* (r) {
     if (!P.sideLeft({ a: 0 }).zf) M[0xB710] = M[0xB710] + M[0xB65C] & 255;
     if (!P.sideLeft({ a: 1 }).zf) M[0xB70F] = M[0xB70F] + M[0xB65D] & 255;
     if (M[0xB70F] < 100 && M[0xB710] < 100 && M[0xB711] !== M[0xB701]) {
       return { ix: r && r.ix, a: M[0xB711], zf: false, cf: M[0xB711] < M[0xB701] };
     }
+    return yield* P.gameOver();
+  });
+  // $A4D9: the game over: the screen cleared, the winner's message (the scenario's $A0 or $A1 with
+  // message $62) or message $64 for none, the points (most 100), message $63 and the scores
+  // ($5FFE), and a key; then the game starts again at $B1C3.
+  P.def(0xA4D9, 'gameOver', function* () {
     P.clearScreen();
     if (M[0xB70F] >= 100 || M[0xB710] >= 100) {
       M[0x5D02] = M[0xB70F] >= 100 ? 0xA0 : 0xA1;

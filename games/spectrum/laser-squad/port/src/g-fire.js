@@ -587,7 +587,7 @@ G.fire = P => {
     ix = ixOf(P.showSeen({ ix }), ix);
     P.drawView();
     P.showSides();
-    ix = ixOf(P.jump(0xB627, { hl: w(0x5D3A), ix }), ix);
+    ix = ixOf(P.scenarioShot({ hl: w(0x5D3A), ix }), ix);
     setw(0x7093, w(0x5DD6));
     setw(0x7091, w(0x5DD8));
     return yield* P.checkEnd({ ix });
@@ -634,7 +634,7 @@ G.fire = P => {
     setw(0xB716, 0xE79F);
     if (M[0x5DF7]) return { ix, a: M[0x5DF7], zf: false };
     P.drawView();
-    ix = ixOf(P.jump(0xB627, { hl: w(0x5D24), ix }), ix);
+    ix = ixOf(P.scenarioShot({ hl: w(0x5D24), ix }), ix);
     if (M[ix + 8]) return { ix, a: M[ix + 8], zf: false };
     M[0x5DE8] = 1;
     return { ix, a: 1, zf: false };

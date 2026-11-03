@@ -198,6 +198,18 @@ for (const lines of [40, 320]) {
   check('a poll by T-states: 30 passes identical', r.ok && r.passes === 30, true);
 }
 
+// 1e. irqRead: the port reads the count through irqByte once, where work reads it after handler B
+// ($8183, LD A,($C005); the processor's pc is past the whole instruction at the read), and takes its
+// first read from its own byte. Only the second of the game's reads counted, the port gets the value
+// after handler B; with both counted, it gets the first, and the byte it stores differs.
+{
+  const second = () => { const P = port(), work = P.work; P.work = function () { work(); P.M[0xC00A] = P.io.irqByte(0xC005); }; return P; };
+  const r = lockstep(second(), { irqBytes: [0xC005], irqRead: cpu => cpu.pc === 0x8186 }).run({ passes: 40, onPass: input });
+  check('irqRead: the read after handler B alone counted, 40 passes identical', r.ok && r.passes === 40, true);
+  const r2 = lockstep(second(), { irqBytes: [0xC005] }).run({ passes: 5, onPass: input, stopOnDiff: false });
+  check('both counted: the port\'s byte the first read\'s', [...new Set(r2.diffs.flatMap(d => d.bytes.map(b => b.address)))].join(), String(0xC00A));
+}
+
 // 2. With the race's byte left out, every pass matches, the border and EAR included, and the keys
 // read back after the border with the port's own EAR; the game is never left inside a handler at a
 // yield; and the machine is given back as it was.
