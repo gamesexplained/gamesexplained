@@ -54,6 +54,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
+.pl-start{margin:16px 0 0;font-size:15px;color:var(--ink)}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -88,12 +89,13 @@ section table{margin:6px 0 18px}
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-tape" id="pl-tape" hidden></div>
+    <p class="pl-start"><b>To start a game:</b> choose KEYBOARD at SELECT CONTROLS, then LOAD SCENARIO, type <kbd>1</kbd>, <kbd>2</kbd> or <kbd>3</kbd> for the scenario and press <kbd>Enter</kbd>. When it has loaded, choose PLAY GAME.</p>
     <ul class="pl-keys">
       <li>SELECT CONTROLS, and every menu: <kbd>Q</kbd> <kbd>A</kbd> move the bar, <kbd>Space</kbd> chooses</li>
       <li>In play: <kbd>Q</kbd> <kbd>A</kbd> <kbd>O</kbd> <kbd>P</kbd> move the cursor, <kbd>Space</kbd> opens the menu for the square under it</li>
       <li>The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
       <li>A file name or a wizard's name: type it, <kbd>0</kbd> rubs out, <kbd>Enter</kbd> ends it; HOW MANY PLAYERS? takes <kbd>1</kbd> to <kbd>4</kbd></li>
-      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added; it winds back to the start after the last file. Hold <kbd>Space</kbd> to stop a search</li>
+      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added, and the game loads the first file whose name starts with the letter typed. It winds back to the start after the last file; a search that finds nothing stops at the end of the tape. Hold <kbd>Space</kbd> to stop a search</li>
       <li>Saving (SAVE GAME at the end of a turn, SAVE WIZARD in the designer) puts the files on the cassette and offers them as a .tap file to keep</li>
     </ul>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the interrupt animates the creatures and slides the bars every frame, and the computer's wizard takes as long to think as it does on the machine. The sound is the port's writes to the beeper, each edge at the T-state the game's delay loops make it.</p>
@@ -126,7 +128,7 @@ section table{margin:6px 0 18px}
   <tr><td>The beeper is toggled from the sounds' delay loops, with the interrupts on, so an interrupt can fall inside a note.</td><td>The site's model of the beeper plays the port's writes to it, each at the T-state the game's loops make it, and an interrupt due inside a note runs before the note's edge, as on the machine.</td></tr>
   <tr><td>The ULA draws the screen a line at a time as the beam crosses it.</td><td>The page takes the screen whole at the moment the beam would reach its first line, so a change made while the beam is drawing shows a frame later, all at once.</td></tr>
   <tr><td>random_below mixes the refresh register, which counts the instructions the processor has run, with bytes of memory it walks through, the game's code among them.</td><td>No port can know the refresh register: the page draws a byte at random in its place, and where the walk passes over the game's code, which the page does not carry, it reads 0.</td></tr>
-  <tr><td>A scenario takes over a minute to load from the cassette; SAVE GAME and SAVE WIZARD write to it; at the end of the tape a search waits until SPACE is held.</td><td>The page's cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM and plays each file at once. It winds back to the start after its last file, so a search goes round it until the file comes or SPACE is held. A save puts its files at the end and offers them as a .tap file to keep; Add a tape file puts one back.</td></tr>
+  <tr><td>A scenario takes over a minute to load from the cassette; SAVE GAME and SAVE WIZARD write to it; at the end of the tape a search waits until SPACE is held.</td><td>The page's cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM and plays each file at once. It winds back to the start after its last file, as a player would to look for a file. A search that has been all the way round without finding its file stops at the end of the tape, as it would on a Spectrum, and the game waits until SPACE is held. A save puts its files at the end and offers them as a .tap file to keep; Add a tape file puts one back.</td></tr>
   <tr><td>The controls are the keyboard (Q, A, O, P and SPACE), a Kempston interface or a Sinclair stick (6 to 0), as SELECT CONTROLS chose.</td><td>The arrow keys, and the pad under the screen, are whichever was chosen, with Left Ctrl for fire; every other key is the Spectrum's own.</td></tr>
   <tr><td>Two loops have no way out: random_below given a limit of 0 draws for ever, and computer_pick_up, looking for an object past the tenth on a square, searches on through memory, the game's code among it, to the first byte of that type, for ever when there is none. The main program stops there and the interrupt goes on.</td><td>The port's search reads the page's memory, where the game's code is zero, so it can stop at another byte than on the Spectrum and mark another entry. In a loop for ever the port's program stops and the clock and the interrupt go on.</td></tr>
   <tr><td>The game reads the keyboard through the ROM's KEY-SCAN, loads and saves through LD-BYTES and SA-BYTES, and prints in the ROM's font.</td><td>The routines the game calls in the ROM are ported with the rest. The page carries two pieces of the 48K ROM and nothing else of it: the font ($3D00-$3FFF) and the key table KEY-SCAN's codes are looked up in ($0205-$022B).</td></tr>
@@ -7451,8 +7453,10 @@ G.turn = function (P) {
 // the routines are called, not once at the stretch's end.
 //
 // The cassette. A load plays the next block; past the last it goes back to the first, as a player
-// rewinding to look for a file. A save puts its block at the end. The tape is never at its end, so
-// the ROM's wait for a signal never comes.
+// rewinding to look for a file. A search that has read more blocks than the cassette holds since a
+// file last loaded (a name no file on it starts with) stops at the end of the tape, and the ROM's
+// wait for a signal comes, until SPACE is held; the tape is then wound back to its start. A save
+// puts its block at the end.
 //
 // The refresh register, which random_below reads ($A738), counts the instructions the processor
 // has run: no port can know it, so the page draws a byte of its own each time.
@@ -7502,24 +7506,32 @@ function create(o) {
   }
 
   // ---- the cassette
+  // run counts the blocks played since a file's data last loaded (a load asking for a data block,
+  // flag $C8, that got one); ended, the tape at its end, makes pos the end, where the port's LD-BYTES
+  // waits for SPACE, and SPACE held (io.in) winds it back to the start.
   const tape = {
     blocks: (o.data.tape || []).map(b => ({ flag: b.flag, bytes: b64(b.bytes) })),
-    at: 0, saved: [],
-    get pos() { return this.blocks.length ? this.at % this.blocks.length : 0; },
+    at: 0, saved: [], run: 0, ended: false,
+    get pos() {
+      if (!this.blocks.length) return 0;
+      if (this.run > this.blocks.length) this.ended = true;
+      return this.ended ? this.blocks.length : this.at % this.blocks.length;
+    },
     set pos(v) { this.at = v; },
-    load() {
+    load(flag) {
       if (!this.blocks.length) return null;
-      const b = this.blocks[this.pos];
-      this.at = (this.pos + 1) % this.blocks.length;
+      const at = this.at % this.blocks.length, b = this.blocks[at];
+      this.at = (at + 1) % this.blocks.length;
+      if (flag === 0xC8 && b.flag === 0xC8) this.run = 0; else this.run++;
       return b;
     },
     save(flag, bytes) {
       const b = { flag, bytes: Uint8Array.from(bytes) };
-      this.blocks.push(b); this.at = 0;
+      this.blocks.push(b); this.at = 0; this.run = 0; this.ended = false;
       for (const f of this.saved) f(b);
       return true;
     },
-    rewind() { this.at = 0; },
+    rewind() { this.at = 0; this.run = 0; this.ended = false; },
     add(list) { for (const b of list) this.blocks.push({ flag: b.flag, bytes: Uint8Array.from(b.bytes) }); },
     onSave(f) { this.saved.push(f); },
   };
@@ -7538,6 +7550,9 @@ function create(o) {
         const k = KEY[name];
         if (k !== undefined && !(high & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
       }
+      // SPACE held at the end of the tape: the player stops the search and winds the tape back to
+      // its start, so that the next search reads each file's header before its data
+      if (tape.ended && !(high & 0x80) && !(v & 1)) tape.rewind();
       return 0xA0 | v;
     },
     out(port, v, T) {
@@ -7844,7 +7859,7 @@ function addTape() {
 }
 
 // --- the loop: one frame of 48K time per frame of real time
-let acc = 0, last = 0;
+let acc = 0, last = 0, tapeEnd = false;
 function boot() {
   rt = LOCPage.create({ data, cost: window.LOC_COST });
   if (added.length) rt.tape.add(added);
@@ -7861,6 +7876,12 @@ function tick(now) {
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
+  // the tape at its end: say what the game is waiting for
+  if (rt.tape.ended && !tapeEnd) {
+    tapeEnd = true;
+    const c = String.fromCharCode(rt.M[0xC637]);
+    say('The tape has reached its end: no file on it starts with ' + (c.trim() ? '"' + c + '"' : 'a space') + '. Hold Space to stop the search; the scenarios are 1, 2 and 3.');
+  } else if (!rt.tape.ended && tapeEnd) { tapeEnd = false; status.textContent = ''; }
 }
 
 // --- input: the arrow keys and fire are the controls the game was set to at SELECT CONTROLS

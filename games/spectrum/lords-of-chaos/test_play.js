@@ -12,8 +12,9 @@
 // - the cursor menu's END TURN and YES end the turn: the computer players take theirs and the
 //   human turn comes back, the turn's count moved on;
 // - with SELECT CONTROLS on the Kempston interface, the joystick moves the cursor;
-// - a scenario asked for by a name the cassette does not hold is searched for until SPACE is held,
-//   and the designer's panel comes back;
+// - a scenario asked for by a name the cassette does not hold is searched for once round the
+//   cassette, the tape stops at its end, as a tape does, until SPACE is held, the designer's panel
+//   comes back, and LOAD SCENARIO with the name 1 then loads 1.GAM;
 // - a loop the game never leaves (random_below given a limit of 0) leaves the page running, the
 //   interrupt with it, as the Spectrum does;
 // - the beeper plays, no frame throws, and every frame is shown in its turn, however far a long
@@ -132,7 +133,7 @@ function player(o) {
   };
   return (read, at, rt) => {
     if (read === 0x028E) {
-      if (at === 'ask_file_name') return st.typed++ === 0 ? [o.name] : st.typed > 3 ? (st.typed = 0, ['ENTER']) : [];
+      if (at === 'ask_file_name') return st.typed++ === 0 ? [typeof o.name === 'function' ? o.name() : o.name] : st.typed > 3 ? (st.typed = 0, ['ENTER']) : [];
       if (at === 'start_game') return ['1'];
       if (at === 'find_file') return o.breakSearch && o.breakSearch(rt) ? ['SPACE'] : [];
       return [];
@@ -190,14 +191,24 @@ for (const [controls, name] of [[1, 'the Kempston interface'], [2, 'a Sinclair s
   keepsTime(name, m);
 }
 
-// --- a name the cassette does not hold: the search goes round the cassette until SPACE
+// --- a name the cassette does not hold: the search goes once round the cassette and the tape stops
+// at its end until SPACE is held; the designer's panel comes back, and the next search loads 1.GAM
 {
-  let blocks = 0;
-  const m = machine(player({ controls: 0, name: '9', breakSearch: () => ++blocks > 40 }));
-  const done = m.run(6000, () => blocks > 40 && m.inner() === 'run_file_menu');
-  if (!done) fail('a search for 9 held with SPACE did not come back to the panel (in ' + (m.ctx.join(' < ') || 'nothing') + ')');
-  else if (m.rt.P.part !== 0) fail('after the search the panel is part ' + m.rt.P.part + '\'s');
-  else console.log('a search for 9: ' + blocks + ' blocks read round the cassette, then SPACE held, and the designer\'s panel back at frame ' + m.f);
+  const names = ['9', '1'];
+  let reads = 0, ended = -1, brk = false, back = -1;
+  const m = machine(player({ controls: 0, name: () => names.length > 1 ? names.shift() : names[0],
+    breakSearch: () => { reads++; return brk; } }));
+  const tape = m.rt.tape;
+  const done = m.run(9000, () => {
+    if (tape.ended && ended < 0) { ended = m.f; brk = true; m.rt.input.keys = new Set(['SPACE']); }
+    if (brk && back < 0 && m.inner() === 'run_file_menu') { back = m.f; brk = false; }
+    return back >= 0 && m.rt.P.part === 1;
+  });
+  if (ended < 0) fail('a search for 9 never stopped at the end of the tape (in ' + (m.ctx.join(' < ') || 'nothing') + ')');
+  else if (reads > tape.blocks.length + 2) fail('find_file went round ' + reads + ' times before the tape stopped, more than once round its ' + tape.blocks.length + ' blocks');
+  else if (back < 0) fail('SPACE at the end of the tape did not bring the designer\'s panel back (in ' + (m.ctx.join(' < ') || 'nothing') + ')');
+  else if (!done) fail('after the search for 9, LOAD SCENARIO with 1 did not load scenario 1 (in ' + (m.ctx.join(' < ') || 'nothing') + '; the tape at block ' + tape.at + ')');
+  else console.log('a search for 9: once round the cassette\'s ' + tape.blocks.length + ' blocks, the tape at its end at frame ' + ended + ', SPACE held and the designer\'s panel back at frame ' + back + ', then 1.GAM loaded by frame ' + m.f);
 }
 // --- a loop the game never leaves: random_below given a limit of 0, on the human turn, throws
 // P.Hang; the page goes on as the Spectrum does, the clock and the interrupt running (the cursor's
