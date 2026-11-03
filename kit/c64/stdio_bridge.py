@@ -53,7 +53,9 @@ def project_path(path, output_dir=None):
     }
     # A previous session may have saved annotations in its converted project.
     # Give each fresh snapshot session its own file; never overwrite that work.
-    output_dir = Path(output_dir) if output_dir is not None else Path(__file__).resolve().parents[2] / "tools"
+    # Resolved, as the snapshot's path is: on macOS the temporary folder is
+    # a link, and a project passed back in must come out as the same path.
+    output_dir = Path(output_dir).resolve() if output_dir is not None else Path(__file__).resolve().parents[2] / "tools"
     output_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(mode="w", prefix=path.stem + ".stdio.",
                                      suffix=".regen2000proj", dir=output_dir,
