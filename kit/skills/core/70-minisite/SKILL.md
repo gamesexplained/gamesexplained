@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Levels or Maps tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Levels or Maps tab for a game with more than one level; the Graphics tab for a game with things that move; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -15,8 +15,9 @@ works** (`index.html`, authored), **Play** (`play.html`, authored, only
 when a JavaScript version exists), **Discoveries** (`discoveries.html`,
 authored, the secrets, quirks and bugs), **Levels** or **Maps**
 (`levels.html`, authored, for every game with more than one level, map,
-room, stage or screen; "Maps or levels", below, names it), **Source
-code** (`source.html`, generated from `listing.json`), **About** (generated from `game.json`, `features.md` and git).
+room, stage or screen; "Maps or levels", below, names it), **Graphics**
+(`graphics.html`, authored, for every game with things that move;
+"Graphics", below), **Source code** (`source.html`, generated from `listing.json`), **About** (generated from `game.json`, `features.md` and git).
 `kit/scripts/build.py` assembles them; you write the authored ones.
 `facts.md`, `cheats.md` and `orientation.md` stay in the repository and
 no tab shows them, so what a reader should see from them goes on an
@@ -57,8 +58,8 @@ beside the claim; the explanation is in terms of what the player sees.
 
 **Interactivity is the point.** A page you can play with beats a page you
 read. Every section should have something to press: step a mechanic,
-scrub a tune, flip through the level data, toggle an overlay on a
-reconstructed screen.
+scrub a tune, flip through the level data or the sprites, turn a 3D
+model, toggle an overlay on a reconstructed screen.
 
 ## Sections
 
@@ -92,7 +93,9 @@ address links into the Source tab, and the house style in `kit/style.md`.
    extend it in the site's library and in its test, so that the next game
    has it too.
 - **The player and the enemies.** What they are drawn with (character
-   graphics, sprites, both), how they move, how they collide.
+   graphics, sprites, both), how they move, how they collide, shown on
+   one of them, with a link to the Graphics tab, where every shape is
+   drawn (below).
 - **Controls.** What the game reads and how, including anything the
    manual never mentioned.
 - **Levels and data.** Where the level lives and what format, shown on
@@ -212,7 +215,7 @@ its music or its maps can put that first instead.
   players, table explorers.
 - Keep every section a top-level `<section>` with the template's label
   line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
-  Discoveries, Play and `levels.html` pages too. The build lists each
+  Discoveries, Play, `levels.html` and `graphics.html` pages too. The build lists each
   page's sections in its left margin by their headings (any further
   `<h2>` gets an entry of its own, and so does a section or heading the
   page's script adds), so the headings are what a reader scans to choose
@@ -479,6 +482,34 @@ they are one world. Another word, such as Rooms or Arenas, only when
 neither fits, and never the two joined: each tab in the bar is one thing.
 The build warns about a `levels.html` with no name and calls it Levels.
 
+## Graphics
+
+A game with things that move gets this tab at every tier above Bronze,
+like the music player, since a reader sees at a glance what a table of
+addresses only lists, and a viewer that asks for every frame finds the
+shapes the listing missed. A run that describes the shapes in a table,
+or leaves the pictures to `TODO.md`, has not built the page.
+
+The tab opens with the viewer: every shape the game stores for the
+things that move (the player, the enemies, the shots, the pickups,
+unused ones too), drawn from the listing's bytes in the game's colours,
+on one sheet or with one control to step through them ("Stepping
+through things of one kind", above). A shape the game animates plays at
+the game's rate, from its own animation tables. A shape the game paints
+into the screen itself is drawn by the game's own routine on the kit's
+processor, or by a port of it. A 3D game's models are drawn the way the
+game draws them, edge by edge or face by face, and turn when the reader
+drags them or presses the buttons beside them (games/c64/space-rogue,
+`ships.html`). How the screen is built, its modes, character sets and
+splits, follows the viewer on this tab.
+
+Name the tab in one word in `game.json`'s `"graphics_tab"` (or as its
+label in `"tabs"`): **Graphics**, or a word for the cast when the cast
+is what the tab is about, such as Fighters or Ships. The file is
+`graphics.html` whatever the tab is called. Leave the tab out only when
+nothing drawn moves (a text adventure, a board of fixed squares), and
+say why in `agent-history.md`.
+
 ## Play
 
 A behavioural port of the full game in JavaScript, built from the
@@ -621,6 +652,7 @@ see it, which makes it the best test that the data is understood.
 widget exercised, its best thing high on the page; `discoveries.html`
 with every secret, quirk and bug; `levels.html` with
 every level, map or room drawn, or the line in `agent-history.md` saying
-why the game has none; `listing.json` built and passing
+why the game has none; `graphics.html` with every shape the moving
+things are drawn with, or the line saying why it has none; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the
 minisite without errors.
