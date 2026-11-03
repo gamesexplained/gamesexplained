@@ -149,3 +149,19 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   set up; the routines read $3EED, a byte the listing does not hold.
   facts.md has each.
 
+
+## 2026-11-03, Enemies tab follow-ups (Claude Opus 5.5)
+
+- Types 5 and 11 burst at point blank in their recordings: the stick
+  closed to range code $C8 and the saucers wandered closer still, so
+  the fan of 16 shots left from 11 units and hit within four passes.
+  Their stick now holds the saucer between range codes $D8 and $DE,
+  and the bursts leave from about 50 units. The game is unchanged.
+- The Rules section was folded into the sections it belongs to. Moving
+  its line on when a saucer gives up showed that "24 periods without a
+  kill or a shot" was not what the code does: $58 counts 256-frame
+  periods and is cleared by the level reset ($9FD4, also after a
+  death), a kill, a missile's spawn, the warp and leaving the pause;
+  firing does not touch it. facts.md and the page say so. The listing
+  comment at $B45F still says $58 is never read; it is read at $A387,
+  $A5F2 and $A78E.
