@@ -118,7 +118,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="warble">
   <p class="fig">05 · Sound</p>
-  <h2 class="t">Bug: two warbles that are one</h2>
+  <h2 class="t">Bug: the two warble sound commands make the same sound</h2>
   <p class="lede">The sound effects have two warble commands, 9 and <code>$A</code>, and each loads a different amount. Both do the same thing.</p>
   <p>Command <code>$A</code> loads <code>$80</code> and command 9 loads <code>$40</code>, and both go on into the same code (<code>sfx_cmd_warble</code>, <code>$BB82</code>). The pitch is a number too big for one byte, so it is kept in two, a low byte and a high byte. The next instruction subtracts the pitch's low byte from itself, which leaves <code>$FF</code> (255) whatever the pitch was, and stores that over the amount. So the amount is never used, and each warble step lowers the pitch's high byte by one. The trip in time (effect 3) uses command 9 and the teleport (effect 4) uses <code>$A</code>; they warble alike. Both are on <a href="index.html#effects">the How it works page's effects player</a>.</p>
 </section>

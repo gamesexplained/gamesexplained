@@ -98,7 +98,7 @@ MERLIN1.WIZ
 
 <section id="lava">
   <p class="fig">02 · Slayer's Dungeon</p>
-  <h2 class="t">Secret: the lava burns only the creatures a player moves</h2>
+  <h2 class="t">Secret: everything the computer moves is immune to lava</h2>
   <p class="lede">The river of molten lava in scenario 2 costs no more to cross than a floor. A creature you move into it loses 7 points of constitution; the dungeon's own monsters and the computer's walk through unharmed.</p>
   <p>The scenario hooks a routine of its own into every step (<code>$E1F0</code>, called through <code>$D021</code> by select_ground for a player's step and by computer_step_move for the computer's). Its first test is computer_moving (<code>$D063</code>): while the computer moves, it returns before it looks at the terrain. The six lava terrains, <code>$18</code> to <code>$1D</code>, have a step cost of 4 and nothing else in the scenario hurts a creature standing in them, so the independent creatures and the computer's wizard's take the lava as a road. <b>test_discoveries.js</b> runs the hook on the game's code for a SPECTRE on each terrain from <code>$16</code> to <code>$1F</code>: moved by a player it loses 7 points in the lava, moved by the computer none.</p>
 </section>
@@ -189,7 +189,7 @@ MERLIN1.WIZ
 
 <section id="draws">
   <p class="fig">07 · The winner</p>
-  <h2 class="t">Bug: a draw goes to the last wizard</h2>
+  <h2 class="t">Bug: a draw with the computer counts as the computer's win</h2>
   <p class="lede">At the end, the game looks for the highest score with a test that lets an equal score take over. Of two wizards on the same points, the one later in the list wins.</p>
   <p>game_over (<code>$8DD3</code>) goes through the four final scores from the first wizard to the fourth and keeps a score when it is at least the best so far. In a game against the computer, the computer's wizard is second. A draw is its win, so the player's designed wizard does not go up a level or keep its score for the designer. Run on the game's own code with 10 points to the player's wizard and 9 to the computer's, the wizard goes from level 1 to 2; with 10 each, it stays at 1.</p>
 </section>
