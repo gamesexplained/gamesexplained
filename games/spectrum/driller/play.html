@@ -54,13 +54,17 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
+.pl-keys .pl-keys-tap{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
 .pl-tape{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:var(--ink-soft)}
 .pl-tape[hidden]{display:none}
-.pl-tape a,.pl-tape button{font-family:var(--fb);font-size:14px;font-weight:700}
-.pl-tape button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-tape a,.pl-tape button,.pl-answer button{font-family:var(--fb);font-size:14px;font-weight:700}
+.pl-tape button,.pl-answer button{background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
+.pl-answer button{margin-left:8px}
 .pl-answer{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px}
 .pl-answer[hidden]{display:none}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
@@ -86,18 +90,24 @@ section table{margin:6px 0 18px}
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
-    <p class="pl-answer" id="pl-answer" hidden></p>
+    <div id="pl-keyset">
+    <p class="pl-answer" id="pl-answer" hidden><span id="pl-answer-text"></span><button type="button" id="pl-type" title="Type the word into the game, then Enter">Type it</button></p>
     <div class="pl-tape" id="pl-tape" hidden></div>
-    <ul class="pl-keys">
-      <li>The security question: type the word from the Federation Briefing (it is shown under the screen), then <kbd>Enter</kbd></li>
-      <li>The control options: <kbd>1</kbd> keyboard, <kbd>2</kbd> Sinclair, <kbd>3</kbd> Kempston, <kbd>4</kbd> cursor; <kbd>Enter</kbd> begins</li>
-      <li><kbd>O</kbd> <kbd>K</kbd> forward and back, <kbd>Q</kbd> <kbd>W</kbd> turn left and right, or the arrow keys</li>
-      <li><kbd>0</kbd> or <kbd>Ctrl</kbd> fires the laser; <kbd>Space</kbd> swaps moving for aiming the crosshair; <kbd>B</kbd> shows or hides the crosshair</li>
-      <li><kbd>P</kbd> <kbd>L</kbd> look up and down, <kbd>N</kbd> <kbd>M</kbd> tilt, <kbd>U</kbd> turns round</li>
-      <li><kbd>R</kbd> <kbd>F</kbd> rise and fall, <kbd>A</kbd> <kbd>Z</kbd> the angle of a turn, <kbd>S</kbd> <kbd>X</kbd> the size of a step</li>
-      <li><kbd>D</kbd> drills: a rig is put down in front of the probe; <kbd>C</kbd> collects it</li>
-      <li><kbd>I</kbd> the information screen: <kbd>S</kbd> saves, <kbd>L</kbd> loads (a .tap file), <kbd>1</kbd> abandons the game, any other key goes back</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
+      <li><kbd data-key="SPACE">Space</kbd> swaps moving for aiming the crosshair</li>
+      <li><kbd data-key="D">D</kbd> drills: a rig is put down in front of the probe; <kbd data-key="C">C</kbd> collects it</li>
+      <li><kbd data-key="R">R</kbd> <kbd data-key="F">F</kbd> rise and fall, <kbd data-key="P">P</kbd> <kbd data-key="L">L</kbd> look up and down</li>
+      <li><kbd data-key="I">I</kbd> the information screen: <kbd data-key="S">S</kbd> saves, <kbd data-key="L">L</kbd> loads (a .tap file), <kbd data-key="1">1</kbd> abandons the game, any other key goes back</li>
+      <li>The security question: the word from the Federation Briefing, shown under the screen with a button that types it, then <kbd>Enter</kbd></li>
+      <li>The control options: <kbd data-key="1">1</kbd> keyboard, <kbd data-key="2">2</kbd> Sinclair, <kbd data-key="3">3</kbd> Kempston, <kbd data-key="4">4</kbd> cursor; <kbd data-key="ENTER">Enter</kbd> begins</li>
+      <li><kbd data-key="A">A</kbd> <kbd data-key="Z">Z</kbd> the angle of a turn, <kbd data-key="S">S</kbd> <kbd data-key="X">X</kbd> the size of a step</li>
+      <li><kbd data-key="B">B</kbd> shows or hides the crosshair, <kbd data-key="N">N</kbd> <kbd data-key="M">M</kbd> tilt</li>
+      <li class="pl-keys-pad"><kbd data-key="O">O</kbd> <kbd data-key="K">K</kbd> forward and back, <kbd data-key="Q">Q</kbd> <kbd data-key="W">W</kbd> turn left and right, or the arrow keys</li>
+      <li class="pl-keys-pad"><kbd data-key="fire">0</kbd> or <kbd data-key="fire">Ctrl</kbd> fires the laser</li>
+      <li><kbd data-key="U">U</kbd> turns round</li>
     </ul>
+    </div>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the game draws each view into a buffer of its own and then copies it to the screen. The sound is the port's writes to the beeper, each edge at the T-state the game's loops make it, played by the site's model of it as each frame is shown.</p>
   </div>
 </section>
@@ -4054,7 +4064,8 @@ G.view = function (P) {
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
-//                      held) }
+//                      held), reads: the game's reads of the keyboard's first half-row, once a
+//                      look at the keys }
 //   rt.onBeep(f)       f(value, T-state) for each change of the beeper (bit 4 of the byte written
 //                      to port $FE)
 //   rt.missing         the stretches met that the cost model has no figure for, 'from>to' in hex
@@ -4100,7 +4111,7 @@ const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, '
 function create(o) {
   const D = root.DRPort;
   const M = new Uint8Array(0x10000);
-  const input = { keys: new Set(), joy: 0 }, beepers = [];
+  const input = { keys: new Set(), joy: 0, reads: 0 }, beepers = [];
   let border = 7, ear = 0;
 
   // ---- the clock, and the frames as the beam shows them
@@ -4128,6 +4139,7 @@ function create(o) {
       if ((port & 0x20) === 0 && (port & 1)) return input.joy & 0x1F;
       if (port & 1) return 0xFF;
       const high = port >> 8;
+      if (high === 0xFE) input.reads++;             // read_keys begins its scan with this half-row
       let v = 0x1F;
       for (const name of input.keys) {
         const k = KEY[name];
@@ -4352,16 +4364,17 @@ function answer() {
     if (M[a + 1] - 0x40 !== page || M[a + 2] !== line || M[a + 3] - 0x20 !== word) continue;
     let w = '';
     for (let i = 0; i < M[a]; i++) w += String.fromCharCode(((M[a + 4 + i] & 0xBF) | 0x80) >> 1);
-    return 'Page ' + page + ', line ' + line + ', word ' + word + ' of the Federation Briefing: ' + w;
+    return { text: 'Page ' + page + ', line ' + line + ', word ' + word + ' of the Federation Briefing: ' + w, word: w };
   }
   return null;
 }
-let shownAnswer = '';
+let shownAnswer = '', answerWord = '';
 function showAnswer() {
   const a = rt && asking ? answer() : null;
-  if ((a || '') === shownAnswer) return;
-  shownAnswer = a || '';
-  answerEl.textContent = shownAnswer;
+  answerWord = a ? a.word : '';
+  if ((a ? a.text : '') === shownAnswer) return;
+  shownAnswer = a ? a.text : '';
+  $('pl-answer-text').textContent = shownAnswer;
   answerEl.hidden = !a;
 }
 
@@ -4476,6 +4489,7 @@ const tape = (function () {
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
+  typing = []; typed = null; held.delete('type');
   rt = DRPage.create({ data, cost: window.DR_COST, tape });
   // the question is asked at the start and after a position is loaded: the answer shows while the
   // game's routine for it runs
@@ -4490,7 +4504,7 @@ function tick(now) {
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) { draw(F); showAnswer(); }
@@ -4512,12 +4526,17 @@ const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 // A key is held for at least eight frames of the game's time: the game looks at the keys once a
-// pass, which can be a few frames apart, and a shorter tap could fall between two looks
-const held = new Map(), since = new Map(), letGo = new Set();
+// pass, which can be a few frames apart, and a shorter tap could fall between two looks. A key
+// tapped in the list (tap:, below) is held until the game has looked at the keys since it went
+// down as well
+const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
 const HOLD = 8;
 let padBits = 0;
 function release() {
-  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  for (const c of letGo) {
+    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
+  }
   input();
 }
 function hold() { input(); }
@@ -4554,11 +4573,51 @@ function onKey(e, down) {
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+screen.addEventListener('blur', () => {
+  active = false; screen.classList.remove('pl-focus');
+  for (const c of [...held.keys()]) if (!c.startsWith('tap:') && c !== 'type') { held.delete(c); since.delete(c); letGo.delete(c); }
+  input();
+});
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
-const controls = PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true,
+// keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+// the finger is on it and, once it lifts, until the game has looked at the keys since it went down
+// (read_keys, once a pass), so that a tap shorter than a pass still counts. data-key is the
+// Spectrum's key, or fire, which is the controls the game was set to
+const TAP_DIR = { fire: 16 };
+function press(name, mods) {
+  if (!running || !rt) return;
+  const c = 'tap:' + name;
+  held.set(c, [name].concat(mods).map(n => (TAP_DIR[n] !== undefined ? TAP_DIR[n] : n)));
+  since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
+  input();
+}
+function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+PlayControls.keys($('pl-keys'), { down: press, up: lift });
+// Type it: the security question's word, then ENTER, each key down until the game has looked at
+// the keys since, for eight frames at least, and a look with no key down between two, so that a
+// letter twice running is typed twice rather than held
+let typing = [], typed = null;   // the keys to type; typed: { key, at, reads } while one is down, then { reads }
+function typeStep() {
+  if (!rt || (!typed && !typing.length)) return;
+  if (typed && typed.key) {
+    if (rt.shown - typed.at < HOLD || rt.input.reads <= typed.reads) return;
+    held.delete('type'); typed = { reads: rt.input.reads }; input();
+    return;
+  }
+  if (typed && rt.input.reads <= typed.reads) return;
+  typed = null;
+  if (!typing.length) return;
+  const key = typing.shift();
+  held.set('type', [key]); typed = { key, at: rt.shown, reads: rt.input.reads }; input();
+}
+$('pl-type').addEventListener('click', () => {
+  if (running && answerWord && !typing.length && !typed) typing = answerWord.split('').concat('ENTER');
+  screen.focus();
+});
+// the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
+// (site/lib/play-controls.js)
+const controls = PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keyset'), pad: true,
   onPad(bits) { padBits = bits; input(); } });
 
 // --- controls
