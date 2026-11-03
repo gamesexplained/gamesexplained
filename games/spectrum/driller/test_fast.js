@@ -27,9 +27,12 @@
 // - once a step: with each way of moving held, no byte of the state a saved game keeps changes
 //   only once every K ticks, a step among frames that glide, unless listed as meant; a walk given
 //   whole once a step is caught;
-// - no frame behind: a key down before a refresh changes that refresh's screen.
+// - no frame behind: a key down before a refresh changes that refresh's screen;
+// - the beam: at every Speed, a tap of the laser shows its four lines on the screen the page shows
+//   (rt.fastFrame) for as long as its sound plays, within two refreshes (a Spectrum shows them a
+//   little longer, while it draws and rubs them out), and rubs them out after.
 //   node games/spectrum/driller/test_fast.js [part: off, limiter, same, clock, whole, speeds,
-//     switches, stopping, away, random, once, behind]
+//     switches, stopping, away, random, once, behind, beam]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -544,19 +547,60 @@ if (part('behind')) {
   // whose loops take it changes that refresh's screen
   const m = fastMachine(SPEEDS[0]), rt = m.rt;
   const rnd = rand(3);
-  let held = false, last = rt.now().screen, pressed = 0, unchanged = 0;
+  let held = false, last = rt.fastFrame().screen, pressed = 0, unchanged = 0;
   for (let i = 0; i < 900; i++) {
     const was = held;
     if (rnd() < 0.08) held = !held;
     m.press(held ? ['W'] : []);
     const m0 = m.hooks.moves;
     FastCPU.run(m.fx, 4 + 36 * rnd());
-    const s = rt.now().screen;
+    const s = rt.fastFrame().screen;
     if (held && !was && m.hooks.moves > m0) { pressed++; if (Buffer.compare(Buffer.from(s), Buffer.from(last)) === 0) unchanged++; }
     last = s;
   }
   if (!pressed || unchanged) fail('no frame behind: ' + unchanged + ' of ' + pressed + ' turns pressed before a refresh left its screen as it was');
   else console.log('no frame behind: ' + pressed + ' turns pressed before a refresh each change its screen');
+}
+
+// ---- the beam
+if (part('beam')) {
+  // the laser's lines: the screen's bytes they change, as the shot's sound begins. A screen shows
+  // them when nine in ten of those bytes are as the lines left them
+  const watch = m => {
+    const w = { lines: null };
+    let before = null;
+    const ac = m.P.aim_command, ps = m.P.play_sound;
+    m.P.aim_command = function* (r) { if ((r.a & 255) === 0x16 && !w.lines) before = m.M.slice(0x4000, 0x5800); return yield* ac.call(this, r); };
+    m.P.play_sound = function (r) {
+      if ((r.a & 255) !== 1 || !before || w.lines) return ps.call(this, r);
+      w.lines = []; for (let i = 0; i < 0x1800; i++) if (m.M[0x4000 + i] !== before[i]) w.lines.push([i, m.M[0x4000 + i]]);
+      const T0 = m.P.T, res = ps.call(this, r);
+      w.secs = (m.P.T - T0) / HZ;
+      return res;
+    };
+    w.shows = screen => w.lines && w.lines.length && w.lines.filter(([i, v]) => screen[i] === v).length >= 0.9 * w.lines.length;
+    return w;
+  };
+  // the Spectrum: 0 held until its pass fires, then the frames that show the lines
+  const sm = machine(true), sw = watch(sm);
+  sm.run(60);
+  const frames = [];
+  sm.press(['0']);
+  for (let i = 0; i < 150 && !sw.lines; i++) frames.push(sm.rt.runFrame().screen);
+  sm.press();
+  for (let i = 0; i < 50; i++) frames.push(sm.rt.runFrame().screen);
+  const sSecs = frames.filter(f => sw.shows(f)).length * FRAME / HZ;
+  if (!sw.lines || !sSecs) fail('the beam: the Spectrum\'s shot ' + (sw.lines ? 'never showed its lines' : 'never came'));
+  for (const speed of SPEEDS) {
+    const m = fastMachine(speed), w = watch(m);
+    const shown = [];
+    for (let i = 0; i < 60; i++) { m.press(i < 3 ? ['0'] : []); FastCPU.run(m.fx, REFRESH); shown.push(m.rt.fastFrame().screen); }
+    m.press();
+    const n = shown.filter(f => w.shows(f)).length, secs = n * REFRESH / 1000;
+    if (!w.lines) fail('the beam, ' + speed.name + ': a tap of 0 fired no shot');
+    else if (Math.abs(secs - w.secs) > 2 * REFRESH / 1000 || w.shows(shown[shown.length - 1])) fail('the beam, ' + speed.name + ': the laser\'s lines showed for ' + n + ' refreshes, ' + secs.toFixed(3) + ' s, while its sound played ' + w.secs.toFixed(3) + ' s' + (w.shows(shown[shown.length - 1]) ? ', and are still on the screen a second later' : ''));
+    else console.log('the beam, ' + speed.name + ': the laser\'s lines show for ' + n + ' refreshes, ' + secs.toFixed(3) + ' s, while its sound plays ' + w.secs.toFixed(3) + ' s (a Spectrum shows them ' + sSecs.toFixed(3) + ' s), then are rubbed out');
+  }
 }
 
 if (fails) { console.log(fails + ' failed'); process.exit(1); }

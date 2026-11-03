@@ -310,7 +310,9 @@ const tape = (function () {
 // --- the loop: one frame of 48K time per frame of real time; with Fast CPU (site/lib/fast-cpu.js), a
 // loop of the game for each of its ticks, 60 a second, that real time has reached, at most four a
 // refresh (a computer too slow for them plays slower than the Spectrum), and the screen as the last
-// one left it drawn in the same refresh
+// one left it drawn in the same refresh, or while a sound holds the processor, as the Spectrum shows
+// it (rt.fastFrame). A key that has come up is let go after each frame, or with Fast CPU after each
+// loop and each refresh: the information screen, drilling and the menus go round no loop
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
@@ -333,8 +335,9 @@ function tick(now) {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast && fx) {
       FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
+      if (letGo.size) release();
       sound.frame(); tape.frame(); typeStep();
-      F = rt.now(); n = 1;
+      F = rt.fastFrame(); n = 1;
     } else {
       acc += dt;
       while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
