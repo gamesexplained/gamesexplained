@@ -1,9 +1,10 @@
 # Encounter — TODO
 
-Current tier: **Silver**. Coverage 100.0 % of 31,707 tracked bytes (6 bytes
+Current tier: **Platinum**, claimed: the Play tab is the whole game, and
+air is curating the copy. Coverage 100.0 % of 31,707 tracked bytes (6 bytes
 bare: the last two of the seven stub JMPs in the title screen).
 
-## For Gold (a human's work)
+## For Gold, and with the Play tab Diamond (a human's work)
 
 - Read the How it works page and cut what is dull. The shape-script
   browser shows bytes and tokens; a human who plays the game may want a
@@ -27,10 +28,10 @@ bare: the last two of the seven stub JMPs in the title screen).
   compare against another dump of the game (tape original) to see what
   was there.
 - Whether the tape version has the same PAL-only check.
-
-## For Platinum
-
-A Play tab that is the whole game: every routine ported to JavaScript
-and run in lockstep with the game's own code, with `test_play.js`
-beside the page (`kit/skills/core/70-minisite/play.md`), and no
-known bug in the port.
+- Why the start samples sprite 3's collision ($9D70, 8 in $C0 on the
+  kit's C64, where the sprite parked at X 503 runs on into the left of
+  the screen) and takes it from the scenery sprites' X at $B9CB.
+- The Play tab's passes cost what the game's do within a few hundred
+  cycles, so over the long demonstration the page drifts a frame in
+  300 from the C64. A cost model fitted per scene, or the view's
+  routines timed by the cells they draw, would close it.

@@ -51,7 +51,9 @@
 //   checkpoint) is one. A { cp } yielded twice running is two arrivals: a game whose every pass
 //   reaches one address (a wait for a timer called from everywhere) yields it once a pass.
 // - waits: the raster waits' exits, the instruction after each loop that polls the raster. The
-//   game must leave on the port's line or the next. While it waits it passes the checkpoint before,
+//   game must leave on the port's line or the next: the line it reaches the exit on, or the line
+//   its last read of the raster found there (an interrupt that comes between the read and the exit
+//   delays the exit, not the wait). While it waits it passes the checkpoint before,
 //   which may head the loop (a port that names its time up to the wait). The game reaches an exit
 //   only when its main program has read the raster ($D011, $D012 or $D019) since its last stop, so
 //   an exit that also heads the loop of work after the wait (a copy, ten times round) is reached
@@ -408,6 +410,8 @@ class Lockstep {
     this.resume = -1;
     this.through = -1;                             // a checkpoint the game passes while it waits for the raster
     this.polled = false;                           // the main program has read the raster since its last stop
+    this.readLine = -1;                            // the line of its last read of it, and of the last before a stop
+    this.stopRead = -1;
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
     this.stored = new Set();                       // bytes the port's program stored since their replay
@@ -545,7 +549,7 @@ class Lockstep {
         if (ls.resume === a) { ls.resume = -1; return prev ? prev(c) : false; }
         if (ls.through === a) return prev ? prev(c) : false;          // the head of the loop a raster wait turns in
         if (ls.waits.has(a) && !ls.polled) return prev ? prev(c) : false; // a wait's exit come to again with no wait
-        ls.at = a; ls.matched = false; m.stopFlag = true; ls.polled = false;
+        ls.at = a; ls.matched = false; m.stopFlag = true; ls.polled = false; ls.stopRead = ls.readLine;
         return true;
       };
     }
@@ -674,7 +678,7 @@ class Lockstep {
       const v = ioRead.call(this, a), q = ls.irq;
       if (a >= 0xD000 && a < 0xD400) {
         const r = a & 0x3F;
-        if (q === null) { if (r === 0x11 || r === 0x12 || r === 0x19) ls.polled = true; }
+        if (q === null) { if (r === 0x11 || r === 0x12 || r === 0x19) { ls.polled = true; ls.readLine = this.line; } }
         else if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
       }
       const f = q !== null ? flagRegister(a) : -1;
@@ -874,12 +878,12 @@ class Lockstep {
     this.through = this.cps.has(this.last) ? this.last : -1;   // after a wait's exit, the same exit is the next stop
     let at;
     try { at = this.toStop(); } finally { this.through = -1; }
-    const ln = this.m.line;
+    const ln = this.m.line, off = l => (l - line + LINES) % LINES > 1;
     if (!this.waits.has(at)) {
       return this.diverge(at < 0 ? this.lost('a raster wait') : 'the game went to ' + hex(at) + ', the port waited for line ' + line,
         { game: at, port: 'wait' });
     }
-    if ((ln - line + LINES) % LINES > 1) {
+    if (off(ln) && (this.stopRead < 0 || off(this.stopRead))) {
       return this.diverge('the game left its raster wait at ' + hex(at) + ' on line ' + ln + ', the port waited for line ' + line,
         { game: at, port: 'wait', line: ln });
     }
