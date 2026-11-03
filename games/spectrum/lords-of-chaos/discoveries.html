@@ -60,7 +60,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Lords of Chaos loads the first file on the tape that starts with the right letter, lets lava burn only the players' creatures, sends the computer's creatures into solid rock, and still holds a breakpoint its authors could stop the game with.</p>
+  <p class="sub">Lords of Chaos loads the first file on the tape that starts with the right letter, lets lava burn only the players' creatures, sends the computer's creatures into solid rock, can lock up for good when the computer's wizard stands on a big pile of objects, and still holds a breakpoint its authors could stop the game with.</p>
 </header>
 <main class="wrap">
 
@@ -148,15 +148,54 @@ MERLIN1.WIZ
   <p>Opening a wizard in the designer sets its experience points to four times its score (<code>$E0C0</code>). EXIT stores the points left divided by four, rounded down, as the score (<code>$E17E</code>). Every visit to the designer that ends on a total that is not a multiple of four loses the difference. A new wizard's mana, action points, stamina and magic resistance cost 8, 8, 4 and 4 a point, but constitution costs 3 and combat and defence 2, and a spell such as GOLD DRAGON 47 plus 23 a level, so it is easy to leave on 597.</p>
 </section>
 
+<section id="hang">
+  <p class="fig">06 · The computer's turn</p>
+  <h2 class="t">Bug: a pile of more than ten objects can stop the game for good</h2>
+  <p class="lede">The list of what lies on a square has room for ten objects. A computer creature that wants one past the tenth goes on looking beyond the end of the list, and takes whatever it finds there for the object. In one game against the computer the search ended inside the instruction that moves play on to the next wizard, and the game never came back from the next menu.</p>
+  <div class="plate">
+    <div class="loc-shots">
+      <figure><img src="reference/hang-turn.png" width="288" height="224" alt="The computer's turn panel: WIZARD TORQUEMADA, TURN 23, PORTAL 4, WIZARD1 0, TORQUEMADA 24"><figcaption>Turn 23. TORQUEMADA, the computer's wizard, stands on fifteen objects and wants the magic mushroom.</figcaption></figure>
+      <figure><img src="reference/hang-menu.png" width="288" height="224" alt="The menu CONTINUE, SAVE GAME, ABANDON GAME on a black screen"><figcaption>The end of the turn: CONTINUE.</figcaption></figure>
+      <figure><img src="reference/hang-blank.png" width="288" height="224" alt="A black screen"><figcaption>Then a black screen, for good.</figcaption></figure>
+    </div>
+    <p class="cap">In the emulator, a game of scenario 1 against the computer, 52 minutes in. In the 600 frames after CONTINUE the game went round its turn loop 32 times, and SPACE, ENTER, 0, 5 to 8, Q, A, O, P and M changed nothing.</p>
+  </div>
+  <div class="plate" style="margin-top:20px">
+    <div class="loc-scroll"><table class="loc-tab">
+      <tr><th class="n">#</th><th>object</th><th>entry</th><th>in the list</th></tr>
+      <tr><td class="n">1</td><td>AMBERGRIS</td><td><code>$0F</code></td><td>yes</td></tr>
+      <tr><td class="n">2</td><td>CLOVER</td><td><code>$15</code></td><td>yes</td></tr>
+      <tr><td class="n">3</td><td>AMBERGRIS</td><td><code>$16</code></td><td>yes</td></tr>
+      <tr><td class="n">4</td><td>CLOVER</td><td><code>$19</code></td><td>yes</td></tr>
+      <tr><td class="n">5</td><td>CLOVER</td><td><code>$1E</code></td><td>yes</td></tr>
+      <tr><td class="n">6</td><td>CRYSTAL</td><td><code>$1F</code></td><td>yes</td></tr>
+      <tr><td class="n">7</td><td>CLOVER</td><td><code>$20</code></td><td>yes</td></tr>
+      <tr><td class="n">8</td><td>CRYSTAL</td><td><code>$22</code></td><td>yes</td></tr>
+      <tr><td class="n">9</td><td>CLOVER</td><td><code>$25</code></td><td>yes</td></tr>
+      <tr><td class="n">10</td><td>CAULDRON</td><td><code>$2A</code></td><td>yes</td></tr>
+      <tr><td class="n">11</td><td>CRYSTAL</td><td><code>$2B</code></td><td>no</td></tr>
+      <tr style="background:var(--hl)"><td class="n">12</td><td>MAGIC MUSHROOM</td><td><code>$2C</code></td><td>no</td></tr>
+      <tr><td class="n">13</td><td>AMBERGRIS</td><td><code>$30</code></td><td>no</td></tr>
+      <tr><td class="n">14</td><td>FAIRY WING</td><td><code>$49</code></td><td>no</td></tr>
+      <tr><td class="n">15</td><td>MISTLETOE</td><td><code>$4C</code></td><td>no</td></tr>
+    </table></div>
+    <p class="cap">The objects lying on TORQUEMADA's square, row 24, column 17, in the order of the table of things on the map, read from the game's memory in the emulator at the moment of the screenshot above.</p>
+  </div>
+  <p>list_objects_at (<code>$67A7</code>) goes through the table of things on the map (<code>$5B5A</code>, six bytes each) and writes each object lying on the square into a list at <code>$D1D4</code>, its entry number and then its type, and stops when the list holds ten (<code>$6819</code>). When a computer creature reaches the object it is after, computer_pick_up (<code>$A0F0</code>) looks for the object's type in that list, every second byte from <code>$D1D5</code>, with nothing to count how far it has gone. If the object is not among the first ten, the search runs on through memory, still every second byte, to the first that holds the type, and takes the byte before as the entry number. It marks that entry as the object in use (bit 7 of its byte 3) and writes the creature's number into its byte 4, which says who carries it.</p>
+  <p>A magic mushroom is type <code>$82</code>, 130. Past the list, the first byte the search reads that holds 130 was at <code>$E8F1</code>, and the byte before it held 3, so in turn 22 each of TORQUEMADA's four tries marked entry 3, the fourth wizard's, empty in a game of two, and the mushroom stayed on the floor. Between tries the wizard tried spells. The computer chooses its spells by priorities, one byte a spell at <code>$D3DC</code>, and raises a spell's priority by one each time it tries the spell. In turn 23, between one try and the next, the FLYING POTION's priority went from 128 to 130. The next search stopped there, at <code>$D3F9</code>, and the byte before was the SPEED POTION's priority, 255.</p>
+  <p>Entry 255 would start at <code>$6154</code>, so its bytes 3 and 4 are <code>$6157</code> and <code>$6158</code>: the operand of <code>LD HL,$5B11</code> at <code>$6156</code>, which points at the number of the player whose turn it is. It became <code>LD HL,$0191</code>, and the <code>INC (HL)</code> after it now adds one to a byte of the ROM, which cannot change. The computer finished its turn and the game showed the end-of-turn menu. A new game turn sets the player number to 0, for the creatures that belong to no one, and from then on it stays 0: it never reaches the number of players, so the turn loop goes round for ever, clearing the screen each time and never coming to a wizard's turn.</p>
+  <p><b>test_discoveries.js</b> runs computer_pick_up on the game's own code with fifteen objects on a square: the list holds the first ten, the search for the twelfth runs past it and marks the entry named by the byte before the first match, and with 255 there the turn loop's operand becomes <code>$0191</code>.</p>
+</section>
+
 <section id="draws">
-  <p class="fig">06 · The winner</p>
+  <p class="fig">07 · The winner</p>
   <h2 class="t">Bug: a draw goes to the last wizard</h2>
   <p class="lede">At the end, the game looks for the highest score with a test that lets an equal score take over. Of two wizards on the same points, the one later in the list wins.</p>
   <p>game_over (<code>$8DD3</code>) goes through the four final scores from the first wizard to the fourth and keeps a score when it is at least the best so far. In a game against the computer, the computer's wizard is second. A draw is its win, so the player's designed wizard does not go up a level or keep its score for the designer. Run on the game's own code with 10 points to the player's wizard and 9 to the computer's, the wizard goes from level 1 to 2; with 10 each, it stays at 1.</p>
 </section>
 
 <section id="breakpoint">
-  <p class="fig">07 · The authors' tools</p>
+  <p class="fig">08 · The authors' tools</p>
   <h2 class="t">Secret: the authors' breakpoint is still in the game</h2>
   <p class="lede">A routine at <code>$96BA</code> that nothing calls counts up, prints the count at the bottom left and waits for fire, keeping every register. Dropped into any routine with a CALL, it stopped the game there.</p>
   <div class="plate"><div class="loc-row">
@@ -175,7 +214,7 @@ MERLIN1.WIZ
 </section>
 
 <section id="names">
-  <p class="fig">08 · Names</p>
+  <p class="fig">09 · Names</p>
   <h2 class="t">Secret: the tape still carries the testers' wizards</h2>
   <p class="lede">The game was saved with names left in its tables. None shows in play, because each slot is marked empty or written over before it is used.</p>
   <div class="plate"><table class="loc-tab">

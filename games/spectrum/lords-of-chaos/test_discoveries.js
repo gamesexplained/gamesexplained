@@ -8,7 +8,9 @@
 // - design_exit's arithmetic ($E17E-$E18A) on every experience total from 0 to 1023, against
 //   LOCFinds.keep: the score it keeps in byte 69 of the record;
 // - scenario 2's lava hook ($E1F0), which hurts only a creature a human moves;
-// - computer_choose_target ($9992) on scenario 2's route 0, whose waypoint 28 is a square of rock.
+// - computer_choose_target ($9992) on scenario 2's route 0, whose waypoint 28 is a square of rock;
+// - computer_pick_up ($A0F0) on a pile of fifteen objects: list_objects_at lists ten, and the search
+//   for the twelfth runs past the list and marks the entry named by the byte before its first match.
 //   node games/spectrum/lords-of-chaos/test_discoveries.js
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
@@ -109,5 +111,41 @@ for (const moving of [0, 1]) for (let t = 0x16; t < 0x20; t++) {
   if (String([...M0.slice(ra + 1, ra + (M0[ra] & 0x7F))]) !== String(route0)) fail('scenario 2 route 0 is not ' + route0);
 }
 
-console.log(fails ? `FAIL: ${fails} of ${cases} cases differ` : `ok - ${cases} cases of find_file, drink, design_exit, scenario 2's lava and its route into rock worked out as the game works them`);
+// a pile of fifteen objects on row 24, column 17, and a computer creature (entry 1) on it wanting the
+// twelfth: list_objects_at ($67A7, called at $A13A) lists ten, and the search from $D1D5 has no end.
+// On the memory as it loads, and with $FF, $81 put at $D1F0 (entry 255, as in the game that hung):
+// entry 255's bytes 3 and 4 are $6157-$6158, the operand of LD HL,$5B11 in the turn loop ($6156)
+for (const plant of [false, true]) {
+  const M = memory(1);
+  for (let i = 0; i < 0x91; i++) M[0x5B5A + 6 * i + 2] = 0xFF;                 // nothing on the map
+  const types = [0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x80, 0x81, 0x82, 0x83, 0x84];
+  types.forEach((t, k) => M.set([24, 0x80 | 17, t, 0, 0xFF, 0], 0x5B5A + 6 * (0x20 + k)));
+  if (plant) { M[0xD1F0] = 0xFF; M[0xD1F1] = 0x81; }
+  M[0x5B55] = 24; M[0x5B56] = 17; M[0x5B4F] = 1; M[0x5B2F] = 0xFF; M[0xD1FB] = 20; M[0xD19B] = 0x81;
+  const before = M.slice();
+  let listed = null;
+  call(M, 0xA0F0, {}, { hooks: {
+    0x984A: (c, M) => { c.f |= 0x40; return ret(c, M); },                         // on the target square
+    0x7156: (c, M) => { c.f &= ~0x40; return ret(c, M); },                        // no partner there
+    0x6DBA: ret, 0x6741: ret,
+    0xA13D: (c, M) => { listed = [...M.slice(0xD1D4, 0xD1D4 + 2 * M[0xD0DD])]; return false; },
+    0xA16B: c => { c.pc = 0; return true; },                                      // the marks are made
+  } });
+  cases++;
+  const want = []; for (let k = 0; k < 10; k++) want.push(0x20 + k, types[k]);
+  if (String(listed) !== String(want)) fail(`list_objects_at on fifteen objects: ${listed}`);
+  let a = 0xD1D5;
+  while (M[a] !== 0x81) a += 2;
+  const e = M[a - 1], at = (0x5B5A + 6 * e) & 0xFFFF;
+  const own = i => (i >= 0x5B2C && i <= 0x5B2E) || i === 0x5B57 || (i >= 0xD0DD && i <= 0xD1FB);   // its variables
+  const changed = [];
+  for (let i = 0x4000; i < 0xFE00; i++) if (M[i] !== before[i] && !own(i)) changed.push(i);
+  cases++;
+  if (a < 0xD1E8 || String(changed) !== String([at + 3, at + 4]) || M[at + 3] !== (before[at + 3] | 0x80) || M[at + 4] !== 1)
+    fail(`computer_pick_up wanting the twelfth: stopped at $${a.toString(16)}, entry ${e}, changed ${changed.map(x => '$' + x.toString(16))}`);
+  cases++;
+  if (plant && (M[0x6157] | M[0x6158] << 8) !== 0x0191) fail(`the turn loop's LD HL operand is $${(M[0x6157] | M[0x6158] << 8).toString(16)}`);
+}
+
+console.log(fails ? `FAIL: ${fails} of ${cases} cases differ` : `ok - ${cases} cases of find_file, drink, design_exit, scenario 2's lava, its route into rock and the pile of fifteen worked out as the game works them`);
 process.exit(fails ? 1 : 0);

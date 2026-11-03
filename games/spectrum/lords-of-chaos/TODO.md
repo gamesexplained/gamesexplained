@@ -26,8 +26,3 @@ checker did not read.
   computer, watching a creature on route 0, 2 or 6 stop beside row 8,
   column 7.
 - The sound pads on How it works could be named by what plays each sound.
-- A Discoveries section on the game's hang (facts.md, "Corner cases"): a
-  computer creature that wants an object past the tenth on its square
-  searches on through memory and can write over the turn loop. A live
-  check in ZEsarUX would pile eleven objects on one square in a game
-  against the computer.

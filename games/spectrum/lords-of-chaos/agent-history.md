@@ -106,5 +106,16 @@ memory and one on the page's blanked memory, diverged only once a page
 drew more random numbers than the recorded session held; the replay now
 gives both the same bytes past the end and compares them up to it.
 
+**The hang on Discoveries.** For the Discoveries section the lockstep
+game was run again from the hand-over and the machine saved at each of
+TORQUEMADA's tries to pick up the mushroom, then loaded into ZEsarUX.
+That corrected what facts.md had said: the earlier searches marked entry
+3, an empty wizard slot, not the first wizard, and the search reached the
+turn loop only because one of the computer's spell priorities had
+climbed to the mushroom's type between two tries in the same turn. The
+lockstep's pass number had not told the tries apart, since the computer's
+whole turn is one pass. ZEsarUX showed the operand rewritten, the
+end-of-turn menu, and then the blank screen that no key ends.
+
 **Left open.** Nothing for Platinum. Gold needs a person's pass over the
 copy.
