@@ -6,6 +6,7 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   discoveries.html copied through if authored    (Discoveries)
   levels.html  copied through if authored          (Levels, Maps or Map: game.json's "levels_tab")
+  graphics.html copied through if authored         (Graphics, or the one word game.json's "graphics_tab" names)
   source.html  from site/source.html + listing.json   (Source code)
                + original-source.md, for a game whose authors' source survives
   about.html   from site/about.html + game.json + features.md + git log
@@ -37,7 +38,8 @@ listing from the page. A byte a page reads and does not name reads as 0, which
 opening the page with ?listing-reads finds (site/lib/listing-reads.js). The
 repository keeps the whole listing.
 Those are the default tabs, in the order the bar shows them. The levels tab is
-named in one word, game.json's "levels_tab" (default_tabs). A game that wants
+named in one word, game.json's "levels_tab", and the graphics tab Graphics or
+the one word of game.json's "graphics_tab" (default_tabs). A game that wants
 others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
 authored page it names is copied through, and a page in the folder that no tab
 names is left out with a warning (about-layout.html, the game's own About
@@ -117,7 +119,8 @@ PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of R
                 "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM",
                 "nes": "the NES's 64 KB address space: 2 KB of RAM, the chips' registers and the cartridge"}
 TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
-        ("levels.html", "Levels"), ("source.html", "Source code"), ("about.html", "About")]
+        ("levels.html", "Levels"), ("graphics.html", "Graphics"), ("source.html", "Source code"),
+        ("about.html", "About")]
 _warned = set()
 
 
@@ -380,9 +383,11 @@ def tab_place(f, n):
 
 def default_tabs(game):
     """TABS, with the levels tab named as game.json's "levels_tab" names it: the one word for what
-    the page draws, Levels, Maps or Map, or another in the rare game neither fits."""
-    name = game.get("levels_tab") or "Levels"
-    return [(f, name if f == "levels.html" else n) for f, n in TABS]
+    the page draws, Levels, Maps or Map, or another in the rare game neither fits. The graphics tab
+    is Graphics unless "graphics_tab" names its cast in one word (Fighters, Ships)."""
+    names = {"levels.html": game.get("levels_tab") or "Levels",
+             "graphics.html": game.get("graphics_tab") or "Graphics"}
+    return [(f, names.get(f, n)) for f, n in TABS]
 
 
 def tab_order(game, present):
