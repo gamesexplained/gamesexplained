@@ -43,6 +43,10 @@ function makePort(M, io, opts = {}) {
   P.IM = 1;
   P.NI = {};
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
+  // a byte the interrupt writes, read by the main program through irqByte and by the interrupt's
+  // own code (P.inIrq, set while it runs) from memory
+  P.inIrq = false;
+  P.ib = a => (P.inIrq ? M[a] : P.irqByte(a));
   P.readR = () => (IO.readR ? IO.readR() : 0);
   P.readAt = a => (IO.readAt ? IO.readAt(a) : M[a]);
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;

@@ -225,8 +225,8 @@ function install(P) {
         if (beyond) {
           if (cpu.sp !== sp0) throw new Error('standIn ' + label + ': the stack moved after popping past its return');
           const op = P.M[pc], op2 = P.M[(pc + 1) & 0xFFFF];
-          if (op === 0xC9) throw new P.Unwind(beyond, regsOf(cpu));
-          if (op === 0xC3) throw new P.Unwind(beyond, regsOf(cpu), op2 | P.M[(pc + 2) & 0xFFFF] << 8);
+          if (op === 0xC9) throw Object.assign(new P.Unwind(beyond, regsOf(cpu)), { from: label, at: pc });
+          if (op === 0xC3) throw Object.assign(new P.Unwind(beyond, regsOf(cpu), op2 | P.M[(pc + 2) & 0xFFFF] << 8), { from: label, at: pc });
           const pop = [0xC1, 0xD1, 0xE1, 0xF1].indexOf(op);
           if (pop >= 0) { setRegs(cpu, { [['bc', 'de', 'hl', 'af'][pop]]: 0 }); beyond++; cpu.pc = (pc + 1) & 0xFFFF; continue; }
           if ((op === 0xDD || op === 0xFD) && op2 === 0xE1) { setRegs(cpu, { [op === 0xDD ? 'ix' : 'iy']: 0 }); beyond++; cpu.pc = (pc + 2) & 0xFFFF; continue; }

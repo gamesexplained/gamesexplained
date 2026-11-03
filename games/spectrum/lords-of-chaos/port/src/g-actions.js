@@ -109,8 +109,7 @@ G.actions = function (P) {
   // find_partner: another creature on the selected creature's square at its height ($5B2F) that
   // rides nothing: Z, its entry in IX and its number in $D1A3.
   def(0x7156, 'find_partner', r => {
-    P.find_others_at({ hl: w(0x5B55) });
-    let ix = r.ix;
+    let ix = P.find_others_at({ hl: w(0x5B55) }).ix;
     if (M[0xD1AE]) {
       M[0xD1A3] = M[0xD1B1];
       ix = w(0xD1AF);

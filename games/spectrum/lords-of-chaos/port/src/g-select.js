@@ -17,64 +17,68 @@ G.select = function (P) {
   // addresses.
   function* select(at, num) {
     P.IFF = false;
+    // IX and IY as the game's would hold them, for the select menu, which reads IX when no partner
+    // is found
+    const rg = {};
+    const keep = o => { if (o) for (const k of ['ix', 'iy']) if (o[k] !== undefined) rg[k] = o[k]; return o; };
     const ma = P.map_address_cursor({}).hl;
-    const ix = w(at);
+    const ix = rg.ix = w(at);
     setw(0xFFF9, ix);
     const t = M[(ix + 2) & 0xFFFF];
     M[0x5B12] = t;
     M[ma] = t;
     M[0x5B58] = M[num];
     setw(0xFF88, w(0xD0D3));
-    const d = P.describe_creature({ ix });
-    P.fill_icon_list({});
-    P.load_figures({ ix: d.ix, iy: d.iy });
-    P.draw_creature_panel({});
-    P.make_selected({ ix: d.ix, iy: d.iy });
-    P.centre({});
-    P.draw_map({});
+    const d = keep(P.describe_creature({ ix }));
+    keep(P.fill_icon_list({}));
+    keep(P.load_figures({ ix: d.ix, iy: d.iy }));
+    keep(P.draw_creature_panel({}));
+    keep(P.make_selected({ ix: d.ix, iy: d.iy }));
+    keep(P.centre({}));
+    keep(P.draw_map({}));
     P.IFF = true;
     yield* P.wait_release({});
     for (;;) {
-      yield* P.read_controls({});
-      P.move_cursor({});
+      keep(yield* P.read_controls({}));
+      keep(P.move_cursor({}));
       let menu = false;
       if (!(M[0x5B13] & 1)) {
         P.IFF = false;
-        P.list_neighbours_of_selected({});
+        keep(P.list_neighbours_of_selected({}));
         let c = 0, hl = 0xFF0C;
         for (; c < 8; c++, hl += 3) if (M[hl] === M[0xD0D3] && M[hl + 1] === M[0xD0D4]) break;
         if (c === 8) menu = true;
         else {
           M[0xFF92] = M[hl + 2];
           M[0xFF93] = c;
-          const k = P.classify_step({ hl: w(0xD0D3) });
-          yield* P.jumpGen(0xD01E, Object.assign({}, k));
+          const k = keep(P.classify_step({ hl: w(0xD0D3) }));
+          keep(yield* P.jumpGen(0xD01E, Object.assign({}, k, rg)));
           const v = M[0xFF8F];
           if (v === 5) {
             if (M[0xD065] === 1) menu = true;
             else {
-              P.move_selected({});
-              yield* P.jumpGen(0xD021, {});
-              P.start_sound({ a: 4 });
-              yield* P.cw('step_effects', { ret: 0x69B4 });
+              keep(P.move_selected({}));
+              keep(yield* P.jumpGen(0xD021, Object.assign({}, rg)));
+              keep(P.start_sound({ a: 4 }));
+              keep(yield* P.cw('step_effects', { ret: 0x69B4 }));
               if (M[0xFF30]) return { a: M[0xFF30], zf: false };
-              P.cursor_to_step({});
+              keep(P.cursor_to_step({}));
               const iy = w(0x5B50);
-              if (M[(iy + 4) & 0xFFFF] & 0x10) yield* P.show_message({ a: 0xB9 });
+              if (M[(iy + 4) & 0xFFFF] & 0x10) keep(yield* P.show_message({ a: 0xB9 }));
               else {
-                if (P.show_enemy_spotted({}).zf) P.print_square_name({});
+                if (keep(P.show_enemy_spotted({})).zf) keep(P.print_square_name({}));
                 P.IFF = true;
-                yield* P.wait_release({});
+                keep(yield* P.wait_release({}));
               }
             }
-          } else if (v === 4) { yield* P.cw('attack', { ret: 0x69E3 }); P.IFF = false; }
-          else if (v === 0) yield* P.attack_terrain({});
+          } else if (v === 4) { keep(yield* P.cw('attack', { ret: 0x69E3 })); P.IFF = false; }
+          else if (v === 0) keep(yield* P.attack_terrain({}));
           else if (v === 7) menu = true;
-          else yield* P.show_message({ a: (v + 0xB3) & 255 });
+          else keep(yield* P.show_message({ a: (v + 0xB3) & 255 }));
         }
       }
-      if (menu) { P.IFF = true; yield* P.select_menu({}); continue; }
-      yield* P.update_info_panel({});
+      if (menu) { P.IFF = true; keep(yield* P.select_menu(Object.assign({}, rg))); continue; }
+      keep(yield* P.update_info_panel({}));
       P.IFF = true;
     }
   }
@@ -182,7 +186,7 @@ G.select = function (P) {
     P.list_selected_carries({});
     const opt = (a, t) => { P.add_menu_option({ a }); if (t !== undefined) P.print_text({ a: t }); };
     opt(0, 0xB8); opt(4, 0xBE); opt(0x14, 0xB1);
-    const fp = P.find_partner({});
+    const fp = P.find_partner({ ix: r.ix });
     setw(0xD1A1, fp.ix);
     // the options whose turn may never come: each returns false to go straight to the end
     const options = () => {

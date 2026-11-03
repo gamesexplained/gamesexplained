@@ -19,8 +19,24 @@ const HALTS = [0x829B];
 // The stacks: the game's own from $FFF3 in play, the loader's from $5DA8 before (in the object
 // table, unused until a scenario starts).
 const STACK_PLAY = [0xFF96, 0xFFF2], STACK_BOOT = [0x5D40, 0x5DA7], PANEL_STACK = [0x5FC0, 0x606D];
-// the bytes an interrupt writes and the main program reads in the middle of a stretch
+// the bytes an interrupt writes and the main program reads in the middle of a stretch: each
+// scenario's things' graphics and colour sets (bytes 1 and 2 of the 170 five-byte entries at
+// ($D032)), which the animations change (g-draw.js, anim), and the frame of the summoning
+// animation, which summon_display reads after each sound
 const IRQ_BYTES = [];
+for (const n of [1, 2, 3]) {
+  const S = lib.listing('scenario-' + n).M, t = S[0xD032] | S[0xD033] << 8;
+  for (let k = 0; k < 0xAA; k++) IRQ_BYTES.push(t + 5 * k + 1, t + 5 * k + 2);
+  IRQ_BYTES.push(t + 0x18F);    // and the summoning animation's frame, which summon_display waits on
+}
+// and the sound's bytes ($C830-$C838), which the interrupt's map drawing plays a step of after each
+// row while the main program plays the summoning sound (g-sound.js); the cursor's blink ($D0D0),
+// the flashing colour ($FF53) and the five bars' heights ($D1F6-$D1FA), which the main program's
+// drawing reads (P.ib)
+const IRQ_FIXED = [0xD0D0, 0xFF53, 0xD1F6, 0xD1F7, 0xD1F8, 0xD1F9, 0xD1FA];
+for (let a = 0xC830; a <= 0xC838; a++) IRQ_FIXED.push(a);
+IRQ_BYTES.push(...IRQ_FIXED);
+const IRQ_FIXED_SET = new Set(IRQ_FIXED);
 // the one LD A,R, in random_below, and its seven reads of memory, which walk through the stacks too
 const READS_R = [0xA738], READS_AT = [0xA741, 0xA743, 0xA745, 0xA74D, 0xA74F, 0xA751, 0xA755];
 
@@ -41,7 +57,8 @@ function run(o) {
   const m = boot ? lib.boot() : lib.restore(lib.readState(o.state));
   const P = LOC.makePort(new Uint8Array(65536), {});
   standin.install(P);
-  P.IRQ = new Set(IRQ_BYTES);
+  // a stand-in's reads of them: the scenario's own table, as the port's anim reads it
+  P.IRQ = { has: a => { const d = (a - P.w(0xD032)) & 0xFFFF; return P.part >= 1 && !P.inIrq && d < 0x352 && (d % 5 === 1 || d % 5 === 2 || d === 0x18F) || (!P.inIrq && IRQ_FIXED_SET.has(a)); } };
   if (!boot) P.part = lib.partOf(m.ram);
   P.io.tape = lib.Tape.from(m.tape.save_());     // a copy of the cassette as it stands: the port plays its own
   if (o.onPort) o.onPort(P, m);
@@ -51,10 +68,16 @@ function run(o) {
     stack: boot ? STACK_BOOT : STACK_PLAY, ignore: (boot ? [STACK_PLAY] : []).concat(o.ignore || []),
     maxFrames: o.maxFrames || 20000, timing: o.timing });
   // The file panel's stack runs down from $606E over the top creature records, which are filled
-  // again before a game starts or loads: while the game's stack is there, those bytes are its stack.
+  // again before a game starts or loads: while the game's stack is there, those bytes are its stack,
+  // and what it leaves there is the game's, which the port takes as it stands (a port keeps no stack).
   const A0 = ls.addrs, A1 = A0.filter(a => a < PANEL_STACK[0] || a > PANEL_STACK[1]);
   const compare = ls.compare.bind(ls);
-  ls.compare = (...x) => { const sp = m.cpu.sp; ls.addrs = sp >= PANEL_STACK[0] && sp <= PANEL_STACK[1] + 1 ? A1 : A0; return compare(...x); };
+  ls.compare = (...x) => {
+    const sp = m.cpu.sp, panel = sp >= PANEL_STACK[0] && sp <= PANEL_STACK[1] + 1;
+    ls.addrs = panel ? A1 : A0;
+    if (panel) for (let a = PANEL_STACK[0]; a <= PANEL_STACK[1]; a++) P.M[a] = m.ram[a];
+    return compare(...x);
+  };
   if (o.onCheckpoint) {
     const cp = ls.checkpoint.bind(ls);
     ls.checkpoint = (a, y) => { const r = cp(a, y); if (!ls.halted) o.onCheckpoint(a, m, ls); return r; };
@@ -76,9 +99,9 @@ if (require.main === module) {
     try {
       let input = null;
       out = run({ state: f, onCheckpoint: (a, mm) => input.check(mm) });
-      input = player(lib.makeRnd(seed), out.m);
+      input = player(lib.makeRnd(seed), out.m, { onRewind: () => out.P.io.tape.rewind() });
       res = out.ls.run({ passes, stopOnDiff: true, onPass: (k, mm) => input.pass(k, mm), onFrame: (fr, mm) => input.frame(fr, mm) });
-    } catch (e) { console.log((f || 'boot') + ': ' + (e.stack || e.message).split('\n').slice(0, 10).join('\n  ')); continue; }
+    } catch (e) { console.log((f || 'boot') + ': ' + (e && e.constructor ? e.constructor.name + ' ' + JSON.stringify(e).slice(0, 300) + ' ' : '') + String(e && (e.stack || e.message) || e).split('\n').slice(0, 10).join('\n  ')); continue; }
     const used = [...out.P.standInsUsed];
     console.log((f || 'boot') + ' (' + (Date.now() - t) + ' ms, ' + out.m.frames + ' frames, ' + used.length + ' routines stood in): ' +
       describe(res).split('\n').join('\n  '));

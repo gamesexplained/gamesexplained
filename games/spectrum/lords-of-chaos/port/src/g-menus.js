@@ -109,7 +109,7 @@ G.menus = function (P) {
     for (;;) {
       yield* P.read_controls({});
       if (!(M[0x5B13] & 1)) { P.IFF = false; return { a: M[0x5B13] >> 1 | (M[0x5B13] & 1) << 7 }; }
-      M[0x5B17] = M[0xFF53];
+      M[0x5B17] = P.ib(0xFF53);
       P.draw_frame({ hl: 0x0101, de: 0x1E16 });
       setw(0x5B0E, 0x3C00);
       P.print_text({ a: 0xE5 });

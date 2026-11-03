@@ -78,6 +78,16 @@ G.draw = function (P) {
 
   def(0xA843, 'draw_thing_at', r => P.draw_block_at(P.thing_graphic(r)));
 
+  // A thing's graphic and colour set (bytes 1 and 2 of its entry in ($D032)) are what the
+  // interrupt's animations change under the main program, which may read them just after: in a
+  // scenario the main program reads them through P.irqByte (in the lockstep, as the game read them),
+  // the interrupt's own drawing from memory.
+  const anim = a => {
+    if (P.inIrq || P.part < 1 || ((a - w(0xD032)) & 0xFFFF) >= 0x352) return M[a & 0xFFFF];
+    return P.irqByte(a & 0xFFFF);
+  };
+  P.anim = anim;
+
   // thing_graphic: A = graphic and B = colour set of thing A, from its entry in ($D032); the entry's
   // character set made the one in use ($D03C, its address from $D07A in $D03D). HL the entry + 2.
   def(0xA84A, 'thing_graphic', r => {
@@ -89,14 +99,17 @@ G.draw = function (P) {
       setw(0xD03D, s);
       d = s >> 8; ee = s & 255;
     } else { d = 0; ee = r.a; }
-    return { a: M[e + 1], b: M[e + 2], hl: (e + 2) & 0xFFFF, d, e: ee };
+    return { a: anim(e + 1), b: anim(e + 2), hl: (e + 2) & 0xFFFF, d, e: ee };
   });
 
   // interrupt: every second frame the work ($A891); every frame the bars slide when bit 4 of $D0DF.
   def(0xA879, 'interrupt', r => {
-    M[0x606E] ^= 1;
-    if (M[0x606E] === 0) P.interrupt_work({});
-    if (M[0xD0DF] & 0x10) P.slide_bars({});
+    P.inIrq = true;
+    try {
+      M[0x606E] ^= 1;
+      if (M[0x606E] === 0) P.interrupt_work({});
+      if (M[0xD0DF] & 0x10) P.slide_bars({});
+    } finally { P.inIrq = false; }
     P.IFF = true;
     return {};
   });
@@ -156,7 +169,7 @@ G.draw = function (P) {
       setw(0xD0CA, lines);
       for (let x = 0; x < 7; x++) {
         let g, b;
-        if (M[0xD0CC] === M[0xD0D3] && M[0xD0CD] === M[0xD0D4] && M[0xD0D0]) {
+        if (M[0xD0CC] === M[0xD0D3] && M[0xD0CD] === M[0xD0D4] && P.ib(0xD0D0)) {
           M[0xD03C] = 0; setw(0xD03D, 0xB646);
           b = M[0xFF87]; g = M[0xFF86];
           ma = (ma + 1) & 0xFFFF;
@@ -164,7 +177,7 @@ G.draw = function (P) {
           const t = M[ma]; ma = (ma + 1) & 0xFFFF;
           const e = (t * 5 + w(0xD032)) & 0xFFFF;
           if (M[0xD03C] !== M[e]) { M[0xD03C] = M[e]; setw(0xD03D, w(0xD07A + 2 * M[e])); }
-          g = M[e + 1]; b = M[e + 2];
+          g = anim(e + 1); b = anim(e + 2);
         }
         setw(0xD0CE, ma);
         P.draw_block({ a: g, b });
@@ -211,7 +224,7 @@ G.draw = function (P) {
 
   // flash_icons: each icon that is on ($D1A9-$D1AD) coloured with the flashing colour $FF53.
   def(0xAAAF, 'flash_icons', r => {
-    const d = M[0xFF53];
+    const d = P.ib(0xFF53);
     for (let i = 0; i < 5; i++) {
       if (!M[0xD1A9 + i]) continue;
       const x = 0x5816 + 2 * i;
@@ -224,7 +237,7 @@ G.draw = function (P) {
   // colour, then delay_50, inside the interrupt.
   def(0xAAD4, 'flash_menu_bar', r => {
     P.draw_thing_list({ b: M[0x5B0A], c: 0, hl: 0xB474 });
-    P.colour_choice_row({ b: M[0xC662], a: M[0xFF53] });
+    P.colour_choice_row({ b: M[0xC662], a: P.ib(0xFF53) });
     return P.delay_50({});
   });
 
@@ -254,7 +267,7 @@ G.draw = function (P) {
     let d = 0x16;
     for (let i = 0; i < 5; i++, d += 2) {
       const ix = 0xD1F6 + i;
-      let a = M[ix];
+      let a = P.ib(ix);
       if (a === M[ix + 5]) continue;
       if (a < M[ix + 5]) {
         if (a === 0x5F) continue;

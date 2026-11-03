@@ -513,10 +513,11 @@ G.magic = function (P) {
     M[hl] = 0xA5;
     M[0xD0DF] = 0x15; M[0xC839] = 0x15;
     P.IFF = true;
+    // the counter is the interrupt's, read just after the call returns: through P.irqByte
     do {
-      P.play_sound({});
+      yield* H.playSound(true);
       yield { cp: 0x8456 };
-    } while (M[hl] !== 0xA8);
+    } while (P.irqByte(hl) !== 0xA8);
     P.IFF = false;
     M[0xC839] = 0; M[0x5B25] = 0;
     return { a: 0, zf: true, hl };

@@ -52,19 +52,27 @@ G.sound = function (P) {
 
   // play_sound: sound_steps groups; in each, sound_repeats times the three notes (each a delay loop of
   // its delay, then the speaker's bit flipped and sent); after each group every delay moves on by its
-  // change.
-  def(0xC856, 'play_sound', r => {
+  // change. While the summoning animation runs, the interrupt's map drawing plays a group of the same
+  // sound after each row, in the middle of the main program's: the main program reads the sound's
+  // bytes through P.irqByte (in the lockstep, as the game's code read them), the interrupt from
+  // memory. H.playSound(true) is the same as a generator, which yields the T-states up to each
+  // note's write to the speaker (counted on P.T already), so that an interrupt that comes in a
+  // note's delay comes before its write, as on the machine.
+  function* sound(notes) {
+    const rd = P.ib;
     const t0 = P.T;
-    let steps = M[0xC830];
+    let t1 = P.T;
+    let steps = rd(0xC830);
     spend(17);
     do {
       spend(28);
-      let reps = M[0xC831];
+      let reps = rd(0xC831);
       do {
         spend(38);
         for (let k = 0; k < 3; k++) {
-          spend(18 + nopLoop(M[0xC833 + 2 * k]) + 33);
-          M[0xC838] ^= 0x10;
+          spend(18 + nopLoop(rd(0xC833 + 2 * k)) + 33);
+          if (notes) { yield { tstates: P.T - t1, clocked: true }; t1 = P.T; }
+          M[0xC838] = rd(0xC838) ^ 0x10;
           P.io.out(0xFE, M[0xC838], P.T);
           spend(11 + 10 + 11 + (k < 2 ? 13 : 8));
         }
@@ -73,7 +81,8 @@ G.sound = function (P) {
       } while (reps);
       spend(27);
       for (let k = 0; k < 3; k++) {
-        M[0xC833 + 2 * k] = (M[0xC833 + 2 * k] + M[0xC832 + 2 * k]) & 255;
+        const c = rd(0xC832 + 2 * k);
+        M[0xC833 + 2 * k] = (rd(0xC833 + 2 * k) + c) & 255;
         spend(33 + (k < 2 ? 13 : 8));
       }
       steps = (steps - 1) & 255;
@@ -82,6 +91,8 @@ G.sound = function (P) {
     spend(10);
     P.N.beep = (P.N.beep || 0) + (P.T - t0);
     return { a: M[0xC838], b: 0, hl: 0xC838, de: 2 };
-  });
+  }
+  def(0xC856, 'play_sound', r => P.sync(sound(false)));
+  H.playSound = notes => sound(notes);
 };
 })(typeof window !== 'undefined' ? window : globalThis);

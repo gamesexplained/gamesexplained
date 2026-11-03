@@ -17,6 +17,8 @@ G.loop = function (P) {
   // vector table filled with $FF, and the turn loop.
   def(0x6073, 'start_game', function* (r) {
     if (!M[0xD03F]) return { a: 0, zf: true };
+    // the stack moved to $FFF3 (P.io.sp: where a routine a test runs as the game's code puts its stack)
+    P.io.sp = 0xFFF3;
     P.clear_screen({});
     M[0xD064] = 0; M[0xD069] = 0;
     M[0x5B11] = 1;
@@ -64,6 +66,7 @@ G.loop = function (P) {
   function* turnLoop(at) {
     for (;;) {
       if (at === 0x6134) {
+        P.io.sp = 0xFFF3;
         P.IM = 2;
         M[0x5B11] = 0;
         yield* P.cw('start_of_turn', {});

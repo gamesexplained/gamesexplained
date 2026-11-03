@@ -128,6 +128,7 @@ G.files = function (P) {
   });
   // load_game: the two blocks loaded back and the turn loop entered; a failure goes back to the panel.
   def(0xC775, 'load_game', function* (r) {
+    P.io.sp = 0xFFF3;
     yield* P.ask_file_name({});
     P.set_extension({ hl: 0xC650 });
     if ((yield* P.find_file({})).zf) return P.restart(0xCC39);
@@ -347,6 +348,7 @@ G.files = function (P) {
   // SCENARIO, LOAD DESIGNER, LOAD WIZARD, LOAD SAVED GAME, SAVE WIZARD; the option chosen kept in
   // panel_value_1 while it runs.
   def(0xCC39, 'file_panel', function* (r) {
+    P.io.sp = 0x606E;
     P.IM = 1;
     P.draw_file_panel({});
     M[CHOICE] = M[0xC663] = M[0xC664] = 0;
