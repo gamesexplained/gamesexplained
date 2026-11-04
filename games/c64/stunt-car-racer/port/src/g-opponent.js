@@ -486,7 +486,7 @@ G.opponent = P => {
       M[0x0173 + x] = (M[0x0173 + x] + M[0x0182 + x] + (t >> 8)) & 255;
       M[0x017F + x] = 0; M[0x0182 + x] = 0;
     }
-    return P.s_CF68({ a: 2, x: 0xFF });
+    return P.EFFECT({ a: 2, x: 0xFF });
   };
   // OPP_WHEELS ($21DE): the opponent's three wheels: each one's height ($07CC/$07D0) against the
   // road's under it ($07EC/$07F0) less its spring's length ($28, or $7C on a piece with $B2 bit

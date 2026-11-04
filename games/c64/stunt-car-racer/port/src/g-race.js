@@ -302,8 +302,8 @@ G.race = P => {
   // START_SOUNDS ($3F27): sound effects 6 and 5, $E104, voices 1 and 3 started on the pulse wave
   // ($41) and the volume up ($F5)
   P.START_SOUNDS = r => {
-    P.s_CF68({ a: 6 });
-    P.s_CF68({ a: 5 });
+    P.EFFECT({ a: 6 });
+    P.EFFECT({ a: 5 });
     P.ENGINE_SOUND({});
     P.wr(0xD404, 0x41);
     P.wr(0xD412, 0x41);
@@ -334,7 +334,7 @@ G.race = P => {
   P.MENU_BITMAP = r => {
     M[0x14] = 0x70;
     P.wr(0xD018, 0x70);
-    M[0xC35F] = 0x80; M[0xC370] = 0x80;
+    P.store(0xC35F, 0x80); M[0xC370] = 0x80;
     return { a: r.a, x: 0x80, y: 0x70 };
   };
   // SCREEN_ON ($3F9E): the screen on, if it is off (and then the raster interrupt at line $32), and

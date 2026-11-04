@@ -24,7 +24,7 @@ G.physics = P => {
   P.STEP = r => {
     let q = Object.assign({}, r);
     const go = (...fs) => { for (const f of fs) q = Object.assign({}, q, f(q) || {}); };
-    go(P.FLIP_IF_READY, P.ROTATION_MATRIX, P.WHEEL_OFFSETS, P.FLIP_IF_READY, P.s_9CBA, P.s_A132, P.FLIP_IF_READY,
+    go(P.FLIP_IF_READY, P.ROTATION_MATRIX, P.WHEEL_OFFSETS, P.FLIP_IF_READY, P.WHEELS_ROAD_HEIGHT, P.CAR_POINT_HEIGHTS, P.FLIP_IF_READY,
       P.VELOCITY_TO_CAR, P.ENGINE_NOTE, P.PULL_IN_CAR, P.WHEELS_ON_ROAD, P.FLIP_IF_READY);
     q.a = M[0xC307];
     if (M[0xC307]) {
@@ -190,7 +190,7 @@ G.physics = P => {
     P.CRANE({});
     M[0xE4] = M[0x0175];
     P.OPP_PUSH({});
-    if (M[0xC3BC]) P.s_CF68({ a: 3 });
+    if (M[0xC3BC]) P.EFFECT({ a: 3 });
     return {};
   };
   // $0C1D, in WHEELS_ON_ROAD with no wheel on the road and the car not hanging from the crane: the

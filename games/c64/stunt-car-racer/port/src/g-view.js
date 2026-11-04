@@ -340,7 +340,7 @@ G.view = P => {
     M[0x0107] = 4;
     M[0x14] = (M[0xC3CD] === 4 || M[0xC3CD] === 0x0A) ? 0x20 : 0;
     M[0x0125] = ((M[0x1D] ^ M[0xA4]) + M[0x14]) & 255;
-    P.STEP(P.SIDEWAYS(P.s_9A38(P.CAMERA({ x: M[0x14] }))));
+    P.STEP(P.SIDEWAYS(P.PLACE_ON_PIECE(P.CAMERA({ x: M[0x14] }))));
     M[0x0107] = 0; M[0x0101] = 0;
     M[0x0104] = 0x10;
     M[0x14] = M[0xC345];

@@ -35,8 +35,9 @@ G.car = P => {
     M[0x16] = a;
     for (let i = 0; i < 3; i++) { const c = a & 1; a >>= 1; M[0x14] = (M[0x14] >> 1) | (c << 7); }
     M[0x15] = a;
-    const t = M[0x14] - M[0x09]; M[0x14] = t & 255;
-    a = (M[0x15] - M[0x0A] - (t < 0 ? 1 : 0)) & 255;
+    // the engine's note, which the interrupt moves on each frame
+    const t = M[0x14] - P.irqByte(0x09); M[0x14] = t & 255;
+    a = (M[0x15] - P.irqByte(0x0A) - (t < 0 ? 1 : 0)) & 255;
     a = P.SHIFT16({ a, y: 3 }).a & 255;
     M[0x11] = a; M[0x10] = M[0x14];
     let y = a, x = M[0x14], set = null;
@@ -263,10 +264,10 @@ G.car = P => {
     P.PIECE_ORIGIN(P.PIECE_LOAD({ x: q.x }));
     M[0x3D] = (M[0x68] - M[0x1D]) & 255;
     let x = (M[0xD5] << 1) & 255;
-    q = P.s_9C14({ x }); M[0x48] = q.a & 255; M[0x5B] = M[0x15] >> 5; x = (q.x + 1) & 255;
-    q = P.s_9C14({ x }); M[0x49] = q.a & 255; x = (q.x + 1) & 255;
-    q = P.s_9C14({ x }); M[0x4A] = q.a & 255; M[0xDC] = M[0x15] >> 5; x = (q.x + 1) & 255;
-    q = P.s_9C14({ x }); M[0x4B] = q.a & 255; x = (q.x + 1) & 255;
+    q = P.POINT_HEIGHT({ x }); M[0x48] = q.a & 255; M[0x5B] = M[0x15] >> 5; x = (q.x + 1) & 255;
+    q = P.POINT_HEIGHT({ x }); M[0x49] = q.a & 255; x = (q.x + 1) & 255;
+    q = P.POINT_HEIGHT({ x }); M[0x4A] = q.a & 255; M[0xDC] = M[0x15] >> 5; x = (q.x + 1) & 255;
+    q = P.POINT_HEIGHT({ x }); M[0x4B] = q.a & 255; x = (q.x + 1) & 255;
     if (x < M[0x9E]) P.PIECE_HEIGHTS_AHEAD({ x });
     else {
       P.PIECE_LOAD(P.PIECE_AHEAD({}));
@@ -282,10 +283,10 @@ G.car = P => {
     M[0xC34D] = M[0xA620 + y];
     M[0x4D] = M[0x9C];
     M[0x4C] = (M[0xB0] - M[0xC34D]) & 255;
-    P.s_FF94({ x: 0 });
+    P.OPP_ROAD_HEIGHT({ x: 0 });
     P.OPP_ALONG_AT({ y: 5, x: 4, a: M[0x4C] });
     M[0x4C] = (M[0xB0] + M[0xC34D]) & 255;
-    P.s_FF94({ x: 1 });
+    P.OPP_ROAD_HEIGHT({ x: 1 });
     P.OPP_ALONG_AT({ y: 7, x: 4, a: M[0x4C] });
     P.OPP_BODY({});
     return P.OPP_SEGMENT({ a: (M[0x6B] & 0x80) ? 0 : 0xFF });
@@ -312,9 +313,9 @@ G.car = P => {
   // PIECE_HEIGHTS_AHEAD ($E5C7): points X and X+1's heights ($9C14) into $DD and $DE, $DF from the
   // first's top bits
   P.PIECE_HEIGHTS_AHEAD = r => {
-    let q = P.s_9C14({ x: r.x });
+    let q = P.POINT_HEIGHT({ x: r.x });
     M[0xDD] = q.a & 255; M[0xDF] = M[0x15] >> 5;
-    q = P.s_9C14({ x: (q.x + 1) & 255 });
+    q = P.POINT_HEIGHT({ x: (q.x + 1) & 255 });
     M[0xDE] = q.a & 255;
     return q;
   };
@@ -408,7 +409,7 @@ G.car = P => {
       M[0x4A] = M[0xDD]; M[0xDC] = M[0xDF]; M[0x4B] = M[0xDE];
     }
     M[0x4C] = M[0xB0];
-    return P.s_FF94({ x: 2, y: M[0xE6E5] });
+    return P.OPP_ROAD_HEIGHT({ x: 2, y: M[0xE6E5] });
   };
 
   // CAR_ROOF ($E6E8): the roof's corners at points $48-$4B from the halves $EC-$EF, placed; then
@@ -479,7 +480,7 @@ G.car = P => {
   };
   // SEGMENT_POINT ($E843): point Y of the piece (PIECE_POINT) into slot X of $C500-$C530
   P.SEGMENT_POINT = r => {
-    const q = P.s_A026({ x: r.x, y: r.y });
+    const q = P.PIECE_POINT_IN_VIEW({ x: r.x, y: r.y });
     const x = q.x & 255;
     M[0xC500 + x] = M[0x51]; M[0xC510 + x] = M[0x77];
     M[0xC520 + x] = M[0x52]; M[0xC530 + x] = M[0x78];

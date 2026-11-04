@@ -15,7 +15,7 @@ t({ name: 'MUL_S16_S8', setup: ops, outs: ['a', 'c'] });
 t({ name: 'MUL_S16_MATRIX', setup: (M, c, rnd) => { const r = ops(M, c, rnd); r.x = rnd(40); put(M, rnd, 0x0774 + r.x, 0x079C + r.x); return r; }, outs: ['a', 'c'] });
 t({ name: 'NEG16_IF_MINUS', setup: (M, c, rnd) => Object.assign(ops(M, c, rnd), { n: rnd(2) }), outs: ['a', 'c'] });
 t({ name: 'NEG16', setup: ops, outs: ['a', 'c'] });
-t({ name: 'ACOS_TABLE', setup: ops, outs: ['a', 'x'] });
+t({ name: 'SINE16', setup: ops, outs: ['a', 'x'] });
 t({ name: 'FIVE_SIXTEENTHS', setup: (M, c, rnd) => { const r = ops(M, c, rnd); r.x = rnd(40); put(M, rnd, 0x0774 + r.x, 0x079C + r.x); return r; }, outs: ['a'] });
 t({ name: 'SQUARE_S16', setup: ops, outs: ['a', 'y', 'c'] });
 t({ name: 'SHIFT16', setup: (M, c, rnd) => { const r = ops(M, c, rnd); r.y = [0, 1, 2, 3, 5, 8, 9, 12, 0xFF, 0xFE, 0xFC, 0xF8, 0xF0, rnd(256)][rnd(14)]; return r; }, outs: ['a', 'y', 'c'] });

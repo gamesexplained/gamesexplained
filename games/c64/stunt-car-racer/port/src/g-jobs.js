@@ -169,16 +169,16 @@ G.jobs = P => {
     const right = (r.x & 255) === 1;
     const t = right ? [0x8C94, 0x8C9C, 0x8CA4] : [0x8C70, 0x8C78, 0x8C80];
     const d = right ? [0x7658, 0x7798, 0x78D8] : [0x7560, 0x76A0, 0x77E0];
-    let x = s;
+    let x = s, w = 0;
     for (let y = 7; y >= 0; y--) {
       if (y >= 4) { const v = M[(t[0] + x) & 0xFFFF]; M[d[0] + y] = v; M[d[0] - 0x2000 + y] = v; }
       const v = M[(t[1] + x) & 0xFFFF]; M[d[1] + y] = v; M[d[1] - 0x2000 + y] = v;
-      let w = M[(t[2] + x) & 0xFFFF];
+      w = M[(t[2] + x) & 0xFFFF];
       if (y < 6) M[d[2] + y] = w;
       else if (y === 6) M[d[2] + y] = w | (right ? 0x40 : 0x01);
       x = (x - 1) & 255;
     }
-    return { x: right ? 1 : 0, y: 0xFF };
+    return { a: w, x: right ? 1 : 0, y: 0xFF, c: 0, n: 0, z: right ? 0 : 1 };
   };
 
   // MARK_COLUMNS ($8CD0), command $41: the pixel columns from $60 to $61 (kept inside $40-$BF),

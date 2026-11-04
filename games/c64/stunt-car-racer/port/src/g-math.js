@@ -131,9 +131,10 @@ G.math = P => {
     return mulTail(M[0xC380]);
   };
 
-  // ACOS_TABLE ($C8CD): A:$14, a signed cosine, back to an angle, from the steps at $AD00 and
-  // $A700 with a straight line between them; bit 6 of A says which half of the table
-  P.ACOS_TABLE = r => {
+  // SINE16 ($C8CD): the sine of the angle in A:$14 (a whole turn $10000), signed, in A:$14: the
+  // quarter-wave table at $A700 (counted from its far end for the first and third quarters, bit 6
+  // clear) with a straight line between its steps, $AD00 their extra bits; bit 7 the sign
+  P.SINE16 = r => {
     let a = r.a & 255;
     M[0x58] = a;
     if (!(a & 0x40)) {

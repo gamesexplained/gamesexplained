@@ -43,10 +43,10 @@ G.track = P => {
       if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.OPP_CORNERS({}); }
     } else {
       M[0x2E] = piece;
-      P.s_9A38({}); P.SIDEWAYS({});
+      P.PLACE_ON_PIECE({}); P.SIDEWAYS({});
       M[0xC374] = M[0x2E];
       if (!(M[0x6B] & 0x40)) M[0xC309] = M[0x2E];
-      P.s_9C79({});
+      P.PLACE_ALONG({});
       M[0xCC] = 0x80; M[0xCD] = 0x80;
       if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.CAR_GAP({}); P.OPPONENT_LINE({}); P.OPP_CORNERS({}); }
       M[0x2E] = M[0xC374];
@@ -113,7 +113,7 @@ G.track = P => {
         M[0xA350 + x] = 0x80;
         if (x < M[0x27]) { M[0xA330 + x] = 0x80; continue; }
         const y = yOf(x);
-        P.s_A026({ x, y }); P.PROJECT_X({ x }); P.PROJECT_Y({ x });
+        P.PIECE_POINT_IN_VIEW({ x, y }); P.PROJECT_X({ x }); P.PROJECT_Y({ x });
         if (!((x ^ M[0xD8]) & 2)) P.OVERLAP({ x });
         M[0xCC + (x & 1)] = x;
       } while ((x = (x + 1) & 255) !== M[0x9E]);
@@ -250,8 +250,8 @@ G.track = P => {
 
   // POINTS_TO_LINES ($1A3B): the piece's points joined by lines into the view ($FE91), pair by
   // pair across the road and along each side, the near or far side first as the car is rolled
-  // ($C3DC, $0126); $FC01 picks each side's colour, the start line's piece is striped ($CF73), and
-  // $E195/$E1B1 draw the opponent's car where it falls
+  // ($C3DC, $0126); $FC01 picks each side's colour, a pair marked at $8080 gets a line across
+  // (its ends moved first, ACROSS_LINE_ENDS), and $E195/$E1B1 draw the opponent's car where it falls
   P.POINTS_TO_LINES = r => {
     let a = (M[0xC3A8] & 0x40) ? 0 : 1;
     M[0xCD] = a; M[0xCC] = a ^ 1;
@@ -281,7 +281,7 @@ G.track = P => {
       if (!(a & 0x80)) {
         M[0x8080 + y] = 0x80;
         P.LINE_COLOUR({ x: a & 3 });
-        P.s_CF73({});
+        P.ACROSS_LINE_ENDS({});
         P.LINE({ x: M[0xC6], y: M[0xC6] ^ 1 });
       }
       M[0xD2] = (M[0xD2] + 1) & 255;

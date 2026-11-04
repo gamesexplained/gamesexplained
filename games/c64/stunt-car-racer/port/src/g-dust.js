@@ -125,7 +125,7 @@ G.dust = P => {
     M[0xAF8C] = ((r.a & 255) + 2) & 255;
     M[0x2C] = r.x & 255;
     if (!M[0x6A]) return P.DUST_CLEAR({});
-    P.s_CF68({ a: 1 });
+    P.EFFECT({ a: 1 });
     let x = M[0x2C];
     do {
       if (!P.DUST_PLOT({ x }).z) continue;

@@ -157,7 +157,7 @@ G.dash = P => {
       }
     }
     if (e === 1) M[0xAF8C] = 0x20;
-    P.s_CF68({ a: e });
+    P.EFFECT({ a: e });
     M[0xC352] = 0;
     return { a: 0 };
   };
