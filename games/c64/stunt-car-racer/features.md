@@ -48,4 +48,20 @@ Sources:
 
 Found in the code, not in the manual.
 
+| Feature | Status | Where |
+|---|---|---|
+| Geoff Crammond's name, each byte flipped with `$AA`: "COPYRIGHT GEOFF CRAMMOND 1988" | confirmed | 29 bytes at `$AFE0`, after the physics tables; no instruction reads them (the listing's cross-references), and the start-up's checksum covers them (`$A380`-`$BFFF`) |
+| The end of an Atari ST (GEM) alert in the loaded file: "...ifferent from\|the palette that is in use.\|Re-color image with current\|palette?][ Yes \| No ]" | confirmed | `$7F40`-`$7F9A`; STARTUP `$3FFB` copies 64 bytes from `$6B60` over the first 64 before anything is shown, and in a race that is sprite `$FD`, a frame of the boost's flame; in the menus `$7F40` is part of their screen (FILL_SCREEN) |
+| The Super League's settings are found by adding the Super League flag, which holds the player's driver number 11, to the first set's address: eleven bytes a set, so the copy starts at the second | confirmed | CLEAR_RACE `$3DF9` copies from `$BFEA` plus `$C71A`; CHANGES `$375D` stores the player's number there; any test of the flag only asks whether it is 0 |
+| The race clock runs about three per cent slow: it adds 0.14 seconds a pass, and a pass takes more than seven frames | live | TICK_CLOCK `$109C`; 69 passes in 500 frames showed 9.66 seconds (facts.md, Timing) |
+| In the races the player does not drive, a driver 70 or more below another in the base ratings never wins: Hot Rod (120) never loses to High Flyer, Bully Boy, Jumping Jack or Road Hog, and Dare Devil (60) beats him once in 512 | confirmed | RACE_RESULT `$E92C`, `driver_base` `$E8B6`; the odds worked out over all 4,096 pairs of draws and checked against the port's RACE_RESULT for every pair of drivers (`test_index.js`) |
+| A changed byte stops the game for good with a yellow border | live | CHECKSUM `$425D` over the seven ranges at `checksum_ranges` `$42A9`; one bit flipped at `$9000` in the loaded game gave a yellow border (`$D020` = 7) and the processor in the loop at `$42A6` |
+
 ## Open questions
+
+- Which divisions Practise lets the player choose (PRACTICE_TRACK `$98A2`).
+- Whether the opponent is given the race when the player's car is wrecked.
+- How many seasons a multiplayer game lasts.
+- Whether the Super League is "twice as fast", as the wiki says: its settings were read, the speeds were not measured.
+- What the five settings bytes no instruction names do, if anything (`race_start_bytes`).
+- Where the Atari ST text came from: the start of the alert is not in the file.

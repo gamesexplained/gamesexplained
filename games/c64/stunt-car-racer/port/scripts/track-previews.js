@@ -110,19 +110,10 @@ function make(SCRPage, data, cost, C64, keep) {
   };
 }
 
-// The pictures as the published Play tab makes them: its own blocks (the port, the page's machine,
-// its pacing and its memory) cut out of play.html in the game's folder and run in node
+// The pictures as the published Play tab makes them (page-machine.js)
 function previews(dir, keep) {
-  const path = require('path');
-  const { game } = require(path.resolve(dir, '../../../kit/scripts/port_check.js'));
-  const g = game(dir);
-  globalThis.window = globalThis;                  // the page's scripts hand over on window
-  g.lib('c64');
-  const PAGE = 'play.html', page = g.read(PAGE);
-  for (const m of page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)) g.run(PAGE, m[1], 'SCRPort');
-  const cost = JSON.parse(/^window\.SCR_COST = (.*);$/m.exec(page)[1]);
-  const data = JSON.parse(/<script type="application\/json" id="scr-data">([^<]*)<\/script>/.exec(page)[1]);
-  return make(globalThis.SCRPage, data, cost, globalThis.C64, keep);
+  const { SCRPage, data, cost, C64 } = require('./page-machine.js').load(dir);
+  return make(SCRPage, data, cost, C64, keep);
 }
 
 if (require.main === module) {

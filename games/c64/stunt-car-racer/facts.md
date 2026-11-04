@@ -17,6 +17,14 @@ from reading the code in the snapshot named in `orientation.md`.
   `$9DFA` the border turns yellow and the game stops for good.
 - The NMI handler (`$9A32`) only clears CIA 2's flags, so RESTORE does
   nothing.
+- Two things in the file no code reads. At `$AFE0`, after the physics
+  tables, 29 bytes each flipped with `$AA` read "COPYRIGHT GEOFF CRAMMOND
+  1988". At `$7F40`-`$7F9A` the file as loaded holds the end of an Atari
+  ST (GEM) alert: "ifferent from|the palette that is in use.|Re-color
+  image with current|palette?][ Yes | No ]". STARTUP copies 64 bytes from
+  `$6B60` over its first 64 before anything is shown (in a race that is
+  sprite `$FD`, a frame of the boost's flame). Both lie inside the
+  checksum's ranges, so they were on the disk when the sum was made.
 
 ## Memory layout
 
@@ -41,7 +49,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 - The race runs a pass of RACE_LOOP (`$3D05`) at a time: the controls, a
   step of the world, the view drawn into the bitmap that is not on show,
-  and then the flip. *Live*: a pass took 7.1 frames on Little Ramp (42
+  and then the flip. *Live*: a pass took 7.1 to 7.25 frames on Little Ramp (42
   passes in 300 frames from `work/play-practice.vsf`, 69 in 500 from
   `work/play.vsf`), so the view moves about seven times a second.
 - The race's clocks are counted in passes, not in time: TICK_CLOCK
@@ -117,8 +125,11 @@ from reading the code in the snapshot named in `orientation.md`.
 - The races the player does not drive are worked out (RACE_RESULT
   `$E92C`): each driver's rating is a base by its place in the league's
   order, 120 for the first down to 10 for the twelfth (`driver_base`
-  `$E8B6`), plus 0 to 63 at random. The higher rating wins, and the winner
-  takes the fastest lap 160 times in 256.
+  `$E8B6`), plus 0 to 63 at random. The higher rating wins, a tie goes to
+  a coin, and the winner takes the fastest lap 160 times in 256. So a
+  driver 70 or more below another never beats it, and one 60 below (Dare
+  Devil against Hot Rod) wins 8 of the 4,096 pairs of draws, one race in
+  512.
 - Two points a win and one a fastest lap; a tie on points goes to more
   wins, then to a coin (SORT_DIVISION `$E9A3`). A season is six races.
 - At the season's end the winner of each division goes up and its last
@@ -189,3 +200,20 @@ until an audit reads the whole listing.
 - The drawing distance: `$173E` poked to 6 drew 8.2 pieces a pass against
   4.0, and a pass took 8.8 frames against 7.1.
 - A save and a load to a blank disk in VICE (`orientation.md`).
+- The port beside the game on the code as published, every session (practice,
+  the pause, a season, multiplayer) for 1,000 passes from the hand-over:
+  all identical. A season with seed 2 for 1,500 passes and the pause
+  session for 1,500 passes (17 pauses): identical.
+- The checksum: one bit of the byte at `$9000` flipped in the loaded game
+  (`work/entry.vsf`), and after 300 frames the border was yellow (`$D020`
+  = 7) and the processor in the loop at `$42A6`.
+- The pages' tests, on a clean checkout: `test_play.js` (the Play tab
+  beside the game on the kit's C64: a practice race 289 passes against
+  291, a season race 260 against 261, the pause, each change of the
+  screen's mode within two frames, and the page's memory against the
+  whole memory over 4,748 frames); `test_levels.js` (the eight tracks'
+  32 pictures, pixel for pixel against the Play tab's machine);
+  `test_graphics.js` (the cockpit's frames and the wheels' steps against
+  the port's WHEELS_TURN); `test_index.js` (the view's frames, and the
+  odds of every pair of drivers against the port's RACE_RESULT);
+  `test_discoveries.js` (every byte the page shows against the listing).

@@ -13,8 +13,6 @@
 //   node time-stretches.js out.jsonl passes [session filter] [seed]
 const fs = require('fs');
 const lockstep = require('../test/lockstep.js');
-// the loader's hand-over, where the start-up begins (page/runtime.js)
-const ENTRY = 0x3FFB;
 const [out, passes, filter = '', seed = '1'] = process.argv.slice(2);
 if (!passes) { console.log('usage: node time-stretches.js out.jsonl passes [session filter] [seed]'); process.exit(2); }
 const fd = fs.openSync(out, 'a');
@@ -57,19 +55,13 @@ for (const st of sessions) {
       return ioWrite.call(this, a, v);
     };
   };
-  // each stretch's video chip cycles; and the start-up's stretch, from the hand-over (ENTRY) to the
-  // first checkpoint, which the lockstep does not time: the page pays for it as cost(ENTRY, cp)
+  // each stretch's video chip cycles. The first row is the start-up's, from the hand-over to the
+  // first checkpoint (test/lockstep.js gives the lockstep its entry): the page pays for it as
+  // cost(ENTRY, cp)
   const onLockstep = ls => {
     const sync = ls.sync;
     ls.sync = function (a, wait) {
       const e = now(), dma = e.dma - at0.dma;
-      if (this.timing && this.from < 0) {
-        const calls = Object.assign({}, this.calls);
-        for (const [k, v] of Object.entries(P.N)) { if (v) calls['#' + k] = v; P.N[k] = 0; }
-        fs.writeSync(fd, JSON.stringify({ st, pass: 0, from: ENTRY, to: a, cycles: e.c - at0.c - this.irqCycles, irqs: this.irqCount,
-          irqCycles: this.irqCycles, polls: this.polls, estimate: this.estimate, dma, calls, irq: irqs }) + '\n');
-        irqs = {};
-      }
       const timing = this.timing;
       this.timing = timing && (s => timing(Object.assign(s, { dma })));
       try { return sync.call(this, a, wait); } finally { this.timing = timing; at0 = e; }

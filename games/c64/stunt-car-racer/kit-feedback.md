@@ -7,35 +7,30 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "Give the lockstep every key the game reads": the pause session presses P, O and C= in the races, and it was that session that found the port's pause loop never yielded, which would have frozen the Play tab at the first pause.
+- `70-minisite`: "Check the fit on sessions it was not fitted on": the pacing was fitted on four sessions with seed 1 and checked on four with seed 2, a mean error of 1.8 % a stretch.
+- `70-minisite`: "Count the page's pass once its clock reaches the checkpoint": `test_play.js` counts the page's passes as each one's stretch is paid, so a slow page cannot pass as one in step.
+- `70-minisite`: "A shape the game paints into the screen itself is drawn by the game's own routine": the opponent's car, which the game draws into the bitmap with the view, is shown on the Graphics tab in frames the Play tab's port draws, not in a drawing of its own.
+- `70-minisite`: "is not drawn again as a still on a sheet": the wheels and the boost's flame are shown only moving, stepped the way the game steps them, with no sheet of their sprites.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/lockstep.js`, `kit/spectrum/lockstep.js`, `kit/nes/lockstep.js`: a new option, `entry`, times the stretch from the address the program starts at to the first checkpoint, which was never timed before. Without it the routines only the start-up calls had no row in the pacing fit, cost the page nothing, and the Play tab reached the menus 13 frames early from the hand-over (`test_play.js` caught it). The C16 lockstep already timed that stretch.
+- `kit/c64/lockstep.js`, `kit/nes/lockstep.js`: the lockstep keeps a copy of the `hooks` it is given. Given the machine's own `m.hooks`, it added its checkpoints to that object and then handed them to the copies of the machine `irqBytes` runs on, and the run went out of step at the first pass with a divergence that pointed nowhere near the cause (checked: with the old file and `hooks: m.hooks` this game's practice session stopped at pass 0; with the new one it is identical).
+- `kit/skills/core/70-minisite/play.md`, "Pace it by the machine's clock": the start is a scene the fit has to see, so a port the page starts from the game's own start gives the lockstep `entry`. games/c64/green-beret has the same shape: its page runs `P.main()` from the start-up at `$4000`, and its lockstep starts there with no `entry`, so its start-up's routines are not in its fit. Lesson: `kit/lessons/2026-11-04-stunt-car-racer.md`.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- **The fit can place a write inside a stretch at the wrong time.** The pacing fit priced each stretch's total well, but routines that are always called together (here the menus' line and fill routines) can share their cost in any proportion, and the fit picked one. The page then made a write in the middle of a stretch, the change of screen mode at `$3DF8`, seven frames before the game did. Nothing failed but `test_play.js`'s check of when `$3DF8` changes. A checkpoint just before the write (`$3511`) made its time the end of a stretch, which the fit measures directly. The skill would say: where the page shows the moment of a write (a change of screen mode, a sound started), put a checkpoint just before it, rather than trust the fit to split a stretch. No other game's notes show the same miss.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- **Stop a lockstep run hanging when a port loop never yields.** The port's pause waited for a key in a JavaScript loop with no yield, and the lockstep session hung with no message, because a loop that never hands control back cannot be interrupted from inside the same thread. Telling a stuck run from a slow one meant waiting on a session that never finished. A guard could live in `kit/c64/lockstep.js` (and the other platforms' copies): run each session under a time limit in a worker, or have the port's chips (`P.io`) count reads and throw past a large number with no yield in between, naming the address read most.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Pacing the Play tab from the hand-over: an `entry` in the lockstep from the start, and the rule in `play.md` that now says so, would have saved the search for why the page reached the menus early.
+
+## Operating system and tools
+
+Linux x86_64 cloud container with no display, VICE 3.14.0 (x64sc, PAL) with its MCP server, regenerator2000 0.9.20, Node 22.23.4, Python 3.13.18. Nothing the install notes do not already say.

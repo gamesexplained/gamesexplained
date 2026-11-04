@@ -55,7 +55,7 @@ function run(o) {
   const P = CM.makePort(new Uint8Array(65536), {});
   standin.install(P, IRQ_BYTES);
   if (o.onPort) o.onPort(P, m);
-  const ls = new Lockstep({ machine: m, port: P, program: P => P.STARTUP({}), checkpoints: [...new Set(P.CHECKPOINTS)],
+  const ls = new Lockstep({ machine: m, port: P, program: P => P.STARTUP({}), entry: 0x3FFB, checkpoints: [...new Set(P.CHECKPOINTS)],
     passAt: 0x3D08, irqs: { 0xEA31: null, 0xCDAA: 'IRQ', 0x9A32: 'NMI' }, irqBytes: IRQ_BYTES, hooks: Object.assign({}, m.hooks),
     chips: ['colour', 'vic', 'sid'], ignore: IGNORE.concat(o.ignore || []), maxFrames: o.maxFrames || 20000, timing: o.timing });
   if (o.onLockstep) o.onLockstep(ls);

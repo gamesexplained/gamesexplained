@@ -127,6 +127,10 @@
 //   the port's own { cycles } for the stretch. A stretch that ends at a wait's exit (wait) holds
 //   the wait. These are the rows of the pacing fit. A port that counts more itself (pixels, rows)
 //   reads and clears its counters here, and keeps its interrupts' work out of them.
+// - entry: the address the program starts at, when the machine is there (a loader's hand-over).
+//   With it, timing is also called for the stretch from there to the first checkpoint, from:
+//   entry, so that a start-up the page runs has a row of its own; without it that stretch is not
+//   timed, and its routines' costs come only from the stretches after.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
 // - irqBytes: addresses of RAM an interrupt writes and the main program reads (a jiffy clock, a
 //   keyboard buffer), for the race replay cannot give (irqs above). The port reads each through
@@ -380,7 +384,9 @@ class Lockstep {
     for (const a of this.waits) if (this.cps.has(a)) throw new Error('Lockstep: ' + hex(a) + ' is both a checkpoint and a wait\'s exit');
     this.irqs = o.irqs || {};
     this.maxFrames = o.maxFrames || 500;
-    this.hooks = o.hooks || {};
+    // a copy: given the machine's own hooks, the lockstep would add its checkpoints to them and
+    // hand those to the copies irqBytes runs on
+    this.hooks = Object.assign({}, o.hooks);
     this.runs = ranges(o);
     try { this.chipList = chipNames(o); } catch (e) { throw new Error('Lockstep: ' + e.message); }
     // the port starts as the game is
@@ -427,7 +433,7 @@ class Lockstep {
     this.cycles0 = m.cpu.cycles;
     this.passes = 0; this.syncs = 0; this.last = -1; this.lastAt = false; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
     this.halted = null; this.stopped = false; this.saved = null; this.res = null;
-    this.from = -1; this.c0 = m.cpu.cycles; this.ic0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
+    this.from = o.entry === undefined ? -1 : o.entry & 0xFFFF; this.c0 = m.cpu.cycles; this.ic0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
   }
 
   // --- the port's chips ---
