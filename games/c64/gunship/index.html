@@ -39,7 +39,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gs-shots img,.gs-pic{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
 .gs-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:4px}
 .gs-canvas{width:100%;height:auto;image-rendering:pixelated;display:block;background:#000;border-radius:4px}
-.gs-wire{width:100%;height:auto;display:block;background:var(--surface-2);border-radius:6px;touch-action:none;cursor:grab}
 .gs-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
 .gs-ctl label{display:flex;gap:6px;align-items:center}
 .gs-ctl input[type=range]{width:180px}
@@ -134,22 +133,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The sky is never drawn as a shape. The routine draws each square's fixed object first, a hill where the terrain has one, and then <code>fill_sky</code> (<code>$A82C</code>) goes down each of the window's 32 columns from the top, filling it with sky until it meets a drawn pixel. The outline of a hill is enough to make it stand solid against the sky. The switchable objects, the units among them, are drawn after the fill, over the sky.</p>
 </section>
 
-<section data-part="flight">
+<section id="wireframe" data-part="flight">
   <p class="fig">03 · The world in wireframe</p>
   <h2 class="t">The 3D world is made of wireframe shapes</h2>
-  <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file.</p>
-  <div class="plate">
-    <div id="gs-shape-pick"></div>
-    <canvas id="gs-shape" class="gs-wire" width="640" height="360" aria-label="The shape, turning"></canvas>
-    <div class="gs-ctl" style="margin-top:12px">
-      <label>Heading <input id="gs-yaw" type="range" min="0" max="255" value="32"></label>
-      <label>Tilt <input id="gs-tilt" type="range" min="0" max="64" value="16"></label>
-      <button type="button" class="gs-btn" id="gs-spin" aria-pressed="true">Turn</button>
-    </div>
-    <div class="gs-out" id="gs-shape-out">-</div>
-    <p class="cap">Drawn from the bytes of Western Europe's terrain file, as they sit in memory during a flight. A number written with a <code>$</code> is in hexadecimal, base 16, and most such numbers on this page are addresses in the C64's 64 KB of memory. Each point is a combination of one x value, one y value and one height, picked by the tables at <code>$1C37</code>, <code>$1CA8</code> and <code>$1D19</code>, or it is a fraction of another point. Every edge the shape lists is drawn here. The game leaves out an edge when both of the faces it joins turn away from the eye. Drag the picture to turn it.</p>
-  </div>
-  <p>A shape's record starts with how many points it has and their numbers (<code>$1E9F</code> on). Then come its faces, five bytes each, a colour number and its edges. An edge names two faces and two points, or a single point drawn as a dot. A flat shape has no faces, so all its edges are always drawn. The hills are the only shapes whose faces matter for more than drawing. The routine <code>project</code> (<code>$894A</code>) sets a flag when a hill's face turns towards the eye from inside the hill, which means the helicopter has flown into it. The main loop then ends the flight as a crash (<code>$31F8</code>).</p>
+  <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file. Every shape turns on the <a href="graphics.html#shapes">Graphics</a> tab, with the format of its record.</p>
+  <p>The hills are the only shapes whose faces, the flat sides between their edges, matter for more than drawing. The routine <code>project</code> (<code>$894A</code>) sets a flag when a hill's face turns towards the eye from inside the hill, which means the helicopter has flown into it. The main loop then ends the flight as a crash (<code>$31F8</code>).</p>
   <p>Most things in the world have two shapes, a near view and a far one. A hill seen from far away is only its ridge lines, and a base is only its outline. Each of the 33 kinds of terrain lists a fixed object (a hill, or nothing) and up to eight switchable ones. A table at <code>$E200</code> holds a byte for each square of the map, and each of its bits switches one of those objects on. A shape stored from <code>$24E3</code> on can be locked as a target, and the byte after the shape names it. That byte plus 11 is the number of the message the CRT prints, so the shape at <code>$27BE</code> prints "T-72".</p>
 </section>
 
@@ -1597,85 +1585,6 @@ function gsMessage(ram, n) {
   return s.trim();
 }
 
-function shapes(ram, names) {
-  const pts = gsPoints(ram);
-  const list = [];
-  for (const [a, l] of names) {
-    if (a < 0x1EC9 || a > 0x2FF0) continue;
-    if (!/^(shape|hill|box|pad|outline|line|strokes|dots|zigzag)/.test(l)) continue;
-    const sh = gsShape(ram, a);
-    let title;
-    if (a === 0x24E3) title = 'A single dot, which no object uses';
-    else if (a > 0x24E3 && a !== 0x2FF0) title = gsMessage(ram, ram[sh.end] + 11) + ' (target)';
-    else if (a === 0x2FF0) title = 'Mi-24 Hind';
-    else if (/^hill(\d)_(near|far)/.test(l)) { const m = l.match(/^hill(\d)_(near|far)/); title = 'Hill ' + m[1] + ', ' + m[2] + ' view'; }
-    else if (/_far/.test(l)) title = 'Far view, ' + l.replace(/_far.*/, '').replace(/_/g, ' ');
-    else title = l.replace(/_[0-9A-F]{4}$/, '').replace(/_/g, ' ');
-    list.push({ a, l, title, sh });
-  }
-  list.sort((p, q) => (p.a > 0x24E3) === (q.a > 0x24E3) ? p.a - q.a : (p.a > 0x24E3 ? -1 : 1));
-  const pick = $('gs-shape-pick');
-  pick.className = 'pick';
-  pick.innerHTML = '<a class="step" href="#" data-d="-1" aria-label="The shape before">‹</a><select aria-label="Shape"></select><a class="step" href="#" data-d="1" aria-label="The shape after">›</a>';
-  const sel = pick.querySelector('select');
-  list.forEach((s, i) => sel.add(new Option(s.title + ' · ' + hex(s.a), i)));
-  const cv = $('gs-shape'), ctx = cv.getContext('2d');
-  let yaw = 32, tilt = 16, spin = true, cur = 0;
-  const COL = { 1: '#2f3136', 2: '#1f5fa8', 3: '#d04a3a' };
-  function draw() {
-    const s = list[cur], P = s.sh.points.map((i) => pts[i] || [0, 0, 0]);
-    const t = yaw / 256 * 2 * Math.PI, el = tilt / 256 * 2 * Math.PI;
-    let cx = 0, cy = 0, cz = 0;
-    P.forEach((p) => { cx += p[0]; cy += p[1]; cz += p[2]; });
-    cx /= P.length || 1; cy /= P.length || 1; cz /= P.length || 1;
-    const proj = P.map(([x, y, h]) => {
-      x -= cx; y -= cy; h -= cz;
-      const u = x * Math.cos(t) - y * Math.sin(t), v = x * Math.sin(t) + y * Math.cos(t);
-      return [u, -(h * Math.cos(el) + v * Math.sin(el))];
-    });
-    const mx = Math.max(1, ...proj.map((p) => Math.max(Math.abs(p[0]), Math.abs(p[1]))));
-    const sc = (cv.height / 2 - 24) / mx;
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    ctx.strokeStyle = ctx.fillStyle = COL[s.sh.colour & 3] || '#2f3136';
-    ctx.lineWidth = 2;
-    for (const [p1, p2] of s.sh.edges) {
-      const a = proj[p1], b = proj[p2];
-      if (!a || !b) continue;
-      if (p1 === p2) { ctx.beginPath(); ctx.arc(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc, 3, 0, 7); ctx.fill(); continue; }
-      ctx.beginPath(); ctx.moveTo(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc); ctx.lineTo(cv.width / 2 + b[0] * sc, cv.height / 2 + b[1] * sc); ctx.stroke();
-    }
-    $('gs-shape-out').textContent = `${s.l} at ${hex(s.a)}: ${s.sh.points.length} points, ${s.sh.faces} faces, ${s.sh.edges.length} edges, colour ${s.sh.colour & 3}, ${s.sh.end - s.a} bytes` +
-      (s.a > 0x24E3 && s.a !== 0x2FF0 ? `; name byte ${s.sh.end >= 0 ? ram[s.sh.end] : ''} at ${hex(s.sh.end)}, message ${ram[s.sh.end] + 11}` : '');
-  }
-  function show(i) {
-    cur = (i + list.length) % list.length; sel.value = cur;
-    pick.querySelector('[data-d="-1"]').classList.toggle('off', false);
-    draw();
-  }
-  sel.addEventListener('change', () => show(+sel.value));
-  pick.querySelectorAll('.step').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); show(cur + +b.dataset.d); }));
-  $('gs-yaw').addEventListener('input', (e) => { yaw = +e.target.value; draw(); });
-  $('gs-tilt').addEventListener('input', (e) => { tilt = +e.target.value; draw(); });
-  $('gs-spin').addEventListener('click', (e) => { spin = !spin; e.target.setAttribute('aria-pressed', spin); });
-  let drag = null;
-  cv.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY, yaw, tilt]; cv.setPointerCapture(e.pointerId); spin = false; $('gs-spin').setAttribute('aria-pressed', 'false'); });
-  cv.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    yaw = ((drag[2] - (e.clientX - drag[0]) / 2) % 256 + 256) % 256;
-    tilt = Math.max(0, Math.min(64, drag[3] + (e.clientY - drag[1]) / 4));
-    $('gs-yaw').value = yaw; $('gs-tilt').value = tilt; draw();
-  });
-  cv.addEventListener('pointerup', () => { drag = null; });
-  let timer = 0;
-  new IntersectionObserver((es) => {
-    const on = es[0].isIntersecting;
-    if (on && !timer) timer = setInterval(() => { if (spin) { yaw = (yaw + 1) % 256; $('gs-yaw').value = yaw; draw(); } }, 50);
-    if (!on && timer) { clearInterval(timer); timer = 0; }
-  }).observe(cv);
-  const first = list.findIndex((s) => /T-72/.test(s.title));
-  show(first < 0 ? 0 : first);
-}
-
 function fly(L) {
   const cv = $('gf-view'), mp = $('gf-map'), vctx = cv.getContext('2d'), mctx = mp.getContext('2d');
   const img = vctx.createImageData(640, 224), rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
@@ -1936,11 +1845,10 @@ function intro(T) {
 }
 
 if (typeof C64 === 'undefined') {
-  ['gs-shape-out', 'gs-music', 'gs-sfx', 'gi-out'].forEach((id) => need('The site\'s scripts', $(id)));
+  ['gs-music', 'gs-sfx', 'gi-out'].forEach((id) => need('The site\'s scripts', $(id)));
 } else {
   frames();
   Promise.all([C64.load('parts/flight/listing.json'), C64.load('parts/title/listing.json')]).then(([F, T]) => {
-    shapes(F.ram, F.names);
     kinds(F.ram);
     intro(T);
     if (typeof C64Cpu === 'undefined') need('cpu6502.js', $('gf-out')); else fly(F);

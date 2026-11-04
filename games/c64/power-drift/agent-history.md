@@ -116,3 +116,26 @@ bytes after every frame of a lap of all 25 stages; dropping `bend_drift`
 from the page fails it at frame 146 of A1. The sky and ground's change of
 colour comes from timer A, 256 × `$24` + 204 cycles into the frame, within
 5 cycles on four recorded frames.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab now shows every sprite the karts are drawn with, the
+faces and the roadside. The player's kart is `set_kart_frame` run on the
+kit's 6502 over the listing's memory; a rival's other records are made
+by the routine `rival_picture_routines` names for its distance, run the
+same way; the podium is `start_lights`' end (`$17D9`) and then
+`place_finisher` run for three finishers, which writes the place labels
+into the face sprites as the game does. The spin, the heads and the
+start are read from their tables. A search of every write to a sprite
+pointer (the band table, the records at `$6A`, and the screens' pointers
+at `$E3F8`, `$EBF8` and `$EFF8`) found no use for shapes `$A1` and `$A2`.
+
+`kart_colour_choices` was described as five colours one of which is
+picked at random. The select screen ANDs the random number with 3
+(`$0EBA`), so the player's kart is red, purple, green or blue, never the
+fifth, light blue. The comment and `facts.md` now say so.
+
+The scenery viewer moved from How it works to the new tab, where every
+kind of object comes nearer through its 16 distances, and so did the
+viewer of a rival at each distance. How it works keeps the rules and
+links to the tab.

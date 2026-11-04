@@ -1,0 +1,542 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paradroid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+.pd-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-wide{width:100%}
+.pd-stack{position:relative;line-height:0}
+.pd-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
+.pd-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.pd-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.pd-btn:hover{border-color:var(--ink-mute)}
+.pd-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pd-mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.pd-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.pd-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.pd-shots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.pd-shots figure{margin:0}
+.pd-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.pd-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.pd-tbl th,.pd-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.pd-tbl th{font-weight:700;color:var(--ink-soft)}
+.pd-tbl td.pd-n,.pd-tbl th.pd-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.pd-tbl tr.pd-on td{background:var(--hl)}
+.pd-scroll{overflow-x:auto}
+.pd-enq{background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-family:var(--fm);font-size:13px;line-height:1.6;color:#813338;white-space:pre-wrap}
+.pd-enq .pd-head{color:#3e8f89;font-weight:500}
+.pd-droid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.pd-droid canvas{background:#fff;border:1px solid var(--line);border-radius:6px}
+.pd-chips{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:760px){
+  :root{--gx:16px;--h1:36px;--pp:16px}
+  .pd-two,.pd-shots,.pd-droid{grid-template-columns:minmax(0,1fr)}
+}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-tile canvas.gx-on{outline:none}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-tile.gx-faint canvas{opacity:.45}
+.gx-group .gx-bar{margin:0 0 10px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Hewson Consultants</p>
+  <h1>Paradroid</h1>
+  <p class="sub">Every robot on a deck is the same black sprite, with its three-digit number written into the shape and a symbol that turns faster the more energy it has. The shots, the explosions, the console's pictures and the menu all come from one bank of shapes.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every robot, shot and explosion, drawn by the game's own code</h2>
+  <p class="lede">The robots' numbers and turning symbols are written into their shapes by the game's own routines, run on the kit's 6502 in this page, a pass of the game at a time; a pass is about three frames. The shots flicker and the explosions step as the game steps them.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <span class="gx-lab"><label for="gx-scheme">Deck colours</label></span>
+      <select id="gx-scheme" class="gx-sel"></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The robots are drawn by the game's own code in the built site.</p>
+    <div class="gx-group">
+      <h3>The robots</h3>
+      <p>A robot that comes into view takes a free sprite from 1 to 6, drawn in black, and <code>sprite_number</code> writes its number into the sprite's shape. Each pass <code>energy_symbols</code> counts down a timer, and when it runs out turns the symbol above and below the number one frame of eight and starts the timer again at 64 less the robot's energy, divided by 8. A robot at full energy turns it every pass.</p>
+      <div class="gx-bar"><label for="gx-energy" class="gx-lab">Energy</label><input type="range" id="gx-energy" min="1" max="64" value="64"><span class="gx-stat" id="gx-energy-out"></span></div>
+      <div class="gx-tiles" id="gx-robots"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The player</h3>
+      <p>The player is sprite 7, the 001's shape numbered as the host's, and its symbol turns by the host's energy the same way. It is white, or below 8 energy flashes through greys; in transfer mode it takes the deck's own colour, or below 8 energy flashes through hot colours.</p>
+      <div class="gx-tiles" id="gx-player"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Shots</h3>
+      <p>A shot's shape comes from <code>shot_shapes</code> by the weapon and the direction: the 001's twin laser and the two guns, four directions each. Each pass a shot takes a colour from <code>flash_hot</code> picked by the noise of the sound chip's third voice, and a gun's shot flips between its two shapes. The robots fire the guns' shots.</p>
+      <div class="gx-tiles" id="gx-shots"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Explosions</h3>
+      <p>A robot's shot that reaches a wall becomes the small explosion, white; a robot or a robot's shot blown up, and the player's end, become the big one, yellow and multicolour. Each pass shows the next shape, and the explosion goes after its last.</p>
+      <div class="gx-tiles" id="gx-blasts"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The console's pictures</h3>
+      <p>The robot enquiry draws each type with all eight sprites, four rows of two, from the shapes its record names; a right half the record leaves at 0 is the left half mirrored by <code>mirror_shape</code> into shapes <code>$44</code>-<code>$47</code>. The console's menu has a picture for each of its four items on the window's orange: the player's own numbered shape, a question mark, and the deck plan's and the side view's at double width. The chosen item's is white.</p>
+      <div class="gx-tiles" id="gx-pictures"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Characters that move</h3>
+      <p>On the deck the energisers swirl and the marker on the deck plan changes, each frame written into the character set by <code>animate_tiles</code> from a list of entries with a delay for each. Two groups of four characters turn round one place every other pass (<code>animate_chars</code>).</p>
+      <div class="gx-tiles" id="gx-chars"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Shapes nothing shows</h3>
+      <p>Of shapes <code>$30</code> to <code>$A3</code>, from <code>$4C00</code> in the video bank at <code>$4000</code>, all but two are drawn above. <code>$48</code> would be sprite 0's numbered shape but is never written, because sprite 0 is the player's shot, and <code>$A3</code> is a striped block in no table or record.</p>
+      <div class="gx-tiles" id="gx-unused"></div>
+    </div>
+    <p class="cap">The robots' and the player's shapes are made by <code>sprite_number</code> (<code>$3C77</code>) and turned by <code>energy_symbols</code> (<code>$3CFB</code>) on the kit's 6502 over the listing's memory, one memory for each robot, and the deck's characters by <code>animate_tiles</code> (<code>$2605</code>) and <code>rotate_chars</code> (<code>$38A5</code>) the same way. The console's pictures are <code>droid_picture</code> (<code>$3629</code>) as the page's port of it builds them, held against the game's own code by <code>test_droids.js</code>. The robots' sprite settings are <code>droid_step</code>'s (<code>$18CA</code>); the shots' <code>shot_step</code>'s (<code>$1849</code>) and <code>player_shot</code>'s (<code>$32D9</code>); the explosions' <code>explosion_step</code>'s (<code>$17F4</code>) and <code>explode</code>'s (<code>$1BCA</code>). The two shared sprite colours in play, black and orange, are the ones <code>cold_start</code> and <code>ship_start</code> set.</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* pd-core */
+// Paradroid's data, read from the game's memory m (64 KB, as C64.load gives it from the listing).
+// deckMap(m, d) is build_deck ($3590) ported: deck d's plan, found through plan_ptrs ($F100, $F110),
+// unpacked by deckPlan (a byte with bit 7 set is a cell repeated as many times as the next byte
+// says, 0 for 256; any other byte is one cell) into 16 rows of 64 cells, each cell's low five bits
+// picking a block of 4 by 4 characters from map_blocks ($E800): 64 rows of 256 characters, as the
+// game puts them at $8000. deckScheme(m, d) is the 16-entry scheme deck_colours ($27E5) leaves at $0215 (entries
+// 12-14 hold 0, entry 15 $FE), and charColour(m, sch, c) the colour recolour ($3577) gives
+// character c: its group, the high four bits of the colour table ($0800), picks a scheme entry,
+// whose low four bits are the colour RAM's nibble; the alert's character $16 is set from
+// alert_colours ($6D45) instead, green on a deck at the start. text(m, a) reads the game's
+// alphabet, words(m) the dictionary at $C000.
+const PD = (() => {
+  const ALPHA = {};
+  '0123456789'.split('').forEach((c, i) => { ALPHA[i] = c; });
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c, i) => { ALPHA[0x0A + i] = c; });
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c, i) => { ALPHA[0x3A + i] = c; });
+  Object.assign(ALPHA, { 0x16: 'I', 0x42: 'm', 0x54: 'w', 0x20: '©', 0x24: '?', 0x25: '!', 0x26: '(', 0x27: ')',
+    0x28: '.', 0x29: ',', 0x2A: ':', 0x2B: ';', 0x2C: '"', 0x2D: "'", 0x2E: '-', 0x30: ' ' });
+  const ch = (b) => (b in ALPHA ? ALPHA[b] : '?');
+  function words(m) {
+    const n = m[0xC000], out = [];
+    let a = 0xC001;
+    while (out.length < n) {
+      let s = ch(m[a] & 0x7F); a++;
+      while (!(m[a] & 0x80) && out.length < n - 1) { s += ch(m[a]); a++; }
+      if (out.length === n - 1) { while (m[a] < 0x80 && m[a] !== 0) { s += ch(m[a]); a++; } }
+      out.push(s);
+    }
+    return out;
+  }
+  // Deck d's plan as build_deck unpacks it: 16 rows of 64 cells, each a byte whose low five bits
+  // pick a block from map_blocks.
+  function deckPlan(m, d) {
+    const plan = new Uint8Array(1024);
+    let p = m[0xF100 + d] | m[0xF110 + d] << 8, pos = 0;
+    while (pos < 1024) {
+      const b = m[p];
+      let n = 1;
+      if (b & 0x80) { n = m[p + 1] || 256; p += 2; } else p += 1;
+      for (let k = 0; k < n && pos < 1024; k++) plan[pos++] = b;
+    }
+    return plan;
+  }
+  function deckMap(m, d) {
+    const map = new Uint8Array(0x4000), plan = deckPlan(m, d);
+    for (let pos = 0; pos < 1024; pos++) {
+      const blk = 0xE800 + (plan[pos] & 0x1F) * 16, r0 = (pos >> 6) * 4, c0 = (pos & 63) * 4;
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) map[(r0 + r) * 256 + c0 + c] = m[blk + r * 4 + c];
+    }
+    return map;
+  }
+  function deckScheme(m, d, cleared) {
+    const s = new Uint8Array(16), k = cleared ? 7 : m[0xF160 + d];
+    for (let i = 0; i < 12; i++) s[i] = m[0x6A44 + 12 * k + i];
+    s[15] = 0xFE;
+    return s;
+  }
+  function charColour(m, sch, c) {
+    if (c === 0x16) return m[0x6D45] & 15;
+    return sch[m[0x0800 + c] >> 4] & 15;
+  }
+  // Draws map cells [r0, r0 + rows) x [c0, c0 + cols) on ctx at pixel scale s, as the deck shows
+  // them: one-colour text ($D016 from the $C0 that back_to_play puts at $6F1C), the deck's
+  // character set at $7800 on the scheme's background, each character in its own colour.
+  function drawMap(ctx, m, map, sch, r0, c0, rows, cols, s) {
+    const PAL = C64.PAL, cs = m.subarray(0x7800, 0x8000);
+    ctx.fillStyle = PAL[sch[0] & 15]; ctx.fillRect(0, 0, cols * 8 * s, rows * 8 * s);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const code = map[(r0 + r) * 256 + c0 + c];
+      C64.drawGlyph(ctx, cs, code, c * 8 * s, r * 8 * s, s, PAL[charColour(m, sch, code)]);
+    }
+  }
+  // The rectangle of the map deck d's cells fill: rows and columns of characters other than 0.
+  function deckBounds(map) {
+    let r0 = 64, r1 = -1, c0 = 256, c1 = -1;
+    for (let r = 0; r < 64; r++) for (let c = 0; c < 256; c++) if (map[r * 256 + c]) {
+      if (r < r0) r0 = r; if (r > r1) r1 = r; if (c < c0) c0 = c; if (c > c1) c1 = c;
+    }
+    return { r0, c0, rows: r1 - r0 + 1, cols: c1 - c0 + 1 };
+  }
+  // Deck d's waypoints, from way_counts ($C800) and way_lists ($C810, $C820): column, row (map
+  // cells) and the ways on from it, bit 7 left round to bit 0 up-left (choose_way).
+  function waypoints(m, d) {
+    const n = m[0xC800 + d], a = m[0xC810 + d] | m[0xC820 + d] << 8, out = [];
+    for (let i = 0; i < n; i++) out.push({ col: m[a + 3 * i], row: m[a + 3 * i + 1], ways: m[a + 3 * i + 2] });
+    return out;
+  }
+  const NUMBERS = (m) => Array.from({ length: 24 }, (_, t) => m[0xEA00 + t] * 100 + (m[0xEA20 + t] >> 4) * 10 + (m[0xEA20 + t] & 15));
+  return { ALPHA, ch, words, deckPlan, deckMap, deckScheme, charColour, drawMap, deckBounds, waypoints, NUMBERS };
+})();
+// end of pd-core
+</script>
+<script>
+/* pd-droids */
+// The console's picture of droid type t, as droid_picture ($3629) builds it from the 64-byte record
+// at $EB00 + 64t: eight sprites, four rows of two. Row k's left sprite shows the shape named by the
+// record's byte 2k, and its right sprite that shape mirrored (mirror_shape, $3AE8: each row's
+// three bytes in reverse order and their bits reversed, in pairs for a multicolour shape), or the
+// shape named by byte 2k + 1 when that is not 0. The left shape's 64th byte gives both sprites
+// their mode (bit 7 set, multicolour) and its low five bits the step down to the next row. The
+// sprites start at X $28 (and $40), Y $90 ($6B6A); the colours come from type_colours ($EA60):
+// the sprite's own from picture_colour ($6D59), the second shared one ($D026) from picture_mc2
+// ($6D63); the first shared one ($D025) is black, from cold_start.
+function droidPicture(m, t) {
+  const rec = 0xEB00 + 64 * t, pair = m[0xEA60 + t];
+  const colour = m[0x6D59 + pair] & 15, mc2 = m[0x6D63 + pair] & 15;
+  const shape = (n) => m.slice(0x4000 + 64 * n, 0x4000 + 64 * n + 63);
+  function mirror(src, mc) {
+    const out = new Uint8Array(63);
+    for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) {
+      const v = src[r * 3 + b];
+      let o = 0;
+      if (mc) for (let k = 0; k < 4; k++) o |= ((v >> (2 * k)) & 3) << (6 - 2 * k);
+      else for (let k = 0; k < 8; k++) o |= ((v >> k) & 1) << (7 - k);
+      out[r * 3 + 2 - b] = o;
+    }
+    return out;
+  }
+  const sprites = [];
+  let y = 0x90;
+  for (let n = 0; n < 8; n += 2) {
+    const left = m[rec + n], flag = m[0x4000 + 64 * left + 63], mc = (flag & 0x80) !== 0;
+    const l = shape(left);
+    sprites.push({ x: 0x28, y, shape: l, n: left, mc, colour });
+    const r = m[rec + n + 1];
+    sprites.push({ x: 0x40, y, shape: r ? shape(r) : mirror(l, mc), n: r || 0x44 + n / 2, mc, colour });
+    y = (y + (flag & 0x1F)) & 0xFF;
+  }
+  return { sprites, colour, mc1: 0, mc2 };
+}
+// The robot enquiry's text for droid type t, as unit_line ($3149), describe ($2D92) and
+// field_value ($2F57) print it from the type's record at $EB00 + 64t and the dictionary W
+// (PD.words): the first line, then the ten fields whose labels are dictionary words $0D-$16
+// (entry, class, height, weight and six words of the record, bytes $0A-$0F), then the notes, the
+// words from byte $10 to a $FF, a $FE ending each sentence and asking for a capital. The first word
+// stays small: the capital describe asks for at the start goes to the label "Notes". On the
+// console the notes run over pages, and a sentence that starts a page loses its capital there too
+// (describe, $2DE5); here they are one paragraph.
+function pdDescribe(m, t, W) {
+  const rec = 0xEB00 + 64 * t, cls = m[0xEA00 + t], nn = m[0xEA20 + t];
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const num = String(cls) + (nn >> 4) + (nn & 15);
+  const kind = t === 0 ? 'device' : cls <= 4 ? 'robot' : cls <= 8 ? 'droid' : 'cyborg';
+  const fields = [];
+  for (let f = 0x0D; f <= 0x16; f++) {
+    const y = f - 7, b = m[rec + y];
+    let v;
+    if (y === 6) v = String(t + 1).padStart(2, '0');
+    else if (y === 7) v = W[cls].trim();
+    else if (y === 8) v = '1.' + (b >> 4) + (b & 15) + ' m';
+    else if (y === 9) v = String(b).padStart(3, '0') + ' kg';
+    else v = W[b].trim();
+    fields.push([cap(W[f]), v]);
+  }
+  const notes = [];
+  let s = [], up = false;
+  for (let y = 0x10; y < 64 && m[rec + y] !== 0xFF; y++) {
+    const b = m[rec + y];
+    if (b === 0xFE) { notes.push(s.join(' ') + '.'); s = []; up = true; continue; }
+    const w = W[b].trim(); s.push(up ? cap(w) : w); up = false;
+  }
+  if (s.length) notes.push(s.join(' ') + '.');
+  return { title: 'Unit type ' + num + ' - ' + cap(W[cls].trim()) + ' ' + kind, number: num, fields, notes: notes.join(' ') };
+}
+// end of pd-droids
+</script>
+<script>
+// Graphics tab. The robots' and the player's shapes are written by the game's own sprite_number
+// ($3C77) and energy_symbols ($3CFB), and the deck's moving characters by animate_tiles ($2605)
+// and animate_chars ($38C4), all run on the kit's 6502 (C64Cpu) over the listing's memory, one
+// memory for each tile, a pass of the game at a time. The console's pictures are droidPicture
+// (pd-droids, above), the port of droid_picture that test_droids.js holds against the game.
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const wait = $('gx-wait');
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined' || typeof droidPicture === 'undefined') { wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.'; return; }
+const P = C64.PAL;
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+const code = (n, w) => '<code>' + hex(n, w) + '</code>';
+const S = 2, PASS_MS = 60;                          // 66 passes in 200 frames were measured: about 3 frames a pass
+const MC1 = 0, MC2 = 8;                             // $D025 black (cold_start), $D026 orange (ship_start)
+let ram, NUM, scheme = 0, running = true, pass = 0, energy = 64, seed = 1;
+const noise = () => (seed = (seed * 1103515245 + 12345) >>> 0) >>> 16;   // stands in for voice 3's noise
+const shapeAt = (m, n) => m.subarray(0x4000 + 64 * n, 0x4000 + 64 * n + 63);
+const schemeEntry = (k) => ram[0x6A44 + 12 * scheme + k] & 15;
+const bg = () => schemeEntry(0);
+
+// A memory and a 6502 for one tile. The io keeps the player's colour, the one write to the video
+// chip energy_symbols makes ($D02E, sprite 7's colour).
+function machine() {
+  const m = ram.slice(), o = { m, colour: 1 };
+  o.cpu = new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x25 }, io: { read() { return 0; }, write(a, v) { if (a === 0xD02E) o.colour = v & 15; } } });
+  o.call = (pc, regs) => o.cpu.call(pc, regs || {}, { maxSteps: 2e5 });
+  return o;
+}
+
+const tiles = [];
+function tile(host, w, h, name, info) {
+  const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+  t.className = 'gx-tile'; cv.width = w * S; cv.height = h * S; cv.style.width = w * S + 'px';
+  sp.innerHTML = name + (info ? '<br>' + info : '');
+  t.appendChild(cv); t.appendChild(sp); host.appendChild(t);
+  const o = { t, cv, sp, ctx: cv.getContext('2d'), w, h };
+  tiles.push(o);
+  return o;
+}
+const clear = (o, c) => { o.ctx.fillStyle = P[c === undefined ? bg() : c]; o.ctx.fillRect(0, 0, o.cv.width, o.cv.height); };
+
+// ---- a robot, or the player: type t on sprite n, numbered by sprite_number into shape $48 + n;
+// its slot (1 for a robot, 0 for the player's host) given the energy, and energy_symbols run once
+// a pass. fire_mode ($3A) is 1 for mobile, 0 for transfer mode; the scheme's entries go to $0215,
+// as deck_colours puts them, for the player's colour in transfer mode ($021B).
+function robot(host, t, n, name, info, opts) {
+  const o = tile(host, 28, 25, name, info), M = machine(), m = M.m, x = n === 7 ? 0 : 1;
+  m[0x58] = t; m[0x04] = n; M.call(0x3C77);
+  m[0x59] = x + 1; m[0x0340 + x] = t; m[0x0350 + x] = n; m[0x0390 + x] = 0;
+  m[0x3A] = opts && opts.transfer ? 0 : 1;
+  o.step = () => {
+    for (let k = 0; k < 12; k++) m[0x0215 + k] = ram[0x6A44 + 12 * scheme + k];
+    m[0x0360 + x] = opts && opts.energy ? opts.energy : energy;
+    m[0x4A] = pass & 255;
+    M.call(0x3CFB);
+  };
+  o.draw = () => {
+    clear(o);
+    C64.drawSprite(o.ctx, shapeAt(m, 0x48 + n), 2 * S, 2 * S, S, P[n === 7 ? M.colour : 0]);
+  };
+  o.m = m;
+  o.step(); o.draw();
+  return o;
+}
+
+// ---- a shot: weapon w's shape for direction d from shot_shapes ($6E4C); a colour from flash_hot
+// ($6D51) each pass, picked by noise; a gun's shot (shapes from $56 up) flips between its two
+// shapes each pass, as shot_step and player_shot flip them (odd up one, even down one).
+function shot(host, w, d) {
+  const DIRS = ['up-left or down-right', 'up or down', 'up-right or down-left', 'left or right'];
+  const WPN = ['The twin laser', 'Gun 1', 'Gun 2'];
+  let s = ram[0x6E4C + 4 * w + d], c = 7;
+  const o = tile(host, 28, 25, WPN[w] + ', ' + DIRS[d], code(s) + (w ? ' and ' + code(s & 1 ? s + 1 : s - 1) : ''));
+  o.step = () => { c = ram[0x6D51 + (noise() & 7)] & 15; if (s >= 0x56) s = s & 1 ? s + 1 : s - 1; };
+  o.draw = () => { clear(o); C64.drawSprite(o.ctx, shapeAt(ram, s), 2 * S, 2 * S, S, P[c]); };
+  o.draw();
+  return o;
+}
+
+// ---- an explosion: the next shape each pass to the last (explosion_step), then gone for a pass
+function blast(host, first, last, colour, mc, name, info) {
+  let s = first;
+  const o = tile(host, 28, 25, name, info);
+  o.step = () => { s = s > last ? first : s + 1; };
+  o.draw = () => {
+    clear(o);
+    if (s > last) return;
+    if (mc) C64.drawSpriteMC(o.ctx, shapeAt(ram, s), 2 * S, 2 * S, S, P[colour], P[MC1], P[MC2]);
+    else C64.drawSprite(o.ctx, shapeAt(ram, s), 2 * S, 2 * S, S, P[colour]);
+  };
+  o.draw();
+  return o;
+}
+
+// ---- the console's picture of type t (droidPicture), on the console's white
+function picture(host, t) {
+  const p = droidPicture(ram, t), y0 = p.sprites[0].y, y1 = Math.max(...p.sprites.map((s) => s.y)) + 21;
+  const o = tile(host, 52, y1 - y0 + 4, String(NUM[t]).padStart(3, '0'), p.sprites.filter((s, i) => !(i & 1)).map((s) => code(s.n)).join(' '));
+  clear(o, 1);
+  for (const s of p.sprites) {
+    const x = (s.x - 0x28 + 2) * S, y = (s.y - y0 + 2) * S;
+    if (s.mc) C64.drawSpriteMC(o.ctx, s.shape, x, y, S, P[s.colour], P[p.mc1], P[p.mc2]);
+    else C64.drawSprite(o.ctx, s.shape, x, y, S, P[s.colour]);
+  }
+  return p;
+}
+// The console's menu (menu_sprites, $6B89): sprites 1-4 on the window's orange, the first the
+// player's own shape $4F as sprite_number numbers it, the chosen item (0 at first) white and the
+// rest the record's colour, the last two at double width
+function menu(host, player) {
+  const recs = [1, 2, 3, 4].map((k) => ram.subarray(0x6B89 + 11 * k, 0x6B89 + 11 * k + 11));
+  const y0 = recs[0][3], o = tile(host, 52, recs[3][3] - y0 + 25, 'The console\'s menu', recs.map((r) => code(r[10])).join(' '));
+  o.draw = () => {
+    clear(o, 8);
+    recs.forEach((r, i) => C64.drawSprite(o.ctx, shapeAt(player.m, r[10]), (r[1] - 0x28 + 2) * S, (r[3] - y0 + 2) * S, S, P[i ? r[9] & 15 : 1], r[8] ? 2 : 1, r[5] ? 2 : 1));
+  };
+  o.draw();
+}
+
+// ---- the deck's moving characters, in the deck's colours (PD.charColour)
+function deckChars(host, chars, name, info, step) {
+  const M = machine(), m = M.m, o = tile(host, 8 * chars.length + 4, 12, name, info);
+  o.step = () => step(M);
+  o.draw = () => {
+    const d = Math.max(0, [...Array(16).keys()].find((k) => ram[0xF160 + k] === scheme) || 0), sch = PD.deckScheme(ram, d);
+    clear(o, sch[0] & 15);
+    chars.forEach((c, i) => C64.drawGlyph(o.ctx, m.subarray(0x7800, 0x8000), c, (2 + 8 * i) * S, 2 * S, S, P[PD.charColour(ram, sch, c)]));
+  };
+  o.draw();
+  return o;
+}
+
+// ---- the shapes $30-$A3 that nothing above uses
+const USES = new Set(), NOTE = new Map();
+const use = (n) => USES.add(n);
+function unused() {
+  const host = $('gx-unused'), cells = [];
+  for (let n = 0x30; n < 0xA4; n++) if (!USES.has(n)) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile gx-faint';
+    cv.width = 28 * S; cv.height = 25 * S; cv.style.width = 28 * S + 'px';
+    sp.innerHTML = 'Shape ' + code(n) + ', at ' + code(0x4000 + 64 * n, 4) + '<br>' + (NOTE.get(n) || 'in no table or record');
+    t.appendChild(cv); t.appendChild(sp); host.appendChild(t);
+    cells.push([cv.getContext('2d'), n]);
+  }
+  const paint = () => {
+    for (const [ctx, n] of cells) {
+      ctx.fillStyle = P[bg()]; ctx.fillRect(0, 0, 28 * S, 25 * S);
+      C64.drawSprite(ctx, shapeAt(ram, n), 2 * S, 2 * S, S, P[1]);
+    }
+  };
+  paint();
+  return paint;
+}
+
+C64.load('listing.json').then((L) => {
+  ram = L.ram; NUM = PD.NUMBERS(ram);
+  wait.hidden = true;
+  const sel = $('gx-scheme');
+  for (let k = 0; k < 7; k++) {
+    const decks = [...Array(16).keys()].filter((d) => ram[0xF160 + d] === k);
+    sel.add(new Option('Scheme ' + k + (decks.length ? ', deck' + (decks.length > 1 ? 's ' : ' ') + decks.join(', ') : ''), k));
+  }
+  const pad = (t) => String(NUM[t]).padStart(3, '0');
+  for (let t = 0; t < 24; t++) {
+    robot($('gx-robots'), t, 1 + t % 6, 'The ' + pad(t), 'sprite ' + (1 + t % 6) + ', shape ' + code(0x48 + 1 + t % 6));
+  }
+  const player = robot($('gx-player'), 0, 7, 'The 001', 'shape <code>$4F</code>, white');
+  NOTE.set(0x48, 'sprite 0\'s numbered shape, never written: sprite 0 is the player\'s shot');
+  robot($('gx-player'), 0, 7, 'Below 8 energy', '<code>flash_mobile</code>', { energy: 5 });
+  robot($('gx-player'), 0, 7, 'In transfer mode', 'the scheme\'s entry 6', { transfer: true });
+  robot($('gx-player'), 0, 7, 'In transfer mode, below 8', '<code>flash_hot</code>', { transfer: true, energy: 5 });
+  for (let n = 1; n <= 7; n++) use(0x48 + n);   // the numbered shapes of the robots on sprites 1-6 and the player on 7
+  for (let w = 0; w < 3; w++) for (let d = 0; d < 4; d++) {
+    shot($('gx-shots'), w, d);
+    const s = ram[0x6E4C + 4 * w + d];
+    use(s); if (w) use(s & 1 ? s + 1 : s - 1);
+  }
+  blast($('gx-blasts'), 0x32, 0x38, 1, false, 'The small explosion', '<code>$32</code>-<code>$38</code>, white');
+  blast($('gx-blasts'), 0x39, 0x43, 7, true, 'The big explosion', '<code>$39</code>-<code>$43</code>, yellow');
+  for (let n = 0x32; n <= 0x43; n++) use(n);   // the two explosions
+  for (let t = 0; t < 24; t++) {
+    const p = picture($('gx-pictures'), t);
+    p.sprites.forEach((s) => {
+      if (s.n >= 0x30) use(s.n);
+    });
+  }
+  menu($('gx-pictures'), player);
+  for (const k of [1, 2, 3, 4]) { const r = ram.subarray(0x6B89 + 11 * k); use(r[10]); }
+  // animate_tiles ($2605) with the entry's address in $1A/$1B and the count in A, once a pass
+  const tilesStep = (a) => (M) => { M.m[0x1A] = a & 255; M.m[0x1B] = a >> 8; M.call(0x2605, { a: 1 }); };
+  deckChars($('gx-chars'), [ram[0x6C29]], 'The energiser', 'character ' + code(ram[0x6C29]) + ', <code>tiles_play</code>', tilesStep(0x6C28));
+  deckChars($('gx-chars'), [ram[0x6C4B]], 'The deck plan\'s marker', 'character ' + code(ram[0x6C4B]) + ', <code>tiles_play</code>', tilesStep(0x6C4A));
+  // animate_chars ($38C4) every second pass ($4A even): the two groups in rotate_list ($6C23)
+  const rot = (M) => { M.m[0x4A] = pass & 255; M.call(0x38C4); };
+  deckChars($('gx-chars'), [0x4C, 0x4D, 0x4E, 0x4F], 'Turning characters', code(0x4C) + '-' + code(0x4F) + ', <code>animate_chars</code>', rot);
+  deckChars($('gx-chars'), [0x7A, 0x7B, 0x7C, 0x7D], 'Turning characters', code(0x7A) + '-' + code(0x7D) + ', <code>animate_chars</code>', rot);
+  NOTE.set(0xA3, 'a striped block, in no table or record');
+  const repaint = unused();
+  $('gx-stat').textContent = tiles.length + ' pictures';
+  sel.onchange = () => { scheme = +sel.value; for (const o of tiles) if (o.draw) o.draw(); repaint(); };
+  const en = $('gx-energy'), enOut = $('gx-energy-out');
+  const showEnergy = () => { energy = +en.value; const t = (64 - energy) >> 3; enOut.textContent = energy + ': a turn every ' + (t + 1) + ' pass' + (t ? 'es' : ''); };
+  en.oninput = showEnergy; showEnergy();
+  const run = $('gx-run');
+  run.onclick = () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; };
+  let t0 = performance.now();
+  const loop = (now) => {
+    if (running && now - t0 >= PASS_MS) {
+      t0 = now - Math.min(now - t0 - PASS_MS, PASS_MS);
+      pass++;
+      for (const o of tiles) if (o.step) { o.step(); o.draw(); }
+    } else if (!running) t0 = now;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}).catch((e) => { wait.hidden = false; wait.textContent = 'The listing could not be read: ' + e.message; });
+})();
+</script>

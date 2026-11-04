@@ -63,3 +63,15 @@ hand in the throne room, which is why it saw a swap), and a two-player
 game changes arena whenever the clock runs out (`clock_out`). Pressing
 F5 for the first time in VICE showed that the press that ends a pause,
 if held past one pass, pauses the game again.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+Added `graphics.html`: every move playing its list of frames for
+either fighter, drawn by the game's own routines through `bbArena`, the
+four frames no move shows, the sprites' picture sequences stepped by
+`step_sequence` with the ending's shapes swapped in, every sprite shape,
+and a section on how one frame is built from its nine blocks. The two
+paragraphs of How it works on composing a frame and its overlay sprites
+moved there; How it works keeps the frame rebuilt from memory and the
+main loop's pace. The plain background is made by clearing the band's
+clean copy (`$AF71`) and the bitmap rows above the band before drawing.

@@ -45,3 +45,8 @@ front end's menus, the briefing, the debriefing and the base).
 - The weather and the wind (`$4F`, `$50`) and what they do to the flight.
 - 258 of the flight's branch targets in the Source tab's index keep the
   disassembler's own names (`b_314A` and so on).
+- Check in the emulator whether an explosion started at `$B28C` (timer
+  `$40`, with no first step from the main loop) shows sprite block `$5F`,
+  the code at `$57C0`, for one frame before `$D2`: the interrupt's
+  `missile_sprite` reads `$957E` one past its 16 entries for a timer of
+  `$40`.

@@ -113,16 +113,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">05 · The view</p>
   <h2 class="t">The roadside is cut out of a sheet of characters</h2>
   <p class="lede">The view is a screen of text characters. Each object beside the road is a block of them, with a picture of its own for each of 16 distances.</p>
-  <div class="plate">
-    <div class="pd-bar">
-      <label>Object <select class="pd-sel" id="pd-type"></select></label>
-      <label>Distance <input type="range" id="pd-dist" min="0" max="15" value="4"></label>
-      <span class="pd-out" id="pd-dist-out"></span>
-    </div>
-    <canvas class="pd-cv" id="pd-scen" width="320" height="160"></canvas>
-    <p class="cap">Each picture is drawn here from the game's own tables. <code>scenery_pictures</code> (<code>$3E0B</code>) gives each of the 24 kinds of object 16 records of four bytes: a width and a height in characters, and where the top-left character sits in the tile sheet (<code>$6E00</code>-<code>$B7F5</code>), whose rows are 256 bytes apart. The character shapes are the race set's, with the block of 175 characters the stage loads before the object first appears, and the colour is the object's own (<code>scenery_colours</code>). A character 0 is left out, as the game's copying routine leaves it out. The colours are those of course B, stage 1.</p>
-  </div>
-  <p>Each picture of the view is built in the same order. <code>clear_view</code> fills the screen with the sky character. <code>draw_horizon_rows</code> copies in the stage's two horizon pictures, 40 characters of each from a picture 80 wide, starting at a column that moves one place for each step of a bend, so the skyline turns as the road does. <code>draw_road</code> draws the road a row at a time from the bottom up. Last, <code>draw_scenery</code> draws the objects, far ones first so that near ones cover them. Every object is copied out of the tile sheet by one routine, <code>draw_tiles</code>, which leaves out the empty character 0, so an object's shape is cut round its outline.</p>
+  <p>Each picture of the view is built in the same order. <code>clear_view</code> fills the screen with the sky character. <code>draw_horizon_rows</code> copies in the stage's two horizon pictures, 40 characters of each from a picture 80 wide, starting at a column that moves one place for each step of a bend, so the skyline turns as the road does. <code>draw_road</code> draws the road a row at a time from the bottom up. Last, <code>draw_scenery</code> draws the objects, far ones first so that near ones cover them. Every object is copied out of the tile sheet by one routine, <code>draw_tiles</code>, which leaves out the empty character 0, so an object's shape is cut round its outline. Every kind of object at all 16 distances is on <a href="graphics.html#roadside">Graphics</a>.</p>
   <p>The scenery moves in four slots, each holding up to three objects: one left of the road, one over it and one right of it. A slot starts at distance 15, the farthest, and comes one step nearer with each step along the track (<code>scenery_tick</code>). When it passes the kart, it takes the next record of the stage's scenery list (<code>scenery_list_next</code>). The list can also name a block of 175 character shapes, which is copied into the race set when the list reaches it (<code>chars_5820</code> and three more), so a stage can change from one kind of roadside to another partway round.</p>
   <p>At distance 0 the objects are level with the kart, and drawing them is also the test for a crash (<code>draw_scenery</code>). An object on the right that covers column 21 spins the kart out, and so does one on the left that starts left of column 18 while the kart is off the left side of the road.</p>
 </section>
@@ -143,15 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">07 · The karts</p>
   <h2 class="t">Eleven rivals share four sprites</h2>
   <p class="lede">The C64 shows eight sprites at once. The player's kart takes four of them, and the other eleven karts take turns with the remaining four.</p>
-  <div class="plate">
-    <div class="pd-bar">
-      <label>Distance <input type="range" id="pd-rd" min="0" max="31" value="3"></label>
-      <span class="pd-out" id="pd-rd-out"></span>
-    </div>
-    <canvas class="pd-cv" id="pd-rival" width="320" height="140"></canvas>
-    <p class="cap">A rival at each of its 32 distances, drawn as the game builds it in <code>place_rivals</code>: the first sprite from <code>rival_pictures</code> (<code>$3B43</code>), and the others the routine for that distance adds (<code>rival_picture_routines</code>), 24 pixels apart and the head 21 lines above. The height on the screen is the flat road's, from <code>road_flat_kart_heights</code> (<code>$4649</code>). Distance 0 and 1 use the player's own kart pictures and the driver's own head from behind; here the head is the first driver's.</p>
-  </div>
-  <p>The player's kart is a head and three body sprites, set once a frame by a timer interrupt (<code>sprite_band_irq</code>). The rivals are up to twelve records of a position, a picture and a colour, built each race frame by <code>place_rivals</code>, sorted from the top of the screen down (<code>sort_karts</code>) and copied where the interrupts read them (<code>copy_kart_sprites</code>). Down the screen, an interrupt (<code>kart_mux_irq</code>) puts the next record into the next of sprites 4 to 7 just after the one before has been drawn, so one sprite can show several karts in one frame.</p>
+  <p>The player's kart is a head and three body sprites, set once a frame by a timer interrupt (<code>sprite_band_irq</code>). The rivals are up to twelve records of a position, a picture and a colour, built each race frame by <code>place_rivals</code>, sorted from the top of the screen down (<code>sort_karts</code>) and copied where the interrupts read them (<code>copy_kart_sprites</code>). Down the screen, an interrupt (<code>kart_mux_irq</code>) puts the next record into the next of sprites 4 to 7 just after the one before has been drawn, so one sprite can show several karts in one frame. Every picture a kart is drawn with, the rivals' at each distance, the spin, the start lights and the podium among them, is on <a href="graphics.html#cast">Graphics</a>.</p>
   <p>A near rival takes four records: three for the kart and one for the head. Up to distance 11 a rival takes two, and from 12 on, one. A rival at distance 1 in front of the kart, and slower than it, spins the player out (<code>place_rivals</code>). The rivals keep their order of speed: rival 0 tops out at speed level 30 and rival 10 at 12 (<code>rival_top_speeds</code>). The player's kart reaches 32 in high gear, the fastest on the track.</p>
 </section>
 
@@ -264,10 +247,8 @@ const PD_FRAMES = { flat: {"schema":1,"standard":"PAL","lines":312,"cycles":63,"
   frame('flat');
 
   const P = C64.PAL;
-  // The view's colours on course B, stage 1: the sky and ground ($25, $26 from the course record),
-  // the view's multicolour ($53EA) and multicolour 2, which panel_irq_lower sets black.
-  const SKY = 6, GROUND = 5, MC1 = 12, MC2 = 0;
-  const BLOCKS = [0x5820, 0x5D98, 0x6310, 0x6888];
+  // The view's colours on course B, stage 1: the sky and ground ($25, $26 from the course record).
+  const SKY = 6, GROUND = 5;
 
   C64.load('listing.json').then((L) => {
     const r = L.ram, w = (a) => r[a] | r[a + 1] << 8;
@@ -278,64 +259,6 @@ const PD_FRAMES = { flat: {"schema":1,"standard":"PAL","lines":312,"cycles":63,"
       C64Sid.mount($('pd-sfx'), { driver: createDriver, data: { mem, list: PD_EFFECTS }, tunes: PD_EFFECTS.map((t) => t.name), rows: [] });
     } else { missing($('pd-sid'), 'The player'); missing($('pd-sfx'), 'The player'); }
 
-    // The race's character set with one block of 175 shapes copied in as characters $42-$F0, as
-    // scenery_list_next copies it to $FA10.
-    const raceSet = (block) => {
-      const cs = r.slice(0xF800, 0x10000);
-      if (block) cs.set(r.subarray(block, block + 1400), 0x42 * 8);
-      return cs;
-    };
-    // Which block is in place when each kind of object first comes into view: the lists from
-    // course_table, each entry a stream (below $4000) or a block, every list ending with $6310's
-    // block, which is so in place as the next stage's first stream is read.
-    const blockOf = {};
-    for (let c = 0; c < 5; c++) {
-      const rec = w(0x3733 + 2 * c);
-      for (let s = 0; s < 5; s++) {
-        let a = w(rec + 10 + 2 * s), cur = 0x6310;
-        for (;;) {
-          const v = w(a); a += 2;
-          if (v >> 8 === 0xFF) break;
-          if (v >= 0x4000) { cur = v; continue; }
-          for (let i = 0; i < 12; i++) {
-            const t = r[v + i];
-            if (!t) continue;
-            const n = blockOf[t] || (blockOf[t] = {});
-            n[cur] = (n[cur] || 0) + 1;
-          }
-        }
-      }
-    }
-    const sets = {};
-    for (const b of BLOCKS) sets[b] = raceSet(b);
-    const setFor = (t) => { const n = blockOf[t] || { 0x6310: 1 }; return sets[+Object.keys(n).sort((x, y) => n[y] - n[x])[0]]; };
-
-    // draw_tiles: a picture of w by h characters from src, rows 256 bytes apart, character 0 left out
-    function tiles(ctx, cs, src, wd, ht, x0, y0, colour, s) {
-      const cols = [null, P[MC1], P[MC2], P[colour & 7]];
-      for (let y = 0; y < ht; y++) for (let x = 0; x < wd; x++) {
-        const code = r[src + y * 256 + x];
-        if (!code) continue;
-        if (colour >= 8) C64.drawGlyphMC(ctx, cs, code, (x0 + x) * 8 * s, (y0 + y) * 8 * s, s, cols);
-        else C64.drawGlyph(ctx, cs, code, (x0 + x) * 8 * s, (y0 + y) * 8 * s, s, P[colour]);
-      }
-    }
-    // the scenery viewer
-    const sel = $('pd-type');
-    for (let t = 1; t <= 24; t++) sel.add(new Option('Kind ' + t, String(t)));
-    sel.value = '7';
-    const scx = C64.canvas($('pd-scen'), 320, 160);
-    function scenery() {
-      const t = +sel.value, d = +$('pd-dist').value, tab = w(0x3E0B + 2 * t), rec = tab + 4 * d;
-      const wd = r[rec], ht = r[rec + 1], src = w(rec + 2), colour = r[0x3E3D + t];
-      scx.fillStyle = P[SKY]; scx.fillRect(0, 0, 320, 160);
-      scx.fillStyle = P[GROUND]; scx.fillRect(0, 96, 320, 64);
-      tiles(scx, setFor(t), src, wd, ht, Math.floor((40 - wd) / 2), 19 - ht + 1, colour, 1);
-      $('pd-dist-out').textContent = (d === 0 ? 'nearest' : d === 15 ? 'farthest' : '') + ' ' + wd + ' by ' + ht + ' characters, from ' + C64.hex(src);
-    }
-    sel.onchange = scenery; $('pd-dist').oninput = scenery;
-    scenery();
-
     // the flat road: road_flat_widths, a row each from the bottom, centred
     const rcx = C64.canvas($('pd-road'), 320, 80);
     rcx.fillStyle = P[SKY]; rcx.fillRect(0, 0, 320, 80);
@@ -345,24 +268,6 @@ const PD_FRAMES = { flat: {"schema":1,"standard":"PAL","lines":312,"cycles":63,"
       rcx.fillStyle = P[12]; rcx.fillRect((20 - wd / 2) * 8, 80 - 8 * (i + 1), wd * 8, 8);
     }
 
-    // a rival at each distance: rival_pictures and the records rival_picture_routines adds
-    const rcv = C64.canvas($('pd-rival'), 320, 140);
-    const sprite = (p) => r.subarray(0xC000 + 64 * p, 0xC000 + 64 * p + 63);
-    const KART = 2, HEAD = 8, SMC1 = 0, SMC2 = 15;  // a red kart; $D025 and $D026 as setup_video sets them
-    function rival() {
-      const d = +$('pd-rd').value, p = r[0x3B43 + d], y = r[0x4649 + d];
-      const recs = [[0, 0, p, KART]];
-      if (d < 2) recs.push([24, 0, 0x8B, KART], [24, -21, r[0x1779], HEAD], [48, 0, 0x8C, KART]);
-      else if (d < 4) recs.push([24, 0, 0x53, KART], [24, -21, 0x55, HEAD], [48, 0, 0x54, KART]);
-      else if (d < 6) recs.push([24, 0, 0x4F, KART], [24, -21, 0x51, HEAD], [48, 0, 0x50, KART]);
-      else if (d < 12) recs.push([24, 0, d < 8 ? 0x46 : d < 10 ? 0x4B : 0x4D, KART]);
-      const wide = d < 6 ? 72 : d < 12 ? 48 : 24, x0 = (320 - wide) / 2, top = 0x90;
-      rcv.fillStyle = P[GROUND]; rcv.fillRect(0, 0, 320, 140);
-      for (const [dx, dy, ptr, c] of recs) C64.drawSpriteMC(rcv, sprite(ptr), x0 + dx, y + dy - top, 1, P[c], P[SMC1], P[SMC2]);
-      $('pd-rd-out').textContent = (d < 2 ? 'alongside, ' : '') + recs.length + (recs.length === 1 ? ' sprite' : ' sprites') + ', pointer ' + C64.hex(p, 2) + ', line ' + y;
-    }
-    $('pd-rd').oninput = rival;
-    rival();
-  }).catch((e) => { $('pd-scen').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
+  }).catch((e) => { $('pd-road').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
 })();
 </script>

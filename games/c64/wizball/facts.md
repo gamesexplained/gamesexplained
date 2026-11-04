@@ -316,6 +316,36 @@ into those operands before they run.
   blocks 56 and 57 (`$9E0D`-`$9EC5`).
 - **The level digit** is drawn into sprite `$A0` from the small font,
   each pixel tripled across and each row doubled (`$770D`).
+- **Shared sprite colours by band.** The landscape's sprites share dark
+  grey and light green (`$6401`-`$6408`, through the shadow `$E7E9`). The
+  icon bar's band sets `$D025` = 6, blue, or 2, red, while
+  `lab_icon_mode` (`$B074`) is set, and `$D026` = 1, white
+  (`$89D2`-`$89E0`). The panel's band sets light grey and dark grey
+  (`$8B90`-`$8B97`), with the level digit, sprite 0, hires and the four
+  cauldrons multicolour (`$D01C` = `$36`, `$8B81`). The Wiz-lab sets green
+  and white (`$AB4B`-`$AB52`).
+- **Fading in.** Bonus aliens 12-15 start with slot byte `$14` = 1 and
+  are drawn hires in black, dark grey, grey and light grey
+  (`tbl_alien_fade`, `$B875`), a step every fourth frame (`$A32F`), before
+  they take their own colour. `$B879`-`$B87C` (4, 3, 7, 1) are not read.
+- **Shapes `$3C`-`$3F`.** The arrow craft's pictures are `$3C`, `$3D`,
+  `$3E`, `$3D` (lists `$40FA`, landscape aliens 6 and 7, and `$3C41`, bonus
+  aliens 16-18); Wiztips page one shows the same list (`$96FF`). `$3F`, the
+  eyed diamond, is the one picture of landscape aliens 13 and 14 (byte 18
+  of records `$4049` and `$4061`).
+- **Shapes no one shows.** `$4A` and `$4B` (a diagonal streak), `$63` and
+  `$64` (two frames of a creature like landscape alien 12) and `$7F` (an
+  arrow) are in no alien record, picture list or Wiztips table, and no
+  code loads them as a shape. `$4A`-`$4B` sit between the two Wiztips
+  alien loops, `$46`-`$49` and `$4C`-`$4F`.
+- **The lab's cat.** When the walk ends, a second cat appears on sprite 2
+  at `$5B`/`$C2`, alternating `$6F` and `$7E` every 16 frames, its colour
+  register counted down from 60 a step a frame (`$AC1D`-`$AC3D`), so it
+  flickers through the 16 colours and stays black.
+- **Game over** is drawn into sprite blocks `$B4`-`$B9` and shown on
+  sprites 2-7 at Y `$7A`, X `$74` to `$EC`, 24 apart, hires and
+  unstretched, all in one colour (`$69F2`-`$6A6C`), which `$98BE`
+  cycles.
 
 ## Mechanics
 

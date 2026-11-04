@@ -106,3 +106,31 @@ Bridge won; on the kit's C64 the stack pointer at `main_loop` went from
 `$FF` to `$FD` as the Bridge was won, and the Discoveries page and the Play
 tab's crash count include it.
 
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab now opens with every figure, built from the listing's tables
+the way the game's routines read them, and the sprite shapes no figure
+uses, drawn faintly after them. The soldiers' figures, the
+fights' lorry, helicopters and dogs, and each stage's characters and tiles
+moved there from How it works, which keeps the types table, the fights'
+rules and the swaps table, with links.
+
+Drawing the hero's poses corrected three notes. Poses `$01` and `$02`, up
+or down a ladder, show `$25` over `$24` and `$27` over `$26`, the hero from
+behind with his arms up; the note on `$4900` had them as a jump with no
+facing. Pose `$0F`, with `$A2`-`$A4` and `$28`, is reached only from
+`hero_walk_map`, going over the fence on the map between stages, not on a
+ladder in play. And `enemy_anim_starts` gives `$AC`-`$AF` to the bazooka
+man alone: the blue soldiers climb on `$3A`-`$3D`. Drawn, the hero's
+"crouch" is flat on the ground, the top beside the legs 24 pixels to the
+right (`pose_dx`), so the notes and pages now say he lies down, as
+features.md did. `listing.py --recomment` carried the notes into the
+listing.
+
+Which figures are stacked was checked by drawing each candidate: the
+bazooka man's firing shapes `$B8`-`$BB` read as a kneeling man only with
+the top over the legs, while his lying shapes `$B7` and `$B6`, the white
+soldier's `$38` and `$39` and the crawler's read only side by side, as the
+spawn tables place them. Fifteen shapes are in no table: `$52`-`$5D`,
+`$68`, `$8F` and `$D2`.

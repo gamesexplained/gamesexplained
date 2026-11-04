@@ -1,0 +1,705 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creatures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.pick{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px}
+.pick select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit}
+.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
+.pick .step:hover{color:var(--ink);border-color:var(--ink-mute);text-decoration:none}
+.pick .step.off{opacity:.35;cursor:default}
+.pick select:focus-visible,.pick .step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a{color:var(--link)}
+a:hover{color:var(--link-hover)}
+p{margin:0 0 1em}
+.cr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin:0 0 16px}
+.cr-cell{border:1px solid var(--line-soft);border-radius:8px;padding:8px 6px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);font:inherit;color:inherit;text-align:center}
+.cr-cell:hover{border-color:var(--ink-mute)}
+.cr-cell.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cr-cell canvas{image-rendering:pixelated;border-radius:4px;max-width:100%}
+.cr-cell .cr-nm{font-size:12.5px;line-height:1.25;color:var(--ink)}
+.cr-cell .cr-n{font-family:var(--fm);font-size:10.5px;color:var(--ink-mute)}
+.cr-detail{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;border-top:1px solid var(--line-soft);padding-top:16px}
+.cr-detail canvas{image-rendering:pixelated;border-radius:6px}
+.cr-detail h3{font-size:19px;margin:0 0 6px}
+.cr-facts{font-size:14px;color:var(--ink-soft);margin:0 0 10px}
+.cr-bytes{font-family:var(--fm);font-size:12.5px;line-height:1.9;margin:0 0 10px;word-break:break-all}
+.cr-bytes span{padding:1px 3px;border-radius:3px}
+.cr-bytes .f{color:var(--ink)}
+.cr-bytes .l{color:var(--violet)}
+.cr-bytes .e{color:var(--coral)}
+.cr-bytes .now{background:var(--hl);outline:1px solid var(--amber)}
+.cr-strip{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px}
+.cr-strip canvas{image-rendering:pixelated;border:1px solid var(--line-soft);border-radius:3px}
+.cr-strip canvas.now{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.cr-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px;font-size:13px}
+.cr-btn{font:inherit;font-size:12.5px;font-family:var(--fm);border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink-soft);padding:4px 9px;cursor:pointer}
+.cr-btn:hover{color:var(--ink);border-color:var(--ink-mute)}
+.cr-btn.on{color:var(--ink);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cr-key{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0 0 1em}
+.cr-key code{justify-self:start}
+.cr-miss{font-size:14px;color:var(--coral);margin:0}
+.gx-group{margin:0 0 26px}
+.gx-group:last-child{margin-bottom:0}
+.gx-group h3{font-size:17px;margin:0 0 4px}
+.gx-group>p{font-size:14.5px;color:var(--ink-soft);margin:0 0 12px}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.gx-tile{margin:0;max-width:100%}
+.gx-tile canvas{display:block;image-rendering:pixelated;border-radius:4px;max-width:100%;height:auto}
+.gx-even{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.gx-even canvas{width:100%}
+.gx-tile figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-top:5px}
+@media (max-width:760px){:root{--gx:20px;--pp:16px}.cr-detail{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1990 · Thalamus</p>
+  <h1>Creatures</h1>
+  <p class="sub">Clyde is three sprites: himself and his two shots, which also make his flame and the bubble he speaks in when he dies. Every creature is a few bytes of script, sprite frames with loops among them, which the engine steps every other frame. Below, all of them move as the game moves them. The stages and the three torture chambers are drawn on <a href="levels.html">Maps</a>.</p>
+</header>
+<main class="wrap">
+
+<section id="clyde" data-part="engine">
+  <p class="fig">01 · Clyde</p>
+  <h2 class="t">Clyde, his shots and the weapons tablet</h2>
+  <p class="lede">Clyde is sprite 0, and his shots are sprites 1 and 2. Each scene here is the engine's own routines, run a frame at a time, fifty times a second, over the sky of world 1.</p>
+  <div class="plate">
+    <div class="cr-row"><button type="button" class="cr-btn" id="cl-run">Pause</button><button type="button" class="cr-btn" id="cl-step">One frame</button></div>
+    <div id="cl-tiles"></div>
+    <p class="cap">The page runs <b>the engine's own code</b> for each scene, from the listings, on the kit's 6502 simulator (the <code>cr-clyde</code> block): <a href="source-engine.html#2E82"><code>player_animate</code></a> chooses Clyde's frame, <a href="source-engine.html#31CA"><code>player_fire</code></a> throws, charges and breathes the flame, <a href="source-engine.html#3102"><code>weapon_setup</code></a> gives each weapon its path and colour, <a href="source-engine.html#ACB6"><code>player_dead</code></a> plays his death, and <a href="source-engine.html#1E0E"><code>weapons_tablet</code></a>, <a href="source-engine.html#2B3D"><code>tablet_open</code></a> and <a href="source-engine.html#1F83"><code>tablet_close</code></a> work the tablet. The page holds the joystick for them and draws the sprites where the game's sprite tables put them.</p>
+  </div>
+  <p>Clyde's three sprites are set from a few bytes each frame (<a href="source-engine.html#29B4"><code>sprites_player</code></a>): a frame, a place and a colour for each, his own colour light red, and all three multicoloured with dark grey and yellow. A shot not in the air has the frame <code>$0F</code>, which leaves the sprite blank. The flame takes both shot sprites, which is why Clyde cannot breathe it while a shot is still flying.</p>
+  <p>The weapons tablet is drawn in the score panel's own band of the screen: while it is open, the band's eight sprites take the tablet's places, frames and colours instead of the panel's (<a href="source-engine.html#24AB"><code>panel_sprites_tablet</code></a>). Its eleven shapes are kept at <code>$B100</code>, outside the 16 KB the video chip can see, and opening it swaps them, a shape a frame, with the flame's in blocks <code>$54</code>-<code>$5E</code> (<a href="source-engine.html#2B1E"><code>tablet_swap_step</code></a>); closing swaps them back. The tablet's sprites stay off while the shapes are on the move.</p>
+</section>
+
+<section id="creatures" data-part="">
+  <p class="fig">02 · The creatures</p>
+  <h2 class="t">Every creature, moving as the game moves it</h2>
+  <p class="lede">Each world's creatures, with the colours and speeds their levels give them. Pick one to see its frames and the script that plays them.</p>
+  <div class="plate">
+    <div class="pick" id="cr-wpick"><button class="step" data-d="-1" aria-label="Previous world">‹</button><select id="cr-wsel" aria-label="World"></select><button class="step" data-d="1" aria-label="Next world">›</button></div>
+    <div class="cr-grid" id="cr-grid"></div>
+    <div class="cr-detail" id="cr-detail"></div>
+    <div class="cr-row" style="margin:14px 0 0"><span>Speed</span><button class="cr-btn on" data-s="1">as the game</button><button class="cr-btn" data-s="0.25">a quarter</button><button class="cr-btn" data-s="0">stopped</button><button class="cr-btn" id="cr-step">step a frame</button></div>
+    <p class="cap">Every creature is stepped by <b>the engine's own rules, ported</b> (the <code>cr-anim</code> block in this page), over its script and colour list as the level file holds them, at 50 frames a second. <code>test_gallery.js</code> runs the engine's <code>animate_objects</code> and <code>object_colours</code> on a 6502 simulator beside the port for 3,000 frames of each script here and finds every frame and colour the same. The colours are those of most of the creature's spawn records. The background is the colour behind the top of the world's first stage, or black for a creature drawn in that colour. A few creatures move only when Clyde shoots them, and here they are shot twice a second.</p>
+  </div>
+  <p>A creature is an object in one of fifteen slots, and the level's spawn records fill the slots as the landscape scrolls in. A record names a type, and the type names an animation script and a speed in the level file's tables (<code>anim_lo</code>, <code>anim_hi</code> and <code>anim_speed</code>, from <a href="source-level-1-1.html#8D5A"><code>$8D5A</code></a> in every level file). The engine's <a href="source-engine.html#C764"><code>animate_objects</code></a> reads one byte of the script at a time:</p>
+  <div class="cr-key">
+    <code>$02-$3F</code><span>a sprite frame: one of the engine's shapes, the 64-byte block at <code>$4000</code> plus 64 times the byte</span>
+    <code>$80-$FF</code><span>a sprite frame: one of the level file's shapes, found the same way, from <code>$6000</code></span>
+    <code>$40-$7F</code><span>a loop: the next byte is the distance back, and the body plays once more than the low six bits say</span>
+    <code>$00</code><span>start the script again</span>
+    <code>$01</code><span>remove the creature, the end of every death and burst</span>
+  </div>
+  <p>The engine animates the even slots on one frame and the odd slots on the next, by turning one branch at <a href="source-engine.html#C769"><code>$C769</code></a> from BEQ to BNE and back, so each creature has its turn every other frame. A creature's speed counts those turns. At speed 1 a new byte comes every fourth frame, twelve and a half times a second, and at speed <code>$7F</code> one comes every 256 frames, which is how the still creatures are made. Colour works the same way, from a list of colours with loops of its own (<a href="source-engine.html#C826"><code>object_colours</code></a>), which is how the potion creatures change colour.</p>
+  <p>Some creatures move only when shot. A spawn record whose hit response has both low bits set leaves the animation off (<code>object_spawn</code>, at <a href="source-engine.html#20EE"><code>$20EE</code></a>), and each shot gives the script one more turn (<a href="source-engine.html#BEE6"><code>hit_response_3</code></a>). The swelling balls of world 2 swell a frame with each shot until they are gone, and level 2.1's end creature, the crescent, changes only when it is hit.</p>
+  <p>Shapes are shared between scripts. The walking devils of world 1 have five scripts over the same thirteen frames, and one of the five holds a single frame still. A creature too big for one sprite is two or four objects that the level places side by side, like the dragon at the end of level 1.1, a head and a body. Two shorter scripts, types 41 and 42, move the dragon's shapes again, mostly in level 1.2.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// The data the gallery draws, from the committed listings: test_gallery.js checks every byte
+// against them.
+const CREATURES = {"worlds":[{"name":"World 1","part":"level-1-1","levels":["1.1","1.2"],"cells":[{"name":"Magic Potion Creatures","parts":[{"t":0,"at":42627,"speed":0,"tall":0,"mc":1,"n":[6,6],"cycle":43131,"cspeed":0,"dx":0,"dy":0},{"t":1,"at":42632,"speed":0,"tall":0,"mc":1,"n":[5,4],"cycle":43126,"cspeed":0,"dx":28,"dy":0},{"t":2,"at":42637,"speed":0,"tall":0,"mc":1,"n":[4,5],"cycle":43131,"cspeed":0,"dx":56,"dy":0}],"variants":[],"note":"The shop's money, one of each kind. Touching one adds it to its kind's count."},{"name":"Extra life","parts":[{"t":6,"at":42666,"speed":0,"tall":0,"mc":1,"n":[1,1],"cycle":43131,"cspeed":0,"dx":0,"dy":0}],"variants":[],"note":"Clyde's face."},{"name":"Walking devil","parts":[{"t":22,"at":42936,"speed":1,"tall":0,"mc":1,"n":[7,1],"colour":12,"dx":0,"dy":0}],"variants":[{"t":20,"at":42898,"speed":1,"tall":0,"mc":1,"n":[3,1],"colour":5},{"t":21,"at":42913,"speed":1,"tall":0,"mc":1,"n":[2,3],"colour":10},{"t":23,"at":42965,"speed":1,"tall":0,"mc":1,"n":[2,2],"colour":14},{"t":47,"at":43105,"speed":127,"tall":0,"mc":1,"n":[1,0],"colour":5}]},{"name":"Worm","parts":[{"t":17,"at":42843,"speed":1,"tall":0,"mc":1,"n":[1,9],"colour":5,"dx":0,"dy":0}],"variants":[{"t":16,"at":42828,"speed":1,"tall":0,"mc":1,"n":[0,3],"colour":5},{"t":18,"at":42862,"speed":1,"tall":0,"mc":1,"n":[4,2],"colour":10},{"t":19,"at":42883,"speed":1,"tall":0,"mc":1,"n":[3,3],"colour":10}]},{"name":"Owl","parts":[{"t":43,"at":43087,"speed":1,"tall":0,"mc":1,"n":[14,22],"colour":8,"dx":0,"dy":0}],"variants":[{"t":9,"at":42721,"speed":0,"tall":0,"mc":1,"n":[0,0],"colour":10}]},{"name":"Disc","parts":[{"t":46,"at":43098,"speed":1,"tall":0,"mc":1,"n":[9,14],"colour":10,"dx":0,"dy":0}],"variants":[{"t":26,"at":42284,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":10},{"t":27,"at":42299,"speed":1,"tall":0,"mc":1,"n":[4,3],"colour":10},{"t":39,"at":43045,"speed":1,"tall":0,"mc":1,"n":[4,2],"colour":10}]},{"name":"Hooded hopper","parts":[{"t":30,"at":42358,"speed":1,"tall":0,"mc":1,"n":[3,5],"colour":12,"dx":0,"dy":0}],"variants":[{"t":29,"at":42343,"speed":1,"tall":0,"mc":1,"n":[1,2],"colour":12},{"t":31,"at":42389,"speed":1,"tall":0,"mc":1,"n":[3,1],"colour":12},{"t":32,"at":42426,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":12}]},{"name":"Sprouting plant","parts":[{"t":53,"at":42748,"speed":1,"tall":0,"mc":1,"n":[0,4],"cycle":43186,"cspeed":1,"dx":0,"dy":0}],"variants":[{"t":34,"at":42681,"speed":2,"tall":0,"mc":1,"n":[1,1],"cycle":43141,"cspeed":2},{"t":54,"at":42700,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":10}]},{"name":"Creature in a basket","parts":[{"t":15,"at":42819,"speed":1,"tall":0,"mc":1,"n":[2,0],"colour":5,"dx":0,"dy":0}],"variants":[{"t":48,"at":43107,"speed":127,"tall":0,"mc":1,"n":[2,0],"colour":10}]},{"name":"Balloon","parts":[{"t":24,"at":42280,"speed":127,"tall":1,"mc":1,"n":[3,0],"colour":10,"dx":0,"dy":0},{"t":25,"at":42282,"speed":127,"tall":1,"mc":1,"n":[3,0],"colour":10,"dx":24,"dy":0}],"variants":[],"note":"Two sprites side by side."},{"name":"Dragon","parts":[{"t":36,"at":42986,"speed":1,"tall":0,"mc":1,"n":[3,0],"colour":5,"dx":0,"dy":0},{"t":37,"at":43009,"speed":1,"tall":0,"mc":1,"n":[3,0],"colour":5,"dx":24,"dy":0}],"variants":[{"t":41,"at":43064,"speed":1,"tall":0,"mc":1,"n":[0,2],"colour":10},{"t":42,"at":43071,"speed":1,"tall":0,"mc":1,"n":[1,1],"colour":10}],"note":"Level 1.1's end creature: a head and a body, two sprites. Level 1.2's snake is the same two shapes."},{"name":"Double frog","parts":[{"t":38,"at":43032,"speed":1,"tall":1,"mc":1,"n":[2,1],"colour":5,"dx":0,"dy":0}],"variants":[],"note":"Level 1.2's end creature."},{"name":"Scowling box","parts":[{"t":40,"at":43055,"speed":1,"tall":1,"mc":1,"n":[0,1],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Hairy ball","parts":[{"t":44,"at":43094,"speed":1,"tall":0,"mc":1,"n":[1,2],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Leafy pads","parts":[{"t":8,"at":42719,"speed":127,"tall":0,"mc":1,"n":[3,3],"colour":5,"dx":0,"dy":0},{"t":33,"at":42984,"speed":0,"tall":0,"mc":1,"n":[3,4],"colour":5,"dx":28,"dy":0}],"variants":[]},{"name":"Bomb","parts":[{"t":14,"at":42805,"speed":1,"tall":0,"mc":1,"n":[3,2],"colour":5,"dx":0,"dy":0}],"variants":[]},{"name":"Puff of smoke","parts":[{"t":3,"at":42642,"speed":2,"tall":0,"mc":1,"n":[0,0],"colour":5,"dx":0,"dy":0}],"variants":[],"note":"A death."},{"name":"Ring","parts":[{"t":4,"at":42651,"speed":1,"tall":0,"mc":1,"n":[0,0],"cycle":43111,"cspeed":1,"dx":0,"dy":0}],"variants":[{"t":7,"at":42668,"speed":1,"tall":1,"mc":1,"n":[0,0],"cycle":43160,"cspeed":1}],"note":"A death; with a 200 for a bonus."},{"name":"Splat","parts":[{"t":5,"at":42661,"speed":3,"tall":0,"mc":1,"n":[0,0],"cycle":43120,"cspeed":1,"dx":0,"dy":0}],"variants":[],"note":"A death."}],"mem":[[42280,"ea00eb00a9aaabaaa9aaabacadaeadacadae00a9a9a9aaabaaa9a9a94107adaeadacacac4107adaead00"],[42343,"d1d2d3d4d5d6d5d1d7d8d9dadbda00d1d2d3d4d5d6d5d4d3d2d3d4d5d6d5d1d7d8d9dadbdad9d8d7d8d9dadbda00d1d2d3d4d5d6d5d4d34109d2d3d4d5d6d5d4d1d7d8d9dadbdad9d84109d7d8d9dadbdad900d1d2d3d4d5d6d5d4d3d2d3d4d5d1d7d8d9dadbdad9d8d7d8d9da00"],[42627,"b64f02b700b84f02b900ba4f02bb00f0f1f2f3f4f5f60f01f7f8f9fafbfcfdfe0f01d0cfce0f014e00f7f8f9fafbfcfdfebc53020f010fe5e5e5e5e6e7e8e9e0dcdddedfdedd6007010fe5e5e5e5e6e7e8e9e0dcdddedfdedd490700cd00a6a7440390440201"],[42748,"dddcdddedfdedd4207dcdddedfdee2e1e2e3e4e3e24207e1e2e3e4e300"],[42805,"0f0fff4302f0f1f2f3f4f5f60f00ecedeeeeed4802ec00b2afb0b1b0afb0b2b3b4b5b4b3b400b2afb0b1b04205afb0b2b3b4b5b44205b3b400b2afb0b1b04405afb0b1b2b3b4b5b44405b3b4b500b2afb0b1b04205b2b3b4b5b4420500c6c0c1c2c3c4c5c6c7c8c9cacbcc00c6c0c1c2c3c4c54107c0c1c6c7c8c9cacbcc4107c7c800c6c0c1c2c3c4c54207c0c1c2c3c4c6c7c8c9cacbcc4207c7c8c9cacb00c6c0c1c2c3c4c54107c6c7c8c9cacbcc41070089009195959594939441079591919fa0a1a2a3a441079f910092969798999a9b41079692929e9e9e9d9c9d41079e9200be4402bf4302be4502bd430200a94202aa4202ab4c02008e8d8d8e8f48028e009fa0a1a2a3a400969798999a9b00"],[43087,"a5a6a7a8a7a600ef00"],[43098,"a9a9a9aaabaa00c600ed00"],[43111,"0a0a0a0a0a0a0a09100c0808090900054f0201100a4f020110"],[43141,"00040404040404080a0a0505050505056007100a0a0a0a0a0a0a090102490310"],[43186,"080a0e03050c0a10"]],"spr":{"4E":"0000000501401945900a568009558005994006ee4007ff4017775027ff6026ee606599646955a46901a46955a46555641656500a56800a8a800a46800a8a80","89":"0000000000000000000501401a46906a9a646965a4669a945a99641a66a416669005a990015940001400000000000000000000000000000000000000000000","8D":"d4001739556c36ee5c1bfa941aeea466ba9565aa5965555966559969d7696e55a55bbaa5666999677dd51955641555541955641955641e55a416eb94055550","8E":"d4001739556c36ee5c1bfa941aeea466ba9565aa5965555966559969d7696e55a55bbaa5666999677dd51955641555541955641ed79407aa9005e950005500","8F":"d4001739556c36ee5c1bfa941aeea466ba9565aa5965555966559969d7696e55a55bbaa5666999677dd519556419d7641d96640bba9006ea5001a540005500","90":"00000000000000000000000000c00000f300001f0000140000140000540000540051a914969a58669a646aaaa46aeea41bff901b779006ee4001a900145450","91":"00004000001000001100000600001b00001e00006900006700019f00019d00019d0001a70001b90001ae0001b600006900006e00005a00006600006b00001a","92":"000000000000514000a41000b90000e900009a4000b64000fd9000dd9000dd90007690009a5000aa5000a65000594000a94000a54000554000950000a50000","93":"000545001550006ed001bfa401eee4059bb90776a91ffdaa1dddaa1ddda90776a6059a990796a60141950001a5000195001695016a5501a954005400000000","94":"000140000404001551006ed001bfa401eee4059bb90776a91ffdaa1ddda61ddda9077699059aa607ba950159a6000695015a5501a995006a55001554000000","95":"000000000140000405001550006ed001bfa401eee5059bb90776a91ffdaa1ddda91ddda6077699059aa507ba9506e9a501569501ba5501a995006a55001554","96":"000000000000000000000000140000400000400000914000e40000b41004b94059ad916da9e6696eb799a9a9a56aba9569a9a4696954595950555540145400","97":"00000000000000000000000014000040000440415991166de56769b5b799b9aaa5aeb69469e990aea5506a9940a9a540655400595000550000550000500000","98":"000000000000000000500000440000401140505694a5a769f5b66db9e699adb9a96aaa59ad99556a65009a5400694000550000550000540000500000000000","99":"00000000000000000014000040400054500065b500b9e640f9b750aeab90a9a6906e9a9469a6649995b4655064554064550010540000500000000000000000","9A":"000000000000000000140000400000510000650000b91000ed5000ba90006da400aaf4006de90099a640696790659e50559a645559b45019a4001564000150","9B":"000000000000040000100000400000400000510000a40000e40000b91000b94000ad910469e659aeb76d69a669aaba9969a695596664559594555550015400","9C":"51500005540007b9001afe401bbb406ee6506a9dd0aa7ff4aa77746a77749a9dd066a6509a96d05641405a400056400056940055a940156a40001500000000","9D":"01400010100045540007b9001afe401bbb406ee6506a9dd0aa7ff49a77746a7774669dd09aa65056aed09a654056900055a540566a4055a900155400000000","9E":"00000001400050100005540007b9001afe405bbb406ee6506a9dd0aa7ff46a77749a7774669dd05aa65056aed05a6b9056954055ae40566a4055a900155400","9F":"00000000000000000000000000001400000100000100014600001b10041e65016e79467a699b6a66deb95a6a6a56aea91a6a69156969056565015555001514","A0":"00000000000000000000000000001410000165410179944669d95b66de5e5aaa6e169eba066b69055aba0166a9015a6a001559000565000055000055000005","A1":"00000000000000000000000500001101440116950569da5a799e5f669b6e6a6e7a65aaa955667a0059a90015a6000169000055000055000015000005000000","A2":"000000000000000000000014000101000515005e59019b6e05de6f06eaba069a6a16a6b9199a691e5666190559190155040055000015000005000000000000","A3":"00000000000000000000001400000100004500005900046e00057b0006ae001a79001faa006b79019a6606d96905b65919a6551e65551a6405195400054000","A4":"00000000000000001000000400000100000100004500001a00001b00046e00016e10467a659b6979deba699a6966aeaa569a69199965165655055555001540","A5":"00000000000000000001010044444494545869a9a46aeea46bffa41bff901b779016ee5006aa40069a4001a9000154000054000150000f500000c00000c000","A6":"00000000000005014000440000540001a90016ee506bffa4abffa86b77a45aee9416aa50069a4001a90001540001540000540000500003d400033c00000c00","A7":"04004001010000440000540001a90006ee4007ff401bff901b77906aeea46aaaa4669a6495a958515514005400005400001400001400001f0000f30000c000","A8":"01010000440000440000540001a90006ee4007ff4007ff401b77901aee906aaaa46a9aa469a9a46454646454641054100015000005000007c0000c00000c00","A9":"00000000000000000000000000000000000000000000000000140000690003ba400ffe400dde9007ba9006aa9006a690065a9001aa4001aa40006900001400","AA":"00000000000000000000000000000000000000000000000000000000000000550001aa400eba903ffe9037dea41ebaa41aaaa406a690055a9001aa40005500","AB":"00000000000000000000000000000000000000000000000000000000000000000000000000000001554016aa947efaa9d75eaa7efaaa6aa5a9155a94015540","AC":"00000000000000000000000000000000000000000000000000140000690001aec001bff006b77006aed006aa90069a9006a59001aa4001aa40006900001400","AD":"00000000000000000000000000000000000000000000000000000000000000550001aa4006aeb006bffc1ab7dc1aaeb41aaaa4069a9006a55001aa40005500","AE":"00000000000000000000000000000000000000000000000000000000000000000000000000000001554016aa946aafbdaab5d7aaafbd6a5aa916a554015540","AF":"00410001414001414005515006e55019695477d954fff954eef954ddf554ddf55077d950596a406ea6406fa640155a406faa406eea401ba9001aa900055400","B0":"00000000000001500006e40019690077d900fff950eef554ddf554ddf55577d9555969556eaa416fa640155a40006a4005ba401ba9001ae900069400014000","B1":"01500006e40019690077d900fff500eef540ddf540ddf95077d9505969506ea9546fa954155954001a54001a54006e5401ba5001ea5006b90006a900015400","B2":"04004005014015555015a95016ba505965945bdf945fffd45fbbd45f77d45f77d417df501965901baa9016ea501955901bea901bba9006ea4006aa40015500","B3":"004100014140014140054550055b901569641567dd156fff156fbb155f77055f770567dd01a965019ab9019af901a55401aaf901abb9006ae4006aa4001550","B4":"000000000000000540001b900069640067dd056fff155fbb155f77555f775567dd55696541aab9019af901a55401a90001ae50006ae4006ba4001690000140","B5":"000540001b900069640067dd005fff015fbb015f77056f770567dd056965156ab9156af915655415a40015a40015b90005ae4005ab40006e90006a90001540","B6":"00000000000000000000000000000000000000000000404000110000000000734000f7c000d9c000fbc001bb9006aa94195969146a1000690000664001a950","B7":"00000000000000000000000000000000000000000000808000220000000000a28000aa8000aa8000aa8002aaa00aaaa82aaaaa28aa2000aa0000aa8002aaa0","B8":"00000000000000000000000000000000000000000000000000400000440011984019659006ee404767446bef9016aa5019a99465555019559026aa64555550","B9":"00000000000000000000000000000000000000000000000000800000880022a8802aaaa00aaa808aaa88aaaaa02aaaa02aaaa8aaaaa02aaaa02aaaa8aaaaa0","BA":"00000000000000000000000000000000000000010005044000440000440001cd0003df0003670007ef4006ee4006aa4006664006564001990001a900005400","BB":"0000000000000000000000000000000000000002000a088000880000880002aa0002aa0002aa000aaa800aaa800aaa800aaa800aaa8002aa0002aa0000a800","BC":"000000000000000000000000000000000000000000a8a8a8088888088888a88888808888808888a8a8a8000000000000000000000000000000000000000000","BD":"00540001f94007fe9005de9417ba9469aaa57e5a957aaa556ea55519555406a9501afa50067f9401e794006ea5001a95001a95156a556aea556f9554155540","BE":"00550003f94005be5007de9406ba9451aaa5655a957aaa956ea9551a555405a95006aa501bef9419e7941baea506aaa5155a956aaa956faa555a9554055540","BF":"01f540077a5006de5001ba94006a94001a94001aa5556a957aaa556ea5551a955405555005aa5417ef9419e7951baea556a6a56d5a956baa551aa555055554","C0":"0000000140000690001fa4001794001ea4001a940005a40011a40065a9006a99006a6e406a6e40156b40065a901a96d01941a4190159550069690069aa41a4","C1":"00500001a40007e90005e50007a90006a5001569001969001aaa401aa6401a9a40056e40007a4001b54001ae90016a900196900191900550500690000aa400","C2":"00140000690001fa4001794001ea4005a940065a4006a94006a94006a500015a4001be4006ea40079540179a406656406a46401a4640064590011a50002a90","C3":"000000000500001a40007e90005e50007a90016a5001969001aa5001a94001aa4000650001aa4005ee4007a9901a95901941a4190159550069690069aa41a4","C4":"00140000690001fa4001794001ea4005a940065a4006a90006aa4006a640015a40006e40007a4001b94001a59001e6900196900191900550400690000aa400","C5":"00500001a40007e90005e50007a90016a5001969001aa4001aa9001aa50005690001ad00066e40069b40169a406657406a46401a4640064550011a90002a90","C6":"00540001a90003ef0003770001ed0005a94006564006a94006a64006994001550001b90001f90006ee4006da40069e4006da40069a400599401656501a9a90","C7":"000000000140000690001af40016d4001ab40016a4001a50001a44006a590066a901b9a901b9a901e95406a5900796a41a41646540646900556900691a41aa","C8":"000500001a40006bd0005b50006ad0005a9000695400696401aaa4019aa401a6a401b95001ad00015e4006ba4006a940069640064640050550000690001aa0","C9":"00140000690001af40016d4001ab40016a5001a590016a90016a90005a9001a54001be4001ab900156d001a6d40195990191a90191a406519005a44006a800","CA":"00000000500001a40006bd0005b50006ad0005a94006964005aa40016a4001aa4000590001aa4001bb50066ad00656a41a41646540646900556900691a41aa","CB":"00140000690001af40016d4001ab40016a5001a590006a9001aa90019a9001a54001b90001ad00016e40065a40069b40069640064640010550000690001aa0","CC":"000500001a40006bd0005b50006ad0005a94006964001aa4006aa4005aa4006950007a4001b99001e69001a69401d5990191a90191a405519006a44006a800","CD":"00000001444011995416666459b9996efef9befbbebababaa9ea6965b9aaa96a6965a959596565155954151554151514041410040410000400000000000000","CE":"00000000000000000000000808822a22288a028a2008aaa802aa88088a20022880080a00002a80008aa000a2200288a00a0088028220080008020020080008","CF":"0000082200220a808828aaaa2a888a0222200a88a802aaa80aaa200a2a8008aaa00a2a8802aaa00aaaa802a8a00a8aa822a22a0888882a002a080008000000","D0":"0400041900191a406919555905bb9401ddd006b7a406556406556406556406556406959401aa900669640695a40699a41a59691a4469190019040004000000","D1":"0000000000000000000000000000000100100640640691a406556401bb9001eed006dde406bba4066a6406556406a69406aa9401a95006556406a6a41aa6a9","D2":"00000000000000000000000000000000100000640001a4000564000e65001b990017a9006eaa406a9a405559446aaa591aa9995aa6a9a599a46a55501a9140","D3":"00000000000000000000000000100000640001a4000564000e65001b990017a9006eaa406a9a4055594015aa416aa9961aa6a90559a51695541aa5006aa500","D4":"00000000000000000000100000640001a4000564000e65001b990017a9006eaa406a9a40555940016a4016a9941aa6a90559aa01545505a40106a9001aa900","D5":"00000000000000000000000000100000640001a4000564000e65001b990017a9006eaa406a9a40555940016a4116a9961aa6a90555a415695019aa4006aa40","D6":"00000000000000000000000000000000100000640001a4000564000e65001b990017a9006eaa406a9a40555944016a9916a9691aa6945656a4695a901a9a40","D7":"000000000000000000000000000000000400001900001a400019500059b00066e4006ad401aab901a6a911655565aaa9666aa46a9aa51a665a0555a90146a4","D8":"000000000000000000000000000400001900001a400019500059b00066e4006ad401aab901a6a901655541aa54966aa96a9aa45a6550155694005aa4005aa9","D9":"000000000000000000000400001900001a400019500059b00066e4006ad401aab901a6a901655501a940166a946a9aa4aa6550551540401a50006a90006aa4","DA":"000000000000000000000000000400001900001a400019500059b00066e4006ad401aab901a6a901655541a940966a946a9aa41a555005695401aa6401aa90","DB":"000000000000000000000000000000000400001900001a400019500059b00066e4006ad401aab901a6a911655566a940696a94169aa41a959506a56901a6a4","DC":"00550001ba4006ab90059a90059ba4066be41b9f941feea41bbb941ae650055a9006ee5001b990006a40001a40005b90006e90006a90001a40000500000000","DD":"001500007a4001aa90016790016690066ba4069be406fba407ef9406b6a4015ad401bb90006e50006b90005aa4006be401be9401bb90016e50006940001500","DE":"000000001500006a40006e40005990019990017ed001bb9001a9d0015690006ad401bba401ae9401aba406be9406fa9406ee5406b99006a650016940001500","DF":"000000000000000500001a40005d40005940006e9000699000569001aa9006be9406fba41bee941bba641aea941bba5406a994066654059950016550001540","E0":"001500006a4001bb9001d9900699a406e6a4079e9406bfa407ae94066a6406556406aaa401aa9001ea5001a990006e40007940006a40001500000000000000","E1":"00550001ae4006ea9006a6501ae6501be99016f6e41abbf416eee4059ba406a55005bb90066e4001a90001a40006e50006b90006a90001a400005000000000","E2":"00540001ad0006aa4006d9400699401ae9901be6901aef9016fbd01a9e9017a54006ee4005b90006e9001aa5001be90016be4006ee4005b940016900005400","E3":"00000000540001a90001b90006650006664007bd4006ee40076a4006954017a9001aee4016ba401aea4016be9016af9015bb90066e90059a90016940005400","E4":"00000000000000500001a40001750001650006b90006690006950006aa4016be901aef9016bbe419aee416aba415aee4166a90159990056650055940015400","E5":"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001500006a4001aa90","E6":"000000000000000000000000000000000000000000000000000000000000000000000000000400001900001900001900001900006900007a40006e4001aa90","E7":"000000000000000000000000000000000000001400006900006e40006640006a40006a40001900001900001d00001900001d00007900006a4001ba4001aa90","E8":"000000000000001500006a40006e9001999001b69001ba5001ae90005540006a40001900001900001d00001900001d00001900006900007a40006a4001aa90","E9":"001500006a40006e4001bb9001d99001999006e6a4079e9406bfa407ae94066a640695a401aa9001aa90006a40006900001d00001900001900001a40006a40","EA":"00005500156a016a7e066dba1bbdaa1efdaa6ef6aa6ef6aa6ef6aa1df6aa19f6aa19f9aa05bdaa067daa016e6a006b6a005a7a00156a00105a000415000410","EB":"550000a95400a99540aa6550aa6954aa6954aa9a55aa9a55aa9a55aa9954aa9954aa6954aa6550aa6550a99540a95500a95500a55400550400541000041000","EC":"4100414100514101914155a511aaa516aea516ff941bf7946b7a546aa95569a955656555555555555555555555555555555555555555155554155554055550","ED":"41004141004141004141544111a94416aa4416ee941bff946b77a46aaaa965a96955a555556555555555555555555555555555555555155554155554055550","EE":"41004141004141004141544111a94416aa445afa546bfe946a7f9415b7a555aaa556a6a55595a55555a55555a5555595555555555555155554155554055550","EF":"00040000441004551001994016a99406aa501bba941fbe641ffe946ddea56dde996ffea56bba956aa6656556956a5a55596a946aa654599995166555155555","F0":"00000000000000000000000000000000000000000000000000000000000000000000550001aa4006bb9006fed01bffa41affe41bffe41bffe406ff90015540","F1":"00000000000000000000000000000000000000000000000000550001be4006fb9007efd01bfbe41bebe41bebe41adba406a69006969001594000690001ba40","F2":"000000000000000000000000000000005500059a501ba6e41a99a46e56b97a9aad7ed7bd6fdbf91fa6f41a59a4056950006400001400001900001900006d00","F3":"0000000000000000000000000101400641901796d067d7d466e7996adb996ba6e95a65a5155954006400006400001000001400001000001000001400006400","F4":"0000000000000000001500546e41b9fa46aeb9966f659119105104004040010400001000000400000400001000000000000400000000000000000400001400","F5":"000000140014590055654105640019690019591069141014004000000000000000000400000400000000000000000000000000000000000000000000000400","F6":"000000000000040014050001050001010441050055144014000000000000000400000000000000000000000000000000000000000000000000000000000000","F7":"00000000000000000000000000550001aa4001be4006be9006ff9006ff9006ff9006ff9006ff9006be9001be4001aa40005500000000000000000000000000","F8":"00000000000000550001aa4006aa9006ff901affa41bffe41bffe41bffe41bffe41bffe41bffe41bffe41affa406ff9006aa9001aa40005500000000000000","F9":"00000000550001aa4006aa901abea41affa41bffe46bffe96ffff96febf96febf96febf96ffff96bffe91bffe41affa41abea406aa9001aa40005500000000","FA":"00550001aa4006be9006ff901bffe41bffe41bffe46febf96f96f96f41f96f41f96f41f96f96f96febf91bffe41bffe41bffe406ff9006be9001aa40005500","FB":"00550001aa4006ff9006ff901bffe41bebe41b96e46f82f96e41b96e41b96e41b96e41b96e41b96f82f91b96e41bebe41bffe406ff9006ff9001aa40005500","FC":"00550001aa4006ff9007aad01b96e41e41b41e41b46d007979006d79006d79006d79006d79006d6d00791e41b41e41b41b96e407aad006ff9001aa40005500","FD":"00550001aa4006969006419019006419006419006464001964001964001964001964001964001964001919006419006419006406419006969001aa40005500","FE":"00000000aa0002828002008008002008002008002020000820000820000820000820000820000820000808002008002008002002008002828000aa00000000","FF":"000400000000001000000400000100000400000500000400001900001900001900001a40006d00001900006d40007e40006e40007f40006e40001900000400"},"bg":14},{"name":"World 2","part":"level-2-1","levels":["2.1","2.2"],"cells":[{"name":"Magic Potion Creatures","parts":[{"t":0,"at":42539,"speed":0,"tall":0,"mc":1,"n":[2,3],"cycle":43142,"cspeed":0,"dx":0,"dy":0},{"t":1,"at":42544,"speed":0,"tall":0,"mc":1,"n":[2,5],"cycle":43132,"cspeed":0,"dx":28,"dy":0},{"t":2,"at":42549,"speed":0,"tall":0,"mc":1,"n":[4,4],"cycle":43137,"cspeed":0,"dx":56,"dy":0}],"variants":[],"note":"The shop's money, one of each kind."},{"name":"Extra life","parts":[{"t":6,"at":42587,"speed":127,"tall":0,"mc":1,"n":[0,0],"cycle":43137,"cspeed":0,"dx":0,"dy":0}],"variants":[],"note":"Clyde's face."},{"name":"Fuzzy imp","parts":[{"t":28,"at":42237,"speed":1,"tall":0,"mc":1,"n":[17,25],"colour":10,"dx":0,"dy":0}],"variants":[{"t":5,"at":42578,"speed":0,"tall":0,"mc":1,"n":[0,0],"colour":10},{"t":49,"at":43097,"speed":1,"tall":0,"mc":1,"n":[3,0],"colour":8}]},{"name":"Piranha","parts":[{"t":24,"at":42183,"speed":2,"tall":0,"mc":1,"n":[10,7],"colour":5,"dx":0,"dy":0}],"variants":[{"t":25,"at":42197,"speed":2,"tall":0,"mc":1,"n":[6,4],"colour":5}]},{"name":"Walking tree","parts":[{"t":34,"at":42608,"speed":1,"tall":1,"mc":1,"n":[0,4],"colour":8,"dx":0,"dy":0}],"variants":[{"t":7,"at":42589,"speed":1,"tall":1,"mc":1,"n":[2,2],"colour":8},{"t":8,"at":42615,"speed":1,"tall":1,"mc":1,"n":[0,2],"colour":8},{"t":9,"at":42651,"speed":1,"tall":1,"mc":1,"n":[0,2],"colour":8},{"t":53,"at":42691,"speed":1,"tall":1,"mc":1,"n":[1,2],"colour":8}]},{"name":"Slug","parts":[{"t":22,"at":42877,"speed":1,"tall":0,"mc":1,"n":[6,2],"colour":10,"dx":0,"dy":0}],"variants":[{"t":20,"at":42837,"speed":1,"tall":0,"mc":1,"n":[2,0],"colour":14},{"t":21,"at":42852,"speed":1,"tall":0,"mc":1,"n":[5,2],"colour":8},{"t":23,"at":42900,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":8}]},{"name":"Shrimp","parts":[{"t":29,"at":42242,"speed":1,"tall":0,"mc":1,"n":[0,6],"colour":10,"dx":0,"dy":0}],"variants":[{"t":30,"at":42257,"speed":1,"tall":0,"mc":1,"n":[2,1],"colour":5},{"t":31,"at":42280,"speed":1,"tall":0,"mc":1,"n":[2,0],"colour":5},{"t":32,"at":42309,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":5}]},{"name":"Big-eyed worm","parts":[{"t":17,"at":42766,"speed":1,"tall":0,"mc":1,"n":[3,3],"colour":14,"dx":0,"dy":0}],"variants":[{"t":18,"at":42789,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":14,"onhit":1},{"t":19,"at":42818,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":14},{"t":50,"at":42835,"speed":1,"tall":0,"mc":1,"n":[1,2],"colour":14}]},{"name":"Hooded figure","parts":[{"t":43,"at":43000,"speed":1,"tall":0,"mc":1,"n":[2,6],"colour":14,"dx":0,"dy":0}],"variants":[{"t":45,"at":43039,"speed":1,"tall":0,"mc":1,"n":[3,2],"colour":12,"onhit":1}]},{"name":"Stretching creature","parts":[{"t":26,"at":42211,"speed":0,"tall":0,"mc":1,"n":[4,2],"colour":10,"dx":0,"dy":0}],"variants":[{"t":27,"at":42225,"speed":0,"tall":0,"mc":1,"n":[4,4],"colour":10}]},{"name":"Swelling ball","parts":[{"t":10,"at":42674,"speed":0,"tall":0,"mc":1,"n":[3,2],"colour":5,"dx":0,"dy":0,"onhit":1}],"variants":[{"t":13,"at":42721,"speed":0,"tall":0,"mc":1,"n":[0,2],"colour":14},{"t":11,"at":42677,"speed":1,"tall":1,"mc":0,"n":[0,0],"cycle":43201,"cspeed":0}]},{"name":"Horned flame","parts":[{"t":33,"at":42921,"speed":0,"tall":0,"mc":1,"n":[3,4],"cycle":43164,"cspeed":0,"dx":0,"dy":0}],"variants":[]},{"name":"Fireball","parts":[{"t":42,"at":42979,"speed":1,"tall":0,"mc":1,"n":[0,4],"cycle":43191,"cspeed":1,"dx":0,"dy":0}],"variants":[]},{"name":"Dying flame","parts":[{"t":40,"at":42964,"speed":1,"tall":0,"mc":1,"n":[1,1],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Bubbles","parts":[{"t":41,"at":42974,"speed":2,"tall":0,"mc":0,"n":[3,3],"colour":1,"dx":0,"dy":0}],"variants":[],"note":"Touching them refills Clyde's oxygen."},{"name":"Crescent","parts":[{"t":36,"at":42953,"speed":0,"tall":1,"mc":0,"n":[1,1],"colour":9,"dx":0,"dy":0,"onhit":1}],"variants":[],"note":"Level 2.1's end creature."},{"name":"Flipping stones","parts":[{"t":14,"at":42737,"speed":1,"tall":1,"mc":1,"n":[0,1],"colour":10,"dx":0,"dy":0},{"t":37,"at":42958,"speed":127,"tall":1,"mc":1,"n":[0,1],"colour":10,"dx":12,"dy":14},{"t":38,"at":42960,"speed":127,"tall":1,"mc":1,"n":[0,1],"colour":10,"dx":34,"dy":14},{"t":15,"at":42744,"speed":1,"tall":1,"mc":1,"n":[0,1],"colour":10,"dx":46,"dy":0}],"variants":[],"note":"Level 2.2's end creature, four sprites."},{"name":"Mound with eyes","parts":[{"t":39,"at":42962,"speed":127,"tall":1,"mc":1,"n":[0,1],"colour":5,"dx":0,"dy":0}],"variants":[]},{"name":"Burst of flame","parts":[{"t":3,"at":42554,"speed":0,"tall":0,"mc":1,"n":[0,0],"colour":10,"dx":0,"dy":0}],"variants":[],"note":"A death."},{"name":"Star","parts":[{"t":4,"at":42571,"speed":1,"tall":0,"mc":1,"n":[0,0],"cycle":43122,"cspeed":1,"dx":0,"dy":0}],"variants":[],"note":"A death."}],"mem":[[42183,"b0b1b2b14405b0b3b4b5b4440500b0b1b2b14905b0b3b4b5b4490500a15002a09f9f9f9f9fa0a1410900a15002a09f4a02a0a1a1a100adaeafae00f5edeeeff0efeef5f1f2f3f4f3f200f5edeeeff0efee4107edeef5f1f2f3f4f3f24107f1f200f5edeeeff0efee4207edeeeff0eff5f1f2f3f4f3f24207f1f2f3f4f300edeeeff0efee4107f5f1f2f3f4f3f24107f500"],[42539,"b64f02b700b84f02b900ba4f02bb00c4c5c4c5c6c5c6c7c6c7c8c7c80fc80f01c9cacbcccd0f01adaf4403a24802a3014e00fcfdfcfbfafb4107fc9192e289e29241079100feff0f4a02fffefbfafbfcfdfcfb4207fafbfcfdfc929192e289e29242079192e289e200"],[42651,"fbfafbfcfdfcfb4107fafb929192e289e2924107919200d8d9daf8f801"],[42691,"0ffffefafbfcfdfcfb770700"],[42721,"d8d8d8d94202da4402da4f02d9d9d800d4d5d6d7d6d500d0d1d2d3d2d100"],[42766,"a8a4a5a6a7a6a54107a4a5a8a9aaabacabaa4107a9aa00a8a4a5a6a7a6a54207a4a5a6a7a6a8a9aaabacabaa4207a9aaabacab00a4a5a6a7a6a54107a8a9aaabacabaa4107a80098999a9b9c9d99989394959697930098999a9b9c9d4106999a9b9c9893949596974106939495960098999a9b9c9d4306999a9b989394959697430693949500999a9b9c9d4106999a9893949596974106939498000f0ff947020f0fdf4a02e04a02c4c5c4c5c6c5c6c7c6c7c8c7c80fc80f570200c0f6f7f800ce00cf00e100e3e4e5e6e7e80f50020085868788000fdbdcdddededf4302e0e0e0c4c5c6c7c80f570200be4302bdbdbdbdc3c3c3c3c24502c1c1c1c1bfbfbfbfbe410200"],[43039,"c2c1c1c2c3c200"],[43097,"a200"],[43122,"030e0e0e06060610"],[43132,"054f0201100a4f0201100e4f020110"],[43164,"09090902080a070a08020a59020a4502080a0809080909005702100a4e020a08090a5702100910"]],"spr":{"4E":"0000000501401945900a568009558005994006ee4007ff4017775027ff6026ee606599646955a46901a46955a46555641656500a56800a8a800a46800a8a80","85":"000000038000044000044000044600038900000900000600000000001000002800001000018000024000024000018000000000000000000800001400008800","86":"04400002870000088002888004488000070000300000480000480000300001800002400002400001800000000000180000240000180000400000a000004000","87":"00088000040000010000e48001100001100001100000e00000c00001200001200000c00000180000240000240000180000000000400000a000004000000000","88":"00000000000001c000022000022000022c0001d200001200000c00000000001800002400002400001800000000000000010000028000010000000000001000","89":"00410001820060660019aa001abb8005ffc001ddc001bb95066a646a9aa015999001698000aa90006aa001aaa4016aa401aa6401669515a66a1965a90555a4","91":"00404001864601819900a6a800aaec006bfc145ddc096bb0066a9002696005a56406a55505a59016aa901aaa406a6a4059aa4015a640a5a954a969642a5590","92":"040404091918060660029aa001abb0016ffc005ddc106bb0196a9006696506996401699005aa9006aa8005aa4006aa401666401669000569001a99002aa540","93":"0000000000000000000000000000000000000000000000000000000000000001500006a40006ed001bef001b67141aed696aa96aa9a91aaa5505aaa4005550","94":"0000000000000000000000000000000000000000000000000000000000000000000001500006a40006a9055aa91aab676aaaed6aaaa965a9a9105a55000554","95":"0000000000000000000000000000000000000000000000000000000000000001500006a4001aa9001aa90169a906aa6506aaa91aa9a91a5a551906a4050150","96":"0000000000000000000000000000000000000000000000000000000001500006a4001aa9001aa9001b67006aed006aa905a9a916aa551aaaa41aa550055000","97":"0000000000000000000000000000000000000000000000000000000001500006a40006ed001bef001b67001aed001aa90169a916aa556aaaa46aaa90155540","98":"00000000000000000000000000000000000000000000000000000000000000540001a90002ee0007ef4007674006ee4006aa40066a4006964006aa40015500","99":"0000000000000000000000000000000000000000000000000000000000000540001a90007b9000fbe400d9e4007ba4146aa9696a6aa955aaa41aaa50055500","9A":"0000000000000000000000000000000000000000000000000000000000000000000540001a90006a90006aa550d9eaa47baaa96aaaa96a6a5955a504155000","9B":"0000000000000000000000000000000000000000000000000000000000000540001a90006aa4006aa4006a694059aa906aaa906a6aa455a5a41a9064054050","9C":"0000000000000000000000000000000000000000000000000000000540001a90006aa4006aa400d9e4007ba9006aa9006a6a5055aa941aaaa4055aa4000550","9D":"0000000000000000000000000000000000000000000000000000000540001a90007b9000fbe400d9e4007ba4006aa4006a694055aa941aaaa906aaa9015554","9F":"00540001a90001650006de4006aa4006aa4006664006564006aa4006a94006aa40069940069940069940019900019900019500005400005400001000000000","A0":"00000000000000000000540001a90006aa400767401bdf901aaa901aaa901aaa501a56901aaa501a9a501a4650064640060140010100000000000000000000","A1":"00000000000000000000000000000001550006aa401aee901b57906befa46aaa9466aa646555646aaa94695594140050000000000000000000000000000000","A2":"0000000000000cccc00fdfc003570001a50006a94006a94006ba4016fd505a66546aee94abffa46b77541bbb9007ff4007ff401aee90165650190190040040","A3":"0000000000000000000000000000000000000000000000000c00c00303003f57f00da5c006a94006a94006aa4016b9505afe5469a994afefe46e76d417ef50","A4":"0000000000000000000000000000000540001690007ba400ffe400eee900dde900ffea507baa546aaa946e5a95191aa5141aa5001ea5006ea5007a94015550","A5":"00000000000000000001500005a4001ee9003ff9003bb9003779003ffa401eea401aaa401ba650155694001a94016a9406ea9406ea5401ba5001a950005540","A6":"00000000540001690007ba400ffe400eee400dde400ffe4007ba4006aa4005a640055640065a401baa501eaa501eaa501aaa501aa95006a950069540015500","A7":"000000000000001500006a4001ee4003ff9003bb9003779007ff9006ee9006aa9015aa501956506d5a406aa9407aa9407aa5406aa5001a5500155400055000","A8":"00000000540001690006ee4007ff4007bb4007774007ff4006ee4006aa4006ea4019a9501955501a56501baa501baa501ba9501aa95006a550055540015500","A9":"000000000000000000000000000000000150000694001aed001bff002bbb007b7705abff1baaed1eaa956aa5a57aa4647aa4146aa4006aa900169500055540","AA":"000000000000000000000540001a50006bb4006ffc006eec006ddc01affc01abb401ea54069a941795541ea4001ea9401aaa501aa95006a94006a540015500","AB":"00000000150000694001aed001bff001bbb001b77001bff001aed001a950019a5001d55001a55005ea5406aa9407aa9407aa5406aa5406aa5001a550005540","AC":"00000000000000540001a90001bb4006ffc006eec006ddc006ffd006bb9006aa9006aa5405955401e56501eaa501aaa501baa5006a95006a94001a54000550","AD":"0400401901901656501aee9007ff4007ff400bbb801b77501bff906aee946a6664a6fd5856ba5406a94006a9400da5003f5c00333f00003300000000000000","AE":"0000000400401901901656501aee9007ff4007ff401bbb906b7754abffa46aee945a665416fd5006ba4006a94006a94001a5000357000fdfc00cccc0000000","AF":"0000000000000400401901901656501aee9047ff4497ff586bbb946b77645bff941aee901a665006fd4006ba4006a94006a94001a5c000d7f003f330033000","B0":"00000000000000000000000000000000000000000000541001a91007ea5005ea901baa501a6950056510015400000000000000000000000000000000000000","B1":"00000000000000000000000000000000000000000400540401a91407ea6405eaa41baa641a6954056514015404000000000000000000000000000000000000","B2":"00000000000000000000000000000000001000005000545001a99007e99005ea901baa901a6990056550015410000010000000000000000000000000000000","B3":"000000000000000000000000000000000000000000041500046a4005abd006ab5005aae40569a4045950001540000000000000000000000000000000000000","B4":"000000000000000000000000000000000000100000101500146a4019abd01aab5019aae41569a4145950101540000000000000000000000000000000000000","B5":"000000000000000000000000000000040000050000051500066a40066bd006ab5006aae40669a4055950041540040000000000000000000000000000000000","B6":"00000000000000000000000000000000000000000000404000110000000000734000f7c000d9c000fbc001bb9006aa94195969146a1000690000664001a950","B7":"00000000000000000000000000000000000000000000808000220000000000a28000aa8000aa8000aa8002aaa00aaaa82aaaaa28aa2000aa0000aa8002aaa0","B8":"00000000000000000000000000000000000000000000000000400000440011984019659006ee404723446bef9016aa5019a99464545019019026aa64555550","B9":"00000000000000000000000000000000000000000000000000800000880022a8802aaaa00aaa808aaa88aaaaa02aaaa02aaaa8aaaaa02aaaa02aaaa8aaaaa0","BA":"00000000000000000000000000000000000000010005044000440000440001cd0003df0003670007ef4006ee4006aa4006224006464001990001a900005400","BB":"0000000000000000000000000000000000000002000a088000880000880002aa0002aa0002aa000aaa800aaa800aaa800aaa800aaa8002aa0002aa0000a800","BD":"00000000000000500001a40006a40006a40006bd0006f500067d0006e90006aa4001aa4001a94001964001aa4001aa50006a50006a50005950001540001500","BE":"00000000000000140000690001aa4001aa4001bf40019d4001bf4001aa4001aa4001aa40019a4001954001aa4001a94001a94001a94001a940016540005500","BF":"000000000000000500001a40001a90001a90006f900067d0006f50006ad001aa90019a40019a4001a54001aa4006a94006a90006a90005a500015500005400","C0":"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","C1":"000000000000000500001a40001a90001a90007e90005f90007d90006b9001aa9001aa40016a4001964001a94006a94006a90006a500059500015400005400","C2":"00000000000000140000690001aa4001aa4001fe4001764001fe4001aa4001aa4001aa4001a64001564001aa4001a94001a94001a94001a940016540005500","C3":"00000000000000500001a40006a40006a40006f90007d90005f90007a90006a94001a64001a640015a4001aa4001aa50006a50006a50006950005540001500","C4":"00000000400000010000400000440004984400e44010b18424764019bb401bbe0407fd1445b99806fe6445fbb899bfe46ebef41ffbe41afe9006fb9001be40","C5":"00400000000000000004440000980401e54011b640647b905bbe4016ed0005b91046fe6405fba819aae47ebed47aeae41a9690054140000000000000000000","C6":"00000004440000990005e140199650056490189140069d0001659006516419a5646916e47917947e4150190000000000000000000000000000000000000000","C7":"0000000010001090400188400645000110000545000118400089000099141186500a4140050000000000000000000000000000000000000000000000000000","C8":"0000000082000088000000000220000a8280028a20008800008800020000000000000000000000000000000000000000000000000000000000000000000000","C9":"00000000000000000000000000000000200000200000a8000aaa8002aa0000a80002aa00028a00020200000000000000000000000000000000000000000000","CA":"00000000000000000000100000100000640000640001a900169a501a569006464001990002aa00069a40064640090180040040000000000000000000000000","CB":"00000000440000440001890001890006464059019410441000000000010064406419019006024009058004104010a800025600010100000000000000000000","CC":"000000010000054040194150650164150050004100000000000000000000000000000010510044640014140050100010001400005500006400001000000000","CD":"200000a80020a00028000080000000000000000000000000000000000000000000000000200000800000800008000000000000000000000000008a00002800","CE":"03801500616b0026be00156f016f9b06ffe61bf5f76fd5da6fff9b1bf966055696002bea00169500556d007e7e01bfbd01e5f90191e40041e0000190000040","CF":"5402c0a94900fa9800a95400e6f9409bff909f5fe4a757f9a6fff9996fe4969550abe800969400795500bdbd007efe406f5b401b46400b4100064000010000","D0":"00140000690001a640019590019590065564065564055554065559055555055555155554155554055554005554000550000000000000000000000000000000","D1":"0000000000000000000000000000000540001b94001aed0019fb40057e90056b90155aa41556b4055569005559001555000154000000000000000000000000","D2":"0000000000000000000000000000000000000500001a40001b90006ed0006ba4006fe9006bb9001aea401bae9006ea9001ab9001ba90006a40001500000000","D3":"0000000000000000000000000000000000000000000000000500001a40001e90006ba4006fe9007fb9006eea407bba406eae407aea406eaa401aa500055000","D4":"001400006900019a40065640065640195590195590155550655590555550555550155554155554155550155500055000000000000000000000000000000000","D5":"0000000000000000000000000000000001500016e4007ba401ef6406bd5006e9501aa5541e9554695550655500555400154000000000000000000000000000","D6":"0000000000000000000000000000000000000000500001a40006e40007b9001ae9006bf9006ee901aba406bae406ab9006ea4006ae4001a900005400000000","D7":"0000000000000000000000000000000000000000000000000000500001a40006b4001ae9006bf9006efd01abb901aeed01bab901abad01aab9005aa4000550","D8":"00000000000000000000000000000000000000000000000000000000000000540001b90001a90006ee4007774007774006ed4005a94001a500015500005400","D9":"00000000000000000000000000000000540001b90006ea4006aa4006ee401bff901b77901b77501bff901aee5016a950066640059940056540015500005400","DA":"00550001aa4006fe9007fb901baaa41aaaa41aeba46bffe56b7dd96b7de55b7dd96bffe55aeb9556aa65199994166654159954055550055550015540005500","DB":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000040000000010000000440001990006e9","DC":"0000000000000000000000000000000000000000000000000000000000000000000000400000000000040000000000000001500106a4001be4001ef9006ef9","DD":"000000000000000000000000000000000000000000000000000000000000000504001a40006f91006ed001bfa401bfb401bb9901aee5006ab9046666001595","DE":"00000000000000000000000000500001a40006f90006ed001bfa401bfb401bb9901aee5006ab90066664015950000644000151000010000044000000000001","DF":"00000000000000000000000001500006a4001be9401bba506fb9946eee516ff9946fea511bb9401be500069000014000000000000000000000000000000000","E0":"0000000000000000000000000000010000100000000001000015440159100665441999901aae406bb9406ee5006fe9006fe4001bb4001be400069000014000","E1":"00140000690001ba4001ea4006aa90059a900776901ffda41ddd941776a4199a946aaaa56eaa99b55aa5ba5699a95a65aaaa956aaa656a99951a6654055550","E2":"001010406460241980196a800aaec005bff001777005aec06a6a951699a405999001698001aa80016a9005aa9006aaa005a9a4069a54059554015a50016a90","E3":"000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000410001840001d90001af9000554000000","E4":"0000000000000000000000000000000000000000000000000000000000000040000100000204000240000740100b91000bd65006fb9005afe9005a64000000","E5":"000000000000000000000000000000100000000000100000204000100000610400660000ba4000bb40047b91006fd6401afb4005afe4005aa9000154000000","E6":"000000000000000000000000100000000000100000101000200000510100210000720000b64004bb410067910016d640019a00005544000115000000000000","E7":"000000000000100000000000000000000000101000200000100000210000320000750010660000124100010500000000000000000001000000000000000000","E8":"000000000000000000000000000000000000100000000000100000100040010000010000000000000000000000000000000000000000000000000000000000","ED":"001000004000004200008840008800001500006a40019a900666d00556a40556b4019ae406aab406a6f40157b406aae406bbe416afb919ab7d15a9b90555e4","EE":"010100020200008800008800001500006a40019a900556d00666a40ddeb403bae406aab406a6f40157b406aae406bbd006af9001aa5001ab900156e4065be4","EF":"000400060800008800008800001500006a4003ba900ffed00ddea40ddeb403bae406aab406a6f40157b406aae406bbd006af9001ab90019d90016a4001be40","F0":"000000001000002000060800008800001500006a4003ba900ffed00ddea40ddeb403bae406aab406a6f40157b406aae4069bd0196f951ebb991be65906d564","F1":"00040000010000810001220000220000540001a90006a6400799901a95501e95501ba6401eaa901f9a901ed5401baa901bee906efa947dea646e6a541b5550","F2":"00404000808000220000220000540001a90006a6400795501a99901eb7701baec01eaa901f9a901ed5401baa9007ee9006fa9005aa4006ea401b95401be590","F3":"00100000209000220000220000540001a90006aec007bff01ab7701eb7701baec01eaa901f9a901ed5401baa9007ee9006fa9006ea4006764001a94001be40","F4":"00000000040000080000209000220000540001a90006aec007bff01ab7701eb7701baec01eaa901f9a901ed5401baa9007e69056f96466eeb4659be4195790","F5":"000000018090002200002200001500006a4001bb9001ffd006dde406dde406bba406aab406aee4066b7406556406bae401af9001aa90029da006d9e40be6f8","F6":"000300000300000700000b0000146000e0b00000400000340000600000500000700000e00003b0004dc001b2c003c300000000000000000000000000000000","F7":"000300000300000700000b00001c6000e8b00071400006f40002600001d0000b70000de00033b0006dc001b3c003c300000000000000000000000000000000","F8":"000200000200000a00000a000028a000a8a000aa80008aa800a8a000aa8002aa200288a002a2a000a88002a280028200000000000000000000000000000000","F9":"0000000000000000000000000000000000008000208000208000a0a000a0a00080200080280280280a80280a80000a00000000000000000000000000000000","FA":"0101009192406642402a9a003baa003fe9003775140ee96006a990096980195a50555a90065a5006aa9401aaa401a9a901aa65019a54156a5a19696a0655a8","FB":"1010102464600990900aa6800eea403ff9403775000ee90406a96459699019669006694006aa5002aa9001aa5001aa900199940069940069500066a4015aa8","FC":"04040009190102641802a96403baa00ffe500ddd4003ba5056a9a91a669406665002694002aa4006a94006aa500aaa901a6a5015a69015565005a54006a940","FD":"00410000824000990900aa6402eea403ff5003774056ee4019a9900aa6a906665402694006aa000aa9001aaa401aa94019aa40569940a99a546a59641a5550","FE":"00000000000000000000000000000000000000000000000004040419191806642402a96401bba006ffd006ddc001bb9056aaa91aaa9406a25001a64002aa40","FF":"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004040419191806642402a96401aaa0"},"bg":9},{"name":"World 3","part":"level-3-1","levels":["3.1","3.2"],"cells":[{"name":"Magic Potion Creatures","parts":[{"t":0,"at":42759,"speed":0,"tall":0,"mc":1,"n":[3,8],"colour":0,"dx":0,"dy":0},{"t":1,"at":42764,"speed":0,"tall":0,"mc":1,"n":[2,3],"cycle":43299,"cspeed":0,"dx":28,"dy":0},{"t":2,"at":42769,"speed":0,"tall":0,"mc":1,"n":[6,3],"cycle":43294,"cspeed":0,"dx":56,"dy":0}],"variants":[],"note":"The shop's money, one of each kind."},{"name":"Extra life","parts":[{"t":6,"at":42810,"speed":127,"tall":0,"mc":1,"n":[0,4],"cycle":43294,"cspeed":0,"dx":0,"dy":0}],"variants":[],"note":"Clyde's face."},{"name":"Bat","parts":[{"t":20,"at":43049,"speed":1,"tall":0,"mc":1,"n":[23,14],"colour":12,"dx":0,"dy":0}],"variants":[]},{"name":"Ghost","parts":[{"t":27,"at":42565,"speed":2,"tall":0,"mc":1,"n":[9,13],"cycle":43329,"cspeed":0,"dx":0,"dy":0}],"variants":[{"t":25,"at":42527,"speed":1,"tall":0,"mc":1,"n":[1,1],"cycle":43329,"cspeed":0}]},{"name":"Worm","parts":[{"t":9,"at":42834,"speed":1,"tall":0,"mc":1,"n":[9,6],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Small bat","parts":[{"t":21,"at":43056,"speed":0,"tall":0,"mc":1,"n":[12,2],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Ghoul","parts":[{"t":22,"at":43059,"speed":1,"tall":0,"mc":1,"n":[6,4],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Flame with a face","parts":[{"t":44,"at":43137,"speed":1,"tall":0,"mc":1,"n":[0,10],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Zombie","parts":[{"t":17,"at":42994,"speed":1,"tall":0,"mc":1,"n":[1,2],"colour":14,"dx":0,"dy":0}],"variants":[{"t":16,"at":42979,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":12},{"t":18,"at":43013,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":12},{"t":19,"at":43034,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":12},{"t":53,"at":42878,"speed":1,"tall":0,"mc":1,"n":[2,0],"colour":14},{"t":54,"at":42900,"speed":1,"tall":0,"mc":1,"n":[1,1],"colour":14}]},{"name":"Rolling bomb","parts":[{"t":48,"at":43203,"speed":1,"tall":0,"mc":1,"n":[5,2],"colour":10,"dx":0,"dy":0}],"variants":[{"t":47,"at":43172,"speed":1,"tall":0,"mc":1,"n":[3,0],"colour":10},{"t":8,"at":42825,"speed":1,"tall":0,"mc":1,"n":[1,0],"colour":10}]},{"name":"Horned demon","parts":[{"t":51,"at":43266,"speed":1,"tall":0,"mc":1,"n":[2,3],"colour":10,"dx":0,"dy":0}],"variants":[{"t":50,"at":43251,"speed":1,"tall":0,"mc":1,"n":[0,2],"colour":10},{"t":52,"at":42848,"speed":2,"tall":0,"mc":1,"n":[0,1],"colour":14}]},{"name":"Bursting drop","parts":[{"t":15,"at":42960,"speed":1,"tall":0,"mc":1,"n":[5,4],"colour":14,"dx":0,"dy":0}],"variants":[{"t":14,"at":42944,"speed":1,"tall":0,"mc":1,"n":[4,0],"colour":5}]},{"name":"Fireball","parts":[{"t":46,"at":43153,"speed":1,"tall":0,"mc":1,"n":[0,1],"colour":10,"dx":0,"dy":0}],"variants":[{"t":38,"at":43107,"speed":1,"tall":0,"mc":1,"n":[3,9],"colour":5}]},{"name":"Spider","parts":[{"t":36,"at":43072,"speed":1,"tall":1,"mc":1,"n":[1,0],"colour":10,"dx":0,"dy":0}],"variants":[{"t":43,"at":43086,"speed":1,"tall":1,"mc":1,"n":[1,0],"colour":10}]},{"name":"Melting heart","parts":[{"t":5,"at":42795,"speed":1,"tall":0,"mc":1,"n":[0,4],"colour":10,"dx":0,"dy":0}],"variants":[]},{"name":"Lightning","parts":[{"t":26,"at":42549,"speed":1,"tall":1,"mc":1,"n":[1,1],"colour":10,"dx":0,"dy":0}],"variants":[{"t":24,"at":42521,"speed":1,"tall":1,"mc":1,"n":[0,1],"colour":10}]},{"name":"Claw","parts":[{"t":39,"at":43109,"speed":1,"tall":1,"mc":1,"n":[0,2],"colour":5,"dx":0,"dy":0}],"variants":[{"t":40,"at":43116,"speed":1,"tall":1,"mc":1,"n":[0,2],"colour":5}]},{"name":"Snapping head","parts":[{"t":37,"at":43100,"speed":1,"tall":1,"mc":1,"n":[0,3],"colour":15,"dx":0,"dy":0}],"variants":[]},{"name":"Big face","parts":[{"t":41,"at":43123,"speed":2,"tall":1,"mc":1,"n":[1,2],"colour":14,"dx":0,"dy":0},{"t":42,"at":43130,"speed":2,"tall":1,"mc":1,"n":[1,2],"colour":14,"dx":24,"dy":0}],"variants":[],"note":"Two sprites side by side."},{"name":"Turning creature","parts":[{"t":45,"at":43144,"speed":1,"tall":0,"mc":1,"n":[0,1],"colour":12,"dx":0,"dy":0}],"variants":[]},{"name":"Broomstick","parts":[{"t":11,"at":42846,"speed":127,"tall":0,"mc":0,"n":[4,2],"colour":9,"dx":0,"dy":0}],"variants":[],"note":"Touching it puts Clyde on it."},{"name":"Striped block","parts":[{"t":10,"at":42844,"speed":127,"tall":0,"mc":1,"n":[1,5],"colour":12,"dx":0,"dy":0}],"variants":[],"note":"Harmless to touch."},{"name":"Patterned blocks","parts":[{"t":33,"at":43066,"speed":127,"tall":0,"mc":1,"n":[2,1],"colour":10,"dx":0,"dy":0},{"t":35,"at":43070,"speed":127,"tall":0,"mc":1,"n":[2,1],"colour":10,"dx":24,"dy":0}],"variants":[{"t":34,"at":43068,"speed":127,"tall":1,"mc":1,"n":[0,1],"colour":10}],"note":"Level 3.1's end creature."},{"name":"Cloud","parts":[{"t":23,"at":43064,"speed":127,"tall":0,"mc":0,"n":[1,1],"colour":1,"dx":0,"dy":0}],"variants":[]},{"name":"Imp","parts":[{"t":31,"at":42574,"speed":127,"tall":0,"mc":1,"n":[0,2],"colour":10,"dx":0,"dy":0},{"t":32,"at":42576,"speed":127,"tall":0,"mc":1,"n":[0,1],"colour":10,"dx":28,"dy":0}],"variants":[]},{"name":"Ball with a mouth","parts":[{"t":29,"at":42570,"speed":127,"tall":0,"mc":0,"n":[0,1],"colour":1,"dx":0,"dy":0}],"variants":[]},{"name":"Small star","parts":[{"t":30,"at":42572,"speed":127,"tall":0,"mc":0,"n":[0,1],"colour":11,"dx":0,"dy":0}],"variants":[],"note":"Harmless to touch."},{"name":"Star burst","parts":[{"t":3,"at":42774,"speed":1,"tall":0,"mc":1,"n":[0,0],"cycle":43285,"cspeed":1,"dx":0,"dy":0}],"variants":[],"note":"A death."},{"name":"Sparks","parts":[{"t":4,"at":42785,"speed":1,"tall":1,"mc":1,"n":[0,0],"colour":10,"dx":0,"dy":0}],"variants":[{"t":7,"at":42812,"speed":1,"tall":1,"mc":1,"n":[0,0],"cycle":43316,"cspeed":1}],"note":"A death; with a 200 for a bonus."}],"mem":[[42521,"0f7a029f9f009b9b9c9c9d9d9c9c42099b9b9c9c9d9d9e49029d9d000f5d029fa0a1a09fa0a1a09fa00f0f009b9c9d9c0086008e00e500e600"],[42759,"b64f02b700b84f02b900ba4f02bb00eff0f1f2f3f4f5f6f70f01f8f9fafbfcfdfeff0f010f0f8b470287420288898a0f4602004e00f8f9fafbfcfdfeff8553020f01c3c2c1c0bfbebdbc00a6a6a7a8a9a9a9a8a700e4008f000feeed9ab0b1b2b14405b0b1b29ab3b4b5b44405b3b4b59aedee0f4602000f44029998d9c4c5c6c74405c4c5c6d998990f4402000f44029998d9c8c9cacb4405c8c9cad998990f440200"],[42944,"0f0f8c4302eff0f1f2f3f4f5f6f70f000f0f8c4602eff0f1f2f3f4f5f6f70f0f0f0f00d9c4c5c6c7c4c5d9c8c9cacbc8c900d9c4c5c6c74205c4c5d9c8c9cacb4205c8c900d9c4c5c6c74405c4c5c6d9c8c9cacb4405c8c9ca00d9c4c5c6c74205d9c8c9cacb420500a2a3a4a5a4a300dadb00d5d6d7d600d800d000ce00cf00969594949494959596969745020096959494949495959696974b0200cdcdcdcc4f02008d00d14902d3480200d24902d4480200dcdee0e2e0de00dddfe1e3e1df00e7e8e9eaebec0093939392914c0292000f8d8d90909090eff0f1f2f3f4f5f6f70f0f00bcbdbebfc0c1c2c3bcbdbebfc0c1c2c3c2c1c0bfbebdbcc3c2c1c0bfbebd00bcbdbebfc0c1c2c34209c2c1c0bfbebdbcc3420900"],[43251,"b0b1b2b142059ab3b4b5b442059a009ab0b1b2b1b0b19ab3b4b5b4b3b400"],[43285,"0510"],[43294,"0a4f0201100e4f020110"],[43316,"0a0a0a0a0a0a0a090106490310010f0c0b0c0f10"]],"spr":{"4E":"0000000501401945900a568009558005994006ee4007ff4017775027ff6026ee606599646955a46901a46955a46555641656500a56800a8a800a46800a8a80","85":"000000000000000000000000000000000000000000a8a8a8088888088888a88888808888808888a8a8a8000000000000000000000000000000000000000000","86":"00ff0003ffc00ffff01ffff83ffffc0bfffe005ffe0000bf002fff5ffffffffffffffffffffffaffffa07fd0003ffe803ffffc1ffff80ffff003ffc000ff00","87":"0440000150400254410554510650540951540a51910e55501a95911e96951e95d51b9695165ad4295b947a6b50fe6d40de95007a5000690000b40000d00000","88":"000000000000000000000000000000015000050040195040154451654054654154a95150b951506a55911e95501e95911596951e56d5375a956e9ad5fa6f94","89":"000000000000000000000000000000000000000000000000000000000000000000000100000100541144a541549405506945912a55511695951e6a95bbbe55","8A":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400006551005515546e6991","8B":"0000000000000000000000000000000000000000000514000a68001595006e6e407fbf4077b7406e6e4015950006e40001d000019000004000000000000000","8C":"00000000000000000000000000100000100000200000600000640000a40001a90001b90001e90006ea4006e94006a94002a90001a500005400000000000000","8D":"0000000000000000000000000000000000000540001a94006fa9007eea50bfb994bfea55bfb9947eea506fa9001a9400054000000000000000000000000000","8E":"000000000000000000000000000180000700000e00000e0001870000ef00003f00003e000033e00000e00000c0000000000000000000000000000000000000","8F":"000000000000000000000600000f00000f00000f00000f00001e00001e00001e00001e00003c00003c00003c00003c0000780000780001fe0007ff003ffe00","90":"00000000000000000000000000001000010000054000594001664006a9401ba5001ee9006ba9006fe4007fb4007fe4007fe4006f90001a9000054000000000","91":"00000000410000960001db4002df4003574005a95007ba900ffe640dde940ddea40579941b96a51fea941bba651ee9951aa6591999550665690555a5020000","92":"00410000860001db4002df4003574001a94007ba900ffe900dde640dde940bbaa40566940015a5000694066a651bfa951aea551ba99506aa59059955055580","93":"0009100029a000b6d00055d0016a5001ea80077e900b779007f79005fe64015a940016a40001950006a4005a9501aea506fa9507ea9506ba6505a995055540","94":"4000014000044000044000104000104000401000401001001004000410000180000a40001740009dd0005b90005dd000175000255000064000024000010000","95":"40000140000140000440000440000410001010001010004004010001040000600000a00001900002640005bd0014de0025f700057d00025600001a00000900","96":"40000140000140000140000410000410000410001004001004004001010000640000a00001900001941001666001fbe001dde0017b50005150009640000000","97":"40000140000140000140000110000410000410000404001004001001004000660000a28001958002776001ffd001ddd0017b90005150009640000000000000","98":"000000000000000000000000000000000000000000003f0000ffc000ccc000ffc00b7f780b6a7806aaa406aaa401aa9001aa90006a40005540005540015550","99":"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000300300b3f380affe806cce406ffe4067f6416aaa5","9A":"160250bf03f82e02e03343300343001353000723000b23000e66d05ea6e41eaad00d65c007df405b77940befa4169a501965902a9aa06a46a46a9aa4aaaaa8","9B":"01900002a41406a968099aa9099aaa0aaaa65aaaa4aaa6905a5a506aaa00aaaa005aaa4022aa8002aa8002aa9001a9a4019a69009a6800a69001a68006a900","9C":"00640000a90001aa0002664042664096aa906aaaa82a6aaaaa96a81aaaa919aaaa21aa6006aa2006aa4006aa400aaa801aa68029aa9019a69005a640001540","9D":"000900142a00696a40aa99806a9980aaaaa0666aa4166aa4069aa401aaa402aaa806aaaa1aaaa81aaa6969aa66a699645a9920066810016900006a00001900","9E":"0600002600005a4680aa9a906aaaa01aa6a006a66406aa64019aa4019aa402aaa81aaaa82aaaa869aaa9a6aaa9a699aa46696a01642a01a429006418006008","9F":"000900001d00002c00007c0000b80001f40502f06e07e6fd0bfff81febf42e87e0240bd0000f80001f40002e00003d0000780000b40000e00001d000024000","A0":"00640001b90001b90001f90001ed0001990001650001b90001fd0001fd0001fd0001fd0001fd0001fd0001bd0001bd0000bd0000b900007800007400002000","A1":"006000007400003800003d00002e00501f40b90f807f9bd02fffe01febf40bd2b807e01802f00001f40000b800007c00002d00001e00000b00000740000180","A2":"00000000000000000010000464001959006559006516419416419415965416699415aa5405eb5005a950016540001400000000000000000000000000000000","A3":"0000000000000000000000000000000000001400146900696e96e9aa69aa59aa6555eb5515a954016540001400000000000000000000000000000000000000","A4":"0000000000000000000000000000000000000000000555501a69a47daa79a9eb6aa5a95a916546401401000000000000000000000000000000000000000000","A5":"00000000000000000000000000000000000000550001694006aa501aeb646da9697a65a9791469680029680029190065190064160094050050010040000000","A6":"000000000000000000000000000000001500006a4003ba900ffe900ddea40ffea407baa406aaa91aa9a91969691a55651aa5a51596950669551bbe541e6ff9","A7":"000000000000000000001500006a4003ba900ffe900ddea40ffea407baa406aaa91aa9a919a5a91a55a51aaaa5159a540665f91dbf941df940199400054000","A8":"000000001500006a4003ba900ffe900ffea40ddea407baa406aaa91aa9a91aa9a519a5a51a569516aa9406aa5901697806d5e40b9f900b7e40077900066400","A9":"00540001a9000eea403ffa403ffa90377a901eea901aa6a46aa6a46aa6946a9698695a685aaa741aa9a405a5e40256d002979002db8002de40009e40000a00","B0":"000000000000003400002c00038c000e4e00057f0004a30009e3000267005aa7641969d007d6c00dfdc05fddd425f5e92a56d165aa90646a9069aaa01aaaa4","B1":"160000bf05802e2fc0334b80034cc01350c00721c00922c00266c052a6e41969d007d6c00dfdc05fddd425f5e92a56d165aa90646a90696aa01aaaa41aaaa8","B2":"d00000b00000300000380008ec403c0c40ec1b503807210c09220c02660c52a63819693007d6b00dfdb05fddd425f5e92a56d169aa90681a90696aa41aaaa8","B3":"000000000000001c000038000032c000b1b000fd5000ca1000cb6000d98019daa50769640397d0037f701777f56b5f584795a806aa5906a9190aaa691aaaa4","B4":"0000940250fe03f8b802e1cc0331c00305c40348d00388600399801b9a850769640397d0037f701777f56b5f584795a806aa5906a9190aa9691aaaa42aaaa4","B5":"00000700000e00000c20002c3c013b3b01302c05e43048d03088603099802c9a850c69640e97d00e7f701777f56b5f584795a806aa6906a4291aa9692aaaa4","B6":"00000000000000000000000000000000000000000000404000110000000000734000f7c000d9c000fbc001bb9006aa94195969146a1000690000664001a950","B7":"00000000000000000000000000000000000000000000808000220000000000a28000aa8000aa8000aa8002aaa00aaaa82aaaaa28aa2000aa0000aa8002aaa0","B8":"00000000000000000000000000000000000000000000000000400000440011984019659006ee404767446bef9016aa5019a99465555019559026aa64555550","B9":"00000000000000000000000000000000000000000000000000800000880022a8802aaaa00aaa808aaa88aaaaa02aaaa02aaaa8aaaaa02aaaa02aaaa8aaaaa0","BA":"00000000000000000000000000000000000000010005044000440000440001cd0003df0003670007ef4006ee4006aa4006664006564001990001a900005400","BB":"0000000000000000000000000000000000000002000a088000880000880002aa0002aa0002aa000aaa800aaa800aaa800aaa800aaa8002aa0002aa0000a800","BC":"00000000002000009001524007e6001df9001f7a401bfa4016ea5016aa9015aa9019aa941aaa9406aa9406aa5406aa5401a954015554005550001540000000","BD":"0000000000000000000000200000600000900552801aa5801afa406bfa906b7f906aff946ab7a469aea5196aa5195aa51a6aa506aa95016a55005554000550","BE":"00000000000000000000100000100000240000240000280000690000550005aa501aeba41bffe46b7de96bebe96aaaa96a55a51a96a41aaa9405a950005500","BF":"000000000000000000080000090000060000028550025aa401afa406afe906fde916ffa91adea95aba695aa9645aa5645aa9a456aa9055a940155500055000","C0":"000000080000060000018540009bd0006f7401adf401afe405ab9406aa9406aa5416aa6416aaa416aa9015aa9015aa90156a40155540055500015400000000","C1":"0000000000000000000400000500000500000145500156b4015ab4056aad056aa915aaa915aaa9556aa5556aa4555a94555554555550555540155500055000","C2":"00000000000000000000100000100000140000140000140000550000550005aa5016aa94156954555555555555555555555555155554155554055550005500","C3":"0000000000000000000000100000500000500551401e95401ea5407aa9506aa9506aaa546aaa545aa9551aa95516a555155555055555015555005554000550","C4":"003d00000f0000cf4000ff40003f00055940faaa40baaa408aa6400a5a40091a400419400055400045400151400141400041500500500a50500002900002a4","C5":"000000003d00000f0000cf4000ff40053f00fa5940baaa40baaa400a9640095a40041a400019400055400045500151500151500140500040540500a40a50a9","C6":"000000003d00000f0000cf4000ff40003f00855940faaa40baaa400aa6400a5a40091a400415400015000015400015500005500010500004a000528000a500","C7":"000000003d00000f0000cf4000ff40003f00055940baaa40faaa408aa6400a5a40091a40045540005500005500001500001500002900002a40000500000a50","C8":"007c0000f00001f30001ff0000fc0001655001aaaf01aaae019aa201a5a001a4600164100155000151000145400141400541000500500505a00680001a8000","C9":"000000007c0000f00001f30001ff0000fc500165af01aaae01aaae0196a001a56001a4100164000155000551000545400545400501401501001a00506a05a0","CA":"000000007c0000f00001f30001ff0000fc0001655201aaaf01aaae019aa001a5a001a4600154100054000154000554000550000504000a1000028500005a00","CB":"000000007c0000f00001f30001ff0000fc0001655001aaae01aaaf019aa201a5a001a46001551000550000550000540000540000680001a80000500005a000","CC":"000008000006001542016a9206aa65196aa4255aa9675aa9a96aa56aaaa95aaaa9aaaaa5aaa99669a94a16a4190150252a94962a64061a9018054001000000","CD":"000008000006001542016a9206aa65196aa4255aa9675aa9a96aa56aaaa95aaaa9aaaaa5aaa99669a94a16a41901502500509601a4060294182aa0011a9000","CE":"0000000155004669559afe6a6bbfaaaa6e9965bf665bee95aabb665a6e9965be56aaf965afae596ab95596e96569a555666456559155455445515015155550","CF":"000000000000000000500000954000a690006be40097f9005bb9005eea405be6506ed9906b96a46e5994aa5654b96599a5596d9455bd5116e94059a5155554","D0":"000554005aa9016bba0696eb0bf5a61df5e91be5ba5695e96556d9695ba56eafa66afad966aaa9166765055ad51996a56d9b956aeea65aa995666651155540","D1":"0000500001a000169401f6a4067aa91aeaaa6aaaaa695aaa16aaaa0156a600015a00001a0000160000690001aa0001aa0006aa0006aa0006aa0019aa006a69","D2":"0550001aa4006969001a9a4006a64046a9909aa9906aaa64aa9a64aa6aa4a99699aa91a9aa9069aa9069aaa419aaa419aaa419aaa40496a90069aa50aa6aa9","D3":"0000000000550005aa001a95001aaa0006a600015a00041a00196a000a9a01f6aa067aaa1aeaaa6aaaa9695aa916aaa6015a9a00056a0001aa0019aa006a69","D4":"000000500000a540005a9400a56900aa9a40a6a990a6aaa49556a4990159aa40156a90016aa4005aa400a6a900aaa901aaaa42aaaa9a96aaa969aaa4aa6950","D5":"00000000000000000000000000000000000000000000000000000000540001a90006aa4006aa401bef901f77d01bff906aaaa46aaaa46955a46a56a45aaa94","D6":"00000000000000000000000000000000540001a90001a90006ee4007ff4007774007774007ff401aee901aaa901a9a901a56901a56901a9a901aaa9006aa40","D7":"00000000540001a90006ee4007ff401b77901b77901b77901b77901aee9006aa4006aa4001a900019900019900019900069a40069a40069a4006aa4001a900","D8":"00e38003f7c037ffec7ffffefffffefffffc7ffffeffffffffffff77fff60f7df0067ec0003c00000000000000000000000000000000000000000000000000","D9":"000000003f00003fc000ccc000ffc0017f5006aaa40baab80b6a7801aa9001aa90006a4000554000554000554001515000514001515001515001a29002a2a0","DA":"00000000000000000001010000440000440000a80006fe4007774016ee50169a50569a5455a954545454150150110110000000000000000000000000000000","DB":"00000000000000000001010010441054445454a85456fe5417775016ee50069a40029a0001a900005400010100010100000000000000000000000000000000","DC":"00001500016a0016bf006beb01befa06fffd06df7d1a7df51b96566baaaa6eaaa66eaa566e55566ea55a1ba95a1ba56a06aaaa06eaaa01aaaa065aa91aa555","DD":"540000a94000ea9400aba900aaa940aaaa50aaaa50aaaa94aaaa94aaaa95aaaa55aaaa55aaaa55aaa955aaa954aaa554aa9550a9555096a9405aea405ba940","DE":"00001500016a0016bf006beb01efaa07ffda05f7da17df5a19656a6baaaa6eaa6a6ea56a65556a6e55aa1b95aa1b56aa06aaaa06eaaa01aaa9005aa6006556","DF":"540000a94000ea9400aba900aaa940aaaa50aaaa50aaaa94aaaa94aaaa55aaaa55aaaa55aaa955aaa955aaa554aa9554aa5550555550aa5540ba9500ea5000","E0":"00001500016a0016bf006bee01baaa06fdaa077daa15f5aa1956aa6baaaa6e9aaa6e5aaa155aaa056aaa016aaa17aaaa06aaaa06ea5501a9aa0056ba0006ea","E1":"540000a94000aa9400aea500aaa940aaa950aaa950aaaa54aaaa54aaaa55aaa955aaa955aaa555aaa555aa9554aa5554a95550955550555540955500556400","E2":"00001500016a0016bf006bee01eeaa07f6aa05f6aa1bd6aa195aaa6baaaa6daaaa65aaaa55aaaa06aaaa17aaaa1baaaa06aaaa0556aa06a9aa1aea651ba955","E3":"540000a94000aa5400ba9500aaa540aaa550aaa950aaa954aaa954aaa955aaa955aaa555aaa555aa9555aa5554a95554a55550955550555540555640555950","E4":"5555556ffea57fbb997eeea57baa957ee6657aa9956e65555555556ffea57fbb997eeea57baa957ee6657aa9956e65555555556ffea57fbb997eeea57baa95","E5":"00000900404a01516a00556a50665aa5bb99a9ffd9a9ddd969ffd419bb941566540555540540540115100155500155900195a00292a002a2a002a29001a000","E6":"001a00001a00002a00002a00105500695540aa5540aa54506950501501500555d4055ef4057f740177e4016e950659550695540695600294a0028490018000","E7":"00800002c00002a0802082e00010800028000018a00002b80082e002ebe202bbe32affa2baffe8bfffeeefddf8ebddf8abffe00affe80bf5fa2ffffeaffffb","E8":"0080000080001000c00000800014000004a00000b80082e202e3e322fa82bafba0feffa8ffffeebfffffcbf77e8bf77a0affe80affe82be5fa2fffffbffffa","E9":"00800000008000000000002000003800002000808202e2e223fae1bbfa88fafeaeeeffbfbfffffeffffe2bddf80adde80affe02bfff8bfd6fbfffffabfffe8","EA":"00408000000000002000002000800002e08023f2e1b3fa80faf808b2fe2e2bfebfafffae3bffe82afff80adde82adde0bbfffafffffbbf5bfb2fffe22fffe8","EB":"00004000000000801002c00023e080b2e2e020a88000be082ef82e0bf83f0afaae3bfee8abfff82bfff2ab77ebbb77e3fbfffafbffe82fe7e02ffff82bfff8","EC":"00000000800002c00022e0802082e0000888002a2e00380800800002e0800afae02afffa2bfffb8bffe2eb77f8ff77f8afffe02bffe00bf5f82afff82ffffe","ED":"0101006a02a419019022022002020002020002120006120009118009619009658008208002ce0007334006de50014500042040168a501602501a8a905aaa94","EE":"000000150150040040110110010100010100010100010100040040041040041040041040018900022200018900000000001000014500010100054540055540","EF":"00000000000000000000000000800000800002e08002e2a002eae002fbe00affc02bff82bfffaebffffe2ffff82bfff80bffe00affe82bfffa2bfffeaffff8","F0":"0000000000000000000001000006000a0a0007ae0002fe4001ff4002ff8007ffe00bfff82fffa00afe5006fe4001b90001b90001b80001b90006fe400bff80","F1":"000000000200000b80282f802faf800fff800bff8003ffe00befe02ffbf82feffebfffa82afe5006fe4001b90001b90001b40000740000640001750005ba40","F2":"000200000b80202fd0bebfe03ffee02ebae00fabe00babf82f9af83f9abebeabffffebfebfefa02bff8002fe0001b90001b40000740000600000640001b500","F3":"00010000064000ab802afed0bffee0bbeae03aa6f82e66f82e56fcbe56bcbe85aeea56abfe9afebf9bf82fabf02fefe00afe8001a800006400002000006400","F4":"000000000000001a000abe402fe9605aa9b4a6a5b8e565b9b955b97955aeba456be9016be54156a545a55a56a96a96bd7e9ae41b9ad006ae80005800001000","F5":"0000000000000000000000000054000165000195000154001040105000649400649400696000591000141000000000100400541500681941941a4190050440","F6":"000000000000000000000000000000000000001000005000014400004000000000000010400004400009900009400004000000000000000010010060064064","F7":"000000000000000000000000000000000000000000000000000000001000005000000000000000000000000004400005400005400005500000400010010010","F8":"00000000000000000000be0002ff8007ffd00bffe01ffff41ffff42ffff82ffff82ffff81ffff41ffff40bffe007ffd002ff8000be00000000000000000000","F9":"00000000000000000000000000000000000003c30003cbc003ef8000ba0000ec0003ff0003efc000c300000000000000000000000000000000000000000000","FA":"0000000000000000000100800e01f03e42f02f42e01a8ba0029a100055000064000196000b9a800b4be02e03f01e02c0080000000000000000000000000000","FB":"00000000000420003878206c78046c690958252e400408000044000190c000400000110000200005b850252168b910acb8002c200000000000000000000000","FC":"00000000000424000964100914000111040006590001442000800002e080008100044640001100006400001000100c04640015a40018900004000000000000","FD":"0000014000015000041000000020000100000200000b8400020030014000019100004200080b80000200001100000000000804430000400001000001000000","FE":"000000000000000000000000000000001000000000010000064000010020000c00000000000100040640000100000000000000000300020000000000000000","FF":"00000000000000000000000000000000000000000000200000000000000001000000041000000000000000c000000200000000000000000000010000000000"},"bg":11}]};
+</script>
+<script>
+/* cr-anim */
+// One creature as the engine animates it, a frame at a time. animate_objects ($C764) steps each
+// object's animation script and object_colours ($C826) its colour list, each for half the objects
+// a frame (even slots, then odd), so an object's turn comes every other frame; its timer counts
+// its turns and reloads from its speed when it runs out, so a step comes every 2 x (speed + 1)
+// frames. A script byte is a sprite frame ($80-$FF, or below $40), 0 to start again, 1 to remove
+// the object, or a loop, $40-$7F: the next byte is the distance back, and the body plays once more
+// than the low six bits say, as the first meeting sets the count and jumps back and each later
+// one counts down and jumps while it is not zero. Type 6 takes every byte as a frame. A colour
+// list's bytes are colours ($00-$0F), loops ($40 and up) or the end ($10-$3F), which starts the
+// list again. mem(a) gives the game's byte at a; c is a gallery entry (at, t, speed, cycle,
+// cspeed, colour); phase 0 or 1 chooses which of the next two frames is the object's first turn
+// (for animation, then colour: the engine flips its two choices separately).
+// c.onhit marks an object whose animation runs only when it is shot: its spawn record's hit response
+// (byte 7) has both low bits set, so object_spawn starts it with obj_anim_on clear ($20EE), and
+// each hit (hit_response_3, $BEE6) sets obj_anim_on to $FF, which gives the script one turn: s.hit().
+// crCreature(c, mem, phaseA, phaseC) -> { tick(), hit(), frame, colour, pos, cpos, gone }
+function crCreature(c, mem, phaseA, phaseC) {
+  const s = { frame: mem(c.at), colour: c.cycle ? mem(c.cycle) & 15 : c.colour, pos: 0, cpos: 0, gone: false };
+  let timer = 0, loop = 0, resume = 0, ctimer = 0, cloop = 0, cresume = 0, n = 0, shot = false;
+  const at = (y) => mem(c.at + (y & 255)), ct = (y) => mem(c.cycle + (y & 255));
+  function animate() {                                  // $C79C on, for one object
+    timer = (timer - 1) & 255; if (timer < 128) return;
+    timer = c.speed;
+    let y = (s.pos + 1) & 255, b = at(y);
+    for (;;) {                                          // $C7B5
+      if (b === 0) { y = 0; b = at(0); if (b !== 0) { s.frame = b; s.pos = y; return; } }
+      if (b === 1) { s.gone = true; return; }       // $C7E9: state 5, and the object is no longer drawn
+      const z = b;                                      // $C7F5
+      if (c.t === 6 || (b & 0xC0) !== 0x40) { s.frame = z; s.pos = y; return; }
+      y = (y + 2) & 255; resume = y; y = (y - 1) & 255;
+      if (loop === 0) { loop = z & 0x3F; if (loop === 0) loop = 0xFF; }
+      else { loop = (loop - 1) & 255; if (loop === 0) { y = resume; b = at(y); continue; } }
+      y = (y - at(y)) & 255; b = at(y);                 // $C7C6: back by the distance byte
+      s.frame = b !== 0 ? b : z; s.pos = y; return;
+    }
+  }
+  function colours() {                                  // $C859 on, for one object
+    if (!c.cycle) return;
+    ctimer = (ctimer - 1) & 255; if (ctimer < 128) return;
+    ctimer = c.cspeed;
+    let y = (s.cpos + 1) & 255, b = ct(y);
+    for (let guard = 0; guard < 64; guard++) {
+      if (b < 0x10) { s.colour = b & 15; s.cpos = y; return; }   // $C882
+      const z = b;
+      if (!(b & 0x40)) { y = 0; s.colour = ct(0) & 15; s.cpos = 0; return; }   // $C87E: the end
+      y = (y + 2) & 255; cresume = y; y = (y - 1) & 255;          // $C8A0
+      if (cloop === 0) { cloop = z & 0x3F; if (cloop === 0) cloop = 0xFF; }
+      else { cloop = (cloop - 1) & 255; if (cloop === 0) { y = cresume; b = ct(y); if (b < 128) continue; throw new Error('colour list ends a loop on $' + b.toString(16)); } }
+      y = (y - ct(y)) & 255; b = ct(y);                 // $C897
+      if (b < 128) { s.colour = b & 15; s.cpos = y; return; }
+      throw new Error('colour list jumps back to $' + b.toString(16));
+    }
+  }
+  s.hit = function () { shot = true; };
+  s.tick = function () {
+    if (!s.gone && ((n + phaseA) & 1) === 0 && (!c.onhit || shot)) { shot = false; animate(); }   // $C792
+    if (!s.gone && ((n + phaseC) & 1) === 0) colours();
+    n++;
+  };
+  return s;
+}
+// end of cr-anim
+</script>
+<script>
+/* cr-clyde */
+// Clyde, his shots, his flame and the weapons tablet, moved by the engine's own routines on the
+// kit's 6502 (C64Cpu), over the engine's memory with level 1.1's file laid over it (base). Each
+// scene is a machine of its own. The page stands in for what game_frame would do around the
+// routines: it sets the joystick flags the routines read and steps frame_divider ($1CE1) once a
+// frame, and clears $1227 (moved this frame) as player_control does; both screens are cleared to a
+// character Clyde can pass, so nothing he throws hits a wall.
+// crClyde(base, CPU) -> { scenes: { walk(), throwing(weapon), flame(), dying(), tablet() } }
+// A scene is { frame(): one frame of play, sprites(): [{ ptr, x, y, colour, mc, wide }], m }; the
+// first sprite is in front, as the lower sprite number is on the C64.
+function crClyde(base, CPU) {
+  const FIRE = 0x45;   // $1280 is zero while the button is down
+  function machine() {
+    const m = base.slice();
+    let joy = 0xFF;
+    const cpu = new CPU(m, { port: 0x35, io: { read(a, c) {
+      const line = Math.floor(c.cycles / 63) % 312;
+      if (a === 0xDC00) return joy;
+      if (a === 0xD012) return line & 255;
+      if (a === 0xD011) return line > 255 ? 0x80 : 0;
+      return 0;
+    }, write() {} } });
+    m.fill(0xFF, 0x4400, 0x4C00);
+    m[0xC056] = 0;                       // no double width, as stage_start leaves it
+    m[0x1280] = FIRE; m[0x128A] = 10; m[0x1286] = 7; m[0x128D] = 0x0F; m[0x128F] = 0x0F;
+    return { m, stick: (v) => { joy = v; }, call: (a, r) => cpu.call(a, r || {}, { maxSteps: 300000 }) };
+  }
+  // sprites 0-2 as sprites_player ($29B4) sets them; death_bubble widens 1 and 2 through $C056
+  function player(m) {
+    const hi = m[0x1241] | m[0x1259] | m[0x125B], wide = m[0xC056], out = [];
+    out.push({ ptr: m[0x1287], x: m[0x1281] + (hi & 1 ? 256 : 0), y: m[0x1282], colour: m[0x128A] & 15, mc: m[0x1286] & 1, wide: wide & 1 });
+    if (m[0x128D] !== 0x0F) out.push({ ptr: m[0x128D], x: m[0x1290] + (hi & 2 ? 256 : 0), y: m[0x1291], colour: m[0x1295] & 15, mc: m[0x1286] & 2, wide: wide & 2 });
+    if (m[0x128F] !== 0x0F) out.push({ ptr: m[0x128F], x: m[0x1292] + (hi & 4 ? 256 : 0), y: m[0x1293], colour: m[0x1297] & 15, mc: m[0x1286] & 4, wide: wide & 4 });
+    return out;
+  }
+  // Walking right, standing, in the air, walking left, standing, in the air, then standing until
+  // he turns to face the player: player_animate ($2E82) chooses each frame from $1227 (moved this
+  // frame), $122D (the way he faces) and $122A (no ground under him). He walks a pixel a frame, as
+  // player_control moves him.
+  function walk() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    m[0x1281] = 0x30; m[0x1282] = 0x80;
+    const PLAN = [['R', 72], ['S', 30], ['J', 24], ['L', 72], ['S', 30], ['J', 24], ['S', 120]];
+    const len = PLAN.reduce((a, p) => a + p[1], 0);
+    let s = 'S';
+    return { m, frame() {
+      let t = f++ % len, k = 0;
+      while (t >= PLAN[k][1]) t -= PLAN[k++][1];
+      s = PLAN[k][0];
+      if (s === 'R') m[0x122D] = 0; else if (s === 'L') m[0x122D] = 1;
+      m[0x1227] = s === 'R' || s === 'L' ? 1 : 0;
+      m[0x122A] = s === 'J' ? 1 : 0;
+      if (s === 'R') m[0x1281]++; else if (s === 'L') m[0x1281]--;
+      W.call(0x1CE1); W.call(0x2E82); W.call(0x2A14);
+    }, sprites: () => player(m), note: () => ({ R: 'walking right', L: 'walking left', S: 'standing', J: 'in the air' })[s] };
+  }
+  // A weapon thrown at each of its three grades in turn: weapon_setup ($3102) gives the shots their
+  // path and the grade's colour, weapon_icon_draw ($B464) puts the weapon's picture into the shot
+  // sprites, and player_fire ($31CA) and player_animate ($2E82), which moves the shots
+  // (shots_move), run each frame. The button is held six frames, short of a charge.
+  function throwing(w) {
+    const W = machine(), m = W.m;
+    let f = 0, grade = 0, wait = 0;
+    m[0x1281] = 0x40; m[0x1282] = 0x80; m[0x122D] = 0; m[0x1241] = 0;
+    const arm = () => { m[0xB419 + w] = grade; W.call(0x3102, { x: w, y: w }); W.call(0xB464, { y: w }); f = 0; };
+    arm();
+    return { m, grade: () => grade, frame() {
+      m[0x1280] = f >= 2 && f < 8 ? 0 : FIRE; m[0x1227] = 0;
+      W.call(0x1CE1); W.call(0x31CA); W.call(0x2E82); W.call(0x2A14);
+      f++;
+      if (f > 10 && m[0x128D] === 0x0F && m[0x128F] === 0x0F && ++wait > 20) { wait = 0; grade = (grade + 1) % 3; arm(); }
+    }, sprites: () => player(m) };
+  }
+  // The flame: the button held 45 frames, so the charge fills (36) and Clyde flashes through
+  // charge_colours, then let go; flame_draw places both shot sprites at his mouth for 24 frames.
+  // He faces right, then left.
+  function flame() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    m[0x1281] = 0x80; m[0x1282] = 0x80;
+    return { m, frame() {
+      const t = f % 130;
+      if (t === 0) m[0x122D] = (f / 130) & 1;
+      m[0x1280] = t >= 2 && t < 47 ? 0 : FIRE; m[0x1227] = 0;
+      W.call(0x1CE1); W.call(0x31CA); W.call(0x2E82); W.call(0x2A14);
+      f++;
+    }, sprites: () => player(m) };
+  }
+  // Clyde touched: player_hurt ($3CDD), then player_dead ($ACB6) each frame. The leap rises and
+  // falls, and with nothing under him he falls to death_floor; the bubble says GULP! when he has
+  // fallen in water ($1271), which the scene sets every other time, and otherwise EEEK! or OUCH!
+  // by the frame counter. He lies still while $1288 counts down from $E6, as stage_main_setup sets it.
+  function dying() {
+    const W = machine(), m = W.m;
+    let n = 0, rest = 0;
+    const start = () => {
+      m[0x1281] = 0x80; m[0x1282] = 0x98; m[0x1284] = 2; m[0x128A] = 10; m[0x1286] = 7;
+      m[0x24F0] = 0xFF; m[0x1271] = n & 1; m[0x126C] = 0; m[0x12A0] = 0; m[0x129F] = 0;
+      m[0x1288] = 0xE6; m[0x1214] = 0; m[0x128D] = 0x0F; m[0x128F] = 0x0F; m[0x1254] = 0;
+      W.call(0x3CDD); n++;
+    };
+    start();
+    return { m, frame() {
+      if (rest) { if (--rest === 0) start(); return; }
+      W.call(0x1CE1);
+      if (m[0x1214]) W.call(0xACB6);
+      if (m[0x1288] === 0) rest = 25;
+    }, sprites: () => player(m) };
+  }
+  // The weapons tablet with all eight weapons owned, at grades A, B, C, A...: down and fire opens
+  // it, and tablet_open ($2B3D) swaps its eleven shapes into blocks $54-$5E a frame at a time;
+  // with fire held, a push left or right turns it (weapons_tablet, $1E0E) and
+  // tablet_icon_colours ($B3C0) cycles the icons every third frame; letting go of fire picks
+  // the middle weapon and tablet_close ($1F83) swaps the shapes back. Its sprites are off ($24AC)
+  // while the shapes are swapped, as player_control and weapons_tablet turn them off.
+  function tablet() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    for (let k = 0; k < 8; k++) { m[0x2592 + k] = 0x57 + k; m[0xB419 + k] = k % 3; }
+    m[0x259A] = 0xFF; m[0x12A6] = 8;
+    W.call(0xC8D8, { x: 0 });
+    const open = () => { W.call(0x1DF7); m[0x124A] = 1; m[0x124C] = 0; m[0x24AC] = 0; };
+    let fire = false, left = false, right = false;
+    open();
+    return { m, frame() {
+      const t = f % 420;
+      if (t === 0 && f) open();
+      fire = t < 330; left = t > 40 && t < 160 && t % 40 > 20 && t % 40 < 26;
+      right = t >= 180 && t < 320 && t % 40 > 20 && t % 40 < 26;
+      W.stick(0xFF & ~(fire ? 0x10 : 0) & ~(left ? 4 : 0) & ~(right ? 8 : 0));
+      W.call(0x1CE1);
+      if (m[0x124C]) W.call(0x1F83);
+      else if (m[0x124A] && !(m[0x124A] & 0x80)) W.call(0x2B3D);
+      else if (m[0x124A] & 0x80) { W.call(0x1E0E); if (--m[0x1252] & 0x80) { m[0x1252] = 2; W.call(0xB3C0); } }
+      f++;
+    }, note() {
+      if (!m[0x124A]) return 'closed';
+      if (m[0x124C]) return 'closing';
+      if (!(m[0x124A] & 0x80)) return 'opening';
+      return left ? 'pushed left' : right ? 'pushed right' : 'fire held';
+    }, sprites() {
+      if (!m[0x124A]) return [];
+      const out = [];
+      for (let k = 0; k < 8; k++) if (m[0x24AC] >> k & 1) out.push({ ptr: m[0x2582 + k], x: m[0x2572 + 2 * k], y: m[0x2573 + 2 * k], colour: m[0x258A + k] & 15, mc: k < 2 || k > 4, wide: 0 });
+      return out;
+    } };
+  }
+  return { scenes: { walk, throwing, flame, dying, tablet } };
+}
+// end of cr-clyde
+</script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const HAS = typeof C64 !== 'undefined';
+const NEED = 'This is drawn from the game\'s bytes by the site\'s shared script, ../../lib/c64.js, which the built site serves.';
+function missing(el, what) {
+  const p = document.createElement('p'); p.className = 'cr-miss'; p.textContent = what || NEED; el.replaceWith(p);
+}
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+             '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown',
+               'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+
+// ---- 01 Clyde
+// Each scene of the cr-clyde block on a tile of its own, over the engine's listing with level
+// 1.1's laid over it. A dry run of each scene finds the box its sprites keep to, so a tile is as
+// big as what moves in it.
+(async () => {
+  const host = $('cl-tiles');
+  if (!HAS || typeof C64Cpu === 'undefined') return missing(host);
+  let E, L1;
+  try {
+    [E, L1] = await Promise.all([C64.load('parts/engine/listing.json'), C64.load('parts/level-1-1/listing.json')]);
+  } catch (e) { return missing(host, 'The listings did not load, so Clyde cannot be drawn: ' + e.message); }
+  const base = E.ram.slice();
+  for (let a = 0; a < 0x10000; a++) if (L1.has[a]) base[a] = L1.ram[a];
+  const C = crClyde(base, C64Cpu.CPU);
+  const WEAPONS = ['Droopy', 'Super Droopy', 'Fireball', 'Fall Up', 'Wiggler', 'Curly Wurly', 'Flamer', 'Scatter Ball'];
+  const SKY = CREATURES.worlds[0].bg, S = 2, PAD = 4;
+  // the play area's sprite multicolours ($D025, $D026), and the tablet's, which its band sets
+  const PLAY = [0x0B, 0x07], PANEL = [0x0B, 0x0F];
+
+  function sprite(ctx, m, q, x, y, mcs) {
+    const d = m.subarray(0x4000 + q.ptr * 64, 0x4000 + q.ptr * 64 + 63), xw = q.wide ? 2 : 1;
+    for (let r = 0; r < 21; r++) for (let bx = 0; bx < 3; bx++) {
+      const v = d[r * 3 + bx];
+      if (!v) continue;
+      if (q.mc) {
+        for (let p = 0; p < 4; p++) {
+          const c = v >> (6 - 2 * p) & 3;
+          if (!c) continue;
+          ctx.fillStyle = PAL[c === 1 ? mcs[0] : c === 2 ? q.colour : mcs[1]];
+          ctx.fillRect(x + (bx * 8 + 2 * p) * xw * S, y + r * S, 2 * xw * S, S);
+        }
+      } else {
+        ctx.fillStyle = PAL[q.colour];
+        for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) ctx.fillRect(x + (bx * 8 + p) * xw * S, y + r * S, xw * S, S);
+      }
+    }
+  }
+  function boxOf(make, n) {
+    const sc = make();
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (let f = 0; f < n; f++) {
+      sc.frame();
+      for (const q of sc.sprites()) {
+        x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y);
+        x1 = Math.max(x1, q.x + (q.wide ? 48 : 24)); y1 = Math.max(y1, q.y + 21);
+      }
+    }
+    return { x: x0 - PAD, y: y0 - PAD, w: x1 - x0 + 2 * PAD, h: y1 - y0 + 2 * PAD };
+  }
+  const tiles = [];
+  function group(title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3></h3><p>' + text + '</p><div class="gx-tiles"></div>';
+    g.querySelector('h3').textContent = title;
+    host.appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(into, make, n, opt) {
+    const box = opt.box || boxOf(make, n), sc = make();
+    const t = document.createElement('figure'), cv = document.createElement('canvas'), sp = document.createElement('figcaption');
+    t.className = 'gx-tile'; cv.width = box.w * S; cv.height = box.h * S;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', opt.alt);
+    t.append(cv, sp); into.appendChild(t);
+    const T = { sc, box, cv, ctx: cv.getContext('2d'), sp, label: opt.label, bg: opt.bg, mcs: opt.mcs, last: '', trail: opt.trail ? [] : null, k: -1 };
+    tiles.push(T);
+    return T;
+  }
+  function draw(T) {
+    const { ctx, box, sc } = T;
+    ctx.fillStyle = PAL[T.bg]; ctx.fillRect(0, 0, T.cv.width, T.cv.height);
+    if (T.trail) {
+      ctx.fillStyle = 'rgba(255,255,255,.45)';
+      for (const [x, y] of T.trail) ctx.fillRect((x - box.x) * S, (y - box.y) * S, S, S);
+    }
+    const qs = sc.sprites();
+    for (let i = qs.length - 1; i >= 0; i--) sprite(ctx, sc.m, qs[i], (qs[i].x - box.x) * S, (qs[i].y - box.y) * S, T.mcs);
+    const l = T.label(sc);
+    if (l !== T.last) { T.sp.textContent = l; T.last = l; }
+  }
+
+  const him = group('Clyde', 'Walking, he takes a new frame every fourth frame; in the air he has one frame, and left standing long enough he turns to face the player. Fire held charges the flame, and a full charge makes him flash; let go, both shot sprites become the flame for 24 frames. Touched, he leaps, falls and says so in a bubble made of the two shot sprites, widened.');
+  tile(him, C.scenes.walk, 400, { bg: SKY, mcs: PLAY, alt: 'Clyde walking right and left, in the air and standing', label: (s) => s.note() });
+  tile(him, C.scenes.flame, 260, { bg: SKY, mcs: PLAY, alt: 'Clyde charging and breathing the flame, facing right and then left', label: () => 'fire held, then let go' });
+  tile(him, C.scenes.dying, 600, { bg: SKY, mcs: PLAY, alt: 'Clyde leaping, falling and lying still, with his last word in a bubble', label: () => 'touched' });
+  // the shots share one box, the room every weapon's path takes, so their tiles line up
+  const shotBox = WEAPONS.map((_, w) => boxOf(() => C.scenes.throwing(w), 700)).reduce((a, b) => {
+    const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+    return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
+  });
+  const shots = group('His shots', 'Each weapon gives its shots a path of their own, a script for x and one for y, and its grade gives them their colour. Here each weapon is thrown at grades A, B and C in turn, and its shots leave a faint trail of the way they went.');
+  shots.classList.add('gx-even');
+  WEAPONS.forEach((name, w) => tile(shots, () => C.scenes.throwing(w), 700, { box: shotBox, bg: SKY, mcs: PLAY,
+    alt: 'Clyde throwing ' + name + ' at each grade', trail: true, label: (s) => name + ', grade ' + 'ABC'[s.grade()] }));
+  const tab = group('The weapons tablet', 'Down and fire opens it in the score panel, as eight sprites of its own, once the engine has swapped its shapes in a frame at a time. With fire held, left or right turns it: the three icons slide two pixels a frame, and each icon\'s colour cycles by its grade. Letting go takes the weapon in the middle. Here all eight weapons are owned, at grades A, B, C, A, B, C, A and B.');
+  tile(tab, C.scenes.tablet, 420, { bg: 0, mcs: PANEL, alt: 'The weapons tablet opening, turning left and right, and closing', label: (s) => s.note() });
+
+  let run = true, seen = true, last = 0, owed = 0;
+  // a shot's trail: the middle of its sprite each frame, since the weapon last changed grade
+  const step = () => {
+    for (const T of tiles) {
+      T.sc.frame();
+      if (!T.trail) continue;
+      if (T.sc.grade() !== T.k) { T.k = T.sc.grade(); T.trail.length = 0; }
+      for (const q of T.sc.sprites().slice(1)) T.trail.push([q.x + 12, q.y + 10]);
+    }
+  };
+  const all = () => { for (const T of tiles) draw(T); };
+  all();
+  $('cl-run').onclick = () => { run = !run; $('cl-run').textContent = run ? 'Pause' : 'Play'; };
+  $('cl-step').onclick = () => { run = false; $('cl-run').textContent = 'Play'; step(); all(); };
+  if ('IntersectionObserver' in window)
+    new IntersectionObserver((es) => { seen = es[0].isIntersecting; }).observe(host.closest('.plate'));
+  // 50 frames a second, as the PAL machine runs, whatever the display's rate
+  const loop = (t) => {
+    const dt = last ? Math.min(t - last, 100) : 0; last = t;
+    if (seen && run) {
+      owed += dt / 20;
+      let n = 0;
+      while (owed >= 1 && n++ < 5) { step(); owed -= 1; }
+      if (n) all();
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();
+
+// ---- 02 the creatures
+// The sprites' two shared colours, $D025 and $D026, are dark grey and yellow in every level.
+const MC1 = 0x0B, MC2 = 0x07;
+const worlds = CREATURES.worlds.map((W) => {
+  const m = new Uint8Array(0x10000), spr = new Map();
+  for (const [a, h] of W.mem) for (let i = 0; i < h.length / 2; i++) m[a + i] = parseInt(h.substr(2 * i, 2), 16);
+  for (const k in W.spr) spr.set(parseInt(k, 16), Uint8Array.from(W.spr[k].match(/../g), (x) => parseInt(x, 16)));
+  return { W, m, mem: (a) => m[a & 0xFFFF], spr };
+});
+
+// One sprite at (x, y), s canvas pixels a C64 pixel: multicolour pixels are two wide, and a tall
+// sprite (the engine's double height) has every row twice.
+function paint(ctx, data, x, y, s, colour, mc, tall) {
+  const hy = tall ? 2 : 1;
+  for (let r = 0; r < 21; r++) for (let bx = 0; bx < 3; bx++) {
+    const v = data[r * 3 + bx];
+    if (!v) continue;
+    if (mc) {
+      for (let p = 0; p < 4; p++) {
+        const q = v >> (6 - 2 * p) & 3;
+        if (!q) continue;
+        ctx.fillStyle = PAL[q === 1 ? MC1 : q === 2 ? colour : MC2];
+        ctx.fillRect(x + (bx * 8 + 2 * p) * s, y + r * hy * s, 2 * s, hy * s);
+      }
+    } else {
+      ctx.fillStyle = PAL[colour];
+      for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) ctx.fillRect(x + (bx * 8 + p) * s, y + r * hy * s, s, hy * s);
+    }
+  }
+}
+
+// A creature of one or more sprites, each stepped by crCreature; once every sprite has removed
+// itself (the deaths end that way) it waits 30 frames and starts again. One that moves only when
+// shot is shot every 25 frames. It stands on the world's background colour, or on black where a
+// sprite of one colour is that colour.
+function makeCreature(wd, parts) {
+  const xs = parts.map((p) => p.dx || 0), ys = parts.map((p) => p.dy || 0);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys);
+  const w = Math.max(...parts.map((p) => (p.dx || 0) + 24)) - x0;
+  const h = Math.max(...parts.map((p) => (p.dy || 0) + (p.tall ? 42 : 21))) - y0;
+  const bg = parts.some((p) => !p.mc && !p.cycle && p.colour === wd.W.bg) ? 0 : wd.W.bg;
+  const o = { parts, w, h, x0, y0, bg, run: [], wait: 0, n: 0 };
+  o.start = () => { o.run = parts.map((p, i) => crCreature(p, wd.mem, i & 1, i & 1)); o.wait = 0; o.n = 0; };
+  o.tick = () => {
+    if (o.run.every((s) => s.gone)) { if (++o.wait >= 30) o.start(); return; }
+    if (++o.n % 25 === 0) o.run.forEach((s, i) => { if (parts[i].onhit) s.hit(); });
+    o.run.forEach((s) => s.tick());
+  };
+  o.draw = (cv, s, pad) => {
+    const sig = o.run.map((r) => r.gone ? '-' : r.frame + ':' + r.colour).join();
+    if (sig === cv.sig) return;               // each canvas keeps what it last drew: the selected
+    cv.sig = sig;                             // creature is drawn in its cell and in the detail
+    const W = (o.w + 2 * pad) * s, H = (o.h + 2 * pad) * s;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = PAL[o.bg]; ctx.fillRect(0, 0, W, H);
+    for (let i = parts.length - 1; i >= 0; i--) {              // the first sprite in front, as the lower sprite number is
+      const p = parts[i], r = o.run[i], d = wd.spr.get(r.frame);
+      if (r.gone || !d) continue;
+      paint(ctx, d, (pad + (p.dx || 0) - o.x0) * s, (pad + (p.dy || 0) - o.y0) * s, s, r.colour, p.mc, p.tall);
+    }
+  };
+  o.start();
+  return o;
+}
+
+// The bytes of a script in order, each marked as a frame (f), a loop and its distance (l) or
+// the end (e): what animate_objects reads at each place.
+function scriptOf(wd, p) {
+  const out = [];
+  for (let i = 0; i < 256;) {
+    const b = wd.mem(p.at + i);
+    if (b === 0 || b === 1) { out.push({ i, b, k: 'e' }); break; }
+    if (p.t !== 6 && (b & 0xC0) === 0x40) { out.push({ i, b, k: 'l' }, { i: i + 1, b: wd.mem(p.at + i + 1), k: 'l' }); i += 2; continue; }
+    out.push({ i, b, k: 'f' }); i++;
+  }
+  return out;
+}
+
+const gallery = { w: 0, cells: [], sel: 0, pick: 0, detail: null, rate: 1 };
+const every = (n) => n === 0 ? 'every other frame' : `every ${2 * (n + 1)} frames`;
+
+function showWorld(w) {
+  gallery.w = w;
+  const wd = worlds[w], grid = $('cr-grid');
+  $('cr-wsel').value = w;
+  grid.textContent = '';
+  gallery.cells = wd.W.cells.map((c, ci) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'cr-cell';
+    b.innerHTML = '<canvas></canvas><span class="cr-nm"></span>';
+    b.querySelector('.cr-nm').textContent = c.name;
+    b.onclick = () => select(ci);
+    grid.appendChild(b);
+    return { c, b, cv: b.querySelector('canvas'), cr: makeCreature(wd, c.parts) };
+  });
+  document.querySelectorAll('#cr-wpick .step').forEach((a) => a.classList.toggle('off', w + Number(a.dataset.d) < 0 || w + Number(a.dataset.d) >= worlds.length));
+  select(0);
+}
+
+function select(ci, pick = 0) {
+  const wd = worlds[gallery.w], cell = gallery.cells[ci], c = cell.c;
+  gallery.sel = ci; gallery.pick = pick;
+  gallery.cells.forEach((x, i) => x.b.classList.toggle('on', i === ci));
+  const types = c.parts.concat(c.variants || []);
+  const p = types[pick], whole = pick < c.parts.length;
+  const cr = whole ? cell.cr : makeCreature(wd, [Object.assign({}, p, { dx: 0, dy: 0 })]);
+  const part = whole ? pick : 0;
+  const D = $('cr-detail'), lv = wd.W.levels, src = 'source-' + wd.W.part + '.html#';
+  const count = p.n[0] || p.n[1]
+    ? `Spawn records: ${p.n[0]} in level ${lv[0]}, ${p.n[1]} in level ${lv[1]}.`
+    : 'No spawn record starts as this type: creatures turn into it when they die.';
+  const script = scriptOf(wd, whole ? c.parts[part] : p), end = script[script.length - 1];
+  const how = (p.onhit ? ' In the game its script moves on only when Clyde shoots it, a turn a shot: here it is shot twice a second.' : '')
+    + (end && end.b === 1 ? ' The script ends with 1, which removes the creature.' : '');
+  const colour = p.cycle
+    ? `colours from the list at <a href="${src}${hex(p.cycle, 4).slice(1)}"><code>${hex(p.cycle)}</code></a>, a step ${every(p.cspeed)}`
+    : `${NAMES[p.colour]}`;
+  D.innerHTML = `<canvas class="cr-big" role="img"></canvas><div>
+    <h3></h3><p class="cr-facts cr-note"></p>
+    <p class="cr-facts">Type ${p.t}: the script at <a href="${src}${hex(p.at, 4).slice(1)}"><code>${hex(p.at)}</code></a> in the level ${lv[0]} file, a byte ${every(p.speed)}; ${colour}${p.tall ? '; double height' : ''}${p.mc ? '' : '; one colour'}.${how} ${count}</p>
+    <div class="cr-strip"></div><div class="cr-bytes"></div>
+    ${types.length > 1 ? '<div class="cr-row"></div>' : ''}</div>`;
+  D.querySelector('h3').textContent = c.name;
+  D.querySelector('.cr-note').textContent = c.note || '';
+  D.querySelector('canvas').setAttribute('aria-label', c.name + ', animated as the game animates it');
+  if (types.length > 1) {
+    const row = D.querySelector('.cr-row');
+    row.innerHTML = '<span>' + (c.variants && c.variants.length ? 'Its types' : 'Its sprites') + '</span>';
+    types.forEach((q, k) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cr-btn' + (k === pick ? ' on' : '');
+      b.textContent = 'type ' + q.t; b.onclick = () => select(ci, k);
+      row.appendChild(b);
+    });
+  }
+  const bytes = D.querySelector('.cr-bytes');
+  bytes.innerHTML = script.map((x) => `<span class="${x.k}" data-i="${x.i}">${x.b.toString(16).toUpperCase().padStart(2, '0')}</span>`).join(' ');
+  const frames = [...new Set(script.filter((x) => x.k === 'f').map((x) => x.b))];
+  const strip = D.querySelector('.cr-strip');
+  for (const f of frames) {
+    const cv = document.createElement('canvas'); cv.dataset.f = f; cv.title = 'frame ' + hex(f, 2);
+    cv.width = 48; cv.height = (p.tall ? 84 : 42);
+    const ctx = cv.getContext('2d'); ctx.fillStyle = PAL[cr.bg]; ctx.fillRect(0, 0, cv.width, cv.height);
+    const d = wd.spr.get(f), q = whole ? c.parts[part] : p;
+    if (d) paint(ctx, d, 0, 0, 2, q.cycle ? wd.mem(q.cycle) & 15 : q.colour, q.mc, q.tall);
+    strip.appendChild(cv);
+  }
+  gallery.detail = { cr, part, whole, cv: D.querySelector('canvas'), bytes, strip, at: -1 };
+  if (!whole) cr.start();
+  drawDetail(true);
+}
+
+function drawDetail(force) {
+  const g = gallery.detail;
+  if (!g) return;
+  if (force) g.cv.sig = '';
+  const big = Math.min(4, Math.floor(300 / (g.cr.w + 8)));
+  g.cr.draw(g.cv, big, 4);
+  const r = g.cr.run[g.part], at = r.gone ? -1 : r.pos;
+  if (at === g.at && !force) return;
+  g.at = at;
+  g.bytes.querySelectorAll('.now').forEach((e) => e.classList.remove('now'));
+  const b = g.bytes.querySelector(`[data-i="${at}"]`); if (b) b.classList.add('now');
+  g.strip.querySelectorAll('canvas').forEach((e) => e.classList.toggle('now', !r.gone && Number(e.dataset.f) === r.frame));
+}
+
+function tick() {
+  for (const x of gallery.cells) x.cr.tick();
+  if (gallery.detail && !gallery.detail.whole) gallery.detail.cr.tick();
+}
+function draw() {
+  for (const x of gallery.cells) x.cr.draw(x.cv, 2, 3);
+  drawDetail(false);
+}
+
+{
+  const sel = $('cr-wsel');
+  worlds.forEach((wd, i) => sel.add(new Option(`${wd.W.name}: levels ${wd.W.levels.join(' and ')}`, i)));
+  sel.onchange = () => showWorld(Number(sel.value));
+  document.querySelectorAll('#cr-wpick .step').forEach((a) => {
+    a.onclick = () => { const w = gallery.w + Number(a.dataset.d); if (w >= 0 && w < worlds.length) showWorld(w); };
+  });
+  const speeds = document.querySelectorAll('[data-s]');
+  speeds.forEach((b) => b.onclick = () => {
+    gallery.rate = Number(b.dataset.s);
+    speeds.forEach((x) => x.classList.toggle('on', x === b));
+  });
+  $('cr-step').onclick = () => {
+    gallery.rate = 0; speeds.forEach((x) => x.classList.toggle('on', x.dataset.s === '0'));
+    tick(); draw();
+  };
+  showWorld(0);
+  // 50 frames a second, as the PAL machine runs, whatever the display's rate
+  let last = 0, owed = 0, seen = true;
+  if ('IntersectionObserver' in window)
+    new IntersectionObserver((es) => { seen = es[0].isIntersecting; }).observe($('cr-grid').closest('.plate'));
+  const loop = (t) => {
+    const dt = last ? Math.min(t - last, 100) : 0; last = t;
+    if (seen && gallery.rate) {
+      owed += dt * gallery.rate / 20;
+      let n = 0;
+      while (owed >= 1 && n++ < 5) { tick(); owed -= 1; }
+      if (n) draw();
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+</script>

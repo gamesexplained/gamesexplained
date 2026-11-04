@@ -140,6 +140,21 @@ registers):
   near enough has a head and three body sprites like the player's
   (`rival_near`, `rival_close`, `rival_middle`); far ones are one or two
   sprites (`rival_pictures`).
+- Band 0 holds the player's kart: the head (sprite 0, orange) at Y `$CE`
+  and three body sprites at X `$96`, `$AE`, `$C6`, Y `$E3`, in the kart's
+  colour, one of `kart_colour_choices`' first four (red, purple, green,
+  blue: `AND #3` at `$0EBA` leaves out the fifth, light blue). Bands 1 to
+  3 are the podium's finishers, with `$8A`, `$56`, `$8C` for the body
+  where the player's straight kart has `$8A`, `$8B`, `$8C`; at the start,
+  band 3 is the START sign (`$69`-`$6C`, red) and band 2 the three lights
+  (`$6D`-`$6F`), unlit in light red, orange and green. `start_lights`
+  waits 100 frames, lights the first red and the second yellow, waits
+  100, puts the second out and lights the third light green, waits 50 and
+  switches both bands off.
+- Several drivers share a head from behind (`head_behind`): `$70` for
+  drivers 1, 10 and 12, `$44` for 8, 9 and 11; each has a face from the
+  front of their own (`$8D`-`$98`) and a head looking back (`$99`-`$A0`).
+- Sprite shapes `$A1` and `$A2` are in no table or routine.
 - Steering pictures: five frames (`kart_body_frames`), each in two sets
   that alternate every eight race frames for the wheels. A spin runs
   through eight frames (`spin_kart_1`-`_3`); the head turns to the front

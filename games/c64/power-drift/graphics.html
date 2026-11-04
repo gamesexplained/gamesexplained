@@ -1,0 +1,481 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Drift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.pd-shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.pd-shots figure{margin:0}
+.pd-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.pd-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.pd-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.pd-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.pd-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.pd-sel{font-family:var(--fm);font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.pd-bar label{font-family:var(--fm);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
+.pd-bar input[type=range]{width:200px;max-width:50vw}
+.pd-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.pd-tab{border-collapse:collapse;width:100%;font-size:14px;margin-top:14px}
+.pd-tab th,.pd-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.pd-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.pd-tab td.n{font-family:var(--fm);text-align:right}
+.pd-tab th.n{text-align:right}
+.pd-scroll{overflow-x:auto}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-sheet{width:auto;max-width:100%;background:none;border-radius:2px}
+.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-tile.gx-faint canvas{opacity:.45}
+.gx-group .gx-bar{margin:0 0 10px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Activision</p>
+  <h1>Power Drift</h1>
+  <p class="sub">Every kart is three body sprites and a head, the player's and the near rivals' alike, and a rival far up the road is one sprite or two. The faces along the top are characters, and so is everything beside the road, cut out of a sheet of them with a picture for each of 16 distances.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every kart, head and light, put together as the game puts them</h2>
+  <p class="lede">The karts here are built by the game's own routines, run on the kit's 6502 in this page over the listing's memory, and drawn where the sprite tables place them. They move at the game's own rate: a race frame is about three video frames.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <span class="gx-lab"><label for="gx-driver">Driver</label></span>
+      <select id="gx-driver" class="gx-sel"></select>
+      <span class="gx-lab"><label for="gx-colour">Kart</label></span>
+      <select id="gx-colour" class="gx-sel"></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The karts are put together by the game's own code in the built site.</p>
+    <div class="gx-group">
+      <h3>The player's kart</h3>
+      <p>The kart is band 0 of the sprite table: the driver's head from behind, orange, and three body sprites side by side in the kart's colour. The stick turns it a frame every fourth race frame, from hard left to hard right, and with the stick at rest it turns back a frame every other race frame. Every eight video frames the body takes its second set of pictures, so the wheels turn; the straight kart has only one.</p>
+      <div class="gx-tiles" id="gx-kart"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Spinning out, and overtaking</h3>
+      <p>A spin steps through eight frames, one every other race frame, and the kart turns right round: for five of them the head is the driver's face from the front. When the player overtakes, the driver turns to look back.</p>
+      <div class="gx-tiles" id="gx-spin"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The rivals</h3>
+      <p>A rival has a picture for each of its 32 distances, from <code>rival_pictures</code>, and a routine for each pair of distances adds its other sprites: a whole kart with a head up to distance 5, a second sprite up to 11, nothing after that. Up close a rival is the player's own kart with its driver's head. Each picture here is a different rival, in its driver's colour.</p>
+      <div class="gx-tiles" id="gx-rivals"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The start</h3>
+      <p>Before the race, bands 3 and 2 of the sprite table hold the START sign and three lights, unlit. After two seconds the first lights red and the second yellow; two seconds later the second goes out and the third lights green, and a second after that both bands are switched off.</p>
+      <div class="gx-tiles" id="gx-start"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The podium</h3>
+      <p>Bands 1 to 3 take the finishers. Each is a kart in its driver's colour, its middle sprite <code>$56</code> where the player's kart has <code>$8B</code>, with the driver's face from the front, and <code>place_finisher</code> writes the place, 1st, 2nd or 3rd, over the top five lines of that face's sprite. The first to finish goes at the top.</p>
+      <div class="gx-tiles" id="gx-podium"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Shapes nothing shows</h3>
+      <p>Shapes <code>$40</code> to <code>$A2</code> are 64 bytes each from <code>$D000</code> in the video bank at <code>$C000</code>, and every sprite is multicolour, with black and light grey shared. Those drawn above are all the game uses; these are in no table or routine the game reads. Blocks <code>$80</code>-<code>$82</code> are left out: they hold rows of the panel's screen, not shapes.</p>
+      <div class="gx-tiles" id="gx-unused"></div>
+    </div>
+    <p class="cap">The player's kart is <code>set_kart_frame</code> (<code>$1A40</code>) run on the 6502, from <code>kart_body_frames</code> (<code>$1A68</code>) and <code>kart_head_x</code> (<code>$1A72</code>), with its head from <code>head_behind</code> (<code>$1779</code>); the spin from <code>spin_kart_1</code> to <code>spin_head_tables</code> (<code>$1749</code>-<code>$1778</code>), as <code>kart_spin</code> reads them; overtaking from <code>head_looking_back</code> (<code>$1785</code>). A rival's records are made by <code>place_rivals</code>' routine for its distance, from <code>rival_picture_routines</code> (<code>$3B63</code>), run on the 6502, in the colour <code>driver_kart_colours</code> (<code>$3722</code>) gives. The start is <code>start_band3</code> and <code>start_band2</code> (<code>$17F3</code>, <code>$1804</code>) with the colours and waits <code>start_lights</code> (<code>$179D</code>) writes. The podium is <code>place_finisher</code> (<code>$1994</code>) run on the 6502 for three finishers. The shared colours are <code>setup_video</code>'s.</p>
+  </div>
+</section>
+
+<section id="faces">
+  <p class="fig">02 · The faces</p>
+  <h2 class="t">Twelve drivers, two faces each, in characters</h2>
+  <p class="lede">The faces on the select screen and along the race's panel are blocks of three by three characters from the panel's character set at <code>$F000</code>. The chequered marker is a sprite behind them.</p>
+  <div class="plate">
+    <canvas class="gx-sheet" id="gx-faces" width="1" height="1" aria-label="The twelve faces with the select screen's cursor"></canvas>
+    <canvas class="gx-sheet" id="gx-faces2" width="1" height="1" aria-label="The twelve second faces" style="margin-top:10px"></canvas>
+    <p class="cap">Top: the faces from <code>face_cells</code> (<code>$129D</code>), with the select screen's cursor, sprite 7 at pointer <code>$83</code>, moving to the next face every 21 frames as <code>driver_cursor_loop</code> moves it. Bottom: the second faces from <code>face2_cells</code> (<code>$1321</code>). Drawn in the panel's colours, the multicolours light grey and orange that <code>race_irq_top</code> sets, on the sky of course B, stage 1.</p>
+  </div>
+  <p>The marker sits behind the characters, so it shows only where a face is blank or light grey. In a race the same sprite marks the player's own face on the panel. Every sixteenth race frame <code>panel_faces_tick</code> gives a face from 5th place to 12th its second picture and puts the last one back, so the faces along the panel change their expressions one at a time.</p>
+</section>
+
+<section id="roadside">
+  <p class="fig">03 · The roadside</p>
+  <h2 class="t">Every roadside object, coming nearer</h2>
+  <p class="lede">Each of the 24 kinds of object has a picture for each of 16 distances, a block of characters cut out of the tile sheet. Here each comes from distance 15 to 0, a step every race frame, as fast as the kart's top speed brings them.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-road-run">Pause</button>
+      <span class="gx-stat" id="gx-road-stat"></span>
+    </div>
+    <div class="gx-tiles" id="gx-roadside"></div>
+    <p class="cap">Each picture is drawn from <code>scenery_pictures</code> (<code>$3E0B</code>): for each kind, 16 records of a width and a height in characters and where the top-left character sits in the tile sheet (<code>$6E00</code>-<code>$B7F5</code>), whose rows are 256 bytes apart. The characters are the race set's, with the block of 175 the stage loads before the object first appears, in the object's own colour (<code>scenery_colours</code>, <code>$3E3D</code>). A character 0 is left out, as <code>draw_tiles</code> leaves it out. The colours are those of course B, stage 1.</p>
+  </div>
+  <p>A step is the track moving on by 32 of the position's units, so at speed level 32, high gear's top, it comes once a race frame, and at 16 every other one. Each of the four scenery slots comes a distance nearer with each step, and a slot that passes the kart takes the next record of the stage's scenery list (<code>scenery_tick</code>). How the view is put together from these pictures, the road and the horizon is on <a href="index.html#view">How it works</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// Graphics tab. The player's kart is set_kart_frame ($1A40) and the podium place_finisher
+// ($1994), and a rival's other records the routine rival_picture_routines ($3B63) names for its
+// distance, each run on the kit's 6502 (C64Cpu) over the listing's memory, one memory for each
+// tile; the sprites are then drawn where the band table ($513D) or the records ($4A-$7D) put
+// them. The spin, the heads and the start are read from their tables as kart_spin and
+// start_lights read them. The faces are the panel's characters and the roadside draw_tiles'
+// cut-outs, drawn by the site's C64 library.
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const wait = $('gx-wait');
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.'; return; }
+const P = C64.PAL;
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+const code = (n, w) => '<code>' + hex(n, w) + '</code>';
+const S = 2, FRAME_MS = 20, RACE = 3;              // a race frame is about three video frames
+const SMC1 = 0, SMC2 = 15;                         // $D025 black, $D026 light grey (setup_video)
+const SKY = 6, GROUND = 5, MC1 = 12, MC2 = 0;      // course B, stage 1: $25, $26, $53EA, black
+const PMC1 = 15, PMC2 = 8;                         // the panel's multicolours (race_irq_top)
+let r, running = true, frame = 0, driver = 1, kartColour = 2;
+const w16 = (a) => r[a] | r[a + 1] << 8;
+const shape = (m, p) => m.subarray(0xC000 + 64 * p, 0xC000 + 64 * p + 63);
+const raceFrame = () => Math.floor(frame / RACE);
+
+function machine() {
+  const m = r.slice();
+  const cpu = new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: { read() { return 0; }, write() {} } });
+  return { m, call: (pc, regs) => cpu.call(pc, regs || {}, { maxSteps: 1e5 }) };
+}
+
+const tiles = [];
+function tile(host, w, h, name, info) {
+  const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+  t.className = 'gx-tile'; cv.width = w * S; cv.height = h * S; cv.style.width = w * S + 'px';
+  sp.innerHTML = name + (info ? '<br>' + info : '');
+  t.appendChild(cv); t.appendChild(sp); host.appendChild(t);
+  const o = { t, cv, sp, ctx: cv.getContext('2d'), w, h };
+  tiles.push(o);
+  return o;
+}
+// Sprite records [x, y, pointer, colour] in screen coordinates, drawn from (x0, y0) with sprite
+// 0 in front, as the video chip puts lower sprites over higher ones. Every sprite is multicolour.
+function drawRecs(o, m, recs, x0, y0, bg) {
+  o.ctx.fillStyle = P[bg === undefined ? GROUND : bg]; o.ctx.fillRect(0, 0, o.cv.width, o.cv.height);
+  for (let k = recs.length - 1; k >= 0; k--) {
+    const [x, y, p, c] = recs[k];
+    C64.drawSpriteMC(o.ctx, shape(m, p), (x - x0) * S, (y - y0) * S, S, P[c & 15], P[SMC1], P[SMC2]);
+  }
+}
+// A band of the sprite table at $513D: four sprites, each field four bytes, one per band
+const band = (m, b) => [0, 1, 2, 3].map((k) => [m[0x5141 + 4 * k + b], m[0x5151 + 4 * k + b], m[0x5161 + 4 * k + b], m[0x5171 + 4 * k + b]]);
+
+// ---- the player's kart: set_kart_frame with the steering frame in $53E2 and the frame count in $E5
+const KART_X0 = 0x8A, KART_Y0 = 0xCA;
+function kart(host, k, name) {
+  const M = machine(), o = tile(host, 92, 50, name, 'body ' + code(r[0x1A68 + k]) + (r[0x1A68 + k] !== r[0x1A6D + k] ? ' and ' + code(r[0x1A6D + k]) : ''));
+  o.step = () => {
+    M.m[0x53E2] = k; M.m[0xE5] = frame & 255; M.call(0x1A40);
+    M.m[0x5161] = r[0x1779 + driver];
+    M.m[0x5175] = M.m[0x5179] = M.m[0x517D] = kartColour;
+  };
+  o.draw = () => drawRecs(o, M.m, band(M.m, 0), KART_X0, KART_Y0);
+  o.step(); o.draw();
+}
+// ---- the spin, as kart_spin reads its tables: a frame every other race frame
+function spin(host) {
+  const o = tile(host, 92, 50, 'Spinning out', 'eight frames from <code>spin_kart_1</code>');
+  let k = 0;
+  o.step = () => { k = Math.floor(raceFrame() / 2) & 7; };
+  o.draw = () => {
+    const b = band(r, 0);
+    b[0][0] = r[0x1761 + k]; b[0][2] = r[w16(0x1769 + 2 * k) + driver];
+    for (let s = 1; s <= 3; s++) { b[s][2] = r[0x1749 + 8 * (s - 1) + k]; b[s][3] = kartColour; }
+    drawRecs(o, r, b, KART_X0, KART_Y0);
+  };
+  o.draw();
+}
+function lookBack(host) {
+  const o = tile(host, 92, 50, 'Overtaking', 'the head from <code>head_looking_back</code>');
+  o.draw = () => {
+    const b = band(r, 0);
+    b[0][2] = r[0x1785 + driver];
+    for (let s = 1; s <= 3; s++) b[s][3] = kartColour;
+    drawRecs(o, r, b, KART_X0, KART_Y0);
+  };
+  o.draw();
+}
+
+// ---- a rival at distance d: place_rivals' first record, then the routine for d & $FE
+function rivalRecs(d, drv) {
+  const M = machine(), m = M.m, colour = r[0x3722 + drv];
+  m[0xDE] = 0; m[0x53AC] = drv; m[0x53C3] = colour;
+  m[0x4A] = 0x50; m[0x5A] = 0xB0; m[0x6A] = r[0x3B43 + d]; m[0x7A] = colour; m[0xDF] = 1;
+  M.call(w16(0x3B63 + (d & 0xFE)), { x: 0, y: d & 0xFE });
+  const recs = [];
+  for (let k = 0; k < m[0xDF]; k++) recs.push([2 * m[0x4A + k], m[0x5A + k], m[0x6A + k], m[0x7A + k]]);   // X is kept halved
+  return { m, recs };
+}
+const GROUPS = [];
+function rivals(host) {
+  for (let d = 0; d < 32; d++) {
+    const key = r[0x3B43 + d] + ':' + w16(0x3B63 + (d & 0xFE));
+    if (GROUPS.length && GROUPS[GROUPS.length - 1].key === key) GROUPS[GROUPS.length - 1].last = d;
+    else GROUPS.push({ key, first: d, last: d });
+  }
+  GROUPS.forEach((g, i) => {
+    const o = tile(host, 92, 50, g.first === g.last ? 'Distance ' + g.first : 'Distances ' + g.first + '-' + g.last, '');
+    o.draw = () => {
+      const drv = (driver + 1 + i) % 12, { m, recs } = rivalRecs(g.first, drv);
+      o.sp.innerHTML = o.sp.innerHTML.split('<br>')[0] + '<br>' + recs.length + (recs.length > 1 ? ' sprites' : ' sprite') + ', ' + recs.map((q) => code(q[2])).join(' ');
+      const xs = recs.map((q) => q[0]), ys = recs.map((q) => q[1]);
+      const left = Math.min(...xs), right = Math.max(...xs) + 24, bottom = Math.max(...ys) + 21;
+      drawRecs(o, m, recs, left - Math.floor((92 - (right - left)) / 2), bottom - 47);
+    };
+    o.draw();
+  });
+}
+
+// ---- the start: start_band3 and start_band2, then the colours start_lights writes after its waits
+function start(host) {
+  const o = tile(host, 164, 66, 'The START sign and the lights', 'bands 3 and 2, ' + code(0x69) + '-' + code(0x6F));
+  const rows = (t) => [0, 1, 2, 3].map((k) => [r[t + 1 + k], r[t + 5 + k], r[t + 9 + k], r[t + 13 + k]]).filter((q) => q[0]);  // sprite 3 of band 2 sits at 0
+  const waits = [r[0x17B7], r[0x17C6], r[0x17D5]], TOTAL = waits[0] + waits[1] + waits[2] + 60;
+  o.draw = () => {
+    const t = frame % TOTAL, sign = rows(0x17F3), lights = rows(0x1804);
+    if (t >= waits[0]) { lights[0][3] = r[0x17BC]; lights[1][3] = r[0x17C1]; }
+    if (t >= waits[0] + waits[1]) { lights[1][3] = r[0x17CB]; lights[2][3] = r[0x17D0]; }
+    drawRecs(o, r, t >= waits[0] + waits[1] + waits[2] ? [] : sign.concat(lights), 0x4A, 0x56, SKY);
+  };
+  o.step = () => {};
+  o.draw();
+}
+
+// ---- the podium: start_lights' end ($17D9) sets bands 2 and 3 for finishers, then place_finisher
+// for three finishers, X the rival
+function podium(host) {
+  const o = tile(host, 92, 128, 'Three finishers', 'bands 3, 2 and 1');
+  o.draw = () => {
+    const M = machine(), m = M.m;
+    M.call(0x17D9);
+    m[0x53AA] = 3;
+    for (let i = 0; i < 3; i++) { const drv = (driver + 1 + i) % 12; m[0x53AC + i] = drv; m[0x53C3 + i] = r[0x3722 + drv]; M.call(0x1994, { x: i }); }
+    drawRecs(o, m, band(m, 3).concat(band(m, 2), band(m, 1)), KART_X0, 0x52, SKY);
+  };
+  o.draw();
+}
+
+// ---- the shapes $40-$A2 that nothing above uses
+const USES = new Set(), NOTE = new Map();
+const use = (n) => USES.add(n);
+function unused() {
+  const host = $('gx-unused');
+  for (let n = 0x40; n < 0xA3; n++) if (!USES.has(n) && !NOTE.has(n)) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile gx-faint';
+    cv.width = 28 * S; cv.height = 25 * S; cv.style.width = 28 * S + 'px';
+    sp.innerHTML = 'Shape ' + code(n) + ', at ' + code(0xC000 + 64 * n, 4);
+    t.appendChild(cv); t.appendChild(sp); host.appendChild(t);
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = P[GROUND]; ctx.fillRect(0, 0, cv.width, cv.height);
+    C64.drawSpriteMC(ctx, shape(r, n), 2 * S, 2 * S, S, P[1], P[SMC1], P[SMC2]);
+  }
+}
+function uses() {
+  for (let k = 0; k < 10; k++) for (let s = 0; s < 3; s++) use(r[0x1A68 + k] + s);   // the player's kart
+  for (let k = 0; k < 8; k++) for (let s = 0; s < 3; s++) use(r[0x1749 + 8 * s + k]);   // the spin
+  for (let d = 0; d < 12; d++) { use(r[0x1779 + d]); use(r[0x1785 + d]); use(r[0x1791 + d]); }   // each driver's head three ways
+  GROUPS.forEach((g) => { for (const q of rivalRecs(g.first, 3).recs) use(q[2]); });   // the rivals at each distance
+  for (let k = 0; k < 4; k++) use(r[0x17F3 + 9 + k]);   // the START sign
+  for (let k = 0; k < 3; k++) use(r[0x1804 + 9 + k]);   // the start lights
+  for (const p of [r[0x5165 + 1], r[0x5169 + 1], r[0x516D + 1]]) use(p);   // the podium
+  for (let k = 0; k < 4; k++) use(r[0x0FB3 + k]);   // lower_kart
+  use(0x83);   // the select screen's cursor
+  use(0x89);   // the blank shape that hides the player's kart after the fourth lap
+  for (const n of [0x80, 0x81, 0x82]) NOTE.set(n, 'rows 0 to 4 of the panel\'s screen at $E000, not a shape');
+}
+
+// ---- the faces: 3 by 3 cells from the panel's set at $F000, the marker behind them
+function glyphs(ctx, cs, codes, cx, cy, cols, keep) {
+  for (let k = 0; k < 9; k++) {
+    const c = codes[k], px = (cx + k % 3) * 8 * S, py = (cy + Math.floor(k / 3)) * 8 * S;
+    for (let y = 0; y < 8; y++) {
+      const row = cs[c * 8 + y];
+      for (let x = 0; x < 4; x++) {
+        const v = (row >> (6 - 2 * x)) & 3;
+        if (!keep.includes(v)) continue;
+        ctx.fillStyle = cols[v]; ctx.fillRect(px + x * 2 * S, py + y * S, 2 * S, S);
+      }
+    }
+  }
+}
+function faces() {
+  const cs = r.subarray(0xF000, 0xF800), cols = [P[SKY], P[PMC1], P[PMC2], P[0]];
+  const face = (tab, d) => { const a = w16(tab + 2 * d); return r.subarray(a, a + 9); };
+  const make = (id, tab, cursor) => {
+    const cv = $(id); cv.width = 37 * 8 * S; cv.height = 3 * 8 * S;
+    const ctx = cv.getContext('2d');
+    return () => {
+      ctx.fillStyle = P[SKY]; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (let d = 0; d < 12; d++) glyphs(ctx, cs, face(tab, d), 3 * d, 0, cols, [1]);
+      if (cursor) {
+        const at = Math.floor(frame / 21) % 12, x = (r[0x14E4 + at] + 8) * 2 - 24 - 16;   // driver_cursor_loop's X, from column 2
+        C64.drawSpriteMC(ctx, shape(r, 0x83), x * S, (0x2E - 50) * S, S, P[1], P[SMC1], P[SMC2]);
+      }
+      for (let d = 0; d < 12; d++) glyphs(ctx, cs, face(tab, d), 3 * d, 0, cols, [2, 3]);
+    };
+  };
+  const top = make('gx-faces', 0x1285, true), bottom = make('gx-faces2', 0x1309, false);
+  top(); bottom();
+  return top;
+}
+
+// ---- the roadside: each kind's 16 pictures drawn once, then shown from distance 15 to 0
+const BLOCKS = [0x5820, 0x5D98, 0x6310, 0x6888];
+function roadside(host) {
+  const raceSet = (block) => { const cs = r.slice(0xF800, 0x10000); if (block) cs.set(r.subarray(block, block + 1400), 0x42 * 8); return cs; };
+  // which block is in place when each kind first comes into view, from the stages' scenery lists
+  const blockOf = {};
+  for (let c = 0; c < 5; c++) {
+    const rec = w16(0x3733 + 2 * c);
+    for (let s = 0; s < 5; s++) {
+      let a = w16(rec + 10 + 2 * s), cur = 0x6310;
+      for (;;) {
+        const v = w16(a); a += 2;
+        if (v >> 8 === 0xFF) break;
+        if (v >= 0x4000) { cur = v; continue; }
+        for (let i = 0; i < 12; i++) { const t = r[v + i]; if (!t) continue; const n = blockOf[t] || (blockOf[t] = {}); n[cur] = (n[cur] || 0) + 1; }
+      }
+    }
+  }
+  const sets = {};
+  for (const b of BLOCKS) sets[b] = raceSet(b);
+  const setFor = (t) => { const n = blockOf[t] || { 0x6310: 1 }; return sets[+Object.keys(n).sort((x, y) => n[y] - n[x])[0]]; };
+  const RS = 1, W = 36, H = 20;
+  const all = [];
+  for (let t = 1; t <= 24; t++) {
+    const tab = w16(0x3E0B + 2 * t), colour = r[0x3E3D + t], cs = setFor(t), pics = [];
+    for (let d = 0; d < 16; d++) {
+      const rec = tab + 4 * d, wd = r[rec], ht = r[rec + 1], src = w16(rec + 2);
+      const pc = document.createElement('canvas'); pc.width = Math.max(1, wd * 8); pc.height = Math.max(1, ht * 8);
+      const ctx = pc.getContext('2d'), mc = [null, P[MC1], P[MC2], P[colour & 7]];
+      for (let y = 0; y < ht; y++) for (let x = 0; x < wd; x++) {
+        const c = r[src + y * 256 + x];
+        if (!c) continue;
+        if (colour >= 8) C64.drawGlyphMC(ctx, cs, c, x * 8, y * 8, 1, mc);
+        else C64.drawGlyph(ctx, cs, c, x * 8, y * 8, 1, P[colour]);
+      }
+      pics.push({ pc, wd, ht, src });
+    }
+    const t0 = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t0.className = 'gx-tile'; cv.width = W * 8 * RS; cv.height = H * 8 * RS; cv.style.width = W * 8 * RS + 'px';
+    t0.appendChild(cv); t0.appendChild(sp); host.appendChild(t0);
+    const ctx = cv.getContext('2d');
+    const o = { d: 15, draw() {
+      ctx.fillStyle = P[SKY]; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = P[GROUND]; ctx.fillRect(0, 12 * 8 * RS, cv.width, cv.height);
+      const p = pics[this.d];
+      ctx.drawImage(p.pc, Math.floor((W - p.wd) / 2) * 8 * RS, (H - 1 - p.ht) * 8 * RS);
+      sp.innerHTML = 'Kind ' + t + ', distance ' + this.d + '<br>' + p.wd + ' by ' + p.ht + ', from ' + code(p.src, 4);
+    } };
+    o.draw();
+    all.push(o);
+  }
+  return all;
+}
+
+C64.load('listing.json').then((L) => {
+  r = L.ram;
+  wait.hidden = true;
+  const dsel = $('gx-driver'), csel = $('gx-colour');
+  for (let d = 0; d < 12; d++) dsel.add(new Option('Driver ' + (d + 1), d));
+  dsel.value = String(driver);
+  const NAMES = { 2: 'red', 4: 'purple', 5: 'green', 6: 'blue', 14: 'light blue' };
+  for (let k = 0; k < 4; k++) csel.add(new Option(NAMES[r[0x372E + k]] || 'colour ' + r[0x372E + k], r[0x372E + k]));
+  csel.value = String(kartColour);
+  const LR = ['Hard left', 'Left', 'Straight', 'Right', 'Hard right'];
+  for (let k = 0; k < 5; k++) kart($('gx-kart'), k, LR[k]);
+  spin($('gx-spin')); lookBack($('gx-spin'));
+  rivals($('gx-rivals'));
+  start($('gx-start'));
+  podium($('gx-podium'));
+  uses(); unused();
+  const facesTop = faces();
+  const road = roadside($('gx-roadside'));
+  $('gx-stat').textContent = tiles.length + ' pictures';
+  const redraw = () => { for (const o of tiles) { if (o.step) o.step(); o.draw(); } };
+  dsel.onchange = () => { driver = +dsel.value; redraw(); };
+  csel.onchange = () => { kartColour = +csel.value; redraw(); };
+  const run = $('gx-run');
+  run.onclick = () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; };
+  let roadRunning = true, roadFrame = 0;
+  $('gx-road-stat').textContent = 'a step a race frame, about 17 a second';
+  const rrun = $('gx-road-run');
+  rrun.onclick = () => { roadRunning = !roadRunning; rrun.textContent = roadRunning ? 'Pause' : 'Play'; };
+  let t0 = performance.now();
+  const loop = (now) => {
+    let n = 0;
+    while (now - t0 >= FRAME_MS && n < 5) {
+      t0 += FRAME_MS; n++;
+      if (running) {
+        frame++;
+        for (const o of tiles) if (o.step) { o.step(); o.draw(); }
+        if (frame % 21 === 0) facesTop();
+      }
+      if (roadRunning && ++roadFrame % RACE === 0) for (const o of road) { o.d = o.d ? o.d - 1 : 15; o.draw(); }
+    }
+    if (now - t0 > 200) t0 = now;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}).catch((e) => { wait.hidden = false; wait.textContent = 'The listing could not be read: ' + e.message; });
+})();
+</script>

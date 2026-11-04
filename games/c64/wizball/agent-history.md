@@ -113,3 +113,36 @@ Placing the tune table at `$5525` and dropping tune K left no difference
 in 3,846 bytes. The game image was not in this container, so the driver
 code itself could not be compared. Tune K was added to the page's player
 from the assembled bytes, with the port unchanged.
+
+## Follow-up: the Graphics tab (4 November 2026)
+
+A Graphics tab now shows every sprite: the Wizball, the catelite, every
+alien of the landscapes and the bonus stage, a shot alien, the icon bar,
+the panel, the tubes and the Wiz-lab, the title and game over, and the
+few shapes in the bank that nothing shows. Each picture is chosen, coloured
+and placed by the game's own routines run on the kit's 6502 over the
+listing's memory a frame at a time: `read_spin_control` and
+`update_wizball` for the ball, `start_alien` (or `create_alien` for the
+bonus stage) and `animate_alien` for the aliens, `update_alien` with the
+hit flag set for a shot one, `flash_lit_icon`, `update_cauldrons`,
+`arrive_from_tube`'s two tube routines, `run_lab_wiz`, `run_lab_cat`,
+and the title's and game over's drawing code. The tube routines wait for
+raster line 266, so the page's model of the video chip gives the raster
+line from the processor's cycle count.
+
+The old alien cards on How it works drew a type with an eased picture
+list (mode 1) as one fixed frame. Run through `animate_alien`, those
+types squash and wobble back to the middle of their list after each
+bounce. The cards are gone; How it works keeps a table of each type's
+points, movement and shots, and links to the tab.
+
+Four comments were wrong and are corrected in `symbols.json`:
+`tbl_alien_fade` (`$B875`) was called a dying alien's colours, and is
+the fade-in of bonus aliens 12-15; `sprites_60_63` (`$CF00`) said no
+code shows those shapes, and they are the arrow craft and the eyed
+diamond; `sprite_pipe_left` (`$CE80`) named the pipe blue, white and red,
+and it is cyan with the landscape's dark grey and light green; and the
+lab timer at `$B17A` said the cat walks in phase 2, which is Wiz.
+Shapes `$4A`, `$4B`, `$63`, `$64` and `$7F` are in no record, list or
+routine found, and bonus type 10, which shares type 9's record, is never
+asked for by the bonus stage's script.
