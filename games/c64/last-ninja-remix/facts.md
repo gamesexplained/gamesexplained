@@ -122,6 +122,21 @@ bitmap `$2000`.
   (`$68` escapes the next byte, `$69` to `$6F` stand for one to seven
   zero bytes, 63 bytes out) and the compositor merges, masked and
   mirrored, into the eight hardware sprites of the buffer not on show.
+- A figure's animation is a stream of commands, each naming a frame,
+  how many ticks it stays and how far it moves the actor. The walk is
+  not a stream: `PlayerDriver` (`$A422` in Central Park) moves the
+  frame's low three bits on by one once four ticks have gone by
+  (`$A47C`), within frames 0-7 facing up the screen or 8-15 facing down
+  it. An enemy's actions take the delay its area's entry in
+  `SpawnEnemy`'s fifth table picks (`$D3`, into the table of four at
+  `$B372`), for every command that brings none of its own; the tables
+  hold 18 areas in six levels and 16 in The Street. The kind `SpawnEnemy`
+  puts in `$7F` adds a sprite to every frame below 49, and to none from
+  49 on (the composer reads it at `$BC24` in Central Park). A star in flight is drawn into
+  the last of Armakuni's four sprites, and `ComposeSprites` flips bit 3
+  of its kind (`$0280`, at `$BCD3`) each time it runs, so the star shows
+  its two images in turn. `test_graphics.js` holds these against the
+  code in all seven levels.
 - The status panel is loaded with the engine and stays: the USING and
   FOUND boxes, the score, the clock and two square spirals for the
   enemy's and the player's energy, 44 half-cells each (engine `$1D4B` and

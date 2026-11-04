@@ -1,0 +1,798 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Ninja Remix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<style>
+a{color:var(--link)} a:hover{color:var(--link-hover)}
+.ln-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.ln-stack{position:relative}
+.ln-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
+.ln-ref{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.ln-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.ln-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.ln-btn:hover{border-color:var(--ink-mute)}
+.ln-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ln-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.ln-out b{font-weight:700}
+.ln-note{font-family:var(--fm);font-size:13px;color:var(--ink-mute);margin:0 0 10px}
+.ln-row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.ln-row input[type=range]{flex:1;min-width:160px}
+.ln-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.ln-table{border-collapse:collapse;width:100%;font-size:14px}
+.ln-table th,.ln-table td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.ln-table th{font-family:var(--fm);font-size:11.5px;font-weight:500;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em}
+.ln-table td.ln-q{font-family:var(--fm);font-size:12.5px}
+.ln-scroll{overflow-x:auto}
+.ln-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;max-height:236px;overflow-y:auto;margin:14px 0 0;padding:2px}
+.ln-gal button{background:#b2b2b2;border:2px solid transparent;border-radius:4px;padding:2px;cursor:pointer;line-height:0}
+.ln-gal button[aria-pressed="true"]{border-color:var(--amber)}
+.ln-gal canvas{width:100%;height:auto;image-rendering:pixelated}
+.ln-big{display:block;width:100%;max-width:288px;height:auto;image-rendering:pixelated;background:#b2b2b2;border-radius:4px}
+.ln-using{max-width:192px}
+.ln-toks{font-family:var(--fm);font-size:12.5px;line-height:1.9;word-break:break-all;margin:0}
+.ln-toks span{padding:1px 3px;border-radius:3px}
+.ln-toks .lit{background:var(--surface-2);color:var(--ink)}
+.ln-toks .zero{background:#dbe8f7;color:var(--link-hover)}
+.ln-toks .esc{background:#ffe1c7;color:var(--amber)}
+.ln-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.ln-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ln-code{font-family:var(--fm);font-size:40px;letter-spacing:.2em;color:#edf171;background:#000;border-radius:6px;padding:6px 16px;display:inline-block;margin:6px 0}
+.lg-pick{margin:28px 0 0}
+.lg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px 16px;align-items:end}
+.lg-grid figure{margin:0;display:flex;flex-direction:column;align-items:center}
+.lg-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;border-radius:4px}
+.lg-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.4;align-self:stretch}
+.lg-grid figcaption b{color:var(--ink);font-weight:700}
+.lg-grid .cap{grid-column:1/-1}
+.lg-grid .lg-wide{grid-column:span 2}
+.lg-grid figcaption code{white-space:nowrap}
+@media (max-width:640px){.lg-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.lg-grid .lg-wide{grid-column:1/-1}}
+.lg-h{font-size:19px;margin:26px 0 10px}
+@media (max-width:640px){:root{--gx:16px}.ln-two{grid-template-columns:minmax(0,1fr)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every figure each level draws, moving as the game moves it: Armakuni walking, fighting, climbing and drowning, every enemy waiting in the level, and the level's own figures, from the boat in Central Park to the spirits of the Final Battle.</p>
+</header>
+<main class="wrap">
+
+<div class="lg-pick">
+  <p class="ln-note">Each level carries its own frames and its own animations, so every card below is drawn from the level picked here, by the level's own code.</p>
+  <div class="ln-bar" id="lg-level"></div>
+</div>
+
+<section id="armakuni">
+  <p class="fig">01 · Armakuni</p>
+  <h2 class="t">Eight frames walk him up the screen and eight down it</h2>
+  <p class="lede">The walk has two sets of frames, one for facing up the screen and one for facing down it. Mirrored, each set serves the other diagonal, so the four ways he can face need sixteen frames. Every figure of his carries the weapon in his hand.</p>
+  <div class="plate">
+    <div class="ln-bar" id="lg-weapon"></div>
+    <div class="lg-grid" id="lg-walk"></div>
+    <p class="cap">The walk is not an animation of its own: <code>PlayerDriver</code> (<code>$A422</code> in Central Park) moves the frame on by one every four ticks while the stick is held, keeping it within its set of eight (<code>$A47C</code>). A tick is CIA 1's timer, 19,457 cycles, about a fiftieth of a second. Fire pressed while he walks, with the stick pointing the way he faces or one step either side of it, starts a somersault instead of a blow (<code>InterpretControls</code>, <code>$A5BD</code>). When he stands still with another weapon picked than the one he holds, he plays the swap, whose fourth frame raises the event that puts the new weapon in his hand (<code>$A577</code>, event 1).</p>
+  </div>
+</section>
+
+<section id="fighting">
+  <p class="fig">02 · Fighting</p>
+  <h2 class="t">Fire and the stick give each weapon its own blows</h2>
+  <p class="lede">With fire held, the stick's direction on the screen picks the move. The sword, the staff and the nunchakus share one set of moves; bare hands and the shuriken share another. The <a href="index.html#weapons">How it works</a> tab shows where each blow reaches and how hard it lands.</p>
+  <div class="plate">
+    <div class="lg-grid" id="lg-moves"></div>
+    <p class="cap">Each move is a stream of commands in the level's table of 36 (<code>SelectPlayerAnimationForAction</code>, <code>$A600</code>), one for facing up the screen and one for facing down. A command names a frame and how many ticks it stays; the moves end on frame 16 or 17, his standing frames.</p>
+  </div>
+  <h3 class="lg-h">Hit</h3>
+  <div class="plate">
+    <div class="lg-grid" id="lg-hits"></div>
+    <p class="cap">The streams a blow sets off in whoever it lands on, chosen by the blow and the way the victim faces (<code>InstallHitReactionAnimation</code>, <code>$ABCA</code>), drawn here on Armakuni. Enemies reel through the same frames, with their own parts.</p>
+  </div>
+</section>
+
+<section id="climbing">
+  <p class="fig">03 · Climbing, falling and the water</p>
+  <h2 class="t">A wall to climb runs a script of its own</h2>
+  <p class="lede">Some walls carry a command that takes Armakuni over when he walks into them: up or down a wall a few pixels at a time, across water, or to his death. Each card is one stream the level's code starts; a climb plays its middle stream again for every 11 pixels of the wall.</p>
+  <div class="plate">
+    <div class="lg-grid" id="lg-scripted"></div>
+  </div>
+</section>
+
+<section id="enemies">
+  <p class="fig">04 · The enemies</p>
+  <h2 class="t">Every enemy borrows Armakuni's frames and adds a sprite of its own</h2>
+  <p class="lede">An enemy shares Armakuni's frames for walking and standing. Its kind adds a sprite of its own to every frame below 49, and its profile picks the weapon it holds. Each card plays the enemy's six actions, its fall when its energy runs out, and its getting up again.</p>
+  <div class="plate">
+    <div class="lg-grid" id="lg-enemies"></div>
+    <p class="cap">From the five tables that <code>SpawnEnemy</code> reads (<code>$B5C7</code> in Central Park), one entry in each for every area of the level: the kind and profile, the position, and the delay the enemy's actions take, which every command without a delay of its own keeps (<code>InstallAiActionByDirection</code>, <code>$B346</code>). The actions are its two walks, its two standing frames and the two streams Armakuni swaps weapons with (<code>$B376</code>); the fall is <code>$C3CB</code> or <code>$C3D7</code>, and the getting up <code>$C3E3</code> or <code>$C3ED</code>.</p>
+  </div>
+</section>
+
+<section id="figures">
+  <p class="fig">05 · The level's own figures</p>
+  <h2 class="t">Boats, a spider, a panther and a helicopter take the enemy's place</h2>
+  <p class="lede">An area without an enemy can give the second actor's slot to something else. The level's code starts its stream when the player enters the area, walks somewhere or uses an object, and the second actor's sprites draw it.</p>
+  <div class="plate">
+    <div class="lg-grid" id="lg-figures"></div>
+    <p class="cap" id="lg-figures-cap"></p>
+  </div>
+</section>
+
+<section id="still">
+  <p class="fig">06 · Thrown, and never shown</p>
+  <h2 class="t">A thrown star is two images that take turns</h2>
+  <p class="lede">The composer swaps a flying star's image each time it draws the thrower's figure again. The level's frames that none of its animations shows close the tab.</p>
+  <div class="plate">
+    <div class="lg-grid" id="lg-thrown"></div>
+    <p class="cap">The star in flight is drawn into the last sprite of Armakuni's group by <code>ConfigureCompositeSpriteSlot</code> (<code>$BCCC</code> in Central Park), which flips bit 3 of its kind before it looks the image up (<code>$BCD3</code>). Kind 1 is the star of the shuriken, and of an enemy that throws (<code>SpawnProjectile</code>, <code>$B6D9</code>). Item 10, thrown with bare hands, flies as kind 6, or as kind 7 once flag <code>$03EB</code> is set: the same two images in other colours.</p>
+  </div>
+  <div class="plate" style="margin-top:16px">
+    <div class="lg-grid" id="lg-unshown"></div>
+    <p class="cap" id="lg-unshown-cap"></p>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* lnr-blow */
+// Armakuni's blows, ported from a level's own code. m is the memory of the level in play (the
+// engine's listing under the level's), S the addresses of its tables: lnrTables(m, P) finds them
+// from the level's listing P (C64.load's), the animation pointers from the operand of the LDX in
+// SelectPlayerAnimationForAction ($A619 in Central Park), as only Central Park's listing names them.
+// lnrMove(m, S, w, d, h): the move InterpretNormalizedControls ($A640) starts when fire is held and
+// the stick has been in direction d (0 up, 1 up and right, ... 7 up and left) long enough, with
+// weapon w in hand ($70: 0 none, 1 sword, 2 staff, 3 nunchakus, 4 shuriken) and heading h ($69, the
+// same eight directions): the action d * 4 + 8, plus $20 with no weapon or the shuriken; the mode
+// $6D, the action's base (player_action_mode_bases) plus h / 2; the animation, the action's pair
+// of pointers, the second when h is 2 to 5 (SelectPlayerAnimationForAction, $A600); and the mirror
+// flag h & 2 (InstallAnimation, $A61F).
+// lnrAnim(m, at): the animation at at, as AnimationInterpreter ($A802) reads it, one step a record:
+// { at, control, delay, frame, dx, dy, event }. Bit 1 of the control byte brings a new delay, in
+// the game's ticks, and without it the last one holds; bit 7 a move in X and Y; bit 0 an event for
+// EventDispatch ($AA25); bit 5 a pointer to the next record, which ends the animation when it is 0.
+// lnrFrame(m, S, f, w, mirror, x, y, clip): the sprites ComposeSprites ($BBC0) builds for frame f of
+// the player standing at x, y ($54, $55) with weapon w and the mirror flag ($F1), and the depth
+// line clip ($9E, $FF for none), with no thrown star in flight: { hdr, width, parts }, a part for
+// each logical sprite the frame fills, { slot, sprite, x, y, colour, bytes }. A frame lists three
+// parts of the body and one of each weapon, each a packed sprite, an X (its low seven bits less
+// $30, taken from the frame's width when mirrored) and a Y from the player's position, and an
+// attribute: the sprite's colour, multicolour in bit 7. A packed sprite's pointer is a word of
+// SpriteSourcePointers plus the table's address less $C000 (DecodeCompressedSprite63, $BF1E: $0E54 in
+// Central Park). Parts are unpacked as DecodeSpriteMaskRle63 does (lnrUnpack) and copied as BlitCachedSpriteMask ($BED7) copies them: each byte through
+// reverse_hires_bits ($1300 in the engine) and the row's three bytes swapped when mirrored, every
+// column masked by the play window's right edge (the masks at $1695, $159D and $15A5), and the rows
+// below the depth line cleared ($BE99). The player has no extra sprite ($7D = 0). Frames whose
+// header has bit 5 or 7 set, which only the somersaults use, give null.
+// lnrBlow(m, S, a, v, cb, t): whether the player's blow lands at the moment its animation's event
+// comes (TestActorCombatOverlap, $AC7A) and what it takes from the enemy's 44
+// (EventResolveCombatFromActorState, $AB70). a is the player { x, y, mode, w } ($54, $55, $6D, $70),
+// v the enemy { x, y, mode } ($56, $57, $6F); cb is $CB, whose bit 7 says there is an enemy, t the
+// counter at $02BD. The blow's row of the tables is the mode's class ((mode - $14) / 4) with the
+// weapon, the shuriken's as no weapon's, times four. Facing right (mode bits 0-1 below 2) the enemy
+// must stand at least 2 pixels to the right and h is the distance less 2; facing left h is the
+// distance to the left. The vertical distance d is taken up the screen for modes ending 0 and 3,
+// down for 1 and 2, and with h it must fall inside the row's limits: hmin <= h < hmax and
+// vmin <= d + 8 < vmax. An enemy in mode class $0C is out of reach; one blocking (class $10) and
+// facing the other way stops it while t is below 4; one already down (class $24) loses nothing.
+function lnrTables(m, P) {
+  const sel = P.sym('SelectPlayerAnimationForAction');
+  return {
+    bases: P.sym('player_action_mode_bases'), anims: m[sel + 0x1A] | m[sel + 0x1B] << 8,
+    frames: P.sym('FramePointers'), sprites: P.sym('SpriteSourcePointers'),
+    hmin: P.sym('combat_horizontal_min'), hmax: P.sym('combat_horizontal_max'),
+    vmin: P.sym('combat_vertical_min'), vmax: P.sym('combat_vertical_max'),
+    damage: P.sym('player_attack_enemy_damage') };
+}
+function lnrMove(m, S, w, d, h) {
+  const action = d * 4 + 8 + (w === 0 || w >= 4 ? 0x20 : 0), y = action + (((h + 2) & 4) >> 1);
+  return { action, mode: (m[S.bases + (action >> 2)] + (h >> 1)) & 0xFF,
+    anim: m[S.anims + y] | m[S.anims + y + 1] << 8, mirror: h & 2 };
+}
+function lnrAnim(m, at) {
+  const steps = [], seen = new Set();
+  let delay = null;
+  while (at && !seen.has(at) && steps.length < 64) {
+    seen.add(at);
+    const c = m[at];
+    let y = 1;
+    if (c & 2) delay = m[at + y++];
+    const s = { at, control: c, delay, frame: m[at + y++], dx: 0, dy: 0, event: 0 };
+    if (c & 0x80) { s.dx = m[at + y] << 24 >> 24; s.dy = m[at + y + 1] << 24 >> 24; y += 2; }
+    if (c & 1) s.event = m[at + y++];
+    steps.push(s);
+    at = c & 0x20 ? m[at + y] | m[at + y + 1] << 8 : (at + y) & 0xFFFF;
+  }
+  return steps;
+}
+function lnrFrame(m, S, f, w, mirror, x, y, clip = 0xFF) {
+  const p = m[S.frames + 2 * f] | m[S.frames + 2 * f + 1] << 8, hdr = m[p], width = (m[p + 1] << 1) & 0xFF;
+  if (hdr & 0xA0) return null;
+  const parts = [], offs = [2, 6, 10, w > 0 && w < 4 ? 10 + 4 * w : -1];
+  offs.forEach((o, slot) => {
+    if (o < 0 || m[p + o] === 0xFF) return;
+    const sprite = m[p + o];
+    let dx = ((m[p + o + 1] & 0x7F) - 0x30) & 0xFFFF;
+    if (mirror) dx = (width - dx) & 0xFFFF;
+    const X = (x + dx) & 0xFFFF, lo = X & 0xFF, Y = (y + m[p + o + 2]) & 0xFF;
+    let k = [0xFF, 0xFF, 0xFF];
+    if (X >> 8) k = [lo < 8 ? m[0x1695 + lo] : 0, 0, 0];
+    else if (lo >= 0xF8) k = [0xFF, m[0x159D + lo], 0];
+    else if (lo >= 0xF0) k = [0xFF, 0xFF, m[0x15A5 + lo]];
+    const at = ((m[S.sprites + 2 * sprite] | m[S.sprites + 2 * sprite + 1] << 8) + S.sprites - 0xC000) & 0xFFFF;
+    const src = lnrUnpack(m, at).bytes, bytes = new Uint8Array(63);
+    for (let r = 0; r < 63; r += 3) for (let c = 0; c < 3; c++)
+      bytes[r + c] = (mirror ? m[0x1300 + src[r + 2 - c]] : src[r + c]) & k[c];
+    const below = Y - clip;
+    if (below > 0) bytes.fill(0, 63 - 3 * Math.min(21, below));
+    parts.push({ slot, sprite, x: X, y: Y, colour: m[p + o + 3], bytes });
+  });
+  return { hdr, width, parts };
+}
+function lnrBlow(m, S, a, v, cb = 0x80, t = 0) {
+  const miss = { hit: false, index: -1, damage: 0 };
+  if (!(cb & 0x80) || (v.mode & 0xFC) === 0x0C) return miss;
+  let h;
+  if ((a.mode & 3) >= 2) h = a.x - v.x;
+  else h = v.x < a.x ? -1 : v.x - a.x - 2;
+  if (h < 0) return miss;
+  const index = (((a.mode - 0x14) & 0xFF) >> 2 | (a.w < 4 ? a.w : 0) << 2) & 0xFF;
+  const d = (a.mode & 3) === 0 || (a.mode & 3) === 3 ? a.y - v.y : v.y - a.y, u = d + 8;
+  const out = { hit: false, index, damage: 0 };
+  if (h < m[S.hmin + index] || h >= m[S.hmax + index] || u < m[S.vmin + index] || u >= m[S.vmax + index]) return out;
+  if ((v.mode & 0xFC) === 0x10 && ((v.mode ^ a.mode) & 2) && t < 4) return Object.assign(out, { blocked: true });
+  out.hit = true;
+  if ((v.mode & 0xFC) !== 0x24) out.damage = m[S.damage + index];
+  return out;
+}
+// end of lnr-blow
+</script>
+<script>
+/* lnr-gfx */
+// The Graphics tab's figures. Every frame is composed by the level's own code on the kit's 6502
+// (C64Cpu), over the memory of the level in play, and stepped by lnrAnim (lnr-blow) at the game's
+// tick, CIA 1's timer A: 19,457 cycles of a PAL machine's 985,248 a second (latch $4C00, engine
+// $028C).
+const LNR_TICK = 19457 / 985248 * 1000;
+// The walk: PlayerDriver ($A422 in Central Park) moves the frame's low three bits on by one once
+// four ticks have gone by ($A47C), forward or back by the stick ($AA1D), keeping its high bits:
+// frames 0-7 facing up the screen, 8-15 facing down it ($A549).
+const LNR_WALK_TICKS = 4;
+// Two streams whose first command brings no delay, so that they run at the one the actor's slot
+// last had ($59,X, AnimationInterpreter $A842): the stream that runs there before them. The
+// helicopter of The Office flies off ($C576, EventHelicopterLoop) after its fourth loop of $C50A;
+// the figure of The Mansion's area 12 turns ($CAD5, ObjectTurnAreaTwelveActor) from $CAC8, which
+// the entrance rules start.
+const LNR_AFTER = { office: { 0xC576: 0xC50A }, mansion: { 0xCAD5: 0xCAC8 } };
+// The level in play: the engine, the level's title load below $4E00 and the level above it.
+function lnrMem(E, T, P) {
+  const m = new Uint8Array(0x10000);
+  for (let a = 0; a < 0x10000; a++) m[a] = E.has[a] ? E.ram[a] : 0;
+  for (let a = 0; a < 0x4E00; a++) if (T.has[a]) m[a] = T.ram[a];
+  for (let a = 0x4E00; a < 0x10000; a++) if (P.has[a]) m[a] = P.ram[a];
+  return m;
+}
+// The frames of the level's table (FramePointers): the table ends where the first frame begins.
+function lnrFrameCount(m, P) {
+  const F = P.sym('FramePointers');
+  let lo = 0x10000;
+  for (let k = 0; k < 512 && F + 2 * k < lo; k++) { const p = m[F + 2 * k] | m[F + 2 * k + 1] << 8; if (p > F && p < lo) lo = p; }
+  return (lo - F) >> 1;
+}
+// Frame f composed as the game composes it: Armakuni's by ComposeSprites into slots 0-3, with the
+// weapon in his hand ($70), or the enemy's by ComposeEnemySprites into slots 4-7, with its kind
+// ($7F, which SpawnEnemy sets and which picks the extra sprite of a frame below 49: the composer
+// reads $7D for slots 0-3 and $7F for 4-7, $BC24) and its profile ($72, whose low two bits pick its
+// weapon). mirror is the flag $F1. thrown puts a projectile of that kind in Armakuni's slot ($0280),
+// which the composer draws into slot 3 in one of its two images, phase picking which. Gives the
+// parts the composer placed: { slot, x, y, attr, bytes }, x and y in the chip's sprite coordinates
+// for a figure standing at (100, 120), attr the colour, with bit 7 for multicolour, and bytes the 63
+// bytes it drew.
+function lnrCompose(m, P, f, { enemy = false, mirror = 0, weapon = 0, kind = 0, profile = 0, thrown = 0, phase = 0 } = {}) {
+  const mm = m.slice(), first = enemy ? 4 : 0;
+  Object.assign(mm, { [0x54]: 100, [0x55]: 120, [0x56]: 100, [0x57]: 120, [0x9E]: 0xFF, [0x9F]: 0,
+    [0x7D]: 0, [0x7F]: enemy ? kind : 0, [0x70]: weapon, [0x72]: profile, [0x0280]: thrown ? thrown | (phase ? 0 : 8) : 0,
+    [0x0281]: 0, [0x0284]: 100, [0x0286]: 120 });
+  mm.fill(0, 0x0210, 0x0220);
+  const io = { read: (a) => { throw new Error('read of $' + a.toString(16)); }, write: (a) => { throw new Error('write to $' + a.toString(16)); } };
+  const cpu = new C64Cpu.CPU(mm, { port: { dir: 0x2F, data: 0x35 }, io });
+  cpu.call(P.sym(enemy ? 'ComposeEnemySprites' : 'ComposeSprites'), { a: mirror ? 0xFF : 0, x: first, y: f, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 });
+  const parts = [];
+  for (let s = first; s < first + 4; s++) {
+    if (!mm[0x0210 + s]) continue;
+    const buf = mm[0x169D + s] | mm[0x16A5 + s] << 8 | (mm[0x0218 + s] & 1) << 9;
+    parts.push({ slot: s, x: mm[0x0200 + s] | mm[0x0208 + s] << 8, y: mm[0x0210 + s], attr: mm[0x0220 + s], bytes: mm.slice(buf, buf + 63) });
+  }
+  return parts;
+}
+// The level's areas: the length of each of SpawnEnemy's five tables, the step between their
+// addresses in its LDA abs,X and abs,Y operands (18 in six levels, 16 in The Street).
+function lnrAreas(m, P) {
+  const sp = P.sym('SpawnEnemy'), sel = m[sp + 0x1B] | m[sp + 0x1C] << 8;
+  let step = 0x80;
+  for (let a = sp; a < sp + 0xC0; a++) if (P.has[a] && (m[a] === 0xBD || m[a] === 0xB9)) {
+    const t = m[a + 1] | m[a + 2] << 8;
+    if (t > sel && t - sel < step) step = t - sel;
+  }
+  return step;
+}
+// The area's enemies, from the five tables, one entry for each area, that SpawnEnemy reads ($B67F
+// on in Central Park, found from the operand of its first LDA): a kind in the high four bits of the
+// first and the profile in the low four; a Y of 0 in the third means no enemy; the low two bits of the fifth pick
+// the delay its actions take, in ticks, from InstallAiActionByDirection's table of four ($B372),
+// which holds for every command of an action that brings no delay of its own. Grouped by kind,
+// profile and delay: [{ kind, profile, areas, delay }].
+function lnrEnemies(m, P) {
+  const sp = P.sym('SpawnEnemy'), sel = m[sp + 0x1B] | m[sp + 0x1C] << 8, out = [];
+  const ai = P.sym('InstallAiActionByDirection'), delays = m[ai + 0x13] | m[ai + 0x14] << 8;
+  const N = lnrAreas(m, P);
+  for (let n = 0; n < N; n++) {
+    if (!m[sel + 2 * N + n]) continue;
+    const kind = m[sel + n] >> 4, profile = m[sel + n] & 15;
+    const delay = m[delays + (m[sel + 4 * N + n] & 3)];
+    let e = out.find((x) => x.kind === kind && x.profile === profile && x.delay === delay);
+    if (!e) out.push(e = { kind, profile, areas: [], delay });
+    e.areas.push(n);
+  }
+  return out;
+}
+// A stream read whole: lnrAnim stops after 64 commands, so a longer one is read on from where it
+// stopped, carrying the delay, until it ends or comes back to a command already read.
+function lnrSteps(m, at) {
+  const out = [], seen = new Set();
+  while (at && !seen.has(at) && out.length < 1024) {
+    const part = lnrAnim(m, at), delay = out.length ? out[out.length - 1].delay : null;
+    if (!part.length) break;
+    for (const s of part) { if (seen.has(s.at)) return out; seen.add(s.at); out.push(s.delay == null && delay != null ? Object.assign(s, { delay }) : s); }
+    const s = part[part.length - 1], c = s.control, len = 2 + (c & 2 ? 1 : 0) + (c & 0x80 ? 2 : 0) + (c & 1 ? 1 : 0);
+    if (part.length < 64) break;
+    at = c & 0x20 ? m[s.at + len] | m[s.at + len + 1] << 8 : (s.at + len) & 0xFFFF;
+  }
+  return out;
+}
+// The routine a code address lies in: the nearest label at or below it that is not a branch target.
+function lnrRoutine(P, a) {
+  let best = null, at = -1;
+  for (const [name, b] of P.byName) if (b <= a && b > at && b >= 0x4E00 && !/Local|^[a-z]_|^[a-z]+_/.test(name)) { best = name; at = b; }
+  return best;
+}
+// The animation streams a level installs, each { at, steps }, steps as lnrAnim reads them: anims,
+// Armakuni's 36, from the table SelectPlayerAnimationForAction reads; actions, the enemy's 13, from
+// InstallAiActionByDirection's table; hits, the 16 of InstallHitReactionAnimation's table, for
+// either side; falls, the two it installs for an enemy whose energy is gone; and scripted, every
+// other stream the level's code starts: a pointer made of immediate loads that the code then
+// stores in an actor's stream pointer ($60/$61 for Armakuni, $62/$63 for the second actor: enemy
+// true) or passes to an installer, followed through branches and jumps; the stream must end (a command with bit 5 that goes on at 0, or back into
+// itself) and show only frames of the level's table. Each scripted stream carries from, the code
+// that starts it, and routine, the routine that holds that code. Where the level has the scripted
+// sequence of Central Park's $A338 (RunScriptCoordinateAnimationSequence, found by its bytes), the
+// two streams its table starts within are each followed by the stream it installs after them, as
+// one (sequence true). A stream already in its list (or, for scripted, in any list) is left out.
+function lnrStreams(m, P, S) {
+  const w = (a) => m[a] | m[a + 1] << 8, n = lnrFrameCount(m, P);
+  let seen = new Set();
+  const list = (ats, fresh) => {
+    if (fresh) seen = new Set();
+    const out = [];
+    for (const at of ats) {
+      if (!at || seen.has(at)) continue;
+      const steps = lnrAnim(m, at);
+      if (!steps.length || steps.some((s) => s.frame >= n)) continue;
+      seen.add(at); out.push({ at, steps });
+    }
+    return out;
+  };
+  const anims = [...Array(36).keys()].map((k) => w(S.anims + 2 * k));
+  const hr = P.sym('InstallHitReactionAnimation'), hits = [...Array(16).keys()].map((k) => w(w(hr + 0x38) + 2 * k));
+  const act = w(P.sym('InstallAiActionByDirection') + 0x18), actions = [...Array(13).keys()].map((k) => w(act + 2 * k));
+  const falls = [m[hr + 0x5A] | m[hr + 0x5C] << 8, m[hr + 0x60] | m[hr + 0x62] << 8];
+  const out = { anims: anims.map((at) => ({ at, steps: lnrAnim(m, at) })) };
+  out.actions = list(actions, true);
+  out.hits = list(hits, true);
+  out.falls = list(falls, true);
+  // every command of the table streams, and the lowest of their addresses: a scripted stream lies
+  // above it, with the rest of the level's animation data
+  const known = new Set();
+  for (const k of ['anims', 'actions', 'hits', 'falls']) for (const s of out[k]) for (const x of s.steps) known.add(x.at);
+  const floor = Math.min(...known) - 0x100;
+  const installers = new Map([['InstallAnimation', 0], ['InstallAnimationThenRunRuntimeLoop', 0], ['InstallAiScript', 1],
+    ['InstallAiScriptMarkedActive', 1], ['InstallAiScriptHighByte', 1]].filter(([k]) => P.byName.has(k)).map(([k, v]) => [P.sym(k), v]));
+  const LEN = (op) => op === 0x20 || op === 0x4C || (op & 0x0C) === 0x0C || (op & 0x1F) === 0x19 ? 3
+    : op === 0x00 || op === 0x40 || op === 0x60 || (op & 0x0F) === 0x08 || (op & 0x0F) === 0x0A ? 1 : 2;
+  // From an immediate load at a, follow the code (branches taken, jumps followed) for up to 16
+  // instructions, keeping the immediates in A, X and Y and what is stored in $60-$63, until it
+  // calls an installer (X the stream's low byte, A its high, or $62 already stored for
+  // InstallAiScriptHighByte) or has stored both bytes of a pointer: { at, enemy } or null.
+  const follow = (a) => {
+    const r = { A: null, X: null, Y: null }, z = {};
+    for (let k = 0; k < 16; k++) {
+      const op = m[a], v = m[a + 1], t = w(a + 1);
+      if (op === 0xA9) r.A = v; else if (op === 0xA2) r.X = v; else if (op === 0xA0) r.Y = v;
+      else if ((op === 0x85 || op === 0x86 || op === 0x84) && v >= 0x60 && v <= 0x63) z[v] = r[op === 0x85 ? 'A' : op === 0x86 ? 'X' : 'Y'];
+      else if ((op === 0x20 || op === 0x4C) && installers.has(t)) {
+        const enemy = installers.get(t), lo = t === P.byName.get('InstallAiScriptHighByte') ? z[0x62] : r.X;
+        return lo != null && r.A != null ? { at: lo | r.A << 8, enemy } : null;
+      } else if (op === 0x4C) { a = t; continue; }
+      else if ((op & 0x1F) === 0x10) { a += 2 + (v << 24 >> 24); continue; }
+      else if (op === 0x20 || op === 0x60 || op === 0x40 || op === 0x6C) return null;
+      else if ((op & 0x9F) !== 0x18 && op !== 0xEA && op !== 0x48) return null;   // only CLC, SEC, CLI, SEI, CLV, NOP, PHA pass
+      for (const [lo, hi, enemy] of [[0x60, 0x61, false], [0x62, 0x63, true]])
+        if (z[lo] != null && z[hi] != null) return { at: z[lo] | z[hi] << 8, enemy };
+      a += LEN(op);
+    }
+    return null;
+  };
+  const scripted = [], taken = new Set(known);
+  for (let a = 0x4E00; a < 0xFFF8; a++) {
+    if (!P.has[a] || (m[a] !== 0xA0 && m[a] !== 0xA2 && m[a] !== 0xA9)) continue;
+    const f = follow(a);
+    if (!f || f.at < floor || taken.has(f.at) || !P.has[f.at]) continue;
+    const steps = lnrSteps(m, f.at), last = steps[steps.length - 1];
+    if (!steps.length || steps.length >= 1024 || !(last.control & 0x20) || steps.some((s) => s.frame >= n)) continue;
+    taken.add(f.at);
+    scripted.push({ at: f.at, steps, enemy: f.enemy, from: a, routine: lnrRoutine(P, a) });
+  }
+  out.scripted = scripted.sort((x, y) => x.at - y.at);
+  const SIG = [0xA9, 0x00, 0x8D, 0x29, 0x02, 0x85, 0x81, 0xA5, 0x55, 0x48, 0x86, 0x55, 0x38, 0xE5, 0x55, 0x85, 0x55,
+    0xA5, 0x69, 0x18, 0x69, 0x02, 0x29, 0x04, 0xF0, 0x05, 0x98, 0x18, 0x69, 0x06, 0xA8, 0xBE];
+  for (let a = 0x4E00; a < 0xFF00; a++) if (SIG.every((v, i) => m[a + i] === v)) {
+    const then = lnrAnim(m, m[a + 0x31] | m[a + 0x33] << 8), firsts = [];
+    for (let k = 0; k < 6; k++) firsts.push(w(w(a + 0x20) + 2 * k));
+    // the table's six are the first, second and third commands of two streams: one card for each
+    for (const at of new Set(firsts)) {
+      const steps = lnrAnim(m, at);
+      if (firsts.some((b) => b !== at && lnrAnim(m, b).length > steps.length && lnrAnim(m, b).slice(-steps.length).every((s, i) => s.at === steps[i].at))) continue;
+      out.scripted = out.scripted.filter((x) => x.at !== at && x.at !== then[0].at);
+      out.scripted.push({ at, steps: steps.concat(then), enemy: false, sequence: true, from: a, routine: lnrRoutine(P, a) });
+    }
+    break;
+  }
+  return out;
+}
+// The kinds of thing thrown that the level can draw: for each kind 1-7 of the projectile tables
+// ($B8EA, $B8FA, $B90A in Central Park, bit 3 of the index picking the image), found from the
+// operands of ConfigureCompositeSpriteSlot, the kinds whose two images and colours match given
+// once, as { kinds }.
+function lnrThrown(m, P) {
+  const c = P.sym('ConfigureCompositeSpriteSlot'), w = (a) => m[a] | m[a + 1] << 8;
+  const at = w(c + 0x0E), hi = w(c + 0x14), lo = w(c + 0x1B), out = [];
+  for (let k = 1; k < 8; k++) {
+    const key = [m[lo + k], m[hi + k], m[lo + 8 + k], m[hi + 8 + k], m[at + k], m[at + 8 + k]].join();
+    const e = out.find((x) => x.key === key);
+    if (e) e.kinds.push(k); else out.push({ key, kinds: [k] });
+  }
+  return out;
+}
+// The pixels the parts set, moved by (dx, dy), widened into box { x0, y0, x1, y1 }: a multicolour
+// pixel is two wide.
+function lnrExtent(parts, dx, dy, box) {
+  for (const p of parts) for (let r = 0; r < 21; r++) for (let c = 0; c < 24; c++) {
+    const multi = p.attr & 0x80, b = p.bytes[r * 3 + (c >> 3)];
+    if (!(multi ? b >> (6 - (c & 6)) & 3 : b >> (7 - (c & 7)) & 1)) continue;
+    const x = p.x - 24 + c + dx, y = p.y - 50 + r + dy;
+    box.x0 = Math.min(box.x0, x); box.x1 = Math.max(box.x1, x); box.y0 = Math.min(box.y0, y); box.y1 = Math.max(box.y1, y);
+  }
+  return box;
+}
+// A card's frames: each step of the streams composed (cached by frame and how it is drawn), placed
+// by the moves before it (the first command's move too, which carries the actor to its spot), and
+// held for its delay in ticks, at least one, as AnimationInterpreter counts it down ($A808). A step
+// with no delay of its own takes delay. Gives { steps: [{ parts, dx, dy, ms, frame }], box } with
+// box the pixels the figure sets over every step, in the chip's sprite coordinates.
+function lnrCard(m, P, streams, opts, delay, cache) {
+  const out = [], box = { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 };
+  let dx = 0, dy = 0;
+  for (const steps of streams) for (const s of steps) {
+    dx += s.dx; dy += s.dy;
+    const o = opts(s), key = s.frame + ':' + JSON.stringify(o);
+    if (!cache.has(key)) cache.set(key, lnrCompose(m, P, s.frame, o));
+    const parts = cache.get(key), d = s.delay != null ? s.delay : delay;
+    lnrExtent(parts, dx, dy, box);
+    out.push({ parts, dx, dy, ms: Math.max(1, d || 0) * LNR_TICK, frame: s.frame });
+  }
+  return { steps: out, box };
+}
+// end of lnr-gfx
+</script>
+<script>
+/* lnr-gfx-page */
+'use strict';
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const GRIDS = ['lg-walk', 'lg-moves', 'lg-hits', 'lg-scripted', 'lg-enemies', 'lg-figures', 'lg-thrown', 'lg-unshown'];
+  const say = (why) => { for (const id of GRIDS) $(id).innerHTML = '<p class="cap">' + why + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { say("These figures need the site's shared scripts, which only the published site serves."); return; }
+  const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const LEVELS = [
+    { id: 'central-park', name: 'Central Park' }, { id: 'street', name: 'The Street' }, { id: 'sewers', name: 'The Sewers' },
+    { id: 'basement', name: 'The Basement' }, { id: 'office', name: 'The Office' }, { id: 'mansion', name: 'The Mansion' },
+    { id: 'final-battle', name: 'The Final Battle' }];
+  const WEAPONS = [{ w: 0, label: 'Bare hands or shuriken' }, { w: 1, label: 'Sword' }, { w: 2, label: 'Staff' }, { w: 3, label: 'Nunchakus' }];
+  const HELD = ['no weapon', 'a sword', 'a staff', 'nunchakus'];
+  const BG = 15;                                   // light grey behind a figure not drawn in it
+  const hex = (v) => '$' + v.toString(16).toUpperCase().padStart(4, '0');
+  // "frame 44", or "frames 44, 45, 44" with a frame held over several commands named once
+  const frames = (steps) => { const f = []; for (const s of steps) if (f[f.length - 1] !== s.frame) f.push(s.frame); return (f.length > 1 ? 'frames ' : 'frame ') + (f.length > 12 ? f.slice(0, 12).join(', ') + ' and on' : f.join(', ')); };
+  const Frames = (steps) => { const t = frames(steps); return t.charAt(0).toUpperCase() + t.slice(1); };
+  // The level's own figures, from the comments on the code that starts each, with the sprite
+  // multicolours ($D025, $D026) the area's entrance rules set; without them the engine's.
+  const FIGURES = {
+    'central-park': {
+      0xCDB7: ['Area 10', 'a man in a hat turns two white sticks in his hands', [6, 11]],
+      0xCE03: ['Area 14', 'the boat', [10, 9]],
+      0xCE1E: ['Area 16', 'the boat, until flag $03EB is set', [10, 8]],
+      0xCE25: ['Area 17', 'the boat, once flag $03EB is set', [8, 10]],
+      0xCE2A: ['An object', 'starts the boat when Armakuni holds the staff'],
+      0xCE3C: ['Area 15', 'a small cloud of dots'] },
+    street: {
+      0xC6A5: ['Area 5', 'a figure at a window with a pot'],
+      0xC6C4: ['Area 7', 'the same figure'],
+      0xC6AC: ['Area 5', 'the pot falls, and its event hurts a player standing below'],
+      0xC6CB: ['Area 7', 'the pot falls there too'],
+      0xC7BD: ['Area 1', 'the motorbike, when the light shows red', [2, 1]],
+      0xC7DB: ['Area 4', 'the motorbike, when the light shows green', [2, 1]],
+      0xC7E7: ['Area 8', 'the motorbike from the left, when the light shows red', [2, 1]] },
+    sewers: {
+      0xB48D: ['Area 4', 'a spider drops on its thread and crawls away'],
+      0xB4DB: ['Area 10', 'a bat'],
+      0xB505: ['Area 14', 'the alligator', [2, 7]],
+      0xB50A: ['Area 14', 'the alligator patrols', [2, 7]],
+      0xB51E: ['Area 14', 'the alligator patrols', [2, 7]],
+      0xB532: ['Area 14', 'the alligator patrols the other way', [2, 7]],
+      0xB546: ['Area 14', 'the alligator patrols the other way', [2, 7]],
+      0xB55A: ['Area 14', 'item 10, thrown at it, burns the alligator away', [2, 7]] },
+    basement: {
+      0xC626: ['Area 13', 'the panther lies still'],
+      0xC62D: ['Area 13', 'the panther, once flag $03EA is set'],
+      0xC634: ['Area 13', 'the panther rises when Armakuni comes near'],
+      0xC63D: ['Area 13', 'it lies down again when he steps back'],
+      0xC646: ['Area 13', 'it leaps, and its event takes 44 from his energy'],
+      0xC664: ['An object', 'the panther leaps and lies down'] },
+    office: {
+      0xC4EB: ['Area 9', 'a fan turns', [11, 12]],
+      0xC50A: ['Area 14', 'the helicopter hovers', [11, 15]],
+      0xC576: ['Area 14', 'after its fourth hover the helicopter flies off, faster and faster', [11, 15]],
+      0xC5C6: ['Area 10', 'a small blue figure creeps left, waits and comes back', [7, 10]] },
+    mansion: {
+      0xC9BD: ['Area 0', 'the helicopter Armakuni arrives hanging from', [11, 15]],
+      0xCAC8: ['Area 12', 'a white spray', [11, 15]],
+      0xCAC1: ['Area 12', 'the spray in its new place, once item 21 is taken', [11, 15]],
+      0xCAD5: ['Area 12', 'taking item 21 turns the spray', [11, 15]] },
+    'final-battle': {
+      0xC15B: ['The end', 'the spirit leaves Kunitoki'],
+      0xC162: ['The end', 'the same from its fourth command, when a candle starts the ending'],
+      0xC1AD: ['The end', 'until the spirit is caught, Kunitoki goes round again and again'] },
+  };
+  // end of FIGURES
+
+  // ---- the levels, loaded once each
+  const levels = new Map();
+  function level(i) {
+    if (!levels.has(i)) {
+      const id = LEVELS[i].id, load = (p) => C64.load(`parts/${p}/listing.json`);
+      levels.set(i, Promise.all([load('engine'), load(id + '-title'), load(id)]).then(([E, T, P]) => {
+        const m = lnrMem(E, T, P), S = lnrTables(m, P);
+        return { id, P, m, S, n: lnrFrameCount(m, P), st: lnrStreams(m, P, S), enemies: lnrEnemies(m, P), cache: new Map(),
+          mc: [m[0x1FAE] & 15, m[0x1FB3] & 15] };
+      }).catch((e) => { levels.delete(i); throw e; }));
+    }
+    return levels.get(i);
+  }
+
+  // ---- the cards, all stepped by one clock while on screen
+  const cards = new Set();
+  const seen = 'IntersectionObserver' in window ? new IntersectionObserver((es) => { for (const e of es) e.target._on = e.isIntersecting; }) : null;
+  function clear(id) { for (const c of [...cards]) if (c.grid === id) { cards.delete(c); if (seen) seen.unobserve(c.cv); } $(id).innerHTML = ''; }
+  // a card's steps drawn once each into image data, the figure placed in its box with a margin
+  // the background: light grey, or the first of mid grey, white and black that no pixel of the
+  // card is drawn in
+  function images(card, mc) {
+    const M = 2, { box } = card, w = box.x1 - box.x0 + 1 + 2 * M, h = box.y1 - box.y0 + 1 + 2 * M;
+    const used = new Set();
+    for (const s of card.steps) for (const p of s.parts) { used.add(p.attr & 15); if (p.attr & 0x80) { used.add(mc[0]); used.add(mc[1]); } }
+    const bg = [BG, 12, 1, 0].find((c) => !used.has(c));
+    return { w, h, list: card.steps.map((s) => {
+      const px = new Uint8Array(w * h).fill(bg);
+      for (const p of s.parts.slice().sort((a, b) => b.slot - a.slot)) {
+        const multi = p.attr & 0x80, own = p.attr & 15;
+        for (let r = 0; r < 21; r++) for (let c = 0; c < 24; c++) {
+          let v;
+          if (multi) { const q = c >> 1; v = [-1, mc[0], own, mc[1]][p.bytes[r * 3 + (q >> 2)] >> (6 - 2 * (q & 3)) & 3]; }
+          else v = p.bytes[r * 3 + (c >> 3)] >> (7 - (c & 7)) & 1 ? own : -1;
+          const x = p.x - 24 + c + s.dx - box.x0 + M, y = p.y - 50 + r + s.dy - box.y0 + M;
+          if (v >= 0 && x >= 0 && x < w && y >= 0 && y < h) px[y * w + x] = v;
+        }
+      }
+      const img = new ImageData(w, h);
+      for (let k = 0; k < w * h; k++) { const c = RGB[px[k]]; img.data.set([c[0], c[1], c[2], 255], 4 * k); }
+      return img;
+    }) };
+  }
+  function add(grid, card, mc, title, text, still, S = 3) {
+    const fig = document.createElement('figure'), cv = document.createElement('canvas'), cap = document.createElement('figcaption');
+    const im = images(card, mc);
+    cv.width = im.w; cv.height = im.h; cv.className = 'lg-cv'; cv.style.width = im.w * S + 'px';
+    if (im.w * S > 300) fig.className = 'lg-wide';
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', title);
+    cap.innerHTML = '<b>' + title + '.</b>' + (text ? ' ' + text.charAt(0).toUpperCase() + text.slice(1) : '');
+    fig.append(cv, cap); $(grid).appendChild(fig);
+    const c = { grid, cv, g: cv.getContext('2d'), im, steps: card.steps, k: 0, next: 0 };
+    c.g.putImageData(im.list[0], 0, 0);
+    if (!still && card.steps.length > 1) { cards.add(c); cv._on = !seen; if (seen) seen.observe(cv); }
+    return fig;
+  }
+  function tick(t) {
+    for (const c of cards) {
+      if (!c.cv._on || t < c.next) continue;
+      const last = c.k === c.steps.length - 1;
+      c.k = last ? 0 : c.k + 1;
+      c.g.putImageData(c.im.list[c.k], 0, 0);
+      c.next = t + c.steps[c.k].ms + (c.k === c.steps.length - 1 ? 600 : 0);
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ---- the page
+  const pick = { li: 0, w: 0, token: 0 };
+  const mirrorOf = (s) => (s.control & 0x10 ? 0 : s.control & 0x40 ? 1 : 0);   // $5D or $5F of 0, facing the way the cards face
+  const ticks = (n) => n + (n === 1 ? ' tick' : ' ticks');
+  // 77, 79 to 82 and 84 to 98
+  const runs = (list) => {
+    const out = [];
+    for (const f of list) { const r = out[out.length - 1]; if (r && r[1] === f - 1) r[1] = f; else out.push([f, f]); }
+    const t = out.map(([a, b]) => (a === b ? a : b === a + 1 ? a + ', ' + b : a + ' to ' + b));
+    return t.length > 1 ? t.slice(0, -1).join(', ') + ' and ' + t[t.length - 1] : t[0];
+  };
+  function armakuni(D) {
+    const w = pick.w, card = (streams, delay = 0) => lnrCard(D.m, D.P, streams, (s) => ({ weapon: w, mirror: s.mirror != null ? s.mirror : mirrorOf(s) }), delay, D.cache);
+    for (const id of ['lg-walk', 'lg-moves', 'lg-hits', 'lg-scripted']) clear(id);
+    // the walk: eight frames a set, a frame every four ticks
+    const walk = (base, mirror) => [...Array(8).keys()].map((k) => ({ frame: base + k, delay: LNR_WALK_TICKS, dx: 0, dy: 0, control: 0, mirror }));
+    for (const [base, mirror, way] of [[0, 0, 'up and to the right'], [0, 1, 'up and to the left'], [8, 1, 'down and to the right'], [8, 0, 'down and to the left']])
+      add('lg-walk', card([walk(base, mirror)]), D.mc, 'Walking ' + way, `frames ${base} to ${base + 7}${mirror ? ', mirrored' : ''}, a frame every ${ticks(LNR_WALK_TICKS)}.`);
+    const A = D.st.anims;
+    for (const [k, title] of [[0, 'Somersault, facing up the screen'], [1, 'Somersault, facing down the screen'], [2, 'Changing weapons, facing up the screen'], [3, 'Changing weapons, facing down the screen']])
+      add('lg-walk', card([A[k].steps]), D.mc, title, frames(A[k].steps) + '.');
+    // the moves: fire and each way of the stick, for the two facings, the same stream given once
+    const bare = w === 0, NAMES = bare ? ['a punch', 'a block', 'a punch', 'a crouch', 'a kick'] : ['a thrust', 'a block', 'a low thrust', 'a crouch', 'a kick'];
+    const STICK = [[0, 'up', 0], [1, 'up diagonally', 1], [2, 'right', 2], [3, 'down diagonally', 3], [4, 'down', 4], [6, 'left', bare ? 0 : -1]];
+    for (const [h, face] of [[1, 'facing up the screen'], [5, 'facing down the screen']]) {
+      const done = new Map();
+      for (const [d, way, name] of STICK) {
+        const steps = lnrAnim(D.m, lnrMove(D.m, D.S, w, d, h).anim);
+        const key = JSON.stringify(steps.map((s) => [s.frame, s.delay, s.dx, s.dy, s.control & 0x50]));
+        if (done.has(key)) { done.get(key).ways.push(way); continue; }
+        done.set(key, { steps, ways: [way], name: name < 0 ? 'a swing over the shoulder' : NAMES[name] });
+      }
+      for (const { steps, ways, name } of done.values())
+        add('lg-moves', card([steps]), D.mc, 'Fire and ' + (ways.length > 1 ? ways.slice(0, -1).join(', ') + ' or ' + ways[ways.length - 1] : ways[0]), face + ': ' + name + ', ' + frames(steps) + '.');
+    }
+    D.st.hits.forEach((s, i) => add('lg-hits', card([s.steps]), D.mc, 'Hit ' + (i + 1), frames(s.steps) + '.'));
+    // his scripted streams: climbing, falling, the water
+    // named by what they show: the climbing frames 73-76 with the way the stream moves him, the
+    // water's frames 88-98, the first frame of sinking (78 or 83) alone, the fall of a death
+    for (const s of D.st.scripted.filter((x) => !x.enemy)) {
+      const c = card([s.steps]), F = s.steps.map((x) => x.frame), dy = s.steps.reduce((n, x) => n + x.dy, 0);
+      const climb = F.some((f) => f >= 73 && f <= 76), water = F.some((f) => f >= 88 && f <= 98);
+      // sinking starts on frame 78 facing up the screen and on 83 facing down it
+      const facing = F[0] === 78 ? ', facing up the screen' : F[0] === 83 ? ', facing down the screen' : '';
+      const what = water ? 'Sinking' + facing : F[0] === 59 && F.includes(51) ? 'Over the top of a climb'
+        : climb ? (dy < 0 ? `Climbing ${-dy} pixels up` : dy > 0 ? `Climbing ${dy} pixels down` : 'Off the wall')
+        : F.every((f) => f === 78 || f === 83) ? 'The first frame of sinking, held' + facing
+        : F.join() === '44,45,46,46' ? 'Falling dead' : Frames(s.steps);
+      add('lg-scripted', c, D.mc, what, what.startsWith('Frame') ? '' : frames(s.steps) + '.');
+    }
+  }
+  function enemies(D) {
+    clear('lg-enemies');
+    const ups = D.st.scripted.filter((x) => x.routine === 'AiGetUpWhenEnergyRefilled');
+    for (const e of D.enemies) {
+      const streams = [...D.st.actions, ...D.st.falls, ...ups].map((s) => s.steps);
+      const card = lnrCard(D.m, D.P, streams, (s) => ({ enemy: true, kind: e.kind, profile: e.profile, mirror: mirrorOf(s) }), e.delay, D.cache);
+      const areas = e.areas.length > 1 ? 'Areas ' + e.areas.slice(0, -1).join(', ') + ' and ' + e.areas[e.areas.length - 1] : 'Area ' + e.areas[0];
+      add('lg-enemies', card, D.mc, areas, `kind ${e.kind}, holding ${HELD[e.profile & 3]}; its actions take ${ticks(e.delay)} a frame.`);
+    }
+  }
+  function figures(D) {
+    clear('lg-figures');
+    const words = FIGURES[D.id] || {}, after = LNR_AFTER[D.id] || {};
+    const list = D.st.scripted.filter((x) => x.enemy && x.routine !== 'AiGetUpWhenEnergyRefilled');
+    for (const s of list) {
+      const prev = after[s.at] && lnrSteps(D.m, after[s.at]), delay = prev ? prev[prev.length - 1].delay : 0;
+      const card = lnrCard(D.m, D.P, [s.steps], (x) => ({ enemy: true, mirror: mirrorOf(x) }), delay, D.cache);
+      const [where, what, mc] = words[s.at] || ['Started by ' + s.routine, ''];
+      add('lg-figures', card, mc || D.mc, where, `${what}${what ? '. ' : ''}${Frames(s.steps)}; <code>${hex(s.at)}</code>.`);
+    }
+    $('lg-figures-cap').innerHTML = list.length ? `Each card is the stream at the address shown, which the level's code starts in the second actor's slot, drawn in the multicolours its area sets.` : `This level has none.`;
+  }
+  async function thrownAndUnshown(D) {
+    clear('lg-thrown'); clear('lg-unshown');
+    for (const [kind, name] of [[1, 'The star'], [6, 'Item 10'], [7, 'Item 10, once flag $03EB is set']]) {
+      const one = (phase) => ({ parts: lnrCompose(D.m, D.P, 16, { thrown: kind, phase }).filter((p) => p.slot === 3), dx: 0, dy: 0, ms: 0, frame: 16 });
+      // the two images side by side, the second moved right past the first
+      const [a, b] = [one(0).parts, one(1).parts], box = { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 };
+      lnrExtent(a.concat(b), 0, 0, box);
+      if (box.x1 < box.x0) continue;
+      const parts = a.concat(b.map((p) => ({ ...p, x: p.x + box.x1 - box.x0 + 4 })));
+      add('lg-thrown', { steps: [{ parts, dx: 0, dy: 0, ms: 0 }], box: lnrExtent(parts, 0, 0, { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 }) }, D.mc, name, `kind ${kind}: its two images.`, true, 6);
+    }
+    // frames no stream shows: Armakuni's 0-17 are the walk's and the standing frames
+    const shown = new Set([...Array(18).keys()]);
+    for (const k of ['anims', 'actions', 'hits', 'falls', 'scripted']) for (const s of D.st[k]) for (const x of s.steps) shown.add(x.frame);
+    let missing = [...Array(D.n).keys()].filter((f) => !shown.has(f)), note = '';
+    // the drowning frames of a level without water, the same as Central Park's, which plays them
+    if (D.id !== 'central-park') {
+      const C = await level(0), same = missing.filter((f) => f >= 77 && f <= 98 && JSON.stringify(lnrCompose(D.m, D.P, f).map((p) => [p.x, p.y, p.attr, [...p.bytes]])) === JSON.stringify(lnrCompose(C.m, C.P, f).map((p) => [p.x, p.y, p.attr, [...p.bytes]])));
+      if (same.length) {
+        missing = missing.filter((f) => !same.includes(f));
+        note = `Frames ${runs(same)} are drowning frames, the same as <a href="#climbing" data-level="0">Central Park's</a>, where they play: this level keeps them in its table and never shows them. `;
+      }
+    }
+    for (const f of missing) {
+      const parts = D.cache.get(f + ':still') || lnrCompose(D.m, D.P, f); D.cache.set(f + ':still', parts);
+      const box = lnrExtent(parts, 0, 0, { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 });
+      if (box.x1 >= box.x0) add('lg-unshown', { steps: [{ parts, dx: 0, dy: 0, ms: 0 }], box }, D.mc, 'Frame ' + f, 'never shown.', true);
+    }
+    $('lg-unshown-cap').innerHTML = note + (missing.length ? `Every other frame of the level's table that no stream names, drawn by <code>ComposeSprites</code>.` : (note ? '' : 'Every frame of the level\'s table is in one of its animations.'));
+    const a = $('lg-unshown-cap').querySelector('a[data-level]');
+    if (a) a.onclick = () => go(0);
+  }
+  async function go(li) {
+    const t = ++pick.token;
+    pick.li = li;
+    $('lg-level').querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === li)));
+    let D;
+    try { D = await level(li); } catch (e) { say('The listings did not load: ' + e.message); return; }
+    if (t !== pick.token) return;
+    armakuni(D); enemies(D); figures(D);
+    await thrownAndUnshown(D);
+  }
+  function weapon(w) {
+    pick.w = w;
+    $('lg-weapon').querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(WEAPONS[i].w === w)));
+    level(pick.li).then((D) => armakuni(D));
+  }
+  const button = (box, label, on) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'ln-btn'; b.textContent = label; b.onclick = on; box.appendChild(b); };
+  LEVELS.forEach((L, i) => button($('lg-level'), L.name, () => go(i)));
+  WEAPONS.forEach((W) => button($('lg-weapon'), W.label, () => weapon(W.w)));
+  $('lg-weapon').querySelectorAll('button')[0].setAttribute('aria-pressed', 'true');
+  go(0);
+})();
+// end of lnr-gfx-page
+</script>

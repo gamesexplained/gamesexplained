@@ -22,7 +22,7 @@ Sources:
 | Keys: F1 sound, F3 and F5 the items, F7 pause, Space the weapons, RUN/STOP kills the ninja | traced | engine `$1EEA` (F1, `$AA`), `$02B7` (pause), `$0267` and `$B6` (RUN/STOP); see `facts.md`, "Controls" |
 | A joystick with a second button (the C64GS's pad): whichever starts the level fires, the other selects the weapon, both together the item | live | POTX of port 2 (`$D419`) with `$DC00` = `$80`; `$8EE8`-`$8EF9`, `$951B`, `$9497` in Central Park |
 | Picking an item up (fire with the stick down and to one side) | traced | either down-diagonal crouches (`InterpretNormalizedControls`, `$A640`); the crouch raises events 9, 10 and 11 on its three frames, and an object record (`object_record_00`, `$C0D0` in Central Park) names the frame, the box and the heading at which its item is taken (`ObjectEngine`, `$BFC3`); `index.html`, section 03, draws each weapon's box |
-| Somersaults | open | not found |
+| Somersaults | traced | fire pressed afresh while he walks (`$6C` = 0, cleared at `$A542` in Central Park when a stick direction is taken), with the stick at most an eighth of a turn from his heading (`InterpretControls`, `$A5BD`-`$A5C9`), selects action 0 (`$A5F3`), which `SelectPlayerAnimationForAction` turns into the first or second stream of the table by the way he faces; `test_graphics.js` runs `InterpretControls` for every heading and stick direction in all seven levels, and the Graphics tab plays both streams |
 | Fighting moves, unarmed, armed and thrown | confirmed | stick to move (`InterpretNormalizedControls`, `$A640`), reach (`TestActorCombatOverlap`, `$AC7A`), damage (`player_attack_enemy_damage`, `$ABBA`, a table for levels 1 to 4, one for The Office and The Mansion, one for the Final Battle), a star's 44 (`$B8B9`); `test_index.js` holds the ports in `index.html`, section 03, against the game's routines in all seven levels |
 | Weapons and items: keys, map, nunchakus, shuriken, staff, bottle, sword, hamburger, credit card, terminal | traced | 40 item flags at `$03D8`; each level's object records say where an item lies and what taking it does |
 | The player's and the enemy's energy | confirmed | `$0229` and `$022A`, 44 each, shown as two spirals (engine `$1D4B`, `$1D78`); `test_index.js` holds the spiral against engine `$1E67` |
@@ -54,5 +54,3 @@ Sources:
 - Who wrote the intro's tune: its driver is not the levels' and it
   carries no credit.
 - The 15 bytes at intro `$1797`, which nothing reads.
-- Somersaults: their animations are in the player's table, but what
-  starts one is not traced.

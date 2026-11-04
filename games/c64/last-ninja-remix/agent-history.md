@@ -112,3 +112,30 @@ unchanged, and the test, held on 20,000 readings against `$95AB`, said
 so. The hidden credits were first said to run for 3,210 frames, which
 was how long the live test watched them, not the length of the text:
 1,058 characters take 4,232 frames.
+
+## 4 November 2026 — the Graphics tab
+
+A Graphics tab, added with the site's newer guidance that every game
+with things that move shows every shape they are drawn with. Each card
+is composed by the level's own `ComposeSprites` or
+`ComposeEnemySprites` on the kit's 6502 and stepped by `lnrAnim` at the
+game's tick. The streams the levels start from their own code were found
+by following each immediate load to an installer or to a store of both
+bytes of a pointer at `$60`-`$63`; a first scan that only paired
+immediates found pointers into the middle of streams and into data.
+
+What went wrong first: the enemy's kind was set in `$7D`, which the
+composer reads only for Armakuni's slots, so every enemy came out
+without its own sprite until `$7F` was set instead. `lnrAnim` stops after
+64 commands, which cut short the stream of The Office's small blue
+figure (`$C5C6`), so the tab reads on with `lnrSteps`. `test_graphics.js` then found three more
+mistakes in the page: The Street's spawn tables are 16 bytes long, not
+18, so its enemies were read from the wrong entries; enemies with the
+same kind and profile were grouped although their delays differed; and
+The Mansion's area 12 sets sprite multicolours its figures were drawn
+without. The Final Battle's area 1 has its enemy only once item 16 is
+held, which the test sets.
+
+The somersault, open since the first run, was traced while writing the
+tab: fresh fire while walking, within an eighth of a turn of the
+heading (`InterpretControls`, `$A5BD`).
