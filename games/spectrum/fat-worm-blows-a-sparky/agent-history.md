@@ -204,3 +204,39 @@ pairs through `$B045` and 360 whole lists through `$B008`. The nine cells the
 view is taken from are pinned by the game's own starting window,
 `cell_grid_template` at `$6400`, which the page's reading of the links
 reproduces.
+
+## The Graphics tab (4 November 2026, maintainer's session)
+
+`graphics.html` plays everything that moves, a pass at a time. Its pictures
+were not drawn by a port: the game's own code made them, on the kit's Z80
+(`kit/spectrum/z80.js`) over `listing.json`'s bytes, and the page carries
+them as one-bit pictures, deflated. Three ways in, each a few lines:
+
+- **The frame loop itself.** Starting at `start_new_game` (`$757F`) with
+  every port reading `$FF` runs real passes: the worm falls to the board and
+  moves off at speed 10. Stopping at `$7668` gives the display list and at
+  `$766B` the drawn buffer; writing the controls byte at `$768E` steers.
+  Drawing only the four type `$FA` records into a cleared buffer gives the
+  worm alone.
+- **The object pool.** Records written at `$7C74`, with `object_list_end`
+  and the count set, in a game 26 passes old, are moved by calling
+  `walk_objects` (`$D691`), which returns once it has walked the pool, and
+  listed by `build_display_list` (`$AAF3`). The Crawly, the Sputnik, the
+  eruption point and the explosion all ran under their own handlers this
+  way.
+- **One record at a time.** A display-list record at `$EC80`, in the free
+  space, with `draw_entry` pointing at it and the extents set, drawn by
+  `draw_object` (`$81DB`) with A, B and C as `$B2F4` loads them.
+
+A routine is called with its return address set to `$FFFF`, in the buffer,
+and the run stops when the program counter gets there. The whole set of
+cards takes under two seconds in node. `test_graphics.js` makes every card
+again and compares it with the page, then checks the numbers the copy gives.
+
+The facts found on the way are in `facts.md` under "Moving pictures". Two
+were new: a spindle turns one way or the other by bit 0 of its top height,
+and an eruption point's handler never removes it once it has let out its
+Crawly. The disk's place in the ending card is where the slide at `$78C9`
+leaves the real disk item, worked out from its y of 9 and the worm's y under
+2; it was not seen live.
+
