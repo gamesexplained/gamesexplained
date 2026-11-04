@@ -61,16 +61,21 @@ function machine(name = 'play', opts = {}) {
   kernal(m);
   return m;
 }
-// VECTOR ($FF8D), the one KERNAL routine the game calls outside a save or a load (the start-up,
-// $4008, with the carry set): the snapshots hold no ROMs, so it is served here as the KERNAL does
-// it, the 32 bytes of vectors at $0314 copied to the address in X and Y. Only while the KERNAL is
-// banked in; the game's own code sits at $FF8D in RAM.
+// The KERNAL routines the game calls (src/kernal.js): the snapshots hold no ROMs, so they are
+// served as the KERNAL does them, only while the KERNAL is banked in; the game's own code sits at
+// $FF8D in RAM.
 function kernal(m) {
-  m.hooks[0xFF8D] = c => {
+  require(path.join(GAME, 'port/src/kernal.js'));
+  const hooks = globalThis.SCRKernal.hooks();
+  for (const a of Object.keys(hooks)) {
+    m.hooks[a] = c => ((c.pdata | ~c.pdir) & 2 ? hooks[a](c) : false);
+  }
+  // The KERNAL's own interrupt ($EA31), which CIA 1's timer raises in the start-up's pause before the
+  // game turns it off: its timer acknowledged and the interrupt left. What the ROM does there (the
+  // clock, the cursor, the keyboard) touches only the KERNAL's own bytes, and the port leaves it out
+  m.hooks[0xEA31] = c => {
     if (!((c.pdata | ~c.pdir) & 2)) return false;
-    const t = c.x | c.y << 8;
-    for (let i = 0; i < 32; i++) if (c.c) m.ram[(t + i) & 0xFFFF] = m.ram[0x314 + i]; else m.ram[0x314 + i] = m.ram[(t + i) & 0xFFFF];
-    c.rts();
+    c.rd(0xDC0D); m.leave();
     return false;
   };
 }

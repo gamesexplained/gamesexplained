@@ -25,9 +25,9 @@ hides its contents from a casual look.
    its own).
 2. The loader shows a copyright screen, then the loading picture (`reference/copyright.png`,
    `reference/loading-picture.png`). Set an execute checkpoint on `$4000`
-   once the autostart is 15 seconds in; it stops at the game's start-up,
-   the loader's last jump. That is the hand-over, saved as
-   `work/entry.vsf`.
+   once the autostart is 15 seconds in; it stops two instructions into
+   the game's start-up, which the loader's last jump enters at `$3FFB`.
+   That is the hand-over, saved as `work/entry.vsf`.
 3. Run on. The menu "Single Player League / Multiplayer" appears a few
    seconds later (`reference/menu.png`); `work/menu.vsf` is saved there.
    The menus are driven by the joystick in port 2: up and down move the
@@ -62,7 +62,7 @@ recorded `codemap.json`.
   the bitmap at `$4000`, `$78` for the one at `$6000`) and puts `$78`
   back at line 197 for the dashboard, which lives only in the bitmap at
   `$6000`.
-- The start-up (`$4000`-`$42A8`) runs once and is then overwritten by
+- The start-up (`$3FFB`-`$42C6`) runs once and is then overwritten by
   the bitmaps, so `work/entry.vsf` is the only image that holds it and
   the listing is built from it. It copies the game's tables from
   `$4F00`-`$56FF`, `$7B00`-`$7FFF` and `$AE00` into the RAM under the I/O
@@ -75,5 +75,6 @@ recorded `codemap.json`.
 `*` loads at `$0302`, over BASIC's warm-start vector, so the BASIC loop
 jumps into it as soon as the load ends (at `$0330`). It decrypts its own
 code with an exclusive-or loop and then reads the game's sectors with a
-routine of its own, showing the loading picture, and jumps to `$4000`.
+routine of its own, showing the loading picture, and jumps to `$3FFB`
+(`JMP $3FFB` at `$02F8`).
 Not annotated further, by policy.

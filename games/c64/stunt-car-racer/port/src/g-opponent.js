@@ -73,7 +73,7 @@ G.opponent = P => {
   P.RACE_SCREEN = r => {
     M[0x52] = 8;
     P.DISPATCH({ a: 0x55, x: 0, y: 0x40 });
-    P.s_3A3C({ a: 0x20, x: 0x38, y: 0x5F });
+    P.HLINE_SCREEN({ a: 0x20, x: 0x38, y: 0x5F });
     return P.DISPATCH({ a: 0x32 });
   };
   // CONTROLS ($1C64): the joystick ($F79E, into $66): left and right steer ($C5 = $F1 or $0F)
