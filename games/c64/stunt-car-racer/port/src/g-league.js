@@ -38,7 +38,8 @@ G.league = P => {
   };
 
   // DIVISION_RANGE ($E8C2): the division $C360's places in the league's order, $50 up to $8A: three
-  // from $E8E1 (9, 6, 3 or 0), or with several players all from 11 less their number to 12
+  // from $E8E1 (9, 6, 3 or 0 for $C360 0 to 3, divisions 4 to 1), or with several players all from
+  // 11 less their number to 12
   P.DIVISION_RANGE = r => {
     if (M[0x31A1]) {
       M[0x50] = ((M[0x31A1] ^ 0xFF) + 0x0C) & 255;

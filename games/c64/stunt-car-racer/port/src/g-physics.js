@@ -107,10 +107,12 @@ G.physics = P => {
   // ADD_SPIN ($0A78): the spin's three axes ($010C/$0112) each moved on by its torque ($0118/$011E)
   P.ADD_SPIN = r => { for (let x = 2; x >= 0; x--) add15(0x010C + x, 0x0112 + x, M[0x0118 + x], M[0x011E + x]); return { x: 0xFF }; };
 
-  // WHEELS_ON_ROAD ($0A97): for each of the three wheels, its height above the road ($C340-$C34B
-  // and $C3CE-$C3D3, less $0E) and how far its spring is pressed ($0148/$014B), a hard landing
-  // counted at $C3BC and its force kept at $C3C3 (the damage it does, after $C38B); then the
-  // springs' sum and difference ($0160/$0161, $0166/$0167, $014E/$014F) and the road's grip
+  // WHEELS_ON_ROAD ($0A97): for each of the three points, how far it is down into the road
+  // ($C340-$C34B and $C3CE-$C3D3, less $0E, which is 2 once the car is wrecked) and how far its
+  // spring is pressed ($0148/$014B: the depth plus its change since the last step), a hard landing
+  // counted at $C3BC, and damage at $C3C3 for a press past $C38B plus 7 while the count $E1 of such
+  // presses in a row is below $209B; then the springs' mean and differences ($0160/$0161,
+  // $0166/$0167, $014E/$014F), the crane and the bump's pushes
   P.WHEELS_ON_ROAD = r => {
     M[0xC3BC] = 0; M[0xC35C] = 0;
     for (let x = 2; x >= 0; x--) {

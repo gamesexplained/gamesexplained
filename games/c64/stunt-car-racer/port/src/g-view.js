@@ -86,9 +86,10 @@ G.view = P => {
     return P.PIECE_FROM_HERE({ a: k, x, y });
   };
 
-  // VIEW_SQUARE ($F15D): the car's place (points 0 and 2 of $0100/$0103/$0106) in squares into
-  // $AF/$B1 and $5C/$5E (a zero low byte made 1 first), and its place within the square into
-  // $45/$63/$24 and $47/$65/$26, swapped and negated as A's top bits (the view's quarter) say
+  // VIEW_SQUARE ($F15D): the car's place (axes 0 and 2 of its position, $0100/$0103/$0106) in
+  // squares into $AF/$B1 and $5C/$5E (a zero low byte made 1 first), and its place within the
+  // square into $45/$63/$24 and $47/$65/$26, swapped and negated as A's top bits (the view's
+  // quarter) say
   P.VIEW_SQUARE = r => {
     M[0x16] = r.a & 255;
     for (let x = 2; x >= 0; x -= 2) {
@@ -106,7 +107,8 @@ G.view = P => {
     if (q & 0x40) { P.VIEW_COPY({ x: 0, y: 2 }); return P.VIEW_NEGATE({ x: 2, y: 0 }); }
     P.VIEW_COPY({ x: 0, y: 0 }); return P.VIEW_COPY({ x: 2, y: 2 });
   };
-  // VIEW_NEGATE ($F1A6): place X's three bytes negated (from 8 squares) into $45/$63/$24 + Y
+  // VIEW_NEGATE ($F1A6): axis X of the car's position, three bytes, negated (from 8 squares) into
+  // $45/$63/$24 + Y
   P.VIEW_NEGATE = r => {
     const x = r.x & 255, y = r.y & 255;
     let t = 0 - M[0x0100 + x]; M[0x45 + y] = t & 255;
@@ -114,7 +116,7 @@ G.view = P => {
     t = 8 - M[0x0106 + x] - (t < 0 ? 1 : 0); M[0x24 + y] = t & 255;
     return { a: t & 255, x, y, c: t >= 0 ? 1 : 0 };
   };
-  // VIEW_COPY ($F1C9): place X's three bytes into $45/$63/$24 + Y
+  // VIEW_COPY ($F1C9): axis X of the car's position, three bytes, into $45/$63/$24 + Y
   P.VIEW_COPY = r => {
     const x = r.x & 255, y = r.y & 255;
     M[0x45 + y] = M[0x0100 + x]; M[0x63 + y] = M[0x0103 + x]; M[0x24 + y] = M[0x0106 + x];
@@ -315,7 +317,7 @@ G.view = P => {
   // ($0100-$018F) cleared, $2F $F0, its place in the middle of the piece's square and its heading
   // the piece's ($0125, $20 more for kinds 4 and $0A); the view and the piece set (CAMERA, $9A38,
   // SIDEWAYS, a STEP), then the car's height from $C345/$C3D0, from the crane's when $C37C is set
-  // (and the crane's count $E6), its frame turned (TURN_POINTS), the wheels' springs at rest,
+  // (and the crane's count $E6), its frame turned (SHIFT_ON_GROUND), the wheels' springs at rest,
   // the view again, $C36B $AF and $C36C 8
   P.START_PLACE = r => {
     let x = r.x & 255;
@@ -358,7 +360,7 @@ G.view = P => {
     }
     M[0xC35E] = P.SHIFT16({ a, y: 0xFA }).a & 255;
     M[0xC35D] = M[0x14];
-    P.TURN_POINTS({ y: 0 });
+    P.SHIFT_ON_GROUND({ y: 0 });
     for (let i = 2; i >= 0; i--) { M[0xC343 + i] = 0x10; M[0xC3CE + i] = 0; M[0xC340 + i] = 0; M[0x0145 + i] = 0; }
     P.CAMERA({ x: 0xFF });
     M[0xC36B] = 0xAF; M[0xC36C] = 0x08;

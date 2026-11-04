@@ -300,10 +300,11 @@ G.dispatch = P => {
     return { x: 0xFF, a: M[0x0500], y: 0xFF };
   };
 
-  // SAVE_RESTORE_SCREEN ($886A): with X below $80 the part of the bitmap at $62A0 that a menu
-  // covers (eight rows of 256 bytes and a ninth of 64) goes to $57C0 and colour RAM to $6DE0; with
-  // X of $80 or more both come back, and the tables under the I/O area at $D000-$D3FF and $DD00
-  // are saved to $7C00 and $7B00
+  // SAVE_RESTORE_SCREEN ($886A): with X below $80, as a race ends, what the menus' bitmap at $4000
+  // draws over, $57C0-$5FFF (sprite shapes and the race's screen at $5C00), is kept in the race
+  // picture's view rows from $62A0 (eight rows of 256 bytes and a ninth of 64, 320 apart), and
+  // colour RAM at $6DE0; with X of $80 or more, as a race starts, both come back, and the dashboard
+  // comes back from the copies under the chips, $D000-$D3FF to $7C00 and $DD00 to $7B00
   P.SAVE_RESTORE_SCREEN = r => {
     M[0x16] = r.x & 255;
     const back = M[0x16] & 0x80;

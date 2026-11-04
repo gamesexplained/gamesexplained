@@ -334,7 +334,7 @@ G.menus = P => {
     return { a: 0, x: q.x, y: q.y };
   };
   // MULTI_RESULTS ($3092): the table of a game for several: after a race (C39C clear) the race's
-  // results; at the end of a track's pair of races ($C39C and $31A5 set) the bonus points
+  // results; after a round ($C39C and $31A5 set) the bonus points
   P.MULTI_RESULTS = r => {
     let q = P.SORT_DIVISION({ x: r.x, y: r.y });
     M[0x3845] = 0x10; M[0x321D] = 0x0E;
@@ -523,8 +523,8 @@ G.menus = P => {
     return yield* fireThenRows();
   };
   // TABLE_ROW ($364F): the row of the table's driver $C7 (by place, $C758): the name, then the
-  // races, wins, fastest laps and points, or for a game for several at the end of a pair of races
-  // ($C39C set) the two race times; Z set at the table's end ($8A)
+  // races, wins, fastest laps and points, or for a game for several after a round ($C39C set) the
+  // two race times; Z set at the table's end ($8A)
   P.TABLE_ROW = r => {
     let x = M[0xC758 + M[0xC7]];
     M[0xC6] = x;
@@ -549,18 +549,21 @@ G.menus = P => {
     return { a, x, y: q.y, z: a === b ? 1 : 0, c: a >= b ? 1 : 0, n: ((a - b) >> 7) & 1 };
   };
   P.GEN.add('WAIT_FIRE');
+  // each turn of a loop that reads the controls is a checkpoint: READ_CONTROLS draws a random number
+  // every time, so the port turns as often as the game does
+  P.CHECKPOINTS.push(0x3696, 0x36A2);
   // WAIT_FIRE ($3696): waits for the fire button to be let go, a moment, and then pressed
   P.WAIT_FIRE = function* (r) {
     let q;
-    do { yield { cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (q.a & 0x10);
+    do { yield { cp: 0x3696, cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (q.a & 0x10);
     yield* P.DELAY({ y: 5 });
-    do { yield { cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (!(q.a & 0x10));
+    do { yield { cp: 0x36A2, cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (!(q.a & 0x10));
     return { a: 0x10, x: q.x, y: q.y, z: 0 };
   };
   P.GEN.add('LEAGUE_TABLE');
-  // LEAGUE_TABLE ($36AD): the four divisions of the league, top last ($C360 3 to 0): each one's
-  // heading, its two tracks and its three drivers, their names from $C70C; then a wait for the fire
-  // button. In a game for several, RESULTS_TABLE
+  // LEAGUE_TABLE ($36AD): the four divisions of the league, the top first ($C360 3 to 0): each
+  // one's heading, its two tracks and its three drivers, their names from $C70C; then a wait for
+  // the fire button. In a game for several, RESULTS_TABLE
   P.LEAGUE_TABLE = function* (r) {
     if (M[0x31A1]) return yield* P.RESULTS_TABLE(r);
     M[0xC356] = 0x80;
@@ -609,11 +612,13 @@ G.menus = P => {
     P.CHANGES({});
     return yield* fireThenRows();
   };
-  // CHANGES ($375D): the end of a season: the league's order from the tables ($C758 to $C70C), who
-  // is promoted (the division's winner; the player out of the top division into the Super League)
-  // and relegated (its last, but from the bottom division), each pair swapped; then the player's
-  // place: the Super League ($C71A) starts with the league in order, and otherwise $C718 is the
-  // division the player is in ($381D by place) and $C719 10 at the top
+  // CHANGES ($375D): the end of a season: the league's order from the tables ($C758 to $C70C); for
+  // division $C360 its winner promoted and its last relegated (none from the bottom division); from
+  // the top division only the player goes up, into the Super League or with a message in it, and
+  // then no relegation line is printed. Each pair at the divisions' edges is swapped; a player who
+  // won the top division outside the Super League goes into it ($C71A), the order starting again at
+  // 0-11 and $C718 0, and otherwise $C718 is the division of the player's place ($381D). $C719, the
+  // car's whole parts, goes back to 10 when the player won the top division or is in the bottom one
   P.CHANGES = r => {
     for (let x = 0x0B; x >= 0; x--) M[0xC70C + x] = M[0xC758 + x];
     P.DIVISION_RANGE({});

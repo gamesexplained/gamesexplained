@@ -11,10 +11,10 @@ G.records = P => {
   // one scan of the keyboard's 64 keys while keys are being redefined, in cycles
   P.COST.keyScan = P.COST.keyScan || 64 * 120;
 
-  P.GEN.add('PAIR_RESULTS'); P.GEN.add('BONUS_RESULTS');
-  // PAIR_RESULTS ($91B4): the table of a game for several at the end of a track's pair of races
-  // ($31A5 set meanwhile: BONUS_RESULTS, then RESULTS_TABLE)
-  P.PAIR_RESULTS = function* (r) {
+  P.GEN.add('ROUND_RESULTS'); P.GEN.add('BONUS_RESULTS');
+  // ROUND_RESULTS ($91B4): the tables of a game for several after each round, once every player has
+  // raced ($31A5 set meanwhile: BONUS_RESULTS, then RESULTS_TABLE)
+  P.ROUND_RESULTS = function* (r) {
     M[0x31A5] = 0x80;
     yield* P.BONUS_RESULTS({});
     const q = yield* P.RESULTS_TABLE({});
@@ -29,9 +29,9 @@ G.records = P => {
     return q;
   };
 
-  // BONUS_LINES ($91CF): the pair's bonuses, from row $0E: one more of the table's wins ($C728) to
-  // the driver of the fastest race ($C76E) and one more of its fastest laps ($C734) to the driver of
-  // the fastest lap ($C76D), each named; then the division sorted again
+  // BONUS_LINES ($91CF): the round's bonuses, from row $0E: one more of the table's wins ($C728) to
+  // the driver of the fastest race ($C76E) and one more of its fastest laps ($C734) to the driver
+  // of the fastest lap ($C76D), each named; then the division sorted again
   P.BONUS_LINES = r => {
     M[0x19] = 0x0E;
     M[0x3953] = 0x0A;

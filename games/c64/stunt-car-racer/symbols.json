@@ -11764,7 +11764,7 @@
   },
   {
    "address": 37300,
-   "name": "PAIR_RESULTS",
+   "name": "ROUND_RESULTS",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -17152,7 +17152,7 @@
   },
   {
    "address": 60729,
-   "name": "TURN_POINTS",
+   "name": "SHIFT_ON_GROUND",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -19324,7 +19324,7 @@
   {
    "address": 2711,
    "type": "line",
-   "text": "For each point of contact: its height above the road (the road's height at $C340/$C343/$C3CE less the car's at $C346/$C349/$C3D1, less $0E for the car's own height), kept at $0179/$017C/$C3D4; how far its spring is pressed ($0148/$014B, from the change in that height since the last step at $0142/$0145), 0 when it is off the road. A spring pressed past 4 that was below 2 counts a landing at $C3BC; past $C38B plus 7 the bump damages the car: the excess, half again, is added to the point's damage at $C3C3 (once a bump: $E1 counts its steps against $209B) and $C352 is set. Then the springs' mean ($0160/$0161), three times the front pair's difference at most 16 either way ($0166/$0167, the roll's force), and the front pair's mean less the back's ($014E/$014F, the pitch's); $6A is non-zero while any spring is pressed. With none pressed and the car not hanging from the crane, the pitch's force is held at a limit set by the pitch and the track. Then the car's grip on the track ($EC11, $2176) and, on a landing, sound effect 3."
+   "text": "For each point of contact, X from 2 to 0: how far it is down into the road, the road's height at $C340/$C343/$C3CE less the point's at $C346/$C349/$C3D1, less $0E (0, and 2 once the car is wrecked, so that it sinks), kept at $0179/$017C/$C3D4. A point more than $300 above the road (its top two bytes below $FFFD) is off it and its spring's press is 0; otherwise the depth, its middle byte held at $14 at most, gives the press ($0148/$014B): the depth plus its change since the last step (ADD16_18, the last kept at $0142/$0145), never below 0 and held at $11FF. A press reaching 4 in its high byte when it was below 2 counts a landing at $C3BC. A press reaching $C38B plus 7 damages the car while $E1, which counts such presses in a row across the three points and from step to step and is cleared by any press under the line, is still below $209B: its excess over $C38B plus 6, at most $7F, and half again is added to the point's damage at $C3C3 (held at $FF), and $C352 is set; the largest over $C38B is kept at $C35C. Then the springs' mean $0160/$0161 (points 0 and 1 a quarter each, point 2 a half), WHEEL_LEVERS, three times the difference of points 0 and 1 held to 16 either way ($0166/$0167, the roll's force), and the mean of points 0 and 1 less point 2's ($014E/$014F, the pitch's); $6A is non-zero while that mean is ($0160 OR $0161). With it 0 and the car not hanging from the crane ($2F), the pitch's force is held at a limit set by the pitch and the track. Then the crane (CRANE), the bump's pushes taken in (OPP_PUSH) and, on a landing, sound effect 3."
   },
   {
    "address": 3185,
@@ -19524,7 +19524,7 @@
   {
    "address": 5158,
    "type": "line",
-   "text": "Draws digit A from X two pixels to the right, the two that spill into the next byte, which is overwritten."
+   "text": "Draws digit A from X two pixels to the right: the glyph's bit 1 spills into bit 7 of the next byte, which is overwritten, and its bit 0, blank in every digit, is lost; the byte at X keeps its own bit 7."
   },
   {
    "address": 5162,
@@ -19644,7 +19644,7 @@
   {
    "address": 5754,
    "type": "line",
-   "text": "Draws a frame's view of the track. From the piece the car is over ($FF6A, or $F117 from $AF and $B1, into $2E and $C374) it draws that piece and the ones ahead, each with DRAW_PIECE, POINTS_TO_LINES and NEXT_PIECE: the first two, then two more, or five more while the car is lowered at the start ($2F), or on Draw Bridge (track 5) up to two more as the car nears piece $31. When no piece is under the car it is off the track and wrecked ($6B = $C0). In a league race the opponent moves (OPPONENT_MOVE) and its car is placed among the pieces. Then the view's column limits, the fills, and the sky above the track (CMD_FILL_ABOVE)."
+   "text": "Draws a frame's view of the track. From the piece the car is over ($FF6A, or $F117 from $AF and $B1, into $2E and $C374) it draws the pieces ahead, each with DRAW_PIECE, POINTS_TO_LINES and NEXT_PIECE. It starts from the car's piece, or from the one after it when the eye is already past that piece's end ($8E = $80, PLACE_ALONG); while the eye is in its piece's first segment ($8E = 0) the opponent is drawn first if it is on the piece before ($A6, OPP_DRAW_HERE). It draws two pieces, then two more: five more while the car is lowered at the start ($2F), and on Draw Bridge (track 5) one more for each piece the car is short of piece $31 when that is two or fewer. When no piece is under the car it is off the track and wrecked ($6B = $C0). In a league race the opponent moves (OPPONENT_MOVE) and its car is placed among the pieces. Then the view's column limits, the fills, and the sky above the track (CMD_FILL_ABOVE)."
   },
   {
    "address": 6013,
@@ -19754,7 +19754,7 @@
   {
    "address": 7740,
    "type": "line",
-   "text": "Aims $20 or $E0 across, to pass the player on the side with more room, when the cars are within $38 across."
+   "text": "Passes the player when the cars are within $38 across ($51): the opponent aims for the edge on its own side, $20 when it is below the player across ($77 bit 7) and $E0 when above, unless the player is near that edge (below $60, or from $A0), when it aims for the other. Further apart it keeps the place it is at ($B0, set by OPPONENT_LINE)."
   },
   {
    "address": 7770,
@@ -19819,12 +19819,12 @@
   {
    "address": 8347,
    "type": "line",
-   "text": "A third, from OPP_PICK, which WHEELS_ON_ROAD counts a bump's steps against."
+   "text": "From OPP_PICK, the track's $C774, or $C775 in the Super League (3 to 10): WHEELS_ON_ROAD adds damage for a spring pressed past its line only while its count $E1 is below it."
   },
   {
    "address": 8348,
    "type": "line",
-   "text": "The cars meet: while the opponent races and is in the air or the player's springs are free, and its back wheel is within $C0 of the player's height ($46/$64, plus $28), three times ($C369) it pushes the player's car up ($0180/$0183); close beside it pushes sideways ($0182); and along by the difference of their speeds ($0181/$0184), once a bump ($E0). The pushes' size, plus 2, is added to each point's damage ($C3C3-$C3C5) and $C352 is set."
+   "text": "The cars meet, while the opponent races ($C37C). Unless the opponent has a wheel on the road ($C9) and the player's springs press ($6A), the heights are tested first: the player's ($46/$64) less the opponent's wheel 0, at the front ($07CC/$07D0), plus $28, must be within $C0 either way, or it returns at once with $C369 set to 3. When they are and $C369 is not 0, it counts $C369 down and pushes the player's car in height ($0180/$0183), harder the nearer the heights, by their difference's sign: at most three times after a pass at heights too far apart, since OPPONENT_LINE clears $C369 while the cars are apart. Close beside ($51 below $2D, $39 below 8) it pushes sideways, 8 or $F8 by which side the opponent is on ($77, into $0182). Once a bump ($E0, cleared by OPPONENT_LINE) it pushes along by half the difference of their speeds plus 3 in its direction ($0181/$0184). $C371 is set, the pushes' high bytes plus 2 are added to each point's damage ($C3C3-$C3C5, held at $FF) and $C352 is set."
   },
   {
    "address": 8566,
@@ -20169,7 +20169,7 @@
   {
    "address": 12315,
    "type": "line",
-   "text": "The column TRACK_TITLE prints each track's name from."
+   "text": "For each track, the column TRACK_TITLE prints \"The \" from ($3460), so that it and the track's name, four columns on, sit in the middle."
   },
   {
    "address": 12323,
@@ -20199,7 +20199,7 @@
   {
    "address": 12434,
    "type": "line",
-   "text": "The table of a game for several. After a pair of races on a track ($C39C and $31A5 set): the track bonus points, the track's name, $91CF's points and the race times. After one race: the race's results, and \"Track record\" when $C74B is 7 or more. Then a row of TABLE_ROW for each driver from $50 to $8A."
+   "text": "The table of a game for several. After a round ($C39C and $31A5 set, ROUND_RESULTS): the track bonus points, the track's name, $91CF's points and the race times. After one race: the race's results, and \"Track record\" when $C74B is 7 or more. Then a row of TABLE_ROW for each driver from $50 to $8A."
   },
   {
    "address": 12656,
@@ -20359,7 +20359,7 @@
   {
    "address": 13408,
    "type": "line",
-   "text": "The column of the track's name under the view."
+   "text": "The column of string $58, \"The \" under the view, from $301B by track; the track's name follows it four columns on."
   },
   {
    "address": 13568,
@@ -20409,7 +20409,7 @@
   {
    "address": 13903,
    "type": "line",
-   "text": "The row of the table's driver $C7 (the driver at that place, $C758): the name, then the races ($C740), the wins ($C728), the fastest laps ($C734) and the points ($C74C); for several at the end of a pair of races ($C39C), the two race times ($99FF). Z is set at the table's end ($8A)."
+   "text": "The row of the table's driver $C7 (the driver at that place, $C758): the name, then the races ($C740), the wins ($C728), the fastest laps ($C734) and the points ($C74C); for several after a round ($C39C), the two race times ($99FF). Z is set at the table's end ($8A)."
   },
   {
    "address": 13974,
@@ -20424,7 +20424,7 @@
   {
    "address": 13997,
    "type": "line",
-   "text": "The whole league: the four divisions, the top last ($C360 3 to 0), each with its heading, its two tracks (half a row down) and its three drivers, from $C70C. Then WAIT_FIRE. For several players, RESULTS_TABLE."
+   "text": "The whole league: the four divisions, the top first ($C360 3 to 0), each with its heading, its two tracks (half a row down) and its three drivers, from $C70C. Then WAIT_FIRE. For several players, RESULTS_TABLE."
   },
   {
    "address": 14120,
@@ -20449,7 +20449,7 @@
   {
    "address": 14173,
    "type": "line",
-   "text": "The end of a season. The league's order from the tables ($C758 into $C70C) and \" CHANGES\": the division's winner promoted (\"Promotion for \"; out of the top division into the Super League, the string at $E0A7, or $E0CE in it), its last relegated (\"Relegation for \", none from the bottom division), each pair swapped. Then the player's place: into the Super League ($C71A) the league starts again in order; otherwise $C718 is the division the player's place is in ($381D). $C719 is 10 in the top division."
+   "text": "The end of a season. The league's order from the tables ($C758 into $C70C) and \" CHANGES\" for division $C360: its winner promoted (\"Promotion for \") and its last relegated (\"Relegation for \", none from the bottom division). From the top division only the player goes up, \"to the SUPER LEAGUE\" ($E0A7), or with \"EXCELLENT DRIVING - WELL DONE\" ($E0CE) in it, and then no relegation line is printed; when another driver wins it, only the relegation is. Then each pair at the divisions' edges swapped in the order. A player who won the top division outside the Super League goes into it ($C71A set), where the order starts again at 0-11 and $C718 is 0; otherwise $C718 is the division of the player's new place ($381D, 0 the bottom). $C719, the car's whole parts, is set back to 10 when the player won the top division or is in the bottom one; elsewhere the damage carries into the next season."
   },
   {
    "address": 14365,
@@ -20689,7 +20689,7 @@
   {
    "address": 15513,
    "type": "line",
-   "text": "A race. The screen kept (command $34) and cleared, the race's state cleared, multicolour, the opponent placed (START_ORDER, on piece $C765) and dropped onto the road. Then the car placed on piece X ($F488) and two steps drawn and shown before the screen goes on (one after a wreck, $3DF8 set), and the race's loop."
+   "text": "A race. The race's screen put back (command $34 with X $80, SAVE_RESTORE_SCREEN) and cleared, the race's state cleared, multicolour, START_ORDER, then the opponent placed on the start piece ($C765 into $C375, 4 along at $C4, $4C across at $B0) and dropped onto the road (OPP_DROP). Then the car placed on piece X ($F488) and two steps drawn and shown before the screen goes on (one after a wreck, $3DF8 set), and the race's loop."
   },
   {
    "address": 15558,
@@ -20709,7 +20709,7 @@
   {
    "address": 15721,
    "type": "line",
-   "text": "Wrecked on the road ($6B bit 7, $6A): $C373 set from $6B when $64 is negative or below 2, and once $C368 runs out the car is put back ($E0F9) at piece $C309 and the race goes on."
+   "text": "Wrecked on the road ($6B bit 7, $6A): $C373 set from $6B when $64 is negative or below 2, and once $C368 runs out, with $6C clear, the sound effects stopped (STOP_EFFECTS) and the car put back on the road at piece $C309 (CAR_ON_ROAD), and the race goes on."
   },
   {
    "address": 15765,
@@ -20719,7 +20719,7 @@
   {
    "address": 15787,
    "type": "line",
-   "text": "The end of the race: $C362 set unless $C364, a black border, the sprites off, the car put back ($E0F9), and in the league for several the player's $C719 kept at $83B0 (and their clock cleared unless $C378 is 4); $C719 back from $C37E; the random numbers kept, and the screen back (command $34)."
+   "text": "The end of the race: $C362 set unless $C364, a black border, the sprites off, the sound effects stopped (STOP_EFFECTS). In a league race ($C76C bit 7) for several players the player's $C719 is kept at $83B0 (and their clock cleared unless $C378 is 4); then $C719 back from $C37E, except in a league race for one player, where the race's damage stays. The random numbers kept, and the race's screen kept for the next race to put back (command $34 with X 0, SAVE_RESTORE_SCREEN)."
   },
   {
    "address": 15864,
@@ -20729,7 +20729,7 @@
   {
    "address": 15865,
    "type": "line",
-   "text": "A race's state cleared: $C300-$C3FF, $0774-$07FF, $4000-$40FF, the car's $0100-$018F and zero page from $02. Then the eleven bytes from $BFEA (one on in the Super League) to $C382; the view's rows' colours 7 to $17; the clocks; the roll's tables; the car put on the road ($E0F9); the race's random numbers; the dashboard's labels and lamps; $C76A, the league's or the Super League's count from $C776 or $C777 in decimal; $C37E kept from $C719; and CLEAR_BARS."
+   "text": "A race's state cleared: $C300-$C3FF, $0774-$07FF, $4000-$40FF, the car's $0100-$018F and zero page from $02. Then the eleven bytes from $BFEA (one on in the Super League) to $C382; the view's rows' colours 7 to $17; the clocks; the roll's tables; the sound effects stopped (STOP_EFFECTS); the race's random numbers; the dashboard's labels and lamps; $C76A, the league's or the Super League's count from $C776 or $C777 in decimal; $C37E kept from $C719; and CLEAR_BARS."
   },
   {
    "address": 16040,
@@ -20744,7 +20744,7 @@
   {
    "address": 16096,
    "type": "line",
-   "text": "While the bitmap at $6000 is being drawn ($C306 set), key $0D pauses the race: the car put back ($E0F9), message $4C, $97AF until key $34, then the message that was showing back and the sounds started again (START_SOUNDS)."
+   "text": "While the bitmap at $6000 is being drawn ($C306 set), key $0D pauses the race: the sound effects stopped (STOP_EFFECTS), message $4C, $97AF until key $34, then the message that was showing back and the sounds started again (START_SOUNDS)."
   },
   {
    "address": 16167,
@@ -20769,7 +20769,7 @@
   {
    "address": 16260,
    "type": "line",
-   "text": "Not called: the same as MENU_BITMAP with $D018 $78 and $C35F 0."
+   "text": "Not called: the same as MENU_BITMAP with $D018 $78, and $C35F and $C370 0."
   },
   {
    "address": 16267,
@@ -20979,7 +20979,7 @@
   {
    "address": 16974,
    "type": "line",
-   "text": "The chips back in ($01 = $35), interrupts on, the screen's colours kept (command $34, X 0), then START."
+   "text": "The chips back in ($01 = $35), interrupts on, the race's screen, sprites and colours kept (command $34 with X 0, SAVE_RESTORE_SCREEN), then START."
   },
   {
    "address": 16989,
@@ -21179,7 +21179,7 @@
   {
    "address": 22464,
    "type": "line",
-   "text": "Sprite shape $5F at run time, a frame of the boost's flame (with $FD, while $C35F's bit 7 is set), copied here from $6BA0 by the start-up; SAVE_RESTORE_SCREEN also keeps the view under a menu from $57C0 on. Loaded: view_outline's second 64 from here, the same outline mirrored left to right, for $C680."
+   "text": "Sprite shape $5F at run time, a frame of the boost's flame (with $FD, while $C35F's bit 7 is set), copied here from $6BA0 by the start-up; SAVE_RESTORE_SCREEN keeps $57C0-$5FFF in the race picture's view rows while the menus' bitmap covers them. Loaded: view_outline's second 64 from here, the same outline mirrored left to right, for $C680."
   },
   {
    "address": 22472,
@@ -21899,7 +21899,7 @@
   {
    "address": 34597,
    "type": "line",
-   "text": "The command dispatcher: A is the command, X (and Y) its argument. $01 shows the bitmap at $4000 in hi-res and $02 the one at $6000 in multicolour ($FE keeps which), $03 sets up the menus' screen, $10 copies or clears the view, $20 sets the half-row flag, $81 tests a key, $15 stops an effect, $32 unpacks the dashboard, $55 fills rows, $34 saves or restores what a menu covers, and $3C-$47 run the race's jobs: the drawbridge, the view's fills, the crane's chains, the front wheels, the speed bar, the opponent's table, the view cleared, the row colours and the disk's commands. Any other command does nothing."
+   "text": "The command dispatcher: A is the command, X (and Y) its argument. $01 shows the bitmap at $4000 in hi-res and $02 the one at $6000 in multicolour ($FE keeps which), $03 sets up the menus' screen, $10 copies or clears the view, $20 sets the half-row flag, $81 tests a key, $15 stops an effect, $32 unpacks the title picture (UNPACK_TITLE), $55 fills rows, $34 saves or restores what a menu covers, and $3C-$47 run the race's jobs: the drawbridge, the view's fills, the crane's chains, the front wheels, the speed bar, the opponent's table, the view cleared, the row colours and the disk's commands. Any other command does nothing."
   },
   {
    "address": 34756,
@@ -21909,7 +21909,7 @@
   {
    "address": 34922,
    "type": "line",
-   "text": "With X below $80, saves the part of the bitmap at $62A0 that a menu covers in the race (eight rows of 256 bytes and a ninth of 64) to $57C0, and colour RAM to $6DE0. With X from $80, puts both back, and copies the tables under the I/O area at $D000-$D3FF and $DD00-$DDFF to $7C00 and $7B00."
+   "text": "Command $34. With X below $80, as a race ends, keeps what the menus' bitmap at $4000 draws over, $57C0-$5FFF (sprite shapes and the race's screen at $5C00), in the race picture's view rows from $62A0 (eight rows of 256 bytes and a ninth of 64, a bitmap row of 320 apart), and colour RAM at $6DE0-$71DF. With X from $80, as a race starts, puts both back, and the dashboard from the copies under the chips: $D000-$D3FF to $7C00-$7FFF and $DD00-$DDFF to $7B00, with the RAM banked in and interrupts off."
   },
   {
    "address": 35105,
@@ -22124,17 +22124,17 @@
   {
    "address": 37300,
    "type": "line",
-   "text": "The table of a game for several at the end of a track's pair of races ($31A5 set meanwhile): BONUS_RESULTS, then RESULTS_TABLE."
+   "text": "The tables of a game for several after each round, once every player has raced ($C77F reaching $31A3) and before the next round ($31A2 counted down): BONUS_RESULTS, then RESULTS_TABLE, with $31A5 set meanwhile."
   },
   {
    "address": 37315,
    "type": "line",
-   "text": "RESULTS_TABLE with $C39C set: the pair's race times and bonuses."
+   "text": "RESULTS_TABLE with $C39C set: the round's race times and bonuses."
   },
   {
    "address": 37327,
    "type": "line",
-   "text": "The pair's bonuses, from row $0E: one more of the table's wins ($C728) to the driver of the fastest race ($C76E) and one more of its fastest laps ($C734) to the driver of the fastest lap ($C76D), each named; then the division sorted again."
+   "text": "The round's bonuses, from row $0E: one more of the table's wins ($C728) to the driver of the fastest race ($C76E) and one more of its fastest laps ($C734) to the driver of the fastest lap ($C76D), each named; then the division sorted again."
   },
   {
    "address": 37397,
@@ -22564,7 +22564,7 @@
   {
    "address": 42496,
    "type": "line",
-   "text": "07 06 05 04 03 02 01 00, twice: sixteen bytes no routine was found reading."
+   "text": "07 06 05 04 03 02 01 00, twice. BITMAP_BYTE, DUST_BYTE, the line drawer and the fills read $A600 plus the row as the high byte of the row's address, but their rows start at $40, so these sixteen, rows 0 to 15, are never read; what they were for is unknown."
   },
   {
    "address": 42512,
@@ -23369,7 +23369,7 @@
   {
    "address": 59586,
    "type": "line",
-   "text": "The places of division $C360 in the league's order, from $50 up to $8A: three places from $E8E1 (9, 6, 3 or 0 for divisions 1 to 4), or with several players all from 11 less their number up to 12."
+   "text": "The places of division $C360 in the league's order, from $50 up to $8A: three places from $E8E1 (9, 6, 3 or 0 for $C360 0 to 3, divisions 4 to 1), or with several players all from 11 less their number up to 12."
   },
   {
    "address": 59617,
@@ -23459,7 +23459,7 @@
   {
    "address": 60729,
    "type": "line",
-   "text": "Two of the car's points moved by its frame's turn: the matrix entries at $0776/$079E (negated) and $0777/$079F, each times $A0 with $C36F's sign and over 8, added to the three-byte places of points 2 and 0 ($0100, $0103, $0106)."
+   "text": "The car's position moved on the ground: matrix entries $02 and $03 ($0776/$079E, negated, and $0777/$079F), each times $A0/256 with $C36F's sign (MUL_S16_S8) and then times 8 (SHIFT16 with Y $FD), so five times the entry, added to axes 2 and 0 of the position ($0100/$0103/$0106 plus X, three bytes an axis)."
   },
   {
    "address": 60799,
@@ -23609,17 +23609,17 @@
   {
    "address": 61789,
    "type": "line",
-   "text": "The car's place in squares and within its square: points 0 and 2 of $0100/$0103/$0106 (a low byte of 0 made 1 first) doubled into $AF/$B1 and $5C/$5E, and the place within the square into $45/$63/$24 and $47/$65/$26, copied or taken from a whole square (VIEW_COPY, VIEW_NEGATE) and swapped as A's top two bits, the view's quarter, say."
+   "text": "The car's place in squares and within its square: axes 0 and 2 of its position, $0100/$0103/$0106 (a low byte of 0 made 1 first), doubled into $AF/$B1 and $5C/$5E, and the place within the square into $45/$63/$24 and $47/$65/$26, copied or taken from a whole square (VIEW_COPY, VIEW_NEGATE) and swapped as A's top two bits, the view's quarter, say."
   },
   {
    "address": 61862,
    "type": "line",
-   "text": "Point X's three bytes ($0100, $0103, $0106) taken from 8 squares into $45, $63 and $24 plus Y."
+   "text": "Axis X of the car's position, three bytes ($0100, $0103, $0106 plus X), taken from 8 squares into $45, $63 and $24 plus Y."
   },
   {
    "address": 61897,
    "type": "line",
-   "text": "Point X's three bytes ($0100, $0103, $0106) into $45, $63 and $24 plus Y."
+   "text": "Axis X of the car's position, three bytes ($0100, $0103, $0106 plus X), into $45, $63 and $24 plus Y."
   },
   {
    "address": 61916,

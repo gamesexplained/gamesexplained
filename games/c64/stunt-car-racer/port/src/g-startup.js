@@ -17,8 +17,8 @@ G.startup = P => {
   // the sky's colours in the screen at $5C54, a column at a time from the heights at $40EF; colours
   // and bytes of the screen and colour RAM; tables moved from the bitmaps' area to $C000-$C25F,
   // $5800-$5BFF, $7F40 and $57C0; the RAM under the chips ($D000-$DDFF) filled from $7C00-$7FFF,
-  // $4F00-$56FF, $AE00 and $7B00, and $DE00-$DFFF with the pattern at $410F; the screen kept
-  // (command $34); START
+  // $4F00-$56FF, $AE00 and $7B00, and $DE00-$DFFF with the pattern at $410F; the race's screen,
+  // sprites and colours kept (command $34 with X 0); START
   P.STARTUP = function* (r) {
     P.wr(0xD011, P.rd(0xD011) & 0xEF);
     P.kernal.VECTOR({ c: 1, x: 0, y: 8 });

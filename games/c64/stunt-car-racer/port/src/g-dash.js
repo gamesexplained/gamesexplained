@@ -341,8 +341,12 @@ G.dash = P => {
   // WHEEL_SPRITES ($14D0): the two front wheels' sprites (5 and 7) moved up and down with the
   // first two points' springs ($83/$86), through the sine table at $A700, from the height $1C;
   // where a wheel would sit too low its sprite is hidden and its top drawn into the bitmap
-  // (command $40) instead
-  P.WHEEL_SPRITES = r => {
+  // (command $40) instead. The game reads the sprites' switches back from the video chip ($152D),
+  // which the interrupt sets band by band, so the read is a checkpoint: the port reads what the
+  // game read, the interrupts that came before it run
+  P.GEN.add('WHEEL_SPRITES');
+  P.CHECKPOINTS.push(0x152D);
+  P.WHEEL_SPRITES = function* (r) {
     let y = 0x0A, a = 4;
     for (let x = 0; x < 2; x++) {
       M[0x16] = a;
@@ -363,6 +367,7 @@ G.dash = P => {
       a = (a + 0x15) & 255;
       if (a >= 0xBE) {
         y = M[0x16];
+        yield { cp: 0x152D };
         P.wr(0xD015, P.rd(0xD015) & M[0x38B4 + y]);
         M[0x14] = a; P.FRONT_WHEEL({ x });
         y = M[0x16];

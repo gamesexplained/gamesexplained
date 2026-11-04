@@ -219,7 +219,9 @@ G.opponent = P => {
     M[0x2C] = (M[0x77] & 0x80) ? 0x20 : 0xE0;
     return {};
   };
-  // LINE_PASS ($1E3C): aims $20 or $E0 across, to pass the player on the side with more room
+  // LINE_PASS ($1E3C): within $38 across, aims for the edge on the opponent's own side ($20 below
+  // the player, $E0 above), or the other edge when the player is near that one (below $60, or from
+  // $A0)
   P.LINE_PASS = r => {
     if (M[0x51] >= 0x38) return {};
     const a = M[0x2B];
@@ -407,11 +409,14 @@ G.opponent = P => {
     M[0xC3B7] = ((M[0xC3B7] << 1) | c) & 255;
     return {};
   };
-  // OPP_BUMP ($209C): the cars meet: while the opponent races and is in the air or the player's
-  // springs are free, and its middle wheel is within $C0 of the player's height ($46/$64, plus
-  // $28), three times ($C369) it pushes the player's car up ($0180/$0183); close beside, sideways
-  // ($0182); and along by the difference of the speeds ($0181/$0184), once a bump ($E0); then the
-  // pushes' sum, plus 2, is added to each point's damage ($C3C3-$C3C5) and $C352 set
+  // OPP_BUMP ($209C): the cars meet, while the opponent races ($C37C). Unless the opponent has a
+  // wheel on the road ($C9) and the player's springs press ($6A), the heights are tested: the
+  // player's ($46/$64) less the opponent's wheel 0, at the front ($07CC/$07D0), plus $28, within
+  // $C0 either way, or it returns with $C369 3; when they are and $C369 is not 0, $C369 is counted
+  // down and the player's car pushed in height ($0180/$0183), harder the nearer the heights. Close
+  // beside, a push sideways ($0182, 8 or $F8); once a bump ($E0), along by half the difference of
+  // the speeds plus 3 ($0181/$0184); then the pushes' high bytes, plus 2, are added to each point's
+  // damage ($C3C3-$C3C5) and $C352 set
   P.OPP_BUMP = r => {
     if (!M[0xC37C]) return { a: 0 };
     let skipUp = false;

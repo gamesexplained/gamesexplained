@@ -16,5 +16,5 @@ const crane = (M, c, rnd) => {
 T('CRANE', { setup: crane, outs: ['a', 'x'] });
 T('CRANE_LOWER', { setup: (M, c, rnd) => { crane(M, c, rnd); return { a: 2 + rnd(3) }; }, outs: ['a', 'c'] });
 T('CRANE_SWING', { setup: (M, c, rnd) => { crane(M, c, rnd); return { a: rnd(2) ? 0 : 0xFF }; }, outs: ['a', 'y'] });
-T('TURN_POINTS', { setup: (M, c, rnd) => { for (let a = 0x0774; a < 0x07C4; a++) if (!rnd(3)) M[a] = byte(rnd); M[0xC36F] = byte(rnd); M[0x2D] = byte(rnd); }, outs: ['a', 'x', 'y'] });
+T('SHIFT_ON_GROUND', { setup: (M, c, rnd) => { for (let a = 0x0774; a < 0x07C4; a++) if (!rnd(3)) M[a] = byte(rnd); M[0xC36F] = byte(rnd); M[0x2D] = byte(rnd); }, outs: ['a', 'x', 'y'] });
 process.exitCode = f ? 1 : 0;

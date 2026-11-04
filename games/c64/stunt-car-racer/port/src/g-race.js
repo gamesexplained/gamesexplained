@@ -100,7 +100,7 @@ G.race = P => {
           P.RESET_SEASON({});
           return;
         }
-        yield* P.PAIR_RESULTS({});
+        yield* P.ROUND_RESULTS({});
         M[0xC304] >>= 1;
         M[0x31A2] = (M[0x31A2] - 1) & 255;
         if (!(M[0x31A2] & 0x80)) { at = 0x3B6C; continue; }
@@ -111,6 +111,8 @@ G.race = P => {
   }
 
   P.GEN.add('RACE_SETUP'); P.GEN.add('VIEW_KEYS');
+  // VIEW_KEYS's turns are checkpoints, as WAIT_FIRE's are: each draws a random number
+  P.CHECKPOINTS.push(0xCFDE);
   // RACE_SETUP ($3C36): before a race, the track seen from above: the race's state cleared, the
   // view's rows all of colour 8, the menus' screen in the track's colours, the frame and the
   // track's name, the track's pieces made ($EA34) and drawn ($F386), turned by left and right
@@ -143,7 +145,7 @@ G.race = P => {
   // VIEW_KEYS ($CFDE): waits for left ($C34C up, C set), right ($C34C down, C set) or fire (C clear)
   P.VIEW_KEYS = function* (r) {
     for (;;) {
-      yield { cycles: P.COST.fireTurn };
+      yield { cp: 0xCFDE, cycles: P.COST.fireTurn };
       P.READ_CONTROLS({});
       const x = M[0x66];
       if (x & 4) { M[0xC34C] = (M[0xC34C] + 1) & 255; return { a: 4, x, c: 1 }; }
@@ -153,14 +155,15 @@ G.race = P => {
   };
 
   P.GEN.add('RACE'); P.GEN.add('PAUSE');
-  // RACE ($3C99): a race. The screen kept and cleared, the race's state cleared, multicolour, the
-  // opponent placed ($3EB6, on piece $C765, $C4 4 and $B0 $4C) and dropped; the car placed on piece
-  // X ($F488) and two steps drawn and shown before the screen goes on (none after a wreck, $3DF8);
-  // then its loop: the controls, a step of the world, the opponent, the view, the dust, the wheels,
-  // the crane's chains and the drawbridge, the speed, the damage, the clocks and the distance, the
-  // bitmap shown and the pause. It ends when the race is over and fire is pressed, or when the car
-  // is wrecked on the road and $C368 runs out (put back on the road, $E0F9, at piece $C309), or on
-  // a key ($2F) while it is off the road or the race is lost
+  // RACE ($3C99): a race. The race's screen put back (command $34 with X $80) and cleared, the
+  // race's state cleared, multicolour, START_ORDER ($3EB6), the opponent placed (on piece $C765,
+  // $C4 4 and $B0 $4C) and dropped; the car placed on piece X ($F488) and two steps drawn and shown
+  // before the screen goes on (none after a wreck, $3DF8); then its loop: the controls, a step of
+  // the world, the opponent, the view, the dust, the wheels, the crane's chains and the drawbridge,
+  // the speed, the damage, the clocks and the distance, the bitmap shown and the pause. It ends
+  // when the race is over and fire is pressed, or when the car is wrecked on the road and $C368
+  // runs out (the sound effects stopped and the car put back on the road at piece $C309), or on a
+  // key ($2F) while it is off the road or the race is lost
   P.RACE = function* (r) {
     P.DISPATCH({ a: 0x34, x: 0x80 });
     P.CLEAR_RACE({});
@@ -174,7 +177,7 @@ G.race = P => {
       P.START_PLACE({ x });
       P.DUST_CLEAR({});
       if (!(M[0x3DF8] & 0x80)) { P.DASH_SPRITES({}); P.DRAW_VIEW({}); P.REQUEST_FLIP({}); P.STEP({}); }
-      P.DRAW_VIEW({}); P.SPEED_TO_BAR({}); P.CMD_CRANE_CHAINS({}); P.WHEEL_SPRITES({}); P.REQUEST_FLIP({}); P.STEP({});
+      P.DRAW_VIEW({}); P.SPEED_TO_BAR({}); P.CMD_CRANE_CHAINS({}); yield* P.WHEEL_SPRITES({}); P.REQUEST_FLIP({}); P.STEP({});
       M[0xC307] = 0x80; M[0x3DF8] = 0x80;
       yield* P.DELAY({ y: 3 });
       P.SCREEN_ON({});
@@ -187,7 +190,7 @@ G.race = P => {
         yield { cp: 0x3D0E }; P.ENGINE_SOUND({});
         yield { cp: 0x3D11 }; P.DRAW_VIEW({});
         yield { cp: 0x3D14 }; P.DUST({});
-        yield { cp: 0x3D17 }; P.WHEEL_SPRITES({});
+        yield { cp: 0x3D17 }; yield* P.WHEEL_SPRITES({});
         yield { cp: 0x3D1A }; P.CMD_CRANE_CHAINS({});
         yield { cp: 0x3D1D }; P.CMD_DRAWBRIDGE({});
         yield { cp: 0x3D20 }; P.SPEED_TO_BAR({});
@@ -240,8 +243,8 @@ G.race = P => {
   };
   // CLEAR_RACE ($3DF9): a race's state cleared: $C300-$C3FF, $0774-$07FF, $4000-$40FF, the car's
   // $0100-$018F and zero page from $02; the eleven bytes at $BFEA (on by one in the Super League)
-  // to $C382; the view's rows' colours all 7 to $17; the clocks, the roll's tables, the car put on
-  // the road ($E0F9), the race's random numbers, the dashboard's labels and lamps, $C76A the
+  // to $C382; the view's rows' colours all 7 to $17; the clocks, the roll's tables, the sound
+  // effects stopped ($E0F9), the race's random numbers, the dashboard's labels and lamps, $C76A the
   // league's or the Super League's count in decimal, $C37E kept from $C719; CLEAR_BARS
   P.CLEAR_RACE = r => {
     let x = 0;
@@ -290,9 +293,9 @@ G.race = P => {
     if (x) { x = M[0x31A4]; M[0xC719] = M[0x83B0 + x]; }
     return P.DAMAGE_BAR({ x, y: 0x80 });
   };
-  // PAUSE ($3EE0): while the bitmap at $6000 is being drawn ($C306 set), a key ($0D) pauses: the car
-  // put back ($E0F9), the message "paused" (4C), $97AF until another key ($34), then the message
-  // that was showing back and the sounds started again
+  // PAUSE ($3EE0): while the bitmap at $6000 is being drawn ($C306 set), a key ($0D) pauses: the
+  // sound effects stopped ($E0F9), the message "paused" (4C), $97AF until another key ($34), then
+  // the message that was showing back and the sounds started again
   P.PAUSE = function* (r) {
     if (!(M[0xC306] & 0x80)) return { a: M[0xC306] };
     if (!P.KEY_PRESSED({ x: 0x0D }).z) return { a: 0 };
@@ -357,9 +360,16 @@ G.race = P => {
   P.BORDER_BLANK = function* (r) { M[0x3FBA] = r.a & 255; return yield* P.BLANK_SCREEN(r); };
   // BLANK_SCREEN ($3FBE): waits, up to about a frame, for the raster's top ten lines, then the border
   // of $3FBA's colour, the screen blanked, and a short delay
+  // The wait is 1,029 turns of a loop of 17 cycles, about 278 lines, so begun within 35 lines of
+  // the top it ends before the top comes round again. Its entry and exit are checkpoints, so that
+  // the port reads the raster where the game does (the work before it, a menu's or a race's setting
+  // up, takes the game far down the screen) and goes on from where the game's loop left
+  P.CHECKPOINTS.push(0x3FBE, 0x3FD6);
   P.BLANK_SCREEN = function* (r) {
+    yield { cp: 0x3FBE };
     const line = () => P.rd(0xD012) | ((P.rd(0xD011) & 0x80) << 1);
-    if (line() >= 0x0A) yield { wait: 0 };
+    const l = line();
+    yield { cycles: l < 0x0A ? 21 : Math.min((312 - l) * 63, 17500), at: 0x3FD6 };
     P.wr(0xD020, M[0x3FBA]);
     P.wr(0xD011, P.rd(0xD011) & 0xEF);
     return yield* P.DELAY({ x: r.x, y: 1 });

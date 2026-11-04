@@ -12,6 +12,8 @@ G.choose = P => {
   // one turn of the chooser's loops (READ_CONTROLS and the keys of its items), in cycles
   P.COST = P.COST || {};
   P.COST.chooseTurn = P.COST.chooseTurn || 1500;
+  // the turns of the menu's loops are checkpoints, as WAIT_FIRE's are: each draws a random number
+  P.CHECKPOINTS.push(0xEEC1, 0xEECB);
 
   P.GEN.add('MENU_CHOICE');
   // MENU_CHOICE ($EE36): a numbered list in the panel, items 0 to Y (Y + 1 items), each string
@@ -55,10 +57,10 @@ G.choose = P => {
         return { a, x: q.x, y: 0, z: a ? 0 : 1, n: a >> 7 };
       }
       // EEC1: the controls let go, a pause, and then a change looked for
-      do { yield { cycles: P.COST.chooseTurn }; q = P.READ_CONTROLS({}); } while (!q.z);
+      do { yield { cp: 0xEEC1, cycles: P.COST.chooseTurn }; q = P.READ_CONTROLS({}); } while (!q.z);
       q = yield* P.DELAY({ x: q.x, y: 2 });
       for (;;) {
-        yield { cycles: P.COST.chooseTurn };
+        yield { cp: 0xEECB, cycles: P.COST.chooseTurn };
         q = P.READ_CONTROLS({});
         M[0x0F] = q.a & 0x10;
         if (M[0x0F]) break;

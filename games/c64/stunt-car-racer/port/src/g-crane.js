@@ -90,10 +90,10 @@ G.crane = P => {
     return { a, y: q.y, z: a === M[0x4E] ? 1 : 0, c: a >= M[0x4E] ? 1 : 0 };
   };
 
-  // TURN_POINTS ($ED39): the turn of the car's frame ($C36F's sign) applied to two of its points:
-  // matrix entries $0776/$079E (negated) and $0777/$079F times $A0, over 8, added to the places of
-  // points 2 and 0 ($0100/$0103/$0106 three bytes each)
-  P.TURN_POINTS = r => {
+  // SHIFT_ON_GROUND ($ED39): the car's position moved on the ground: matrix entries $0776/$079E
+  // (negated) and $0777/$079F times $A0/256 with $C36F's sign, then times 8, added to axes 2 and 0
+  // of the position ($0100/$0103/$0106, three bytes each)
+  P.SHIFT_ON_GROUND = r => {
     let y = 2, a = 0;
     for (let x = 2; x >= 0; x -= 2) {
       M[0x14] = M[0x0774 + y];

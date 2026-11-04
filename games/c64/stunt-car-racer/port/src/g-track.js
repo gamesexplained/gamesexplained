@@ -24,10 +24,11 @@ G.track = P => {
   };
 
   // DRAW_VIEW ($167A): draws the frame's view of the track: from the piece the car is on ($2E, kept
-  // at $C374), piece after piece ahead (DRAW_PIECE, POINTS_TO_LINES, NEXT_PIECE), five more on a
-  // track's last stretch or while lowered, fewer near Draw Bridge's gap; the opponent's car is
-  // drawn among them in a league race. Off the track ($FF6A, $F117) the car is wrecked ($6B). Then
-  // the horizon, the fills and the sky.
+  // at $C374), or the one after it when the eye is already past its end ($8E = $80), piece after
+  // piece ahead (DRAW_PIECE, POINTS_TO_LINES, NEXT_PIECE): two, then two more, five more while the
+  // car is lowered, and on Draw Bridge one more for each piece the car is short of piece $31 when
+  // that is two or fewer; the opponent's car is drawn among them in a league race. Off the track
+  // ($FF6A, $F117) the car is wrecked ($6B). Then the horizon, the fills and the sky.
   P.DRAW_VIEW = r => {
     P.NEW_VIEW({});
     if (!M[0x2F] && (M[0x6B] & 0x80)) P.DUST_WRECKED({});
@@ -36,7 +37,7 @@ G.track = P => {
     let piece = -1;
     if (!o.c) {
       if ((o.a & 255) !== 0xFF) piece = o.a & 255;
-      else { o = P.PIECE_NEIGHBOUR({ a: M[0xAF], y: M[0xB1] }); if ((o.a & 255) !== 0xFF) piece = o.a & 255; }
+      else { o = P.PIECE_NEIGHBOUR({ a: M[0xAF], x: o.x, y: M[0xB1] }); if ((o.a & 255) !== 0xFF) piece = o.a & 255; }
     }
     if (piece < 0) {
       M[0x6B] = 0xC0;

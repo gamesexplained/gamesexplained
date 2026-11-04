@@ -43,7 +43,7 @@ T('PLAYER_KEYS', { cases: 500, setup: (M, c, rnd) => { league(M, c, rnd); return
 T('SHOW_RECORDS', { setup: (M, c, rnd) => { league(M, c, rnd); for (let i = 0; i < 25; i++) M[0x31AA + 0xC9 + i] = 0x41 + rnd(26); } });
 T('BONUS_LINES', { setup: league });
 T('BONUS_RESULTS', Object.assign({ cases: 100, setup: waits }, io));
-T('PAIR_RESULTS', Object.assign({ cases: 100, setup: waits }, io));
+T('ROUND_RESULTS', Object.assign({ cases: 100, setup: waits }, io));
 T('HALL_OF_FAME', Object.assign({ cases: 100, maxSteps: 2e7, setup: waits }, io));
 // the keys defined again from the pause: F1 held or not at the start; keys pressed at random, then
 // the five of a set over and over, so that the confirming pass finds them the same
