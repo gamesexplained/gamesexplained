@@ -66,6 +66,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .lv-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:16px}
 @media (max-width:760px){.lv-cols{grid-template-columns:minmax(0,1fr)}}
 .lv-info{font-family:var(--fm);font-size:13px;line-height:1.55;min-height:6em}
+.cr-map{max-width:816px}
+.cr-map canvas{cursor:default}
+.lv-bar input[type=number]{font:inherit;width:4.2em;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
+#cr-info{margin:14px 0 0;min-height:4.5em}
+@media (max-width:600px){.cr-map{overflow-x:auto}.cr-map canvas{min-width:560px}}
 .lv-scroll{font-family:var(--fm);background:#000;color:#ff0;padding:8px 12px;border-radius:4px;display:inline-block;margin-top:6px;letter-spacing:.04em}
 </style>
 <!-- tabs -->
@@ -116,8 +121,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="domain">
   <p class="fig">03 · Scenario 3</p>
-  <h2 class="t">Ragaril's Domain: every trap the scrolls hint at</h2>
-  <p class="lede">One wizard plays against RAGARIL, and the portal opens late, on turn 44 to 51, in the middle of the hall at the centre. The scenario's own code adds teleports, trap floors, a floor that kills and an altar that takes a life.</p>
+  <h2 class="t">Ragaril's Domain, from the start to the portal</h2>
+  <p class="lede">One wizard plays against RAGARIL, and the portal opens late, on turn 44 to 51, in a hall at the centre that has no door. The scenario's own code adds teleports, trap floors, a floor that kills and an altar that takes a life.</p>
   <div class="plate" data-scen="3">
     <div class="lv-bar">
       <label><input type="checkbox" data-o="things" checked> creatures and objects</label>
@@ -130,9 +135,47 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">Drawn the same way as scenario 1. The orange marks come from the scenario's own code: the table of teleports (<code>$E3AD</code>), the trap floors (<code>$E324</code>), and the floor and altar that kill (<code>$E3C9</code>). The walls marked are the ones a creature can walk through or break with ease.</p>
   </div>
   <p>The scrolls hold the scenario's hints. A wizard reads one with READ, a menu option only this scenario adds (<code>$E2F8</code>). "Offer a living sacrifice on the altar of Sondoman": a creature that starts its turn on the altar, at row 18, column 9, dies, and four walls in row 16 become locked doors (<code>$E3C9</code>). The last of them is a trip square, and wakes the spectre waiting beside it. "When is a wall not a wall?": five squares look just like the walls round them and are named WALL, but cost 4 action points to cross, the same as the floor.</p>
-  <p>Several squares look like floor and are something else. A creature that steps onto one of the three trap floors turns the eight squares round it into tangle vine, water or green fire. Three floor squares side by side in row 11 are teleports to row 5, column 4. The floor at rows 23 to 25 kills any creature that starts its turn on it.</p>
-  <p>The four teleport pads at the corners of the hall in the middle each lead to a square of its own. A teleport costs no action points, but walking onto one of those squares costs 254.</p>
-  <p>Opening the locked chest at row 5, column 30, which holds the scroll about the green flame, wakes three zombies.</p>
+  <p>Several squares look like floor and are something else. A creature that steps onto one of the three trap floors turns the eight squares round it into tangle vine, water or green fire. Three floor squares side by side in row 11 are teleports to row 5, column 4. The floor at rows 23 to 25 kills any creature that starts its turn on it. It runs the length of a corridor too long to cross in one turn, and <a href="#corridor">the next section</a> shows how a wizard gets to the end of it.</p>
+  <p>From the start, at row 31, column 4, a wizard can walk through the doors to the south and west of the building, and no further. Everything to the north and east lies beyond the wall at row 28, column 33, at the head of a passage whose far end holds the scroll YOUR EXIT IS AHEAD. It is the only wall in the domain that can be broken. A blow breaks terrain when a random number below twice the attacker's combat reaches the terrain's toughness (<code>$6862</code>): this wall's toughness is 5, and every other wall's is 255, which the number never reaches.</p>
+  <p>Beyond the wall, the way north runs along a passage beside a gallery where a troll and a giant walk with magic bows. Nobody can walk into the gallery: walls close it on three sides and a chasm on the fourth. A chasm, unlike a wall, does not block the view (the terrain flags at <code>$D38E</code>), so the two archers can see and shoot at anything in the passage across it (<code>$9CC5</code>).</p>
+  <p>The scroll that asks "When is a wall not a wall?" lies in the north, at row 9, column 17, and the walls it means lead on. The one at row 10, column 22 opens onto the three teleports in row 11, which send a creature to the rooms in the north-west corner. Those rooms have no way out on foot. They hold a diamond, which lies on the trap floor at row 5, column 9: the creature that steps on to take it is shut in by green fire, which can neither be entered nor broken. The FLOOD spell turns green fire into water (<code>$7F09</code>), which costs 12 action points a step and drowns a creature that cannot swim one time in four (<code>$7F98</code>). The rooms also hold the wooden floor, which is the way to the portal, as the <a href="#hall">section after next</a> explains.</p>
+  <p>The keys decide which locked doors open. The scenario places two door keys, one at row 13, column 12 and one in the chest at the end of the corridor that kills, and a key is used up when it opens a door (<code>$726C</code>). Once the altar has done its work there are five locked doors: the four in row 16 and the one at row 26, column 29, into the corridor's dead end. Behind the third door in row 16, a chest at row 15, column 10 holds the chest key. That opens the locked chest at row 5, column 30, in the north-east. It holds the scroll about the green flame, with treasure and filled vials drawn at random as each game starts (<code>$FE03</code>), and opening it wakes three zombies.</p>
+</section>
+
+<section id="corridor">
+  <p class="fig">04 · Scenario 3</p>
+  <h2 class="t">Secret: it takes a wizard riding a mount to cross the corridor that kills in one turn</h2>
+  <p class="lede">Behind the door at row 26, column 18, where the scroll SPEED IS OF THE ESSENCE lies, a corridor of 20 squares bends round a room to a dead end with a chest in it. A creature on the ground that starts its turn on the corridor's floor dies (<code>$E3C9</code>), so the run has to be made in a single turn.</p>
+  <div class="plate" id="cr-plate">
+    <div class="lv-bar">
+      <label>who runs <select id="cr-who" aria-label="Who runs"></select></label>
+      <label><input type="checkbox" id="cr-potion" checked> under a speed or super potion</label>
+      <label id="cr-ride-l"><input type="checkbox" id="cr-ride" checked> carrying its wizard</label>
+    </div>
+    <div class="lv-bar" id="cr-wiz">
+      <label>the wizard's action points <input type="number" id="cr-wap" min="30" max="40" value="34"></label>
+      <label>stamina <input type="number" id="cr-wst" min="34" max="90" value="34"></label>
+      <label id="cr-wpotion-l"><input type="checkbox" id="cr-wpotion"> the wizard under a potion too</label>
+    </div>
+    <div class="lv-map cr-map"><canvas width="408" height="168" aria-label="The corridor that kills, rows 22 to 28 and columns 14 to 30 of scenario 3, with the route through it"></canvas></div>
+    <p class="lv-info" id="cr-info">The corridor needs the site's spectrum.js, which is served with the built site.</p>
+    <p class="cap">The corridor as the game draws it, with its door open. The line is the cheapest route from the doorway to the dead end, and each square on it shows the action points spent by the time a creature stands there (<code>$CA2B</code>). A creature's points and stamina are its type's (<code>$D003</code>), doubled under a speed or super potion (<code>$9342</code>), and a wizard's are its own: 30 when it is new and 40 at the most. The run is drawn in cyan and the wizard's walk after it gets off in green. A red square is where a creature is left on the floor that kills.</p>
+  </div>
+  <p>Each square of that floor costs 8 action points to cross, twice as much as an ordinary floor, and a diagonal step costs half as much again, 12 (<code>$CA2B</code>). The cheapest way from the open doorway to the dead end cuts every corner it can. It takes 16 steps and 144 action points, and as a step also costs half its points in stamina (<code>$B4EB</code>), 72 stamina too.</p>
+  <p>That is more than any creature has. The fastest on foot is the unicorn, with 56 action points a turn. A speed potion or a super potion doubles them (<code>$9342</code>), to 112, and that takes the unicorn to row 24, column 24, still 32 points short. A wizard has at most 40, or 80 under a potion. Flying does not help either: a creature cannot take off from these floors, or land in the dead end (bits 4 and 5 of the fifth byte of the floor's terrain record). A ghost, which pays 4 for any square, walls and all, has no need of the corridor, but it cannot pick anything up.</p>
+  <p>Two creatures can do it together. A rider spends nothing while its mount walks, so a unicorn under a speed potion carries its wizard to row 24, column 24, where the wizard gets off (RIDER, <code>$71D3</code>) and walks the last four steps, 32 action points, into the dead end. The unicorn, left on the floor with nothing to spare, dies at the start of the next turn, and it takes its rider with it if the rider is still on its back (<code>$78D6</code>).</p>
+  <p>The run needs setting up. Getting on a mount costs 10 action points (<code>$718E</code>), so the wizard does best to be on the unicorn's back, in the open doorway, before the turn of the run begins. A new wizard, with 30 action points, falls two short on the last step and dies a square from safety, unless it has drunk a potion too. The scenario leaves what the potion needs close by: SULPH, the speed potion's ingredient (<code>$84CE</code>), lies in the room inside the corridor's bend, at row 25, column 22, and a cauldron stands at row 30, column 5, beside the start.</p>
+  <p>The prize is the chest. It holds a door key, which the scenario puts there, and objects drawn at random as each game starts from a list of empty vials, apples, a magic apple and a magic mushroom (<code>$FE03</code>). The other way into the dead end is the locked door at row 26, column 29, and opening that uses up the other door key the scenario places, so a wizard who goes in that way comes out with the one key it went in with.</p>
+</section>
+
+<section id="hall">
+  <p class="fig">05 · Scenario 3</p>
+  <h2 class="t">Secret: burning the wooden floor is how a flyer gets into the portal's hall</h2>
+  <p class="lede">The hall at the centre, where RAGARIL starts and the portal opens at row 17, column 17, has walls all round and no door. The four teleport pads in its corners only take a creature out.</p>
+  <p>Each pad leads to a square of its own outside the hall (<code>$E3AD</code>). A teleport costs no action points, but walking onto one of those squares costs 254, so the pads are a way out and never a way in.</p>
+  <p>A flyer can cross any wall in this scenario. None of its walls has a roof (bit 3 of the fifth byte of the terrain record), so a step in the air costs 4 whatever lies below (<code>$CA2B</code>). A creature can take off or land only where the terrain allows it, though (bits 4 and 5 of the same byte, <code>$6DC2</code>), and every floor inside the building forbids both, except the floor of the hall itself.</p>
+  <p>The way round that is the wooden floor at rows 3 to 7, columns 20 to 24, in the north-west rooms that the teleports in row 11 lead to. The scroll THE FLAMES OF HOPE BURN BRIGHT ! lies on it. It is the only ground inside the building that MAGIC FIRE will take (the low four bits of the fourth byte of the terrain record, <code>$86B2</code>), and fire that dies down leaves WASTELAND (<code>$7DBD</code>), where a creature may take off. A wizard riding a pegasus or a gryphon, the two mounts with wings, can take off from the burnt floor, fly south over the walls and land in the hall beside the portal.</p>
+  <p>The other way in is the wizard's own TELEPORT spell, which puts the wizard near the square chosen, or fails if that square is solid (<code>$8AE1</code>).</p>
 </section>
 
 </main>
@@ -295,6 +338,80 @@ var LOCLevels = (function () {
 // end of loc-levels
 </script>
 <script>
+/* loc-corridor */
+// Scenario 3's corridor that kills: the floor at rows 23 to 25 (terrain 7, which deadly_floors $E3C9
+// kills on), behind the door at row 26, column 18. Worked out from memory M laid out as the game's
+// (the engine with scenario 3 over it from $D003). Needs LOCMap (loc-map).
+//   LOCCorridor.DOOR, OPEN       the door the run starts in, [row, column], and the open door ($25) it
+//                                is counted as
+//   LOCCorridor.step(M, r, c, d) what a step on foot onto row r, column c costs (classify_step $CA2B):
+//                                byte 0 of the terrain's record ($D208 + 5v), and on a diagonal (d true)
+//                                half as much again, in a byte; 255 a square that cannot be entered
+//   LOCCorridor.route(M)         the cheapest steps from the open door over the floor that kills to the
+//                                first square past it: [{ r, c, cost, total }], total the points spent
+//   LOCCorridor.creature(M, t, potion)  { ap, stamina } of an unhurt creature of type t ($90 up) as its
+//                                turn starts: byte 0 of its type's record (twelve bytes at ($D003)),
+//                                doubled under a speed or super potion (load_figures $9342), and byte 2
+//   LOCCorridor.mount(M, t)      whether type t carries a rider (bit 0 of byte 11)
+//   LOCCorridor.walk(route, from, ap, stamina)  how far route goes from step from on ap and stamina,
+//                                each step paid for with its cost in action points and half of it in
+//                                stamina (move_selected $B4EB): { to, ap, stamina }, to the last step
+//                                taken (from - 1 when none), with what is left
+var LOCCorridor = (function () {
+  const w = (M, a) => M[a] | M[(a + 1) & 0xFFFF] << 8;
+  const DOOR = [26, 18], OPEN = 0x25, DEADLY = 0x07;
+  const terrain = (M, r, c) => r === DOOR[0] && c === DOOR[1] ? OPEN : LOCMap.square(M, r, c);
+  function step(M, r, c, d) {
+    const k = M[0xD208 + 5 * terrain(M, r, c)];
+    if (k === 255) return 255;
+    return d ? (k + (k >> 1)) & 255 : k;
+  }
+  // Dijkstra from the door, going on only from squares of the floor that kills; the first other
+  // square reached from that floor ends it
+  function route(M) {
+    const key = (r, c) => 36 * r + c, at = k => [(k / 36) | 0, k % 36];
+    const start = key(DOOR[0], DOOR[1]), best = new Map([[start, 0]]), back = new Map(), done = new Set();
+    for (;;) {
+      let k = -1, d = Infinity;
+      for (const [q, v] of best) if (!done.has(q) && v < d) { k = q; d = v; }
+      if (k < 0) return [];
+      done.add(k);
+      const [r, c] = at(k);
+      if (k !== start && terrain(M, r, c) !== DEADLY) {
+        if (terrain(M, ...at(back.get(k))) !== DEADLY) continue;
+        const out = [];
+        for (let q = k; q !== start; q = back.get(q)) {
+          const [y, x] = at(q), [py, px] = at(back.get(q));
+          out.unshift({ r: y, c: x, cost: step(M, y, x, y !== py && x !== px), total: best.get(q) });
+        }
+        return out;
+      }
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        if (!dr && !dc) continue;
+        const y = r + dr, x = c + dc, cost = step(M, y, x, dr && dc);
+        if (cost === 255) continue;
+        const q = key(y, x);
+        if (d + cost < (best.has(q) ? best.get(q) : Infinity)) { best.set(q, d + cost); back.set(q, k); }
+      }
+    }
+  }
+  const type = (M, t) => (w(M, 0xD003) + 12 * (t - 0x90)) & 0xFFFF;
+  const creature = (M, t, potion) => ({ ap: potion ? (2 * M[type(M, t)]) & 255 : M[type(M, t)], stamina: M[type(M, t) + 2] });
+  const mount = (M, t) => !!(M[type(M, t) + 11] & 1);
+  function walk(path, from, ap, stamina) {
+    let to = from - 1;
+    for (let i = from; i < path.length; i++) {
+      const k = path[i].cost;
+      if (ap < k || stamina < k >> 1) break;
+      ap -= k; stamina -= k >> 1; to = i;
+    }
+    return { to, ap, stamina };
+  }
+  return { DOOR, OPEN, DEADLY, step, route, creature, mount, walk };
+})();
+// end of loc-corridor
+</script>
+<script>
 (function () {
 'use strict';
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -410,12 +527,100 @@ function setUp(plate, S) {
   draw();
 }
 
+
+// The corridor plate: rows 22 to 28, columns 14 to 30 of scenario 3, with the route and how far the
+// chosen creature, and the wizard it carries, get along it.
+function corridor(S) {
+  const plate = document.getElementById('cr-plate');
+  if (!plate) return;
+  const M = S.M, C = LOCCorridor, $ = id => document.getElementById(id);
+  const cv = plate.querySelector('canvas'), ctx = cv.getContext('2d'), info = $('cr-info');
+  const R0 = 22, C0 = 14, ROWS = 7, COLS = 17, GHOST = 0xA5;
+  const path = C.route(M), last = path.length - 1;
+  const img = ctx.createImageData(864, 864), on = new Map();
+  for (const t of S.things) if (t.by === 0xFF) {
+    const k = t.r * 36 + t.c, was = on.get(k);
+    if (was === undefined || (t.t >= 0x8C && was < 0x8C)) on.set(k, t.t);
+  }
+  LOCMap.whole(M, img, (v, r, c) => on.has(r * 36 + c) ? on.get(r * 36 + c) : r === C.DOOR[0] && c === C.DOOR[1] ? C.OPEN : v);
+  const types = [];
+  for (let t = 0x90; t < 0x90 + 25; t++) types.push(t);
+  types.sort((a, b) => C.creature(M, b, false).ap - C.creature(M, a, false).ap || a - b);
+  $('cr-who').innerHTML = types.map(t => '<option value="' + t + '"' + (t === 0x99 ? ' selected' : '') + '>' + esc(S.name(t)) + ', ' + C.creature(M, t, false).ap + ' action points</option>').join('')
+    + '<option value="w">the wizard on foot</option>';
+  const xy = ([r, c]) => [24 * (c - C0) + 12, 24 * (r - R0) + 12];
+  const sq = i => i < 0 ? C.DOOR : [path[i].r, path[i].c];
+  const at = i => i < 0 ? 'the doorway' : 'row ' + path[i].r + ', column ' + path[i].c;
+  function line(a, b, col, dash) {
+    if (b <= a) return;
+    ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.setLineDash(dash ? [4, 4] : []);
+    ctx.beginPath();
+    for (let i = a; i <= b; i++) { const [x, y] = xy(sq(i)); i === a ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  const box = (i, col) => { const [x, y] = xy(sq(i)); ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.strokeRect(x - 10.5, y - 10.5, 21, 21); };
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(+v) || lo));
+  // why a creature stopped where it did
+  const short = (k, i) => i >= last ? '' : k.ap < path[i + 1].cost
+    ? ': it has ' + k.ap + ' action points left, and the next step costs ' + path[i + 1].cost
+    : ': it has ' + k.stamina + ' stamina left, and the next step costs ' + (path[i + 1].cost >> 1);
+  function draw() {
+    const v = $('cr-who').value, wiz = v === 'w', t = wiz ? 0 : +v;
+    const potion = $('cr-potion').checked, mount = !wiz && C.mount(M, t), ride = mount && $('cr-ride').checked;
+    const wap = clamp($('cr-wap').value, 30, 40), wst = clamp($('cr-wst').value, 34, 90);
+    $('cr-ride').disabled = !mount;
+    $('cr-ride-l').style.opacity = mount ? '' : '0.45';
+    $('cr-wiz').style.display = wiz || ride ? '' : 'none';
+    $('cr-wpotion-l').style.display = ride ? '' : 'none';
+    ctx.putImageData(img, -24 * C0, -24 * R0, 24 * C0, 24 * R0, 24 * COLS, 24 * ROWS);
+    if (t === GHOST) {
+      line(-1, last, '#9a9a9a', true);
+      info.textContent = 'A GHOST pays 4 action points for any square, walls and all (classify_step $CA2B), so it has no need of the corridor, but it cannot pick anything up: its carry limit is 0.';
+      return;
+    }
+    const me = wiz ? { ap: potion ? 2 * wap : wap, stamina: wst } : C.creature(M, t, potion);
+    const name = wiz ? 'The wizard' : 'The ' + S.name(t);
+    const a = C.walk(path, 0, me.ap, me.stamina);
+    const wz = { ap: $('cr-wpotion').checked ? 2 * wap : wap, stamina: wst };
+    const b = ride && a.to < last ? C.walk(path, a.to + 1, wz.ap, wz.stamina) : null;
+    const end = b ? b.to : a.to;
+    line(-1, a.to, '#3ae0ff');
+    if (b) line(a.to, b.to, '#3ad16a');
+    line(end, last, '#9a9a9a', true);
+    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    path.forEach((p, i) => {
+      const [x, y] = xy([p.r, p.c]);
+      ctx.fillStyle = 'rgba(0,0,0,0.78)'; ctx.fillRect(x - 9, y - 6, 18, 12);
+      ctx.fillStyle = i <= a.to ? '#3ae0ff' : b && i <= b.to ? '#3ad16a' : '#bdbdbd';
+      ctx.fillText(String(p.total), x, y);
+    });
+    const kills = i => i >= 0 && i < last;
+    if (a.to >= 0) box(a.to, kills(a.to) ? '#ff3a3a' : '#3ad16a');
+    if (b && b.to > a.to) box(b.to, kills(b.to) ? '#ff3a3a' : '#3ad16a');
+    let s = name + ' starts the turn in the open doorway with ' + me.ap + ' action points and ' + me.stamina + ' stamina' + (ride ? ', carrying its wizard' : '') + '. ';
+    if (a.to === last) s += 'It reaches the dead end with ' + a.ap + ' action points to spare.';
+    else if (a.to < 0) s += 'It cannot take the first step' + short(a, -1) + '.';
+    else {
+      s += 'It gets ' + (a.to + 1) + ' steps in, to ' + at(a.to) + ', ' + (path[last].total - path[a.to].total) + ' points short of the dead end' + short(a, a.to) + '. ';
+      if (!b) s += 'The floor kills it at the start of the next turn.';
+      else if (b.to === last) s += 'The wizard gets off there with ' + wz.ap + ' action points and walks the last ' + (last - a.to) + ' steps into the dead end, with ' + b.ap + ' to spare. The ' + S.name(t) + ' is left on the floor that kills, and dies at the start of the next turn.';
+      else if (b.to === a.to) s += 'The wizard gets off there with ' + wz.ap + ' action points but cannot take a step' + short(b, a.to).replace(': it has', ', having') + '. The floor kills them both at the start of the next turn.';
+      else s += 'The wizard gets off there with ' + wz.ap + ' action points but gets only as far as ' + at(b.to) + short(b, b.to).replace(': it has', ', with') + '. The floor kills them both at the start of the next turn.';
+    }
+    info.textContent = s;
+  }
+  plate.querySelectorAll('select,input').forEach(el => el.addEventListener(el.type === 'number' ? 'input' : 'change', draw));
+  draw();
+}
+
 Spectrum.load('parts/engine/listing.json').then(engine => Promise.all(plates.map(p => {
   const n = +p.dataset.scen;
   return Spectrum.load('parts/scenario-' + n + '/listing.json').then(s => {
     const M = engine.ram.slice();
     for (let a = 0xD003; a < 0x10000; a++) if (s.has[a]) M[a] = s.ram[a];
-    setUp(p, LOCLevels.scenario(M, s.sym));
+    const S = LOCLevels.scenario(M, s.sym);
+    setUp(p, S);
+    if (n === 3) corridor(S);
   });
 }))).catch(err => plates.forEach(p => p.querySelector('.lv-info').textContent = 'Could not load the listings: ' + err.message));
 })();

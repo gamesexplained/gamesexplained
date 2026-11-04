@@ -151,3 +151,29 @@ call to find.
 
 **Left open.** Nothing for Platinum. Gold needs a person's pass over the
 copy.
+
+## 4 November 2026: the corridor that kills
+
+Aaron remembered a long corridor in one of the maps that had to be run
+in one turn, with the right creature and potions for the speed. It is in
+scenario 3: the floor at rows 23 to 25 that deadly_floors kills on, 20
+squares behind the door where SPEED IS OF THE ESSENCE lies, leading to a
+dead end with a chest. His memory was right about the place and wrong
+about the means. A search of every creature type's action points, doubled
+for a speed potion, against the cheapest crossing (144 points, found by a
+search over the step costs) showed no creature fast enough alone; the
+unicorn on a potion falls 32 short. What does it is the unicorn carrying
+its wizard, who gets off at the unicorn's last square and walks the last
+32 points. The kit's 48K machine ran the game itself to check: the
+unicorn's run, the wizard's walk, and the death of the unicorn, and of
+the wizard too when it stayed on.
+
+Reading the map for the puzzles the page had not described gave the
+wall that alone can be broken, the archers behind the chasm, the north-
+west rooms with no way out on foot, and the hall with no door, which a
+flyer can reach only from the wooden floor once magic fire has burnt it
+to wasteland. A flood fill over the map, doors open, showed which parts
+are reachable on foot; the flight from the wasteland into the hall was
+run on the kit's 48K too. The Maps tab's corridor plate draws the route
+and how far each creature gets, and test_corridor.js holds it to
+classify_step, move_selected and load_figures.
