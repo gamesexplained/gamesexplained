@@ -187,21 +187,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="cm-row"><label><input type="checkbox" id="cm-bands"> Show where the raster interrupts change the chip</label></div>
   <p class="cap">One frame recorded in VICE with every write to the video chip during it, and drawn here line by line with the state in force when the beam got there: 104,448 of 104,448 pixels match the emulator's own picture of the same frame.</p></div>
   <p>The screen is 24 rows of multicolour characters (<code>$4049</code>): 21 rows of playfield copied from the map, and under them the score line in the text character set. The playfield's colours are a brown background, black and grey shared by every character, and green, or blue in the second area, as each character's own colour (<code>$40BC</code>).</p>
-  <p>Everything that moves is a sprite, and there are sixteen of them in the game's tables against the video chip's eight. Slot 0 is Super Joe, slots 1 to 3 his bullets, slot 4 his grenade and slots 5 to 15 the enemies. On each pass of the game's logic, <code>$3F06</code> sorts the slots by height, and a chain of raster interrupts hands them out down the screen. At the top, <code>$41A7</code> puts the first eight on the eight sprites. Below the fourth of those, <code>$4266</code> reuses sprites 7 to 4 for slots 8 to 11, and further down <code>$436B</code> reuses sprites 3 to 0 for the last four. Below the playfield, <code>$4119</code> blanks the screen while it switches to the text character set, and <code>$416A</code> shows the score line.</p>
+  <p>Everything that moves is a sprite, and there are sixteen of them in the game's tables against the video chip's eight. The <a href="graphics.html">Graphics</a> tab shows every shape, stepped as the game steps it. Slot 0 is Super Joe, slots 1 to 3 his bullets, slot 4 his grenade and slots 5 to 15 the enemies. On each pass of the game's logic, <code>$3F06</code> sorts the slots by height, and a chain of raster interrupts hands them out down the screen. At the top, <code>$41A7</code> puts the first eight on the eight sprites. Below the fourth of those, <code>$4266</code> reuses sprites 7 to 4 for slots 8 to 11, and further down <code>$436B</code> reuses sprites 3 to 0 for the last four. Below the playfield, <code>$4119</code> blanks the screen while it switches to the text character set, and <code>$416A</code> shows the score line.</p>
   <p>The game never reads the video chip's collision registers. Whether Super Joe touches an enemy, or a bullet meets a wall, comes from the positions in the game's own tables (<code>$100F</code>, <code>$3917</code>), which works for sixteen sprites as well as for eight.</p>
 </section>
 
 <section>
-  <p class="fig">08 · The player and the enemies</p>
-  <h2 class="t">Every sprite in the game</h2>
-  <p class="lede">The 112 sprite shapes at <code>$E400</code>, drawn from the listing. Click one to see what it is.</p>
-  <div class="plate"><canvas id="cm-cast" class="cm-cv" width="728" height="368" role="img" aria-label="Every sprite shape in the game"></canvas>
-  <p class="cm-read" id="cm-cast-read">&nbsp;</p>
-  <p class="cap">Multicolour sprites with the shared colours the game uses in play, light grey and black (<code>$4049</code>), on the playfield's brown. The game sets each sprite's own colour slot by slot; here it is one colour for each kind of thing.</p></div>
-</section>
-
-<section>
-  <p class="fig">09 · Weapons</p>
+  <p class="fig">08 · Weapons</p>
   <h2 class="t">Super Joe's weapons</h2>
   <p class="lede">A press of fire gives two bullets and no more until the button is let go (<code>$39C3</code>). Space throws a grenade.</p>
   <p>A counter set to <code>$FF</code> while fire is up counts once a frame for each free bullet slot. A bullet goes when the counter reaches 0 and again when it reaches 8, two frames later with all four shot slots free, and there the counter stops. Held down for 40 frames at a time, four presses made eight bullets in the emulator. A bullet flies for 15 frames and stops at a wall.</p>
@@ -216,7 +207,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">10 · This copy</p>
+  <p class="fig">09 · This copy</p>
   <h2 class="t">What REMEMBER's crack changed in the game</h2>
   <p class="lede">Set beside the 1985 release, this copy differs in 29 of the game's 19,450 bytes. The maps, the character sets and the sprites are the same, apart from two bytes of a glyph no map uses. Everything else REMEMBER added sits in memory the 1985 game never uses: a menu, two pages of instructions, a trainer, and a saver for the high scores.</p>
   <div class="plate cm-scroll"><table class="cm-tbl"><thead><tr><th>Where</th><th>The 1985 release</th><th>This copy</th></tr></thead><tbody>
@@ -782,51 +773,6 @@ function terrainImage(D, ar) {
     });
   }
   box.onchange = draw; draw();
-})();
-
-// ---- every sprite (section 07)
-const CAST = [
-  [0x90, 0x90, 1, 'a bullet, the player’s or an enemy’s'], [0x91, 0x93, 1, 'a grenade in flight, at three sizes'],
-  [0x94, 0x97, 1, 'the spark a bullet ends in'], [0x98, 0x9A, 6, 'walking up ($98 is also standing still)'],
-  [0x9B, 0x9D, 6, 'walking down'], [0x9E, 0xA0, 6, 'walking down and to the right'], [0xA1, 0xA3, 6, 'walking down and to the left'],
-  [0xA4, 0xA5, 6, 'Super Joe throwing a grenade'], [0xA6, 0xA8, 6, 'walking up and to the right'], [0xA9, 0xAB, 6, 'walking up and to the left'],
-  [0xAC, 0xAC, 7, 'the right-hand end of the title’s logo'], [0xAD, 0xAF, 8, 'the blast of a grenade, a bomb or a shell, $AD largest'],
-  [0xB0, 0xB1, 2, 'the motorcycle and sidecar'], [0xB2, 0xB5, 2, 'the stopped motorcycle, its passenger throwing grenades'],
-  [0xB6, 0xB7, 4, 'the vehicle that crosses from the left'], [0xB8, 0xB8, 6, 'Super Joe lying dead'],
-  [0xB9, 0xBA, 5, 'the green soldier walking right'], [0xBB, 0xBB, 8, 'a box of grenades'],
-  [0xBC, 0xBC, 1, 'the score sprite reading 2000'], [0xBD, 0xBD, 1, 'the score sprite reading 1000'],
-  [0xBE, 0xBF, 11, 'a soldier falling, shot'], [0xC0, 0xC1, 11, 'a guard'], [0xC2, 0xC3, 10, 'the prisoner'],
-  [0xC4, 0xC5, 10, 'the freed prisoner waving'], [0xC6, 0xC7, 11, 'a soldier leaping to the left'],
-  [0xC8, 0xCA, 11, 'a soldier lying in wait, facing down, down-right and down-left'], [0xCB, 0xCC, 11, 'sinking out of sight'],
-  [0xCD, 0xCF, 11, 'a soldier in a trench, and his recoil'], [0xD0, 0xD2, 0, 'the mortar bomb, at three sizes ($D2 is also a bunker gun’s shell)'],
-  [0xD3, 0xD4, 11, 'a soldier leaping to the right'], [0xD5, 0xD8, 11, 'walking left'], [0xD9, 0xDC, 11, 'walking right'],
-  [0xDD, 0xDD, 6, 'Super Joe hit'], [0xDE, 0xDE, 6, 'the third frame of the throw'], [0xDF, 0xE2, 11, 'the fourth frames of the diagonal walks'],
-  [0xE3, 0xE4, 11, 'the grenadier raising and throwing a grenade'], [0xE5, 0xE8, 11, 'the bomb thrower walking, then throwing'],
-  [0xE9, 0xEB, 0, 'his bomb, falling straight, down-left and down-right'], [0xEC, 0xED, 11, 'a foxhole, its soldier ducked and rising'],
-  [0xEE, 0xEE, 2, 'the burst the ending shows across the fortress'], [0xEF, 0xF0, 5, 'the green soldier walking left'],
-  [0xF1, 0xF2, 11, 'the lorry'], [0xF3, 0xF3, 11, 'the jeep'], [0xF4, 0xF5, 11, 'two doors for soldiers to come out of, which no area in play has'],
-  [0xF6, 0xFB, 7, 'the title’s logo, six of its seven sprites'], [0xFC, 0xFD, 11, 'a bunker’s gun, aimed down-right and down-left'],
-  [0xFE, 0xFE, 7, 'a near copy of $AC that nothing shows'], [0xFF, 0xFF, 0, 'the blank block, zeroed before play'],
-];
-(function cast() {
-  const cv = $('#cm-cast'), read = $('#cm-cast-read');
-  listing().then((D) => {
-    const ctx = C64.canvas(cv, 728, 368), P = C64.PAL, per = 14;
-    ctx.fillStyle = P[9]; ctx.fillRect(0, 0, 728, 368);
-    const kind = (b) => CAST.find(([a, z]) => b >= a && b <= z);
-    for (let b = 0x90; b <= 0xFF; b++) {
-      const i = b - 0x90, k = kind(b);
-      C64.drawSpriteMC(ctx, D.ram.subarray(0xC000 + b * 64, 0xC000 + b * 64 + 63), (i % per) * 52 + 2, Math.floor(i / per) * 46 + 2, 2,
-        P[k ? k[2] : 11], P[15], P[0]);
-    }
-    cv.onclick = (e) => {
-      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 728, y = (e.clientY - r.top) / r.height * 368;
-      const b = 0x90 + Math.floor(y / 46) * per + Math.floor(x / 52);
-      if (b > 0xFF) return;
-      const k = kind(b);
-      read.innerHTML = `Block ${hx(b, 2)} at <code>${hx(0xC000 + b * 64)}</code>: ${k ? k[3] : ''}`;
-    };
-  }).catch((e) => miss(cv.parentNode, e));
 })();
 
 // ---- the fire rate by area played (section 05)

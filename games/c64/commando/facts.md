@@ -122,6 +122,24 @@ codes (`$4660`, `$46D8`, `$4800`, `$5F80-$5FFF`, `$7F60`).
   into area 1's map (`$14B5`, `$37B1`), and every life puts the three whole
   bunkers back (`$3DE0`). The gate at the top of areas 0 and 1 is drawn
   shut at each life's start and open when its row comes up (`$15BC`).
+- **Sprite animation.** Each slot's shape (`$045D`) is set by its own
+  code on each pass of the game logic, so the figures stop with the logic
+  on the frames the map moves a row. Super Joe's walk steps every four of
+  his count (`$04E6`, `$3B8E`), every soldier's every four of the frame
+  counter (`$040A`), so the soldiers step together; the rest step on their
+  own timers. The bomb thrower walks `$E5 $E6 $E7 $E6` eight passes a
+  shape (`$27C2`); on a pass he throws, `$E8` takes the place of `$E5`. A
+  jumper's y-speed starts at -2 on the 30th pass of his timer and grows by
+  one every eight until it would reach 3, when he lands (`$303D`), so a
+  leap is 34 passes, `$C6` or `$D3` for five and `$C7` or `$D4` for 29.
+  The grenadier from the right appears with block `$15`, bytes of the
+  character set, for one pass before his walk replaces it (`$2E7D`). *Run*
+  on the kit's machine model by `test_graphics.js`: 40,000 passes with the
+  lives, falls and the enemy's hits patched out and one guard of each pair
+  counted as shot, and 12,000 with the enemy's hits on. Every figure on the
+  Graphics tab appeared with its shapes, passes and colours; the logic ran
+  on all 32,661 frames with the map still and on 16,903 of the 19,337
+  while it scrolled, 7 in 8.
 
 ## Mechanics
 
