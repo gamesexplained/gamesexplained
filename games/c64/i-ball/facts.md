@@ -128,6 +128,27 @@ sample 2.
 - The score is drawn into two sprites (`$9A`, `$9B`) from the text set's
   digit glyphs (`draw_score`).
 - The timer's digits and the level number are digit sprites `$8A`-`$93`.
+- **Sprite animation.** Iball's roll (`animate_iball`): eight pointers
+  a facing, three pictures and back, each two passes, stepped every logic
+  pass but those that draw a map row, moving or not; turning keeps the
+  count. Aliens: 49 passes single-colour in `forming_colours` (the 50th
+  is replaced in the same pass by `end_forming`'s colour), then
+  multicolour; each kind's count (`anim_counts`) is shared by every alien
+  of that kind. `alien_shot` clears the alien's multicolour bit
+  (`$5C49`), so the explosion is single-colour: `explode_frames` `$E9`-`$F0`,
+  each two passes, 15 passes shown (the 16th is never seen), fewer when it
+  leaves the screen first. The meter (`$9C`) changes colour every logic
+  pass (`$45D4`). Block `$BF` is pointed at by nothing.
+- **Losing a life on screen.** After the speech (40 frames for "OH NO!"
+  at pitch `$8C`), `death_step` runs once a frame: 1 frame breaking up,
+  13 of flash with the sprites keeping their pictures (only sprite 7
+  gets `$9E`), then the pieces fly at 10 pixels a frame, slowing one
+  every two frames because `materialise_wait` leaves `death_delay` at 2
+  when the start is clear at once (50 steps from 4). *Kit model:* every
+  frame of 74 deaths and their materialising ran exactly one step.
+- **Glow Ball glows.** The title's interrupt adds one to sprite 4's colour
+  every frame (`$6E6D`); after level 12 `show_friend` shows Glow Ball in
+  white.
 
 ## Mechanics
 

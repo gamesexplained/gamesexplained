@@ -1,0 +1,386 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I, Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 24px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.ib-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.ib-wide{width:100%}
+.ib-field{width:100%;max-width:580px}
+.ib-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.ib-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.ib-btn:hover{border-color:var(--ink-mute)}
+.ib-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ib-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
+.ib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.ib-grid figure{margin:0}
+.ib-grid canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.ib-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.ib-grid figcaption b{color:var(--ink);font-weight:700}
+.ib-miss{font-size:14px;color:var(--coral)}
+@media (max-width:700px){:root{--gx:16px;--h1:36px;--pp:16px}.ib-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Firebird</p>
+  <h1>I, Ball</h1>
+  <p class="sub">Iball is sprite 0 and the aliens are sprites 1 to 7. Twice more each frame the same eight sprites are moved into the panels, where they are the icons, the timer, the score and the lives. Here every picture moves as the game moves it: one step for each pass of its logic, which comes every frame while the screen is quiet and about every other frame with seven aliens about.</p>
+</header>
+<main class="wrap">
+
+<section id="iball">
+  <p class="fig">01 · Iball</p>
+  <h2 class="t">Iball rolls through three pictures and back</h2>
+  <p class="lede">Each pass of the logic, <code>animate_iball</code> (<code>$4ABD</code>) gives sprite 0 the next of eight pointers: three pictures and back, each held for two passes. One set faces right and one faces left. He rolls all the time, standing still too; the stick only decides which way he faces, and when he turns the count carries on, so he turns mid-roll.</p>
+  <div class="plate">
+    <canvas class="ib-cv" id="ib-roll" width="264" height="108" aria-label="Iball rolling, facing right and facing left, four times as large"></canvas>
+    <p class="ib-out" id="ib-roll-out"></p>
+    <p class="cap">Drawn from the sprite shapes in the listing, in grey (<code>$0C</code>) with the play area's shared light and dark grey (<code>$0F</code>, <code>$0B</code>), at one step a pass, 50 a second. The tables are <code>roll_right</code> (<code>$4ADF</code>) and <code>roll_left</code> (<code>$4AE7</code>). On a pass that draws a new row of the map, the step is skipped.</p>
+  </div>
+</section>
+
+<section id="lives">
+  <p class="fig">02 · Losing a life</p>
+  <h2 class="t">A lost life breaks Iball into eight pieces, and eight pieces bring him back</h2>
+  <p class="lede">When Iball is killed, the game says "OH NO!" first, and while it speaks nothing moves. Then <code>death_step</code> (<code>$5061</code>) runs once a frame. Every sprite jumps to where he was and turns multicolour. For 13 frames the background flashes through 13 colours (<code>death_colours</code>, <code>$50F2</code>) while the sprites still show the pictures they had, aliens included; only sprite 7 already shows the piece, because the loop meant to give all eight their piece stops after one. Then all eight become the piece (<code>$9E</code>), Iball's in white, and fly off in eight directions at 10 pixels a frame, slowing by one every two frames.</p>
+  <div class="plate">
+    <div class="ib-bar"><button class="ib-btn" id="ib-life-pause" aria-pressed="false">Pause</button><button class="ib-btn" id="ib-life-again">Again</button></div>
+    <canvas class="ib-cv ib-field" id="ib-life" width="464" height="388" aria-label="The play area as Iball dies and comes back: the pieces fly out, then gather"></canvas>
+    <p class="ib-out" id="ib-life-out">Loading the listing…</p>
+    <p class="cap"><b>Run by this page from the game's own code</b>, on the site's 6502 over the bytes on the Source tab, one call a frame as <code>irq_top</code> (<code>$4432</code>) makes it: <code>materialise_step</code> while Iball materialises, else <code>death_step</code> while he dies, else <code>animate_iball</code>. It starts from a moment of play: the eight sprites as they were at a death in a run of the game on the kit's model of the C64. The pause for the speech is 40 frames, the length of the sample (<code>$AC00</code>-<code>$B6FF</code>, two volumes a byte) at the pitch the game gives it (<code>$8C</code>). The search for a clear place finds one at once here, with no walls.</p>
+  </div>
+  <p>When the last piece has left, <code>materialise_step</code> (<code>$4E98</code>) takes over. It waits at least 51 frames, scrolling the map back while there is a wall where Iball starts, then puts eight pieces 70 pixels out around the start, in colours 1 to 8, and brings them in, a pixel a frame faster each frame up to five. When they meet, sprite 0 is Iball again, grey, at <code>$AE</code>, <code>$A0</code>.</p>
+</section>
+
+<section id="aliens">
+  <p class="fig">03 · Aliens</p>
+  <h2 class="t">Each alien flickers into being in one colour, then turns in two greys and its own</h2>
+  <p class="lede">A new alien takes a kind at random from <code>kind_choices</code> (<code>$568B</code>), where kinds 2 and 3 are listed twice; kind 6 is kept for the bonus discs. For 49 passes it is a single-colour sprite stepping through <code>forming_colours</code> (<code>$5777</code>), and cannot hurt Iball. Then it goes multicolour in one of 16 colours (<code>alien_colours</code>, <code>$5650</code>). All the while it turns through its kind's pictures (<code>alien_frames</code>, <code>$53C4</code>), one step a pass. The count belongs to the kind, not the alien (<code>anim_counts</code>, <code>$5452</code>), so two aliens of a kind always show the same picture. Shot, it is single-colour again (<code>alien_shot</code>, <code>$5C49</code>) and steps through the explosion (<code>explode_frames</code>, <code>$5CF8</code>), each picture held two passes, and is gone after the fifteenth.</p>
+  <div class="plate">
+    <div class="ib-grid" id="ib-aliens"></div>
+    <p class="cap">Each panel plays one alien's life at the game's pace: 49 passes forming, three seconds formed, the 15 passes of its explosion, then a gap, and again in another of the 16 colours. In the game an alien lives until it is shot or until Iball dies.</p>
+  </div>
+</section>
+
+<section id="panels">
+  <p class="fig">04 · The panels</p>
+  <h2 class="t">The panels move the same eight sprites twice more each frame</h2>
+  <p class="lede">Above line <code>$36</code> and again below line <code>$F8</code>, an interrupt gives the eight sprites new places, pointers and colours (<code>panel_sprites_top</code>, <code>$46C2</code>; <code>panel_sprites_bottom</code>, <code>$470E</code>). The ten extras' icons are multicolour with their own colour black until the extra is given, so only the two greys show. The timer is two single-colour digits from ten pictures (<code>$8A</code>-<code>$93</code>). The score is drawn into two sprites (<code>$9A</code>, <code>$9B</code>) from the text set's digits by <code>draw_score</code> (<code>$54BC</code>). The Electro Shield and the Hyper Brakes share one meter (<code>$9C</code>), whose colour steps every pass.</p>
+  <div class="plate">
+    <div class="ib-bar"><button class="ib-btn" id="ib-give" aria-pressed="false">Give the other eight extras</button></div>
+    <canvas class="ib-cv ib-wide" id="ib-panels" width="672" height="132" aria-label="The top and bottom panels' sprites: icons, meter, timer, score and lives"></canvas>
+    <p class="ib-out" id="ib-panels-out"></p>
+    <p class="cap"><b>Run by this page from the game's own code</b>: each pass it calls <code>timer_tick</code> (<code>$5594</code>), which takes a second off every 50 passes, and <code>shield_meters</code> (<code>$659B</code>), which clears one more byte of the meter every seventh pass, 63 bytes in about 441 passes. When the meter is empty the page gives the other extra, through the game's own routines for the Electro Shield (<code>$640A</code>) and the Hyper Brakes (<code>$6483</code>). The score is <code>draw_score</code>'s picture of 000000.</p>
+  </div>
+  <p>The lives sprite is <code>$E5</code> plus the lives left, for 0 to 3 (<code>show_lives</code>, <code>$5F0D</code>), multicolour in grey with the icons' two greys. With no lives left it is <code>$9D</code>, which is empty.</p>
+  <div class="plate"><div class="ib-grid" id="ib-lives-sheet"></div></div>
+</section>
+
+<section id="friends">
+  <p class="fig">05 · Friends</p>
+  <h2 class="t">Glow Ball glows on the title screen</h2>
+  <p class="lede">The title screen shows Iball twice, facing right and facing left (<code>$94</code>, <code>$97</code>), and the four friends to rescue below (<code>$F1</code>-<code>$F4</code>), each with the two greys and a colour of its own (<code>title_sprites</code>, <code>$6ED7</code>). Every frame the title's interrupt adds one to Glow Ball's colour (<code>$6E6D</code>), so it cycles through all 16 colours three times a second. After levels 4, 8, 12 and 16 the friend rescued stands beside Iball (<code>show_friend</code>, <code>$5AC5</code>), in the same colour as on the title, but for Glow Ball, which is white there.</p>
+  <div class="plate"><div class="ib-grid" id="ib-friends"></div>
+  <p class="cap">No table or routine points a sprite at block <code>$BF</code>, between the bonus disc's pictures and the playfield's characters. <code>$F5</code>-<code>$FF</code> are empty.</p></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8">gamesexplained</a> · I, Ball for the Commodore 64, explained from its code</footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* ib-figures */
+// Every sprite the Graphics tab draws, read from the game's tables and code in listing.json. An
+// operand is the byte after an LDA #, LDX # or the like in the game's code: test_graphics.js checks
+// that each is one.
+function ibFigures(ram) {
+  const at = (a, n) => Array.from(ram.subarray(a, a + n)), op = (a) => ram[a];
+  let a = 0x53C4;                                                  // alien_frames, one list a kind
+  const kinds = at(0x5459, 7).map((n) => { const f = at(a, n); a += n; return f; });   // lengths: anim_limits
+  return {
+    roll: { right: at(0x4ADF, 8), left: at(0x4AE7, 8) },           // animate_iball, one entry a pass
+    iball: op(0x4F66),                                             // his colour, set as he materialises
+    mc: [op(0x43F6), op(0x43FA)],                                  // the play sprites' shared colours ($D025, $D026)
+    kinds,                                                         // one entry a pass (alien_anim_step)
+    choices: at(0x568B, 8),                                        // the kinds a new alien can take (pick_kind)
+    forming: at(0x5777, 49),       // forming_step, a colour a pass; the 50th is replaced in the same pass (end_forming)
+    explode: at(0x5CF8, 15),       // explode_step, a picture a pass; the 16th never shows (remove_sprite, same pass)
+    colours: at(0x5650, 16),                                       // alien_colours, for random_colour
+    piece: op(0x4EF1),                                             // the piece, as he dies and materialises
+    panels: {
+      top: { pos: at(0x4861, 16), ptr: at(0x4879, 6), multi: op(0x46D0), msb: op(0x46DD),
+             lit: [0x63C7, 0x63DA, 0x63E5, 0x6400, 0x640B].map(op) },          // give_extra's colours
+      bottom: { pos: at(0x4881, 16), ptr: at(0x4899, 7), multi: op(0x471C), msb: op(0x4721),
+                lit: [0x644A, 0x6465, 0x6489, 0x64C4, 0x64CA].map(op) },
+      digits: op(0x4490),                                          // the timer: $8A plus the digit (irq_top)
+      lives: op(0x5F17), none: op(0x5F1D),                         // show_lives
+    },
+    title: {                                                       // title_sprites
+      mc: [op(0x6F04), op(0x6F09)],
+      iball: [op(0x6F45), op(0x6F4A)], iballColour: op(0x6EDD),
+      friends: [[op(0x6F4F), op(0x6EE5)], [op(0x6F54), op(0x6EEA)], [op(0x6F59), op(0x6EEF)], [op(0x6F5E), op(0x6EEF)]],
+      rescued: [[op(0x5A04), op(0x5A06)], [op(0x5A2B), op(0x5A2D)], [op(0x5A52), op(0x5A54)], [op(0x5A79), op(0x5A7B)]],
+    },
+  };
+}
+// One alien's life on the tab, t passes in: 49 forming, 150 formed, 15 exploding, 20 gone. The kind's
+// picture comes from the kind's own count, which here is t; in the game it has been running all along.
+const IB_LIFE = { forming: 49, formed: 150, explode: 15, gone: 20 };
+function ibAlienAt(F, kind, t, colour) {
+  const L = IB_LIFE, turn = F.kinds[kind][t % F.kinds[kind].length];
+  if (t < L.forming) return { ptr: turn, colour: F.forming[t], multi: false };
+  t -= L.forming;
+  if (t < L.formed) return { ptr: turn, colour, multi: true };
+  t -= L.formed;
+  if (t < L.explode) return { ptr: F.explode[t], colour, multi: false };     // alien_shot clears its multicolour bit
+  return null;
+}
+// end of ib-figures
+</script>
+<script>
+/* ib-life */
+// Iball's death and return, run by the game's own code on the site's 6502 (C64Cpu) over the
+// listing's bytes. Each frame does what irq_top ($4432) does then: materialise_step ($4E98) while
+// materialising ($ED) is set, else death_step ($5061) while dying ($3C) is, and the page adds
+// animate_iball ($4ABD) once he is back, as the next logic pass would. The routines touch only RAM.
+// materialise_wait looks for walls where he starts through probe_at ($4D98): here it finds none.
+// IB_DEATH is the moment it starts from: the sprites as death_step's first stage found them in a
+// run of the game on the kit's model of the C64 (test_graphics.js finds the same moment again).
+const IB_DEATH = {
+  pos: [0xBB, 0x6C, 0x6F, 0x6D, 0x6F, 0x45, 0x82, 0x69, 0x68, 0x7E, 0xAF, 0xC2, 0xAA, 0x6C, 0x5F, 0xA0, 0x00],
+  ptr: [0x97, 0xBB, 0xA4, 0x9F, 0xB4, 0xB4, 0xA4, 0x9F],
+  colour: [0x0C, 0x04, 0x03, 0x03, 0x05, 0x0D, 0x09, 0x03],
+  enable: 0xFF, multi: 0xFB,
+  delay: 2,                                     // death_delay ($3F), as materialise_wait left it
+};
+// The frames "OH NO!" lasts: sample 1's pages (from $C1EC to the page in $C1F0), two volumes a byte,
+// one every pitch + 1 cycles at the pitch kill_iball gives ($5057), 19,656 cycles a PAL frame.
+function ibSayFrames(ram) {
+  const bytes = (ram[0xC1F0] - ram[0xC1EC]) << 8;
+  return Math.round(2 * bytes * (ram[0x5057] + 1) / 19656);
+}
+const IB_BACK = 100;                            // frames he rolls before the page starts again
+function ibLife(ram, C64Cpu, D = IB_DEATH) {
+  const m = ram.slice(), say = ibSayFrames(ram);
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write() {} } });
+  const hooks = { 0x4D98: (c) => { m.fill(0, 0x97, 0x97 + 12); c.rts(); } };      // probe_at: no walls
+  const call = (a) => cpu.call(a, {}, { hooks, maxSteps: 100000 });
+  const S = { phase: 'said', n: 0, frames: 0 };
+  const start = () => {
+    m.set(D.pos, 0x12); m.set(D.ptr, 0x02); m.set(D.colour, 0x0A);
+    m[0x25] = D.enable; m[0x3A] = D.multi; m[0x23] = 0x0F; m[0x24] = 0x0B;   // sprite_mc0/1, as at $43F5
+    m[0x3C] = 1; m[0xED] = 0; m[0x3E] = 0; m[0x3B] = 3; m[0x3F] = D.delay;   // dying, as kill_iball leaves it
+    S.phase = 'said'; S.n = say; S.frames = 0;
+  };
+  start();
+  return {
+    m, S, start, say,
+    frame() {
+      S.frames++;
+      if (S.phase === 'said') { if (--S.n <= 0) S.phase = 'steps'; return; }
+      if (S.phase === 'steps') {
+        if (m[0xED]) call(0x4E98); else if (m[0x3C]) call(0x5061);
+        if (!m[0xED] && !m[0x3C]) { S.phase = 'back'; S.n = IB_BACK; }
+        return;
+      }
+      call(0x4ABD);
+      if (--S.n <= 0) start();
+    },
+    stage() {
+      if (S.phase === 'said') return 'OH NO! The game stands still while it speaks.';
+      if (S.phase === 'back') return 'Iball is back.';
+      if (m[0xED] === 1) return 'Waiting for a clear place to start.';
+      if (m[0xED] === 3) return 'The pieces gather.';
+      if (m[0x3C] === 2) return 'The flash: colour ' + (m[0x3D] + 1) + ' of 13.';
+      if (m[0x3C] === 3) return 'The pieces fly off.';
+      return '';
+    },
+  };
+}
+// end of ib-life
+</script>
+<script>
+/* ib-panels */
+// The panels' sprites, from the game's tables, with three of the game's routines run each pass on
+// the site's 6502: timer_tick ($5594), shield_meters ($659B) and, when the meter is empty, the
+// give routine of the other extra that uses it, the Electro Shield's ($640A) or the Hyper Brakes'
+// ($6483). Every logic pass also adds one to the meter's colour (irq_logic, $45D4), and irq_top
+// sets the timer's pointers from its digits ($448C).
+function ibPanels(ram, C64Cpu) {
+  const m = ram.slice();
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write() {} } });
+  const call = (a) => cpu.call(a, {}, { maxSteps: 100000 });
+  m.fill(0, 0x4871, 0x4871 + 5); m.fill(0, 0x4891, 0x4891 + 5);  // no extras given, as at $42B7
+  m[0x47] = 0; m[0x48] = 5; m[0x49] = 50;                       // the timer at 50 seconds
+  m.fill(0, 0x41, 0x41 + 6); call(0x54F6); call(0x54BC);         // score_init, draw_score: 000000
+  m[0x3B] = 3; call(0x5F0D);                                     // show_lives with three
+  let gap = 0, next = 0x640A;
+  call(next); next = 0x6483;
+  return {
+    m,
+    pass() {
+      m[0x4876]++;
+      call(0x5594);
+      if (!m[0x47] && !m[0x48]) m[0x48] = 5;                     // at 00 the game kills Iball and starts at 50 again
+      m[0x487F] = 0x8A + m[0x48]; m[0x4880] = 0x8A + m[0x47];
+      if (m[0x41C2] || m[0x41CA]) call(0x659B);
+      else if (++gap >= 50) { gap = 0; call(next); next = next === 0x640A ? 0x6483 : 0x640A; }
+    },
+    meter() { return m[0x41C2] ? 'Electro Shield' : m[0x41CA] ? 'Hyper Brakes' : ''; },
+  };
+}
+// end of ib-panels
+</script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const NEED = 'This widget draws from the game\'s bytes with the site\'s shared scripts; it works in the built site.';
+const missing = (el) => { const p = document.createElement('p'); p.className = 'ib-miss'; p.textContent = NEED; el.replaceWith(p); };
+if (!window.C64 || !window.C64Cpu) ['ib-roll', 'ib-life', 'ib-panels'].forEach((id) => missing($(id)));
+else C64.load('listing.json').then((D) => {
+  const ram = D.ram, F = ibFigures(ram), P = C64.PAL, hex = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  // one sprite from memory m at its block, multicolour or not
+  const spr = (ctx, m, ptr, x, y, s, colour, multi, mc = F.mc) => {
+    const data = m.subarray(ptr * 64, ptr * 64 + 63);
+    if (multi) C64.drawSpriteMC(ctx, data, x, y, s, P[colour & 15], P[mc[0] & 15], P[mc[1] & 15]);
+    else C64.drawSprite(ctx, data, x, y, s, P[colour & 15]);
+  };
+  const ctxOf = (el) => { const c = el.getContext('2d'); c.imageSmoothingEnabled = false; return c; };
+  const card = (host, label, w, h, s) => {
+    const f = document.createElement('figure'), c = document.createElement('canvas'), cap = document.createElement('figcaption');
+    c.width = w * s; c.height = h * s; cap.innerHTML = label; f.append(c, cap); host.append(f);
+    return ctxOf(c);
+  };
+
+  // 01: the roll
+  const roll = ctxOf($('ib-roll'));
+  const drawRoll = (t) => {
+    roll.fillStyle = '#000'; roll.fillRect(0, 0, 264, 108);
+    const r = F.roll.right[t & 7], l = F.roll.left[t & 7];
+    spr(roll, ram, r, 24, 12, 4, F.iball, true); spr(roll, ram, l, 144, 12, 4, F.iball, true);
+    const out = 'Facing right: ' + hex(r) + '   Facing left: ' + hex(l);
+    if ($('ib-roll-out').textContent !== out) $('ib-roll-out').textContent = out;
+  };
+
+  // 02: losing a life
+  const life = ibLife(ram, C64Cpu), lc = ctxOf($('ib-life')), LX = 56, LY = 54, LS = 2;
+  const drawLife = () => {
+    const m = life.m;
+    lc.fillStyle = P[(life.S.phase === 'said' ? 0 : m[0x3E]) & 15]; lc.fillRect(0, 0, 464, 388);
+    for (let s = 7; s >= 0; s--) {
+      if (!(m[0x25] >> s & 1)) continue;
+      const x = m[0x12 + 2 * s] + ((m[0x22] >> s & 1) << 8);
+      spr(lc, m, m[2 + s], (x - LX) * LS, (m[0x13 + 2 * s] - LY) * LS, LS, m[0x0A + s], m[0x3A] >> s & 1, [m[0x23], m[0x24]]);
+    }
+    const st = life.stage();
+    if ($('ib-life-out').textContent !== st) $('ib-life-out').textContent = st;
+  };
+  let lifePaused = false;
+  $('ib-life-pause').onclick = () => { lifePaused = !lifePaused; $('ib-life-pause').setAttribute('aria-pressed', lifePaused); };
+  $('ib-life-again').onclick = () => { life.start(); drawLife(); };
+
+  // 03: the aliens
+  const NAMES = ['Kind 0', 'Kind 1', 'Kind 2', 'Kind 3', 'Kind 4', 'Kind 5', 'Kind 6, the bonus disc'];
+  const aliens = F.kinds.map((frames, k) => {
+    const list = [...new Set(frames)].map(hex);
+    const label = '<b>' + NAMES[k] + '</b><br>' + list[0] + '-' + list[list.length - 1] + ', ' + frames.length + ' passes a loop';
+    return { ctx: card($('ib-aliens'), label, 32, 29, 4), k, colour: F.colours[(k * 5 + 3) & 15], cycle: 0 };
+  });
+  const LIFE = IB_LIFE.forming + IB_LIFE.formed + IB_LIFE.explode + IB_LIFE.gone;
+  const drawAliens = (t) => {
+    for (const a of aliens) {
+      const u = (t + a.k * 37) % LIFE, c = Math.floor((t + a.k * 37) / LIFE);
+      if (c !== a.cycle) { a.cycle = c; a.colour = F.colours[(c * 7 + a.k * 5 + 3) & 15]; }
+      a.ctx.fillStyle = '#000'; a.ctx.fillRect(0, 0, 128, 116);
+      const s = ibAlienAt(F, a.k, u, a.colour);
+      if (s) spr(a.ctx, ram, s.ptr, 16, 16, 4, s.colour, s.multi);
+    }
+  };
+
+  // 04: the panels
+  const pan = ibPanels(ram, C64Cpu), pc = ctxOf($('ib-panels')), PS = 2;
+  const strip = (m, T, colours, ptrs, y0) => {
+    for (let s = 7; s >= 0; s--) {
+      const x = T.pos[2 * s] + ((T.msb >> s & 1) << 8) - 24 + 8;
+      spr(pc, m, m[ptrs + s], x * PS, y0 * PS, PS, m[colours + s], T.multi >> s & 1, [0x0F, 0x0B]);
+    }
+  };
+  let given = false;
+  $('ib-give').onclick = () => {
+    given = !given; $('ib-give').setAttribute('aria-pressed', given);
+    const m = pan.m, T = F.panels;
+    [0, 1, 2, 3].forEach((i) => { m[0x4871 + i] = given ? T.top.lit[i] : 0; });
+    [0, 1, 3, 4].forEach((i) => { m[0x4891 + i] = given ? T.bottom.lit[i] : 0; });
+  };
+  const drawPanels = () => {
+    pc.fillStyle = '#000'; pc.fillRect(0, 0, 672, 132);
+    strip(pan.m, F.panels.top, 0x4871, 0x4879, 12);
+    strip(pan.m, F.panels.bottom, 0x4891, 0x4899, 12 + 21 + 8);
+    const out = 'Timer ' + pan.m[0x48] + pan.m[0x47] + (pan.meter() ? ' · the meter: ' + pan.meter() : ' · the meter: empty');
+    if ($('ib-panels-out').textContent !== out) $('ib-panels-out').textContent = out;
+  };
+  // the lives sprite, by lives left
+  ['0', '1', '2', '3'].forEach((n, i) => {
+    const ctx = card($('ib-lives-sheet'), '<b>' + n + ' left</b> · ' + hex(F.panels.lives + i), 32, 29, 3);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 96, 87);
+    spr(ctx, ram, F.panels.lives + i, 12, 12, 3, ram[0x4898], true, [0x0F, 0x0B]);
+  });
+
+  // 05: the friends
+  const T = F.title, NAMESF = ['Lover Ball', 'Eddy Ball', 'Glow Ball', 'No Ball'];
+  const iballs = T.iball.map((p, i) => card($('ib-friends'), '<b>Iball</b>, facing ' + (i ? 'left' : 'right') + ' · ' + hex(p), 32, 29, 3));
+  const friends = T.friends.map(([p], i) => card($('ib-friends'), '<b>' + NAMESF[i] + '</b> · ' + hex(p) + ', rescued after level ' + 4 * (i + 1), 32, 29, 3));
+  const drawFriends = (frame) => {
+    iballs.forEach((ctx, i) => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 96, 87); spr(ctx, ram, T.iball[i], 12, 12, 3, T.iballColour, true, T.mc); });
+    friends.forEach((ctx, i) => {
+      const [p, c] = T.friends[i], colour = i === 2 ? c + frame : c;     // sprite 4, stepped at $6E6D
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 96, 87); spr(ctx, ram, p, 12, 12, 3, colour, true, T.mc);
+    });
+  };
+
+  // one clock for the tab: 50 steps a second, a pass of the logic a frame as with few aliens
+  let t = 0, due = 0, last = performance.now();
+  const tick = () => {
+    t++;
+    if (!lifePaused) life.frame();
+    pan.pass();
+  };
+  const draw = () => { drawRoll(t); drawLife(); drawAliens(t); drawPanels(); drawFriends(t); };
+  const frame = (now) => {
+    due = Math.min(due + (now - last) * 50 / 1000, 5); last = now;
+    let n = 0;
+    while (due >= 1) { tick(); due--; n++; }
+    if (n) draw();
+    requestAnimationFrame(frame);
+  };
+  draw(); requestAnimationFrame(frame);
+}).catch((e) => { console.error(e); ['ib-roll', 'ib-life', 'ib-panels'].forEach((id) => { if ($(id)) missing($(id)); }); });
+</script>
