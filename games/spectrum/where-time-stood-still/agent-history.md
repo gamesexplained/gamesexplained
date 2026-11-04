@@ -149,3 +149,26 @@ the new game's set-up a stretch of its own to fit.
 among them tune 23's transposition, which comes from the step count
 and not from channel A's notes; `index.html` and `facts.md` said the
 same and are corrected.
+
+## 4 November 2026: the Graphics tab
+
+The cast sheet drew every frame of every class as a still. The site's
+Graphics standard asks for the shapes a game animates to play instead,
+so the sheet became a Graphics tab that plays each class's animation
+scripts. The scripts are bank 1's data: the class's entry at bank 3
+`$EAC8` names its list (bytes 3 and 4, which `test_cast.js` now reads
+too), and a script is a count of frames, three bytes, then four bytes a
+frame, the fourth the frame drawn. The page plays each script whose
+frames the class has, one frame for every 6.5 television frames, the
+rate measured while walking (46 passes in 300 frames), without the
+steps across, down and up. Frames no multi-frame script shows are drawn
+still beneath: the four characters' frames 28 and 29 are in no script
+of their list, and the shaggy beast's 18 and 19 appear only in scripts
+that also name frames it does not have.
+
+Which scripts a creature is ever given depends on its actions, through
+bank 1 `$E2F2`, and that was not worked out, so the caption says that a
+class sharing the people's list shows scripts its creature may never
+be given. `test_cast.js` now holds the scripts and lists against the
+listing and reads `graphics.html`. How it works keeps a short cast
+section, with the creatures' identities, and a link.

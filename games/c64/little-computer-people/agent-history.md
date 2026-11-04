@@ -139,3 +139,31 @@ and comments on the cells the code rewrites (the text band, objects,
 the stove and the lamp). Four smaller stretches the listing left out
 got a type and a comment: `$0E`-`$0F`, the four bytes after
 `sprite_bit`, and two unreachable `RTS` bytes at `$20C1` and `$248C`.
+
+## 4 November 2026: the Graphics tab
+
+The cast gallery moved from How it works to a new Graphics tab, which
+leads with the man and the dog moving by the game's own code. The page
+runs, on the kit's 6502 over `listing.json`, the main loop's figure
+stages each pass: `update_figure_sprites` (`$0FD2`, its wait for raster
+line `$FA` answered at once), `move_figure` (`$16C4`) for the man and the
+dog, and `upper_body_turn` (`$ACF3`). A click sets his target and
+movement state 2, as the activities do; every one of the 48 floor
+locations is reached by its route, stairs included. The dog wanders by
+its own state 1 and eats once `fill_dog_bowl` (`$2A63`) has filled the
+bowl. `draw_bowl` writes colour RAM at `$DB99`, so the page keeps its
+own colour RAM, started from the copy at `$CC00`.
+
+Two activities run in place: the exercise (activity 27 from phase 2,
+`exercise_start` then `exercise_move`) and the talking sub-machine
+`act41_talk` (`$237E`). The talking needs `sound_requests` (`$3476`)
+and the driver's `sound_frame` (`$B003`) too: `talk_mouth` uses the
+widest mouth only while slot 18 (`$3572`) is free, and only the sound
+code frees it. Both start from `figure_set_pose` `$21`, the back view,
+so the turn to the front shows every view.
+
+The gallery now shows only the 100 images the views do not: 70 body
+poses, the 25 props and the head frames `$18`-`$1E` other than the two
+mouths. `test_graphics.js` runs the page's block for 60,000 passes of
+the house and 3,000 of each activity and finds the images unpacked are
+exactly the page's list of the other 83.

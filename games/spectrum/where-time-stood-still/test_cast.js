@@ -1,7 +1,8 @@
 'use strict';
-// The cast sheet on the How it works page. Its data, <script id="wtss-cast">, is every class of
-// actor's frames as bank 3's table at $EAC8 lists them, the bytes read from the parts' listings
-// (with --write, this test puts them in the page). Its renderer, the block /* wtss-sprites */, is
+// The animations on the Graphics tab. Its data, <script id="wtss-cast">, is every class of actor's
+// frames as bank 3's table at $EAC8 lists them, and the lists of animation scripts in bank 1 the
+// table names, the bytes read from the parts' listings (with --write, this test puts them in the
+// page). Its renderer, the block /* wtss-sprites */, is
 // held to the game's own drawing: each frame of each class, plain and mirrored, at pixel positions
 // 0 to 3, is drawn by draw_actors' body ($A6F8 to $A6F4: set_up_sprite, build_mask and the
 // drawers, or draw_two_pieces) on the kit's Z80 with the 128K's paging, into the screen in bank 7
@@ -27,7 +28,8 @@ const span = (B, a, n) => Uint8Array.from({ length: n }, (_, i) => {
   throw new Error(`a frame's bytes run on to $${x.toString(16)}, outside the bank and the ROM's excerpt`);
 });
 
-// The classes, from bank 3's $EAC8: five bytes each, the bank, the frame list and the animations.
+// The classes, from bank 3's $EAC8: five bytes each, the bank, the frame list and the list of
+// animation scripts in bank 1. A script is a count of frames n, three bytes, then n frames of four.
 // A frame list's length is its table's in the listing; types $14 to $1B are drawn in two pieces,
 // placed by the tables at $F26A (bank 1) and $E2EF (bank 6), whose lengths are the listings' too.
 const NAMES = ['Jarret', 'Gloria', 'Dirk', 'Clive', 'Types 4 to $0F', 'Types $10 to $13', 'Types $14 to $17',
@@ -53,32 +55,42 @@ function build() {
       frames.push([wd, rows, ga, ma, b64(span(B, ga, n)), wd === 4 && ma >= 0xC000 ? b64(span(B, ma, n)) : '']);
       if (wd === 4 && ma < 0xC000 && ma !== 0x8521) throw new Error(`class ${c} frame ${f}: its mask at $${ma.toString(16)}`);
     }
-    const out = { name, types: TYPES[c], bank, list, frames };
+    const out = { name, types: TYPES[c], bank, list, anims: B3[e + 3] | B3[e + 4] << 8, frames };
     if (TWO[c]) out.two = { at: TWO[c], t: b64(B.subarray(TWO[c] - 0xC000, TWO[c] - 0xC000 + tableLen(bank, TWO[c]))) };
     return out;
   });
   // what a sprite of the most rows, its top row the last of a character row, reads past the mask
   const most = Math.max(...classes.flatMap(c => c.frames.map(f => f[1])));
+  // each list's scripts, by address, and each script's bytes, from bank 1
+  const B1 = bankOf(1), lists = {}, scripts = {};
+  for (const a of [...new Set(classes.map(c => c.anims))].sort((x, y) => x - y)) {
+    lists[a] = [];
+    for (let k = 0; k < tableLen(1, a) / 2; k++) {
+      const s = B1[a - 0xC000 + 2 * k] | B1[a - 0xC000 + 2 * k + 1] << 8;
+      lists[a].push(s);
+      scripts[s] = b64(B1.subarray(s - 0xC000, s - 0xC000 + 4 + 4 * B1[s - 0xC000]));
+    }
+  }
   return { t81: b64(main.subarray(0x8100, 0x8200)), t82: b64(main.subarray(0x8200, 0x8300)),
-    after: b64(main.subarray(0x85E1, 0x8521 + 4 * (7 + most))), classes };
+    after: b64(main.subarray(0x85E1, 0x8521 + 4 * (7 + most))), classes, lists, scripts };
 }
 
-const RE = /(<script type="application\/json" id="wtss-cast">)([\s\S]*?)(<\/script>)/;
+const PAGE = 'graphics.html', RE = /(<script type="application\/json" id="wtss-cast">)([\s\S]*?)(<\/script>)/;
 const data = build();
 if (process.argv.includes('--write')) {
-  const file = path.join(__dirname, 'index.html'), html = fs.readFileSync(file, 'utf8');
-  if (!RE.test(html)) { console.log('FAIL index.html has no <script type="application/json" id="wtss-cast">'); process.exit(1); }
+  const file = path.join(__dirname, PAGE), html = fs.readFileSync(file, 'utf8');
+  if (!RE.test(html)) { console.log(`FAIL ${PAGE} has no <script type="application/json" id="wtss-cast">`); process.exit(1); }
   fs.writeFileSync(file, html.replace(RE, (_, a, b, c) => a + JSON.stringify(data) + c));
-  console.log('wrote index.html');
+  console.log('wrote ' + PAGE);
   process.exit(0);
 }
 
 let fails = 0;
 const check = (ok, what) => { if (!ok) { fails++; console.log('FAIL ' + what); } else console.log('ok   ' + what); };
-const m = g.read('index.html').match(RE);
-check(m && JSON.stringify(JSON.parse(m[2])) === JSON.stringify(data), 'index.html: the classes, frames and tables as the listings hold them');
+const m = g.read(PAGE).match(RE);
+check(m && JSON.stringify(JSON.parse(m[2])) === JSON.stringify(data), `${PAGE}: the classes, frames, tables and animation scripts as the listings hold them`);
 
-const { wtssSprites } = g.run('index.html', 'wtss-sprites', 'wtssSprites');
+const { wtssSprites } = g.run(PAGE, 'wtss-sprites', 'wtssSprites');
 const S = wtssSprites(data);
 const M = machine(g), mem = M.mem;
 M.run({ pc: 0x8534 }, 0x8546);                  // start builds the bit-reversal table at $8000

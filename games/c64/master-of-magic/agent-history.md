@@ -222,3 +222,25 @@ A click anywhere on the picture but a menu's word is now fire, held
 until the game has read it and, in play with no menu up, until the menu
 comes back: so a click stops a RUN, and the chooser, which waits for
 fire to be released, picks nothing.
+
+## The Cast tab (4 November 2026)
+
+The site's Graphics standard asks for a tab that shows every shape the
+moving things are drawn with. Here those are the player's dot and the
+figures in the view window, and nothing on the site showed the figures:
+the snapshots behind the page were taken with no entry in sight, so
+sprites 1 to 7 were empty. The figures were rebuilt from the copy loop
+`$10B4`-`$10CD`, which puts the eight bytes of an entry's character
+(`$3000` + 8 × `$4070`) into rows 0 to 7 of the sprite's first byte
+column, and from `$1085`-`$108F`, which colours the sprite from `$A400`.
+The listing's notes at `$3600` and `$3680` name the three characters in
+those rows that no entry uses, `$C9`, `$CE` and `$D3`.
+
+How it works' cast section, the picture sheet with each creature's
+numbers, moved to the new tab, which is named Cast (`graphics_tab`). It
+shows every picture already, and the pictures never move, so they stay
+as stills; each picture's panel now shows the entry's figure too. How it
+works keeps a short section on the entry tables and a link, its
+`MOM_DATA` lost the sheet, the descriptions and the picture tables that
+only the cast read, and `weaponOf` and `attackMask` stay there for the
+combat section.
