@@ -117,11 +117,33 @@ from reading the code in the snapshot named in `orientation.md`.
   `$0FAD`). The car starts on the piece before the line, so the first
   crossing comes at once (*live*: 3.5 seconds after the drop on Little
   Ramp) and the race is three laps.
-- In a league race the computer's car drives the track's line
-  (OPPONENT_LINE `$1D25`), passes or blocks the player when they are close
-  (LINE_PASS `$1E3C`, LINE_HOLD) and bumps them (OPP_BUMP `$209C`). Its top
-  speed and limits are drawn at random for each race from ranges for the
-  track (OPP_PICK `$1F06`).
+- In a league race the computer's car is a distance along the track, a
+  place across the road (`$B0`, kept between `$20` and `$E0`, steered 10 a
+  pass towards its aim) and three wheels on springs (OPPONENT_MOVE `$1E85`,
+  OPP_WHEELS `$21DE`). Its engine's push is the race's setting for every
+  driver (`$C386`, from `race_start_bytes`); its speed is that push less a
+  drag of the speed squared, plus the slope's pull (OPP_SPEED `$1F48`),
+  held to each piece's limit (`$0710`) or, where the piece does not insist,
+  a top speed drawn for the race from the track's range (OPP_PICK `$1F06`:
+  `$BFB2` plus a random number masked by `$BFAA`, 58 to 88 in the league,
+  87 to 109 in the Super League; OPP_GRIP `$2037`).
+- Each driver's habits are a byte at `$AEE0` plus its number (Hot Rod 0
+  to Road Hog 10): bit 1 holds the player's line when close behind
+  (LINE_HOLD), otherwise it goes for the side the player is not on
+  (LINE_PASS `$1E3C`); bit 5 starts passing from further back (`$32` to
+  `$C7`); bit 3 sets its own line (`$6E` against `$40`, mirrored for the
+  odd numbers) and keeps it when right behind, where the others go round
+  (LINE_ROUND `$1E30`); bit 2 jolts its back wheel one pass in 16 while
+  its wheels are still. Bytes: `$22 $20 $62 $20 $3E $04 $30 $14 $4A $10
+  $08`, Hot Rod first (OPPONENT_LINE `$1D25`).
+- A swerve of 16 passes, on the wave at `$1601` with 25 less push, starts
+  at random with a chance of the driver's number plus one in 32 whenever
+  the road allows (SWERVE `$158E`).
+- When the cars meet, OPP_BUMP (`$209C`) pushes the player's car up,
+  sideways and along (half the speeds' difference plus 3) and adds the
+  pushes to the player's damage; OPP_PUSH (`$2176`) takes the push off the
+  computer's speed and starts sound effect 2. Close behind it (`$C308`),
+  the computer's car ahead works out its drag from its speed less 20.
 - The races the player does not drive are worked out (RACE_RESULT
   `$E92C`): each driver's rating is a base by its place in the league's
   order, 120 for the first down to 10 for the twelfth (`driver_base`
@@ -158,13 +180,27 @@ from reading the code in the snapshot named in `orientation.md`.
 ## Sound
 
 - No music. The SID is written by the start-up, START_SOUNDS (`$3F27`),
-  the interrupt's engine note (`$CF0F`) and the sound effects (START_EFFECT
-  `$8655`, EFFECT_TICK `$86EF`, CUT_EFFECT `$8716`), and by no other code.
-- The engine is voices 1 and 3, an octave apart, on the pulse wave. Its
-  note follows the speed along the road (ENGINE_SOUND `$E104`), an eighth
-  of the way each pass, and the filter's cut-off follows it too.
-- A sound effect is seven bytes: the voice, the waveform, the envelope,
-  the pitch, the pulse width and how many frames the gate is held.
+  the interrupt's engine note (`$CF0F`), the sound effects (START_EFFECT
+  `$8655`, EFFECT_TICK `$86EF`, CUT_EFFECT `$8716`, STOP_EFFECTS `$E0F9`)
+  and CLEAR_RACE, which sets the volume to 0. A practice race run on the
+  Play tab's machine met no other writer in the main loop
+  (`port/scripts/race-sound.js`).
+- The engine is voices 1 and 3, an octave apart, on the pulse wave
+  (`$07xx`, its low byte random each pass). Its aim is the speed's size
+  plus 5, times 32 (in the air 0, or 200 with the stick pushed forward or
+  back), and ENGINE_SOUND (`$E104`) sets the interrupt's step to an eighth
+  of the gap: up at most 256 a frame, down at most 256 on the road and 32
+  in the air. Both voices go through the filter (`$D417` = `$F5`), all
+  three modes on and the volume 5 (`$D418` = `$F5`), the cut-off
+  `2 × min(aim, $63) + $20`, at least `$6E`.
+- A sound effect is seven bytes at `$AF80`, eight apart: the slot, the
+  control byte, attack and decay, sustain and release, the pitch's high
+  byte, the pulse width and how many frames the gate is held. Effects 0
+  to 4 are on voice 2: 0 a key taken, 1 stones (pitch at `$AF8C`: the
+  speed plus 2 from `$0A` to `$34`, now and then `$05` or `$0F`; `$0A` on
+  a wreck; `$20` when a part breaks, on two passes), 2 the cars pushing,
+  3 a hard landing, 4 damage with no part lost. 5 and 6 set voices 3 and
+  1 up for the engine.
 
 ## The listing's error rate
 

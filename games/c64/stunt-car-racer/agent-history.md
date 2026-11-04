@@ -77,3 +77,33 @@ in 4,096.
 **Screenshots.** A full-page screenshot in Chromium left the last sections
 of How it works blank: the site's `content-visibility` skips drawing what
 is off the screen. Each section shot on its own showed it fine.
+
+## 4 November 2026, the name's prompt, the sound player and the drivers
+
+**The name's prompt skipped itself.** Return at the first menu picks Single
+Player League, and the Play tab held a key until the game had read it
+twice. The game reads Return once at the menu; the next read came from
+the name's prompt, which took it as the name's end. The page now lets a
+key go two frames after it comes up once the game has read it, read again
+or not. `port/test/keys-browser.js` presses Return for 100 ms in Chromium
+and checks that the prompt waits; with the old rule it ends at once.
+
+**The sound player.** `port/scripts/race-sound.js` records every call the
+race's main loop makes to the sound's code while the Play tab's machine
+drives a practice race, with the frame each came in. Two things made the
+first playback differ from the port: the interrupt can come between
+ENGINE_SOUND's start and its read of the engine's note (the call then
+belongs to the next frame), and between two of START_EFFECT's writes to
+the SID (once in the race, at frame 1378). The page runs the interrupt
+there, on a second 6502 over the same memory. STOP_EFFECTS was the third
+writer the first recording missed. Then all 1,675 frames match, register
+by register. A frame's writes reach the player's SID at one instant, so
+an effect whose gate the interrupt closes in the frame it starts (effect
+4, one frame) was silent; each frame of the player now begins with the
+interrupt and ends with the main loop's calls, so the gate stays open a
+frame.
+
+**The drivers.** Every driver has the race's engine (`$C386` comes from
+`race_start_bytes`), and the top speed is drawn per track, not per driver.
+The drivers differ in the habits byte at `$AEE0` and in how often they
+swerve, the driver's number plus one in 32.
