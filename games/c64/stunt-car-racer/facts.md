@@ -90,6 +90,16 @@ from reading the code in the snapshot named in `orientation.md`.
   up to six on Draw Bridge. Each piece's points are turned into the eye's
   frame and projected (DRAW_PIECE `$177D`), joined by lines
   (POINTS_TO_LINES `$1A3B`) and filled.
+- The lens is a cylinder, worked by logarithms (PROJECT_X `$2458`,
+  PROJECT_Y `$25EA`). A point's place across the screen is its bearing
+  from the eye, 256 fat pixels to a quarter turn (a fit to 3,723 projected
+  points gives 162.4 a radian, against 163.0). Its place up the screen is
+  its height above the eye over its distance along the ground, about 83
+  lines for a unit of height at a distance of one (the median of 87
+  views' fits, 82.5 to 84.4 between the quartiles), from the horizon's
+  line (`$33`/`$69`). The eye's height (`$37`/`$38`) is set by CAMERA
+  (`$F1DC`) inside DRAW_VIEW. The picture is then turned by the car's roll
+  about its middle (ROLL_POINT `$2809`).
 - The front wheels are sprites that move with the springs
   (WHEEL_SPRITES `$14D0`); a wheel that would sit too low is drawn into the
   bitmap instead. The clocks are digits drawn into sprites (DIGIT `$142E`).

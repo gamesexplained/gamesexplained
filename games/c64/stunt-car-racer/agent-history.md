@@ -158,3 +158,49 @@ to the jump (the C64's 14.70 in 15.92), the car's speed within 1.5 per
 cent of the C64's at the same time on the race's clock, and the same
 memory at every refresh rate tried. `port/test/fast-browser.js`: 50.1
 passes a second in Chromium with it on, 7.0 off.
+
+## 4 November 2026, the Chase View mod
+
+Asked for a mod that puts the camera behind and above the car, with the
+car drawn as the game draws the opponent's, and whether the front tyres
+should turn while left or right is held. They do: the game steers all or
+nothing (`$C5`), the car turns slowly after it, and from behind the
+cockpit's own clues are gone, so the front wheels turn 0.3 radians while a
+steering key is down.
+
+**The track.** Its points come from the game's own routines
+(`PIECE_LOAD`, `PIECE_ORIGIN`, `PIECE_POINTS`, `PIECE_POINT_IN_VIEW`) run
+on a scratch machine with the eye at the map's corner, so they come out
+in the map's units. The scratch machine is rebuilt only when the track's
+bytes change (the Draw Bridge's ends move, so their shape is in the key).
+
+**The opponent.** `DRAW_OPPONENT` builds the car on the screen from two
+projected corners, so its 3D shape was measured from its pictures: 81
+across, half as long again, wheels a quarter of the width, a wedge body.
+
+**The lens, wrong at first.** The first version took the game's scale as
+163 hires pixels and 99.4 lines for a unit's ratio to the distance, and a
+height as 0.65 of a unit across. A test drawing the race from the
+driver's seat over the game's own picture met only 16 to 48 per cent of
+the game's line pixels. Fitting the game's own projected points
+(`PROJECT_X`, `PROJECT_Y` wrapped, 3,723 points over 87 views) gave 162.4
+fat pixels a radian (256 fat pixels to a quarter turn, not hires) and
+83.4 lines for a unit of height. On the page's square pixels a height is
+then 0.256 of a unit across. With those, and the player's own car left
+out (the eye is inside it), the same test meets 88 to 99 per cent, the
+opponent's car included. Two traps on the way: the eye read before
+`DRAW_VIEW` is the last pass's (`CAMERA` sets `$37`/`$38` inside it), and
+the picture on show lags the one just drawn until `FLIP_DONE`. The
+game's view also rolls with the car (`ROLL_POINT`), so the test takes
+pictures with no roll.
+
+**The chains.** `CRANE_CHAINS` runs after `DRAW_VIEW` in the same pass,
+so the snapshot predicts it: from row `$C36B` while `$2F` counts, then
+rising by `$C36C` until row `$5F`. `test_chase.js` checks the prediction
+against every pass that draws them or does not.
+
+**Checked.** `test_chase.js`: the machine with Chase View attached is
+the same as one without at every 25th of 5,540 practice frames and 5,748
+league frames; the chains as the game drew them in 174 passes and none
+in 127; the driver's-seat pictures as above. `port/test/chase-browser.js`:
+the button and its memory, 50 pictures a second on, none off.
