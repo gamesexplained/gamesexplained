@@ -14,8 +14,13 @@
 //   on Little Ramp and three of a league race with the opponent in sight, each a picture the game
 //   has not turned by the car's roll (Chase View draws more of the track than the game, so its own
 //   lines are not counted);
-// - the time a picture takes, printed.
-//   node games/c64/stunt-car-racer/test_chase.js [part: off, chains, cockpit]
+// - the time a picture takes, printed;
+// - Heli Replay's recording: one snapshot for each DRAW_VIEW since the race's CLEAR_RACE, in the
+//   order of the C64's frames; the replay at a recorded frame is that snapshot (the later of two
+//   drawn in one frame), and halfway between
+//   two it puts the cars halfway; from the helicopter, over every frame of the recording, the camera
+//   is above the ground and the player's car inside the view in 95 % of them or more.
+//   node games/c64/stunt-car-racer/test_chase.js [part: off, chains, cockpit, heli]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -168,6 +173,43 @@ if (part('cockpit')) {
     if (got < want) fail(name + ': only ' + got + ' pictures of the car on the road, not turned by a roll');
   }
   console.log('     a picture took ' + (ms / n).toFixed(1) + ' ms on average');
+}
+
+// --- Heli Replay -------------------------------------------------------------------------------
+if (part('heli')) {
+  const b = machine(false), P = b.rt.P;
+  let views = 0, clears = 0;
+  const dv = P.DRAW_VIEW, cr = P.CLEAR_RACE;
+  P.DRAW_VIEW = r => { views++; return dv(r); };
+  P.CLEAR_RACE = r => { clears++; views = 0; return cr(r); };
+  for (const s of flat([...TO_RACE.season, ...DRIVE.slice(0, 4)])) { b.set(s); b.rt.runFrame(); }
+  const rec = b.view.rec;
+  if (!clears || rec.length !== views) fail('heli: ' + rec.length + ' snapshots kept, ' + views + ' pictures drawn since CLEAR_RACE');
+  else if (rec.some((r, i) => i && r.frame < rec[i - 1].frame)) fail('heli: the recording is out of order');
+  else console.log('ok   heli: ' + rec.length + ' snapshots kept, one for each picture drawn since the race was cleared');
+  let off = 0;
+  for (let i = 0; i + 1 < rec.length; i++) {
+    const a = rec[i], z = rec[i + 1];
+    if (z.frame === a.frame) continue;                 // two pictures in a frame, as a race starts: the later is shown
+    if (C.replayAt(rec, a.frame, 0).s !== a.s) { if (!off++) fail('heli: the replay at frame ' + a.frame + ' is not its snapshot'); continue; }
+    const m = C.replayAt(rec, (a.frame + z.frame) / 2, i).s, A = a.s.car, Z = z.s.car;
+    if (Math.hypot(Z.x - A.x, Z.z - A.z) < 1500 && Math.abs(m.car.x - (A.x + Z.x) / 2) > 1e-6) { if (!off++) fail('heli: halfway between frames ' + a.frame + ' and ' + z.frame + ' the car is not halfway'); }
+  }
+  if (!off) console.log('ok   heli: the replay is each snapshot at its frame, and the car halfway between two');
+  let cam = null, seen = 0, frames = 0, low = 0, i = 0;
+  for (let f = rec[0].frame; f <= rec[rec.length - 1].frame; f++) {
+    const at = C.replayAt(rec, f, i); i = at.i;
+    const c = C.heli(b.view, at.s, cam, f); cam = c.state;
+    if (c.pos[1] <= 0x200 * C.HS) low++;
+    // the car's middle through the camera's flat lens
+    const d = [at.s.car.x - c.pos[0], at.s.car.front * C.HS - c.pos[1], at.s.car.z - c.pos[2]];
+    const x = d[0] * c.r[0] + d[1] * c.r[1] + d[2] * c.r[2], y = d[0] * c.u[0] + d[1] * c.u[1] + d[2] * c.u[2], z = d[0] * c.f[0] + d[1] * c.f[1] + d[2] * c.f[2];
+    const sx = C.FX * c.zoom * x / z, sy = C.FY * c.zoom * y / z;
+    frames++;
+    if (z > 0 && Math.abs(sx) < C.VIEW.w / 2 && Math.abs(sy) < C.VIEW.h / 2) seen++;
+  }
+  const line = 'heli: from the helicopter the car is in the view in ' + seen + ' of ' + frames + ' frames, the camera below the ground in ' + low;
+  if (low || seen < 0.95 * frames) fail(line); else console.log('ok   ' + line);
 }
 
 console.log(fails ? fails + ' failed' : 'all passed');

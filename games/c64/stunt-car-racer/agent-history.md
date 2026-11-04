@@ -204,3 +204,29 @@ the same as one without at every 25th of 5,540 practice frames and 5,748
 league frames; the chains as the game drew them in 174 passes and none
 in 127; the driver's-seat pictures as above. `port/test/chase-browser.js`:
 the button and its memory, 50 pictures a second on, none off.
+
+## 4 November 2026, the Heli Replay mod
+
+Asked for a mod that flips to a camera above and to the side of the cars
+at a cinematic angle and follows them round the track, replaying the race
+up to that moment. Chase View's hook already reads a snapshot each time
+`DRAW_VIEW` finishes; Heli Replay keeps them all from the race's
+`CLEAR_RACE` on (a restart after a wreck does not clear them, so the
+replay covers the whole race). Two pictures can come in one frame as a
+race starts. Each snapshot carries the track it was drawn on, so the Draw
+Bridge's ends replay as they stood.
+
+The replay stops the race as the pause does, plays the recording in real
+time over the last frame shown, and moves the cars in a straight line
+between pictures unless one jumped more than 1,500 units. The helicopter
+was tried at 900 units to the side and 380 up (no sky in the view), then
+1,000 and 200 (cars too small), and settled at 750 and 160 with a lens of
+57 degrees, following 15 % of the gap a video frame: at 5 % the cars fell
+behind and shrank at speed.
+
+**Checked.** `test_chase.js heli`: 179 snapshots for 179 pictures in a
+league race, the replay exact at each and halfway between, the car in the
+helicopter's view in 1,695 of 1,728 frames. `port/test/heli-browser.js`:
+nothing to play before a race; during the replay the race stands still
+and the replay draws about 60 pictures a second; pressed again, or left to
+end, the race goes on.
