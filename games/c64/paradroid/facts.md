@@ -136,12 +136,28 @@ the hardware vectors at `$FFFA`-`$FFFF` (`cold_start`).
   (`map_blocks`). A character with bit 7 set is a wall.
 - Robots, shots and explosions are sprites 1-6 (`find_sprite`), the
   player sprite 7 and the player's shot sprite 0. Each droid's sprite has
-  its three-digit number drawn into it (`sprite_number`, `$3C77`) and a
-  symbol that turns faster as its energy falls (`energy_symbols`,
-  `$3CFB`).
+  its three-digit number drawn into it (`sprite_number`, `$3C77`, into
+  shape `$48` plus the sprite) and a symbol that turns faster the more
+  energy it has: each turn restarts a timer at (64 − energy) / 8 passes
+  (`energy_symbols`, `$3CFB`). Shape `$48` is never numbered.
 - Console pictures are eight sprites, four rows of two, from the shapes
   each droid's record names, the right half mirrored from the left
-  (`droid_picture`, `$3629`; `mirror_shape`, `$3AE8`).
+  (`droid_picture`, `$3629`; `mirror_shape`, `$3AE8`) into shapes
+  `$44`-`$47` when the record leaves it at 0. A row whose shapes are both
+  `$01` is blank.
+- The console menu's four pictures are sprites 1-4 from the 11-byte
+  records at `$6B94`-`$6BBF` (`menu_sprites`, `$6B89`, records 1-4):
+  the player's own numbered shape `$4F`, the question mark `$50`, and the
+  deck plan `$A1` and side view `$A2` at double width, all light grey on
+  the window's orange, the chosen item's white
+  (`reference/console-menu.png`).
+- A shot's shape is `shot_shapes` (`$6E4C`) by weapon and direction, four
+  to a weapon; a gun's shapes, from `$56` up, flip between a pair each
+  pass, and a shot's colour is one of `flash_hot` (`$6D51`) picked by
+  voice 3's noise (`shot_step`, `$1849`; `player_shot`, `$32D9`). The
+  small explosion is shapes `$32`-`$38` in white, the big one `$39`-`$43`
+  in yellow and multicolour, a shape a pass. Shape `$A3`, a striped
+  block, is in no table or record.
 
 ## Mechanics
 

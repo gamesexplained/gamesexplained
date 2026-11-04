@@ -109,9 +109,46 @@ from reading the code in the snapshot named in `orientation.md`.
   `$EC00` + 64 × slot (`sprite_draw`, `$A185`), in rows of 1, 2 or 3
   bytes as `obj_flags` says. The gnome facing the other way and the horse
   facing left are mirror images built by the start-up (`sprites_build`).
-- The machine's lights, the portal's colour, the sword, the staff and the
-  spaceship's background and lights change colour every pass or two, from
-  random numbers (`rnd`, `$3D78`).
+- Colours that change in play: the portal (object `$1B`) takes a random
+  colour every pass (`play_state`, `$35D0`); the round light and the
+  pyramid key (`$5F`, `$61`) a random one every other pass, the same
+  number that goes to the background in spaceship rooms 1-4 and to `$D023`
+  on the moon (`ship_common`, `$2B2C`); the sword (`$4E`) the entry of
+  `sword_colours` (`$3E7A`) for the pass count's low three bits, on three
+  passes in four, so entries 0 and 4 are never read; the staff (`$58`) its
+  colour plus one, every pass. Random numbers come from `rnd` (`$3D78`).
+- Double height (`$D017`) is the ladder's in mansion room 3
+  (`machine_room_entry`) and the staff's wherever it has a sprite
+  (`play_state`); `room_enter` clears it.
+- Pace of the pictures: `sprite_update` steps a slot's frame when its
+  delay (`$63,x`) runs out and reloads it from `obj_anim` bits 0-2, so a
+  frame lasts that many passes; with 0 it never steps by itself. It runs
+  once a pass for objects 4-`$6C`, but for the gnome only on the even
+  passes he steps, so his frames last 4 passes. Rooms' code sets other
+  paces by writing the delay: Medusa's halves a frame every 16 passes
+  (`greece_medusa`), the snake rising every 16 (`snake_shown`), the risen
+  snake every 64 (`risen_snake_hold`), the woman on the carpet every 32
+  and the carpet's halves every 16 (`persia_carpet`), the lift wheels
+  every 8 once the horse is on the treadle (`gold_wheels`), the horse one
+  for each sideways step, every fourth pass (`horse_hold`), the lit torch
+  through frames 1-3 every 4 (`play_torch`), and a carried object that
+  animates every pass the gnome moves (`carried_follow`). The Medusa,
+  carpet and portal paces were measured by running their rooms' code on
+  the kit's 6502 for 200 passes and more.
+- The portal grows a frame every 64 passes from 0 to 2 as it opens, stays
+  open 16 counts of 64 passes (frames 0 and 1 one count each, frame 2
+  fourteen), and is shut for 61 counts (`play_state`, `$35D6`-`$361A`; run
+  on the 6502 from `$35B5` for 5,120 passes).
+- Pictures written while the game runs: the time machine's lights
+  (objects `$17` and `$18`, 21 one-byte rows each at `$0676` and `$068B`),
+  each pass of the countdown two random numbers ORed and masked by
+  `$AB33`-`$AB5C` (`mansion_pass`, `$10BA`); Medusa's shot (`$6C`, eight
+  bytes at `$0676`), each pass a random number ANDed with the old byte
+  inverted and with `medusa_ball` (`$26D1`); and the gnome breaking up,
+  random bits cleared in ten random bytes of his buffer (`gnome_scramble`,
+  `$10CF`).
+- Smoke (object `$26`) has seven frames of 7 passes; the room's code frees
+  it on the pass after it reaches frame 6, so frame 6 shows for one pass.
 
 ## Mechanics
 

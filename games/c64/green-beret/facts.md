@@ -76,7 +76,7 @@ interrupts off (`block_swap`, `text_draw`, `anim_chars_restore`).
 
 - Joystick in port 2 (`read_joystick`): left and right walk, up jumps
   (pressed again for each jump: `jump_used`), up or down on a ladder
-  climbs, down crouches, fire stabs (once per press).
+  climbs, down lies down, fire stabs (once per press).
 - SPACE fires the extra weapon (`weapon_trigger`, CIA 1 port B bit 4 with
   port A left at row 7). Port 1's fire button is on the same line, so it
   fires the weapon too.
@@ -107,6 +107,33 @@ interrupts off (`block_swap`, `text_draw`, `anim_chars_restore`).
   14-19 the projectiles (0-2 the hero's, 3-5 the enemies'), 20 the
   dropped weapon. `sprites_sort` keeps them in order of Y by insertion
   sort.
+- Sprite shapes `$10`-`$DF` are at `$4400`-`$7FFF` (shape n at `$4000`
+  plus 64n, all multicolour over light red and black from `vic_colours`).
+  Block swap 7 brings ten more, the dog handler's and the dogs', from
+  `$C580` over `$C7`-`$D0` for the Harbour's fight. Fifteen shapes are in
+  no table the game reads and no instruction loads: `$52`-`$5D` (kneeling
+  and leaping soldiers), `$68`, `$8F` and `$D2`.
+- The hero's pose is the stick's bits (`player_pose_starts`): `$04` and
+  `$08` walk (standing is the walk's first frame), `$01` and `$02` up or
+  down a ladder, seen from behind (`$25` over `$24`, `$27` over `$26`),
+  `$05` and `$09` jump, `$06` and `$0A` lie down, `$14` and `$18` stab,
+  `$16` and `$1A` stab lying down, and `$0F` goes over the fence on the map
+  between stages (`hero_walk_map`). The start's place in
+  `pose_anim_starts` picks where the top goes (`pose_dy`, `pose_dx`): 21
+  lines above the legs, 8 pixels to the side for a standing stab, or
+  beside them, 24 pixels right, lying down. A weapon swaps in the tops
+  `$20` (bazooka) or `$40` (flame thrower) further on while he walks and
+  jumps (`weapon_pose_offsets`). The hero is dark grey (`new_game`).
+- An enemy's top is 21 lines above its legs. A white soldier, a bazooka
+  man and a crawler come in lying down, the legs 24 pixels right of the
+  top at the same height (`spawn_dx_bot`, `spawn_dy_top`,
+  `spawn_dy_bot`), and are put upright when their hold runs out
+  (`enemy_hold_timers`) or they die (`enemy_deaths`). Fire poses (`fire_pose_tops`) keep the top over
+  the legs. Only the bazooka man climbs on `$AC`-`$AF`; the white and
+  blue soldiers and the officer on `$3A`-`$3D`.
+- Every projectile, the explosions and the jet among them, flashes yellow
+  and red every four frames (`shots_flash`), whatever `shot_colours` gave
+  it.
 - Each stage's graphics are exchanged in memory by `block_swap` (`$FEEC`),
   nine swaps in `swap_a_addrs`/`swap_b_addrs`/`swap_lengths`: the Harbour
   swap 0; the Bridge swaps 1, 3 and 2; the Prison Camp 4, 6 and 5

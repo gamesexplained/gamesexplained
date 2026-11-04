@@ -1,0 +1,535 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gunship</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.gs-wire{width:100%;height:auto;display:block;background:var(--surface-2);border-radius:6px;touch-action:none;cursor:grab}
+.gs-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 14px;font-size:15px}
+.gs-ctl label{display:flex;gap:6px;align-items:center}
+.gs-ctl input[type=range]{width:180px}
+.gs-btn{font:inherit;font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.gs-btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gs-out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 14px;margin-top:12px;line-height:1.5}
+.gx-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px}
+.gx-group{margin:0 0 26px}
+.gx-group:last-child{margin-bottom:0}
+.gx-group h3{font-size:17px;margin:0 0 4px}
+.gx-group>p{font-size:14.5px;color:var(--ink-soft);margin:0 0 12px}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.gx-tile{margin:0;max-width:100%}
+.gx-tile canvas{display:block;image-rendering:pixelated;border-radius:4px;max-width:100%;height:auto}
+.gx-tile figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-top:5px}
+.gs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin:0 0 16px}
+.gs-cell{border:1px solid var(--line-soft);border-radius:8px;background:var(--surface);padding:6px 4px 4px;font:inherit;font-size:12px;line-height:1.25;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.gs-cell:hover{border-color:var(--ink-mute)}
+.gs-cell.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.gs-cell canvas{width:100%;height:auto;display:block;background:var(--surface-2);border-radius:4px}
+@media (max-width:700px){:root{--gx:16px;--h1:34px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · MicroProse</p>
+  <h1>Gunship</h1>
+  <p class="sub">Everything that moves in the flight. The gun's tracer, the missiles and the explosions are sprites over the 3D view, moved by the flight's own raster interrupt; the marks on the map are sprites too. The tanks, bunkers, bases and hills of the 3D world are wireframe shapes, all of which turn below.</p>
+</header>
+<main class="wrap">
+
+<section id="window" data-part="flight">
+  <p class="fig">01 · The window's sprites</p>
+  <h2 class="t">Sprites for the gun, the missiles and the explosions</h2>
+  <p class="lede">The 3D view is drawn line by line into a bitmap, but what flies through it is sprites: the sight, the target's box, the tracer, missiles leaving the wings and in flight, explosions and the enemy's gun flashes. Each tile here runs the flight's own interrupt code, a frame at a time, fifty times a second.</p>
+  <div class="plate">
+    <div class="gx-bar"><button type="button" class="gs-btn" id="gx-run">Pause</button><button type="button" class="gs-btn" id="gx-step">One frame</button></div>
+    <div id="gx-window"></div>
+    <p class="cap">The page runs <b>the flight's own interrupt</b>, the sprite part of <a href="source-flight.html#9206"><code>irq_bottom</code></a> from <code>$92F9</code> to <code>$944D</code>, on the kit's 6502 simulator over the flight's listing (the <code>gs-sprites</code> block). It gives each sprite its frame, and the launches and the enemy's flashes their places and colours; the page sets what the flight's main loop would: the gun fired and a hit, a launch, missiles in their slots, an explosion's start, the enemy firing. The window's sprites are multicoloured but for the sight, with the two shared colours the interrupt sets.</p>
+  </div>
+  <p>The interrupt runs once a frame at line <code>$FB</code>, below the window, and the window's sprite registers are its own instructions: the main loop writes each sprite's place, colour and frame into a table at <code>$8154</code>, and <a href="source-flight.html#9AEA"><code>sprites_copy</code></a> writes them into the interrupt's LDA instructions, which store them into the video chip. So the main loop can take as long as its 3D picture needs, and the sprites still move every frame.</p>
+</section>
+
+<section id="map" data-part="flight">
+  <p class="fig">02 · The panel and the map</p>
+  <h2 class="t">The marks on the panel and the map</h2>
+  <p class="lede">A second interrupt, at line <code>$9A</code> where the window ends, gives the panel its own eight sprites: the pitch ladder, the slip and waypoint marks, the four needles and the helicopter's mark on the CRT. On the big map the cross and the helicopter are sprites again.</p>
+  <div class="plate">
+    <div id="gx-map"></div>
+    <p class="cap">The cross and the helicopter are the big map's own interrupt (<a href="source-flight.html#97D8"><code>irq_map</code></a>) and <a href="source-flight.html#9873"><code>heading_sprite</code></a> run on the kit's 6502 simulator, the page turning the heading. The stills are the shapes as the listing holds them, in the colours the panel gives them.</p>
+  </div>
+</section>
+
+<section id="shapes" data-part="flight">
+  <p class="fig">03 · The wireframe shapes</p>
+  <h2 class="t">Every wireframe shape in the 3D world, turning</h2>
+  <p class="lede">The tanks, missile launchers, bunkers, bases and hills in the 3D view are all wireframes. Each is one record of a few dozen bytes in the theatre's terrain file.</p>
+  <div class="plate">
+    <div class="gs-grid" id="gs-shape-grid"></div>
+    <div id="gs-shape-pick"></div>
+    <canvas id="gs-shape" class="gs-wire" width="640" height="360" aria-label="The shape, turning"></canvas>
+    <div class="gs-ctl" style="margin-top:12px">
+      <label>Heading <input id="gs-yaw" type="range" min="0" max="255" value="32"></label>
+      <label>Tilt <input id="gs-tilt" type="range" min="0" max="64" value="16"></label>
+      <button type="button" class="gs-btn" id="gs-spin" aria-pressed="true">Turn</button>
+    </div>
+    <div class="gs-out" id="gs-shape-out">-</div>
+    <p class="cap">Drawn from the bytes of Western Europe's terrain file, as they sit in memory during a flight. A number written with a <code>$</code> is in hexadecimal, base 16, and most such numbers on this page are addresses in the C64's 64 KB of memory. Each point is a combination of one x value, one y value and one height, picked by the tables at <code>$1C37</code>, <code>$1CA8</code> and <code>$1D19</code>, or it is a fraction of another point. Every edge the shape lists is drawn here. The game leaves out an edge when both of the faces it joins turn away from the eye. Pick a shape from the grid or the list, and drag the large picture to turn it.</p>
+  </div>
+  <p>A shape's record starts with how many points it has and their numbers (<code>$1E9F</code> on). Then come its faces, five bytes each, a colour number and its edges. An edge names two faces and two points, or a single point drawn as a dot. A flat shape has no faces, so all its edges are always drawn.</p>
+  <p>How the world puts the shapes on its map, near and far, and how a hill's faces crash the helicopter, is on <a href="index.html#wireframe">How it works</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* gs-shapes */
+// The shapes of the terrain file as the flight's listing holds them (W3.WE): the points table and
+// one record a shape. A point is an x value, a y value and a height, each a signed word in two
+// tables (x: $1B88 low, $1BA5 high; y: $1BC4, $1BE7; heights: $1C0C, $1C21), numbered for it at
+// $1C37, $1CA8 and $1D19, for $1C36 + 1 points; after them come the fraction points, $1D8A + 1 of
+// them, each a source point ($1D8B) halved n times ($1DB1). A shape: its last point's index n,
+// then n + 1 point numbers; its face count, five bytes a face; a colour byte; its last edge's
+// index; then each edge, two faces and two points, or two faces and one point with bit 7 set,
+// drawn as a dot.
+function gsPoints(ram) {
+  const s16 = (lo, hi) => { const v = lo | hi << 8; return v >= 0x8000 ? v - 0x10000 : v; };
+  const pts = [];
+  const n = ram[0x1C36] + 1;
+  for (let i = 0; i < n; i++) {
+    const xi = ram[0x1C37 + i], yi = ram[0x1CA8 + i], hi = ram[0x1D19 + i];
+    pts.push([s16(ram[0x1B88 + xi], ram[0x1BA5 + xi]), s16(ram[0x1BC4 + yi], ram[0x1BE7 + yi]),
+      s16(ram[0x1C0C + hi], ram[0x1C21 + hi])]);
+  }
+  for (let j = 0; j <= ram[0x1D8A]; j++) {
+    const p = pts[ram[0x1D8B + j]] || [0, 0, 0], k = ram[0x1DB1 + j];
+    pts.push(p.map((v) => v >> k));
+  }
+  return pts;
+}
+function gsShape(ram, a) {
+  const n = ram[a], pl = [];
+  for (let i = 0; i <= n; i++) pl.push(ram[a + 1 + i]);
+  let y = a + n + 2;
+  const nf = ram[y]; y += 1 + 5 * nf;
+  const colour = ram[y], ne = ram[y + 1] + 1; y += 2;
+  const edges = [];
+  for (let e = 0; e < ne; e++) {
+    const p1 = ram[y + 2];
+    if (p1 & 0x80) { edges.push([p1 & 0x7F, p1 & 0x7F]); y += 3; } else { edges.push([p1, ram[y + 3]]); y += 4; }
+  }
+  return { points: pl, faces: nf, colour, edges, end: y };
+}
+// end of gs-shapes
+</script>
+<script>
+/* gs-sprites */
+// The window's sprites as the flight's raster interrupt moves them: its sprite part
+// (irq_bottom from $92F9 to $944D) run on the kit's 6502 (C64Cpu) once a frame over the flight's
+// memory, after the frame count zpa_17 goes up as irq_bottom's start makes it. That part steps
+// the cannon's tracer and the hits on the target's box (sprite 1, $81CD), each missile's flicker
+// and each explosion's frames ($81AC, $8211, $8217), the multicolours the explosions flicker
+// between, the enemy's gun flashes ($81D0) and the missiles leaving the wings (zpa_2F, zpa_30).
+// Each scene is a machine of its own, and sets up what the flight's main loop would have set:
+// the gun fired, a hit, a launch, a missile slot. The video chip's registers are kept from the
+// writes, so a scene reads the places the interrupt gave its sprites, the multicolours and
+// sprite 2's colour; the pointers are the screen's at $7FF8.
+// gsSprites(ram, CPU) -> { cannon(), launch(weapon), missiles(), explosion(), flashes(), map() }
+// A scene is { frame(), sprites(): [{ ptr, bank, x, y, colour, mc, wide, tall }], mcs(): [$D025, $D026],
+// m, note() }; the first sprite listed is in front, as the lower sprite number is.
+function gsSprites(base, CPU) {
+  function machine() {
+    const m = base.slice(), vic = new Uint8Array(0x30);
+    let seed = 0x2B;
+    vic[0x25] = 7; vic[0x26] = 7;
+    const cpu = new CPU(m, { port: 0x35, io: {
+      read(a) {
+        if (a === 0xD41B) { seed = (seed * 109 + 89) & 255; return seed; }   // the SID's noise, as random
+        return a >= 0xD000 && a < 0xD030 ? vic[a - 0xD000] : 0;
+      },
+      write(a, v) { if (a >= 0xD000 && a < 0xD030) vic[a - 0xD000] = v; } } });
+    m[0xFF] = 0;                                   // the cockpit, not the map
+    // nothing fired, launched or exploding, as a flight starts
+    m[0x81CD] = 0; m[0x81D0] = 0xFF; m[0x81AC] = 0; m[0x2F] = 0xFF; m[0x30] = 0xFF;
+    const irq = () => { m[0x17] = (m[0x17] + 1) & 255; cpu.pc = 0x92F9; cpu.run({ until: 0x944D, maxSteps: 20000 }); };
+    return { m, vic, irq, cpu };
+  }
+  // a window sprite n at (x, y) with the colour the interrupt or the main loop gives it
+  // (irq_bottom: $D01C $FE, $D01D 3, $D017 1; bank 1, so a shape is at $4000 + 64 times its pointer)
+  const win = (W, n, x, y, colour) => ({ ptr: W.m[0x7FF8 + n], bank: 0x4000, x, y, colour: colour & 15, mc: n > 0, wide: n < 2, tall: n === 0 });
+  const placed = (W, n, colour) => win(W, n, W.vic[2 * n] + (W.vic[0x10] >> n & 1) * 256, W.vic[2 * n + 1], colour);
+  const SIGHT = (W) => win(W, 0, 0xA0, 0x55, 1);
+
+  // The gun fired: gun_fire sets $81CD to $1F and the tracer runs through $72-$77 by the count,
+  // nearest first. A hit sets $80, and the box shows its sparks; target_hit's end clears bit 7 and
+  // puts the plain box back ($D8).
+  function cannon() {
+    const W = machine(), m = W.m;
+    let f = 0, s = 'box';
+    m[0x7FF8] = 0x41; m[0x7FF9] = 0xD8;
+    return { m, mcs: () => [W.vic[0x25], W.vic[0x26]], frame() {
+      const t = f++ % 200;
+      if (t === 20) { m[0x81CD] = 0x1F; s = 'the gun fires'; }
+      if (t === 60) { m[0x81CD] = 0x80; s = 'hits on the target'; }
+      if (t === 150) { m[0x81CD] &= 0x7F; m[0x7FF9] = 0xD8; s = 'box'; }
+      W.irq();
+    }, note: () => s, sprites: () => [SIGHT(W), win(W, 1, 0xE0, 0x3C, 1)] };
+  }
+  // A launch: launch_wings ($AD3C) takes the weapon's two wing sprites ($C7, $C8) and starts each
+  // wing's count (zpa_2F, zpa_30) at $27 with its missile's slot (zpa_31, zpa_32); the interrupt
+  // gives the sprite its frame from $E300 and its place from $E314 and $E328 for 20 steps, two
+  // frames each. An FFAR pair leaves both wings at once; another missile one wing, by its store's
+  // count, so here they alternate.
+  // w: 1 a Sidewinder (or a Hellfire, 3, which leaves the same way), 2 an FFAR pair.
+  function launch(w) {
+    const W = machine(), m = W.m;
+    let f = 0, side = 0;
+    m[0xC7] = m[0xAD53 + w]; m[0xC8] = m[0xAD56 + w];
+    return { m, mcs: () => [W.vic[0x25], W.vic[0x26]], note: () => (m[0x2F] & m[0x30] & 0x80) ? 'waiting' : 'leaving the wing', frame() {
+      const t = f++ % 90;
+      if (t === 10) {
+        if (w === 2) { m[0x2F] = 0x27; m[0x31] = 1; m[0x30] = 0x27; m[0x32] = 2; }
+        else if (side ^= 1) { m[0x2F] = 0x27; m[0x31] = 1; } else { m[0x30] = 0x27; m[0x32] = 2; }
+      }
+      W.irq();
+    }, sprites() {
+      const out = [];
+      if (!(m[0x2F] & 0x80)) out.push(placed(W, m[0x31] + 2, W.vic[0x27 + m[0x31] + 2]));
+      if (!(m[0x30] & 0x80)) out.push(placed(W, m[0x32] + 2, W.vic[0x27 + m[0x32] + 2]));
+      return out;
+    } };
+  }
+  // Missiles in flight, one in each distance class: the main loop gives each the frame $C8 plus
+  // twice its class; the interrupt turns bit 0 of a slot's pointer over once every eight frames,
+  // each slot on a frame of its own.
+  function missiles() {
+    const W = machine(), m = W.m;
+    m[0x81AC] = 0x1F;
+    for (let k = 0; k < 5; k++) { m[0x8211 + k] = 0x60; m[0x7FFA + k] = 0xC8 + 2 * (4 - k); }
+    return { m, mcs: () => [W.vic[0x25], W.vic[0x26]], frame: () => W.irq(), note: () => 'far to near',
+      sprites: () => [0, 1, 2, 3, 4].map((k) => win(W, k + 2, 0x30 + k * 36, 0x60, 1)) };
+  }
+  // An explosion: the missile code sets bit 0 of the slot's kind and its timer to $40, and its own
+  // count takes the first step ($B2E7-$B2F3); the interrupt counts the timer on down to 1, the
+  // frame going from $D2 to $D7 by a quarter of the count.
+  function explosion() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    return { m, mcs: () => [W.vic[0x25], W.vic[0x26]], frame() {
+      const t = f++ % 110;
+      if (t === 0) { m[0x81AC] = 1; m[0x8211] = 0x61; m[0x8217] = 0x3F; }
+      if (t === 90) m[0x81AC] = 0;
+      W.irq();
+    }, note: () => m[0x81AC] & 1 ? 'timer ' + m[0x8217] : 'gone', sprites: () => m[0x81AC] & 1 ? [win(W, 2, 0x40, 0x60, 1)] : [] };
+  }
+  // The enemy's gun: a ground unit that fires sets $81D0 to 8, or $20 when it hits; the interrupt
+  // shows sprite 2 at a random place, a new one every eight frames, its frame stepping $D5 to $D2.
+  function flashes() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    m[0x81D0] = 0xFF;
+    return { m, mcs: () => [W.vic[0x25], W.vic[0x26]], frame() {
+      const t = f++ % 80;
+      if (t === 10) m[0x81D0] = 0x20;
+      W.irq();
+    }, note: () => m[0x81D0] & 0x80 ? 'quiet' : 'firing', sprites: () => m[0x81D0] & 0x80 ? [] : [placed(W, 2, W.vic[0x29])] };
+  }
+  // The big map: its own interrupt (irq_map, from $97EE) builds the helicopter's mark each frame
+  // (heading_sprite, $9873: the outline for the heading, the rotor's frame stepped by its speed,
+  // zpa_41, here $9C, the most it reaches) and turns the waypoint's cross between white and black
+  // every 32 frames. Here the helicopter turns a full circle in 512 frames.
+  function map() {
+    const W = machine(), m = W.m;
+    let f = 0;
+    m[0x18] = 1; m[0x41] = 0x9C; W.vic[0x27] = 1; W.vic[0x28] = 0;
+    return { m, mcs: () => [0, 0], frame() {
+      if (f++ & 1) m[0x8144] = (m[0x8144] + 1) & 255;
+      m[0x17] = (m[0x17] + 1) & 255;
+      W.cpu.pc = 0x97EE; W.cpu.run({ until: 0x9804, maxSteps: 20000 });
+    }, note: () => 'heading ' + Math.round(m[0x8144] * 360 / 256) + '°',
+    sprites: () => [{ ptr: 0xB7, bank: 0xC000, x: 40, y: 60, colour: W.vic[0x27] & 15 }, { ptr: 0x40, bank: 0xC000, x: 90, y: 60, colour: W.vic[0x28] & 15 }] };
+  }
+  return { cannon, launch, missiles, explosion, flashes, map };
+}
+// end of gs-sprites
+</script>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const need = (name, el) => { if (el) el.textContent = name + ' did not load, so this widget cannot run here.'; };
+const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+function gsMessage(ram, n) {
+  // message n, from the tables at $7B04 (low bytes) and $7B26 (high bytes): 1-26 are A-Z, $1F a
+  // space, $1E a hyphen, the digits as the map font has them, bit 7 a new line, $FF the end. The
+  // font draws 10 and 24, J and X, as 7 and 8, and its O is also its 0.
+  const DIG = { 0x2F: '1', 0x3A: '2', 0x3B: '3', 0x3C: '4', 0x3E: '5', 0x3F: '6', 0x0A: '7', 0x18: '8', 0x00: '9' };
+  let a = ram[0x7B04 + n] | ram[0x7B26 + n] << 8, s = '';
+  for (let i = 0; i < 60; i++, a++) {
+    const c = ram[a];
+    if (c === 0xFF) break;
+    if (c & 0x80 && s) s += ' / ';
+    const b = c & 0x7F;
+    s += DIG[b] ? DIG[b] : b === 15 && /\d$/.test(s) ? '0' : b >= 1 && b <= 26 ? String.fromCharCode(64 + b) : b === 0x1F ? ' ' : b === 0x1E ? '-' : b === 0x1C ? ':' : b === 0x2E ? '!' : '?';
+  }
+  return s.trim();
+}
+
+// ---- 03 the wireframe shapes
+function shapes(ram, names) {
+  const pts = gsPoints(ram);
+  const list = [];
+  for (const [a, l] of names) {
+    if (a < 0x1EC9 || a > 0x2FF0) continue;
+    if (!/^(shape|hill|box|pad|outline|line|strokes|dots|zigzag)/.test(l)) continue;
+    const sh = gsShape(ram, a);
+    let title;
+    if (a === 0x24E3) title = 'A single dot, which no object uses';
+    else if (a > 0x24E3 && a !== 0x2FF0) title = gsMessage(ram, ram[sh.end] + 11) + ' (target)';
+    else if (a === 0x2FF0) title = 'Mi-24 Hind';
+    else if (/^hill(\d)_(near|far)/.test(l)) { const m = l.match(/^hill(\d)_(near|far)/); title = 'Hill ' + m[1] + ', ' + m[2] + ' view'; }
+    else if (/_far/.test(l)) title = 'Far view, ' + l.replace(/_far.*/, '').replace(/_/g, ' ');
+    else title = l.replace(/_[0-9A-F]{4}$/, '').replace(/_/g, ' ');
+    list.push({ a, l, title, sh });
+  }
+  list.sort((p, q) => (p.a > 0x24E3) === (q.a > 0x24E3) ? p.a - q.a : (p.a > 0x24E3 ? -1 : 1));
+  const pick = $('gs-shape-pick');
+  pick.className = 'pick';
+  pick.innerHTML = '<a class="step" href="#" data-d="-1" aria-label="The shape before">‹</a><select aria-label="Shape"></select><a class="step" href="#" data-d="1" aria-label="The shape after">›</a>';
+  const sel = pick.querySelector('select');
+  list.forEach((s, i) => sel.add(new Option(s.title + ' · ' + hex(s.a), i)));
+  const cv = $('gs-shape'), ctx = cv.getContext('2d');
+  // a cell for every shape, drawn small at the same heading and tilt as the large one
+  const grid = $('gs-shape-grid'), cells = list.map((s, i) => {
+    const b = document.createElement('button'), c = document.createElement('canvas'), n = document.createElement('span');
+    b.type = 'button'; b.className = 'gs-cell'; c.width = 200; c.height = 120; n.textContent = s.title;
+    c.setAttribute('aria-hidden', 'true'); b.append(c, n); grid.appendChild(b);
+    b.addEventListener('click', () => show(i));
+    return { b, c, x: c.getContext('2d') };
+  });
+  let yaw = 32, tilt = 16, spin = true, cur = 0;
+  const COL = { 1: '#2f3136', 2: '#1f5fa8', 3: '#d04a3a' };
+  function draw() {
+    wire(ctx, cv, list[cur], 2, 3);
+    cells.forEach((c, i) => wire(c.x, c.c, list[i], 1.5, 2));
+    const s = list[cur];
+    $('gs-shape-out').textContent = `${s.l} at ${hex(s.a)}: ${s.sh.points.length} points, ${s.sh.faces} faces, ${s.sh.edges.length} edges, colour ${s.sh.colour & 3}, ${s.sh.end - s.a} bytes` +
+      (s.a > 0x24E3 && s.a !== 0x2FF0 ? `; name byte ${s.sh.end >= 0 ? ram[s.sh.end] : ''} at ${hex(s.sh.end)}, message ${ram[s.sh.end] + 11}` : '');
+  }
+  function wire(ctx, cv, s, lw, dot) {
+    const P = s.sh.points.map((i) => pts[i] || [0, 0, 0]);
+    const t = yaw / 256 * 2 * Math.PI, el = tilt / 256 * 2 * Math.PI;
+    let cx = 0, cy = 0, cz = 0;
+    P.forEach((p) => { cx += p[0]; cy += p[1]; cz += p[2]; });
+    cx /= P.length || 1; cy /= P.length || 1; cz /= P.length || 1;
+    const proj = P.map(([x, y, h]) => {
+      x -= cx; y -= cy; h -= cz;
+      const u = x * Math.cos(t) - y * Math.sin(t), v = x * Math.sin(t) + y * Math.cos(t);
+      return [u, -(h * Math.cos(el) + v * Math.sin(el))];
+    });
+    const mx = Math.max(1, ...proj.map((p) => Math.max(Math.abs(p[0]), Math.abs(p[1]))));
+    const sc = (cv.height / 2 - cv.height / 15) / mx;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.strokeStyle = ctx.fillStyle = COL[s.sh.colour & 3] || '#2f3136';
+    ctx.lineWidth = lw;
+    for (const [p1, p2] of s.sh.edges) {
+      const a = proj[p1], b = proj[p2];
+      if (!a || !b) continue;
+      if (p1 === p2) { ctx.beginPath(); ctx.arc(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc, dot, 0, 7); ctx.fill(); continue; }
+      ctx.beginPath(); ctx.moveTo(cv.width / 2 + a[0] * sc, cv.height / 2 + a[1] * sc); ctx.lineTo(cv.width / 2 + b[0] * sc, cv.height / 2 + b[1] * sc); ctx.stroke();
+    }
+  }
+  function show(i) {
+    cur = (i + list.length) % list.length; sel.value = cur;
+    cells.forEach((c, k) => c.b.classList.toggle('on', k === cur));
+    pick.querySelector('[data-d="-1"]').classList.toggle('off', false);
+    draw();
+  }
+  sel.addEventListener('change', () => show(+sel.value));
+  pick.querySelectorAll('.step').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); show(cur + +b.dataset.d); }));
+  $('gs-yaw').addEventListener('input', (e) => { yaw = +e.target.value; draw(); });
+  $('gs-tilt').addEventListener('input', (e) => { tilt = +e.target.value; draw(); });
+  $('gs-spin').addEventListener('click', (e) => { spin = !spin; e.target.setAttribute('aria-pressed', spin); });
+  let drag = null;
+  cv.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY, yaw, tilt]; cv.setPointerCapture(e.pointerId); spin = false; $('gs-spin').setAttribute('aria-pressed', 'false'); });
+  cv.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    yaw = ((drag[2] - (e.clientX - drag[0]) / 2) % 256 + 256) % 256;
+    tilt = Math.max(0, Math.min(64, drag[3] + (e.clientY - drag[1]) / 4));
+    $('gs-yaw').value = yaw; $('gs-tilt').value = tilt; draw();
+  });
+  cv.addEventListener('pointerup', () => { drag = null; });
+  let timer = 0;
+  new IntersectionObserver((es) => {
+    const on = es[0].isIntersecting;
+    if (on && !timer) timer = setInterval(() => { if (spin) { yaw = (yaw + 1) % 256; $('gs-yaw').value = yaw; draw(); } }, 50);
+    if (!on && timer) { clearInterval(timer); timer = 0; }
+  }).observe(cv);
+  const first = list.findIndex((s) => /T-72/.test(s.title));
+  show(first < 0 ? 0 : first);
+}
+
+// ---- 01 and 02: the sprites
+// Each gs-sprites scene on a tile of its own, as big as a dry run of the scene says its sprites
+// need; the stills are the shapes nothing animates, read from the listing where they lie.
+function sprites(F) {
+  const host = $('gx-window'), host2 = $('gx-map');
+  if (typeof C64Cpu === 'undefined') { need('cpu6502.js', host); need('cpu6502.js', host2); return; }
+  const PAL = C64.PAL, S = 2, PAD = 4, SKY = 14;
+  const G = gsSprites(F.ram, C64Cpu.CPU);
+  function paint(ctx, m, q, x, y, mcs) {
+    const a = q.bank + q.ptr * 64, xw = q.wide ? 2 : 1, yh = q.tall ? 2 : 1;
+    for (let r = 0; r < 21; r++) for (let bx = 0; bx < 3; bx++) {
+      const v = m[a + r * 3 + bx];
+      if (!v) continue;
+      if (q.mc) {
+        for (let p = 0; p < 4; p++) {
+          const c = v >> (6 - 2 * p) & 3;
+          if (!c) continue;
+          ctx.fillStyle = PAL[c === 1 ? mcs[0] & 15 : c === 2 ? q.colour : mcs[1] & 15];
+          ctx.fillRect(x + (bx * 8 + 2 * p) * xw * S, y + r * yh * S, 2 * xw * S, yh * S);
+        }
+      } else {
+        ctx.fillStyle = PAL[q.colour];
+        for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) ctx.fillRect(x + (bx * 8 + p) * xw * S, y + r * yh * S, xw * S, yh * S);
+      }
+    }
+  }
+  function boxOf(make, n) {
+    const sc = make();
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (let f = 0; f < n; f++) {
+      sc.frame();
+      for (const q of sc.sprites()) {
+        x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y);
+        x1 = Math.max(x1, q.x + (q.wide ? 48 : 24)); y1 = Math.max(y1, q.y + (q.tall ? 42 : 21));
+      }
+    }
+    return { x: x0 - PAD, y: y0 - PAD, w: x1 - x0 + 2 * PAD, h: y1 - y0 + 2 * PAD };
+  }
+  const tiles = [];
+  function group(into, title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3></h3><p>' + text + '</p><div class="gx-tiles"></div>';
+    g.querySelector('h3').textContent = title;
+    into.appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function canvasTile(into, w, h, alt) {
+    const t = document.createElement('figure'), cv = document.createElement('canvas'), sp = document.createElement('figcaption');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', alt);
+    t.append(cv, sp); into.appendChild(t);
+    return { cv, sp };
+  }
+  function tile(into, make, n, opt) {
+    const box = boxOf(make, n), sc = make(), { cv, sp } = canvasTile(into, box.w * S, box.h * S, opt.alt);
+    tiles.push({ sc, box, cv, ctx: cv.getContext('2d'), sp, name: opt.name, bg: opt.bg, last: '' });
+  }
+  function draw(T) {
+    const { ctx, box, sc } = T;
+    ctx.fillStyle = PAL[T.bg]; ctx.fillRect(0, 0, T.cv.width, T.cv.height);
+    const qs = sc.sprites(), mcs = sc.mcs();
+    for (let i = qs.length - 1; i >= 0; i--) paint(ctx, sc.m, qs[i], (qs[i].x - box.x) * S, (qs[i].y - box.y) * S, mcs);
+    const l = T.name + (sc.note ? ': ' + sc.note() : '');
+    if (l !== T.last) { T.sp.textContent = l; T.last = l; }
+  }
+  // a shape that nothing animates, at 3 canvas pixels a C64 pixel
+  function still(into, a, colour, bg, mc, label, rows = 21, cols = 3) {
+    const { cv, sp } = canvasTile(into, (cols * 8 + 4) * 3, (rows + 4) * 3, label);
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = PAL[bg]; ctx.fillRect(0, 0, cv.width, cv.height);
+    for (let r = 0; r < rows; r++) for (let bx = 0; bx < cols; bx++) {
+      const v = F.ram[a + r * cols + bx];
+      for (let p = 0; p < 8; p += mc ? 2 : 1) {
+        const c = mc ? v >> (6 - p) & 3 : v >> (7 - p) & 1;
+        if (!c) continue;
+        ctx.fillStyle = PAL[mc ? [0, 7, colour, 7][c] : colour];
+        ctx.fillRect((2 + bx * 8 + p) * 3, (2 + r) * 3, (mc ? 2 : 1) * 3, 3);
+      }
+    }
+    sp.textContent = label;
+  }
+
+  const gun = group(host, 'The cannon', 'The sight is sprite 0, white, stretched to twice its size both ways. Sprite 1 is the box over the locked target, and the same sprite shows the gun: while it fires, the tracer runs through six frames from a tight burst to scattered sparks, by a count of 31 frames, and a hit makes the box spark, a frame every fourth frame.');
+  tile(gun, G.cannon, 200, { name: 'The sight and the box', bg: SKY, alt: 'The gunsight and the target box, the gun firing and hitting' });
+  const go = group(host, 'Missiles leaving the wings', 'A missile just fired is drawn by the interrupt for 20 steps of two frames each, from the wing towards the middle of the window, a frame smaller every few steps. A Sidewinder and a Hellfire leave the same way, from one wing at a time; FFARs leave in pairs, one from each wing.');
+  tile(go, () => G.launch(1), 180, { name: 'Sidewinder or Hellfire', bg: SKY, alt: 'A Sidewinder leaving the left wing, then the right' });
+  tile(go, () => G.launch(2), 180, { name: 'FFAR pair', bg: SKY, alt: 'A pair of FFAR rockets leaving both wings' });
+  const fly = group(host, 'In flight and exploding', 'A missile in flight is one of five sizes by its distance, far on the left here and near on the right, and each flickers between its two frames once every eight frames. An explosion steps through six frames as its timer counts down, and every fourth frame one of the two shared colours turns to a random one of red, orange, yellow and light red while the other is yellow. In play the flight\'s main loop counts the timer down too, once a pass, so an explosion there is over sooner. The enemy\'s gun flashes are sprite 2, black, at a random place in the window every eight frames.');
+  tile(fly, G.missiles, 32, { name: 'Missiles', bg: SKY, alt: 'Five missiles in flight, from far to near, flickering' });
+  tile(fly, G.explosion, 110, { name: 'Explosion', bg: SKY, alt: 'An explosion, from fireball to debris' });
+  tile(fly, G.flashes, 160, { name: 'Enemy gun', bg: SKY, alt: 'The enemy gun\'s flashes, in random places' });
+
+  const mapg = group(host2, 'On the big map', 'The waypoint\'s cross turns between white and black every 32 frames. The helicopter\'s mark is built afresh every frame: the outline for its heading, one of eight, and over it one of the rotor\'s four frames, stepping faster the faster the rotor turns. Here it turns a full circle with the rotor at full speed.');
+  tile(mapg, G.map, 512, { name: 'The cross and the helicopter', bg: 5, alt: 'The waypoint cross blinking and the helicopter mark turning' });
+  const marks = group(host2, 'Shapes that only move', 'These are never animated: they only slide. The pitch ladder moves up and down the attitude indicator, the slip mark and the waypoint\'s mark along the strip under the compass. The compass needle is one of eight small shapes by the heading, drawn into its sprite; the other three needles are lines drawn into theirs.');
+  still(marks, 0xED00, 1, 0, 0, 'Pitch ladder, $B4');
+  still(marks, 0xED40, 13, 0, 0, 'Slip mark, $B5');
+  still(marks, 0xED80, 10, 0, 0, 'Waypoint mark, $B6');
+  for (let k = 0; k < 8; k++) still(marks, 0xBCAE + 4 * k, 7, 0, 0, 'Compass, ' + k * 45 + '°', 4, 1);
+  const unused = group(host2, 'Shapes nothing shows', 'Three of the window\'s shapes are never seen. Sprites 2 to 7 start the flight pointing at a dot and a large box, out of sight until a missile takes them, and a solid square has no pointer set to it.');
+  still(unused, 0x5080, 1, SKY, 0, 'A dot, $42');
+  still(unused, 0x50C0, 1, SKY, 0, 'Box corners, $43');
+  still(unused, 0x70C0, 1, SKY, 0, 'Solid, $C3');
+
+  let run = true, seen = true, last = 0, owed = 0;
+  const step = () => { for (const T of tiles) T.sc.frame(); };
+  const all = () => { for (const T of tiles) draw(T); };
+  all();
+  $('gx-run').onclick = () => { run = !run; $('gx-run').textContent = run ? 'Pause' : 'Play'; };
+  $('gx-step').onclick = () => { run = false; $('gx-run').textContent = 'Play'; step(); all(); };
+  if ('IntersectionObserver' in window) {
+    const vis = new Set();
+    const io = new IntersectionObserver((es) => { es.forEach((e) => e.isIntersecting ? vis.add(e.target) : vis.delete(e.target)); seen = vis.size > 0; });
+    io.observe(host.closest('.plate')); io.observe(host2.closest('.plate'));
+  }
+  // 50 frames a second, as the PAL machine runs, whatever the display's rate
+  const loop = (t) => {
+    const dt = last ? Math.min(t - last, 100) : 0; last = t;
+    if (seen && run) {
+      owed += dt / 20;
+      let n = 0;
+      while (owed >= 1 && n++ < 5) { step(); owed -= 1; }
+      if (n) all();
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+
+if (typeof C64 === 'undefined') {
+  ['gs-shape-out', 'gx-window', 'gx-map'].forEach((id) => need('The site\'s scripts', $(id)));
+} else {
+  C64.load('parts/flight/listing.json').then((F) => { shapes(F.ram, F.names); sprites(F); });
+}
+</script>

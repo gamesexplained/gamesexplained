@@ -120,3 +120,25 @@ left end of the broom differed at x 21.
 **The rest.** The closet has its picture, the Discoveries tab's unused
 frames play at the game's speed with the never-shown frame outlined, and the
 Maps tab no longer has the grid of one era's rooms.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab now draws all 109 objects, each frame copied into a sprite
+by the game's own `sprite_draw` on the kit's 6502 after `sprites_build`,
+at the pace the game shows it. The object viewer moved there from How it
+works, which keeps the object tables and the seven-sprite rule and links
+to the tab.
+
+- The pace of most objects is not their `obj_anim` count: the rooms' code
+  writes the frame delay each pass. Reading every write to `$63,x` and
+  `$6B,x` and every extra `sprite_update` call found the paces now listed
+  in `facts.md`; Medusa's, the carpet's and the portal's were measured by
+  running their rooms' code on the 6502.
+- `facts.md` said the sword and the staff change colour from random
+  numbers. The sword takes `sword_colours` by the pass count, on three
+  passes in four, so two of its eight entries are never read; the staff's
+  colour goes up by one a pass. The `sword_colours` comment said one a
+  pass and is corrected.
+- The lights, Medusa's shot and the gnome breaking up are drawn by the
+  game's own code each pass (`$10BA`, `$26D1`, `gnome_scramble`), on a
+  memory of their own.

@@ -140,6 +140,20 @@ differ.
   (light red) (`colour_strip`), on the arena background from
   `backdrop_colours`: brown `$09` on side 1 and dark grey `$0B` on side 2,
   for both backdrops.
+- The Graphics tab draws all 91 frames for either fighter with the game's
+  own routines (`bbArena.draw`: `clear_compose`, `compose_frame`,
+  `draw_fighter`, `place_overlays`, `show_strip`, `sprite_registers`)
+  and `C64.renderFrame`. Every frame of both fighters lies inside the
+  same 72 by 68 pixel window round its column, sprites included: the
+  frame's nine columns and the 15 lines above the band (traced, 3
+  November 2026).
+- `step_sequence` (`$9608`), run on the 6502 from each sequence's start
+  (read index 2), gives the pictures and rates the listing's notes on
+  `picture_sequences` give: the head rolling 4 frames a picture, the
+  goblin 8, the star 2; the neck's spurt goes off after 33 steps and a
+  blood splash after 11. The ending's sequences `$8B`-`$95` draw their
+  pictures only after `swap_shape_bank` (`$8C93`) has swapped the 13
+  shapes at `$FC40` in (traced, 3 November 2026).
 
 ## Mechanics
 

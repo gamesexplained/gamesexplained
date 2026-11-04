@@ -1,0 +1,665 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wizball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:28px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.btn{font-family:var(--fm);font-size:12.5px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.mono{font-family:var(--fm);font-size:13px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 18px;margin:12px 0 0;font-size:14px}
+.readout span{font-family:var(--fm);font-size:13px}
+.k{color:var(--ink-mute);font-size:12.5px;margin-right:6px}
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#000}
+.note{font-size:14px;color:var(--coral);margin:8px 0 0}
+table.d{border-collapse:collapse;font-size:14px;margin:8px 0 0;width:100%}
+table.d th,table.d td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+table.d th{font-weight:700;color:var(--ink-soft);font-size:13px}
+table.d td.n{font-family:var(--fm);font-size:13px;text-align:right}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);font-size:13px;line-height:1.4}
+.card canvas{background:#000;border-radius:4px;margin:0 auto 6px}
+.card b{font-family:var(--fm);font-size:12.5px}
+.keys{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:620px}
+.key{border:1px solid var(--line);border-radius:5px;padding:5px 2px;text-align:center;font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink-mute)}
+.key.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.key small{display:block;font-size:10px;opacity:.8}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:760px){.two{grid-template-columns:1fr}:root{--gx:18px;--pp:14px}}
+img.ref{display:block;max-width:100%;border-radius:6px;image-rendering:pixelated}
+.bars{display:flex;gap:18px;align-items:flex-end;height:150px;margin:6px 0 0}
+.bar{width:46px;height:120px;border:2px solid var(--ink-soft);border-top:none;border-radius:0 0 12px 12px;position:relative;overflow:hidden;background:var(--surface-2)}
+.bar i{position:absolute;left:0;right:0;bottom:0}
+.barl{text-align:center;font-family:var(--fm);font-size:12px;margin-top:4px}
+input[type=range]{width:100%}
+.sliders{display:grid;grid-template-columns:70px 1fr 40px;gap:4px 10px;align-items:center;font-size:14px;max-width:460px}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-tile canvas.gx-on{outline:none}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-tile.gx-faint canvas{opacity:.45}
+.gx-tile canvas.gx-strip{margin:5px 0 0;background:none}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Ocean</p>
+  <h1>Wizball</h1>
+  <p class="sub">Every moving thing in Wizball is a sprite, and most of their pictures sit in one bank of 128 shapes. The game also draws pictures of its own as it runs: the WIZBALL logo, the scores on the title, the level number, the four cauldrons as they fill, the pipe of a tube and the words GAME OVER.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every sprite, moved by the game's own code</h2>
+  <p class="lede">Each picture here is chosen, coloured and placed by the game's own routines, run on the kit's 6502 in this page over the listing's memory, a frame of play at a time: a fiftieth of a second.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The sprites are drawn by the game's own code in the built site.</p>
+    <div class="gx-group">
+      <h3>The Wizball</h3>
+      <p>The ball has 16 pictures of one turn. Holding the stick left or right changes its spin by 6 a frame, up to 48 either way, and twice a frame the spin is added to a fraction that carries into the picture, so at full spin it turns once in 43 frames. Here the stick is held right, let go, then held left. With a shield the ball goes black two frames in four. A new Wizball arrives through 24 pictures from a line to a ball, a step every three frames, and leaves the same way in reverse. The beam is two arcs, one 23 lines above the ball and one 23 below, drawn by the same sprite as the ball further down the screen: a shot sends them through three widths, four frames each, each width in the next of light green, light blue, white and red, and black on every other frame.</p>
+      <div class="gx-tiles" id="gx-ball"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The catelite</h3>
+      <p>The cat steps through three pictures, one every four frames. After eight hits, or a purple droplet, it is the mutant cat and pulses from black to white and back through blue, purple and light blue, a step every four frames; with a shield it blinks black.</p>
+      <div class="gx-tiles" id="gx-cat"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The aliens of the landscapes</h3>
+      <p>Eighteen kinds, each made from its template by <code>start_alien</code> and animated by <code>animate_alien</code>. Some keep one picture, some step through a list, and the colour spheres and the creature of type 12 are eased between the pictures of a list: each bounce sends them to its far end, and every third frame they move one place back to the middle, so they squash and wobble. Here they bounce every 64 frames. The spheres take the level's colour, red on level 1. A colour of <code>$10</code> in a template makes the alien flash light green, light blue, white and yellow, five frames each.</p>
+      <div class="gx-tiles" id="gx-land"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The aliens of the bonus stage</h3>
+      <p>The bonus stage has a table of 20 templates of its own. Types 9 and 10 point at the same template, and the stage's script never asks for type 10, so it is left out here. Types 12 to 15 fade in through black, dark grey, grey and light grey, four frames each, before they take their colour. Type 19 is the Wizball lookalike, which runs the ball's turn backwards.</p>
+      <div class="gx-tiles" id="gx-bonus"></div>
+    </div>
+    <div class="gx-group">
+      <h3>When an alien is shot</h3>
+      <p>A shot alien explodes in its own colour through four pictures, four frames each. Every ninth kill, and every kill of a type 1 molecule, leaves a pearl instead. A shot colour sphere drops a droplet, which wobbles through three pictures as it falls a line a frame, and splashes in nine pictures when it reaches the ground. Most droplets are the level's colour; now and then one is white, dark grey, black, purple or light blue, the special droplets.</p>
+      <div class="gx-tiles" id="gx-shot"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The icon bar</h3>
+      <p>Seven sprites in the top border. Each pearl lights the next icon, and the lit icon pulses through six colours, a step every four frames: blues in play, reds while the Wiz-lab offers its weapons. An icon that has been taken shows what the next take gives, or the box with an arrow when there is nothing left to take. Before each life, all eight sprites are rings around the words GET READY, flashing through four colours.</p>
+      <div class="gx-tiles" id="gx-icons"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The panel</h3>
+      <p>Below the landscape are the level number and four cauldrons. The number is drawn into a sprite from the text font, each pixel three wide and each row twice, and flashes in the level's own colour. The cauldrons are drawn a row a frame from the empty and full cauldron shapes, full below the cauldron's level: red, green, blue, and the colour the level wants, which fills as its recipe's colours do. Here the level wants purple, ten red and ten blue.</p>
+      <div class="gx-tiles" id="gx-panel"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Tubes and the Wiz-lab</h3>
+      <p>Arriving from a tube, two sprites stretched to double height show a pipe sliding down a line a frame. It rises five lines, the Wizball rolls out from under it, and the pipe comes down again and slides back up. In the Wiz-lab, Wiz climbs out of the ball and walks to the pot, then stirs it while the colours are poured in. The cat, if it came along, walks to its milk and drinks, flickering through the colours as its colour counts down a step a frame from 60, until it stays black.</p>
+      <div class="gx-tiles" id="gx-lab"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The title, the menu and the end</h3>
+      <p>The title's WIZBALL is drawn into five sprites in the large font when the title opens, and shown double width; on each of its 16 lines the colour changes, and new colours enter in the middle every other frame and move outwards. The best score is drawn into three sprites in the text font, recoloured every second line from a ramp of greens and white. The player menu's stars are the empty shape with one two-pixel dot in it. GAME OVER and the player's name are drawn into six sprites, which cycle from black to white through the blues.</p>
+      <div class="gx-tiles" id="gx-title"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Shapes nothing shows</h3>
+      <p>The bank at <code>$C000</code> holds 128 shapes, and all but five of them are drawn above. These five are in no template, list or routine the game reads: a diagonal streak (<code>$4A</code>, <code>$4B</code>), two frames of a creature like type 12 (<code>$63</code>, <code>$64</code>) and an arrow (<code>$7F</code>).</p>
+      <div class="gx-tiles" id="gx-unused"></div>
+    </div>
+    <p class="cap" id="gx-cap"></p>
+  </div>
+  <p>Eight sprites are not enough for all of this, so the game moves them down the screen in bands, rewriting their positions, colours and pictures at set raster lines: the icon bar in the top border, the beam's upper arc, the ball and its lower arc on one sprite, six aliens and the cat in the landscape, and the panel in the bottom border. The bands are on <a href="index.html#frame">How it works</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// Graphics tab. Every tile runs the game's own routines on the kit's 6502 (C64Cpu) over a copy of
+// the listing's memory, a frame of play (1/50 s) at a time, and draws the sprites as the routines
+// leave the video chip's register copies: picture, colour, place and multicolour bit. Each tile has
+// a machine of its own, except the aliens, which share one and take turns in slot 0. The random
+// numbers are the game's random ($7533), which reads CIA 2's timer B: here the cycle count stands in.
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const wait = $('gx-wait');
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+  wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.';
+  return;
+}
+const H = (n, w) => C64.hex(n, w);
+const code = (t) => '<code>' + t + '</code>';
+const S = 2, PAD = 3, FRAME_MS = 20;
+const P = C64.PAL;
+const MC0 = 0x0B, MC1 = 0x0D;          // the play sprites' shared colours ($6403, $6408)
+
+C64.load('listing.json').then((L) => {
+  const r = L.ram;
+  wait.hidden = true;
+  const machine = () => {
+    const m = r.slice();
+    const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+      read(a, c) {                           // the raster line and timer B run with the cycle count
+        const ln = Math.floor(c.cycles / 63) % 312;
+        if (a === 0xDD06) return (0xFF - c.cycles) & 0xFF;
+        if (a === 0xD012) return ln & 0xFF;
+        if (a === 0xD011) return (ln > 255 ? 0x80 : 0) | 0x1B;
+        return 0;
+      },
+      write() {} } });
+    return { m, cpu, call: (a, regs) => cpu.call(a, regs || {}, { maxSteps: 3e5 }) };
+  };
+  const shape = (m, b) => m.subarray(0xC000 + 64 * b, 0xC000 + 64 * b + 63);
+  const sgn = (v) => (v << 24) >> 24;
+
+  // one sprite: d its 63 bytes, colour c (or a function of the row), o { mc, m0, m1, ex, ey }
+  function paint(ctx, d, x, y, s, c, o) {
+    const ex = o.ex || 1, ey = o.ey || 1;
+    for (let row = 0; row < 21; row++) {
+      const cc = typeof c === 'function' ? c(row) : c;
+      for (let bx = 0; bx < 3; bx++) {
+        const v = d[row * 3 + bx];
+        if (!v) continue;
+        if (o.mc) {
+          for (let k = 0; k < 4; k++) {
+            const p = (v >> (6 - 2 * k)) & 3;
+            if (!p) continue;
+            ctx.fillStyle = P[[0, o.m0, cc, o.m1][p]];
+            ctx.fillRect(x + (bx * 8 + k * 2) * ex * s, y + row * ey * s, 2 * ex * s, ey * s);
+          }
+        } else {
+          ctx.fillStyle = P[cc];
+          for (let k = 0; k < 8; k++) if (v & (0x80 >> k)) ctx.fillRect(x + (bx * 8 + k) * ex * s, y + row * ey * s, ex * s, ey * s);
+        }
+      }
+    }
+  }
+
+  // what shows each shape; a shape with none goes with the shapes nothing shows
+  const USES = new Map();
+  const use = (n, c, o, what) => {
+    if (!USES.has(n)) USES.set(n, { c, o: Object.assign({}, o), by: [] });
+    const u = USES.get(n);
+    if (!u.by.includes(what)) u.by.push(what);
+  };
+
+  // A tile: w by h pixels of the machine's screen. step() runs a frame of the game's code and
+  // returns the sprites to draw, each { b: shape, d: its bytes (else the bank's), x, y, c, o };
+  // note() the live line under the name; strip: shapes drawn small underneath, mark() the one showing.
+  const tiles = [];
+  function tile(host, w, h, name, step, opts) {
+    opts = opts || {};
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile' + (opts.faint ? ' gx-faint' : '');
+    const W = w + 2 * PAD, Ht = h + 2 * PAD;
+    cv.width = W * S; cv.height = Ht * S; cv.style.width = W * S + 'px';
+    cv.setAttribute('aria-label', name.replace(/<[^>]+>/g, ''));
+    t.appendChild(cv);
+    const ctx = cv.getContext('2d');
+    const bg = opts.bg === undefined ? 0 : opts.bg;
+    let sctx = null, cell = 0, per = 1;
+    const strip = opts.strip;
+    if (strip) {
+      const sc = document.createElement('canvas');
+      cell = 28; per = Math.max(1, Math.min(strip.length, Math.floor(Math.max(W * S, 168) / cell)));
+      sc.width = per * cell - 4; sc.height = Math.ceil(strip.length / per) * 29;
+      sc.className = 'gx-strip'; sc.setAttribute('aria-label', 'Every picture, the one showing marked');
+      t.appendChild(sc); sctx = sc.getContext('2d');
+    }
+    const label = document.createElement('span');
+    label.innerHTML = name;
+    sp.appendChild(label);
+    const live = document.createElement('span');
+    sp.appendChild(document.createElement('br')); sp.appendChild(live);
+    t.appendChild(sp); host.appendChild(t);
+    const o = { key: null, mark: -2, sprites: [] };
+    o.frame = () => { o.sprites = step() || []; };
+    o.draw = () => {
+      const key = o.sprites.map((q) => [q.b, q.x, q.y, typeof q.c === 'function' ? q.c.key : q.c, q.d ? q.d.join('') : ''].join(',')).join('|');
+      if (key !== o.key) {
+        o.key = key;
+        ctx.fillStyle = P[bg]; ctx.fillRect(0, 0, cv.width, cv.height);
+        for (const q of o.sprites) paint(ctx, q.d || shape(r, q.b), (PAD + q.x) * S, (PAD + q.y) * S, S, q.c, q.o);
+      }
+      if (opts.note) { const n = opts.note(); if (live.innerHTML !== n) live.innerHTML = n; }
+      if (sctx) {
+        const k = opts.mark ? opts.mark() : -1;
+        if (k !== o.mark) {
+          o.mark = k;
+          sctx.clearRect(0, 0, sctx.canvas.width, sctx.canvas.height);
+          strip.forEach((q, i) => {
+            const x0 = (i % per) * cell, y0 = Math.floor(i / per) * 29;
+            sctx.fillStyle = P[bg]; sctx.fillRect(x0, y0, 24, 21);
+            paint(sctx, q.d || shape(r, q.b), x0, y0, 1, q.c, q.o);
+            sctx.fillStyle = i === k ? '#6aa0e8' : '#45464c'; sctx.fillRect(x0, y0 + 23, 24, 2);
+          });
+        }
+      }
+    };
+    tiles.push(o);
+    return o;
+  }
+  const MCO = { mc: true, m0: MC0, m1: MC1 };
+  const HIRES = { mc: false };
+  const ranged = (a, b) => { const s = []; for (let n = a; a <= b ? n <= b : n >= b; n += a <= b ? 1 : -1) s.push(n); return s; };
+  const stripOf = (list, c, o) => list.map((b) => ({ b, c, o }));
+
+  // ---- The Wizball ----
+  const ball = $('gx-ball');
+  {
+    // read_spin_control ($80F8) from the stick bits in $B23F, then place_wizball_sprite ($8097)
+    const W = machine();
+    let p = 0;
+    tile(ball, 24, 21, 'Spinning', () => {
+      const q = p++ % 400;
+      W.m[0xB23F] = q < 60 ? 0xF7 : q < 180 ? 0xFF : q < 240 ? 0xFB : 0xFF;
+      W.call(0x80F8); W.call(0x8097);
+      return [{ b: W.m[0xB525], x: 0, y: 0, c: W.m[0xE7EB], o: MCO }];
+    }, { strip: stripOf(ranged(0x10, 0x1F), 5, MCO), mark: () => W.m[0xB525] - 0x10,
+      note: () => 'spin ' + (sgn(W.m[0xB21C]) > 0 ? '+' : '') + sgn(W.m[0xB21C]) + (W.m[0xB23F] === 0xF7 ? ', stick right' : W.m[0xB23F] === 0xFB ? ', stick left' : '') });
+    ranged(0x10, 0x1F).forEach((n) => use(n, 5, MCO, 'the Wizball turning'));
+  }
+  {
+    const W = machine();
+    W.m[0xB21C] = 18; W.m[0x7F06] = 40;     // a spin, and a shield ($7F06, shield_time)
+    tile(ball, 24, 21, 'With a shield', () => {
+      W.m[0xB23F] = 0xFF; W.call(0x80F8); W.call(0x8097);
+      return [{ b: W.m[0xB525], x: 0, y: 0, c: W.m[0xE7EB], o: MCO }];
+    }, { note: () => 'black when bit 1 of <code>$7F08</code> is set' });
+  }
+  {
+    // init_wizball ($8040) starts the arrival; animate_materialise ($7FEA) each frame; 2 in $B216 leaves
+    const W = machine();
+    let p = 0, phase = '';
+    tile(ball, 24, 21, 'Arriving and leaving', () => {
+      const q = p++ % 230;
+      if (q === 0) W.call(0x8040);
+      if (q === 130) W.m[0xB216] = 2;
+      W.call(0x7FEA); W.call(0x8097);
+      phase = W.m[0xB216] === 1 ? 'arriving' : W.m[0xB216] === 2 ? 'leaving' : q < 130 ? 'here' : 'gone';
+      if (phase === 'gone') return [];
+      return [{ b: W.m[0xB525], x: 0, y: 0, c: 5, o: MCO }];
+    }, { strip: stripOf(ranged(0x37, 0x20), 5, MCO), mark: () => phase === 'arriving' || phase === 'leaving' ? 0x37 - W.m[0xB525] : -1,
+      note: () => phase });
+    ranged(0x20, 0x37).forEach((n) => use(n, 5, MCO, 'a Wizball arriving or leaving'));
+  }
+  {
+    // animate_beam ($8592) every frame with the beam owned ($B235); a shot sets $B8DC to 1 ($8472)
+    const W = machine();
+    W.m[0xB235] = 1; W.m[0xB21C] = 12;
+    let p = 0;
+    tile(ball, 24, 67, 'Firing the beam', () => {
+      if (p++ % 32 === 0) W.m[0xB8DC] = 1;
+      W.m[0xB23F] = 0xFF; W.call(0x80F8); W.call(0x8097);
+      W.call(0x8592);
+      const s = [{ b: W.m[0xB525], x: 0, y: 23, c: W.m[0xE7EB], o: MCO }];
+      if (W.m[0xB8DE] !== 5) { s.push({ b: W.m[0xB8DE], x: 0, y: 0, c: W.m[0xB8E0], o: MCO }, { b: W.m[0xB8DF], x: 0, y: 46, c: W.m[0xB8E0], o: MCO }); }
+      return s;
+    }, { note: () => 'arcs ' + (W.m[0xB8DE] === 5 ? 'off' : code(H(W.m[0xB8DE], 2)) + ' and ' + code(H(W.m[0xB8DF], 2))) });
+    ranged(0x40, 0x45).forEach((n) => use(n, 13, MCO, 'the beam\'s arcs'));
+  }
+
+  // ---- The cat: the end of the cat's update, $87AE-$881E, each frame ----
+  const cat = $('gx-cat');
+  [['Walking', {}], ['The mutant cat', { 0xB26C: 8 }], ['With a shield', { 0x89B6: 40 }]].forEach(([name, set]) => {
+    const W = machine();
+    for (const a in set) W.m[a] = set[a];
+    tile(cat, 24, 21, name, () => {
+      W.call(0x87AE);
+      return [{ b: W.m[0xB526], x: 0, y: 0, c: W.m[0xE7EC], o: MCO }];
+    }, name === 'Walking' ? { strip: stripOf([0x0D, 0x0E, 0x0F], 5, MCO), mark: () => W.m[0xB526] - 0x0D } : {});
+  });
+  [0x0D, 0x0E, 0x0F].forEach((n) => use(n, 5, MCO, 'the cat'));
+
+  // ---- The aliens: one machine, each alien's 42-byte slot saved and put back in slot 0 in turn ----
+  const A = machine();
+  A.m[0xB128] = 0;                            // level 1: the spheres are red ($B18B)
+  const SLOT = 0x0200;
+  const aliens = [];
+  function newAlien(tbl, i) {
+    const p = r[tbl + 2 * i] | r[tbl + 2 * i + 1] << 8;
+    A.m[0x62] = p & 0xFF; A.m[0x63] = p >> 8; A.m[0x5E] = 0; A.m[0x5F] = 0;
+    A.m.fill(0, SLOT, SLOT + 42);
+    if (tbl === 0x3ECF) A.call(0xAA66, { x: 0 }); else A.call(0x9DA1, { x: 0 });   // start_alien, or create_alien
+    return { p, t: r.subarray(p, p + 24), st: A.m.slice(SLOT, SLOT + 42), f: 0, c: 0, mc: true, n: 0 };
+  }
+  function alienFrame(al) {
+    A.m.set(al.st, SLOT);
+    if (al.t[17] === 1 && al.n++ % 64 === 0) { A.m[0x0207] = 0xFF; A.call(0xA707, { x: 0 }); }   // a bounce: bounce_off_top
+    A.call(0xA5B1, { x: 0 });                // animate_alien
+    A.m[0x72] = 0xFB; A.m[0x73] = 2; A.m[0x74] = 4; A.m[0x75] = 4; A.m[0xB1B2] = 3;
+    A.call(0xA29C, { x: 0 });                // show_alien_sprite, as sprite 2
+    al.st = A.m.slice(SLOT, SLOT + 42);
+    al.f = A.m[0xB527]; al.c = A.m[0xE7ED]; al.mc = !!(A.m[0xB1B2] & 4);
+  }
+  const frameList = (t) => {
+    if (t[17] === 0) return [t[18]];
+    const out = [];
+    for (let a = t[19] | t[20] << 8, k = 0; r[a] !== 0xFF && k < 32; a++, k++) if (!out.includes(r[a])) out.push(r[a]);
+    return out;
+  };
+  const NAMES = {
+    land: ['a colour sphere', 'a molecule, always a pearl', 'a colour sphere', 'a molecule that aims', 'a molecule that fires all ways', 'a ring',
+      'an arrow craft', 'an arrow craft', 'a colour sphere that rises', 'a dart', 'a dart that fires turning shots', 'a colour sphere on a path',
+      'a creature', 'an eyed diamond', 'an eyed diamond that aims', 'a figure', 'a diamond outline', 'the police ship'],
+    bonus: ['a sphere', 'a sphere that rises', 'a ring', 'a ring', 'a sphere', 'a dart', 'a dart', 'the textured ball: shots bounce off', 'a police ship',
+      'a police ship', '', 'a police ship', 'a cross-marked ball', 'a cross-marked ball', 'a cross-marked ball', 'a cross-marked ball',
+      'an arrow craft', 'an arrow craft', 'an arrow craft', 'the Wizball lookalike']
+  };
+  const paceNote = (t) => t[17] === 0 ? 'one picture' : t[17] === 1 ? 'eased, a step every ' + (t[16] & 0x80 ? 5 : 3) + ' frames' : 'a picture every ' + t[18] + ' frame' + (t[18] > 1 ? 's' : '');
+  [[0x3ECF, 18, 'land', $('gx-land')], [0x39DC, 20, 'bonus', $('gx-bonus')]].forEach(([tbl, n, kind, host]) => {
+    for (let i = 0; i < n; i++) {
+      if (kind === 'bonus' && i === 10) continue;
+      const al = newAlien(tbl, i);
+      aliens.push(al);
+      const list = frameList(al.t), colour = al.t[16] & 0x1F;
+      const o0 = al.t[16] & 0x40 ? HIRES : MCO;
+      const what = (kind === 'land' ? 'landscape type ' : 'bonus type ') + i;
+      list.forEach((b) => use(b, colour === 0x10 ? 13 : colour || 2, o0, what));
+      tile(host, 24, 21, (kind === 'land' ? 'Type ' : 'Bonus type ') + i + ' · ' + NAMES[kind][i], () => {
+        alienFrame(al);
+        return [{ b: al.f, x: 0, y: 0, c: al.c, o: al.mc ? MCO : HIRES }];
+      }, Object.assign({ note: () => code(H(al.f, 2)) + ' · ' + paceNote(al.t) },
+        list.length > 1 ? { strip: stripOf(list, colour === 0x10 ? 13 : colour || 2, o0), mark: () => list.indexOf(al.f) } : {}));
+    }
+  });
+
+  // ---- Shot: update_alien ($A258) each frame, with the hit flag (slot byte $25) set ----
+  const shot = $('gx-shot');
+  function shotTile(name, type, after, opts) {
+    const W = machine();
+    W.call(0x8040);                            // init_wizball sets the special-droplet thresholds
+    W.m[0xB128] = opts.level || 0;
+    let p = 0, done = 0, y0 = 0;
+    tile(shot, 24, opts.h || 21, name, () => {
+      const q = p++;
+      if (done && q - done > 25) { p = 0; done = 0; }
+      if (p === 1) {
+        const a = r[0x3ECF + 2 * type] | r[0x3ECF + 2 * type + 1] << 8;
+        W.m[0x62] = a & 0xFF; W.m[0x63] = a >> 8; W.m[0x5E] = 0; W.m[0x5F] = 0;
+        W.call(0xAA66, { x: 0 });
+        W.m[0x0200] = 0x50; W.m[0x0201] = 0; W.m[0x0202] = opts.line || 0x80; y0 = W.m[0x0202];
+        W.m[0x0204] = 0; W.m[0x0205] = 0; W.m[0x0206] = 0; W.m[0x0207] = 0; W.m[0x0208] = 0; W.m[0x0209] = 0;
+      }
+      if (done) return [];
+      if (p === 20) W.m[0x0225] = 1;
+      W.m[0x72] = 0xFB; W.m[0x73] = 2; W.m[0x74] = 4; W.m[0x75] = 4; W.m[0xB1B2] = 3;
+      W.m[0x0204] = 0; W.m[0x0205] = 0;        // held in place across the screen
+      W.call(0xA258, { x: 0 });
+      if (!W.m[0x0202] || (after && p > after)) { done = p; return []; }
+      return [{ b: W.m[0xB527], x: 0, y: opts.fall ? W.m[0x0202] - y0 : 0, c: W.m[0xE7ED], o: W.m[0xB1B2] & 4 ? MCO : HIRES }];
+    }, { note: () => (done ? '' : code(H(W.m[0xB527], 2))) });
+  }
+  shotTile('Exploding', 3, 0, {});
+  shotTile('Leaving a pearl', 1, 110, {});
+  shotTile('A droplet falling and splashing', 0, 0, { fall: true, line: 0xA0, h: 64 });
+  ranged(0x5F, 0x5C).forEach((n) => use(n, 7, MCO, 'an explosion'));
+  use(0x78, 5, MCO, 'a pearl');
+  [0x50, 0x51, 0x52].forEach((n) => use(n, 2, MCO, 'a droplet'));
+  ranged(0x53, 0x5B).forEach((n) => use(n, 2, MCO, 'a droplet splashing'));
+  {
+    // the special droplets' colours, $A772-$A776, on the frames drop_droplet steps through ($A9AB)
+    let p = 0;
+    const cols = [2, 5, 6].concat(Array.from(r.subarray(0xA772, 0xA777)));
+    tile(shot, 8 * 28 - 4, 21, 'Every droplet colour', () => {
+      const f = r[0xA9AB + (Math.floor(p++ / 4) & 3)];
+      return cols.map((c, i) => ({ b: f, x: i * 28, y: 0, c, o: MCO }));
+    }, { note: () => 'red, green, blue, then the specials from ' + code('$A772') });
+  }
+
+  // ---- Icons ----
+  const icons = $('gx-icons');
+  [['The icon bar', 0], ['In the Wiz-lab', 6]].forEach(([name, lab]) => {
+    // flash_lit_icon ($7269) each frame; a pearl moves the lit icon on ($B258)
+    const W = machine();
+    W.m[0xB074] = lab;
+    let p = 0;
+    const X0 = r[0xB4C6];
+    tile(icons, 6 * 28 + 24, 21, name, () => {
+      if (p++ % 48 === 0) W.m[0xB258] = W.m[0xB258] % 7 + 1;
+      W.call(0x7269);
+      const o = { mc: true, m0: lab ? 2 : 6, m1: 1 };
+      return ranged(0, 6).map((k) => ({ b: r[0xB4DE + k], x: (k < 6 ? r[0xB4C6 + 2 * k] : 0x100) - X0, y: 0, c: W.m[0xB4D6 + k], o }));
+    }, { note: () => 'icon ' + W.m[0xB258] + ' lit' });
+  });
+  for (let k = 0; k < 7; k++) use(r[0xB4DE + k], 14, { mc: true, m0: 6, m1: 1 }, 'the icon bar');
+  {
+    const o = { mc: true, m0: 6, m1: 1 };
+    tile(icons, 4 * 28 - 4, 21, 'What a taken icon becomes', () =>
+      [3, 4, 0x0A, 9].map((b, i) => ({ b, x: i * 28, y: 0, c: 14, o })), { note: () => 'anti-grav, double, the cat\'s spray, used up' });
+    [3, 4, 0x0A].forEach((b) => use(b, 14, o, 'an icon after a take'));
+    use(9, 14, o, 'an icon with nothing left to take');
+  }
+  {
+    // the get-ready rings: shape $0C in all eight sprites ($68F4), colours from $B87D every 5 frames ($692E)
+    let p = 0, step = 0;
+    const o = { mc: true, m0: 6, m1: 1 };
+    tile(icons, 24, 21, 'Get ready', () => {
+      if (++p % 5 === 0) step++;
+      return [{ b: 0x0C, x: 0, y: 0, c: r[0xB87D + (step & 3)], o: HIRES }];
+    }, { note: () => 'one of the eight rings' });
+    use(0x0C, 13, HIRES, 'the get-ready rings, and landscape type 5');
+  }
+
+  // ---- The panel: draw_level_digit_sprite ($770D) and the band at $8B46; init_cauldrons ($9DE9), update_cauldrons ($9E0D) ----
+  const panel = $('gx-panel');
+  {
+    const W = machine();
+    W.call(0x8C84);                            // font_text_normal, as play starts
+    let p = 0;
+    const draw = (lv) => { W.m.fill(0, 0xE800, 0xE840); W.m[0xB128] = lv; W.call(0x770D); };
+    tile(panel, 24, 21, 'The level number', () => {
+      if (p % 150 === 0) draw(Math.floor(p / 150) % 8);
+      p++;
+      W.call(0x8B46);
+      return [{ b: 0xA0, d: shape(W.m, 0xA0), x: 0, y: 0, c: W.m[0xB515], o: HIRES }];
+    }, { note: () => 'level ' + (W.m[0xB128] + 1) });
+  }
+  {
+    const W = machine();
+    W.call(0x9DE9);
+    W.m[0xB51A] = 4;                          // the level wants purple
+    let p = 0;
+    const X = [0x82, 0xAC, 0xD6, 0x114];
+    tile(panel, X[3] - X[0] + 24, 21, 'The cauldrons filling', () => {
+      const q = p++ % 520;
+      if (q === 0) { W.m[0xB12B] = 0; W.m[0xB12C] = 0; W.m[0xB12D] = 0; }
+      if (q < 360 && q % 8 === 0) { const k = [0, 2, 1][(q / 8) % 3]; if (W.m[0xB12B + k] < (k === 1 ? 6 : 20)) W.m[0xB12B + k]++; }
+      W.call(0x9E0D);
+      const o = { mc: true, m0: 0x0F, m1: 0x0B };
+      return [0xB9, 0xBA, 0xBB, 0xBC].map((b, i) => ({ b, d: shape(W.m, b), x: X[i] - X[0], y: 0, c: [2, 5, 6, W.m[0xB51A]][i], o }));
+    }, { note: () => 'red ' + W.m[0xB12B] + ', green ' + W.m[0xB12C] + ', blue ' + W.m[0xB12D] + ', purple ' + W.m[0xB12E] });
+    use(0x38, 2, { mc: true, m0: 0x0F, m1: 0x0B }, 'the empty cauldron, copied into the panel\'s cauldrons');
+    use(0x39, 2, { mc: true, m0: 0x0F, m1: 0x0B }, 'the full cauldron, below a cauldron\'s level');
+  }
+
+  // ---- Tubes and the lab ----
+  const lab = $('gx-lab');
+  {
+    // arrive_from_tube ($8239): lower_tube_sprites ($830A) and raise_tube_sprites ($8334) a frame a call
+    const W = machine();
+    let p = 0, bx = 0, k = 0;
+    const PIPE = { mc: true, m0: MC0, m1: MC1, ey: 2 };
+    // sprites 1 and 2 at x $D0 and $E8, line $46; the ball (sprite 3) from x $D0 left to $AC, line $4C
+    const X0 = 0xAC, Y0 = 0x46;
+    tile(lab, 0xE8 - X0 + 24, 42, 'Out of a tube', () => {
+      const q = p++ % 150;
+      if (q === 0) { W.call(0x8F15, { y: 0xB4, x: 4, a: 0 }); W.m[0xBB02] = 0; bx = 0xD0; k = 0; }
+      // $82BD-$82F6: down 21 lines, up 5, the ball rolls out, down 5, up 21
+      if (q < 21) W.call(0x830A, { a: 1 });
+      else if (q < 26) W.call(0x8334, { a: 1 });
+      else if (bx > X0) bx--;
+      else if (k < 5) { W.call(0x830A, { a: 1 }); k++; }
+      else if (k < 26) { W.call(0x8334, { a: 1 }); k++; }
+      const s = [];
+      if (q >= 21) s.push({ b: 0x10, x: bx - X0, y: 0x4C - Y0, c: 5, o: MCO });
+      s.push({ b: 0xB5, d: shape(W.m, 0xB5), x: 0xD0 - X0, y: 0, c: 3, o: PIPE }, { b: 0xB7, d: shape(W.m, 0xB7), x: 0xE8 - X0, y: 0, c: 3, o: PIPE });
+      return s;
+    }, { note: () => 'sprites 1 and 2, double height' });
+    use(0x3A, 3, { mc: true, m0: MC0, m1: MC1, ey: 2 }, 'the pipe of a tube, left half');
+    use(0x3B, 3, { mc: true, m0: MC0, m1: MC1, ey: 2 }, 'the pipe of a tube, right half');
+  }
+  {
+    // run_lab_wiz ($AC4F) from the end of the Wizball's parking script: Wiz gets out, walks, stirs
+    let W = null, p = 0;
+    const LO = { mc: true, m0: 5, m1: 1 };
+    const reset = () => {                    // parked: the script's end ($B17B = 8), the Wizball at x $C0
+      W = machine();
+      W.m[0xB185] = 1; W.m[0xB17B] = 8; W.m[0xE7C4] = 0xC0;
+      W.m[0xB51A] = 4; W.m[0xB12B] = 20; W.m[0xB12D] = 20; W.m[0xB12E] = 20;
+    };
+    reset();
+    tile(lab, 0xC0 - 0x9A + 24, 0xC3 - 0xAE + 21, 'Wiz', () => {
+      if (++p % 480 === 0) reset();
+      W.call(0xAC4F);
+      if (W.m[0xB185] < 2) return [];
+      return [{ b: W.m[0xB528], x: W.m[0xE7CA] - 0x9A, y: W.m[0xE7CB] - 0xAE, c: W.m[0xE7EE], o: LO },
+        { b: W.m[0xB529], x: W.m[0xE7CC] - 0x9A, y: W.m[0xE7CD] - 0xAE, c: W.m[0xE7EF], o: LO }];
+    }, { note: () => ['', '', 'getting out and walking', 'stirring'][W.m[0xB185]] });
+    ranged(0x68, 0x6E).forEach((n) => use(n, 8, LO, 'Wiz in the Wiz-lab'));
+  }
+  {
+    // run_lab_cat ($AB9D): the cat walks in, then sprite 2 drinks
+    let W = null, p = 0;
+    const LO = { mc: true, m0: 5, m1: 1 };
+    const reset = () => { W = machine(); W.m[0xB22B] = 1; };   // the cat came into the lab
+    reset();
+    tile(lab, 24, 21, 'The cat at its milk', () => {
+      if (++p % 150 === 0) reset();       // the walk, the 60 frames of flicker, and a moment of black
+      W.call(0xAB9D);
+      if (!(W.m[0xE7D9] & 4)) return [];
+      return [{ b: W.m[0xB527], x: 0, y: 0, c: W.m[0xE7ED], o: LO }];
+    }, { note: () => 'colour ' + W.m[0xE7ED] });
+    use(0x6F, 5, { mc: true, m0: 5, m1: 1 }, 'the cat drinking in the Wiz-lab');
+    use(0x7E, 5, { mc: true, m0: 5, m1: 1 }, 'the cat drinking in the Wiz-lab');
+  }
+
+  // ---- Title, menu, game over ----
+  const title = $('gx-title');
+  {
+    // show_title_page's drawing ($8FAA-$8FE3): fill_sprite_blocks ($8F15), print_sprite_text_large ($8E32),
+    // print_sprite_text ($8DE4); then cycle_logo_colours ($9884) and cycle_green_ramp ($9916) each frame
+    const W = machine();
+    W.call(0x8C8D); W.call(0x8CB5);
+    W.call(0x8F15, { y: 0x80, x: 5, a: 0 });
+    W.call(0x8E32, { x: W.m[0xB7DA], y: W.m[0xB7DB], a: 0x80 });
+    W.call(0x8F15, { y: 0x85, x: 7, a: 0 });
+    W.call(0x8DE4, { x: W.m[0xB7DC], y: W.m[0xB7DD], a: 0x85 });
+    W.m.fill(0, 0xEBB2, 0xEBF4);
+    const XO = { mc: false, ex: 2 };
+    const bar = (row) => W.m[0xEBD0 - Math.min(row, 15)];
+    tile(title, 5 * 48, 16, 'The logo', () => {
+      W.call(0x9884);
+      const c = (row) => bar(row); c.key = Array.from(W.m.subarray(0xEBC1, 0xEBD1)).join('.');
+      return ranged(0, 4).map((k) => ({ b: 0x80 + k, d: shape(W.m, 0x80 + k), x: 48 * k, y: 0, c, o: XO }));
+    }, { note: () => 'blocks ' + code('$80') + '-' + code('$84') });
+    tile(title, 3 * 48, 8, 'The best score', () => {
+      W.call(0x9916);
+      const ramp = (row) => W.m[row < 1 ? 0xEBD5 : row < 3 ? 0xEBD4 : row < 5 ? 0xEBD3 : 0xEBD2];
+      const c = (row) => ramp(row); c.key = Array.from(W.m.subarray(0xEBD2, 0xEBD6)).join('.');
+      return ranged(0, 2).map((k) => ({ b: 0x85 + k, d: shape(W.m, 0x85 + k), x: 48 * k, y: 0, c, o: XO }));
+    }, { note: () => 'blocks ' + code('$85') + '-' + code('$87') });
+  }
+  {
+    // the player menu: $9034-$903F clear shape 5 and put a two-pixel dot in it
+    const W = machine();
+    W.cpu.pc = 0x9034; W.cpu.sp = 0xF0; W.cpu.run({ until: 0x9042, maxSteps: 1e4 });
+    tile(title, 24, 21, 'A star of the menu', () => [{ b: 5, d: shape(W.m, 5), x: 0, y: 0, c: 1, o: HIRES }], { note: () => 'shape 5, one byte set' });
+    use(5, 1, HIRES, 'the empty shape, which hides a sprite; with a dot, the menu\'s stars');
+  }
+  {
+    // show_game_over ($69F2) for side 1's last Wizball, up to its wait; then the colours of $6AA6-$6AB2
+    const W = machine();
+    W.call(0x8C8D); W.call(0x8CB5);
+    W.m[0xBFD9] = 1; W.m[0xBFD6] = 1; W.m[0xB278] = 1;
+    W.cpu.pc = 0x69F2; W.cpu.sp = 0xF0; W.cpu.run({ until: 0x6A6C, maxSteps: 1e6 });
+    const X0 = W.m[0xE7C8];
+    tile(title, 6 * 24, 21, 'Game over', () => {
+      W.call(0x98BE);
+      for (let k = 1; k <= 6; k++) W.m[0xE7EC + k] = W.m[0xEBD7];
+      return ranged(2, 7).map((k) => ({ b: W.m[0xB525 + k], d: shape(W.m, W.m[0xB525 + k]), x: W.m[0xE7C4 + 2 * k] - X0, y: 0, c: W.m[0xE7EB + k], o: HIRES }));
+    }, { note: () => 'blocks ' + code('$B4') + '-' + code('$B9') });
+  }
+  // Wiztips shows a few of the shapes above again; the bonus tally borrows one more
+  use(0x60, 5, MCO, 'beside the bonus stage\'s tally (<code>$664D</code>)');
+
+  // ---- the shapes nothing shows: those no tile above records a use of ----
+  {
+    const NOTE = { 0x4A: 'a diagonal streak', 0x4B: 'a diagonal streak', 0x63: 'a creature like type 12\'s', 0x64: 'a creature like type 12\'s', 0x7F: 'an arrow' };
+    for (let n = 0; n < 128; n++) if (!USES.has(n)) {
+      tile($('gx-unused'), 24, 21, 'Shape ' + code(H(n, 2)) + ', ' + (NOTE[n] || 'in no table or routine'), () => [{ b: n, x: 0, y: 0, c: 1, o: MCO }], { faint: true });
+    }
+  }
+
+  $('gx-cap').innerHTML = 'The ball is <code>read_spin_control</code> (<code>$80F8</code>) and <code>place_wizball_sprite</code> (<code>$8097</code>), its arrival <code>animate_materialise</code> (<code>$7FEA</code>), the beam <code>animate_beam</code> (<code>$8592</code>), the cat the end of its update (<code>$87AE</code>). Each alien is made by <code>start_alien</code> (<code>$AA66</code>) or, on the bonus stage, <code>create_alien</code> (<code>$9DA1</code>), from the templates at <code>$3ECF</code> and <code>$39DC</code>, then run each frame by <code>animate_alien</code> (<code>$A5B1</code>) and <code>show_alien_sprite</code> (<code>$A29C</code>); a bounce is <code>bounce_off_top</code> (<code>$A707</code>), and a shot alien <code>update_alien</code> (<code>$A258</code>) with its hit flag set, held still. The icons are <code>flash_lit_icon</code> (<code>$7269</code>), the level number <code>draw_level_digit_sprite</code> (<code>$770D</code>) and the panel band (<code>$8B46</code>), the cauldrons <code>init_cauldrons</code> and <code>update_cauldrons</code> (<code>$9DE9</code>, <code>$9E0D</code>), the tube <code>lower_tube_sprites</code> and <code>raise_tube_sprites</code> (<code>$830A</code>, <code>$8334</code>), the lab <code>run_lab_wiz</code> and <code>run_lab_cat</code> (<code>$AC4F</code>, <code>$AB9D</code>), the title <code>print_sprite_text_large</code> and <code>print_sprite_text</code> (<code>$8E32</code>, <code>$8DE4</code>) with <code>cycle_logo_colours</code> and <code>cycle_green_ramp</code> (<code>$9884</code>, <code>$9916</code>), and the end <code>show_game_over</code> (<code>$69F2</code>) with <code>cycle_blue_ramp</code> (<code>$98BE</code>). Play sprites share dark grey and light green; the panel\'s light grey and dark grey, the icons\' blue and white, the lab\'s green and white.';
+
+  $('gx-stat').textContent = tiles.length + ' pictures';
+  let running = true;
+  const run = $('gx-run');
+  run.onclick = () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; };
+  for (const o of tiles) { o.frame(); o.draw(); }
+  let t0 = performance.now();
+  const loop = (now) => {
+    let n = 0;
+    while (running && now - t0 >= FRAME_MS && n < 3) { t0 += FRAME_MS; n++; for (const o of tiles) o.frame(); }
+    if (n) for (const o of tiles) o.draw();
+    if (now - t0 > 200) t0 = now;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}).catch((e) => { wait.hidden = false; wait.textContent = 'The listing could not be read: ' + e.message; });
+})();
+</script>

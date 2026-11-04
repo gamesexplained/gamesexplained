@@ -28,7 +28,7 @@ Sources:
 | Opening scene "RESCUE THE CAPTIVES": four captives tied to posts, guards walking | live | `new_game`, `captives_place`, `guards_send`, `captives_struggle` |
 | Four stages: Missile, Harbour, Bridge, Prison Camp | live | `stage`, `map`, `stage_end_lo`; the intermission's map names the first three (`picture_map`) |
 | Joystick in port 2: left and right walk, up jumps or climbs a ladder, down lies down or climbs down, diagonals jump left and right | confirmed | `read_joystick`, `player_move`, `player_action`, `player_ladder`; a jump keeps the stick's direction (`jump_joy`) and needs up pressed again (`jump_used`) |
-| Fire stabs with the knife | live | `player_stab`, `knife_hit_test`: standing or crouching, once per press |
+| Fire stabs with the knife | live | `player_stab`, `knife_hit_test`: standing or lying down, once per press |
 | Space fires the extra weapon (flame thrower 3 shots, bazooka 4, hand grenades 3) | confirmed | `weapon_trigger`, `weapon_fire`, `pickup_ammo` (4, 3, 3). Port 1's fire button is on the same line and fires it too |
 | Run/Stop pauses, fire continues; Q in pause ends the game | differs | this version has no pause: the code reads CIA 1 port B only for key 1 (`irq_player`) and SPACE (`weapon_trigger`) |
 | Weapons dropped by the white enemies, picked up by walking over them | confirmed | `enemy_deaths`, `spawn_pickups`, `pickup_update`: only the white soldiers the scripted spawn table names carry one: flame throwers on the Missile Base, bazookas on the Harbour, grenades and bazookas on the Bridge and the Prison Camp |

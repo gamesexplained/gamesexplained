@@ -206,3 +206,29 @@ so each two-byte table starts one byte after the base the disassembler
 labelled, and the comments on `f_CFBD`, `f_CFBF` and `f_CFC1` had each
 named the table that starts after it: `$CFBD` is stage 2's value for
 `$51`, not the `$52` table. They are corrected.
+
+## Follow-up: the Graphics tab (4 November 2026)
+
+A Graphics tab now opens with Clyde, run by the engine's own routines on
+the kit's 6502 over the engine's listing with level 1.1's laid over it: a
+walk, the flame, his death and its bubble, a shot from each of the eight
+weapons at grades A, B and C, and the weapons tablet opening, turning and
+closing. The page holds the joystick and steps `frame_divider` once a
+frame, as `game_frame` would. Three things showed up on the way. Clyde
+took his walking frames while he threw until `$1227` (moved this frame)
+was cleared each frame, as `player_control` clears it, because
+`player_fire` sets it. Every weapon's shot had the same picture until
+`weapon_icon_draw` was called too, which copies the weapon's icon into
+the shot sprites. The shot's colour stayed the same at every grade
+until `weapon_setup` was given the weapon's place in Y as well as its
+number in X, because it reads `weapon_grades` by place. The bubble is
+two sprites widened through the operand at `$C056`, and the tablet's
+sprites stay off (`$24AC`) while its shapes are swapped in.
+
+The creature gallery moved there from How it works, with the script
+format; How it works keeps a paragraph and a link. Moving it showed a
+bug: the selected creature's cell and its large view shared one record
+of what had been drawn, so the cell stayed blank while the creature was
+selected. Each canvas now keeps its own. The speed button "a quarter"
+ran the gallery at four times the game's speed, and now runs it at a
+quarter. `test_gallery.js` reads the cr-anim block from graphics.html.

@@ -46,11 +46,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gb-tbl th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
 .gb-tbl td.n{font-family:var(--fm);text-align:right;white-space:nowrap}
 .gb-scroll{overflow-x:auto}
-.gb-fights{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-#gb-dogs{grid-column:1/-1}
-.gb-gap{margin-top:12px}
-.gb-fights canvas{width:100%;image-rendering:pixelated;background:#7f7ad1;border-radius:6px;display:block}
-@media (max-width:720px){:root{--gx:16px;--h1:34px}.gb-two,.gb-fights{grid-template-columns:1fr}}
+@media (max-width:720px){:root{--gx:16px;--h1:34px}.gb-two{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -142,7 +138,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The heights in <code>jump_arc</code>, read the way <code>player_jump</code> reads them: from entry 20 down to 0 while he rises, then back up to 20. Measured in the emulator, the hero's legs went from line 226 to 196 and back in 42 frames.</p>
   </div>
   <p>Up starts a jump, and a second jump needs up pressed again. Pushed diagonally, he keeps moving left or right through the jump. Each frame his height is the jump's base plus an entry of <code>jump_arc</code>. The entries are 30 lines apart from one end to the other, and the first two are both 0, so he hangs at the top for four frames. The same table throws the dogs, the enemies' jumps and the hand grenades, each starting from a different entry.</p>
-  <p>Fire stabs with the knife, standing or, with the stick pulled down, crouching. The stab holds for five frames. Its point is 13 or 7 units ahead of him (a unit is two pixels), and it hits an enemy within 6 units across and 16 lines of height. A crouching stab reaches lower, and a dog leaps only at a hero who is standing. Space fires the extra weapon; it fires nothing on a ladder.</p>
+  <p>Fire stabs with the knife, standing or, with the stick pulled down, lying down. The stab holds for five frames. Its point is 13 or 7 units ahead of him (a unit is two pixels), and it hits an enemy within 6 units across and 16 lines of height. A stab lying down reaches lower, and a dog leaps only at a hero who is standing. Space fires the extra weapon; it fires nothing on a ladder.</p>
   <p>The game reads one more key. While 1 is held, the interrupt skips the hero's movement, so he freezes where he is, even in mid-air (<a href="discoveries.html">Discoveries</a>).</p>
 </section>
 
@@ -151,9 +147,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The soldiers and what each one does</h2>
   <p class="lede">Every enemy is two sprites, a top and legs, and a type number from 0 to 9 that picks its colour, its speed, its points and its behaviour.</p>
   <div class="plate">
-    <canvas id="gb-types" class="gb-cv"></canvas>
     <div class="gb-scroll"><table class="gb-tbl" id="gb-types-tbl"></table></div>
-    <p class="cap">Shapes, colours, speeds and points drawn from the listing: the walking frames in <code>enemy_anim_tops</code> and <code>enemy_anim_bottoms</code>, the colours in <code>type_top_colours</code>, the speeds in <code>type_speeds</code> and the points in <code>enemy_points</code>, shown with the 0 the score adds. The behaviour of each type is a routine in <code>behaviour_table</code>.</p>
+    <p class="cap">Speeds and points from the listing: the speeds in <code>type_speeds</code> and the points in <code>enemy_points</code>, shown with the 0 the score adds. The behaviour of each type is a routine in <code>behaviour_table</code>. Every type walking, climbing, jumping, firing and dying, in its colours, is on the <a href="graphics.html">Graphics</a> tab.</p>
   </div>
   <p>Most enemies walk at you along their floor and follow you up and down ladders: when you are on a lower floor, an enemy standing on the top of a ladder climbs down, and one beside a ladder climbs up when you are higher. Brown soldiers and kickers never climb. A floor holds at most three enemies, and the game counts an enemy on every floor its fall or climb may pass.</p>
   <p>The ones that shoot fire when their own frame counter reaches <code>$50</code>: once in every 256 frames, about every five seconds, and only on your floor. They stop, turn to face you, kneel or raise the weapon, and fire on the fifth step. A soldier who touches you kills you; so does a bullet, a shell, a grenade or a bomb.</p>
@@ -181,34 +176,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · The end of each stage</p>
   <h2 class="t">Each stage ends in a fight of its own</h2>
   <p class="lede">When the scroll reaches the stage's last column, an alarm sounds, the hero may walk on across the screen, and the stage's own routine takes over the main loop.</p>
-  <div class="plate">
-    <div class="gb-fights">
-      <canvas id="gb-lorry"></canvas>
-      <canvas id="gb-heli"></canvas>
-      <canvas id="gb-dogs"></canvas>
-    </div>
-    <div class="gb-bar gb-gap"><button class="gb-btn" id="gb-fight-play" aria-pressed="false">Animate</button></div>
-    <p class="cap">The lorry built from nine sprites as <code>lorry_update</code> places them, a helicopter from six as <code>helis_place</code> does (with the rotor frames of <code>rotor_shapes</code>), and the eighteen dogs in the order <code>dog_release</code> sends them, each in its colour from <code>dog_colours</code>, facing the way it runs.</p>
-  </div>
   <p><b>The Missile Base.</b> A lorry drives across the bottom floor, slowing from 6 pixels a frame to 2 as it goes, and leaves the screen. Then eighteen soldiers and kickers come from the right, never more than three on the floor at once.</p>
-  <p><b>The Harbour.</b> A handler in green stands at one edge and sends eighteen dogs, in threes from alternate sides, the first three from the left. A dog running right leaps at a hero who is up to 19 units ahead of it and standing. Crouching, he is never leapt at. The dogs' shapes are swapped into the sprite memory for the fight and out again after it.</p>
+  <p><b>The Harbour.</b> A handler in green stands at one edge and sends eighteen dogs, in threes from alternate sides, the first three from the left. A dog running right leaps at a hero who is up to 19 units ahead of it and standing. Lying down, he is never leapt at. The dogs' shapes are swapped into the sprite memory for the fight and out again after it.</p>
   <p><b>The Bridge.</b> Three helicopters come, at most two at once, each built from three enemy slots. A helicopter comes down to hover low and chase the hero, or, when the other one is already low, to hover high and patrol from side to side. Both throw grenades from their middle, the way the officers do. A hit on any of a helicopter's parts destroys all of it, and the one left comes down low to chase him.</p>
   <p><b>The Prison Camp.</b> Eighteen enemies come along the bottom floor, from the right and from the left in turn: blue soldiers, bazooka men lying down, kickers and officers. When the last has gone the prisoners are free.</p>
+  <p>The lorry, the helicopters, the handler and his dogs are drawn, moving, on the <a href="graphics.html">Graphics</a> tab.</p>
 </section>
 
 <section>
   <p class="fig">10 · Memory</p>
   <h2 class="t">Four stages in one load</h2>
   <p class="lede">The game loads once. Each stage's characters, tiles and tile colours wait elsewhere in memory, and nine block swaps put them where the video chip and the map routine read them.</p>
-  <div class="plate">
-    <div class="pick"><a class="step" id="gb-mem-prev" aria-label="Previous stage">‹</a><select id="gb-mem-stage" aria-label="Stage"></select><a class="step" id="gb-mem-next" aria-label="Next stage">›</a></div>
-    <canvas id="gb-chars" class="gb-cv"></canvas>
-    <canvas id="gb-tiles" class="gb-cv" style="margin-top:12px"></canvas>
-    <p class="cap">Top: the 256 characters at <code>$7800</code>, which the playfield shows, as each stage has them. Bottom: the 64 tiles at <code>$A000</code>, with their colours, as each stage has them. Drawn from the listing with the stage's swaps made as <code>block_swap</code> makes them.</p>
-  </div>
   <div class="gb-scroll"><table class="gb-tbl" id="gb-swaps"></table></div>
   <p><code>block_swap</code> exchanges two blocks of memory byte for byte, so the graphics it moves out are kept where the new ones were, and a second swap puts everything back. The blocks under the I/O area, <code>$D000</code>-<code>$DFFF</code>, hold three character sets that the processor can only see with the chips switched out, and the routine switches them out for those swaps. The Bridge's swaps leave the Harbour's in place, and the Prison Camp's are made on top of the Bridge's, so each stage's memory is the sum of the swaps before it. A new game undoes them all (<code>swaps_undo</code>).</p>
-  <p>The same trick serves the title page and the scenes between stages: swap 8 brings the title's character set to <code>$7800</code> and takes it back. The texts, such as WELL DONE and the credits, are kept in spare characters of a character set, and move with it.</p>
+  <p>The same trick serves the title page and the scenes between stages: swap 8 brings the title's character set to <code>$7800</code> and takes it back. The texts, such as WELL DONE and the credits, are kept in spare characters of a character set, and move with it. Each stage's characters and tiles, as its swaps leave them, are on the <a href="graphics.html#scenery">Graphics</a> tab.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -386,7 +367,7 @@ function sprite(ctx, m, K, n, x, y, s, c) {
 
 C64.load('listing.json').then((L) => {
   const ram = L.ram, mem = [0, 1, 2, 3].map((s) => gbStageMem(ram, s)), K = colours(ram);
-  sound(ram); frame(); map(mem, K); jump(ram, K); enemies(ram, K); lanes(ram); fights(mem, K); memory(mem, K);
+  sound(ram); frame(); map(mem, K); jump(ram, K); enemies(ram); lanes(ram); memory(mem);
 });
 
 // ---- 02 and 10: the music and the effects, on the game's own driver (gb-music).
@@ -514,10 +495,8 @@ function jump(ram, K) {
   f.oninput = draw; draw();
 }
 
-// ---- 06: the ten enemy types. Those a lane brings walk in from their first frame walking left
-// (enemy_anim_start at direction 4: enemy_anim_starts at the type's base plus 4); the scripted
-// ones come in with type_top_shapes and type_bot_shapes, placed by spawn_dy_top, spawn_dy_bot and
-// spawn_dx_bot; the paratrooper is para_part's four parts.
+// ---- 06: the ten enemy types: speed (type_speeds), points (enemy_points) and what each does
+// (behaviour_table); every type's frames are on the Graphics tab.
 const GB_TYPES = [
   ['Brown soldier', 'walks at you; never climbs'],
   ['White soldier', 'carries a weapon, which he drops when knifed'],
@@ -530,35 +509,9 @@ const GB_TYPES = [
   ['Officer', 'throws grenades (shooter)'],
   ['Paratrooper', 'drifts down, fires once his canopy is open, and lands as a kicker'],
 ];
-function enemies(ram, K) {
-  const cv = $('gb-types'), S = 2, H = 82, FL = H - 46;
-  const WD = [36, 56, 36, 36, 36, 36, 56, 56, 36, 80], W = WD.reduce((a, b) => a + b) + 12;
-  const ctx = C64.canvas(cv, W * S, H * S);
-  ctx.fillStyle = '#7f7ad1'; ctx.fillRect(0, 0, W * S, H * S);
-  ctx.font = '500 ' + (10 * S) + 'px "IBM Plex Mono", monospace'; ctx.textBaseline = 'top';
-  const walk = (t) => {
-    const i = ram[0x273B + ram[0x278B + t] + 4];
-    return [ram[0x2691 + i], ram[0x26E6 + i]];
-  };
+function enemies(ram) {
   const rows = [];
-  let x0 = 8;
   for (let t = 0; t < 10; t++) {
-    const ct = ram[0x21DF + t], cb = ram[0x21E9 + t];
-    ctx.fillStyle = '#ffffff'; ctx.fillText(String(t), x0 * S, 2 * S);
-    if (t === 9) {
-      for (let p = 0; p < 4; p++) {
-        sprite(ctx, ram, K, ram[0x32F8 + p], (x0 + ram[0x32F0 + p] - 0x4F) * S, (ram[0x32E8 + p] - 0x4A + 8) * S, S, ram[0x3300 + p]);
-        sprite(ctx, ram, K, ram[0x32FC + p], (x0 + ram[0x32F4 + p] - 0x4F) * S, (ram[0x32EC + p] - 0x4A + 8) * S, S, ram[0x3304 + p]);
-      }
-    } else if ([0, 2, 3, 5, 8].includes(t)) {
-      const [a, b] = walk(t);
-      sprite(ctx, ram, K, a, x0 * S, FL * S, S, ct);
-      sprite(ctx, ram, K, b, x0 * S, (FL + 21) * S, S, cb);
-    } else {
-      sprite(ctx, ram, K, ram[0x2207 + t], (x0 + ram[0x2092 + t]) * S, (FL + ram[0x207E + t]) * S, S, ct);
-      sprite(ctx, ram, K, ram[0x2211 + t], (x0 + ram[0x209C + t]) * S, (FL + ram[0x2088 + t]) * S, S, cb);
-    }
-    x0 += WD[t];
     const sp = ram[0x21F3 + t], bcd = (v) => (v >> 4) * 10 + (v & 15);
     const pts = t < 9 ? ((bcd(ram[0x0A53 + 2 * t]) + 100 * bcd(ram[0x0A54 + 2 * t])) * 10).toLocaleString('en-GB') : '-';
     rows.push('<tr>' + td(String(t), 'n') + td(GB_TYPES[t][0]) + td(String(1 + sp / 256), 'n')
@@ -593,60 +546,7 @@ function lanes(ram) {
   $('gb-rates').innerHTML = h;
 }
 
-// ---- 08: the three fights' machines and the dogs.
-function fights(mem, K) {
-  const S = 3;
-  // The lorry: lorry_update's nine sprites, three columns 10 X units (20 pixels) apart, the
-  // front column (slot 0) leading; top, middle and bottom 21 lines apart.
-  {
-    const m = mem[0], ctx = C64.canvas($('gb-lorry'), 100 * S, 80 * S);
-    ctx.fillStyle = '#7f7ad1'; ctx.fillRect(0, 0, 100 * S, 80 * S);
-    for (let x = 0; x < 3; x++) for (let k = 0; k < 3; k++) {
-      const i = (2 - x) * 3 + k;
-      sprite(ctx, m, K, m[0x1C8D + i], (8 + x * 20) * S, (8 + (2 - k) * 21) * S, S, m[0x1C96 + i]);
-    }
-  }
-  // A helicopter: helis_place's three columns 12 X units (24 pixels) apart, tops white and
-  // bottoms blue (heli_launch), the shapes of rotor frame f flying right (rotor_shapes).
-  const heli = (f) => {
-    const m = mem[2], ctx = C64.canvas($('gb-heli'), 100 * S, 80 * S);
-    ctx.fillStyle = '#7f7ad1'; ctx.fillRect(0, 0, 100 * S, 80 * S);
-    for (let c = 0; c < 3; c++) {
-      sprite(ctx, m, K, m[0x1281 + 6 * f + c], (14 + c * 24) * S, 16 * S, S, 1);
-      sprite(ctx, m, K, m[0x1281 + 6 * f + 3 + c], (14 + c * 24) * S, 37 * S, S, 6);
-    }
-  };
-  // The dogs, in the order dog_release sends them (boss_count from $11 down): side from
-  // dog_sides (8 from the left, running right, shape $CA; 4 from the right, shape $CD), colour
-  // from dog_colours; dogs_animate steps $C9-$CB and $CC-$CE every fourth frame.
-  const dogs = (f) => {
-    const m = gbHarbourFight(mem[1]), W = 6 * 3 * 26 + 6 * 8, ctx = C64.canvas($('gb-dogs'), W * S, 34 * S);
-    ctx.fillStyle = '#7f7ad1'; ctx.fillRect(0, 0, W * S, 34 * S);
-    for (let n = 0; n < 18; n++) {
-      const b = 0x11 - n, right = m[0x0FC1 + b] === 8;
-      const shape = (right ? 0xC9 : 0xCC) + f % 3;
-      sprite(ctx, m, K, shape, (4 + n * 26 + Math.floor(n / 3) * 8) * S, 8 * S, S, m[0x0FD3 + b]);
-    }
-  };
-  let f = 0, t = null;
-  heli(0); dogs(0);
-  const btn = $('gb-fight-play');
-  btn.onclick = () => {
-    if (t) { clearInterval(t); t = null; press(btn, false); return; }
-    press(btn, true);
-    t = setInterval(() => { f++; heli(f & 3); dogs(Math.floor(f / 4) % 3); }, 20);
-  };
-}
-// The Harbour's memory during its fight: block swap 7 ($C580 with $71C0) made, as
-// harbour_fight_start makes it.
-function gbHarbourFight(m0) {
-  const m = m0.slice(), w = (a) => m[a] | m[a + 1] << 8;
-  const a = w(0xFF5F + 14), b = w(0xFF71 + 14), len = w(0xFF83 + 14);
-  for (let i = 0; i < len; i++) { const t = m[a + i]; m[a + i] = m[b + i]; m[b + i] = t; }
-  return m;
-}
-
-// ---- 09: each stage's characters at $7800 and tiles at $A000, and the nine swaps.
+// ---- 09: the nine swaps.
 const GB_SWAPS = [
   ["the Harbour's characters $40-$C7", 'the Harbour'],
   ["the Bridge's tiles", 'the Bridge'],
@@ -658,19 +558,7 @@ const GB_SWAPS = [
   ["the dog handler's and the dogs' shapes", "the Harbour's fight"],
   ["the title's character set", 'the title and the scenes between stages'],
 ];
-function memory(mem, K) {
-  const cs = $('gb-chars'), ts = $('gb-tiles'), S = 2;
-  const cctx = C64.canvas(cs, 32 * 9 * S, 8 * 9 * S), tctx = C64.canvas(ts, 16 * 66 * 1, 4 * 66 * 1);
-  picker($('gb-mem-stage'), $('gb-mem-prev'), $('gb-mem-next'), STAGES, (s) => {
-    const m = mem[s];
-    cctx.fillStyle = '#ffffff'; cctx.fillRect(0, 0, cs.width, cs.height);
-    for (let c = 0; c < 256; c++) cell(cctx, m, K, c, 0x09, (c % 32) * 9 * S, Math.floor(c / 32) * 9 * S, S);
-    tctx.fillStyle = '#ffffff'; tctx.fillRect(0, 0, ts.width, ts.height);
-    for (let t = 0; t < 64; t++) for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-      const a = 0xA000 + t * 64 + (7 - r) * 8 + c;
-      cell(tctx, m, K, m[a], m[a + 0x1000], (t % 16) * 66 + c * 8, Math.floor(t / 16) * 66 + r * 8, 1);
-    }
-  });
+function memory(mem) {
   const w = (a) => mem[0][a] | mem[0][a + 1] << 8;
   let h = '<tr><th>Swap</th><th>Block</th><th>With</th><th>Bytes</th><th>Brings in</th><th>For</th></tr>';
   for (let n = 0; n < 9; n++)

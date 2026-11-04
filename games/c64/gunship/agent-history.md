@@ -116,3 +116,30 @@ missed. With the clock's fetches on, the page takes each of the 1,027
 pictures in the same frame as the kit's C64 (`test_intro.js`). Playing it
 corrected the music section, which said the tune plays while the
 helicopter rises: it starts after GUNSHIP is written, 1,105 frames in.
+
+## Follow-up: the Graphics tab (4 November 2026)
+
+A Graphics tab now shows everything that moves in the flight. The
+window's sprites run on the flight's own interrupt: the sprite part of
+`irq_bottom`, `$92F9` to `$944D`, on the kit's 6502 once a frame over the
+flight's listing, with the page setting what the main loop would (the
+gun fired and a hit, a launch from each wing, five missiles in their
+slots, an explosion, the enemy firing). The big map's cross and the
+helicopter's mark are `irq_map` and `heading_sprite`. The shapes nothing
+animates (the pitch ladder, the slip and waypoint marks, the compass
+needle's eight shapes) are stills, and the three window shapes nothing
+shows ($42, $43, $C3) a group of their own. The wireframe viewer moved
+there from How it works, with a grid of all 59 shapes turning together;
+How it works keeps the hills and the map's objects, with a link.
+`test_shapes.js` checks the shape reader in both pages, since the
+weapons table on How it works names its targets by it.
+
+Two things showed up. The interrupt leaves the wing launches' counts
+(`zpa_2F`, `zpa_30`) and the enemy flash's (`$81D0`) running whenever
+they are not negative, so a scene starts with them at `$FF`, as a flight
+does. An exploding missile's timer is counted down by the interrupt each
+frame and by the main loop each pass (`j_B2F1`), and the missile code's
+own first step takes it from `$40` to `$3F` on one of its two paths; the
+scene starts it at `$3F`. On the other path (`$B28C`) the interrupt may
+see `$40` first, which gives the explosion sprite block `$5F`, code at
+`$57C0`, for one frame. That was not checked in the emulator.

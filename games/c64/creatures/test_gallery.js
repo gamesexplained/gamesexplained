@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the creature gallery against the game's own code. index.html's cr-anim block (crCreature)
+// Hold the creature gallery against the game's own code. graphics.html's cr-anim block (crCreature)
 // steps a creature's animation script and colour list as the engine does; this runs the engine's
 // own animate_objects ($C764) and object_colours ($C826) on the kit's 6502 simulator, over the
 // engine's listing with the world's level file laid over it, for one object in slot 0, and
@@ -11,7 +11,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'graphics.html';
 const { crCreature } = g.run(page, 'cr-anim', 'crCreature');
 const mm = g.read(page).match(/const CREATURES = (\{.*?\});/);
 if (!mm) { console.error('no CREATURES data'); process.exit(1); }

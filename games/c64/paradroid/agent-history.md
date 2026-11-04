@@ -59,3 +59,22 @@ showed it working.
 - The C64-Wiki's POKE 8410,0 was written for another copy: in this build
   `$20DA` is the first byte of `countdown`, and the poke stops the
   transfer from ending at all.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab now draws every sprite shape the game uses. The robots'
+and the player's numbered shapes are made by `sprite_number` and turned
+by `energy_symbols`, run on the kit's 6502 over the listing's memory,
+one memory for each tile; the console's pictures come from the
+`droid_picture` port that `test_droids.js` holds against the game.
+
+- `facts.md` said the energy symbol turns faster as energy falls. The
+  timer restarts at (64 − energy) / 8 passes (`$3D39`), so it turns
+  faster the more energy the droid has, as `features.md` already said.
+- The work-shapes comment on `$5100`-`$53FF` said eight numbered droid
+  shapes. Sprite 0 is the player's shot, so `$48` is never numbered:
+  seven, `$49`-`$4F`.
+- The first draft of the console menu drew `$4F` as the listing holds
+  it, the staged bytes from `$DC00`, on black. `reference/console-menu.png`
+  shows the player's numbered shape, white, on the window's orange; the
+  tile now numbers `$4F` with `sprite_number` first.

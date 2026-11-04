@@ -50,10 +50,8 @@ table.d th,table.d td{border-bottom:1px solid var(--line-soft);padding:5px 8px;t
 table.d th{font-weight:700;color:var(--ink-soft);font-size:13px}
 table.d td.n{font-family:var(--fm);font-size:13px;text-align:right}
 .sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
-.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.card{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);font-size:13px;line-height:1.4}
-.card canvas{background:#000;border-radius:4px;margin:0 auto 6px}
-.card b{font-family:var(--fm);font-size:12.5px}
+.wrapx{overflow-x:auto}
+.wrapx table{min-width:600px}
 .keys{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:620px}
 .key{border:1px solid var(--line);border-radius:5px;padding:5px 2px;text-align:center;font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink-mute)}
 .key.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -183,9 +181,9 @@ input[type=range]{width:100%}
   <p class="lede">Aliens come from two tables of templates: 18 for the landscapes at <code>$3ECF</code> and 20 for the bonus stage at <code>$39DC</code>. Six at most are on screen, one in each of six 42-byte slots at <code>$0200</code>.</p>
   <div class="plate">
     <div class="row" style="margin:0 0 12px"><button class="btn" id="aLand" aria-pressed="true">Landscape</button><button class="btn" id="aBonus" aria-pressed="false">Bonus stage</button></div>
-    <div class="grid-cards" id="alienCards"></div>
+    <div class="wrapx"><table class="d" id="alienTable"></table></div>
     <p class="note" id="aliensMsg"></p>
-    <p class="cap">Each template's frames, drawn from the sprite data at <code>$C000</code>-<code>$DFFF</code> and animated as its frame list says; the points are byte 22 of the template times ten. These are the templates as loaded: for every list it builds, the game rewrites the landscape ones in place, setting each type's shot interval from the level's entry in <code>$A12A</code>, the colour spheres' shots by level (<code>$A027</code>), and sometimes turning a faller into a riser (<code>$A070</code>). The spheres take their colour from the level, drawn here in red.</p>
+    <p class="cap">Each template's movement, shots and points, read from the listing; the points are byte 22 of the template times ten. These are the templates as loaded: for every list it builds, the game rewrites the landscape ones in place, setting each type's shot interval from the level's entry in <code>$A12A</code>, the colour spheres' shots by level (<code>$A027</code>), and sometimes turning a faller into a riser (<code>$A070</code>). Every kind, moved and animated by the game's own code, is on <a href="graphics.html#cast">Graphics</a>.</p>
   </div>
   <p><code>$9DA1</code> copies 23 bytes of a template into a slot and then applies its random fields, each a mask, an offset and the byte to change, so two aliens of one kind start in different places. A landscape's aliens come from a list of (column, type) pairs made for it when it opens (<code>$9F9B</code>): groups of 4, 6 or 12 of one type, spawned as the view uncovers their column. Only the highest level open and the two below it get lists. Clearing a list pays 1,000 points and makes a new one.</p>
   <p>Every landscape alien is worth 50 points, where the manual says 10 to 500. The ninth alien killed since the last pearl leaves a pearl, and every molecule does (<code>$A9AA</code> = 9; colour spheres do not count). The reviews say eighth.</p>
@@ -1314,43 +1312,22 @@ mountMusic(document.getElementById('music'));
     $('colBtn').onclick = () => { coloured = !coloured; $('colBtn').setAttribute('aria-pressed', String(coloured)); drawLand(); };
     drawLand();
 
-    /* the aliens */
-    const spr = n => ram.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);
-    const cards = [];
+    /* the aliens: each template's rules, from the listing */
     function aliens(bonus) {
       $('aLand').setAttribute('aria-pressed', String(!bonus)); $('aBonus').setAttribute('aria-pressed', String(bonus));
-      const base = bonus ? 0x39DC : 0x3ECF, n = bonus ? 20 : 18, box = $('alienCards');
-      box.innerHTML = ''; cards.length = 0;
+      const base = bonus ? 0x39DC : 0x3ECF, n = bonus ? 20 : 18;
       const MOVE = ['falls under its own gravity', 'rises under its own gravity', 'follows a path', 'accelerates along a path'], FIRE = ['no shots', 'aimed shots', 'turning shots', 'eight-way bursts'];
+      let h = '<tr><th>Type</th><th>Template</th><th>Points</th><th>Moves</th><th>Shoots</th><th>Note</th></tr>';
       for (let i = 0; i < n; i++) {
         const p = ram[base + 2 * i] | ram[base + 2 * i + 1] << 8, t = ram.subarray(p, p + 24);
-        let frames;
-        const list = t[19] | t[20] << 8;
-        if (t[17] === 0) frames = [t[18]];
-        else if (t[17] === 1) frames = [ram[list + t[18]]];
-        else { frames = []; for (let k = list; ram[k] !== 0xFF && frames.length < 32; k++) frames.push(ram[k]); }
-        const sphere = t[21] === 1, colour = sphere ? 2 : t[16] & 0x10 ? 1 : t[16] & 15, hires = t[16] & 0x40;
-        const div = document.createElement('div'); div.className = 'card';
-        const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42; cv.style.width = '96px'; cv.style.height = '84px';
-        div.appendChild(cv);
-        const kind = t[16] & 0x80 ? 'police ship' : t[21] === 1 ? 'colour sphere' : t[21] === 6 ? 'lookalike: a Wizball when shot' : t[21] === 0xFF ? 'shots bounce off' : t[16] & 0x20 ? 'always a pearl' : '';
-        div.insertAdjacentHTML('beforeend', `<b>${bonus ? 'Bonus ' : 'Type '}${i}</b> · ${t[22] * 10} points<br>${MOVE[t[8] & 3]}; ${sphere ? 'shots set by the level' : FIRE[t[14] & 3]}${kind ? '<br><i>' + kind + (sphere ? ', coloured by the level' : '') + '</i>' : ''}<br><span class="k">${hex(p, 4)} · frames ${[...new Set(frames)].map(f => hex(f)).join(' ')}</span>`);
-        box.appendChild(div);
-        cards.push({ ctx: cv.getContext('2d'), frames, rate: t[17] === 2 ? Math.max(1, t[18]) : 0, colour, hires, k: 0 });
+        const sphere = t[21] === 1;
+        const kind = t[16] & 0x80 ? 'police ship' : sphere ? 'colour sphere, coloured by the level' : t[21] === 6 ? 'lookalike: a Wizball when shot' : t[21] === 0xFF ? 'shots bounce off' : t[16] & 0x20 ? 'always a pearl' : '';
+        h += `<tr><td class="n">${i}</td><td><code>${hex(p, 4)}</code></td><td class="n">${t[22] * 10}</td><td>${MOVE[t[8] & 3]}</td><td>${sphere ? 'set by the level' : FIRE[t[14] & 3]}</td><td>${kind}</td></tr>`;
       }
-    }
-    function drawCards(fr) {
-      for (const c of cards) {
-        const f = c.frames[c.rate ? Math.floor(fr / c.rate) % c.frames.length : 0];
-        c.ctx.fillStyle = '#000'; c.ctx.fillRect(0, 0, 48, 42);
-        const d = spr(f);
-        if (c.hires) { for (let r = 0; r < 21; r++) for (let b = 0; b < 24; b++) if (d[r * 3 + (b >> 3)] & (0x80 >> (b & 7))) { c.ctx.fillStyle = PAL[c.colour]; c.ctx.fillRect(12 + b, 10 + r, 1, 1); } }
-        else drawSpriteMC(c.ctx, d, 12, 10, [0, 11, c.colour, 13]);
-      }
+      $('alienTable').innerHTML = h;
     }
     $('aLand').onclick = () => aliens(false); $('aBonus').onclick = () => aliens(true);
     aliens(false);
-    let fr = 0; setInterval(() => { fr++; drawCards(fr); }, 20);
   }).catch(e => { $('landMsg').textContent = needSite + ' (' + e.message + ')'; $('aliensMsg').textContent = needSite; });
 })();
 </script>
