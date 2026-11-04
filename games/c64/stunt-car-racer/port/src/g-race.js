@@ -122,13 +122,13 @@ G.race = P => {
     P.CLEAR_BARS({});
     P.BUILD_TRACK({ x: M[0xC77D] });
     P.CMD_DRAWBRIDGE({});
-    let q = P.s_F386({});
+    let q = P.TRACK_PREVIEW({});
     for (;;) {
       for (let x = 0x27; x >= 0; x--) M[0x7FC0 + x] = 0x3B;
       P.PRINT_STRING({ x: 0x2C, y: q.y });
       q = yield* P.VIEW_KEYS({});
       if (!q.c) break;
-      q = P.s_F386({});
+      q = P.TRACK_PREVIEW({});
     }
     yield* P.BORDER_BLANK({ a: 0 });
     M[0x3DF8] = 0;
@@ -138,7 +138,7 @@ G.race = P => {
   P.VIEW_KEYS = function* (r) {
     for (;;) {
       yield { cycles: P.COST.fireTurn };
-      P.s_F79E({});
+      P.READ_CONTROLS({});
       const x = M[0x66];
       if (x & 4) { M[0xC34C] = (M[0xC34C] + 1) & 255; return { a: 4, x, c: 1 }; }
       if (x & 8) { M[0xC34C] = (M[0xC34C] - 1) & 255; return { a: 8, x, c: 1 }; }
@@ -165,7 +165,7 @@ G.race = P => {
     P.OPP_DROP({});
     let x = M[0xC765];
     start: for (;;) {
-      P.s_F488({ x });
+      P.START_PLACE({ x });
       P.DUST_CLEAR({});
       if (!(M[0x3DF8] & 0x80)) { P.DASH_SPRITES({}); P.DRAW_VIEW({}); P.REQUEST_FLIP({}); P.STEP({}); }
       P.DRAW_VIEW({}); P.SPEED_TO_BAR({}); P.CMD_CRANE_CHAINS({}); P.WHEEL_SPRITES({}); P.REQUEST_FLIP({}); P.STEP({});
@@ -282,7 +282,7 @@ G.race = P => {
     M[0xC43F] = 0xC0;
     let x = M[0x31A1];
     if (x) { x = M[0x31A4]; M[0xC719] = M[0x83B0 + x]; }
-    return P.j_F6A6({ x, y: 0x80 });
+    return P.DAMAGE_BAR({ x, y: 0x80 });
   };
   // PAUSE ($3EE0): while the bitmap at $6000 is being drawn ($C306 set), a key ($0D) pauses: the car
   // put back ($E0F9), the message "paused" (4C), $97AF until another key ($34), then the message
@@ -325,10 +325,10 @@ G.race = P => {
   // FLIP_DONE ($3F70): the view's colours brought up to date for the bitmap now shown (command
   // $46), two of the dashboard's colours ($0C), and $C37A and $C37B cleared
   P.FLIP_DONE = r => {
-    P.CMD_ROW_COLOURS(r);
+    const q = P.CMD_ROW_COLOURS(r || {}) || {};
     P.wr(0xDAAC, 0x0C); P.wr(0xDACB, 0x0C);
     P.store(0xC37A, 0); P.store(0xC37B, 0);
-    return { a: 0 };
+    return Object.assign({}, q, { a: 0, z: 1, n: 0 });
   };
   // MENU_BITMAP ($3F8B): the menus' bitmap and screen shown ($D018 $70, $C35F and $C370 $80)
   P.MENU_BITMAP = r => {

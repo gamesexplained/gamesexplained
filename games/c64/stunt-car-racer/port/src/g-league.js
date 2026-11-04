@@ -211,7 +211,7 @@ G.league = P => {
       M[0x14] = M[0x7D];
       M[0x06BE + x] = P.SHIFT16({ a: M[0x7F], y: 0xFB }).a & 255;
       M[0x0670 + x] = M[0x14];
-      P.s_F02F({ x });
+      P.PIECE_LOAD({ x });
       M[0xD8] = (M[0xD8] + M[0x62]) & 2;
       let t = M[0x7D] + M[0xBE];
       M[0x7D] = t & 255; M[0x7F] = (M[0x7F] + (t >> 8)) & 255;

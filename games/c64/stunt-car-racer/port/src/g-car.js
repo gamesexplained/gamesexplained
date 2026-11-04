@@ -97,17 +97,17 @@ G.car = P => {
       }
       if (behind) M[0x6D] = 0x80;
       M[0xC303] = 0x80;
-      P.s_FC31({});
+      P.LINE_MODE_CAR({});
       P.CAR_SIDES({});
       let q = P.CAR_FRAME({ x: 0x3D });
       if (!q.c) {
-        if (M[0xC3DA] & 0x80) { P.s_FC99({}); P.s_FCB3({}); } else P.s_FCA2({});
+        if (M[0xC3DA] & 0x80) { P.LINE_LIMIT_HIDE({}); P.COPY_LIMITS({}); } else P.LINE_LIMIT({});
         q = P.CAR_ROOF({});
       }
       P.CMD_MARK_COLUMNS({ x: q.x, y: q.y });
-      P.s_FC23({});
+      P.LINE_MODE_TRACK({});
     }
-    return P.s_FC01({ x: keep });
+    return P.LINE_COLOUR({ x: keep });
   };
 
   // CAR_FRACTIONS ($E25D): a half, a quarter and an eighth of each of $E8-$EB, signed, into
@@ -135,7 +135,7 @@ G.car = P => {
   // CAR_END ($E2AA): the end's corners at points $44-$47 (around the centre by the halves,
   // quarters and eighths), placed, copied to $40-$43 and drawn
   P.CAR_END = r => {
-    P.s_FC01({ x: 1 });
+    P.LINE_COLOUR({ x: 1 });
     M[0xA247] = (M[0xEC] - M[0xED]) & 255;
     M[0xA293] = (M[0xEE] - M[0xEF]) & 255;
     M[0xA244] = (0 - M[0xEC] - M[0xED]) & 255;
@@ -189,7 +189,7 @@ G.car = P => {
   // CAR_PANEL_AT ($E39A): a side's corners at points $40-$43 from $D9 and A ($DA), placed and drawn
   P.CAR_PANEL_AT = r => {
     M[0xDA] = r.a & 255;
-    P.s_FC01({ x: 0 });
+    P.LINE_COLOUR({ x: 0 });
     const d9 = M[0xD9], da = M[0xDA];
     M[0xA241] = d9; M[0xA242] = (d9 + M[0xEC]) & 255;
     M[0xA28D] = da; M[0xA28E] = (da + M[0xEE]) & 255;
@@ -202,10 +202,10 @@ G.car = P => {
   };
   // CAR_PANEL ($E3D8): edges 40-43 and 41-42 for the fill, lines 43-42 and 40-41
   P.CAR_PANEL = r => {
-    P.s_FEAB({ x: 0x40, y: 0x43 });
-    if (M[0xEA] & 0x80) { P.s_FEC9({ x: 0x40, y: 0x41 }); P.s_FEC9({ x: 0x43, y: 0x42 }); }
-    else { P.s_FEC9({ x: 0x43, y: 0x42 }); P.s_FEC9({ x: 0x40, y: 0x41 }); }
-    return P.s_FEAB({ x: 0x41, y: 0x42 });
+    P.LINE_SPAN({ x: 0x40, y: 0x43 });
+    if (M[0xEA] & 0x80) { P.LINE_ON_SCREEN({ x: 0x40, y: 0x41 }); P.LINE_ON_SCREEN({ x: 0x43, y: 0x42 }); }
+    else { P.LINE_ON_SCREEN({ x: 0x43, y: 0x42 }); P.LINE_ON_SCREEN({ x: 0x40, y: 0x41 }); }
+    return P.LINE_SPAN({ x: 0x41, y: 0x42 });
   };
 
   // CAR_FRAME ($E409): the frame from points X and X+2: half their gap each way into $51/$77
@@ -260,7 +260,7 @@ G.car = P => {
   P.OPP_CORNERS = r => {
     let q = P.OPP_SEGMENT({ a: 0x40 });
     M[0xD4] = q.x & 255; M[0xD5] = q.a & 255; M[0x9C] = q.y & 255;
-    P.s_F0C5(P.s_F02F({ x: q.x }));
+    P.PIECE_ORIGIN(P.PIECE_LOAD({ x: q.x }));
     M[0x3D] = (M[0x68] - M[0x1D]) & 255;
     let x = (M[0xD5] << 1) & 255;
     q = P.s_9C14({ x }); M[0x48] = q.a & 255; M[0x5B] = M[0x15] >> 5; x = (q.x + 1) & 255;
@@ -269,9 +269,9 @@ G.car = P => {
     q = P.s_9C14({ x }); M[0x4B] = q.a & 255; x = (q.x + 1) & 255;
     if (x < M[0x9E]) P.PIECE_HEIGHTS_AHEAD({ x });
     else {
-      P.s_F02F(P.PIECE_AHEAD({}));
+      P.PIECE_LOAD(P.PIECE_AHEAD({}));
       P.PIECE_HEIGHTS_AHEAD({ x: 2 });
-      P.s_F02F(P.PIECE_BEHIND({}));
+      P.PIECE_LOAD(P.PIECE_BEHIND({}));
     }
     P.OPP_SEGMENT_POINTS({ a: M[0xD5] });
     P.OPP_ALONG({ y: 4, x: 0 });
@@ -302,7 +302,7 @@ G.car = P => {
     M[0x18] = t & 255;
     let a = (M[0xC4] - (t < 0 ? 1 : 0)) & 255;
     if (a & 0x80) {
-      x = P.s_F02F(P.PIECE_BEHIND({})).x & 255;
+      x = P.PIECE_LOAD(P.PIECE_BEHIND({})).x & 255;
       a = (M[0xBE] - 1) & 255;
     }
     M[0xA3] = a; M[0xA6] = x;
@@ -415,7 +415,7 @@ G.car = P => {
   // the pillars, the roof's edges and the sides in the order that leaves the far ones hidden: by
   // the end against the roof across ($A245/$A246, $A249/$A24A) and down ($A291/$A292,
   // $A295/$A296), and $C3DA, which also puts the roof into the fill's tables (FCB3)
-  const line = (x, y) => P.s_FEC9({ x, y });
+  const line = (x, y) => P.LINE_ON_SCREEN({ x, y });
   const PILLARS_44_45 = () => { line(0x44, 0x48); return line(0x45, 0x49); };
   const PILLARS_47_46 = () => { line(0x47, 0x4B); return line(0x46, 0x4A); };
   P.PILLARS_44_45 = r => PILLARS_44_45();
@@ -427,7 +427,7 @@ G.car = P => {
   P.PILLAR_45 = r => line(0x45, 0x49);
   P.PILLAR_46 = r => line(0x46, 0x4A);
   P.CAR_ROOF = r => {
-    P.s_FC01({ x: 1 });
+    P.LINE_COLOUR({ x: 1 });
     M[0xA24A] = M[0xEC]; M[0xA24B] = (M[0xEC] - M[0xED]) & 255;
     M[0xA296] = M[0xEE]; M[0xA297] = (M[0xEE] - M[0xEF]) & 255;
     M[0xA249] = neg(M[0xEC]); M[0xA248] = (M[0xA249] - M[0xED]) & 255;
@@ -440,7 +440,7 @@ G.car = P => {
         if (M[0xA295] < M[0xA291]) { P.PILLAR_45({}); P.ROOF_EDGE_49({}); P.PILLAR_44({}); }
         P.CAR_SIDE_B({}); return P.CAR_SIDE_A({});
       }
-      P.ROOF_EDGE_48({}); P.PILLAR_44({}); P.PILLAR_47({}); P.s_FCB3({});
+      P.ROOF_EDGE_48({}); P.PILLAR_44({}); P.PILLAR_47({}); P.COPY_LIMITS({});
       P.CAR_SIDE_A({}); P.CAR_SIDE_B({}); return P.PILLAR_46({});
     }
     if (M[0xA245] < M[0xA249]) {
@@ -448,7 +448,7 @@ G.car = P => {
         P.PILLARS_47_46({}); P.PILLARS_44_45({}); P.ROOF_EDGE_49({});
         P.CAR_SIDE_A({}); return P.CAR_SIDE_B({});
       }
-      P.ROOF_EDGE_48({}); P.PILLAR_44({}); P.PILLAR_47({}); P.s_FCB3({});
+      P.ROOF_EDGE_48({}); P.PILLAR_44({}); P.PILLAR_47({}); P.COPY_LIMITS({});
       P.CAR_SIDE_A({}); return P.CAR_SIDE_B({});
     }
     if (!below) {
@@ -456,7 +456,7 @@ G.car = P => {
       if (M[0xA296] < M[0xA292]) { P.PILLAR_46({}); P.ROOF_EDGE_49({}); P.PILLAR_47({}); }
       P.CAR_SIDE_A({}); return P.CAR_SIDE_B({});
     }
-    P.ROOF_EDGE_48({}); P.PILLAR_47({}); P.PILLAR_44({}); P.s_FCB3({});
+    P.ROOF_EDGE_48({}); P.PILLAR_47({}); P.PILLAR_44({}); P.COPY_LIMITS({});
     P.CAR_SIDE_B({}); P.CAR_SIDE_A({}); return P.PILLAR_45({});
   };
 

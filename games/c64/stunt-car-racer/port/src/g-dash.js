@@ -46,7 +46,7 @@ G.dash = P => {
     if (a !== M[0xC77C]) return {};
     M[0xC376 + x] = 0x80;
     M[0xC378 + x] = (M[0xC378 + x] + 1) & 255;
-    if (M[0xC378 + x] !== 1) P.s_F811({ x });
+    if (M[0xC378 + x] !== 1) P.TIME_PENALTY({ x });
     if (!x) {
       if (M[0xC378] !== 1) { P.s_92A2({ x }); M[0x82] = 0x19; P.SHOW_LAP_TIME({ x }); }
       M[0xC6] = x;
@@ -144,7 +144,7 @@ G.dash = P => {
     let e;
     if (M[0xC302]) {
       const a = M[0xC302]--;
-      if (a === 0x40) { P.s_F021({ y: M[0xC719] }); P.s_F668({}); e = 1; }
+      if (a === 0x40) { P.BAR_HOLE(P.BAR_PART_AT({ y: M[0xC719] })); e = 1; }
       else if (M[0xC352]) e = 4;
       else return {};
     } else {
@@ -152,7 +152,7 @@ G.dash = P => {
       if (M[0xC35C] < 0x14 || !M[0xC719]) e = 4;
       else {
         M[0xC719]--;
-        P.s_F021({ y: M[0xC719] }); P.s_F673({});
+        P.BAR_HOLE_LIT(P.BAR_PART_AT({ y: M[0xC719] }));
         M[0xC302] = 0x40; e = 1;
       }
     }
@@ -168,7 +168,7 @@ G.dash = P => {
   P.LAMP_A = r => { P.wr(0xDBDA, r.y & 255); P.wr(0xDBDB, r.y & 255); return { y: r.y & 255 }; };
   // WIN_LAMP ($1154) and LAMP_B ($115D): the lamp at $DBCC/$DBCD, 11 while $F5E9 says the
   // opponent leads, else 7; Y comes back with it
-  P.WIN_LAMP = r => { const o = P.s_F5E9({ y: 0x0B }); return P.LAMP_B({ y: (o.n ? 7 : 0x0B) }); };
+  P.WIN_LAMP = r => { const o = P.SAME_LAP({ y: 0x0B }); return P.LAMP_B({ y: (o.n ? 7 : 0x0B) }); };
   P.LAMP_B = r => { P.wr(0xDBCC, r.y & 255); P.wr(0xDBCD, r.y & 255); return { y: r.y & 255 }; };
 
   // SHOW_DISTANCE ($1164), every fourth pass: the sixteen bits at $39/$3A times 5/16, as four

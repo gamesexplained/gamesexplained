@@ -552,9 +552,9 @@ G.menus = P => {
   // WAIT_FIRE ($3696): waits for the fire button to be let go, a moment, and then pressed
   P.WAIT_FIRE = function* (r) {
     let q;
-    do { yield { cycles: P.COST.fireTurn }; q = P.s_F79E({}); } while (q.a & 0x10);
+    do { yield { cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (q.a & 0x10);
     yield* P.DELAY({ y: 5 });
-    do { yield { cycles: P.COST.fireTurn }; q = P.s_F79E({}); } while (!(q.a & 0x10));
+    do { yield { cycles: P.COST.fireTurn }; q = P.READ_CONTROLS({}); } while (!(q.a & 0x10));
     return { a: 0x10, x: q.x, y: q.y, z: 0 };
   };
   P.GEN.add('LEAGUE_TABLE');

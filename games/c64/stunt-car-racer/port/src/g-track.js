@@ -18,7 +18,7 @@ G.track = P => {
       M[0x0280 + x] = 0; M[0x02C0 + x] = 0;
     }
     P.CMD_CLEAR_VIEW({});
-    P.s_F1DC({});
+    P.CAMERA({});
     M[0xC3A9] = 0; M[0xC3DA] = 0; M[0x6D] = 0; M[0xC303] = 0;
     return { a: 0 };
   };
@@ -32,23 +32,23 @@ G.track = P => {
     P.NEW_VIEW({});
     if (!M[0x2F] && (M[0x6B] & 0x80)) P.DUST_WRECKED({});
     M[0x0B] = 0; M[0x0C] = 0;
-    let o = P.s_FF6A({});
+    let o = P.SQUARE_PIECE({});
     let piece = -1;
     if (!o.c) {
       if ((o.a & 255) !== 0xFF) piece = o.a & 255;
-      else { o = P.s_F117({ a: M[0xAF], y: M[0xB1] }); if ((o.a & 255) !== 0xFF) piece = o.a & 255; }
+      else { o = P.PIECE_NEIGHBOUR({ a: M[0xAF], y: M[0xB1] }); if ((o.a & 255) !== 0xFF) piece = o.a & 255; }
     }
     if (piece < 0) {
       M[0x6B] = 0xC0;
       if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.OPP_CORNERS({}); }
     } else {
       M[0x2E] = piece;
-      P.s_9A38({}); P.s_F2B7({});
+      P.s_9A38({}); P.SIDEWAYS({});
       M[0xC374] = M[0x2E];
       if (!(M[0x6B] & 0x40)) M[0xC309] = M[0x2E];
       P.s_9C79({});
       M[0xCC] = 0x80; M[0xCD] = 0x80;
-      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.s_F585({}); P.OPPONENT_LINE({}); P.OPP_CORNERS({}); }
+      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.CAR_GAP({}); P.OPPONENT_LINE({}); P.OPP_CORNERS({}); }
       M[0x2E] = M[0xC374];
       M[0xD0] = 0;
       if (M[0x8E] & 0x80) { P.PIECE_AHEAD({}); M[0x8E] = 0; }
@@ -86,8 +86,8 @@ G.track = P => {
   // points projected and drawn into the view ($A026, $2458, $25EA, OVERLAP), near to far or far
   // to near, then its far end's points kept for the next piece
   P.DRAW_PIECE = r => {
-    P.s_F02F({ x: M[0x2E] });
-    P.s_F0C5({ x: M[0x2E] });
+    P.PIECE_LOAD({ x: M[0x2E] });
+    P.PIECE_ORIGIN({ x: M[0x2E] });
     M[0x3D] = (M[0x68] - M[0x1D]) & 255;
     P.PIECE_POINTS({});
     let x = M[0x27];
@@ -102,7 +102,7 @@ G.track = P => {
     if (a & 0x80) {
       M[0xC3A9] = a;
       M[0xD0] = 0;
-      P.s_F440({});
+      P.REVERSE_POINTS({});
       M[0xD8] = (M[0xD8] + M[0x62]) & 2;
       fwd = !!M[0xA4];
     } else fwd = !M[0xA4];
@@ -259,7 +259,7 @@ G.track = P => {
     for (;;) {
       M[0xA0] = 1;
       const x = M[0xD2] >= 0x28 ? 0 : ((M[0xC6] ^ M[0xD8]) >> 1) & 1;
-      P.s_FC01({ x });
+      P.LINE_COLOUR({ x });
       if (((M[0xC6] >> 1) - 1 & 255) === M[0xA3] && M[0xA6] === M[0x2E]) P.OPP_DRAW_HERE({});
       do {
         const k = M[0xC6];
@@ -280,9 +280,9 @@ G.track = P => {
       a = M[0x8080 + y];
       if (!(a & 0x80)) {
         M[0x8080 + y] = 0x80;
-        P.s_FC01({ x: a & 3 });
+        P.LINE_COLOUR({ x: a & 3 });
         P.s_CF73({});
-        P.s_FE91({ x: M[0xC6], y: M[0xC6] ^ 1 });
+        P.LINE({ x: M[0xC6], y: M[0xC6] ^ 1 });
       }
       M[0xD2] = (M[0xD2] + 1) & 255;
       M[0xC6] = (M[0xC6] + 2) & 255;
@@ -290,9 +290,9 @@ G.track = P => {
     }
   };
   // ALONG_SIDE ($1AF7): the line from point $C6 back to the last point drawn on its side
-  P.ALONG_SIDE = r => P.s_FE91({ x: M[0xC6], y: M[0xCC + M[0xA0]] });
+  P.ALONG_SIDE = r => P.LINE({ x: M[0xC6], y: M[0xCC + M[0xA0]] });
   // TO_COPY ($1B02): the line from point $C6 to its copy (point $C6 + $20)
-  P.TO_COPY = r => P.s_FE91({ x: M[0xC6], y: M[0xC6] | 0x20 });
+  P.TO_COPY = r => P.LINE({ x: M[0xC6], y: M[0xC6] | 0x20 });
 
   // CLIP_NEAR ($1B0B): the piece's first two points, when one lies inside the view's columns but
   // behind the eye ($A2E4/$A24C), are moved along the side towards the next point by the share $8D

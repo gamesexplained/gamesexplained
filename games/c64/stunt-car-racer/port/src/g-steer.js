@@ -19,7 +19,7 @@ G.steer = P => {
   P.STEERING = r => {
     let x = M[0xC374];
     M[0x2E] = x;
-    P.s_F02F({ x });
+    P.PIECE_LOAD({ x });
     let t = M[0x0189] - M[0x0122]; M[0x14] = t & 255;
     M[0x15] = ((M[0x018A] ^ M[0xA4]) - M[0x0125] - (t < 0 ? 1 : 0)) & 255;
     let y = 0;
@@ -33,7 +33,7 @@ G.steer = P => {
     if (a < 8) a = P.SHIFT16({ a, y: 0xFC }).a;
     else a = 0x7F;
     M[0xA5] = a;
-    if (((M[0xBE] - M[0xC3]) & 255) < 2) { x = P.PIECE_AHEAD({}).x; P.s_F02F({ x }); }
+    if (((M[0xBE] - M[0xC3]) & 255) < 2) { x = P.PIECE_AHEAD({}).x; P.PIECE_LOAD({ x }); }
     M[0x79] = M[0x9D] ^ M[0xA4];
     // the turn: L2ED7 with A the steering's factor, or straight to L2E6C
     let turn = null;

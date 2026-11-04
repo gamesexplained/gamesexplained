@@ -37,7 +37,7 @@ G.dust = P => {
     let y = (x & 1) ? 0 : 1;
     M[0xA0] = M[0x2A36 + y];
     M[0x08] = M[0x2A38 + y];
-    P.s_FC01({ x: (x >> 1) & 1, y });
+    P.LINE_COLOUR({ x: (x >> 1) & 1, y });
     x = M[0xC6];
     let a = (M[0x80A0 + x] + M[0x2A3C + y]) & 255;
     y = M[0xC260 + x];
@@ -48,7 +48,7 @@ G.dust = P => {
       a = (a + M[0x2A3E + y]) & 255;
       M[0xA221] = a;
       M[0xA26D] = (M[0xA26C] + M[0x2A4D + y]) & 255;
-      P.s_FEC9({ x: 0x20, y: 0x21 });
+      P.LINE_ON_SCREEN({ x: 0x20, y: 0x21 });
       a = M[0xA221];
       y = M[0xA26D];
       M[0xA0] = (M[0xA0] - 1) & 255;

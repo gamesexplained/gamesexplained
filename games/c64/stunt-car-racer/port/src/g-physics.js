@@ -19,23 +19,22 @@ G.physics = P => {
   // STEP ($0841): one step of the world, called once a pass in the race (twice as it starts). The
   // bitmap that was drawn is shown at four points along it, as soon as the interrupt is ready for it
   // (FLIP_IF_READY): the steps take longer than a frame
+  // Each routine is given the registers the one before it left, as the game's are: SIN_COS keeps
+  // the X it was given at $C780.
   P.STEP = r => {
-    P.FLIP_IF_READY();
-    P.s_C9EA({}); P.WHEEL_OFFSETS({});
-    P.FLIP_IF_READY();
-    P.s_9CBA({}); P.s_A132({});
-    P.FLIP_IF_READY();
-    P.s_CC31({}); P.ENGINE_NOTE({}); P.s_CC84({}); P.WHEELS_ON_ROAD({});
-    P.FLIP_IF_READY();
+    let q = Object.assign({}, r);
+    const go = (...fs) => { for (const f of fs) q = Object.assign({}, q, f(q) || {}); };
+    go(P.FLIP_IF_READY, P.ROTATION_MATRIX, P.WHEEL_OFFSETS, P.FLIP_IF_READY, P.s_9CBA, P.s_A132, P.FLIP_IF_READY,
+      P.VELOCITY_TO_CAR, P.ENGINE_NOTE, P.PULL_IN_CAR, P.WHEELS_ON_ROAD, P.FLIP_IF_READY);
+    q.a = M[0xC307];
     if (M[0xC307]) {
-      P.SPRINGS({}); P.STEERING({}); P.s_CCB3({});
-      P.FLIP_IF_READY();
-      P.DRAG({}); P.SPIN_FORCES({}); P.ADD_SPIN({}); P.s_CD05({});
-      P.FLIP_IF_READY();
+      go(P.SPRINGS, P.STEERING, P.FORCES_TO_WORLD, P.FLIP_IF_READY, P.DRAG, P.SPIN_FORCES, P.ADD_SPIN, P.SPIN_TO_ANGLES,
+        P.FLIP_IF_READY);
     }
-    P.ADD_FORCES({}); P.MOVE_CAR({}); P.ROLL_TABLES({});
-    if (M[0xC37A]) P.FLIP_DONE({});
-    return {};
+    go(P.ADD_FORCES, P.MOVE_CAR, P.ROLL_TABLES);
+    q.a = M[0xC37A];
+    if (M[0xC37A]) go(P.FLIP_DONE);
+    return q;
   };
 
   // WHEEL_OFFSETS ($0897): where the three wheels' contact points sit from the car's middle, from the

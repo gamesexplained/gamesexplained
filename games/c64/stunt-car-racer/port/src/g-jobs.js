@@ -373,7 +373,7 @@ G.jobs = P => {
   P.SET_ROW_COLOURS = r => {
     M[0x16] = M[0xC76B];
     M[0x14] = 0;
-    let x = 0;
+    let x = 0, y = r.y & 255;
     do {
       x = M[0x14];
       const now = M[0x0201 + x], was = M[0x0200 + x];
@@ -381,23 +381,25 @@ G.jobs = P => {
         M[0x15] = now;
         M[0x0200 + x] = now;
         M[0x20] = x >> 2;
+        let k;
         if (now < was) {
-          for (let k = was; k !== now; k = (k - 1) & 255) {
-            M[0x21] = M[0xA418 + k];
-            P.wr(((M[0x21] << 8 | M[0x20]) + M[0xA400 + k]) & 0xFFFF, M[0x16]);
+          for (k = was; k !== now; k = (k - 1) & 255) {
+            M[0x21] = M[0xA418 + k]; y = M[0xA400 + k];
+            P.wr(((M[0x21] << 8 | M[0x20]) + y) & 0xFFFF, M[0x16]);
           }
         } else {
-          let k = (was + 1) & 255;
+          k = (was + 1) & 255;
           do {
-            M[0x21] = M[0xA418 + k];
-            P.wr(((M[0x21] << 8 | M[0x20]) + M[0xA400 + k]) & 0xFFFF, 0x0E);
+            M[0x21] = M[0xA418 + k]; y = M[0xA400 + k];
+            P.wr(((M[0x21] << 8 | M[0x20]) + y) & 0xFFFF, 0x0E);
             k = (k + 1) & 255;
           } while (k <= M[0x15]);
         }
+        x = k;
       }
       M[0x14] = (M[0x14] + 4) & 255;
     } while (!(M[0x14] & 0x80));
-    return { a: M[0x14] };
+    return { a: M[0x14], x, y };
   };
 
   // DISK_COMMAND ($90BB), command $47, with the KERNAL in: nothing unless $0840 says there is a

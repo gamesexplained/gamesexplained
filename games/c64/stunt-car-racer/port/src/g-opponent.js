@@ -82,7 +82,7 @@ G.opponent = P => {
   // back brakes ($FF10) until forward again. Nothing while the car is lowered, dropped or past
   // $78 along the road. Then $F60F.
   P.CONTROLS = r => {
-    P.s_F79E({});
+    P.READ_CONTROLS({});
     let a = M[0x6A];
     if (a) {
       a = M[0x2F];
@@ -104,7 +104,7 @@ G.opponent = P => {
       if (drive) { x = M[0xC384]; y = M[0xC385]; M[0xC39B] = 0x80; }
     }
     M[0x0150] = x; M[0x0151] = y;
-    P.s_F60F({});
+    P.BOOST({});
     return {};
   };
   // HORIZON ($1CCB): with $C359 set, in place of the view's column limits: a line across the
@@ -122,9 +122,9 @@ G.opponent = P => {
       P.ROLL_POINT({ x });
       x--;
     } while (x >= 2);
-    P.s_FC16({ a: 0x2C });
-    P.s_FE91({ x: 2, y: 3 });
-    P.s_FC16({ a: 0x3D });
+    P.LINE_OPCODE({ a: 0x2C });
+    P.LINE({ x: 2, y: 3 });
+    P.LINE_OPCODE({ a: 0x3D });
     M[0xC365] = (M[0xC365] << 1) & 255;
     return {};
   };
@@ -251,7 +251,7 @@ G.opponent = P => {
   // ($C375) when $C4 passes the piece's length $BE
   P.OPPONENT_MOVE = r => {
     if (!M[0xC37C]) return { a: 0 };
-    P.s_F02F({ x: M[0xC375] });
+    P.PIECE_LOAD({ x: M[0xC375] });
     P.OPP_WHEELS({});
     P.SWERVE({});
     P.OPP_ENGINE({});

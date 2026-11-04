@@ -67,7 +67,7 @@ T('CLEAR_VIEW', { setup: (M, c, rnd) => { M[0x12] = rnd(2) ? 0x20 : 0; return { 
 T('SET_ROW_COLOURS', { setup: (M, c, rnd) => {
   for (let x = 0; x < 0x80; x += 4) { M[0x0200 + x] = range(rnd, 6, 0x17); M[0x0201 + x] = rnd(2) ? M[0x0200 + x] : range(rnd, 6, 0x17); }
   M[0xC76B] = rnd(256);
-}, cases: 1000 });
+}, cases: 1000, outs: ['a', 'x', 'y'] });
 T('DISPATCH', { setup: (M, c, rnd) => {
   M[0x52] = range(rnd, 1, 4);
   return { a: [0x01, 0x02, 0x20, 0x81, 0x15, 0x55, 0x33, 0x00, 0xFF][rnd(9)], x: rnd(3), y: range(rnd, 0x40, 0x60) };
