@@ -376,6 +376,56 @@ code on the play snapshot (`kit/cpu/census.py`, 19 October 2026).
 | `$4016` JOY1 | strobe and the eight reads (`JOY1,X` for controller 2) | `read_joypads` |
 | `$4017` JOY2_FRAME | `$C0` once a frame: the APU frame counter in 5-step mode with its interrupt off | `sound_frame` |
 
+## Pictures and animation
+
+What the Graphics tab draws, every card run by the port and by the
+game's own routines on the kit's 6502 with the same result
+(`test_graphics.js`).
+
+- `draw_actor` (`$E3A4`) draws an actor as six sprites from a layout:
+  `player_layout_ptrs` or `bird_layout_ptrs`, indexed by the action
+  times 4 plus the animation step, from a base by balloon count; a
+  flashing player's from `player_flash_ptrs` by step; the fish's from
+  `fish_layout_ptrs` by `fish_state`. The palette is the player's
+  number, or `(type + 2) & 3` for a bird, so the three colours share
+  every drawing; a sprite goes behind the background at Y `$C9` or
+  more. A player turning with two balloons is drawn flipped.
+- `actor_animate` (`$EA18`) runs on the control pass, every third
+  frame. A player's step moves on every pass, except gliding (action 1)
+  and standing (3), which move only when the frame counter is a multiple
+  of 8: once every 24 frames. A bird's moves every pass in actions 0 to
+  2, every 24 frames gliding, and every 12 frames in the pumping actions
+  3 to 6. Skidding and turning have four steps of one picture.
+- With B held a flap's three pictures repeat every 9 frames. A burst
+  balloon is a pose of its own (actions 6 to 10 from
+  `player_burst_actions`, by the pose the player was in) for one pass.
+  A spark's shock (`spark_hit`) alternates the player's falling picture
+  with a pale one for 64 frames: `actor_timer` `$20`, counted down every
+  other frame.
+- A bird standing at the start of phase 3 waits 88 frames, pumps its
+  balloon up in four steps 48 frames apart and takes off 280 frames in;
+  in phases 1 and 2, 147 frames. A popped bird is drawn without a
+  balloon for one pass, with its parachute half open for one, then
+  under the parachute.
+- The fish rises through states 1 to 3, a pixel a frame; at its 24th
+  frame (`fish_timer` `$18`) it bites a victim within reach, which
+  `fish_draw` then draws at its mouth until `fish_timer` `$20`, when the
+  victim is removed. It sinks through states 4 to 6 and is gone at
+  `$38`.
+- The splash is four pictures four frames apart (`splash_frame` 4 to
+  1; 0 draws nothing). A bubble shifts down a pixel for 32 frames and
+  right a pixel for another 32 in every 128. The lightning bolt grows in
+  five steps 8 frames apart, its tiles swapped every 2 frames; the four
+  directions flip the same tiles (`bolt_attrs`). The spark turns
+  through `spark_tiles` a frame at a time; Balloon Trip's sparks use its
+  first four entries, one every other frame.
+- A bonus balloon is three sprites; its string swings through
+  `balloon_bottom_tiles` and `balloon_bottom_flips` in a cycle of 128
+  frames, and the title screen's pointer is the same balloon. A spinning
+  propeller steps every other frame through four pictures of 3 by 3
+  background tiles. The six scores that pop up (300, 500, 750, 1,000,
+  1,500 and 2,000) are two sprites each, in the scorer's palette.
+
 ## Quirks and bugs
 
 - **The reset button never keeps the scores.** `reset` compares

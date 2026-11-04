@@ -166,3 +166,26 @@ the fish once in 9,000 frames, so it was given a controller that skims
 the water. In the browser, the ghost first never appeared, because a
 run cut short by a restart was thrown away; a restart now ends the run
 as a fall does.
+
+## 4 November 2026 — the Graphics tab
+
+A Graphics tab, added with the site's newer guidance that every game
+with things that move shows every picture they are drawn with. Each
+card sets up one actor or one effect in a memory of its own and runs
+the Play tab's routines a frame at a time; `test_graphics.js` runs every
+card a second time with each routine replaced by the game's own bytes
+on the kit's 6502, and the two agree frame for frame.
+
+Which pictures to draw came first from playing fourteen games on the
+port, recording every balloon count, action and step each actor reached.
+That missed the burst poses from standing, skidding and turning
+(actions 8 to 10), which a hit on the ground gives and the games never
+did, so the test takes its list from the code's ranges instead. A
+bubble card first drew nothing: running `actor_animate` on it turned
+its action to 1, which bursts it, and `actors_update` never animates a
+bubble. Player 2's flap first showed gliding, because the page's
+controller answered `$4016` only and player 2 is read from `$4017`.
+The pumping card started from phase 1's numbers, where the four steps
+are 9 frames apart and two of the bird's pumping pictures never
+show; it starts from phase 3's.
+
