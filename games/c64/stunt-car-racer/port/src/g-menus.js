@@ -336,7 +336,7 @@ G.menus = P => {
   // MULTI_RESULTS ($3092): the table of a game for several: after a race (C39C clear) the race's
   // results; at the end of a track's pair of races ($C39C and $31A5 set) the bonus points
   P.MULTI_RESULTS = r => {
-    let q = P.s_E9A3({ x: r.x, y: r.y });
+    let q = P.SORT_DIVISION({ x: r.x, y: r.y });
     M[0x3845] = 0x10; M[0x321D] = 0x0E;
     let j3153 = false;
     if ((M[0xC39C] & M[0x31A5]) & 0x80) {
@@ -513,7 +513,7 @@ G.menus = P => {
   // RESULTS_TABLE ($3626): the division's table after a race (or MULTI_RESULTS for several), its
   // rows from $50 to $8A, then a wait for the fire button
   P.RESULTS_TABLE = function* (r) {
-    let q = P.s_E8C2({ x: r.x, y: r.y });
+    let q = P.DIVISION_RANGE({ x: r.x, y: r.y });
     M[0xC7] = M[0x50];
     if (M[0x31A1]) { P.MULTI_RESULTS(q); return yield* fireThenRows(); }
     q = P.DIVISION_PANEL({});
@@ -595,7 +595,7 @@ G.menus = P => {
   // PAIRING ($3738): at panel line A, the race's two drivers ($C771 and $C772), " V " between
   P.PAIRING = r => {
     M[0x19] = r.a & 255;
-    P.s_E8E5({ a: r.a, x: r.x, y: r.y });
+    P.RACE_PAIR({ a: r.a, x: r.x, y: r.y });
     P.LINE_START({});
     let q = P.DRIVER_NAME({ x: M[0xC771] });
     P.PRINT_STRING({ x: 0x28, y: q.y });
@@ -616,7 +616,7 @@ G.menus = P => {
   // division the player is in ($381D by place) and $C719 10 at the top
   P.CHANGES = r => {
     for (let x = 0x0B; x >= 0; x--) M[0xC70C + x] = M[0xC758 + x];
-    P.s_E8C2({});
+    P.DIVISION_RANGE({});
     P.PRINT_AT({ x: 0x0F, y: 0x0C });
     P.PRINT_STRING({ x: 0xD7, y: 0x0C });
     M[0x19] = 1;
@@ -639,7 +639,7 @@ G.menus = P => {
     }
     M[0xC360] = 2;
     do {
-      P.s_E8C2({});
+      P.DIVISION_RANGE({});
       const y = M[0x50];
       const t = M[0xC70C + y];
       M[0xC70C + y] = M[0xC70B + y];

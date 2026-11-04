@@ -188,7 +188,7 @@ G.physics = P => {
     M[0x014F] = (M[0x77] - M[0x014D] - (t < 0 ? 1 : 0)) & 255;
     M[0x6A] = M[0x0161] | M[0x0160];
     if (!M[0x6A] && !M[0x2F]) holdOnSlope();
-    P.s_EC11({});
+    P.CRANE({});
     M[0xE4] = M[0x0175];
     P.OPP_PUSH({});
     if (M[0xC3BC]) P.s_CF68({ a: 3 });

@@ -276,7 +276,7 @@ G.opponent = P => {
   // OPP_DROP ($1EE2): the opponent lowered onto the track ($E4DA): its three wheels' heights set to
   // the road's plus $68 to $E7 at random
   P.OPP_DROP = r => {
-    P.s_E4DA({});
+    P.OPP_CORNERS({});
     M[0x14] = ((P.RANDOM({}).a & 0x7F) + 0x68) & 255;
     for (let x = 3; x >= 0; x--) {
       const t = M[0x07EC + x] + M[0x14];

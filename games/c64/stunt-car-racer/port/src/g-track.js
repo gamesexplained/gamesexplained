@@ -40,7 +40,7 @@ G.track = P => {
     }
     if (piece < 0) {
       M[0x6B] = 0xC0;
-      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.s_E4DA({}); }
+      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.OPP_CORNERS({}); }
     } else {
       M[0x2E] = piece;
       P.s_9A38({}); P.s_F2B7({});
@@ -48,13 +48,13 @@ G.track = P => {
       if (!(M[0x6B] & 0x40)) M[0xC309] = M[0x2E];
       P.s_9C79({});
       M[0xCC] = 0x80; M[0xCD] = 0x80;
-      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.s_F585({}); P.OPPONENT_LINE({}); P.s_E4DA({}); }
+      if (M[0xC76C] & 0x80) { P.OPPONENT_MOVE({}); P.s_F585({}); P.OPPONENT_LINE({}); P.OPP_CORNERS({}); }
       M[0x2E] = M[0xC374];
       M[0xD0] = 0;
       if (M[0x8E] & 0x80) { P.PIECE_AHEAD({}); M[0x8E] = 0; }
       if (!M[0x8E]) {
         const k = P.PIECE_BEHIND({});
-        if ((k.x & 255) === M[0xA6]) P.s_E195({});
+        if ((k.x & 255) === M[0xA6]) P.OPP_DRAW_HERE({});
         P.PIECE_AHEAD({});
       }
       P.DRAW_PIECE({}); P.CLIP_NEAR({}); P.POINTS_TO_LINES({});
@@ -260,7 +260,7 @@ G.track = P => {
       M[0xA0] = 1;
       const x = M[0xD2] >= 0x28 ? 0 : ((M[0xC6] ^ M[0xD8]) >> 1) & 1;
       P.s_FC01({ x });
-      if (((M[0xC6] >> 1) - 1 & 255) === M[0xA3] && M[0xA6] === M[0x2E]) P.s_E195({});
+      if (((M[0xC6] >> 1) - 1 & 255) === M[0xA3] && M[0xA6] === M[0x2E]) P.OPP_DRAW_HERE({});
       do {
         const k = M[0xC6];
         if (!(M[0xA330 + k] & 0x80)) {
@@ -272,7 +272,7 @@ G.track = P => {
             else { P.TO_COPY({}); P.ALONG_SIDE({}); }
           }
           M[0xCC + M[0xA0]] = M[0xC6];
-          if (M[0xC366] & 0x80) P.s_E1B1({});
+          if (M[0xC366] & 0x80) P.DRAW_OPPONENT({});
         }
         M[0xC6] ^= 1;
       } while (!(--M[0xA0] & 0x80));
@@ -310,8 +310,8 @@ G.track = P => {
       if (clip) {
         M[0xC6] = x; M[0xC7] = x & 1;
         M[0xA32E + x] = M[0xC396 + M[0xC7]];
-        P.s_E808({ a: M[0x8E], x, y: M[0xC7] });
-        P.s_E631({ x: M[0xC7], y: 4, a: M[0x8D] });
+        P.OPP_SEGMENT_POINTS({ a: M[0x8E], x, y: M[0xC7] });
+        P.OPP_ALONG_AT({ x: M[0xC7], y: 4, a: M[0x8D] });
         x = M[0xC6];
         M[0x15] = M[0x8D];
         let t = M[0x8040 + x] - M[0x803E + x]; M[0x14] = t & 255;
@@ -319,7 +319,7 @@ G.track = P => {
         M[0x15] = o.a;
         t = M[0x803E + x] + M[0x14]; M[0x803E + x] = t & 255;
         M[0xA32E + x] = (M[0xA32E + x] + M[0x15] + (t >> 8)) & 255;
-        P.s_E641({ x: (x - 2) & 255, y: 4, a: M[0xA32E + x] });
+        P.PROJECT_CORNER({ x: (x - 2) & 255, y: 4, a: M[0xA32E + x] });
         x = M[0xC6];
       }
       x = (x + 1) & 255;

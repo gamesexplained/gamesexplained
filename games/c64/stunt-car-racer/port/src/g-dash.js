@@ -281,7 +281,7 @@ G.dash = P => {
       } while (--M[0x08]);
     }
     M[0xC355] = 0x80;
-    return { x: r.x };
+    return { a: r.x & 255, x: r.x };
   };
 
   // COLON ($1411): the two dots between the minutes and the seconds, bit 7 of the bytes 15 and 6

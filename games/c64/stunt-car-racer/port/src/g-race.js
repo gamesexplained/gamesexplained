@@ -19,7 +19,7 @@ G.race = P => {
     P.ALL_RAM({});
     for (let x = 0; x < 256; x++) M[0xAE00 + x] = M[0xDC00 + x];
     P.IO_BACK({});
-    P.s_E85B({});
+    P.NEW_LEAGUE({});
     yield* P.RACE_VIEW_SCREEN({});
     yield* P.CHOOSE_PLAYERS({});
     yield* P.LEAGUE_TABLE({});
@@ -54,7 +54,7 @@ G.race = P => {
         at = 0x3B85;
       } else if (at === 0x3B85) {
         M[0xC360] = M[0xC718];
-        P.s_E8E5({});
+        P.RACE_PAIR({});
         at = 0x3BA7;
         let y = M[0xC772];
         if (!(M[0xC304] & 0x80)) {
@@ -73,7 +73,7 @@ G.race = P => {
         yield* P.RACE({});
         P.s_9846({ a: 0 });
         P.s_9319({ a: 0 });
-        P.s_E87F({});
+        P.RACE_OTHERS({});
         yield* P.RACE_VIEW_SCREEN({});
         if (M[0xC305]) { yield* P.NEXT_RACE({}); M[0xC305] = 0; }
         yield* P.RACE_DONE({});
@@ -81,7 +81,7 @@ G.race = P => {
         if (M[0x31A1]) yield* P.s_91C3({});
         at = 0x3BF8;
       } else if (at === 0x3BA7) {
-        P.s_E87F({});
+        P.RACE_OTHERS({});
         at = 0x3BF8;
       } else {
         M[0x31A6] = (M[0x31A6] + 1) & 255;
@@ -120,7 +120,7 @@ G.race = P => {
     P.FRAME({});
     P.TRACK_TITLE({});
     P.CLEAR_BARS({});
-    P.s_EA34({ x: M[0xC77D] });
+    P.BUILD_TRACK({ x: M[0xC77D] });
     P.CMD_DRAWBRIDGE({});
     let q = P.s_F386({});
     for (;;) {
@@ -178,7 +178,7 @@ G.race = P => {
         M[0xC30C] = (M[0xC30C] - 1) & 255;
         yield { cp: 0x3D08 }; P.CONTROLS({});
         yield { cp: 0x3D0B }; P.STEP({});
-        yield { cp: 0x3D0E }; P.s_E104({});
+        yield { cp: 0x3D0E }; P.ENGINE_SOUND({});
         yield { cp: 0x3D11 }; P.DRAW_VIEW({});
         yield { cp: 0x3D14 }; P.DUST({});
         yield { cp: 0x3D17 }; P.WHEEL_SPRITES({});
@@ -205,7 +205,7 @@ G.race = P => {
           M[0xC368] = (M[0xC368] - 1) & 255;
           if (M[0xC368] & 0x80) {
             M[0xC368] = (M[0xC368] + 1) & 255;
-            if (!M[0x6C]) { P.s_E0F9({}); x = M[0xC309]; continue start; }
+            if (!M[0x6C]) { P.STOP_EFFECTS({}); x = M[0xC309]; continue start; }
           }
         }
         if (M[0x2F] || (!(M[0x6B] & 0x80) && M[0x6A])) {
@@ -218,7 +218,7 @@ G.race = P => {
     yield* P.BORDER_BLANK({ a: 0 });
     M[0x3DF8] = 0;
     P.wr(0xD015, 0);
-    P.s_E0F9({});
+    P.STOP_EFFECTS({});
     let to3DE7 = true;
     if (M[0xC76C] & 0x80) {
       if (!M[0x31A1]) to3DE7 = false;
@@ -258,7 +258,7 @@ G.race = P => {
     P.CLEAR_CLOCK({ x: (M[0x31A4] + 0x0C) & 255 });
     P.ROLL_TABLES({});
     M[0x33] = 0xA0; M[0x3C] = 0x78;
-    P.s_E0F9({});
+    P.STOP_EFFECTS({});
     M[0xC354] = 4;
     P.LOAD_RANDOM({ y: 9 });
     M[0x03] = 0x3B;
@@ -290,7 +290,7 @@ G.race = P => {
   P.PAUSE = function* (r) {
     if (!(M[0xC306] & 0x80)) return { a: M[0xC306] };
     if (!P.KEY_PRESSED({ x: 0x0D }).z) return { a: 0 };
-    P.s_E0F9({});
+    P.STOP_EFFECTS({});
     M[0x10] = 0; M[0x11] = 0;
     const c355 = M[0xC355], start = M[0x1327], groups = M[0x1328];
     P.SHOW_MESSAGE({ y: 0x4C, a: 2 });
@@ -304,7 +304,7 @@ G.race = P => {
   P.START_SOUNDS = r => {
     P.s_CF68({ a: 6 });
     P.s_CF68({ a: 5 });
-    P.s_E104({});
+    P.ENGINE_SOUND({});
     P.wr(0xD404, 0x41);
     P.wr(0xD412, 0x41);
     P.wr(0xD418, 0xF5);
