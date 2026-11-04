@@ -139,7 +139,7 @@ G.dash = P => {
       t = a + M[0xC3C5];
       a = ((t >> 1) & 0x7F) | (t > 255 ? 0x80 : 0);
       M[0xC3CB] = a >> 1;
-      P.s_1B88({});
+      P.CRACK({});
     }
     let e;
     if (M[0xC302]) {
@@ -421,11 +421,11 @@ G.dash = P => {
     }
     return { x: 0xFF, a: 0 };
   };
-  // SAVE_ZP_02 ($162C): $02-$06 kept at $1648
-  P.SAVE_ZP_02 = r => { for (let x = 4; x >= 0; x--) M[0x1648 + x] = M[0x02 + x]; return { x: 0xFF }; };
-  // LOAD_ZP_02 ($1637): $02-$06 set from the five bytes ending at $1643 + Y (Y 4 the defaults, 9
-  // those SAVE_ZP_02 kept)
-  P.LOAD_ZP_02 = r => {
+  // SAVE_RANDOM ($162C): $02-$06 kept at $1648
+  P.SAVE_RANDOM = r => { for (let x = 4; x >= 0; x--) M[0x1648 + x] = M[0x02 + x]; return { x: 0xFF }; };
+  // LOAD_RANDOM ($1637): $02-$06 set from the five bytes ending at $1643 + Y (Y 4 the defaults, 9
+  // those SAVE_RANDOM kept)
+  P.LOAD_RANDOM = r => {
     let y = r.y & 255;
     for (let x = 4; x >= 0; x--) { M[0x02 + x] = M[0x1643 + y]; y = (y - 1) & 255; }
     return { x: 0xFF, y };

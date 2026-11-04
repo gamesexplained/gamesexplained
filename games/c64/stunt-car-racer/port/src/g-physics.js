@@ -25,16 +25,16 @@ G.physics = P => {
     P.FLIP_IF_READY();
     P.s_9CBA({}); P.s_A132({});
     P.FLIP_IF_READY();
-    P.s_CC31({}); P.s_2D89({}); P.s_CC84({}); P.WHEELS_ON_ROAD({});
+    P.s_CC31({}); P.ENGINE_NOTE({}); P.s_CC84({}); P.WHEELS_ON_ROAD({});
     P.FLIP_IF_READY();
     if (M[0xC307]) {
-      P.SPRINGS({}); P.s_2DC2({}); P.s_CCB3({});
+      P.SPRINGS({}); P.STEERING({}); P.s_CCB3({});
       P.FLIP_IF_READY();
       P.DRAG({}); P.SPIN_FORCES({}); P.ADD_SPIN({}); P.s_CD05({});
       P.FLIP_IF_READY();
     }
-    P.ADD_FORCES({}); P.MOVE_CAR({}); P.s_2726({});
-    if (M[0xC37A]) P.s_3F70({});
+    P.ADD_FORCES({}); P.MOVE_CAR({}); P.ROLL_TABLES({});
+    if (M[0xC37A]) P.FLIP_DONE({});
     return {};
   };
 
@@ -190,7 +190,7 @@ G.physics = P => {
     if (!M[0x6A] && !M[0x2F]) holdOnSlope();
     P.s_EC11({});
     M[0xE4] = M[0x0175];
-    P.s_2176({});
+    P.OPP_PUSH({});
     if (M[0xC3BC]) P.s_CF68({ a: 3 });
     return {};
   };

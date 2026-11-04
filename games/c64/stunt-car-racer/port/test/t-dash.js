@@ -55,6 +55,6 @@ T('SWERVE', { setup: (M, c, rnd) => {
   M[0xC9] = rnd(4) ? 1 : 0; M[0xC30F] = rnd(2) ? rnd(17) : 0; M[0xC358] = rnd(2) ? 8 : 0x10;
   M[0xC353] = byte(rnd); M[0xC773] = rnd(32); M[0xC36A] = rnd(2) ? 0 : 0x80; M[0xB2] = rnd(2) ? 0 : byte(rnd); M[0xA4] = byte(rnd);
 } });
-T('RESET_SEASON'); T('SAVE_ZP_02');
-T('LOAD_ZP_02', { setup: (M, c, rnd) => ({ y: rnd(2) ? 4 : 9 }) });
+T('RESET_SEASON'); T('SAVE_RANDOM');
+T('LOAD_RANDOM', { setup: (M, c, rnd) => ({ y: rnd(2) ? 4 : 9 }) });
 process.exitCode = f ? 1 : 0;

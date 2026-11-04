@@ -14,17 +14,17 @@ G.dispatch = P => {
   // DISPATCH ($8725): the command in A, its argument in X (and Y)
   P.DISPATCH = r => {
     switch (r.a & 255) {
-      case 0x3C: return P.ROAD_EDGE_TABLE(r);
-      case 0x3D: return P.HORIZON_LIMITS(r);
-      case 0x3E: return P.FILL_COLUMNS(r);
-      case 0x3F: return P.CRANE_CABLES(r);
-      case 0x40: return P.DAMAGE_HOLE(r);
-      case 0x41: return P.MARK_ROWS(r);
+      case 0x3C: return P.DRAWBRIDGE(r);
+      case 0x3D: return P.COLUMN_LIMITS(r);
+      case 0x3E: return P.FILL_ABOVE_EDGES(r);
+      case 0x3F: return P.CRANE_CHAINS(r);
+      case 0x40: return P.FRONT_WHEEL(r);
+      case 0x41: return P.MARK_COLUMNS(r);
       case 0x42: return P.FILL_SPANS(r);
-      case 0x43: return P.CRACK_BAR(r);
-      case 0x44: return P.SEGMENT_DISTANCES(r);
+      case 0x43: return P.SPEED_BAR(r);
+      case 0x44: return P.PIECE_TABLE(r);
       case 0x45: return P.CLEAR_VIEW(r);
-      case 0x46: return P.DRAW_SPRITE_COLUMNS(r);
+      case 0x46: return P.SET_ROW_COLOURS(r);
       case 0x47: return P.DISK_COMMAND(r);
       case 0x01: M[0xFE] = 1; return P.VIDEO_HIRES(r);
       case 0x02: M[0xFE] = 2; return P.VIDEO_MULTICOLOUR(r);
