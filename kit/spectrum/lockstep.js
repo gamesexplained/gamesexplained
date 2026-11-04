@@ -87,6 +87,10 @@
 //   port's own { tstates } for the stretch. A stretch that ends at a HALT's exit (halt) holds the
 //   halted T-states. These are the rows of the pacing fit. A port that counts more itself (pixels,
 //   rows) reads and clears its counters here, and keeps its interrupts' work out of them.
+// - entry: the address the program starts at, when the machine is there (a loader's hand-over).
+//   With it, timing is also called for the stretch from there to the first checkpoint, from:
+//   entry, so that a start-up the page runs has a row of its own; without it that stretch is not
+//   timed, and its routines' costs come only from the stretches after.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
 // - irqBytes: addresses of RAM an interrupt writes and the main program reads (a frame counter, a
 //   key the handler scanned), for the race replay cannot give (irqs above). The port reads each
@@ -319,7 +323,7 @@ class Lockstep {
     this.tstates0 = m.cpu.tstates;
     this.passes = 0; this.syncs = 0; this.last = -1; this.lastAt = false; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
     this.halted = null; this.stopped = false; this.saved = null; this.res = null;
-    this.from = -1; this.t0 = m.cpu.tstates; this.it0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
+    this.from = o.entry === undefined ? -1 : o.entry & 0xFFFF; this.t0 = m.cpu.tstates; this.it0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
   }
 
   // --- the port's ULA ---

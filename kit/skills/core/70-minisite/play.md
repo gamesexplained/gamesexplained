@@ -114,8 +114,12 @@ demonstration.
   it twice and the page runs late. Check the
   fit on sessions it was not fitted on, and on every kind of play the
   page offers: a scene the fit never saw can run fast by a routine it
-  never costed. Then check the pace itself: passes in the same frames from
-  the same moment, on the machine and on the page. Count the page's pass
+  never costed. The start is such a scene: where the page runs the port
+  from the game's own start (a loader's hand-over, a cold start), give
+  the lockstep that address as `entry`, or the stretch to the first
+  checkpoint has no row and its routines cost the page nothing. Then
+  check the pace itself: passes in the same frames from the same
+  moment, on the machine and on the page. Count the page's pass
   once its clock reaches the checkpoint, the stretch that leads there
   paid, not when the port yields it: the yield comes before the clock
   moves, so a long stretch (a room drawn) counts the pass early by its

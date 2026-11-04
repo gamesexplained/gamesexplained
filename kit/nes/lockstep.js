@@ -80,6 +80,10 @@
 //   functions in between, the handler not counted (P's functions are wrapped to count them when
 //   the lockstep is made); the port's bare yields; and the port's own { cycles } for the stretch.
 //   These are the rows of the pacing fit.
+// - entry: the address the program starts at, when the machine is there (a loader's hand-over).
+//   With it, timing is also called for the stretch from there to the first checkpoint, from:
+//   entry, so that a start-up the page runs has a row of its own; without it that stretch is not
+//   timed, and its routines' costs come only from the stretches after.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
 // - irqBytes: addresses of RAM the NMI handler writes and the main program reads in the middle of
 //   a stretch (a frame counter read for a random seed), for the race replay cannot give. The port
@@ -260,7 +264,9 @@ class Lockstep {
     this.cps.add(this.passAt);
     this.nmis = o.nmis || {};
     this.maxFrames = o.maxFrames || 500;
-    this.hooks = o.hooks || {};
+    // a copy: given the machine's own hooks, the lockstep would add its checkpoints to them and
+    // hand those to the copies irqBytes runs on
+    this.hooks = Object.assign({}, o.hooks);
     this.runs = ranges(o);
     try { this.chipList = chipNames(o); } catch (e) { throw new Error('Lockstep: ' + e.message); }
     P.M.set(m.ram);
@@ -293,7 +299,7 @@ class Lockstep {
     this.lastFrames = m.frames;
     this.passes = 0; this.syncs = 0; this.last = -1; this.lastAt = false; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
     this.halted = null; this.stopped = false; this.saved = null; this.res = null;
-    this.from = -1; this.c0 = m.cpu.cycles; this.ic0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
+    this.from = o.entry === undefined ? -1 : o.entry & 0xFFFF; this.c0 = m.cpu.cycles; this.ic0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
   }
 
   makeIO() {
