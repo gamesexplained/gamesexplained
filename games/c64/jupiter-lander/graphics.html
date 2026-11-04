@@ -1,0 +1,244 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jupiter Lander — graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+/* Page-local additions. Tokens and the base look come from site.css. */
+.site .hero{padding:52px 24px 30px;background:radial-gradient(ellipse 900px 340px at 50% -14%,rgba(143,127,224,.13),transparent 70%)}
+.site .hero .eyebrow{margin-bottom:18px}
+.site section{padding:44px 0;border-bottom:1px solid var(--line-soft)}
+.site section:last-of-type{border-bottom:none}
+.site .fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+.site h2{font-size:21px;margin:0 0 12px}
+.site .lede{color:var(--ink-soft);max-width:64ch;margin:0 0 26px}
+.site p{max-width:70ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.screenwrap{background:#000;border-radius:6px;display:block;width:fit-content;max-width:100%;line-height:0;overflow:hidden}
+canvas{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+.cap code{font-size:1em}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.col{flex:1 1 260px;min-width:0}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--violet)}
+button.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+.stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);line-height:1.8}
+.stat b{color:var(--amber);font-weight:500}
+.warn{border-left:3px solid var(--amber);padding:2px 0 2px 16px;color:var(--ink-soft);margin:18px 0}
+</style>
+<body class="site">
+<!-- tabs -->
+
+<header class="hero">
+  <p class="eyebrow">{{year}} &middot; {{publisher}}</p>
+  <h1>Jupiter Lander</h1>
+  <p class="sub">A lander, two flames, two jets and a fireball, each one moving here at the speed the game moves it.</p>
+</header>
+
+<main class="wrap">
+
+<section>
+  <p class="fig">01 &middot; The lander</p>
+  <h2>The flames are sprites of their own</h2>
+  <p class="lede">The lander is sprite 1. The main flame is sprite 2 and a side jet is sprite 3, and
+  <code>place_sprites</code> (<code>$E3F9</code>) puts all three at the same position, so the flames
+  are stacked on the hull rather than placed beside it. A flame's sprite is switched on only while its
+  thruster is held. The main flame swaps between shapes <code>$F8</code> and <code>$F9</code> on every
+  pass of the game, about 29 times a second, and that swap is the flicker.</p>
+
+  <div class="plate">
+    <div class="row">
+      <div class="screenwrap"><canvas id="stackCv" width="256" height="216"></canvas></div>
+      <div class="col">
+        <div class="ctl">
+          <button id="kF1" class="on">F1: main thruster</button>
+          <button id="kA">A: left jet</button>
+          <button id="kD">D: right jet</button>
+        </div>
+        <div class="ctl">
+          <button id="vWide" class="on">Wide view</button>
+          <button id="vClose">Close-up</button>
+        </div>
+        <div class="ctl jl-speed">
+          <button data-speed="1" class="on">The game's speed</button>
+          <button data-speed="0.25">A quarter</button>
+        </div>
+        <div class="stat" id="stackStat"></div>
+      </div>
+    </div>
+    <p class="cap">Sprite&nbsp;1 is cyan, sprite&nbsp;2 red and sprite&nbsp;3 orange, and the lowest
+    number is in front. A pushes the lander right and D pushes it left: each key names the jet that
+    fires, <code>$FA</code> on the left or <code>$FB</code> on the right, and when both are held D wins.
+    In a close-up, <code>close_view_sprites</code> (<code>$E3A1</code>) writes <code>$0E</code> to
+    <code>$D017</code> and <code>$D01D</code>, which doubles sprites 1 to 3 both ways; that is all the
+    zoom does to the lander. Shapes <code>$FC</code> to <code>$FF</code> are empty.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 &middot; The explosion</p>
+  <h2>The lander turns into its own fireball</h2>
+  <p class="lede">Hitting rock does not swap the ship for a picture of an explosion.
+  <code>explode</code> (<code>$E44B</code>) switches the flames off and adds one to sprite 1's pointer
+  seven times, from the lander at <code>$F0</code> to <code>$F7</code>. Between pictures,
+  <code>flash_explosion_colour</code> (<code>$E4F3</code>) moves the sprite's colour on by two, four
+  times, three delay units apart. Each picture shows four colours, and the fireball runs through the
+  eight odd-numbered colours of the palette. A colour lasts about 33&nbsp;ms and a picture about
+  131&nbsp;ms, so the explosion is over in 0.92 seconds. Then the screen stays empty for 200 delay units,
+  about two seconds, before the next lander.</p>
+
+  <div class="plate">
+    <div class="row">
+      <div class="screenwrap"><canvas id="boomCv" width="256" height="216"></canvas></div>
+      <div class="col">
+        <div class="ctl">
+          <button id="bWide" class="on">Wide view</button>
+          <button id="bClose">Close-up</button>
+        </div>
+        <div class="ctl jl-speed">
+          <button data-speed="1" class="on">The game's speed</button>
+          <button data-speed="0.25">A quarter</button>
+        </div>
+        <div class="stat" id="boomStat"></div>
+      </div>
+    </div>
+    <p class="cap">The lander is shown for a moment before each explosion, and most of the empty pause
+    after it is left out.</p>
+  </div>
+  <div id="loadErr"></div>
+</section>
+
+</main>
+
+<script src="../../lib/c64.js"></script>
+<script>
+/* jl-gfx */
+// The rules the two cards follow, from the game's code. Times are in cycles of the PAL machine.
+const JL_CLOCK = 985248;
+// One pass of main_loop ($E12C): three delay units of busy-waiting plus the pass's own work, with
+// the video chip's stolen cycles, about 34.5 ms.
+const JL_PASS = 34000;
+// One colour step of flash_explosion_colour ($E4F3): three delay units and a few instructions.
+const JL_FLASH = 32300;
+const JL_BASE = 0x3C00;                    // sprite shape $F0; shape n is at JL_BASE + (n - $F0) * 64
+const JL_COLOUR = { 1: 3, 2: 2, 3: 8 };     // cyan lander, red flame, orange jet ($D028-$D02A)
+// What place_sprites ($E3F9) switches on for the keys held: up is F1 or fire, side is
+// thrust_side (1 for A or the stick left, 2 for D or the stick right), phase is flame_phase.
+// Sprites are listed back to front, so the lander, sprite 1, comes last and is drawn on top.
+function jlStack(up, side, phase, close) {
+  const s = [];
+  let x = 1;
+  if (side) { s.push({ n: 3, ptr: 0xF9 + side, colour: JL_COLOUR[3] }); x += 4; }
+  if (up) { s.push({ n: 2, ptr: 0xF8 + phase, colour: JL_COLOUR[2] }); x += 2; }
+  s.push({ n: 1, ptr: 0xF0, colour: JL_COLOUR[1] });
+  return { sprites: s, enable: x * 2, expand: close ? 0x0E : 0 };
+}
+// The explosion as explode ($E44B) and flash_explosion_colour play it: seven pictures, each held
+// for four colour steps, the colour moving on by two (mod 16) at each step, from the lander's cyan.
+function jlExplosion() {
+  const steps = [];
+  let colour = JL_COLOUR[1];
+  for (let ptr = 0xF1; ptr <= 0xF7; ptr++)
+    for (let k = 0; k < 4; k++) { colour = (colour + 2) & 15; steps.push({ ptr, colour }); }
+  return steps;
+}
+// end of jl-gfx
+
+(async function () {
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown',
+    'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const hex = (n, w = 2) => C64.hex(n, w);
+  let G;
+  try { G = await C64.load('listing.json'); } catch (e) {
+    document.getElementById('loadErr').innerHTML =
+      '<p class="warn">The shapes are drawn from <code>listing.json</code> and it did not load. ' +
+      'Open this page from a web server rather than from disk.</p>';
+    return;
+  }
+  const shape = (ptr) => G.ram.subarray(JL_BASE + (ptr - 0xF0) * 64, JL_BASE + (ptr - 0xF0) * 64 + 63);
+  const S = 4, W = 64, H = 54;               // canvas pixels a C64 pixel; the box in C64 pixels
+  // Draws sprites at one place, centred in the box at either size.
+  function paint(cv, list, close) {
+    const g = cv.getContext('2d'), e = close ? 2 : 1;
+    g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height);
+    const x = (W - 24 * e) / 2 * S, y = (H - 21 * e) / 2 * S;
+    for (const s of list) C64.drawSprite(g, shape(s.ptr), x, y, S, C64.PAL[s.colour], e, e);
+  }
+
+  const speed = { v: 1 };
+  for (const bar of document.querySelectorAll('.jl-speed')) bar.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    speed.v = +b.dataset.speed;
+    for (const x of document.querySelectorAll('.jl-speed button')) x.classList.toggle('on', x.dataset.speed === b.dataset.speed);
+  });
+  const ms = (cycles) => cycles / JL_CLOCK * 1000;
+
+  // ---- 01: the lander and its flames
+  const st = { up: 1, side: 0, close: false, phase: 0, t: 0 };
+  const stackCv = document.getElementById('stackCv');
+  function drawStack() {
+    const r = jlStack(st.up, st.side, st.phase, st.close);
+    paint(stackCv, r.sprites, st.close);
+    const ptrs = r.sprites.slice().reverse().map((s) => 'sprite ' + s.n + ' <b>' + hex(s.ptr) + '</b>').join(', ');
+    document.getElementById('stackStat').innerHTML =
+      '<code>$D015</code> = <b>' + hex(r.enable) + '</b>, <code>$D017</code> = <code>$D01D</code> = <b>' + hex(r.expand) + '</b><br>' +
+      ptrs + '<br>flame_phase <b>' + st.phase + '</b>';
+  }
+  const keys = { kF1: () => { st.up ^= 1; }, kA: () => { st.side = st.side === 1 ? 0 : 1; }, kD: () => { st.side = st.side === 2 ? 0 : 2; } };
+  for (const id in keys) document.getElementById(id).addEventListener('click', () => {
+    keys[id]();
+    document.getElementById('kF1').classList.toggle('on', !!st.up);
+    document.getElementById('kA').classList.toggle('on', st.side === 1);
+    document.getElementById('kD').classList.toggle('on', st.side === 2);
+    drawStack();
+  });
+  function views(wide, close, set) {
+    const a = document.getElementById(wide), b = document.getElementById(close);
+    a.addEventListener('click', () => { set(false); a.classList.add('on'); b.classList.remove('on'); });
+    b.addEventListener('click', () => { set(true); b.classList.add('on'); a.classList.remove('on'); });
+  }
+  views('vWide', 'vClose', (c) => { st.close = c; drawStack(); });
+
+  // ---- 02: the explosion
+  const BOOM = jlExplosion(), BEFORE = 700, AFTER = 1000;
+  const bt = { close: false, t: 0 };
+  const boomCv = document.getElementById('boomCv');
+  function boomAt(t) {                       // what sprite 1 shows t ms into the loop
+    if (t < BEFORE) return { ptr: 0xF0, colour: JL_COLOUR[1], i: -1 };
+    const i = Math.floor((t - BEFORE) / ms(JL_FLASH));
+    return i < BOOM.length ? Object.assign({ i }, BOOM[i]) : null;
+  }
+  const loopMs = () => BEFORE + BOOM.length * ms(JL_FLASH) + AFTER;
+  let shown = '';
+  function drawBoom(force) {
+    const b = boomAt(bt.t), key = b ? b.ptr + ':' + b.colour : 'off';
+    if (key === shown && !force) return;
+    shown = key;
+    paint(boomCv, b ? [{ ptr: b.ptr, colour: b.colour }] : [], bt.close);
+    document.getElementById('boomStat').innerHTML = !b ? 'sprites off, <code>$D015</code> = <b>$00</b>'
+      : b.i < 0 ? 'the lander, <b>$F0</b>, flying'
+      : 'picture <b>' + hex(b.ptr) + '</b>, ' + (b.ptr - 0xF0) + ' of 7<br>colour <b>' + b.colour + '</b>, ' + NAMES[b.colour] +
+        '<br>step ' + (b.i % 4 + 1) + ' of 4 for this picture';
+  }
+  views('bWide', 'bClose', (c) => { bt.close = c; drawBoom(true); });
+
+  drawStack(); drawBoom(true);
+  let last = 0;
+  function tick(now) {
+    const dt = last ? Math.min(now - last, 100) * speed.v : 0; last = now;
+    st.t += dt;
+    let flipped = false;
+    while (st.t >= ms(JL_PASS)) { st.t -= ms(JL_PASS); st.phase ^= 1; flipped = true; }
+    if (flipped) drawStack();
+    bt.t = (bt.t + dt) % loopMs();
+    drawBoom(false);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
