@@ -70,3 +70,11 @@ each frame (`rt.onFrame`) and draws the frame on screen. A tapped arrow
 key moved the deploy cursor four squares because the page held each key
 for 16 reads and the cursor loop reads four times a move; the page now
 lets a key go once the game has read it and a frame has been shown.
+
+## Follow-up: each tile shown once (4 November 2026)
+
+The Graphics tab's last section drew every tile of the scenario, the
+units, objects, blobs, bodies, blows and hits again after the sections
+above had shown them. Under the minisite skill's rule that a shape is
+shown once, it now draws only the tiles no section above draws: the
+map's own squares, and those no table names, outlined in red.
