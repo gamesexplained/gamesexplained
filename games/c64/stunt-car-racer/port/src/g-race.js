@@ -27,7 +27,7 @@ G.race = P => {
     for (let x = 0; x < 256; x++) M[0xAE00 + x] = M[0xDC00 + x];
     P.IO_BACK({});
     P.NEW_LEAGUE({});
-    yield* P.RACE_VIEW_SCREEN({});
+    yield* P.MENU_BACKDROP({});
     yield* P.CHOOSE_PLAYERS({});
     yield* P.LEAGUE_TABLE({});
     P.SAVE_RANDOM({});
@@ -38,7 +38,7 @@ G.race = P => {
         yield* P.RACE_SETUP({});
         yield* P.PANEL_SCREEN({});
         yield* P.RACE({});
-        yield* P.RACE_VIEW_SCREEN({});
+        yield* P.MENU_BACKDROP({});
         continue;
       }
       P.NEW_DRIVERS({});
@@ -80,7 +80,7 @@ G.race = P => {
         P.PLAYER_KEYS({ a: 0 });
         P.TRACK_RECORDS({ a: 0 });
         P.RACE_OTHERS({});
-        yield* P.RACE_VIEW_SCREEN({});
+        yield* P.MENU_BACKDROP({});
         if (M[0xC305]) { yield* P.NEXT_RACE({}); M[0xC305] = 0; }
         yield* P.RACE_DONE({});
         yield* P.RESULTS_TABLE({});

@@ -248,7 +248,7 @@ G.records = P => {
     P.wr(0xD011, P.rd(0xD011) | 0x10);
     q = yield* P.WAIT_FIRE({});
     q = P.SCREEN_ON_NOW(q);
-    return yield* P.RACE_VIEW_SCREEN(q);
+    return yield* P.MENU_BACKDROP(q);
   };
 
   // PRINT_TIME ($99FF): clock X as minutes, seconds and hundredths (M:SS.HH), or seven dashes when

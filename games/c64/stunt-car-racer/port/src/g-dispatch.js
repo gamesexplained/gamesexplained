@@ -33,7 +33,7 @@ G.dispatch = P => {
       case 0x20: M[0x85D0] = r.x & 255; return {};
       case 0x81: return P.KEY_SCAN(r);
       case 0x15: return P.CUT_EFFECT(r);
-      case 0x32: return P.UNPACK_DASHBOARD(r);
+      case 0x32: return P.UNPACK_TITLE(r);
       case 0x55: return P.FILL_ROWS(r);
       case 0x34: return P.SAVE_RESTORE_SCREEN(r);
     }
@@ -264,10 +264,10 @@ G.dispatch = P => {
     return { a: 0, y, z: 1, n: 0 };
   };
 
-  // UNPACK_DASHBOARD ($87C4): the dashboard put together from the table under the I/O area at
+  // UNPACK_TITLE ($87C4): the menus' title picture put together from the table under the I/O area at
   // $D400 (13 runs of bytes, each a length and where it goes), its screen and colour bytes to $7C00
   // and colour RAM, and 17 rows from $4A00 cleared
-  P.UNPACK_DASHBOARD = r => {
+  P.UNPACK_TITLE = r => {
     P.wr(0xD01A, 0);
     M[1] = 0x34;
     M[0x1E] = 0x40; M[0x1F] = 0xD4;

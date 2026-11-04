@@ -141,7 +141,7 @@ G.files = P => {
   P.FILE_RESULT = function* (r) {
     if ((M[0xC39A] & 0x80) || !(M[0xC367] & 0x80)) {
       yield* P.PANEL_SCREEN({});
-      yield* P.RACE_VIEW_SCREEN({});
+      yield* P.MENU_BACKDROP({});
       M[0x19] = 1;
       let q = P.LINE_START({});
       q = P.DRIVER_NAME({ x: 0x0C, y: q.y });

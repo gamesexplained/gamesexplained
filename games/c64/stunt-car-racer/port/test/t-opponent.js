@@ -30,7 +30,7 @@ T('CRACK', { setup: (M, c, rnd) => {
 T('SET_DAMAGE', { setup: (M, c, rnd) => { M[0xC3CB] = byte(rnd); }, outs: ['y'] });
 T('CMD_CRANE_CHAINS', { cases: 200 });
 T('CLEAR_PANEL', { cases: 50 });
-T('RACE_SCREEN', { cases: 50 });
+T('MENU_TITLE', { cases: 50 });
 T('CONTROLS', { setup: (M, c, rnd) => {
   c.game.joy = 0x1F ^ rnd(32);
   for (const a of [0x6A, 0x2F, 0x0E, 0xC39B, 0x0159]) if (!rnd(3)) M[a] = byte(rnd);

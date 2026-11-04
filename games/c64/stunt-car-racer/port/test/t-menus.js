@@ -87,5 +87,5 @@ T('SCREEN_ON_NOW', { setup: (M, c, rnd) => { c.vic[0x11] = rnd(256); }, outs: ['
 T('DELAY', { cases: 30, setup: (M, c, rnd) => { M[0x14] = rnd(256); return { y: 1 + rnd(3) }; }, outs: ['a', 'x', 'y'] });
 T('BLANK_SCREEN', { cases: 30, setup: (M, c, rnd) => { M[0x3FBA] = rnd(16); }, outs: ['a', 'x', 'y'] });
 T('BORDER_BLANK', { cases: 30, setup: (M, c, rnd) => ({ a: rnd(16) }), outs: ['a', 'x', 'y'] });
-T('RACE_VIEW_SCREEN', { cases: 30, setup: L.setup });
+T('MENU_BACKDROP', { cases: 30, setup: L.setup });
 process.exitCode = f ? 1 : 0;

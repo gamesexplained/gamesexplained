@@ -426,14 +426,14 @@ G.menus = P => {
   // ALL_RAM ($33F1): the raster interrupt off and RAM under the chips; IO_BACK ($33FC) the reverse
   P.ALL_RAM = r => { P.wr(0xD01A, 0); M[1] = 0x34; return { a: 0x34, x: r.x, y: r.y }; };
   P.IO_BACK = r => { M[1] = 0x35; P.wr(0xD01A, 1); return { a: 1, x: r.x, y: r.y }; };
-  P.GEN.add('PANEL_SCREEN'); P.GEN.add('RACE_VIEW_SCREEN');
+  P.GEN.add('PANEL_SCREEN'); P.GEN.add('MENU_BACKDROP');
   // PANEL_SCREEN ($3500): BLANK_SCREEN, in a border of $3FBA's colour
   P.PANEL_SCREEN = function* (r) { return yield* P.BLANK_SCREEN(r); };
-  // RACE_VIEW_SCREEN ($3504): the screen of a race with the panel in it: blanked in black, the race
-  // screen drawn, high resolution, the wooden posts, the division's panel, and the screen back on
-  P.RACE_VIEW_SCREEN = function* (r) {
+  // MENU_BACKDROP ($3504): the menus' screen with the panel in it: blanked in black, the title
+  // drawn, high resolution, the wooden posts, the division's panel, and the screen back on
+  P.MENU_BACKDROP = function* (r) {
     yield* P.BORDER_BLANK({ a: 0 });
-    P.RACE_SCREEN({});
+    P.MENU_TITLE({});
     P.DISPATCH({ a: 1 });
     M[0x3DF8] = 0x41;
     P.WOOD_POSTS({});

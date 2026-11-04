@@ -68,9 +68,9 @@ G.opponent = P => {
     M[0x1E] = p & 255; M[0x1F] = p >> 8;
     return { a: M[0x1F], x: 0, y: 0xFF };
   };
-  // RACE_SCREEN ($1C49): the screen for a race: eight rows filled (command $55), $3A3C, and the
-  // dashboard unpacked (command $32)
-  P.RACE_SCREEN = r => {
+  // MENU_TITLE ($1C49): the top of the menus' screen: eight rows filled (command $55), a line
+  // across (HLINE_SCREEN), and the title picture unpacked (command $32)
+  P.MENU_TITLE = r => {
     M[0x52] = 8;
     P.DISPATCH({ a: 0x55, x: 0, y: 0x40 });
     P.HLINE_SCREEN({ a: 0x20, x: 0x38, y: 0x5F });

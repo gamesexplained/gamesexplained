@@ -221,7 +221,7 @@ G.choose = P => {
       } else {
         // EFF4
         yield* P.PANEL_SCREEN({});
-        yield* P.RACE_VIEW_SCREEN({});
+        yield* P.MENU_BACKDROP({});
         yield* P.LEAGUE_TABLE({});
         at = 0xEF3A;
       }

@@ -30,7 +30,7 @@ T('START_EFFECT', { setup: (M, c, rnd) => {
 }, outs: ['x'] });
 T('EFFECT_TICK', { setup: (M, c, rnd) => { M[0x86C9] = [0, 0x80, 1, 2, rnd(256)][rnd(5)]; M[0x86D5] = [0, 1, 2, rnd(256)][rnd(4)]; M[0x86D1] = rnd(256); M[0x86D9] = rnd(256); } });
 T('CUT_EFFECT', { setup: (M, c, rnd) => ({ x: rnd(3) }) });
-T('UNPACK_DASHBOARD', { cases: 30 });
+T('UNPACK_TITLE', { cases: 30 });
 T('SAVE_RESTORE_SCREEN', { setup: (M, c, rnd) => ({ x: rnd(2) ? 0x80 : 0 }), cases: 60 });
 
 // the race's jobs
