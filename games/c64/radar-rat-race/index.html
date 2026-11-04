@@ -49,19 +49,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .castcard p{font-size:12.5px;color:var(--ink-soft);margin:0}
 .castcard .codes{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:8px}
 
-/* rat player */
-.ratbox{display:flex;gap:26px;flex-wrap:wrap;align-items:center;justify-content:center}
-#ratCv{image-rendering:pixelated;width:180px;height:180px;background:#000;border-radius:10px;border:1px solid var(--line)}
-.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:6px}
-.dpad button{font-family:var(--fm);font-size:16px;background:var(--surface-2);color:var(--ink-soft);
- border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:.15s}
-.dpad button:hover{border-color:var(--violet);color:var(--violet)}
-.dpad button[aria-pressed="true"]{background:var(--violet);color:#14122b;border-color:var(--violet)}
-.dpad button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.dpad .sp{visibility:hidden}
-.ratmeta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);text-align:center;min-width:150px}
-.ratmeta b{display:block;color:var(--amber);font-size:15px;margin-bottom:4px}
-
 /* tables */
 table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:13px}
 th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
@@ -177,44 +164,16 @@ footer li{margin-bottom:9px}
   <p class="fig">02 &middot; The cast</p>
   <h2 class="t">The full cast</h2>
   <p class="lede">Using the font for graphics costs almost no
-  memory, and the hardware draws it for free. Here is the entire cast, pulled from font entries
-  <code>$40</code> through <code>$5F</code>. These are the real pixels, not illustrations.</p>
-  <div class="plate">
-    <div class="castgrid" id="castGrid"></div>
-    <p class="cap">Each one occupies four consecutive font entries, stamped as a 2&times;2 block
-    at screen offsets <code>0, 1, 40, 41</code>: the <code>40</code> is one screen row.</p>
-  </div>
+  memory, and the hardware draws it for free. The entire cast is font entries
+  <code>$40</code> through <code>$5F</code>, and the rat itself is four of them for each of the four
+  directions it can face. The <a href="graphics.html">Graphics</a> tab draws every one, turning and
+  spinning the rats as the game does.</p>
+  <p>Each one occupies four consecutive font entries, stamped as a 2&times;2 block
+  at screen offsets <code>0, 1, 40, 41</code>: the <code>40</code> is one screen row.</p>
 </section>
 
 <section>
-  <p class="fig">03 &middot; Four frames of animation</p>
-  <h2 class="t">Turn the rat</h2>
-  <p class="lede">The entire animation budget for the player is four tiles. The game picks one
-  based on the rat's committed direction, then stamps it. That's the whole renderer.
-  There is no interpolation, no sprite multiplexing and no in-between frames. Press a direction.</p>
-  <div class="plate">
-    <div class="ratbox">
-      <canvas id="ratCv" width="16" height="16"></canvas>
-      <div class="dpad">
-        <button class="sp"></button>
-        <button data-dir="rat_up" aria-label="Face up">&#9650;</button>
-        <button class="sp"></button>
-        <button data-dir="rat_left" aria-label="Face left">&#9664;</button>
-        <button id="autoBtn" aria-label="Cycle directions">&#8635;</button>
-        <button data-dir="rat_right" aria-label="Face right">&#9654;</button>
-        <button class="sp"></button>
-        <button data-dir="rat_down" aria-label="Face down">&#9660;</button>
-        <button class="sp"></button>
-      </div>
-      <div class="ratmeta" id="ratMeta"></div>
-    </div>
-    <p class="cap">Four routines in the code, one per direction, each differing only in which
-    four font entries it reads. The middle button cycles them.</p>
-  </div>
-</section>
-
-<section>
-  <p class="fig">04 &middot; The level format</p>
+  <p class="fig">03 &middot; The level format</p>
   <h2 class="t">The maze is a bitmap</h2>
   <p class="lede">The whole maze is 224 bytes. One bit per cell, 32 cells across by 56 down,
   four bytes to a row: a 1 means wall. What you see on screen is a nine-by-nine window
@@ -245,7 +204,7 @@ footer li{margin-bottom:9px}
 </section>
 
 <section>
-  <p class="fig">05 &middot; Placement</p>
+  <p class="fig">04 &middot; Placement</p>
   <h2 class="t">Who goes where, and why</h2>
   <p class="lede">Three kinds of thing share the maze with you, and the game places each one a
   different way. The red rats always start from the same spots. The cats come from a hand-made list
@@ -299,7 +258,7 @@ footer li{margin-bottom:9px}
 </section>
 
 <section>
-  <p class="fig">06 &middot; Difficulty</p>
+  <p class="fig">05 &middot; Difficulty</p>
   <h2 class="t">Every fourth round is a SPEED RUN</h2>
   <p class="lede">A handful of tables indexed by one round counter set the whole difficulty curve.
   The chasing red rats grow from 3 to 7 and get faster from round 8. On rounds 3, 7, 11 and 15 the
@@ -318,7 +277,7 @@ footer li{margin-bottom:9px}
 </section>
 
 <section>
-  <p class="fig">07 &middot; The font</p>
+  <p class="fig">06 &middot; The font</p>
   <h2 class="t">All 256 entries</h2>
   <p class="lede">The complete custom character set. Letters and digits are stored inverted:
   drawn as holes punched in a solid block. That is why the game's text reads as white
@@ -331,7 +290,7 @@ footer li{margin-bottom:9px}
 </section>
 
 <section>
-  <p class="fig">08 &middot; Sound</p>
+  <p class="fig">07 &middot; Sound</p>
   <h2 class="t">Music: every tune, from the stored bytes</h2>
   <p class="lede">The game stores its music as bare frequency bytes, one per note, written
   straight into the SID chip's registers. There is no player routine to speak of: no
@@ -404,11 +363,6 @@ function drawGlyph(ctx,code,px,py,s,col){
   for(let y=0;y<8;y++){const r=rows[y];
     for(let x=0;x<8;x++) if(r&(1<<(7-x))) ctx.fillRect(px+x*s,py+y*s,s,s);}
 }
-function drawTile2x2(ctx,codes,s,col){
-  ctx.fillStyle="#000"; ctx.fillRect(0,0,16*s,16*s);
-  const pos=[[0,0],[1,0],[0,1],[1,1]];
-  codes.forEach((c,i)=>{const[cx,cy]=pos[i]; drawGlyph(ctx,c,cx*8*s,cy*8*s,s,col);});
-}
 
 function renderScreen(){
   const ctx=document.getElementById('screenCv').getContext('2d');
@@ -436,26 +390,6 @@ function renderStats(){
     ["Rat position",s.rat_x+", "+s.rat_y]];
   document.getElementById('stats').innerHTML=items.map(([k,v])=>
     `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
-}
-
-const CAST=[
-  ["rat_up","Rat","Facing up. One of four.","#6c5eb5"],
-  ["rat_right","Rat","Same tiles, recoloured red, become the enemy.","#b86962"],
-  ["cat","Black cat","Never moves. Kills the rat, stuns a red rat.","#505050"],
-  ["cheese_2x","Cheese","The red 2x corner marks the one that doubles your score.","#e8a33d"],
-  ["sparkle","Star","Your weapon. Fire drops three behind you.","#ffffff"],
-  ["eeek","EEEK","Drawn when the rat is caught.","#67b6bd"],
-];
-function renderCast(){
-  const g=document.getElementById('castGrid');
-  g.innerHTML=CAST.map(([key,name,desc])=>
-    `<div class="castcard"><canvas data-cast="${key}" width="64" height="64"></canvas>
-     <h3>${name}</h3><p>${desc}</p>
-     <div class="codes">$${DATA.cast[key][0].toString(16).toUpperCase()}&ndash;$${DATA.cast[key][3].toString(16).toUpperCase()}</div></div>`).join('');
-  CAST.forEach(([key,,,col])=>{
-    const cv=g.querySelector(`canvas[data-cast="${key}"]`);
-    drawTile2x2(cv.getContext('2d'),DATA.cast[key],4,col);
-  });
 }
 
 function renderMaze(){
@@ -495,34 +429,6 @@ function renderTiles(){
     ctx.fillStyle="#000"; ctx.fillRect(0,0,64,64);
     drawGlyph(ctx,code,16,16,4,col);
   });
-}
-
-const DIRS=["rat_up","rat_right","rat_down","rat_left"];
-const DIRNAME={rat_up:"Up",rat_right:"Right",rat_down:"Down",rat_left:"Left"};
-let curDir="rat_down", autoTimer=null;
-function showRat(dir){
-  curDir=dir;
-  const cv=document.getElementById('ratCv');
-  drawTile2x2(cv.getContext('2d'),DATA.cast[dir],1,"#bfce72");
-  const codes=DATA.cast[dir].map(c=>"$"+c.toString(16).toUpperCase()).join(" ");
-  document.getElementById('ratMeta').innerHTML=`<b>${DIRNAME[dir]}</b>font entries<br>${codes}`;
-  document.querySelectorAll('.dpad button[data-dir]').forEach(b=>
-    b.setAttribute('aria-pressed', b.dataset.dir===dir ? "true":"false"));
-}
-function wireRat(){
-  document.querySelectorAll('.dpad button[data-dir]').forEach(b=>
-    b.addEventListener('click',()=>{stopAuto(); showRat(b.dataset.dir);}));
-  document.getElementById('autoBtn').addEventListener('click',()=>{
-    if(autoTimer) return stopAuto();
-    let i=DIRS.indexOf(curDir);
-    autoTimer=setInterval(()=>{i=(i+1)%4; showRat(DIRS[i]);},420);
-    document.getElementById('autoBtn').setAttribute('aria-pressed',"true");
-  });
-  showRat(curDir);
-}
-function stopAuto(){
-  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
-  document.getElementById('autoBtn').setAttribute('aria-pressed',"false");
 }
 
 function renderProg(){
@@ -775,6 +681,6 @@ function wirePlacement(){
   renderPlacement();
 }
 
-renderScreen(); renderStats(); renderCast(); renderMaze(); renderTiles(); wireRat(); renderProg(); renderCharGrid(); wirePlacement();
+renderScreen(); renderStats(); renderMaze(); renderTiles(); renderProg(); renderCharGrid(); wirePlacement();
 
 </script>

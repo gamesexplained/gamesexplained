@@ -51,6 +51,23 @@ clears the flag after each pass, so an overrunning pass drops a tick.
 | Music loop | 320 | 5.4 |
 | Pause before play / after death | 80 | 1.35 |
 
+The counts are of passes, and a pass in which the maze is redrawn takes longer
+than a tick and loses the next one, so in play the countdowns run slower than
+the ticks above say. Measured on the kit's machine model (`kit/c64/machine.js`
+with the video chip's stolen cycles, a game started from the title screen and
+played with the stick at random; `test_graphics.js` holds the Graphics tab to
+it), in round 1:
+
+| Thing | Passes | Cycles on average | Ticks | PAL seconds |
+|---|---|---|---|---|
+| Player move | 6 | 110,600 | 6.6 | 0.112 |
+| Red rat move | 6 | 116,700 | 7.0 | 0.118 |
+| X2 on or off | 20 | 372,000 | 22.3 | 0.38 |
+| One unit of TIME | 70 | 1,300,000 | 78 | 1.32 |
+| EEEK stamped to the screen cleared | 16 + 80 ticks | 1,569,000 | 94 | 1.59 |
+
+At that rate a full TIME bar lasts about 106 seconds.
+
 ## Screen layout
 
 | Region | Rows | Columns |
@@ -118,6 +135,25 @@ purple), enabled to match the red rat count. Register = `(pos AND $FC)` + `$D0`
 pixel per half-cell. Cheese blips on the radar are characters. Cats never
 appear on the radar. *Live:* `$D015=$0F` with three red rats; sprite 0 at
 (236,190) for player (30,78).
+
+**What changes on the screen, and how.** Checked on the model by
+`test_graphics.js`:
+
+- A stunned red rat stays put and `move_all_red_rats` (`$E088`) sets its
+  facing to the stun timer's low two bits before taking one off, so a 15-move
+  stun shows facings 3, 2, 1, 0 and round again, ending on 1: left, down,
+  right, up, an anticlockwise spin. A 7-move stun shows 3, 2, 1, 0, 3, 2, 1.
+- A red rat that the chase turns back (`$E0D3`) spends that move facing
+  `(new direction − 1) AND 3`, a quarter-turn short, and faces the new way on
+  the next. Every U-turn in the play matched it.
+- `draw_eeek_text` (`$E8BC`) writes only screen codes, so EEEK takes the colour
+  already in the rat's four cells: red after a red rat, which
+  `player_caught_sequence` has just redrawn there, and the rat's blue after a
+  cat. A star drawn on the rat's own cell covers the rat in black, and EEEK is
+  black then.
+- The X2 beside NEXT MEAL alternates `$18 $32` (X2) and `$20 $20` (solid blue)
+  every 20 passes. A TIME bar cell goes from `$77` through `$7E`, `$7D` … `$78`
+  to `$20` as its eight units are used.
 
 ## Actors
 
