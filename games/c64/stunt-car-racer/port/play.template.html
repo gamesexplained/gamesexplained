@@ -198,7 +198,7 @@ function tick(now) {
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; release(); typeStep(); }
+    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; frames++; release(); typeStep(); }
     if (n === 10) acc = 0;
   } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
@@ -208,19 +208,23 @@ function tick(now) {
 // joystick in port 2; the letters, the figures, Return, Space, Backspace (DEL), =, F1 and Left
 // Ctrl (C=) as the C64's keys. A key or a direction goes down at once, and one let go is held
 // until the game has read it twice since it went down, so a tap is never lost; one held longer
-// lets go the moment it comes up.
+// lets go the moment it comes up. A key the game has read once is let go two frames after it
+// comes up, read again or not: a choice made with Return is read once, and the next read of the
+// key comes from the screen after, the name's prompt, which a finger would have left by then
+// (held, Return ends the name before a letter is typed).
 const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, ControlRight: 16, AltRight: 16, NumpadEnter: 16, Numpad0: 16 };
 const KEYS = { F1: 'F1', Space: 'SPACE', Enter: 'RETURN', Backspace: 'DEL', Equal: '=', ControlLeft: 'CBM',
   Period: '.', Slash: '/', Semicolon: ':', ShiftLeft: 'LSHIFT', ShiftRight: 'RSHIFT' };
 for (let c = 65; c <= 90; c++) KEYS['Key' + String.fromCharCode(c)] = String.fromCharCode(c);
 for (let d = 0; d <= 9; d++) { KEYS['Digit' + d] = String(d); }
-const held = new Map(), since = new Map(), letGo = new Set();
-const READS = 2;
+const held = new Map(), since = new Map(), letGo = new Set(), upAt = new Map();
+const READS = 2, AFTER = 2;
+let frames = 0;                                    // the game's frames run, for AFTER
 function readsOf(k) { return typeof k === 'number' ? rt.input.joyReads : rt.input.rowReads[SCRPage.KEY[k] >> 3]; }
 function release() {
   for (const c of letGo) {
-    const s = since.get(c), k = held.get(c);
-    if (!rt || !s || readsOf(k) - s >= READS) { letGo.delete(c); held.delete(c); since.delete(c); }
+    const s = since.get(c), n = rt && s !== undefined ? readsOf(held.get(c)) - s : READS;
+    if (n >= READS || (n >= 1 && frames - upAt.get(c) >= AFTER)) { letGo.delete(c); held.delete(c); since.delete(c); upAt.delete(c); }
   }
   input();
 }
@@ -237,7 +241,7 @@ function press(code, k) {
   if (!held.has(code) || letGo.has(code)) since.set(code, readsOf(k));
   held.set(code, k); letGo.delete(code); input();
 }
-function lift(code) { if (held.has(code)) { letGo.add(code); release(); } }
+function lift(code) { if (held.has(code)) { letGo.add(code); upAt.set(code, frames); release(); } }
 function onKey(e, down) {
   if (!running || e.metaKey) return;
   const k = JOY[e.code] !== undefined ? JOY[e.code] : KEYS[e.code];
@@ -310,7 +314,7 @@ let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
 function start() {
   over.hidden = true;
-  held.clear(); since.clear(); letGo.clear(); typing = []; typed = null; clearName();
+  held.clear(); since.clear(); letGo.clear(); upAt.clear(); typing = []; typed = null; clearName();
   boot();
   running = true; paused = false; last = 0; acc = 0;
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
