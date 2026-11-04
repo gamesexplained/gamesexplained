@@ -25,7 +25,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-- **Stop a lockstep run hanging when a port loop never yields.** The port's pause waited for a key in a JavaScript loop with no yield, and the lockstep session hung with no message, because a loop that never hands control back cannot be interrupted from inside the same thread. Telling a stuck run from a slow one meant waiting on a session that never finished. A guard could live in `kit/c64/lockstep.js` (and the other platforms' copies): run each session under a time limit in a worker, or have the port's chips (`P.io`) count reads and throw past a large number with no yield in between, naming the address read most.
+- #761: Stop a lockstep run hanging when a port loop never yields.
 
 ## What cost the most time
 
