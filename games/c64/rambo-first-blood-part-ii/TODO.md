@@ -17,8 +17,6 @@ Gold: a human's section-by-section pass over the copy.
 
 ## Questions only a person can settle
 
-- Which weapon is which: the code numbers them 0-5; a player's eye matches
-  them to the knife, bow, arrows, M16, grenades and rocket launcher.
 - Where Banks, tied to a cross, is drawn: no separate object was found.
 
 ## Ideas for the page

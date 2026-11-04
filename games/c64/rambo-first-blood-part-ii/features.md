@@ -27,7 +27,7 @@ Sources:
 | "S" toggles music and sound effects | traced | `music_toggle_key` `$0CCC`: toggles effects off (`$0D11`) and the voices the music may use (7 or 0) |
 | RUN/STOP toggles a pause | traced | `key_pause_toggle` `$09F8` sets `$0A19`; `irq_panel` then freezes input and silences the SID |
 | Extra weapons lie in the terrain and the enemy campsite | confirmed | four map items (`$0BB7`-`$0BCB`); `item_pickup_check` `$0A1A` adds weapon bits to `$19ED` |
-| Starting weapons (the sources disagree) | traced | weapons 0-2 owned at the start (`$19ED` = 7); which weapon each number is was not tied to a picture |
+| Starting weapons (the sources disagree) | traced | weapons 0-2 owned at the start (`$19ED` = 7): the knife and the two kinds of arrow (facts.md, Sprites) |
 | An energy bar; death when it runs out | confirmed | `energy_tick` `$0C89`, energy `$0CC3` from `$30`; damage per hit in facts.md |
 | Free scrolling in every direction over a jungle map | live | `scroll_jungle` `$1C67`; map of 119 by 16 tiles at `$E770` |
 | The POW camp, Banks and the hut opened with the knife | traced | `hut_door_check` `$08D9`: weapon 0 on the hut-door character `$E0`, after the first flight, frees ten POWs (`$0846`). Banks on a cross was not found as a separate object; open |
@@ -51,5 +51,4 @@ Found in the code, not in the manual.
 
 ## Open questions
 
-- Which weapon is which picture: the code numbers them 0-5.
 - Where Banks is: no object or tile for a captive on a cross was identified.

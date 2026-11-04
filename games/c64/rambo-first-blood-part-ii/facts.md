@@ -102,6 +102,45 @@ move through the front end and the name wheel.
   but only the two routines at `$07A4` and `$07AA` write it, and nothing
   calls them: in this build the lock is never set.
 
+## Sprites
+
+- The shapes are in video bank 1, pointer p at `$4000` + 64p. Every
+  store to an object's picture (`$8B`-`$98`), Rambo's (`$D1`, `$D2`) or
+  the panel's pointers puts a shape from a table or an immediate the
+  Graphics tab reads; nine shapes are pointed at by nothing: `$21`,
+  `$25` and `$D8`-`$DE`. `$22` is empty, the icon of a weapon not owned.
+- Rambo is two sprites: the black high-resolution outline (sprite 0,
+  from `$D2`) and a multicolour body four shapes on (object 13, colour
+  10), a step every fourth frame (`rambo_animate`, `$1281`). The outline
+  is copied from `$D1` once a pass of the main loop (`objects_snapshot`,
+  `$1D61`), so on some frames the game shows it a step behind the body
+  (964 of 10,049 frames in a run of the test).
+- The six weapons' shot types are 4, 5, 6, 9, 3 and 8 (`$1AA0`) and
+  their colours 11, 4, 3, 5, 0 and 14 (`$1AA6`). Weapon 0 spins through
+  `$39`-`$40` and opens the hut: the knife. Weapons 1 and 2 share the
+  arrow shapes (`$1AB7`); 1, purple, explodes on a hit (types 5 and 8 do,
+  `shot_hit` `$158B`). Weapon 3 is thrown in an arc (`shot_arc`
+  `$183D`): grenades. Weapon 4 fires black bullets and adds 5 to the
+  spawn budget. Weapon 5 is the only one the helicopter fires
+  (`heli_fire_rocket` `$3140`): the rocket launcher.
+- `explosion_start` (`$18EC`) stores the picture before the colour and
+  `fire_check` a new shot's colour before its picture, so an interrupt
+  between the two shows a shot slot for one frame in the other's colour
+  (7 of 13,586 shot frames in the test's run).
+- Soldiers step every third frame in one of four colours (`$11E1`);
+  only the marker's soldier is type 0, kneeling, a step every 21
+  frames. A falling soldier is white, five shapes a step every fifth
+  frame; a rising one brown (`$0DCE`).
+- The helicopter is objects 12 and 4, twelve frames (`$3793`-`$37AB`);
+  the gunship objects 5-8, twelve frames of four shapes from
+  `gunship_frames` (`$3630`), `$83`-`$B2`. One sprite, Rambo's sprite 0,
+  draws both rotors, the helicopter's and the gunship's by turns each
+  frame (`heli_sprites_place`, `$3827`), each stepping every second call
+  (`heli_anim_timers`, `$369C`).
+- `test_graphics.js` checks all of this against the kit's machine: the
+  jungle played at random for 20,000 frames with every weapon owned, and
+  a flight of 8,500 frames with the gunship pursuing.
+
 ## Data tables
 
 The tune table `$91E3` holds twelve tunes (three sequence pointers
