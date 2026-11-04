@@ -242,7 +242,7 @@ G.race = P => {
     return P.DISPATCH({ a: 0x34, x: 0 });
   };
   // CLEAR_RACE ($3DF9): a race's state cleared: $C300-$C3FF, $0774-$07FF, $4000-$40FF, the car's
-  // $0100-$018F and zero page from $02; the eleven bytes at $BFEA (on by one in the Super League)
+  // $0100-$018F and zero page from $02; the eleven bytes at $BFEA ($BFF5 in the Super League, $C71A 11)
   // to $C382; the view's rows' colours all 7 to $17; the clocks, the roll's tables, the sound
   // effects stopped ($E0F9), the race's random numbers, the dashboard's labels and lamps, $C76A the
   // league's or the Super League's count in decimal, $C37E kept from $C719; CLEAR_BARS
