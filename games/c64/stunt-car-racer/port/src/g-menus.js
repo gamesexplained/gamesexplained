@@ -435,6 +435,9 @@ G.menus = P => {
     yield* P.BORDER_BLANK({ a: 0 });
     P.MENU_TITLE({});
     P.DISPATCH({ a: 1 });
+    // a checkpoint ($3511) before the menus' bands are asked for, so that the page has paid for the
+    // title when they begin, as the game has
+    yield { cp: 0x3511 };
     M[0x3DF8] = 0x41;
     P.WOOD_POSTS({});
     const q = P.DIVISION_PANEL({});
@@ -551,7 +554,7 @@ G.menus = P => {
   P.GEN.add('WAIT_FIRE');
   // each turn of a loop that reads the controls is a checkpoint: READ_CONTROLS draws a random number
   // every time, so the port turns as often as the game does
-  P.CHECKPOINTS.push(0x3696, 0x36A2);
+  P.CHECKPOINTS.push(0x3696, 0x36A2, 0x3511);
   // WAIT_FIRE ($3696): waits for the fire button to be let go, a moment, and then pressed
   P.WAIT_FIRE = function* (r) {
     let q;

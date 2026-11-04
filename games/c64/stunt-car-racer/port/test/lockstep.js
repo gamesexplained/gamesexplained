@@ -37,10 +37,11 @@ const SESSIONS = {
   practice: { steps: [{ frames: 400 }, ...tap(J.fire), { frames: 300 }, ...NAME,
     { frames: 200 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire),
     { frames: 300 }, ...tap(J.fire), { frames: 600 }, { frames: 180, joy: J.fire }], keys: [] },
-  // the same, with the pause (P, then O) and the key that ends a race (C=) now and then
+  // the same, with the pause (P, and O a second or few later) and the key that ends a race (C=)
+  // now and then
   pause: { steps: [{ frames: 400 }, ...tap(J.fire), { frames: 300 }, ...NAME,
     { frames: 200 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire),
-    { frames: 300 }, ...tap(J.fire), { frames: 600 }, { frames: 180, joy: J.fire }], keys: ['P', 'O', 'P', 'O', 'CBM', 'RETURN'] },
+    { frames: 300 }, ...tap(J.fire), { frames: 600 }, { frames: 180, joy: J.fire }], keys: ['P', 'P', 'CBM', 'RETURN'], every: 40 },
   // Single Player League, the name, then Start the Racing Season: races against the drivers
   season: { steps: [{ frames: 400 }, ...tap(J.fire), { frames: 300 }, ...NAME,
     { frames: 200 }, ...tap(J.fire), { frames: 100 }, ...tap(J.down), { frames: 60 }, ...tap(J.fire)], keys: ['CBM'] },
@@ -57,16 +58,22 @@ function run(o) {
   const ls = new Lockstep({ machine: m, port: P, program: P => P.STARTUP({}), checkpoints: [...new Set(P.CHECKPOINTS)],
     passAt: 0x3D08, irqs: { 0xEA31: null, 0xCDAA: 'IRQ', 0x9A32: 'NMI' }, irqBytes: IRQ_BYTES, hooks: Object.assign({}, m.hooks),
     chips: ['colour', 'vic', 'sid'], ignore: IGNORE.concat(o.ignore || []), maxFrames: o.maxFrames || 20000, timing: o.timing });
+  if (o.onLockstep) o.onLockstep(ls);
   let seed = o.seed || 1;
   const rnd = n => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return Math.floor(seed / 4294967296 * n); };
   const S = SESSIONS[o.session], steps = S.steps.slice();
-  let left = 0, lastPass = 0, menuTap = null, nextTap = 0, until = 0, keyUp = -1, curFrame = 0;
+  // a session's key: held for 24 frames, longer than the two passes P waits for at most, and after
+  // P, O pressed 50 to 250 frames later, and again until a pass begins
+  let left = 0, lastPass = 0, menuTap = null, nextTap = 0, until = 0, keyUp = -1, resume = -1, oPressed = false, curFrame = 0;
   const apply = (mm, s) => { mm.keys.clear(); for (const k of s.keys || []) mm.press(k); mm.joy = s.joy === undefined ? J.none : s.joy; };
   const res = ls.run({ passes: o.passes || 200, stopOnDiff: o.stopOnDiff !== false,
     onFrame: (f, mm) => {
       if (left <= 0 && steps.length) { const st = steps.shift(); left = st.frames; apply(mm, st); }
       curFrame = f;
       if (left > 0) { left--; if (left === 0 && !steps.length) { apply(mm, { joy: J.none }); lastPass = f; } return; }
+      if (keyUp >= 0 && f >= keyUp) { mm.keys.clear(); keyUp = -1; }
+      // O again every 100 frames until the race goes on (a tap of fire in the pause can lift it)
+      if (resume >= 0 && f >= resume && keyUp < 0) { mm.press('O'); keyUp = f + 6; oPressed = true; resume = f + 100; }
       // outside a race: a tap of fire, or of RETURN one time in three, every 90 frames or so
       if (menuTap && f >= menuTap.end) { apply(mm, { joy: J.none }); menuTap = null; nextTap = f + 60 + rnd(60); }
       if (!menuTap && f - lastPass > 90 && f >= nextTap) {
@@ -77,11 +84,15 @@ function run(o) {
     },
     onPass: (n, mm) => {
       lastPass = curFrame;
+      if (oPressed) { resume = -1; oPressed = false; }
       if (steps.length || left > 0) return;
       if (menuTap) { apply(mm, { joy: J.none }); menuTap = null; }
-      if (keyUp >= 0 && n >= keyUp) { mm.keys.clear(); keyUp = -1; }
       if (n >= until) { mm.joy = 0x1F & ~MOVES[rnd(MOVES.length)]; until = n + 1 + rnd(8); }
-      if (S.keys.length && keyUp < 0 && rnd(150) === 0) { mm.keys.clear(); mm.press(S.keys[rnd(S.keys.length)]); keyUp = n + 2 + rnd(4); }
+      if (S.keys.length && keyUp < 0 && resume < 0 && rnd(S.every || 150) === 0) {
+        const k = S.keys[rnd(S.keys.length)];
+        mm.keys.clear(); mm.press(k); keyUp = curFrame + 24;
+        if (k === 'P') resume = curFrame + 50 + rnd(200);
+      }
     } });
   return { res, ls, m, P };
 }

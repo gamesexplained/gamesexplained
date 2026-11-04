@@ -13,6 +13,9 @@ const G = root.SCRGroups = root.SCRGroups || {};
 G.lines = P => {
   const M = P.M;
   const hex = v => '$' + v.toString(16).toUpperCase();
+  // the work the page's pacing counts (src/core.js, P.N): each pixel a line tests, each one it
+  // draws, and each step of a line that is off the view
+  Object.assign(P.N, { tests: 0, pixels: 0, skip: 0 });
 
   // The pixel at X, Y of the line whose test starts at `site` (the TYA before it): $F8C9, $F9D0,
   // $FAD8 or $FBBF. Two tests, as the table at $FC67 writes them:
@@ -38,6 +41,7 @@ G.lines = P => {
     return y > M[0xC580 + x] && y < M[0xC600 + x];
   };
   const plot = (site, x, y) => {
+    P.N.tests++;
     let draw;
     // the page of the second CMP (LINE_LIMIT writes $C5 there) and the branch after it (LINE_LIMIT_HIDE
     // writes $E2 there, to the test sixteen bytes before the site)
@@ -62,7 +66,7 @@ G.lines = P => {
     let v = M[p];
     if (M[site + 21] === 0x3D) v &= M[(0xA400 | M[site + 22]) + x];
     M[p] = v;
-    P.N.pixels = (P.N.pixels || 0) + 1;
+    P.N.pixels++;
     return v;
   };
   // the bitmap's byte for column X, row Y, less Y (the loops index it with Y): $1E/$1F
@@ -88,7 +92,7 @@ G.lines = P => {
     let x = r.x & 255;
     M[0x89] = (M[0x89] - 1) & 255;
     const page = M[0xF92B] << 8;
-    do { M[page + x] = 0x40; x = (x - 1) & 255; } while (x !== M[0x89]);
+    do { P.N.skip++; M[page + x] = 0x40; x = (x - 1) & 255; } while (x !== M[0x89]);
     return { a: 0x40, x, z: 1, c: 1 };
   };
   // COVER_RIGHT_FROM ($FA2E): the columns from X up to $89 less 1 marked the same way (the page
@@ -96,7 +100,7 @@ G.lines = P => {
   P.COVER_RIGHT_FROM = r => {
     let x = r.x & 255;
     const page = M[0xFA32] << 8;
-    do { M[page + x] = 0x40; x = (x + 1) & 255; } while (x !== M[0x89]);
+    do { P.N.skip++; M[page + x] = 0x40; x = (x + 1) & 255; } while (x !== M[0x89]);
     return { a: 0x40, x, z: 1, c: 1 };
   };
 
@@ -116,6 +120,7 @@ G.lines = P => {
       switch (pc) {
         case 0xF843:
           while (y >= 0xC0) {
+            P.N.skip++;
             y = (y - 1) & 255;
             t = a + M[0x51]; a = t & 255;
             if (t > 255) { a = (a - M[0x52]) & 255; x = (x - 1) & 255; }
@@ -123,6 +128,7 @@ G.lines = P => {
           if (x < 0x40) return { a, x, y, c: 0 };
           if (x < 0xC0) { pc = 0xF874; break; }
           for (;;) {
+            P.N.skip++;
             y = (y - 1) & 255;
             if (y < M[0x89]) { pc = 0xF907; break; }
             t = a + M[0x51]; a = t & 255;
@@ -179,6 +185,7 @@ G.lines = P => {
       switch (pc) {
         case 0xF94A:
           while (y >= 0xC0) {
+            P.N.skip++;
             y = (y - 1) & 255;
             t = a + M[0x51]; a = t & 255;
             if (t > 255) { a = (a - M[0x52]) & 255; x = (x + 1) & 255; }
@@ -186,6 +193,7 @@ G.lines = P => {
           if (x >= 0xC0) return { a, x, y, c: 1 };
           if (x >= 0x40) { pc = 0xF97B; break; }
           for (;;) {
+            P.N.skip++;
             y = (y - 1) & 255;
             if (y < M[0x89]) { pc = 0xFA0E; break; }
             t = a + M[0x51]; a = t & 255;
@@ -244,6 +252,7 @@ G.lines = P => {
     a = (M[0x51] >> 1) ^ 0xFF;
     if (x < M[0x89]) return { a, x, y, c: 0 };
     while (x >= 0xC0) {
+      P.N.skip++;
       x = (x - 1) & 255;
       t = a + M[0x52]; a = t & 255;
       if (t > 255) { a = (a - M[0x51]) & 255; y = (y - 1) & 255; }
@@ -251,6 +260,7 @@ G.lines = P => {
     if (y < 0x40) return Object.assign({ y }, P.COVER_LEFT_FROM({ x }));
     if (y >= 0xC0) {
       for (;;) {
+        P.N.skip++;
         x = (x - 1) & 255;
         if (x < M[0x89]) return { a, x, y, c: 0 };
         t = a + M[0x52]; a = t & 255;
@@ -296,6 +306,7 @@ G.lines = P => {
     a = (M[0x51] >> 1) ^ 0xFF;
     if (x > M[0x89]) return { a, x, y, c: 1 };
     while (x < 0x40) {
+      P.N.skip++;
       x = (x + 1) & 255;
       t = a + M[0x52]; a = t & 255;
       if (t > 255) { a = (a - M[0x51]) & 255; y = (y - 1) & 255; }
@@ -304,6 +315,7 @@ G.lines = P => {
     if (y < 0x40) return fill();
     if (y >= 0xC0) {
       for (;;) {
+        P.N.skip++;
         x = (x + 1) & 255;
         if (x > M[0x89]) return { a, x, y, c: 1 };
         t = a + M[0x52]; a = t & 255;

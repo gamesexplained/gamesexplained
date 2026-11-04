@@ -293,9 +293,10 @@ G.race = P => {
     if (x) { x = M[0x31A4]; M[0xC719] = M[0x83B0 + x]; }
     return P.DAMAGE_BAR({ x, y: 0x80 });
   };
-  // PAUSE ($3EE0): while the bitmap at $6000 is being drawn ($C306 set), a key ($0D) pauses: the
-  // sound effects stopped ($E0F9), the message "paused" (4C), $97AF until another key ($34), then
-  // the message that was showing back and the sounds started again
+  // PAUSE ($3EE0): while the bitmap at $6000 is being drawn ($C306 set), P (key $0D) pauses: the
+  // sound effects stopped ($E0F9), the message "paused" (4C), then REDEFINE_KEYS over and over
+  // until O (key $34), a turn of a loop that polls the keyboard; then the message that was showing
+  // back and the sounds started again
   P.PAUSE = function* (r) {
     if (!(M[0xC306] & 0x80)) return { a: M[0xC306] };
     if (!P.KEY_PRESSED({ x: 0x0D }).z) return { a: 0 };
@@ -303,7 +304,11 @@ G.race = P => {
     M[0x10] = 0; M[0x11] = 0;
     const c355 = M[0xC355], start = M[0x1327], groups = M[0x1328];
     P.SHOW_MESSAGE({ y: 0x4C, a: 2 });
-    do yield* P.REDEFINE_KEYS({}); while (!P.KEY_PRESSED({ x: 0x34 }).z);
+    for (;;) {
+      yield* P.REDEFINE_KEYS({});
+      if (P.KEY_PRESSED({ x: 0x34 }).z) break;
+      yield;
+    }
     M[0x1328] = groups; M[0x1327] = start; M[0xC355] = c355;
     if (c355 & 0x80) P.SHOW_MESSAGE({ a: groups, x: groups, y: start });
     return P.START_SOUNDS({});
