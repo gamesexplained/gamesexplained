@@ -128,3 +128,37 @@ last five bytes past the 16 KB it copies. Each is excluded with the
 reason. `$0E43`, one byte between display list B and the erase header,
 was untyped; it is now a byte with a comment.
 
+
+## The Graphics tab (4 November 2026)
+
+The site's Graphics tab rule asks for every shape that moves to be shown
+moving, once. `graphics.html` draws each thing the way its routine puts it
+together: the helicopter for every facing, tilt and skid flag, the people,
+the cloud, the mine, the tank, the four jet manoeuvres, the base and the
+sheds, with the hill, the shots and the parallax blob as stills.
+`test_graphics.js` runs the game from `listing.json` on the kit's machine
+model and compares the tab's drawing with the game's bitmap after every
+blit. Sixteen deliberately broken copies of the drawing code were each
+caught.
+
+What the comparison changed:
+
+- The sheared blitter at `$90D2` is not a simple slope. A second counter
+  sometimes skips the row step, and only a line-for-line port of it gave
+  the game's bytes for the head-on and turning frames.
+- A pass is not a fixed length. The test first classified passes by what
+  was on screen and the averages would not settle; holding the helicopter
+  to two fixed situations (on the pad, and flying forward over open
+  country) gave 82,816 and 49,829 cycles every time.
+- The Map tab coloured bit pair `10` light blue near the ground and blue
+  in the sky, the wrong way round and split at row 26 instead of row 39,
+  painted the ground dark grey where `$D021` holds medium grey `$0C`, and
+  drew the base's apron red where its pattern `$AA` makes it blue. All
+  three are fixed.
+
+How it works lost its shape table and the tank and jet plates, which the
+tab now shows moving; it keeps the rules and links to the tab.
+
+The listing's comments on `$0B61` and `$0B62` say their meaning is not
+established. They are the main and tail rotor counters (`facts.md`); the
+comments need a session with the snapshot to regenerate the listing.

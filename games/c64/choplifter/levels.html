@@ -164,9 +164,11 @@ const SHEDS=[0x037D,0x047D,0x057D,0x067D], BASE=0x1254, GREY_ROW=26, ROWS=168;
    already turned the background grey. */
 
 /* Colours as the play area actually uses them: the video matrix byte is $2E
-   for the sky rows and $26 for the ground rows, and colour RAM is 1. */
-function penFor(row){ return row<=GREY_ROW ? ['#4a4a4a','#813329','#706deb','#ffffff']
-                                           : ['#000000','#813329','#2e2c9b','#ffffff']; }
+   above character row 20 (row 40 and up here) and $26 from it, colour RAM is
+   1, and from display line 173 (row 26 and below) the background is grey,
+   colour 12. So bit pair 01 is red, 10 light blue in the sky and blue near the
+   ground, 11 white. */
+function penFor(row){ return [row<=GREY_ROW?'#7b7b7b':'#000000','#813329',row<=39?'#2e2c9b':'#706deb','#ffffff']; }
 
 /* Draw one shape into a pixel buffer, honouring the bit offset it lands on,
    optionally mirrored, exactly as $8FD3 and $903E do. */
@@ -207,7 +209,7 @@ function renderWorld(cam,W){
     if(i===3) blit(px,W,H,74,x+6,28,false);
   });
   const bx=BASE-cam;
-  fillRect(px,W,H,bx+0x0F,25,15,5,'#813329');
+  fillRect(px,W,H,bx+0x0F,25,15,5,penFor(25)[2]);   /* the pattern is $AA, bit pair 10 */
   blit(px,W,H,66,bx-1,25,true);
   blit(px,W,H,66,bx+0x7F,25,false);
   blit(px,W,H,65,bx+0x48,34,false);
@@ -226,7 +228,7 @@ function drawView(){
   const tg=t.getContext('2d');
   for(let y=0;y<H;y++){
     const row=ROWS-1-y;
-    tg.fillStyle = row<=GREY_ROW ? '#4a4a4a' : '#000000';
+    tg.fillStyle = row<=GREY_ROW ? '#7b7b7b' : '#000000';
     tg.fillRect(0,y,W,1);
   }
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){

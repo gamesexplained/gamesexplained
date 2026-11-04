@@ -1,0 +1,571 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choplifter — graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;max-width:100%;height:auto;display:block;border-radius:6px;background:#000}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+button.k{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer}
+button.k:hover{border-color:var(--violet)}
+button.k[aria-pressed=true]{background:var(--violet);border-color:var(--violet);color:#fff}
+input[type=range]{flex:1;min-width:160px;max-width:320px;accent-color:var(--violet)}
+.mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.ch-speed{position:sticky;top:0;z-index:2;background:var(--paper);padding:10px 0;margin:0}
+.ch-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.ch-card{margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px}
+.ch-card canvas{margin:0 auto 10px}
+.ch-card figcaption{font-size:13px;color:var(--ink-soft);line-height:1.5}
+.ch-card figcaption b{display:block;color:var(--ink);font-size:14px;margin-bottom:3px}
+.ch-card .codes{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);margin-top:6px}
+.ch-still{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.ch-still .ch-card canvas{width:100%;max-width:150px}
+@media (max-width:640px){:root{--gx:16px;--pp:16px;--h1:34px;--h2:22px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Br&oslash;derbund Software</p>
+  <h1>Choplifter</h1>
+  <p class="sub">Nothing here is a sprite. Each picture is one of the 75 shapes in the table at
+  <code>$8009</code>, ORed into the bitmap by the game's own routines, and each one below moves the
+  way the game moves it.</p>
+</header>
+<main class="wrap">
+
+<div class="ctl ch-speed">
+  <button class="k" data-speed="1" aria-pressed="true">The game's speed</button>
+  <button class="k" data-speed="0.25" aria-pressed="false">A quarter</button>
+</div>
+<p class="lede">The game draws the next picture as soon as it has finished the last one, so it
+runs faster where there is less to draw: about 20 pictures a second with the helicopter flying
+over empty country, and 12 beside the base. Everything below steps at the first rate, apart from
+the base, which steps at the second. Anything else on the screen slows the game down further.</p>
+
+<section id="g1">
+  <p class="fig">01 &middot; The helicopter</p>
+  <h2 class="t">Turn the helicopter and tilt it</h2>
+  <p class="lede">Side on, the helicopter is one of eleven drawings, one for each step of tilt,
+  and facing left is the same drawing flipped. Turned towards you it is one of three narrow
+  drawings, and those are leaned as they are drawn: the blitter at <code>$90D2</code> plots one
+  bit at a time and drops a row every few columns. The main rotor is three shapes and the tail
+  rotor four, and each moves on one shape every time the game draws the screen.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" data-face="-3" aria-pressed="false">Face left</button>
+      <button class="k" data-face="0" aria-pressed="false">Face us</button>
+      <button class="k" data-face="3" aria-pressed="true">Face right</button>
+      <button class="k" id="chBump">Bump the skids</button>
+    </div>
+    <div class="ctl">
+      <span class="mono">lean left</span>
+      <input type="range" id="chTilt" min="-5" max="5" value="0" aria-label="Tilt">
+      <span class="mono">lean right</span>
+    </div>
+    <div class="ctl">
+      <button class="k" data-bit="0" aria-pressed="true">On an even bit</button>
+      <button class="k" data-bit="1" aria-pressed="false">On an odd bit</button>
+    </div>
+    <canvas id="chHeliCv" width="384" height="192" style="width:384px"></canvas>
+    <p class="cap mono" id="chHeliCap"></p>
+    <p class="cap">The helicopter is placed by its middle, not by a pixel, so it can land on either
+    bit of a pixel pair. Each pair of bits is one wide pixel, and the same shape takes different
+    colours when it moves by one bit. The game does nothing about it, and in play the helicopter
+    changes colour as it flies. <b>Bump the skids</b> shows the frame drawn on the one pass the
+    skids touch the ground, shape 14 side on and 15 facing you: one row shorter, redrawn rather
+    than cut. Lean is <code>$5A</code> and facing is <code>$59</code>.</p>
+  </div>
+</section>
+
+<section id="g2">
+  <p class="fig">02 &middot; The hostages</p>
+  <h2 class="t">The people walk, wave and climb in</h2>
+  <p class="lede">A person is nine bits wide and eleven rows tall, in one of nine drawings.
+  <code>$9B7D</code> moves every person one step and draws them on each pass: a walker takes
+  shapes 55 to 58 and two bits of ground a step, flipped when walking left; someone standing
+  waves through 59, 60, 61 and 60; someone at the door takes 62 twice and 63 twice and is
+  gone.</p>
+  <div class="plate">
+    <canvas id="chPeopleCv" width="480" height="132" style="width:480px"></canvas>
+    <p class="cap mono" id="chPeopleCap"></p>
+  </div>
+</section>
+
+<section id="g3">
+  <p class="fig">03 &middot; Explosions and the mine</p>
+  <h2 class="t">The cloud and the mine</h2>
+  <p class="lede">Everything that blows up becomes the same actor, <code>$B106</code>, which
+  draws shapes 51, 52, 53 and 54 on four passes and frees itself. A cloud on the ground is lifted
+  four rows so that it sits on the ground instead of half in it. The mine that homes on you from
+  the third sortie is one drawing, shape 50, which <code>$B73D</code> draws flipped on every
+  other pass, so it seems to spin.</p>
+  <div class="ch-row">
+    <figure class="ch-card"><canvas id="chBoomAir" width="160" height="96"></canvas>
+      <figcaption><b>A cloud in the air</b>Actor type 1.</figcaption></figure>
+    <figure class="ch-card"><canvas id="chBoomGround" width="160" height="96"></canvas>
+      <figcaption><b>A cloud on the ground</b>Actor type 2, four rows higher.</figcaption></figure>
+    <figure class="ch-card"><canvas id="chMine" width="160" height="96"></canvas>
+      <figcaption><b>The mine</b>Bit 0 of the pass counter <code>$89</code> picks the way round.</figcaption></figure>
+  </div>
+</section>
+
+<section id="g4">
+  <p class="fig">04 &middot; The tank</p>
+  <h2 class="t">The tank's tracks are one drawing, flipped</h2>
+  <p class="lede">A tank is three shapes: the hull, the turret on top, and one of five barrels.
+  Nothing animates the tracks. <code>$A0BB</code> draws the hull as stored when bit 2 of the
+  tank's X is set and flipped when it is clear, and a moving tank goes four units a pass, so the
+  hull flips on every pass it moves. The barrel is picked by the bearing to the helicopter: drag
+  the slider.</p>
+  <div class="plate">
+    <div class="ctl">
+      <span class="mono">bearing to the helicopter</span>
+      <input type="range" id="chBearing" min="0" max="255" value="128" aria-label="Bearing">
+      <span class="mono" id="chBearLbl"></span>
+    </div>
+    <canvas id="chTankCv" width="720" height="72" style="width:720px"></canvas>
+    <p class="cap">The gun has five positions. <code>$A249</code> holds the bearing at which
+    each one starts and <code>$A244</code> how far along the hull its barrel is drawn. The rule
+    that turns the gun and fires it is on <a href="index.html#s5">How it works</a>.</p>
+  </div>
+</section>
+
+<section id="g5">
+  <p class="fig">05 &middot; The jet</p>
+  <h2 class="t">Four canned manoeuvres, one record a pass</h2>
+  <p class="lede">The jet cruises on shape 23. Each manoeuvre is a list of four-byte records, one
+  a pass: which drawing, how far along, and two steps down the screen. The wide turn ends facing
+  the other way, and from then on the jet is drawn flipped.</p>
+  <div class="plate">
+    <div class="ctl" id="chJetBtns"></div>
+    <canvas id="chJetCv" width="720" height="240" style="width:720px"></canvas>
+    <p class="cap mono" id="chJetCap"></p>
+  </div>
+</section>
+
+<section id="g6">
+  <p class="fig">06 &middot; The base and the sheds</p>
+  <h2 class="t">A flag that flaps every pass</h2>
+  <p class="lede">The base is built from five shapes on a blue block. The sloping end is one
+  shape drawn twice, once flipped, and so is the bunker. The flag is two drawings, and bit 0 of
+  the pass counter <code>$89</code> picks between them, so it changes on every pass. A shed is
+  one of two drawings on a bar of ground, and once it has been blown open the people in its
+  doorway are one shape, drawn flipped on every other pass.</p>
+  <div class="plate">
+    <canvas id="chBaseCv" width="320" height="96" style="width:640px"></canvas>
+    <div class="ch-row" style="margin-top:16px">
+      <figure class="ch-card"><canvas id="chShedShut" width="64" height="40" style="width:192px"></canvas>
+        <figcaption><b>A shed, shut</b>Shape 71 on shape 73.</figcaption></figure>
+      <figure class="ch-card"><canvas id="chShedOpen" width="64" height="40" style="width:192px"></canvas>
+        <figcaption><b>A shed, blown open</b>Shape 72, with shape 74 in the doorway.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="g7">
+  <p class="fig">07 &middot; The rest</p>
+  <h2 class="t">Shots, a mine and the scenery</h2>
+  <p class="lede">These never change their drawing. The shots only move, and are drawn flipped
+  when they fly left, and the hills and the blobs in front of the base slide past at their own
+  rates as the view scrolls.</p>
+  <div class="ch-still" id="chStill"></div>
+</section>
+
+</main>
+
+<script src="../../lib/c64.js"></script>
+<script>
+/* ch-gfx */
+// Every picture is a shape in the table at $8009: a width in bitmap bits, a height in rows, then
+// the rows, top first. The game ORs shapes into a multicolour bitmap, where each pair of bits is
+// one wide pixel. These functions draw shapes as its three blitters do, and put each thing
+// together as the routine that draws it does. X is in bitmap bits and a row counts up from the
+// bottom of the play area, as the game counts them.
+const CH_CLOCK = 985248;
+// Cycles one pass of the main loop takes: the game draws the next picture as soon as it has
+// finished the last, so it goes faster where there is less to draw. open is the helicopter flying
+// forward with only the hills about, base is the helicopter on the pad beside the base.
+const CH_PASS = { open: 49800, base: 82800 };
+const CH_TABLE = 0x8009;
+const chS8 = (v) => (v > 127 ? v - 256 : v);
+function chShape(ram, i) {
+  const a = ram[CH_TABLE + 2 * i] | (ram[CH_TABLE + 2 * i + 1] << 8);
+  const w = ram[a], h = ram[a + 1], bpr = (w + 7) >> 3;
+  return { i, a, w, h, bit: (r, k) => (ram[a + 2 + r * bpr + (k >> 3)] >> (7 - (k & 7))) & 1 };
+}
+// A picture W bits wide and H rows tall whose bottom row is the game's row `base`.
+function chPicture(W, H, base) { return { W, H, base: base || 0, bits: new Uint8Array(W * H) }; }
+function chPlot(P, x, row, v) {
+  const r = row - P.base;
+  if (x >= 0 && x < P.W && r >= 0 && r < P.H) P.bits[(P.H - 1 - r) * P.W + x] = v === undefined ? 1 : v;
+}
+// how: 'p' is $8FD3, as stored; 'm' is $903E, flipped bit for bit; 's' and 'S' are $90D2 and
+// $90DF, which plot one bit at a time: every `run` columns the row moves by `step`, and every
+// `run` rows the start moves one bit, which leans the shape.
+function chBlit(P, s, x, row, how, run, step) {
+  if (how === 'p' || how === 'm') {
+    for (let r = 0; r < s.h; r++) for (let k = 0; k < s.w; k++)
+      if (s.bit(r, k)) chPlot(P, how === 'p' ? x + k : x + s.w - 1 - k, row - r);
+    return;
+  }
+  const mir = how === 'S', R = run || 256;
+  let top = row, c30 = R, start = mir ? x + s.w - 1 : x;
+  for (let r = 0; r < s.h; r++) {
+    let c32 = R, c33 = c30, cur = top, px = start;
+    for (let k = 0; k < s.w; k++) {
+      if (s.bit(r, k)) chPlot(P, px, cur);
+      let move = true;
+      if (--c32 === 0) {
+        c32 = R; cur += step; c33 = (c33 + step) & 255;
+        if (c33 === 0) { c33 = R; move = false; } else if (c33 >= R) { c33 = 1; move = false; }
+      }
+      if (move) px += mir ? -1 : 1;
+    }
+    top--;
+    if (--c30 === 0) { c30 = R; start += (step < 0) !== mir ? -1 : 1; }
+  }
+}
+// $8C5E: a block of whole character cells filled with a pattern byte, stored over what is there.
+function chFill(P, x, row, cells, rows, pattern) {
+  const x0 = x & ~7;
+  for (let r = 0; r < rows; r++) for (let k = 0; k < cells * 8; k++)
+    chPlot(P, x0 + k, row - r, (pattern >> (7 - (k & 7))) & 1);
+}
+// $A9A0 with A non-zero: the shape's left edge moved on a bit if it would land on the wrong one.
+const chAlign = (x, odd) => ((x & 1) === odd ? x : x + 1);
+// The lean for a tilt of -5 to +5, from the pairs at $8C48: [run, step].
+function chLean(ram, t) { const i = 0x8C48 + 2 * (t + 5); return [ram[i + 1], chS8(ram[i])]; }
+
+// $AFD6: the helicopter for a facing $59 (-3 left, 0 towards us, +3 right), a tilt $5A (-5 to
+// +5), the rotor counters $0B61 (4, 2, 0) and $0B62 (6, 4, 2, 0), and $60, set on the pass the
+// skids bite. Each draw is a shape, a blitter and its top left from the helicopter's own point.
+function chHeli(ram, face, tilt, main, tail, bite) {
+  const out = [], t = face < 0 ? -tilt : tilt;
+  let shape, lean = [0, 0], nudge = 0;
+  const how = tilt === 0 ? (face < 0 ? 'm' : 'p') : ['m', 'S', 'S', 's', 's', 's', 'p'][face + 3];
+  if (face === 0 && tilt === 0 && bite) shape = 15;
+  else if (Math.abs(face) === 3 && tilt === 0 && bite) shape = 14;
+  else if (Math.abs(face) === 3) shape = 5 + t;
+  else { shape = 11 + Math.abs(face); lean = chLean(ram, t); nudge = chS8(ram[0x927E + 5 * (tilt + 5) + face + 2]); }
+  const body = chShape(ram, shape);
+  out.push({ shape, how, run: lean[0], step: lean[1], dx: -(body.w >> 1), dy: (body.h >> 1) + nudge });
+  const f = 0x92B5 + 14 * (tilt + 5) + 2 * (face + 3), b = 0x934F + 2 * (tilt + 5), rl = chLean(ram, tilt);
+  out.push({ shape: 16 + main / 2, how: 's', run: rl[0], step: rl[1],
+    dx: -chS8((ram[b] + ram[f]) & 255), dy: chS8((ram[b + 1] + ram[f + 1]) & 255) });
+  if (Math.abs(face) === 3) {
+    const o = (face > 0 ? 0x9365 : 0x937B) + 2 * (tilt + 5);
+    out.push({ shape: 19 + tail / 2, how: 'p', run: 0, step: 0, dx: -chS8(ram[o]), dy: chS8(ram[o + 1]) });
+  }
+  return out;
+}
+// The rotor counters step once a pass, and the facing and the tilt one notch a pass towards
+// where they are going ($986C); a turn from one side to the other does not stop facing us.
+const chNextMain = (m) => (m === 0 ? 4 : m - 2);
+const chNextTail = (t) => (t === 0 ? 6 : t - 2);
+function chTurn(face, want) {
+  if (face === want) return face;
+  const d = want > face ? 1 : -1;
+  return face + d === 0 && want !== 0 ? face + 2 * d : face + d;
+}
+
+// $9DDA: a person for a direction (0 standing, $01 or $FF walking, $02 or $FE climbing in) and
+// the step counter 0 to 3. A person's left edge is X - 4, put on an odd bit.
+function chPerson(dir, phase) {
+  const how = dir & 0x80 ? 'm' : 'p';
+  if (dir === 0) return { shape: 59 + ((((phase << 1) ^ 0xFF) & phase) & 3), how };
+  if (dir & 1) return { shape: 55 + phase, how };
+  return { shape: 62 + ((phase & 2) >> 1), how };
+}
+const CH_PERSON_TOP = 22 + 11;   // the ground row $58 plus 11
+
+// $B106: the cloud for step 0 to 3, by its middle; on the ground it is four rows higher.
+function chBoom(ram, frame, ground) {
+  const s = chShape(ram, 51 + frame);
+  return { shape: 51 + frame, how: 'p', dx: -(s.w >> 1), dy: (s.h >> 1) + (ground ? 4 : 0), even: true };
+}
+
+// $B73D: the mine, by a point 6 bits right of its left edge and 7 rows below its top, on an
+// even bit, drawn flipped when bit 0 of $89 is set.
+const chMine = (flip) => ({ shape: 50, how: flip ? 'm' : 'p', dx: -6, dy: 7 });
+
+// $A0BB: hull, turret and barrel for a tank at X with its gun at position 0 to 4, each put on
+// an odd bit; the hull is flipped when bit 2 of X is clear.
+function chTank(ram, x, aim) {
+  return [{ shape: 40, how: x & 4 ? 'p' : 'm', dx: -15, dy: 0 },
+          { shape: 39, how: 'p', dx: -7, dy: 3 },
+          { shape: 41 + aim, how: 'p', dx: -chS8(ram[0xA244 + aim]), dy: 7 }];
+}
+// The bearing at which each gun position starts, from $A249.
+const chAimFor = (ram, bearing) => { let a = 0; for (let i = 0; i < 5; i++) if (bearing >= ram[0xA249 + i]) a = i; return a; };
+
+// $AD8F: the jet's manoeuvre for state 0 to 4, from the tables at $AFC2, $AFCC and $AD8A: the
+// first shape and the records, [drawing, X step, height step, depth step]. State 0 has a count of
+// 0 and is the one record repeated.
+function chJet(ram, state) {
+  const p = ram[0xAFC2 + 2 * state] | (ram[0xAFC3 + 2 * state] << 8);
+  const t = ram[0xAFCC + 2 * state] | (ram[0xAFCD + 2 * state] << 8);
+  const n = ram[0xAD8A + state], recs = [];
+  for (let i = 0; i < Math.max(n, 1); i++) recs.push([ram[p + 4 * i], chS8(ram[p + 4 * i + 1]), chS8(ram[p + 4 * i + 2]), chS8(ram[p + 4 * i + 3])]);
+  return { first: (t - CH_TABLE) / 2, recs, flips: state === 1 };
+}
+
+// $BA3F: the base, from its left end B, on an even bit. The block is $BB25; flag is bit 0 of $89.
+function chBase(ram, flag) {
+  return [{ fill: true, dx: 15, row: 25, cells: ram[0xBB25], rows: ram[0xBB26], pattern: ram[0xBB27] },
+          { shape: 66, how: 'm', dx: -1, row: 25 }, { shape: 66, how: 'p', dx: 127, row: 25 },
+          { shape: 65, how: 'p', dx: 72, row: 34 }, { shape: 65, how: 'm', dx: 98, row: 34 },
+          { shape: 67, how: 'p', dx: 113, row: 46 }, { shape: 68 + flag, how: 'p', dx: 115, row: 46 }];
+}
+// $B8AE: a shed from its left end S, on an even bit; flip is bit 0 of $89.
+function chShed(open, flip) {
+  const d = [{ shape: open ? 72 : 71, how: 'p', dx: 0, row: 36 }, { shape: 73, how: 'p', dx: 0, row: 25 }];
+  if (open) d.push({ shape: 74, how: flip ? 'm' : 'p', dx: 6, row: 28 });
+  return d;
+}
+
+// The colours: the matrix holds $2E above character row 20 and $26 from it, colour RAM 1, and
+// the background turns grey at display line 173. A bit pair 01 is red, 10 light blue or blue, 11
+// white.
+function chPens(row) {
+  return [row <= 26 ? 12 : 0, 2, row <= 39 ? 6 : 14, 1];
+}
+// end of ch-gfx
+
+(async function () {
+  let G;
+  try { G = await C64.load('listing.json'); } catch (e) {
+    document.querySelector('main').insertAdjacentHTML('afterbegin', '<p class="lede">The listing did not load, so the pictures cannot be drawn.</p>');
+    return;
+  }
+  const ram = G.ram, PAL = C64.PAL;
+  const RGB = PAL.map((h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  function draw(P, d, x, row) {
+    if (d.fill) return chFill(P, x, row, d.cells, d.rows, d.pattern);
+    chBlit(P, chShape(ram, d.shape), x, row, d.how, d.run || 0, d.step || 0);
+  }
+  // Paint a picture into its canvas, one wide pixel to each pair of bits.
+  function paint(cv, P) {
+    const g = cv.getContext('2d'), im = g.createImageData(P.W, P.H);
+    for (let y = 0; y < P.H; y++) {
+      const pens = chPens(P.base + P.H - 1 - y);
+      for (let x = 0; x < P.W; x += 2) {
+        const v = (P.bits[y * P.W + x] << 1) | P.bits[y * P.W + x + 1], c = RGB[pens[v]];
+        for (const xx of [x, x + 1]) { const o = (y * P.W + xx) * 4; im.data[o] = c[0]; im.data[o + 1] = c[1]; im.data[o + 2] = c[2]; im.data[o + 3] = 255; }
+      }
+    }
+    const t = document.createElement('canvas'); t.width = P.W; t.height = P.H;
+    t.getContext('2d').putImageData(im, 0, 0);
+    g.imageSmoothingEnabled = false; g.clearRect(0, 0, cv.width, cv.height);
+    g.drawImage(t, 0, 0, cv.width, cv.height);
+  }
+  const pressed = (sel, b) => { for (const o of document.querySelectorAll(sel)) o.setAttribute('aria-pressed', o === b); };
+
+  // Each scene keeps its own count of cycles and steps when it has a pass's worth.
+  const scenes = [];
+  function scene(kind, step) { const s = { kind, acc: 0, step }; scenes.push(s); step(); return s; }
+
+  /* 01: the helicopter */
+  const H = { face: 3, want: 3, tilt: 0, wantTilt: 0, main: 4, tail: 6, bite: 0, bump: false, odd: 0 };
+  const heliCv = document.getElementById('chHeliCv');
+  function heli() {
+    const P = chPicture(96, 48, 60), ax = 48 + H.odd, arow = 82;
+    const draws = chHeli(ram, H.face, H.tilt, H.main, H.tail, H.bite);
+    for (const d of draws) draw(P, d, ax + d.dx, arow + d.dy);
+    paint(heliCv, P);
+    const name = { p: 'as stored', m: 'flipped', s: 'leaned', S: 'leaned and flipped' };
+    document.getElementById('chHeliCap').textContent = 'facing ' + H.face + ', tilt ' + H.tilt + ' · ' +
+      draws.map((d, i) => ['body', 'rotor', 'tail rotor'][i] + ' ' + d.shape + ' ' + name[d.how]).join(', ');
+  }
+  scene('open', function () {
+    H.bite = 0;
+    if (H.bump && H.tilt === 0 && H.face % 3 === 0) { H.bite = 1; H.bump = false; }
+    H.face = chTurn(H.face, H.want);
+    if (H.tilt !== H.wantTilt) H.tilt += H.wantTilt > H.tilt ? 1 : -1;
+    H.main = chNextMain(H.main); H.tail = chNextTail(H.tail);
+    heli();
+  });
+  for (const b of document.querySelectorAll('[data-face]'))
+    b.addEventListener('click', () => { H.want = +b.dataset.face; pressed('[data-face]', b); });
+  for (const b of document.querySelectorAll('[data-bit]'))
+    b.addEventListener('click', () => { H.odd = +b.dataset.bit; pressed('[data-bit]', b); heli(); });
+  // The slider runs left to right and $5A the other way: a helicopter leaning right has a negative $5A.
+  document.getElementById('chTilt').addEventListener('input', (e) => { H.wantTilt = -e.target.value; });
+  document.getElementById('chBump').addEventListener('click', () => { H.bump = true; });
+
+  /* 02: the people. A walker paces between two marks; the climber steps in and leaves a gap. */
+  const peopleCv = document.getElementById('chPeopleCv');
+  const folk = [{ x: 21, dir: 0, phase: 0 }, { x: 81, dir: 1, phase: 0, lo: 61, hi: 141 }, { x: 191, dir: 2, phase: 0, gap: 0 }];
+  scene('open', function () {
+    const P = chPicture(240, 22, 20);
+    for (const f of folk) {
+      if (f.gap) { f.gap--; continue; }
+      if (f.dir === 1 || f.dir === 0xFF) {
+        f.x += f.dir === 1 ? 2 : -2;
+        if (f.x >= f.hi) f.dir = 0xFF; else if (f.x <= f.lo) f.dir = 1;
+      }
+      const d = chPerson(f.dir, f.phase);
+      draw(P, d, f.x, CH_PERSON_TOP);
+      if (f.dir === 2 && f.phase === 3) f.gap = 8;
+      f.phase = (f.phase + 1) & 3;
+    }
+    paint(peopleCv, P);
+    document.getElementById('chPeopleCap').textContent = folk.map((f, i) =>
+      ['waving', 'walking', 'climbing in'][i] + ': ' + (f.gap ? 'gone' : 'shape ' + chPerson(f.dir, (f.phase + 3) & 3).shape)).join(' · ');
+  });
+
+  /* 03: explosions */
+  const booms = [{ cv: document.getElementById('chBoomAir'), ground: false, frame: 0, gap: 0 },
+                 { cv: document.getElementById('chBoomGround'), ground: true, frame: 2, gap: 0 }];
+  const mineCv = document.getElementById('chMine');
+  let mineFlip = 0;
+  scene('open', function () {
+    mineFlip ^= 1;
+    const P = chPicture(80, 48, 60), d = chMine(mineFlip);
+    draw(P, d, chAlign(40 + d.dx, 0), 84 + d.dy);
+    paint(mineCv, P);
+  });
+  scene('open', function () {
+    for (const b of booms) {
+      const P = chPicture(80, 48, b.ground ? 0 : 60);
+      if (b.gap) b.gap--;
+      else {
+        const d = chBoom(ram, b.frame, b.ground), y = b.ground ? 22 : 80;
+        draw(P, d, chAlign(40 + d.dx, 0), y + d.dy);
+        if (++b.frame === 4) { b.frame = 0; b.gap = 6; }
+      }
+      paint(b.cv, P);
+    }
+  });
+
+  /* 04: the tank drives to and fro under the slider's gun position */
+  const tankCv = document.getElementById('chTankCv'), bearing = document.getElementById('chBearing');
+  const T = { x: 80, dx: 4 };
+  function tankLabel() {
+    const v = +bearing.value, a = chAimFor(ram, v);
+    document.getElementById('chBearLbl').textContent = C64.hex(v, 2) + ', gun position ' + a + ', barrel shape ' + (41 + a);
+  }
+  scene('open', function () {
+    T.x += T.dx; if (T.x >= 200 || T.x <= 40) T.dx = -T.dx;
+    const P = chPicture(240, 24, 0), aim = chAimFor(ram, +bearing.value);
+    for (const d of chTank(ram, T.x, aim)) draw(P, d, chAlign(T.x + d.dx, 1), 8 + d.dy);
+    paint(tankCv, P);
+  });
+  bearing.addEventListener('input', tankLabel); tankLabel();
+
+  /* 05: the jet flies one manoeuvre over and over, one record a pass */
+  const jetCv = document.getElementById('chJetCv');
+  const J = { state: 1, i: 0, play: true };
+  const jetBox = document.getElementById('chJetBtns');
+  const jetName = ['Cruise', 'Wide turn', 'Tight turn', 'Fast run'];
+  jetName.forEach((n, s) => { const b = document.createElement('button'); b.className = 'k'; b.textContent = n;
+    b.dataset.jet = s; b.setAttribute('aria-pressed', s === J.state);
+    b.addEventListener('click', () => { J.state = s; J.i = 0; pressed('[data-jet]', b); jet(); }); jetBox.appendChild(b); });
+  const stepBtn = document.createElement('button'); stepBtn.className = 'k'; stepBtn.textContent = 'Pause';
+  stepBtn.addEventListener('click', () => { J.play = !J.play; stepBtn.textContent = J.play ? 'Pause' : 'Play'; });
+  jetBox.appendChild(stepBtn);
+  function jet() {
+    const m = chJet(ram, J.state), P = chPicture(240, 80, 60);
+    // Walk the path from the start to record i: X and the two vertical fields, and the facing.
+    let x = 20, alt = 50, depth = 60, face = 1;
+    const n = J.state === 0 ? 24 : m.recs.length;
+    for (let k = 0; k <= J.i && k < n; k++) {
+      const r = m.recs[J.state === 0 ? 0 : k];
+      if (k === J.i) {
+        const s = chShape(ram, m.first + r[0]);
+        draw(P, { shape: m.first + r[0], how: face > 0 ? 'p' : 'm' }, chAlign(x - (s.w >> 1), 0), alt + depth + (s.h >> 1));
+        document.getElementById('chJetCap').textContent = 'record ' + k + ' of ' + (J.state ? m.recs.length : 1) +
+          ': shape ' + (m.first + r[0]) + ', X ' + (r[1] >= 0 ? '+' : '') + r[1] + ', height ' + r[2] + ', depth ' + r[3] + (face < 0 ? ', flipped' : '');
+      }
+      x += face * r[1]; alt += r[2]; depth += r[3];
+    }
+    paint(jetCv, P);
+  }
+  scene('open', function () {
+    if (!J.play) return jet();
+    const n = J.state === 0 ? 24 : chJet(ram, J.state).recs.length;
+    J.i = (J.i + 1) % (n + 6);
+    if (J.i >= n) return;
+    jet();
+  });
+
+  /* 06: the base and the sheds */
+  const baseCv = document.getElementById('chBaseCv'), shut = document.getElementById('chShedShut'), open = document.getElementById('chShedOpen');
+  let flag = 0;
+  scene('base', function () {
+    flag ^= 1;
+    const P = chPicture(160, 48, 0);
+    for (const d of chBase(ram, flag)) draw(P, d, 10 + d.dx, d.row);
+    paint(baseCv, P);
+  });
+  let flip = 0;
+  scene('open', function () {
+    flip ^= 1;
+    for (const [cv, o] of [[shut, false], [open, true]]) {
+      const P = chPicture(64, 40, 0);
+      for (const d of chShed(o, flip)) draw(P, d, 16 + d.dx, d.row);
+      paint(cv, P);
+    }
+  });
+
+  /* 07: the stills */
+  const STILL = [[46, 'The helicopter\'s shot', '$B16E', 70], [47, 'A tank\'s shell', '$B26D', 60],
+                 [48, 'A jet\'s rocket, two at a time', '$B221', 90], [49, 'A jet\'s shell, when you are landed', '$B1E8', 34],
+                 [64, 'A hill, drawn three times along the horizon', '$AA67', 29], [70, 'The blob drawn four times in front of the base', '$B971', 22]];
+  const box = document.getElementById('chStill');
+  for (const [i, what, at, top] of STILL) {
+    const s = chShape(ram, i), W = 48, Hh = Math.max(16, s.h + 6);
+    const P = chPicture(W, Hh, top - s.h + 1 - ((Hh - s.h) >> 1));
+    draw(P, { shape: i, how: 'p' }, chAlign((W - s.w) >> 1, 0), top);
+    const f = document.createElement('figure'); f.className = 'ch-card';
+    const cv = document.createElement('canvas'); cv.width = W * 3; cv.height = Hh * 3;
+    f.appendChild(cv);
+    f.insertAdjacentHTML('beforeend', '<figcaption><b>' + what + '</b><span class="codes">shape ' + i + ', ' + s.w + ' bits by ' + s.h + ' rows, drawn by ' + at + '</span></figcaption>');
+    box.appendChild(f); paint(cv, P);
+  }
+
+  /* the clock */
+  const speed = { v: 1 };
+  document.querySelector('.ch-speed').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    speed.v = +b.dataset.speed; pressed('.ch-speed button', b);
+  });
+  let last = 0;
+  function tick(now) {
+    const ms = last ? Math.min(now - last, 100) * speed.v : 0; last = now;
+    for (const s of scenes) {
+      s.acc += ms / 1000 * CH_CLOCK;
+      if (s.acc >= CH_PASS[s.kind]) { s.acc %= CH_PASS[s.kind]; s.step(); }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
