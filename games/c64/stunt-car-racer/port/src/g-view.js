@@ -560,19 +560,19 @@ G.view = P => {
     if (k & 0x10) y |= 1;
     if (k & 0x02) y |= 0x10;
     if (k & 0x01) y = (y | 2) & 0xFE;
-    let a = y;
+    let a = y, x = k;
     if (!a) {
       M[0xF810] = (M[0xF810] + 1) & 255;
       P.wr(0xDC02, 0);
       a = P.rd(0xDC00) ^ 0xFF;
       if (!a) {
         y = M[0x3DF8];
-        if (!(y & 0x80)) a = P.KEY_PRESSED({ x: 8 }).z ? 0x10 : 0;
+        if (!(y & 0x80)) { const q = P.KEY_PRESSED({ x: 8, y }); x = q.x; a = q.z ? 0x10 : 0; }
       }
     }
     a &= 0x1F;
     M[0x66] = a;
-    return { a, z: a ? 0 : 1 };
+    return { a, x, y, z: a ? 0 : 1 };
   };
 
   // TIME_PENALTY ($F811): car X off the track short of the line ($C3 + X clear): the part of the

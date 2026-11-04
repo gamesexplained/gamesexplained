@@ -48,7 +48,7 @@ G.dash = P => {
     M[0xC378 + x] = (M[0xC378 + x] + 1) & 255;
     if (M[0xC378 + x] !== 1) P.TIME_PENALTY({ x });
     if (!x) {
-      if (M[0xC378] !== 1) { P.s_92A2({ x }); M[0x82] = 0x19; P.SHOW_LAP_TIME({ x }); }
+      if (M[0xC378] !== 1) { P.CHECK_RECORDS({ x }); M[0x82] = 0x19; P.SHOW_LAP_TIME({ x }); }
       M[0xC6] = x;
       P.DIGIT_SPLIT({ a: M[0xC378], x: 4 });
       x = M[0xC6];

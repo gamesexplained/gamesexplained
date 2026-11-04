@@ -88,7 +88,7 @@ T('READ_CONTROLS', { setup: (M, c, rnd) => {
   c.game.keys.clear();
   for (let i = rnd(3) ? rnd(2) : rnd(6); i; i--) c.game.keys.add(rnd(64));
   c.game.joy = rnd(2) ? 0x1F : (0x1F & ~(1 << rnd(5)));
-  M[0x3DF8] = rnd(2) ? 0x80 : 0;
-}, outs: ['a', 'z'] });
+  M[0x3DF8] = [0x80, 0, 0x41, 0xC1][rnd(4)];
+}, outs: ['a', 'x', 'y', 'z'] });
 T('TIME_PENALTY', { setup: (M, c, rnd) => { const x = rnd(2); M[0xC3 + x] = rnd(3) ? 0 : rnd(4); M[0x22 + x] = rnd(256); return { x }; }, outs: [] });
 process.exitCode = f ? 1 : 0;

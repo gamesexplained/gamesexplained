@@ -16,6 +16,13 @@ G.race = P => {
   // ($DC00) to $AE00, the race screen, the players chosen and the league shown; then for good the
   // main menu ($EF3A), and a practice race or a season of the league
   P.START = function* (r) {
+    for (;;) {
+      try { return yield* start(); } catch (e) { if (e !== P.RESTART) throw e; }
+    }
+  };
+  // the main menu's quit ($EF74) jumps back to START: here the menu throws P.RESTART
+  P.RESTART = P.RESTART || { restart: true };
+  function* start() {
     P.ALL_RAM({});
     for (let x = 0; x < 256; x++) M[0xAE00 + x] = M[0xDC00 + x];
     P.IO_BACK({});
@@ -26,7 +33,7 @@ G.race = P => {
     P.SAVE_RANDOM({});
     for (;;) {
       M[0xC304] >>= 1;
-      yield* P.s_EF3A({});
+      yield* P.MAIN_MENU({});
       if (!(M[0xC76C] & 0x80)) {
         yield* P.RACE_SETUP({});
         yield* P.PANEL_SCREEN({});
@@ -37,8 +44,7 @@ G.race = P => {
       P.NEW_DRIVERS({});
       yield* season();
     }
-  };
-  P.GEN.add('s_EF3A'); P.GEN.add('s_91B4'); P.GEN.add('s_91C3');
+  }
   // $3B6C-$3C34: the seasons of a league: each race of the division's ($C77F of $31A3), the player's
   // raced (NEXT_RACE, RACE_SETUP, RACE, the results) and the others' worked out ($E87F); at a
   // season's end the changes and the league, or for several players their turns ($31A2)
@@ -69,16 +75,16 @@ G.race = P => {
         if (P.KEY_PRESSED({ x: 0x20 }).z) { at = 0x3B5F; continue; }
         yield* P.RACE_SETUP({});
         yield* P.PANEL_SCREEN({});
-        P.s_9846({ a: 0x80 });
+        P.PLAYER_KEYS({ a: 0x80 });
         yield* P.RACE({});
-        P.s_9846({ a: 0 });
-        P.s_9319({ a: 0 });
+        P.PLAYER_KEYS({ a: 0 });
+        P.TRACK_RECORDS({ a: 0 });
         P.RACE_OTHERS({});
         yield* P.RACE_VIEW_SCREEN({});
         if (M[0xC305]) { yield* P.NEXT_RACE({}); M[0xC305] = 0; }
         yield* P.RACE_DONE({});
         yield* P.RESULTS_TABLE({});
-        if (M[0x31A1]) yield* P.s_91C3({});
+        if (M[0x31A1]) yield* P.BONUS_RESULTS({});
         at = 0x3BF8;
       } else if (at === 0x3BA7) {
         P.RACE_OTHERS({});
@@ -94,7 +100,7 @@ G.race = P => {
           P.RESET_SEASON({});
           return;
         }
-        yield* P.s_91B4({});
+        yield* P.PAIR_RESULTS({});
         M[0xC304] >>= 1;
         M[0x31A2] = (M[0x31A2] - 1) & 255;
         if (!(M[0x31A2] & 0x80)) { at = 0x3B6C; continue; }
@@ -146,7 +152,7 @@ G.race = P => {
     }
   };
 
-  P.GEN.add('RACE'); P.GEN.add('PAUSE'); P.GEN.add('s_97AF');
+  P.GEN.add('RACE'); P.GEN.add('PAUSE');
   // RACE ($3C99): a race. The screen kept and cleared, the race's state cleared, multicolour, the
   // opponent placed ($3EB6, on piece $C765, $C4 4 and $B0 $4C) and dropped; the car placed on piece
   // X ($F488) and two steps drawn and shown before the screen goes on (none after a wreck, $3DF8);
@@ -294,7 +300,7 @@ G.race = P => {
     M[0x10] = 0; M[0x11] = 0;
     const c355 = M[0xC355], start = M[0x1327], groups = M[0x1328];
     P.SHOW_MESSAGE({ y: 0x4C, a: 2 });
-    do yield* P.s_97AF({}); while (!P.KEY_PRESSED({ x: 0x34 }).z);
+    do yield* P.REDEFINE_KEYS({}); while (!P.KEY_PRESSED({ x: 0x34 }).z);
     M[0x1328] = groups; M[0x1327] = start; M[0xC355] = c355;
     if (c355 & 0x80) P.SHOW_MESSAGE({ a: groups, x: groups, y: start });
     return P.START_SOUNDS({});

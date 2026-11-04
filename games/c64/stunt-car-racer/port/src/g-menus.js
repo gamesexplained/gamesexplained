@@ -309,21 +309,21 @@ G.menus = P => {
     for (let x = 0x0B; x >= 0; x--) P.wr(0xDAB6 + x, M[0xC6C0 + x]);
     return { a: M[0xC6C0], x: 0xFF, y: r.y };
   };
-  P.GEN.add('CHOOSE_PLAYERS'); P.GEN.add('s_EE36'); P.GEN.add('s_ED7F');
+  P.GEN.add('CHOOSE_PLAYERS');
   // CHOOSE_PLAYERS ($3052): the first menu ($31A0 set meanwhile): the single player's league, or
   // the drivers of a game for several, each one's name entered, two to eight ($31A1 one less)
   P.CHOOSE_PLAYERS = function* (r) {
     M[0x31A0] = 0x80; M[0x31A1] = 0;
-    let q = yield* P.s_EE36({ a: 0, x: 0x10, y: 1 });
+    let q = yield* P.MENU_CHOICE({ a: 0, x: 0x10, y: 1 });
     let at = (q.a & 255) ? 0x307D : 0x3067;
     for (;;) {
-      if (at === 0x3067) { q = yield* P.s_ED7F(q); break; }
+      if (at === 0x3067) { q = yield* P.NAME_ENTRY(q); break; }
       if (at === 0x306D) {
-        q = yield* P.s_EE36({ a: 0, x: 0x14, y: 1 });
+        q = yield* P.MENU_CHOICE({ a: 0, x: 0x14, y: 1 });
         if (q.a & 255) at = 0x3087;
         else { M[0x31A1] = (M[0x31A1] + 1) & 255; at = 0x307D; }
       } else if (at === 0x307D) {
-        q = yield* P.s_ED7F(q);
+        q = yield* P.NAME_ENTRY(q);
         at = M[0x31A1] < 7 ? 0x306D : 0x3087;
       } else {
         if (M[0x31A1]) break;
@@ -350,7 +350,7 @@ G.menus = P => {
       const row = M[0x3190 + M[0x31A1]];
       M[0x3845] = (row + 2) & 255;
       q = P.TRACK_HEADER({ y: row });
-      q = P.s_91CF({ x: q.x, y: q.y });
+      q = P.BONUS_LINES({ x: q.x, y: q.y });
       let a = M[0x31A1];
       if (a !== 6 && a !== 5) P.TEXT_ON_ROWS({ y: q.y });
       a = M[0x3198 + M[0x31A1]];
@@ -502,9 +502,9 @@ G.menus = P => {
         return yield* fireThenRows();
       }
       q = P.PAIRING({ a: 6 });
-      q = P.s_9319({ a: 0x80, x: q.x, y: q.y });
+      q = P.TRACK_RECORDS({ a: 0x80, x: q.x, y: q.y });
     }
-    P.s_9225({ x: q.x, y: q.y });
+    P.SHOW_RECORDS({ x: q.x, y: q.y });
     return yield* fireThenRows();
   }
   // $361C: a wait for the fire button, then TEXT_ON_ROWS
@@ -533,9 +533,9 @@ G.menus = P => {
     P.SPACE({ x, y });
     x = M[0xC6];
     if (M[0xC39C] & 0x80) {
-      q = P.s_99FF({ x, y });
+      q = P.PRINT_TIME({ x, y });
       q = P.SPACES_2(q);
-      q = P.s_99FF({ x: (q.x + 0x0C) & 255, y: q.y });
+      q = P.PRINT_TIME({ x: (q.x + 0x0C) & 255, y: q.y });
       x = q.x;
     } else {
       P.NUMBER_SP({ a: M[0xC740 + x], x, y });
@@ -692,6 +692,20 @@ G.menus = P => {
     M[0x19] = (M[0x19] + 1) & 255;
     return P.TEXT_HALF_DOWN({ y: M[0x7A] });
   };
+  // SCREEN_RUN ($3AC3): run X of $3AD9 (the count, then the byte) stored at ($1E) + Y on, across
+  // pages; X and Y come back past it
+  P.SCREEN_RUN = r => {
+    let x = r.x & 255, y = r.y & 255;
+    M[0x51] = M[0x3AD9 + x]; x = (x + 1) & 255;
+    const a = M[0x3AD9 + x]; x = (x + 1) & 255;
+    do {
+      M[((M[0x1E] | M[0x1F] << 8) + y) & 0xFFFF] = a;
+      y = (y + 1) & 255;
+      if (!y) M[0x1F] = (M[0x1F] + 1) & 255;
+      M[0x51] = (M[0x51] - 1) & 255;
+    } while (M[0x51]);
+    return { a, x, y, z: 1 };
+  };
   // RACE_SCREEN_COLOURS ($3A77): the screen RAM at $7C00 from the runs at $3AD9 (a count below $C8
   // and the byte; $C8 + n, n times the group of runs that follows, its length first; $FF the end),
   // the track's colour ($C76B) in two of them, then two bytes of $0E
@@ -699,16 +713,7 @@ G.menus = P => {
     M[0x3AEE] = M[0xC76B]; M[0x3AF2] = M[0xC76B];
     P.COLOUR_ROW({ x: 0, y: 0 });
     let x = 0, y = 0;
-    const run = () => {
-      M[0x51] = M[0x3AD9 + x]; x = (x + 1) & 255;
-      const a = M[0x3AD9 + x]; x = (x + 1) & 255;
-      do {
-        M[at(y)] = a;
-        y = (y + 1) & 255;
-        if (!y) M[0x1F] = (M[0x1F] + 1) & 255;
-        M[0x51] = (M[0x51] - 1) & 255;
-      } while (M[0x51]);
-    };
+    const run = () => { const q = P.SCREEN_RUN({ x, y }); x = q.x; y = q.y; };
     for (;;) {
       const a = M[0x3AD9 + x];
       if (a < 0xC8) { run(); continue; }

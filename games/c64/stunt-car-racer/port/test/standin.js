@@ -14,7 +14,9 @@ function labels() {
   if (!LABELS) {
     LABELS = new Map();
     const L = JSON.parse(fs.readFileSync(path.join(lib.GAME, 'listing.json'), 'utf8'));
-    for (const r of L.records) if (r.t === 'code' && r.l && !LABELS.has(r.l)) LABELS.set(r.l, r.a);
+    // KERNAL_ names the KERNAL's entry points the game calls with the KERNAL banked in, where the
+    // game's own code also sits: they are not the game's routines (src/kernal.js)
+    for (const r of L.records) if (r.t === 'code' && r.l && !r.l.startsWith('KERNAL_') && !LABELS.has(r.l)) LABELS.set(r.l, r.a);
   }
   return LABELS;
 }
@@ -41,11 +43,13 @@ function install(P, irqBytes = []) {
     const gen = P[k].constructor.name === 'GeneratorFunction';
     if (gen !== P.GEN.has(k)) throw new Error(k + (gen ? ' is a generator that GEN leaves out' : ' is in GEN but is not a generator'));
   }
-  const hooks = {};
+  const hooks = kernalHooks();
   for (const [label, a] of names) {
     if (!ported.has(label) || P.GEN.has(label)) continue;
     const f = P[label];
+    const k = hooks[a];
     hooks[a] = c => {
+      if (k && k(c) === false && c.pc !== a) return false;
       P.M[1] = c.pdata;
       const r0 = regsOf(c), sp = c.sp;
       const r = f.call(P, Object.assign({}, r0)) || {};
@@ -82,4 +86,11 @@ function install(P, irqBytes = []) {
   return P;
 }
 
-module.exports = { labels, install };
+// The KERNAL's routines (src/kernal.js) at its jump table, while the KERNAL is banked in: the
+// game's own code sits under some of them
+function kernalHooks(files = null) {
+  const h = globalThis.SCRKernal.hooks(files), out = {};
+  for (const a of Object.keys(h)) out[a] = c => ((c.pdata | ~c.pdir) & 2 ? h[a](c) : false);
+  return out;
+}
+module.exports = { labels, install, kernalHooks };

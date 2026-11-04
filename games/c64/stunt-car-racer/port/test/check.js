@@ -12,7 +12,10 @@
 // setup's rnd(n) is an integer below n (rnd() a fraction); it may change M and the chips, and gives
 // the registers (those it leaves out are random, the same on both sides). ignore lists addresses
 // or [first, last] ranges left out; states filters the moments by name; onPort(P) may change the
-// port once it is made; entry calls an address with no label; timing({ cycles, N, st, regs }) gets
+// port once it is made; entry calls an address with no label; rom, the ROMs ({ kernal }) for the
+// game's side, in place of src/kernal.js's stand-ins; files(rnd, from, M), the page's store of
+// files for each side (made from rnd and the case's memory for the game's, as a copy of from for the
+// port's), with dump() to compare them after; timing({ cycles, N, st, regs }) gets
 // each identical case's cycles on the game and the port's counts of its work (scripts/time-routines.js).
 const path = require('path');
 const lib = require('./lib.js');
@@ -94,16 +97,18 @@ function check(o) {
     const regs = Object.assign({ a: rnd(256), x: rnd(256), y: rnd(256), c: rnd(2) }, given);
     // the game
     const MA = M0.slice(), cA = cloneChips(c0, game), logA = logWrites(cA), ioA = ioOf(cA);
-    const cpu = new CPU(MA, { port: { dir: 0x2F, data: port }, io: { read: a => ioA.read(a), write: (a, v) => ioA.write(a, v) } });
+    const cpu = new CPU(MA, { port: { dir: 0x2F, data: port }, rom: o.rom, io: { read: a => ioA.read(a), write: (a, v) => ioA.write(a, v) } });
     const set = { d: 0 };
     for (const k of ['a', 'x', 'y', 'c', 'z', 'n', 'v']) if (regs[k] !== undefined) set[k] = regs[k];
     cpu.setRegs(set); cpu.sp = 0xFF;
     let gerr = null;
-    try { cpu.call(entry, {}, { maxSteps: o.maxSteps || 5e6, hooks: o.hooks || {} }); } catch (e) { gerr = e; }
+    const filesA = o.files ? o.files(rnd, null, M0) : null, filesB = o.files ? o.files(null, filesA) : null;
+    try { cpu.call(entry, {}, { maxSteps: o.maxSteps || 5e6, hooks: Object.assign(o.rom ? {} : standin.kernalHooks(filesA), o.hooks || {}) }); } catch (e) { gerr = e; }
     const rA = { a: cpu.a, x: cpu.x, y: cpu.y, c: cpu.c, z: cpu.z, n: cpu.n, v: cpu.v };
     // the port
     const MB = M0.slice(), cB = cloneChips(c0, game), logB = logWrites(cB), ioB = ioOf(cB);
     MB[0] = 0x2F; MB[1] = port;
+    if (filesB) ioB.files = filesB;
     const P = CM.makePort(MB, ioB);
     standin.install(P);
     if (o.onPort) o.onPort(P);
@@ -125,6 +130,7 @@ function check(o) {
       for (let i = 0; i < 0x400; i++) if ((cA.colour[i] & 15) !== (cB.colour[i] & 15)) { diffs.push('colour ' + hex(0xD800 + i) + ' game ' + cA.colour[i] + ' port ' + cB.colour[i]); break; }
       const la = logA.map(w => hex(w[0]) + '=' + hex2(w[1])).join(' '), lb = logB.map(w => hex(w[0]) + '=' + hex2(w[1])).join(' ');
       if (la !== lb) diffs.push('chip writes: game [' + la.slice(0, 300) + '] port [' + lb.slice(0, 300) + ']');
+      if (filesA && filesA.dump() !== filesB.dump()) diffs.push('files: game ' + filesA.dump().slice(0, 200) + ' port ' + filesB.dump().slice(0, 200));
       for (const k of outs) if (rB[k] === undefined || ((+rB[k]) & 0xFF) !== (rA[k] & 0xFF)) diffs.push('register ' + k + ': game ' + rA[k] + ' port ' + rB[k]);
     }
     if (!diffs.length && o.timing) o.timing({ cycles: cpu.cycles, N: Object.assign({}, P.N), st: st.name, regs });
@@ -140,4 +146,12 @@ function check(o) {
   return { fails, cases };
 }
 
-module.exports = { check, moments, makeRnd };
+// the port on memory M, with chips of their own and the stand-ins, to make a case's material
+function portOn(M) {
+  const c = new PortChips();
+  c.game = { keys: new Set(), joy: 0x1F, joy1: 0x1F, cpu: { cycles: 0 } };
+  const P = loadPort().makePort(M, ioOf(c));
+  standin.install(P);
+  return P;
+}
+module.exports = { check, moments, makeRnd, portOn };
