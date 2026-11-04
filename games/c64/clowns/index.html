@@ -176,10 +176,7 @@ table.cl-t td.n{font-family:var(--fm);font-size:14px}
   <canvas class="cl-cv" id="cl-bcell"></canvas>
   <p class="cap"><b>One balloon on a strip of the screen's cells</b>, drawn from the game's font. Move the slider: each pixel picks the next drawing of the balloon, and every eighth pixel the balloon's three characters start one cell further right. The cell borders are drawn in here; on the C64 the cells never move.</p>
   <canvas class="cl-cv" id="cl-glyphs" style="margin-top:18px"></canvas>
-  <p class="cap"><b>All eight drawings</b>, characters 96 to 119 of the font (<code>$FB00</code>), three characters each, with the borders between the characters marked. Each copy is the balloon one pixel further right; the third character is the room it slides into.</p>
-  <div class="cl-row" style="margin-top:18px"><button class="cl-btn" id="cl-bal" aria-pressed="true">Scroll</button></div>
-  <canvas class="cl-cv" id="cl-rowcv"></canvas>
-  <p class="cap"><b>A whole row of twelve balloons</b> scrolled the way the game does it, from those characters alone.</p></div>
+  <p class="cap"><b>All eight drawings</b>, characters 96 to 119 of the font (<code>$FB00</code>), three characters each, with the borders between the characters marked. Each copy is the balloon one pixel further right; the third character is the room it slides into. The <a href="graphics.html">Graphics</a> tab shows the three rows moving, run by the game's own code.</p></div>
   <p>The video chip can scroll smoothly by itself: the low three bits of <code>$D016</code> shift the picture zero to seven pixels sideways. That register moves the whole screen at once, and moving one band of it alone means changing the register on the right raster line in every frame, which needs an interrupt or a program waiting for the beam. Clowns has neither, and its three rows move at the same time in two directions, so it does the scrolling in the font instead.</p>
   <p>The font holds each balloon eight times, each copy one pixel further right inside a strip three characters wide. Every third tick (<code>$F1E7</code>), each row's fine position steps on by one, from 0 to 7, and the routine rewrites the row's 36 cells with the matching copy of each of its twelve balloons: characters 96 + 3 &times; position to 98 + 3 &times; position. When the position wraps from 7 back to 0, the row's first column moves on by one cell, so copy 0 starts where copy 7 left off. The top and bottom rows step forwards through the copies and move right; the middle row steps backwards and moves left. A popped balloon is written as three spaces.</p>
 </section>
@@ -488,7 +485,7 @@ const missing = (el) => { const p = document.createElement('p'); p.className = '
 const PAL = window.C64 ? C64.PAL : [];
 const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
 
-if (!window.C64) { for (const id of ['cl-frame', 'cl-bug', 'cl-saw', 'cl-col', 'cl-bcell', 'cl-glyphs', 'cl-rowcv', 'cl-scv', 'cl-pcv']) missing($(id)); }
+if (!window.C64) { for (const id of ['cl-frame', 'cl-bug', 'cl-saw', 'cl-col', 'cl-bcell', 'cl-glyphs', 'cl-scv', 'cl-pcv']) missing($(id)); }
 else C64.load('listing.json').then((D) => {
   const mem = D.ram, font = mem.subarray(0xF800, 0x10000);
 
@@ -658,20 +655,6 @@ else C64.load('listing.json').then((D) => {
       ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 1;
       for (let k = 0; k <= 3; k++) { ctx.beginPath(); ctx.moveTo(n * w + k * 8 * s + .5, 0); ctx.lineTo(n * w + k * 8 * s + .5, 8 * s); ctx.stroke(); }
     }
-    let fine = 1, start = 2, run = true;
-    const rowc = $('cl-rowcv'), rs = 2;
-    const step = () => {
-      const ctx2 = C64.canvas(rowc, 320 * rs, 8 * rs);
-      ctx2.fillStyle = PAL[0]; ctx2.fillRect(0, 0, 320 * rs, 8 * rs);
-      for (let b = 0; b < 12; b++) for (let k = 0; k < 3; k++) {
-        const c = 2 + (start - 2 + 3 * b + k) % 36;
-        C64.drawGlyph(ctx2, font, 96 + 3 * fine + k, c * 8 * rs, 0, rs, PAL[7]);
-      }
-      fine = (fine + 1) & 7; if (!fine) start = start === 37 ? 2 : start + 1;
-    };
-    step();
-    setInterval(() => { if (run) step(); }, 30);
-    $('cl-bal').onclick = () => { run = !run; $('cl-bal').setAttribute('aria-pressed', run); };
   }
 
   // ---- 08 the score
@@ -712,5 +695,5 @@ else C64.load('listing.json').then((D) => {
     td.appendChild(document.createTextNode(' ' + (D.names.get(a) || '')));
     tr.insertCell().textContent = what[n];
   }
-}).catch((e) => { console.error(e); for (const id of ['cl-frame', 'cl-bug', 'cl-saw', 'cl-col', 'cl-bcell', 'cl-glyphs', 'cl-rowcv', 'cl-scv', 'cl-pcv']) if ($(id)) missing($(id)); });
+}).catch((e) => { console.error(e); for (const id of ['cl-frame', 'cl-bug', 'cl-saw', 'cl-col', 'cl-bcell', 'cl-glyphs', 'cl-scv', 'cl-pcv']) if ($(id)) missing($(id)); });
 </script>

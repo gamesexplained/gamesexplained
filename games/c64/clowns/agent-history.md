@@ -36,3 +36,22 @@ and giving the renderer the 4 KB the chip sees from the cartridge, gave a
 frame that matched the emulator to the pixel. The play snapshot was saved
 in the emulator's folder but not copied into `work/` the first time; it was
 copied before the page's frame was captured.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`. It runs the title screen, which plays itself, by the
+game's own code on the kit's 6502: the cartridge's bytes from the listing,
+the processor started at the reset vector, the chips stood in for, and the
+CIA wait at `wait_tick` taken as the end of a tick. Every one of the
+eleven pictures and both of the see-saw's appear in it; a clown misses
+rarely there, so a button holds the see-saw away until one falls. The
+scrolling row of balloons moved there from How it works, which keeps the
+slider and the eight drawings that explain the scrolling.
+
+`test_graphics.js` runs the page's own block for 20,000 ticks and checks
+the table of pictures against it. Two things it found were not in the
+notes: the run's 13th drawing is never seen, since the leap replaces it in
+the same tick, and the see-saw shows its new picture a tick after the clown
+has moved to the other end.
+
