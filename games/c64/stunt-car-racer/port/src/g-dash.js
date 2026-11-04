@@ -142,8 +142,10 @@ G.dash = P => {
       P.CRACK({});
     }
     let e;
+    // plug-in point once: with Fast CPU, the 64 passes counted once a step, and each sound started
+    // at most once a step
     if (M[0xC302]) {
-      const a = M[0xC302]--;
+      const a = P.plug.once('hole') ? M[0xC302]-- : 0;
       if (a === 0x40) { P.BAR_HOLE(P.BAR_PART_AT({ y: M[0xC719] })); e = 1; }
       else if (M[0xC352]) e = 4;
       else return {};
@@ -157,7 +159,7 @@ G.dash = P => {
       }
     }
     if (e === 1) M[0xAF8C] = 0x20;
-    P.EFFECT({ a: e });
+    if (P.plug.once('damage' + e)) P.EFFECT({ a: e });
     M[0xC352] = 0;
     return { a: 0 };
   };
@@ -395,27 +397,36 @@ G.dash = P => {
   // SWERVE ($158E): while $C9 is set, a swerve of sixteen passes ($C30F) steers by the wave at
   // $1601 ($C30D right or $C30E left, $C357 the throttle); a new one starts at random, more often
   // the higher $C773, when $C353 allows it and the piece ahead does not forbid it
+  // (plug-in point once: with Fast CPU, the count and the dice once a step, the wave's values kept
+  // for the step's other loops; plug-in point glide: the wheels' offsets moved from one step's to
+  // the next's over the step)
   P.SWERVE = r => {
     if (!M[0xC9]) return {};
     let x = 0;
-    M[0xC30D] = 0; M[0xC30E] = 0; M[0xC357] = 0;
-    if (M[0xC30F]) {
-      const old = M[0xC30F]--;
-      let y = (old + M[0xC358]) & 0x0F;
-      let a = M[0x1601 + y];
-      if (a & 0x80) { a = (-a) & 255; x++; }
-      M[0xC30D + x] = a;
-      y = (y + 5) & 0x0F;
-      M[0xC357] = M[0x1601 + y];
-    } else if (!((M[0x0710 + M[0xC375]] | M[0xC36A] | M[0xB2]) & 0x80) && (M[0xC353] & 0x80)) {
-      M[0xC358] = (M[0xC353] & 0x40) ? 0x10 : 0x08;
-      const a = P.RANDOM({}).a & 0x1F;
-      M[0x14] = a;
-      if (M[0xC773] >= a) M[0xC30F] = 0x10;
+    if (P.plug.once('swerve')) {
+      M[0xC30D] = 0; M[0xC30E] = 0; M[0xC357] = 0;
+      if (M[0xC30F]) {
+        const old = M[0xC30F]--;
+        let y = (old + M[0xC358]) & 0x0F;
+        let a = M[0x1601 + y];
+        if (a & 0x80) { a = (-a) & 255; x++; }
+        M[0xC30D + x] = a;
+        y = (y + 5) & 0x0F;
+        M[0xC357] = M[0x1601 + y];
+      } else if (!((M[0x0710 + M[0xC375]] | M[0xC36A] | M[0xB2]) & 0x80) && (M[0xC353] & 0x80)) {
+        M[0xC358] = (M[0xC353] & 0x40) ? 0x10 : 0x08;
+        const a = P.RANDOM({}).a & 0x1F;
+        M[0x14] = a;
+        if (M[0xC773] >= a) M[0xC30F] = 0x10;
+      }
+      wave = M[0xC30D] - M[0xC30E];
     }
+    const w = P.plug.glide('swerve', wave);
+    M[0xC30D] = w > 0 ? w : 0; M[0xC30E] = w < 0 ? -w : 0;
     M[0xC353] = (M[0xA4] >> 1) ^ M[0xB2];
     return {};
   };
+  let wave = 0;
 
   // RESET_SEASON ($1611): the league's points ($C728-$C763) cleared, the twelve drivers back in
   // their places ($C758) with no holes worth $0A ($83B0), and $C77F cleared

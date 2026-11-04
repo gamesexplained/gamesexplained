@@ -206,7 +206,7 @@ G.opponent = P => {
       else step = a >= 0xF0 ? 0 : 0xF6;
     }
     if (!step) return {};
-    a = (step + M[0xB0]) & 255;
+    a = (P.plug.step('line', (step << 24) >> 24) + M[0xB0]) & 255;         // plug-in point step
     if (!M[0xC9]) return {};
     if (a >= 0xE1 || a < 0x20) return {};
     M[0xB0] = a;
@@ -264,6 +264,9 @@ G.opponent = P => {
     o = P.A_TO_15({ a: o.a });
     o = P.SHIFT16({ a: M[0x15], y: 0xFD });
     M[0x15] = o.a;
+    // plug-in point step: the move's share
+    const v = P.plug.step('along', (M[0x2D] << 24 >> 8) | (M[0x15] << 8) | M[0x14]);
+    M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; M[0x2D] = (v >> 16) & 255;
     let t = M[0xA1] + M[0x14]; M[0xA1] = t & 255;
     t = M[0x23] + M[0x15] + (t >> 8); M[0x23] = t & 255;
     t = M[0xC4] + M[0x2D] + (t >> 8);
@@ -362,7 +365,10 @@ G.opponent = P => {
       t = M[0x16] + M[0x14]; M[0x14] = t & 255;
       a = (M[0x17] + M[0x15] + (t >> 8)) & 255;
     } else a = M[0x17];
-    const o = P.A_TO_15({ a });
+    let o = P.A_TO_15({ a });
+    // plug-in point step: the change's share
+    const v = P.plug.step('speed', (M[0x15] << 24 >> 16) | o.a);
+    M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; o = { a: M[0x14] };
     t = o.a + M[0xD6];
     M[0xD6] = t & 255;
     a = (M[0xD7] + M[0x15] + (t >> 8)) & 255;
@@ -419,6 +425,7 @@ G.opponent = P => {
   // damage ($C3C3-$C3C5) and $C352 set
   P.OPP_BUMP = r => {
     if (!M[0xC37C]) return { a: 0 };
+    if (!P.plug.once('bump')) return { a: 0 };                                 // plug-in point once
     let skipUp = false;
     if (M[0xC9] && M[0x6A]) skipUp = true;
     if (!skipUp) {
@@ -472,9 +479,15 @@ G.opponent = P => {
   // OPP_PUSH ($2176): a bump's pushes ($C371) taken in: the opponent's speed less the push along
   // ($0181/$0184, never below 0), its wheels' heights' speeds less the push up over 16, the
   // player's springs' forces ($0170-$0175) plus the pushes, which are then cleared; sound effect 2
+  // (plug-in point hold: with Fast CPU, the pushes on the player's forces are added on each loop of
+  // the step, the changes to the opponent's speeds and the sound once)
   P.OPP_PUSH = r => {
-    if (!M[0xC371]) return { a: 0 };
+    if (!M[0xC371]) {
+      if (P.plug.holding('push')) for (let x = 2; x >= 0; x--) add(0x0170 + x, 0x0173 + x, push[x], push[x + 3]);
+      return { a: 0 };
+    }
     M[0xC371] = 0;
+    for (let x = 0; x < 6; x++) push[x] = M[0x017F + x];
     let t = M[0xD6] - M[0x0181]; M[0xD6] = t & 255;
     let a = (M[0xD7] - M[0x0184] - (t < 0 ? 1 : 0)) & 255;
     if (a & 0x80) a = 0;
@@ -487,12 +500,14 @@ G.opponent = P => {
       M[0x07E0 + x] = (M[0x07E0 + x] - M[0x15] - (t < 0 ? 1 : 0)) & 255;
     }
     for (let x = 2; x >= 0; x--) {
-      t = M[0x0170 + x] + M[0x017F + x]; M[0x0170 + x] = t & 255;
-      M[0x0173 + x] = (M[0x0173 + x] + M[0x0182 + x] + (t >> 8)) & 255;
+      add(0x0170 + x, 0x0173 + x, M[0x017F + x], M[0x0182 + x]);
       M[0x017F + x] = 0; M[0x0182 + x] = 0;
     }
+    P.plug.hold('push');
     return P.EFFECT({ a: 2, x: 0xFF });
   };
+  const push = [0, 0, 0, 0, 0, 0];
+  const add = (lo, hi, l, h) => { const t = M[lo] + l; M[lo] = t & 255; M[hi] = (M[hi] + h + (t >> 8)) & 255; };
   // OPP_WHEELS ($21DE): the opponent's three wheels: each one's height ($07CC/$07D0) against the
   // road's under it ($07EC/$07F0) less its spring's length ($28, or $7C on a piece with $B2 bit
   // 7), held to $FFA0 at the lowest; the spring's push ($07C4/$07C8, at most $3FF), and $C9 non-zero
@@ -514,8 +529,10 @@ G.opponent = P => {
         a = 0xFF;
       }
       M[0x19] = a;
-      t = M[0x18] - M[0x07D4 + x]; M[0x14] = t & 255;
-      const o = P.ADD16_18({ a: (M[0x19] - M[0x07D8 + x] - (t < 0 ? 1 : 0)) & 255 });
+      // the depth less the depth a pass ago (plug-in point back: with Fast CPU, a step ago)
+      const prev = P.plug.back('odepth' + x, M[0x07D4 + x] | M[0x07D8 + x] << 8);
+      t = M[0x18] - (prev & 255); M[0x14] = t & 255;
+      const o = P.ADD16_18({ a: (M[0x19] - (prev >> 8) - (t < 0 ? 1 : 0)) & 255 });
       a = o.a;
       if (o.n) { a = 0; M[0x14] = 0; }
       if (a >= 4) { M[0x14] = 0xFF; a = 3; }
@@ -524,6 +541,7 @@ G.opponent = P => {
       t = M[0x14] - M[0x52]; M[0x07C4 + x] = t & 255;
       M[0x07C8 + x] = (y - (t < 0 ? 1 : 0)) & 255;
       M[0x07D4 + x] = M[0x18]; M[0x07D8 + x] = M[0x19];
+      P.plug.log('odepth' + x, M[0x18] | M[0x19] << 8);
     }
     let s16 = 0, s17 = 0;
     for (let x = 2; x >= 0; x--) {
@@ -548,12 +566,14 @@ G.opponent = P => {
     const d = M[0xC773];
     if (M[0xAEE0 + d] & 4) {
       if (!((M[0x07E2] | M[0x07DE] | M[0x07EA] | M[0x07E6]) & 0xFC)) {
-        if (!(P.RANDOM({}).a & 0x0F)) M[0x07DE] = 0xA0;
+        if (P.plug.once('bounce') && !(P.RANDOM({}).a & 0x0F)) M[0x07DE] = 0xA0;   // plug-in point once
       }
     }
     for (let x = 2; x >= 0; x--) {
-      M[0x14] = M[0x07E4 + x];
-      let o = P.A_TO_15({ a: M[0x07E8 + x] });
+      // plug-in point step: the change of each wheel's speed, and its move, in shares
+      let v = P.plug.step('ospeed' + x, (M[0x07E8 + x] << 24 >> 16) | M[0x07E4 + x]);
+      M[0x14] = v & 255;
+      let o = P.A_TO_15({ a: (v >> 8) & 255 });
       let t = o.a + M[0x07DC + x];
       M[0x07DC + x] = t & 255; M[0x14] = t & 255;
       const a = (M[0x07E0 + x] + M[0x15] + (t >> 8)) & 255;
@@ -562,7 +582,9 @@ G.opponent = P => {
       const c = (M[0x15] >> 7) & 1;
       const c2 = M[0x15] & 1;
       M[0x15] = (M[0x15] >> 1) | (c << 7);
-      const lo = (M[0x14] >> 1) | (c2 << 7);
+      let lo = (M[0x14] >> 1) | (c2 << 7);
+      v = P.plug.step('oheight' + x, (M[0x15] << 24 >> 16) | lo);
+      lo = v & 255; M[0x15] = (v >> 8) & 255;
       t = lo + M[0x07CC + x]; M[0x07CC + x] = t & 255;
       M[0x07D0 + x] = (M[0x07D0 + x] + M[0x15] + (t >> 8)) & 255;
     }
@@ -624,8 +646,9 @@ G.opponent = P => {
     const h = (M[0x07E0 + x] - M[0x07E2] - (t < 0 ? 1 : 0)) & 255;
     if (!(h & 0x80)) { if (h || M[0x14] >= 0x10) return {}; }
     for (x = 2; x >= 0; x--) {
-      t = M[0x07DC + x] + M[0x242D + x]; M[0x07DC + x] = t & 255;
-      M[0x07E0 + x] = (M[0x07E0 + x] + M[0x2430 + x] + (t >> 8)) & 255;
+      const v = P.plug.step('tilt' + x, (M[0x2430 + x] << 24 >> 16) | M[0x242D + x]);   // plug-in point step
+      t = M[0x07DC + x] + (v & 255); M[0x07DC + x] = t & 255;
+      M[0x07E0 + x] = (M[0x07E0 + x] + ((v >> 8) & 255) + (t >> 8)) & 255;
     }
     return {};
   };

@@ -174,6 +174,7 @@ G.race = P => {
     P.OPP_DROP({});
     let x = M[0xC765];
     start: for (;;) {
+      P.plug.leave();                                       // plug-in point leave
       P.START_PLACE({ x });
       P.DUST_CLEAR({});
       if (!(M[0x3DF8] & 0x80)) { P.DASH_SPRITES({}); P.DRAW_VIEW({}); P.REQUEST_FLIP({}); P.STEP({}); }
@@ -184,10 +185,12 @@ G.race = P => {
       P.START_SOUNDS({});
       P.DASH_COLOURS({});
       for (;;) {
-        M[0xC30C] = (M[0xC30C] - 1) & 255;
+        // plug-in point once: with Fast CPU, the passes' count, the engine's note, the clocks and
+        // the wreck's count go on once a step
+        if (P.plug.once('pass')) M[0xC30C] = (M[0xC30C] - 1) & 255;
         yield { cp: 0x3D08 }; P.CONTROLS({});
         yield { cp: 0x3D0B }; P.STEP({});
-        yield { cp: 0x3D0E }; P.ENGINE_SOUND({});
+        yield { cp: 0x3D0E }; if (P.plug.once('engine')) P.ENGINE_SOUND({});
         yield { cp: 0x3D11 }; P.DRAW_VIEW({});
         yield { cp: 0x3D14 }; P.DUST({});
         yield { cp: 0x3D17 }; yield* P.WHEEL_SPRITES({});
@@ -195,7 +198,7 @@ G.race = P => {
         yield { cp: 0x3D1D }; P.CMD_DRAWBRIDGE({});
         yield { cp: 0x3D20 }; P.SPEED_TO_BAR({});
         yield { cp: 0x3D23 }; P.DAMAGE({});
-        yield { cp: 0x3D26 }; P.RACE_CLOCKS({});
+        yield { cp: 0x3D26 }; if (P.plug.once('clocks')) P.RACE_CLOCKS({});
         yield { cp: 0x3D29 }; P.SHOW_DISTANCE({});
         yield { cp: 0x3D2C }; P.REQUEST_FLIP({});
         yield { cp: 0x3D2F }; yield* P.PAUSE({});
@@ -211,7 +214,7 @@ G.race = P => {
           // wrecked on the road
           const a = M[0x64];
           if ((a & 0x80) || a < 2) M[0xC373] = M[0x6B];
-          M[0xC368] = (M[0xC368] - 1) & 255;
+          if (P.plug.once('wreck')) M[0xC368] = (M[0xC368] - 1) & 255;
           if (M[0xC368] & 0x80) {
             M[0xC368] = (M[0xC368] + 1) & 255;
             if (!M[0x6C]) { P.STOP_EFFECTS({}); x = M[0xC309]; continue start; }

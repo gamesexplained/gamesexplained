@@ -15,6 +15,8 @@ G.physics = P => {
   const add15 = (a, b, lo, hi) => { M[0x14] = lo; M[0x15] = hi; add16(a, b, lo, hi); };
   // the signed halving the physics uses: CLC, BPL +1, SEC, ROR A, ROR lo
   const half = (hi, lo) => ({ hi: ((hi >> 1) | (hi & 0x80)) & 255, lo: ((lo >> 1) | ((hi & 1) << 7)) & 255 });
+  // plug-in point step: the share of a move of the signed 16 bits lo/hi, as [lo, hi]
+  const share = (key, lo, hi) => { const v = P.plug.step(key, (hi << 24 >> 16) | lo); return [v & 255, (v >> 8) & 255]; };
 
   // STEP ($0841): one step of the world, called once a pass in the race (twice as it starts). The
   // bitmap that was drawn is shown at four points along it, as soon as the interrupt is ready for it
@@ -72,6 +74,9 @@ G.physics = P => {
         M[0x14] = (M[0x14] >> 1) | (c2 << 7);
       }
       M[0x16] = (M[0x15] & 0x80) ? 0xFF : 0;
+      // plug-in point step: the move's share
+      const v = P.plug.step('move' + x, (M[0x16] << 24 >> 8) | (M[0x15] << 8) | M[0x14]);
+      M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; M[0x16] = (v >> 16) & 255;
       let t = M[0x14] + M[0x0100 + x]; M[0x0100 + x] = t & 255;
       t = M[0x0103 + x] + M[0x15] + (t >> 8); M[0x0103 + x] = t & 255;
       M[0x0106 + x] = (M[0x0106 + x] + M[0x16] + (t >> 8)) & 255;
@@ -79,7 +84,7 @@ G.physics = P => {
     const hy = M[0x0107];
     if (!(hy & 0x80) && hy >= 3 && (hy !== 3 || M[0x0104] >= 0xE8)) { M[0x0104] = 0xE7; M[0x0107] = 3; }
     for (let x = 2; x >= 0; x--) {
-      add15(0x0121 + x, 0x0124 + x, M[0x016A + x], M[0x016D + x]);
+      add15(0x0121 + x, 0x0124 + x, ...share('turn' + x, M[0x016A + x], M[0x016D + x]));   // plug-in point step
       if (x === 1) continue;
       const y = (M[0xC373] & 0x80) && M[0xC359] === 0xE0 ? 1 : 0;
       const a = M[0x0124 + x];
@@ -103,9 +108,17 @@ G.physics = P => {
 
   // ADD_FORCES ($0A59): the velocity's three axes ($0109/$010F) each moved on by its force
   // ($0115/$011B)
-  P.ADD_FORCES = r => { for (let x = 2; x >= 0; x--) add15(0x0109 + x, 0x010F + x, M[0x0115 + x], M[0x011B + x]); return { x: 0xFF }; };
+  // (plug-in point step: with Fast CPU, each loop's share of the forces)
+  P.ADD_FORCES = r => {
+    for (let x = 2; x >= 0; x--) add15(0x0109 + x, 0x010F + x, ...share('force' + x, M[0x0115 + x], M[0x011B + x]));
+    return { x: 0xFF };
+  };
   // ADD_SPIN ($0A78): the spin's three axes ($010C/$0112) each moved on by its torque ($0118/$011E)
-  P.ADD_SPIN = r => { for (let x = 2; x >= 0; x--) add15(0x010C + x, 0x0112 + x, M[0x0118 + x], M[0x011E + x]); return { x: 0xFF }; };
+  // (plug-in point step: the torques' shares)
+  P.ADD_SPIN = r => {
+    for (let x = 2; x >= 0; x--) add15(0x010C + x, 0x0112 + x, ...share('torque' + x, M[0x0118 + x], M[0x011E + x]));
+    return { x: 0xFF };
+  };
 
   // WHEELS_ON_ROAD ($0A97): for each of the three points, how far it is down into the road
   // ($C340-$C34B and $C3CE-$C3D3, less $0E, which is 2 once the car is wrecked) and how far its
@@ -132,26 +145,28 @@ G.physics = P => {
       if (lo < 0) { M[0x83 + x] = 0; M[0x86 + x] = 0xFD; air = true; }
       else {
         M[0x86 + x] = lo; M[0x19] = lo;
-        t = M[0x18] - M[0x0142 + x]; M[0x14] = t & 255;
-        let a = (M[0x19] - M[0x0145 + x] - (t < 0 ? 1 : 0)) & 255;
+        // the depth less the depth a pass ago (plug-in point back: with Fast CPU, a step ago)
+        const prev = P.plug.back('depth' + x, M[0x0142 + x] | M[0x0145 + x] << 8);
+        t = M[0x18] - (prev & 255); M[0x14] = t & 255;
+        let a = (M[0x19] - (prev >> 8) - (t < 0 ? 1 : 0)) & 255;
         const s = P.ADD16_18({ a });
         a = s.a;
         if (a & 0x80) air = true;
         else {
           M[0x0148 + x] = M[0x14];
           M[0x17] = a;
-          if (a >= 4 && M[0x014B + x] < 2) M[0xC3BC]++;
+          if (a >= 4 && P.plug.back('press' + x, M[0x014B + x]) < 2) M[0xC3BC]++;   // plug-in point back
           M[0x014B + x] = a;
           const d = (a - M[0xC38B]) & 255;
           if (!(d & 0x80) && d >= 7) {
             if (d >= M[0xC35C]) M[0xC35C] = d;
             let e = (d - 6) & 255;
-            M[0xE1] = (M[0xE1] + 1) & 255;
+            M[0xE1] = (M[0xE1] + P.plug.step('presses', 1)) & 255;                  // plug-in point step
             if (M[0xE1] < M[0x209B]) {
               if (e >= 0x80) e = 0x7F;
               M[0x15] = e;
-              let u = (e >> 1) + e;
-              u = (u & 255) + M[0xC3C3 + x];
+              let u = P.plug.step('damage' + x, ((e >> 1) + e) & 255);              // plug-in point step
+              u += M[0xC3C3 + x];
               M[0xC3C3 + x] = u > 255 ? 0xFF : u;
               M[0xC352] = 0x80;
             }
@@ -162,6 +177,7 @@ G.physics = P => {
       }
       if (air) { M[0x0148 + x] = 0; M[0x014B + x] = 0; M[0xE1] = 0; }
       M[0x0142 + x] = M[0x83 + x]; M[0x0145 + x] = M[0x86 + x];
+      P.plug.log('depth' + x, M[0x83 + x] | M[0x86 + x] << 8); P.plug.log('press' + x, M[0x014B + x]);
     }
     // the springs' sum, the front pair's halved, then with the rear's, halved again
     let t = M[0x0148] + M[0x0149];
@@ -192,7 +208,7 @@ G.physics = P => {
     P.CRANE({});
     M[0xE4] = M[0x0175];
     P.OPP_PUSH({});
-    if (M[0xC3BC]) P.EFFECT({ a: 3 });
+    if (M[0xC3BC] && P.plug.once('landing')) P.EFFECT({ a: 3 });                // plug-in point once
     return {};
   };
   // $0C1D, in WHEELS_ON_ROAD with no wheel on the road and the car not hanging from the crane: the

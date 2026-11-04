@@ -80,6 +80,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart" title="The game started again from its loader: the main menu">Start again</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Race as a C64 with a much faster processor would: a new frame from the game every video frame, at the game's own speed">Fast CPU</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys" id="pl-keys">
@@ -94,10 +95,27 @@ section table{margin:6px 0 18px}
     </ul>
   </div>
 </section>
+<section id="fast">
+  <p class="fig">01 · Fast CPU</p>
+  <h2 class="t">A C64 with a much faster processor</h2>
+  <p class="lede">The <b>Fast CPU</b> switch beside the screen races as a C64 with a much faster processor would. The race's main loop goes round once every video frame, 50 times a second, and each pass draws a new view into the game's own bitmaps, which its interrupt puts on show. On a C64 the same loop manages about seven a second.</p>
+<p>A faster processor alone would make a faster game, since each pass moves the cars a fixed step. Fast CPU keeps the game's speed instead, and the game says what that is: its clocks add 0.14 seconds for each pass (<code>TICK_CLOCK</code>, <code>$109C</code>), seven frames' worth. So seven of Fast CPU's passes stand for one of the C64's, and each takes a seventh of every step: of the car's move and its turn, of the springs' and the engine's push, of the crane's swing, of the other car's move along the track and across it, and of each speck of dust thrown up at the road's edge. The sevenths go through the game's own code and add up to the C64's step.</p>
+<p>The C64 falls behind its seven frames. It takes about 7.25 over most passes on Little Ramp, and 10.5 while the crane lowers the car, so everything slows with it and its clocks lose time: from the start line to the jump, they count 14.7 seconds in 15.9 seconds of real time. A faster processor would not fall behind, so Fast CPU keeps to the seven frames there. Where the C64 is quicker than seven, as the car falls off the track and there is little to draw, Fast CPU follows it: the page knows what each part of a pass costs on a C64, so before each of the C64's passes it works out the frames the C64 would take over the work of the last one, and shares that pass among as many of its own.</p>
+<table>
+  <tr><th>Little Ramp, from the line to the jump, the stick held forward</th><th>C64</th><th>Fast CPU</th></tr>
+  <tr><td>Passes of the race a second</td><td>6.6</td><td>50.1</td></tr>
+  <tr><td>Passes a second while the crane lowers the car</td><td>4.8</td><td>50.1, seven for each of the C64's</td></tr>
+  <tr><td>Seconds on the race's clock for 15 seconds of real time</td><td>13.8</td><td>15.0</td></tr>
+  <tr><td>The car's speed against the race's clock</td><td>the C64's own</td><td>within 1.5 % of the C64's</td></tr>
+</table>
+<p>What the game does once a pass is done once for every seven: its clocks and the laps, the count of passes, the engine's note's aim (the interrupt still moves the note on each video frame, as on a C64), the countdowns, the damage's hold on a broken part, the other car's dice for a swerve or a bounce, and each sound it starts. A spring's press is measured against where its wheel was a C64's pass ago, as the game measures it.</p>
+<p>Landings differ. On a C64 the car falls a whole pass's step into the road before a spring pushes back, so how hard a landing presses the springs depends on where in a pass the wheels reach the road. With Fast CPU they meet it within a video frame. In 16 practice races on Little Ramp from the same start, each with a short turn at a different moment, a spring's hardest press was 7 to 15 on a C64 and 9 to 12 with Fast CPU. The damage at the car's three points came to 6.8 on average with Fast CPU against 7.8 on a C64: more in 10 of the races, less in 5. So with Fast CPU the hardest landings do less damage and the softest a little more.</p>
+<p>Some things change with the finer steps. The stick is read on every pass, so a short tap steers for as long as it is held, where a C64 holds it for the whole of a pass. The frames come at the C64's 50.12 a second: a display at 50 or 100 Hz shows each for the same time, and at 60 Hz one frame in five stays up for two refreshes. The menus, the panels before and after a race, and the restart after a wreck run at the C64's own speed. Switched off, the game is the C64's again from where it stands.</p>
+</section>
 <section id="differences">
-  <p class="fig">01 · Differences</p>
+  <p class="fig">02 · Differences</p>
   <h2 class="t">What differs from a C64</h2>
-  <p class="lede">The game plays as it does on a C64, at the C64's pace. These are the places where the page cannot be the machine, and what it does instead.</p>
+  <p class="lede">The game plays as it does on a C64, at the C64's speed, unless Fast CPU is on (section 01). These are the places where the page cannot be the machine, and what it does instead.</p>
 <table>
   <tr><th>On a C64</th><th>On this page</th></tr>
   <tr><td>The game loads from disk behind a loading picture, and its own loader jumps to the start-up at <code>$3FFB</code>.</td><td>There is no loading. The page starts at <code>$3FFB</code> with the memory as the loader leaves it, and the main menu comes up after the start-up's work.</td></tr>
@@ -115,6 +133,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/play-controls.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <script>
 /* port/src/core.js */
 // Stunt Car Racer's port: P, the game's routines on the game's memory. Each group of routines is a
@@ -157,6 +176,27 @@ function makePort(M, io, opts = {}) {
   // The work inside routines whose length varies, counted for the page's pacing; the page reads
   // and clears them, as the fit's rows do.
   P.N = {};
+  // The plug-in points: the places in the race's routines where the Play tab's Fast CPU
+  // (site/lib/fast-cpu.js, with the table in page/fast-table.js) passes in a value or skips a job,
+  // each marked "plug-in point" where it is used. These are the game's own: with nothing plugged
+  // in, each gives what the game's code gives, so the lockstep holds the port and its plug-in
+  // points together. Fast CPU replaces them while a pass of the race runs:
+  // - step(key, v): a move by v (a force into a speed, a speed into a place, a turn), signed; Fast
+  //   CPU gives the loop's share of it;
+  // - once(key): a job whose effect adds up (a count of passes, the clocks, a sound started, a
+  //   roll of the dice); Fast CPU runs it once a step;
+  // - log(key, v) and back(key, v): a value the game keeps from one pass to the next to take a
+  //   change over a pass (a spring's depth), logged where the game keeps it, and given back where
+  //   it reads it: Fast CPU gives the one logged a step ago;
+  // - hold(key) and holding(key): a push the game adds to a force for one pass and then clears:
+  //   Fast CPU adds it again on the rest of the step's loops (holding is true on those);
+  // - glide(key, v): a value the game sets once a step from a table (the swerve's wave): Fast CPU
+  //   moves it from one step's to the next's over the step's loops;
+  // - leave(): the race starting again after a wreck, which Fast CPU runs in the machine's time.
+  P.plug = {
+    step: (key, v) => v, once: key => true, log: (key, v) => {}, back: (key, v) => v,
+    hold: key => {}, holding: key => false, glide: (key, v) => v, leave: () => {},
+  };
   // A read and a write through the processor's map as $01 has it: the I/O at $D000-$DFFF when its
   // bits say so. The port has no ROMs: reading one is an error, as it would be a byte the port
   // cannot know.
@@ -969,13 +1009,13 @@ G.crane = P => {
     if (x >= 0xE6) {
       M[0xC3DF] = (M[0xC36F] & 0x80) ? 0xD4 : 0x2C;
       M[0x34] = 0;
-      M[0x2F] = (M[0x2F] - 1) & 255;
+      if (P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;                 // plug-in point once
       return { a: 0, x };
     }
     if (x === 0xE5) {
       P.CRANE_SWING({ a: 0 });
       const q = P.CRANE_LOWER({ a: 3 });
-      if (!(q.a & 0x80)) M[0x2F] = (M[0x2F] - 1) & 255;
+      if (!(q.a & 0x80) && P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;
       return { a: q.a, x };
     }
     if (x === 0xE4) {
@@ -990,7 +1030,7 @@ G.crane = P => {
     }
     P.CRANE_SWING({ a: 0 });
     P.CRANE_LOWER({ a: 2 });
-    M[0x2F] = (M[0x2F] - 1) & 255;
+    if (P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;
     if (!M[0x2F]) M[0x2F] = 1;
     if (M[0xC37C]) { if (M[0xC398]) return { a: M[0xC398], x }; }
     else if (M[0x2F] & 0x80) return { a: M[0xC37C], x };
@@ -1024,6 +1064,9 @@ G.crane = P => {
     M[0x4E] = y;
     M[0x14] = 0;
     a = P.A_TO_15({ a, y: 0 }).a & 255;
+    // plug-in point step: the swing's share
+    const v = P.plug.step('swing', (M[0x15] << 24 >> 16) | a);
+    a = v & 255; M[0x15] = (v >> 8) & 255;
     M[0x1A] = a; M[0x18] = M[0x15];
     M[0x14] = M[0xB5];
     const q = P.SHIFT16({ a: M[0xB6], y: 0xFB });
@@ -1210,8 +1253,10 @@ G.dash = P => {
       P.CRACK({});
     }
     let e;
+    // plug-in point once: with Fast CPU, the 64 passes counted once a step, and each sound started
+    // at most once a step
     if (M[0xC302]) {
-      const a = M[0xC302]--;
+      const a = P.plug.once('hole') ? M[0xC302]-- : 0;
       if (a === 0x40) { P.BAR_HOLE(P.BAR_PART_AT({ y: M[0xC719] })); e = 1; }
       else if (M[0xC352]) e = 4;
       else return {};
@@ -1225,7 +1270,7 @@ G.dash = P => {
       }
     }
     if (e === 1) M[0xAF8C] = 0x20;
-    P.EFFECT({ a: e });
+    if (P.plug.once('damage' + e)) P.EFFECT({ a: e });
     M[0xC352] = 0;
     return { a: 0 };
   };
@@ -1463,27 +1508,36 @@ G.dash = P => {
   // SWERVE ($158E): while $C9 is set, a swerve of sixteen passes ($C30F) steers by the wave at
   // $1601 ($C30D right or $C30E left, $C357 the throttle); a new one starts at random, more often
   // the higher $C773, when $C353 allows it and the piece ahead does not forbid it
+  // (plug-in point once: with Fast CPU, the count and the dice once a step, the wave's values kept
+  // for the step's other loops; plug-in point glide: the wheels' offsets moved from one step's to
+  // the next's over the step)
   P.SWERVE = r => {
     if (!M[0xC9]) return {};
     let x = 0;
-    M[0xC30D] = 0; M[0xC30E] = 0; M[0xC357] = 0;
-    if (M[0xC30F]) {
-      const old = M[0xC30F]--;
-      let y = (old + M[0xC358]) & 0x0F;
-      let a = M[0x1601 + y];
-      if (a & 0x80) { a = (-a) & 255; x++; }
-      M[0xC30D + x] = a;
-      y = (y + 5) & 0x0F;
-      M[0xC357] = M[0x1601 + y];
-    } else if (!((M[0x0710 + M[0xC375]] | M[0xC36A] | M[0xB2]) & 0x80) && (M[0xC353] & 0x80)) {
-      M[0xC358] = (M[0xC353] & 0x40) ? 0x10 : 0x08;
-      const a = P.RANDOM({}).a & 0x1F;
-      M[0x14] = a;
-      if (M[0xC773] >= a) M[0xC30F] = 0x10;
+    if (P.plug.once('swerve')) {
+      M[0xC30D] = 0; M[0xC30E] = 0; M[0xC357] = 0;
+      if (M[0xC30F]) {
+        const old = M[0xC30F]--;
+        let y = (old + M[0xC358]) & 0x0F;
+        let a = M[0x1601 + y];
+        if (a & 0x80) { a = (-a) & 255; x++; }
+        M[0xC30D + x] = a;
+        y = (y + 5) & 0x0F;
+        M[0xC357] = M[0x1601 + y];
+      } else if (!((M[0x0710 + M[0xC375]] | M[0xC36A] | M[0xB2]) & 0x80) && (M[0xC353] & 0x80)) {
+        M[0xC358] = (M[0xC353] & 0x40) ? 0x10 : 0x08;
+        const a = P.RANDOM({}).a & 0x1F;
+        M[0x14] = a;
+        if (M[0xC773] >= a) M[0xC30F] = 0x10;
+      }
+      wave = M[0xC30D] - M[0xC30E];
     }
+    const w = P.plug.glide('swerve', wave);
+    M[0xC30D] = w > 0 ? w : 0; M[0xC30E] = w < 0 ? -w : 0;
     M[0xC353] = (M[0xA4] >> 1) ^ M[0xB2];
     return {};
   };
+  let wave = 0;
 
   // RESET_SEASON ($1611): the league's points ($C728-$C763) cleared, the twelve drivers back in
   // their places ($C758) with no holes worth $0A ($83B0), and $C77F cleared
@@ -1989,14 +2043,15 @@ G.dust = P => {
     M[0xAF8C] = ((r.a & 255) + 2) & 255;
     M[0x2C] = r.x & 255;
     if (!M[0x6A]) return P.DUST_CLEAR({});
-    P.EFFECT({ a: 1 });
+    if (P.plug.once('stones')) P.EFFECT({ a: 1 });                              // plug-in point once
     let x = M[0x2C];
     do {
       if (!P.DUST_PLOT({ x }).z) continue;
-      const a = (M[0x4120 + x] + 2) & 255;
+      // plug-in point step: each speck's fall, its move down and its move across, in shares
+      const a = (M[0x4120 + x] + P.plug.step('fall' + x, 2)) & 255;
       M[0x4120 + x] = a;
-      M[0xC260 + x] = (a + M[0xC260 + x]) & 255;
-      M[0x80A0 + x] = (M[0x80A0 + x] + M[0x4100 + x]) & 255;
+      M[0xC260 + x] = (P.plug.step('down' + x, (a << 24) >> 24) + M[0xC260 + x]) & 255;
+      M[0x80A0 + x] = (M[0x80A0 + x] + P.plug.step('across' + x, (M[0x4100 + x] << 24) >> 24)) & 255;
     } while (((x = (x - 1) & 255) & 0x80) === 0);
     x = M[0x2C];
     do {
@@ -2059,7 +2114,7 @@ G.dust = P => {
     M[0x0188] = a;
     if (!M[0x6A]) {
       M[0x14] = M[0x5D] >> 2;
-      M[0x5D] = (M[0x5D] - M[0x14]) & 255;
+      if (P.plug.once('note')) M[0x5D] = (M[0x5D] - M[0x14]) & 255;           // plug-in point once
       return { a: M[0x5D], x: 0 };
     }
     if (a < 8) {
@@ -5258,7 +5313,7 @@ G.opponent = P => {
       else step = a >= 0xF0 ? 0 : 0xF6;
     }
     if (!step) return {};
-    a = (step + M[0xB0]) & 255;
+    a = (P.plug.step('line', (step << 24) >> 24) + M[0xB0]) & 255;         // plug-in point step
     if (!M[0xC9]) return {};
     if (a >= 0xE1 || a < 0x20) return {};
     M[0xB0] = a;
@@ -5316,6 +5371,9 @@ G.opponent = P => {
     o = P.A_TO_15({ a: o.a });
     o = P.SHIFT16({ a: M[0x15], y: 0xFD });
     M[0x15] = o.a;
+    // plug-in point step: the move's share
+    const v = P.plug.step('along', (M[0x2D] << 24 >> 8) | (M[0x15] << 8) | M[0x14]);
+    M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; M[0x2D] = (v >> 16) & 255;
     let t = M[0xA1] + M[0x14]; M[0xA1] = t & 255;
     t = M[0x23] + M[0x15] + (t >> 8); M[0x23] = t & 255;
     t = M[0xC4] + M[0x2D] + (t >> 8);
@@ -5414,7 +5472,10 @@ G.opponent = P => {
       t = M[0x16] + M[0x14]; M[0x14] = t & 255;
       a = (M[0x17] + M[0x15] + (t >> 8)) & 255;
     } else a = M[0x17];
-    const o = P.A_TO_15({ a });
+    let o = P.A_TO_15({ a });
+    // plug-in point step: the change's share
+    const v = P.plug.step('speed', (M[0x15] << 24 >> 16) | o.a);
+    M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; o = { a: M[0x14] };
     t = o.a + M[0xD6];
     M[0xD6] = t & 255;
     a = (M[0xD7] + M[0x15] + (t >> 8)) & 255;
@@ -5471,6 +5532,7 @@ G.opponent = P => {
   // damage ($C3C3-$C3C5) and $C352 set
   P.OPP_BUMP = r => {
     if (!M[0xC37C]) return { a: 0 };
+    if (!P.plug.once('bump')) return { a: 0 };                                 // plug-in point once
     let skipUp = false;
     if (M[0xC9] && M[0x6A]) skipUp = true;
     if (!skipUp) {
@@ -5524,9 +5586,15 @@ G.opponent = P => {
   // OPP_PUSH ($2176): a bump's pushes ($C371) taken in: the opponent's speed less the push along
   // ($0181/$0184, never below 0), its wheels' heights' speeds less the push up over 16, the
   // player's springs' forces ($0170-$0175) plus the pushes, which are then cleared; sound effect 2
+  // (plug-in point hold: with Fast CPU, the pushes on the player's forces are added on each loop of
+  // the step, the changes to the opponent's speeds and the sound once)
   P.OPP_PUSH = r => {
-    if (!M[0xC371]) return { a: 0 };
+    if (!M[0xC371]) {
+      if (P.plug.holding('push')) for (let x = 2; x >= 0; x--) add(0x0170 + x, 0x0173 + x, push[x], push[x + 3]);
+      return { a: 0 };
+    }
     M[0xC371] = 0;
+    for (let x = 0; x < 6; x++) push[x] = M[0x017F + x];
     let t = M[0xD6] - M[0x0181]; M[0xD6] = t & 255;
     let a = (M[0xD7] - M[0x0184] - (t < 0 ? 1 : 0)) & 255;
     if (a & 0x80) a = 0;
@@ -5539,12 +5607,14 @@ G.opponent = P => {
       M[0x07E0 + x] = (M[0x07E0 + x] - M[0x15] - (t < 0 ? 1 : 0)) & 255;
     }
     for (let x = 2; x >= 0; x--) {
-      t = M[0x0170 + x] + M[0x017F + x]; M[0x0170 + x] = t & 255;
-      M[0x0173 + x] = (M[0x0173 + x] + M[0x0182 + x] + (t >> 8)) & 255;
+      add(0x0170 + x, 0x0173 + x, M[0x017F + x], M[0x0182 + x]);
       M[0x017F + x] = 0; M[0x0182 + x] = 0;
     }
+    P.plug.hold('push');
     return P.EFFECT({ a: 2, x: 0xFF });
   };
+  const push = [0, 0, 0, 0, 0, 0];
+  const add = (lo, hi, l, h) => { const t = M[lo] + l; M[lo] = t & 255; M[hi] = (M[hi] + h + (t >> 8)) & 255; };
   // OPP_WHEELS ($21DE): the opponent's three wheels: each one's height ($07CC/$07D0) against the
   // road's under it ($07EC/$07F0) less its spring's length ($28, or $7C on a piece with $B2 bit
   // 7), held to $FFA0 at the lowest; the spring's push ($07C4/$07C8, at most $3FF), and $C9 non-zero
@@ -5566,8 +5636,10 @@ G.opponent = P => {
         a = 0xFF;
       }
       M[0x19] = a;
-      t = M[0x18] - M[0x07D4 + x]; M[0x14] = t & 255;
-      const o = P.ADD16_18({ a: (M[0x19] - M[0x07D8 + x] - (t < 0 ? 1 : 0)) & 255 });
+      // the depth less the depth a pass ago (plug-in point back: with Fast CPU, a step ago)
+      const prev = P.plug.back('odepth' + x, M[0x07D4 + x] | M[0x07D8 + x] << 8);
+      t = M[0x18] - (prev & 255); M[0x14] = t & 255;
+      const o = P.ADD16_18({ a: (M[0x19] - (prev >> 8) - (t < 0 ? 1 : 0)) & 255 });
       a = o.a;
       if (o.n) { a = 0; M[0x14] = 0; }
       if (a >= 4) { M[0x14] = 0xFF; a = 3; }
@@ -5576,6 +5648,7 @@ G.opponent = P => {
       t = M[0x14] - M[0x52]; M[0x07C4 + x] = t & 255;
       M[0x07C8 + x] = (y - (t < 0 ? 1 : 0)) & 255;
       M[0x07D4 + x] = M[0x18]; M[0x07D8 + x] = M[0x19];
+      P.plug.log('odepth' + x, M[0x18] | M[0x19] << 8);
     }
     let s16 = 0, s17 = 0;
     for (let x = 2; x >= 0; x--) {
@@ -5600,12 +5673,14 @@ G.opponent = P => {
     const d = M[0xC773];
     if (M[0xAEE0 + d] & 4) {
       if (!((M[0x07E2] | M[0x07DE] | M[0x07EA] | M[0x07E6]) & 0xFC)) {
-        if (!(P.RANDOM({}).a & 0x0F)) M[0x07DE] = 0xA0;
+        if (P.plug.once('bounce') && !(P.RANDOM({}).a & 0x0F)) M[0x07DE] = 0xA0;   // plug-in point once
       }
     }
     for (let x = 2; x >= 0; x--) {
-      M[0x14] = M[0x07E4 + x];
-      let o = P.A_TO_15({ a: M[0x07E8 + x] });
+      // plug-in point step: the change of each wheel's speed, and its move, in shares
+      let v = P.plug.step('ospeed' + x, (M[0x07E8 + x] << 24 >> 16) | M[0x07E4 + x]);
+      M[0x14] = v & 255;
+      let o = P.A_TO_15({ a: (v >> 8) & 255 });
       let t = o.a + M[0x07DC + x];
       M[0x07DC + x] = t & 255; M[0x14] = t & 255;
       const a = (M[0x07E0 + x] + M[0x15] + (t >> 8)) & 255;
@@ -5614,7 +5689,9 @@ G.opponent = P => {
       const c = (M[0x15] >> 7) & 1;
       const c2 = M[0x15] & 1;
       M[0x15] = (M[0x15] >> 1) | (c << 7);
-      const lo = (M[0x14] >> 1) | (c2 << 7);
+      let lo = (M[0x14] >> 1) | (c2 << 7);
+      v = P.plug.step('oheight' + x, (M[0x15] << 24 >> 16) | lo);
+      lo = v & 255; M[0x15] = (v >> 8) & 255;
       t = lo + M[0x07CC + x]; M[0x07CC + x] = t & 255;
       M[0x07D0 + x] = (M[0x07D0 + x] + M[0x15] + (t >> 8)) & 255;
     }
@@ -5676,8 +5753,9 @@ G.opponent = P => {
     const h = (M[0x07E0 + x] - M[0x07E2] - (t < 0 ? 1 : 0)) & 255;
     if (!(h & 0x80)) { if (h || M[0x14] >= 0x10) return {}; }
     for (x = 2; x >= 0; x--) {
-      t = M[0x07DC + x] + M[0x242D + x]; M[0x07DC + x] = t & 255;
-      M[0x07E0 + x] = (M[0x07E0 + x] + M[0x2430 + x] + (t >> 8)) & 255;
+      const v = P.plug.step('tilt' + x, (M[0x2430 + x] << 24 >> 16) | M[0x242D + x]);   // plug-in point step
+      t = M[0x07DC + x] + (v & 255); M[0x07DC + x] = t & 255;
+      M[0x07E0 + x] = (M[0x07E0 + x] + ((v >> 8) & 255) + (t >> 8)) & 255;
     }
     return {};
   };
@@ -5715,6 +5793,8 @@ G.physics = P => {
   const add15 = (a, b, lo, hi) => { M[0x14] = lo; M[0x15] = hi; add16(a, b, lo, hi); };
   // the signed halving the physics uses: CLC, BPL +1, SEC, ROR A, ROR lo
   const half = (hi, lo) => ({ hi: ((hi >> 1) | (hi & 0x80)) & 255, lo: ((lo >> 1) | ((hi & 1) << 7)) & 255 });
+  // plug-in point step: the share of a move of the signed 16 bits lo/hi, as [lo, hi]
+  const share = (key, lo, hi) => { const v = P.plug.step(key, (hi << 24 >> 16) | lo); return [v & 255, (v >> 8) & 255]; };
 
   // STEP ($0841): one step of the world, called once a pass in the race (twice as it starts). The
   // bitmap that was drawn is shown at four points along it, as soon as the interrupt is ready for it
@@ -5772,6 +5852,9 @@ G.physics = P => {
         M[0x14] = (M[0x14] >> 1) | (c2 << 7);
       }
       M[0x16] = (M[0x15] & 0x80) ? 0xFF : 0;
+      // plug-in point step: the move's share
+      const v = P.plug.step('move' + x, (M[0x16] << 24 >> 8) | (M[0x15] << 8) | M[0x14]);
+      M[0x14] = v & 255; M[0x15] = (v >> 8) & 255; M[0x16] = (v >> 16) & 255;
       let t = M[0x14] + M[0x0100 + x]; M[0x0100 + x] = t & 255;
       t = M[0x0103 + x] + M[0x15] + (t >> 8); M[0x0103 + x] = t & 255;
       M[0x0106 + x] = (M[0x0106 + x] + M[0x16] + (t >> 8)) & 255;
@@ -5779,7 +5862,7 @@ G.physics = P => {
     const hy = M[0x0107];
     if (!(hy & 0x80) && hy >= 3 && (hy !== 3 || M[0x0104] >= 0xE8)) { M[0x0104] = 0xE7; M[0x0107] = 3; }
     for (let x = 2; x >= 0; x--) {
-      add15(0x0121 + x, 0x0124 + x, M[0x016A + x], M[0x016D + x]);
+      add15(0x0121 + x, 0x0124 + x, ...share('turn' + x, M[0x016A + x], M[0x016D + x]));   // plug-in point step
       if (x === 1) continue;
       const y = (M[0xC373] & 0x80) && M[0xC359] === 0xE0 ? 1 : 0;
       const a = M[0x0124 + x];
@@ -5803,9 +5886,17 @@ G.physics = P => {
 
   // ADD_FORCES ($0A59): the velocity's three axes ($0109/$010F) each moved on by its force
   // ($0115/$011B)
-  P.ADD_FORCES = r => { for (let x = 2; x >= 0; x--) add15(0x0109 + x, 0x010F + x, M[0x0115 + x], M[0x011B + x]); return { x: 0xFF }; };
+  // (plug-in point step: with Fast CPU, each loop's share of the forces)
+  P.ADD_FORCES = r => {
+    for (let x = 2; x >= 0; x--) add15(0x0109 + x, 0x010F + x, ...share('force' + x, M[0x0115 + x], M[0x011B + x]));
+    return { x: 0xFF };
+  };
   // ADD_SPIN ($0A78): the spin's three axes ($010C/$0112) each moved on by its torque ($0118/$011E)
-  P.ADD_SPIN = r => { for (let x = 2; x >= 0; x--) add15(0x010C + x, 0x0112 + x, M[0x0118 + x], M[0x011E + x]); return { x: 0xFF }; };
+  // (plug-in point step: the torques' shares)
+  P.ADD_SPIN = r => {
+    for (let x = 2; x >= 0; x--) add15(0x010C + x, 0x0112 + x, ...share('torque' + x, M[0x0118 + x], M[0x011E + x]));
+    return { x: 0xFF };
+  };
 
   // WHEELS_ON_ROAD ($0A97): for each of the three points, how far it is down into the road
   // ($C340-$C34B and $C3CE-$C3D3, less $0E, which is 2 once the car is wrecked) and how far its
@@ -5832,26 +5923,28 @@ G.physics = P => {
       if (lo < 0) { M[0x83 + x] = 0; M[0x86 + x] = 0xFD; air = true; }
       else {
         M[0x86 + x] = lo; M[0x19] = lo;
-        t = M[0x18] - M[0x0142 + x]; M[0x14] = t & 255;
-        let a = (M[0x19] - M[0x0145 + x] - (t < 0 ? 1 : 0)) & 255;
+        // the depth less the depth a pass ago (plug-in point back: with Fast CPU, a step ago)
+        const prev = P.plug.back('depth' + x, M[0x0142 + x] | M[0x0145 + x] << 8);
+        t = M[0x18] - (prev & 255); M[0x14] = t & 255;
+        let a = (M[0x19] - (prev >> 8) - (t < 0 ? 1 : 0)) & 255;
         const s = P.ADD16_18({ a });
         a = s.a;
         if (a & 0x80) air = true;
         else {
           M[0x0148 + x] = M[0x14];
           M[0x17] = a;
-          if (a >= 4 && M[0x014B + x] < 2) M[0xC3BC]++;
+          if (a >= 4 && P.plug.back('press' + x, M[0x014B + x]) < 2) M[0xC3BC]++;   // plug-in point back
           M[0x014B + x] = a;
           const d = (a - M[0xC38B]) & 255;
           if (!(d & 0x80) && d >= 7) {
             if (d >= M[0xC35C]) M[0xC35C] = d;
             let e = (d - 6) & 255;
-            M[0xE1] = (M[0xE1] + 1) & 255;
+            M[0xE1] = (M[0xE1] + P.plug.step('presses', 1)) & 255;                  // plug-in point step
             if (M[0xE1] < M[0x209B]) {
               if (e >= 0x80) e = 0x7F;
               M[0x15] = e;
-              let u = (e >> 1) + e;
-              u = (u & 255) + M[0xC3C3 + x];
+              let u = P.plug.step('damage' + x, ((e >> 1) + e) & 255);              // plug-in point step
+              u += M[0xC3C3 + x];
               M[0xC3C3 + x] = u > 255 ? 0xFF : u;
               M[0xC352] = 0x80;
             }
@@ -5862,6 +5955,7 @@ G.physics = P => {
       }
       if (air) { M[0x0148 + x] = 0; M[0x014B + x] = 0; M[0xE1] = 0; }
       M[0x0142 + x] = M[0x83 + x]; M[0x0145 + x] = M[0x86 + x];
+      P.plug.log('depth' + x, M[0x83 + x] | M[0x86 + x] << 8); P.plug.log('press' + x, M[0x014B + x]);
     }
     // the springs' sum, the front pair's halved, then with the rear's, halved again
     let t = M[0x0148] + M[0x0149];
@@ -5892,7 +5986,7 @@ G.physics = P => {
     P.CRANE({});
     M[0xE4] = M[0x0175];
     P.OPP_PUSH({});
-    if (M[0xC3BC]) P.EFFECT({ a: 3 });
+    if (M[0xC3BC] && P.plug.once('landing')) P.EFFECT({ a: 3 });                // plug-in point once
     return {};
   };
   // $0C1D, in WHEELS_ON_ROAD with no wheel on the road and the car not hanging from the crane: the
@@ -6663,6 +6757,7 @@ G.race = P => {
     P.OPP_DROP({});
     let x = M[0xC765];
     start: for (;;) {
+      P.plug.leave();                                       // plug-in point leave
       P.START_PLACE({ x });
       P.DUST_CLEAR({});
       if (!(M[0x3DF8] & 0x80)) { P.DASH_SPRITES({}); P.DRAW_VIEW({}); P.REQUEST_FLIP({}); P.STEP({}); }
@@ -6673,10 +6768,12 @@ G.race = P => {
       P.START_SOUNDS({});
       P.DASH_COLOURS({});
       for (;;) {
-        M[0xC30C] = (M[0xC30C] - 1) & 255;
+        // plug-in point once: with Fast CPU, the passes' count, the engine's note, the clocks and
+        // the wreck's count go on once a step
+        if (P.plug.once('pass')) M[0xC30C] = (M[0xC30C] - 1) & 255;
         yield { cp: 0x3D08 }; P.CONTROLS({});
         yield { cp: 0x3D0B }; P.STEP({});
-        yield { cp: 0x3D0E }; P.ENGINE_SOUND({});
+        yield { cp: 0x3D0E }; if (P.plug.once('engine')) P.ENGINE_SOUND({});
         yield { cp: 0x3D11 }; P.DRAW_VIEW({});
         yield { cp: 0x3D14 }; P.DUST({});
         yield { cp: 0x3D17 }; yield* P.WHEEL_SPRITES({});
@@ -6684,7 +6781,7 @@ G.race = P => {
         yield { cp: 0x3D1D }; P.CMD_DRAWBRIDGE({});
         yield { cp: 0x3D20 }; P.SPEED_TO_BAR({});
         yield { cp: 0x3D23 }; P.DAMAGE({});
-        yield { cp: 0x3D26 }; P.RACE_CLOCKS({});
+        yield { cp: 0x3D26 }; if (P.plug.once('clocks')) P.RACE_CLOCKS({});
         yield { cp: 0x3D29 }; P.SHOW_DISTANCE({});
         yield { cp: 0x3D2C }; P.REQUEST_FLIP({});
         yield { cp: 0x3D2F }; yield* P.PAUSE({});
@@ -6700,7 +6797,7 @@ G.race = P => {
           // wrecked on the road
           const a = M[0x64];
           if ((a & 0x80) || a < 2) M[0xC373] = M[0x6B];
-          M[0xC368] = (M[0xC368] - 1) & 255;
+          if (P.plug.once('wreck')) M[0xC368] = (M[0xC368] - 1) & 255;
           if (M[0xC368] & 0x80) {
             M[0xC368] = (M[0xC368] + 1) & 255;
             if (!M[0x6C]) { P.STOP_EFFECTS({}); x = M[0xC309]; continue start; }
@@ -7912,6 +8009,9 @@ G.steer = P => {
       }
       a = P.NEG16_IF_MINUS({ a, n: (M[0x77] >> 7) & 1 }).a;
       M[0x15] = a;
+      // plug-in point step: the turn's share
+      const v = P.plug.step('heading', (M[0x15] << 24 >> 16) | M[0x14]);
+      M[0x14] = v & 255; M[0x15] = (v >> 8) & 255;
       t = M[0x0122] + M[0x14]; M[0x0122] = t & 255;
       M[0x0125] = (M[0x0125] + M[0x15] + (t >> 8)) & 255;
     }
@@ -8767,7 +8867,7 @@ G.view = P => {
       M[0x6E] &= 0xFC; M[0x72] = 0;
       return { a: 0 };
     }
-    M[0xC36E] = (M[0xC36E] - 1) & 255;
+    if (P.plug.once('boost')) M[0xC36E] = (M[0xC36E] - 1) & 255;               // plug-in point once
     if (M[0xC36E] & 0x80) {
       M[0xC36E] = M[0xC388];
       // one less, in decimal (never from 0: that is no boost left)
@@ -9208,6 +9308,9 @@ G.kernal = P => {
 //   rt.restore(state, entry, from)   a machine saved by the tests (kit/c64/machine.js's save()),
 //                      and the program started at entry(P), a generator, from the checkpoint at
 //                      from
+//   rt.runTicks(cycles, loop), rt.ticks, rt.leave()   Fast CPU's clock (below, and
+//                      site/lib/fast-cpu.js); rt.inLoop says whether a pass of the race is under
+//                      way on it
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. Each stretch of the main program moves the
 // clock on by its cost, and the raster's interrupts run on their lines when they fall due, their
@@ -9429,6 +9532,14 @@ function create(o) {
 
   // ---- the program, and what its stretches cost
   const P = SP.makePort(M, io);
+  // the plug-in points (src/core.js): Fast CPU's, once it plugs them in, while a pass of the race
+  // is under way on its clock; the game's own the rest of the time
+  const gamePlug = P.plug;
+  let fastPlug = null;
+  Object.defineProperty(P, 'plug', {
+    get: () => (fastPlug && free ? fastPlug : gamePlug),
+    set: v => { fastPlug = v === gamePlug ? null : v; },
+  });
   // The start-up's checksum sums the game's code, which the page does not carry: the page's
   // machine leaves the zero page as the sum over the whole game leaves it (pack-data.js), and goes
   // on as the game does when the sum is right. Its time is the start-up's stretch's, from the
@@ -9457,11 +9568,13 @@ function create(o) {
   function called(name, c) {
     calls[name] = (calls[name] || 0) + 1;
     owed += c;
-    if (owed >= LINE && t < lim) { const d = whole(callsCost()); if (d >= 1) owed += advance(d, lim); }
+    if (owed >= LINE && t < lim && !free) { const d = whole(callsCost()); if (d >= 1) unpaid(advance(d, lim)); }
   }
-  // cycles as whole ones, the fractions the costs leave carried on to the next
-  let frac = 0;
-  function whole(c) { const v = c + frac, n = Math.floor(v); frac = v - n; return n; }
+  // cycles as whole ones, the fractions the costs leave carried on to the next; work counts them
+  // (machineBeats, below), and a cost the clock could not pay yet goes back to be counted again
+  let frac = 0, work = 0;
+  function whole(c) { const v = c + frac, n = Math.floor(v); frac = v - n; work += n; return n; }
+  function unpaid(c) { owed += c; work -= c; }
   // the routines called and the work counted since the clock last moved, at their cost
   function callsCost() {
     let c = owed;
@@ -9482,7 +9595,7 @@ function create(o) {
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) {
-    if (counting) { const c = whole(callsCost()); if (c >= 1) owed += advance(c, lim); }
+    if (counting && !free) { const c = whole(callsCost()); if (c >= 1) unpaid(advance(c, lim)); }
     return M[a];
   }
 
@@ -9566,15 +9679,18 @@ function create(o) {
       // a checkpoint: the stretch to it, and a busy loop's cycles that end there
       debt = (lastCp === null ? whole(callsCost()) : Math.max(MIN_STRETCH, cost(lastCp, y.cp))) + (y.cycles || 0);
       lastCp = y.cp;
+      if (y.cp === PASS) { passWork = work; work = 0; known = !loop || free; }
+      if (loop) checkpoint(y.cp);
     } else if (y && y.cycles !== undefined) {
       // a busy loop: what the stretch has cost so far and its own cycles, and with at a checkpoint
       // it ends at
       if (y.at !== undefined) { debt = (lastCp === null ? whole(callsCost()) : cost(lastCp, y.at)) + y.cycles; lastCp = y.at; }
       else debt = Math.max(1, whole(callsCost()) + y.cycles);
+      if (free) debt = Math.max(1, y.cycles);           // in a loop of Fast CPU's, the wait alone
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
       const c = whole(callsCost());
-      debt = c >= 1 ? c : -1;
+      debt = c >= 1 && !free ? c : -1;
       next = true;
     }
     pay(limit);
@@ -9594,11 +9710,83 @@ function create(o) {
     return done[Math.max(0, Math.min(done.length - 1, i))];
   }
   function runFrame() {
+    if (loop) offTicks();
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
+
+  // ---- Fast CPU's clock (site/lib/fast-cpu.js): the real time owed, in cycles. The race's passes
+  // go round once a beat, at line 55 of each video frame, and their own work takes no time, as on a
+  // processor fast enough to finish it at once: the controls, the step of the world and the
+  // engine's note at the beat, just before the interrupt at line 61 puts on show the frame the last
+  // pass drew; the drawing and the rest of the pass from line 62, once it has. The game's own
+  // handshake with the interrupt needs that order: the last frame's colours set (FLIP_DONE, in the
+  // step) between the interrupt at line 197, which sees the flip asked for, and the one at line 61,
+  // which makes it, and the next flip asked for after that. A wait inside a pass (the pause, the
+  // wait for fire at the race's end), the restart after a wreck (plug-in point leave) and the
+  // program outside the race take the machine's time. loop.cap is the most passes one call runs
+  // (time owed past them is dropped), loop.begin() is called as each starts, loop.between() after
+  // it and loop.fresh() as the first pass after the machine's time comes to its start. Returns the
+  // passes run; ticks counts the beats.
+  const PASS = 0x3D08, DRAW = 0x3D11, BEAT = 55 * LINE, SHOWN = 62 * LINE;
+  // the checkpoints inside a pass: the race loop's, and the wheels' sprites' read of the chips
+  const IN_PASS = new Set([0x3D08, 0x3D0B, 0x3D0E, 0x3D11, 0x3D14, 0x3D17, 0x3D1A, 0x3D1D, 0x3D20, 0x3D23, 0x3D26, 0x3D29, 0x3D2C, 0x3D2F, 0x152D]);
+  let loop = null, free = false, parked = false, ticks = 0, lastBeat = -Infinity;
+  // the beats the C64 would take over the last pass's work: its cost (the program's own cycles, as
+  // the clock counts them), over the share of a frame's cycles the interrupts and the video chip
+  // leave the program in a race (PROGRAM, measured on the page with Fast CPU off); unknown
+  // (Infinity) when the last pass was not a whole one on Fast CPU's clock
+  const PROGRAM = 0.883;
+  let passWork = 0, known = false;
+  function machineBeats() { return known ? passWork / (PROGRAM * FRAME) : Infinity; }
+  function checkpoint(cp) {
+    if (cp === PASS) {
+      // a pass starts here: the one before it is over, and this one waits for the beat
+      if (free) { debt = -1; if (loop.between) loop.between(); }
+      else if (loop.fresh) loop.fresh();               // the first pass since the machine's time
+      free = false; parked = true;
+    } else if (!free) return;
+    else if (cp === DRAW) { debt = -1; next = Math.floor(t / FRAME) * FRAME + SHOWN; if (next < t) next = t; }
+    else if (IN_PASS.has(cp)) debt = -1;
+    else free = false;                                 // the race over: the machine's time again
+  }
+  // the restart after a wreck, in the machine's time
+  function leave() { if (free) { free = false; if (loop && loop.between) loop.between(); } }
+  function nextBeat() {
+    let b = Math.floor(t / FRAME) * FRAME + BEAT;
+    if (b < t) b += FRAME;
+    if (b <= lastBeat) b = lastBeat + FRAME;
+    return b;
+  }
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = false; parked = false; }
+    if (target === null) target = t;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // a pass's own work goes on whatever the time; a wait, or the program outside the race,
+        // as far as real time is owed
+        if (t >= target && !(free && debt < 0 && next === null)) break;
+        step(target);
+        continue;
+      }
+      if (debt >= 0 || next !== null) { if (!pay(target)) break; }
+      const at = nextBeat();
+      if (at > target) { until(target); break; }
+      if (loops === o.cap) { target = t; break; }
+      until(at);
+      lastBeat = at; ticks++; loops++;
+      parked = false; free = true;
+      if (o.begin) o.begin();
+    }
+    return loops;
+  }
+  // off: the clock as it was, a pass parked at its start going on in the machine's time
+  function offTicks() { loop = null; free = false; parked = false; }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry, from) {
@@ -9617,6 +9805,7 @@ function create(o) {
     if (vm) vm.at(-1, [], 0);
     done.length = 0; begin();
     it = entry(P); lastCp = from === undefined ? null : from; calls = Object.create(null); owed = 0; debt = -1; next = null;
+    free = false; parked = false; lastBeat = -Infinity; work = 0; passWork = 0; known = false;
     for (const k in P.N) P.N[k] = 0;
   }
   restore(o.data, p => p.STARTUP({}), ENTRY);
@@ -9624,12 +9813,108 @@ function create(o) {
     M, colour, vic, sidw, input, KEY, P, missing,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runUntil, restore, runTicks, leave, machineBeats, get ticks() { return ticks; }, get inLoop() { return free; },
+    lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     frameAt: n => (n === frameIdx ? cur : frameAt(n)),
     onSid: f => sidListeners.push(f),
   };
 }
 root.SCRPage = { create, LINE, LINES, FRAME, KEY, ENTRY };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/fast-table.js */
+// Stunt Car Racer's table for Fast CPU (site/lib/fast-cpu.js, kit/skills/core/70-minisite/fast-cpu.md):
+// what Fast CPU knows about the game. Fast CPU plays the race's passes (RACE, $3D08); the menus,
+// the panels, the crane's start and the restart after a wreck keep the C64's speed.
+//
+// The beat is the C64's video frame, 50.12 a second: page/runtime.js starts a pass at line 55 of
+// each one. The speed follows the C64's, pass by pass: before each of the C64's passes (a shadow
+// pass), the page's cost model gives the frames the C64 would take over the work of the last pass
+// (rt.machineBeats), and that many of Fast CPU's passes make it, each taking its share of every
+// step. It is held to the speed the game plans for, seven frames a pass: the race's clocks add 0.14
+// seconds for every pass (TICK_CLOCK, $109C), seven frames' worth. The C64 takes 7.25 frames over
+// most passes on Little Ramp and 10.5 while the crane lowers the car, the processor falling behind;
+// those take seven. A pass the C64 takes less time over (about five frames as the car falls off the
+// track, with little to draw) keeps the C64's speed.
+//
+// The keys of steps are the plug-in points' in the port (src/core.js lists the kinds):
+// - the player's car: the forces into its speeds (force0-2), the torques into its spins
+//   (torque0-2), its speeds into its place (move0-2), its turns into its angles (turn0-2), the
+//   turn back towards the road's direction (heading), the crane's chains' swing (swing), the count
+//   of presses in a row that do damage (presses) and the damage itself (damage0-2);
+// - the dust: each of the 32 specks' fall (fall0-31), its move down (down0-31) and across
+//   (across0-31);
+// - the opponent: its move along the road (along), its speed's change (speed), its wheels'
+//   speeds' changes (ospeed0-2) and their moves (oheight0-2), the tilt in the air (tilt0-2) and
+//   its steer across the road (line).
+(function (root) {
+'use strict';
+const steps = {};
+for (const k of ['heading', 'swing', 'presses', 'along', 'speed', 'line']) steps[k] = 'pace';
+for (let x = 0; x < 3; x++) for (const k of ['force', 'torque', 'move', 'turn', 'damage', 'ospeed', 'oheight', 'tilt']) steps[k + x] = 'pace';
+for (let x = 0; x < 32; x++) for (const k of ['fall', 'down', 'across']) steps[k + x] = 'pace';
+
+root.SCR_FAST = {
+  tick: 19656, hz: 985248,            // the beat: a PAL video frame, 312 lines of 63 cycles
+  cap: 4,                             // the most passes a refresh runs: real time on a 15 Hz display
+  start: 0x3D08,                      // where a pass starts (RACE's loop)
+  work: [0x3D08],
+  follow: true, most: 7,              // the C64's speed, at most seven frames a pass, as the clocks count them
+  steps,
+  // The rest the plug-in points ask for themselves (once, by name in the port): the count of
+  // passes ($C30C), the engine's note (ENGINE_SOUND), the clocks, the laps and the countdowns
+  // (RACE_CLOCKS), the wreck's count ($C368), the boost's count ($C36E), the crane's count ($2F),
+  // the wheels' note in the air ($5D), the sounds started (stones, landing, damage1, damage4), the
+  // 64 passes of a part lost ($C302), the opponent's bump (OPP_BUMP), its swerve (SWERVE) and its
+  // bounce (OPP_WHEELS).
+};
+
+// The plug-in points of the game's own kinds, added to Fast CPU's (src/core.js says what each is):
+// log and back, a value kept from pass to pass given back from a step ago; hold and holding, a push
+// added again on each loop of its step; glide, a value set once a step moved to over the step;
+// leave, the restart after a wreck in the machine's time. And once in place of Fast CPU's: a job
+// once a step on the step's first pass, and a sound the race starts (a landing, the stones, a
+// bump) on the first of the step's passes it comes in, and a step after the last at the soonest,
+// as the C64 would start it on its pass. The first pass after the machine's time (a race's start,
+// the restart after a wreck, Fast CPU turned on) starts afresh, as the C64's next pass would:
+// nothing kept from before, a step begun, and every job once a step done on it.
+function extend(fx) {
+  const P = fx.plug, logs = new Map(), held = new Map(), glides = new Map();
+  fx.loop.fresh = () => { logs.clear(); held.clear(); glides.clear(); fx.carry.clear(); fx.onceAt.clear(); fx.left = 0; };
+  P.once = key => {
+    const l = fx.onceAt.get(key);
+    if (l && (l.shadow === fx.shadow || fx.loops - l.n < l.K)) return false;
+    fx.onceAt.set(key, { t: fx.rt.ticks, n: fx.loops, K: fx.K, shadow: fx.shadow });
+    return true;
+  };
+  P.log = (key, v) => {
+    let L = logs.get(key);
+    if (!L) logs.set(key, L = []);
+    L.push([fx.loops, v]);
+    while (L.length > fx.K + 1) L.shift();
+  };
+  P.back = (key, v) => {
+    const L = logs.get(key);
+    if (!L || !L.length) return v;
+    const want = fx.loops - fx.K;
+    let e = L[0];
+    for (const x of L) if (x[0] <= want) e = x;
+    return e[1];
+  };
+  P.hold = key => { held.set(key, fx.loops); };
+  P.holding = key => { const n = held.get(key); return n !== undefined && fx.loops > n && fx.loops - n < fx.K; };
+  P.glide = (key, v) => {
+    let g = glides.get(key);
+    if (!g) glides.set(key, g = { from: v, to: v, at: fx.loops, out: v });
+    if (g.to !== v) { g.from = g.out; g.to = v; g.at = fx.loops; }
+    g.out = Math.round(g.from + (g.to - g.from) * Math.min(1, (fx.loops - g.at + 1) / fx.K));
+    return g.out;
+  };
+  P.leave = () => fx.rt.leave();
+  return fx;
+}
+root.SCRFast = { extend };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -9645,6 +9930,7 @@ const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = SCRPage.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 let data = null, rt = null, running = false, paused = false;
+let fx = null, fast = false;                       // Fast CPU (site/lib/fast-cpu.js, page/fast-table.js), and whether it is on
 
 // --- drawing: the frame the video chip would show at the clock's target
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
@@ -9721,15 +10007,27 @@ let acc = 0, last = 0;
 function boot() {
   rt = SCRPage.create({ data, cost: window.SCR_COST, files: disc() });
   sound.attach(); input();
+  if (window.FastCPU && window.SCR_FAST) { fx = SCRFast.extend(FastCPU.attach(rt, window.SCR_FAST)); FastCPU.set(fx, fast); }
 }
 function tick(now) {
   requestAnimationFrame(tick);
   if (!running || paused || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
-    acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; frames++; release(); typeStep(); }
-    if (n === 10) acc = 0;
+    if (fast && fx) {
+      // Fast CPU: the time since the last refresh, the race's passes in it one a video frame (at
+      // most four), the rest of the game in the C64's time; then the frame the clock has reached
+      const ms = Math.min(250, now - (last || now)), f0 = rt.shown; last = now;
+      FastCPU.run(fx, ms);
+      sound.frame();
+      n = rt.shown - f0;
+      for (let i = 0; i < n; i++) { frames++; release(); typeStep(); }
+      F = n ? rt.lastFrame() : null;
+    } else {
+      acc += Math.min(250, now - (last || now)); last = now;
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; frames++; release(); typeStep(); }
+      if (n === 10) acc = 0;
+    }
   } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
 }
@@ -9851,11 +10149,22 @@ function start() {
   sound.hold();
   screen.focus();
 }
+// Fast CPU, on or off: kept in this browser for the next visit
+const FAST_KEY = 'gamesexplained.stunt-car-racer.fast';
+function setFast(f) {
+  fast = f;
+  if (fx) FastCPU.set(fx, f);                      // off: the C64's clock again from where it stands
+  acc = 0;
+  document.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(fast));
+  try { localStorage.setItem(FAST_KEY, fast ? '1' : ''); } catch (e) { /* no storage: the switch lasts for this visit */ }
+}
+try { if (localStorage.getItem(FAST_KEY)) setFast(true); } catch (e) { /* no storage */ }
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
   else if (act === 'restart' && data) start();
+  else if (act === 'fast') setFast(!fast);
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });
@@ -9867,6 +10176,6 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.SCRPlay = { get rt() { return rt; }, start, press, lift };
+window.SCRPlay = { get rt() { return rt; }, get fx() { return fx; }, start, press, lift, setFast };
 })();
 </script>

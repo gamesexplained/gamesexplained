@@ -421,7 +421,7 @@ G.view = P => {
       M[0x6E] &= 0xFC; M[0x72] = 0;
       return { a: 0 };
     }
-    M[0xC36E] = (M[0xC36E] - 1) & 255;
+    if (P.plug.once('boost')) M[0xC36E] = (M[0xC36E] - 1) & 255;               // plug-in point once
     if (M[0xC36E] & 0x80) {
       M[0xC36E] = M[0xC388];
       // one less, in decimal (never from 0: that is no boost left)

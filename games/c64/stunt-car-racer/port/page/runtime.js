@@ -21,6 +21,9 @@
 //   rt.restore(state, entry, from)   a machine saved by the tests (kit/c64/machine.js's save()),
 //                      and the program started at entry(P), a generator, from the checkpoint at
 //                      from
+//   rt.runTicks(cycles, loop), rt.ticks, rt.leave()   Fast CPU's clock (below, and
+//                      site/lib/fast-cpu.js); rt.inLoop says whether a pass of the race is under
+//                      way on it
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. Each stretch of the main program moves the
 // clock on by its cost, and the raster's interrupts run on their lines when they fall due, their
@@ -242,6 +245,14 @@ function create(o) {
 
   // ---- the program, and what its stretches cost
   const P = SP.makePort(M, io);
+  // the plug-in points (src/core.js): Fast CPU's, once it plugs them in, while a pass of the race
+  // is under way on its clock; the game's own the rest of the time
+  const gamePlug = P.plug;
+  let fastPlug = null;
+  Object.defineProperty(P, 'plug', {
+    get: () => (fastPlug && free ? fastPlug : gamePlug),
+    set: v => { fastPlug = v === gamePlug ? null : v; },
+  });
   // The start-up's checksum sums the game's code, which the page does not carry: the page's
   // machine leaves the zero page as the sum over the whole game leaves it (pack-data.js), and goes
   // on as the game does when the sum is right. Its time is the start-up's stretch's, from the
@@ -270,11 +281,13 @@ function create(o) {
   function called(name, c) {
     calls[name] = (calls[name] || 0) + 1;
     owed += c;
-    if (owed >= LINE && t < lim) { const d = whole(callsCost()); if (d >= 1) owed += advance(d, lim); }
+    if (owed >= LINE && t < lim && !free) { const d = whole(callsCost()); if (d >= 1) unpaid(advance(d, lim)); }
   }
-  // cycles as whole ones, the fractions the costs leave carried on to the next
-  let frac = 0;
-  function whole(c) { const v = c + frac, n = Math.floor(v); frac = v - n; return n; }
+  // cycles as whole ones, the fractions the costs leave carried on to the next; work counts them
+  // (machineBeats, below), and a cost the clock could not pay yet goes back to be counted again
+  let frac = 0, work = 0;
+  function whole(c) { const v = c + frac, n = Math.floor(v); frac = v - n; work += n; return n; }
+  function unpaid(c) { owed += c; work -= c; }
   // the routines called and the work counted since the clock last moved, at their cost
   function callsCost() {
     let c = owed;
@@ -295,7 +308,7 @@ function create(o) {
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) {
-    if (counting) { const c = whole(callsCost()); if (c >= 1) owed += advance(c, lim); }
+    if (counting && !free) { const c = whole(callsCost()); if (c >= 1) unpaid(advance(c, lim)); }
     return M[a];
   }
 
@@ -379,15 +392,18 @@ function create(o) {
       // a checkpoint: the stretch to it, and a busy loop's cycles that end there
       debt = (lastCp === null ? whole(callsCost()) : Math.max(MIN_STRETCH, cost(lastCp, y.cp))) + (y.cycles || 0);
       lastCp = y.cp;
+      if (y.cp === PASS) { passWork = work; work = 0; known = !loop || free; }
+      if (loop) checkpoint(y.cp);
     } else if (y && y.cycles !== undefined) {
       // a busy loop: what the stretch has cost so far and its own cycles, and with at a checkpoint
       // it ends at
       if (y.at !== undefined) { debt = (lastCp === null ? whole(callsCost()) : cost(lastCp, y.at)) + y.cycles; lastCp = y.at; }
       else debt = Math.max(1, whole(callsCost()) + y.cycles);
+      if (free) debt = Math.max(1, y.cycles);           // in a loop of Fast CPU's, the wait alone
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
       const c = whole(callsCost());
-      debt = c >= 1 ? c : -1;
+      debt = c >= 1 && !free ? c : -1;
       next = true;
     }
     pay(limit);
@@ -407,11 +423,83 @@ function create(o) {
     return done[Math.max(0, Math.min(done.length - 1, i))];
   }
   function runFrame() {
+    if (loop) offTicks();
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
+
+  // ---- Fast CPU's clock (site/lib/fast-cpu.js): the real time owed, in cycles. The race's passes
+  // go round once a beat, at line 55 of each video frame, and their own work takes no time, as on a
+  // processor fast enough to finish it at once: the controls, the step of the world and the
+  // engine's note at the beat, just before the interrupt at line 61 puts on show the frame the last
+  // pass drew; the drawing and the rest of the pass from line 62, once it has. The game's own
+  // handshake with the interrupt needs that order: the last frame's colours set (FLIP_DONE, in the
+  // step) between the interrupt at line 197, which sees the flip asked for, and the one at line 61,
+  // which makes it, and the next flip asked for after that. A wait inside a pass (the pause, the
+  // wait for fire at the race's end), the restart after a wreck (plug-in point leave) and the
+  // program outside the race take the machine's time. loop.cap is the most passes one call runs
+  // (time owed past them is dropped), loop.begin() is called as each starts, loop.between() after
+  // it and loop.fresh() as the first pass after the machine's time comes to its start. Returns the
+  // passes run; ticks counts the beats.
+  const PASS = 0x3D08, DRAW = 0x3D11, BEAT = 55 * LINE, SHOWN = 62 * LINE;
+  // the checkpoints inside a pass: the race loop's, and the wheels' sprites' read of the chips
+  const IN_PASS = new Set([0x3D08, 0x3D0B, 0x3D0E, 0x3D11, 0x3D14, 0x3D17, 0x3D1A, 0x3D1D, 0x3D20, 0x3D23, 0x3D26, 0x3D29, 0x3D2C, 0x3D2F, 0x152D]);
+  let loop = null, free = false, parked = false, ticks = 0, lastBeat = -Infinity;
+  // the beats the C64 would take over the last pass's work: its cost (the program's own cycles, as
+  // the clock counts them), over the share of a frame's cycles the interrupts and the video chip
+  // leave the program in a race (PROGRAM, measured on the page with Fast CPU off); unknown
+  // (Infinity) when the last pass was not a whole one on Fast CPU's clock
+  const PROGRAM = 0.883;
+  let passWork = 0, known = false;
+  function machineBeats() { return known ? passWork / (PROGRAM * FRAME) : Infinity; }
+  function checkpoint(cp) {
+    if (cp === PASS) {
+      // a pass starts here: the one before it is over, and this one waits for the beat
+      if (free) { debt = -1; if (loop.between) loop.between(); }
+      else if (loop.fresh) loop.fresh();               // the first pass since the machine's time
+      free = false; parked = true;
+    } else if (!free) return;
+    else if (cp === DRAW) { debt = -1; next = Math.floor(t / FRAME) * FRAME + SHOWN; if (next < t) next = t; }
+    else if (IN_PASS.has(cp)) debt = -1;
+    else free = false;                                 // the race over: the machine's time again
+  }
+  // the restart after a wreck, in the machine's time
+  function leave() { if (free) { free = false; if (loop && loop.between) loop.between(); } }
+  function nextBeat() {
+    let b = Math.floor(t / FRAME) * FRAME + BEAT;
+    if (b < t) b += FRAME;
+    if (b <= lastBeat) b = lastBeat + FRAME;
+    return b;
+  }
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = false; parked = false; }
+    if (target === null) target = t;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // a pass's own work goes on whatever the time; a wait, or the program outside the race,
+        // as far as real time is owed
+        if (t >= target && !(free && debt < 0 && next === null)) break;
+        step(target);
+        continue;
+      }
+      if (debt >= 0 || next !== null) { if (!pay(target)) break; }
+      const at = nextBeat();
+      if (at > target) { until(target); break; }
+      if (loops === o.cap) { target = t; break; }
+      until(at);
+      lastBeat = at; ticks++; loops++;
+      parked = false; free = true;
+      if (o.begin) o.begin();
+    }
+    return loops;
+  }
+  // off: the clock as it was, a pass parked at its start going on in the machine's time
+  function offTicks() { loop = null; free = false; parked = false; }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry, from) {
@@ -430,6 +518,7 @@ function create(o) {
     if (vm) vm.at(-1, [], 0);
     done.length = 0; begin();
     it = entry(P); lastCp = from === undefined ? null : from; calls = Object.create(null); owed = 0; debt = -1; next = null;
+    free = false; parked = false; lastBeat = -Infinity; work = 0; passWork = 0; known = false;
     for (const k in P.N) P.N[k] = 0;
   }
   restore(o.data, p => p.STARTUP({}), ENTRY);
@@ -437,7 +526,8 @@ function create(o) {
     M, colour, vic, sidw, input, KEY, P, missing,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runUntil, restore, runTicks, leave, machineBeats, get ticks() { return ticks; }, get inLoop() { return free; },
+    lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     frameAt: n => (n === frameIdx ? cur : frameAt(n)),
     onSid: f => sidListeners.push(f),
   };

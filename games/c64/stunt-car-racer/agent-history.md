@@ -107,3 +107,54 @@ frame.
 `race_start_bytes`), and the top speed is drawn per track, not per driver.
 The drivers differ in the habits byte at `$AEE0` and in how often they
 swerve, the driver's number plus one in 32.
+
+## 4 November 2026, Fast CPU on the Play tab
+
+**Where the plug-in points are.** A census of what each pass of the race
+writes, run on the port in a practice race and a league race, gave the
+list: the car's forces into its speeds, its spins into its angles and its
+speeds into its place (ADD_FORCES, ADD_SPIN, MOVE_CAR), the turn back
+towards the road's direction (STEERING), the crane's swing and its count,
+the springs' change since the last pass (WHEELS_ON_ROAD, against the
+depth a step ago), the count of presses and the damage, the dust's specks,
+and the opponent's move, speed, wheels, tilt and line. The jobs once a
+pass are the clocks, the count of passes, the engine's aim, the wreck's
+and the boost's counts, the damage's hold, the swerve's dice and wave,
+the bump and the bounce, and the sounds started. `$C3DC`, the roll flag,
+is set each pass from the car's state and stays a plain flag.
+
+**The handshake with the interrupt.** The pass asks the interrupt to show
+the view it has drawn (`$C37A`), the interrupt at line 197 copies the ask
+to `$C37B`, FLIP_DONE in the next pass's step sets the colours and clears
+both, and the interrupt at line 61 shows the new bitmap only once `$C37A`
+is clear. A pass that takes no time has to put FLIP_DONE between line 197
+and line 61 and its ask after line 61. So a pass starts at line 55 (the
+controls, the step and the engine), waits at `$3D11` for line 62, and
+draws from there.
+
+**The speed.** The first version took seven passes for each of the C64's
+everywhere. The C64's passes in play measured 7.25 frames on most of
+Little Ramp, 10.5 under the crane and about five as the car falls off the
+track (13 of 177 passes). The skill says to follow the machine where the
+page has a cost model, held to the game's planned seven: `rt.machineBeats`
+counts each pass's cost as the clock counts it. Its first count ran high, by up
+to 58 per cent, because a cost the clock could not pay at once went back
+to be counted again; with that fixed, the C64's pass is the count over
+0.883 of a frame within 2.5 per cent on 1,102 passes, and the rounded
+frames never differ from the measured ones under the cap. Following, the
+fall takes five passes for each of the C64's and the rest seven.
+
+**Once a pass under follow.** Fast CPU's `once` with the speed followed
+runs a job on the first pass of a shadow pass only, which would lose a
+sound the race starts on a later pass (a landing, the stones, a bump). The
+table's own `once` runs a job on the first pass of a shadow pass that asks
+for it, and a step after the last at the soonest.
+
+**Checked.** Off means off: the lockstep (4 sessions, 200 passes each)
+and `test_play.js` with the plug-in points in place, and `test_fast.js`
+against a page without Fast CPU, 6,000 frames with a spell on in the
+menus. On: the race's clock 14.56 s in 14.58 s of real time from the line
+to the jump (the C64's 14.70 in 15.92), the car's speed within 1.5 per
+cent of the C64's at the same time on the race's clock, and the same
+memory at every refresh rate tried. `port/test/fast-browser.js`: 50.1
+passes a second in Chromium with it on, 7.0 off.
