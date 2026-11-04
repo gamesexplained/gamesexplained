@@ -63,3 +63,27 @@ same symbol map, apart from `j_FCE2` coming back as `KERNAL_RESET_VECTOR`.
 **Frame test after a standard switch.** With the emulator switched to NTSC
 and back to PAL, `frame.py test` failed by one pixel on line 138 on a clean
 checkout of `main` as well; a freshly started emulator passed.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`: the spies walking, holding the club, frozen and rising
+as angels, the four traps the game draws over a spy step by step, the
+sprites for what a spy carries and for the trapulator, and the plane
+taking off. The frames are drawn by `svFrame` from the game's frame and
+shape tables, and every card counts in the spy's turns, timed from the
+game's own counts. How it works links to the tab from the spies' drawing
+and the traps.
+
+`test_graphics.js` matches every frame against `draw_spy_shape` run on
+the kit's 6502. The first version differed on frames 46 and 60, which
+draw past the box's right edge; the routine stops at the byte that holds
+it, and `svFrame` now does too. Forcing an action on the white spy late
+in a game found it already knocked out by the computer's spy, so the
+test forces it 30 frames in, alone and unfrozen. The angel after the
+bucket started a turn out of step with the other traps' until the
+cards simulated the action's count as `spy_sinking` keeps it. The random
+game drew frame 0 on its first turn, which corrected the tab's claim
+that frame 0 is never drawn, and the frame headers' listing comment,
+which described three bytes a strip, was corrected to the two the code
+reads.
