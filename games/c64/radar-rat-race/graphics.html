@@ -1,0 +1,283 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Rat Race — graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+/* Page-local additions. Tokens and the base look come from site.css. */
+.site .hero{padding:52px 24px 30px;background:radial-gradient(ellipse 900px 340px at 50% -14%,rgba(143,127,224,.13),transparent 70%)}
+.site .hero .eyebrow{margin-bottom:18px}
+.site section{padding:44px 0;border-bottom:1px solid var(--line-soft)}
+.site section:last-of-type{border-bottom:none}
+.site .fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+.site h2{font-size:21px;margin:0 0 12px}
+.site .lede{color:var(--ink-soft);max-width:64ch;margin:0 0 26px}
+.site p{max-width:70ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+canvas{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+.cap code{font-size:1em}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px}
+button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--violet)}
+button.on,button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+.rr-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.rr-card{margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.rr-card canvas{width:120px;margin:0 auto 10px;border-radius:4px;border:1px solid var(--line)}
+.rr-card figcaption{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+.rr-card figcaption b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:3px}
+.rr-card .codes{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:6px}
+.ratbox{display:flex;gap:26px;flex-wrap:wrap;align-items:center;justify-content:center}
+#ratCv{width:180px;border-radius:10px;border:1px solid var(--line)}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:6px}
+.dpad button{font-size:16px;padding:0}
+.dpad .sp{visibility:hidden}
+.ratmeta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);text-align:center;min-width:150px}
+.ratmeta b{display:block;color:var(--amber);font-size:15px;margin-bottom:4px}
+.warn{border-left:3px solid var(--amber);padding:2px 0 2px 16px;color:var(--ink-soft);margin:18px 0}
+</style>
+<body class="site">
+<!-- tabs -->
+
+<header class="hero">
+  <p class="eyebrow">{{year}} &middot; {{publisher}}</p>
+  <h1>Radar Rat Race</h1>
+  <p class="sub">Everything in the maze is a letter of the game's own font, stamped two characters wide
+  and two tall. Here is each one, moving as the game moves it.</p>
+</header>
+
+<main class="wrap">
+
+<div class="ctl rr-speed">
+  <button data-speed="1" class="on">The game's speed</button>
+  <button data-speed="0.25">A quarter</button>
+</div>
+
+<section>
+  <p class="fig">01 &middot; Four frames of animation</p>
+  <h2>Turn the rat</h2>
+  <p class="lede">The entire animation budget for the player is four tiles. The game picks one
+  based on the rat's committed direction, then stamps it. That's the whole renderer.
+  There is no interpolation, no sprite multiplexing and no in-between frames. Press a direction.</p>
+  <div class="plate">
+    <div class="ratbox">
+      <canvas id="ratCv" width="24" height="24"></canvas>
+      <div class="dpad">
+        <button class="sp"></button>
+        <button data-dir="0" aria-label="Face up">&#9650;</button>
+        <button class="sp"></button>
+        <button data-dir="3" aria-label="Face left">&#9664;</button>
+        <button id="autoBtn" aria-label="Cycle directions">&#8635;</button>
+        <button data-dir="1" aria-label="Face right">&#9654;</button>
+        <button class="sp"></button>
+        <button data-dir="2" aria-label="Face down">&#9660;</button>
+        <button class="sp"></button>
+      </div>
+      <div class="ratmeta" id="ratMeta"></div>
+    </div>
+    <p class="cap">Four routines in the code, one per direction, each differing only in which
+    four font entries it reads. The rat steps half a cell at a time and can turn only when it is
+    whole on a cell, every other step, so the middle button turns it at every cell: as fast as the
+    game lets it turn.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 &middot; The red rats</p>
+  <h2>The same rat in red, spinning when stunned</h2>
+  <p class="lede">A red rat is the player's four tiles drawn in colour 2, picked by
+  <code>red_rat_facing</code> (<code>$42</code>). It steps every sixth pass of the main loop, every
+  fifth from round 8. When it lands on a star, a black cat or another red rat,
+  <code>red_rat_hit_test</code> (<code>$E2A4</code>) stuns it: for 15 moves after a star or 7 after
+  anything else it stays where it is, and <code>move_all_red_rats</code> (<code>$E088</code>) sets its
+  facing to the low two bits of the countdown, so it spins anticlockwise. A red rat that turns back
+  spends one move facing a quarter-turn short of its new way, so it turns round rather than flipping.</p>
+  <div class="plate">
+    <div class="rr-cards" id="redCards"></div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">03 &middot; Caught</p>
+  <h2>EEEK takes the colour of whatever caught you</h2>
+  <p class="lede"><code>player_caught_sequence</code> (<code>$F2DE</code>) redraws the red rats, then
+  <code>draw_eeek_text</code> (<code>$E8BC</code>) stamps the EEEK tile over the rat without touching
+  colour memory. Caught by a red rat, the cells under the rat were just painted red, so EEEK is red;
+  caught by a cat, they are still the rat's blue. It stays for the 16-step squeak and 80 ticks more,
+  about 1.6 seconds, before the screen is cleared for the next life.</p>
+  <div class="plate">
+    <div class="rr-cards" id="caughtCards"></div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">04 &middot; Around the maze</p>
+  <h2>The rest of the cast</h2>
+  <p class="lede">Cats never move, cheese never moves, and a star stays put for 50 of the rat's moves.
+  Two things on the panel do change: the X2 beside NEXT MEAL flashes once the 2x cheese is eaten, and
+  the TIME bar fills cell by cell.</p>
+  <div class="plate">
+    <div class="rr-cards" id="restCards"></div>
+    <p class="cap">Each piece of the maze is four consecutive font entries, stamped at screen offsets
+    <code>0, 1, 40, 41</code>: the <code>40</code> is one screen row. The 2x cheese is an ordinary
+    cheese whose bottom-right cell <code>draw_2x_marker</code> (<code>$E704</code>) overwrites with a
+    small red 2x.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">05 &middot; The radar</p>
+  <h2>The only sprites in the game</h2>
+  <p class="lede">The radar panel is black character cells. A cheese is a blip: a solid cell with a
+  four-pixel hole in the corner its position falls in, one of four glyphs. The rat and the red rats
+  are hardware sprites, a 4&times;4 square and a 4&times;4 cross, the game's only sprites.</p>
+  <div class="plate">
+    <div class="rr-cards" id="radarCards"></div>
+  </div>
+  <div id="loadErr"></div>
+</section>
+
+</main>
+
+<script src="../../lib/c64.js"></script>
+<script>
+/* rr-gfx */
+// The rules the cards follow, from the game's code. Times are in cycles of the PAL machine: the
+// countdowns count passes of the main loop, one a tick of CIA 1's timer when nothing overruns, and
+// a pass that redraws the maze takes longer than a tick and loses one, so these are the averages
+// the game keeps up in play.
+const RR_CLOCK = 985248;
+const RR_TICK = 16668;           // CIA 1 timer A, latch $411B
+const RR_MOVE = 116700;          // a red rat's move: 6 passes, about 7 ticks
+const RR_PMOVE = 110600;         // the rat's move, half a cell: 6 passes
+const RR_X2 = 372000;            // X2 on or off: 20 passes
+const RR_UNIT = 1300000;         // one unit of TIME: 70 passes
+const RR_EEEK = 1569000;         // EEEK stamped to the screen cleared: 16 + 80 ticks
+const RR_COLOUR = { rat: 6, red: 2, cheese: 7, marker: 2, cat: 0, star: 0, panel: 6, bar: 0, radar: 0, ratDot: 3, redDot: 4 };
+// A rat's tile for facing f (0 up, 1 right, 2 down, 3 left): top left, top right, bottom left,
+// bottom right, as draw_rat_facing_* ($E884) and the red rat glyph tables ($FDCB) hold them.
+const rrTile = (f) => [0x40, 0x41, 0x42, 0x43].map((c) => c + 4 * f);
+const RR_TILES = {
+  cheese: [0x50, 0x51, 0x52, 0x00], star: [0x54, 0x55, 0x56, 0x57], cat: [0x58, 0x59, 0x5A, 0x5B],
+  eeek: [0x5C, 0x5D, 0x5E, 0x5F], spare: [0x64, 0x65, 0x66, 0x67], marker: 0x53,
+  blips: [0x60, 0x61, 0x62, 0x63], x2on: [0x18, 0x32], x2off: [0x20, 0x20],
+};
+// The facings a stunned red rat shows on each of its moves, timer t counting down to 1.
+function rrStun(t) { const f = []; for (; t > 0; t--) f.push(t & 3); return f; }
+// A red rat turning from direction a to the opposite direction b: the move that turns it shows a
+// quarter-turn short of b, and the next shows b.
+function rrTurnBack(a, b) { return [(b - 1) & 3, b]; }
+// One TIME bar cell from full to used up: $77, then $77 + the units left in it, then $20.
+function rrTimeCell() { const g = [0x77]; for (let u = 7; u >= 1; u--) g.push(0x77 + u); g.push(0x20); return g; }
+// end of rr-gfx
+
+(async function () {
+  let G;
+  try { G = await C64.load('listing.json'); } catch (e) {
+    document.getElementById('loadErr').innerHTML =
+      '<p class="warn">The pictures are drawn from <code>listing.json</code> and it did not load. ' +
+      'Open this page from a web server rather than from disk.</p>';
+    return;
+  }
+  const CHARSET = G.ram.subarray(0x3800, 0x4000), PAL = C64.PAL, WHITE = PAL[1];
+  const ms = (c) => c / RR_CLOCK * 1000;
+  const hx = (n) => C64.hex(n, 2);
+  // A picture: a list of [code, colour, column, row] cells, and sprites [pointer, colour, x, y].
+  const tile = (codes, colours) => codes.map((c, i) => [c, Array.isArray(colours) ? colours[i] : colours, i & 1, i >> 1]);
+  function paint(cv, cells, opts = {}) {
+    const g = cv.getContext('2d'), s = opts.s || 1, ox = opts.ox === undefined ? 4 : opts.ox, oy = opts.oy === undefined ? 4 : opts.oy;
+    g.fillStyle = opts.bg || WHITE; g.fillRect(0, 0, cv.width, cv.height);
+    for (const [code, colour, cx, cy] of cells) C64.drawGlyph(g, CHARSET, code, (ox + cx * 8) * s, (oy + cy * 8) * s, s, PAL[colour]);
+    for (const [ptr, colour, x, y] of opts.sprites || []) C64.drawSprite(g, G.ram.subarray(ptr * 64, ptr * 64 + 63), x * s, y * s, s, PAL[colour]);
+  }
+
+  const speed = { v: 1 };
+  document.querySelector('.rr-speed').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    speed.v = +b.dataset.speed;
+    for (const x of document.querySelectorAll('.rr-speed button')) x.classList.toggle('on', x === b);
+  });
+
+  // Cards: each a list of steps { cells, ms, opts }, played in a loop.
+  const cards = [];
+  function card(host, title, note, steps, codes, size) {
+    const fig = document.createElement('figure'), cv = document.createElement('canvas'), cap = document.createElement('figcaption');
+    fig.className = 'rr-card'; cv.width = (size || [24, 24])[0]; cv.height = (size || [24, 24])[1];
+    cap.innerHTML = '<b>' + title + '</b>' + note + (codes ? '<div class="codes">' + codes + '</div>' : '');
+    fig.appendChild(cv); fig.appendChild(cap); document.getElementById(host).appendChild(fig);
+    const c = { cv, steps, i: 0, t: 0 };
+    paint(cv, steps[0].cells, steps[0].opts);
+    if (steps.length > 1) cards.push(c);
+  }
+  const still = (cells, opts) => [{ cells, ms: 1, opts }];
+  const codesOf = (a) => hx(a[0]) + '&ndash;' + hx(a[a.length - 1]);
+
+  // ---- 01: the rat
+  const ratCv = document.getElementById('ratCv');
+  let dir = 2, auto = null, autoT = 0;
+  function showRat(f) {
+    dir = f; paint(ratCv, tile(rrTile(f), RR_COLOUR.rat));
+    document.getElementById('ratMeta').innerHTML = '<b>' + ['Up', 'Right', 'Down', 'Left'][f] + '</b>font entries<br>' +
+      rrTile(f).map(hx).join(' ');
+    for (const b of document.querySelectorAll('.dpad button[data-dir]')) b.setAttribute('aria-pressed', String(+b.dataset.dir === f));
+  }
+  for (const b of document.querySelectorAll('.dpad button[data-dir]')) b.addEventListener('click', () => { auto = null; document.getElementById('autoBtn').setAttribute('aria-pressed', 'false'); showRat(+b.dataset.dir); });
+  document.getElementById('autoBtn').addEventListener('click', (e) => {
+    auto = auto ? null : true; autoT = 0; e.currentTarget.setAttribute('aria-pressed', String(!!auto));
+  });
+  showRat(dir);
+
+  // ---- 02: the red rats
+  const red = (f) => tile(rrTile(f), RR_COLOUR.red);
+  const walk = (f, n) => Array.from({ length: n }, () => ({ cells: red(f), ms: ms(RR_MOVE) }));
+  card('redCards', 'Stunned by a star', 'spins for 15 moves',
+    [...walk(1, 4), ...rrStun(15).map((f) => ({ cells: red(f), ms: ms(RR_MOVE) })), ...walk(1, 4)], codesOf(rrTile(0).concat(rrTile(3))));
+  card('redCards', 'Stunned by a cat or a red rat', 'spins for 7 moves',
+    [...walk(1, 4), ...rrStun(7).map((f) => ({ cells: red(f), ms: ms(RR_MOVE) })), ...walk(1, 4)]);
+  card('redCards', 'Turning back', 'a move a quarter-turn short',
+    [...walk(1, 4), ...rrTurnBack(1, 3).map((f) => ({ cells: red(f), ms: ms(RR_MOVE) })), ...walk(3, 3),
+      ...rrTurnBack(3, 1).map((f) => ({ cells: red(f), ms: ms(RR_MOVE) })), ...walk(1, 3)]);
+
+  // ---- 03: caught
+  const eeek = (colour) => [{ cells: tile(rrTile(1), RR_COLOUR.rat), ms: 900 }, { cells: tile(RR_TILES.eeek, colour), ms: ms(RR_EEEK) },
+    { cells: [], ms: 400 }];
+  card('caughtCards', 'By a red rat', 'red, from the red rat drawn there', eeek(RR_COLOUR.red), codesOf(RR_TILES.eeek));
+  card('caughtCards', 'By a black cat', 'blue, the rat\'s own colour', eeek(RR_COLOUR.rat));
+
+  // ---- 04: around the maze
+  card('restCards', 'Cheese', 'yellow', still(tile(RR_TILES.cheese, RR_COLOUR.cheese)), codesOf(RR_TILES.cheese.slice(0, 3)) + ', ' + hx(0));
+  card('restCards', 'The 2x cheese', 'the red 2x in its corner', still(tile(RR_TILES.cheese.slice(0, 3).concat(RR_TILES.marker),
+    [RR_COLOUR.cheese, RR_COLOUR.cheese, RR_COLOUR.cheese, RR_COLOUR.marker])), hx(RR_TILES.marker));
+  card('restCards', 'Black cat', 'never moves', still(tile(RR_TILES.cat, RR_COLOUR.cat)), codesOf(RR_TILES.cat));
+  card('restCards', 'Star', 'dropped behind the rat', still(tile(RR_TILES.star, RR_COLOUR.star)), codesOf(RR_TILES.star));
+  card('restCards', 'Spare rat', 'on the blue panel', still(tile(RR_TILES.spare, RR_COLOUR.panel)), codesOf(RR_TILES.spare));
+  const x2 = (codes) => codes.map((c, i) => [c, RR_COLOUR.panel, i, 0.5]);
+  card('restCards', 'X2', 'flashing, 20 passes on and 20 off',
+    [{ cells: x2(RR_TILES.x2on), ms: ms(RR_X2) }, { cells: x2(RR_TILES.x2off), ms: ms(RR_X2) }], hx(RR_TILES.x2on[0]) + ' ' + hx(RR_TILES.x2on[1]));
+  card('restCards', 'A TIME bar cell', 'a step every 70 passes',
+    rrTimeCell().map((c, i, a) => ({ cells: [[c, RR_COLOUR.bar, 0.5, 0.5]], ms: i === a.length - 1 ? 1500 : ms(RR_UNIT) })), codesOf([0x77, 0x7E]) + ', ' + hx(0x20));
+
+  // ---- 05: the radar
+  const black = PAL[RR_COLOUR.radar];
+  RR_TILES.blips.forEach((c, i) => card('radarCards', 'Cheese blip', ['top left', 'top right', 'bottom left', 'bottom right'][i],
+    still([[c, RR_COLOUR.radar, 0.5, 0.5]]), hx(c)));
+  card('radarCards', 'The rat', 'sprite 0, cyan', still([[0x20, RR_COLOUR.radar, 0.5, 0.5]], { sprites: [[0xF0, RR_COLOUR.ratDot, 8, 8]] }), 'pointer ' + hx(0xF0));
+  card('radarCards', 'A red rat', 'sprites 1&ndash;7, purple', still([[0x20, RR_COLOUR.radar, 0.5, 0.5]], { sprites: [[0xF1, RR_COLOUR.redDot, 8, 8]] }), 'pointer ' + hx(0xF1));
+
+  let last = 0;
+  function tick(now) {
+    const dt = last ? Math.min(now - last, 100) * speed.v : 0; last = now;
+    for (const c of cards) {
+      c.t += dt; let moved = false;
+      while (c.t >= c.steps[c.i].ms) { c.t -= c.steps[c.i].ms; c.i = (c.i + 1) % c.steps.length; moved = true; }
+      if (moved) paint(c.cv, c.steps[c.i].cells, c.steps[c.i].opts);
+    }
+    if (auto) { autoT += dt; const turn = 2 * ms(RR_PMOVE); while (autoT >= turn) { autoT -= turn; showRat([1, 2, 3, 0][dir]); } }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>

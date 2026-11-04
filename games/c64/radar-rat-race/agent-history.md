@@ -923,3 +923,19 @@ The persistence problem also went away. regenerator2000's project format
 turned out to be plain JSON, so `scripts/export_regen_project.py` writes a
 `.regen2000proj` from the live session; a server started from that file alone
 reports the same 100%.
+
+## The Graphics tab (4 November 2026, maintainer's session)
+
+"The full cast" and "Turn the rat" moved from How it works to a Graphics tab,
+which also plays what the game animates: a stunned red rat spinning, one
+turning back, EEEK in the colour of what caught the rat, the X2 flashing and
+a TIME bar cell running out. How it works keeps the rule and a link.
+
+The game runs on `kit/c64/machine.js` once the vectors at `$FFFA` are poked
+as facts.md gives them (the listing stops at `$FF57`) and the I flag is set.
+Its countdowns count passes, not ticks, and a pass that redraws the maze
+overruns its tick, so a red rat moves every 7.0 ticks on average in round 1,
+not 6, and a unit of TIME takes 78 ticks, not 70. Measuring TIME needed care:
+`drop_star` and `time_bonus` also call `tick_round_timer`, so only the main
+loop's call at `$F2A4` is timed. A cat catch first came out black: the rat
+had been standing on one of its own stars, which is drawn after the rat.

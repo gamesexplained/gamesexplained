@@ -186,3 +186,23 @@ C045  C8 AD F1 C0 91 FB C8 A5 1C 91 FB C8 A5 12 91 FB C8 A5 13 91 FB
 C05A  EE F0 C0   inc $C0F0
 C05D  60         rts
 ```
+
+## The Graphics tab (4 November 2026, maintainer's session)
+
+The sprite grid, the explosion player and the thruster composer moved from
+How it works to a Graphics tab, where the lander, its flames and the
+explosion play at the game's speed; How it works keeps the code and the
+rules, with a link. The old explosion player was wrong about the colours:
+it gave each picture one colour, (3 + 2f) mod 16, at 260 ms a picture,
+where the game steps the colour four times a picture, 33 ms apart.
+
+The timings come from running the game on `kit/c64/machine.js` with the
+video chip's stolen cycles and sprite collisions on. Two things were needed
+to get it going. The listing stops at `$F451`, so the vectors at `$FFFA`
+are poked as facts.md gives them (the attract screen's CIA interrupt goes
+through `$FFFE`), and the processor's I flag is set before the first
+instruction, as a reset leaves it. Without `collide: true` the lander never
+crashes, because `main_loop` reads `$D01F` for the rock. A pass measured
+33,900 to 34,500 cycles, 1.1 times the three delay units facts.md counts,
+which matches the 29 passes a second seen live. `test_graphics.js` replays
+all of it against the page's `jl-gfx` block.

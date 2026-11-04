@@ -81,7 +81,10 @@ matrix holds `$2E` in character rows 4 to 19 and `$26` in rows 20 to 24,
 and colour RAM holds `1` in all 840 cells of the play area. So bit pair
 `01` is red, `10` is light blue in the sky rows and blue in the ground
 rows, `11` is white, and `00` is whatever `$D021` holds at that raster
-line.
+line: black from the interrupt at raster `$1E`, grey (`$0C`) from the one
+at raster `$E0`. Raster `$E0` is display line 173, play-area row 26, so
+`00` is grey from row 26 down. Character row 20 starts at row 39, so `10`
+is blue from row 39 down.
 
 **The character set copy at `$5000` is byte for byte the first 2 KB of the
 C64 character ROM** (*live*: read through the emulator's `rom` bank and
@@ -151,6 +154,22 @@ chosen by `$DC04 and 3`, exclusive-oring `$0F` into the high byte for the
 buffer. Each write also blanks the other three pixel pairs in that byte, so
 a star erases itself.
 
+**How each moving thing is put together.** Each rule below is held bit for
+bit against the game's own drawing on the kit's machine model by
+`test_graphics.js`, which the Graphics tab draws from.
+
+| Routine | What it draws |
+|---|---|
+| `$AFD6` | the helicopter, from facing `$59` (−3 to +3), tilt `$5A` (−5 to +5), the rotor counters `$0B61` and `$0B62` and the skid flag `$60`. Side on it is bank frame `5 + tilt`, mirrored for facing left; head on and turning it is shape 11 + \|facing\| sheared by the lean pair at `$8C48`, nudged by `$927E`. The main rotor is sheared by the same lean, placed by `$934F` and `$92B5`; the tail rotor is drawn only side on, placed by `$9365` or `$937B` |
+| `$986C` | each pass, `$0B61` steps 4, 2, 0 and `$0B62` 6, 4, 2, 0; the facing and the tilt move one notch towards where they are going, and a turn from one side to the other passes through facing us |
+| `$9DDA` | a person, from the direction `$0CA1,x` (0 standing, `$01`/`$FF` walking, `$02`/`$FE` climbing in) and the step `$0CA0,x` (0 to 3). Bit 7 of the direction mirrors the shape. Standing is `59 + ((step << 1) eor $FF) and step and 3`, walking `55 + step`, climbing `62 +` bit 1 of the step. The left edge is X − 4 on an odd bit and the top row is 33 |
+| `$B106` | the cloud, shapes 51 to 54 by step, centred on an even bit, four rows higher on the ground |
+| `$B73D` | the mine, shape 50 on an even bit, mirrored when bit 0 of `$89` is set |
+| `$A0BB` | a tank: hull 40, mirrored when bit 2 of X is clear, so the tracks seem to roll every four bits; turret 39; barrel `41 + aim`, moved left by `$A244,aim`. All three go on odd bits |
+| `$AD8F` | a jet, one record a pass from the list at `$AFC2,state`, with the first shape from `$AFCC,state` and the count from `$AD8A,state`. A record is four bytes: the drawing, then signed steps in X, height and depth. State 0 has a count of 0 and repeats its one record; state 1 is drawn mirrored |
+| `$BA3F` | the base, from its left end on an even bit: a block of character cells filled from `$BB25`-`$BB27`, shape 66 at each end, 65 plain and mirrored, the pole 67 and the flag 68 or 69 by bit 0 of `$89` |
+| `$B8AE` | a shed, 71 shut or 72 open, on the bar 73, from its left end on an even bit; an open shed puts 74 in the doorway, mirrored by bit 0 of `$89` |
+
 ## The screen, band by band
 
 The raster handler at `$99F2`, reached through `$0314`, compares `$D012`
@@ -179,8 +198,15 @@ A raster interrupt, enabled at `$A79E`. **The main loop is not locked to
 it**: `$966F` ran 83 times in 201 raster frames, about 21 passes a second
 against 51 (*live*). Counters stepped by the interrupt are `$96` (fire
 button hold), `$95`/`$94` (rotor beat) and `$98` (effect length).
-Counters stepped once per pass are `$89` (the frame counter the flag and
-the tail rotor animate from), `$63` and the message timeouts.
+Counters stepped once per pass are `$89` (the frame counter whose low bit
+alternates the flag, the mine and the figures in an open shed), `$0B61`
+and `$0B62` (the main and tail rotors), `$63` and the message timeouts.
+
+**A pass takes as long as the drawing does.** On the kit's machine model
+(`kit/c64/machine.js`, PAL, 985,248 cycles a second), a pass on the pad
+beside the base averaged 82,816 cycles, about 12 a second, and flying
+forward with nothing but the hills about averaged 49,829, about 20 a
+second. `test_graphics.js` holds both to five per cent.
 
 The NMI vector `$0318` points at `$9AAB`, which is the `rti` that ends the
 IRQ handler. RESTORE therefore returns immediately (*live*: six RESTORE

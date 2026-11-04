@@ -324,6 +324,24 @@ The explosion is the lander itself: `explode` (`$E44B`) increments the
 sprite 1 pointer seven times from `$F0`, and `flash_explosion_colour` steps
 the sprite colour by 2 modulo 16 four times between frames.
 
+**Timing on the kit's machine model** (`kit/c64/machine.js` with the video
+chip's stolen cycles, a game started from the attract screen with fire;
+`test_graphics.js` holds the Graphics tab to it):
+
+| Thing | Cycles | PAL ms |
+|---|---|---|
+| One pass of `main_loop`, any thruster, wide view or close-up | 33,900–34,500 | about 34.5 |
+| One colour step of `flash_explosion_colour` | 32,300 on average | 32.8 |
+| One explosion picture (four colour steps) | 129,200 | 131 |
+| The explosion, `$F1` to `$F7` | 904,600 | 918 |
+
+`flame_phase` flips on every pass, so the main flame's two shapes alternate
+about 29 times a second. Joystick left and A both give `thrust_side` 1 and
+shape `$FA`, the left jet; right and D give 2 and `$FB`. The colour steps
+run 5, 7, 9, 11 on `$F1`, 13, 15, 1, 3 on `$F2`, and on round the eight odd
+colours, ending on 11 when `$D015` is cleared after `$F7`. Shapes `$FC`–`$FF`
+(`$3F00`–`$3FFF`) are all zero.
+
 ## Level data
 
 Each of the four views is a run-length stream of (count, character) pairs,

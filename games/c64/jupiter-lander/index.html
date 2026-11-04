@@ -115,54 +115,28 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
 
 <section>
   <p class="fig">02 &middot; The cast</p>
-  <h2 class="t">Sixteen sprite shapes</h2>
-  <p class="lede">The sixteen sprite shapes are stored in the second half of the 2KB character set block, addressed through the sprite pointers.</p>
-  <div class="plate">
-    <div id="spriteGrid" class="row" style="gap:10px"></div>
-    <p class="cap">Click any shape to see it large. Slots <code>$FC</code> to <code>$FF</code> are
-    empty; they are the tail of the 2 KB block.</p>
-  </div>
+  <h2 class="t">The lander is its own explosion</h2>
+  <p class="lede">The sixteen sprite shapes are stored in the second half of the 2KB character set
+  block, addressed through the sprite pointers. The <a href="graphics.html">Graphics</a> tab flies
+  the lander, its flames and the explosion at the game's own speed.</p>
 
   <h3>The explosion animation</h3>
   <p>Hitting rock does not swap the ship for an explosion. It adds one to the sprite pointer,
   seven times, and cycles the sprite colour between frames.</p>
-  <div class="plate">
-    <div class="row">
-      <div><div class="screenwrap"><canvas id="boomCv" width="192" height="168"></canvas></div></div>
-      <div class="col">
-        <div class="ctl"><button id="boomPlay">Play the explosion</button><button id="boomStep">Step</button></div>
-        <div class="stat" id="boomStat"></div>
-        <div class="asm"><span class="a">$E46F</span>  <span class="k">lda</span> #$07
+  <div class="asm"><span class="a">$E46F</span>  <span class="k">lda</span> #$07
 <span class="a">$E471</span>  <span class="k">sta</span> boom_frame
 <span class="a">$E473</span>  <span class="k">inc</span> $07F9      <span class="c">; the sprite pointer</span>
 <span class="a">$E481</span>  <span class="k">jsr</span> flash_explosion_colour
 <span class="a">$E484</span>  <span class="k">dec</span> boom_frame
 <span class="a">$E486</span>  <span class="k">bne</span> $E473</div>
-      </div>
-    </div>
-  </div>
 
   <h3>Thrusters: compose three sprites</h3>
   <p>The flames are not drawn into the hull. They are sprites 2 and 3, sitting at exactly the
   same coordinates as sprite 1 and switched on only while a thruster is held. Sprite 2 alternates
   between two shapes on every update, which is what makes the main engine flicker.</p>
-  <div class="plate">
-    <div class="row">
-      <div><div class="screenwrap"><canvas id="stackCv" width="240" height="210"></canvas></div></div>
-      <div class="col">
-        <div class="ctl">
-          <button id="stMain">Main thruster</button>
-          <button id="stSideL">Left jet</button>
-          <button id="stSideR">Right jet</button>
-          <button id="stBig">Double size</button>
-        </div>
-        <div class="stat" id="stackStat"></div>
-      </div>
-    </div>
-    <p class="cap">Sprite&nbsp;1 is cyan, sprite&nbsp;2 red, sprite&nbsp;3 orange, and none of
-    those colours is ever changed except during an explosion. <b>Double size</b> is the whole of
-    the game's zoom: <code>$D017</code> and <code>$D01D</code> both get <code>$0E</code>.</p>
-  </div>
+  <p class="cap">Sprite&nbsp;1 is cyan, sprite&nbsp;2 red, sprite&nbsp;3 orange, and none of
+  those colours is ever changed except during an explosion. Doubling the size is the whole of
+  the game's zoom: <code>$D017</code> and <code>$D01D</code> both get <code>$0E</code>.</p>
 </section>
 
 <section>
@@ -491,80 +465,6 @@ function spritePix(slot,x,y){ // x 0..23, y 0..20
   draw();
 })();
 
-// ---- 02a: sprite grid ----------------------------------------------------
-(function(){
-  const host=document.getElementById('spriteGrid');
-  const names={0xF0:'lander',0xF1:'boom 1',0xF2:'boom 2',0xF3:'boom 3',0xF4:'boom 4',
-    0xF5:'boom 5',0xF6:'boom 6',0xF7:'boom 7',0xF8:'flame a',0xF9:'flame b',
-    0xFA:'left jet',0xFB:'right jet',0xFC:'unused',0xFD:'unused',0xFE:'unused',0xFF:'unused'};
-  const big=document.createElement('div'); big.className='col';
-  const bigCv=document.createElement('canvas'); bigCv.width=24*6; bigCv.height=21*6;
-  const bigTxt=document.createElement('div'); bigTxt.className='stat';
-  const wrap=document.createElement('div'); wrap.className='screenwrap'; wrap.appendChild(bigCv);
-  big.appendChild(wrap); big.appendChild(bigTxt);
-  const grid=document.createElement('div');
-  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1 1 300px';
-  function showBig(slot){
-    const c=bigCv.getContext('2d'); c.fillStyle='#000'; c.fillRect(0,0,bigCv.width,bigCv.height);
-    drawSprite(c,slot,0,0,6,slot>=0xF8&&slot<=0xF9?PAL[2]:(slot>=0xFA&&slot<=0xFB?PAL[8]:PAL[3]));
-    let on=0; for(let y=0;y<21;y++)for(let x=0;x<24;x++) on+=spritePix(slot,x,y);
-    bigTxt.innerHTML='slot <b>'+hex(slot)+'</b> at <b>'+hex(0x3C00+(slot-0xF0)*64,4)+'</b><br>'+
-      names[slot]+'<br><b>'+on+'</b> of 504 pixels set';
-  }
-  for(let s=0xF0;s<=0xFF;s++){
-    const d=document.createElement('div');
-    d.style.cssText='background:#000;border:1px solid var(--line);border-radius:6px;padding:5px;cursor:pointer;line-height:0';
-    const cv=document.createElement('canvas'); cv.width=24*2; cv.height=21*2;
-    const c=cv.getContext('2d');
-    drawSprite(c,s,0,0,2,s>=0xF8&&s<=0xF9?PAL[2]:(s>=0xFA&&s<=0xFB?PAL[8]:PAL[3]));
-    d.appendChild(cv); d.onclick=()=>showBig(s); grid.appendChild(d);
-  }
-  host.appendChild(grid); host.appendChild(big); showBig(0xF0);
-})();
-
-// ---- 02b: explosion ------------------------------------------------------
-(function(){
-  const cv=document.getElementById('boomCv'), ctx=cv.getContext('2d');
-  let f=0, timer=null;
-  function draw(){
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
-    drawSprite(ctx,0xF0+f,0,0,8,PAL[(3+f*2)%16]);
-    document.getElementById('boomStat').innerHTML=
-      'frame <b>'+f+'</b> of 7<br>sprite pointer <b>'+hex(0xF0+f)+'</b><br>sprite colour <b>'+((3+f*2)%16)+'</b>';
-  }
-  document.getElementById('boomStep').onclick=()=>{f=(f+1)%8;draw();};
-  document.getElementById('boomPlay').onclick=()=>{
-    if(timer){clearInterval(timer);timer=null;return;}
-    f=0;draw(); timer=setInterval(()=>{f++; if(f>7){clearInterval(timer);timer=null;f=7;} draw();},260);
-  };
-  draw();
-})();
-
-// ---- 02c: the three-sprite stack ----------------------------------------
-(function(){
-  const cv=document.getElementById('stackCv'), ctx=cv.getContext('2d');
-  const st={main:false,left:false,right:false,big:false};
-  let phase=0;
-  function draw(){
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
-    const s=st.big?4:2, ox=(cv.width-24*s)/2, oy=(cv.height-21*s)/2;
-    if(st.main) drawSprite(ctx,0xF8+phase,ox,oy,s,PAL[2]);
-    if(st.left) drawSprite(ctx,0xFA,ox,oy,s,PAL[8]);
-    if(st.right) drawSprite(ctx,0xFB,ox,oy,s,PAL[8]);
-    drawSprite(ctx,0xF0,ox,oy,s,PAL[3]);
-    let x=1; if(st.left||st.right) x+=4; if(st.main) x+=2;
-    document.getElementById('stackStat').innerHTML=
-      'X counted up to <b>'+x+'</b><br>$D015 = <b>'+hex(x*2)+'</b><br>'+
-      'sprites on: <b>'+[1,st.main?2:0,(st.left||st.right)?3:0].filter(Boolean).join(', ')+'</b><br>'+
-      '$D017 / $D01D = <b>'+(st.big?'$0E':'$00')+'</b>';
-  }
-  function bind(id,k,excl){const b=document.getElementById(id);
-    b.onclick=()=>{st[k]=!st[k]; if(st[k]&&excl){st[excl]=false;document.getElementById(excl==='left'?'stSideL':'stSideR').classList.remove('on');}
-      b.classList.toggle('on',st[k]);draw();};}
-  bind('stMain','main'); bind('stSideL','left','right'); bind('stSideR','right','left'); bind('stBig','big');
-  setInterval(()=>{if(st.main){phase^=1;draw();}},310);
-  draw();
-})();
 // ---- shared world model --------------------------------------------------
 const VIEW_ORIGIN=[null,{x:0x0038,y:0xE2},{x:0x00E8,y:0x42},{x:0x0148,y:0xE2}];
 const PADS=[{y:0x016A,x0:0x00B0,x1:0x00E0,m:5,view:1},
