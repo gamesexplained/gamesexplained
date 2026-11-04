@@ -47,11 +47,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
 .gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
 .gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
-.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
-.gx-sheet+.gx-sheet{margin-top:10px}
-.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
-.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
-.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
 .gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
 .gx-sub:first-child{margin-top:0}
 .gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
@@ -83,28 +78,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>A player's frame is his move plus the way he faces, one of eight, counted round from up. Standing is frame <code>$40</code> plus his facing, sliding <code>$48</code> plus it, and a jump <code>$88</code> plus it; each of those is one frame, held for four looks (16 frames) for a slide or a jump. Running is four steps for each facing, from <code>$50</code>, and a throw three parts, from <code>$70</code>. A player knocked down falls through <code>$98</code>-<code>$9E</code> and lies on the last until his time is up, which is longer the more tired the player who tackled him; an injured player lies on the stretcher, <code>$9F</code>. A player who scores celebrates with <code>$A1</code>-<code>$A4</code>, rocking between the last two.</p>
   <p>Brutal Deluxe are always red. The other team's colour comes from its number in the league: grey, green, yellow or blue (<code>team_2_colours</code>, <code>$1D34</code>). The player with the ball turns purple, or white or cyan on the other side (<code>pick_up</code>, <code>$2D59</code>).</p>
   <p>The ball's frame is its height: <code>$28</code> plus the height divided by 32. A lob starts at a height of 20, rising 19 the first frame and one less each frame after (<code>throw_lob</code>, <code>$41E4</code>), so it peaks at 210 and comes down on exactly 0. Frame <code>$2F</code>, for heights from 224, is never reached; it is a copy of <code>$2E</code>.</p>
-</section>
-
-<section id="shapes">
-  <p class="fig">02 · The sprite frames</p>
-  <h2 class="t">Every sprite frame, and what shows it</h2>
-  <p class="lede">In a match the video chip reads its sprites from <code data-part="">$C000</code>-<code data-part="">$FFFF</code>, where frame <i>n</i> is the 64 bytes at <code data-part="">$C000</code> + 64<i>n</i>. The match uses frames <code>$00</code>-<code>$2F</code> and <code>$40</code>-<code>$BF</code>; the gym and the menus put their own frames in the same places.</p>
-  <div class="plate">
-    <p class="gx-sub">The match</p>
-    <canvas id="gx-sheet" class="gx-sheet" width="832" height="702" aria-label="The match's sprite frames, sixteen to a row"></canvas>
-    <div class="gx-key" id="gx-key"></div>
-    <p class="gx-sub">The gym and the menus</p>
-    <canvas id="gx-sheet2" class="gx-sheet" width="832" height="162" aria-label="The gym's and the menus' sprite frames"></canvas>
-    <p class="gx-read" id="gx-read">Point at a frame to see what shows it.</p>
-    <p class="cap">Each frame as the game shows it: the match's in multicolour with black and light grey, the gym's figure pieces in multicolour with brown and orange, and the gym's buttons and the menus' pointers in one colour. The first row of the match is frames <code>$00</code>-<code>$09</code> during the run-out; the last is the picture packed as frame <code>$AE</code>, which <code>match_setup</code> covers before it is ever shown.</p>
-  </div>
   <p>The run-out uses the first ten frames twice over. <code>match_setup</code> unpacks the arena's frames to <code data-part="">$C000</code>, then the ten frames of a door opening over the first ten of them. Once the players have run out, a grey sprite plays the door's ten frames, a frame every four (<code>$298F</code>); then the game unpacks the arena's frames again (<code>$29B6</code>), and frames <code>$00</code>-<code>$05</code> are the arcs over the players again.</p>
   <p>Frames <code>$26</code>, <code>$27</code>, <code>$90</code>-<code>$97</code>, <code>$B8</code>-<code>$BB</code> and <code>$BF</code> are empty. Two of them have a use: the ball is given <code>$BF</code> before the kick-off (<code>match_setup</code>) and <code>$B8</code> when it goes back to the centre at the end of a half (<code>match_end_frame</code>, <code>$223D</code>), so it is still a sprite, but one that shows nothing.</p>
   <p>Six frames that <code>match_setup</code> makes are never shown. It copies pictures into <code>$A0</code>, <code>$A8</code>, <code>$A9</code> and <code>$AB</code>, and mirrors two of them into <code>$AA</code> and <code>$AC</code>, but no code in the game puts any of the six in an object's frame. Nor does any throw reach <code>$2F</code>, the ball's frame for heights from 224, which is a copy of <code>$2E</code>.</p>
 </section>
 
 <section id="memory">
-  <p class="fig">03 · Where the frames come from</p>
+  <p class="fig">02 · Where the frames come from</p>
   <h2 class="t">Half the match's frames are made just before kick-off</h2>
   <p class="lede">The game keeps its sprite frames packed, and in columns. Before each match it unpacks them, turns them into the rows the video chip reads, copies some into new places and mirrors others.</p>
   <p>Each packed frame is stored as its three columns of 21 bytes, which the game's unpacker squeezes better than the chip's rows of three bytes. <code>sprite_rows</code> (<code>$4D8C</code>) turns each one round. Three packed sets make the match: <code>match_sprites</code> (<code>$A04F</code>) for frames <code>$80</code>-<code>$BF</code>, <code>arena_sprites</code> (<code>$A1D0</code>) for <code>$00</code>-<code>$2F</code>, and <code>door_sprites</code> (<code>$A5BB</code>) for the run-out. Frames <code>$40</code>-<code>$7F</code> are not packed at all: they sit in rows at <code>$D000</code>-<code>$DFFF</code>, in the RAM under the video and sound chips, for the whole game.</p>
@@ -257,6 +237,42 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   const doorTile = tile(tWall, CW, RH, 'The door, <code>$00</code>-<code>$09</code> of <code>door_sprites</code>');
   let flashN = 0, doorN = 0;
 
+  // the frames match_setup makes or keeps that nothing shows
+  const tIdle = group('Frames nothing shows', 'Six frames that <code>match_setup</code> makes, which no code puts in an object\'s frame, the ball\'s frame for heights no throw reaches, and the picture packed as frame <code>$AE</code>, which <code>match_setup</code> covers before any match shows it.');
+  for (const [lab, data] of [[0xA0, F(0xA0)], [0xA8, F(0xA8)], [0xA9, F(0xA9)], [0xAA, F(0xAA)], [0xAB, F(0xAB)], [0xAC, F(0xAC)], [0x2F, F(0x2F)], ['<code>$AE</code> as packed', packedAE]]) {
+    const t = tile(tIdle, CW, RH, typeof lab === 'number' ? '<code>' + hex(lab) + '</code>' : lab);
+    fill(t); mc(t.ctx, data, 0, 3, S, lab === 0x2F ? 1 : 2);
+  }
+
+  // the gym, the menus and the manager screen: frames the game unpacks into the same places off the pitch
+  const tMenu = group('The gym and the menus', 'Off the pitch the game unpacks other frames into the same memory. In the gym the attribute buttons\' labels are sprites, white over the buttons\' black middles and light red while chosen (<code>button_light</code>, <code>$61BA</code>), and the equipment that trains the chosen attribute is shown in sprites over the figure, in red with brown and orange. On the menus two pointers stand either side of the chosen line and pulse from black to white and back through the sixteen colours at <code>$4D5C</code>, a step a frame. On the manager screen two halves of a marker frame the chosen player\'s face.');
+  const GS = 2, BW = 24 * GS, BH = 21 * GS;
+  // frames $10-$17 are AGR, DEF, THR, STA, ATT, SPD, POW and INT; on the screen they sit in two columns of four
+  const ORDER = [0, 4, 1, 5, 2, 6, 3, 7];
+  const FIG = Array.from(ram.subarray(0x66DE, 0x66DE + 32));                        // sprite_figure_frames: four pieces to a button
+  const GF = (n) => GY.subarray(0xC000 + n * 64, 0xC000 + n * 64 + 63);
+  const btnTile = tile(tMenu, BW * 2 + 24, BH * 4 + 30, 'The gym\'s buttons, <code>$10</code>-<code>$17</code>, the chosen one lit');
+  const pieceTile = tile(tMenu, BW * 4 + 18, BH + 6, 'The chosen attribute\'s equipment, four of <code>$1C</code>-<code>$2F</code> (<code>$66DE</code>)');
+  const nameTile = tile(tMenu, BW + 12, BH * 3 + 6, 'The column of names, <code>$18</code>-<code>$1A</code>');
+  const ptrTile = tile(tMenu, BW * 2 + 160, BH + 12, 'The menus\' pointers, <code>$FD</code> and its mirror image <code>$FE</code> (<code>run_menu</code>)');
+  const markTile = tile(tMenu, BW * 2 + 24, BH + 12, 'The manager screen\'s marker, its left half <code>$FD</code> and its right half <code>$FE</code>, into which the player\'s worth is printed');
+  fill(nameTile, 0);
+  for (let k = 0; k < 3; k++) C64.drawSprite(nameTile.ctx, GF(0x18 + k), 6, 3 + k * BH, GS, PAL[1]);
+  fill(markTile, 6);
+  for (let k = 0; k < 2; k++) C64.drawSprite(markTile.ctx, MG.subarray(0xC000 + (0xFD + k) * 64, 0xC000 + (0xFD + k) * 64 + 63), 6 + k * (BW + 12), 6, GS, PAL[1]);
+  let chosen = 0;
+  function drawMenus() {
+    fill(btnTile, 0);
+    ORDER.forEach((b, i) => C64.drawSprite(btnTile.ctx, GF(0x10 + b), 8 + (i & 1) * (BW + 8), 6 + (i >> 1) * (BH + 6), GS, PAL[b === ORDER[chosen] ? 10 : 1]));
+    fill(pieceTile, 0);
+    const b = ORDER[chosen];
+    for (let k = 0; k < 4; k++) C64.drawSpriteMC(pieceTile.ctx, GF(FIG[4 * b + k]), 3 + k * (BW + 4), 3, GS, PAL[2], PAL[9], PAL[8]);
+    const q = frame & 31, c = ram[0x4D5C + (q < 16 ? q : q ^ 31)];
+    fill(ptrTile, 14);
+    C64.drawSprite(ptrTile.ctx, MN.subarray(0xC000 + 0xFD * 64, 0xC000 + 0xFD * 64 + 63), 6, 6, GS, PAL[c]);
+    C64.drawSprite(ptrTile.ctx, MN.subarray(0xC000 + 0xFE * 64, 0xC000 + 0xFE * 64 + 63), 6 + BW + 148, 6, GS, PAL[c]);
+  }
+
   function draw() {
     const c = colour();
     players.forEach((p, i) => {
@@ -281,6 +297,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     if (flashN % 50 < 6) mc(flashTile.ctx, F(0xBC + Math.floor(flashN / 50) % 3), Math.floor(flashN / 50) % 3 * CW, 3, S, 13);
     fill(doorTile);
     mc(doorTile.ctx, D(Math.min(9, doorN >> 2)), 0, 3, S, 12);
+    drawMenus();
   }
 
   let frame = 0, running = true, last = 0, acc = 0;
@@ -293,6 +310,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       if ((frame & 3) === 2) coin = coin === 0x25 ? 0x1A : coin + 1;   // pickups_spin: one pickup a frame
       flashN = (flashN + 1) % 150;
       doorN = (doorN + 1) % 70;                                         // 40 frames of door, then a pause
+      if (frame % 50 === 0) chosen = (chosen + 1) % 8;                  // the stick moves the choice once a second
     }
     draw();
     $('gx-stat').textContent = 'frame ' + frame + ' · ' + (frame / FPS).toFixed(1) + ' s';
@@ -311,107 +329,5 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   tick(1);
   requestAnimationFrame(loop);
 
-  // ---- 02: the sheets, every frame and what shows it, from the game's tables and code
-  const CAT = {
-    run: ['#4f8cc9', 'standing and running'], slide: ['#5aa05a', 'sliding and jumping'], throw: ['#e0a030', 'throwing'],
-    down: ['#d0503c', 'down, hurt, celebrating'], keeper: ['#2fa8b0', 'the keepers'], ball: ['#9a9a9a', 'the ball'],
-    arc: ['#a070c0', 'the arcs'], pick: ['#c07a2c', 'the pickups'], wall: ['#3aa76d', 'the walls and the run-out'],
-  };
-  const uses = new Map();
-  const use = (key, cat, what) => { if (!uses.has(key)) uses.set(key, { cat, what: [] }); const u = uses.get(key); if (!u.what.includes(what)) u.what.push(what); };
-  for (let d = 0; d < 8; d++) {
-    use(0x40 + d, 'run', 'a player standing, facing ' + FACING[d]);
-    use(0x48 + d, 'slide', 'a player sliding into a tackle, facing ' + FACING[d]);
-    use(0x88 + d, 'slide', 'a player jumping, facing ' + FACING[d]);
-    for (let k = 0; k < 4; k++) use(0x50 + 4 * d + k, 'run', 'a player running ' + FACING[d] + ', step ' + k);
-    for (let k = 0; k < 3; k++) use(0x70 + 3 * d + k, 'throw', 'a player throwing, facing ' + FACING[d] + ', part ' + k);
-  }
-  for (let f = 0x98; f <= 0x9E; f++) use(f, 'down', 'a player knocked down, frame ' + (f - 0x98) + (f === 0x9E ? ', where he lies until he gets up' : ''));
-  use(0x9F, 'down', 'an injured player on the stretcher');
-  for (let f = 0xA1; f <= 0xA4; f++) use(f, 'down', 'a player celebrating a goal');
-  for (let k = 0; k < 8; k++) use(ram[0x1D2C + k], 'keeper', 'a keeper\'s stance at ' + (k & 1 ? 'the other end' : 'one end'));
-  for (let end = 0; end < 2; end++) for (let k = 0; k < 4; k++) use(0xB0 + 4 * end + k, 'keeper', 'a keeper at ' + (end ? 'the other end' : 'one end') + ' diving ' + (k < 2 ? 'left' : 'right') + ', part ' + (k & 1));
-  for (let h = 0; h < 7; h++) use(0x28 + h, 'ball', 'the ball at heights ' + 32 * h + '-' + (32 * h + 31));
-  use(0x2F, null, 'nothing: it would be the ball at heights from 224, which no throw reaches; a copy of $2E');
-  const copied = new Map(), mirrored = new Map();
-  for (let k = 0; k < 23; k++) copied.set(ram[0x2A70 + 2 * k], ram[0x2A6F + 2 * k]);       // copy_pairs
-  for (let k = 0; k < 45; k++) mirrored.set(ram[0x2A0C + 2 * k], ram[0x2A0B + 2 * k]);     // mirror_pairs
-  for (const f of [0xA0, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC]) {
-    const how = copied.has(f) ? 'copying ' + hex(copied.get(f)) : 'mirroring ' + hex(mirrored.get(f));
-    use(f, null, 'nothing: match_setup makes it, ' + how + ', but no code puts it in an object\'s frame');
-  }
-  use(0xB8, 'ball', 'the ball put back in the centre at the end of a half (match_end_frame): an empty frame');
-  use(0xBF, 'ball', 'the ball before the kick-off: an empty frame');
-  use(0x00, 'arc', 'the arc over the player under control while he has not got the ball');
-  for (let y = 0; y < 9; y++) use(ram[0x1CB2 + y], 'arc', 'the letter over a ' + PLACES[y] + ' under control with the ball');
-  for (let t = 0; t < 32; t++) use(6 + t, 'pick', t < 8 ? 'armour pickup, type ' + t : t < 20 ? 'token pickup, type ' + t : 'the spinning coin, step ' + (t - 20) + ' (pickup type ' + t + ')');
-  use(0xBC, 'wall', 'a bounce dome flashing');
-  use(0xBD, 'wall', 'an electrobounce unit lit, the ball in the left half of the pitch');
-  use(0xBE, 'wall', 'an electrobounce unit lit, the ball in the right half');
-  for (let n = 0; n < 10; n++) use('d' + n, 'wall', 'the door in the run-out, frame ' + n + ' of door_sprites');
-  use('ae', null, 'the picture packed as frame $AE in match_sprites, covered by the copy of $62 before any match shows it');
-
-  const blank = (f) => f.every((b) => !b);
-  const SW = 52, SH = 54, sheet = $('gx-sheet'), sctx = sheet.getContext('2d');
-  sctx.imageSmoothingEnabled = false;
-  // rows: the run-out's ten frames, $00-$2F, $40-$BF, then the covered $AE
-  const cells = [];
-  for (let n = 0; n < 10; n++) cells.push({ key: 'd' + n, data: D(n), label: hex(n) + ' in the run-out', col: n, row: 0 });
-  for (let n = 0; n < 0x30; n++) cells.push({ key: n, data: F(n), label: hex(n), col: n % 16, row: 1 + (n >> 4) });
-  for (let n = 0x40; n < 0xC0; n++) cells.push({ key: n, data: F(n), label: hex(n), col: n % 16, row: 4 + ((n - 0x40) >> 4) });
-  cells.push({ key: 'ae', data: packedAE, label: hex(0xAE) + ' as packed', col: 0, row: 12 });
-  sheet.height = 13 * SH;
-  for (const cell of cells) {
-    const x = cell.col * SW, y = cell.row * SH, u = uses.get(cell.key);
-    const c = u && u.cat === 'pick' ? (cell.key >= 26 ? 6 : 9) : u && u.cat === 'wall' ? (typeof cell.key === 'string' ? 12 : 13) : u && u.cat === 'ball' ? 1 : 2;
-    sctx.fillStyle = PAL[PITCH]; sctx.fillRect(x, y, 48, 42);
-    mc(sctx, cell.data, x, y, 2, c);
-    if (u && u.cat) { sctx.fillStyle = CAT[u.cat][0]; sctx.fillRect(x, y + 44, 48, 4); }
-  }
-  $('gx-key').innerHTML = Object.values(CAT).map(([cc, t]) => '<span><i style="background:' + cc + '"></i>' + t + '</span>').join('');
-
-  // the gym and the menus: $10-$1A the buttons (white, lit light red), $1C-$2F the figure's pieces
-  // (red multicolour with brown and orange), $FD-$FE the manager screen's marker and the menus' pointer
-  const sheet2 = $('gx-sheet2'), s2 = sheet2.getContext('2d');
-  s2.imageSmoothingEnabled = false;
-  const gcells = [];
-  for (let n = 0x10; n <= 0x1A; n++) gcells.push({ m: GY, n, col: n - 0x10, row: 0 });
-  for (let n = 0x1C; n <= 0x2F; n++) gcells.push({ m: GY, n, col: (n - 0x1C) % 16, row: 1 + ((n - 0x1C) >> 4) });
-  gcells.push({ m: MG, n: 0xFD, col: 6, row: 2 }, { m: MG, n: 0xFE, col: 7, row: 2 }, { m: MN, n: 0xFD, col: 9, row: 2 }, { m: MN, n: 0xFE, col: 10, row: 2 });
-  sheet2.height = 3 * SH;
-  // the figure's pieces: four to a group in sprite_figure_frames ($66DE), a group for each attribute
-  // button in the order of the buttons' frames, and each attribute's equipment named in armour_names ($62D5)
-  const FIG = Array.from(ram.subarray(0x66DE, 0x66DE + 36));
-  const BUTTONS = ['AGR', 'DEF', 'THR', 'STA', 'ATT', 'SPD', 'POW', 'INT'], ATTRS = ['AGR', 'ATT', 'DEF', 'SPD', 'THR', 'POW', 'STA', 'INT'];
-  const EQUIP = []; { let a = 0x62D5, w = ''; while (EQUIP.length < 8) { const b = ram[a++]; if (!b) { EQUIP.push(w); w = ''; } else w += b === 1 ? ' ' : String.fromCharCode(b); } }
-  for (const g of gcells) {
-    const x = g.col * SW, y = g.row * SH, data = g.m.subarray(0xC000 + g.n * 64, 0xC000 + g.n * 64 + 63);
-    s2.fillStyle = PAL[0]; s2.fillRect(x, y, 48, 42);
-    if (g.n >= 0x1C && g.n <= 0x2F && g.m === GY) C64.drawSpriteMC(s2, data, x, y, 2, PAL[2], PAL[9], PAL[8]);
-    else C64.drawSprite(s2, data, x, y, 2, PAL[1]);
-  }
-  function readout(e, cv, list, what) {
-    const r = cv.getBoundingClientRect(), k = cv.width / r.width;
-    const col = Math.floor((e.clientX - r.left) * k / SW), row = Math.floor((e.clientY - r.top) * k / SH);
-    const cell = list.find((c) => c.col === col && c.row === row);
-    if (cell) $('gx-read').innerHTML = what(cell);
-  }
-  const matchText = (cell) => {
-    const u = uses.get(cell.key), at = typeof cell.key === 'number' ? ' at ' + hex(0xC000 + cell.key * 64, 4) : '';
-    return '<b>' + cell.label + '</b>' + at + ': ' + (u ? u.what.join('; ') : blank(cell.data) ? 'an empty frame that nothing shows' : 'nothing in the game shows it') + '.';
-  };
-  const gymText = (g) => {
-    const at = ' at ' + hex(0xC000 + g.n * 64, 4);
-    if (g.m === MG) return '<b>' + hex(g.n) + '</b>' + at + ' on the manager screen: the ' + (g.n === 0xFD ? 'left' : 'right') + ' half of the marker over a squad place, with the player\'s worth printed into it.';
-    if (g.m === MN) return '<b>' + hex(g.n) + '</b>' + at + ' on the menus: the pointer' + (g.n === 0xFE ? ', mirrored by sprite_rows as it is unpacked' : '') + '.';
-    if (g.n <= 0x17) return '<b>' + hex(g.n) + '</b>' + at + ' in the gym: the ' + BUTTONS[g.n - 0x10] + ' button\'s label, white, light red while it is chosen.';
-    if (g.n <= 0x1A) return '<b>' + hex(g.n) + '</b>' + at + ' in the gym: part of the column of names beside the attribute bars, one of three sprites stacked.';
-    const at2 = BUTTONS[Math.floor(FIG.indexOf(g.n) / 4)];
-    return '<b>' + hex(g.n) + '</b>' + at + ' in the gym: part of the ' + EQUIP[ATTRS.indexOf(at2)] + ', which trains ' + at2 + (g.n >= 0x27 ? ', a mirror image of ' + hex(g.n - 11) : '') + '. The game draws it into the figure, and shows it as a sprite while ' + at2 + ' is chosen.';
-  };
-  for (const ev of ['mousemove', 'click']) {
-    sheet.addEventListener(ev, (e) => readout(e, sheet, cells, matchText));
-    sheet2.addEventListener(ev, (e) => readout(e, sheet2, gcells, gymText));
-  }
 })();
 </script>

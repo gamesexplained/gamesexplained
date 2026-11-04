@@ -73,13 +73,6 @@ a{color:var(--link)}
 .gx-cast b{color:var(--ink);font-weight:700}
 .gx-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .gx-row .a2-btn{font-size:11.5px;padding:3px 8px}
-.gx-group{margin:0 0 18px}
-.gx-group h3{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0 0 8px}
-.gx-tiles{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
-.gx-tiles button{background:#000;border:2px solid transparent;border-radius:4px;padding:4px 4px 2px;cursor:pointer;max-width:100%}
-.gx-tiles button.on{border-color:var(--amber)}
-.gx-tiles canvas{display:block;image-rendering:pixelated;max-width:100%}
-.gx-tiles span{display:block;font-family:var(--fm);font-size:10px;color:#aaa;text-align:center}
 .gx-msg{color:var(--coral);font-size:14px}
 .gx-place{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
 .gx-place canvas{image-rendering:pixelated;border-radius:4px;display:block;max-width:100%}
@@ -112,23 +105,11 @@ a{color:var(--link)}
   </div>
   <p>The enemy has four looks by its distance. At range 6 or more its cell is left empty. At 2 to 5 it is a single dot, or two rows of one when it comes to range 2. Nearer, it is a medium picture of a single cell's eight bytes, drawn into two cells by two so it can move a pixel at a time, and nearest, within <code>$78</code> across and <code>$13</code> in height, a large picture of two columns of 16 rows, spread over three by three cells. The large picture is chosen through four tables from the enemy's pitch, roll and heading against ours, and our own roll and pitch (<code>large_view_step_one</code> to <code>large_view_pictures</code>), and comes out as one of fifteen pictures in one of four frames.</p>
   <p>Every picture is drawn in the fourth colour of a multicolour cell, the colour held for the cell itself. The game sets that colour for the whole view when the ground under the plane changes, blue over the sea and yellow over land (<code>map_square_check</code>, <code>$14AF</code>), so the enemy jet turns yellow when its pilot's view is over land. A dot in the view's light blue (<code>$55</code>) is lost against the sky, which is why the targets' far dots are drawn in it, over the ground only, and the enemy's in the cell colour (<code>$FF</code>). A missile's dot takes one or the other by the screen being drawn (<code>$59</code>), which changes every pass, so a missile against the sky flickers.</p>
-</section>
-
-<section id="pictures">
-  <p class="fig">02 · The pictures</p>
-  <h2 class="t">Fifteen pictures and four frames make every angle of the enemy</h2>
-  <p class="lede">Every picture the cockpit views and the explosion use, each built alone by the game's code. Pick one to see what the listing says it is.</p>
-  <div class="plate">
-    <p class="gx-msg" id="gx-tablemsg"></p>
-    <div id="gx-table"></div>
-    <p class="a2-out" id="gx-info">Pick a picture.</p>
-    <p class="cap">A frame is a picture drawn as stored, mirrored left to right, upside down, or turned half round: <code>shape_build</code> reads the picture's bytes in one of four orders (<code>shape_orders</code>, <code>$7241</code>) and, for the mirrored frames, turns each byte round through <code>mirror_table</code> (<code>$9000</code>). The large pictures are listed by the codes <code>large_view_pictures</code> holds, the medium ones by the codes at <code>medium_picture_codes</code> (<code>$9358</code>) that the game reads. The explosion's are sprites, twelve windows of 63 bytes on one run of bytes from <code>$F026</code>, so some share bytes. The targets' pictures are drawn in light blue over the ground's colour, the spy ship over the sea and the radar station over land, the only ground each is shown over; the sights, also light blue, are shown over the sea.</p>
-  </div>
-  <p>The fifteen large pictures fill only 480 bytes at <code>$FE00</code>-<code>$FFDF</code>, the top of memory, under the KERNAL ROM. The four frames make sixty drawings of them, and the tables pick 39 of those for the angles the enemy can be seen from. The spy ship and the radar station each have eight pictures in two sizes, chosen by our own roll alone, and turned half round for the half of the roll that turns the view over. The explosion has twelve pictures, but its sequence never goes past picture 10, so picture 11 is never seen.</p>
+  <p>The fifteen large pictures fill only 480 bytes at <code>$FE00</code>-<code>$FFDF</code>, the top of memory, under the KERNAL ROM. Each is drawn in one of four frames, as stored, mirrored left to right, upside down or turned half round: <code>shape_build</code> reads the picture's bytes in one of four orders (<code>shape_orders</code>, <code>$7241</code>) and, for the mirrored frames, turns each byte round through <code>mirror_table</code> (<code>$9000</code>). That makes sixty drawings, and the tables pick 39 of them for the angles the enemy can be seen from. The spy ship and the radar station each have eight pictures in two sizes, chosen by our own roll alone and turned half round for the half of the roll that turns the view over. The explosion's twelve pictures are sprites, windows of 63 bytes on one run of bytes from <code>$F026</code>, so some share bytes, and its sequence never goes past picture 10, so picture 11 is never seen.</p>
 </section>
 
 <section id="place">
-  <p class="fig">03 · How a picture is placed</p>
+  <p class="fig">02 · How a picture is placed</p>
   <h2 class="t">A picture moves inside its cells two pixels and one row at a time</h2>
   <p class="lede">The enemy's large picture at each fine position. Move it across and down to see it shifted inside the three by three cells it is drawn into.</p>
   <div class="plate">
@@ -152,7 +133,7 @@ a{color:var(--link)}
 <script>
 (async function () {
   const $ = id => document.getElementById(id);
-  const say = msg => { for (const id of ['gx-castmsg', 'gx-tablemsg', 'pl-out']) $(id).textContent = msg; };
+  const say = msg => { for (const id of ['gx-castmsg', 'pl-out']) $(id).textContent = msg; };
   const missing = [['c64.js', typeof C64], ['cpu6502.js', typeof C64Cpu]].filter(([, t]) => t === 'undefined').map(([f]) => f);
   if (missing.length) return say('These pictures need the built site (missing: ' + missing.join(', ') + ').');
   let G;
@@ -218,8 +199,6 @@ a{color:var(--link)}
   // the first cols columns and rows rows of a picture held in columns of colRows bytes
   const crop = (buf, colRows, cols, rows) => { const out = new Uint8Array(cols * rows); for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) out[c * rows + r] = buf[c * colRows + r]; return out; };
   const word = (lo, k) => m[lo + 2 * k] | m[lo + 2 * k + 1] << 8;
-  const name = a => G.names.get(a) || hex(a);
-  const about = a => { const r = G.listing.records.find(r => r.a === a); return r && r.c ? r.c : ''; };
 
   // --- 01: everything that moves --------------------------------------------------------------------------
   const PITCH = [['level', 0], ['climbing', 0x10], ['steep climb', 0x20], ['diving', 0xF0], ['steep dive', 0xD0]];
@@ -250,6 +229,8 @@ a{color:var(--link)}
   const boom = figure('<b>An explosion near at hand</b>, closer than range 6: the counter runs from 1 to <code>$1F</code>, pictures 1, 2, 1 and 0 five times, then out to 4, back, and on to 5.', 4);
   const hit = figure('<b>An explosion farther off</b>, or a missile\'s hit: the counter runs from <code>$20</code> to <code>$27</code>, pictures 6 to 10 and back to 9.', 4);
   const box = figure('<b>The missile sight\'s box</b>: one of four pictures by which way the enemy sits in its cell (<code>lock_box_shapes</code>, <code>$71E8</code>), in light blue, which shows against the ground and the enemy but not the sky.', 4);
+  const sight = figure('<b>The gun sight</b> (<code>$95C8</code>), drawn at column 14, row 3 of the view while the cannon is chosen. It does not move or change.', 4);
+  const spare = figure('<b>Explosion picture 11</b>, the last of the twelve, which no step of the sequence chooses, so it is never seen.', 4);
   function makeAll() {
     big.frames = []; big.says = []; mid.frames = []; mid.says = [];
     for (let h = 0; h < 256; h += 4) {
@@ -268,6 +249,8 @@ a{color:var(--link)}
     const seq = from => { const out = []; for (let c = from; c <= (from === 1 ? 0x1F : 0x27); c++) out.push(sprite(word(0x4DB9, m[0x4DD1 + c]))); return out; };
     boom.frames = seq(1); hit.frames = seq(0x20);
     box.frames = [0, 1, 2, 3].map(k => mc(m.slice(word(0x71E8, k), word(0x71E8, k) + 72), 3, 24, 3));
+    sight.frames = [mc(m.slice(0x95C8, 0x95E8), 2, 16, 3)];
+    spare.frames = [sprite(word(0x4DB9, 11))];
     for (const f of shown) f.show(pass);
   }
   let pass = 0, running = true;
@@ -277,59 +260,9 @@ a{color:var(--link)}
   let timer = setInterval(tick, RATE);
   $('gx-run').onclick = () => { running = !running; $('gx-run').textContent = running ? '❚❚ Pause' : '▶ Play'; $('gx-run').setAttribute('aria-pressed', running); clearInterval(timer); if (running) timer = setInterval(tick, RATE); };
   $('gx-step').onclick = () => { if (running) $('gx-run').onclick(); tick(); };
-  $('gx-land').onclick = () => { land = !land; $('gx-land').setAttribute('aria-pressed', land); makeAll(); drawTable(); place(); };
+  $('gx-land').onclick = () => { land = !land; $('gx-land').setAttribute('aria-pressed', land); makeAll(); place(); };
 
-  // --- 02: the pictures --------------------------------------------------------------------------------------
-  const FRAME = ['as stored', 'mirrored', 'upside down', 'turned half round'];
-  const tiles = $('gx-table');
-  function group(title, items) {
-    const g = document.createElement('div'); g.className = 'gx-group';
-    g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
-    for (const it of items) {
-      const b = document.createElement('button'), cv = document.createElement('canvas'), img = it.img();
-      b.type = 'button'; cv.width = img.width; cv.height = img.height; cv.style.width = img.width * (it.px || 3) + 'px';
-      cv.getContext('2d').putImageData(img, 0, 0);
-      const s = document.createElement('span'); s.textContent = it.short; b.append(cv, s);
-      b.onclick = () => { tiles.querySelectorAll('button.on').forEach(e => e.classList.remove('on')); b.classList.add('on'); $('gx-info').innerHTML = it.info(); };
-      g.lastChild.append(b);
-    }
-    tiles.append(g);
-  }
-  const DESC = (a, extra) => { const n = G.names.get(a); return `<code>${hex(a)}</code>${n ? ` (<code>${n}</code>)` : ''}${extra}`; };
-  function drawTable() {
-    tiles.textContent = '';
-    // the large pictures by the codes the lookup can give
-    const codes = [...new Set(Array.from(m.slice(0x75B0, 0x75B0 + 88)))].sort((a, b) => (a & 15) - (b & 15) || (a >> 4) - (b >> 4));
-    group('The enemy, nearest: each picture and frame the lookup can give', codes.map(c => ({
-      short: `${c & 15}.${c >> 4}`, px: 3,
-      img: () => { const B = built(word(0x77F8, c & 15), c >> 4, 1); return mc(crop(B.buf, 24, 2, 16), 2, 16); },
-      info: () => `<b>Large picture ${c & 15}, ${FRAME[c >> 4]}</b> (code ${hex(c, 2)}): ${DESC(word(0x77F8, c & 15), '')}, two columns of 16 rows, built three cells by three.`,
-    })));
-    const mids = [...new Set(Array.from({ length: 20 }, (_, k) => m[0x9358 + m[0x66D7 + k]]))].sort((a, b) => a - b);
-    group('The enemy, nearer: each medium picture the game reads', mids.map(c => ({
-      short: `${c >> 4}.${c & 15}`, px: 4,
-      img: () => { const B = built(word(0x6576, c >> 4), c & 15, 0); return mc(crop(B.buf, 16, 1, 8), 1, 8); },
-      info: () => `<b>Medium picture ${c >> 4}, ${FRAME[c & 15]}</b> (code ${hex(c, 2)}): the byte set ${DESC(word(0x6576, c >> 4), '')}, one cell of eight bytes.`,
-    })));
-    for (const [title, lo, size, cell] of [['The spy ship, one cell', 0x7820, 0, 6], ['The spy ship, close', 0x7830, 1, 6], ['The radar station, one cell', 0x7840, 0, 7], ['The radar station, close', 0x7850, 1, 7]])
-      group(title, Array.from({ length: 8 }, (_, k) => ({
-        short: String(k), px: size ? 3 : 4,
-        img: () => { const B = built(word(lo, k), 0, size); return size ? mc(crop(B.buf, 24, 2, 16), 2, 16, 3, cell) : mc(crop(B.buf, 16, 1, 8), 1, 8, 3, cell); },
-        info: () => `<b>${title}, picture ${k}</b>: ${DESC(word(lo, k), '')}${size ? ', 32 bytes' : ', 8 bytes'}. ${about(lo)}`,
-      })));
-    group('The explosion\'s sprite pictures', Array.from({ length: 12 }, (_, k) => ({
-      short: String(k), px: 3, img: () => sprite(word(0x4DB9, k)),
-      info: () => `<b>Explosion picture ${k}</b>: the 63 bytes from <code>${hex(word(0x4DB9, k))}</code>${k === 11 ? ', which no step of the sequence chooses' : ''}.`,
-    })));
-    group('The sights', [
-      ...[0, 1, 2, 3].map(k => ({ short: 'box ' + k, px: 3, img: () => mc(m.slice(word(0x71E8, k), word(0x71E8, k) + 72), 3, 24, 3),
-        info: () => `<b>The missile sight's box ${k}</b>: ${DESC(word(0x71E8, k), '')}, three cells by three. ${about(0x71E8)}` })),
-      { short: 'gun sight', px: 3, img: () => mc(m.slice(0x95C8, 0x95E8), 2, 16, 3), info: () => `<b>The gun sight</b>: ${DESC(0x95C8, '')}. ${about(0x95C8)}` },
-    ]);
-  }
-  drawTable();
-
-  // --- 03: how a picture is placed ------------------------------------------------------------------------------
+  // --- 02: how a picture is placed ------------------------------------------------------------------------------
   const pcv = $('pl-cv'), pctx = pcv.getContext('2d');
   function place() {
     const x = +$('pl-x').value, y = +$('pl-y').value;

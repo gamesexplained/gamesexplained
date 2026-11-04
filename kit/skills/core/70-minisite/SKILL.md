@@ -492,10 +492,15 @@ or leaves the pictures to `TODO.md`, has not built the page.
 
 The tab opens with the viewer: every shape the game stores for the
 things that move (the player, the enemies, the shots, the pickups,
-unused ones too), drawn from the listing's bytes in the game's colours,
-on one sheet or with one control to step through them ("Stepping
-through things of one kind", above). A shape the game animates plays at
-the game's rate, from its own animation tables. A shape the game paints
+unused ones too), drawn from the listing's bytes in the game's colours.
+A shape the game animates plays at the game's rate, from its own
+animation tables, and is not drawn again as a still on a sheet, since
+a second copy of what the reader has just watched tells them nothing.
+Stills go on one sheet or behind one control ("Stepping through things
+of one kind", above) only where they show what nothing on the page
+moves: shapes the game never animates (games/c64/shadowfire), the
+pieces an animation is put together from (games/c64/kane), and the
+unused shapes, in a small group of their own. A shape the game paints
 into the screen itself is drawn by the game's own routine on the kit's
 processor, or by a port of it. A 3D game's models are drawn the way the
 game draws them, edge by edge or face by face, and turn when the reader

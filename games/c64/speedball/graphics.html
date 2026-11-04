@@ -69,10 +69,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
 .gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
 .gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
-.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
-.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
-.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
-.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
 .gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 @media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
 </style>
@@ -105,24 +101,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Some moves share their shapes. A tackle won is a throw without its first frame, and both keepers stand, between punches, on the field players' standing frames for up and down. A throw starts from the standing frame in seven of the eight directions; facing down, it starts from <code>$66</code>, a running frame, instead of <code>$67</code>.</p>
   <p>The player under your control flashes light green, or light red on the other side, for four passes in every eight, while bit 2 of the pass counter <code>$62</code> is clear. The ball has four sizes. A player's throw keeps it on the ground, at the smallest size, unless fire is held for five passes after it; then, as after every keeper's throw, the ball goes up, a size larger every eight passes, stays at the largest for twenty and shrinks again on the way down (<code>ball_move</code>, <code>$380E</code>).</p>
   <p>The launcher is two sets of shapes. Its body is six characters by six in the pitch map, and the four characters that fill its middle are a hatch. At a kick-off <code>launcher_step</code> (<code>$B2B9</code>) opens it a line a frame, sliding its top half up and its bottom half down over a black hole, and after the shot closes it again a line a pass. While it is open, four sprites make a frame round the ball, and the ball's own sprite shows an arrow that turns anticlockwise a step every six frames, seventeen to forty-nine times, before the ball is shot out the way it points (<code>launcher_sequence</code>, <code>$3739</code>). While it turns, the game sets the sprites' shared black to dark grey at line <code>$6E</code> of the screen and back to black at line <code>$9E</code>.</p>
-</section>
-
-<section id="shapes">
-  <p class="fig">02 · The sprite shapes</p>
-  <h2 class="t">Every sprite shape, and what shows it</h2>
-  <p class="lede">The video chip finds its sprites in the second bank of memory, <code>$4000</code>-<code>$7FFF</code>, where a pointer names a shape of 64 bytes. The game uses shapes <code>$00</code>-<code>$9F</code>.</p>
-  <div class="plate">
-    <canvas id="gx-sheet" class="gx-sheet" width="832" height="540" aria-label="Sprite shapes $00 to $9F, sixteen to a row"></canvas>
-    <div class="gx-key" id="gx-key"></div>
-    <p class="gx-read" id="gx-read">Point at a shape to see what shows it.</p>
-    <p class="cap">Shapes <code>$00</code>-<code>$9F</code>, sixteen to a row, from the listing's bytes, each as the game shows it: the menus' shapes in one colour on black, the countdown's digits on the panel's light grey, and the rest in multicolour on the pitch's light blue, the players in green. The bar under a shape says what shows it, from the game's frame lists and pointer tables; a shape with no bar is in none of them.</p>
-  </div>
   <p>Three of the menus' shapes are never shown: two corner pieces, <code>$08</code> and <code>$09</code>, and a block of upright stripes, <code>$0B</code>. Nor are the last ten, <code>$96</code>-<code>$9F</code>, which are alternately filled and empty. The launcher's table at <code>$2D21</code>-<code>$2D58</code> has room for two sets of four parts, but <code>launcher_sequence</code> only ever sets up the first; the second would be four light red copies of the second-smallest ball, <code>$36</code>.</p>
   <p>The menus' highlight bar and the shop's cursor are each a row of sprites, a left end, middles and a right end, loaded with every other setting of the video chip from the sprite blocks at <code>$2D72</code> and <code>$2D9A</code> (<code>sprite_block_load</code>, <code>$8917</code>). Moving one is writing a new height into every other byte of its block.</p>
 </section>
 
 <section id="memory">
-  <p class="fig">03 · Where the shapes live</p>
+  <p class="fig">02 · Where the shapes live</p>
   <h2 class="t">The match's sprites move into the menus' colour screen</h2>
   <p class="lede">Shapes <code>$00</code>-<code>$6F</code> stay at <code>$4000</code>-<code>$5BFF</code> for good. The other forty-eight share <code>$5C00</code>-<code>$67FF</code> with the menus' bitmap, and are kept between matches where the pitch's map is built during one.</p>
   <p>On the menus, <code>$5C00</code> is the colour screen of the bitmap at <code>$6000</code>, and the shapes <code>$70</code>-<code>$9F</code> wait at <code>$F300</code>-<code>$FEFF</code>. Before a match <code>pitch_setup</code> (<code>$90C8</code>) copies them down to <code>$5C00</code> (<code>play_sprites_in</code>, <code>$916A</code>) and then builds the pitch's map where they were (<code>pitch_map_build</code>, <code>$917D</code>). After the match <code>play_sprites_out</code> (<code>$9147</code>) copies them back up over the map, and the menus draw their colours over <code>$5C00</code> again.</p>
@@ -439,12 +423,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   tick(1);
   requestAnimationFrame(loop);
 
-  // ---- 02: the sheet, every shape and what shows it, from the game's tables
-  const CAT = {
-    menu: ['#c07a2c', 'the menus'], count: ['#3aa76d', 'the countdown'], run: ['#4f8cc9', 'running and standing'],
-    jump: ['#a070c0', 'jumping'], throw: ['#e0a030', 'throwing, and a tackle won'], slide: ['#5aa05a', 'sliding'],
-    down: ['#d0503c', 'knocked down'], keeper: ['#2fa8b0', 'the keepers'], ball: ['#9a9a9a', 'the ball'], launcher: ['#7a5fd0', 'the launcher'],
-  };
+  // ---- what shows each shape, from the game's tables, to find the shapes nothing shows
   const NAMES = ['running', 'jumping', 'standing', 'throwing', 'sliding', 'knocked down', 'winning a tackle', 'green\'s keeper diving',
     'green\'s keeper punching', 'green\'s keeper standing', 'red\'s keeper diving', 'red\'s keeper punching', 'red\'s keeper standing'];
   const KIND = ['run', 'jump', 'run', 'throw', 'slide', 'down', 'throw', 'keeper', 'keeper', 'keeper', 'keeper', 'keeper', 'keeper'];
@@ -470,34 +449,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   for (let e = 0; e < 12; e++) use(ram[0x2F36 + e], 'menu', 'the frame round the team being chosen');
   use(ram[0x8822], 'menu', 'the row of eight across the prematch screens');
 
-  const sheet = $('gx-sheet'), sctx = sheet.getContext('2d'), SW = 52, SH = 54;
-  sctx.imageSmoothingEnabled = false;
-  for (let p = 0; p < 160; p++) {
-    const x = (p % 16) * SW, y = Math.floor(p / 16) * SH, u = uses[p];
-    let bg = 14, draw;
-    if (p < 0x0C) {
-      const black = u.what.some((w) => /frame round|row of eight/.test(w));
-      bg = black ? 15 : 0;
-      draw = () => C64.drawSprite(sctx, shape(ram, p), x, y, 2, PAL[u.cat ? (black ? 0 : ram[0x2D72 + 24]) : 15]);
-    } else if (u.cat === 'count') {
-      bg = 15; draw = () => C64.drawSprite(sctx, shape(ram, p), x, y, 2, PAL[ram[0x2DC6]]);
-    } else {
-      const c = !u.cat || u.cat === 'ball' || u.cat === 'launcher' ? 15 : 5;
-      draw = () => mc(sctx, ram, p, x, y, 2, c);
+  // the prematch screens' row: irq_slot_shop_row ($881D) points eight expanded black sprites at it
+  const row = tile(tMenus, 48 * 2 + 8, 42 * 2 + 8, 'The row of eight across the prematch screens, each sprite shape <code>' + hex(ram[0x8822]) + '</code> in black, stretched to twice its size');
+  fill(row, 15); C64.drawSprite(row.ctx, shape(ram, ram[0x8822]), 4, 4, 4, PAL[0]);
+  const idle = uses.map((u, p) => u.cat ? -1 : p).filter((p) => p >= 0);
+  if (idle.length) {
+    const tIdle = group('Shapes nothing shows', 'In the sprite bank, but in none of the game\'s frame lists or pointer tables: two corner pieces and a block of upright stripes among the menus\' shapes, and the last ten, alternately filled and empty.');
+    for (const p of idle) {
+      const t = tile(tIdle, 48 * 2, 42 * 2, hex(p));
+      fill(t, p < 0x0C ? 0 : 14);
+      if (p < 0x0C) C64.drawSprite(t.ctx, shape(ram, p), 0, 0, 4, PAL[15]);
+      else mc(t.ctx, ram, p, 0, 0, 4, 15);
     }
-    sctx.fillStyle = PAL[bg]; sctx.fillRect(x, y, 48, 42);
-    draw();
-    if (u.cat) { sctx.fillStyle = CAT[u.cat][0]; sctx.fillRect(x, y + 44, 48, 4); }
   }
-  $('gx-key').innerHTML = Object.values(CAT).map(([c, t]) => '<span><i style="background:' + c + '"></i>' + t + '</span>').join('');
-  function readout(e) {
-    const r = sheet.getBoundingClientRect(), k = sheet.width / r.width;
-    const cx = Math.floor((e.clientX - r.left) * k / SW), cy = Math.floor((e.clientY - r.top) * k / SH), p = cy * 16 + cx;
-    if (cx < 0 || cx > 15 || p < 0 || p > 159) return;
-    const u = uses[p];
-    $('gx-read').innerHTML = '<b>' + hex(p) + '</b> at ' + hex(0x4000 + p * 64, 4) + ': ' + (u.what.length ? u.what.join('; ') : 'nothing in the game\'s frame lists or pointer tables shows it') + '.';
-  }
-  sheet.addEventListener('mousemove', readout);
-  sheet.addEventListener('click', readout);
 })();
 </script>

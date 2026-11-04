@@ -77,10 +77,6 @@ ul.gdo-list li{margin:0 0 .5em}
 .gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
 .gx-tile canvas{display:block;max-width:100%;image-rendering:pixelated;border-radius:2px}
 .gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
-.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
-.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
-.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
-.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
 .gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 @media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
 </style>
@@ -110,6 +106,10 @@ ul.gdo-list li{margin:0 0 .5em}
   <p>Fire blows a bubble every eighth frame while it is held (<code>blow_bubble</code>, <code>$6429</code>). It takes Gribbly's sprite settings, so it is drawn in his colour, but single-colour. <code>move_bubbles</code> (<code>$64A5</code>) carries it nine pixels a step away from him and counts its shape down from <code>$CB</code>, the smallest, to <code>$C4</code>, the burst, then lets the sprite go.</p>
   <p>The Gribblets on the ledges are tiles <code>$38</code>-<code>$3F</code>, a left half and a right half four times over. On frame 2 of every eight, <code>animate_chars</code> (<code>$6651</code>) moves each of the four pictures on to the next character, so every Gribblet on the map looks about at once. A flipped Gribblet's legs are its top three rows, copied in from <code>$7F67</code> and <code>$7F77</code> at random on the same frame, and the psi-grub (tile <code>$27</code>) is redrawn from one of four pictures at <code>$7FAC</code>. Gribbly's own face is redrawn inside his sprite, a piece at a time (<a href="#face">below</a>).</p>
   <p>The two sequences at the end are played by <code>level_start</code> (<code>$4573</code>) and <code>end_sequence</code> (<code>$5A20</code>) with sprites 1, 2, 3, 6 and 7, double size, between waits of one video frame or two (<code>wait_frame</code>, <code>$5BBD</code>, takes two when the frame counter it steps comes out even). At the start a small black star grows where Gribbly will stand and opens into a triangle; three pieces gather round it, turn white and fall away as dots, and Gribbly is there. The end is much the same played backwards: the pieces slide out from him and darken, and the last of them shrinks back to a star and goes. One of the star's colours is blue (<code>$F6</code>), so on a level with a blue background that step cannot be seen.</p>
+  <p>A Gribblet sitting on a ledge is two tiles in the map, drawn by the character screen like the scenery. Only when it hops, falls from a Flyer, or rides inside one does it borrow a hardware sprite. Sprites are scarce. Gribbly has one, and the game has seven to share between Gribblets, bubbles, Seon and the creatures. A creature off the screen gets none at all: it moves as numbers in a table (<code>$0368</code>-<code>$03F7</code>, sixteen slots) and takes a free sprite only when it comes into view (<code>free_sprite</code> <code>$620B</code>).</p>
+  <p>A Gribblet that hops (<code>gribblet_hop</code> <code>$62E5</code>) is erased from its ledge, flies as a sprite, and is drawn back into the map where it lands. Off the screen, a hop moves the tiles and nothing more.</p>
+  <p>In play the video chip shows the play screen at <code>$0800</code> with the tiles at <code>$2800</code> (<code>$D018</code> = <code>$2B</code>), so the sprite pointers are the last eight bytes of that screen, <code>$0BF8</code>-<code>$0BFF</code>. Below the play area a raster interrupt switches to the status panel's screen at <code>$0400</code>, whose eight pointers all hold <code>$C0</code>, the blank shape, set once by <code>new_game</code>. The <a href="index.html">How it works</a> tab shows how the switch is hidden.</p>
+  <p>Shape <code>$FF</code> holds stray bytes and nothing ever points at it. A mover sets its creature's shape every time it moves it, but its colour mostly when it gives it a sprite, and a creature that changes kind keeps the sprite it had: a seed pod that lands becomes a Topsy in the same sprite, and a Topsy curling up shows the chrysalis's <code>$F1</code> in its own colour.</p>
 </section>
 
 <section id="face">
@@ -141,31 +141,6 @@ ul.gdo-list li{margin:0 0 .5em}
   <p>The joystick picks which of the three shapes is shown: left shows <code>$C2</code>, right <code>$C3</code>, and once he has stopped moving sideways, <code>$C1</code>, the shape that faces you (<code>gribbly_physics</code> <code>$68F5</code>). All three get the same antennae and mouth, so nothing jumps when he turns. The side shapes keep the eyes they were drawn with. The face goes on moving while the game is paused (<code>pause</code> <code>$72E5</code>) and between levels (<code>wait_frame</code> <code>$5BBD</code>).</p>
 </section>
 
-<section id="gribblets">
-  <p class="fig">03 · Gribblets</p>
-  <h2 class="t">Gribblets are characters until they jump</h2>
-  <p class="lede">A Gribblet sitting on a ledge is two tiles in the map, drawn by the character screen like the scenery. Only when it hops, falls from a Flyer, or rides inside one does it borrow a hardware sprite.</p>
-  <div class="plate">
-    <canvas id="gdo-grib" class="gdo-cv" width="768" height="200"></canvas>
-    <p class="cap">Left: the Gribblet tiles from the play font at <code>$2800</code>, <code>$38</code>-<code>$3B</code> paired with <code>$3C</code>-<code>$3F</code>, and <code>$40</code>/<code>$41</code>, a Gribblet a Topsy has knocked onto its back. Right: the sprite shapes <code>$CC</code>-<code>$D3</code> a Gribblet uses in the air (<code>$3300</code>-<code>$34FF</code>). All drawn from the bytes in the listing, in level 0's colours.</p>
-  </div>
-  <p>Sprites are scarce. Gribbly has one, and the game has seven to share between Gribblets, bubbles, Seon and the creatures. A creature off the screen gets none at all: it moves as numbers in a table (<code>$0368</code>-<code>$03F7</code>, sixteen slots) and takes a free sprite only when it comes into view (<code>free_sprite</code> <code>$620B</code>).</p>
-  <p>A Gribblet that hops (<code>gribblet_hop</code> <code>$62E5</code>) is erased from its ledge, flies as a sprite, and is drawn back into the map where it lands. Off the screen, a hop moves the tiles and nothing more.</p>
-</section>
-
-<section id="shapes">
-  <p class="fig">04 · The sprite shapes</p>
-  <h2 class="t">Seventy-one sprite shapes, and what shows each one</h2>
-  <p class="lede">The sprites point into the first 16K of memory, where the video chip looks. Shapes <code>$C0</code>-<code>$FF</code> fill <code>$3000</code>-<code>$3FFF</code>, and Seon's seven sit apart at <code>$0E40</code>.</p>
-  <div class="plate">
-    <canvas id="gx-sheet" class="gx-sheet" width="832" height="240" aria-label="Sprite shapes $C0 to $FF, sixteen to a row, then Seon's shapes $39 to $3F"></canvas>
-    <div class="gx-key" id="gx-key"></div>
-    <p class="gx-read" id="gx-read">Point at a shape to see what shows it.</p>
-    <p class="cap">Shapes <code>$C0</code>-<code>$FF</code>, sixteen to a row, then <code>$39</code>-<code>$3F</code>, each drawn as the game shows it, in level 0's colours. The bar under a shape says what shows it; a shape with no bar is never shown.</p>
-  </div>
-  <p>In play the video chip shows the play screen at <code>$0800</code> with the tiles at <code>$2800</code> (<code>$D018</code> = <code>$2B</code>), so the sprite pointers are the last eight bytes of that screen, <code>$0BF8</code>-<code>$0BFF</code>. Below the play area a raster interrupt switches to the status panel's screen at <code>$0400</code>, whose eight pointers all hold <code>$C0</code>, the blank shape, set once by <code>new_game</code>. The <a href="index.html">How it works</a> tab shows how the switch is hidden.</p>
-  <p>Shape <code>$FF</code> holds stray bytes and nothing ever points at it. A mover sets its creature's shape every time it moves it, but its colour mostly when it gives it a sprite, and a creature that changes kind keeps the sprite it had: a seed pod that lands becomes a Topsy in the same sprite, and a Topsy curling up shows the chrysalis's <code>$F1</code> in its own colour.</p>
-</section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 
@@ -178,7 +153,7 @@ const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
 function missing(el) {
   el.insertAdjacentHTML('afterend', '<p class="gx-miss">These pictures are drawn by the site\'s shared script, which the built site serves.</p>');
 }
-if (typeof C64 === 'undefined') { missing($('gx-cast')); missing($('gx-sheet')); return; }
+if (typeof C64 === 'undefined') { missing($('gx-cast')); return; }
 const PAL = C64.PAL;
 const rnd = n => Math.random() * n | 0;
 
@@ -422,58 +397,9 @@ function levels() {
   }
 }
 
-// ---- section 02: every shape and what shows it ----
-const KINDS = {
-  gribbly: ['#7bd88f', 'Gribbly'], bubble: ['#56d4dd', 'bubbles'], gribblet: ['#e5c07b', 'Gribblets'],
-  creature: ['#ff7a6b', 'creatures'], seon: ['#c678dd', 'Seon'], pieces: ['#5b8def', 'the start and end of a level'], panel: ['#8a8a8a', 'the panel screen\'s pointers'],
-};
-$('gx-key').innerHTML = Object.values(KINDS).map(([c, s]) => '<span><i style="background:' + c + '"></i>' + s + '</span>').join('');
-function uses(sh) {
-  const u = { kinds: [], text: '', colour: 14, multi: false };
-  const r = (k, t, c, mc) => { u.kinds.push(k); u.text = t; u.colour = c; u.multi = !!mc; };
-  if (sh < 0xC0) r('seon', sh <= 0x3C ? 'Seon, one of the four he picks from at random' : 'Seon, one of the three he plays once every 256 frames', 0);
-  else if (sh === 0xC0) r('panel', 'blank; the status panel\'s screen points all eight sprites here', 14);
-  else if (sh <= 0xC3) r('gribbly', 'Gribbly, facing ' + ['you', 'left', 'right'][sh - 0xC1] + '; his face is redrawn inside it', GRIBBLY, true);
-  else if (sh <= 0xCB) r('bubble', 'a bubble, ' + (sh === 0xCB ? 'just blown' : sh <= 0xC5 ? 'bursting' : 'growing'), GRIBBLY);
-  else if (sh <= 0xD3) r('gribblet', 'a Gribblet hopping or falling', 7);
-  else if (sh <= 0xD9) r('creature', 'a seed pod falling', 9, true);
-  else if (sh <= 0xEB) r('pieces', sh <= 0xE1 ? 'a solid triangle, a piece of Gribbly' : sh <= 0xE7 ? 'a triangle closing into a star' : 'a triangle dissolving into dots', 14);
-  else if (sh <= 0xEF) r('creature', 'a Topsy walking', GRIBBLY);
-  else if (sh === 0xF0) r('creature', 'a Topsy walking: the last of its five', GRIBBLY);
-  else if (sh === 0xF1) r('creature', 'a chrysalis, the first picture after a Topsy curls up, in the Topsy\'s colour; the hatch also shows it for a step', GRIBBLY);
-  else if (sh <= 0xF4) r('creature', 'a chrysalis' + (sh === 0xF4 ? ', held until it hatches' : ''), 14, true);
-  else if (sh <= 0xF9) r('creature', 'a Stomper walking', 13);
-  else if (sh <= 0xFE) r('creature', 'a Flyer, a Stomper carrying a Gribblet', 1);
-  else u.text = 'stray bytes; nothing shows it';
-  return u;
-}
-const sheet = $('gx-sheet'), sx = sheet.getContext('2d');
-const SHAPES = [...Array(64).keys()].map(i => 0xC0 + i).concat([0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F]);
-function drawSheet() {
-  sx.clearRect(0, 0, 832, 240);
-  SHAPES.forEach((sh, i) => {
-    const x = (i % 16) * 52, y = Math.floor(i / 16) * 48, u = uses(sh);
-    sx.fillStyle = PAL[6]; sx.fillRect(x + 2, y + 1, 48, 42);
-    sx.globalAlpha = u.kinds.length ? 1 : 0.4;
-    sprite(sx, sh, x + 2, y + 1, 2, u.colour, u.multi);
-    sx.globalAlpha = 1;
-    u.kinds.forEach(k => { sx.fillStyle = KINDS[k][0]; sx.fillRect(x + 2, y + 44, 48, 3); });
-  });
-}
-function readAt(ev) {
-  const b = sheet.getBoundingClientRect();
-  const x = (ev.clientX - b.left) * 832 / b.width, y = (ev.clientY - b.top) * 240 / b.height;
-  const i = Math.floor(y / 48) * 16 + Math.floor(x / 52);
-  if (i < 0 || i >= SHAPES.length) return;
-  const sh = SHAPES[i];
-  $('gx-read').textContent = 'Shape ' + hex(sh) + ', at ' + hex(sh * 64, 4) + ': ' + uses(sh).text + '.';
-}
-sheet.addEventListener('mousemove', readAt);
-sheet.addEventListener('click', readAt);
-
 C64.load('listing.json').then(L => {
   m = L.ram.slice();
-  colours(); levels(); build(); drawSheet(); play(true);
+  colours(); levels(); build(); play(true);
 }).catch(e => { $('gx-cast').textContent = 'The listing did not load (' + e.message + ').'; });
 })();
 </script>
@@ -517,26 +443,11 @@ C64.load('listing.json').then(L => {
 // end of animateFace
 
   if (!window.C64) {
-    ['gdo-face', 'gdo-grib'].forEach(id => { const c = document.getElementById(id); if (c) c.insertAdjacentHTML('afterend', '<p class="gdo-msg">This drawing needs the site\u2019s script and the listing, which the built site serves.</p>'); });
+    ['gdo-face'].forEach(id => { const c = document.getElementById(id); if (c) c.insertAdjacentHTML('afterend', '<p class="gdo-msg">This drawing needs the site\u2019s script and the listing, which the built site serves.</p>'); });
     return;
   }
   C64.load('listing.json').then(G => {
     const ram = G.ram;
-    const cols0 = [6, 9, 5, 7];                              // level 0: background, $D022, $D023, colour RAM & 7
-    // Gribblet tiles and the hop sprites
-    {
-      const ctx = C64.canvas(document.getElementById('gdo-grib'), 768, 200);
-      ctx.fillStyle = PALC[6]; ctx.fillRect(0, 0, 768, 200);
-      const font = ram.subarray(0x2800, 0x3000), mc = cols0.map(c => PALC[c]);
-      const pairs = [[0x38, 0x3C], [0x39, 0x3D], [0x3A, 0x3E], [0x3B, 0x3F], [0x40, 0x41]];
-      pairs.forEach(([a, b], i) => {
-        C64.drawGlyphMC(ctx, font, 0x2E, 20 + i * 64, 70, 3, mc); C64.drawGlyphMC(ctx, font, 0x2E, 44 + i * 64, 70, 3, mc);
-        C64.drawGlyphMC(ctx, font, a, 20 + i * 64, 46, 3, mc); C64.drawGlyphMC(ctx, font, b, 44 + i * 64, 46, 3, mc);
-      });
-      for (let k = 0; k < 8; k++) C64.drawSprite(ctx, ram.subarray((0xCC + k) * 64, (0xCC + k) * 64 + 63), 360 + (k % 4) * 100, 10 + Math.floor(k / 4) * 95, 3, PALC[7]);
-      ctx.fillStyle = '#fff'; ctx.font = '12px "IBM Plex Mono", monospace';
-      ctx.fillText('tiles $38-$41 on a ledge ($2E)', 20, 120); ctx.fillText('sprites $CC-$D3', 360, 196);
-    }
     // Gribbly's face, drawn by the port of animate_face into a copy of memory, a frame at a time
     {
       const cv = document.getElementById('gdo-face'), ctx = C64.canvas(cv, 320, 224);

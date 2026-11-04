@@ -59,8 +59,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile canvas{background:#000}
 .gx-panels{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
 .gx-panels .gx-tile span{min-width:0}
-#gx-pics{display:flex;flex-wrap:wrap;column-gap:26px}
-#gx-pics .gx-group{margin-bottom:16px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -86,22 +84,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>A player has a picture for each of the four ways he can face, and his step and his turn both go through <code>redraw_player</code>. The players' controls run every other pass, so a player walks at most a cell every two passes, about ten cells a second. A turn sets <code>turn_delay</code> to 2 and each run of the controls counts it down before it reads the joystick, so a held turn turns him once every four passes. Agravain's own colour is always red. Storm's colours come from a different row of <code>colour_rows</code> for each way he faces.</p>
   <p>Each kind of monster has its own drawing routine, <code>draw_kind1</code> to <code>draw_kind6</code> (<code>$6187</code>-<code>$62A3</code>). Kinds 1, 3 and 6 have a picture for each way they face, and a monster faces the way it last stepped, across rather than up or down when it steps both ways at once. Kind 6 also takes the colours of the way it faces. Kinds 2 and 4 have two pictures and swap them at every step, using the top bit of the monster's kind byte to remember which is showing. Kind 5 has four and moves to the next at every step, counting in the kind byte's top four bits. The routine runs even when a monster has nowhere to go, so these three go on changing while they stand still.</p>
   <p>A shot is one character, Agravain's <code>$FE</code> and Storm's <code>$FF</code>. At each step <code>shot_step</code> puts back what the shot covered and builds the character again over the next cell's floor from character 7, the shot's pattern. It stops at a wall, a player, an object or the edge of the play area, and hits a generator or a monster. The generators do not move: <code>draw_generators</code> draws each one once, in one of two looks, as the room is drawn.</p>
-</section>
-
-<section id="pictures">
-  <p class="fig">02 · The pictures</p>
-  <h2 class="t">Every picture, in the order the game keeps them</h2>
-  <p class="lede">The players', the monsters' and the generators' pictures are 1,998 bytes at <code>$4E64</code>-<code>$5631</code>, eight bytes to a character. Three pieces of it are pictures nothing draws.</p>
-  <div class="plate">
-    <div id="gx-pics"></div>
-    <p class="cap">Each picture drawn by the game's <code>draw_actor</code> (<code>$5E04</code>) on the page's 6502 over a cleared screen, in the colours the routine that uses it chooses. The pieces nothing uses are drawn as characters in light blue, the colours of the first row of <code>colour_rows</code>.</p>
-  </div>
-  <p>A picture is a block of characters, read across and then down: a player's or a facing monster's is four characters by two rows, 64 bytes, and a kind 2 or kind 4 monster's or a generator's is three by two, 48 bytes. In multicolour each pair of bits is one wide pixel: black, the orange and yellow every character shares, or the character's own colour, which is what changes from row to row of <code>colour_rows</code>.</p>
+  <p>The players', the monsters' and the generators' pictures are 1,998 bytes at <code>$4E64</code>-<code>$5631</code>, eight bytes to a character. A picture is a block of characters, read across and then down: a player's or a facing monster's is four characters by two rows, 64 bytes, and a kind 2 or kind 4 monster's or a generator's is three by two, 48 bytes. In multicolour each pair of bits is one wide pixel: black, the orange and yellow every character shares, or the character's own colour, which is what changes from row to row of <code>colour_rows</code>.</p>
   <p>Nothing points at three pieces of the block. The 30 bytes at <code>$4E64</code> sit between the last object's picture and Storm's, and are not a whole picture. The 128 bytes at <code>$5142</code>, after the generators, make two pictures four characters wide. The 16 bytes at <code>$5422</code>, between Agravain and kind 6, are two characters. The objects' 28 pictures are kept in a block of their own before these, and How it works draws each of them <a href="index.html#objects">with what touching it does</a>.</p>
 </section>
 
 <section id="build">
-  <p class="fig">03 · Building a figure</p>
+  <p class="fig">02 · Building a figure</p>
   <h2 class="t">A picture, cut by the floor's mask and laid over it</h2>
   <p class="lede">The floor's patterns stay on top of whoever stands on them. The game does it a character at a time, with a mask for every floor character.</p>
   <div class="plate">
@@ -512,8 +500,8 @@ function stormCast(ram) {
   drawCast();
   requestAnimationFrame(loop);
 
-  // 02: every picture, in address order
-  const P = C.stage(null), pm = P.m, picBox = $('gx-pics');
+  // the pieces of the pictures' block that nothing draws
+  const P = C.stage(null), pm = P.m;
   function actor(shape, w, row) {
     for (const r of [7, 8]) for (let c = 4; c < 8; c++) pm[0x0400 + r * 40 + c] = 0;
     pm[0x6585] = shape & 255; pm[0x6586] = shape >> 8;
@@ -531,32 +519,14 @@ function stormCast(ram) {
   }
   const hx = (v) => '$' + v.toString(16).toUpperCase();
   const FACE = ['up', 'right', 'down', 'left'];
-  const SHEET = [
-    ['Nothing points at these 30 bytes', [[0x4E64, 'spare', 4, 0x0E, 30]]],
-    ['Storm', FACE.map((f, d) => [0x4E82 + 64 * d, f, 4, 0x50 + 8 * d])],
-    ['Kind 1', FACE.map((f, d) => [0x4F82 + 64 * d, f, 4, 0x00])],
-    ['Kind 2', [[0x5082, 'first', 3, 0x10], [0x50B2, 'second', 3, 0x10]]],
-    ['Generators', [[0x50E2, 'look 1', 3, 0x00], [0x5112, 'look 2', 3, 0x00]]],
-    ['Nothing points at these two', [[0x5142, '', 4, 0x00], [0x5182, '', 4, 0x00]]],
-    ['Kind 3', FACE.map((f, d) => [0x51C2 + 64 * d, f, 4, 0x00])],
-    ['Kind 4', [[0x52C2, 'first', 3, 0x08], [0x52F2, 'second', 3, 0x08]]],
-    ['Agravain', FACE.map((f, d) => [0x5322 + 64 * d, f, 4, 0x08])],
-    ['Nothing points at these 16 bytes', [[0x5422, 'spare', 2, 0x0E, 16]]],
-    ['Kind 6', FACE.map((f, d) => [0x5432 + 64 * d, f, 4, 0x30 + 8 * d])],
-    ['Kind 5', [0, 1, 2, 3].map((k) => [0x5532 + 64 * k, 'frame ' + (k + 1), 4, 0x10])],
-  ];
-  for (const [title, pics] of SHEET) {
-    const tiles = group(picBox, title, '');
-    for (const [a, what, w, row, n] of pics) {
-      const t = tile(tiles, 32, n ? 8 : 16, 3, '<code>' + hx(a) + '</code>' + (what && what !== 'spare' ? ' ' + what : n ? ', ' + n + ' bytes' : ''));
-      if (n) paint(t, chars(ram.slice(a, a + n), w, row), [0, 1], [0, w]);
-      else paint(t, actor(a, w, row), [7, 9], [4, 4 + w]);
-    }
+  const spare = group(box, 'Pieces nothing draws', 'Three pieces of the pictures\' block that no routine points at, drawn as characters in light blue, the colours of the first row of <code>colour_rows</code>, and as pictures four characters wide.');
+  for (const [a, w, row, n] of [[0x4E64, 4, 0x0E, 30], [0x5142, 4, 0x00], [0x5182, 4, 0x00], [0x5422, 2, 0x0E, 16]]) {
+    const t = tile(spare, 32, n ? 8 : 16, 3, '<code>' + hx(a) + '</code>' + (n ? ', ' + n + ' bytes' : ''));
+    if (n) paint(t, chars(ram.slice(a, a + n), w, row), [0, 1], [0, w]);
+    else paint(t, actor(a, w, row), [7, 9], [4, 4 + w]);
   }
-  const shotTiles = group(picBox, 'The shot', 'Not part of the block: character 7 of the play area\'s set, which every shot is built from.');
-  paint(tile(shotTiles, 8, 8, 3, 'character 7'), chars(ram.slice(0x0838, 0x0840), 1, 0x0A), [0, 1], [0, 1]);
 
-  // 03: building a figure, in room 1 over the floor piece at cell (9, 5)
+  // 02: building a figure, in room 1 over the floor piece at cell (9, 5)
   const R = stormRooms(ram), CX = 9, CY = 5, ROWS = [CY + 6, CY + 8], COLS = [2 * CX + 2, 2 * CX + 6];
   const panels = $('gx-panels');
   const pBg = tile(panels, 32, 16, 6, 'The floor under him');

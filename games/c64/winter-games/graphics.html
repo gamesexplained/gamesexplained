@@ -86,18 +86,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
 .gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
 .gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
-.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
 .gx-tile canvas.gx-on{outline:none}
-.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
 .gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
 .gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
 .gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
 .gx-sub:first-child{margin-top:0}
 .gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
 @media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
-.gx-sheet{width:auto;max-width:100%;background:none;border-radius:2px}
-.gx-group .gx-read{min-height:3em;margin:6px 0 0;font-size:12.5px}
-.gx-group .gx-sheet+.gx-read+.gx-sheet{margin-top:12px}
 .gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
 .gx-bar input[type=range]{flex:1 1 200px;max-width:420px}
 .gx-layers{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
@@ -116,7 +111,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="cast">
   <p class="fig">01 · Everything that moves</p>
   <h2 class="t">Every frame of every event, drawn by the event's own code</h2>
-  <p class="lede">Each event is a program of its own, loaded over the menu, with its own pictures. Here are all of them, unpacked by each event's own routine and drawn in its colours. Point at a frame for what it is.</p>
+  <p class="lede">Each event is a program of its own, loaded over the menu, with its own pictures. Here they all move, unpacked by each event's own routine, drawn in its colours and played as its scripts play them.</p>
   <div class="plate">
     <div class="gx-bar">
       <button type="button" id="gx-run">Pause</button>
@@ -134,46 +129,44 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
     <div class="gx-group" data-part="hot-dog">
       <h3>Hot Dog Aerials</h3>
-      <p>The skier's 58 frames: the stunts, the flips, the awkward poses and the four falls.</p>
-      <canvas class="gx-sheet" id="gx-hot-dog" width="1" height="1" aria-label="The Hot Dog skier's 58 frames"></canvas>
-      <p class="gx-read" id="gx-hot-dog-read"></p>
+      <p>Each move played by the event's own script code (<span data-part="hot-dog"><code>step_script</code>, <code>$14B2</code></span>), a step a frame. Each run starts down the in-run in frame 0, crouches in frame 1 and rises off the kicker in frame 2 (<span data-part="hot-dog"><code>in_run</code>, <code>$1476</code></span>). A move holds a pose while the stick is held: each one here is skated twice, first let go after 14 frames of the pose, which is clean, then after 4, too soon, which shows the awkward pose for twenty frames. The flips go round a second time while the stick is held, and are let go on their last frame, then on the wrong one. Between moves the skier waits in frame 9, arms up, the only pose to land in. Then the four falls, played to their end.</p>
+      <div class="gx-tiles" id="gx-hot-dog"></div>
     </div>
 
     <div class="gx-group" data-part="biathlon">
       <h3>Biathlon</h3>
-      <p>The skier's 16 frames, then the rifle's sight, a sprite of its own.</p>
-      <canvas class="gx-sheet" id="gx-biathlon" width="1" height="1" aria-label="The Biathlon skier's 16 frames and the sight"></canvas>
-      <p class="gx-read" id="gx-biathlon-read"></p>
+      <p>The skier's three scripts (<span data-part="biathlon"><code>$2E79</code>-<code>$2EA2</code></span>), each a frame and how many frames to show it. Where a script waits for a stroke, the stroke comes here after ten frames. Then the rifle's sight, a sprite of its own, black at the range.</p>
+      <div class="gx-tiles" id="gx-biathlon"></div>
     </div>
 
     <div class="gx-group" data-part="speed-skating">
       <h3>Speed Skating</h3>
-      <p>A frame for each state of the stride, drawn in each skater's colour, blue and then red. Speed Skating is the one event that keeps its frames whole rather than packed.</p>
-      <canvas class="gx-sheet" id="gx-speed-skating" width="1" height="1" aria-label="The speed skater's twelve frames, in blue and in red"></canvas>
-      <p class="gx-read" id="gx-speed-skating-read"></p>
+      <p>The stride moves on to its next state about every 5.3 frames, when the stride clock passes 256 (<span data-part="speed-skating"><code>stride_step</code>, <code>$9F5E</code></span>), to the state the stick picks from three tables. Here the stick is held right for three states, let go for two, held left for three and let go for two, a clean stroke each way. The far skater is blue and the near one red. Then the standing skater and the winner. Speed Skating is the one event that keeps its frames whole rather than packed.</p>
+      <div class="gx-tiles" id="gx-speed-skating"></div>
     </div>
 
     <div class="gx-group" data-part="skating">
       <h3>Figure and Free Skating</h3>
-      <p>The skater's 60 frames. The sprites in front are white like the ice, solid but for a hole the skater shows through. On the ice only their edge can be seen: pick white behind them to see her as the game shows her.</p>
-      <canvas class="gx-sheet" id="gx-skating" width="1" height="1" aria-label="The skater's 60 frames"></canvas>
-      <p class="gx-read" id="gx-skating-read"></p>
+      <p>Each move played from its records, each frame held as long as the record says, and each jump raised by the event's own <span data-part="skating"><code>jump_height</code> (<code>$1436</code>)</span>. The sprites in front are white like the ice, solid but for a hole the skater shows through. On the ice only their edge can be seen: pick white behind them to see her as the game shows her.</p>
+      <div class="gx-tiles" id="gx-skating"></div>
     </div>
 
     <div class="gx-group" data-part="ski-jump">
       <h3>Ski Jump</h3>
-      <p>The small skier on the hill is a single black sprite, with 24 shapes; three of them no frame uses, drawn faint here. From the take-off, a close-up in the corner of the screen shows the jumper large, for the 26 frames from 5 to 30.</p>
-      <canvas class="gx-sheet" id="gx-small" width="1" height="1" aria-label="The small ski jumper's 24 shapes"></canvas>
-      <p class="gx-read" id="gx-small-read"></p>
-      <canvas class="gx-sheet" id="gx-close" width="1" height="1" aria-label="The close-up's 26 frames"></canvas>
-      <p class="gx-read" id="gx-close-read"></p>
+      <p>The small skier on the hill is a single black sprite. On the in-run its frame changes at each of the in-run's points (<span data-part="ski-jump"><code>ramp_points</code>, <code>$1A5D</code></span>); here each is held a third of a second, and the flight's lean is swept from one side to the other. The landing, the fall and the missed take-off's tumble play their scripts' own counts. From the take-off a close-up in the corner of the screen shows the jumper large, its pose chosen by the band of the lean (<span data-part="ski-jump"><code>lean_frames_lr</code>, <code>$1A80</code>, and <code>lean_frames_ud</code>, <code>$1A77</code></span>).</p>
+      <div class="gx-tiles" id="gx-ski-jump"></div>
     </div>
 
     <div class="gx-group" data-part="bobsled">
       <h3>Bobsled</h3>
-      <p>The sled's 13 frames, in the order of its place across the chute: from high on the left wall, through the middle, to high on the right, then the crashes over each wall.</p>
-      <canvas class="gx-sheet" id="gx-bobsled" width="1" height="1" aria-label="The bobsled's 13 frames"></canvas>
-      <p class="gx-read" id="gx-bobsled-read"></p>
+      <p>The sled's frame comes from its place across the chute (<span data-part="bobsled"><code>sled_places</code>, <code>$4AC6</code></span>): here it swings from high on the left wall, through the middle, to high on the right and back, a place every two frames, and then crashes over each wall.</p>
+      <div class="gx-tiles" id="gx-bobsled"></div>
+    </div>
+
+    <div class="gx-group">
+      <h3>Frames nothing shows</h3>
+      <p>In the events' files, but in no script, table or record that the events read.</p>
+      <div class="gx-tiles" id="gx-unused"></div>
     </div>
 
     <p class="cap">Every frame is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page. The packed frames are unpacked by each event's <code>draw_frame</code>: <span data-part="hot-dog"><code>$1632</code></span> in Hot Dog, <span data-part="biathlon"><code>$2EF1</code></span> in Biathlon, <span data-part="skating"><code>$1BBB</code></span> in the skating, and <span data-part="bobsled"><code>build_sled</code> (<code>$4E45</code>)</span> in Bobsled. Speed Skating's frames are read where they lie, from <span data-part="speed-skating"><code>frame_bases</code> (<code>$A154</code>)</span>. Ski Jump's close-up is drawn by its <span data-part="ski-jump"><code>draw_frame</code> (<code>$1973</code>) over the landing slope's picture, which <code>unpack_list</code> (<code>$1273</code>) unpacks</span>. The colours are each event's own, from the tables its start-up writes to the video chip; the opening's come from its raster interrupts, which set them three times down the screen (<span data-part="opening"><code>$AB3F</code>, <code>irq_flame</code> and <code>irq_bearer</code></span>).</p>
@@ -373,127 +366,213 @@ function wgPaint(px, w, h, layers, rgb, ox, oy) {
   const bgSel = $('gx-bg');
   const bg = () => +bgSel.value;
 
-  // A sheet: cells of cw x ch pixels, as many across as fit the plate at twice the size, each cell
-  // painted by paint(px, w, h, item, ox, oy); faint cells (item.faint) drawn at a third. read(item)
-  // gives the line under the sheet for the cell pointed at.
-  const sheets = [];
-  function sheet(id, items, cw, ch, paint, read, opts = {}) {
-    const cv = $(id), out = $(id + '-read'), ctx = cv.getContext('2d');
-    const s = { cv, items, cw, ch, paint, opts };
-    s.draw = () => {
-      const avail = Math.max(cv.parentNode.clientWidth, 200);
-      const per = Math.max(1, Math.min(items.length, Math.floor(avail / (2 * cw)))), rows = Math.ceil(items.length / per);
-      s.per = per;
-      const w = per * cw, h = rows * ch;
-      cv.width = w; cv.height = h; cv.style.width = 2 * w + 'px';
-      const img = ctx.createImageData(w, h), px = img.data, back = RGB[opts.bg !== undefined ? opts.bg : bg()];
-      for (let i = 0; i < w * h; i++) { px[4 * i] = back[0]; px[4 * i + 1] = back[1]; px[4 * i + 2] = back[2]; px[4 * i + 3] = 255; }
-      items.forEach((it, i) => {
-        const ox = (i % per) * cw, oy = (i / per | 0) * ch;
-        paint(px, w, h, it, ox, oy);
-        if (it.faint) for (let y = oy; y < oy + ch; y++) for (let x = ox; x < ox + cw; x++) {
-          const o = 4 * (y * w + x); for (let k = 0; k < 3; k++) px[o + k] = (px[o + k] + 2 * back[k]) / 3;
-        }
-      });
-      ctx.putImageData(img, 0, 0);
-    };
-    const at = (e) => {
-      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * cv.width / r.width, y = (e.clientY - r.top) * cv.height / r.height;
-      const i = Math.floor(y / ch) * s.per + Math.floor(x / cw);
-      return x >= 0 && x < s.per * cw && i >= 0 && i < items.length ? items[i] : null;
-    };
-    const show = (it) => { out.innerHTML = it ? read(it) : opts.hint || 'Point at a frame for what it is.'; };
-    cv.addEventListener('pointermove', (e) => show(at(e)));
-    cv.addEventListener('pointerdown', (e) => show(at(e)));
-    show(null);
-    s.draw();
-    sheets.push(s);
-    return s;
-  }
-  const layers = (cw, ch, dx = 2, dy = 2) => (px, w, h, it, ox, oy) => wgPaint(px, w, h, it.layers, RGB, ox + dx + (it.dx || 0), oy + dy);
-
-  // ---- Hot Dog: frame_table ($16B7); the notes on frames 9, 24 and 47 are the listing's
-  const HD = { 9: 'arms up with the skis level, the pose between moves and the only one to land in', 24: 'a crouch in the air with the skis pointing down, which no script shows' };
-  sheet('gx-hot-dog', S.hotDog, 52, 46, layers(), (it) => 'Frame ' + it.f + ', packed at ' + hex(it.a) +
-    (it.f === 47 ? ': no script shows it, and its bytes are not a whole frame. Unpacked, they run on into frame 48\'s and draw scattered dots.' : HD[it.f] ? ': ' + HD[it.f] + '.' : '.'));
-
-  // ---- Biathlon: frame_table ($2E59), the scripts at $2E79-$2EA3; the sight at $318B
-  const BI = (f) => f < 6 ? 'the diagonal stride on the flat' : f === 8 ? 'downhill, the poles planted, waiting for a stroke' : f < 8 ? 'downhill, the push with both poles' : f === 9 ? 'downhill, the tuck' : 'the stride uphill';
-  sheet('gx-biathlon', S.biathlon.concat([{ sight: true, layers: S.sight }]), 52, 46, layers(), (it) => it.sight
-    ? 'The rifle\'s sight, a ring with a cross in it: sprite shape <code>$2F</code>, copied there from ' + hex(0x318B) + ', in one colour, black at the range.'
-    : 'Frame ' + it.f + ', packed at ' + hex(it.a) + ': ' + BI(it.f) + '.');
-
-  // ---- Speed Skating: frame_bases ($A154), in blue and in red
-  const SS = { 16: 'standing, before the start and after the finish', 17: 'the winner' };
-  const speed = [true, false].flatMap((far) => S.speed.map((f) => ({ s: f.s, a: f.a, far, layers: f.layers(far) })));
-  sheet('gx-speed-skating', speed, 52, 46, layers(), (it) => 'Stride state ' + it.s + (SS[it.s] ? ', ' + SS[it.s] : '') + ': eight sprite shapes, whole, from ' + hex(it.a) + ', in ' + (it.far ? 'blue' : 'red') + '.');
-
-  // ---- Figure and Free Skating: each frame moved by its own x offset ($32)
-  const SK = { 55: 'a shaky take-off, held for 30 frames', 59: 'an awkward landing, held for 30 frames' };
-  sheet('gx-skating', S.skating.map((f) => Object.assign({ dx: 15 }, f)), 78, 46, layers(), (it) => 'Frame ' + it.f + (it.off ? ', moved ' + Math.abs(it.off) + ' pixels to the ' + (it.off < 0 ? 'left' : 'right') : '') + (SK[it.f] ? ': ' + SK[it.f] : '') + '.');
-
-  // ---- Ski Jump: the small skier's shapes ($7488, copied to $8400), then the close-ups
-  const SJ = { 0x1E: 'crouched on the in-run', 0x10: 'down the in-run', 0x11: 'down the in-run', 0x12: 'down the in-run', 0x13: 'down the in-run', 0x14: 'the take-off', 0x15: 'flying', 0x18: 'a fall', 0x19: 'a fall', 0x1A: 'a fall', 0x1B: 'the landing', 0x1C: 'the landing', 0x1D: 'arms up' };
-  sheet('gx-small', S.small.map((s) => Object.assign({ faint: !s.used }, s)), 28, 25, layers(28, 25, 2, 2), (it) => 'Shape ' + hex(it.s, 2) + ', copied from ' + hex(0x7488 + 64 * (it.s - 0x10)) + ' to ' + hex(0x8000 + 64 * it.s) + ': ' +
-    (it.used ? (SJ[it.s] ? SJ[it.s] + ', ' : 'a lean, ') + 'shown for frame' + (it.frames.length > 1 ? 's ' : ' ') + it.frames.join(', ') : 'no frame shows it') + '.', { hint: 'Point at a shape for the frames that show it.' });
-  sheet('gx-close', S.closeUps, 70, 60, (px, w, h, u, ox, oy) => {
-    for (let y = 0; y < u.h; y++) for (let x = 0; x < u.w; x++) { const c = RGB[u.px[y * u.w + x]], o = 4 * ((oy + 1 + y) * w + ox + 1 + x); px[o] = c[0]; px[o + 1] = c[1]; px[o + 2] = c[2]; }
-  }, (u) => 'Frame ' + u.f + ': the close-up, while the small skier on the hill shows shape ' + hex(u.s, 2) + '.', { hint: 'Point at a close-up for its frame.' });
-
-  // ---- Bobsled: sled_places ($4AC6) gives each place's frame; the frames in the order of the places
-  const bs = P.bobsled.ram, places = {};
-  for (let p = 0; p < 41; p++) (places[bs[0x4AC6 + 4 * p + 3]] = places[bs[0x4AC6 + 4 * p + 3]] || []).push(p);
-  const where = (ps) => {
-    const a = ps[0], b = ps[ps.length - 1], r = a === b ? 'place ' + a : 'places ' + a + ' to ' + b;
-    if (a >= 36) return r + ', crashing over the right wall';
-    if (a >= 31) return r + ', crashing over the left wall';
-    if (a <= 15 && b >= 15) return r + ', in the middle of the chute';
-    return r + ', ' + (b < 15 ? (a === 0 ? 'high on' : b >= 10 ? 'low on' : 'on') + ' the left wall' : (b === 30 ? 'high on' : a <= 20 ? 'low on' : 'on') + ' the right wall');
-  };
-  const sled = [6, 2, 5, 0, 3, 1, 4, 7, 8, 9, 10, 11, 12].map((f) => S.bobsled[f]);
-  sheet('gx-bobsled', sled, 52, 46, layers(), (it) => 'Frame ' + it.f + ', packed at ' + hex(it.a) + ', for ' + where(places[it.f] || []) + '.');
-
-  bgSel.addEventListener('input', () => { sheets.forEach((s) => s.draw()); openingBack(); pairsDraw(); });
-  let rw = 0;
-  window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => sheets.forEach((s) => s.draw()), 150); });
-
-  // ---- The opening's animations, a step a frame at 50 a second
-  const tiles = S.opening.map((a) => {
-    let w = 0, h = 0;
-    for (const f of a.frames) for (const L of f.layers) { w = Math.max(w, L.x + 24); h = Math.max(h, L.y + 21); }
+  // A tile that plays an animation: frames of { n: steps to show it, layers, x, y, say }, a step a
+  // frame at 50 a second; loop is true to start again, or the frame to start again from. Each frame
+  // is drawn at (x, y) inside a box that holds every frame.
+  const anims = [];
+  function animTile(box, a) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const f of a.frames) for (const L of f.layers || []) { x0 = Math.min(x0, L.x + (f.x || 0)); y0 = Math.min(y0, L.y + (f.y || 0)); x1 = Math.max(x1, L.x + (f.x || 0) + 24); y1 = Math.max(y1, L.y + (f.y || 0) + 21); }
+    for (const f of a.frames) if (f.px) { x0 = Math.min(x0, 0); y0 = Math.min(y0, 0); x1 = Math.max(x1, f.w); y1 = Math.max(y1, f.h); }
     const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
-    t.className = 'gx-tile'; cv.width = w + 4; cv.height = h + 4; cv.style.width = 2 * (w + 4) + 'px';
-    t.appendChild(cv); t.appendChild(sp); $('gx-opening').appendChild(t);
+    t.className = 'gx-tile'; cv.width = x1 - x0 + 4; cv.height = y1 - y0 + 4; cv.style.width = 2 * cv.width + 'px';
+    t.appendChild(cv); t.appendChild(sp); $(box).appendChild(t);
     const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
-    const o = { a, i: 0, left: a.frames[0].n, cv, sp, t };
-    o.draw = () => {
-      const px = img.data, back = RGB[bg()];
+    const o = { a, i: 0, left: a.frames[0].n, shown: -1 };
+    o.draw = (force) => {
+      if (o.i === o.shown && !force) return;
+      o.shown = o.i;
+      const px = img.data, back = RGB[a.bg !== undefined ? a.bg : bg()], f = a.frames[o.i];
       for (let k = 0; k < cv.width * cv.height; k++) { px[4 * k] = back[0]; px[4 * k + 1] = back[1]; px[4 * k + 2] = back[2]; px[4 * k + 3] = 255; }
-      wgPaint(px, cv.width, cv.height, a.frames[o.i].layers, RGB, 2, 2);
+      if (f.layers) wgPaint(px, cv.width, cv.height, f.layers, RGB, 2 - x0 + (f.x || 0), 2 - y0 + (f.y || 0));
+      if (f.px) for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) { const c = RGB[f.px[y * f.w + x]], q = 4 * ((2 - y0 + y) * cv.width + 2 - x0 + x); px[q] = c[0]; px[q + 1] = c[1]; px[q + 2] = c[2]; }
       ctx.putImageData(img, 0, 0);
-      sp.innerHTML = a.name + '<br>frame ' + (o.i + 1) + ' of ' + a.frames.length + ', ' + a.frames[o.i].n + ' step' + (a.frames[o.i].n === 1 ? '' : 's');
+      sp.innerHTML = a.name + (f.say !== undefined ? '<br>' + f.say : a.count ? '<br>frame ' + (o.i + 1) + ' of ' + a.frames.length + ', ' + f.n + ' step' + (f.n === 1 ? '' : 's') : '');
     };
     o.step = () => {
-      if (--o.left > 0) return false;
+      if (a.frames.length < 2 || --o.left > 0) return;
       o.i = o.i + 1 < a.frames.length ? o.i + 1 : (a.loop === true ? 0 : a.loop);
-      o.left = a.frames[o.i].n; return true;
+      o.left = a.frames[o.i].n;
     };
-    o.draw();
+    o.draw(true);
+    anims.push(o);
     return o;
-  });
-  function openingBack() { tiles.forEach((o) => o.draw()); }
+  }
+  // a list of [frame, steps] pairs as frames, each frame's layers from pics, merging repeats
+  const runs = (list, pics, say) => {
+    const out = [];
+    for (const [f, n] of list) { const last = out[out.length - 1]; if (last && last.f === f) last.n += n; else out.push({ f, n, layers: pics[f].layers, say: say ? say(f) : 'frame ' + f }); }
+    return out;
+  };
+  const seen = {};
+  const mark = (ev, list) => { seen[ev] = seen[ev] || new Set(); for (const [f] of list) seen[ev].add(f); return list; };
 
-  let running = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), seen = false, last = 0, acc = 0, steps = 0;
+  // ---- Hot Dog: step_script ($14B2) on the kit's 6502, a call a frame, with the stick held in the
+  // move's direction ($1E) until release says to let go ($1F = 0); draw_frame and start_sound are
+  // stood in for, and the frame shown is $3A. A move ends when the script is back at air_script, frame 9 read.
+  {
+    const L = P['hot-dog'], sym = L.sym, m = L.ram.slice();
+    const cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write() {} } });
+    const hooks = { [sym('draw_frame')]: () => 'rts', [sym('start_sound')]: () => 'rts' };
+    const play = (script, dir, release, stop) => {
+      m.set(L.ram.slice(0, 0x100));
+      m[0x30] = script & 255; m[0x31] = script >> 8; m[0x32] = 1; m[0x1C] = 0; m[0x40] = 0; m[0x1E] = dir; m[0x3A] = 9;
+      const out = []; let held = dir !== 0, count = {};
+      for (let f = 0; f < 600; f++) {
+        if (held && release(m, count)) held = false;
+        m[0x1F] = held ? dir : 0;
+        cpu.call(sym('step_script'), {}, { maxSteps: 1e5, hooks });
+        const fr = m[0x3A];
+        if (!out.length || out[out.length - 1][0] !== fr) { count[fr] = (count[fr] || 0) + 1; out.push([fr, 1]); } else out[out.length - 1][1]++;
+        const at = m[0x30] | m[0x31] << 8;
+        if (stop ? at === stop && m[0x32] === 1 : at === sym('air_script') + 2) break;   // back in the air: frame 9 read, the list of moves next
+      }
+      return out;
+    };
+    const wait = [[9, 25]];
+    // in_run, kicker and take_off ($1476, $1452, $1440): frame 0 for ten frames, 1 for four, 2 for four
+    const start = [[0, 10], [1, 4], [2, 4]];
+    const MOVES = [
+      ['The back flip', 'script_back_flip', 5, 8], ['The forward flip', 'script_front_flip', 6, 13],
+      ['The Daffy', 'script_daffy', 1], ['The back scratch', 'script_back_scratch', 2],
+      ['The swan', 'script_swan', 3], ['The mule kick', 'script_mule_kick', 4],
+    ];
+    for (const [name, s, dir, last] of MOVES) {
+      const good = last ? (mm, c) => mm[0x3A] === last && c[last] >= 2 : (mm) => mm[0x40] >= 14;
+      const poor = last ? (mm, c) => mm[0x3A] === last - 2 && c[last - 2] >= 2 : (mm) => mm[0x40] >= 4;
+      const list = mark('hot-dog', start.concat(wait, play(sym(s), dir, good), wait, play(sym(s), dir, poor), wait));
+      animTile('gx-hot-dog', { name: name + ', clean then awkward', frames: runs(list, S.hotDog), loop: true });
+    }
+    const FALLS = ['script_fall_1', 'script_fall_2', 'script_fall_3', 'script_fall_4', 'script_landing'];
+    for (let k = 0; k < 4; k++) {
+      const list = mark('hot-dog', start.concat(wait, play(sym(FALLS[k]), 0, () => false, sym(FALLS[k + 1]))));
+      animTile('gx-hot-dog', { name: 'Fall ' + (k + 1), frames: runs(list, S.hotDog), loop: true });
+    }
+  }
+
+  // ---- Biathlon: the scripts as the event reads them (next_script, $2EBF): a frame and its count;
+  // a count of $FF waits for a stroke, and a frame of $FF goes back by the next byte
+  {
+    const r = P.biathlon.ram;
+    const script = (a) => { const out = []; for (let i = 0; i < 40; i++) { if (r[a] === 0xFF) break; out.push([r[a], r[a + 1] === 0xFF ? 10 : r[a + 1]]); a += 2; } return out; };
+    for (const [name, a] of [['On the flat, the diagonal stride', 0x2E79], ['Uphill', 0x2E87], ['Downhill, a push with both poles and the tuck', 0x2E95]])
+      animTile('gx-biathlon', { name, frames: runs(mark('biathlon', script(a)), S.biathlon), loop: true });
+    animTile('gx-biathlon', { name: 'The rifle\'s sight', frames: [{ n: 1, layers: S.sight }] });
+  }
+
+  // ---- Speed Skating: stride_step's clock gains 48 a frame (sample_steps); each time it passes 256
+  // the stick's table gives the next state: stride_right, stride_none or stride_left ($9FD1-$9FF1)
+  {
+    const r = P['speed-skating'].ram, T = { R: 0x9FE1, N: 0x9FD1, L: 0x9FF1 }, STICK = 'RRRNNLLLNN';
+    let st = 9, clock = 0, k = 0; const list = [];
+    for (let f = 0; f < 160; f++) { clock += 48; if (clock > 255) { clock -= 256; st = r[T[STICK[k++ % STICK.length]] + st]; } list.push([st, 1]); }
+    const byState = {}; S.speed.forEach((s) => { byState[s.s] = s; });
+    for (const far of [true, false]) {
+      const pics = {}; for (const s of S.speed) pics[s.s] = { layers: s.layers(far) };
+      animTile('gx-speed-skating', { name: (far ? 'The far skater, blue' : 'The near skater, red') + ', striding', frames: runs(list, pics, (s) => 'state ' + s), loop: true });
+    }
+    animTile('gx-speed-skating', { name: 'Standing, before the start and after the finish', frames: [{ n: 1, layers: byState[16].layers(true) }] });
+    animTile('gx-speed-skating', { name: 'The winner', frames: [{ n: 1, layers: byState[17].layers(false) }] });
+  }
+
+  // ---- Figure and Free Skating: each move's records, two bytes a frame (the frame, the frames it
+  // lasts) to $FF; a record's byte 4 picks the jump's speed and pull from jump_speeds as start_move
+  // does ($15F0), and jump_height ($1436) moves the height at $2B-$2C once a frame
+  {
+    const L = P.skating, ram = L.ram, sym = L.sym, js = sym('jump_speeds');
+    const m = ram.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write() {} } });
+    const MOVES = [
+      ['The camel spin', [['mv_camel_in', 1], ['mv_camel_spin', 7], ['mv_camel_out', 1]]],
+      ['The sit spin', [['mv_sit_in', 1], ['mv_sit_spin', 7], ['mv_sit_out', 1]]],
+      ['The double lutz', [['mv_lutz2', 1], ['fly_lutz2', 1], ['land_clean', 1]]],
+      ['The triple lutz', [['mv_lutz3', 1], ['fly_lutz3', 1], ['land_clean', 1]]],
+      ['The double axel', [['mv_axel2', 1], ['mv_axel2_up', 1], ['fly_axel2', 1], ['land_clean_2', 1]]],
+      ['The triple axel', [['mv_axel3', 1], ['mv_axel3_up', 1], ['fly_axel3', 1], ['land_clean_2', 1]]],
+      ['The camel spin into the sit spin', [['mv_camel_in', 1], ['mv_camel_spin', 2], ['mv_combo', 1], ['mv_sit_spin', 6], ['mv_sit_out', 1]]],
+      ['A fall', [['mv_fall_fwd', 1]]],
+      ['An awkward landing', [['land_awkward', 1]]],
+    ];
+    for (const [name, recs] of MOVES) {
+      m.set(ram); m.fill(0, 0x2B, 0x2F); m[0x35] = 0;
+      const steps = [];
+      for (const [rn, times] of recs) for (let t = 0; t < times; t++) {
+        const rec = sym(rn);
+        if (!m[0x35]) { const k = ram[rec + 4]; m[0x2D] = ram[js + k]; m[0x2E] = ram[js + k + 1]; m[0x35] = ram[js + k + 2]; }
+        for (let li = ram[rec] | ram[rec + 1] << 8; ram[li] !== 0xFF; li += 2)
+          for (let n = 0; n < ram[li + 1]; n++) { cpu.call(sym('jump_height'), {}, { maxSteps: 1000 }); steps.push([ram[li], m[0x2C] << 24 >> 24]); }
+      }
+      const frames = [{ n: 25, layers: S.skating[steps[0][0]].layers, say: 'frame ' + steps[0][0] }];
+      for (const [f, h] of steps) {
+        const last = frames[frames.length - 1];
+        if (last.f === f && last.y === h) last.n++;
+        else frames.push({ f, n: 1, y: h, layers: S.skating[f].layers, say: 'frame ' + f });
+      }
+      frames[frames.length - 1].n += 40;
+      mark('skating', frames.filter((f) => f.f !== undefined).map((f) => [f.f]));
+      animTile('gx-skating', { name, frames, loop: true });
+    }
+  }
+
+  // ---- Ski Jump: the small skier through the in-run's points, the take-off (5) and the flying pose
+  // (6), the lean swept through lean_frames_lr's bands, then land_script; a fall from the lean; and
+  // missed_script's tumble. The close-up for the same frames from 5 on.
+  {
+    const r = P['ski-jump'].ram, fs = 0x1A3E;
+    const script = (a) => { const out = []; for (; r[a] !== 0xFF; a += 2) out.push([r[a], r[a + 1]]); return out; };
+    const lr = [...Array(9).keys()].map((b) => r[0x1A80 + b]), ud = [...Array(9).keys()].map((b) => r[0x1A77 + b]);
+    const sweep = (bands) => [4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5].map((b) => [bands[b], 8]);
+    const small = {}; for (const s of S.small) small[s.s] = s;
+    const smallPic = (f) => ({ layers: small[r[fs + f]].layers });
+    const pics = {}; for (let f = 0; f <= 30; f++) pics[f] = smallPic(f);
+    const say = (f) => 'frame ' + f + ', shape $' + r[fs + f].toString(16).toUpperCase();
+    const inrun = [[0, 25], [1, 16], [2, 16], [3, 16], [4, 16], [0, 8], [5, 10], [6, 25]];
+    const jump = inrun.concat(sweep(lr), [[6, 10]], script(0x1A89), [[17, 50]]);
+    const fall = inrun.concat(sweep(lr).slice(0, 12), script(0x1A90));
+    const tumble = [[0, 25], [1, 16], [2, 16], [3, 16], [4, 16], [0, 8]].concat(script(0x1A99), [[13, 100]]);
+    animTile('gx-ski-jump', { name: 'A jump and a good landing', frames: runs(jump, pics, say), loop: true });
+    animTile('gx-ski-jump', { name: 'A jump that lands leaning: a fall', frames: runs(fall, pics, say), loop: true });
+    animTile('gx-ski-jump', { name: 'The missed take-off\'s tumble', frames: runs(tumble, pics, say), loop: true });
+    const close = {}; for (const c of S.closeUps) close[c.f] = c;
+    const cu = (list) => { const out = []; for (const [f, n] of list) { const c = close[f], last = out[out.length - 1]; if (last && last.f === f) last.n += n; else out.push({ f, n, px: c.px, w: c.w, h: c.h, say: 'frame ' + f }); } return out; };
+    animTile('gx-ski-jump', { name: 'The close-up, leaning left and right', frames: cu(sweep(lr)), loop: true });
+    animTile('gx-ski-jump', { name: 'The close-up, leaning back and forward', frames: cu(sweep(ud)), loop: true });
+    animTile('gx-ski-jump', { name: 'The close-up, landing, then falling', frames: cu([[6, 25]].concat(script(0x1A89), [[6, 25]], script(0x1A90))), loop: true });
+  }
+
+  // ---- Bobsled: each place's frame from sled_places ($4AC6, byte 3 of four); places 0-30 run from
+  // high on the left wall to high on the right, 31-35 and 36-40 the crashes over each wall
+  {
+    const bs = P.bobsled.ram, frameAt = (p) => bs[0x4AC6 + 4 * p + 3];
+    const swing = []; for (let p = 15; p <= 30; p++) swing.push(p); for (let p = 29; p >= 0; p--) swing.push(p); for (let p = 1; p < 15; p++) swing.push(p);
+    const say = (f) => 'frame ' + f;
+    const sw = swing.map((p) => [frameAt(p), 2]);
+    animTile('gx-bobsled', { name: 'Swinging from wall to wall', frames: runs(mark('bobsled', sw), S.bobsled, say), loop: true });
+    for (const [name, a, b] of [['Crashing over the left wall', 31, 35], ['Crashing over the right wall', 36, 40]]) {
+      const list = [[frameAt(a - 31 ? 30 : 0), 25]]; for (let p = a; p <= b; p++) list.push([frameAt(p), 8]); list[list.length - 1][1] += 40;
+      animTile('gx-bobsled', { name, frames: runs(mark('bobsled', list), S.bobsled, say), loop: true });
+    }
+  }
+
+  // ---- the opening's animations
+  for (const a of S.opening) animTile('gx-opening', Object.assign({ count: true }, a));
+
+  // ---- the frames nothing shows: Hot Dog's and the bobsled's by what the moves above show, and
+  // the small ski jumper's shapes by frame_sprites
+  for (const f of S.hotDog) if (!seen['hot-dog'].has(f.f)) animTile('gx-unused', { name: 'Hot Dog, frame ' + f.f, frames: [{ n: 1, layers: f.layers }] });
+  for (const s of S.small) if (!s.used) animTile('gx-unused', { name: 'Ski Jump, shape $' + s.s.toString(16).toUpperCase(), frames: [{ n: 1, layers: s.layers }] });
+
+  bgSel.addEventListener('input', () => { anims.forEach((o) => o.draw(true)); pairsDraw(); });
+
+  let running = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), last = 0, acc = 0, steps = 0;
   const run = $('gx-run');
   run.textContent = running ? 'Pause' : 'Play';
   run.addEventListener('click', () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; last = 0; });
-  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { seen = es[0].isIntersecting; last = 0; }).observe($('gx-opening'));
-  else seen = true;
   const loop = (now) => {
     requestAnimationFrame(loop);
-    if (!running || !seen) return;
+    if (!running) return;
     acc = Math.min(acc + (last ? now - last : 0), 200); last = now;
-    while (acc >= 20) { acc -= 20; steps++; tiles.forEach((o) => { if (o.step()) o.draw(); }); }
+    while (acc >= 20) { acc -= 20; steps++; anims.forEach((o) => o.step()); }
+    anims.forEach((o) => o.draw());
     $('gx-stat').textContent = 'step ' + steps;
   };
   requestAnimationFrame(loop);

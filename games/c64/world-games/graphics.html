@@ -139,22 +139,62 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="cast">
   <p class="fig">01 · Everything that moves</p>
-  <h2 class="t">Every pose of every event, placed by the event's own code</h2>
-  <p class="lede">Each event is a program of its own, loaded over the last, with its own poses. Here are all 940 of them, each placed by its event's own routine and drawn in its colours. Choose an event, and point at a pose for what it is.</p>
+  <h2 class="t">Every figure of every event, played from the event's own lists</h2>
+  <p class="lede">Each event is a program of its own, loaded over the last, with its own poses and its own lists of them: a pose and how long to show it, step after step. Here each list plays as its event plays it, every pose placed by the event's own routine and drawn in its colours.</p>
   <div class="plate">
-    <div class="gx-bar" id="gx-events"></div>
     <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
       <span class="gx-lab"><label for="gx-bg">Behind them</label></span>
       <select id="gx-bg" class="gx-sel"><option value="14">Light blue</option><option value="1">White</option><option value="0">Black</option></select>
       <span class="gx-stat" id="gx-stat"></span>
     </div>
-    <p class="gx-miss" id="gx-wait">The poses are drawn by the game's own code in the built site.</p>
-    <div class="gx-group" id="gx-group" data-part="">
-      <p id="gx-about"></p>
-      <div class="gx-box"><canvas class="gx-sheet" id="gx-sheet" width="1" height="1" aria-label="Every pose of the chosen event"></canvas><div class="gx-hi" id="gx-hi" hidden></div></div>
-      <p class="gx-read" id="gx-sheet-read"></p>
+    <p class="gx-miss" id="gx-wait">The figures are drawn by the game's own code in the built site.</p>
+    <div class="gx-group" data-part="weightlifting">
+      <h3>Weightlifting</h3>
+      <p>The lifter in 97 poses, eight sprites each. A lift is a script of poses, each held for so many frames, with windows in which the stick must push the way the bar names. Here every window is pushed in its last frame, except the last of each lift, which is held through: the lifter rocks under the weight until it ends. The bar's plates are drawn into the screen's bitmap rather than as sprites, so they are not here.</p>
+      <div class="gx-tiles" id="gx-weightlifting"></div>
     </div>
-    <p class="cap">Every pose is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page, with the video chip's registers caught as the code writes them. The routines are <span data-part="weightlifting"><code>wl_pose_shapes</code> (<code>$1E3A</code>) and <code>wl_pose_place</code> (<code>$1E8B</code>)</span> in weightlifting, <span data-part="barrel-jumping"><code>bj_draw_skater</code> (<code>$2394</code>)</span>, <span data-part="cliff-diving"><code>cd_draw_diver</code> (<code>$21C8</code>)</span>, <span data-part="slalom"><code>sl_draw_frame</code> (<code>$8EC6</code>)</span>, <span data-part="log-rolling"><code>lr_build_sprites</code> (<code>$2445</code>)</span>, <span data-part="caber-toss"><code>ct_draw_thrower</code> (<code>$12F6</code>)</span>, <span data-part="bull-riding"><code>br_draw_bull</code> (<code>$1E16</code>)</span> and <span data-part="sumo"><code>su_pose_right</code> (<code>$1DB6</code>)</span>. Where an event changes its shapes during play, the page runs its own routine for that first: <span data-part="cliff-diving"><code>cd_sprite_set</code> (<code>$10B3</code>)</span>, <span data-part="slalom"><code>sl_swap_shapes</code> (<code>$C25E</code>)</span>, <span data-part="log-rolling"><code>lr_unpack_set</code> (<code>$2992</code>)</span> and <span data-part="caber-toss"><code>ct_swap_shapes</code> (<code>$1EB2</code>)</span>. A pose drawn faint is one that no list in its event shows.</p>
+    <div class="gx-group" data-part="barrel-jumping">
+      <h3>Barrel jumping</h3>
+      <p>The skater and the barrels in 120 poses. Each list is a pose a step, to <code>$FF</code>, shown for so many turns of a delay loop: about two frames a pose for the take-off, eight for the opening. The stride's eight poses are the stride's states, which the stick moves on, left from the third and right from the seventh.</p>
+      <div class="gx-tiles" id="gx-barrel-jumping"></div>
+    </div>
+    <div class="gx-group" data-part="cliff-diving">
+      <h3>Cliff diving</h3>
+      <p>The diver, the splashes, the pelican and the gull in 175 poses. Every list is a pose and its frames, ending on a pose held or going back to play again. The pelican on its rock takes one of three poses by how far the diver is above or below it, and in the air the stick chooses the body position, from tucked to straight. Three sets of shapes take turns at <code>$7000</code>, so the dive, the water and the pelican's extra turns each have room for their own.</p>
+      <div class="gx-tiles" id="gx-cliff-diving"></div>
+    </div>
+    <div class="gx-group" data-part="slalom">
+      <h3>Slalom</h3>
+      <p>The skier's frame comes from the turn, up to five steps either way, and from the stance: the stick up, neither, or fire held. A step of the turn waits until the stick has stayed put long enough, longer when skiing slowly. The push-off, the falls and the stops are sequences of frames, each with its time; the falls' shapes are swapped in over the push-off's once the skier is away.</p>
+      <div class="gx-tiles" id="gx-slalom"></div>
+    </div>
+    <div class="gx-group" data-part="caber-toss">
+      <h3>Caber toss</h3>
+      <p>The thrower plays a list for each state, its poses and their frames side by side. The run steps through six poses over and over. The caber has lists of its own, each step a pose (or <code>$FE</code> to keep it), a move across and down, and its frames, and they move it here as they do in the event. The walk off is drawn from a second set of shapes swapped in after the toss.</p>
+      <div class="gx-tiles" id="gx-caber-toss"></div>
+    </div>
+    <div class="gx-group" data-part="bull-riding">
+      <h3>Bull riding</h3>
+      <p>The bull and its rider are drawn together, in 52 frames stored facing left; a frame number with bit 7 set is the same frame turned round, mirrored as its shapes are copied. A ride's moves step on every 7 frames, and the chute and the endings every 11.</p>
+      <div class="gx-tiles" id="gx-bull-riding"></div>
+    </div>
+    <div class="gx-group" data-part="log-rolling">
+      <h3>Log rolling</h3>
+      <p>Each lumberjack's picture comes from its pose: the run is poses 0 to 5, round and round as the feet go, and an arm pose runs on to 16. A fall is played in stages from a set of 100 pictures unpacked for it, one set for each lumberjack's fall: the fall and the splash, then the two lumberjacks in turn, the one in the water and the one left on the log.</p>
+      <div class="gx-tiles" id="gx-log-rolling"></div>
+    </div>
+    <div class="gx-group" data-part="sumo">
+      <h3>Sumo</h3>
+      <p>Every pose names the next one forward and the next one back, and the wrestler's speed steps it on, so the poses fall into loops of their own. A throw runs back through its poses, and the wrestler thrown runs forward through a fall. These are the right wrestler's poses, in red; the left wrestler is the same poses turned round, in white.</p>
+      <div class="gx-tiles" id="gx-sumo"></div>
+    </div>
+    <div class="gx-group" data-part="barrel-jumping">
+      <h3>Poses nothing shows</h3>
+      <p>Three of barrel jumping's poses point their sprites at the character set at <code>$4000</code>, and no list in the event shows them.</p>
+      <div class="gx-tiles" id="gx-unused"></div>
+    </div>
+    <p class="cap">Every pose is made from the listing's bytes by the event's own code, run on the kit's 6502 in this page, with the video chip's registers caught as the code writes them. The routines are <span data-part="weightlifting"><code>wl_pose_shapes</code> (<code>$1E3A</code>) and <code>wl_pose_place</code> (<code>$1E8B</code>)</span> in weightlifting, <span data-part="barrel-jumping"><code>bj_draw_skater</code> (<code>$2394</code>)</span>, <span data-part="cliff-diving"><code>cd_draw_diver</code> (<code>$21C8</code>)</span>, <span data-part="slalom"><code>sl_draw_frame</code> (<code>$8EC6</code>)</span>, <span data-part="log-rolling"><code>lr_build_sprites</code> (<code>$2445</code>)</span>, <span data-part="caber-toss"><code>ct_draw_thrower</code> (<code>$12F6</code>)</span>, <span data-part="bull-riding"><code>br_draw_bull</code> (<code>$1E16</code>)</span> and <span data-part="sumo"><code>su_pose_right</code> (<code>$1DB6</code>)</span>. Where an event changes its shapes during play, the page runs its own routine for that first: <span data-part="cliff-diving"><code>cd_sprite_set</code> (<code>$10B3</code>)</span>, <span data-part="slalom"><code>sl_swap_shapes</code> (<code>$C25E</code>)</span>, <span data-part="log-rolling"><code>lr_unpack_set</code> (<code>$2992</code>)</span> and <span data-part="caber-toss"><code>ct_swap_shapes</code> (<code>$1EB2</code>)</span>. The lists are read from the listing as the events read them: <span data-part="weightlifting"><code>wl_scripts</code> (<code>$2000</code>)</span>, <span data-part="barrel-jumping"><code>bj_play_poses</code> (<code>$229C</code>)</span>, <span data-part="cliff-diving"><code>cd_diver_list</code> (<code>$2441</code>)</span>, <span data-part="slalom"><code>sl_next_pose</code> (<code>$C203</code>) and <code>sl_pose_frames</code> (<code>$8F86</code>)</span>, <span data-part="caber-toss"><code>ct_thrower_list</code> (<code>$1DC3</code>) and <code>ct_caber_moves</code> (<code>$1EE7</code>)</span>, <span data-part="bull-riding"><code>br_next_frame</code> (<code>$130A</code>)</span>, <span data-part="log-rolling"><code>lr_poses</code> (<code>$1EED</code>) and <code>lr_fall_step</code> (<code>$29E4</code>)</span> and <span data-part="sumo"><code>su_next_pose</code> (<code>$251F</code>)</span>. Where a pose's time hangs on the player, the speed or a delay loop, it is shown for a fixed number of frames.</p>
   </div>
 </section>
 
@@ -286,6 +326,201 @@ function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
 }
 </script>
 <script>
+/* wog-anims */
+// wogAnims(id, m): the figures of one event as the event plays them, from the lists in its listing's
+// memory m: [{ name, seq: [[pose, frames], ...], loop }], where loop is true to start again or the
+// step to go back to; and holds, a step's frames when the list holds a pose for good.
+function wogAnims(id, m) {
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const HOLD = 50;
+  const A = [];
+  const add = (name, seq, loop) => { A.push({ name, seq: seq.filter((s) => s[1] > 0), loop: loop === undefined ? true : loop }); };
+  // a list of single bytes to $FF, each shown for n frames
+  const bytes = (a, n, stop) => { const o = []; while (m[a] !== (stop === undefined ? 0xFF : stop)) o.push([m[a++], n]); return o; };
+  // pairs of a pose and its frames, to $FF and where to go on, or to a pose held (0 frames); the
+  // jump back makes the loop
+  const pairs = (a) => {
+    const o = [], at = {};
+    for (let k = 0; k < 200; k++) {
+      if (m[a] === 0xFF) { const to = w(a + 1); if (at[to] !== undefined) return { seq: o, loop: at[to] }; a = to; continue; }
+      at[a] = o.length; o.push([m[a], m[a + 1] || HOLD]);
+      if (!m[a + 1]) return { seq: o, loop: false };
+      a += 2;
+    }
+    return { seq: o, loop: true };
+  };
+  const pl = (name, a, from) => { const p = pairs(a); add(name, (from || []).concat(p.seq), p.loop === false ? false : p.loop + (from ? from.length : 0)); };
+  if (id === 'weightlifting') {
+    // the lift's scripts (wl_script_step, $1894) a frame at a time, a push in the last frame of each
+    // timing window except a window whose good push ends the script, which is held through
+    const lift = (s, push) => {
+      const S = { pc: w(0x2000 + 2 * s), frames: 1, win: 0, goodAt: 0, ret: 0, pose: -1, end: false };
+      const step = () => { for (;;) { const c = m[S.pc];
+        if (c === 0) { S.end = true; return; }
+        if (c < 0xF0) { S.frames = c; S.pose = m[S.pc + 1]; S.pc += 2; return; }
+        if (c === 0xF0) { S.ret = S.pc + 3; S.pc = w(S.pc + 1); } else if (c === 0xF3) S.pc = S.ret; else if (c === 0xF4) S.pc += 3; else if (c === 0xF6) S.pc += 2;
+        else { S.win = m[S.pc + 1]; S.goodAt = w(S.pc + 2); S.pc += 4; } } };
+      const o = [];
+      const put = () => { const l = o[o.length - 1]; if (l && l[0] === S.pose) l[1]++; else o.push([S.pose, 1]); };
+      for (let f = 0; f < 1200 && !S.end; f++) {
+        if (S.win && --S.win === 0 && push && m[S.goodAt]) { S.pc = S.goodAt; step(); put(); continue; }
+        S.frames = (S.frames - 1) & 255; if (!S.frames) step();
+        if (!S.end) put();
+      }
+      return o;
+    };
+    add('Standing, waiting to take hold of the bar', lift(0, false).slice(0, 5));
+    add('Taking hold of the bar', lift(1, false).slice(0, 13));
+    add('The snatch', lift(2, true));
+    add('The clean and jerk', lift(3, true));
+    add('A lift that fails', lift(2, false));
+    add('A good lift, the weight held up', lift(7, true));
+    add('Putting the weight down', lift(4, true));
+    add('Held up too long', lift(5, true));
+  }
+  if (id === 'barrel-jumping') {
+    // each list a pose a step to $FF, shown for so many turns of bj_delay ($20A8), 1,284 cycles
+    // each, here in frames of 19,656 cycles
+    const d = (y) => Math.max(1, Math.round(y * 1284 / 19656));
+    const at = (a, y) => bytes(a, d(y));
+    add('The stride', [0, 1, 2, 3, 4, 5, 6, 7].map((p) => [p, 6]));
+    add('Before a run, with ten barrels or more', at(0x22DB, 0x7A).concat(at(0x22E8, 0x7A)));
+    add('The jump, the landing and the bow', at(0x19B6, 0x24).filter((s) => s[0] !== 0xFE).concat([[0x12, 25]], at(0x19C2, 0x7F), at(0x19FB, 0x9F)));
+    add('A fall in the run-up, and the slide', at(0x1992, 0x4F).concat(at(0x1999, 0x4F)));
+    add('Coming down on the ice', at(0x19C6, 0x35).concat(at(0x19D2, 0x5F)), at(0x19C6, 0x35).length);
+    add('Coming down on the barrels', at(0x19DE, 0x3F).concat(at(0x19EC, 0x3F)));
+    add('The knocked barrel', at(0x1A06, 0x3F));
+    add('The rolling barrel', at(0x1A0E, 0x4F));
+  }
+  if (id === 'cliff-diving') {
+    pl('Standing at the edge', 0x24BD);
+    add('Waiting at the edge, then standing again', pairs(0x24C8).seq.slice(0, 10).concat(pairs(0x24BD).seq));
+    add('The jump', [[0x52, HOLD]].concat(pairs(0x24E1).seq));
+    add('Body positions, tucked to straight', [0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x65, 0x64, 0x63, 0x62, 0x61].map((p) => [p, 8]));
+    // the splash's lists end on a step of 0 frames (cd_splash_list, $26C5)
+    const splash = (a) => { const o = []; for (; m[a + 1]; a += 2) o.push([m[a], m[a + 1]]); return o; };
+    add('The splash', splash(0x2715));
+    add('A crash\'s splash', splash(0x2729));
+    pl('Under the water after a clean entry', 0x2509);
+    pl('Surfaced', 0x251E);
+    pl('The end after a good dive', 0x252A);
+    pl('The end after a fault', 0x2559);
+    pl('A bad entry', 0x25A5);
+    pl('Touching the bottom', 0x257C);
+    pl('Hitting the cliff', 0x25B8);
+    add('The pelican on its rock, as the diver is above, near and below it', [[0x3D, 25], [0x3E, 25], [0x3F, 25], [0x3E, 25]]);
+    for (const [name, k] of [['The pelican after a clean entry', 0], ['The pelican after a bad entry or a crash', 1], ['The pelican after the diver has touched the bottom', 2]]) pl(name, w(0x266C + 2 * k));
+    for (let k = 0; k < 3; k++) pl(['The pelican\'s first extra turn', 'The pelican\'s second extra turn', 'The pelican flying off'][k], w(0x1B3B + 2 * k));
+    pl('The gull', 0x278B);
+  }
+  if (id === 'slalom') {
+    // a sequence is a frame and its time (bit 7 only says it runs every frame), $FE the end
+    const seq = (a) => { const o = []; while (m[a] !== 0xFE) { o.push([m[a], m[a + 1] === 0xFE ? HOLD : m[a + 1] & 0x7F]); if (m[a + 1] === 0xFE) a += 2; else a += 2; } return o; };
+    // the skier's frame by the turn, from straight to 5 steps right or left (sl_pose_frames, $8F86):
+    // the stance plus 3 when turning left, plus 6 for each step
+    const f = (k, left, stance) => m[0x8F86 + stance + (left ? 3 : 0) + 6 * k];
+    const sweep = (left) => [0, 1, 2, 3, 4, 5, 4, 3, 2, 1].map((k) => [f(k, left, 1), 12]);
+    add('Turning right, step by step, and back', sweep(false));
+    add('Turning left, step by step, and back', sweep(true));
+    add('A hard turn with fire held, right and left', [[f(3, false, 1), 25], [f(3, false, 2), 25], [f(0, false, 1), 25], [f(3, true, 1), 25], [f(3, true, 2), 25], [f(0, false, 1), 25]]);
+    add('The push-off', seq(0xC367));
+    add('A fall turning right', seq(0xC3A4));
+    add('A fall turning left', seq(0xC3B3));
+    add('A fall going straight', seq(0xC3C2));
+    add('The stop, from the right', seq(0xC3CF));
+    add('The stop, from the left', seq(0xC3FE));
+    // the bend: a count and a frame each, to a count of 0
+    const bend = []; for (let a = 0xF5C2; m[a]; a += 2) bend.push([m[a + 1], 4]);
+    add('The flag bending as the skier passes it', bend.concat([[bend[bend.length - 1][0], 25]]));
+  }
+  if (id === 'caber-toss') {
+    // a state's poses and their frames, side by side, to a frame count of $FF (ct_thrower_list, $1DC3)
+    const st = (p, f) => { const o = []; for (let k = 0; m[f + k] !== 0xFF; k++) o.push([m[p + k], m[f + k]]); return o; };
+    add('Lifting the caber', st(0x2060, 0x2069));
+    add('The run', [0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B].map((p) => [p, 6]));
+    add('The toss begun', st(0x207E, 0x2088));
+    add('The throw', st(0x2072, 0x2078));
+    add('Out of stamina', st(0x20B0, 0x20C3));
+    add('Dropping the caber', st(0x2132, 0x2142));
+    add('Falling', st(0x2092, 0x20A1));
+    add('Walking off', st(0x20D6, 0x2104));
+    // the caber's own moves: a pose, across, down and frames a step, to $FF
+    // a step's move is made once, as the step begins; $FE keeps the pose, so the list is shown from
+    // its first pose, the moves before it made
+    const caber = (k) => {
+      const o = []; let x = 0, y = 0, pose = -1;
+      for (let a = w(0x1F6A + 2 * (k - 1)); m[a] !== 0xFF; a += 4) {
+        x += m[a + 1] << 24 >> 24; y += m[a + 2] << 24 >> 24;
+        if (m[a] !== 0xFE) pose = m[a];
+        if (pose >= 0) o.push([pose, m[a + 3] || 1, x, y]);
+      }
+      return o.concat([[pose, HOLD, x, y]]);
+    };
+    add('The caber falling over, out of stamina', caber(3));
+    add('The caber falling over the other way', caber(4));
+    add('The caber dropped forwards', caber(5));
+    add('The caber fallen back, as the thrower falls', caber(6));
+  }
+  if (id === 'bull-riding') {
+    // a frame a step to $FF; a ride's moves a step every 7 frames, the end's every 11 ($1226)
+    add('The run', bytes(0x204D, 7));
+    add('The buck', bytes(0x20C4, 7));
+    add('The spin', bytes(0x206E, 7));
+    add('The longer spin', bytes(0x208F, 7));
+    add('The rider thrown off', bytes(0x21A9, 11), false);
+    add('The bull after a fall', bytes(0x17EF, 11), 1);
+    add('The rider jumping off after a ride', bytes(0x2191, 11), false);
+    add('The bull trotting away', bytes(0x221A, 11));
+    add('The credits screen', bytes(0x2FE7, 11));
+  }
+  if (id === 'log-rolling') {
+    // pictures by pose (lr_poses1, lr_poses2): the run, poses 0 to 5; from an arm pose on to 16
+    const set0 = (t, ps) => ps.map((p) => [m[t + p], 6]);
+    const run = [0, 1, 2, 3, 4, 5], arms = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    add('Lumberjack 1 running', set0(0x1FD2, run));
+    add('Lumberjack 2 running', set0(0x1FE3, run));
+    add('Lumberjack 1, the arms flung out', set0(0x1FD2, arms));
+    add('Lumberjack 2, the arms flung out', set0(0x1FE3, arms));
+    // a fall's stages: its pictures and waits side by side, to a wait of $FF; the sets' pictures
+    // are numbered on from 20 (lumberjack 2's fall) and 120 (lumberjack 1's)
+    // a wait of $FF ends the stage once its picture is drawn; in stage 5 each lumberjack's picture
+    // stays while the other's changes, two steps
+    const stage = (p, f, base, pick) => {
+      const o = [], n = (k) => m[f + k] === 0xFF ? 8 : m[f + k];
+      let last = 0; while (m[f + last] !== 0xFF) last++;
+      for (let k = 0; k <= last; k++) if (!pick || pick(k)) o.push([base + m[p + k], n(k) + (pick && k < last ? n(k + 1) : 0)]);
+      return o;
+    };
+    for (const [who, base] of [['Lumberjack 2', 20], ['Lumberjack 1', 120]]) {
+      add(who + ' falling, leaning forwards', stage(0x2A77, 0x2A8E, base).concat(stage(0x2ACD, 0x2AE3, base)), false);
+      add(who + ' falling, leaning back', stage(0x2AA5, 0x2AB9, base).concat(stage(0x2ACD, 0x2AE3, base)), false);
+      add(who + ' in the water', stage(0x2AF9, 0x2B48, base, (k) => !(k & 1)));
+      add('The one left on the log, after ' + who.toLowerCase() + '\'s fall', stage(0x2AF9, 0x2B48, base, (k) => k & 1));
+    }
+  }
+  if (id === 'sumo') {
+    // each pose's next, forward and back (su_next_poses, $2812), and its pause (su_pose_events)
+    const next = (p, back) => m[0x2812 + 2 * p + (back ? 1 : 0)];
+    const pause = (p) => m[0x28C6 + 2 * p] === 1 ? m[0x28C7 + 2 * p] : 0;
+    const chain = (p, back, n) => { const o = [], at = {}; for (let k = 0; k < (n || 60); k++) { if (at[p] !== undefined) return { seq: o, loop: at[p] }; at[p] = o.length; o.push([p, 6 + Math.min(pause(p), HOLD)]); const q = next(p, back); if (q === p) return { seq: o, loop: false }; p = q; } return { seq: o, loop: true }; };
+    const ch = (name, p, back, n) => { const c = chain(p, back, n); add(name, c.seq, c.loop); };
+    ch('Before the bout: the walk in and the crouch, then standing up', 0x00, false, 0x19);
+    ch('Standing', 0x19, false);
+    ch('Moving', 0x25, false);
+    ch('The forearm', 0x1F, false);
+    ch('Down', 0x21, false);
+    ch('Reaching for the belt', 0x2B, false);
+    ch('A throw with down and right', 0x31, true);
+    ch('A throw with down and left', 0x36, true);
+    ch('A throw with down alone', 0x3B, true);
+    ch('Thrown', 0x52, false);
+    ch('The utchari', 0x42, true);
+    ch('Thrown by the utchari', 0x49, false);
+  }
+  return A;
+}
+</script>
+<script>
 // Graphics tab. wogPoses (above) places every pose with each event's own code on the kit's 6502 over
 // the part's listing; this script lays them out. What a pose is comes from the listings' notes on the
 // lists and scripts that show it.
@@ -293,26 +528,22 @@ function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
   const $ = (id) => document.getElementById(id);
   const wait = $('gx-wait');
   if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.'; return; }
-  wait.textContent = 'Loading the event\'s listing…';
+  wait.textContent = 'Loading the events\' listings…';
   const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
   const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
   const h4 = (v) => '$' + v.toString(16).toUpperCase().padStart(4, '0');
-  const h2 = (v) => '$' + v.toString(16).toUpperCase().padStart(2, '0');
   const at = (id, v) => '<a href="source-' + id + '.html#' + h4(v).slice(1) + '"><code>' + h4(v) + '</code></a>';
 
   // What each event's poses are, from the lists in its listing: [first, last, what]
   const EV = [
     { id: 'weightlifting', name: 'Weightlifting', what: 'pose',
-      about: 'The lifter and the bar in 97 poses, eight sprites each, for every step of the snatch and the clean and jerk. A lift is a script of these poses with windows for the joystick.',
       names: [] },
     { id: 'barrel-jumping', name: 'Barrel jumping', what: 'pose',
-      about: 'The skater in 120 poses, from the stride and the jump to the falls, and the barrels themselves, knocked and rolling.',
       names: [[0, 7, 'the stride, one pose for each of its eight states'], [22, 30, 'the opening\'s end'], [31, 42, 'the longer opening, coming down before the barrels'],
         [66, 66, 'its sprites point at the character set at $4000, and no list in the event shows it'], [87, 87, 'its sprites point at the character set at $4000, and no list in the event shows it'],
         [103, 109, 'the knocked barrel'], [110, 110, 'its sprites point at the character set at $4000, and no list in the event shows it'], [111, 119, 'the rolling barrel']],
       faint: [66, 87, 110] },
     { id: 'cliff-diving', name: 'Cliff diving', what: 'pose',
-      about: 'The diver on the cliff, in the air and under the water, the splashes, the pelican on its rock and the gull: 175 poses. Three sets of shapes take turns at $7000, so the dive, the water and the pelican\'s extra turns each have room for their own.',
       names: [[0, 4, 'under the water after a clean entry'], [5, 8, 'under the water, coming up'], [9, 14, 'surfaced'], [15, 17, 'the end, after the result'], [18, 26, 'the splash'],
         [27, 28, 'a bad entry'], [34, 38, 'a bad entry'], [43, 52, 'a crash\'s splash'], [53, 60, 'hitting the cliff'], [61, 61, 'the pelican on its rock, the diver well above it'],
         [62, 63, 'the pelican on its rock'], [65, 66, 'the pelican, after a bad entry or a crash'], [68, 69, 'the pelican, after the diver has touched the bottom'], [76, 78, 'the gull\'s wingbeats'],
@@ -320,20 +551,15 @@ function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
         [96, 102, 'a body position in the air, tucked at 96 to straight at 102'], [103, 112, 'idle at the edge, waiting'], [113, 124, 'the end after a good dive'], [125, 130, 'the end after a fault'],
         [133, 150, 'touching the bottom'], [151, 162, 'the pelican\'s extra turns'], [163, 172, 'the pelican flying off']] },
     { id: 'slalom', name: 'Slalom', what: 'frame',
-      about: 'The skier\'s 67 frames: each stance and step of a turn, the gate\'s flag bending as the skier passes it, the push-off at the start and the falls, whose shapes are swapped in over the push-off\'s.',
       names: [[0, 13, 'the skier, a stance or a step of a turn'], [14, 27, 'the flag bending'], [44, 55, 'the push-off at the start'], [56, 66, 'a fall, from the swapped-in shapes']] },
     { id: 'log-rolling', name: 'Log rolling', what: 'picture',
-      about: 'The lumberjacks\' 220 pictures, in three sets: standing and running on the log, then lumberjack 2\'s fall and lumberjack 1\'s, each with its splash. Only one set is in memory at a time.',
       names: [[0, 19, 'standing and running on the log, from the first set'], [20, 119, 'from the set for lumberjack 2\'s fall'], [120, 219, 'from the set for lumberjack 1\'s fall']] },
     { id: 'caber-toss', name: 'Caber toss', what: 'pose',
-      about: 'The thrower and the caber in 119 poses: lifting it, the run, the toss, walking off, dropping it and falling, and the caber on its own. The walk off is drawn from a second set of shapes swapped in after the toss.',
       names: [[0x0C, 0x0C, 'the caber fallen short'], [0x10, 0x10, 'the caber after a good toss'], [0x16, 0x1B, 'the run'], [0x1E, 0x24, 'the toss begun'], [0x32, 0x37, 'the throw'],
         [0x38, 0x3A, 'lifting the caber'], [0x41, 0x46, 'out of stamina'], [0x47, 0x56, 'dropping the caber'], [0x57, 0x65, 'falling'], [0x66, 0x76, 'walking off, from the second set of shapes']] },
     { id: 'bull-riding', name: 'Bull riding', what: 'frame',
-      about: 'The bull and its rider in 52 frames: bucking, running and spinning, and the rider thrown off. They are stored facing left; the event mirrors each shape as it copies it when the bull faces right.',
       names: [] },
     { id: 'sumo', name: 'Sumo', what: 'pose',
-      about: 'The wrestler on the right in 90 poses, in red, as the event keeps them. The wrestler on the left is the same poses turned round, in white.',
       names: [] },
   ];
   const named = (E, p) => { const n = E.names.find(([a, b]) => p >= a && p <= b); return n ? n[2] : ''; };
@@ -352,74 +578,75 @@ function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
   const bg = () => +bgSel.value;
   const fill = (px, n, c) => { for (let i = 0; i < n; i++) { px[4 * i] = c[0]; px[4 * i + 1] = c[1]; px[4 * i + 2] = c[2]; px[4 * i + 3] = 255; } };
 
-  // ---- 01: the sheet, poses in rows as wide as the plate at twice the size, each row's poses
-  // standing on its foot
-  const sheet = $('gx-sheet'), sctx = sheet.getContext('2d'), hi = $('gx-hi'), read = $('gx-sheet-read'), group = $('gx-group');
-  let cur = 0, cells = [];
-  const CAPW = 128, CAPH = 112, PAD = 3;
-  function drawSheet() {
-    const E = EV[cur], q = posed[E.id];
-    if (!q) return;
-    const avail = Math.max(Math.floor(group.clientWidth / 2), 100);
-    cells = []; let x = 0, y = 0, row = [];
-    const end = () => { const h = Math.max(...row.map((c) => c.h)); row.forEach((c) => { c.y = y + h - c.h; }); y += h; row = []; x = 0; };
-    q.forEach((p, i) => {
-      const b = p.box || [0, 0, 8, 8], w = Math.min(b[2] - b[0], CAPW) + 2 * PAD, h = Math.min(b[3] - b[1], CAPH) + 2 * PAD;
-      if (x + w > avail && row.length) end();
-      const c = { i, p, x, w, h }; row.push(c); cells.push(c); x += w;
+  // ---- 01: each event's lists played, a tile each, once its group comes near the screen
+  const RUN = $('gx-run'), anims = [];
+  // a tile that plays one list: steps of [pose, frames, x, y], a step a frame at 50 a second; loop
+  // is true to start again, the step to go back to, or false to stay on the last
+  function animTile(box, id, a) {
+    const q = posed[id], mc = WOG_EVENTS[id].mc;
+    // the chip's places wrap, y in 8 bits and x in 9, so each step is drawn at the turn of its place
+    // nearest the first step's
+    let ref = null;
+    const at = a.seq.map(([p, , dx, dy]) => {
+      const b = q[p] && q[p].box; if (!b) return null;
+      const x = b[0] + (dx || 0), y = b[1] + (dy || 0);
+      if (!ref) ref = [x, y];
+      return [(dx || 0) + 512 * Math.round((ref[0] - x) / 512), (dy || 0) + 256 * Math.round((ref[1] - y) / 256)];
     });
-    end();
-    sheet.width = avail; sheet.height = y; sheet.style.width = 2 * avail + 'px';
-    const img = sctx.createImageData(avail, y), px = img.data, back = RGB[bg()];
-    fill(px, avail * y, back);
-    const faint = E.faint || [];
-    for (const c of cells) {
-      if (!c.p.box) continue;
-      const b = c.p.box;
-      wogPaint(px, avail, y, c.p.spr, WOG_EVENTS[E.id].mc, RGB, c.x + PAD - b[0], c.y + PAD - b[1], [c.x, c.y, c.x + c.w, c.y + c.h]);
-      if (faint.includes(c.i)) for (let yy = c.y; yy < c.y + c.h; yy++) for (let xx = c.x; xx < c.x + c.w; xx++) {
-        const o = 4 * (yy * avail + xx); for (let k = 0; k < 3; k++) px[o + k] = (px[o + k] + 2 * back[k]) / 3;
-      }
-    }
-    sctx.putImageData(img, 0, 0);
-    hi.hidden = true;
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    a.seq.forEach(([p], k) => { if (!at[k]) return; const b = q[p].box, [dx, dy] = at[k]; x0 = Math.min(x0, b[0] + dx); y0 = Math.min(y0, b[1] + dy); x1 = Math.max(x1, b[2] + dx); y1 = Math.max(y1, b[3] + dy); });
+    if (x0 > x1) return;
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = x1 - x0 + 4; cv.height = y1 - y0 + 4; cv.style.width = (a.scale || 2) * cv.width + 'px';
+    cv.setAttribute('aria-label', a.name);
+    t.appendChild(cv); t.appendChild(sp); box.appendChild(t);
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
+    const E = EV.find((e) => e.id === id);
+    const o = { i: 0, left: a.seq[0][1], shown: -1 };
+    o.draw = (force) => {
+      if (o.i === o.shown && !force) return;
+      o.shown = o.i;
+      const p = a.seq[o.i][0], [dx, dy] = at[o.i] || [0, 0], px = img.data;
+      fill(px, cv.width * cv.height, RGB[bg()]);
+      if (q[p]) wogPaint(px, cv.width, cv.height, q[p].spr, mc, RGB, 2 - x0 + dx, 2 - y0 + dy);
+      ctx.putImageData(img, 0, 0);
+      sp.textContent = a.name + ', ' + E.what + ' ' + p;
+    };
+    o.step = () => {
+      if (a.seq.length < 2 || --o.left > 0) return;
+      if (o.i + 1 < a.seq.length) o.i++;
+      else if (a.loop === false) { o.left = 1; return; }
+      else o.i = a.loop === true ? 0 : a.loop;
+      o.left = a.seq[o.i][1];
+    };
+    o.draw(true);
+    anims.push(o);
   }
-  const say = (E, p) => {
-    const q = posed[E.id][p], n = named(E, p), s = q.spr.length;
-    const shapes = [...new Set(q.spr.map((S) => S.src))].sort((a, b) => a - b);
-    return (E.what[0].toUpperCase() + E.what.slice(1)) + ' ' + p + ' (' + h2(p) + '), ' + s + ' sprite' + (s === 1 ? '' : 's') + (n ? ': ' + n.replace('$4000', at(E.id, 0x4000)) : '') +
-      '. Its shapes are at ' + shapes.slice(0, 4).map((a) => at(E.id, a)).join(', ') + (shapes.length > 4 ? ' and ' + (shapes.length - 4) + ' more' : '') + '.';
-  };
-  function pointAt(e) {
-    const r = sheet.getBoundingClientRect(), x = (e.clientX - r.left) * sheet.width / r.width, y = (e.clientY - r.top) * sheet.height / r.height;
-    const c = cells.find((k) => x >= k.x && x < k.x + k.w && y >= k.y && y < k.y + k.h);
-    if (!c) { hi.hidden = true; return; }
-    const k = r.width / sheet.width;
-    hi.hidden = false; hi.style.left = c.x * k + 'px'; hi.style.top = c.y * k + 'px'; hi.style.width = c.w * k + 'px'; hi.style.height = c.h * k + 'px';
-    read.innerHTML = say(EV[cur], c.i);
-  }
-  sheet.addEventListener('pointermove', pointAt);
-  sheet.addEventListener('pointerdown', pointAt);
-  sheet.addEventListener('pointerleave', () => { hi.hidden = true; });
-
-  const btns = EV.map((E, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = E.name;
-    b.addEventListener('click', () => choose(i)); $('gx-events').appendChild(b); return b;
-  });
-  async function choose(i) {
-    cur = i; const E = EV[i];
-    btns.forEach((b, k) => b.setAttribute('aria-pressed', k === i));
-    group.dataset.part = E.id;
-    $('gx-about').innerHTML = E.about.replace('$4000', at(E.id, 0x4000)).replace('$7000', at(E.id, 0x7000));
-    read.textContent = '';
-    try { await poses(E.id); } catch (e) { wait.hidden = false; wait.textContent = 'The listing could not be loaded: ' + e.message; return; }
-    if (cur !== i) return;
+  async function group(id) {
+    const box = $('gx-' + id);
+    try { await poses(id); } catch (e) { box.textContent = 'The listing could not be loaded: ' + e.message; return; }
     wait.hidden = true;
-    drawSheet();
-    const q = posed[E.id];
-    $('gx-stat').textContent = q.length + ' ' + E.what + 's, ' + q.reduce((n, p) => n + p.spr.length, 0) + ' sprites';
-    read.textContent = 'Point at a ' + E.what + ' for what it is.';
+    for (const a of wogAnims(id, listings[id].ram)) animTile(box, id, a);
+    // barrel jumping's poses whose sprites point at the character set
+    if (id === 'barrel-jumping') for (const p of EV.find((e) => e.id === id).faint) animTile($('gx-unused'), id, { name: 'Barrel jumping', seq: [[p, 1]], loop: true, scale: 1 });
   }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); group(e.target.dataset.part); } }, { rootMargin: '300px' });
+    for (const g of document.querySelectorAll('#cast .gx-group')) if (g.querySelector('.gx-tiles').id !== 'gx-unused') io.observe(g);
+  } else for (const E of EV) group(E.id);
+
+  let running = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), last = 0, acc = 0, steps = 0;
+  RUN.textContent = running ? 'Pause' : 'Play';
+  RUN.addEventListener('click', () => { running = !running; RUN.textContent = running ? 'Pause' : 'Play'; last = 0; });
+  const loop = (now) => {
+    requestAnimationFrame(loop);
+    if (!running) return;
+    acc = Math.min(acc + (last ? now - last : 0), 200); last = now;
+    while (acc >= 20) { acc -= 20; steps++; anims.forEach((o) => o.step()); }
+    anims.forEach((o) => o.draw());
+    $('gx-stat').textContent = 'frame ' + steps;
+  };
+  requestAnimationFrame(loop);
 
   // ---- 02: one pose, its sprites boxed and listed
   const pcv = $('gx-p-cv'), pbox = $('gx-p-box'), range = $('gx-p-pose'), ptbl = $('gx-p-tbl'), pgroup = $('gx-p-group');
@@ -479,16 +706,14 @@ function wogPaint(px, w, h, spr, mc, rgb, ox, oy, clip) {
     const n = named(E, p);
     $('gx-p-stat').innerHTML = E.name + ', ' + E.what + ' ' + p + (n ? ': ' + n.replace(/ at \$4000/, '') : '');
   }
-  bgSel.addEventListener('input', () => { drawSheet(); poseDraw(); });
-  let rw = 0;
-  window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(drawSheet, 150); });
+  bgSel.addEventListener('input', () => { anims.forEach((o) => o.draw(true)); poseDraw(); });
 
-  // Start when the section comes near the screen, so the page opens without the work
+  // One pose: started when its section comes near the screen, so the page opens without the work
   let started = false;
-  const start = () => { if (started) return; started = true; choose(0); pchoose(6, 0); };
+  const start = () => { if (started) return; started = true; pchoose(6, 0); };
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '400px' });
-    io.observe($('cast')); io.observe($('pose'));
+    io.observe($('pose'));
   } else start();
 })();
 </script>

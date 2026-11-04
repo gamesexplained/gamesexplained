@@ -68,10 +68,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gx-tile .gx-cvs{display:flex;gap:4px;flex-wrap:wrap}
 .gx-tile canvas{display:block;image-rendering:pixelated}
 .gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
-.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
-.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
-.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
-.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
 .gx-mem{display:flex;height:46px;border-radius:5px;overflow:hidden;font-family:var(--fm);font-size:11.5px;line-height:1.25;color:#fff}
 .gx-mem div{padding:6px 7px;overflow:hidden;border-right:1px solid rgba(255,255,255,.5)}
 .gx-addr{display:flex;font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin:4px 0 0}
@@ -103,24 +99,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>An enemy's look is five bytes in five tables, one entry per object type (<code>objects_init_new</code>, <code>$E3AA</code>): its first and last frame, a byte holding its firing mode, its frame delay and whether it plays back and forth, its colour, and its hit points. The tables hold 162 types, and many enemies share their frames with other types that differ only in colour or behaviour. A run of frames is played forwards and starts again, or plays to its last frame and back, holding each end for one more step.</p>
   <p>A boss is built from the same objects as a wave. Its table names an object type for each of up to 16 parts, and most parts show a single frame, so a boss is a picture cut into sprite-sized pieces that fly in formation. The <a href="bosses.html">Bosses</a> tab runs every boss fight with these parts in place.</p>
   <p>The ships tilt rather than turn. Player 1's ship has seven frames with level flight in the middle. Every fifth frame the game moves it one frame towards one end while the stick is pushed up, towards the other while it is pulled down, and back towards the middle when the stick is let go (<code>ship1_bank</code>, <code>$F407</code>). A second player's ship does the same with frames <code>$07</code>-<code>$0D</code>. The drone has no tilt at all: it turns through eight frames of its own, a step every fourth frame while it is attached and every second frame when it is set loose (<code>drone_spin</code>, <code>$9F0E</code>).</p>
-</section>
-
-<section id="bank" data-part="engine">
-  <p class="fig">02 · The sprite frames</p>
-  <h2 class="t">A level's 192 sprite frames, and what uses each one</h2>
-  <p class="lede">The ships, the drone, the scoreboard, the pods and the bursts have the same frames in every level's file. The rest belong to the level, and a few of them nothing ever shows.</p>
-  <div class="plate">
-    <div class="gx-bar" id="gx-levels2"></div>
-    <canvas id="gx-sheet" class="gx-sheet" width="832" height="576" aria-label="The level's sprite frames, sixteen to a row"></canvas>
-    <div class="gx-key" id="gx-key"></div>
-    <p class="gx-read" id="gx-read">Point at a frame to see what uses it.</p>
-    <p class="cap">Frames <code>$00</code>-<code>$BF</code>, sixteen to a row, from <code>$4000</code> to <code>$6FFF</code> in the level's listing, each in the colour of the first thing that uses it. The bar under a frame says what uses it; a frame with no bar is never shown. What uses a frame comes from the level's object types, those its waves place, its bosses are built from and its bosses let loose, and from the engine's fixed frames.</p>
-  </div>
-  <p>The scoreboard's eight frames are drawn into while the game runs: <code>panel_update</code> (<code>$99FA</code>) writes the score and each player's figures into them from the engine's font, one changed item a frame, so what the level file holds there is only a starting picture. Frame <code>$BF</code> is blank in every level and is what an exploding ship shows after its last burst frame (<code>$EA18</code>).</p>
+  <p>The scoreboard's eight frames (<code>$16</code>-<code>$1D</code>) are drawn into while the game runs: <code>panel_update</code> (<code>$99FA</code>) writes the score and each player's figures into them from the engine's font, one changed item a frame, so what the level file holds there is only a starting picture. Frame <code>$BF</code> is blank in every level and is what an exploding ship shows after its last burst frame (<code>$EA18</code>).</p>
 </section>
 
 <section id="screen" data-part="engine">
-  <p class="fig">03 · The screen</p>
+  <p class="fig">02 · The screen</p>
   <h2 class="t">One bank of the video chip's memory holds the sprites, both screens and the characters</h2>
   <p class="lede">The video chip sees 16K of memory at a time. In play it sees <code>$4000</code>-<code>$7FFF</code> (<code>$DD00</code> = 2), and most of what it holds comes from the level's file.</p>
   <div class="plate">
@@ -150,7 +133,7 @@ const PAL_HZ = 50.125;
 function missing(el) {
   el.insertAdjacentHTML('afterend', '<p class="ar-miss">These pictures are drawn by the site\'s shared script, which the built site serves.</p>');
 }
-if (!HAS) { missing($('gx-cast')); missing($('gx-sheet')); return; }
+if (!HAS) { missing($('gx-cast')); return; }
 const PAL = C64.PAL;
 const part = id => C64.load('parts/' + id + '/listing.json');
 const list = a => a.length < 2 ? String(a[0]) : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
@@ -297,6 +280,10 @@ function castOf(L, E) {
     { label: 'an enemy of type ' + ex + ' bursting, a frame every 4', anims: [seqAnim(burst.concat(Array(15).fill(null)), 4, r[0x3E6 + ex] & 15)] },
     { label: 'an enemy shot bursting, a frame every 2', anims: [seqAnim(burst.concat(Array(30).fill(null)), 2, r[0x3E6 + 3] & 15)] },
   ]});
+  const board = []; for (let f = 0x16; f <= 0x1D; f++) board.push({ label: hex(f), anims: [seqAnim([f], 1, 12)] });
+  groups.push({ tail: true, title: 'The scoreboard', note: 'Eight frames side by side at the foot of the screen, as the level\'s file holds them before the game writes the scores into them.', tiles: board });
+  const idle = view.use.map((u, f) => u.length ? -1 : f).filter(f => f >= 0);
+  if (idle.length) groups.push({ tail: true, title: 'Frames nothing shows', note: 'In the level\'s file, but no object type its waves place or its bosses use or let loose points at them, nor does the engine.', tiles: idle.map(f => ({ label: hex(f), anims: [seqAnim([f], 1, 12)] })) });
   return groups;
 }
 
@@ -326,7 +313,12 @@ const view = { L: null, E: null, tiles: [], f: 0, playing: true, last: 0, acc: 0
 function buildCast() {
   const L = view.L, box = $('gx-cast');
   box.innerHTML = ''; view.tiles = [];
-  for (const g of castOf(L, view.E)) {
+  const groups = castOf(L, view.E);
+  const fire = document.createElement('div'); fire.className = 'gx-group';
+  fire.innerHTML = '<h3>The players\' fire</h3><p>Not sprites: characters of the level\'s own set, written into the screen, here in the colours of the level\'s first stretch.</p>';
+  fire.appendChild(fireTiles(L.r));
+  for (const g of groups.filter(g => !g.tail).concat([fire], groups.filter(g => g.tail))) {
+    if (g === fire) { box.appendChild(fire); continue; }
     const d = document.createElement('div'); d.className = 'gx-group';
     d.innerHTML = '<h3>' + g.title + '</h3><p>' + g.note + '</p>';
     const row = document.createElement('div'); row.className = 'gx-tiles';
@@ -343,9 +335,6 @@ function buildCast() {
     }
     d.appendChild(row); box.appendChild(d);
   }
-  const d = document.createElement('div'); d.className = 'gx-group';
-  d.innerHTML = '<h3>The players\' fire</h3><p>Not sprites: characters of the level\'s own set, written into the screen, here in the colours of the level\'s first stretch.</p>';
-  d.appendChild(fireTiles(L.r)); box.appendChild(d);
   draw();
 }
 function draw() {
@@ -373,12 +362,7 @@ function play(on) {
 $('gx-run').onclick = () => play(!view.playing);
 $('gx-step').onclick = () => { play(false); step(); draw(); };
 
-// ---- section 02: the level's 192 frames, and what uses each ----
-const KINDS = {
-  ship: ['#5b8def', 'the ships and the drone'], board: ['#a0a0a0', 'the scoreboard'], pod: ['#3fb950', 'the pods'],
-  burst: ['#ff7a6b', 'bursts'], enemy: ['#f0a020', 'enemies'], shot: ['#c678dd', 'enemy shots'], boss: ['#56d4dd', 'boss parts'],
-};
-$('gx-key').innerHTML = Object.values(KINDS).map(([c, s]) => '<span><i style="background:' + c + '"></i>' + s + '</span>').join('');
+// ---- what uses each of a level's 192 frames, to find those nothing shows ----
 function usesOf(L, E) {
   const r = L.r, e = E.ram, use = Array.from({ length: 192 }, () => []);
   const add = (lo, hi, kind, text, colour) => { for (let f = lo; f <= hi && f < 192; f++) use[f].push({ kind, text, colour }); };
@@ -409,47 +393,19 @@ function usesOf(L, E) {
   }
   return use;
 }
-const sheet = $('gx-sheet'), sx = sheet.getContext('2d');
-function drawSheet() {
-  const L = view.L, use = view.use;
-  sx.clearRect(0, 0, 832, 576);
-  for (let f = 0; f < 192; f++) {
-    const x = (f % 16) * 52, y = Math.floor(f / 16) * 48, u = use[f];
-    sx.fillStyle = '#000'; sx.fillRect(x + 2, y + 1, 48, 42);
-    sx.globalAlpha = u.length ? 1 : 0.4;
-    sx.drawImage(shape(L, f, u.length ? u[0].colour : 12), x + 2, y + 1);
-    sx.globalAlpha = 1;
-    const kinds = [...new Set(u.map(v => v.kind))];
-    kinds.forEach((k, i) => { sx.fillStyle = KINDS[k][0]; sx.fillRect(x + 2 + i * 48 / kinds.length, y + 44, 48 / kinds.length - (i < kinds.length - 1 ? 1 : 0), 3); });
-  }
-}
-function readAt(ev) {
-  const b = sheet.getBoundingClientRect();
-  const x = (ev.clientX - b.left) * 832 / b.width, y = (ev.clientY - b.top) * 576 / b.height;
-  const f = Math.floor(y / 48) * 16 + Math.floor(x / 52);
-  if (f < 0 || f > 191) return;
-  const u = view.use[f];
-  $('gx-read').textContent = 'Frame ' + hex(f) + ', at ' + hex(0x4000 + 64 * f, 4) + ': ' + (u.length ? [...new Set(u.map(v => v.text))].join('; ') : 'nothing in this level shows it') + '.';
-}
-sheet.addEventListener('mousemove', readAt);
-sheet.addEventListener('click', readAt);
-
-// ---- the level buttons, shared by both sections ----
+// ---- the level buttons ----
 async function show(n) {
   view.n = n;
-  for (const id of ['gx-levels', 'gx-levels2']) $(id).querySelectorAll('button').forEach(b => b.classList.toggle('ar-on', +b.dataset.n === n));
+  $('gx-levels').querySelectorAll('button').forEach(b => b.classList.toggle('ar-on', +b.dataset.n === n));
   try {
     const [E, L] = await Promise.all([part('engine'), part('level-' + n)]);
     view.E = E; view.L = { n, r: L.ram }; view.f = 0;
+    view.use = usesOf(view.L, E);
     buildCast();
-    view.use = usesOf(view.L, E); drawSheet();
-    $('gx-read').textContent = 'Point at a frame to see what uses it.';
   } catch (e) { $('gx-cast').textContent = 'The level\'s listing did not load (' + e.message + ').'; }
 }
-for (const id of ['gx-levels', 'gx-levels2']) {
-  for (let n = 1; n <= 8; n++) $(id).insertAdjacentHTML('beforeend', '<button type="button" data-n="' + n + '">Level ' + n + '</button>');
-  $(id).querySelectorAll('button').forEach(b => b.onclick = () => show(+b.dataset.n));
-}
+for (let n = 1; n <= 8; n++) $('gx-levels').insertAdjacentHTML('beforeend', '<button type="button" data-n="' + n + '">Level ' + n + '</button>');
+$('gx-levels').querySelectorAll('button').forEach(b => b.onclick = () => show(+b.dataset.n));
 show(1).then(() => play(true));
 })();
 </script>
