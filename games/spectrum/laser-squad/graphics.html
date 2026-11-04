@@ -151,13 +151,13 @@ table.gx-rows td .gx-tile{background:#000}
 </section>
 
 <section id="tiles">
-  <p class="fig">05 · Every tile</p>
-  <h2 class="t">A scenario carries up to 185 tiles of 32 bytes</h2>
+  <p class="fig">05 · The map's squares</p>
+  <h2 class="t">The rest of a scenario's tiles draw its map</h2>
   <div class="plate">
-    <div class="gx-sheet"><canvas id="gx-sheet" width="288" height="216" aria-label="Every tile of the scenario"></canvas></div>
+    <div class="gx-sheet"><canvas id="gx-sheet" width="288" height="216" aria-label="The tiles of the scenario's map squares"></canvas></div>
     <p class="hw-out" id="gx-sheet-sum"></p>
     <p class="hw-out" id="gx-sheet-out">Point at a tile.</p>
-    <p class="cap">Each tile in the colours of the first thing that draws it, and in white on black when nothing does.</p>
+    <p class="cap">Each tile in the colours of the first square that draws it, and in white on black when nothing does. The units, the objects, the blobs, the falling bodies, the blows and the hits are in the sections above, so they are left out here.</p>
   </div>
   <p>The tiles fill the end of each scenario's block from <code>$E8DF</code>, 32 bytes each: the top left cell's eight bytes, then the top right, the bottom left and the bottom right. Terrain, objects, units, the falling bodies, the blows and the hits all draw from the same set, so each scenario has its own look. The sheet stops at the highest tile any table of the scenario names.</p>
 </section>
@@ -6991,7 +6991,11 @@ function fireMode() {
 function tiles() {
   L.load(id);
   const use = new Map();
-  const add = (a, what, at) => { if (!use.has(a)) use.set(a, { what: [], at }); use.get(a).what.push(what); };
+  // shown: the tile is drawn in a section above, so the sheet leaves it out
+  const add = (a, what, at, shown = true) => {
+    if (!use.has(a)) use.set(a, { what: [], at, shown: false });
+    const u = use.get(a); u.what.push(what); u.shown = u.shown || shown;
+  };
   for (const e of unitKinds()) {
     const at = unitColours(e.units[0]), nm = nameOf(0x8C + e.units[0]);
     for (const r of e.rows.keys()) rowTiles(r).forEach((a, f) => add(a, nm + ', facing ' + FACING[f] + ' (row ' + r + ')', at));
@@ -7003,28 +7007,32 @@ function tiles() {
   for (let code = 0; code < 0x8C; code++) {
     const a = 0xE65F + 2 * code, b = 0xE79F + 2 * code;
     const nm = nameOf(code) + ' (map byte ' + hex(code) + ')';
-    if (code < 0x6E + kindsOfObject()) { add(M[a + 1], nm, M[a]); add(M[b + 1], nm + ' in fire mode', M[b]); }
+    if (code < 0x6E + kindsOfObject()) { add(M[a + 1], nm, M[a], code >= 0x6E); add(M[b + 1], nm + ' in fire mode', M[b], code >= 0x6E); }
   }
   for (let k = 0; k < 20; k++) { const b = 0xE79F + 2 * (0x8C + k); add(M[b + 1], nameOf(0x8C + k) + ' in fire mode', M[b]); }
   const top = Math.max(...use.keys());
+  // the tiles no section above draws: the map's own squares, and those no table names
+  const rest = [];
+  for (let a = 0; a <= top; a++) if (!use.has(a) || !use.get(a).shown) rest.push(a);
   const cv = $('gx-sheet'), g = cv.getContext('2d'), PITCH = 18, PER = 16;
-  cv.width = PER * PITCH; cv.height = Math.ceil((top + 1) / PER) * PITCH;
+  cv.width = PER * PITCH; cv.height = Math.max(1, Math.ceil(rest.length / PER)) * PITCH;
   g.fillStyle = '#23262d'; g.fillRect(0, 0, cv.width, cv.height);
   let unused = 0;
-  for (let a = 0; a <= top; a++) {
+  rest.forEach((a, i) => {
     const u = use.get(a);
-    const x = (a % PER) * PITCH + 1, y = Math.floor(a / PER) * PITCH + 1;
+    const x = (i % PER) * PITCH + 1, y = Math.floor(i / PER) * PITCH + 1;
     g.putImageData(L.tile(a, u ? u.at : 0x47), x, y);
     if (!u) { unused++; g.strokeStyle = '#ff5050'; g.lineWidth = 1; g.strokeRect(x - .5, y - .5, 17, 17); }
-  }
-  $('gx-sheet-sum').textContent = (top + 1) + ' tiles, 0 to ' + top + ', at ' + hex(0xE8DF, 4) + ' to ' + hex(0xE8DF + 32 * top + 31, 4) + '; ' +
-    (unused ? unused + ' that no table of the scenario names, outlined in red.' : 'every one named by a table of the scenario.');
+  });
+  $('gx-sheet-sum').textContent = (top + 1) + ' tiles, 0 to ' + top + ', at ' + hex(0xE8DF, 4) + ' to ' + hex(0xE8DF + 32 * top + 31, 4) + '. ' +
+    (top + 1 - rest.length) + ' are drawn above; these are the other ' + rest.length + ': the map\'s own squares' +
+    (unused ? ', and ' + unused + ' that no table of the scenario names, outlined in red.' : '.');
   const out = $('gx-sheet-out');
   const point = e => {
     const b = cv.getBoundingClientRect();
     const x = Math.floor((e.clientX - b.left) / b.width * cv.width / PITCH), y = Math.floor((e.clientY - b.top) / b.height * cv.height / PITCH);
-    const a = y * PER + x;
-    if (x < 0 || x >= PER || a > top || a < 0) return;
+    const a = rest[y * PER + x];
+    if (x < 0 || x >= PER || a === undefined) return;
     const u = use.get(a);
     out.innerHTML = '<b>Tile ' + a + '</b>, its 32 bytes at <code>' + hex(0xE8DF + 32 * a, 4) + '</code>: ' +
       (u ? [...new Set(u.what)].slice(0, 6).join('; ') + (new Set(u.what).size > 6 ? '; and more' : '') + '.' : 'no table of the scenario names it.');
