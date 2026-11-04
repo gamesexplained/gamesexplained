@@ -98,6 +98,33 @@ figures (battle `$91B1`); everything else that moves is a sprite,
 multiplexed to more than eight on the map (`$11C1`), in the battle, the
 fort and the train.
 
+The battle's 78 pictures (`$6400`, 64 bytes each) are the Union's 39 and
+the Confederacy's 39 after them, facing the other way. The action tables
+are at `$8640`-`$868A`; the infantry and the cannon step when a timer of
+10 frames runs out (`$9E16`, `$9DED`), the cavalry when one of 6 does
+(`$95A9`), but a picture changes only when the main loop comes round, so
+in a run of a battle with every unit moving the steps stretched to 17 or
+18 frames. Six pictures of each side are never drawn: 2, 13, 25, 26, 27
+and 36. The charge's first (13) is skipped because `$95AD` moves the
+frame on before `$9618` reads it, and the rider fallen in the river (26)
+because `hazards` marks the slot to go (`$A16C`) and `draw_objects`
+empties it first (`$91D8`).
+
+The fort's fighters are posed by ten routines through `pose_lo`/`pose_hi`
+(`$8CC1`, `$8CCB`); the walk steps every 4 frames and the jump rises 20
+lines (`$8BF9`). The fort never shows images `$C2` and `$C7`; the train
+shows `$C5`/`$C6` (the driver) and `$DD`/`$DE` (the rods), which the fort
+does not. On the map, picture 16 of `draw_picture` is the window that
+`save_window` (`$331A`) kept, which `panel_restore` (`$340C`) puts back.
+The battle's panel (`$1F76`) shows the attacker's picture for 50 frames,
+then scrolls a cell left a frame: 30 columns of scenery (`$A454`, the same
+ten three times) and the ten of the other side's picture (`$BF10`). The
+bank's bags are at the places in `$BF1B` (x) and `$BF21` (y), added from
+the last down to the first (`$385D`). The supply train steps every 6
+frames while it moves, and at once when it turns onto a new line
+(`train_wait` set to 1 at `$1D5E`). Images `$B7` and `$B8` of the map are
+never shown.
+
 ## Mechanics
 
 The rules are in the parts' facts: the war in `parts/map/facts.md`, the
