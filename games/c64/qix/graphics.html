@@ -1,0 +1,257 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.qx-pair{display:flex;gap:18px;flex-wrap:wrap}
+.qx-pair figure{margin:0;flex:1 1 300px}
+.qx-pair img,.qx-cv{width:100%;image-rendering:pixelated;border-radius:4px;display:block}
+.qx-ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 14px;font-size:15px}
+.qx-ctl button,.qx-ctl select{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.qx-ctl button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.qx-ctl input[type=number]{font:inherit;width:7em;padding:4px 8px;border:1px solid var(--line);border-radius:6px}
+.qx-key{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft);margin-top:10px}
+.qx-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.qx-tab{border-collapse:collapse;width:100%;font-size:14px}
+.qx-tab th,.qx-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.qx-tab th{font-weight:700;color:var(--ink-soft)}
+.qx-tab td.qx-on{background:var(--hl)}
+.qx-out{font-family:var(--fm);font-size:15px}
+.qx-out b{font-size:20px}
+.qx-miss{font-size:14px;color:var(--coral)}
+.qx-scroll{overflow-x:auto}
+.qm-wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.qm-cv{flex:2 1 320px;max-width:560px;background:#000}
+.qm-side{flex:1 1 220px;min-width:0}
+.qm-read{color:var(--ink);font-family:var(--fm);font-size:13px;line-height:1.5;margin:0 0 10px;padding:10px 12px;background:var(--surface-2);border-radius:6px;white-space:pre-wrap}
+.qm-log{font-family:var(--fm);font-size:12px;line-height:1.45;color:var(--ink-soft);margin:0;padding:0;list-style:none;max-height:220px;overflow:auto}
+.qm-log li{margin:0 0 4px}
+.qm-log b{color:var(--ink-mute);font-weight:400}
+.qm-log li.qm-k{color:var(--coral);font-weight:500}
+.qm-log li.qm-f{color:var(--amber)}
+@media (max-width:640px){:root{--gx:18px;--h1:36px;--pp:16px}}
+.qxg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;align-items:start;margin-bottom:12px}
+.qxg-grid figure{margin:0}
+.qxg-grid .qx-cv{width:auto;max-width:100%}
+.qxg-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.4;font-family:var(--fm)}
+.qxg-grid figcaption b{color:var(--ink);font-family:var(--fb);font-weight:700;font-size:14px}
+.qxg-burst{max-width:552px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Taito America</p>
+  <h1>Qix</h1>
+  <p class="sub">Every sprite in the game, set by the game's own routines: the marker, the Sparx, the Spritz and the Fuse in a round's colours, and the four sprites that burst out of the marker when it dies and fly back in when a life starts.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The marker and the enemies</p>
+  <h2 class="t">The enemies change colour with the field</h2>
+  <p class="lede">Each round draws its field's two colours at random from a table of 32 (<code>qix_colours</code>, <code>$121B</code>), and the enemies take their colours from the same byte (<code>level_params</code>, <code>$90C0</code>). The Sparx and the Spritz then cycle through three colour pairs as they animate.</p>
+  <div class="plate">
+    <div class="qx-ctl"><button type="button" id="qxg-round">Another round's colours</button><span class="qx-out" id="qxg-col"></span></div>
+    <div class="qxg-grid" id="qxg-cards"></div>
+    <p class="cap">Run on the site's 6502 over the game's memory: the round's colours by <code>level_params</code>, then a step of <code>sprite_anim</code> (<code>$A4A9</code>) every second frame, as the play interrupt runs it (<code>$1568</code>), at an American machine's 60 frames a second. A step moves each sprite's four-frame animation on and the colour pair round. The Sparx are multicolour sprites in black (<code>$A1C8</code>, <code>$A241</code>, <code>$A320</code>), their two shared colours from the round's byte; the Spritz are high-resolution sprites whose own colour cycles (<code>$A4F4</code>). Each pair of Sparx starts its frames out of step, so no two look the same at once.</p>
+  </div>
+  <p>The marker is one high-resolution sprite (<code>$8CF9</code>), white, and red while it draws a fast line (<code>$8A8D</code>). On the levels where pair B chases up your line, its two Sparx swap between yellow and green on every pass of the main loop instead of staying black (<code>walker_pair_b</code>, <code>$A24E</code>). The Spritz take the place of pair C from level 5, and of pair A as well from level 7.</p>
+  <p class="cap">One of the 32 shapes is never shown, as nothing in the code points a sprite at it: <code>$20</code>, below. Four more, <code>$2C</code>-<code>$2F</code>, are empty.</p>
+  <div class="qxg-grid" id="qxg-unused"></div>
+</section>
+
+<section>
+  <p class="fig">02 · The burst</p>
+  <h2 class="t">Four sprites fly to the corners and back</h2>
+  <p class="lede">When the marker dies, four sprites burst out of it and fly diagonally to the corners of the field, a pixel at a time, growing through eight frames each. When the next life starts, the same flight plays backwards and the four close in on the marker.</p>
+  <div class="plate">
+    <div class="qx-ctl"><button type="button" id="qxg-death" aria-pressed="true">A death</button><button type="button" id="qxg-start" aria-pressed="false">A life starts</button></div>
+    <canvas id="qxg-burst" class="qx-cv qxg-burst" width="368" height="284"></canvas>
+    <p class="cap">The game's own routines on the site's 6502, from the marker's starting place: <code>marker_burst</code> (<code>$A774</code>) for a death, and for a new life <code>round_intro</code> (<code>$A6E8</code>), which records the flight at full speed and then plays it backwards (<code>burst_replay</code>, <code>$A709</code>). A delay loop paces each move, not the frame, so the moves here are timed by the cycles they take at an American machine's 1,022,727 a second: about 9,600 a move out and 10,800 back, some 1 and 1.1 seconds in all. On the machine the flight takes about a tenth longer, as the video chip and the interrupt that runs every frame take some of the processor's time. A sprite that reaches its corner goes out (<code>$A875</code>), and one past the edge of the screen's window is hidden by the border, drawn grey here. Each pair of sprites steps its frame every ninth move (<code>$A84E</code>), <code>$30</code>-<code>$37</code> and <code>$38</code>-<code>$3F</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* qx-sprites */
+// The sprites as the game's own routines set them, run on the kit's 6502 over a copy of the game's
+// memory with the video chip's registers kept in an array.
+// qxAnim(R, CPU, colours, roamers): twelve steps of sprite_anim ($A4A9), which the play interrupt
+// runs every QX_STEP frames: each step's eight pointers, eight colours and the two shared colours.
+// colours is the round's byte from qix_colours ($121B), which level_params ($90C0-$90DD) turns into
+// the enemies' colour tables ($15B7-$15BC); roamers sets $BE so that sprites 2-3 and 6-7 are
+// roamers. Sprites 4-5 (pair B) take their pointers where walker_pair_b does ($A294).
+const QX_STEP = (R) => R[0x1568] + 1;
+function qxVic(R, CPU) {
+  const m = R.slice(), v = new Uint8Array(64);
+  const io = { read: (a) => (a < 0xD040 ? v[a - 0xD000] : 0), write: (a, x) => { if (a < 0xD040) v[a - 0xD000] = x; } };
+  return { m, v, cpu: new CPU.CPU(m, { port: 0x35, io }) };
+}
+function qxAnim(R, CPU, colours, roamers) {
+  const { m, v, cpu } = qxVic(R, CPU);
+  m[0x0205] = colours;
+  cpu.call(0x90C0, {}, { hooks: { 0x90DE: () => true } });
+  m[0xBE] = roamers ? 0xC0 : 0;
+  m[0x07F8] = 0x21; m[0x07F9] = 0x26;                 // the marker ($8CF9) and the Fuse ($9146)
+  v.set([1, 1, 0, 0, 0, 0, 0, 0], 0x27);              // white, and black for walkers let out ($A1C8, $A241, $A320)
+  const steps = [];
+  for (let i = 0; i < 12; i++) {
+    m[0x5D] = 0xFF;
+    cpu.call(0xA4A9);
+    const p = [...m.subarray(0x07F8, 0x0800)], k = m[0x159E] & 3;
+    p[4] = m[0x15A3 + k]; p[5] = m[0x15AB + k];
+    steps.push({ p, c: [...v.subarray(0x27, 0x2F)].map((x) => x & 15), mc0: v[0x25] & 15, mc1: v[0x26] & 15 });
+  }
+  return steps;
+}
+// qxBurst(R, CPU, x, y, start): the four sprites of the marker's burst from a marker at x, y, as the
+// game's routines place them in the video chip, with the processor's cycle count, which their delay
+// loops pace. A death (start false) is marker_burst ($A774) flying out, a move at a time ($A87F);
+// the start of a life is round_intro ($A6E8): marker_burst recorded without its delay ($74 = $80),
+// then burst_replay ($A709) playing it backwards, a move at a time ($A760). The status panel
+// (draw_status) is skipped. [{ cyc, on, s: [[pointer, x, y] x4] }]
+function qxBurst(R, CPU, x, y, start) {
+  const { m, v, cpu } = qxVic(R, CPU);
+  m[0x31] = x; m[0x32] = y;
+  const moves = [];
+  const snap = () => { moves.push({ cyc: cpu.cycles, on: v[0x15] & 15, s: [0, 1, 2, 3].map((i) => [m[0x07F8 + i], v[2 * i] | ((v[0x10] >> i) & 1) << 8, v[2 * i + 1]]) }); };
+  const back = (c) => { c.rts(); };
+  const status = m[0xA6ED] | m[0xA6EE] << 8;
+  if (!start) { m[0x74] = 0; cpu.call(0xA774, {}, { maxSteps: 2e7, hooks: { 0xA87F: snap } }); }
+  else cpu.call(0xA6E8, {}, { maxSteps: 4e7, hooks: { [status]: back, 0xA760: snap, 0x904C: () => true } });
+  return moves;
+}
+// end of qx-sprites
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const hex = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+    for (const id of ['qxg-cards', 'qxg-burst']) $(id).insertAdjacentHTML('afterend', '<p class="cap">This picture needs the site\'s shared scripts, which this copy of the page could not load. Open it from the built site.</p>');
+    return;
+  }
+  const PAL = C64.PAL, BG = '#000';   // the open field is black
+  const shape = (R, p) => R.subarray(64 * p, 64 * p + 63);
+  function card(el, title, sub, w, h) {
+    const f = document.createElement('figure'), cv = document.createElement('canvas');
+    cv.width = w; cv.height = h; cv.className = 'qx-cv';
+    const cap = document.createElement('figcaption');
+    cap.innerHTML = '<b>' + title + '</b>' + (sub ? '<br>' + sub : '');
+    f.append(cv, cap); el.append(f);
+    return { ctx: cv.getContext('2d'), cv, cap };
+  }
+  // one clock for every card: 60 ticks a second, an American NTSC machine's frames
+  const ticks = [], TICK = 1000 / 60;
+  let last = 0, frame = 0;
+  function clock(ts) {
+    if (!last) last = ts;
+    let k = Math.floor((ts - last) / TICK);
+    if (k > 0) { last += k * TICK; k = Math.min(k, 5); for (let i = 0; i < k; i++) { frame++; for (const t of ticks) t(frame, i === k - 1, ts); } }
+    requestAnimationFrame(clock);
+  }
+  C64.load('listing.json').then(({ ram: R }) => {
+    const S = 3, STEP = QX_STEP(R), COLS = R.subarray(0x121B, 0x121B + 32);
+    let pick = 16, walk = null, roam = null;
+    function round() {
+      walk = qxAnim(R, C64Cpu, COLS[pick], false); roam = qxAnim(R, C64Cpu, COLS[pick], true);
+      $('qxg-col').textContent = 'Round colours ' + hex(COLS[pick]) + ', entry ' + pick + ' of 32';
+    }
+    round();
+    $('qxg-round').addEventListener('click', () => { let p; do p = Math.floor(Math.random() * 32); while (p === pick); pick = p; round(); });
+    // each card: [title, sprites [index, mode] in a row, from the walkers' or the roamers' run]
+    const CARDS = [
+      ['The marker', [[0, 'hi']], () => walk],
+      ['The Sparx, pair A', [[6, 'mc'], [7, 'mc']], () => walk],
+      ['The Sparx, pair B', [[4, 'mc'], [5, 'mc']], () => walk],
+      ['The Sparx, pair C', [[2, 'mc'], [3, 'mc']], () => walk],
+      ['The Spritz', [[2, 'hi'], [3, 'hi']], () => roam],
+      ['The Fuse', [[1, 'mc']], () => walk],
+    ];
+    for (const [title, spr, run] of CARDS) {
+      const W = spr.length * 26 * S + 16, H = 21 * S + 16, k = card($('qxg-cards'), title, '', W, H);
+      const seen = new Set();
+      for (const st of run()) for (const [i] of spr) seen.add(st.p[i]);
+      k.cap.innerHTML = '<b>' + title + '</b><br>' + [...seen].sort((a, b) => a - b).map(hex).join(' ');
+      let shown = -1;
+      const t = (f, paint) => {
+        const n = Math.floor(f / STEP) % 12, st = run()[n];
+        if (!paint || (n === shown && f % 30)) return;
+        shown = n;
+        k.ctx.fillStyle = BG; k.ctx.fillRect(0, 0, W, H);
+        spr.forEach(([i, mode], j) => {
+          const x = 8 + j * 26 * S, d = shape(R, st.p[i]);
+          if (mode === 'hi') C64.drawSprite(k.ctx, d, x, 8, S, PAL[st.c[i] || (i === 0 ? 1 : 0)]);
+          else C64.drawSpriteMC(k.ctx, d, x, 8, S, PAL[st.c[i]], PAL[st.mc0], PAL[st.mc1]);
+        });
+      };
+      ticks.push(t); t(0, true);
+    }
+    { const k = card($('qxg-unused'), '$20', '', 24 * S + 16, 21 * S + 16); k.ctx.fillStyle = BG; k.ctx.fillRect(0, 0, 24 * S + 16, 21 * S + 16); C64.drawSprite(k.ctx, shape(R, 0x20), 8, 8, S, PAL[1]); }
+
+    // the burst: moves timed by cycles at 1,022,727 a second
+    const cv = $('qxg-burst'), ctx = cv.getContext('2d'), HZ = 1022727;
+    const X0 = (R[0x1576] - R[0x1575]) >> 1, Y0 = R[0x1578];
+    const RUNS = [qxBurst(R, C64Cpu, X0, Y0, false), qxBurst(R, C64Cpu, X0, Y0, true)];
+    let which = 0, t0 = 0;
+    const pickRun = (i) => { which = i; t0 = performance.now(); $('qxg-death').setAttribute('aria-pressed', i === 0); $('qxg-start').setAttribute('aria-pressed', i === 1); };
+    $('qxg-death').addEventListener('click', () => pickRun(0));
+    $('qxg-start').addEventListener('click', () => pickRun(1));
+    // sprite places as the video chip takes them: the screen's window is x 24-343, y 50-249, and the
+    // border covers a sprite outside it; the canvas shows y from 16
+    const MX = RUNS[0][0].s.reduce((a, [, x]) => a + x, 0) / 4, MY = RUNS[0][0].s.reduce((a, [, , y]) => a + y, 0) / 4;
+    function drawBurst(mv, marker) {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+      if (marker) C64.drawSprite(ctx, shape(R, 0x21), MX, MY - 16, 1, PAL[1]);
+      if (mv) mv.s.forEach(([p, x, y], i) => { if (mv.on >> i & 1) C64.drawSprite(ctx, shape(R, p), x, y - 16, 1, PAL[1]); });
+      ctx.fillStyle = '#3a3a3a';
+      ctx.fillRect(0, 0, cv.width, 34); ctx.fillRect(0, 234, cv.width, cv.height - 234);
+      ctx.fillRect(0, 34, 24, 200); ctx.fillRect(344, 34, cv.width - 344, 200);
+    }
+    ticks.push((f, paint, ts) => {
+      if (!paint) return;
+      const run = RUNS[which], c0 = run[0].cyc, end = (run[run.length - 1].cyc - c0) / HZ * 1000;
+      const ms = (ts - t0) % (end + 1500);
+      if (ms > end) { drawBurst(which ? run[run.length - 1] : null, true); return; }
+      let i = 0;
+      while (i + 1 < run.length && (run[i + 1].cyc - c0) / HZ * 1000 <= ms) i++;
+      drawBurst(run[i], false);
+    });
+    pickRun(0);
+    requestAnimationFrame(clock);
+  });
+})();
+</script>

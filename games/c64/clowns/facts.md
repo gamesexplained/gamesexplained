@@ -132,6 +132,19 @@ No instruction reads or writes `$0800`-`$CFFF` except the operands of five
 - The see-saw is sprites 1 and 2, 24 pixels apart, at y 234 (sprite
   coordinates): shapes `$EF`/`$F0` with the left end down and a clown
   standing on it, `$F1`/`$F2` mirrored.
+- *Run* on the kit's 6502, the title screen from the reset vector for
+  20,000 ticks (`test_graphics.js`): the flying pictures 0-3 change every
+  11 ticks, in turn; 4 shows exactly when the clown is falling at y 151 or
+  more. A jump's run shows 12 of its 13 drawings, 10 ticks each and a pixel
+  apart: the 13th is replaced by the leap in the same tick. A miss shows 4
+  for 17 ticks from the tick the clown is found down (that tick draws
+  nothing), then 5 for 16 and 6 for 16 or more. When the see-saw tips,
+  sprite 0 is at once over the end that went up, and the see-saw's sprites
+  change picture on the next tick, since each pass draws the see-saw before
+  it moves the clown.
+- The title screen's see-saw chases the clown by itself (`attract_loop`):
+  in the run above it caught 87 clowns and missed 3 that were not made to
+  miss.
 
 ## Mechanics
 

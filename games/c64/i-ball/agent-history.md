@@ -52,3 +52,19 @@ test caught the up key's test listed at the down key's address.
 
 **Pushing.** The git proxy refused the contributor's fork until it was
 attached to the session near the end of the run.
+
+## 4 November 2026: the Graphics tab
+
+The page gained a Graphics tab: Iball's roll, a death and materialising
+run by the game's own `death_step` and `materialise_step` on the kit's
+6502, the seven alien kinds forming, turning and exploding, the panels
+with the timer and meter run by `timer_tick` and `shield_meters`, and the
+title's friends. How it works drew no sprites, so nothing moved; its
+aliens section links to the tab. `test_graphics.js` plays the game on the
+kit's model of the C64 for 20,000 frames and holds the tab to it. It
+caught two errors in the first draft: explosions drawn in multicolour
+(`alien_shot` clears the bit), and the pieces of a death flying at a
+steady 10 pixels a frame (the page had not given `death_delay` the 2
+that `materialise_wait` leaves). Glow Ball's colour step on the title
+was found while drawing the friends, from the reference screenshot's
+colour.

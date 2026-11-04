@@ -55,9 +55,6 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 .jw-fields button{font-family:var(--fm);font-size:12.5px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);cursor:pointer;color:var(--ink)}
 .jw-fields button[aria-pressed="true"]{outline:2px solid var(--ink)}
 .jw-say{min-height:3.2em;font-size:15px;margin:6px 0 0}
-.jw-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:3px;background:#101114;padding:6px;border-radius:6px}
-.jw-gal canvas{width:100%;height:auto;image-rendering:pixelated;cursor:pointer;border-radius:2px;display:block}
-.jw-gal canvas.jw-on{outline:2px solid #f5c542}
 .jw-kb{display:flex;flex-direction:column;gap:4px;font-family:var(--fm);font-size:11px;overflow-x:auto;padding-bottom:4px}
 .jw-kr{display:flex;gap:4px}
 .jw-k{min-width:30px;height:30px;padding:0 4px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#4c4844;color:#f2efe9;white-space:nowrap;flex:none}
@@ -154,12 +151,7 @@ input.jw-range{width:100%;max-width:480px}
 <section id="guardians">
   <p class="fig">06 · Guardians</p>
   <h2 class="t">Eight bytes decide everything a guardian does</h2>
-  <p class="lede">Every sprite in the game, from <code>$4000</code>. Press one to read what it is and where it appears.</p>
-  <div class="plate">
-    <div class="jw-gal" id="jw-gal"></div>
-    <p class="jw-say" id="jw-gs"></p>
-    <p class="cap"><b>Each sprite is drawn from its 64 bytes</b>, pointer n at <code>$4000</code> + 64n; the words beside it are its comment in the <a href="source.html">Source code</a> tab. The rope's 102 sprites are separate, at <code>$8100</code>.</p>
-  </div>
+  <p class="lede">A guardian is a sprite that moves up and down or across its room, through frames of its own. The <a href="graphics.html">Graphics</a> tab shows every guardian's frames as the game steps them.</p>
   <p>A room names its first guardian in the table at <code>$2443</code> and how many there are (offsets <code>$E0</code> and <code>$E1</code>), up to seven. Each guardian is eight bytes: which way it moves and which way it starts, its column and row, its first sprite, its far bound, a mask for its frames, its speed and its near bound. Guardians that move across step a column at a time between their bounds, and going right add 4 to their frame when their mask byte is 4 or more (<code>$369E</code>); guardians that move up and down climb and drop between theirs (<code>$3614</code>). Nothing else decides where they go: a guardian never looks at Willy. The <a href="levels.html#room">Map</a> tab runs every room's guardians with a port of both routines.</p>
   <p>Arrows are separate, 16 records of four bytes at <code>$2403</code>: the room, a countdown, a column and a row. One flies across its room on sprite 6 when its countdown runs out, and a burst of noise on voice 3 warns of it ten counts before. The loop at <code>$314D</code> runs only 15 of them, so the arrow in The Beach never flies, and three records name room 99, which does not exist (<a href="discoveries.html#arrows">Discoveries</a>).</p>
 </section>
@@ -167,13 +159,7 @@ input.jw-range{width:100%;max-width:480px}
 <section id="ropes">
   <p class="fig">07 · Ropes</p>
   <h2 class="t">A rope is 34 drawings of three sprites</h2>
-  <p class="lede">Five rooms have a rope. Let it swing, or drag it through its 34 positions.</p>
-  <div class="plate">
-    <div class="jw-row"><button class="jw-b" type="button" id="jw-rp" aria-pressed="true">Swinging</button><input type="range" class="jw-range" id="jw-rs" min="0" max="33" value="16" aria-label="Position"></div>
-    <canvas id="jw-rc" class="jw-scr jw-mid" width="768" height="432"></canvas>
-    <p class="jw-out" id="jw-ro"></p>
-    <p class="cap"><b>Drawn from the rope's sprites at <code>$8100</code></b> and the places at <code>$178A</code>, as the routine at <code>$16A2</code> copies them in, in We Must Perform a Quirkafleeg. A room starts its rope at position 16, at the far right of its swing (<code>$30B5</code>). The swing is a port of <code>$16A2</code>, held against the game's code by <code>test_rooms.js</code>.</p>
-  </div>
+  <p class="lede">Five rooms have a rope. On the <a href="graphics.html">Graphics</a> tab it swings, and a slider takes it through its 34 positions.</p>
   <p>The rope is three sprites stretched to double height, sprites 5, 6 and 7, and the game keeps a drawing of all three for each of 34 positions: 102 sprites, 6,528 bytes. Positions 0 to 16 take it from hanging straight down out to the right, and 17 to 33 do the same to the left, mirrored. Every second player update moves it on one: from 16 down to 0, on through 17 to 33, then back. Willy holds it at one of 16 points down its length, from a table of 32 bytes for each position at <code>$189C</code>; on the second half of the swing the game mirrors the x (<code>$1C86</code>). Holding the way the rope swings slides him down it, the other way up it, and past the top he leaves by the room's upper exit.</p>
   <p>On a rope the touch that kills Willy is turned off for sprites 5 to 7, the rope itself (<code>$3392</code>). The cells are another matter: when his sprite touches any cell's pixels, the check at <code>$1B96</code> compares the cell's screen code with the tile kinds 0 and 3, and since a room's cells are codes <code>$20</code> to <code>$26</code>, neither matches. Every touch makes him let go, and a hazard never kills him while he holds on.</p>
 </section>
@@ -289,14 +275,13 @@ function createDriver(data) {
   const $ = id => document.getElementById(id);
   const hex = (v, w = 4) => '$' + v.toString(16).toUpperCase().padStart(w, '0');
   const say = (el, html) => { el.innerHTML = html; };
-  const widgets = ['jw-sid', 'jw-fr', 'jw-rm', 'jw-jc', 'jw-gal', 'jw-rc', 'jw-mb'];
+  const widgets = ['jw-sid', 'jw-fr', 'jw-rm', 'jw-jc', 'jw-mb'];
   const missing = why => { for (const id of widgets) $(id).insertAdjacentHTML('afterend', `<p class="cap">${why}</p>`); };
   if (typeof C64 === 'undefined' || typeof jswRoom === 'undefined' || typeof C64Sid === 'undefined') { missing("This widget needs the site's shared scripts, which only the published site serves."); return; }
   let D;
   try { D = await C64.load('listing.json'); } catch (e) { missing("This widget reads the game's listing, which only the published site serves."); return; }
   const ram = D.ram;
   const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
-  const comment = new Map(D.listing.records.filter(r => r.c).map(r => [r.a, r.c]));
   const paint = (cv, pic, s) => {
     const x = cv.getContext('2d'), img = x.createImageData(pic.w * s, pic.h * s);
     for (let y = 0; y < pic.h * s; y++) for (let X = 0; X < pic.w * s; X++) {
@@ -466,50 +451,6 @@ function createDriver(data) {
   }
   $('jw-js').oninput = () => drawJump(+$('jw-js').value);
   drawJump(0);
-
-  // ---- 06 the sprite gallery
-  const gal = $('jw-gal');
-  for (let n = 0; n < 172; n++) {
-    const c = document.createElement('canvas'); c.width = 24; c.height = 21; c.dataset.n = n;
-    const x = c.getContext('2d'), sp = D.bytes(0x4000 + 64 * n, 63);
-    x.fillStyle = n >= 0x12 && n < 0xAA ? '#d8d8d8' : n >= 6 && n < 0x0E ? '#ffffff' : '#edf171';
-    for (let y = 0; y < 21; y++) for (let X = 0; X < 24; X++) if (sp[3 * y + (X >> 3)] & (0x80 >> (X & 7))) x.fillRect(X, y, 1, 1);
-    c.setAttribute('aria-label', 'Sprite ' + hex(n, 2));
-    c.onclick = () => {
-      for (const o of gal.children) o.classList.toggle('jw-on', o === c);
-      say($('jw-gs'), `Pointer <code>${hex(n, 2)}</code>, at <code>${hex(0x4000 + 64 * n)}</code>. ${comment.get(0x4000 + 64 * n) || ''}`);
-    };
-    gal.appendChild(c);
-  }
-  gal.children[0x4A].onclick();
-
-  // ---- 07 the rope
-  const ROPE_ROOM = 16, ropeRoom = jswRoom.build(ram, ROPE_ROOM), swing = jswSwing();
-  let ropePos = 16, ropeRun = true, ropeT = 0;
-  const ropeColour = ropeRoom.colours[5] & 15;
-  function drawRope() {
-    const W = 256, H = 144, px = new Uint8Array(W * H);
-    const pic = jswPicture(ram, ROPE_ROOM, { ropeAt: ropePos, guardians: false, items: false });
-    px.set(pic.px.map(v => v === (ropeRoom.vic.bg0 & 15) ? 0 : 11));
-    const R = jswRope(ram, ropePos);
-    for (let k = 0; k < 3; k++) {
-      const d = R.data.subarray(64 * k), sx = R.coords[2 * k], sy = R.coords[2 * k + 1];
-      for (let y = 0; y < 42; y++) for (let x = 0; x < 24; x++) if (d[(y >> 1) * 3 + (x >> 3)] & (0x80 >> (x & 7))) {
-        const X = sx - 56 + x, Y = sy - 50 + y;
-        if (X >= 0 && X < W && Y >= 0 && Y < H) px[Y * W + X] = [7, 3, 13][k];
-      }
-    }
-    paint($('jw-rc'), { w: W, h: H, px }, 3);
-    $('jw-rs').value = ropePos;
-    say($('jw-ro'), `Position ${ropePos}${ropePos < 17 ? ', the right-hand half of the swing' : ', the left-hand half, mirrored'}: sprites from <code>${hex(R.src)}</code>, places at <code>${hex(0x178A + 6 * ropePos)}</code>. Sprite 5 is drawn yellow, 6 cyan and 7 green here; the game draws all three in colour ${ropeColour}.`);
-  }
-  function ropeTick(t) {
-    if (ropeRun && t - ropeT > 80) { ropeT = t; ropePos = swing.pos; swing.next(); drawRope(); }
-    requestAnimationFrame(ropeTick);
-  }
-  $('jw-rp').onclick = () => { ropeRun = !ropeRun; $('jw-rp').setAttribute('aria-pressed', ropeRun); };
-  $('jw-rs').oninput = () => { ropeRun = false; $('jw-rp').setAttribute('aria-pressed', false); ropePos = +$('jw-rs').value; drawRope(); };
-  drawRope(); requestAnimationFrame(ropeTick);
 
   // ---- 08 the keyboard
   const L = 'Q E T U O @ 1 3 5 7 9'.split(' '), Rk = 'W R Y I P * 2 4 6 8 0'.split(' ');

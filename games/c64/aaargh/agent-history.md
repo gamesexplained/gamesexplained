@@ -69,3 +69,25 @@ game's own builder, after its city picker (without it every building
 counted as burning and none was drawn). Chrome's screenshots timed out on
 every page, so the pages were checked through their scripts and drawn
 offline in node. There is no Play tab; that is Platinum work.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`. The monster viewer moved there from How it works, and the
+pickups picture went with it. Each move's pace was measured on the kit's
+machine model (`kit/c64/machine.js`), playing the game from the listing
+with the stick, and then traced in the code: walking a frame a pass, the
+punch, flame and eating timers stepping the frame on even counts, dying
+counted down from `$1F`. The hornets', the flyer's and the cannon's
+pictures were measured the same way. `test_graphics.js` keeps all of it.
+
+Three notes were wrong and are corrected. The third sprite of a monster
+was called its punching arm; it is a burst that shows only for a punch
+that has power and misses. `$8240` said the cannon's frames 1 to 4 were
+burning; they are its aim, which a flame steps on. And it said 6 was a
+breaking-up frame; no code sets it.
+
+A run of the long game first took three and a half minutes:
+`runPasses(1)` waits up to 100,000 frames for a pass, and when the lizard
+died or reached the cave there were no more passes. The test now asks for
+a pass within 40 frames and stops when none comes.

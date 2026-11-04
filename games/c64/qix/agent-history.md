@@ -98,3 +98,21 @@ showed qix2_step never running: `$BB`, like `$6F`, comes back from the
 level table at every round start, so level 1's entry at `$1210` had to
 be poked as well. A second attempt recorded 400 steps; the port with the
 slip matched all of them, and without it drifted at step 288.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`. Its cards run the game's own sprite_anim on the kit's
+6502 over the listing, in a round's colours picked from the game's
+table, and its burst runs marker_burst and round_intro, timed by the
+cycles their delay loops take. How it works keeps its table of enemies
+and links to the tab.
+
+`test_graphics.js` runs the attract demo on the kit's machine and checks
+the tab against it. Two things it found that the run had wrong: the
+burst from the marker's starting place takes 105 moves, not the 92 of a
+trial from another place, so the captions' times became 1 and 1.1
+seconds; and the real flight is about a tenth slower than the routines
+alone, not a few per cent, since the interrupt takes its share as well
+as the video chip. A first try also counted shape `$2C`'s padding byte
+and found it not empty; the 63 bytes of the shape are.

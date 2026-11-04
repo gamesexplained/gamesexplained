@@ -376,6 +376,60 @@ A board item's type byte (`$827B`, `$89B8-$8A0F`):
   and lifting it out of view. Where the hand meets the disk depends on
   where the worm stopped: the independent check's run turned at `$C0`.
 
+### Moving pictures
+
+Simulated: `test_graphics.js` runs the game's frame loop from `$757F`, or
+puts records into the object pool and steps them with `$D691` and
+`$AAF3`, and draws them with `$81DB`, a pass at a time.
+
+- **Crawly** (`$840A`, `$B36A`): record +`$0E` is the heading and
+  +`$0F` to +`$11` the six legs, a nibble each. A leg's angle is the
+  heading plus `$68`, `$77` or `$8B` plus its low nibble, or `$18`, `$09`
+  or `$F5` less its high nibble (`$B491` finds the leg's end point). A
+  walking pass adds `$20` to each of the three bytes
+  (`$D97D`) and subtracts 2 twice (`$D996`); a turning pass does one or
+  the other (`$D923-$D93E`). The body is two discs from `$B7B6`: half the
+  width, set toward the heading, then three quarters of it.
+- A Crawly whose width byte +8 is 7 is drawn by `$B4E0`: the body
+  `$CB37` or `$CB23` on the frame counter's bit 0, and `$CB07` and
+  `$CAEF` placed up to 5 pixels out on opposite sides by the heading.
+- A sparky hitting a Crawly sets +`$12` to `$FF` (`$D89A`). While +`$12`
+  is negative `$840A` adds `$40` times its negative to the heading (a
+  quarter turn at `$FF`, a half at `$FE`); `$D6C9` takes 1 off it each
+  pass and at `$FD` calls `$DE22`, which makes the record type `$E6` with
+  +`$0E` = 4 and the picture `$C5B3`. `$DDF8` then gives `$C5B3` for two
+  more passes, `$C5EF` and `$C62B` for one each, and removes it: five
+  passes of explosion.
+- **Sputnik** (`$8667`): the ball is `$CA3F` (12 rows) under 13 pixels
+  wide, `$CA03` (15) under 16, `$C997` (18) under 20, else `$C913` (22),
+  the width being the smaller of the top outline's and the record's
+  +`$1C`, which is then stored there (+`$1C` starts at `$63`, `$D51C`), so
+  the picture never grows. The shadow `$C8DF`, 13 rows, is drawn first,
+  centred on the outline at height 0, when +`$1B` is under `$11`;
+  `$81DF` gives a type `$E5` its unscaled outline as the bottom. In one
+  run from 12 units off the worm on each axis it came down 5 a pass from
+  `$CF` and became a Crawly on the 42nd pass.
+- **Sparky** (`$83DC`): the picture from `$BF27` for the width of the
+  average of the two outlines; nothing else is read.
+- **Eruption point** (`$863F`, `$DE41`): record +1 counts down a pass
+  from `$14`. At 9 or more nothing is drawn, from 8 to 1 `$CA6F`, at 0
+  `$CAAF`. At 0 the handler adds a type `$F3` record 7 by 7 units with
+  its heading the frame counter, and leaves the count at 0. The handler
+  never removes the point after that, and it is drawn with `$CAAF` each
+  pass (simulated for 12 passes).
+- **Spindle** (`$860A`): picture `$CB4B + $30 x n`, 12 rows, n the frame
+  counter AND 3 when bit 0 of the record's top height is set, and its
+  negative AND 3 when it is clear. 27 of the board's 58 spindles have an
+  odd top and 31 an even one, so the two kinds turn opposite ways.
+- **Eruption pad** (`$874C`): the four triangles reach 5 plus the frame
+  counter AND 15 into the top, or 20 less it when bit 4 is set: 5 to 20
+  and back over 32 passes (`$8786-$8795`).
+- **De-bugger** (`$8833`): the stripes' offset grows with the frame
+  counter's low four bits, and its bit 4 picks fill `$00FF` or `$0000`;
+  the picture repeats every 16 passes.
+- **Disk** (`$BB06`): the hub is `$C75F` or `$C7C5` on the frame
+  counter's bit 0 (`$BC77-$BC82`).
+
 ## Mechanics
 
 ### The board

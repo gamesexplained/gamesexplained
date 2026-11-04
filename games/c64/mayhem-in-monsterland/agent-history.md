@@ -112,3 +112,12 @@ machine's own state and they are excluded in `parts/intro/part.json`:
 the KERNAL's text screen at `$0400`-`$07FF`, which the start-up later
 covers with the music driver, and the copy of the KERNAL's vector table
 that RESTOR leaves in the RAM under the ROM at `$FD30`.
+
+## 4 November 2026: the Graphics tab
+
+The character sets, Mayhem's images and the monster viewer moved from How
+it works to a new Graphics tab, under the site's rule that every game with
+things that move gets one. How it works keeps the rules (walls and
+platforms, the sprite pairing, the object records) and links to the tab.
+The walk and the charge, shown as still images before, now play at the
+rate `$EE9E` steps them; the walk's rate was read from `$EF1E`-`$EF36`.

@@ -137,6 +137,38 @@ record was cleared.
   (`monitor_off` `$7D6A`).
 - Text uses a five-line font one character cell wide (`$1A2E`), screen
   codes with two of the game's own: `"` draws a colon and `&` the letter F.
+- **The frames in use.** A frame header (`$B710`/`$B755`) is four bytes,
+  the width in pixels, the strip count, the top's offset from the spy's
+  line and the facing its shapes must be in, then two bytes a strip: its
+  rows less one, then its shape (shape 0 is a gap). The twelve walking
+  lists (`$B6B0`/`$B6BC`, six frames each) are three pictures there and
+  back, 1, 2, 3, 3, 2, 1; climbing uses the walking-away pictures. Frames
+  47-60 are frames 33-46 mirrored. Frame 0 is a copy of frame 5 and is
+  drawn once, on the white spy's first turn of a game, before it has a
+  frame of its own; frames 63 and 64 are never drawn. *Live and traced*:
+  `test_graphics.js` matches every frame, at seven places across, against
+  `draw_spy_shape` on the kit's 6502, and a random game of 16,000 frames
+  on the kit's machine drew frame 0 once and 63 and 64 never.
+- **A walking step.** The next frame of a walk is drawn on each of the
+  spy's turns; on the kit's model of a PAL machine the median step took
+  55,852 cycles, about 56 ms, of which 5,113 were the interrupts'.
+- **A trap going off** (`spy_action_start` `$69C2`, `spy_action_step`
+  `$6A4E`): the spy is copied into the backdrop (`bake_spy` `$7ABA`), and
+  after 13 of its turns each of eight steps draws a shape from
+  `action_frames` (`$0973` + type × 8) with `draw_shape`, three turns
+  apart; the gun on its string adds offsets (`$0983`, `$098B`). The
+  bucket then runs nine steps of four turns (`$B582`, frames 5 or 17,
+  61, 62), and every type ends in the angel (`spy_sinking` `$6959`): the
+  action's count goes down each turn, and past zero it restarts at 1 and
+  the spy rises a line; the frame is `$B560` plus the count's bit 0. A
+  trap leaves the count at 1, the bucket at 3. *Live*: each type forced on
+  the white spy drew its eight shapes on turns 13, 16, ... 34 and an angel
+  matching that rule turn for turn (`test_graphics.js`).
+- **The plane's take-off** (`plane_takeoff` `$885D`): 255 engine steps,
+  then 160 steps of two pixels, climbing a line every fourth step past
+  across `$4B`. Each step waits 18 units of `delay` once the step count
+  `$04` is below 100, and (count − 100) / 2 + 18 before that, so the
+  plane speeds up.
 
 ## Mechanics
 

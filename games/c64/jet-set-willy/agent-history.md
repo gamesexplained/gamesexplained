@@ -147,3 +147,21 @@ have needed another one. The contributor's disk was not available to
 this session, so the hand-over was remade from archive.org's copy of the
 BCS disk (`orientation.md`); it matched every byte of the listing.
 
+## 4 November 2026: the Graphics tab
+
+A Graphics tab joins the older pages that carried none. It moves every
+sprite the game shows with the ports `test_rooms.js` already holds
+(`jswGuardians`, `jswArrows`, `jswRoom.sprite7`, the rope), one clock
+ticking once a pass of the main loop, three passes to a frame. The
+sprite gallery left How it works for it, and so did the rope's slider;
+How it works keeps the rules and a link. Two things were new and were
+measured on the kit's C64 rather than read: Willy's walk (the count at
+$32 skips 1 going right and 6 going left, so the first frame of a cell
+shows for one update and the rest for two) and the game-over timing,
+whose waits come to 4.27 ms a line and 1,422 ms before the title.
+`test_graphics.js` holds both, the guardian and arrow paces, and that
+every sprite from $00 to $AB is on a card. A first draft headed the
+guardian cards with a count of forty; the records start at 38 frames.
+The three records of the face in Entrance to Hades share a card drawn as
+the room places them, and each card is drawn on its room's background
+colour, since the robot at frame $2A is black.

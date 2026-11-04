@@ -74,6 +74,14 @@ The loading screen shows the front-end character set at `$5000`
 those images under the I/O chips while the land loads, and swap 5
 (`$CE39`) brings both back.
 
+Mayhem's walk: `$EE9E` steps the outline through the eight walking
+images (base plus 0, 2 ... 14) each time the counter `$1B50` runs out,
+and reloads it with 4 minus the scroll speed `$1BD7` (`$EF24`-`$EF2F`),
+so the image changes every 5 minus the speed calls, and every call from
+speed 4. A charge steps its outline 0, 1, 2 one a call (`$EF08`-`$EF1C`).
+The Graphics tab plays both at one call a frame, the most the play loop
+runs (Timing).
+
 ## Mechanics
 
 The rules of play (touching, stomping, items, stars, the clock, the

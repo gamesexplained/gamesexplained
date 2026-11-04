@@ -102,3 +102,26 @@ over a minute. And VICE's text monitor wedged three times: a `chis` of
 2,500 lines did not finish in the 60 seconds `codemap.monitor()` waits,
 and a second command sent on the same connection after the monitor had
 left (the `monitor-run-leaves` quirk) wedged it until a restart.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`: Rambo, the six weapons and their shots, the soldiers,
+the prisoners and items, the helicopter and the gunship with their
+rotors, and the panel, each read from the game's tables and immediates.
+Two of the game's routines run on the kit's 6502: `enemy_rise` for a
+soldier coming out of the ground and `shot_arc` for a thrown grenade.
+How it works links to the tab from the enemies and the helicopter.
+
+`test_graphics.js` checks the tab against the game on the kit's
+machine. Drawing what the interrupt draws frame by frame first gave
+thousands of mismatches in the flight, all from timing: the interrupt
+places the gunship and the rotors while the main loop is part way
+through its pass. Checking what each placing routine leaves as it
+returns, and only the set of pictures and colours drawn, matched every
+frame. The jungle showed two races the game really has: Rambo's outline
+a step behind his body (it is copied once a pass), and a shot slot for
+one frame in another shot's colour (a picture and its colour are two
+stores). The test allows them at their measured rate. Tying the panel's
+icons and the shots' behaviour to the weapon numbers answered the open
+question of which weapon is which.

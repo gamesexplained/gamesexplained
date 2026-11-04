@@ -40,3 +40,22 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   checked through the page's state instead, and by `test_music.js`.
 - The loader's text at `$F2CC` is in none of the listings: it lies in
   memory none of the menu's files cover, and the map's files load over it.
+
+## 4 November 2026: the Graphics tab
+
+A Graphics tab was added under the site's rule that every game with
+things that move gets one. How it works drew none of these shapes, so it
+only gained links. The battle's cards take their pictures from the action
+tables and their steps from the timers' operands; the fort's fighters are
+posed by the fort's own routines on the site's 6502, and the battle's
+panel and the interception run the map's own routines the same way.
+
+`test_graphics.js` plays a battle and two years of the map on the kit's
+model and checks the tab against them. It found three things the first
+draft had wrong: the bank's bags were in a guessed layout (they come from
+`$BF1B`/`$BF21`, last bag first), the interception's last moves were
+approximated by hand (now run by the game's code), and the bank's
+pictures go 9, 10, 9, not back and forth. It also showed that a picture
+on the battlefield changes only on a pass of the main loop, so the steps
+in a busy battle are longer than the timers say; the page says so.
+

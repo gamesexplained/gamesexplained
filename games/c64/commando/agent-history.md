@@ -128,3 +128,22 @@ that the KERNAL and the loader leave behind: `$0001`, `$000E`-`$000F`,
 `$00A1`-`$00A2` (the jiffy clock) and `$00FB`. Those six were written back,
 so the rebuilt listing keeps every byte it had and adds these seven. The
 raw snapshot is kept as `work/entry-raw.vsf`.
+
+## 4 November 2026: the Graphics tab
+
+A later run, retrofitting older minisites with a Graphics tab, added
+`graphics.html`: the walk in eight headings, then each figure stepping
+through its shapes for as many passes as the game holds each, in its
+colour. How it works' sheet of all 112 shapes moved there, so the play
+screen section links to it. The figures' frames were first measured by
+recording every slot's shape on each pass of a long run on the kit's
+machine model, then read in the code, and `test_graphics.js` checks the
+page's own table against a fresh run. It corrected four things in the
+first draft: the bomb thrower's throwing shape replaces the first of his
+walk rather than following it, the two grenadiers throw on different
+plans (one every 64 passes as he goes, one every 16 as he stands), the
+trench soldier's wait between bombs is at least 45 passes rather than
+exactly, and the thrown bomb shows one shape for its whole fall. The
+logo's sprites were drawn unexpanded, which the reference screenshot of
+the title showed.
+

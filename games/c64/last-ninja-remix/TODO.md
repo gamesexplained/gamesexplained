@@ -13,9 +13,9 @@ sample of 60 comments, seed 25956, found 1 wrong, within the mark
 
 ## For Gold
 
-A human pass over the copy, section by section, on all three pages
-(`index.html`, `discoveries.html`, `levels.html`), setting `copy` in
-`game.json` to what the pass did.
+A human pass over the copy, section by section, on all four pages
+(`index.html`, `discoveries.html`, `levels.html`, `graphics.html`),
+setting `copy` in `game.json` to what the pass did.
 
 ## For Platinum
 
@@ -30,8 +30,9 @@ levels.
 
 ## Open questions
 
-- Three features stay open in `features.md`: picking an item up, the
-  somersaults, and the table from stick to fighting move.
+- The projectile tables (`ConfigureCompositeSpriteSlot`, `$BCCC` in
+  Central Park) have entries for kinds 2 to 5, and what throws them is
+  not traced; the Graphics tab draws kinds 1, 6 and 7 only.
 - Who wrote the intro's tune: its driver is not the levels' and it
   carries no credit.
 - The 15 bytes at intro `$1797`, which nothing reads.

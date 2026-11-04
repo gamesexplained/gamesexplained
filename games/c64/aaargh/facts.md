@@ -71,7 +71,7 @@ sprites less `$1A`. `$B6E9` installs the first handler, `$B714` ends each.
 Each band has eight sprites. The first (`$8810`): the two hornets, the
 white flyer and a fourth, from `$80B5`-`$80BC` with pointers from
 `$80C6`. The second (`$88A2`, whose operands `$9B4F` writes): each
-monster's lower and upper body and its punching arm, three sprites each,
+monster's lower and upper body and the burst beside its punch, three sprites each,
 and the cannon as two sprites side by side, 21 pixels apart. When the ogre
 stands lower on the screen than the lizard, `$9AF8` swaps the two
 monsters' sprites, so the nearer one has the lower numbers and is drawn in
@@ -81,9 +81,58 @@ A monster's lower sprite is built every pass (`$9772`): its frame is
 copied from the shapes at `$0BB8` (64 bytes a frame, 98 frames) into
 `$9D12`, and `$9811` clears the pixels where a cell around the monster
 holds a character below `$A0`, so the monster seems to walk behind walls
-and buildings. The upper sprite and the arm point straight at shapes in
+and buildings. The upper sprite and the burst point straight at shapes in
 video bank 3, most of them in the RAM under the I/O area and the KERNAL
 (`$CDC0`-`$F0FF`).
+
+### The pictures and their pace
+
+Each is checked by `test_graphics.js`, which runs the game on the kit's
+machine model and compares it with the Graphics tab.
+
+- A pass of play takes four frames: `$B728` starts each at a frame, and a
+  pass takes more than three. Now and then a pass takes five and the next
+  three.
+- A monster's body and legs come from its tables at action plus frame
+  (`$8215` + `$8213`): 17 actions of four frames, the last dying. Walking
+  steps the frame each pass. A punch runs its timer `$82B9` for 8 passes,
+  a flame `$82BB` and eating `$82BF` for 6, and the frame steps when the
+  timer is even (`$9136`): frames 0, 1 and 2 two passes each, then 3,
+  which stays. Dying counts `$80E9` down from `$1F` (`$8AA9`): frame 0 at
+  `$1E`, the next at each multiple of 8, gone at 0. Eating adds `$20` to
+  the action (`$9184`); facing right it was `$34`, facing left `$3C`.
+- The third sprite of a monster is a burst, not an arm: yellow, 25 pixels
+  to the side, for a punch left or right that has punching power and hits
+  no building (`$82B7`, counted at `$8FDD` and `$90B3`, cleared at
+  `$8D14`). Its pointer is read from `$9C09` (right) or `$9C00` (left) by
+  the punch timer, so it grows: `$A4`, `$A5`, `$A6` to the right and `$A0`
+  to `$A3` to the left. Up and down punches have none.
+- The screen shows the pictures a pass after the state that picks them,
+  the body and the burst alike.
+- On the title both monsters step through frames 0 to `$3F` of their
+  tables, one every other title pass of two frames (`$B09C`), so every
+  move but dying, in order.
+- The first band's pointers (`$8810`): `$81FF` at the sprite's base
+  (`$820F`,x: 4 a hornet flying left, `$0C` right, 8 the white flyer) plus
+  the step `$8212`, counted each pass by `$A446`. A burnt one's count
+  `$823D`,x is added to `$D8` instead. The addition keeps the carry from
+  the sprite before it in the loop, so a hornet's burst can start one
+  picture later when the other hornet's count is left over from an
+  earlier burn.
+- The cannon's frame (`$8240`): 2 rolling right, 4 left; the shell's way
+  when it fires (`$AA64`, 1 up, 2 right, 3 down, 4 left); the next of 1
+  to 4 each time a flame burns it (`$8D8C`); 5 for health 6 down to 2,
+  a pass each (`$A9BC`). Frame 6 (`$BB`, `$BC`) is never set: the branch
+  that would set it needs a health below 2, and 1 is caught first.
+  `$BC` is also the first A of the title's logo.
+- Never shown: bodies `$4F` and `$8F` and leg shapes 24, 48 and 87, which
+  no frame table holds (the title and the cave read the same tables).
+  The logo's eighth sprite,
+  `$C3`, is placed at 0, 0, under the border.
+- The fire: at each stage of a building's fire, `$93F0` moves every cell
+  of it holding one of `$A9`-`$AE` (`$82B0`) on to the next; a punched hole
+  is `$A9` over `$AA` in colour 10 (`$B44A`). A falling building's top
+  row is `$94` between `$93` and `$95`, colour 8.
 
 ### Characters
 

@@ -90,6 +90,26 @@ extended colour mode.
   arrow ($AA, $AB). The boot and barrel are shown at game over, and some
   guardians use the first six too: the barrel in Ballroom East and Top
   Landing, the boot and Maria's frames in The Nightmare Room.
+- Willy walks a step at each player update, every sixth pass of the
+  main loop: going right the count at $32 runs 0, 2, 3 ... 7 and back to
+  0 as the column at $4F goes on by one; going left it runs 7, 5, 4 ... 0
+  and back to 7 as the column goes back by one. His frame at $50 is half
+  the count, plus 4 facing left, and the interrupt shows sprite 0 at
+  frame $50 + 6 ($358E) (*live*: 400 frames walking each way from the
+  start of a game on the kit's C64, `test_graphics.js`).
+- The guardians step on every twelfth pass of the main loop ($3614 up and
+  down, $369E across) and the arrows on every eighth ($314D) (*live*,
+  same run).
+- The guardian records of the 60 rooms that are on screen (row below 16)
+  start at 38 different frames above $05. The face in Entrance to Hades
+  is three of them, frames $7E, $7F and $80-$81, placed side by side and
+  below. Three records, in rooms 6, 27 and 38, sit at row 25, below
+  the room, with first frame $2C.
+- Game over ($383B): the boot, frame $00, drops 146 lines ($3890) onto
+  Willy, frame $08, who stands on the barrel, frame $01. Each line is one
+  of the main loop's waits ($33D0) and a few instructions, 4.27 ms on
+  the kit's PAL model; then 21 × 16 waits ($38D8, $38E3), 1,422 ms,
+  before the title (*live*: one run on the kit's C64).
 - Rooms are drawn from 2-bit cells with six glyphs each room carries
   (offsets $A0-$CF), in extended colour mode ($2E9C).
 - The code card's five sprites at $0A00-$0B3F, in bank 0: a marker and

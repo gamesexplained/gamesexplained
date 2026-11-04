@@ -101,6 +101,27 @@ program.
 - Sprites: 0 the marker, 1 the Fuse, 2-7 the edge walkers in pairs (or
   the roamers on 2-3 and 6-7). The death and the start of a life are four
   sprites flying between the marker and the field's corners (marker_burst).
+- Sprite shapes are at `$0800`-`$0FFF`, pointers `$20`-`$3F`: `$21` the
+  marker, `$22`-`$25` the walkers, `$26`/`$27` the Fuse, `$28`-`$2B` the
+  roamers, `$30`-`$37` and `$38`-`$3F` the burst's two pairs. `$2C`-`$2F`
+  are empty, and no store to a sprite pointer puts `$20` (the stores are
+  immediates, the tables at `$159F`-`$15C6`, the Fuse's EOR, the burst's
+  INC that stops at `$37` and `$3F`, and two screen copies that put 0).
+- The walkers are black multicolour sprites; their two shared colours
+  (`$D025`/`$D026`) step through three pairs taken from the round's byte
+  of qix_colours (`$0205`, picked from `$121B` at `$8974`) by
+  level_params. The roamers are high-resolution and their own colour
+  steps through the same three. sprite_anim steps both every `$1568` + 1
+  frames (2), with no store to `$1568`.
+- *Run* on the kit's machine, the attract demo for 7,900 frames
+  (`test_graphics.js`): every sprite's look matches the Graphics tab's
+  run of sprite_anim in the round's colours, and walker, roamer and Fuse
+  shapes hold 2 frames. Its two bursts (a death from 29, 134 and a life
+  starting from the marker's starting place, 67, 198) match the tab's run
+  of marker_burst and round_intro move for move. They take 10,581 and
+  11,830 cycles a move, 1.10 times the 9,606 and 10,784 the routines
+  take alone: the video chip's and the interrupt's share, on PAL; NTSC's
+  shorter frame makes it about 1.12.
 
 ## Mechanics
 

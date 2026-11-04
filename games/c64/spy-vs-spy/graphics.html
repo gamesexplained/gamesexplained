@@ -1,0 +1,433 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spy vs Spy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.svs-cv{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.svs-stack{position:relative}
+.svs-stack canvas+canvas{position:absolute;left:0;top:0}
+.svs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:12.5px}
+.svs-bar button,.svs-bar select{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
+.svs-bar button:hover{border-color:var(--ink-mute)}
+.svs-bar button.svs-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.svs-bar label{color:var(--ink-mute)}
+.svs-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
+.svs-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 0}
+.svs-tbl th,.svs-tbl td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.svs-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.svs-tbl td.svs-n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.svs-scroll{overflow-x:auto}
+.svs-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.svs-grid button{font:inherit;font-size:14px;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.svs-grid button:hover{border-color:var(--ink-mute)}
+.svs-grid button small{display:block;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.svs-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 6px}
+.svs-panel div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.svs-panel b{display:block;font-family:var(--fm);font-size:22px;font-weight:500;color:var(--ink)}
+.svs-panel span{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.04em;text-transform:uppercase}
+.svs-miss{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:16px;--h1:36px;--pp:14px}.svs-grid,.svs-panel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.svg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;align-items:start;margin-bottom:12px}
+.svg-wide{grid-template-columns:1fr}
+.svg-grid figure{margin:0}
+.svg-cv{image-rendering:pixelated;border-radius:4px;display:block;max-width:100%}
+.svg-wide .svg-cv{width:100%;height:auto}
+.svg-grid figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.4;font-family:var(--fm)}
+.svg-grid figcaption b{color:var(--ink);font-family:var(--fb);font-weight:700;font-size:14px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · First Star Software</p>
+  <h1>Spy vs Spy</h1>
+  <p class="sub">Every picture the spies are drawn with, moving as the game moves them: walking, fighting, caught by the traps and knocked out, and the sprites for what they carry and the plane they escape in.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · Walking</p>
+  <h2 class="t">A spy walks in three pictures, there and back, one each time the game serves it</h2>
+  <p class="lede">The spies are not sprites. Each frame is a stack of strips drawn into the bitmap, and a spy's shapes are kept facing one way and turned round when it turns.</p>
+  <div class="plate">
+    <div class="svg-grid" id="svg-walk"></div>
+    <p class="cap">From <code>spy_anim_start</code> (<code>$6D92</code>): the sequence for the facing (<code>$B602</code>) names a list of six frames (<code>$B6B0</code>), the black spy's six lists further on (<code>$B55A</code>), and the next frame is drawn each time the main loop serves the spy (<code>store_position</code>, <code>$7022</code>). The loop serves the two spies by turns (<code>next_spy</code>, <code>$674E</code>), so a walking spy steps about 18 times a second; every card on this page keeps that pace. A frame (<code>$B710</code>) is a stack of strips, each a shape from <code>$AB76</code> on (<code>draw_spy_shape</code>, <code>$77FC</code>). The shapes are stored facing one way (<code>$BAF0</code>) and turned round in memory when a frame needs them the other way (<code>mirror_shape</code>, <code>$865B</code>). Drawn in the colours of a room's cells, white, light red and black, on one of the rooms' backgrounds.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 · The club</p>
+  <h2 class="t">The stick holds the club in five places, and a swing knocks the other spy down</h2>
+  <p class="lede">With fire held in a shared room, a spy turns to face the other and the stick moves the club. Swinging it from one side to the other, up to down or forward to back, hits the other spy if it is in reach. Ten hits knock a spy out.</p>
+  <div class="plate">
+    <div class="svg-grid svg-wide" id="svg-club"></div>
+    <p class="cap">From <code>spy_move</code> (<code>$6BEA</code>): the stick gives a move (<code>$B594</code>) and the move a frame for the spy and the side the other spy is on (<code>move_frames</code>, <code>$B5A4</code>), shown here facing right; facing left the game uses the same frames mirrored, 47 to 60. A swing in reach (<code>club_in_reach</code>, <code>$6CF1</code>) shows the other spy knocked down for six of its turns, a frame by the swing (<code>swing_frames</code>, <code>$B5B8</code>). Thrown by the spring or the guard at the exit door, a spy shows a frame by its facing (<code>$B564</code>): facing right or left, the club's.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">03 · Frozen and knocked out</p>
+  <h2 class="t">A spy flinches while it is frozen and rises as an angel when it is knocked out</h2>
+  <p class="lede">When a trap goes off, the other spy freezes for 40 of its turns, and so does the winner of a fight. A spy caught by a trap or the guard, or beaten in a fight, rises out of the room as an angel.</p>
+  <div class="plate">
+    <div class="svg-grid" id="svg-hurt"></div>
+    <p class="cap">The frozen spy from <code>spy_walk</code> (<code>$6B3D</code>): its flinch frame (<code>$B562</code>) plus bit 1 of the count of turns left (<code>$021F</code>), so the frame changes every second turn. The angel from <code>spy_sinking</code> (<code>$6959</code>): the frame (<code>$B560</code>) plus 1 on every other turn, and a line higher every second turn, until it is more than 14 lines above the room's floor line. Then its monitor is turned off, and the spy lies stunned for 144 of its turns.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">04 · The traps</p>
+  <h2 class="t">A trap that goes off is eight shapes drawn over the spy</h2>
+  <p class="lede">The spy stops where it stands and becomes part of the room's picture. Then the trap's shapes are drawn over it, a step at a time, and the spy rises as an angel.</p>
+  <div class="plate">
+    <div class="svg-grid" id="svg-traps"></div>
+    <p class="cap">From <code>spy_action_start</code> and <code>spy_action_step</code> (<code>$69C2</code>, <code>$6A4E</code>): the spy is copied into the room behind it (<code>bake_spy</code>, <code>$7ABA</code>), and after a wait of 13 turns each of eight steps draws an object shape (<code>action_frames</code>, <code>$0973</code>) in its own box, over the room as it stood (<code>draw_shape</code>, <code>$7C7E</code>), three turns a step. What a step's box leaves out stays on the screen. The bomb also shakes the screen. The gun on its string jumps, at offsets for each step (<code>$09A3</code>, <code>$09AB</code>). The water bucket ends in a nine-step sequence of four turns a step (<code>$B582</code>): the skeleton, with the room flashing white (<code>$B570</code>).</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">05 · What the spies carry</p>
+  <h2 class="t">What a spy holds is a sprite beside it</h2>
+  <p class="lede">The sprites are kept for small things: what a spy carries, the four lights for the items on its trapulator, and the arrow that picks a trap.</p>
+  <div class="plate">
+    <div class="svg-grid" id="svg-held"></div>
+    <p class="cap">From <code>build_spy_sprite</code> and <code>place_spy_sprite</code> (<code>$92AC</code>, <code>$90A4</code>): each held object picks a class (<code>$14A0</code>), and the class a packed shape (<code>$1576</code> on, class plus 5) and a colour (<code>$14F4</code> on). The four items share one sprite. While an action runs, the spy holds a marker of its own, the last two. The shared multicolours are white and black (<code>reset_play_state</code>, <code>$8EBF</code>). The trapulator's lights are sprites 0-3 in their colours (<code>$149A</code>), and its arrow is drawn in yellow (<code>place_arrow</code>, <code>$9142</code>).</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">06 · The airport</p>
+  <h2 class="t">The plane is six sprites in the winner's colour</h2>
+  <p class="lede">The spy who reaches the exit with the full briefcase walks to the plane, climbs in, and flies off.</p>
+  <div class="plate">
+    <div class="svg-grid svg-wide" id="svg-plane"></div>
+    <p class="cap">From <code>airport_scene</code> and <code>place_plane_sprites</code> (<code>$8722</code>, <code>$91BC</code>): six sprites (<code>$21DA</code> on) at offsets (<code>$21C5</code>, <code>$21CC</code>) whose first multicolour is the winner's, white or grey (<code>$21C3</code>), and the winner in sprite 0. <code>plane_takeoff</code> (<code>$885D</code>) revs the engine for about two seconds, then moves the plane 160 steps, two pixels a step, climbing a line every fourth step once it is past column <code>$4B</code>, each step a wait that shortens as it speeds up.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">07 · Never shown</p>
+  <h2 class="t">Two frames are never drawn</h2>
+  <p class="lede">Nothing in the code picks frames 63 and 64, one for each spy. Frame 0, a copy of the white spy standing towards you, is drawn once, on the first turn of a game, before the white spy has a frame of its own.</p>
+  <div class="svg-grid" id="svg-unused"></div>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* svs-graphics */
+// The spies, their traps and their sprites, read from the game's tables in the listing's memory (R).
+const SV_S8 = (v) => (v & 0x80 ? v - 256 : v);
+// A spy frame as draw_spy_shape ($77FC) draws it. The header ($B710/$B755): the width in pixels
+// (byte 0), the strip count (1), the top's offset from the spy's line (2) and the facing its shapes
+// must be in (3), then two bytes a strip, its rows less one and its shape. A shape's pixels are at
+// $B9E8/$BA2A; $BA6C gives its width (bits 2-7, bytes less one) and a shift for mirroring (bits 0-1).
+// A shape stored facing the other way ($BAF0) is mirrored in place first (face_shape, $864C): its
+// bytes end for end and the pixel pairs in each reversed. The frame's left edge is the spy's column
+// less half the width (spy_screen_box, $77B3); a mirrored frame's strips are shifted by their own bits
+// (draw_strip, $7905), and nothing is drawn past the byte that holds the right edge (the box's
+// columns, $77E0). Shape 0 is an empty page: its rows are a gap. Gives [x, y, value] for each
+// pixel that is not 0, x in pixels from column 0, y in lines from the spy's line.
+function svFrame(R, f, cx) {
+  const h = R[0xB710 + f] | R[0xB755 + f] << 8, n = R[h + 1], bc = R[h + 3], left = cx - (R[h] >> 1), px = [];
+  const end = 4 * (((left + R[h]) >> 2) + 1);
+  let y = SV_S8(R[h + 2]) - 12;
+  for (let k = 0; k < n; k++) {
+    const rows = R[h + 4 + 2 * k] + 1, s = R[h + 5 + 2 * k];
+    if (s === 0) { y += rows; continue; }
+    const a = R[0xB9E8 + s] | R[0xBA2A + s] << 8, size = R[0xBA6C + 2 * s], w = (size >> 2) + 1, mir = bc !== R[0xBAF0 + s];
+    const shift = bc === 2 ? ((left & 3) - ((size & 3) ^ 3)) & 3 : left & 3;
+    for (let r = 0; r < rows; r++, y++) for (let i = 0; i < w; i++) {
+      const b = R[a + r * w + (mir ? w - 1 - i : i)];
+      for (let p = 0; p < 4; p++) { const v = (b >> (mir ? 2 * p : 6 - 2 * p)) & 3; const x = (left & ~3) + shift + 4 * i + p; if (v && x < end) px.push([x, y, v]); }
+    }
+  }
+  return px;
+}
+// The colours a spy's pixels take in a room: the screen matrix's cell there (the run-length list
+// at $1BCF, as draw_screen_colours unpacks it) gives %01 and %10, colour RAM %11 (cleared to black).
+function svColours(R) {
+  const m = [];
+  for (let a = 0x1BCF; a < 0x1BCF + 96; a += 2) for (let k = 0; k < R[a + 1]; k++) m.push(R[a]);
+  const cell = m[5 * 40 + 12];                                    // the white spy's room, row 5
+  return [null, cell >> 4, cell & 15, 0];
+}
+// The 32 room colours ($BBF8): the low nibble is the room's background.
+const svRoomColours = (R) => [...new Set([...R.subarray(0xBBF8, 0xBC18)].map((v) => v & 15))];
+// Each spy's walk for each facing (0 right, 1 front, 2 left, 3 back): the sequence for the facing
+// ($B602/$B60E) names a frame list ($B6B0/$B6BC, six frames), the black spy's six lists on ($B55A).
+// The standing frames are $B552, four to a spy ($B55C).
+function svWalks(R) {
+  const out = [];
+  for (let spy = 0; spy < 2; spy++) for (let fc = 0; fc < 4; fc++) {
+    const seq = R[0xB602 + fc] | R[0xB60E + fc] << 8, list = R[seq + 1] + R[0xB55A + spy];
+    const a = R[0xB6B0 + list] | R[0xB6BC + list] << 8;
+    out.push({ spy, facing: fc, frames: [...R.subarray(a, a + R[seq] + 1)], stand: R[0xB552 + R[0xB55C + spy] + fc] });
+  }
+  return out;
+}
+// The club: the frame for each move (0 none, 1 right, 2 down, 3 left, 4 up, from the stick through
+// $B594), each spy and the side the other spy is on (0 right, 2 left): move_frames, $B5A4.
+function svMoves(R) {
+  const out = [];
+  for (let spy = 0; spy < 2; spy++) out.push([0, 1, 2, 3, 4].map((mv) => R[0xB5A4 + mv * 4 + spy]));
+  return out;
+}
+// The frames a spy hit by the club shows (swing_frames, $B5B8, by the swinger's new move, side and
+// spy), and those of a spy thrown by the spring or the guard (action_frames_spy, $B564, by facing).
+function svKnocks(R) {
+  const club = new Set(), thrown = [];
+  for (let i = 0; i < 20; i++) if (R[0xB5B8 + i] !== 0xFF) club.add(R[0xB5B8 + i]);
+  for (let fc = 0; fc < 4; fc++) for (let spy = 0; spy < 2; spy++) thrown.push(R[0xB564 + fc * 2 + spy]);
+  return { club: [...club], thrown };
+}
+// The object shapes (draw_shape, $7C7E): data at $09B3/$09E7, width in bytes $0A1B, lines less one
+// $0A4F, offsets across $0A83 and down $0AB7. Those at $E900, a page cleared at start-up, are empty.
+function svObject(R, s) {
+  const a = R[0x09B3 + s] | R[0x09E7 + s] << 8;
+  return { a, empty: a >= 0xE900, w: R[0x0A1B + s], h: R[0x0A4F + s] + 1, dx: SV_S8(R[0x0A83 + s]), dy: SV_S8(R[0x0AB7 + s]) };
+}
+// An action's steps, as spy_action_step ($6A4E) draws them: eight, the step counter counting down
+// from 7, each the object shape at $0973 + type × 8 + step; type 4 adds an offset across (bytes of
+// four pixels, $09A3) and down ($09AB) for its step. [{ s, ax, ay }].
+function svAction(R, type) {
+  const out = [];
+  for (let st = 7; st >= 0; st--) {
+    const y = type * 8 + st, bounce = y >= 0x20 && y < 0x28;
+    out.push({ s: R[0x0973 + y], ax: bounce ? R[0x0983 + y] >> 3 : 0, ay: bounce ? SV_S8(R[0x098B + y]) : 0 });
+  }
+  return out;
+}
+// The packed sprites ($152A/$153D, widths $1550, rows $1563), unpacked into 63 bytes as draw_screen
+// and build_spy_sprite do: each row's bytes from the left of a three-byte row.
+function svSprite(R, n) {
+  const a = R[0x152A + n] | R[0x153D + n] << 8, w = R[0x1550 + n], rows = R[0x1563 + n], d = new Uint8Array(63);
+  for (let r = 0, k = 0; r < rows; r++) for (let i = 0; i < w; i++) d[r * 3 + i] = R[a + k++];
+  return d;
+}
+// The timing, in the spy's turns: the wait before an action's first step ($69D6), each step
+// after ($6AD0), each step of the nine-step sequence ($692D) and the flinch (its frame changes with
+// bit 1 of the count, $6B42).
+const svTiming = (R) => ({ wait: R[0x69D7] + 1, step: R[0x6AD1] + 1, seq9: R[0x692E] + 1, flinch: R[0x6B43] });
+// The nine-step sequence that follows the water bucket (spy_action, $6929): the frame of each step
+// for each spy, two to a step ($B582), the step counting down from 8, and the flash ($B570).
+function svSeq9(R, spy) {
+  const out = [];
+  for (let st = 8; st >= 0; st--) out.push({ f: R[0xB582 + st * 2 + spy], flash: R[0xB570 + st] });
+  return out;
+}
+// The angel (spy_sinking, $6959): each turn the action's count ($87) goes down one, and when it goes
+// past zero it starts again from $695E and the spy rises a line. The frame is the spy's first angel
+// frame ($B560) plus bit 0 of the count. The angel goes once the spy's line is more than $6967 lines
+// above the floor line, so how far it rises depends on how deep in the room it stands. A trap leaves
+// the count at $6AC5, the bucket's nine steps at $692E. [{ f, up }], a turn each.
+function svAngel(R, spy, count, depth) {
+  const out = [];
+  for (let up = 0; ;) {
+    if (--count < 0) { count = R[0x695E]; up++; }
+    if (depth - up < -R[0x6967]) return out;
+    out.push({ f: R[0xB560 + spy] + (count & 1), up });
+  }
+}
+// A spy's turn: the main loop serves the spies by turns (next_spy, $674E), and every count above is
+// in turns. While a spy walks a turn comes about every 56 thousandths of a second: 55,852 cycles on
+// the kit's model of a PAL machine, and within a few per cent of that on the NTSC machine the game
+// needs, which runs faster but is interrupted more often.
+const SV_TURN_MS = 56;
+// end of svs-graphics
+</script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const hex = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  if (typeof C64 === 'undefined') {
+    $('svg-walk').insertAdjacentHTML('afterend', '<p class="cap">These pictures need the site\'s shared scripts, which this copy of the page could not load. Open it from the built site.</p>');
+    return;
+  }
+  const PAL = C64.PAL;
+  // One clock for every card, a tick for each of a spy's turns.
+  const PASS = SV_TURN_MS, ticks = [];
+  let last = 0, pass = 0;
+  function clock(ts) {
+    if (!last) last = ts;
+    let k = Math.floor((ts - last) / PASS);
+    if (k > 0) { last += k * PASS; k = Math.min(k, 4); for (let i = 0; i < k; i++) { pass++; for (const t of ticks) t(pass, i === k - 1); } }
+    requestAnimationFrame(clock);
+  }
+  function card(el, title, sub, w, h) {
+    const f = document.createElement('figure'), cv = document.createElement('canvas');
+    cv.width = w; cv.height = h; cv.className = 'svg-cv';
+    const cap = document.createElement('figcaption');
+    cap.innerHTML = '<b>' + title + '</b>' + (sub ? '<br>' + sub : '');
+    f.append(cv, cap); el.append(f);
+    return cv.getContext('2d');
+  }
+  C64.load('listing.json').then(({ ram: R }) => {
+    const COL = svColours(R), T = svTiming(R), BG = PAL[7];
+    const X = 6, Y = 3;                                   // a multicolour pixel 6 wide, a line 3 high
+    const fill = (ctx, c, x, y, w, h) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+    // a spy frame with its line at y0 and its column at cx (multicolour pixels), in canvas units
+    const frame = (ctx, f, ox, oy) => { for (const [x, y, v] of svFrame(R, f, 12)) fill(ctx, PAL[COL[v]], ox + x * X, oy + y * Y, X, Y); };
+    // an object shape at the place of a spy whose column is 12 and whose line is at oy
+    function object(ctx, s, ox, oy, ax, ay, clear) {
+      const o = svObject(R, s), x0 = ((12 + o.dx) & ~3) + 4 * (ax || 0), y0 = o.dy + (ay || 0);
+      if (clear) clear(ox + x0 * X, oy + y0 * Y, o.w * 4 * X, o.h * Y);
+      if (o.empty) return;
+      for (let r = 0; r < o.h; r++) for (let i = 0; i < o.w; i++) {
+        const b = R[o.a + r * o.w + i];
+        for (let p = 0; p < 4; p++) { const v = (b >> (6 - 2 * p)) & 3; if (v) fill(ctx, PAL[COL[v]], ox + (x0 + 4 * i + p) * X, oy + (y0 + r) * Y, X, Y); }
+      }
+    }
+    // a card that steps through a list, item i held for hold(i) passes: draw(ctx, item, i)
+    function anim(el, title, sub, w, h, items, hold, draw) {
+      const ctx = card(el, title, sub, w, h), starts = [];
+      let t = 0;
+      for (let i = 0; i < items.length; i++) { starts.push(t); t += hold(i); }
+      let shown = -1;
+      const at = (p) => { const q = p % t; let i = 0; while (i + 1 < starts.length && starts[i + 1] <= q) i++; return i; };
+      const paint = (i) => { fill(ctx, BG, 0, 0, w, h); draw(ctx, items[i], i); };
+      ticks.push((p, last) => { const i = at(p); if (last && i !== shown) { shown = i; paint(i); } });
+      paint(0); shown = 0;
+    }
+    const W1 = 30 * X, H1 = 32 * Y, OY = 17 * Y, OX = 2 * X; // a frame's lines run from 16 above its base to 13 below
+    const FACE = ['right', 'towards you', 'left', 'away'], SPY = ['White', 'Black'];
+    const DEPTH = 12;                                     // how deep in the room the cards' spies stand
+
+    // 01 · walking: each pass the next frame of the facing's list
+    for (const w of svWalks(R)) {
+      anim($('svg-walk'), SPY[w.spy] + ' spy, ' + FACE[w.facing], 'frames ' + w.frames.join(', ') + '; standing ' + w.stand, W1, H1, w.frames, () => 1,
+        (ctx, f) => frame(ctx, f, OX, OY));
+    }
+    // 02 · the club, still: the move the stick picks; the knocked frames
+    const MV = ['no stick', 'right', 'down', 'left', 'up'];
+    svMoves(R).forEach((fs, spy) => {
+      const ctx = card($('svg-club'), SPY[spy] + ' spy with the club', fs.map((f, k) => MV[k] + ' ' + f).join(', '), fs.length * 20 * X, H1);
+      fill(ctx, BG, 0, 0, fs.length * 20 * X, H1);
+      fs.forEach((f, k) => frame(ctx, f, k * 20 * X - 3 * X, OY));
+    });
+    const K = svKnocks(R);
+    const hit = K.club.filter((f) => f < 47).sort((a, b) => a - b), thrown = K.thrown.filter((f) => f > 60);
+    const kn = card($('svg-club'), 'Knocked down', 'by the club: frames ' + hit.join(', ') + '; thrown by the spring or the guard, towards you or away: ' + thrown.join(', '), (hit.length + thrown.length) * 20 * X, H1);
+    fill(kn, BG, 0, 0, (hit.length + thrown.length) * 20 * X, H1);
+    [...hit, ...thrown].forEach((f, k) => frame(kn, f, k * 20 * X - 3 * X, OY));
+    // 03 · the flinch, while frozen by the other spy's trap: bit 1 of a count down a pass
+    for (let spy = 0; spy < 2; spy++) {
+      const f0 = R[0xB562 + spy];
+      anim($('svg-hurt'), SPY[spy] + ' spy, frozen', 'frames ' + f0 + ' and ' + (f0 + 1), W1, H1, [f0, f0 + 1], () => T.flinch, (ctx, f) => frame(ctx, f, OX, OY));
+    }
+    // the angel, as spy_sinking moves it after a trap
+    for (let spy = 0; spy < 2; spy++) {
+      const f0 = R[0xB560 + spy], items = [...svAngel(R, spy, R[0x6AC5], DEPTH), ...Array(12).fill(null)];
+      anim($('svg-hurt'), SPY[spy] + ' spy, knocked out', 'frames ' + f0 + ' and ' + (f0 + 1) + ', rising', W1, H1 + 26 * Y, items, () => 1,
+        (ctx, it) => { if (it) frame(ctx, it.f, OX, OY + 26 * Y - it.up * Y); });
+    }
+    // 04 · the traps: the spy's standing frame is copied into the room behind (bake_spy, $7ABA) and
+    // each step's shape is drawn over that copy, in its own box; what the box leaves out stays
+    const stand = R[0xB552 + 1];
+    const TRAPS = [[0, 'The bomb'], [5, 'The time bomb'], [2, 'The water bucket'], [4, 'The gun on its string']];
+    for (const [type, name] of TRAPS) {
+      const steps = svAction(R, type), seq = type === 2 ? svSeq9(R, 0) : [];
+      const items = [{ k: 'wait', n: T.wait }, ...steps.map((s, i) => ({ k: 'step', i, n: T.step }))];
+      for (const q of seq) { if (q.flash) items.push({ k: 'seq', q, flash: true, n: 1 }); items.push({ k: 'seq', q, n: q.flash ? T.seq9 - 1 : T.seq9 }); }
+      for (const q of svAngel(R, 0, type === 2 ? R[0x692E] : R[0x6AC5], DEPTH)) items.push({ k: 'angel', f: q.f, up: q.up, n: 1 });
+      items.push({ k: 'gone', n: 12 });
+      const hold = (i) => items[i].n;
+      const w = 30 * X, h = 54 * Y, oy = 40 * Y, ox = 4 * X;
+      anim($('svg-traps'), name, 'shapes ' + steps.map((s) => s.s).join(', ') + (seq.length ? '; then frames ' + seq.map((q) => q.f).join(', ') : ''), w, h, items, hold, (ctx, it, idx) => {
+        if (it.k === 'gone') return;
+        if (it.k === 'angel') { frame(ctx, it.f, ox, oy - it.up * Y); return; }
+        if (it.k === 'seq') { if (it.flash) fill(ctx, PAL[1], 0, 0, w, h); frame(ctx, it.q.f, ox, oy); return; }
+        frame(ctx, stand, ox, oy);
+        if (it.k === 'wait') return;
+        // the screen as the steps so far left it
+        for (let j = 0; j <= it.i; j++) {
+          const s = steps[j];
+          object(ctx, s.s, ox, oy, s.ax, s.ay, (x, y, bw, bh) => { fill(ctx, BG, x, y, bw, bh); ctx.save(); ctx.beginPath(); ctx.rect(x, y, bw, bh); ctx.clip(); frame(ctx, stand, ox, oy); ctx.restore(); });
+        }
+      });
+    }
+    // 05 · what a spy holds, the trapulator's item lights and its arrow
+    const NAMES = ['The fire bucket', 'The wire cutters', 'The umbrella', 'The scissors', 'A bomb', 'A spring', 'A water bucket', 'A gun', 'The gun with its string', 'A time bomb', 'The briefcase', 'An item', 'White spy at work', 'Black spy at work'];
+    const S = 4;
+    const sprite = (ctx, d, x, y, c) => C64.drawSpriteMC(ctx, d, x, y, S, PAL[c], PAL[1], PAL[0], 1);
+    for (let c = 0; c < 14; c++) {
+      const rec = R[0x14D8 + c] | R[0x14E6 + c] << 8, colour = R[rec + 2];
+      const ctx = card($('svg-held'), NAMES[c], 'sprite ' + (c + 5) + ', colour ' + colour, 24 * S + 8, 21 * S + 8);
+      fill(ctx, BG, 0, 0, 24 * S + 8, 21 * S + 8); sprite(ctx, svSprite(R, c + 5), 4, 4, colour);
+    }
+    const TRAPC = [...R.subarray(0x149A, 0x149E)];
+    for (let n = 0; n < 5; n++) {
+      const colour = n < 4 ? TRAPC[n] : R[0x9177];
+      const ctx = card($('svg-held'), n < 4 ? 'Trapulator light ' + (n + 1) : 'Trapulator arrow', 'sprite ' + n + ', colour ' + colour, 24 * S + 8, 21 * S + 8);
+      fill(ctx, BG, 0, 0, 24 * S + 8, 21 * S + 8); sprite(ctx, svSprite(R, n), 4, 4, colour);
+    }
+    // 06 · the airport: six sprites in the winner's colour ($D025), and the winner in sprite 0. The
+    // take-off (plane_takeoff, $885D) revs the engine for 255 waits of 6, then moves the plane 160
+    // steps, two pixels a step, climbing a line every fourth step past column $4B, each step a wait
+    // that shortens from 48 to 18 (delay, $8DA5: about 1.5 thousandths of a second a unit).
+    const PW = 420, PH = 150, X0 = 2 * R[0x87DC] - 12;
+    function plane(ctx, spy, px, py, inside) {
+      const mc0 = R[0x21C3 + spy];
+      fill(ctx, PAL[5], 0, 0, PW, PH);
+      for (let k = inside ? 0 : 1; k < 7; k++) {
+        const a = k ? 0x219A + 64 * k : spy ? 0x239A : 0x235A;
+        const x = 2 * ((px + R[0x21C5 + k]) & 0xFF), y = py + R[0x21CC + k];
+        C64.drawSpriteMC(ctx, R.subarray(a, a + 63), x - X0, y - 10, 1, PAL[R[0x87EC]], PAL[mc0], PAL[0], 1);
+      }
+    }
+    for (let spy = 0; spy < 2; spy++) {
+      const items = [{ x: R[0x87DC], y: 30, inside: false, ms: 1500 }, { x: R[0x87DC], y: 30, inside: true, ms: 255 * 6 * 1.5 }];
+      let x = R[0x87DC], y = 30;
+      for (let n = R[0x88B3]; n > 0; n--) {
+        x++; if (x >= R[0x88BD] && (x & 3) === 0) y--;
+        const d = n >= R[0x88CD] ? ((n - R[0x88CD]) >> 1) + R[0x88D2] + ((n - R[0x88CD]) & 1) : R[0x88C8];
+        items.push({ x, y, inside: true, ms: d * 1.5 });
+      }
+      items.push({ x: 0, y: -100, inside: false, ms: 1500 });
+      const ctx = card($('svg-plane'), (spy ? 'The black' : 'The white') + ' spy gets away', 'the plane, sprites $91-$96; the winner, ' + (spy ? '$239A' : '$235A'), PW, PH);
+      let i = 0, shown = -1, acc = 0, lastTs = 0;
+      const step = (ts) => {
+        if (lastTs) acc += Math.min(ts - lastTs, 200);
+        lastTs = ts;
+        while (acc >= items[i].ms) { acc -= items[i].ms; i = (i + 1) % items.length; }
+        if (i !== shown) { shown = i; plane(ctx, spy, items[i].x, items[i].y, items[i].inside); }
+        requestAnimationFrame(step);
+      };
+      plane(ctx, spy, items[0].x, items[0].y, false); requestAnimationFrame(step);
+    }
+    // 07 · the frames nothing picks
+    for (const f of [63, 64]) { const ctx = card($('svg-unused'), 'Frame ' + f, '', W1, H1); fill(ctx, BG, 0, 0, W1, H1); frame(ctx, f, OX, OY); }
+    requestAnimationFrame(clock);
+  });
+})();
+</script>
