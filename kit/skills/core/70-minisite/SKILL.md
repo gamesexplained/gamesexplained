@@ -589,7 +589,13 @@ its own. A game played another way leaves the joystick off, since one
 the game does not read only gets in the way. The page's text says
 nothing about how the joystick or Full screen works, since each shows
 what it does and a paragraph about them is one more for the reader to
-skip. The header of
+skip. A page holds
+the keys the player presses with `PlayControls.hold`: each stays down
+for a least time of the game's own, a key tapped in the page's list
+until the game has looked at the keys as well, and what is due is let go
+at every refresh of the display by the holder itself, since a key let go
+only after the game's frames or loops stays down through a screen that
+runs none (`games/c64/castle-master`, `games/spectrum/driller`). The header of
 `site/lib/play-controls.js` gives the bits and the other options.
 `kit/scripts/test_play_controls.js` fails a Play page that does not
 attach it, a page with the joystick that keeps its own pad, and a page

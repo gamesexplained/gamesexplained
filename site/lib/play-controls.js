@@ -33,6 +33,27 @@
 //     up        up(key) as it lifts, wherever it is by then
 //   ks.letGo(): every key held lets go, modifiers too
 //
+//   const h = PlayControls.hold({ clock, least, reads, change })
+//     clock     clock() the game's time in its frames (a Fast CPU page's frames of real time), or
+//               null while no game runs, when a key let go is let go at once
+//     least     least() the frames a key stays down at least, so that a press shorter than the
+//               game's wait between two looks at the keys still reaches it (a function: a page can
+//               hold a key for less with Fast CPU, whose loops look more often)
+//     reads     reads() the game's looks at the keys so far (optional): a key tapped (h.tap) stays
+//               down until the game has looked since it went down as well
+//     change    change() whenever what is held changes: the page gives the game its keys again
+//   h.down(code, v)  a key down: v is what it holds (the page's to read back); a repeat changes v only
+//   h.tap(code, v)   a key down from the page's list of keys to tap
+//   h.up(code)       a key up: let go once it is due
+//   h.release()      what is due let go: call it after each frame and between Fast CPU's loops. It
+//                    is called at each refresh of the display as well, by itself, so that a key
+//                    comes up while the game runs no frame and no loop (a screen outside a Fast
+//                    CPU page's main loop goes round none)
+//   h.set(code, v), h.delete(code)   held, and let go, at once, with no least time (keys a page
+//                    types for the player)
+//   h.clear(keep)    every key let go at once but those keep(code) is true of (the focus lost)
+//   h.values(), h.has(code), h.size
+//
 // A key with data-mod as well (Shift) is a modifier: a tap holds it for the next key, which gets
 // it in mods, and a second tap lets go of it. A touch that starts on a key presses it at once and
 // neither scrolls nor zooms the page; the page scrolls from the words between the keys. The keys
@@ -441,5 +462,43 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
     return { letGo };
   }
 
-  root.PlayControls = { attach, keys, direction, nearest, UP, DOWN, LEFT, RIGHT };
+  // The keys a page holds for the game: see the header.
+  function hold(o) {
+    const held = new Map(), since = new Map(), up = new Set(), readAt = new Map();
+    const least = () => (o.least ? o.least() : 0);
+    const changed = () => { if (o.change) o.change(); };
+    const forget = c => { held.delete(c); since.delete(c); up.delete(c); readAt.delete(c); };
+    function release() {
+      if (!up.size) return false;
+      const now = o.clock ? o.clock() : null;
+      let any = false;
+      for (const c of [...up]) {
+        if (now !== null && (now - since.get(c) < least() || (readAt.has(c) && o.reads && o.reads() <= readAt.get(c)))) continue;
+        forget(c); any = true;
+      }
+      if (any) changed();
+      return any;
+    }
+    const at = () => { const t = o.clock ? o.clock() : null; return t === null ? 0 : t; };
+    const h = {
+      down(c, v) { if (!held.has(c) || up.has(c)) since.set(c, at()); held.set(c, v); up.delete(c); readAt.delete(c); changed(); },
+      tap(c, v) { held.set(c, v); since.set(c, at()); up.delete(c); readAt.set(c, o.reads ? o.reads() : 0); changed(); },
+      up(c) { if (held.has(c) && since.has(c)) { up.add(c); release(); } },
+      release,
+      set(c, v) { forget(c); held.set(c, v); changed(); },
+      delete(c) { if (held.has(c)) { forget(c); changed(); } },
+      clear(keep) { let any = false; for (const c of [...held.keys()]) if (!keep || !keep(c)) { forget(c); any = true; } if (any) changed(); },
+      values: () => held.values(),
+      has: c => held.has(c),
+      get size() { return held.size; },
+    };
+    // at each refresh of the display, what is due, whether or not the page's game ran
+    if (typeof root.requestAnimationFrame === 'function') {
+      const each = () => { release(); root.requestAnimationFrame(each); };
+      root.requestAnimationFrame(each);
+    }
+    return h;
+  }
+
+  root.PlayControls = { attach, keys, hold, direction, nearest, UP, DOWN, LEFT, RIGHT };
 })(typeof window !== 'undefined' ? window : globalThis);

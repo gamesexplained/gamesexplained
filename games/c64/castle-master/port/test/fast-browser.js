@@ -5,38 +5,27 @@
 //   comes up;
 // - at every Speed, presses of U from 80 to 400 ms turn you about once;
 // - nothing in the console is an error.
-// It needs Playwright and its Chromium (require('playwright')), which CI does not install, so it is
-// run by hand rather than by kit/scripts/test_kit.py.
-//   node games/c64/castle-master/port/test/fast-browser.js [built site, _site]
-const fs = require('fs'), http = require('http'), path = require('path');
+// CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
+// (kit/scripts/play_browser.js).
+//   node games/c64/castle-master/port/test/fast-browser.js [built site, _site] [--chromium <path>]
+const path = require('path');
 const ROOT = path.resolve(__dirname, '../../../../..');
-const SITE = path.resolve(process.argv[2] || path.join(ROOT, '_site'));
+const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 const PAGE = '/c64/castle-master/play.html';
-if (!fs.existsSync(path.join(SITE, PAGE))) { console.log('FAIL: no ' + PAGE + ' in ' + SITE + ': build the site first (python3 kit/scripts/build.py)'); process.exit(1); }
-const { chromium } = require('playwright');
-
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => {
-  const f = path.join(SITE, decodeURIComponent(req.url.split('?')[0]));
-  if (!f.startsWith(SITE) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' });
-  fs.createReadStream(f).pipe(res);
-});
 
 let fails = 0;
 const fail = (...w) => { fails++; console.log('FAIL', ...w); };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
-  const browser = await chromium.launch();
+  const { browser, base, stop } = await start(process.argv.slice(2));
   const page = await browser.newPage();
   const errors = [];
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', e => errors.push(e.message));
   // the fonts are the only thing from elsewhere: answered empty, off the network
   await page.route(u => !u.href.startsWith('http://127.0.0.1'), r => r.fulfill({ status: 200, body: '' }));
-  await page.goto('http://127.0.0.1:' + server.address().port + PAGE);
+  await page.goto(base + PAGE);
   // the CRT screen off: without a graphics card its shader would hold the refreshes to a few a second
   if (await page.$eval('[data-crt]', b => b.getAttribute('aria-pressed')) === 'true') await page.click('[data-crt]');
   await page.click('#pl-over button');
@@ -104,8 +93,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   if (errors.length) fail('the console: ' + errors.slice(0, 3).join(' | '));
   else console.log('the console: no errors');
-  await browser.close();
-  server.close();
+  await stop();
   if (fails) { console.log(fails + ' failed'); process.exit(1); }
   console.log('ok');
 })().catch(e => { console.log('FAIL', e.stack || e.message); process.exit(1); });

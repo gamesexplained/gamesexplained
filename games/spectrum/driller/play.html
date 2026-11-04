@@ -4727,7 +4727,8 @@ const tape = (function () {
 // refresh (a computer too slow for them plays slower than the Spectrum), and the screen as the last
 // one left it drawn in the same refresh, or while a sound holds the processor, as the Spectrum shows
 // it (rt.fastFrame). A key that has come up is let go after each frame, or with Fast CPU after each
-// loop and each refresh: the information screen, drilling and the menus go round no loop
+// loop; and at each refresh by the key holder itself (site/lib/play-controls.js, hold), since the
+// information screen, drilling and the menus go round no loop
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
@@ -4749,13 +4750,12 @@ function tick(now) {
   try {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast && fx) {
-      FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
-      if (letGo.size) release();
+      FastCPU.run(fx, dt, held.release);
       sound.frame(); tape.frame(); typeStep();
       F = rt.fastFrame(); n = 1;
     } else {
       acc += dt;
-      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; held.release(); typeStep(); }
       if (n === 10) acc = 0;
     }
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
@@ -4780,17 +4780,11 @@ const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 // A key is held for at least eight frames of the game's time: the game looks at the keys once a
 // pass, which can be a few frames apart, and a shorter tap could fall between two looks. With Fast
 // CPU it looks each tick, and three frames are enough. A key tapped in the list (tap:, below) is
-// held until the game has looked at the keys since it went down as well
-const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
+// held until the game has looked at the keys since it went down as well (site/lib/play-controls.js,
+// hold)
 const HOLD = 8, HOLD_FAST = 3;
+const held = PlayControls.hold({ clock: () => (rt ? rt.shown : null), least: () => (fast ? HOLD_FAST : HOLD), reads: () => rt.input.reads, change: input });
 let padBits = 0;
-function release() {
-  for (const c of letGo) {
-    if (rt && (rt.shown - (since.get(c) || 0) < (fast ? HOLD_FAST : HOLD) || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
-    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
-  }
-  input();
-}
 function hold() { input(); }
 function input() {
   if (!rt) return;
@@ -4819,15 +4813,13 @@ function onKey(e, down) {
   const z = zxKey(e); if (z) k.push(...z);
   if (!k.length) return;
   e.preventDefault();
-  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
-  else letGo.add(e.code);
-  release();
+  if (down) held.down(e.code, k); else held.up(e.code);
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
 screen.addEventListener('blur', () => {
   active = false; screen.classList.remove('pl-focus');
-  for (const c of [...held.keys()]) if (!c.startsWith('tap:') && c !== 'type') { held.delete(c); since.delete(c); letGo.delete(c); }
+  held.clear(c => c.startsWith('tap:') || c === 'type');
   input();
 });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
@@ -4839,12 +4831,9 @@ document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 const TAP_DIR = { fire: 16 };
 function press(name, mods) {
   if (!running || !rt) return;
-  const c = 'tap:' + name;
-  held.set(c, [name].concat(mods).map(n => (TAP_DIR[n] !== undefined ? TAP_DIR[n] : n)));
-  since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
-  input();
+  held.tap('tap:' + name, [name].concat(mods).map(n => (TAP_DIR[n] !== undefined ? TAP_DIR[n] : n)));
 }
-function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+function lift(name) { held.up('tap:' + name); }
 PlayControls.keys($('pl-keys'), { down: press, up: lift });
 // Type it: the security question's word, then ENTER, each key down until the game has looked at
 // the keys since, for eight frames at least, and a look with no key down between two, so that a
@@ -4854,14 +4843,14 @@ function typeStep() {
   if (!rt || (!typed && !typing.length)) return;
   if (typed && typed.key) {
     if (rt.shown - typed.at < HOLD || rt.input.reads <= typed.reads) return;
-    held.delete('type'); typed = { reads: rt.input.reads }; input();
+    held.delete('type'); typed = { reads: rt.input.reads };
     return;
   }
   if (typed && rt.input.reads <= typed.reads) return;
   typed = null;
   if (!typing.length) return;
   const key = typing.shift();
-  held.set('type', [key]); typed = { key, at: rt.shown, reads: rt.input.reads }; input();
+  typed = { key, at: rt.shown, reads: rt.input.reads }; held.set('type', [key]);
 }
 $('pl-type').addEventListener('click', () => {
   if (running && answerWord && !typing.length && !typed) typing = answerWord.split('').concat('ENTER');
