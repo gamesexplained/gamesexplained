@@ -401,5 +401,8 @@ every loop. A loop can return before it reads them.
 
 In a browser, check that the view stops when a key comes up. Check also
 that a short press of a switch acts once at every Speed setting
-(`games/c64/castle-master/port/test/fast-browser.js`). Run that check by
-hand where CI has no browser.
+(`games/c64/castle-master/port/test/fast-browser.js`), and that a short
+press on a screen outside the main loop acts once there, since no loop
+ends there to let the key go (`games/spectrum/driller/port/test/fast-browser.js`).
+Give the check a file name that ends in `-browser.js`: CI runs every such
+file on the built site (`kit/scripts/play_browser.js`).

@@ -122,7 +122,10 @@ fails rather than skips when it is set. CI sets it, and there a test that
 skips anyway fails too, so an oracle that is missing cannot pass for a green
 run. The older `--test` self-tests on the tools stay where they are and are
 listed in `test_kit.py`, which fails on a script with the flag that the list
-leaves out; a new test is a `test_*.py` file, not a new flag.
+leaves out; a new test is a `test_*.py` file, not a new flag. A browser
+check is a file in a game's folder whose name ends in `-browser.js`: it
+drives the built page in Chromium through `kit/scripts/play_browser.js`,
+and CI runs every one after building the site.
 
 ## Titling a pull request
 

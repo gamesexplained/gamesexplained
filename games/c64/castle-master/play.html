@@ -6516,15 +6516,14 @@ function tick(now) {
   try {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast && fx) {
-      // a key that has come up is let go between loops, and after the refresh too: a screen outside
-      // the main loop goes round no loop
-      FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
-      if (letGo.size) release();
+      // a key that has come up is let go between loops, and at each refresh by the key holder
+      // itself (site/lib/play-controls.js, hold): a screen outside the main loop goes round no loop
+      FastCPU.run(fx, dt, held.release);
       sound.frame();
       F = rt.now(); n = 1;
     } else {
       acc += dt;
-      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; held.release(); }
       if (n === 10) acc = 0;
     }
     if (n && F !== frame) compose(F);
@@ -6543,16 +6542,10 @@ const CODE = { Space: 'SPACE', Enter: 'RETURN', Backspace: 'DEL', ShiftLeft: 'LS
 // A key is held for at least three frames of the game's time: a tap shorter than the game's
 // wait between two looks at the keyboard would never reach it. A key tapped in the list (tap:,
 // below) is held until the game has read the controls since it went down as well
-const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
+// (site/lib/play-controls.js, hold)
 const HOLD = 3;
+const held = PlayControls.hold({ clock: () => (rt ? rt.shown : null), least: () => HOLD, reads: () => rt.input.reads, change: input });
 let padBits = 0;
-function release() {
-  for (const c of letGo) {
-    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
-    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
-  }
-  input();
-}
 function input() {
   if (!rt) return;
   let bits = padBits;
@@ -6572,15 +6565,13 @@ function onKey(e, down) {
   const k = JOY[e.code] !== undefined ? JOY[e.code] : c64Key(e);
   if (k === null) return;
   e.preventDefault();
-  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
-  else letGo.add(e.code);
-  release();
+  if (down) held.down(e.code, k); else held.up(e.code);
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
 screen.addEventListener('blur', () => {
   active = false; screen.classList.remove('pl-focus');
-  for (const c of [...held.keys()]) if (!c.startsWith('tap:')) { held.delete(c); since.delete(c); letGo.delete(c); }
+  held.clear(c => c.startsWith('tap:'));
   input();
 });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
@@ -6593,12 +6584,9 @@ document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 const TAP_JOY = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
 function press(name, mods) {
   if (!running || !rt) return;
-  const c = 'tap:' + name;
-  held.set(c, [name].concat(mods).map(n => (TAP_JOY[n] !== undefined ? TAP_JOY[n] : n)));
-  since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
-  input();
+  held.tap('tap:' + name, [name].concat(mods).map(n => (TAP_JOY[n] !== undefined ? TAP_JOY[n] : n)));
 }
-function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+function lift(name) { held.up('tap:' + name); }
 PlayControls.keys($('pl-keys'), { down: press, up: lift });
 // the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
 // (site/lib/play-controls.js)

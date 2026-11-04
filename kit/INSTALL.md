@@ -164,6 +164,12 @@ http://127.0.0.1:9222` it uses the Chromium started above; without it, it
 starts Playwright's own, with its profile, temporary files and XDG state
 under `tools/shoot/`.
 
+A game's browser check (a file in its folder whose name ends in
+`-browser.js`) drives Chromium through Playwright too, by
+`kit/scripts/play_browser.js`, and installs neither. With `--chromium
+<path>` it launches that Chromium; without it, Playwright's own, with a
+temporary profile that Playwright deletes when the check closes it.
+
 On a Mac, a Firefox in `/Applications` is found without being on `PATH`.
 With no Firefox at all, `tools.py browser` names the Chrome, Chromium or
 Edge it finds there and starts nothing, because using one is the
