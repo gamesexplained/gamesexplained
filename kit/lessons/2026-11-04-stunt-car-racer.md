@@ -1,4 +1,4 @@
-## next · 2026-11-04 · Stunt Car Racer (C64) · air with Claude
+## 0.0.309 · 2026-11-04 · Stunt Car Racer (C64) · air with Claude
 
 - **Time the start-up, or the page runs it in no time.** The Play tab
   starts the port at the loader's hand-over, `$3FFB`, and the lockstep
