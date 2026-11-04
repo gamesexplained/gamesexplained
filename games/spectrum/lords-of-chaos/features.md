@@ -76,6 +76,8 @@ Sources:
 | Scenario 1, The Many Coloured Land: Torquemada, treasure gold 16, ruby 12, emerald 8 | traced | scenario 1's header and object records; TORQUEMADA is its wizard |
 | Scenario 2, Slayer's Dungeon: the Slayer, worth 30 | traced | scenario 2's object records |
 | Scenario 3, Ragaril's Domain: one player, puzzles, traps and helpful scrolls; diamond 30 | traced | scenario 3's hooks (floor_traps, deadly_floors, read_scroll) and object records |
+| Scenario 3's corridor that kills: too long for any creature to cross in one turn, but a mount under a speed potion can carry its wizard far enough for the wizard to walk the rest | traced, live | classify_step `$CA2B`, load_figures `$9342`, rider `$71D3`, damage_and_rider `$78D6`; test_corridor.js holds the Maps tab's route and every walk along it to the game's code; the run seen on the kit's 48K |
+| Scenario 3's hall has no door: a flyer can take off indoors only from the wooden floor once magic fire has burnt it to wasteland | traced, live | can_fly_or_land `$6DC2`, area_spell_at `$86B2`, spread_magic `$7DBD`; a pegasus carrying the wizard flew from wasteland at row 5, column 22 into the hall on the kit's 48K |
 
 ## Beyond the documentation
 

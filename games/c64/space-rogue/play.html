@@ -12147,11 +12147,11 @@ function tick(now) {
       // one's frame; outside flight, the C64's own frames
       const ms = Math.min(250, now - (last || now)), f0 = rt.frame; last = now;
       n = FastCPU.run(fx, ms);
-      sound.frame(); if (letGo.size) release();
+      sound.frame(); held.release();
       if (n || rt.frame !== f0) { n = 1; compose(); }
     } else {
       acc += Math.min(250, now - (last || now)); last = now;
-      while (acc >= FRAME_MS && n < 10) { rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+      while (acc >= FRAME_MS && n < 10) { rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; held.release(); }
       if (n === 10) acc = 0;
       if (n) compose();
     }
@@ -12185,14 +12185,11 @@ const CODE = { Space: 'SPACE', Enter: 'RETURN', Backspace: 'DEL', ShiftLeft: 'LS
   Escape: 'F1', F1: 'F1', F3: 'F3', F5: 'F5', F7: 'F7', Minus: '-', NumpadSubtract: '-', Equal: '+', NumpadAdd: '+', Period: '.', Comma: ',',
   Slash: '/', Semicolon: ';', Quote: ':', BracketLeft: '@', BracketRight: '*', Backquote: '£', Home: 'HOME' };
 // A key is held for at least three frames of the game's time: the game reads the keyboard once a
-// frame in its interrupt, and a tap shorter than that would never reach it
-const held = new Map(), since = new Map(), letGo = new Set();
+// frame in its interrupt, and a tap shorter than that would never reach it (site/lib/play-controls.js,
+// hold)
 const HOLD = 3;
+const held = PlayControls.hold({ clock: () => (rt ? rt.frame : null), least: () => HOLD, change: input });
 let padBits = 0;
-function release() {
-  for (const c of letGo) if (!rt || rt.frame - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
-  input();
-}
 function input() {
   if (!rt || busy) return;
   let bits = padBits;
@@ -12212,13 +12209,11 @@ function onKey(e, down) {
   const k = JOY[e.code] !== undefined ? JOY[e.code] : c64Key(e);
   if (k === null) return;
   e.preventDefault();
-  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.frame : 0); held.set(e.code, k); letGo.delete(e.code); }
-  else letGo.add(e.code);
-  release();
+  if (down) held.down(e.code, k); else held.up(e.code);
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)

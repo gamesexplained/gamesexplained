@@ -140,7 +140,7 @@ section table{margin:6px 0 18px}
 <p>Sixty is the refresh rate of most displays. A Spectrum's screen shows 50 frames a second, and a pass on each of those would show unevenly on a 60 Hz display, one frame in five held for two refreshes. Each refresh of your display, the page runs the passes it owes the game for the time since the last refresh, and shows the screen as the last of them left it in the same refresh, so the screen is always the game's newest. When no key is down the game waits for one, as on a Spectrum, and a key that goes down is taken at once.</p>
 <p>A refresh runs at most four passes. A display as slow as 15 Hz still keeps up with the clock, and a refresh that comes late, while the browser was busy elsewhere, starts the game again from where it stopped rather than racing to catch up. Counted in the Spectrum's T-states, the same keys pressed on the same passes make the same game on any display.</p>
 <h3>The clock keeps absolute time</h3>
-<p>The interrupt runs in the Spectrum's time with Fast CPU on or off, so everything it counts runs as on a Spectrum, in seconds: the clock, the energy a minute, the laser beacons' shots. So does every wait inside a pass, such as the game's pause after a change of the turn size, and every sound. The processor drives the beeper itself, and while an effect plays the game does nothing else, so the laser's sound, about a fifth of a second, holds the pass that fires as it holds a Spectrum's. The next pass starts on the first tick after. The security question, the control options, the information screen, drilling, the end of a game and the demonstration run at the Spectrum's speed. A minute of play is a minute on either machine.</p>
+<p>The interrupt runs in the Spectrum's time with Fast CPU on or off, so everything it counts runs as on a Spectrum, in seconds: the clock, the energy a minute, the laser beacons' shots. So does every wait inside a pass, such as the game's pause after a change of the turn size, and every sound. The processor drives the beeper itself, and while an effect plays the game does nothing else, so the laser's sound, about a fifth of a second, holds the pass that fires as it holds a Spectrum's, and the screen shows what a Spectrum's shows meanwhile: the four lines of the beam, which the game rubs out when the sound ends. The next pass starts on the first tick after. The security question, the control options, the information screen, drilling, the end of a game and the demonstration run at the Spectrum's speed. A minute of play is a minute on either machine.</p>
 <h3>The Speed sets how far each pass takes you</h3>
 <p>Fast CPU makes many passes where the Spectrum made one. Anything the game counts in passes would happen that many times as often, so each pass takes only a share of a step. The <b>Speed</b> slider sets how many ticks one Spectrum step takes, K. Each pass walks, turns, looks or rolls 1/K of the Spectrum's step, through the game's own code for a step, and carries the part of a unit left over to the next pass. Holding a key for K ticks moves you exactly one Spectrum step, whatever is on screen. You travel as fast as a Spectrum that made 60/K passes a second, and see 60 frames.</p>
 <table>
@@ -4163,6 +4163,9 @@ G.view = function (P) {
 //                      program outside the loop (the start, the demonstration, the information
 //                      screen, drilling, a game's end) take the Spectrum's time. Returns the loops run
 //   rt.now()           the screen as memory stands now, in runFrame's form
+//   rt.fastFrame()     the screen Fast CPU shows: now(), but while the clock is more than a frame
+//                      past real time (a sound, which holds the processor), the frame the beam
+//                      showed at real time
 //   rt.ticks           Fast CPU's ticks so far: 60 a second, 58,333⅓ T-states apart
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
@@ -4462,6 +4465,11 @@ function create(o) {
     return loops;
   }
   const now = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
+  // Fast CPU's screen: as the loops left it, but while a stretch has taken the clock more than a
+  // frame past real time, the frame the beam showed at real time, as a Spectrum shows it. A sound
+  // holds the processor: the laser's lines, drawn before its sound and rubbed out after it in the
+  // same stretch, show while it plays
+  const fastFrame = () => (target !== null && t > target + FRAME ? frameAt(Math.floor(target / FRAME)) : now());
 
   // a machine: the hand-over (data) or a test's moment, the program started at entry(P)
   function restore(s, entry) {
@@ -4482,7 +4490,7 @@ function create(o) {
   return {
     M, P, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
-    get ticks() { return ticksAt(t); }, runTicks, now,
+    get ticks() { return ticksAt(t); }, runTicks, now, fastFrame,
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
     get border() { return border; }, get wiped() { return wiped; }, missing,
     runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
@@ -4717,7 +4725,10 @@ const tape = (function () {
 // --- the loop: one frame of 48K time per frame of real time; with Fast CPU (site/lib/fast-cpu.js), a
 // loop of the game for each of its ticks, 60 a second, that real time has reached, at most four a
 // refresh (a computer too slow for them plays slower than the Spectrum), and the screen as the last
-// one left it drawn in the same refresh
+// one left it drawn in the same refresh, or while a sound holds the processor, as the Spectrum shows
+// it (rt.fastFrame). A key that has come up is let go after each frame, or with Fast CPU after each
+// loop; and at each refresh by the key holder itself (site/lib/play-controls.js, hold), since the
+// information screen, drilling and the menus go round no loop
 let acc = 0, last = 0, asking = false;
 function boot() {
   tape.reset();
@@ -4739,12 +4750,12 @@ function tick(now) {
   try {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast && fx) {
-      FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
+      FastCPU.run(fx, dt, held.release);
       sound.frame(); tape.frame(); typeStep();
-      F = rt.now(); n = 1;
+      F = rt.fastFrame(); n = 1;
     } else {
       acc += dt;
-      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); typeStep(); }
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); tape.frame(); acc -= FRAME_MS; n++; held.release(); typeStep(); }
       if (n === 10) acc = 0;
     }
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
@@ -4769,17 +4780,11 @@ const CURSOR = [[1, '7'], [2, '6'], [4, '5'], [8, '8'], [16, '0']];
 // A key is held for at least eight frames of the game's time: the game looks at the keys once a
 // pass, which can be a few frames apart, and a shorter tap could fall between two looks. With Fast
 // CPU it looks each tick, and three frames are enough. A key tapped in the list (tap:, below) is
-// held until the game has looked at the keys since it went down as well
-const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
+// held until the game has looked at the keys since it went down as well (site/lib/play-controls.js,
+// hold)
 const HOLD = 8, HOLD_FAST = 3;
+const held = PlayControls.hold({ clock: () => (rt ? rt.shown : null), least: () => (fast ? HOLD_FAST : HOLD), reads: () => rt.input.reads, change: input });
 let padBits = 0;
-function release() {
-  for (const c of letGo) {
-    if (rt && (rt.shown - (since.get(c) || 0) < (fast ? HOLD_FAST : HOLD) || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
-    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
-  }
-  input();
-}
 function hold() { input(); }
 function input() {
   if (!rt) return;
@@ -4808,15 +4813,13 @@ function onKey(e, down) {
   const z = zxKey(e); if (z) k.push(...z);
   if (!k.length) return;
   e.preventDefault();
-  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
-  else letGo.add(e.code);
-  release();
+  if (down) held.down(e.code, k); else held.up(e.code);
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
 screen.addEventListener('blur', () => {
   active = false; screen.classList.remove('pl-focus');
-  for (const c of [...held.keys()]) if (!c.startsWith('tap:') && c !== 'type') { held.delete(c); since.delete(c); letGo.delete(c); }
+  held.clear(c => c.startsWith('tap:') || c === 'type');
   input();
 });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
@@ -4828,12 +4831,9 @@ document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 const TAP_DIR = { fire: 16 };
 function press(name, mods) {
   if (!running || !rt) return;
-  const c = 'tap:' + name;
-  held.set(c, [name].concat(mods).map(n => (TAP_DIR[n] !== undefined ? TAP_DIR[n] : n)));
-  since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
-  input();
+  held.tap('tap:' + name, [name].concat(mods).map(n => (TAP_DIR[n] !== undefined ? TAP_DIR[n] : n)));
 }
-function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+function lift(name) { held.up('tap:' + name); }
 PlayControls.keys($('pl-keys'), { down: press, up: lift });
 // Type it: the security question's word, then ENTER, each key down until the game has looked at
 // the keys since, for eight frames at least, and a look with no key down between two, so that a
@@ -4843,14 +4843,14 @@ function typeStep() {
   if (!rt || (!typed && !typing.length)) return;
   if (typed && typed.key) {
     if (rt.shown - typed.at < HOLD || rt.input.reads <= typed.reads) return;
-    held.delete('type'); typed = { reads: rt.input.reads }; input();
+    held.delete('type'); typed = { reads: rt.input.reads };
     return;
   }
   if (typed && rt.input.reads <= typed.reads) return;
   typed = null;
   if (!typing.length) return;
   const key = typing.shift();
-  held.set('type', [key]); typed = { key, at: rt.shown, reads: rt.input.reads }; input();
+  typed = { key, at: rt.shown, reads: rt.input.reads }; held.set('type', [key]);
 }
 $('pl-type').addEventListener('click', () => {
   if (running && answerWord && !typing.length && !typed) typing = answerWord.split('').concat('ENTER');

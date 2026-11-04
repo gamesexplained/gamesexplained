@@ -13,8 +13,10 @@
 // keeps the row above the picture (beside it where it would cost the picture height) with the
 // switch showing ✕, puts the keys between the picture and the bar, and puts each back where it
 // was, by the switch, Escape or Back, adding one step to the history and taking it off again.
-// Every Play page with a canvas attaches it, and a page with the joystick keeps no touch pad of
-// its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
+// The keys a page holds for its game (hold) stay down for their least time, a key tapped in the
+// list until the game has looked at the keys as well, and what is due is let go at every refresh
+// of the display even when the page runs no frame. Every Play page with a canvas attaches it, and
+// a page with the joystick keeps no touch pad of its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
 // each shows what it does. Runs in node, on a stand-in for the page's document.
 //   node kit/scripts/test_play_controls.js
 const fs = require('fs');
@@ -104,6 +106,48 @@ check(PC.direction(...at(-28, 40), 50, RIGHT) === RIGHT, 'a direction held is ke
 check(PC.direction(...at(-28, 40), 50, 0) === (UP | RIGHT), 'which a new touch there does not get');
 check(PC.direction(...at(-33, 40), 50, RIGHT) === (UP | RIGHT), 'and further past it the next direction takes over');
 check(PC.nearest(10, 10, [[0, 0], [50, 0]]) === 0 && PC.nearest(30, 0, [[0, 0], [50, 0]]) === 1, 'a finger is on the nearest fire button');
+
+// --- the keys a page holds for its game
+{
+  const refreshes = [];
+  globalThis.requestAnimationFrame = f => refreshes.push(f);
+  const refresh = () => { const fs = refreshes.splice(0); for (const f of fs) f(); };
+  let frame = 0, reads = 0, changes = 0, game = true;
+  const h = PC.hold({ clock: () => (game ? frame : null), least: () => 3, reads: () => reads, change: () => changes++ });
+  const down = c => [...h.values()].includes(c);
+  h.down('KeyA', 'A');
+  check(down('A') && changes === 1, 'a key down is held at once, and the page told');
+  frame = 1; h.up('KeyA');
+  check(down('A'), 'a key up before its least time stays down');
+  frame = 2; h.release();
+  check(down('A'), 'and stays down until the time is up');
+  frame = 3; h.release();
+  check(!down('A') && changes === 2, 'then is let go, and the page told');
+  h.down('KeyB', 'B'); frame = 4; h.down('KeyB', 'B'); frame = 5; h.up('KeyB'); frame = 6; h.release();
+  check(!down('B'), 'a key the keyboard repeats keeps the time it first went down');
+  // a key up while the game runs no frame and no loop the page would let it go after: a screen
+  // outside a Fast CPU page's main loop
+  h.down('KeyI', 'I'); frame = 7; h.up('KeyI'); frame = 12;
+  check(down('I'), 'with no release from the page, a key due to go stays down');
+  refresh();
+  check(!down('I'), 'until the next refresh of the display lets it go by itself');
+  refresh();
+  check(refreshes.length === 1, 'and the holder looks again at every refresh');
+  // a key tapped in the page's list stays down until the game has looked at the keys
+  h.tap('tap:D', 'D'); frame = 20; h.up('tap:D'); h.release();
+  check(down('D'), 'a key tapped and lifted stays down until the game has looked at the keys since');
+  reads = 1; h.release();
+  check(!down('D'), 'and is let go once it has');
+  h.set('type', 'T'); h.up('type'); frame = 40; refresh();
+  check(down('T'), 'a key the page types stays down whatever the time');
+  h.delete('type');
+  check(!down('T'), 'until the page lets it go');
+  h.down('KeyX', 'X'); h.tap('tap:Y', 'Y'); h.clear(c => c.startsWith('tap:'));
+  check(!down('X') && down('Y'), 'the focus lost lets every key go but those the page keeps');
+  game = false; h.up('tap:Y');
+  check(!down('Y') && h.size === 0, 'with no game running, a key up is let go at once');
+  delete globalThis.requestAnimationFrame;
+}
 
 // --- the controller on the page
 const plate = El('div'), screen = El('div'), bar = El('div'), soundButton = El('button'), crtButton = El('button'), other = El('button'), canvas = Object.assign(El('canvas'), { width: 384, height: 272 });

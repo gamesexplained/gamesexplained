@@ -54,7 +54,13 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
-.pl-start{margin:16px 0 0;font-size:15px;color:var(--ink)}
+.pl-keys .pl-keys-tap,.pl-keys .pl-type{display:none}
+.pl-keys.pc-keys-touch .pl-keys-tap{display:list-item}
+.pl-keys.pc-keys-touch .pl-type{display:inline}
+.pl-type input{font-family:var(--fm);font-size:16px;text-transform:uppercase;width:8.5em;max-width:60vw;margin:3px 0;padding:7px 8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;-webkit-user-select:text;user-select:text}
+.pl-keys.pc-keys-touch .pl-keys-pad{display:none}
+.pl-keys .pl-start{grid-column:1/-1}
+.pl-plate .pl-keys .pl-start{font-size:15px;color:var(--ink)}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -89,14 +95,16 @@ section table{margin:6px 0 18px}
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-tape" id="pl-tape" hidden></div>
-    <p class="pl-start"><b>To start a game:</b> choose KEYBOARD at SELECT CONTROLS, then LOAD SCENARIO, type <kbd>1</kbd>, <kbd>2</kbd> or <kbd>3</kbd> for the scenario and press <kbd>Enter</kbd>. When it has loaded, choose PLAY GAME.</p>
-    <ul class="pl-keys">
-      <li>SELECT CONTROLS, and every menu: <kbd>Q</kbd> <kbd>A</kbd> move the bar, <kbd>Space</kbd> chooses</li>
-      <li>In play: <kbd>Q</kbd> <kbd>A</kbd> <kbd>O</kbd> <kbd>P</kbd> move the cursor, <kbd>Space</kbd> opens the menu for the square under it</li>
-      <li>The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
-      <li>A file name or a wizard's name: type it, <kbd>0</kbd> rubs out, <kbd>Enter</kbd> ends it; HOW MANY PLAYERS? takes <kbd>1</kbd> to <kbd>4</kbd></li>
-      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added, and the game loads the first file whose name starts with the letter typed. It winds back to the start after the last file; a search that finds nothing stops at the end of the tape. Hold <kbd>Space</kbd> to stop a search</li>
+    <ul class="pl-keys" id="pl-keys">
+      <li class="pl-keys-tap">Tap a key in this list to press it in the game.</li>
+      <li class="pl-start"><b>To start a game:</b> choose KEYBOARD at SELECT CONTROLS, then LOAD SCENARIO, type <kbd data-key="1">1</kbd>, <kbd data-key="2">2</kbd> or <kbd data-key="3">3</kbd> for the scenario and press <kbd data-key="ENTER">Enter</kbd>. When it has loaded, choose PLAY GAME.</li>
+      <li>HOW MANY PLAYERS? takes <kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> or <kbd data-key="4">4</kbd>; scenario 3 is for one player and does not ask</li>
+      <li>A file name or a wizard's name: type it<form class="pl-type" id="pl-type"> here <input type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="enter" maxlength="12" aria-label="A name to type into the game"></form>, <kbd data-key="0">0</kbd> rubs out, <kbd data-key="ENTER">Enter</kbd> ends it</li>
+      <li>Loading: the cassette holds DESIGNER., 1.GAM, 2.GAM and 3.GAM, then whatever is saved or added, and the game loads the first file whose name starts with the letter typed. It winds back to the start after the last file; a search that finds nothing stops at the end of the tape. Hold <kbd data-key="SPACE">Space</kbd> to stop a search</li>
       <li>Saving (SAVE GAME at the end of a turn, SAVE WIZARD in the designer) puts the files on the cassette and offers them as a .tap file to keep</li>
+      <li class="pl-keys-pad">SELECT CONTROLS, and every menu: <kbd data-key="Q">Q</kbd> <kbd data-key="A">A</kbd> move the bar, <kbd data-key="SPACE">Space</kbd> chooses</li>
+      <li class="pl-keys-pad">In play: <kbd data-key="Q">Q</kbd> <kbd data-key="A">A</kbd> <kbd data-key="O">O</kbd> <kbd data-key="P">P</kbd> move the cursor, <kbd data-key="SPACE">Space</kbd> opens the menu for the square under it</li>
+      <li class="pl-keys-pad">The arrow keys and <kbd>Ctrl</kbd> are the controls chosen at the start: the keys above, a Kempston joystick or a Sinclair one</li>
     </ul>
     <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum would show it, at the Spectrum's own pace: the interrupt animates the creatures and slides the bars every frame, and the computer's wizard takes as long to think as it does on the machine. The sound is the port's writes to the beeper, each edge at the T-state the game's delay loops make it.</p>
   </div>
@@ -260,7 +268,7 @@ function tick(now) {
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); if (typed || typing.length) typeStep(); }
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
@@ -282,12 +290,16 @@ const KEMPSTON = [[8, 1], [4, 2], [2, 4], [1, 8], [16, 16]];
 const KEYBOARD = [[1, 'Q'], [2, 'A'], [4, 'O'], [8, 'P'], [16, 'SPACE']];
 const SINCLAIR = [[1, '9'], [2, '8'], [4, '6'], [8, '7'], [16, '0']];
 // A key is held for at least four frames of the game's time: the game reads the controls once a
-// pass, and a shorter tap could fall between two reads
-const held = new Map(), since = new Map(), letGo = new Set();
+// pass, and a shorter tap could fall between two reads. A key tapped in the list (tap:, below) is
+// held until the game has read the controls since it went down as well
+const held = new Map(), since = new Map(), letGo = new Set(), readAt = new Map();
 const HOLD = 4;
 let padBits = 0;
 function release() {
-  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  for (const c of letGo) {
+    if (rt && (rt.shown - (since.get(c) || 0) < HOLD || (readAt.has(c) && rt.input.reads <= readAt.get(c)))) continue;
+    letGo.delete(c); held.delete(c); since.delete(c); readAt.delete(c);
+  }
   input();
 }
 function input() {
@@ -322,17 +334,73 @@ function onKey(e, down) {
 }
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
-screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+screen.addEventListener('blur', () => {
+  active = false; screen.classList.remove('pl-focus');
+  for (const c of [...held.keys()]) if (!c.startsWith('tap:') && c !== 'type') { held.delete(c); since.delete(c); letGo.delete(c); }
+  input();
+});
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-// the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js)
-PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), pad: true, onPad(bits) { padBits = bits; input(); } });
+// keys tapped in the list under the picture (site/lib/play-controls.js, keys): each is down while
+// the finger is on it and, once it lifts, until the game has read the controls since it went down,
+// so that a tap the game is too busy to see still counts. data-key is the Spectrum's key
+function press(name) {
+  if (!running || !rt) return;
+  if (name === 'ENTER') clearName();
+  else if (name === '0' && typedText) typeIn.value = typedText = typedText.slice(0, -1);
+  if (typed || typing.length) { typing.push(name); return; }   // after what is being typed
+  const c = 'tap:' + name;
+  held.set(c, [name]); since.set(c, rt.shown); readAt.set(c, rt.input.reads); letGo.delete(c);
+  input();
+}
+function lift(name) { const c = 'tap:' + name; if (held.has(c)) { letGo.add(c); release(); } }
+PlayControls.keys($('pl-keys'), { down: press, up: lift });
+// A name typed in the field beside the name's line, with the phone's own keyboard (it shows on a
+// touch screen only): each letter, digit or space the field gains is typed into the game in turn,
+// and each one it loses is rubbed out with 0; the keyboard's Enter types ENTER and empties it. A
+// typed key is down until the game has read the controls since, for HOLD frames at least, and then
+// up for a read, since the game waits for each key to be let go before it reads the next
+const typeForm = $('pl-type'), typeIn = typeForm.querySelector('input');
+let typing = [], typed = null, typedText = '';   // typed: { key, at, reads } while a key is down, then { reads }
+function typeStep() {
+  if (!rt) return;
+  if (typed && typed.key) {
+    if (rt.shown - typed.at < HOLD || rt.input.reads <= typed.reads) return;
+    held.delete('type'); typed = { reads: rt.input.reads }; input();
+    return;
+  }
+  if (typed && rt.input.reads <= typed.reads) return;
+  typed = null;
+  if (!typing.length) return;
+  const key = typing.shift();
+  held.set('type', [key]); typed = { key, at: rt.shown, reads: rt.input.reads }; input();
+}
+function clearName() { typeIn.value = typedText = ''; }
+typeIn.addEventListener('input', () => {
+  if (!running || !rt) { clearName(); return; }
+  const v = typeIn.value.toUpperCase().replace(/[^A-Z1-9 ]/g, '');
+  let same = 0;
+  while (same < v.length && same < typedText.length && v[same] === typedText[same]) same++;
+  for (let n = typedText.length - same; n > 0; n--) typing.push('0');
+  for (const ch of v.slice(same)) typing.push(ch === ' ' ? 'SPACE' : ch);
+  typedText = v;
+  if (!typed) typeStep();
+});
+typeForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (running && rt) { typing.push('ENTER'); if (!typed) typeStep(); }
+  clearName();
+});
+// the row of switches over the screen, full screen, the touch joystick and the keys to tap with it
+// (site/lib/play-controls.js)
+PlayControls.attach({ screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true, onPad(bits) { padBits = bits; input(); } });
 
 // --- controls
 let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
 function start() {
   over.hidden = true;
+  typing = []; typed = null; held.delete('type'); clearName();
   boot();
   running = true; paused = false; last = 0; acc = 0;
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');

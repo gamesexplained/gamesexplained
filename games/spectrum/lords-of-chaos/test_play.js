@@ -18,7 +18,9 @@
 // - a loop the game never leaves (random_below given a limit of 0) leaves the page running, the
 //   interrupt with it, as the Spectrum does;
 // - the beeper plays, no frame throws, and every frame is shown in its turn, however far a long
-//   stretch of the program takes the clock ahead of it.
+//   stretch of the program takes the clock ahead of it;
+// - the machine's count of reads of the controls (rt.input.reads), which the page holds a tapped
+//   key down by until the game has read the controls since, moves on between every two reads.
 //   node games/spectrum/lords-of-chaos/test_play.js
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -55,7 +57,7 @@ function machine(decide) {
       try { return yield* f.apply(this, a); } finally { ctx.pop(); }
     };
   }
-  let held = false, reads = 0, beeps = 0, f = 0, threw = null, lead = 0, skipped = 0;
+  let held = false, reads = 0, beeps = 0, f = 0, threw = null, lead = 0, skipped = 0, ins = -1, still = 0;
   const joyBits = { RIGHT: 1, LEFT: 2, DOWN: 4, UP: 8, FIRE: 16 };
   rt.restore(data, P => (function* (gen) {
     P.part = 0;
@@ -64,6 +66,8 @@ function machine(decide) {
       if (r.done) return r.value;
       const y = r.value;
       if (y && (y.cp === 0x622B || y.cp === 0x028E)) {
+        if (ins >= 0 && rt.input.reads === ins) still++;   // no IN since the last read began
+        ins = rt.input.reads;
         reads++;
         const k = held ? [] : decide(y.cp, inner(), rt) || [];
         rt.input.keys = new Set(k.filter(x => !joyBits[x]));
@@ -84,7 +88,7 @@ function machine(decide) {
     }
     return false;
   };
-  return { rt, ctx, seen, run, inner, get f() { return f; }, get reads() { return reads; }, get beeps() { return beeps; }, get threw() { return threw; }, get lead() { return lead; }, get skipped() { return skipped; } };
+  return { rt, ctx, seen, run, inner, get f() { return f; }, get reads() { return reads; }, get still() { return still; }, get beeps() { return beeps; }, get threw() { return threw; }, get lead() { return lead; }, get skipped() { return skipped; } };
 }
 
 // the index in the menu on screen of the option whose routine is named name: the menu's options at
@@ -162,6 +166,8 @@ const square = (M, at) => 'row ' + (at ? at[0] : M[ROW]) + ', column ' + (at ? a
     if (m.rt.P.part !== 1 || M[0xD03F] !== 1) fail('the human turn came with scenario ' + M[0xD03F] + ' loaded (part ' + m.rt.P.part + ')');
     if (M[0x622A] !== 0) fail('SELECT CONTROLS left control type ' + M[0x622A]);
     console.log('play reached: SELECT CONTROLS, LOAD SCENARIO and 1.GAM found on the cassette, the human turn at frame ' + m.f + ', ' + m.reads + ' reads');
+    if (m.still) fail('rt.input.reads stood still between two reads of the controls ' + m.still + ' times');
+    else console.log('rt.input.reads moved on between every two of them, ' + m.rt.input.reads + ' INs in all');
     at = [M[ROW], M[COL]];
     const turn0 = M[TURN], f0 = m.f;
     let left = false;

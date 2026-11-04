@@ -85,14 +85,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 kit/scripts/build.py
+      # The kit installs no browser driver, so CI installs playwright-core for the checks below and
+      # uses the runner's Chrome.
+      - name: Playwright for the browser checks
+        run: npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/pw" playwright-core@1.63.0
       # Every button of every SID music player on the built site, played through the player's own
       # AudioWorklet: a page whose driver's writes match the game's can still be silent in the
       # browser (the volume the game sets at start-up left out, a name the worklet has not got).
-      # The kit installs no browser driver, so CI installs playwright-core and uses the runner's Chrome.
       - name: Every music button sounds
+        run: NODE_PATH="$RUNNER_TEMP/pw/node_modules" node kit/c64/sid_check.js _site --chromium "$(command -v google-chrome)"
+      # Every game's browser check: a file in a game's folder whose name ends in -browser.js, which
+      # presses real keys on the built page and watches what it draws (kit/scripts/play_browser.js).
+      # A new one needs no edit here.
+      - name: Every game's browser check
         run: |
-          npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/pw" playwright-core@1.63.0
-          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node kit/c64/sid_check.js _site --chromium "$(command -v google-chrome)"
+          for f in $(git ls-files 'games/*-browser.js'); do
+            echo "== $f"
+            NODE_PATH="$RUNNER_TEMP/pw/node_modules" node "$f" _site --chromium "$(command -v google-chrome)" || exit 1
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

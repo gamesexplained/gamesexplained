@@ -245,6 +245,12 @@ its music or its maps can put that first instead.
   between machines, and the page says so.
 - Every claim shows its evidence: the table, the bytes, the register, the
   screenshot from `reference/`.
+- A table of bare text is a flag. Ask what the reader could see in it
+  instead of read: the picture of each thing a row names (its sprite,
+  tile or icon, drawn from the game's own data in its colours), a bar
+  for a number, a dot on the map for a place. Put it in the row beside
+  the text, as the terrain, creature and spell tables of
+  `games/spectrum/lords-of-chaos/index.html` do (pull request #751).
 - A widget that runs a mechanic is a claim too. Port the routine, then
   test the port against the game itself before it goes on the page:
   against a pass-by-pass trace of the game's own variables recorded in
@@ -355,7 +361,11 @@ checklist mechanically, paragraph by paragraph:
    or more things joined by commas or "and", with no verb saying what they
    do, is an inventory of the section ("Five digits, one key and one
    column: how the bomb is defused"). Rewrite it as the one finding, or as
-   the plain name of the subject (`kit/style.md`, "Section headings").
+   the plain name of the subject. Then read each heading alone, as the
+   section list shows it, and wherever it needs the section to make sense
+   ("Secret: the dungeon's hawk can be killed, the palace's only driven
+   off"), put back the words it squeezed out: who acts, on what, with a
+   plain verb (`kit/style.md`, "Section headings").
 5. Collapse triplets written for rhythm into a plain list or two sentences.
    Three genuine items are fine; three arranged for a drumbeat are not.
 6. State it positively. A one-beat correction is fine when the reader would
@@ -584,7 +594,13 @@ its own. A game played another way leaves the joystick off, since one
 the game does not read only gets in the way. The page's text says
 nothing about how the joystick or Full screen works, since each shows
 what it does and a paragraph about them is one more for the reader to
-skip. The header of
+skip. A page holds
+the keys the player presses with `PlayControls.hold`: each stays down
+for a least time of the game's own, a key tapped in the page's list
+until the game has looked at the keys as well, and what is due is let go
+at every refresh of the display by the holder itself, since a key let go
+only after the game's frames or loops stays down through a screen that
+runs none (`games/c64/castle-master`, `games/spectrum/driller`). The header of
 `site/lib/play-controls.js` gives the bits and the other options.
 `kit/scripts/test_play_controls.js` fails a Play page that does not
 attach it, a page with the joystick that keeps its own pad, and a page

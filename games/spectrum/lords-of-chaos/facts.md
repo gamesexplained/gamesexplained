@@ -373,6 +373,55 @@ every wizard is gone, game_over names the winner by final score. A
 designed wizard who wins a game against the computer with a score keeps
 it and goes up a level.
 
+### Ragaril's Domain
+
+Scenario 3's map, with the closed door at row 26, column 18 counted
+open where a route starts there.
+
+- The corridor that kills is terrain 7, FLOOR, step cost 8: row 23,
+  columns 15 to 24; row 24, columns 15 and 24; row 25, columns 15 to
+  18 and 24 to 27; 20 squares. deadly_floors (`$E3C9`) kills a
+  creature on the ground there at the start of its player's turn. It
+  runs from the door at row 26, column 18 (the scroll SPEED IS OF THE
+  ESSENCE at row 27, column 18) to a dead end of six squares, rows 23
+  to 25, columns 28 and 29, with a closed chest at row 25, column 29
+  holding a door key and objects from list 1 (scatter_objects); the
+  locked door at row 26, column 29 also leads in. The cheapest crossing
+  from the open doorway is 16 steps, five of them diagonal, 144 action
+  points and 72 stamina (test_corridor.js).
+- The most action points on the ground: the unicorn's 56 a turn, 112
+  under a speed or super potion (load_figures). A designed wizard has
+  30 to 40 (the designer's start and most, `$DCE2`, `$DCF0`). A rider
+  pays nothing for its mount's steps, RIDER (`$71D3`) leaves it on the
+  mount's square, getting on costs 10 (`$718E`), and a rider still on a
+  mount that dies takes 255 (damage_and_rider `$78D6`).
+- The wall at row 28, column 33 (`$19`) has toughness 5; every other
+  wall has 255, which attack_terrain's number (below twice the attack)
+  never reaches. On foot from the start, through every door, a wizard
+  reaches nothing north or east of the corridor except past that wall.
+  The north-west rooms (rows 2 to 8, columns 3 to 12, the passage in
+  row 4 and the wooden floor) are reached only by the teleports in row
+  11 and have no way out on foot; the hall (rows 14 to 21, columns 14
+  to 21) and the gallery at rows 18 and 19, columns 25 to 32, where the
+  troll and the giant walk route 6 with magic bows, cannot be reached
+  on foot at all.
+- No terrain of the scenario has the roof bit (bit 3 of byte 4), so a
+  flyer crosses every wall for 4 a step. Take-off and landing (bits 4
+  and 5): both allowed on the hall's floor (`$2B`) and pads (`$08`),
+  grass, the woods, wasteland and the portal; take-off only on fire and
+  magic fire; neither on any other floor. The wooden floor (`$0C`) is
+  the only terrain inside the building with a fire susceptibility
+  (15, low four bits of byte 3); fire dies back to `$D049`, WASTELAND.
+- The chasm (`$05`, `$06`) has only bit 2 of its terrain flags
+  (`$D38E`), so it blocks sight neither on the ground nor in the air.
+- Green fire (`$34`): step cost and toughness 255, flood susceptibility
+  15, so FLOOD (flood_area `$7F09`) turns it to WATER (`$36`).
+- The scenario places two door keys, at row 13, column 12 and in the
+  corridor's chest, and one chest key, in the closed chest at row 15,
+  column 10 behind the third of the altar's doors; use_square uses a
+  key up. The chest key opens the locked chest at row 5, column 30,
+  the trip square of group 3, the three zombies.
+
 ### The computer's play
 
 computer_turn moves each of the computer's creatures in turn, up to 50
@@ -500,7 +549,8 @@ engine comment and this file had called the magic shield.
 ## Live tests
 
 Run in ZEsarUX 13.0 from snapshots of the game in play (`work/`, not
-committed), driven through its remote port by the run's scripts.
+committed), driven through its remote port by the run's scripts, but for
+the last two, which ran on the kit's 48K machine.
 
 - The map window: LOCMap.window, drawing from the snapshots of play in
   scenarios 1, 2 and 3 with their creatures and objects, matches the
@@ -528,3 +578,16 @@ committed), driven through its remote port by the run's scripts.
 - The strength vials: in a game of scenario 2 started in the emulator,
   the two strength vials (`$73`) on the map held 255 in byte 5 and the
   other vials 4 to 7.
+- The corridor that kills, on the kit's 48K machine running the game
+  (port/test/lib.js), scenario 3 at its first human turn, the door at
+  row 26, column 18 opened in memory: a unicorn with 112 action points
+  (a speed potion in byte 3) stopped at row 24, column 24 with none
+  left, and a further step gave NOT ENOUGH ACTION POINTS; a creature
+  with 144 and 72 stamina reached row 25, column 28 with 0 and 0.
+  Carrying the wizard, with 34, the unicorn reached row 24, column 24,
+  the wizard got off with RIDER and walked to row 25, column 28 with 2
+  left; at the next turn's start the unicorn took 255 and died and the
+  wizard lived. With the wizard left on its back, both died.
+- A pegasus carrying the wizard, on wasteland put at row 5, column 22,
+  was offered FLY, flew south over the walls to row 15, column 20 in
+  the hall, was offered LAND there and landed.

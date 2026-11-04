@@ -120,6 +120,10 @@ Real examples:
 | Codes you cannot win without, a fire that ends the level, and a reset that starts the car chase | Without its code, a section can be played but never won | Lead with the strongest finding; the others have sections of their own |
 | City Hall: 75 rooms, a fire that spreads, and two ways out | City Hall, room by room | A map section names the map; the fire that wins the level earns a `Secret:` heading of its own |
 | The mine: four winch parts, five digits and the detonator | Every object in the mine, in the order it is needed | Name what the section shows; a count of items is not a hook |
+| Secret: the lava burns only the creatures a player moves | Secret: everything the computer moves is immune to lava | Make the surprise the subject; "a player" left the reader to work out who is spared |
+| Secret: the dungeon's hawk can be killed, the palace's only driven off | Secret: the hawk can be killed in the dungeon, but in the palace it always comes back | Put back the words the reader was left to carry over |
+| Bug: wrecking the scenery cheers whoever killed last | Bug: damaging the scenery raises the morale of whichever side made the last kill | A plain verb says what happens; "cheers" has to be decoded |
+| Secret: a death can take an extra back | Secret: dying can take away a power-up you have already collected | Use a plain word for the game's own term until the section has explained it |
 
 A heading is never an inventory. Two to four things strung together with
 commas and an "and", often counted, sometimes behind a colon, and with no
@@ -131,6 +135,19 @@ heading, and a margin full of them is the plainest sign that a machine
 wrote the page. Pick the one thing a reader would most want to know and
 say it, or name the subject plainly. A section with three findings that
 each deserve a heading is three sections.
+
+A heading is never a telegram either. The section list shows it alone,
+before the section has explained anything, so it keeps the words that
+make a plain sentence: the articles, the "that", the verb, and who does
+what to whom. Squeeze them out and the reader has to rebuild the
+sentence: a clause stripped of its "that" and its actor ("the creatures
+a player moves"), a word to carry over from the first half ("the
+palace's only driven off"), a verb used as a figure of speech ("cheers",
+"walls out", "paints"), or a term that only the section explains ("an
+extra", "the arcade"). Put them back: twelve words that read at once beat
+six that have to be worked out. Make the surprise the subject and say it
+positively: the news in a lava that burns only the players' creatures is
+that the computer's are immune.
 
 ## Declare provenance
 
