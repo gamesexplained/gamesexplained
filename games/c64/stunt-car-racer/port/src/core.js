@@ -38,6 +38,27 @@ function makePort(M, io, opts = {}) {
   // The work inside routines whose length varies, counted for the page's pacing; the page reads
   // and clears them, as the fit's rows do.
   P.N = {};
+  // The plug-in points: the places in the race's routines where the Play tab's Fast CPU
+  // (site/lib/fast-cpu.js, with the table in page/fast-table.js) passes in a value or skips a job,
+  // each marked "plug-in point" where it is used. These are the game's own: with nothing plugged
+  // in, each gives what the game's code gives, so the lockstep holds the port and its plug-in
+  // points together. Fast CPU replaces them while a pass of the race runs:
+  // - step(key, v): a move by v (a force into a speed, a speed into a place, a turn), signed; Fast
+  //   CPU gives the loop's share of it;
+  // - once(key): a job whose effect adds up (a count of passes, the clocks, a sound started, a
+  //   roll of the dice); Fast CPU runs it once a step;
+  // - log(key, v) and back(key, v): a value the game keeps from one pass to the next to take a
+  //   change over a pass (a spring's depth), logged where the game keeps it, and given back where
+  //   it reads it: Fast CPU gives the one logged a step ago;
+  // - hold(key) and holding(key): a push the game adds to a force for one pass and then clears:
+  //   Fast CPU adds it again on the rest of the step's loops (holding is true on those);
+  // - glide(key, v): a value the game sets once a step from a table (the swerve's wave): Fast CPU
+  //   moves it from one step's to the next's over the step's loops;
+  // - leave(): the race starting again after a wreck, which Fast CPU runs in the machine's time.
+  P.plug = {
+    step: (key, v) => v, once: key => true, log: (key, v) => {}, back: (key, v) => v,
+    hold: key => {}, holding: key => false, glide: (key, v) => v, leave: () => {},
+  };
   // A read and a write through the processor's map as $01 has it: the I/O at $D000-$DFFF when its
   // bits say so. The port has no ROMs: reading one is an error, as it would be a byte the port
   // cannot know.

@@ -20,13 +20,13 @@ G.crane = P => {
     if (x >= 0xE6) {
       M[0xC3DF] = (M[0xC36F] & 0x80) ? 0xD4 : 0x2C;
       M[0x34] = 0;
-      M[0x2F] = (M[0x2F] - 1) & 255;
+      if (P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;                 // plug-in point once
       return { a: 0, x };
     }
     if (x === 0xE5) {
       P.CRANE_SWING({ a: 0 });
       const q = P.CRANE_LOWER({ a: 3 });
-      if (!(q.a & 0x80)) M[0x2F] = (M[0x2F] - 1) & 255;
+      if (!(q.a & 0x80) && P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;
       return { a: q.a, x };
     }
     if (x === 0xE4) {
@@ -41,7 +41,7 @@ G.crane = P => {
     }
     P.CRANE_SWING({ a: 0 });
     P.CRANE_LOWER({ a: 2 });
-    M[0x2F] = (M[0x2F] - 1) & 255;
+    if (P.plug.once('crane')) M[0x2F] = (M[0x2F] - 1) & 255;
     if (!M[0x2F]) M[0x2F] = 1;
     if (M[0xC37C]) { if (M[0xC398]) return { a: M[0xC398], x }; }
     else if (M[0x2F] & 0x80) return { a: M[0xC37C], x };
@@ -75,6 +75,9 @@ G.crane = P => {
     M[0x4E] = y;
     M[0x14] = 0;
     a = P.A_TO_15({ a, y: 0 }).a & 255;
+    // plug-in point step: the swing's share
+    const v = P.plug.step('swing', (M[0x15] << 24 >> 16) | a);
+    a = v & 255; M[0x15] = (v >> 8) & 255;
     M[0x1A] = a; M[0x18] = M[0x15];
     M[0x14] = M[0xB5];
     const q = P.SHIFT16({ a: M[0xB6], y: 0xFB });

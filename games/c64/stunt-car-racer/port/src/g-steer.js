@@ -88,6 +88,9 @@ G.steer = P => {
       }
       a = P.NEG16_IF_MINUS({ a, n: (M[0x77] >> 7) & 1 }).a;
       M[0x15] = a;
+      // plug-in point step: the turn's share
+      const v = P.plug.step('heading', (M[0x15] << 24 >> 16) | M[0x14]);
+      M[0x14] = v & 255; M[0x15] = (v >> 8) & 255;
       t = M[0x0122] + M[0x14]; M[0x0122] = t & 255;
       M[0x0125] = (M[0x0125] + M[0x15] + (t >> 8)) & 255;
     }

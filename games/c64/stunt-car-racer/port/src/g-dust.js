@@ -125,14 +125,15 @@ G.dust = P => {
     M[0xAF8C] = ((r.a & 255) + 2) & 255;
     M[0x2C] = r.x & 255;
     if (!M[0x6A]) return P.DUST_CLEAR({});
-    P.EFFECT({ a: 1 });
+    if (P.plug.once('stones')) P.EFFECT({ a: 1 });                              // plug-in point once
     let x = M[0x2C];
     do {
       if (!P.DUST_PLOT({ x }).z) continue;
-      const a = (M[0x4120 + x] + 2) & 255;
+      // plug-in point step: each speck's fall, its move down and its move across, in shares
+      const a = (M[0x4120 + x] + P.plug.step('fall' + x, 2)) & 255;
       M[0x4120 + x] = a;
-      M[0xC260 + x] = (a + M[0xC260 + x]) & 255;
-      M[0x80A0 + x] = (M[0x80A0 + x] + M[0x4100 + x]) & 255;
+      M[0xC260 + x] = (P.plug.step('down' + x, (a << 24) >> 24) + M[0xC260 + x]) & 255;
+      M[0x80A0 + x] = (M[0x80A0 + x] + P.plug.step('across' + x, (M[0x4100 + x] << 24) >> 24)) & 255;
     } while (((x = (x - 1) & 255) & 0x80) === 0);
     x = M[0x2C];
     do {
@@ -195,7 +196,7 @@ G.dust = P => {
     M[0x0188] = a;
     if (!M[0x6A]) {
       M[0x14] = M[0x5D] >> 2;
-      M[0x5D] = (M[0x5D] - M[0x14]) & 255;
+      if (P.plug.once('note')) M[0x5D] = (M[0x5D] - M[0x14]) & 255;           // plug-in point once
       return { a: M[0x5D], x: 0 };
     }
     if (a < 8) {
