@@ -29,7 +29,7 @@ game plays no banking tricks. *(live)*
 | Player attitude bank | `$2B00`–`$2D7F`, two sets of five frames, nose-left and nose-right |
 | Explosion frames | blocks `$88`–`$8F` (`$2200`–`$23FF`), a random-dot cloud that grows then fades |
 | Enemy aircraft frames | blocks `$94`–`$98` nose-left, mirrored at `$99`–`$9D` nose-right |
-| Exhaust plume | blocks `$90`–`$93`, drawn on sprite 7; `$90` is blank and doubles as the "life over" sentinel |
+| Smoke over a falling wreck | blocks `$90`–`$93`, drawn multicolour on sprite 7 while a shot-down aircraft falls; `$90` is blank and doubles as the "life over" sentinel |
 | Crack's front end | `$1900`–`$1A60`, menu text `$1A80`–`$1BE7`, instruction screen `$1C00`–`$1FFF`, unread intro and scroll text `$0C00`–`$123F` |
 | Saved high-score table | `$2800`–`$2854`, five entries of five score digits and twelve name characters |
 | Character generator | `$3000`–`$37FF`, 256 glyphs |

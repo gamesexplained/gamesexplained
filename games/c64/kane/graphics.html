@@ -1,0 +1,744 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.kn-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.kn-stack{position:relative}
+.kn-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
+.kn-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.kn-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.kn-btn:hover{border-color:var(--ink-mute)}
+.kn-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.kn-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.kn-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.kn-two figure{margin:0}
+.kn-two img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.kn-two figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.kn-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.kn-tbl th,.kn-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.kn-tbl th{font-weight:700;color:var(--ink-soft)}
+.kn-tbl td.kn-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.kn-range{display:flex;align-items:center;gap:12px;margin:12px 0 0;font-family:var(--fm);font-size:13px}
+.kn-range input{flex:1}
+.kn-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.kn-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media (max-width:720px){.kn-two{grid-template-columns:1fr}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;max-width:832px;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Mastertronic</p>
+  <h1>Kane</h1>
+  <p class="sub">Every figure is built from hardware sprites over a picture: the archer and the Marshall are three sprites stacked, the horse six. Their shapes are packed, and unpacked with each picture and each ride, and a figure turns round by having its shapes mirrored where they lie. The gunmen have no stored shapes at all: the game draws each one into his sprite a row at a time.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every figure, as each stage moves it</h2>
+  <p class="lede">The game does not move its figures on every frame. Each stage has a loop that waits between passes, so the archer's stage moves about every 3.7 frames and the shoot-out about every 2.8, and a ride moves the horse every fourth frame. Here each figure is drawn over the picture behind it, at the place the game puts it.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"></div>
+    <p class="cap">The shapes and the pictures are unpacked from the listing's bytes as the How it works tab unpacks them. The canyon and the shoot-out are the game's own loops, and the gunmen beside them the game's own <code>gunman_step</code> (<code>$8810</code>), run on the kit's 6502 in this page; the sight's flicker and the collision register, which the game's interrupt keeps, are kept by the page. The stages' loops are timed by delay loops rather than by the screen, so their rates are the averages measured in the emulator; a ride's four frames are counted by its raster interrupt. The stick is played by a script, which keeps the arrows, bullets and tokens from running out, and the random numbers the game reads from its timers come from the page.</p>
+  </div>
+  <p>The archer and the Marshall are the same three sprites: a black hat and head, white arms and black legs (<code>marshall_stand</code>, <code>$3843</code>). Walking, every pass of the loop moves each sprite on to the shape below its own, and every seventh pass starts them again from <code>$26</code>, <code>$3B</code> and <code>$2D</code> (<code>walk_animate</code>, <code>$3912</code>). The middle sprite starts again one shape lower every other time, so the arms swing through fourteen shapes while the head and the legs go through seven. The archer's middle sprite is his bow arm, which takes one of four shapes for the arrow's angle, and a fifth as he shoots.</p>
+  <p>Facing is not a second set of shapes. Each shape has a flag in the top rows of the status lines' screen, which the picture covers (<code>$0400</code> plus its number), and when a figure turns, <code>flip_shape</code> (<code>$89DE</code>) mirrors each shape it needs in place and flips the flag. The stored shapes face right.</p>
+  <p>A gunman's sprite shape starts empty. Every fifth pass, <code>gunman_step</code> writes the rows of his figure into its right-hand column from the bottom up, one row more each step, so he rises from behind cover; the other two kinds slide in from the side instead, their eleven rows shifted a bit less each step. He waits seven steps, fires and goes back the way he came. Shot, he does not fall: each step ANDs his rows with noise from the timers and the raster line until nothing is left.</p>
+  <p>On a ride the horse is six sprites in two rows of three, white and single-colour, and the rider a seventh, multicolour. Every fourth frame the horse takes the next frame from the list for what it is doing, and each frame is six shapes from <code>$10</code> + 6 × its number. The rider bobs between <code>$CA</code> and <code>$CB</code> every second step. A fall throws him off in an arc, as two sprites.</p>
+</section>
+
+<section id="shapes">
+  <p class="fig">02 · The sprite shapes</p>
+  <h2 class="t">Ninety-six shapes for the stages, two hundred and eight for the rides</h2>
+  <p class="lede">Two packed streams hold every stored shape: the stages' at <code>$D000</code>, unpacked with each picture to <code>$4800</code>-<code>$5FFF</code>, and the rides' at <code>$DA50</code>, unpacked to <code>$4400</code>-<code>$77FF</code> when a ride begins.</p>
+  <div class="plate">
+    <div class="gx-bar" id="gx-sets"></div>
+    <canvas id="gx-sheet" class="gx-sheet" width="832" height="288" aria-label="The sprite shapes, sixteen to a row"></canvas>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a shape to see what shows it.</p>
+    <p class="cap">Each shape as it is stored, facing right, in the colour of the first sprite that shows it, over the colour of the stage. The bar under a shape says what shows it; a shape with no bar is never shown.</p>
+  </div>
+  <p>Both sets live in the video chip's second bank, <code>$4000</code>-<code>$7FFF</code>, so a sprite pointer is the shape's address there over 64. In the canyon and the shoot-out the first kilobyte holds the four shapes the game draws while it runs: the sight, twelve dots in a small ring copied in at <code>$402F</code> by <code>start_play</code>, whose colour the interrupt flips between black and white every frame so it flickers; the arrow, shape 1, whose bottom eight rows <code>duck_loop</code> rewrites from nine pictures at <code>$112B</code> for its angle; and the four gunmen's shapes, 1 to 4. On a ride the same kilobyte is the screen, and its last eight bytes the sprite pointers.</p>
+  <p>The rider thrown from his horse is three shapes that arrive with the program at <code>$4000</code>, where the stages draw, so the game's first act is to copy them into the processor's stack page, <code>$0101</code>-<code>$01C0</code>. Every ride copies them back to <code>$7300</code>, as shapes <code>$CC</code>-<code>$CE</code>, over the end of the rides' unpacked set. Some of the stages' shapes are never shown: <code>$3C</code>-<code>$3E</code>, after the walking arms; <code>$55</code>-<code>$57</code>, three small arrows, where the arrow the game shows is drawn into shape 1 as it flies; and <code>$5C</code>-<code>$7F</code>, empty but for a few stray bytes.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* kane-gfx */
+// Kane's pictures, sprite shapes and riding courses, rebuilt from the listing's bytes the way the
+// game builds them. Each function works on m, a copy of the machine's 64 KB, as the game's routine
+// works on memory: it reads the packed bytes where the listing holds them (under the I/O area and
+// the KERNAL too, which the game reads with $01 = 0) and writes where the game writes.
+//   picture(m, stage)  show_picture ($0C1B) up to its jump to start_stage: the picture's header
+//                      from picture_table ($907C), relocated; its screen colours to $4400 and its
+//                      colour-RAM nibbles to $8010 (unpack_runs), the nibbles spread over colour RAM
+//                      (returned, 1024 cells), its bitmap to $6000 (unpack_bitmap), and the stages'
+//                      sprite shapes from $D000 to $4800-$5FFF (unpack_rle). Returns { colour, head,
+//                      order }, order the bitmap's bytes as unpack_bitmap writes them, for drawing it
+//                      a byte at a time.
+//   course(m, stage)   build_ride_screen's ($2D08) map: clear_map ($3126), then the stage's
+//                      placement list ($0B00 for ride 1, stage 1; $0B70 for the train, stage 2), each
+//                      object laid by place_object ($2F7B), five rows of five characters from
+//                      ride_objects ($0EC2) into the buffer at $8010, whose rows are 400 bytes apart;
+//                      then the ride's character set copied from $F6C0 to $7800 and its sprite shapes
+//                      unpacked from $DA50 to $4400-$77FF. Returns the placements, { step, object, at }.
+//   bitmapImage(m, colour, bg)   the multicolour bitmap at $6000 with its screen at $4400: 320 x 200
+//                      colour indices.
+//   KANE_PICTURES      the four pictures by stage, with the background the stage shows them on
+//                      (irq_top, $3B09: dark grey in the shoot-out, white in the other stages; the
+//                      title's handler, black) and the processor cycles unpack_bitmap takes to draw
+//                      the bitmap on the kit's 6502, its pauses included (short_delay, $0E31).
+const KANE_PICTURES = [
+  { name: 'The canyon', stage: 1, bg: 1, cycles: 1026121 },
+  { name: 'The town', stage: 0, bg: 11, cycles: 1004094 },
+  { name: 'The ending', stage: 3, bg: 1, cycles: 883056 },
+  { name: 'The title', stage: 4, bg: 0, cycles: 870807 },
+];
+const KANE = (() => {
+  const lo = (a) => a & 0xFF, hi = (a) => a >> 8 & 0xFF;
+  // the stop test of unpack_bitmap and unpack_runs: the source's low byte against the end's, then
+  // its high byte against the end's, each going on while less ($0DEC, $0E22)
+  const more = (src, end) => lo(src) < lo(end) || hi(src) < hi(end);
+  // unpack_bitmap ($0D84): a byte other than $00, $55, $AA or $FF copied; one of those four and a
+  // count (0 for 256) written that many times. Stops when the destination is at $7F40 or past it
+  // (high byte $7F or more and low byte $40 or more) or at the source test above.
+  function unpackBitmap(m, src, end, dest, order) {
+    for (;;) {
+      const b = m[src];
+      if (b === 0x00 || b === 0xAA || b === 0x55 || b === 0xFF) {
+        let n = m[(src + 1) & 0xFFFF]; src = (src + 2) & 0xFFFF;
+        do { m[dest] = b; if (order) order.push(dest); dest = (dest + 1) & 0xFFFF; n = (n - 1) & 0xFF; } while (n);
+      } else {
+        m[dest] = b; if (order) order.push(dest); src = (src + 1) & 0xFFFF; dest = (dest + 1) & 0xFFFF;
+      }
+      if (hi(dest) >= 0x7F && lo(dest) >= 0x40) return src;
+      if (!more(src, end)) return src;
+    }
+  }
+  // unpack_runs ($0DFB): pairs of a count (0 for 256) and a value
+  function unpackRuns(m, src, end, dest) {
+    do {
+      let n = m[src]; const v = m[(src + 1) & 0xFFFF]; src = (src + 2) & 0xFFFF;
+      do { m[dest] = v; dest = (dest + 1) & 0xFFFF; n = (n - 1) & 0xFF; } while (n);
+    } while (more(src, end));
+    return src;
+  }
+  // unpack_rle ($3086): a byte other than $00 or $FF copied; $00 or $FF and a count (0 for 256)
+  // written that many times. Stops as soon as the destination's high byte is stop's or more and its
+  // low byte is stop's or more, inside a run too.
+  function unpackRle(m, src, dest, stop) {
+    const done = () => hi(dest) >= hi(stop) && lo(dest) >= lo(stop);
+    for (;;) {
+      const b = m[src];
+      if (b === 0x00 || b === 0xFF) {
+        let n = m[(src + 1) & 0xFFFF]; src = (src + 2) & 0xFFFF;
+        do { m[dest] = b; dest = (dest + 1) & 0xFFFF; if (done()) return src; n = (n - 1) & 0xFF; } while (n);
+      } else { m[dest] = b; src = (src + 1) & 0xFFFF; dest = (dest + 1) & 0xFFFF; }
+      if (done()) return src;
+    }
+  }
+  function picture(m, stage) {
+    const x = 2 * stage, entry = m[0x907C + x] | m[0x907D + x] << 8;
+    const at = (entry + 1) & 0xFFFF, h = [0, 1, 2, 3, 4, 5].map((i) => m[at + i]);
+    let c = 0;                                       // the relocation, $0C7A-$0C9C, carries and all
+    for (let y = 5; y > 0; y -= 2) {
+      const t = ((h[y] - 0xA0) & 0xFF) + m[0x907D + x];
+      h[y] = t & 0xFF; c = t >> 8;
+      const u = h[y - 1] + m[0x907C + x] + c;
+      h[y - 1] = u & 0xFF; c = u >> 8;
+      const v = h[y] + c; h[y] = v & 0xFF; c = v >> 8;
+    }
+    const head = [h[0] | h[1] << 8, h[2] | h[3] << 8, h[4] | h[5] << 8];
+    unpackRuns(m, head[0], head[1], 0x4400);
+    unpackRuns(m, head[1], head[2], 0x8010);
+    const colour = new Uint8Array(1024);
+    for (let i = 0; i < 512; i++) { colour[2 * i] = m[0x8010 + i] >> 4; colour[2 * i + 1] = m[0x8010 + i] & 15; }
+    const order = [];
+    const end = unpackBitmap(m, (at + 7) & 0xFFFF, head[0], 0x6000, order);
+    unpackRle(m, 0xD000, 0x4800, 0x6000);
+    return { colour, head, entry, stream: [(at + 7) & 0xFFFF, end], order };
+  }
+  function placeObject(m, obj, at) {
+    let p = 0x0EC2 + ((obj - 1) & 0xFF) * 25;
+    for (let row = 0; row < 5; row++) {
+      for (let i = 0; i < 5; i++) m[(at + i) & 0xFFFF] = m[p + i];
+      at = (at + 0x190) & 0xFFFF; p += 5;
+    }
+  }
+  function course(m, stage) {
+    for (let a = 0x8010; a < 0x8810; a++) m[a] = 0;            // clear_map: $8010-$880F
+    let list = stage === 2 ? 0x0B70 : 0x0B00, buf = 0x8010;
+    const placed = [];
+    for (;;) {
+      const step = m[list]; buf = (buf + step) & 0xFFFF; list++;
+      const obj = m[list];
+      if (obj === 0xFF) break;
+      if (obj) { placeObject(m, obj, buf); placed.push({ step, object: obj, at: buf }); }
+      list++;
+    }
+    for (let i = 0; i < 0x800; i++) m[0x7800 + i] = m[0xF6C0 + i];
+    unpackRle(m, 0xDA50, 0x4400, 0x7800);
+    return placed;
+  }
+  function bitmapImage(m, colour, bg) {
+    const px = new Uint8Array(320 * 200);
+    for (let cy = 0; cy < 25; cy++) for (let cx = 0; cx < 40; cx++) {
+      const cell = cy * 40 + cx, s = m[0x4400 + cell], cols = [bg, s >> 4, s & 15, colour[cell] & 15];
+      for (let r = 0; r < 8; r++) {
+        const b = m[0x6000 + cell * 8 + r];
+        for (let p = 0; p < 4; p++) {
+          const v = cols[(b >> (6 - 2 * p)) & 3], o = (cy * 8 + r) * 320 + cx * 8 + 2 * p;
+          px[o] = v; px[o + 1] = v;
+        }
+      }
+    }
+    return { w: 320, h: 200, px };
+  }
+  return { unpackBitmap, unpackRuns, unpackRle, picture, placeObject, course, bitmapImage };
+})();
+// end of kane-gfx
+</script>
+<script>
+/* kane graphics tab */
+// The canyon and the shoot-out are the game's own loops (duck_loop at $1950, the shoot-out's at
+// $35FA) run on the kit's 6502 over the listing's bytes, a pass at a time: the delay at the end of a
+// pass (delay_count, $380B) is where the page stops and draws. What the interrupt does each frame
+// (the sight's flicker, the collision register) the page does for it, and a script plays the stick.
+// The rides are drawn from the game's frame lists ($1038-$1074), a step every fourth frame as
+// irq_ride_control ($2A25) counts them; the rider thrown from his horse is the game's code at $23C2.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const PAL = C64.PAL, FPS = 985248 / 19656;
+  const RGB = PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) {
+    $('gx-cast').innerHTML = '<p class="gx-miss">The listing did not load, so nothing can be drawn.</p>';
+    return;
+  }
+  const ram = L.ram;
+  const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  // the shadow sprite registers the stages keep, which irq_bottom ($39D9) copies to the video chip
+  const SX = 0x0E3F, MSB = 0x0E4F, EN = 0x0E50, COL = 0x0E58, PTR = 0x0E61;
+  const sx = (m, n) => m[SX + n * 2] + (m[MSB] >> n & 1) * 256, sy = (m, n) => m[SX + n * 2 + 1];
+  const shape = (m, p) => m.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+
+  function picture(img, s, x0, y0, w, h) {
+    const c = document.createElement('canvas'); c.width = w * s; c.height = h * s;
+    const ctx = c.getContext('2d'), d = ctx.createImageData(w * s, h * s);
+    for (let y = 0; y < h * s; y++) for (let x = 0; x < w * s; x++) {
+      const k = RGB[img.px[(y0 + (y / s | 0)) * img.w + x0 + (x / s | 0)]], o = (y * w * s + x) * 4;
+      d.data[o] = k[0]; d.data[o + 1] = k[1]; d.data[o + 2] = k[2]; d.data[o + 3] = 255;
+    }
+    ctx.putImageData(d, 0, 0);
+    return c;
+  }
+  function group(title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><p>' + text + '</p><div class="gx-tiles"></div>';
+    $('gx-cast').appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h; sp.innerHTML = label;
+    t.append(cv, sp); tiles.appendChild(t);
+    return { cv, ctx: cv.getContext('2d'), sp };
+  }
+  const rng = (seed) => () => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) >>> 16 & 0xFF;
+  function cpuFor(m, read) {
+    return new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x36 }, io: { read, write() {} } });
+  }
+
+  // Sprites drawn from 7 down to 0, so that a lower number is in front, as the video chip shows them.
+  function drawShadows(ctx, m, s, x0, y0) {
+    for (let n = 7; n >= 0; n--) {
+      if (!(m[EN] >> n & 1)) continue;
+      C64.drawSprite(ctx, shape(m, m[PTR + n]), (sx(m, n) - 24 - x0) * s, (sy(m, n) - 50 - y0) * s, s, PAL[m[COL + n] & 15]);
+    }
+  }
+  // The video chip's sprite-to-sprite collision register: a bit for every sprite with a pixel on
+  // top of another sprite's pixel.
+  function collisions(m) {
+    const rows = [];
+    for (let n = 0; n < 8; n++) {
+      if (!(m[EN] >> n & 1)) { rows.push(null); continue; }
+      const d = shape(m, m[PTR + n]), r = [];
+      for (let y = 0; y < 21; y++) r.push(d[y * 3] << 16 | d[y * 3 + 1] << 8 | d[y * 3 + 2]);
+      rows.push({ x: sx(m, n), y: sy(m, n), r });
+    }
+    let bits = 0;
+    for (let a = 0; a < 8; a++) for (let b = a + 1; b < 8; b++) {
+      const A = rows[a], B = rows[b];
+      if (!A || !B || Math.abs(A.x - B.x) >= 24 || Math.abs(A.y - B.y) >= 21) continue;
+      const dx = B.x - A.x, dy = B.y - A.y;
+      for (let y = Math.max(0, dy); y < Math.min(21, 21 + dy); y++) {
+        const ra = A.r[y], rb = B.r[y - dy], hit = dx >= 0 ? ra & (rb >>> dx) : ra & (rb << -dx);
+        if (hit & 0xFFFFFF) { bits |= 1 << a | 1 << b; break; }
+      }
+    }
+    return bits;
+  }
+
+  // ---- the canyon and the shoot-out, run on the 6502
+  function stage(tiles, which, img, label, framesPerPass, play) {
+    const m = ram.slice();
+    KANE.picture(m, which === 0 ? 0 : 1);
+    m[0x907B] = which; m[0x8FA2] = 0; m[0x8FAC] = 3;           // stage, level 1, three tokens
+    const s = 2, W = 320, H = 165, bg = picture(img, s, 0, 0, W, H);
+    const t = tile(tiles, W * s, H * s, label);
+    const rand = rng(which * 7919 + 17);
+    let stick = 0xFF, failed = false, acc = 0;
+    const cpu = cpuFor(m, (a) => a === 0xDC00 ? stick : a === 0xDC04 || a === 0xDC05 || a === 0xD012 ? rand() : 0);
+    cpu.pc = 0x34AF; cpu.sp = 0xF0;                               // start_play
+    const stop = () => true, rts = (c) => { c.rts(); };
+    const hooks = {
+      0x380B: (c) => { c.rts(); return true; },                  // delay_count: the end of a pass
+      0x9337: rts, 0x935B: rts, 0x1F30: rts,                      // play_hit, play_whinny, wait_points
+      0x1F04: stop, 0x0C1B: stop,                                 // clear_bitmap, show_picture
+    };
+    function pass() {
+      if (failed) return;
+      m[0x8FAC] = 3;                                              // the tokens kept up
+      play(m, (v) => { stick = v; });
+      m[0x1027] = collisions(m) & 0x7F;                           // what irq_bottom keeps ($3A12)
+      try { cpu.run({ hooks, maxSteps: 4e6 }); } catch (e) { failed = true; }
+      if (cpu.pc === 0x1F04 || cpu.pc === 0x0C1B) failed = true;
+      if (failed) t.sp.innerHTML += '<br><span class="gx-miss">The game\'s code stopped here: ' + hex(cpu.pc, 4) + '.</span>';
+    }
+    return {
+      frame() {
+        const c = m[COL + 7]; m[COL + 7] = c ? c - 1 : 1;         // irq_bottom flips the sight's colour
+        acc += 1;
+        while (acc >= framesPerPass) { acc -= framesPerPass; pass(); }
+      },
+      draw() { t.ctx.drawImage(bg, 0, 0); drawShadows(t.ctx, m, s, 0, 0); },
+    };
+  }
+
+  // The archer's script: aim the sight ahead of the leftmost duck that an arrow can reach, fire.
+  let duckCx = 12, duckCy = 10;
+  function archer(m, set) {
+    if (m[SX] !== 1 || !(m[MSB] & 1) || m[0x907A] || m[0x8FAF]) { set(0xFF); return; }
+    m[0x8FB0] = 0x10; m[0x8FB1] = 0;                               // arrows kept, ducks home kept at 0
+    let best = null;
+    for (let d = 0; d < 3; d++) {
+      const n = 3 + d, x = sx(m, n), y = sy(m, n);
+      if (m[0x11CE + d] || x > 170 || x < 8) continue;
+      if (!best || x > best.x) best = { x, y, v: m[0x90C1 + d] };
+    }
+    if (!best) { set(0xFF); return; }
+    const ax = best.x + duckCx - 20, ay = best.y + duckCy - 17;     // the ring of the sight over the duck
+    let tx = ax;
+    for (let k = 0; k < 3; k++) {
+      const dist = 255 - tx, dx = dist < 0x70 ? dist >> 3 : dist >> 4;
+      tx = ax + best.v * (dx > 0 ? dist / dx : 0);
+    }
+    tx = Math.min(0xB3, Math.max(0x20, Math.round(tx))); const ty = Math.min(0x9B, Math.max(0x32, ay));
+    const px = m[0x0E4D], py = m[0x0E4E];
+    let v = 0xFF;
+    if (ty < py - 3) v &= ~1; else if (ty > py + 3) v &= ~2;
+    if (tx < px - 3) v &= ~4; else if (tx > px + 3) v &= ~8;
+    if (v === 0xFF) v &= ~0x10;
+    set(v);
+  }
+  // The Marshall's script: walk under a gunman who is out, bringing the sight to his height on the
+  // way, and fire; with nobody out, walk up and down the street, where a gunman's shot cannot hit
+  // him; and now and then stand still, which lets the gunmen's aim close in.
+  let patrol = 1, passNo = 0;
+  function marshall(m, set) {
+    m[0x8FB0] = 6; m[0x9137] = 0; m[0x41] = 0x12;                 // bullets, and twelve still to shoot
+    if (m[0x91B5] || m[0x90B7] || ++passNo % 300 < 100) { set(0xFF); return; }   // and now and then he stands
+    const mx = sx(m, 0), py = m[0x0E4E];
+    let tgt = null;
+    for (let g = 0; g < 4; g++) {
+      const pl = m[0x9165 + g];
+      if (!m[0x91B1 + g] || m[0x91DA + g] || m[0x916B + pl * 4]) continue;
+      let n = 0; for (let i = 0; i < 63; i++) if (m[0x4040 + g * 64 + i]) n++;
+      // the box check_shot ($3734) allows round his place, by his kind (hit_boxes, $91CA)
+      const hb = ram.subarray(0x91CA + (m[0x916C + pl * 4] & 3) * 4);
+      const t = { x: sx(m, 3 + g), y: sy(m, 3 + g), xlo: 1 - hb[0], xhi: hb[1], ylo: 1 - hb[2], yhi: hb[3] };
+      if (n >= 3 && (!tgt || Math.abs(t.x - mx) < Math.abs(tgt.x - mx))) tgt = t;
+    }
+    let v = 0xFF;
+    const gy = tgt ? tgt.y + (tgt.ylo + tgt.yhi >> 1) : 0x60, dy = py - (tgt ? tgt.y : 0);
+    if (gy < py - 1) v &= ~1; else if (gy > py + 1) v &= ~2;
+    if (!tgt) {
+      if (mx > 0x110) patrol = -1; else if (mx < 0x50) patrol = 1;
+      walked = true;
+      set(v & (patrol > 0 ? ~8 : ~4));
+      return;
+    }
+    const dx = mx - tgt.x, out = dx > tgt.xhi ? dx - tgt.xhi : dx < tgt.xlo ? tgt.xlo - dx : 0;
+    if (out && out < 6 && walked) walked = false;                  // stand a pass, so the next step is 3
+    else if (out) { walked = true; v &= dx > tgt.xhi ? ~4 : ~8; }
+    else if (dy >= tgt.ylo && dy <= tgt.yhi) { walked = false; v = 0xEF; }
+    else walked = false;
+    set(v);
+  }
+  let walked = false;
+
+  // ---- 01: the canyon
+  const mCanyon = ram.slice(), rCanyon = KANE.picture(mCanyon, 1);
+  const canyonImg = KANE.bitmapImage(mCanyon, rCanyon.colour, 1);
+  const mTown = ram.slice(), rTown = KANE.picture(mTown, 0);
+  const townImg = KANE.bitmapImage(mTown, rTown.colour, 11);
+  {
+    const d = shape(mCanyon, 0x58); let n = 0, cx = 0, cy = 0;
+    for (let y = 0; y < 21; y++) for (let x = 0; x < 24; x++) if (d[y * 3 + (x >> 3)] & 0x80 >> (x & 7)) { n++; cx += x; cy += y; }
+    if (n) { duckCx = Math.round(cx / n); duckCy = Math.round(cy / n); }
+  }
+  const scenes = [];
+  let g = group('The canyon', 'The archer walks in from the left and stops at the edge of the rocks; then the stick moves the sight six pixels a pass, and the bow arm follows it. Three ducks fly across, each flapping through <code>$58</code>-<code>$5B</code>, one picture a pass. An arrow flies until it leaves the top or the left of the screen, or a duck flies into it, and a duck hit falls with the arrow in it.');
+  scenes.push(stage(g, 1, canyonImg, '<code>duck_loop</code> (<code>$1950</code>) on the 6502, a pass every 3.7 frames. The sight is sprite 7, the arrow sprite 6, the ducks sprites 3 to 5.', 3.7, archer));
+  {
+    const tiles = g;
+    for (let f = 0; f < 9; f++) {
+      // shape 1's bottom eight rows, columns 1 and 2, as duck_loop copies them ($1A46)
+      const t = tile(tiles, 72, 40, 'arrow ' + f + (f ? '' : ', flat') + (f === 8 ? ', steepest' : '')), d = new Uint8Array(63);
+      for (let r = 0; r < 8; r++) { d[(13 + r) * 3 + 1] = ram[0x112B + f * 16 + 2 * r]; d[(13 + r) * 3 + 2] = ram[0x112B + f * 16 + 2 * r + 1]; }
+      C64.drawSprite(t.ctx, d, 4 - 8 * 4, 4 - 13 * 4, 4, PAL[1]);
+    }
+  }
+  g = group('The shoot-out', 'The Marshall walks in and stops in the street. Left and right walk him, up and down move the sight, which keeps to his x, and fire shoots while he stands. Gunmen come out of the sixteen hiding places, wait, fire and go back. A gunman\'s shot does nothing while the Marshall walks; standing, he is hit if the gunmen\'s aim, which closes on him the longer he stands, is within eight pixels, and otherwise the shot throws up a puff of dust where it lands. Shot, he falls in three pictures and gets up where he fell.');
+  scenes.push(stage(g, 0, townImg, 'The shoot-out\'s loop (<code>$35FA</code>) on the 6502, a pass every 2.8 frames. The gunmen take a step every fifth pass, about fourteen frames.', 2.8, marshall));
+
+  // The four kinds of gunman, each from a place of his kind, by gunman_step ($8810) on the 6502.
+  {
+    const m = ram.slice();
+    for (let i = 0; i < 0x100; i++) m[0x4040 + i] = 0;
+    for (let p = 0; p < 16; p++) { m[0x916B + p * 4] = 0; m[0x914D + p] = 0; }
+    const rand = rng(4242), cpu = cpuFor(m, (a) => a === 0xDC04 || a === 0xDC05 || a === 0xD012 ? rand() : 0);
+    const KIND = [
+      [0, 'kind 0: rises from below'], [5, 'kind 1: rises from below'],
+      [8, 'kind 2: slides in from the right'], [12, 'kind 3: slides in from the left'],
+    ];
+    const men = KIND.map(([place, text], gi) => {
+      const px = ram[0x9169 + place * 4], x = px + (px & 1) * 256, y = ram[0x916A + place * 4];
+      const s = 3, x0 = x - 24 - 8, y0 = y - 50 - 6;
+      const t = tile(g, 40 * s, 32 * s, 'place ' + place + ', ' + text);
+      return { gi, place, x, y, s, x0, y0, t, bg: picture(townImg, s, x0, y0, 40, 32), steps: 0, wait: 1, round: gi };
+    });
+    let acc = 0, passes = 0;
+    function step(man) {
+      const gx = man.gi;
+      if (man.wait) {
+        if (--man.wait) return;
+        m[0x91B1 + gx] = 0xFF; m[0x914D + man.place] = 0xFF; m[0x9165 + gx] = man.place;   // as $3EE6 does
+        m[0x9161 + gx] = 0; m[0x91AD + gx] = 0; m[0x916B + man.place * 4] = 0; man.steps = 0; man.round++;
+        for (let i = 0; i < 64; i++) m[0x4040 + gx * 64 + i] = 0;
+      }
+      if (man.round % 2 === 0 && ++man.steps === 9) m[0x916B + man.place * 4] = 1;          // shot, as check_shot marks him
+      cpu.call(0x8810, { x: gx }, { hooks: { 0x8AF2: (c) => { c.rts(); } }, maxSteps: 2e5 });
+      if (!m[0x91B1 + gx]) man.wait = 4;
+    }
+    scenes.push({
+      frame() {
+        acc += 1;
+        while (acc >= 2.8) { acc -= 2.8; if (++passes % 5 === 0) for (const man of men) step(man); }
+      },
+      draw() {
+        for (const man of men) {
+          man.t.ctx.drawImage(man.bg, 0, 0);
+          if (!man.wait) C64.drawSprite(man.t.ctx, shape(m, 1 + man.gi), (man.x - 24 - man.x0) * man.s, (man.y - 50 - man.y0) * man.s, man.s, PAL[1]);
+        }
+      },
+    });
+  }
+
+  // ---- the rides
+  const mRide = ram.slice();
+  KANE.course(mRide, 1);
+  for (let i = 0; i < 0xC0; i++) mRide[0x7300 + i] = ram[0x4000 + i];   // build_ride_screen's copy ($2F13)
+  const flipped = new Map();
+  function mirror(d) {
+    const o = new Uint8Array(63);
+    for (let y = 0; y < 21; y++) {
+      const v = d[y * 3] << 16 | d[y * 3 + 1] << 8 | d[y * 3 + 2]; let r = 0;
+      for (let b = 0; b < 24; b++) if (v >> b & 1) r |= 1 << (23 - b);
+      o[y * 3] = r >> 16; o[y * 3 + 1] = r >> 8 & 255; o[y * 3 + 2] = r & 255;
+    }
+    return o;
+  }
+  const rideShape = (p, flip) => {
+    const d = shape(mRide, p);
+    if (!flip) return d;
+    if (!flipped.has(p)) flipped.set(p, mirror(d));
+    return flipped.get(p);
+  };
+  const SKY = 6, GROUND = 8;
+  function rideBg(s, x0, y0, w, h) {
+    const c = document.createElement('canvas'); c.width = w * s; c.height = h * s;
+    const ctx = c.getContext('2d');
+    for (let y = 0; y < h; y++) { ctx.fillStyle = PAL[y0 + y + 50 < 0x6A ? SKY : GROUND]; ctx.fillRect(0, y * s, w * s, s); }
+    return c;
+  }
+  const list = (a) => { const o = []; while (ram[a] !== 0xFF) o.push(ram[a++]); return o; };
+  const LISTS = { stand: list(0x1038), trot: list(0x1042), gallop: list(0x104C), jump: list(0x1056), turn: list(0x1065) };
+  const HL = [], HR = [];
+  for (let i = 0; i < 6; i++) { HL.push([ram[0x1005 + i * 2], ram[0x1006 + i * 2]]); HR.push([ram[0x1011 + i * 2], ram[0x1012 + i * 2]]); }
+  const RIDER = [[ram[0x0FED], ram[0x0FEE]], [ram[0x0FEF], ram[0x0FF0]]];
+  const JUMP_Y = Array.from(ram.subarray(0x0FF1, 0x0FFF)), JUMP_HORSE = Array.from(ram.subarray(0x0FFF, 0x1005));
+  function drawHorse(ctx, frame, flip, s, x0, y0, ys, rider, riderY) {
+    const pos = flip ? HR : HL;
+    for (let k = 5; k >= 0; k--) {                                  // sprites 7 to 2: shapes 5,3,1 then 4,2,0
+      const n = k < 3 ? k * 2 : (k - 3) * 2 + 1, p = 16 + frame * 6 + n;
+      const y = ys ? ys[k] : pos[k][1];
+      C64.drawSprite(ctx, rideShape(p, flip), (pos[k][0] - 24 - x0) * s, (y - 50 - y0) * s, s, PAL[1]);
+    }
+    if (rider === null) return;
+    const rp = RIDER[flip ? 1 : 0];
+    C64.drawSpriteMC(ctx, rideShape(rider, flip), (rp[0] - 24 - x0) * s, ((riderY || rp[1]) - 50 - y0) * s, s, PAL[1], PAL[1], PAL[0]);
+  }
+  g = group('The rides', 'The horse is sprites 2 to 7 and the rider sprite 1. Every fourth frame the horse takes the next frame from the list for its speed: standing, a trot for a speed of one or two, a gallop for three. Fire jumps: the horse rises eight lines and the rider follows his own list of heights. A turn mirrors all six shapes and then plays the turn\'s five frames. The rider changes picture every second step whatever the horse does.');
+  const RX0 = 0x86, RY0 = 0x52, RW = 104, RH = 72;
+  const rides = [
+    ['stand', 'standing: frames ' + LISTS.stand.filter((v, i, a) => a.indexOf(v) === i).map((v) => hex(v)).join(', ') + ', three steps each'],
+    ['trot', 'trotting: frames ' + hex(LISTS.trot[0]) + '-' + hex(LISTS.trot[LISTS.trot.length - 1])],
+    ['gallop', 'galloping: frames ' + hex(LISTS.gallop[0]) + '-' + hex(LISTS.gallop[LISTS.gallop.length - 1])],
+    ['jump', 'a jump from a gallop: frames ' + hex(LISTS.jump[0]) + '-' + hex(LISTS.jump[LISTS.jump.length - 1]) + ', rider heights from <code>$0FF1</code>'],
+    ['turn', 'turning: mirrored, then frames ' + hex(LISTS.turn[0]) + ' down to ' + hex(LISTS.turn[LISTS.turn.length - 1]) + ', then trotting'],
+  ].map(([kind, text]) => ({ kind, t: tile(g, RW * 2, RH * 2, text), bg: rideBg(2, RX0 - 24, RY0 - 50, RW, RH) }));
+  let rideStep = 0;
+  function rideFrame(kind, k) {
+    // what the horse shows at step k of a loop of each tile
+    if (kind === 'stand' || kind === 'trot' || kind === 'gallop') { const l = LISTS[kind]; return { f: l[k % l.length] }; }
+    if (kind === 'jump') {
+      const g9 = LISTS.gallop, j = LISTS.jump, loop = g9.length * 2 + j.length, i = k % loop;
+      if (i < g9.length * 2) return { f: g9[i % g9.length] };
+      return { f: j[i - g9.length * 2], jump: i - g9.length * 2 };
+    }
+    const tl = LISTS.turn, tr = LISTS.trot, half = tl.length + tr.length * 2, i = k % (half * 2), flip = i >= half, h = i % half;
+    return { f: h < tl.length ? tl[h] : tr[(h - tl.length) % tr.length], flip };
+  }
+  function drawRides() {
+    const rider = (rideStep >> 1) % 2 ? 0xCB : 0xCA;
+    for (const r of rides) {
+      const st = rideFrame(r.kind, rideStep), ctx = r.t.ctx;
+      ctx.drawImage(r.bg, 0, 0);
+      const ys = st.jump !== undefined ? [0, 1, 2, 3, 4, 5].map((k) => JUMP_HORSE[k]) : null;
+      drawHorse(ctx, st.f, !!st.flip, 2, RX0 - 24, RY0 - 50, ys, rider, st.jump !== undefined ? JUMP_Y[st.jump] : 0);
+    }
+  }
+  // The rider thrown: the game's own fall ($23C2) run on the 6502, a step every frame_delay, with
+  // the sprites placed every fourth frame, as irq_ride_control copies them.
+  const thrown = (() => {
+    const m = mRide.slice();
+    for (let i = 0; i < 0x100; i++) m[0x0400 + i] = 0xFF;          // every shape facing as drawn
+    m[0x8FAD] = 1; m[0x8FAC] = 3; m[0x90ED] = 0xFF; m[0x90B5] = 0xFF;
+    m[0x91B8] = RIDER[0][0]; m[0x91B9] = RIDER[0][1]; m[0x90EE] = 0; m[0x90EF] = 0xCA; m[MSB] = 0;
+    const cpu = cpuFor(m, () => 0), steps = [], snap = () => steps.push({
+      rider: m[0x90EF], rx: m[0x91B8] + (m[MSB] >> 1 & 1) * 256, ry: m[0x91B9],
+      s0: m[0x90EE], x0: m[0x91B6] + (m[MSB] & 1) * 256, y0: m[0x91B7], en: m[EN],
+    });
+    try {
+      cpu.call(0x23C2, {}, { hooks: {
+        0x3801: (c) => { snap(); c.rts(); },
+        0x2514: () => { snap(); return true; },                   // before the whinny
+      }, maxSteps: 2e6 });
+    } catch (e) { /* stopped at $2514 on purpose */ }
+    return steps;
+  })();
+  {
+    let lo = 999, hi = 0, top = 999, bot = 0;
+    for (const st of thrown) {
+      for (const [x, y, on] of [[st.rx, st.ry, 1], [st.x0, st.y0, st.en & 1]]) if (on) { lo = Math.min(lo, x); hi = Math.max(hi, x + 24); top = Math.min(top, y); bot = Math.max(bot, y + 21); }
+    }
+    lo = Math.min(lo, 0x93) - 6; hi = Math.max(hi, 0xDB) + 6; top = Math.min(top, 0x67) - 4; bot = Math.max(bot, 0x91) + 4;
+    const s = 2, t = tile(g, (hi - lo) * s, (bot - top) * s, 'thrown: the game\'s fall at <code>$23C2</code> on the 6502, a step every <code>frame_delay</code>, shapes <code>$CC</code>-<code>$CE</code>');
+    const bg = rideBg(s, lo - 24, top - 50, hi - lo, bot - top);
+    let acc = 0, k = 0, shown = null;
+    const GALLOP = 18, HOLD = 30;
+    scenes.push({
+      frame(n) {
+        acc += 1;
+        while (acc >= 2.8) { acc -= 2.8; k = (k + 1) % (GALLOP + thrown.length + HOLD); }
+        if (n % 4 === 0) shown = k;
+      },
+      draw() {
+        if (shown === null) shown = 0;
+        const ctx = t.ctx; ctx.drawImage(bg, 0, 0);
+        if (shown < GALLOP || !thrown.length) {
+          drawHorse(ctx, LISTS.gallop[rideStep % LISTS.gallop.length], false, s, lo - 24, top - 50, null, (rideStep >> 1) % 2 ? 0xCB : 0xCA);
+          return;
+        }
+        const st = thrown[Math.min(shown - GALLOP, thrown.length - 1)];
+        drawHorse(ctx, LISTS.gallop[0], false, s, lo - 24, top - 50, null, null);
+        if (st.en & 1) C64.drawSprite(ctx, shape(mRide, st.s0), (st.x0 - lo) * s, (st.y0 - top) * s, s, PAL[0]);
+        C64.drawSpriteMC(ctx, shape(mRide, st.rider), (st.rx - lo) * s, (st.ry - top) * s, s, PAL[1], PAL[1], PAL[0]);
+      },
+    });
+  }
+
+  // ---- the clock
+  let frame = 0, running = true, last = 0, acc = 0;
+  function tick(n) {
+    for (let i = 0; i < n; i++) {
+      frame++;
+      for (const sc of scenes) sc.frame(frame);
+      if (frame % 4 === 0) rideStep++;
+    }
+    for (const sc of scenes) sc.draw();
+    drawRides();
+    $('gx-stat').textContent = 'frame ' + frame + ' · ' + (frame / FPS).toFixed(1) + ' s';
+  }
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * FPS;
+      const n = Math.floor(acc); acc -= n;
+      if (n) tick(n);
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Play'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Play'; tick(1); });
+  tick(1);
+  requestAnimationFrame(loop);
+
+  // ---- 02: the sheet
+  const CAT = {
+    walk: ['#4f8cc9', 'walking'], stand: ['#e0a030', 'standing and shooting'], hit: ['#d0503c', 'shot'],
+    dust: ['#9a7b4f', 'dust'], arm: ['#5aa05a', 'the bow arm'], duck: ['#a070c0', 'ducks'],
+    gallop: ['#4f8cc9', 'galloping'], trot: ['#5aa05a', 'trotting'], jump: ['#e0a030', 'jumping'],
+    standh: ['#9a7b4f', 'standing'], turn: ['#a070c0', 'turning'], rider: ['#d0503c', 'the rider'],
+  };
+  function stageUse(p) {
+    const W = 'walk_animate (<code>$3912</code>)';
+    if (p <= 0x26) return ['walk', 'walking: the head, sprite 0, black', W, 0];
+    if (p <= 0x2D) return ['walk', 'walking: the legs, sprite 2, black', W, 0];
+    if (p <= 0x3B) return ['walk', 'walking: the arms, sprite 1, white', W, 1];
+    const T = {
+      0x3F: ['stand', 'standing: the head, sprite 0, black', 'marshall_stand (<code>$3843</code>)', 0],
+      0x40: ['stand', 'standing: the legs, sprite 2, black', 'marshall_stand (<code>$3843</code>)', 0],
+      0x41: ['stand', 'standing: the arms, sprite 1, white', 'marshall_stand (<code>$3843</code>)', 1],
+      0x42: ['stand', 'shooting: the head, for twelve passes', '<code>$36C8</code>', 0],
+      0x43: ['stand', 'shooting: the legs, for twelve passes', '<code>$36C8</code>', 0],
+      0x44: ['stand', 'shooting: the arms, for twelve passes', '<code>$36C8</code>', 1],
+      0x45: ['stand', 'after the shot: the head, for five passes', '<code>$36F4</code>', 0],
+      0x46: ['stand', 'after the shot: the legs, for five passes', '<code>$36F4</code>', 0],
+      0x47: ['stand', 'after the shot: the arms, for five passes', '<code>$36F4</code>', 1],
+      0x48: ['hit', 'hit: the legs, while the hit sample plays', 'marshall_dies (<code>$8BC5</code>)', 0],
+      0x49: ['hit', 'hit and down: the arms', 'marshall_dies (<code>$8BC5</code>)', 1],
+      0x4A: ['hit', 'hit: the head', 'marshall_dies (<code>$8BC5</code>)', 0],
+      0x4B: ['hit', 'down: the legs, for 60 delays', 'marshall_dies (<code>$8BC5</code>)', 0],
+      0x4C: ['hit', 'down: the head, for the last 30 delays', 'marshall_dies (<code>$8BC5</code>)', 0],
+      0x4D: ['dust', 'a puff of dust, first', 'dust_puffs (<code>$8B76</code>)', 0],
+      0x4E: ['dust', 'a puff of dust, second', 'dust_puffs (<code>$8B76</code>)', 0],
+      0x4F: ['dust', 'a puff of dust, last', 'dust_puffs (<code>$8B76</code>)', 0],
+      0x50: ['arm', 'the bow arm, aimed high', '<code>$1AE3</code>', 1],
+      0x51: ['arm', 'the bow arm, aimed highest', '<code>$1AEA</code>', 1],
+      0x52: ['arm', 'the bow arm, aimed a little up', '<code>$1AD8</code>', 1],
+      0x53: ['arm', 'the bow arm as it shoots, while the arrow flies', '<code>$1A6F</code>', 1],
+      0x54: ['arm', 'the bow arm, aimed low', '<code>$1ACD</code>', 1],
+    };
+    if (T[p]) return T[p];
+    if (p >= 0x58 && p <= 0x5B) return ['duck', 'a duck\'s wings, picture ' + (p - 0x57) + ' of four', 'wing_frames (<code>$11BD</code>)', 1];
+    return null;
+  }
+  function rideUse(p) {
+    if (p >= 16 && p < 16 + 31 * 6) {
+      const f = (p - 16) / 6 | 0, part = (p - 16) % 6, where = ['top left', 'bottom left', 'top middle', 'bottom middle', 'top right', 'bottom right'][part];
+      const kind = f <= 8 ? 'gallop' : f <= 17 ? 'trot' : f <= 22 ? 'jump' : f <= 25 ? 'standh' : 'turn';
+      return [kind, 'the horse, frame ' + hex(f) + ' (' + CAT[kind][1] + '), its ' + where, 'set_horse_frames (<code>$3063</code>)', 1];
+    }
+    if (p === 0xCA || p === 0xCB) return ['rider', 'the rider, in the saddle', '<code>$2600</code>', 1, true];
+    if (p === 0xCC) return ['rider', 'the rider thrown, rising', '<code>$248B</code>', 1, true];
+    if (p === 0xCD) return ['rider', 'the rider thrown, landing', '<code>$24CB</code>', 1, true];
+    if (p === 0xCE) return ['rider', 'the rider\'s legs as he lands, sprite 0, black', '<code>$24D0</code>', 0];
+    return null;
+  }
+  const SETS = {
+    stages: { label: 'The stages\' shapes, $20-$7F', from: 0x20, to: 0x7F, m: mCanyon, bg: 11, use: stageUse, cats: ['walk', 'stand', 'hit', 'dust', 'arm', 'duck'] },
+    rides: { label: 'The rides\' shapes, $10-$DF', from: 0x10, to: 0xDF, m: mRide, bg: SKY, use: rideUse, cats: ['gallop', 'trot', 'jump', 'standh', 'turn', 'rider'] },
+  };
+  const sheet = $('gx-sheet'), sctx = sheet.getContext('2d'), CELL = 52;
+  let set = SETS.stages;
+  function drawSheet() {
+    const n = set.to - set.from + 1, rows = Math.ceil(n / 16);
+    sheet.height = rows * CELL;
+    sctx.fillStyle = '#1b1c20'; sctx.fillRect(0, 0, sheet.width, sheet.height);
+    for (let i = 0; i < n; i++) {
+      const p = set.from + i, u = set.use(p), x = (i % 16) * CELL + 2, y = (i / 16 | 0) * CELL + 2;
+      sctx.fillStyle = PAL[set.bg]; sctx.fillRect(x, y, 48, 42);
+      const d = shape(set.m, p);
+      if (u && u[4]) C64.drawSpriteMC(sctx, d, x, y, 2, PAL[1], PAL[1], PAL[0]);
+      else C64.drawSprite(sctx, d, x, y, 2, u ? PAL[u[3]] : PAL[15]);
+      if (u) { sctx.fillStyle = CAT[u[0]][0]; sctx.fillRect(x, y + 44, 48, 4); }
+    }
+    $('gx-key').innerHTML = set.cats.map((c) => '<span><i style="background:' + CAT[c][0] + '"></i>' + CAT[c][1] + '</span>').join('');
+  }
+  const bar = $('gx-sets');
+  for (const [k, v] of Object.entries(SETS)) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = v.label; b.setAttribute('aria-pressed', String(v === set));
+    b.addEventListener('click', () => { set = v; for (const o of bar.children) o.setAttribute('aria-pressed', String(o === b)); drawSheet(); });
+    bar.appendChild(b);
+  }
+  drawSheet();
+  sheet.addEventListener('mousemove', (e) => {
+    const r = sheet.getBoundingClientRect(), x = (e.clientX - r.left) * sheet.width / r.width, y = (e.clientY - r.top) * sheet.height / r.height;
+    const i = (y / CELL | 0) * 16 + (x / CELL | 0), p = set.from + i;
+    if (x >= 16 * CELL || p > set.to) return;
+    const u = set.use(p), base = set === SETS.stages ? 0x4000 : 0x4000;
+    $('gx-read').innerHTML = '<code>' + hex(p) + '</code> at <code>' + hex(base + p * 64, 4) + '</code>: ' +
+      (u ? u[1] + ', set by ' + u[2] + '.' : 'nothing shows this shape.');
+  });
+})();
+</script>

@@ -192,13 +192,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">07 · Tal and the suit</p>
   <h2 class="t">Tal turns to face you before he walks the other way</h2>
   <p class="lede">What the joystick does depends on Tal's picture. Left and right turn him one view at a time through facing the player before he walks, and fire does nothing at all while he faces you.</p>
-  <div class="plate">
-    <div class="an-bar" id="an-tal-bar"></div>
-    <div class="an-sprite"><canvas id="an-tal" width="144" height="126"></canvas><p class="an-out" id="an-tal-out"></p></div>
-    <p class="cap">Tal and the suit are two sprites each, one above the other, run from the animations at <code>anim_ptrs</code> (<code>$FCA6</code>) at the game's speed of 50 frames a second, in the shared multicolours the game sets on foot and in the suit.</p>
-  </div>
   <p>The joystick is read every seventh frame, and not at all while Tal is jumping, falling, dissolving or appearing (<code>tal_control</code>). On foot (<code>foot_control</code>), up from a side view jumps straight up, fire while walking jumps that way, fire while standing throws a stone if the last one has landed, and down crouches. Crouching is how he picks things up.</p>
-  <p>Facing the player is the only view in which he can climb into the armour or use the teleporter (<code>tal_touches</code>).</p>
+  <p>Facing the player is the only view in which he can climb into the armour or use the teleporter (<code>tal_touches</code>). Every one of his animations, and the suit's, runs on the <a href="graphics.html#cast">Graphics</a> tab.</p>
   <p>In the suit (<code>suit_control</code>), up takes off only with the Gravity Displacer fitted, left and right turn and then speed up to 3 pixels a frame, and fire shoots the Pulsar Beam if it is fitted. Left or right on the ground climbs out, except in the ten rooms of the top five rows, where the radiation is highest.</p>
 </section>
 
@@ -221,14 +216,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">09 · The creatures</p>
   <h2 class="t">A creature's damage is four times its hit points</h2>
   <p class="lede">The game keeps one number for how hard a creature hits Tal and works out from it how many hits the creature takes to kill.</p>
-  <div class="plate">
-    <div class="an-grid" id="an-crit"></div>
-    <p class="an-out" id="an-crit-out"></p>
-    <p class="cap">The 25 animations in <code>enemy_anims</code> (<code>$C618</code>), each with its points (<code>enemy_points</code>, <code>$C631</code>) and damage (<code>enemy_damage</code>, <code>$C64A</code>), drawn from their animations in the shared multicolours of Tal on foot.</p>
-  </div>
   <p>When a room is built, each creature's hit points are its damage divided by four (<code>set_enemy_stats</code>): 2 for one that takes 8 energy on contact, 1 for one that takes 4. A stone takes one hit point and a Pulsar Beam shot two (<code>sprite_hits</code>), so the creatures that hurt most take two stones or one shot, and the rest one of either.</p>
   <p>A creature that touches Tal takes its damage from his energy, or half of it from the suit's, a quarter with the Particle Negator, and then dies, scoring its points. Sixteen animations cannot die: the drops and their splashes, the bomb-thrower, the empty armour, the recharge cells, the add-ons and the teleporter (<code>unkillable_anims</code>, <code>$C608</code>). A drop that splashes on the floor appears again where it started and falls again (<code>spawn_enemy</code>), so it costs 4 energy on every frame it touches Tal, for ever.</p>
-  <p>The round striped creature holds back everything listed after it in its room, and a stone kill pays double (<a href="discoveries.html">Discoveries</a>).</p>
+  <p>The round striped creature holds back everything listed after it in its room, and a stone kill pays double (<a href="discoveries.html">Discoveries</a>). Every creature, with its points, its damage and the rooms it is listed in, is on the <a href="graphics.html#cast">Graphics</a> tab.</p>
 </section>
 
 <section id="radiation">
@@ -726,16 +716,6 @@ function Anim(m, n) {
 // The How it works page's widgets, drawn from the listing's memory (C64.load) with the ant-room,
 // ant-music and ant-ui blocks above.
 const LEVEL_COLOURS = ['#2a8a4a', '#b08a00', '#c25a00', '#d04a3a'];
-const CRIT = {
-  0xC7: 'a creature in cyan', 0xC8: 'the same creature in light green', 0xCB: 'a creature in orange',
-  0xCC: 'the same creature in light red', 0xCD: 'the same creature in purple', 0xCE: 'a creature in green',
-  0xCF: 'the same creature in light red', 0xD0: 'the round striped creature in light blue',
-  0xD1: 'the round striped creature in light red', 0xD7: 'a creature in light blue', 0xD8: 'the same creature in purple',
-  0xD9: 'a creature in cyan', 0xDA: 'a creature in green', 0xDB: 'the machine gunner\'s bullet',
-  0xD4: 'a drop in light red', 0xD5: 'a drop in green', 0xD6: 'a drop in yellow', 0xC9: 'the bomb-thrower\'s left half',
-  0xCA: 'the bomb-thrower\'s right half', 0xC6: 'a recharge cell', 0xC2: 'the Pulsar Beam', 0xC3: 'the Particle Negator',
-  0xC4: 'the Gravity Displacer', 0xC5: 'the Implosion Mine', 0xD2: 'the bomb',
-};
 const roomName = (m, r, G) => hex(r) + ', ' + ANT.place(G[r]);
 
 // ---- 03 the screen
@@ -833,39 +813,6 @@ function solidWidget(ram) {
   draw();
 }
 
-// ---- 07 Tal and the suit
-const TAL = [
-  ['Facing the player', 0x88, 0x89], ['Walking left', 0x80, 0x81], ['Walking right', 0x82, 0x83],
-  ['Standing, facing left', 0x84, 0x85], ['Crouching down', 0x8A, 0x8B], ['Jumping left', 0x92, 0x93],
-  ['Falling', 0x94, 0x95], ['Landing', 0x96, 0x97], ['Throwing', 0xA2, 0xA3], ['Collapsing', 0xA6, 0xA7],
-  ['Lying dead', 0xA8, 0xA9, 'side'], ['Getting up', 0xAA, 0xAB], ['The empty armour', 0xC0, 0xC1],
-  ['The suit, facing left', 0xAC, 0xAD, 'suit'], ['The suit turning', 0xAE, 0xAF, 'suit'],
-  ['The suit, facing the player', 0xB0, 0xB1, 'suit'], ['The suit, landed', 0xB2, 0xB3, 'suit'],
-];
-function talWidget(ram) {
-  const cv = $('an-tal'), bar = $('an-tal-bar'), W = 72, H = 63;
-  let pair = null, A = null;
-  function draw() {
-    const px = new Uint8Array(W * H), mc = pair[3] === 'suit' ? [14, 11] : [8, 9];
-    A.forEach((a, k) => {
-      const x = pair[3] === 'side' ? 12 + 24 * k : 24, y = pair[3] === 'side' ? 31 : 10 + 21 * k;
-      ANT.sprite(ram, px, W, H, a.pic(), x, y, a.a.colour, a.a.mc, ...mc);
-    });
-    show(cv, { w: W, h: H, px }, 2);
-  }
-  TAL.forEach((p, i) => {
-    const b = button(bar, p[0], () => {
-      pair = p; A = [Anim(ram, p[1]), Anim(ram, p[2])];
-      const a = ANT.anim(ram, p[1]);
-      $('an-tal-out').innerHTML = '<b>' + p[0] + '</b>: animations ' + hex(p[1]) + ' and ' + hex(p[2]) + ', ' + a.pics.length + (a.pics.length === 1 ? ' picture' : ' pictures') +
-        ' of ' + a.wait + (a.wait === 1 ? ' frame' : ' frames') + ' each, from <code>' + hex(a.at, 4) + '</code>, in ' + (p[3] === 'suit' ? 'the suit\'s' : 'Tal\'s') + ' shared multicolours.';
-      draw();
-    });
-    if (!i) b.click();
-  });
-  Frames.add(cv, () => { A.forEach((a) => a.step()); draw(); });
-}
-
 // ---- 08 the panel's messages
 // the strip as the lit panel shows it, 88 x 8 pixels in multicolour: the panel band's 11 and 14
 // ($D022, $D023) and the strip's colour RAM, 11, for cyan
@@ -906,36 +853,6 @@ function messageWidget(ram) {
   Frames.add(cv, frame);
 }
 
-// ---- 09 the creatures
-function creatureWidget(ram) {
-  const box = $('an-crit'), G = ANT.grid(ram), anims = [];
-  for (let i = 0; i < 25; i++) {
-    const n = ram[0xC618 + i], pts = ram[0xC631 + i], dmg = ram[0xC64A + i], cv = document.createElement('canvas');
-    const A = Anim(ram, n), px = new Uint8Array(24 * 21);
-    let drawn = '';
-    // drawn again only when the picture or its colours change, every few frames
-    const draw = () => {
-      const now = A.pic() + ',' + A.a.colour + ',' + A.a.mc;
-      if (now === drawn) return;
-      drawn = now; px.fill(0); ANT.sprite(ram, px, 24, 21, A.pic(), 0, 0, A.a.colour, A.a.mc); show(cv, { w: 24, h: 21, px }, 2);
-    };
-    anims.push(() => { A.step(); draw(); });
-    draw();
-    const b = button(box, '', () => {
-      const unkill = [...ram.subarray(0xC608, 0xC618)].includes(n), hits = dmg >> 2, rooms = [];
-      for (let r = 0; r < ANT.ROOMS; r++) if (ANT.sprites(ram, r).some((s) => s.anim === n)) rooms.push(ANT.place(G[r]));
-      let kill;
-      if (unkill) kill = 'Stones and shots cannot kill it.';
-      else if (n === 0xD2) kill = 'Its damage would give it 8 hit points, but it is placed with none, so the first stone kills it (Discoveries).';
-      else kill = hits + (hits === 1 ? ' hit point: one stone or one shot kills it.' : ' hit points: two stones or one shot kill it.');
-      $('an-crit-out').innerHTML = '<b>' + esc(CRIT[n] || 'animation ' + hex(n)) + '</b>, animation ' + hex(n) + ': ' + pts + ' points, ' + dmg + ' damage on contact. ' + kill +
-        (n === 0xDB ? ' Touching Tal, it vanishes without dying.' : '') + (rooms.length ? ' Listed in ' + rooms.length + (rooms.length === 1 ? ' room: ' : ' rooms: ') + rooms.join(', ') + '.' : n === 0xD2 ? ' Dropped by the bomb-thrower.' : n === 0xDB ? ' Fired by the machine gunner.' : '');
-    });
-    b.appendChild(cv); b.setAttribute('aria-label', CRIT[n] || hex(n));
-    if (!i) b.click();
-  }
-  Frames.add(box, () => anims.forEach((f) => f()));
-}
 
 // ---- 10 radiation
 function radiationWidget(ram) {
@@ -1006,7 +923,7 @@ function endWidget(ram) {
 frameWidget();
 C64.load('listing.json').then((L) => {
   const m = L.ram;
-  soundWidgets(m); roomWidget(m); solidWidget(m); talWidget(m); messageWidget(m); creatureWidget(m); radiationWidget(m); endWidget(m);
-}).catch((e) => { for (const id of ['an-music', 'an-sfx', 'an-room-out', 'an-solid-out', 'an-tal-out', 'an-msg-out', 'an-crit-out', 'an-rad-out', 'an-end-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
+  soundWidgets(m); roomWidget(m); solidWidget(m); messageWidget(m); radiationWidget(m); endWidget(m);
+}).catch((e) => { for (const id of ['an-music', 'an-sfx', 'an-room-out', 'an-solid-out', 'an-msg-out', 'an-rad-out', 'an-end-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
 // end of ant-page
 </script>

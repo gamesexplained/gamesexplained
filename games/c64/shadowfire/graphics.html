@@ -1,0 +1,355 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadowfire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.sf-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.sf-stack{position:relative}
+.sf-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
+.sf-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.sf-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.sf-btn:hover{border-color:var(--ink-mute)}
+.sf-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sf-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.sf-out b{font-weight:700}
+.sf-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.sf-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.sf-tbl th,.sf-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.sf-tbl th{font-weight:700;color:var(--ink-soft)}
+.sf-tbl td.sf-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.sf-meter{display:inline-block;height:9px;border-radius:2px;background:var(--accent);vertical-align:1px;margin-right:8px}
+.sf-steps{margin:0;padding-left:1.4em}
+.sf-steps li{margin:0 0 .45em}
+.sf-picks{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.sf-picks figure{margin:0;text-align:center;font-size:13px;line-height:1.35}
+.sf-picks .sf-n{font-family:var(--fm)}
+.sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
+.sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
+.sf-grid canvas{image-rendering:pixelated;max-width:100%}
+.sf-strip{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:3px;margin:0 0 6px}
+.sf-strip button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
+.sf-strip button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.sf-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
+.sf-mono{font-family:var(--fm);font-size:13px}
+.sf-ring{align-items:center;margin:14px 0 0;gap:6px}
+.sf-ring small{opacity:.7;margin-left:4px}
+.sf-ring>span{color:var(--ink-mute)}
+@media (max-width:720px){.sf-two{grid-template-columns:1fr}.sf-strip{grid-template-columns:repeat(10,minmax(0,1fr))}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-set{margin:0 0 14px}
+.gx-set h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 6px}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:4.5em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Beyond Software</p>
+  <h1>Shadowfire</h1>
+  <p class="sub">Almost nothing in Shadowfire is a sprite. Every person, object and command is a small multicolour picture drawn into the one bitmap. Five sprites remain: the cursor, and four grey ones that make the view screen's iris.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">The iris, the monitor and the cursor</h2>
+  <p class="lede">The three things that move on their own, each played by the game's own routine on the kit's 6502 in this page.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One frame</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div class="gx-tiles" id="gx-cast"></div>
+    <p class="cap">The iris is <code>iris_open</code> (<code>$45E2</code>) and <code>iris_close</code> (<code>$4646</code>) over the four sprites' bytes at <code>$0900</code>-<code>$09FF</code>, a circle at a time, each shown after the cycles it takes on the kit's 6502; the game's interrupt and the video chip take some of the real machine's time, so the game's iris is a little slower. Behind it is what the view screen shows for a place off the ship's map: the team's attack craft. The monitor is <code>show_portrait</code> (<code>$48B1</code>), one roll a frame, as <code>roll_monitor</code> (<code>$49A3</code>) waits for line <code>$64</code> before each.</p>
+  </div>
+  <p>The iris is four sprites, 1 to 4, each stretched to twice its width and height, so that together they cover the view screen with a square 96 pixels by 84 in dark grey (<code>restart</code>, <code>$40A3</code>). To open it, <code>iris_circle</code> (<code>$4698</code>) clears the sprites' pixels round a circle of growing radius, working out the points by a shift-and-add rotation rather than by sines, and twice as many points from radius 8 and again from 17, so that the bigger circles have no gaps. The map is drawn in the bitmap behind, so it shows through the hole. Closing sets the same pixels again from the outside in.</p>
+  <p>A portrait does not appear at once. <code>show_portrait</code> rolls the monitor's eight rows down a line at a time, and in seven passes copies one line of every cell of the portrait into the top line of the cell before rolling it on, like a picture coming through on a television. Line 0 of a cell is never copied, so the monitor shows line 1 twice.</p>
+  <p>People who move round the ship are not animated. Each has a figure and a map icon, and the view screen shows the icon of whoever stands in each of its cells (<code>find_view_locations</code>, <code>$6BB7</code>).</p>
+</section>
+
+<section id="pictures">
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Every picture the game draws, and seven portraits</h2>
+  <p class="lede">A picture is its width and height in cells, its bitmap a cell at a time, and its colours packed three bytes to two cells. One routine, <code>draw_picture</code> (<code>$42D9</code>), draws all of them.</p>
+  <div class="plate">
+    <div id="gx-sets"></div>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a picture to see what it is and where it is used.</p>
+    <p class="cap">Each picture is drawn by the game's <code>draw_picture</code> on the kit's 6502 from the listing's bytes, then shown from the bitmap, the screen colours and colour RAM it wrote, as the video chip shows a multicolour bitmap. The portraits are drawn whole here; the monitor never shows line 0 of their cells. A picture with no bar under it is drawn by nothing in the game.</p>
+  </div>
+  <p>Pictures are of a few sizes. The map icons are two cells by two, the figures and objects four by two, the commands three by two, the team's full figures four by six, the direction arrows four by four or two by two, and the portraits ten by eight. The attack craft that the view screen shows from outside the ship is the biggest, two pictures of ten by five.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* shadowfire graphics tab */
+// Every picture here is drawn by the game's own draw_picture ($42D9) on the kit's 6502 over the
+// listing's bytes, and shown from what it wrote: the bitmap at $2000, the screen colours at $0C00
+// and colour RAM, as the video chip shows a multicolour bitmap. The iris and the monitor are the
+// game's iris_open, iris_close and show_portrait, run the same way and replayed a step at a time.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const PAL = C64.PAL, FPS = 985248 / 19656;
+  const RGB = PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) {
+    $('gx-cast').innerHTML = '<p class="gx-miss">The listing did not load, so nothing can be drawn.</p>';
+    return;
+  }
+  const ram = L.ram, hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  const records = new Map(L.listing.records.map((r) => [r.a, r]));
+
+  // A machine: the listing's memory, colour RAM as start copies it from $1000, and a 6502 with the
+  // I/O in and the KERNAL out ($01 = $35, as the game keeps it).
+  function machine() {
+    const m = ram.slice(), colour = new Uint8Array(1024);
+    for (let i = 0; i < 1000; i++) colour[i] = ram[0x1000 + i] & 15;
+    const cpu = new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: {
+      read(a) { return a === 0xD012 ? 0x64 : 0; },                 // roll_monitor waits for line $64
+      write(a, v) { if (a >= 0xD800 && a < 0xDBE8) colour[a - 0xD800] = v & 15; },
+    } });
+    return { m, colour, cpu };
+  }
+  function draw(M, at, col, row) {
+    M.m[0x31] = at & 255; M.m[0x32] = at >> 8;
+    M.cpu.call(0x42D9, { x: col, y: row }, { maxSteps: 2e6 });
+  }
+  // cells col0.. of rows row0.. as the video chip shows them in multicolour bitmap mode on black
+  function cells(M, col0, row0, w, h, s, ctx, dx = 0, dy = 0, only) {
+    const d = ctx.createImageData(w * 8 * s, h * 8 * s);
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      const cell = (row0 + r) * 40 + col0 + c, sc = M.m[0x0C00 + cell];
+      const cols = [0, sc >> 4, sc & 15, M.colour[cell]];
+      for (let y = 0; y < 8; y++) {
+        const b = only ? only(cell, y) : M.m[0x2000 + (row0 + r) * 320 + (col0 + c) * 8 + y];
+        for (let x = 0; x < 8; x++) {
+          const k = RGB[cols[b >> (6 - (x & 6)) & 3]];
+          for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) {
+            const o = (((r * 8 + y) * s + yy) * w * 8 * s + (c * 8 + x) * s + xx) * 4;
+            d.data[o] = k[0]; d.data[o + 1] = k[1]; d.data[o + 2] = k[2]; d.data[o + 3] = 255;
+          }
+        }
+      }
+    }
+    ctx.putImageData(d, dx, dy);
+  }
+  function tile(w, h, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h; sp.innerHTML = label;
+    t.append(cv, sp); $('gx-cast').appendChild(t);
+    return cv.getContext('2d');
+  }
+  const scenes = [];
+
+  // ---- the iris, over the attack craft on the view screen (columns 15-24, rows 1-10)
+  {
+    const M = machine();
+    draw(M, 0xF6C2, 15, 1); draw(M, 0xF89F, 15, 6);                 // offmap_upper and offmap_lower
+    const steps = [];
+    const run = (at) => {
+      let last = M.cpu.cycles;
+      const snap = () => { steps.push({ c: M.cpu.cycles - last, b: M.m.slice(0x0900, 0x0A00) }); last = M.cpu.cycles; };
+      M.cpu.call(at, {}, { hooks: { 0x4698: snap }, maxSteps: 5e7 });
+      snap();
+    };
+    M.cpu.call(0x4646, {}, { maxSteps: 5e7 });                       // closed to begin with
+    const closed = M.m.slice(0x0900, 0x0A00);
+    run(0x45E2); const open = steps.length; run(0x4646);
+    const S = 3, X0 = 13, Y0 = 0, W = 14, H = 12;                     // cells round the view screen
+    const ctx = tile(W * 8 * S, H * 8 * S, 'the iris: <code>iris_open</code> and <code>iris_close</code> on the 6502, a circle at a time');
+    const bg = document.createElement('canvas'); bg.width = W * 8 * S; bg.height = H * 8 * S;
+    cells(M, X0, Y0, W, H, S, bg.getContext('2d'));
+    const SPR = [[0x88, 0x38], [0xB8, 0x38], [0x88, 0x62], [0xB8, 0x62]];   // sprites 1-4 ($4116-$4133)
+    // shut for a second, open a circle at a time, open for two and a half seconds, close again
+    const HOLD_SHUT = 50, HOLD_OPEN = 120;
+    let state = 'shut', t = 0, i = 0, cycles = 0, bytes = closed;
+    scenes.push({
+      frame() {
+        t++;
+        if (state === 'shut' || state === 'open') {
+          if (t >= (state === 'shut' ? HOLD_SHUT : HOLD_OPEN)) { state = state === 'shut' ? 'opening' : 'closing'; i = state === 'opening' ? 0 : open; cycles = 0; }
+          return;
+        }
+        cycles += 19656;                                              // a frame's cycles
+        const end = state === 'opening' ? open : steps.length;
+        while (i < end && cycles >= steps[i].c) { cycles -= steps[i].c; bytes = steps[i].b; i++; }
+        if (i >= end) { state = state === 'opening' ? 'open' : 'shut'; t = 0; }
+      },
+      draw() {
+        ctx.drawImage(bg, 0, 0);
+        for (let n = 0; n < 4; n++) {
+          const d = bytes.subarray(n * 64, n * 64 + 63);
+          C64.drawSprite(ctx, d, (SPR[n][0] - 24 - X0 * 8) * S, (SPR[n][1] - 50 - Y0 * 8) * S, S, PAL[11], 2, 2);
+        }
+      },
+    });
+  }
+
+  // ---- the monitor (columns 28-37, rows 2-9): show_portrait for each character in turn
+  {
+    const M = machine(), S = 3, X0 = 27, Y0 = 1, W = 12, H = 10, shots = [];
+    const grab = () => {
+      const o = { b: new Uint8Array(W * H * 8), s: new Uint8Array(W * H), c: new Uint8Array(W * H) };
+      for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+        const cell = (Y0 + r) * 40 + X0 + c, i = r * W + c;
+        o.s[i] = M.m[0x0C00 + cell]; o.c[i] = M.colour[cell];
+        for (let y = 0; y < 8; y++) o.b[i * 8 + y] = M.m[0x2000 + (Y0 + r) * 320 + (X0 + c) * 8 + y];
+      }
+      return o;
+    };
+    const NAMES = ['Syylk', 'Sevrina', 'Manto', 'Maul', 'Zark', 'Torik', 'nobody'];
+    for (let who = 0; who < 7; who++) {
+      M.m[0x5436] = who;
+      const list = [];
+      M.cpu.call(0x48B1, {}, { hooks: { 0x49A3: () => { list.push(grab()); } }, maxSteps: 5e7 });
+      list.push(grab());
+      shots.push(list);
+    }
+    const ctx = tile(W * 8 * S, H * 8 * S, 'the monitor: <code>show_portrait</code> on the 6502, one roll a frame');
+    const lab = ctx.canvas.nextSibling;
+    const view = { m: new Uint8Array(0x10000), colour: new Uint8Array(1024) };
+    let who = 0, k = 0, hold = 0;
+    scenes.push({
+      frame() {
+        if (hold) { if (--hold === 0) { who = (who + 1) % shots.length; k = 0; } return; }
+        if (++k >= shots[who].length) { k = shots[who].length - 1; hold = 150; }
+      },
+      draw() {
+        const o = shots[who][k];
+        for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+          const cell = (Y0 + r) * 40 + X0 + c, i = r * W + c;
+          view.m[0x0C00 + cell] = o.s[i]; view.colour[cell] = o.c[i];
+          for (let y = 0; y < 8; y++) view.m[0x2000 + (Y0 + r) * 320 + (X0 + c) * 8 + y] = o.b[i * 8 + y];
+        }
+        cells(view, X0, Y0, W, H, S, ctx);
+        lab.innerHTML = 'the monitor: <code>show_portrait</code> on the 6502, one roll a frame; portrait ' + who + ', ' + NAMES[who];
+      },
+    });
+  }
+
+  // ---- the cursor, sprite 0 at block $28 ($0A00): multicolour, black with white, as restart sets it
+  {
+    const ctx = tile(24 * 5 + 16, 21 * 5 + 16, 'the cursor: sprite 0, shape <code>$0A00</code>, multicolour');
+    ctx.fillStyle = PAL[12]; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    C64.drawSpriteMC(ctx, ram.subarray(0x0A00, 0x0A3F), 8, 8, 5, PAL[0], PAL[1], PAL[0]);
+  }
+
+  // ---- the clock
+  let frame = 0, running = true, last = 0, acc = 0;
+  function tick(n) {
+    for (let i = 0; i < n; i++) { frame++; for (const sc of scenes) sc.frame(); }
+    for (const sc of scenes) sc.draw();
+    $('gx-stat').textContent = 'frame ' + frame + ' · ' + (frame / FPS).toFixed(1) + ' s';
+  }
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * FPS;
+      const n = Math.floor(acc); acc -= n;
+      if (n) tick(n);
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Play'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Play'; tick(1); });
+  tick(1);
+  requestAnimationFrame(loop);
+
+  // ---- 02: every picture
+  const pics = L.listing.records.filter((r) => r.c && /A picture of \d+ x \d+ cells|in the same form as every picture/.test(r.c));
+  const GROUPS = [
+    ['team', 'The team', '#4f8cc9', (n) => /^team_|^portrait_\d_size$|^(fig|map_icon)_(manto|zark|torik|syylk|sevrina|maul)$/.test(n)],
+    ['people', 'Everyone else aboard', '#d0503c', (n) => /^fig_|^map_icon_(0a|kryxix|zoff|08|09)$/.test(n)],
+    ['objects', 'Objects', '#e0a030', (n) => /^pic_(weapon_|key_|master_key|destruct_|tool_kit|time_delay|beacon|dest_|object_4)/.test(n)],
+    ['craft', 'The attack craft', '#a070c0', (n) => /^offmap_/.test(n)],
+    ['blank', 'Blanks', '#9a7b4f', (n) => /^pic_(blank|dead|letter_cell)/.test(n)],
+    ['icons', 'Commands, arrows and icons', '#5aa05a', () => true],
+  ];
+  const unused = (r) => /Nothing refers|nothing draws it|which nothing/.test(r.c);
+  const M = machine(), S = 2, GAP = 6, WIDE = 832;
+  const holder = $('gx-sets'), placed = [];
+  for (const [key, title, colour, test] of GROUPS) {
+    const list = pics.filter((r) => !placed.some((p) => p.r === r) && test(r.l || ''));
+    if (!list.length) continue;
+    // shelves: left to right, a new shelf when the next picture does not fit
+    let x = GAP, y = GAP, shelf = 0;
+    const at = [];
+    for (const r of list) {
+      const w = ram[r.a] * 8 * S, h = ram[r.a + 1] * 8 * S;
+      if (x + w + GAP > WIDE) { x = GAP; y += shelf + GAP + 6; shelf = 0; }
+      at.push({ r, x, y, w, h, key, colour }); x += w + GAP; shelf = Math.max(shelf, h);
+    }
+    const div = document.createElement('div'), cv = document.createElement('canvas');
+    div.className = 'gx-set'; div.innerHTML = '<h3>' + title + ' (' + list.length + ')</h3>';
+    cv.className = 'gx-sheet'; cv.width = WIDE; cv.height = y + shelf + GAP + 6;
+    cv.style.maxWidth = WIDE + 'px';
+    div.appendChild(cv); holder.appendChild(div);
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#1b1c20'; ctx.fillRect(0, 0, cv.width, cv.height);
+    for (const p of at) {
+      const w = ram[p.r.a], h = ram[p.r.a + 1];
+      draw(M, p.r.a, 0, 13);
+      cells(M, 0, 13, w, h, S, ctx, p.x, p.y);
+      if (!unused(p.r)) { ctx.fillStyle = colour; ctx.fillRect(p.x, p.y + p.h + 2, p.w, 3); }
+      placed.push(p);
+    }
+    cv.addEventListener('mousemove', (e) => {
+      const b = cv.getBoundingClientRect(), mx = (e.clientX - b.left) * cv.width / b.width, my = (e.clientY - b.top) * cv.height / b.height;
+      const p = at.find((q) => mx >= q.x && mx < q.x + q.w && my >= q.y && my < q.y + q.h + 5);
+      if (!p) return;
+      const r = p.r, portrait = /^portrait_\d_size$/.test(r.l), about = portrait ? records.get(r.a + 2) : r;
+      const text = (about && about.c || '').split(/ A picture of| show_portrait copies/)[0];
+      $('gx-read').innerHTML = '<code>' + (portrait ? about.l : r.l) + '</code>, ' + ram[r.a] + ' × ' + ram[r.a + 1] + ' cells at <code>' + hex(r.a, 4) + '</code>: ' +
+        text.replace(/</g, '&lt;') + (unused(r) ? ' <em>Drawn by nothing.</em>' : '');
+    });
+  }
+  $('gx-key').innerHTML = GROUPS.map((g) => '<span><i style="background:' + g[2] + '"></i>' + g[1].toLowerCase() + '</span>').join('');
+})();
+</script>

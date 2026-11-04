@@ -86,3 +86,34 @@ left the bouncing ball floating came from the SID player before its
 fix for gates restarted within a frame: with the player from before
 it, those two voices floated 96 % of the first 20 seconds, and with it
 9 % and 13 %.
+
+## 3 November 2026: the Graphics tab
+
+The kit's minisite skill made a Graphics tab standard after this run, and
+air asked for it on the games no contributor had shaped. `graphics.html`
+runs the players through every action with the game's own code on the
+kit's 6502 (`action_set_now`, `player_frame_set` and the step at
+`$A02E`, each pass, as `player_dir_step` runs them), in the colours
+`player_colours` gives each side; the keepers follow scripts of their
+own actions. The ball's height is a port of `ball_move`'s, the
+launcher's hatch is `launcher_step` drawn in the play charset that
+`block_copy` puts at `$7800`, and the team choice screen is `team_select`
+and the animation part of `team_choose` run on the 6502. A sheet of
+shapes `$00`-`$9F` marks what shows each, from the game's frame lists
+and pointer tables. A last section says where the match's sprites live:
+shapes `$70`-`$9F` share `$5C00`-`$67FF` with the menus' bitmap and are
+copied in and out by `play_sprites_in` and `play_sprites_out`.
+
+Notes corrected on the way:
+
+- `$A0C7` was named `action_run`; it puts a player into action 2,
+  standing, and is now `action_stand`. `player_action`'s note now names
+  every action, 0 to 12.
+- `player_colours` flashes the controlled player for four passes in every
+  eight, while bit 2 of `$62` is clear, not every other pass.
+- The launcher does not rise out of the floor: its middle four
+  characters are a hatch that `launcher_step` opens a line a frame, its
+  top half sliding up and its bottom half down. The hatch's bytes are now
+  `hatch_open`, `hatch_dir`, `hatch_top` and `hatch_bottom`, and
+  `features.md` says so. The arrow turns 17 to 49 steps, not 16 to 48.
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold How it works' port of animate_face (animateFace in index.html, the face widget) against the
+// Hold the Graphics tab's port of animate_face (animateFace in graphics.html, the face widget) against the
 // game's own routine at $6AAD, run in kit/cpu/cpu6502.js on the bytes of the committed listing.json:
 // every frame counter 0-255, eight times over, with random SID ($D41B) and raster ($D012) bytes and
 // points waiting to be added, taken off, both or neither. After every call the three sprite shapes,
@@ -12,7 +12,7 @@ const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
 
-const { animateFace } = g.run('index.html', 'animateFace');
+const { animateFace } = g.run('graphics.html', 'animateFace');
 
 (async () => {
   const base = (await C64.load('listing.json')).ram;

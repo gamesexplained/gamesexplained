@@ -103,7 +103,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="table">
   <p class="fig">02 · The shape table</p>
   <h2 class="t">One table of shapes draws everything, the lettering too</h2>
-  <p class="lede">The 128 pointers at <code>$A000</code>, in their order, each shape drawn alone. Pick one to see what the listing says it is.</p>
+  <p class="lede">The 128 pointers at <code>$A000</code> hold every shape the game draws. Those that move are above; here are the rest, the scenery, the counters' digits and the lettering, each drawn alone. Pick one to see what the listing says it is.</p>
   <div class="plate">
     <p class="gx-msg" id="gx-tablemsg"></p>
     <div id="gx-table"></div>
@@ -346,13 +346,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   // bytes, or by OR (the rest), which keeps the sky's bit; and the column's evenness where its placing
   // fixes it (object_place) or the attract mode always drew it there
   function range(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
-  const DRAW = new Map([...range(25, 49).map(i => [i, ['draw', B]]), ...range(50, 57).map(i => [i, ['draw', 0]]),
-    [62, ['draw', B]], [63, ['draw', B]], ...range(64, 66).map(i => [i, ['opq', 0]]), ...range(67, 73).map(i => [i, ['draw', B]]),
-    ...[83, 84, 85, 86, 89, 101, 102].map(i => [i, ['copy', 0]]), [87, ['opq', 0]], [88, ['opq', B]], [90, ['opq', 0]],
-    ...[91, 92, 93, 105, 106].map(i => [i, ['opq', B]]), ...range(107, 127).map(i => [i, ['opq', B]])]);
-  const ODD = new Set([...range(50, 57), 62, ...range(64, 66), ...range(73, 82), 89, ...range(91, 95), 121]);
-  const GROUPS = [['The helicopter', 0, 24], ['The jets', 25, 49], ['The tanks', 50, 57], ['Shots and the muzzle flash', 58, 62],
-    ['The drones', 63, 66], ['Explosions', 67, 72], ['The hostages', 73, 82], ['The scenery', 83, 106], ['The counters', 107, 118], ['Lettering', 119, 127]];
+  const DRAW = new Map([...[83, 84, 85, 86, 89].map(i => [i, ['copy', 0]]), [87, ['opq', 0]], [88, ['opq', B]], [90, ['opq', 0]],
+    ...range(107, 127).map(i => [i, ['opq', B]])]);
+  const ODD = new Set([89, 94, 95, 121]);
+  // shapes 0 to 82, the helicopter, the jets, the tanks, the shots, the drones, the explosions and the
+  // hostages, move in the cast above, and so do the flag (91-93) and the barracks (101-106)
+  const GROUPS = [['The scenery', 83, 100], ['The counters', 107, 118], ['Lettering', 119, 127]];
+  const MOVING = new Set([91, 92, 93]);
   const about = a => {
     const c = (L.listing.records.find(r => r.a === a) || {}).c || '';
     const m = c.match(/^(.*?),? \d+ dots wide/);
@@ -364,6 +364,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     g.innerHTML = '<h3>' + title + '</h3><div class="gx-tiles"></div>';
     const row = g.lastChild;
     for (let i = a; i <= b; i++) {
+      if (MOVING.has(i)) continue;
       const [how, col] = DRAW.get(i) || ['or', 0];
       const pg = libDraw([{ i, x: ODD.has(i) ? 15 : 14, row: 183, col, how }]);
       // a shape with no dot lit (the bar's corner) is drawn opaque to cut a black line: shown as its box

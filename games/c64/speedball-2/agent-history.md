@@ -78,3 +78,23 @@ player runs the intro's own player on the kit's 6502, held to it by
 `test_music.js` over 6,643 frames, with a button for tune 1, which
 nothing starts. The score panel's frame was rebuilt from a recorded frame
 and matched the emulator's picture.
+
+## 3 November 2026: the Graphics tab
+
+A Graphics tab was added, following the standard that every game with
+things that move shows every shape they are drawn with. The page runs the
+game's own sprite set-up on the kit's 6502 over the listing's bytes:
+`match_setup` from its first unpack to its last mirror, the second unpack
+after the run-out, and the gym's, the manager screen's and the menus'
+unpacks. Listing every write to the objects' frames showed that six of
+the frames `match_setup` makes, $A0 and $A8-$AC, are never shown, that
+the picture packed as $AE is covered by a copy before any match, and that
+the ball never reaches $2F, because every throw that leaves the ground
+lands on exactly 0 after peaking at 210. Seven listing comments were
+corrected: the markers are letters for a player's place with frame 0 a
+plain arc, not "no frame"; a tackle, a throw and a jump last a number of
+`players_contact`'s looks, every fourth frame, not frames; `jump` is the
+jump alone; `ball_frame` turns the ball's speed along the pitch round at
+an end wall, not its height's speed; and `match_sprites` now says which
+frames nothing shows. How it works links to the new tab from the frame
+and the pickups.

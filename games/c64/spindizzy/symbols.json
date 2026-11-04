@@ -12422,7 +12422,7 @@
   {
    "address": 40216,
    "type": "line",
-   "text": "Builds a mask in $C300-$C37F for a 3-cell-wide, 3-row object at screen place (row $2E, column $2F): starts all set, then for each of the 6 places under it ANDs in the masks ($B900 + class * 16) of every queued tile there that is nearer than the object (its depth in the tile buffer below $30), so scenery in front of a sprite hides it."
+   "text": "Builds a mask in $C300-$C37F for a 3-cell-wide, 3-row object at screen place (row $2E, column $2F): starts all set, then for each of the 6 places under it ANDs in the masks ($B900 + class * 16) of the queued tiles there from the first whose depth is greater than the object's ($30), the tiles nearer the viewer, so scenery in front of a sprite hides it."
   },
   {
    "address": 40241,
@@ -12432,7 +12432,7 @@
   {
    "address": 40251,
    "type": "line",
-   "text": "One place for build_sprite_mask: finds its tile buffer entry (tile_address) and, from the first tile at least as deep as the object, ANDs the masks of the tiles from there into the mask at X."
+   "text": "One place for build_sprite_mask: finds its tile buffer entry (tile_address) and, from the first tile whose depth is greater than the object's ($30), ANDs the masks of the tiles from there into the mask at X."
   },
   {
    "address": 40472,
@@ -12597,7 +12597,7 @@
   {
    "address": 41714,
    "type": "line",
-   "text": "Sorts the sprite slots by depth ($C288), nearest last, with a bubble sort over the order list at $C2B8, then copies them in that order into the shadow registers (copy_slot), so later hardware sprites (lower priority) are the ones further back. Sets $78 for raster_irq."
+   "text": "Sorts the sprite slots by depth ($C288), deepest first (the larger the depth, the nearer the viewer), with a bubble sort over the order list at $C2B8, then copies them in that order into the shadow registers (copy_slot), so later hardware sprites (lower priority) are the ones further back; slots of equal depth keep their order. Sets $78 for raster_irq."
   },
   {
    "address": 41799,
@@ -12622,7 +12622,7 @@
   {
    "address": 42293,
    "type": "line",
-   "text": "Builds an object of two sprites, Gerald or an inhabitant, at screen place (column $FF, row $8C): its mask from the scenery (build_sprite_mask), two shape pointers, then 48 bytes of each from the shape set at ($2A) ($C800 for Gerald), picking one of four 48-byte frames by bits 6-7 of $FE and the second sprite 192 bytes on, each byte ANDed with the mask. Sets both slots' depth, position and colours: the first in multicolour, the second hires."
+   "text": "Builds an object of two sprites, Gerald or an inhabitant, at screen place (column $FF, row $8C): its mask from the scenery (build_sprite_mask), two shape pointers, then 48 bytes of each from the shape set at ($2A) ($C800 for Gerald), picking one of four 48-byte frames by bits 5-6 of $FE (a new frame every 32 of the column, four to each 8-pixel step of the sprite's X, which comes from bit 7 up) and the second sprite 192 bytes on, each byte ANDed with the mask. The first sprite goes in slot $43 + 1, multicolour, in the colour that slot already has; the second in slot $43, hires and black ($C2A8 = 0), which puts it in front at the same depth. Sets both slots' depth and position."
   },
   {
    "address": 42526,

@@ -150,7 +150,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p><code>spawn</code> counts passes, and at the 50th (<code>spawn_period</code>) it takes the next generator in turn. If that generator still stands and fewer than ten monsters are out, it tries the space above it, then to its right, below, and to its left, and puts a monster of the generator's kind into the first slot of ten that is empty. Kinds 1 to 3 start with as many hit points as their number, kinds 4 to 6 with two fewer.</p>
   <p><code>move_monster</code> takes the slots in turn, one a pass, so with ten out each monster steps once in ten passes. An empty slot costs a busy wait (<code>delay</code>), which keeps a pass about as long however many monsters there are. The monster heads for Agravain, or in a two-player game for Storm when he is nearer, and <code>step_monster</code> tries the vertical step first, then the horizontal one, each only if nothing is in the way. There is no path finding: a wall between a monster and its target holds it there, which is why monsters gather against walls.</p>
-  <p>Nothing here is a sprite. <code>compose</code> builds each figure's characters as it moves: for every character it ANDs the picture with a mask made from the floor character beneath and ORs in that floor character, so floor decorations stay on top and the figure fills the gaps. Ten monsters take characters <code>$A0</code>-<code>$EF</code>, eight each; the two players, the objects, and the generators have ranges of their own. When a step finds a player in the way, <code>touch_damage</code> charges him four times the monster's kind byte. What that costs him is the next section's subject, and a spell that should clear the room has <a href="discoveries.html">a bug of its own</a>.</p>
+  <p>Nothing here is a sprite: each monster is eight characters of its own, <code>$A0</code>-<code>$EF</code> between the ten, which the game builds again over the floor at every step (<a href="graphics.html#build">Graphics</a>). When a step finds a player in the way, <code>touch_damage</code> charges him four times the monster's kind byte. What that costs him is the next section's subject, and a spell that should clear the room has <a href="discoveries.html">a bug of its own</a>.</p>
 </section>
 
 <section id="energy">
@@ -220,7 +220,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Left and right turn a player a quarter turn; up walks one cell the way he faces. Down is magic.</p>
   <table class="st-tbl">
     <tr><th>Joystick</th><th>Agravain (port 1, <code>$DC01</code>)</th><th>Storm (port 2, <code>$DC00</code>)</th></tr>
-    <tr><td>Left, right</td><td colspan="2">turn a quarter, at most once every two passes (<code>turn_delay</code>)</td></tr>
+    <tr><td>Left, right</td><td colspan="2">turn a quarter, at most once every four passes (<code>turn_delay</code>)</td></tr>
     <tr><td>Up</td><td colspan="2">one cell forward (<code>walk</code>)</td></tr>
     <tr><td>Fire</td><td colspan="2">a shot, when his last one has gone (<code>control</code>)</td></tr>
     <tr><td>Down</td><td>a mask: every generator in the room removed</td><td>nothing</td></tr>

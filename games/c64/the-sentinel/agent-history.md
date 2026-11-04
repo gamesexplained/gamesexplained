@@ -114,3 +114,33 @@ of it that survives in the backup is equal to the tape's. A one-file
 crack in the contributor's own files (`SENTINEL.P00`, a Cyberpunx
 release with its own docs) was tried first and does not hold the
 picture.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+A Graphics tab was added under the standard the site set on 3 November
+2026: every shape that moves, drawn from the listing's bytes by the
+game's own code. All ten object types are drawn by `draw_object` on the
+kit's 6502 in the page. The game's own placement, `place_title_object`
+in configuration 0, sets up the viewer; the object is then moved 10
+tiles off and a unit down, with the pitch at −14, because at the
+game-over picture's 5 tiles the tree and the title blocks run off the
+top of the screen. That single viewpoint was searched for over all 256
+yaws so that the ten fit at one size. Each drawing is about 200,000
+cycles, so the page keeps every yaw it has drawn and recolours from
+those.
+
+Turning the objects showed two things the notes had not said. The
+title's letter blocks (types 7-9) have only four faces, the top and
+three sides, so from the missing side a block nearly vanishes. And a
+face turned away draws nothing: hooking `$859F` and `$85A2` and
+comparing the bitmap around each `draw_polygon` call, six of the
+boulder's ten faces change no byte at each quarter turn, and the sets
+swap as it turns. The same hooks give the order on the title, which
+the second section plays back face by face; the Sentinel's two passes
+there (102-104 and 126-136, then 105-125) are as `$854D`-`$85B4` read.
+Both are in `facts.md` under Objects, marked *run*.
+
+The sights and the scanner were added as the only sprites. The scanner
+is drawn by `draw_scanner` itself, in its static, half and solid states.
+Nothing was moved from How it works: its play-screen section is about
+how the screen is built, and it now links to the sprites here.

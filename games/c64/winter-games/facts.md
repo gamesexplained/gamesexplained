@@ -136,6 +136,39 @@ Two engines.
   frames 27, 30, 29 and 28, and bands 5 to 8 bend the knees ever further,
   frames 7, 8, 9 and 21. The centre band is frame 6 on both. Right and
   down add to the lean (`flight_steer`, `$1600`).
+- Hot Dog, Biathlon and Bobsled draw their skier or sled the same way:
+  eight sprites in four pairs, the even sprites hires and in front (black
+  in Hot Dog, grey in Biathlon, orange in Bobsled), the odd multicolour.
+  Each `draw_frame` (`$1632`, `$2EF1`, `build_sled` at `$4E45`) unpacks a
+  frame of 64 cells, a mask byte then the bytes its set bits stand for,
+  the rest 0, into `$8C00` or `$8E00`, the set not on screen. Run on the
+  kit's 6502 over the listings: Hot Dog 58 frames, Biathlon 16, Bobsled 13.
+- Hot Dog's frame 47 (`$2A30`) is not a whole frame: unpacked, it reads 197
+  bytes, 11 of them frame 48's, and draws scattered dots. Every other
+  frame's packed bytes end exactly where the next one in memory begins.
+- Bobsled's frame is chosen by the sled's place across the chute
+  (`sled_places`, `$4AC6`): frame 6 for places 0-2, 2 for 3-6, 5 for
+  7-11, 0 for 12-18, 3 for 19-23, 1 for 24-27, 4 for 28-30; the crashes
+  7, 7, 7, 8, 9 over the left wall (31-35) and 10, 10, 10, 11, 12 over
+  the right (36-40).
+- Speed Skating keeps its twelve frames whole, eight sprite blocks each
+  (`frame_bases`, `$A154`): stride states 0-9, 16 (standing) and 17 (the
+  winner), 6,144 bytes. The even sprites are dark grey outlines, the odd
+  multicolour with orange and grey; the raster interrupt makes the far
+  skater's blue (`$968C`) and the near one's red (`$96D5`).
+- Ski Jump's small skier is one black sprite (`setup_colours`), its 24
+  shapes copied from `$7488` to `$8400`. `frame_sprites` uses all but
+  `$16`, `$17` and `$23`. The close-up is drawn for frames 5 to 30;
+  frames 0 to 4, on the in-run, draw none.
+- The opening's animations, each `flags, last frame`, then five bytes a
+  frame (shape, second shape or 0, two bytes of length, one unread):
+  the flags one sprite each, the flame two side by side, the torch bearer
+  eight (four multicolour, yellow with light blue and orange, under four
+  blue hires outlines, `irq_bearer`). The flags' colours are the fixed
+  ones at `$AB3F`: black, white and orange for sprites 0-2. `bearer_run`
+  copies the big flame and the doves over shapes `$F9`-`$FF` from `$A711`
+  only after the torch bearer's pose at the top of the steps, 192 steps
+  (`$A6C1`-`$A6E8`).
 
 ## The listing's error rate
 

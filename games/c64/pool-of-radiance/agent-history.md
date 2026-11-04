@@ -78,3 +78,19 @@ and the state needed was poked in.
 - Maps draws all 29 GEO files from the disks with the How it works
   page's renderer; a wall present on one side only is drawn like any
   other.
+
+## Follow-up: the Graphics tab (3 November 2026)
+
+Added `graphics.html`. Its sheets show every weapon and head the combat
+icon editor offers, 100 choices in both poses, each laid out by the
+editor's own lines (`save_head`, then `pick_piece` from `$B14C` to
+`$B1F2`) on the kit's 6502 over the icons part, starting from the
+editor's own icon with the size's first weapon and first head. The
+cells are drawn on the battle's colours from `combat_colours`
+(com-prep `$146A`: dark grey, light red, black), which the editor sets
+too (icons `$AF77`-`$AF8B`). The cursor is built by running com-prep's
+`set_sprites` with the resident's banking routines stood in for. Only
+missile pictures 0 to 3 are in the combat-set listing; the other
+sixteen lie under SPELLN00 there. The monsters' figures (COMPIC files)
+and the 3D view's sprites are in no part, so the page does not draw
+them.

@@ -67,7 +67,13 @@ from reading the code in the snapshot named in `orientation.md`.
 - **Hunger**: every 25 passes (`phase` counts 1-5, `hunger_timer` 0-5),
   2 from Agravain's energy and 1 from Storm's (`main_loop`). Measured
   *live* at about every 1.3 seconds with six monsters out.
-- Turning is limited to once every two passes (`turn_delay`, `joystick`).
+- Turning is limited to once every four passes: a turn sets `turn_delay`
+  to 2, and `players_update` counts it down on each run of the controls
+  before `joystick` reads it, so a held turn comes on every second run.
+  It is one counter for both players: in a two-player game, while
+  Agravain keeps turning, Storm cannot turn at all (*traced*: both
+  sticks held right on the kit's 6502 over `players_update`, Agravain
+  turned on passes 2, 6, 10 and so on, and Storm never).
 - The tune: one tick every 5 frames (`music_play`, operand `$9147`); the
   whole tune is 640 ticks, so it loops every 3,200 frames (64 seconds at
   50 frames a second).
@@ -110,6 +116,14 @@ from reading the code in the snapshot named in `orientation.md`.
   by 2 rows, objects 2 to 4 characters by 2 rows (`draw_object`), players
   4 characters by 2 rows, monsters 3 or 4 characters by 2 rows
   (`draw_kind1`-`draw_kind6`).
+- Colours come from `colour_rows` (`$8594`), eight entries a figure,
+  taken in turn by `put_block`: Agravain row 8, Storm row `$50` + 8 x
+  direction (`put_player`); monster kinds 1 and 3 row 0, kinds 2 and 5
+  row `$10`, kind 4 row 8, kind 6 row `$30` + 8 x direction
+  (`draw_kind1`-`draw_kind6`); generators row 0 (`draw_generators`).
+- A shot is one character, `$FE` or `$FF`, built by `shot_step` with
+  `compose_one` from character 7 (`$0838`) over the floor character it
+  covers, in colour `$0A`.
 - `compose` finds a background character's mask at (character - `$11`)
   x 8 in eight bits, so character `$31`, the corner of the floor piece
   `$2A` that 32 floor records in 23 rooms place, wraps to the first

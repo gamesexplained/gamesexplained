@@ -64,3 +64,24 @@ and held by `test_map.js` for every position. The music player runs the
 game's driver, held by `test_sound.js`. The frame is drawn from one
 recorded frame of play, 0 of 104,448 pixels different from VICE's
 picture.
+
+## 3 November 2026: the Graphics tab
+
+The kit's minisite skill made a Graphics tab standard after this run, and
+Aaron Bell asked for it on the games no contributor had shaped. `graphics.html`
+runs `enemy_in_view`'s lookup from `$2D0D` to its call of `shape_build`,
+then `shape_build` and `shape_shift`, on the kit's 6502 for the enemy's
+heading turning a full circle; `medium_view` the same way from `$2E09`;
+`dot_shape` for the far dots and the missiles; and the targets' and
+sights' pictures by their pointers. The colours are the recorded frame's
+for plane one's view: `$D021` black, `$D022` light blue (the sky's `$55`),
+`$D023` white and the cell colour, blue over the sea or yellow over land.
+
+One comment was wrong: `$F026` said the explosion runs 0, 1, 2, 1 six
+times and on to picture 11. Read with the counter `step_explosion` keeps
+(`$214A`) and the two starts `set_explosion_kind` gives (`$213A`: 1 below
+range 6, `$20` otherwise and for a missile's hit), the sequence at `$4DD1`
+gives 1, 2, 1, 0 five times then 1-2-3-4-3-2-1-2-3-4-5, or 6, 7, 8, 9,
+10, 9, 8, 9; picture 11 is never chosen. The sights and the targets are
+drawn in the sky's light blue, so they show only over the ground or the
+enemy, as the recorded frame's gun sight does over the sea.

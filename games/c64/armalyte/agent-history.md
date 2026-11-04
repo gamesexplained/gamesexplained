@@ -249,3 +249,31 @@ button, it was worked through to 100 % coverage and a player of its own
   in a fight: a released enemy ignores them, a super weapon's character
   counts one hit on a boss part and is wiped, and the core ignores hits
   while a guard lives.
+
+## 3 November 2026: the Graphics tab
+
+- Aaron Bell asked for Graphics tabs on the older pages that no
+  contributor had shaped. `graphics.html` draws every sprite of a chosen
+  level from the level's listing: the ships, the drone, the pods, every
+  enemy run of frames in each colour its types give it, the enemy shots,
+  each boss's parts, the bursts and the players' fire characters, each
+  stepped as `objects_animate` (`$F022`), `ship1_bank` (`$F407`),
+  `drone_spin` (`$9F0E`), `ship1_invulnerable` (`$EA77`) and the ship's
+  explosion table (`$EA18`) step them. A sheet of all 192 frames marks
+  what uses each one.
+- Building the sheet corrected two sets of notes. The routine at `$9F0E`
+  was called a colour pulse: it steps the drone's sprite frame (`$07`
+  goes into sprite 1's pointer at `$E4E7`), through `$0F`-`$15` and then
+  `$0E`, so the drone turns; its colour is set once to 5. It is now
+  `drone_spin`, and the level files' notes on frames `$0E`-`$15` say so.
+  The level files' notes also called the enemy shots' frames (types 3
+  and 4) and the frames of the enemies a boss lets loose "not used by
+  this level's objects"; every level's notes now name them. The frames
+  nothing shows are `$2A`-`$2D` on levels 1, 2 and 4-7 (`$2B`-`$2D` on
+  level 3, `$2B` and `$44` on level 8), `$89` on level 7, and runs at the
+  end of the banks of levels 4, 6 and 7, most of them blank.
+- air then asked for what How it works and the Graphics tab said twice to
+  be said once. The Graphics tab's screen section repeated How it works'
+  Sprites section on the multiplexer almost word for word; it now links
+  to that section and to Weapons instead. How it works drew nothing the
+  Graphics tab draws.

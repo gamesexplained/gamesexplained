@@ -105,3 +105,26 @@ of every map confirmed that level 4's is the only one with no ground.
 The Outline the pieces button had done nothing because the canvas
 before it carried the same id; `check_docs.py` now fails any page with
 an id on two elements.
+
+## 3 November 2026: the Graphics tab
+
+- Aaron Bell asked for Graphics tabs on the older pages that no
+  contributor had shaped. `graphics.html` steps every sprite and every
+  moving tile as its routine does, at 50 frames a second, in the colours
+  of a chosen level: Gribbly's three shapes, the bubble (`$64A5`), the
+  Gribblets on a ledge (`animate_chars`, `$6651`), on their backs and in
+  the air, the psi-grub, each creature's mover, and Seon. It also plays
+  `level_start`'s materialisation (`$4721`-`$48D9`) and `end_sequence`
+  (`$5A20`) sprite by sprite, with `wait_frame` taking one frame or two by
+  the counter's parity. A sheet of the 71 shapes marks what shows each.
+- One note was wrong. The chrysalis does not play five frames: its mover
+  steps the frame on before drawing it, so it shows `$F1`-`$F4`, and the
+  sprite it keeps from a Topsy turns multicolour only from `$F2`
+  (`$5411`), so `$F1` appears in the Topsy's colour. The How it works
+  caption and its widget, and the note at `$538A`, now say so.
+- air then asked for what How it works drew twice to live only on the
+  Graphics tab. The sections on Gribbly's face and on the Gribblets moved
+  there, after the cast, with their scripts; the face's port,
+  `animateFace`, moved with them, and `test_face.js` now reads it from
+  `graphics.html`. The creatures' animation left How it works, which keeps
+  the life cycle, the odds and the collision table, and links to the tab.

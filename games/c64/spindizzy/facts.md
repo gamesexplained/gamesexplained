@@ -124,6 +124,21 @@ joystick option $77.
   $7223), and inhabitants are drawn from the spares, kind 0 from $7800
   and kind 1 from $7980, so they change shape when Gerald does. *Live*
   in room (65, 66).
+- `draw_object` picks the frame by bits 5-6 of the screen column ($FE,
+  from X - Y), and the sprites' X moves in steps of 8 pixels from bit 7
+  up: a new frame every 32 of the column, four to each step, so Gerald
+  spins only while he moves across the screen. The multicolour sprite
+  keeps its slot's colour (Gerald cyan, $C2A9 = 3 from `init_and_title`;
+  inhabitants light red, $0A); the hires one is black and in front.
+  *Traced*; drawn on the Graphics tab by the routine itself.
+- A jewel's sprite is built once from `jewel_picture` ($C180); after
+  that `jewel_piece` adds 1 to its colour at each run of the pieces. A
+  lift's two sprites are the two `symbol_pieces` of its switch, chosen
+  as `draw_switch_symbol` chooses them for the panel's box, so a lift
+  shows its switch's symbol; a lift with no switch shows pieces 0 and
+  1, which the box never draws. Lifts by switch, counted from the world
+  data: none 20, 1: 2, 3: 2, 4: 13, 5: 2, 7: 13, 8-10: 2 each, 11: 6;
+  no lift is on switch 2 or 6. *Traced*.
 - The view can be turned in quarter turns: the room grid is rebuilt with
   every block's position and slope direction turned (`decode_block`,
   $95D4; `turn_view`, $8CFF).

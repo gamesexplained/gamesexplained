@@ -118,3 +118,18 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   game's start, from the hand-over to the title's first wait, is measured
   on its own. The page then reached play at the same frame as the C64
   (103.3) and kept its pace to within 0.03 %, waiting or not.
+
+## 3 November 2026: the Graphics tab
+
+A Graphics tab was added, following the standard that every game with
+things that move shows every shape they are drawn with. Squirm has no
+sprites, so the tab shows its moving characters, animated by the game's
+own interrupt (`irq_handler`, $3CB3) run on the kit's 6502 once a jiffy,
+and the whole character set with what draws each character. Checking the
+set against every screen the game copies (the status lines, the title,
+the high-score screen, the three mazes and the strings) found $A0, a
+solid block, in the title and the status lines, which the character
+table in `facts.md` left out; $56-$59, $5C, $5D, $80 and $BA-$FF are in
+none of them, and no use for them was found. How it works' paragraph on
+the character animation moved to the new tab, leaving one sentence and
+a link.

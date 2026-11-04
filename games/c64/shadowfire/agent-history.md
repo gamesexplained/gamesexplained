@@ -212,3 +212,19 @@ too). The port's own notes had names crossed: Kryxix called "the
 general", Manto and Maul's gravestone given to Syylk and Sevrina, the
 44th kill called the 34th. The memory decides those (the name tokens at
 `$81B1`, the records from `$CA0E`), and the notes now follow it.
+
+## 3 November 2026: the Graphics tab
+
+Aaron Bell asked for Graphics tabs on the minisites a human had not yet
+edited, following the site's standard for them.
+
+- `graphics.html` plays the three things that move by the game's own
+  code on the kit's 6502 over the listing's bytes: the iris
+  (`iris_open`, `$45E2`, and `iris_close`, `$4646`) over the attack craft,
+  each circle shown after the cycles it takes; the monitor
+  (`show_portrait`, `$48B1`) for each portrait in turn, a roll a frame as
+  `roll_monitor` (`$49A3`) waits for line `$64`; and the cursor's sprite.
+  It then draws all 156 pictures (149 and the seven portraits' bitmaps)
+  with `draw_picture` (`$42D9`) on the 6502, grouped, each with its note.
+- The iris takes about 73 frames of the 6502's time to open and 94 to
+  close, before the interrupt and the video chip take theirs.

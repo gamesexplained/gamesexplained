@@ -15360,7 +15360,7 @@
   {
    "address": 7346,
    "type": "line",
-   "text": "The frame of the arc over a controlled player who has the ball, by his place in the team."
+   "text": "The frame of the marker over a controlled player who has the ball, by his place in the team, 18 bytes (nine a team, read by control_markers): a letter for the place, G (frame 5) for the goalkeeper, D (4) for the two defenders, M (3) for the three midfielders, F (1) for the forward and W (2) for the two wingers. A controlled player without the ball has frame 0, a plain arc."
   },
   {
    "address": 7364,
@@ -15810,12 +15810,12 @@
   {
    "address": 10909,
    "type": "line",
-   "text": "Places the two arcs over the controlled players ($72 team 1, $73 team 2) as objects 19 and 20: copies each player's position (three rows higher) and colour to the marker, and its frame from $1CB2 when that player has the ball (0, no frame, otherwise); a marker whose player is not controlled or not on the pitch is moved off ($E0, $DF = $FA)."
+   "text": "Places the two markers over the controlled players ($72 team 1, $73 team 2) as objects 19 and 20: copies each player's position (three rows higher) and colour to the marker, and its frame from $1CB2 when that player has the ball (frame 0, the plain arc, otherwise); a marker whose player is not controlled or not on the pitch is moved off ($E0, $DF = $FA)."
   },
   {
    "address": 11026,
    "type": "line",
-   "text": "Once a frame, in a match. Gives each human team the player who has the ball, or the nearest one to it (nearest_player), as its controlled player, stopping his own run; then, when the ball is free ($60 = $12), moves it: its height ($63) rises and falls by the vertical speed $64, which drops by one a frame (gravity), and its frame shows the height. A bounce off an end wall turns its vertical speed round and, between columns $22 and $2D below height $40, is a goal for the team attacking that end, unless the goal-door token protects it: counts the goal ($0BFD), adds the goal's points ($53,x, with the multiplier) to the score, lets the scorer celebrate (frame $A1, a run up the pitch), sets the goal state ($45 = 2) and plays effect $18; any other end-wall bounce plays effect $0C. Then the score multiplier ramps ($2C61), the bounce domes (bounce_dome), the electrobounce units (electrobounce), the ball slowing down every 7 frames and coming off the walls, losing the ball when it is more than two away from its holder, and picking it up (pick_up, $2D59)."
+   "text": "Once a frame, in a match. Gives each human team the player who has the ball, or the nearest one to it (nearest_player), as its controlled player, stopping his own run; then, when the ball is free ($60 = $12), moves it: its height ($63) rises and falls by the vertical speed $64, which drops by one a frame (gravity), and its frame is $28 + height / 32. A bounce off an end wall turns its speed along the pitch ($E438, $E44B) round and, between columns $22 and $2D below height $40, is a goal for the team attacking that end, unless the goal-door token protects it: counts the goal ($0BFD), adds the goal's points ($53,x, with the multiplier) to the score, lets the scorer celebrate (frame $A1, a run up the pitch), sets the goal state ($45 = 2) and plays effect $18; any other end-wall bounce plays effect $0C. Then the score multiplier ramps ($2C61), the bounce domes (bounce_dome), the electrobounce units (electrobounce), the ball slowing down every 7 frames and coming off the walls, losing the ball when it is more than two away from its holder, and picking it up (pick_up, $2D59)."
   },
   {
    "address": 11177,
@@ -16145,7 +16145,7 @@
   {
    "address": 14290,
    "type": "line",
-   "text": "Player X throws the ball in direction A: the ball becomes free with X as its thrower ($61, $62), held low, his colour back, he plays the throw frame ($70 + 3 x direction) for 3 frames, the ball starts at his place and its speed for the direction comes from throw_dirs at the throw speed (throw_speed), with effect 1."
+   "text": "Player X throws the ball in direction A: the ball becomes free with X as its thrower ($61, $62), held low, his colour back, he plays the throw frames ($70 + 3 x direction, then the next two) for 3 of his looks in players_contact, a part a look, every fourth frame; the ball starts at his place and its speed for the direction comes from throw_dirs at the throw speed (throw_speed), with effect 1."
   },
   {
    "address": 14399,
@@ -16155,12 +16155,12 @@
   {
    "address": 14413,
    "type": "line",
-   "text": "Player X jumps or slides: sets his action bit 3 for 4 frames and the jump frame for his direction ($88-$8F), effect 4."
+   "text": "Player X jumps: sets his action bit 3 for 4 of his looks in players_contact (every fourth frame) and the jump frame for his direction ($88-$8F), effect 4. A slide is slide ($3A89)."
   },
   {
    "address": 14440,
    "type": "line",
-   "text": "Player X tackles player Y: Y falls (down for 12 + (255 - X's energy) / 32 frames, frame $98, effect $2C or $2E by team) and is knocked away from X at X's speed / 4; a ball holder loses the ball to X (or it stays free when X is the electric ball), and one wearing armour loses it. The damage is X's power / 2 + $4B less Y's stamina / 2, over 16: half of it (at least 1) comes off each of Y's eight attributes, to no less than 90, and all of it (at least 1) off his energy. Below zero he is injured (injured), and the other team scores a goal's worth ($53,x, through score_add_bcd, so it is not counted as a bonus)."
+   "text": "Player X tackles player Y: Y falls (frame $98, stepping to $9E, down for 12 + (255 - X's energy) / 32 of his looks in players_contact, every fourth frame; effect $2C or $2E by team) and is knocked away from X at X's speed / 4; a ball holder loses the ball to X (or it stays free when X is the electric ball), and one wearing armour loses it. The damage is X's power / 2 + $4B less Y's stamina / 2, over 16: half of it (at least 1) comes off each of Y's eight attributes, to no less than 90, and all of it (at least 1) off his energy. Below zero he is injured (injured), and the other team scores a goal's worth ($53,x, through score_add_bcd, so it is not counted as a bonus)."
   },
   {
    "address": 14785,
@@ -17885,7 +17885,7 @@
   {
    "address": 41039,
    "type": "line",
-   "text": "Packed sprite frames of the match, stored in columns (unpack, then sprite_rows): 385 bytes that unpack to 4096 at $E000-$EFFF, frames $80-$BF. Only seven of them hold a picture here: $AE, the dives $B0, $B1, $B4 and $B5, and the flashes $BC and $BD. match_setup fills the others by copying frames from $40-$7F into them (sprite_copy: the jumps, a player down, the stretcher, celebrating) and by mirroring right-facing frames (sprite_mirror: the throws, the other dives, $BE)."
+   "text": "Packed sprite frames of the match, stored in columns (unpack, then sprite_rows): 385 bytes that unpack to 4096 at $E000-$EFFF, frames $80-$BF. Only seven of them hold a picture here: $AE, the dives $B0, $B1, $B4 and $B5, and the flashes $BC and $BD; $AE's is covered by the copy of $62 before any match shows it. match_setup fills the others by copying frames from $40-$7F into them (sprite_copy: the jumps, a player down, the stretcher, celebrating, the keepers' stances, and $A0, $A8, $A9 and $AB, which nothing shows) and by mirroring right-facing frames (sprite_mirror: the throws, the other dives, $BE)."
   },
   {
    "address": 41424,

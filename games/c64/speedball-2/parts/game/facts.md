@@ -102,6 +102,43 @@ With $0C10 set (BRADFORD-ON-AVON on the title):
   is a goal for the team attacking that end, unless the goal-door token
   shuts it ($2B12).
 
+### Sprite frames
+
+- In a match frame n is the 64 bytes at $C000 + 64n (video bank 3).
+  `match_setup` ($2657) unpacks `match_sprites` ($A04F) to frames
+  $80-$BF, `arena_sprites` ($A1D0) to $00-$2F and `door_sprites` ($A5BB)
+  over $00-$09, each turned from columns into rows (`sprite_rows`,
+  $4D8C); frames $40-$7F stay in rows at $D000-$DFFF. Then it copies 23
+  frames (`copy_pairs`, $2A6F) and mirrors 45 (`mirror_pairs`, $2A0B).
+  After the run-out it unpacks `arena_sprites` again and mirrors the
+  coin's five middle steps ($29B6-$29DE). Run on the kit's 6502 for the
+  Graphics tab.
+- Only seven of $80-$BF are in the packed data; the picture packed as
+  $AE is covered by the copy of $62. The copies into $A0, $A8, $A9 and
+  $AB, and the mirrors of two of them into $AA and $AC, are never shown:
+  every write to the objects' frames ($081A-$0833) was listed, and none
+  sets them. Frames $26, $27, $90-$97, $B8-$BB and $BF are empty; the
+  ball shows $BF before the kick-off and $B8 after `match_end_frame`
+  ($223D).
+- A player's frame changes only when `players_contact` looks at him,
+  every fourth frame: standing $40 + facing, sliding $48 + facing and
+  jumping $88 + facing (each held four looks), running $50 + 4 x facing
+  + step, throwing $70 + 3 x facing + part (a part a look), knocked down
+  $98 stepping to $9E (12 + (255 - the tackler's energy) / 32 looks),
+  injured $9F (16 looks), celebrating $A1, $A2, then $A3 and $A4 in turn
+  (12 looks). A keeper steps through `keeper_frames` ($1D2C) while he
+  moves and dives in two frames of three looks each ($3CC4).
+- The ball's frame is $28 + height / 32. Every throw that leaves the
+  ground starts at height 20 rising 19 (`throw_lob`, the kick-off) or 74
+  rising 16 (the lob after a throw, $3DE4), and gravity takes one a frame,
+  so both peak at 210 and land on exactly 0; $2F (heights from 224, a
+  copy of $2E) is never shown.
+- The markers over the controlled players (`control_markers`, $2A9D)
+  show frame 0, a plain arc, or with the ball the letter for the
+  player's place from `marker_frames` ($1CB2): G, D, M, F or W. A coin
+  steps through $1A-$25 every fourth frame (`pickups_spin`, $306E). The
+  dome and electrobounce flashes ($BC-$BE) last six frames ($2122).
+
 ### Scoring
 
 The multiplier's position $51 runs from 0 (all team 1's) through 2

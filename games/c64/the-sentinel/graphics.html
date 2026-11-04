@@ -1,0 +1,477 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Sentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:28px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+/* controls */
+.ctl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 14px;font-size:14px}
+.ctl .grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.ctl label{color:var(--ink-soft)}
+button.b{font:500 13px var(--fm);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button.b:hover{border-color:var(--ink-mute)}
+button.b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+input.num{font:500 18px var(--fm);width:5.2em;padding:4px 8px;border:1px solid var(--line);border-radius:6px;text-align:center;letter-spacing:.08em}
+input[type=range]{width:220px}
+canvas{max-width:100%;display:block}
+.cv-dark{background:#000;border-radius:6px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:22px;align-items:start}
+@media (max-width:880px){.cols{grid-template-columns:1fr}}
+.stats{font-size:14px;line-height:1.5}
+.stats dt{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-top:10px}
+.stats dd{margin:0}
+.code8{font:500 26px var(--fm);letter-spacing:.12em;color:var(--ink)}
+.tip{position:absolute;pointer-events:none;background:var(--chip);color:#fff;font:12px/1.4 var(--fm);padding:6px 8px;border-radius:6px;white-space:nowrap;display:none;z-index:5}
+.rel{position:relative}
+.tablewrap{overflow-x:auto}
+table.d{border-collapse:collapse;font-size:14px;width:100%;margin:6px 0}
+table.d th,table.d td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.d th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.seq{display:flex;flex-wrap:wrap;gap:4px;font:12px var(--fm)}
+.seq span{padding:2px 5px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line-soft)}
+.seq span.k{background:var(--hl);border-color:#e0c46a;font-weight:500}
+.bars{display:flex;gap:6px;align-items:flex-end;height:120px;margin:10px 0 4px}
+.bars div{flex:1;background:var(--accent);border-radius:3px 3px 0 0;position:relative}
+.bars div span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font:12px var(--fm);color:var(--ink-soft)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--plate-shadow)}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0 0 8px;font-size:15px}
+.card.wide{grid-column:1/-1}
+.card.wide .imgs figure{max-width:420px}
+.imgs{display:flex;gap:14px;flex-wrap:wrap}
+.imgs figure{margin:0;flex:1;min-width:220px}
+.imgs img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+.imgs figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.mm text{font:11px var(--fm)}
+.note{font-size:14px;color:var(--ink-soft)}
+.unsure li{margin-bottom:6px}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+.gx-tile canvas{background:#000}
+.gx-line{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:pan-y;cursor:ew-resize}
+.gx-names{display:flex;max-width:100%;font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin:4px 0 0}
+.gx-names span{text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gx-sel{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.gx-order{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:700px){.gx-order{grid-template-columns:1fr}}
+#gx-o-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.seq{margin:12px 0 0}
+.seq span{cursor:pointer}
+.seq span.gx-p2{text-decoration:underline;text-underline-offset:3px}
+.seq span.gx-none{opacity:.45}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Firebird</p>
+  <h1>The Sentinel</h1>
+  <p class="sub">Every object on a landscape is drawn by one routine from a list of points and a list of faces: the robots, the sentries, the trees, the boulders, the meanies, the Sentinel and its tower, and the blocks the title's letters are built from. Only the sights and the scanner are sprites.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every object, drawn by the game's own 3D code</h2>
+  <p class="lede">The ten shapes the 3D code knows, each drawn by the routine that draws it in play, turning. Drag across a picture to turn them by hand, and pick the colours of the title or of a landscape.</p>
+  <div class="plate" id="gx-plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <span class="gx-lab"><label for="gx-pal">Colours</label></span>
+      <select id="gx-pal" class="gx-sel"></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"><p class="gx-miss">The objects are drawn by the game's own code in the built site.</p></div>
+    <p class="gx-read" id="gx-read">Point at an object for its numbers.</p>
+    <p class="cap">Drawn by the game's routines on the kit's 6502 in the page, over the listing's bytes. <code>place_title_object</code> (<code>$8819</code>) sets up the viewer as the game-over picture does, then the object is moved 10 tiles in front of the viewer and a unit below, and the view's pitch set to −14 in place of the picture's −12, so that all ten fit at one size; <code>draw_object</code> (<code>$8533</code>) draws it with its yaw (<code>$09C0</code> + n) a step of 4 further on, 16 steps a second. Each picture is a window of the 320 × 200 bitmap at <code>$E000</code>, wide enough for the object at every turn. Landscape colours are the play palette at <code>$869D</code> with colours 2 and 3 from <code>$14F3</code> and <code>$14D4</code> by the number of enemies, as <code>$1420</code> sets them.</p>
+  </div>
+  <p>An object is a list of points and a list of faces. Each point is three bytes in three tables: its angle around the object's upright axis (<code>$9DE0</code>), its distance from that axis (<code>$A060</code>) and its height (<code>$9F20</code>). To draw an object, <code>draw_object</code> adds the object's yaw to every point's angle and multiplies the distance by the sine and cosine of the sum, so turning an object is changing one byte. The ten types share 160 points, numbered on from each other: the robot's are 0 to 28 and the tower's 124 to 135 (<code>$9CA0</code>).</p>
+  <p>Each face is one byte at <code>$A1A0</code>, and a list of its corners. Bits 0 and 1 give three or four sides, bits 2 and 3 the colour it is filled with, bits 4 and 5 the colour of its edges, and bit 7 the pass it is drawn in. The colours are the four of the screen, not fixed ones. On the title they are blue, black, red and yellow. In play they are blue, black and two colours set by the number of enemies on the landscape, so the robot that is red and yellow on the title is white and green on a landscape with one enemy.</p>
+  <p>The three blocks are the pieces the title's big letters are built from, one block for each pair of pixels of a character, on a tile of its own. Each has eight points and only four faces: its top and three of its sides (<code>$A6A0</code>). The fourth side and the bottom are not stored at all, and the title, which looks at the letters from one side, never shows them. Turn a block round in the line-up and, seen from the missing side, it all but disappears.</p>
+  <p>Drawn from a long way off, a face's edges take its fill colour (<code>$22E2</code>, when the distance's high byte at <code>$7D</code> is <code>$0F</code> or more), so a distant object loses its outlines.</p>
+  <h3 id="sprites">The sights and the scanner</h3>
+  <div class="plate">
+    <div id="gx-sprites"></div>
+    <p class="cap">The sights are sprite 0, its shape at <code>$7000</code> as the game writes it, in the colours <code>$98FF</code>-<code>$9909</code> give it, white with black, over each of the four screen colours of the palette above. The scanner is sprites 1 to 3 in white, black and green, drawn by <code>draw_scanner</code> (<code>$163F</code>) on the kit's 6502, 50 times a second as the raster interrupt calls it while an enemy is draining the player.</p>
+  </div>
+  <p>The BBC Micro original drew the sights and the scanner into the screen. The Commodore 64 version makes both of them sprites. The sights are a cross 11 lines high whose pixels alternate between white and black, so it shows on any ground. The scanner at the top right is three sprites side by side, of which only the top four lines are used. <code>draw_scanner</code> fills them a byte at a time with one of four patterns for the state, chosen by two bits of a random number from the page of them at <code>$0200</code>. It reads 32 of those 256 numbers on each redraw, so the static repeats every eight redraws, six times a second. When an enemy can see the player but not the tile the player stands on, the right half is drawn in the quiet pattern. Paused, the whole scanner is solid green.</p>
+</section>
+
+<section id="order">
+  <p class="fig">02 · One face at a time</p>
+  <h2 class="t">The title's Sentinel, drawn face by face</h2>
+  <p class="lede">The Sentinel on its tower, drawn as the title screen draws it, a face at a time. What is drawn later covers what is already there, so the order decides which faces show.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-o-title" aria-pressed="true">The title</button>
+      <button type="button" id="gx-o-code" aria-pressed="false">The secret-code screen</button>
+      <button type="button" id="gx-o-run">Pause</button>
+      <button type="button" id="gx-o-back">Back</button>
+      <button type="button" id="gx-o-next">Next</button>
+    </div>
+    <div class="gx-order">
+      <canvas id="gx-o-cv" width="100" height="156" aria-label="The title's tower and the object on it, drawn one face at a time"></canvas>
+      <div>
+        <p class="gx-read" id="gx-o-read"></p>
+        <div class="seq" id="gx-o-seq"></div>
+      </div>
+    </div>
+    <p class="cap">The bottom right-hand corner of the title's bitmap, 100 × 156 pixels, as <code>draw_title_pair</code> (<code>$887E</code>) draws them on the kit's 6502: the object on top in configuration 1, then the tower in configuration 2 (<code>$8819</code>). Each picture is the bitmap after one face; the outline marks what that face changed. In the list, faces of the second pass are underlined, and faces that changed nothing are faint.</p>
+  </div>
+  <p><code>draw_object</code> draws the faces in the order of the table, each one painted over whatever is already there. A face turned away from the viewer draws nothing. Seen from above, as in the pictures in the first part, six of the boulder's ten faces draw nothing; turned half round, three of those six swap places with three that drew.</p>
+  <p>A fixed order is right from only some viewpoints. For three types, the robot, the sentry and the Sentinel, when the object stands above the viewer, <code>draw_object</code> makes two passes (<code>$854D</code>-<code>$856D</code>): first the faces with bit 7 clear, then those with it set. On the title the Sentinel stands a unit above the viewer, so its faces go 102 to 104 and 126 to 136 first, then 105 to 125. Seen level or from above, all 35 go in order. A meanie makes two passes too, chosen by which way it faces rather than by its height. The other six types are always drawn in one.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* sen-objects */
+// senObjects(ram, C64Cpu): the game's own 3D drawing code run on the kit's 6502 over a copy of the
+// listing's memory. Everything is drawn into the bitmap at $E000-$FF3F, cleared first, as the game
+// draws its title and game-over pictures; crop() reads a window of it back as logical colours 0-3.
+//   object(type, yaw, cam): place_title_object ($8819) with configuration 0, the game-over picture,
+//     sets up object 1 of the given type in front of the viewer, object 2; cam then moves it cam.dz
+//     tiles in front and cam.dh units up, and tilts the view to cam.pitch; draw_object ($8533, Y = 1)
+//     draws it with its yaw ($09C1) set.
+//   titlePair(top, onPolygon): draw_title_pair ($887E), the object `top` on the tower as the title
+//     (5, the Sentinel) or the secret-code screen (0, a robot) draws it; onPolygon(n, pass, m) runs
+//     after each polygon draw_object hands to draw_polygon ($859F), pass 1 for the second of two
+//     passes ($0C47), and once more at the end with n = -1.
+//   scanner(state, half): a machine whose step() runs draw_scanner ($163F) with A = state (4 static,
+//     8 solid); half puts $40 in $0C4F, an enemy that sees the player but not the player's tile.
+function senObjects(ram, C64Cpu) {
+  const io = { read() { return 0; }, write() {} };
+  function viewer() {
+    const m = ram.slice();
+    m.fill(0, 0xE000, 0xFF40);
+    m[0x0902] = 16; m[0x0982] = 16; m[0x0942] = 2; m[0x0A02] = 0;   // object 2: x, z, height, fraction
+    return { m, cpu: new C64Cpu.CPU(m, { port: 0x35, io }) };
+  }
+  function object(type, yaw, cam) {
+    const { m, cpu } = viewer();
+    cpu.call(0x8819, { a: type, y: 0 }, { maxSteps: 1e5 });
+    m[0x0981] = 16 + cam.dz; m[0x0941] = 2 + cam.dh; m[0x0142] = cam.pitch & 255; m[0x09C1] = yaw & 255;
+    cpu.call(0x8533, { y: 1 }, { maxSteps: 4e6 });
+    return m;
+  }
+  function titlePair(top, onPolygon) {
+    const { m, cpu } = viewer();
+    let n = 0, pass = 0;
+    cpu.call(0x887E, { a: top }, { maxSteps: 8e6, hooks: {
+      0x859F: (c) => { n = c.y; pass = m[0x0C47] >> 7; },
+      0x85A2: () => { onPolygon(n, pass, m); },
+    } });
+    onPolygon(-1, 0, m);
+    return m;
+  }
+  function scanner(state, half) {
+    const m = ram.slice(), cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+    m[0x0C4F] = half ? 0x40 : 0;
+    return { m, step() { cpu.call(0x163F, { a: state }, { maxSteps: 1e4 }); } };
+  }
+  // The window x0..x0+w-1 (multicolour pixels), y0..y0+h-1 (lines) of the bitmap, a byte a pixel.
+  function crop(m, x0, y0, w, h) {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const X = x0 + x, Y = y0 + y;
+      if (X < 0 || X >= 160 || Y < 0 || Y >= 200) continue;
+      const v = m[0xE000 + (Y >> 3) * 320 + (X >> 2) * 8 + (Y & 7)];
+      out[y * w + x] = v >> (6 - 2 * (X & 3)) & 3;
+    }
+    return out;
+  }
+  return { object, titlePair, scanner, crop };
+}
+</script>
+<script>
+// Graphics tab. Every object is drawn by the game's own draw_object on the kit's 6502 (senObjects,
+// C64Cpu from ../../lib/cpu6502.js) over the bytes of the listing; the page only crops the bitmap
+// and colours it. A drawing takes about 200,000 of the 6502's cycles, so each turn of an object is
+// drawn once, kept, and drawn again only in the colours.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const fail = (t) => { $('gx-cast').innerHTML = '<p class="gx-miss">' + t + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined' || typeof senObjects === 'undefined') { fail('These objects are drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) { fail('The listing did not load, so nothing can be drawn.'); return; }
+  const ram = L.ram, S = senObjects(ram, C64Cpu);
+  const rgb = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const H = (n) => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // The palettes: the title's ($869D + 4, used with $87) and the play palette ($869D, with $83)
+  // with colours 2 and 3 as $1446 and $144C set them for 1 to 8 enemies.
+  const PALS = [['The title', [ram[0x86A1], ram[0x86A2], ram[0x86A3], ram[0x86A4]]]];
+  for (let n = 1; n <= 8; n++) PALS.push(['A landscape with ' + n + ' enem' + (n > 1 ? 'ies' : 'y'), [ram[0x869D], ram[0x869E], ram[0x14F3 + n - 1], ram[0x14D4 + n - 1]]]);
+  let pal = PALS[0][1];
+  const sel = $('gx-pal');
+  PALS.forEach(([name], i) => { const o = document.createElement('option'); o.value = i; o.textContent = name; sel.appendChild(o); });
+
+  // Paints logical-colour pixels (one byte each, w x h multicolour pixels) into ctx at (dx, dy),
+  // each pixel two canvas pixels wide.
+  function paint(ctx, px, w, h, dx, dy, cols) {
+    const img = ctx.createImageData(w * 2, h);
+    for (let i = 0; i < w * h; i++) {
+      const c = rgb[cols[px[i]]], o = ((i / w | 0) * w * 2 + (i % w) * 2) * 4;
+      for (let k = 0; k < 8; k += 4) { img.data[o + k] = c[0]; img.data[o + k + 1] = c[1]; img.data[o + k + 2] = c[2]; img.data[o + k + 3] = 255; }
+    }
+    ctx.putImageData(img, dx, dy);
+  }
+
+  // 01: the ten objects, in two line-ups, drawn from one viewpoint.
+  const CAM = { dz: 10, dh: -1, pitch: -14 }, Y0 = 26, ROWS = 133, STEP = 4, RATE = 16;
+  const KIND = {
+    0: 'A robot', 1: 'A sentry', 2: 'A tree', 3: 'A boulder', 4: 'A meanie',
+    5: 'The Sentinel', 6: 'The Sentinel\'s tower',
+    7: 'A block for the right pixel of a pair', 8: 'A block for the left pixel of a pair', 9: 'A block for both pixels of a pair',
+  };
+  const LABEL = ['Robot', 'Sentry', 'Tree', 'Boulder', 'Meanie', 'Sentinel', 'Tower', 'Right pixel', 'Left pixel', 'Both pixels'];
+  const SHORT = ['robot', 'sentry', 'tree', 'boulder', 'meanie', 'Sentinel', 'tower', 'right block', 'left block', 'double block'];
+  // Half the width in multicolour pixels each needs at every turn, measured across all 256.
+  const LINES = [
+    { title: 'On the landscape', types: [[0, 10], [1, 10], [2, 16], [3, 17], [4, 11], [5, 11], [6, 25]] },
+    { title: 'The blocks of the title\'s letters', types: [[7, 27], [8, 27], [9, 27]] },
+  ];
+  const cache = new Map();
+  const box = $('gx-cast');
+  box.innerHTML = '';
+  const lines = LINES.map((ln) => {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    const w = ln.types.reduce((a, [, h]) => a + 2 * h, 0);
+    g.innerHTML = '<h3>' + ln.title + '</h3><canvas class="gx-line" width="' + w * 2 + '" height="' + ROWS + '"></canvas><div class="gx-names"></div>';
+    box.appendChild(g);
+    const cv = g.querySelector('canvas'), names = g.querySelector('.gx-names');
+    cv.style.width = w * 4 + 'px';
+    names.style.width = w * 4 + 'px';
+    let x = 0;
+    const parts = ln.types.map(([type, half]) => {
+      const s = document.createElement('span');
+      s.style.flex = '0 0 ' + (200 * half / w) + '%';
+      s.textContent = LABEL[type];
+      names.appendChild(s);
+      const p = { type, half, x }; x += 2 * half; return p;
+    });
+    return { cv, ctx: cv.getContext('2d'), parts, w };
+  });
+  const key = (type, yaw) => type * 256 + yaw;
+  function draw(type, half, yaw) {
+    const k = key(type, yaw);
+    if (!cache.has(k)) cache.set(k, S.crop(S.object(type, yaw, CAM), 80 - half, Y0, 2 * half, ROWS));
+    return cache.get(k);
+  }
+  const ready = (yaw) => lines.every((l) => l.parts.every((p) => cache.has(key(p.type, yaw))));
+  // Draws what is missing for this yaw, for at most `ms` milliseconds.
+  function fill(yaw, ms) {
+    const t0 = performance.now();
+    for (const l of lines) for (const p of l.parts) {
+      if (cache.has(key(p.type, yaw))) continue;
+      if (performance.now() - t0 > ms) return false;
+      draw(p.type, p.half, yaw);
+    }
+    return true;
+  }
+  let shown = 96, yaw = 96;
+  function show(y) {
+    shown = y;
+    for (const l of lines) for (const p of l.parts) paint(l.ctx, draw(p.type, p.half, y), 2 * p.half, ROWS, p.x * 2, 0, pal);
+    $('gx-stat').textContent = 'yaw ' + y + ' of 256';
+  }
+
+  // the readout: which object the pointer is over, and its numbers from $9CA0, $9CAB and $9CB6
+  const passes = (t) => [, , 'two passes, chosen by which way it faces', 'two passes when it stands above the viewer'][ram[0x9CB6 + t]] || 'one pass';
+  function read(type) {
+    const p0 = ram[0x9CA0 + type], p1 = ram[0x9CA1 + type], f0 = ram[0x9CAB + type], f1 = ram[0x9CAC + type];
+    $('gx-read').innerHTML = KIND[type] + ', type ' + type + ': points ' + p0 + '-' + (p1 - 1) + ' (' + (p1 - p0) + '), faces ' + f0 + '-' + (f1 - 1) + ' (' + (f1 - f0) + '), drawn in ' + passes(type) + '.';
+  }
+  let running = !reduced, drag = null;
+  for (const l of lines) {
+    const at = (e) => { const r = l.cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * l.w; return l.parts.find((p) => x >= p.x && x < p.x + 2 * p.half) || l.parts[l.parts.length - 1]; };
+    l.cv.addEventListener('pointermove', (e) => {
+      read(at(e).type);
+      if (drag) yaw = (drag.yaw - Math.round((e.clientX - drag.x) / 6) * STEP) & 255;
+    });
+    l.cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, yaw: shown }; l.cv.setPointerCapture(e.pointerId); read(at(e).type); e.preventDefault(); });
+    const up = () => { drag = null; };
+    l.cv.addEventListener('pointerup', up);
+    l.cv.addEventListener('pointercancel', up);
+  }
+  sel.addEventListener('change', () => { pal = PALS[+sel.value][1]; show(shown); drawSprites(); });
+
+  // the sights and the scanner
+  const sp = $('gx-sprites');
+  function sTile(w, h, s, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), lb = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h; cv.style.width = w * s + 'px'; lb.innerHTML = label;
+    t.appendChild(cv); t.appendChild(lb); sp.appendChild(t);
+    return cv.getContext('2d');
+  }
+  // A multicolour sprite's rows r0..r1 from `data`, bytes b0..b1 of each row, as logical colours:
+  // 0 transparent, 1 multicolour 0, 2 the sprite's colour, 3 multicolour 1.
+  function sprite(m, data, r0, r1, b0, b1) {
+    const out = [];
+    for (let r = r0; r <= r1; r++) for (let b = b0; b <= b1; b++) for (let k = 0; k < 4; k++) out.push(m[data + r * 3 + b] >> (6 - 2 * k) & 3);
+    return out;
+  }
+  // $D025 black ($9907), $D026 green ($9AA7), the sights' colour ($9902) and the scanner's ($3F8B)
+  const MC0 = ram[0x9908], MC1 = ram[0x9AA8], SIGHTS = ram[0x9903], SCANNER = ram[0x3F8C];
+  const cross = sprite(ram, 0x7000, 0, 10, 0, 2);
+  const sights = sTile(4 * 26 - 2, 11, 4, 'The sights, sprite 0, at <code>$7000</code>, over the four screen colours');
+  const SCAN = [[4, false, 'An enemy can see the player\'s tile: static'], [4, true, 'It can see the player but not the tile'], [8, false, 'Paused: solid']];
+  const scans = SCAN.map(([state, half, label]) => ({ m: S.scanner(state, half), ctx: sTile(64, 4, 4, label + ' (<code>$7040</code>-<code>$70C1</code>)') }));
+  function drawSprites() {
+    for (let i = 0; i < 4; i++) paint(sights, cross, 12, 11, i * 26, 0, [pal[i], MC0, SIGHTS, MC1]);
+    for (const s of scans) {
+      // rows 0-3 of sprites 1, 2 and 3 side by side: 3 + 3 + 2 bytes, 32 pixels
+      const px = [];
+      for (let r = 0; r < 4; r++) for (const [base, n] of [[0x7040, 3], [0x7080, 3], [0x70C0, 2]]) for (let b = 0; b < n; b++) for (let k = 0; k < 4; k++) px.push(s.m.m[base + r * 3 + b] >> (6 - 2 * k) & 3);
+      paint(s.ctx, px, 32, 4, 0, 0, [0, MC0, SCANNER, MC1]);
+    }
+  }
+  for (const s of scans) s.m.step();
+
+  // 02: one face at a time
+  const oc = $('gx-o-cv'), octx = oc.getContext('2d'), OX = 110, OY = 44, OW = 50, OH = 156;
+  oc.style.width = OW * 2 * 3 + 'px';
+  octx.imageSmoothingEnabled = false;
+  const TITLE = [0x86A1, 0x86A2, 0x86A3, 0x86A4].map((a) => ram[a]);
+  let order = null, at = 0;
+  function build(top) {
+    const steps = [];
+    let prev = new Uint8Array(OW * OH), twoPass = false;
+    S.titlePair(top, (n, pass, m) => {
+      if (n < 0) return;
+      const px = S.crop(m, OX, OY, OW, OH);
+      let x0 = OW, x1 = -1, y0 = OH, y1 = -1;
+      for (let i = 0; i < px.length; i++) if (px[i] !== prev[i]) { const x = i % OW, y = i / OW | 0; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      steps.push({ n, pass, px, box: x1 < 0 ? null : [x0, y0, x1, y1] });
+      if (pass) twoPass = true;
+      prev = px;
+    });
+    return { top, steps, twoPass };
+  }
+  function owner(n) { let t = 0; while (t < 9 && ram[0x9CAB + t + 1] <= n) t++; return t; }
+  function showStep() {
+    const s = order.steps[at];
+    paint(octx, s.px, OW, OH, 0, 0, TITLE);
+    if (s.box) {
+      octx.strokeStyle = '#f0a020'; octx.lineWidth = 1;
+      octx.strokeRect(s.box[0] * 2 - 1.5, s.box[1] - 1.5, (s.box[2] - s.box[0] + 1) * 2 + 3, s.box[3] - s.box[1] + 4);
+    }
+    const t = owner(s.n), d = ram[0xA1A0 + s.n], f0 = ram[0x9CAB + t], k = s.n - f0 + 1;
+    const two = order.steps.some((x) => x.pass && owner(x.n) === t);
+    const nth = k + ([, 'st', 'nd', 'rd'][k % 100 > 10 && k % 100 < 14 ? 0 : k % 10] || 'th');
+    $('gx-o-read').innerHTML = '<b>Face ' + s.n + '</b>, the ' + nth + ' of the ' + SHORT[t] + '\'s ' + (ram[0x9CAB + t + 1] - f0) + ': ' + ((d & 3) ? 'four' : 'three') + ' sides, filled ' + NAMES[TITLE[d >> 2 & 3]] + ', edged ' + NAMES[TITLE[d >> 4 & 3]] +
+      (two ? ', in the ' + (s.pass ? 'second' : 'first') + ' pass' : ', in one pass') + '.' + (s.box ? '' : ' It draws nothing from here.') + '<br>Step ' + (at + 1) + ' of ' + order.steps.length + '.';
+    const chips = $('gx-o-seq').children;
+    for (let i = 0; i < chips.length; i++) chips[i].classList.toggle('k', i === at);
+  }
+  function pick(top) {
+    order = build(top); at = 0;
+    const seq = $('gx-o-seq');
+    seq.innerHTML = '';
+    order.steps.forEach((s, i) => {
+      const c = document.createElement('span');
+      c.textContent = s.n;
+      if (s.pass) c.className = 'gx-p2';
+      if (!s.box) c.classList.add('gx-none');
+      c.addEventListener('click', () => { at = i; oRun = false; $('gx-o-run').textContent = 'Play'; showStep(); });
+      seq.appendChild(c);
+    });
+    $('gx-o-title').setAttribute('aria-pressed', top === 5); $('gx-o-code').setAttribute('aria-pressed', top === 0);
+    showStep();
+  }
+  let oRun = !reduced, oLast = 0, oHold = 0;
+  $('gx-o-run').textContent = oRun ? 'Pause' : 'Play';
+  $('gx-o-title').addEventListener('click', () => pick(5));
+  $('gx-o-code').addEventListener('click', () => pick(0));
+  $('gx-o-run').addEventListener('click', () => { oRun = !oRun; $('gx-o-run').textContent = oRun ? 'Pause' : 'Play'; });
+  const stop = () => { oRun = false; $('gx-o-run').textContent = 'Play'; };
+  $('gx-o-back').addEventListener('click', () => { stop(); at = (at + order.steps.length - 1) % order.steps.length; showStep(); });
+  $('gx-o-next').addEventListener('click', () => { stop(); at = (at + 1) % order.steps.length; showStep(); });
+  pick(5);
+
+  // Only what is on screen does any work.
+  const seen = new Set(), plate = $('gx-plate'), oPlate = oc.closest('.plate');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target))));
+    io.observe(plate); io.observe(oPlate);
+  } else { seen.add(plate); seen.add(oPlate); }
+  $('gx-run').textContent = running ? 'Pause' : 'Turn';
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Turn'; });
+  let last = 0, acc = 0, sAcc = 0;
+  fill(yaw, 1e9); show(yaw); drawSprites();
+  function loop(ts) {
+    const dt = last ? Math.min(0.25, (ts - last) / 1000) : 0;
+    last = ts;
+    if (seen.has(plate)) {
+      if (running && !drag && yaw === shown) { acc += dt * RATE; if (acc >= 1) { acc = Math.min(acc - 1, 1); yaw = shown + STEP & 255; } }
+      if (yaw !== shown && fill(yaw, 10)) show(yaw);
+      if (running) {
+        sAcc += dt * 50;
+        let n = Math.floor(sAcc); sAcc -= n;
+        if (n) { while (n--) for (const s of scans) s.m.step(); drawSprites(); }
+      }
+    }
+    if (seen.has(oPlate) && oRun) {
+      oLast += dt;
+      const wait = at === order.steps.length - 1 ? 1.6 : order.steps[at].box ? 0.3 : 0.12;
+      if (oLast >= wait) { oLast = 0; at = (at + 1) % order.steps.length; showStep(); }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>

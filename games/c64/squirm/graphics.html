@@ -1,0 +1,245 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squirm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:34px;--h2:22px;--fs:16px}}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.gx-tile{background:#1b1c20;border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:#b8b8b8;margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-sheet{display:block;width:100%;height:auto;image-rendering:pixelated;background:#1b1c20;border-radius:4px;cursor:crosshair}
+.gx-tile canvas.gx-on{outline:none}
+.gx-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-height:3em;margin:10px 0 0;line-height:1.5}
+.gx-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.gx-key i{display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:3px}
+.gx-sub{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:18px 0 6px}
+.gx-sub:first-child{margin-top:0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · Mastertronic</p>
+  <h1>Squirm</h1>
+  <p class="sub">Nothing in Squirm is a sprite. The player, the worms, the eggs and the treasure are characters, and they move by being written into the next cell of the screen. Their animation is the character set itself, rewritten about eight times a second.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every moving character, as the game animates it</h2>
+  <p class="lede">About 8.6 times a second the game's interrupt rewrites the shapes of a few characters, so every egg rolls and the player spins wherever they are on the screen. In play the player and the worms move a cell at a time, at most a cell a pass, ten passes a second on the first levels.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <button type="button" id="gx-step">One jiffy</button>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <div id="gx-cast"><p class="gx-miss">The characters are drawn from the game's bytes in the built site.</p></div>
+    <p class="cap">The shapes are the character set at <code>$2800</code>, from the listing's bytes, and they change because the page runs the game's own interrupt, <code>irq_handler</code> (<code>$3CB3</code>), on the kit's 6502 once a jiffy, the tick of the C64's clock, 60 times a second. On every seventh call it rotates the arrow's three frames, swaps each treasure's two poses, rolls the egg and calls <code>rotate_spinner</code> (<code>$2508</code>). The worm and the player move a cell every six jiffies, a pass of the main loop at the first levels' speed (<code>step_delay</code>, <code>$2689</code>); where they go here, the page chooses.</p>
+  </div>
+  <p>The movement comes from the character set itself. On every seventh call of its interrupt the game rewrites a few characters' shapes: each row of the egg rolls one pixel to the left, each treasure swaps between two poses, and the eight frames of a spinning figure move round one place. Every egg on the screen rolls at once, because every egg is the same character and the game changes its one shape.</p>
+  <p>The player is character <code>$51</code>, one of eight in a row, <code>$4E</code>-<code>$55</code>, that hold the frames of the spinning figure. <code>rotate_spinner</code> moves every shape down one character, the first going to the end, so <code>$51</code> shows each frame in turn. The three lives at the bottom of the screen are <code>$4E</code>-<code>$50</code>, other frames of the same figure, and the title's border is made of all eight.</p>
+  <p>A worm is a head, <code>$43</code>, and a body, <code>$44</code>, written into the cells it crawls along, and nothing about it is animated. The treasure is <code>$47</code> or <code>$49</code>, the next picture after each one is collected (<code>treasure_char</code>, <code>$268E</code>); each wobbles because the interrupt swaps its shape with the character after it, <code>$48</code> or <code>$4A</code>, which nothing draws. Nor does anything draw the arrow, <code>$40</code>-<code>$42</code>, though the interrupt turns it all game.</p>
+  <p>None of these characters has a colour of its own. A cell's colour is set once, as a level starts, from where it is on the screen, so a worm or the player changes colour cell by cell as it moves. How the maze's colours are set is on the <a href="index.html#frame">How it works</a> tab.</p>
+</section>
+
+<section id="charset">
+  <p class="fig">02 · The character set</p>
+  <h2 class="t">Every character, and what draws it</h2>
+  <p class="lede">The screen is characters from the game's own set at <code>$2800</code>, all 256 of them. The maze uses its walls in multicolour, two wide pixels to a pair of bits; everything else is drawn the ordinary way, a pixel to a bit.</p>
+  <div class="plate">
+    <canvas id="gx-sheet" class="gx-sheet" width="896" height="616" aria-label="The 256 characters of the set at $2800, sixteen to a row"></canvas>
+    <div class="gx-key" id="gx-key"></div>
+    <p class="gx-read" id="gx-read">Point at a character to see what draws it.</p>
+    <p class="cap">The characters as the listing holds them, sixteen to a row: the walls in multicolour, blue and blue with white, as the maze shows them, and every other character in white on black.</p>
+  </div>
+  <p>The set is also the game's alphabet. <code>$01</code>-<code>$1A</code> is an italic A to Z and <code>$30</code>-<code>$39</code> the digits, so the game's text is ordinary screen codes. The walls take <code>$1B</code>-<code>$25</code>, all below <code>$28</code>, which is how the game tells a wall from anything the player may walk into (<code>try_cell</code>, <code>$2FF9</code>). Fifty-four characters, <code>$5E</code>-<code>$7F</code>, <code>$9B</code>-<code>$9F</code> and <code>$A1</code>-<code>$AF</code>, are never drawn: they hold a table of instruction names left over from the assembler the game was written with. The last seven bytes of <code>$FF</code> are code.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">gamesexplained</a></footer><script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// Graphics tab. The shapes are the character set at $2800 from the listing, and they move because the
+// page runs the game's own interrupt, irq_handler ($3CB3), on the kit's 6502 (C64Cpu, from
+// ../../lib/cpu6502.js) once a jiffy, up to the KERNAL's handler ($EA31) it ends in. Where the worm
+// and the player go is the page's choice; the cell colours follow colour_maze ($35E8): a counter
+// from 1 to 7, stepped on every cell.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const fail = (t) => { $('gx-cast').innerHTML = '<p class="gx-miss">' + t + '</p>'; };
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { fail('These pictures are drawn by the site\'s shared scripts, which the built site serves.'); return; }
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) { fail('The listing did not load, so nothing can be drawn.'); return; }
+  const PAL = C64.PAL, JIFFY = 985248 / 16422, ram = L.ram;
+  const hex = (v, n = 2) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  const m = ram.slice(), set = m.subarray(0x2800, 0x3000);
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: { read: () => 0, write: () => {} } });
+  const irq = () => { cpu.pc = 0x3CB3; cpu.sp = 0xF0; cpu.run({ until: 0xEA31, maxSteps: 100000 }); };
+
+  $('gx-cast').innerHTML = '';
+  function group(title, text) {
+    const g = document.createElement('div');
+    g.className = 'gx-group';
+    g.innerHTML = '<h3>' + title + '</h3><p>' + text + '</p><div class="gx-tiles"></div>';
+    $('gx-cast').appendChild(g);
+    return g.querySelector('.gx-tiles');
+  }
+  function tile(tiles, w, h, label) {
+    const t = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    t.className = 'gx-tile'; cv.width = w; cv.height = h; sp.innerHTML = label;
+    t.appendChild(cv); t.appendChild(sp); tiles.appendChild(t);
+    const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    return { ctx, w, h };
+  }
+  const clear = (t) => { t.ctx.fillStyle = PAL[0]; t.ctx.fillRect(0, 0, t.w, t.h); };
+  const ch = (t, c, x, y, s, col) => C64.drawGlyph(t.ctx, set, c, x, y, s, PAL[col]);
+  const S = 4, CELL = 8 * S;
+
+  const g1 = group('The player and the lives', 'The eight characters of the spinning figure, each showing the frame it holds now. The player is the fourth, <code>$51</code>.');
+  const spin = tile(g1, 8 * (CELL + 8) - 8, CELL + 12, 'Characters <code>$4E</code>-<code>$55</code>: the lives, the player (outlined), and four more frames');
+  const g2 = group('In the maze', 'A worm crawls and the player walks along a corridor, a cell a pass, each taking the colour of the cell it is in.');
+  const N = 14, strip = tile(g2, N * CELL, 2 * CELL + 8, 'A worm, <code>$43</code> and <code>$44</code>, and the player, <code>$51</code>, along a corridor coloured as <code>colour_maze</code> colours one');
+  const g3 = group('Eggs and treasure', 'Every egg on the screen is the same character, so they all roll together. The treasure wobbles between two poses; once collected, its cell shows what it paid.');
+  const things = tile(g3, 6 * (CELL + 8) - 8, CELL + 12, 'The egg <code>$46</code>; the treasures <code>$47</code> and <code>$49</code>; their hidden poses <code>$48</code> and <code>$4A</code>; the arrow <code>$40</code>, never drawn');
+  const paid = tile(g3, 3 * (CELL + 8) - 8, CELL + 12, 'What a treasure paid: <code>$4B</code> 100, <code>$4C</code> 10, <code>$4D</code> nothing');
+
+  // the corridor: colour_maze steps a counter 1-7 on every cell, so a row of open cells runs 1, 2, ... 7, 1
+  const cellColour = (i) => (i + 3) % 7 + 1;
+  let jiffy = 0, pass = 0;
+  function drawAll() {
+    clear(spin);
+    for (let k = 0; k < 8; k++) {
+      const x = k * (CELL + 8);
+      ch(spin, 0x4E + k, x, 6, S, k < 3 ? 2 : k === 3 ? 7 : 1);
+      if (k === 3) { spin.ctx.strokeStyle = '#ffd23f'; spin.ctx.lineWidth = 2; spin.ctx.strokeRect(x - 3, 3, CELL + 6, CELL + 6); }
+    }
+    clear(strip);
+    const len = 5, span = N + len, wp = pass % span;                // the worm's head runs off the right and comes back
+    for (let i = 0; i < len; i++) { const c = wp - i; if (c >= 0 && c < N) ch(strip, i ? 0x44 : 0x43, c * CELL, 0, S, cellColour(c)); }
+    const pp = pass % (2 * N - 2), pc = pp < N ? pp : 2 * N - 2 - pp;   // the player walks there and back
+    if (pp < N) for (let c = pc + 1; c < N; c++) if (c % 3 === 1) ch(strip, 0x46, c * CELL, CELL + 8, S, cellColour(c));  // eggs ahead, eaten as he passes
+    ch(strip, 0x51, pc * CELL, CELL + 8, S, cellColour(pc));
+    clear(things);
+    [[0x46, 7], [0x47, 3], [0x49, 5], [0x48, 3], [0x4A, 5], [0x40, 1]].forEach(([c, col], k) => ch(things, c, k * (CELL + 8), 6, S, col));
+    clear(paid);
+    [0x4B, 0x4C, 0x4D].forEach((c, k) => ch(paid, c, k * (CELL + 8), 6, S, 1));
+  }
+  let running = true, last = 0, acc = 0;
+  function tick(n) {
+    for (let i = 0; i < n; i++) { jiffy++; irq(); if (jiffy % 6 === 0) pass++; }
+    drawAll();
+    $('gx-stat').textContent = 'jiffy ' + jiffy + ' · pass ' + pass + ' · ' + (jiffy / JIFFY).toFixed(1) + ' s';
+  }
+  function loop(ts) {
+    if (running) {
+      if (last) acc += Math.min(0.25, (ts - last) / 1000) * JIFFY;
+      const n = Math.floor(acc); acc -= n;
+      if (n) tick(n);
+    }
+    last = ts;
+    requestAnimationFrame(loop);
+  }
+  $('gx-run').addEventListener('click', () => { running = !running; $('gx-run').textContent = running ? 'Pause' : 'Play'; last = 0; });
+  $('gx-step').addEventListener('click', () => { running = false; $('gx-run').textContent = 'Play'; tick(1); });
+  tick(0);
+  requestAnimationFrame(loop);
+
+  // ---- 02: the set, with what draws each character (the game's code and its screens, as facts.md lists them)
+  const CAT = {
+    text: ['#9a9a9a', 'letters and digits'], wall: ['#4f8cc9', 'the maze\'s walls'], logo: ['#a070c0', 'the title\'s logo'],
+    move: ['#e0a030', 'what moves in the maze'], spin: ['#3aa76d', 'the spinning figure'], other: ['#c07a2c', 'the panel and the name entry'],
+    never: ['#d0503c', 'never drawn'],
+  };
+  const what = new Array(256).fill(null);
+  const put = (a, b, cat, text) => { for (let c = a; c <= b; c++) what[c] = [cat, typeof text === 'function' ? text(c) : text]; };
+  put(0x00, 0x00, 'other', 'a solid block: the trail the player leaves in the bonus run');
+  put(0x01, 0x1A, 'text', (c) => 'the italic letter ' + String.fromCharCode(64 + c));
+  put(0x1B, 0x25, 'wall', 'a piece of the maze\'s walls, drawn in multicolour');
+  put(0x20, 0x20, 'text', 'the space');
+  put(0x26, 0x2F, 'logo', 'a piece of the title\'s SQUIRM logo');
+  put(0x3A, 0x3F, 'logo', 'a piece of the title\'s SQUIRM logo');
+  put(0x30, 0x39, 'text', (c) => 'the digit ' + (c - 0x30));
+  put(0x40, 0x42, 'never', 'the arrow, one of its three frames, which the interrupt rotates; nothing draws it');
+  put(0x43, 0x43, 'move', 'a worm\'s head');
+  put(0x44, 0x44, 'move', 'a worm\'s body');
+  put(0x45, 0x45, 'logo', 'a worm\'s body as the title draws it');
+  put(0x46, 0x46, 'move', 'the egg, its rows rolled a pixel left every seventh jiffy');
+  put(0x47, 0x47, 'move', 'the first treasure, its shape swapped with $48 every seventh jiffy');
+  put(0x48, 0x48, 'never', 'the first treasure\'s other pose, held while $47 shows one; nothing draws it');
+  put(0x49, 0x49, 'move', 'the second treasure, its shape swapped with $4A every seventh jiffy');
+  put(0x4A, 0x4A, 'never', 'the second treasure\'s other pose; nothing draws it');
+  put(0x4B, 0x4B, 'move', 'what a collected treasure paid: 100');
+  put(0x4C, 0x4C, 'move', 'what a collected treasure paid: 10');
+  put(0x4D, 0x4D, 'move', 'what a collected treasure paid: nothing');
+  put(0x4E, 0x55, 'spin', (c) => 'a frame of the spinning figure, which moves on a character every seventh jiffy' + (c === 0x51 ? ': the player' : c < 0x51 ? ': a life on the bottom line' : ': on the title\'s border'));
+  put(0x5A, 0x5A, 'other', 'TK, the initials of the author, Tony Kelly, in the bottom right corner');
+  put(0x5B, 0x5B, 'other', 'a box, for the name entry');
+  put(0x5E, 0x7F, 'never', 'bytes of the leftover assembler\'s table of instruction names');
+  put(0x9B, 0x9F, 'never', 'bytes of the leftover assembler\'s table of instruction names');
+  put(0xA1, 0xAF, 'never', 'bytes of the leftover assembler\'s table of instruction names');
+  put(0x81, 0x9A, 'text', (c) => 'the block letter ' + String.fromCharCode(c - 0x40) + ', light on dark');
+  put(0xB0, 0xB9, 'text', (c) => 'the block digit ' + (c - 0xB0) + ', light on dark');
+  put(0xA0, 0xA0, 'text', 'a solid block, the block alphabet\'s space, in the title and the status lines');
+  const sheet = $('gx-sheet'), sx = sheet.getContext('2d'), SS = 3, SW = 56, SH = 38;
+  sx.imageSmoothingEnabled = false;
+  for (let c = 0; c < 256; c++) {
+    const x = (c % 16) * SW, y = Math.floor(c / 16) * SH, w = what[c];
+    sx.fillStyle = PAL[0]; sx.fillRect(x, y, 8 * SS, 8 * SS);
+    if (w && w[0] === 'wall' && c !== 0x20) C64.drawGlyphMC(sx, set, c, x, y, SS, [PAL[0], PAL[6], PAL[6], PAL[1]]);
+    else C64.drawGlyph(sx, set, c, x, y, SS, PAL[1]);
+    sx.fillStyle = '#80838a'; sx.font = '11px "IBM Plex Mono", monospace'; sx.fillText(hex(c), x + 26, y + 16);
+    if (w) { sx.fillStyle = CAT[w[0]][0]; sx.fillRect(x, y + 27, 24, 4); }
+  }
+  $('gx-key').innerHTML = Object.values(CAT).map(([c, t]) => '<span><i style="background:' + c + '"></i>' + t + '</span>').join('');
+  function readout(e) {
+    const r = sheet.getBoundingClientRect(), k = sheet.width / r.width;
+    const col = Math.floor((e.clientX - r.left) * k / SW), row = Math.floor((e.clientY - r.top) * k / SH), c = row * 16 + col;
+    if (col < 0 || col > 15 || c < 0 || c > 255) return;
+    const w = what[c];
+    $('gx-read').innerHTML = '<b>' + hex(c) + '</b> at ' + hex(0x2800 + c * 8, 4) + ': ' + (w ? w[1] : 'no screen the game copies holds it, and no use for it was found') + '.';
+  }
+  sheet.addEventListener('mousemove', readout);
+  sheet.addEventListener('click', readout);
+})();
+</script>
