@@ -1,9 +1,11 @@
 'use strict';
 // Writes games/c64/stunt-car-racer/play.html: port/play.template.html with, at <!-- port -->, the
 // port's sources (each file of port/src as a script of its own, core.js first), the page's machine
-// (page/runtime.js), Fast CPU's table (page/fast-table.js), the pacing the fit wrote (cost.json)
+// (page/runtime.js), Fast CPU's table (page/fast-table.js), the view from outside the car for the
+// mods (page/chase.js), the pacing the fit wrote (cost.json)
 // and the machine as the page carries it (scripts/pack-data.js: memory and chips at the loader's
-// hand-over, the code left out); at <!-- fast --> the section on Fast CPU (page/fast.html); and at
+// hand-over, the code left out); at <!-- chase --> the section on Chase View (page/chase.html); at
+// <!-- fast --> the section on Fast CPU (page/fast.html); and at
 // <!-- differences --> the section on what differs from a C64 (page/differences.html).
 //   node build-play.js
 // pack-data.js reads the snapshot from work/, which only a contributor with the game has; without
@@ -17,6 +19,7 @@ const src = ['core.js'].concat(fs.readdirSync(path.join(ROOT, 'src')).filter(f =
 for (const f of src) parts.push(script('src/' + f, fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')));
 parts.push(script('page/runtime.js', fs.readFileSync(path.join(ROOT, 'page', 'runtime.js'), 'utf8')));
 parts.push(script('page/fast-table.js', fs.readFileSync(path.join(ROOT, 'page', 'fast-table.js'), 'utf8')));
+parts.push(script('page/chase.js', fs.readFileSync(path.join(ROOT, 'page', 'chase.js'), 'utf8')));
 parts.push('<script>\nwindow.SCR_COST = ' + fs.readFileSync(path.join(ROOT, 'cost.json'), 'utf8').trim() + ';\n</script>');
 let data;
 try {
@@ -29,6 +32,7 @@ try {
 }
 parts.push('<script type="application/json" id="scr-data">' + data + '</script>');
 html = html.replace('<!-- port -->', () => parts.join('\n'));   // a function, so that $' in the code stays as it is
+html = html.replace('<!-- chase -->', () => fs.readFileSync(path.join(ROOT, 'page', 'chase.html'), 'utf8').trim());
 html = html.replace('<!-- fast -->', () => fs.readFileSync(path.join(ROOT, 'page', 'fast.html'), 'utf8').trim());
 html = html.replace('<!-- differences -->', () => fs.readFileSync(path.join(ROOT, 'page', 'differences.html'), 'utf8').trim());
 fs.writeFileSync(OUT, html);
