@@ -163,3 +163,19 @@ frames, set 1× at K 8. Walls: 186 of 201 three-step walks ended where the
 Spectrum's did, 4 more than 64 units away, none at another height. The
 crosshair went 60 pixels in 0.609 s against the Spectrum's 0.633 s. The
 laser held fired every 0.317 s at 1× against 0.334 s.
+
+**Found in play, fixed the same day.** Aaron found that with Fast CPU
+on, FIRE did not seem to shoot and I often closed the information screen
+at once. The laser did fire: the game draws its four lines, plays its
+sound for 0.189 s with the processor and rubs the lines out in one
+stretch, and the page showed memory as it stood after the stretch, so
+the lines never reached the screen. The runtime's `fastFrame` now shows
+the frame the beam took at real time while the clock is more than a frame
+ahead of it; the lines show for 10 refreshes (0.167 s). A key that came up
+within its least hold of three frames was let go only between loops, and
+the information screen runs none, so a tap of I stayed down until the
+screen's own wait of 25 frames ended and then closed it (after 0.7 s in
+Chromium). The page now lets keys go after each refresh too.
+`test_fast.js` gained the beam part, and `port/test/fast-browser.js`
+presses the keys in Chromium; it failed on the old page and passes on
+the new.

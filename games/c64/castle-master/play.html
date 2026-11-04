@@ -6516,7 +6516,10 @@ function tick(now) {
   try {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast && fx) {
+      // a key that has come up is let go between loops, and after the refresh too: a screen outside
+      // the main loop goes round no loop
       FastCPU.run(fx, dt, () => { if (letGo.size) release(); });
+      if (letGo.size) release();
       sound.frame();
       F = rt.now(); n = 1;
     } else {

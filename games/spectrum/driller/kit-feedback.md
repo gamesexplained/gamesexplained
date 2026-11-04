@@ -27,6 +27,8 @@ time, operating system and tool versions.
 
 - `kit/skills/core/70-minisite/fast-cpu.md`, "The frame limiter" and "Controls": a delay loop in a pass that moves a pointer sets a speed of the game's own, so share the pass's time rather than time the delay as on the machine (timed as on the machine, Driller's crosshair went 60 pixels a second against the Spectrum's 94). And a main loop that waits inside itself for a key starts at the key read, with Fast CPU switched on during that wait taking the wait's loop as its own. Both wait for a second game with Fast CPU that shows them.
 
+- `kit/skills/core/70-minisite/fast-cpu.md`, "The frame limiter": a page that shows memory as the last loop left it hides whatever the game draws and rubs out around a wait that holds the processor. Driller draws the laser's four lines, plays its sound for 0.189 s with the processor, and rubs them out in the same stretch, so the page showed no beam at all; while the clock is more than a frame past real time it now shows the frame the beam took at real time (`rt.fastFrame` in `port/page/runtime.js`). And a key that comes up before its least hold must be let go at each refresh as well as between loops, because the screens outside the main loop go round no loop: let go only between loops, a tap of I held itself down through the information screen, which closed itself after 0.7 s. Castle Master's page had the same code and was given the same line without a game moment that shows it there. Both wait for a second game that shows them.
+
 ## Maintainer asks
 
 - #729: kit/spectrum/lockstep.js: tell a port write of the same value apart from no write at all.

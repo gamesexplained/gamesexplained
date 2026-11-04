@@ -343,3 +343,13 @@ walking (leaving out loops that changed area). A C64 with a faster
 processor is nowhere slower than a C64, so 1× is now 10 ticks a step, the
 C64's quickest, and 2× and 5× are 5 and 2. The guide's rule for a faster
 pace says the same.
+
+## 3 November 2026: keys let go after each refresh
+
+Driller's page, built from this one's, held a tapped key down through
+its information screen with Fast CPU on: a key that came up within its
+least hold was let go only between loops, and a screen outside the main
+loop goes round none. This page had the same code, so it now lets keys go
+after each refresh as well. No moment of Castle Master that shows the
+fault was looked for; `test_fast.js` and `port/test/fast-browser.js`
+pass with the change.

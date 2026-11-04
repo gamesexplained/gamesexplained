@@ -27,6 +27,9 @@
 //                      program outside the loop (the start, the demonstration, the information
 //                      screen, drilling, a game's end) take the Spectrum's time. Returns the loops run
 //   rt.now()           the screen as memory stands now, in runFrame's form
+//   rt.fastFrame()     the screen Fast CPU shows: now(), but while the clock is more than a frame
+//                      past real time (a sound, which holds the processor), the frame the beam
+//                      showed at real time
 //   rt.ticks           Fast CPU's ticks so far: 60 a second, 58,333⅓ T-states apart
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
@@ -326,6 +329,11 @@ function create(o) {
     return loops;
   }
   const now = () => ({ frame: frameIdx, screen: M.slice(0x4000, 0x4000 + 6912), border, flash: (frameIdx >> 4) & 1, at: t });
+  // Fast CPU's screen: as the loops left it, but while a stretch has taken the clock more than a
+  // frame past real time, the frame the beam showed at real time, as a Spectrum shows it. A sound
+  // holds the processor: the laser's lines, drawn before its sound and rubbed out after it in the
+  // same stretch, show while it plays
+  const fastFrame = () => (target !== null && t > target + FRAME ? frameAt(Math.floor(target / FRAME)) : now());
 
   // a machine: the hand-over (data) or a test's moment, the program started at entry(P)
   function restore(s, entry) {
@@ -346,7 +354,7 @@ function create(o) {
   return {
     M, P, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
-    get ticks() { return ticksAt(t); }, runTicks, now,
+    get ticks() { return ticksAt(t); }, runTicks, now, fastFrame,
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
     get border() { return border; }, get wiped() { return wiped; }, missing,
     runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
