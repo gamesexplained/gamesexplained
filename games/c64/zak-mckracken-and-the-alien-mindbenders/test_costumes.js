@@ -14,7 +14,7 @@ const g = game(__dirname);
 const P = g.run('graphics.html', 'zk-costume', 'zkLimbState', 'zkStartAnimation', 'zkDrawLimbs');
 g.lib('cpu6502');
 const C64Cpu = globalThis.C64Cpu;
-const L = g.listing();
+const L = g.listing('parts/main/listing.json');
 const page = g.read('graphics.html');
 const m = /<script type="application\/json" id="zk-costumes">([\s\S]*?)<\/script>/.exec(page);
 if (!m) throw new Error('graphics.html has no zk-costumes data');

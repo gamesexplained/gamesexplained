@@ -22,19 +22,17 @@ Maps with all 58 rooms, Graphics with all 37 costumes, and Source code.
   kit's 6502 already) and the disk reads, with the scripts read from the
   two game sides.
 - **An audit of the whole listing** is recommended: the sample found 11
-  of 60 comments wrong (18 %, `facts.md`, "The listing's error rate"),
+  of 60 comments wrong (18 %, `parts/main/facts.md`, "The listing's error rate"),
   and a checker misses some (`kit/CHECKING.md`).
 
 ## Coverage
 
-The program is 100 % covered. Two things the game runs are outside the
-listing and counted in `coverage.virtual`:
-
-- the scripts, 116,884 bytes of SCUMM code on the two game sides, which
-  the kit cannot list until it has tools for that machine;
-- the music's own program, sound 1, 1,078 bytes of 6502 code that runs at
-  `$C300` once it is loaded. The page runs it and `test_music.js` holds
-  it to the game's code, but nothing describes it a line at a time.
+Both parts are 100 % covered: the program (main) and the music's own
+program, sound 1, which the game loads to `$C300` (music). One thing the
+game runs is outside the listing and counted in `coverage.virtual` in
+main's `part.json`: the scripts, 116,884 bytes of SCUMM code on the two
+game sides, which the kit cannot list until it has tools for that
+machine.
 
 ## Open questions
 

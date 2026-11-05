@@ -26,7 +26,12 @@ computer's memory, and what the drive does for the game shows in the
 calls the game makes to it. Nor is data
 the game fetches into a buffer during play, a portrait for each fight or
 a tune for each room: a widget that shows it carries its bytes in the
-page (`70-minisite`).
+page (`70-minisite`). Code fetched the same way is a part when it always
+lands at the same addresses, as a music player that the loader puts at
+the top of a heap every time: a load over the part that holds the
+buffer (step 4), with its snapshot taken while it is there. The loader's
+code says whether the place is fixed; a snapshot shows only where it
+landed once.
 
 ## Terms
 

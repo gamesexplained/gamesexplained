@@ -116,3 +116,35 @@ behaved as the install notes say. Full-page screenshots of the built
 pages came out blank below the first screen because of the site's
 `content-visibility`; screenshots taken a section at a time, with that
 style turned off, show everything.
+
+## 5 November 2026: the music player becomes a part (#771)
+
+The Silver run left the music player, sound 1, as a `coverage.virtual`
+row: it is loaded into the heap like any resource, and `15-parts` counts
+a buffer's contents as data. Aaron chose to list it as a load part
+instead. The loader's code settled it: load_resource writes sound 1 to
+`$C300` whenever `$61EF` is set (main `$D4FF`-`$D506`), and
+op_music_memory forgets the sound's table entry afterwards, so the place
+never changes. The snapshot `music-on.vsf`, saved during the Silver run
+while tune 95 played, holds sound 1 there byte for byte except the heap
+block's header.
+
+`parts.py add ... main --adopt` made the program's symbol map, listing,
+facts and ledger settings the part main; `parts.py add ... music --over
+main` added the player with the range `$C300`-`$C735`. listing.py, run
+on the music part, says 1,050 bytes of main's code differ in
+`music-on.vsf`; they are all in the heap, where `startup.vsf`, main's
+listing, still holds the start-up code the heap clear wipes, so the
+range is right. The player's 879 bytes of code and 199 of tables were
+annotated in one session; the 24 comments were then audited by
+gpt-6-astra at medium effort through Codex, which found 4 wrong in a
+detail (`parts/music/facts.md`), all corrected. Reading it found the
+tunes' cues for the opening's pictures (variable 17), the pitch table's
+American tuning, and that the music counts sounds 3, 4 and 5 down
+without ever counting them up, which corrected a fact in main's facts.
+
+The page's two players now take the player's bytes from the music
+part's listing instead of an embedded copy of sound 1, and the tests
+read the parts' listings. The About tab's feature table no longer links
+its addresses: in a game of several parts the whole game's files link
+only addresses written with their part's name.

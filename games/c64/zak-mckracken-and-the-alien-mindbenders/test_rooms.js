@@ -12,7 +12,7 @@ g.sameBlock('zk-room');
 const { zkDecoder, zkBytes, zkRoomCells } = g.run('levels.html', 'zk-room', 'zkDecoder', 'zkBytes', 'zkRoomCells');
 g.lib('cpu6502');
 const C64Cpu = globalThis.C64Cpu;
-const L = g.listing();
+const L = g.listing('parts/main/listing.json');
 const page = g.read('levels.html');
 const m = /<script type="application\/json" id="zk-rooms">([\s\S]*?)<\/script>/.exec(page);
 if (!m) throw new Error('levels.html has no zk-rooms data');
