@@ -4,9 +4,11 @@
 Every tool the kit uses is started only through this script (AGENTS.md,
 "Leave the cleanest footprint you can"), so that the containment lives in
 kit/scripts/browser.py for browser checks, kit/zmachine/bocfel.py for the
-Z-machine interpreter, and kit/<platform>/tools.py for platform tools. Browser
-and Bocfel commands need no platform selection: Infocom's games run on the
-Z-machine whatever machine they were sold for (kit/zmachine/INSTALL.md).
+Z-machine interpreter, kit/scumm/scummvm.py for the SCUMM one, and
+kit/<platform>/tools.py for platform tools. Browser, Bocfel and ScummVM
+commands need no platform selection: Infocom's games run on the Z-machine and
+Lucasfilm's on SCUMM whatever machine they were sold for
+(kit/zmachine/INSTALL.md, kit/scumm/INSTALL.md).
 
 Usage:
   tools.py [--platform <name>] <command> [args]     e.g. tools.py status
@@ -14,6 +16,8 @@ Usage:
   tools.py stop browser                            stop only this clone's browser
   tools.py get-bocfel                              download and build Bocfel, with the kit's trace
   tools.py bocfel run <story> [...]                play a story on it (bocfel.py -h for the rest)
+  tools.py get-scummvm                             download and build ScummVM's SCUMM engine, with the kit's trace
+  tools.py scummvm run <game folder> [...]         play a SCUMM game on it (scummvm.py -h for the rest)
   tools.py --platforms                              list platforms that have a launcher
   tools.py -h                                       this, and every platform's commands
 
@@ -43,7 +47,8 @@ KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(KIT)
 SELF_DIR = os.path.basename(os.path.dirname(os.path.abspath(__file__)))   # "scripts" is not a platform
 EVERY_PLATFORM = ("status", "stop")    # safe to run on every platform's tools at once
-SHARED = ("get-bocfel", "bocfel")      # the Z-machine's, which every platform's Infocom games share
+SHARED = ("get-bocfel", "bocfel",      # the Z-machine's, which every platform's Infocom games share
+          "get-scummvm", "scummvm")    # SCUMM's, which every platform's Lucasfilm games share
 
 
 def bocfel():
@@ -51,6 +56,13 @@ def bocfel():
     sys.path.insert(0, os.path.join(KIT, "zmachine"))
     import bocfel as b
     return b
+
+
+def scummvm():
+    """kit/scumm/scummvm.py, imported when a command needs it."""
+    sys.path.insert(0, os.path.join(KIT, "scumm"))
+    import scummvm as s
+    return s
 
 
 def platforms(kit=KIT):
@@ -145,6 +157,10 @@ def main():
         bocfel().get(); return
     if a and a[0] == "bocfel":
         sys.exit(bocfel().main(a[1:]))
+    if a == ["get-scummvm"]:
+        scummvm().get(); return
+    if a and a[0] == "scummvm":
+        sys.exit(scummvm().main(a[1:]))
     avail = platforms()
     decl = {p: declared(p) for p in avail}
     if not explicit and not os.environ.get("KIT_PLATFORM") and len(avail) > 1 \
@@ -158,6 +174,8 @@ def main():
         browser.status()
         if os.path.isdir(os.path.join(ROOT, "tools", "zmachine")):
             print(f"bocfel        {bocfel().build_line()}")
+        if os.path.isdir(os.path.join(ROOT, "tools", "scumm")):
+            print(f"scummvm       {scummvm().build_line()}")
     if a and a[0] == "stop" and all(x in ("all", "--force") for x in a[1:]):
         browser.stop()
     if not a or a[0] in ("-h", "--help"):

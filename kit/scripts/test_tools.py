@@ -137,7 +137,7 @@ def test_documented_commands():
                 # checks their dispatch with both one and multiple platforms.
                 if args == ["browser"] or args in (["stop", "browser"], ["stop", "browser", "--force"]):
                     continue
-                if args[0] in tools.SHARED:           # the Z-machine's: test_shared_commands
+                if args[0] in tools.SHARED:           # the Z-machine's and SCUMM's: test_shared_commands
                     continue
                 seen += 1
                 r = resolves(args, explicit=explicit)
@@ -151,15 +151,16 @@ def test_documented_commands():
 
 
 def test_shared_commands():
-    """The Z-machine's commands reach kit/zmachine/bocfel.py with no platform named, however
-    many platforms there are, and status names Bocfel's build when it is installed."""
-    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "bocfel", "status"],
-                       capture_output=True, text=True, cwd=ROOT)
-    check("tools.py bocfel status reaches bocfel.py",
-          r.returncode == 0 and ("Bocfel" in r.stdout or "MISSING" in r.stdout), r.stdout + r.stderr)
-    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "bocfel", "-h"],
-                       capture_output=True, text=True, cwd=ROOT)
-    check("tools.py bocfel -h prints bocfel.py's usage", "verify-footprint" in r.stdout, r.stdout + r.stderr)
+    """The Z-machine's and SCUMM's commands reach kit/zmachine/bocfel.py and kit/scumm/scummvm.py
+    with no platform named, however many platforms there are."""
+    for tool, script, name in (("bocfel", "bocfel.py", "Bocfel"), ("scummvm", "scummvm.py", "ScummVM")):
+        r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), tool, "status"],
+                           capture_output=True, text=True, cwd=ROOT)
+        check(f"tools.py {tool} status reaches {script}",
+              r.returncode == 0 and (name in r.stdout or "MISSING" in r.stdout), r.stdout + r.stderr)
+        r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), tool, "-h"],
+                           capture_output=True, text=True, cwd=ROOT)
+        check(f"tools.py {tool} -h prints {script}'s usage", "verify-footprint" in r.stdout, r.stdout + r.stderr)
     check("no platform declares a shared command",
           not any(c in tools.SHARED for d in decls().values() for c in d["COMMANDS"]))
 

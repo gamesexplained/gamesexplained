@@ -95,7 +95,11 @@ every machine a game was sold for. It is no platform, with no `tools.py`
 and no folder under `games/`: the platform's kit explains the machine's
 interpreter, and `kit/zmachine/` reads the story, lists it as a part of
 the game, runs it on an interpreter that traces it, and checks one
-against the other (`kit/skills/cpu/zmachine`).
+against the other (`kit/skills/cpu/zmachine`). Lucasfilm Games'
+SCUMM is the same kind of thing, in `kit/scumm/`: it reads a game's
+rooms, objects and scripts from its disks, decodes the scripts, and
+checks the decoder against ScummVM built with a trace
+(`kit/skills/cpu/scumm`).
 
 ## The order of work
 

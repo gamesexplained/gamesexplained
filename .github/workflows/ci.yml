@@ -49,6 +49,15 @@ jobs:
         run: python3 kit/scripts/tools.py --platform nes get-jsnes
       - name: Bocfel, the Z-machine decoder's oracle in CI
         run: python3 kit/scripts/tools.py get-bocfel
+      # ScummVM's source is 223 MB: kept between runs, so its site is asked for it once
+      # for each change to the script that names the release.
+      - name: ScummVM's source tarball, cached
+        uses: actions/cache@v4
+        with:
+          path: tools/scumm/scummvm-*.tar.xz
+          key: scummvm-source-${{ hashFiles('kit/scumm/scummvm.py') }}
+      - name: ScummVM, the SCUMM decoder's oracle in CI
+        run: python3 kit/scripts/tools.py get-scummvm
       - name: Every kit test
         run: python3 kit/scripts/test_kit.py --require-tools
       - name: Every kit script imports

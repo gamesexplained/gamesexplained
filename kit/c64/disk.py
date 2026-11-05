@@ -29,11 +29,15 @@ game allocates and no file holds is data it reads with the drive's block command
   disk.files()             {name: bytes} of every closed PRG, SEQ and USR file whose chain ends
                            (the others are named on stderr and left out)
   disk.unowned()           the sectors the BAM marks used that no file and no directory holds
+  disk.d64()               (bytes, missing): the disk as a 35-track .d64, a sector the image
+                           lacks written as zeros and listed in missing
 
 Usage:
   disk.py <image>                          the directory, and the sectors no file holds
   disk.py extract <image> <dir>            each file to <dir>/<name>, with a character a file
                                            name cannot hold ("/", "*", $00) written $hh
+  disk.py d64 <image> <out.d64>            the image as a .d64, for a tool that reads only those
+                                           (ScummVM: kit/skills/cpu/scumm)
   disk.py pack <out.json> <image> [<image> ...] [--sectors <image>]
                                            the files of every image, and with --sectors the
                                            unowned sectors of that one, for C64Run.read:
@@ -93,7 +97,8 @@ def gcr_track(raw, track):
 
 class Disk:
     def __init__(self, path):
-        blob = open(path, "rb").read()
+        with open(path, "rb") as f:
+            blob = f.read()
         self.sectors, self.bad = {}, set()
         if blob.startswith(b"GCR-1541"):
             halves = blob[9]
@@ -186,6 +191,19 @@ class Disk:
         return out
 
 
+def d64(disk):
+    """(bytes, missing): the disk's 35 tracks as a .d64, a sector the image lacks as zeros."""
+    out, missing = bytearray(), []
+    for t in range(1, 36):
+        for s in range(SPT[t]):
+            b = disk.sectors.get((t, s))
+            if b is None:
+                missing.append((t, s))
+                b = bytes(256)
+            out += b
+    return bytes(out), missing
+
+
 def pack(images, sector_images):
     """The files of every image and the unowned sectors of sector_images, for C64Run.read."""
     files, sectors = {}, {}
@@ -220,6 +238,13 @@ def main(argv):
         with open(a.out, "w") as f:
             json.dump(obj, f)
         print(f"{a.out}: {len(obj['files'])} files and {len(obj['sectors'])} sectors")
+        return 0
+    if len(argv) == 3 and argv[0] == "d64":
+        data, missing = d64(Disk(argv[1]))
+        with open(argv[2], "wb") as f:
+            f.write(data)
+        print(f"{argv[2]}: {len(data)} bytes" + (f"; {len(missing)} sectors the image lacks, written as zeros: "
+                                                 f"{missing[:8]}{' ...' if len(missing) > 8 else ''}" if missing else ""))
         return 0
     if len(argv) == 3 and argv[0] == "extract":
         d = Disk(argv[1])
