@@ -2,10 +2,9 @@
 // Holds the Maps tab's room decoder (the zk-room block of levels.html) against the game's own
 // decoder, decode_start ($0104) and decode_byte ($0122), run in the kit's 6502 simulator on the
 // listing's memory: every byte of every stream the page carries, each room's character set, its
-// characters, colours, mask and mask characters, and every object's picture. Then, when
-// index.html carries the bedroom frame (the zk-frame block), draws room 1 with the objects that
-// frame shows and compares each cell's character, colour and character shape with the screen the
-// emulator recorded.
+// characters, colours, mask and mask characters, and every object's picture. Then draws room 1
+// with the objects drawn in the bedroom frame graphics.html carries (zk-frame-data) and compares each
+// cell's character, colour and character shape with the screen the emulator recorded.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const g = game(__dirname);
@@ -50,24 +49,24 @@ for (const R of ROOMS) {
 }
 console.log(`zk-room: ${streams} streams, ${bytes.toLocaleString('en')} bytes, decoded as decode_byte decodes them`);
 
-// The bedroom as the emulator showed it
-const idx = g.read('index.html');
-const f = /\/\* zk-frame \*\/\s*const ZK_FRAME = (\{[\s\S]*?\});\s*\n/.exec(idx);
-if (!f) { console.log('zk-room: index.html carries no bedroom frame yet; the screen check waits for it'); process.exit(0); }
+// The bedroom as the emulator showed it: the frame graphics.html draws
+const gp = g.read('graphics.html');
+const f = /<script type="application\/json" id="zk-frame-data">([\s\S]*?)<\/script>/.exec(gp);
+if (!f) throw new Error('graphics.html has no zk-frame-data');
 const F = JSON.parse(f[1]);
 const ram = new Uint8Array(65536);
 for (const r of F.ram) ram.set(zkBytes(r.b), r.a);
-const colour = zkBytes(F.colour);
+const colour = zkBytes(F.colour);         // colour RAM, $D800-$DBFF, a byte a cell
 const R = ROOMS[0];
 const drawn = R.objs.map((o) => F.drawn.includes(o[0]));
 const c = zkRoomCells(R, drawn);
-const SCREEN = 0xC800 + 2 * 40;          // the room's 16 rows start on the screen's third row ($C850)
+const SCREEN = 0xC800, ROW = 2;          // the room's 16 rows start on the screen's third row ($C850)
 let cells = 0;
 for (let y = 0; y < 16; y++) for (let x = 0; x < 40; x++) {
-  const a = SCREEN + y * 40 + x, ch = c.chr[y * 40 + x];
-  if (ram[a] !== ch) throw new Error(`bedroom: cell ${x},${y} is character ${ch} on the page and ${ram[a]} on the screen`);
-  if ((colour[(a - 0xC800) >> 1] >> ((a & 1) ? 0 : 4) & 15) !== (c.col[y * 40 + x] & 15)) throw new Error(`bedroom: cell ${x},${y}'s colour differs`);
+  const o = (ROW + y) * 40 + x, ch = c.chr[y * 40 + x];
+  if (ram[SCREEN + o] !== ch) throw new Error(`bedroom: cell ${x},${y} is character ${ch} on the page and ${ram[SCREEN + o]} on the screen`);
+  if ((colour[o] & 15) !== (c.col[y * 40 + x] & 15)) throw new Error(`bedroom: cell ${x},${y}'s colour is ${c.col[y * 40 + x] & 15} on the page and ${colour[o] & 15} on the screen`);
   for (let r = 0; r < 8; r++) if (ram[0xD800 + ch * 8 + r] !== c.cs[ch * 8 + r]) throw new Error(`bedroom: character ${ch} row ${r} differs from the screen's character set`);
   cells++;
 }
-console.log(`zk-room: the bedroom's ${cells} cells, their colours and their characters' shapes match the frame the emulator recorded`);
+console.log(`zk-room: the bedroom's ${cells} cells, their colours and their characters' shapes match the frame the emulator recorded, with objects ${F.drawn.join(', ')} drawn`);
