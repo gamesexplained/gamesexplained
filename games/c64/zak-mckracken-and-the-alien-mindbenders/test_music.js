@@ -21,7 +21,10 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] || 'index.html';
 g.sameBlock('zk-music');
-const { createDriver, ZK_DRIVER_RANGES } = g.run(page, 'zk-music', 'createDriver', 'ZK_DRIVER_RANGES');
+const P = g.run(page, 'zk-music', 'createDriver', 'ZK_DRIVER_RANGES'), ZK_DRIVER_RANGES = P.ZK_DRIVER_RANGES;
+// made from its source text alone, as the player's AudioWorklet makes it: a driver that leans on
+// the page's other names stops there (kit/skills/c64/steps, "sound")
+const createDriver = require('vm').runInNewContext('(' + P.createDriver + ')', { atob });   // the worklet's atob, which sid.js gives it
 const L = g.listing();
 const src = g.read(page);
 const j = /<script type="application\/json" id="zk-sounds">([\s\S]*?)<\/script>/.exec(src);

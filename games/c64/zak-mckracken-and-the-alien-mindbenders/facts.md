@@ -353,6 +353,8 @@ with the scripts in `work/verify/`:
   6,354 times in those 7,780 frames (`t_music4.py`).
 - The main loop made 100 passes in 600 frames in the bedroom, with
   variable 25 at 6 (`t_speed.py`).
+- With variable 25 poked to 3 and to 1 in the bedroom, the main loop
+  made 199 and 492 passes in 600 frames (`t_cheat_speed.py`).
 - From the moment tune 95 starts (the opening), 3,000 frames: the room
   went 58, 51, 55, 49; video_off (`$13F3`) and video_on (`$142F`) ran
   three times each, frame_irq 3,000 times, and the music flag and the
