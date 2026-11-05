@@ -41,6 +41,28 @@ const SESSIONS = {
 // then (the arrow moved down onto it first)
 SESSIONS.infancy = SESSIONS['new-random'].slice(0, -1).concat([['run', 600]],
   ...Array.from({ length: 40 }, (_, i) => (i % 3 === 2 ? [['key', 'DOWN', 4, 60], ['key', 'RETURN', 6, 700]] : [['key', 'RETURN', 6, 700]])));
+// A player that presses keys at random from a seed, as a session: mostly fire (RETURN), which plays
+// the cell or takes the answer under the arrow, then the arrow keys, the function keys (the choices
+// beside the map; shifted, f2-f8) and now and then RUN/STOP and the menu's first line (back to the
+// map). Each key waits a while after the one before
+function bot(seed, keys, start = SESSIONS['new-random'].slice(0, -1)) {
+  let x = seed >>> 0;
+  const rnd = n => { x = (Math.imul(x, 1103515245) + 12345) >>> 0; return (x >>> 8) % n; };
+  const pick = [['RETURN', 9], ['DOWN', 4], ['UP', 2], ['LEFT', 2], ['RIGHT', 2], ['F1', 1], ['F3', 1], ['F5', 1],
+    ['F7', 1], ['LSHIFT+F1', 1], ['LSHIFT+F3', 1], ['LSHIFT+F5', 1], ['LSHIFT+F7', 1], ['STOP', 1]];
+  const total = pick.reduce((t, p) => t + p[1], 0);
+  const out = start.concat([['run', 600]]);
+  for (let i = 0; i < keys; i++) {
+    let r = rnd(total), k = pick[0][0];
+    for (const [name, w] of pick) { if (r < w) { k = name; break; } r -= w; }
+    out.push(['key', k, 5, 60 + rnd(240)]);
+    if (k === 'STOP') out.push(['key', 'RETURN', 5, 300]);
+  }
+  return out;
+}
+SESSIONS.bot = bot(1, 400);
+SESSIONS.bot2 = bot(2, 1500);
+
 // Each event waits its delay after the one before was given, and is given only where the game and
 // the port stand at the same stop, so that a key falls in the same pass on both sides; one that
 // came due in a long stretch (a load) is late, and the ones after it with it.
@@ -74,8 +96,8 @@ function run(o = {}) {
     if (i >= tl.length || !(l.matched && l.at >= 0) || mm.frames - last < tl[i][0]) return;
     const [, op, k] = tl[i++];
     last = mm.frames;
-    if (op === 'press') mm.press(lib.KEY[k]);
-    else if (op === 'release') mm.release(lib.KEY[k]);
+    if (op === 'press') for (const x of k.split('+')) mm.press(lib.KEY[x]);
+    else if (op === 'release') for (const x of k.split('+')) mm.release(lib.KEY[x]);
     else if (o.stopAtEnd !== false) l.stopped = true;
   } });
   // the drives: what each side wrote
