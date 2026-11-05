@@ -1428,7 +1428,9 @@ def game_footprint(P, out, hidden=False):
     # or may only not have been split from what stays, and the folders do not say which.
     if over:
         said = (f"{made_of(P)}. The map is of {name}, which stays in memory; the band marked as "
-                f"varying holds whichever of the {len(over)} part{'s' if len(over) != 1 else ''} loaded over it is there. ")
+                + (f"varying holds {html.escape(over[0]['title'])}, loaded over it, while it is there. "
+                   if len(over) == 1 else
+                   f"varying holds whichever of the {len(over)} parts loaded over it is there. "))
         if apart:
             said += f"The other {len(apart) if len(apart) > 1 else 'part'}{' are' if len(apart) > 1 else ' is'} not on this map. "
     else:

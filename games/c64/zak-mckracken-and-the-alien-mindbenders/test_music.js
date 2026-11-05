@@ -1,10 +1,11 @@
 'use strict';
 // Holds the page's sound players to the game's own code. index.html's zk-music block (createDriver)
 // runs the game's sound engine and music on the kit's 6502 from the listing over ZK_DRIVER_RANGES
-// alone, with the music's code (sound 1) at $C300 and each tune or effect at $9000. Here the same
-// code runs over the listing's whole memory, with the resource put somewhere else in the heap
-// ($A000) and the sound tables pointing there, started as the game starts it: restart's setting of
-// the built-in sounds 3, 4 and 5 ($04EB-$0511), then startMusic's call of $C304 ($57A5) for a tune
+// alone, with the music's code (sound 1, from the listing of the part music) at $C300 and each tune
+// or effect at $9000. Here the same code runs over the listing's whole memory, with the resource
+// put somewhere else in the heap ($A000) and the sound tables pointing there, started as the game
+// starts it: restart's setting of the built-in sounds 3, 4 and 5 ($04EB-$0511), then startMusic's
+// call of $C304 ($57A5) for a tune
 // or start_sound's stop_sound and queue_sound ($57BF) for an effect, and sound_frame ($3FE0) once a
 // frame as the frame interrupt calls it ($1354), which every sixth frame, when the main loop has
 // finished a pass, first lets the engine begin the sounds queued ($12A2, $FC32). For every button of both players, both must make
@@ -25,7 +26,8 @@ const P = g.run(page, 'zk-music', 'createDriver', 'ZK_DRIVER_RANGES'), ZK_DRIVER
 // made from its source text alone, as the player's AudioWorklet makes it: a driver that leans on
 // the page's other names stops there (kit/skills/c64/steps, "sound")
 const createDriver = require('vm').runInNewContext('(' + P.createDriver + ')', { atob });   // the worklet's atob, which sid.js gives it
-const L = g.listing();
+const L = g.listing('parts/main/listing.json');
+const player = g.listing('parts/music/listing.json').ram.slice(0xC300, 0xC736);   // sound 1, as the page takes it
 const src = g.read(page);
 const j = /<script type="application\/json" id="zk-sounds">([\s\S]*?)<\/script>/.exec(src);
 if (!j) throw new Error(page + ' has no zk-sounds data');
@@ -39,7 +41,7 @@ const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 
 function reference(c) {
   const m = L.ram.slice(), w = [];
-  m.set(b64(S.player), 0xC300);
+  m.set(player, 0xC300);
   m[0x7542] = m[0x7543] = m[0x7544] = 0x80;
   m[0x74C3] = 0x06; m[0x7444] = 0x44; m[0x74C4] = 0x33; m[0x7445] = 0x44; m[0x74C5] = 0x60; m[0x7446] = 0x44;
   m.set(b64(c.b), AT);
@@ -79,7 +81,7 @@ function reference(c) {
 
 const lengths = [], partsLeft = new Set();
 for (const [list, set] of [[S.tunes, 'tune'], [S.effects, 'effect']]) list.forEach((c, t) => {
-  const D = { mem, player: S.player, tunes: list };
+  const D = { mem, player, tunes: list };
   const drv = createDriver(D, kit), ref = reference(c);
   drv.init(t);
   buttons++;

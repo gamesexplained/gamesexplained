@@ -85,14 +85,30 @@ The opcode table and the code under the I/O chips are copied from the
 heap's own area, which the start-up then clears. The listing is built
 from `work/startup.vsf` for that reason, with `--entry work/entry.vsf`.
 
+## Parts
+
 Nothing is reloaded as a whole: rooms, scripts, costumes and sounds
-are loaded into the heap as the player meets them (`kit/skills/core/15-parts`
-counts that as data fetched into a buffer, so the game is one part).
-The scripts are programs for the SCUMM interpreter, read from the disk
-during play; they are counted under `coverage.virtual` in `game.json`.
-The music's player is 6502 code inside sound 1, which opcode `$AB`
-loads to `$C300`, the top five pages of the heap, before a tune plays;
-it is outside the listing, like the scripts (`facts.md`, "Sound").
+are loaded into the heap as the player meets them, which
+`kit/skills/core/15-parts` counts as data fetched into a buffer. The
+scripts are programs for the SCUMM interpreter, read from the disk
+during play; they are counted under `coverage.virtual` in main's
+`part.json`. One resource is code that always lands at the same place:
+the music's player, sound 1, which opcode `$AB` loads to `$C300`, the
+top five pages of the heap, before a tune plays. So the game is two
+parts:
+
+| Part | What | Snapshots, in the part's `work/` |
+|---|---|---|
+| main | the program, `AA`, and everything above | `entry.vsf`, `startup.vsf` (the listing's) and `play-bedroom.vsf`, as in the table of snapshots |
+| music | sound 1 at `$C300`-`$C735`, over main | `music-on.vsf`, the listing's and its hand-over (`listing.py parts/music parts/music/work/music-on.vsf --entry parts/music/work/music-on.vsf`) |
+
+The route to `music-on.vsf`: from `work/side1-prompt.vsf`, saved at
+step 2 while the screen asks for side 1, attach `work/side1.g64`, hold
+fire on port 1 for 40 frames and let the opening of step 3 run, five
+frames at a time, until `$43E8`, the music's on-flag, reads `$FF`. Tune 95 starts about
+7,780 frames in. The snapshot is saved there, with the player loaded
+and the tune's first notes playing (the script is
+`work/verify/t_music4.py`).
 
 ## Disk files in memory
 
