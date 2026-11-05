@@ -33,34 +33,461 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-
+.zk-shots{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.zk-shots figure{margin:0}
+.zk-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.zk-shots figcaption{font-size:13.5px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.zk-grid{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:2px;max-width:640px}
+.zk-grid button{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;font-family:var(--fm);font-size:11px;line-height:1;padding:7px 0;border-radius:3px;color:#22242a;background:var(--g,#ddd);border:1px solid transparent}
+.zk-grid button.dim{opacity:.28}
+.zk-grid button.same{border-color:#22242a}
+.zk-grid button.on{background:#22242a;color:#fff}
+.zk-grid button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.zk-legend{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.zk-legend button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);border-radius:6px;padding:3px 9px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.zk-legend button i{width:12px;height:12px;border-radius:3px;background:var(--g)}
+.zk-legend button.on{border-color:var(--ink);color:var(--ink)}
+.zk-op{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:12px;min-height:7.5em}
+.zk-op h3{font-size:17px;margin:0 0 4px}
+.zk-op p{margin:0 0 6px;font-size:15px;color:var(--ink-soft)}
+.zk-op .k{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+.zk-op .r{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute)}
+.zk-view canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.zk-mini{margin-top:10px;position:relative}
+.zk-mini canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:3px}
+.zk-ctl2{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.zk-ctl2 input[type=range]{flex:1;min-width:160px}
+.zk-btn{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);border-radius:6px;padding:4px 10px;cursor:pointer}
+.zk-btn.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.zk-status{font-family:var(--fm);font-size:13px;color:var(--ink);margin:8px 0 0;min-height:1.5em}
+.zk-heap{border-collapse:collapse;width:100%;font-size:14px}
+.zk-heap th,.zk-heap td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.zk-heap th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.zk-heap td.n{font-family:var(--fm);font-size:13px;text-align:right;white-space:nowrap}
+.zk-heap .bar{height:10px;border-radius:3px;background:var(--accent);min-width:2px}
+.zk-heap .bar.h{background:var(--amber)}
+.zk-heap tr.heap td{font-weight:700}
+.zk-wide{overflow-x:auto}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}.zk-shots{grid-template-columns:1fr}.zk-grid button{font-size:9.5px;padding:6px 0}}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The standfirst, which the agent writes: the most interesting thing inside this game, in a sentence or two.</p>
+  <p class="sub">Very little of what happens in this game is decided by the program in the computer's memory. The story is written in a language of its own, as scripts that come off the disk room by room, and the program is the machine that runs them.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
+<section id="game">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">A tabloid reporter who dreams about aliens</h2>
+  <div class="plate">
+    <div class="zk-shots">
+      <figure><img src="reference/title.png" width="384" height="272" alt="The title over Zak's bed at night"><figcaption>The title comes up over Zak's bed, in the dream that opens the game.</figcaption></figure>
+      <figure><img src="reference/play-bedroom.png" width="384" height="272" alt="Zak standing in his bedroom, with the verbs below the picture"><figcaption>Zak's bedroom, where play begins. The sentence line, the verbs and the inventory sit under the room.</figcaption></figure>
+    </div>
+    <p class="cap">Both from the game running in the emulator.</p>
+  </div>
+  <p>You play Zak McKracken, who is tired of making up stories for a tabloid paper, the National Inquisitor. The game opens on his dream about aliens, and the dream turns out to matter. Later you also play three others, Annie, Melissa, and Leslie, and switch between the four with the function keys. The journey goes round the world by plane and on to Mars.</p>
+  <p>You play by making sentences. Pick a verb from the list under the picture, such as Open, Pick up, or Use, then click on something in the room or in your inventory. "Walk to" comes back after every sentence, so a click on the floor walks there. Rooms wider than the screen scroll as Zak walks, and the game asks you to swap disk sides as you travel.</p>
+  <p>Words on this page: a <em>room</em> is one place, wider than the screen or not. An <em>actor</em> is a character who walks about in it, and a <em>script</em> is a piece of the story, written in the game's own language, that tells the actors and the room what to do.</p>
+</section>
+<section id="music">
+  <p class="fig">02 · Music</p>
+  <h2 class="t">Music: the tunes play on a program of their own, loaded from the disk</h2>
+  <p class="lede">Press a tune to hear it played by the game's own code. Tune 95 plays over the opening dream.</p>
+  <div class="plate">
+    <div id="zk-music"><p class="cap">The player starts when the page has loaded the game's code.</p></div>
+    <p class="cap">Played by the game's own code, run here on a model of the computer's processor: the music's program (sound 1) and the sound engine, with their bytes from the listing. A test beside this page runs the same code over the whole of the game's memory, with each tune placed elsewhere, and checks that every write to the sound chip, in every frame, is the same as the page's, until the tune ends: 102, 59, 46, and 33 seconds.</p>
+  </div>
+  <p>Numbers written with a $ are addresses in the computer's memory, in hexadecimal; each one links to the game's code on the Source code tab. The game's sound engine (<code>$3CDF</code> to <code>$4460</code>) plays sound effects on the sound chip's three voices, each of which plays one note at a time. The music is not part of it. It is sound 1 on the disk, 1,078 bytes of program and tables. A script instruction takes five pages off the top of the heap, the memory the game loads things into, and loads sound 1 there, at <code>$C300</code>, where nothing will move it (<code>$6183</code>). The script's startMusic loads the tune and calls <code>$C304</code> with its number (<code>$57A5</code>). From then on, once a frame, the engine calls the music's program at <code>$C395</code> for as long as music plays (<code>$3FE0</code>).</p>
+  <p>The music does not write to the chip itself. It plays its three voices as three sound effects, sounds 3, 4, and 5, which are built into the program (<code>$4406</code>, <code>$4433</code>, <code>$4460</code>). For each note it rewrites a voice's sound with the new instrument and pitch and starts it through the engine, which then plays it like any other. While the music holds all three voices, no sound effect can start (<code>$3CDF</code>).</p>
+  <p>There are four tunes on the disks, sounds 95, 102, 103, and 104, all in the same file as the music's program. A search of the scripts' bytes for startMusic finds 95 in global scripts 1 and 48, 102 in 48 and 149, 103 in 78 and 135, and 104 in script 128 and an object in room 25. The music also keeps playing while a new room loads, which <a href="discoveries.html">Discoveries</a> explains.</p>
+</section>
+<section id="sfx">
+  <p class="fig">03 · Sound</p>
+  <h2 class="t">Sound: each effect is a list of commands for the engine</h2>
+  <p class="lede">Every sound effect on the disks, by its number. Some play on until they are stopped: press Stop to end those.</p>
+  <div class="plate">
+    <div id="zk-sfx"><p class="cap">The player starts when the page has loaded the game's code.</p></div>
+    <p class="cap">Played by the game's sound engine, run as for the music, and started as a script's startSound starts it: the sound is stopped if it was playing (<code>$3E52</code>), put on the list of sounds to start (<code>$3FCE</code>) and begun by the engine in the frame after the game's next pass (<code>$12A2</code>). The same test checks every effect's writes to the chip, frame by frame, until it ends or for five minutes. 24 of them play on until they are stopped. Sound 126 is silent: the byte that lists its parts is 0, so it has none.</p>
+  </div>
+  <p>A sound effect is a resource of its own, from 11 to 469 bytes. Its first byte is its priority, and its second says which parts it has: one, two, or three voices, a part for a voice's pulse width (the shape of its square wave), and one for the chip's filter. When no voice is free, the engine stops the playing sound of lowest priority if the new one's is as high; otherwise the new sound waits, if it may, or is dropped (<code>$3CDF</code>).</p>
+  <p>Each part is a list of commands. One sets a frequency, a pulse width, or a filter setting, with a time to hold it and an amount to slide it by every frame; others set the envelope and the waveform, turn the voice on or off, or loop back over earlier commands a number of times. A command of 0 ends the part (<code>$419B</code>). Every frame the engine copies each channel's values to the chip and steps each channel on (<code>$414E</code>).</p>
+</section>
+<section id="scripts">
+  <p class="fig">04 · The interpreter</p>
+  <h2 class="t">The story is a program, and the game reads it an instruction at a time</h2>
+  <p class="lede">The 256 instructions of the game's script language. Click one to see what it does, or a group to pick out its instructions.</p>
+  <div class="plate">
+    <div class="zk-grid" id="zk-grid" role="group" aria-label="The 256 instructions"></div>
+    <div class="zk-legend" id="zk-legend"></div>
+    <div class="zk-op" id="zk-op" aria-live="polite"><p>Loading the game's code…</p></div>
+    <p class="cap">Read from the game's table of instructions (<code>$D000</code>, <code>$D100</code>) in the listing. The name and the description are those the listing gives the routine each instruction runs. The groups are this page's.</p>
+  </div>
+  <p>Each script is a list of instructions, one byte each, with what they work on after them. The program fetches each instruction in turn and runs the routine for it, from two tables kept in the memory under the chips (<code>$4C58</code>). The 256 instructions share 110 routines. Many come in pairs or fours because the top bits of an instruction say whether each thing it works on is a number written in the script or a variable to look up (<code>$4ED0</code>, <code>$4EC8</code>, <code>$4EC0</code>): instruction <code>$1C</code> starts the sound the script names, and <code>$9C</code> starts the sound a variable holds.</p>
+  <p>Up to 19 scripts run at once, each in a slot of its own (<code>$4DD5</code>). Once a pass, the program runs every running slot until its script gives way, by waiting or by breakHere (<code>$4C2F</code>, <code>$50CE</code>), so many scripts carry on side by side. Scripts keep their numbers in 16-bit variables (<code>$FE6E</code>, <code>$FD6F</code>); variable 0 is the actor you control and variable 4 the room. A slot runs a global script, a room's entry or exit script, or the script an object has for a verb (<code>$4CCA</code>).</p>
+  <p>Lucasfilm Games called the language SCUMM, and this is the second game written in it. The scripts are the bulk of the game: 151 global scripts, 50,590 bytes, besides the scripts each room and its objects carry.</p>
+</section>
+<section id="street">
+  <p class="fig">05 · Scrolling</p>
+  <h2 class="t">A room wider than the screen is decoded a column at a time</h2>
+  <p class="lede">The street outside Zak's flat is 120 columns wide, and the screen shows 40. Move the camera a column at a time, or press Pan, and watch which columns the game has to decode.</p>
+  <div class="plate">
+    <div class="zk-view"><canvas id="zk-street" width="640" height="256" aria-label="The part of the street the camera shows"></canvas></div>
+    <div class="zk-mini"><canvas id="zk-mini" width="960" height="128" aria-label="The whole street, with the part on the screen marked"></canvas></div>
+    <div class="zk-ctl2">
+      <button type="button" class="zk-btn" id="zk-left" aria-label="One column left">‹</button>
+      <input type="range" id="zk-cam" min="20" max="100" value="20" aria-label="The camera's centre column">
+      <button type="button" class="zk-btn" id="zk-right" aria-label="One column right">›</button>
+      <button type="button" class="zk-btn" id="zk-pan">Pan</button>
+    </div>
+    <p class="zk-status" id="zk-cam-say"></p>
+    <p class="cap">The street drawn by the page's port of the game's room decoder, the one the <a href="levels.html">Maps</a> tab uses for every room, checked byte for byte against the game's own. Red marks the columns decoded for the move just made. The camera moves a column for each pass of the game, about eight a second, as Pan does.</p>
+  </div>
+  <p>A room is stored as four streams packed in runs: its characters, their colours, the mask that says what stands in front of the actors, and the mask's own characters. Each stream holds the room a column at a time, top to bottom, so a column is a run of bytes in the middle of a stream. To start decoding there, the game needs to know where the column begins and how far into a run it is. When a room is shown, the game decodes all of it once and keeps, for every column and each of three streams, the place it starts and the run under way: twelve bytes a column, in a block of its own in memory (<code>$38D9</code>).</p>
+  <p>The camera is centred on a column (<code>$CBC2</code>) and moves one column a pass towards its target, never closer than 20 columns to either end of the room. When it follows an actor, the target moves to the actor whenever the actor comes within 10 columns of the edge of the screen (<code>$CAD0</code>). After a move of one column, the game shifts the room across the screen by one character and decodes only the column that came into view; after any longer jump it decodes all 40 (<code>$3610</code>). It draws on the screen not being shown and swaps the two when the drawing is done (<code>$063A</code>), so the scroll never shows half drawn.</p>
+  <p>The actors are sprites over the room, put together from eight limbs each. The <a href="graphics.html">Graphics</a> tab draws every costume and a frame of the bedroom from the bytes the video chip read.</p>
+</section>
+<section id="heap">
+  <p class="fig">06 · Memory</p>
+  <h2 class="t">Everything but the program is loaded from the disk when it is needed</h2>
+  <p class="lede">What the disks hold, beside the space the game loads it into. Press a row for more about it.</p>
+  <div class="plate zk-wide">
+    <table class="zk-heap" id="zk-heap"></table>
+    <p class="cap" id="zk-heap-cap">Sizes from the resource index the game reads at start-up (<code>$6E4E</code>) and the resources on the two disk sides it points at. The space they are loaded into is the heap, from <code>$77D5</code> to <code>$C7FF</code>.</p>
+  </div>
+  <p>Rooms, costumes, scripts, and sounds are loaded into one stretch of memory, the heap, when they are needed, each into the smallest free block it fits (<code>$4699</code>). When nothing fits, the game closes up the gaps and throws resources out, a kind at a time: the room left longest ago, a costume, every sound, and every script that is neither running nor locked (<code>$497D</code>). In Zak's bedroom, the heap holds room 1, 16 global scripts, 3 costumes, and 20 sounds. The music's program takes the top five pages of the heap while music plays.</p>
+  <p>Every resource lives inside a room's file on the disk, which runs on from the room's first track and sector (<code>$2FCF</code>). The game sends the disk drive a program of its own at start-up and reads whole sectors through it, two bits at a time (<code>$7C59</code>, <code>$3BF8</code>), rather than through the computer's own disk routines, which are switched out of memory while the game plays.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" id="zk-sounds">{"player":"NgQAp42mRKq9QXSFqo2uRL3AdIWpja1E7jH8qQCN6EMgk0CupkT+P3WgBa6mRLGpIEjGoASxqY2RRKICrZFEPVpD8AMgY8PKEPKp/43oQ63fQynwjd9DIJXDzjH8qf+NMvxgSIpImEi8jkSxqZ2vRMixqZ2yRKWpGH2vRJ2nRKWqfbJEnapEILfFqQCdikNoqGiqaGCgAoyfRK3pQzlaQ9ADTK3FreBDOVpD8ANMrcWYSCAWxmiouadEhay5qkSFrZiqoACMmkSMm0SMnESxrNAaINTFrehD0AFgrJ9ErelDOVpD0ANMrcVMl8PJ/9AGjZtETAnEjDXHqLlzxo2dRLnUxo2eRKw1x8ixrBAFjZxEKX/Iqr24RI2YRL3ZRI2ZRK2cRPADTF3EqQCNl0SxrBAFjZxEKX/IqilA0AeKjZpETErEiik/jX/+rZxE8ANMXcStl0TQBu6XREwuxK6fRJgYfadEnadEkAP+qkSYGH2vRJ2vRJAD/rJErZpE8GIKGGkMqK2tRIWpra5EhaqxqRhtrUSFrMixqW2uRIWtvJJEucB0GGkPha65QXSQAmkAha+gBLGska6IEPmgBLGsnaBEpa4YaQqFrpAC5q+lrBhpBYWskALmraAQsayRrogQ+b2SRKi5wHSFrLlBdIWtoAqxrK6bRPAeSK6fRL2jRNAKaCn+kaygE0wMxWip/52jRKANTEbFSJhIrp9EvaNE8BG9oESgE5GsaKhoCQGRrEw0xWhoyK2dRJGsyK2eRJGsyKkAnaNErZhEkazIrZlEkayun0St4EMdWkON4EO9kkSddUO9kkSdeUOpf51uQ6kAnclDqQid0EOpAJ3XQ87zQyC/QK6fROjo6Oit4EMdWkON4EOpf51uQ6kAnclDqRmd0EOpAJ3XQyC/QK6fRKyfRIgwA0yXw2BIikiYSK3qQx1aQ43qQ63pQx1aQ43pQ2ioaKpoYEiKSJhIrepDPWFDjepD0B6N6ENIikiYSK6mRN4/daACvpJE3j91iBD3aKhoqmit6UM9YUON6UOpAJ2gRGioaKpoYEiKSJhIrqZEvUF0ja5EvcB0ja1EogKtrUQYfa9EnadEra5EfbJEnapEyhDqaKhoqmhgjZVEqQCN2kSulUTKyo65RIqiAaAAGG2VRJ25REiQAciYndpEaOjgIDDrYAAMHC0+UWZ7kanD3foYOFp9o8z2I1OGu/QwcLT7R5jtR6cMd+lh4Wj3jzDaj04Y79LDw9HvH2C1Hpwx36WHhqLfPsFrPDljvksPDEW/fYPWeXPHfJceGIt++gas8+aP+C4AAQEBAQEBAQEBAQEBAgICAgICAgMDAwMDBAQEBAUFBQYGBwcHCAgJCQoLCwwNDg4PEBESExUWFxkaHB0fISMlJyosLzI1ODs/Q0dLT1RZXmRqcHd+ho6Wn6izvcjU4e79AA==","tunes":[{"n":95,"music":true,"b":"GwsABAcIJADnAhMHAABvCn4KjQqcCqsKwQrQCt8K7gr9CgwL/5AbAof/gkkCgf+EJ4JJgkmBSYEnAof/gkkCgf+CG4IngkmCSYFJgRsCh/+CSQKB/4QngkmCSYFJgSeC/4JJgv+CG4IngkmCSYFJgRuC/4JJgv+COoInghuCSYFGgSeC/4JJgv+CG4IngkmCG4EngRuC/4JJgv+CQoI8gjaBPYFggSyBJwKHM4JJAoH/ghuCJ4JJgkmBSYEbAof/gkkCgf+EJ4JJgkmBSYEnAof/gkkCgf+CG4IngkmCSYFJgRsCh/+CSQKB/4I6gieCG4JJgUaBJwKH/4JJAoH/ghuCJ4JJgkmBSYEbAof/gkkCgf+EJ4JJgkmBSYEnAof/gkkCgf+CG4IngkmCSYFJgRsChzOCSQKB/4I6gieCG4JJgUaBLoJXgi6BLoFXgS6CV4L/g1eBV4EugleCJ4EugVeBLoJXgv+BP4E6gTOBJ4H/kP+Q/5D/kCIQilIBhv+DWYH/g02B/4M6gUGBRoFNgU2CTYJZgUaBUoFBgU2CTYJGAYE6gUGBWYEnAof/gkkCgf+CG4IngkmCSYFJgRsCh/+CSQKB/4JCgjyCNoE9gWCBLIEnAof/gkkCgf+CG4IngkmCSYFJgRsCh/+CSQKB/4QngkmCSYFJgScChzOCSQKB/4IbgieCSYJJgUmBGwKH/4JJAoH/gjqCJ4IbgkmBRoEnAoczgkkCgf+CG4IngkmCSYFJgRsCh/+CSQKB/4QngkmCSYFJgScCh/+CSQKB/4IbgieCSYJJgUmBGwKH/4JJAoH/gjqCJ4IbgkmBRoEnAocngikBgSqBLIEugScChyeCMAGBMYEzgTWBJwKHJ4I2AYE4gTqBPIEnAocngj0BgT+BQYFCgScChyeCRAGBRoFIgUmBJwKHJ4JLAYFNgU6BUIEnAocnglIBgWCBXIFXgVKBTYFIgUKBPYE4gTOBLoEnDIv/hAAWAYIWgRaBFoH/ihSBFIEWgRaBFoEWgf+KFIEUgRaBFoEWgRaB/4oUgRSBFgHCFoEWgRaB/4oUgRiBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgRmBGwHCG4ERgRSBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgR6BHQHCHYERgRSBFoEWgRaBFoEWgRaBFoEWgR6BHoEegR2BGwHCG4EdgRSBFoEWgRaBFoEWgRaBGIEYgRmBG4EdgR6BIAHCGYEkgRuBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGQHCGYEZgR6BHYEdgRGBFIEWgRaBFoEWgRaBFoEWgRaBHoEegR6BHYEbgRuBHYEUgRaBFoEWgRaBFoEWgRiBGIEZgRmBGYEZgRuBG4ERgRSBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBHoEdgR2BEYEUgRaBFoEWgRaBFoEWgRaBFoEegR6BHoEdgRuBG4EdgRSBFoEWgRaBFoEWgRaBGIEYgRmBGYEZgRmBG4EbgRGBFIEWghaCFoEUgRKBEYIRg/+BG4EdgRmBFoIWghaBGIEZgR2CHYMlgSSBIoEkgRaCFoIlgSSBIoEggRaCFoIZgRiBFoEYgRaCFoIigSKBIoEigRaCFoIigSKBIoEigRKCEoIegSCBIoEkgRmCGYIqgSmBJ4EpgR2CHYIqgSeBJYEngR2CHYIngSWBJIEggRaCFoIlgSSBIoEggRaCFoIWgf+BFIEUgRaBFoEWgRaB/4oUgRSBFoEWgRaBFoH/ihSBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRiBGIEegR2BHoEdgRuBG4EZgRSBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBHoEdgR2BEYEUgRaBFoEWgRaBFoEWgRaBFoEegR6BHoEdgRuBG4EdgRSBFoEWgRaBFoEWgRaBGIEYgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEegR2BHYERgRSBFoEWgRaBFoEWgRaBFoEWgR6BHoEegR2BG4EbgR2BFIEWgRaBFoEWgRaBFoEYgRiBGYEZgRmBGYEbgRuBEYEUgRaBGYEdgR6BG4EdgSCBIoEegSKBJYEpgSKBJ4EpgS6BIoElgSmBKoEngSmBLIEugSqBLoExgTWBLoEzgTWBOoEigRmBKYEegSeBHYEsgSKBKoEigTGBKYEugSeBNYEugf+QFoEWgRaBFoH/jAAiAYMigSKBIoH/iiCBIIEigSKBIoEigf+KIIEggSKBIoEigSKB/4oggSCBIoEigSKBIoH/iiCBIIH/hCKC/4YigiCBIIH/hCKC/4YigiSBIIH/hCKC/4YigiCBIIH/hCKC/4IegiSCJ4IwgSyBQYFBgUGBQYFBgUGB/4FBgUGBQoFBgf+BQYE/gUGBPYFBgf+BQYFBgUGBQoH/gUKBSYFJgUmB/4FIgj+CQYFBgUGBQYFBgUGB/4FBgUGBQoFBgf+BQYE/gUGBPYE8gjyBPIE9gT+B/4E/gUSBRIFEgf+BQoI/gkaBRoFGgUaBRoFIgkmBRIFEgUSBRIFCgj+CRoFGgUaBRoFIgUmCS4FNgU6BS4FNgVWCVIJGgUaBRoFEgUaBSIJJgUKBQoFCgUGBQoI/gkaBRoFGgUSBRoFIgUmBS4FBgf+BQYJVAYVUgVKBVIEiAoMigiKBIIEegR2CHYP/gRuBHYEZgUGCQYJBgT+BPYE/gj+C/4FJAYVIgUaBSIH/kC4ChC6CLoEsgSqBKYj/gSqCKoIqgSyBMYEziP+BNYQ2gTWBMYEwiP+BLoIugjGBMIEsiCABgyCBIoEigSKBIoH/iiCBIIEigSKBIoEigf+KIIEggS4BiDGBNYE2gTOBNYE4gTqBNoE6gT2BQYE6gT+BQYFGgS6BMYE1gTaBM4E1gTiBOoFSgU2BSYFGgUGBPYEsAYMsgUGBQYFBgUGBQYFBgf+BQYFBgUKBQYH/gUGBP4FBgT2BQYH/gUGBQYFBgUKB/4FCgUmBSYFJgf+BSII/gkGBQYFBgUGBQYFBgf+BQYFBgUKBQYH/gUGBP4FBgT2BPII8gTyBPYE/gf+BP4FEgUSBRIH/gUKCP4JGgUaBRoFGgUaBSIJJgUSBRIFEgUSBQoI/gkaBRoFGgUaBSIFJgkuBTYFOgUuBTYFVglSCRoFGgUaBRIFGgUiCSYFCgUKBQoFBgUKCP4JGgUaBRoFEgUaBSIFJgUuBQYH/gUGCSQGFSIFGgUiBGwGJHoEigSOBIIEigSWBJ4EjgSeBKoEugSeBLIEugTOBKYEsgTCBMYEugTCBM4E1gTGBNYE4gTyBNYE6gTyBQYEigimCJ4IsgiqCMYIugjWBOoH/kCIBgyKBIoEigf+MAAAACACABAAAAAAAAIAHAAAACABABAARAAAAAIAHAAAACQQgBAAAAAAAAIAHAAAAygogBAAAAAAAAIAHAACACABABAAIAAAAAAQIBFAA/f+ADgAAAAQAgAQAAAAAAACABwAAAAkAgAQAAAAAAACABwAAAQgIIAQAAAAAAACABwAAAAkAQAQAGAAAAACABwAAgawAEAQAAAAAAACABwD7/woAgAQAAAAAAACABwA="},{"n":102,"music":true,"b":"6QYAQwcILgAmAoAEAABFBkUGVAZjBmMGcgaBBpAGnwafBp8Gnwa1BssGywbaBv+QGwKH/4JJAo//hCeCSYJJgUmBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAoc9AYY9gUkCj/+CG4FQgUSBOIEsgSCBMYEggRsChz0Bhj2BSQKP/4IbgieCSYJJgUmBGwKH/4JJAo//hCeCSYJJgUmBGwKHPQGGPYFJAo//ghuCJ4JJgkmBSYEnAocngjoBjz+BRoFLgVeBXoFUgUmBGwGHNQGPKoEggScChzOCSQKP/4IbgieCSYJJgUmBGwKH/4JJAo//hCeCSYJJgUmBGwKHPQGGPYFJAo//ghuCJ4JJgkmBSYEbAof/gkkCj/+COoInghuCSYFGgScCh/+CSQKP/4IbgieCSYJJgUmBGwKHNQGGNYFJAo//hCeCSYJJgUmBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAoczgkkCj/+COoInghuCSYFGgS4Cj1eCLoEugVeBLoJXgv+DV4FXgS6CV4IngS6BV4EugleC/4E/gTqBM4EngU0BhkiBTYFIgTWCNYJNgUiBTYFIgTWCLoEugU2CSIJNgkiCSQGPSAGGQoE9gT0BjzMBhjCBKYEnAocngkYBjz+BRoFLgU0BhkiBTYFIgTWCLoEugU2CSIJNgkiCRgGPSAGGQoE9gT0BjzMBhjCBKYEbAof/gkmC/4IbgjUBhjWBSQSQABYBghaBFoEWgf+KFIEUgRaBFoEWgRaB/4oUgRSBFoEWgRaBFoH/ihSBFIEWgRaBFoEWgf+KFIEYgRaBFoEWgRSBFoEWgRuBFIEWgRaBFoEYgRmBGYEggR6BFoEWgRaBFIEWgRiBGYEggR2BHYEdgRuBHYEdgRGBFIEWgRaBFoEUgRaBFoEbgRSBFoEWgRaBGIEZgRmBIIEegRaBFoEWgRSBFoEYgRmBIIEdgR6BIoEkgSWBJ4EsgS2BFoEWgRaBFoEWgRaBFoEWgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBHoEdgR2BEYEUgRaBFoEWgRaBFoEWgRaBFoEegR6BHoEdgRuBG4EdgRSBFoEWgRaBFoEWgRaBGIEYgRmBGYEZgRmBG4EbgRGBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEegR2BHYERgRSBFoEWgRaBFoEWgRaBFoEWgR6BHoEegR2BG4EbgR2BFIEWgRaBFoEWgRaBFoEYgRiBGYEZgRmBGYEbgRuBEYEUgRaCFoIWgRSBEoERghGD/4EbgR2BGYEWghaCFoEYgRmBHYIdgyWBJIEigSSBFoIWgiWBJIEigSCBFoIWghmBGIEWgRiBFoIWgiKBIoEigSKBFoIWgiKBIoEigSKBEoISgh6BIIEigSSBGYIZgiqBKYEngSmBHYIdgiqBJ4ElgSeBHYIdgieBJYEkgSCBFoIWgiWBJIEigSCBFoIWghaB/4MAIgGDIoEigSKB/4oggSCBIoEigSKBIoH/iiCBIIEigSKBIoEigf+KIIH/gSKBIoEigSKB/4oggSCBLgaMLoEugSwEjCyEJwaMJ4EngSkEjC6CKYIqCIwwCIwxCIwqAY0sgTGBNIE2gTmBP4FAgUEBg0GBQYFBgUGBQYH/gUGBQYFCgUGB/4FBgT+BQYE9gUGB/4FBgUGBQYFCgf+BQoFJgUmBSYH/gUiCP4JBgUGBQYFBgUGBQYH/gUGBQYFCgUGB/4FBgT+BQYE9gTyCPIE8gT2BP4H/gT+BRIFEgUSB/4FCgj+CRoFGgUaBRoFGgUiCSYFEgUSBRIFEgUKCP4JGgUaBRoFGgUiBSYJLgU2BToFLgU2BVYJUgkaBRoFGgUSBRoFIgkmBQoFCgUKBQYFCgj+CRoFGgUaBRIFGgUiBSYFLgUGB/4FBgkkBhUiBRoFIgSICgyKCIoEggR6BHYIdg/+BG4Edgf+BQYJBgkGBP4E9gT+CP4L/gT0BhTyBOoE8gToEiDWEOIQ2gjWCNII1gjSCNYI0gTOBMoExgTCCLYIuhCmELIQqgjCCMYEwgSiBMIExgjOCNIEzgTmBOIE2gjyK/4gAAAAIAEAEABEAAAAAgAcAAAAKBCAEAAAAAAAAgAcAAACHB0AEAAgAAAAAgAcAAAAEAIAEAAAAAAAAgAcAAAAJCYAEAAAAAAAAgAcAAACKByAEAAAAAAAAgAcAAAAMB0AEAAD+/hwABAgEUAD9/4AOAAAACgdABAAC/v4QAAQIBFAA/f+ADgAAAAgIgAQAAAAAAACABwD7/woAgAQAAAAAAACABwA="},{"n":103,"music":true,"b":"ogUAuwcILgCkAZ4DAAANBQ0FHAUrBToFOgVJBVgFWAVYBWcFZwV9BZMFkwWiBf+QGwKH/4JJAo//hCeCSYJJgUmBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAoc9AYY9gUkCj/+CG4FQgUSBOIEsgSCBMYEggRsChz0Bhj2BSQKP/4IbgieCSYJJgUmBGwKH/4JJAo//hCeCSYJJgUmBGwKHPQGGPYFJAo//ghuCJ4JJgkmBSYEnAocngjoBjz+BRoFLgVeBXoFUgUmBGwGHNQGPKoEggScChzOCSQKP/4IbgieCSYJJgUmBGwKH/4JJAo//hCeCSYJJgUmBGwKHPQGGPYFJAo//ghuCJ4JJgkmBSYEbAof/gkkCj/+COoInghuCSYFGgScCh/+CSQKP/4IbgieCSYJJgUmBGwKHNQGGNYFJAo//hCeCSYJJgUmBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAoczgkkCj/+COoInghuCSYFGgRsCh/+CSwKP/4Ingv+CS4H/gUuBS4EngieCP4FGgUuBUoEngv+CS4FSgUaBP4EAFgGCFoEWgRaB/4oUgRSBFoEWgRaBFoH/ihSBFIEWgRaBFoEWgf+KFIEUgRaBFoEWgRaB/4oUgRiBFoEWgRaBFIEWgRaBG4EUgRaBFoEWgRiBGYEZgSCBHoEWgRaBFoEUgRaBGIEZgSCBHYEdgR2BG4EdgR2BEYEUgRaBFoEWgRSBFoEWgRuBFIEWgRaBFoEYgRmBGYEggR6BFoEWgRaBFIEWgRiBGYEggR2BHoEigSSBJYEngSyBLYEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEegR2BHYERgRSBFoEWgRaBFoEWgRaBFoEWgR6BHoEegR2BG4EbgR2BFIEWgRaBFoEWgRaBFoEYgRiBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEZgRuBG4ERgRSBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgR6BHYEdgRGBFIEWgRaBFoEWgRaBFoEWgRaBHoEegR6BHYEbgRuBHYEUgRaBFoEWgRaBFoEWgRiBGIEZgRmBGYEZgRuBG4ERgRSBFoEWgRaBFIEWgRaBFoEYgRmBGYEZgR6BHYEdgRiBFIEWgRaBFoEUgRaBFoEWgRiBGYEZgRmBHoEdgR2BIIEggQAiAYMigSKBIoH/iiCBIIEigSKBIoEigf+KIIEggSKBIoEigSKB/4oggSCBIoEigSKBIoH/iiABjCCBLgiMLoYugi4IjDGGMIIwBowugi6GLIIuAowwgjGCNoI1AY0zgTWBNoE4gTyBPYE/gUEBg0GBQYFBgUGBQYH/gUGBQYFCgUGB/4FBgT+BQYE9gUGB/4FBgUGBQYFCgf+BQoFJgUmBSYH/gUiCP4JBgUGBQYFBgUGBQYH/gUGBQYFCgUGB/4FBgT+BQYE9gTyCPIE8gT2BP4H/gT+BRIFEgUSB/4FCgj+CRoFGgUaBRoFGgUiCSYFEgUSBRIFEgUKCP4JGgUaBRoFGgUiBSYJLgU2BToFLgU2BVYJUgkaBRoFGgUSBRoFIgkmBQoFCgUKBQYFCgj+CRoFGgUaBRIFGgUiBSYFLgUGB/4FBgkkBikiBRoFIgTUIhDaCNYIzgjGCMIQ6hDiBOoFCgUSBPYE8gTqBPIEAAAAIAEAEABEAAAAAgAcAAAAKBCAEAAAAAAAAgAcAAADKCiAEAAAAAAAAgAcAAAAEAIAEAAAAAAAAgAcAAAAJCYAEAAAAAAAAgAcAAIAJByAEAAAAAAAAgAcAAAAMB0AEAAD+/hwABAgEUAD9/4AOAAAACgdABAAC/v4QAAQIBFAA/f+ADgAAAAgIgAQAAAAAAACABwA="},{"n":104,"music":true,"b":"XgQABgcILgA9Aa0CAAD1A/UDBAQTBBMEIgQxBEAEQARABEAEQARABEAEQARPBCcCh/+CWQGG/4NNgf+DOoFBgUaBTYFNgk2CWYFGgVKBQYFNgk2CRgGPOoFBgVmBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAof/gkkCj/+CQoI8gjaBPYFVgSyBJwKHM4JJAo//ghuCJ4JJgkmBSYEbAof/gkkCj/+EJ4JJgkmBSYEbAoc9AYY9gUkCj/+CG4IngkmCSYFJgRsCh/+CSQKP/4I6gieCG4JJgUaBJwKH/4JJAo//ghuCJ4JJgkmBSYEbAoc1AYY1gUkCj/+EJ4JJgkmBSYEnAof/gkkCj/+CG4IngkmCSYFJgRsChzOCSQKP/4I6gieCG4JJgUaBJwKHSQGGSYEnAodJAYZJgScIkAAWAYIWgRaBFoH/ihSBFIEWgRaBFoEWgRaEFoQWgRSBFIEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEZgRuBG4ERgRSBFoEWgRaBFoEWgRaBGIEYgR6BHYEegR2BG4EbgRmBFIEWgRaBFoEWgRaBFoEWgRaBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEegR2BHYERgRSBFoEWgRaBFoEWgRaBFoEWgR6BHoEegR2BG4EbgR2BFIEWgRaBFoEWgRaBFoEYgRiBGYEZgRmBGYEbgRuBEYEUgRaBFoEWgRaBFoEWgRaBFoEZgRmBGYEZgRuBG4ERgRSBFoEWgRaBFoEWgRaBFoEWgRmBGYEZgR6BHYEdgRGBFIEWgRaBFoEWgRaBFoEWgRaBHoEegR6BHYEbgRuBHYEUgRaBFoEWgRaBFoEWgRiBGIEZgRmBGYEZgRuBG4ERgRSBFoL/ghaC/4IWhP+EACIBgiKBIoEigf+KIIEggSKBIoEigSKBFoQWhBaBFIEUgSCBLgGFMIExgTaBNYIwgjGBM4E1gT2BPYE8gTqBPIE6gjWCNoI1gTOBMYIzgimBMIEzgTaBQQGDQYFBgUGBQYFBgf+BQYFBgUKBQYH/gUGBP4FBgT2BQYH/gUGBQYFBgUKB/4FCgUmBSYFJgf+BSII/gkGBQYFBgUGBQYFBgf+BQYFBgUKBQYH/gUGBP4FBgT2BPII8gTyBPYE/gf+BP4FEgUSBRIH/gUKCP4JGgUaBRoFGgUaBSIJJgUSBRIFEgUSBQoI/gkaBRoFGgUaBSIFJgkuBTYFOgUuBTYFVglSCRoFGgUaBRIFGgUiCSYFCgUKBQoFBgUKCP4JGgUaBRoFEgUaBSIFJgUuBQYH/gUGCSQGFSIFGgUiBFgKD/4IWgv+CFoT/hAAAAAgAQAQAEQAAAACABwAAAAoEIAQAAAAAAACABwAAAIcHQAQACAAAAACABwAAAAQAgAQAAAAAAACABwAAAAkJgAQAAAAAAACABwAAAAgIgAQAAAAAAACABwD7/woAgAQAAAAAAACABwA="}],"effects":[{"n":2,"music":false,"b":"FwAAy2QAAAAtEBABAAAAABKAEAQFAAA="},{"n":6,"music":false,"b":"FgAAmgUAAAAtYAgFAKD/IgCAIAACAA=="},{"n":7,"music":false,"b":"FgAA7wUAAAAtAAgCAAD/kACAIAACAA=="},{"n":8,"music":false,"b":"FgAA7wUAAAAtAAgCAAD/kACAIAACAA=="},{"n":9,"music":false,"b":"KAAAwmQAAAAtgEABABAAABCADQAgFAAAAAEWDAAggAAAAABqIAACAA=="},{"n":10,"music":false,"b":"IAAAY2QAAAAt8IAEAP/7FQCALUAgBQAAAyYAgCAAAgA="},{"n":11,"music":false,"b":"HQAAwmQAAAAtgEAFAP/7JACALUABCQDw/wQAgAA="},{"n":12,"music":false,"b":"NgAAuWQiGwAsAAAPLbATGAAAACDwEBAEGAAAAA8tABgYAAAAAMAQEAQYAADwLwQAiDAAAAAA"},{"n":13,"music":false,"b":"TgAAfWQCKwAAAC0AIAQAAABAMBCACgwQBBgADQAgBAAAAEAwgAkMIAACAAAALQBABAAAAFAwIIAKDBAEGAANAEAEAAAAUDCACQwgAAIA"},{"n":14,"music":false,"b":"LgAA3mQAAAAtACACAAAAIFAQgAoMEAQYAC0AIAIAAAAgUBCACgwQBIAAIAACAA=="},{"n":15,"music":false,"b":"RAAAbmQHHAAoADgAAAAtAAYAAgAAACBAIAACAAQABP//AACABwACAAAALQAFAAIAAAAgQCAAAgAEAAb//wAAgAcAAgA="},{"n":16,"music":false,"b":"FgAAKWQAAAAtEAoIAAAAAHAgIAACAA=="},{"n":17,"music":false,"b":"IwAA6KUgFwAADy0AQP//EHAAWoCACgDwLwQAdP//AACABwA="},{"n":18,"music":false,"b":"GQAAZ2QAAAAtAAICAABCIGSAgAoAIAACAA=="},{"n":19,"music":false,"b":"GAAAMa8AAAAtEAboQAAAYMcQEAQgAIAO"},{"n":20,"music":false,"b":"IQAAMmYBGAAAAC0AcCgAAAAJAEAgAAIABAAEEAFAAAIA"},{"n":21,"music":false,"b":"JwAAhmQgHAAADy0QMBAAAGcoAIAQBAgAIAACAPAvBKpLEAAAFQIA"},{"n":22,"music":false,"b":"gQAA/WQqNwBLAHYAAA8tIEEIAAAwQOeALQACGAAyFjD6gC0gAigAABeA+4AEBADwAAAYIAACAAAALQDocABAAMBLgBAEgAAgAAIAAAAtIEEIAAAwQLeALQACEAAyGDC6gC0gAiAAABOAu4AEBADwAAAYIAACAIAvBAA0OAEAAAIA"},{"n":23,"music":false,"b":"JgAAX2QCFQAAAC0UFIAAAAArABAAAAAQBCgALQAQgAAAACsAEAA="},{"n":24,"music":false,"b":"VQAAIWQqHAAzAEoAAA8t4ABIAP3/CgCAIAACAAAALQAhAQD+/wCogAQAISgA/v8gAAIAAAAtAEEGAAAAAIeABABBKAAAACAAAgDwHwQAoEgA/P8CAA=="},{"n":25,"music":false,"b":"HQAAlGQAAAAtABgMAAACV2qABABAGgDw+iAAAgA="},{"n":26,"music":false,"b":"IAAAZWQAAAAt8IADAP/7FQCALUAgBAAAAyYAgCAAAgA="},{"n":27,"music":false,"b":"FgAAXWQAAAAtgBAEAP/7JgCAIAACAA=="},{"n":28,"music":false,"b":"WQAA+aUqHwA2AE0AAA8tAAAcAEOAiQAgEAQQAIAOAAAPEAQQAC0AABwAR4CJACAQBBAAgA4AAA8QBCQALQAAHQBKgHkAEBAEEACADgDwTwQAODAAAACABwA="},{"n":29,"music":false,"b":"WwAAZ2QfIAApADkAQgBSAAAALeAJFAACAHD3UCAAAgAEAAFgAAgAAgAAAC0gChQAAAAA91AgAAIABAAHYAD3/wIAAAAtAAoUAAAAAPBAIAACAARABGAA//cCAA=="},{"n":30,"music":false,"b":"UAAA2G4OJwA3AEAAAAAt4AIQAIKHiwCALUACYAD//wkAgBAEQAAAAAAtIAgQAAAABwBQIAACAAQABxAA9/8CAAAALQADEAAAAA4AgCAAAgA="},{"n":31,"music":false,"b":"lgAAn2QKYAB7AAAALQAIMAA4UgDqgA2AHRAAEPoA/QQAHhQAAP4NACBAAOB/CwBEERENEREFACIiMzNEERINVTIFACIiMzNEEVMNmVMFACIiMzMNAAgTADgEAOogAAIAAAAQBDQALQCggACg/9XNIAQAA0AAAvwgAAIAAAAQBDQALQBAgACgAdXMIAQAAzIAMoIgAAIA"},{"n":32,"music":false,"b":"RQAAFXgCMQAAAC0AGDAAo/+ZCRANAAggAPMAqZ+AEwMMABxgAPwAqZ4QBKAAIAACAAAALQAYoAEAqwopUBAEoAAgAAIA"},{"n":33,"music":false,"b":"+QAAGmQAAAAtSQwIAAAASQAgDWUQCAAAAEgAgAkBDWgSCAAAAEgAgAkBDakUBQAAAEgADZIYBQAAAEgADakUBQAAAEgADWUQDAAAAEkADUkMCAAAAEkADWUQCAAAAEgAgAkBDWgSCAAAAEgAgAkBDakUEAAAAEkADWUQEAAAAEkADUkMCAAAAEkADWUQCAAAAEgAgAkBDWgSCAAAAEgAgAkBDakUBQAAAEkADZIYBQAAAEkADakUBQAAAEkADWUQEAAAAEkALUkBEAAABAcAgC1oEhAAAABJACAN4xUFAAAASQANiRQQAAAASQANZRAYAAAASQAgAAIA"},{"n":34,"music":false,"b":"FgAA7qYAAAAtAAgLAAUEQIWAIAACAA=="},{"n":35,"music":false,"b":"LQAAwmQBJAAAAC0AASAAGAAA8FANAAAUAAAAAPCAEwMgAAIABQAHbAAAAAIA"},{"n":36,"music":false,"b":"QwAAamQiIQA4AAAPLQAQYAAVFUC3gAQAQEAAIBIgAAIAAA8tAABgAAAgQLeABABAQAAgEiAAAgDgTwQAbMAAAAACAA=="},{"n":37,"music":false,"b":"JQAA6mQAAAAtAKCwAAAAAGqAEQQPABEEDwAEAKBgAED/IAACAA=="},{"n":38,"music":false,"b":"FgAAeGQAAAAtAA4tAAAAKQkQIAACAA=="},{"n":39,"music":false,"b":"HQAACDIAAAAtAOIIAAABVAiABP//CQDw/yAAAgA="},{"n":40,"music":false,"b":"TAAAz2QHGwAsADsAAAAtAK3/AAAA201AgAoABBAAowAYAARYD6MA6P+ADgAAAC1srf8AAADbTUCACgAEgABRAAgABAgDUQD4/4AOAA=="},{"n":41,"music":false,"b":"KQAAtGQBHwAAAC0ABAAAAABg7EAlhAMgAQAAQIAIAATgCAAOAQSABwA="},{"n":42,"music":false,"b":"IQAAAdcAAAAtAAj/AAAAABqAEQQPABEEDwARBA8AgAwA"},{"n":43,"music":false,"b":"RAAA42QCJgAAAC2AACAA5096AIAF5ywQAOdFBecsMABZYSAAAgAAAC2AUCAA5z9pAIAF51wQAOcVBefsMABZESAAAgA="},{"n":44,"music":false,"b":"FgAAR2QAAAAtACgSAAAABgAQIAACAA=="},{"n":45,"music":false,"b":"NwAAftcCHgAAAC2AATAASABQ6CAFgAUwAPD/gBEAAAAt9CQwAID/UOYUBfQdMAAABIARAIAOAA=="},{"n":46,"music":false,"b":"WAAALGQAAAAtAEAQAED/BQWAEAQAAAUAQAgAQP8QBAAABQBACABA/xAEAAAFAEAQAED/EAQAAAUAQCAAQP8QBAAABQBAEABA/xAEAAAFAEAIAED/IAACAA=="},{"n":47,"music":false,"b":"JAAA6GQAAAAtAPA4AH//ehmAEAQCAC0AQA8A8AwnB4AgAAIA"},{"n":48,"music":false,"b":"XAAAz3gKLABEAAAALYAAAQAQAJ0AgA0ACBQAAAAJbQwACIAAAAAJbCAAAgAAABAEVgAtAAgIAAAAzAyAEATgACAAAgAAABAErAAtAAgGAAAA2gyAEATAACAAAgA="},{"n":49,"music":false,"b":"1QEAu2QelABZAWUBuwEAAC0AByAA+/8JAIANACAYAAAABwANABAIAAAABQANAAYQAPv/CAANAAcQAPj/BwANACAgAAAABwANAAcgAPv/CAANACAYAAAABwANAEAIAAAABAANAAgQAPL/CAANAAYQAOD/CAANACAQAAAABwANABAIAAAABQANABgIAAAABQCAfwACAAAALXAEIAAAAAoAQA2GAzAAAAAKAA27AyAAAAAKAA20BBAAAAAKAA1wBBAAAAAKAA27AxAAAAAKAA2GAxAAAAAKAA27AyAAAAAKAA1wBBAAAAAKAA1HBiQAAAAKAA1wBCAAAAAKAA2GAzAAAAAKAA20BCAAAAAKAA27AxAAAAAKAA0jA0AAAAALAA32AggAAAAJAA0jAwgAAAAJAA32AggAAAAJAA0jAwgAAAAJAA27AxAAAAAJAA0jAxMAAAAKAIC+AAIABIABCAAIAIAHAAIAAAAQBMABLY8MAAFAANsAEA08MoAAAH+qAC2pAYAAAEGbACANUwOAAAC+nQAtTg2AAAAYewBADUcGIACAAAoADZEBQACAAAsADZEBwABAwI8NgE8AAgAEAAQIAAA/BIBwCQCvrwQgoAUAIiKAFQACAA=="},{"n":50,"music":false,"b":"FQAAiqUAAAAtACj//wAAACCAgAoA"},{"n":51,"music":false,"b":"rwAAO3gLQgB1AJsAAAAtAAQKAAAAAPpQJQADCgAAAFAlpQCgAAAAUCXUAIADBABAEAQIAC3wAgAB/v+U3kAgAAIABAAAgAH/AwQAAIAAYP8EAAyAACD/BAAMgADQ/gQADIAAAP4EAAyAAAD9BAAMgAQA+gIAAAAQBL8ALQBAAAGA/goNgA0AAIACDwBKig0ACgAE/v8ODiAAAgAAABAEQAQtADoAAYDgDI6AIAACAA=="},{"n":52,"music":false,"b":"IQAA1GQBGAAAAC1gAAADAgCeDlAgAAIABAADAAIAAAIA"},{"n":53,"music":false,"b":"TgAAz2QHHAAtAD0AAAAtAK2oAAAAywtAIAACAAQQAKMAGAAEWA+jAOj/gA4AAAAtbK2oAAAAywtAIAACAASAAFEACAAECANRAPj/gA4A"},{"n":54,"music":false,"b":"UwAA9mQCIQAAAC3JLBIBAP8EqIANyQQKAgUAjQggAAIAAAAQBKAALQBAJAABAE0AIBAEIACADgMtAEAkAA//TQAgLQAgSAA/AGamIIAUAyAAAgA="},{"n":55,"music":false,"b":"IAAApWQAAAAtAACAAAgAzp4gCT6eEAQMAIAHACAAAgA="},{"n":56,"music":false,"b":"FgAApmQAAAAtAAN+Af7/Dp4gIAACAA=="},{"n":57,"music":false,"b":"IAAAxmQAAAAtADCAAAAAnp6ACUp+EAQTAIAHAAAAAgA="},{"n":58,"music":false,"b":"FgAATGQAAAAtADBYAuz/3gCAIAACAA=="},{"n":59,"music":false,"b":"KAAAcGQCGAAAAC3Ke4YB0P/cABAgAAIAAAAtwnuGAdD/2gAQIAACAA=="},{"n":60,"music":false,"b":"FgAAzmQAAAAt//9AAED8SQAQIAACAA=="},{"n":61,"music":false,"b":"SgAAY2QHGgArADkAAAAtABD4ACAAzgxAAgAEEACjABgABFgPowDo/4AOAAAALcwQ8AAgAM4MQAIABIAAUQAIAAQIA1EA+P+ADgA="},{"n":62,"music":false,"b":"SgAAY2QHGgArADkAAAAtADD4AN//zgxAAgAEEACjABgABFgPowDo/4AOAAAALcww8ADf/84MQAIABIAAUQAIAAQIA1EA+P+ADgA="},{"n":63,"music":false,"b":"FgAAOmQAAAAtABgZAFAAwECAIAACAA=="},{"n":64,"music":false,"b":"FgAAOmQAAAAtABgZAK//wECAIAACAA=="},{"n":65,"music":false,"b":"QwAA/GQKIwAzAAAALQAAkAAGAK4AIC2gAaABAgBtACAAAgAAAC1HIAABDgCLAIAgAAIAAAAtRzCAAhwA3QCAIAACAA=="},{"n":66,"music":false,"b":"qQAAD6UAAAAtACAFAAAAAwCAEAQCABEEAgAQBAIAEQQGABAEAgARBAIAEAQCABEEBwAQBAIAEQQMABAEAgARBAIAEAQCABEEBgAQBAIAEQQSABAEAgARBAIAEAQCABEEBAAQBAIAEQQDABAEAgARBAIAEAQCABEEIgAQBAIAEQQSABAEAgARBAIAEAQCABEECQAQBAIAEQQCABAEAgARBAwAEAQCAICeAA=="},{"n":67,"music":false,"b":"FgAAM2QAAAAtQAUaAAAAlxCAIAACAA=="},{"n":68,"music":false,"b":"HwAACWQAAAAtABoQAKAAyRCADQAfAQAAAIIAIAACAA=="},{"n":69,"music":false,"b":"HwAAcGQAAAAtABwQAKD/yRCADQAQCgAAAAYAIAACAA=="},{"n":70,"music":false,"b":"LwAAMmQBJQAAAC0ADBgAAAFJaVAtACQYAAD/SWlQgBQAIAACAAQQBQUAgAGABwA="},{"n":71,"music":false,"b":"IgAAY2QBGAAAAC0AJGgAwP9JaVAgAAIABBAFBQCAAYAHAA=="},{"n":72,"music":false,"b":"MAAAQGQCHAAAAC0ADBAAAADESSAQBBoAIAACAAAALQAGEAAAAMRJEBAEGgAgAAIA"},{"n":73,"music":false,"b":"MAAAUmQCHAAAAC0AEBAAAADESSAQBBoAIAACAAAALQAIEAAAAMRJEBAEGgAgAAIA"},{"n":74,"music":false,"b":"MAAAVGQCHAAAAC0AFBAAAADESSAQBBoAIAACAAAALQAKEAAAAMRJEBAEGgAgAAIA"},{"n":75,"music":false,"b":"MAAAXmQCHAAAAC0AGBAAAADESSAQBBoAIAACAAAALQAMEAAAAMRJEBAEGgAgAAIA"},{"n":76,"music":false,"b":"MAAAWGQCHAAAAC0AHBAAAADESSAQBBoAIAACAAAALQAOEAAAAMRJEBAEGgAgAAIA"},{"n":77,"music":false,"b":"MAAAemQCHAAAAC0AIBAAAADESSAQBBoAIAACAAAALQAQEAAAAMRJEBAEGgAgAAIA"},{"n":78,"music":false,"b":"MAAA8mQCHAAAAC2AAxoABgC/B4AQBAYAIAACAAAALQACHQAIAL8HgBAEBgAgAAIA"},{"n":79,"music":false,"b":"HQAAumQAAAAtAGEGADUA1kiAEAQGAIAOASAAAgA="},{"n":80,"music":false,"b":"agAAA6UCNQAAAC0AGAQAAAAgAIANABAYAEB//gwQBBcEDQAgEABAYP4MEATjA4AkACAAAgAAABAEgAAtBQoHAJAz0AqAEAR3Ag1miAUA8DOyBRAE9wINAFUDAETuAScQBEQBgCwAIAACAA=="},{"n":81,"music":false,"b":"aAAAcGQCOQAAAC0AAUAAAQDWRyAQBD8ALQBgQACA//IGECAAEAR4AIAeAS0AAWAAAQDGRyAgAAIAAAAtAAJAAAEA6keAEAQ/AC0AIBQA6v/jDIAQBKAAgBwBLQACYAABANpHgCAAAgA="},{"n":82,"music":false,"b":"4wAAUWQKUwChAAAALQAEYAAFAKqqgBAEoAAtAAYYALSPDNiADQAKGgDuigyYDQAGEADw7gyYDQB3SACJOAyYDQADCADg/wycgAkEEAQAAiAAAgAAAC0AAmAAAgCqqiAQBKAALQAKEAC0/wzYgA0AGhoA7hoMmA0AFhAA8P4MmA0AIBgAiQgMmA0AAiAA4AAMmA0AAwcA0P8MmIAJByAAAgAAABAEAAEtgAcMAHf/APCAgAoGDQB6EgB3dwyYDQAGIADw/AyYDQB3OACJOAyYDQAABwAaAAyagAkDEAQAAiAAAgA="},{"n":83,"music":false,"b":"KwAAjmQCGwAAAC3uA///AAAIQCCACgAgAAIAAAAtQAYIAAAAkgAgIAACAA=="},{"n":84,"music":false,"b":"KAAAcGQAAAAtADEYAEYA9kWAITAQBCAAITAtAFAIAAAABiAgIAACAA=="},{"n":85,"music":false,"b":"uAAAKdcKIQA4AAAALQAKEAAAAAYAEBAEEQCADgAgAAIAAAAtAAgQAAAABAAQEAQGAIAOACAAAgAAAC0AEgsAAAAFABAQBAsADQAPCwAAAAMAEAQLAA0ADwsAAAADAA0ADwsAAAADABAECwANAA8LAAAAAwAQBAsADQAPCwAAAAMADQAPCwAAAAMAEAQLAA0AEgsAAAAFABAECwANAA8LAAAAAwAQBAsADQAPCwAAAAMAgHcAIAACAA=="},{"n":86,"music":false,"b":"NgAAl2QCHwAAAC0ASCAA9f8JCRAQBBAAgA4YIAACAAAALfAGQAAEAMmZIBAEUACADgYgAAIA"},{"n":87,"music":false,"b":"SgEAE2QCbAAAAC0zCRAAAAAoCBANMwkgAAAAKAgNMwkgAAAAKAgN5AYQAAAAKAgNMwkgAAAAKAgNVAoQAAAAKAgNVAogAAAAKAgNSQwgAAAAKAgNSQwQAAAAKAgNmAsgAAAAKAiAWwAgAAIAAAAtlBswAAAA3DoQEARQAA0xFzAAAADcOhAEUAANlBtgAAAA/DwQBKAADTEXYAAAAPw8EASgAA31HmAAAAD8PBAEoAANlBtAAAAA3DsQBEAADZIYYAAAAPw8EASgAA2UG2AAAAD8PBAEoAANlBtgAAAA/DwQBKAADTEXYAAAAPw8EASgAA2UG2AAAAD8PBAEoAANkhhgAAAA/DwQBKAADZQbQAAAAOxLEARAAA2SGGAAAAD8PBAEoAANMRdAAAAA7EsQBEAADWgSYAAAAPw8EASgABAEgAGA1QAgAAIA"},{"n":88,"music":false,"b":"UQAADWQCLAAAAC0ABGAABQCqqoAQBHAADQBAoADA//s6EASAAIAbACAAAgAAAC0AAmAAAgCqqiAQBHAALQA2oADQ/+wKgBAEgACAHAAgAAIA"},{"n":89,"music":false,"b":"HQAAQGQAAAAtAAIQACAGOQyABABCXABP/yAAAgA="},{"n":90,"music":false,"b":"FgAAZWQAAAAtAAgQAAAABgAQIAACAA=="},{"n":91,"music":false,"b":"FgAAZ2QAAAAtAAoQAAAABgAQIAACAA=="},{"n":92,"music":false,"b":"FgAAf2QAAAAtABIQAAAABgAQIAACAA=="},{"n":93,"music":false,"b":"GQAAOmQAAAAtANAFAPBMMwKAgAoDIAACAA=="},{"n":94,"music":false,"b":"IwAAMGQAAAAtAA0sABUA0ACADQAYGAD6/woJEAQgACAAAgA="},{"n":96,"music":false,"b":"YAAATGUGLwBUAAAALQD/GgAAABgJgA0A/w0AAAAVBw0A/w0AAAAVB4AcACAAAgAAAC0A4BoAAAAIB0ANAOANAAAACAcNAOANAAAABweAHAAgAAIABABgAwAAeIAHAAIA"},{"n":97,"music":false,"b":"FgAA3WQAAAAtAAAQAAAgBgCAIAACAA=="},{"n":98,"music":false,"b":"TQAAHWQCLQAAAC0ACgIAAACYmBANAAkCAAAAmJgNAAsCAAAAmJiAHAAgAAIAAAAQBIAALQAFgAAWAH0KEA0AEIAA9v+9CoATACAAAgA="},{"n":99,"music":false,"b":"dAAAj2QCTAAAAC0ACgIAAACYmBANAAkCAAAAmJgNAAsCAAAAmJiAHDQtAAoCAAAAmJggDQAGAgAAAJiYDQAOAgAAAJiYgBwaIAACAAAAEASAAC0ABYAAFgB9ChAtAAjQAICAvdogLQAAAAGAgALggCAAAgA="},{"n":100,"music":false,"b":"fgAAQWQaSgBeAHIAAAAtAAoCAAAAmJggDQAJAgAAAJiYDQALAgAAAJiYgBwODQAGBAAAAJiYDQAEBAAAAJiegBIYEAQAAiAAAgAAAC0ACIAAYACYnoAQBAAEIAACAAAALQAIgADwALqdQBAEAAEgAAIABACAAwCAgIAHAAIA"},{"n":101,"music":false,"b":"RgAA7WQKHgAyAAAALQAYQADg/wD7gBAEsAAgAAIAAAAtAAhAAACAkPuAEASwACAAAgAAAC0AAEAAIAAA+4AQBLAAIAACAA=="},{"n":105,"music":false,"b":"IAAAC2QAAAAtwADwAYD/7B+ALAAQ/wEAAAAfgCAAAgA="},{"n":106,"music":false,"b":"MAAA6mQAAAAtAKgHAP/2JQUQgAoELQC4DQD/+SgFEC0AuB0A//soBRCACgEgAAIA"},{"n":107,"music":false,"b":"LgAAZ2QBGwAAAC0AODAA/P46CFCACgEgAAIABP8DMABAAIAHAQT/BQgADwACAA=="},{"n":108,"music":false,"b":"NgAAqtcCHwAAAC2AATAASABQ7CAEgAVQAPD/IAACAAAALfQNMAAAAFDrFAT0HVAAAAAgAAIA"},{"n":109,"music":false,"b":"LAAAVmQAAAAtABB/AAAA8BuAEAQBABAEAQAQBCAALcAwgALw/90AgCAAAgA="},{"n":110,"music":false,"b":"SAAABWQLHAAoADgAAAAtAAEA/wAAmYtQIAACAAQAMAIAgECABwACAAAALQCNAAMAgO0AICAAAgAAAC3IAAD/AACZ6yAgAAIA"},{"n":111,"music":false,"b":"FgAAyWQAAAAtABQPAMD/BgCAIAACAA=="},{"n":112,"music":false,"b":"PgEAa2QPYABsAOAA7AAAAC2GAyAAAAAKB0ANhgMgAAAACQcNhgMgAAAACQcNhgMIAAAACQcNhgMIAAAACQcNhgMIAAAACQcNhgMIAAAACQeAQAcNhgPAAAAADAcgAAIABAABBAAEAIAHAAIAAAAthgOEAAAA20ggLQwHZAAAAItIQA2PCiQAAACLSA33CYQAAACcCA1hCGQAAACLSA2PDCQAAACLSA3aC4QAAACcCA2PCmQAAACLSA3DECQAAACLSA3SD2AAAACMCA1ODSQAAACLSA0YDgQBAADMCCAAAgAEAAgEAAoAgAcAAgAAAC2GBiAAAAAIB4ANhgYgAAAACAcNhgYgAAAACAcNhgUIAAAABgcNhgUIAAAABgcNhgUIAAAABgcNhgUIAAAABgeAQAcNhgTAAAAADAcgAAIA"},{"n":113,"music":false,"b":"bAAAfWQfIAAsAEAATABgAAAALY8KoAAAAAsHQCAAAgAEAAD+/nwAgAcAAgAAABAEAgAtpwagAAAACwdAIAACAAQAAP7+TACABwACAAAAEAQEAC0fFaAAAAALB0AgAAIABAAA/v4cAIAHAAIA"},{"n":114,"music":false,"b":"QAEAgWQCtAAAAC3kBhQAAAAoCBANyQ0UAAAAKAgN5AYUAAAAKAgNBA0UAAAAKAgN5AYUAAAAKAgNVAoUAAAAKAgNmAsUAAAAKAgNMwkKAAAAKAgNrwgKAAAAKAgN5AYUAAAAKAgNyQ0UAAAAKAgNvQcUAAAAKAgNBA0UAAAAKAgNrwgUAAAAKAgNmAsUAAAAKAgNVAoUAAAAKAgNeg8KAAAAKAgNggYKAAAAKAiAowAgAAIAAAAQBEABLZQbQAEAAM0NEA0IGsAAAAC8DA0xF6AAAAC7Cw2pFEABAADNDQ1gEcAAAAC8DA0EDaAAAAC7Cw3JDUABAADNDQ3kBkABAADdDQ1UCsAAAAC8DA2YC6AAAAC7Cw0EDUABAADNDQ16D8AAAADMDA2CBqAAAAC8DA3JDQADAADuDoB/ACAAAgA="},{"n":115,"music":false,"b":"FgAAXWQAAAAtgBAEAP/7JgCAIAACAA=="},{"n":116,"music":false,"b":"MAAA8mQCHAAAAC2AAxoABgC/B4AQBAYAIAACAAAALQACHQAIAL8HgBAEBgAgAAIA"},{"n":117,"music":false,"b":"HQAAlGQAAAAtABgMAAACV2qABABAGgDw+iAAAgA="},{"n":118,"music":false,"b":"FgAAeGQAAAAtAA4tAAAAKQkQIAACAA=="},{"n":119,"music":false,"b":"FgAAOmQAAAAtABgZAFAAwECAIAACAA=="},{"n":120,"music":false,"b":"KAAAcGQAAAAtADEYAEYA9kWAITAQBCAAITAtAFAIAAAABiAgIAACAA=="},{"n":121,"music":false,"b":"WwAAZ2QfIAApADkAQgBSAAAALeAJFAACAHD3UCAAAgAEAAFgAAgAAgAAAC0gChQAAAAA91AgAAIABAAHYAD3/wIAAAAtAAoUAAAAAPBAIAACAARABGAA//cCAA=="},{"n":122,"music":false,"b":"GAAAMa8AAAAtEAboQAAAYMcQEAQgAIAO"},{"n":123,"music":false,"b":"HwAAY2QAAAAtACAEAAAADwAQDQAwCAAAAAYAIAACAA=="},{"n":124,"music":false,"b":"HQAAQGQAAAAtAAIQACAGOQyABABCXABP/yAAAgA="},{"n":126,"music":false,"b":"CwAAAAMAgHcAIAA="}]}</script>
+<script type="application/json" id="zk-street-data">{"n":3,"name":"The street: the bakery, Zak's door, the phone company and the bus","side":2,"size":7111,"w":120,"h":16,"bg":0,"c1":8,"c2":12,"cs":"AKr/qIdHVafHQH9F1QEA/0VUgcBE6gLoAP+kgcDkASh8RdQBAP9F6gGA/6UBAP7lgOegRr+gRvxGv4BG/IBH6EeVxED+4UdfAVddRV/BB39/3/f9/f/qRe8B/6rG4EL8QsxHikB/QtUD3f/9PaJAoEOjooCj4kAIQ4gB6OhE6gIA6OjkgEf8C19VVUBPR01P/1VVAMEBv59CU0ATQ9HDQz8Ef9/3/f3HGn/f3//99/vbe7u7UNzR0cXFRRN/XxcXHTdHR0fvR8zhRaBCikAKoQQCAP9fX0JXClQATxHR9NXx/PX/QlQDFEQEUEejoUWvoUDuRO9HiIBCKgeCqCiCgigogkIoQIJHT0C1Rr4B0VFF0UM/Axc9Pz/FA1/19/3BDP3339/3329f3+ft77tCuAS5sYWFHEN/B1V/f01NT098QlwB9/1CfwLf3/+EAgIKqkWgAYCAogIqiqCiAwqgigqlASiCogX/Nz2PoIqhBlJA1NBUAKiiDQAKAiiqKqogiqKoqiqqRK8Cqq+vQ+8B7vrBRFVCVkcqogS/Kj8qAKIE/6r/qgCiA/qi8qKDAQICQgoHICICCiooIABHgMJAD0PPAwIKKiqjRFZCWgL//v7BQP7BC6/7/6/7+6//q7+/r0K/Af/rRL4D6//7+0K7D6r7++u+vv7777+qgooIIICCAYCAhaJACkOKR6LAQ1SCQH9D1YJHAkRaQmpAAkYOoIZAoEYsgEYwpASooIL/AMUBzAxD/AHMzIXBhaGFAaCAokCgQ6JA/EVUgKIBoKNCoqIBAP+i4gEIyEKIRGqiQA+GR8BA/EbAhQMqCiggQiIDAiIiCqYDAAIKCkMqAwCAoKDjBwo6AMAFBBUVoQEABUJRAVWAhgWggACAoIqhQAKEAaiqR8iFAQIKhAKgCCBHA8GAwYDBgQIDDz/CgMUFwADA8Pz8wgXAwPDw/PzBBQMDDw8/P8EEwPDw/PzCQw5DOgQCAgABAUIFB7q6AAFVEVVVhEJAQzBDDEcKggsCKqiAIgIqKAAiCAJEKgMKCgIA4wiggIAABQUBBQWBAQJVQ1QCUKiqRqNAAsagRshAgIINCAIgCACqIICAAIIoAICCQIKDBCCIqACggURUQkRAD0MMQAOBwIPAgUTAgkQDgkDwQzBAwIHEgkVWAVpaRzpCAYMIAkVVRVRUEKiqRwwEiAIqqICCQAiGwwUA/6oACCqhCKiggooAFFZVVaIBIKihAyoKgqKDQ4ABCiqhA6iggoqigaICoKiaQlYCkqKqQggSKoCAAKgCAgigCAgiAAgIKCiIqEIIBAoqKCIiQoCAQwIFiKqAgACgggGKCEIgEiqAgIIgIICAAICAAIAiIggggIBCogS/urqwooLAoYFCA8ChAQADQooN8qKiAor/w//D/8P/w/9FVQIARFRDRAFUVEKIBPCgoACIwQX8/PDwwMCDw0VaAWpqgwMDAQMDghQD/1X/wAw8/PxUfPw8CiqqWlRUgoJC7wPs7+/Aw4DBAQD/QswGDPz8AP8PDIEBDwyBC3/V1fHB1dUAgICgoOGhwQU/Pw8PAwNFaqFAD4TCAQCqQoAEj4//AKqCwQLAAKqCwYGggsEB8ABDgAmPjwUFAQEFBQACRZUBlpZEj0CKxgKqAP9Fj8FEVEJ0BJWkuLhUQnQBlaThQFRCREWWApqawEPKA8+Kqg5DrkD+oUb4QPpHjwF0VEN0AVRUQqJAoKGBwKGAoYEEAgACCiqigKYDKoqiqKcDKoqiqEWiAqAC/6QBAKpFiAEIgEKapEDwwgIA/6qBwgQA/6oAD8IEAP+qAP+CwIJA8IJA8IPApQEAP0U6jw==","pic":"AAIHBOMCBQQF5AMFBAL8QwUCBAUERAUEBAUC/QZCEgQgBAUAn4EFBAUEAvwHggwHBQSGoABpBQQFAvwHggwHBAWHoblpBAUEAvwHggwHBQQAoroABQQFAvwHggIHBAWBB7uwBAUEAvwHggIHBQSBB7yCBQQFAvwHQhICBwQFgQe9aQQFBAL8B4ICBwUEgQe+aQUEBQL8B4ICBwQFgQe/ggQFBAL8B4IMBwUEAwDAAAUEBQL8B4IMBwQFAwDBAAQFBAL8B4IMBwUEAwBhAAUEBQL8CEISAiEEBUQJFQUJAvwFBAUFBGRyY2PCwmNj7QL8BAXhAgVlHoEBw8OBCe4C/AUEBQUEZB6BAcPDgQTuAvwEBeECBWUegQHDw4EU7gL8BQQFBQRkHoiIxMSIiO4C/AQF4QwFZWIbG8XFGxsvAvwGQhIBIAXiAcbV4gIC/QeCBAcEBQCfgQUFBAUC/AeCDAcFBIagAGkEBQQC/AeCDAcEBYehuWkFBAUC/AeCDAcFBACiugAEBQQC/AeCAgcEBYEHu7AFBAUC/AdCEgIHBQSBB7yCBAUEAvwHggIHBAWBB71pBQQFAvwHggIHBQSBB75pBAUEAvwHggIHBAWBB7+CBQQFAvwHggwHBQQDAMAABAUEAvwHggwHBAUDAMEABQQFAvwIQhILIQUEAwBhAAQFBAL8RQlAc0MJBAUJcwL8TQoBAvxNCwEC/E0MAgL8CqFACogHhgL8CwI3CwBHZgPvAvwMoUAMhwcE8AL8CgI4CoYFBMfwAvwLoUALhQkEx8fwAvwMAjcMhOBCxwPwAvwKoUAKg+BDxwfwAvwLAjgLREdQA/EC/QyhAQxYogKjyNahAvIC/E0KAQL8TQsBAvxNDAEC/E0NPwL8DhAOEA4QDhAOEA4QDhAC/A8RDxEPEQ8RDxEPEQ8RAvwQDhAOEA4QDhAOEA4QDgL8EQ8RDxEPEQ8RDxEPEQ84AvwOEA4QDhAOEA4QDhAOEAL8DxEPEQ8RDxEPEQ8RDxEC/BIgDhAGEnRjY8LCY2PzAvwABw8RBwB1gQHDw4EJ9AL8AAcOEAcAdYEBw8OBCfQC/BIHDxEHAHWBAcPDgSj0AvwABw4QBwB1iIjExIiI9AL8AAcPEQgSdjY2yck2NvUC/BIHDhAOEEYOCRAC/AAHDxEPEQZDEgsgDxEC/AAHDhAOEAdDiQ0HDhAC/BIhDxEPEQcApIENBw8RAv0OEA4QDhAHiqWBDQcOEAL8DxEPEQ8RB4umgQwHDxEC/A4QDhAOEAeLQgMNBw4QAvwPEQ8RDxEHi6eBDQcPEQL8DhAOEA4QB4ylgQ0HDhAC/A8RDxEPEQcAqIEEBw8RAvxCEgMgDhAHQwMEBw4QAvyCDAcPEQcDAAMABw8RAvyCDAcOEAeNA8oABw4QAvyCAwcPEQeDBAcPEQL8ggwHDhAHjgMD1wcOEAL8ggQHDxEHA4EFAwcPEQL8QhIEBw4QBwOBBQMHDhAC/IIMBw8RB4+py8oHDxEC/IIDBw4QB4MEBw4QAvyCAwcPEQdDiQQHDxEC/IIDBw4QB0OJBAcOEAL9ggMHDxEHQ4kEBw8RAvyCAwcOEAdDiQQHDhAC/EISAyEPEQhDEiQhDxEC/A4QDhAOEA4QDhAOEA4QAvwPEQ8RDxEPEQ8RDxEPEQL8ShME4Of2AvxGAQNPqszYo0D8QgEDT1lnd6dA/EIDq0D8QgOrA/wUIiKrQPxCA0xQQgOsQgOhCg0uRVZhbwMRsdQCQgMMUQBoaJCrq9kD6LH6AEIDAlIAaYMF2uHpsfoAQgMCUgBpgwXb4uix+gBCAwJSAGmDBdvi6bH6AEIDAlIDaYMF2+Lq9/r8QgMCUlppggbN2wOd+Pr8QgMCUltpggbO216d+Pr8QgMDUlxqeIEGz9tfnfj6/EIDAlJdAEN5CtwDnfj6/BUjOVIDhAzdA534+vwDJDpSA2h6QnkL2wOd+Pr8FiU7Ul5pgwvbA534+vwXJjxSX2mCPFTbA534+vwDJz1SA2l7kazQ2+Lr+fr8Ayg+UgBpcJKtt9vi6LH6AAMDP1IAaXGTALjb4umx+gADKUBSAGmCGbXb4uix+gADKkFTAGtrlK6u3uPpsfoAAytCoQ1QfJVmAG8DEbH7AgMoQ6EBbH2oAgMDF6GBqEIDrA==","col":"CQ4PCs6AzoXJhcmFyYXJhcmFyYXJhcmFyYXB48OFwYPDhcGjw4XJgMiGyIbIhsiGxojIi8OAxIXJhcmFyYXJhcmFyYXJhcmFyYXB48OFwYPDhcGjw4DOn5+fn5+fn5+A7oDugO6A7oDugO6C4Y3hjeGN4Y3hjeGN7ILjheKC44CjgOKC44GigOKA5YCjgOKA5YCjgOKA5YCjgOKA5YCjgOKA5YCjgOKA5YGigOKE4YCjgOKE4YCjgOKE4YCjgOKE4YXihOGAo4DihOGAo4DihOGAo4DihOGAo4DihOGF4oThgKOA4oThgKOA4oThgKOA4oThgKOA4oThheKA7oDun5CugK6AroC/qQIJDgqCooegg6KHoIOih6CDooegg6KApQEJDoOigKSBoIOigKSBoIOiAQkOhaCDooChhKCDooClAQkOg6IBCQ6FoIOigKUBCQ6DooClAQkOg6KApQEJDoOig6IBCQ6Dooegg6KHoIOih6CDqQIJDgqCv68=","mask":"AwAYBJ+fn5+fn5+fpYmliaWJpYmliaWJpYmliaWJpYmliaWJpYmliaWJpZ+fn5+Jo0AUiqNAFIqjQBSKo0AUiqNAFIqjQBVHE0AhgazAgazAgazAgazAgexAIp+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fhgQFCA0TF6SDQBCrggIQABiDpYICEAAYg6WCAhAAGIOlggIQABiDpMCCAhAAGIJAHqTAggIQABiCQB+kwIICEAAZQgVAIKTAgkAQqsCfn5+fn5+P","mch":"IAH/AMD8p0dVR6qHRwPng0DzwoUBPw/hSPDjA/8PAwOkgwM/Dw8DhAL88ABF8MGiAcDwgkADo4WkguFC8AcPDDzwwAMPP8emgKYFwDww888/gsGmhqDGghH8wAM/zPzAAz/MM/wAM/zAAz+CQPOK44LgogI/8MCkwYZAA4YACVAC","mn":288,"boxes":[36,52,43,44,40,41,3,0,52,57,40,42,39,43,0,0,57,60,1,20,1,20,0,0,57,57,21,25,21,25,3,0,60,60,21,25,21,25,0,0,57,60,25,80,25,80,0,0,56,56,96,96,92,92,3,0,51,55,103,103,99,99,3,0,26,59,92,92,92,92,3,0,22,22,16,32,16,32,3,160,57,59,80,92,80,92,3,0],"objs":[[134,"stairs",38,0,7,10,0,0,0,"AwoJAkAdQx4DHzM0NeEDNjNNTuECNjNXgQgCNjNiAmMCNjPhA2MCNjPhAzMDhZxDnUCewaPCosKiwEIOocBCDqHAQg6hAgkODqLApJ+PDwMABAQEHAUEBeEKMDEyBAVHSElKS0zF4QIFBAXhCgUEBQQFR0iDhEtM"],[135,"door",57,6,6,8,0,0,0,"AwoJAkAdQx4DHzM0NeEDNjNNTuECNjNXgQgCNjNiAmMCNjPhA2MCNjPhAzMDhZxDnUCewaPCosKiwEIOocBCDqHAQg6hAgkODqLApJ+P"],[147,"doorbell",20,10,3,1,0,0,0,"DwMECRUbBBwFBAUELwQwMTIEBUZHSElKS0wJ"],[149,"sign",20,9,3,1,0,0,0,"IwAAAIYAACYABwAtBVMSDRkAc3RhaXJzAAdwACRwAAL//wAyAAAAhwAAOQYGADs="],[136,"door",15,6,6,8,0,0,0,"DwMABAQEHAUEBeEKMDEyBAVHSElKS0zF4QIFBAXhCgUEBQQFR0iDhEtMxZ+PAgMGB6MCCQoLowEOD78="],[137,"",21,0,13,5,0,0,0,"AAkDB0AG6gEIEsMBEhKDQhLDARISg0ISwwESEoMCEhIg6kAhrUMOqEMOqEMOtI3DiMOIw5Q="],[28,"mailbox",45,7,2,4,0,0,1,"AAlQAgdQAlDkUOxQ1qeH"],[139,"letter",45,7,2,4,0,0,0,"AAlQAgdQAlDlUOxQ1qeH"],[138,"mailbox",45,7,2,4,0,0,0,"AAlQAgdQAlDmUMhQ1qeH"],[140,"Golden Gate Bridge",107,0,12,3,0,0,0,"AgMKAp+fn58="],[141,"14th Avenue",90,0,10,7,0,0,0,"AgMKAp+fn5+fn58="],[150,"CashCard reader",103,9,3,1,0,0,0,"IwAAAIYAACYABwAtBVMSDRkAc3RhaXJzAAdwACRwAAL//wAyAAAAhwAAOQYGADs="],[142,"bus",97,3,22,13,0,0,0,"AgMKAp+fn5+fn5+fnd/f39/f39/f3b+/v7+/v7+/vQ=="],[143,"",93,5,5,10,0,0,0,"CQAOLAUYGRkaDSyhFi0uLABELUUsVFUtVixgAC1hLG1tbm8soRAtAyyWly0RLK+wLbHR0tLT1JjDgcECCQ4JwQIJCgnBhqMUBQADAwAIAAMMAA0AERIAEwAWAwAXpQEDA6IBGhuiARwdpg=="],[144,"bus driver",109,6,5,4,0,0,1,"AwkAAsYCfgJ/wQeYApkAVLKztLOT"],[145,"",109,6,5,4,0,0,0,"AwkAcMHhQHHBAoCBgsEBmpvBA1S2t7izkw=="],[146,"",111,8,1,1,0,0,0,"AwnfcALfCQM="],[29,"stale bread",22,12,3,3,19,1,0,"Aw8EBQgEBQQFBAVIg4SoiA=="],[148,"",20,12,7,3,0,0,0,"DwMECRUbBBwFBAUELwQwMTIEBUZHSElKS0wJheCF4IWhAQYHpAIJCgukAQ4PoQ=="],[27,"fan club card",0,0,0,0,0,0,0,""]]}</script>
+<script type="application/json" id="zk-heap-data">[{"kind":"Rooms","count":58,"bytes":223836,"note":"A room carries its picture, its objects and their scripts. The largest, room 11, inside the plane, is 7,423 bytes, more than a third of the heap."},{"kind":"Costumes","count":37,"bytes":28342,"note":"The two largest, Zak\u2019s and costume 36, are 1,532 bytes each."},{"kind":"Global scripts","count":151,"bytes":50590,"note":"The longest, script 102, is 1,817 bytes."},{"kind":"Sound effects","count":117,"bytes":7661,"note":"From 11 to 469 bytes."},{"kind":"Tunes","count":4,"bytes":7172,"note":"Tune 95, the longest, is 2,843 bytes."},{"kind":"The music\u2019s program","count":1,"bytes":1078,"note":"Kept at the top of the heap while music plays, where it is never moved."}]</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+/* zk-room */
+// A room as the game builds it on the screen, ported from the game's own code and checked against
+// it by test_rooms.js.
+//
+// zkBytes(s): the bytes of a base64 string, as a Uint8Array.
+// zkDecoder(b, p): decode_start ($0104) and decode_byte ($0122) on the bytes b from index p. The
+//   stream's first four bytes are its commonest; the function returned gives the next byte each
+//   call. A code byte below $40 is followed by that many bytes plus one, copied; $40 to $7F repeat
+//   the byte after it (code & $3F) + 1 times; $80 and over repeat common byte (code >> 5) & 3,
+//   (code & $1F) + 1 times.
+// zkRoomCells(room, drawn): the room's screen. room is one entry of the page's zk-rooms list (its
+//   streams in base64, as they lie in its resource); drawn[i] says whether object i (0 to count - 1)
+//   has bit 7 of its state set. Returns { w, h, cs, chr, col, mask, mch, shown }: the character set
+//   (2,048 bytes, as setup_room_graphics, $2D17, decodes it), the character, colour and mask
+//   character of each cell row by row (w * h each; the streams hold them a column at a time), the
+//   mask characters (after the stream's two-byte size), and shown[i], true for each object whose
+//   picture was drawn. Objects are drawn as draw_room_objects ($31CA) draws them: from the last to
+//   the first, each one whose state has bit 7 set and whose parent, and the parent's parent, are in
+//   the states they need (bit 7 of byte 8 of the object's record); each picture is decoded a row at
+//   a time, its characters, then its colours, then its mask (draw_object, $32A8), and every cell it
+//   covers is replaced.
+// zkRoomPixels(c, room): the picture, 8 pixels to a column and a row: { w, h, px } with a colour
+//   number from 0 to 15 for each pixel. Multicolour text mode, as the game sets the chip: a cell
+//   whose colour has bit 3 set is four double-wide pixels to a byte, 00 the background ($D021),
+//   01 and 10 the room's two shared colours ($D022, $D023) and 11 the cell's colour less 8; any
+//   other cell is eight pixels, 1 in the cell's colour and 0 the background.
+function zkBytes(s) {
+  const t = atob(s), b = new Uint8Array(t.length);
+  for (let i = 0; i < t.length; i++) b[i] = t.charCodeAt(i);
+  return b;
+}
+function zkDecoder(b, p) {
+  const common = [b[p], b[p + 1], b[p + 2], b[p + 3]];
+  let at = p + 4, left = 0, repeat = false, value = 0;
+  return function next() {
+    if (left) left--;
+    else {
+      const c = b[at++];
+      if (c < 0x40) { left = c; repeat = false; }
+      else if (c < 0x80) { left = c & 0x3F; value = b[at++]; repeat = true; }
+      else { left = c & 0x1F; value = common[(c >> 5) & 3]; repeat = true; }
+    }
+    return repeat ? value : b[at++];
+  };
+}
+function zkRoomCells(room, drawn) {
+  const w = room.w, h = room.h, n = w * h;
+  const take = (s, len, from) => { const d = zkDecoder(zkBytes(s), from || 0), o = new Uint8Array(len); for (let i = 0; i < len; i++) o[i] = d(); return o; };
+  const byColumn = (s) => { const c = take(s, n), o = new Uint8Array(n); for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) o[y * w + x] = c[x * h + y]; return o; };
+  const cs = take(room.cs, 2048), chr = byColumn(room.pic), col = byColumn(room.col), mask = byColumn(room.mask);
+  const mch = take(room.mch, room.mn, 2), shown = room.objs.map(() => false);
+  for (let i = room.objs.length - 1; i >= 0; i--) {
+    if (!drawn[i]) continue;
+    let k = i, ok = true;
+    while (room.objs[k][6]) {
+      const parent = room.objs[k][6] - 1;
+      if (!!drawn[parent] !== !!room.objs[k][7]) { ok = false; break; }
+      k = parent;
+    }
+    if (!ok) continue;
+    const [, , ox, oy, ow, oh] = room.objs[i];
+    if (!ow || !oh) continue;
+    const d = zkDecoder(zkBytes(room.objs[i][9]), 0);
+    for (const layer of [chr, col, mask])
+      for (let y = 0; y < oh; y++) for (let x = 0; x < ow; x++) {
+        const v = d();
+        if (ox + x < w && oy + y < h) layer[(oy + y) * w + ox + x] = v;
+      }
+    shown[i] = true;
+  }
+  return { w, h, cs, chr, col, mask, mch, shown };
+}
+function zkRoomPixels(c, room) {
+  const W = c.w * 8, H = c.h * 8, px = new Uint8Array(W * H);
+  for (let y = 0; y < c.h; y++) for (let x = 0; x < c.w; x++) {
+    const ch = c.chr[y * c.w + x], co = c.col[y * c.w + x] & 15;
+    for (let r = 0; r < 8; r++) {
+      const b = c.cs[ch * 8 + r], o = (y * 8 + r) * W + x * 8;
+      if (co & 8) {
+        const pal = [room.bg & 15, room.c1 & 15, room.c2 & 15, co & 7];
+        for (let p = 0; p < 4; p++) px[o + 2 * p] = px[o + 2 * p + 1] = pal[(b >> (6 - 2 * p)) & 3];
+      } else for (let p = 0; p < 8; p++) px[o + p] = (b >> (7 - p)) & 1 ? co & 7 : room.bg & 15;
+    }
+  }
+  return { w: W, h: H, px };
+}
+// end of zk-room
+</script>
+<script>
+/* zk-music */
+// createDriver for C64Sid: runs the game's own sound engine and music on the kit's 6502 (C64Cpu,
+// from ../../lib/cpu6502.js, which sid.js passes to createDriver). The engine's code and tables
+// come from the listing over ZK_DRIVER_RANGES; the music's own code is sound 1, D.player, which the
+// game loads to $C300 (op_music_memory, $6183); each tune or effect is its sound resource as it
+// lies on the disk, D.tunes[t].b, put at $9000 in the heap with its entry in the sound address
+// tables ($74C0 low, $7441 high) pointing at it. init(t) does first what restart does to the three
+// sounds built into the program that the music plays its voices with ($04EB-$0511): their entries
+// point at them ($4406, $4433, $4460) and are locked ($7542-$7544). Then a tune starts as
+// startMusic ($57A5) starts it, the chips banked in and its number in A, at the music's entry,
+// $C304; an effect starts as start_sound ($57BF) starts it: stop_sound ($3E52) with the chips in,
+// then queue_sound ($3FCE) with them out, and the frame interrupt's flag that the main loop has
+// finished a pass ($12A2, $FC32), which lets sound_frame begin the sounds queued. play() is the
+// frame interrupt's call of sound_frame ($3FE0, from $1354). A tune plays while the music is on
+// ($43E8), an effect while isSoundRunning ($571C) would say so: its use count ($753F + its number,
+// less the lock in bit 7). Sounds 1 to 5 are never counted down (sound_used_less, $4328), so for
+// sound 2 it is while the engine has it on a channel in use ($4375 the sound on each of the seven
+// channels, $43E0 a bit for each in use, $435A the bits), on the list to start ($43FB, $4405 long)
+// or waiting for a voice ($43FA).
+// stop() is stopMusic's stop_music ($4332) for a tune and stop_sound for an effect. Nothing here
+// reads the chips; every write to the SID is kept in order.
+const ZK_DRIVER_RANGES = [[0x00A7, 0x00AF], [0x3CDF, 0x452C], [0x7441, 0x75BD], [0xFC31, 0xFC32], [0xFE7F, 0xFE7F]];
+function createDriver(D, C64Cpu) {
+  const ZK_AT = 0x9000;   // where the tune or effect is put (inside: the worklet has only this function's text)
+  const bytes = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const base = new Uint8Array(0x10000);
+  for (const [ad, b] of D.mem) base.set(typeof b === 'string' ? bytes(b) : b, ad);
+  base.set(bytes(D.player), 0xC300);
+  base[0x7542] = base[0x7543] = base[0x7544] = 0x80;          // restart: sounds 3, 4 and 5, locked
+  base[0x74C3] = 0x06; base[0x7444] = 0x44;
+  base[0x74C4] = 0x33; base[0x7445] = 0x44;
+  base[0x74C5] = 0x60; base[0x7446] = 0x44;
+  const sid = new Uint8Array(25);
+  let m = base.slice(), cpu = null, cur = null, writes = [];
+  const io = {
+    read(ad) { throw new Error('read $' + ad.toString(16)); },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad <= 0xD418) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  const run = (ad, a) => cpu.call(ad, { a: a || 0, x: 0, y: 0 }, { maxSteps: 200000 });
+  const bank = (v) => cpu.portWrite(1, v);
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      cur = D.tunes[t];
+      const n = cur.n;
+      m = base.slice();
+      m.set(bytes(cur.b), ZK_AT);
+      m[0x74C0 + n] = ZK_AT & 0xFF; m[0x7441 + n] = ZK_AT >> 8;
+      cpu = new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x24 }, io });
+      sid.fill(0); writes = [];
+      if (cur.music) { bank(0x25); run(0xC304, n); bank(0x24); }
+      else {
+        m[0xFC31] |= 0x80;
+        bank(0x25); run(0x3E52, n); bank(0x24); run(0x3FCE, n);
+        m[0xFC31] &= 0x7F;
+        m[0xFC32] = 1;                                         // the main loop's pass is done ($12A2)
+      }
+    },
+    stop() {
+      if (!cpu) return;
+      writes = [];
+      if (cur.music) run(0x4332);
+      else { bank(0x25); run(0x3E52, cur.n); bank(0x24); }
+    },
+    play() {
+      writes = [];
+      if (!cpu) return;
+      bank(0x25); run(0x3FE0); bank(0x24);
+    },
+    playing() {
+      if (!cpu) return false;
+      if (cur.music) return m[0x43E8] !== 0;
+      const n = cur.n;
+      if (n >= 6) return (m[0x753F + n] & 0x7F) !== 0;
+      for (let x = 0; x < 7; x++) if ((m[0x43E0] & m[0x435A + x]) && m[0x4375 + x] === n) return true;
+      for (let i = 0; i < m[0x4405]; i++) if (m[0x43FB + i] === n) return true;
+      return m[0x43FA] === n;
+    },
+  };
+}
+// end of zk-music
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const hx = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 4, '0');
+  const link = (a) => `<code><a href="source.html#${a.toString(16).toUpperCase().padStart(4, '0')}">${hx(a)}</a></code>`;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const linkText = (s) => esc(s).replace(/\$([0-9A-F]{4})\b/g, (m, h) => link(parseInt(h, 16)));
+  const S = JSON.parse($('zk-sounds').textContent);
+  const STREET = JSON.parse($('zk-street-data').textContent);
+  const PAL = (typeof C64 === 'undefined') ? ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171', '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'] : C64.PAL;
+  const RGB = PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+
+  // ---- 02 and 03 the music and the effects
+  function soundWidgets(ram) {
+    const mem = ZK_DRIVER_RANGES.map(([a, b]) => [a, ram.slice(a, b + 1)]);
+    C64Sid.mount($('zk-music'), { driver: createDriver, data: { mem, player: S.player, tunes: S.tunes }, tunes: S.tunes.map((c) => c.n === 95 ? 'Tune 95, the opening' : 'Tune ' + c.n), filter: '6581' });
+    C64Sid.mount($('zk-sfx'), { driver: createDriver, data: { mem, player: S.player, tunes: S.effects }, tunes: S.effects.map((c) => c.n === 126 ? '126 (silent)' : String(c.n)), filter: '6581', bounce: false });
+  }
+
+  // ---- 04 the instructions
+  const GROUPS = [
+    ['Tests and jumps', '#f3c98b', 'is_greater_equal is_not_equal if_state_80_clear if_state_80_set if_state_40_clear if_state_40_set if_state_20_clear if_state_20_set if_state_10_clear if_state_10_set is_less_equal is_less is_equal is_greater equal_zero not_equal_zero if_class_of_is jump_relative'],
+    ['Variables', '#a9c8ef', 'assign_var_word_indirect move set_bit_var get_bit_var set_var_range add_indirect assign_var_byte subtract increment add sub_indirect decrement get_random_nr'],
+    ['Actors', '#a7dcb2', 'put_actor get_actor_room get_actor_elevation face_actor walk_actor_to_actor put_actor_at_object animate_actor actor_ops actor_from_pos walk_actor_to get_actor_y put_actor_in_room get_dist walk_actor_to_object wait_for_actor set_actor_elevation get_actor_x actor_follow_camera get_actor_moving get_actor_facing get_closest_obj_actor get_actor_costume get_actor_walk_box load_room_with_ego print_ego'],
+    ['Objects', '#d6c1ee', 'draw_object set_state_80 clear_state_80 set_state_40 clear_state_40 set_state_20 clear_state_20 set_state_10 clear_state_10 set_obj_preposition get_obj_preposition get_object_owner set_owner_of find_object pickup_object set_object_name stop_object_code'],
+    ['Scripts, verbs and text', '#f1b3a8', 'do_sentence delay_variable delay cutscene end_cutscene begin_override start_script chain_script stop_script is_script_running break_here wait_for_sentence draw_sentence wait_for_message print verb_ops cursor_command'],
+    ['Rooms and the camera', '#bfe3e8', 'pan_camera_to set_camera_at room_ops set_box_flags lights load_room pseudo_room video_off video_on'],
+    ['Sound', '#f0e08a', 'start_music stop_music start_sound stop_sound is_sound_running music_memory'],
+    ['The rest', '#d8d6d0', 'resource_routines save_load_game restart dummy fatal_12'],
+  ];
+  const groupOf = new Map();
+  GROUPS.forEach(([, , names], i) => names.split(' ').forEach((n) => groupOf.set('op_' + n, i)));
+  function instructions(L) {
+    const comment = new Map();
+    for (const r of L.listing.records) if (r.c && !comment.has(r.a)) comment.set(r.a, r.c);
+    const ops = [];
+    for (let op = 0; op < 256; op++) {
+      const h = L.ram[0xD100 + op] | L.ram[0xD000 + op] << 8, name = L.names.get(h) || hx(h);
+      ops.push({ op, h, name, group: groupOf.has(name) ? groupOf.get(name) : GROUPS.length - 1, text: comment.get(h) || '' });
+    }
+    const grid = $('zk-grid'), legend = $('zk-legend'), out = $('zk-op');
+    grid.innerHTML = ops.map((o) => `<button type="button" data-op="${o.op}" style="--g:${GROUPS[o.group][1]}" aria-label="Instruction ${hx(o.op, 2)}, ${esc(o.name.replace(/^op_/, '').replace(/_/g, ' '))}">${o.op.toString(16).toUpperCase().padStart(2, '0')}</button>`).join('');
+    legend.innerHTML = GROUPS.map(([n, c], i) => `<button type="button" data-g="${i}" style="--g:${c}" aria-pressed="false"><i></i>${esc(n)} (${ops.filter((o) => o.group === i).length})</button>`).join('');
+    const cells = [...grid.children], keys = [...legend.children];
+    let group = -1, pick = 0x1C;
+    function show() {
+      const o = ops[pick], same = ops.filter((p) => p.h === o.h).map((p) => p.op);
+      cells.forEach((c, i) => {
+        c.classList.toggle('on', i === pick);
+        c.classList.toggle('same', i !== pick && ops[i].h === o.h);
+        c.classList.toggle('dim', group >= 0 && ops[i].group !== group);
+      });
+      keys.forEach((k, i) => { k.classList.toggle('on', i === group); k.setAttribute('aria-pressed', String(i === group)); });
+      const words = o.name.replace(/^op_/, '').replace(/_/g, ' ');
+      out.innerHTML = `<p class="k">Instruction ${hx(o.op, 2)} · ${esc(GROUPS[o.group][0])}</p><h3>${esc(words)}</h3><p>${linkText(o.text)}</p>` +
+        `<p class="r">Runs ${esc(o.name)} at ${link(o.h)}` + (same.length > 1 ? `, as ${same.length > 2 ? 'do' : 'does'} ${same.filter((x) => x !== o.op).map((x) => hx(x, 2)).join(', ')}` : '') + '</p>';
+    }
+    grid.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { pick = +b.dataset.op; show(); } });
+    grid.addEventListener('keydown', (e) => {
+      const d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -16, ArrowDown: 16 }[e.key];
+      if (d === undefined) return;
+      e.preventDefault(); pick = (pick + d + 256) & 255; show(); cells[pick].focus();
+    });
+    legend.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { group = group === +b.dataset.g ? -1 : +b.dataset.g; show(); } });
+    show();
+  }
+
+  // ---- 05 the street
+  function street() {
+    const R = STREET, cells = zkRoomCells(R, R.objs.map((o) => !!o[8])), p = zkRoomPixels(cells, R);
+    const view = $('zk-street'), mini = $('zk-mini'), cam = $('zk-cam'), say = $('zk-cam-say');
+    cam.min = 20; cam.max = R.w - 20;
+    let centre = 20, fresh = [], timer = 0;
+    function img(cv, x0, cols, scale, marks) {
+      const W = cols * 8 * scale, H = p.h * scale;
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d'), d = ctx.createImageData(W, H);
+      for (let y = 0; y < H; y++) {
+        const sy = (y / scale) | 0;
+        for (let x = 0; x < W; x++) {
+          const sx = x0 * 8 + ((x / scale) | 0), col = sx >> 3, o = (y * W + x) * 4;
+          let [r, g, b] = RGB[p.px[sy * p.w + sx]];
+          if (marks && marks(col)) { r = (r + 2 * 230) / 3; g = (g + 2 * 40) / 3; b = (b + 2 * 40) / 3; }
+          d.data[o] = r; d.data[o + 1] = g; d.data[o + 2] = b; d.data[o + 3] = 255;
+        }
+      }
+      ctx.putImageData(d, 0, 0);
+      return ctx;
+    }
+    function draw() {
+      const left = centre - 20;
+      img(view, left, 40, 2, (c) => fresh.includes(c));
+      const ctx = img(mini, 0, R.w, 1, null);
+      ctx.fillStyle = 'rgba(0,0,0,.55)';
+      ctx.fillRect(0, 0, left * 8, p.h); ctx.fillRect((left + 40) * 8, 0, (R.w - left - 40) * 8, p.h);
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(left * 8 + 1, 1, 320 - 2, p.h - 2);
+      cam.value = centre;
+      say.textContent = `Camera on column ${centre}; the screen shows columns ${left} to ${left + 39}. ` +
+        (fresh.length === 1 ? `Decoded: column ${fresh[0]} only.` : fresh.length ? 'Decoded: all 40 columns.' : '');
+    }
+    function moveTo(c) {
+      c = Math.max(20, Math.min(R.w - 20, c));
+      if (c === centre) return;
+      const left = c - 20;
+      fresh = c === centre + 1 ? [left + 39] : c === centre - 1 ? [left] : Array.from({ length: 40 }, (_, i) => left + i);
+      centre = c; draw();
+    }
+    function stopPan() { clearInterval(timer); timer = 0; $('zk-pan').classList.remove('on'); }
+    cam.addEventListener('input', () => { stopPan(); moveTo(+cam.value); });
+    $('zk-left').addEventListener('click', () => { stopPan(); moveTo(centre - 1); });
+    $('zk-right').addEventListener('click', () => { stopPan(); moveTo(centre + 1); });
+    $('zk-pan').addEventListener('click', () => {
+      if (timer) { stopPan(); return; }
+      const dir = centre >= R.w - 20 ? -1 : 1;
+      $('zk-pan').classList.add('on');
+      timer = setInterval(() => {
+        const next = centre + dir;
+        if (next < 20 || next > R.w - 20) { stopPan(); return; }
+        moveTo(next);
+      }, 120);
+    });
+    draw();
+  }
+
+  // ---- 06 the heap
+  function heap() {
+    const H = JSON.parse($('zk-heap-data').textContent), HEAP = 0xC800 - 0x77D5;
+    const max = Math.max(...H.map((r) => r.bytes), HEAP), t = $('zk-heap');
+    const row = (r, i, cls) => `<tr data-i="${i}" class="${cls || ''}"><td>${esc(r.kind)}</td><td class="n">${r.count === null ? '' : r.count.toLocaleString('en')}</td><td class="n">${r.bytes.toLocaleString('en')}</td><td style="width:40%"><div class="bar${cls ? ' h' : ''}" style="width:${(100 * r.bytes / max).toFixed(1)}%"></div></td></tr>`;
+    t.innerHTML = '<thead><tr><th>What</th><th>How many</th><th>Bytes</th><th></th></tr></thead><tbody>' +
+      H.map((r, i) => row(r, i)).join('') + row({ kind: 'The heap, which holds them while they are needed', count: null, bytes: HEAP }, -1, 'heap') + '</tbody>';
+    const cap = $('zk-heap-cap'), base = cap.innerHTML;
+    t.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-i]'); if (!tr || +tr.dataset.i < 0) return;
+      const r = H[+tr.dataset.i];
+      cap.innerHTML = `<b>${esc(r.kind)}:</b> ${esc(r.note)} ` + base;
+    });
+  }
+
+  street();
+  heap();
+  if (typeof C64 !== 'undefined') C64.load('listing.json').then((L) => {
+    instructions(L);
+    if (typeof C64Sid !== 'undefined') soundWidgets(L.ram);
+  }).catch((e) => { $('zk-op').textContent = 'The game’s code did not load: ' + e.message; });
+})();
 </script>

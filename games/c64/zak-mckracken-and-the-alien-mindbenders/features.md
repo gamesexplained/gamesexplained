@@ -46,7 +46,7 @@ Sources:
 | A second click on the last word, or one on the sentence line, carries the sentence out | traced | a click is passed to the scripts with where it came from in variable 32 (click_room `$F2EE`, click_sentence `$F314`, start_input_script `$067D`); the scripts decide when a sentence is complete; not exercised |
 | "What is" names whatever is under the cursor as it moves | live | the sentence line shows each object's name while the cursor passes over it |
 | "Walk to" comes back on the sentence line after every sentence | live | |
-| An inventory for each character, four shown at a time, arrows to scroll when there are more | traced | redraw_inventory `$F380` and draw_arrow `$F3C6` show four items from the scroll; click_arrow `$F34E` scrolls by two; with an odd number of items the last scroll shows three and a blank (`facts.md`, "Bugs") |
+| An inventory for each character, four shown at a time, arrows to scroll when there are more | traced | redraw_inventory `$F380` and draw_arrow `$F3C6` show four items from the scroll; click_arrow `$F34E` scrolls by two, a row, so with an odd number of items the last scroll shows three and a blank |
 | Four characters to control: Zak, Annie, Melissa and Leslie, switched with F1, F3, F5 and F7 | traced | F1, F3, F5 and F7 reach the scripts as 1 to 4 in variable 39 (key_table `$1CF8`, handle_key `$234D`); the switch itself is done by the scripts |
 | Cut-scenes, during which the verbs and inventory disappear; RETURN bypasses one, and on an airliner takes you straight to your destination | traced | op_cutscene `$5AE3` hides the verbs, the inventory and the cursor; the cut-scene key, variable 40 (13, RETURN, in the bedroom), sends the script to its override when it set one (handle_key `$234D`); which cut-scenes have one, the flights among them, is in the scripts |
 | Save and load with SHIFT and F1, on a blank formatted disk; not during cut-scenes | traced | save_game `$0A53` refuses one of the game's own disks and writes tracks 1 and 5 on, load_game `$0AD5` reads them back (`facts.md`, "Saving"); the key reaches the scripts, which call saveLoadGame `$5E6F`; not exercised |
@@ -70,7 +70,7 @@ Found in the code, not in the manual.
 
 | Feature | Status | Where |
 |---|---|---|
-| The music keeps playing through a change of room: video_off, which turns the picture and the interrupts off while a room loads, does nothing while the music plays | traced | video_off `$13F3`, the check of `$43E8` |
+| The music keeps playing through a change of room: video_off, which turns the picture and the interrupts off while a room loads, does nothing while the music plays | live | video_off `$13F3`, the check of `$43E8`; three changes of room in the 3,000 frames after tune 95 starts, with the frame interrupt in every frame (`facts.md`, "Live tests") |
 | The cursor has weight: it speeds up as the joystick is held and slides to a stop, more slowly over some kinds of slot | traced | move_cursor `$F5F5`, set_cursor_feel `$F5AE` |
 | At most four actors can be on the screen at once, one sprite column each; a fifth stops the game | traced | assign_sprites `$3491`, fatal error 13 |
 | The cursor's colour pulses through six greys, a step every seventh frame | traced | `$1163`-`$1167`, frame_irq `$117C` |

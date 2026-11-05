@@ -8,6 +8,7 @@
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const g = game(__dirname);
+g.sameBlock('zk-room');
 const { zkDecoder, zkBytes, zkRoomCells } = g.run('levels.html', 'zk-room', 'zkDecoder', 'zkBytes', 'zkRoomCells');
 g.lib('cpu6502');
 const C64Cpu = globalThis.C64Cpu;

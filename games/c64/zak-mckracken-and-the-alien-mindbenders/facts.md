@@ -80,8 +80,10 @@ does nothing.
   entered, video_off (`$13F3`) turns the picture and the interrupts off
   until video_on (`$142F`), so the frame interrupt stops too: it ran
   6,354 times in 7,780 frames of the opening (*live*). video_off does
-  nothing while the music plays, so the music goes on through a change
-  of room, with the picture left on.
+  nothing while the music plays (`$43E8`), so the music goes on through a
+  change of room, with the picture left on: in the 3,000 frames after
+  tune 95 starts, the room changed three times, video_off ran three
+  times, and the frame interrupt ran in all 3,000 frames (*live*).
 - The idle count (`$FC20`/`$FC21`) is set to 18,000 frames by read_keys
   (`$1BAF`) on any joystick move or press, and while a cut-scene runs. Keys
   do not set it (*live*). When it reaches 0 read_keys files a space, and
@@ -218,12 +220,14 @@ does nothing.
 ### Bugs in the program
 
 - **walkActorToObject, putActorAtObject and loadRoomWithEgo** (`$57F1`,
-  `$580D`, `$548D`) test find_object's Y for `$FF` instead of its A. An
-  object in an inventory is found with Y its inventory slot, and the
-  walk-to point is then read from the room's object tables at that index
-  (`$08D8`): the actor walks to whichever room object sits at that index.
-  In a room with no objects find_object leaves Y at 0, so the walk goes
-  to room object 0's point.
+  `$580D`, `$548D`) look only at find_object's Y, and take anything but
+  `$FF` for an object in the room. find_object answers A 0 with Y the
+  inventory slot for a carried object, A 1 with Y the index for a room
+  object, Y `$FF` for one it cannot find, and A `$FF` with Y 0 when the
+  room shown has no objects (it returns before its search, `$07AC`). So
+  a carried object's walk-to point is read from the room's object tables
+  at its inventory slot (`$08D8`), and in a room with no objects at index
+  0. Whether a script ever asks for either is in the scripts.
 - **getActorX and getActorY** (`$5C99`, `$5CB2`) take an actor with no
   walk slot's position from its own tables, `actor_x` (`$FFB7`) and
   `$FFAA`, indexed by Y, which holds the slot, `$FF`, instead of by X,
@@ -234,9 +238,6 @@ does nothing.
   the carry clear, so a failed write is never noticed.
 - **setup_sprites** (`$8132`) writes 0 to the sprite collision registers
   `$D01E` and `$D01F`, which can only be read: the writes do nothing.
-- **The inventory's scroll** (redraw_inventory, `$F380`) is held at the
-  count less four rounded up to an even number, so with an odd number of
-  items the last scroll shows three items and a blank.
 
 ## Data tables
 
@@ -285,12 +286,37 @@ and 5 are built into the program at `$4406` instead.
   sounds read 3, 4, 5, 0, 3, 4, 5, 16 (`$4375`-`$437C`), and the music
   stored 283 times into the three sounds in 300 frames, with a stop on
   one of those stores at `$C506`, in the music's code (*live*).
+- A sound is started by start_sound (`$57BF`): stop_sound (`$3E52`),
+  then queue_sound (`$3FCE`), which puts it on the list at `$43FB` and
+  adds one to its use count (`$753F`). sound_frame begins the sounds on
+  the list only when `$FC32` is set, which the frame interrupt does when
+  the main loop has a pass ready (`$12A2`), and takes the one back
+  (sound_used_less, `$4328`) before begin_sound.
+- The use count follows a sound's voices only: start_part (`$3F2E`) adds
+  one for each voice part and stop_channel (`$3E98`) takes one off for
+  each voice that ends; a filter part is started by start_part_data
+  (`$3E4C`) and its end takes nothing off. isSoundRunning (`$571C`) reads
+  the count. Sounds 1 to 5 are never counted down. Sound 36's filter
+  part is still on channel 3 when its voices end at frame 162 and the
+  count reaches 0; it is the only effect where that happens (the game's
+  engine on the kit's 6502, `test_music.js`).
+- The 117 sound effects are 11 to 469 bytes, 7,661 in all. Started on
+  their own, on the game's engine on the kit's 6502, 93 end within five
+  minutes (sound 126 at once, since its parts byte, offset 5, is 0 and it has
+  none; the longest, sound 51, after 2,116 frames)
+  and 24 are still playing after five minutes (`test_music.js`).
 - There are four tunes, sounds 95, 102, 103 and 104, of 2,843, 1,769,
   1,442 and 1,118 bytes, all in room 47's file beside the player. A
   search of the scripts' bytes for startMusic (`$02`) with each tune's
   number finds 95 in global scripts 1 and 48, 102 in 48 and 149, 103 in
   78 and 135, and 104 in script 128 and an object of room 25; that is a
-  search of the bytes, not a decoding of the scripts.
+  search of the bytes, not a decoding of the scripts. On the game's code
+  on the kit's 6502 they last 5,121, 2,945, 2,305 and 1,665 frames (102,
+  59, 46 and 33 seconds) before the music turns itself off (`$43E8`).
+- Room 47 (side 1, track 2, sector 7) is the smallest room, 187 bytes:
+  40 by 16, no objects, every cell of its picture character 0. The
+  resource index puts sounds 1, 95, 102, 103 and 104 in its file, and no
+  costume or script.
 
 ## The listing's error rate
 
@@ -327,6 +353,10 @@ with the scripts in `work/verify/`:
   6,354 times in those 7,780 frames (`t_music4.py`).
 - The main loop made 100 passes in 600 frames in the bedroom, with
   variable 25 at 6 (`t_speed.py`).
+- From the moment tune 95 starts (the opening), 3,000 frames: the room
+  went 58, 51, 55, 49; video_off (`$13F3`) and video_on (`$142F`) ran
+  three times each, frame_irq 3,000 times, and the music flag and the
+  picture (`$D011` bit 4) were on at every tenth frame (`t_music_rooms.py`).
 - The cursor moves with a joystick in port 1 and not in port 2; the
   sentence line names each object as the cursor passes over it
   (`work/scripts/t_joy.py`, `t_cur*.py`).
