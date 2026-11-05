@@ -111,10 +111,13 @@
     if (s === 'U;') return;
     if (s[0] === 'I') { d.fast = null; setError(d, 0, ' OK'); return; }
     if (s[0] === 'S') {
+      // the names after the colon, separated by commas, each scratched: "S0:AESD,P", as the
+      // game sends it with its file's type, scratches AESD and any file named P
       const i = s.indexOf(':');
-      const name = s.slice(i + 1);
       let n = 0;
-      if (d.files[name]) { d.files = Object.assign({}, d.files); delete d.files[name]; n = 1; }
+      for (const name of s.slice(i + 1).split(',')) {
+        if (d.files[name]) { d.files = Object.assign({}, d.files); delete d.files[name]; n++; }
+      }
       setError(d, 1, ' FILES SCRATCHED', n, 0);
       return;
     }

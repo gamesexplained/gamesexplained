@@ -42,13 +42,17 @@ def decompile(mem, entry, names=None):
     starts = {p["body"]} | {t for i in ins.values() for t in i.targets}
     out = [f"proc {names.get(entry, '$%04X' % entry)}  ; locals {-p['adjust']} bytes"]
     P, S, stack = "P", "S", []
+    last_call = 0
     prev_falls = True
 
     def emit(a, s):
         out.append(f"  {a:04X}  {s}")
 
-    for a in sorted(ins):
+    order = sorted(ins)
+    skip_adj = None
+    for n_, a in enumerate(order):
         i = ins[a]
+        nxt = ins[order[n_ + 1]] if n_ + 1 < len(order) else None
         if a in starts and a != p["body"]:
             if P != "P" and prev_falls:
                 emit(a, f"P = {P}  ; on to {a:04X}")
@@ -64,7 +68,7 @@ def decompile(mem, entry, names=None):
         elif base == "push" and k:
             stack.append(operand(i, names, m == "pushb"))
         elif m == "push p":
-            stack.append(P)
+            stack.append(P if P != "P" else f"P@{last_call:04X}")
         elif m == "pop s":
             S = stack.pop() if stack else "pop()"
         elif base == "stp":
@@ -99,15 +103,24 @@ def decompile(mem, entry, names=None):
             P = f"({P} + {i.arg})" if i.arg >= 0 else f"({P} - {-i.arg})"
         elif m == "add":
             P = f"({P} + {operand(i, names)})"
-        elif m == "call":
-            args = ", ".join(reversed(stack))
-            emit(a, f"P = {names.get(i.arg, '$%04X' % i.arg)}({args})")
+        elif m in ("call", "call p"):
+            # the call's arguments are the words the adj after it takes back; any pushed before
+            # them are the caller's temporaries, still on the stack while it runs
+            nargs = nxt.arg // 2 if nxt is not None and nxt.m == "adj" and nxt.arg > 0 else 0
+            nargs = min(nargs, len(stack))
+            args = ", ".join(reversed(stack[len(stack) - nargs:]))
+            temps = len(stack) - nargs
+            del stack[len(stack) - nargs:]
+            skip_adj = order[n_ + 1] if nargs else None
+            note = f"  ; temps {temps}" if temps else ""
+            target = names.get(i.arg, '$%04X' % i.arg) if m == "call" else f"(*{P})"
+            emit(a, f"P = {target}({args}){note}")
             P = "P"
-        elif m == "call p":
-            emit(a, f"P = (*{P})({', '.join(reversed(stack))})")
-            P = "P"
+            last_call = a
         elif m == "call $02A7":
             emit(a, "call $02A7")
+        elif m == "adj" and a == skip_adj:
+            skip_adj = None
         elif m == "adj":
             n = i.arg
             if n > 0 and n % 2 == 0 and len(stack) >= n // 2:

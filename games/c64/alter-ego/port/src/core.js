@@ -21,23 +21,35 @@
 
   AEPort.create = function (M, io, opts = {}) {
     const P = { M, io, sp: 0, fp: 0, cpuPort: opts.cpuPort === undefined ? 0x36 : opts.cpuPort,
-      charRom: opts.charRom || null, opts };
+      cpuDir: opts.cpuDir === undefined ? 0x2F : opts.cpuDir, charRom: opts.charRom || null, opts };
+    P.cpuOut = P.cpuPort & P.cpuDir;
 
-    // ---- memory, as the 6510 sees it through the processor port
+    // ---- memory, as the 6510 sees it through the processor port ($00 its direction, $01 its
+    // data: the bits set as outputs read back as written, bit 4 (the cassette switch, open) reads
+    // 1, and bits 6 and 7 what was last driven on them). The chips through P.io, which the
+    // lockstep may replace, so it is looked up at each access
     P.rb = function (a) {
       a &= 0xFFFF;
-      if (a >= 0xD000 && a < 0xE000 && (P.cpuPort & 3)) {
-        if (P.cpuPort & 4) return io.read(a);
+      if (a < 2) return a === 0 ? P.cpuDir : ((P.cpuPort & P.cpuDir) | (~P.cpuDir & (0x17 | (P.cpuOut & 0xC8)))) & 0xFF;
+      if (a >= 0xD000 && a < 0xE000 && (P.cpuPort | ~P.cpuDir) & 3) {
+        if ((P.cpuPort | ~P.cpuDir) & 4) return P.io.read(a);
         if (!P.charRom) throw new Error('the port read the character ROM at $' + a.toString(16));
         return P.charRom[a - 0xD000];
       }
-      if (a >= 0xE000 && (P.cpuPort & 2)) throw new Error('the port read the KERNAL ROM at $' + a.toString(16));
+      if (a >= 0xE000 && ((P.cpuPort | ~P.cpuDir) & 2)) throw new Error('the port read the KERNAL ROM at $' + a.toString(16));
       return M[a];
     };
     P.wb = function (a, v) {
-      a &= 0xFFFF;
-      if (a >= 0xD000 && a < 0xE000 && (P.cpuPort & 3) && (P.cpuPort & 4)) { io.write(a, v & 255); return; }
-      M[a] = v & 255;
+      a &= 0xFFFF; v &= 255;
+      if (a < 2) {
+        if (a === 0) P.cpuDir = v; else P.cpuPort = v;
+        P.cpuOut = ((P.cpuOut & ~P.cpuDir) | (P.cpuPort & P.cpuDir)) & 0xFF;
+        M[a] = v;
+        return;
+      }
+      const cfg = (P.cpuPort | ~P.cpuDir) & 7;
+      if (a >= 0xD000 && a < 0xE000 && (cfg & 3) && (cfg & 4)) { P.io.write(a, v); return; }
+      M[a] = v;
     };
     P.rw = a => P.rb(a) | P.rb(a + 1) << 8;
     P.ww = (a, v) => { P.wb(a, v); P.wb(a + 1, v >> 8); };
@@ -104,6 +116,21 @@
       M.set(frame.saved, 0x30);
       P.sp = frame.sp; P.fp = frame.fp;
     };
+
+    // ---- the machine's KERNAL and drive (port/src/kernal.js), on the port's memory. The bytes the
+    // KERNAL's interrupt fills and GETIN takes (the keyboard's buffer and its count) are read
+    // through P.io.irqByte and written through P.io.store, which the lockstep follows and the page
+    // gives as M[a]; the interrupt itself reads and writes them plainly
+    P.drive = opts.drive || (root.AEKernal ? root.AEKernal.drive() : null);
+    P.irqBytes = [0xC6]; for (let a = 0x0277; a <= 0x0280; a++) P.irqBytes.push(a);
+    const IRQ = new Set(P.irqBytes);
+    P.k = {
+      rd: a => (IRQ.has(a) ? P.io.irqByte(a) & 255 : P.rb(a)),
+      wr: (a, v) => { if (IRQ.has(a)) P.io.store(a, v & 255); else P.wb(a, v); },
+      get drive() { return P.drive; },
+    };
+    P.kIrq = { rd: a => P.rb(a), wr: (a, v) => P.wb(a, v), get drive() { return P.drive; } };
+    P.kernal = (name, r = {}) => root.AEKernal.K[name](P.k, Object.assign({ a: 0, x: 0, y: 0, c: 0 }, r));
 
     for (const g of groups) g(P);
     return P;
