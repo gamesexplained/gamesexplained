@@ -7,7 +7,7 @@
 // and calls through a pointer (call_vm_function_pointer). The page carries their data but not
 // their code, so the port knows each by where it was read from (P.objects: the stream's place when
 // read_length_prefixed_stream_object began) and calls its JavaScript: the start object's entry is
-// run_new_or_resume_personality_setup ($8D5E), the life object's j_84DC. Each object leaves by its
+// run_new_or_resume_personality_setup ($8D5E), the life object's play_life_stage ($84DC). Each object leaves by its
 // exit routine ($936B, $B3B5) from any depth, which the port throws (P.Exit) and catches here.
 (function (root) {
   const AEPort = root.AEPort || (root.AEPort = {});
@@ -135,7 +135,7 @@
         P.setw(SAVED_FP[obj], P.fp);
         P.leave(f);
         try {
-          return obj === 'start' ? yield* P.run_new_or_resume_personality_setup(ptr, arg) : yield* P.j_84DC(ptr, arg);
+          return obj === 'start' ? yield* P.run_new_or_resume_personality_setup(ptr, arg) : yield* P.play_life_stage(ptr, arg);
         } catch (e) {
           if (e instanceof Exit) return e.value;
           throw e;

@@ -22,11 +22,13 @@ function loadPort() {
 // - $02-$03 and $08-$1D, $24-$27: the p-code interpreter's own registers (its instruction pointer,
 //   primary and secondary values) and the scratch its 6502 routines work in, dead between
 //   routines. $04-$07, the stack and frame pointers, are kept and compared.
-// - $417D and $417E: the A register the NMI and IRQ bridges keep, the main program's.
+// - $417D-$4180: the A register and the processor port the NMI and IRQ bridges keep, the main
+//   program's where the interrupt came: the port takes its interrupts between its steps, so never
+//   inside a stretch the game runs with the KERNAL out (a string read from under it).
 // - $CC6A-$CFFF: the p-code's stack, whose frames and locals the port keeps in JavaScript (a local
 //   whose address the game passes on is at the game's address, and what it holds reaches the
 //   screen, the disk or the shared words, which are compared).
-const IGNORE = [[0x02, 0x03], [0x08, 0x1D], [0x24, 0x27], [0x417D, 0x417E], [0xCC6A, 0xCFFF]];
+const IGNORE = [[0x02, 0x03], [0x08, 0x1D], [0x24, 0x27], [0x417D, 0x4180], [0xCC6A, 0xCFFF]];
 
 // A session: steps run in order, as the scripted runs that made work/states do it. Each becomes
 // key presses at frames: ['run', frames], ['key', name, hold, after], ['type', text].
@@ -35,6 +37,10 @@ const SESSIONS = {
   'new-random': [['run', 150], ['key', 'RETURN', 6, 400], ['type', 'ADAM'], ['key', 'RETURN', 6, 300],
     ['key', 'DOWN', 4, 30], ['key', 'RETURN', 6, 800], ['key', 'RETURN', 6, 900], ['run', 600]],
 };
+// the first stage played: through Infancy's picture and its scenes' pages, an answer taken now and
+// then (the arrow moved down onto it first)
+SESSIONS.infancy = SESSIONS['new-random'].slice(0, -1).concat([['run', 600]],
+  ...Array.from({ length: 40 }, (_, i) => (i % 3 === 2 ? [['key', 'DOWN', 4, 60], ['key', 'RETURN', 6, 700]] : [['key', 'RETURN', 6, 700]])));
 // Each event waits its delay after the one before was given, and is given only where the game and
 // the port stand at the same stop, so that a key falls in the same pass on both sides; one that
 // came due in a long stretch (a load) is late, and the ones after it with it.

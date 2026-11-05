@@ -162,8 +162,8 @@
     };
     // $5603: the window's four ages from age - 3 drawn on the screen, six pixel rows each and a
     // connector row first
-    P.render_initial_life_map_window = function (age) {
-      const f = P.enter([age], 10);
+    P.render_initial_life_map_window = function (age, ...more) {
+      const f = P.enter([age, ...more], 10);
       try {
         let choices = 0x81CB, cell = (P.mul((age - 3) & 0xFFFF, 6) + 0x81F7) & 0xFFFF, dst = 0x2000, r = 0xFFFF;
         for (let i = 3; P.s(i) >= 0; i = (i - 1) & 0xFFFF) {
@@ -412,12 +412,12 @@
     // rows - (last - first) up the life map's window ($82BF)
     const gridX = col => P.rw(((col << 1) + 0x7F36) & 0xFFFF);
     const gridY = (first, last) => (P.rw((((4 - ((last - first) & 0xFFFF)) << 1) + 0x82BF) & 0xFFFF) + 53) & 0xFFFF;
-    P.show_sprite0_at_grid_position = function (col, first, last) {
-      const f = P.enter([col, first, last], 0);
+    P.show_sprite0_at_grid_position = function (col, first, last, ...more) {
+      const f = P.enter([col, first, last, ...more], 0);
       try { return P.sprite0_show_at_position(gridX(col), gridY(first, last)); } finally { P.leave(f); }
     };
-    P.set_sprite0_target_from_grid_position = function (col, first, last) {
-      const f = P.enter([col, first, last], 0);
+    P.set_sprite0_target_from_grid_position = function (col, first, last, ...more) {
+      const f = P.enter([col, first, last, ...more], 0);
       try { return P.sprite0_set_target(gridX(col), gridY(first, last)); } finally { P.leave(f); }
     };
     // $54BF: the arrow at text column col, row row of the screen (x = col x 8, y = row x 8 + 53),
