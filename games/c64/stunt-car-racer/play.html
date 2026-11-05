@@ -1550,8 +1550,10 @@ G.dash = P => {
   };
 
   // SWERVE ($158E): while $C9 is set, a swerve of sixteen passes ($C30F) steers by the wave at
-  // $1601 ($C30D right or $C30E left, $C357 the throttle); a new one starts at random, more often
-  // the higher $C773, when $C353 allows it and the piece ahead does not forbid it
+  // $1601 ($C30D pushes the left end of the line its corners are set out on along, $C30E the
+  // right end, $C357 the way it steers, by the value five places on); a new one starts at
+  // random, more often the higher $C773, when $C353 allows it and the piece ahead does not
+  // forbid it
   // (plug-in point once: with Fast CPU, the count and the dice once a step, the wave's values kept
   // for the step's other loops; plug-in point glide: the wheels' offsets moved from one step's to
   // the next's over the step)
@@ -5289,8 +5291,8 @@ G.opponent = P => {
   // mirrored for the odd-numbered drivers; the middle ($80) when either of the next two pieces
   // says so ($B240). Then it steers $B0 towards $2C, by ten a pass ($C357 can force a way), while
   // a wheel is on the road ($C9), between $20 and $E0. $C308 is set while the cars are close
-  // (within $40) and either the opponent is ahead ($C36A bit 7) or they are in line (less than
-  // $32 apart across): the car in front then has less drag.
+  // (within $40) and either the opponent is behind ($C36A bit 7) or they are in line (less than
+  // $32 apart across): the car behind then has less drag (OPP_SPEED, DRAG).
   P.OPPONENT_LINE = r => {
     let x = M[0xC773];
     let y = 0;
@@ -5459,8 +5461,8 @@ G.opponent = P => {
   };
   // OPP_SPEED ($1F48): the opponent's speed $D6/$D7: the engine's push ($C3B6/$C3B7, less what it
   // loses climbing, $B2) less a drag of its speed squared over 64 (its speed less 20 while it is
-  // in front and close, $C308), and while a wheel is on the road the slope's pull from its wheels'
-  // heights ($07EC-$07F2); never below 0
+  // close behind the player, $C308 with $C36A bit 7), and while a wheel is on the road the
+  // slope's pull from its wheels' heights ($07EC-$07F2); never below 0
   P.OPP_SPEED = r => {
     M[0x17] = 0; M[0x16] = 0;
     const skip = (M[0xD7] & 0x80) !== 0;
@@ -5494,7 +5496,7 @@ G.opponent = P => {
     M[0x17] = t & 255;
     let a;
     if (M[0xC9]) {
-      // the front wheels' mean road height, the sum's carry shifted back in at the top
+      // the back wheels' mean road height, the sum's carry shifted back in at the top
       t = M[0x07EC] + M[0x07ED]; M[0x14] = t & 255;
       const h = M[0x07F0] + M[0x07F1] + (t >> 8);
       a = ((h >> 8) << 7) | ((h & 255) >> 1);
@@ -5568,7 +5570,7 @@ G.opponent = P => {
   };
   // OPP_BUMP ($209C): the cars meet, while the opponent races ($C37C). Unless the opponent has a
   // wheel on the road ($C9) and the player's springs press ($6A), the heights are tested: the
-  // player's ($46/$64) less the opponent's wheel 0, at the front ($07CC/$07D0), plus $28, within
+  // player's ($46/$64) less the opponent's wheel 0, at the back ($07CC/$07D0), plus $28, within
   // $C0 either way, or it returns with $C369 3; when they are and $C369 is not 0, $C369 is counted
   // down and the player's car pushed in height ($0180/$0183), harder the nearer the heights. Close
   // beside, a push sideways ($0182, 8 or $F8); once a bump ($E0), along by half the difference of
@@ -5664,9 +5666,9 @@ G.opponent = P => {
   // 7), held to $FFA0 at the lowest; the spring's push ($07C4/$07C8, at most $3FF), and $C9 non-zero
   // while any is on the road; a share of the three pushes' sum and each one's own, over 8, into
   // the wheels' speeds ($07E4/$07E8); a driver with bit 2 of its flags sometimes (one pass in 16)
-  // bounces its back wheel ($07DE = $A0) when all are nearly still; the speeds moved into the
-  // heights (half of them); then the wheels kept together (OPP_SPREAD) and the opponent's model's
-  // points placed ($8040/$A330, points $3C-$3F) from them
+  // kicks its front wheel, wheel 2, up ($07DE = $A0) while that wheel's speed and its change are
+  // both under 4; the speeds moved into the heights (half of them); then the wheels kept together
+  // (OPP_SPREAD) and the opponent's model's points placed ($8040/$A330, points $3C-$3F) from them
   P.OPP_WHEELS = r => {
     M[0xC9] = 0;
     M[0x52] = (M[0xB2] & 0x80) ? 0x7C : 0x28;
@@ -5772,8 +5774,8 @@ G.opponent = P => {
   };
   // OPP_SPREAD ($23A2): wheels X and Y kept within A:$51 of each other in height: the higher is
   // lowered to it and their speeds averaged (all three's when Y is 2); with Y = 2 and no wheel on
-  // the road, when wheel X rises no faster than the back wheel by $10, the car is tilted: the
-  // front wheels' speeds up by 4 and the back's down by 4 ($242D/$2430)
+  // the road, when wheel X rises less than $10 faster than the front wheel, the car is tilted:
+  // the back wheels' speeds up by 4 and the front's down by 4 ($242D/$2430)
   P.OPP_SPREAD = r => {
     let x = r.x & 255, y = r.y & 255;
     M[0x77] = r.a & 255; M[0x52] = x;
@@ -6144,9 +6146,9 @@ G.physics = P => {
   };
 
   // DRAG ($0DE8): the forces each lose a part of the velocity: $C350 of it, shifted by 2, 4 or 6
-  // places: the road's friction from the springs on the road ($0154-$0159), less when boosting
-  // ($C308) with the engine on ($C36A clear), and a fixed $C0 in the air, on a steep slide ($E4), at
-  // a wreck ($6B), or at the start
+  // places: the road's friction from the springs on the road ($0154-$0159), less in the
+  // opponent's tow ($C308 with $C36A clear: the opponent ahead and in line), and a fixed $C0 in
+  // the air, on a steep slide ($E4), at a wreck ($6B), or at the start
   P.DRAG = r => {
     let y = 2, a = -1;
     const calc = () => {

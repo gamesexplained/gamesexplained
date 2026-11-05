@@ -1,0 +1,88 @@
+'use strict';
+// The Opponents tab in Chromium, on the built page (python3 kit/scripts/build.py first), on a
+// desktop screen and on a phone (390 by 844, touch):
+// - every widget draws: the six pictures hold more than one colour, the five charts a line or
+//   bars, and the readouts say something;
+// - dragging the computer's car on the map of racing lines changes what the readout says;
+// - Swerve now starts a swerve, and the pictures of the car turn;
+// - on the phone the page is no wider than the screen;
+// - nothing in the console is an error.
+// CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
+// (kit/scripts/play_browser.js).
+//   node games/c64/stunt-car-racer/port/test/opponents-browser.js [built site, _site] [--chromium <path>]
+const path = require('path');
+const ROOT = path.resolve(__dirname, '../../../../..');
+const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
+const PAGE = '/c64/stunt-car-racer/opponents.html';
+const CANVASES = ['op-map', 'op-sw-cv', 'op-dr-cv', 'op-bo-cv', 'op-bu-cv', 'op-tow'];
+const CHARTS = ['op-dr-chart', 'op-bo-chart', 'op-en-chart', 'op-tow-chart', 'op-li-chart'];
+const READS = ['op-read', 'op-sw-read', 'op-bu-read', 'op-en-read', 'op-tow-read', 'op-li-read'];
+
+let fails = 0;
+const fail = (...w) => { fails++; console.log('FAIL', ...w); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function look(browser, base, name, opts) {
+  const ctx = await browser.newContext(opts);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('pageerror', e => errors.push(e.message));
+  // the fonts are the only thing from elsewhere: answered empty, off the network
+  await page.route(u => !u.href.startsWith('http://127.0.0.1'), r => r.fulfill({ status: 200, body: '' }));
+  await page.goto(base + PAGE);
+  await page.waitForFunction(() => document.getElementById('op-read').textContent.length > 0, null, { timeout: 60000 });
+  // each widget draws while it is on the screen: scroll past them all
+  for (const id of CANVASES.concat(CHARTS)) { await page.$eval('#' + id, e => e.scrollIntoView({ block: 'center' })); await wait(250); }
+  const drawn = await page.evaluate(ids => ids.map(id => {
+    const c = document.getElementById(id), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, seen = new Set();
+    for (let i = 0; i < d.length && seen.size < 3; i += 4 * 37) seen.add(d[i] << 16 | d[i + 1] << 8 | d[i + 2]);
+    return [id, seen.size];
+  }), CANVASES);
+  for (const [id, n] of drawn) if (n < 2) fail(name + ': #' + id + ' is one colour');
+  const charts = await page.evaluate(ids => ids.map(id => [id, document.getElementById(id).querySelectorAll('path, rect:not(.op-hit)').length]), CHARTS);
+  for (const [id, n] of charts) if (!n) fail(name + ': #' + id + ' draws nothing');
+  const reads = await page.evaluate(ids => ids.map(id => [id, document.getElementById(id).textContent.trim()]), READS);
+  for (const [id, t] of reads) if (!t) fail(name + ': #' + id + ' says nothing');
+
+  // the map: the computer's car dragged from ahead of the player to behind it
+  const map = await page.$('#op-map');
+  await map.scrollIntoViewIfNeeded();
+  await wait(1000);                                 // the scroll is smooth: the map where it stops
+  const box = await map.boundingBox(), before = await page.$eval('#op-read', e => e.textContent);
+  const at = (fx, fy) => [box.x + box.width * fx, box.y + box.height * fy];
+  await page.mouse.move(...at(0.35, 0.25)); await page.mouse.down();
+  await page.mouse.move(...at(0.35, 0.6), { steps: 4 }); await page.mouse.move(...at(0.3, 0.92), { steps: 4 }); await page.mouse.up();
+  await wait(300);
+  const after = await page.$eval('#op-read', e => e.textContent);
+  if (after === before) fail(name + ': dragging the computer\'s car leaves the readout at "' + before + '"');
+
+  // a swerve: the picture of the car changes from pass to pass
+  await page.$eval('#op-sw-go', e => e.scrollIntoView({ block: 'center' }));
+  await page.click('#op-sw-go');
+  const shots = [];
+  for (let i = 0; i < 4; i++) {
+    await wait(300);
+    shots.push(await page.$eval('#op-sw-cv', c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1]) | 0; return h; }));
+  }
+  if (new Set(shots).size < 3) fail(name + ': the swerve\'s picture changed ' + (new Set(shots).size - 1) + ' times in four looks');
+
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+  if (opts.isMobile && wide > opts.viewport.width) fail(name + ': the page is ' + wide + ' wide on a screen of ' + opts.viewport.width);
+  for (const e of errors) fail(name + ': console: ' + e);
+  await ctx.close();
+  return !fails;
+}
+
+(async () => {
+  const { browser, base, stop } = await start(process.argv.slice(2));
+  try {
+    if (await look(browser, base, 'desktop', { viewport: { width: 1280, height: 900 } }))
+      console.log('ok   on a desktop screen every widget draws, the map\'s readout follows a drag and a swerve turns the car');
+    const was = fails;
+    await look(browser, base, 'phone', { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    if (fails === was) console.log('ok   on a phone the same, and the page is no wider than the screen');
+  } finally { await stop(); }
+  console.log(fails ? fails + ' failed' : 'all passed');
+  process.exitCode = fails ? 1 : 0;
+})().catch(e => { console.log('FAIL', e.message); process.exitCode = 1; });

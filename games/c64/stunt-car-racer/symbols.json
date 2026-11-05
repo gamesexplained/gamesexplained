@@ -19349,7 +19349,7 @@
   {
    "address": 3560,
    "type": "line",
-   "text": "Takes a share of the velocity from the forces, $C350 parts in 256 shifted right by 2, 4 or 6 places. On the road the share is the largest of the three speeds along the road ($0154-$0159), less 20 while the boost ($C308) is on with the engine running ($C36A); otherwise $C0: a fixed share shifted 2 places when the car is skidding sideways ($E4 past 2) or wrecked ($6B), 4 places when it hangs from the crane or $0E is set."
+   "text": "Takes a share of the velocity from the forces, $C350 parts in 256 shifted right by 2, 4 or 6 places. On the road the share is the largest of the three speeds along the road ($0154-$0159), less 20 in the opponent's tow ($C308 with $C36A bit 7 clear: the opponent ahead of the player and in line with it); otherwise $C0: a fixed share shifted 2 places when the car is skidding sideways ($E4 past 2) or wrecked ($6B), 4 places when it hangs from the crane or $0E is set."
   },
   {
    "address": 3699,
@@ -19604,7 +19604,7 @@
   {
    "address": 5518,
    "type": "line",
-   "text": "While $C9 is set: a swerve of sixteen passes ($C30F) steers by the wave at $1601 ($C30D one way, $C30E the other, $C357 the throttle). A new one starts at random, the more often the higher $C773, when $C353 allows it and $0710 for piece $C375 does not forbid it."
+   "text": "While $C9 is set: a swerve of sixteen passes ($C30F) steers by the wave at $1601. Each pass the wave's value moves one end of the line the car's corners are set out on along the track ($C30D the left end for a value over 0, $C30E the right end for one under), and the value five places on steers it ($C357). A new one starts on the first pass after a bend ($C353), with the opponent ahead and $0710 for piece $C375 not insisting, when RANDOM's low five bits are no higher than the driver's number $C773; the bend's side ($C353 bit 6) picks the half of the wave it starts on ($C358)."
   },
   {
    "address": 5633,
@@ -19744,7 +19744,7 @@
   {
    "address": 7461,
    "type": "line",
-   "text": "Where across the road the opponent aims ($2C, from its place $B0; the player's is $2B). Close behind the player ($39/$3A, the distance between the cars, and less than $32 apart across) it may bump ($209C, OPP_BUMP); within $18 it goes round (LINE_ROUND), unless its driver's flags at $AEE0 (bit 3) say to keep its line; nearer than $32 it holds the player's line (bit 1, LINE_HOLD) or passes (LINE_PASS), as it does within $C8 for a driver with bit 5, and always once it is ahead ($C36A bit 7). Otherwise its own line: $40 or $6E across (bit 3), mirrored for the odd-numbered drivers ($C773), or the middle when either of the next two pieces says so ($B240). Then it steers towards that line by ten a pass ($C357 can push it either way) while a wheel is on the road ($C9), keeping between $20 and $E0. $C308 is set while the cars are within $40 and either the opponent is ahead or they are in line; then the car in front has less drag."
+   "text": "Where across the road the opponent aims ($2C, from its place $B0; the player's is $2B). Within $FF of the player along the track ($39/$3A, the distance between the cars) its driver's flags at $AEE0 decide. Within $10 along and $32 across, with the player's car over the road ($B7/$B8 under $180), the cars bump ($209C, OPP_BUMP). Behind the player ($C36A bit 7) it passes (LINE_PASS) from $18 back and goes round (LINE_ROUND) nearer. Ahead by $18 to $31 it holds the player's line with bit 1 (LINE_HOLD) or else passes; $32 to $C7 ahead it passes with bit 5; $0E to $17 ahead it keeps its own line with bit 3; otherwise, and nearer than $0E, it goes round. Otherwise its own line: $40 or $6E across (bit 3), mirrored for the odd-numbered drivers ($C773), or the middle when either of the next two pieces says so ($B240), except while it passes from behind or goes round. Then it steers towards the aim by ten a pass ($C357 can push it either way) while a wheel is on the road ($C9), keeping between $20 and $E0. $C308 is set while the cars are within $40 and either the opponent is behind or they are in line (less than $32 apart across); then the car behind has less drag (OPP_SPEED, DRAG)."
   },
   {
    "address": 7728,
@@ -19789,7 +19789,7 @@
   {
    "address": 8008,
    "type": "line",
-   "text": "The opponent's speed $D6/$D7: plus the engine's push ($C3B6/$C3B7, less its speed again and $23 more on a climb, $B2), less a drag of its speed squared over 64 (its speed taken 20 lower while it is in front and close, $C308), plus, while a wheel is on the road, the slope's pull from the heights of its front and back wheels ($07EC-$07F2); never below 0."
+   "text": "The opponent's speed $D6/$D7: plus the engine's push ($C3B6/$C3B7, less its speed again and $23 more on a climb, $B2), less a drag of its speed squared over 64 (its speed taken 20 lower while it is close behind the player, $C308 with $C36A bit 7), plus, while a wheel is on the road, the slope's pull from the heights of its front and back wheels ($07EC-$07F2); never below 0."
   },
   {
    "address": 8201,
@@ -19824,7 +19824,7 @@
   {
    "address": 8348,
    "type": "line",
-   "text": "The cars meet, while the opponent races ($C37C). Unless the opponent has a wheel on the road ($C9) and the player's springs press ($6A), the heights are tested first: the player's ($46/$64) less the opponent's wheel 0, at the front ($07CC/$07D0), plus $28, must be within $C0 either way, or it returns at once with $C369 set to 3. When they are and $C369 is not 0, it counts $C369 down and pushes the player's car in height ($0180/$0183), harder the nearer the heights, by their difference's sign: at most three times after a pass at heights too far apart, since OPPONENT_LINE clears $C369 while the cars are apart. Close beside ($51 below $2D, $39 below 8) it pushes sideways, 8 or $F8 by which side the opponent is on ($77, into $0182). Once a bump ($E0, cleared by OPPONENT_LINE) it pushes along by half the difference of their speeds plus 3 in its direction ($0181/$0184). $C371 is set, the pushes' high bytes plus 2 are added to each point's damage ($C3C3-$C3C5, held at $FF) and $C352 is set."
+   "text": "The cars meet, while the opponent races ($C37C). Unless the opponent has a wheel on the road ($C9) and the player's springs press ($6A), the heights are tested first: the player's ($46/$64) less the opponent's wheel 0, at the back ($07CC/$07D0), plus $28, must be within $C0 either way, or it returns at once with $C369 set to 3. When they are and $C369 is not 0, it counts $C369 down and pushes the player's car in height ($0180/$0183), harder the nearer the heights, by their difference's sign: at most three times after a pass at heights too far apart, since OPPONENT_LINE clears $C369 while the cars are apart. Close beside ($51 below $2D, $39 below 8) it pushes sideways, 8 or $F8 by which side the opponent is on ($77, into $0182). Once a bump ($E0, cleared by OPPONENT_LINE) it pushes along by half the difference of their speeds plus 3 in its direction ($0181/$0184). $C371 is set, the pushes' high bytes plus 2 are added to each point's damage ($C3C3-$C3C5, held at $FF) and $C352 is set."
   },
   {
    "address": 8566,
@@ -19834,7 +19834,7 @@
   {
    "address": 8670,
    "type": "line",
-   "text": "The opponent's three wheels as springs: each one's height ($07CC/$07D0) against the road's under it ($07EC/$07F0) and the spring's length ($28, or $7C on a piece with $B2 bit 7), at most $60 below; the spring's push ($07C4/$07C8, up to $3FF), and $C9 non-zero while any wheel is on the road. Each wheel's speed ($07E4/$07E8) is a share of the three pushes and its own, over 8. A driver with bit 2 of its flags now and then (one pass in 16) bounces its back wheel ($07DE = $A0) when all are nearly still. The speeds are added into the heights (half of them), the wheels kept together (OPP_SPREAD), and the opponent's model's points placed ($8040/$A330, points $3C-$3F)."
+   "text": "The opponent's three wheels as springs: each one's height ($07CC/$07D0) against the road's under it ($07EC/$07F0) and the spring's length ($28, or $7C on a piece with $B2 bit 7), at most $60 below; the spring's push ($07C4/$07C8, up to $3FF), and $C9 non-zero while any wheel is on the road. Each wheel's speed ($07E4/$07E8) is a share of the three pushes and its own, over 8. A driver with bit 2 of its flags now and then (one pass in 16) kicks its front wheel, wheel 2, up ($07DE = $A0) while that wheel's speed and its change are both under 4. The speeds are added into the heights (half of them), the wheels kept together (OPP_SPREAD), and the opponent's model's points placed ($8040/$A330, points $3C-$3F)."
   },
   {
    "address": 9098,
@@ -19849,7 +19849,7 @@
   {
    "address": 9122,
    "type": "line",
-   "text": "Keeps wheels X and Y within A:$51 of each other in height: the higher is lowered to it and their speeds averaged (all three's when Y is 2). With Y = 2 and no wheel on the road, when wheel X rises no faster than the back wheel by $10, the car is tilted: the front wheels' speeds up by 4 and the back's down by 4."
+   "text": "Keeps wheels X and Y within A:$51 of each other in height: the higher is lowered to it and their speeds averaged (all three's when Y is 2). With Y = 2 and no wheel on the road, when wheel X rises less than $10 faster than the front wheel (wheel 2), the car is tilted: the back wheels' speeds up by 4 and the front's down by 4."
   },
   {
    "address": 9261,

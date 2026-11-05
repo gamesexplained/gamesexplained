@@ -294,3 +294,39 @@ and its right in the next. The sparks use those two colours, ten off
 each front wheel, thrown afresh from the frame's number each refresh.
 Seven, within a fifth of the car's width of the wheel, were hard to see
 from Heli cam.
+
+## 5 November 2026, the Opponents tab
+
+Asked to turn How it works' section on the computer drivers into a tab
+of its own, a section for each mechanic, each one visual and
+interactive. The tab runs the port's own routines (OPPONENT_LINE,
+SWERVE, OPP_BUMP, OPP_PUSH, OPP_WHEELS, OPP_ENGINE, OPP_SPEED, OPP_PICK,
+PIECE_TABLE) on listing.json's memory, and draws the cars with Chase
+cam's renderer. How it works keeps a line pointing to it, and its old
+anchor `#drivers` sends a reader to the tab's racing lines.
+
+Working each mechanic out again for the widgets showed three things the
+facts had wrong. Bit 1 of the habits acts with the computer's car ahead
+of the player by `$18` to `$31`, not close behind it. Bit 2 kicks the
+front wheel, wheel 2, not a back wheel: `opp_points` (`$238A`) hangs
+wheels 0 and 1 on the back corners, which settled the TODO's question
+about the wheels, and the comments at OPP_BUMP, OPP_SPREAD and OPP_WHEELS
+now say so. And the tow (`$C308`) cuts the drag of the car behind: the
+computer's car's in OPP_SPEED when it is behind (`$C36A` bit 7), the
+player's in DRAG when the computer's car is ahead and in line. The
+swerve's two bytes are the pushes at the left (`$C30D`) and right
+(`$C30E`) ends of the line OPP_CORNERS sets the car's corners out on,
+which turn it by up to 16 degrees, checked against OPP_CORNERS' corners
+within half a degree.
+
+RANDOM's five bytes (`$02`-`$06`) are zeros in the listing's memory,
+on which it gives only zeros; the page seeds them with LOAD_RANDOM from
+the defaults at `$1643`, as the game does. The map of racing lines runs OPPONENT_LINE about
+28,000 times for each picture, 110 ms in Chromium, so it paints every
+sixth column while the player's car is dragged.
+
+The first race of a season, driven with the stick forward, meets only
+three of the map's rules (its own line, the middle, holding its course),
+so `test_opponents.js` also runs the game's own OPPONENT_LINE in the
+kit's 6502 simulator over 61,776 places on the map and compares the
+machine with the page's: every rule appears, and the two agree.

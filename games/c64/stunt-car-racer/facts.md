@@ -138,22 +138,39 @@ from reading the code in the snapshot named in `orientation.md`.
   `$BFB2` plus a random number masked by `$BFAA`, 58 to 88 in the league,
   87 to 109 in the Super League; OPP_GRIP `$2037`).
 - Each driver's habits are a byte at `$AEE0` plus its number (Hot Rod 0
-  to Road Hog 10): bit 1 holds the player's line when close behind
-  (LINE_HOLD), otherwise it goes for the side the player is not on
-  (LINE_PASS `$1E3C`); bit 5 starts passing from further back (`$32` to
-  `$C7`); bit 3 sets its own line (`$6E` against `$40`, mirrored for the
-  odd numbers) and keeps it when right behind, where the others go round
-  (LINE_ROUND `$1E30`); bit 2 jolts its back wheel one pass in 16 while
-  its wheels are still. Bytes: `$22 $20 $62 $20 $3E $04 $30 $14 $4A $10
-  $08`, Hot Rod first (OPPONENT_LINE `$1D25`).
-- A swerve of 16 passes, on the wave at `$1601` with 25 less push, starts
-  at random with a chance of the driver's number plus one in 32 whenever
-  the road allows (SWERVE `$158E`).
+  to Road Hog 10), read by OPPONENT_LINE (`$1D25`) each pass the cars are
+  within 255 of each other along the track. With the computer's car ahead
+  by `$18` to `$31`, bit 1 sends it for the player's line (LINE_HOLD
+  `$1E5A`), otherwise it heads away from the player's side (LINE_PASS
+  `$1E3C`); bit 5 makes it do that from `$32` to `$C7` ahead as well; bit 3
+  sets its own line (`$6E` against `$40`, mirrored for the odd numbers)
+  and keeps it from `$0E` to `$17` ahead, where the others go round the
+  player (LINE_ROUND `$1E30`). Behind the player it passes from `$18` back
+  and goes round closer in. Passing and going round only change its aim
+  within `$38` across, and a bend on its piece or the next sends it to the
+  middle of the road (`$80`) unless it is passing or going round. Bit 2
+  kicks its front wheel (wheel 2) up at a speed of 160 (`$07DE`, OPP_WHEELS
+  `$21DE`) one pass in 16 while that wheel's speed and its change are both
+  0 to 3: Big Ed, Max Boost and High Flyer. Bytes: `$22 $20 $62 $20 $3E
+  $04 $30 $14 $4A $10 $08`, Hot Rod first.
+- A swerve of 16 passes, on the wave at `$1601` with 25 less push (`$D3`
+  for `$EC`), can start on the first pass after a bend, with the
+  computer's car ahead of the player, a wheel on the road and a piece that
+  does not insist on its limit; it starts when RANDOM's low five bits are
+  no higher than the driver's number, a chance of the number plus one in
+  32 (SWERVE `$158E`). The wave moves one end of the line the car's
+  corners are set out on along the track (`$C30D` for the left end,
+  `$C30E` for the right), turning it by up to 16 degrees, and steers it
+  10 across a pass by the value five places on (`$C357`).
 - When the cars meet, OPP_BUMP (`$209C`) pushes the player's car up,
   sideways and along (half the speeds' difference plus 3) and adds the
   pushes to the player's damage; OPP_PUSH (`$2176`) takes the push off the
-  computer's speed and starts sound effect 2. Close behind it (`$C308`),
-  the computer's car ahead works out its drag from its speed less 20.
+  computer's speed and starts sound effect 2.
+- Within `$40` along, OPPONENT_LINE sets the tow flag `$C308` when the
+  computer's car is behind the player (`$C36A` bit 7), or ahead of it and
+  less than `$32` apart across. Then the car behind works out its drag
+  from its speed less 20: OPP_SPEED (`$1F48`) for the computer's car,
+  DRAG (`$0DE8`) for the player's.
 - The races the player does not drive are worked out (RACE_RESULT
   `$E92C`): each driver's rating is a base by its place in the league's
   order, 120 for the first down to 10 for the twelfth (`driver_base`

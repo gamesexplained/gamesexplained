@@ -322,9 +322,9 @@ G.physics = P => {
   };
 
   // DRAG ($0DE8): the forces each lose a part of the velocity: $C350 of it, shifted by 2, 4 or 6
-  // places: the road's friction from the springs on the road ($0154-$0159), less when boosting
-  // ($C308) with the engine on ($C36A clear), and a fixed $C0 in the air, on a steep slide ($E4), at
-  // a wreck ($6B), or at the start
+  // places: the road's friction from the springs on the road ($0154-$0159), less in the
+  // opponent's tow ($C308 with $C36A clear: the opponent ahead and in line), and a fixed $C0 in
+  // the air, on a steep slide ($E4), at a wreck ($6B), or at the start
   P.DRAG = r => {
     let y = 2, a = -1;
     const calc = () => {
