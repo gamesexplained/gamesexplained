@@ -17,7 +17,8 @@
 // list until the game has looked at the keys as well, and what is due is let go at every refresh
 // of the display even when the page runs no frame. Every Play page with a canvas attaches it, and
 // a page with the joystick keeps no touch pad of its own beside it. No Play page tells the reader how the touch joystick or Full screen works:
-// each shows what it does. Runs in node, on a stand-in for the page's document.
+// each shows what it does. No Play page gives anything to Right Ctrl, which a MacBook does not have.
+// Runs in node, on a stand-in for the page's document.
 //   node kit/scripts/test_play_controls.js
 const fs = require('fs');
 const path = require('path');
@@ -329,6 +330,8 @@ pc.hand('right');
       const words = page.replace(/<(style|script)\b[\s\S]*?<\/\1>|<!--[\s\S]*?-->/g, ' ').replace(/<[^>]*>/g, '');
       const help = words.match(/\bpad under the (picture|game)\b|\bslide your thumb\b|\bBack returns to the page\b|\bFull screen, over the\b/i);
       check(!help, name + ' leaves the touch joystick and Full screen to explain themselves, with no text telling the reader how they work' + (help ? ': "' + help[0] + '"' : ''));
+      const rctrl = /\bControlRight\b/.exec(page) || /\bright\s+ctrl\b/i.exec(words);
+      check(!rctrl, name + ' gives nothing to Right Ctrl, which a MacBook does not have' + (rctrl ? ': "' + rctrl[0] + '"' : ''));
       if (!/<canvas\b/.test(page)) continue;
       pages++;
       check(page.includes('lib/play-controls.js') && /\bPlayControls\.attach\(/.test(page), name + ' loads site/lib/play-controls.js and calls PlayControls.attach');

@@ -602,9 +602,11 @@ at every refresh of the display by the holder itself, since a key let go
 only after the game's frames or loops stays down through a screen that
 runs none (`games/c64/castle-master`, `games/spectrum/driller`). The header of
 `site/lib/play-controls.js` gives the bits and the other options.
+No key of a Play tab is Right Ctrl, since a MacBook has none.
 `kit/scripts/test_play_controls.js` fails a Play page that does not
-attach it, a page with the joystick that keeps its own pad, and a page
-whose text explains the joystick or Full screen.
+attach it, a page with the joystick that keeps its own pad, a page
+whose text explains the joystick or Full screen, and a page that uses
+Right Ctrl.
 
 Every Play tab's Reset works whatever the page is doing, a stop
 included: it builds a new machine, lets go of the page's own pause, sets

@@ -101,7 +101,7 @@ section table{margin:6px 0 18px}
     <ul class="pl-keys" id="pl-keys">
       <li class="pl-keys-tap">Tap a key in this list to press it in the game. <b>Shift</b> stays down for the key you tap after it.</li>
       <li class="pl-keys-pad"><kbd data-key="ArrowLeft">←</kbd> <kbd data-key="ArrowRight">→</kbd> <kbd data-key="ArrowUp">↑</kbd> <kbd data-key="ArrowDown">↓</kbd> the joystick</li>
-      <li class="pl-keys-pad"><kbd data-key="F">F</kbd> or right <kbd data-key="Ctrl">Ctrl</kbd> fire</li>
+      <li class="pl-keys-pad"><kbd data-key="F">F</kbd> fire</li>
       <li><kbd data-key="1">1</kbd> <kbd data-key="2">2</kbd> <kbd data-key="3">3</kbd> <kbd data-key="4">4</kbd> <kbd data-key="5">5</kbd> <kbd data-key="6">6</kbd> <kbd data-key="7">7</kbd> <kbd data-key="8">8</kbd> <kbd data-key="9">9</kbd> <kbd data-key="0">0</kbd> thrust</li>
       <li><kbd data-key="Shift" data-mod>Shift</kbd> + digit reverse</li>
       <li><kbd data-key="=">=</kbd> <kbd data-key="-">−</kbd> thrust up and down, <kbd data-key="Space">Space</kbd> stop</li>
@@ -216,7 +216,7 @@ section table{margin:6px 0 18px}
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, a frame at a time.</li>
     <li><b>The interrupts.</b> They run between the steps of a pass, not inside them (section 02).</li>
     <li><b>Fast CPU.</b> The frames between two of the C64's passes are the game's own, from passes that each take a share of the C64's step. The C64 never shows them, and what the game tests once a pass, it tests at each share. A pass the C64 takes more than eight frames over takes eight (section 03).</li>
-    <li><b>The keyboard.</b> The arrows are the joystick in port 2, and F or the right Ctrl key fires. The other keys are the C64's by name: the digits set the thrust, T takes and B boards. Esc is CTRL + RETURN, the game's pause.</li>
+    <li><b>The keyboard.</b> The arrows are the joystick in port 2, and F fires. The other keys are the C64's by name: the digits set the thrust, T takes and B boards. Esc is CTRL + RETURN, the game's pause.</li>
   </ul>
 </section>
 </main>
@@ -7253,7 +7253,7 @@ function makeDisplay(opts) {
     '+': 0x28, P: 0x29, L: 0x2A, '-': 0x2B, '.': 0x2C, ':': 0x2D, '@': 0x2E, ',': 0x2F, '*': 0x31, ';': 0x32,
     '=': 0x35, '/': 0x37, '1': 0x38, LARROW: 0x39, CTRL: 0x3A, '2': 0x3B, SPACE: 0x3C, Q: 0x3E };
   const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Numpad8: 1, Numpad2: 2, Numpad4: 4, Numpad6: 8,
-    Numpad7: 5, Numpad9: 9, Numpad1: 6, Numpad3: 10, KeyF: 16, ControlRight: 16, Numpad5: 16, Numpad0: 16 };
+    Numpad7: 5, Numpad9: 9, Numpad1: 6, Numpad3: 10, KeyF: 16, Numpad5: 16, Numpad0: 16 };
   const held = new Map();                          // event code -> C64 key numbers it holds
   let joyBits = 0, padBits = 0;
   // With Fast CPU, what was let go before three video frames: event code -> { frame, joy, keys }
@@ -7331,7 +7331,7 @@ function makeDisplay(opts) {
   // for the stick and fire, the joystick's port read) since it went down, so that a tap shorter than
   // the game's pass still counts; with Fast CPU for three video frames at least too, as a key let go
   // early is (hold). Shift tapped first goes down with the key after it
-  const PRESS = { ArrowUp: { joy: 1 }, ArrowDown: { joy: 2 }, ArrowLeft: { joy: 4 }, ArrowRight: { joy: 8 }, F: { joy: 16 }, Ctrl: { joy: 16 },
+  const PRESS = { ArrowUp: { joy: 1 }, ArrowDown: { joy: 2 }, ArrowLeft: { joy: 4 }, ArrowRight: { joy: 8 }, F: { joy: 16 },
     Space: { keys: [KEY.SPACE] }, Shift: { keys: [KEY.LSHIFT] }, Esc: { keys: [KEY.CTRL, KEY.RETURN] }, '=': { keys: [KEY['+']] } };
   const pressed = new Map();                       // data-key -> { joy, keys, port, reads, frame, up }
   let pressJoy = 0;
