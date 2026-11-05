@@ -15,6 +15,9 @@
 //   has not turned by the car's roll (Chase cam draws more of the track than the game, so its own
 //   lines are not counted);
 // - the time a picture takes, printed;
+// - the boost: in a practice race, each picture's snapshot says the boost is on exactly when the
+//   game's flag for its flame is set, and both cameras then draw sparks in the flame's yellow,
+//   thrown afresh the next frame, and none while it is off;
 // - Heli cam, at each picture of a league race as the page calls it: never under the ground or
 //   inside the track; the player's car in the picture in 97 % of them or more and the track not in
 //   its way in 95 % or more, and the road ahead of it in the picture in 90 % or more; the opponent
@@ -24,7 +27,7 @@
 // - the dust: the specks the game draws over its view put back where it draws them (below);
 // - the tilt: the player's car leans the way the game's own horizon tilts, and its nose follows its
 //   climb (below).
-//   node games/c64/stunt-car-racer/test_chase.js [part: off, chains, cockpit, tilt, dust, heli]
+//   node games/c64/stunt-car-racer/test_chase.js [part: off, chains, cockpit, tilt, dust, boost, heli]
 const path = require('path'), crypto = require('crypto');
 const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
@@ -287,6 +290,32 @@ if (part('dust')) {
   if (specks < 30 || met < 0.95 * specks) fail(l2); else console.log('ok   ' + l2);
   const l3 = 'dust: ' + puffs + ' puffs of a wreck\'s dust in the snapshots';
   if (!puffs) fail(l3); else console.log('ok   ' + l3);
+}
+
+// --- the boost's sparks -------------------------------------------------------------------------
+if (part('boost')) {
+  // a practice race driven forward, then with the boost: each picture from both cameras, its
+  // yellow pixels counted (nothing else in these views is yellow)
+  const b = machine(false);
+  for (const s of flat([...TO_RACE.practice, { frames: 180, joy: J.fire }, { frames: 300, joy: J.up }])) { b.set(s); b.rt.runFrame(); }
+  let last = null, cs = null, hs = null, on = 0, off = 0, lit = 0, dark = 0, agree = 0, n = 0, moved = 0;
+  const yellow = (v, s, c) => { const px = new Uint8Array(384 * 272); C.draw(b.view, s, c, px); let k = 0; for (const p of px) if (p === 7) k++; return { k, px }; };
+  for (let f = 0; f < 700; f++) {
+    b.set({ joy: f < 200 ? J.up : J.up & J.fire }); b.rt.runFrame();
+    const v = b.view.seen;
+    if (!v || v === last) continue;
+    last = v; n++;
+    if (v.s.boost === !!(b.rt.M[0x72] & 0x80)) agree++;
+    const c = C.chase(b.view, v.s, cs, v.frame), h = C.heli(b.view, v.s, hs, v.frame); cs = c.state; hs = h.state;
+    c.tick = h.tick = v.frame;
+    const yc = yellow(b.view, v.s, c), yh = yellow(b.view, v.s, h);
+    if (v.s.boost) { on++; if (yc.k >= 20 && yh.k >= 8) lit++; c.tick++; if (yellow(b.view, v.s, c).px.some((p, i) => p !== yc.px[i])) moved++; }
+    else { off++; if (!yc.k && !yh.k) dark++; }
+  }
+  const l1 = 'boost: the snapshot\'s boost the game\'s flag ($72 bit 7) in ' + agree + ' of ' + n + ' pictures; the boost on in ' + on + ', off in ' + off;
+  if (agree !== n || on < 20 || off < 10) fail(l1); else console.log('ok   ' + l1);
+  const l2 = 'boost: sparks in the flame\'s yellow from both cameras in ' + lit + ' of ' + on + ' pictures with the boost on, thrown afresh the next frame in ' + moved + ', and none in ' + dark + ' of ' + off + ' without it';
+  if (lit < on || moved < on || dark < off) fail(l2); else console.log('ok   ' + l2);
 }
 
 // --- Heli cam ----------------------------------------------------------------------------------

@@ -158,7 +158,7 @@ function draw(F) {
   const seen = view && view.seen;
   if (cam && seen && rt.shown - seen.frame < 30) {
     const c = SCRChase[cam](view, seen.s, camState, seen.frame);
-    camState = c.state;
+    camState = c.state; c.tick = rt.shown;            // the frame shown, which throws the boost's sparks afresh
     SCRChase.draw(view, seen.s, c, p);
   }
   for (let i = 0, o = 0; i < p.length; i++, o += 4) { const c = RGB[p[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
@@ -321,11 +321,13 @@ document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 // the finger is on it and, once it lifts, until the game has read it
 PlayControls.keys($('pl-keys'), { down: name => { if (running) press('tap:' + name, name); }, up: name => lift('tap:' + name) });
 // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js):
-// each of the joystick's bits is held as a key is; fire starts the game, as a tap does
-PlayControls.attach({
+// each of the joystick's bits is held as a key is; fire starts the game, as a tap does. In a race
+// ($3DF8 bit 7) fire without the stick back is fire with it forward, the boost forward, as Z is.
+const controls = PlayControls.attach({
   screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true,
   onPad(bits) {
     if (!running) { if ((bits & 16) && data) start(); return; }
+    if ((bits & 16) && !(bits & 2) && rt && (rt.M[0x3DF8] & 0x80)) bits |= 1;
     for (const b of [1, 2, 4, 8, 16]) {
       const code = 'pad-' + b;
       if (bits & b) { if (!held.has(code) || letGo.has(code)) press(code, b); }
@@ -333,6 +335,8 @@ PlayControls.attach({
     }
   },
 });
+// on a touch screen the buttons stay right under the picture, over the joystick and the keys
+if (controls.touch) screen.insertAdjacentElement('afterend', $('pl-bar'));
 // a name typed on a phone's own keyboard: each character pressed in turn, held until the game has
 // read its row of the keyboard twice, and a read with no key between two
 const typeForm = $('pl-type'), typeIn = typeForm.querySelector('input');

@@ -38,6 +38,11 @@
 // over the lowest line a puff is drawn on ($B7) in the game's picture, in the game's shape at the
 // same scale (a line half a fat pixel, as the game's screen has them), turned to face the camera.
 //
+// The boost. While the game shows the boost's flame ($72 bit 7, which BOOST sets: two multicolour
+// sprites over the bonnet's exhausts, yellow with white, the left and the right by turns each
+// frame), these views throw sparks off the car's front wheels in the flame's two colours, as the
+// specks are drawn: a fat pixel by two lines each, thrown afresh each video frame (cam.tick).
+//
 // The picture. The game's lens is a cylinder: a point's place across is its bearing, 256 fat
 // pixels to a quarter turn (PROJECT_X), and its place up its height over its distance along the
 // ground, 83.4 lines for a unit of height at a distance of one (PROJECT_Y). On the page's square
@@ -69,9 +74,10 @@ const GROUND = 0x200;                    // the ground's height
 const CAR_W = 81, CAR_L = 121.5;         // the cars' width and length
 const VIEW = { x: 32, y: 35, w: 160, h: 161 };   // the view in the frame's pixels: x and y, its width in fat pixels and its height in lines
 const CHAIN_X = 3 * CAR_W / 8, CHAIN_Z = CAR_L / 2;   // the chains: over the wheels
-const SKY = 14, FILL = 8, BLACK = 0, WHITE = 1;
+const SKY = 14, FILL = 8, BLACK = 0, WHITE = 1, YELLOW = 7;
 const SPECK_D = 128;                     // how far ahead of the eye a speck is put
 const PUFF_R = CAR_L, PUFF_K = Math.PI * PUFF_R / VIEW.w;   // a puff of a wreck's dust: how far from the car, and a fat pixel's size
+const SPARKS = 10;                       // the boost's sparks off each front wheel, each video frame
 const NEAR = 4;
 
 // ---- vectors
@@ -188,7 +194,7 @@ function snap(v, M) {
   // horizon's line in the view (from $33/$69, which the pitch moves)
   const eye = { x: pos[0] / 16, y: s16(M[0x38] << 8 | M[0x37]) * HS, z: pos[2] / 16, heading: car.heading,
     hz: 208 - s16(M[0x69] << 8 | M[0x33]) };
-  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces, eye, dust: [] };
+  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces, eye, dust: [], boost: !!(M[0x72] & 0x80) };
 }
 
 // ---- a car: the model in its own frame (across, up, along), placed by its frame
@@ -365,7 +371,7 @@ function draw(v, s, cam, px) {
   if (s.dust && s.eye) for (const d of s.dust) {
     if (d.puff === undefined) {
       const c = toCam(backProject(s.eye, d.col + 16, d.row - 48, SPECK_D));
-      if (c[2] >= NEAR) dots.push(project(c));
+      if (c[2] >= NEAR) dots.push([...project(c), WHITE]);
       continue;
     }
     const pts = puffShape(v.puff, d), a = s.car.heading + (pts.u - VIEW.w / 2) / (VIEW.w / 2) * Math.PI / 2;
@@ -376,10 +382,21 @@ function draw(v, s, cam, px) {
     face([...arc, at([pts[pts.length - 1][0], bottom]), at([pts[0][0], bottom])], FILL);
     for (let i = 1; i < arc.length; i++) line(arc[i - 1], arc[i], d.puff & 2 ? WHITE : BLACK);
   }
+  // the boost's sparks: off the outside of each front wheel, up and back, yellow and some white,
+  // where the frame's number puts them
+  if (s.boost && !cam.inside) {
+    const fr = playerFrame(s.car), q = CAR_W / 4, tick = cam.tick || 0;
+    for (const side of [-1, 1]) for (let k = 0; k < SPARKS; k++) {
+      const n = tick * 31 + k * 7 + (side > 0 ? 3 : 0), r = i => { const x = Math.sin(n * 12.9898 + i * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const p = place(fr, [side * (CAR_W / 2 + r(1) * CAR_W / 3), q * (0.4 + r(2) * 2), CAR_L / 2 - r(3) * CAR_L / 2]);
+      const c = toCam(p);
+      if (c[2] >= NEAR) dots.push([...project(c), r(4) < 0.3 ? WHITE : YELLOW]);
+    }
+  }
   for (const l of lines) stroke(l);
   for (const p of dots) {
     const x = Math.floor(p[0]), y = Math.floor(p[1]);
-    for (const yy of [y - 1, y]) if (x >= 0 && yy >= 0 && x < W && yy < H && p[2] >= zb[yy * W + x] * 0.97) col[yy * W + x] = WHITE;
+    for (const yy of [y - 1, y]) if (x >= 0 && yy >= 0 && x < W && yy < H && p[2] >= zb[yy * W + x] * 0.97) col[yy * W + x] = p[3];
   }
   // into the frame: each fat pixel two of the frame's
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
