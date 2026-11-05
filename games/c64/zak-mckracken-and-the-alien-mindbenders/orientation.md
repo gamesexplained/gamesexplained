@@ -90,8 +90,9 @@ are loaded into the heap as the player meets them (`kit/skills/core/15-parts`
 counts that as data fetched into a buffer, so the game is one part).
 The scripts are programs for the SCUMM interpreter, read from the disk
 during play; they are counted under `coverage.virtual` in `game.json`.
-A music resource carries 6502 code of its own, which runs from wherever
-the heap put it (seen at `$C304` in the bedroom); see `facts.md`.
+The music's player is 6502 code inside sound 1, which opcode `$AB`
+loads to `$C300`, the top five pages of the heap, before a tune plays;
+it is outside the listing, like the scripts (`facts.md`, "Sound").
 
 ## Disk files in memory
 

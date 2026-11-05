@@ -36,36 +36,51 @@ Sources:
 | Feature | Status | Where |
 |---|---|---|
 | Boots from its own boot disk with `LOAD"*",8,1`, then asks "Put in side 1 and push joystick button." | live | the boot file `BOOT` loads `AA` at `$0400` and jumps there (`orientation.md`); the prompt's text is at `$309E` |
-| Joystick in port 1 moves the cursor; its button clicks | live | the cursor moves on port 1 and not on port 2 (5 November 2026) |
-| Game disk sides swapped at a prompt, "Put in side 2 and push joystick button." | live | |
-| The opening title sequence: Zak dreams, the title over his bed, credits | live | `reference/` |
-| Screen in four bands: two message lines at the top, the animation window, the sentence line, the verbs and the inventory | live | message text at `$CC00`-`$CC4F`, the sentence line at row 18, verbs rows 19-21, inventory rows 22-23 of the screen at `$CC00` |
-| Verbs chosen from the list below the sentence line: Push, Pull, Give, Open, Close, Read, Walk to, Pick up, What is, Put on, Take off, Use, Turn on, Turn off | live | |
-| New verbs appear as the game goes on; "Switch" appears once Zak has met Annie | open | |
-| A sentence is a verb and one or two objects; "with", "on" and "to" are put in by the program | open | |
-| A second click on the last word, or one on the sentence line, carries the sentence out | open | |
+| Joystick in port 1 moves the cursor; its button clicks | live | the cursor moves on port 1 and not on port 2 (5 November 2026); read_joystick `$1CE0` reads port 1 alone |
+| Game disk sides swapped at a prompt, "Put in side 2 and push joystick button." | live | ask_for_side `$300B` reads the side's number from track 1, sector 0 |
+| The opening title sequence: Zak dreams, the title over his bed, credits | live | `reference/`; its tune, sound 95, starts 7,780 frames in |
+| Screen in four bands: two message lines at the top, the animation window, the sentence line, the verbs and the inventory | live | message text at `$CC00`-`$CC4F`, the sentence line at row 18, verbs rows 19-21, inventory rows 22-23 of the screen at `$CC00`; the raster interrupts switch from multicolour to hires text at line `$C3` (raster_interface `$1102`) |
+| Verbs chosen from the list below the sentence line: Push, Pull, Give, Open, Close, Read, Walk to, Pick up, What is, Put on, Take off, Use, Turn on, Turn off | live | 20 verb slots in the interface's table (`$F0D9`); the verbs are placed by the scripts (verbOps `$5F86`) |
+| New verbs appear as the game goes on; "Switch" appears once Zak has met Annie | traced | a verb is added or deleted by verbOps (`$5F86`) from a script; when "Switch" is added is in the scripts, which are not decoded, and was not played to |
+| A sentence is a verb and one or two objects; "with", "on" and "to" are put in by the program | traced | each verb keeps a preposition (`$F165`, set by verbOps) that the sentence line puts between the objects (append_name `$07FC`, object_preposition `$0825`); not exercised with a two-object verb |
+| A second click on the last word, or one on the sentence line, carries the sentence out | traced | a click is passed to the scripts with where it came from in variable 32 (click_room `$F2EE`, click_sentence `$F314`, start_input_script `$067D`); the scripts decide when a sentence is complete; not exercised |
 | "What is" names whatever is under the cursor as it moves | live | the sentence line shows each object's name while the cursor passes over it |
 | "Walk to" comes back on the sentence line after every sentence | live | |
-| An inventory for each character, four shown at a time, arrows to scroll when there are more | open | |
-| Four characters to control: Zak, Annie, Melissa and Leslie, switched with F1, F3, F5 and F7 | open | manual, Commodore column |
-| Cut-scenes, during which the verbs and inventory disappear; RETURN bypasses one, and on an airliner takes you straight to your destination | open | manual |
-| Save and load with SHIFT and F1, on a blank formatted disk; not during cut-scenes | open | manual |
-| Restart with SHIFT and F7 | open | manual |
-| Pause with the space bar; the game pauses by itself after five minutes with no input | open | manual |
-| A snail replaces the cursor while the disk is read or the game is paused | open | manual |
-| Message line speed: `+` faster, `-` slower | open | manual (the OCR shows `+` and `-` in the Commodore column) |
-| Sound off and on | open | manual: the Commodore cell of the table did not survive the OCR |
-| The room "irises" to black while the next room is loaded from disk | open | manual |
-| Rooms wider than the screen scroll left and right | open | C64-Wiki, "graphics are often scrolled to the right or left" |
-| The copy protection: a security code from the code sheet when flying out of the USA, asked again on later flights; five wrong codes is a gag | open | Wikipedia; C64-Wiki, Gags |
-| Money on Zak's CashCard, spent on flights; the lottery numbers on the alien ship win the lottery in San Francisco | open | C64-Wiki, Cheats |
-| Characters can be "killed" only with difficulty | open | manual, "Our Game Design Philosophy" |
-| Mazes on Earth and Mars (the Mexican temple, the Sphinx, the Mars chambers) | open | C64-Wiki, "The labyrinths" |
-| Music by Matthew Kane; sound effects by Matthew Kane, Chris Grigg and David Warhol | open | manual credits |
-| The National Inquisitor newspaper in the box carries hints | open | the manual and the wiki; not in the program |
+| An inventory for each character, four shown at a time, arrows to scroll when there are more | traced | redraw_inventory `$F380` and draw_arrow `$F3C6` show four items from the scroll; click_arrow `$F34E` scrolls by two; with an odd number of items the last scroll shows three and a blank (`facts.md`, "Bugs") |
+| Four characters to control: Zak, Annie, Melissa and Leslie, switched with F1, F3, F5 and F7 | traced | F1, F3, F5 and F7 reach the scripts as 1 to 4 in variable 39 (key_table `$1CF8`, handle_key `$234D`); the switch itself is done by the scripts |
+| Cut-scenes, during which the verbs and inventory disappear; RETURN bypasses one, and on an airliner takes you straight to your destination | traced | op_cutscene `$5AE3` hides the verbs, the inventory and the cursor; the cut-scene key, variable 40 (13, RETURN, in the bedroom), sends the script to its override when it set one (handle_key `$234D`); which cut-scenes have one, the flights among them, is in the scripts |
+| Save and load with SHIFT and F1, on a blank formatted disk; not during cut-scenes | traced | save_game `$0A53` refuses one of the game's own disks and writes tracks 1 and 5 on, load_game `$0AD5` reads them back (`facts.md`, "Saving"); the key reaches the scripts, which call saveLoadGame `$5E6F`; not exercised |
+| Restart with SHIFT and F7 | traced | op_restart `$5F5A` goes back into the start-up at `$0418`; the key is the scripts' |
+| Pause with the space bar; the game pauses by itself after five minutes with no input | live | handle_key `$234D` pauses on space; read_keys `$1BAF` files a space when the idle count, 18,000 frames, runs out; joystick input resets it and keys do not (`facts.md`, "Timing") |
+| A snail replaces the cursor while the disk is read or the game is paused | traced | busy_cursor `$13DA` shows the snail (`$F080`) around every load (load_resource `$D4BE`); the cursor during the pause was not looked at |
+| Message line speed: `+` faster, `-` slower | live | change_message_speed `$23D0`: the speed, 6 at the start, goes from 0 to 10; three presses of `+` took it from 6 to 3 |
+| Sound off and on | open | the Commodore cell of the manual's table did not survive the OCR; the program's own keys (handle_key `$234D`) are space, `+`, `-` and the cut-scene key, so any key for the sound would be the scripts', which are not decoded |
+| The room "irises" to black while the next room is loaded from disk | traced | close_room `$D61E` closes the iris (`$D60C`) and open_room `$D645` opens it from the middle (`$D615`) |
+| Rooms wider than the screen scroll left and right | traced | draw_room `$3610` shifts the room a column and decodes the new one; move_camera `$CAD0` follows the actor when it comes within 10 columns of an edge |
+| The copy protection: a security code from the code sheet when flying out of the USA, asked again on later flights; five wrong codes is a gag | open | nothing in the 6502 program asks for a code; it is in the scripts, which are not decoded |
+| Money on Zak's CashCard, spent on flights; the lottery numbers on the alien ship win the lottery in San Francisco | open | in the scripts, which are not decoded |
+| Characters can be "killed" only with difficulty | open | in the scripts, which are not decoded |
+| Mazes on Earth and Mars (the Mexican temple, the Sphinx, the Mars chambers) | open | the mazes are rooms and scripts on the disk; the rooms were not matched to places |
+| Music by Matthew Kane; sound effects by Matthew Kane, Chris Grigg and David Warhol | live | four tunes, sounds 95, 102, 103 and 104, played by the player in sound 1 (`facts.md`, "Sound"); tune 95 heard in the opening |
+| The National Inquisitor newspaper in the box carries hints | open | printed in the box; nothing on the disks was looked for |
 
 ## Beyond the documentation
 
 Found in the code, not in the manual.
 
+| Feature | Status | Where |
+|---|---|---|
+| The music keeps playing through a change of room: video_off, which turns the picture and the interrupts off while a room loads, does nothing while the music plays | traced | video_off `$13F3`, the check of `$43E8` |
+| The cursor has weight: it speeds up as the joystick is held and slides to a stop, more slowly over some kinds of slot | traced | move_cursor `$F5F5`, set_cursor_feel `$F5AE` |
+| At most four actors can be on the screen at once, one sprite column each; a fifth stops the game | traced | assign_sprites `$3491`, fatal error 13 |
+| The cursor's colour pulses through six greys, a step every seventh frame | traced | `$1163`-`$1167`, frame_irq `$117C` |
+| An object in someone's inventory sends a walk to the wrong place: walkActorToObject and two other opcodes check the wrong register | traced | `facts.md`, "Bugs in the program" |
+| A disk that will not take a write is never noticed when saving | traced | disk_write `$3AD1`, bus_write_sector `$3BCB` |
+
 ## Open questions
+
+- Which scenes the tunes 102, 103 and 104 play over: the scripts that
+  start them are known by a search of their bytes (`facts.md`, "Sound"),
+  and the rooms are not matched to places.
+- Whether anything uses the entries for scripts 56, 57 and 154, which
+  point at bytes that are no script's header.

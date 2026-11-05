@@ -2551,9 +2551,9 @@
   },
   {
    "address": 2264,
-   "name": "b_08D8",
+   "name": "room_object_walk_point",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2286,
@@ -12391,21 +12391,21 @@
   },
   {
    "address": 29508,
-   "name": "f_7344",
+   "name": "room_counts",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 29567,
-   "name": "f_737F",
+   "name": "room_address_hi",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 29626,
-   "name": "f_73BA",
+   "name": "room_address_lo",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 29685,
@@ -15277,9 +15277,9 @@
   },
   {
    "address": 65394,
-   "name": "a_FF72",
+   "name": "interface_drawing",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 65395,
@@ -15492,7 +15492,7 @@
   {
    "address": 1316,
    "type": "line",
-   "text": "One pass of the game: shows the messages, acts on a key, puts the cursor's place in the room into variables 30 and 31 (and the camera into 2, the message flag into 3, the music flag into 6), runs every script, starts the input script for a waiting click or key, carries out a waiting sentence. When a room is shown: walks the actors, moves the camera, copies the objects' states, draws the room again when the camera has moved (a column, or the whole when it jumped), draws the objects waiting to be drawn, swaps the screens when the hidden one has been drawn, draws the actors, opens the room after it has been entered ($D645 or $1162), plays the actors' sounds and moves the flashlight. Then waits for the frame interrupt, and until variable 25's number of frames have passed since the pass began ($C6): that sets the game's speed"
+   "text": "One pass of the game: shows the messages, acts on a key, puts the cursor's place in the room into variables 30 and 31 (and the camera into 2, the message flag into 3, the music flag into 6), runs every script, starts the input script for a waiting click or key, carries out a waiting sentence. With no room shown (room 0) it starts the next pass at once. When a room is shown: walks the actors, moves the camera, copies the objects' states, draws the room again when the camera has moved (a column, or the whole when it jumped), draws the objects waiting to be drawn, swaps the screens when the hidden one has been drawn, draws the actors, opens the room after it has been entered ($D645 or $1162), plays the actors' sounds and moves the flashlight; then waits for the frame interrupt, and until variable 25's number of frames have passed since the pass began ($C6): that sets the game's speed"
   },
   {
    "address": 1549,
@@ -15552,7 +15552,7 @@
   {
    "address": 1782,
    "type": "line",
-   "text": "Points $15/$16 at the name of verb A: finds the verb's slot (21 to 0) in $F149 and takes its name block from $77C1/$779E (four bytes on, past the header); with no name, an empty string at $F0C0"
+   "text": "Points $15/$16 at the name of verb A: finds the verb's slot (20 to 0) in $F149 and takes its name block from $77C1/$779E (four bytes on, past the header); with no name, an empty string at $F0C0"
   },
   {
    "address": 1824,
@@ -15608,6 +15608,11 @@
    "address": 2212,
    "type": "line",
    "text": "The position of the object or actor in X (low) and A (high) in $FC18/$FC19: an actor's from its walk record when it is in the room ($FF when it is not); an object in the inventory, its owner's; an object in the room, its walk-to point ($69A3, $69C6 times 4) and the direction to face ($69E9, into $FC1A), moved to the nearest point a walk box allows ($17DC). $FF when not found, 0 when found"
+  },
+  {
+   "address": 2264,
+   "type": "line",
+   "text": "The walk-to point of room object Y ($69A3, and $69C6 times 4) and the direction to face ($69E9, into $FC1A), moved to the nearest point a walk box allows; returns 0"
   },
   {
    "address": 2322,
@@ -15757,17 +15762,17 @@
   {
    "address": 2643,
    "type": "line",
-   "text": "Saves the game on the disk in the drive: refuses a game disk (check_game_disk); writes $5A, the mark of a save disk, to block 1, then the script variables and the state after them ($FD6F, $283 bytes) to block 5, seven bytes from $00B6 to block 6, the verbs' table ($F0D9, $A0 bytes) to block 7, and everything from $679D to the end of the heap ($6063 bytes) from block 8. Returns 0"
+   "text": "Saves the game on the disk in the drive: refuses a game disk (check_game_disk returns 1 for it); writes $5A, the mark of a save disk, at sector 0 of track 1, then the script variables and the state after them ($FD6F, $283 bytes) at sector 0 of track 5, seven bytes from $00B6 at track 6, the verbs' table ($F0D9, $A0 bytes) at track 7, and everything from $679D to the end of the heap ($6063 bytes) from track 8 on. disk_write sends whole pages, so each piece is rounded up to whole sectors of 256 bytes from its address. Returns 0"
   },
   {
    "address": 2773,
    "type": "line",
-   "text": "Loads a saved game: refuses a game disk; returns 2 when block 1 does not hold the mark $5A; otherwise reads the same blocks back where save_game took them from, and returns 3"
+   "text": "Loads a saved game: refuses a game disk (1); returns 2 when sector 0 of track 1 does not start with the mark $5A; otherwise reads the same tracks back to where save_game took them from, and returns 3"
   },
   {
    "address": 2884,
    "type": "line",
-   "text": "Reads the first byte of block 1 into $15; when it is \"0\", \"1\" or \"2\", the disk is one of the game's own: it drops its caller's return address, so the save or load returns 1 at once. Otherwise returns 0"
+   "text": "Reads the first byte of track 1, sector 0, into $15; when it is \"0\", \"1\" or \"2\", the disk is one of the game's own: it drops its caller's return address, so the save or load returns 1 at once. Otherwise returns 0"
   },
   {
    "address": 2918,
@@ -15882,17 +15887,17 @@
   {
    "address": 2952,
    "type": "line",
-   "text": "Where each raster interrupt keeps Y while it runs ($0B89 A, $0B8A X)"
+   "text": "Where the raster interrupts above and inside the picture (raster_top, raster_room and the band interrupts) keep Y while they run ($0B89 A, $0B8A X); the frame interrupt at $117C keeps its registers on the stack"
   },
   {
    "address": 2953,
    "type": "line",
-   "text": "Where each raster interrupt keeps A while it runs"
+   "text": "Where raster_top, raster_room and the band interrupts that change the sprite pointers keep A while they run"
   },
   {
    "address": 2954,
    "type": "line",
-   "text": "Where each raster interrupt keeps X while it runs"
+   "text": "Where raster_top, raster_room and the band interrupts that change the sprite pointers keep X while they run"
   },
   {
    "address": 2955,
@@ -16072,7 +16077,7 @@
   {
    "address": 4453,
    "type": "line",
-   "text": "Frames between the cursor's colour steps, 6"
+   "text": "The countdown's reload, 6: the countdown runs from 6 through 0 and steps the cursor's colour as it passes below 0, so a step comes every seventh frame"
   },
   {
    "address": 4454,
@@ -16997,12 +17002,12 @@
   {
    "address": 10474,
    "type": "line",
-   "text": "Once a pass of the main loop: one step of walking for each actor from 12 down to 1 that has a walk slot (walk_actor_step)"
+   "text": "Each pass of the main loop while a room is shown: one step of walking for each actor from 12 down to 1 that has a walk slot (walk_actor_step)"
   },
   {
    "address": 10500,
    "type": "line",
-   "text": "Once a pass of the main loop: for each actor from 12 down to 1 with a costume and a walk slot, checks whether it is on the screen (check_on_screen) and, when its slot is due to be redrawn ($FD22), places its sprite (actor_sprite_position, assign_sprites) and, when it is on the screen, draws its next frame (draw_actor); then swaps the sprite buffer ($FC0E) for the next frame"
+   "text": "Each pass of the main loop while a room is shown: for each actor from 12 down to 1 with a costume and a walk slot, checks whether it is on the screen (check_on_screen) and, when its slot is due to be redrawn ($FD22), places its sprite (actor_sprite_position, assign_sprites) and, when it is on the screen, draws its next frame (draw_actor); then swaps the sprite buffer ($FC0E) for the next frame"
   },
   {
    "address": 10566,
@@ -17032,7 +17037,7 @@
   {
    "address": 10902,
    "type": "line",
-   "text": "Frees the last room's resource for the heap to reuse, makes room X the shown one ($6903, variable 4) and its resource ($6902, variable 36: rooms numbered below 0 use the one the table at $7265 gives). Frees the last room's picture and mask set ($77B2 and $77B3). Room 0 is no room: no scripts, and it returns from enter_room too. Otherwise loads the room (load_room_resource), keeps it locked, reads its header and objects, sets up its colours and characters ($2D17) and $38D9, and makes every other room in memory one older"
+   "text": "Marks the last room's resource as no longer shown: its count in $7344 becomes 1 ($81 when it is locked), so the heap may throw it out. Makes room X the shown one ($6903, variable 4) and its resource ($6902, variable 36: rooms numbered below 0 use the one the table at $7265 gives). Frees the last room's picture and mask set ($77B2 and $77B3). Room 0 is no room: no scripts, and it returns from enter_room too. Otherwise loads the room (load_room_resource), sets its count to 0, the shown room's ($80 when it is locked), reads its header and objects, sets up its colours and characters ($2D17) and its column index ($38D9), and adds one to the count of every room in memory whose count, lock bit aside, is not 0"
   },
   {
    "address": 11065,
@@ -17167,7 +17172,7 @@
   {
    "address": 12586,
    "type": "line",
-   "text": "Once a pass of the main loop: copies each of the room's objects' state, from the table of every object at $6B47, into $6B24 for the room, through the LDA at $3141 whose address it writes"
+   "text": "Each pass of the main loop while a room is shown: copies each of the room's objects' state, from the table of every object at $6B47, into $6B24 for the room, through the LDA at $3141 whose address it writes"
   },
   {
    "address": 12610,
@@ -17217,7 +17222,7 @@
   {
    "address": 13263,
    "type": "line",
-   "text": "Once a pass of the main loop: draws each object waiting to be drawn that is in view (draw_object, the whole view), first copying the shown screen to the hidden one when the room is lit only by the flashlight ($342A), and empties the list"
+   "text": "Each pass of the main loop while a room is shown: draws each object waiting to be drawn that is in view (draw_object, the whole view), first copying the shown screen to the hidden one when the room is lit only by the flashlight ($342A), and empties the list"
   },
   {
    "address": 13354,
@@ -17312,7 +17317,7 @@
   {
    "address": 13840,
    "type": "line",
-   "text": "Once a pass of the main loop, when the picture is to be drawn: rebuilds the column index when the room's resource or the index has moved in the heap ($6914, $FC2E). When the camera has moved one column right ($CBC2 one more than $CBC3), shifts the room left in the screens and decodes only the new rightmost column ($3E zero); one column left, shifts it right and decodes the leftmost ($3E $FF); otherwise decodes all 40 columns ($3E 1). Each column is decoded for its characters into the hidden screen ($23/$24), its colours into the colour buffer at $64F5 and its mask into the mask screen at $624D. Then draws the room's objects over it"
+   "text": "From the main loop while a room is shown, when the camera has moved since the last pass: rebuilds the column index when the room's resource or the index has moved in the heap ($6914, $FC2E). When the camera has moved one column right ($CBC2 one more than $CBC3), shifts the room left in the screens and decodes only the new rightmost column ($3E zero); one column left, shifts it right and decodes the leftmost ($3E $FF); otherwise decodes all 40 columns ($3E 1). Each column is decoded for its characters into the hidden screen ($23/$24), its colours into the colour buffer at $64F5 and its mask into the mask screen at $624D. Then draws the room's objects over it"
   },
   {
    "address": 14158,
@@ -17422,7 +17427,7 @@
   {
    "address": 15057,
    "type": "line",
-   "text": "Writes the bytes from X/Y on to the disk from the start set by disk_seek, a page to a sector, as many pages as $3BC6/$3BC7 cover; a sector the drive will not take shows \"Disk Error, push button to continue.\" and is tried again"
+   "text": "Writes the bytes from X/Y on to the disk from the start set by disk_seek, 256 bytes to a sector, as many sectors as $3BC6/$3BC7 cover rounded up. The check for a sector the drive would not take (\"Disk Error, push button to continue.\" and another try) is never met: bus_write_sector always returns with the carry clear"
   },
   {
    "address": 15128,
@@ -18277,7 +18282,7 @@
   {
    "address": 18898,
    "type": "line",
-   "text": "Frees the room that has gone longest unshown ($7344, which grows by one each time another room is entered) and is not locked (bit 7), of rooms 1 to 58"
+   "text": "Frees the room in memory that has gone longest unshown: the highest count in $7344 (load_room adds one to each count but the shown room's 0 every time a room is entered), leaving out the shown room and any that is locked (bit 7), of rooms 1 to 58"
   },
   {
    "address": 18974,
@@ -18807,7 +18812,7 @@
   {
    "address": 21645,
    "type": "line",
-   "text": "Opcodes $24, $64, $A4 and $E4, loadRoomWithEgo: reads an object, a room and an X and Y; a room script stops running here; puts the current actor (variable 0) in the room ($FF9D), enters it, places the actor at the object's walk-to point facing back the way it came ($08D8, $216C), points the camera at it and makes it follow ($5B6C), clears the sentence ($5C65), sends the actor walking to the X and Y when they are not negative, and starts global script 5. An object that is not in the new room is fatal error 11"
+   "text": "Opcodes $24, $64, $A4 and $E4, loadRoomWithEgo: reads an object, a room and an X and Y; a room script stops running here; puts the current actor (variable 0) in the room ($FF9D), enters it, places the actor at the object's walk-to point facing back the way it came ($08D8, $216C), points the camera at it and makes it follow ($5B6C), clears the sentence ($5C65), sends the actor walking to the X and Y when they are not negative, and starts global script 5. An object that find_object finds nowhere, in the new room or an inventory, is fatal error 11; one in an inventory passes, and its slot is read as a room object's index"
   },
   {
    "address": 21744,
@@ -18817,7 +18822,7 @@
   {
    "address": 21747,
    "type": "line",
-   "text": "The object is in the room: the actor is placed at its walk-to point ($08D8) facing the other way from it (bit 0 of the direction flipped), its walk slot's X set to $FF so that it is placed afresh; the camera is put on it and follows it, the room is marked to be drawn again ($C8), the input flag and the sentence are cleared, a walk starts when the X given is not negative, and global script 5 starts"
+   "text": "The object was found (in the room, or in an inventory, whose slot $08D8 then reads as a room object's index): the actor is placed at that walk-to point ($08D8) facing the other way from it (bit 0 of the direction flipped), its walk slot's X set to $FF so that it is placed afresh; the camera is put on it and follows it, the room is marked to be drawn again ($C8), the input flag and the sentence are cleared, a walk starts when the X given is not negative, and global script 5 starts"
   },
   {
    "address": 21845,
@@ -18932,12 +18937,12 @@
   {
    "address": 22513,
    "type": "line",
-   "text": "Opcodes $36, $76, $B6 and $F6, walkActorToObject: when the object is in the room, sends the actor walking ($1761) to the object's walk-to point ($08D8)"
+   "text": "Opcodes $36, $76, $B6 and $F6, walkActorToObject: finds the object (find_object) and, unless find_object leaves Y at $FF (not found), sends the actor walking ($1761) to the walk-to point that $08D8 reads with Y as an index into the room's objects. An object in an inventory is found too, with Y its inventory slot, so the actor walks to the point of whichever room object has that index; in a room with no objects at all, find_object returns with Y 0 and the walk goes to room object 0's point"
   },
   {
    "address": 22541,
    "type": "line",
-   "text": "Opcodes $0E, $4E, $8E and $CE, putActorAtObject: places the actor ($216C), in the room it is in, at the object's walk-to point, or at X 30, Y 60 when the object is not in the room"
+   "text": "Opcodes $0E, $4E, $8E and $CE, putActorAtObject: places the actor ($216C), in the room it is in, at the walk-to point $08D8 reads for the object (with the same mix-up as walkActorToObject for an object in an inventory), or at X 30, Y 60 when the object is not found"
   },
   {
    "address": 22593,
@@ -19260,6 +19265,21 @@
    "text": "The room shown (also kept in variable 4)"
   },
   {
+   "address": 29508,
+   "type": "line",
+   "text": "Each room resource's count, 1 to 58: 0 for the room shown; once it is left, 1, and one more each time a room is entered (load_room), so the highest is the room that has gone longest unshown, the one free_oldest_room throws out. Bit 7 locks the room in memory"
+  },
+  {
+   "address": 29567,
+   "type": "line",
+   "text": "The high byte of each room's address in the heap, 0 when it is not in memory ($73BA the low bytes)"
+  },
+  {
+   "address": 29626,
+   "type": "line",
+   "text": "The low byte of each room's address in the heap"
+  },
+  {
    "address": 30677,
    "type": "line",
    "text": "The heap's first block's header, its size: $502B at start-up ($77D6 high), written by init_heap at $4C02"
@@ -19352,7 +19372,7 @@
   {
    "address": 33074,
    "type": "line",
-   "text": "Sprites not expanded, in front of the picture, no collisions kept, sprites 0 to 6 multicolour; sprite pointers at $CBF8 ($78/$79); the sprite area $E000-$EFFF cleared"
+   "text": "Sprites not expanded, in front of the picture, sprites 0 to 6 multicolour; zero is also written to the collision registers $D01E and $D01F, which does nothing, as they can only be read; sprite pointers at $CBF8 ($78/$79); the sprite area $E000-$EFFF cleared"
   },
   {
    "address": 33134,
@@ -19382,7 +19402,7 @@
   {
    "address": 51920,
    "type": "line",
-   "text": "Once a pass of the main loop: moves the camera's centre ($CBC2) one column at a time: back inside variables 23 and 24 when it is outside them; otherwise towards its target ($CBC8), which, when it follows an actor ($CBC6 = 2, actor $CBC7), is set to the actor's column whenever the actor is closer than $CBC4 (10) columns to the view's left edge or further than $CBC5 (30); the target is kept within variables 23 and 24. The centre stays 20 columns from each end of the room; the view runs from the centre less 20 ($CBC0) to 19 more ($CBC1)"
+   "text": "Each pass of the main loop while a room is shown: moves the camera's centre ($CBC2) one column at a time: back inside variables 23 and 24 when it is outside them; otherwise towards its target ($CBC8), which, when it follows an actor ($CBC6 = 2, actor $CBC7), is set to the actor's column whenever the actor is closer than $CBC4 (10) columns to the view's left edge or further than $CBC5 (30); the target is kept within variables 23 and 24. The centre stays 20 columns from each end of the room; the view runs from the centre less 20 ($CBC0) to 19 more ($CBC1)"
   },
   {
    "address": 51934,
@@ -19887,7 +19907,7 @@
   {
    "address": 61939,
    "type": "line",
-   "text": "Each frame, from the frame interrupt: moves the cursor (move_cursor), works out where it points in the room (cursor_room_point) and which slot it is over (find_slot). When that slot has changed, gives the last one back its colour and highlights the new one, through the routines for their kinds. When the button has just been pressed over a slot, runs that kind's click routine. The JSRs at $F21B, $F23D and $F25D are written with the routines' addresses"
+   "text": "From the frame interrupt, each frame that the room's colours were not copied ($116D), the interface is not being drawn ($FF72) and the cursor is not hidden ($1161): moves the cursor (move_cursor), works out where it points in the room (cursor_room_point) and which slot it is over (find_slot). When that slot has changed, gives the last one back its colour and highlights the new one, through the routines for their kinds. When the button has just been pressed over a slot, runs that kind's click routine. The JSRs at $F21B, $F23D and $F25D are written with the routines' addresses"
   },
   {
    "address": 61980,
@@ -20002,7 +20022,7 @@
   {
    "address": 62336,
    "type": "line",
-   "text": "Keeps the inventory's scroll within the items the actor holds (at most four fewer, and even), then draws the inventory's items and arrows again, slot by slot"
+   "text": "Keeps the inventory's scroll from passing the items the actor holds: when it is more than the count less four (0 at least), it becomes that, rounded up to an even number, so an odd count can leave three items below it. Then draws the inventory's items and arrows again, slot by slot"
   },
   {
    "address": 62406,
@@ -20097,7 +20117,7 @@
   {
    "address": 62965,
    "type": "line",
-   "text": "Each frame: the cursor's speed across and up and down dies away by its own value shifted by $F1A1, then the joystick pushes it ($F19F, $F1A0), and the position moves by the speed, stopping at the screen's edges (X 0 to 159, Y 16 to 191) with the speed cleared there"
+   "text": "Each frame the cursor moves (update_cursor): the cursor's speed across and up and down dies away by its own value shifted by $F1A1, then the joystick pushes it ($F19F, $F1A0), and the position moves by the speed. At X 0 and 159, and at Y 0 and 191, it stops with the speed cleared; a Y below 16, at the top, is put back to 16 and the speed is kept"
   },
   {
    "address": 63242,
@@ -20133,6 +20153,11 @@
    "address": 65393,
    "type": "line",
    "text": "The interface's state, set by set_user_state: bit 7 the verbs shown, 6 the inventory, 5 the sentence line, 4 the cursor, 3 the other scripts frozen"
+  },
+  {
+   "address": 65394,
+   "type": "line",
+   "text": "1 while the verbs and the inventory are drawn again (set_user_state, redraw_inventory_banked); the frame interrupt does not move the cursor meanwhile"
   },
   {
    "address": 65424,
