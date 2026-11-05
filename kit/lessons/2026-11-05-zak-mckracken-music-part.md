@@ -1,4 +1,4 @@
-## next · 2026-11-05 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
+## 0.0.311 · 2026-11-05 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
 
 - **Code in a buffer is a part when the loader always puts it in the
   same place.** The game's music player is 6502 code inside a sound
