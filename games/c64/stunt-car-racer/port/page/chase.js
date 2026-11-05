@@ -1,4 +1,4 @@
-// The Play page's 3D view of the race from outside the car, for its mods (Chase View, Heli Replay):
+// The Play page's 3D view of the race from outside the car, for its mods (Chase cam, Heli cam):
 // the track, the player's car and the opponent's drawn again from a camera the page places, in the
 // game's own colours and in its fat pixels, over the part of the screen above the dashboard. The
 // game is not changed: its memory is only read, and the routines below are run on a scratch copy
@@ -22,7 +22,21 @@
 // and three eighths at the back's top. The car is 81 across ($C34D, $1B, times 1.5 each way) and
 // half as long again. The opponent's corners are read as DRAW_VIEW leaves them, its wheels'
 // heights from OPP_WHEELS; the player's car is the same shape, placed by its position, its
-// heading and the heights of its three points (CAR_POINT_HEIGHTS, from the pitch and the roll).
+// heading and the heights of its three points (CAR_POINT_HEIGHTS, from the pitch and the roll):
+// points 0 and 1 the front wheels, left and right, and point 2 the middle of the back. The crane's
+// chains hang to all four wheels.
+//
+// The dust. The game throws specks up over its view while a wheel is over the road's edge (DUST,
+// $2C6F) and, while the car is wrecked, a cloud of dust: puffs drawn as a few lines joined end to
+// end over the ground's colour (DUST_WRECKED, DEBRIS). Both are drawn on the screen, not in the
+// track. These views put a speck where the game's driver sees it, a car length ahead of the eye
+// (just past the car's nose, where the higher ones clear its roof from behind), white and a fat
+// pixel by two lines as the game draws it. The game's cloud covers the
+// view from the horizon down, so here it is put round the car: each puff a car length from the
+// car's middle, as far round from its nose as its column is from the view's middle (the view's
+// edges a quarter turn, so its width is half the way round), as high over the car's wheels as it is
+// over the lowest line a puff is drawn on ($B7) in the game's picture, in the game's shape at the
+// same scale (a line half a fat pixel, as the game's screen has them), turned to face the camera.
 //
 // The picture. The game's lens is a cylinder: a point's place across is its bearing, 256 fat
 // pixels to a quarter turn (PROJECT_X), and its place up its height over its distance along the
@@ -40,9 +54,10 @@
 //                                          frame's palette indices)
 //   SCRChase.chase(v, s, prev, frame)      the camera behind and above the car at the C64's frame
 //                                          number, following prev (the last camera's state)
-//   SCRChase.replayAt(v.rec, f, i)         the recording at C64 frame f: { s, i }, the snapshot there
-//                                          and where to look from next time
-//   SCRChase.heli(v, s, prev, frame)       the helicopter's camera for Heli Replay
+//   SCRChase.heli(v, s, prev, frame)       Heli cam: the helicopter's camera at the C64's frame
+//                                          number, following prev; the same arguments as chase
+//   SCRChase.hidden(v, s, a, b)            whether the track stands between points a and b
+//   SCRChase.roadAt(v, s, x, z)            the road's height there, -Infinity off the track
 (function (root) {
 'use strict';
 // the game's lens: 256 fat pixels across to a quarter turn of bearing (PROJECT_X), and 83.4 lines
@@ -53,8 +68,10 @@ const HS = KY / FY;                      // a unit of height in units across, as
 const GROUND = 0x200;                    // the ground's height
 const CAR_W = 81, CAR_L = 121.5;         // the cars' width and length
 const VIEW = { x: 32, y: 35, w: 160, h: 161 };   // the view in the frame's pixels: x and y, its width in fat pixels and its height in lines
-const CHAIN_X = 3 * CAR_W / 8, CHAIN_Z = CAR_L / 2;   // the chains: over the front wheels
+const CHAIN_X = 3 * CAR_W / 8, CHAIN_Z = CAR_L / 2;   // the chains: over the wheels
 const SKY = 14, FILL = 8, BLACK = 0, WHITE = 1;
+const SPECK_D = 128;                     // how far ahead of the eye a speck is put
+const PUFF_R = CAR_L, PUFF_K = Math.PI * PUFF_R / VIEW.w;   // a puff of a wreck's dust: how far from the car, and a fat pixel's size
 const NEAR = 4;
 
 // ---- vectors
@@ -105,22 +122,28 @@ function trackKey(M) {
 
 function create(make) {
   const sc = make();
-  return { sc, key: null, pieces: null, seen: null, rec: [] };
+  return { sc, key: null, pieces: null, seen: null, puff: puffTables(sc.M), blocks: null };
 }
 
 // the page's hook: each time the game's DRAW_VIEW finishes, a snapshot of the race as it drew it,
-// with the C64's frame number, in v.seen, and kept in v.rec for Heli Replay from the start of the
-// race (CLEAR_RACE empties it), at most REC_MAX; the game's memory only read
-const REC_MAX = 50 * 60 * 20;            // twenty minutes of Fast CPU's pictures
+// with the C64's frame number, in v.seen; the specks and puffs DUST_PLOT draws in the pass (in
+// DRAW_VIEW for a wreck's, after it for the specks) added to that snapshot as they are drawn. The
+// game's memory is only read.
 function attach(rt, make) {
-  const v = create(make), drawView = rt.P.DRAW_VIEW, clearRace = rt.P.CLEAR_RACE;
+  const v = create(make), drawView = rt.P.DRAW_VIEW, plot = rt.P.DUST_PLOT, M = rt.M;
+  let plots = [];
   rt.P.DRAW_VIEW = r => {
+    plots = [];
     const q = drawView(r);
-    v.seen = { s: snap(v, rt.M), frame: rt.frame };
-    if (v.rec.length < REC_MAX) v.rec.push(v.seen);
+    v.seen = { s: snap(v, M), frame: rt.frame };
+    v.seen.s.dust = plots;
     return q;
   };
-  rt.P.CLEAR_RACE = r => { v.rec = []; return clearRace(r); };
+  rt.P.DUST_PLOT = r => {
+    const x = r.x & 255, row = M[0xC260 + x], col = M[0x80A0 + x], q = plot(r);
+    if (q.z) plots.push(M[0x6B] & 0x80 ? { puff: x, row, col } : { row, col });
+    return q;
+  };
   return v;
 }
 
@@ -129,7 +152,8 @@ function snap(v, M) {
   const key = trackKey(M);
   if (key !== v.key) { v.pieces = track(v.sc.M, v.sc.P, M); v.key = key; }
   const S = v.sc.M, P = v.sc.P;
-  // the player's car: its place, its heading and its three points' heights (CAR_POINT_HEIGHTS)
+  // the player's car: its place, its heading and its three points' heights (CAR_POINT_HEIGHTS):
+  // the front wheels' (points 0 and 1, left and right) and the back's (point 2)
   const pos = [0, 1, 2].map(x => s24(M[0x0106 + x] << 16 | M[0x0103 + x] << 8 | M[0x0100 + x]));
   for (const a of [0x0101, 0x0104, 0x0107, 0x0121, 0x0124, 0x0123, 0x0126]) S[a] = M[a];
   P.CAR_POINT_HEIGHTS({});
@@ -137,10 +161,12 @@ function snap(v, M) {
   const ht = x => Math.max(s24(S[0xC3D1 + x] << 16 | S[0xC349 + x] << 8 | S[0xC346 + x]) / 8 + 0x28,
     s24(M[0xC3CE + x] << 16 | M[0xC343 + x] << 8 | M[0xC340 + x]) / 8);
   const car = { x: pos[0] / 16, z: pos[2] / 16, heading: s16(M[0x0125] << 8 | M[0x0122]) / 65536 * 2 * Math.PI,
-    back: [ht(0), ht(1)], front: ht(2), steer: M[0xC5] === 0xF1 ? -1 : M[0xC5] === 0x0F ? 1 : 0 };
-  // the opponent's: its corners from the view's place and quarter, and its points' heights
+    front: [ht(0), ht(1)], back: ht(2), steer: M[0xC5] === 0xF1 ? -1 : M[0xC5] === 0x0F ? 1 : 0 };
+  // the opponent's: its corners from the view's place and quarter, and its points' heights, each
+  // pass in a league race (OPP_CORNERS works them out wherever it is; the game draws the car only
+  // when it is ahead, OPP_DRAW_HERE, $E195, and these views draw it behind too)
   let opp = null;
-  if ((M[0xC76C] & 0x80) && !(M[0xC36A] & 0x80)) {
+  if (M[0xC76C] & 0x80) {
     const q = M[0x68], ex = (pos[0] >> 4), ez = (pos[2] >> 4);
     const corner = k => {
       const lat = s16(M[0xC510 + k] << 8 | M[0xC500 + k]), dep = s16(M[0xC530 + k] << 8 | M[0xC520 + k]);
@@ -150,12 +176,19 @@ function snap(v, M) {
     // a corner's wheel: its point less $50 (OPP_WHEELS), on the road under the wheel ($07EC) when
     // lower; wheels 0 and 1 are at the back, 2 at the front ($238A)
     const h = (k, w) => Math.max(s16(M[0xA330 + k] << 8 | M[0x8040 + k]) - 0x50, s16(M[0x07F0 + w] << 8 | M[0x07EC + w]));
-    opp = { corners: [5, 7, 8, 10].map(corner), heights: [h(0x3C, 0), h(0x3E, 1), h(0x3D, 2), h(0x3F, 2)] };
+    // ahead: whether it is ahead of the player round the track ($C36A); shown: whether the game
+    // draws it, ahead and 10 or more apart
+    opp = { corners: [5, 7, 8, 10].map(corner), heights: [h(0x3C, 0), h(0x3E, 1), h(0x3D, 2), h(0x3F, 2)],
+      ahead: !(M[0xC36A] & 0x80), shown: !(M[0xC36A] & 0x80) && (M[0x3A] > 0 || M[0x39] >= 0x0A) };
   }
   // the crane's chains, as CRANE_CHAINS will draw them later in this pass: from row $C36B up while
   // the count $2F runs; once it is 0 their ends rise by $C36C a pass, and at row $5F they are gone
   const chain = M[0x2F] ? M[0xC36B] : M[0xC36B] === 0x5F ? null : (M[0xC36B] - M[0xC36C]) & 0xFF;
-  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces };
+  // the eye the game drew from, for the dust: its place and height ($37/$38), its heading, and the
+  // horizon's line in the view (from $33/$69, which the pitch moves)
+  const eye = { x: pos[0] / 16, y: s16(M[0x38] << 8 | M[0x37]) * HS, z: pos[2] / 16, heading: car.heading,
+    hz: 208 - s16(M[0x69] << 8 | M[0x33]) };
+  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces, eye, dust: [] };
 }
 
 // ---- a car: the model in its own frame (across, up, along), placed by its frame
@@ -193,14 +226,18 @@ function frameOf(bl, br, fl, fr) {
 }
 const place = (fr, p) => add(fr.o, add(mul(fr.r, p[0]), add(mul(fr.u, p[1]), mul(fr.f, p[2]))));
 
-// the player's car's frame: its points 63.5 ahead and behind and 31.75 to each side at the back
-// ($0130-$013B), their wheels $28 under the heights CAR_POINT_HEIGHTS gives them
+// the player's car's frame: its points ($0130-$013B, WHEEL_OFFSETS) 63.5 ahead and 31.75 to the
+// left (point 0) and to the right (point 1), and 63.5 behind in the middle (point 2), their wheels
+// $28 under the heights CAR_POINT_HEIGHTS gives them. So the car is tilted as the game tilts its
+// own view: the roll that turns the picture is the one that lifts point 0 over point 1.
 function playerFrame(c) {
   const f = [Math.sin(c.heading), 0, Math.cos(c.heading)], r = [Math.cos(c.heading), 0, -Math.sin(c.heading)];
   const at = (a, s, h) => [c.x + f[0] * a + r[0] * s, h * HS, c.z + f[2] * a + r[2] * s];
-  const bl = at(-63.5, -31.75, c.back[1]), br = at(-63.5, 31.75, c.back[0]), fm = at(63.5, 0, c.front);
-  return frameOf(bl, br, add(fm, mul(r, -31.75)), add(fm, mul(r, 31.75)));
+  const fl = at(63.5, -31.75, c.front[0]), fr = at(63.5, 31.75, c.front[1]), bm = at(-63.5, 0, c.back);
+  return frameOf(add(bm, mul(r, -31.75)), add(bm, mul(r, 31.75)), fl, fr);
 }
+// the height of the player's car's middle, between its front wheels and its back
+const carHeight = c => ((c.front[0] + c.front[1]) / 2 + c.back) / 2;
 function oppFrame(o) {
   const p = k => [o.corners[k][0], o.heights[k] * HS, o.corners[k][1]];
   return frameOf(p(0), p(1), p(2), p(3));
@@ -304,23 +341,46 @@ function draw(v, s, cam, px) {
     }
   }
   // the cars
-  // (from the driver's seat, cam.inside, the player's own car is left out: the eye is inside it)
+  // (from the driver's seat, cam.inside, the player's own car is left out: the eye is inside it;
+  // and the opponent's too where the game does not draw it)
   const cars = cam.inside ? [] : [[playerFrame(s.car), s.car.steer]];
-  if (s.opp) cars.push([oppFrame(s.opp), 0]);
+  if (s.opp && (s.opp.shown || !cam.inside)) cars.push([oppFrame(s.opp), 0]);
   for (const [fr, steer] of cars) for (const part of carModel(steer)) {
     for (const f of part.faces) face(f.map(p => place(fr, p)), FILL);
     for (const e of part.edges) line(place(fr, e[0]), place(fr, e[1]), e[2]);
   }
-  // the crane's chains: straight up from the front wheels, where the game's driver sees them end;
-  // their ends risen by the rows the game has lifted them from $AF, at their distance from the eye
+  // the crane's chains: straight up from the four wheels; the game's driver sees the front two end
+  // where they hook on, risen by the rows the game has lifted them from $AF at their distance from
+  // the eye, and the back two are risen as far
   if (s.chain !== null && s.chain !== undefined && !cam.inside) {
     const fr = cars[0][0], rise = (0xAF - s.chain) * Math.hypot(CHAIN_X, CHAIN_Z) / FY;
-    for (const x of [-CHAIN_X, CHAIN_X]) {
-      const p = place(fr, [x, CAR_W / 4, CHAIN_Z]);
+    for (const z of [-CHAIN_Z, CHAIN_Z]) for (const x of [-CHAIN_X, CHAIN_X]) {
+      const p = place(fr, [x, CAR_W / 4, z]);
       line([p[0], p[1] + rise, p[2]], [p[0], p[1] + 3000, p[2]], BLACK);
     }
   }
+  // the dust: each speck a fat pixel by two lines where nothing nearer covers it; each puff of a
+  // wreck's dust filled with the ground's colour and outlined in the game's line's
+  const dots = [];
+  if (s.dust && s.eye) for (const d of s.dust) {
+    if (d.puff === undefined) {
+      const c = toCam(backProject(s.eye, d.col + 16, d.row - 48, SPECK_D));
+      if (c[2] >= NEAR) dots.push(project(c));
+      continue;
+    }
+    const pts = puffShape(v.puff, d), a = s.car.heading + (pts.u - VIEW.w / 2) / (VIEW.w / 2) * Math.PI / 2;
+    const foot = Math.min(s.car.front[0], s.car.front[1], s.car.back) * HS;
+    const ctr = [s.car.x + Math.sin(a) * PUFF_R, foot + (0xB7 - 48 - pts.w) * PUFF_K / 2, s.car.z + Math.cos(a) * PUFF_R];
+    const at = q => add(ctr, add(mul(cam.r, (q[0] - pts.u) * PUFF_K), mul(cam.u, (pts.w - q[1]) * PUFF_K / 2)));
+    const arc = pts.map(at), bottom = Math.max(pts[0][1], pts[pts.length - 1][1]);
+    face([...arc, at([pts[pts.length - 1][0], bottom]), at([pts[0][0], bottom])], FILL);
+    for (let i = 1; i < arc.length; i++) line(arc[i - 1], arc[i], d.puff & 2 ? WHITE : BLACK);
+  }
   for (const l of lines) stroke(l);
+  for (const p of dots) {
+    const x = Math.floor(p[0]), y = Math.floor(p[1]);
+    for (const yy of [y - 1, y]) if (x >= 0 && yy >= 0 && x < W && yy < H && p[2] >= zb[yy * W + x] * 0.97) col[yy * W + x] = WHITE;
+  }
   // into the frame: each fat pixel two of the frame's
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const o = (VIEW.y + y) * 384 + VIEW.x + 2 * x;
@@ -354,55 +414,126 @@ function chase(v, s, prev, frame) {
   return cam;
 }
 
-// ---- Heli Replay: the race so far again, from a helicopter beside the cars
-
-// a snapshot between two of the recording's, t of the way from a to b: the cars' places, headings
-// and heights in a straight line, unless either car jumped (the crane, a restart)
+// the way from heading a to heading b, t of it, the short way round
 const turnBy = (a, b, t) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return a + d * t; };
-function between(a, b, t) {
-  if (!b || t <= 0) return a;
-  const l = (p, q) => p + (q - p) * t, A = a.car, B = b.car;
-  if (Math.hypot(B.x - A.x, B.z - A.z) > 1500) return a;
-  const car = { x: l(A.x, B.x), z: l(A.z, B.z), heading: turnBy(A.heading, B.heading, t),
-    back: [l(A.back[0], B.back[0]), l(A.back[1], B.back[1])], front: l(A.front, B.front), steer: A.steer };
-  let opp = a.opp;
-  if (a.opp && b.opp && Math.hypot(b.opp.corners[0][0] - a.opp.corners[0][0], b.opp.corners[0][1] - a.opp.corners[0][1]) < 1500)
-    opp = { corners: a.opp.corners.map((c, k) => [l(c[0], b.opp.corners[k][0]), l(c[1], b.opp.corners[k][1])]), heights: a.opp.heights.map((h, k) => l(h, b.opp.heights[k])) };
-  return Object.assign({}, a, { car, opp });
+
+// ---- the track as solid blocks, for Heli cam: each stretch of road between two pairs of its edges,
+// down to the ground, as two triangles across the map with their heights; and whether the track
+// stands between two points (a point of the line between them under the road, tested every 20
+// units), or under one
+function blocks(v, s) {
+  const pieces = s.pieces || v.pieces;
+  if (v.blocks && v.blocks.pieces === pieces) return v.blocks;
+  const tris = [];
+  for (const pairs of pieces) for (let j = 1; j < pairs.length; j++) {
+    const A = pairs[j - 1].L, B = pairs[j].L, C = pairs[j].R, D = pairs[j - 1].R;
+    for (const t of [[A, B, C], [A, C, D]]) {
+      const xs = t.map(p => p[0]), zs = t.map(p => p[2]);
+      tris.push({ t, x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) });
+    }
+  }
+  return (v.blocks = { pieces, tris });
+}
+// the road's height at (x, z), the highest where stretches cross; -Infinity off the track
+function roadAt(v, s, x, z) {
+  let best = -Infinity;
+  for (const b of blocks(v, s).tris) {
+    if (x < b.x0 || x > b.x1 || z < b.z0 || z > b.z1) continue;
+    const [p, q, r] = b.t, d = (q[2] - r[2]) * (p[0] - r[0]) + (r[0] - q[0]) * (p[2] - r[2]);
+    if (!d) continue;
+    const l1 = ((q[2] - r[2]) * (x - r[0]) + (r[0] - q[0]) * (z - r[2])) / d, l2 = ((r[2] - p[2]) * (x - r[0]) + (p[0] - r[0]) * (z - r[2])) / d, l3 = 1 - l1 - l2;
+    if (l1 < 0 || l2 < 0 || l3 < 0) continue;
+    best = Math.max(best, l1 * p[1] + l2 * q[1] + l3 * r[1]);
+  }
+  return best;
+}
+function hidden(v, s, a, b) {
+  const n = Math.max(2, Math.ceil(Math.hypot(b[0] - a[0], b[2] - a[2]) / 20));
+  for (let i = 1; i < n; i++) {
+    const t = i / n, p = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    if (p[1] < roadAt(v, s, p[0], p[2])) return true;
+  }
+  return false;
 }
 
-// the replay at C64 frame f of the recording: the snapshot there, between the two around it; i is
-// where to start looking (the last call's), and the answer gives the next
-function replayAt(rec, f, i = 0) {
-  if (i >= rec.length || rec[i].frame > f) i = 0;
-  while (i + 1 < rec.length && rec[i + 1].frame <= f) i++;
-  const a = rec[i], b = rec[i + 1];
-  return { s: b ? between(a.s, b.s, (f - a.frame) / (b.frame - a.frame)) : a.s, i };
-}
-
-// the helicopter: beside the cars (the player's, or midway to the opponent's when it is near), up
-// and a little behind, swinging slowly from the car's side towards its front and back and again;
-// it follows with a lag, turning with the cars at half its rate, and looks just above the cars
-const HELI = { side: 750, up: 160, back: 120, aim: 45, zoom: 0.9, follow: 0.15, swing: 0.6, period: 1000, near: 1200 };
+// ---- Heli cam: the race filmed from a helicopter flying with it. It hangs behind the car and to
+// one side, high up, and looks ahead of the car, so that the road it is driving into is in the
+// picture. While the opponent's car is ahead (the game's $C36A) and nearer than HELI.near, it aims
+// between the two and stands further off, so that both are in the picture; an opponent behind is
+// never followed. When the track has hidden the car from it for HELI.patience frames, and would not
+// from the other side, it flies round to that side, over the back of the car, and stays there at
+// least HELI.stay frames. It eases into everything it does, as a helicopter would, and rises and
+// falls with the car faster than it follows it across, so that a car falling off the track stays
+// in the picture.
+const HELI = { dist: 560, up: 210, side: 2.2, ahead: 250, aim: 30, zoom: 0.9, follow: 0.12, rise: 0.3, swing: 0.035, near: 1600, spread: 0.8, over: 260, patience: 6, stay: 75 };
+const oppMiddle = o => [(o.corners[0][0] + o.corners[1][0] + o.corners[2][0] + o.corners[3][0]) / 4,
+  (o.heights[0] + o.heights[1] + o.heights[2] + o.heights[3]) / 4 * HS, (o.corners[0][1] + o.corners[1][1] + o.corners[2][1] + o.corners[3][1]) / 4];
 function heli(v, s, prev, frame) {
-  const c = s.car;
-  let tx = c.x, tz = c.z, ty = c.front * HS;
-  if (s.opp) {
-    const o = s.opp.corners, ox = (o[0][0] + o[1][0] + o[2][0] + o[3][0]) / 4, oz = (o[0][1] + o[1][1] + o[2][1] + o[3][1]) / 4;
-    if (Math.hypot(ox - tx, oz - tz) < HELI.near) { tx = (tx + ox) / 2; tz = (tz + oz) / 2; }
+  const c = s.car, car = [c.x, carHeight(c) * HS, c.z];
+  // what it films: the car, or the car and the opponent ahead of it, and how far apart they are
+  let mid = car, gap = 0;
+  if (s.opp && s.opp.ahead) {
+    const o = oppMiddle(s.opp), d = Math.hypot(o[0] - car[0], o[2] - car[2]);
+    if (d < HELI.near) { mid = mul(add(car, o), 0.5); gap = d; }
   }
-  let st = { x: tx, y: ty, z: tz, h: c.heading, frame };
-  if (prev && Math.hypot(tx - prev.x, tz - prev.z) < 1500 && frame >= prev.frame) {
-    const k = 1 - Math.pow(1 - HELI.follow, Math.min(50, frame - prev.frame));
-    st = { x: prev.x + (tx - prev.x) * k, y: prev.y + (ty - prev.y) * k, z: prev.z + (tz - prev.z) * k, h: turnBy(prev.h, c.heading, k / 2), frame };
+  // the frames since the last picture, and whether the car has been put somewhere new
+  const dt = prev && frame >= prev.frame ? Math.min(50, frame - prev.frame) : 0;
+  const fresh = !prev || Math.hypot(car[0] - prev.cx, car[2] - prev.cz) > 1500;
+  const rate = r => fresh ? 1 : 1 - Math.pow(1 - r, dt), k = rate(HELI.follow), ky = rate(HELI.rise), ks = rate(HELI.swing);
+  const ease = (p, q, t) => p + (q - p) * t, sideAngle = side => side > 0 ? HELI.side : 2 * Math.PI - HELI.side;
+  const st = fresh ? { x: mid[0], y: mid[1], z: mid[2], h: c.heading, gap, side: 1, a: HELI.side, hid: 0, since: HELI.stay }
+    : { x: ease(prev.x, mid[0], k), y: ease(prev.y, mid[1], ky), z: ease(prev.z, mid[2], k), h: turnBy(prev.h, c.heading, k),
+      gap: ease(prev.gap, gap, k), side: prev.side, a: prev.a, hid: prev.hid, since: prev.since + dt };
+  st.cx = car[0]; st.cz = car[2]; st.frame = frame;
+  // where it hangs at angle a, measured from the car's nose round to its right (the right side is
+  // HELI.side, the left a turn less it): further off the further apart the cars are, high over
+  // the road under it, and higher the nearer it is to straight behind
+  const at = a => {
+    const d = HELI.dist + st.gap * HELI.spread, back = Math.max(0, 1 - Math.abs(a - Math.PI) / (Math.PI - HELI.side));
+    const p = [st.x + Math.sin(st.h + a) * d, 0, st.z + Math.cos(st.h + a) * d];
+    p[1] = Math.max(st.y, GROUND * HS, roadAt(v, s, p[0], p[2]) + 60) + HELI.up + HELI.over * back;
+    return p;
+  };
+  // the side it is on: the other once the track has hidden the car's roof long enough from here
+  // and would not from there
+  const roof = add(car, [0, 25, 0]);
+  if (dt) {
+    st.hid = hidden(v, s, at(st.a), roof) ? st.hid + dt : 0;
+    if (st.hid >= HELI.patience && st.since >= HELI.stay && !hidden(v, s, at(sideAngle(-st.side)), roof)) { st.side = -st.side; st.hid = 0; st.since = 0; }
   }
-  const a = st.h + Math.PI / 2 + HELI.swing * Math.sin(2 * Math.PI * frame / HELI.period);
-  const pos = [st.x + Math.sin(a) * HELI.side - Math.sin(st.h) * HELI.back, Math.max(st.y, GROUND * HS) + HELI.up,
-    st.z + Math.cos(a) * HELI.side - Math.cos(st.h) * HELI.back];
-  const cam = lookAt(pos, [tx, ty + HELI.aim, tz]);
+  st.a = ease(st.a, sideAngle(st.side), ks);
+  const lead = HELI.ahead * Math.max(0, 1 - st.gap / HELI.near);
+  const cam = lookAt(at(st.a), [st.x + Math.sin(st.h) * lead, st.y + HELI.aim, st.z + Math.cos(st.h) * lead]);
   cam.zoom = HELI.zoom; cam.state = st;
   return cam;
 }
 
-const SCRChase = root.SCRChase = { create, attach, snap, draw, chase, heli, replayAt, between, lookAt, track, playerFrame, oppFrame, HS, VIEW, FX, FY, CHASE, HELI };
+// ---- the dust
+// a point the game draws over its view, at view column u (fat pixels) and line w, put back into the
+// track d from the eye e along the ground, by the game's lens: across by its bearing, up by its
+// height over the horizon's line
+function backProject(e, u, w, d) {
+  const th = (u - VIEW.w / 2) / FX;
+  return [e.x + Math.sin(e.heading + th) * d, e.y + (e.hz - w) * d / FY, e.z + Math.cos(e.heading + th) * d];
+}
+// the game's tables for a puff of a wreck's dust (DEBRIS, $29E3), read from its memory: where the
+// steps start ($2A36) and how many there are less one ($2A38), for an odd piece and an even, how
+// far right of its column it starts ($2A3C), and the steps across ($2A3E) and down ($2A4D)
+function puffTables(S) {
+  const sb = a => (S[a] << 24) >> 24, run = (a, n) => Array.from({ length: n }, (_, i) => sb(a + i));
+  return { start: [S[0x2A36], S[0x2A37]], count: [S[0x2A38], S[0x2A39]], shift: [S[0x2A3C], S[0x2A3D]], across: run(0x2A3E, 15), down: run(0x2A4D, 15) };
+}
+// a puff as DEBRIS draws it: from its column ($80A0) plus the shift and its row ($C260), ten lines
+// for an odd piece and five for an even, the steps taken from the start back; in view columns and
+// lines, with its middle (u, w)
+function puffShape(T, d) {
+  const y = d.puff & 1 ? 0 : 1;
+  let i = T.start[y], c = d.col + T.shift[y], r = d.row;
+  const pts = [[c - 48, r - 48]];
+  for (let n = T.count[y]; n >= 0; n--, i--) { c += T.across[i]; r += T.down[i]; pts.push([c - 48, r - 48]); }
+  pts.u = pts.reduce((t, p) => t + p[0], 0) / pts.length; pts.w = pts.reduce((t, p) => t + p[1], 0) / pts.length;
+  return pts;
+}
+
+const SCRChase = root.SCRChase = { create, attach, snap, draw, chase, heli, hidden, roadAt, lookAt, track, playerFrame, oppFrame, carHeight, backProject, puffShape, HS, VIEW, FX, FY, CHASE, HELI };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,8 +1,8 @@
 'use strict';
-// The Play tab's Chase View in Chromium, on the built page (python3 kit/scripts/build.py first),
+// The Play tab's Chase cam in Chromium, on the built page (python3 kit/scripts/build.py first),
 // with the page's own refreshes:
-// - the Chase View button switches it on and off, and the page remembers it on the next visit;
-// - in a practice race on Little Ramp, driven forward with the up arrow, the page draws Chase View
+// - the Chase cam button switches it on and off, and the page remembers it on the next visit;
+// - in a practice race on Little Ramp, driven forward with the up arrow, the page draws Chase cam
 //   (SCRChase.draw) over the view about every refresh while it is on, and never while it is off;
 //   the view's top rows show the sky and the race's own picture is replaced;
 // - nothing in the console is an error.
@@ -33,12 +33,12 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await crtOff();
 
   // the switch, and the next visit
-  await page.click('[data-mod="chase"]');
-  if (await page.$eval('[data-mod="chase"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('the Chase View button does not show it on');
+  await page.click('[data-cam="chase"]');
+  if (await page.$eval('[data-cam="chase"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('the Chase cam button does not show it on');
   await page.reload();
   await crtOff();
-  if (await page.$eval('[data-mod="chase"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('on the next visit, Chase View is off');
-  else console.log('ok   the Chase View button switches it on, and the next visit keeps it on');
+  if (await page.$eval('[data-cam="chase"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('on the next visit, Chase cam is off');
+  else console.log('ok   the Chase cam button switches it on, and the next visit keeps it on');
 
   // the menus to a practice race, on the page's machine, paused
   await page.click('#pl-over button');
@@ -50,7 +50,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     const S = [{ frames: 400 }, ...tap(J.fire), { frames: 300 }, ...type('A'), ...type('RETURN'), { frames: 200 }, ...tap(J.fire), { frames: 100 },
       ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 300 }, ...tap(J.fire), { frames: 600 }, { frames: 180, joy: J.fire }];
     for (const s of S) { rt.input.keys = new Set(s.keys || []); rt.input.joy = s.joy === undefined ? J.none : s.joy; for (let i = 0; i < s.frames; i++) rt.runFrame(); }
-    // count the pictures Chase View draws, and keep the last frame it drew into
+    // count the pictures Chase cam draws, and keep the last frame it drew into
     const draw = window.SCRChase.draw;
     window.chaseDraws = 0;
     window.SCRChase.draw = (v, s, cam, px) => { window.chaseDraws++; const q = draw(v, s, cam, px); window.chasePx = px; return q; };
@@ -67,8 +67,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     return (z.n - a.n) / ((z.t - a.t) / 1000);
   };
   const on = await count(3000);
-  if (on < 20) fail('with Chase View on, ' + on.toFixed(1) + ' pictures a second; the page refreshes about 50 times a second');
-  else console.log('ok   with Chase View on, ' + on.toFixed(1) + ' pictures a second');
+  if (on < 20) fail('with Chase cam on, ' + on.toFixed(1) + ' pictures a second; the page refreshes about 50 times a second');
+  else console.log('ok   with Chase cam on, ' + on.toFixed(1) + ' pictures a second');
   // the view's top rows are sky (the game's own picture has the cockpit's frame there), and the
   // middle of the view is not the game's picture: the camera is behind the car
   const look = await page.evaluate(() => {
@@ -79,11 +79,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   });
   if (look.sky < 0.9) fail('the view\'s top row is sky in ' + (100 * look.sky).toFixed(0) + ' % of it');
   else console.log('ok   the view\'s top row is sky, the camera behind the car');
-  await page.click('[data-mod="chase"]');
+  await page.click('[data-cam="chase"]');
   await page.focus('#pl-screen');
   const off = await count(2000);
-  if (off !== 0) fail('with Chase View off, ' + off.toFixed(1) + ' pictures a second');
-  else console.log('ok   with Chase View off, the game\'s own picture');
+  if (off !== 0) fail('with Chase cam off, ' + off.toFixed(1) + ' pictures a second');
+  else console.log('ok   with Chase cam off, the game\'s own picture');
   await page.keyboard.up('ArrowUp');
   if (errors.length) fail('the console: ' + errors.join(' | '));
   await stop();
