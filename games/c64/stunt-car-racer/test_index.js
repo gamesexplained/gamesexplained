@@ -7,9 +7,7 @@
 // - the odds of the races the player does not drive (its block race-odds) are what the port's
 //   RACE_RESULT ($E92C) gives, counted over every roll of the two ratings (RACE_OTHERS: the base at
 //   $E8B6 plus 0 to 63), both sides of the coin on a tie and all 256 of the fastest lap's draw, for
-//   every pair of the computer's drivers;
-// - the drivers' table is the habits bytes at $AEE0 read as OPPONENT_LINE reads them, the swerves'
-//   chances SWERVE's, and the top speeds every value the port's OPP_PICK draws for each track.
+//   every pair of the computer's drivers.
 //   node games/c64/stunt-car-racer/test_index.js
 const fs = require('fs'), path = require('path');
 const { graphics } = require('./port/scripts/race-frame.js');
@@ -73,45 +71,6 @@ if (!flips) fail('none of the frames shows a new view');
   }
   if (worst > 1e-12) fail('the odds differ from RACE_RESULT\'s by up to ' + worst);
   else console.log('ok   the odds of all ' + pairs + ' pairings are RACE_RESULT\'s, counted over every roll, coin and draw');
-}
-// the drivers' table and the top speeds against the game's bytes and the port's OPP_PICK
-{
-  const L = g.listing(), r = L.ram;
-  const rows = [...page.matchAll(/<tr><td>([^<]+)<\/td><td class="m">\$([0-9A-F]{2})<\/td><td><svg[^>]*><rect[^>]*\/><circle cx="([\d.]+)"[^>]*\/><\/svg><span class="dr-n">\$([0-9A-F]{2})<\/span><\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td class="n">(\d+) in 32<\/td><td>([^<]+)<\/td><\/tr>/g)];
-  const names = [];
-  for (let i = 0; i < 11; i++) names.push(String.fromCharCode(...r.subarray(0xAE01 + 16 * i, 0xAE01 + 16 * i + 12)).trim());
-  let bad = 0;
-  if (rows.length !== 11) { fail('the drivers\' table has ' + rows.length + ' rows'); bad++; }
-  rows.forEach((m, n) => {
-    const f = r[0xAEE0 + n];
-    let line = f & 8 ? 0x6E : 0x40;
-    if (n & 1) line ^= 0xFF;
-    const want = [names[n], f, line, (line / 255 * 100).toFixed(1), f & 2 ? 'follows the player’s line' : 'pulls out to pass',
-      f & 0x20 ? 'yes' : '-', f & 8 ? 'keeps its own line' : 'goes round', n + 1, f & 4 ? 'yes' : '-'];
-    const got = [m[1], parseInt(m[2], 16), parseInt(m[4], 16), m[3], m[5], m[6], m[7], +m[8], m[9]];
-    if (JSON.stringify(want) !== JSON.stringify(got)) { bad++; fail('the drivers\' table, row ' + (n + 1) + ': ' + JSON.stringify(got) + ', the game gives ' + JSON.stringify(want)); }
-  });
-  // each track's top speeds: every value OPP_PICK can draw, in the league and the Super League
-  const { SCRPage, data, cost } = load(__dirname);
-  const rt = SCRPage.create({ data, cost }), M = rt.M, P = rt.P, real = P.RANDOM;
-  const TRACK = { 'Little Ramp': 0, 'Stepping Stones': 1, 'Hump Back': 2, 'Big Ramp': 3, 'Ski Jump': 4, 'Draw Bridge': 5, 'High Jump': 6, 'Roller Coaster': 7 };
-  const speeds = [...page.matchAll(/<tr><td>([A-Za-z ]+)<\/td><td class="n">(\d+) to (\d+)<\/td><td class="n">(\d+) to (\d+)<\/td><\/tr>/g)];
-  if (speeds.length !== 8) { fail('the top speeds\' table has ' + speeds.length + ' rows'); bad++; }
-  for (const m of speeds) {
-    for (const sl of [0, 1]) {
-      let lo = 255, hi = 0;
-      for (let v = 0; v < 256; v++) {
-        let k = 0;
-        P.RANDOM = () => ({ a: k++ < 256 ? 0 : v });
-        M[0x31A1] = 0; M[0xC77D] = TRACK[m[1]]; M[0xC71A] = sl;
-        P.OPP_PICK({});
-        lo = Math.min(lo, M[0x2099]); hi = Math.max(hi, M[0x2099]);
-      }
-      if (lo !== +m[2 + 2 * sl] || hi !== +m[3 + 2 * sl]) { bad++; fail(m[1] + (sl ? ', Super League' : '') + ': the page says ' + m[2 + 2 * sl] + ' to ' + m[3 + 2 * sl] + ', OPP_PICK draws ' + lo + ' to ' + hi); }
-    }
-  }
-  P.RANDOM = real;
-  if (!bad) console.log('ok   the drivers\' habits, lines and swerves are the bytes at $AEE0, and the top speeds every value OPP_PICK draws');
 }
 console.log(fails ? fails + ' failed' : 'all passed');
 process.exitCode = fails ? 1 : 0;

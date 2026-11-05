@@ -18,13 +18,6 @@ game's own code, held in CI by `test_play.js`.
 - **An audit of the whole listing** is recommended: the sample found 12
   of 60 comments wrong (20 %, `facts.md`, "The listing's error rate"),
   and a checker misses some (`kit/CHECKING.md`).
-- **The opponent's wheels in the listing** may have front and back the
-  wrong way round. The comments at OPP_WHEELS (`$21DE`, "bounces its back
-  wheel", `$07DE`) and OPP_BUMP (`$209C`, "wheel 0, at the front") put
-  wheel 0 at the front, but `opp_points` (`$238A`) hangs wheels 0 and 1 on
-  corners 5 and 7, which OPP_BODY places behind corners 8 and 10 (wheel
-  2). To check against the game's picture of the car before the comments
-  change.
 
 ## Open questions
 
@@ -40,6 +33,10 @@ the Atari ST text came from.
   driven by the game's own effect tick.
 - The opponent's car on the Graphics tab, turnable by drag, drawn by the
   port's own drawing routines from any angle.
+- On the Opponents tab, a race that meets the other car up close: the
+  race the page carries is driven with the stick forward, so the other car
+  is far ahead for most of it and the map's rules beyond its own line, the
+  middle and holding its course are shown only on the map.
 - The car's springs and damage shown live beside the Play tab's view.
 - A Hall of Fame tab: the records' layout at `$DE00` and `$DF00`, loaded
   from a saved file.

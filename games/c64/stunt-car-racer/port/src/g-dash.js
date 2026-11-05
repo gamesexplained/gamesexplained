@@ -395,8 +395,10 @@ G.dash = P => {
   };
 
   // SWERVE ($158E): while $C9 is set, a swerve of sixteen passes ($C30F) steers by the wave at
-  // $1601 ($C30D right or $C30E left, $C357 the throttle); a new one starts at random, more often
-  // the higher $C773, when $C353 allows it and the piece ahead does not forbid it
+  // $1601 ($C30D pushes the left end of the line its corners are set out on along, $C30E the
+  // right end, $C357 the way it steers, by the value five places on); a new one starts at
+  // random, more often the higher $C773, when $C353 allows it and the piece ahead does not
+  // forbid it
   // (plug-in point once: with Fast CPU, the count and the dice once a step, the wave's values kept
   // for the step's other loops; plug-in point glide: the wheels' offsets moved from one step's to
   // the next's over the step)
