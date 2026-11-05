@@ -230,3 +230,48 @@ helicopter's view in 1,695 of 1,728 frames. `port/test/heli-browser.js`:
 nothing to play before a race; during the replay the race stands still
 and the replay draws about 60 pictures a second; pressed again, or left to
 end, the race goes on.
+
+## 5 November 2026, Far view, Heli cam and the cars' details
+
+Asked for the draw distance cheat as a switch, the mod buttons in the bar
+under the picture (so full screen carries them), a key that accelerates
+with the boost without stopping the arrows, the name's field gone where
+there is a keyboard, and the How it works text on the poke reworded.
+Far view pokes `$173E` as the C64 cheat does; the port's own copy of the
+count in `G.track` now reads it from memory rather than holding the 2.
+Return is the game's boost key but stops it reading the stick while any
+of its five driving keys is down (READ_CONTROLS), so Z gives forward and
+fire on the stick instead.
+
+Chase View's car leaned the wrong way on slopes: its three points had
+been taken as two at the back and one at the front, the left and right
+swapped. WHEEL_OFFSETS (`$0897`) puts points 0 and 1 at the front, left
+and right, and 2 at the middle of the back; the same roll bytes turn the
+game's horizon, so with the points right the car leans with it (15 of 15
+pictures, and the nose follows the climb). The crane's chains now hang to
+all four wheels.
+
+The game skips the opponent's car when it is behind or less than 10
+apart (OPP_DRAW_HERE, `$E195`). OPP_BUMP never tests which car is ahead,
+so drawing it anyway changes no collision. The outside views now draw it
+always.
+
+The specks (DUST, `$2C6F`) and a wreck's puffs (DEBRIS, `$29E3`) are
+drawn on the screen, not in the track. Hooked at DUST_PLOT, so each is
+read where it is plotted rather than after it moves (110 of 113 specks
+then matched from the driver's seat, against 57 read afterwards), and put
+back into the track by the game's lens, a car's length ahead (at 64 the
+higher ones hid behind the roof). The horizon's line is 208 less
+`$69`/`$33`, a median error of 0 against 209's 1.
+
+Heli Replay was then asked to become a live Heli cam beside a Replay
+with a choice of camera, and Replay was dropped before it was built, so
+the recording, its sound and its test are gone. Heli cam sits 126
+degrees round from the nose, looks 250 ahead, films the midpoint while
+the opponent is ahead and near, and flies to the other side when the
+track hides the car for six frames. It first followed the car's height
+at the same 12 % as across, and on Roller Coaster a car falling off the
+track left the picture in 18 of 438 pictures; at 30 % for height, none.
+On a practice race on each of the eight tracks, driven forward, the car
+was never hidden by the track from it, so the fly-round is checked with a
+wall of track put beside a car in `test_chase.js`.

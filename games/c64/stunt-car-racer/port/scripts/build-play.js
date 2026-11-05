@@ -4,10 +4,10 @@
 // (page/runtime.js), Fast CPU's table (page/fast-table.js), the view from outside the car for the
 // mods (page/chase.js), the pacing the fit wrote (cost.json)
 // and the machine as the page carries it (scripts/pack-data.js: memory and chips at the loader's
-// hand-over, the code left out); at <!-- chase --> the section on Chase View (page/chase.html); at
-// <!-- heli --> the one on Heli Replay (page/heli.html); at <!-- fast --> the section on Fast CPU
-// (page/fast.html); and at
-// <!-- differences --> the section on what differs from a C64 (page/differences.html).
+// hand-over, the code left out); at <!-- chase --> the section on Chase cam (page/chase.html); at
+// <!-- heli --> the one on Heli cam (page/heli.html); at <!-- fast --> the section on Fast CPU
+// (page/fast.html); at <!-- far --> the one on Far view, the draw distance cheat (page/far.html);
+// and at <!-- differences --> the section on what differs from a C64 (page/differences.html).
 //   node build-play.js
 // pack-data.js reads the snapshot from work/, which only a contributor with the game has; without
 // it the data already in play.html is kept.
@@ -36,6 +36,7 @@ html = html.replace('<!-- port -->', () => parts.join('\n'));   // a function, s
 html = html.replace('<!-- chase -->', () => fs.readFileSync(path.join(ROOT, 'page', 'chase.html'), 'utf8').trim());
 html = html.replace('<!-- heli -->', () => fs.readFileSync(path.join(ROOT, 'page', 'heli.html'), 'utf8').trim());
 html = html.replace('<!-- fast -->', () => fs.readFileSync(path.join(ROOT, 'page', 'fast.html'), 'utf8').trim());
+html = html.replace('<!-- far -->', () => fs.readFileSync(path.join(ROOT, 'page', 'far.html'), 'utf8').trim());
 html = html.replace('<!-- differences -->', () => fs.readFileSync(path.join(ROOT, 'page', 'differences.html'), 'utf8').trim());
 fs.writeFileSync(OUT, html);
 console.log('wrote play.html, ' + Math.round(html.length / 1024) + ' KB');

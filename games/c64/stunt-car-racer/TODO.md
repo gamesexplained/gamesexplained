@@ -18,6 +18,13 @@ game's own code, held in CI by `test_play.js`.
 - **An audit of the whole listing** is recommended: the sample found 12
   of 60 comments wrong (20 %, `facts.md`, "The listing's error rate"),
   and a checker misses some (`kit/CHECKING.md`).
+- **The opponent's wheels in the listing** may have front and back the
+  wrong way round. The comments at OPP_WHEELS (`$21DE`, "bounces its back
+  wheel", `$07DE`) and OPP_BUMP (`$209C`, "wheel 0, at the front") put
+  wheel 0 at the front, but `opp_points` (`$238A`) hangs wheels 0 and 1 on
+  corners 5 and 7, which OPP_BODY places behind corners 8 and 10 (wheel
+  2). To check against the game's picture of the car before the comments
+  change.
 
 ## Open questions
 

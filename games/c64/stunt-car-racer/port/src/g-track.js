@@ -62,7 +62,7 @@ G.track = P => {
       M[0x27] = 0; M[0xD0] = 2;
       P.NEXT_PIECE({});
       P.PIECE_AHEAD({}); P.DRAW_PIECE({}); P.POINTS_TO_LINES({}); P.NEXT_PIECE({});
-      let a = 2;
+      let a = M[0x173E];                         // the 2 of LDA #$02 at $173D, read where the game keeps it
       if (M[0xC77D] === 5) {
         const d = (0x31 - M[0xC374]) & 255;
         if (d < 3) a = d + 2;
