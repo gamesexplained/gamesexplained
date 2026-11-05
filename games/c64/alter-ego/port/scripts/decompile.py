@@ -118,7 +118,7 @@ def decompile(mem, entry, names=None):
         elif m == "copy":
             emit(a, f"memcpy({S}, {P}, {i.arg})")
         elif m == "prim":
-            emit(a, f"primitive {i.arg}")
+            emit(a, f"primitive {i.text()}")
         elif m == "jmp":
             if P != "P":
                 emit(a, f"P = {P}")

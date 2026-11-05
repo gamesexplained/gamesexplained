@@ -45,6 +45,10 @@ FORMS = {0x81: ("ldp", "fs"), 0x82: ("ldp", "fw"), 0x83: ("lds", "fs"), 0x84: ("
          0xAC: ("call", "a"), 0xAD: ("copy", "n"), 0xAE: ("adj", "ib"), 0xAF: ("adj", "iw"),
          0xB7: ("prim", "u8"), 0xD6: ("jmp", "j"), 0xD7: ("jnz", "j"), 0xD8: ("jz", "j"),
          0xDE: ("ldp", "fa"), 0xDF: ("lds", "fa")}
+# the 32-bit primitives of $B7 ($7B27: their table at $7B42) that take operands after their number:
+# 12-15 a frame offset word ($78ED), 16-19 an absolute address ($78D6), 24 and 25 a four-byte
+# immediate
+PRIM_OPERAND = {12: 2, 13: 2, 14: 2, 15: 2, 16: 2, 17: 2, 18: 2, 19: 2, 24: 4, 25: 4}
 SIZE = {"fs": 2, "ib": 2, "u8": 2, "fw": 3, "a": 3, "iw": 3, "j": 3, "n": 3, "fa": 3}
 
 
@@ -85,6 +89,9 @@ class Ins:
         if k == "n":
             return f"{self.m} {v}"
         if k == "u8":
+            if isinstance(v, tuple):
+                n, x = v
+                return f"{self.m} {n}, ${x & 0xFFFFFFFF:X}" if n >= 16 else f"{self.m} {n}, {'L' if x < 0 else 'A'}{x:+d}"
             return f"{self.m} {v}"
         if k == "case":
             bias, cases, default = v
@@ -117,6 +124,12 @@ def decode(mem, a):
             v = sb(mem[a + 1])
         elif k == "u8":
             v = mem[a + 1]
+            more = PRIM_OPERAND.get(v, 0)
+            if more == 4:
+                v = (v, mem[a + 2] | mem[a + 3] << 8 | mem[a + 4] << 16 | mem[a + 5] << 24)
+            elif more == 2:
+                v = (v, w(mem, a + 2) if v >= 16 else sw(w(mem, a + 2)))
+            return Ins(a, op, 2 + more, m, v, k)
         elif k in ("fw", "fa"):
             v = sw(w(mem, a + 1))
         elif k == "iw":
