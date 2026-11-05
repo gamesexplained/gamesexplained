@@ -40,6 +40,9 @@
 //                                          frame's palette indices)
 //   SCRChase.chase(v, s, prev, frame)      the camera behind and above the car at the C64's frame
 //                                          number, following prev (the last camera's state)
+//   SCRChase.replayAt(v.rec, f, i)         the recording at C64 frame f: { s, i }, the snapshot there
+//                                          and where to look from next time
+//   SCRChase.heli(v, s, prev, frame)       the helicopter's camera for Heli Replay
 (function (root) {
 'use strict';
 // the game's lens: 256 fat pixels across to a quarter turn of bearing (PROJECT_X), and 83.4 lines
@@ -102,14 +105,22 @@ function trackKey(M) {
 
 function create(make) {
   const sc = make();
-  return { sc, key: null, pieces: null, seen: null };
+  return { sc, key: null, pieces: null, seen: null, rec: [] };
 }
 
 // the page's hook: each time the game's DRAW_VIEW finishes, a snapshot of the race as it drew it,
-// with the C64's frame number, in v.seen; the game's memory only read
+// with the C64's frame number, in v.seen, and kept in v.rec for Heli Replay from the start of the
+// race (CLEAR_RACE empties it), at most REC_MAX; the game's memory only read
+const REC_MAX = 50 * 60 * 20;            // twenty minutes of Fast CPU's pictures
 function attach(rt, make) {
-  const v = create(make), drawView = rt.P.DRAW_VIEW;
-  rt.P.DRAW_VIEW = r => { const q = drawView(r); v.seen = { s: snap(v, rt.M), frame: rt.frame }; return q; };
+  const v = create(make), drawView = rt.P.DRAW_VIEW, clearRace = rt.P.CLEAR_RACE;
+  rt.P.DRAW_VIEW = r => {
+    const q = drawView(r);
+    v.seen = { s: snap(v, rt.M), frame: rt.frame };
+    if (v.rec.length < REC_MAX) v.rec.push(v.seen);
+    return q;
+  };
+  rt.P.CLEAR_RACE = r => { v.rec = []; return clearRace(r); };
   return v;
 }
 
@@ -144,7 +155,7 @@ function snap(v, M) {
   // the crane's chains, as CRANE_CHAINS will draw them later in this pass: from row $C36B up while
   // the count $2F runs; once it is 0 their ends rise by $C36C a pass, and at row $5F they are gone
   const chain = M[0x2F] ? M[0xC36B] : M[0xC36B] === 0x5F ? null : (M[0xC36B] - M[0xC36C]) & 0xFF;
-  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain };
+  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces };
 }
 
 // ---- a car: the model in its own frame (across, up, along), placed by its frame
@@ -275,9 +286,9 @@ function draw(v, s, cam, px) {
   }
   // the track: each piece's blocks between its pairs, the near road's edges striped, the far black
   const yG = GROUND * HS, down = p => [p[0], yG, p[2]];
-  const n = v.pieces.length;
+  const pieces = s.pieces || v.pieces, n = pieces.length;
   for (let i = 0; i < n; i++) {
-    const pairs = v.pieces[i], ahead = (i - s.piece + n) % n;
+    const pairs = pieces[i], ahead = (i - s.piece + n) % n;
     for (let j = 0; j < pairs.length; j++) {
       const P1 = pairs[j], far = ahead * 8 + j - s.seg > 8 + 1;
       const c = far ? BLACK : P1.colour;
@@ -343,5 +354,55 @@ function chase(v, s, prev, frame) {
   return cam;
 }
 
-const SCRChase = root.SCRChase = { create, attach, snap, draw, chase, lookAt, track, playerFrame, oppFrame, HS, VIEW, FX, FY, CHASE };
+// ---- Heli Replay: the race so far again, from a helicopter beside the cars
+
+// a snapshot between two of the recording's, t of the way from a to b: the cars' places, headings
+// and heights in a straight line, unless either car jumped (the crane, a restart)
+const turnBy = (a, b, t) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return a + d * t; };
+function between(a, b, t) {
+  if (!b || t <= 0) return a;
+  const l = (p, q) => p + (q - p) * t, A = a.car, B = b.car;
+  if (Math.hypot(B.x - A.x, B.z - A.z) > 1500) return a;
+  const car = { x: l(A.x, B.x), z: l(A.z, B.z), heading: turnBy(A.heading, B.heading, t),
+    back: [l(A.back[0], B.back[0]), l(A.back[1], B.back[1])], front: l(A.front, B.front), steer: A.steer };
+  let opp = a.opp;
+  if (a.opp && b.opp && Math.hypot(b.opp.corners[0][0] - a.opp.corners[0][0], b.opp.corners[0][1] - a.opp.corners[0][1]) < 1500)
+    opp = { corners: a.opp.corners.map((c, k) => [l(c[0], b.opp.corners[k][0]), l(c[1], b.opp.corners[k][1])]), heights: a.opp.heights.map((h, k) => l(h, b.opp.heights[k])) };
+  return Object.assign({}, a, { car, opp });
+}
+
+// the replay at C64 frame f of the recording: the snapshot there, between the two around it; i is
+// where to start looking (the last call's), and the answer gives the next
+function replayAt(rec, f, i = 0) {
+  if (i >= rec.length || rec[i].frame > f) i = 0;
+  while (i + 1 < rec.length && rec[i + 1].frame <= f) i++;
+  const a = rec[i], b = rec[i + 1];
+  return { s: b ? between(a.s, b.s, (f - a.frame) / (b.frame - a.frame)) : a.s, i };
+}
+
+// the helicopter: beside the cars (the player's, or midway to the opponent's when it is near), up
+// and a little behind, swinging slowly from the car's side towards its front and back and again;
+// it follows with a lag, turning with the cars at half its rate, and looks just above the cars
+const HELI = { side: 750, up: 160, back: 120, aim: 45, zoom: 0.9, follow: 0.15, swing: 0.6, period: 1000, near: 1200 };
+function heli(v, s, prev, frame) {
+  const c = s.car;
+  let tx = c.x, tz = c.z, ty = c.front * HS;
+  if (s.opp) {
+    const o = s.opp.corners, ox = (o[0][0] + o[1][0] + o[2][0] + o[3][0]) / 4, oz = (o[0][1] + o[1][1] + o[2][1] + o[3][1]) / 4;
+    if (Math.hypot(ox - tx, oz - tz) < HELI.near) { tx = (tx + ox) / 2; tz = (tz + oz) / 2; }
+  }
+  let st = { x: tx, y: ty, z: tz, h: c.heading, frame };
+  if (prev && Math.hypot(tx - prev.x, tz - prev.z) < 1500 && frame >= prev.frame) {
+    const k = 1 - Math.pow(1 - HELI.follow, Math.min(50, frame - prev.frame));
+    st = { x: prev.x + (tx - prev.x) * k, y: prev.y + (ty - prev.y) * k, z: prev.z + (tz - prev.z) * k, h: turnBy(prev.h, c.heading, k / 2), frame };
+  }
+  const a = st.h + Math.PI / 2 + HELI.swing * Math.sin(2 * Math.PI * frame / HELI.period);
+  const pos = [st.x + Math.sin(a) * HELI.side - Math.sin(st.h) * HELI.back, Math.max(st.y, GROUND * HS) + HELI.up,
+    st.z + Math.cos(a) * HELI.side - Math.cos(st.h) * HELI.back];
+  const cam = lookAt(pos, [tx, ty + HELI.aim, tz]);
+  cam.zoom = HELI.zoom; cam.state = st;
+  return cam;
+}
+
+const SCRChase = root.SCRChase = { create, attach, snap, draw, chase, heli, replayAt, between, lookAt, track, playerFrame, oppFrame, HS, VIEW, FX, FY, CHASE, HELI };
 })(typeof window !== 'undefined' ? window : globalThis);
