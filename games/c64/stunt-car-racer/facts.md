@@ -137,6 +137,25 @@ from reading the code in the snapshot named in `orientation.md`.
   a top speed drawn for the race from the track's range (OPP_PICK `$1F06`:
   `$BFB2` plus a random number masked by `$BFAA`, 58 to 88 in the league,
   87 to 109 in the Super League; OPP_GRIP `$2037`).
+- The computer's car's three wheels are two at the back and one in the
+  middle of the front (`$238A`: wheel 0 the back left, 1 the back right, 2
+  the front), where the player's car has two points at the front and one
+  at the back (WHEEL_OFFSETS `$0897`). Each pass OPP_WHEELS (`$21DE`) reads
+  the road's height under each (`$07EC`/`$07F0`: the back wheels under the
+  car's back corners, the front wheel under its middle half a segment
+  ahead) and presses its spring by how far that comes over the wheel's
+  height (`$07CC`/`$07D0`) plus a pull of `$28`, or `$7C` on a piece with
+  `$B2` bit 7, a bend. The push is twice that less last pass's, held
+  between 0 and `$3FF`, less the pull; each wheel takes three quarters of
+  its own push and an eighth of each of the others', and OPP_SPREAD
+  (`$23A2`) keeps the back wheels within 296 of each other in height and
+  the front within 368 of them. With no wheel pushing, OPP_ENGINE
+  (`$201B`) adds no push and only the drag slows the car. In the Play
+  tab's machine, over Little Ramp's jump at the game's run-up of 70 it
+  leaves the road at the crest and rises 3,302 over the road; with the
+  run-up's limit (`$0710`) set to 45 it falls into the dip, the landing
+  ramp's face presses its springs to the limit, and it is thrown to a
+  height of 20,159 (`port/scripts/opponents-data.js`).
 - Each driver's habits are a byte at `$AEE0` plus its number (Hot Rod 0
   to Road Hog 10), read by OPPONENT_LINE (`$1D25`) each pass the cars are
   within 255 of each other along the track. With the computer's car ahead

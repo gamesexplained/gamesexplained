@@ -4,7 +4,9 @@
 // - the port's files it carries (/* port/src/<file> */) and the Chase cam renderer
 //   (/* port/page/chase.js */) are play.html's, the same text;
 // - the data its widgets draw from (op-data) is what opponents-data.js makes from the Play tab's
-//   machine: the tracks as BUILD_TRACK leaves them and the first race of a season on Little Ramp;
+//   machine: the tracks as BUILD_TRACK leaves them, the first race of a season on Little Ramp, and
+//   the computer's car over that track's banked bend and its jump, at the game's run-up and five
+//   others;
 // - its racing lines: in that race, at every pass OPPONENT_LINE ($1D25) ran, the page's OPS.line,
 //   given what the game's routine read, aims the computer's car where the game aimed it ($2C) and
 //   leaves it where the game left it ($B0); and over a grid of drivers, gaps, places across and
@@ -45,7 +47,7 @@ const { opponents } = require('./port/scripts/opponents-data.js');
 const made = opponents(__dirname);
 const carried = JSON.parse(/<script type="application\/json" id="op-data">([^<]*)<\/script>/.exec(page)[1]);
 if (!same(carried, made.data)) fail('op-data differs from what opponents-data.js makes: run port/scripts/build-opponents.js');
-else console.log('ok   op-data is opponents-data.js\'s: ' + carried.tracks.length + ' tracks and a race of ' + carried.race.passes.length + ' passes');
+else console.log('ok   op-data is opponents-data.js\'s: ' + carried.tracks.length + ' tracks, a race of ' + carried.race.passes.length + ' passes and the car over the jump at ' + carried.moves.jump.length + ' run-ups');
 
 {
   const m = OPS.machine(ram), seen = {};
