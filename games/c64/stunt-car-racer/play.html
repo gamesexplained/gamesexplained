@@ -115,6 +115,7 @@ section h3{font-size:19px;margin:22px 0 8px}
   <li>The crane's chains hang straight down to the wheels while the game draws them (<code>CRANE_CHAINS</code>, <code>$8B51</code>). From the driver's seat the game draws them at pixel columns <code>$54</code> and <code>$A8</code>, from row <code>$AF</code> up, ending on the front tyres. As the crane lets go, the game lifts their ends by 8, 24, 48 and 80 rows over four passes and then stops drawing them. Chase cam hangs a chain to each of the four wheels and lifts them by the same rows at the front chains' distance from the driver.</li>
   <li>The specks the game throws up over its view while a wheel is over the road's edge (<code>DUST</code>, <code>$2C6F</code>) are drawn where its driver sees them, a car's length ahead: white, a fat pixel wide and two lines tall, as the game draws them. The game draws them on the screen, not on the track, so a car's length is this view's choice, and the higher ones show over the car's roof from behind.</li>
   <li>When the car is wrecked, the game covers its view with a cloud of dust: up to sixteen puffs, each a few lines joined end to end over the ground's colour, thrown up and falling back (<code>DUST_WRECKED</code>, <code>DEBRIS</code>, <code>$29E3</code>). The game draws its cloud from the horizon down, so here the puffs ring the car's front, a car's length out. Each sits as far round from the nose as it is across the game's view, with the view's edges level with the car's sides, and as high as it is in the game's picture. Each keeps the game's shape and turns to face the camera.</li>
+  <li>While the game shows the boost's flame (<code>$72</code> bit 7, which <code>BOOST</code>, <code>$F60F</code>, sets), sparks fly up and back off the outside of both front wheels. The game's flame is two sprites over the bonnet, yellow with white, on its left and its right by turns each frame (<code>IRQ_SPRITES</code>, <code>$CE1B</code>). The sparks take its two colours and are drawn as the specks are, a fat pixel by two lines each, thrown afresh each video frame. They are the mod's own: the game shows the boost only by its flame and the boost left on the dashboard.</li>
   <li>Your car's front wheels turn while you steer. The game steers all the way or not at all (<code>CONTROLS</code> sets <code>$C5</code> to <code>$F1</code> for left, <code>$0F</code> for right, 0 for straight), and the car turns slowly after it, so the wheels show at once what the stick is doing. The wheels are the mod's own: the game never draws them on the opponent's car.</li>
 </ul>
 <h3>The camera</h3>
@@ -131,7 +132,7 @@ section h3{font-size:19px;margin:22px 0 8px}
 <p>The camera hangs 560 units from your car, 126 degrees round from its nose, and 210 above it. It looks at a point 250 ahead of the car, so the car sits low and to one side of the picture and the road it is driving into fills the rest. While the opponent's car is ahead of you and less than 1,600 units away, the camera films the point midway between the two cars and stands further off, by 0.8 of the gap, so that both are in the picture. The game keeps which car is ahead in bit 7 of <code>$C36A</code> (<code>CAR_GAP</code>, <code>$F585</code>). An opponent behind you is not followed, so the road ahead stays in sight.</p>
 <p>When the track has hidden your car from the helicopter for six video frames, and the car would be in sight from the other side, it flies round to that side. It goes over the back of the car, higher as it passes behind, and stays on its new side for at least a second and a half. It never comes lower than 270 units above the road under it.</p>
 <p>It follows the car with a lag, as a helicopter would. Across the ground it closes 12 % of the gap each video frame and turns with the car at the same rate; up and down it closes 30 %, so that a car falling off the track stays in the picture. Its lens is flat and sees 57 degrees across, about the game's own 56.</p>
-<p>The track, the cars, the dust and the colours are Chase cam's, drawn by the same code, and the opponent's car is drawn behind and beside yours here too. The sound is the game's own.</p>
+<p>The track, the cars, the dust, the boost's sparks and the colours are Chase cam's, drawn by the same code, and the opponent's car is drawn behind and beside yours here too. The sound is the game's own.</p>
 </section>
 <section id="fast">
   <p class="fig">03 · Fast CPU</p>
@@ -169,7 +170,7 @@ section h3{font-size:19px;margin:22px 0 8px}
   <tr><td>The raster interrupt splits the screen into bands: the view's bitmap above and the dashboard below, the sprites placed again in each.</td><td>Each band runs whole when its interrupt comes, and its writes to the video chip land where the game's land in that band on average, within a few cycles.</td></tr>
   <tr><td>The SID plays the engine and the effects, written by the game as it runs.</td><td>The site's model of the SID, with the filter of the C64's original 6581, plays what the port writes as each frame is shown.</td></tr>
   <tr><td>A league, a Hall of Fame or a game for several is saved to a disc or a tape, and loaded from it.</td><td>Both go to a disc the page keeps in this browser: what is saved there is there the next time the page is opened. The KERNAL's routines for it are written in JavaScript, as the page has no ROM.</td></tr>
-  <tr><td>The game reads a joystick in control port 2, and the keyboard.</td><td>The arrows and Alt (Option on a Mac) are the joystick, or the pad on a touch screen, and the letters, figures, Return, Space, = and F1 are the C64's keys of the same names; Backspace is DEL and Left Ctrl is C=. A tap shorter than a pass of the game is held until the game has read it.</td></tr>
+  <tr><td>The game reads a joystick in control port 2, and the keyboard.</td><td>The arrows and Alt (Option on a Mac) are the joystick, or the pad on a touch screen, and the letters, figures, Return, Space, = and F1 are the C64's keys of the same names; Backspace is DEL and Left Ctrl is C=. In a race, Z, and the pad's fire without the stick back, are fire with the stick forward: the boost forward. A tap shorter than a pass of the game is held until the game has read it.</td></tr>
 </table>
 </section>
 </main>
@@ -10004,6 +10005,11 @@ root.SCRFast = { extend };
 // over the lowest line a puff is drawn on ($B7) in the game's picture, in the game's shape at the
 // same scale (a line half a fat pixel, as the game's screen has them), turned to face the camera.
 //
+// The boost. While the game shows the boost's flame ($72 bit 7, which BOOST sets: two multicolour
+// sprites over the bonnet's exhausts, yellow with white, the left and the right by turns each
+// frame), these views throw sparks off the car's front wheels in the flame's two colours, as the
+// specks are drawn: a fat pixel by two lines each, thrown afresh each video frame (cam.tick).
+//
 // The picture. The game's lens is a cylinder: a point's place across is its bearing, 256 fat
 // pixels to a quarter turn (PROJECT_X), and its place up its height over its distance along the
 // ground, 83.4 lines for a unit of height at a distance of one (PROJECT_Y). On the page's square
@@ -10035,9 +10041,10 @@ const GROUND = 0x200;                    // the ground's height
 const CAR_W = 81, CAR_L = 121.5;         // the cars' width and length
 const VIEW = { x: 32, y: 35, w: 160, h: 161 };   // the view in the frame's pixels: x and y, its width in fat pixels and its height in lines
 const CHAIN_X = 3 * CAR_W / 8, CHAIN_Z = CAR_L / 2;   // the chains: over the wheels
-const SKY = 14, FILL = 8, BLACK = 0, WHITE = 1;
+const SKY = 14, FILL = 8, BLACK = 0, WHITE = 1, YELLOW = 7;
 const SPECK_D = 128;                     // how far ahead of the eye a speck is put
 const PUFF_R = CAR_L, PUFF_K = Math.PI * PUFF_R / VIEW.w;   // a puff of a wreck's dust: how far from the car, and a fat pixel's size
+const SPARKS = 10;                       // the boost's sparks off each front wheel, each video frame
 const NEAR = 4;
 
 // ---- vectors
@@ -10154,7 +10161,7 @@ function snap(v, M) {
   // horizon's line in the view (from $33/$69, which the pitch moves)
   const eye = { x: pos[0] / 16, y: s16(M[0x38] << 8 | M[0x37]) * HS, z: pos[2] / 16, heading: car.heading,
     hz: 208 - s16(M[0x69] << 8 | M[0x33]) };
-  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces, eye, dust: [] };
+  return { car, opp, piece: M[0xC374], seg: M[0xC3], chain, pieces: v.pieces, eye, dust: [], boost: !!(M[0x72] & 0x80) };
 }
 
 // ---- a car: the model in its own frame (across, up, along), placed by its frame
@@ -10331,7 +10338,7 @@ function draw(v, s, cam, px) {
   if (s.dust && s.eye) for (const d of s.dust) {
     if (d.puff === undefined) {
       const c = toCam(backProject(s.eye, d.col + 16, d.row - 48, SPECK_D));
-      if (c[2] >= NEAR) dots.push(project(c));
+      if (c[2] >= NEAR) dots.push([...project(c), WHITE]);
       continue;
     }
     const pts = puffShape(v.puff, d), a = s.car.heading + (pts.u - VIEW.w / 2) / (VIEW.w / 2) * Math.PI / 2;
@@ -10342,10 +10349,21 @@ function draw(v, s, cam, px) {
     face([...arc, at([pts[pts.length - 1][0], bottom]), at([pts[0][0], bottom])], FILL);
     for (let i = 1; i < arc.length; i++) line(arc[i - 1], arc[i], d.puff & 2 ? WHITE : BLACK);
   }
+  // the boost's sparks: off the outside of each front wheel, up and back, yellow and some white,
+  // where the frame's number puts them
+  if (s.boost && !cam.inside) {
+    const fr = playerFrame(s.car), q = CAR_W / 4, tick = cam.tick || 0;
+    for (const side of [-1, 1]) for (let k = 0; k < SPARKS; k++) {
+      const n = tick * 31 + k * 7 + (side > 0 ? 3 : 0), r = i => { const x = Math.sin(n * 12.9898 + i * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const p = place(fr, [side * (CAR_W / 2 + r(1) * CAR_W / 3), q * (0.4 + r(2) * 2), CAR_L / 2 - r(3) * CAR_L / 2]);
+      const c = toCam(p);
+      if (c[2] >= NEAR) dots.push([...project(c), r(4) < 0.3 ? WHITE : YELLOW]);
+    }
+  }
   for (const l of lines) stroke(l);
   for (const p of dots) {
     const x = Math.floor(p[0]), y = Math.floor(p[1]);
-    for (const yy of [y - 1, y]) if (x >= 0 && yy >= 0 && x < W && yy < H && p[2] >= zb[yy * W + x] * 0.97) col[yy * W + x] = WHITE;
+    for (const yy of [y - 1, y]) if (x >= 0 && yy >= 0 && x < W && yy < H && p[2] >= zb[yy * W + x] * 0.97) col[yy * W + x] = p[3];
   }
   // into the frame: each fat pixel two of the frame's
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -10532,7 +10550,7 @@ function draw(F) {
   const seen = view && view.seen;
   if (cam && seen && rt.shown - seen.frame < 30) {
     const c = SCRChase[cam](view, seen.s, camState, seen.frame);
-    camState = c.state;
+    camState = c.state; c.tick = rt.shown;            // the frame shown, which throws the boost's sparks afresh
     SCRChase.draw(view, seen.s, c, p);
   }
   for (let i = 0, o = 0; i < p.length; i++, o += 4) { const c = RGB[p[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
@@ -10695,11 +10713,13 @@ document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 // the finger is on it and, once it lifts, until the game has read it
 PlayControls.keys($('pl-keys'), { down: name => { if (running) press('tap:' + name, name); }, up: name => lift('tap:' + name) });
 // the row of switches over the screen, full screen and the touch joystick (site/lib/play-controls.js):
-// each of the joystick's bits is held as a key is; fire starts the game, as a tap does
-PlayControls.attach({
+// each of the joystick's bits is held as a key is; fire starts the game, as a tap does. In a race
+// ($3DF8 bit 7) fire without the stick back is fire with it forward, the boost forward, as Z is.
+const controls = PlayControls.attach({
   screen, canvas: cv, bar: $('pl-bar'), keys: $('pl-keys'), pad: true,
   onPad(bits) {
     if (!running) { if ((bits & 16) && data) start(); return; }
+    if ((bits & 16) && !(bits & 2) && rt && (rt.M[0x3DF8] & 0x80)) bits |= 1;
     for (const b of [1, 2, 4, 8, 16]) {
       const code = 'pad-' + b;
       if (bits & b) { if (!held.has(code) || letGo.has(code)) press(code, b); }
@@ -10707,6 +10727,8 @@ PlayControls.attach({
     }
   },
 });
+// on a touch screen the buttons stay right under the picture, over the joystick and the keys
+if (controls.touch) screen.insertAdjacentElement('afterend', $('pl-bar'));
 // a name typed on a phone's own keyboard: each character pressed in turn, held until the game has
 // read its row of the keyboard twice, and a read with no key between two
 const typeForm = $('pl-type'), typeIn = typeForm.querySelector('input');

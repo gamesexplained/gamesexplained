@@ -275,3 +275,22 @@ track left the picture in 18 of 438 pictures; at 30 % for height, none.
 On a practice race on each of the eight tracks, driven forward, the car
 was never hidden by the track from it, so the fly-round is checked with a
 wall of track put beside a car in `test_chase.js`.
+
+## 5 November 2026, the boost's sparks and the phone's buttons
+
+Asked for the buttons right under the picture, the phone's fire button
+to accelerate with the boost, and a boost indicator in the outside
+views: sparks at the front wheels in the flame's colours. On a touch
+screen the shared controls put the keys to tap under the joystick and
+the page's bar after them, below a long list; the page now moves its bar
+back under the picture once the controls are attached. In a race
+(`$3DF8` bit 7) the pad's fire without the stick back adds the stick
+forward, as Z does; with the stick back it stays the boost back.
+
+The flame is sprites 0 and 1, placed by IRQ_SPRITES (`$CE1B`) while
+`$72` bit 7 is set, multicolour with sprite colour 7: in a rendered race
+frame it adds yellow and white pixels, on the bonnet's left in one frame
+and its right in the next. The sparks use those two colours, ten off
+each front wheel, thrown afresh from the frame's number each refresh.
+Seven, within a fifth of the car's width of the wheel, were hard to see
+from Heli cam.
