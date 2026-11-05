@@ -76,8 +76,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-cheat="lives" aria-pressed="false" title="Plus/4 World's poke: the two DECs that take a life become loads">Unlimited lives</button>
       <button type="button" data-cheat="tough" aria-pressed="false" title="Plus/4 World's poke: the enemies and the breaks no longer kill Tex">Tex can't be hurt</button>
@@ -97,7 +95,7 @@ section table{margin:6px 0 18px}
       <li><kbd>Esc</kbd> ends the game</li>
       <li><kbd>Z</kbd> <kbd>X</kbd> <kbd>;</kbd> <kbd>/</kbd> <kbd>Enter</kbd> are the game's own keys, with the keyboard chosen</li>
     </ul>
-    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the five bands the raster interrupt makes, each with its own colours and scroll. The arrows and Space are a joystick in port 2, or the game's own keys when the menu is set to the keyboard. The game starts with its sound off; <b>Start again</b> and <b>Start on level</b> set SOUND to ON on the menu while the page's sound is on, and keep the lives, the difficulty and the controls you chose. <b>Start on level</b> plays the game's own way there: PLAY THE GAME, then each level before it finished at once, as Plus/4 World's poke of <code>$9D</code> does, so the score holds those levels' bonuses, and waits, paused, when it gets there. The two cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
+    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the five bands the raster interrupt makes, each with its own colours and scroll. The arrows and Space are a joystick in port 2, or the game's own keys when the menu is set to the keyboard. The game starts with its sound off; while the page's sound is on, the page sets SOUND to ON on the menu, and <b>Start on level</b> keeps the lives, the difficulty and the controls you chose. <b>Start on level</b> plays the game's own way there: PLAY THE GAME, then each level before it finished at once, as Plus/4 World's poke of <code>$9D</code> does, so the score holds those levels' bonuses, and waits, paused, when it gets there. The two cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
   </div>
 </section>
 <section id="differences">
@@ -114,7 +112,7 @@ section table{margin:6px 0 18px}
 <!-- port -->
 <script>
 /* plan */
-// The menu set and a level reached, the game's own way, for the page's Start again and Start on
+// The menu set and a level reached, the game's own way, for the page's start and Start on
 // level (and for ../test_play.js, which runs this block in node). TexPlan.toLevel(rt, want, n) is
 // a generator: each step yields one frame's controls, stick directions and key numbers, for the
 // page to give the game and run the frame. It waits for the menu to take the controls, sets it as
@@ -298,12 +296,11 @@ function tick(now) {
     while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
     if (n === 10) acc = 0;
     if (fr) draw(fr);
-  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); }
 }
 
 // --- controls ----------------------------------------------------------------------------------
-const pauseButton = document.querySelector('[data-act="pause"]');
-function pause(on) { paused = on; pauseButton.setAttribute('aria-pressed', String(on)); sound.hold(); }
+function pause(on) { paused = on; sound.hold(); }
 // paused, with a message over the screen until the player goes on
 function wait(msg) { ready = true; pause(true); overMsg.textContent = msg; over.hidden = false; }
 function go() { ready = false; over.hidden = true; pause(false); }
@@ -340,10 +337,8 @@ for (const [i, what] of LEVELS) {
 }
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  const act = b.dataset.act, cheat = b.dataset.cheat;
-  if (act === 'pause' && running) { if (ready) go(); else pause(!paused); }
-  else if (act === 'restart' && image) start(null);
-  else if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
+  const cheat = b.dataset.cheat;
+  if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
   screen.focus();
 });
 screen.addEventListener('click', () => { if (ready) go(); else if (!running && image) start(null); });

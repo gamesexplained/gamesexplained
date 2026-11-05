@@ -75,8 +75,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart" title="The machine switched on again, at the options panel">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" class="pl-fk" data-key="F1" title="The options panel: the keyboard">F1</button>
       <button type="button" class="pl-fk" data-key="F3" title="The options panel: the joystick">F3</button>
@@ -129,7 +127,7 @@ const $ = id => document.getElementById(id);
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = AMPage.FRAME, FRAME_MS = 1000 * FRAME / 985248;
-let data = null, rt = null, running = false, paused = false;
+let data = null, rt = null, running = false;
 
 // --- drawing: the frame the video chip would show at the clock's target
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
@@ -174,7 +172,7 @@ const sound = (function () {
     for (; sent <= rt.shown; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
     if (frames.length) host.push(frames);
   }
-  function hold() { if (host) { if (on && running && !paused) host.ctx.resume(); else host.ctx.suspend(); } }
+  function hold() { if (host) { if (on && running) host.ctx.resume(); else host.ctx.suspend(); } }
   return { attach, set, frame, hold };
 })();
 Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
@@ -188,13 +186,13 @@ function boot() {
 function stop(msg) { running = false; sound.hold(); overMsg.textContent = msg; over.hidden = false; }
 function tick(now) {
   requestAnimationFrame(tick);
-  if (!running || paused || !rt) { last = now; return; }
+  if (!running || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; release(); }
     if (n === 10) acc = 0;
-  } catch (e) { stop('The port stopped: ' + e.message); console.error(e); return; }
+  } catch (e) { stop('The port stopped: ' + e.message + '. Reloading the page starts it again.'); console.error(e); return; }
   if (n) draw(F);
 }
 
@@ -258,8 +256,7 @@ function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = set
 function start() {
   over.hidden = true;
   boot();
-  running = true; paused = false; last = 0; acc = 0;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  running = true; last = 0; acc = 0;
   sound.hold();
   screen.focus();
 }
@@ -268,9 +265,7 @@ function tap(k) { if (!rt || !running) return; press('bar-' + k, k); letGo.add('
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
-  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
-  else if (act === 'restart' && data) start();
-  else if (b.dataset.key) tap(b.dataset.key);
+  if (b.dataset.key) tap(b.dataset.key);
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });

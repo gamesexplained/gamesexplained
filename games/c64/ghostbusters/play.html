@@ -86,7 +86,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-sep" aria-hidden="true"></span>
@@ -5045,7 +5044,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   const screen = $('pl-screen'), cv = $('pl-cv'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
   const FRAME_MS = 1000 / 50.1245;
   const PASS_COST = window.GB_COST || {};
-  let image = null, rt = null, P = null, running = false, paused = false;
+  let image = null, rt = null, P = null, running = false;
   const cheats = { free: false, power: false, traps: false, pk: false };
   let startAt = 'title';
 
@@ -5092,8 +5091,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
       sound.reset();
       if (!ok) say('The start did not reach the map.');
     }
-    running = true; paused = false; last = 0; acc = 0;
-    document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+    running = true; last = 0; acc = 0;
     draw(); screen.focus();
   }
 
@@ -5116,12 +5114,12 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   let acc = 0, last = 0;
   function tick(now) {
     requestAnimationFrame(tick);
-    if (!running || paused) { last = now; return; }
+    if (!running) { last = now; return; }
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
     try {
       while (acc >= FRAME_MS && n < 8) { taps(); rt.runFrame(); speech.frame(); sound.frame(); acc -= FRAME_MS; n++; }
-    } catch (e) { running = false; showOver('The port stopped: ' + e.message, 'Start again'); console.error(e); return; }
+    } catch (e) { running = false; showOver('The port stopped: ' + e.message + '. Reloading the page starts it again.'); console.error(e); return; }
     if (n === 8) acc = 0;
     if (n) draw();
   }
@@ -5303,8 +5301,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   $('pl-bar').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     const act = b.dataset.act;
-    if (act === 'pause' && rt) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
-    else if (act === 'f1' && running) tap([KEY.F1]);
+    if (act === 'f1' && running) tap([KEY.F1]);
     else if (act === 'f3' && running) tap([KEY.F3]);
     else if (act === 'restore' && running) restore();
     screen.focus();

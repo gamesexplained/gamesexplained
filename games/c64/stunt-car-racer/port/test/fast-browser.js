@@ -6,7 +6,8 @@
 //   pass of the race a video frame of real time, where the C64 runs one in seven or more, and the
 //   race's clock keeps real time;
 // - nothing in the console is an error.
-// The menus are run on the page's machine in one go, the page paused, as test_fast.js runs them.
+// The menus are run on the page's machine in one go, between two of the page's frames, as
+// test_fast.js runs them.
 // CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
 // (kit/scripts/play_browser.js).
 //   node games/c64/stunt-car-racer/port/test/fast-browser.js [built site, _site] [--chromium <path>]
@@ -39,9 +40,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   if (await page.$eval('[data-act="fast"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('on the next visit, Fast CPU is off');
   else console.log('ok   the Fast CPU button switches it on, and the next visit keeps it on');
 
-  // the menus to a practice race, on the page's machine, paused
+  // the menus to a practice race, on the page's machine, in one go
   await page.click('#pl-over button');
-  await page.click('[data-act="pause"]');
   await page.evaluate(() => {
     const rt = window.SCRPlay.rt, J = { none: 0x1F, fire: 0x0F };
     const tap = (joy, hold = 8, after = 40) => [{ frames: hold, joy }, { frames: after, joy: J.none }];
@@ -50,7 +50,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
       ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 300 }, ...tap(J.fire), { frames: 600 }, { frames: 180, joy: J.fire }];
     for (const s of S) { rt.input.keys = new Set(s.keys || []); rt.input.joy = s.joy === undefined ? J.none : s.joy; for (let i = 0; i < s.frames; i++) rt.runFrame(); }
   });
-  await page.click('[data-act="pause"]');
   await page.focus('#pl-screen');
   await page.keyboard.down('ArrowUp');
   // passes and the race's clock over real time, Fast CPU on, then off

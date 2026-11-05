@@ -7,7 +7,8 @@
 //   forward ($66 = 1 + 16, READ_CONTROLS), and fire with the stick back stays the boost back
 //   ($66 = 2 + 16);
 // - nothing in the console is an error.
-// The menus are run on the page's machine in one go, the page paused, as test_fast.js runs them.
+// The menus are run on the page's machine in one go, between two of the page's frames, as
+// test_fast.js runs them.
 // CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
 // (kit/scripts/play_browser.js).
 //   node games/c64/stunt-car-racer/port/test/phone-browser.js [built site, _site] [--chromium <path>]
@@ -49,8 +50,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   }, [sel, down, id, low]);
   const reads = () => page.evaluate(() => window.SCRPlay.rt.M[0x66]);
   await page.click('#pl-over button');
-  await page.click('[data-act="pause"]');
-  // the menus to a practice race, on the page's machine, paused; then the race let go
+  // the menus to a practice race, on the page's machine, in one go; then the race let go
   await page.evaluate(() => {
     const rt = window.SCRPlay.rt, J = { none: 0x1F, fire: 0x0F };
     const tap = (joy, hold = 8, after = 40) => [{ frames: hold, joy }, { frames: after, joy: J.none }];
@@ -59,7 +59,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
       ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 100 }, ...tap(J.fire), { frames: 300 }, ...tap(J.fire), { frames: 600 }];
     for (const s of S) { rt.input.keys = new Set(s.keys || []); rt.input.joy = s.joy === undefined ? J.none : s.joy; for (let i = 0; i < s.frames; i++) rt.runFrame(); }
   });
-  await page.click('[data-act="pause"]');
   if (!await page.evaluate(() => !!(window.SCRPlay.rt.M[0x3DF8] & 0x80))) fail('the practice race has not begun');
   // the boost forward: fire alone
   await touch('.pc-fire', true, 5); await wait(600);
@@ -74,8 +73,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await touch('.pc-fire', false, 5); await touch('.pc-pad', false, 7);
   if (back !== (2 | 16)) fail('in a race, the stick back with fire gives $66 = ' + back);
   else console.log('ok   in a race, the stick back with fire stays the boost back');
-  // started again, in the main menu: fire alone
-  await page.click('[data-act="restart"]');
+  // started again by a reload, in the main menu: fire alone
+  await page.reload();
+  await page.click('#pl-over button');
   await wait(500);
   await touch('.pc-fire', true, 5); await wait(100);
   const menu = await page.evaluate(() => ({ joy: window.SCRPlay.rt.input.joy, race: !!(window.SCRPlay.rt.M[0x3DF8] & 0x80) }));

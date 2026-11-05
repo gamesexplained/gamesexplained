@@ -76,8 +76,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-cheat="lives" aria-pressed="false" title="Plus/4 World's poke: the two DECs that take a life become loads">Unlimited lives</button>
       <button type="button" data-cheat="tough" aria-pressed="false" title="Plus/4 World's poke: the enemies and the breaks no longer kill Tex">Tex can't be hurt</button>
@@ -97,7 +95,7 @@ section table{margin:6px 0 18px}
       <li><kbd>Esc</kbd> ends the game</li>
       <li><kbd>Z</kbd> <kbd>X</kbd> <kbd>;</kbd> <kbd>/</kbd> <kbd>Enter</kbd> are the game's own keys, with the keyboard chosen</li>
     </ul>
-    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the five bands the raster interrupt makes, each with its own colours and scroll. The arrows and Space are a joystick in port 2, or the game's own keys when the menu is set to the keyboard. The game starts with its sound off; <b>Start again</b> and <b>Start on level</b> set SOUND to ON on the menu while the page's sound is on, and keep the lives, the difficulty and the controls you chose. <b>Start on level</b> plays the game's own way there: PLAY THE GAME, then each level before it finished at once, as Plus/4 World's poke of <code>$9D</code> does, so the score holds those levels' bonuses, and waits, paused, when it gets there. The two cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
+    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the five bands the raster interrupt makes, each with its own colours and scroll. The arrows and Space are a joystick in port 2, or the game's own keys when the menu is set to the keyboard. The game starts with its sound off; while the page's sound is on, the page sets SOUND to ON on the menu, and <b>Start on level</b> keeps the lives, the difficulty and the controls you chose. <b>Start on level</b> plays the game's own way there: PLAY THE GAME, then each level before it finished at once, as Plus/4 World's poke of <code>$9D</code> does, so the score holds those levels' bonuses, and waits, paused, when it gets there. The two cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
   </div>
 </section>
 <section id="differences">
@@ -109,9 +107,9 @@ section table{margin:6px 0 18px}
     <li><b>The screen.</b> TED reads the screen as its beam meets it. The page keeps the memory as each row of characters began and TED's registers line by line, a write taking effect on the line after the one it was made on, and draws the frame from those. The game's raster interrupt changes the colours, the fine scroll and the character set five times a frame, for the HUD, the skyline, the play field, the pipe and the message row. The port makes each of those changes as its interrupt is taken, and the page puts each on the line where the game's own lands, from the cycles the game takes to reach it.</li>
     <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, at each turn of a loop that waits, and where the game lets it in itself, during Tex's death and as a level begins. The game's main program reads 17 bytes that the interrupt writes, among them the controls, the random numbers and the flags for a death, a pause and a finished level. On a C16 one of those can change between two of its reads; on the page it cannot.</li>
     <li><b>Random numbers.</b> The game stirs its random numbers with TED's timers, read as the code reaches them. The page reads them on its own clock, so the enemies come and the breaks fall where a C16 would put them on some other run, never where one particular run did.</li>
-    <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it. The game loads with SOUND OFF on its menu. While the page's sound is on, <b>Start again</b> and <b>Start on level</b> turn it on the way a player would, on the menu.</li>
+    <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it. The game loads with SOUND OFF on its menu. While the page's sound is on, the page turns it on the way a player would, on the menu, when the game starts and at <b>Start on level</b>.</li>
     <li><b>The joystick.</b> The game reads the joystick in port 2, or in port 1 when port 2 shows nothing. The page's stick, the arrows and Space or the pad on a touch screen, is in port 2.</li>
-    <li><b>Start on level.</b> The game has no way to choose a level. The page's buttons play the way there: on the menu they choose PLAY THE GAME, then each level before the one wanted is finished at once, as Plus/4 World's poke of <code>$9D</code> does. Each level gets its scene, its enemies and its pipe from the game's own <code>next_level</code>, and the score holds the bonus for each level finished, the pressure left on a full pipe. The page then waits, paused, for an arrow, Space or a click, since on the later levels the enemies come within a second. The high-score table lasts until <b>Start again</b> or another level, which start the game from its first instruction.</li>
+    <li><b>Start on level.</b> The game has no way to choose a level. The page's buttons play the way there: on the menu they choose PLAY THE GAME, then each level before the one wanted is finished at once, as Plus/4 World's poke of <code>$9D</code> does. Each level gets its scene, its enemies and its pipe from the game's own <code>next_level</code>, and the score holds the bonus for each level finished, the pressure left on a full pipe. The page then waits, paused, for an arrow, Space or a click, since on the later levels the enemies come within a second. The high-score table lasts until another level is chosen or the page is reloaded, and either starts the game from its first instruction.</li>
     <li><b>The cheats.</b> <b>Unlimited lives</b> and <b>Tex can't be hurt</b> are Plus/4 World's pokes: the page writes the same bytes into the game's code (cheats.md), and the port reads its instructions there, so the game does what it does on a C16 with the same pokes.</li>
     <li><b>The keys.</b> The arrows and Space are the joystick, or, with the keyboard chosen on the menu, the game's own keys: Z, X, ; and / with RETURN to fire. The C16's SPACE pauses the game and C= carries on; on the page they are P and C, since Space fires. Enter is RETURN and Esc is ESC.</li>
   </ul>
@@ -2342,7 +2340,7 @@ window.TEX_COST = {"seg":{"18a9:18dd>out":33,"18a9:24bd>18dd":0,"18a9:in>18dd":0
 </script>
 <script>
 /* plan */
-// The menu set and a level reached, the game's own way, for the page's Start again and Start on
+// The menu set and a level reached, the game's own way, for the page's start and Start on
 // level (and for ../test_play.js, which runs this block in node). TexPlan.toLevel(rt, want, n) is
 // a generator: each step yields one frame's controls, stick directions and key numbers, for the
 // page to give the game and run the frame. It waits for the menu to take the controls, sets it as
@@ -2526,12 +2524,11 @@ function tick(now) {
     while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
     if (n === 10) acc = 0;
     if (fr) draw(fr);
-  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); }
 }
 
 // --- controls ----------------------------------------------------------------------------------
-const pauseButton = document.querySelector('[data-act="pause"]');
-function pause(on) { paused = on; pauseButton.setAttribute('aria-pressed', String(on)); sound.hold(); }
+function pause(on) { paused = on; sound.hold(); }
 // paused, with a message over the screen until the player goes on
 function wait(msg) { ready = true; pause(true); overMsg.textContent = msg; over.hidden = false; }
 function go() { ready = false; over.hidden = true; pause(false); }
@@ -2568,10 +2565,8 @@ for (const [i, what] of LEVELS) {
 }
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  const act = b.dataset.act, cheat = b.dataset.cheat;
-  if (act === 'pause' && running) { if (ready) go(); else pause(!paused); }
-  else if (act === 'restart' && image) start(null);
-  else if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
+  const cheat = b.dataset.cheat;
+  if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
   screen.focus();
 });
 screen.addEventListener('click', () => { if (ready) go(); else if (!running && image) start(null); });

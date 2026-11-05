@@ -57,7 +57,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button class="cp-btn" id="cp-pause" aria-pressed="false">Pause</button>
       <button class="cp-btn" type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" class="cp-btn" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
-      <button class="cp-btn" id="cp-reset">Reset</button>
       <span class="cp-out" id="cp-out"></span>
     </div>
     <div><canvas class="cp-screen" id="cp-screen" width="768" height="544"></canvas></div>
@@ -179,18 +178,8 @@ if (!window.C64 || !window.ClownsPort) {
   // ---- the clock: each tick moves it on by what the game's tick of that loop costs
   let paused = false, last = 0;
   $('cp-pause').onclick = () => { paused = !paused; $('cp-pause').setAttribute('aria-pressed', paused); };
-  // Reset: a new machine from the listing's bytes, the sound chip's registers as it starts, the
-  // page's pause let go and the clock started again, whatever the old machine was doing, a stop
-  // included
   let running = false;
   const go = () => { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } };
-  $('cp-reset').onclick = () => {
-    boot();
-    if (paused) $('cp-pause').click();
-    pending = [];
-    if (host) host.push([registers()]);
-    go();
-  };
   document.addEventListener('visibilitychange', () => { last = 0; });
   function frame(t) {
     try {
@@ -213,7 +202,7 @@ if (!window.C64 || !window.ClownsPort) {
       last = t;
       draw();
       $('cp-out').textContent = paused ? 'paused' : ticks + ' ticks';
-    } catch (e) { console.error(e); running = false; $('cp-out').textContent = 'The port stopped: ' + e.message + '. Reset starts it again.'; return; }
+    } catch (e) { console.error(e); running = false; $('cp-out').textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; return; }
     requestAnimationFrame(frame);
   }
   go();

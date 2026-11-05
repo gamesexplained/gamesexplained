@@ -605,16 +605,17 @@ runs none (`games/c64/castle-master`, `games/spectrum/driller`). The header of
 No key of a Play tab is Right Ctrl, since a MacBook has none.
 `kit/scripts/test_play_controls.js` fails a Play page that does not
 attach it, a page with the joystick that keeps its own pad, a page
-whose text explains the joystick or Full screen, and a page that uses
-Right Ctrl.
+whose text explains the joystick or Full screen, a page that uses
+Right Ctrl, and a page with a button that starts the game again.
 
-Every Play tab's Reset works whatever the page is doing, a stop
-included: it builds a new machine, lets go of the page's own pause, sets
-the sound chip's registers as the new machine has them, and starts the
-page's loop again. The loop catches whatever a frame throws, says the
-port stopped and that Reset starts it again, and goes no further, since
-a page that only rebuilds the machine leaves a reader whose port stopped
-with a button that does nothing.
+A Play tab has no Start again or Reset button, since reloading the page
+starts the game again. It has a Pause button only for a game whose
+action goes on in time and that has no pause of its own: look in the
+listing for a pause key, or a menu or screen that holds the game's clock,
+before adding one, since a second pause beside the game's, or one on a
+game that waits for the player, is a button that adds nothing. The loop
+catches whatever a frame throws, says the port stopped and that
+reloading the page starts it again, and goes no further.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

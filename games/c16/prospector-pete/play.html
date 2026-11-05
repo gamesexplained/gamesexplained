@@ -77,7 +77,6 @@ section table{margin:6px 0 18px}
     </div>
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -119,7 +118,7 @@ section table{margin:6px 0 18px}
     <li><b>Random numbers.</b> The game makes its random numbers from TED's timers and the beam's place, read as the code reaches them. The page reads them on its own clock, so the goodies, the creatures, and the face fall where a C16 would put them on some other run, never where one particular run did.</li>
     <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.</li>
     <li><b>Three bytes.</b> The table that gives the earth character beside each one, at <code>$2970</code> to <code>$2972</code>, is missing from the listing the page reads the game from. The page adds the three bytes (2, 1, and 4), as the listing's comment gives them.</li>
-    <li><b>Start on.</b> The level buttons are the page's own, but they do what a player does: on the title they tap right until the level shows, then press fire. The high-score table lasts until <b>Start again</b>, which starts the game from its first instruction.</li>
+    <li><b>Start on.</b> The level buttons are the page's own, but they do what a player does: on the title they tap right until the level shows, then press fire. The high-score table lasts until the page is reloaded, which starts the game from its first instruction.</li>
     <li><b>The keys.</b> The arrows and Space are the joystick in port 2, or, with the keyboard chosen on the title, the game's own keys: A, S, P, and L, and SPACE. Enter is RETURN and Esc is ESC.</li>
   </ul>
 </section>
@@ -2461,7 +2460,7 @@ function tick(now) {
     while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
     if (n === 10) acc = 0;
     if (fr) draw(fr);
-  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); }
 }
 
 // --- controls ----------------------------------------------------------------------------------
@@ -2490,7 +2489,6 @@ $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
-  else if (act === 'restart' && image) start(null);
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && image) start(null); });

@@ -72,7 +72,6 @@ section table{margin:6px 0 18px}
     </div>
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart" title="The machine switched on again: the title page and its tune">Start again</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -175,9 +174,9 @@ function tick(now) {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; release(); }
     if (n === 10) acc = 0;
-  } catch (e) { stop('The port stopped: ' + e.message); console.error(e); return; }
+  } catch (e) { stop('The port stopped: ' + e.message + '. Reloading the page starts it again.'); console.error(e); return; }
   if (n) draw(F);
-  if (rt.P.leak >= CRASH) stop('The game has crashed. Deaths in the end-of-stage fights and Bridges won, 23 in all, have left 46 bytes on the stack, and on a C64 the machine stops within half a minute (Discoveries). Start again switches it on again.');
+  if (rt.P.leak >= CRASH) stop('The game has crashed. Deaths in the end-of-stage fights and Bridges won, 23 in all, have left 46 bytes on the stack, and on a C64 the machine stops within half a minute (Discoveries). Reloading the page switches it on again.');
 }
 
 // --- input: the arrows and X as the joystick in port 2, Space and 1 as the C64's keys. A key the
@@ -244,7 +243,6 @@ $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
-  else if (act === 'restart' && data) start();
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });

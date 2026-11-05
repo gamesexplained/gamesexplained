@@ -72,7 +72,6 @@ section table{margin:6px 0 18px}
     </div>
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart" title="The machine switched on again: the title screen and its tune">Start again</button>
       <button type="button" data-act="quit" title="Q on the C64's keyboard: the game in play ends and the title comes back">Q: new game</button>
       <button type="button" data-act="solution" aria-pressed="false" title="The route on the Maps tab, from the title to the ending, in about six minutes">▶ Watch the solution</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
@@ -176,7 +175,7 @@ function tick(now) {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; release(); }
     if (n === 10) acc = 0;
-  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
 }
 
@@ -259,7 +258,6 @@ $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
-  else if (act === 'restart' && data) start();
   else if (act === 'solution' && data) { if (sol && sol.on) takeOver(); else watch(); }
   else if (act === 'quit') quit();
   screen.focus();
