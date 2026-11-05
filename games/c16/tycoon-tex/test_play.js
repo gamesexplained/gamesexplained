@@ -42,7 +42,7 @@ const SCENE = 0x1826, ENEMIES = 0xA6, TEX = 0x15, LIVES = 0x80, DYING = 0x7A;
 const RIGHT = 0x17, UP = 0x1E, FIRE = 0x0F, STILL = 0x1F;
 const BIT = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
 const AS_KEYS = { up: KEY[';'], down: KEY['/'], left: KEY.Z, right: KEY.X, fire: KEY.RETURN };
-// the menu as the game loads it, with SOUND on, as the page's Start again has it with its sound on
+// the menu as the game loads it, with SOUND on, as the page's start has it with its sound on
 const WANT = { joystick: 1, difficulty: 0, lives: 3, sound: 1 };
 const CHEATS = { lives: [[0x249D, 0xAD], [0x24A0, 0xA5]], tough: [[0x1EB7, 0x00], [0x1EEC, 0x00]] };   // cheats.md
 

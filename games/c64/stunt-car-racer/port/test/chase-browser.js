@@ -6,7 +6,8 @@
 //   (SCRChase.draw) over the view about every refresh while it is on, and never while it is off;
 //   the view's top rows show the sky and the race's own picture is replaced;
 // - nothing in the console is an error.
-// The menus are run on the page's machine in one go, the page paused, as test_fast.js runs them.
+// The menus are run on the page's machine in one go, between two of the page's frames, as
+// test_fast.js runs them.
 // CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
 // (kit/scripts/play_browser.js).
 //   node games/c64/stunt-car-racer/port/test/chase-browser.js [built site, _site] [--chromium <path>]
@@ -40,9 +41,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   if (await page.$eval('[data-cam="chase"]', b => b.getAttribute('aria-pressed')) !== 'true') fail('on the next visit, Chase cam is off');
   else console.log('ok   the Chase cam button switches it on, and the next visit keeps it on');
 
-  // the menus to a practice race, on the page's machine, paused
+  // the menus to a practice race, on the page's machine, in one go
   await page.click('#pl-over button');
-  await page.click('[data-act="pause"]');
   await page.evaluate(() => {
     const rt = window.SCRPlay.rt, J = { none: 0x1F, fire: 0x0F };
     const tap = (joy, hold = 8, after = 40) => [{ frames: hold, joy }, { frames: after, joy: J.none }];
@@ -55,7 +55,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     window.chaseDraws = 0;
     window.SCRChase.draw = (v, s, cam, px) => { window.chaseDraws++; const q = draw(v, s, cam, px); window.chasePx = px; return q; };
   });
-  await page.click('[data-act="pause"]');
   await page.focus('#pl-screen');
   await page.keyboard.down('ArrowUp');
   try { await page.waitForFunction(() => window.SCRPlay.rt.M[0xC378] === 1, null, { timeout: 60000 }); }

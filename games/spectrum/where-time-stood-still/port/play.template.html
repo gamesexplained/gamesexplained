@@ -103,9 +103,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
-      <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <button type="button" data-act="wide" aria-pressed="false" title="Fill the window with the plateau round the view, drawn by the game's own routines">🔭 Wide view</button>
@@ -171,7 +168,7 @@ const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16
 const FRAME = WTPage.FRAME, FRAME_MS = 1000 * FRAME / 3546900;
 // the picture: the paper, 256 by 192, inside a border of 32 pixels
 const W = 320, H = 256, BX = 32, BY = 32;
-let data = null, rt = null, mouse = null, running = false, paused = false;
+let data = null, rt = null, mouse = null, running = false;
 
 // --- drawing: the frame the clock finished last, the screen as the beam reached the paper
 const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
@@ -370,13 +367,13 @@ function boot() {
 }
 function tick(now) {
   requestAnimationFrame(tick);
-  if (!running || paused || !rt) { last = now; return; }
+  if (!running || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
     if (n === 10) acc = 0;
-  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); return; }
   if (n) { draw(F); drawWide(F); }
 }
 
@@ -445,11 +442,11 @@ function spot(e) {
   return [Math.floor((e.clientX - r.left) * w / r.width) - (wide ? 0 : BX), Math.floor((e.clientY - r.top) * h / r.height) - (wide ? 0 : BY)];
 }
 screen.addEventListener('pointermove', e => {
-  const p = running && !paused && mouse && spot(e);
+  const p = running && mouse && spot(e);
   if (p) mouse.move(p[0], p[1]);
 });
 screen.addEventListener('pointerdown', e => {
-  const p = e.button === 0 && running && !paused && mouse && spot(e);
+  const p = e.button === 0 && running && mouse && spot(e);
   if (!p) return;
   const k = { space: 'SPACE', fire: 16 }[mouse.click(p[0], p[1])];
   if (k === undefined) return;
@@ -463,16 +460,13 @@ function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = set
 function start() {
   over.hidden = true;
   boot();
-  running = true; paused = false; last = 0; acc = 0;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  running = true; last = 0; acc = 0;
   screen.focus();
 }
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
-  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
-  else if (act === 'restart' && data) start();
-  else if (act === 'wide') setWide(!wideOn);
+  if (act === 'wide') setWide(!wideOn);
   else if (act === 'zoom-in') zoomBy(1);
   else if (act === 'zoom-out') zoomBy(-1);
   else if (act === 'full' && plate.requestFullscreen) plate.requestFullscreen().catch(() => {});

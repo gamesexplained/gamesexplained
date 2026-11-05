@@ -13,7 +13,8 @@
 // - Z held in the race is forward and fire on the stick, and the left arrow held with it still
 //   reaches the game ($66, READ_CONTROLS);
 // - nothing in the console is an error.
-// The menus are run on the page's machine in one go, the page paused, as test_fast.js runs them.
+// The menus are run on the page's machine in one go, between two of the page's frames, as
+// test_fast.js runs them.
 // CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
 // (kit/scripts/play_browser.js).
 //   node games/c64/stunt-car-racer/port/test/far-browser.js [built site, _site] [--chromium <path>]
@@ -67,10 +68,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   else console.log('ok   the Far view button switches it on, and the next visit keeps it on');
   if (await page.$eval('[data-act="fast"]', b => b.getAttribute('aria-pressed')) === 'true') await page.click('[data-act="fast"]');
 
-  // the menus to a practice race, on the page's machine, paused
+  // the menus to a practice race, on the page's machine, in one go
   await page.click('#pl-over button');
   if (await page.evaluate(() => window.SCRPlay.rt.M[0x173E]) !== 6) fail('a game started with Far view on has ' + await page.evaluate(() => window.SCRPlay.rt.M[0x173E]) + ' at $173E');
-  await page.click('[data-act="pause"]');
   await page.evaluate(() => {
     const rt = window.SCRPlay.rt, J = { none: 0x1F, fire: 0x0F };
     const tap = (joy, hold = 8, after = 40) => [{ frames: hold, joy }, { frames: after, joy: J.none }];
@@ -82,7 +82,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     const c = rt.P.CONTROLS; rt.P.CONTROLS = function (...x) { window.passes++; return c.apply(this, x); };
     const d = rt.P.DRAW_PIECE; rt.P.DRAW_PIECE = function (...x) { window.pieces++; return d.apply(this, x); };
   });
-  await page.click('[data-act="pause"]');
   await page.focus('#pl-screen');
   await page.keyboard.down('ArrowUp');
   // passes, pieces drawn and the race's clock over real time

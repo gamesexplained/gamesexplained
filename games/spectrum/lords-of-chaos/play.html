@@ -86,8 +86,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <button type="button" data-act="tape" title="Put a .tap file saved from this page on the cassette, after the game's own files">Add a tape file…</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
@@ -7752,7 +7750,7 @@ const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16
 const FRAME = LOCPage.FRAME, FRAME_MS = 1000 * FRAME / 3500000;
 // the picture: the paper, 256 by 192, inside a border of 32 pixels
 const W = 320, H = 256, BX = 32, BY = 32;
-let data = null, rt = null, running = false, paused = false;
+let data = null, rt = null, running = false;
 
 // --- drawing: the frame the clock finished last, the screen as the beam reached the paper
 const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
@@ -7878,13 +7876,13 @@ function boot() {
 }
 function tick(now) {
   requestAnimationFrame(tick);
-  if (!running || paused || !rt) { last = now; return; }
+  if (!running || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); if (typed || typing.length) typeStep(); }
     if (n === 10) acc = 0;
-  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); return; }
   if (n) draw(F);
   // the tape at its end: say what the game is waiting for
   if (rt.tape.ended && !tapeEnd) {
@@ -8016,16 +8014,13 @@ function start() {
   over.hidden = true;
   typing = []; typed = null; held.delete('type'); clearName();
   boot();
-  running = true; paused = false; last = 0; acc = 0;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  running = true; last = 0; acc = 0;
   screen.focus();
 }
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
-  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
-  else if (act === 'restart' && data) start();
-  else if (act === 'tape') addTape();
+  if (act === 'tape') addTape();
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });

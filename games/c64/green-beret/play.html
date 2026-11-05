@@ -72,7 +72,6 @@ section table{margin:6px 0 18px}
     </div>
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart" title="The machine switched on again: the title page and its tune">Start again</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -97,7 +96,7 @@ section table{margin:6px 0 18px}
   <tr><td>An interrupt can fall between any two instructions. The multiplexer's lets the next one in before it ends.</td><td>A handler runs whole when its interrupt comes, and then its time passes. A read of the raster line in it, and each write to a chip, are placed as far into the handler as its work so far has taken, so the multiplexer sets the next band from the line the beam is on as it gets there.</td></tr>
   <tr><td>The SID plays the music and the effects. The sound driver reads the next notes in the main program, once a frame, and plays the effects in the interrupt, on the same SID registers, so an interrupt can come in the middle of the main program's writes.</td><td>The game's own sound driver, Martin Galway's, runs on the site's 6502 in the port, and the site's model of the SID, with the filter of the C64's original 6581, plays what it writes as each frame is shown. The interrupt comes before or after the main program's writes, never among them, so on a frame where a note and an effect start together a register can end the frame with the other one's value.</td></tr>
   <tr><td>Once a frame the game checks that CIA 2's serial port has shifted out the byte it was last given, and stops the machine if not: a copy protection.</td><td>The page has a model of the serial port and its timer, which shift a byte out in the time the C64's do, and the check passes as it does on a C64.</td></tr>
-  <tr><td>A death in an end-of-stage fight, and a Bridge won, each leave two bytes on the stack for good. From 12 of them the stack reaches the sprites' tables and the game can crash; from 23 it crashes within half a minute (Discoveries).</td><td>The port keeps no return addresses in memory, so the stack never reaches the tables. It counts the bytes, and at the 23rd the page stops the game. Between 12 and 22 the page plays on where a C64 might crash. Start again is the machine switched off and on, which clears them.</td></tr>
+  <tr><td>A death in an end-of-stage fight, and a Bridge won, each leave two bytes on the stack for good. From 12 of them the stack reaches the sprites' tables and the game can crash; from 23 it crashes within half a minute (Discoveries).</td><td>The port keeps no return addresses in memory, so the stack never reaches the tables. It counts the bytes, and at the 23rd the page stops the game. Between 12 and 22 the page plays on where a C64 might crash. Reloading the page is the machine switched off and on, which clears them.</td></tr>
   <tr><td>The game reads a joystick in control port 2, and the keyboard for <kbd>Space</kbd> and <kbd>1</kbd>.</td><td>The arrows and <kbd>X</kbd> are the joystick in port 2, because <kbd>Space</kbd> is the C64's own key here, as is <kbd>1</kbd>; on a touch screen the pad is both. A tap shorter than a frame is held until the game has read it.</td></tr>
 </table>
 </section>
@@ -5546,9 +5545,9 @@ function tick(now) {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; release(); }
     if (n === 10) acc = 0;
-  } catch (e) { stop('The port stopped: ' + e.message); console.error(e); return; }
+  } catch (e) { stop('The port stopped: ' + e.message + '. Reloading the page starts it again.'); console.error(e); return; }
   if (n) draw(F);
-  if (rt.P.leak >= CRASH) stop('The game has crashed. Deaths in the end-of-stage fights and Bridges won, 23 in all, have left 46 bytes on the stack, and on a C64 the machine stops within half a minute (Discoveries). Start again switches it on again.');
+  if (rt.P.leak >= CRASH) stop('The game has crashed. Deaths in the end-of-stage fights and Bridges won, 23 in all, have left 46 bytes on the stack, and on a C64 the machine stops within half a minute (Discoveries). Reloading the page switches it on again.');
 }
 
 // --- input: the arrows and X as the joystick in port 2, Space and 1 as the C64's keys. A key the
@@ -5615,7 +5614,6 @@ $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
-  else if (act === 'restart' && data) start();
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });

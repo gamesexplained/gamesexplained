@@ -8,7 +8,8 @@
 //   (SCRChase.heli, SCRChase.draw) over the view about every refresh while the race goes on, the
 //   view's top row sky; pressed again, the game's own picture;
 // - nothing in the console is an error.
-// The menus are run on the page's machine in one go, the page paused, as test_fast.js runs them.
+// The menus are run on the page's machine in one go, between two of the page's frames, as
+// test_fast.js runs them.
 // CI runs it after building the site, with the runner's Chrome; elsewhere it needs Playwright
 // (kit/scripts/play_browser.js).
 //   node games/c64/stunt-car-racer/port/test/heli-browser.js [built site, _site] [--chromium <path>]
@@ -54,9 +55,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   if (await pressed() !== 'heli') fail('on the next visit, the cameras on are "' + await pressed() + '"');
   else console.log('ok   the next visit keeps Heli cam on');
 
-  // the menus to a practice race, on the page's machine, paused
+  // the menus to a practice race, on the page's machine, in one go
   await page.click('#pl-over button');
-  await page.click('[data-act="pause"]');
   await page.evaluate(() => {
     const rt = window.SCRPlay.rt, J = { none: 0x1F, fire: 0x0F };
     const tap = (joy, hold = 8, after = 40) => [{ frames: hold, joy }, { frames: after, joy: J.none }];
@@ -70,7 +70,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     window.SCRChase.heli = (...a) => { window.heliCams++; return heli(...a); };
     window.SCRChase.draw = (v, s, cam, px) => { window.draws++; const q = draw(v, s, cam, px); window.drawPx = px; return q; };
   });
-  await page.click('[data-act="pause"]');
   await page.focus('#pl-screen');
   await page.keyboard.down('ArrowUp');
   try { await page.waitForFunction(() => window.SCRPlay.rt.M[0xC378] === 1, null, { timeout: 60000 }); }

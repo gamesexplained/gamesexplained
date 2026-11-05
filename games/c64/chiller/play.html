@@ -164,7 +164,7 @@ section table{margin:6px 0 18px}
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
       <canvas id="pl-fx" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The game drawn another way, as the View row sets"></canvas>
-      <div id="pl-layers" hidden role="group" aria-label="The video chip's layers as a stack of ten panes, each labelled"><div class="stage"></div><div class="ctl"><label>Spread <input type="range" min="8" max="100" value="40" data-l="gap"></label><label>Zoom <input type="range" min="-900" max="300" value="-420" data-l="zoom"></label><button type="button" data-l="reset">Reset</button></div><p class="key">Drag to turn the stack. Back to front: <b>BG</b> the border and background colour, <b>CH</b> the characters (the scenery and the score), then a pane for each sprite, <b>S0</b> to <b>S7</b>. S0 is the one you steer; S2 to S6 are the enemies, each on its path script. A sprite the game puts behind the scenery slides back behind CH; a dashed pane is a sprite switched off.</p></div>
+      <div id="pl-layers" hidden role="group" aria-label="The video chip's layers as a stack of ten panes, each labelled"><div class="stage"></div><div class="ctl"><label>Spread <input type="range" min="8" max="100" value="40" data-l="gap"></label><label>Zoom <input type="range" min="-900" max="300" value="-420" data-l="zoom"></label><button type="button" data-l="reset">Reset the view</button></div><p class="key">Drag to turn the stack. Back to front: <b>BG</b> the border and background colour, <b>CH</b> the characters (the scenery and the score), then a pane for each sprite, <b>S0</b> to <b>S7</b>. S0 is the one you steer; S2 to S6 are the enemies, each on its path script. A sprite the game puts behind the scenery slides back behind CH; a dashed pane is a sprite switched off.</p></div>
       <div class="pl-race" id="pl-race" hidden><span id="pl-race-msg"></span> <button type="button" id="pl-race-go">👻 Race your ghost</button> <button type="button" id="pl-race-no" aria-label="No thanks">✕</button></div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
@@ -186,7 +186,6 @@ section table{margin:6px 0 18px}
         <button type="button" data-transport="play" aria-pressed="false"><span aria-hidden="true">▶</span> Play</button>
         <button type="button" data-transport="forward" title="Move forward five seconds in recorded play" disabled><span aria-hidden="true">⏩</span> Fast forward</button>
       </div>
-      <button type="button" data-act="restart">Start again</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
         <output id="pl-scrub-t" aria-label="Playback position">0.0 s of 0.0 s</output>
@@ -3997,7 +3996,7 @@ function tick(now) {
     }
     if (n === 10) acc = 0;
     if (n) { maxPlayed = played; draw(); overlays(n); if (played % 6 === 0) lab(); }
-  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); }
 }
 
 // --- input: the keyboard as the C64's, the arrows and space as the joystick in port 2 --------
@@ -4075,9 +4074,7 @@ $('pl-cheats').addEventListener('click', e => {
   screen.focus();
 });
 $('pl-bar').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const act = b.dataset.act;
-  if (act === 'restart' && image) start(level || 0);
+  if (!e.target.closest('button')) return;
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && image) start(0); });

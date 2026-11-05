@@ -71,8 +71,6 @@ section table{margin:6px 0 18px}
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart" title="The machine switched on again: the title screen and its tune">Start again</button>
       <button type="button" data-act="f1" title="F1 on the C64's keyboard: the game's own pause, which fire ends">F1: pause the game</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
@@ -110,7 +108,7 @@ section table{margin:6px 0 18px}
 const $ = id => document.getElementById(id);
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const CLOCK = 985248;
-let data = null, rt = null, keep = null, running = false, paused = false, target = 0, last = 0;
+let data = null, rt = null, keep = null, running = false, target = 0, last = 0;
 
 // --- drawing: the last whole frame, through the site's model of the video chip
 CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
@@ -134,7 +132,7 @@ async function sound(on) {
   hold();
   return soundOn;
 }
-function hold() { if (host) { if (soundOn && running && !paused) host.ctx.resume(); else host.ctx.suspend(); } }
+function hold() { if (host) { if (soundOn && running) host.ctx.resume(); else host.ctx.suspend(); } }
 Sound.attach(document.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
 
 // --- input: the arrows, Space and Z as the joystick in port 1, F1 and P as the C64's F1 (the
@@ -196,7 +194,7 @@ PlayControls.attach({
 function frame(t) {
   if (!running) return;
   requestAnimationFrame(frame);
-  if (paused || !rt) { last = 0; return; }
+  if (!rt) { last = 0; return; }
   try {
     const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
     last = t;
@@ -210,7 +208,7 @@ function frame(t) {
     draw();
   } catch (e) {
     running = false; hold();
-    overMsg.textContent = 'The port stopped: ' + e.message + '. Start again runs it from the start.'; over.hidden = false; console.error(e);
+    overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e);
   }
 }
 document.addEventListener('visibilitychange', () => { last = 0; });
@@ -224,8 +222,7 @@ function start() {
   rt = SquirmPlay.create({ M: data.ram.slice(), keep });
   held.clear(); letGo.clear();
   if (host) host.push([registers()]);
-  target = 0; last = 0; paused = false;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  target = 0; last = 0;
   if (!running) { running = true; requestAnimationFrame(frame); }
   hold();
   screen.focus();
@@ -235,9 +232,7 @@ function f1() { if (!rt || !running) return; press('bar-F1', 'F1'); release('bar
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
-  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); hold(); }
-  else if (act === 'restart' && data) start();
-  else if (act === 'f1') f1();
+  if (act === 'f1') f1();
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });

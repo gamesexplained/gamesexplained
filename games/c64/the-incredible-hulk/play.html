@@ -129,8 +129,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
-      <button type="button" data-act="restart">Start again</button>
       <button type="button" data-act="saves" title="Put back the four games saved on Commodore's disk, in place of any saved on this page">Disk's saved games</button>
       <button type="button" data-act="fast" aria-pressed="false" title="Load and draw each picture at once, without waiting for the disk drive">⏩ Skip loading times</button>
       <span class="pl-sep" aria-hidden="true"></span>
@@ -1555,7 +1553,7 @@ const HulkScreen = (function () {
       hold();
       return on;
     }
-    function hold() { if (host) { if (on && !paused && running) host.ctx.resume(); else host.ctx.suspend(); } }
+    function hold() { if (host) { if (on && running) host.ctx.resume(); else host.ctx.suspend(); } }
     return { write, tick, set, hold };
   })();
   if (typeof Sound !== 'undefined') Sound.attach(document.querySelector('[data-sound]'), sound.set);
@@ -1563,7 +1561,7 @@ const HulkScreen = (function () {
   // The machine: the port on the game's memory, with the screen editor, the drive, the disk's
   // saved games and the keyboard round it
   let L = null, M = null, C = null, run = null, st = null, keys = [], waiting = 0, exited = false;
-  let running = false, paused = false, quiet = false, tail = [];
+  let running = false, quiet = false, tail = [];
   // Skip loading times: the waits the port marks as a picture's (the drive's load, and the
   // clearing, copying and drawing of the picture) take none of the C64's time
   const FAST_KEY = 'gamesexplained.the-incredible-hulk.fast';
@@ -1614,7 +1612,7 @@ const HulkScreen = (function () {
         if (w.left > 0) break;
         st = run.next();
       } else if (w.wait === 'exit') {
-        if (!exited) { exited = true; overMsg.textContent = 'The game has left for BASIC, as character $FF tells it to. Start again to play.'; over.hidden = false; }
+        if (!exited) { exited = true; overMsg.textContent = 'The game has left for BASIC, as character $FF tells it to. Reloading the page starts it again.'; over.hidden = false; }
         budget = 0; break;
       } else st = run.next();
     }
@@ -1625,11 +1623,9 @@ const HulkScreen = (function () {
     if (!running) return;
     const ms = last ? Math.min(100, now - last) : 0;
     last = now;
-    if (!paused) {
-      try { advance(ms); typeOn(now); } catch (e) { overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; running = false; return; }
-      const f = Math.floor(cycles / 19656);
-      sound.tick(f - shownFrames); shownFrames = f;
-    }
+    try { advance(ms); typeOn(now); } catch (e) { overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; running = false; return; }
+    const f = Math.floor(cycles / 19656);
+    sound.tick(f - shownFrames); shownFrames = f;
     draw();
     requestAnimationFrame(loop);
   }
@@ -1694,12 +1690,10 @@ const HulkScreen = (function () {
     const b = e.target.closest('button[data-act]');
     if (!b || !L) return;
     const act = b.dataset.act;
-    if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); say(paused ? 'paused' : ''); sound.hold(); }
-    else if (act === 'fast') {
+    if (act === 'fast') {
       fast = !fast; b.setAttribute('aria-pressed', String(fast));
       try { localStorage.setItem(FAST_KEY, fast ? '1' : '0'); } catch (e) { /* the choice lasts for this visit */ }
     }
-    else if (act === 'restart') { stopTyping(''); start(); over.hidden = true; begin(); }
     else if (act === 'saves') {
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* nothing was kept */ }
       readSaves(); say('the disk’s four saved games are back');
