@@ -1,8 +1,9 @@
 'use strict';
 // The life object (MAP1, read into the heap at $8466 once the start object has run): a phase of
-// life played on its map, a cell at a time. A stage's file (MAP2 to MAP7) holds its header (the
-// ages it spans, its choices, its map of 30 ages by three cells, where the arrow starts, its table
-// of scene blocks) and the blocks, each a run of LZW-packed scenes. A scene is a descriptor: the
+// life played on its map, a cell at a time. A stage's file (MAP1 for Infancy, MAP27 for Childhood
+// and Old Age, MAP3 to MAP6 for the four between) holds its header (the ages it spans, its
+// choices, its map of ages by three cells, where the arrow starts, its table of scene blocks)
+// and the blocks, each a run of LZW-packed scenes. A scene is a descriptor: the
 // conditions on the 64 shared words ($7F40) that pick one of its alternatives, the changes it
 // makes to them, then its pages of text and the questions on them; the answers pick the next
 // scene. Its code is never on the page; its data (texts, tables, the scene blocks it reads from
@@ -28,7 +29,7 @@
     function* waitFor(test) {
       const n = P.due();
       if (n) yield { cycles: n };
-      while (!test()) yield;
+      for (let first = true; !test(); first = false) yield first ? P.FIRST : undefined;
     }
     function* waitForFire() { while (yield* P.poll_input_high_nibble()); }
 
@@ -147,8 +148,8 @@
       } finally { P.leave(f); }
     };
 
-    // $881B: the stage's file opened, if it is not: MAP2 for the last stage (7), MAP n for the
-    // others, asked for again (and the map drawn again, when redraw is set) until it opens. On the
+    // $881B: the stage's file opened, if it is not: file 2 (MAP27, Childhood's) for the last stage
+    // (7), file n (MAP1, MAP3 to MAP6) for the others, asked for again (and the map drawn again, when redraw is set) until it opens. On the
     // first three stages' files, a word of where the first block starts; the second's is not used
     P.open_stage_map_stream = function* (redraw) {
       const f = P.enter([redraw], 37);
@@ -221,13 +222,13 @@
         let again = 0;
         const cellAt = () => (P.mul(row, 6) + (col << 1) + GRID) & 0xFFFF;
         yield* P.enter_inline_native_5f36_adjust_0();
-        P.hit_test_selection_rectangle(1024, 32, 15, 39, 15, 1);
+        P.play_sid_click(1024, 32, 15, 39, 15, 1);
         P.memmove_bytes(0x8145, W, 128);
         const v = choice ? P.rw((((((col << 1) << 1) + row) << 1) + CHOICES) & 0xFFFF) : P.rw(cellAt());
         P.ww(len, v & 255);
         P.ww(len, yield* P.locate_scene_block(P.rw(len)));
         if (!P.rw(len)) {
-          P.hit_test_selection_rectangle(512, 32, 15, 39, 15, 1);
+          P.play_sid_click(512, 32, 15, 39, 15, 1);
           return yield* P.delay_scaled_iterations(0x1388);
         }
         P.disable_sprite0();
@@ -638,9 +639,9 @@
         P.ww(0xCAD9, 8);
         let at = 0;
         for (;;) {
-          if (at === 255) yield* P.read_pointer_device_position(7, 2);
-          else if (val(at) === 255) yield* P.read_pointer_device_position(7, 22);
-          else yield* P.read_pointer_device_position(7, (rowOf(at) + 1) & 0xFFFF);
+          if (at === 255) yield* P.place_arrow_at_text_cell(7, 2);
+          else if (val(at) === 255) yield* P.place_arrow_at_text_cell(7, 22);
+          else yield* P.place_arrow_at_text_cell(7, (rowOf(at) + 1) & 0xFFFF);
           yield* P.delay_scaled_iterations(0x1388);
           let k;
           do k = (yield* P.read_normalized_input()) & 255; while (k !== 1 && k !== 2 && k !== 3 && k !== 16);
@@ -659,7 +660,7 @@
           if (at === 255) { yield* P.enter_inline_native_5f36_adjust_0(); return 1; }
           if (val(at) === 255) {
             yield* P.enter_inline_native_5f36_adjust_0();
-            P.hit_test_selection_rectangle(2048, 32, 15, 39, 15, 1);
+            P.play_sid_click(2048, 32, 15, 39, 15, 1);
             return 0;
           }
           let i = 0;
@@ -757,7 +758,7 @@
         P.render_text_into_region(0xAB9A, PANEL, 14, 8, 21);
         P.disable_sprite0();
         yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 24, 1);
-        yield* P.read_pointer_device_position(6, 22);
+        yield* P.place_arrow_at_text_cell(6, 22);
         yield* waitForFire();
         yield* P.enter_inline_native_5f36_adjust_0();
         return yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 22, 8);
@@ -775,7 +776,7 @@
         P.render_text_into_region(c, PANEL, P.measure_zero_terminated_string(c), 1, 4);
         P.render_text_into_region(0xAC34, PANEL, 8, 8, 21);
         yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 24, 1);
-        yield* P.read_pointer_device_position(12, 22);
+        yield* P.place_arrow_at_text_cell(12, 22);
         yield* waitForFire();
         yield* P.enter_inline_native_5f36_adjust_0();
         if (back) return yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 22, 8);
@@ -823,7 +824,7 @@
               yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 24, 1);
               P.ww(first, 0);
             } else yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 24, 8);
-            yield* P.read_pointer_device_position(6, 22);
+            yield* P.place_arrow_at_text_cell(6, 22);
             P.clear_and_frame_text_region(23, PANEL);
             yield* waitForFire();
             yield* P.enter_inline_native_5f36_adjust_0();
@@ -890,7 +891,7 @@
       try {
         let at = 1, shown = 1;
         yield* P.animate_screen_region_transition(4, 1, 23, PANEL, 24, 8);
-        yield* P.read_pointer_device_position(6, 22);
+        yield* P.place_arrow_at_text_cell(6, 22);
         P.enable_sprite0();
         P.clear_and_frame_text_region(23, PANEL);
         for (;;) {
@@ -900,8 +901,8 @@
           else if (k & 2) at = 1;
           if (shown !== at) {
             shown = at;
-            if (at) yield* P.read_pointer_device_position(6, 22);
-            else yield* P.read_pointer_device_position(6, 2);
+            if (at) yield* P.place_arrow_at_text_cell(6, 22);
+            else yield* P.place_arrow_at_text_cell(6, 2);
             yield* P.delay_scaled_iterations(0x1388);
           }
         }

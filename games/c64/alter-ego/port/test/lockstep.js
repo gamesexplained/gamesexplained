@@ -71,6 +71,14 @@ for (let n = 2; n <= 7; n++) SESSIONS['stage' + n] = bot(10 + n, 200, phase(n));
 // Adolescence with the keys marked with arrows (the up arrow and the left arrow, characters of
 // their own, which the game reads as no move) in place of the shifted cursor keys
 SESSIONS['arrow-keys'] = bot(13, 200, phase(3), PICK.map(([k, w]) => [k.replace('LSHIFT+DOWN', 'UP').replace('LSHIFT+RIGHT', 'LEFT'), w]));
+// Old Age played to its end: a life's last scene, the stage's menu, and a new life begun in
+// Infancy (a bot without RUN/STOP, fire weighted more)
+SESSIONS['old-age'] = bot(7, 520, phase(7), [['RETURN', 12], ['DOWN', 4], ['LSHIFT+DOWN', 2], ['LSHIFT+RIGHT', 2], ['RIGHT', 2],
+  ['F1', 1], ['F3', 1], ['F5', 1], ['F7', 1]]);
+// with the bus's zeros for dice, as the game alone reads them on the kit's C64. The life dies at
+// 65, at frame 24,396, in the scene of reference/old-age-last-scene.png (where another life,
+// played by the game alone, dies at 70), and the new life is a year old when the session ends
+SESSIONS['old-age'].dice = 0;
 // the questionnaire answered by hand (its menu's first line), or left to chance and then gone over
 // (its third): fire answers and moves on, left and right change the answer, up and down move the
 // arrow, until the last page's line at its foot starts the game; then play
@@ -138,6 +146,7 @@ function run(o = {}) {
   const m = lib.machine('parts/main/work/entry.vsf', disk ? { drive: AEKernal.copyDrive(disk) } : {});
   const P = AE.create(new Uint8Array(65536), {}, { charRom: lib.charRom(), drive: disk ? AEKernal.copyDrive(disk) : lib.newDrive(), cpuPort: m.cpu.pdata, cpuDir: m.cpu.pdir });
   if (o.port) o.port(P);                     // a test's own counters on the port (scripts/time-stretches.js)
+  if (o.machine) o.machine(m);               // and on the game's machine (scripts/profile.js)
   // the program from the hand-over; a quit ends it at the KERNAL's reset, which the game calls
   // through $7FC8 and the port throws: the last stop, where the two are compared once more
   let reset = false;
@@ -154,9 +163,10 @@ function run(o = {}) {
   P.M[0] = m.cpu.pdir; P.M[1] = m.cpu.pdata;
   // The dice: the SID's third voice running noise, read at $D41B (read_sid_voice3_noise, $4697).
   // The kit's C64 reads the SID's registers as its data bus, 0 there every time, so each side is
-  // handed the same bytes from a seed instead, in the order it reads them (o.dice: the seed, by
-  // default one from the session's name; 0 keeps the bus's zeros)
-  const seed = o.dice !== undefined ? o.dice : [...(o.session || 'new-random')].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+  // handed the same bytes from a seed instead, in the order it reads them (o.dice, or the
+  // session's own .dice: the seed, by default one from the session's name; 0 keeps the bus's
+  // zeros)
+  const seed = o.dice !== undefined ? o.dice : steps.dice !== undefined ? steps.dice : [...(o.session || 'new-random')].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
   if (seed) {
     const dice = () => { let x = seed >>> 0; return () => { x = (Math.imul(x, 1103515245) + 12345) >>> 0; return (x >>> 16) & 255; }; };
     const g = dice(), p = dice(), gr = m.ioRead, pr = P.io.read;

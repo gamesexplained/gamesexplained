@@ -24,7 +24,7 @@
           P.install_dialog_glyph_range(P.rw(desc), 0, P.rw(desc + 2));
           desc = (desc + 4) & 0xFFFF;
         }
-        yield* P.read_pointer_device_position((col + 4) & 0xFFFF, first);
+        yield* P.place_arrow_at_text_cell((col + 4) & 0xFFFF, first);
         yield* P.delay_scaled_iterations(0x1388);
         let at = 0, shown = 0;
         for (;;) {
@@ -34,11 +34,11 @@
           if ((k & 2) && P.s((at + 1) & 0xFFFF) < P.s(count)) at = (at + 1) & 0xFFFF;
           if (shown !== at) {
             shown = at;
-            yield* P.read_pointer_device_position((col + 4) & 0xFFFF, ((at << 1) + first) & 0xFFFF);
+            yield* P.place_arrow_at_text_cell((col + 4) & 0xFFFF, ((at << 1) + first) & 0xFFFF);
             yield* P.delay_scaled_iterations(0x1388);
           }
         }
-        P.hit_test_selection_rectangle(1024, 32, 15, 39, 15, 1);
+        P.play_sid_click(1024, 32, 15, 39, 15, 1);
         yield* P.enter_inline_native_5f36_adjust_0();
         yield* P.delay_scaled_iterations(0x1388);
         return at;
@@ -105,7 +105,7 @@
     };
 
     // ---- the life map. Its window is the bitmap's first 24 character rows ($2000-) less the
-    // columns $82B1/$82B7 bound; it is drawn a cell at a time from the map's 30 ages of three
+    // columns $82B1/$82B7 bound; it is drawn a cell at a time from the map's ages of three
     // words ($81F7) and the scene choices ($81C5-)
     // $5220: the window scrolled back by n ages, a pixel row at a time, the ages coming in at
     // the top drawn: the first age shown after
@@ -213,7 +213,7 @@
     };
     // $596E: segment seg (0 and 4 the margins, 1-3 the choices' boxes) of a pixel row, from
     // column from to to, drawn: an icon's row from the map's graphics (the word's high byte's low
-    // nibble picks it, 240 bytes each) or the box's frame (layout_wrapped_text_lines). The
+    // nibble picks it, 240 bytes each) or the box's frame (draw_map_box_frame_row). The
     // graphics are read with the KERNAL banked out
     P.clip_and_draw_life_map_connector_segment = function (word, dst, from, to, seg) {
       const f = P.enter([word, dst, from, to, seg], 2);
@@ -234,7 +234,7 @@
         }
         if (P.s(to) <= P.s(from)) return 1;
         const icon = P.return_argument_byte_1(word) & 15;
-        if (!icon) return P.layout_wrapped_text_lines(word, dst, from, to);
+        if (!icon) return P.draw_map_box_frame_row(word, dst, from, to);
         let src = ((icon - 1) * 240 + P.ramw(0x7E8F)) & 0xFFFF;
         dst = (dst + from) & 0xFFFF;
         src = (src + from) & 0xFFFF;
@@ -249,7 +249,7 @@
     // $5A5D: a box's frame in a pixel row (columns from to to of dst): blank, with the line down
     // its middle (column 24) where the word's bit says a line runs there; the middle row also
     // has the line across, left ($8000) and right ($4000) of it
-    P.layout_wrapped_text_lines = function (word, dst, from, to) {
+    P.draw_map_box_frame_row = function (word, dst, from, to) {
       const f = P.enter([word, dst, from, to], 0);
       try {
         P.fill_memory_range((dst + from) & 0xFFFF, (to - from) & 0xFFFF, 0);
@@ -422,7 +422,7 @@
     };
     // $54BF: the arrow at text column col, row row of the screen (x = col x 8, y = row x 8 + 53),
     // moved at the top of a frame
-    P.read_pointer_device_position = function* (col, row) {
+    P.place_arrow_at_text_cell = function* (col, row) {
       const f = P.enter([col, row], 2);
       try {
         yield* P.enter_inline_native_5f36_adjust_0();
@@ -495,8 +495,8 @@
     };
 
     // $554D: a click on the SID: voice voice at freq with wave, its envelope ad and sr and the
-    // volume vol, gated on and at once off (the listing's name for it is wrong: it tests nothing)
-    P.hit_test_selection_rectangle = function (freq, wave, ad, sr, vol, voice) {
+    // volume vol, gated on and at once off
+    P.play_sid_click = function (freq, wave, ad, sr, vol, voice) {
       const f = P.enter([freq, wave, ad, sr, vol, voice], 4);
       try {
         const v = (P.mul(voice, 7) + 0xD400) & 0xFFFF;

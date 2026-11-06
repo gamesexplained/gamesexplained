@@ -133,7 +133,7 @@
           if (!(P.s((at - 1) & 0xFFFF) <= P.s(count))) break;
         }
         if (P.s(at) > P.s(count)) at = 1;
-        yield* P.read_pointer_device_position(4, rowOf(at));
+        yield* P.place_arrow_at_text_cell(4, rowOf(at));
         let col = 4, shownAt = at, shownCol = 4;
         yield* P.delay_scaled_iterations(1000);
         for (;;) {
@@ -145,7 +145,7 @@
           if (k === 8) col = 16;
           if (!at || at === n) col = 4;
           if (shownCol !== col || shownAt !== at) {
-            yield* P.read_pointer_device_position(col, rowOf(at));
+            yield* P.place_arrow_at_text_cell(col, rowOf(at));
             shownCol = col; shownAt = at;
             yield* P.delay_scaled_iterations(0x1388);
           }
@@ -164,7 +164,7 @@
             }
             col = 4;
             at = (at + 1) & 0xFFFF;
-            yield* P.read_pointer_device_position(4, rowOf(at));
+            yield* P.place_arrow_at_text_cell(4, rowOf(at));
             yield* P.delay_scaled_iterations(0x1388);
           }
         }

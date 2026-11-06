@@ -7,8 +7,11 @@
 //              c64/machine.js's save(), its memory without the program), files: { NAME: base64 },
 //              the files the game reads as it plays, the start and life objects in MAP1 without
 //              their program, glyphs: the character ROM's glyphs the game copies, as 4 KB }
-//     cost     the program's costs, fitted on the game (scripts/fit-cost.js, cost.json): { seg:
-//              { 'from>to': cycles }, call: { routine: cycles }, turn, irq }
+//     cost     the program's costs, measured on the game (scripts/profile.js, cost.json): { seg:
+//              { 'from>to': cycles }, call, pass, wait: { routine: cycles } (pass also
+//              'routine>child': a loop round the wait for a key by the routine it calls), unit: { routine:
+//              [the place of the argument that counts, cycles for each] }, readers: [routine],
+//              stack: [routine], turn, irq }
 //     saved    optional: { NAME: Uint8Array }, saved games the browser kept, put on the disk
 //     onSave   optional: (name, bytes) when the game writes a file (a saved game, its slots)
 //     onRestart optional: (why) when the game quits or stops and the page starts it again
@@ -21,15 +24,16 @@
 //   rt.missing         the stretches the program ran that the cost has nothing for, as 'from>to'
 //   rt.passes          the calls of GETIN ($6DFA) so far, each counted once the clock has paid
 //                      the stretch that leads to it
+//   rt.shown           the frame runFrame last returned; rt.ahead, the frames finished after it
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. The game's interrupt is the KERNAL's, CIA 1's
 // timer A running out (every 16,422 cycles as the KERNAL sets it); the arrow's motion is hooked in
 // front of it at $4229, and with the KERNAL banked out the vector under it takes the interrupt to
-// the bridge at $414A. Each stretch of the program moves the clock on by its cost, and the
-// interrupts that fall due on the way run where they fall, their own time added: the stretch's own
-// cycles (seg, by the checkpoints it runs between) and each routine the port called in it its own
-// (call), fitted on the game's sessions. A turn of a polling loop (a wait for the arrow to arrive,
-// for the raster) moves the clock to the next line, and a turn of the game's delay loop costs
+// the bridge at $414A. The program moves the clock on by what the game spends in each routine the
+// port runs, measured on the game (each routine's own cycles a call, a turn of the wait for a key
+// in the loop round it, and a wait for the raster or the arrow), and the interrupts that fall due
+// on the way run where they fall, their own time added. A turn of a polling loop (a wait for the arrow to arrive, for
+// the raster) moves the clock to the next line, and a turn of the game's delay loop costs
 // cost.turn.
 //
 // The disk. Every side is in the drive at once, as the port's drive model holds them, so a request
@@ -108,20 +112,35 @@ function create(o) {
   let cmp = 0, latch = 0, enable = 0, pra = 0xFF, ddra = 0, ddrb = 0, pra2 = 0x97, ddra2 = 0x3F;
   let cia1 = null, cia2 = null, noise = voice3();
   let t = 0, frameIdx = 0, cur = null, target = null, nextIrq = Infinity;
-  const done = [];
   const keep = {};
   const vm = root.C64 ? root.C64.videoMemory(M, colour, { keep }) : null;
   const lineNow = () => Math.floor(t / LINE);
   const bank = () => 3 - ((pra2 | ~ddra2) & 3);
+  // The frames. The clock runs ahead of the frames on show while the game is busy: a stretch the
+  // C64 takes seconds over (a scene's text drawn into the bitmap, a stage read from the disk) runs
+  // here at once, its frames kept until each is due. A frame keeps the memory that changed since
+  // the last one began, and the frames are shown in turn, each change put into a copy of the
+  // memory as it is shown (shown), so the frames waiting cost only their changes
+  const queue = [], base = { mem: new Uint8Array(0x10000), colour: new Uint8Array(0x400) };
+  const shown = { mem: new Uint8Array(0x10000), colour: new Uint8Array(0x400) };
+  const words = a => new Uint32Array(a.buffer, a.byteOffset, a.length >> 2);
+  const liveW = words(M), baseW = words(base.mem);
+  let last = null;
   function begin() {
-    const f = vm ? vm.begin() : { mem: M.slice(), colour: colour.slice() };
-    cur = { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: f.mem, colourMem: f.colour, keep };
+    const diff = [], cdiff = [];
+    for (let x = 0; x < 0x4000; x++) if (liveW[x] !== baseW[x]) {
+      baseW[x] = liveW[x];
+      for (let a = x * 4; a < x * 4 + 4; a++) diff.push(a, M[a]);
+    }
+    for (let a = 0; a < 0x400; a++) if (colour[a] !== base.colour[a]) { base.colour[a] = colour[a]; cdiff.push(a, colour[a]); }
+    if (vm) vm.begin();
+    cur = { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], diff, cdiff, keep };
   }
-  // the frames the clock has finished: each kept for the page to draw, and the next begun
+  // the frames the clock has finished: each kept until it is due, and the next begun
   function rollFrames() {
     if (vm) vm.at(t, cur.writes, bank());
     while (t >= (frameIdx + 1) * FRAME) {
-      done.push(cur); if (done.length > 3) done.shift();
+      queue.push(cur);
       frameIdx++;
       begin();
     }
@@ -250,25 +269,52 @@ function create(o) {
     irqByte: a => M[a], store: (a, v) => { M[a] = v & 255; },
   };
 
-  // ---- the program's costs, counted as the port calls its routines outside the interrupt
-  let calls = Object.create(null), counting = true;
+  // ---- the program's costs, measured on the game (port/scripts/profile.js): each routine the
+  // port calls outside the interrupt moves the clock on by its own cycles a call (call), as it
+  // returns, or, for one that waits, as it starts; by its own cycles a turn of the loop round the
+  // wait for a key (pass), at each call of GETIN, for the loop and the routines reading the key in
+  // it (readers); by its own cycles between its waits (wait), at the first turn of each
+  // (P.FIRST); and, for one that fills, copies or reads a count of bytes it is given, by its own
+  // cycles a byte (unit), as it returns. A few lines' worth at a time, so that the interrupts fall inside a long stretch and
+  // its frames show what the game has drawn by then
+  const CHUNK = 4 * LINE;
+  let owed = 0, counting = true;
+  const stack = [], readers = new Set(model.readers || []);
   function counted(P) {
     const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
-    for (const name of Object.keys(model.call)) {
-      const f = P[name];
+    const pass = model.pass || {}, wait = model.wait || {}, unit = model.unit || {};
+    for (const name of new Set(Object.keys(model.call).concat(model.stack || [], Object.keys(unit)))) {
+      const f = P[name], c = model.call[name] || 0, u = unit[name];
       if (typeof f !== 'function') continue;
       P[name] = f instanceof GENERATOR
-        ? function* (...a) { if (counting) calls[name] = (calls[name] || 0) + 1; return yield* f.apply(this, a); }
-        : function (...a) { if (counting) calls[name] = (calls[name] || 0) + 1; return f.apply(this, a); };
+        ? function* (...a) {
+          if (counting) charge(c);
+          stack.push(name);
+          try { return yield* f.apply(this, a); } finally { stack.pop(); }
+        }
+        : function (...a) { const r = f.apply(this, a); if (counting) charge(c + (u ? u[1] * (a[u[0]] & 0xFFFF) : 0)); return r; };
     }
+    // a call of GETIN: a turn of the innermost loop and of the readers inside it; the loop's cost
+    // by the routine it calls there (name>child), where its routine waits in more than one loop
+    perPass = () => {
+      let d = 0;
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (readers.has(stack[i])) { d += pass[stack[i]] || 0; continue; }
+        const k = i < stack.length - 1 ? stack[i] + '>' + stack[i + 1] : stack[i];
+        d += pass[k] !== undefined ? pass[k] : pass[stack[i]] || 0;
+        break;
+      }
+      return d;
+    };
+    perWait = () => (stack.length ? wait[stack[stack.length - 1]] || 0 : 0);
     return P;
   }
-  function callsCost() {
-    let c = 0;
-    for (const k in calls) c += model.call[k] * calls[k];
-    calls = Object.create(null);
-    return c;
+  let perPass = () => 0, perWait = () => 0;
+  function charge(c) {
+    owed += c;
+    if (owed >= CHUNK) { const d = owed; owed = 0; advance(d); }
   }
+  function callsCost() { const d = owed; owed = 0; return d; }
 
   // ---- the program, from the hand-over
   let P = null, it = null, lastCp = null, passes = 0;
@@ -286,7 +332,7 @@ function create(o) {
     M[0] = st.cpu.pdir; M[1] = st.cpu.pdata;
     drive = K.copyDrive(K.drive({ files: Object.assign({}, drive.files) }));
     P = counted(AE.create(M, io, { charRom: glyphs, drive, cpuPort: st.cpu.pdata, cpuDir: st.cpu.pdir }));
-    it = P.native_startup_enter_vm(); lastCp = 0x4000; calls = Object.create(null);
+    it = P.native_startup_enter_vm(); lastCp = 0x4000; owed = 0; stack.length = 0;
     nextIrq = irqDue();
   }
   // the files the game wrote, handed to the page as they change
@@ -343,7 +389,7 @@ function create(o) {
     if (r.done) { restart('the game ended'); return; }
     const y = r.value;
     if (y && y.cp !== undefined) {
-      let dt = cost(lastCp, y.cp) + (y.cycles || 0);
+      let dt = cost(lastCp, y.cp) + (y.cycles || 0) + (y.cp === 0x6DFA ? perPass() : 0);
       // a stretch no session measured: a line, so that a loop along it runs slow, never stands still
       if (!dt) dt = LINE;
       lastCp = y.cp;
@@ -351,7 +397,10 @@ function create(o) {
       if (y.cp === 0x6DFA) passes++;
     } else if (y && y.delay) advance(callsCost() + (y.cycles || 0) + y.delay * TURN);
     else if (y && y.cycles !== undefined) advance(callsCost() + y.cycles);
-    else advance(callsCost() + LINE - t % LINE);       // a turn of a polling loop: to the next line
+    else {                                             // a turn of a polling loop: to the next line
+      if (y === P.FIRST) charge(perWait());
+      advance(callsCost() + LINE - t % LINE);
+    }
   }
   function restart(why) {
     if (o.onRestart) o.onRestart(why);
@@ -368,10 +417,17 @@ function create(o) {
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
-    // the frame due at the target: the one that ended at or before it
+    // the frame due at the target, the one that ended at or before it, and the ones before it that
+    // were not shown, their changes taken in turn
     const due = Math.floor(target / FRAME) - 1;
-    for (let i = done.length - 1; i >= 0; i--) if (done[i].frame <= due) return done[i];
-    return done[done.length - 1];
+    let F = null;
+    while (queue.length && queue[0].frame <= due) {
+      F = queue.shift();
+      for (let i = 0; i < F.diff.length; i += 2) shown.mem[F.diff[i]] = F.diff[i + 1];
+      for (let i = 0; i < F.cdiff.length; i += 2) shown.colour[F.cdiff[i]] = F.cdiff[i + 1];
+    }
+    if (F) { F.mem = shown.mem; F.colourMem = shown.colour; last = F; }
+    return last;
   }
 
   start();
@@ -379,8 +435,10 @@ function create(o) {
     M, colour, vic, sidw, input, KEY, missing,
     get t() { return t; }, get frame() { return frameIdx; }, get P() { return P; }, get target() { return target; },
     get passes() { return passes; },
+    // the frame last shown, and how many frames the clock has run ahead of it
+    get shown() { return last ? last.frame : -1; }, get ahead() { return queue.length; },
     get drive() { return drive; },
-    runFrame, runUntil, step, lastFrame: () => done[done.length - 1],
+    runFrame, runUntil, step, lastFrame: () => last,
     onSid: f => sidListeners.push(f),
   };
 }

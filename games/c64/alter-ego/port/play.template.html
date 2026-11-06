@@ -140,12 +140,13 @@ function present() {
   offCtx.putImageData(img, 0, 0);
   cv.getContext('2d').drawImage(off, 0, 0);
 }
-// --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model
+// --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model as the
+// frame is shown (the clock may have run ahead of it)
 const sound = (function () {
   let host = null, on = false, pending = new Map(), sent = 0;
   function attach() {
     if (!rt) return;
-    pending.clear(); sent = rt.frame;
+    pending.clear(); sent = rt.shown + 1;
     rt.onSid((r, v, t) => {
       if (!on) return;
       const f = Math.max(sent, Math.floor(t / FRAME));
@@ -154,7 +155,7 @@ const sound = (function () {
     });
   }
   async function set(want) {
-    if (want && !on) { pending.clear(); sent = rt ? rt.frame : 0; }
+    if (want && !on) { pending.clear(); sent = rt ? rt.shown + 1 : 0; }
     on = want;
     if (on && !host) {
       try {
@@ -168,7 +169,7 @@ const sound = (function () {
   function frame() {
     if (!on || !host || !rt) return;
     const frames = [];
-    for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    for (; sent <= rt.shown; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
     if (frames.length) host.push(frames);
   }
   return { attach, set, frame, get on() { return on; } };
