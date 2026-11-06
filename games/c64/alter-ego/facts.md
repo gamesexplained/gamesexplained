@@ -8,7 +8,7 @@ The male edition, from the C64 Preservation Project's original disks `alter_ego_
 
 ## How the program is made
 
-Most of the game is not 6502 code. It is a program compiled for a stack machine of 16-bit values (p-code), run by the interpreter at `$7033-$7926` in the resident program: fetch and dispatch at `$713C`, through the two 256-entry handler tables at `$7927` (low bytes) and `$7A27` (high bytes). Its registers are in zero page: `$04/$05` the expression stack pointer, growing down from `$CFFF`; `$06/$07` the frame pointer; `$08/$09` the instruction pointer; `$0A/$0B` the primary value and `$0E/$0F` the secondary. A p-code procedure starts with `JSR $70F8` and a word, the frame's size; a 6502 routine with a frame of its own starts with `JSR $7059`, a byte (the zero-page workspace it saves) and a word. 48 opcodes have no handler: all of them point at the BRK at `$7893`.
+Most of the game is not 6502 code. It is a program compiled for a stack machine of 16-bit values (p-code), run by the interpreter at `$7033-$7926` in the resident program: fetch and dispatch at `$713C`, through the two 256-entry handler tables at `$7927` (low bytes) and `$7A27` (high bytes). Its registers are in zero page: `$04/$05` the expression stack pointer, growing down from `$CFFF`; `$06/$07` the frame pointer; `$08/$09` the instruction pointer; `$0A/$0B` the primary value and `$0E/$0F` the secondary. A p-code procedure starts with `JSR $70F8` and a word, the locals' size negated (the gateway adds it to the stack pointer); a 6502 routine with a frame of its own starts with `JSR $7059`, a byte (the zero-page workspace it saves) and a word. 48 opcodes have no handler: all of them point at the BRK at `$7893`.
 
 The program is in three loads, the listing's three parts:
 
@@ -28,7 +28,7 @@ The top level (`initialize_alter_ego_runtime`, `$4003`) opens MAP1 and reads thr
 | Screen colours, sprite pointers | `$0400-$07E7`, `$07F8-$07FF` |
 | The 64 shared words (traits, money, years, flags) | `$7F40-$7FBF`, cleared by the top level before each start |
 | The age in years | `$7F74`; the fraction of a year since the last birthday at `$7FC4`, in 65,536ths, which a save leaves out |
-| The heap | from `$8466` up, its pointer at `$7FCB` |
+| The heap | from `$8465` up, its pointer at `$7FCB` |
 | The p-code's stack | down from `$CFFF` |
 | The drive's record buffer | `$8045-$8144`: a status, the file's number, then the 254-byte record |
 | The map's and choices' pictures | `$E800` on (`$81F5` holds the address) |
@@ -38,11 +38,11 @@ The top level (`initialize_alter_ego_runtime`, `$4003`) opens MAP1 and reads thr
 
 Every MAP file is a relative file of 254-byte records, each a `:`, 252 bytes and a `:`. The game reads a file as one stream of its payload bytes, through a fast loader of its own (`$5B72-$5F2F`): it starts its code in the drive with `M-E $07AF`, then for each record sends `M-E $0300` with the record's number, and the drive clocks 256 bytes back over CIA 2 into the buffer at `$8045`. A file is numbered: MAP1 is file 1 (Infancy's stage, and the start and life objects), MAP27 file 2 (Childhood's and Old Age's stages), MAP3 to MAP6 files 3 to 6. When a read fails, the game asks for the disk it needs by number and label side (`prompt_retry_after_disk_error`, `$5677`, the table at `$7E6C`).
 
-A saved life is a sequential file, AES0 to AES4, of 380 bytes: the regions of the shared words and the stage's state it moves through one routine (`$4E0F`). AESD, 160 bytes, is the directory of the five: five entries of 32 bytes, each the player's name and the age (`$4D86`). The fraction of the year at `$7FC4` is not saved, so a life resumed after a fresh start comes back at its last birthday (`parts/main/facts.md`, "Saving").
+A saved life is a file, AES0 to AES4 (a program file in the disk's directory, opened with `,W` alone), of 380 bytes: the regions of the shared words and the stage's state it moves through one routine (`$4E0F`). AESD, 160 bytes, is the directory of the five: five entries of 32 bytes, each the player's name and the age (`$4D86`). The fraction of the year at `$7FC4` is not saved, so a life resumed after a fresh start comes back at its last birthday (`parts/main/facts.md`, "Saving").
 
 ## Timing
 
-The arrow's interrupt (`sprite0_motion_irq_hook`, `$4229`) runs in front of the KERNAL's own, on CIA 1's timer: 16,422 cycles apart, about 60 a second on a PAL machine. It moves the arrow four pixels across and three down or up towards its target each time, and puts sprite 0 back only once the raster has reached line 0 or 256. A busy loop of the game's (`$545B`) counts turns of 687 cycles.
+The arrow's interrupt (`sprite0_motion_irq_hook`, `$4229`) runs in front of the KERNAL's own, on CIA 1's timer: 16,422 cycles apart, about 60 a second on a PAL machine. It moves the arrow four pixels across and three down or up towards its target each time, and puts sprite 0 back only once the raster has reached line 0 or 256. A busy loop of the game's (`$545B`) counts turns of 640 of the processor's cycles, 687 on a C64 with the interrupt and the cycles the video chip takes.
 
 ## Chance
 
@@ -66,9 +66,11 @@ The fifth, of the 161 comments of the start object and of the life object up to 
 
 The sixth, of the 166 comments of the life object from `$A000` to its end, found 9 wrong and 34 with a wrong detail, and corrected all 43: a routine named for showing the traits and acquisitions that shows three lines of a message and CONTINUE (now `show_three_line_message_panel`), a byte said to be the text decoder's work that is the scene's page number (now `scene_page_number`), five comments on the scene buffer at `$C2A2` that described the descriptor in another snapshot, the MONTHS figure (twelve times the fraction's high byte, divided by 256), the status page said to show months that shows years only, and figures for the scene block that were the name prompt's.
 
+Then every claim in the four facts files, 147 of them, was audited on claude-fable-5-1: none was wrong, 13 had a wrong detail and were corrected, among them the heap's first address (`$8465`), the save files' type (program files, opened for writing), the name editor's callers (the name and the message that no saved files are available, not the menus), how the curtain treats colours (it fills them), and the sessions (sixteen, with `bot2`). The 7 comments of the listing that said the same things were corrected with them. 8 claims rest on runs and tools rather than the bytes and could not be checked from them.
+
 ## Live tests
 
-Fifteen sessions in `port/test/lockstep.js`, each keys given at frames to the game's own code on the kit's C64 (`kit/c64/machine.js`, with the KERNAL and the drive of `port/src/kernal.js`), beside the JavaScript port, which agrees with it on memory and the chips at every call of GETIN:
+Sixteen sessions in `port/test/lockstep.js`, each keys given at frames to the game's own code on the kit's C64 (`kit/c64/machine.js`, with the KERNAL and the drive of `port/src/kernal.js`), beside the JavaScript port, which agrees with it on memory and the chips at every call of GETIN:
 
 | Session | What it plays | Frames |
 |---|---|---|
@@ -79,6 +81,7 @@ Fifteen sessions in `port/test/lockstep.js`, each keys given at frames to the ga
 | answers | the questionnaire answered by hand, then play | 29,155 |
 | answers-edited | left to chance, then gone over by hand, then play | 33,694 |
 | bot | 400 keys at random from a seed: fire, the cursor keys, the function keys, RUN/STOP | 95,102 |
+| bot2 | 1,500 keys at random from another seed, as bot | 330,973 |
 | stage2 to stage7 | each phase from Childhood to Old Age chosen at the start, then 200 keys at random, none to the phase's end | 49,095 to 56,323 |
 | arrow-keys | Adolescence with the keys marked with arrows in place of the shifted cursor keys | 48,591 |
 | old-age | Old Age chosen at the start and played by 520 keys at random to the life's end, at 65; the stage's menu; a new life in Infancy played to the age of 1 | 115,881 |

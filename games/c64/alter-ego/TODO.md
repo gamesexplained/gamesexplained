@@ -9,7 +9,7 @@ each part, the listing sampled, audited in full and sampled again by a
 maintainer's checker on a proven model, every feature confirmed, traced
 or open, the minisite built with its Stages and Graphics tabs, and a
 Play tab that is the whole game ported to JavaScript, run in lockstep
-with the game's own code over 15 sessions and held in CI by
+with the game's own code over 16 sessions and held in CI by
 `test_play.js`.
 
 - **Diamond** needs Gold as well: a human curating the copy, section by

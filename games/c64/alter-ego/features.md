@@ -1,6 +1,6 @@
 # Alter Ego — features
 
-Inventory: the [game's documentation](https://www.lemon64.com/doc/alter-ego-male/47), read on 30 September 2026, and the game's own menus and code. The disks are the male edition's (`orientation.md`). *Live* below means seen on the kit's C64 running the game, in the fifteen recorded sessions `port/test/lockstep.js` plays (named in brackets), with the port beside it agreeing on every call of GETIN and on memory.
+Inventory: the [game's documentation](https://www.lemon64.com/doc/alter-ego-male/47), read on 30 September 2026, and the game's own menus and code. The disks are the male edition's (`orientation.md`). *Live* below means seen on the kit's C64 running the game, in the sixteen recorded sessions `port/test/lockstep.js` plays (named in brackets), with the port beside it agreeing on every call of GETIN and on memory.
 
 | Feature | Status | Evidence or open work |
 |---|---|---|

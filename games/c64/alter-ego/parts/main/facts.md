@@ -4,7 +4,7 @@ The resident program: `$4000-$8465`, with the scene strings at `$E000-$E5FB` and
 
 ## The p-code
 
-62 p-code procedures are resident (each begins `JSR $70F8`, counted in the snapshot from `$4000` to `$8465`); the rest of this part is 6502 code, the interpreter's handlers and its tables. The handler directory is the two 256-byte tables at `$7927` (low bytes) and `$7A27` (high bytes). Opcode `$B7` calls a 32-bit primitive by the number after it, through the table of words at `$7B42`; that table begins with the operand of the `JMP ($0002)` at `$7B41`, so number 0 would jump to `$0002`. Of the 90 p-code procedures in the three parts (`port/scripts/vm.py`), two use `$B7`, both in the life object, with numbers 18 and 24.
+62 p-code procedures are resident (each begins `JSR $70F8`, counted in the snapshot from `$4000` to `$8465`); the rest of this part is 6502 code, the interpreter's handlers and its tables. The handler directory is the two 256-byte tables at `$7927` (low bytes) and `$7A27` (high bytes). Opcode `$B7` calls a 32-bit primitive by the number after it, through the table of words at `$7B42`; that table begins with the operand of the `JMP ($0002)` at `$7B41`, so number 0 would jump to `$0002`. Of the 90 p-code procedures in the three parts (`port/scripts/vm.py`), one uses `$B7`, `finish_life_stage` (`$8CFF`) in the life object, twice: with number 24 and then 18.
 
 ## The top level
 
@@ -26,11 +26,11 @@ The screen is a hires bitmap at `$2000` with its colours at `$0400`. Text is dra
 
 ## The curtain
 
-`animate_screen_region_transition` (`$44C5`) brings a page on behind sprites 1 to 7, laid side by side and widened, as a bar that moves down the region row by row: the bitmap and colours behind the bar are swapped for the new page's, and when the last row is done every sprite is turned off. Its argument record gives the region, the source, a fill byte and a count of frames to wait at each step. The Graphics tab's test holds the page's curtain to this routine.
+`animate_screen_region_transition` (`$44C5`) brings a page on behind sprites 1 to 7, laid side by side and widened, as a bar that moves down the region row by row: the bitmap behind the bar is swapped for the new page's and its colour cells take the fill byte, and when the last row is done every sprite is turned off. Its argument record gives the region, the source, a fill byte and a count of frames to wait at each step. The Graphics tab's test holds the page's curtain to this routine.
 
 ## The keyboard and the name
 
-`EditMenuTextOrSelectEntry` (`$511C`) runs both the menus and the line the name is typed on. For the name the start object gives it the prompt at `$8E11`, the 16 bytes at `$82CB` and a length of 16. Letters are stored in lower case, DEL takes off the last, letters past the sixteenth are ignored, and RETURN accepts the line; a name of 16 letters has no NUL after it. *Live* (new-random types ADAM).
+`EditMenuTextOrSelectEntry` (`$511C`) runs the line the name is typed on, and shows "There are no saved files available" (`$50AC`) when a resume finds none; the menus are `run_modal_selection_dialog` (`$4B57`). For the name the start object gives it the prompt at `$8E11`, the 16 bytes at `$82CB` and a length of 16. Unshifted letters are stored in lower case and shifted ones in upper case, DEL takes off the last, letters past the sixteenth are ignored, and RETURN accepts the line; a name of 16 letters has no NUL after it. *Live* (new-random types ADAM).
 
 `delay_scaled_iterations` (`$545B`) is the game's only wait that is not for a key or the raster: it divides its count by 16 and counts that many turns of a loop.
 
@@ -45,7 +45,7 @@ The fast loader is `$5B72-$5F2F` (the game's `facts.md`, "The disk"). `seek_map_
 A saved life is five files, AES0 to AES4, and a directory, AESD:
 
 - `transfer_save_slot_state` (`$4E0F`) moves 380 bytes, in this order: the shared words `$7F40-$7FBF` (128), `$81C5-$81F4` (48), `$81F7-$82AA` (180), the name `$82CB-$82DA` (16), the phase `$82BD` (2), `$82AB` (2) and `$7FC0-$7FC3` (4). The slot's digit is added to the name AES0.
-- `format_save_directory_entry` (`$4D86`) makes the slot's line of the directory: four spaces, the 16 bytes of the name, ", Age " and the age in two columns.
+- `format_save_directory_entry` (`$4D86`) makes the slot's line of the directory: four spaces, the name (up to 16 bytes), ", Age " right after it and the age in two columns.
 - `read_save_directory_aesd` (`$4D05`) reads AESD's 160 bytes, five entries of 32, and `save_current_game_menu` (`$4F65`) and `resume_saved_game_menu` (`$4EF4`) show it as a menu of five. Saving writes AESD again, then the slot. *Live* (save, resume; the disks compared file by file).
 
 The fraction of a year since the last birthday, `$7FC4-$7FC5`, is in none of the seven regions. On the kit's C64, the game alone: Infancy played from a new game until the fraction was `$4703`, LIFE TIME showing 0 years and 3 months; saved in the first place and quit; the machine started again and the life resumed from the title's menu, LIFE TIME showing 0 years and 0 months (`reference/months-before-saving.png`, `months-after-resuming.png`). Only `advance_age_and_finances` (life object, `$91CD`) writes it, so a life resumed without a fresh start, or born after Old Age, begins with the fraction the life before it left (the code, and the port's agreeing with the game's memory in the save, resume and old-age sessions).

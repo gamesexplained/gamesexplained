@@ -35,7 +35,7 @@ A cell's word gives its scene block in its low byte and its kind in bits 8 to 11
 | Value | What follows |
 |---|---|
 | 255, 254, `$FFFF` | the cell is crossed off |
-| `$FFFE` | the block could not be read: the words are put back and the cell crossed off |
+| `$FFFE` | the block could not be read: the words are put back and the cell crossed off, but a cell of kind 8 has its chain played again until it can be |
 | 251 | the scene does not count: the words are put back |
 | 252 | a choice's next experience is played |
 | `$FFFD` | a panel of three lines: the experience is inappropriate for you at this time (`show_three_line_message_panel`, `$ABA9`) |
@@ -71,4 +71,4 @@ In the game's own code alone on the kit's C64, Old Age begun at the start and pl
 
 ## Arithmetic
 
-The life object has 16-bit multiplication, division and shifts of its own (`$B408-$B567`). `DivideSigned16InPlace` (`$B46B`) and its three siblings share one restoring-division loop; a divisor of 0 gives a quotient of `$FFFF` and leaves the dividend as the remainder, which 44 runs of the routines on their own show.
+The life object has 16-bit multiplication, division and shifts of its own, and a 32-bit arithmetic shift right (`$B408-$B567`). `DivideSigned16InPlace` (`$B46B`) and its three siblings share one restoring-division loop; a divisor of 0 gives a quotient of `$FFFF` (1 from the signed divide when the dividend is negative) and leaves the dividend as the remainder, which 44 runs of the routines on their own show.
