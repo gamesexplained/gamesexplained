@@ -1821,7 +1821,7 @@
     },
     {
       "address": 43945,
-      "name": "show_profile_and_acquisitions_menu",
+      "name": "show_three_line_message_panel",
       "type": "UserDefined",
       "kind": "user"
     },
@@ -2187,7 +2187,7 @@
     },
     {
       "address": 46440,
-      "name": "packed_text_runtime_work",
+      "name": "scene_page_number",
       "type": "UserDefined",
       "kind": "user"
     },
@@ -2397,7 +2397,7 @@
     },
     {
       "address": 49826,
-      "name": "resident_scene26_descriptor31",
+      "name": "scene_descriptor_buffer",
       "type": "UserDefined",
       "kind": "user"
     },
@@ -2560,7 +2560,7 @@
     {
       "address": 34012,
       "type": "line",
-      "text": "The life program's main procedure: one phase of life after another. It reads the stage's header (load_stage_header), works out how many ages the map has ($CAD5, a third of $82BB) and the last age with a cell still in it ($CAD3, the age at the window's foot), counts the cells left ($CAD7), sets the border to the stage's colour ($CAA4 + stage - 1) and, on a new stage, plays its first cell at once (on stage 1, after drawing five rows from the cell words at $C29C and waiting for fire). Then the map window is drawn and the arrow (sprite 0) put on it, and every key moves it: up and down a row (scrolling the window at its edges), left and right over the three cells and the two choice columns beside them. Fire plays the cell under the arrow, or the choice beside the map; f1-f8 a choice by number. RUN/STOP opens the menu at $CAB1: continue, save, resume, quit (the longjmp out with 1) or the status pages.\nInputs: +8 the entry's pointer; +10 0 for a new stage, 1 to read the header over a saved or resumed game.\nOutputs: none; it leaves only through gameplay_object_longjmp_exit."
+      "text": "The life program's main procedure: one phase of life after another. It reads the stage's header (load_stage_header), works out how many ages the map has ($CAD5, a third of $82BB) and the last age with a cell still in it ($CAD3, the age at the window's foot), counts the cells left ($CAD7), sets the border to the stage's colour ($CAA4 + stage - 1) and, on a new stage, plays its first cell at once (on stage 1, after drawing five rows from the cell words at $C29C and waiting for fire). Then the map window is drawn and the arrow (sprite 0) put on it, and every key moves it: up and down a row (scrolling the window at its edges), left and right over the three cells and the two choice columns beside them. Fire plays the cell under the arrow, or the choice beside the map; f1 to f8 a choice by its place: the odd keys the left column (f7 choice 0, f5 1, f3 2, f1 3) and the even the right (f8 4, f6 5, f4 6, f2 7). RUN/STOP opens the menu at $CAB1: continue, save, resume, quit (the longjmp out with 1) or the status pages.\nInputs: +8 the entry's pointer; +10 0 for a new stage, 1 to read the header over a saved or resumed game.\nOutputs: none; it leaves only through gameplay_object_longjmp_exit."
     },
     {
       "address": 34015,
@@ -2640,7 +2640,7 @@
     {
       "address": 35461,
       "type": "line",
-      "text": "Play the scene block behind a map cell or a choice. The 64 shared words ($7F40) are copied to $8145 first, so that a scene that is not to count can put them back. A choice's block comes from run_stage_choice_experience; a cell's word gives its block, found with locate_scene_block, and execute_scene_chunk_chain plays its scenes. Their value says what follows: another of the choice's experiences, the profile panel (the texts at $8CA5 when there is nothing for the player), the cell crossed off, or the stage over. The block's length (a third of it for a choice) moves the years and the money on (advance_age_and_finances). The stage ends when the age passes its last or no cell is left, and finish_life_stage runs.\nInputs: +8 column (or choice / 4); +10 row (or choice & 3); +12 the age at the window's foot, or -1; +14 1 for a choice.\nOutputs: 1 when the stage ended, else 0."
+      "text": "Play the scene block behind a map cell or a choice. The 64 shared words ($7F40) are copied to $8145 first, so that a scene that is not to count can put them back. The cell's or the choice's word gives its block in its low byte, found with locate_scene_block, and execute_scene_chunk_chain plays its scenes; when a choice's scenes return 252, run_stage_choice_experience finds and plays its next experience. Their value says what follows: another of the choice's experiences, the profile panel (the texts at $8CA5 when there is nothing for the player), the cell crossed off, or the stage over. The block's length (a third of it for a choice) moves the years and the money on (advance_age_and_finances). The stage ends when the age passes its last or no cell is left, and finish_life_stage runs.\nInputs: +8 column (or choice / 4); +10 row (or choice & 3); +12 the age at the window's foot, or -1; +14 1 for a choice.\nOutputs: 1 when the stage ended, else 0."
     },
     {
       "address": 35464,
@@ -2700,7 +2700,7 @@
     {
       "address": 37325,
       "type": "line",
-      "text": "Move the years and the money on by a scene block of length +9. The length times the stage's years per unit ($803F), in 1024ths of a year, goes onto the year's fraction ($7FC4); the whole years carried go onto the age ($7F74) and $7F8C. Cash ($7F78 thousands and $7F76 units) and debt ($7F84, $7F82) are worked in whole units with the 32-bit helpers at $6E9F-$6F1D, and cash below nothing goes onto the debt. With a salary ($7F8A, while $7F58 is set) the years' pay is added less a tax worked from $7F52 and the stages left ($8041); without one, the stages up to the sixth (5 >= $8041) cost a fifth of the years' worth of cash. At the end an acquisition waiting at $7F88 becomes its bit at $82AB (1 shifted left by it, $B50C) and $7F88 is cleared.\nInputs: +9 the block's length.\nOutputs: none."
+      "text": "Move the years and the money on by a scene block of length +9. The length times the stage's scale at $803F, plus 512 and shifted right by 10, goes onto the year's fraction ($7FC4, in 65536ths of a year); the whole years carried go onto the age ($7F74) and $7F8C. Cash ($7F78 thousands and $7F76 units) and debt ($7F84, $7F82) are worked in whole units with the 32-bit helpers at $6E9F-$6F1D, and cash below nothing goes onto the debt. With a salary ($7F8A, while $7F58 is set) the years' pay is added less a tax worked from $7F52 and the stages left ($8041); without one, when $8041 is 5 or less (it is 8 less the stage's number, 7 in Infancy down to 1 in Old Age, so from the third stage on) a fifth of the years' worth of cash is taken. At the end an acquisition waiting at $7F88 becomes its bit at $82AB (1 shifted left by it, $B50C) and $7F88 is cleared.\nInputs: +9 the block's length.\nOutputs: none."
     },
     {
       "address": 37328,
@@ -2720,7 +2720,7 @@
     {
       "address": 38002,
       "type": "line",
-      "text": "advance_age_and_finances: the years' earnings. With no job ($7F58 zero) the salary $7F8A is cleared. A salary adds its pay for the years, less a tax worked from $7F52 and the stages left ($8041); without one the branch at $9629 takes the cost of living on the stages up to the sixth."
+      "text": "advance_age_and_finances: the years' earnings. With no job ($7F58 zero) the salary $7F8A is cleared. A salary adds its pay for the years, less a tax worked from $7F52 and the stages left ($8041); without one the branch at $9629 takes the cost of living when $8041 is 5 or less, which is from the third stage on ($8041 is 8 less the stage's number)."
     },
     {
       "address": 38704,
@@ -2730,7 +2730,7 @@
     {
       "address": 38954,
       "type": "line",
-      "text": "Find scene block +9 (from 1) of the stage's table: its place in the file is the table's start ($82F7) plus the lengths ($82FB, a signed word each) of the blocks before it, kept at $CC65 as 32 bits. Then load_scene_block_header reads its header.\nInputs: +9 the block, 1-254.\nOutputs: its length, or 0 when it is 0 or 255, has no length or the header could not be read."
+      "text": "Find scene block +9 (from 1) of the stage's table: its place in the file is the table's start ($82F7) plus the lengths ($82FB, a signed word each) of the blocks before it, kept at $CC65 as 32 bits. Then load_scene_block_header reads its header.\nInputs: +9 the block, 1-254.\nOutputs: its length, or 0 when it is 0 or 255 or has no length (the test of load_scene_block_header's result for -1 at $98E9 cannot fire: that procedure returns only 0, or leaves through gameplay_object_longjmp_exit)."
     },
     {
       "address": 38957,
@@ -2805,7 +2805,7 @@
     {
       "address": 39829,
       "type": "line",
-      "text": "Verified unreachable isolated VM return byte. It is not a procedure entry, CFG target or overlapping instruction byte in any of the 82 decoded resident procedures."
+      "text": "Verified unreachable isolated VM return byte. It is not a procedure entry, CFG target or overlapping instruction byte in any of the 85 decoded p-code procedures the snapshot holds (the 62 resident and the life object's 23)."
     },
     {
       "address": 39830,
@@ -2845,12 +2845,12 @@
     {
       "address": 40960,
       "type": "line",
-      "text": "interpret_interaction_descriptor's bytecode ($9BFE-$A06C) goes on here, across the BASIC ROM's address; the life program banks the ROM out, so the bytes are RAM."
+      "text": "interpret_interaction_descriptor's bytecode ($9BFE-$A057) goes on here, across the BASIC ROM's address; the life program banks the ROM out, so the bytes are RAM."
     },
     {
       "address": 40962,
       "type": "line",
-      "text": "ADD operation in compiled descriptor interpreter $9BF9. Continues from $9FFF frame-address operand spanning $A000/$A001, reads a choice byte and updates local state before selecting a route. Every instruction through return $A06C belongs to the same structurally checked VM body; $A000 is an operand continuation, not a native entry."
+      "text": "ADD operation in compiled descriptor interpreter $9BF9. Continues from the $9FFF frame-address operand (lds &L-89) spanning $A000/$A001: it indexes that table of page numbers by the choice dimension L-4, and the byte read, the page on which an unanswered dimension's choices were shown, goes to L-27 before the jump to $9F30 that shows the page again. Every instruction through the return at $A057 belongs to the same structurally checked VM body; $A000 is an operand continuation, not a native entry."
     },
     {
       "address": 41048,
@@ -2860,17 +2860,17 @@
     {
       "address": 41069,
       "type": "line",
-      "text": "Present the descriptor interpreter's accumulated display-item list and collect a response when the list defines selectable choices.\nInputs: +8/+10 carry packed display/choice metadata assembled by $9BF9; $CAD9 identifies the active descriptor context. Opcode 3 calls this routine after adding an indexed text fragment, while opcode 5 calls it to finalize a choice set.\nOutputs: selected mixed-radix choice/control result when selection is requested; otherwise the text panel is presented and interpretation continues.\nAssumptions: descriptor text indices, choice radices, and packed display metadata are valid.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; $B568 packed-text work, selection/sprite/screen state.\nHardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; signed frame adjustment -3; bytecode $A072-$A233 (220 decoded operations); native calls $44C5, $475D, $545B, $54BF, $554D, $56FF, $5F30. VM opcode $CF restores the saved frame and returns."
+      "text": "Present one page of the descriptor interpreter's display-item list (text and choices) and wait for the player's response: a choice taken is recorded, CONTINUE or REVIEW ends the page.\nInputs: +8 the page's item list assembled by $9BF9 (two bytes an item, the choice byte and its row, ended by $FF) and +10 the choice slots, one byte a dimension; $CAD9, the pixel rows the curtain moves a frame, is passed to $44C5 and then set to 8. Script opcode 3 ends the item list and calls this routine for a page break; opcode 5 calls it when the page has items, then finishes the descriptor.\nOutputs: 0 when CONTINUE is taken (fire on the terminator row), 1 for REVIEW (fire with the cursor on the page's top line, only on a page after the first), 2 on input code 3; a choice taken is stored in the +10 slot (item >> 4) & 7 as item & 15 and marked with '*', and the page goes on. The caller combines the slots into the mixed-radix route index.\nAssumptions: descriptor text indices, choice radices, and packed display metadata are valid.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; $B568 packed-text work, selection/sprite/screen state.\nHardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; signed frame adjustment -3; bytecode $A072-$A233 (220 decoded operations); native calls $44C5, $475D, $545B, $54BF, $554D, $56FF, $5F30. VM opcode $CF restores the saved frame and returns."
     },
     {
       "address": 41072,
       "type": "line",
-      "text": "Signed frame adjustment -3 for collect_scene_choice at $A06D, consumed by the $70F8 VM gateway before bytecode begins at $A072. Present the descriptor interpreter's accumulated display-item list and collect a response when the list defines selectable choices."
+      "text": "Signed frame adjustment -3 for collect_scene_choice at $A06D, consumed by the $70F8 VM gateway before bytecode begins at $A072. Present one page of the descriptor interpreter's display-item list (text and choices) and wait for the player's response: a choice taken is recorded, CONTINUE or REVIEW ends the page."
     },
     {
       "address": 41074,
       "type": "line",
-      "text": "Compiled bytecode belonging to collect_scene_choice ($A06D). Present the descriptor interpreter's accumulated display-item list and collect a response when the list defines selectable choices. This position is the opcode of push_absolute_word at $A072. The procedure decodes to 220 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include animate_screen_region_transition, copy_rom_glyph_to_screen_charset, delay_scaled_iterations, place_arrow_at_text_cell, play_sid_click, read_normalized_input."
+      "text": "Compiled bytecode belonging to collect_scene_choice ($A06D). Present one page of the descriptor interpreter's display-item list (text and choices) and wait for the player's response: a choice taken is recorded, CONTINUE or REVIEW ends the page. This position is the opcode of push_absolute_word at $A072. The procedure decodes to 220 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include animate_screen_region_transition, copy_rom_glyph_to_screen_charset, delay_scaled_iterations, place_arrow_at_text_cell, play_sid_click, read_normalized_input, enter_inline_native_5f36_adjust_0."
     },
     {
       "address": 41524,
@@ -3020,7 +3020,7 @@
     {
       "address": 42209,
       "type": "line",
-      "text": "Reset the per-block grouped-LZW cursor and dictionary-growth counters at $B577-$B57A and $C245 to zero while retaining the initialized literal tables. Inputs: none beyond the $7059 native frame. Outputs: next compressed scene starts at its first 9-bit group. Assumptions: Entered through the $A4DB shim with the $7059 frame live and X=0 on entry, since X supplies the zero written to all five state bytes. It assumes the literal tables built by $A45D are still intact and must be called between compressed scenes, never mid-code, because it resets the bit cursor without touching the dictionary. Clobbers: X-derived zero and the five state bytes; hardware: none.\nEntry: $7059 frame active, X=0. Return: RTS to $70D1. Physical extent $A4E1-$A4F0. Hardware: Touches no hardware at all: five stores to RAM at $B577-$B57A and $C245 followed by RTS."
+      "text": "Reset the per-block grouped-LZW state to zero: the group bit position $B577/$B578, the group bit limit $B579/$B57A and the phrase-resume flag $C245, while retaining the initialized literal tables and the dictionary counter $C243. Inputs: none beyond the $7059 native frame. Outputs: next compressed scene starts at its first 9-bit group. Assumptions: Entered through the $A4DB shim with the $7059 frame live and X=0 on entry, since X supplies the zero written to all five state bytes. It assumes the literal tables built by $A45D are still intact and must be called between compressed scenes, never mid-code, because it resets the bit cursor without touching the dictionary. Clobbers: X-derived zero and the five state bytes; hardware: none.\nEntry: $7059 frame active, X=0. Return: RTS to $70D1. Physical extent $A4E1-$A4F0. Hardware: Touches no hardware at all: five stores to RAM at $B577-$B57A and $C245 followed by RTS."
     },
     {
       "address": 42225,
@@ -3040,7 +3040,7 @@
     {
       "address": 42231,
       "type": "line",
-      "text": "Expand the requested slice of one MAP scene with the game's grouped LZW codec. Inputs: the native frame supplies compressed-stream reader state, a destination cursor and the requested decompressed bounds. It initializes the decoder on first use, obtains grouped 9/10-bit codes through $A850, handles the ordinary and KwKwK cases, walks prefix/suffix chains, adds dictionary entries up to 1,024, skips bytes before the requested lower boundary and copies the selected range. Outputs: VM primary is the resulting destination/cursor value or $FFFF on malformed/end-of-stream input; caller bounds/cursors advance. Assumptions: the section directory supplied valid output bounds. Clobbers: A,X,Y, VM/native scratch, decoder tables and $B5xx/$C24x working state. Hardware: none.\nEntry: $7059 frame active. Return: RTS to $70D1. Physical extent $A4F7-$A849."
+      "text": "Expand the requested slice of one MAP scene with the game's grouped LZW codec. Inputs: the native frame supplies, at +9/+10, a word passed on to $A850 (the stream id $CADB, which $A850 never reads), at +11/+12 the destination pointer, at +13/+14 the count of decoded bytes to skip and at +15/+16 the count to copy. It initializes the decoder on first use, obtains grouped 9/10-bit codes through $A850, handles the ordinary and KwKwK cases, walks prefix/suffix chains, adds dictionary entries up to 1,024, skips bytes before the requested lower boundary and copies the selected range. Outputs: VM primary is 0 once the skip and copy counts are exhausted, otherwise the count still owed (the sum of the words at +13 and +15) when a code of $FFFF arrives from $A850 (end of stream or a failed record read); the frame's own cursor and counts are advanced, not the caller's locals. Assumptions: the section directory supplied valid output bounds. Clobbers: A,X,Y, VM/native scratch, decoder tables and $B5xx/$C24x working state. Hardware: none.\nEntry: $7059 frame active. Return: RTS to $70D1. Physical extent $A4F7-$A849."
     },
     {
       "address": 42295,
@@ -3145,17 +3145,17 @@
     {
       "address": 43664,
       "type": "line",
-      "text": "Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and the 16-bit component at $7FC4 beside the resident literal 'MONTHS:', then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; frame adjustment -32; bytecode $AA95-$AB7D; native calls $42D3, $439D, $44C5, $52D9, $536A, $54BF, $550C, $552D and $5F30. VM opcode $CF returns."
+      "text": "Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and, beside the resident literal 'MONTHS:', the months worked from the year's fraction at $7FC4 (its high byte times 12, high byte), leading zeroes blanked, then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; frame adjustment -32; bytecode $AA95-$AB7D; native calls $42D3, $439D, $44C5, $52D9, $536A, $54BF, $550C, $552D and $5F30. VM opcode $CF returns."
     },
     {
       "address": 43667,
       "type": "line",
-      "text": "Signed frame adjustment -32 for show_lifetime_status_screen at $AA90, consumed by the $70F8 VM gateway before bytecode begins at $AA95. Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and the 16-bit component at $7FC4 beside the resident literal 'MONTHS:', then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers."
+      "text": "Signed frame adjustment -32 for show_lifetime_status_screen at $AA90, consumed by the $70F8 VM gateway before bytecode begins at $AA95. Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and, beside the resident literal 'MONTHS:', the months worked from the year's fraction at $7FC4 (its high byte times 12, high byte), leading zeroes blanked, then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers."
     },
     {
       "address": 43669,
       "type": "line",
-      "text": "Compiled bytecode belonging to show_lifetime_status_screen ($AA90). Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and the 16-bit component at $7FC4 beside the resident literal 'MONTHS:', then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers. This position is the opcode of push_immediate_word at $AA95. The procedure decodes to 109 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, return_argument_byte_1, animate_screen_region_transition, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
+      "text": "Compiled bytecode belonging to show_lifetime_status_screen ($AA90). Render the LIFE TIME status screen. Inputs: none. It displays state-vector age_years at $7F74 beside 'YEARS:' and, beside the resident literal 'MONTHS:', the months worked from the year's fraction at $7FC4 (its high byte times 12, high byte), leading zeroes blanked, then offers RETURN TO GAME. Output: return-to-game selection. Assumptions: time state is initialized. Clobbers: VM values, expression stack/frame locals, numeric text buffers and selection screen state. Hardware: VIC-II/CIA through display/input helpers. This position is the opcode of push_immediate_word at $AA95. The procedure decodes to 109 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, return_argument_byte_1, animate_screen_region_transition, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
     },
     {
       "address": 43902,
@@ -3165,17 +3165,17 @@
     {
       "address": 43945,
       "type": "line",
-      "text": "Show personality traits and material acquisitions.\nInputs: +8/+10/+12/+14 carry menu/display values.\nOutputs: selection/control result.\nAssumptions: profile text pool and state vector are valid.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; status screen, renderer and selection state.\nHardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; signed frame adjustment -2; bytecode $ABAE-$AC33 (68 decoded operations); native calls $44C5, $52D9, $536A, $54BF, $552D, $5F30, $6BBB. VM opcode $CF restores the saved frame and returns."
+      "text": "Show a three-line message panel: the strings at +10, +12 and +14 on rows 2, 3 and 4 of the text panel, CONTINUE (the first string of $AC34) on row 21, the arrow at cell (12, 22), and wait for fire; when +8 is nonzero the panel is then slid away. play_life_map_cell calls it with \"I'm sorry, this experience is\" / \"inappropriate for you at this\" / \"time. Please try again later.\" ($8CA5, $8CC3, $8CE1). run_stage_choice_experience ($8DD0) calls it, +8 zero, with one of the two sets of lines at $9122 and $9179 when a choice has no experience to give (no_more_experiences_texts). The traits and acquisitions are drawn by render_complete_life_status ($ADAC), which reads the labels at $AC3D onward through $C26A.\nInputs: +8 nonzero slides the panel away after fire; +10, +12 and +14 point at the three NUL-terminated lines.\nOutputs: the value of the last native call (no selection is made).\nAssumptions: the three strings are NUL-terminated and fit the panel.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; status screen, renderer and selection state.\nHardware: VIC-II/CIA through display/input helpers.\nEntry protocol: JSR $70F8; signed frame adjustment -2; bytecode $ABAE-$AC33 (68 decoded operations); native calls $44C5, $52D9, $536A, $54BF, $552D, $5F30, $6BBB. VM opcode $CF restores the saved frame and returns."
     },
     {
       "address": 43948,
       "type": "line",
-      "text": "Signed frame adjustment -2 for show_profile_and_acquisitions_menu at $ABA9, consumed by the $70F8 VM gateway before bytecode begins at $ABAE. Show personality traits and material acquisitions."
+      "text": "Signed frame adjustment -2 for show_three_line_message_panel at $ABA9, consumed by the $70F8 VM gateway before bytecode begins at $ABAE. Show a three-line message panel: the strings at +10, +12 and +14 on rows 2, 3 and 4 of the text panel, CONTINUE (the first string of $AC34) on row 21, the arrow at cell (12, 22), and wait for fire; when +8 is nonzero the panel is then slid away. play_life_map_cell calls it with \"I'm sorry, this experience is\" / \"inappropriate for you at this\" / \"time. Please try again later.\" ($8CA5, $8CC3, $8CE1). The traits and acquisitions are drawn by render_complete_life_status ($ADAC), which reads the labels at $AC3D onward through $C26A."
     },
     {
       "address": 43950,
       "type": "line",
-      "text": "Compiled bytecode belonging to show_profile_and_acquisitions_menu ($ABA9). Show personality traits and material acquisitions. This position is the opcode of push_immediate_word at $ABAE. The procedure decodes to 68 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include animate_screen_region_transition, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell, poll_input_high_nibble, enter_inline_native_5f36_adjust_0."
+      "text": "Compiled bytecode belonging to show_three_line_message_panel ($ABA9). Show a three-line message panel: the strings at +10, +12 and +14 on rows 2, 3 and 4 of the text panel, CONTINUE (the first string of $AC34) on row 21, the arrow at cell (12, 22), and wait for fire; when +8 is nonzero the panel is then slid away. play_life_map_cell calls it with \"I'm sorry, this experience is\" / \"inappropriate for you at this\" / \"time. Please try again later.\" ($8CA5, $8CC3, $8CE1). The traits and acquisitions are drawn by render_complete_life_status ($ADAC), which reads the labels at $AC3D onward through $C26A. This position is the opcode of push_immediate_word at $ABAE. The procedure decodes to 68 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include animate_screen_region_transition, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell, poll_input_high_nibble, enter_inline_native_5f36_adjust_0."
     },
     {
       "address": 44084,
@@ -3185,17 +3185,17 @@
     {
       "address": 44460,
       "type": "line",
-      "text": "Render the complete life-status view: identity, years/months, work, relationships, base-1000 cash/debt, and acquisitions.\nInputs: frame +8/+10 select entry/mode.\nOutputs: selection/control result.\nAssumptions: the phase-appropriate gameplay overlay is resident at $8466-$9991 and the state vector/player name are valid.\nClobbers/state: VM values, expression stack/frame locals, status text buffers, screen/input state.\nHardware: SID noise plus VIC-II/CIA through formatting/UI helpers.\nPhase-sensitive calls: operand $B09C-$B09D targets $8DD0, enter_select_remaining_episode, and $B0A8-$B0A9 targets $91CD, enter_advance_age_for_scene_span. The archive has explicit references to both male and female gameplay occupants. At the first-name phase the same logical addresses contain questionnaire VM bytes and must not be interpreted as these native callees.\nEntry protocol: JSR $70F8; frame adjustment -72; bytecode $ADB1-$B0DD; native calls otherwise $42D3, $44C5, $4697, $52D9, $536A, $54BF, $550C, $552D, $5596, $5F30, $6521, $6951, $6BBB, $A279, $B1EB, $B217 and $B2E1. VM opcode $CF returns."
+      "text": "Render the complete life-status view: identity, age in years, work, relationships, base-1000 cash/debt, and acquisitions.\nInputs: frame +8/+10 select entry/mode.\nOutputs: selection/control result.\nAssumptions: the life object is resident ($8466-$CC68, this procedure and its callees $8DD0 and $91CD among it) and the state vector/player name are valid.\nClobbers/state: VM values, expression stack/frame locals, status text buffers, screen/input state.\nHardware: SID noise plus VIC-II/CIA through formatting/UI helpers.\nCalls into the life object: operand $B09C-$B09D targets $8DD0, run_stage_choice_experience, and $B0A8-$B0A9 targets $91CD, advance_age_and_finances; both run only when +10 is not negative and the SID noise (read_sid_voice3_noise >> 2) is a multiple of 3, a one-in-three chance of an extra experience from choice +8 after the status is left.\nEntry protocol: JSR $70F8; frame adjustment -72; bytecode $ADB1-$B0DD; native calls otherwise $42D3, $44C5, $4697, $52D9, $536A, $54BF, $550C, $552D, $5596, $5F30, $6521, $6951, $6BBB, $A279, $B1EB, $B217 and $B2E1. VM opcode $CF returns."
     },
     {
       "address": 44463,
       "type": "line",
-      "text": "Signed frame adjustment -72 for render_complete_life_status at $ADAC, consumed by the $70F8 VM gateway before bytecode begins at $ADB1. Render the complete life-status view: identity, years/months, work, relationships, base-1000 cash/debt, and acquisitions."
+      "text": "Signed frame adjustment -72 for render_complete_life_status at $ADAC, consumed by the $70F8 VM gateway before bytecode begins at $ADB1. Render the complete life-status view: identity, age in years, work, relationships, base-1000 cash/debt, and acquisitions."
     },
     {
       "address": 44465,
       "type": "line",
-      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, years/months, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of load_primary_const_1 at $ADB1. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
+      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, age in years, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of load_primary_const_1 at $ADB1. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
     },
     {
       "address": 45212,
@@ -3205,7 +3205,7 @@
     {
       "address": 45214,
       "type": "line",
-      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, years/months, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of adjust_stack_signed_byte at $B09E. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
+      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, age in years, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of adjust_stack_signed_byte at $B09E. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
     },
     {
       "address": 45224,
@@ -3215,7 +3215,7 @@
     {
       "address": 45226,
       "type": "line",
-      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, years/months, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of adjust_stack_signed_byte at $B0AA. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
+      "text": "Compiled bytecode belonging to render_complete_life_status ($ADAC). Render the complete life-status view: identity, age in years, work, relationships, base-1000 cash/debt, and acquisitions. This position is the opcode of adjust_stack_signed_byte at $B0AA. The procedure decodes to 413 operations with valid instruction-boundary targets; fresh snapshot operation bytes match the supplied VM export. Native/VM helpers include format_word_as_three_decimal_digits, animate_screen_region_transition, read_sid_voice3_noise, clear_and_frame_text_region, render_text_into_region, place_arrow_at_text_cell."
     },
     {
       "address": 45278,
@@ -3270,7 +3270,7 @@
     {
       "address": 45793,
       "type": "line",
-      "text": "Format and render one numeric status field.\nInputs: +8/+10/+12/+14 carry destination, value, format and text fields.\nOutputs: field rendered.\nAssumptions: formatter and renderer buffers are valid.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; temporary decimal/text buffer.\nHardware: display through $A279.\nEntry protocol: JSR $70F8; signed frame adjustment -36; bytecode $B2E6-$B391 (105 decoded operations); native calls $A279, $B296. VM opcode $CF restores the saved frame and returns."
+      "text": "Format and render one numeric status field.\nInputs: +8 the label text; +10 the row; +12 the thousands and +14 the units of the base-1000 value (units over 999 carry into the thousands). The digits follow the label, with a comma between thousands and units.\nOutputs: field rendered.\nAssumptions: formatter and renderer buffers are valid.\nClobbers/state: VM primary/secondary values, expression stack and frame locals are scratch; temporary decimal/text buffer.\nHardware: display through $A279.\nEntry protocol: JSR $70F8; signed frame adjustment -36; bytecode $B2E6-$B391 (105 decoded operations); native calls $A279, $B296. VM opcode $CF restores the saved frame and returns."
     },
     {
       "address": 45796,
@@ -3285,7 +3285,7 @@
     {
       "address": 45970,
       "type": "line",
-      "text": "Entry point of the later gameplay occupant and the setjmp half of its non-local-exit pair. Reached only through each overlay's own load-address entry: GAMEPLAY_MALE_PHASE::$8466 holds 4C 92 B3 (JMP $B392) and RAM $8109-$810A holds the word $B392. It discards the two-byte native return pushed by the caller, publishes the current VM frame pointer to the recovery slot $C29A/$C29B, mirrors it into $0E/$0F, copies the eight-byte VM frame at ($0E) to $02-$09, re-pushes the recovered return address from $03/$02, and jumps to $84DC. Inputs: A valid VM frame: $06/$07 frame pointer, $04/$05 expression-stack pointer, $08/$09 script IP. Two bytes of native return on the 6502 stack. Outputs: $C29A/$C29B hold the recovery frame pointer; $02-$09 reloaded from the frame; control transferred to the gameplay main loop at $84DC, which does not return here. Assumptions: Valid only in GAMEPLAY_MALE_PHASE, where $84DC is male_gameplay_main_loop. In the captured questionnaire phase $84DC holds active questionnaire text and executing this routine would be invalid; the male gameplay overlay ends at $9991, so these bytes live in ordinary RAM and are shared between the two phases. The female edition uses the byte-identical routine one address lower at GAMEPLAY_FEMALE_PHASE::$B391. Clobbers: A, Y, flags, $0E/$0F, $02-$09, and two bytes of 6502 stack; pushes two bytes back. Hardware: None directly. The gameplay main loop it enters programs VIC-II and CIA registers through its own plated helpers."
+      "text": "Entry point of the later gameplay occupant and the setjmp half of its non-local-exit pair. Reached only through the life object's load-address entry: $8466 holds 4C 92 B3 (JMP $B392), the one reference to it in the life snapshot. It discards the two-byte native return pushed by the caller, publishes the current VM frame pointer to the recovery slot $C29A/$C29B, mirrors it into $0E/$0F, copies the eight-byte VM frame at ($0E) to $02-$09, re-pushes the recovered return address from $03/$02, and jumps to $84DC. Inputs: A valid VM frame: $06/$07 frame pointer, $04/$05 expression-stack pointer, $08/$09 script IP. Two bytes of native return on the 6502 stack. Outputs: $C29A/$C29B hold the recovery frame pointer; $02-$09 reloaded from the frame; control transferred to the gameplay main loop at $84DC, which does not return here. Assumptions: Valid only with the life object loaded ($8466-$CC68), of which this routine and play_life_stage at $84DC are part. Clobbers: A, Y, flags, $0E/$0F, $02-$09, and two bytes of 6502 stack; pushes two bytes back. Hardware: None directly. The gameplay main loop it enters programs VIC-II and CIA registers through its own plated helpers."
     },
     {
       "address": 46002,
@@ -3295,7 +3295,7 @@
     {
       "address": 46005,
       "type": "line",
-      "text": "Non-local exit of the later gameplay occupant and the longjmp half of the pair whose setjmp is $B392. Called as an ordinary VM native call: opcode $AC with the two-byte little-endian target $B3B5. It discards the native return, pops one argument word off the VM expression stack ($04),Y into VM primary $0A/$0B, reloads the recovery frame pointer recorded at $C29A/$C29B, copies eight bytes back over $02-$09, increments the recovered return address by one, and jumps indirectly through ($0002). Inputs: VM expression stack $04/$05 with one pushed argument word; $C29A/$C29B previously written by $B392. Outputs: The argument word in VM primary $0A/$0B as the longjmp value; VM registers $02-$09 restored to the recovery frame; control resumed at the recovery point. Does not return to its caller. Assumptions: $B392 must have run in this phase so the recovery frame is valid. Valid only in GAMEPLAY_MALE_PHASE; the male overlay ends at $9991 so these bytes sit in ordinary RAM. The female mirror is GAMEPLAY_FEMALE_PHASE::$B3B4. Clobbers: A, X, Y, flags, $0A/$0B, $0E/$0F, $02-$09 and two bytes of 6502 stack. Hardware: None directly."
+      "text": "Non-local exit of the later gameplay occupant and the longjmp half of the pair whose setjmp is $B392. Called as an ordinary VM native call: opcode $AC with the two-byte little-endian target $B3B5. It discards the native return, pops one argument word off the VM expression stack ($04),Y into VM primary $0A/$0B, reloads the recovery frame pointer recorded at $C29A/$C29B, copies eight bytes back over $02-$09, increments the recovered return address by one, and jumps indirectly through ($0002). Inputs: VM expression stack $04/$05 with one pushed argument word; $C29A/$C29B previously written by $B392. Outputs: The argument word in VM primary $0A/$0B as the longjmp value; VM registers $02-$09 restored to the recovery frame; control resumed at the recovery point. Does not return to its caller. Assumptions: $B392 must have run in this phase so the recovery frame is valid. Valid only with the life object loaded ($8466-$CC68), of which this routine is part. Clobbers: A, X, Y, flags, $0A/$0B, $0E/$0F, $02-$09 and two bytes of 6502 stack. Hardware: None directly."
     },
     {
       "address": 46049,
@@ -3365,12 +3365,12 @@
     {
       "address": 46417,
       "type": "line",
-      "text": "Shared logical-shift-right body of the 16-bit buffer shifters. It reads the remaining shift count from $03, and while the count is non-zero performs LSR $01,X / ROR $00,X on the two-byte buffer selected by X, decrementing the count and then the whole-byte counter at $02. Inputs: X = zero-page index of the two-byte buffer, $02 = whole-byte shift count, $03 = residual bit count. Outputs: the buffer shifted right; on exhaustion it returns with Y = 1, X = 0 and A = 0. Assumptions: Entered by fall-through from shift_u16_buffer_right_by_ax at $B54B and by BPL from shift_i16_buffer_right_by_ax at $B531, which branches here precisely when the value is non-negative and an arithmetic shift therefore degenerates to a logical one. Not an independent routine: it has no prologue of its own. Clobbers: A, X, Y, flags, $02/$03 and the indexed buffer. Hardware: None."
+      "text": "Shared logical-shift-right body of the 16-bit buffer shifters. It reads the remaining shift count from $03, and while the count is non-zero performs LSR $01,X / ROR $00,X on the two-byte buffer selected by X, decrementing the count and, when it runs out, the count's high byte at $02, each unit of which is another 256 rounds. Inputs: X = zero-page index of the two-byte buffer, $02 = high byte of the shift count (256 rounds a unit), $03 = low byte of the shift count. Outputs: the buffer shifted right; on exhaustion it returns with Y = 1, X = 0 and A = 0. Assumptions: Entered by fall-through from shift_u16_buffer_right_by_ax at $B54B and by BPL from shift_i16_buffer_right_by_ax at $B531, which branches here precisely when the value is non-negative and an arithmetic shift therefore degenerates to a logical one. Not an independent routine: it has no prologue of its own. Clobbers: A, X, Y, flags, $02/$03 and the indexed buffer. Hardware: None."
     },
     {
       "address": 46440,
       "type": "line",
-      "text": "Compiler/runtime work words used by the active $A45D/$A850/$A974 overlap routines for bounds, shifts and buffer offsets. Fields $B569-$B56C and $B577-$B57A are directly read and written as little-endian 16-bit values; intermediate bytes retain transient state from the first-interaction snapshot."
+      "text": "The scene page number, one byte: begin_scene_text_output ($A235) stores its +8 here (0 on a descriptor's first page) and collect_scene_choice ($A06D) reads it to know whether the page has a REVIEW line above its items (nonzero) when the cursor moves off the top. No 6502 instruction names it; the grouped-LZW decoder's state begins at $B569."
     },
     {
       "address": 46441,
@@ -3420,7 +3420,7 @@
     {
       "address": 46459,
       "type": "line",
-      "text": "First 256 little-endian prefix words of the 1024-entry LZW dictionary at $B57B-$BD7A. The initializer $A457 clears all 2048 prefix bytes; literal codes $00-$FF have zero prefixes. $A6AA-$A6C5 index this table with twice the code, following predecessor phrases. A separate suffix byte for each code lies at $BD7B-$C17A. Independently decoding male MAP1 scene 26 reproduced all 3072 prefix/suffix bytes in this capture. This is dictionary state, not a generic 512-byte disk buffer."
+      "text": "First 256 little-endian prefix words of the 1024-entry LZW dictionary at $B57B-$BD7A. The initializer $A457 clears all 2048 prefix bytes; literal codes $00-$FF have zero prefixes. $A6AA-$A6C5 index this table with twice the code, following predecessor phrases. A separate suffix byte for each code lies at $BD7B-$C17A. The tables are cleared and rebuilt for each scene block; in the infancy snapshot they belong to the block at payload offset 102206 ($CC65), not to MAP1 scene 26 as at the name prompt. This is dictionary state, not a generic 512-byte disk buffer."
     },
     {
       "address": 46971,
@@ -3470,7 +3470,7 @@
     {
       "address": 49733,
       "type": "line",
-      "text": "one-byte flag distinguishing a fresh phrase request from resuming an incompletely drained phrase. State belongs to $A457-$AA8F; it is not authored VM bytecode."
+      "text": "one-byte flag: 1 once the decoder has been initialised for the current scene block (set by $A45D from Y), 0 after $A4E1 resets it; $A4F7 tests it on entry and either initialises the tables and reads a first code (0) or carries on from where the last slice stopped, draining what is left of the phrase stack first (nonzero). State belongs to $A457-$AA8F; it is not authored VM bytecode."
     },
     {
       "address": 49734,
@@ -3530,7 +3530,7 @@
     {
       "address": 49770,
       "type": "line",
-      "text": "24 little-endian label pointers through $C299, ranging from $AC3D to $ADD5. Compiled life-status procedure $ADAC indexes this directory while laying out state labels and values. It is separate from the LZW mask words preceding it. Life-status display is a later gameplay feature whose full behavior needs a fresh overlay; this table remains resident in the name-prompt image."
+      "text": "24 little-endian label pointers through $C299, ranging from $AC3D to $ADA4 (the twelve trait labels, then the twelve acquisition names). Compiled life-status procedure $ADAC indexes this directory while laying out state labels and values. It is separate from the LZW mask words preceding it. The first twelve are read through $C26A at $AF6E and $AFC5, the acquisitions through $C282 at $B061."
     },
     {
       "address": 49818,
@@ -3545,42 +3545,42 @@
     {
       "address": 49820,
       "type": "line",
-      "text": "Three words, 0, $0100 and 0: a row of the life map with only its middle cell, of type 1 (bits 8-11). play_life_stage draws it with render_life_map_cell_or_connector, rows 0-4 at $2C80, on stage 1 before the first cell is played. In this capture, like all of $C000-$CF82, the bytes equal their twin at $129C-$12A1, the image the bootstrap at $0E98 copied up to $C000-$CFFF."
+      "text": "Three words, 0, $0100 and 0: a row of the life map with only its middle cell, of type 1 (bits 8-11). play_life_stage draws it with render_life_map_cell_or_connector, rows 0-4 at $2C80, on stage 1 before the first cell is played. The bootstrap at $0E98 copied this image up from $1000-$1FFF; in the infancy snapshot the twin at $129C-$12A1 holds 00 00 00 00 0C 0C, the life object having worked in $1000-$1FFF since."
     },
     {
       "address": 49826,
       "type": "line",
-      "text": "394-byte cached interaction descriptor at $C2A2-$C42B. Independent male MAP1 decoding yields this exact allocation, using scene-26 boundaries 6032 and 6426. It contains one route $FE, no conditions, one four-byte effect {state 9, flags 5, big-endian value 30}, no choice dimensions, four script bytes 0,1,0,5, and two text boundaries 0 and 373 followed by 373 text bytes and one zero trailer. The current name prompt does not display this cached narrative. All 39 descriptors in that scene independently parse to complete boundaries; effect behavior requires its interpreter, not these fields alone."
+      "text": "The 2,048-byte buffer ($C2A2-$CAA1) that load_local_map_chunk ($9A14) unpacks one descriptor of the scene block into, and the first bytes of the descriptor it holds. In the infancy snapshot that is descriptor 14 of the block ($CAAF; 15 at $CAD1), 216 bytes from boundaries 2918 and 3134, through $C379: two route bytes 15 and 16, no conditions, no effects, one choice dimension of radix 2, a twelve-byte script {0,1,0,3,1,2,0,2,2,1,3,5}, the count word 5 at $C2B6 and five text boundaries {0,171,172,178,183} from $C2B8, then the text from $C2C2 (\"What a good sport. Are you\", then an empty fragment, \"  YES\" and \"  NO\") and a zero at $C379. What interpret_interaction_descriptor ($9BF9) does with each field is its own business; the bytes alone do not say."
     },
     {
       "address": 49840,
       "type": "line",
-      "text": "Two little-endian text boundaries in cached scene-26 descriptor 31. Their words begin $C2B2; boundaries 0 and 373 delimit its single text fragment. Text starts at $C2B6, ends $C42A, and a final zero trailer is at $C42B."
+      "text": "Script bytes 7 and 8 (00 02) of the descriptor held in the unpack buffer in the infancy snapshot (descriptor 14 of the block, 216 bytes from $C2A2): its twelve-byte script runs $C2AA-$C2B5, its count word 5 is at $C2B6 and its five text boundaries {0,171,172,178,183} at $C2B8-$C2C1."
     },
     {
       "address": 49842,
       "type": "line",
-      "text": "Two little-endian text offsets 0 and 373 for the cached 394-byte descriptor. They index the text pool beginning $C2B6 rather than CPU memory addresses."
+      "text": "The last four script bytes (02 01 03 05) of the descriptor held in the unpack buffer in the infancy snapshot (descriptor 14 of the block): opcode 2 with choice byte 1, opcode 3 (page break) and opcode 5 (end). The count word and the text boundaries follow at $C2B6; the text begins at $C2C2."
     },
     {
       "address": 49846,
       "type": "line",
-      "text": "373 bytes of scene-26 descriptor-31 text, through $C42A. Starts with the daredevil statement; embedded line breaks and display substitutions are part of the preserved text. All bytes match independent decompression of the contributor's disk data. This is cached narrative data at the name prompt, not text visibly shown by that prompt."
+      "text": "The text boundary count word (5) of the descriptor held in the unpack buffer in the infancy snapshot (descriptor 14 of the block), followed by its five little-endian boundaries {0,171,172,178,183} at $C2B8-$C2C1, offsets into the text that begins at $C2C2: \"What a good sport. Are you\\nsure you're ready for this?...\" (171 bytes), an empty fragment, \"  YES\" and \"  NO\", ending at $C378, with a zero at $C379."
     },
     {
       "address": 50219,
       "type": "line",
-      "text": "Single zero byte following the checked 373-byte text pool. Completes the 394-byte cached descriptor; higher memory at $C42C has separate unresolved ownership."
+      "text": "A zero byte inside the unpack buffer, beyond the descriptor it holds in the infancy snapshot (descriptor 14 of the block, 216 bytes ending at $C379); from $C37A to $CAA1 the buffer is all zeros in that capture."
     },
     {
       "address": 50220,
       "type": "line",
-      "text": "The rest of the 2,048-byte buffer ($C2A2-$CAA1) that load_local_map_chunk unpacks one scene into; a scene longer than 2,048 bytes is refused with the text at $9AF1. In this capture the scene unpacked is 394 bytes long and ends at $C42B; from here the bytes are whatever longer scenes left, zeros at this point of the game."
+      "text": "The rest of the 2,048-byte buffer ($C2A2-$CAA1) that load_local_map_chunk unpacks one scene into; a scene longer than 2,048 bytes is refused with the text at $9AF1. In this capture the descriptor unpacked is 216 bytes long and ends at $C379; from there the bytes are whatever longer descriptors left, zeros at this point of the game."
     },
     {
       "address": 51244,
       "type": "line",
-      "text": "The buffer goes on to $CAA1, zeros in this capture, which equal their twin at $182C-$1AA1, the image the bootstrap at $0E98 copied up to $C000-$CFFF."
+      "text": "The buffer goes on to $CAA1, zeros in this capture; the bootstrap at $0E98 copied this image up from $1000-$1FFF, but the twin at $182C-$1AA1 no longer matches, the life object having worked in $1000-$1FFF since."
     },
     {
       "address": 51874,
@@ -3595,7 +3595,7 @@
     {
       "address": 51883,
       "type": "line",
-      "text": "Four-byte little-endian logical MAP payload offset, passed by VM $9A14 to seek helper $5C37 before decoding an earlier descriptor. Captured value 89098 independently equals scene-26 block offset 89016 + two count bytes + 80 boundary bytes. It points at the compressed group stream, not CPU RAM. Native cache checks for descriptors 30/31/32 verify reset/hit/forward-decode selection without running disk I/O."
+      "text": "Four-byte little-endian logical MAP payload offset, passed by VM $9A14 to seek helper $5C37 before decoding an earlier descriptor. In the infancy snapshot it holds 102312: the block's place at $CC65 (102206) plus the six bytes of its two lengths and its boundary count and its 50 boundary words, which load_scene_block_header reads before tell_map_payload_offset ($5EAD) records the position here. It points at the compressed group stream, not CPU RAM. Native cache checks for descriptors 30/31/32 verify reset/hit/forward-decode selection without running disk I/O."
     },
     {
       "address": 51887,
@@ -3640,37 +3640,37 @@
     {
       "address": 51933,
       "type": "line",
-      "text": "16-bit pointer published by VM scene loader $9ADD and read by interaction procedures $9B18/$9BF9. At the name prompt it is $C2A2. Independently decompressing MAP1 scene 26 and taking local descriptor 31 reproduces all 394 bytes at $C2A2-$C42B."
+      "text": "16-bit pointer published by the scene loader load_local_map_chunk (the store at $9ADD: the descriptor's place in the unpack buffer, or zero when it is not there) and by execute_invalid_choice_descriptor ($A3D8, which points it at the fallback descriptor $A3DF), and read by interaction procedures $9B18/$9BF9. In the infancy snapshot it is $C2A2, where the buffer holds the 216-byte descriptor 14 of the current block."
     },
     {
       "address": 51935,
       "type": "line",
-      "text": "Captured 16-bit value 7872, agreeing with the final of 40 scene boundaries and the independently decoded MAP1 scene-26 length. This is a size rather than a pointer."
+      "text": "In the infancy snapshot the 16-bit value is 7252, agreeing with the last of the block's 50 scene boundaries at $CAE5. This is a size rather than a pointer."
     },
     {
       "address": 51937,
       "type": "line",
-      "text": "Captured 16-bit value 5169, agreeing with the independent scene-26 decoder's compressed bytes consumed. Native full-stream/error behavior remains open; a matching stored size alone is not a live disk-read test."
+      "text": "In the infancy snapshot the 16-bit value is 4714, the packed length read with the unpacked length and the boundary count by load_scene_block_header ($9908). Native full-stream/error behavior remains open; a matching stored size alone is not a live disk-read test."
     },
     {
       "address": 51939,
       "type": "line",
-      "text": "40 descriptor boundary words for captured MAP1 scene 26, loaded immediately before the boundary table $CAE5. The directory-derived block contains 7872 decompressed bytes, and all 80 boundary bytes independently match the fresh snapshot. The count includes the final end boundary, so there are 39 descriptor slices."
+      "text": "The number of descriptor boundary words of the current scene block, loaded immediately before the boundary table $CAE5 by load_scene_block_header. In the infancy snapshot it is 50, for a block of 7252 decompressed bytes. The count includes the final end boundary, so there are 49 descriptor slices."
     },
     {
       "address": 51941,
       "type": "line",
-      "text": "Forty little-endian decompressed-stream offsets through $CB34. They strictly increase from 0 to 7872. VM scene loader $9A14 uses consecutive boundaries to locate/size descriptors; boundary indices 31 and 32 are 6032 and 6426, giving the current 394-byte descriptor. Independent decoding checks the complete table, not merely those two entries."
+      "text": "Little-endian decompressed-stream offsets, as many as $CAE3 says: in the infancy snapshot fifty, through $CB48, strictly increasing from 0 to 7252. VM scene loader $9A14 uses consecutive boundaries to locate/size descriptors; boundary indices 14 and 15 are 2918 and 3134, giving the 216-byte descriptor held at $C2A2."
     },
     {
       "address": 52021,
       "type": "line",
-      "text": "The rest of the table of scene boundaries ($CAE5-$CC64, room for 192 words). This block has 40 and uses $CAE5-$CB34; the words after them are left from a longer block, or zero."
+      "text": "The rest of the table of scene boundaries ($CAE5-$CC64, room for 192 words). This block has 50 and uses $CAE5-$CB48 (boundaries 40 to 49 are at $CB35-$CB48); the words after them are left from a longer block, or zero."
     },
     {
       "address": 52325,
       "type": "line",
-      "text": "Four-byte little-endian logical MAP payload cursor at $CC65-$CC68. Compiled VM procedure $9830 copies the stage span-table offset from $82F7 here, walks scene spans and invokes $9908 to refill. This is not a CPU address and does not own the higher VM stack allocation."
+      "text": "Four-byte little-endian logical MAP payload cursor at $CC65-$CC68. The 6502 body of locate_scene_block ($9830, entered from $982A through $7059) copies the stage's block-table offset from $82F7 here, adds the signed lengths at $82FB of the blocks before block +9, and calls load_scene_block_header ($9908), which seeks to this position and reads the block's header. In the infancy snapshot it holds 102206. This is not a CPU address and does not own the higher VM stack allocation."
     },
     {
       "address": 52329,

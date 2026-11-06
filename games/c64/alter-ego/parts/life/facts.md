@@ -24,7 +24,7 @@ Where the blocks start in the file goes to `$82F7`. A stage begun has its number
 
 ## The map
 
-`play_life_stage` (`$84DC`) sets the border to the stage's colour from the seven bytes at `$CAA4` (red, orange, yellow, green, light blue, purple, grey), draws the window of the map and puts the arrow on it. Up and down move a row, scrolling the window at its edges; left and right move over the age's three cells and the two columns of choices beside them. Fire plays the cell or the choice under the arrow, f1 to f8 a choice by its number, and RUN/STOP opens the menu at `$CAB1`: continue, save, resume, quit, or the status. *Live* (bot, stage2 to stage7, arrow-keys).
+`play_life_stage` (`$84DC`) sets the border to the stage's colour from the seven bytes at `$CAA4` (red, orange, yellow, green, light blue, purple, grey), draws the window of the map and puts the arrow on it. Up and down move a row, scrolling the window at its edges; left and right move over the age's three cells and the two columns of choices beside them. Fire plays the cell or the choice under the arrow, the function keys a choice beside the map (f1, f3, f5 and f7 the left column's from the top down, f2, f4, f6 and f8 the right's; `read_normalized_input` turns them into 3 to 0 and 7 to 4, and the choice under the arrow is its row counted up from the window's foot), and RUN/STOP opens the menu at `$CAB1`: continue, save, resume, quit, or the status. *Live* (bot, stage2 to stage7, arrow-keys).
 
 A cell's word gives its scene block in its low byte and its kind in bits 8 to 11; a cell played has its kind cleared, crossing it off. A choice's word gives its type the same way: 1 shows the age in years and months (`show_lifetime_status_screen`, `$AA90`), 5 the whole status (`render_complete_life_status`, `$ADAC`), and the others play the choice's next experience (`activate_stage_choice`, `$87C5`).
 
@@ -38,7 +38,7 @@ A cell's word gives its scene block in its low byte and its kind in bits 8 to 11
 | `$FFFE` | the block could not be read: the words are put back and the cell crossed off |
 | 251 | the scene does not count: the words are put back |
 | 252 | a choice's next experience is played |
-| `$FFFD` | the profile panel |
+| `$FFFD` | a panel of three lines: the experience is inappropriate for you at this time (`show_three_line_message_panel`, `$ABA9`) |
 | 250 | the stage is over |
 | 253 | the life is over: the stage is set to 7, then ended |
 
@@ -52,11 +52,11 @@ The text is packed with LZW in groups: eight codes to a group, of 9 bits each an
 
 ## The years and the money
 
-`advance_age_and_finances` (`$91CD`) moves the age (`$7F74`, with the fraction of a year at `$7FC4`) by the block's length. A job's salary (`$7F8A`) pays for the years, less a tax worked from `$7F52` and the stages left (`$8041`); with no job (`$7F58` zero) the salary is cleared and, up to the sixth stage, the cost of living is taken instead (`$9472`). The cash and the debt are kept as thousands and units (`$7F78`/`$7F76`, `$7F84`/`$7F82`), worked in 32 bits and divided back by 1,000 (`$9730`). An acquisition waiting at `$7F88` becomes its bit in `$82AB`. *Live* (every stage session).
+`advance_age_and_finances` (`$91CD`) moves the age (`$7F74`, with the fraction of a year at `$7FC4`) by the block's length. A job's salary (`$7F8A`) pays for the years, less a tax worked from `$7F52` and the stages left (`$8041`); with no job (`$7F58` zero) the salary is cleared and, from the third stage on (`$8041`, the stages left counting this one, at 5 or less), the cost of living is taken instead (`$9472`). The cash and the debt are kept as thousands and units (`$7F78`/`$7F76`, `$7F84`/`$7F82`), worked in 32 bits and divided back by 1,000 (`$9730`). An acquisition waiting at `$7F88` becomes its bit in `$82AB`. *Live* (every stage session).
 
 ## The status
 
-`show_lifetime_status_screen` (`$AA90`) shows YEARS and MONTHS. `render_complete_life_status` (`$ADAC`) shows the name, the years, the work, the relationships, the cash and the debt, and what has been acquired; `show_profile_and_acquisitions_menu` (`$ABA9`) the traits, each a bar of the resident glyphs (`draw_trait_score_bar`, `$B1EB`). *Live* (bot, save).
+`show_lifetime_status_screen` (`$AA90`) shows YEARS and MONTHS. `render_complete_life_status` (`$ADAC`) shows the name, the years, the work, the relationships, the cash and the debt, the traits, each a bar of the resident glyphs (`draw_trait_score_bar`, `$B1EB`), and what has been acquired. *Live* (bot, save).
 
 ## The end of a stage, and of a life
 

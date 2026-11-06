@@ -74,13 +74,13 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 var(--fm);max-heig
 
 <section id="map" data-part="life"><p class="fig">03 · The map</p><h2 class="t">Each picture on the map is a block of scenes on the disk</h2>
 <p>A phase's map is three 16-bit words to a row, each word a place on the map. Its low byte is the number of a scene block, its next four bits the picture, and its top four bits the lines out of it. The arrow moves over the three places of a row and over the two columns of choices beside the map, and fire plays what is under it (<code>play_life_stage</code>, <code>$84DC</code>). A place that has been played loses its picture and keeps its lines. The <a href="levels.html">Stages</a> tab draws all seven maps and decodes any word on them.</p>
-<p>The eight choices are words too. A choice of type 1 shows the age in years and months, type 5 the whole status, and the others play the next of the choice's own scenes. The function keys f1 to f8 pick a choice by its number.</p>
+<p>The eight choices are words too. A choice of type 1 shows the age in years and months, type 5 the whole status, and the others play the next of the choice's own scenes. The function keys pick a choice: f1, f3, f5 and f7 the left column's from the top down, and f2, f4, f6 and f8 the right column's, as they sit on the C64's keyboard.</p>
 <p>A scene block ends by telling the map what to do next (<code>play_life_map_cell</code>, <code>$8A85</code>):</p>
 <div class="plate scroll"><table><thead><tr><th>The block ends with</th><th>What follows</th></tr></thead><tbody>
 <tr><td>255, 254 or <code>$FFFF</code></td><td>the picture is crossed off the map</td></tr>
 <tr><td>251</td><td>the scene does not count: every number it changed is put back</td></tr>
 <tr><td>252</td><td>the choice plays its next scene</td></tr>
-<tr><td><code>$FFFD</code></td><td>the profile of traits and possessions</td></tr>
+<tr><td><code>$FFFD</code></td><td>three lines saying the experience is inappropriate for you at this time</td></tr>
 <tr><td>250</td><td>the phase is over</td></tr>
 <tr><td>253</td><td>the life is over</td></tr>
 </tbody></table><p class="cap">A scene that may not count is possible because the game copies all its shared numbers to <code>$8145</code> before every block and copies them back on 251.</p></div>
@@ -105,7 +105,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 var(--fm);max-heig
 <tr><td>37</td><td><code>$7F8A</code></td><td>the salary</td></tr>
 <tr><td>49</td><td><code>$7FA2</code></td><td>set by statement 22, strict parents</td></tr>
 </tbody></table></div>
-<p>A scene is a chain of descriptors, and each descriptor is played in the same order (<code>interpret_interaction_descriptor</code>, <code>$9BF9</code>). First come its conditions: five bytes each, a number's index and the lowest and highest value it may have. A descriptor whose conditions fail is not played: the chain goes on to the descriptor its second byte names, and when the first of a block fails, the game shows the profile of traits instead. Then come its changes to the numbers, four bytes each, then the answers the player may pick, then the text. Some changes are left to chance, by the same sound-chip noise as the questionnaire's, and the answer picked decides which descriptor plays next. The <a href="play.html">Play</a> tab runs these descriptors as the game does.</p>
+<p>A scene is a chain of descriptors, and each descriptor is played in the same order (<code>interpret_interaction_descriptor</code>, <code>$9BF9</code>). First come its conditions: five bytes each, a number's index and the lowest and highest value it may have. A descriptor whose conditions fail is not played: the chain goes on to the descriptor its second byte names, and when the first of a block fails, the game says instead that the experience is inappropriate for you at this time. Then come its changes to the numbers, four bytes each, then the answers the player may pick, then the text. Some changes are left to chance, by the same sound-chip noise as the questionnaire's, and the answer picked decides which descriptor plays next. The <a href="play.html">Play</a> tab runs these descriptors as the game does.</p>
 </section>
 
 <section id="text" data-part="life"><p class="fig">06 · Text</p><h2 class="t">Scene text is packed with a dictionary that grows as it is read</h2>

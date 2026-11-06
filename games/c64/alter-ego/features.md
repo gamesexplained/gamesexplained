@@ -15,7 +15,7 @@ Inventory: the [game's documentation](https://www.lemon64.com/doc/alter-ego-male
 | Scene text packed with a growing dictionary (LZW) | confirmed | the decoder `$A457-$AA8F` (life object) ported and run in every session; scene 26 of MAP1 decoded independently (`parts/main/facts.md`) |
 | Scenes changing the traits, the years and the money | live | the scene descriptors' changes to the 64 shared words at `$7F40`; `advance_age_and_finances` (`$91CD`) [every stage session] |
 | The choices beside the map: the age, the whole status, and experiences asked for | live | the eleven choice pictures; types 1 (age) and 5 (status) and the experiences (`run_stage_choice_experience`, `$8DD0`) [bot, stage sessions] |
-| The status pages: traits, acquisitions, money | live | `render_complete_life_status`, `show_profile_and_acquisitions_menu` [bot, save] |
+| The status pages: traits, acquisitions, money | live | `render_complete_life_status` [bot, save] |
 | A stage ending when its pictures are all played or the years pass its last age, and the next one beginning | live | `finish_life_stage` [bot, stage sessions] |
 | The end of a life, and a new one begun after Old Age | live | the scene code 253 sets the stage to 7 and ends it; `finish_life_stage` (`$8CFF`) turns a stage past 7 into Infancy, the twelve traits and the name kept and the shared words 12 to 55 cleared (`parts/life/facts.md`) [old-age; the game alone in `reference/new-life-womb.png`] |
 | Pages brought on behind a bar of sprites | confirmed | `animate_screen_region_transition` (`$44C5`); the Graphics tab's test against the game's routine |

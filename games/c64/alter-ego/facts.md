@@ -56,6 +56,16 @@ A sample of 90 (seed 61106), drawn as 60 of the 916 written comments, 20 of the 
 
 The first of six audits, of the 248 comments of the resident program from `$0000` to `$57FF`, on claude-fable-5-1, found 8 wrong and 65 with a wrong detail, and corrected all 73: among them a routine named for a hit test that plays a click on the SID (now `play_sid_click`), one named for reading a pointer device that places the arrow at a text cell (now `place_arrow_at_text_cell`), the number of resident p-code procedures (62, not 82), and the values the three-digit formatter gets right (0 to 255 and 400 to 655).
 
+The second, of the 184 comments from `$5800` to `$6FFF` (the MAP stream and the drive, the runtime, the KERNAL wrappers), found 1 wrong and 35 with a wrong detail, and corrected all 36: a procedure said to lay out text that draws a row of a box's frame on the life map (`$5A5C`), the fast loader's byte said to come from three reads of `$DD00` that comes from four, a status of 0 said to be accepted where only 1 is, the argument order of the routines that read and write a file, UNTLK called UNLSN, and the order of CLRCHN and CLOSE. Eight stubs at `$6D9A` to `$6DAF` were said to be reached through a table that no part holds; how they are reached is now given as not known.
+
+The third, of the 229 from `$7000` to `$77FF` (the interpreter, its gateways and most of its opcode handlers), found 3 wrong and 15 with a wrong detail, and corrected all 18: three comparisons named the wrong way round (opcodes `$C3`, `$C5` and `$C7`), branch handlers said to fall into the next handler when the two branches before cover every case, and a division core named by a label the listing does not have.
+
+The fourth, of the 324 from `$7800` to the end of memory (the last opcode handlers, the dispatch table, the 32-bit arithmetic, the state variables and the text under the KERNAL), found 7 wrong and 27 with a wrong detail, and corrected all 34: a fourth comparison the wrong way round (`$C9`), logical NOT called a test for non-zero (`$CA`), three 32-bit comparisons named for the wrong test, a callback pointer at `$8104` and menu tables after it that are the drive's record buffer, which holds the last record read, and the stage's number at `$82BD`, which is 1 to 7 while a stage is played.
+
+The fifth, of the 161 comments of the start object and of the life object up to `$9FFF`, found none wrong and 11 with a wrong detail, and corrected them: the choice each function key picks, the stages that pay the cost of living (from the third on, not up to the sixth), the unit of the age's fraction at `$7FC4` (65,536ths of a year), and the life snapshot's count of p-code procedures (85, the 62 resident ones among them).
+
+The sixth, of the 166 comments of the life object from `$A000` to its end, found 9 wrong and 34 with a wrong detail, and corrected all 43: a routine named for showing the traits and acquisitions that shows three lines of a message and CONTINUE (now `show_three_line_message_panel`), a byte said to be the text decoder's work that is the scene's page number (now `scene_page_number`), five comments on the scene buffer at `$C2A2` that described the descriptor in another snapshot, the MONTHS figure (twelve times the fraction's high byte, divided by 256), the status page said to show months that shows years only, and figures for the scene block that were the name prompt's.
+
 ## Live tests
 
 Fifteen sessions in `port/test/lockstep.js`, each keys given at frames to the game's own code on the kit's C64 (`kit/c64/machine.js`, with the KERNAL and the drive of `port/src/kernal.js`), beside the JavaScript port, which agrees with it on memory and the chips at every call of GETIN:
@@ -69,7 +79,7 @@ Fifteen sessions in `port/test/lockstep.js`, each keys given at frames to the ga
 | answers | the questionnaire answered by hand, then play | 29,155 |
 | answers-edited | left to chance, then gone over by hand, then play | 33,694 |
 | bot | 400 keys at random from a seed: fire, the cursor keys, the function keys, RUN/STOP | 95,102 |
-| stage2 to stage7 | each phase from Childhood to Old Age chosen at the start, then 200 keys at random | 49,565 to 50,906 |
+| stage2 to stage7 | each phase from Childhood to Old Age chosen at the start, then 200 keys at random, none to the phase's end | 49,095 to 56,323 |
 | arrow-keys | Adolescence with the keys marked with arrows in place of the shifted cursor keys | 48,591 |
 | old-age | Old Age chosen at the start and played by 520 keys at random to the life's end, at 65; the stage's menu; a new life in Infancy played to the age of 1 | 115,881 |
 
