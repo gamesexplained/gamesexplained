@@ -472,10 +472,16 @@ class Lockstep {
     const sps = [];
     for (let q = this.irq; q !== null; q = q.up) sps.unshift(q.sp);
     depth = sps.length;
+    // with nest, an interrupt is over once the stack is above its frame: checked at each
+    // instruction, and at each read and stop too, since a hook can leave an interrupt by the
+    // KERNAL's exit and a hook standing in for a KERNAL routine (GETIN) then read the keyboard's
+    // buffer before the main program runs an instruction
+    const left = () => { if (g.nest) while (depth && g.cpu.sp > sps[sps.length - 1]) { sps.pop(); depth--; } };
     Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
       g.hooks[a] = c => {
+        left();
         if (depth) return prev ? prev(c) : false;                     // an interrupt's code
         if (a === skip) { skip = -1; return prev ? prev(c) : false; }   // the stop it starts at
         if (this.waits.has(a) && !polled) return prev ? prev(c) : false;   // a wait's exit come to again with no wait
@@ -496,12 +502,13 @@ class Lockstep {
     }
     const reads = new Proxy({}, { set(t, k) {
       const a = +k;
+      left();
       if (!depth && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(g.ram[a]); }
       return true;
     } });
     const executed = new Proxy({}, { set(t, k) {
       const a = +k;
-      while (depth && g.cpu.sp > sps[sps.length - 1]) { sps.pop(); depth--; }
+      left();
       if (depth && g.ram[a] === 0x40 && g.cpu.sp === sps[sps.length - 1]) { sps.pop(); depth--; }
       return true;
     } });
@@ -532,7 +539,8 @@ class Lockstep {
     const P = this.P, ls = this;
     for (const name of Object.keys(P)) {
       const f = P[name];
-      if (typeof f !== 'function') continue;
+      // a class (a port's exception, thrown with new) is not a routine: wrapped, new would fail
+      if (typeof f !== 'function' || /^class\b/.test(Function.prototype.toString.call(f))) continue;
       P[name] = f instanceof GENERATOR
         ? function* (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return yield* f.apply(this, a); }
         : function (...a) { if (ls.counting) ls.calls[name] = (ls.calls[name] || 0) + 1; return f.apply(this, a); };
