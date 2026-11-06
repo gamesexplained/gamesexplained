@@ -16,7 +16,8 @@ every instruction, so the listing, the JavaScript port and its tests read p-code
   procedure(mem, entry) -> dict       every instruction a procedure reaches from its stub
   procedures(mem, lo, hi) -> list     every stub in lo..hi
 
-Run as a script: vm.py <snapshot.vsf> <lo> <hi> [--proc <addr>] prints the procedures.
+Run as a script: vm.py <snapshot.vsf or listing.json> <lo> <hi> [--proc <addr>] prints the procedures; with
+--bytes, the bytes of the procedures whose stubs (hex, one a line) come on standard input.
 """
 import os, sys
 
@@ -197,15 +198,41 @@ def procedures(mem, lo, hi):
     return [a for a in range(lo, hi - 2) if stub(mem, a)]
 
 
+def bytecode(mem, entries):
+    """Every byte of the p-code instructions of the procedures whose stubs are at entries, with
+    each stub's adjust word: the program, as the page leaves it out (scripts/pack-data.js)."""
+    out = set()
+    for e in entries:
+        p = procedure(mem, e)
+        out.update(range(e + 3, e + 5))
+        for a, i in p["ins"].items():
+            out.update(range(a, a + i.size))
+    return sorted(out)
+
+
 def main(argv):
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../../../kit/c64"))
     import snapshot
     if len(argv) < 4:
         print(__doc__)
         return 2
-    mem = snapshot.read(argv[1])
+    if argv[1].endswith(".json"):
+        # a listing.json: the bytes its records hold, the rest 0
+        import json
+        mem = bytearray(65536)
+        for r in json.load(open(argv[1]))["records"]:
+            for i, b in enumerate(r.get("b") or []):
+                mem[r["a"] + i] = b
+    else:
+        mem = snapshot.read(argv[1])
     lo, hi = int(argv[2].lstrip("$"), 16), int(argv[3].lstrip("$"), 16)
     only = int(argv[argv.index("--proc") + 1].lstrip("$"), 16) if "--proc" in argv else None
+    if "--bytes" in argv:
+        # the stubs at the addresses given on standard input, one a line; the bytes as JSON
+        import json
+        entries = [int(x, 16) for x in sys.stdin.read().split()]
+        print(json.dumps(bytecode(mem, entries)))
+        return 0
     for a in procedures(mem, lo, hi):
         if only is not None and a != only:
             continue

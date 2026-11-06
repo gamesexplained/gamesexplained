@@ -57,6 +57,13 @@
       } finally { P.leave(f); }
     };
 
+    // (*$7FC8)(), the KERNAL's reset at $FCE2, which the game reaches from its top level's frame:
+    // the p-code's registers are left in $04-$07 as they stand there, and the port stops
+    P.reset = function () {
+      P.setw(0x04, P.sp); P.setw(0x06, P.fp);
+      throw new Reset();
+    };
+
     // $4003, the game's top level. The heap starts after the program (at $4000's own address, the
     // end of the code), the interrupt vectors under the KERNAL and the arrow's interrupt go in,
     // the 64 words the start and life objects share are cleared, and MAP1's first three objects
@@ -85,7 +92,7 @@
           }
           if (!obj) {
             yield* P.report_packed_runtime_error(0x40E1);       // startup_load_error_text_pool
-            throw new Reset();
+            P.reset();
           }
           P.enter_inline_native_5ead_adjust_0(L6);
           const phase = yield* P.call_vm_function_pointer(obj, 0);
@@ -94,9 +101,9 @@
           const life = P.read_length_prefixed_stream_object(1);
           if (!life) {
             yield* P.report_packed_runtime_error(0x40F4);
-            throw new Reset();
+            P.reset();
           }
-          if ((yield* P.call_vm_function_pointer(life, phase)) !== 2) throw new Reset();
+          if ((yield* P.call_vm_function_pointer(life, phase)) !== 2) P.reset();
         }
       } finally { P.leave(f); }
     };
@@ -227,7 +234,7 @@
       } finally { P.leave(f); }
     };
 
-    // $545B: a busy loop of n / 16 turns of the p-code's own loop, about 120 cycles each
+    // $545B: a busy loop of n / 16 turns of the p-code's own loop (a page times a turn by its cost: cost.json's turn)
     P.delay_scaled_iterations = function* (n) {
       const f = P.enter([n], 2);
       try {
