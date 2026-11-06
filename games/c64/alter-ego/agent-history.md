@@ -147,5 +147,8 @@ comparisons named the wrong way round, a callback pointer that is two
 bytes of the drive's record buffer, a routine named for the traits that
 shows a three-line message, and figures from the name prompt's snapshot
 carried into the life object's listing, whose snapshot holds another
-scene. Each part's listing was built again from its own snapshot after
-the audit.
+scene. Then every claim in the four facts files was audited (147; 13
+details corrected, none wrong), and a second sample of 120 with a new
+seed found 7 wrong, 5.8 % against the first sample's 20 %, each in a
+detail. Each part's listing was built again from its own snapshot after
+every round of corrections.
