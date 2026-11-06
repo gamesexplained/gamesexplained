@@ -10,6 +10,10 @@
 //   ($E3), whether a wheel was on the road ($C9), its place across ($B0) and its aim ($2C), the
 //   swerve's count ($C30F), the player's place across ($2B) and the gap between the cars
 //   ($39/$3A, with $C36A's sign). The player holds the stick forward from the drop.
+// - the same race's computer's car over Little Ramp's banked bend (pieces 23 to 28) and its jump
+//   (from piece 32), pass by pass, as the Play tab's outside views place it (watchCar); and the
+//   jump again with the run-up's limit (pieces 30 to 33, $0710) set to other speeds; with the
+//   stretch of track the views draw (SCRChase's pairs, their heights in the game's units).
 //   node opponents-data.js [out.json]      (default: print the sizes; with a file, write it)
 // make(SCRPage, data, cost) is what build-opponents.js puts in the page and test_opponents.js
 // holds it to; its second result, the race's machine states, is for the test only.
@@ -34,7 +38,39 @@ const MENUS = [{ frames: 400 }, ...tap(J.fire), { frames: 300 }, ...NAME, { fram
 const SEASON = [...MENUS, ...tap(J.down), { frames: 60 }, ...tap(J.fire), { frames: 300 }, ...tap(J.fire), { frames: 300 }, ...tap(J.fire),
   { frames: 300 }, ...tap(J.fire), { frames: 300 }];
 const RACE_FRAMES = 4200;
+// the stretch of Little Ramp the views of the computer's car show: its banked bend and its jump,
+// and the run-up limits the jump is tried at besides the game's own (70, which insists)
+const BEND = [23, 28], JUMP = [32, 41], LIMITS = [45, 55, 60, 75, 90];
+const RUN_UP = [30, 33];
 
+// the computer's car each pass from piece lo to hi, as OPP_CORNERS leaves it: its corners as the
+// outside views place them (SCRChase.snap; their heights follow from the wheels', see the page),
+// its wheels' heights, the road's under each, the springs' pushes, their pull down as OPP_WHEELS
+// set it ($52: $28, or $7C on a piece with $B2 bit 7), whether a wheel is on the road, its speed,
+// its piece and its place across
+const CAR_FIELDS = ['corners: x, z of each of 4', 'wheels\' heights x 3', 'road\'s heights x 3', 'pushes x 3', 'pull', 'on the road', 'speed', 'piece', 'across'];
+function watchCar(P, M, v, lo, hi, out) {
+  const corners = P.OPP_CORNERS, wheels = P.OPP_WHEELS, s16 = (a, b) => (M[a] | M[b] << 8) << 16 >> 16;
+  let pull = 0;
+  P.OPP_WHEELS = r => { pull = M[0xB2] & 0x80 ? 0x7C : 0x28; return wheels(r); };
+  P.OPP_CORNERS = r => {
+    const o = corners(r), x = M[0xC375];
+    if (!M[0xC37C] || x < lo || x > hi) return o;
+    const s = SCRChase.snap(v, M), w = [0, 1, 2];
+    out.push([...s.opp.corners.flat(), ...w.map(k => s16(0x07CC + k, 0x07D0 + k)), ...w.map(k => s16(0x07EC + k, 0x07F0 + k)),
+      ...w.map(k => s16(0x07C4 + k, 0x07C8 + k)), pull, M[0xC9] ? 1 : 0, M[0xD7], x, M[0xB0]]);
+    return o;
+  };
+}
+// a run of passes as the page carries it: 16-bit numbers, little-endian, in base 64
+const pack16 = ps => Buffer.from(Int16Array.from(ps.flat()).buffer).toString('base64');
+// the jump's passes from the run-up's last two pieces to 12 after the last in the air
+function jumpOnly(ps) {
+  const i0 = ps.findIndex(p => p[20] >= RUN_UP[1] - 1);
+  let last = -1;
+  ps.forEach((p, i) => { if (!p[18]) last = i; });
+  return ps.slice(i0, Math.min(ps.length, last + 13));
+}
 function make(SCRPage, data, cost) {
   const drive = (rt, steps) => {
     for (const s of steps) {
@@ -74,10 +110,34 @@ function make(SCRPage, data, cost) {
     passes.push([x, place, M[0xD7] << 8 | M[0xD6], M[0xE3], M[0xC9] ? 1 : 0, M[0xB0], M[0x2C], M[0xC30F], M[0x2B], gap]);
     return o;
   };
+  const v = SCRChase.create(() => SCRPage.create({ data, cost })), game = [];
+  watchCar(P, M, v, BEND[0], JUMP[1], game);
   for (let f = 0; f < RACE_FRAMES; f++) { rt.input.keys = new Set(); rt.input.joy = J.up; rt.runFrame(); }
   const race = { track: M[0xC77D], driver: M[0xC773], top: M[0x2099], corner: M[0x209A],
     fields: ['piece', 'place', 'speed', 'limit', 'road', 'across', 'aim', 'swerve', 'you', 'gap'], passes };
-  return { data: { tracks, race }, states };
+  // the jump again, the run-up held to another limit; each race run from the menus, until the car
+  // is past the stretch
+  const lap = game.findIndex((p, i) => i && p[20] < game[i - 1][22]), first = lap < 0 ? game : game.slice(0, lap);
+  const runs = [{ limit: 0, passes: pack16(jumpOnly(first.filter(p => p[20] >= JUMP[0]))) }];
+  for (const limit of LIMITS) {
+    const r2 = SCRPage.create({ data, cost }), M2 = r2.M, P2 = r2.P, out = [];
+    drive(r2, SEASON);
+    const grip = P2.OPP_GRIP;
+    P2.OPP_GRIP = r => {
+      const x = M2[0xC375];
+      if (x < RUN_UP[0] || x > RUN_UP[1]) return grip(r);
+      const keep = M2[0x0710 + x];
+      M2[0x0710 + x] = 0x80 | limit;
+      try { return grip(r); } finally { M2[0x0710 + x] = keep; }
+    };
+    watchCar(P2, M2, SCRChase.create(() => SCRPage.create({ data, cost })), JUMP[0], JUMP[1], out);
+    for (let f = 0; f < RACE_FRAMES && !(out.length && M2[0xC375] > JUMP[1]); f++) { r2.input.keys = new Set(); r2.input.joy = J.up; r2.runFrame(); }
+    runs.push({ limit, passes: pack16(jumpOnly(out)) });
+  }
+  const HS = SCRChase.HS, pt = q => [q[0], Math.round(q[1] / HS), q[2]];
+  const pieces = v.pieces.slice(BEND[0], JUMP[1] + 1).map(ps => ps.map(p => [...pt(p.L), ...pt(p.R), p.cross, p.colour]));
+  const moves = { from: BEND[0], pieces, fields: CAR_FIELDS, bend: pack16(first.filter(p => p[20] <= BEND[1])), jump: runs };
+  return { data: { tracks, race, moves }, states };
 }
 
 function opponents(dir) {

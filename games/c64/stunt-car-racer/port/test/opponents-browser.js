@@ -1,8 +1,10 @@
 'use strict';
 // The Opponents tab in Chromium, on the built page (python3 kit/scripts/build.py first), on a
 // desktop screen and on a phone (390 by 844, touch):
-// - every widget draws: the six pictures hold more than one colour, the five charts a line or
+// - every widget draws: the seven pictures hold more than one colour, the seven charts a line or
 //   bars, and the readouts say something;
+// - the 3D view of the computer's car on its springs moves while it plays, and another run-up
+//   changes what its readout says;
 // - dragging the computer's car on the map of racing lines changes what the readout says;
 // - Swerve now starts a swerve, and the pictures of the car turn;
 // - on the phone the page is no wider than the screen;
@@ -14,9 +16,9 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../../../../..');
 const { start } = require(path.join(ROOT, 'kit/scripts/play_browser.js'));
 const PAGE = '/c64/stunt-car-racer/opponents.html';
-const CANVASES = ['op-map', 'op-sw-cv', 'op-dr-cv', 'op-bo-cv', 'op-bu-cv', 'op-tow'];
-const CHARTS = ['op-dr-chart', 'op-bo-chart', 'op-en-chart', 'op-tow-chart', 'op-li-chart'];
-const READS = ['op-read', 'op-sw-read', 'op-bu-read', 'op-en-read', 'op-tow-read', 'op-li-read'];
+const CANVASES = ['op-mv-cv', 'op-map', 'op-sw-cv', 'op-dr-cv', 'op-bo-cv', 'op-bu-cv', 'op-tow'];
+const CHARTS = ['op-mv-chart', 'op-mv-springs', 'op-dr-chart', 'op-bo-chart', 'op-en-chart', 'op-tow-chart', 'op-li-chart'];
+const READS = ['op-mv-read', 'op-read', 'op-sw-read', 'op-bu-read', 'op-en-read', 'op-tow-read', 'op-li-read'];
 
 let fails = 0;
 const fail = (...w) => { fails++; console.log('FAIL', ...w); };
@@ -45,6 +47,18 @@ async function look(browser, base, name, opts) {
   const reads = await page.evaluate(ids => ids.map(id => [id, document.getElementById(id).textContent.trim()]), READS);
   for (const [id, t] of reads) if (!t) fail(name + ': #' + id + ' says nothing');
 
+  // the car on its springs: the picture changes as it plays, and the run-up of 45 says another
+  // highest point
+  const hash = id => page.$eval('#' + id, c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1]) | 0; return h; });
+  await page.$eval('#op-mv-cv', e => e.scrollIntoView({ block: 'center' }));
+  const views = [];
+  for (let i = 0; i < 4; i++) { await wait(300); views.push(await hash('op-mv-cv')); }
+  if (new Set(views).size < 3) fail(name + ': the springs\' picture changed ' + (new Set(views).size - 1) + ' times in four looks');
+  const jumpRead = await page.$eval('#op-mv-read', e => e.textContent);
+  await page.locator('#op-mv-speeds button', { hasText: /^45$/ }).click();
+  await wait(300);
+  if (await page.$eval('#op-mv-read', e => e.textContent) === jumpRead) fail(name + ': a run-up of 45 leaves the readout at "' + jumpRead + '"');
+
   // the map: the computer's car dragged from ahead of the player to behind it
   const map = await page.$('#op-map');
   await map.scrollIntoViewIfNeeded();
@@ -63,7 +77,7 @@ async function look(browser, base, name, opts) {
   const shots = [];
   for (let i = 0; i < 4; i++) {
     await wait(300);
-    shots.push(await page.$eval('#op-sw-cv', c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0; for (let i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1]) | 0; return h; }));
+    shots.push(await hash('op-sw-cv'));
   }
   if (new Set(shots).size < 3) fail(name + ': the swerve\'s picture changed ' + (new Set(shots).size - 1) + ' times in four looks');
 
@@ -78,7 +92,7 @@ async function look(browser, base, name, opts) {
   const { browser, base, stop } = await start(process.argv.slice(2));
   try {
     if (await look(browser, base, 'desktop', { viewport: { width: 1280, height: 900 } }))
-      console.log('ok   on a desktop screen every widget draws, the map\'s readout follows a drag and a swerve turns the car');
+      console.log('ok   on a desktop screen every widget draws, the springs\' picture moves, the map\'s readout follows a drag and a swerve turns the car');
     const was = fails;
     await look(browser, base, 'phone', { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
     if (fails === was) console.log('ok   on a phone the same, and the page is no wider than the screen');
