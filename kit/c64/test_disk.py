@@ -5,7 +5,8 @@ The disk holds a PRG of two sectors, a SEQ of one, a scratched entry, and a sect
 used that no file holds (what a game reads with the drive's block commands). Both images must give
 the same directory, files and unowned sectors; the .g64's data blocks are GCR-coded with the
 1541's table, and one of them gets a bad checksum. Then pack writes both files and the sector for
-kit/c64/c64run.js, and they read back as the same bytes. Then extract writes a disk whose
+kit/c64/c64run.js, and they read back as the same bytes, and d64 writes the .g64 as the .d64's
+bytes. Then extract writes a disk whose
 names hold $00, "*" and "/" as files the host can hold. Last, a disk with a decoy entry, whose
 chain leaves the disk after one sector, is listed whole.
 
@@ -118,6 +119,11 @@ for path, kind in ((d64, ".d64"), (g64, ".g64")):
     check(F == {"PROG": prog, "TEXT": text}, f"{kind}: the PRG over two sectors and the SEQ read whole")
     check(D.unowned() == [(20, 5)], f"{kind}: the one sector the BAM marks used that no file holds")
 check(disk.Disk(g64).bad == {(20, 5)} and not disk.Disk(d64).bad, ".g64: the data block with a bad checksum is reported")
+
+# d64 writes the .g64's sectors in a .d64's order: the same bytes as the .d64 the test wrote
+out = os.path.join(tmp, "from-g64.d64")
+disk.main(["d64", g64, out])
+check(open(out, "rb").read() == open(d64, "rb").read(), "d64: the .g64 written as a .d64 is the same bytes")
 
 out = os.path.join(tmp, "disk.json")
 disk.main(["pack", out, d64, "--sectors", d64])
