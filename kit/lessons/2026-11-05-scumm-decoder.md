@@ -1,4 +1,4 @@
-## next · 2026-11-05 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
+## 0.0.312 · 2026-11-05 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
 
 - **Check a bytecode decoder against the engine that runs the game, not
   against another decoder.** The game's scripts are SCUMM bytecode, and
