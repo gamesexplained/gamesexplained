@@ -76,7 +76,7 @@
             yield* waitFor(() => P.sprite0_has_reached_target());
             let k = yield* P.read_normalized_input();
             let choice = -1;
-            if (k & 32) choice = k & 7;                  // f1-f8: a choice by its number
+            if (k & 32) choice = k & 7;                  // f1-f8: a choice (f7 0 to f1 3, f8 4 to f2 7)
             else if (k === 1) {                          // up
               if (col & 3) {
                 if (s(row) > 0) {
@@ -236,8 +236,8 @@
         for (;;) {
           let next = false;
           switch (r) {
-            case 0xFFFD:                               // the profile panel
-              yield* P.show_profile_and_acquisitions_menu(1, 0x8CA5, 0x8CC3, 0x8CE1);
+            case 0xFFFD:                               // not for this life now: a message
+              yield* P.show_three_line_message_panel(1, 0x8CA5, 0x8CC3, 0x8CE1);
               P.ww(len, 0);
               break;
             case 0xFFFE:                               // the scene could not be read
@@ -765,9 +765,9 @@
       } finally { P.leave(f); }
     };
 
-    // $ABA9: three lines of text (a, b, c) on rows 2-4 and "OK" below, until fire; the map
+    // $ABA9: three lines of text (a, b, c) on rows 2-4 and CONTINUE below, until fire; the map
     // brought back over them when back is set
-    P.show_profile_and_acquisitions_menu = function* (back, a, b, c) {
+    P.show_three_line_message_panel = function* (back, a, b, c) {
       const f = P.enter([back, a, b, c], 2);
       try {
         P.clear_and_frame_text_region(23, PANEL);

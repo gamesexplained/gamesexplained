@@ -154,7 +154,7 @@ function beside(name, seed) {
   let i = 0, worst = 0, at = -1, bad = null;
   for (let j = 0; j < b.length && !bad; j++) {
     while (i < a.length && a[i][1] !== b[j][1]) i++;
-    if (i === a.length) bad = 'the ' + (j + 1) + 'th screen to settle on the C64 (frame ' + b[j][0] + ') never settles on the page after the last that matched';
+    if (i === a.length) bad = 'screen ' + (j + 1) + ' to settle on the C64 (frame ' + b[j][0] + ') never settles on the page after the last that matched';
     else {
       const gap = Math.abs(a[i][0] - b[j][0]);
       if (gap > worst) { worst = gap; at = j; }
@@ -163,7 +163,7 @@ function beside(name, seed) {
   }
   const strange = a.filter(e => !shown.has(e[1]));
   if (bad) fail(name + ': ' + bad + ' (' + a.length + ' screens settle on the page, ' + b.length + ' on the C64)');
-  else if (worst > 60) fail(name + ': the ' + (at + 1) + 'th screen to settle on the C64 settles ' + worst + ' frames from it on the page');
+  else if (worst > 60) fail(name + ': screen ' + (at + 1) + ' to settle on the C64 settles ' + worst + ' frames from it on the page');
   else if (strange.length) fail(name + ': ' + strange.length + ' screens settle on the page that the C64 never shows, the first at frame ' + strange[0][0]);
   else console.log('ok   ' + name + ': the ' + b.length + ' screens that settle on the C64 settle on the page in the same order, within ' + worst + ' frames (' + (a.length - b.length) + ' more settle on the page)');
   const e = (rt.passes - m.passes) / m.passes;

@@ -3,7 +3,9 @@
 // played on the kit's C64 as the lockstep plays them, and each stretch of the processor's time (a
 // raster line at most, the machine's own step) given to the routine it was in at its end: the
 // 6502 routine whose code holds the program counter, or, while the counter is in the p-code's
-// interpreter ($7033-$7926), the procedure whose bytecode holds its instruction pointer ($08), but
+// interpreter ($7033-$7926), the procedure whose bytecode holds the byte before its instruction
+// pointer ($08): the last byte the interpreter read, as the pointer has already moved past it (past
+// a procedure's last byte, its return, the pointer is in the next procedure's stub), but
 // for the gateway in and out of a 6502 routine with a frame of its own ($7059-$70F7), whose
 // cycles are the gateway's (enterNative: by the call and by the workspace bytes it saves, which
 // the page charges at each P.enterNative), since $08 holds a 6502 routine's scratch there. The
@@ -19,7 +21,13 @@
 //   not here: on the kit's C64 the p-code's instruction pointer stayed inside the loop
 //   ($5460-$5478) for 214,700 to 215,900 cycles in each of six delays of 312 turns in the
 //   new-random session, 13 interrupts of about 97 cycles among them: 687 a turn.
-// Each routine's calls are counted as the processor reaches its first instruction, and on the port
+// A label the port never calls (a point a 6502 routine resumes at after a procedure it called, a
+// tail several routines jump into, a routine the port has folded into its caller) is not a routine
+// the page can charge: its cycles go to the routine the port does call that the processor entered
+// last before it, which on the page is called as often (the procedure the resume follows, the
+// routine that jumped into the tail).
+// Each routine's calls are counted as the port calls it (or, for one the port does not define, as
+// the processor reaches its first instruction), and on the port
 // beside it, each time the game calls GETIN ($6DFA, the checkpoint where the two meet) while the
 // routine is running: a routine that loops round the wait for a key (a menu, the name's editor, a
 // stage) spends its own cycles by the turn of the loop as much as by the call. Each session's
@@ -68,6 +76,10 @@ for (const session of sessions) {
   const t0 = Date.now();
   const self = Object.create(null), calls = Object.create(null), passes = Object.create(null), waits = Object.create(null);
   const units = Object.create(null), spent = Object.create(null);
+  // the port's own calls of each routine, and the machine's cycles by label and by the routine the
+  // port defines that the processor entered last (owner), sorted out at the session's end
+  const portCalls = Object.create(null), byOwner = Object.create(null);
+  let defined = null;
   const segs = new Set();
   let cycles0 = 0, total = 0, irq = 0;
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
@@ -80,6 +92,15 @@ for (const session of sessions) {
     const stack = [];
     // what the port spends itself (P.spend: the time it counts inside a routine of its own), the
     // innermost routine's, which its fit leaves out; and the counts the sized routines are given
+    defined = new Set();
+    for (const name of Object.keys(P)) {
+      const f = P[name];
+      if (typeof f !== 'function' || !NAMES.has(name)) continue;
+      defined.add(name);
+      P[name] = f instanceof GENERATOR
+        ? function* (...a) { portCalls[name] = (portCalls[name] || 0) + 1; return yield* f.apply(this, a); }
+        : function (...a) { portCalls[name] = (portCalls[name] || 0) + 1; return f.apply(this, a); };
+    }
     const spend = P.spend;
     P.spend = n => { if (stack.length) spent[stack[stack.length - 1]] = (spent[stack[stack.length - 1]] || 0) + n; spend(n); };
     for (const [name, at] of Object.entries(SIZED)) {
@@ -125,14 +146,14 @@ for (const session of sessions) {
     // the object at $8466: its entry stub's jump, $9348 the start object's, $B392 the life object's
     const object = () => (ram[0x8466] === 0x4C ? (ram[0x8468] === 0x93 ? 'start' : ram[0x8468] === 0xB3 ? 'life' : null) : null);
     const partAt = a => (a < 0x8466 ? 'main' : object());
-    let waiting = false;
+    let waiting = false, owner = '';
     function place() {
       const pc = cpu.pc;
       if (inside(pc, IRQ)) return '#irq';
       if (inside(pc, WAITS)) return null;
       let a = pc;
       if (pc >= 0x7059 && pc < 0x70F8) return 'enterNative';
-      if (pc >= 0x7033 && pc < 0x7927) { if (waiting) return null; a = ram[8] | ram[9] << 8; }
+      if (pc >= 0x7033 && pc < 0x7927) { if (waiting) return null; a = ((ram[8] | ram[9] << 8) - 1) & 0xFFFF; }
       const part = partAt(a);
       return part ? nameAt(part, a) : null;
     }
@@ -142,7 +163,7 @@ for (const session of sessions) {
       const dt = cpu.cycles - last; last = cpu.cycles;
       const k = place();
       if (k === '#irq') irq += dt;
-      else if (k && k !== 'delay_scaled_iterations') self[k] = (self[k] || 0) + dt;
+      else if (k && k !== 'delay_scaled_iterations') { const t = byOwner[k] || (byOwner[k] = Object.create(null)); t[owner] = (t[owner] || 0) + dt; }
       return tick.apply(this, arguments);
     };
     // the calls: a hook at each routine's first instruction, beside the machine's own
@@ -153,7 +174,7 @@ for (const session of sessions) {
       const h0 = hooks[a];
       hooks[a] = c => {
         const part = partAt(a), n = part && byPart[part];
-        if (n) { calls[n] = (calls[n] || 0) + 1; waiting = n === 'sprite0_has_reached_target'; }
+        if (n) { calls[n] = (calls[n] || 0) + 1; waiting = n === 'sprite0_has_reached_target'; if (!inside(a, IRQ) && (!defined || defined.has(n))) owner = n; }
         return h0 ? h0(c) : undefined;
       };
     }
@@ -161,7 +182,14 @@ for (const session of sessions) {
     hooks[0x7059] = c => { calls.enterNative = (calls.enterNative || 0) + 1; return h1 ? h1(c) : undefined; };
   } });
   total = r.m.cpu.cycles - cycles0;
-  rows.push({ session, total, self, calls, passes, waits, units, spent, irq, segs: [...segs], stack: [...tracked] });
+  for (const [k, t] of Object.entries(byOwner)) for (const [o, dt] of Object.entries(t)) {
+    const to = k === 'enterNative' || portCalls[k] || !portCalls[o] ? k : o;
+    self[to] = (self[to] || 0) + dt;
+  }
+  // a routine the port defines is charged at the port's calls of it, the rest at the machine's
+  const charged = Object.assign(Object.create(null), calls);
+  for (const n of defined) charged[n] = portCalls[n] || 0;
+  rows.push({ session, total, self, calls: charged, machineCalls: calls, passes, waits, units, spent, irq, segs: [...segs], stack: [...tracked] });
   console.log(session + ': ' + (r.res.ok && !r.drives ? 'identical' : 'DIFFERS') + ', ' + r.m.frames + ' frames, ' + Math.round((Date.now() - t0) / 1000) + ' s');
 }
 // a, b, c and d for each routine, over the rows: its own cycles, less what the port spends in it
@@ -218,7 +246,7 @@ for (const k of names) {
   if (d > 0) unit[k] = [SIZED[k], Math.round(d * 100) / 100];
 }
 const counted = rows.reduce((s, r) => s + Object.values(r.self).reduce((x, y) => x + y, 0), 0), all = rows.reduce((s, r) => s + r.total, 0);
-const irqs = rows.reduce((s, r) => s + (r.calls.sprite0_motion_irq_hook || 0), 0), irqCycles = rows.reduce((s, r) => s + r.irq, 0);
+const irqs = rows.reduce((s, r) => s + ((r.machineCalls || r.calls).sprite0_motion_irq_hook || 0), 0), irqCycles = rows.reduce((s, r) => s + r.irq, 0);
 const seg = {};
 for (const k of [...new Set(rows.flatMap(r => r.segs))].sort()) seg[k] = 0;
 fs.writeFileSync(ROWS, JSON.stringify(rows) + '\n');

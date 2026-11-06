@@ -112,8 +112,8 @@
           ep = (ep + 1) & 0xFFFF;
         }
         if (flag) return 0xFFFD;
-        if (mask) yield* P.show_profile_and_acquisitions_menu(0, 0x9122, 0x913F, 0x915B);
-        else yield* P.show_profile_and_acquisitions_menu(0, 0x9179, 0x9197, 0x91B5);
+        if (mask) yield* P.show_three_line_message_panel(0, 0x9122, 0x913F, 0x915B);
+        else yield* P.show_three_line_message_panel(0, 0x9179, 0x9197, 0x91B5);
         P.ww(out, 0);
         return 0x00FE;
       } finally { P.leaveNative(f); }
@@ -126,7 +126,7 @@
     // year's fraction ($7FC4); whole years carried go on the age ($7F74) and $7F8C. Cash
     // ($7F78 thousands and $7F76) and debt ($7F84, $7F82) are worked in whole units: cash below 0
     // goes onto the debt. A salary ($7F8A, while $7F58 is set) adds the years' pay, less a tax
-    // from $7F52 and the stage ($8041); without one, the stages up to the sixth take a cost of
+    // from $7F52 and the stage ($8041); without one, the stages from the third on ($8041 at 5 or less) take a cost of
     // living (a fifth of the years' worth of cash). An acquisition waiting at $7F88 goes onto the
     // bits at $82AB
     P.advance_age_and_finances = function (n) {
