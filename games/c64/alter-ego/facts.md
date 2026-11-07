@@ -1,73 +1,91 @@
-# Alter Ego — facts
+# Alter Ego — verified technical facts
 
-## Fresh boot
+What is true of the game as a whole: how its parts follow one another, and what they share. Each part's own facts are in `parts/<id>/facts.md`: the resident program in [`parts/main`](parts/main/facts.md), the start in [`parts/start`](parts/start/facts.md), a life's seven phases in [`parts/life`](parts/life/facts.md). Unless marked *live*, a fact comes from reading the code in the snapshots `orientation.md` names; *live* means seen on the kit's C64 running the game's own code, in the sessions under "Live tests".
 
-The supplied male disk 01a reaches the FNC introduction, Activision menu and first name prompt. Direct matrix Space exits the intro; Return selects Begin a new game. The reference image records the fresh prompt.
+## Build
 
-All 9,794 imported native-code bytes and 2,718 word bytes match at the prompt. The final hand-over at $4000 contains the same code; bitmap output changes by 7,593 bytes on the way to the prompt.
+The male edition, from the C64 Preservation Project's original disks `alter_ego_male_s1` to `s6` (Activision, 1987): six disk sides. The loader's own files (ACTIVISION, SIGNI1, SIGNI2, 1985, COPYRIGHT) bring the title up and jump to `$4000`, where the game's program begins; the game never opens them again.
 
-## VM decoder check
+## How the program is made
 
-The contributor’s recovered `decode_vm.py` was run on the fresh physical RAM. It decodes 82 procedures and 7,071 operations, with no invalid opcode, missing return, shared instruction byte or branch into an instruction body/header. After JSON normalization, every decoded operation and procedure matches the supplied VM export. This checks the imported decoding against the fresh image; it does not independently prove every opcode’s semantic description.
+Most of the game is not 6502 code. It is a program compiled for a stack machine of 16-bit values (p-code), run by the interpreter at `$7033-$7926` in the resident program: fetch and dispatch at `$713C`, through the two 256-entry handler tables at `$7927` (low bytes) and `$7A27` (high bytes). Its registers are in zero page: `$04/$05` the expression stack pointer, growing down from `$CFFF`; `$06/$07` the frame pointer; `$08/$09` the instruction pointer; `$0A/$0B` the primary value and `$0E/$0F` the secondary. A p-code procedure starts with `JSR $70F8` and a word, the locals' size negated (the gateway adds it to the stack pointer); a 6502 routine with a frame of its own starts with `JSR $7059`, a byte (the zero-page workspace it saves) and a word. 48 opcodes have no handler: all of them point at the BRK at `$7893`.
 
-## Hidden VM mirror
+The program is in three loads, the listing's three parts:
 
-$D800-$DFFF exactly matches $ABEB-$B3EA over 2,048 bytes. The imported note described only the final 1,599-byte suffix at $D9C1. The complete prefix also includes compiled bytecode and personality/acquisition strings. Internal targets refer to the active RAM addresses, so the stored bytes are a mirror rather than independently relocated execution. Visible colour-RAM/CIA operands refer to different occupants.
+| Part | Where | What |
+|---|---|---|
+| `main` | `$4000-$8465` | the resident program: the interpreter, a C library (files, strings, 32-bit arithmetic), the display, the arrow, the KERNAL wrappers and the fast loader; the game's top level at `$4003` |
+| `start` | `$8466-$9991` | the start object: the title's menu, a saved life resumed, the player's name, the questionnaire and its scoring, the phase to begin in |
+| `life` | `$8466-$CC69` | the life object: a phase of life played on its map, scene by scene, the status pages, saving and loading |
 
-## Annotation corrections
+The top level (`initialize_alter_ego_runtime`, `$4003`) opens MAP1 and reads three objects from it, each a word of its address, a word of its length and its bytes (`read_length_prefixed_stream_object`, `$4AEE`): the pictures of the map and the choices, to `$E800`; the scene strings, to `$E000`; and the start object, to `$8466`. It calls the start object through a pointer (`call_vm_function_pointer`, `$4B4F`) and reads the life object over it from where the start object ended in MAP1, then calls that with the phase the start object returned. The life object returning 2 begins the whole cycle again; anything else ends in the KERNAL's reset (`$FCE2`, through `$7FC8`).
 
-The offcut label retains its operand address. Hardware-register labels were removed from the underlying RAM occupant; named graphics and VM-mirror regions replace them. Compiled procedure frame/body descriptions name their game purpose and checked operation boundaries. Native continuations name their actual preceding inline call and argument cleanup. Text records retain literal content and hexadecimal substitution bytes; category terminators name the table they end.
+## Memory layout
 
-## MAP1 framing and scene decode
+| Thing | Where |
+|---|---|
+| Hires bitmap | `$2000-$3F3F` |
+| Screen colours, sprite pointers | `$0400-$07E7`, `$07F8-$07FF` |
+| The 64 shared words (traits, money, years, flags) | `$7F40-$7FBF`, cleared by the top level before each start |
+| The age in years | `$7F74`; the fraction of a year since the last birthday at `$7FC4`, in 65,536ths, which a save leaves out |
+| The heap | from `$8465` up, its pointer at `$7FCB` |
+| The p-code's stack | down from `$CFFF` |
+| The drive's record buffer | `$8045-$8144`: a status, the file's number, then the 254-byte record |
+| The map's and choices' pictures | `$E800` on (`$81F5` holds the address) |
+| The scene strings | `$E000-$E5FB` (`$8463` holds the address) |
 
-The contributor's male MAP1 REL extraction has 464 records, each `$3A + 252 logical payload bytes + $3A`. All markers pass. The native custom-drive buffer is a distinct 256-byte record at `$8045-$8144`: status, identifier, marker, 252 payload bytes, marker. Native seek/read code uses division by 252, initial cursor 3 and rollover 255; a drive record is not a host REL record.
+## The disk
 
-An independently written whole-phrase decoder reads scene 26 from its directory-derived payload offset 89016. It expands 4,130 grouped MSB-first codes to 7,872 bytes, consuming 5,169 compressed bytes. Eight codes occupy each nine- or ten-byte group. After adding dictionary entry 256, the next-entry index 257 changes width to ten and discards the remaining old group. All 2,048 prefix bytes and 1,024 suffix bytes match `$B57B-$C17A`. This area is the prefix/suffix dictionary, split at the RAM boundary.
+Every MAP file is a relative file of 254-byte records, each a `:`, 252 bytes and a `:`. The game reads a file as one stream of its payload bytes, through a fast loader of its own (`$5B72-$5F2F`): it starts its code in the drive with `M-E $07AF`, then for each record sends `M-E $0300` with the record's number, and the drive clocks 256 bytes back over CIA 2 into the buffer at `$8045`. A file is numbered: MAP1 is file 1 (Infancy's stage, and the start and life objects), MAP27 file 2 (Childhood's and Old Age's stages), MAP3 to MAP6 files 3 to 6. When a read fails, the game asks for the disk it needs by number and label side (`prompt_retry_after_disk_error`, `$5677`, the table at `$7E6C`).
 
-Every one of the scene's 39 descriptors independently parses to its complete length. All 40 boundary words match `$CAE5-$CB34`. Descriptor 31 occupies decompressed offsets 6032-6425; all 394 bytes match `$C2A2-$C42B`. It has route `$FE`, no conditions, one effect `{9,5,30}`, no choice dimensions, four script bytes, one 373-byte text fragment and a zero trailer. These are cached data in the prompt capture; the prompt is not displaying that narrative.
+A saved life is a file, AES0 to AES4 (a program file in the disk's directory, opened with `,W` alone), of 380 bytes: the regions of the shared words and the stage's state it moves through one routine (`$4E0F`). AESD, 160 bytes, is the directory of the five: five entries of 32 bytes, each the player's name and the age (`$4D86`). The fraction of the year at `$7FC4` is not saved, so a life resumed after a fresh start comes back at its last birthday (`parts/main/facts.md`, "Saving").
 
-Sixteen controlled native calls to `$A974` reproduce all eight code positions at widths nine and ten, including maximum-width values. Four native branch tests at `$A850` confirm index 256/257, group positions 0/72, width and threshold, stopping before disk refill. Full live disk decoding and error handling remain open.
+## Timing
 
-The MAP1 preamble loads a 4,560-byte resource at `$E800-$F9CF` and a 1,532-byte resident text object at `$E000-$E5FB`; both match the fresh image completely. Its 5,420-byte program object at `$8466` differs only at the runtime saved-frame pointer `$9990/$9991`. The separate 18,436-byte gameplay object is a later occupant and does not match the declared prompt phase.
+The arrow's interrupt (`sprite0_motion_irq_hook`, `$4229`) runs in front of the KERNAL's own, on CIA 1's timer: 16,422 cycles apart, about 60 a second on a PAL machine. It moves the arrow four pixels across and three down or up towards its target each time, and puts sprite 0 back only once the raster has reached line 0 or 256. A busy loop of the game's (`$545B`) counts turns of 640 of the processor's cycles, 687 on a C64 with the interrupt and the cycles the video chip takes.
 
-The resident cache metadata gives compressed payload offset 89098 (`89016+2+80`), first descriptor 31 and exclusive end 32. Three native calls to `$9A14` confirm request 31 returns `$C2A2`, request 30 reaches reset `$A4DB`, and request 32 reaches decode `$A4F1`. Miss cases stop before file I/O.
+## Chance
 
-## Questionnaire scoring
+The game's dice are the SID's third voice running noise, read at `$D41B` (`read_sid_voice3_noise`, `$4697`): the questionnaire left to chance takes a bit of one for each answer (`$9323`), and scenes pick among their alternatives with them.
 
-Both score tables contain 25 fixed records of 25 bytes, at `$94AE-$971E` (TRUE) and `$971F-$998F` (FALSE). Each record contains a count, ordered operation/state/magnitude triples and zero padding. All counts are at most eight; all padding and state indexes check. The records use assignment, movement toward 100 by a percentage of the remaining distance, and movement toward zero by a percentage of the old value. Each percentage result truncates before the next operation.
+## The listing's error rate
 
-Sixty controlled full native executions of `$8E29` match an independent table interpreter over all 64 state words. Cases include all TRUE, all FALSE, each of 25 single-answer flips on both baselines, five mixed profiles, and all-0/3/255 inputs. The twelve traits start at 50, state 49 at zero; scores are deterministic within this routine. All input bytes other than 1 select FALSE. The UI's separate completion check still rejects unset answers. Scoring does not prove that later stage entry preserves the result unchanged.
+The listing has 1,312 comments in its three parts.
 
-Only question 22 TRUE sets state 49 to one. Intelligence, Physical and Vocational remain 50 in these tables. Label names come from the resident life-status pointer directory; full later gameplay display remains open.
+A sample of 90 (seed 61106), drawn as 60 of the 916 written comments, 20 of the 204 the p-code decoder wrote and 10 of the 192 on text, was checked by a maintainer (`air`) on claude-fable-5-1 before any of them was changed. 18 were wrong, 20.0 % (95 % interval 13.0 % to 29.4 %), 19.4 % weighted by the strata's sizes: 14 of the 60 written, 4 of the 20 from the decoder and none of the 10 on text. What was wrong was a detail in each: a block size off by one (`$B1` for `$B0`), the number of header bytes a decoder template counted (two for three, in 13 records), a stack frame said to need an RTI that the bridge returns from itself, a key read called a wait for a key, a cleanup routine said to be tested for zero, opcodes said to share handlers, the KERNAL routine a save called (CHRIN for GETIN), a colour, and a scene cache's layout. All 18 were corrected, with the 95 other comments that said the same things: 113 in all.
 
-## Name editor
+The first of six audits, of the 248 comments of the resident program from `$0000` to `$57FF`, on claude-fable-5-1, found 8 wrong and 65 with a wrong detail, and corrected all 73: among them a routine named for a hit test that plays a click on the SID (now `play_sid_click`), one named for reading a pointer device that places the arrow at a text cell (now `place_arrow_at_text_cell`), the number of resident p-code procedures (62, not 82), and the values the three-digit formatter gets right (0 to 255 and 400 to 655).
 
-Ordinary matrix input types lower-case name bytes: S/A/M produces `sam`; matrix DEL (row 0, column 0) removes the last character, then V produces `sav`. Further input fills exactly 16 bytes with `savabcdefghijklm`; seven further letters leave that field unchanged. Return accepts it and proceeds through the screen transition. A full-length name has no NUL within its 16-byte field.
+The second, of the 184 comments from `$5800` to `$6FFF` (the MAP stream and the drive, the runtime, the KERNAL wrappers), found 1 wrong and 35 with a wrong detail, and corrected all 36: a procedure said to lay out text that draws a row of a box's frame on the life map (`$5A5C`), the fast loader's byte said to come from three reads of `$DD00` that comes from four, a status of 0 said to be accepted where only 1 is, the argument order of the routines that read and write a file, UNTLK called UNLSN, and the order of CLRCHN and CLOSE. Eight stubs at `$6D9A` to `$6DAF` were said to be reached through a table that no part holds; how they are reached is now given as not known.
 
-## Display tables
+The third, of the 229 from `$7000` to `$77FF` (the interpreter, its gateways and most of its opcode handlers), found 3 wrong and 15 with a wrong detail, and corrected all 18: three comparisons named the wrong way round (opcodes `$C3`, `$C5` and `$C7`), branch handlers said to fall into the next handler when the two branches before cover every case, and a division core named by a label the listing does not have.
 
-All 16 custom-glyph pointers select eight-byte border/fill patterns; several starts overlap or repeat. Rendering identifies corners, horizontal/vertical lines, blank and filled patterns. Sixteen controlled native calls to `$47B8` copy the selected patterns exactly into the requested bitmap cell. All 91 native `$475D` copies for characters `$20-$7A` match the corresponding eight bytes of installed C64 character ROM 901225-01. No full ROM is published.
+The fourth, of the 324 from `$7800` to the end of memory (the last opcode handlers, the dispatch table, the 32-bit arithmetic, the state variables and the text under the KERNAL), found 7 wrong and 27 with a wrong detail, and corrected all 34: a fourth comparison the wrong way round (`$C9`), logical NOT called a test for non-zero (`$CA`), three 32-bit comparisons named for the wrong test, a callback pointer at `$8104` and menu tables after it that are the drive's record buffer, which holds the last record read, and the stage's number at `$82BD`, which is 1 to 7 while a stage is played.
 
-Four split address/offset tables match every entry: 40 columns at `8*i`, 40 packed-panel columns at `31*i`, 25 screen rows at `$0400+40*i`, 25 bitmap rows at `$2000+320*i`.
+The fifth, of the 161 comments of the start object and of the life object up to `$9FFF`, found none wrong and 11 with a wrong detail, and corrected them: the choice each function key picks, the stages that pay the cost of living (from the third on, not up to the sixth), the unit of the age's fraction at `$7FC4` (65,536ths of a year), and the life snapshot's count of p-code procedures (85, the 62 resident ones among them).
 
-## Heap and retained arithmetic
+The sixth, of the 166 comments of the life object from `$A000` to its end, found 9 wrong and 34 with a wrong detail, and corrected all 43: a routine named for showing the traits and acquisitions that shows three lines of a message and CONTINUE (now `show_three_line_message_panel`), a byte said to be the text decoder's work that is the scene's page number (now `scene_page_number`), five comments on the scene buffer at `$C2A2` that described the descriptor in another snapshot, the MONTHS figure (twelve times the fraction's high byte, divided by 256), the status page said to show months that shows years only, and figures for the scene block that were the name prompt's.
 
-`$6E70` uses a 16-bit heap pointer `$7FCB/$7FCC`, not a 32-bit pointer. It compares wrapped `heap+size` with its expression stack minus 256. Eight native cases with heap `$C465` and caller stack `$CE00` (expression-stack pointer `$CDF6` at the guard comparison, hence guard `$CCF6`) verify maximum 2193-byte acceptance, 2194-byte rejection, and overflow. Size `$FFFF` is accepted and moves the pointer back one; sizes 15259/15260 wrap it to zero/one and are also accepted. A player-visible oversized-request route has not been established.
+Then every claim in the four facts files, 147 of them, was audited on claude-fable-5-1: none was wrong, 13 had a wrong detail and were corrected, among them the heap's first address (`$8465`), the save files' type (program files, opened for writing), the name editor's callers (the name and the message that no saved files are available, not the menus), how the curtain treats colours (it fills them), and the sessions (sixteen, with `bot2`). The 7 comments of the listing that said the same things were corrected with them. 8 claims rest on runs and tools rather than the bytes and could not be checked from them.
 
-161 bytes `$B46B-$B50B` form signed/unsigned quotient/remainder wrappers and their restoring-division kernel. Forty-four native cases reproduce integer calculations, mixed signs, minimum-value/-1 overflow and divisor zero. Zero divisor yields unsigned quotient `$FFFF` and unchanged dividend as remainder; signed quotient follows the wrapper's sign rule. No normal caller/route is established merely by executing a controlled call.
+A second sample after the audit, of 120 (seed 20261106), drawn as 90 of the written comments, 20 of the decoder's and 10 on text, was checked on claude-fable-5-1 by a checker that had checked none of them before: 7 were wrong, 5.8 % (95 % interval 2.9 % to 11.6 %), 5.4 % weighted by the strata's sizes, all 7 among the written comments. Each was wrong in a detail: bytes inside a procedure's p-code said to be left over from the loader (`$A3BF`), the stage header's copy of a comment that dropped the case of a resumed game, a page number called a display mode, a file mode left out, a snapshot value from another snapshot, a claim that the RAM under the KERNAL holds game data, and the registers GETIN changes. All 7 were corrected, with one more comment that said the same thing.
 
-Primitive selector zero aliases the `$0002` operand of JMP-indirect at `$7B41`. Native selector 0 targets `$0002`, now beginning with JAM `$02`; selector 1 positively targets `$7B92`. Selector zero overwrites the previous pointer before jumping. No `$B7` operation occurs in the 7,071 decoded current operations, which does not exclude computed or later code.
+## Live tests
 
-## Retained initialization twin
+Sixteen sessions in `port/test/lockstep.js`, each keys given at frames to the game's own code on the kit's C64 (`kit/c64/machine.js`, with the KERNAL and the drive of `port/src/kernal.js`), beside the JavaScript port, which agrees with it on memory and the chips at every call of GETIN:
 
-The declared hand-over has 4,095 of 4,096 bytes equal between `$1000-$1FFF` and `$C000-$CFFF`, with the final paired byte differing. The name prompt has 52 differences, all in the live frame/stack tail. The stored source includes dictionary suffixes and cached data as well as frame seeds; matching the seed does not make an allocation unused.
+| Session | What it plays | Frames |
+|---|---|---|
+| new-random | a new life, the name ADAM, the questionnaire left to chance, Infancy begun | 3,612 |
+| infancy | then forty of Infancy's pages, an answer now and then | 35,981 |
+| save | Infancy, then the RUN/STOP menu: saved in the first place, loaded, the status shown, quit | 17,705 |
+| resume | the save session's disk: the life resumed from the start's menu, and played on | 27,727 |
+| answers | the questionnaire answered by hand, then play | 29,155 |
+| answers-edited | left to chance, then gone over by hand, then play | 33,694 |
+| bot | 400 keys at random from a seed: fire, the cursor keys, the function keys, RUN/STOP | 95,102 |
+| bot2 | 1,500 keys at random from another seed, as bot | 330,973 |
+| stage2 to stage7 | each phase from Childhood to Old Age chosen at the start, then 200 keys at random, none to the phase's end | 49,095 to 56,323 |
+| arrow-keys | Adolescence with the keys marked with arrows in place of the shifted cursor keys | 48,591 |
+| old-age | Old Age chosen at the start and played by 520 keys at random to the life's end, at 65; the stage's menu; a new life in Infancy played to the age of 1 | 115,881 |
 
-580 bytes `$F9D0-$FC13` exactly duplicate source `$1DBB-$1FFE`. Their origin is open. Distinct bootstrap-like instructions begin at `$FC14`; their earlier-phase producer/relocation is not proved by the twin.
-
-## Open verification
-
-Resolve the remaining hand-over range `$CAA4-$CAD9`, unannotated high-RAM allocations and earlier bootstrap fragment. Complete current workspace ownership, full live compressed-file/error tests and save/load behavior. Male and female gameplay overlays require fresh independent captures. Original analysis models are unknown; Silver needs the required maintainer check.
-
-## Provenance
-
-`alter_ego_full_listing.txt`, SHA-256 `569f63e5e7ac084df3f63ed4863d17fe73b8fb43234d3ea8d37b017ea0a246c6`. Source is generated by `listing.py` from fresh exported symbols and the declared snapshot. Binaries and original text exports remain private.
+The disks the game and the port leave are compared file by file at the end of each. `test_play.js` holds the published Play page to the game on three of the sessions, `test_levels.js` the Stages tab's maps to the game's own drawing, and `test_graphics.js` the Graphics tab's arrow and curtain to the game's code.
