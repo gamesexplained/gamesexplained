@@ -668,4 +668,16 @@ function portSame(store) {
   check('a loop of one checkpoint: twenty turns, identical', r.ok && r.passes === 20 && P.M[0xC000] === m.ram[0xC000], true);
 }
 
+// A polling loop with no yield (issue 761): the keys stand still between two yields, so a loop
+// waiting for one to change never ends; the lockstep stops it, naming the port it polls.
+{
+  const P = port(), t0 = Date.now(), scan = P.scan;
+  P.scan = function () { scan(); const k = P.io.in(0xFEFE); while (P.io.in(0xFEFE) === k); };
+  let err = null;
+  try { lockstep(P, { spinLimit: 200000 }).run({ passes: 5, onPass: input }); } catch (e) { err = e; }
+  check('a loop with no yield: stopped with an error', !!err, true);
+  check('which names the port it polls', !!err && /200,000 times with no yield; .* were in\(\$FEFE\)/.test(err.message), true);
+  check('within a second', Date.now() - t0 < 1000, true);
+}
+
 process.exit(fails ? 1 : 0);

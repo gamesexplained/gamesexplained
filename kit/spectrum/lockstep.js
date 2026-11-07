@@ -92,6 +92,10 @@
 //   entry, so that a start-up the page runs has a row of its own; without it that stretch is not
 //   timed, and its routines' costs come only from the stretches after.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
+// - spinLimit: how many calls of P.io the port may make between two of its yields (default two
+//   million). Past it the lockstep throws, naming the address called most: a loop that waits for
+//   a key, the beam or the interrupt with no yield in it, which would otherwise hang the session
+//   with no message (kit/scripts/spin_guard.js). A loop on a byte of P.M alone is not caught.
 // - irqBytes: addresses of RAM an interrupt writes and the main program reads (a frame counter, a
 //   key the handler scanned), for the race replay cannot give (irqs above). The port reads each
 //   through P.io.irqByte(a), and gets, in turn, the values the game's main program read of it in
@@ -162,6 +166,7 @@
 // interrupt and the processor's fetch, rd and wr, and it puts them back when run returns.
 const { Banks128, AY_MASK } = require('./machine.js');
 const { CPU } = require('./z80.js');
+const { SpinGuard } = require('../scripts/spin_guard.js');
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
@@ -299,7 +304,8 @@ class Lockstep {
     this.readsAt = new Set((o.readsAt || []).map(a => a & 0xFFFF));
     this.ib = { live: new Map(), list: null, used: new Map() };   // the stretch's reads of them
     this.io = this.makeIO(top);
-    P.io = Object.assign({}, P.io, this.io);
+    this.guard = new SpinGuard('Lockstep', o.spinLimit);          // a port's loop with no yield (kit/scripts/spin_guard.js)
+    P.io = this.guard.wrap(Object.assign({}, P.io, this.io), ['in', 'out', 'readAt', 'readR', 'irqByte']);
     this.timing = o.timing || null;
     this.counting = false;
     this.calls = {};
@@ -577,6 +583,7 @@ class Lockstep {
   step() {
     let r;
     this.since++;
+    this.guard.reset();
     try { r = this.it.next(); } catch (e) { throw this.annotate(e); }
     if (r.done) return this.diverge('the port\'s program returned');
     const y = r.value;
