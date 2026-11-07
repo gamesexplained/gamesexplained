@@ -70,3 +70,7 @@ After the environment resumed, stale Chromium singleton links in its
 contained test profile were removed before relaunch; no personal browser
 profile was used. Review screenshots are kept under review/ and are not
 published by the site build.
+
+The sound test accepts either the contained SkoolKit installation or a
+Python-importable pip installation, matching the CI workflow. Both lookup
+paths were exercised locally without installing another package.
