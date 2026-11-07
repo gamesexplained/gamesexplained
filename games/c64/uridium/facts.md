@@ -98,6 +98,25 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
 - Enemy bullets are sprites in free enemy slots, flying level at the
   fighter's speed plus the type's bullet speed for 160 frames
   (`enemy_fire`, `bullet_move`).
+- Fighters, bullets, mines and explosions are multicolour sprites sharing
+  `$D025` (the level's Manta multicolour) and `$D026` (white). Only
+  `new_wave` sets an enemy sprite's colour (`sprite_put_all`, `$1BCD`);
+  bullets, mines and explosions go through `sprite_put`, which writes
+  only shape, place and enable, so they keep the colour the slot last
+  had. A wave's shape is `$A0` or `$B0` plus its type, chosen once by the
+  sign of the speed (`$1B49`), and never changes.
+- Before each life `start_life` turns the Manta through `$40`-`$4F`, one
+  shape a frame, until fire is pressed or the frame counter, started at
+  `$BF`, wraps after 65 frames (`$0CB4`). `launch_sequence` opens the
+  door (`$07` to `$0B`) a shape every three frames, moves the Manta out a
+  pixel every two frames to X `$AA`, then slides the transporter left
+  with a speed that grows by one every two frames. `manta_explodes` uses
+  colours yellow, orange (`$D025`) and black (`$D026`), adds a sprite at
+  a random offset of about 8 pixels from sprite 7 every three frames and steps
+  every sprite a shape every three frames, 66 frames in play. The blank
+  shapes `$13`, `$1E`, `$1F`, `$3B`-`$3F`, `$6E`, `$6F`, `$9E` and `$9F`
+  are never shown (the Graphics tab's recorder, on all fifteen
+  Dreadnoughts, in `test_ports.py`).
 - The Dreadnought scrolls by whole characters (`draw_map` copies 17 rows
   of 39 characters every frame) and by pixel through `$D016` (`$2C`).
   The stars stay still because `draw_stars` rewrites the star characters'
