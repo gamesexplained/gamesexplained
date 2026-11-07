@@ -152,3 +152,21 @@ details corrected, none wrong), and a second sample of 120 with a new
 seed found 7 wrong, 5.8 % against the first sample's 20 %, each in a
 detail. Each part's listing was built again from its own snapshot after
 every round of corrections.
+
+## Fast, and the Play page's empty sections (7 November 2026)
+
+The maintainer found the Play tab slow. Timed on the page, frame by
+frame, by what the port was running: over 40 pages of Infancy each page
+kept the player waiting 1.3 to 5 seconds, and up to 10 in random play,
+in the scene's text being unpacked (0.2 to 8 seconds), drawn off the
+screen, the panel cleared, the curtain, a delay loop of the game's, the
+life map and the disk. The game moves nothing a step at a time while the
+player waits, so the Fast CPU skill's steps and shares had nothing to do;
+the page's switch runs at once each frame with no call of GETIN.
+The first try let a key held in real time stay down through hundreds of
+frames run at once: a tap of the stick sent the arrow on past the answer,
+since it glides between moves. Fast now waits while a key is down. The
+same look showed that the Play page's two sections on the port and its
+differences had been published empty: the template's placeholders were
+filled from files never written. Both are written, and `build.py` now
+fails a section with a heading and nothing under it.

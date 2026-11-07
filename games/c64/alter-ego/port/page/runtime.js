@@ -25,6 +25,14 @@
 //   rt.passes          the calls of GETIN ($6DFA) so far, each counted once the clock has paid
 //                      the stretch that leads to it
 //   rt.shown           the frame runFrame last returned; rt.ahead, the frames finished after it
+//   rt.busy            the game made no call of GETIN in the frame runFrame last ran: it is working
+//                      out what comes next, not waiting for a key (a turn of the wait takes about
+//                      4,000 cycles, so a frame of the wait holds four calls or more)
+//   rt.runBusy(stop)   Fast: the frames after that one at once, the game's own frames in turn, its
+//                      code and clock unchanged, while the game stays busy, stop() is false and no
+//                      key or stick is held (held through frames run at once, a key would be held
+//                      for all of them: a stick held to move the arrow, which glides between its
+//                      moves, would send it on and on); returns the frames run
 //
 // The clock. A PAL machine: 312 lines of 63 cycles. The game's interrupt is the KERNAL's, CIA 1's
 // timer A running out (every 16,422 cycles as the KERNAL sets it); the arrow's motion is hooked in
@@ -413,10 +421,13 @@ function create(o) {
       if (++guard > 2e6) throw new Error('runUntil: no progress');
     }
   }
+  let busy = false;
   function runFrame() {
     if (target === null) target = t;
     target += FRAME;
+    const before = passes;
     if (t < target) runUntil(target);
+    busy = passes === before;
     // the frame due at the target, the one that ended at or before it, and the ones before it that
     // were not shown, their changes taken in turn
     const due = Math.floor(target / FRAME) - 1;
@@ -429,16 +440,22 @@ function create(o) {
     if (F) { F.mem = shown.mem; F.colourMem = shown.colour; last = F; }
     return last;
   }
+  const held = () => input.keys.size > 0 || (input.joy & 0x1F) !== 0x1F || (input.joy1 & 0x1F) !== 0x1F;
+  function runBusy(stop) {
+    let n = 0;
+    while (busy && !stop(n) && !held()) { runFrame(); n++; }
+    return n;
+  }
 
   start();
   return {
     M, colour, vic, sidw, input, KEY, missing,
     get t() { return t; }, get frame() { return frameIdx; }, get P() { return P; }, get target() { return target; },
-    get passes() { return passes; },
+    get passes() { return passes; }, get busy() { return busy; },
     // the frame last shown, and how many frames the clock has run ahead of it
     get shown() { return last ? last.frame : -1; }, get ahead() { return queue.length; },
     get drive() { return drive; },
-    runFrame, runUntil, step, lastFrame: () => last,
+    runFrame, runBusy, runUntil, step, lastFrame: () => last,
     onSid: f => sidListeners.push(f),
   };
 }

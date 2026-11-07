@@ -1249,6 +1249,23 @@ def authored_page(gdir, game, f, nav, ban, src=None, present=None):
     return send_on(page, f, section_redirects(game, present).get(f))
 
 
+def empty_sections(page):
+    """The sections of an authored page with a heading and nothing under it, by id (or by heading,
+    for one with no id): a template's section left unfilled, such as a Play page's results built
+    from a file that was never written, which the site would publish as a heading over nothing."""
+    out = []
+    for m in re.finditer(r"<section\b([^>]*)>(.*?)</section>", page, re.S):
+        rest = re.sub(r"<!--.*?-->", "", m.group(2), flags=re.S)
+        rest = re.sub(r'<p class="fig">.*?</p>', "", rest, flags=re.S)
+        rest = re.sub(r"<h[1-6]\b[^>]*>.*?</h[1-6]>", "", rest, flags=re.S)
+        if rest.strip():
+            continue
+        i = re.search(r'\bid="([^"]*)"', m.group(1))
+        h = re.search(r"<h[1-6]\b[^>]*>(.*?)</h[1-6]>", m.group(2), re.S)
+        out.append(i.group(1) if i else re.sub(r"<[^>]+>", "", h.group(1)).strip() if h else "?")
+    return out
+
+
 def drop_platform(page, plat):
     """The page with the platform's name taken off the start of its eyebrow ("Commodore 64 ·
     1984 · Epyx" reads "1984 · Epyx"): the breadcrumb above it already names the platform."""
@@ -1514,6 +1531,11 @@ def build_game(gdir, out_root):
                   platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
                   platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in authored(gdir, game):
+        empty = empty_sections(read(os.path.join(gdir, f)))
+        if empty:
+            sys.exit(f"{os.path.relpath(gdir, ROOT)}/{f}: the section{'s' if len(empty) > 1 else ''} "
+                     f"{', '.join(repr(e) for e in empty)} {'hold' if len(empty) > 1 else 'holds'} a heading and "
+                     "nothing under it. Fill each, or take it out of the page")
         open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban, present=present))
     # source: one page, or one for each part of a game of several; none for a game with no listing,
     # and for a game whose listing is withheld, one page that says so
