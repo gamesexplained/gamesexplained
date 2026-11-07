@@ -1,4 +1,4 @@
-## next · 2026-11-07 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
+## 0.0.314 · 2026-11-07 · Zak McKracken and the Alien Mindbenders (C64) · air with Claude
 
 - **Play an adventure's solution to the end screen, and check the
   decoder on that trace.** The opening's scripted play had checked the
