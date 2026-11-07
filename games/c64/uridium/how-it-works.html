@@ -82,32 +82,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The playfield's background colour is white. Space is a character filled with solid colour, drawn in black, so the white background shows only in the hull's plating. The stars are characters too, and the next section shows how they stay still.</p>
 </section>
 
-<section id="stars">
-  <p class="fig">02 · Stars</p>
-  <h2 class="t">Stars that stay still while the screen scrolls</h2>
-  <p class="lede">The stars behind the Dreadnought are characters fixed to the screen. They never move, and the hull slides over them.</p>
-  <div class="plate">
-    <div class="ur-ctl"><button type="button" id="ur-splay" aria-pressed="false">Play</button>
-      <button type="button" id="ur-sstep">One pixel</button>
-      <label>Speed <input id="ur-sspeed" type="range" min="1" max="8" value="2"></label>
-      <button type="button" id="ur-sgrid" aria-pressed="false">Cells</button></div>
-    <div class="ur-stars"><canvas id="ur-sview" class="ur-cv ur-wide" width="320" height="136"></canvas>
-      <canvas id="ur-szoom" class="ur-cv" width="176" height="136"></canvas></div>
-    <p class="ur-out" id="ur-sout"></p>
-    <p class="cap">Zinc's hull scrolling past the ten stars of the frame recorded in the emulator, drawn as <code>$2BEB</code> copies the map and <code>$2ED7</code> puts back the stars. On the right, star character <code>$42</code> and the hole in it for the current fine scroll. The star drawing was checked against the game's code in a 6502 simulator on 2,000 random screens.</p>
-  </div>
-  <p>The map is copied to the screen whole every frame, and that copy wipes out the stars. Straight after it, <code>$2ED7</code> goes through the star list. A star whose screen cell holds a space gets its character back, <code>$42</code> or <code>$43</code>, in the star colour. A star whose cell holds a piece of hull stays hidden, and its colour cell gets the map's colour back. So the hull passes over the stars, and they reappear behind it.</p>
-  <p>Each star is a character that is solid in the dark colour of space except for one pixel, a hole through which the white background shows. The screen scrolls a pixel at a time by the fine scroll in <code>$D016</code>, and moves a whole character only when the fine scroll wraps. Every frame the game moves the hole the other way, by writing the byte for the current fine scroll from <code>$311E</code> into the star characters' rows (<code>$7A15</code>, <code>$7A1A</code>, <code>$7A1B</code>). The screen cell moves right by the fine scroll and the hole moves left by the same amount, so the star's pixel stays where it was.</p>
-  <table class="ur-tbl"><thead><tr><th>Where</th><th>Stars drawn</th><th>Set at</th></tr></thead><tbody>
-    <tr><td>The giant scrolling message on the title screens</td><td>16</td><td><code>$0ADA</code></td></tr>
-    <tr><td>A game</td><td>10</td><td><code>$0B8F</code></td></tr>
-    <tr><td>The demo</td><td>8</td><td><code>$21CB</code></td></tr>
-  </tbody></table>
-  <p>At the start of each level, <code>$2E17</code> places 16 stars in screen rows 7 to 22, each in its own row where it can, from the random table at <code>$0800</code>. No star goes in columns 20 to 24, which <code>$2E17</code> marks as taken before it starts. The table above shows how many of the 16 each screen draws, the number at <code>$8D</code>, measured in the emulator. The rows above and below the playfield get scattered stars of their own (<code>$2532</code>), which the same hole trick keeps still.</p>
-</section>
-
 <section id="dreadnought">
-  <p class="fig">03 · The Dreadnought</p>
+  <p class="fig">02 · The Dreadnought</p>
   <h2 class="t">Every Dreadnought is built from the same 148 pieces</h2>
   <p class="lede">Each Dreadnought is 512 characters long and 17 high, assembled at the start of the level from a list of pieces.</p>
   <div class="plate">
@@ -140,24 +116,32 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The giant message that scrolls across the title screens is level 0. Its piece list is written at <code>$8010</code> from the message text, four letter pieces per character (<code>$2415</code>), and the same map and scroll code shows it.</p>
 </section>
 
-<section>
-  <p class="fig">04 · The Manta</p>
-  <h2 class="t">The Manta's manoeuvres</h2>
-  <p class="lede">The Manta has 46 frames: two cycles of a roll, one facing each way, and the frames of a half-loop seen end-on. Every one of them, and every other sprite in the game, is on the <a href="graphics.html#sprites">Graphics</a> tab.</p>
+<section id="stars">
+  <p class="fig">03 · Stars</p>
+  <h2 class="t">Stars that stay still while the screen scrolls</h2>
+  <p class="lede">The stars behind the Dreadnought are characters fixed to the screen. They never move, and the hull slides over them.</p>
   <div class="plate">
-    <div class="ur-ctl"><label>Manoeuvre <select id="ur-seq"></select></label>
-      <button type="button" id="ur-play" aria-pressed="false">Play</button>
-      <button type="button" id="ur-step">Step</button></div>
-    <canvas id="ur-manta" class="ur-cv" width="480" height="200"></canvas>
-    <p class="ur-out" id="ur-mout"></p>
-    <p class="cap">The animation tables at <code>$31E2</code>, played as <code>$2713</code> plays them, one frame every other game frame. The shadow is the Manta's frame + <code>$30</code>, placed as <code>$27BA</code> places it: right by the height and down by half of it. The half-loops change the height by the table at <code>$32F5</code>.</p>
+    <div class="ur-ctl"><button type="button" id="ur-splay" aria-pressed="false">Play</button>
+      <button type="button" id="ur-sstep">One pixel</button>
+      <label>Speed <input id="ur-sspeed" type="range" min="1" max="8" value="2"></label>
+      <button type="button" id="ur-sgrid" aria-pressed="false">Cells</button></div>
+    <div class="ur-stars"><canvas id="ur-sview" class="ur-cv ur-wide" width="320" height="136"></canvas>
+      <canvas id="ur-szoom" class="ur-cv" width="176" height="136"></canvas></div>
+    <p class="ur-out" id="ur-sout"></p>
+    <p class="cap">Zinc's hull scrolling past the ten stars of the frame recorded in the emulator, drawn as <code>$2BEB</code> copies the map and <code>$2ED7</code> puts back the stars. On the right, star character <code>$42</code> and the hole in it for the current fine scroll. The star drawing was checked against the game's code in a 6502 simulator on 2,000 random screens.</p>
   </div>
-  <p>Fire held for seven frames and then up or down rolls the Manta between level and edge-on (<code>$2576</code>). Level, it collides with the three characters on its row and those above and below its middle; edge-on, only with the three on its row, so the roll takes it through gaps one character high. Slowing below speed 2 starts a half-loop (<code>$268C</code>): the Manta climbs, turns end-on and comes out facing the other way with a push of speed. While its height is <code>$14</code> or more, bullets and mines pass under it.</p>
-  <p>The shadow is sprite 7. Its frames are not stored: at every restart the game builds them from the Manta's frames at <code>$5000</code>, ORing each pair of pixels together so that the shape becomes a solid multicolour silhouette (<code>$25E5</code>), and stores them as frames <code>$70</code> to <code>$9D</code>.</p>
+  <p>The map is copied to the screen whole every frame, and that copy wipes out the stars. Straight after it, <code>$2ED7</code> goes through the star list. A star whose screen cell holds a space gets its character back, <code>$42</code> or <code>$43</code>, in the star colour. A star whose cell holds a piece of hull stays hidden, and its colour cell gets the map's colour back. So the hull passes over the stars, and they reappear behind it.</p>
+  <p>Each star is a character that is solid in the dark colour of space except for one pixel, a hole through which the white background shows. The screen scrolls a pixel at a time by the fine scroll in <code>$D016</code>, and moves a whole character only when the fine scroll wraps. Every frame the game moves the hole the other way, by writing the byte for the current fine scroll from <code>$311E</code> into the star characters' rows (<code>$7A15</code>, <code>$7A1A</code>, <code>$7A1B</code>). The screen cell moves right by the fine scroll and the hole moves left by the same amount, so the star's pixel stays where it was.</p>
+  <table class="ur-tbl"><thead><tr><th>Where</th><th>Stars drawn</th><th>Set at</th></tr></thead><tbody>
+    <tr><td>The giant scrolling message on the title screens</td><td>16</td><td><code>$0ADA</code></td></tr>
+    <tr><td>A game</td><td>10</td><td><code>$0B8F</code></td></tr>
+    <tr><td>The demo</td><td>8</td><td><code>$21CB</code></td></tr>
+  </tbody></table>
+  <p>At the start of each level, <code>$2E17</code> places 16 stars in screen rows 7 to 22, each in its own row where it can, from the random table at <code>$0800</code>. No star goes in columns 20 to 24, which <code>$2E17</code> marks as taken before it starts. The table above shows how many of the 16 each screen draws, the number at <code>$8D</code>, measured in the emulator. The rows above and below the playfield get scattered stars of their own (<code>$2532</code>), which the same hole trick keeps still.</p>
 </section>
 
 <section id="shots">
-  <p class="fig">05 · Shots and bullets</p>
+  <p class="fig">04 · Shots and bullets</p>
   <h2 class="t">The Manta's shots are drawn into the map</h2>
   <p class="lede">Up to six shots at a time, each one a character of its own, built every frame and written into the Dreadnought's map.</p>
   <div class="plate">
@@ -178,7 +162,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="waves">
-  <p class="fig">06 · Waves</p>
+  <p class="fig">05 · Waves</p>
   <h2 class="t">Fighters fly short programs</h2>
   <p class="lede">Each Dreadnought sends its fighters in a fixed order of waves. A wave is up to six fighters, each flying a path: a list of steps that push it forwards, back, up or down.</p>
   <div class="plate">
@@ -204,7 +188,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="mines">
-  <p class="fig">07 · Homing mines</p>
+  <p class="fig">06 · Homing mines</p>
   <h2 class="t">Homing mines swing back and forth through the Manta</h2>
   <p class="lede">The flashing generator ports on the hull launch mines that home on the Manta for a few seconds and then burst. Shots pass straight through them.</p>
   <div class="plate">
@@ -222,7 +206,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="landing">
-  <p class="fig">08 · Landing</p>
+  <p class="fig">07 · Landing</p>
   <h2 class="t">The landing test is one character and one attitude</h2>
   <p class="lede">After the last wave, the Manta lands only over one particular character, flying level and facing right.</p>
   <div class="ur-shots"><figure><img src="reference/land-now.png" alt="Land now! in the status line above the Dreadnought"><figcaption><i>Land now!</i> in the status line once the wave list is used up.</figcaption></figure></div>
@@ -230,7 +214,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">09 · The bonus game</p>
+  <p class="fig">08 · The bonus game</p>
   <h2 class="t">The fuel rod chamber</h2>
   <p class="lede">The bonus for destroying the ship is a timing game against a countdown.</p>
   <div class="plate">
@@ -249,7 +233,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="take-off">
-  <p class="fig">10 · The take-off</p>
+  <p class="fig">09 · The take-off</p>
   <h2 class="t">The Dreadnought vaporises faster than the Manta flies</h2>
   <p class="lede">After the bonus game the Manta takes off, turns at the right-hand end of the ship and flies back over it as the hull breaks up behind it, then overtakes it.</p>
   <div class="plate">
@@ -272,7 +256,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">11 · Quirks</p>
+  <p class="fig">10 · Quirks</p>
   <h2 class="t">Quirks</h2>
   <p class="lede">Smaller rules worth knowing. The <b>Discoveries</b> tab has the findings a player is least likely to know.</p>
   <p>After <i>Land now!</i>, fighters keep coming. Once a level's list of waves is used up, the game picks one of four filler waves at random (<code>$12</code> to <code>$15</code>), and their fighters score nothing and count no formation (<code>$1E4B</code>).</p>
@@ -594,7 +578,7 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
 const say = (id, t) => { const e = document.getElementById(id); if (e) e.innerHTML = '<p class="ur-msg">' + t + '</p>'; };
 const hex2 = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
 const NAMES = ['Message', 'Zinc', 'Lead', 'Copper', 'Silver', 'Iron', 'Gold', 'Platinum', 'Tungsten', 'Iridon', 'Kallisto', 'Tri-alloy', 'Quadmium', 'Ergonite', 'Galactium', 'Uridium'];
-if (!window.C64) { ['ur-frame', 'ur-map', 'ur-manta', 'ur-waves'].forEach(id => say(id, 'This needs the site’s scripts: open the page from the built site.')); return; }
+if (!window.C64) { ['ur-frame', 'ur-map', 'ur-waves'].forEach(id => say(id, 'This needs the site’s scripts: open the page from the built site.')); return; }
 try { C64.drawFrame(document.getElementById('ur-frame'), FRAME, 1); } catch (e) { say('ur-frame', 'The frame could not be drawn: ' + e.message); }
 C64.load('listing.json').then((L) => {
   const ram = L.ram, P = C64.PAL;
@@ -711,47 +695,6 @@ C64.load('listing.json').then((L) => {
   document.getElementById('ur-pnext').addEventListener('click', () => showUse(1));
   document.getElementById('ur-pprev').addEventListener('click', () => showUse(-1));
   lvSel.addEventListener('change', () => { if (selPiece) { selUse = -1; showUse(1); } });
-  // ---------------------------------------------------------------- Manta
-  const SEQS = [];
-  for (const [side, lo, hi, n] of [['right', 0x3292, 0x32A4, 18], ['left', 0x3266, 0x327C, 22]])
-    for (let i = 0; i < n; i++) {
-      const a = ram[lo + i] | ram[hi + i] << 8;
-      if (a < 0x3000) continue;
-      const len = ram[a], frames = Array.from(ram.slice(a + 1, a + 1 + len)).reverse();
-      SEQS.push({ side, from: i >> 3, to: i & 7, a, frames, climbs: ram[a + len + 1], push: ram[a + len + 2] });
-    }
-  const sSel = document.getElementById('ur-seq'), mc = document.getElementById('ur-manta');
-  SEQS.forEach((q, k) => sSel.add(new Option(`Facing ${q.side}, ${q.frames.length === 4 ? 'roll' : q.climbs ? 'half-loop' : 'full roll'} ($${q.a.toString(16).toUpperCase()})`, k)));
-  let st = 0, timer = 0, height = 0x10;
-  const thick = (d) => d.map(b => b | ((b & 0xAA) >> 1) | ((b & 0x55) << 1));
-  function drawManta() {
-    const q = SEQS[+sSel.value], f = q.frames[Math.min(st, q.frames.length - 1)];
-    const ctx = C64.canvas(mc, 480, 200), s = 3;
-    ctx.fillStyle = P[15]; ctx.fillRect(0, 0, 480, 200);   // over the hull's light grey (level 1)
-    const spr = (fr) => Array.from(ram.slice(0x4000 + fr * 64, 0x4000 + fr * 64 + 63));
-    // the shadow: frame + $30, built as thicken_shapes builds it; placed as manta_animate places it
-    // sprite 7 at the Manta's X + height and Y + height / 2, hires, dark grey, behind the Manta
-    C64.drawSprite(ctx, thick(spr(f)), 150 + height * s, 30 + (height >> 1) * s, s, P[11]);
-    C64.drawSpriteMC(ctx, spr(f), 150, 30, s, P[0], P[7], P[1]);
-    document.getElementById('ur-mout').textContent = `Frame ${hex2(f)}, step ${st + 1} of ${q.frames.length}, height ${hex2(height)}${q.climbs ? '' : ' (no climb)'}, push ${hex2(q.push)}`;
-  }
-  function step() {
-    const q = SEQS[+sSel.value];
-    if (q.climbs && st < q.frames.length) height = (height + ((ram[0x32F5 + q.frames.length - st] << 24) >> 24)) & 255;
-    st++;
-    if (st >= q.frames.length) { st = q.frames.length - 1; stop(); }
-    drawManta();
-  }
-  function stop() { clearInterval(timer); timer = 0; document.getElementById('ur-play').setAttribute('aria-pressed', 'false'); }
-  document.getElementById('ur-play').addEventListener('click', () => {
-    if (timer) { stop(); return; }
-    st = 0; height = 0x10; drawManta();
-    document.getElementById('ur-play').setAttribute('aria-pressed', 'true');
-    timer = setInterval(step, 40);
-  });
-  document.getElementById('ur-step').addEventListener('click', () => { stop(); step(); });
-  sSel.addEventListener('change', () => { stop(); st = 0; height = 0x10; drawManta(); });
-  drawManta();
   // ---------------------------------------------------------------- stars
   {
     const STARCELLS = [[7, 7, 66], [11, 8, 67], [13, 28, 67], [17, 13, 67], [20, 15, 67], [19, 26, 66], [13, 1, 67], [18, 29, 66], [9, 33, 67], [21, 37, 66], [14, 25, 66], [15, 30, 67], [10, 6, 67], [12, 16, 67], [22, 31, 67], [8, 10, 67]];                    // [screen row, column, character] of the recorded frame's stars
@@ -1115,6 +1058,6 @@ C64.load('listing.json').then((L) => {
     }
     render();
   });
-}).catch((e) => { ['ur-map', 'ur-manta', 'ur-waves'].forEach(id => say(id, 'The listing could not be loaded: ' + e.message)); });
+}).catch((e) => { ['ur-map', 'ur-waves'].forEach(id => say(id, 'The listing could not be loaded: ' + e.message)); });
 })();
 </script>
