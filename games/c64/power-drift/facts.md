@@ -172,13 +172,67 @@ registers):
   race frame; 50 coarse steps are a lap, and the fourth lap ends the race
   for the player (`move_on`). Rivals do the same with their own speeds
   (`move_rivals`): rival 0's top speed is `$1E`, rival 10's `$0C`
-  (`rival_top_speeds`); the player's is 32 in high gear.
+  (`rival_top_speeds`); the player's is 32 in high gear. A lap is
+  12,800 fine steps (50 × 256).
 - **Places and the podium.** The player's place is worked out each race
   frame from the rivals' laps and positions (`update_place`). There are
   three podium places (`$53AA`); each kart that finishes takes the next
   (`place_finisher`). When the third is taken before the player has
   finished, `$53AB` is set and the race ends in `game_over`; so a place in
   the first three is needed to go on.
+- **The rivals' drivers.** `setup_stage` (the loop at `$3687`) puts
+  driver (player + 1 + k) mod 12 in grid place k (`$53AC`,x), with that
+  driver's kart colour (`driver_kart_colours` to `$53C3`,x). A grid place
+  fixes everything that moves: top speed (`rival_top_speeds`), lane
+  (`rival_lanes`) and start (`rival_start_coarse`, `rival_start_fine`).
+  The driver brings only pictures: a face and its second picture, a head
+  from behind (`head_behind`, which drivers 0, 9 and 11 share as `$70`
+  and 7, 8 and 10 as `$44`), a head looking back, and the kart colour.
+  So the fastest rival is always the driver after the player's on the
+  select screen, and the slowest the one before.
+- **The rivals' movement.** A rival's record is its laps (`$53B8`,x),
+  position (`$5382`,x/`$538E`,x), speed (`$E7`,x) and lane (`$539A`,x).
+  `move_rivals` raises the speed by 1 on the race frames when `$E6` is
+  even until it equals the top speed, and adds it to the position; no
+  piece of track enters. Starts, in fine steps from the lap line:
+  752, 692, 632, 572 for rivals 0 to 3, the player at 512, then 452, 392,
+  332, 272, 212, 92, 32. The faster karts start in front and all speed
+  up alike, so no rival passes another. *Kit's simulator*
+  (`test_rivals.js`): lanes and order hold on every race frame of the
+  25 stages.
+- **Collisions with rivals.** `place_rivals` spins the player only for a
+  rival at distance 1 (a gap of 8 to 15 fine steps, the low byte of the
+  gap shifted right three times, with the coarse gap 0), slower than the
+  player, whose X works out from `$3C` to `$59`. For the X sums that is
+  `$2F` from `$EA` to `$F7` for lane `$08` and `$CA` to `$D7` for lane
+  `$28`; `$D8` to `$E9` touches neither. *Kit's simulator*: the game's
+  own sum from `$3A64`, run for every `$2F` from `$A8` to `$1B` (the
+  range `move_player` keeps) at 325 meetings over the 25 stages, agrees;
+  outside that range it also hits at `$43` and `$63`, which the kart
+  cannot reach. Lane `$08` is the left lane and `$28` the right: with
+  `$2F` at `$F0` the road is drawn to the right of the kart. Distance 1
+  is looked at once a race frame, so a kart closing by more than 8 a
+  frame can step over it.
+- **Races on the kit's simulator** (`test_rivals.js`, with the page's
+  stand-ins: the kart held at one `$2F`, up held, low gear below level
+  14 and high from 14). In the middle (`$E0`): the player finishes on race
+  frame 1616, 2'14 on the clock, on all 25 stages and for all 12 drivers,
+  untouched. Rivals 0, 1 and 2 finish on frames 1711, 1831 and 1970,
+  whatever the player does; the third ends the game. One spin at full
+  speed costs 66 race frames; with spins 200 frames apart, one still wins,
+  two or three give second, four or five third, six lose. Held in the
+  left lane (`$F0`) on A1: rival 2 is hit on frame 80, then rival 5 ten
+  times, 176 frames apart (each spin leaves the kart in the same place
+  behind it), and the game is lost. In the right lane (`$D0`): rival 3
+  on frame 65, rival 4 on 260, then rival 3 every 264 frames from 593;
+  closing 8 a frame on rival 3, the kart cannot step over it, but it
+  goes through rival 6 on frame 189 (closing 11) and rival 4 on 473
+  (closing 10) untouched.
+- **After the finish.** `move_on` gives rival 10's record the player's
+  kart: lane `-$2F - 6`, position 0 and the player's speed. Above its top
+  speed `$0C`, its speed never equals it, so `move_rivals` keeps raising
+  it every other race frame: 62 at the end of the 60 frames, 434 km/h
+  on the panel's scale.
 - **Speed.** Speed levels 0 to 32; the read-out adds 7 km/h a level
   (`speed_up`): 126 km/h is the top of low gear, 224 of high. *Live*: level
   18 showed 126, level 10 70, level 17 119.
@@ -236,7 +290,8 @@ registers):
   source in the tile sheet at each of 16 distances; `scenery_colours`
   ($3E3D).
 - `rival_pictures` ($3B43), `rival_scale` ($3B23), `rival_top_speeds`
-  ($1989), `rival_lanes` ($3717), `rival_start_coarse` ($3701).
+  ($1989), `rival_lanes` ($3717), `rival_start_coarse` ($3701),
+  `rival_start_fine` ($370C), `driver_kart_colours` ($3722).
 - `head_behind`, `head_looking_back`, `head_front` ($1779-$179C), one
   sprite pointer per driver.
 

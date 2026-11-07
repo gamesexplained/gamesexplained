@@ -38,7 +38,7 @@ Sources:
 | A place in the first three moves the player on to the next stage | traced | `place_finisher`: when three karts have finished before the player, `game_over` |
 | Each stage of a course changes the scenery: road markings, obstacles, night | traced | each stage's record gives its own scenery list, character blocks, colours and horizon (`course_a`-`course_e`) |
 | The track rises and falls like a roller coaster, and the kart can fall off it, losing time | traced | `piece_climb`, `piece_crest`, `piece_descent`, `piece_jump`; `drop_kart_back` |
-| Collisions with the other karts | traced | `place_rivals`: a slower rival at distance 1 in front makes the kart spin (`kart_spin`) |
+| Collisions with the other karts | traced | `place_rivals`: a slower rival at distance 1 in front, in its band of the road, makes the kart spin (`kart_spin`) |
 | Race panel: the eleven rivals' faces, time, score, gear, stage, lap, speed in km/h, high score, the player's place | live | `work/shots/play-04.png` |
 | The player's driver turns to look back at a kart just overtaken (64'er review) | traced | `head_looking_back`, from `show_place` when the place improves |
 | Podium with three karts stacked after a race (wiki screenshot "Auf dem 3. Platz gelandet") | traced | `place_finisher` puts each finisher in a sprite band with its face from the front and a 1st, 2nd or 3rd label |
@@ -62,12 +62,15 @@ Found in the code, not in the manual.
 | The select screen is silent: its interrupts never call the sound driver | traced | `select_irq_top`, `select_irq_mid`; `sound_play`'s two callers |
 | The chequered marker sprite shares eight bytes with the panel's text, hidden under the top border | live | `sprite_83`; `$D017` read in a race |
 | A rival is solid only at one distance, and only when slower than the player | traced | `place_rivals` |
+| The drivers have no skill of their own: a kart's top speed, lane and start belong to its grid place, and the drivers are dealt out round the row of faces from the one after the player's, so the fastest rival is always the face after yours | traced | the loop at `$3687` in `setup_stage`, `rival_top_speeds`; the kit's simulator (`test_rivals.js`): every driver finishes a perfect race on the same race frame |
+| The rivals never steer, slow down or pass one another; nothing about the track enters their movement, and every stage's race comes out the same | traced | `move_rivals`; the kit's simulator (`test_rivals.js`): 25 stages, the same race frames |
+| The two lanes leave the middle of the road clear, so a kart kept there passes the whole field untouched | traced | `place_rivals`, `rival_lanes`; the kit's simulator: every `$2F` tried at 325 meetings |
+| Held in a lane, the kart hits the same slower rival again and again, the same way each time, until the game is lost | traced | the kit's simulator (`test_rivals.js`): in the left lane on A1, rival 5 ten times, 176 race frames apart |
+| A kart closing on a slower rival by more than 8 a frame can step over the one distance where it is solid and drive through it | traced | `place_rivals`; the kit's simulator (`test_rivals.js`): in the right lane, through rival 6, closing 11 a frame |
+| After the finish, the rival that takes over the player's kart keeps speeding up, to 434 km/h | traced | `move_on`, `move_rivals`'s BEQ; the kit's simulator: speed level 62 at the end of every stage |
 
 ## Open questions
 
-- Can a fast enough kart pass through a slower rival without a spin? The
-  test in `place_rivals` looks only at distance 1, and a kart closing
-  faster than one distance a race frame could skip it. Not tried.
 - Does the panel's sprite 0 pointer, written into byte 56 of sprite `$8F`
   (`$E3F8`), show on the third driver's face on the podium? From the code
   it must; not seen.

@@ -18,10 +18,6 @@ proven model, `claude-opus-5-5`, for every step.
 
 ## Open questions
 
-- Can a fast enough kart pass through a slower rival without a spin?
-  `place_rivals` tests only distance 1, and a kart closing faster than
-  one distance a race frame could skip it. Work out the largest closing
-  speed from `move_player` and `move_rivals`, or try it live.
 - Does the panel's sprite 0 pointer, written into byte 56 of sprite `$8F`
   (`$E3F8`), show as a mark on the third driver's face when that face is
   on the podium? The code says it must; a screenshot of a podium with the
