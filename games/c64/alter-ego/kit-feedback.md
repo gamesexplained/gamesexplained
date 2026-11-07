@@ -66,7 +66,7 @@ Existing #113 import policy and #124 multiple-state RFC; no new ask or relaxed r
 
 ### Asks for a maintainer
 
-Filed as issues labelled `kit-ask`:
+Filed as issues labelled `kit-ask`, #785 and #786:
 
 1. **kit: Add a cycle profiler for pacing a Play tab by routine.** Each
    instruction's cycles given to the routine whose code it is, from the
