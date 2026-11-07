@@ -60,3 +60,13 @@ committed. Title and timeout port writes were captured in the emulator;
 the independent machine agreed within six T-states per edge interval.
 There is no Play tab: this contribution explains the original and does
 not provide a behavioural port of its complete game loop.
+
+The final readability pass defines the memory links, BASIC, engine passes,
+and sound cycles where they first matter. An ant-decision widget exposes
+the strict distance boundary. Browser checks exercised all authored tabs,
+sixty shape records, seventeen sound choices, the ant/follow/score/fuse
+controls, and mobile widths. A sound-selector width overflow was fixed.
+After the environment resumed, stale Chromium singleton links in its
+contained test profile were removed before relaunch; no personal browser
+profile was used. Review screenshots are kept under review/ and are not
+published by the site build.
