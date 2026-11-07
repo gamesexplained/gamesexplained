@@ -10,7 +10,8 @@
 //   ($E3), whether a wheel was on the road ($C9), its place across ($B0) and its aim ($2C), the
 //   swerve's count ($C30F), the player's place across ($2B) and the gap between the cars
 //   ($39/$3A, with $C36A's sign). The player holds the stick forward from the drop.
-// - the same race's computer's car over Little Ramp's banked bend (pieces 23 to 28) and its jump
+// - the same race's computer's car over Little Ramp's banked bend (pieces 23 to 28, and the 15
+//   passes after, two seconds of the game, back on the flat) and its jump
 //   (from piece 32), pass by pass, as the Play tab's outside views place it (watchCar); and the
 //   jump again with the run-up's limit (pieces 30 to 33, $0710) set to other speeds; with the
 //   stretch of track the views draw (SCRChase's pairs, their heights in the game's units).
@@ -41,7 +42,7 @@ const RACE_FRAMES = 4200;
 // the stretch of Little Ramp the views of the computer's car show: its banked bend and its jump,
 // and the run-up limits the jump is tried at besides the game's own (70, which insists)
 const BEND = [23, 28], JUMP = [32, 41], LIMITS = [45, 55, 60, 75, 90];
-const RUN_UP = [30, 33];
+const RUN_UP = [30, 33], AFTER_BEND = 15;
 
 // the computer's car each pass from piece lo to hi, as OPP_CORNERS leaves it: its corners as the
 // outside views place them (SCRChase.snap; their heights follow from the wheels', see the page),
@@ -136,7 +137,8 @@ function make(SCRPage, data, cost) {
   }
   const HS = SCRChase.HS, pt = q => [q[0], Math.round(q[1] / HS), q[2]];
   const pieces = v.pieces.slice(BEND[0], JUMP[1] + 1).map(ps => ps.map(p => [...pt(p.L), ...pt(p.R), p.cross, p.colour]));
-  const moves = { from: BEND[0], pieces, fields: CAR_FIELDS, bend: pack16(first.filter(p => p[20] <= BEND[1])), jump: runs };
+  const off = first.findIndex(p => p[20] > BEND[1]), bend = first.slice(0, off < 0 ? first.length : off + AFTER_BEND);
+  const moves = { from: BEND[0], pieces, fields: CAR_FIELDS, bend: pack16(bend), jump: runs };
   return { data: { tracks, race, moves }, states };
 }
 

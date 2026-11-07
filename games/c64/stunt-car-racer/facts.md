@@ -171,7 +171,12 @@ from reading the code in the snapshot named in `orientation.md`.
   kicks its front wheel (wheel 2) up at a speed of 160 (`$07DE`, OPP_WHEELS
   `$21DE`) one pass in 16 while that wheel's speed and its change are both
   0 to 3: Big Ed, Max Boost and High Flyer. Bytes: `$22 $20 $62 $20 $3E
-  $04 $30 $14 $4A $10 $08`, Hot Rod first.
+  $04 $30 $14 $4A $10 $08`, Hot Rod first. The kick comes in the race at
+  speed, not only at the start: the first race of a season on Little Ramp,
+  run on the Play tab's machine with the stick held forward, has Big Ed's
+  front wheel still enough for the roll on 41 of 377 passes and 5 hops,
+  at speeds 43 to 72; Max Boost and High Flyer 56 of 378 and 2 hops
+  (`port/scripts/bounce-race.js`, observed).
 - A swerve of 16 passes, on the wave at `$1601` with 25 less push (`$D3`
   for `$EC`), can start on the first pass after a bend, with the
   computer's car ahead of the player, a wheel on the road and a piece that
