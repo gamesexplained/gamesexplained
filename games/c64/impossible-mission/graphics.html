@@ -1,0 +1,325 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossible Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/impossible-mission-page.css">
+<style>
+.im-stage{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.im-pick{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.im-pick button{font-family:var(--fm);font-size:12.5px;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.im-pick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.im-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;margin-top:6px}
+.im-sheet figure{margin:0;text-align:center;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);line-height:1.35}
+.im-sheet canvas{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:3px}
+.im-glyphs{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;margin:0 auto;border-radius:4px}
+table.d td.n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
+  <h1>Impossible Mission</h1>
+  <p class="sub">Every sprite the game shows, drawn from its own bytes and moved at its own speed: the agent's 28 frames, the robots, the zap, the lift and the screens the pocket computer and the terminals put up.</p>
+</header>
+<main class="wrap">
+
+<section id="cast">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">The agent runs, somersaults and dies in 28 frames of three sprites</h2>
+  <p class="lede">Pick one. Each plays at the game's own speed on a PAL machine, from the game's own tables, in the colours of the room chosen below.</p>
+  <div class="plate">
+    <div class="im-pick" id="who"></div>
+    <div class="ctl" id="opts">
+      <label id="roomwrap">Room <select id="room"></select></label>
+      <label id="facewrap"><input type="checkbox" id="face"> facing right</label>
+      <label id="boxwrap"><input type="checkbox" id="boxes"> outline the sprites</label>
+    </div>
+    <canvas id="stage" class="im-stage" width="320" height="96"></canvas>
+    <p class="cap" id="cap"></p>
+  </div>
+  <h3>Shapes that never change</h3>
+  <p>These move across the screen, or sit still, but the game never changes their shape. They are drawn here in the colours the game gives them.</p>
+  <div class="im-sheet" id="sheet"></div>
+  <p>Every shape in the game's two sprite blocks is used: the agent's 64 shapes from <code>$6000</code> to <code>$6FFF</code>, the robots' seven, and the sixteen small shapes at <code>$4400</code>. The map marker, the piece frames and the dying agent are drawn into a work area at <code>$4D80</code> while the game runs, so their shapes are not stored anywhere.</p>
+</section>
+
+<section id="frames">
+  <p class="fig">02 · One frame</p>
+  <h2 class="t">Every frame is three sprites, stored once and mirrored when he turns</h2>
+  <p class="lede">Step through all 28 frames. The three sprites are drawn apart in three colours, as the video chip sees them.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button id="fprev">◀</button>
+      <input type="range" id="fno" min="0" max="27" value="14" style="flex:1;min-width:160px;accent-color:var(--accent)">
+      <button id="fnext">▶</button>
+      <label><input type="checkbox" id="fface"> facing right</label>
+      <label><input type="checkbox" id="fapart" checked> each sprite in its own colour</label>
+    </div>
+    <canvas id="fcv" class="im-stage" width="160" height="96" style="max-width:640px;margin:0 auto"></canvas>
+    <p class="cap" id="fcap"></p>
+  </div>
+  <p>The agent is sprites 1, 2 and 3, one above the other at the same X: sprite 2 at the top, sprite 1 twelve lines lower and sprite 3 twenty-one lines lower (<code>$ABE2</code>). Sprite 1 is white and the other two light grey (<code>$9715</code>), and sprite 1 is drawn in front, so it carries the face, the hands and the light edges. Each frame names its first shape in a table (<code>$8D43</code>), and the other two follow it (<code>$873B</code>).</p>
+  <p>The fourteen walking frames are two strides of seven that share their upper sprites: the second stride skips a shape to take its own sprite 1. In six frames of the somersault, sprite 2 is switched off and the agent is two sprites, curled into a ball. Each frame is stored facing left. When the agent faces the other way, <code>$8729</code> mirrors the frame's shapes in place, through a table of reversed bytes the start-up builds at <code>$C500</code>, and notes the new facing in the last byte of the frame's first shape, so a frame is turned only when the facing has changed since it was last drawn.</p>
+  <p>In the somersault each sprite moves on its own: five tables give each of the twelve frames a step up or down for every sprite and a step forward for sprites 1 and 2 and for sprite 3 (<code>$8D07</code>-<code>$8D42</code>, applied by <code>$8859</code>). What frame <code>$0F</code> is for is an open question: the only code that tests for it is <code>$948C</code>, which checks whether the agent stands on a lifting platform.</p>
+</section>
+
+<section id="screen">
+  <p class="fig">03 · The screen</p>
+  <h2 class="t">Rooms are multicolour characters in one set; the shaft and the pocket computer split the screen between two others</h2>
+  <p class="lede">The stronghold is drawn with three character sets of 256 glyphs, all in the video chip's second bank of memory.</p>
+  <div class="plate">
+    <div class="ctl" id="csets"></div>
+    <canvas id="ccv" class="im-glyphs" width="256" height="64"></canvas>
+    <p class="cap" id="ccap"></p>
+  </div>
+  <table class="d">
+    <tr><th>Set</th><th>Shown in</th><th>Selected by</th></tr>
+    <tr><td class="n">$4800</td><td>the shaft view above the panel, the security terminal, the end screen</td><td>the interrupt at line <code>$FF</code></td></tr>
+    <tr><td class="n">$5000</td><td>the rooms</td><td><code>$A39C</code>, which draws the room; in a room the interrupt leaves it alone</td></tr>
+    <tr><td class="n">$5800</td><td>the pocket computer panel</td><td>the interrupt at line <code>$AA</code></td></tr>
+  </table>
+  <p>In the shaft view the raster interrupt runs twice a frame. At line <code>$AA</code>, where the panel begins, it sets the panel's background and multicolours and character set <code>$5800</code>; at line <code>$FF</code> it puts back the shaft's colours and set <code>$4800</code> for the next frame (<code>$82F4</code>). A room fills the whole screen, so there the interrupt runs once a frame and never changes the set. The first eighteen glyphs of the room set are left blank in the program and filled while it runs: with the code rooms' big screen, or with the picture of what a search has found.</p>
+  <p>The sprites are shared out the same way in every room: sprites 1 to 3 for the agent, 4 to 7 for the robots, and sprite 0 for the ball, or the zap while a robot fires. In the shaft view sprites 0 and 7 are the lift car, and in the pocket computer sprite 4 is the hand and sprite 6 the map marker.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+// ---- port: the agent's sprites (agent_frame $8729, agent_move $8859) and the electrocution ($95E4) ----
+// M is the game's memory. REV is the game's bit-reversal table, built at start-up at $38F3.
+const REV = Array.from({ length: 256 }, (_, v) => { let r = 0; for (let b = 0; b < 8; b++) if (v & (1 << b)) r |= 0x80 >> b; return r; });
+function agentPointers(M, f) {                       // $873B-$875E: the pointers of sprites 1, 2 and 3
+  let y = M[0x8D43 + f], s2 = -1;
+  if (f < 0x14 || f >= 0x1A) { s2 = y; y = (y + 1) & 0xFF; }   // sprite 2 is off in frames $14-$19
+  const s3 = y; y = (y + 1) & 0xFF;
+  if (f >= 7 && f < 0x0E) y = (y + 1) & 0xFF;        // the second stride's own sprite 1
+  return { s1: y, s2, s3 };
+}
+function agentMirror(M, f, facing) {                 // $8764-$87D4: turns frame f to face `facing` in place
+  const base = M[0x8D5F + 2 * f] | M[0x8D60 + 2 * f] << 8;
+  if (M[base + 0x3F] === facing) return false;
+  M[base + 0x3F] = REV[M[base + 0x3F]];              // byte 63 of the first shape records the facing
+  let y = M[0x8D97 + f];
+  for (;;) {
+    const a = base + y, b0 = M[a], b2 = M[a + 2];
+    M[a + 2] = REV[b0]; M[a] = REV[b2]; M[a + 1] = REV[M[a + 1]];
+    y = (y - 3) & 0xFF;
+    if ((y & 0x3F) !== 0x3D) continue;               // past a shape's first row: skip its byte 63
+    y = (y - 1) & 0xFF;
+    if (y === 0xFC) return true;
+  }
+}
+const s8 = v => (v & 0x80 ? v - 256 : v);
+function agentMove(M, P, f, facing, speed) {         // $8859: P = { x: [3], y: [3], bits } as $2C-$32
+  if (f < 0x10) {                                    // walking: every sprite by `speed`, the ninth bits from sprite 1's carry
+    let c = 0;
+    for (const i of [2, 1, 0]) { const s = P.x[i] + speed; c = s > 255 ? 1 : 0; P.x[i] = s & 0xFF; }
+    if (speed & 0x80) { if (!c) P.bits &= 0xF1; } else if (c) P.bits |= 0x0E;
+    return;
+  }
+  const k = f - 0x10;
+  P.y[0] = (P.y[0] + M[0x8D07 + k]) & 0xFF; P.y[1] = (P.y[1] + M[0x8D13 + k]) & 0xFF; P.y[2] = (P.y[2] + M[0x8D1F + k]) & 0xFF;
+  const step = (i, d, bit) => {                      // a signed step on a 9-bit X: the patched bcc/bcs
+    if (facing & 0x80) d = (-d) & 0xFF;
+    const s = P.x[i] + d, c = s > 255;
+    P.x[i] = s & 0xFF;
+    if ((d & 0x80) ? !c : c) P.bits ^= bit;
+  };
+  step(2, M[0x8D37 + k], 0x08);
+  const d = M[0x8D2B + k]; step(0, d, 0x02); step(1, d, 0x04);
+}
+const BITMASKS = [0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F];
+function dissolvePass(S, rand) {                     // $9629-$964B: S = the three work shapes ($4D80, $4DC0, $4E00)
+  for (let x = 0x30; x >= 0; x--) for (let k = 0; k < 3; k++) { const m = BITMASKS[rand() & 7]; S[k][rand() & 0x3F] &= m; }
+}
+// end of port
+
+const PALC = C64.PAL;
+// ---- drawing ----
+const ST = { y0: 0x50, img: null };
+function spr(c, M, ptr, x, y, colour, o = {}) {           // a sprite at VIC coordinates; the stage starts at X 24, Y ST.y0
+  const data = o.data || M.subarray(0x4000 + ptr * 64, 0x4000 + ptr * 64 + 64);
+  const px = x - (ST.img ? -8 : 24), py = y - (ST.img ? 15 : ST.y0), ex = o.ex ? 2 : 1, ey = o.ey ? 2 : 1;
+  if (o.mc) C64.drawSpriteMC(c, data, px, py, 1, PALC[colour & 15], PALC[o.mc1 & 15], PALC[o.mc2 & 15], ex, ey);
+  else C64.drawSprite(c, data, px, py, 1, PALC[colour & 15], ex, ey);
+  if (o.box) { c.strokeStyle = '#ffd54a'; c.lineWidth = 1; c.strokeRect(px + .5, py + .5, 24 * ex - 1, 21 * ey - 1); }
+}
+function roomColours(M, n) {                             // the record's colours, as draw_room reads them ($A39C)
+  const ptr = M[0x0E70 + 2 * n] | M[0x0E71 + 2 * n] << 8, r = i => M[ptr + i];
+  let y = 4;
+  while (r(y) !== 0xFF) y += 3; y++;                     // floors
+  while (r(y) !== 0xFF) y += 3; y++;                     // gaps
+  y += 6;                                                 // the two entries
+  while (r(y) !== 0xFF) y += 3; y++;                     // robots
+  y += r(y) === 0xFF ? 1 : 3;                            // the ball
+  return { bg: r(0) & 15, d022: r(1) & 15, d023: r(2) & 15, mc1: r(y) & 15, mc2: r(y + 1) & 15, robot: r(y + 2) & 15, robot2: r(y + 3) & 15 };
+}
+const loadImg = src => new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
+(async () => {
+  const G = await C64.load('listing.json'), M0 = G.ram;
+  for (let v = 0; v < 256; v++) M0[0xC500 + v] = REV[v];   // as the start-up does ($38F3)
+  const M = M0.slice();                                   // the agent's shapes, mirrored in place as the game does
+  const IMG = { terminal: await loadImg('reference/security-terminal.png'), lift: await loadImg('reference/title.png') };
+  const roomSel = document.getElementById('room');
+  for (let n = 0; n < 32; n++) { const o = document.createElement('option'); o.value = n; o.textContent = 'room ' + C64.hex(n, 2); roomSel.appendChild(o); }
+  roomSel.value = 0x1C;
+  const RC = () => roomColours(M0, +roomSel.value);
+  const stage = document.getElementById('stage'), sc = stage.getContext('2d');
+  const cap = document.getElementById('cap');
+  const facing = () => document.getElementById('face').checked ? 0x01 : 0x80;
+  const boxes = () => document.getElementById('boxes').checked;
+  const TICK = 1000 / 50;                                 // one raster interrupt, one tick, on a PAL machine
+  let who = 'run', st = null, tick = 0, last = performance.now(), acc = 0;
+  let seed = 1; const rand = () => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed & 0xFF; };
+  function agent(P, f, fc, cols = [1, 11, 11], data) {    // the three sprites, 3 drawn first so that 1 is in front
+    agentMirror(M, f, fc);
+    const p = agentPointers(M, f), X = i => P.x[i] + (P.bits & (2 << i) ? 256 : 0);
+    spr(sc, M, p.s3, X(2), P.y[2], cols[2], { data: data && data[2] });
+    if (p.s2 >= 0) spr(sc, M, p.s2, X(1), P.y[1], cols[1], { data: data && data[1] });
+    spr(sc, M, p.s1, X(0), P.y[0], cols[0], { data: data && data[0] });
+  }
+  const standAt = x => ({ x: [x & 255, x & 255, x & 255], y: [0x6A, 0x5E, 0x73], bits: x > 255 ? 0x0E : 0 });
+  const xOf = P => P.x[0] + (P.bits & 2 ? 256 : 0);
+  const T1 = [1, 15], T2 = [11, 12];                      // death_flash's colours ($978D, $978F)
+  function deathTimeline() {                              // the electrocution ($95E4) as (cycles, event); interrupts are off
+    const t = [], flash = x => { t.push([16813, { cols: [T2[x], T1[x], T1[x]] }]); t.push([16814, { cols: [T1[x], T2[x], T2[x]] }]); };
+    for (const x of [1, 0]) for (let k = 0; k < 17; k++) flash(x);
+    for (let k = 0; k < 33; k++) { t.push([18719, { pass: true }]); flash(0); }
+    t.push([985248, { clear: true }]);
+    return t;
+  }
+  const SUBJECTS = {
+    run: { label: 'The agent runs', w: 200, h: 64, y0: 0x58, agent: true, init() { st = { P: standAt(facing() & 0x80 ? 200 : 20), f: 0x0D }; },
+      step() { if (tick % 3) return; const sp = facing() & 0x80 ? 0xFB : 0x05;
+        agentMove(M, st.P, st.f, facing(), sp); st.f = st.f ? st.f - 1 : 0x0D;           // agent_move, then agent_animate
+        const x = xOf(st.P); if (sp === 5 && x > 214) st.P = standAt(10); if (sp === 0xFB && (x < 6 || x > 300)) st.P = standAt(210); },
+      draw() { agent(st.P, st.f, facing()); },
+      cap: () => `Walking frame <b>${C64.hex(st.f, 2)}</b>. The frame counts down from <code>$0D</code> to 0 and round again (<code>$8817</code>), and the agent moves five pixels, once every three ticks (<code>$8859</code>): about 17 frames a second on a PAL machine.` },
+    jump: { label: 'The somersault', w: 200, h: 64, y0: 0x50, agent: true, init() { st = { P: standAt(facing() & 0x80 ? 170 : 30), f: 0x0E, wait: 15 }; },
+      step() { if (tick % 3) return;
+        if (st.f === 0x0E) { if (--st.wait > 0) return; st.f = 0x1B; return; }           // fire: agent_animate starts the somersault
+        agentMove(M, st.P, st.f, facing(), 0);
+        if (--st.f < 0x10) { st.f = 0x0E; st.wait = 12; const x = xOf(st.P); if (x > 176 || x < 50) st.P = standAt(facing() & 0x80 ? 170 : 30); } },
+      draw() { agent(st.P, st.f, facing()); },
+      cap: () => `Frame <b>${C64.hex(st.f, 2)}</b>. Fire starts the somersault at frame <code>$1B</code>; it counts down to <code>$10</code> and lands on the standing frame <code>$0E</code>. Every three ticks each sprite takes its own step from the tables at <code>$8D07</code>, so the body folds and opens as it travels, and in frames <code>$14</code> to <code>$19</code> sprite 2 is off.` },
+    zapped: { label: 'Electrocuted', w: 200, h: 64, y0: 0x58, agent: true, init() { agentMirror(M, 0x0E, facing()); const p = agentPointers(M, 0x0E);
+        st = { P: standAt(110), S: [p.s1, p.s2, p.s3].map(q => M.slice(0x4000 + q * 64, 0x4000 + q * 64 + 64)), T: deathTimeline(), k: 0, wait: 0, cols: [1, 11, 11], passes: 0, hidden: false }; },
+      step() {
+        st.wait -= TICK * 985.248;                        // the PAL processor's cycles in one tick
+        while (st.wait <= 0) {
+          if (st.k >= st.T.length) { this.init(); return; }
+          const [dt, e] = st.T[st.k++];
+          if (e.cols) st.cols = e.cols;
+          if (e.pass) { dissolvePass(st.S, rand); st.passes++; }
+          if (e.clear) st.hidden = true;
+          st.wait += dt;
+        } },
+      draw() { if (!st.hidden) agent(st.P, 0x0E, facing(), st.cols, st.S); },
+      cap: () => st.passes === 0 ? `Touching a robot or its zap: the agent's three shapes are copied to a work area (<code>$972A</code>), and he flashes 34 times in two pairs of colours (<code>$9765</code>).`
+        : `Pass ${st.passes} of 33: each clears one random bit in each sprite at 49 random places (<code>$9629</code>), with a flash after it. The game runs this with interrupts off, so the speed is its own loops: 33,627 cycles a flash and 18,719 a pass, 2,870,736 cycles in all: 2.9 seconds on a PAL machine.` },
+    robot: { label: 'A robot turns', w: 200, h: 48, y0: 0x58, init() { st = { p: 0xC0, d: 1, hold: 12 }; },
+      step() { if (tick % 4) return; if (st.hold) { st.hold--; return; } st.p += st.d; if (st.p === 0xC6 || st.p === 0xC0) { st.d = -st.d; st.hold = 10; } },
+      draw() { const r = RC(); spr(sc, M0, st.p, 112, 0x5E, tick & 8 ? r.robot : r.robot2, { mc: true, mc1: r.mc1, mc2: r.mc2, box: boxes() }); },
+      cap: () => `Pointer <b>${C64.hex(st.p, 2)}</b>. A robot turns in seven steps between <code>$C0</code>, facing right, and <code>$C6</code>, facing left, one step every four ticks (<code>$90B6</code>). Its colour changes between the room's two robot colours every eight ticks (<code>$9211</code>), so every robot flickers.` },
+    zap: { label: 'The zap', w: 200, h: 48, y0: 0x58, init() { st = { p: 0x14 }; },
+      step() { if (tick % 4) return; st.p = 0x14 + (rand() & 3); },
+      draw() { const r = RC(); spr(sc, M0, 0xC0, 70, 0x5E, tick & 8 ? r.robot : r.robot2, { mc: true, mc1: r.mc1, mc2: r.mc2, box: boxes() });
+        spr(sc, M0, st.p, 70 + 18, 0x5E, tick & 4 ? 1 : 6, { ex: true, box: boxes() }); },
+      cap: () => `Shape <b>${C64.hex(st.p, 2)}</b>. The zap is sprite 0, twice as wide, eighteen pixels in front of a robot facing right (forty-four behind one facing left). On the firing robot's turn, every fourth tick, it takes one of the four shapes <code>$14</code> to <code>$17</code> at random and changes between white and blue (<code>$8F3F</code>). A robot fires only when it faces fully left or right.` },
+    code: { label: 'The code room', h: 160, y0: 0x4C, room: 0x11, init() { st = { mc1: 0, mc2: 0 }; },
+      step() { if (tick % 16 === 0) { st.mc1 = rand() & 15; st.mc2 = rand() & 15; } },
+      draw() { const X = M0.subarray(0xA67F, 0xA687), P = M0.subarray(0xA67B, 0xA67F), C = M0.subarray(0xA687, 0xA68B);
+        for (let i = 3; i >= 0; i--) spr(sc, M0, P[i], X[2 * i], X[2 * i + 1], C[i], { mc: i === 3, mc1: st.mc1, mc2: st.mc2, box: boxes() }); },
+      cap: () => `Room <code>$11</code>'s sprites 4 to 7, placed and coloured from the tables at <code>$A67B</code> to <code>$A68A</code>: the hand that points at the big screen's squares, and the shapes <code>$33</code>, <code>$34</code> and <code>$35</code> below it. Sprite 7 is multicolour, and every sixteen ticks the room picks its two shared colours at random (<code>$A73D</code>).` },
+    lift: { label: 'The lift', h: 272, w: 384, img: 'lift', init() { st = { s: 0 }; }, step() {},
+      draw() { const a = M0[0xB035 + st.s], b = M0[0xB03D + st.s];
+        spr(sc, M0, 0x12, 0xA0, 0x5E, a, { mc: true, ey: true, mc1: b, mc2: 0, box: boxes() }); spr(sc, M0, 0x11, 0xAC, 0x4D, 1, { box: boxes() }); },
+      cap: () => `The lift car is two sprites, drawn here by the page over a screenshot of the shaft view: sprite 7, shape <code>$11</code>, white, and sprite 0, shape <code>$12</code>, multicolour and twice as tall, the car's left side, in the first shaft's two colours, red and light red. Each of the eight shafts has its own pair (<code>$B035</code>, <code>$B03D</code>), set by <code>$AFEF</code>. The car stays where it is: the shaft scrolls past it.` },
+    terminal: { label: 'A security terminal', h: 272, w: 384, img: 'terminal', init() { st = {}; }, step() {},
+      draw() { const T = M0.subarray(0x9EF5, 0x9F06), Pt = M0.subarray(0x9F06, 0x9F0E), C = M0.subarray(0x9EE7, 0x9EF5), r = roomColours(M0, 0x1C);
+        for (let i = 7; i >= 0; i--) spr(sc, M0, Pt[i], T[2 * i] + (T[16] & (1 << i) ? 256 : 0), T[2 * i + 1], i < 4 ? r.d022 : C[6 + i], { box: boxes() }); },
+      cap: () => `The terminal's screen is characters, but its rounded corners are eight sprites, shapes <code>$18</code> to <code>$1D</code>, placed from the table at <code>$9EF5</code> and drawn here by the page over a screenshot of room <code>$1C</code>'s terminal. Sprites 0 to 3 take the room's first multicolour and sprites 4 to 7 are light grey (<code>$9D87</code>).` },
+  };
+  const whoDiv = document.getElementById('who');
+  for (const [k, s] of Object.entries(SUBJECTS)) { const b = document.createElement('button'); b.textContent = s.label; b.dataset.k = k;
+    b.onclick = () => { who = k; SUBJECTS[k].init(); sync(); }; whoDiv.appendChild(b); }
+  function sync() { const S = SUBJECTS[who];
+    for (const b of whoDiv.children) b.setAttribute('aria-pressed', b.dataset.k === who ? 'true' : 'false');
+    document.getElementById('facewrap').style.display = S.agent ? '' : 'none';
+    document.getElementById('roomwrap').style.display = S.img || S.room !== undefined ? 'none' : '';
+    document.getElementById('boxwrap').style.display = S.agent ? 'none' : '';
+    stage.width = S.w || 320; stage.height = S.h; sc.imageSmoothingEnabled = false; }
+  function frame(now) {
+    acc += now - last; last = now;
+    if (acc > 500) acc = 500;
+    while (acc >= TICK) { acc -= TICK; tick++; SUBJECTS[who].step(); }
+    const S = SUBJECTS[who], r = S.room !== undefined ? roomColours(M0, S.room) : RC();
+    ST.y0 = S.y0 || 0; ST.img = S.img ? IMG[S.img] : null;
+    if (ST.img) sc.drawImage(ST.img, 0, 0); else { sc.fillStyle = PALC[r.bg]; sc.fillRect(0, 0, stage.width, stage.height); }
+    S.draw(); cap.innerHTML = S.cap();
+    requestAnimationFrame(frame);
+  }
+  document.getElementById('face').onchange = () => SUBJECTS[who].init();
+  SUBJECTS.run.init(); sync(); requestAnimationFrame(frame);
+  window.imGraphics = { M, M0, SUBJECTS, pick: k => { who = k; SUBJECTS[k].init(); sync(); } };     // for the page's browser check
+
+  // ---- the shapes that never change ----
+  const sheet = document.getElementById('sheet');
+  function still(label, w, h, paint, bg = 0) { const f = document.createElement('figure'), c = document.createElement('canvas');
+    c.width = w; c.height = h; const x = c.getContext('2d'); x.fillStyle = PALC[bg]; x.fillRect(0, 0, w, h); paint(x);
+    f.appendChild(c); const t = document.createElement('figcaption'); t.innerHTML = label; f.appendChild(t); sheet.appendChild(f); }
+  const at = (x, ptr, X, Y, col, o = {}) => { const d = o.data || M0.subarray(0x4000 + ptr * 64, 0x4000 + ptr * 64 + 64);
+    if (o.mc) C64.drawSpriteMC(x, d, X, Y, 1, PALC[col], PALC[o.mc1], PALC[o.mc2], o.ex ? 2 : 1, 1); else C64.drawSprite(x, d, X, Y, 1, PALC[col], o.ex ? 2 : 1, 1); };
+  const r0 = roomColours(M0, 0x1C);
+  still('the ball, <code>$1F</code>, black', 32, 29, x => at(x, 0x1F, 4, 4, 0, { mc: true, mc1: r0.mc1, mc2: r0.mc2 }), r0.bg);
+  still('the hand, <code>$10</code>', 32, 29, x => at(x, 0x10, 4, 4, 3), 0);
+  still('a slot frame, <code>$13</code>, twice as wide', 56, 29, x => at(x, 0x13, 4, 4, 8, { ex: true }), 0);
+  still('the cross, <code>$1E</code>, sprite 0 in the code rooms', 32, 29, x => at(x, 0x1E, 4, 4, 1), 0);
+  for (const p of [0x33, 0x34]) still('code room shape <code>' + C64.hex(p, 2) + '</code>, black', 32, 29, x => at(x, p, 4, 4, 0), 12);
+  still('code room shape <code>$35</code>, multicolour', 32, 29, x => at(x, 0x35, 4, 4, 1, { mc: true, mc1: 7, mc2: 2 }), 12);
+  for (let p = 0x18; p <= 0x1D; p++) still('terminal corner <code>' + C64.hex(p, 2) + '</code>', 32, 29, x => at(x, p, 4, 4, p < 0x1C ? r0.d022 : 15), 9);
+  still('frame <code>$0F</code>', 32, 50, x => { const p = agentPointers(M0, 0x0F); at(x, p.s3, 4, 25, 11); at(x, p.s2, 4, 4, 11); at(x, p.s1, 4, 16, 1); }, 0);
+
+  // ---- one frame ----
+  const fcv = document.getElementById('fcv'), fc = fcv.getContext('2d'); fc.imageSmoothingEnabled = false;
+  const fno = document.getElementById('fno'), FM = M0.slice();
+  function drawFrameNo() {
+    const f = +fno.value, face = document.getElementById('fface').checked ? 0x01 : 0x80, apart = document.getElementById('fapart').checked;
+    agentMirror(FM, f, face);
+    const p = agentPointers(FM, f), cols = apart ? [7, 3, 10] : [1, 11, 11];
+    fc.fillStyle = PALC[0]; fc.fillRect(0, 0, 160, 96);
+    const P = { x: [100, 100, 100], y: [0x6A, 0x5E, 0x73], bits: 0 };     // where the somersault's steps put each sprite, from a stand
+    if (f >= 0x10) for (let k = 0x1B; k > f; k--) agentMove(FM, P, k, face, 0);
+    const base = f >= 0x10 ? (face & 0x80 ? 112 : 24) : 68;
+    const put = (q, i, c) => C64.drawSprite(fc, FM.subarray(0x4000 + q * 64, 0x4000 + q * 64 + 64), P.x[i] - 100 + base, P.y[i] - 0x5E + 18, 1, PALC[c]);
+    put(p.s3, 2, cols[2]); if (p.s2 >= 0) put(p.s2, 1, cols[1]); put(p.s1, 0, cols[0]);
+    const kind = f < 7 ? 'walking, first stride' : f < 0x0E ? 'walking, second stride' : f === 0x0E ? 'standing' : f === 0x0F ? 'frame $0F' : 'the somersault';
+    document.getElementById('fcap').innerHTML = `<b>Frame ${C64.hex(f, 2)}</b>, ${kind}: sprite 1 <code>${C64.hex(p.s1, 2)}</code>, sprite 2 ` +
+      (p.s2 >= 0 ? `<code>${C64.hex(p.s2, 2)}</code>` : 'off') + `, sprite 3 <code>${C64.hex(p.s3, 2)}</code>` + (apart ? ', in yellow, cyan and light red here.' : '.') +
+      ` The pointers and the mirroring come from a port of <code>$8729</code> that gives the same pointers and the same shape bytes as the game's routine for all 28 frames both ways.`;
+  }
+  fno.oninput = drawFrameNo; document.getElementById('fface').onchange = drawFrameNo; document.getElementById('fapart').onchange = drawFrameNo;
+  document.getElementById('fprev').onclick = () => { fno.value = (+fno.value + 27) % 28; drawFrameNo(); };
+  document.getElementById('fnext').onclick = () => { fno.value = (+fno.value + 1) % 28; drawFrameNo(); };
+  drawFrameNo();
+
+  // ---- the character sets ----
+  const ccv = document.getElementById('ccv'), cc = ccv.getContext('2d'); cc.imageSmoothingEnabled = false;
+  const SETS = [[0x4800, 'shaft and terminal', false], [0x5000, 'rooms', true], [0x5800, 'pocket computer', false]];
+  let cs = 1;
+  const csDiv = document.getElementById('csets');
+  SETS.forEach(([a, n], i) => { const b = document.createElement('button'); b.textContent = C64.hex(a, 4) + ' ' + n; b.onclick = () => { cs = i; drawSet(); }; csDiv.appendChild(b); });
+  function drawSet() {
+    const [a, n, mc] = SETS[cs], r = RC(), set = M0.subarray(a, a + 0x800);
+    for (const [i, b] of [...csDiv.children].entries()) b.setAttribute('aria-pressed', i === cs ? 'true' : 'false');
+    cc.fillStyle = PALC[mc ? r.bg : 0]; cc.fillRect(0, 0, 256, 64);
+    for (let g = 0; g < 256; g++) { const x = (g % 32) * 8, y = Math.floor(g / 32) * 8;
+      if (mc) C64.drawGlyphMC(cc, set, g, x, y, 1, [PALC[r.bg], PALC[r.d022], PALC[r.d023], PALC[1]]);
+      else C64.drawGlyph(cc, set, g, x, y, 1, PALC[1]); }
+    document.getElementById('ccap').innerHTML = mc
+      ? `Character set <code>${C64.hex(a, 4)}</code> in multicolour, in the background and the two shared colours of the room chosen above, with white for each cell's own colour, which the room gives cell by cell. Glyphs 0 to <code>$11</code> are blank until the game draws into them.`
+      : `Character set <code>${C64.hex(a, 4)}</code>, one colour a pixel. Its letters and digits are copied from the machine's character ROM at start-up, so they are blank in the program as loaded and blank here.`;
+  }
+  roomSel.addEventListener('change', drawSet);
+  drawSet();
+})();
+</script>

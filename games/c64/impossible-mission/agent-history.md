@@ -170,3 +170,16 @@ slow version could not do (it lasted 27 s against a 3.3 s line). The
 speech port moved from the Sound and speech tab into
 `reference/speech.js` so that both tabs play it. The listing's comment on
 `end_twinkle` still says "X times"; the count is X + 1.
+
+## 7 November 2026: the Graphics tab
+
+The contributor asked for a Graphics tab like other games' (Wizball, Zak
+McKracken, World Games). The container was new and `work/` was gone, so
+everything was drawn from `listing.json`, and the code that moves the
+agent was ported and held against the game's own routines in the kit's
+6502 simulator; the check is committed as `test_graphics.py`, with
+`graphics-browser.js` for the page. Overlaying the lift car and the
+terminal's corner sprites on the reference screenshots confirmed their
+positions. The `robot_zap` comment gave the zap's offsets in half-pixels
+(9 and 22); it was corrected with `listing.py --recomment`, since the
+snapshot was no longer here.

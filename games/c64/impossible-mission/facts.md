@@ -139,6 +139,39 @@ In the `$5800` order: the password words (`$208E`), the status texts
   (`robot_turn`, `$90B6`); the zap is sprite 0 (`$14`-`$17`), as is the
   ball (`$1F`).
 - The hand pointer is sprite 4 (`$10`), the map marker sprite 6.
+- The agent's frames: sprite 2 is at the agent's Y, sprite 1 at +12 and
+  sprite 3 at +21, all at one X (`place_agent`, `$ABE2`); sprite 1 is
+  white and in front, 2 and 3 light grey (`$9715`). Frame f takes sprite 2
+  `tbl_agent_pointers`[f], sprite 3 the next and sprite 1 the one after,
+  skipping one more in walk frames 7-13 (the second stride shares the
+  first's sprites 2 and 3); in frames `$14`-`$19` sprite 2 is off and
+  sprite 3 takes the pointer itself (`$873B`). Every shape is stored
+  facing left (`$80` in byte 63 of the frame's first shape); `$C500` is a
+  plain bit reversal (`$38F3`), so the agent's sprites are hi-res. Walk
+  frames run `$0D` to 0, the somersault `$1B` to `$10`, one step every
+  three ticks. *Checked:* a port of `agent_frame` and `agent_move` gives
+  the same pointers, sprite 2, shape bytes and positions as the game's
+  code in the kit's 6502 simulator for all 28 frames both ways, a
+  3,000-step sequence and 20,000 moves (`test_graphics.py`).
+- Frame `$0F` shows the agent facing the screen, arms out.
+- The zap (`$8F3F`) is placed 18 pixels right of a robot at `$C0` or 44
+  left of one at `$C6` (offsets 9 and -22 added to half the robot's X),
+  X-expanded, hi-res, a random shape `$14`-`$17` on the firing robot's
+  tick, white or blue as bit 2 of the tick says. Robots flicker between
+  the room's two robot colours every 8 ticks (`$9211`) and turn one step
+  every 4 (`$90B6`).
+- The lift car is sprite 7 (`$11`, white, the car's top) and sprite 0
+  (`$12`, multicolour, Y-expanded, the car's left side, in the shaft's
+  colours from `$B035`/`$B03D`) (`$AFEF`). The security terminal's
+  rounded corners are eight hi-res sprites `$18`-`$1D` placed from `$9EF5`
+  (`$9D16`). *Checked:* drawn over the reference screenshots, both land
+  on the pixels they draw.
+- The electrocution (`$95E4`) copies the agent's three shapes to
+  `$4D80`-`$4E3F`, flashes 34 times and then runs 33 passes that each
+  clear one random bit at 49 random places in each sprite, with a flash
+  after each. With interrupts off it takes 33,627 cycles a flash and
+  18,719 a pass, 2,870,736 in all (2.9 s on PAL), measured in the
+  simulator.
 
 ### The end picture
 
