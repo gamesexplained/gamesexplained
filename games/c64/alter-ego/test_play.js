@@ -192,5 +192,56 @@ beside('save', 3);
   else console.log('ok   the page on its own memory and on the whole memory alike for ' + f + ' frames');
 }
 
+// ---- Fast: the page's switch runs at once each frame in which the game looks for no key, until it
+// looks for one again (runtime.js, runBusy; play.template.html, tick). Played a key at a time, each
+// pressed once the game has looked for a key in 25 frames on end and held for its frames of the
+// game's time, a session goes the same with Fast on and off: the same memory at every key, and
+// every stretch Fast runs at once ends with the game looking for a key, so that Fast never runs
+// the clock on while the game waits for the player
+function hash(M) {
+  let h = 2166136261;
+  for (let a = 0; a < 0x10000; a++) h = Math.imul(h ^ M[a], 16777619);
+  return h >>> 0;
+}
+function atWaits(name, fast) {
+  const keys = [];
+  for (const [op, a, b] of SESSIONS[name]) {
+    if (op === 'key') keys.push([a.split('+'), b]);
+    else if (op === 'type') for (const ch of a) keys.push([[ch === ' ' ? 'SPACE' : ch.toUpperCase()], 4]);
+  }
+  const rt = AEPage.create({ data, cost, dice: dice(5) });
+  const screens = [];
+  let k = 0, idle = 0, up = -1, refreshes = 0, longest = 0, waited = 0;
+  // after each frame of the game's, as the page does it: a key let go once held its frames, and the
+  // frames counted since the game last looked for no key or a key was let go
+  const after = () => {
+    if (up >= 0 && rt.frame >= up) { rt.input.keys = new Set(); up = -1; idle = 0; }
+    else idle = rt.busy ? 0 : idle + 1;
+  };
+  for (; refreshes < 400000; refreshes++) {
+    rt.runFrame(); after();
+    if (rt.busy) waited++;
+    if (fast && rt.busy) {
+      const n = rt.runBusy(i => { if (i) after(); return i >= 3000; });
+      if (n) after();
+      longest = Math.max(longest, 1 + n);
+    }
+    if (up < 0 && idle >= 25) {
+      screens.push(hash(rt.M));
+      if (k === keys.length) break;
+      rt.input.keys = new Set(keys[k][0]); up = rt.frame + keys[k][1]; k++; idle = 0;
+    }
+  }
+  return { screens, refreshes, waited, longest, keys: keys.length, frames: rt.frame };
+}
+for (const name of ['new-random', 'infancy', 'save']) {
+  const off = atWaits(name, false), on = atWaits(name, true);
+  const same = off.screens.length === on.screens.length && off.screens.every((h, i) => h === on.screens[i]);
+  if (on.screens.length !== on.keys + 1 || off.screens.length !== off.keys + 1) fail(name + ' with Fast: ' + on.screens.length + ' and ' + off.screens.length + ' waits for ' + on.keys + ' keys');
+  else if (!same) fail(name + ' with Fast: the memory at key ' + off.screens.findIndex((h, i) => h !== on.screens[i]) + ' differs from the memory without it');
+  else if (on.longest >= 3000) fail(name + ' with Fast: a stretch of 3,000 frames with no look for a key');
+  else console.log('ok   ' + name + ' with Fast: the same memory at each of ' + on.keys + ' keys; the player kept waiting ' + on.waited + ' frames of real time against ' + off.waited + ' without, the longest stretch run at once ' + on.longest + ' frames');
+}
+
 console.log(fails ? fails + ' failed' : 'all passed');
 process.exitCode = fails ? 1 : 0;

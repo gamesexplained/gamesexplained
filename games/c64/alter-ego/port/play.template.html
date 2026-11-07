@@ -89,6 +89,7 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-fast aria-pressed="false" title="Skip the C64's waits: each page appears as soon as the game has worked it out">⏩ Fast</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys" id="pl-keys">
@@ -99,7 +100,7 @@ section table{margin:6px 0 18px}
       <li><kbd data-key="STOP">Esc</kbd> is RUN/STOP: the menu to save the game, resume a saved one, see your status or quit</li>
       <li>Your name: type it<form class="pl-type" id="pl-type"> here <input type="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="enter" maxlength="20" aria-label="A name to type into the game"></form>, <kbd data-key="DEL">Backspace</kbd> rubs out, <kbd data-key="RETURN">Enter</kbd> ends it</li>
     </ul>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The six disk sides are all in the drive at once, so when the game asks for another side, any key goes on. A game saved from the RUN/STOP menu is kept in this browser, and RESUME A SAVED GAME on the first screen finds it.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The six disk sides are all in the drive at once, so when the game asks for another side, any key goes on. A game saved from the RUN/STOP menu is kept in this browser, and RESUME A SAVED GAME on the first screen finds it. <b>Fast</b> skips the waits: the C64 takes one to ten seconds over each page, unpacking its words, drawing them off the screen and then bringing the page down a pixel row a frame, and with Fast on the page shows it as soon as the game has worked it out (section 02).</p>
   </div>
 </section>
 <section id="port">
@@ -166,10 +167,13 @@ const sound = (function () {
     if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
     return on;
   }
-  function frame() {
+  // the frames shown since the last call, each a call of the SID's model; or, after a stretch Fast
+  // ran at once (merge), all their writes in one call, so the sound does not lag behind the picture
+  function frame(merge) {
     if (!on || !host || !rt) return;
     const frames = [];
     for (; sent <= rt.shown; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    if (merge && frames.length > 1) frames.splice(0, frames.length, [].concat(...frames));
     if (frames.length) host.push(frames);
   }
   return { attach, set, frame, get on() { return on; } };
@@ -192,8 +196,12 @@ function saved(name, bytes) {
     if (/^AES[0-4]$/.test(name)) say('Game saved in this browser.');
   } catch (e) { say('Saved for this visit only: the browser keeps no storage for this page.'); }
 }
-// --- the loop: one frame of C64 time per frame of real time
-let acc = 0, last = 0;
+// --- the loop: one frame of C64 time per frame of real time. With Fast on, a frame in which the
+// game made no call of GETIN (it is working out the next page, not waiting for a key) is followed
+// at once by the next, for up to 12 ms of each refresh, until the game looks for a key again or a
+// key is down: the same frames of the game, run without waiting for the clock (runtime.js, runBusy)
+let acc = 0, last = 0, fast = false;
+const FAST_MS = 12, FAST_KEY = 'gamesexplained.alter-ego.fast';
 function boot() {
   rt = AEPage.create({ data, cost: window.AE_COST, saved: savedFiles(), onSave: saved,
     onRestart: why => say('The game starts again (' + why + ').') });
@@ -207,6 +215,10 @@ function tick(now) {
     acc += Math.min(250, now - (last || now)); last = now;
     while (acc >= FRAME_MS && n < 10) { frame = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; held.release(); typeStep(); }
     if (n === 10) acc = 0;
+    if (fast && n && rt.busy) {
+      const t0 = performance.now();
+      if (rt.runBusy(() => { held.release(); typeStep(); return performance.now() - t0 > FAST_MS; })) { frame = rt.lastFrame(); sound.frame(true); }
+    }
     if (n && frame) px = C64.renderFrame(frame).px;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; over.hidden = false; console.error(e); return; }
   if (n) present();
@@ -306,6 +318,14 @@ function showStart(t) {
   over.appendChild(bt);
 }
 CRT.attach(cv, { button: document.querySelector('[data-crt]') });
+// the Fast switch, remembered in this browser
+const fastBt = document.querySelector('[data-fast]');
+function setFast(on) {
+  fast = on; fastBt.setAttribute('aria-pressed', on ? 'true' : 'false');
+  try { localStorage.setItem(FAST_KEY, on ? '1' : '0'); } catch (e) { /* no storage: for this visit */ }
+}
+fastBt.addEventListener('click', () => { setFast(!fast); screen.focus(); });
+try { setFast(localStorage.getItem(FAST_KEY) === '1'); } catch (e) { setFast(false); }
 try {
   data = JSON.parse(document.getElementById('ae-data').textContent);
   showStart('Alter Ego, as the disk starts it: the credits, then BEGIN A NEW GAME or RESUME A SAVED GAME. Click, then use the keyboard.');
