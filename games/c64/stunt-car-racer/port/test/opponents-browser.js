@@ -6,7 +6,7 @@
 // - the 3D view of the computer's car on its springs moves while it plays, and another run-up
 //   changes what its readout says; a click on it stops it, the game's view of the car draws
 //   another picture, and on the banked bend the run-up buttons are off;
-// - Fast CPU on the springs draws seven times as many points on the chart;
+// - Fast CPU on the springs draws seven points a pass on the chart, at the game's own speed;
 // - picking a row of the drivers' table puts that driver's car on its own line;
 // - dragging the computer's car on the map of racing lines changes what the readout says;
 // - Swerve now starts a swerve, and the pictures of the car turn;
@@ -75,13 +75,14 @@ async function look(browser, base, name, opts) {
   if (off) fail(name + ': on the banked bend ' + off + ' run-up buttons are still on');
   await page.click('#op-mv-jump');
 
-  // Fast CPU on the springs: seven points a pass on the chart, each line's path longer
+  // Fast CPU on the springs: seven points a pass on the chart, one a video frame (20 ms), so
+  // some 75 in 1.5 seconds where a picture a pass at a third of the game's speed makes 4
   const points = () => page.$eval('#op-dr-chart', s => Math.max(0, ...[...s.querySelectorAll('path')].map(p => (p.getAttribute('d') || '').split(/[LM]/).length)));
   await page.$eval('#op-dr-fast', e => e.scrollIntoView({ block: 'center' }));
   await page.click('#op-dr-fast');
   await wait(1500);
   const fast = await points();
-  if (fast < 14) fail(name + ': with Fast CPU the springs\' chart has ' + fast + ' points after 1.5 seconds');
+  if (fast < 40) fail(name + ': with Fast CPU the springs\' chart has ' + fast + ' points after 1.5 seconds');
 
   // the drivers' own lines: a row picked names its driver, and the car moves to its line
   await page.click('#drivers .op-tbl tr:nth-child(3) td');

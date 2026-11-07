@@ -234,7 +234,7 @@ th{font-size:13px;color:var(--ink-soft);font-weight:700}
       <div class="op-rel"><svg id="op-dr-chart" class="op-chart" viewBox="0 0 360 220" role="img" aria-label="The wheels' heights over the road, pass by pass"></svg><div class="op-tip"></div></div>
     </div>
     <p class="op-status"></p>
-    <p class="cap">One picture a pass, at a third of the game's speed. <b>Fast CPU</b> draws seven a pass, as the Play tab's Fast CPU does (its section 03): each pass is shared among seven of its own, each taking a seventh of every wheel's change of speed and of its move, and reading a spring's depth from a whole pass before, so the springs answer a little sooner. <code>OPP_DROP</code> (<code>$1EE2</code>) sets the heights. Each pass <code>OPP_WHEELS</code> (<code>$21DE</code>) works out how deep each wheel is, from 40 over the road down, and pushes it up by twice that depth less the depth a pass before, at most <code>$3FF</code>, less 40, which is what pulls a wheel down while it is off the road. Each wheel takes an eighth of the three pushes' sum and five eighths of its own, and <code>OPP_SPREAD</code> then keeps the three together, so the car lands as one. Heights are in the game's units, a quarter of a unit across: the car is 81 across.</p>
+    <p class="cap">One picture a pass, at a third of the game's speed. <b>Fast CPU</b> draws seven a pass at the game's own speed, a picture every video frame, as the Play tab's Fast CPU does (its section 03): each pass is shared among seven of its own, each taking a seventh of every wheel's change of speed and of its move, and reading a spring's depth from a whole pass before, so the springs answer a little sooner. <code>OPP_DROP</code> (<code>$1EE2</code>) sets the heights. Each pass <code>OPP_WHEELS</code> (<code>$21DE</code>) works out how deep each wheel is, from 40 over the road down, and pushes it up by twice that depth less the depth a pass before, at most <code>$3FF</code>, less 40, which is what pulls a wheel down while it is off the road. Each wheel takes an eighth of the three pushes' sum and five eighths of its own, and <code>OPP_SPREAD</code> then keeps the three together, so the car lands as one. Heights are in the game's units, a quarter of a unit across: the car is 81 across.</p>
   </div>
 </section>
 <section id="bounce">
@@ -4171,15 +4171,16 @@ function start(ram) {
     fastB.addEventListener('click', () => { K = K > 1 ? 1 : 7; pressed(fastB, K > 1); go(); });
     redraws.push(() => draw());
     go();
-    // at a third of the game's speed: the drop is over in about ten passes; a picture a pass, or
-    // with Fast CPU seven
+    // a picture a pass at a third of the game's speed, so each pass can be seen; with Fast CPU
+    // seven a pass at the game's own speed, a picture every video frame (a seventh of a pass), as
+    // the Play tab's Fast CPU draws them. The drop is over in about ten passes
     ticker(cv, () => {
-      if (left <= 0 || (K === 1 && (wait = (wait + 1) % 7))) return;
+      if (left <= 0 || (K === 1 && (wait = (wait + 1) % 21))) return;
       left--;
       hist.push(OPS.wheels(m));
       if (loop) loop();
       draw();
-    }, 3 * PASS / 7);
+    }, PASS / 7);
   }
   function bounce() {
     const ctx = $('op-bo-cv').getContext('2d'), sel = $('op-bo-driver'), play = $('op-bo-play');
