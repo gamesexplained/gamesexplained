@@ -7,10 +7,12 @@
 // then twelve frames are drawn by load_anim_state, draw_limbs ($1DFE) and save_anim_state, as
 // draw_actor ($1D8C) draws them. After each frame the sprite column, read back through the game's
 // row tables ($D3B1, $D311), the 32 bytes of animation state, the count of limbs still changing
-// ($2088) and the sound requests ($FD52) must be what the page's port gives.
+// ($2088) and the sound requests ($FD52) must be what the page's port gives. solution.html draws
+// its cast with a copy of the block, which must be the same.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const g = game(__dirname);
+g.sameBlock('zk-costume');
 const P = g.run('graphics.html', 'zk-costume', 'zkLimbState', 'zkStartAnimation', 'zkDrawLimbs');
 g.lib('cpu6502');
 const C64Cpu = globalThis.C64Cpu;

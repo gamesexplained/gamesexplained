@@ -191,3 +191,23 @@ The newspaper and the manual were read from the Internet Archive's
 scans (`zak-mckracken-newspaper`, `game_manual_Zak_McKracken_Manual`);
 the page links to them. The copy protection is explained without its
 code table or the arithmetic script 110 uses to make the symbols.
+
+## 7 November 2026: Aaron's review of the story pages
+
+Aaron asked for the story Discoveries first, a playable and pictured
+two-tunes section, pictures in the cast table and a look at the dolphin on
+the Graphics tab. The Discoveries now run in reverse order. The tunes
+section gained four ScummVM screenshots, taken by branching the solution's
+recording at the ship (`work/replay/pilot.steps`, `alien.steps` and
+`king.steps`): the alien's tune, played from the left end of the bridge,
+took Zak to his bedroom, as script 64 says. Reading script 69 for the
+captions showed the pilot is The King (actor 11, renamed by the small
+button), so the pilot's part was corrected before it reached the page. The
+notes play through a copy of the zk-music block, which `test_music.js`
+holds identical with `sameBlock`; the cast pictures use a copy of
+zk-costume, which `test_costumes.js` now holds the same way. The dolphin
+was drawn in the default grey on the grey stage: the colour finder had
+paired a costume with a palette only when one script set both, and the
+dolphin's palette is set in script 50, before the sea's room puts the
+costume on. Eleven costumes took the colour of the actor that wears them.
+
