@@ -7,96 +7,122 @@
   "publisher": "Activision",
   "developer": "Activision",
   "title_image": "reference/first-prompt.png",
-  "build": "Male edition, freshly booted first name prompt",
-  "tier": "bronze",
-  "coverage_percent": 94.6,
+  "build": "Male edition, the C64 Preservation Project original disks (alter_ego_male_s1 to s6, Activision 1987)",
+  "tier": "platinum",
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
   "credits": [],
   "tools": {
-    "host": "Linux x86_64",
+    "host": "Linux x86_64 cloud container, no display",
+    "emulator": "VICE MCP 3.14.0 (x64sc, PAL), the release v3.14.0-linux-x86_64-gui.zip; the kit's C64 (kit/c64/machine.js) for the lockstep",
     "disassembler": "regenerator2000 0.9.20",
-    "publication": "Python 3; symbols_export.py and listing.py",
-    "browser": "Firefox 157.0 (installed); WebDriver BiDi",
-    "emulator": "VICE MCP 3.13.1"
+    "publication": "Python 3.13.18; symbols_export.py and listing.py",
+    "node": "22.23.4",
+    "browser": "Chromium 153.0.8010.12 through Playwright"
   },
-  "model": "gpt-6.1-sol",
-  "step_models": {"50-coverage": ["gpt-6.1-sol"], "60-verify": ["gpt-6.1-sol"]},
-  "accuracy": [
-    {"step": "research", "web": true, "models": ["gpt-6.1-sol"]},
-    {"step": "annotate", "models": ["gpt-6.1-sol"], "note": "started from an imported Ghidra analysis by 64kramsystem, its model unknown"},
-    {"step": "annotate", "models": ["claude-opus-5-5[1m]"], "note": "22 October 2026: comments on 3,781 bytes of typed data no label reached, from $7E9F to $F9CF"},
-    {"step": "annotate", "models": ["claude-opus-5-5[1m]"], "note": "22 October 2026: the 645 cache bytes at $C29C-$C2A1 and $C82C-$CAAA, taken from their twin at $1000-$1FFF, with two line comments"}
-  ],
-  "kit_version": "0.0.48",
-  "created": "2026-09-30",
-  "video": {
-    "screen": "$0400",
-    "charset": ""
-  },
-  "coverage": {
-    "extra": [
-      [
-        "$B57B",
-        "$C17A",
-        "Complete 1024-entry LZW prefix/suffix dictionary; all bytes independently match MAP1 decode"
-      ],
-      [
-        "$7927",
-        "$7B26",
-        "Complete split 256-entry VM opcode handler directory"
-      ],
-      [
-        "$1000",
-        "$1FFF",
-        "Retained 4 KiB high-RAM initialization source selected by bootstrap"
-      ],
-      [
-        "$9BFE",
-        "$A06C",
-        "Complete bytecode body of compiled descriptor interpreter $9BF9; decoded instruction boundaries checked"
-      ],
-      [
-        "$C2A2",
-        "$C42B",
-        "Complete independently decoded 394-byte cached interaction descriptor"
-      ],
-      [
-        "$C26A",
-        "$C299",
-        "Complete 24-word resident life-status label directory"
-      ]
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "50-coverage": [
+      "gpt-6.1-sol",
+      "claude-opus-5-5[1m]"
     ],
-    "include": [
-      [
-        "$D000",
-        "$DFFF",
-        "Physical RAM under I/O, not visible hardware registers"
-      ]
-    ],
-    "exclude": [
-      [
-        "$0000",
-        "$03FF",
-        "Runtime zero page, stack and system work area"
-      ],
-      [
-        "$2000",
-        "$3F3F",
-        "Runtime hires bitmap output"
-      ],
-      [
-        "$0400",
-        "$07FF",
-        "Runtime screen matrix and sprite pointers"
-      ]
+    "60-verify": [
+      "gpt-6.1-sol",
+      "claude-opus-5-5[1m]"
     ]
   },
-  "io": [],
-  "regions": [],
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "gpt-6.1-sol"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "note": "started from an imported Ghidra analysis by 64kramsystem, its model unknown"
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "22 October 2026: comments on 3,781 bytes of typed data no label reached, from $7E9F to $F9CF"
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "22 October 2026: the 645 cache bytes at $C29C-$C2A1 and $C82C-$CAAA, taken from their twin at $1000-$1FFF, with two line comments"
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "5 November 2026: the start and life objects made parts of their own, each listed from its own snapshot, and every byte of the three parts annotated"
+    },
+    {
+      "step": "play",
+      "fixed": 4,
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "every routine of the three parts ported and checked against the game's code in lockstep, at every call of GETIN, over 16 sessions from the title to a new life after Old Age; the comments at $8466, $8469, $C29C and $C82C of the life object corrected"
+    },
+    {
+      "step": "sample",
+      "size": 90,
+      "wrong": 18,
+      "fixed": 18,
+      "seed": 61106,
+      "by": "air",
+      "models": [
+        "claude-fable-5-1"
+      ],
+      "note": "60 of the 916 written comments, 20 of the 204 the p-code decoder wrote and 10 of the 192 on text; 95 more comments that said the same things corrected with them"
+    },
+    {
+      "step": "audit",
+      "checked": 1312,
+      "of": 1312,
+      "fixed": 215,
+      "by": "air",
+      "models": [
+        "claude-fable-5-1"
+      ],
+      "note": "and every claim in facts.md"
+    },
+    {
+      "step": "sample",
+      "size": 120,
+      "wrong": 7,
+      "fixed": 7,
+      "seed": 20261106,
+      "by": "air",
+      "models": [
+        "claude-fable-5-1"
+      ],
+      "note": "90 of the 916 written comments, 20 of the 204 the p-code decoder wrote and 10 of the 192 on text, after the audit; one more comment that said the same thing corrected with them"
+    }
+  ],
+  "kit_version": "0.0.311",
+  "created": "2026-09-30",
   "links": {
-    "wiki": {"title": "Alter Ego (Male) – Lemon64", "url": "https://www.lemon64.com/game/alter-ego-male"},
-    "manual": {"title": "Alter Ego (Male) manual – Lemon64", "url": "https://www.lemon64.com/doc/alter-ego-male/47"}
+    "wiki": {
+      "title": "Alter Ego (Male) – Lemon64",
+      "url": "https://www.lemon64.com/game/alter-ego-male"
+    },
+    "manual": {
+      "title": "Alter Ego (Male) manual – Lemon64",
+      "url": "https://www.lemon64.com/doc/alter-ego-male/47"
+    }
   },
   "imported": {
     "source": "alter_ego_full_listing.txt",
@@ -109,5 +135,6 @@
   "redirects": {
     "index.html#name": "discoveries.html#name",
     "index.html#allocation": "discoveries.html#allocation"
-  }
+  },
+  "levels_tab": "Stages"
 }
