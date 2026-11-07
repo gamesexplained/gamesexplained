@@ -52,6 +52,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-bars{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:14px}
 .zk-bars .b{height:14px;border-radius:3px;background:var(--accent)}
 .zk-bars .b.off{background:var(--coral)}
+.zk-tunes{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center;font-size:14px}
+.zk-notes{display:flex;gap:6px;flex-wrap:wrap}
+.zk-note{width:44px;height:30px;border-radius:5px;border:1px solid rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
 .zk-bars .track{display:flex;background:var(--surface-2);border-radius:3px;overflow:hidden}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}.zk-bars{grid-template-columns:1fr}}
 </style>
@@ -59,7 +62,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">What the program does that the manual never mentions: a pause that takes longer than it says, music that keeps the picture on, and three of its instructions that answer from the wrong place.</p>
+  <p class="sub">What the program does that the manual never mentions: a pause that takes longer than it says, music that keeps the picture on, three of its instructions that answer from the wrong place, and the secrets in the story's scripts, from a fortune-telling machine that picks its own numbers to magic words that read backwards.</p>
 </header>
 <main class="wrap">
 <section id="idle-pause">
@@ -179,13 +182,96 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 <section id="sound-36">
   <p class="fig">07 · A sound that ends twice</p>
-  <h2 class="t">Sound 36 is over before its filter part has finished</h2>
-  <p class="lede">The engine counts how many of a sound's voices are playing. Sound 36 has a part for the filter as well, and it is still running when the count says the sound is over.</p>
+  <h2 class="t">Sushi's splash is over before its filter part has finished</h2>
+  <p class="lede">The engine counts how many of a sound's voices are playing. The splash of water that Sushi's fish bowl and the kitchen tap make, sound 36, has a part for the filter as well, and it is still running when the count says the sound is over.</p>
   <div class="plate">
     <p>After 162 frames of sound 36, its two voices end and its count, which a script reads to ask whether the sound is still playing, drops to 0. Its third part, which works the chip's filter, is still on its channel, and the engine goes on stepping it every frame. No voice is left to be heard through the filter.</p>
     <p class="cap">Seen on the game's own sound engine, run on the site's model of the processor for every effect on the disks (the test beside the <a href="index.html#sfx">Sound</a> player). Sound 36 is the only one.</p>
   </div>
   <p>Each voice a sound starts adds one to the sound's count (<code>$3F3A</code>), and each voice that ends takes one off (<code>$3EB6</code>). A filter part is started by another routine, which leaves the count alone (<code>$3E4C</code>), and its end takes nothing off. isSoundRunning, which scripts use to wait for a sound, reads that count (<code>$571C</code>). So the count follows a sound's voices only, and a filter part that outlasts them runs on uncounted.</p>
+</section>
+<section id="lotto">
+  <p class="fig">08 · The Lotto</p>
+  <h2 class="t">Secret: the Lott-O-Dictor picks the numbers it foretells</h2>
+  <p class="lede">The machine on the Caponians' ship shows tomorrow's Lotto number. It is never wrong, because reading it is what picks the number.</p>
+  <div class="plate">
+    <div class="zk-wide"><table class="zk-tab">
+      <thead><tr><th>When</th><th>What the scripts do with the four digits</th></tr></thead>
+      <tbody>
+        <tr><td>The start of the game</td><td>Picks them at random, the first never 0 (script 48)</td></tr>
+        <tr><td>The Lott-O-Dictor read for the first time</td><td>Picks them again, then shows them: "Tomorrow's Winning Lotto Number"</td></tr>
+        <tr><td>A ticket bought at Lou's</td><td>Keeps the digits typed on the keypad, and waits a few minutes of play for the draw (scripts 24 and 73)</td></tr>
+        <tr><td>The draw, digits right</td><td>"10,000 Smackeroos!", then picks new digits and resets the Lott-O-Dictor, so it can be read and won again (script 72)</td></tr>
+        <tr><td>The fifth win</td><td>"Friend, ya won the big one a few too many times… I'll pay up this last time, but I ain't sellin' ya another ticket."</td></tr>
+        <tr><td>The draw, digits wrong</td><td>One time in ten a smaller prize, of $10 to $1,000; otherwise "yer lotto tick's a dud"</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">From the scripts named, and played: in one game the digits were 4 3 0 5 at the start and 7 0 3 0 once the Lott-O-Dictor had been read, and a ticket for 7 0 3 0 took Zak's CashCard from $2,322 to $12,322.</p>
+  </div>
+  <p>The digits live in four variables that the start of the game fills. The first reading of the Lott-O-Dictor fills them again before it prints them, so numbers copied from another game are no use. After a win the machine is reset, and the next reading picks again. Lou pays out four times; the fifth time he grumbles, pays, and sells no more tickets.</p>
+</section>
+<section id="two-tunes">
+  <p class="fig">09 · Two tunes on one keyboard</p>
+  <h2 class="t">The tune that sends Zak home is the pilot's tune with each note moved on by its place</h2>
+  <p class="lede">The ship's six coloured buttons play two tunes. The pilot's opens the floor; the one the alien shows a fan of The King sends Zak home. The game picks the pilot's at the start and works the alien's out from it.</p>
+  <div class="plate">
+    <div class="zk-row"><button type="button" class="zk-btn" id="zk-tune-new">Another game</button></div>
+    <div class="zk-tunes" id="zk-tunes"></div>
+    <p class="cap">Script 48 picks each of the pilot's four notes as one of the six buttons, red, blue, green, light blue, yellow and purple, at random. Script 103 writes the alien's: note 1 moved on one button, note 2 two, note 3 three and note 4 four, going round from purple to red. One object of the room (239) follows both tunes as the buttons are pressed, and either tune, finished, starts script 64.</p>
+  </div>
+  <p>The pilot's tune, played by Zak, opens the floor under him, which is the way to the sea, the dolphin and the glowing object. The alien's tune sends him straight home to his bedroom in San Francisco, if he plays it from the right part of the bridge: script 64 checks where he stands. A wrong note gets "I must have played the wrong tune."</p>
+</section>
+<section id="sphinx-legs">
+  <p class="fig">10 · The Sphinx</p>
+  <h2 class="t">Secret: the way in is always in the second leg of the Sphinx a kid visits</h2>
+  <p class="lede">The Sphinx has two front legs, and the strange markings that open its secret entry are on one of them. Which one is decided by the player: the first leg visited is empty.</p>
+  <div class="plate">
+    <p>On the first visit to either leg, its script marks the other leg as the one with the markings, and leaves itself bare. The markings, and behind them the entry to the maze, are then always at the leg the kid goes to next.</p>
+    <p class="cap">From the Sphinx's room (room 20) and its two legs, and played: in one game the first leg visited was bare and the second had the markings.</p>
+  </div>
+  <p>A player who goes to the right leg first finds nothing and walks to the left; a player who goes left first walks to the right. Either way the second leg is the one, so every player walks to both.</p>
+</section>
+<section id="gnik-sisi-vle">
+  <p class="fig">11 · Words of power</p>
+  <h2 class="t">Secret: the words that fuse the crystal at Stonehenge are "Elvis is King" backwards</h2>
+  <p class="lede">With the flagpole and both shards on the altar stone, the scroll from Peru is read aloud. Its "words of power" are Gnik Sisi Vle.</p>
+  <div class="plate">
+    <div class="zk-screen">It has `words of power` on it:<br>`Gnik Sisi Vle`<br>Wow! The crystal's fused and the scroll burned up in my hands!</div>
+    <p class="cap">The lines of script 136, at Stonehenge.</p>
+  </div>
+  <p>Read from the end, the words are "Elvis is King". The King never gives his name, but the game is full of him: he is the Caponians' leader, the fan club card says "Member in good standing since 1997", one Caponian is caught in the secret room singing scrambled song titles ("O BABY - I'M A JAILHOUND DOG… IN MY BLUE SUEDE…", "…CUZ I'M ALL SHAKEN UP") and calls it "Grooveling to The King!" (script 140), and The King himself, on the ship, feels a song coming on that turns out to be an upset stomach (script 103).</p>
+  <p>The King also suggests what to do with Zak once he has been caught, and two of his ideas are other Lucasfilm Games: "Make him clean the meteor slime off our hull?", the meteor of Maniac Mansion, and "Make him play Ballblazer with Droid 9?" (script 101).</p>
+</section>
+<section id="scrambled">
+  <p class="fig">12 · The stupidity machine</p>
+  <h2 class="t">Zak thinks in headlines, and the machine scrambles them</h2>
+  <p class="lede">Caught by the Caponians, Zak is put through their stupidity machine. What it does to him is shown on his favourite thing, the headline.</p>
+  <div class="plate">
+    <div class="zk-screen">SLEAZY TABLOID REPORTER ABDUCTED BY SPACE ALIENS.<br>TEASING SLABOID, uh, PORTER AB, AB, er, TAKEN BY SPACE ALIASES.<br>TEDING SLOBORT, uh, TABES SPADES ALIABUH.<br>SLEEBLE DEEDOB, uh, PACEALOO BALEAZZ.</div>
+    <p class="cap">The lines of script 88, in order.</p>
+  </div>
+  <p>Through the game Zak sums up what happens to him as a tabloid headline: "TABLOID REPORTER `SPACES OUT` IN DREAM." in the opening, "REPORTER BECOMES `SPACE CADET` IN SPACE CADILLAC!" on the ship's green button, "MAN TRADES MINDS WITH DOLPHIN; DESTROYS TUNA BOAT FLEET." in the sea. In the machine his headline falls apart a line at a time. Released, with "You are free to go now. Don't come back!" (script 92), he gets his verbs back one at a time over the next minutes, and says "Ah, back to normal!" when the last one returns (script 89).</p>
+</section>
+<section id="dead-pads">
+  <p class="fig">13 · The teleport map</p>
+  <h2 class="t">Two of the teleport pads on Zak's map never take him anywhere</h2>
+  <p class="lede">The Yellow Crystal takes Zak to any teleport pad on the map he has drawn. Seven pads are drawn, and two of them, Atlantis and the Martian pyramid, answer only "Nothing's happening!"</p>
+  <div class="plate">
+    <div class="zk-wide"><table class="zk-tab">
+      <thead><tr><th>Pad</th><th>Where it takes Zak</th></tr></thead>
+      <tbody>
+        <tr><td>Mt. Rainier cave</td><td>The crystal chamber in Seattle</td></tr>
+        <tr><td>Mayan pyramid</td><td>The crystal chamber in Mexico</td></tr>
+        <tr><td>Peruvian eye cave</td><td>The cave behind the carving's eyes, where the candelabra is</td></tr>
+        <tr class="bad"><td>Atlantis</td><td>Nowhere: "Nothing's happening!"</td></tr>
+        <tr><td>Egyptian pyramid</td><td>The Crystalabra's room</td></tr>
+        <tr class="bad"><td>Mars pyramid</td><td>Nowhere: "Nothing's happening!"</td></tr>
+        <tr><td>Mars face chamber</td><td>The crystal chamber in the Martian Face</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">From script 60, which reads the pad picked on the map and loads the room it names, or prints "Nothing's happening!" for the two that name none. It works only for Zak, only with the Yellow Crystal, and not in the Guru's shrine ("It doesn't seem to work here."). A pad not yet visited is drawn on the map as ???.</p>
+  </div>
+  <p>The Martian pyramid is reached by tram instead, with air in the helmets and the keyhole opened.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -246,5 +332,26 @@ function zkIdle() {
   });
   show();
   requestAnimationFrame(tick);
+})();
+</script>
+<script>
+/* zk-tunes */
+// The ship's two tunes. Script 48 picks the pilot's four notes, each one of the six buttons
+// (objects 230 to 235: red, blue, green, light blue, yellow, purple), as 230 + a random number
+// from 0 to 5; script 103 shows the alien's: note i (from 1) moved on i buttons, purple going
+// round to red.
+(() => {
+  const NAMES = ['red', 'blue', 'green', 'light blue', 'yellow', 'purple'];
+  const COLOURS = ['#c84c3c', '#3c58c8', '#3f9c4b', '#5fb4d8', '#d6b52c', '#8a4cc0'];
+  const box = document.getElementById('zk-tunes'), again = document.getElementById('zk-tune-new');
+  if (!box || !again) return;
+  const row = (label, notes) => `<span>${label}</span><div class="zk-notes" role="img" aria-label="${label}: ${notes.map((n) => NAMES[n]).join(', ')}">` +
+    notes.map((n, i) => `<span class="zk-note" style="background:${COLOURS[n]}" title="${NAMES[n]}">${i + 1}</span>`).join('') + '</div>';
+  const show = (pilot) => {
+    const alien = pilot.map((n, i) => (n + i + 1) % 6);
+    box.innerHTML = row("The pilot's tune", pilot) + row("The alien's tune home", alien);
+  };
+  again.addEventListener('click', () => show([0, 1, 2, 3].map(() => Math.floor(Math.random() * 6))));
+  show([1, 2, 5, 0]);              // blue, green, purple, red: the tune of the game played to the end
 })();
 </script>

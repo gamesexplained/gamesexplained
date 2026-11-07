@@ -125,6 +125,12 @@ class Decoder(unittest.TestCase):
             # resourceRoutines that ScummVM does nothing for, and one it does
             (bytes.fromhex("0c 03 50"), 3, "resourceRoutines($50, 3)"),
             (bytes.fromhex("0c 03 51"), 3, "resourceRoutines(load script 3)"),
+            # variables 14 to 16 point: a read goes through to the variable each holds the number
+            # of, a write does not; increment reads through and writes the pointer itself
+            (bytes.fromhex("a5 0e 07 78"), 4, "drawObject(Var[Var[14]], 7, Var[120])"),
+            (bytes.fromhex("48 0f 07 00 03 00"), 6, "unless (Var[Var[15]] == 7) goto 0009"),
+            (bytes.fromhex("5a 0e 44 00"), 4, "Var[14] += 68"),
+            (bytes.fromhex("46 10"), 2, "Var[16] = Var[Var[16]] + 1"),
         ]
         for code, end, text in cases:
             with self.subTest(code=code.hex(" ")):

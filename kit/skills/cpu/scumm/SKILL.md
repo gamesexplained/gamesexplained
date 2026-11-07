@@ -21,8 +21,10 @@ are never committed.
 | `kit/scumm/scode.py` | the instructions of versions 1 and 2: the opcode table, what each handler reads, decoding, the text of an instruction, a script's listing |
 | `kit/scumm/scummvm.py` | ScummVM, the interpreter: installs its SCUMM engine into `tools/` with the kit's trace and runs a game from a file of clicks and keys |
 | `kit/scumm/strace.py` | reads ScummVM's trace: shows it with the instructions' text, checks the decoder against it, sums it up script by script |
+| `kit/scumm/world.py` | what every script holds, for a reader: the verbs, the actors, the rooms and the ways between them, each object's verbs and what they do, every line of text, the sounds, and where a variable or an object is used |
 | `kit/scumm/testgame.py` | a small game the kit writes itself, and an assembler for its scripts: the test runs ScummVM on it without anyone's disks |
 | [reference.md](reference.md) | the disk layout, the resources' headers, the parameters, and what the interpreter does without being asked |
+| [explore.md](explore.md) | how to explore a game for its page: its characters, places, puzzles, the solution played from the start, its secrets, names for its numbers, and what came in its box |
 
 What each handler reads is ScummVM's (`engines/scumm/script_v2.cpp` and
 the version 5, 4 and 3 handlers it shares), and the test checks the kit's
@@ -90,7 +92,8 @@ A game may carry out a sentence only on a second click of its object
 (its verb script, 4, decides): when a click seems to do nothing, look at
 what the trace ran. ScummVM's
 own improvements to the games are off and the copy protection on, so
-what runs is the scripts as they shipped. Keep the input file in
+what runs is the scripts as they shipped; `--no-copy-protection` lets a
+replay of the solution past the codes printed in the box. Keep the input file in
 `work/` with the trace: it is the recording a page's claim rests on.
 
 **Check before you read.** `strace.py check` decodes again, from the
@@ -100,6 +103,10 @@ and the constants' values, and where the script went on. A listing rests
 on the decoder only when it reports none where they disagree. It checks
 only what ran: play through the scenes a page talks about before its
 claims rest on the listing.
+
+Once the decoder is checked, [explore.md](explore.md) is how to go
+through the game for the reader: what each step finds and which tool
+finds it.
 
 ## Checking the decoder
 

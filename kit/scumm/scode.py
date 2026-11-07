@@ -25,7 +25,7 @@ The B and W reads are the "parameters", the ones the kit's ScummVM writes in its
 
 Run as a script: scode.py <game folder> script N | entry ROOM | exit ROOM | object ROOM N | all
 """
-import os, sys
+import os, signal, sys
 from dataclasses import dataclass, field
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -127,6 +127,12 @@ VARS_V12 = {0: "VAR_EGO", 2: "VAR_CAMERA_POS_X", 3: "VAR_HAVE_MSG", 4: "VAR_ROOM
             33: "VAR_CLICK_VERB", 35: "VAR_CLICK_OBJECT", 36: "VAR_ROOM_RESOURCE", 37: "VAR_LAST_SOUND",
             38: "VAR_BACKUP_VERB", 39: "VAR_KEYPRESS", 40: "VAR_CUTSCENEEXIT_KEY", 41: "VAR_TALK_ACTOR"}
 
+# Variables 14, 15 and 16 point: reading one reads the variable whose number it holds, so that
+# Var[14] = 68 then drawObject(Var[14]) draws the object Var[68] holds. Writing one writes it
+# (ScummVM's ScummEngine_v2::readVar, versions 1 and 2; add and subtract write without reading
+# through it, increment and decrement read through it)
+POINTER_VARS = (14, 15, 16)
+
 # How the script goes on after each handler, besides to its next instruction
 JUMPS = {"jumpRelative"}
 ENDS = {"stopObjectCode", "restart", "chainScript"}          # the script stops (stopScript(0) too)
@@ -146,6 +152,8 @@ class Operand:
 
     def text(self, names=None):
         if self.kind == "var":
+            if self.value in POINTER_VARS:      # read through: the variable it points at
+                return f"Var[{var_name(self.value, names)}]"
             return var_name(self.value, names)
         if self.kind == "result":
             return var_name(self.value, names)
@@ -409,6 +417,8 @@ def render(ins, names=None):
         return f"{t(ops[0])} += {t(ops[1])}"
     if n in ("subtract", "subIndirect"):
         return f"{t(ops[0])} -= {t(ops[1])}"
+    if n in ("increment", "decrement") and ops[0].value in POINTER_VARS:   # reads through it
+        return f"{t(ops[0])} = Var[{t(ops[0])}] {'+' if n == 'increment' else '-'} 1"
     if n == "increment":
         return f"{t(ops[0])}++"
     if n == "decrement":
@@ -522,4 +532,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    if hasattr(signal, "SIGPIPE"):        # quietly, when the output is cut short (| head)
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     sys.exit(main(sys.argv[1:]))

@@ -68,3 +68,19 @@ PAL) with its MCP server; regenerator2000 0.9.20; Python 3.13.18;
 Node 22.23.4; Codex CLI 0.166.0, signed in with the contributor's
 ChatGPT account by device code. Nothing the install notes do not already
 say.
+
+## Exploring the story (6 and 7 November 2026)
+
+The kit had no step for the story of an adventure: its characters,
+places, puzzles and solution. This run added one for SCUMM games,
+`kit/skills/cpu/scumm/explore.md`, with `kit/scumm/world.py` and its
+test, and so edited no core skill. What would have saved the most time:
+
+- **A recording rests on the exact points the kit clicks.** A change to
+  how `walkto` picks its point changed the timing, and so every random
+  choice after it, and a recorded route through a random jungle stopped
+  matching. `explore.md` says to replay every recording after such a
+  change; `test_scummvm.py` checks the clicks on the test game.
+- **Waits on the game's state, not on the clock.** The Lotto's draw, the
+  stupidity machine and the Martian air each needed an `until` on a
+  variable, a bit or a state; `show` and `lacks` were added for them.

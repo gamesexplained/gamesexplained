@@ -181,6 +181,8 @@ def verb_scripts(number):
     look.increment(count)
     look.stopObjectCode()
     out = {1: look}
+    if number == BOX:           # USE shares LOOK's script: one offset in the verb table for both
+        out[2] = look
     if number == LAMP:          # the verb any other verb falls back to
         other = Asm()
         other.increment(171)
@@ -225,6 +227,13 @@ def boot():
     a.resourceRoutines(3, 0x52)              # unlock it
     a.move(120, 3)
     a.resourceRoutines(Var(120), 0x50)       # nothing (the low four bits are 0)
+    # -- variables 14 to 16 point: Var[14] holds 130, so a read of it reads Var[130]
+    a.move(130, 7)
+    a.move(14, 130)
+    check("isEqual", 14, 7, expect="next")
+    check("isEqual", 14, 130, expect="jump")
+    a.add(14, 1)                             # add writes the pointer without reading through it
+    check("isEqual", 14, 0, expect="next")   # Var[131], still 0
     a.pseudoRoom(1, [0x80 | 60])
     a.switchCostumeSet(0)
     a.op("dummy")
@@ -393,6 +402,15 @@ def boot():
     check("isEqual", 144, 1, expect="next")  # room 2's exit script ran
     a.saveLoadGame(135, 2)                   # save
     a.breakHere()
+    # -- clicks: 120 frames for the input's verb, object and sentence lines to click, and its until
+    # lines to see what script 4 kept of each
+    a.move(190, 1)
+    a.label("clicks")
+    a.breakHere()
+    a.increment(191)
+    a.op("isGreaterEqual", 191, 120, "clicked")
+    a.jumpRelative("clicks")
+    a.label("clicked")
     a.restart()
     return a
 
@@ -412,6 +430,26 @@ def sentence():
     and 10 (and in 18 whether the object has a script for the verb); it runs the verb's script."""
     a = Asm()
     a.doSentence(Var(8), Var(9), Var(10), 1)
+    a.stopObjectCode()
+    return a
+
+
+def input_script():
+    """Script 4: ScummVM runs it for each click and key (versions 1 and 2), with where it was in
+    VAR_CLICK_AREA; it keeps what each click hit, for test_scummvm.py's until lines to wait for."""
+    a = Asm()
+    a.op("isEqual", 32, 1, "not_verb")       # VAR_CLICK_AREA 1: a verb, in VAR_CLICK_VERB
+    a.move(186, Var(33))
+    a.label("not_verb")
+    a.op("isEqual", 32, 2, "not_room")       # 2: the room, at VAR_VIRT_MOUSE_X and Y
+    a.findObject(187, Var(30), Var(31))
+    a.label("not_room")
+    a.op("isEqual", 32, 3, "not_inventory")  # 3: the inventory, the object in VAR_CLICK_OBJECT
+    a.move(188, Var(35))
+    a.label("not_inventory")
+    a.op("isEqual", 32, 5, "not_sentence")   # 5: the sentence line
+    a.increment(184)
+    a.label("not_sentence")
     a.stopObjectCode()
     return a
 
@@ -439,7 +477,7 @@ def stops_itself():
     return a
 
 
-GLOBAL_SCRIPTS = {1: boot, 2: sentence, 3: background, 5: room_entered, 7: stops_itself, 8: chaining, 9: chained}
+GLOBAL_SCRIPTS = {1: boot, 2: sentence, 3: background, 4: input_script, 5: room_entered, 7: stops_itself, 8: chaining, 9: chained}
 ROOM_SCRIPTS = {1: (141, 142), 2: (143, 144)}       # room: (variable its entry counts, its exit)
 
 
@@ -472,15 +510,17 @@ def obcd(number, x, y, w, h, klass, name, scripts):
     head[4:6] = number.to_bytes(2, "little")
     head[6], head[7], head[8], head[9] = klass, x, y, w
     head[11], head[12], head[13] = x, y + h, (h * 8) & 0xF8
-    codes = [(verb, asm.assemble()) for verb, asm in scripts.items()]
-    table_len = 2 * len(codes) + 1
+    table_len = 2 * len(scripts) + 1
     name_at = 15 + table_len
     p = name_at + len(name) + 1
     table = bytearray()
     body = bytearray()
-    for verb, code in codes:
-        table += bytes([verb, p + len(body)])
-        body += code
+    placed = {}                 # a script that several verbs share is written once
+    for verb, asm in scripts.items():
+        if id(asm) not in placed:
+            placed[id(asm)] = p + len(body)
+            body += asm.assemble()
+        table += bytes([verb, placed[id(asm)]])
     head[14] = name_at
     block = head + table + b"\0" + name.encode("latin-1") + b"\0" + body
     if len(block) > 255:

@@ -12,7 +12,9 @@ with a trace, and checks:
   - every handler ran but the ones testgame.NOT_RUN names, and every script, room script and object
     script, one from the inventory among them; restart started the game again;
   - the opcode table is ScummVM's: each opcode names the handler engines/scumm/script_v2.cpp gives it;
-  - a run repeats: the same input gives the same trace, and a screenshot is the screen's size.
+  - a run repeats: the same input gives the same trace, and a screenshot is the screen's size;
+  - the input's until, verb, object and sentence lines: each until held, and each click hit what
+    it named, as the test game's input script saw it.
 
 The test needs the build `python3 kit/scripts/tools.py get-scummvm` makes; without it, it skips,
 and with KIT_REQUIRE_TOOLS set it fails.
@@ -34,6 +36,22 @@ from game import Game  # noqa: E402
 
 STOP = 12          # seconds of the game's clock: the whole test game runs in about 4.5
 
+# Clicks by a thing's number, once the test game waits for them (testgame.boot, "clicks"); each
+# until waits for what the test game's input script, 4, kept of the click before it
+INPUT = f"""+0 until var 190 = 1 within 11000
++0 until ready 200 within 2000
++0 verb 1                          # LOOK
++0 until var 186 = 1 within 2000
++0 object {testgame.LAMP}                       # in the room
++0 until var 187 = {testgame.LAMP} within 2000
++0 object {testgame.KEY}                       # in the inventory
++0 until var 188 = {testgame.KEY} within 2000
++0 sentence
++0 until var 184 = 1 within 2000
++0 show var 186 3                  # what script 4 kept of the three clicks
++0 until state {testgame.LAMP} lacks 2 within 2000     # script 1 set its state bits and cleared them
+"""
+
 
 class ScummVM(unittest.TestCase):
     @classmethod
@@ -46,7 +64,7 @@ class ScummVM(unittest.TestCase):
         cls.game_dir = testgame.write(os.path.join(cls.work, "game"))
         cls.game = Game(cls.game_dir)
         cls.trace = os.path.join(cls.work, "run.trace")
-        cls.out = scummvm.run(cls.game_dir, trace=cls.trace, stop=STOP)
+        cls.out = scummvm.run(cls.game_dir, INPUT, cls.work, trace=cls.trace, stop=STOP)
         cls.steps = strace.steps(cls.trace)
 
     @classmethod
@@ -86,6 +104,21 @@ class ScummVM(unittest.TestCase):
         self.assertEqual(sorted(want - scripts), [], "scripts that never ran")
         starts = [s for s in self.steps if s.script() == ("g", 1, None) and s.at == 4]
         self.assertGreaterEqual(len(starts), 2, "restart did not start the game again")
+
+    def test_input_clicks(self):
+        """Each until held, in turn: the verb, the object in the room, the one in the inventory and
+        the sentence line were each clicked where the game shows them."""
+        with open(self.trace) as f:
+            held = [ln.split(": ", 1)[1].strip() for ln in f if ln.startswith("# ") and " held: " in ln]
+        want = [ln.split("+0 ", 1)[1].split(" #")[0].strip() for ln in INPUT.splitlines() if ln.startswith("+0 until")]
+        self.assertEqual(held, want, f"ScummVM printed:\n{self.out}")
+
+    def test_show(self):
+        """A show line writes the values at that moment into the trace: the verb and the two objects
+        clicked."""
+        with open(self.trace) as f:
+            shown = [ln.split(" on: ", 1)[1].split() for ln in f if ln.startswith("# ") and " var 186 on: " in ln]
+        self.assertEqual(shown, [["1", str(testgame.LAMP), str(testgame.KEY)]])
 
     def test_opcode_table(self):
         """Each opcode names the handler ScummVM's version 2 table gives it (o2_, o4_, o5_ dropped)."""
