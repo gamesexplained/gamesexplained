@@ -12,6 +12,10 @@ Usage:
                                                                again from the disks and compared
   strace.py scripts <game folder> <trace>                       each script that ran: how often
                                                                and how many of its places
+  strace.py story <game folder> <trace>                         what happened, in the game's time:
+                                                               the input's notes, each line of
+                                                               text shown, each room loaded, each
+                                                               object picked up or given
 
 A trace line is one instruction, written when it has finished:
   SEQ DEPTH MS WHERE ROOM AT OP END [a:ARGS]
@@ -22,7 +26,8 @@ script, r and an object's number (or 10001 for the room's exit script, 10002 its
 room's, i and the object's number for an object carried in the inventory; ROOM the room loaded;
 AT and OP the opcode's offset in the resource and the opcode, in hex; END where the script went
 on from (hex; - when it stopped); ARGS each parameter the handler read, in order, a v before one
-read from a variable. A line that starts with # is a note: the input given at that time.
+read from a variable. A line that starts with # is a note: the input given at that time, or the
+room the game moved to (# MS room N).
 
 The check compares, for each place that ran: that the decoder finds the same opcode there (the
 disks are read as ScummVM reads them), that it reads as many parameters, each from a variable or
@@ -32,7 +37,7 @@ waits, or nowhere for one that stopped the script (what the trace shows after an
 always stops its script, such as restart, belongs to the script that runs in its place). kit/scumm/test_scummvm.py runs it on the kit's
 test game; on a game, it is the test that the decoder reads its scripts as ScummVM runs them.
 """
-import argparse, collections, os, re, sys
+import argparse, collections, os, re, signal, sys
 from dataclasses import dataclass
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -167,9 +172,27 @@ def annotate(game, s):
     return f"{s.seq:7} {s.ms:8} {'  ' * min(s.depth, 8)}{label(s):<26} {s.at:04X}  {text}   {end}"
 
 
+STORY = {"print", "printEgo", "loadRoom", "loadRoomWithEgo", "pickupObject", "setOwnerOf", "startMusic",
+         "cutscene", "endCutscene"}
+
+
+def story(game, path):
+    """[(ms, text)]: the trace's notes, and the instructions in STORY that ran, with their text."""
+    out = [(ms, f"# {text}") for ms, text in notes(path)]
+    for s in steps(path):
+        if scode.OPCODES_V12[s.opcode] in STORY:
+            try:
+                text = decode_step(game, s).text
+            except (scode.ScummError, GameError, IndexError) as e:
+                text = f"?? {e}"
+            out.append((s.ms, f"{label(s)}: {text}"))
+    out.sort(key=lambda x: x[0])
+    return out
+
+
 def main(argv):
     ap = argparse.ArgumentParser(prog="strace.py")
-    ap.add_argument("command", choices=("show", "check", "scripts"))
+    ap.add_argument("command", choices=("show", "check", "scripts", "story"))
     ap.add_argument("game")
     ap.add_argument("trace")
     ap.add_argument("--from", dest="start", type=int, default=0)
@@ -189,6 +212,9 @@ def main(argv):
         print(f"{len(ss)} instructions at {len(places)} places in {len(scripts)} scripts; "
               f"{len(problems)} where the decoder and ScummVM disagree")
         return 1 if problems else 0
+    elif a.command == "story":
+        for ms, text in story(game, a.trace):
+            print(f"{ms:8}  {text}")
     elif a.command == "scripts":
         runs = collections.Counter(s.script() for s in ss)
         places = collections.defaultdict(set)
@@ -201,4 +227,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    if hasattr(signal, "SIGPIPE"):        # quietly, when the output is cut short (| head)
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     sys.exit(main(sys.argv[1:]))

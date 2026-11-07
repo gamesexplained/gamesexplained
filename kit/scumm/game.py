@@ -38,7 +38,7 @@ counts itself. In memory a resource keeps that length; a script's code starts fo
 
 Run as a script: game.py <folder> [index | rooms | scripts | room N | objects N]
 """
-import os, sys
+import os, signal, sys
 from dataclasses import dataclass, field
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -67,6 +67,17 @@ class Obj:
     verbs: dict = field(default_factory=dict)    # verb -> offset from the code block's start
     name_at: int = 0            # offset of the name from the code block's start
     klass: int = 0
+    # where it is in the room, in pixels (versions 1 and 2; ScummVM's resetRoomObject reads them
+    # the same way): its box, where an actor walks to reach it, and the object (0: none) it can
+    # be found only with, when that one's state is parent_state
+    x: int = 0
+    y: int = 0
+    width: int = 0
+    height: int = 0
+    walk_x: int = 0
+    walk_y: int = 0
+    parent: int = 0
+    parent_state: int = 0
 
 
 def find_images(folder, names):
@@ -231,7 +242,14 @@ class Game:
             k = name_at
             while k < size and ob[k]:
                 name.append(ob[k] & 0x7F); k += 1
-            out.append(Obj(number, off, size, name.decode("latin-1"), verbs, name_at, ob[6]))
+            o = Obj(number, off, size, name.decode("latin-1"), verbs, name_at, ob[6])
+            if self.version >= 1:     # ScummEngine_v4::resetRoomObject, from two bytes before the block
+                o.x, o.y, o.width, o.height = ob[7] * 8, (ob[8] & 0x7F) * 8, ob[9] * 8, ob[13] & 0xF8
+                o.walk_x, o.walk_y = ob[11] * 8, (ob[12] & 0x1F) * 8
+                o.parent, o.parent_state = ob[10], 8 if ob[8] & 0x80 else 0
+            out.append(o)
+        for o in out:               # the parent is the room's object slot, counted from 1: its number here
+            o.parent = out[o.parent - 1].number if 0 < o.parent <= len(out) else 0
         return out
 
     def object(self, number):
@@ -314,7 +332,9 @@ def main(argv):
         for n in range(1, g.n_rooms):
             if g.has_room(n):
                 r = g.room(n)
-                print(f"room {n:2}: side {g.room_side[n]}, track {g.room_start[n][0]:2} sector {g.room_start[n][1]:2}, "
+                side = g.room_side[n]
+                side = side - ord("0") if side in (ord("1"), ord("2")) else side
+                print(f"room {n:2}: side {side}, track {g.room_start[n][0]:2} sector {g.room_start[n][1]:2}, "
                       f"{len(r):5} bytes, {r[4] * 8}x{r[5] * 8}, {r[20]} objects, entry {g.entry(n):04X}, exit {g.exit(n):04X}")
     elif cmd == "scripts":
         for n, (room, off) in enumerate(g.index["script"]):
@@ -326,7 +346,9 @@ def main(argv):
     elif cmd == "objects":
         for o in g.objects(int(argv[2])):
             verbs = " ".join(f"{v}:{off:02X}" for v, off in o.verbs.items())
-            print(f"object {o.number:4} at {o.offset:04X}, {o.size:4} bytes, {o.name!r}: {verbs}")
+            where = f"x {o.x:3} y {o.y:3} {o.width:3}x{o.height:<3}" + (
+                f" shown with object {o.parent} in state {o.parent_state}" if o.parent else "")
+            print(f"object {o.number:4} at {o.offset:04X}, {o.size:4} bytes, {where}, {o.name!r}: {verbs}")
     elif cmd == "room":
         r = g.room(int(argv[2]))
         print(f"{len(r)} bytes: {r[:32].hex(' ')}")
@@ -336,4 +358,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    if hasattr(signal, "SIGPIPE"):        # quietly, when the output is cut short (| head)
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     sys.exit(main(sys.argv[1:]))

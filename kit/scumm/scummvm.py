@@ -19,23 +19,28 @@ a clock that moves only when the engine waits, so that a run is as fast as the c
 and the same every time; the trace, every SCUMM instruction it runs (kit/scumm/strace.py reads
 it); input at set times from a file; and screenshots. ScummVM's own improvements to the games
 are off (enhancements=0) and the games' copy protection on, so that what runs is the scripts
-as they shipped.
+as they shipped; --no-copy-protection turns on ScummVM's own way past it (for Zak McKracken, it
+skips the script that asks for the code at the airports), for a replay of a solution that should
+need no manual.
 
 Usage:
   scummvm.py get                       download ScummVM 2026.4.0, check its SHA-256, add the kit's
                                        trace, build
   scummvm.py status                    which build is there
   scummvm.py run <game folder> [--input FILE] [--trace FILE] [--stop SECONDS] [--seed N]
+                 [--no-copy-protection]
                                        play the game in that folder (the files ScummVM detects:
                                        zak1.d64 and zak2.d64 for the C64 Zak McKracken), with
                                        clicks and keys from FILE, every instruction into the trace
                                        FILE, until SECONDS of the game's clock have passed (or the
-                                       input's `quit`), the random numbers from seed N
+                                       input's `quit`), the random numbers from seed N; with
+                                       --no-copy-protection, past the game's code checks
   scummvm.py verify-footprint          build the kit's test game, run it with a trace and list what
                                        was written outside the repository; an empty list is the pass
 
 The input file has a line for each thing to do, at a time on the game's clock in milliseconds,
-or "+N", N milliseconds after the line before; # starts a comment:
+or "+N", N milliseconds after the line before; # starts a comment, at the start of a line or
+after a space:
   1000 click 160 100      move the mouse to x 160, y 100 on the game's screen and press the left
                           button (rclick: the right one; move: move it only)
   +500 key RETURN         press a key: a character, or RETURN, ESCAPE, SPACE, BACKSPACE, TAB,
@@ -43,7 +48,43 @@ or "+N", N milliseconds after the line before; # starts a comment:
   +500 type hello         each character in turn, 100 ms apart
   +200 shot title.png     the screen as it is drawn next, as a PNG (a path from the input file's
                           folder)
+  +0 show var 131 6       the values of variables 131 to 136 at that moment, written in the
+                          trace (what the game chose at random, say); bit, owner, state and
+                          sound the same way
   60000 quit              stop
+
+A thing the game shows can be clicked by its number, at a point where the engine's own hit test
+finds it when the line's time comes, so that a recording does not depend on where the camera is:
+  +0 verb 14              verb 14, where it is drawn
+  +0 object 16            object 16: in the room, a point where a click finds it and no actor
+                          stands; in the inventory of the actor the player moves, its line,
+                          clicking the inventory's arrows first to bring it into view
+  +0 actor 10             actor 10, in the room
+  +0 object 572|573|574   the first of them that is on the screen, for a room whose ways out
+                          change from one visit to the next
+  +0 sentence             the sentence line
+  +0 walkto 112           walk to the screen's edge on the side of object 112 of the room,
+                          until the room has scrolled to show it (nothing, when it shows or
+                          is not in the room), at a point no way out covers, since a click on
+                          one would take the actor through it
+If the thing is nowhere on the screen, the run stops with exit status 3 and says which line.
+
+  +0 until ready          wait until the game takes clicks, the actor the player moves stands
+                          still, no sentence waits and nothing is being said, for two seconds
+                          running (a verb's script may pause between two of its steps); `until
+                          ready 500`: for 500 ms
+  +0 until room 5         or until the room is 5 (VAR_ROOM: a pseudo room keeps its own number),
+  +0 until ego 2            the player moves actor 2,
+  +0 until var 66 = 3       variable 66 is 3 (=, !=, <, >, <=, >=),
+  +0 until bit 1470 = 1     bit variable 1470 is 1,
+  +0 until owner 16 = 1     actor 1 has object 16,
+  +0 until state 94 = 1     object 94's state is 1 (state 94 has 8: that bit of it is set;
+                            lacks 2: it is clear, as when the object can be touched),
+  +0 until sound 33 = 0     or sound (or tune) 33 is not playing (1: it is)
+  ... within 60000        at most this long (the default is 120000 ms); if it does not hold by
+                          then, the run stops with exit status 3 and says which line
+The lines after an until are timed from the moment it held, so every line after the first until
+is "+N". The trace has a note for each line, where each click landed, and when each until held.
 """
 import hashlib, os, re, shutil, subprocess, sys, tarfile, tempfile, zlib, struct
 
@@ -82,9 +123,10 @@ CONFIGURE = [
     "--disable-enet", "--disable-discord",
 ]
 
-# What the kit adds to ScummVM: two files of its own, and these edits, each of which must match
+# What the kit adds to ScummVM: three files of its own, and these edits, each of which must match
 # exactly once or the build stops, so a release that has moved them is noticed.
-KIT_FILES = {"kit_scumm.h": "scummvm_kit.h", "backends/platform/null/kit_scumm.cpp": "scummvm_kit.cpp"}
+KIT_FILES = {"kit_scumm.h": "scummvm_kit.h", "backends/platform/null/kit_scumm.cpp": "scummvm_kit.cpp",
+             "engines/scumm/kit_scumm_engine.cpp": "scummvm_kit_engine.cpp"}
 EDITS = (
     ("backends/platform/null/module.mk", "MODULE_OBJS := \\\n\tnull.o\n",
      "MODULE_OBJS := \\\n\tnull.o \\\n\tkit_scumm.o\n"),
@@ -128,6 +170,15 @@ EDITS = (
      "int ScummEngine_v5::getVarOrDirectWord(byte mask) {\n\tbool kitVar = (_opcode & mask) != 0;\n"
      "\tint kitValue = kitVar ? getVar() : fetchScriptWordSigned();\n\tif (kitTraceOn)\n"
      "\t\tkitTraceArg(kitValue, kitVar);\n\treturn kitValue;\n}"),
+    # the engine's side of the input's verb, object, actor, sentence and until lines
+    ("engines/scumm/module.mk", "MODULE_OBJS := \\\n\tactor.o \\\n",
+     "MODULE_OBJS := \\\n\tactor.o \\\n\tkit_scumm_engine.o \\\n"),
+    ("engines/scumm/scumm.h", "\tfriend class ScummEditor;\n", "\tfriend class ScummEditor;\n\tfriend class KitScumm;\n"),
+    ("engines/scumm/scumm_v2.h", "class ScummEngine_v2 : public ScummEngine_v3old {\nprotected:\n",
+     "class ScummEngine_v2 : public ScummEngine_v3old {\n\tfriend class KitScumm;\nprotected:\n"),
+    ("engines/scumm/scumm.cpp", '#include "scumm/object.h"\n', '#include "scumm/object.h"\n#include "kit_scumm.h"\n'),
+    ("engines/scumm/scumm.cpp", "\tsetTotalPlayTime();\n\n\t_lastWaitTime = _system->getMillis();\n",
+     "\tsetTotalPlayTime();\n\tkitEngineStart(this);\n\n\t_lastWaitTime = _system->getMillis();\n"),
 )
 
 
@@ -294,9 +345,14 @@ def png(ppm_path, png_path):
                 + chunk(b"IDAT", zlib.compress(rows, 9)) + chunk(b"IEND", b""))
 
 
-def run(game, input_text=None, input_dir=None, trace=None, stop=None, seed=1, timeout=1800):
-    """Play the game in folder `game`; returns what ScummVM printed. input_text is the input
-    file's text, its screenshots' paths taken from input_dir; stop is seconds of the game's clock."""
+last_status = None      # the exit status of the last run: 3 when its input stopped it
+
+
+def run(game, input_text=None, input_dir=None, trace=None, stop=None, seed=1, timeout=1800,
+        copy_protection=True):
+    """Play the game in folder `game`; returns what ScummVM printed, and leaves its exit status in
+    last_status. input_text is the input file's text, its screenshots' paths taken from input_dir;
+    stop is seconds of the game's clock."""
     if not available():
         sys.exit(f"no up-to-date ScummVM: {build_line()}")
     work = scratch("run-")
@@ -304,7 +360,8 @@ def run(game, input_text=None, input_dir=None, trace=None, stop=None, seed=1, ti
         env = environment()
         ini = os.path.join(work, "scummvm.ini")
         with open(ini, "w") as f:   # ScummVM's improvements off: the scripts as they shipped
-            f.write("[scummvm]\nenhancements=0\ncopy_protection=true\nsubtitles=true\n")
+            f.write("[scummvm]\nenhancements=0\ncopy_protection=%s\nsubtitles=true\n"
+                    % ("true" if copy_protection else "false"))
         shots = []
         if input_text is not None:
             lines = []
@@ -324,9 +381,12 @@ def run(game, input_text=None, input_dir=None, trace=None, stop=None, seed=1, ti
             env["SCUMM_KIT_TRACE"] = os.path.abspath(trace)
         if stop is not None:
             env["SCUMM_KIT_STOP"] = str(int(float(stop) * 1000))
-        args = [EXE, "-c", ini, f"--savepath={work}", f"--random-seed={int(seed)}", "--copy-protection",
-                f"--path={os.path.abspath(game)}", "--auto-detect"]
+        args = [EXE, "-c", ini, f"--savepath={work}", f"--random-seed={int(seed)}"] + \
+            (["--copy-protection"] if copy_protection else []) + \
+            [f"--path={os.path.abspath(game)}", "--auto-detect"]
         r = subprocess.run(args, env=env, cwd=work, capture_output=True, text=True, timeout=timeout)
+        global last_status
+        last_status = r.returncode
         for dest in shots:
             if os.path.isfile(dest + ".ppm"):
                 if dest.lower().endswith(".png"):
@@ -377,13 +437,16 @@ def main(argv):
         ap.add_argument("--trace")
         ap.add_argument("--stop", type=float, help="seconds of the game's clock")
         ap.add_argument("--seed", type=int, default=1)
+        ap.add_argument("--no-copy-protection", action="store_true")
         a = ap.parse_args(rest)
         if a.input is None and a.stop is None:
             sys.exit("scummvm.py run: give --stop SECONDS or an --input file that ends with quit; "
                      "otherwise the game runs until it is stopped")
         text = _read(a.input) if a.input else None
         sys.stdout.write(run(a.game, text, os.path.dirname(os.path.abspath(a.input)) if a.input else None,
-                             a.trace, a.stop, a.seed))
+                             a.trace, a.stop, a.seed, copy_protection=not a.no_copy_protection))
+        if last_status == 3:
+            return 3        # a thing to click was not on the screen, or an until did not hold
     else:
         sys.exit(f"scummvm.py: no command {cmd!r}; see -h")
     return 0
