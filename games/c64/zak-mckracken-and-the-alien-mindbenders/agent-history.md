@@ -148,3 +148,46 @@ part's listing instead of an embedded copy of sound 1, and the tests
 read the parts' listings. The About tab's feature table no longer links
 its addresses: in a game of several parts the whole game's files link
 only addresses written with their part's name.
+
+## 6 and 7 November 2026: the story, played to the end
+
+Aaron asked for a playbook for exploring a SCUMM game (characters,
+places, puzzles, the solution, secrets, names for the bare numbers),
+and then for what came in the box. The playbook went into the kit as
+`kit/skills/cpu/scumm/explore.md`, with `kit/scumm/world.py` to gather
+what each step needs from every script.
+
+Every line of text came first (`work/text.txt`, 1,296 lines), then the
+actors, the pseudo rooms and each room's objects. The solution was
+written as an input file for the kit's ScummVM a scene at a time, each
+scene replayed from the start, and run to THE END on seed 1 with
+`--no-copy-protection`: `work/replay/final.txt`, 4,048 lines, about two
+hours of the game's clock, 35 seconds to run. `strace.py check` on the
+whole trace found no place where the decoder and ScummVM disagree.
+
+What playing it taught, in the order it cost time:
+
+- A click on an object off the screen walks to the screen's edge first.
+  In a maze, that point can be a doorway, and the kid walked through it
+  into the wrong chamber. The kit's `walkto` now moves the point along
+  the edge when an object with a Walk to script covers it. The first
+  version avoided every object, which moved the click in rooms where
+  nothing was wrong, changed the timing, and so changed the jungle's
+  random paths after it: the recorded jungle crossings stopped
+  matching. Narrowing it to objects with a Walk to script kept every
+  earlier recording.
+- The jungle's paths are picked again on every visit, so the crossings
+  were played a step at a time from the trace's notes
+  (`work/replay/autoj.py`).
+- The Lotto keypad takes clicks on its digit objects, not typed keys;
+  the draw waits about five minutes of play (bit 1455); the stupidity
+  machine takes the verbs away for minutes. Each needed an until on the
+  game's own state rather than a pause.
+- Mars: the fish bowl suffocates Zak unless it is taped and goes on
+  after the oxygen tank; the white crystal is free for a moment, so the
+  click on it has to come straight after the button.
+
+The newspaper and the manual were read from the Internet Archive's
+scans (`zak-mckracken-newspaper`, `game_manual_Zak_McKracken_Manual`);
+the page links to them. The copy protection is explained without its
+code table or the arithmetic script 110 uses to make the symbols.
