@@ -24,7 +24,8 @@ take-off's vaporising ($173B, $16D2) on every Dreadnought with the same noise, c
 points of its run; the fighters ($1A98, $1C73) on all 57 wave records, both entry sides and two
 Manta heights, every position frame by frame; the shots ($2A17, $2AE9) over random volleys on
 every Dreadnought; the stars ($2ED7) on random screens; and the homing mines ($1F62, $2021,
-$205F) over 600 random launches, every frame from materialising to the burst.
+$205F) over 600 random launches, every frame from materialising to the burst. Last, the Graphics tab's recorder on all fifteen
+Dreadnoughts: every routine it runs reaches its end and every shape that holds a picture is drawn.
 
 Everything it needs is committed: no game image, no snapshot, no emulator.
 It needs node; with KIT_REQUIRE_TOOLS set it fails without it.
@@ -374,6 +375,45 @@ const flyMine = new Function(s.slice(s.indexOf('function flyMine'), s.indexOf('/
 })().catch(e => { console.log(e.stack || e); process.exit(1); });
 """
 
+EXTRA_GRAPHICS = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
+const s = fs.readFileSync(path.join(GAME, 'graphics.html'), 'utf8');
+if (s.indexOf('function gxRecord') < 0) throw new Error('gxRecord not found in graphics.html');
+const gxRecord = new Function(s.slice(s.indexOf('function gxRecord'), s.indexOf('// end of gxRecord')) + '\nreturn gxRecord;')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let fail = 0;
+  const bad = (lv, why) => { fail++; console.log('level', lv + ':', why); };
+  for (let lv = 1; lv <= 15; lv++) {
+    const o = gxRecord(ram, CPU, lv), seen = new Set();
+    for (const k of ['manoeuvres', 'waiting', 'launch', 'explodes', 'fexpl', 'mine']) o[k].forEach((f) => f.s.forEach((q) => q.on && seen.add(q.b)));
+    for (let b = 0xA0; b < 0xC0; b++) seen.add(b);                                       // the fighters, drawn as stills
+    for (let n = 0; n < 16; n++) seen.add(ram[0x3723 + n]);                               // the bullets, stills
+    for (let b = 0; b < 0xC0; b++) {
+      if (b >= 0x20 && b < 0x30) continue;                                                // the screen
+      const full = o.m.subarray(0x4000 + 64 * b, 0x4000 + 64 * b + 63).some((v) => v);
+      if (full && !seen.has(b)) bad(lv, 'shape $' + b.toString(16) + ' is drawn nowhere');
+      if (!full && seen.has(b)) bad(lv, 'blank shape $' + b.toString(16) + ' is shown');
+    }
+    if (o.seqs.length !== 12) bad(lv, o.seqs.length + ' manoeuvres');
+    if (o.waiting.length !== 65) bad(lv, 'the wait lasts ' + o.waiting.length + ' frames');
+    const end = o.launch[o.launch.length - 1].s;
+    if (!(end[6].on && end[6].x === 0xAA)) bad(lv, 'the launch leaves the Manta at ' + end[6].x);
+    if (o.explodes.length !== 66) bad(lv, 'the Manta explodes for ' + o.explodes.length + ' frames');
+    if (o.fexpl.length !== 20 || o.fexpl[19].st !== 0) bad(lv, 'the explosion does not end after 20 frames');
+    const st = [...new Set(o.mine.map((f) => f.st))].join();
+    if (st !== '8,10,6,0') bad(lv, 'the mine goes through states ' + st);
+  }
+  console.log(`15 Dreadnoughts recorded; ${fail ? fail + ' problems' : 'every routine ran to its end and every shape is drawn'}`);
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
 
 def main():
     node = shutil.which("node")
@@ -388,7 +428,7 @@ def main():
             f.write(JS)
         r = subprocess.run([node, script, HERE, ROOT] + PAGES)
         codes = [r.returncode]
-        for name, js in (("vaporising", EXTRA_VAPOUR), ("fighters", EXTRA_FIGHTERS), ("shots", EXTRA_SHOTS), ("stars", EXTRA_STARS), ("homing mines", EXTRA_MINE)):
+        for name, js in (("vaporising", EXTRA_VAPOUR), ("fighters", EXTRA_FIGHTERS), ("shots", EXTRA_SHOTS), ("stars", EXTRA_STARS), ("homing mines", EXTRA_MINE), ("graphics", EXTRA_GRAPHICS)):
             f = os.path.join(d, name + ".js")
             with open(f, "w") as out:
                 out.write(js)
