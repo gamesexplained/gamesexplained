@@ -215,3 +215,17 @@ a play snapshot remade from the archive.org copy of the disk image,
 whose SHA-1 matches the contributor's (`orientation.md`); 61 bytes of
 running state differ from the first snapshot (zero page, `$A401`-`$A48D`
 and `$FFFE`), because it was taken at another moment of play.
+
+## Graphics tab (7 November 2026)
+
+`graphics.html` runs the game's own routines on the kit's 6502 over the listing and records the
+eight sprites a frame at a time: `manta_animate` for the twelve manoeuvres, the start of a life's
+wait at `$0CB4`, `launch_sequence`, `manta_explodes`, and `enemies_frame` for an explosion and a
+homing mine, each with the routine's frame wait (`wait_frame`, `frame_tick`, `frame_coast`)
+standing in as a hook that records and returns. `thicken_shapes`, `level_colours` and
+`copy_tile_set` run first, so the shadows, the colours and the level's characters are the game's.
+Fighters and bullets are stills, since a wave keeps its shape. `test_ports.py` runs the recorder on
+all fifteen Dreadnoughts and checks that every routine ends and that every shape holding a picture,
+and no blank one, is drawn. Found on the way: bullets, mines and explosions never set a colour
+(`sprite_put`), and the Manta turns while the game waits for fire. The fuel rod chamber's
+characters are left off the tab: the colours its screen gives each cell were not traced.

@@ -1,0 +1,463 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uridium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}}
+.ur-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000}
+.ur-scroll{overflow-x:auto;max-width:100%}
+.ur-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+.ur-ctl button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer}
+.ur-ctl button:hover{border-color:var(--accent)}
+.ur-ctl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ur-ctl label{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.ur-ctl select,.ur-ctl input[type=range]{font-family:var(--fm);font-size:12.5px}
+.ur-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
+.ur-tbl{border-collapse:collapse;font-size:14px;margin:6px 0 18px;width:100%}
+@media (max-width:640px){.ur-tbl{display:block;overflow-x:auto;max-width:100%}}
+.ur-tbl th,.ur-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.ur-tbl th{font-family:var(--fm);font-size:12px;font-weight:500;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em}
+.ur-shots{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 20px}
+.ur-shots figure{margin:0;flex:1 1 300px}
+.ur-shots img{width:100%;image-rendering:pixelated;display:block;border-radius:4px}
+.ur-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.ur-rods{display:grid;grid-template-columns:repeat(3,auto);gap:6px 14px;justify-content:start;font-family:var(--fm);font-size:14px;margin:12px 0 0}
+.ur-rods span{padding:2px 8px;border-radius:4px;background:var(--surface-2)}
+.ur-rods .ur-lit{background:#2a8a4a;color:#fff}
+.ur-msg{font-size:14px;color:var(--coral)}
+.ur-wide{width:100%;height:auto}
+.ur-click{cursor:pointer}
+.ur-note{font-size:13px;color:var(--ink-mute)}
+.gx-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 16px;font-family:var(--fm);font-size:13px}
+.gx-bar button,.gx-bar select{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer}
+.gx-bar button:hover{border-color:var(--ink-mute)}
+.gx-bar .gx-lab{color:var(--ink-soft);margin:0 2px 0 8px}
+.gx-stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-left:auto}
+.gx-group{margin:0 0 22px}
+.gx-group h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.gx-group p{font-size:13.5px;color:var(--ink-mute);margin:0 0 10px;line-height:1.5}
+.gx-tiles{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;margin:0 0 10px}
+.gx-tile{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;padding:6px 6px 4px;max-width:100%;width:max-content}
+.gx-tile canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+.gx-tile span{display:block;font-family:var(--fm);font-size:10.5px;color:var(--ink-soft);margin:4px 0 0;line-height:1.35;min-width:132px;contain:inline-size}
+.gx-tile canvas.gx-strip{margin:5px 0 0}
+.gx-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.gx-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated}
+.gx-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.4em}
+@media (max-width:700px){.gx-stat{margin-left:0;width:100%}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Hewson Consultants</p>
+  <h1>Uridium</h1>
+  <p class="sub">Everything that moves in Uridium is one of eight hardware sprites: the Manta, its shadow, and six enemy sprites that take turns as fighters, bullets, homing mines and explosions. The Dreadnought itself is characters, 128 that every level shares and 128 that are the level's own.</p>
+</header>
+<main class="wrap">
+
+<section id="sprites">
+  <p class="fig">01 · Everything that moves</p>
+  <h2 class="t">Every sprite, moved by the game's own code</h2>
+  <p class="lede">Each picture here is placed, coloured and stepped by the game's own routines, run on the kit's 6502 over the listing's memory a frame at a time, a fiftieth of a second, in the colours of the Dreadnought chosen below.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <button type="button" id="gx-run">Pause</button>
+      <label class="gx-lab" for="gx-lv">Dreadnought</label> <select id="gx-lv"></select>
+      <span class="gx-stat" id="gx-stat"></span>
+    </div>
+    <p class="gx-miss" id="gx-wait">The sprites are drawn by the game's own code in the built site.</p>
+    <div class="gx-group">
+      <h3>The Manta and its shadow</h3>
+      <p>The Manta has 46 frames: a roll facing right (<code>$40</code>-<code>$4F</code>), a roll facing left (<code>$50</code>-<code>$5F</code>) and the end-on frames of a half-loop (<code>$60</code>-<code>$6D</code>). <code>manta_animate</code> plays its twelve manoeuvres from the tables at <code>$31E2</code>, a frame every other game frame; here they play in turn. The shadow is sprite 7, the Manta's frame plus <code>$30</code> in dark grey, moved right by the Manta's height and down by half of it, so it drops away as a half-loop climbs.</p>
+      <div class="gx-tiles" id="gx-manta"></div>
+      <p>The shadows' shapes are not in the game's file. <code>thicken_shapes</code> (<code>$25E5</code>) builds all 46 from the Manta's frames at every restart: any pair of pixels with one bit set gets both, which turns the multicolour Manta into a solid hires outline.</p>
+    </div>
+    <div class="gx-group">
+      <h3>The launch</h3>
+      <p>Before each life the Manta turns through its right-facing roll, one frame a frame, until fire is pressed or 65 frames have passed (<code>$0CB4</code>). Then <code>launch_sequence</code> (<code>$2839</code>) puts up the transporter, six multicolour pieces in two rows, with a door of bars at its front. The door opens a shape every three frames, then the Manta takes its place and slides out a pixel every two frames, and the transporter falls away to the left, faster as it goes.</p>
+      <div class="gx-tiles" id="gx-launch"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The fighters</h3>
+      <p>Sixteen types, each stored twice, facing each way (<code>$A0</code>-<code>$AF</code> and <code>$B0</code>-<code>$BF</code>). A wave takes its shape once, when it starts: <code>$A0</code> or <code>$B0</code> plus its type, by the sign of the Manta's speed at that moment (<code>$1B49</code>), and its fighters never change it, so they are not animated. Every fighter is multicolour, in the level's fighter colour with the Manta's two shared colours.</p>
+      <div class="gx-tiles" id="gx-fighters"></div>
+    </div>
+    <div class="gx-group">
+      <h3>Bullets, mines and explosions</h3>
+      <p>The fighters' bullets are six shapes, picked by the wave's type (<code>type_bullet</code>, <code>$3723</code>). A shot-down fighter, a bullet at the end of its life and a burst mine all become the same explosion, <code>$14</code> to <code>$1D</code> a step every other frame (<code>explosion_move</code>, <code>$1C37</code>). A homing mine runs the same shapes backwards as it materialises, a step every fourth frame, and then flies as the cross <code>$11</code> (<code>mine_appear</code>, <code>mine_move</code>). None of these sets a colour: <code>sprite_put</code> writes only the shape and the place, so each takes the colour its sprite last had, which in play is the fighter colour the wave gave it.</p>
+      <div class="gx-tiles" id="gx-shots"></div>
+    </div>
+    <div class="gx-group">
+      <h3>The Manta destroyed</h3>
+      <p><code>manta_explodes</code> (<code>$245B</code>) turns the Manta's sprite into a fireball, <code>$30</code>, in yellow with orange and black. Every three frames it throws one more of the eight sprites out from the fireball at a random offset, and steps every sprite on one shape until each has gone past <code>$3A</code>.</p>
+      <div class="gx-tiles" id="gx-boom"></div>
+    </div>
+    <p class="cap" id="gx-cap"></p>
+  </div>
+  <p>Every shape in the bank that holds a picture is drawn above. The twelve that are blank are ends: <code>$13</code> is where a materialising mine turns into the cross, <code>$1E</code> and <code>$3B</code> are where the explosions switch their sprites off, and <code>$1F</code>, <code>$3C</code>-<code>$3F</code>, <code>$6E</code> and <code>$6F</code> with their shadows <code>$9E</code> and <code>$9F</code> fill out the blocks. How the sprites collide with the map is on How it works: <a href="how-it-works.html#shots">Shots and bullets</a> and <a href="how-it-works.html#mines">Homing mines</a>.</p>
+</section>
+
+<section id="characters">
+  <p class="fig">02 · The characters</p>
+  <h2 class="t">Each Dreadnought is drawn from one of three character sets</h2>
+  <p class="lede">The playfield is 17 rows of multicolour characters. Codes <code>$00</code>-<code>$7F</code> are the same on every level; <code>$80</code>-<code>$FF</code> are copied in for each level from one of three sets.</p>
+  <div class="plate">
+    <div class="gx-bar">
+      <label class="gx-lab" for="gx-clv">Dreadnought</label> <select id="gx-clv"></select>
+      <span class="gx-stat" id="gx-cset"></span>
+    </div>
+    <div class="ur-scroll"><canvas id="gx-chars" class="gx-cv" width="576" height="288"></canvas></div>
+    <p class="gx-out" id="gx-cout">Point at a character to see its code.</p>
+    <p class="cap">The fixed half from <code>$7800</code>; the level's half copied to <code>$7C00</code> by <code>copy_tile_set</code> (<code>$1A54</code>) from <code>$D400</code>, <code>$D800</code> or <code>$DC00</code>, by the table at <code>$E040</code>; the colours from <code>level_colours</code> (<code>$2F33</code>), both run on the kit's 6502. Each cell is drawn in the level's map colour with its two shared colours, on the white background.</p>
+  </div>
+  <p>Walls are <code>$80</code>-<code>$8F</code> and targets <code>$90</code>-<code>$9F</code>, both in the level's own half, so each set gives its Dreadnoughts their own walls and targets. A target shot down becomes its wreck, the code <code>$20</code> lower, <code>$70</code>-<code>$7F</code> in the shared half. The runway's end is <code>$6F</code>, and the stars are <code>$42</code> and <code>$43</code>, rewritten every frame (<a href="how-it-works.html#stars">Stars</a>). The three sets are shared out over the fifteen Dreadnoughts: six use the set at <code>$DC00</code>, five the set at <code>$D400</code> and four the set at <code>$D800</code>.</p>
+</section>
+
+<section id="font">
+  <p class="fig">03 · The status lines</p>
+  <h2 class="t">The status font is printed two rows tall with a gap in every other line</h2>
+  <p class="lede">The score lines above the playfield use a font of their own, in hires, each character printed as a top half and a bottom half.</p>
+  <div class="plate">
+    <div class="ur-scroll"><canvas id="gx-font" class="gx-cv" width="576" height="160"></canvas></div>
+    <p class="gx-out" id="gx-fout">Point at a character to see its codes.</p>
+    <p class="cap">The font at <code>$7000</code>, as <code>spread_font</code> (<code>$30A0</code>) leaves it: code <code>n</code> is the top half and <code>n + $80</code> the bottom half, drawn here one above the other in white on black.</p>
+  </div>
+  <p>The game's file holds the font eight rows to a character. <code>spread_font</code> runs once at start-up and spreads each character over two: the top four rows go to the top half at <code>$7000</code> and the bottom four to the bottom half at <code>$7400</code>, each row followed by a blank one, which gives the status text its scan-line look. Among the 128 are the digits, the lower case, wide capitals in two halves, the joystick and colour icons and the URIDIUM logo.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+// Graphics tab. gxRecord runs the game's own routines on the kit's 6502 (C64Cpu) over a copy of the
+// listing's memory and records the eight sprites a frame at a time; the tiles play the recordings
+// back at 50 frames a second. Stills are drawn from the same memory, after the game's own
+// thicken_shapes, level_colours and copy_tile_set have run on it.
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const wait = $('gx-wait');
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+  wait.textContent = 'These pictures are drawn by the site\'s shared scripts, which the built site serves.';
+  return;
+}
+  function gxRecord(ram, CPU, level) {
+    // The game's own routines on the kit's 6502, over a copy of the listing's memory. Each tile's
+    // pictures are recorded a frame at a time: the routine runs until it would wait for the next
+    // frame (wait_frame $2918, frame_tick $13B1, frame_coast $13EB), the eight sprites are read
+    // from the video chip's registers and the pointers at $4BF8, and the wait returns at once.
+    let seed = 0x5EED;
+    const noise = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed & 255; };
+    function machine() {
+      const m = Uint8Array.from(ram), vic = new Uint8Array(0x40);
+      const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: {
+        read(a, c) {
+          if (a >= 0xD000 && a < 0xD040) return a === 0xD012 ? Math.floor(c.cycles / 63) % 256 : vic[a - 0xD000];
+          if (a === 0xD41B) return noise();                       // voice 3's oscillator: the game's noise
+          if (a >= 0xDC00 && a < 0xDD10) return 0xFF;             // no stick, no key
+          return 0;
+        },
+        write(a, v) { if (a >= 0xD000 && a < 0xD040) vic[a - 0xD000] = v; } } });
+      const call = (a, hooks) => cpu.call(a, {}, { maxSteps: 2e6, hooks: hooks || {} });
+      const record = (into) => {
+        const s = [];
+        for (let i = 0; i < 8; i++) s.push({ on: (vic[0x15] >> i) & 1, x: vic[2 * i] | ((vic[0x10] >> i) & 1) << 8, y: vic[2 * i + 1],
+          b: m[0x4BF8 + i], c: vic[0x27 + i] & 15, mc: (vic[0x1C] >> i) & 1, ey: (vic[0x17] >> i) & 1, ex: (vic[0x1D] >> i) & 1, pri: (vic[0x1B] >> i) & 1 });
+        into.push({ s, m0: vic[0x25] & 15, m1: vic[0x26] & 15 });
+      };
+      const fromRecord = (a) => { m[0x1A] = a & 255; m[0x1B] = a >> 8; call(0xB287); };    // sprite_from_record
+      return { m, vic, cpu, call, record, fromRecord };
+    }
+    const base = machine();
+    base.m[0x26] = level;
+    base.call(0x25E5);                          // thicken_shapes: the shadows $70-$9D from the Manta's frames
+    base.call(0x2F33);                          // level_colours: the scheme, $D022/$D023, $D025/$D026
+    base.call(0x1A54);                          // copy_tile_set: the level's characters $80-$FF
+    ram = base.m;
+    const play = () => { const w = machine(); w.vic.set(base.vic); return w; };
+    const out = { m: base.m, colours: Array.from(base.m.slice(0x4B, 0x50)) };
+
+    // the Manta's manoeuvres: each animation in the tables manta_animate reads, requested in turn
+    // and played by manta_animate ($2713) from the attitude it starts from
+    out.seqs = [];
+    for (const [left, lo, hi, n] of [[0, 0x3292, 0x32A4, 18], [4, 0x3266, 0x327C, 22]])
+      for (let i = 0; i < n; i++) {
+        const a = ram[lo + i] | ram[hi + i] << 8;
+        if (a >= 0x3000) out.seqs.push({ a, from: (i >> 3) | left, to: i & 7, len: ram[a], climbs: ram[a + ram[a] + 1] });
+      }
+    {
+      const w = play(), f = [];
+      w.fromRecord(0x32CC); w.fromRecord(0x32D7);             // the Manta and its shadow (start_life, demo)
+      w.m[0x33] = 0x80; w.m[0x3D] = 0x10;
+      for (const q of out.seqs) {
+        w.m[0x45] = q.from; w.m[0x46] = 0x80 | q.to;
+        w.m[0x40] = q.from & 4 ? 0x59 : 0x41;
+        for (let k = 0; k < 4; k++) { w.m[0x62]++; w.call(0x2713); w.record(f); f[f.length - 1].q = q; }
+        for (let k = 0; k < 80 && (w.m[0x45] & 0x80); k++) { w.m[0x62]++; w.call(0x2713); w.record(f); f[f.length - 1].q = q; }
+        for (let k = 0; k < 20; k++) { w.m[0x62]++; w.call(0x2713); w.record(f); f[f.length - 1].q = q; }
+        w.m[0x3D] = 0x10;
+      }
+      out.manoeuvres = f;
+    }
+    // waiting for fire before a life: start_life turns the Manta through $40-$4F, one a frame ($0CB4)
+    {
+      const w = machine(), f = [];
+      w.vic[0x25] = 0x0E; w.vic[0x26] = 0x01;                 // start_life's $FE and $F1
+      w.fromRecord(0x32CC);
+      w.m[0x18] = 1; w.m[0x62] = 0xBF;
+      w.call(0x0CB4, { 0x13B1: (c) => { c.m[0x62]++; w.record(f); c.rts(); }, 0x2B6D: (c) => { c.rts(); },
+        0x0CD7: () => true });                                 // fire, or the frame count run out: the launch is next
+      out.waiting = f;
+    }
+    // the launch: launch_sequence ($2839) from the transporter's records to the Manta flying
+    {
+      const w = machine(), f = [];
+      w.vic[0x25] = 0x0E; w.vic[0x26] = 0x01; w.m[0x4E] = base.m[0x4E];
+      w.call(0x2839, { 0x2918: (c) => { w.record(f); c.rts(); } });
+      out.launch = f;
+    }
+    // the Manta destroyed: manta_explodes ($245B), in play (game mode 2), eight sprites from $30
+    {
+      const w = play(), f = [];
+      w.fromRecord(0x32CC); w.fromRecord(0x32D7);
+      w.m[0x33] = 0x80; w.m[0x5A] = 2; w.m[0x32] = 1;
+      w.call(0x27A3);                                           // manta_animate's placing of both sprites
+      w.call(0x245B, { 0x13EB: (c) => { w.record(f); c.rts(); }, 0xB1B4: (c) => { c.rts(); } });
+      out.explodes = f;
+    }
+    // a fighter shot down, and a homing mine: enemies_frame ($1BFD) on one slot, in the level's colours
+    const slot = (state, shape) => {
+      const w = play(), f = [];
+      w.m[0xA490] = state; w.m[0x6C] = 0x81; w.m[0x2E] = 0; w.m[0x2D] = 0;
+      if (state === 8) w.m[0xA4B0] = (level * 4) & 255 | 0x80;
+      w.m[0x33] = 0x90; w.m[0x3D] = 0x20;
+      w.vic[0] = 0xA0; w.vic[1] = 0x90; w.vic[0x15] = 1; w.vic[0x1C] = 1; w.vic[0x27] = base.m[0x4F]; w.m[0x4BF8] = shape;
+      for (let k = 0; k < 400 && w.m[0xA490]; k++) { w.m[0x62]++; w.call(0x1BFD); w.record(f); f[f.length - 1].st = w.m[0xA490]; }
+      return f;
+    };
+    out.fexpl = slot(6, 0x14);
+    out.mine = slot(8, 0x1D);
+    return out;
+  }
+  // end of gxRecord
+
+const NAMES = ['Message', 'Zinc', 'Lead', 'Copper', 'Silver', 'Iron', 'Gold', 'Platinum', 'Tungsten', 'Iridon', 'Kallisto', 'Tri-alloy', 'Quadmium', 'Ergonite', 'Galactium', 'Uridium'];
+const H = (n, w) => C64.hex(n, w || 2), code = (t) => '<code>' + t + '</code>';
+const S = 2, PAD = 4, FRAME_MS = 20, BG = 15;           // light grey behind the sprites
+C64.load('listing.json').then((L) => {
+  const ram = L.ram, P = C64.PAL;
+  wait.hidden = true;
+  for (const id of ['gx-lv', 'gx-clv']) for (let lv = 1; lv <= 15; lv++) $(id).add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
+  // which Dreadnoughts fly each wave type (the wave lists at $C100, the records at $C200)
+  const typeLevels = [...Array(16)].map(() => []);
+  for (let lv = 1; lv <= 15; lv++) {
+    let a = ram[0xC100 + lv] | ram[0xC110 + lv] << 8; const seen = new Set();
+    for (let k = 0; ram[a] !== 0xFF && k < 64; k++, a++) seen.add(ram[0xC200 + 16 * ram[a] + 14]);
+    seen.forEach((t) => typeLevels[t].push(lv));
+  }
+  const sx = (x) => (x > 0x170 ? x - 512 : x);            // a sprite pushed off the left edge
+  function sprite(ctx, m, q, x, y, s, m0, m1) {
+    const d = m.subarray(0x4000 + 64 * q.b, 0x4000 + 64 * q.b + 63);
+    if (q.mc) C64.drawSpriteMC(ctx, d, x, y, s, P[q.c], P[m0], P[m1], q.ex + 1, q.ey + 1);
+    else C64.drawSprite(ctx, d, x, y, s, P[q.c], q.ex + 1, q.ey + 1);
+  }
+  let R = null, tiles = [], t = 0;
+  // A tile: a window of the screen, w by h pixels from (x0, y0), playing frames; or a still.
+  function tile(host, name, o) {
+    const el = document.createElement('div'), cv = document.createElement('canvas'), sp = document.createElement('span');
+    el.className = 'gx-tile';
+    const W = o.w + 2 * PAD, Ht = o.h + 2 * PAD;
+    cv.width = W * S; cv.height = Ht * S; cv.style.width = W * S + 'px';
+    cv.setAttribute('aria-label', name.replace(/<[^>]+>/g, ''));
+    el.appendChild(cv);
+    let sctx = null, per = 0;
+    if (o.strip) {
+      const sc = document.createElement('canvas'); per = Math.max(1, Math.floor(Math.max(W * S, 196) / 28));
+      sc.width = per * 28 - 4; sc.height = Math.ceil(o.strip.length / per) * 29; sc.className = 'gx-strip';
+      sc.setAttribute('aria-label', 'Every shape it shows, the one showing marked');
+      el.appendChild(sc); sctx = sc.getContext('2d');
+    }
+    const label = document.createElement('span'), live = document.createElement('span');
+    label.innerHTML = name; sp.appendChild(label); sp.appendChild(live); el.appendChild(sp); host.appendChild(el);
+    const ctx = cv.getContext('2d');
+    let last = null, lastMark = null;
+    const T = { draw(f) {
+      const fr = o.frames ? o.frames[f % o.frames.length] : null;
+      const key = o.frames ? f % o.frames.length : 0;
+      if (key === last) return;
+      last = key;
+      ctx.fillStyle = P[BG]; ctx.fillRect(0, 0, cv.width, cv.height);
+      const list = fr ? fr.s.map((q, i) => ({ q, i })).filter((e) => e.q.on && (!o.only || o.only.includes(e.i))) : o.still;
+      for (let k = list.length - 1; k >= 0; k--) {                // sprite 0 in front
+        const q = list[k].q;
+        const x = o.fixed ? o.fixed[0] : o.still ? q.x : sx(q.x) - o.x0, y = o.fixed ? o.fixed[1] : o.still ? q.y : q.y - o.y0;
+        sprite(ctx, R.m, q, (PAD + x) * S, (PAD + y) * S, S, fr ? fr.m0 : R.m0, fr ? fr.m1 : R.m1);
+      }
+      if (o.note) { const n = o.note(fr); if (live.innerHTML !== n) live.innerHTML = n; }
+      if (sctx) {
+        const mk = o.mark(fr);
+        if (mk === lastMark) return;
+        lastMark = mk;
+        sctx.clearRect(0, 0, sctx.canvas.width, sctx.canvas.height);
+        o.strip.forEach((b, i) => {
+          const x0 = (i % per) * 28, y0 = Math.floor(i / per) * 29;
+          sctx.fillStyle = P[BG]; sctx.fillRect(x0, y0, 24, 21);
+          sprite(sctx, R.m, Object.assign({ ex: 0, ey: 0 }, o.stripAs, { b }), x0, y0, 1, R.m0, R.m1);
+          sctx.fillStyle = b === mk ? '#1f5fa8' : '#b8b6ae'; sctx.fillRect(x0, y0 + 23, 24, 2);
+        });
+      }
+    } };
+    tiles.push(T);
+    return T;
+  }
+  const range = (a, b) => [...Array(b - a + 1)].map((_, i) => a + i);
+  // the window that holds every sprite a recording shows, within the screen's sprite area
+  const box = (frames, only, lo, hi) => {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const f of frames) f.s.forEach((q, i) => {
+      if (!q.on || (only && !only.includes(i))) return;
+      const x = sx(q.x);
+      x0 = Math.min(x0, x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, x + 24 * (q.ex + 1)); y1 = Math.max(y1, q.y + 21 * (q.ey + 1));
+    });
+    if (lo !== undefined) { x0 = Math.max(x0, lo); x1 = Math.min(x1, hi); }
+    return { x0, y0, w: x1 - x0, h: y1 - y0 };
+  };
+  function build(level) {
+    R = gxRecord(ram, C64Cpu.CPU, level);
+    R.m0 = R.colours[3] & 15; R.m1 = 1;                         // $D025 the Manta's multicolour, $D026 white
+    const enemy = R.colours[4] & 15;
+    tiles = [];
+    for (const id of ['gx-manta', 'gx-launch', 'gx-fighters', 'gx-shots', 'gx-boom']) $(id).textContent = '';
+    // the Manta
+    {
+      const fr = R.manoeuvres, b = box(fr);
+      const kind = (q) => q.len === 4 ? 'a roll' : q.climbs ? 'a half-loop' : 'a full roll';
+      tile($('gx-manta'), 'Manoeuvres, ' + code('manta_animate'), Object.assign({ frames: fr, strip: range(0x40, 0x6D), stripAs: { mc: 1, c: 0 },
+        mark: (f) => f.s[6].b, note: (f) => 'facing ' + (f.q.from & 4 ? 'left' : 'right') + ', ' + kind(f.q) + ' (' + H(f.q.a, 4) + '), frame ' + H(f.s[6].b) }, b));
+      const wt = R.waiting;
+      tile($('gx-manta'), 'Waiting for fire, ' + code('$0CB4'), Object.assign({ frames: wt, only: [6], note: (f) => 'frame ' + H(f.s[6].b) }, box(wt, [6])));
+    }
+    // the launch
+    {
+      const fr = R.launch.slice(1), b = box(fr, null, 0x10, 0xD8);
+      tile($('gx-launch'), 'Launch, ' + code('launch_sequence'), Object.assign({ frames: fr, strip: range(0x00, 0x0B), stripAs: { mc: 1, c: 12 },
+        mark: (f) => f.s[6].b, note: (f) => f.s[6].b > 0x0B ? 'the Manta, frame ' + H(f.s[6].b) : 'the door, ' + H(f.s[6].b) }, b));
+    }
+    // the fighters: stills, both facings
+    for (let n = 0; n < 16; n++) {
+      const q = { mc: 1, c: enemy, ex: 0, ey: 0 };
+      tile($('gx-fighters'), 'Type ' + n + ', ' + code(H(0xA0 + n)) + ' and ' + code(H(0xB0 + n)) + '<br>Dreadnoughts ' + typeLevels[n].join(', '),
+        { w: 52, h: 21, still: [{ q: Object.assign({ b: 0xA0 + n, x: 0, y: 0 }, q) }, { q: Object.assign({ b: 0xB0 + n, x: 28, y: 0 }, q) }] , pos: true });
+    }
+    // the bullets (stills) and the moving ones
+    {
+      const shapes = [...new Set(range(0, 15).map((n) => ram[0x3723 + n]))].sort((a, b) => a - b);
+      shapes.forEach((b) => {
+        const types = range(0, 15).filter((n) => ram[0x3723 + n] === b);
+        tile($('gx-shots'), 'Bullet ' + code(H(b)) + '<br>types ' + types.join(', '), { w: 24, h: 21, still: [{ q: { b, mc: 1, c: enemy, ex: 0, ey: 0, x: 0, y: 0 } }] });
+      });
+      tile($('gx-shots'), 'An explosion, ' + code('explosion_move'), { frames: R.fexpl.concat(R.fexpl.slice(-1).map((f) => ({ s: f.s.map((q) => Object.assign({}, q, { on: 0 })), m0: f.m0, m1: f.m1 }))), w: 24, h: 21, fixed: [0, 0], only: [0],
+        note: (f) => f.s[0].on ? 'shape ' + H(f.s[0].b) : 'switched off' });
+      tile($('gx-shots'), 'A homing mine, ' + code('mine_appear') + ', ' + code('mine_move'), { frames: R.mine, w: 24, h: 21, fixed: [0, 0], only: [0],
+        note: (f) => ({ 8: 'materialising', 10: 'homing', 6: 'burst' })[f.st] + ', ' + H(f.s[0].b) });
+    }
+    // the Manta destroyed
+    {
+      const fr = R.explodes, b = box(fr);
+      const pause = [...Array(30)].map(() => ({ s: fr[0].s.map((q) => Object.assign({}, q, { on: 0 })), m0: fr[0].m0, m1: fr[0].m1 }));
+      tile($('gx-boom'), 'Destroyed, ' + code('manta_explodes'), Object.assign({ frames: fr.concat(pause), strip: range(0x30, 0x3A), stripAs: { mc: 1, c: 7 },
+        mark: (f) => f.s[7].on ? f.s[7].b : -1, note: (f) => f.s.filter((q) => q.on).length + ' sprites' }, b));
+    }
+    tiles.forEach((T) => T.draw(t));
+    let full = 0;
+    for (let b = 0; b < 0xC0; b++) if ((b < 0x20 || b >= 0x30) && R.m.subarray(0x4000 + 64 * b, 0x4000 + 64 * b + 63).some((v) => v)) full++;
+    $('gx-stat').textContent = full + ' shapes, every one drawn';
+    $('gx-cap').innerHTML = 'Recorded on the kit\'s 6502 from the listing: ' + R.manoeuvres.length + ' frames of manoeuvres, ' + R.launch.length + ' of the launch, ' +
+      R.explodes.length + ' of the Manta destroyed, ' + R.fexpl.length + ' of an explosion and ' + R.mine.length + ' of a mine, each played at 50 frames a second. The fighters and bullets are stills in the level\'s fighter colour ' +
+      '(' + H(R.colours[4]) + ') with its Manta multicolour (' + H(R.colours[3]) + ') and white, as <code>level_colours</code> sets them; light grey stands in for the Dreadnought behind them.';
+  }
+  // the characters
+  const cv = $('gx-chars'), cs = 2;
+  function chars(level) {
+    const m = level === (R && R.level) ? R.m : gxRecord(ram, C64Cpu.CPU, level).m;
+    const C = { mc2: m[0x4B] & 15, mc1: m[0x4C] & 15, map: m[0x4D] };
+    const ctx = C64.canvas(cv, 32 * 9 * cs, 8 * 9 * cs);
+    ctx.fillStyle = '#e0ded8'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const set = m.subarray(0x7800, 0x8000);
+    for (let n = 0; n < 256; n++) {
+      const x = (n % 32) * 9 * cs, y = Math.floor(n / 32) * 9 * cs;
+      ctx.fillStyle = P[1]; ctx.fillRect(x, y, 8 * cs, 8 * cs);
+      C64.drawGlyphMC(ctx, set, n, x, y, cs, [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]]);
+    }
+    $('gx-cset').textContent = 'characters $80-$FF from ' + H(m[0xE040 + level] << 8, 4);
+  }
+  const ROLE = (n) => n >= 0x80 && n < 0x90 ? 'a wall' : n >= 0x90 && n < 0xA0 ? 'a target' : n >= 0x70 && n < 0x80 ? 'a wreck' : n === 0x6F ? 'the runway\'s end' : n === 0x42 || n === 0x43 ? 'a star' : n >= 0x80 ? 'the level\'s own' : 'shared by every level';
+  cv.addEventListener('mousemove', (e) => {
+    const r = cv.getBoundingClientRect(), k = cv.width / r.width;
+    const n = Math.floor((e.clientX - r.left) * k / (9 * cs)) + 32 * Math.floor((e.clientY - r.top) * k / (9 * cs));
+    if (n >= 0 && n < 256) $('gx-cout').textContent = 'Character ' + H(n) + ': ' + ROLE(n);
+  });
+  // the status font: top half n over bottom half n + $80
+  {
+    const fv = $('gx-font'), fs = 2, ctx = C64.canvas(fv, 32 * 9 * fs, 4 * 17 * fs), set = ram.subarray(0x7000, 0x7800);
+    ctx.fillStyle = '#e0ded8'; ctx.fillRect(0, 0, fv.width, fv.height);
+    for (let n = 0; n < 128; n++) {
+      const x = (n % 32) * 9 * fs, y = Math.floor(n / 32) * 17 * fs;
+      C64.drawGlyph(ctx, set, n, x, y, fs, P[1], P[0]);
+      C64.drawGlyph(ctx, set, n + 0x80, x, y + 8 * fs, fs, P[1], P[0]);
+    }
+    fv.addEventListener('mousemove', (e) => {
+      const r = fv.getBoundingClientRect(), k = fv.width / r.width;
+      const n = Math.floor((e.clientX - r.left) * k / (9 * fs)) + 32 * Math.floor((e.clientY - r.top) * k / (17 * fs));
+      if (n >= 0 && n < 128) $('gx-fout').textContent = 'Codes ' + H(n) + ' (top) and ' + H(n + 0x80) + ' (bottom)';
+    });
+  }
+  const lv = $('gx-lv'), clv = $('gx-clv');
+  lv.onchange = () => { build(+lv.value); R.level = +lv.value; clv.value = lv.value; chars(+lv.value); };
+  clv.onchange = () => { lv.value = clv.value; lv.onchange(); };
+  lv.onchange();
+  let running = true;
+  const run = $('gx-run');
+  run.onclick = () => { running = !running; run.textContent = running ? 'Pause' : 'Play'; };
+  let t0 = performance.now();
+  const loop = (now) => {
+    let n = 0;
+    while (running && now - t0 >= FRAME_MS && n < 3) { t0 += FRAME_MS; n++; t++; }
+    if (n) tiles.forEach((T) => T.draw(t));
+    if (now - t0 > 200) t0 = now;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}).catch((e) => { wait.hidden = false; wait.textContent = 'The listing could not be read: ' + e.message; });
+})();
+</script>
