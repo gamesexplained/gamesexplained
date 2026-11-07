@@ -51,7 +51,20 @@ Script and room numbers are the game's resource numbers.
   to 230. Room 10 object 239 tracks both as buttons are pressed (bits
   1570 and 1571); either starts script 64. The pilot's tune runs script
   50, the fall; the alien's sends Zak to room 1 when he stands in a walk
-  box numbered 2 or less.
+  box numbered 2 or less (both played in ScummVM on seed 1: the pilot's to
+  the sea, room 31; the alien's, green yellow green yellow, to room 1).
+  Buttons 230-235 start sounds 72-77, 45 frames each.
+- **The pilot is The King.** Actor 11 is named pilot with costume 10 in
+  room 40; script 69 takes the plane to room 10, where the pilot plays the
+  pilot's tune ("Now, what was the combination?") and is put in room 0.
+  The small button (room 10 object 240) renames actor 11 The King and
+  gives it costume 27. Script 69 takes only a passenger other than Annie
+  (`Var[233]` = 2 flies her back: "Well, time to be heading back").
+- **Costume colours.** Script 50 gives actor 5, the dolphin (costumes 12
+  and 13), palette 11; script 108 gives actor 6, the bird (costumes 14 and
+  15), palette 6; room 38's entry gives actors 10 to 12, the Shaman and
+  two villagers (costume 21), palette 9. Costume 7 is worn by Melissa
+  (palette 3, script 108) and Leslie (palette 10, script 5).
 - **The Lotto.** Reading the Lott-O-Dictor (room 10 object 237) the first
   time picks the digits again (seed 1: 7 0 3 0). Script 24 sells the
   ticket and starts 73, which sets bit 1455 after delay(14400); script 72

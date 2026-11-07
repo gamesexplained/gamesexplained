@@ -56,56 +56,180 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .zk-notes{display:flex;gap:6px;flex-wrap:wrap}
 .zk-note{width:44px;height:30px;border-radius:5px;border:1px solid rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5)}
 .zk-bars .track{display:flex;background:var(--surface-2);border-radius:3px;overflow:hidden}
-@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}.zk-bars{grid-template-columns:1fr}}
+.zk-shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 18px}
+.zk-shots figure{margin:0}
+.zk-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.zk-shots figcaption{font-size:13.5px;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+.zk-plate-gap{margin-top:18px}
+button.zk-note{cursor:pointer;padding:0}
+button.zk-note:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.zk-note.on{box-shadow:0 0 0 3px var(--ink);transform:translateY(-1px)}
+.zk-tunes .zk-btn{white-space:nowrap}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}.zk-bars{grid-template-columns:1fr}.zk-shots{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">What the program does that the manual never mentions: a pause that takes longer than it says, music that keeps the picture on, three of its instructions that answer from the wrong place, and the secrets in the story's scripts, from a fortune-telling machine that picks its own numbers to magic words that read backwards.</p>
+  <p class="sub">The secrets in the story's scripts, from a fortune-telling machine that picks its own numbers to magic words that read backwards, and then what the program does that the manual never mentions: a pause that takes longer than it says, music that keeps the picture on, and three of its instructions that answer from the wrong place.</p>
 </header>
 <main class="wrap">
-<section id="idle-pause">
-  <p class="fig">01 · The pause</p>
-  <h2 class="t">The five-minute pause takes six minutes, and typing does not put it off</h2>
-  <p class="lede">The manual says the game pauses itself after five minutes with nothing pressed. On a European machine it takes six, and only the joystick counts as something pressed.</p>
+<section id="dead-pads">
+  <p class="fig">01 · The teleport map</p>
+  <h2 class="t">Two of the teleport pads on Zak's map never take him anywhere</h2>
+  <p class="lede">The Yellow Crystal takes Zak to any teleport pad on the map he has drawn. Seven pads are drawn, and two of them, Atlantis and the Martian pyramid, answer only "Nothing's happening!"</p>
   <div class="plate">
-    <div class="zk-row" role="group" aria-label="The machine">
-      <button type="button" class="zk-btn on" data-tv="50">European (PAL), 50 frames a second</button>
-      <button type="button" class="zk-btn" data-tv="60">American (NTSC), 60</button>
-    </div>
-    <div class="zk-meter" aria-hidden="true"><i id="zk-idle-bar"></i></div>
-    <p class="zk-say" id="zk-idle-say"></p>
-    <div class="zk-row" style="margin-top:12px">
-      <button type="button" class="zk-btn" id="zk-idle-joy">Move the joystick</button>
-      <button type="button" class="zk-btn" id="zk-idle-key">Type a key</button>
-      <button type="button" class="zk-btn" id="zk-idle-fast">Run 100 times as fast</button>
-      <button type="button" class="zk-btn" id="zk-idle-space">Press space</button>
-    </div>
-    <div class="zk-screen" id="zk-idle-screen">Walk to</div>
-    <p class="cap">The count and what resets it, as the game does them: the frame interrupt counts <code>$FC20</code>/<code>$FC21</code> down by one a frame, and the input routine (<code>$1BAF</code>) sets it back to 18,000 on any move or press of the joystick, and files a space when it reaches 0. Checked in VICE: the count fell by 300 in 300 frames while keys were typed, and at 0 the game paused with this line.</p>
+    <div class="zk-wide"><table class="zk-tab">
+      <thead><tr><th>Pad</th><th>Where it takes Zak</th></tr></thead>
+      <tbody>
+        <tr><td>Mt. Rainier cave</td><td>The crystal chamber in Seattle</td></tr>
+        <tr><td>Mayan pyramid</td><td>The crystal chamber in Mexico</td></tr>
+        <tr><td>Peruvian eye cave</td><td>The cave behind the carving's eyes, where the candelabra is</td></tr>
+        <tr class="bad"><td>Atlantis</td><td>Nowhere: "Nothing's happening!"</td></tr>
+        <tr><td>Egyptian pyramid</td><td>The Crystalabra's room</td></tr>
+        <tr class="bad"><td>Mars pyramid</td><td>Nowhere: "Nothing's happening!"</td></tr>
+        <tr><td>Mars face chamber</td><td>The crystal chamber in the Martian Face</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">From script 60, which reads the pad picked on the map and loads the room it names, or prints "Nothing's happening!" for the two that name none. It works only for Zak, only with the Yellow Crystal, and not in the Guru's shrine ("It doesn't seem to work here."). A pad not yet visited is drawn on the map as ???.</p>
   </div>
-  <p>The game keeps a count of frames with nothing done (<code>$FC20</code>, <code>$FC21</code>). At the end of every frame the screen draws, fifty or sixty times a second, the game's frame interrupt takes one off. The input routine sets it back to 18,000 whenever the joystick moves or its button is pressed, and while a cut-scene runs, but not when a key is typed (<code>$1BAF</code>). When the count runs out, the routine acts as if the space bar had been pressed, and the space bar pauses the game (<code>$234D</code>).</p>
-  <p>18,000 frames is five minutes on an American machine, which draws 60 frames a second, and six on a European one, which draws 50. So a player in Europe gets a minute more than the manual says, and a player who only types, changing the message speed with <code>+</code> and <code>-</code> or pressing a key a script listens for, is paused all the same. The count stops while the disk is read (<code>$13DA</code>).</p>
+  <p>The Martian pyramid is reached by tram instead, with air in the helmets and the keyhole opened.</p>
 </section>
-<section id="music-rooms">
-  <p class="fig">02 · The music and the disk</p>
-  <h2 class="t">While music plays, the picture stays on as the next room loads</h2>
-  <p class="lede">Between rooms the game turns the picture and its interrupts off while it reads the disk. Once a tune has started it leaves them on, and the music plays through the load.</p>
+<section id="scrambled">
+  <p class="fig">02 · The stupidity machine</p>
+  <h2 class="t">Zak thinks in headlines, and the machine scrambles them</h2>
+  <p class="lede">Caught by the Caponians, Zak is put through their stupidity machine. What it does to him is shown on his favourite thing, the headline.</p>
   <div class="plate">
-    <div class="zk-bars">
-      <span>From the side 1 prompt to the tune: frame interrupts in 7,780 frames</span>
-      <div class="track"><div class="b" style="width:81.7%"></div><div class="b off" style="width:18.3%"></div></div>
-      <span>The 3,000 frames after the tune starts, with three changes of room</span>
-      <div class="track"><div class="b" style="width:100%"></div></div>
-    </div>
-    <p class="cap">Measured in VICE through the opening. Before tune 95 starts, the frame interrupt (<code>$117C</code>) ran 6,354 times in 7,780 frames: the red is the time the picture and the interrupts were off while rooms loaded. In the 3,000 frames after it, the room changed three times (58 to 51, 55, and 49), video_off (<code>$13F3</code>) was called three times, and the interrupt ran in all 3,000 frames, with the picture on at every check.</p>
+    <div class="zk-screen">SLEAZY TABLOID REPORTER ABDUCTED BY SPACE ALIENS.<br>TEASING SLABOID, uh, PORTER AB, AB, er, TAKEN BY SPACE ALIASES.<br>TEDING SLOBORT, uh, TABES SPADES ALIABUH.<br>SLEEBLE DEEDOB, uh, PACEALOO BALEAZZ.</div>
+    <p class="cap">The lines of script 88, in order.</p>
   </div>
-  <p>When the game changes room, video_off (<code>$13F3</code>) blanks the screen and stops the raster interrupts, the routines the video chip calls at set lines of every frame, and video_on (<code>$142F</code>) brings them back. But the frame interrupt is what plays the sound (<a href="index.html#music">How it works</a>). Stopping it would stop the music, so video_off checks the music's flag (<code>$43E8</code>) first and does nothing while a tune plays.</p>
-  <p>In the first minute of tune 95, the opening changes room three times, and each new room comes up with the picture on and the music running through the load.</p>
+  <p>Through the game Zak sums up what happens to him as a tabloid headline: "TABLOID REPORTER `SPACES OUT` IN DREAM." in the opening, "REPORTER BECOMES `SPACE CADET` IN SPACE CADILLAC!" on the ship's green button, "MAN TRADES MINDS WITH DOLPHIN; DESTROYS TUNA BOAT FLEET." in the sea. In the machine his headline falls apart a line at a time. Released, with "You are free to go now. Don't come back!" (script 92), he gets his verbs back one at a time over the next minutes, and says "Ah, back to normal!" when the last one returns (script 89).</p>
+</section>
+<section id="gnik-sisi-vle">
+  <p class="fig">03 · Words of power</p>
+  <h2 class="t">Secret: the words that fuse the crystal at Stonehenge are "Elvis is King" backwards</h2>
+  <p class="lede">With the flagpole and both shards on the altar stone, the scroll from Peru is read aloud. Its "words of power" are Gnik Sisi Vle.</p>
+  <div class="plate">
+    <div class="zk-screen">It has `words of power` on it:<br>`Gnik Sisi Vle`<br>Wow! The crystal's fused and the scroll burned up in my hands!</div>
+    <p class="cap">The lines of script 136, at Stonehenge.</p>
+  </div>
+  <p>Read from the end, the words are "Elvis is King". The King never gives his name, but the game is full of him: he is the Caponians' leader, the fan club card says "Member in good standing since 1997", one Caponian is caught in the secret room singing scrambled song titles ("O BABY - I'M A JAILHOUND DOG… IN MY BLUE SUEDE…", "…CUZ I'M ALL SHAKEN UP") and calls it "Grooveling to The King!" (script 140), and The King himself, on the ship, feels a song coming on that turns out to be an upset stomach (script 103).</p>
+  <p>The King also suggests what to do with Zak once he has been caught, and two of his ideas are other Lucasfilm Games: "Make him clean the meteor slime off our hull?", the meteor of Maniac Mansion, and "Make him play Ballblazer with Droid 9?" (script 101).</p>
+</section>
+<section id="sphinx-legs">
+  <p class="fig">04 · The Sphinx</p>
+  <h2 class="t">Secret: the way in is always in the second leg of the Sphinx a kid visits</h2>
+  <p class="lede">The Sphinx has two front legs, and the strange markings that open its secret entry are on one of them. Which one is decided by the player: the first leg visited is empty.</p>
+  <div class="plate">
+    <p>On the first visit to either leg, its script marks the other leg as the one with the markings, and leaves itself bare. The markings, and behind them the entry to the maze, are then always at the leg the kid goes to next.</p>
+    <p class="cap">From the Sphinx's room (room 20) and its two legs, and played: in one game the first leg visited was bare and the second had the markings.</p>
+  </div>
+  <p>A player who goes to the right leg first finds nothing and walks to the left; a player who goes left first walks to the right. Either way the second leg is the one, so every player walks to both.</p>
+</section>
+<section id="two-tunes">
+  <p class="fig">05 · Two tunes on one keyboard</p>
+  <h2 class="t">The tune that sends Zak home is the pilot's tune with each note moved on by its place</h2>
+  <p class="lede">On the biplane tour of the Bermuda Triangle, the Caponians' ship takes the plane aboard. By the door of the ship's bridge is a keyboard of six coloured buttons, each with a note of its own, and two four-note tunes played on it take Zak off the ship. The pilot, who is The King in disguise, plays the first from memory, asks "You coming or staying?" and is gone. A Caponian plays the second for Zak, once The King knows Zak is a fan, and it sends him home.</p>
+  <div class="plate">
+    <div class="zk-shots">
+      <figure><img src="reference/tune-pilot.png" width="320" height="136" alt="The bridge: the pilot stands at a panel of six coloured buttons beside Zak and says: Now, what was the combination?"><figcaption>The pilot at the keyboard, just after the ship has taken the plane: "Now, what was the combination?"</figcaption></figure>
+      <figure><img src="reference/tune-alien.png" width="320" height="136" alt="A bald Caponian in a black suit stands at the buttons with Zak and says: Enter this sequence to return home."><figcaption>The King's friend, once Zak has given The King the fan club card: "Enter this sequence to return home."</figcaption></figure>
+    </div>
+    <div class="zk-row"><button type="button" class="zk-btn" id="zk-tune-new">Another game</button><span class="zk-say" id="zk-tune-say"></span></div>
+    <div class="zk-tunes" id="zk-tunes"></div>
+    <p class="cap">Press a tune to hear it, or a button for its note: each is the button's own sound, played by the game's sound code. The pilot's four notes are picked at random when a game starts, each one of the six buttons, red, blue, green, light blue, yellow and purple. The alien's tune is worked out from it: note 1 moved on one button, note 2 two, note 3 three and note 4 four, going round from purple to red. The game follows both tunes as the buttons are pressed (scripts 48 and 103, and object 239 of the room).</p>
+  </div>
+  <p>Either tune, played through, takes Zak off the ship if he is standing at the left end of the bridge, which script 64 checks. A wrong note gets "I must have played the wrong tune."</p>
+  <div class="plate">
+    <div class="zk-shots">
+      <figure><img src="reference/tune-sea.png" width="320" height="136" alt="Zak's head above the waves of a purple sea under white clouds. He says: Whew!"><figcaption><b>The pilot's tune:</b> Zak falls out of the ship and, with the parachute open, lands in the sea. This is the way to the dolphin and the glowing object.</figcaption></figure>
+      <figure><img src="reference/tune-home.png" width="320" height="136" alt="Zak stands in his bedroom, by the bed and the desk."><figcaption><b>The alien's tune:</b> Zak is back in his bedroom in San Francisco.</figcaption></figure>
+    </div>
+  </div>
+</section>
+<section id="lotto">
+  <p class="fig">06 · The Lotto</p>
+  <h2 class="t">Secret: the Lott-O-Dictor picks the numbers it foretells</h2>
+  <p class="lede">The machine on the Caponians' ship shows tomorrow's Lotto number. It is never wrong, because reading it is what picks the number.</p>
+  <div class="plate">
+    <div class="zk-wide"><table class="zk-tab">
+      <thead><tr><th>When</th><th>What the scripts do with the four digits</th></tr></thead>
+      <tbody>
+        <tr><td>The start of the game</td><td>Picks them at random, the first never 0 (script 48)</td></tr>
+        <tr><td>The Lott-O-Dictor read for the first time</td><td>Picks them again, then shows them: "Tomorrow's Winning Lotto Number"</td></tr>
+        <tr><td>A ticket bought at Lou's</td><td>Keeps the digits typed on the keypad, and waits a few minutes of play for the draw (scripts 24 and 73)</td></tr>
+        <tr><td>The draw, digits right</td><td>"10,000 Smackeroos!", then picks new digits and resets the Lott-O-Dictor, so it can be read and won again (script 72)</td></tr>
+        <tr><td>The fifth win</td><td>"Friend, ya won the big one a few too many times… I'll pay up this last time, but I ain't sellin' ya another ticket."</td></tr>
+        <tr><td>The draw, digits wrong</td><td>One time in ten a smaller prize, of $10 to $1,000; otherwise "yer lotto tick's a dud"</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">From the scripts named, and played: in one game the digits were 4 3 0 5 at the start and 7 0 3 0 once the Lott-O-Dictor had been read, and a ticket for 7 0 3 0 took Zak's CashCard from $2,322 to $12,322.</p>
+  </div>
+  <p>The digits live in four variables that the start of the game fills. The first reading of the Lott-O-Dictor fills them again before it prints them, so numbers copied from another game are no use. After a win the machine is reset, and the next reading picks again. Lou pays out four times; the fifth time he grumbles, pays, and sells no more tickets.</p>
+</section>
+<section id="sound-36">
+  <p class="fig">07 · A sound that ends twice</p>
+  <h2 class="t">Sushi's splash is over before its filter part has finished</h2>
+  <p class="lede">The engine counts how many of a sound's voices are playing. The splash of water that Sushi's fish bowl and the kitchen tap make, sound 36, has a part for the filter as well, and it is still running when the count says the sound is over.</p>
+  <div class="plate">
+    <p>After 162 frames of sound 36, its two voices end and its count, which a script reads to ask whether the sound is still playing, drops to 0. Its third part, which works the chip's filter, is still on its channel, and the engine goes on stepping it every frame. No voice is left to be heard through the filter.</p>
+    <p class="cap">Seen on the game's own sound engine, run on the site's model of the processor for every effect on the disks (the test beside the <a href="index.html#sfx">Sound</a> player). Sound 36 is the only one.</p>
+  </div>
+  <p>Each voice a sound starts adds one to the sound's count (<code>$3F3A</code>), and each voice that ends takes one off (<code>$3EB6</code>). A filter part is started by another routine, which leaves the count alone (<code>$3E4C</code>), and its end takes nothing off. isSoundRunning, which scripts use to wait for a sound, reads that count (<code>$571C</code>). So the count follows a sound's voices only, and a filter part that outlasts them runs on uncounted.</p>
+</section>
+<section id="room-47">
+  <p class="fig">08 · The music's room</p>
+  <h2 class="t">Secret: the music is stored with a room that has no picture</h2>
+  <p class="lede">Every resource on the disks belongs to a room. The music's program and all four tunes belong to room 47, which has nothing to show.</p>
+  <div class="plate">
+    <div class="zk-wide"><table class="zk-tab">
+      <thead><tr><th>In room 47's file, side 1, track 2, sector 7</th><th>Bytes</th></tr></thead>
+      <tbody>
+        <tr><td>Room 47: 40 by 16, no objects, every cell of its picture the same character</td><td>187</td></tr>
+        <tr><td>Sound 1, the music's program</td><td>1,078</td></tr>
+        <tr><td>Sound 95, the opening tune</td><td>2,843</td></tr>
+        <tr><td>Sounds 102, 103, and 104, the other tunes</td><td>1,769, 1,442, and 1,118</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">From the resource index the game reads at start-up (<code>$6E4E</code> for the rooms, <code>$7142</code> for the sounds' rooms) and the files on side 1.</p>
+  </div>
+  <p>The game finds a resource by the room it lives with and an offset in that room's file. The rooms are places in the game, except this one: room 47 is the smallest room in the game, with a picture of one character repeated, and its file holds nothing but the music. No costume or script lives there. It is drawn on the <a href="levels.html">Maps</a> tab with the rest.</p>
+</section>
+<section id="save-error">
+  <p class="fig">09 · A message nobody sees</p>
+  <h2 class="t">Bug: a save that the disk will not take is never noticed</h2>
+  <p class="lede">Saving has a "Disk Error, push button to continue." and a retry for a sector the drive will not write. Neither can happen.</p>
+  <div class="plate">
+    <pre class="zk-asm"><i>; disk_write, for each sector</i>
+3AF5  jsr bus_write_sector
+3AF8  bcc 3B08            <i>; carry clear: written</i>
+...                       <i>; "Disk Error", wait for the button, try again</i>
+
+<i>; bus_write_sector, at its end</i>
+3BF0  <b>clc</b>                 <i>; always clear</i>
+3BF1  rts</pre>
+    <p class="cap">Traced in the code: disk_write (<code>$3AD1</code>) and bus_write_sector (<code>$3BCB</code>).</p>
+  </div>
+  <p>The game saves by sending each sector to its own program in the disk drive (<code>$3BCB</code>). A read waits for the drive's program to answer, and an error code from the drive sets the carry (<code>$3BF8</code>). A write sends the command and the 256 bytes and returns with the carry clear, which disk_write (<code>$3AD1</code>) takes to mean the sector went on to the disk. So whatever happens at the drive, the game takes every sector as written and says nothing.</p>
+</section>
+<section id="actor-xy">
+  <p class="fig">10 · A wrong index</p>
+  <h2 class="t">Bug: the position of an actor in another room is read from the wrong memory</h2>
+  <p class="lede">getActorX and getActorY give an actor's position. For an actor in another room they read the wrong memory, so a script gets a number that has nothing to do with the actor.</p>
+  <div class="plate">
+    <pre class="zk-asm"><i>; getActorX</i>
+5C9F  tax                 <i>; X: the actor</i>
+5CA0  ldy FD56,x          <i>; Y: its walk slot, $FF when it is not in the room</i>
+5CA3  bmi 5CAB
+5CA5  lda FCE6,y          <i>; in the room: X from its walk slot</i>
+5CA8  jmp 5CAE
+5CAB  <b>lda FFB7,y</b>          <i>; not: meant to be FFB7,x</i></pre>
+    <p class="cap">Traced in the code: getActorX (<code>$5C99</code>) and getActorY (<code>$5CB2</code>).</p>
+  </div>
+  <p>An actor in the room has a walk slot, and its position is read from there (<code>$FCE6</code>). An actor elsewhere keeps its position in its own table, one byte for each of the 13 actors (<code>$FFB7</code> for X, <code>$FFAA</code> for Y). The instructions index that table with Y, which holds the walk slot, <code>$FF</code>, instead of with X, which holds the actor. The address runs past the top of memory and wraps round: getActorX reads <code>$00B6</code>, a flag for the message line, and getActorY reads <code>$00A9</code>, the same for every actor.</p>
 </section>
 <section id="walk-bug">
-  <p class="fig">03 · A wrong register</p>
+  <p class="fig">11 · A wrong register</p>
   <h2 class="t">Bug: told to walk to an object it carries, an actor walks to an object in the room instead</h2>
   <p class="lede">Three instructions of the script language ask where an object is and then send an actor to it. They read the answer from the wrong place, so an object in someone's pocket sends the actor to whatever object in the room happens to share its number.</p>
   <div class="plate">
@@ -129,149 +253,44 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>find_object (<code>$0767</code>) answers in two of the processor's registers, A and Y. A says where the object is: 0 for an object someone carries and 1 for one in the room. Y says which slot: the inventory slot for a carried object, the index among the room's objects for one in the room, and <code>$FF</code> when the object is not found. The three instructions look only at Y, and take anything but <code>$FF</code> to mean an object in the room. They then read the walk-to point from the room's object tables at index Y (<code>$08D8</code>).</p>
   <p>For a carried object, Y is its slot in the inventory, so the actor walks to, or is put at, the room object that sits at that index. And in a room with no objects, find_object gives up before its search with Y still 0, so the walk goes to whatever the tables hold for object 0. loadRoomWithEgo, which takes the actor into a new room and puts it at an object there, makes the same test after it has loaded the room (<code>$54DE</code>), so a carried object puts the actor at the point of the room object with its slot number.</p>
 </section>
-<section id="actor-xy">
-  <p class="fig">04 · A wrong index</p>
-  <h2 class="t">Bug: the position of an actor in another room is read from the wrong memory</h2>
-  <p class="lede">getActorX and getActorY give an actor's position. For an actor in another room they read the wrong memory, so a script gets a number that has nothing to do with the actor.</p>
+<section id="music-rooms">
+  <p class="fig">12 · The music and the disk</p>
+  <h2 class="t">While music plays, the picture stays on as the next room loads</h2>
+  <p class="lede">Between rooms the game turns the picture and its interrupts off while it reads the disk. Once a tune has started it leaves them on, and the music plays through the load.</p>
   <div class="plate">
-    <pre class="zk-asm"><i>; getActorX</i>
-5C9F  tax                 <i>; X: the actor</i>
-5CA0  ldy FD56,x          <i>; Y: its walk slot, $FF when it is not in the room</i>
-5CA3  bmi 5CAB
-5CA5  lda FCE6,y          <i>; in the room: X from its walk slot</i>
-5CA8  jmp 5CAE
-5CAB  <b>lda FFB7,y</b>          <i>; not: meant to be FFB7,x</i></pre>
-    <p class="cap">Traced in the code: getActorX (<code>$5C99</code>) and getActorY (<code>$5CB2</code>).</p>
+    <div class="zk-bars">
+      <span>From the side 1 prompt to the tune: frame interrupts in 7,780 frames</span>
+      <div class="track"><div class="b" style="width:81.7%"></div><div class="b off" style="width:18.3%"></div></div>
+      <span>The 3,000 frames after the tune starts, with three changes of room</span>
+      <div class="track"><div class="b" style="width:100%"></div></div>
+    </div>
+    <p class="cap">Measured in VICE through the opening. Before tune 95 starts, the frame interrupt (<code>$117C</code>) ran 6,354 times in 7,780 frames: the red is the time the picture and the interrupts were off while rooms loaded. In the 3,000 frames after it, the room changed three times (58 to 51, 55, and 49), video_off (<code>$13F3</code>) was called three times, and the interrupt ran in all 3,000 frames, with the picture on at every check.</p>
   </div>
-  <p>An actor in the room has a walk slot, and its position is read from there (<code>$FCE6</code>). An actor elsewhere keeps its position in its own table, one byte for each of the 13 actors (<code>$FFB7</code> for X, <code>$FFAA</code> for Y). The instructions index that table with Y, which holds the walk slot, <code>$FF</code>, instead of with X, which holds the actor. The address runs past the top of memory and wraps round: getActorX reads <code>$00B6</code>, a flag for the message line, and getActorY reads <code>$00A9</code>, the same for every actor.</p>
+  <p>When the game changes room, video_off (<code>$13F3</code>) blanks the screen and stops the raster interrupts, the routines the video chip calls at set lines of every frame, and video_on (<code>$142F</code>) brings them back. But the frame interrupt is what plays the sound (<a href="index.html#music">How it works</a>). Stopping it would stop the music, so video_off checks the music's flag (<code>$43E8</code>) first and does nothing while a tune plays.</p>
+  <p>In the first minute of tune 95, the opening changes room three times, and each new room comes up with the picture on and the music running through the load.</p>
 </section>
-<section id="save-error">
-  <p class="fig">05 · A message nobody sees</p>
-  <h2 class="t">Bug: a save that the disk will not take is never noticed</h2>
-  <p class="lede">Saving has a "Disk Error, push button to continue." and a retry for a sector the drive will not write. Neither can happen.</p>
+<section id="idle-pause">
+  <p class="fig">13 · The pause</p>
+  <h2 class="t">The five-minute pause takes six minutes, and typing does not put it off</h2>
+  <p class="lede">The manual says the game pauses itself after five minutes with nothing pressed. On a European machine it takes six, and only the joystick counts as something pressed.</p>
   <div class="plate">
-    <pre class="zk-asm"><i>; disk_write, for each sector</i>
-3AF5  jsr bus_write_sector
-3AF8  bcc 3B08            <i>; carry clear: written</i>
-...                       <i>; "Disk Error", wait for the button, try again</i>
-
-<i>; bus_write_sector, at its end</i>
-3BF0  <b>clc</b>                 <i>; always clear</i>
-3BF1  rts</pre>
-    <p class="cap">Traced in the code: disk_write (<code>$3AD1</code>) and bus_write_sector (<code>$3BCB</code>).</p>
+    <div class="zk-row" role="group" aria-label="The machine">
+      <button type="button" class="zk-btn on" data-tv="50">European (PAL), 50 frames a second</button>
+      <button type="button" class="zk-btn" data-tv="60">American (NTSC), 60</button>
+    </div>
+    <div class="zk-meter" aria-hidden="true"><i id="zk-idle-bar"></i></div>
+    <p class="zk-say" id="zk-idle-say"></p>
+    <div class="zk-row" style="margin-top:12px">
+      <button type="button" class="zk-btn" id="zk-idle-joy">Move the joystick</button>
+      <button type="button" class="zk-btn" id="zk-idle-key">Type a key</button>
+      <button type="button" class="zk-btn" id="zk-idle-fast">Run 100 times as fast</button>
+      <button type="button" class="zk-btn" id="zk-idle-space">Press space</button>
+    </div>
+    <div class="zk-screen" id="zk-idle-screen">Walk to</div>
+    <p class="cap">The count and what resets it, as the game does them: the frame interrupt counts <code>$FC20</code>/<code>$FC21</code> down by one a frame, and the input routine (<code>$1BAF</code>) sets it back to 18,000 on any move or press of the joystick, and files a space when it reaches 0. Checked in VICE: the count fell by 300 in 300 frames while keys were typed, and at 0 the game paused with this line.</p>
   </div>
-  <p>The game saves by sending each sector to its own program in the disk drive (<code>$3BCB</code>). A read waits for the drive's program to answer, and an error code from the drive sets the carry (<code>$3BF8</code>). A write sends the command and the 256 bytes and returns with the carry clear, which disk_write (<code>$3AD1</code>) takes to mean the sector went on to the disk. So whatever happens at the drive, the game takes every sector as written and says nothing.</p>
-</section>
-<section id="room-47">
-  <p class="fig">06 · The music's room</p>
-  <h2 class="t">Secret: the music is stored with a room that has no picture</h2>
-  <p class="lede">Every resource on the disks belongs to a room. The music's program and all four tunes belong to room 47, which has nothing to show.</p>
-  <div class="plate">
-    <div class="zk-wide"><table class="zk-tab">
-      <thead><tr><th>In room 47's file, side 1, track 2, sector 7</th><th>Bytes</th></tr></thead>
-      <tbody>
-        <tr><td>Room 47: 40 by 16, no objects, every cell of its picture the same character</td><td>187</td></tr>
-        <tr><td>Sound 1, the music's program</td><td>1,078</td></tr>
-        <tr><td>Sound 95, the opening tune</td><td>2,843</td></tr>
-        <tr><td>Sounds 102, 103, and 104, the other tunes</td><td>1,769, 1,442, and 1,118</td></tr>
-      </tbody>
-    </table></div>
-    <p class="cap">From the resource index the game reads at start-up (<code>$6E4E</code> for the rooms, <code>$7142</code> for the sounds' rooms) and the files on side 1.</p>
-  </div>
-  <p>The game finds a resource by the room it lives with and an offset in that room's file. The rooms are places in the game, except this one: room 47 is the smallest room in the game, with a picture of one character repeated, and its file holds nothing but the music. No costume or script lives there. It is drawn on the <a href="levels.html">Maps</a> tab with the rest.</p>
-</section>
-<section id="sound-36">
-  <p class="fig">07 · A sound that ends twice</p>
-  <h2 class="t">Sushi's splash is over before its filter part has finished</h2>
-  <p class="lede">The engine counts how many of a sound's voices are playing. The splash of water that Sushi's fish bowl and the kitchen tap make, sound 36, has a part for the filter as well, and it is still running when the count says the sound is over.</p>
-  <div class="plate">
-    <p>After 162 frames of sound 36, its two voices end and its count, which a script reads to ask whether the sound is still playing, drops to 0. Its third part, which works the chip's filter, is still on its channel, and the engine goes on stepping it every frame. No voice is left to be heard through the filter.</p>
-    <p class="cap">Seen on the game's own sound engine, run on the site's model of the processor for every effect on the disks (the test beside the <a href="index.html#sfx">Sound</a> player). Sound 36 is the only one.</p>
-  </div>
-  <p>Each voice a sound starts adds one to the sound's count (<code>$3F3A</code>), and each voice that ends takes one off (<code>$3EB6</code>). A filter part is started by another routine, which leaves the count alone (<code>$3E4C</code>), and its end takes nothing off. isSoundRunning, which scripts use to wait for a sound, reads that count (<code>$571C</code>). So the count follows a sound's voices only, and a filter part that outlasts them runs on uncounted.</p>
-</section>
-<section id="lotto">
-  <p class="fig">08 · The Lotto</p>
-  <h2 class="t">Secret: the Lott-O-Dictor picks the numbers it foretells</h2>
-  <p class="lede">The machine on the Caponians' ship shows tomorrow's Lotto number. It is never wrong, because reading it is what picks the number.</p>
-  <div class="plate">
-    <div class="zk-wide"><table class="zk-tab">
-      <thead><tr><th>When</th><th>What the scripts do with the four digits</th></tr></thead>
-      <tbody>
-        <tr><td>The start of the game</td><td>Picks them at random, the first never 0 (script 48)</td></tr>
-        <tr><td>The Lott-O-Dictor read for the first time</td><td>Picks them again, then shows them: "Tomorrow's Winning Lotto Number"</td></tr>
-        <tr><td>A ticket bought at Lou's</td><td>Keeps the digits typed on the keypad, and waits a few minutes of play for the draw (scripts 24 and 73)</td></tr>
-        <tr><td>The draw, digits right</td><td>"10,000 Smackeroos!", then picks new digits and resets the Lott-O-Dictor, so it can be read and won again (script 72)</td></tr>
-        <tr><td>The fifth win</td><td>"Friend, ya won the big one a few too many times… I'll pay up this last time, but I ain't sellin' ya another ticket."</td></tr>
-        <tr><td>The draw, digits wrong</td><td>One time in ten a smaller prize, of $10 to $1,000; otherwise "yer lotto tick's a dud"</td></tr>
-      </tbody>
-    </table></div>
-    <p class="cap">From the scripts named, and played: in one game the digits were 4 3 0 5 at the start and 7 0 3 0 once the Lott-O-Dictor had been read, and a ticket for 7 0 3 0 took Zak's CashCard from $2,322 to $12,322.</p>
-  </div>
-  <p>The digits live in four variables that the start of the game fills. The first reading of the Lott-O-Dictor fills them again before it prints them, so numbers copied from another game are no use. After a win the machine is reset, and the next reading picks again. Lou pays out four times; the fifth time he grumbles, pays, and sells no more tickets.</p>
-</section>
-<section id="two-tunes">
-  <p class="fig">09 · Two tunes on one keyboard</p>
-  <h2 class="t">The tune that sends Zak home is the pilot's tune with each note moved on by its place</h2>
-  <p class="lede">The ship's six coloured buttons play two tunes. The pilot's opens the floor; the one the alien shows a fan of The King sends Zak home. The game picks the pilot's at the start and works the alien's out from it.</p>
-  <div class="plate">
-    <div class="zk-row"><button type="button" class="zk-btn" id="zk-tune-new">Another game</button></div>
-    <div class="zk-tunes" id="zk-tunes"></div>
-    <p class="cap">Script 48 picks each of the pilot's four notes as one of the six buttons, red, blue, green, light blue, yellow and purple, at random. Script 103 writes the alien's: note 1 moved on one button, note 2 two, note 3 three and note 4 four, going round from purple to red. One object of the room (239) follows both tunes as the buttons are pressed, and either tune, finished, starts script 64.</p>
-  </div>
-  <p>The pilot's tune, played by Zak, opens the floor under him, which is the way to the sea, the dolphin and the glowing object. The alien's tune sends him straight home to his bedroom in San Francisco, if he plays it from the right part of the bridge: script 64 checks where he stands. A wrong note gets "I must have played the wrong tune."</p>
-</section>
-<section id="sphinx-legs">
-  <p class="fig">10 · The Sphinx</p>
-  <h2 class="t">Secret: the way in is always in the second leg of the Sphinx a kid visits</h2>
-  <p class="lede">The Sphinx has two front legs, and the strange markings that open its secret entry are on one of them. Which one is decided by the player: the first leg visited is empty.</p>
-  <div class="plate">
-    <p>On the first visit to either leg, its script marks the other leg as the one with the markings, and leaves itself bare. The markings, and behind them the entry to the maze, are then always at the leg the kid goes to next.</p>
-    <p class="cap">From the Sphinx's room (room 20) and its two legs, and played: in one game the first leg visited was bare and the second had the markings.</p>
-  </div>
-  <p>A player who goes to the right leg first finds nothing and walks to the left; a player who goes left first walks to the right. Either way the second leg is the one, so every player walks to both.</p>
-</section>
-<section id="gnik-sisi-vle">
-  <p class="fig">11 · Words of power</p>
-  <h2 class="t">Secret: the words that fuse the crystal at Stonehenge are "Elvis is King" backwards</h2>
-  <p class="lede">With the flagpole and both shards on the altar stone, the scroll from Peru is read aloud. Its "words of power" are Gnik Sisi Vle.</p>
-  <div class="plate">
-    <div class="zk-screen">It has `words of power` on it:<br>`Gnik Sisi Vle`<br>Wow! The crystal's fused and the scroll burned up in my hands!</div>
-    <p class="cap">The lines of script 136, at Stonehenge.</p>
-  </div>
-  <p>Read from the end, the words are "Elvis is King". The King never gives his name, but the game is full of him: he is the Caponians' leader, the fan club card says "Member in good standing since 1997", one Caponian is caught in the secret room singing scrambled song titles ("O BABY - I'M A JAILHOUND DOG… IN MY BLUE SUEDE…", "…CUZ I'M ALL SHAKEN UP") and calls it "Grooveling to The King!" (script 140), and The King himself, on the ship, feels a song coming on that turns out to be an upset stomach (script 103).</p>
-  <p>The King also suggests what to do with Zak once he has been caught, and two of his ideas are other Lucasfilm Games: "Make him clean the meteor slime off our hull?", the meteor of Maniac Mansion, and "Make him play Ballblazer with Droid 9?" (script 101).</p>
-</section>
-<section id="scrambled">
-  <p class="fig">12 · The stupidity machine</p>
-  <h2 class="t">Zak thinks in headlines, and the machine scrambles them</h2>
-  <p class="lede">Caught by the Caponians, Zak is put through their stupidity machine. What it does to him is shown on his favourite thing, the headline.</p>
-  <div class="plate">
-    <div class="zk-screen">SLEAZY TABLOID REPORTER ABDUCTED BY SPACE ALIENS.<br>TEASING SLABOID, uh, PORTER AB, AB, er, TAKEN BY SPACE ALIASES.<br>TEDING SLOBORT, uh, TABES SPADES ALIABUH.<br>SLEEBLE DEEDOB, uh, PACEALOO BALEAZZ.</div>
-    <p class="cap">The lines of script 88, in order.</p>
-  </div>
-  <p>Through the game Zak sums up what happens to him as a tabloid headline: "TABLOID REPORTER `SPACES OUT` IN DREAM." in the opening, "REPORTER BECOMES `SPACE CADET` IN SPACE CADILLAC!" on the ship's green button, "MAN TRADES MINDS WITH DOLPHIN; DESTROYS TUNA BOAT FLEET." in the sea. In the machine his headline falls apart a line at a time. Released, with "You are free to go now. Don't come back!" (script 92), he gets his verbs back one at a time over the next minutes, and says "Ah, back to normal!" when the last one returns (script 89).</p>
-</section>
-<section id="dead-pads">
-  <p class="fig">13 · The teleport map</p>
-  <h2 class="t">Two of the teleport pads on Zak's map never take him anywhere</h2>
-  <p class="lede">The Yellow Crystal takes Zak to any teleport pad on the map he has drawn. Seven pads are drawn, and two of them, Atlantis and the Martian pyramid, answer only "Nothing's happening!"</p>
-  <div class="plate">
-    <div class="zk-wide"><table class="zk-tab">
-      <thead><tr><th>Pad</th><th>Where it takes Zak</th></tr></thead>
-      <tbody>
-        <tr><td>Mt. Rainier cave</td><td>The crystal chamber in Seattle</td></tr>
-        <tr><td>Mayan pyramid</td><td>The crystal chamber in Mexico</td></tr>
-        <tr><td>Peruvian eye cave</td><td>The cave behind the carving's eyes, where the candelabra is</td></tr>
-        <tr class="bad"><td>Atlantis</td><td>Nowhere: "Nothing's happening!"</td></tr>
-        <tr><td>Egyptian pyramid</td><td>The Crystalabra's room</td></tr>
-        <tr class="bad"><td>Mars pyramid</td><td>Nowhere: "Nothing's happening!"</td></tr>
-        <tr><td>Mars face chamber</td><td>The crystal chamber in the Martian Face</td></tr>
-      </tbody>
-    </table></div>
-    <p class="cap">From script 60, which reads the pad picked on the map and loads the room it names, or prints "Nothing's happening!" for the two that name none. It works only for Zak, only with the Yellow Crystal, and not in the Guru's shrine ("It doesn't seem to work here."). A pad not yet visited is drawn on the map as ???.</p>
-  </div>
-  <p>The Martian pyramid is reached by tram instead, with air in the helmets and the keyhole opened.</p>
+  <p>The game keeps a count of frames with nothing done (<code>$FC20</code>, <code>$FC21</code>). At the end of every frame the screen draws, fifty or sixty times a second, the game's frame interrupt takes one off. The input routine sets it back to 18,000 whenever the joystick moves or its button is pressed, and while a cut-scene runs, but not when a key is typed (<code>$1BAF</code>). When the count runs out, the routine acts as if the space bar had been pressed, and the space bar pauses the game (<code>$234D</code>).</p>
+  <p>18,000 frames is five minutes on an American machine, which draws 60 frames a second, and six on a European one, which draws 50. So a player in Europe gets a minute more than the manual says, and a player who only types, changing the message speed with <code>+</code> and <code>-</code> or pressing a key a script listens for, is paused all the same. The count stops while the disk is read (<code>$13DA</code>).</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -334,23 +353,160 @@ function zkIdle() {
   requestAnimationFrame(tick);
 })();
 </script>
+<script type="application/json" id="zk-keys">[{"n":72,"music":false,"b":"MAAAQGQCHAAAAC0ADBAAAADESSAQBBoAIAACAAAALQAGEAAAAMRJEBAEGgAgAAIA"},{"n":73,"music":false,"b":"MAAAUmQCHAAAAC0AEBAAAADESSAQBBoAIAACAAAALQAIEAAAAMRJEBAEGgAgAAIA"},{"n":74,"music":false,"b":"MAAAVGQCHAAAAC0AFBAAAADESSAQBBoAIAACAAAALQAKEAAAAMRJEBAEGgAgAAIA"},{"n":75,"music":false,"b":"MAAAXmQCHAAAAC0AGBAAAADESSAQBBoAIAACAAAALQAMEAAAAMRJEBAEGgAgAAIA"},{"n":76,"music":false,"b":"MAAAWGQCHAAAAC0AHBAAAADESSAQBBoAIAACAAAALQAOEAAAAMRJEBAEGgAgAAIA"},{"n":77,"music":false,"b":"MAAAemQCHAAAAC0AIBAAAADESSAQBBoAIAACAAAALQAQEAAAAMRJEBAEGgAgAAIA"}]</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* zk-music */
+// createDriver for C64Sid: runs the game's own sound engine and music on the kit's 6502 (C64Cpu,
+// from ../../lib/cpu6502.js, which sid.js passes to createDriver). The engine's code and tables
+// come from the listing over ZK_DRIVER_RANGES; the music's own code is sound 1, D.player, from the
+// listing of the part music, which the game loads to $C300 (op_music_memory, $6183); each tune or effect is its sound resource as it
+// lies on the disk, D.tunes[t].b, put at $9000 in the heap with its entry in the sound address
+// tables ($74C0 low, $7441 high) pointing at it. init(t) does first what restart does to the three
+// sounds built into the program that the music plays its voices with ($04EB-$0511): their entries
+// point at them ($4406, $4433, $4460) and are locked ($7542-$7544). Then a tune starts as
+// startMusic ($57A5) starts it, the chips banked in and its number in A, at the music's entry,
+// $C304; an effect starts as start_sound ($57BF) starts it: stop_sound ($3E52) with the chips in,
+// then queue_sound ($3FCE) with them out, and the frame interrupt's flag that the main loop has
+// finished a pass ($12A2, $FC32), which lets sound_frame begin the sounds queued. play() is the
+// frame interrupt's call of sound_frame ($3FE0, from $1354). A tune plays while the music is on
+// ($43E8), an effect while isSoundRunning ($571C) would say so: its use count ($753F + its number,
+// less the lock in bit 7). The engine never counts sounds 1 to 5 down (sound_used_less, $4328), so
+// for sound 2 it is while the engine has it on a channel in use ($4375 the sound on each of the seven
+// channels, $43E0 a bit for each in use, $435A the bits), on the list to start ($43FB, $4405 long)
+// or waiting for a voice ($43FA).
+// stop() is stopMusic's stop_music ($4332) for a tune and stop_sound for an effect. Nothing here
+// reads the chips; every write to the SID is kept in order.
+const ZK_DRIVER_RANGES = [[0x00A7, 0x00AF], [0x3CDF, 0x452C], [0x7441, 0x75BD], [0xFC31, 0xFC32], [0xFE7F, 0xFE7F]];
+function createDriver(D, C64Cpu) {
+  const ZK_AT = 0x9000;   // where the tune or effect is put (inside: the worklet has only this function's text)
+  const bytes = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const base = new Uint8Array(0x10000);
+  for (const [ad, b] of D.mem) base.set(typeof b === 'string' ? bytes(b) : b, ad);
+  base.set(typeof D.player === 'string' ? bytes(D.player) : D.player, 0xC300);
+  base[0x7542] = base[0x7543] = base[0x7544] = 0x80;          // restart: sounds 3, 4 and 5, locked
+  base[0x74C3] = 0x06; base[0x7444] = 0x44;
+  base[0x74C4] = 0x33; base[0x7445] = 0x44;
+  base[0x74C5] = 0x60; base[0x7446] = 0x44;
+  const sid = new Uint8Array(25);
+  let m = base.slice(), cpu = null, cur = null, writes = [];
+  const io = {
+    read(ad) { throw new Error('read $' + ad.toString(16)); },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad <= 0xD418) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  const run = (ad, a) => cpu.call(ad, { a: a || 0, x: 0, y: 0 }, { maxSteps: 200000 });
+  const bank = (v) => cpu.portWrite(1, v);
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      cur = D.tunes[t];
+      const n = cur.n;
+      m = base.slice();
+      m.set(bytes(cur.b), ZK_AT);
+      m[0x74C0 + n] = ZK_AT & 0xFF; m[0x7441 + n] = ZK_AT >> 8;
+      cpu = new C64Cpu.CPU(m, { port: { dir: 0x2F, data: 0x24 }, io });
+      sid.fill(0); writes = [];
+      if (cur.music) { bank(0x25); run(0xC304, n); bank(0x24); }
+      else {
+        m[0xFC31] |= 0x80;
+        bank(0x25); run(0x3E52, n); bank(0x24); run(0x3FCE, n);
+        m[0xFC31] &= 0x7F;
+        m[0xFC32] = 1;                                         // the main loop's pass is done ($12A2)
+      }
+    },
+    stop() {
+      if (!cpu) return;
+      writes = [];
+      if (cur.music) run(0x4332);
+      else { bank(0x25); run(0x3E52, cur.n); bank(0x24); }
+    },
+    play() {
+      writes = [];
+      if (!cpu) return;
+      bank(0x25); run(0x3FE0); bank(0x24);
+    },
+    playing() {
+      if (!cpu) return false;
+      if (cur.music) return m[0x43E8] !== 0;
+      const n = cur.n;
+      if (n >= 6) return (m[0x753F + n] & 0x7F) !== 0;
+      for (let x = 0; x < 7; x++) if ((m[0x43E0] & m[0x435A + x]) && m[0x4375 + x] === n) return true;
+      for (let i = 0; i < m[0x4405]; i++) if (m[0x43FB + i] === n) return true;
+      return m[0x43FA] === n;
+    },
+  };
+}
+// end of zk-music
+</script>
 <script>
 /* zk-tunes */
 // The ship's two tunes. Script 48 picks the pilot's four notes, each one of the six buttons
 // (objects 230 to 235: red, blue, green, light blue, yellow, purple), as 230 + a random number
 // from 0 to 5; script 103 shows the alien's: note i (from 1) moved on i buttons, purple going
-// round to red.
+// round to red. Each button plays its own sound, 72 to 77 (startSound in its script), and these
+// play through createDriver above, the game's sound engine on the 6502, its code from the
+// listings, which load when the section comes near.
 (() => {
   const NAMES = ['red', 'blue', 'green', 'light blue', 'yellow', 'purple'];
   const COLOURS = ['#c84c3c', '#3c58c8', '#3f9c4b', '#5fb4d8', '#d6b52c', '#8a4cc0'];
-  const box = document.getElementById('zk-tunes'), again = document.getElementById('zk-tune-new');
+  const STEP = 1000;               // ms from one note to the next: each sound lasts 45 frames, 0.9 s
+  const $ = (id) => document.getElementById(id);
+  const box = $('zk-tunes'), again = $('zk-tune-new'), say = $('zk-tune-say');
   if (!box || !again) return;
-  const row = (label, notes) => `<span>${label}</span><div class="zk-notes" role="img" aria-label="${label}: ${notes.map((n) => NAMES[n]).join(', ')}">` +
-    notes.map((n, i) => `<span class="zk-note" style="background:${COLOURS[n]}" title="${NAMES[n]}">${i + 1}</span>`).join('') + '</div>';
+  const KEYS = JSON.parse($('zk-keys').textContent);
+  let data = null, loading = null, host = null, timers = [];
+  function load() {
+    if (!loading && typeof C64 !== 'undefined')
+      loading = Promise.all([C64.load('parts/main/listing.json'), C64.load('parts/music/listing.json')]).then(([L, M]) => {
+        data = { mem: ZK_DRIVER_RANGES.map(([a, b]) => [a, L.ram.slice(a, b + 1)]), player: M.ram.slice(0xC300, 0xC736), tunes: KEYS };
+      });
+    return loading || Promise.reject(new Error('the page’s scripts did not load'));
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); load().catch(() => {}); } }, { rootMargin: '600px' });
+    io.observe(box);
+  }
+  // host() makes its AudioContext as it is called, so it is called from the press itself once
+  // the code has loaded; a press before that waits for the code
+  let ready = null;
+  function sound() {
+    if (ready) { ready.ctx.resume(); return Promise.resolve(ready); }
+    if (typeof C64Sid === 'undefined') return Promise.reject(new Error('the sound player did not load'));
+    if (!host) {
+      host = (data ? C64Sid.host({ driver: createDriver, data, filter: '6581' })
+        : load().then(() => C64Sid.host({ driver: createDriver, data, filter: '6581' })))
+        .then((h) => { ready = h; h.ctx.resume(); return h; }, (e) => { host = null; throw e; });
+    }
+    return host;
+  }
+  function light(n) { box.querySelectorAll('.zk-note').forEach((b) => b.classList.toggle('on', b === n)); }
+  async function play(notes, els) {
+    timers.forEach(clearTimeout); timers = []; light(null);
+    say.textContent = data ? '' : 'Loading the game’s sound code…';
+    let h;
+    try { h = await sound(); } catch (e) { say.textContent = 'No sound: ' + e.message; return; }
+    say.textContent = '';
+    notes.forEach((n, i) => timers.push(setTimeout(() => { h.send({ cmd: 'start', tune: n }); light(els[i]); }, i * STEP)));
+    timers.push(setTimeout(() => light(null), notes.length * STEP));
+  }
+  const row = (label, notes, k) => `<button type="button" class="zk-btn" data-tune="${k}" aria-label="Play ${label}">▶ ${label}</button><div class="zk-notes">` +
+    notes.map((n, i) => `<button type="button" class="zk-note" data-n="${n}" style="background:${COLOURS[n]}" title="${NAMES[n]}" aria-label="Note ${i + 1}: ${NAMES[n]}">${i + 1}</button>`).join('') + '</div>';
+  let tunes = [];
   const show = (pilot) => {
-    const alien = pilot.map((n, i) => (n + i + 1) % 6);
-    box.innerHTML = row("The pilot's tune", pilot) + row("The alien's tune home", alien);
+    tunes = [pilot, pilot.map((n, i) => (n + i + 1) % 6)];
+    box.innerHTML = row("The pilot's tune", tunes[0], 0) + row("The alien's tune home", tunes[1], 1);
   };
+  box.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-tune]'), n = e.target.closest('.zk-note');
+    if (t) play(tunes[+t.dataset.tune], [...t.nextElementSibling.querySelectorAll('.zk-note')]);
+    else if (n) play([+n.dataset.n], [n]);
+  });
   again.addEventListener('click', () => show([0, 1, 2, 3].map(() => Math.floor(Math.random() * 6))));
   show([1, 2, 5, 0]);              // blue, green, purple, red: the tune of the game played to the end
 })();
