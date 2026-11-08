@@ -130,6 +130,71 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script>
+/* por-kinds */
+// POR_KINDS: what each effect kind a monster file can hold does, by its routine: [what it does, the
+// part that holds the routine, its address]. Kinds 0 to 63 are the spells' and the items' own; the
+// list has the ones the monster files hold, and 63, 84, 88 and 105, the powers no file holds.
+const POR_KINDS = {
+  24: ['Sees invisible foes (DETECT INVISIBILITY\'s own kind)', 'effects', 0xA8E7],
+  37: ['Blinks: cannot be targeted, and attacks on it miss, while it has initiative left in the round', 'effects', 0xA966],
+  63: ['Is harder to pick out from the combatants an attacker can see', 'effects', 0xAA07],
+  64: ['Poison: a hit kills unless the target saves', 'effects', 0xAA1A],
+  65: ['Poison: a hit kills unless the target saves, with 4 added to the roll', 'effects', 0xAA42],
+  66: ['Poison: a hit kills unless the target saves, with 2 added to the roll', 'effects', 0xAA46],
+  67: ['Paralysis: a hit paralyses for 2d8 rounds unless the target saves', 'effects', 0xAA4A],
+  68: ['Paralysis: a hit paralyses for 63 rounds unless the target saves; elves are immune', 'effects', 0xAA61],
+  69: ['Paralysis: a hit paralyses for 10 to 20 rounds unless the target saves, 2 harder', 'effects', 0xAA72],
+  72: ['Turns invisible for the round, 95 times in 100', 'effects', 0xAA86],
+  73: ['Rakes: two more 2d4 attacks once a target has been hit twice in a round', 'effects', 0xAA96],
+  76: ['Fastens on to the target after a hit', 'effects', 0xAB53],
+  77: ['Grabs: a target with strength below 19 is held fast', 'effects', 0xAB71],
+  79: ['A hit burns for 2d10 more, with no save', 'effects', 0xABEA],
+  80: ['A bite does a d4 of acid more, until it has spat', 'effects', 0xAC02],
+  81: ['Awe at the start of a battle: foes below level 4 are paralysed, levels 4 and 5 weakened, unless they save', 'effects', 0xABA6],
+  82: ['Fear at the start of a battle: foes are paralysed for 1 to 4 rounds; only humans get a save', 'effects-2', 0xA736],
+  83: ['Gaze: the target turns to stone unless it saves', 'effects', 0xAC11],
+  84: ['Gaze: the target is charmed unless it saves, 2 harder', 'effects-2', 0xA77F],
+  85: ['A hit drains a level', 'effects-2', 0xA7A3],
+  86: ['A hit drains two levels', 'effects-2', 0xA9E4],
+  87: ['A hit gives mummy rot', 'effects-2', 0xA9F4],
+  88: ['Breathes lightning for damage equal to its own hit points, half its turns', 'effects', 0xAC60],
+  89: ['The first attack on it in a battle misses', 'effects', 0xAC78],
+  91: ['Unharmed by MAGIC MISSILE and by electricity', 'effects-2', 0xAA18],
+  92: ['Halves fire damage, at a moment when there is none to halve', 'effects', 0xAC90],
+  93: ['Takes half damage from fire', 'effects', 0xAC90],
+  94: ['Takes half damage from blunt and piercing weapons', 'effects-2', 0xAA2C],
+  96: ['Hit only by silver or magic weapons', 'effects-2', 0xAA82],
+  98: ['Regenerates 3 hit points a round', 'effects', 0xACA4],
+  99: ['Fights on once after going down, for 1 to 4 rounds', 'effects', 0xACB5],
+  100: ['Rises again after going down, unless it was fire or acid', 'effects', 0xACF7],
+  101: ['Starts regenerating two rounds after it is hurt', 'effects', 0xAD11],
+  103: ['Turns into gas and flees when it goes down', 'effects-2', 0xAA39],
+  104: ['Dodges missiles 55 times in 100', 'effects', 0xAD37],
+  105: ['Magic resistance, 50 plus a figure for the caster\'s level', 'effects', 0xAD5B],
+  106: ['Magic resistance, 15 plus a figure for the caster\'s level; total against level 6', 'effects', 0xAD81],
+  108: ['Immune to sleep and charm', 'effects', 0xAD8C],
+  109: ['Immune to paralysis', 'effects', 0xADA7],
+  110: ['Immune to cold', 'effects', 0xAD97],
+  111: ['Immune to poison and paralysis', 'effects', 0xADA2],
+  112: ['Immune to fire', 'effects', 0xADAC],
+  113: ['Takes one less damage a die from fire', 'effects', 0xADB0],
+  114: ['Takes half damage from electricity', 'effects', 0xADD0],
+  115: ['Takes half damage from every weapon but a blunt one', 'effects-2', 0xAA41],
+  116: ['Takes half damage from magic weapons', 'effects-2', 0xAA4F],
+  117: ['Holy water does it 2 to 7 damage', 'effects-2', 0xAA5D],
+  118: ['Takes half damage from cold', 'effects', 0xADDB],
+  119: ['Hit only by magic weapons', 'effects-2', 0xAA73],
+  120: ['Catches a thrown boulder half the time', 'effects', 0xADDF],
+  121: ['Spits acid for 8d4 once a battle, a save for half', 'effects', 0xADF5],
+  122: ['A flask of oil does it 3d8, and magical fire one more a die', 'effects-2', 0xAA96],
+  123: ['Hit only by silver or magic weapons, silver for half', 'effects-2', 0xAA82],
+  125: ['Immune to sleep, charm, poison and paralysis', 'effects', 0xAE39],
+  126: ['Meant to be kept away by a mirror or a wooden holy symbol; the check never works', 'effects-2', 0xAABC],
+  127: ['A readied mirror turns its gaze back on it', 'effects', 0xAE3F],
+};
+// end of por-kinds
+</script>
+<script>
 /* por-beasts */
 // The bestiary's decoders, each from the game's own format; test_bestiary.js holds porBattle to the
 // game's routines and porPic to the files it decodes.
@@ -382,6 +447,8 @@ function porItems(rec, mem) {
     right.innerHTML = h;
     h = '<p><b>Size:</b> ' + ['one square', 'one square', 'two squares, one above the other', 'two squares side by side', 'four squares'][v.size] + ' on the battle map.</p>';
     h += '<p><b>Abilities:</b> strength ' + rec[0x14] + (rec[0x1A] ? '/' + String(rec[0x1A]).padStart(2, '0') : '') + ', intelligence ' + rec[0x15] + ', wisdom ' + rec[0x16] + ', dexterity ' + rec[0x17] + ', constitution ' + rec[0x18] + ', charisma ' + rec[0x19] + '.</p>';
+    const kinds = [...rec.subarray(0xAD, 0xB7)].filter((k) => POR_KINDS[k]);
+    if (kinds.length) h += '<p><b>Special abilities:</b> ' + kinds.map((k) => esc(POR_KINDS[k][0])).join('; ') + ' (<a href="spells.html#specials">the kinds in its file</a>).</p>';
     const money = v.money.map((n, i) => n ? n + ' ' + MONEY[i] : '').filter(Boolean);
     if (money.length) h += '<p><b>Money:</b> ' + money.join(', ') + '.</p>';
     if (v.items.length) h += '<p><b>Carries:</b> ' + v.items.map((it) => (it.count > 1 ? it.count + ' ' : '') + esc(it.name) + (it.readied ? ' (readied)' : '')).join(', ') + '.</p>';

@@ -16,6 +16,17 @@
   in a detail and all corrected with the 15 comments that shared their
   belief; at that rate a few hundred of the 4,157 comments are still
   wrong somewhere (`facts.md`, "The listing's error rate").
+- An audit of the four spell parts (spells, effects, effects-2,
+  camp-spells) in particular: their own sample (seed 20261108) found 8 of
+  60 wrong, over the mark, all in a detail and all corrected with the
+  three that shared their belief.
+- The corrections after both samples were made in `symbols.json` by hand
+  (parts combat, camp, dungeon, spells, camp-spells, effects, combat-set,
+  resident and gen), not in the disassembler projects in `work/`: a
+  fresh export from those would undo them.
+- The labels `has_item_type` (resident `$4027`) and `race_items` (gen
+  `$13DD`) name items, where the list they read is effect kinds: rename
+  them, with every part that uses them.
 
 ## Discoveries still to try live
 
@@ -32,17 +43,12 @@ Each is traced in the code; what a player sees is not settled yet.
   65,535 to the next kind.
 - SHARE (post-com `$21CD`) loses the coin it has just taken when nobody
   has room for it.
-- The camp's spell list heads level 4 "7TH LEVEL" (camp `$2AC1`).
 - 16 of the 29 maps have walls on one side only, which the step check
   (dungeon `$10EC`) lets the party through from the other side. Find one
   in a place a party can reach and walk it.
 
 ## The Bestiary
 
-- A monster record's ten kind bytes (`$6BAD`-`$6BB6`, the list
-  `has_item_type` reads and the spell files add to) are not decoded, so
-  the Bestiary names none of a monster's special abilities. Find what
-  each kind number means in the spell files (`combat-set`) and show it.
 - Portraits: the NPCs that join the party (SWORDSMAN, HERO, CURATE and
   others) name a head and a body (`$6BFE`, `$6BFF`) drawn from the HEAD
   and BODY files by ANIMATE00's portrait entry (`$8409`); the Bestiary
@@ -61,6 +67,20 @@ Each is traced in the code; what a player sees is not settled yet.
 - OGRE LEADER (side 1, MON09) has THAC0 3 in its record, far better
   than an ogre's 15, and no script the generator follows loads it:
   find whether anything does.
+
+## Spell findings to try live
+
+- Raise a level-1 fighter that a wight has drained (magic-user level
+  255, DEAD) at a temple, and see what it can cast and how it fights.
+- PRAYER in a real fight: the party's rolls one worse, the monsters' one
+  better (effects `kind_prayer`, `$A9B9`).
+- A SILVER MIRROR readied against the vampire (effects-2
+  `vampire_wards`, `$AABC`): it should be attacked as usual.
+- The mummy's fear on a dwarf, which should get no save (effects-2
+  `$A75E`), and mummy rot over ten days of rest, which should heal a
+  hit point (camp-spells `$AD97`).
+- A POTION OF GIANT STRENGTH drunk in combat by a character of strength
+  18/50, which should change nothing (spells `set_strength`, `$A95E`).
 
 ## Script findings to watch live
 

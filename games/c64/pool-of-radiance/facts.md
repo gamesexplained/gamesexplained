@@ -249,6 +249,73 @@ something else (resident `$6E13`-`$6E2B`).
   old age (post-com `old_age`, `$215D`: dwarf 525, elf 1600, gnome 750,
   half-elf 325, halfling 199, half-orc 80, human 120).
 
+## Spells and effects
+
+*Run* below means the routine was run on the kit's 6502 over the
+listing's bytes by `test_spells.js`, which holds `spells.html` to it.
+
+- **Timed effects and events.** The engine keeps 64 timed effects, each
+  a kind (`$4900`), a holder (`$4940`) and a time (`$4980`), and every
+  character's record holds ten kinds that never run out (`$6BAD`-`$6BB6`).
+  A battle runs the kinds that care about an event, for the combatant
+  concerned (combat-set `run_effects`, `$072E`): event 1 when it is picked
+  as a target, 10 at an attack roll, 12 at a saving throw, 9 when an
+  effect is about to land, 13 when it goes down, 14 on its turn and 19 at
+  the round's end. The routines are in four files loaded at `$A700`:
+  SPELLE00 (the combat spells), SPELLE01 and SPELLE02 (the effects) and
+  SPELLE04 (the camp's spells, with the camp's table at `$9900`). Each is
+  a part. *Traced*.
+- **The level drain.** energy_drain (effects-2 `$A7A3`) takes the level
+  from the class whose present level cost the most experience
+  (`top_part`, `$A8CB`) and falls back on the class drained last
+  (`$A92C`, 0 in the file) when none cost anything. A level-1 fighter on
+  a fresh file goes to magic-user level 255, loses all its hit points
+  and is DEAD (`set_drained`, `$A89C`), with 11,610,464 experience and a
+  to-hit byte of 109 (THAC0 −49); a level-1 magic-user is GONE. A
+  drained magic-user of levels 1 to 5 or thief of 1 to 4 gets to-hit
+  byte 40 (THAC0 20). *Run*. What a raised fighter of magic-user level
+  255 can do was not tried.
+- **PRAYER.** kind_prayer (effects `$A9B9`) adds one to the roll of a
+  combatant whose side differs from the caster's (bit 6 of the effect's
+  fourth byte, set by spells `spell_prayer`, `$AC36`) and takes one from
+  the caster's own side's: the opposite of the rule book. *Run*.
+- **PROTECTION FROM EVIL.** kind_prot_evil (effects `$A794`) checks the
+  attacker's alignment (`$6BD8`, 0 LAWFUL GOOD to 8 CHAOTIC EVIL) against
+  2, 5 and 9 (`prot_alignments`, `$A7CA`), so it never helps against a
+  chaotic evil attacker. *Run*.
+- **RESIST COLD.** kind_resist_cold (effects `$A7D0`) returns at once when
+  run by an event, which calls it with A = 0 and the Z flag set: the
+  damage and the save are unchanged. *Run*.
+- **Tyranithraxus's magic resistance.** kind_resist_15 (effects `$AD81`)
+  reads a six-byte table for caster levels 0 to 5 (`mr_by_level`,
+  `$AD7B`); level 6 reads the next instruction's A9 and the chance is 184
+  in 100. The chances for levels 1 to 6 are 60, 55, 50, 45, 40 and 184.
+  *Run*.
+- **The vampire's ward.** vampire_wards (effects-2 `$AABC`) looks through
+  the items of the combatant it runs for, and it runs at event 1 for the
+  combatant being picked (combat `pick_target`, `$28AF`), which holds
+  kind 126 only when it is the vampire. *Traced*.
+- **The mummy.** mummy_fear (effects-2 `$A736`) loads the save byte with
+  `A5 21` (LDA `$21`, zero page) at `$A75E`; nothing writes `$21`, so
+  only a human, who gets `$40` added, has a save. *Run* (the bytes).
+  mummy_rot (`$A9F4`) gives kinds 50 and 57; in camp, kind 50's end
+  (camp-spells `rot_ten_days`, `$AD97`) starts it again with time `$CA`
+  and heals a hit point, kind 57's (`$AD9F`) starts it again, and no entry
+  of `camp_kinds` (`$9AD5`) points at `rot_charisma` (`$ADA4`). *Run*.
+- **Kinds no monster carries.** 63 (`kind_displace`, effects `$AA07`), 84
+  (`charm_gaze`, effects-2 `$A77F`), 88 (`kind_breath`, effects `$AC60`,
+  which casts spell 39, CURE DISEASE's combat record, a lightning bolt of
+  the breather's full hit points) and 105 (resist 50) are on none of the
+  170 monster files. *Traced* (the files read by `scripts/spells_data.py`).
+- **Smaller ones.** SLOW's record has a save byte of 0 (*Run*). The
+  combat's POTION OF GIANT STRENGTH (spells `set_strength`, `$A95E`)
+  compares only the percentages at strength 18, so it leaves 18/50 at
+  18/50 and raises 17 to 21 (*Run*). Camp CURE LIGHT WOUNDS heals 2d4 and
+  skips the dying (camp-spells `heal_conditions_camp`, `$9B1E`); REMOVE
+  CURSE ends only BESTOW CURSE (`$AC59`); CURSE leaves no one out for
+  melee (`side_filter`, `$A8A5`); REDUCE ends an ENLARGE and adds no
+  effect of its own (`$A9B7`). *Traced*.
+
 ## Data tables
 
 - ITEMS: 128 item types of 16 bytes (tables `item_types`, `$7B00`). An
@@ -315,6 +382,29 @@ dungeon `operand_counts` (`$1625`) gives ADD NPC one operand fewer than
 its routine reads, where the comment named only two such commands. Camp
 `$1E0F` said the rest's roll is 1 to 100 under the chance; the roll is
 0 to 99, roll_die's result less one, so the chance is that many in 100.
+
+A second sample, seed 20261108, was drawn from the 454 comments of the
+four spell parts alone (spells, effects, effects-2, camp-spells), 60 of
+them, and checked by one checker on claude-opus-5-5 with the same brief.
+All eight verdicts of wrong held, every one wrong in a detail: 8 of 60,
+13.3 % (95 % interval 6.9 % to 24.2 %), over the mark. camp-spells
+`$A79F` said an effect of the same kind is ended and the new one added;
+the new one is added only when the old one was ended. camp-spells
+`$ADDC` said a kind goes into the first empty place; the list is searched
+from the last place down, the check for a duplicate covers only the
+places above, and a full list gets an effect that lasts for ever. effects
+`$A700` named the wrong users of cancel_kind; `$AB01` called `$A680` a
+remembered target where its bit 7 is the turned-undead mark; `$AC3C`
+called `$0DC7` a redraw where it is report_result's end. spells `$A700`
+said a cancel aborts the spell; it does only when nothing was picked.
+spells `$A95E` missed that at strength 18 only the percentages are
+compared. spells `$ABB9` missed that spell_effect keeps six bits of the
+time. All eight were corrected, and with them the three comments that
+shared their belief (combat-set `give_kind`, `$9ACD`; spells `$A700`'s
+second line; spells `$AD4A`). While the tab was built, three comments
+that called the ten bytes at `$6BAD` item numbers were corrected to
+effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
+`$13DD`).
 
 ## Live tests
 

@@ -172,3 +172,38 @@ the area's own flags; and the Discoveries text first had the barracks
 giants boasting they could read, where they dare the party to.
 
 The new findings are traced, not watched live; `TODO.md` lists them.
+
+## Follow-up: the Spells tab (8 November 2026)
+
+Aaron asked for the spells next, with a theme: what a wiki cannot offer
+is the unknown, what worked differently from the rule book, what was
+bugged and what was cut. Added `spells.html` and the four spell files as
+parts (spells, effects, effects-2, camp-spells), each at 100 %.
+
+- The routines are found from the tables, not the code: the spell
+  records (combat-set `spell_records_copy`), the file each kind's routine
+  is in (`spell_flags_copy`), the events' kind lists and the camp's
+  `camp_kinds`. `work/spells/entries.py` turns them into the seeds each
+  part's annotation started from.
+- SPELLE02 is loaded by no fight that was played. Its snapshot was
+  forced through the game's own loader: at a stop in `combat_kobolds`,
+  `$07A4` pushed as the return, A = 2, PC = `$9B2D`, then a stop at
+  `$07A5`.
+- A wrong turn: opening the disassembler on a copied project file rather
+  than the snapshot gave an export with no instructions. Starting it on
+  `entry.vsf` and replaying `annotations.jsonl` fixed it, as the tool
+  notes say.
+- The bugs were first read in the code, then run: `test_spells.js`
+  calls each routine on the kit's 6502 over the listings. Running
+  changed one reading. RESIST COLD, called directly, seemed to do
+  something; called as `run_effect` calls it (LDA `$2B23`, which is 0,
+  then JSR, so the Z flag is set), it returns at once.
+- One sample, seed 20261108, of 60 from the four parts' 454 comments, by
+  one checker that wrote none of them: 8 wrong, all in a detail, all
+  corrected with three more that shared their belief (`facts.md`). While
+  the tab was built, six comments that called the ten kinds at `$6BAD`
+  item types were corrected too, and the camp's 7TH LEVEL heading turned
+  out to be right: it heads RESTORATION, spell 56, alone.
+- The Bestiary now names each monster's special abilities from the same
+  table of kinds (`por-kinds`), which `test_spells.js` holds the same on
+  both pages.
