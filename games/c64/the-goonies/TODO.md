@@ -5,12 +5,17 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: 100 % coverage, `facts.md`, every feature confirmed, traced or
-open, the minisite built, all agent-authored.
+Gold: Euan's pass over every tab on 8 November 2026 (copy
+`human-edited`, steward unorig). Next is Platinum, which needs a Play tab.
 
-## For Gold
+## For Platinum
 
-- A human pass over each tab, section by section (`kit/START.md`).
+- A Play tab: every routine ported to JavaScript and run in lockstep with
+  the game's own code (`kit/skills/core/70-minisite/play.md`), with a
+  scene picker (`$12BC`) and an infinite-lives cheat (`$0BDA`-`$0BDC`).
+
+## Open questions
+
 - Scene 8: whether the wiki's fixed roles for the two Goonies come from
   the second Goonie's taller shapes (49-56, `$9D63`) against the scene's
   rectangles (`features.md`).
@@ -18,6 +23,10 @@ open, the minisite built, all agent-authored.
   Enough"): listen to the four on the Music tab.
 - The start-up check at `$0800`: what comparing `$CF79` with `$CF99`
   was meant to catch.
+- Where sounds 0, 8 and 19 are started: no `jsr start_sound` with those
+  numbers was found; look for a sound number taken from a table or a
+  variable.
+- Why the L key turns a joystick a quarter turn.
 
 ## Ideas
 

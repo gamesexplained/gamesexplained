@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Read the surviving source fragment for the cage puzzle, and see how a hidden copy-protection check can corrupt play. Edition differences and open questions are kept beside the evidence.</p>
+  <p class="sub">A page of the makers’ own source code for the cage puzzle is still in memory, and a hidden copy check runs every time the Goonie moves.</p>
 </header>
 <main class="wrap">
 <section id="source">
@@ -31,8 +31,8 @@ DFL31    LDA PLAY,X
 <section id="protection">
   <p class="fig">Copy protection</p>
   <h2 class="t">The game checks its loader on every move the Goonie makes</h2>
-  <p class="lede">A game loaded without the expected setup can corrupt its own screen during play. Every update, the controlled Goonie’s routine checks a value left by the disk loader. The expected value is <code>$EF</code> in the processor’s data direction register at <code>$0000</code>. The C64’s KERNAL system software leaves <code>$2F</code> there instead.</p>
-  <p>Every pass, after moving the Goonie the player controls, <code>goonie_active</code> reads that register (<code>$0B2D</code>). The read is disguised. The code loads an index from <code>$A14F</code>, which holds <code>$E3</code>, and reads <code>$1D</code> plus that index, an address that wraps round the zero page to <code>$00</code>. It then adds <code>$11</code> from <code>$A150</code>, which gives zero only for <code>$EF</code>. Both values sit among scene 8's tables, so neither the address nor the value it wants appears in the code that does the check.</p>
+  <p class="lede">A copy of the game loaded the wrong way slowly wrecks itself. Every pass, the routine that moves the Goonie checks for a value only the original disk loader leaves behind, and when it is missing the game starts to corrupt its own screen.</p>
+  <p>The value is <code>$EF</code> in the processor’s data direction register at <code>$0000</code>; the C64’s own system software, the KERNAL, leaves <code>$2F</code> there instead. Every pass, after moving the Goonie the player controls, <code>goonie_active</code> reads that register (<code>$0B2D</code>). The read is disguised. The code loads an index from <code>$A14F</code>, which holds <code>$E3</code>, and reads <code>$1D</code> plus that index, an address that wraps round the zero page to <code>$00</code>. It then adds <code>$11</code> from <code>$A150</code>, which gives zero only for <code>$EF</code>. Both values sit among scene 8's tables, so neither the address nor the value it wants appears in the code that does the check.</p>
   <p>When the sum is not zero, the routine moves the Goonie a second time and calls into the middle of the interrupt handler (<code>$0A49</code>), whose pulls and return wreck the stack. Tested in the emulator with <code>$2F</code> poked into <code>$00</code>, the second move ran four times in 200 frames and then the screen was corrupted. With the loader's <code>$EF</code> it never ran. No instruction in the game writes <code>$00</code>, so the loader's value survives the whole game.</p>
   <p>A second check runs once, at the hand-over from the loader (<code>game_start</code>, <code>$0800</code>). It compares eleven bytes at <code>$CF79</code> with eleven at <code>$CF99</code>, sixteen times over, and jumps to <code>$0000</code>, crashing the machine, if they ever agree. In an untouched load they differ. Then the routine wipes its own first 45 bytes, so in play the check is gone. What it is meant to catch is not known.</p>
 </section>
@@ -50,7 +50,7 @@ DFL31    LDA PLAY,X
     <tr><td>U.S. Gold: the lives are not capped</td><td>Scene 4's three extra lives stop at nine</td><td><code>$181B</code></td></tr>
     <tr><td>Scene 8's tasks are fixed to one Goonie each</td><td>The task routines accept either; whether the taller figure’s size restricts access remains open</td><td><code>$9D33</code></td></tr>
   </table></div>
-  <p>The wiki also leaves out two keys the game reads. V prints the version line, V 1 BY SES, and L turns a player's joystick a quarter turn (<a href="controls.html#keys">Controls</a>). A third key, F5, is scanned with the others and nothing acts on it (<code>$161C</code>).</p>
+  <p>The wiki also leaves out two keys the game reads. V prints the version line, V 1 BY SES, and L <a href="controls.html#keys">turns a player's joystick a quarter turn</a>. A third key, F5, is scanned with the others and nothing acts on it (<code>$161C</code>).</p>
 </section>
 
 <section id="small">
@@ -71,8 +71,9 @@ DFL31    LDA PLAY,X
   <ul>
     <li>What the start-up check at <code>$0800</code> was meant to catch.</li>
     <li>Whether scene 8's second Goonie, drawn from taller shapes than the other scenes' (<code>$9D63</code>), is what fixes the wiki's roles.</li>
-    <li>Why the L key turns a joystick a quarter turn (<a href="controls.html#keys">the keys</a>).</li>
-    <li>Which of the four tunes, if any, is the film's song (<a href="music.html">Music</a>).</li>
+    <li>Why the <a href="controls.html#keys">L key</a> turns a joystick a quarter turn.</li>
+    <li>Where sounds 0, 8, and 19 play: no caller was found for them, and they can be heard on the <a href="music.html#effects">Music</a> page.</li>
+    <li>Which of the <a href="music.html#tunes">four tunes</a>, if any, is the film's song.</li>
   </ul>
 </section>
 
