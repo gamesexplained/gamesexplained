@@ -120,6 +120,7 @@ const GOON = (function () {
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
       if (img && img.complete) ctx.drawImage(img, 0, 0, 384 * S, 272 * S);
       ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(0, 0, cv.width, cv.height);
+      const tags = [];
       for (const q of cur.list) {
         const off = q.kind & 0x80, K = KINDS[q.kind & 7];
         if (!show.has(q.kind & 7)) continue;
@@ -127,8 +128,16 @@ const GOON = (function () {
         ctx.strokeStyle = K.col; ctx.lineWidth = q.j === hover ? 4 : 2;
         ctx.setLineDash(off ? [6, 5] : []);
         ctx.strokeRect(x0 + 1, y0 + 1, Math.max(2, x1 - x0 - 2), Math.max(2, y1 - y0 - 2));
+        tags.push([x0, y0, q.kind & 7, K.col]);
       }
       ctx.setLineDash([]);
+      // the kind number in each rectangle's corner, so the kinds read without colour
+      ctx.font = 'bold 11px "IBM Plex Mono", ui-monospace, monospace'; ctx.textBaseline = 'top';
+      for (const [x, y, k, col] of tags) {
+        ctx.fillStyle = '#000'; ctx.fillRect(x, y, 11, 13);
+        ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, 10, 12);
+        ctx.fillStyle = '#fff'; ctx.fillText(String(k), x + 2, y + 1);
+      }
     }
     function table(sc) {
       const t = el('table', { class: 't' });

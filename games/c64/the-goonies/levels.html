@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Choose a scene and uncover its floors, ladders, and walls. These saved collision tables show where the game tests movement, independently of the scenery.</p>
+  <p class="sub">Walls only block from one side. Every solid block is really two thin walls, and a Goonie that ends up inside one just walks out.</p>
 </header>
 <main class="wrap">
 <section id="map">
@@ -16,7 +16,8 @@
   <h2 class="t">Each scene is a list of rectangles of eight kinds</h2>
   <p class="lede">The game checks movement against rectangles that describe floors, walls, and ladders. Toggle a kind to see where it appears. The scene’s rectangle count is at <code>$11F7</code>; <code>load_scene_tables</code> (<code>$1189</code>) selects its lists through <code>$1201</code>.</p>
   <div class="plate" id="map-widget"></div>
-  <p class="cap">Saved collision tables over original scene captures. Dashed rectangles are disabled in the saved data. This is a static reference view: the diagrams do not simulate switches or changes during play. Focus or point to a data row to highlight its rectangle.</p>
+  <p class="cap">Each scene’s rectangles over its picture, numbered by kind. A dashed outline is a rectangle that starts out of use.</p>
+  <p>A wall works from one side only. A kind 0 rectangle stops a Goonie moving left and a kind 1 stops one moving right, so each solid block on the map is drawn as a pair of thin walls, and a Goonie inside one walks out freely.</p>
   <p>Each pass, <code>move_object</code> (<code>$0CFD</code>) moves an object by its speeds and then looks for every rectangle its new box overlaps, noting one of each kind. The kind decides what happens next:</p>
   <div class="table-scroll" role="region" aria-label="Levels reference table" tabindex="0"><table class="t">
     <tr><th>Kind</th><th>What it does to a Goonie</th><th>Where</th></tr>
@@ -29,7 +30,7 @@
     <tr><td>6</td><td>water, which slows a fall</td><td><code>$0F05</code></td></tr>
     <tr><td>7</td><td>a bar: up holds on, gravity stops, and left or right jumps off</td><td><code>$0E31</code></td></tr>
   </table></div>
-  <p>A wall works from one side only. A kind 0 rectangle stops a Goonie moving left and a kind 1 stops one moving right, so each solid block on the map is drawn as a pair of thin walls, and a Goonie inside one walks out freely.</p>
+  
 </section>
 
 <section id="switches">
