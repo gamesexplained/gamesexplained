@@ -54,6 +54,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pd-scroll{overflow-x:auto}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
 .pd-pre{font-family:var(--fm);font-size:14px;margin:0;white-space:pre;overflow-x:auto}
+.pd-pic{display:block;width:100%;max-width:624px;height:auto}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -63,8 +64,32 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </header>
 <main class="wrap">
 
+<section id="rivals">
+  <p class="fig">01 · The rivals</p>
+  <h2 class="t">The other drivers never steer, overtake each other or crash</h2>
+  <p class="lede">The eleven rival karts have no driving in them. Each one goes round at its own fixed speed, in its own fixed lane, and nothing that happens in the race changes either.</p>
+  <div class="plate">
+    <canvas class="pd-pic" id="pd-lines" width="624" height="330" aria-label="Eleven straight lines, one for each rival's distance against the race clock, none of them crossing"></canvas>
+    <p class="cap">Each rival's distance from the start line, in laps, against the race clock, from <code>rival_start_coarse</code>, <code>rival_start_fine</code> and <code>rival_top_speeds</code>, moved as <code>move_rivals</code> moves them. The darker the line, the faster the kart. The race runs until the third rival crosses the line, which ends the game for a player who has not finished. <code>test_rivals.js</code> checks every point against a race run by the game's own code.</p>
+  </div>
+  <p>A rival is four numbers: a lap count, a position along the lap, a speed and a lane. Once a race frame <code>move_rivals</code> (<code>$1950</code>) adds the speed to the position, and every other race frame, until the speed reaches the top speed of the rival's place on the starting grid, it adds one to the speed. That is all a rival does. Nothing about the track goes in: a rival keeps the same speed through every bend, over every hill and across every jump, on all 25 stages, and it never changes lane. The karts only seem to follow the bends and ride the hills because <code>place_rivals</code> draws each one where its lane falls on the road at its distance.</p>
+  <p>Nor can a rival crash. Karts drive straight through one another, and the game has a spin, a fall and a slowdown for the player's kart only. And no rival ever overtakes another. The faster karts start in front, and all eleven speed up at the same rate until each reaches its top speed, so none is ever slower than the one behind it, and the lines above never cross. The order the rivals finish in is settled before the lights change; the player's kart is the only one that changes places. <a href="index.html#rivals">How it works</a> has the race to drive.</p>
+</section>
+
+<section id="middle">
+  <p class="fig">02 · The middle of the road</p>
+  <h2 class="t">Driving in the middle of the road is always safe</h2>
+  <p class="lede">Nothing in the game can touch a kart in the middle of the road: no rival and no roadside object, on any stage, at any speed.</p>
+  <div class="plate">
+    <canvas class="pd-pic" id="pd-road" width="624" height="190" aria-label="The road across, from its left edge to its right: a band in each lane where a rival is solid, the clear middle between them, and the last unit on the right where roadside objects reach"></canvas>
+    <p class="cap">The road across, as the kart sees it, in units of <code>$2F</code>, the road's offset against the kart: 64 of them, from <code>$FF</code> at the left edge to <code>$C0</code> at the right. <b>Red</b>: the band of each lane where <code>place_rivals</code> spins the kart out on a slower rival just in front of it. <b>Amber</b>: the one unit on the road where <code>draw_scenery</code> spins it on a roadside object. <b>Green</b>: the middle, which neither reaches. <code>test_rivals.js</code> runs the game's own sums for every unit of the road at every meeting with a rival or a roadside object on all 25 stages.</p>
+  </div>
+  <p>The rivals keep to two lanes, one each side of the middle, five karts in the left and six in the right. A rival is solid only to a kart in a band around its own lane, and only when it is slower than the kart and just in front of it, 8 to 15 units of position ahead out of 12,800 in a lap. The 18 units of road between the two bands are in neither. The objects by the road can spin the kart too, but one on the left reaches only a kart already off the road, one on the right reaches only the road's last unit, and nothing over the road is solid at all.</p>
+  <p>So a kart held in the middle can pass the whole field without a touch. Driven there flat out, it wins every one of the 25 stages at 2'14 on the race clock, eight clock seconds ahead of the fastest rival. Staying in the middle still takes steering, because each bend pushes the kart sideways (<code>bend_drift</code>), and a jump taken below 70 km/h still drops the kart into the gap (<code>piece_jump</code>). But nothing will ever run into it. The game even starts the kart in the left lane's band, at <code>$F4</code>.</p>
+</section>
+
 <section id="note">
-  <p class="fig">01 · Text</p>
+  <p class="fig">03 · Text</p>
   <h2 class="t">Secret: a note in front of the first instruction</h2>
   <p class="lede">The game's code starts at <code>$0834</code>. The 52 bytes before it are text that nothing reads.</p>
   <div class="plate"><pre class="pd-pre" id="pd-sig"></pre>
@@ -73,7 +98,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="bonus">
-  <p class="fig">02 · The time bonus</p>
+  <p class="fig">04 · The time bonus</p>
   <h2 class="t">Bug: the time bonus is counted out in hexadecimal</h2>
   <p class="lede">After a stage won, the panel shows a bonus of 45 minus the seconds on the clock, and counts it into the score a thousand points at a time. The count runs in the wrong number system, so the bonus pays more than it shows, the panel shows letters, and 45 seconds exactly pays the most of all.</p>
   <div class="plate">
@@ -95,7 +120,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="clock">
-  <p class="fig">03 · The clock</p>
+  <p class="fig">05 · The clock</p>
   <h2 class="t">The race clock runs about 40 % fast</h2>
   <p class="lede">The clock on the panel counts the game's own pictures, not time. Ten seconds of play put about fourteen and a half seconds on it.</p>
   <div class="plate">
@@ -110,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="engine">
-  <p class="fig">04 · Sound effects</p>
+  <p class="fig">06 · Sound effects</p>
   <h2 class="t">Secret: an engine sound the game never plays</h2>
   <p class="lede">The sound driver holds four effects. The game starts only two of them, and the fourth is an engine's hum that keeps itself going.</p>
   <p>A search of the code for every write to <code>sound_effect</code> (<code>$B805</code>) finds the value 2, when the place changes or a rival comes alongside, and 3, for a spin, and otherwise only the driver itself. Effect 4 is a steady tone with a pulse that sweeps up and down, and its last command jumps back to repeat it. Starting it sets <code>$B808</code>, and while that is set, the end of any other effect starts effect 4 again (<code>sound_end_effect</code>). The only routine that clears it, <code>sound_engine_off</code> (<code>$C01C</code>), is called by nothing. It sounds like an engine.</p>
@@ -118,14 +143,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="jump">
-  <p class="fig">05 · Jumps</p>
+  <p class="fig">07 · Jumps</p>
   <h2 class="t">In the air, the stick does nothing</h2>
   <p class="lede">A jump fixes the kart's sideways drift at the moment it leaves the ground.</p>
   <p>From the 7th to the 21st step of a jump piece the kart is in the air, and <code>piece_jump</code> sets <code>$53E8</code>. While it is set, <code>move_player</code> leaves out the steering and every change of speed; only fire still changes gear. It still adds the road's sideways slide at <code>$30</code> to the kart's place across the road, and nothing changes <code>$30</code> in the air, so the kart keeps sliding the way the stick last pushed it on the ground until it lands.</p>
 </section>
 
 <section id="stripes">
-  <p class="fig">06 · Unused pictures</p>
+  <p class="fig">08 · Unused pictures</p>
   <h2 class="t">Two sprites of stripes that nothing shows</h2>
   <p class="lede">Sprites <code>$A1</code> and <code>$A2</code> sit in the part of a view screen that is never shown, and no table or routine points a sprite at them.</p>
   <div class="plate"><canvas class="pd-cv" id="pd-stripes" width="96" height="42" style="max-width:384px"></canvas>
@@ -154,6 +179,35 @@ function pdBonus(secs) {
   return { shown, counts, points: counts.length * 1000 };
 }
 // end of pd-bonus
+</script>
+<script>
+/* pd-rivals */
+// pdRivals(ram, frames): where each of the eleven rivals is, in fine steps from the lap line (a lap
+// is 50 coarse steps of 256), at the start and after each race frame up to frames, as move_rivals
+// ($1950) moves them: from rival_start_coarse ($3701) and rival_start_fine ($370C) at speed 0, the
+// speed up by 1 on the race frames when the counter $E6 is even (it is 0 at the lights and goes up
+// 1 a race frame, after move_rivals) until it equals the top speed in rival_top_speeds ($1989),
+// then the speed added to the position. Nothing else moves a rival before the player's finish.
+// PD_ROAD: values of $2F, the road's offset against the kart, which is on the road from $C0 (its
+// right edge) to $FF (its left): the band of each lane, $08 and $28 (rival_lanes), where
+// place_rivals spins the kart on a slower rival at distance 1; the one value on the road where
+// draw_scenery spins it on a roadside object; and where setup_stage starts it.
+const PD_ROAD = { ROAD: [0xC0, 0xFF], SOLID: { 0x08: [0xEA, 0xF7], 0x28: [0xCA, 0xD7] }, SCENERY: 0xC0, START: 0xF4 };
+function pdRivals(ram, frames) {
+  const start = [], top = [], speed = [], at = [];
+  for (let k = 0; k < 11; k++) { start.push(256 * ram[0x3701 + k] + ram[0x370C + k]); top.push(ram[0x1989 + k]); speed.push(0); }
+  const pos = start.slice();
+  at.push(pos.slice());
+  for (let f = 1, e6 = 0; f <= frames; f++, e6 = (e6 + 1) & 255) {
+    for (let k = 0; k < 11; k++) {
+      if (speed[k] !== top[k] && !(e6 & 1)) speed[k]++;
+      pos[k] += speed[k];
+    }
+    at.push(pos.slice());
+  }
+  return at;
+}
+// end of pd-rivals
 </script>
 <script>
 (function () {
@@ -185,6 +239,86 @@ function pdBonus(secs) {
     $('pd-panel').insertAdjacentHTML('afterend', '<p class="cap">The panel line needs the site\'s shared scripts, which did not load.</p>');
     return;
   }
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const MONO = "12px 'IBM Plex Mono', ui-monospace, Menlo, monospace";
+  const ORD = (n) => n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th');
+  // a canvas drawn at the screen's pixel density, in the units of its width and height attributes
+  const sharp = (cv) => {
+    const W = cv.width, H = cv.height, d = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = W * d; cv.height = H * d;
+    const c = cv.getContext('2d'); c.scale(d, d);
+    return [c, W, H];
+  };
+  // The rivals' distances against the race clock, until the third rival finishes
+  function drawLines(r) {
+    const LAP = 50 * 256, LAPS = 4, at = pdRivals(r, 2400);
+    const done = [];                                     // the frame each rival crosses the line
+    for (let k = 0; k < 11; k++) done.push(at.findIndex((p) => p[k] >= LAPS * LAP));
+    const end = done.filter((f) => f > 0).sort((a, b) => a - b)[2];
+    const [c, W, H] = sharp($('pd-lines'));
+    const L0 = 68, R0 = 86, T0 = 34, B0 = 36, pw = W - L0 - R0, ph = H - T0 - B0, SECS = end / 12;
+    const X = (f) => L0 + pw * f / 12 / SECS, Y = (p) => T0 + ph * (1 - p / (LAPS * LAP));
+    c.clearRect(0, 0, W, H); c.font = MONO; c.lineWidth = 1; c.strokeStyle = css('--line-soft'); c.fillStyle = css('--ink-mute');
+    c.textAlign = 'right';
+    for (let l = 0; l <= LAPS; l++) { c.beginPath(); c.moveTo(L0, Y(l * LAP) + 0.5); c.lineTo(L0 + pw, Y(l * LAP) + 0.5); c.stroke(); c.fillText(l === LAPS ? 'finish' : l === 0 ? 'lap line' : 'lap ' + l, L0 - 6, Y(l * LAP) + 4); }
+    c.textAlign = 'center';
+    for (let t = 0; t <= SECS; t += 30) { const x = L0 + pw * t / SECS; c.beginPath(); c.moveTo(x + 0.5, T0); c.lineTo(x + 0.5, T0 + ph); c.stroke(); c.fillText(Math.floor(t / 60) + "'" + String(t % 60).padStart(2, '0'), x, H - 16); }
+    c.fillText('race clock', L0 + pw / 2, H - 2);
+    for (let k = 10; k >= 0; k--) {
+      const last = done[k] > 0 && done[k] <= end ? done[k] : end;
+      c.strokeStyle = 'hsl(222, 45%, ' + (24 + 4.5 * k) + '%)'; c.lineWidth = 2; c.beginPath();
+      for (let f = 0; f <= last; f += 6) { const x = X(f), y = Y(Math.min(at[f][k], LAPS * LAP)); f ? c.lineTo(x, y) : c.moveTo(x, y); }
+      c.lineTo(X(last), Y(Math.min(at[last][k], LAPS * LAP))); c.stroke();
+    }
+    // the top speeds of the karts still going, spread so that they do not overlap
+    let y = -Infinity;
+    const going = [...Array(11).keys()].filter((k) => !(done[k] > 0 && done[k] <= end));
+    c.textAlign = 'left';
+    for (const k of going) {
+      y = Math.max(y + 15, Y(at[end][k]) + 4);
+      c.fillStyle = 'hsl(222, 45%, ' + (24 + 4.5 * k) + '%)';
+      c.fillText(r[0x1989 + k] * 7 + ' km/h', X(end) + 8, y);
+    }
+    c.fillStyle = css('--ink-mute'); c.fillText('top speed', X(end) + 8, Y(at[end][going[0]]) - 12);
+    done.map((f, k) => [f, k]).filter(([f]) => f > 0 && f <= end).sort((a, b) => a[0] - b[0]).forEach(([f, k], i) => {
+      c.fillStyle = 'hsl(222, 45%, ' + (24 + 4.5 * k) + '%)'; c.beginPath(); c.arc(X(f), Y(LAPS * LAP), 4.5, 0, 7); c.fill();
+      c.textAlign = 'center'; c.font = '700 ' + MONO; c.fillText(['1st', '2nd', '3rd'][i], X(f), Y(LAPS * LAP) - 10 - 13 * (i % 2)); c.font = MONO;
+    });
+  }
+  // The road across, from its left edge ($FF) to its right ($C0)
+  function drawRoad(r) {
+    const [c, W, H] = sharp($('pd-road'));
+    const [lo, hi] = PD_ROAD.ROAD, n = hi - lo + 1, L0 = 32, U = (W - 2 * L0) / n, X = (v) => L0 + U * (hi - v);
+    const RT = 58, RB = 128, band = (a, b, colour) => { c.fillStyle = colour; c.fillRect(X(b), RT, U * (b - a + 1), RB - RT); };
+    c.clearRect(0, 0, W, H); c.font = MONO;
+    band(lo, hi, '#c9c7c0');
+    const lanes = { 0x08: [], 0x28: [] };
+    for (let k = 0; k < 11; k++) lanes[r[0x3717 + k]].push(k);
+    const solid = Object.entries(PD_ROAD.SOLID).map(([lane, [a, b]]) => [+lane, a, b]);
+    for (const [, a, b] of solid) band(a, b, 'rgba(208, 74, 58, .55)');
+    const clear = [solid[1][2] + 1, solid[0][1] - 1];
+    band(clear[0], clear[1], 'rgba(42, 138, 74, .45)');
+    band(PD_ROAD.SCENERY, PD_ROAD.SCENERY, 'rgba(194, 90, 0, .85)');
+    c.strokeStyle = css('--ink'); c.lineWidth = 2;
+    for (const x of [X(hi), X(lo) + U]) { c.beginPath(); c.moveTo(x, RT - 6); c.lineTo(x, RB + 6); c.stroke(); }
+    c.textAlign = 'center'; c.fillStyle = css('--ink');
+    for (const [lane, a, b] of solid) {
+      const x = (X(b) + X(a) + U) / 2, side = lane === 0x08 ? 'left' : 'right';
+      c.font = '700 ' + MONO; c.fillText(side + ' lane', x, RT - 26); c.font = MONO;
+      c.fillStyle = css('--ink-soft'); c.fillText('fastest: ' + lanes[lane].map((k) => ORD(k + 1)).join(', '), x, RT - 10); c.fillStyle = css('--ink');
+      c.fillText('$' + b.toString(16).toUpperCase() + '-$' + a.toString(16).toUpperCase(), x, (RT + RB) / 2 + 4);
+    }
+    const mx = (X(clear[1]) + X(clear[0]) + U) / 2;
+    c.font = '700 ' + MONO; c.fillText('clear', mx, (RT + RB) / 2 - 6); c.font = MONO;
+    c.fillText((clear[1] - clear[0] + 1) + ' units', mx, (RT + RB) / 2 + 12);
+    c.fillStyle = css('--ink-soft');
+    c.textAlign = 'left'; c.fillText('left edge $' + hi.toString(16).toUpperCase(), X(hi) - 4, RB + 24);
+    c.textAlign = 'right'; c.fillText('$' + lo.toString(16).toUpperCase() + ' right edge', X(lo) + U + 4, RB + 24);
+    c.textAlign = 'right'; c.fillText('roadside objects reach here', X(lo) + U + 4, RB + 42);
+    const sx = X(PD_ROAD.START) + U / 2;
+    c.strokeStyle = css('--ink'); c.lineWidth = 1.5; c.beginPath(); c.moveTo(sx, RB - 10); c.lineTo(sx, RB + 30); c.stroke();
+    c.textAlign = 'left'; c.fillStyle = css('--ink'); c.fillText('the kart starts here, $' + PD_ROAD.START.toString(16).toUpperCase(), sx - 4, RB + 46);
+  }
   C64.load('listing.json').then((L) => {
     const r = L.ram, P = C64.PAL;
     // the bonus line: str_bonus in the panel's set at $F000, multicolour, in the colours of row 3 in a
@@ -210,6 +344,7 @@ function pdBonus(secs) {
     let t = '';
     for (let a = 0x0800; a < 0x0834; a++) { const v = r[a]; t += v === 13 ? '\n' : v === 5 ? '' : String.fromCharCode(v); }
     $('pd-sig').textContent = t.replace(/\n+$/, '');
+    drawLines(r); drawRoad(r);
   }).catch((e) => { $('pd-panel').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
 })();
 </script>
