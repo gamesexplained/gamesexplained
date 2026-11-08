@@ -37,6 +37,31 @@ Each is traced in the code; what a player sees is not settled yet.
   (dungeon `$10EC`) lets the party through from the other side. Find one
   in a place a party can reach and walk it.
 
+## The Bestiary
+
+- A monster record's ten kind bytes (`$6BAD`-`$6BB6`, the list
+  `has_item_type` reads and the spell files add to) are not decoded, so
+  the Bestiary names none of a monster's special abilities. Find what
+  each kind number means in the spell files (`combat-set`) and show it.
+- Portraits: the NPCs that join the party (SWORDSMAN, HERO, CURATE and
+  others) name a head and a body (`$6BFE`, `$6BFF`) drawn from the HEAD
+  and BODY files by ANIMATE00's portrait entry (`$8409`); the Bestiary
+  draws none of them.
+- The 3D-view sprites are placed by the page's port of
+  `draw_monster_sprites` (`$28FA`); `test_bestiary.js` holds the battle
+  numbers and the close-ups to the game, not the sprites' places.
+- A close-up or sprite set goes with a monster only when a script that
+  loads it shows one with a number of its own; leaders (KOBOLD LEADER,
+  ORC LEADER and the like) are met in front of their band's picture and
+  get none. Watch an encounter with a leader to confirm.
+- One HILL GIANT file (side 5) has dexterity 0 and a readied BOULDER:
+  com-prep gives it THAC0 18 against its record's 12, the dexterity
+  penalty applying once a weapon is readied. The side-2 file, with its
+  boulders not readied, keeps 12 but moves 3. Fight both live.
+- OGRE LEADER (side 1, MON09) has THAC0 3 in its record, far better
+  than an ogre's 15, and no script the generator follows loads it:
+  find whether anything does.
+
 ## Script findings to watch live
 
 The Maps, Solution and Discoveries tabs read these from the area

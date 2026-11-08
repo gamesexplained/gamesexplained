@@ -102,6 +102,53 @@ something else (resident `$6E13`-`$6E2B`).
 - The title is a hires bitmap at `$E000` with its colours at `$DC00`,
   unpacked from TITLEPG (title `title_packed`, `$6F00`).
 
+## Monsters
+
+- A monster is a MON file, a character record of 480 bytes (544 for
+  a few) loaded at `$6B00` with its party entry at `$6C00` and its
+  items from `$6C20`, by the script command LOAD MONSTER (dungeon
+  `cmd_load_monster`, `$1AC6`): file number, count and combat figure.
+  170 MON files on the eight sides hold 135 distinct records under 108
+  names; a number is the side's own (MON16 is RESTAL on side 1 and a
+  GIANT SKELETON on side 4).
+- Each monster of one LOAD MONSTER is a copy of the same record and
+  takes 1, 1, 2, 2 or 4 combat entries by the low bits of `$6B99`
+  (`monster_entry_sizes`, `$1B6F`), the four-slot monster characters 8
+  to 11 and at most 64 entries allowing.
+- The battle's THAC0, armour class, damage and move of every combatant
+  are made by com-prep `$1630`-`$163C`: `strength_index` (resident
+  `$3ED2`), `dex_hit_bonus` (com-prep `$1682`) into `$6BEC`, then
+  `compute_combat_stats` (resident `$3729`), which adds a readied
+  weapon, armour and the strength and dexterity adjustments for a
+  monster too (`$6DB1`, the slot, is positive). Run over all 135
+  records, the page's `porBattle` matches com-prep's own lines
+  (`test_bestiary.js`).
+- A fallen monster is worth `$6BF7`/`$6BF8` plus `$6BF9` times its full
+  hit points (255 from 256 up) in experience (post-com `$09BA`); its
+  money joins the treasure varied to 51-150 % (`vary_amount`, `$0CBD`).
+- COMPICnn, the combat figure: a 162-byte block per square, 72 bytes of
+  the ready pose's nine characters, 72 of the attacking pose's, then
+  nine colours for each pose (bit 3 multicolour); laid out by size as
+  com-prep `fit_combatant` (`$0FBD`) reads `size_squares_across`
+  (`$1058`) and `size_squares_down` (`$106C`).
+- PICnn, a close-up, as ANIMATE00 (one version on every side, loaded
+  at `$8400`) decodes it: the frame letters from byte 0 to a zero, a
+  delay per letter at `$20` + letter - 'A', repeated `$2C` + 1 times (at
+  most 255 jiffies), the window 11 by 11 characters (`$2D`-`$31`), three
+  colours at `$34`-`$36`, then per frame two XOR run-length blocks, the
+  characters and the colours (from `$3C8` in the buffer). All 65
+  decodable close-ups end on their last byte. PIC3A on side 5, and
+  PIC64, the same file on every side, do not decode this way.
+- SPRITEnn, the 3D-view sprites: a 64-byte header (two shared colours,
+  base X and Y per distance at 2-7, picture counts per distance at
+  8-10, offsets per picture from `$10`) and up to twelve 64-byte
+  pictures, colour and multicolour bit in the last byte; placed by
+  dungeon `draw_monster_sprites` (`$28FA`) with `sprite_offsets`
+  (`$29FE`) for the place.
+- SETUP MONSTER (dungeon `cmd_setup_monster`, `$1F0A`) loads the
+  close-up only in a 3D area (`$49E6` not 0); outdoors the monsters
+  stand at the middle place.
+
 ## Mechanics
 
 - **The modules.** `linker` (resident `$2B80`) loads the module whose

@@ -95,6 +95,42 @@ sixteen lie under SPELLN00 there. The monsters' figures (COMPIC files)
 and the 3D view's sprites are in no part, so the page does not draw
 them.
 
+## Follow-up: the Bestiary tab (8 November 2026)
+
+Aaron asked for a tab like a bestiary: every monster's pictures with its
+stats. Added `bestiary.html`, its data written by
+`scripts/bestiary_data.py` from the eight sides' files (extracted into
+`work/files/` with `kit/c64/disk.py extract`).
+
+- The four kinds of file were decoded first: MON (the record), COMPIC
+  (the battle figure), PIC (the close-up, ANIMATE00's format; the
+  driver was disassembled from its file, which is in no part, and the
+  decoder written from it) and SPRITE (the 3D view, placed as
+  `draw_monster_sprites` places them).
+- Tying a record to its pictures went through the scripts. A flat
+  decode of an ECL file stops at its tables, so the generator follows
+  GOTO, GOSUB and ON GOTO/GOSUB from the five entries, and resolves an
+  operand through SAVE, GET TABLE and RANDOM. The LOAD MONSTER operand
+  gives the figure directly. The close-up and sprites come from the
+  SETUP MONSTER or ENCOUNTER MENU before the load, which can belong to
+  another monster: a first rule taking any number a version was loaded
+  with gave the ORC's picture to the GOBLIN GUARD, HOBGOBLIN and OGRE,
+  and a fallback to the same-numbered file on the side gave the KOBOLD
+  LEADER the treasure chest and the 4TH LVL FIGHTER a picture of the
+  docks. The rule kept: a number of the monster's own (its file's, its
+  most used figure's, another version's file's) shown by an encounter
+  that loads it, or, for a race-0 monster, a PICTURE of its file's
+  number in a script that loads it (TYRANITHRAXUS). Every entry was
+  checked by eye on a contact sheet.
+- The battle numbers are run, not read: `porBattle` calls
+  `strength_index` and `compute_combat_stats` on the kit's 6502, and
+  `test_bestiary.js` holds it to com-prep's own lines from `$1630`.
+  A first guess that monsters skip the weapon step was wrong:
+  `compute_combat_stats` skips it only for a negative `$6DB1`, and a
+  monster's slot is 8 to 11. Zeroing the dexterity table in a mutation
+  run changed only the side-5 HILL GIANT, which has dexterity 0 (in
+  `TODO.md`).
+
 ## Follow-up: the area scripts on the Maps, Solution and Discoveries tabs (8 November 2026)
 
 Aaron asked what the maps hide: traps, scripts, treasure, secrets,
