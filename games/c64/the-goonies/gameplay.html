@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Explore the eight puzzles and see what survives a lost life. One player switches between the Goonies; two players can work together with a joystick each.</p>
+  <p class="sub">The game never ends. Finish the ship and you land back in the hideout with your score and lives, ready to earn the ending’s bonus all over again.</p>
 </header>
 <main class="wrap">
 <section id="scenes">
@@ -27,15 +27,15 @@
     <tr><td>7 · The octopus</td><td>A Goonie knocks the crate off its ledge (<code>$97D6</code>), and it is pushed under the flipper lever. With the lever held down, a Goonie pulls the pond's plug (<code>$96EE</code>), the pond drains, and the octopus sinks out of the way (<code>$962A</code>).</td><td>the octopus's tentacles, a spot by the pond (<code>$95CE</code>), and fliers</td></tr>
     <tr><td>8 · The pirate ship</td><td>Four levers open three portholes (<code>$A0B6</code>), a lift by the mast carries a Goonie up (<code>$A049</code>), and pushing the chest on the top deck spills coins into the sea (<code>$9F0B</code>). Mama Fratelli follows the coins and falls in (<code>$9DEB</code>). The exit is by the chest (<code>$9DBE</code>).</td><td>Mama Fratelli while she guards the hold (<code>$9E62</code>), and the water below the ship</td></tr>
   </table></div></details>
-  <p>The C64-Wiki's walkthrough says scene 8's tasks are fixed to one Goonie each.<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> No routine in scene 8 asks which Goonie it is: the levers, the lift, and the chest take either. The two Goonies do differ in this scene alone. Its start routine draws the second Goonie from other shapes (<code>$9D63</code>), a figure about three lines taller than the children of the other scenes. Whether that height keeps it from a task, through the scene's rectangles, has not been checked.</p>
+  <p>Whether scene 8 gives each Goonie a fixed task is one of the <a href="discoveries.html#open">open questions</a>.</p>
 </section>
 
 <section id="goonies">
   <p class="fig">The two Goonies</p>
   <h2 class="t">Fire swaps which Goonie is the player</h2>
   <p class="lede">Pressing fire hands control to the other Goonie. The character you leave behind waits in place, unless it is falling. With two players, both characters respond to their own joysticks.</p>
-  <p>Type 1 is the Goonie under control: its routine reads the joystick and moves it (<code>$0AF9</code>). Type 2 is the one waiting, which gets "nothing pressed" every pass and so stands still, or falls if it was left in mid-air (<code>$0B62</code>). Pressing fire swaps the two slots' types, so the stick passes from one Goonie to the other where each stands.</p>
-  <p>With two players, set by F3 on the title, the waiting Goonie's routine reads the joystick in port 2 instead (<code>$0BA9</code>), and both Goonies move at once. The <a href="controls.html">Controls</a> tab has the rest.</p>
+  <p>Only one Goonie listens to the joystick at a time (<code>$0AF9</code>). The other is told every pass that nothing is pressed, so it stands where you left it, or keeps falling if you left it in mid-air (<code>$0B62</code>). Pressing fire swaps the two, and the stick takes over the other Goonie wherever it stands.</p>
+  <p>With two players, set by F3 on the title, the waiting Goonie's routine reads the joystick in port 2 instead (<code>$0BA9</code>), and both Goonies move at once. The other keys are on the <a href="controls.html#keys">Controls</a> page.</p>
 </section>
 
 <section id="jump">
@@ -47,7 +47,7 @@
     <tr><td>Line</td><td class="n">102</td><td class="n">98</td><td class="n">95</td><td class="n">93</td><td class="n">92</td><td class="n">92</td><td class="n">93</td><td class="n">95</td><td class="n">98</td><td class="n">102</td></tr>
     <tr><td>Speed down</td><td class="n">&minus;4</td><td class="n">&minus;3</td><td class="n">&minus;2</td><td class="n">&minus;1</td><td class="n">0</td><td class="n">1</td><td class="n">2</td><td class="n">3</td><td class="n">4</td><td class="n">0</td></tr>
   </table></div>
-  <p class="cap">A Goonie's line and speed at the start of each pass, from the moment up is pushed, recorded on the kit's 6502 machine running the game's own code from a saved moment of play. The first step is four lines, not five: gravity is applied in the same pass the jump begins.</p>
+  <p class="cap">A Goonie's line and speed at the start of each pass, from the moment up is pushed.<sup class="fn"><a href="about.html#src-5" title="Jump recorded from the game's own code">5</a></sup> The first step is four lines, not five: gravity is applied in the same pass the jump begins.</p>
   <p>With left or right held, the same jump moves two units across each pass. A Goonie that walks off an edge falls the same way, one line faster each pass up to four, and no fall is too high: every one of the eighteen instructions that start a death is in a scene's hazard or a creature's routine, none in the movement code.</p>
   <p>Up is also the climb on a ladder and the grip on a bar. The scenes are built of rectangles of eight kinds, floors, walls, ladders, water, and bars to hang from, and the <a href="levels.html">Maps</a> tab draws every scene's rectangles over its picture.</p>
 </section>
@@ -72,7 +72,7 @@
 <section id="points">
   <p class="fig">Points</p>
   <h2 class="t">Most of the score comes from the ending</h2>
-  <p class="lede">The ending bonus grows with the number of lives remaining. The ending awards 5,000 points for each remaining life, plus another 5,000. The six-digit score (<code>$12A7</code>) is updated by <code>add_score</code> (<code>$852C</code>), which ignores awards during demonstrations.</p>
+  <p class="lede">The ending pays 5,000 points for each life left, plus another 5,000. The six-digit score (<code>$12A7</code>) is updated by <code>add_score</code> (<code>$852C</code>), which ignores awards during demonstrations.</p>
   <div class="table-scroll" role="region" aria-label="Gameplay reference table" tabindex="0"><table class="t">
     <tr><th class="n">Points</th><th>For</th></tr>
     <tr><td class="n">1,000</td><td>both Goonies at a scene's exit, eight times a round</td></tr>
@@ -83,7 +83,7 @@
     <tr><td class="n">50</td><td>scene 5: an egg onto the pile; scene 7: knocking the crate off its ledge</td></tr>
     <tr><td class="n">35</td><td>scene 4: a rock on the plank lever, while planks remain</td></tr>
   </table></div>
-  <p>An ending entered with five lives pays 30,000, against 8,000 for the eight exits. The C64-Wiki gives 5,000 for each Goonie left;<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> the loop at <code>$A4E6</code> runs once more than the lives. The ending entered with five lives and no score showed SCORE 30000.</p>
+  <p>An ending reached with five lives pays 30,000, and an ending entered that way with no other points showed SCORE 30000. That is more than three times the 8,000 the eight exits pay. The C64-Wiki gives 5,000 for each Goonie left,<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> but the loop at <code>$A4E6</code> runs once more than the lives.</p>
 </section>
 
 <section id="round">

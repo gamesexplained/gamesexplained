@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Listen to the Datasoft disk’s four tunes through John A. Fitzpatrick’s Pearl Music Player. The explanation below shows how music and effects share the sound chip.</p>
+  <p class="sub">The music driver can do filters, instruments, and tempo changes, but all four tunes use only one of its seven commands: the one that sets how long a note lasts.</p>
 </header>
 <main class="wrap">
 <section id="tunes">
@@ -17,6 +17,7 @@
   <p class="lede">Press a tune’s button to listen. These are the tunes from the Datasoft disk examined here; the U.S. Gold disk has different music data. The game’s music software names John A. Fitzpatrick and his Pearl Music Player (<code>$BA34</code>).</p>
   <div class="plate" id="music-widget"></div>
   <p class="cap">The original music player rewritten in JavaScript, heard through the site’s model of the SID, the C64’s sound chip.</p>
+  <details class="reference-detail"><summary>How this player was checked</summary><p>The port was compared with the game’s original driver running on the listing’s bytes. Every sound-chip register matched after every frame, over 30,000 frames of each tune.</p></details>
   <div class="table-scroll" role="region" aria-label="Music reference table" tabindex="0"><table class="t">
     <tr><th>Tune</th><th>Voices</th><th>Length</th><th>Where it plays</th></tr>
     <tr><td>0</td><td>three</td><td>50 seconds</td><td>the title and the attract mode, and the ending</td></tr>
@@ -24,12 +25,11 @@
     <tr><td>2</td><td>two</td><td>50 seconds</td><td>scenes 3 and 4</td></tr>
     <tr><td>3</td><td>two</td><td>38 seconds</td><td>scene 2</td></tr>
   </table></div>
-  <p>Scene 6 has no tune. The tunes do not loop by themselves. Each pass, the main loop checks whether the tune has ended and starts it again from the top (<code>$092C</code>). S switches the music off for every scene except the ending, whose tune plays regardless (<code>$0905</code>).</p>
+  <p>Each scene’s tune comes from <code>scene_jingles</code> (<code>$09F9</code>), and scene 6 has no tune. The tunes do not loop by themselves. Each pass, the main loop checks whether the tune has ended and starts it again from the top (<code>$092C</code>). S switches the music off for every scene except the ending, whose tune plays regardless (<code>$0905</code>).</p>
   <p>Which tune, if any, is the film's song, Cyndi Lauper's "The Goonies 'R' Good Enough", has not been established. The <i>ZZap!64</i> panel was unimpressed, rating the sound 35 % with "Terrible tunes and few FX".<sup class="fn"><a href="about.html#src-3" title="ZZap!64 9, as transcribed on GameBase64">3</a></sup></p>
 </section>
 
 <section id="driver">
-  <details class="reference-detail"><summary>How this player was checked</summary><p>The port was compared with the game’s original driver running on the listing’s bytes. Every sound-chip register matched after every frame, over 30,000 frames of each tune. The scene’s tune is selected by <code>scene_jingles</code> (<code>$09F9</code>).</p></details>
   <p class="fig">The driver</p>
   <h2 class="t">Each voice reads a stream of notes and commands</h2>
   <p class="lede">A tune is three streams of bytes, one for each of the SID's voices (<code>f_C02E</code>). The player runs once a frame from the raster interrupt (<code>play_tune</code>, <code>$BBDB</code>). It counts down the tempo, and on each tick counts down every voice's note, releasing the note a step before its end and reading the voice's next bytes when the note is over (<code>voice_next</code>, <code>$BCC4</code>).</p>
@@ -44,7 +44,7 @@
     <tr><td>5</td><td>one of eight filter settings</td><td><code>$BEC5</code></td></tr>
     <tr><td>6</td><td>the tempo, from the next byte</td><td><code>$BEFE</code></td></tr>
   </table></div>
-  <p>The four tunes use only command 0. Run on the kit's 6502 machine from start to end, the driver reads 1,166 commands across the four tunes, and every one sets a note length. The six other routines are there for tunes that this game does not have. The table of filter settings that command 5 would read even overlaps a tune's notes at <code>$C08E</code>.</p>
+  <p>The four tunes use only command 0. Played from start to end, the driver reads 1,166 commands across the four tunes, and every one sets a note length.<sup class="fn"><a href="about.html#src-5" title="Measured on the game's own code">5</a></sup> The six other routines are there for tunes that this game does not have. The table of filter settings that command 5 would read even overlaps a tune's notes at <code>$C08E</code>.</p>
 </section>
 
 <section id="effects">
@@ -53,6 +53,9 @@
   <p class="lede">The game asks for every sound by number, 0 to 24, through <code>start_sound</code> (<code>$92C7</code>). A table (<code>sound_table</code>, <code>$9384</code>) says which four of the 25 are tunes and gives each of the other 21 an effect, a priority, and whether it may restart over itself.</p>
   <p>An effect goes to one of the three voices. A free voice takes it. Otherwise it takes over a voice whose effect has a priority no higher than its own, and if every voice is busy with something more important, the effect is not played. A tune claims voices 1 and 2 at priority <code>$7F</code>, which no effect can match, so during a scene every effect plays on voice 3. Tune 0 claims all three voices (<code>$9325</code>).</p>
   <p>Each effect is a short script of its own commands, run by one of three effect players, a frame at a time (<code>effects_play</code>, <code>$C921</code>). Swapping the Goonies with fire, for example, plays sound 6 (<code>$0B62</code>).</p>
+  <p>Press a button to hear an effect. Each starts the game’s way with every voice free, so it plays on voice 3.</p>
+  <div class="plate" id="effects-widget"></div>
+  <details class="reference-detail"><summary>How this player was checked</summary><p>The effect players were rewritten in JavaScript and compared with the game’s own code running on the listing’s bytes: every write to the sound chip matched, in order, for 3,000 frames of each of the 21 effects. Sounds 0, 8, and 19 have no caller that was found; they may be started through a table that was not traced.</p></details>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -61,3 +64,4 @@
 <script src="reference/goonies-music.js"></script>
 <script src="reference/goonies-page.js"></script>
 <script>GOON.mountMusic(document.getElementById('music-widget'));</script>
+<script>GOON.mountEffects(document.getElementById('effects-widget'));</script>

@@ -200,4 +200,80 @@ var GOONMUSIC = {
     };
   },
 };
+// The sound effects: start_sound ($92C7) for an effect, and the three effect players
+// (effects_play, $C921), ported the same way. data is { sounds: $9384-$93EB, driver: $BA00-$CFFF },
+// and optionally list, the sound numbers a page offers. init(n) starts sound n (or list[n]) as the game does with every voice free; play() is one frame of
+// effects_play. Checked against the game's own code by test_effects.js.
+GOONMUSIC.createEffects = function (data) {
+  const M = new Uint8Array(0x10000);
+  M.set(data.sounds, 0x9384); M.set(data.driver, 0xBA00);
+  const START = M.slice();
+  const sid = new Uint8Array(25);
+  let writes = [];
+  const W = (r, v) => { sid[r] = v; writes.push(r, v); };
+  const ptr = [0, 0, 0];                                     // $F9, $FB, $FD: each voice's step pointer
+  function effectsInit() {                                   // effects_init, $C8F0
+    W(0x18, 0x0F);
+    for (let v = 0; v < 3; v++) { M[0xBA0F + v] = 0; M[0xBA0C + v] = 0xFF; }
+  }
+  function startSound(y) {                                   // start_sound, $92C7, an effect
+    if (M[0x93CF + y]) return;                               // a tune: the music driver's
+    const eff = M[0x9384 + y];
+    if (!M[0x93B6 + y]) for (let x = 2; x >= 0; x--) if (M[0xBA0C + x] === eff) return;
+    let x;
+    if ((M[0xBA0C] | M[0xBA0D] | M[0xBA0E]) & 0x80) {
+      for (x = 2; x > 0; x--) if (M[0xBA0C + x] & 0x80) break;
+    } else {
+      for (x = 2; x >= 0; x--) if (M[0x939D + y] >= M[0x93E9 + x]) break;
+      if (x < 0) return;
+    }
+    M[0x93E9 + x] = M[0x939D + y];
+    M[0xBA0F + x] = eff | 0x80;                              // effect_start, $C90C
+  }
+  function voice(v) {                                        // effect_voice1, $C92A (and $CA25, $CB20)
+    const o = 7 * v, rd = (y) => M[(ptr[v] + y) & 0xFFFF];
+    const req = M[0xBA0F + v];
+    if (!req) return;
+    if (req & 0x80) {
+      const e = req & 0x7F;
+      M[0xBA0C + v] = e;
+      ptr[v] = M[0xCC1B + 2 * e] | M[0xCC1C + 2 * e] << 8;
+      M[0xBA15 + v] = 1; M[0xBA0F + v] = 1;
+      W(o + 4, 0); M[0xBA12 + v] = 0;
+    }
+    M[0xBA15 + v] = (M[0xBA15 + v] - 1) & 255;
+    if (M[0xBA15 + v]) return;
+    let y = M[0xBA12 + v];
+    const note = () => { y++; M[0xBA15 + v] = rd(y); y++; const n = rd(y);
+      W(o, M[0xBF81 + n]); W(o + 1, M[0xBFD5 + n]); y++; };   // $C97E
+    const env = () => { const a = rd(y); y++; W(o + 5, a); W(o + 6, rd(y)); y++; };   // $C996
+    const wave = () => { W(o + 4, rd(y)); y++; };            // $C9A3
+    const pulse = () => { const a = rd(y); y++; W(o + 2, a); const b = rd(y); y++; W(o + 3, b); };   // $C9BE
+    for (;;) {
+      const c = rd(y), off = M[0xBF6E + c];
+      if (off % 3 || off > 21) throw new Error('effect command ' + c);
+      switch (off / 3) {
+        case 0: W(o, 0); W(o + 1, 0); M[0xBA0F + v] = 0; M[0xBA12 + v] = 0; M[0xBA0C + v] = 0xFF; return;
+        case 1: note(); break;
+        case 2: note(); wave(); break;
+        case 3: note(); env(); wave(); break;
+        case 4: note(); env(); pulse(); wave(); break;
+        case 5: { y++; const lo = rd(y); y++; ptr[v] = lo | rd(y) << 8; y = 0; continue; }   // $C9F9: go to
+        case 6: note(); pulse(); wave(); break;
+        case 7: y++; M[0xBA15 + v] = rd(y); y++; wave(); break;
+      }
+      M[0xBA12 + v] = y & 255;
+      return;
+    }
+  }
+  return {
+    sid,
+    get writes() { return writes; },
+    init(n) { M.set(START); sid.fill(0); writes = []; ptr.fill(0); effectsInit(); startSound(data.list ? data.list[n] : n); },
+    stop() { writes = []; effectsInit(); for (let v = 0; v < 3; v++) { W(7 * v, 0); W(7 * v + 1, 0); W(7 * v + 4, 0); } },
+    play() { writes = []; for (let v = 0; v < 3; v++) voice(v); },
+    playing() { return M[0xBA0C] !== 0xFF || M[0xBA0D] !== 0xFF || M[0xBA0E] !== 0xFF; },
+    voice(x) { const e = M[0xBA0C + x]; return { on: e !== 0xFF, effect: e }; },
+  };
+};
 if (typeof module !== 'undefined') module.exports = GOONMUSIC;

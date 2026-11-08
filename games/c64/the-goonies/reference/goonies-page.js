@@ -120,6 +120,7 @@ const GOON = (function () {
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
       if (img && img.complete) ctx.drawImage(img, 0, 0, 384 * S, 272 * S);
       ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(0, 0, cv.width, cv.height);
+      const tags = [];
       for (const q of cur.list) {
         const off = q.kind & 0x80, K = KINDS[q.kind & 7];
         if (!show.has(q.kind & 7)) continue;
@@ -127,8 +128,16 @@ const GOON = (function () {
         ctx.strokeStyle = K.col; ctx.lineWidth = q.j === hover ? 4 : 2;
         ctx.setLineDash(off ? [6, 5] : []);
         ctx.strokeRect(x0 + 1, y0 + 1, Math.max(2, x1 - x0 - 2), Math.max(2, y1 - y0 - 2));
+        tags.push([x0, y0, q.kind & 7, K.col]);
       }
       ctx.setLineDash([]);
+      // the kind number in each rectangle's corner, so the kinds read without colour
+      ctx.font = 'bold 11px "IBM Plex Mono", ui-monospace, monospace'; ctx.textBaseline = 'top';
+      for (const [x, y, k, col] of tags) {
+        ctx.fillStyle = '#000'; ctx.fillRect(x, y, 11, 13);
+        ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, 10, 12);
+        ctx.fillStyle = '#fff'; ctx.fillText(String(k), x + 2, y + 1);
+      }
     }
     function table(sc) {
       const t = el('table', { class: 't' });
@@ -220,7 +229,9 @@ const GOON = (function () {
       for (let c = 0; c <= 56; c++) { ctx.beginPath(); ctx.moveTo(c * 8 * s + .5, 0); ctx.lineTo(c * 8 * s + .5, cv.height); ctx.stroke(); }
       const frame = (x & 2) ? 2 : 0, a = t[frame][x & 3];
       drawShape(ctx, ram, a, (x >> 2) * 8 * s, 6 * s, s);
-      ctx.fillStyle = '#ffe14d'; ctx.fillRect(2 * x * s, 0, 2, 5 * s);
+      // a downward arrow marks the position, so it reads by shape as well as colour
+      const px = 2 * x * s + 1;
+      ctx.fillStyle = '#ffe14d'; ctx.beginPath(); ctx.moveTo(px - 2.5 * s, 0); ctx.lineTo(px + 2.5 * s, 0); ctx.lineTo(px, 5 * s); ctx.closePath(); ctx.fill();
       out.replaceChildren(document.createTextNode('x = ' + x + ' (' + 2 * x + ' pixels) · column ' + (x >> 2) + ' · frame ' + frame + ' · '), code(a));
     }
     function nextX(value) { const n = value + 2, frame = (n & 2) ? 2 : 0; return ((n >> 2) * 8 + ram[t[frame][n & 3]] * 8 > 112) ? 8 : n; }
@@ -258,6 +269,31 @@ const GOON = (function () {
     });
   }
 
-  return { SCENES, KINDS, load, drawShape, shapeTable, rects, picker, mountMap, mountShapes, mountWalk, mountMusic, hex, el };
+  // The 21 sound effects, each started the game's way with every voice free (so on voice 3).
+  const EFFECTS = [
+    [0, 'Sound 0: where it plays was not traced'], [1, 'Sound 1: the water tank tips over (scene 1)'],
+    [2, 'Sound 2: the money press (scene 1)'], [3, 'Sound 3: the gunman (scene 3)'],
+    [4, 'Sound 4: a vent closes (scene 3)'], [5, 'Sound 5: the spring (scene 2)'],
+    [6, 'Sound 6: fire swaps the Goonies'], [7, 'Sound 7: the bell (scene 4)'],
+    [8, 'Sound 8: where it plays was not traced'], [9, 'Sound 9: the flipper lever (scene 7)'],
+    [10, 'Sound 10: a splash (drips, and the sea in scene 8)'], [11, 'Sound 11: the cage’s first pad (scene 6)'],
+    [12, 'Sound 12: the cage’s second pad (scene 6)'], [13, 'Sound 13: the cage’s third pad (scene 6)'],
+    [14, 'Sound 14: a Goonie in water'], [15, 'Sound 15: a lift creaks (scenes 2 and 8)'],
+    [19, 'Sound 19: where it plays was not traced'], [20, 'Sound 20: the acid drop (scene 3)'],
+    [21, 'Sound 21: coins hit the sea (scene 8)'], [22, 'Sound 22: a rolling rock (scene 4)'],
+    [23, 'Sound 23: a weight thuds down (scene 2)'],
+  ];
+  async function mountEffects(root) {
+    if (!window.C64Sid || !window.GOONMUSIC) { root.textContent = 'This player needs lib/sid.js and reference/goonies-music.js.'; return; }
+    let G; try { G = await load(); } catch (e) { root.textContent = e.message; return; }
+    C64Sid.mount(root, {
+      driver: GOONMUSIC.createEffects,
+      data: { sounds: Array.from(G.ram.slice(0x9384, 0x93EC)), driver: Array.from(G.ram.slice(0xBA00, 0xD000)), list: EFFECTS.map(e => e[0]) },
+      tunes: EFFECTS.map(e => e[1]),
+      rows: [{ k: 'Effect', f: (v) => v.on ? String(v.effect) : 'none' }],
+    });
+  }
+
+  return { SCENES, KINDS, load, drawShape, shapeTable, rects, picker, mountMap, mountShapes, mountWalk, mountMusic, mountEffects, hex, el };
 })();
 if (typeof module !== 'undefined') module.exports = GOON;
