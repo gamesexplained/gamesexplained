@@ -9,7 +9,7 @@
   "title_image": "reference/title-loading-picture.png",
   "build": "TCI crack of the Firebird release, one packed file on a D64; level 1 in play",
   "tier": "bronze",
-  "coverage_percent": 15.7,
+  "coverage_percent": 100.0,
   "copy": "agent-draft",
   "steward": "",
   "credits": [
@@ -28,13 +28,16 @@
   ],
   "tools": {
     "host": "macOS arm64 (macOS 26.5.1)",
-    "emulator": "release v3.13.2, v3.13.2-macos-arm64-gui.dmg",
+    "emulator": "release v3.14.0, v3.14.0-macos-arm64-gui.dmg",
     "disassembler": "regenerator2000 0.9.20",
     "publication": "Python 3; symbols_export.py and listing.py"
   },
   "model": "claude-opus-5-5",
   "step_models": {
     "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
       "claude-opus-5-5"
     ]
   },
@@ -63,9 +66,74 @@
   "coverage": {
     "exclude": [
       [
+        "$0801",
+        "$087F",
+        "The crack's BASIC line (SYS 2082) and the start of its first depacker, left from loading. The game never reads them: no instruction or pointer names an address here."
+      ],
+      [
+        "$08C2",
+        "$08FF",
+        "Bytes left from loading between the direction tables and the messages. No instruction or pointer names them."
+      ],
+      [
+        "$097E",
+        "$097F",
+        "Two bytes after the messages copied to $0900, left from loading. Nothing reads them."
+      ],
+      [
+        "$09C0",
+        "$09FF",
+        "Bytes left from loading after the direction tables. scroll_and_window's base $09F7 is only used with X from 9, which starts at $0A00."
+      ],
+      [
+        "$0BF0",
+        "$0BFF",
+        "Bytes left from loading after the column tables. $0BFF is only a base address that swap_sprite_lists uses with X from 1."
+      ],
+      [
+        "$0FA0",
+        "$2FFF",
+        "Data left from the crack's loading and unpacking: the same at the hand-over as in play, and never read. No instruction names an address here, no pointer the game sets reaches it, and the video chip looks only at $4000-$7FFF. It decodes as neither code nor text (packed data, by its look)."
+      ],
+      [
+        "$3001",
+        "$3FFF",
+        "The rest of the relocator's source: the crack's relocator copied $3000-$6CFF up to $8280 and left this behind, a stale copy of $8281-$927F (4,061 of 4,095 bytes still equal in play; the rest differ where the game changes its own variables). Only $3000 is used, by raster_handler_0's JSR $3000."
+      ],
+      [
+        "$4D00",
+        "$52FF",
+        "Data left from loading, the same at the hand-over as in play, that nothing reads: no instruction or pointer names it, and no sprite pointer the game writes ($00-$30, $4C-$4F) reaches it. It shows as noise if drawn as sprites."
+      ],
+      [
+        "$5300",
+        "$5FFF",
+        "Video memory the game writes as it runs: the rod's two sprite buffers ($5300-$53FF, drawn by draw_rod), the second colour screen and its sprite pointers ($5400-$57FF), the status bar's character set ($5800-$5AFF, a copy of status_bar_chars that print_char writes figures into; $5B00-$5BFF after it holds bytes left from loading that no character shown uses), and the main colour screen and its sprite pointers ($5C00-$5FFF, filled by set_level_colours and text_page)."
+      ],
+      [
+        "$6000",
+        "$7FFF",
+        "The bitmap: the status bar's copy at $6000-$627F (hidden under the text-mode status bar) and the play area, drawn and cleared as the game runs."
+      ],
+      [
+        "$8200",
+        "$827F",
+        "Bytes below the relocated program, left from loading and never read."
+      ],
+      [
+        "$BE96",
+        "$CFFF",
+        "Left from loading above the program: the crack's relocator itself ($BE96-$BEC6, carried up from $6C16 with the program it moved), the first $B9 bytes of the sprite data it had copied to $4000 ($BEC7-$BF7F), and from $BF80 bytes the relocator never wrote. Nothing runs or reads them."
+      ],
+      [
         "$D000",
         "$DFFF",
         "TCI's loading picture, unpacked into the RAM under the I/O before the game starts: the code at $D000 that shows it and the colours it copies from $D800-$DBFF into colour RAM (orientation.md, step 2). The game keeps the I/O in."
+      ],
+      [
+        "$E000",
+        "$FFFF",
+        "Under the KERNAL, which the game keeps in: TCI's loading picture's bitmap ($E000-$FF3F, shown from video bank 3 by the code at $D000 before the game starts) and the bytes after it. The game never reads them."
       ]
     ],
     "extra": [],
