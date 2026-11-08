@@ -229,7 +229,9 @@ const GOON = (function () {
       for (let c = 0; c <= 56; c++) { ctx.beginPath(); ctx.moveTo(c * 8 * s + .5, 0); ctx.lineTo(c * 8 * s + .5, cv.height); ctx.stroke(); }
       const frame = (x & 2) ? 2 : 0, a = t[frame][x & 3];
       drawShape(ctx, ram, a, (x >> 2) * 8 * s, 6 * s, s);
-      ctx.fillStyle = '#ffe14d'; ctx.fillRect(2 * x * s, 0, 2, 5 * s);
+      // a downward arrow marks the position, so it reads by shape as well as colour
+      const px = 2 * x * s + 1;
+      ctx.fillStyle = '#ffe14d'; ctx.beginPath(); ctx.moveTo(px - 2.5 * s, 0); ctx.lineTo(px + 2.5 * s, 0); ctx.lineTo(px, 5 * s); ctx.closePath(); ctx.fill();
       out.replaceChildren(document.createTextNode('x = ' + x + ' (' + 2 * x + ' pixels) · column ' + (x >> 2) + ' · frame ' + frame + ' · '), code(a));
     }
     function nextX(value) { const n = value + 2, frame = (n & 2) ? 2 : 0; return ((n >> 2) * 8 + ram[t[frame][n & 3]] * 8 > 112) ? 8 : n; }

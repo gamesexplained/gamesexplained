@@ -8,17 +8,17 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Step through a Goonie’s walk, then inspect the shapes behind each scene. The game draws its moving characters into two alternating pictures.</p>
+  <p class="sub">The game uses no hardware sprites. It draws every Goonie into the picture itself, and keeping every scene to the same four colours lets it draw them anywhere without colour clashes.</p>
 </header>
 <main class="wrap">
 <div class="plate scene-scope" id="graphics-picker"></div>
 <section id="walk">
   <p class="fig">The walk</p>
   <h2 class="t">A walking Goonie's two frames are half a byte apart</h2>
-  <p class="lede">The two walking frames also help position a Goonie between the picture’s byte columns. Step the demonstration to see a four-pixel move on each update. The frame changes every update; the byte column changes every other update.</p>
+  <p class="lede">The two walking frames also help position a Goonie between the picture’s byte columns. A pass is one step of the game, four frames long, and a walking Goonie moves four pixels each pass. The frame changes every pass; the byte column changes every other pass.</p>
   <p>Each byte spans eight screen pixels. The routine <code>goonie_frame</code> (<code>$0C36</code>) uses the Goonie’s horizontal position to choose its walking frame. The second frame’s artwork sits four pixels further right within its bytes, so changing the frame supplies the intermediate step.</p>
   <div class="plate" id="walk-widget"></div>
-  <p class="cap">A walking demonstration reconstructed from the selected scene’s first Goonie. The grid marks eight-pixel columns; yellow marks its position. Walk advances every 80 ms. The arrow exports this same diagram and pace as a GIF.</p>
+  <p class="cap">The selected scene’s first Goonie walking, one pass at a time. The grid marks eight-pixel columns, and the arrow at the top marks the Goonie’s position.</p>
 </section>
 
 <section id="colours">
@@ -57,7 +57,7 @@
   </table></div>
   <p>Shapes 0 to 15 are the scene's two Goonies, eight frames each: walking right, walking left, climbing, standing, and swimming. The game holds seven Goonies, each a different child, in seven blocks of shape pointers at <code>$B797</code>-<code>$B996</code>. When a scene loads, <code>load_scene_graphics</code> (<code>$6F7A</code>) copies the scene's two blocks (<code>scene_shape_blocks</code>, <code>$7049</code>) into the start of the table, so the pair of Goonies on screen changes from scene to scene. Scene 8 breaks the pattern: its start routine draws the second Goonie from shapes 49 to 56 instead (<code>$9D63</code>), a figure about three lines taller than any of the children. Shapes 16 to 57, the creatures and the other things that move, stay in place for the whole game.</p>
   <div class="plate" id="shape-widget"></div>
-  <p class="cap">Shapes reconstructed from the selected scene’s base pointer table. Show all four copies compares the horizontal offsets. Scene 8 overrides its second character with the taller figure in shapes 49–56; the base entries 8–15 remain visible here for reference.</p>
+  <p class="cap">The selected scene’s shapes, as the game draws them. For scene 8, shapes 8 to 15 are the Goonie the scene replaces with the taller figure in shapes 49 to 56.</p>
 </section>
 
 <section id="pictures">
