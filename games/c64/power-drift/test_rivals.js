@@ -22,14 +22,18 @@
 // times, 176 race frames apart, and loses, and in the right lane it goes through the seventh
 // fastest untouched and hits the fourth fastest every 264; after the finish rival 10 drives away at up to speed level 62; and
 // place_rivals finds a rival at distance 1 inside its spin window for exactly the values of $2F
-// that the page's PD_RACE.SOLID gives for its lane, which leave the 18 in the middle clear. It
-// exits 1 on any difference.
+// that the page's PD_RACE.SOLID gives for its lane, which leave the 18 in the middle clear.
+// discoveries.html's pdRivals is held against the rivals of a race with no one driving, race
+// frame by race frame, and its PD_ROAD against PD_RACE, setup_stage and draw_scenery: at every
+// slot met at distance 0 on the 25 stages, the game's own tests for the objects at the sides spin
+// a kart on the road only at PD_ROAD.SCENERY, $C0. It exits 1 on any difference.
 //   node games/c64/power-drift/test_rivals.js
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const { createRace, raceFrame, PD_RACE } = g.run('index.html', 'pd-race', 'createRace', 'raceFrame', 'PD_RACE');
+const { pdRivals, PD_ROAD } = g.run('discoveries.html', 'pd-rivals', 'pdRivals', 'PD_ROAD');
 g.lib('c64');
 const { C64 } = globalThis;
 const L = g.listing(), S = (n) => L.sym(n);
@@ -96,8 +100,9 @@ function theGame(driver, course, stage, { drive = true, road = 0xE0, extra = {} 
 
 // A race, the page beside the game. spins: the race frames before which Spin out is pressed;
 // one that cannot spin yet (a spin still on) is pressed again on the next frame. road: the $2F the
-// kart is held at. drive false: no one drives, and the page is left out.
-function race(driver, course, stage, { spins = [], drive = true, road = 0xE0, extra = {} } = {}) {
+// kart is held at. drive false: no one drives, and the page is left out. onFrame(n, memory) is
+// called at the start and after each race frame.
+function race(driver, course, stage, { spins = [], drive = true, road = 0xE0, extra = {}, onFrame = () => {} } = {}) {
   const name = 'driver ' + driver + ', ' + 'ABCDE'[course] + (stage + 1) + (spins.length ? ', spins ' + spins : '') + (road !== 0xE0 ? ', $2F $' + road.toString(16) : '');
   const page = drive ? createRace(L.ram, kit) : null, gm = theGame(driver, course, stage, { drive, road, extra });
   if (page) { page.road = road; page.start(driver, course, stage); }
@@ -112,7 +117,7 @@ function race(driver, course, stage, { spins = [], drive = true, road = 0xE0, ex
     if (c >= 0) return fail(name, 'frame ' + n, 'colour RAM cell ' + c, page.colour[c], gm.colour[c]);
     compared++;
   };
-  agree();
+  agree(); onFrame(0, gm.m);
   while (gm.state === 'racing' && n < 3000) {
     if (todo.length && n + 1 >= todo[0]) {
       const p = page ? page.spin() : null, q = gm.spin();
@@ -123,7 +128,7 @@ function race(driver, course, stage, { spins = [], drive = true, road = 0xE0, ex
     const spinning = gm.m[0x53D0];
     if (page) page.frame();
     gm.frame(); n++;
-    agree();
+    agree(); onFrame(n, gm.m);
     const m = gm.m;
     const gap = (x) => where(m, x) - where(m, 11);
     if (!spinning && m[0x53D0]) out.hits.push([n, [...Array(11).keys()].findIndex((x) => gap(x) >= 8 && gap(x) < 16)]);   // distance 1
@@ -179,14 +184,50 @@ function windowAt(c, m) {                             // at $3A64, place_rivals 
   windows++;
 }
 
-// Every stage, driven perfectly, the page beside the game, with the window probed on the way
+// draw_scenery's tests at distance 0: for every slot met at distance 0 in the races below, its
+// objects on the left and on the right are run through the game's own sums from $3C7C for every
+// value of $2F on the road, $C0 to $FF. A left object spins the kart at $3D11, a right one at
+// $3DDA; an object over the road has no test. Only PD_ROAD.SCENERY may spin it.
+let meetings = 0, edgeHits = 0;
+const SCENERY_STOPS = { left: [0x3D11, 0x3D22, 0x3D25], right: [0x3DDA, 0x3DEB, 0x3DEE] };
+const stopAt = (list) => Object.fromEntries(list.map((a) => [a, () => true]));
+function sceneryAt(c, m) {                            // at $3C7C, draw_scenery starting slot X
+  if (m[0x31 + c.x] !== 0) return;
+  probe.set(m);
+  meetings++;
+  for (let v = PD_ROAD.ROAD[0]; v <= PD_ROAD.ROAD[1]; v++) {
+    probe[0x2F] = v;
+    pc.x = c.x; pc.sp = 0xFF; pc.pc = 0x3C7C;
+    pc.run({ until: 0x3CBD, maxSteps: 400 });         // the slot's place across, from $2F
+    const keep = probe.slice(0x00, 0x100), x = pc.x;
+    pc.run({ maxSteps: 400, hooks: stopAt(SCENERY_STOPS.left) });
+    const left = pc.pc === 0x3D11;
+    probe.set(keep, 0); pc.x = x; pc.pc = 0x3D80;
+    pc.run({ maxSteps: 400, hooks: stopAt(SCENERY_STOPS.right) });
+    const right = pc.pc === 0x3DDA;
+    if (left || right) {
+      if (v !== PD_ROAD.SCENERY || left) return fail('draw_scenery spins the kart at $2F = $' + v.toString(16), left ? 'on the left' : 'on the right');
+      edgeHits++;
+    }
+  }
+}
+
+// Every stage, driven perfectly, the page beside the game, with place_rivals and draw_scenery
+// probed on the way
 for (let c = 0; c < 5; c++) for (let s = 0; s < 5; s++) {
-  const r = race(1, c, s, { extra: { 0x3A64: windowAt } }), name = 'ABCDE'[c] + (s + 1);
+  const r = race(1, c, s, { extra: { 0x3A64: windowAt, 0x3C7C: sceneryAt } }), name = 'ABCDE'[c] + (s + 1);
   check(r.finish === 1616 && r.clock === "2'14" && r.place === 0 && r.state === 'won', name, 'perfect race', r.finish, r.clock, r.place, r.state);
   check(r.top10 === 62, name, 'rival 10 reached speed level', r.top10);
   check(r.hits.length === 0, name, 'the kart in the middle hit', r.hits);
 }
 check(windows > 100, 'only', windows, 'rivals met at distance 1');
+check(meetings > 1000 && edgeHits > 0, 'scenery met at distance 0', meetings, 'times, at the edge', edgeHits);
+for (const lane of [0x08, 0x28]) check(String(PD_ROAD.SOLID[lane]) === String(PD_RACE.SOLID[lane]), 'discoveries.html and index.html differ on lane', lane);
+{
+  const page = createRace(L.ram, kit);
+  page.start(1, 0, 0);
+  check(page.m[0x2F] === PD_ROAD.START, 'setup_stage starts the kart at $2F = $' + page.m[0x2F].toString(16));
+}
 
 // Every driver finishes the same perfect race
 for (let driver = 0; driver < 12; driver++) {
@@ -197,9 +238,13 @@ for (let driver = 0; driver < 12; driver++) {
   check(finish === 1616 && page.state === 'won', 'driver', driver, 'finished on', finish, page.state);
 }
 
-// The rivals, with no one driving: the three fastest finish and the third ends the game
+// The rivals, with no one driving: the three fastest finish and the third ends the game, and
+// discoveries.html's pdRivals has every rival where the game has it on every race frame
 {
-  const r = race(1, 0, 0, { drive: false });
+  const lines = pdRivals(L.ram, 2000);
+  const r = race(1, 0, 0, { drive: false, onFrame: (n, m) => {
+    for (let x = 0; x < 11; x++) if (where(m, x) !== lines[n][x]) fail('pdRivals: rival', x, 'race frame', n, lines[n][x], where(m, x));
+  } });
   check(r.rivals[0] === 1711 && r.rivals[1] === 1831 && r.rivals[2] === 1970 && r.state === 'over', 'rivals finish on', r.rivals.slice(0, 3), r.state);
 }
 
@@ -239,5 +284,5 @@ for (let driver = 0; driver < 12; driver++) {
   check(r && r.px && r.px.length === r.w * r.h, 'raceFrame did not render');
 }
 
-console.log(`${compared} race frames the same in the page and the game, the window checked at ${windows} rivals: ` + (bad ? bad + ' differences' : 'the grid, the finishes, the spins and the window as the page says'));
+console.log(`${compared} race frames the same in the page and the game, the window checked at ${windows} rivals and the roadside at ${meetings} slots (${edgeHits} spins at the edge): ` + (bad ? bad + ' differences' : 'the grid, the finishes, the spins, the window and the road as the pages say'));
 process.exit(bad ? 1 : 0);

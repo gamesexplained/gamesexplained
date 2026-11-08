@@ -177,3 +177,18 @@ the sixth fastest rival is hit every 176 race frames until the game is
 lost. `test_rivals.js` runs the game's own loop beside the page and
 checks all of memory after every race frame of 34 races, and the
 numbers the copy gives.
+
+## Follow-up: two discoveries from the rivals (8 November 2026)
+
+The Discoveries tab opens with two findings from the rivals section:
+the rivals never steer, overtake one another or crash, with a chart of
+their eleven straight lines, and the middle of the road is always safe,
+with a drawing of the road across. Before saying "always", the run
+checked the roadside objects as well as the rivals: `draw_scenery` has a
+spin test only for objects at the sides, a left one only for a kart off
+the road, and running the game's own sums for every `$2F` on the road at
+every slot met at distance 0 on the 25 stages found a spin only at `$C0`,
+the road's right edge. One lap of every stage with the kart held at
+`$E0` at speed levels 10, 14, 20, 26 and 32 had no spin either.
+`test_rivals.js` now holds the chart's positions against a race with no
+one driving and the drawing's numbers against the game.

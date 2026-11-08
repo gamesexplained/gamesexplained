@@ -270,7 +270,15 @@ registers):
 - **Spins.** Running into roadside scenery at distance 0 (`draw_scenery`)
   or into a slower rival at distance 1 in front (`place_rivals`) starts a
   spin of ten turns (`kart_spin`), during which the road slides back under
-  the kart and the horizon whirls.
+  the kart and the horizon whirls. Those are the only three places that
+  start a spin (`$3AE6`, `$3D16`, `$3DDF`). A left object spins the kart
+  only while `$1B`, `$2F` scaled, is not negative, so only off the road's
+  left side; an object over the road has no test at all. *Kit's
+  simulator* (`test_rivals.js`): the game's own sums from `$3C7C`, run for
+  every `$2F` on the road at 11,725 slots met at distance 0 over the 25
+  stages, spin the kart only at `$C0`, the road's right edge, on a right
+  object. A kart on the road from `$C1` to `$FF` is never hit by the
+  scenery, and from `$D8` to `$E9` by nothing at all.
 - **Off the road.** Off the road (`$2F` outside `$C0`-`$FF`) above speed
   level 3 the kart slows (`move_player`).
 - **High scores.** Seven entries of three BCD bytes and three letters
