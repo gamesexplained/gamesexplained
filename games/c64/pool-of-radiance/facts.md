@@ -55,8 +55,9 @@ something else (resident `$6E13`-`$6E2B`).
   `$EA31`. *Live*: 300 calls of `$3BEA` and 300 of `$EA31` in 250 PAL
   frames, in New Phlan; 300 calls of the title tune's player (title
   `$BA00`) in 250 frames at the title.
-- The game's clock is six figures from `$49C6` (minutes, tens of minutes,
-  hours, days, months, then the year at `$49CC`), carried by
+- The game's clock is kept from `$49C6`: a figure the adventure module
+  never changes, then minutes (`$49C7`), tens of minutes (`$49C8`),
+  hours (`$49C9`), days, months, and the year at `$49CC`, carried by
   `add_time_unit` (dungeon `$0DEC`) and `clock_add` (camp `$124A`). A step
   in a town or dungeon is one minute, ten with Search on (dungeon
   `step_minutes`, `$08EA`); a move outdoors is twelve hours (dungeon
@@ -166,6 +167,60 @@ something else (resident `$6E13`-`$6E2B`).
   (`$9904`), before the camp (`$9908`), at `$990C`, and at the area's
   start (`$9910`) (dungeon `script_entries`, `$1A0B`).
   The scripts are data loaded at `$9900` and are in no part.
+- **The scripts' variables.** The 32 bytes `$4A00`-`$4A1F` are the
+  area's own flags, which NEW ECL clears when the party enters another
+  area (dungeon `command_handlers`, command 32); from `$4A20` on they
+  last the whole game. The city hall's script keeps the council's
+  rewards as 26 bytes from `$4AA6`, each 254 when a reward is due and
+  255 once paid (ECL08 `$9D12`). *Traced*.
+- **The commissions.** The clerk (ECL08 `$A837`-`$A899`) walks a list of
+  sixteen entries and offers at most three on a visit; entry 10 only
+  goes on to the next. Reaching the end of the list on a visit sets
+  `$4ABE` to 254, Cadorna a traitor (`$AF37`); so do the reward for the
+  Zhentil mission (`$A2AC`) and the evidence in the castle (ECL04
+  `$ADA6`). Valhingen Graveyard is offered before the list once `$4AC1`,
+  which some of the rewards count up, reaches 4 and the party strength is
+  19 or more, with an enchanted weapon above 36 (`$A584`). *Traced*.
+- **No script on the way to the castle reads a commission.** New Phlan
+  to the slums, Kuto's Well (west edge), Podol Plaza (north edge),
+  Stojanow Gate (north edge, ECL09 `$9C68`), the bailey, the grounds,
+  the hedge maze gate (RHODIA, ECL03) and the stairs into the keep
+  (ECL05) check passwords, the wagon and gold only. *Traced*.
+- **The council's meeting is lost to a clean river.** The eastern
+  wilderness's script shows the land recovering the first time the
+  party leaves the pyramid's area with `$4AB3` ≥ 254 (ECL1A `$9AEB`),
+  setting `$4A9A` to 1 (`$AF2B`) and then 255 (`$AF3B`). `$4A9A` is the
+  council's special meeting, offered only while below 254 (ECL08
+  `$AE97`) and held at 254 (`$B28B`). *Traced*.
+- **Restal's reseal pays the party.** The textile house's script
+  (ECL02 `$AE5B`-`$AF0C`) offers to duplicate the seal while `$4A97` is
+  255, `$4AC8` is not 0 (the box found, opened or not, or handed to the
+  watch) and `$4AB8` is not 255; a yes runs TREASURE 0, 0, 0, 0, 200,
+  4, 2, 39 (200 platinum, 4 gems, 2 jewelry, item set 39) and sets
+  `$4AC8` to 1, unopened. The box held 450 copper, 20 silver, 400
+  platinum, 8 gems, 4 jewelry and set 39. The yes is kept in the area
+  flag `$4A17`, so it is offered again on the next visit. *Traced*.
+- **The fortune teller.** Murdering her (ECL14 `$A6E7`) sets the slums'
+  fights won, `$4A80`, to 0 and the area flag `$4A0B` to 255. The slums'
+  patrols stop once `$4A80` reaches 15 (`$9B32`); while `$4A0B` is 255
+  they are likelier (`$9B57`) and bigger (`$9B81`) and a rest can be
+  broken off (`$9A3C`). She appears while `$4A0B` is 250 or less
+  (`$A63A`), so on the next visit. *Traced*.
+- **The vampire.** In the crypt (ECL0A `$B12C`) the vampire is MON69
+  alone when the coffin was sanctified (`$4A43` = 251) or the pit was
+  fought on this visit (`$4A15`), and otherwise MON17 with 15 wolves.
+  The two records on disk 2B differ in hit points, 43 and 15 (offsets
+  `$76` and `$119`, `$6B76` and `$6C19` once loaded). The coffin can be
+  sanctified only before the pit's fight (`$AEFE`). *Traced*.
+- **The runes.** PRINT GLYPHS prints a string of character numbers from
+  the rune font SECSET10 (the same file on every disk; a character's
+  bytes at file offset 2 + (code − `$40`) × 8). The two-wide runes take
+  `$40` + 2 × the letter's place for A to O and three more from R on;
+  the dwarvish runes take `$79` + the letter's place. The strings are
+  HARASH and RHODIA (ECL04 `$A4AA`, `$A4B7`), RHODIA (ECL03 `$AAE7`),
+  NOTNOW (ECL17 `$A56E`), and LUX, SAMOSUD and SHESTNI (ECL15 `$AF20`,
+  `$AF27`, `$AF36`); the scripts compare the typed answers with the same
+  words. *Traced*.
 - **Maps.** A map (GEOnn) is four pages: the north and east walls of each
   of the 256 squares in the first, south and west in the second, a byte
   for each square in the third and the doors in the fourth, two bits for

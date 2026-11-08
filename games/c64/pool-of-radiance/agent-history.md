@@ -131,3 +131,44 @@ stats. Added `bestiary.html`, its data written by
   run changed only the side-5 HILL GIANT, which has dexterity 0 (in
   `TODO.md`).
 
+## Follow-up: the area scripts on the Maps, Solution and Discoveries tabs (8 November 2026)
+
+Aaron asked what the maps hide: traps, scripts, treasure, secrets,
+Easter eggs and bugs, and for a solution with the main quest and the
+shortest way through. The 31 scripts on the eight disk sides were
+decoded with the How it works page's decoder (`areas/ecl.py`, held to
+`get_operand` and `operand_counts` earlier) and read area by area.
+
+`areas/events.py` ties each script event to its squares. It runs a
+script's square entry in a small interpreter for every square, with
+Search on and off, every facing and three rolls of the dice, and takes
+the texts, menus, fights, treasure, damage, passwords and exits along
+the path. What made it hard, in the order it came up:
+
+- GET TABLE takes the operand's own address as the table's start, not
+  the byte stored there.
+- Area-wide events (a welcome, a random encounter) answer before the
+  square's own event, so the runs take their flags from the welcome's
+  fall-through path only; taking them from the whole walk switched
+  every event off.
+- Code that two or more events reach (a secret door's check, the
+  random fights) is left out of each event, so a square shows its own
+  event and not the area's common stock.
+- The castle's four maps are shared by four scripts that load a map by
+  the party's facing; ECL03, ECL05 and ECL06 each draw on more than one
+  of them, so the Maps tab shows a map with each script that runs it.
+
+`areas/highlights.py` names 52 squares worth reading, each found by a
+piece of the script's own text so that it cannot point at a square the
+extraction does not show.
+
+Corrections made while writing the pages, each from a second reading of
+the script: the scripts never call the two-wide runes elvish (only the
+pyramid's sign names its runes, dwarvish); the kitchen slave's and
+Cadorna's slips carry only the gate password; the coffin can be
+sanctified only before the vampire's fight in the pit; the pale form in
+Sokal Keep comes back after a wrong word, because the word is kept in
+the area's own flags; and the Discoveries text first had the barracks
+giants boasting they could read, where they dare the party to.
+
+The new findings are traced, not watched live; `TODO.md` lists them.

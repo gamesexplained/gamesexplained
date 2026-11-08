@@ -62,6 +62,24 @@ Each is traced in the code; what a player sees is not settled yet.
   than an ogre's 15, and no script the generator follows loads it:
   find whether anything does.
 
+## Script findings to watch live
+
+The Maps, Solution and Discoveries tabs read these from the area
+scripts (`facts.md`, Mechanics); none has been played through in the
+emulator.
+
+- The council's special meeting never offered after Yarash dies first
+  (ECL1A `$AF2B`, ECL08 `$AE97`).
+- Restal's reseal paying 200 platinum again on a second visit (ECL02
+  `$AE5B`).
+- The murdered fortune teller at her table on the next visit, and the
+  slums' patrols back (ECL14 `$A63A`, `$9B32`).
+- The crypt's vampire with 15 hit points and no wolves after a sanctify
+  (ECL0A `$B12C`).
+- The runes as the game draws them, against the Discoveries widget.
+- The shortest way: a party that walks from New Phlan to the audience
+  hall with no commission done.
+
 ## Open questions
 
 - The third page of a map file holds a byte for each square, which the
