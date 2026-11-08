@@ -1263,7 +1263,7 @@
   {
    "address": 42752,
    "type": "line",
-   "text": "SPELLE00's first entry, called by load_and_cast: the spell's targets, by the low nibble of the record's fourth byte ($2B35). 0: the caster alone ($A4F4). $0F: one the caster aims at, or, when a square is chosen rather than a combatant, everyone within the high nibble plus 1 squares of it (spell_targets_at). 8 and up: everyone within (nibble AND 7) plus 1 squares of the square aimed at. 4 to 7: (nibble AND 3) plus 1 combatants picked one by one (1 when the computer chose the spell), kept at $2B2E and copied to $9801. 1 to 3, used by no spell, and a cancelled aim: ABORTED (combat message 7) and $2B18 set, which tells spell_flight and the spell's routine there is no target. The list goes to $9800 (its count first) and into the target list ($A640) through into_targets."
+   "text": "SPELLE00's first entry, called by load_and_cast: the spell's targets, by the low nibble of the record's fourth byte ($2B35). 0: the caster alone ($A4F4). $0F: one the caster aims at, or, when a square is chosen rather than a combatant, everyone within the high nibble plus 1 squares of it (spell_targets_at). 8 and up: everyone within (nibble AND 7) plus 1 squares of the square aimed at. 4 to 7: (nibble AND 3) plus 1 combatants picked one by one (1 when the computer chose the spell), kept at $2B2E and copied to $9801; a cancel after one or more picks keeps those. 1 to 3, used by no spell, and an aim cancelled before anything was picked: ABORTED (combat message 7) and $2B18 set, which tells spell_flight and the spell's routine there is no target. The list goes to $9800 (its count first) and into the target list ($A640) through into_targets."
   },
   {
    "address": 42764,
@@ -1453,7 +1453,7 @@
   {
    "address": 43358,
    "type": "line",
-   "text": "Raises the first target's strength to $2B2F and its percentage to $2B2E, unless it is already as strong. The old strength plus 100, or the old percentage at 18, goes in the effect's fourth byte ($2B09) with bit 7 set, for the effect's end to put back. A target with no free timed-effect entry (free_effect), or already enlarged (kind $0C) or strong (kind $26), is left as it was: the caster is loaded again and nothing is cast. Otherwise the strength index and the combat figures are worked out again, the character stored, and spell_area adds the effect. Enlarge, READ MAGIC's record and items 59 come here."
+   "text": "Raises the first target's strength to $2B2F and its percentage to $2B2E, unless it is already as strong: stronger, or at exactly 18 with a percentage as high, whatever the new strength, so item 59's 21 with percentage 0 leaves an 18 as it was. The old strength plus 100, or the old percentage at 18, goes in the effect's fourth byte ($2B09) with bit 7 set, for the effect's end to put back. A target with no free timed-effect entry (free_effect), or already enlarged (kind $0C) or strong (kind $26), is left as it was: the caster is loaded again and nothing is cast. Otherwise the strength index and the combat figures are worked out again, the character stored, and spell_area adds the effect. Enlarge, READ MAGIC's record and items 59 come here."
   },
   {
    "address": 43398,
@@ -1578,7 +1578,7 @@
   {
    "address": 43961,
    "type": "line",
-   "text": "CAUSE DISEASE: the effect's fourth byte is the caster's level with bit 7; its time a d6 with bit 6 set; then spell_area."
+   "text": "CAUSE DISEASE: the effect's fourth byte is the caster's level with bit 7; the time's base a d6 with bit 6 set, which spell_effect drops (it keeps the low six bits), and the record has no time per level, so the time is a d6; then spell_area."
   },
   {
    "address": 43982,
@@ -1688,7 +1688,7 @@
   {
    "address": 44362,
    "type": "line",
-   "text": "Item power 63: the time's base a 2d10 with bit 6 set; the caster's level doubled; then spell_area (the record's kind $47, IS INVISIBLE, on up to four picked)."
+   "text": "Item power 63: the time's base a 2d10 with bit 6 set, which spell_effect drops (it keeps the low six bits); the caster's level doubled; then spell_area (the record's kind $47, IS INVISIBLE, on up to four picked)."
   },
   {
    "address": 44378,

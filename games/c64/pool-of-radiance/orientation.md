@@ -101,6 +101,10 @@ play snapshot is beside it.
 | `combat` | `COMBAT` (module 2) | `$0800` | after `COM.PREP`; `combat_kobolds` |
 | `post-com` | `POST.COM` (module 5) | `$0800` | winning the fight; `postcom_treasure` |
 | `final` | `FINAL` (module 8) | `$0800` | see below |
+| `spells` | `SPELLE00`, loaded over `combat-set`'s `SPELLE65` by `load_spell_record` (combat-set `$993D`) when a spell is cast | `$A700` | from `combat_kobolds`, CAST: entry, a stop at `$991F` after the load |
+| `effects` | `SPELLE01`, loaded by `run_effect` (combat-set `$0776`) when an event runs a kind whose routine is in it | `$A700` | from `combat_kobolds`, the first event: entry, a stop at `$07A5` after the load |
+| `effects-2` | `SPELLE02`, loaded the same way for its kinds | `$A700` | no fight that was played needs it, so the load was forced: at a stop in `combat_kobolds`, `$07A4` pushed as the return, A = 2 and PC = `$9B2D` (`load_slot7`), then a stop at `$07A5` |
+| `camp-spells` | `SPELLE04`, `ECL65`, `SPELLN00`, loaded by the camp's `load_spell_files` (`$133F`) | `$A700`, `$9900`, `$AF00` | CAST in `camp`: entry, waiting at PICK A SPELL TO (camp `pick_spell`, `$1B1E`) |
 
 `FINAL` is the end of the game, played after the last battle. Playing
 there was not practical, so the module number was set and the game's own

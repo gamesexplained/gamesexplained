@@ -51,7 +51,8 @@ tests are listed in the game's own `facts.md`.
 - A spell cast from a scroll with USE is cast at level 6 (`camp_use`,
   `$1122`).
 - The headings of the spell lists are 1ST, 2ND and 3RD LEVEL, and the
-  fourth reads 7TH LEVEL (`level_headings`, `$2AC1`).
+  fourth, 7TH LEVEL, heads RESTORATION alone, the only spell from 56
+  (`spell_level`, `$2B35`; `level_headings`, `$2AC1`).
 
 ## Changing the party
 
