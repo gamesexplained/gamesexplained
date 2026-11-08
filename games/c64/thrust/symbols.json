@@ -6300,7 +6300,7 @@
   },
   {
    "address": 44509,
-   "name": "pen_down",
+   "name": "pen_step_right",
    "type": "Jump",
    "kind": "user"
   },
@@ -6312,7 +6312,7 @@
   },
   {
    "address": 44531,
-   "name": "pen_up",
+   "name": "pen_step_left",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -6330,7 +6330,7 @@
   },
   {
    "address": 44552,
-   "name": "pen_right",
+   "name": "pen_step_down",
    "type": "Jump",
    "kind": "user"
   },
@@ -6342,7 +6342,7 @@
   },
   {
    "address": 44577,
-   "name": "pen_left",
+   "name": "pen_step_up",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -7768,7 +7768,7 @@
   {
    "address": 40,
    "type": "line",
-   "text": "Set on the frames the shield's sprite is shown (alternate frames while Space is held)."
+   "text": "Set on the frames the shield's sprite is shown: two frames in four (bit 1 of $1A) while Space is held."
   },
   {
    "address": 42,
@@ -8118,7 +8118,7 @@
   {
    "address": 122,
    "type": "line",
-   "text": "Work byte: the object being handled by update_objects and its helpers."
+   "text": "Work byte: the object being handled by update_objects and its helpers; a sum's low byte in the thrust code, rod_vector and pod_pickup."
   },
   {
    "address": 123,
@@ -9113,12 +9113,12 @@
   {
    "address": 34971,
    "type": "line",
-   "text": "Marks object $7A drawn this pass and queues its sprites through queue_sprite, by type: a gun is one sprite ($22 + its direction), a fuel tank two ($26 and $27) or one ($2E), the pod on its stand $28 and $29, the reactor $2A and $2B, a door switch $2C or $2D; colours from object_colours."
+   "text": "Marks object $7A drawn this pass and queues its sprites through queue_sprite, by type: a gun is one sprite ($22 + its direction), a fuel tank two ($26 and $27) or one ($2E), the pod on its stand $28 (in the walls' colour, $9AAF) and $29, the reactor $2A and $2B, a door switch $2C or $2D; colours from object_colours."
   },
   {
    "address": 35123,
    "type": "line",
-   "text": "The sprite multiplexer's variables: $8933 next free offset in the queue at $0F00, $8934 sprites queued, $8936 set when a new frame's lists are ready, $8937 set while they are being built, $8938 where this frame's rotation of the hardware sprites starts, $8939 set for a text screen's raster list, $893A set when the play area is shown in hi-res, $893B the play area's background colour, $893C its third colour."
+   "text": "The sprite multiplexer's variables: $8933 next free offset in the queue at $0F00, $8934 sprites queued, $8936 set when a new frame's lists are ready, $8937 set while they are being built, $8938 where this frame's rotation of the hardware sprites starts, $8939 set for a text screen's raster list, $893A set when the play area is shown in hi-res, $893B the play area's background colour, $893C the status bar's third multicolour colour ($D023)."
   },
   {
    "address": 35124,
@@ -9158,7 +9158,7 @@
   {
    "address": 35132,
    "type": "line",
-   "text": "The play area's third colour, set per level from level_colours."
+   "text": "The status bar's third multicolour colour, written to $D023 in raster_handler_0; set per level from level_colours."
   },
   {
    "address": 35133,
@@ -9173,7 +9173,7 @@
   {
    "address": 35172,
    "type": "line",
-   "text": "Acknowledges the raster interrupt, then reads the next entry of the raster list at $0E01 + $AD: a handler number, and the line for the next interrupt from $0E03, which it writes to $D012. Advances $AD by 3 and jumps through raster_handler_lo/hi. A handler number of $FF ends the list."
+   "text": "Acknowledges the raster interrupt, then reads the next entry of the raster list at $0E01 + $AD: three bytes, a handler number, an end mark, and the line for the next interrupt, which it writes to $D012. Advances $AD by 3 and jumps through raster_handler_lo/hi. When the end mark is $FF it still runs that entry's handler, but sets $AD back to 0 and takes the next line from $0E00, the frame's first."
   },
   {
    "address": 35256,
@@ -9208,7 +9208,7 @@
   {
    "address": 35405,
    "type": "line",
-   "text": "Raster handler 3, where the status bar ends: at lines $41-$43 switches to the bitmap at $6000 (multicolour, or hi-res while $893A is set), with background colour $893B and second colour 4."
+   "text": "Raster handler 3, where the status bar ends: at lines $41-$43 switches to the bitmap at $6000 (multicolour, or hi-res while $893A is set), with background colour $893B; it also sets $D022 to 4, which a bitmap does not use."
   },
   {
    "address": 35468,
@@ -9268,7 +9268,7 @@
   {
    "address": 36040,
    "type": "line",
-   "text": "Reads the video chip's collision latches. While $AF8F counts down after a respawn they are cleared and ignored. Otherwise the ship (sprite 7) touching another sprite, unless the rod was drawn in the last two passes ($4A), or the ship touching the background, sets $2A (ship lost); the pod (sprite 6) touching the background sets $2B, except while the ship's row $0B/$0C is below $178. Then writes sprites 6 and 7's registers from their copies at $9AB0-$9AB3 and $9792-$9798."
+   "text": "Reads the video chip's collision latches. While $AF8F counts down after a respawn they are cleared and ignored. Otherwise the ship (sprite 7) touching another sprite, unless the rod was drawn in the last two passes ($4A), or the ship touching the background, sets $2A (ship lost); the pod (sprite 6) touching the background sets $2B, except while the centre's row $0B/$0C is below $178. Then writes sprites 6 and 7's registers from their copies at $9AB0-$9AB3 and $9792-$9798."
   },
   {
    "address": 36174,
@@ -9578,7 +9578,7 @@
   {
    "address": 38280,
    "type": "line",
-   "text": "Moves the ship's velocity on a pass. While the ship is not in play (dead, or before it appears) it is held still. Gravity: on 6 passes in 16 the gravity of the level ($A6/$A7) is added to the vertical speed $15/$16. Thrust (thrust_keys) burns fuel, makes the thrust sound and adds the direction's vector from the tables at $0880-$09BF to the speeds, a sixteenth of it, or a thirty-second while the pod is towed ($22). With the pod towed it also turns the pod and ship as a pair (the angle $1C/$1D and its rate $1E-$20) from the thrust's direction against the rod. Last, friction: each speed loses a 64th (horizontal) or a 256th (vertical) of itself."
+   "text": "Moves the ship's velocity, on 6 passes in 16 (the low four bits of the pass count $19 at 0, 3, 5, 8, 11 or 13); on the other passes it returns at once, so gravity, thrust and friction all act only then. While the ship is not in play and not towing (or exploding) its speeds are held at 0. Gravity: the level's ($A6/$A7) is added to the vertical speed $15/$16. Thrust (thrust_keys) burns a unit of fuel, makes the thrust sound and adds the direction's vector from the tables at $0880-$09BF to the speeds, a sixteenth of it, or a thirty-second while the pod is towed ($22). It also turns the rod (its rate $1E-$20) from the thrust's direction against the rod, except when $19's low bits are 3 or 11. Last, friction: each speed loses a 64th (horizontal) or a 256th (vertical) of itself."
   },
   {
    "address": 38347,
@@ -9638,7 +9638,7 @@
   {
    "address": 38809,
    "type": "line",
-   "text": "Each pass: works out the rod's vector (rod_vector); unless the ship is in play ($18) keeps it hidden. Space raises the shield and the tractor beam ($27, while not dead or out of fuel): on alternate frames it costs fuel, shows the shield sprite ($20) in the level's shield colour and makes its sound. Then turns the ship's position into sprite coordinates for sprite 7 (ship_sprite), with $4E-$50 a copy for the pod's distance test, and the pod's through pod_sprite."
+   "text": "Each pass: works out the rod's vector (rod_vector); unless the ship is in play ($18) keeps it hidden. Space raises the shield and the tractor beam ($27, while not dead or out of fuel): on two frames in four (bit 1 of the frame count $1A) it costs fuel, shows the shield sprite ($20) in the level's shield colour and makes its sound. Then turns the ship's position into sprite coordinates for sprite 7 (ship_sprite), with $4E-$50 a copy for the pod's distance test, and the pod's through pod_sprite."
   },
   {
    "address": 39090,
@@ -9648,7 +9648,7 @@
   {
    "address": 39206,
    "type": "line",
-   "text": "Picks up the pod. Unless it is already towed, while the shield/tractor ($27) is on and the ship is in play: once the ship has come within reach of the pod ($68 set by a distance under $75 from pod_distance), and then moves out to a distance of $84 or more, the pod is attached: $22 and $B512 are set, the two bodies' positions are averaged into the ship's (the pair's centre), their speeds halved, and the rod's angle and length are found by searching the 32 directions (three passes, each halving the step) for the one that points from ship to pod. Taking the pod also sets $A6A6, the level's restart point."
+   "text": "Picks up the pod. Unless it is already towed, while the shield/tractor ($27) is on and the ship is in play: once the ship has come within reach of the pod ($68 set by a distance under $75 from pod_distance), and then moves out to a distance of $84 or more, the pod is attached: $22 and $B512 are set, the two bodies' positions are averaged into the centre ($07-$0C), their speeds halved, and the rod's angle is found by searching the 32 directions (seven passes, each halving the step) for the one that points from ship to pod; the rod's turning speed ($1F/$20) comes from the two bodies' velocities. Taking the pod also sets restart_with_pod ($A6A6) and ignores collisions for 10 passes."
   },
   {
    "address": 39599,
@@ -10113,7 +10113,7 @@
   {
    "address": 42662,
    "type": "line",
-   "text": "Set when the pod has been taken, so a restart puts the ship back towing it."
+   "text": "Set when the pod has been taken. restart_ship reads it to choose the restart point and, while it is still set, puts the ship back towing the pod; restart_ship clears it when the chosen point does not allow that ($A62E, $A642)."
   },
   {
    "address": 42663,
@@ -10123,7 +10123,7 @@
   {
    "address": 42847,
    "type": "line",
-   "text": "Blanks the play area and sets a level's colours from the tables at $A92D-$A94B: the play area's third colour and the text colour $AE68, the walls' colour in both colour screens and colour RAM, the guns', fuel tanks', reactor's and pod's sprite colours and the shield's. Then, at raster line $50, writes the status bar: character codes 0-$4F into the first two rows of both screens, and its colours."
+   "text": "Blanks the play area and sets a level's colours from the tables at $A92D-$A94B: the status bar's third colour and the text colour $AE68, the walls' colour in both colour screens and colour RAM, the guns', fuel tanks', reactor's and pod's sprite colours and the shield's. Then, at raster line $50, writes the status bar: character codes 0-$4F into the first two rows of both screens, and its colours."
   },
   {
    "address": 43058,
@@ -10208,7 +10208,7 @@
   {
    "address": 43309,
    "type": "line",
-   "text": "Six colour tables for the levels: $A92D the play area's third colour and text colour, $A933 the walls' screen colour (high half), $A939 the walls' colour in colour RAM and the pod's, $A93F the status bar's labels, $A945 the guns', $A94B the shield's and a fuel tank's."
+   "text": "Six colour tables for the levels: $A92D the status bar's third colour ($D023) and the text colour, $A933 the walls' screen colour (high half), $A939 the walls' colour in colour RAM and the pod's, $A93F the status bar's labels, $A945 the guns', $A94B the shield's and a fuel tank's."
   },
   {
    "address": 43315,
@@ -10408,7 +10408,7 @@
   {
    "address": 44188,
    "type": "line",
-   "text": "Moves the line into the next sprite of the pair, queues the one finished."
+   "text": "Moves the line into the next sprite of the pair: steps the sprite pointer $A8 on and queues the new sprite (draw_rod queued the first), then resets the byte offset, mask and counters."
   },
   {
    "address": 44222,
@@ -10473,22 +10473,22 @@
   {
    "address": 44509,
    "type": "line",
-   "text": "Moves the pen one pixel down."
+   "text": "Moves the pen one pixel right: the bit $74 on, into the next byte (8 on) after the eighth."
   },
   {
    "address": 44531,
    "type": "line",
-   "text": "Moves the pen one pixel up."
+   "text": "Moves the pen one pixel left: the bit $74 back, into the byte before (8 back) after the first."
   },
   {
    "address": 44552,
    "type": "line",
-   "text": "Moves the pen one pixel right."
+   "text": "Moves the pen one pixel line down the bitmap ($72/$73 on one, or on to the next character row)."
   },
   {
    "address": 44577,
    "type": "line",
-   "text": "Moves the pen one pixel left."
+   "text": "Moves the pen one pixel line up the bitmap ($72/$73 back one, or back to the character row above)."
   },
   {
    "address": 44603,
@@ -10538,7 +10538,7 @@
   {
    "address": 44918,
    "type": "line",
-   "text": "Moves the pen four pixels down and four left."
+   "text": "Moves the pen four pixels right and four up."
   },
   {
    "address": 44930,
