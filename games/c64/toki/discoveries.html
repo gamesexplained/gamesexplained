@@ -55,11 +55,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <main class="wrap">
 <section id="skip">
   <h2 class="t">Secret: skip a stage with two joysticks</h2>
-  <p>The player routine tests for up and fire on joystick port 2 together with down and fire on port 1 <code>$8572</code>. Every frame the pair is held, the game adds one to a cheat flag and one to the background colour. With the flag set, the Commodore key skips to the next stage while the stage number is below 4. In VICE on 25 October 2026, holding the pair from the first stage raised the flag by one a frame, and the Commodore key then moved the game from stage 1 to stage 2. The Commodore key on its own did nothing. The skip from later stages was not tried.</p>
+  <p>Hold up and fire on joystick port 2 and down and fire on port 1 together <code>$8572</code>. Every frame the pair is held, the game adds one to a cheat flag and one to the background colour, so the background changes colour every frame while you hold them. With the flag set, the Commodore key skips to the next stage while the stage number is below 4.<sup class="fn"><a href="about.html#src-13" title="Live check">13</a></sup> The Commodore key on its own does nothing.</p>
+</section>
+<section id="sfx-bug">
+  <h2 class="t">Bug: nine of the ten sound effects silence the wrong register</h2>
+  <p>Before an effect starts a voice, the game means to clear that voice's control register, but it looks the register up by the effect's position in a list instead of by the voice <code>$6659</code>. Only the first effect gets it right; the others write the zero into some other register of the sound chip, such as voice 2's sustain and release. <a href="music.html#player">The Music tab</a> plays all ten effects.</p>
 </section>
 <section id="music">
   <h2 class="t">Three tune sets inside the sound driver</h2>
-  <p>The sound driver holds three sets of voice scripts <code>$70BA</code>, and the main code starts only the second. <a href="music.html#tunes">The Music tab</a> says what is known about the callers.</p>
+  <p>The sound driver holds three sets of voice scripts <code>$70BA</code>, and the main code starts only the second; only a command in the objects' scripts could start the other two. <a href="music.html#player">Listen to all three on the Music tab.</a></p>
 </section>
 <section id="dead">
   <h2 class="t">Routines with no callers found</h2>

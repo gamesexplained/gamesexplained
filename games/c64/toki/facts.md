@@ -25,6 +25,13 @@ alphabet). No version string found.
 | Sprite pointers | $CBF8 and $CFF8, written by `nmi_frame` ($4D4D, $4D50): two screens |
 | Sound code | the SID writes all fall in $6615-$6ED4 (`sound_init` $660D) |
 
+## Sound driver
+
+- Three dispatchers patch a `jmp` operand from a table: sequence commands $F0-$F5 (`seq_run_command` $6984, table $65E5/$65EB), pattern commands 0-6 (`music_voice_step` $6A3C, table $65F1/$65F8), and voice script commands $80-$8D (`dispatch_voice_command` $6927, table $65C9/$65D7). Their 26 targets are typed as code in `symbols.json`; command $8C's entry is $6F06, the start of `note_freq_lo`, which is data.
+- Driven on the kit's 6502 from the play snapshot (2026-11-08): the three tune sets for 30,000 frames each and the ten effects for 3,000 frames each never execute $6EF2 (command $8B), $699F, $69AE, or $69CE (sequence commands $F1, $F2, $F4).
+- `sid_load_song_voices` ($6633) indexes `sid_voice_offsets` ($65FF, three bytes) with the list position X instead of the voice Y at $6659, so for every effect but $00 its write of 0 to `$D404,y` at $665E lands in another register: for effect $0C (X = 12), voice slot 2 reads $660D ($A9) and writes $D4AD, which the SID answers as $D40D.
+- The SID answers at $D400-$D7FF, the same 32 registers every 32 bytes (`kit/c64/machine.js`, `a & 0x1F`); the Music page's player and `test_music.js` fold writes the same way.
+
 ## Timing
 
 - `game_start` ($8000) sets CIA 2 timer A to $4CC7 ($8006-$800D) and
