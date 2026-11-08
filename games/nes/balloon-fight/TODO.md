@@ -13,6 +13,10 @@ later run could add.
   Trip loops; the bonus round's loop is inline in `bonus_round_play`,
   and resuming there needs the round's tail written as a routine of its
   own in the page.
+- The recorded game (Watch) ends at phase 4. A longer one, through the
+  later phases with their propellers, or a Balloon Trip, would need
+  `route/find_route.js` to look further ahead: its lookahead loses
+  nothing in phases 1 to 3 and has not been tried past them.
 - The Play tab's controller 2 is on the keyboard only; a gamepad through
   the browser's Gamepad API, and a second on-screen pad, would let two
   people play on a phone.

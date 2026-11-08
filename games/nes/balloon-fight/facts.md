@@ -258,6 +258,42 @@ each player's count times the value and counts it into the score; 20
 popped between the players is PERFECT!!! and the super bonus. A player
 cannot die here (`no_enemies`).
 
+`balloon_spawn_timer` (`$05CC`) is counted down by `balloon_spawn`
+(`$CD5A`, a `DEC` and a `BEQ`) and loaded only when it reaches 0
+(`$CD66`); the round's setup sets `balloons_to_launch` (`$CF31`) and
+never the timer. So the first balloon of a game's first bonus round
+rises on the call that counts down what the RAM held at power-on: the
+256th from 0, the 255th from `$FF`, the 128th from `$80` (measured on
+the kit's NES on 7 November 2026, the recorded game below with the byte
+set before power-on). Later rounds start from what the last one left.
+
+## The recorded game
+
+`route/route.json` is a game from power-on, one player through phases
+1, 2 and 3 and the first bonus round to the start of phase 4, with no
+life lost: 6,513 reads of controller 1 and none of controller 2. Every
+read of the controllers is a call of `read_joypad_x` (`$E76A`), from
+`wait_frame_pause` (`$F477`, `$F48C`), `steer_actor` (`$E6FC`), the
+title loop (`$DAD5`), the demonstration (`$F31C`) and game over
+(`$F378`), each at most once a frame, so the recording keeps the value
+at each read (`route/route.js`). `route/find_route.js` found it on the
+kit's NES from the listing's bytes with the RAM cleared, since the
+listing carries the RAM of the snapshot it was made from.
+
+Replayed read by read on 7 November 2026, each reached all 150
+milestones (`test_route.js`, `route/check_emulator.py`):
+
+| Machine | Milestones | Frames against the kit's NES |
+|---|---|---|
+| the kit's NES, from the listing | 150 of 150, the recording's own | 0 |
+| the Play tab's machine (`bf-play.js`) | 150 of 150 | 0 |
+| MesenCE 2.2.1, as it powers on | 150 of 150 | 0 |
+| jsnes 2.1.0, RAM cleared at power-on | 150 of 150 | 0 |
+| jsnes 2.1.0, as it powers on (RAM `$FF`) | 124, then the second bonus balloon popped two reads early | 0 until it parts |
+
+A bisection over the RAM, clearing all of it on jsnes but one range
+left at `$FF`, found the one byte that parts them: `$05CC`.
+
 ## Balloon Trip
 
 `trip_start` and `trip_loop` (`$C1C5`, `$C209`). One life, no
