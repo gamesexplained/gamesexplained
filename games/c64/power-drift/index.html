@@ -52,6 +52,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pd-tab td.n{font-family:var(--fm);text-align:right}
 .pd-tab th.n{text-align:right}
 .pd-scroll{overflow-x:auto}
+.pd-pic{display:block;width:100%;max-width:624px;height:auto}
+#pd-roster{cursor:pointer}
+#pd-screen{max-width:640px;margin:0 auto}
+.pd-btn:disabled{opacity:.45;cursor:default}
 @media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
 </style>
 <!-- tabs -->
@@ -93,8 +97,43 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The game writes <code>$B805</code> in three places: 2 when the player's place changes (<code>update_place</code>) or a rival comes alongside (<code>rival_near</code>), and 3 when the kart spins (<code>kart_spin</code>). Effect 1 has no writer at all. Effect 4 is a steady tone with a sweeping pulse, which starts itself again whenever it ends; it sounds like an engine. Only starting effect 4 sets the flag at <code>$B808</code> that keeps it going, and only a routine nothing calls clears it (<code>sound_engine_off</code>). So the game carries an engine sound it never plays.</p>
 </section>
 
+<section id="rivals">
+  <p class="fig">04 · The rivals</p>
+  <h2 class="t">The fastest rival is always the face to the right of yours</h2>
+  <p class="lede">The eleven other drivers have no skill of their own. A kart's top speed belongs to its place on the starting grid, and the game deals the places out along the row of faces, the fastest to the face after the one picked.</p>
+  <div class="plate" id="pd-pick">
+    <div class="pd-bar">
+      <label>You drive <select class="pd-sel" id="pd-who" aria-label="Your driver"></select></label>
+      <span class="pd-out">or tap a face</span>
+    </div>
+    <canvas class="pd-pic" id="pd-roster" width="624" height="268" aria-label="The twelve faces, each with its kart's top speed in a race against the face picked"></canvas>
+    <canvas class="pd-pic" id="pd-grid" width="624" height="250" aria-label="The starting grid seen from above" style="margin-top:14px"></canvas>
+    <p class="cap">Top: each face's top speed in a race against the face picked, from <code>rival_top_speeds</code> (<code>$1989</code>), at 7 km/h a speed level as the panel reads it. <code>setup_stage</code> gives grid place 0, the fastest kart, to the driver after the player's on the select screen, place 1 to the one after that, and so on round the row, from the twelfth face back to the first (the loop at <code>$3687</code>). Bottom: the grid from above, to scale, from <code>rival_start_coarse</code>, <code>rival_start_fine</code> and <code>rival_lanes</code>, with the player's kart where <code>setup_stage</code> puts it, at position 2,0 and <code>$2F</code> = <code>$F4</code>. The road is 64 units of <code>$2F</code> across and drawn wider than it is long. A rival is solid only in the shaded band of its own lane (<code>place_rivals</code>).</p>
+  </div>
+  <p>Nothing else about a driver changes how its kart goes. Each brings a face, with a second picture of it for the panel, a head seen from behind and one looking back, and a colour for the kart (<code>driver_kart_colours</code>), and that is all. Three drivers even share one head from behind, and three more another (<code>head_behind</code>). Speed comes only from where a driver sits in the row after the player's, so every driver is the fastest rival in one race and the slowest in another.</p>
+  <p>A rival does not steer, brake or look at the road. Its whole record is a lap count, a position along the lap, a speed and a lane, and once a race frame <code>move_rivals</code> adds the speed to the position. From the lights the speed goes up a level every other race frame to the top speed of its grid place, and there it stays, through every bend, hill and jump, on all 25 stages. The lane never changes either. <code>place_rivals</code> draws each kart where its lane falls on the road at its distance, so the rivals seem to follow the bends and ride the hills, but nothing in their records knows about either.</p>
+  <p>The grid puts the faster karts in front: the four fastest start ahead of the player and the other seven behind. All twelve speed up at the same rate, and no rival is slower than the one behind it, so no rival ever passes another. The order the rivals finish in is settled before the lights change, and the race decides only where the player fits into it. A place on the podium needs one of the first three, so the kart to beat is the third fastest, three faces to the right, at 182 km/h.</p>
+  <p>Karts pass through one another. The one exception is a rival that is slower than the player and just in front, at distance 1, which is 8 to 15 units ahead (a lap is 12,800): when the player's kart is in that rival's band of the road, it spins out (<code>place_rivals</code>). A rival catching up from behind drives straight through the player. The two lanes leave the middle of the road clear, 18 of its 64 units, so a kart kept in the middle can pass the whole field without a touch.</p>
+  <div class="plate" id="pd-race">
+    <div class="pd-bar">
+      <button class="pd-btn" type="button" id="pd-go">Start the race</button>
+      <button class="pd-btn" type="button" id="pd-spin" disabled>Spin out</button>
+      <select class="pd-sel" id="pd-lane" aria-label="Where the kart is held"><option value="224" selected>In the middle</option><option value="240">In the left lane</option><option value="208">In the right lane</option></select>
+      <select class="pd-sel" id="pd-stage" aria-label="Stage"></select>
+      <select class="pd-sel" id="pd-pace" aria-label="Speed"><option value="1">At the game's speed</option><option value="4" selected>Four times as fast</option></select>
+    </div>
+    <canvas class="pd-cv" id="pd-screen" width="320" height="200" aria-label="The race screen, drawn from the game's memory"></canvas>
+    <p class="pd-out" id="pd-state" style="margin:10px 0 4px">&nbsp;</p>
+    <canvas class="pd-pic" id="pd-chart" width="624" height="350" aria-label="How far each kart has gone, against the race clock"></canvas>
+    <p class="cap">The race is the game's own code, from the listing's bytes, run on the site's model of the 6502 processor: <code>setup_stage</code> and the rest of <code>stage_loop</code> (<code>$086F</code>) through the start lights, without their waits, then <code>race_frame_loop</code> (<code>$08AC</code>) once a race frame, about 17 times a second at the game's speed, with the race clock, the finish and the podium. The page stands in for the stick: up held all race, fire pressed to be in low gear below speed level 14 and in high gear from 14, which gains speed fastest, and the kart held in the middle of the road, or in the band of the left or the right lane, as if steered perfectly. <b>Spin out</b> does what <code>place_rivals</code> does when the kart runs into a slower rival. The picture is drawn by the site's model of the video chip from the game's memory, with the registers the race's interrupts set; the lines on which the sprites are moved down the screen are worked out by the page rather than counted in cycles. Below it, each kart's distance from the start line, in laps, against the race clock: the rivals in their karts' colours, the player in black. <code>test_rivals.js</code> runs the game's own loop beside the page on the kit's simulator, with the same stand-ins, and checks every byte of memory after every race frame of whole races on every stage.</p>
+  </div>
+  <p>Driven perfectly, the kart crosses the line at 2'14 on the race clock, eight clock seconds before the fastest rival, on every stage. A spin at full speed costs five and a half: the kart slows to a stop while it turns and has to build its speed again. So a perfect race can take one spin and still win. Two or three spins put it second, four or five third, and a sixth ends the game.</p>
+  <p>Nor does a rival ever get out of the way. Held in the left lane, the kart runs into the third fastest rival as it catches it, 80 race frames in, and spins to a stop while the field drives past. Then it catches the sixth fastest and hits that, and again 176 race frames later, and again: each spin leaves the kart the same distance behind the same rival, so each approach ends the same way, ten times, until the game is over.</p>
+  <p>Distance 1 is only 8 units deep, though, and the test is made once a race frame, so a kart that closes in by more than 8 units a frame can step right over it. Held in the right lane, the kart goes through the seventh fastest rival untouched, closing on it at 11 units a frame. The fourth fastest is 8 speed levels slower than a kart at full speed, so the kart closes on it by exactly 8 units a frame, can never step over it, and hits it every 264 race frames.</p>
+</section>
+
 <section id="frame">
-  <p class="fig">04 · One frame</p>
+  <p class="fig">05 · One frame</p>
   <h2 class="t">One frame of a race, drawn from memory</h2>
   <p class="lede">The race screen is two screens in one: a panel of five text rows at the top, and the view under it.</p>
   <div class="plate">
@@ -110,7 +149,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="view">
-  <p class="fig">05 · The view</p>
+  <p class="fig">06 · The view</p>
   <h2 class="t">The roadside is cut out of a sheet of characters</h2>
   <p class="lede">The view is a screen of text characters. Each object beside the road is a block of them, with a picture of its own for each of 16 distances.</p>
   <p>Each picture of the view is built in the same order. <code>clear_view</code> fills the screen with the sky character. <code>draw_horizon_rows</code> copies in the stage's two horizon pictures, 40 characters of each from a picture 80 wide, starting at a column that moves one place for each step of a bend, so the skyline turns as the road does. <code>draw_road</code> draws the road a row at a time from the bottom up. Last, <code>draw_scenery</code> draws the objects, far ones first so that near ones cover them. Every object is copied out of the tile sheet by one routine, <code>draw_tiles</code>, which leaves out the empty character 0, so an object's shape is cut round its outline. Every kind of object at all 16 distances is on <a href="graphics.html#roadside">Graphics</a>.</p>
@@ -119,7 +158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="road">
-  <p class="fig">06 · The road</p>
+  <p class="fig">07 · The road</p>
   <h2 class="t">Every hill is a list of road widths</h2>
   <p class="lede">The road is drawn from the bottom of the screen up, one character row at a time. A list gives each row's width, and a hill is a different list for every step.</p>
   <div class="plate">
@@ -131,15 +170,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="karts">
-  <p class="fig">07 · The karts</p>
+  <p class="fig">08 · The karts</p>
   <h2 class="t">Eleven rivals share four sprites</h2>
   <p class="lede">The C64 shows eight sprites at once. The player's kart takes four of them, and the other eleven karts take turns with the remaining four.</p>
   <p>The player's kart is a head and three body sprites, set once a frame by a timer interrupt (<code>sprite_band_irq</code>). The rivals are up to twelve records of a position, a picture and a colour, built each race frame by <code>place_rivals</code>, sorted from the top of the screen down (<code>sort_karts</code>) and copied where the interrupts read them (<code>copy_kart_sprites</code>). Down the screen, an interrupt (<code>kart_mux_irq</code>) puts the next record into the next of sprites 4 to 7 just after the one before has been drawn, so one sprite can show several karts in one frame. Every picture a kart is drawn with, the rivals' at each distance, the spin, the start lights and the podium among them, is on <a href="graphics.html#cast">Graphics</a>.</p>
-  <p>A near rival takes four records: three for the kart and one for the head. Up to distance 11 a rival takes two, and from 12 on, one. A rival at distance 1 in front of the kart, and slower than it, spins the player out (<code>place_rivals</code>). The rivals keep their order of speed: rival 0 tops out at speed level 30 and rival 10 at 12 (<code>rival_top_speeds</code>). The player's kart reaches 32 in high gear, the fastest on the track.</p>
+  <p>A near rival takes four records: three for the kart and one for the head. Up to distance 11 a rival takes two, and from 12 on, one. A rival at distance 1 in front of the kart, and slower than it, spins the player out (<code>place_rivals</code>). The rivals keep their order of speed: rival 0 tops out at speed level 30 and rival 10 at 12 (<code>rival_top_speeds</code>), and <a href="#rivals">the rivals' section</a> races them. The player's kart reaches 32 in high gear, the fastest on the track.</p>
 </section>
 
 <section id="speed">
-  <p class="fig">08 · Speed and time</p>
+  <p class="fig">09 · Speed and time</p>
   <h2 class="t">Speed levels of 7 km/h</h2>
   <p class="lede">Up on the stick adds a speed level every other race frame. The read-out adds 7 km/h for each level.</p>
   <div class="plate">
@@ -155,13 +194,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="places">
-  <p class="fig">09 · Places</p>
+  <p class="fig">10 · Places</p>
   <h2 class="t">Three places on the podium, and the game ends when they are gone</h2>
   <p class="lede">Each race has three places on the podium. Once rivals have taken all three, the game is over, wherever the player is.</p>
   <div class="plate pd-shots"><figure><img src="reference/wiki-third-place.png" alt="Three karts stacked above the road, each with a driver's face" width="320" height="200"><figcaption>The player has finished third. The three finishers stand one above another over the road, the first at the top, each with its driver's face from the front.</figcaption></figure></div>
   <p>Each race frame <code>update_place</code> works out the player's place from the rivals' laps and positions. The rivals keep their order of speed, so it only has to look from the slowest up for the first rival ahead. A change of place starts a sound and swaps the player's face along the row of faces on the panel (<code>show_place</code>).</p>
   <p>Every kart that finishes its fourth lap takes the next of three places on the podium (<code>place_finisher</code>): its kart and its driver's face appear over the road, with the place written across the top of the face. When the third place goes to a rival, the game is over (<code>game_over</code>). When the player takes a place, the stage is won (<code>stage_won</code>), and after the fifth stage of a course the screen says CONGRATULATIONS (<code>course_complete</code>).</p>
-  <p>When the player finishes, the slowest rival, rival 10, is given the player's lane, speed and colour, and the player's own sprites are pointed at an empty picture (<code>move_on</code>). So the kart seems to drive on up the road while the view stays where it is.</p>
+  <p>When the player finishes, the slowest rival, rival 10, is given the player's lane, speed and colour, and the player's own sprites are pointed at an empty picture (<code>move_on</code>). So the kart seems to drive on up the road while the view stays where it is. It also gathers speed as it goes. <code>move_rivals</code> adds a level every other race frame until a rival's speed equals its top speed, and the player's 32 is already past rival 10's 12, so the two never meet: in the 60 race frames before the stage ends, the kart driving away climbs from 224 km/h to over 430.</p>
 </section>
 
 </main>
@@ -269,5 +308,391 @@ const PD_FRAMES = { flat: {"schema":1,"standard":"PAL","lines":312,"cycles":63,"
     }
 
   }).catch((e) => { $('pd-road').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
+})();
+</script>
+<script>
+/* pd-race */
+// createRace(ram, C64Cpu): a whole race run by the game's own code on the site's 6502, over ram,
+// the 64 KB of the listing (C64.load's L.ram), which is left as it is. start(driver, course,
+// stage) picks the driver ($53B7), the course and the stage as the select screen does, and the
+// kart's colour as lower_kart does (random AND 3 into kart_colour_choices), then runs stage_loop
+// ($086F) from setup_stage through the start lights to the first race frame. frame() runs
+// race_frame_loop ($08AC) once, through its own ending: race_clock while the race is on, the 60
+// race frames after the player's finish, and a stop where the stage is won (stage_won) or lost
+// (game_over). It returns 'racing', 'won' or 'over'. The stand-ins: a wait for the video chip
+// (wait_frame) returns at once, as do the start lights' waits for line 0 (wait_frames), and the
+// frame counter of the race's top interrupt ($E5) goes up three a race frame, the video frames a
+// race frame takes at its fastest; and at the start of move_player the kart is put at road, its
+// place across the road ($2F; MIDDLE, $E0, unless the page sets another), as if steered
+// perfectly, and the stick is set: up held all race, and fire pressed to be in low gear ($53D9 =
+// 0) below speed level 14 and in high gear from 14, so the kart gains a level every other race
+// frame all the way to 32, the most the game allows (high gear gains one in four below 14, low
+// gear stops at 18). spin() spins the kart out as place_rivals does when the kart runs into a
+// slower rival, and returns false while it cannot (a spin on, or the player finished).
+const PD_RACE = {
+  clearTextScreen: 0x1A18, random: 0x389E, kartColours: 0x372E, stageLoop: 0x086F, raceFrameLoop: 0x08AC, waitFrame: 0x5018,
+  movePlayer: 0x3291, again: [0x08FF, 0x090A], won: 0x090D, over: 0x095A,
+  MIDDLE: 0xE0, GEAR: 14, UP: 0xFE, FIRE: 0xEF, VIDEO_FRAMES: 3,
+  // the values of $2F (the road's offset against the kart) for which place_rivals finds a rival of
+  // lane $08 or $28, at distance 1, inside the window it spins the kart for (X $3C to $59)
+  SOLID: { 0x08: [0xEA, 0xF7], 0x28: [0xCA, 0xD7] },
+};
+function createRace(ram, C64Cpu) {
+  const A = PD_RACE, m = new Uint8Array(65536), colour = new Uint8Array(1024);
+  let stick = 0xFF, pressed = false, state = 'ready', frames = 0, road = A.MIDDLE;
+  const io = {
+    read(a) {
+      if (a >= 0xD800 && a < 0xDC00) return colour[a - 0xD800] | 0xF0;
+      if (a === 0xDC00) return stick;                 // the joystick in port 2
+      if (a === 0xDC01) return 0xFF;                  // no key: pause_on_space goes on
+      if (a === 0xD012) return 0;                     // the beam at line 0, for wait_frames
+      if (a === 0xD011 || a === 0xD018) return 0;     // read to keep bits of, for writes the page does not use
+      throw new Error('read $' + a.toString(16));
+    },
+    write(a, v) { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; },   // and the video chip's registers
+  };
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+  const hooks = {
+    [A.waitFrame]: (c) => { c.rts(); },
+    [A.movePlayer]: () => {
+      m[0x2F] = road;
+      stick = A.UP;
+      if (pressed) pressed = false;                   // fire let go for a frame after each press
+      else if ((m[0x53D9] === 1) !== (m[0x536F] >= A.GEAR)) { stick &= A.FIRE; pressed = true; }
+    },
+    [A.again[0]]: () => true, [A.again[1]]: () => true,
+    [A.won]: () => { state = 'won'; return true; },
+    [A.over]: () => { state = 'over'; return true; },
+  };
+  return {
+    m, colour,
+    start(driver, course, stage) {
+      m.set(ram); colour.fill(0); stick = 0xFF; pressed = false; state = 'racing'; frames = 0;
+      m[0x2E] = 0;                                    // as game_start leaves it
+      m[0x53B7] = driver; m[0x53E4] = course; m[0x53E5] = stage;
+      cpu.call(A.clearTextScreen, {}, { maxSteps: 200000 });   // the colour buffer at 8, as the screens before a race leave it
+      cpu.call(A.random);
+      m[0x53CE] = m[A.kartColours + (cpu.a & 3)];
+      cpu.sp = 0xFF; cpu.pc = A.stageLoop;
+      cpu.run({ until: A.raceFrameLoop, maxSteps: 5000000, hooks });
+    },
+    frame() {
+      if (state !== 'racing') return state;
+      cpu.sp = 0xFF; cpu.pc = A.raceFrameLoop;
+      cpu.run({ maxSteps: 2000000, hooks });
+      m[0xE5] = (m[0xE5] + A.VIDEO_FRAMES) & 255;
+      frames++;
+      return state;
+    },
+    spin() {
+      if (state !== 'racing' || m[0x53D0] || m[0x53CF]) return false;
+      m[0x53D0]++; m[0xE6] = 0; m[0x53E3] = 0; m[0x53D1] = 10;
+      return true;
+    },
+    get state() { return state; },
+    get frames() { return frames; },
+    get road() { return road; },
+    set road(v) { road = v & 255; },
+  };
+}
+// raceFrame(m, colour): one frame of the race screen as C64.renderFrame takes it, from the game's
+// memory: the registers race_irq_top sets at the top (the panel's screen at $E000 and set at
+// $F000, the stage's sky, multicolours 15 and 8, sprite 7 over the player's face), multicolour 2
+// black from line 75 (panel_irq_lower), the view's screen and multicolour from line 90
+// (race_irq_view), the ground colour where CIA 1's timer A runs out, and the sprites. The four
+// bands of sprites 0 to 3 go down the screen as sprite_bands' timer places them: the podium's
+// when they are on, then the player's kart. The twelve rival records go to sprites 4 to 7 in the
+// draw order sort_karts leaves at $CA: the last four as race_irq_view places them, then the rest
+// in turn, each when its sprite is free or seven lines above its own Y, as kart_mux_irq does. The
+// lines these happen on are worked out here, not counted in cycles as the interrupts run.
+function raceFrame(m, colour) {
+  const mem = m.slice(), vic = new Array(47).fill(0), writes = [];
+  const sprite = (s, x, y, p, c, line, cyc, ptrs) => {
+    msb = x > 255 ? msb | 1 << s : msb & ~(1 << s);
+    const set = [[0xD000 + 2 * s, x & 255], [0xD001 + 2 * s, y], [0xD010, msb], [0xD027 + s, 0xF0 | c]].concat(ptrs.map((a) => [a, p]));
+    if (line === undefined) for (const [a, v] of set) { if (a < 0xD02F && a >= 0xD000) vic[a - 0xD000] = v; else mem[a] = v; }
+    else set.forEach(([a, v], i) => writes.push([line, Math.min(63, cyc + i), a, v]));
+  };
+  let msb = 0;
+  vic[0x11] = 0x1B; vic[0x15] = 0xFF; vic[0x16] = 0xD8; vic[0x18] = 0x8C; vic[0x1B] = 0xF0; vic[0x1C] = 0xFF;
+  for (const r of [0x20, 0x24, 0x25]) vic[r] = 0xF0;
+  vic[0x21] = 0xF0 | m[0x25]; vic[0x22] = 0xFF; vic[0x23] = 0xF8; vic[0x26] = 0xFF;
+  const view = [0xEBF8, 0xEFF8], all = [0xE3F8, 0xEBF8, 0xEFF8];
+  const band = (b, k) => [m[0x5141 + 4 * k + b], m[0x5151 + 4 * k + b], m[0x5161 + 4 * k + b], m[0x5171 + 4 * k + b]];
+  const rec = (k) => { const x = m[0xCA + k]; return [2 * m[0x8A + x], m[0x9A + x], m[0xAA + x], m[0xBA + x]]; };
+  for (let k = 0; k < 4; k++) { const [x, y, p, c] = band(0, k); sprite(k, x, y, p, c, undefined, 0, all.map((a) => a + k)); }
+  for (let s = 0; s < 3; s++) { const [x, y, p, c] = rec(s); sprite(4 + s, x, y, p, c, undefined, 0, view.map((a) => a + 4 + s)); }
+  sprite(7, 2 * m[0x53EB], 0x2E, 0x83, rec(3)[3], undefined, 0, [0xE3FF]);
+  writes.push([75, 10, 0xD023, 0xF0]);
+  writes.push([90, 62, 0xD018, m[0x399F + m[0x2E]]]);
+  writes.push([91, 7, 0xD022, 0xF0 | m[0x53EA]]);
+  const T = 256 * m[0x24] + 204;
+  writes.push([Math.floor(T / 63), T % 63, 0xD021, 0xF0 | m[0x26]]);
+  let line = 82;                                       // timer B, $1400 cycles after the top
+  for (let b = 3; b >= 1; b--) {
+    if (!m[0x513D + b]) break;
+    for (let k = 0; k < 4; k++) { const [x, y, p, c] = band(b, k); sprite(k, x, y, p, c, line, 4 + 12 * k, all.map((a) => a + k)); }
+    line += 37;                                        // and $0900 cycles a band after that
+  }
+  if (line > 82) for (let k = 0; k < 4; k++) { const [x, y, p, c] = band(0, k); sprite(k, x, y, p, c, line, 4 + 12 * k, all.map((a) => a + k)); }
+  const ys = [0, 1, 2, 3].map((s) => vic[9 + 2 * s]);
+  for (let i = 0; i < 4; i++) { const [x, y, p, c] = rec(11 - i), s = 3 - i; sprite(4 + s, x, y, p, c, 92 + i, 20, view.map((a) => a + 4 + s)); ys[s] = y; }
+  let cur = 96;
+  for (let k = 7; k >= 0; k--) {
+    const s = k & 3, [x, y, p, c] = rec(k);
+    if (ys[s] + 20 >= cur && y - 7 > cur) cur = y - 7;
+    sprite(4 + s, x, y, p, c, cur, 20, view.map((a) => a + 4 + s));
+    ys[s] = y; cur++;
+  }
+  writes.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  return { standard: 'PAL', lines: 312, cycles: 63, vic, cia2: [0xC4, 0x3F], writes, mem, colourMem: colour };
+}
+// end of pd-race
+</script>
+<script>
+// The rivals: the roster and the grid from the game's tables, and a race run by createRace.
+(function () {
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
+    for (const id of ['pd-roster', 'pd-screen']) $(id).insertAdjacentHTML('afterend', '<p class="cap">This needs the site\'s shared scripts, which did not load.</p>');
+    return;
+  }
+  const P = C64.PAL, RGB = P.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim() || '#2f3136';
+  const MONO = "12px 'IBM Plex Mono', ui-monospace, Menlo, monospace";
+  const ORD = (n) => n + (n % 100 > 10 && n % 100 < 14 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+
+  C64.load('listing.json').then((L) => {
+    const r = L.ram, w = (a) => r[a] | r[a + 1] << 8;
+    const top = (k) => r[0x1989 + k];                    // rival_top_speeds, by grid place
+    const kartColour = (d) => r[0x3722 + d];             // driver_kart_colours, by driver
+    const KMH = 7, PLAYER_TOP = 32, LAP = 50 * 256, LAPS = 4;
+    const driverAt = (k, you) => (you + 1 + k) % 12;     // the loop at $3687
+    const placeOf = (d, you) => (d - you + 11) % 12;     // the grid place of driver d; 11 is the player
+    let you = 1;                                          // where the select screen's cursor first stops
+
+    // A face: 3 by 3 multicolour cells from the panel's set at $F000 (face_pointers, $1285), in the
+    // panel's colours: multicolours 15 and 8 (race_irq_top) and black, the cells' colour 8.
+    const CS = r.subarray(0xF000, 0xF800), FACE = [null, P[15], P[8], P[0]];
+    function drawFace(ctx, d, x, y, s, bg) {
+      const a = w(0x1285 + 2 * d);
+      if (bg) { ctx.fillStyle = bg; ctx.fillRect(x, y, 24 * s, 24 * s); }
+      for (let k = 0; k < 9; k++) {
+        const c = r[a + k], px = x + (k % 3) * 8 * s, py = y + Math.floor(k / 3) * 8 * s;
+        for (let yy = 0; yy < 8; yy++) {
+          const row = CS[c * 8 + yy];
+          for (let xx = 0; xx < 4; xx++) {
+            const v = row >> (6 - 2 * xx) & 3;
+            if (v) { ctx.fillStyle = FACE[v]; ctx.fillRect(px + xx * 2 * s, py + yy * s, 2 * s, s); }
+          }
+        }
+      }
+    }
+
+    // ---- the roster: twelve faces, each with its top speed against the face picked
+    const roster = $('pd-roster'), rc = roster.getContext('2d');
+    const CELL = 52, BASE = 226, KMH_PX = 150 / (PLAYER_TOP * KMH);
+    const target = (d) => (d === you ? PLAYER_TOP : top(placeOf(d, you))) * KMH;
+    const shown = Array.from({ length: 12 }, (_, d) => target(d));
+    let anim = null;
+    function drawRoster() {
+      rc.clearRect(0, 0, roster.width, roster.height);
+      rc.font = MONO; rc.textAlign = 'center';
+      const third = driverAt(2, you);
+      for (let d = 0; d < 12; d++) {
+        const x = d * CELL + 2, cx = x + 24, k = placeOf(d, you), h = shown[d] * KMH_PX;
+        drawFace(rc, d, x, 4, 2, P[6]);
+        if (d === you) { rc.lineWidth = 3; rc.strokeStyle = css('--ink'); rc.strokeRect(x - 1.5, 2.5, 51, 51); }
+        rc.fillStyle = d === you ? css('--ink') : P[kartColour(d)];
+        rc.fillRect(cx - 15, BASE - h, 30, h);
+        if (d === third) { rc.lineWidth = 2; rc.strokeStyle = css('--ink'); rc.setLineDash([4, 3]); rc.strokeRect(cx - 16, BASE - h - 1, 32, h + 1); rc.setLineDash([]); }
+        rc.fillStyle = css('--ink');
+        rc.fillText(String(Math.round(shown[d])), cx, BASE - h - 6);
+        rc.fillStyle = d === you || k < 3 ? css('--ink') : css('--ink-mute');
+        rc.font = (k < 3 || d === you ? '700 ' : '') + MONO;
+        rc.fillText(d === you ? 'you' : ORD(k + 1), cx, BASE + 18);
+        rc.font = MONO;
+      }
+      rc.fillStyle = css('--line'); rc.fillRect(0, BASE, roster.width, 1);
+      rc.textAlign = 'left'; rc.fillStyle = css('--ink-mute');
+      rc.fillText('top speed, km/h', 2, BASE + 36);
+    }
+    function pickRoster(d) {
+      if (d === you) return;
+      you = d; $('pd-who').value = String(d);
+      const from = shown.slice(), t0 = performance.now();
+      cancelAnimationFrame(anim);
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / 350), e = t * (2 - t);
+        for (let i = 0; i < 12; i++) shown[i] = from[i] + (target(i) - from[i]) * e;
+        drawRoster();
+        if (t < 1) anim = requestAnimationFrame(step);
+      };
+      anim = requestAnimationFrame(step);
+      drawGrid(); race.reset();
+    }
+
+    // ---- the grid from above: rival_start_coarse/fine and rival_lanes; the player at 2,0 and $2F = $F4
+    const grid = $('pd-grid'), gc = grid.getContext('2d');
+    const GX = (pos) => 38 + pos * 0.72, ROAD = [46, 206], GY = (v) => ROAD[0] + (255.5 - v) * 2.5;
+    const BANDS = Object.values(PD_RACE.SOLID);
+    function drawGrid() {
+      gc.clearRect(0, 0, grid.width, grid.height);
+      gc.font = MONO;
+      gc.fillStyle = '#c9c6bd'; gc.fillRect(GX(-30), ROAD[0], GX(800) - GX(-30), ROAD[1] - ROAD[0]);
+      for (const [lo, hi] of BANDS) { gc.fillStyle = 'rgba(208,74,58,.14)'; gc.fillRect(GX(-30), GY(hi + 1), GX(800) - GX(-30), GY(lo) - GY(hi + 1)); }
+      gc.fillStyle = css('--ink-soft'); gc.textAlign = 'right';
+      gc.fillText('middle: in no lane', GX(800) - 4, (GY(0xEA) + GY(0xD7)) / 2 + 4);
+      gc.fillStyle = css('--ink'); gc.fillRect(GX(-30), ROAD[0] - 2, GX(800) - GX(-30), 2); gc.fillRect(GX(-30), ROAD[1], GX(800) - GX(-30), 2);
+      for (let i = 0; i < 32; i++) { gc.fillStyle = (i + (i >> 4)) & 1 ? '#ffffff' : css('--ink'); gc.fillRect(GX(0) - 5 + 5 * (i >> 4), ROAD[0] + (i & 15) * 10, 5, 10); }
+      gc.textAlign = 'left'; gc.fillStyle = css('--ink-mute');
+      gc.fillText('lap line', GX(0) - 22, ROAD[0] - 26);
+      gc.fillText('the race runs this way →', GX(800) - 200, ROAD[0] - 26);
+      const kart = (pos, v, d, colour, mine) => {
+        const x = GX(pos) - 22, y = GY(v) - 17;
+        gc.fillStyle = mine ? '#ffffff' : P[colour];
+        gc.beginPath(); gc.roundRect(x, y, 44, 34, 6); gc.fill();
+        if (mine) { gc.lineWidth = 3; gc.strokeStyle = css('--ink'); gc.stroke(); }
+        drawFace(gc, d, x + 10, y + 5, 1, null);
+      };
+      for (let k = 10; k >= 0; k--) {
+        const [lo, hi] = PD_RACE.SOLID[r[0x3717 + k]], pos = 256 * r[0x3701 + k] + r[0x370C + k], v = (lo + hi) / 2;
+        kart(pos, v, driverAt(k, you), kartColour(driverAt(k, you)), false);
+        gc.fillStyle = css('--ink'); gc.textAlign = 'center';
+        gc.fillText(String(top(k) * KMH), GX(pos), v > PD_RACE.MIDDLE ? ROAD[0] - 8 : ROAD[1] + 18);
+      }
+      kart(512, 0xF4, you, 0, true);
+      gc.fillStyle = css('--ink'); gc.textAlign = 'center'; gc.font = '700 ' + MONO;
+      gc.fillText('you', GX(512), ROAD[0] - 8);
+      gc.font = MONO; gc.textAlign = 'left'; gc.fillStyle = css('--ink-mute');
+      gc.fillText('km/h at the top', GX(-30), grid.height - 6);
+    }
+
+    // ---- the race
+    const race = (() => {
+      const R = createRace(r, C64Cpu);
+      const screen = $('pd-screen'), sc = C64.canvas(screen, 320, 200), img = sc.createImageData(320, 200);
+      const chart = $('pd-chart'), cc = chart.getContext('2d');
+      const go = $('pd-go'), spinB = $('pd-spin'), stageSel = $('pd-stage'), pace = $('pd-pace'), lane = $('pd-lane'), out = $('pd-state');
+      R.road = +lane.value;
+      lane.onchange = () => { R.road = +lane.value; };
+      for (let c = 0; c < 5; c++) for (let s = 0; s < 5; s++) stageSel.add(new Option('Course ' + 'ABCDE'[c] + ', stage ' + (s + 1), 5 * c + s));
+      let running = false, hist = [], drivers = [], colours = [], finished = [], t0 = 0, dirty = true, keep = {};
+      const pos = (k) => {                                 // distance from the lap line, rivals 0-10 then the player
+        const m = R.m;
+        return k < 11 ? m[0x53B8 + k] * LAP + 256 * m[0x5382 + k] + m[0x538E + k] : m[0x53A7] * LAP + 256 * m[0x5380] + m[0x5381];
+      };
+      const bcd = (v) => (v >> 4) * 10 + (v & 15);
+      const clock = () => R.m[0x53DF] + "'" + String(bcd(R.m[0x53E0])).padStart(2, '0');
+      // the player's place, from the mark move_on gives the stage's box: podium_colours ($344E) by the places left
+      const placed = () => 3 - [0, 1, 2].findIndex((x) => r[0x344E + x] === R.m[0x53F1 + R.m[0x53E5]]);
+      function record() {
+        const row = new Int32Array(12);
+        for (let k = 0; k < 12; k++) {
+          const p = pos(k), last = hist.length ? hist[hist.length - 1][k] : p;
+          row[k] = last >= LAPS * LAP || (k === 10 && R.m[0x53A7] >= LAPS) ? last : Math.min(p, LAPS * LAP);   // rival 10 takes the player's kart at the finish
+          if (row[k] >= LAPS * LAP && last < LAPS * LAP) finished.push({ k, f: hist.length });
+        }
+        hist.push(row);
+      }
+      function reset() {
+        running = false; keep = {}; hist = []; finished = [];
+        R.start(you, Math.floor(+stageSel.value / 5), +stageSel.value % 5);
+        drivers = Array.from({ length: 11 }, (_, k) => R.m[0x53AC + k]); drivers.push(you);
+        colours = Array.from({ length: 11 }, (_, k) => R.m[0x53C3 + k]);
+        record();
+        go.textContent = 'Start the race'; spinB.disabled = true;
+        status(); dirty = true;
+      }
+      function status() {
+        const m = R.m, kmh = bcd(m[0x53DA]) * 100 + bcd(m[0x53DB]);
+        if (R.state === 'won') out.textContent = 'Finished ' + ORD(placed()) + ' at ' + clock() + ' on the race clock.';
+        else if (R.state === 'over') out.textContent = 'Game over at ' + clock() + ': the third rival has crossed the line.';
+        else if (m[0x53CF]) out.textContent = 'Over the line in ' + ORD(placed()) + ' place, at ' + clock() + '.';
+        else out.textContent = 'Lap ' + Math.min(LAPS, m[0x53A7] + 1) + ' of ' + LAPS + ' · ' + ORD(m[0x53D7] + 1) + ' · ' + kmh + ' km/h · ' + clock() + (m[0x53D0] ? ' · spinning' : '');
+      }
+      function paint() {
+        const F = raceFrame(R.m, R.colour); F.keep = keep;
+        const f = C64.renderFrame(F);
+        for (let y = 0; y < 200; y++) for (let x = 0; x < 320; x++) {
+          const c = RGB[f.px[(y + 51 - f.line0) * f.w + x + 24 - f.x0]], o = (y * 320 + x) * 4;
+          img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+        }
+        sc.putImageData(img, 0, 0);
+        drawChart();
+      }
+      // The chart: distance in laps against the race clock (12 race frames a clock second)
+      const CL = 68, CR = 76, CT = 40, CB = 34, SECS = 170;
+      function drawChart() {
+        const W = chart.width, H = chart.height, pw = W - CL - CR, ph = H - CT - CB;
+        const X = (f) => CL + pw * Math.min(1, f / 12 / SECS), Y = (p) => CT + ph * (1 - p / (LAPS * LAP));
+        cc.clearRect(0, 0, W, H); cc.font = MONO;
+        cc.strokeStyle = css('--line-soft'); cc.lineWidth = 1; cc.fillStyle = css('--ink-mute');
+        cc.textAlign = 'right';
+        for (let l = 0; l <= LAPS; l++) { cc.beginPath(); cc.moveTo(CL, Y(l * LAP) + 0.5); cc.lineTo(CL + pw, Y(l * LAP) + 0.5); cc.stroke(); cc.fillText(l === LAPS ? 'finish' : l === 0 ? 'lap line' : 'lap ' + l, CL - 6, Y(l * LAP) + 4); }
+        cc.textAlign = 'center';
+        for (let s = 0; s <= SECS; s += 30) { const x = CL + pw * s / SECS; cc.beginPath(); cc.moveTo(x + 0.5, CT); cc.lineTo(x + 0.5, CT + ph); cc.stroke(); cc.fillText(Math.floor(s / 60) + "'" + String(s % 60).padStart(2, '0'), x, H - 14); }
+        cc.fillText('race clock', CL + pw / 2, H - 1);
+        const line = (k, colour, width) => {
+          cc.strokeStyle = colour; cc.lineWidth = width; cc.beginPath();
+          const step = Math.max(1, Math.floor(hist.length / 400));
+          for (let f = 0; f < hist.length; f += step) { const x = X(f), y = Y(hist[f][k]); f ? cc.lineTo(x, y) : cc.moveTo(x, y); }
+          const f = hist.length - 1; cc.lineTo(X(f), Y(hist[f][k])); cc.stroke();
+        };
+        for (let k = 10; k >= 0; k--) line(k, P[colours[k]], 2);
+        line(11, css('--ink'), 3.5);
+        finished.slice(0, 3).forEach(({ k, f }, i) => {
+          cc.fillStyle = k === 11 ? css('--ink') : P[colours[k]];
+          cc.beginPath(); cc.arc(X(f), Y(LAPS * LAP), 5, 0, 7); cc.fill();
+          cc.fillStyle = css('--ink'); cc.textAlign = 'center'; cc.font = '700 ' + MONO;
+          cc.fillText(ORD(i + 1), X(f), Y(LAPS * LAP) - 9 - 14 * (i % 2)); cc.font = MONO;
+        });
+        // the faces, at the right, beside where each line has got to
+        const last = hist[hist.length - 1], order = [...Array(12).keys()].sort((a, b) => last[b] - last[a]);
+        let y = CT - 36;
+        for (const k of order) {
+          y = Math.max(y + 24, Math.min(Y(last[k]) - 12, CT + ph - 12 - 24 * (11 - order.indexOf(k))));
+          const fx = W - CR + 30, ly = Y(last[k]);
+          cc.strokeStyle = k === 11 ? css('--ink') : P[colours[k]]; cc.lineWidth = 1;
+          cc.beginPath(); cc.moveTo(CL + pw + 2, ly); cc.lineTo(fx - 3, y + 12); cc.stroke();
+          cc.fillStyle = cc.strokeStyle; cc.beginPath(); cc.arc(X(hist.length - 1), ly, k === 11 ? 4 : 3, 0, 7); cc.fill();
+          drawFace(cc, drivers[k], fx, y, 1, P[6]);
+          if (k === 11) { cc.lineWidth = 2; cc.strokeStyle = css('--ink'); cc.strokeRect(fx - 1, y - 1, 26, 26); }
+        }
+      }
+      function tick(now) {
+        if (!running) return;
+        const ms = 60 / +pace.value;
+        let n = 0;
+        while (now - t0 >= ms && n < 40 && R.state === 'racing') { t0 += ms; n++; R.frame(); record(); }
+        if (now - t0 > 500) t0 = now;
+        if (n) { status(); paint(); spinB.disabled = R.state !== 'racing' || !!R.m[0x53D0] || !!R.m[0x53CF]; }
+        if (R.state !== 'racing') { running = false; go.textContent = 'Race again'; spinB.disabled = true; return; }
+        requestAnimationFrame(tick);
+      }
+      go.onclick = () => {
+        if (R.state !== 'racing') reset();
+        running = !running;
+        go.textContent = running ? 'Pause' : 'Go on';
+        if (running) { t0 = performance.now(); requestAnimationFrame(tick); }
+        spinB.disabled = !running || !!R.m[0x53D0];
+      };
+      spinB.onclick = () => { if (R.spin()) { spinB.disabled = true; status(); } };
+      stageSel.onchange = () => { reset(); paint(); };
+      reset(); paint();
+      return { reset: () => { reset(); paint(); } };
+    })();
+
+    const who = $('pd-who');
+    for (let d = 0; d < 12; d++) who.add(new Option('Face ' + (d + 1), d));
+    who.value = String(you);
+    who.onchange = () => pickRoster(+who.value);
+    roster.onclick = (e) => {
+      const b = roster.getBoundingClientRect(), x = (e.clientX - b.left) * roster.width / b.width;
+      const d = Math.floor(x / CELL);
+      if (d >= 0 && d < 12) pickRoster(d);
+    };
+    drawRoster(); drawGrid();
+  }).catch((e) => { $('pd-roster').insertAdjacentHTML('afterend', '<p class="cap">The listing did not load: ' + e.message + '</p>'); });
 })();
 </script>

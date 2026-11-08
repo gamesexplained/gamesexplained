@@ -139,3 +139,41 @@ The scenery viewer moved from How it works to the new tab, where every
 kind of object comes nearer through its 16 distances, and so did the
 viewer of a rival at each distance. How it works keeps the rules and
 links to the tab.
+
+## Follow-up: the rivals (7 November 2026)
+
+How it works has a new section, 04 The rivals, on the eleven other
+drivers: a roster of top speeds for whichever face the reader picks, the
+grid from above, and a race run by the game's own code on the site's
+6502 (`setup_stage`, `stage_loop` through the start lights, then
+`race_frame_loop` once a race frame), drawn by the site's model of the
+video chip, with a chart of every kart's distance against the race
+clock. The page holds the kart at one place across the road and works
+the stick and the gears; a Spin out button does what `place_rivals`
+does.
+
+What the code says: a driver brings only pictures and a kart colour.
+Speed, lane and start belong to the grid place, and `setup_stage` deals
+the drivers out from the one after the player's. The rivals follow no
+road: `move_rivals` raises each speed every other race frame to its top
+and adds it to the position. The collision band of each lane was first
+worked out by hand from the X sum in `place_rivals`; running the game's
+own sum for every `$2F` at every meeting at distance 1 agreed within the
+range `move_player` allows, and found two more hits at `$43` and `$63`,
+outside it.
+
+The first measurements of a spin's cost came out at 89 to 105 race
+frames, because the page's stick never changed down after a spin and
+high gear gains only one level in four below 14. With fire pressed to
+match the gear to the speed, a spin costs 66. The page's place at the
+end was first worked out from the podium places left (`$53AA`), which a
+rival finishing after the player takes one more of, so a win read as
+second; it now reads the stage's box mark, which `move_on` sets once.
+
+Holding the kart in a lane answered an open question: a kart closing by
+more than 8 fine steps a race frame can step over distance 1 and drive
+through a slower rival, and it found the loop in the left lane, where
+the sixth fastest rival is hit every 176 race frames until the game is
+lost. `test_rivals.js` runs the game's own loop beside the page and
+checks all of memory after every race frame of 34 races, and the
+numbers the copy gives.
