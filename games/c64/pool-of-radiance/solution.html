@@ -1,0 +1,330 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool of Radiance · Solution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+a{color:var(--link)}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word}
+.por-word{font-family:var(--fm);font-weight:500;letter-spacing:.04em}
+.por-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:0}
+.por-tbl th,.por-tbl td{border-bottom:1px solid var(--line-soft);padding:7px 8px;text-align:left;vertical-align:top}
+.por-tbl th{font-family:var(--fm);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.por-tbl td:first-child{white-space:nowrap}
+.por-wide{overflow-x:auto}
+.por-fold{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin:0 0 10px;box-shadow:var(--plate-shadow)}
+.por-fold>summary{cursor:pointer;padding:12px var(--pp);font-weight:700;list-style:none}
+.por-fold>summary::-webkit-details-marker{display:none}
+.por-fold>summary::before{content:'\25B8';display:inline-block;width:1.2em;color:var(--ink-mute);transition:transform .15s}
+.por-fold[open]>summary::before{transform:rotate(90deg)}
+.por-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r)}
+.por-fold>summary small{font-weight:400;color:var(--ink-mute);margin-left:.4em}
+.por-steps{margin:0;padding:0 var(--pp) 16px calc(var(--pp) + 1.2em)}
+.por-steps li{margin:0 0 .55em}
+.por-fold .por-wide{padding:0 var(--pp) 16px}
+@media (max-width:760px){:root{--gx:18px;--h1:34px;--pp:16px}.por-tbl{font-size:13.5px}.por-tbl td:first-child{white-space:normal}
+  .por-stack thead{display:none}.por-stack tr{display:block;border-bottom:1px solid var(--line-soft);padding:8px 0}
+  .por-stack td{display:block;border:0;padding:2px 0}.por-stack td:first-child{font-weight:700}
+  .por-stack td[data-l]:not(:first-child)::before{content:attr(data-l);display:block;font-family:var(--fm);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-top:4px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · SSI</p>
+  <h1>Pool of Radiance</h1>
+  <p class="sub">How the council of New Phlan hands out the story, the shortest way to the dragon, every password and where the game gives it, and the mistakes that cannot be put right. The answers are folded away: open only the ones you want.</p>
+</header>
+<main class="wrap">
+
+<section id="the-story">
+  <p class="fig">01 · The story</p>
+  <h2 class="t">The clerk at the city hall hands out the story one commission at a time</h2>
+  <p class="lede">The council of New Phlan pays adventurers to take back the old city block by block. Its clerk goes down a fixed list of sixteen commissions and offers at most three of the open ones on each visit. Some only appear once earlier work is done, and the last two lead to the attack on the castle, after Cadorna, the councilman who has been using the party, is found out.</p>
+  <details class="por-fold"><summary>Show the commissions in the clerk's order</summary>
+  <div class="por-wide"><table class="por-tbl por-stack">
+    <thead><tr><th>#</th><th>The commission</th><th>Offered</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Clear the slums to the west of New Phlan</td><td>From the start</td><td>The party has won 25 fights in the slums</td></tr>
+      <tr><td>2</td><td>Clear Sokal Keep on Thorn Island</td><td>From the start</td><td>The ghost of Ferran Martinez sends the keep's dead to rest</td></tr>
+      <tr><td>3</td><td>Bring back books and maps about Phlan before the fall</td><td>From the start</td><td>Each book found in Mendor's library is paid for when it is handed in</td></tr>
+      <tr><td>4</td><td>Find out what weapon is being auctioned in Podol Plaza</td><td>From the start</td><td>The auction is over</td></tr>
+      <tr><td>5</td><td>Junior councilman Cadorna's special commission: his family's treasure, hidden in the textile house</td><td>Until Cadorna is found out</td><td>His iron box comes back to New Phlan with its seal unbroken</td></tr>
+      <tr><td>6</td><td>Report to Braccio, the Bishop of Tyr, whose summons leads to the Temple of Bane</td><td>Once Sokal Keep is cleared</td><td>The temple's high priest, Mace, is beaten</td></tr>
+      <tr><td>7</td><td>Clean out the thieves in the old Kovel mansion</td><td>Once Sokal Keep is cleared</td><td>21 of the thieves are dead</td></tr>
+      <tr><td>8</td><td>Stop the nomads from joining the enemy</td><td>From the start</td><td>The party fights the kobolds beside the nomads, or wipes out the tribe</td></tr>
+      <tr><td>9</td><td>Stop the kobold tribe from joining the enemy</td><td>From the start</td><td>The kobold king dies in his own spiked pit</td></tr>
+      <tr><td>10</td><td colspan="3">An empty place in the list: the clerk goes straight on to the next</td></tr>
+      <tr><td>11</td><td>Find the source of the river's pollution and end it</td><td>From the start</td><td>Yarash is dead</td></tr>
+      <tr><td>12</td><td>Stop the lizard men from joining the enemy</td><td>From the start</td><td>A champion of the party beats Drythh, or 40 lizard men are dead</td></tr>
+      <tr><td>13</td><td>Rescue the heir to the house of Bivant</td><td>Once Sokal Keep is cleared, while no rescue has been tried</td><td>The boy is out of the buccaneers' base</td></tr>
+      <tr><td>14</td><td>Lord Cadorna's diplomatic mission to the Zhentil outpost</td><td>Once Cadorna's first commission has been taken</td><td>The party is back from the outpost</td></tr>
+      <tr><td>15</td><td>Lord Urslingen's plan to take Stojanow Gate</td><td>Once Cadorna is found out</td><td>The party holds the gate</td></tr>
+      <tr><td>16</td><td>A special council meeting, at which the party is asked to lead the attack on Valjevo Castle</td><td>Once the gate's reward is paid</td><td>Tyranthraxus is beaten</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">From the clerk's list in the city hall's script. A commission stays on the list until the council has paid for it. Once Cadorna has fled, number 14 is still offered, as the council's own message to the outpost, with a warning that he may have tampered with the packet.</p></div>
+  </details>
+  <p>Valhingen Graveyard is outside the list. Once the council has paid for four of the big commissions and the party is strong enough, the clerk raises it before the list: the undead are crossing the river and carrying off settlers. A party that is stronger still is offered an enchanted weapon for taking it on.</p>
+  <p>Cadorna is found out in one of three ways. The first time the clerk reaches the end of the list on a visit, because only two commissions or fewer are left to offer, the council marks him a traitor. Coming back from the Zhentil outpost does it too: the council is pleasantly surprised that the mission went so swiftly, since Cadorna was wagering that the party would be much delayed. The third way is in the castle itself, where the party can find hard evidence that he has been seeking the Pool of Radiance for himself.</p>
+  <p>Then the story turns to the castle. Lord Urslingen asks the party to slip into Stojanow Gate and hold it, and once the gate is taken the whole council asks it to lead the attack on Valjevo Castle. Tyranthraxus waits in the castle's keep.</p>
+</section>
+
+<section id="the-shortest-way">
+  <p class="fig">02 · The shortest way</p>
+  <h2 class="t">Secret: the party can fight Tyranthraxus without finishing a single commission</h2>
+  <p class="lede">The scripts on the way to the castle ask for passwords and gold, and never for anything the council has asked the party to do. What stands in the way is the fighting.</p>
+  <details class="por-fold"><summary>Show the way to the audience hall</summary>
+  <ol class="por-steps">
+    <li>Walk west out of New Phlan into <a href="levels.html#GEO14">the slums</a>, and out again by any edge but the east one, into <a href="levels.html#GEO1D">Kuto's Well</a>.</li>
+    <li>Leave Kuto's Well by its west edge, into <a href="levels.html#GEO12">Podol Plaza</a>, and the plaza by its north edge, to <a href="levels.html#GEO09">Stojanow Gate</a>.</li>
+    <li>Get through the gate. Before two in the afternoon a trader drives his wagon past, and he sells it for 250 gold pieces, or the party kills him for it. With the wagon, a bugbear asks for 15 gold and opens the gate. The bugbears call the party impostors one time in ten anyway, two times in ten if the party has been told once to stay away from the wall, and every time after a second warning. The other way through is to beat the monsters in both of the gate's towers.</li>
+    <li>Leave the gate by its north edge, into the castle's <a href="levels.html#GEO06">bailey</a>, and the bailey by any edge but the south one, into the castle grounds.</li>
+    <li>Patrols of hill giants ask for today's password, <span class="por-word">HARASH</span>, or on whose authority the party is there, <span class="por-word">TYRANTHRAXUS</span>. The right word gets a nod and the party is left alone.</li>
+    <li>In <a href="levels.html#GEO03">the grounds</a> a guard holds the gate into the hedge maze. Give him <span class="por-word">RHODIA</span>. Cutting through a hedge instead can kill: its thorns are poisonous.</li>
+    <li>Stairs in <a href="levels.html#GEO03-ECL05">the hedge maze</a> lead up into <a href="levels.html#GEO07">the keep</a>. The audience hall is in the keep, where twelve fighters of the eighth level stand guard in front of an ancient bronze dragon.</li>
+    <li>Before the fight the dragon asks each member to join him. Vote to attack: a member who votes to join fights for him.</li>
+  </ol>
+  </details>
+  <p>Beating the dragon ends the story. The party walks back through streets where monsters keep out of sight and none attack, into the civilised part of Phlan. At the city hall the clerk announces that the quest is over and Phlan is free, and that the party may go on clearing the monsters that remain.</p>
+</section>
+
+<section id="the-passwords">
+  <p class="fig">03 · The passwords</p>
+  <h2 class="t">Every password the game asks for, and where the game gives it away</h2>
+  <p class="lede">The game checks each word letter for letter. Most of them are written down somewhere in Phlan, several of them in runes.</p>
+  <details class="por-fold"><summary>Show the passwords</summary>
+  <div class="por-wide"><table class="por-tbl por-stack">
+    <thead><tr><th>Word</th><th>Who asks for it</th><th>Where the game gives it</th><th>A wrong word</th></tr></thead>
+    <tbody>
+      <tr><td class="por-word">HARASH</td><td>Patrols at Stojanow Gate and in the castle grounds: today's password</td><td>A list the giants in the castle's barracks show off, and a piece of paper on the barracks' ground, both in runes</td><td>The patrol calls the party impostors and attacks</td></tr>
+      <tr><td class="por-word">TYRANTHRAXUS</td><td>The same patrols: on whose authority the party is there</td><td>It is the name of the enemy</td><td>The patrol attacks</td></tr>
+      <tr><td class="por-word">RHODIA</td><td>The guard at the gate into the hedge maze</td><td>The same list and paper, a slip from a freed kitchen slave, and one from Porphyrys Cadorna, if the party frees him from his cell, all in the dwarvish runes of the pyramid's sign</td><td>A volley of boulders, twelve blows of 2 to 12 hit points each</td></tr>
+      <tr><td class="por-word">NOTNOW</td><td>A door in the lower level of Yarash's pyramid</td><td>A sign on the door, in dwarvish runes, that says "don't forget the password"</td><td>A monster's scream costs every member 201 hit points, with no saving throw</td></tr>
+      <tr><td class="por-word">LUX</td><td>The weeping haunts in Sokal Keep's barracks, and the pale form in its chapel</td><td>A scroll in runes on a dead elf in the reeds by the keep's gate</td><td>The haunts go on moaning; the pale form fades away until the party comes back to the keep</td></tr>
+      <tr><td class="por-word">SHESTNI</td><td>The undead patrols in Sokal Keep, before Ferran Martinez is freed</td><td>The same scroll</td><td>The patrol attacks</td></tr>
+      <tr><td class="por-word">SAMOSUD</td><td>The same patrols, once Ferran is freed</td><td>The same scroll, and Ferran himself</td><td>The patrol attacks</td></tr>
+      <tr><td class="por-word">SAVIOR</td><td>An old lizard man near the lizard men's keep: the tribe's friend-word</td><td>The three lizard men the party frees in Yarash's pumping room</td><td>He calls the party murderous pirates and vanishes into the swamp</td></tr>
+      <tr><td class="por-word">OHLO</td><td>A booth in the old rope guild, in the slums</td><td>Ohlo, who sends the party to fetch a potion for him</td><td>'I am sorry, I cannot help you', until the party comes back to the slums</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">The patrols at the gate and in the grounds ask for HARASH when the party answers meekly, and for TYRANTHRAXUS when it answers haughtily or rudely. Three giants in the hedge maze ask for today's password too, and there is none: they say "wrong, guess again" to any word. How the runes spell the words is on the <a href="discoveries.html">Discoveries</a> tab.</p></div>
+  </details>
+</section>
+
+<section id="every-commission">
+  <p class="fig">04 · Every commission</p>
+  <h2 class="t">How each of the council's commissions is finished</h2>
+  <p class="lede">One fold for each place, in the clerk's order. The squares where each thing happens are on the <a href="levels.html">Maps</a> tab.</p>
+
+  <details class="por-fold"><summary>The slums <small>commission 1</small></summary>
+  <ol class="por-steps">
+    <li>Win 25 fights in <a href="levels.html#GEO14">the slums</a>. Patrols offer to forget they saw the party for a few gold pieces. Less than one gold piece for each monster brings "what a bunch of cheapskates" and a fight.</li>
+    <li>Ohlo, a small man at a desk, asks the party to fetch a potion from a booth in the old rope guild. Say his name, <span class="por-word">OHLO</span>, at the booth, and he pays 150 platinum and items for the package.</li>
+    <li>A rumour at the hemp market says there is a secret treasure room in the north-west corner. There is: 1,000 electrum, 92 gold, 50 platinum, 2 gems, a piece of jewelry and items.</li>
+    <li>With Search on, a leather bag in the stable, a chest under a floorboard and the hobgoblins' gold.</li>
+    <li>Leave the old fortune teller alive: murdering her makes the slums forget every fight the party has won there.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Sokal Keep <small>commission 2</small></summary>
+  <ol class="por-steps">
+    <li>The harbour master in New Phlan sells a round trip for 1 platinum. Until the keep is cleared, it is the only boat he sells.</li>
+    <li>With Search on by the gate, a dead elf in the reeds carries a scroll with three words in runes: <span class="por-word">LUX</span>, <span class="por-word">SAMOSUD</span> and <span class="por-word">SHESTNI</span>.</li>
+    <li>Undead patrols leave when given <span class="por-word">SHESTNI</span>. The haunts in the barracks answer <span class="por-word">LUX</span> with their story, a diary under a floorboard and five gems.</li>
+    <li>In the chapel a pale form rises. Say <span class="por-word">LUX</span>, and when he asks whether the city has been freed, tell him the truth. Ferran Martinez sends the dead to rest, and the commission is done. Beating the pale form in a fight counts too.</li>
+    <li>Ferran tells of an illusionary wall in the armory: behind it are a shield, a mace, a sword and a small suit of chainmail. The patrols on the way out want <span class="por-word">SAMOSUD</span>.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Mendor's library <small>commission 3</small></summary>
+  <ol class="por-steps">
+    <li>In <a href="levels.html#GEO0F">the library</a>, Search scans the stacks. Five books are paid for one at a time: Fyerdetha's Discourses on Power, Urgund's Description of Darkness, the Lex Geographica with an old map of Phlan, the History of the North, and the Grand Historian's Arts of War.</li>
+    <li>Five duller titles are paid for together, once all five are found: the Meditations, The Harmony of the Rock, Strom's Discussions of Poetics, the Chronicles of Arram, and a Discourse on the Nature of Writing.</li>
+    <li>A spectre stops a party leaving with books: "Thief! I defended these books in life".</li>
+    <li>A mad fighter cowers in the library. Invite him to join and he is the Mad Man who later screams and attacks in New Phlan.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The auction in Podol Plaza <small>commission 4</small></summary>
+  <ol class="por-steps">
+    <li><a href="levels.html#GEO12">The plaza</a> is crowded with monsters. Stride in boldly, disguise the party as monsters (half-orcs in the party make the disguise better), or sneak.</li>
+    <li>At the auction, a man in plain clothes beside an ogre bids 5,000 gold. Outbid him and he wraps the block in darkness and escapes, while the auctioneer cries "Garwin, I'll get you!" Move in close and the weapon is only a wand of fear.</li>
+    <li>The commission is done once the auction is over or called off.</li>
+    <li>A hidden temple of Ilmater in the plaza heals for nothing, and the party can rest there as long as it likes.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Cadorna's treasure, in the textile house <small>commission 5</small></summary>
+  <ol class="por-steps">
+    <li>Cadorna's family treasure is in <a href="levels.html#GEO02">the textile house</a>, just south of Podol Plaza. The ogre chief has it: an iron box with Cadorna's seal.</li>
+    <li>Bring the box back unopened: the city watch takes it at New Phlan's gate, and the council pays. Opened, it holds 450 copper, 20 silver, 400 platinum, 8 gems, 4 pieces of jewelry and items.</li>
+    <li>Skullcrusher is chained up in the house. A brass key frees him, and he joins the party until it reaches the city hall.</li>
+    <li>The well marked THIEVES ONLY leads to Restal's guild, which offers to reseal the box for half the treasure, and then pays the party instead (<a href="discoveries.html">Discoveries</a>). Falling while climbing down costs 15 dice of six-sided damage, unless the climber is under a feather fall.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The Temple of Bane <small>commission 6</small></summary>
+  <ol class="por-steps">
+    <li>Braccio, the Bishop of Tyr, introduces a priest, Dirtin, who joins the party to win back his temple.</li>
+    <li>In <a href="levels.html#GEO18">the temple quarter</a>, goblin slaves the party frees say that a holy symbol of Bane gets it into the temple. The blind orc at the door paws the party and lets it in only with the symbol.</li>
+    <li>Inside <a href="levels.html#GEO1F">the temple</a>, taking its treasure or destroying the bloody altar brings a horde led by Mace, the half-orc high priest. Beat him and the council lets the party keep everything it found in the temple.</li>
+    <li>A message scratched on the wall of a cell points to hidden treasure.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Kovel mansion <small>commission 7</small></summary>
+  <ol class="por-steps">
+    <li>Kill 21 of the thieves in <a href="levels.html#GEO0E">the mansion</a>. Many of its doorways and caskets are trapped; a thief or a find-traps spell gives the party the chance to avoid or disarm each one.</li>
+    <li>The man caught at the end of a chase calls himself the guild master. Let him go and he thanks the party, walks off, shouts "Suckers!" and sprints away.</li>
+    <li>A slate holds a map of the castle's maze, and a crude map shows another part of the castle. Both go into the journal.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The nomads <small>commission 8</small></summary>
+  <ol class="por-steps">
+    <li>Talk to the nomads in <a href="levels.html#GEO11">their camp</a> in the eastern wilderness. A tripwire with bells by day brings them charging instead.</li>
+    <li>Their headman, Hassad Ahwal, gives a feast and asks the party to stay: there are kobolds nearby.</li>
+    <li>In the morning, stay and fight the kobold horde beside the tribe: 3,000 gold, and 5,000 more and items from the shaman. A party that runs from the fight is called cowards and paid 500 gold "equal to your honor".</li>
+    <li>Fighting beside the tribe finishes the commission, and so does wiping the tribe out.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The kobold caves <small>commission 9</small></summary>
+  <ol class="por-steps">
+    <li><a href="levels.html#GEO0D">The caves</a> are full of traps: a pool that takes items, a pit, a roof that caves in, a net and spikes.</li>
+    <li>With Search on, a brass bottle holds the efreeti Samir Ahwahl. He asks whether the party are vampires: say no, and the party keeps the bottle.</li>
+    <li>A drunken kobold takes the party for the envoys and escorts it to the king. At the throne the party fights the horde, two men who are the real envoys, and the king's ballista.</li>
+    <li>The king runs to his quarters and, in a panic, falls into his own spiked pit. The commission is done.</li>
+    <li>A party that surrenders is robbed and thrown in a cell, where Princess Fatima breaks it out.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The river's pollution, in Yarash's pyramid <small>commission 11</small></summary>
+  <ol class="por-steps">
+    <li>A rowboat hidden in the reeds of the eastern wilderness reaches the pyramid, where a secret door leads in.</li>
+    <li><a href="levels.html#GEO16">The upper level</a> is a maze of teleporters. With Search on, the party feels a tingle near one; a thrown rock vanishes with a flash.</li>
+    <li>On <a href="levels.html#GEO17">the lower level</a>, a door's sign in dwarvish runes says "don't forget the password". The word is <span class="por-word">NOTNOW</span>, and any other kills the whole party.</li>
+    <li>In the pumping room, free the three lizard men chained to the wall. They tell what Yarash is doing, and how their tribe in the swamp can help.</li>
+    <li>Kill Yarash, the ancient mage, and the river is clean. Leave him until after the council's special meeting, or the meeting never comes (<a href="discoveries.html">Discoveries</a>).</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The lizard men <small>commission 12</small></summary>
+  <ol class="por-steps">
+    <li>At <a href="levels.html#GEO10">the lizard men's keep</a>, an old lizard man raises his hand in peace and asks for the tribe's friend-word: <span class="por-word">SAVIOR</span>.</li>
+    <li>He tells his story, and Drythh challenges him. Choose one member as his champion: the others sit the fight out, and a win keeps the tribe from joining Tyranthraxus.</li>
+    <li>Without a champion he fights Drythh himself. The fight is extremely short, and Drythh tells his followers to kill the party. Killing 40 lizard men and leaving counts as done too.</li>
+    <li>With Search on, rubble and swamp squares hide tunnels down to <a href="levels.html#GEO1E">the lizard men's tunnels</a>.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The heir to the house of Bivant <small>commission 13</small></summary>
+  <ol class="por-steps">
+    <li>The boy with a heart-shaped birthmark is in the slave pen of <a href="levels.html#GEO01">the buccaneers' base</a>, in the western wilderness.</li>
+    <li>There are several ways in: buy a pass from a seedy man and the boy from the captain, who wants three quarters of everyone's money; let the animals loose as a distraction and walk into the pen; or fight wave after wave of buccaneers and take the fort.</li>
+    <li>Never run from the last battle. The boy cannot keep up and is left behind for good.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>The Zhentil outpost <small>commission 14</small></summary>
+  <ol class="por-steps">
+    <li>Riders meet the party on the way and escort it to <a href="levels.html#GEO1C">the outpost</a>, where the commandant has the party to dinner.</li>
+    <li>At night the party is attacked in its quarters. A wall the party can climb is the way out.</li>
+    <li>Getting back to New Phlan is enough: the council's surprise at the party's swift return gives Cadorna away.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Stojanow Gate <small>commission 15</small></summary>
+  <ol class="por-steps">
+    <li>Keep away from <a href="levels.html#GEO09">the gate's</a> wall: the bugbears warn twice and then punch, and the towers throw rocks and shoot arrows.</li>
+    <li>The trader's wagon and 15 gold get the party through the gate, as in the shortest way above.</li>
+    <li>To take the gate, beat the garrisons of both towers, ettins and men, and the bugbears outside. The script says YOU HAVE TAKEN THE GATE, and the council pays for it.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Valjevo Castle <small>commission 16</small></summary>
+  <ol class="por-steps">
+    <li>The way in is the shortest way above, from the bailey to the hedge maze's gate.</li>
+    <li>The washerwomen in <a href="levels.html#GEO06">the bailey</a> lend their clothes as a disguise if the party talks to them. Do not rob the temple of Bane in a bailey barracks: every giant in the castle then shouts thief.</li>
+    <li>In <a href="levels.html#GEO04">the barracks</a> the giants show off their list of passwords if the party talks haughtily or slyly, and the scribes' empty building can hold the evidence against Cadorna.</li>
+    <li>Porphyrys Cadorna is chained in a cell in the castle once the council has called him a traitor. He pleads that he knows the way through the hedge, left, right, right, and once freed he hands over a slip with the gate password.</li>
+    <li>The Tyranthraxus on a throne in the hedge maze is an impostor. In the keep, the trap door leads down to a medusa. The real one is the dragon in the audience hall.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Valhingen Graveyard <small>offered apart from the list</small></summary>
+  <ol class="por-steps">
+    <li><a href="levels.html#GEO0A">The graveyard</a> is full of skeletons, zombies and wights, and hidden figures are raising more of them.</li>
+    <li>Once three of the figures are dead, a man in mystic robes asks to join and says the vampire lurks in the north-east corner.</li>
+    <li>The vampire waits in a pit with 50 wolves. Beat him and he turns into a cloud of vapour and floats away to his crypt. A party carrying the efreeti's bottle gets the efreeti on its side, once.</li>
+    <li>Find his crypt of black marble before the fight in the pit, and sanctify the coffin. When he is fought again in the crypt he then has 15 hit points instead of 43, and none of his 15 wolves. Beating him in the crypt ends the graveyard menace.</li>
+    <li>With Search on afterwards, his treasure: 9,000 gold, 12 gems and items.</li>
+  </ol>
+  </details>
+
+  <details class="por-fold"><summary>Norris the Gray, under Kuto's Well <small>paid for, never offered</small></summary>
+  <ol class="por-steps">
+    <li>A rumour in the slums says a gang works from the catacombs by the well. Rungs lead down into <a href="levels.html#GEO20">the catacombs</a>.</li>
+    <li>Norris the Gray's bandits surround the party: fight. A win clears the gang for the council's reward and leaves the party a hideout where it can rest undisturbed.</li>
+    <li>Behind a nailed door, a woman on a rug warns that an evil spirit from an unholy pool guides the party's enemies and hides behind a fair countenance. Then she vanishes.</li>
+  </ol>
+  </details>
+</section>
+
+<section id="mistakes">
+  <p class="fig">05 · Mistakes</p>
+  <h2 class="t">The mistakes that cannot be put right</h2>
+  <p class="lede">Most of what goes wrong in Phlan can be fought again or bought back. These cannot, short of loading a saved game.</p>
+  <div class="plate por-wide">
+    <table class="por-tbl por-stack">
+      <thead><tr><th>The mistake</th><th>What it costs</th></tr></thead>
+      <tbody>
+        <tr><td>Any word but NOTNOW at the door in Yarash's pyramid</td><td>Every member loses 201 hit points, with no saving throw: the whole party dies</td></tr>
+        <tr><td>Attacking Diogenes, the silver dragon, a second time, after following him up to the top of his den</td><td>The party is frozen in time and hit by a fireball, and his cave is empty for the rest of the game</td></tr>
+        <tr><td>Surrendering to Norris the Gray</td><td>The gang takes every valuable, and is never met again, so its reward is lost</td></tr>
+        <tr><td>Running from the last battle at the buccaneers' base</td><td>The Bivant heir is left behind, and the council complains about the bungled rescue</td></tr>
+        <tr><td>Killing Yarash before the council's special meeting</td><td>The meeting never comes (the attack on the castle can still be made)</td></tr>
+        <tr><td>Voting to join Tyranthraxus</td><td>That member changes sides and fights for him</td></tr>
+        <tr><td>Murdering the fortune teller in the slums</td><td>Every fight won in the slums is forgotten, and the patrols start again</td></tr>
+        <tr><td>Cutting through a hedge in the castle's maze</td><td>One member makes a saving throw or loses 201 hit points</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">Fighters, the class with the most hit points, stop at the eighth level in this game (its table of class limits), so 201 hit points is more than any member can have.</p>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+// On a phone the tables stack, one card to a row: each cell is labelled with its column's heading.
+document.querySelectorAll('.por-stack').forEach(t => {
+  const heads = [...t.querySelectorAll('thead th')].map(th => th.textContent);
+  t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (heads[i] && td.colSpan === 1) td.dataset.l = heads[i]; }));
+});
+</script>
