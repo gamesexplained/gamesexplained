@@ -1,4 +1,4 @@
-## next · 2026-11-07 · Balloon Fight (NES) · Zihe Jia with Claude
+## 0.0.315 · 2026-11-07 · Balloon Fight (NES) · Zihe Jia with Claude
 
 - **Start a recorded game from the console's power-on, not from the
   listing's RAM.** The kit's NES built from `loadListing` holds the RAM
