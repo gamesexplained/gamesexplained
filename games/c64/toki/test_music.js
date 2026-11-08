@@ -23,7 +23,7 @@ for(let t=0;t<13;t++){
  const p=createDriver(data,C);p.init(t);
  let events=[],bus=0;
  const m=new Uint8Array(65536);m.set(image,0x6501);
- const c=new C.CPU(m,{port:0x35,io:{read(a){return m[a];},write(a,v){if(a>=0xd400&&a<=0xd418)events.push(a-0xd400,v);else m[a]=v;}}});
+ const c=new C.CPU(m,{port:0x35,io:{read(a){return m[a];},write(a,v){if(a>=0xd400&&a<0xd800){if((a&31)<25)events.push(a&31,v);}else m[a]=v;}}});
  if(t<3)c.call(0x66a9,{x:6*t});else{c.call(0x660d,{});c.call(0x6633,{x:4*(t-3)});}
  assert.deepStrictEqual(Array.from(p.writes),events,`tune ${t} init`);
  let frames=0,gates=0;
