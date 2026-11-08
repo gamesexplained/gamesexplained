@@ -189,3 +189,31 @@ The pumping card started from phase 1's numbers, where the four steps
 are 9 frames apart and two of the bird's pumping pictures never
 show; it starts from phase 3's.
 
+
+## 7 November 2026 — the recorded game
+
+A Watch button on the Play tab, after the inputs skill (`65-inputs`).
+Every read of the controllers is one routine, `read_joypad_x`, called
+at most once a frame, so the recording keeps the value at each call.
+`route/find_route.js` searched for a game on the kit's NES: every nine
+frames, nine ways of holding the controller, each tried on copies with
+three quarters of a second of lookahead. The first search read its score
+digits in the wrong order, and slowed in phase 2; read in the game's
+order (tens first) it cleared phase 1 at frame 2,071.
+
+The page then parted from the kit's NES in the bonus round: the page
+starts with its RAM clear, and the kit's NES had started with the RAM
+of the snapshot the listing was made from, which `loadListing` keeps.
+With the RAM cleared on the kit too, the page agreed at all 8,220 reads
+but for one scratch byte at one read, and a new search from power-on
+found a shorter game: phase 4 at frame 5,770.
+
+jsnes, the second machine, agreed for 124 milestones and then popped
+the second bonus balloon two reads early. With its RAM cleared at
+power-on it agreed to the end, so a bisection over the RAM, all clear
+but one range left at `$FF`, named the byte: `$05CC`, the balloon spawn
+timer, which the bonus round counts down and never sets. MesenCE, which
+powers on with the RAM clear, agreed to the end with no change. The
+milestone for `balloons_popped` is kept only for a rise, since its
+reset at the round's start shows only where the RAM held something
+else.

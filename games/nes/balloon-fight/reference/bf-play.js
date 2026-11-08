@@ -31,6 +31,10 @@
 //   g.restore(s)             the game put back to a saved state, and the port resumed from that loop
 //   g.loop                   { kind: 'phase' or 'trip', frame } when a game, not the demonstration,
 //                            last reached the top of one of those loops, else null
+//   g.onRead(x)              when set, called at each of the game's reads of a controller
+//                            (read_joypad_x, $E76A), before it, with x the controller (0 or 1); a
+//                            number it returns is that controller's buttons for the read, which
+//                            is how a recorded game plays (route/route.js)
 //   g.frames, g.passes, g.P, g.M, g.ppu, g.onFrame (called after each NMI), g.onBoot (after each
 //   boot, before the port runs), g.onLoop (at the top of the phase or Balloon Trip loop, where
 //   g.save() works)
@@ -46,7 +50,7 @@ const BalloonFightPlay = (function () {
     const chr = new Uint8Array(0x2000); chr.set(b64(data.chr_sp), 0); chr.set(b64(data.chr_bg), 0x1000);
     const rom = b64(data.game_rom);
     const nmiCost = costs.nmi ? costs.nmi.median : 1283;
-    const g = { frames: 0, passes: 0, onFrame: null, onBoot: null, onLoop: null, lag: 0, loop: null };
+    const g = { frames: 0, passes: 0, onFrame: null, onBoot: null, onLoop: null, onRead: null, lag: 0, loop: null };
     let M, P, gen, ppu, apuw, apuFrame, frameList, pads, strobe, shift, fpos, nmiDue, last, pixels, top, split, script, jump;
 
     const io = {
@@ -81,6 +85,12 @@ const BalloonFightPlay = (function () {
       pixels = new Uint8Array(256 * 240);
       g.frames = 0; g.passes = 0; g.lag = 0; g.loop = null;
       P = BalloonFight.create(M, io, { CPU: o.CPU });
+      const readPad = P.read_joypad_x;
+      P.read_joypad_x = function (r) {
+        const v = g.onRead ? g.onRead(r.x & 1) : undefined;
+        if (typeof v === 'number') pads[r.x & 1] = v & 0xFF;
+        return readPad.call(this, r);
+      };
       P.onSplit = () => { top = ppu.scroll(); split = true; };
       P.onPhaseStart = () => { if (jump) { M[P.V.phase_index] = jump.index; M[P.V.phase_counter] = jump.counter; M[P.V.bonus_round] = jump.bonus; jump = null; } };
       g.P = P; g.M = M; g.ppu = ppu;
