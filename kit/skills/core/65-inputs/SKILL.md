@@ -39,6 +39,11 @@ the game loop with every variable the port keeps, then feed a port its
 input poll by poll, exactly where the game reads the controls. For what
 it never does, write short input scripts in the same format.
 
+Start a route on the kit's machine as the console powers on, with the
+RAM clear as a page starts it: a machine built from a listing holds the
+RAM of the snapshot the listing was made from, and a game that reads a
+byte before it writes it plays another game from there.
+
 In the emulator, stop at each read (a checkpoint on the reading
 instruction), set the input and run on, or redirect the game's control
 read to a table so it runs at its own speed (the platform's tool notes).
@@ -64,7 +69,11 @@ search on the kit's machine finds what the kit's machine allows. Replay
 it in the emulator, read by read, before trusting it. Where the two
 part, the read's number names the moment, and the cause is usually a
 gap in the kit's machine: bytes the game reads before it writes them,
-which a listing does not carry, or an interrupt taken late. Sometimes it
+which a listing does not carry, or an interrupt taken late. An
+emulator fills the RAM at power-on its own way, so where a replay parts,
+run it again with the emulator's RAM cleared first: if it then agrees,
+a bisection over the RAM, all clear but one range left as the emulator
+filled it, names the byte the game reads unset. Sometimes it
 is the game's own race between its interrupt and its main loop; then
 prefer a route that does not lean on it.
 

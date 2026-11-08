@@ -246,6 +246,13 @@ from the server's run by those two cycles an IRQ. The kit never does that.
   replaces them with the mirrors, as the CPU sees them; `snapshot.py`
   replaces them with zero, since a mirror holds nothing of its own and the
   listing would otherwise report the copy as data.
+- **The RAM powers on as `$FF`** (jsnes's `src/cpu.js` fills its array
+  with it), where MesenCE's, the kit's NES's and a page's start at 0. A
+  game that reads a byte before it writes it plays differently from
+  there, so a replay that parts from the kit's NES is run again with the
+  RAM cleared first: `write` of 2 KB of zeros straight after `cartridge`
+  or `reset`, before the first `run` (`65-inputs`, "Replay it on a
+  second machine").
 - A write to `$4017` from a script is the APU's frame counter, not
   controller 2: the same address is two things (`nes-reference`, "Sound").
 - The buttons are held until released, through stops and runs. A load or
