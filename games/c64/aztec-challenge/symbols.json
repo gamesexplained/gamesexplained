@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "aztec-challenge",
- "build": "",
+ "build": "PAL cassette in the KERNAL's own format, two files (AC, a BASIC boot; AZTEC, the game at $1000-$7FFE); the U.S. Gold release of Cosmi's tape as the Ultimate Tape Archive V4.0 has it (entry 733)",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -7346,7 +7346,7 @@
   {
    "address": 4096,
    "type": "line",
-   "text": "The game's first instruction (SYS 4096 from the BASIC boot) and where RUN/STOP on the scorecard and the end of phase 4 come back to. Clears $D400-$D428 (the SID, and through its mirror at $D420 its first nine registers again) and loads $D400-$D418 from the 25 bytes at $41C0, points the interrupt vector $0314 at the music interrupt $1C00, sets the first tune ($5700, a step every 9 interrupts), blacks the screen and clears it through the KERNAL. Then the Cosmi logo: the spiral from $4000-$419F in light blue, in the multicolour characters at $3000; after a delay of 16x65536 loops, the sun stone from $4200-$43FF appears in orange one character at a time, 240 characters picked at random by the CIA 1 timer A low byte, then whole; after two more delays the title, AZTEC from $4600 above it and CHALLENGE from $4700 below, in red. After a wait of 8x65536 increments it clears the screen, sets the main tune ($5F00, a step every 4 interrupts), turns all three voices on as triangle waves, sets the cutoff high byte and the volume to 15 and goes to the menu at $1AF8."
+   "text": "The game's first instruction (SYS 4096 from the BASIC boot), and where RUN/STOP comes back to (on the scorecard at $122B, and in the Vermin $66F8, the Stairs $6E09 and the Temple $76F3), as does the end of phase 4 ($1390, $13D2). Clears $D400-$D428 (the SID, and through its mirror at $D420 its first nine registers again) and loads $D400-$D418 from the 25 bytes at $41C0, points the interrupt vector $0314 at the music interrupt $1C00, sets the first tune ($5700, a step every 9 interrupts), blacks the screen and clears it through the KERNAL. Then the Cosmi logo: the spiral from $4000-$419F in light blue, in the multicolour characters at $3000; after a delay of 16x65536 loops, the sun stone from $4200-$43FF appears in orange a few characters at a time: 240 passes, each copying two characters at offsets picked at random by the CIA 1 timer A low byte, one from $4200 and one from $4300; then the whole of it. After two more delays the title, AZTEC from $4600 above it and CHALLENGE from $4700 below, in red. After a wait of 8x65536 increments it clears the screen, sets the main tune ($5F00, a step every 4 interrupts), turns all three voices on as triangle waves, sets the filter cutoff's high byte to $80 and the volume to 15, and goes to the menu at $1AF8."
   },
   {
    "address": 4443,
@@ -7781,7 +7781,7 @@
   {
    "address": 17152,
    "type": "line",
-   "text": "The second half of the sun stone, copied to $0628 by $10CB and $7816."
+   "text": "The second half of the sun stone, copied to $0628: a character at a time at random by $10AA, then whole by $10CB in the logo, and by $7816 for the Temple."
   },
   {
    "address": 17408,
@@ -8076,7 +8076,7 @@
   {
    "address": 25312,
    "type": "line",
-   "text": "Draws the next stage of the temple ahead, by the progress stage $45: an even stage copies a row from $5500, an odd one from $5600, $44 characters long in the phase's colour, at the screen address in $40/$41; each odd stage then makes the next row 40 characters longer and one row higher. At stage 8 it puts the temple's doorway, characters $FA-$FD, at $061A. Called once more at stage 8, it ends the level as won: drops two return addresses and jumps to $1300."
+   "text": "Draws the next stage of the temple ahead, by the progress stage $45: an even stage copies a row from $5500, an odd one from $5600, $44 characters long in the phase's colour, at the screen address in $40/$41; after stages 1, 3 and 5 the next copy is 40 characters longer and starts a row higher. Stage 7 instead puts the temple's doorway, characters $FA-$FD, at $061A, and $45 is then 8. Called once more at stage 8, it ends the level as won: drops two return addresses and jumps to $1300."
   },
   {
    "address": 25422,
@@ -8181,7 +8181,7 @@
   {
    "address": 26368,
    "type": "line",
-   "text": "Every $57 calls (the phase's spawn delay: 128, 80, 48, 16) it brings on creatures: for each bit of the CIA 1 timer's low byte from 0 to 5 that is set, the creature of that bit is placed ($67A0-$683A) unless it is already out (its bit in $2A). Bit 4's creature is never marked as out, because its routine ORs #$00 into $2A, so it is placed again each time and never moves. Then every creature that is out takes a step ($68F0)."
+   "text": "Every $57 calls (the phase's spawn delay: 128, 80, 48, 16) it brings on creatures: for each bit of the CIA 1 timer's low byte from 0 to 5 that is set, the creature of that bit is placed ($67A0-$683A) unless it is already out (its bit in $2A). For bit 4 the check ORs #$00 into $2A where the others OR in their own bit ($6772), so creature E is never marked as out: it is placed again each time and never moves. Then every creature that is out takes a step ($68F0)."
   },
   {
    "address": 26514,
@@ -8191,12 +8191,12 @@
   {
    "address": 26528,
    "type": "line",
-   "text": "Places creature A: sprite 2, shape $9A, orange, at a random X past the right edge (ninth bit set), on the ground at line $B6."
+   "text": "Places creature A: sprite 2, shape $9A, orange, on the ground at line $B6, at X 256 plus a random byte (256-511): about a third of the time already on the right edge of the screen (up to 343), otherwise past it."
   },
   {
    "address": 26560,
    "type": "line",
-   "text": "Places creature B: sprite 3, shape $9B, white, at a random X past the right edge, line $B3."
+   "text": "Places creature B: sprite 3, shape $9B, white, at line $B3, at X 256 plus a random byte (256-511): about a third of the time already on the right edge of the screen, otherwise past it."
   },
   {
    "address": 26592,
@@ -8216,17 +8216,17 @@
   {
    "address": 26650,
    "type": "line",
-   "text": "Places creature E: sprite 6, shape $9C, green, at a random X past the right edge, line $AD. Its flag is never set (it ORs #$00 into $2A), so $6A80 never moves it and it is never switched on: creature E never appears."
+   "text": "Places creature E: sprite 6, shape $9C, green, at line $AD, at X 256 plus a random byte. The check that calls it ($6772) ORs #$00 into $2A instead of creature E's bit, so its mover $6A80 never runs and its sprite is never switched on: creature E never appears."
   },
   {
    "address": 26682,
    "type": "line",
-   "text": "Places creature F: sprite 7, shape $9E, medium grey, double width, at a random X past the right edge, line $AA."
+   "text": "Places creature F: sprite 7, shape $9E, medium grey, double width, at line $AA, at X 256 plus a random byte: sometimes already on the right edge of the screen, otherwise past it."
   },
   {
    "address": 26720,
    "type": "line",
-   "text": "A second copy of the creature checks in $670B-$678F, without the spawn delay before them and ending in a jump to $68F0; nothing jumps or calls here, so it never runs. It has the same ORA #$00 for creature E."
+   "text": "A second copy of the creature checks in $670B-$678F, without the spawn delay before them and ending in a jump to $68F0; nothing jumps or calls here, so it never runs. Its check for creature E has the same ORA #$00 ($68C7)."
   },
   {
    "address": 26855,
@@ -8346,7 +8346,7 @@
   {
    "address": 27856,
    "type": "line",
-   "text": "Fills the first 768 characters of the screen (rows 0-18 and most of row 19) with character $67 and their colour with cyan; the Vermin then covers rows 15 on with the ground."
+   "text": "Fills the first 768 characters of the screen (rows 0-18 and the first eight of row 19, up to $06FF) with character $67 and their colour with cyan; the Vermin then covers rows 15 on with the ground."
   },
   {
    "address": 27884,
@@ -8431,7 +8431,7 @@
   {
    "address": 28672,
    "type": "line",
-   "text": "Every third call moves the three blocks down: block 0 by $53+1 lines, block 1 by $54+1, block 2 by $55+1 (the phase's speeds: 7, 9 and 11 lines a step in phase 1, up to 15, 17 and 19 in phase 4), each turning through shapes $AB, $AC, $AD as it rolls. A block past line $F0 comes back in at the top: block 0 at the climber's X, aimed at the player; block 1 at a random X from the CIA 1 timer and block 2 from the CIA 2 timer, each given the ninth X bit at random when its X is below $50. Then $6E45."
+   "text": "Every third call moves the three blocks down: block 0 by $53+1 lines, block 1 by $54+1, block 2 by $55+1 (the phase's speeds: 7, 9 and 11 lines a step in phase 1, up to 15, 17 and 19 in phase 4), each turning through shapes $AB, $AC, $AD as it rolls. A block at or past line $F0 comes back in at the top: block 0 at the climber's X, aimed at the player; block 1 at a random X from the CIA 1 timer and block 2 from the CIA 2 timer, each given the ninth X bit at random when its X is below $50. Then $6E45."
   },
   {
    "address": 28884,
@@ -8551,7 +8551,7 @@
   {
    "address": 29890,
    "type": "line",
-   "text": "Picks the trapped tiles for this attempt: puts voice 3 on noise at a high pitch and reads its oscillator, keeping values below $3C or from $3F to $42 (it refuses $3C-$3E and anything from $43; a test against 44 in the same chain can never match there), with a delay ($74EC) between picks, until $58 tile numbers are in $5C28 (10, 16, 24 or 32 by the phase). Then voice 3 back to a triangle. Numbers may repeat, and tile 44 (the doorway) may be picked, which $1FE8 never tests. These are the only bytes of the program the game writes."
+   "text": "Picks the trapped tiles for this attempt: writes $80 to voice 3's control (noise, gate off) and to its frequency's low byte (the high byte stays as the tune left it), and reads its oscillator, keeping values below $3C or from $3F to $42 (it refuses $3C-$3E and anything from $43; a test against 44 in the same chain can never match there), with a delay ($74EC) between picks, until $58 tile numbers are in $5C28 (10, 16, 24 or 32 by the phase). Then voice 3 back to a triangle. Numbers may repeat, and tile 44 (the doorway) may be picked, which $1FE8 never tests. These are the only bytes of the program the game writes."
   },
   {
    "address": 29932,
@@ -8591,7 +8591,7 @@
   {
    "address": 30208,
    "type": "line",
-   "text": "Level 3, the Temple, and where it restarts after a lost life. Dark grey border on black; the first room's trap is the spears ($1A = 1); the runner (sprites 0 and 1, shapes $90/$91, yellow and white, multicoloured) at the left on the floor, $17 = 8 (standing); the sun stone from $4200 on the back wall ($7808); colour RAM light grey; the multicolour characters at $3000; the floor (character $2A, light green) from row 18, column 32, to the bottom; colour RAM light grey above it; the two pillars from $4400 and $4450, three characters wide, down the left and right edges. Then the loop: the runner ($7700), the trap ($785B), a delay, the STOP key (RUN/STOP restarts at $1000), and the bite of the trap ($79F0)."
+   "text": "Level 3, the Temple, and where it restarts after a lost life. Dark grey border on black; the first room's trap is the spears ($1A = 1); the runner (sprites 0 and 1, shapes $90/$91, yellow and white, multicoloured) at the left on the floor, $17 = 8 (standing); the sun stone from $4200 on the back wall ($7808); colour RAM light grey for the first 840 characters; the multicolour characters at $3000; the floor (character $2A, light green) on rows 21-24 ($0748-$07E7); the two pillars from $4400 and $4450, three characters wide, down the left and right edges. Then the loop: the runner ($7700), the trap ($785B), a delay, the STOP key (RUN/STOP restarts at $1000), and the bite of the trap ($79F0)."
   },
   {
    "address": 30457,
@@ -8641,7 +8641,7 @@
   {
    "address": 30728,
    "type": "line",
-   "text": "Clears the screen through the KERNAL and copies the sun stone ($4200-$43FF) to rows 7-19 in orange, then clears the ninth X bits, the room count $69 and the stage $45."
+   "text": "Clears the screen through the KERNAL and copies the sun stone ($4200-$43FF) to $0528-$0727 (row 7, column 16, to row 20, column 7; the stone itself fills rows 7-17) in orange, then clears the ninth X bits, the room count $69 and the stage $45."
   },
   {
    "address": 30769,
@@ -8656,7 +8656,7 @@
   {
    "address": 30811,
    "type": "line",
-   "text": "Runs the room's trap by its state $1A. 1: six spears (sprites 2-7, shape $B9, white) and 5: six stones (shape $AB, yellow) are lined up at the top ($7870), state 2 or 6. 2 and 6: they fall one at a time, 9 lines a step, each from a random X, and when the sixth is down the state goes back to 1 or 5, so they keep falling. 3: three spikes (shape $BD) under the floor at X 80, 160 and 255, state 4: they rise one after another, 3, 4 and 4 lines a step, until each is above line $D5. 7: three trapdoors (shape $BE, black, double height) in the floor at X 96, 192 and 288, state 8: every 32 calls the next one opens (comes on), until all three are open."
+   "text": "Runs the room's trap by its state $1A. 1: six spears (sprites 2-7, shape $B9, white) and 5: six stones (shape $AB, yellow) are lined up at the top ($7870), state 2 or 6. 2 and 6: they fall one at a time, 9 lines a step, each from a random X, and when the sixth is down the state goes back to 1 or 5, so they keep falling. 3: three spikes (shape $BD) under the floor at X 80, 160 and 255, state 4: they rise one after another, 3, 4 and 4 lines a step, until each is above line $D5. 7: three trapdoors (shape $BE, black, double height) in the floor at X 96, 192 and 288, state 8: the first opens (comes on) 16 calls after they are set, the next two 32 calls apart."
   },
   {
    "address": 30832,

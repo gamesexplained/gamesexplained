@@ -125,8 +125,12 @@ menu and scorecard, `$1D` (set A) for levels 3, 5, 6 and 7 and the logo,
   attempt from voice 3's noise (`$74C2`): 10, 16, 24 or 32 numbers below
   `$3C` or from `$3F` to `$42`, repeats allowed.
 - The Vermin's creature E is placed but never marked as out, because
-  `$681A` ORs `#$00` into `$2A`, so it never moves and is never shown
-  (also in the unused copy at `$6860`).
+  the spawner's check for it ORs `#$00` into `$2A` (`$6772`) where the
+  others OR in their own bit, so it never moves and is never shown (the
+  unused copy at `$6860` has the same, at `$68C7`).
+- Creatures A, B, E and F are placed at X 256 plus a random byte, so
+  about a third of the time they appear already on the screen's right
+  edge rather than walking in (`$67A0`).
 - The Temple's collision test (`$79F0`) counts only a touch by the
   runner's lower half alone (latch bits 0-1 equal to 2).
 - The Piranha's bite test is skipped whenever fire is held (`$1EA0`),
@@ -156,4 +160,46 @@ menu and scorecard, `$1D` (set A) for levels 3, 5, 6 and 7 and the logo,
 
 ## The listing's error rate
 
+Sample `sample-20261108`: seed 20261108, 60 of the listing's 313 comments
+drawn at random, checked by a checker on claude-fable-5-1 that wrote none
+of them. 11 were wrong in a detail and none in its main claim: 18 %, with
+a 95 % interval of 10.6 % to 29.9 % (Wilson), a lower bound since a
+checker misses some. The kinds: incomplete lists of callers or readers
+(`$1000`, `$4300`), a mistake of what a step does (two characters a pass,
+not one, in the logo's reveal; `$D40E` is the low byte of a frequency),
+positions on the screen worked out wrong (`$6CD0`, `$7600`, `$7808`),
+a condition at an edge (`$62E0` after stage 7, `$7000` at line `$F0`,
+`$785B`'s first trapdoor), and two of one belief: the `ORA #$00` that keeps
+the Vermin's creature E hidden was put in the creature's routine instead
+of the spawner's check (`$6700`), and the creatures that start "past the
+right edge" are on screen a third of the time (`$67C0`). All 11 were
+corrected, with the comments that shared those two beliefs (`$67A0`,
+`$681A`, `$683A`, `$6860`). The listing has had no full audit.
+
 ## Live tests
+
+All on VICE (vice-mcp v3.13.2), from the snapshots in `orientation.md`,
+8 November 2026, at normal speed.
+
+- Every level reached by setting `$03` on the scorecard and pressing fire;
+  in phase 1 and phase 4 (`work/levels.py`). Phase 4's colours change
+  four of them (above).
+- The interrupt at `$1C00` ran 3,601 times in 60 seconds: 60 a second.
+- Losing five lives on the Gauntlet with the stick still: back to the
+  scorecard on level 1, score 10 (no achievements, plus the extra 10).
+- The Gauntlet won by setting the stage `$45` to 8 and its step counter
+  `$46` to 1 in the main loop: `$1300` with `$02` = 0, score 1,010, level
+  2 on the scorecard.
+- Two players: the turn passed after every attempt, won or lost.
+- The Vermin, 60 seconds with a jump now and then: `$D015` showed sprites
+  0-5 and 7 but never 6, and bit 4 of `$2A` was never set.
+- The Piranha, 60 seconds each from the same snapshot: stick centred,
+  four lives lost; fire alone, 18 lost (drowned, about 3 seconds each);
+  fire with up and fire with left, one bite in the first moments and
+  none after.
+- The Piranha swimming up: each passage off the top counted one
+  achievement and every second one a stage; a lost life set the stage
+  back to 0.
+- The Bridge, right held 10 seconds on the ground: achievements 0 to 72,
+  no jump.
+- RUN/STOP on the scorecard: back to the spiral at `$1000`.
