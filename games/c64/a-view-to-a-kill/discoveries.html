@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Claims the code contradicts, bugs, and the questions still open. Everything under "Confirmed" was read in the code, and where it says so, seen in the emulator.</p>
+  <p class="sub">A burning room wins City Hall by jumping into the middle of an instruction, and the word ZOOM is hidden in three of the five programs. Here are the claims the code contradicts, the bugs, and the questions still open.</p>
 </header>
 <main class="wrap">
 <section id="sources" data-part="">
@@ -16,8 +16,8 @@
   <h2 class="t">Where the code and the sources disagree</h2>
   <table class="t">
     <tr><th>The claim</th><th>What the code does</th></tr>
-    <tr><td>MI6-HQ: the mine's detonator combination is 32768.</td><td>The mine checks 6, 7, 1, 3, 4 (<a href="source-mine.html#26F0"><code>$26F0</code></a>), and only digits 1 to 7 can be entered at all.</td></tr>
-    <tr><td>C64-Wiki: the game can be played from the keyboard as well as the joystick.</td><td>In play only the joystick in port 2 is read, and the keyboard scan is stopped. Keys are read only at the code prompts.</td></tr>
+    <tr><td><a href="https://www.mi6-hq.com/sections/games/avtak">MI6-HQ</a>: the mine's detonator combination is 32768.</td><td>The mine checks 6, 7, 1, 3, 4 (<a href="source-mine.html#26F0"><code>$26F0</code></a>), and only digits 1 to 7 can be entered at all.</td></tr>
+    <tr><td><a href="https://www.c64-wiki.de/wiki/A_View_to_a_Kill">C64-Wiki</a>: the game can be played from the keyboard as well as the joystick.</td><td>In play only the joystick in port 2 is read, and the keyboard scan is stopped. Keys are read only at the code prompts.</td></tr>
     <tr><td>The <a href="https://frgcb.blogspot.com/2023/04/james-bond-007-view-to-kill-domark-1985.html">FRGCB blog</a>: each section can be played without its code, "but they will be practically impossible to beat without them".</td><td>Not practically: completely. Without the code, City Hall starts again at the exit and the mine's bomb always goes off (<a href="mechanics.html#codes">How it fits together</a>).</td></tr>
     <tr><td>The code prompts: RETURN plays the section without the code.</td><td>It plays, but City Hall and the mine cannot then be won (<a href="mechanics.html#codes">How it fits together</a>).</td></tr>
   </table>
@@ -26,31 +26,31 @@
 <section id="city-hall" data-part="city-hall">
   <p class="fig">02 · City Hall</p>
   <h2 class="t">Bug: a burning room runs the end test from the middle of an instruction</h2>
-  <p>The main loop's test for a burning room branches to <code>$7090</code>, which is the second byte of a branch instruction. From there the processor reads <code>ORA $57AD</code>, then an undocumented instruction that shifts a byte of memory left and ORs it in (<code>SLO</code>, writing <code>$0BFC</code>), and arrives at the load of the code flag in the end test (<code>$7096</code>). Seen in the emulator with Bond's room set on fire: with CCPHJ typed, the next pass ended in the mission-complete screen with DB4CT; without it, a new game. Whether the branch was meant to go to the end test and the target is off by a byte, or was changed later, is not known.</p>
+  <p>The main loop's test for a burning room branches to <code>$7090</code>, which is the second byte of a branch instruction. From there the processor reads <code>ORA $57AD</code>, then an undocumented instruction that shifts a byte of memory left and ORs it in (<code>SLO</code>, writing <code>$0BFC</code>), and arrives at the load of the code flag in the end test (<code>$7096</code>). With CCPHJ typed, the next pass ends in the mission-complete screen with DB4CT; without it, a new game starts.<sup class="fn"><a href="about.html#src-4" title="Bond’s room set on fire in VICE">4</a></sup> Whether the branch was meant to go to the end test and the target is off by a byte, or was changed later, is not known.</p>
   <h3>Energy and the clock cannot kill Bond</h3>
   <p>The energy objects set a value for Bond and one for Stacey that nothing reads or draws (<code>$1B5B</code>, <code>$1B5C</code>). The clock counts and nothing reads it: where a test might have been there are nine <code>NOP</code>s (<code>$6EA1</code>).</p>
   <h3>Room 38 holds furniture with no place</h3>
-  <p>Room 38's record names a second piece of furniture, type <code>$A1</code>, at address 0 (<code>$A20E</code>, copied to <code>$443E</code>). In the emulator Bond went through the door from room 39, the room was drawn and play went on; what the drawing routine makes of a type that high was not worked out.</p>
+  <p>Room 38's record names a second piece of furniture, type <code>$A1</code>, at address 0 (<code>$A20E</code>, copied to <code>$443E</code>). Bond can still walk in from room 39, the room is drawn, and play goes on;<sup class="fn"><a href="about.html#src-12" title="Room 38 entered in VICE">12</a></sup> what the drawing routine makes of a type that high was not worked out.</p>
   <h3>A table read from the screen</h3>
-  <p>When the fire spreads to the next floor, the new temperatures are masked with <code>AND $03E9,Y</code> (<code>$95AD</code>), a read of the screen, where an <code>AND #</code> of a fixed value was probably meant. Not tried in the emulator.</p>
+  <p>When the fire spreads to the next floor, the new temperatures are masked with <code>AND $03E9,Y</code> (<code>$95AD</code>), a read of the screen, where an <code>AND #</code> of a fixed value was probably meant. This is untested.</p>
 </section>
 
 <section id="intro" data-part="intro">
   <p class="fig">03 · The intro</p>
   <h2 class="t">Bug: the credits depend on where the raster beam is</h2>
-  <p>Before the credits the intro writes <code>$97</code> to the video chip's control register (<code>$CB50</code>). Its top bit is also the top bit of the raster line the next interrupt is asked for, which becomes line 496, a line a European screen never reaches. A later read, AND and write of the register clears it (<code>$C540</code>), but reading that bit gives the line the beam is on, so if the beam were below line 255 at that moment the bit would be written back set. Then no interrupt would ever come again, and the credits, the music and everything else driven from the interrupt would stop. In four boots in the emulator, started a tenth of a second apart, the beam was on lines 25 to 29 each time and the credits scrolled; whether the stall can happen at all on this disk is not known.</p>
+  <p>Before the credits the intro writes <code>$97</code> to the video chip's control register (<code>$CB50</code>). Its top bit is also the top bit of the raster line the next interrupt is asked for, which becomes line 496, a line a European screen never reaches. A later read, AND and write of the register clears it (<code>$C540</code>), but reading that bit gives the line the beam is on, so if the beam were below line 255 at that moment the bit would be written back set. Then no interrupt would ever come again, and the credits, the music and everything else driven from the interrupt would stop. In test boots the beam was always near the top and the credits scrolled;<sup class="fn"><a href="about.html#src-2" title="Four boots in VICE">2</a></sup> whether the stall can happen at all on this disk is not known.</p>
 </section>
 
 <section id="paris" data-part="paris">
   <p class="fig">04 · Paris</p>
   <h2 class="t">Bug: the locator is cut off by one byte</h2>
-  <p>The cockpit's locator lamp should flash, and a beep sound, faster the closer the car is to May Day (<a href="source-paris.html#4A50"><code>$4A50</code></a>). The interrupt's sound routine calls it at its end, but a return instruction sits on the first byte of that call (<a href="source-paris.html#51E9"><code>$51E9</code></a>), where the load of the sound option should begin. Nothing else calls it, so the lamp never lights and the beep never sounds. In 30 seconds of a chase in the emulator, with the effects on, it was not called once.</p>
+  <p>The cockpit's locator lamp should flash, and a beep sound, faster the closer the car is to May Day (<a href="source-paris.html#4A50"><code>$4A50</code></a>). The interrupt's sound routine calls it at its end, but a return instruction sits on the first byte of that call (<a href="source-paris.html#51E9"><code>$51E9</code></a>), where the load of the sound option should begin. Nothing else calls it, so the lamp never lights and the beep never sounds.<sup class="fn"><a href="about.html#src-3" title="30 seconds of a chase in VICE">3</a></sup></p>
 </section>
 
 <section id="mine" data-part="mine">
   <p class="fig">05 · The mine</p>
   <h2 class="t">A digit counter with no limit</h2>
-  <p>Each digit entered is stored at <code>$1B73</code> plus the count so far, and nothing limits the count (<code>$38AA</code>). The numbered objects stay in the list after use, so a digit can be entered again and again. The fourteenth digit would land on the pause flag and stop the clock, and the forty-sixth on the code flag itself, which would make the section winnable without DB4CT once the count wraps round after 256. None of this was tried in the emulator.</p>
+  <p>Each digit entered is stored at <code>$1B73</code> plus the count so far, and nothing limits the count (<code>$38AA</code>). The numbered objects stay in the list after use, so a digit can be entered again and again. The fourteenth digit would land on the pause flag and stop the clock, and the forty-sixth on the code flag itself, which would make the section winnable without DB4CT once the count wraps round after 256. This is untested.</p>
   <p>Two smaller slips: the welcome page loads the stack pointer from the byte at <code>$FF</code> where the number <code>$FF</code> was meant (<code>$7D1D</code>), harmless because the next routine sets it again; and the planks' handler tests for an object number no object has (<code>$3970</code>).</p>
 </section>
 
@@ -67,8 +67,8 @@
   <ul>
     <li>Which release the cracked copy came from: it plays differently in four of the five programs (<a href="about.html#copy">About</a>).</li>
     <li>Why the small ovals on the Paris map do not sit on May Day's landing points (<a href="maps.html#paris">Maps</a>).</li>
-    <li>What the meter on the mine's panel measures. It rises towards the upper right of the mine (<a href="source-mine.html#3000"><code>$3000</code></a>); the sources call something a Geiger counter.</li>
-    <li>Which of the two tunes is the Bond theme and which the title song.</li>
+    <li>What the meter on the mine's panel measures. It rises towards the upper right of the mine (<a href="source-mine.html#3000"><code>$3000</code></a>).</li>
+    
     <li>What City Hall's door codes 1, 2, 3, 5 and 7 look like: the drawing code handles only 0 and 6.</li>
     <li>Why Paris rewrites two short stretches of its map at every start (<a href="source-paris.html#4140"><code>$4140</code></a>).</li>
   </ul>

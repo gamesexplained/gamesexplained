@@ -5,25 +5,27 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Silver** (30 September 2026; the original disk from 8 October 2026). All five programs at 100 % coverage
-(`python3 kit/scripts/parts.py games/c64/a-view-to-a-kill`), every
-feature confirmed, traced, differs or explicitly open (`features.md`),
-facts verified (`facts.md` and each part's), the Overview and focused
-tabs built. The copy is `agent-draft`.
+**Gold** (8 November 2026). Next: a Play tab, for Platinum. Steward
+unorig went through every tab, page by page, with the agent; `copy` is
+`human-edited`. Silver since 30 September 2026 (the original disk from
+8 October 2026): all five programs at 100 % coverage
+(`python3 kit/scripts/parts.py games/c64/a-view-to-a-kill`).
 
-## For Gold
+## For Platinum
 
-- A human pass over every tab, section by section: rewrite, cut, expand,
-  add what the agent missed. Set `copy` to what the pass did.
-- A Play tab, which no tier requires: for example a Paris chase with the
-  police following the player's route, or a City Hall floor to walk.
-  Each section is a separate program, so a level select is the menu the
-  game already has.
+- A Play tab: for example a Paris chase with the police following the
+  player's route, or a City Hall floor to walk. Each section is a
+  separate program, so a level select is the menu the game already has.
+
+## Listing
+
+- The mine's listing calls object 50 "the key item" and the rock-clearing
+  object (type 16) "detonator"; the pages use the names from the
+  steward's notes (detonator and lighter). Rename the symbols and
+  comments to match, then rebuild the mine's listing.
 
 ## Open
 
-- Which tune is the Bond theme and which the title song, and the words
-  of Paris's three speech samples: listening would settle both.
 - What the mine's panel meter measures (`$3000`, mine).
 - The mine's digit overflow (`$38AA`, mine) and hazard freeze
   (`$2BAB`, mine), and City Hall's `AND $03E9,Y` (`$95AD`): traced, not
