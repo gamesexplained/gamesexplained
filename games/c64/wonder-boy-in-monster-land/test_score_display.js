@@ -41,6 +41,21 @@ for (const glyph of [0, 1, 10]) {
   call(m, 0x3a0a);
   assert.equal(m[0xd8d9], changed, 'unchanged high score returns without redrawing');
 }
+// The first score caches each decoded glyph and copies only changed columns.
+{
+  const m = base.slice(); m[0x4dbc] = 1; m[0x4dbd] = 0;
+  m[0x4dc1] = 0x00; m[0x4dc3] = 0x12; m[0x4dc5] = 0x34;
+  m.fill(0xff, 0x4da6, 0x4dac);
+  call(m, 0x38fe);
+  assert.deepEqual(Array.from(m.slice(0x3bac, 0x3bb2)), [0, 0, 2, 3, 4, 5]);
+  assert.deepEqual(Array.from(m.slice(0x4da6, 0x4dac)), [0, 0, 2, 3, 4, 5]);
+  [0xd819, 0xd81a, 0xd858, 0xd859, 0xd85a, 0xd898, 0xd899]
+    .forEach((dest, i) => expected(m, [0, 0, 2, 3, 4, 5, 1][i], dest));
+  m[0xd819] ^= 0xff; m[0xd899] ^= 0xff;
+  const unchanged = m[0xd819]; call(m, 0x38fe);
+  assert.equal(m[0xd819], unchanged, 'unchanged first digit is skipped');
+  expected(m, 1, 0xd899); // the fixed last zero is always redrawn
+}
 // In two-player mode the alternate score is drawn only when player index is nonzero.
 {
   const m = base.slice(); m[0x4dbc] = 1; m[0x4dbd] = 1;
