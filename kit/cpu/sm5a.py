@@ -112,25 +112,32 @@ WHAT = {
     "LAX": "A = n (a run of LAX loads only the first)", "ADX": "A += n, skip on carry", "LB": "B = a cell",
     "SSR": "page for the next TR, or a long TRS", "TR": "jump", "TRS": "call", "LBL": "B = a cell",
     "CEND": "stop the clock until a button or the 1 Hz flag", "DTA": "A = the divider's bits 11-14",
+    "?": "an undefined 5E prefix: the chip skips both bytes",
 }
 
 
 def decode(ram, a):
     """(mnemonic, mode, nbytes) for the instruction at logical address a, or None. The mode
     carries what the operand needs: the kind, and for TR and TRS the page an SSR just before
-    names, if one does (the byte at a - 1; at the top of a page, none is looked at)."""
+    names, if one does (the byte at a - 1; at the top of a page, none is looked at).
+
+    A two-byte instruction (LBL, or the prefix 5E) on a page's 63rd step takes its second byte
+    from the page's first, where the step counter goes next: the mode carries that byte as
+    ":pXX", and the listing's second byte is step $3F's, which the counter never reaches. On
+    step $3F itself one is not decoded. An undefined 5E xx is two bytes the chip skips, "?" as
+    MAME writes it."""
     if a >= ROM_SIZE:
         return None
     op = ram[a]
     m, kind = _T[op]
     if kind in ("lbl", "ext"):
-        if (a & 0x3F) == 0x3E or (a & 0x3F) == 0x3F:
-            return None   # its second byte would be past the 63 steps of the page
+        step = a & 0x3F
+        if step == 0x3F:
+            return None
+        param = ram[a & ~0x3F] if step == 0x3E else ram[a + 1]
         if kind == "ext":
-            m = EXTENDED.get(ram[a + 1])
-            if m is None:
-                return None
-        return (m, kind, 2)
+            m = EXTENDED.get(param, "?")
+        return (m, kind + (":p%02X" % param if step == 0x3E else ""), 2)
     if kind in ("t6", "c6") and (a & 0x3F) and _T[ram[a - 1]][1] == "ssr":
         kind += ":" + str(ram[a - 1] & 0x0F)
     return (m, kind, 1)
@@ -173,8 +180,9 @@ def operand(a, m, mode, bs, names, regs=None, chips=None):
         cell = RAM_BASE + (bm << 4 | bl)
         return names.get(cell) or _num(op & 0x0F), cell
     if kind == "lbl":
-        cell = RAM_BASE + (bs[1] & 0x7F)
-        return names.get(cell) or "$%02X" % bs[1], cell
+        param = int(mode.split(":p")[1], 16) if ":p" in mode else bs[1]
+        cell = RAM_BASE + (param & 0x7F)
+        return names.get(cell) or "$%02X" % param, cell
     if kind == "ext":
         return None, None
     t = target(a, mode, op)
@@ -201,10 +209,12 @@ if __name__ == "__main__":
         sys.exit(0 if len(sys.argv) == 2 else 2)
     rom = open(sys.argv[1], "rb").read()
     img = reorder(rom)
-    a = 0
-    while a < ROM_SIZE:
-        pc = physical(a)
-        d = decode(img, a)
-        n = d[2] if d else 1
-        print("%d:%X:%02X: %-6s %s" % (pc >> 10, pc >> 6 & 0xF, pc & 0x3F, " ".join("%02X" % b for b in img[a:a + n]), text(img, a)))
-        a += n
+    for page in range(ROM_SIZE >> 6):
+        a = page << 6
+        while a < (page << 6) + 63:
+            pc = physical(a)
+            d = decode(img, a)
+            n = d[2] if d else 1
+            bs = img[a:a + n] if not (d and d[1] and ":p" in d[1]) else bytes([img[a], img[page << 6]])
+            print("%d:%X:%02X: %-6s %s" % (pc >> 10, pc >> 6 & 0xF, pc & 0x3F, " ".join("%02X" % b for b in bs), text(img, a)))
+            a += n

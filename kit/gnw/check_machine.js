@@ -22,6 +22,8 @@ const ROOT = path.resolve(__dirname, '../..');
 const MAME = path.join(ROOT, 'tools/gnw/mame-src/gnw');
 const HOME = path.join(ROOT, 'tools/gnw/home');
 const FIXTURE = path.join(__dirname, 'fixtures/machine.json');
+const DASM = path.join(__dirname, 'fixtures/disassembly.json');
+const DASM_SEEDS = [1, 2, 3, 4];
 const SEEDS = Array.from({ length: 64 }, (_, i) => i + 1);
 const FRAMES = 40;                  // MAME's frames (60 a second) each program runs for
 const CHUNK = 1024;
@@ -171,10 +173,47 @@ function main() {
   const all = Array.from({ length: 256 }, (_, i) => i).filter(o => o !== 0x5e).concat([0x5e00, 0x5e04]);
   const missing = all.filter(o => !ops.has(o));
   console.log((missing.length ? 'note ' : 'ok   ') + 'opcodes run: ' + (all.length - missing.length) + ' of ' + all.length + (missing.length ? ', not ' + missing.map(o => o.toString(16)).join(' ') : ''));
-  if (record) { fs.mkdirSync(path.dirname(FIXTURE), { recursive: true }); fs.writeFileSync(FIXTURE, JSON.stringify(fixture, null, 1) + '\n'); console.log('wrote ' + path.relative(ROOT, FIXTURE)); }
+  if (record) {
+    fs.mkdirSync(path.dirname(FIXTURE), { recursive: true }); fs.writeFileSync(FIXTURE, JSON.stringify(fixture, null, 1) + '\n'); console.log('wrote ' + path.relative(ROOT, FIXTURE));
+    // MAME's disassembly, for kit/gnw/test_sm5a.py to hold kit/cpu/sm5a.py to
+    const d = { about: 'MAME 0.289\'s disassembly of programs ' + DASM_SEEDS.join(', ') + ' (kit/gnw/check_machine.js), a hash of each 64 lines', chunk: 64, programs: [] };
+    for (const seed of DASM_SEEDS) {
+      const lines = mameDasm(program(seed)), h = [];
+      for (let i = 0; i < lines.length; i += 64) h.push(crypto.createHash('sha1').update(lines.slice(i, i + 64).join('\n')).digest('hex').slice(0, 16));
+      d.programs.push({ seed, lines: lines.length, first: lines.slice(0, 3), chunks: h });
+    }
+    fs.writeFileSync(DASM, JSON.stringify(d, null, 1) + '\n'); console.log('wrote ' + path.relative(ROOT, DASM));
+  }
   console.log(fails ? fails + ' FAILED' : 'the kit\'s SM5A agrees with MAME\'s');
   return fails ? 1 : 0;
 }
 
-module.exports = { program, presses, apply, model, chunks, line };
+// MAME's disassembly of a program, each page's 63 steps in the order the chip runs them (step $3F,
+// which the counter never reaches, left out), as lines "CB:PM:PL: bytes MNEMONIC operand" with the
+// spacing made single. A two-byte instruction on a page's 63rd step takes its second byte from step
+// 0, where MAME's CPU reads it (sm510base.cpp, execute_run); MAME's disassembler shows another
+// byte there, so that byte and the operand are masked as "~" (kit/gnw/test_sm5a.py masks its own)
+const LAST = (() => { let pl = 0; for (let i = 0; i < 62; i++) pl = SM5A.nextPc(pl); return pl; })();   // the 63rd step's PL
+function mameDasm(rom) {
+  const dir = path.join(HOME, 'check'), set = path.join(dir, 'roms', 'gnw_ball');
+  fs.mkdirSync(set, { recursive: true });
+  fs.writeFileSync(path.join(set, 'ac-01'), rom);
+  fs.writeFileSync(path.join(set, 'gnw_ball.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="1671" height="1080"></svg>\n');
+  const lua = path.join(dir, 'dasm.lua'), out = path.join(dir, 'dasm.txt');
+  const pages = [];
+  for (let p = 0; p < SM5A.ROM_SIZE >> 6; p++) pages.push('manager.machine.debugger:command("dasm ' + out + '.' + p + ',' + (p << 6).toString(16) + ',3f")');
+  fs.writeFileSync(lua, 'emu.register_periodic(function() ' + pages.join('; ') + '; manager.machine:exit() end)\n');
+  for (let p = 0; p < SM5A.ROM_SIZE >> 6; p++) if (fs.existsSync(out + '.' + p)) fs.unlinkSync(out + '.' + p);
+  execFileSync(MAME, ['gnw_ball', '-rompath', path.join(dir, 'roms'), '-video', 'none', '-sound', 'none', '-skip_gameinfo', '-nowriteconfig',
+    '-debug', '-debugger', 'none', '-autoboot_script', lua], { cwd: HOME, stdio: 'ignore' });
+  const text = Array.from({ length: SM5A.ROM_SIZE >> 6 }, (_, p) => fs.readFileSync(out + '.' + p, 'utf8')).join('\n');
+  return text.split('\n').map(l => /^\s*(\d+:[0-9A-F]+:[0-9A-F]+):\s+((?:[0-9A-F]{2} )+)\s*(.*)$/.exec(l + ' '))
+    .filter(Boolean).map(m => {
+      const bytes = m[2].trim().split(' '), last = parseInt(m[1].split(':')[2], 16) === LAST;
+      if (last && bytes.length === 2) return m[1] + ': ' + bytes[0] + ' ~ ' + m[3].trim().split(/\s+/)[0] + ' ~';
+      return m[1] + ': ' + m[2].trim() + ' ' + m[3].trim().split(/\s+/).join(' ');
+    });
+}
+
+module.exports = { program, presses, apply, model, chunks, line, mameDasm, DASM_SEEDS };
 if (require.main === module) process.exit(main());

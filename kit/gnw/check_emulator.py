@@ -2,7 +2,7 @@
 """kit/EMULATOR.md's four tests, run on the kit's Game & Watch server (kit/gnw/gnw_server.mjs)
 with a test program of the kit's own, written here with kit/gnw/asm.py.
 
-    python3 kit/gnw/check_emulator.py [--keep]     (or `tools.py check-emulator`)
+    python3 kit/gnw/check_emulator.py [--keep]     (or `tools.py --platform gnw check-emulator`)
 
 It starts its own server on a spare port and stops it at the end; --keep leaves the files it
 wrote in tools/gnw-home/check-emulator. The result goes to tools/logs/check-emulator/gnw.json,

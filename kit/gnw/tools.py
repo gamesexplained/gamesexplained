@@ -75,7 +75,7 @@ def node():
 def build():
     """Which MAME tools/gnw holds, as a line that can go into game.json."""
     if os.path.exists(MAME_EXE):
-        return f"MAME 0.{MAME_TAG[4:]}, built from source with only {DRIVER} (tools/gnw)"
+        return f"MAME 0.{MAME_TAG[5:]}, built from source with only {DRIVER} (tools/gnw)"
     return "MISSING (run: tools.py get-mame)"
 
 
@@ -99,7 +99,7 @@ def fetch(url, dest, sha256):
 def get_mame():
     """Download MAME's source and (on macOS) SDL3, and build MAME with the Game & Watch driver alone.
 
-    A whole MAME takes an hour and 10 GB to build; one driver takes about ten minutes. The build
+    One driver took two minutes to build on an Apple M4 with ten cores, on 8 November 2026. The build
     needs a C++ compiler (Xcode's command line tools on macOS) and Python 3, and on Linux SDL3's
     development package, which is outside this repository: the install notes say which."""
     words = ("mame", "sdl")
@@ -131,7 +131,7 @@ def get_mame():
         cmd.append(f"SDL_FRAMEWORK_PATH={FRAMEWORKS}/")
     log = os.path.join(LOGS, "mame-build.log")
     os.makedirs(LOGS, exist_ok=True)
-    print(f"building MAME's Game & Watch driver ({' '.join(cmd[1:3])}); about ten minutes; log: {os.path.relpath(log, ROOT)}")
+    print(f"building MAME's Game & Watch driver ({' '.join(cmd[1:3])}); two minutes on an Apple M4; log: {os.path.relpath(log, ROOT)}")
     env = dict(os.environ, HOME=MAME_HOME)
     with open(log, "w") as f:
         r = subprocess.run(cmd, cwd=MAME_SRC, stdout=f, stderr=subprocess.STDOUT, env=env)

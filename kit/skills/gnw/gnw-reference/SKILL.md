@@ -204,11 +204,11 @@ is a count of instructions. Nothing else makes sound.
 - **BP** bit 0, set by `ATBP`, turns the whole screen on and off; bit 3
   (`COMCN` flips it) picks which half of the digit table `DTW` reads
   (`sm500op.cpp`, `get_digit`).
-- MAME draws segment `o.h.b` (latch o, common h, bit b) as the SVG shape
-  with the id `o.h.b`, latch numbers counted as MAME's `lcd_update`
-  sends them; `hh_sm510.cpp`, `sm500_lcd_segment_w`, is the mapping. Which
-  SVG shape is which object on the screen is the game's to find, by
-  lighting one bit at a time.
+- MAME's SVG of a unit's screen gives each segment's shape a title
+  `o.b.h`: latch o (0-8), bit b (0-3), common h (0 for W and H1, 1 for
+  W' and H2; `hh_sm510.cpp`, `update_display`). The kit's `lit()` and the
+  server's `screen` use the same names. Which shape is which object on
+  the screen is the game's to find, by lighting one bit at a time.
 
 ## Mistakes that bite
 

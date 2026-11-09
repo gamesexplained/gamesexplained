@@ -14,7 +14,7 @@
 //   m.run(16384);                    // a second of the machine's time, in cycles
 //   m.ram[0x23]                      // a data cell, BM * 16 + BL (mirrors resolved by cell())
 //   m.save(), SM5A.load(rom, state)  // the whole state as a plain object, and back
-//   m.lit()                          // the LCD's lit segments, as MAME's 'o.h.b' ids
+//   m.lit()                          // the LCD's lit segments, as MAME's 'o.b.h' names
 //
 // Time: an instruction is one machine cycle of two clocks of the 32.768 kHz crystal, LBL and
 // the 5E prefix two cycles; m.clocks counts clocks since power on. The divider counts every
@@ -242,13 +242,15 @@ class SM5A {
   decb() { this.bl = (this.bl - 1) & 0xf; this.skip = this.bl === 0xf; }
   rtn() { this.pc = this.stack & 0x7ff; this.rsub = false; }
 
-  // ---- the LCD: segment 'o.h.b' is lit when BP bit 0 is set and bit b of latch o is (h 0: W, h 1: W')
+  // ---- the LCD: segment 'o.b.h' (latch o, bit b, common h) is lit when BP bit 0 is set and bit b of
+  // latch o is: W for common 0 (H1), W' for common 1 (H2). MAME's SVG titles each shape so (hh_sm510.cpp,
+  // update_display)
   lit() {
     const out = [];
     if (!(this.bp & 1)) return out;
     for (let h = 0; h < 2; h++) for (let o = 0; o < O_PINS; o++) {
       const seg = h ? this.ox[o] : this.o[o];
-      for (let b = 0; b < 4; b++) if (seg >> b & 1) out.push((o << 1 | h) + '.' + b);
+      for (let b = 0; b < 4; b++) if (seg >> b & 1) out.push(o + '.' + b + '.' + h);
     }
     return out;
   }
@@ -273,4 +275,6 @@ SM5A.ROM_SIZE = ROM_SIZE;
 SM5A.cell = cell;
 SM5A.nextPc = nextPc;
 
-if (typeof module !== 'undefined') module.exports = { SM5A, cell, nextPc, ROM_SIZE };
+SM5A.SM5A = SM5A;               // so that `const { SM5A, cell } = require(...)` works as well as the class itself
+if (typeof module !== 'undefined') module.exports = SM5A;
+else globalThis.SM5A = SM5A;
