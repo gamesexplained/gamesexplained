@@ -8,6 +8,7 @@
 //   const { SM5A } = require('kit/gnw/sm5a.js');
 //   const m = new SM5A(rom);         // rom: the chip's 1,856 bytes, in the ROM's own order
 //   m.rows[2] = 0b0100;              // the buttons on K of the row R4 selects (unit's wiring)
+//   m.always = 0b0010;               // the buttons of a row wired to ground, read whatever R selects
 //   m.alpha = 1;                     // the alpha input (TA), m.beta the beta input (TB)
 //   m.step();                        // one instruction, or one cycle asleep; returns its cycles
 //   m.run(16384);                    // a second of the machine's time, in cycles
@@ -48,6 +49,7 @@ class SM5A {
     this.rom = Uint8Array.from(rom.slice(0, ROM_SIZE));
     this.ram = new Uint8Array(0x80);
     this.rows = [0, 0, 0];     // K inputs of the rows R2, R3, R4 select
+    this.always = 0;           // K inputs of a row wired to ground, always read (MAME's inp_fixed_last)
     this.alpha = 0; this.beta = 0;
     this.hooks = {};
     this.onBuzzer = null;      // (level, clocks): R1's output changed
@@ -93,7 +95,7 @@ class SM5A {
   k() {
     // the rows R2-R4 select, ORed (hh_sm510.cpp, read_inputs with the mux = R >> 1)
     const mux = this.rOut >> 1;
-    let v = 0;
+    let v = this.always;
     for (let i = 0; i < 3; i++) if (mux >> i & 1) v |= this.rows[i];
     return v & 0xf;
   }
@@ -266,7 +268,7 @@ class SM5A {
   }
 }
 SM5A.FIELDS = ['stack', 'pc', 'prevPc', 'op', 'prevOp', 'param', 'acc', 'bl', 'bm', 'c', 'skip', 'r', 'rOut',
-  'div', 'gamma', 'halt', 'mx', 'cb', 'rsub', 'bp', 'clocks', 'cycles', 'alpha', 'beta'];
+  'div', 'gamma', 'halt', 'mx', 'cb', 'rsub', 'bp', 'clocks', 'cycles', 'alpha', 'beta', 'always'];
 SM5A.ROM_SIZE = ROM_SIZE;
 SM5A.cell = cell;
 SM5A.nextPc = nextPc;

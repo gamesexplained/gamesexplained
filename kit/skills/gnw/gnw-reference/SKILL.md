@@ -169,6 +169,13 @@ loads a different value; that is how a table of values is written.
   their bit of A is 0 (`sm500.cpp`, `clock_melody`; MAME's driver,
   `hh_sm510.cpp`, `piezo_input_w`). Which button is which K and R is in
   the unit's driver block.
+- A unit may wire its last row to ground instead of to an R pin: that
+  row is read by every `KTA`, whatever R selects. MAME marks such a unit
+  with `inp_fixed_last()` in its class; a game on one reads its buttons
+  with R left at $F.
+- **Alpha** and **beta** are wired active high on some units and active
+  low on others (`IP_ACTIVE_HIGH` or `IP_ACTIVE_LOW` in the unit's
+  ports): read the driver before taking a skip as "pressed".
 - **Alpha** and **beta**, two inputs of their own, are usually the left
   and right controls: `TA` skips when alpha is high, `TB` when beta is.
   A unit's driver block names them (`BA` for alpha, `B` for beta).
