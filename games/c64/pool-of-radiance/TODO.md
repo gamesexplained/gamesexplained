@@ -82,6 +82,19 @@ Each is traced in the code; what a player sees is not settled yet.
 - A POTION OF GIANT STRENGTH drunk in combat by a character of strength
   18/50, which should change nothing (spells `set_strength`, `$A95E`).
 
+## Item findings to try live
+
+- Ready the trolls' RING OF PROTECTION +2 from the hedge maze and watch
+  the armour class stay as it was (resident `armour_bonus`, `$37E3`).
+- Pick up the 26 HUGE TAPESTRIES in Kovel Mansion and look at the
+  character's weight (resident `add_item_weight`, `$4093`).
+- Ready the FINE COMPOSITE LONG BOW with quarrels, then with arrows, in a
+  fight (combat `can_strike`, `$1648`).
+- Cast one RESTORATION from the graveyard's CLERICAL SCROLL OF
+  RESTORATION in camp, and look for the scroll (camp `$1ED9`).
+- Ready one of the bailey's LONG SWORD +3 on a character who is not
+  lawful evil (effects `$AE94`).
+
 ## Script findings to watch live
 
 The Maps, Solution and Discoveries tabs read these from the area

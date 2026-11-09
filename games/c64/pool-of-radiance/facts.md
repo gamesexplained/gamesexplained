@@ -316,6 +316,82 @@ listing's bytes by `test_spells.js`, which holds `spells.html` to it.
   melee (`side_filter`, `$A8A5`); REDUCE ends an ENLARGE and adds no
   effect of its own (`$A9B7`). *Traced*.
 
+## Items
+
+*Run* below means the routine was run on the kit's 6502 over the
+listing's bytes by `test_items.js`, which holds `items.html` to it. The
+item lists, the monsters' items and the random table were read from the
+disk sides' files by `scripts/items_data.py`.
+
+- **An item** is 16 bytes: type, three name words (printed third, second,
+  first; flag bits 2, 1 and 0 hide them until identified), plus, a byte
+  added to the saving-throw bonus, flags (bit 7 readied), a byte whose bit
+  7 is cursed, weight (2), count, worth (2), and three bytes for charges
+  and powers or a scroll's three spells. A power that comes on when the
+  item is readied is the last byte with bit 7 set; the byte before it is
+  its argument.
+- **An item type** is 16 bytes at tables `$7B00`: the place it is readied
+  in (0 weapon, 1 shield, 2 armour, 3 gauntlets, 5 necklace, 7 cloak, 8
+  boots, 9 ring; 4 and 6 are no item's; `$0A` and up carried), hands,
+  damage against large (dice, sides, bonus), attacks in two rounds,
+  protection (bit 7, and a base on the 60 scale), damage against small or
+  man-sized, range, classes (bits 0 to 3 magic-user, cleric, thief,
+  fighter) and flags (bit 0 needs arrows, bit 7 needs quarrels, bit 1
+  dexterity to hit, bit 2 strength to hit and damage, bit 3 missile,
+  `$10` and up thrown). Types 1 to 47 are named by the word of the same
+  number.
+- **The trolls' ring.** The hedge maze's troll file (MON1F, disk 3 side
+  A) carries a RING OF PROTECTION +2 of type 69, whose protection byte is
+  0, so armour_bonus (resident `$37E3`) never adds it; every other ring of
+  protection is type 93. *Run*.
+- **Bracers.** Type 77 has armour class 10 less the plus. The SHAMAN's
+  BRACERS AC2 have plus 6 (AC 4) and are worth 24,000; AL-HYAM DAZID's AC3
+  plus 7; random bracers are always AC4, plus 6 (post-com `bracers_ac`,
+  `$1F13`). *Run*.
+- **Piles.** add_item_weight (resident `$4093`) and item_fits (`$47A1`)
+  load the count into X over the weight's high byte, so a pile weighs its
+  weight's low byte times its count: 26 HUGE TAPESTRIES (800 each) weigh
+  832, 6 LEATHER HOLY SYMBOLS (256 each) weigh 0. *Run*.
+- **Type 45, the HEAVY CROSSBOW,** has flags `$0F`: it needs arrows, not
+  quarrels (combat `can_strike`, `$1648`), adds strength (resident
+  `weapon_bonuses`, `$368F`) and shoots twice a round. The FINE COMPOSITE
+  LONG BOW (silver shop, worth 25,000) is type 45. Unused types 94 to 96
+  are bows with the same flags. *Run*.
+- **Scrolls.** In camp use_scroll_word (camp `$1ED9`) takes one off the
+  scroll's middle word and removes the scroll below `$D2` (WITH 1 SPELL);
+  the graveyard's CLERICAL SCROLL OF RESTORATION has OF (`$A7`) there and
+  is gone after one cast. In combat the scroll goes only when the word
+  reaches `$D1` (combat `$2827`). *Run* for the camp. Kovel Mansion's
+  CLERICAL SCROLL WITH 3 SPELLS (PRAYER, REMOVE CURSE, ANIMATE DEAD) is
+  type 61, for magic-users (resident `ready_item`, `$4630`). *Traced*.
+- **Aligned swords.** Kind 132 (effects `kind_item_aligned`, `$AE94`;
+  camp-spells `aligned_item`, `$AE5F`): unless the wearer's alignment is
+  the low nibble of byte 14, the item comes off and deals the high nibble
+  as damage with no save. The graveyard's LONG SWORD +2 (`$F0`: lawful
+  good, 15) and the bailey's two LONG SWORD +3 (`$52`: lawful evil, 5) are
+  the only items with it. *Run*.
+- **Random treasure.** random_base (post-com `$1E98`) rolls d188 against
+  36 chances (`item_chance`, `$1F7C`); the CLOAK's chance is 0, so it
+  never comes, and the CLERICAL SCROLL, last, takes 184 to 188. Pluses +1
+  on 1 to 64 of d100, +2 to 95, +3 above (`random_plus`, `$1EE4`); a
+  scroll gets one spell of 1 to 55 (`scroll_spell`, `$1F2F`); arrows and
+  quarrels come as 2d6. *Run* for the roll. Type 67, the cloak's, has no
+  protection; the LEVEL 6 MU's CLOAK OF DISPLACEMENT is type 67, Mendor's
+  library's type 92. *Run*.
+- **Shops and treasure.** remove_item (post-com `$11BB`) leaves a shop's
+  stock as it is; the Valjevo armoury's TREASURE 33 is offered on every
+  visit. Price is worth times count times `$6E6D` over 16 (16 in all four
+  New Phlan shops); a sale is half; ID costs 200. magic_exp (`$15A7`)
+  gives 400 experience for each point of plus of every item in a won
+  battle's treasure, before anything is taken. *Traced*.
+- **Unused on the disks.** ITEMFILE04 (disk 1 side B), ITEMFILE17 and
+  ITEMFILE1A (disk 2 side A: earlier forms of the graveyard's lists 29
+  and 26, with no powers), ITEMFILE33 (disk 2 side B) and ITEMFILE35
+  (disk 1 side A, the arms shop's list) are given by no script on their
+  side. Item types 60, 64, 65, 66, 80, 81, 83, 88, 89, 94, 95, 96 and 127
+  are on no item; the page lists the name words no item has and no code
+  writes. *Traced* (the files read by `scripts/items_data.py`).
+
 ## Data tables
 
 - ITEMS: 128 item types of 16 bytes (tables `item_types`, `$7B00`). An

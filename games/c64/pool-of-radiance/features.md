@@ -99,5 +99,16 @@ Found in the code, not in the manual.
 | Mummy rot never harms the character, and kind 50 heals a hit point each time it renews; a charisma-rotting routine is in the file and unused | traced | camp-spells part, rot_ten_days (`$AD97`), rot_charisma (`$ADA4`); run by `test_spells.js` |
 | A charming gaze (kind 84), a breath weapon (kind 88, spell 39's combat record), a displacement (kind 63) and a 50 % magic resistance (kind 105) are in the code and on no monster | traced | effects-2 part, charm_gaze (`$A77F`); effects part, kind_breath (`$AC60`), kind_displace (`$AA07`); the 170 MON files, read by `scripts/spells_data.py` |
 | RESIST COLD does nothing in combat; SLOW allows no save; REDUCE only ends an ENLARGE; CURSE leaves no one out for melee; REMOVE CURSE ends only BESTOW CURSE; camp CURE LIGHT WOUNDS heals 2d4 and not the dying; the POTION OF GIANT STRENGTH drunk in combat leaves strength 18 as it was | traced | effects part, kind_resist_cold (`$A7D0`); spells part, spell_slow (`$ACEF`), spell_reduce (`$A9B7`), side_filter (`$A8A5`), spell_remove_curse (`$AC59`), set_strength (`$A95E`); camp-spells part, heal_conditions_camp (`$9B1E`) |
+| The trolls' RING OF PROTECTION +2 (hedge maze) is type 69 and protects nothing | traced | resident part, armour_bonus (`$37E3`); MON1F on disk 3 side A; run by `test_items.js` |
+| The SHAMAN's BRACERS AC2 give AC 4, worse than BRACERS AC3 | traced | resident part, armour_bonus (`$37E3`); MON2B on disk 4 side A; run by `test_items.js` |
+| A pile of pieces weighing 256 or more weighs only the low byte times the count: 26 HUGE TAPESTRIES weigh 832, 6 LEATHER HOLY SYMBOLS 0 | traced | resident part, add_item_weight (`$4093`), item_fits (`$47A1`); run by `test_items.js` |
+| The HEAVY CROSSBOW (type 45) needs arrows, adds strength and shoots twice a round; the 25,000-gold FINE COMPOSITE LONG BOW is type 45 | traced | combat part, can_strike (`$1648`); resident part, weapon_bonuses (`$368F`); run by `test_items.js` |
+| The CLERICAL SCROLL OF RESTORATION is gone after one of its two spells in camp | traced | camp part, use_scroll_word (`$1ED9`); run by `test_items.js` |
+| Kovel Mansion's CLERICAL SCROLL WITH 3 SPELLS is a magic-user's scroll | traced | resident part, ready_item (`$4630`); combat part, item_spells (`$270D`) |
+| Three long swords deal damage to a wearer of the wrong alignment and come off: lawful good 15, lawful evil 5 | traced | effects part, kind_item_aligned (`$AE94`); camp-spells part, aligned_item (`$AE5F`); run by `test_items.js` |
+| The random treasure's CLOAK has a chance of 0 in 188 and never comes | traced | post-com part, random_base (`$1E98`), item_chance (`$1F7C`); run by `test_items.js` |
+| The Valjevo armoury's 58 items are offered again on every visit; a shop never runs out | traced | post-com part, remove_item (`$11BB`); ECL04 and ECL06 on disk 3 side A |
+| Every item with a plus in a won battle's treasure gives 400 experience a point, taken or not | traced | post-com part, magic_exp (`$15A7`) |
+| Five item lists, 13 item types and many name words are used by nothing; two lists are earlier forms of graveyard treasures | traced | `scripts/items_data.py` over the eight disk sides' files |
 
 ## Open questions

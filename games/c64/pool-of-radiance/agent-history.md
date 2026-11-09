@@ -207,3 +207,27 @@ parts (spells, effects, effects-2, camp-spells), each at 100 %.
 - The Bestiary now names each monster's special abilities from the same
   table of kinds (`por-kinds`), which `test_spells.js` holds the same on
   both pages.
+
+## Follow-up: the Items tab (9 November 2026)
+
+Aaron asked for an Items tab, with the same theme as the Spells tab.
+Added `items.html`, its data script `scripts/items_data.py` and
+`test_items.js`.
+
+- The data comes from the files, not the snapshots: every ITEMFILE on
+  the eight sides, the items in every MON file, and the TREASURE
+  commands of every area script, tied to squares through
+  `areas/events.py`. Three scripts choose their list from a variable and
+  were read by hand. ECL64 decoded as a script with a TREASURE of 25
+  random items, a false reading: ECL64 and ECL65 are code and a table.
+- The sheet on the page runs compute_combat_stats on the saved
+  character `$01PENDRAGON` from disk 2 side A; the first try set the
+  readied bit in the plus byte instead of byte 6.
+- Reading the data against the code turned up more than the first pass
+  had: two more aligned swords in Valjevo's bailey, the earlier forms of
+  two graveyard lists on disk 2 side A, and a second CLOAK OF
+  DISPLACEMENT of a type that protects.
+- Three comments were corrected: combat `item_spells` named `$6BCA` the
+  magic-user's level (it is the cleric's), and resident `add_item_weight`
+  and `item_fits` said the whole weight is multiplied by the count.
+
