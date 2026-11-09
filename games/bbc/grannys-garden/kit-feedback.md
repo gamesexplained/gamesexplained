@@ -30,6 +30,33 @@ time, operating system and tool versions.
 - `kit/skills/bbc/bbc-reference`: `*FX15,0` empties the sound queues too, and an envelope is read while its note plays. Both measured in the audit, and both behind wrong comments.
 - `kit/lessons/2026-10-14-grannys-garden.md`: record the chip, type DELETE first, and run a BASIC line before describing what it does.
 
+## The Gold pass, 7 November 2026
+
+A second session, on the contributor's phone, curated the Silver to Gold
+as `kit/START.md` describes ("A Silver game is curated to Gold"). The
+agent read every section as an editor, made the changes below, and the
+contributor read the edited pages and asked for one sentence to be
+rewritten (the passwords, in The game). No code was changed; every new
+claim on the page (the lines that leave a GOSUB or REPEAT open, the
+fourth throw at the dragons) was read again in the listing before it
+went in.
+
+- `kit/style.md`, "Section headings": two headings now say the finding
+  (the trees, the baby dragons), where they named the subject.
+- `kit/style.md`, "Numbers go in tables": the early restarts and the case
+  that the disc is a copy of the tape, each one long paragraph, are
+  tables.
+- `kit/style.md`, "Do not describe the tooling": the City caption no
+  longer names the library function or the emulator.
+
+What the kit lacked here: a contributor in a hosted session, with no
+computer of their own in it, has no way to see the pages. `edit.py` and
+`preview.py` both assume a machine that can serve or build the site, and
+a fork's pull request has no deployed preview. The agent published the
+built `_site/bbc/grannys-garden/` folder, with `site/lib` and the icons,
+as a private hosted page the contributor opened on their phone, and
+republished it after the pass; that is the ask below.
+
 ## Candidates
 
 - **Line addresses taken from a listing at another address.** The page's
@@ -57,6 +84,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
+- **Give a contributor in a hosted session a way to see the pages before the pull request.** On 7 November 2026 the Gold pass for this game was run from the contributor's phone in a cloud session on their fork. `kit/START.md` sends a curating contributor to `python3 kit/scripts/edit.py`, which needs a machine that can serve the site, and a fork's pull request has no deployed preview until a maintainer lets it deploy, so there was nothing for them to read. The agent got round it by publishing the built `_site/bbc/grannys-garden/` folder, with `site/lib/` and `icons/`, as a private hosted page, and republishing it after each pass. `kit/START.md`, in the paragraph on curating to Gold, could say that a hosted session publishes the built game folder that way (or a script could bundle it), and a maintainer could decide whether fork pull requests may deploy a preview on their own.
 - #355: Decide whether a BASIC game's listing may carry the whole program. The contributor decided, on 14 October 2026, that the repository keeps it and the site publishes none of it (`"publish_source": false`); what is left is whether `AGENTS.md` says so.
 - #356: Report a page's links that land inside a record of a BASIC listing.
 
