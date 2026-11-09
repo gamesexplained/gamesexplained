@@ -12,4 +12,4 @@ In the forced play capture, 2 stable 63-byte sprite bitmaps from this load were 
 
 The loaded pointer at `$7F3F/$7F40` targets `$8F25`, inside the eight-page character-copy source at `$8C05`. The entry was observed in the 200-frame forced-play probe and monitor collection. The code and graphics uses overlap; `codemap.json` records only observed instruction starts in that source whose bytes still matched the load-entry snapshot.
 
-The seven entity-state handlers and their shared update are relocated copies of load 16. `test_entity_code_copies.py` compares all 205 instruction encodings, accounting for internal address relocation, and checks the eight animation offsets. This does not establish their natural reachability in this load.
+The seven entity-state handlers and their shared update are relocated copies of load 16. `test_entity_code_copies.py` compares all 212 dispatcher and handler instruction encodings, accounting for internal address relocation, and checks the seven split-table targets and eight animation offsets. This does not establish their natural reachability in this load.
