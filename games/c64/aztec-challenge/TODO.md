@@ -46,10 +46,7 @@ music player already runs the game's interrupt.
 
 ## Questions for the contributor
 
-- The Vermin's creature F (shape `$9E`): a lizard, a crocodile, or
-  something else? The page calls it a long crawling creature.
-- Does your inlay or cassette date the U.S. Gold release? The sources
-  disagree between 1983 and 1984.
+None open.
 
 ## Ideas
 

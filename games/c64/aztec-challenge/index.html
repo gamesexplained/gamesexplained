@@ -75,8 +75,18 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
   <p>The game keeps three tunes. The first, at <code>$5F00</code>, opens with seven steps of a low pulse that the menu and every level start with, and goes on at <code>$5F30</code> with the melody that stage 2 switches to. The title tune, at <code>$5700</code>, plays under the logo and comes back at stage 3. The level tune, at <code>$4900</code>, is the longest, 127 steps, and plays only from stage 4 on, so a player hears it only deep into a level.</p>
 </section>
 
+<section id="sfx">
+  <p class="fig">03 · The sound effects</p>
+  <h2 class="t">Sound: the effects are part of each level's code, timed by its delay loops</h2>
+  <p>There is no sound-effects driver. A level makes its noises itself, by writing voice 1's waveform and pitch in the middle of its own code, and the noise lasts as long as that code takes to run. The spears' whoosh is noise whose pitch drops one step each time the spear moves (<code>$63D0</code>); the fall through the Bridge lowers the pitch a step for each line the runner sinks, with the delay between steps growing (<code>$7E1B</code>); the swimmer eaten by the piranhas sets all three voices to noise and changes their pitch from voice 3's own noise at every row of water it redraws (<code>$1B80</code>).</p>
+  <div class="plate">
+    <div id="az-sfx"></div>
+    <p class="cap">Each button runs the stretch of the game's code that makes the effect on the kit's 6502, a video frame's worth of cycles at a time, so the effect keeps the pace its delay loops give it in the game. The music is left out: in the game the tune's interrupt goes on writing the same voices, so an effect on voice 1 is heard against the tune. The Gauntlet's fall is noise at the lowest pitch, a dull thud that small speakers barely play. <code>test_sounds.js</code> holds each button against the same code run along the game's path.</p>
+  </div>
+</section>
+
 <section id="frame">
-  <p class="fig">03 · One frame</p>
+  <p class="fig">04 · One frame</p>
   <h2 class="t">The Gauntlet, rebuilt from memory</h2>
   <p>The play screen is characters and sprites, nothing else: the sand, the spear throwers and the temple are characters from the set at <code>$3800</code>, and the runner and the spears are sprites. The picture below is not a screenshot. It is drawn from the memory and the video registers of one frame recorded in play.</p>
   <div class="plate">
@@ -87,7 +97,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="levels">
-  <p class="fig">04 · Seven programs</p>
+  <p class="fig">05 · Seven programs</p>
   <h2 class="t">Each level is its own program, run from the scorecard</h2>
   <p>The scorecard (<code>$1195</code>) shows both players' level, phase and score and the level's four lines of instructions (from <code>$1600</code>), and waits for the stick. Then <code>$122E</code> copies the phase's settings into zero page and jumps to the level's own code by the level's number. The level sets up its own screen, sprites and controls and runs its own loop until the runner wins or loses five lives, and then jumps to <code>$1300</code>, which scores the attempt and goes back to the scorecard. Nothing is shared between the levels but a few routines and the music.</p>
   <div class="plate"><table class="az-tab" id="az-lv"></table>
@@ -95,7 +105,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="hero">
-  <p class="fig">05 · The runner</p>
+  <p class="fig">06 · The runner</p>
   <h2 class="t">The runner is two sprites, and the levels see it from three sides</h2>
   <p>A hardware sprite is 24 by 21 pixels, so every level makes its hero from two, an upper and a lower half moved together. The Gauntlet and the Stairs show the runner from behind, the Temple, the Vermin and the Bridge from the side, Hopaztec from above at an angle and the Piranha swimming. Collisions come from the video chip, which sets a bit for each sprite that touches another; the levels read that register and decide from its bits, which is why some of them only notice a hit on one half (<a href="discoveries.html#legs">Discoveries</a>). Every shape, animated, is on the <a href="graphics.html">Graphics</a> tab.</p>
   <div class="plate"><div class="az-row" id="az-heroes"></div>
@@ -103,7 +113,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="controls">
-  <p class="fig">06 · Controls</p>
+  <p class="fig">07 · Controls</p>
   <h2 class="t">One joystick, seven meanings</h2>
   <p>The game reads only the joystick in port 2 (<code>$DC00</code>, fourteen times in the code), and each level reads it its own way. The manual tells most of it; the code adds a few things it did not say.</p>
   <div class="plate"><table class="az-tab">
@@ -120,7 +130,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="score">
-  <p class="fig">07 · Scoring</p>
+  <p class="fig">08 · Scoring</p>
   <h2 class="t">A win pays for the lives left, and every attempt pays 10 points an achievement</h2>
   <p>When a level ends, <code>$1300</code> looks at the lives lost (<code>$02</code>). Five lost means the level was failed: the score gets only the achievements. Fewer means it was won: <code>$1400</code> adds 1,000 points with no life lost, 200 less for each life lost, and then the achievements. Achievements are counted in one byte (<code>$68</code>) by each level its own way: a spear dodged, a creature touched, a room crossed, a hop forward (and one taken away for a hop back). <code>$1456</code> pays 10 points for each, and 10 more.</p>
   <div class="plate">
@@ -132,7 +142,7 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 </section>
 
 <section id="progress">
-  <p class="fig">08 · Progress and difficulty</p>
+  <p class="fig">09 · Progress and difficulty</p>
   <h2 class="t">Every level counts to nine its own way</h2>
   <p>Each level moves the progress stage <code>$45</code> on by its own measure, and the stage both builds the music and ends the level. The phase's 16 settings, copied in as each level starts, set how fast things come; the <a href="levels.html#phases">Levels</a> tab has them all.</p>
   <div class="plate"><table class="az-tab">
@@ -225,6 +235,85 @@ function createDriver(D, C64Cpu) {
   };
 }
 // end of az-music
+
+/* az-sfx */
+// createSfxDriver for C64Sid: four of Aztec Challenge's sound effects, each the game's own code run on
+// the kit's 6502 (C64Cpu) over the listing's bytes in AZ_SFX_RANGES, 19,656 cycles a call, one PAL
+// frame: the effects are written inline by the levels' code, timed by its delay loops, so running the
+// code for a frame's worth of cycles keeps their pace. A button sets the SID up as the start-up
+// ($1000-$103D) and a level's start ($1CA0) leave it (volume 15, all three voices triangle), puts the
+// sprites where the effect expects them (AZ_SFX's vic: [register, value] pairs) and the zero-page
+// bytes it reads (zp), and runs the code from its first instruction until it reaches its end:
+//   $7502  Hopaztec's trapped tile, as $7309 calls it: a spear in from the left, one from the
+//          right, a rumble; the routine's RTS ends it
+//   $6470  the Gauntlet's runner falls, hit from the left ($20 = 1), up to $64F7, where it resets
+//   $1B80  the swimmer eaten, up to $1BD2, where the level is restarted
+//   $7E15  the fall through the Bridge, from the hole check's branch to its RTS
+// What the code reads from the chips is answered here: the sprite registers as written, no
+// collisions, and for the CIA 1 timer and voice 3's oscillator a xorshift of the page's own (the
+// game's values depend on the moment). The music's interrupt is not run, so each effect plays alone;
+// in the game the tune goes on beside it on the same voices.
+const AZ_SFX_RANGES = [[0x0000, 0x00FF], [0x0400, 0x07FF], [0x1000, 0x1FFD], [0x2000, 0x2FFF], [0x41C0, 0x41D8], [0x4FF0, 0x4FF7], [0x5F00, 0x5FEF], [0x6000, 0x7FE4]];
+const AZ_SFX = [
+  { name: 'A trapped tile: spears from both walls (Hopaztec)', at: 0x7502, call: true, vic: [[0x00, 0x82], [0x01, 0x96], [0x02, 0x82], [0x03, 0xAB], [0x10, 0x00]] },
+  { name: 'Speared in the Gauntlet: the runner falls', at: 0x6470, until: 0x64F7, zp: [[0x20, 1]], vic: [[0x00, 0xA8], [0x01, 0xC8], [0x02, 0xA8], [0x03, 0xDC], [0x04, 0x90], [0x05, 0xCE], [0x10, 0x0C]] },
+  { name: 'Eaten by the piranhas', at: 0x1B80, until: 0x1BD2, zp: [[0x29, 6]], vic: [[0x00, 0xA0], [0x01, 0x90], [0x02, 0xA0], [0x03, 0xA5]] },
+  { name: 'Falling through the Bridge', at: 0x7E15, call: true, vic: [[0x00, 0x70], [0x01, 0x58], [0x02, 0x70], [0x03, 0x6D], [0x15, 0xFF]] },
+];
+const AZ_FRAME_CYCLES = 19656;
+function createSfxDriver(D, C64Cpu) {
+  const base = new Uint8Array(0x10000);
+  for (const [ad, bytes] of D.mem) base.set(bytes, ad);
+  const sid = new Uint8Array(25), vic = new Uint8Array(0x40);
+  let m, cpu, c, writes = [], over = true, seed = 0x2545F491;
+  const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 8) & 255; };
+  const io = {
+    read(ad) {
+      if (ad >= 0xD000 && ad < 0xD400) { const r = ad & 0x3F; return r === 0x1E || r === 0x1F ? 0 : vic[r]; }
+      if ((ad & 0xFF1F) === 0xD41B) return rnd();
+      if (ad === 0xDC04 || ad === 0xDD04) return rnd();
+      throw new Error('read $' + ad.toString(16));
+    },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad < 0xD800) { const r = (ad - 0xD400) & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } return; }
+      if (ad >= 0xD000 && ad < 0xD400) { vic[ad & 0x3F] = val; return; }
+      if (ad >= 0xD800 && ad < 0xDC00) return;                  // colour RAM
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      c = D.list[t];
+      m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x37, io });
+      sid.fill(0); vic.fill(0); writes = []; over = false; seed = 0x2545F491;
+      cpu.pc = 0x1000; cpu.run({ until: 0x103E, maxSteps: 100000, hooks: { 0xFFD2: (k) => { k.rts(); } } });
+      cpu.call(0x1CA0, {}, { maxSteps: 1000 });
+      for (const [r, v] of c.vic || []) vic[r] = v;
+      for (const [a, v] of c.zp || []) m[a] = v;
+      cpu.sp = 0xFF;
+      if (c.call) { m[0x01FF] = 0xFF; m[0x01FE] = 0xFE; cpu.sp = 0xFD; }   // an RTS from the routine lands on $FFFF
+      cpu.pc = c.at;
+    },
+    stop() {
+      over = true; writes = [];
+      for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); }
+    },
+    play() {
+      writes = [];
+      if (over) return;
+      const end = c.call ? 0xFFFF : c.until;
+      cpu.run({ until: end, cycles: AZ_FRAME_CYCLES, maxSteps: 1e6 });
+      if (cpu.pc === end) {                         // the effect is over: the gates off, as Stop does
+        over = true;
+        for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); }
+      }
+    },
+    playing() { return !over; },
+  };
+}
+// end of az-sfx
 </script>
 <script>
 const AZ_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[194,213,194,233,157,219,96,223,255,255,57,234,73,18,0,0,8,27,0,213,21,15,216,0,31,125,240,12,15,12,5,255,240,247,249,241,243,249,241,241,241,240,240,241,241,241,241],"cia2":[151,63],"cpu":[47,55],"writes":[[49,49,53248,195,195],[49,55,53250,195,195],[49,61,53252,158,158],[50,4,53248,196,196],[50,10,53250,196,196],[50,16,53252,159,159],[50,22,53249,214,214],[50,28,53251,234,234],[50,34,53253,220,220],[285,60,53248,197,197],[286,3,53250,197,197],[286,9,53252,160,160],[286,15,53248,198,198],[286,21,53250,198,198],[286,27,53252,161,161],[286,33,53249,215,215],[286,39,53251,235,235],[286,45,53253,221,221]],"colour":"CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":1024,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8ff7/fXwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHx9fX3+/319fXwAAAAAAAAAAAAAAAAAAAB6eXp7e3t6ent7eUFAej8+PTx7eXt5vL2+v3nAwXp6e3t6eXt5e3t7e0tKSUh6eUdGeXo7RHtDQnt6e3p6enp7wsN7xLt6esbHenrIycrLe3p6UVB7eXsoTnl5TUx5e3l6e3t6ent7e3l7eszNenvOu3p6etDRent5elVUenl7TVJ5eXt7e3p5e3p5e3p6e3t5e3l5e3t70s15e3rU1Xp6eXlYV3l7eXp7e3l5enp7e3l5e3l6e3p5e3p5enp7eXt7e3t519h6e3lbWll7eXl6e3l6e3t7enl7enl5e3t6eXt7e3t5e3t7e3t5e9na23l5eXp6e3t7e3t7eXl6eXt5e3p5ent5enp5e3t5e3t7eXp5e3t5eXp6e3t7e3t5eXp6e3t5enp7e3t7eXl6ent7e3t7e3l5enp7e3t6e3t7e3t7e3t7e3l5ent7e3t5e3l7eXt6eXt6e3t7eXp6enl7e3l7enp7e3t7e3t7eXl6eXp7e3t7e3t5eXp7e3t7e3l5enp7e3t7e3t5eXp7e3t7eXp6e3t5enp7e3t7e3p6e3t7e3t6eXl5eXt7enl7enl6ent7e3t5eQ=="},{"a":2040,"b":"jI2Kiw=="},{"a":8832,"b":"AAAAAAAIAKqqAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":8896,"b":"AAAAIAAAqqoAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":8960,"b":"AAFAAgFQCoFUOqAVCoAFKqAFqqgUKqBUKtVQCtVQKlVAA1VAAFVAAVVAAVUABVUABVUAFVUAFVcAVF8AAAAA"},{"a":9024,"b":"UGqAUKqAQKqgQKqgUGqgUGqkEFqkAF+VABVVABUVABUVAAUFAAUFABUVABQUAFRUAVBQBUFABAFAAQBQAQAB"},{"a":14336,"b":"//////////8="},{"a":14656,"b":"BQEAAAAAAgI="},{"a":14808,"b":"AQEAAAAAAADwgEBQgIBAQA8AAQAAAAAAAADwgEBAUFAAAD8BAQEBAAAAAAD8QKCQAAAAAD8BAQFAgIBQEBAAAAAAAQEBAQEBkEBQVFVQoKA="},{"a":14896,"b":"/0AAoJCQQFD/AQEFBQQFBQAAAAAAwPDAAAAAAAAD/wMAAAAAAAD/BQAAAAAAAA8AoGREREQEAAAAAAAAAQEFBFRVUFCgoKSk"},{"a":14976,"b":"ACCAQEAAQEAUUkpCSklRVWREREREBQAA"},{"a":15008,"b":"QFBURUGAgIAVBQUFBQoKCg=="},{"a":15032,"b":"gJCQkFQUFBQaGhoaFFRQQAQIBQAAAAAAQEBAAABAAAAAAAEBAQAAAA=="},{"a":15304,"b":"AAEAQAABAAAAAEAABAAAAQAQAABAABAA/////wBVVVUAVVVVAFVVVQ=="},{"a":15832,"b":"QEAAAAAAAAAPAgEFAgIBAfAAQAAAAAAAAAAPAgEBBQUAAPxAQEBAAAAAAAA/AQoGAAAAAPxAQEABAgIFBAQAAAAAQEBAQEBABgEFFVUFCgo="},{"a":15920,"b":"/wEACgYGAQX/QEBQUBBQUAAAAAAAAw8DAAAAAADA/8AAAAAAAAD/UAAAAAAAAPAAChkREREQAAAAAAAAQEBQEBVVBQUKChoa"},{"a":16000,"b":"AAgCAQEAAQEUhaGBoWFFVRkRERERUAAA"},{"a":16032,"b":"AQUVUUECAgJUUFBQUKCgoA=="},{"a":16056,"b":"AgYGBhUUFBSkpKSkFBUFARAQUAAAAAAAAQEBAAABAAAAAEBAQAAAAA=="},{"a":16368,"b":"FQAVABUAFQBUAFQAVABUAA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19654,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":5,"colour_cells_changed_during_frame":0}};
@@ -280,7 +369,9 @@ const AZ_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":""
     if (typeof C64Sid !== 'undefined' && typeof C64Cpu !== 'undefined') {
       const mem = AZ_DRIVER_RANGES.map(([a, b]) => [a, Array.from(r.subarray(a, b + 1))]);
       C64Sid.mount($('az-sid'), { driver: createDriver, data: { mem, list: AZ_TUNES }, tunes: AZ_TUNES.map((t) => t.name), period: AZ_PERIOD });
-    } else $('az-sid').textContent = 'The music player is the site\'s shared script; it works in the built site.';
+      const smem = AZ_SFX_RANGES.map(([a, b]) => [a, Array.from(r.subarray(a, b + 1))]);
+      C64Sid.mount($('az-sfx'), { driver: createSfxDriver, data: { mem: smem, list: AZ_SFX }, tunes: AZ_SFX.map((t) => t.name), rows: [] });
+    } else for (const id of ['az-sid', 'az-sfx']) $(id).textContent = 'The player is the site\'s shared script; it works in the built site.';
   }).catch((e) => console.error(e));
 })();
 </script>

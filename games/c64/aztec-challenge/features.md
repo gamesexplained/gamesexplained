@@ -26,6 +26,9 @@ Sources:
   Nevish Ash, at
   https://everygamegoing.com/larticle/gameplay-c64-aztec-challenge/4405,
   read 8 November 2026. It names U.S. Gold as the publisher.
+- The cassette's own label: "(c) 1983 Cosmi Corp", read by the
+  contributor on 9 November 2026. The boot program's card says 1983 too;
+  the 1984 of some sources is a later release's.
 - StrategyWiki's page and a manual on regvault.org refused automated
   reads (HTTP 403 and 401) on 8 November 2026 and were not read.
 
