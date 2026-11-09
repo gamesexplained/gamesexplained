@@ -76,11 +76,13 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 <section id="tiles">
   <p class="fig">03 · Hopaztec's floor</p>
   <h2 class="t">The trapped tiles are a list of numbers drawn from noise</h2>
-  <p>Hopaztec's tiles are numbered by the moves between them: a hop forward adds 1 to the hopper's tile number, a hop back takes 1 away, a hop to either side adds or takes 9 (<code>$732A</code>). The start is tile 9 and the doorway tile 44 (<code>$7320</code>). At the start of an attempt the game fills a list at <code>$5C28</code> with tile numbers read from voice 3's noise generator (<code>$74C2</code>): 10 in phase 1, up to 32 in phase 4. After each hop it looks for the tile in the list, and a match brings the spears (<code>$1FE8</code>). The list is made once an attempt, so it stays the same for all five lives and changes only after the fifth.</p>
+  <p>Hopaztec's tiles are numbered by the moves between them: a hop forward adds 1 to the hopper's tile number, a hop back takes 1 away, a hop to either side adds or takes 9 (<code>$732A</code>). The start is tile 9 and the doorway tile 44 (<code>$7320</code>). The floor is 65 tiles in nine rows, drawn below from the game's own tables (<code>$5BF8</code>-<code>$5C20</code>): each row's left and right edge, where a hop sideways is refused, and the back and front rows, where a hop forward or back is.</p>
+  <p>At the start of an attempt the game fills a list at <code>$5C28</code> with tile numbers read from voice 3's noise generator (<code>$74C2</code>): 10 in phase 1, up to 32 in phase 4. After each hop it looks for the tile in the list, and a match brings the spears (<code>$1FE8</code>). The list is made once an attempt, so it stays the same for all five lives and changes only after the fifth.</p>
   <div class="plate">
-    <div class="az-ctl"><label>Phase <select id="az-hop-ph"><option>1</option><option>2</option><option>3</option><option>4</option></select></label><button type="button" id="az-hop-roll">Draw another list</button></div>
+    <canvas id="az-hop" class="az-px"></canvas>
+    <div class="az-ctl"><label>Phase <select id="az-hop-ph"><option>1</option><option>2</option><option>3</option><option>4</option></select></label><button type="button" id="az-hop-roll">Draw another list</button><label><input type="checkbox" id="az-hop-n" checked> Tile numbers</label></div>
     <div class="az-out" id="az-hop-out"></div>
-    <p class="cap">The numbers a list can hold follow the game's test exactly (below 60, or 63 to 66); the draws here use the page's own random numbers in place of the noise generator.</p>
+    <p class="cap">The room as recorded in play (the hopper on the start, tile 9), each tile's number where the hopper stands on it, and in red the tiles of one list. The arrows are the four hops the edges let through, off the floor (<a href="discoveries.html#off-floor">Discoveries</a>). The map is worked out from the tables, and <code>test_hop.js</code> holds it against the game's own four hop checks run on the kit's 6502 from every tile in every direction: 260 hops, refused or landed exactly as the map says. The lists here use the page's own random numbers in place of the noise generator, with the game's test of what a list can hold (below 60, or 63 to 66). The game's own lists are less random than these: <a href="discoveries.html#traps">Discoveries</a> shows them coming from one fixed sequence.</p>
   </div>
 </section>
 
@@ -96,6 +98,43 @@ function azHopPick(count, rnd) {
   const list = [];
   while (list.length < count) { const v = rnd(); if (v < 0x3C || (v >= 0x3F && v <= 0x42)) list.push(v); }
   return list;
+}
+// azHopFloor(ram): Hopaztec's floor from the game's own tables. The nine rows are the hopper's Y in
+// $5BF8 ($46 at the back to $C6 at the front). In each row the tiles are 40 pixels apart, from the
+// row's left edge (its X in $5C08, where a hop left is refused) to the first X whose low byte is the
+// row's entry in $5C18 (where a hop right is refused; the check compares the low byte only). A tile's
+// number is the one $732A keeps in $16: 9 at the start, the front row's left edge, +1 a hop forward
+// (16 pixels right and up), -1 back, -9 left, +9 right. Returns { tiles: [{ x, y, n, row }], exits }:
+// exits are the hops the checks let through that land outside the floor (a hop forward is refused only
+// on the back row, $7430, and a hop back only on the front row, $7450, so a row whose edge steps in
+// lets one out): each as { from: tile, dir, x, y, n } with the landing's X, Y and number.
+function azHopFloor(ram) {
+  const ys = Array.from(ram.subarray(0x5BF8, 0x5C01)), lx = Array.from(ram.subarray(0x5C08, 0x5C11)), rx = Array.from(ram.subarray(0x5C18, 0x5C21));
+  const rows = ys.map((y, i) => {
+    const xs = [];
+    for (let x = lx[i]; xs.length < 16; x += 40) { xs.push(x); if ((x & 255) === rx[i]) break; }
+    return { y, xs };
+  });
+  const tiles = [], at = {};
+  for (let i = 0; i < 9; i++) {
+    const r = 8 - i;                               // rows from the front: the front row ($C6) is 0
+    for (const x of rows[i].xs) {
+      const n = 9 + r + 9 * Math.round((x - 0x2A - 16 * r) / 40);
+      const t = { x, y: rows[i].y, n, row: r };
+      tiles.push(t); at[x + ',' + t.y] = t;
+    }
+  }
+  const exits = [];
+  const minX = (y) => Math.min(...tiles.filter((u) => u.y === y).map((u) => u.x));
+  const maxX = (y) => Math.max(...tiles.filter((u) => u.y === y).map((u) => u.x));
+  for (const t of tiles) {
+    for (const [dir, dx, dy, dn, refused] of [['forward', 16, -16, 1, t.y === 0x46], ['back', -16, 16, -1, t.y === 0xC6],
+      ['left', -40, 0, -9, t.x === minX(t.y)], ['right', 40, 0, 9, t.x === maxX(t.y)]]) {
+      const x = t.x + dx, y = t.y + dy;
+      if (!refused && !at[x + ',' + y]) exits.push({ from: t, dir, x, y, n: t.n + dn });
+    }
+  }
+  return { tiles, exits };
 }
 // end of az-hop
 </script>
@@ -136,14 +175,39 @@ const AZ_NOTES = ["Level 1, <code>$6000</code>. The runner from behind between t
     $('az-ph').innerHTML = '<tr><th>Byte</th><th>Setting</th><th>Phase 1</th><th>Phase 2</th><th>Phase 3</th><th>Phase 4</th></tr>' +
       ROWS.map(([o, name, k]) => '<tr><td><code>' + hex(0x50 + o) + '</code></td><td>' + name + '</td>' +
         [0, 1, 2, 3].map((p) => { const v = r[0x5C50 + 16 * p + o]; return '<td>' + (k ? sw(v) : v) + '</td>'; }).join('') + '</tr>').join('');
-    // the trapped tiles
+    // the trapped tiles, on the floor map: the Hopaztec frame drawn, the tiles marked where the hopper
+    // stands on them (its upper half's sprite position, 28 pixels right and 23 down in the drawn frame)
+    const floor = azHopFloor(r);
+    let list = [];
+    function hopMap() {
+      const cv = $('az-hop'), s = 2;
+      C64.drawFrame(cv, AZ_FRAMES[4], s);
+      const ctx = cv.getContext('2d'), trap = new Set(list.filter((t) => t !== 44));
+      const px = (x, y) => [(x + 28) * s, (y + 23) * s];
+      ctx.font = 'bold ' + (9 * s) + 'px IBM Plex Mono, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (const t of floor.tiles) {
+        const [X, Y] = px(t.x, t.y);
+        ctx.fillStyle = trap.has(t.n) ? 'rgba(220,40,40,.85)' : t.n === 44 ? 'rgba(40,160,220,.85)' : 'rgba(0,0,0,.55)';
+        ctx.beginPath(); ctx.arc(X, Y, 7.5 * s, 0, 2 * Math.PI); ctx.fill();
+        if ($('az-hop-n').checked) { ctx.fillStyle = '#fff'; ctx.fillText(String(t.n), X, Y + 0.5); }
+      }
+      ctx.strokeStyle = '#ff40c0'; ctx.fillStyle = '#ff40c0'; ctx.lineWidth = 2 * s;
+      for (const e of floor.exits) {
+        const [a, b2] = px(e.from.x, e.from.y), [c, d] = px(e.x, e.y);
+        ctx.beginPath(); ctx.moveTo(a, b2); ctx.lineTo(c, d); ctx.stroke();
+        ctx.beginPath(); ctx.arc(c, d, 4 * s, 0, 2 * Math.PI); ctx.fill();
+      }
+    }
     function roll() {
       const ph = +$('az-hop-ph').value, n = r[0x5C50 + 16 * (ph - 1) + 8];
-      const list = azHopPick(n, () => Math.floor(Math.random() * 256));
-      const fine = list.filter((t) => t !== 44);
-      $('az-hop-out').innerHTML = n + ' numbers for phase ' + ph + ': ' + list.join(', ') + '.' + (list.length !== fine.length ? '<br>44, the doorway, is in this list, and the game never tests it there.' : '') +
-        '<br>Different tiles in the list: ' + new Set(list).size + ' (repeats are kept).';
+      list = azHopPick(n, () => Math.floor(Math.random() * 256));
+      const onFloor = new Set(floor.tiles.map((t) => t.n));
+      const hit = [...new Set(list)].filter((t) => onFloor.has(t) && t !== 44).sort((a, b) => a - b);
+      $('az-hop-out').innerHTML = n + ' numbers for phase ' + ph + ': ' + list.join(', ') + '.<br>Tiles of the floor they trap: ' + (hit.join(', ') || 'none') + ' (' + hit.length + ' of 64).' +
+        (list.includes(44) ? '<br>44, the doorway, is in the list; the game never tests it there.' : '');
+      hopMap();
     }
+    $('az-hop-n').onchange = hopMap;
     $('az-hop-roll').onclick = roll; $('az-hop-ph').onchange = roll; roll();
   }).catch((e) => console.error(e));
 })();

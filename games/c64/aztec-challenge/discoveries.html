@@ -95,19 +95,34 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 
 <section id="legs">
   <p class="fig">05 · The Temple</p>
-  <h2 class="t">Only the runner's legs can be hit in the Temple</h2>
-  <p>The runner is two sprites, the upper half and the lower half (<a href="graphics.html#halves">Graphics</a>). The Temple's trap check (<code>$79F0</code>) reads the sprite collision register and keeps its two lowest bits, one for each half. Only the value 2, the lower half touching something while the upper half does not, kills. A spear or a stone that strikes the head alone, or both halves at once, passes through.</p>
-  <div class="plate"><table class="az-tab"><tr><th>Upper half touching</th><th>Lower half touching</th><th>Caught</th></tr><tr><td>no</td><td>no</td><td>no</td></tr><tr><td>yes</td><td>no</td><td>no</td></tr><tr><td>no</td><td>yes</td><td>yes</td></tr><tr><td>yes</td><td>yes</td><td>no</td></tr></table>
-  <p class="cap">From <code>$79F0</code>-<code>$79FF</code>: <code>AND #$03</code>, <code>CMP #$03</code>, <code>CMP #$02</code>. Read in the code, not tried in the emulator.</p></div>
+  <h2 class="t">A falling spear can strike the runner's head and do no harm until it reaches the legs</h2>
+  <p>The runner is two sprites, the upper half and the lower half (<a href="graphics.html#halves">Graphics</a>). The Temple's trap check (<code>$79F0</code>) reads the sprite collision register and keeps its two lowest bits, one for each half. Only the value 2, the lower half touching something while the upper half does not, catches the runner. A spear or a stone that strikes the head, or both halves at once, passes on, and the runner is caught only when it has fallen past the head onto the legs. Until then the runner can still run out from under it.</p>
+  <div class="plate"><table class="az-tab"><tr><th>The falling spear's Y</th><th>Touching</th><th>Caught</th></tr><tr><td>180</td><td>the head</td><td>no</td></tr><tr><td>189</td><td>the head</td><td>no</td></tr><tr><td>198</td><td>both halves</td><td>no</td></tr><tr><td>207</td><td>both halves</td><td>no</td></tr><tr><td>216</td><td>the legs alone</td><td>yes</td></tr></table>
+  <p class="cap">Live in VICE on 9 November 2026: the first room's spears, the stick held left so the runner stands still, each spear moved straight above the runner as it appeared, and the collision bits read at every pass of the check (<code>$79F3</code>) until the runner was caught (<code>$7A08</code>).</p></div>
+</section>
+
+<section id="traps">
+  <p class="fig">06 · Hopaztec</p>
+  <h2 class="t">Secret: Hopaztec's trapped tiles come from one fixed sequence</h2>
+  <p>The game picks its trapped tiles from voice 3's noise generator (<code>$74C2</code>), reading it after a fixed delay each time (<code>$74EC</code>). The noise generator is a shift register that runs on the clock, so read at the same intervals it gives the same numbers in the same order. Which part of that sequence a player gets depends only on how long the scorecard waited for fire: two attempts started at the same moment get the same traps, and an attempt started a little later gets the same list shifted on by a few numbers.</p>
+  <div class="plate"><table class="az-tab" id="az-traps"></table>
+  <p class="cap">Twenty lists drawn in VICE on 9 November 2026, phase 1, each started a little over half a second later than the one before. Matching runs of numbers are marked in the same colour: list 2 is list 1 four numbers on, and lists 6 and 7, 10 and 11, 13 and 14 are the same list.</p></div>
+</section>
+
+<section id="off-floor">
+  <p class="fig">07 · Hopaztec</p>
+  <h2 class="t">Bug: four hops take the hopper off the floor and into the walls</h2>
+  <p>Hopaztec stops a hop at the floor's edges with tables (<code>$5BE8</code>-<code>$5C20</code>): a hop forward is refused on the back row, a hop back on the front row, and a hop sideways at each row's left and right edge. The floor is not a rectangle, though. Its right edge steps in three times on the way to the back, and its left edge steps out once from the front row, so at four tiles a hop forward or back lands on no tile at all: from tile 60, 66 or 72 forward, into the right-hand wall, and from tile 1 back, under the left border, where the hopper is almost out of sight. Out there the tile numbers go on (61, 67, 73 and 0), the hops go on, and so does the check for traps, which knows only numbers. The hopper can hop back onto the floor, and it can go on hopping round the outside of the room.</p>
+  <div class="plate"><p class="az-out">The four exits are on the <a href="levels.html#tiles">Levels</a> tab's map of the floor, worked out from the tables and held against the game's own hop checks, from every tile in every direction (<code>test_hop.js</code>). Live in VICE, with the traps switched off, the hopper hopped forward from tiles 60, 66 and 72 off the floor, came back from the first two, and, once off the floor, hopped right past the edge of the screen and came round again from the left as its X passed 511.</p></div>
 </section>
 
 <section id="quirks">
-  <p class="fig">06 · Smaller things</p>
+  <p class="fig">08 · Smaller things</p>
   <h2 class="t">Quirks in the controls, the traps and the night</h2>
   <ul>
     <li><b>The Stairs move left for up and down.</b> The climber's stick (<code>$71A0</code>) sorts the input by size: anything below 7 moves left, so up and down alone move the climber left as well; anything of 7 or more moves right, fire included.</li>
     <li><b>Some creatures appear on the screen instead of walking in.</b> The Vermin places its scorpion, spiders, snake and lizard at 256 plus a random byte (<code>$67A0</code>); the screen's right edge is at 343, so about a third of them pop up already on it.</li>
-    <li><b>The doorway can be a trapped tile.</b> Hopaztec's list of trapped tiles (<code>$74C2</code>) can hold 44, the doorway's number, and repeats; the check after a hop (<code>$1FE8</code>) skips 44, so a trapped doorway is harmless and a repeat is a wasted trap.</li>
+    <li><b>The doorway can be a trapped tile.</b> Hopaztec's list of trapped tiles (<code>$74C2</code>) can hold 44, the doorway's number, and repeats, and numbers that are no tile of the floor (0 and 61-66 lie off it); the check after a hop (<code>$1FE8</code>) skips 44, so a trapped doorway is harmless and a repeat or a number off the floor is a wasted trap.</li>
     <li><b>Night falls on four levels only.</b> Phase 4's two colours darken the Gauntlet, the Piranha, the Bridge and Hopaztec's doorway; the Stairs, the Temple and the Vermin never read them and look the same by night.</li>
     <li><b>Left-overs.</b> Two sprite shapes no routine uses (<code>$B2</code>, <code>$BA</code>), a second copy of the Vermin's creature checks nothing calls (<code>$6860</code>), and 52 bytes of what look like screen positions at <code>$457A</code> that nothing reads.</li>
     <li><b>The Gauntlet punishes holding the stick.</b> Any input held for 8 passes of the main loop makes the runner fall (<code>$614F</code>), the manual's "staying in either mode for too long", which also catches a jump held too long.</li>
@@ -136,6 +151,26 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
     }).join('');
   }
   table(null);
+  // twenty trap lists drawn in VICE (9 November 2026), and the runs of three or more they share
+  const LISTS = [[35,22,35,38,27,42,40,46,45,29],[27,42,40,44,45,29,46,58,2,27],[27,42,40,44,45,29,46,58,2,27],[45,29,53,36,51,27,35,34,25,25],[57,27,35,34,25,25,25,47,51,47],
+    [25,35,43,47,51,47,54,48,22,57],[25,35,43,47,51,47,54,48,22,57],[33,19,54,48,22,57,41,55,54,51],[38,2,28,64,31,51,51,32,42,30],[31,51,51,32,1,31,39,19,23,43],
+    [31,51,51,32,1,31,39,19,23,43],[1,31,39,8,23,43,41,36,11,33],[63,43,23,5,11,53,25,52,33,64],[63,43,23,5,11,53,25,52,33,64],[11,37,47,10,15,0,26,57,31,33],
+    [33,64,49,28,35,12,54,3,39,41],[12,54,3,39,41,4,53,15,30,33],[12,54,3,39,41,4,53,15,30,33],[39,41,4,41,64,41,33,46,41,16],[64,41,33,46,41,65,2,47,34,66]];
+  const HUES = [200, 30, 120, 280, 0, 160, 60, 320];
+  const mark = LISTS.map((l) => l.map(() => -1));
+  let hue = 0;
+  for (let i = 1; i < LISTS.length; i++) {               // a run of three or more numbers list i shares with list i-1
+    const a = LISTS[i - 1], b = LISTS[i];
+    for (let s = 0; s < a.length; s++) for (let t = 0; t < b.length; t++) {
+      let k = 0; while (s + k < a.length && t + k < b.length && a[s + k] === b[t + k]) k++;
+      if (k >= 3 && mark[i][t] < 0) {
+        const h = mark[i - 1][s] >= 0 ? mark[i - 1][s] : HUES[hue++ % HUES.length];
+        for (let j = 0; j < k; j++) { mark[i - 1][s + j] = h; mark[i][t + j] = h; }
+      }
+    }
+  }
+  $('az-traps').innerHTML = '<tr><th>List</th><th>Tile numbers, in the order drawn</th></tr>' + LISTS.map((l, i) => '<tr><td>' + (i + 1) + '</td><td>' +
+    l.map((n, j) => mark[i][j] >= 0 ? '<span style="background:hsl(' + mark[i][j] + ' 80% 85%);padding:0 3px;border-radius:3px">' + n + '</span>' : n).join(', ') + '</td></tr>').join('');
   if (typeof C64 !== 'undefined') C64.load('listing.json').then((L) => table(L.ram)).catch((e) => console.error(e));
 })();
 </script>

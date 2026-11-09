@@ -31,18 +31,11 @@ music player already runs the game's interrupt.
 
 ## Open questions
 
-- The Temple ignores a touch on the runner's upper half (`$79F0`): read in
-  the code, not tried live. A snapshot in a room with falling spears and
-  the runner stopped would settle it.
-- Hopaztec's floor: how the tile numbers lie on the screen. The edge
-  tables at `$5BE8`-`$5C20` do not fence a simple grid when walked with
-  the hop rules; a live walk round the floor's edge, recording the
-  hopper's position and `$16`, would draw the map.
 - How many passages across the Piranha's lake a win takes in practice
   (the code says every second passage is a stage and stage 9 wins).
-- The sound effects (the spears' whoosh, the falls) are written by the
-  levels' own code, not by a driver; a player for them would record the
-  SID in the emulator.
+- The spears' whoosh in the Gauntlet is made across many calls of the
+  level's loop, so it is not in the effects player; it would need the
+  level's own loop run on the kit's machine.
 
 ## Questions for the contributor
 
@@ -50,8 +43,6 @@ None open.
 
 ## Ideas
 
-- A floor map of Hopaztec with the trapped tiles of a roll marked on it,
-  once the tile layout is measured.
 - A recorded run through one level that the page replays.
 - The night palette side by side with the day for the four levels it
   changes.

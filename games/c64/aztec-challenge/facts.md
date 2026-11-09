@@ -124,7 +124,14 @@ every level but the Bridge, whose gorge is single colour.
   to night ones (`$5E`/`$5F`).
 - Hopaztec's trapped tiles are picked again at the start of every
   attempt from voice 3's noise (`$74C2`): 10, 16, 24 or 32 numbers below
-  `$3C` or from `$3F` to `$42`, repeats allowed.
+  `$3C` or from `$3F` to `$42`, repeats allowed. Read at fixed delays,
+  the noise gives one fixed sequence, and each list is a window of it
+  that starts where the moment of pressing fire puts it (live: 20 lists).
+- Hopaztec's floor is 65 tiles in nine rows, tile 9 + row + 9 x column,
+  bounded by the tables at `$5BE8`-`$5C20`. Forward is refused only on
+  the back row and back only on the front row, so four hops land off the
+  floor: forward from tiles 60, 66 and 72 and back from tile 1
+  (`test_hop.js`, every hop from every tile against the game's checks).
 - The Vermin's creature E is placed but never marked as out, because
   the spawner's check for it ORs `#$00` into `$2A` (`$6772`) where the
   others OR in their own bit, so it never moves and is never shown (the
@@ -133,7 +140,9 @@ every level but the Bridge, whose gorge is single colour.
   about a third of the time they appear already on the screen's right
   edge rather than walking in (`$67A0`).
 - The Temple's collision test (`$79F0`) counts only a touch by the
-  runner's lower half alone (latch bits 0-1 equal to 2).
+  runner's lower half alone (latch bits 0-1 equal to 2); live, a spear
+  falling on the standing runner touched the head, then both halves, and
+  caught it only on the legs alone.
 - The Piranha's bite test is skipped whenever fire is held (`$1EA0`),
   but diving, and the drowning count, needs fire alone (`$1DE9`).
 - The Bridge counts an achievement on every pass the stick is held in a
@@ -204,3 +213,12 @@ All on VICE (vice-mcp v3.13.2), from the snapshots in `orientation.md`,
 - The Bridge, right held 10 seconds on the ground: achievements 0 to 72,
   no jump.
 - RUN/STOP on the scorecard: back to the spiral at `$1000`.
+- The Temple, 9 November 2026: the runner held still under the first
+  room's spears, each spear placed straight above it; the collision bits at
+  `$79F3` were head, head, both, both, then legs alone, where it was caught.
+- Hopaztec, 9 November 2026: with the traps switched off and the
+  doorway's test patched for the walk, the hopper hopped from tile 9 over
+  the floor; forward from tiles 60, 66 and 72 it left the floor, and off
+  the floor it hopped round past the screen's edge as X passed 511.
+  Twenty trap lists, each started half a second apart, are windows of
+  one sequence.

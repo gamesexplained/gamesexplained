@@ -37,3 +37,13 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - The contributor asked mid-run for the graphics and sprites to be
   explained: the Graphics tab animates every sprite at speeds measured in
   VICE and draws both character sets and the pictures built from them.
+- The follow-ups the contributor asked for (9 November 2026): Hopaztec's
+  floor, walked in VICE, then worked out from the tables and held against
+  the game's own hop checks (`test_hop.js`). The walk's first try started
+  from a snapshot saved mid-level, after random hops, and wandered off the
+  floor; the second showed the four exits. A backtracking hop that fired
+  twice ended both walks early, which the tables made up for. Walking it
+  also showed that `$5C00`-`$5C07`, the last row's Y, had been left out of
+  the listing: untyped, so the coverage figure never missed it. The
+  Temple's head was tested live, and the sound effects play from the
+  game's own code (`test_sounds.js`).

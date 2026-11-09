@@ -17,7 +17,7 @@ time, operating system and tool versions.
 
 ## Candidates
 
-None.
+- **A one-byte end of a table left untyped, and nothing said so.** Hopaztec's table of the floor's nine rows (`$5BF8`-`$5C00`) was typed `$5800`-`$5BFF` with the room before it, so its ninth byte, `$C6` at `$5C00`, sat in an untyped gap of eight bytes. Coverage was 100 %, since untyped bytes are not counted, and `listing.py`'s list of uncounted loaded data did not name the gap, though it named a 9-byte one elsewhere. A page that drew the floor from the listing then put the front row at Y 0; the test against the game's own hop checks caught it. A skill or `listing.py` could say: list every untyped gap between two typed data blocks that holds a non-zero byte, however short. Only this game shows it so far.
 
 ## Maintainer asks
 
