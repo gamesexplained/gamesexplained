@@ -14,6 +14,10 @@ The renderer at `$6D41–$6D63` expands a map byte into four character codes fro
 
 The [Maps](levels.html) viewer draws the 31 captured maps from their tile and character data. The numbers identify forced load captures, and do not establish the order or reachability of natural gameplay. The viewer omits sprites and later runtime changes.
 
+## Entity records
+
+Each later load supplies an entity-record pointer at `$7F4F` and an initial slot limit at `$7F51`. `$369E` copies ten bytes from a record into the resident entity arrays. A zero first byte ends the record sequence; the slot-reuse path can select records beyond the initial limit. Controlled VICE tests checked all ten copied fields for load 2's first record and load 19's twelfth record. `test_entity_records.js` checks the copies for the later loads' 179 described records against the resident instructions. A field's later use depends on the entity's handler.
+
 ## Text
 
 The `$C800` character set contains digits at codes `$01–$0A`, upper-case letters at `$41–$5A` and lower-case letters at `$61–$7A`. The message-copy routine converts stored spaces to the blank glyph. The punctuation and message-record format are documented in [the resident facts](parts/resident/facts.md); the first load's opening messages are in [its facts](parts/stage-01/facts.md).

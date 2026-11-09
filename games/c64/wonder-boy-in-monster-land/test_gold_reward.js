@@ -1,6 +1,11 @@
 'use strict';
 // Exercise the captured reward instructions, without a game snapshot.
 const assert = require('assert');
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const source = html.match(/\/\* REWARD_BEGIN \*\/\s*([\s\S]*?)\s*\/\* REWARD_END \*\//);
+assert(source, 'reward widget is present');
+const rewardForInputs = vm.runInNewContext('(' + source[1] + ')');
 const { CPU } = require('../../../kit/cpu/cpu6502.js');
 const listing = require('./parts/resident/listing.json');
 const initial = new Uint8Array(65536);
@@ -14,7 +19,7 @@ for (const vertical of [0, 0x80]) {
   const m = initial.slice(); m[0x5264] = prevLeft; m[0x5265] = prevRight;
   m[0x73] = left; m[0x74] = right; m[0x4db3] = vertical; m[0x1ab1] = 5;
   new CPU(m).call(0x5c0c);
-  const reversal = vertical === 0 && (right === 0 ? prevLeft === 0 : left === 0 && prevRight === 0);
+  const reversal = rewardForInputs(prevLeft, prevRight, left, right, vertical);
   assert.equal(m[0x1ab1], reversal ? 0xff : 5); cases++;
 }
 for (let offset = 0; offset < 5; offset++) {
