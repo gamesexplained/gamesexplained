@@ -45,3 +45,5 @@ Traced the sampled-terrain decision routine at $60D7. Tested latch, countdown, d
 Traced the player-to-map calculation at $6EA9. The first independent formula failed: the horizontal calculation uses only the low nine bits, and the second vertical subtraction retains the first subtraction’s borrow. Corrected the formula, tested 5,000 cases against the listing and five in VICE, and restored the user pause. The unusual borrow is an observed arithmetic property; whether it matters in reachable play is open.
 
 Sampled the player coordinates for 120 frames of the second forced-load play capture with no new input. The player stayed at X=90, Y=210; none of these samples takes the vertical-underflow path. This bounded observation does not settle whether another route can reach it. The user pause was restored.
+
+Traced the entity update at $4250. Tested lifetime, animation-frame timer, phase and collision reversal paths with callee stubs in the listing simulator; checked the lifetime and frame path with the original callees in VICE, then restored the user pause. The entry sequence index is not bounded locally.
