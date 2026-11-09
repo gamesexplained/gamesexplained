@@ -60,10 +60,11 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <section>
   <p class="fig">01 · Rambo</p>
   <h2 class="t">Rambo is two sprites, one on top of the other</h2>
-  <p class="lede">A black high-resolution outline sits on a multicolour body four shapes further on. The outline is the hardware's sprite 0, which the interrupt sets apart from the rest; the body is one of the objects the multiplexer shares out among sprites 1-7.</p>
+  <p class="lede">A black high-resolution outline sits on a multicolour body four shapes further on. On some frames the game shows the outline a step behind the body, because it draws the outline from a copy made once a pass. The outline is the hardware's sprite 0, which the interrupt sets apart from the rest; the body is one of the objects the multiplexer shares out among sprites 1-7.</p>
   <div class="plate">
     <div class="rbg-grid" id="rbg-rambo"></div>
-    <p class="cap">From <code>rambo_animate</code> (<code>$1281</code>): a list of four frames for each way the stick points (<code>$12CD</code>, <code>$12D8</code>), the outline from the list and the body four on (<code>$12B1</code>), a step every fourth frame. Pushed diagonally Rambo uses the north or south list; when the stick lets go he stops on his last frame, and a new direction starts its list from the first. The outline is drawn from a copy of its picture that the main loop makes once a pass (<code>objects_snapshot</code>, <code>$1D61</code>), so on some frames the game shows it a step behind the body; the cards here keep the two together. The body's colour, 10, is set by <code>game_init</code> (<code>$1778</code>), and the multicolours every sprite shares are white and black (<code>$175D</code>, <code>$1765</code>). Drawn on the colour of the jungle's ground.</p>
+    <p class="cap">From <code>rambo_animate</code> (<code>$1281</code>): a list of four frames for each way the stick points (<code>$12CD</code>, <code>$12D8</code>), the outline from the list and the body four on (<code>$12B1</code>), a step every fourth frame. Pushed diagonally Rambo uses the north or south list; when the stick lets go he stops on his last frame, and a new direction starts its list from the first.</p>
+    <p class="cap">The copy of the outline's picture is made by the main loop (<code>objects_snapshot</code>, <code>$1D61</code>); the cards here keep outline and body together. The body's colour, 10, is set by <code>game_init</code> (<code>$1778</code>), and the multicolours every sprite shares are white and black (<code>$175D</code>, <code>$1765</code>).</p>
   </div>
 </section>
 
@@ -73,7 +74,7 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
   <p class="lede">The panel shows an icon for each weapon Rambo owns, and the space bar steps between them. Each weapon fires a shot of its own type, in its own colour, in the direction Rambo last moved.</p>
   <div class="plate">
     <div class="rbg-grid rbg-wide" id="rbg-weapons"></div>
-    <p class="cap">From <code>fire_check</code> (<code>$19F7</code>): each weapon's type (<code>$1AA0</code>), colour (<code>$1AA6</code>) and shapes by direction (<code>$1AAC</code>, <code>$1AB7</code>, <code>$1AC2</code>). The knife spins a shape a frame from <code>$39</code> to <code>$40</code> (<code>shot_step</code>, <code>$1831</code>). Types 5 and 8, the purple arrows and the rocket, explode on a hit; the cyan arrows stop. The grenade is thrown: <code>shot_arc</code> (<code>$183D</code>) runs here on the site's 6502 a call a frame, lifting it along a table of 28 heights (<code>$8000</code>) and drawing it larger near the top, until it comes down and explodes. Each icon is the one the panel shows for the weapon (<code>panel_weapons</code>, <code>$193D</code>) in its colour there.</p>
+    <p class="cap">From <code>fire_check</code> (<code>$19F7</code>): each weapon's type (<code>$1AA0</code>), colour (<code>$1AA6</code>) and shapes by direction (<code>$1AAC</code>, <code>$1AB7</code>, <code>$1AC2</code>). The knife spins a shape a frame from <code>$39</code> to <code>$40</code> (<code>shot_step</code>, <code>$1831</code>). Types 5 and 8, the explosive arrows and the rocket, explode on a hit; the ordinary arrows stop. The grenade is thrown: <code>shot_arc</code> (<code>$183D</code>) runs here on the site's 6502 a call a frame, lifting it along a table of 28 heights (<code>$8000</code>) and drawing it larger near the top, until it comes down and explodes. Each icon is the one the panel shows for the weapon (<code>panel_weapons</code>, <code>$193D</code>) in its colour there.</p>
   </div>
   <div class="plate" style="margin-top:16px">
     <div class="rbg-grid" id="rbg-boom"></div>
@@ -84,7 +85,7 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <section>
   <p class="fig">03 · The soldiers</p>
   <h2 class="t">Soldiers walk, kneel, climb out of the ground and fall</h2>
-  <p class="lede">A soldier walks one of eight ways, set by the zone it enters from and changed now and then at random, and comes in one of four colours picked at random. Diagonal walkers use the north and south frames, as Rambo does.</p>
+  <p class="lede">A <a href="index.html#enemies">soldier</a> walks one of eight ways, set by the zone it enters from and changed now and then at random, and comes in one of four colours picked at random. Diagonal walkers use the north and south frames, as Rambo does.</p>
   <div class="plate">
     <div class="rbg-grid" id="rbg-soldiers"></div>
     <p class="cap">From <code>enemy_animate</code> (<code>$1070</code>): a list of frames for each type (<code>$10B1</code>, <code>$10BC</code>), a step every third frame, in a colour from <code>enemy_colours</code> (<code>$11E1</code>). Only the soldier placed at the map's marker stands still, as type 0 (<code>marker_scan</code>, <code>$0E31</code>): it kneels in grey, a step every 21 frames. A soldier coming out of a hole in the ground (<code>hole_spawn</code>, <code>$0DB7</code>) is brown, one of two shapes by the character below the hole, and is run here through the game's own <code>enemy_rise</code> (<code>$0D33</code>) on the site's 6502. A soldier that is hit turns white and falls through five shapes, a step every fifth frame (<code>shot_hit</code>, <code>$1539</code>; <code>enemy_step</code>, <code>$0F68</code>).</p>
@@ -94,7 +95,7 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <section>
   <p class="fig">04 · Prisoners and items</p>
   <h2 class="t">The prisoners walk out of the hut</h2>
-  <p class="lede">Once the hut is opened, ten prisoners come out one at a time, walk south, then turn east and walk to the edge of the screen. Four items lie in the jungle; the last is the helicopter.</p>
+  <p class="lede">Once the hut is opened, ten prisoners come out one at a time, walk south, then turn east and walk to the edge of the screen. Four items lie in the jungle; the last calls in the <a href="index.html#heli">helicopter</a>.</p>
   <div class="plate">
     <div class="rbg-grid" id="rbg-pows"></div>
     <p class="cap">The prisoners from <code>pow_spawn</code> and <code>pow_walk</code> (<code>$0803</code>, <code>$084B</code>): grey, four frames each way, a step every third frame (<code>pow_anim_tick</code>, <code>$0897</code>). The items from <code>item_place</code> (<code>$0B01</code>) and <code>item_frame</code> (<code>$0BCB</code>): the first three flash through eight colours, a step every third frame (<code>flash_counter</code>, <code>$1B00</code>); the helicopter is two sprites in light blue, which it keeps for the flight.</p>
@@ -104,7 +105,7 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <section>
   <p class="fig">05 · The helicopter and the gunship</p>
   <h2 class="t">Twelve frames of helicopter, forty-eight of gunship</h2>
-  <p class="lede">The helicopter has four headings, and for each a frame flying straight and two turning towards either side, three to a heading. Its rotor is a single sprite that moves round the hub as it turns. The gunship is four sprites for each of the same twelve frames.</p>
+  <p class="lede">The helicopter has four headings, and for each a frame flying straight and two turning towards either side, three to a heading. Its rotor is a single sprite that moves round the hub as it turns. The <a href="index.html#heli">gunship</a> is four sprites for each of the same twelve frames.</p>
   <div class="plate">
     <div class="rbg-grid" id="rbg-heli"></div>
     <p class="cap">The helicopter from <code>heli_objects_place</code> (<code>$3775</code>): two multicolour sprites, the second at an offset for the frame (<code>$3793</code>, <code>$379F</code>, <code>$37AB</code>). The frame is the heading's first (<code>$3751</code>) plus 1 or 2 when the stick also points along the other axis (<code>steer_heading</code>, <code>$36CE</code>). The rotor is sprite 0, white, in four steps that each move it round the hub (<code>heli_sprites_place</code>, <code>$3827</code>; <code>$388A</code>-<code>$3892</code>), a step every second frame. The same sprite draws the gunship's rotor, so each rotor shows on every other frame only, as it does here.</p>
