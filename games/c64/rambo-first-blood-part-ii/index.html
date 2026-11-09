@@ -43,15 +43,15 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
 <header class="hero">
   <p class="eyebrow">1985 · Ocean Software</p>
   <h1>Rambo: First Blood Part II</h1>
-  <p class="sub">One scrolling jungle of 119 rows, a helicopter flight that drains your energy as fuel, and a copy protection that loads its second stage over the top of memory until the last byte switches off the KERNAL under its own feet.</p>
+  <p class="sub">A copy protection loads the game's second stage over the top of memory, until its last byte switches off the KERNAL under its own feet. What it loads is a scrolling jungle of 119 rows and a helicopter flight that burns your energy as fuel.</p>
 </header>
 <main class="wrap">
 <section id="game">
   <p class="fig">01 · The game</p>
   <h2 class="t">A jungle, a hut, a helicopter</h2>
-  <p class="lede">You walk Rambo north through a jungle that scrolls in every direction, shooting the soldiers who come at you. Weapons lie in the jungle. One item calls in a helicopter; after the first flight you can cut ten prisoners free from a hut with the knife, and the second flight, with an enemy gunship behind you, ends the game if you land far enough north.</p>
+  <p class="lede">You walk Rambo north through a jungle that scrolls in every direction, shooting the <a href="#enemies">soldiers</a> who come at you. Weapons lie in the jungle. One item calls in a <a href="#heli">helicopter</a>; after the first flight you can cut ten prisoners free from a hut with the knife, and the second flight, with an enemy <a href="#heli">gunship</a> behind you, ends the game if you land far enough north.</p>
   <div class="plate"><div class="shots"><img src="reference/instructions-1.png" alt="The first instructions page"><img src="reference/play-start.png" alt="Rambo in the jungle at the start of play"></div>
-  <p class="cap">The first instructions page and the start of play, from the emulator. The panel at the bottom is two sprites that hold the words ENERGY and SCORE, the energy bar and the score digits (<code>$4400</code>).</p></div>
+  <p class="cap">The first instructions page and the start of play, from the emulator. The panel at the bottom is two sprites that hold the words ENERGY and SCORE, the <a href="#energy">energy</a> bar and the score digits (<code>$4400</code>).</p></div>
 </section>
 <section id="map">
   <p class="fig">02 · The map</p>
@@ -78,11 +78,13 @@ button{font-family:var(--fm);font-size:13px;padding:4px 10px;margin:0 6px 6px 0;
   <tr><td>An explosion (grenade, rocket, thrown weapon)</td><td>5</td><td><code>explosion_start</code> <code>$18EC</code></td></tr>
   <tr><td>Firing weapon 4</td><td>5</td><td><code>fire_check</code> <code>$19F7</code></td></tr>
   <tr><td>An enemy firing a bullet</td><td>1</td><td><code>bullet_fire</code> <code>$2586</code></td></tr></table>
-  <p>Each new soldier uses up one unit (<code>enemy_spawn</code>, <code>$118B</code>), so a quiet knife keeps the jungle emptier than a rocket launcher, which is how the instructions' advice not to engage the enemy turns into code. Once an item with bit 7 has been taken (<code>$0AFF</code>) the budget no longer limits them. Soldiers also come out of the ground at character <code>$93</code> (<code>hole_scan</code>, <code>$0D6F</code>), and they fire more often the further north you are: <code>bullet_fire</code> picks a random soldier and fires with a chance of one in (255 − row/4)/4, aiming along a straight line at Rambo. The <a href="graphics.html">Graphics</a> tab draws the soldiers walking, kneeling, rising and falling, in their colours and at the game's pace.</p>
+  <p>Each new soldier uses up one unit (<code>enemy_spawn</code>, <code>$118B</code>), so a quiet knife keeps the jungle emptier than a rocket launcher, which is how the instructions' advice not to engage the enemy turns into code. Once Rambo has picked up an item that is not a weapon (counted at <code>$0AFF</code>), the budget stops limiting the soldiers.</p>
+  <p>Soldiers also come out of the ground at character <code>$93</code> (<code>hole_scan</code>, <code>$0D6F</code>), and they fire more often the further north you are: <code>bullet_fire</code> picks a random soldier and aims along a straight line at Rambo (<a href="discoveries.html#north">the odds, by row</a>). The <a href="graphics.html">Graphics</a> tab draws the soldiers walking, kneeling, rising and falling, in their colours and at the game's pace.</p>
 </section>
 <section id="energy">
   <p class="fig">05 · Energy</p>
   <h2 class="t">Damage is paid off one unit a frame</h2>
+  <p class="lede">Every hit is paid off slowly, and flying costs the same bar.</p>
   <table class="tbl"><tr><th>Hit</th><th>Units of damage</th><th>Where</th></tr>
   <tr><td>A walking soldier touches Rambo</td><td>4</td><td><code>enemy_touch</code> <code>$0BE6</code></td></tr>
   <tr><td>An enemy bullet</td><td>7</td><td><code>bullet_touch</code> <code>$0C33</code></td></tr>
