@@ -54,6 +54,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gr-split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 @media (max-width:720px){.gr-three,.gr-split{grid-template-columns:1fr}}
 .gr-shot{width:100%;max-width:640px;image-rendering:pixelated;border-radius:6px;display:block}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -65,71 +67,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="game">
   <p class="fig">01 · The game</p>
-  <h2 class="t">A ship, a power-up bar and eight stages</h2>
-  <p class="lede">You fly the Vic Viper from left to right through eight stages. The screen scrolls on its own, and each stage ends in a boss.</p>
+  <h2 class="t">Eight stages in one load</h2>
+  <p class="lede">Konami's Gradius on the Commodore 64 loads once and never touches the disk again: all eight stages sit in memory from the start. It also carries <a href="#music">music it never plays</a>, and <a href="#splits">times its screen for American machines</a>, so on a European one the picture falls apart.</p>
   <div class="plate">
     <div class="gr-three"><img src="reference/loading.png" alt="The loading screen: the Gradius logo over a space station"><img src="reference/title.png" alt="The title screen: GRADIUS and ONE PLAYER GAME over a star field"><img src="reference/stage1.png" alt="Stage 1: the Vic Viper over ground and trees, the power-up bar along the bottom"></div>
-    <p class="cap">The loading screen, the title and stage 1, in VICE. The loading screen credits the programming to Simon Pick and dates the game KONAMI 1986. The title and the stage are from an NTSC C64, where the screen splits land where the game expects them (<a href="#splits">section 04</a>).</p>
+    <p class="cap">The loading screen, the title and stage 1, in VICE. The loading screen credits the programming to Simon Pick and dates the game KONAMI 1986. The title and the stage are from an NTSC C64, where the <a href="#splits">screen splits</a> land where the game expects them.</p>
   </div>
-  <p>Shooting a red enemy, or the last of a group, leaves a capsule. Each capsule you pick up moves a light along the power-up bar at the bottom of the screen: SPEEDUP, MISSILE, DOUBLE, LASER, MULTI and ?. Right SHIFT takes the power-up that is lit, and the light goes out. MULTI gives an Option, a copy of the ship that fires with it, and ? gives a shield.</p>
-  <p>When a stage's scenery runs out, the scroll stops and the stage's own attack begins: rocks from volcanoes, darts, bursting blocks, a block to shoot through, and then a boss, most often the Big Core. One to four players take turns, each with three lives, and a lost life past the stage's checkpoint starts again from there (<a href="levels.html">Levels</a>).</p>
-</section>
-
-<section id="music">
-  <p class="fig">02 · Music</p>
-  <h2 class="t">Music: two tunes the game never plays</h2>
-  <p class="lede">The game carries a two-voice music player and two tunes for it. Nothing in the game calls the player, so the tunes have never been heard in play.</p>
-  <div class="plate">
-    <div id="gr-sid"></div>
-    <p class="cap">The game's own tune player running on the page, over the bytes in the listing: <code>set_tune</code> (<code>$1C5B</code>) to start, as the stage's events do, then <code>tune_tick</code> (<code>$1AB5</code>) once a frame, as <code>music_tick</code> (<code>$6AA9</code>) would call it. <code>test_music.js</code> runs the game's <code>music_tick</code> on the kit's 6502 beside the page and holds every register write of 3,000 frames of each tune to it. The clock is an NTSC C64's.</p>
-  </div>
-  <p>Each tune is two lists of notes, one for each voice, two bytes a note: the note and its length. Three more bytes are commands: <code>$FE</code> loads one of 15 instruments, <code>$FD</code> jumps to the tune's second section and <code>$FF</code> starts both voices again. Tune 1 steps every six frames and is played an octave up; tune 2 steps every four frames (<code>tune_tempo</code>, <code>tune_transpose</code>).</p>
-  <p>The stages still start the tunes: event 15 calls <code>set_tune</code> for tune 1 and event 16 for tune 2. But <code>set_tune</code> only clears the chip and points the voices at the notes. The routine that would play a step each frame, <code>music_tick</code>, has no caller, and the M key that would switch the music on is cut off by a single byte (<a href="discoveries.html">Discoveries</a>).</p>
-  <p>The player has a small fault of its own. It adds each voice's register offset in the chip, 0 or 7, to the low byte of the note's frequency (<code>$1B4D</code>), so the second voice plays every note a little sharp.</p>
-</section>
-
-<section id="effects">
-  <p class="fig">03 · Sound effects</p>
-  <h2 class="t">Sound: nine effects, eight pitches each</h2>
-  <p class="lede">Every sound in the game is one of nine effects, each a waveform, an envelope and eight pitches played round and round.</p>
-  <div class="plate">
-    <div id="gr-sfx"></div>
-    <p class="cap">Each button runs the game's <code>play_effect</code> (<code>$9B71</code>) with the effect's number, then <code>effects_tick</code> (<code>$9BE1</code>) once a frame, as the play frame calls it, until the effect's time runs out. Checked by <code>test_music.js</code> like the tunes.</p>
-  </div>
-  <p><code>play_effect</code> puts each new effect on the next of the three voices in turn, so three can sound at once and a fourth cuts off the oldest. Each frame <code>effects_tick</code> sets the voice's pitch to the next of the effect's eight steps in <code>effect_pitch</code> and counts down its time from <code>effect_time</code>. The explosions (effects 2, 5 and 6) use noise; the rest use triangle or sawtooth waves.</p>
-</section>
-
-<section id="splits">
-  <p class="fig">04 · The screen splits</p>
-  <h2 class="t">Splits timed for an American machine</h2>
-  <p class="lede">Two timer interrupts a frame switch the screen between the playfield and the power-up bar. Their timing fits an NTSC frame exactly and a PAL frame not at all.</p>
-  <div class="plate">
-    <div class="gr-bar"><button class="gr-btn" id="gr-ntsc" aria-pressed="true">NTSC</button><button class="gr-btn" id="gr-pal" aria-pressed="false">PAL</button><input type="range" class="gr-range" id="gr-frame" min="0" max="49" value="0" aria-label="Frame"><span id="gr-frame-n"></span></div>
-    <canvas id="gr-split" class="gr-cv"></canvas>
-    <div class="gr-out" id="gr-split-out"></div>
-    <p class="cap">The screen's 25 rows of characters, with the lines where each interrupt arrives, worked out from the timer's period (<code>$42C6</code>, 17,095 cycles) and the frame's length. Rows drawn in the playfield's mode are plain; rows drawn in the bar's mode are hatched, labelled B. On VICE's PAL C64, frames 0, 2 and 4 recorded with <code>frame.py</code> had the writes at lines 82 and 242; 1, 161 and 272; and 80, 191 and 226. This model gives the same lines to within one, apart from the write at line 226, which it does not have.</p>
-  </div>
-  <p>The playfield is drawn in multicolour character mode, where a character has four colours. The power-up bar is drawn in extended colour mode, where a character has a background colour of its own but only 64 shapes. The game switches between the two with two timers on the second CIA chip, which fire non-maskable interrupts (NMIs), handled at <code>nmi_split</code> (<code>$0840</code>). <code>start_split_timers</code> (<code>$FD50</code>) starts timer A at raster line 70 and timer B at line 230, and gives both the same period: 17,095 cycles. The handlers' writes land about twelve lines later, at lines 82 and 242.</p>
-  <p>An NTSC C64 draws a frame in 263 lines of 65 cycles, 17,095 cycles: the timers come round at the same lines every frame. A PAL C64 draws a frame in 312 lines of 63 cycles, 19,656 cycles, so each timer comes 2,561 cycles, about 41 lines, earlier in each frame than in the last, and sometimes twice in one frame. The bar's mode creeps up over the playfield, where its 64 shapes turn the scenery into letters and digits. Press PAL and move through the frames.</p>
-</section>
-
-<section id="map">
-  <p class="fig">05 · The scenery</p>
-  <h2 class="t">A map read one column at a time</h2>
-  <p class="lede">Each time the screen has scrolled eight pixels, the game shifts the playfield one character left and reads one new column of 19 rows from the stage's map.</p>
-  <div class="plate">
-    <div class="pick"><a class="step" id="gr-map-prev" aria-label="Previous stage">‹</a><select id="gr-map-stage" aria-label="Stage"></select><a class="step" id="gr-map-next" aria-label="Next stage">›</a></div>
-    <div class="gr-bar"><input type="range" class="gr-range" id="gr-map-col" min="0" max="100" value="0" aria-label="Map column"></div>
-    <canvas id="gr-map" class="gr-cv"></canvas>
-    <div class="gr-out" id="gr-map-out"></div>
-    <p class="cap">Forty columns of the stage's scenery from the slider's column on, drawn by the page from the map, the character set and the row colours in the listing; the outlined column is the one the bytes below it make. <code>test_map.js</code> runs the game's own <code>map_column</code> (<code>$4EA9</code>) and <code>map_column_up</code> (<code>$54DF</code>) on every column of every stage and holds the page's reader to them.</p>
-  </div>
-  <p>A map byte of <code>$7F</code> or more is a character, put in the next row down. A smaller byte is a count of empty rows, filled with spaces. A column ends when its 19 rows are full, and <code>map_ptr</code> moves past the bytes it read, so a column of open sky costs one byte and a column of solid rock costs nineteen. Stage 4's drawer, <code>map_column_up</code>, fills the column from the bottom row up, so stage 1's map comes out upside down, the volcanoes hanging from the ceiling, through a character set whose shapes are drawn upside down to match.</p>
-  <p>Characters from <code>$80</code> up to a limit set for each stage (<code>scenery_limit</code>) are solid: the shots, lasers and missiles stop at them and the ship dies on them. The stage's own character set fills characters <code>$80</code> to <code>$FF</code>, copied to <code>$3C00</code> as the stage starts (<code>load_stage_charset</code>). Every stage is drawn whole on the <a href="levels.html">Levels</a> tab.</p>
+  <p>You fly the Vic Viper from left to right while the screen scrolls on its own. Shooting a red enemy, or the sixth of a group of fliers, leaves a <a href="#powerups">capsule</a>. Each capsule you pick up moves a light along the power-up bar at the bottom of the screen: SPEEDUP, MISSILE, DOUBLE, LASER, MULTI and ?. Right SHIFT takes the <a href="#powerups">power-up</a> that is lit, and the light goes out.</p>
+  <p>Each stage's <a href="#map">scenery</a> is read from a map one column at a time. When it runs out, the scroll stops and the stage's own attack begins: rocks from volcanoes, darts, bursting blocks or a block to shoot through. Then comes a <a href="#bosses">boss</a>, most often the Big Core. One to four players take turns, each with three lives, and a lost life past the stage's <a href="levels.html">checkpoint</a> starts again from there.</p>
 </section>
 
 <section id="powerups">
-  <p class="fig">06 · Power-ups</p>
+  <p class="fig">02 · Power-ups</p>
   <h2 class="t">What each box gives</h2>
   <p class="lede">Right SHIFT takes the lit box. The joystick has no way to take one: the only call to <code>take_powerup</code> is in the keyboard reader.</p>
   <div class="plate">
@@ -142,13 +91,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td>MULTI</td><td>An Option, which follows the ship's trail and fires with it</td><td>Two</td></tr>
       <tr><td>?</td><td>A shield worth four hits</td><td>While it lasts</td></tr>
     </table></div>
-    <p class="cap">From <code>take_powerup</code> (<code>$5200</code>). A power-up that can go no further has its box blanked, and a blank box does nothing when taken.</p>
+    <p class="cap">What <code>take_powerup</code> (<code>$5200</code>) does for each box. A power-up that can go no further has its box blanked, and a blank box does nothing when taken.</p>
   </div>
   <p>A capsule moves the light one box on (<code>capsule_power</code>, <code>$5777</code>) and scores 500. Every seventh capsule dropped is blue instead (<code>drop_capsule</code>, <code>$5630</code>): picking it up destroys every small enemy on the screen and leaves the light where it is (<code>blue_capsule</code>, <code>$5D3D</code>). The fire button shoots every 17 frames while it is held (<code>fire_button</code>, <code>$4DAC</code>). An extra Vic Viper comes every 100,000 points (<code>extra_life</code>, <code>$6B8B</code>).</p>
 </section>
 
+<section id="map">
+  <p class="fig">03 · The scenery</p>
+  <h2 class="t">A map read one column at a time</h2>
+  <p class="lede">Each time the screen has scrolled eight pixels, the game shifts the playfield one character left and reads one new column of 19 rows from the stage's map.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="gr-map-prev" aria-label="Previous stage">‹</a><select id="gr-map-stage" aria-label="Stage"></select><a class="step" id="gr-map-next" aria-label="Next stage">›</a></div>
+    <div class="gr-bar"><input type="range" class="gr-range" id="gr-map-col" min="0" max="100" value="0" aria-label="Map column"></div>
+    <canvas id="gr-map" class="gr-cv"></canvas>
+    <div class="gr-out" id="gr-map-out"></div>
+    <p class="cap">Forty columns of the stage's scenery from the slider's column on, drawn by the page from the map, the character set and the row colours in the listing; the outlined column is the one the bytes below it make.<sup class="fn"><a href="about.html#src-4" title="Checked against the game's own column drawers">4</a></sup></p>
+  </div>
+  <p>A map byte of <code>$7F</code> or more is a character, put in the next row down. A smaller byte is a count of empty rows, filled with spaces. A column ends when its 19 rows are full, and <code>map_ptr</code> moves past the bytes it read, so a column of open sky costs one byte and a column of solid rock costs nineteen. Stage 4's drawer, <code>map_column_up</code>, fills the column from the bottom row up, so stage 1's map comes out upside down, the volcanoes hanging from the ceiling, through a character set whose shapes are drawn upside down to match.</p>
+  <p>Characters from <code>$80</code> up to a limit set for each stage (<code>scenery_limit</code>) are solid: the shots, lasers and missiles stop at them and the ship dies on them. The stage's own character set fills characters <code>$80</code> to <code>$FF</code>, copied to <code>$3C00</code> as the stage starts (<code>load_stage_charset</code>). Every stage is drawn whole on the <a href="levels.html">Levels</a> tab.</p>
+</section>
+
 <section id="bosses">
-  <p class="fig">07 · The bosses</p>
+  <p class="fig">04 · The bosses</p>
   <h2 class="t">The Big Core and the last boss</h2>
   <p class="lede">Most stages end with the Big Core. Stage 7 ends with a block to shoot through, and stage 8 with a boss drawn dot by dot.</p>
   <div class="plate">
@@ -157,6 +121,44 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
   <p>The Big Core is six double-size sprites (shapes <code>$A7</code>-<code>$AC</code>) with five walls across its middle (<code>boss_phase</code>, <code>$7768</code>). A shot that strikes the two middle rows counts toward a wall, and every sixth such hit takes one away (<code>core_shots</code>, <code>$7829</code>); a laser takes one every eighth touch. As each wall goes, <code>core_walls_draw</code> rewrites the rows of two sprite shapes so the gap shows. With all five gone the stage is cleared for 500 points. If the Core's timer runs out first, the stage is cleared without them.</p>
   <p>Stage 7's block takes 40 hits (<code>target_struck</code>, <code>$6A16</code>). The last boss is four double-size sprites whose shapes are cleared and then drawn in from a picture at <code>$9C49</code>, 25 dots a frame, until all 2,048 are in (<code>grow_brain</code>, <code>$9985</code>). It has six layers of 20 hits each (<code>brain_struck</code>, <code>$9A4B</code>). After it, the ending prints YOU HAVE SAVED THE PEOPLE OF NEMESIS over rolling bands of grey for 250 frames (<code>ending</code>, <code>$CE66</code>), and play goes back to stage 1.</p>
+</section>
+
+<section id="splits">
+  <p class="fig">05 · The screen splits</p>
+  <h2 class="t">Screen splits timed for an American machine</h2>
+  <p class="lede">Two timer interrupts a frame switch the screen between the playfield and the power-up bar. Their timing fits an NTSC frame exactly and a PAL frame not at all.</p>
+  <div class="plate">
+    <div class="gr-bar"><button class="gr-btn" id="gr-ntsc" aria-pressed="true">NTSC</button><button class="gr-btn" id="gr-pal" aria-pressed="false">PAL</button><input type="range" class="gr-range" id="gr-frame" min="0" max="49" value="0" aria-label="Frame"><span id="gr-frame-n"></span></div>
+    <canvas id="gr-split" class="gr-cv"></canvas>
+    <div class="gr-out" id="gr-split-out"></div>
+    <p class="cap">The screen's 25 rows of characters, with the lines where each interrupt arrives, worked out from the timer's period (<code>$42C6</code>, 17,095 cycles) and the frame's length. Rows drawn in the playfield's mode are plain; rows drawn in the bar's mode are hatched, labelled B.<sup class="fn"><a href="about.html#src-3" title="Checked against frames recorded in VICE">3</a></sup></p>
+  </div>
+  <p>The playfield is drawn in multicolour character mode, where a character has four colours. The power-up bar is drawn in extended colour mode, where a character has a background colour of its own but only 64 shapes. The game switches between the two with two timers on the second CIA chip, which fire non-maskable interrupts (NMIs), handled at <code>nmi_split</code> (<code>$0840</code>). <code>start_split_timers</code> (<code>$FD50</code>) starts timer A at raster line 70 and timer B at line 230, and gives both the same period: 17,095 cycles. The handlers' writes land about twelve lines later, at lines 82 and 242.</p>
+  <p>An NTSC C64 draws a frame in 263 lines of 65 cycles, 17,095 cycles: the timers come round at the same lines every frame. A PAL C64 draws a frame in 312 lines of 63 cycles, 19,656 cycles, so each timer comes 2,561 cycles, about 41 lines, earlier in each frame than in the last, and sometimes twice in one frame. The bar's mode creeps up over the playfield, where its 64 shapes turn the scenery into letters and digits. Press PAL and move through the frames.</p>
+</section>
+
+<section id="music">
+  <p class="fig">06 · Music</p>
+  <h2 class="t">Music: two tunes the game never plays</h2>
+  <p class="lede">The game carries a two-voice music player and two tunes for it. Nothing in the game calls the player, so the tunes have never been heard in play.</p>
+  <div class="plate">
+    <div id="gr-sid"></div>
+    <p class="cap">The game's own tune player running on the page, over the bytes in the listing: <code>set_tune</code> (<code>$1C5B</code>) to start, as the stage's events do, then <code>tune_tick</code> (<code>$1AB5</code>) once a frame, as <code>music_tick</code> (<code>$6AA9</code>) would call it. The clock is an NTSC C64's.<sup class="fn"><a href="about.html#src-1" title="Checked against the game's own player">1</a></sup></p>
+  </div>
+  <p>Each tune is two lists of notes, one for each voice, two bytes a note: the note and its length. Three more bytes are commands: <code>$FE</code> loads one of 15 instruments, <code>$FD</code> jumps to the tune's second section and <code>$FF</code> starts both voices again. Tune 1 steps every six frames and is played an octave up; tune 2 steps every four frames (<code>tune_tempo</code>, <code>tune_transpose</code>).</p>
+  <p>The stages still start the tunes: event 15 calls <code>set_tune</code> for tune 1 and event 16 for tune 2. But <code>set_tune</code> only clears the chip and points the voices at the notes. The routine that would play a step each frame, <code>music_tick</code>, has no caller, and the M key that would switch the music on is cut off by a single byte (<a href="discoveries.html#music">Discoveries</a>).</p>
+  <p>The player on this page plays the notes as the bytes give them, faults included: the <a href="discoveries.html#sharp">second voice is slightly sharp</a>.</p>
+</section>
+
+<section id="effects">
+  <p class="fig">07 · Sound effects</p>
+  <h2 class="t">Sound: nine effects, eight pitches each</h2>
+  <p class="lede">Every sound in the game is one of nine effects, each a waveform, an envelope and eight pitches played round and round.</p>
+  <div class="plate">
+    <div id="gr-sfx"></div>
+    <p class="cap">Each button runs the game's <code>play_effect</code> (<code>$9B71</code>) with the effect's number, then <code>effects_tick</code> (<code>$9BE1</code>) once a frame, as the play frame calls it, until the effect's time runs out.<sup class="fn"><a href="about.html#src-2" title="Checked against the game's own effects player">2</a></sup></p>
+  </div>
+  <p><code>play_effect</code> puts each new effect on the next of the three voices in turn, so three can sound at once and a fourth cuts off the oldest. Each frame <code>effects_tick</code> sets the voice's pitch to the next of the effect's eight steps in <code>effect_pitch</code> and counts down its time from <code>effect_time</code>. The explosions (effects 2, 5 and 6) use noise; the rest use triangle or sawtooth waves.</p>
 </section>
 </main>
 
