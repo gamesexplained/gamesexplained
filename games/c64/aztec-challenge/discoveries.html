@@ -1,0 +1,141 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aztec Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a; --chip:#2f3136; --chip-ink:#ffffff;
+  --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:18px;margin:26px 0 10px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas.az-px{display:block;image-rendering:pixelated;max-width:100%;height:auto;border-radius:4px}
+.az-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+.az-ctl button,.az-ctl select,.az-ctl label{font:inherit;font-size:14px}
+.az-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
+.az-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.az-ctl input[type=range]{width:220px}
+.az-out{font-family:var(--fm);font-size:14px;margin-top:12px;line-height:1.6;color:var(--ink-soft)}
+.az-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.az-gal figure{margin:0;font-size:13px;color:var(--ink-soft);text-align:center;line-height:1.35}
+.az-gal figure b{display:block;color:var(--ink);font-size:14px;margin-top:6px}
+.az-gal figure span{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.az-gal canvas{margin:0 auto}
+.az-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+table.az-tab{border-collapse:collapse;width:100%;font-size:15px}
+table.az-tab td,table.az-tab th{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+table.az-tab th{font-weight:700;color:var(--ink-soft)}
+.az-sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px;border:1px solid #0003}
+@media (max-width:640px){:root{--gx:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1983 · Cosmi</p>
+  <h1>Aztec Challenge</h1>
+  <p class="sub">A snake that is set up and never shown, a fire button that makes the swimmer bite-proof, and a bridge that pays for holding the stick the wrong way: what the code does that the manual never said.</p>
+</header>
+<main class="wrap">
+
+<section id="snake">
+  <p class="fig">01 · The Vermin</p>
+  <h2 class="t">Bug: the Vermin's green snake is placed but never appears</h2>
+  <p>The Vermin brings on six creatures, one for each of the low six bits of a random number (<code>$6700</code>). For each bit that is set, it checks whether that creature is already out, by the same bit of the byte <code>$2A</code>, and if not it marks it out and places it. Marking is an <code>ORA</code> of the creature's bit into <code>$2A</code>. For the fifth creature, bit 4, the value is <code>#$00</code> where it should be <code>#$10</code> (<code>$6772</code>). The creature is placed (<code>$681A</code>: sprite 6, shape <code>$9C</code>, a coiled snake, in green) but never marked, so the routine that would move it and switch its sprite on (<code>$6A80</code>) is never called. Each time bit 4 comes up again the snake is placed again, its sprite still switched off.</p>
+  <div class="plate"><table class="az-tab" id="az-ora"></table>
+    <p class="cap">The six marking instructions, read from the listing's bytes. Live in VICE on 8 November 2026: 60 seconds of the Vermin, the sprites on screen sampled 281 times; sprites 0-5 and 7 all came on, sprite 6 never, and bit 4 of <code>$2A</code> was never set. A second copy of the checks at <code>$6860</code>, which nothing calls, has the same <code>#$00</code> (<code>$68C7</code>).</p></div>
+</section>
+
+<section id="fire">
+  <p class="fig">02 · The Piranha</p>
+  <h2 class="t">Secret: holding fire with a direction keeps the swimmer safe from the piranhas</h2>
+  <p>The manual warns that fire must be pressed with the stick centred, "or neither function will work". On the Piranha that is half true. The swimmer's controls (<code>$1DE0</code>) dive only for fire alone, and move only for a direction alone; fire with a direction does neither. The bite check (<code>$1EA0</code>) asks a different question: is the fire bit pressed at all? If so it empties the collision register and returns (<code>$1E97</code>), and no fish can bite. The drowning count only runs while diving (<code>$7F9D</code>), and fire with a direction is not a dive, so the swimmer never drowns either. It also never moves, so the lake is never crossed: it is a way to wait, not to win.</p>
+  <div class="plate"><table class="az-tab">
+    <tr><th>Stick held for 60 seconds</th><th>Bites</th><th>Lives lost</th></tr>
+    <tr><td>Centred</td><td>4</td><td>4</td></tr>
+    <tr><td>Fire alone (dive)</td><td>1</td><td>18 (drowned about every 3 seconds)</td></tr>
+    <tr><td>Fire and up</td><td>1, in the first moment</td><td>1</td></tr>
+    <tr><td>Fire and left</td><td>1, in the first moment</td><td>1</td></tr>
+  </table>
+  <p class="cap">VICE, 8 November 2026, from one snapshot of the Piranha a few seconds in, counting the calls of the eaten routine (<code>$1F9D</code>) and of the life-lost routine (<code>$1BD2</code>). The one bite with fire held came from the fish already closing in when the snapshot was taken; none came after.</p></div>
+</section>
+
+<section id="bridge">
+  <p class="fig">03 · The Bridge</p>
+  <h2 class="t">Secret: holding the stick right on the Bridge scores 10 points a pass</h2>
+  <p>Every level counts "achievements" in one byte, <code>$68</code>, worth 10 points each when the attempt ends (<code>$1456</code>). The Bridge counts one on every pass of its loop in which the stick is held in any direction but fire alone (<code>$7D4C</code>), before it looks at which direction it is. Down, left and up then start a jump and the count stops; right and the diagonals start nothing, so the runner stays on the bridge and the count goes on. Held right for 10 seconds, it went from 0 to 72, 720 points. The count is one byte, so after 255 it starts again at 0: the most it can pay is 2,560 points (255 achievements and the 10 every attempt adds), and holding on too long loses them.</p>
+  <div class="plate">
+    <div class="az-ctl"><label>Seconds held right <input type="range" id="az-br-s" min="0" max="60" value="10"></label></div>
+    <div class="az-out" id="az-br-out"></div>
+    <p class="cap">At the rate measured in VICE (72 passes in 10 seconds, 7.2 a second, on 8 November 2026), with the byte wrapping as <code>INC $68</code> does. The points are added when the attempt ends, won or lost.</p>
+  </div>
+</section>
+
+<section id="piranha-progress">
+  <p class="fig">04 · The Piranha</p>
+  <h2 class="t">Bug: a lost life on the Piranha throws away all the progress</h2>
+  <p>The Piranha counts the swimmer's way up the lake by the passages off its top edge (<code>$1AB8</code>): each counts an achievement, and every second one raises the progress stage, which wins at stage 9. When a life is lost the level restarts through the music's reset (<code>$1CA0</code>), which also clears the stage. Other levels clear their progress too, but a crossing of the lake has to be done in one life, eighteen passages without a bite.</p>
+  <div class="plate"><p class="az-out">Swimming up in VICE: stage 0, then 1 at the second passage; a bite; stage 0 again. Repeated five times over two minutes, the stage never passed 1.</p></div>
+</section>
+
+<section id="legs">
+  <p class="fig">05 · The Temple</p>
+  <h2 class="t">Only the runner's legs can be hit in the Temple</h2>
+  <p>The runner is two sprites, the upper half and the lower half (<a href="graphics.html#halves">Graphics</a>). The Temple's trap check (<code>$79F0</code>) reads the sprite collision register and keeps its two lowest bits, one for each half. Only the value 2, the lower half touching something while the upper half does not, kills. A spear or a stone that strikes the head alone, or both halves at once, passes through.</p>
+  <div class="plate"><table class="az-tab"><tr><th>Upper half touching</th><th>Lower half touching</th><th>Caught</th></tr><tr><td>no</td><td>no</td><td>no</td></tr><tr><td>yes</td><td>no</td><td>no</td></tr><tr><td>no</td><td>yes</td><td>yes</td></tr><tr><td>yes</td><td>yes</td><td>no</td></tr></table>
+  <p class="cap">From <code>$79F0</code>-<code>$79FF</code>: <code>AND #$03</code>, <code>CMP #$03</code>, <code>CMP #$02</code>. Read in the code, not tried in the emulator.</p></div>
+</section>
+
+<section id="quirks">
+  <p class="fig">06 · Smaller things</p>
+  <h2 class="t">Quirks in the controls, the traps and the night</h2>
+  <ul>
+    <li><b>The Stairs move left for up and down.</b> The climber's stick (<code>$71A0</code>) sorts the input by size: anything below 7 moves left, so up and down alone move the climber left as well; anything of 7 or more moves right, fire included.</li>
+    <li><b>Some creatures appear on the screen instead of walking in.</b> The Vermin places its scorpion, spiders, snake and long crawling creature at 256 plus a random byte (<code>$67A0</code>); the screen's right edge is at 343, so about a third of them pop up already on it.</li>
+    <li><b>The doorway can be a trapped tile.</b> Hopaztec's list of trapped tiles (<code>$74C2</code>) can hold 44, the doorway's number, and repeats; the check after a hop (<code>$1FE8</code>) skips 44, so a trapped doorway is harmless and a repeat is a wasted trap.</li>
+    <li><b>Night falls on four levels only.</b> Phase 4's two colours darken the Gauntlet, the Piranha, the Bridge and Hopaztec's doorway; the Stairs, the Temple and the Vermin never read them and look the same by night.</li>
+    <li><b>Left-overs.</b> Two sprite shapes no routine uses (<code>$B2</code>, <code>$BA</code>), a second copy of the Vermin's creature checks nothing calls (<code>$6860</code>), and 52 bytes of what look like screen positions at <code>$457A</code> that nothing reads.</li>
+    <li><b>The Gauntlet punishes holding the stick.</b> Any input held for 8 passes of the main loop makes the runner fall (<code>$614F</code>), the manual's "staying in either mode for too long", which also catches a jump held too long.</li>
+  </ul>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  // the Bridge: 7.2 passes a second, one byte that wraps, 10 points each and 10 more
+  function bridge() {
+    const s = +$('az-br-s').value, n = Math.floor(7.2 * s), c = n % 256;
+    $('az-br-out').innerHTML = s + ' seconds: ' + n + ' passes, so <code>$68</code> = ' + c + (n > 255 ? ' (it has wrapped ' + Math.floor(n / 256) + ' time' + (n > 511 ? 's' : '') + ')' : '') + ', paid as ' + ((c + 1) * 10).toLocaleString('en-GB') + ' points.';
+  }
+  $('az-br-s').oninput = bridge; bridge();
+  // the six marking instructions of the Vermin
+  const AT = [0x671A, 0x6730, 0x6746, 0x675C, 0x6772, 0x6788], WHO = ['A, scorpion', 'B, spider', 'C, spider', 'D, snake', 'E, green snake', 'F, long crawler'];
+  function table(ram) {
+    $('az-ora').innerHTML = '<tr><th>Creature</th><th>Bit</th><th>Instruction</th><th>Marks it out</th></tr>' + AT.map((a, i) => {
+      const v = ram ? ram[a + 1] : null, ok = v === (1 << i);
+      return '<tr><td>' + WHO[i] + '</td><td>' + i + '</td><td><code>$' + a.toString(16).toUpperCase() + '</code> ' + (ram ? 'ORA #$' + v.toString(16).toUpperCase().padStart(2, '0') : '') + '</td><td>' + (ram ? (ok ? 'yes' : '<b>no</b>') : '') + '</td></tr>';
+    }).join('');
+  }
+  table(null);
+  if (typeof C64 !== 'undefined') C64.load('listing.json').then((L) => table(L.ram)).catch((e) => console.error(e));
+})();
+</script>

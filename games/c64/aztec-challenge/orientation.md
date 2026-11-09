@@ -74,9 +74,10 @@ holds them.
   the KERNAL to clear the screen (`$FFD2` with `$93`), to update the
   clock and to read the STOP key (`$FFEA`, `$FFE1`).
 - The video chip stays in bank 0 (`$DD00` = `$97`). The screen is
-  `$0400` throughout. `$D018` picks the ROM character set (`$15`, the
-  scorecard and menu), the set at `$3000` (`$1D`, levels 3, 5, 6, 7)
-  or the one at `$3800` (`$1F`, levels 2 and 4). Sprite pointers
+  `$0400` throughout. `$D018` picks the ROM character set (`$14`, the
+  scorecard and menu), the set at `$3000` (`$1C`, levels 3, 5, 6, 7 and
+  the logo) or the one at `$3800` (`$1E`, levels 1, 2 and 4); the chip
+  reads each back with bit 0 set. Sprite pointers
   `$8A`-`$BE` put the sprite shapes in `$2280`-`$2FBF`.
 - Memory used: zero page, the stack, the screen and its sprite pointers
   `$0400`-`$07FF`, colour RAM, and the program at `$1000`-`$7FFE`.

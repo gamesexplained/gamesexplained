@@ -1,0 +1,414 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aztec Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a; --chip:#2f3136; --chip-ink:#ffffff;
+  --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:18px;margin:26px 0 10px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas.az-px{display:block;image-rendering:pixelated;max-width:100%;height:auto;border-radius:4px}
+.az-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+.az-ctl button,.az-ctl select,.az-ctl label{font:inherit;font-size:14px}
+.az-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
+.az-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.az-ctl input[type=range]{width:220px}
+.az-out{font-family:var(--fm);font-size:14px;margin-top:12px;line-height:1.6;color:var(--ink-soft)}
+.az-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.az-gal figure{margin:0;font-size:13px;color:var(--ink-soft);text-align:center;line-height:1.35}
+.az-gal figure b{display:block;color:var(--ink);font-size:14px;margin-top:6px}
+.az-gal figure span{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.az-gal canvas{margin:0 auto}
+.az-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+table.az-tab{border-collapse:collapse;width:100%;font-size:15px}
+table.az-tab td,table.az-tab th{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+table.az-tab th{font-weight:700;color:var(--ink-soft)}
+.az-sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:-1px;border:1px solid #0003}
+@media (max-width:640px){:root{--gx:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1983 · Cosmi</p>
+  <h1>Aztec Challenge</h1>
+  <p class="sub">Everything that moves is a sprite, and the hero is always two of them stacked, because one sprite is too short for a running man. The scenery is two character sets of 256 shapes each, and the Bridge's rocky gorge is built from the same characters as Cosmi's spinning logo.</p>
+</header>
+<main class="wrap">
+
+<section id="sprites">
+  <p class="fig">01 · Sprites</p>
+  <h2 class="t">Every moving thing, as the game animates it</h2>
+  <p>The program keeps 64 sprite shapes at <code>$2000</code>-<code>$2FFF</code>, 64 bytes each. A sprite on the Commodore 64 is a 24 by 21 pixel picture that the video chip draws over the screen wherever it is told, and a byte at the end of the screen, the sprite pointer, picks its shape: shape <code>$80</code> is the 64 bytes at <code>$2000</code>, <code>$81</code> the next, up to <code>$BF</code>. Each level animates by writing new numbers into those pointers. The game has no tables of animation: each sequence is a few instructions in the level's code that add 2 to the pointer and wrap it round, so the pictures below play the sequences those instructions make, at the speed they ran in the emulator.</p>
+  <div class="plate">
+    <div class="az-gal" id="az-anims"></div>
+    <div class="az-ctl"><button type="button" id="az-anim-pause" aria-pressed="false">Pause</button><label><input type="checkbox" id="az-anim-big"> Twice the size</label></div>
+    <p class="cap">Drawn from the listing's bytes in each level's own colours (the sprite colour registers <code>$D027</code>-<code>$D02E</code> and the two shared colours <code>$D025</code>/<code>$D026</code> as the level's set-up writes them). Speeds are what the game ran at in VICE on 8 November 2026, counted in video frames: a runner's pose lasts about 5 frames, the climber's 8, the swimmer's stroke 15. The game paces itself with delay loops, not the frame, so these are measurements, not constants of the code.</p>
+  </div>
+</section>
+
+<section id="halves">
+  <p class="fig">02 · Two sprites to a hero</p>
+  <h2 class="t">The hero is two sprites, one on top of the other</h2>
+  <p>A sprite is 21 pixels tall, too short for a running figure, so on every level the hero is sprites 0 and 1: the upper half and the lower half, kept 21 lines apart and moved together. Every move in the code changes both: the Gauntlet's jump moves both up 9 lines a step (<code>$6250</code>), the Piranha's swimmer moves both a pixel (<code>$1DF4</code>). The split matters to the rules too. The Temple kills the runner only when the lower half touches a trap and the upper half does not (<code>$79F0</code>), the Stairs only when a block hits the upper half (<code>$70E0</code>), and the Vermin's bite counts only on the lower half (<code>$6BE0</code>).</p>
+  <div class="plate">
+    <div class="az-row"><canvas id="az-halves" class="az-px"></canvas><div class="az-out" id="az-halves-out"></div></div>
+    <div class="az-ctl" id="az-halves-bar"><button type="button" data-v="gap" aria-pressed="false">Pull the halves apart</button><button type="button" data-v="box" aria-pressed="false">Show each sprite's box</button></div>
+    <p class="cap">The side-view runner (shapes <code>$90</code> and <code>$91</code>) in the Temple's colours. The two boxes are the sprites' 24 by 21 frames.</p>
+  </div>
+</section>
+
+<section id="every">
+  <p class="fig">03 · Every shape by number</p>
+  <h2 class="t">All 64 shapes, two of them never used</h2>
+  <p>Shapes <code>$B2</code> (a fish turning) and <code>$BA</code> (a spear on the slant) are drawn in the data, but no instruction in the program writes either number into a sprite pointer. The Vermin's green snake, <code>$9C</code> in sprite 6, is used and still never seen: <a href="discoveries.html#snake">Discoveries</a> says why.</p>
+  <div class="plate">
+    <div class="az-row"><canvas id="az-one" class="az-px"></canvas><div class="az-out" id="az-one-out"></div></div>
+    <div class="pick"><button type="button" class="step" id="az-one-prev" aria-label="Previous shape">◀</button><select id="az-one-sel" aria-label="Shape"></select><button type="button" class="step" id="az-one-next" aria-label="Next shape">▶</button></div>
+    <div class="az-ctl"><label><input type="checkbox" id="az-one-hi"> Draw as single colour (one bit a pixel)</label></div>
+    <p class="cap">Multicolour shapes pair their bits: 01 is the first shared colour, 10 the sprite's own and 11 the second shared one. The single-colour view shows the raw bits of the same 63 bytes, which is how the spears, the falling things and the creatures are drawn.</p>
+  </div>
+</section>
+
+<section id="charsets">
+  <p class="fig">04 · Character sets</p>
+  <h2 class="t">Two character sets draw all the scenery</h2>
+  <p>The screen is 40 by 25 characters, each an 8 by 8 picture from a character set: 256 shapes of 8 bytes, 2 KB. The game carries two. Set A at <code>$3000</code> draws the logo, the title, the Temple, Hopaztec, the Piranha's lake and the Bridge; set B at <code>$3800</code> draws the Gauntlet, the Stairs and the Vermin. The menu and the scorecard use the machine's own letters from ROM. A level picks its set with the register <code>$D018</code> (<code>ORA #$0C</code> for A, <code>ORA #$0E</code> for B, as at <code>$7205</code> and <code>$60C7</code>), and most turn on multicolour text, where a character whose colour has bit 3 set is drawn with double-wide pixels in four colours.</p>
+  <div class="plate">
+    <canvas id="az-cs" class="az-px"></canvas>
+    <div class="az-ctl" id="az-cs-bar"><button type="button" data-v="a" aria-pressed="true">Set A, $3000</button><button type="button" data-v="b" aria-pressed="false">Set B, $3800</button><label><input type="checkbox" id="az-cs-hi"> Single colour</label></div>
+    <div class="az-out" id="az-cs-out">Click a character to see what draws with it.</div>
+    <p class="cap">Drawn in neutral colours (black, grey, white and red for the four bit pairs), since each level gives the same character different colours.</p>
+  </div>
+</section>
+
+<section id="pictures">
+  <p class="fig">05 · Pictures built from characters</p>
+  <h2 class="t">The logo, the title and the scenery, from their screen data</h2>
+  <p>A picture made of characters is a list of character numbers, one byte a cell, copied to the screen. The program keeps these lists beside the code and draws each with a loop: the spiral at <code>$4000</code> and the sun stone at <code>$4200</code> are copied to <code>$0528</code>, the title's two words from <code>$4600</code> and <code>$4700</code>, Hopaztec's room from <code>$5800</code>, the Bridge's gorge from <code>$4C00</code>.</p>
+  <div class="plate">
+    <canvas id="az-pic" class="az-px"></canvas>
+    <div class="pick"><button type="button" class="step" id="az-pic-prev" aria-label="Previous picture">◀</button><select id="az-pic-sel" aria-label="Picture"></select><button type="button" class="step" id="az-pic-next" aria-label="Next picture">▶</button></div>
+    <div class="az-ctl" id="az-pic-bar"></div>
+    <p class="cap" id="az-pic-cap"></p>
+  </div>
+  <p>The Bridge is the one that borrows. Its gorge uses characters 1-127 of set A, the same characters the spiral is drawn with, and the Bridge shows them in single colour where the spiral is multicolour, so the swirls of the logo turn into the grain of the rock. The switch under the Bridge's picture marks every cell that uses one of the spiral's characters.</p>
+</section>
+
+<section id="gauntlet3d">
+  <p class="fig">06 · The Gauntlet's depth</p>
+  <h2 class="t">Five frames of throwers and a growing temple make the Gauntlet's 3D</h2>
+  <p>The first level looks like a run into the screen, and none of it is 3D. Two rows of spear throwers are five pictures of six rows each (<code>$5000</code>, 240 bytes a frame) drawn over rows 14-19 one after another (<code>$60E3</code>). Between frames the sand scrolls down and a trapezoid of ground is copied a row down (<code>$616B</code>). Every 88 steps the temple on the horizon is drawn a stage larger (<code>$62E0</code>), from rows at <code>$5500</code> and <code>$5600</code>; after its eighth stage the runner has arrived.</p>
+  <div class="plate">
+    <canvas id="az-gt" class="az-px"></canvas>
+    <div class="az-ctl"><button type="button" id="az-gt-play" aria-pressed="true">Throwers moving</button><label>Temple stage <input type="range" id="az-gt-stage" min="0" max="8" value="0"></label><span class="az-out" id="az-gt-out"></span></div>
+    <p class="cap">The throwers' frames and the temple drawn from the listing's bytes by a port of <code>$62E0</code>, which <code>test_temple.js</code> holds against the game's own routine run on the kit's 6502, stage by stage, screen and colour byte for byte. The sand below the throwers is the game's three sand characters in a fixed pattern; the game picks each at random as it scrolls.</p>
+  </div>
+</section>
+
+<section id="screens">
+  <p class="fig">07 · How each level sets up the screen</p>
+  <h2 class="t">One screen mode a level, with no split in the frame</h2>
+  <p>The game never changes the video chip in the middle of a frame: it has no raster interrupt at all, only the KERNAL's timer for the music. Each level writes its registers once at its start, and a frame recorded in play is drawn exactly by reading them once (the <a href="levels.html">Levels</a> tab shows each). The table is what each level's start writes.</p>
+  <div class="plate"><table class="az-tab" id="az-modes"></table>
+    <p class="cap">From each level's set-up code and the registers read back in VICE in play. In phase 4 the levels that use the phase's two colours (<code>$5E</code>/<code>$5F</code>) darken: the Gauntlet, the Piranha, the Bridge and Hopaztec's doorway.</p></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* az-temple */
+// azTemple(ram, stage): the screen and colour bytes the Gauntlet's temple_grow ($62E0) has written
+// after it has been called `stage` + 1 times from the start of the level, as $6097 calls it once
+// and $6216 every 88 steps after: { scr: Map(address -> code), col: Map(address -> colour) }.
+// Each call copies $44 bytes from $5500 (even stages) or $5600 (odd) to the screen at $40/$41 and
+// the phase's colour $5E to colour RAM at $42/$43; after an odd stage short of 8 the length grows
+// by 40 and both addresses move up a row; when the stage reaches 8 the doorway, $FA-$FD, goes to
+// $061A-$061D in colour 8. The start values are $6073-$6083's: $05B8, $D9B8 and 120.
+function azTemple(ram, stage, colour) {
+  const scr = new Map(), col = new Map();
+  let at = 0x05B8, cat = 0xD9B8, len = 0x78, s = 0;
+  for (let k = 0; k <= stage && k < 8; k++) {
+    const src = (s & 1) ? 0x5600 : 0x5500;
+    for (let y = 0; y < len; y++) { scr.set(at + y, ram[src + y]); col.set(cat + y, colour); }
+    s++;
+    if (src === 0x5600) {
+      if (s === 8) { for (let x = 0; x < 4; x++) { scr.set(0x061A + x, 0xFA + x); col.set(0xDA1A + x, 8); } }
+      else { len += 40; at -= 40; cat -= 40; }
+    }
+  }
+  return { scr, col };
+}
+// end of az-temple
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  if (typeof C64 === 'undefined') {
+    for (const c of document.querySelectorAll('canvas')) c.replaceWith(Object.assign(document.createElement('p'), { className: 'cap', textContent: 'This picture is drawn by the site\'s shared scripts; it works in the built site.' }));
+    return;
+  }
+  const P = (n) => C64.PAL[n & 15];
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+
+  C64.load('listing.json').then((L) => {
+    const ram = L.ram;
+    const shape = (p) => ram.subarray(0x2000 + (p - 0x80) * 64, 0x2000 + (p - 0x80) * 64 + 63);
+    // one sprite: p the pointer, c its colour, mc [shared 1, shared 2] or null for single colour
+    function sprite(ctx, p, x, y, s, c, mc, ex, ey) {
+      if (mc) C64.drawSpriteMC(ctx, shape(p), x, y, s, P(c), P(mc[0]), P(mc[1]), ex || 1, ey || 1);
+      else C64.drawSprite(ctx, shape(p), x, y, s, P(c), ex || 1, ey || 1);
+    }
+
+    // ---- 01: the animations ----------------------------------------------------------------
+    // kind 'pair': [upper, lower] pointers per pose, drawn one above the other; 'one': a pointer per pose.
+    // c: colours [upper, lower]; mc: the shared colours; rate: frames a pose (measured); bg: the level's background.
+    const RUN = { c: [7, 1], mc: [9, 9] };
+    const ANIMS = [
+      { name: 'Running, from behind', where: 'Gauntlet, $62C0', pair: [[0x80, 0x81], [0x82, 0x83]], c: [1, 1], mc: [9, 1], rate: 5.5, bg: 7 },
+      { name: 'Jumping a spear', where: 'Gauntlet, $6220', pair: [[0x84, 0x85]], c: [1, 1], mc: [9, 1], rate: 12, bg: 7 },
+      { name: 'Ducking', where: 'Gauntlet, $6290', pair: [[0x86, 0x87], [0x88, 0x89]], c: [1, 1], mc: [9, 1], rate: 5.5, bg: 7 },
+      { name: 'Speared: falling, then lying', where: 'Gauntlet $6470, also the Vermin and Hopaztec', pair: [[0x8C, 0x8D], [0x8E, 0x8F]], c: [1, 1], mc: [9, 1], rates: [12, 22], bg: 7 },
+      { name: 'The spears', where: 'thrown from the left and the right, $634E', one: [0x8A, 0x8B], c: 0, rate: 30, bg: 7, ex: 2 },
+      { name: 'Climbing the stairs', where: 'Stairs, $6E10', pair: [[0xA3, 0xA4], [0xA5, 0xA6], [0xA7, 0xA8], [0xA9, 0xAA], [0xA7, 0xA8], [0xA5, 0xA6]], c: [1, 1], mc: [9, 7], rate: 8, bg: 12 },
+      { name: 'Flattened', where: 'Stairs, $70EA', pair: [[0xAE, 0xAF]], c: [1, 1], mc: [9, 7], rate: 30, bg: 12 },
+      { name: 'The rolling block', where: 'Stairs, $7023, twice the size', one: [0xAB, 0xAC, 0xAD], c: 1, rate: 3.3, bg: 12, ex: 2, ey: 2 },
+      { name: 'Running, from the side', where: 'Temple, Vermin and Bridge', pair: [[0x90, 0x91], [0x92, 0x93], [0x94, 0x95]], c: RUN.c, mc: RUN.mc, rate: 5.3, bg: 0 },
+      { name: 'Jumping: up, then down', where: 'Temple $77B0, Vermin $6B10, Bridge $7D8B', pair: [[0x96, 0x97], [0x98, 0x99]], c: RUN.c, mc: RUN.mc, rate: 16, bg: 0 },
+      { name: 'Bitten, lying', where: 'Vermin $6C73, Temple $7ABD', pair: [[0xA0, 0x9F]], c: RUN.c, mc: RUN.mc, rate: 30, bg: 0, side: true },
+      { name: 'Scorpion', where: 'Vermin creature A, sprite 2', one: [0x9A], c: 8, rate: 30, bg: 0 },
+      { name: 'Spider', where: 'Vermin creatures B and C', one: [0x9B], c: 1, rate: 30, bg: 0 },
+      { name: 'Snake, falling, then coiled', where: 'Vermin creature D, $6A30', one: [0x9D, 0x9C], c: 10, rate: 25, bg: 0, eys: [2, 1] },
+      { name: 'Long crawler', where: 'Vermin creature F, twice as wide', one: [0x9E], c: 12, rate: 30, bg: 0, ex: 2 },
+      { name: 'Hopping', where: 'Hopaztec: standing $73F0, in the air $74B6', pair: [[0xB5, 0xB6], [0xB7, 0xB8]], c: [1, 1], mc: [9, 7], rate: 12, bg: 0 },
+      { name: 'Swimming', where: 'Piranha, $7F70', pair: [[0xA1, 0xA2], [0xBB, 0xBC]], c: [1, 1], mc: [9, 7], rate: 14.5, bg: 6 },
+      { name: 'Diving', where: 'Piranha $7F9D: the swimmer goes dark grey', pair: [[0xA1, 0xA2], [0xBB, 0xBC]], c: [1, 1], mc: [11, 7], rate: 14.5, bg: 6 },
+      { name: 'Piranha', where: 'Piranha, six of them, $7E9B', one: [0xB1], c: 9, rate: 30, bg: 6 },
+      { name: 'Eaten', where: 'Piranha $1F9D: every sprite, doubled, in cyan', one: [0xBF], c: 3, rate: 30, bg: 6, ex: 2, ey: 2 },
+      { name: 'Falling spear and stone', where: 'Temple traps 1 and 5, $785B', one: [0xB9, 0xAB], c: [1, 7], rate: 30, bg: 0 },
+      { name: 'Spikes and trapdoor', where: 'Temple traps 3 and 7', one: [0xBD, 0xBE], c: [1, 0], rate: 30, bg: 15, eys: [1, 2] },
+      { name: 'A plank and a hole', where: 'Bridge, $7CCA, twice as wide', one: [0xB3, 0xB4], c: 5, rate: 30, bg: 1, ex: 2 },
+      { name: 'Falling through', where: 'Bridge, $7E2F, twice as tall', one: [0xB0], c: 7, mc: [9, 9], rate: 30, bg: 1, ey: 2 },
+    ];
+    let big = false, paused = false, t0 = performance.now();
+    const cells = ANIMS.map((a) => {
+      const f = document.createElement('figure');
+      const cv = document.createElement('canvas'); cv.className = 'az-px';
+      f.append(cv, Object.assign(document.createElement('b'), { textContent: a.name }), Object.assign(document.createElement('span'), { textContent: a.where }));
+      $('az-anims').appendChild(f);
+      return { a, cv, pose: -1 };
+    });
+    function poseAt(a, frames) {
+      const n = (a.pair || a.one).length;
+      if (a.rates) { const tot = a.rates.reduce((x, y) => x + y, 0); let t = frames % tot; for (let i = 0; i < n; i++) { if (t < a.rates[i]) return i; t -= a.rates[i]; } return n - 1; }
+      return Math.floor(frames / a.rate) % n;
+    }
+    function drawCell(c, pose) {
+      const a = c.a, s = big ? 4 : 2, W = a.side ? 48 : 48, H = a.pair ? 42 : 42;
+      const ctx = C64.canvas(c.cv, W * s + 8 * s, H * s + 4 * s);
+      ctx.fillStyle = P(a.bg); ctx.fillRect(0, 0, c.cv.width, c.cv.height);
+      if (a.pair) {
+        const [u, l] = a.pair[pose];
+        if (a.side) { sprite(ctx, l, 4 * s, 12 * s, s, a.c[1], a.mc); sprite(ctx, u, 28 * s, 12 * s, s, a.c[0], a.mc); }
+        else { const x = 16 * s; sprite(ctx, u, x, 0, s, a.c[0], a.mc); sprite(ctx, l, x, 21 * s, s, a.c[1], a.mc); }
+      } else {
+        const p = a.one[pose], col = Array.isArray(a.c) ? a.c[pose] : a.c;
+        const ex = a.ex || 1, ey = a.eys ? a.eys[pose] : (a.ey || 1);
+        sprite(ctx, p, Math.round((W + 8 - 24 * ex) / 2) * s, Math.round((H + 4 - 21 * ey) / 2) * s, s, col, a.mc, ex, ey);
+      }
+    }
+    function tick(now) {
+      if (!paused) {
+        const frames = (now - t0) / 20;
+        for (const c of cells) { const p = poseAt(c.a, frames); if (p !== c.pose) { c.pose = p; drawCell(c, p); } }
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    $('az-anim-pause').onclick = (e) => { paused = !paused; e.target.setAttribute('aria-pressed', String(paused)); if (!paused) t0 = performance.now(); };
+    $('az-anim-big').onchange = (e) => { big = e.target.checked; for (const c of cells) { c.pose = -1; } if (paused) for (const c of cells) drawCell(c, 0); };
+
+    // ---- 02: the two halves -----------------------------------------------------------------
+    let gap = false, box = false;
+    function halves() {
+      const s = 4, ctx = C64.canvas($('az-halves'), 40 * s, 56 * s);
+      ctx.fillStyle = P(0); ctx.fillRect(0, 0, 40 * s, 56 * s);
+      const dy = gap ? 8 : 0;
+      sprite(ctx, 0x90, 8 * s, 4 * s, s, 7, [9, 9]);
+      sprite(ctx, 0x91, 8 * s, (25 + dy) * s, s, 1, [9, 9]);
+      if (box) {
+        ctx.strokeStyle = '#ff5050'; ctx.lineWidth = 2; ctx.strokeRect(8 * s, 4 * s, 24 * s, 21 * s);
+        ctx.strokeStyle = '#50c0ff'; ctx.strokeRect(8 * s, (25 + dy) * s, 24 * s, 21 * s);
+      }
+      $('az-halves-out').innerHTML = 'Sprite 0, shape <code>$90</code>: the head, arms and body, yellow (<code>$D027</code> = 7).<br>Sprite 1, shape <code>$91</code>: the legs, white (<code>$D028</code> = 1).<br>Both: brown for the shared colours (<code>$D025</code>/<code>$D026</code> = 9).<br>Together: 24 by 42 pixels, 21 lines apart (lines <code>$C0</code> and <code>$D5</code> in the Temple, <code>$7619</code>-<code>$7623</code>).';
+    }
+    for (const b of document.querySelectorAll('#az-halves-bar button')) b.onclick = () => {
+      if (b.dataset.v === 'gap') gap = !gap; else box = !box;
+      b.setAttribute('aria-pressed', String(b.dataset.v === 'gap' ? gap : box)); halves();
+    };
+    halves();
+
+    // ---- 03: every shape by number ----------------------------------------------------------
+    const USE = {
+      0x80: 'the Gauntlet: running, upper half', 0x81: 'the Gauntlet: running, lower half', 0x82: 'the Gauntlet: running, upper half', 0x83: 'the Gauntlet: running, lower half',
+      0x84: 'the Gauntlet: jumping, upper half', 0x85: 'the Gauntlet: jumping, lower half', 0x86: 'the Gauntlet: ducking, upper half', 0x87: 'the Gauntlet: ducking, lower half',
+      0x88: 'the Gauntlet: ducking, upper half; Hopaztec after the second spear', 0x89: 'the Gauntlet: ducking, lower half; Hopaztec after the second spear',
+      0x8A: 'a spear flying right: the Gauntlet, Hopaztec', 0x8B: 'a spear flying left: the Gauntlet, Hopaztec',
+      0x8C: 'falling, upper half: the Gauntlet, the Vermin, Hopaztec, the Temple', 0x8D: 'falling, lower half', 0x8E: 'lying, upper half: the Gauntlet, Hopaztec', 0x8F: 'lying, lower half',
+      0x90: 'side-view runner, upper half: the Temple, the Vermin, the Bridge', 0x91: 'side-view runner, lower half', 0x92: 'running, upper half', 0x93: 'running, lower half', 0x94: 'running, upper half', 0x95: 'running, lower half',
+      0x96: 'rising in a jump, upper half', 0x97: 'rising in a jump, lower half', 0x98: 'coming down, upper half', 0x99: 'coming down, lower half',
+      0x9A: 'the Vermin: scorpion (creature A)', 0x9B: 'the Vermin: spider (creatures B and C)', 0x9C: 'the Vermin: coiled snake (creature D on the ground; creature E, never shown)', 0x9D: 'the Vermin: snake falling (creature D)', 0x9E: 'the Vermin: a long crawling creature (creature F)',
+      0x9F: 'lying, legs: the Vermin, the Temple', 0xA0: 'lying, head and body: the Vermin, the Temple', 0xA1: 'the Piranha: swimmer, upper half', 0xA2: 'the Piranha: swimmer, lower half in the water',
+      0xA3: 'the Stairs: climber, upper half', 0xA4: 'the Stairs: climber, lower half', 0xA5: 'the Stairs: climber', 0xA6: 'the Stairs: climber', 0xA7: 'the Stairs: climber', 0xA8: 'the Stairs: climber', 0xA9: 'the Stairs: climber', 0xAA: 'the Stairs: climber',
+      0xAB: 'a stone block: the Stairs (rolling), the Temple (falling)', 0xAC: 'the Stairs: the block, turned', 0xAD: 'the Stairs: the block, turned again', 0xAE: 'the Stairs: flattened, upper half', 0xAF: 'the Stairs: flattened, lower half',
+      0xB0: 'the Bridge: falling through a hole', 0xB1: 'the Piranha: a fish', 0xB2: 'no routine uses it: a fish, turning', 0xB3: 'the Bridge: a plank', 0xB4: 'the Bridge: a plank with a hole',
+      0xB5: 'Hopaztec: hopper, upper half', 0xB6: 'Hopaztec: hopper, lower half', 0xB7: 'Hopaztec: hopping, upper half; the hop out through the door', 0xB8: 'Hopaztec: hopping, lower half',
+      0xB9: 'the Temple: a spear falling', 0xBA: 'no routine uses it: a spear on the slant', 0xBB: 'the Piranha: swimmer, the other stroke', 0xBC: 'the Piranha: swimmer, the other stroke, lower half',
+      0xBD: 'the Temple: spikes', 0xBE: 'the Temple: a trapdoor', 0xBF: 'the Piranha: the cloud where the swimmer was eaten',
+    };
+    const MC = new Set(); for (let p = 0x80; p <= 0xBF; p++) MC.add(p);
+    for (const p of [0x8A, 0x8B, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0xAB, 0xAC, 0xAD, 0xB1, 0xB2, 0xB3, 0xB4, 0xB9, 0xBA, 0xBD, 0xBE, 0xBF]) MC.delete(p);
+    const sel = $('az-one-sel');
+    for (let p = 0x80; p <= 0xBF; p++) sel.add(new Option(hex(p) + ' (' + hex(0x2000 + (p - 0x80) * 64, 4) + ')', p));
+    function one() {
+      const p = +sel.value, s = 6, ctx = C64.canvas($('az-one'), 24 * s + 12, 21 * s + 12);
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, 24 * s + 12, 21 * s + 12);
+      const hi = $('az-one-hi').checked || !MC.has(p);
+      if (hi) C64.drawSprite(ctx, shape(p), 6, 6, s, P(1)); else C64.drawSpriteMC(ctx, shape(p), 6, 6, s, P(1), P(12), P(10));
+      $('az-one-out').innerHTML = '<b>Shape ' + hex(p) + '</b>, the 63 bytes at <code>' + hex(0x2000 + (p - 0x80) * 64, 4) + '</code><br>' + (USE[p] || '') + '<br>' + (MC.has(p) ? 'Drawn multicolour in play.' : 'Drawn single colour in play.');
+    }
+    sel.onchange = one; $('az-one-hi').onchange = one;
+    $('az-one-prev').onclick = () => { sel.selectedIndex = (sel.selectedIndex + 63) % 64; one(); };
+    $('az-one-next').onclick = () => { sel.selectedIndex = (sel.selectedIndex + 1) % 64; one(); };
+    one();
+
+    // ---- 04: character sets -----------------------------------------------------------------
+    const CS_USE = {
+      a: [[0, 143, 'the spiral logo; 1-127 also the Bridge\'s rock'], [144, 215, 'the sun stone'], [217, 224, 'the Temple\'s pillars'], [220, 221, 'Hopaztec\'s walls'], [224, 225, 'Hopaztec\'s walls'], [226, 229, 'the lake\'s ripples and the river\'s foam'], [230, 230, 'the block the title\'s letters are made of'], [233, 236, 'Hopaztec\'s tiles'], [42, 42, 'the floor of the Temple and Hopaztec']],
+      b: [[1, 120, 'the spear throwers, in five frames'], [103, 103, 'the Vermin\'s wall'], [121, 123, 'the Gauntlet\'s sand and the Stairs\' steps'], [124, 125, 'the temple on the horizon'], [126, 126, 'the Vermin\'s ground'], [127, 127, 'the Stairs\' steps'], [129, 247, 'the spear throwers'], [250, 253, 'the temple\'s doorway'], [252, 252, 'also the Stairs\' steps'], [254, 255, 'the temple\'s top']],
+    };
+    let cs = 'a';
+    function charset() {
+      const base = cs === 'a' ? 0x3000 : 0x3800, s = 3, per = 32, ctx = C64.canvas($('az-cs'), per * 9 * s, 8 * 9 * s);
+      ctx.fillStyle = '#2b2e36'; ctx.fillRect(0, 0, per * 9 * s, 8 * 9 * s);
+      const set = ram.subarray(base, base + 2048), hi = $('az-cs-hi').checked;
+      for (let i = 0; i < 256; i++) {
+        const x = (i % per) * 9 * s, y = Math.floor(i / per) * 9 * s;
+        ctx.fillStyle = '#000'; ctx.fillRect(x, y, 8 * s, 8 * s);
+        if (hi) C64.drawGlyph(ctx, set, i, x, y, s, '#fff'); else C64.drawGlyphMC(ctx, set, i, x, y, s, ['#000', '#888', '#fff', '#e05050']);
+      }
+    }
+    $('az-cs').onclick = (e) => {
+      const r = e.target.getBoundingClientRect(), k = e.target.width / r.width;
+      const i = Math.floor((e.clientY - r.top) * k / 27) * 32 + Math.floor((e.clientX - r.left) * k / 27);
+      if (i < 0 || i > 255) return;
+      const uses = CS_USE[cs].filter(([a, b]) => i >= a && i <= b).map((u) => u[2]);
+      $('az-cs-out').textContent = 'Character ' + i + ' (' + hex(i) + ') of set ' + cs.toUpperCase() + ', the 8 bytes at ' + hex((cs === 'a' ? 0x3000 : 0x3800) + i * 8, 4) + ': ' + (uses.length ? uses.join('; ') : 'nothing found that draws with it') + '.';
+    };
+    for (const b of document.querySelectorAll('#az-cs-bar button')) b.onclick = () => {
+      cs = b.dataset.v; for (const o of document.querySelectorAll('#az-cs-bar button')) o.setAttribute('aria-pressed', String(o === b)); charset();
+    };
+    $('az-cs-hi').onchange = charset;
+    charset();
+
+    // ---- 05: pictures ---------------------------------------------------------------------------
+    // a 40x25 screen: scr/col Uint8Arrays of 1000, set base, multicolour flag, [bg, d022, d023]
+    function screen(cv, scr, col, base, mc, cols, s, mark) {
+      const ctx = C64.canvas(cv, 320 * s, 200 * s), set = ram.subarray(base, base + 2048);
+      ctx.fillStyle = P(cols[0]); ctx.fillRect(0, 0, 320 * s, 200 * s);
+      for (let i = 0; i < 1000; i++) {
+        const x = (i % 40) * 8 * s, y = Math.floor(i / 40) * 8 * s, c = col[i] & 15;
+        if (mc && (c & 8)) C64.drawGlyphMC(ctx, set, scr[i], x, y, s, [null, P(cols[1]), P(cols[2]), P(c & 7)]);
+        else C64.drawGlyph(ctx, set, scr[i], x, y, s, P(c));
+        if (mark && mark(i)) { ctx.fillStyle = 'rgba(255,40,200,.45)'; ctx.fillRect(x, y, 8 * s, 8 * s); }
+      }
+    }
+    const blank = () => ({ scr: new Uint8Array(1000).fill(32), col: new Uint8Array(1000) });
+    const put = (o, at, src, n, colour) => { for (let k = 0; k < n; k++) { o.scr[at - 0x400 + k] = ram[src + k]; o.col[at - 0x400 + k] = colour; } };
+    let bridgeMark = false, gtFrame = 0;
+    const PICS = [
+      { name: 'The spiral (start-up)', draw(cv) { const o = blank(); put(o, 0x528, 0x4000, 256, 14); put(o, 0x628, 0x4100, 160, 14); screen(cv, o.scr, o.col, 0x3000, true, [0, 1, 2], 2); },
+        cap: 'Cosmi\'s logo, 416 bytes from <code>$4000</code> copied to <code>$0528</code> in light blue (<code>$105F</code>), multicolour, with the shared colours the machine has at the hand-over (white and red on black). The game then dissolves it into the sun stone.' },
+      { name: 'The sun stone and the title', draw(cv) { const o = blank(); put(o, 0x528, 0x4200, 256, 8); put(o, 0x628, 0x4300, 256, 8); put(o, 0x428, 0x4600, 200, 2); put(o, 0x6F8, 0x4700, 200, 2); screen(cv, o.scr, o.col, 0x3000, false, [0, 0, 0], 2); },
+        cap: 'The sun stone from <code>$4200</code> in orange, and AZTEC and CHALLENGE from <code>$4600</code> and <code>$4700</code> in red, all single colour (<code>$1091</code> turns multicolour off). The letters are one solid character, 230, laid out like large type.' },
+      { name: 'The Temple\'s back wall', draw(cv) { const o = blank(); put(o, 0x528, 0x4200, 256, 8); put(o, 0x628, 0x4300, 256, 8);
+          for (let r = 0; r < 22; r++) for (let x = 0; x < 3; x++) { o.scr[r * 40 + x] = ram[0x4400 + r * 3 + x]; o.scr[r * 40 + 37 + x] = ram[0x4450 + r * 3 + x]; o.col[r * 40 + x] = o.col[r * 40 + 37 + x] = 15; }
+          for (let i = 0x348; i < 1000; i++) { o.scr[i] = 0x2A; o.col[i] = 13; }
+          for (let i = 0; i < 0x348; i++) if (!o.col[i]) o.col[i] = 15;
+          screen(cv, o.scr, o.col, 0x3000, true, [0, 12, 11], 2); },
+        cap: 'The sun stone again, now on the Temple\'s wall (<code>$7808</code>), between the pillars from <code>$4400</code> and <code>$4450</code>, over the floor of character 42 (<code>$7699</code>). The stone\'s colour 8 means multicolour here, which the Temple turns on, so the same bytes look different from the title.' },
+      { name: 'Hopaztec\'s room', draw(cv) { const o = blank(); for (let i = 0; i < 1000; i++) { o.scr[i] = ram[0x5800 + i]; const c = o.scr[i]; o.col[i] = (c >= 0xE9 && c <= 0xEC) ? 7 : 8; }
+          for (const a of [0x4D, 0x4E, 0x75, 0x76, 0x9D, 0x9E, 0xC5, 0xC6]) o.col[a] = 3;
+          screen(cv, o.scr, o.col, 0x3000, true, [0, 13, 5], 2); },
+        cap: 'The room from <code>$5800</code>, 1,000 bytes for the whole screen. <code>$7200</code> colours the tiles\' faces (characters 233-236) yellow and the rest multicoloured, then the doorway\'s eight cells cyan by day (<code>$7724</code>).' },
+      { name: 'The Stairs\' steps', draw(cv) { const o = blank(); for (let k = 0; k < 8; k++) put(o, 0x400 + k * 120, 0x4800, 120, 15); put(o, 0x7C0, 0x4800, 40, 15); screen(cv, o.scr, o.col, 0x3800, true, [12, 12, 15], 2); },
+        cap: 'Three rows from <code>$4800</code>, repeated down the screen (<code>$6E9F</code>). The game scrolls them a line at a time with the fine vertical scroll, and every eighth line draws them again a row lower from one of three starting rows, so the steps slide down without end.' },
+      { name: 'The Bridge\'s gorge', draw(cv) { const o = blank(); for (let i = 0; i < 1000; i++) { const b = ram[0x4C00 + i]; o.scr[i] = b & 0x7F; o.col[i] = b & 0x80 ? 3 : 9; }
+          for (let i = 0x300; i < 1000; i++) if (o.scr[i] === 0x20) { o.scr[i] = 0xE2 + (i % 3); o.col[i] = 8; }
+          screen(cv, o.scr, o.col, 0x3000, false, [1, 0, 0], 2, bridgeMark ? (i) => { const c = ram[0x4C00 + i] & 0x7F; return c >= 1 && c <= 0x7F && c !== 0x20; } : null); },
+        cap: 'The gorge from <code>$4C00</code>: bit 7 of each byte picks the phase\'s colour (cyan by day) and the rest are brown; the spaces low on the screen get the foam characters 226-228 (picked at random by the game, in turn here). The Bridge leaves multicolour off, so these are the spiral\'s characters in single colour.', bar: '<label><input type="checkbox" id="az-bridge-mark"> Mark the cells drawn with the spiral\'s characters</label>' },
+    ];
+    const psel = $('az-pic-sel'); PICS.forEach((p, i) => psel.add(new Option(p.name, i)));
+    function pic() {
+      const p = PICS[+psel.value]; p.draw($('az-pic')); $('az-pic-cap').innerHTML = p.cap; $('az-pic-bar').innerHTML = p.bar || '';
+      const m = $('az-bridge-mark'); if (m) { m.checked = bridgeMark; m.onchange = () => { bridgeMark = m.checked; pic(); }; }
+    }
+    psel.onchange = pic;
+    $('az-pic-prev').onclick = () => { psel.selectedIndex = (psel.selectedIndex + PICS.length - 1) % PICS.length; pic(); };
+    $('az-pic-next').onclick = () => { psel.selectedIndex = (psel.selectedIndex + 1) % PICS.length; pic(); };
+    pic();
+
+    // ---- 06: the Gauntlet --------------------------------------------------------------------
+    let gtPlay = true, gtLast = 0;
+    function gauntlet() {
+      const o = { scr: new Uint8Array(1000), col: new Uint8Array(1000).fill(11) };
+      const fr = [0x5000, 0x50F0, 0x51E0, 0x52D0, 0x53C0][gtFrame];
+      for (let k = 0; k < 240; k++) { o.scr[0x230 + k] = ram[fr + k]; o.col[0x230 + k] = 8; }
+      for (let k = 0x320; k < 1000; k++) o.scr[k] = 0x79 + ((k * 7 + (k >> 3)) % 3);   // the sand, rows 20-24 ($616B)
+      const st = +$('az-gt-stage').value, t = azTemple(ram, st, 11);
+      for (const [a, v] of t.scr) o.scr[a - 0x400] = v;
+      for (const [a, v] of t.col) o.col[a - 0xD800] = v;
+      screen($('az-gt'), o.scr, o.col, 0x3800, true, [7, 9, 1], 2);
+      $('az-gt-out').textContent = 'frame ' + (gtFrame + 1) + ' of 5 (' + hex(fr, 4) + '), temple stage ' + st + (st >= 7 ? ', the doorway drawn' : '');
+    }
+    function gtTick(now) { if (gtPlay && now - gtLast > 160) { gtLast = now; gtFrame = (gtFrame + 1) % 5; gauntlet(); } requestAnimationFrame(gtTick); }
+    $('az-gt-play').onclick = (e) => { gtPlay = !gtPlay; e.target.setAttribute('aria-pressed', String(gtPlay)); };
+    $('az-gt-stage').oninput = gauntlet;
+    gauntlet(); requestAnimationFrame(gtTick);
+
+    // ---- 07: the modes -----------------------------------------------------------------------
+    const sw = (n) => '<span class="az-sw" style="background:' + P(n) + '"></span>';
+    const MODES = [
+      ['The Gauntlet', 'B, $3800', 'multicolour', 7, 9, 1, '$6000'],
+      ['The Stairs', 'B, $3800', 'multicolour, 24 rows, fine vertical scroll', 12, 12, 15, '$6CF5'],
+      ['The Temple', 'A, $3000', 'multicolour', 0, 12, 11, '$7600'],
+      ['The Vermin', 'B, $3800', 'multicolour, fine horizontal scroll', 0, 6, 11, '$6595'],
+      ['Hopaztec', 'A, $3000', 'multicolour', 0, 13, 5, '$7200'],
+      ['The Piranha', 'A, $3000', 'multicolour', 6, 3, 1, '$7E98'],
+      ['The Bridge', 'A, $3000', 'single colour', 1, null, null, '$7B00'],
+      ['Menu, scorecard', 'ROM letters', 'single colour', 0, null, null, '$1300'],
+    ];
+    $('az-modes').innerHTML = '<tr><th>Level</th><th>Characters</th><th>Mode</th><th>Background, shared colours</th><th>Set up at</th></tr>' +
+      MODES.map((m) => '<tr><td>' + m[0] + '</td><td>' + m[1] + '</td><td>' + m[2] + '</td><td>' + sw(m[3]) + (m[4] !== null ? sw(m[4]) + sw(m[5]) : '') + '</td><td><code>' + m[6] + '</code></td></tr>').join('');
+  }).catch((e) => { console.error(e); });
+})();
+</script>

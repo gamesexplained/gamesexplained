@@ -59,9 +59,10 @@ preview, `$08` players, `$09` whose turn, `$30`-`$36` the tune's pointers
 and tempo, `$45` the progress stage, `$50`-`$5F` the phase's settings,
 `$60`-`$67` the two BCD scores, `$68` achievements.
 
-Video: bank 0 throughout; screen `$0400`; `$D018` `$15` (ROM set) for the
-menu and scorecard, `$1D` (set A) for levels 3, 5, 6 and 7 and the logo,
-`$1F` (set B) for levels 1, 2 and 4.
+Video: bank 0 throughout; screen `$0400`; `$D018` written `$14` (ROM set)
+for the menu and scorecard, `$1C` (set A) for levels 3, 5, 6 and 7 and
+the logo, `$1E` (set B) for levels 1, 2 and 4. Multicolour text is on in
+every level but the Bridge, whose gorge is single colour.
 
 ## Timing
 

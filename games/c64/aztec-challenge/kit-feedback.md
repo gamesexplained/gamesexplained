@@ -21,8 +21,13 @@ None.
 
 ## Maintainer asks
 
-None.
+- **Add a tool that lists and extracts the KERNAL-format files on a TAP image.** The C64 `steps` skill's "media" row names tools for disks (`c1541`, `kit/c64/disk.py`) and cartridges, and `loads.py` for a game running, but nothing reads a tape image's files. On Aztec Challenge (8 November 2026, branch `game/c64/aztec-challenge`) a 70-line decoder in `work/tapdec.py` found both files and their addresses from the pulses in seconds, where the emulator took ten minutes in warp to load them, and it showed the boot program before it ran. A `kit/c64/tap.py` with `list` and `extract` (TAP versions 0 and 1, KERNAL blocks only, checksums checked, each file's first copy), named in the "media" row, would give every tape game the table `10-orient` step 7 asks for at the start.
 
 ## What cost the most time
 
-Waiting for the tape: a standard KERNAL load of 28 KB takes about ten minutes even in warp, twice (the first look and the hand-over).
+Waiting for the tape: a standard KERNAL load of 28 KB takes about ten minutes even in warp, twice (the first look and the hand-over); a TAP reader in the kit (the ask above) would have given the files and their addresses before the first boot.
+
+## Notes on tools
+
+- WSL2 on Windows 11 (Ubuntu 26.04.1, Linux 6.18, Intel Core i7-3770): `node` is not on the path in a `wsl.exe -e bash -lc` shell; the kit's own is at `tools/node/bin`, and `kit/c64/frame.py compare` fails with "drawing a frame needs a JavaScript runtime" until it is added.
+- The Chrome extension was not connected, so the pages were checked with Windows' own Chrome headless (`--screenshot`) through a page in `_site/` that offsets an iframe, as earlier runs on this machine did.
