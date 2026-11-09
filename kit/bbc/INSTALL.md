@@ -65,12 +65,13 @@ modes 0 to 6, and on a screen scrolled by the CRTC, and compares jsbeeb's
 picture with the site's drawing of the same memory (`site/lib/bbc.js`) at
 every pixel. On 13 October 2026, on the build above, nothing differed in
 any of the nine pictures, about 8 s in all. Mode 7, teletext, is drawn
-by the site with its letters in the page's own font; the same check fills
-three screens with random control codes and characters and compares every
-mosaic, space and blank cell with jsbeeb's at a point inside each block,
-and the colours of every letter. On 14 October 2026 none of the 3,000
-cells differed. The check resets the machine, so run it on a server of
-its own (`tools.py --platform bbc jsbeeb --port 6848`).
+by the site in the SAA5050's own letters; the same check fills three
+screens with random control codes and characters and compares them with
+jsbeeb's at every pixel. On 9 November 2026 every cell was the same but
+the nine that showed the letter j, which jsbeeb draws a row shorter than
+the chip does (`site/lib/bbc.js`, `SAA5050`, says where the site's
+letters come from). The check resets the machine, so run it on a server
+of its own (`tools.py --platform bbc jsbeeb --port 6848`).
 
 ## Why jsbeeb, and beebjit beside it
 

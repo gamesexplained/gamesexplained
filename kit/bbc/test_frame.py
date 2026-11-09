@@ -5,12 +5,13 @@ This is what CI runs. It reads a PNG written here as the kit's server writes one
 picture inside a frame, and runs bbc.js under Node to check its rules against the platform
 reference's: which bits make each pixel in two, four and sixteen colours, where a pixel's
 byte is, how an address past &7FFF wraps, the blank lines of modes 3 and 6, and mode 2's
-flashing colours; and teletext's rules for what a cell shows: set-after and set-at codes,
-mosaics and the capitals among them, hold, and double height.
+flashing colours; teletext's rules for what a cell shows: set-after and set-at codes,
+mosaics and the capitals among them, hold, and double height; and how the SAA5050 draws a
+cell: character rounding, a row's 12 half-dots spread over 16 pixels, and double height.
 
 The drawing is checked against the machine, and only there: `python3 kit/bbc/frame.py test`
-paints a test pattern in jsbeeb in every mode from 0 to 6 and compares jsbeeb's picture with
-bbc.js's pixel by pixel, and mode 7 cell by cell. That needs a jsbeeb server, which CI does not start, so it is run by hand after
+paints a test pattern in jsbeeb in every mode from 0 to 6, and random teletext in mode 7, and
+compares jsbeeb's picture with bbc.js's pixel by pixel. That needs a jsbeeb server, which CI does not start, so it is run by hand after
 any change to site/lib/bbc.js. Node is needed here; with KIT_REQUIRE_TOOLS set, a missing
 Node fails instead of skipping.
 """
@@ -158,6 +159,70 @@ class Teletext(unittest.TestCase):
         self.assertEqual((g[1][1]["half"], g[1][1]["blank"]), (2, False), "the row under: bottom halves")
         self.assertTrue(g[1][3]["blank"], "and its other cells blank")
         self.assertEqual(g[2][0]["half"], 0, "the row after the pair is a row of its own")
+
+
+def lit(line):
+    """The 16 pixels of a white-on-black cell's line whose half-dots (0 to 11, left first) are
+    lit, as BBC.teletext codes them: each pixel covers three quarters of a half-dot, and takes
+    its share of white mixed in light."""
+    out = []
+    for i in range(16):
+        w = sum(max(0, min(3 * i + 3, 4 * j + 4) - max(3 * i, 4 * j)) for j in line)
+        out.append(round((w / 3) ** (1 / 2.2) * 255))
+    return out
+
+
+class TeletextPicture(unittest.TestCase):
+    """BBC.teletext against the SAA5050's way of drawing a cell, as Bedstead's notes and
+    jsbeeb's src/teletext.js describe it."""
+
+    def lines(self, codes, rows=1, col=0, opts="{}"):
+        """The red channel of each of a cell's 20 lines of 16 pixels."""
+        b = list(codes) + [32] * (40 * rows - len(codes))
+        return node_eval(f"(() => {{ const t = BBC.teletext({json.dumps(b)}, Object.assign({{ rows: {rows} }}, {opts}));"
+                         f" const out = []; for (let l = 0; l < 20 * {rows}; l++) {{ const row = [];"
+                         f" for (let x = 0; x < 16; x++) row.push(t.rgba[(l * 640 + {col} * 16 + x) * 4]); out.push(row); }}"
+                         f" return [t.w, t.h, out]; }})()")
+
+    def test_size(self):
+        w, h, _ = self.lines([], rows=25)
+        self.assertEqual((w, h), (640, 500), "16 pixels by 20 lines a cell")
+
+    def test_rounding(self):
+        # '/' is a dot a row, stepping left: dot 5 in row 2, dot 4 in row 3, dot 3 in row 4
+        _, _, g = self.lines([0x2F])
+        self.assertEqual(g[4], lit({10, 11}), "the upper line of row 2: nothing above to round to")
+        self.assertEqual(g[5], lit({9, 10, 11}), "its lower line reaches towards row 3's dot")
+        self.assertEqual(g[6], lit({8, 9, 10}), "row 3's upper line reaches back to row 2's")
+        self.assertEqual(g[7], lit({7, 8, 9}))
+
+    def test_mosaics_are_not_rounded(self):
+        # top left and middle right blocks only: a diagonal that a letter would have rounded
+        _, _, cell = self.lines([0x97, 0x20 | 0x01 | 0x08], col=1)
+        self.assertEqual(cell[5], lit(set(range(6))), "the top left block's last line, as it is")
+        self.assertEqual(cell[6], lit(set(range(6, 12))), "the middle right block's first line, as it is")
+
+    def test_double_height(self):
+        _, _, g = self.lines([0x8D, 0x41, *[32] * 38, 0x8D, 0x41], rows=2, col=1)
+        _, _, single = self.lines([0x41], col=0)
+        self.assertEqual([g[2 * k] for k in range(10)], single[:10], "the top half: each line twice")
+        self.assertEqual([g[2 * k + 1] for k in range(10)], single[:10])
+        self.assertEqual([g[20 + 2 * k] for k in range(10)], single[10:], "the row under: the bottom half")
+
+    def test_descenders(self):
+        _, _, j = self.lines([0x6A])
+        _, _, y = self.lines([0x79])
+        self.assertTrue(any(j[19]) and any(y[19]), "j reaches the bottom dot row, as g, p, q and y do")
+
+    def test_flash_and_conceal(self):
+        _, _, shown = self.lines([0x88, 0x41], col=1)
+        _, _, hidden = self.lines([0x88, 0x41], col=1, opts="{ phase: 1 }")
+        self.assertTrue(any(map(any, shown)))
+        self.assertFalse(any(map(any, hidden)), "phase 1: a flashing cell shows its background")
+        _, _, concealed = self.lines([0x98, 0x41], col=1)
+        _, _, revealed = self.lines([0x98, 0x41], col=1, opts="{ reveal: true }")
+        self.assertFalse(any(map(any, concealed)))
+        self.assertTrue(any(map(any, revealed)))
 
 
 if __name__ == "__main__":

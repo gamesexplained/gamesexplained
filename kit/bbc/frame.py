@@ -7,13 +7,13 @@ memory with BBC.render under node, and compares the two at every pixel. A scroll
 checked too: the CRTC's start moved down eight character rows, so the bottom of the picture
 comes from the memory that wraps round to the screen's start.
 
-Mode 7, teletext, is checked cell by cell: a screen of random control codes and characters
-(flash left out, so that a still picture is the same at any moment) is put in &7C00, the third
-with the CRTC's start moved on two rows as the MOS scrolls it (BBC.screen7 then reads it round
-the 1K), and BBC.cells works out what each cell shows. Every mosaic, space and blank cell is compared with
-jsbeeb's picture at six points, one inside each block, wherever double height puts it; a cell
-with a letter must show its background and no colour but its own two, since bbc.js draws
-letters in the page's font and not the SAA5050's.
+Mode 7, teletext, is checked pixel by pixel too: a screen of random control codes and
+characters (flash left out, so that a still picture is the same at any moment) is put in &7C00,
+the third with the CRTC's start moved on two rows as the MOS scrolls it (BBC.screen7 then reads
+it round the 1K), and BBC.teletext draws it under node. jsbeeb codes a full colour as 240 and
+bbc.js as 255, so a pixel matches when the two agree to within two 255ths. A cell showing the
+letter j is left out and counted: jsbeeb's j is a row shorter than the SAA5050's (bbc.js,
+SAA5050, says where the site's letters come from).
 
 It resets the machine it is given, so give it one of its own:
 
@@ -105,31 +105,27 @@ def node_screen7(k, r12, r13):
     return bytes(json.loads(r.stdout))
 
 
-def teletext_colour(rgb):
+def teletext(screen):
+    """BBC.teletext from site/lib/bbc.js, under node, for 1000 bytes of mode 7 screen: (its
+    cells, [(r, g, b) of each pixel, 640 to a line])."""
+    with tempfile.TemporaryDirectory() as d:
+        out = os.path.join(d, "rgba")
+        script = ("const fs = require('fs'), vm = require('vm');"
+                  "vm.runInThisContext(fs.readFileSync(process.argv[1], 'utf8'));"
+                  "const t = BBC.teletext(JSON.parse(process.argv[2]));"
+                  "fs.writeFileSync(process.argv[3], Buffer.from(t.rgba));"
+                  "console.log(JSON.stringify(t.grid));")
+        r = subprocess.run(["node", "-e", script, LIB, json.dumps(list(screen)), out], capture_output=True, text=True)
+        if r.returncode:
+            sys.exit(f"bbc.js under node failed:\n{r.stderr}")
+        raw = open(out, "rb").read()
+    return json.loads(r.stdout), [tuple(raw[i:i + 3]) for i in range(0, len(raw), 4)]
+
+
+def same_colour(jsbeeb, site):
     """jsbeeb's teletext colours are its palette at 240 rather than 255 (src/teletext.js,
-    rebuildColours): the colour number, from which of red, green and blue are lit."""
-    r, g, b = rgb
-    return (r > 128) | (g > 128) << 1 | (b > 128) << 2
-
-
-# The points of a 16 by 20 cell the mode 7 check reads, one inside each mosaic block: jsbeeb
-# draws the SAA5050's 12 dots of a row as 16 pixels, and line y shows dot row y // 2, or y // 4
-# of the half that double height shows.
-POINTS = [(x, y) for y in (3, 10, 17) for x in (4, 12)]
-
-
-def expected(cell, x, y):
-    """The colour bbc.js's cell gives the pixel (x, y) of it, as the SAA5050 draws a mosaic."""
-    if cell["blank"] or cell["conceal"] or cell["ch"] == 32 or not cell["mosaic"]:
-        return cell["bg"]
-    dot_col = (x * 12 // 16) // 2
-    dot_row = (y >> 1) if not cell["half"] else (y >> 2) + (5 if cell["half"] == 2 else 0)
-    band = 0 if dot_row < 3 else 1 if dot_row < 7 else 2
-    block = band * 2 + (dot_col >= 3)
-    lit = cell["ch"] & (1 << [0, 1, 2, 3, 4, 6][block])
-    if cell["sep"] and (dot_col in (0, 3) or dot_row in (2, 6, 9)):
-        lit = 0
-    return cell["fg"] if lit else cell["bg"]
+    rebuildColours), and it rounds down where bbc.js rounds to the nearest."""
+    return all(abs(j * 255 / 240 - s) <= 2 for j, s in zip(jsbeeb, site))
 
 
 def screen7(seed):
@@ -142,7 +138,7 @@ def screen7(seed):
 
 
 def test7(m, keep):
-    """Mode 7 against jsbeeb, cell by cell: how many cells differ, over three screens."""
+    """Mode 7 against jsbeeb, pixel by pixel: how many cells differ, over three screens."""
     m.boot()
     m.type("MODE 7\nVDU 23,1,0;0;0;0;\n")
     m.frames(2)
@@ -155,7 +151,7 @@ def test7(m, keep):
     sx, sy = first_lit(lambda x, y: rgb[y * W + x] != (0, 0, 0), W, H)
     x0, y0 = sx - 16, sy
     os.remove(path)
-    bad = total = 0
+    bad = 0
     for seed in (1, 2, 3):
         screen = screen7(seed)
         if seed == 3:   # scrolled two rows, as the MOS scrolls it: the CRTC starts at &7C50
@@ -171,28 +167,24 @@ def test7(m, keep):
         path = os.path.join(OUT, f"mode7-{seed}.png")
         m.screenshot(path)
         W, H, rgb = png_rgb(path)
-        grid = cells(screen)
-        wrong = []
+        grid, ours = teletext(screen)
+        wrong, js = [], 0
         for row in range(25):
             for col in range(40):
                 c = grid[row][col]
-                at = lambda x, y: teletext_colour(rgb[(y0 + row * 20 + y) * W + x0 + col * 16 + x])
-                total += 1
-                if c["mosaic"] or c["ch"] == 32 or c["blank"] or c["conceal"]:
-                    ok = all(at(x, y) == expected(c, x, y) for x, y in POINTS)
-                else:
-                    # jsbeeb rounds a letter's diagonals by mixing its two colours, which can
-                    # light a mixed pixel in neither, so a letter's pixels need only be made
-                    # of the cell's colours, with its background among them; one may show no
-                    # ink at all, as a full stop does in the top half of double height
-                    seen = {at(x, y) for y in range(20) for x in range(16)}
-                    ok = c["bg"] in seen and all(k & ~(c["fg"] | c["bg"]) == 0 for k in seen)
-                if not ok:
+                shown = not (c["blank"] or c["conceal"] or c["ch"] == 32)
+                if shown and not c["mosaic"] and c["ch"] == 0x6A:
+                    js += 1
+                    continue
+                if not all(same_colour(rgb[(y0 + row * 20 + y) * W + x0 + col * 16 + x],
+                                       ours[(row * 20 + y) * 640 + col * 16 + x])
+                           for y in range(20) for x in range(16)):
                     wrong.append((row, col))
         bad += len(wrong)
         print(f"{'PASS' if not wrong else 'FAIL'}  mode 7, random screen {seed}{', scrolled 2 rows' if seed == 3 else ''}:"
-              f" {len(wrong)} of 1000 cells differ"
-              + (f", first at row {wrong[0][0]}, column {wrong[0][1]}" if wrong else ""))
+              f" {len(wrong)} of {1000 - js} cells differ"
+              + (f", first at row {wrong[0][0]}, column {wrong[0][1]}" if wrong else "")
+              + (f"; {js} showing j left out" if js else ""))
         if not keep and not wrong:
             os.remove(path)
     return bad
