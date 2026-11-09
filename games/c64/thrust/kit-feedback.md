@@ -26,7 +26,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-- **kit: Say how to put Node in `tools/` for the page tests on macOS.** `kit/c64/INSTALL.md` says the widget tests and `kit/scripts/shoot.js` need node and Playwright, and `kit/nes/INSTALL.md` says the kit does not install Node. A contributor without them (this Mac, 8 November 2026) has no recipe that keeps them inside the clone. This run used Node's official macOS arm64 build: `curl -sSfL -o tools/dl/node.tar.gz https://nodejs.org/dist/v26.13.0/node-v26.13.0-darwin-arm64.tar.gz`, checked against `SHASUMS256.txt` from the same folder, unpacked into `tools/node` (222 MB), then `npm_config_cache=$PWD/tools/npm/cache npm install playwright-core` in `tools/npm`, with `PATH=$PWD/tools/node/bin:$PATH NODE_PATH=$PWD/tools/npm/node_modules` for every test and `shoot.js`. With no Firefox, `KIT_BROWSER_CHROMIUM` pointed at the installed Google Chrome, which the contributor allowed knowing its updater can write outside the folder. A `tools.py get-node` that does the same, and a line in `kit/INSTALL.md`, would make it one command.
+- #804: Add a way to install Node into `tools/` for the page tests, with Playwright (the recipe this run used is in the issue).
 
 ## What cost the most time
 
