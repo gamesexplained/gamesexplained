@@ -17,6 +17,9 @@ const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const { createSfxDriver, AZ_SFX, AZ_SFX_RANGES, AZ_FRAME_CYCLES } = g.run('index.html', 'az-sfx', 'createSfxDriver', 'AZ_SFX', 'AZ_SFX_RANGES', 'AZ_FRAME_CYCLES');
 const L = g.listing();
+// the driver made from its source text alone, as the player's AudioWorklet makes it: one that uses a
+// name from the page's scope throws there, and the page is silent (site/lib/sid.js)
+const isolated = require('vm').runInNewContext('(' + createSfxDriver + ')', {});
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 if (AZ_FRAME_CYCLES !== 312 * 63) fail('a frame is', AZ_FRAME_CYCLES, 'cycles');
@@ -48,7 +51,7 @@ AZ_SFX.forEach((c, t) => {
   if (c.call) { m[0x01FF] = 0xFF; m[0x01FE] = 0xFE; cpu.sp = 0xFD; }
   cpu.pc = c.at;
   const end = c.call ? 0xFFFF : c.until;
-  const drv = createSfxDriver({ mem, list: AZ_SFX }, kit);
+  const drv = isolated({ mem, list: AZ_SFX }, kit);
   drv.init(t);
   if (w.join() !== drv.writes.join()) fail(c.name, 'start');
   let f = 0, sounded = false;

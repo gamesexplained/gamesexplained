@@ -19,6 +19,9 @@ const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const { createDriver, AZ_TUNES, AZ_DRIVER_RANGES, AZ_PERIOD } = g.run('index.html', 'az-music', 'createDriver', 'AZ_TUNES', 'AZ_DRIVER_RANGES', 'AZ_PERIOD');
 const L = g.listing();
+// the driver made from its source text alone, as the player's AudioWorklet makes it: one that uses a
+// name from the page's scope throws there, and the page is silent (site/lib/sid.js)
+const isolated = require('vm').runInNewContext('(' + createDriver + ')', {});
 const N = 3000;
 let bad = 0, frames = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
@@ -45,7 +48,7 @@ AZ_TUNES.forEach((c, t) => {
     for (let s = 1; s <= c.stage; s++) { m[0x45] = s; cpu.call(0x6530, {}); }
   }
   if (c.start) { m[0x34] = c.start & 0xFF; m[0x35] = c.start >> 8; m[0x33] = 0; }
-  const drv = createDriver({ mem, list: AZ_TUNES }, kit);
+  const drv = isolated({ mem, list: AZ_TUNES }, kit);
   drv.init(t);
   if (w.join() !== drv.writes.join()) fail(c.name, 'start', w.join(), '|', drv.writes.join());
   const ptr0 = m[0x34] | m[0x35] << 8;
