@@ -8,6 +8,9 @@ comments and every claim in `facts.md` on Opus 5.5, then a second sample
 
 Missing for Platinum: the Play tab.
 
+- The Graphics tab (`graphics.html`), which the Silver definition asks for in
+  AGENTS.md: every sprite shape the moving things are drawn with.
+
 - Unreached sprite shapes in level 2 ($01, $70, $73, $74) are level-specific;
   trace them from level 1's code.
 - Name Darkman's move states ($2768, $2F67) and which strike is a punch and
