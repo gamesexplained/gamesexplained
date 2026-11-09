@@ -47,3 +47,17 @@ Traced the player-to-map calculation at $6EA9. The first independent formula fai
 Sampled the player coordinates for 120 frames of the second forced-load play capture with no new input. The player stayed at X=90, Y=210; none of these samples takes the vertical-underflow path. This bounded observation does not settle whether another route can reach it. The user pause was restored.
 
 Traced the entity update at $4250. Tested lifetime, animation-frame timer, phase and collision reversal paths with callee stubs in the listing simulator; checked the lifetime and frame path with the original callees in VICE, then restored the user pause. The entry sequence index is not bounded locally.
+
+Matched all 25 resident sound-pattern starts to records in the built-in voice lists and checked their zero-terminated extents against the entry snapshot. Described each pattern with its own length and pointer locations, while keeping the event interpretation conditional on voice state and sequencer tick. The listing-based sound-pattern and music tests pass.
+
+Made the already-rendered lowercase glyph description distinct from the uppercase description. The coverage ledger normalizes letter case when detecting repeated comments and had treated the two as duplicates.
+
+Traced the transition screen-clear loop at $7B2A. With X=0 it clears the first 1,000 bytes of each screen page; the simulator and VICE both checked the exact endpoints and the untouched 24-byte tails. The earlier resident-entry snapshot has zeros in the two pages. The range remains in the ledger until its pointer and video uses are checked. Restored the user pause.
+
+Checked the title raster in VICE: at the first title IRQ, CIA2 selects VIC bank 3 and $D018 selects $D000; the first 12 screen rows use character codes through $97. The corresponding $D000–$D4BF RAM bytes match the resident-entry snapshot exactly. Added that range beneath I/O to the resident ledger as unexplained title graphics, leaving the adjacent $D4C0–$D4FF for further investigation. Restored the user pause.
+
+Read VIC bank, screen pointer, sprite enable and sprite pointers in six captured play states; in the second-load sample the enabled pointers include slots $60–$65 beneath I/O, with multicolour mode off. Slots $60, $61 and $63 match the resident-entry, first-load and second-load play bytes and were rendered as 24-by-21 masks. Added their 63-byte bitmap ranges to the resident ledger; retained their padding and changing neighbours for further ownership checks. Restored the user pause.
+
+Removed 51 automatic aliases inside the three newly counted sprite masks, so addresses that also refer to CPU-visible I/O do not split the VIC RAM data into misleading tiny spans. The listing still applies the platform’s I/O naming rules to instructions; the change must be retained when rebuilding the disassembler export. The hidden-RAM audit reports whole pages only when at least 16 non-fill bytes remain, so the small gaps next to the newly counted ranges are listed explicitly in TODO.
+
+Added the three observed resident sprite masks to the Graphics page. The listing-based test checks the embedded bytes against the three captured hashes. Firefox rendered nonempty pixels in all three canvases, and the existing animation pause and step controls worked.
