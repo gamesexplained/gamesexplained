@@ -724,4 +724,16 @@ const TICK = (() => {
   check('the same write through P.io.store: 20 passes identical', t.ok && t.passes === 20, true);
 }
 
+// A polling loop with no yield (issue 761): the raster line stands still between two yields, so a
+// loop waiting for it to move never ends; the lockstep stops it, naming the register it polls.
+{
+  const P = port(), t0 = Date.now(), scan = P.scan;
+  P.scan = function () { scan(); const l = P.io.vicRead(0x12); while (P.io.vicRead(0x12) === l); };
+  let err = null;
+  try { lockstep(P, { spinLimit: 200000 }).run({ passes: 5, onPass: input }); } catch (e) { err = e; }
+  check('a loop with no yield: stopped with an error', !!err, true);
+  check('which names the register it polls', !!err && /200,000 times with no yield; .* were vicRead\(\$0012\)/.test(err.message), true);
+  check('within a second', Date.now() - t0 < 1000, true);
+}
+
 process.exit(fails ? 1 : 0);

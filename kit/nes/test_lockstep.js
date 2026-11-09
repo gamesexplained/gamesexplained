@@ -118,6 +118,18 @@ const input = (n, m) => {
   check('at $30, one byte', r.diffs[0].count === 1 && r.diffs[0].bytes[0].address, 0x30);
   check('describe names it', /pass 5 .*1 byte differs: \$0030 game \$[0-9A-F]{2} port \$[0-9A-F]{2}/.test(describe(r)), true);
 }
+// --- a polling loop with no yield (issue 761): stopped, at the address it polls ---
+{
+  const m = atPass(), P = port(), t0 = Date.now();
+  const queue = P.queue;
+  // the sprite 0 hit, which the port's chips never draw, so the loop never ends
+  P.queue = function () { queue(); if (P.M[0x20] === 4) while (!(P.io.read(0x2002) & 0x40)); };
+  let err = null;
+  try { new Lockstep(options(m, P, { spinLimit: 200000 })).run({ passes: 10, onPass: input }); } catch (e) { err = e; }
+  check('a loop with no yield: stopped with an error', !!err, true);
+  check('which names the register it polls', !!err && /200,000 times with no yield; .* were read\(\$2002\)/.test(err.message), true);
+  check('within a second', Date.now() - t0 < 1000, true);
+}
 // --- a skipped call: out of step ---
 {
   const m = atPass(), P = port();

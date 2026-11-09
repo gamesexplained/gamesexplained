@@ -85,6 +85,10 @@
 //   entry, so that a start-up the page runs has a row of its own; without it that stretch is not
 //   timed, and its routines' costs come only from the stretches after.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
+// - spinLimit: how many calls of P.io the port may make between two of its yields (default two
+//   million). Past it the lockstep throws, naming the address called most: a loop that waits for
+//   a key, the beam or the interrupt with no yield in it, which would otherwise hang the session
+//   with no message (kit/scripts/spin_guard.js). A loop on a byte of P.M alone is not caught.
 // - irqBytes: addresses of RAM the NMI handler writes and the main program reads in the middle of
 //   a stretch (a frame counter read for a random seed), for the race replay cannot give. The port
 //   reads each through P.io.irqByte(a), and gets, in turn, the values the game's main program read
@@ -160,6 +164,7 @@
 // and ioRead, and it puts them back when run returns.
 const { Machine, LINE, LINES, MAP } = require('./machine.js');
 const { CPU, OPCODES } = require('../cpu/cpu6502.js');
+const { SpinGuard } = require('../scripts/spin_guard.js');
 require('../../site/lib/nes.js');
 const NES = globalThis.NES;
 const FRAME = 29781;
@@ -277,7 +282,8 @@ class Lockstep {
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
     this.ib = { live: new Map(), list: null, used: new Map() };
     this.io = this.makeIO();
-    P.io = Object.assign({}, P.io, this.io);
+    this.guard = new SpinGuard('Lockstep', o.spinLimit);          // a port's loop with no yield (kit/scripts/spin_guard.js)
+    P.io = this.guard.wrap(Object.assign({}, P.io, this.io), ['read', 'write', 'irqByte']);
     this.timing = o.timing || null;
     this.counting = false;
     this.calls = {};
@@ -515,6 +521,7 @@ class Lockstep {
   step() {
     let r;
     this.since++;
+    this.guard.reset();
     try { r = this.it.next(); } catch (e) { throw this.annotate(e); }
     if (r.done) return this.diverge('the port\'s program returned');
     const y = r.value;
@@ -742,7 +749,9 @@ function checkGen(P, routine, address, opts = {}) {
   portChips.ram = P.M;
   let line = (opts.line || 0) % LINES, frames = 0;
   portChips.beam = gameChips.beam = line;
-  P.io = Object.assign({}, P.io, chipIO(portChips), { irqByte: a => P.M[a & 0xFFFF], store: (a, v) => { P.M[a & 0xFFFF] = v & 0xFF; } });
+  const guard = new SpinGuard('checkGen', opts.spinLimit);
+  P.io = guard.wrap(Object.assign({}, P.io, chipIO(portChips), { irqByte: a => P.M[a & 0xFFFF], store: (a, v) => { P.M[a & 0xFFFF] = v & 0xFF; } }),
+    ['read', 'write', 'irqByte']);
   const G = { M: Uint8Array.from(P.M), io: chipIO(gameChips) };
   gameChips.ram = G.M;
   const game = standInGen(G, address, { polls: byLine ? opts.polls : [frame, ...(opts.polls || [])], maxSteps: opts.maxSteps })(regs);
@@ -750,6 +759,7 @@ function checkGen(P, routine, address, opts = {}) {
   if (!port || typeof port.next !== 'function') throw new Error('checkGen: the port\'s routine gave no generator');
   const turn = (it, who) => {
     for (;;) {
+      if (it === port) guard.reset();
       const r = it.next();
       if (r.done) return r;
       const y = r.value;
