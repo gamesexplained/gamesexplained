@@ -140,8 +140,13 @@
  "blocks": [
   {
    "start": 32479,
-   "end": 32576,
+   "end": 32574,
    "type": "Undefined"
+  },
+  {
+   "start": 32575,
+   "end": 32576,
+   "type": "Word"
   },
   {
    "start": 32577,
@@ -385,8 +390,23 @@
   },
   {
    "start": 36337,
-   "end": 36821,
+   "end": 36768,
    "type": "Undefined"
+  },
+  {
+   "start": 36769,
+   "end": 36814,
+   "type": "Code"
+  },
+  {
+   "start": 36815,
+   "end": 36815,
+   "type": "Byte"
+  },
+  {
+   "start": 36816,
+   "end": 36821,
+   "type": "Byte"
   },
   {
    "start": 36822,
@@ -601,6 +621,12 @@
  ],
  "symbols": [
   {
+   "address": 32575,
+   "name": "load_update_vector",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 32577,
    "name": "stage_character_pointer",
    "type": "UserDefined",
@@ -805,6 +831,24 @@
    "kind": "user"
   },
   {
+   "address": 36769,
+   "name": "load_update_entry",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36815,
+   "name": "load_motion_gate_index",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36816,
+   "name": "load_motion_gate_pattern",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 36822,
    "name": "load_trigger_record_01",
    "type": "UserDefined",
@@ -999,6 +1043,11 @@
  ],
  "comments": [
   {
+   "address": 32575,
+   "type": "line",
+   "text": "Load 27: little-endian update target $8FA1, dispatched by the resident indirect jump at $0450. The target begins inside the eight-page character-copy source at $8DF1; those bytes have both code and graphics uses."
+  },
+  {
    "address": 32577,
    "type": "line",
    "text": "A little-endian pointer to the eight-page source copied to RAM beneath I/O by $34DD and $717C."
@@ -1167,6 +1216,21 @@
    "address": 36209,
    "type": "line",
    "text": "Map row 15 of 15: 82 metatile indices beginning at $8D71; the stored row stride is 128 bytes. The first index is $08 and the last is $0B. The draw loop at $6D41 uses the row-pointer tables at $85CF and $8620 and expands each selected index through the four tables at $81CF\u2013$85CE. The row storage may contain cells that ordinary play does not visit."
+  },
+  {
+   "address": 36769,
+   "type": "line",
+   "text": "Load 27 update entry: load X from $4DBD and write $09 to $4DCB,X. If either $4DB6 or $4DB3 is nonzero, write $FF to the horizontal-motion gate $E1 and leave the index at $8FCF unchanged. Otherwise read the six-byte pattern at $8FD0 using that index, store the value at $E1, increment the index and reset it when it reaches 6. The index is not locally bounded before the read. It then jumps to $0200. The entry overlaps the captured character-copy source. The resident left and right speed-update paths at $0E58 and $0FF2 return early when the gate is zero. The conditions were tested with controlled inputs; natural reachability and timing remain open."
+  },
+  {
+   "address": 36815,
+   "type": "line",
+   "text": "Load 27: mutable index for the six-byte gate pattern at $8FD0. The entry snapshot holds zero. The update routine increments it and resets it on reaching 6, but does not locally bound its value before indexing."
+  },
+  {
+   "address": 36816,
+   "type": "line",
+   "text": "Load 27: six captured gate values $FF, $00, $00, $FF, $00, $00, indexed by the mutable byte at $8FCF. The update routine writes the selected value to $E1 when both tested motion-state bytes are zero."
   },
   {
    "address": 36822,

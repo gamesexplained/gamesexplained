@@ -150,8 +150,13 @@
  "blocks": [
   {
    "start": 32479,
-   "end": 32576,
+   "end": 32574,
    "type": "Undefined"
+  },
+  {
+   "start": 32575,
+   "end": 32576,
+   "type": "Word"
   },
   {
    "start": 32577,
@@ -315,8 +320,13 @@
   },
   {
    "start": 34711,
-   "end": 36096,
+   "end": 36070,
    "type": "Undefined"
+  },
+  {
+   "start": 36071,
+   "end": 36096,
+   "type": "Code"
   },
   {
    "start": 36097,
@@ -390,6 +400,66 @@
   },
   {
    "start": 36545,
+   "end": 36591,
+   "type": "Undefined"
+  },
+  {
+   "start": 36592,
+   "end": 36609,
+   "type": "Code"
+  },
+  {
+   "start": 36610,
+   "end": 36612,
+   "type": "Code"
+  },
+  {
+   "start": 36613,
+   "end": 36619,
+   "type": "Byte"
+  },
+  {
+   "start": 36620,
+   "end": 36626,
+   "type": "Byte"
+  },
+  {
+   "start": 36627,
+   "end": 36648,
+   "type": "Code"
+  },
+  {
+   "start": 36649,
+   "end": 36650,
+   "type": "Code"
+  },
+  {
+   "start": 36651,
+   "end": 36656,
+   "type": "Code"
+  },
+  {
+   "start": 36657,
+   "end": 36658,
+   "type": "Undefined"
+  },
+  {
+   "start": 36659,
+   "end": 36687,
+   "type": "Code"
+  },
+  {
+   "start": 36688,
+   "end": 36688,
+   "type": "Undefined"
+  },
+  {
+   "start": 36689,
+   "end": 36739,
+   "type": "Code"
+  },
+  {
+   "start": 36740,
    "end": 37139,
    "type": "Undefined"
   },
@@ -515,6 +585,12 @@
   }
  ],
  "symbols": [
+  {
+   "address": 32575,
+   "name": "load_update_vector",
+   "type": "UserDefined",
+   "kind": "user"
+  },
   {
    "address": 32577,
    "name": "stage_character_pointer",
@@ -714,6 +790,12 @@
    "kind": "user"
   },
   {
+   "address": 36071,
+   "name": "load_update_entry",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 36097,
    "name": "load_trigger_record_01",
    "type": "UserDefined",
@@ -770,6 +852,36 @@
   {
    "address": 36471,
    "name": "load_sound_pattern_06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36592,
+   "name": "stage16_entity_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36610,
+   "name": "stage16_patched_entity_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36613,
+   "name": "stage16_entity_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36620,
+   "name": "stage16_entity_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36649,
+   "name": "stage16_patched_column_compare",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -877,6 +989,11 @@
   }
  ],
  "comments": [
+  {
+   "address": 32575,
+   "type": "line",
+   "text": "Load 16: little-endian update target $8CE7, dispatched by the resident indirect jump at $0450. The target begins inside the eight-page character-copy source at $8797; those bytes have both code and graphics uses."
+  },
   {
    "address": 32577,
    "type": "line",
@@ -1043,6 +1160,11 @@
    "text": "Map row 14 of 14: 21 metatile indices beginning at $8782; the stored row stride is 21 bytes. The first index is $0A and the last is $0A. The draw loop at $6D41 uses the row-pointer tables at $85CF and $8620 and expands each selected index through the four tables at $81CF\u2013$85CE. The row storage may contain cells that ordinary play does not visit."
   },
   {
+   "address": 36071,
+   "type": "line",
+   "text": "Load 16 update entry: load X from $4DBD and write $05 to $4DCB,X. It jumps to $0732 when row $6F3D is zero and bit $40 is set in $4DE2,X; otherwise it jumps to $0200. The entry bytes also belong to the captured character-copy source. The entry was reached during the bounded 200-frame capture and monitor collection. The conditions are tested with controlled inputs; this does not establish a natural route to them."
+  },
+  {
    "address": 36097,
    "type": "line",
    "text": "Load 16 trigger record 1 of 1: initial bytes $71, $07, $01, $03, $2A, $5C. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $5C2A. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. Other code can change the stored count."
@@ -1091,6 +1213,31 @@
    "address": 36471,
    "type": "line",
    "text": "Load 16 captured sound pattern 6: 73 nonzero event bytes from $8E77, followed by the zero marker at $8EC0. Voice-list pointer records at $8D1F select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 36592,
+   "type": "line",
+   "text": "After calling $792C, load Y from $1AB1,X, read the split tables at $8F05/$8F0C and patch the low and high operands of the jump at $8F02. The state index is not locally bounded."
+  },
+  {
+   "address": 36610,
+   "type": "line",
+   "text": "Jump through the absolute operand patched at $8EF9 and $8EFF. The entry snapshot contains the placeholder $FF00; a controlled VICE stop observed $9023 after patching."
+  },
+  {
+   "address": 36613,
+   "type": "line",
+   "text": "Seven captured low bytes paired with the high bytes at $8F0C. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E. The state index read at $8EF3 is not locally bounded."
+  },
+  {
+   "address": 36620,
+   "type": "line",
+   "text": "Seven captured high bytes paired with the low bytes at $8F05. The pairs target $8F13, $8F4B, $8F7C, $8FAA, $9023, $904E and $907E. The state index read at $8EF3 is not locally bounded."
+  },
+  {
+   "address": 36649,
+   "type": "line",
+   "text": "Compare the value loaded from $6F3C with an immediate byte patched by STX $8F2A at $8F22 after $71DB returns. The entry snapshot holds $FF; a controlled VICE stop observed $10. The branch at $8F2B uses the resulting carry."
   },
   {
    "address": 37140,
