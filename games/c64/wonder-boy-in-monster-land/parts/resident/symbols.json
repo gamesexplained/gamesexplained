@@ -18815,6 +18815,61 @@
    "text": "The preceding LDA #$10 sets Z clear, so this BNE is unconditional in ordinary execution."
   },
   {
+   "address": 29436,
+   "type": "line",
+   "text": "Save Y in the immediate operand at $7328 and select the entity's display slot from $1A29,X. Form an eight-bit half-coordinate by shifting the low bit of $4C4F,Y into bit 7 of $4C6F,Y; when bit 0 of $192A,X is set, add 6 with eight-bit wrap. Compare that result with the analogous half-coordinate from player $48:$47. Return A as the adjusted entity half-coordinate and carry set when it is greater than or equal to the player half-coordinate. X is unchanged and Y is restored. The restoring LDY changes N and Z after the comparison; carry still reflects CMP."
+  },
+  {
+   "address": 29477,
+   "type": "line",
+   "text": "Compare the entity half-coordinate in A with the player half-coordinate patched into this immediate operand by $7321. The following LDY restores Y and replaces the comparison's N and Z flags, but preserves its carry."
+  },
+  {
+   "address": 29480,
+   "type": "line",
+   "text": "Immediate operand of the LDY at $7327; $72FC stores the caller's Y here before selecting a display slot."
+  },
+  {
+   "address": 29744,
+   "type": "line",
+   "text": "Return carry clear when the attack-contact budget at $5285 is zero, player Y at $49 is $FE, the selected player's action tier at $4DDB,Y is zero, or the player frame at $4A is neither $6E nor $7C. Otherwise build a player attack rectangle and test it against the already prepared second rectangle. A miss returns carry clear without spending the budget."
+  },
+  {
+   "address": 29777,
+   "type": "line",
+   "text": "Set the attack box Y to $49 plus $0D, its height to 3, and its width to 5 plus the selected player's action tier. All values wrap to eight bits. When $1177 is nonzero, set the box X to $4DAE plus 8; when it is zero, use the left-facing calculation at $747B."
+  },
+  {
+   "address": 29819,
+   "type": "line",
+   "text": "Set the left-facing attack box X to $4DAE minus (box width minus 4), with eight-bit wrap. The intermediate offset is patched into the immediate operand at $7489 before the subtraction."
+  },
+  {
+   "address": 29837,
+   "type": "line",
+   "text": "Call the rectangle-overlap test with the box just prepared and the existing second box. Return carry clear on a miss; on carry set, continue to spend one contact and apply damage."
+  },
+  {
+   "address": 29843,
+   "type": "line",
+   "text": "Decrement the attack-contact budget, preserve Y through the immediate operand at $74BF, and use the selected player's action tier as the damage. When bit $20 of that player's flags is set, decrement $4DDF and double the damage byte even on the contact that makes the countdown zero."
+  },
+  {
+   "address": 29865,
+   "type": "line",
+   "text": "Decrement the double-damage countdown. If it becomes zero, clear bit $20 of the selected player's flags and call $7A91 with A=$0C before doubling this contact's damage. A zero starting countdown wraps to $FF."
+  },
+  {
+   "address": 29883,
+   "type": "line",
+   "text": "Shift the patched damage byte at $74C5 left one bit, discarding the high bit. This doubles damage modulo 256 before the shared health subtraction."
+  },
+  {
+   "address": 29886,
+   "type": "line",
+   "text": "Restore Y from the immediate operand at $74BF, subtract the patched damage byte at $74C5 from $1A6D,X, and store zero on borrow. When the result is nonzero, set $1A8F,X to 8. Return carry set in either case. The same subtraction entry is also used by entity-contact paths."
+  },
+  {
    "address": 29910,
    "type": "line",
    "text": "Scans active negative entity types for overlap and dispatches contact handling through a patched jump table. The negated type index is not locally bounded."
