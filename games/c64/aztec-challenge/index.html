@@ -66,12 +66,13 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 <section id="music">
   <p class="fig">02 · The music</p>
   <h2 class="t">Music: the soundtrack is the level's progress, played aloud</h2>
-  <p>Every level counts its progress in stages, 0 to 9 (the byte <code>$45</code>), and calls one routine each time the count goes up (<code>$6530</code>). That routine changes the music: at stage 1 the three voices switch from soft triangle waves to sawtooth; at stage 2 the melody comes in; at 3 the title tune returns, faster; at 4 a third tune takes over and a voice drops out; at 5 it comes back, and at 6 it turns to a sawtooth too. A player who hears the melody start knows they are a fifth of the way through, which is what the manual means when it says the music will "indicate the extent of your progress". Hopaztec is the one level that never calls it, so its music never builds.</p>
+  <p>Every level counts its progress in stages, 0 to 9 (the byte <code>$45</code>), and calls one routine each time the count goes up (<code>$6530</code>). That routine changes the music: at stage 1 the three voices switch from soft triangle waves to sawtooth; at stage 2 the melody comes in; at 3 the title tune returns, faster; at 4 a tune heard nowhere else takes over and a voice drops out; at 5 that voice comes back, and at 6 it turns to a sawtooth too. A player who hears the melody start knows they are a fifth of the way through, which is what the manual means when it says the music will "indicate the extent of your progress". Hopaztec is the one level that never calls it, so its music never builds.</p>
   <div class="plate">
     <div id="az-sid"></div>
     <p class="cap">Each button runs the game's own code on the kit's 6502: the start-up's sound set-up (<code>$1000</code>), the menu's (<code>$1121</code>), a level's start (<code>$1CA0</code>) and the stage routine once for each stage, then the interrupt at <code>$1C00</code> 60 times a second, as the computer's own timer calls it. <code>test_music.js</code> holds every button against the same code run along the game's own path. The menu's pulse is very low, about 15 to 55 hertz: laptop and phone speakers barely play it, and headphones do.</p>
   </div>
   <p>The music player itself is 155 bytes (<code>$1C00</code>-<code>$1C9A</code>). It steps through a tune six bytes at a time, the high and low byte of each voice's pitch, one step every few interrupts (<code>$36</code>), and starts again at the address in <code>$30</code>/<code>$31</code> when it reads a byte <code>$FF</code>. It never touches a voice's waveform or volume: those are set once by the start-up from the table at <code>$41C0</code> and changed only by the levels and the stage routine. That is why the same tune sounds different at different stages.</p>
+  <p>The game keeps three tunes. The first, at <code>$5F00</code>, opens with seven steps of a low pulse that the menu and every level start with, and goes on at <code>$5F30</code> with the melody that stage 2 switches to. The title tune, at <code>$5700</code>, plays under the logo and comes back at stage 3. The level tune, at <code>$4900</code>, is the longest, 127 steps, and plays only from stage 4 on, so a player hears it only deep into a level.</p>
 </section>
 
 <section id="frame">
@@ -167,21 +168,21 @@ table.az-tab th{font-weight:700;color:var(--ink-soft)}
 // starts the tune itself, so the button plays the stage's music at once.
 const AZ_DRIVER_RANGES = [[0x1000, 0x115A], [0x1C00, 0x1CBF], [0x41C0, 0x41D8], [0x4900, 0x4BFF], [0x5700, 0x57FF], [0x5F00, 0x5FEF], [0x6530, 0x658A]];
 const AZ_TUNES = [
-  { name: 'The title', stage: -1 },
-  { name: 'The menu, and every level as it starts', stage: 0 },
-  { name: 'Stage 1: the same pulse on sawtooth voices', stage: 1 },
-  { name: 'Stage 2: the melody comes in', stage: 2, start: 0x5F30 },
-  { name: 'Stage 3: the title tune, faster', stage: 3, start: 0x5700 },
-  { name: 'Stage 4: tune C, voice 3 off', stage: 4, start: 0x4900 },
-  { name: 'Stage 5: tune C with voice 3 back', stage: 5, start: 0x4900 },
-  { name: 'Stage 6: tune C, voice 3 on a sawtooth', stage: 6, start: 0x4900 },
+  { name: 'The title: the title tune ($5700)', stage: -1 },
+  { name: 'The menu, and every level as it starts: the pulse ($5F00)', stage: 0 },
+  { name: 'Stage 1: the pulse on sawtooth voices', stage: 1 },
+  { name: 'Stage 2: the melody ($5F30)', stage: 2, start: 0x5F30 },
+  { name: 'Stage 3: the title tune again, faster ($5700)', stage: 3, start: 0x5700 },
+  { name: 'Stage 4: the level tune ($4900), voice 3 off', stage: 4, start: 0x4900 },
+  { name: 'Stage 5: the level tune, voice 3 back', stage: 5, start: 0x4900 },
+  { name: 'Stage 6: the level tune, voice 3 on a sawtooth', stage: 6, start: 0x4900 },
 ];
 const AZ_PERIOD = 16422;
 function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
   const sid = new Uint8Array(25);
-  let m, cpu, writes = [];
+  let m, cpu, writes = [], stopped = false;
   const io = {
     read(ad) { throw new Error('read $' + ad.toString(16)); },
     write(ad, val) {
@@ -202,7 +203,7 @@ function createDriver(D, C64Cpu) {
     init(t) {
       const c = D.list[t];
       m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x37, io });
-      sid.fill(0); writes = [];
+      sid.fill(0); writes = []; stopped = false;
       upto(0x1000, 0x103E);                         // the start-up: the SID, $0314, the title's tune
       if (c.stage >= 0) {
         upto(0x1121, 0x1158);                       // the menu's set-up
@@ -211,12 +212,16 @@ function createDriver(D, C64Cpu) {
       }
       if (c.start) { m[0x34] = c.start & 0xFF; m[0x35] = c.start >> 8; m[0x33] = 0; }
     },
-    stop() { writes = []; },
+    stop() {                                        // the gates off: each voice goes into its release
+      stopped = true; writes = [];
+      for (const r of [4, 11, 18]) { sid[r] &= 0xFE; writes.push(r, sid[r]); }
+    },
     play() {
       writes = [];
+      if (stopped) return;
       cpu.irq(null, { kernal: true, maxSteps: 10000 });
     },
-    playing() { return true; },
+    playing() { return !stopped; },
   };
 }
 // end of az-music

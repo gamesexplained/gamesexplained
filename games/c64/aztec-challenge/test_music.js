@@ -7,7 +7,8 @@
 // for), a level's start ($1CA0) and the stage routine $6530 once for each stage, the stage in $45,
 // as the levels call it; then the interrupt, entered through the KERNAL's path to $0314 and left
 // through $EA31, 3,000 times. Both must write the same SID registers with the same values in the same
-// order at the start and at every interrupt; every button must make sound (a voice gated with a
+// order at the start and at every interrupt, and stop() must turn every gate off and end the tune;
+// every button must make sound (a voice gated with a
 // pitch other than 0, volume above 0) and move through its tune. The KERNAL's interrupt comes every
 // 16,422 cycles (CIA 1 timer A, latch $4025, on a PAL machine); the page's AZ_PERIOD must say so.
 // It exits 1 on any difference.
@@ -59,6 +60,12 @@ AZ_TUNES.forEach((c, t) => {
     frames++;
   }
   if (!sounded) fail(c.name, 'makes no sound');
+  // the page's Stop: every gate off, nothing more written, and the player told the tune is over
+  drv.stop();
+  if ([4, 11, 18].some((r) => drv.sid[r] & 1)) fail(c.name, 'a gate is still on after stop');
+  if (drv.playing()) fail(c.name, 'still playing after stop');
+  drv.play();
+  if (drv.writes.length) fail(c.name, 'writes after stop');
   if (!steps) fail(c.name, 'never steps its tune');
   report.push(c.name.split(':')[0] + ' from $' + ptr0.toString(16).toUpperCase() + ', ' + steps + ' steps');
 });
