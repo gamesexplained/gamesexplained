@@ -1,43 +1,39 @@
 # Thrust — TODO
 
-Current tier and what is missing for the next one. Coverage gaps from
-`coverage.py`. Article ideas.
+Current tier and what is missing for the next one.
 
-## Tier: Bronze
+## Tier: Silver
 
-Coverage 15.7 % (2,739 of 17,451 tracked bytes). The run stopped after
-`40-sweep`, as a Bronze run does. To reach Silver, continue from
-`50-coverage` (start the disassembler on `work/play.vsf`; the launcher
-rebuilds the project from `symbols.json`):
+Coverage 100 % (21,735 bytes; `coverage.py`). The listing's sample
+(seed 20261108, 60 comments, checked on claude-fable-5-1) found 10
+wrong, 16.7 %, over the mark of 2; the ten and every comment that
+repeated them are corrected. **A full audit of the listing is
+recommended** (`kit/skills/core/60-verify`): the rate is a lower bound,
+and correcting the sampled comments does not bring the rest under the
+mark.
 
-- Describe the rest of the program to 100 %. Largest bare runs:
-  `$AF90` (810 bytes), `$9926`, `$9014`, `$9E77`, `$869F`, the sound code
-  at `$9B58`, `$9799`, `$AB26`, `$858E`, `$A38E`; data at `$583F` (961
-  bytes) and the five raster handlers' bodies.
-- Decode the start-up code at `$B773`-`$BA72`, which is assembled for
-  `$0400` and so cannot be traced in place.
-- Say what the data the ledger does not count is: `$0F44`-`$2FFF`,
-  `$3003`-`$3FFF`, `$4D00`-`$52FF`, `$BE96`-`$CFFF`, `$E008`-`$E63F`, and
-  the tables copied to `$4000`-`$4CFF`
-  (`listing.py` prints the list).
-- What `$3000`, run once in the code map, is.
-- Then `60-verify` (`facts.md`, a checked sample) and `70-minisite`.
+For Gold: a person goes through every section of every tab, cutting,
+expanding and rewriting (`AGENTS.md`, "Definition of done"); `copy` in
+`game.json` then says what they did.
 
-## Open questions for the code
+## Questions only a person can settle
 
-- What sets `$63`, and how the attract mode's pilot is steered.
-- Who calls `show_bbc_keys_page` (`$B74B`), if anything.
-- What RUN/STOP does (`$B269`, `$B3E0`).
-- How the status bar's FUEL, LIVES and SCORE are drawn.
-- Whether the levels, the reversed gravity and the invisible landscape
-  are all in this one load (no reloading was seen).
-- The C64 wording of the messages after levels 24, 48 and 72.
+- Did Firebird's release play Rob Hubbard's music in the game, through
+  the `JSR $3000` and `music_hook` (`$A951`) calls this copy answers
+  with an RTS? A copy of the original release, or a different crack,
+  would show it.
+- Does the original release start at a title screen, where this copy
+  starts a game at once (`crack_start`, `$AF82`)?
+- The C64 manual on REG-Vault is a scanned PDF this run could not read;
+  it may describe controls or scoring this write-up does not.
 
-## Article ideas
+## Ideas for the pages
 
-- The BBC Micro key page the C64 program kept, shown as the BBC would
-  draw it in MODE 7 next to how the C64 would print it.
-- The pod on its rod: the physics, with a widget to swing it.
-- The level cycle: six planets, then reversed gravity, invisible walls,
-  and both.
-- Rob Hubbard's music, with a player.
+- A sound effects player: `sound_tick` (`$9B58`) run on the kit's 6502
+  with each effect's start routine (`$9C94`, `$9CCF`, `$9D07`, `$9D3D`,
+  `$9D85`, `$9DC4`), through `site/lib/sid.js`.
+- A pod-and-rod widget: the ship's thrust, gravity and the rod's spin
+  ported from `ship_physics`, `move_ship` and `ship_position`, checked
+  against a trace from the emulator, so a reader can swing the pod.
+- The demo pilot's flight replayed from `demo_steps` and `demo_times`.
+- A Play tab: the walls, objects and physics are all described.

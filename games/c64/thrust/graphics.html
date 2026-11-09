@@ -1,0 +1,140 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.th-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.th-btn{font-family:var(--fm);font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.th-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.th-scroll{overflow:auto;max-height:640px;background:#000;border-radius:6px}
+.th-scroll canvas{display:block;image-rendering:pixelated}
+.th-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.th-tab{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0}
+.th-tab th,.th-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.th-tab th{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:500}
+.th-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid #0003}
+.th-grid{display:flex;flex-wrap:wrap;gap:14px}
+.th-cell{text-align:center;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.th-cell canvas{display:block;background:#000;border-radius:4px;image-rendering:pixelated;margin:0 auto 4px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Firebird</p>
+  <h1>Thrust</h1>
+  <p class="sub">Every shape the game draws with: the ship in 32 directions, the objects in each level's colours, and the five-line font the status bar and messages are written in.</p>
+</header>
+<main class="wrap">
+<section id="ship">
+  <p class="fig">01 · The ship</p>
+  <h2 class="t">The ship in 32 directions</h2>
+  <p class="lede">The ship has one sprite for each direction, drawn as a single-colour outline. Turning swaps the sprite.</p>
+  <div class="plate">
+    <div class="th-bar"><button type="button" class="th-btn" id="th-g-spin" aria-pressed="true">Turn</button><button type="button" class="th-btn" id="th-g-shield" aria-pressed="false">Shield</button><span class="th-read" id="th-g-out"></span></div>
+    <canvas id="th-g-ship" class="th-cv" width="192" height="168" aria-label="The ship turning through its 32 sprites"></canvas>
+    <div class="th-grid" id="th-g-sheet" style="margin-top:14px"></div>
+    <p class="cap">Pointers 0-$1F, at <code>$4000</code>-<code>$47FF</code>, drawn from the listing's bytes in yellow, the ship's colour. The ship turns one direction on three passes of the main loop in four, and the loop ran about 26 passes a second in the emulator, so the animation turns about 20 directions a second. With the shield up, the sprite is the circle at pointer $20, in the level's shield colour, shown on two frames in four.</p>
+  </div>
+</section>
+<section id="objects">
+  <p class="fig">02 · The objects</p>
+  <h2 class="t">Each level colours its objects</h2>
+  <p class="lede">The guns, fuel tanks, reactor and pod stand are one or two sprites each. Their colours come from the level's tables.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" id="th-o-prev" aria-label="The level before">‹</button><select id="th-o-sel" aria-label="Level"></select><button type="button" class="step" id="th-o-next" aria-label="The level after">›</button></div>
+    <div class="th-grid" id="th-o-grid"></div>
+    <p class="cap">Pointers $21-$30, at <code>$4840</code>-<code>$4C3F</code>, in the colours <code>object_sprites</code> (<code>$889B</code>) gives them: the guns, the pod's stand and the reactor's dome from <code>$A945</code>, the pod from <code>$A939</code>, the word FUEL from <code>$A94B</code>, the rest yellow. Two sprites drawn at one place make one object.</p>
+  </div>
+  <p>A fuel tank is drawn one of two ways, chosen by whether its place in the level's list is odd or even: as a tank with a separate FUEL sign, two sprites, or as one sprite with the word on it. The tractor beam is two sprites the game shows under the ship on alternate passes while it drains a tank. The rod is drawn afresh each pass into a pair of sprite buffers at <code>$5300</code> and <code>$5380</code>, as the <a href="index.html#pod">How it works</a> page explains.</p>
+</section>
+<section id="font">
+  <p class="fig">03 · The font</p>
+  <h2 class="t">A five-line font for every word on screen</h2>
+  <p class="lede">The game writes its words with its own font, five lines high, into the bitmap and into the status bar's characters.</p>
+  <div class="plate"><canvas id="th-font" class="th-cv" width="592" height="40" aria-label="The game's font: a space, A to Z and 0 to 9"></canvas>
+  <p class="cap"><code>status_font</code> (<code>$8E52</code>): 37 characters (a space, A to Z, 0 to 9), one table of 37 bytes for each of the five lines. <code>print_char</code> (<code>$8F4E</code>) draws upper and lower case with the same capitals.</p></div>
+  <p>The status bar is a picture held in 80 characters, one for each of its cells (<code>status_bar_chars</code>, <code>$BB96</code>). The frame, the lines and the words FUEL, LIVES and SCORE are drawn in it, and the font writes the numbers into it. The last digit of the score is part of the picture: it is always 0.</p>
+  <div class="plate"><canvas id="th-bar" class="th-cv" width="640" height="32" style="width:100%" aria-label="The status bar's 80 characters, as copied at start-up"></canvas>
+  <p class="cap">The 80 characters at <code>$BB96</code>, two rows of 40, drawn as plain pixels in white. In the game, the first row is multicolour and takes its colours from the status bar's settings.</p></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('th-g-out').textContent = 'These widgets need the site\'s c64.js, which did not load.'; return; }
+  const PAL = C64.PAL;
+  C64.load('listing.json').then(L => {
+    const ram = L.ram, spr = p => ram.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+    const cell = (sprites, label, s = 2) => { const d = document.createElement('div'), k = document.createElement('canvas'); d.className = 'th-cell';
+      k.width = 24 * s; k.height = 21 * s; const x = k.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, k.width, k.height);
+      for (const [p, c] of sprites) C64.drawSprite(x, spr(p), 0, 0, s, c); d.appendChild(k); d.append(label); return d; };
+    // ---- 01 the ship
+    const sc = $('th-g-ship').getContext('2d'); let dir = 0, spin = true, shield = false, t = 0;
+    for (let p = 0; p < 32; p++) $('th-g-sheet').appendChild(cell([[p, PAL[7]]], '$' + p.toString(16).toUpperCase().padStart(2, '0'), 1));
+    function frame() {
+      sc.fillStyle = '#000'; sc.fillRect(0, 0, 192, 168);
+      const sh = shield && (t & 2);
+      C64.drawSprite(sc, spr(sh ? 0x20 : dir), 60, 42, 3, sh ? PAL[ram[0xA94B]] : PAL[7]);
+      $('th-g-out').textContent = `direction ${dir}, pointer $${(sh ? 0x20 : dir).toString(16).toUpperCase().padStart(2, '0')}`;
+    }
+    let last = 0;
+    function tick(now) { if (now - last >= 50) { last = now; t++; if (spin) dir = (dir + 1) & 31; frame(); } requestAnimationFrame(tick); }
+    $('th-g-spin').onclick = e => { spin = !spin; e.target.setAttribute('aria-pressed', String(spin)); };
+    $('th-g-shield').onclick = e => { shield = !shield; e.target.setAttribute('aria-pressed', String(shield)); };
+    frame(); requestAnimationFrame(tick);
+    // ---- 02 the objects
+    const sel = $('th-o-sel'); for (let i = 0; i < 6; i++) sel.add(new Option('Level ' + (i + 1), i));
+    function objects() {
+      const l = +sel.value, gun = PAL[ram[0xA945 + l]], pod = PAL[ram[0xA939 + l]], fuel = PAL[ram[0xA94B + l]], y = PAL[7], g = $('th-o-grid'); g.innerHTML = '';
+      const list = [[[[0x21, pod]], 'pod, towed $21'], [[[0x22, gun]], 'gun $22'], [[[0x23, gun]], 'gun $23'], [[[0x24, gun]], 'gun $24'], [[[0x25, gun]], 'gun $25'],
+        [[[0x26, y], [0x27, fuel]], 'fuel tank $26+$27'], [[[0x2E, y]], 'fuel tank $2E'], [[[0x28, pod], [0x29, gun]], 'pod on stand $28+$29'],
+        [[[0x2A, y], [0x2B, gun]], 'reactor $2A+$2B'], [[[0x2C, y]], 'switch $2C'], [[[0x2D, y]], 'switch $2D'], [[[0x2F, y], [0x30, y]], 'tractor beam $2F+$30']];
+      for (const [s, label] of list) g.appendChild(cell(s, label, 2));
+    }
+    sel.onchange = objects;
+    $('th-o-prev').onclick = () => { sel.value = (+sel.value + 5) % 6; objects(); };
+    $('th-o-next').onclick = () => { sel.value = (+sel.value + 1) % 6; objects(); };
+    objects();
+    // ---- 03 the font and the status bar
+    const f = $('th-font').getContext('2d'); f.fillStyle = '#000'; f.fillRect(0, 0, 592, 40); f.fillStyle = PAL[7];
+    const T = [0x8E52, 0x8E77, 0x8E9C, 0x8EC1, 0x8EE6];
+    for (let ch = 0; ch < 37; ch++) for (let line = 0; line < 5; line++) { const b = ram[T[line] + ch];
+      for (let x = 0; x < 8; x++) if (b & (0x80 >> x)) f.fillRect(ch * 16 + x * 2, 8 + line * 4, 2, 4); }
+    const b = $('th-bar').getContext('2d'); b.fillStyle = '#000'; b.fillRect(0, 0, 640, 32);
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 40; c++) C64.drawGlyph(b, ram.subarray(0xBB96), r * 40 + c, c * 16, r * 16, 2, '#fff');
+  }).catch(e => { $('th-g-out').textContent = 'The listing did not load: ' + e.message; });
+})();
+</script>

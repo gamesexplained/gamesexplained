@@ -4,8 +4,9 @@ How to get from the contributor's own copy to the analysed state. Someone
 else must be able to follow this exactly.
 
 Emulator: vice-mcp release v3.13.2, `v3.13.2-macos-arm64-gui.dmg`, on
-macOS arm64. `check-emulator` on 17 October 2026: 57 of 57 passed, so no
-check failed and no workaround applies.
+macOS arm64, for the Bronze run (`check-emulator` on 17 October 2026: 57
+of 57); release v3.14.0, `v3.14.0-macos-arm64-gui.dmg`, for the Silver
+run (57 of 57 on 8 November 2026). The snapshots below load in both.
 
 ## The image
 
@@ -36,13 +37,17 @@ collector's label, not something the image shows.
    61 pages from `$3000` up to `$8280`, and jumps to **`$B675`, the
    game's first instruction** (the hand-over).
 5. `$B675` copies 13 pages from `$6C47` to `$4000`-`$4CFF`, resets the
-   stack and zero page and builds its tables. The game then runs its
-   attract mode: level 1, a demo pilot flying the ship and pod, with no
-   title screen in this crack.
-6. **Space** starts a game: the lives counter reads 3, the ship
-   materialises out of a yellow cross at the top of level 1, and the
-   lives counter then reads 2 (it shows the ships in reserve). Play is
-   confirmed: `S` rotated the ship clockwise.
+   stack and zero page and builds its tables, then runs the start-up
+   code at `$0400`, which ends at `crack_start` (`$AF82`): a game starts
+   at once, with the player in control and three lives. Left alone, the
+   ship falls and is lost three times; after about 35 seconds the title
+   comes up (the high score table over level 1), and after it the demo
+   pilot (`$63` = `$FF`).
+6. **Space** on the title starts a new game: the lives counter reads 3,
+   the ship materialises out of a yellow cross at the top of level 1,
+   and the counter then reads 2 (it shows the ships in reserve). Play is
+   confirmed: `S` rotated the ship clockwise. The snapshots below were
+   taken this way, from the title.
 
 Snapshots, all in `work/`:
 

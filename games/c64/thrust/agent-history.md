@@ -62,3 +62,38 @@ the depacker's at `$0844` and one at `$BEA0` that keeps the I/O and the
 KERNAL in. The RAM under the I/O is now excluded in
 `game.json` with that reason. Coverage reads 15.7 %, as the ledger has counted it
 since #455.
+
+## 8 November 2026: Silver run (claude-opus-5-5, macOS arm64)
+
+Started from an updated `main` on a new branch, `game/c64/thrust-silver`,
+since the Bronze branch had been merged. The emulator was updated to the
+v3.14.0 release (57 of 57). `listing.py` on the old `play.vsf` gave the
+same records as the committed listing; only the snapshot's hash and the
+newer `uncounted` field changed.
+
+Reading the program from 15.7 % to 100 % took one pass through a compact
+listing of `$8280`-`$BFFF` and four rounds of annotation files. Two
+mistakes were caught on the way: a byte typing of `$B4BC`-`$B512` covered
+`demo_controls` (`check_listing.py` failed on the code the code map had
+seen run, and the range was typed code again), and decoding the unused
+BBC key-page printer traced the RAM under the KERNAL at `$FFD2` as code
+(set back to data).
+
+The Bronze run's "attract mode at boot" was a game in progress: the
+start-up code jumps to `$AF82`, which starts a game, and the demo flag
+`$63` is set only by the title after that game ends. Running
+`entry.vsf` with no input for two minutes showed it.
+
+`$3000`-`$3FFF` turned out to be the relocator's leftover source, and the
+per-frame `JSR $3000` lands on its first byte, an RTS. With no store to
+the SID at `$D400` anywhere in memory, this copy has no music.
+
+A first statement that thrust costs a unit of fuel a pass contradicted
+the Bronze measurement (5 units in 25 frames). `ship_physics` returns at
+once except on 6 passes in 16, and the comment and `facts.md` were
+written again with that.
+
+The sample of 60 comments, checked on claude-fable-5-1, found 10 wrong;
+all ten held against the code and were corrected, with every comment
+that said the same. The pages were checked in a headless Chrome after
+Node and Playwright were put in `tools/` with the contributor's yes.

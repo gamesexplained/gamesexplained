@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
+<title>Thrust</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -32,48 +32,229 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
-code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
+.th-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.th-btn{font-family:var(--fm);font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.th-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.th-scroll{overflow:auto;max-height:640px;background:#000;border-radius:6px}
+.th-scroll canvas{display:block;image-rendering:pixelated}
+.th-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.th-tab{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0}
+.th-tab th,.th-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.th-tab th{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:500}
+.th-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid #0003}
+.th-grid{display:flex;flex-wrap:wrap;gap:14px}
+.th-cell{text-align:center;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.th-cell canvas{display:block;background:#000;border-radius:4px;image-rendering:pixelated;margin:0 auto 4px}
+.th-dial{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.th-read{font-family:var(--fm);font-size:13px;line-height:1.7}
+.th-pics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.th-pics img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">Commodore 64 · 1986 · Firebird</p>
+  <p class="eyebrow">1986 · Firebird</p>
   <h1>Thrust</h1>
-  <p class="sub">Jeremy C. Smith's cave flyer, in which a ship tows a heavy pod on a rod against gravity, sold on the C64 by Firebird's budget label. The C64 program still carries the BBC Micro version's page of keys, teletext codes and all.</p>
+  <p class="sub">A ship that falls, a pod on a rigid rod, and caves stored as nothing more than two lists of slopes. This copy also carries the BBC Micro original's key page, and the hooks for a music player it does not have.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · Controls</p>
-  <h2 class="t">Secret: the C64 copy keeps the BBC Micro's key page</h2>
-  <p>On the C64 the ship is flown from the keyboard. A and S turn it through 32 directions, either Shift key thrusts, Return fires, and Space raises the shield, which is also the tractor beam. F5 pauses until F7 is pressed, and F1 and F3 turn the sound off and on.</p>
-  <p>The game reads the whole keyboard matrix once into eight bytes <code>$9DE2</code>, then asks about one key at a time by its number in the matrix, row times eight plus column <code>$B476</code>. The five controls sit together in a table of key numbers <code>$B4BC</code>.</p>
-  <p>Next to the game's own messages sits a page of text that starts with 22,7, the BBC Micro's command for its teletext mode, and uses teletext colour and double-height codes <code>$B9DD</code>. The page names the BBC keys: CAPS LOCK and CTRL to rotate, COPY and DELETE to freeze, ESCAPE to quit. A routine prints the page through the C64's own character output and waits for Space <code>$B74B</code>, but nothing in the code traced so far calls it. The crackers added a line at the bottom: "Cracked By The Syndicate For TCI !".</p>
+<section id="game">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">Steal the pod and fly it out</h2>
+  <p class="lede">You fly a small ship down into a planet's caves to steal a pod, the Klystron pod, and tow it back out into space.</p>
+  <div class="th-pics">
+    <figure style="margin:0"><img src="reference/title-loading-picture.png" alt="The loading picture: the ship towing the pod past a planet"><figcaption class="cap">The loading picture, with "TCI" added by the crackers.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/attract-towing-pod.png" alt="The ship towing the pod on its rod over level 1"><figcaption class="cap">The ship towing the pod on its rod.</figcaption></figure>
+  </div>
+  <p>The ship turns and thrusts against gravity, and it keeps moving until something slows it. Guns on the cave walls fire at it, a reactor powers them, and fuel tanks stand on ledges. The pod waits on a stand. The tractor beam picks it up, and from then on the ship and the pod swing together at the two ends of a rod. Leaving the planet with the pod completes the mission. Shoot the reactor enough and it goes critical: the planet blows up a few seconds later, and a ship still inside goes with it.</p>
 </section>
-<section>
-  <p class="fig">02 · Loading</p>
-  <h2 class="t">Two unpackers before the first instruction</h2>
-  <p>This copy is a crack: one packed file, with the title picture shown while it waits for fire on joystick port 1. A second unpacker then rebuilds the game, a short routine moves 61 pages of it up to $8280, and the game's own code starts at $B675 <code>$B675</code>. Its first job is to copy three pages of start-up code to $0400 and run them there <code>$B70B</code>, which is why that code sits at $B773 in memory but is written for $0400 <code>$B773</code>.</p>
-  <p>Once running, the game has one interrupt handler <code>$8943</code>. It splits the screen by working down a list of raster lines, each naming one of five handlers <code>$8964</code>, so the status bar at the top and the cave below get their own settings.</p>
+<section id="frame">
+  <p class="fig">02 · One frame, rebuilt from memory</p>
+  <h2 class="t">Two screens in one frame</h2>
+  <p class="lede">The status bar at the top is a text screen, and the cave below it is a multicolour bitmap. The video chip switches between them twice in every frame.</p>
+  <div class="plate">
+    <div class="th-bar" id="th-f-bar"></div>
+    <div style="position:relative;max-width:768px"><canvas id="th-frame" class="th-cv" width="384" height="272" style="width:100%" aria-label="A frame of level 1, drawn by this page from the game's memory"></canvas><canvas id="th-frame-hi" width="384" height="272" style="position:absolute;inset:0;width:100%;pointer-events:none" aria-hidden="true"></canvas></div>
+    <p class="cap" id="th-f-cap">A frame of level 1, drawn by this page from the memory and the register writes recorded in the emulator (VICE). Of its 104,448 pixels, 104,446 match the emulator's own picture of the same frame. The two that differ are on line 191, where a sprite is moved in the middle of the line.</p>
+  </div>
+  <p>The frame begins with the status bar. <code>raster_handler_0</code> (<code>$89C4</code>) runs at the top of each frame, sets the video chip to text mode, and points it at the screen at <code>$5C00</code> and the character set at <code>$5800</code>. The status bar is two rows of 40 characters, and each of its 80 cells holds a character of its own, codes 0 to 79. The character set is therefore a tiny bitmap. The game writes the fuel, lives and score into it with its own five-line font (<code>$8E52</code>).</p>
+  <p>At lines $41-$43 <code>raster_handler_3</code> (<code>$8A4D</code>) turns on the bitmap at <code>$6000</code>, in multicolour, and the rest of the frame is the cave. Below that, <code>raster_handler_1</code> (<code>$8AA1</code>) moves sprites 0-5 down the screen band by band. The guns, fuel tanks, reactor, pod stand and rod all go through those six sprites. The ship is sprite 7, and the towed pod is sprite 6.</p>
 </section>
-<section>
-  <p class="fig">03 · Screens</p>
-  <h2 class="t">From the title to the first planet</h2>
-  <div class="plate"><img class="reference" src="reference/title-loading-picture.png" alt="Thrust title picture: a ship towing a round pod past a planet, with THRUST TCI in red letters"><p class="cap"><b>Title.</b> The loading picture, signed "Bob". This crack adds "TCI" under the name.</p></div>
-  <div class="plate" style="margin-top:20px"><img class="reference" src="reference/attract-towing-pod.png" alt="The ship towing the pod on a red rod above the cave"><p class="cap"><b>Attract mode.</b> A demo pilot flies level 1 and carries the pod away. Space starts a game.</p></div>
-  <div class="plate" style="margin-top:20px"><img class="reference" src="reference/ship-materialising.png" alt="A yellow dotted cross above the cave where the ship will appear"><p class="cap"><b>Arrival.</b> Each ship appears out of a yellow cross.</p></div>
-  <div class="plate" style="margin-top:20px"><img class="reference" src="reference/play-level1-start.png" alt="The ship hovering above level 1, with a fuel tank, a gun, the pod on its stand and the reactor"><p class="cap"><b>Level 1.</b> The fuel tank, a gun, the pod on its stand, and the reactor on the right. Fuel, lives in reserve, and score run along the top.</p></div>
-  <div class="plate" style="margin-top:20px"><img class="reference" src="reference/shield.png" alt="The ship drawn as a green circle with the shield up"><p class="cap"><b>Shield.</b> Space turns the ship into a green circle and burns fuel faster than thrust.</p></div>
-  <div class="plate" style="margin-top:20px"><img class="reference" src="reference/high-score-table.png" alt="Top Eight Thrusters table, every entry 1000 points by SYNDICATE"><p class="cap"><b>High scores.</b> The table between games. In this copy every entry reads SYNDICATE.</p></div>
+<section id="ship">
+  <p class="fig">03 · The ship</p>
+  <h2 class="t">32 directions and a falling ship</h2>
+  <p class="lede">The ship has 32 directions. Each one has a thrust vector, stored as a pair of signed numbers in a table.</p>
+  <div class="plate">
+    <div class="th-bar"><button type="button" class="th-btn" id="th-d-a">◀ A (anticlockwise)</button><button type="button" class="th-btn" id="th-d-s">S (clockwise) ▶</button></div>
+    <div class="th-dial"><canvas id="th-dial" width="240" height="240" class="th-cv" aria-label="The ship's sprite for the chosen direction, with its thrust vector"></canvas><div class="th-read" id="th-d-out"></div></div>
+    <p class="cap">The ship's sprite for each direction, from <code>$4000</code> on, and its vector from <code>direction_tables</code> (<code>$B8E7</code>), drawn to scale. The sideways number is half the scale of the up-and-down one, because a column of the cave is twice as wide as a row is high.</p>
+  </div>
+  <p>A and S turn the ship one direction at a time, on three passes of the main loop in four (<code>rotate_ship</code>, <code>$9E09</code>). A pass is not a frame: the main loop waits for three ticks of a timer (<code>wait_pass</code>, <code>$B44C</code>). Measured in the emulator, it ran 131 times in 250 frames, about 26 times a second.</p>
+  <p>Gravity, thrust and friction all happen in <code>ship_physics</code> (<code>$9588</code>), and only on 6 passes in 16. On those passes the level's gravity is added to the falling speed. Shift adds a sixteenth of the direction's vector to the speeds, or a thirty-second while the pod is towed, and burns one unit of fuel. Then friction takes a 64th of the sideways speed and a 256th of the falling speed. Gravity rises from 5 on level 1 to 13 on level 6 (<a href="levels.html#table">Levels</a>).</p>
+</section>
+<section id="pod">
+  <p class="fig">04 · The pod on its rod</p>
+  <h2 class="t">The pod pulls the ship round</h2>
+  <p class="lede">Once the pod is attached, the game no longer moves the ship. It moves the point halfway along the rod, and turns the rod about it.</p>
+  <p>With Space held, the shield goes up and the tractor beam comes on. <code>pod_pickup</code> (<code>$9926</code>) waits for the ship to come within a short distance of the pod and then move away again. As the gap opens past a longer distance, the pod is attached. That moment matches what a player sees: the beam draws in, and then the rod goes taut.</p>
+  <p>From then on the physics moves the centre of the pair, <code>$07</code>-<code>$0C</code>. The ship is drawn at the centre plus the rod's vector, and the pod at the centre minus it (<code>ship_position</code>, <code>$9E77</code>; <code>pod_position</code>, <code>$B377</code>). Thrusting in a direction across the rod gives the rod a spin (<code>$1E</code>-<code>$20</code>), so the ship and pod swing round each other. Thrust is also halved while towing. The rod itself is a line drawn every pass into a pair of sprites (<code>draw_rod</code>, <code>$AB26</code>), alternately at <code>$5300</code> and <code>$5380</code>, so the one on screen is never the one being drawn.</p>
+</section>
+<section id="walls">
+  <p class="fig">05 · The cave walls</p>
+  <h2 class="t">A cave stored as runs of slopes</h2>
+  <p class="lede">Each wall of a level is a list of runs: so many rows, each moving the wall a few steps left or right. The game builds the walls row by row as the camera moves.</p>
+  <div class="plate">
+    <div class="th-bar" id="th-w-bar"><button type="button" class="th-btn" id="th-w-left" aria-pressed="true">Left wall</button><button type="button" class="th-btn" id="th-w-right" aria-pressed="false">Right wall</button></div>
+    <canvas id="th-w-cv" class="th-cv" width="480" height="200" aria-label="Level 1's walls, with the chosen run picked out"></canvas>
+    <table class="th-tab" id="th-w-tab"><thead><tr><th>Run</th><th>Rows</th><th>Slope a row</th></tr></thead><tbody></tbody></table>
+    <p class="cap">Level 1's walls, drawn by this page with a port of the game's generators, from the run lists at <code>$A03C</code>. Press a row of the table to pick out its run. The port matches the game's own code on every row of all six levels (<code>test_levels.js</code>).</p>
+  </div>
+  <p>Each wall has two generators (<code>walls_step</code>, <code>$841C</code>). Each generator keeps an x position, the rows left in its run and its place in the lists. Every row it adds the run's slope to x, and when the run is used up it reads the next. The results go into two rings of 256 rows at <code>$0400</code> and <code>$0500</code>, one per wall. <code>draw_walls</code> (<code>$828B</code>) then fills the rock from the edge of the screen to each wall. It does that on every second pixel line, which gives the rock its stripes. It draws only the pixels that changed since the last pass, by exclusive-or (EOR).</p>
+  <p>The first runs of every level are long and flat: open sky, with the left wall at 0 and the right wall at 255. The cave starts a few hundred rows down. All six levels are drawn whole on the <a href="levels.html">Levels</a> tab.</p>
+</section>
+<section id="objects">
+  <p class="fig">06 · Guns, fuel and the reactor</p>
+  <h2 class="t">Everything is an object with a type</h2>
+  <p class="lede">Each level lists its objects in five lists: x, row (low and high), type and flags. Object 0 is always the pod on its stand and object 1 the reactor.</p>
+  <div class="plate"><table class="th-tab" id="th-o-tab"><thead><tr><th></th><th>Type</th><th>What</th><th>Hit box</th><th>Points</th></tr></thead><tbody></tbody></table>
+  <p class="cap">Sprites from <code>$4880</code> on, in level 1's colours; hit boxes from <code>hit_width</code> and <code>hit_height</code> (<code>$84F1</code>, <code>$84FA</code>), in columns and rows; points from <code>hit_points</code> (<code>$8508</code>), as the status bar shows them.</p></div>
+  <p><code>update_objects</code> (<code>$8571</code>) goes through the level's objects every pass. It tests the player's four shots against each object on screen. A gun hit once is destroyed. Each hit on the reactor silences the guns for a random time (<code>guns_silent</code>, <code>$3D</code>) and adds the same random amount, 0 to 31, to its damage (<code>$3E</code>). Damage starts at 50 on each level, and when the total passes 255 the countdown starts at 10 (<code>countdown</code>, <code>$6A</code>). It goes down one every 33 passes, beeping, and is shown twice on the status bar. At 0 the planet blows up.</p>
+  <p>A gun fires on a pass when a random byte comes out below <code>gun_rate</code> (<code>$A3</code>). The rate is 1 for the first two missions, then rises by one each mission up to 35, with 8 more for the mission after a planet was destroyed without the pod. Each gun's flags set which way it aims and how widely it scatters its shots.</p>
+  <p>A fuel tank can be shot for 150 points, or drained with the tractor beam: 11 units of fuel a pass for 26 passes, then the tank goes, for 300 points.</p>
+</section>
+<section id="score">
+  <p class="fig">07 · Scoring and the end of a mission</p>
+  <h2 class="t">Every score ends in a painted zero</h2>
+  <p class="lede">The score is stored in binary-coded decimal (BCD) at <code>$0180</code>-<code>$0182</code>, two digits to a byte. The last "0" on the status bar is drawn into the status bar's picture and never changes.</p>
+  <p>The status bar's character set is copied at start-up from <code>status_bar_chars</code> (<code>$BB96</code>), and the cell after the score's six digits already holds a "0" (at <code>$5A51</code> in the copy). So every stored value is shown ten times over: a gun adds 75 to the score and the player sees 750. An extra life comes each time the score's ten-thousands digit changes (<code>add_score</code>, <code>$92A2</code>).</p>
+  <p>Rising above row $120 leaves the planet (<code>above_planet</code>, <code>$B3C7</code>). With the pod, <code>mission_complete</code> (<code>$B608</code>) counts up a bonus of 400 for each of (level number + 5) steps. A planet destroyed on the way out adds 5 more steps. Without the pod the mission is "Incomplete" and the level is played again. If the planet was destroyed and the pod left behind, the mission has "Failed", with "No Bonus", and play moves on to the next level.</p>
+</section>
+<section id="copy">
+  <p class="fig">08 · This copy</p>
+  <h2 class="t">What the crackers changed</h2>
+  <p class="lede">This is TCI's cracked copy, packed into one file. A few things in it differ from what reviews of Firebird's release describe.</p>
+  <p>The start-up code ends with a jump to <code>crack_start</code> (<code>$AF82</code>), which starts a game at once, with the player in control. The high score table and the demo pilot appear only once that game is over. In the emulator, with no key pressed, the ship fell and was lost three times. After about 35 seconds the table came up.</p>
+  <p>This copy has no music. <code>raster_handler_0</code> calls <code>$3000</code> once a frame, where a music player would be called, and the start and end of every life call <code>music_hook</code> (<code>$A951</code>) with a tune number. Both reach an <code>RTS</code>. No instruction in memory writes to the sound chip (SID) at <code>$D400</code>. The game's own sound effects write it through its mirror at <code>$D500</code> instead (<code>sound_tick</code>, <code>$9B58</code>). The odds and ends the crackers left are on the <a href="discoveries.html">Discoveries</a> tab.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* th-frame */
+// One frame of play recorded in VICE with kit/c64/frame.py (capture, then trim): every write to the
+// video chip with its line and cycle, and the memory the drawing reads, for C64.drawFrame.
+const TH_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Thrust (C64), level 1 in play, recorded in VICE (vice-mcp v3.14.0) from play.vsf with kit/c64/frame.py on 8 November 2026","vic":[64,190,120,206,180,222,252,226,252,226,64,190,0,0,118,142,33,27,0,209,0,161,216,0,119,126,241,0,0,0,0,32,240,247,240,242,243,244,240,247,247,245,245,245,245,247,247],"cia2":[62,3],"cpu":[47,54],"writes":[[52,17,53281,240,0],[65,25,53272,121,120],[65,29,53265,59,59],[68,5,53282,244,4],[196,8,24569,39,39],[196,13,22521,39,39],[196,25,53288,243,3],[197,43,53269,163,163],[198,42,24570,38,38],[198,47,22522,38,38],[199,1,53289,247,7],[199,61,53252,120,120],[200,12,53253,206,206],[200,24,53269,167,167],[212,20,24571,34,34],[212,25,22523,34,34],[213,31,53254,180,180],[213,40,53255,222,222],[213,52,53269,175,175],[214,48,24572,41,41],[214,53,22524,41,41],[216,24,53269,191,191],[217,20,24573,40,40],[217,25,22525,40,40],[218,14,53264,1,1],[218,31,53258,252,252],[218,40,53259,226,226],[271,53,53269,128,128],[277,9,53272,119,118],[277,19,53265,155,27],[277,25,53281,247,7],[277,31,53282,240,0],[284,2,24568,43,43],[284,7,22520,43,43],[284,19,53287,245,5],[285,25,53269,129,129],[286,14,24569,42,42],[286,19,22521,42,42],[286,31,53288,247,7],[286,59,53264,3,3],[287,16,53250,64,64],[287,25,53251,190,190],[287,37,53269,131,131]],"colour":"Dw8PDw8FBQUFDw8PDw8PDw8FBQUFBQ8PDw8PDw8PBQUFBQUPDw8PDwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQ==","ram":[{"a":16384,"b":"ACAAAFAAAFAAAIgAAIgAAQQAAQQAAgIAAgIADAGAEABACACABAEABHEAAooAAQQAAAAAAAAAAAAAAAAAAAAA"},{"a":18560,"b":"AAAABngAGYYAYGEAgBiA/waAAOGAABhgAAYQAAEQAACQAACQAABQAABQAAAwAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":18816,"b":"H/gAYAYAgAEAgAEAgAEAgAEAgAEAgAEAgAEAgAEAgAEAgAEAgAEAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":18880,"b":"AAAAAAAAAAAAAAAANWgAJUgANWgAJUgAJ2wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":18944,"b":"AAAAAOAAAxgABAQABAQACAIACAIACAIABAQABAQAAxgAAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":19008,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAggABfQABAQAAxgAAKAAAKAAAKAAARAAAAAA"},{"a":19072,"b":"AAAAAADgAACgAACgAACgAACgAACgAACgAACgAACgAACgAACgAACg//+wgAAQsAAQsAAQsAAQAAAAAAAAAAAA"},{"a":19136,"b":"AfgABgYAGAEAIAAAQAAAQAAAgAAQgAAQgAAQgAAQQAAAQAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22528,"b":"ANXAysDKwMAAVQCqAKoAAABVAKoAqgAAAFUAqgCqAAAAVQCoAKgAAAAA/sD8wMAAAADGxsbG/gAAAP7A/MD+AAAAwMDAwP4AAFUAKgAqAAAAVQCqAKoAAABVAKoAqgAAAFUAqgCqAAAAVQCqAKoAAABVAKoAqgAAAFUAqgCqAAAAVQCoAKgAAAAAwMDAwP4AAAB+GBgYfgAAAMbGzNjwAAAA/sD8wP4AAAD8wP4G/gAAVQAqACoAAABVAKoAqgAAAFUAqgCqAAAAVQCqAKoAAABVAKoAqgAAAFUAqgCqAAAAVQCqAKoAAABVAKgAqAAAAAD8wP4G/gAAAP7GwMD+AAAA/sbGxv4AAAD+xv7MxgAAAP7A/MD+AABVACoAKgAAAFUAqgCqAAAAVQCqAKoAAABVAKoAqgAAAFcDowOjAwPAYDAYDAYD"},{"a":22856,"b":"AAAAAAAAAA=="},{"a":22864,"b":"AAAAAAAAAA=="},{"a":22872,"b":"AAAAAAAAAA=="},{"a":22880,"b":"AAAAAAAAAA=="},{"a":22888,"b":"AHgYGH5+AA=="},{"a":22896,"b":"AP7Gxt7+AA=="},{"a":22904,"b":"AHgYfh7+AA=="},{"a":22912,"b":"APjA/g7+AA=="},{"a":22920,"b":"AAAAAAAAAA=="},{"a":22928,"b":"AAAAAAAA"},{"a":22936,"b":"AAAAAAAA"},{"a":22944,"b":"AAAAAAAA"},{"a":22952,"b":"AAAAAAAA"},{"a":22960,"b":"AAAAAAAA"},{"a":22968,"b":"AAAAAAAA"},{"a":22976,"b":"AAAAAAAA"},{"a":22984,"b":"AAAAAAAA"},{"a":22992,"b":"AAAAAAAA"},{"a":23000,"b":"AH4G/uD+"},{"a":23008,"b":"AAAAAAAA"},{"a":23016,"b":"AAAAAAAA"},{"a":23024,"b":"AAAAAAAA"},{"a":23032,"b":"AAAAAAAA"},{"a":23040,"b":"AAAAAAAA"},{"a":23048,"b":"AAAAAAAA"},{"a":23056,"b":"AAAAAAAA"},{"a":23064,"b":"AAAAAAAA"},{"a":23072,"b":"AAAAAAAA"},{"a":23080,"b":"AAAAAAAA"},{"a":23088,"b":"AAAAAAAA"},{"a":23096,"b":"AAAAAAAA"},{"a":23104,"b":"AAAAAAAA"},{"a":23112,"b":"AAAAAAAA"},{"a":23120,"b":"AP7Gxt7+"},{"a":23128,"b":"AAAAAAAA"},{"a":23136,"b":"AAAAAAAA"},{"a":23144,"b":"AAAAAAAA"},{"a":23152,"b":"AAAAAAAA"},{"a":23160,"b":"AwYMGDBg"},{"a":23552,"b":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9ycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycg=="},{"a":24568,"b":"KiYiKSgr"},{"a":24575,"b":"AA=="},{"a":24903,"b":"Aw=="},{"a":24911,"b":"/w=="},{"a":24919,"b":"/w=="},{"a":24927,"b":"/w=="},{"a":24935,"b":"/w=="},{"a":24943,"b":"/w=="},{"a":24951,"b":"/w=="},{"a":24959,"b":"/w=="},{"a":24967,"b":"/w=="},{"a":24975,"b":"/w=="},{"a":24982,"b":"AP8="},{"a":24990,"b":"AP8="},{"a":24998,"b":"AP8="},{"a":25006,"b":"AP8="},{"a":25014,"b":"AP8="},{"a":25022,"b":"AP8="},{"a":25030,"b":"AP8="},{"a":25038,"b":"AP8="},{"a":25046,"b":"AP8="},{"a":25054,"b":"AP8="},{"a":25062,"b":"AP8="},{"a":25070,"b":"AP8="},{"a":25078,"b":"AP8="},{"a":25086,"b":"AP8="},{"a":25094,"b":"AP8="},{"a":25102,"b":"AP8="},{"a":25110,"b":"AP8="},{"a":25118,"b":"AP8="},{"a":25126,"b":"AP8="},{"a":25134,"b":"AP8="},{"a":25142,"b":"AP8="},{"a":25150,"b":"AP8="},{"a":25158,"b":"AP8="},{"a":25166,"b":"AP8="},{"a":25174,"b":"AP8="},{"a":25182,"b":"AP8="},{"a":25190,"b":"AP8="},{"a":25198,"b":"AP8="},{"a":25206,"b":"AP8="},{"a":25214,"b":"wMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDAAAAAAAAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMAAAKoAqgCqAKoAAACgAKoAqgAAAAAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAAACgAKoAqgAAAAAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAAAAAAAAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAAACgAKoAqgAAAAAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAAACqAKoAqgAAAKoAqgCqAAAAqgCqAKoAAACqAKoAqgAAAKoAqgCqAAAAqgCqAKoAAACqAKoAqgAAAKoAqgCqAAAAqgCqAKoAAACqAKoAqgAAAKAAqgCqAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgAAAKAAqgCqAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgAAAKAAqgCqAAAAAAAAAKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgAAAKAAqgCqAAAAAACqAKoAAAAAAKoAqgAAAAAAqgCqAAAAAACqAKoAAAAAAKoAqgAAAAAAqgCqAAAAAACqAKoAAAAAAKoAqgAAAAAAqgCqAAAAAACqAKoAAAAAAKoAqgAAAAAAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoAqgCqAKoA"},{"a":32767,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":62,"colour_cells_changed_during_frame":0}};
+// end of th-frame
+</script>
+<script>
+/* thrust-walls */
+// A port of the wall generators (walls_step, $841C, wall_step_forward, $84C8): each wall of a level
+// is two generators reading one list of run lengths and one of slopes. thrustWalls(ram, level, rows)
+// gives { left, right }, the x of each wall at level rows 0..rows-1, as the game's ring at $0400 and
+// $0500 holds them once the camera has passed.
+function thrustWalls(ram, level, rows) {
+  const ptr = (lo, hi) => ram[lo + level] | ram[hi + level] << 8;
+  const runsL = ptr(0xA8FD, 0xA903), slopesL = ptr(0xA909, 0xA90F);
+  const runsR = ptr(0xA915, 0xA91B), slopesR = ptr(0xA921, 0xA927);
+  const gen = (v, i) => ({ v, c: 0xFF, i });
+  const step = (g, runs, slopes) => {
+    if (g.c === 0) { g.i = (g.i + 1) & 0xFF; g.c = ram[runs + g.i]; }
+    g.v = (g.v + ram[slopes + g.i]) & 0xFF;
+    g.c = (g.c - 1) & 0xFF;
+  };
+  const a = gen(0, 0), b = gen(0, 1), c = gen(0xFF, 0), d = gen(0xFF, 1);
+  const left = new Uint8Array(rows + 1), right = new Uint8Array(rows + 1);
+  for (let k = 1; k <= rows; k++) {
+    step(a, runsL, slopesL); left[k] = a.v; step(b, runsL, slopesL); left[k - 1] = b.v;
+    step(c, runsR, slopesR); right[k] = c.v; step(d, runsR, slopesR); right[k - 1] = d.v;
+  }
+  return { left: left.subarray(0, rows), right: right.subarray(0, rows) };
+}
+// end of thrust-walls
+
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('th-f-cap').textContent = 'These widgets need the site\'s c64.js, which did not load.'; return; }
+  const PAL = C64.PAL;
+  // ---- 02 the frame
+  C64.drawFrame($('th-frame'), TH_FRAME, 1);
+  const hi = $('th-frame-hi').getContext('2d');
+  const BANDS = [['The whole frame', null, 'The whole frame, as the video chip drew it.'],
+    ['Status bar', [35, 51, 'text mode: screen $5C00, characters $5800'], 'Lines 51 to 66 of the picture: the status bar in text mode, two rows of 40 characters, each cell a character of its own.'],
+    ['Cave', [67, 250, 'multicolour bitmap at $6000'], 'From line 67: the cave, a multicolour bitmap at $6000, with the ship (sprite 7) and the objects on the six multiplexed sprites.']];
+  BANDS.forEach(([name, band, text], i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'th-btn'; b.textContent = name; b.setAttribute('aria-pressed', String(i === 0));
+    b.onclick = () => {
+      document.querySelectorAll('#th-f-bar button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      hi.clearRect(0, 0, 384, 272);
+      if (band) { hi.fillStyle = 'rgba(0,0,0,.6)'; hi.fillRect(0, 0, 384, 272); hi.clearRect(0, band[0], 384, band[1] - band[0] + 1);
+        hi.strokeStyle = '#ffd400'; hi.lineWidth = 2; hi.strokeRect(1, band[0], 382, band[1] - band[0] + 1); }
+      $('th-f-cap').textContent = text;
+    };
+    $('th-f-bar').appendChild(b);
+  });
+  C64.load('listing.json').then(L => {
+    const ram = L.ram, spr = p => ram.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+    // ---- 03 the directions
+    const dial = $('th-dial').getContext('2d'); let dir = 0;
+    const s16 = (lo, hi) => { const v = ram[lo] | ram[hi] << 8; return v >= 0x8000 ? v - 0x10000 : v; };
+    function drawDial() {
+      dial.fillStyle = '#000'; dial.fillRect(0, 0, 240, 240);
+      C64.drawSprite(dial, spr(dir), 120 - 36, 120 - 31, 3, PAL[7]);
+      const vy = s16(0xB8E7 + dir, 0xB907 + dir), vx = s16(0xB927 + dir, 0xB947 + dir);
+      dial.strokeStyle = PAL[2]; dial.lineWidth = 3; dial.beginPath(); dial.moveTo(120, 120);
+      dial.lineTo(120 + vx / 256 * 2 * 36, 120 + vy / 256 * 36); dial.stroke();
+      const f = v => (v / 256).toFixed(3);
+      $('th-d-out').innerHTML = `Direction ${dir} of 32<br>sprite pointer $${dir.toString(16).toUpperCase().padStart(2, '0')}, at $${(0x4000 + dir * 64).toString(16).toUpperCase()}<br>vertical ${f(vy)} rows a pass<br>sideways ${f(vx)} columns a pass<br><span style="color:var(--ink-mute)">(as stored; thrust adds a sixteenth of it)</span>`;
+    }
+    $('th-d-a').onclick = () => { dir = (dir + 31) & 31; drawDial(); };
+    $('th-d-s').onclick = () => { dir = (dir + 1) & 31; drawDial(); };
+    drawDial();
+    // ---- 05 the walls of level 1
+    const W = thrustWalls(ram, 0, 0x200), wc = $('th-w-cv').getContext('2d');
+    let side = 'left', pick = -1;
+    const runs = s => { const base = s === 'left' ? 0xA03C : 0xA04E, sl = s === 'left' ? 0xA045 : 0xA055, n = s === 'left' ? 9 : 7, out = [];
+      for (let i = 0; i < n; i++) { const d = ram[sl + i]; out.push({ i, rows: ram[base + i], slope: d >= 128 ? d - 256 : d }); } return out; };
+    // which rows each run covers: follow the second generator, which writes the rows kept on screen
+    function spans(s) { const rs = runs(s), out = []; let row = 0, i = 1, c = 0xFF;
+      for (let r = 1; r < 0x200; r++) { if (c === 0) { i++; c = rs[i] ? rs[i].rows : 0; } c = (c - 1) & 0xFF; (out[i] = out[i] || [r - 1, r - 1])[1] = r - 1; }
+      return out; }
+    function drawWalls() {
+      const r0 = 0x170, r1 = 0x1D0, x0 = 0x48, x1 = 0xC0, sx = 480 / (x1 - x0);
+      wc.fillStyle = '#000'; wc.fillRect(0, 0, 480, 200);
+      const sp = spans(side), hl = pick >= 0 && sp[pick] ? sp[pick] : null;
+      for (let r = r0; r < r1; r++) {
+        const y = (r - r0) * 2, l = Math.max(x0, Math.min(x1, W.left[r])), rt = Math.max(x0, Math.min(x1, W.right[r]));
+        const lit = hl && r >= hl[0] && r <= hl[1];
+        wc.fillStyle = PAL[2]; wc.fillRect(0, y, (l - x0) * sx, 1); wc.fillRect((rt - x0) * sx, y, (x1 - rt) * sx, 1);
+        if (lit) { wc.fillStyle = PAL[7]; const x = ((side === 'left' ? l : rt) - x0) * sx; wc.fillRect(x - 2, y, 4, 2); }
+      }
+    }
+    function fillRuns() {
+      const tb = document.querySelector('#th-w-tab tbody'); tb.innerHTML = '';
+      runs(side).forEach(r => { const tr = document.createElement('tr'); tr.style.cursor = 'pointer';
+        tr.innerHTML = `<td>${r.i}</td><td>${r.rows}</td><td>${r.slope > 0 ? '+' : ''}${r.slope}</td>`;
+        tr.onclick = () => { pick = r.i; [...tb.children].forEach(x => x.style.background = x === tr ? 'var(--hl)' : ''); drawWalls(); };
+        tb.appendChild(tr); });
+    }
+    for (const [id, s] of [['th-w-left', 'left'], ['th-w-right', 'right']]) $(id).onclick = () => {
+      side = s; pick = -1; $('th-w-left').setAttribute('aria-pressed', String(s === 'left')); $('th-w-right').setAttribute('aria-pressed', String(s === 'right')); fillRuns(); drawWalls(); };
+    fillRuns(); drawWalls();
+    // ---- 06 the objects
+    const tb = document.querySelector('#th-o-tab tbody');
+    const gun = PAL[ram[0xA945]], wallc = PAL[ram[0xA939]], shield = PAL[ram[0xA94B]], y7 = PAL[7];
+    const rows = [[[[0x22, gun]], '0-3', 'A gun, facing one of four ways', 0], [[[0x26, y7], [0x27, shield]], '4', 'A fuel tank', 4],
+      [[[0x28, wallc], [0x29, gun]], '5', 'The pod on its stand', 5], [[[0x2A, y7], [0x2B, gun]], '6', 'The reactor', 6], [[[0x2C, y7]], '7, 8', 'A door switch', 7]];
+    for (const [sprites, type, what, t] of rows) {
+      const tr = document.createElement('tr'), c = document.createElement('canvas'); c.width = 48; c.height = 42; c.className = 'th-cv';
+      const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 48, 42);
+      for (const [p, col] of sprites) C64.drawSprite(x, spr(p), 0, 0, 2, col);
+      const pts = t < 5 ? (+ram[0x8508 + t].toString(16) * 10) : '';
+      tr.innerHTML = `<td></td><td>${type}</td><td>${what}</td><td>${ram[0x84F1 + t]} × ${ram[0x84FA + t]}</td><td>${pts}</td>`;
+      tr.firstChild.appendChild(c); tb.appendChild(tr);
+    }
+  }).catch(e => { $('th-f-cap').textContent = 'The listing did not load: ' + e.message; });
+})();
+</script>
