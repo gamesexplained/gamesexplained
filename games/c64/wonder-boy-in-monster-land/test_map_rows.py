@@ -21,6 +21,14 @@ for number in range(1, 32):
         address = byte(0x85CF + row) | byte(0x8620 + row) << 8
         assert address == 0x8671 + row * stride, f'load {number}: row {row}'
     symbols = json.loads((part / 'symbols.json').read_text())
+    if number >= 2:
+        for address, side in ((0x85CF, 'low'), (0x8620, 'high')):
+            block = next(b for b in symbols['blocks'] if b['start'] == address)
+            assert block['type'] == 'Byte' and block['end'] == address + rows - 1, f'load {number}: {side} pointer block'
+            comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
+            assert f'first {rows} {side} bytes' in comment and f'{stride}-byte steps' in comment, f'load {number}: {side} pointer description'
+        fact = (part / 'facts.md').read_text()
+        assert 'row pointers in split tables at `$85CF` and `$8620`' in fact
     for row in range(rows):
         address = 0x8671 + row * stride
         block = next(b for b in symbols['blocks'] if b['start'] == address)
@@ -31,4 +39,4 @@ for number in range(1, 32):
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
-print('OK - map rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 1–31')
+print('OK - map pointers, rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 1–31')
