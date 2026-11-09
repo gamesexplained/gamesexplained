@@ -36,27 +36,27 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">Commodore 64 · 1987 · Ocean</p><h1>Platoon: discoveries</h1><p class="sub">A programmer's cheat, a difficulty setting nobody can change, an editor's placeholder left among the sprites, and a game of Space Invaders that nothing starts.</p></header>
+<header class="hero"><p class="eyebrow">Commodore 64 · 1987 · Ocean</p><h1>Platoon: discoveries</h1><p class="sub">A complete game of Space Invaders that nothing starts, a cheat made from the programmer's name, a difficulty setting nobody can change, and an editor's placeholder left among the sprites.</p></header>
 <main class="wrap" data-part="load1">
 
-<section><p class="fig">01 · Cheat</p><h2 class="t">Secret: ZACH1 stops enemies and their bullets from killing the soldier</h2>
-<p>In the first section, holding Z, A, C, H and 1 together makes the main loop at <code>$07B5</code> write <code>rts</code> over the first byte of <code>$2BC8</code>. That routine is the only test of whether the second figure has caught the soldier or a bullet in the enemy's shot slot has hit him, and with it gone neither can start his fall (<code>$2CB7</code>). Holding the five keys in the emulator changed <code>$2BC8</code> from <code>$EA</code> to <code>$60</code> (7 October 2026); N writes the <code>$EA</code> back.</p>
-<p>The cheat does not cover everything that hurts him. A booby trap still springs and takes three hits (<code>$39C1</code>), walking on to the blown bridge still drops him into the river (<code>$3D38</code>), and the patrol still ends the game if the bridge stands (<code>$35CB</code>). The later sections, each a program of its own, carry no copy of the test.</p>
-</section>
-
-<section><p class="fig">02 · Quirk</p><h2 class="t">A skill setting fixed at 2</h2>
-<p>The byte at <code>$1EC6</code> is set to 2 when the game starts and never changed. With 2, the scroll moves two pixels a step instead of one (<code>$B12A</code>), enemies walk at 3 while the soldier walks the same way, and a jump while walking left holds 15 passes instead of 20. Unreached code at <code>$1E80</code> once set it with F1 and F3, keys the finished game uses to switch men instead.</p>
-</section>
-
-<section><p class="fig">03 · Leftover</p><h2 class="t">An ICON among the sprites</h2>
-<p>Sprite shape <code>$A7</code>, stored at <code>$69C0</code> in the first section, is a filled block with the word ICON cut into it: an editor's placeholder that shipped with the game.</p>
-</section>
-
-<section id="invaders" data-part="load4"><p class="fig">04 · Leftover</p><h2 class="t">A game of Space Invaders inside the last section</h2>
-<p>The program for the last section carries a small, complete game of Space Invaders at <code>$28E2</code> that nothing in Platoon starts. It draws three shields, puts four rows of six invaders at the top of the screen and a gun at the bottom, and takes over the screen's interrupts: the top row uses the play sprites, and three more interrupts (<code>$0C1E</code>, <code>$0C60</code>, <code>$0CA2</code>) reuse the sprites for the rows below, turning the border red, cyan and purple as they go.</p>
+<section id="invaders" data-part="load4"><p class="fig">01 · Leftover</p><h2 class="t">A game of Space Invaders inside the last section</h2>
+<p>The program for the <a href="index.html#maze">last jungle and Barnes's bunker</a> carries a small, complete game of Space Invaders at <code>$28E2</code> that nothing in Platoon starts. It draws three shields, puts four rows of six invaders at the top of the screen and a gun at the bottom, and takes over the screen's interrupts: the top row uses the play sprites, and three more interrupts (<code>$0C1E</code>, <code>$0C60</code>, <code>$0CA2</code>) reuse the sprites for the rows below, turning the border red, cyan and purple as they go.</p>
 <p>The joystick moves the gun, and fire sends up one shot at a time (<code>$2B17</code>). The rows march sideways and step down at each edge, a little faster for every invader shot (<code>$2BA9</code>), while the invaders drop bombs in a fixed order of 25 turns (<code>$2CD6</code>) that wear the shields away (<code>$2E4F</code>). There is no score and there are no lives: a bomb on the gun, or the last invader shot, starts it all again (<code>$2F0D</code>).</p>
 <p>The finished game still makes room for it. The panel's interrupt shows the gun and marks each frame for the invaders whenever the game's mode byte is 7 (<code>$0E84</code>), and only the invaders' own start sets that mode.</p>
 <div class="plate"><img class="reference" src="reference/hidden-invaders.png" alt="Rows of small orange, white, cyan and purple sprites above three white shields and a gun at the bottom, with bombs falling, inside a purple border striped red and cyan"><p class="cap">The hidden game running, entered by jumping to <code>$28E2</code> from the middle of the jungle. Not every invader shows when it is started this way.</p></div>
+</section>
+
+<section><p class="fig">02 · Cheat</p><h2 class="t">Secret: ZACH1 stops enemies and their bullets from killing the soldier</h2>
+<p>ZACH1 is the programmer's first name and a 1, and <a href="index.html#makers">Zach Townsend</a> is credited on the title screen. In the first section, holding Z, A, C, H and 1 together makes the main loop at <code>$07B5</code> write <code>rts</code> (return at once) over the first byte of <code>$2BC8</code>. That routine is the only test of whether the second figure has caught the soldier or a bullet in the enemy's shot slot has hit him, and with it gone neither can start his fall (<code>$2CB7</code>). Holding the five keys in the emulator changed <code>$2BC8</code> from <code>$EA</code> to <code>$60</code> (7 October 2026); N writes the <code>$EA</code> back.</p>
+<p>The cheat does not cover everything that hurts him. A <a href="levels.html#jungle">booby trap</a> still springs and takes three hits (<code>$39C1</code>), walking on to the blown bridge still drops him into the river (<code>$3D38</code>), and the patrol still ends the game if the bridge stands (<code>$35CB</code>). The later sections, each a program of its own, carry no copy of the test.</p>
+</section>
+
+<section><p class="fig">03 · Quirk</p><h2 class="t">A skill setting fixed at 2</h2>
+<p>The byte at <code>$1EC6</code> is set to 2 when the game starts and never changed. With 2, the jungle scrolls two pixels a step instead of one (<code>$B12A</code>), enemies walk at speed 3, and a jump while walking left is cut from 20 passes of the game loop to 15, so it is shorter. Unreached code at <code>$1E80</code> once set it with F1 and F3, keys the finished game uses to switch men instead.</p>
+</section>
+
+<section><p class="fig">04 · Leftover</p><h2 class="t">An ICON among the sprites</h2>
+<p>Sprite shape <code>$A7</code>, stored at <code>$69C0</code> in the first section, is a filled block with the word ICON cut into it: an editor's placeholder that shipped with the game.</p>
 </section>
 
 </main>
