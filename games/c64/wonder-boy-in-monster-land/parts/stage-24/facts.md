@@ -11,3 +11,5 @@ The captured descriptor names 4 six-byte trigger records at `$91B5` and 1 sixtee
 In the forced play capture, 2 stable 63-byte sprite bitmaps from this load were named by active display-slot entries in VIC bank 3. Their entry and play bytes match; non-stopping checkpoints saw no instruction entry into those bitmap ranges during the following 200 frames. The observation covers those captured states and does not establish all animation or ordinary-play behavior.
 
 The loaded pointer at `$7F3F/$7F40` targets `$9199`, inside the eight-page character-copy source at `$8D79`. The entry was observed in the 200-frame forced-play probe and monitor collection. The code and graphics uses overlap; `codemap.json` records only observed instruction starts in that source whose bytes still matched the load-entry snapshot.
+
+The seven entity-state handlers and their shared update are relocated copies of load 16. `test_entity_code_copies.py` compares all 205 instruction encodings, accounting for internal address relocation, and checks the eight animation offsets. This does not establish their natural reachability in this load.

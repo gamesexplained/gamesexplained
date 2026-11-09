@@ -4,7 +4,7 @@
  "game": "wonder-boy-in-monster-land",
  "part": "stage-26",
  "build": "",
- "source": "regenerator2000 live",
+ "source": "regen2000proj",
  "regions": {
   "exclude": [
    [
@@ -540,6 +540,21 @@
   },
   {
    "start": 42808,
+   "end": 43393,
+   "type": "Undefined"
+  },
+  {
+   "start": 43394,
+   "end": 43872,
+   "type": "Code"
+  },
+  {
+   "start": 43873,
+   "end": 43880,
+   "type": "Byte"
+  },
+  {
+   "start": 43881,
    "end": 44128,
    "type": "Undefined"
   },
@@ -968,6 +983,66 @@
    "kind": "user"
   },
   {
+   "address": 43394,
+   "name": "entity_state_0_initialize",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43416,
+   "name": "entity_patched_column_compare",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43450,
+   "name": "entity_state_1_wait",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43499,
+   "name": "entity_state_2_move",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43545,
+   "name": "entity_state_3_turn",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43666,
+   "name": "entity_state_4_restore",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43709,
+   "name": "entity_state_5_effect",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43757,
+   "name": "entity_state_6_finish",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43787,
+   "name": "entity_shared_entity_update",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43873,
+   "name": "entity_animation_offsets",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 44129,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -1332,6 +1407,56 @@
    "address": 42664,
    "type": "line",
    "text": "Load 26 captured sound pattern 6: 143 nonzero event bytes from $A6A8, followed by the zero marker at $A737. Voice-list pointer records at $A430 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 43394,
+   "type": "line",
+   "text": "State 0 copies $1990,X and $197F,X to $1B06,X and $1B17,X, calls $71DB, and uses its returned X as a patched comparison threshold for $6F3C. It stores $00 or $08 at $1AD3,X according to that comparison, sets $1AB1,X to 1, stores the threshold minus 6 with a floor of zero at $1AE4,X, and jumps to $AB0B. The compare operand at $A999 is patched at runtime. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43416,
+   "type": "line",
+   "text": "Compare the value loaded from $6F3C with an immediate byte patched by STX $A999 at $A991 after $71DB returns. The entry snapshot holds $FF; the patched value depends on the caller of $71DB. The branch at $A99A uses the resulting carry."
+  },
+  {
+   "address": 43450,
+   "type": "line",
+   "text": "State 1 returns immediately when $1A29,X is zero. Otherwise it compares $6F3C with a window beginning at $1AE4,X and ending at that byte plus $0C, then subtracts $1A and the selected display-slot Y from $49. When those checks pass, it stores the resulting difference shifted right three bits at $1AE4,X and sets $1AB1,X to 2. The arithmetic is eight-bit and can wrap; the non-return paths jump to $AB0B. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43499,
+   "type": "line",
+   "text": "State 2 calls $AB0B and decrements $1AE4,X. A negative result sets $1AB1,X to 3, $1AF5,X to 1 and $1AE4,X to 7. Otherwise it calls $4368 with A=$08, then calls $43A2 when $1AD3,X is zero or $43F0 when it is nonzero. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43545,
+   "type": "line",
+   "text": "State 3 calls $AB0B and $4368, decrements $1AE4,X when nonzero, and increments $1AF5,X unless it equals 5. It calls $43A2 or $43F0 according to $1AD3,X, then compares a shifted display-slot position with $4DAE. On the qualifying side of that comparison, unless $1AB1,X already equals 4, it sets that state to 4, writes $52 or $5E to $1B28,X and toggles bit $08 in $1AD3,X. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43666,
+   "type": "line",
+   "text": "State 4 calls $AB0B and $35C1 with $1B28,X, then compares the 16-bit value $197F/$1990,X with the saved $1B17/$1B06,X using subtraction. If the subtraction borrows, it restores the saved two bytes and sets $1AB1,X to zero; otherwise it returns without that restoration. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43709,
+   "type": "line",
+   "text": "State 5 checks $1A8F,X. When nonzero, it sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then jumps to $4574 or $45BC with A=$08 according to $1AD3,X. When zero, it copies $1AC2,X to $19F6,X, clears $1AC2,X and jumps to the shared path at $AA6E. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43757,
+   "type": "line",
+   "text": "State 6 sets $19F6,X to $0F and $19C3,X to $19E5,X plus 6, then decrements $1AC2,X. If the result is nonzero it returns; if zero it calls $4B0E with A=$02 and jumps to $5DB9 with A=$01. The state-table index and entry conditions are not locally bounded; this description does not establish a natural route to the handler."
+  },
+  {
+   "address": 43787,
+   "type": "line",
+   "text": "Increment $1AC2,X, reset it to zero when it reaches 8, and use it to select an offset at $AB61. Add that offset, $19E5,X and $1AD3,X with eight-bit wrap and store the result in $19C3,X. If $1A29,X is zero, return. Otherwise call $732A: on carry set, a positive nonzero $1A6D,X saves $19F6,X to $1AC2,X and selects state 5; zero or negative sets $1AC2,X to $0A and selects state 6. Both paths pop two stack bytes before returning, so they can bypass a caller\u2019s continuation. On carry clear, call $7227; if it returns carry set, call $5D7A with A=$02 and jump to $AA6E, otherwise return. The animation index has no local bounds check before the table read."
+  },
+  {
+   "address": 43873,
+   "type": "line",
+   "text": "Eight captured animation offsets: $00, $00, $02, $02, $04, $04, $02, $02. The shared routine at $AB0B indexes this table after incrementing $1AC2,X; only the equality with 8 resets the index, so other initial values are not locally bounded."
   },
   {
    "address": 44129,
