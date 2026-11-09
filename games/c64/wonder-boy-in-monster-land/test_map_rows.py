@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-for number in range(2, 32):
+for number in range(1, 32):
     part = ROOT / 'parts' / f'stage-{number:02d}'
     listing = json.loads((part / 'listing.json').read_text())
     memory = {}
@@ -31,4 +31,4 @@ for number in range(2, 32):
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
-print('OK - map rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 2–31')
+print('OK - map rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 1–31')

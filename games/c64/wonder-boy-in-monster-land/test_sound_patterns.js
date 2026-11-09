@@ -11,4 +11,14 @@ for(let i=0;i<patterns.length;i++){
  assert(refs.length,`pattern ${i+1} pointer`);const c=symbols.comments.find(x=>x.address===a&&x.type==='line');assert(c&&c.text.includes(`${end-a-1} event bytes`)&&c.text.includes(`$${(end-1).toString(16).toUpperCase()}`));
  for(const p of refs)assert(c.text.includes(`$${p.toString(16).toUpperCase()}`),`pattern ${i+1} pointer description`);
 }
-console.log('OK - 25 built-in sound patterns, pointers and terminators');
+const stageDir=path.join(__dirname,'parts/stage-01'),stageSymbols=JSON.parse(fs.readFileSync(path.join(stageDir,'symbols.json'))),stageMem=new Uint8Array(65536);
+for(const r of JSON.parse(fs.readFileSync(path.join(stageDir,'listing.json'))).records)if(r.b)stageMem.set(r.b,r.a);
+const stagePatterns=stageSymbols.symbols.filter(x=>x.name.startsWith('stage_sound_pattern_')).sort((a,b)=>a.address-b.address);assert.equal(stagePatterns.length,8);
+for(let i=0;i<stagePatterns.length;i++){
+ const a=stagePatterns[i].address,end=i+1<stagePatterns.length?stagePatterns[i+1].address:0xb170;
+ assert.equal(stageMem[end-1],0,`first-load pattern ${i+1} terminator`);for(let p=a;p<end-1;p++)assert.notEqual(stageMem[p],0);
+ const refs=[];for(const [lo,hi] of [[0xb017,0xb023],[0xb023,0xb027],[0xb027,0xb03d]])for(let p=lo;p<hi;p+=2)if((stageMem[p]|stageMem[p+1]<<8)===a)refs.push(p);
+ assert(refs.length,`first-load pattern ${i+1} pointer`);const c=stageSymbols.comments.find(x=>x.address===a&&x.type==='line');assert(c&&c.text.includes(`${end-a-1} event bytes`)&&c.text.includes(`$${(end-1).toString(16).toUpperCase()}`));
+ for(const p of refs)assert(c.text.includes(`$${p.toString(16).toUpperCase()}`));
+}
+console.log('OK - 25 built-in and eight first-load sound patterns, pointers and terminators');

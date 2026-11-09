@@ -67,3 +67,19 @@ Captured one complete second-load video frame with the kit frame recorder, inclu
 A store watch from the title-ready snapshot stopped at $20C7 after $20C5 wrote the changed byte at $DD2E. At that stop the mirror routine had source slot $66 and destination slot $74. Independently reversing the rows of the resident $66/$67 pair as bits and two-bit groups reproduces all 126 bitmap bytes of the $74/$75 pair in the second-load play snapshot. Counted the two source masks, filtered their automatic I/O aliases, and restored the user pause.
 
 Added the two observed player-position layers and their composite to the Graphics page. The browser generated the monochrome layer from the resident source bitmap; the listing test runs the game’s mirror routine and checks both output layers, including the captured monochrome hash. Firefox rendered nonempty pixels in each layer and the composite.
+
+Stopped at the sprite mirror entry during title-to-play and recovered the return address $AFFB. The first-load routine at $AFC7 copies six source pairs from $ACC7–$AFC6 and then invokes the resident mirror routine seven times. Compared each 128-byte source block with its destination: all six match the second-load play snapshot; the resident-entry copy differs only in the two 64th slot bytes per pair, which the VIC does not fetch as sprite pixels. Moved ownership of the two previously counted source masks and one mirrored output to the first-load source, avoiding double-counting. Restored the user pause.
+
+Changed the player graphics viewer to use the first-load source masks and mirror both layers in the page. The listing-based test executes $AFC7 and checks all six 128-byte copies, plus the restored X and memory configuration; the mirror test checks both captured output hashes.
+
+Rechecked the first load’s map descriptor against its entry snapshot: 15 row pointers select 96-byte rows at $8671 and the end meets the character-data pointer at $8C11. Described each row by its own dimensions and endpoint bytes, preserving the warning that later pointer-table entries and unbounded consumers exist. Extended the map-row test to include the first load.
+
+After moving the player masks to their first-load source, Firefox rendered both reconstructed layers and the composite, and the map, sprite-copy and mirror tests passed. The first-load sprite-copy instructions are marked as RAM accesses because $01 banks I/O out for that loop.
+
+Traced the first-load voice lists to eight event-pattern blocks at $B03D–$B16F. Each has one trailing zero and is referenced from a voice list. Added distinct lengths and pointer locations to the listing, with the same state-dependent event caveat used for resident patterns.
+
+Matched the resident-entry title bytes $D000–$D4BF to the first-load source $B5C4–$BA83. The title initializer at $0256 passes $B5C4 to the eight-page copy at $717C, so the resident RAM copy is excluded and the source counted in the first load. Added a description for the second half of the source, including its overlap with the screen template.
+
+Described the $9011–$9240 continuation of the first-load character-copy source, which the ledger had left beyond the first symbol’s 1,024-byte reach. The full eight-page source overlaps executable code and other records after this byte-typed prefix; its separate alias is retained.
+
+Parsed the three captured voice lists in each of loads 2–31 and checked their pointer targets and event boundaries against the resident sequencer. The listing-based simulator ran each captured selector-1 loop: all 207 patterns were selected and reached the parsed zero marker. Added 90 list descriptions and 207 pattern descriptions, leaving reachability in ordinary play open. The permanent test rebuilds these checks from the committed listings and recorded loop states.
