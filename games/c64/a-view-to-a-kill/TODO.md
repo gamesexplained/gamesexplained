@@ -30,10 +30,11 @@ unorig went through every tab, page by page, with the agent; `copy` is
 - The mine's long digit overflow (the 14th digit on the pause flag, the
   46th on the code flag, `$38AA`, mine) and City Hall's `AND $03E9,Y`
   (`$95AD`): traced, not tried. A sixth digit and the helmet count were
-  tried in VICE (About, notes 13 to 15).
-- The mine walkthrough's walks after the plank are planned with a movement
-  model, not played; play them in VICE and replace the plan with the
-  recording (the tools are described in `agent-history.md`).
+  tried in VICE (About, notes 13 and 14).
+- The mine walkthrough traces the steward's 2021 recording; in the bottom
+  corridor and near the right edge the match to the map is unsure and the
+  model fills the walk. Whether a plank is ever needed is not known: the
+  recorded play never lays one.
 - Why Paris's map ovals do not sit on May Day's landing points.
 - Which release the cracked copy came from: its credits, Paris damage
   limit, music tempo, City Hall gauge and mine pace all differ from this

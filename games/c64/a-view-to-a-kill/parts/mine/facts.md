@@ -159,9 +159,11 @@ City Hall's, apart from its text and addresses. Only port 2 is read
 - EXAMINE's upper test (`$3727`) subtracts 5 from the object's column; for
   object 40 at column 3 it wraps to 254, so object 40 can never be
   examined or taken (VICE: refused from every column 4 to 10).
-- Object 48 (the number 7) lies in a pit with no exit: jumps end on its
-  floor and a rope there cannot be climbed. Blasting rock fall 14, its
-  floor, drops Bond to a pit where a rope can be climbed (VICE).
+- Object 48 (the number 7) lies in a pit two steps wide. Jumps end on its
+  floor; a rope fired there takes Bond out (the steward's recording of a
+  complete play, 2021). A rope tried from one spot in it in VICE could not
+  be climbed, so where he stands matters. Blasting rock fall 14, the
+  pit's floor, also drops Bond to a pit where a rope can be climbed (VICE).
 - A sixth digit makes `code_count` 6: EXAMINE then refuses object 50, and
   with object 50 carried the end check at map column `$15` lets play go
   on (VICE).

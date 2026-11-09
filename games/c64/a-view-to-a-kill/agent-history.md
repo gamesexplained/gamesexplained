@@ -93,6 +93,19 @@ map_col, map_row, fine scroll 2 and 7) and using the panel. The checks
 found that the helmet by the start can never be examined, that the
 helmet count starts at 2 so the hazard freeze cannot happen, and that the
 number 7 lies in a pit whose floor (rock fall 14) has to be blasted. The
+steward reviewed the planned walks on 9 November 2026: they jumped over every
+falling-rock column, because the model charged each hazard step as if the
+rock were always lit, and one fall passed through rock by a game bug the
+steward knows (stuck in the ground, jumping through rock), which he does not
+want used. He then supplied his own recording of a complete play from 2021.
+It overturned two findings: he climbs out of the number 7's pit on a rope,
+so it is not a dead end, and he enters the digits in the detonator's cave
+after WINCH DOWN, never laying the plank. The walkthrough was rebuilt from
+that recording: Bond's place in each quarter second was found by matching
+the playfield's rock to the map (an FFT correlation of the two masks), the
+stops were read from the panel, and the model only joins waypoints where
+the match is unsure, as in the long bottom corridor, whose repeating
+pattern lets the match slide sideways. The
 scripts are kept outside the repository, with the contributor's project
 files; `test_mine_route.py` checks the published route's stops against
 the game's rules from the listing.

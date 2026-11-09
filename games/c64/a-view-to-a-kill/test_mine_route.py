@@ -2,7 +2,8 @@
 """Check the mine walkthrough on maps.html against the game's own rules.
 
 The route is the JSON the page's player draws (script#mn-route): for each stop, Bond's
-path in characters, (x, y) being his left column and head row. The object table comes
+path in characters, (x, y) being his left column and head row, and the place where the
+stop's action happens (x), which for the cave stop is before WINCH UP lifts him away. The object table comes
 from the mine's listing ($BD00: present, taken, x, x high, row, type, width, height, 64
 of each). For each stop the test checks the place where it ends:
 - a pick-up: EXAMINE finds that object first ($36F6: tile row (y + 4) / 2, tile
@@ -11,7 +12,8 @@ of each). For each stop the test checks the place where it ends:
 - the winch: map row $0D in the right part ($3F7C);
 - a blast: the rock it names is the one USE dynamite marks ($3827: within -8 to +5
   tiles, rock falls counted down from 15);
-- the digits: the right part, above map row $55 ($389C), after May Day and the winch;
+- the digits: the right part, above map row $55 ($389C), after all five numbers are taken;
+  in the same stop the detonator is taken, which needs the winch and the digits ($375B);
 - the end: map column $15 or less, carrying the detonator ($2564).
 Run: python3 games/c64/a-view-to-a-kill/test_mine_route.py"""
 import json, re, sys
@@ -53,7 +55,7 @@ def marked(x, y):
 
 
 for n, s in enumerate(S, 1):
-    t, (x, y) = s["t"], s["p"][-1]
+    t, (x, y) = s["t"], s.get("x") or s["p"][-1]
     want = DYN.get(t) or next((v for k, v in NUM.items() if t.startswith("Take the " + k)), None)
     if want is not None:
         got = examine(x, y)
@@ -83,6 +85,12 @@ for n, s in enumerate(S, 1):
         if not {47, 48, 42, 44, 45} <= gone:
             fails.append(f"stop {n}: a number not yet taken")
         digits = True
+        if "detonator" in t:
+            if not parts:
+                fails.append(f"stop {n}: the detonator before the winch")
+            if examine(x, y) != 50:
+                fails.append(f"stop {n}: EXAMINE at {x},{y} finds {examine(x, y)}, not the detonator")
+            gone.add(50)
     elif t.startswith("Walk left"):
         if x + 2 > 0x15 or 50 not in gone:
             fails.append(f"stop {n}: the end test needs the detonator at map column $15, Bond ends at {x},{y}")
