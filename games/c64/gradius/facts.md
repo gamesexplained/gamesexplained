@@ -41,9 +41,19 @@ read by `load_stage_charset` and `load_stage_block`):
 | 3 | $C200 | $C620 | $C600 | $BC30 | $BF6D |
 | 4 | $C820 | $AA80 | $AC80 | $A000 | $A32B |
 | 5 | $8200 | $9DD0 | $E425 | $E000 | $E2A0 |
-| 6 | $8600 | $CC20 | $E425 | $AD00 | none |
+| 6 | $8600 | $CC20 | $E425 | none (points at $AD00) | none |
 | 7 | $FADC | $F8D4 | $FCD1 | $F1FE | $F714 |
 | 8 | $EBBE | $EFCE | $EB8C | $E448 | none |
+
+Stage 6's event list never turns the scenery on (no event 1 or 16), so its
+map entry is never used and the stage is open space. *Live*: the stage 6
+screenshots in `reference/` show no scenery.
+
+Columns each stage scrolls through, from the event that turns the scenery
+on (event 16, `start_tune2`, which calls `event_scenery` $50C4) to event
+12 (`event_attack`), which sets `boss_mode` and stops the scroll: 381, 363,
+275, 381, 270, none, 194 and 271. *Live*: on stage 1 the scroll stopped with
+the map pointer at $A5E7, the end of the 381st column.
 
 Stage 7's character set ($FADC-$FEDB) overlaps code and tables, so the
 glyphs of its characters there are those bytes.

@@ -1,0 +1,144 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gradius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.gr-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gr-two img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+.gr-cv{width:100%;image-rendering:pixelated;display:block;background:#000;border-radius:6px}
+.gr-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
+.gr-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--ink)}
+.gr-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gr-range{flex:1;min-width:160px}
+.gr-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.5em}
+.gr-tbl{border-collapse:collapse;width:100%;font-size:14px}
+.gr-tbl th,.gr-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.gr-tbl th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.gr-tbl td.n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.gr-scroll{overflow-x:auto}
+.gr-strip{display:block;image-rendering:pixelated;max-width:none}
+.gr-gap{margin-top:12px}
+@media (max-width:720px){:root{--gx:16px;--h1:34px}.gr-two{grid-template-columns:1fr}}
+.gr-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.gr-three img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+.gr-split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:720px){.gr-three,.gr-split{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Konami</p>
+  <h1>Gradius</h1>
+  <p class="sub">What the code holds that the game never shows: a cheat one byte from working, a music player nobody calls, a pause key that was cut, and the test loops and file names the developer left behind.</p>
+</header>
+<main class="wrap">
+
+<section id="cheat">
+  <p class="fig">01 · Secret</p>
+  <h2 class="t">Secret: a cheat that one byte switches off</h2>
+  <p>The routine that reads the keys on the title screen (<code>title_keys</code>, <code>$1881</code>) ends in an RTS at <code>$18D0</code> (<code>cheat_switch</code>). The code after it, <code>cheat_key</code> (<code>$18D1</code>), is never reached. It begins with the second byte of an LDA #$FF, so the RTS sits exactly where the instruction's first byte, $A9, belongs.</p>
+  <p>Put $A9 back and the cheat works. With four players chosen, holding left SHIFT on the title sets <code>cheat_mode</code> (<code>$6ED2</code>) and puts a "C" at the top left of the screen. While the flag is set, the play loop skips its checks for a hit ship and a finished turn, so the Vic Viper flies through enemies unharmed. Q still gives up the game, and clears the flag as it does (<code>quit_key</code>, <code>$6B02</code>).</p>
+  <div class="plate">
+    <table class="gr-tbl"><thead><tr><th>Evidence</th><th>What was seen</th></tr></thead><tbody>
+      <tr><td>Tried in VICE</td><td>With $A9 written at <code>$18D0</code>, four players chosen and left SHIFT held on the title, a "C" appeared, and in play the ship flew through enemies without losing a life.</td></tr>
+      <tr><td>As shipped</td><td>The RTS at <code>$18D0</code> returns before the key is read, and nothing else jumps into <code>cheat_key</code>.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section id="music">
+  <p class="fig">02 · Secret</p>
+  <h2 class="t">Secret: a music player with two tunes that never play</h2>
+  <p>From <code>$1CA1</code> to <code>$1FF9</code> the game holds two tunes for two voices, and from <code>$19D2</code> the player that plays them (<code>tune_tick</code>, <code>$1AB5</code>). The game never plays a note of them, because two links are missing.</p>
+  <p>The first missing link is the M key. Each frame of play calls <code>jmp_music_key</code> (<code>$6AA6</code>), which is a lone RTS. With a JMP there it would go on to <code>music_key</code> (<code>$6AB9</code>), which turns <code>music_on</code> on and off. The second link is the tick. <code>music_tick</code> (<code>$6AA9</code>), the routine that would step the tune once a frame while <code>music_on</code> is set, has no caller anywhere in memory. The events that start each stage still choose a tune (<code>set_tune</code>, <code>$1C5B</code>), but all that does is clear the sound chip.</p>
+  <p>Patching the RTS into a JMP makes M switch <code>music_on</code>, and the only effect is that the sound effects go quiet, as the effects player gives way to the music (<code>play_effect</code>, <code>$9B71</code>). The tune still has nothing to step it. The player on <a href="index.html#music">How it works</a> runs the game's own driver, so the two tunes can be heard there.</p>
+  <p>A test loop at <code>$1BEC</code> shows how the tunes were tried out: it starts tune 1 and plays it for ever, one tick a frame, flashing the border black and white to show how long each tick takes.</p>
+</section>
+
+<section id="splits">
+  <p class="fig">03 · Bug</p>
+  <h2 class="t">Bug: on a European machine the screen splits wander</h2>
+  <p>The game splits the screen with two interrupts a frame from CIA 2's timers (<code>start_split_timers</code>, <code>$FD50</code>, and <code>nmi_split</code>, <code>$0840</code>). Both timers count 17,095 cycles, one frame of an American (NTSC) C64. A European (PAL) frame is 19,656 cycles, so on a PAL machine each split comes 2,561 cycles earlier every frame and creeps up the screen. Where it lands in the playfield, the playfield is drawn in the power-up bar's mode and its characters turn to garbage. <a href="index.html#splits">The stepper on How it works</a> follows the splits frame by frame on both machines.</p>
+</section>
+
+<section id="sharp">
+  <p class="fig">04 · Bug</p>
+  <h2 class="t">Bug: the music's second voice plays every note slightly sharp</h2>
+  <p>When <code>tune_tick</code> sets a note's frequency, it adds the voice's register offset to the low byte at <code>$1B4D</code>. The offset is 0 for the first voice and 7 for the second, so every note of the second voice is 7 units above where it should be: barely out of tune on high notes, where the frequency numbers are large, and clearly out on low ones. It would have been heard only if the music had ever played (<a href="#music">section 02</a>).</p>
+</section>
+
+<section id="hatch">
+  <p class="fig">05 · Oddity</p>
+  <h2 class="t">Oddity: a hatch scores only when it gets away</h2>
+  <p>The enemy hatches on the floor and ceiling take eight hits (<code>hatch_hits</code>). The eighth starts the explosion and plays the explosion sound, but calls nothing that adds points. The 1000 points are in <code>move_hatch</code> (<code>$64FD</code>) instead, at <code>$6560</code>: they are given when a hatch scrolls off the left edge of the screen. So the player scores for letting a hatch go, and nothing for destroying it.</p>
+</section>
+
+<section id="pause">
+  <p class="fig">06 · Leftover</p>
+  <h2 class="t">Leftover: a pause on P that was cut</h2>
+  <p>At <code>$6B29</code>, next to the routine for Q, sits a pause. It switches the interrupt and the screen off, silences the sound chip, waits for P to be let go, pressed and let go again, and turns everything back on. Nothing calls it, and it could not run as it stands: its calls to a delay routine land in the middle of an instruction at <code>$6B81</code>. The game shipped with no pause.</p>
+</section>
+
+<section id="tests">
+  <p class="fig">07 · Leftover</p>
+  <h2 class="t">Leftover: test loops for single enemies</h2>
+  <p>Five loops in the game run one part of it on its own, frame after frame, and nothing calls any of them. They look like the developer's test benches, each built to watch one enemy or one piece of the game without playing up to it.</p>
+  <div class="plate">
+    <table class="gr-tbl"><thead><tr><th>Where</th><th>What it runs</th></tr></thead><tbody>
+      <tr><td><code>$0C98</code></td><td>Stage 4's volcano: waits for raster line 255, then runs the eruption and its rocks and draws the sprites.</td></tr>
+      <tr><td><code>$1BEC</code></td><td>Tune 1, for ever, with the border flashing to time each tick.</td></tr>
+      <tr><td><code>$4495</code></td><td>The Big Core: sets it up, then runs its movement, lasers and sprites once a frame.</td></tr>
+      <tr><td><code>$8C38</code></td><td>Stage 6's spheres and tentacles, with the border flashing, until a key on the bottom row is pressed.</td></tr>
+      <tr><td><code>$95A2</code></td><td>Stage 5's blocks: they appear, burst and their fragments fly, for ever.</td></tr>
+    </tbody></table>
+  </div>
+  <p>Beside them is an older main loop. <code>$5F6D</code> plays a game for one player: it zeroes the score, gives three lives, moves on when a stage is cleared and ends when the lives run out. The loop the game uses, for up to four players taking turns, replaced it.</p>
+</section>
+
+<section id="disk">
+  <p class="fig">08 · Leftover</p>
+  <h2 class="t">Leftover: lines from the developer's disk</h2>
+  <p>The program was saved from memory as it stood on the developer's machine, so scraps of what was there before came with it.</p>
+  <div class="plate">
+    <table class="gr-tbl"><thead><tr><th>Where</th><th>What is there</th></tr></thead><tbody>
+      <tr><td><code>$0801</code></td><td>A BASIC line, 9 SYS 5768, which would start the game at <code>$1688</code>. The loader jumps there itself, so the line never runs. After it come the remains of more BASIC lines: "C)LM87 SIM. P." and "NO RASTER FLICKER !!!".</td></tr>
+      <tr><td><code>$9FD0</code></td><td>The file name OBJNEMMAIN3. Nemesis is the game's name in Europe, which suggests what "NEM" stands for.</td></tr>
+      <tr><td><code>$B5C5</code></td><td>The end of stage 2's map runs into the developer's assembler source: "ALIENBKH BYT 170,186,198,..." and "BANK".</td></tr>
+      <tr><td><code>$BBDD</code></td><td>The end of stage 2's event list holds more source: "BCC MTHS7" and "JSR CLEARMOUTH".</td></tr>
+    </tbody></table>
+  </div>
+  <p>The loading screen credits the programming to Simon Pick, so "SIM. P." in the BASIC line is most likely him.</p>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

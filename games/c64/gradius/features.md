@@ -40,7 +40,7 @@ Found in the code, not on any screen.
 | A cheat switched off by one byte: four players and left SHIFT on the title, "C" on screen, no hits | live | `cheat_switch` $18D0, `cheat_key` $18D1, `cheat_mode` $6ED2 |
 | A pause on P that nothing calls, left in a state that would not run | traced | $6B29 |
 | Screen splits timed for an American (NTSC) machine: on a European (PAL) one the split wanders and the playfield is drawn in the power-up bar's mode | live | `start_split_timers` $FD50, `nmi_split` $0840 |
-| Stage 4 is stage 1's map drawn from the bottom up with a flipped character set; stage 6 reuses stage 2's map | confirmed | `map_column_up` $54DF, `map_starts` $50B4 |
+| Stage 4 is stage 1's map drawn from the bottom up with a flipped character set; stage 6 has no scenery at all, though its entry in the map table points at stage 2's map | live | `map_column_up` $54DF, `map_starts` $50B4; screenshots in `reference/` |
 | The hatch scores 1000 points when it scrolls off the left edge, and nothing when it is destroyed | traced | `move_hatch` $64FD |
 | Leftovers from the developer's disk: a BASIC stub, the file name OBJNEMMAIN3, scraps of assembler source | confirmed | `basic_stub` $0801, $9FD0, $B5C5, $BBDD |
 
