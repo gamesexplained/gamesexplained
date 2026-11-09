@@ -103,3 +103,7 @@ Watched each later-load eight-page character source for instruction execution ov
 Traced the two changing load-16 instruction starts. The jump at $8F02 is patched from split state tables; a VICE stop observed target $9023. The compare at $8F29 uses an immediate patched by $8F22; a VICE stop observed $10. Their opcodes and instruction lengths remain stable, so the two starts were added to the bounded code map with operand-patching caveats. Restored the user pause.
 
 Traced the load 25–27 update entries and their six-byte gate patterns. The listing test checks all six initial indexes, both tested motion-state bytes and the load-26 column decision; nine controlled VICE cases agreed. The timing of those visits and the reachability of each state in ordinary play remain open. Restored the user pause.
+
+Decoded and described all seven targets of the load-16 entity-state table. The listing test exercises representative branches with dependent routines stubbed, and seven matching controlled VICE calls used the same stubs. The shared routine at $909C and natural reachability remain open. Restored the user pause.
+
+Traced the load-16 shared entity routine at $909C and its eight-byte animation table. Its collision branch can discard one stacked return address before returning. The listing test checks animation, collision, damage and caller-continuation paths with dependent routines stubbed; three VICE cases confirmed the same field and stack behavior using those stubs. Restored the user pause.
