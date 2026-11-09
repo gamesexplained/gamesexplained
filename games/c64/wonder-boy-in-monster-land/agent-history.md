@@ -89,3 +89,9 @@ Rechecked the split row-pointer tables at $85CF/$8620 against the captured row c
 Traced the two per-load record formats selected by $7F52–$7F57. The listing-based test checks the actual $7979 copy for all 112 six-byte trigger records and $4655 for all 55 sixteen-byte records, with its map-writing callee stubbed; zero object counts return without reading the pointer. Controlled VICE calls in loads 2 and 19 confirmed the copied fields with the real map updater. Added per-record descriptions and kept activation in ordinary play open.
 
 Excluded the ten additional 63-byte resident bitmap copies of the first-load sprite source pairs. Comparison against the resident-entry snapshot covered each bitmap byte; the 64th byte of every slot remains outside the exclusion. The first-load source remains counted, and the copy routine test checks all six complete 128-byte writes.
+
+Checked the captured display-pointer, Y, flags and colour tables against VICE for all later-load play snapshots. In VIC bank 3, 52 selected 63-byte bitmap slots matched their load-entry bytes; two had already been described. Non-stopping execution checkpoints on all 52 ranges recorded no instruction entries over the following 200 frames per capture. Documented the remaining 50 masks and recorded the limited observations in `display-observations.json`; the test checks bitmap hashes and runs the display-pointer writer. Restored the user pause.
+
+Added an interactive gallery of the 52 observed bitmap slots, using the captured display-slot flags and individual colours with a fixed shared preview palette. The listing-based test verifies each embedded bitmap against its observation hash and checks the display-pointer writer.
+
+Built the site and checked the observed-sprite gallery in Firefox: it offered 20 captured loads, changed the selected bitmap, and produced a source link for the selected slot. The other sprite canvases and animation controls also rendered and responded.
