@@ -36,4 +36,24 @@ for (const [a, value] of [[0x5285, 0], [0x49, 0xfe], [0x4ddb, 0], [0x4a, 0]]) {
   const m = setup(); m.set([0x18, 0x60], 0x75e3); const cpu = call(m);
   assert.equal(cpu.c, 0); assert.equal(m[0x5285], 1); assert.equal(m[0x1a6f], 10);
 }
-console.log('OK - attack box, gates, contact budget, damage and doubled-damage expiry with overlap stub');
+// The Gauntlet pickup sets ten qualifying contacts; its tenth hit is doubled.
+{
+  const m = setup(); m[0x4de2] = 0;
+  m.set([0x8d, 0xf0, 0x02, 0x60], 0x77e2); // capture message ID
+  m[0x4454] = 0x60; // release callback stub
+  m.set([0x8d, 0xf1, 0x02, 0x60], 0x7a91); // capture expiry message ID
+  const cpu = new CPU(m); cpu.call(0x7688, {x: 2, y: 0x57}, {maxSteps: 1000});
+  assert.equal(m[0x4de2] & 0x20, 0x20); assert.equal(m[0x4ddf], 10);
+  assert.equal(m[0x2f0], 11); assert.equal(cpu.x, 2); assert.equal(cpu.y, 0x57);
+  assert.equal(m[0x5636 + 10] | m[0x564c + 10] << 8, 0x5526);
+  assert.equal(m[0x5636 + 11] | m[0x564c + 11] << 8, 0x553d);
+  for (let i = 0; i < 10; i++) {
+    m[0x5285] = 1; m[0x1a6f] = 10; call(m);
+    assert.equal(m[0x1a6f], 4, `double damage on hit ${i + 1}`);
+    assert.equal(m[0x4ddf], 9 - i);
+    assert.equal(!!(m[0x4de2] & 0x20), i !== 9);
+  }
+  assert.equal(m[0x2f1], 12);
+  m[0x5285] = 1; m[0x1a6f] = 10; call(m); assert.equal(m[0x1a6f], 7);
+}
+console.log('OK - attack box, gates, contact budget, damage and ten-hit Gauntlet expiry with overlap stub');
