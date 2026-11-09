@@ -36,7 +36,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Three tunes, a fourth that never starts, and eleven sound effects, played by the game's own sound driver.</p></header>
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">The music only plays between levels. In play there's a second copy of the sound driver for effects, and it has a bug that writes stray zeros into the sound chip.</p></header>
 <main class="wrap">
 <style>
 .dm-scroll{overflow-x:auto}
@@ -45,6 +45,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .dm-t th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500;white-space:nowrap}
 .dm-t td.n{text-align:right;font-variant-numeric:tabular-nums}
 .dm-t code{margin-right:2px}
+.dm-fold{margin:12px 0}.dm-fold summary{cursor:pointer;font-weight:700;color:var(--link);padding:6px 0}.dm-fold summary:focus-visible{outline:3px solid var(--link);outline-offset:2px}
 .dm-miss{font-size:14px;color:var(--coral)}
 </style>
 
@@ -53,7 +54,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The music plays before a level and never during one</h2>
   <p class="lede">The title pages and the briefing text play three tunes, and a fourth is in the game and never starts. Jonathan Dunn is credited with the sound. The player below runs the game's own driver on the kit's 6502 simulator, calls it once a frame, and plays what the driver writes to the sound chip.</p>
   <div class="plate"><div id="dm-music"></div>
-    <p class="cap">The driver is the title copy at <code>$A0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$817C</code></span> to <span data-part="level1"><code>$93AB</code></span>, and the player calls <code>$A242</code> once a frame, 50.12 times a second on a PAL machine. The page supplies only the player, the note display, and the filter, which starts as a model of a 6581 chip; its cutoff curve is one chip's, and real chips differ. Each tune was checked against the same calls on the kit's 6502 simulator (<code>test_music.js</code>): <span data-count="tunes">520,674</span> writes to the sound chip over 12,000 frames of each tune, in order, with no difference.</p></div>
+    <p class="cap">The player runs the game’s own title driver at <code>$A0C8</code> once a frame, and test_music.js checked every tune against the game write for write, with no difference. The filter is a model of one 6581 chip, and real chips differ.</p>
+<details class="dm-fold"><summary>How the tunes were checked</summary><p class="cap">The driver is the title copy at <code>$A0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$817C</code></span> to <span data-part="level1"><code>$93AB</code></span>, and the player calls <code>$A242</code> once a frame, 50.12 times a second on a PAL machine. The page supplies only the player, the note display, and the filter, which starts as a model of a 6581 chip; its cutoff curve is one chip's, and real chips differ. Each tune was checked against the same calls on the kit's 6502 simulator (<code>test_music.js</code>): <span data-count="tunes">520,674</span> writes to the sound chip over 12,000 frames of each tune, in order, with no difference.</p></details></div>
   <p>Level 1's title code starts a tune by calling <code>$A164</code> with X set to six times the tune number. The title pages play tune 3, or tune 1 when the new-high-score flag at <span data-part="level1"><code>$110F</code></span> is set. Tune 0 starts at <span data-part="level1"><code>$0F70</code></span> whenever no voice is playing while the briefing text is typed. Nothing in the game loads X with 12, so tune 2 never starts, and it is the only tune that ends: the other three loop. Once play begins, nothing calls the tune player again.</p>
   <div class="plate dm-scroll"><table class="dm-t">
     <thead><tr><th>Tune</th><th>Started at</th><th>Track lists, voices 1 to 3</th><th>Plays</th><th>Wave programs</th><th>Patterns</th></tr></thead>
@@ -66,6 +68,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The tune table at <code>$AA8D</code> holds the three track-list addresses of each tune. Two pattern numbers that share an address cannot be told apart from the address, so the player shows both.</p></div>
   <p>The driver is not a program of its own on the disk. Level 1's file holds it twice: once to play tunes, and once to play sound effects. <span data-part="level1"><code>$1C11</code></span> copies 19 pages of the file, from <span data-part="level1"><code>$80B4</code></span> to <code>$A000</code>, when the title pages are set up, and <span data-part="level1"><code>$1BE9</code></span> copies 13 pages from <span data-part="level1"><code>$747B</code></span> to <code>$B000</code> when play is set up. The second copy covers the first from <code>$B000</code> upwards, so tune 3's track lists, which begin at <code>$B0F3</code>, are in the file at <span data-part="level1"><code>$91A7</code></span> and gone from memory in play.</p>
   <p>A tune is three track lists, one for each voice. A track list is a row of pattern numbers with a few commands between them, and the pattern tables at <code>$AAA5</code> and <code>$AAF6</code> give each pattern's address. A pattern is a stream of notes, each with a length in frames, and commands that change the instrument. A stream picks a wave program from the table at <code>$ACF7</code>, and each note runs it: a short list of steps that sets the waveform and the envelope, and waits. The pulse width, the pitch slide, the arpeggio, and the filter each have a table of their own. Notes come from a table of 94 pitches at <code>$A98C</code> and <code>$A9EA</code>, where entry 45 is A3.</p>
+  <details class="dm-fold"><summary>Show the tune format: what each byte of a tune means</summary>
   <div class="plate dm-scroll"><table class="dm-t">
     <thead><tr><th>Stream byte</th><th>What the driver does</th></tr></thead>
     <tbody>
@@ -96,6 +99,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <tr><td><code>$F5</code></td><td>Fade the volume in, from a rate and a target</td></tr>
     </tbody></table>
     <p class="cap">The commands of a track list.</p></div>
+  </details>
 </section>
 
 <section data-part="resident">
@@ -103,7 +107,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Eleven sound effects, and the last is never asked for</h2>
   <p class="lede">In play, a second copy of the driver sits at <code>$B000</code> and plays sound effects only. Press a button to hear one. The numbers are the game's own, and the names say what the levels use each effect for, where the code makes that plain.</p>
   <div class="plate"><div id="dm-sfx"></div>
-    <p class="cap">The driver is the sound-effect copy at <code>$B0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$7543</code></span> to <span data-part="level1"><code>$80B3</code></span>. Each button starts the effect as a level does, with <code>$B0EE</code>, and calls <code>$B176</code> once a frame. Each effect was checked against the same calls on the kit's 6502 simulator: <span data-count="effects">18,547</span> writes to the sound chip over 400 frames of each effect, in order, with no difference. The page repeats the chip's registers every 32 bytes from <span data-part=""><code>$D400</code></span> to <span data-part=""><code>$D7FF</code></span>, as the chip does, so the stray writes described below land where they do on a real chip.</p></div>
+    <p class="cap">Each button starts the effect with <code>$B0EE</code>, as a level does, and runs the sound-effect driver once a frame; every effect was checked against the game write for write, stray zeros included.</p>
+<details class="dm-fold"><summary>How the effects were checked</summary><p class="cap">The driver is the sound-effect copy at <code>$B0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$7543</code></span> to <span data-part="level1"><code>$80B3</code></span>. Each button starts the effect as a level does, with <code>$B0EE</code>, and calls <code>$B176</code> once a frame. Each effect was checked against the same calls on the kit's 6502 simulator: <span data-count="effects">18,547</span> writes to the sound chip over 400 frames of each effect, in order, with no difference. The page repeats the chip's registers every 32 bytes from <span data-part=""><code>$D400</code></span> to <span data-part=""><code>$D7FF</code></span>, as the chip does, so the stray writes described below land where they do on a real chip.</p></details></div>
   <p>A level plays an effect by calling <code>$B0EE</code> with X set to four times the effect number. That picks a row of the sound table at <code>$BB48</code>, which has one byte for each voice: the number of a stream, or a value with bit 7 set that leaves the voice alone. A stream is the same kind of list of notes and commands that a tune uses, and the table at <code>$BB74</code> gives each stream's address. Effects 0, 2, 6, and 7 use voice 1 alone, and the others use voices 2 and 3 together. Effect 10 plays one note and starts it again every 255 frames, so it never ends, and no level asks for it.</p>
   <div class="plate dm-scroll"><table class="dm-t">
     <thead><tr><th>Effect</th><th>X</th><th>Voices</th><th>Frames</th><th>Seconds</th><th>Asked for by</th><th>Stray zero lands on</th></tr></thead>

@@ -1,12 +1,15 @@
 # Darkman — TODO
 
-Tier: Silver. Coverage 100 % of the traced bytes in all 7 parts. The listing was
+Tier: Gold (curation pass by unorig, 2026-11-09, copy human-edited). Coverage 100 % of the traced bytes in all 7 parts. The listing was
 annotated mostly on Sonnet 5.5, which the kit does not count as proven, and has
 had the maintainer's check (`kit/CHECKING.md`): a full audit of all 3,698
 comments and every claim in `facts.md` on Opus 5.5, then a second sample
 (seed 5813) that found 2 of 60 wrong, within the mark.
 
-Missing for Gold: a human pass over every section.
+Missing for Platinum: the Play tab.
+
+- The Graphics tab (`graphics.html`), which the Silver definition asks for in
+  AGENTS.md: every sprite shape the moving things are drawn with.
 
 - Unreached sprite shapes in level 2 ($01, $70, $73, $74) are level-specific;
   trace them from level 1's code.
