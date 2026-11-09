@@ -13,6 +13,7 @@ These are leads for verification, not findings from the code. Each remains open 
 | Reversing direction as a hidden reward appears can yield 65–69 gold | traced: `$5C0C`, `$7632` and `$771F`; controlled input-state cases were stepped in VICE, but an unmodified pickup has not been replayed |
 | Health, hearts, a potion that restores health, and drinks | open |
 | Boots, shields, armour, swords, gloves, helm and temporary invisibility | open |
+| Wing boots slow the fall while up is held and expire | traced: `$76FD`, `$0A92`; five controlled VICE cases cover the flag and countdown, while a natural pickup remains open |
 | Grenades, tornado, lightning and fireball special weapons | open |
 | Score treasures: goblet, chain, gold, harp, scales and crown | open |
 | Keys, letter, flute, charm, jewellery, bell and ruby as quest items | open |

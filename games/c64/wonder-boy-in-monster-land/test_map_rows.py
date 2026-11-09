@@ -14,15 +14,21 @@ for number in range(2, 32):
     def byte(address):
         assert address in memory, f'load {number}: missing ${address:04X}'
         return memory[address]
-    rows, stride = byte(0x7F4C), byte(0x7F4A)
+    rows, stride, width = byte(0x7F4C), byte(0x7F4A), byte(0x7F4B)
     next_data = byte(0x7F41) | byte(0x7F42) << 8
     assert 0x8671 + rows * stride == next_data, f'load {number}: map end'
     for row in range(rows):
         address = byte(0x85CF + row) | byte(0x8620 + row) << 8
         assert address == 0x8671 + row * stride, f'load {number}: row {row}'
     symbols = json.loads((part / 'symbols.json').read_text())
-    row_block = next(b for b in symbols['blocks'] if b['start'] == 0x8671)
-    assert row_block['end'] == 0x8671 + stride - 1, f'load {number}: first-row block'
-    comment = next(c['text'] for c in symbols['comments'] if c['address'] == 0x8671 and c['type'] == 'line')
-    assert f'First of {rows} map rows' in comment and f'row stride of {stride} bytes' in comment, f'load {number}: first-row comment'
-print('OK - map row pointers, dimensions and descriptions agree for loads 2–31')
+    for row in range(rows):
+        address = 0x8671 + row * stride
+        block = next(b for b in symbols['blocks'] if b['start'] == address)
+        assert block['end'] == address + width - 1 and block['type'] == 'Byte', f'load {number}: row {row} block'
+        if width < stride:
+            tail = next(b for b in symbols['blocks'] if b['start'] == address + width)
+            assert tail['end'] == address + stride - 1 and tail['type'] == 'Undefined', f'load {number}: row {row} remainder'
+        comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
+        assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
+        assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
+print('OK - map rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 2–31')
