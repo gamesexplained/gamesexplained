@@ -47,6 +47,12 @@ class Gnw:
             raise GnwError(r.get("error"))
         return r
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
     def close(self):
         try:
             self.sock.close()

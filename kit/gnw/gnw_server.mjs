@@ -31,7 +31,7 @@ const ROOT = path.dirname(path.dirname(HERE));
 const PROTOCOL = 1;
 const HZ = 16384;                // machine cycles a second: 32,768 Hz, two clocks a cycle
 const SLICE = 4096;              // cycles between two looks at the socket: a quarter of a second
-const RUN_BACKSTOP = 600 * HZ;   // a run with no limit of its own stops after ten minutes of the machine's time
+const RUN_BACKSTOP = 3600 * HZ;  // a run with no limit of its own stops after an hour of the machine's time
 
 function option(name, fallback) {
   const i = process.argv.indexOf(name);
