@@ -18830,6 +18830,51 @@
    "text": "Immediate operand of the LDY at $7327; $72FC stores the caller's Y here before selecting a display slot."
   },
   {
+   "address": 29482,
+   "type": "line",
+   "text": "Call the player attack-box routine at $7430 first. If it returns carry set, return immediately; otherwise continue to the entity-contact scan at $7330."
+  },
+  {
+   "address": 29488,
+   "type": "line",
+   "text": "Save the original entity index X. If its display-slot byte at $1A29,X is zero, return carry clear with X restored. Otherwise save Y for $74BE. When $6F equals 1, use twice the selected player's action tier, modulo 256, as damage to the original entity and jump to the shared subtraction at $74BE. For other $6F values scan the entity types beginning at $7358."
+  },
+  {
+   "address": 29528,
+   "type": "line",
+   "text": "Scan entity indexes 16 down through 0 for type $27. For each match, build the rectangle at $7367 and test overlap. On the first overlap use damage 1; after exhausting this type, continue to the $29 scan at $7396."
+  },
+  {
+   "address": 29543,
+   "type": "line",
+   "text": "For this $27 entity's display slot, form half its X from the low bit of $4C4F,Y and $4C6F,Y, add 4, and use width 4. Add 13 to $4CCF,Y for the top and use height 8. Values wrap to eight bits. Test the rectangle at $75E3; a hit selects damage 1 and marks this scanned entity."
+  },
+  {
+   "address": 29590,
+   "type": "line",
+   "text": "Scan indexes 16 down through 0 for type $29 after all $27 candidates miss. The first overlapping candidate selects damage 2; if none overlaps, continue to type $28 at $73D4."
+  },
+  {
+   "address": 29605,
+   "type": "line",
+   "text": "For this $29 entity's display slot, form the half X coordinate, add 3 and use width 6; add 10 to its Y and use height 11. Values wrap to eight bits. Test the rectangle at $75E3; a hit selects damage 2 and marks this scanned entity."
+  },
+  {
+   "address": 29652,
+   "type": "line",
+   "text": "Scan indexes 16 down through 0 for type $28 after all $27 and $29 candidates miss. The first overlap selects damage 3; otherwise restore the original X and return carry clear."
+  },
+  {
+   "address": 29667,
+   "type": "line",
+   "text": "For this $28 entity's display slot, form the half X coordinate, add 1 and use width 10; add 5 to its Y and use height 15. Values wrap to eight bits. Test the rectangle at $75E3; a hit selects damage 3 and marks this scanned entity."
+  },
+  {
+   "address": 29729,
+   "type": "line",
+   "text": "Save the selected damage in the immediate operand at $74C5, set $1B17,X to $80 for the scanned entity, restore the original entity index from $742F and subtract the damage from its $1A6D value via $74BE. That routine returns carry set."
+  },
+  {
    "address": 29744,
    "type": "line",
    "text": "Return carry clear when the attack-contact budget at $5285 is zero, player Y at $49 is $FE, the selected player's action tier at $4DDB,Y is zero, or the player frame at $4A is neither $6E nor $7C. Otherwise build a player attack rectangle and test it against the already prepared second rectangle. A miss returns carry clear without spending the budget."
@@ -18892,7 +18937,22 @@
   {
    "address": 30179,
    "type": "line",
-   "text": "Tests two 8-bit rectangles using scratch fields. Carry and wrap conditions affect the result; it is not an unrestricted mathematical rectangle test."
+   "text": "In binary arithmetic, compute B's bottom as ($762F+$7631) modulo 256 and its right as ($762E+$7630) modulo 256, storing them at $7628/$7629. Compare the rectangles using the following eight-bit tests. The routine does not clear decimal mode itself."
+  },
+  {
+   "address": 30199,
+   "type": "line",
+   "text": "Return carry clear if A's X is at least B's computed right. Otherwise add A's width and B's width to A's X, discarding carry after each addition; return carry clear if that result is below B's right. Thus touching on the tested left edge can pass while touching on the tested right edge fails."
+  },
+  {
+   "address": 30220,
+   "type": "line",
+   "text": "Return carry clear if A's Y is at least B's computed bottom. Otherwise add A's height; carry from that sum returns set immediately. If there is no carry, add B's height; carry again returns set immediately. With no carry from either sum, compare the result with B's bottom and return carry set when it is at least that value, clear otherwise."
+  },
+  {
+   "address": 30245,
+   "type": "line",
+   "text": "Return the carry from the vertical tests. The following $7626 entry clears carry and returns for a failed test."
   },
   {
    "address": 30248,
