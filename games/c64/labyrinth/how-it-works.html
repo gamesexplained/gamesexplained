@@ -18,7 +18,7 @@ summary{cursor:pointer}.lab-evidence{margin:20px 0;padding:14px 0;border-top:1px
 .lx-strip canvas{display:block;image-rendering:pixelated;height:256px}
 .lx-bytes{font:13px/1.7 ui-monospace,monospace;word-break:break-all}
 .lx-bytes span{padding:1px 2px;border-radius:3px}
-.lx-bytes .w{background:#dfe9f7}.lx-bytes .c{background:#f6dfd8}.lx-bytes .h{background:#e7e5df}
+.lx-bytes .w{background:#dfe9f7;text-decoration:underline}.lx-bytes .c{background:#f6dfd8;outline:1px dotted #55585f}.lx-bytes .h{background:#e7e5df}
 .lx-dice{font:15px/1.6 ui-monospace,monospace}
 table.lx-plain{border-collapse:collapse;font-size:14px;margin:12px 0}
 table.lx-plain th,table.lx-plain td{border-bottom:1px solid #e0ded8;padding:4px 10px;text-align:left}
@@ -27,7 +27,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,[tabindex="0"]:focus-v
 @media(max-width:600px){.lx-row label{display:flex;flex-direction:column;align-items:flex-start;width:100%;gap:4px}.lx-row label select{width:100%}}
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">Commodore 64 · 1986 · Lucasfilm Games</p><h1>Labyrinth</h1><p class="sub">Try the command rules and explore how the maze is built. One scene choice controls the replies, their stored bytes, and the room strip.</p></header>
+<header class="hero"><p class="eyebrow">Commodore 64 · 1986 · Lucasfilm Games</p><h1>Labyrinth</h1><p class="sub">Alph and Ralph flip two random bits when their room loads to decide which door is the lie, and every reply in the game is stored half as letters, half as shared dictionary words. Pick a scene to try its commands, read its reply bytes, and see how its room is built.</p></header>
 <main><section id="commands" data-part="">
 <p class="fig">01 · Commands</p><h2>Try the maze’s commands</h2>
 <p>Choose a scene, then combine an action with an object. Some choices print a reply; others call a routine that changes the game. The same scene choice controls the room strip below.</p>
@@ -63,14 +63,14 @@ a:focus-visible,button:focus-visible,select:focus-visible,[tabindex="0"]:focus-v
 <div class="lx-strip" role="region" aria-label="Room strip for the selected scene" tabindex="0"><canvas id="lx-room" width="320" height="128"></canvas></div>
 <p class="lx-how">Reconstructed from the selected scene’s map and character shapes. Grey shades represent pixel values, without the game’s per-cell colours.</p>
 </div>
-<p>Building rooms from sixteen reusable blocks keeps each scene small. A hedge or a brick wall is drawn once, on one page, and a room 64 blocks long is a 64-byte map. The same scheme lets the game change a room in place: opening a door in the Brick Hallway rewrites one byte of the map so the next redraw picks the open-door page (<a href="levels.html#brick-hallway">Brick Hallway</a>).</p>
+<p>Building rooms from sixteen reusable blocks keeps each scene small. A hedge or a brick wall is drawn once, on one page, and a room 64 blocks long is a 64-byte map. The same scheme lets the game change a room in place: opening a door in the <a href="levels.html#brick-hallway">Brick Hallway</a> rewrites one byte of the map so the next redraw picks the open-door page.</p>
 <details class="lab-evidence"><summary>How the room strip is stored</summary><p class="lx-how">The whole strip, drawn with the scene's own character set from <code>$E000</code>, in shades of grey. Scroll it sideways. The game colours these characters per cell through a second routine at <a href="source-resident.html#5B76"><code>$5B76</code></a>, which is not reproduced here, so the shades stand for the four pixel values of each multicolour character, not for the colours on screen. The block lookup is a port of <code>$4C01</code>, and <code>test_room.js</code> checks it against the routine itself on the kit's 6502: 574,720 screen cells across every scene, all equal.</p><p>The maze rooms scroll sideways. Each is built from a short map at <code>$0600</code>, one byte per block, and the low four bits of the byte pick one of sixteen pages of character codes at <code>$BC00</code>-<code>$CBFF</code>. Each page is a 16 by 16 block of characters. The header byte <code>$0705</code> sets the map's shape: 256 blocks in one row when it is 0, and half as many in twice as many rows for each step up. When the room scrolls, the routine at <a href="source-resident.html#4C01"><code>$4C01</code></a> fills a newly exposed row of 40 characters, and <a href="source-resident.html#4C7A"><code>$4C7A</code></a> a column of 16.</p></details></section>
 
 <section id="guards" data-part="">
 <p class="fig">04 · A puzzle in code</p><h2>Alph and Ralph decide at random which door is the lie</h2>
 <p>Two guards stand at two doors. One always lies and the other tells the truth, they say, and they will not help until you have opened all fifteen doors of the Brick Hallway behind you. The game counts those doors: the room's map starts with three open, and each door you open adds one to a counter. Alph's reply changes when the counter reaches fifteen.</p>
 <p>When the guards' room loads, its setup code stores two random bits. The first, at <code>$8F06</code>, decides which doorway leads on to the Wall of Hands and which drops you into a pit with "Ok, we lied. It wasn't endless" and the end of the game. The second, at <code>$8F07</code>, is compared with the first when a guard is asked again later: when they match the later answer points you to the castle, and otherwise to your death. So the safe door is not the same in every game, and only the guards' answers tell you which it is.</p>
-<p>The Areas page steps through every part of this exchange with ports of the guards' own code: the door count, the replies, the random bits and what each door does (<a href="levels.html#alph-and-ralph">Alph and Ralph</a>).</p>
+<p>The Areas page steps through every part of this exchange for <a href="levels.html#alph-and-ralph">Alph and Ralph</a> with ports of the guards' own code: the door count, the replies, the random bits and what each door does.</p>
 </section>
 
 <section id="exits" data-part="">
@@ -79,19 +79,19 @@ a:focus-visible,button:focus-visible,select:focus-visible,[tabindex="0"]:focus-v
 <div class="lx-plate">
 <div class="lx-row"><label>State <input id="lx-seed" type="number" min="0" max="65535" value="17243" style="width:8em;font:inherit;padding:4px"></label><button id="lx-roll" type="button">Next number</button></div>
 <div class="lx-dice" id="lx-dice" role="region" aria-label="Random number steps" tabindex="0"></div>
-<p class="lx-how">The step is <i>state × 37 + 17</i>, kept to 16 bits; <code>test_dispatch.js</code> checks the port against <code>$4210</code> for all 65,536 states. The first line starts from <code>$435B</code>, the state recorded at the moment an ordinary walk through the corridor's opening at column 8 reached the exit; its next number, <code>$BC38</code>, gave bank 1 and entry 35 of the Brick Hallway in the emulator. The Areas page has the corridor's banks and checks them against the game (<a href="levels.html#first-corridor">The first corridor</a>).</p>
+<p class="lx-how">The step is <i>state × 37 + 17</i>, kept to 16 bits; <code>test_dispatch.js</code> checks the port against <code>$4210</code> for all 65,536 states. The first line starts from <code>$435B</code>, the state recorded at the moment an ordinary walk through the corridor's opening at column 8 reached the exit; its next number, <code>$BC38</code>, gave bank 1 and entry 35 of the Brick Hallway in the emulator. The Areas page has <a href="levels.html#first-corridor">the first corridor</a>'s banks and checks them against the game.</p>
 </div>
 </section>
 
 <section id="clock" data-part="">
 <p class="fig">06 · Time</p><h2>The thirteen hours</h2>
-<p>The clock is kept in hours and minutes in the saved state. Some actions spend hours outright. At the Wall of Hands, the eighth manicure in a row calls the engine's hour routine at <a href="source-resident.html#0C61"><code>$0C61</code></a>, which takes one hour off and shows the "One hour later" panel. When the hours run out the same panel ends the game with Jareth's verdict: "Your time is up. You have failed to defeat me." How fast the clock runs on its own while you play is not established.</p>
+<p>The clock is kept in hours and minutes in the saved state. Some actions spend hours outright. At the <a href="levels.html#wall-of-hands">Wall of Hands</a>, the eighth manicure in a row calls the engine's hour routine at <a href="source-resident.html#0C61"><code>$0C61</code></a>, which takes one hour off and shows the "One hour later" panel. When the hours run out the same panel ends the game with Jareth's verdict: "Your time is up. You have failed to defeat me." How fast the clock runs on its own while you play is not established.</p>
 <figure style="max-width:520px"><img src="reference/wall-manicure-hour.png" width="384" height="272" alt="The One hour later panel over the Wall of Hands"><figcaption>The eighth manicure at the Wall of Hands costs an hour. From the supplied disk.</figcaption></figure>
 </section>
 
 <section id="sound" data-part="">
 <p class="fig">07 · Music</p><h2>Music: five tunes and 44 sound effects</h2>
-<p>The game stores five tunes: a short jingle in the engine, the menu tune of the opening, the gate's tune, the duel's music and the win ending. Each is a header, three note sequences and a set of instruments, played by the engine's own sound code. The <a href="music.html">Music</a> tab plays every tune and every sound effect through a model of the SID chip, driven by the game's own data.</p>
+<p>The game stores five tunes: a short jingle in the engine, the menu tune of the opening, the <a href="levels.html#entrance-gate">entrance gate</a>'s tune, the duel's music and the win ending. Each is a header, three note sequences and a set of instruments, played by the engine's own sound code. The <a href="music.html">Music</a> tab plays every tune and every sound effect through a model of the SID chip, driven by the game's own data.</p>
 </section>
 
 
