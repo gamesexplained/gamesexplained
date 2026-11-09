@@ -1,0 +1,200 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.th-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.th-btn{font-family:var(--fm);font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.th-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.th-scroll{overflow:auto;max-height:640px;background:#000;border-radius:6px}
+.th-scroll canvas{display:block;image-rendering:pixelated}
+.th-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.th-tab{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0}
+.th-tab th,.th-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.th-tab th{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:500}
+.th-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid #0003}
+.th-grid{display:flex;flex-wrap:wrap;gap:14px}
+.th-cell{text-align:center;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.th-cell canvas{display:block;background:#000;border-radius:4px;image-rendering:pixelated;margin:0 auto 4px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Firebird</p>
+  <h1>Thrust</h1>
+  <p class="sub">The six caves, drawn whole from the lists of runs and slopes the game builds its walls from, with every gun, fuel tank, reactor and switch where the level puts it.</p>
+</header>
+<main class="wrap">
+<section id="caves">
+  <p class="fig">01 · The six caves</p>
+  <h2 class="t">Six caves, each built from two walls</h2>
+  <p class="lede">Each level is a shaft cut down into a planet. The rock on either side is a wall, and each wall is stored as a list of runs: so many rows going straight down, so many leaning left or right.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" id="th-l-prev" aria-label="The level before">‹</button><select id="th-l-sel" aria-label="Level"></select><button type="button" class="step" id="th-l-next" aria-label="The level after">›</button></div>
+    <div class="th-bar">
+      <button type="button" class="th-btn" id="th-l-door" aria-pressed="false">Door open</button>
+      <button type="button" class="th-btn" id="th-l-marks" aria-pressed="true">Show restart points</button>
+    </div>
+    <div class="th-scroll"><canvas id="th-l-cv" width="400" height="400" aria-label="The level, walls and objects, as the game would draw it"></canvas></div>
+    <p class="cap" id="th-l-cap">Drawn by this page from the listing's bytes: the walls by a port of the game's wall generators (<code>$841C</code>), the objects from the level's lists (<code>$A1EE</code>), each in its sprite and colour.</p>
+  </div>
+  <p>The walls are drawn on every second pixel line, as <code>draw_walls</code> (<code>$828B</code>) draws them, so the rock has the game's stripes. One step across is four pixels and one row down is two lines, the same scale the game uses on screen. The port is checked against the game's own generator code, run on the kit's 6502 for all six levels: <code>test_levels.js</code>, beside this page, compares 12,240 rows.</p>
+  <p>The yellow crosses mark the restart points (<code>$A879</code>): a ship lost below one comes back at the last point above where it was lost. Levels 4 to 6 each have a door that a switch opens. <b>Door open</b> draws it as <code>move_doors</code> (<code>$917D</code>) leaves it when fully open.</p>
+</section>
+<section id="table">
+  <p class="fig">02 · What changes from level to level</p>
+  <h2 class="t">Gravity grows with every level</h2>
+  <p class="lede">Each level has its own gravity, colours, objects and restart points, read from tables indexed by the level number (<code>$A6A4</code>).</p>
+  <div class="plate"><table class="th-tab" id="th-l-tab"><thead><tr><th>Level</th><th>Gravity</th><th>Wall colour</th><th>Gun colour</th><th>Shield colour</th><th>Guns</th><th>Fuel tanks</th><th>Switches</th><th>Restart points</th></tr></thead><tbody></tbody></table>
+  <p class="cap">Gravity from <code>$A8F7</code>, added to the ship's falling speed on 6 passes in 16. Colours from <code>$A92D</code>, <code>$A945</code> and <code>$A94B</code>. Counts from each level's type list and <code>$A873</code>.</p></div>
+  <p>After level 6 the game starts again at level 1. The second time round gravity pulls upwards, the third time the walls are invisible, and the fourth time both. Gravity reversed is the same table negated. An invisible wall is drawn as usual, but the play area is shown through a colour screen (<code>$5400</code>) where the walls' colour is black, until the shield is raised.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* thrust-walls */
+// A port of the wall generators (walls_step, $841C, wall_step_forward, $84C8): each wall of a level
+// is two generators reading one list of run lengths and one of slopes. thrustWalls(ram, level, rows)
+// gives { left, right }, the x of each wall at level rows 0..rows-1, as the game's ring at $0400 and
+// $0500 holds them once the camera has passed.
+function thrustWalls(ram, level, rows) {
+  const ptr = (lo, hi) => ram[lo + level] | ram[hi + level] << 8;
+  const runsL = ptr(0xA8FD, 0xA903), slopesL = ptr(0xA909, 0xA90F);
+  const runsR = ptr(0xA915, 0xA91B), slopesR = ptr(0xA921, 0xA927);
+  const gen = (v, i) => ({ v, c: 0xFF, i });
+  const step = (g, runs, slopes) => {
+    if (g.c === 0) { g.i = (g.i + 1) & 0xFF; g.c = ram[runs + g.i]; }
+    g.v = (g.v + ram[slopes + g.i]) & 0xFF;
+    g.c = (g.c - 1) & 0xFF;
+  };
+  const a = gen(0, 0), b = gen(0, 1), c = gen(0xFF, 0), d = gen(0xFF, 1);
+  const left = new Uint8Array(rows + 1), right = new Uint8Array(rows + 1);
+  for (let k = 1; k <= rows; k++) {
+    step(a, runsL, slopesL); left[k] = a.v; step(b, runsL, slopesL); left[k - 1] = b.v;
+    step(c, runsR, slopesR); right[k] = c.v; step(d, runsR, slopesR); right[k - 1] = d.v;
+  }
+  return { left: left.subarray(0, rows), right: right.subarray(0, rows) };
+}
+// end of thrust-walls
+
+/* thrust-objects */
+// The level's objects, from the five lists whose addresses the game keeps at $A95E-$A999 and
+// patches into update_objects: x, row (low, high), type ($FF ends the list) and flags. Also the
+// restart points (restart_ship, $A5B9): count at $A873, lists from $A8DF/$A8E5.
+function thrustObjects(ram, level) {
+  const w = a => ram[a + 2 * level] | ram[a + 2 * level + 1] << 8;
+  const xs = w(0xA95E), lo = w(0xA96A), hi = w(0xA976), ty = w(0xA982), fl = w(0xA98E);
+  const objects = [];
+  for (let i = 0; ram[ty + i] !== 0xFF && i < 32; i++)
+    objects.push({ x: ram[xs + i], row: ram[lo + i] | ram[hi + i] << 8, type: ram[ty + i], flags: ram[fl + i] });
+  const n = ram[0xA873 + level], p = ram[0xA8DF + level] | ram[0xA8E5 + level] << 8, restarts = [];
+  for (let i = 0; i < n; i++)
+    restarts.push({ row: ram[p + i] << 8 | ram[p + n + i], camX: ram[p + 2 * n + i],
+                    camRow: ram[p + 3 * n + i] << 8 | ram[p + 4 * n + i], x: ram[p + 5 * n + i] });
+  return { objects, restarts };
+}
+// end of thrust-objects
+/* thrust-doors */
+// move_doors ($917D) rewrites rows of the left wall on levels 4-6 (level 3-5 counted from 0), from
+// how far the door is open, open = 0 (shut) up to its limit.
+function thrustDoor(left, level, open) {
+  if (level === 3) { for (let k = 0; k < 13; k++) left[0x269 + k] = 0xAE - open; return 0x10; }
+  if (level === 4) { let a = 0xA6; for (let y = 0x15; y >= 1; y--) { if (y === open) a = 0x98; left[0x343 + y] = a; } return 0x15; }
+  if (level === 5) { let a = 0xC0 - open, r = 0x370;
+    for (let k = 0; k < 7; k++) left[r++] = (a + k) & 0xFF; a = (a + 7) & 0xFF;
+    for (let k = 0; k < 8; k++) left[r++] = (a - k) & 0xFF; return 0x12; }
+  return 0;
+}
+// end of thrust-doors
+(function () {
+  if (typeof C64 === 'undefined') { document.getElementById('th-l-cap').textContent = 'This widget needs the site\'s c64.js, which did not load.'; return; }
+  const PAL = C64.PAL || ['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+  const sel = document.getElementById('th-l-sel'), cv = document.getElementById('th-l-cv'), ctx = cv.getContext('2d');
+  const doorB = document.getElementById('th-l-door'), marksB = document.getElementById('th-l-marks');
+  for (let i = 0; i < 6; i++) sel.add(new Option('Level ' + (i + 1), i));
+  C64.load('listing.json').then(L => {
+    const ram = L.ram;
+    const spr = p => ram.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63);
+    function sprites(o, i, level) {
+      const gun = PAL[ram[0xA945 + level]], wall = PAL[ram[0xA939 + level]], shield = PAL[ram[0xA94B + level]], y7 = PAL[7];
+      if (o.type < 4) return [[0x22 + o.type, gun]];
+      if (o.type === 4) return (i + 1) & 1 ? [[0x26, y7], [0x27, shield]] : [[0x2E, y7]];
+      if (o.type === 5) return [[0x28, wall], [0x29, gun]];
+      if (o.type === 6) return [[0x2A, y7], [0x2B, gun]];
+      return [[0x25 + o.type, y7]];
+    }
+    function draw() {
+      const level = +sel.value, W = thrustWalls(ram, level, 0x480);
+      const left = W.left.slice(), right = W.right;
+      const lim = thrustDoor(left, level, 0);
+      if (doorB.getAttribute('aria-pressed') === 'true' && lim) thrustDoor(left, level, lim);
+      const { objects, restarts } = thrustObjects(ram, level);
+      let first = 0, closed = 0;
+      for (let r = 0; r < 0x480; r++) { if (!first && (left[r] || right[r] !== 0xFF)) first = r; if (first && !closed && left[r] >= right[r]) closed = r; }
+      const r0 = Math.max(0, first - 60), r1 = (closed || 0x47F) + 12;
+      let cmin = 255, cmax = 0;
+      for (let r = first; r < r1; r++) { if (left[r] > 0) cmin = Math.min(cmin, left[r]); if (right[r] < 255) cmax = Math.max(cmax, right[r]); }
+      for (const o of objects) { cmin = Math.min(cmin, o.x); cmax = Math.max(cmax, o.x + 6); }
+      cmin = Math.max(0, cmin - 8); cmax = Math.min(255, cmax + 8);
+      cv.width = (cmax - cmin) * 4; cv.height = (r1 - r0) * 2;
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = PAL[ram[0xA92D + level]];
+      for (let r = r0; r < r1; r++) {
+        const y = (r - r0) * 2, l = Math.max(cmin, Math.min(cmax, left[r])), rt = Math.max(cmin, Math.min(cmax, right[r]));
+        if (l > cmin) ctx.fillRect(0, y, (l - cmin) * 4, 1);
+        if (rt < cmax) ctx.fillRect((rt - cmin) * 4, y, (cmax - rt) * 4, 1);
+      }
+      objects.forEach((o, i) => { for (const [p, c] of sprites(o, i, level)) C64.drawSprite(ctx, spr(p), (o.x - cmin) * 4, (o.row - r0) * 2, 1, c); });
+      if (marksB.getAttribute('aria-pressed') === 'true') {
+        ctx.strokeStyle = PAL[7]; ctx.lineWidth = 1;
+        for (const p of restarts) { const x = (p.x - cmin) * 4 + .5, y = (p.row - r0) * 2 + .5;
+          ctx.beginPath(); ctx.moveTo(x - 4, y - 4); ctx.lineTo(x + 4, y + 4); ctx.moveTo(x + 4, y - 4); ctx.lineTo(x - 4, y + 4); ctx.stroke(); }
+      }
+      doorB.disabled = !lim;
+      document.getElementById('th-l-cap').innerHTML = `Level ${level + 1}, rows $${r0.toString(16).toUpperCase()} to $${(r1 - 1).toString(16).toUpperCase()}: ${objects.length} objects and ${restarts.length} restart point${restarts.length > 1 ? 's' : ''}. Drawn by this page from the listing's bytes: the walls by a port of the game's wall generators (<code>$841C</code>), the objects from the level's lists (<code>$A1EE</code>), each in its sprite and colour.`;
+    }
+    const tb = document.querySelector('#th-l-tab tbody');
+    for (let level = 0; level < 6; level++) {
+      const { objects, restarts } = thrustObjects(ram, level), count = f => objects.filter(f).length;
+      const sw = c => `<span class="th-sw" style="background:${PAL[c]}"></span>`;
+      tb.insertAdjacentHTML('beforeend', `<tr><td>${level + 1}</td><td>${ram[0xA8F7 + level]}</td><td>${sw(ram[0xA92D + level])}</td><td>${sw(ram[0xA945 + level])}</td><td>${sw(ram[0xA94B + level])}</td><td>${count(o => o.type < 4)}</td><td>${count(o => o.type === 4)}</td><td>${count(o => o.type > 6)}</td><td>${restarts.length}</td></tr>`);
+    }
+    sel.onchange = draw;
+    document.getElementById('th-l-prev').onclick = () => { sel.value = (+sel.value + 5) % 6; draw(); };
+    document.getElementById('th-l-next').onclick = () => { sel.value = (+sel.value + 1) % 6; draw(); };
+    for (const b of [doorB, marksB]) b.onclick = () => { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); draw(); };
+    draw();
+  }).catch(e => { document.getElementById('th-l-cap').textContent = 'The listing did not load: ' + e.message; });
+})();
+</script>

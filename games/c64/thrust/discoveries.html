@@ -1,0 +1,160 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.th-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.th-btn{font-family:var(--fm);font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.th-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.th-scroll{overflow:auto;max-height:640px;background:#000;border-radius:6px}
+.th-scroll canvas{display:block;image-rendering:pixelated}
+.th-cv{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.th-tab{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0}
+.th-tab th,.th-tab td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.th-tab th{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:500}
+.th-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid #0003}
+.th-grid{display:flex;flex-wrap:wrap;gap:14px}
+.th-cell{text-align:center;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.th-cell canvas{display:block;background:#000;border-radius:4px;image-rendering:pixelated;margin:0 auto 4px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Firebird</p>
+  <h1>Thrust</h1>
+  <p class="sub">What the program holds that a player never sees: the BBC Micro version's key page, calls to a music player that is not there, code that can never run, and three sprites nobody draws.</p>
+</header>
+<main class="wrap">
+<section id="bbc">
+  <p class="fig">01 · The BBC Micro's key page</p>
+  <h2 class="t">Secret: the C64 game carries the BBC Micro's instructions page</h2>
+  <p class="lede">Thrust began on the BBC Micro, written by Jeremy C. Smith. The C64 program still holds the BBC version's key page, in the BBC's own teletext codes.</p>
+  <div class="plate"><canvas id="th-bbc" class="th-cv" width="640" height="500" style="width:100%;max-width:640px" aria-label="The key page drawn as the BBC Micro's teletext mode would show it"></canvas>
+  <p class="cap" id="th-bbc-cap">The text at <code>$B9DD</code>, drawn by this page the way the BBC Micro's MODE 7 would show it: each control code takes a cell and changes the colour, the background or the height of what follows. The page draws the letters in a browser font, not the BBC's teletext font.</p></div>
+  <p>The text opens with the bytes 22 and 7, which the BBC Micro reads as "change to MODE 7", its teletext screen. After them come teletext control codes: <code>$84</code> blue, <code>$9D</code> new background, <code>$83</code> yellow, <code>$8D</code> double height. The keys it lists are the BBC's: CAPS LOCK and CTRL to turn, COPY and DELETE to freeze, ESCAPE to quit. The C64 version uses A and S, the function keys and RUN/STOP.</p>
+  <p>The crackers added their own line near the end, "Cracked By The Syndicate For TCI !", in letters with the top bit set, which teletext shows as plain capitals. A routine to print the page is there too: <code>show_bbc_keys_page</code> (<code>$B74B</code>) sends the text to the C64's own print routine (<code>CHROUT</code>), waits for Space and starts the game. No instruction calls it, and no table holds its address. On a C64 the teletext codes would print as other characters, so the page could never have looked like this one.</p>
+</section>
+<section id="music">
+  <p class="fig">02 · The missing music</p>
+  <h2 class="t">Secret: the calls to the music player land on an RTS</h2>
+  <p class="lede">Thrust on the C64 is known for Rob Hubbard's music. This copy has none, but the calls to play it are still in the code.</p>
+  <div class="plate"><table class="th-tab"><thead><tr><th>Call</th><th>From</th><th>What is there</th></tr></thead><tbody>
+    <tr><td><code>JSR $3000</code>, every frame</td><td><code>raster_handler_0</code>, <code>$8A38</code></td><td><code>$60</code>, an RTS: the first byte of the program's old copy, left at <code>$3000</code> by the relocator</td></tr>
+    <tr><td><code>JSR $A951</code> with 7 and 1 in A and Y</td><td><code>restart_ship</code>, <code>$A699</code></td><td>an RTS (<code>music_hook</code>)</td></tr>
+    <tr><td><code>JSR $A951</code> with 0 and 0</td><td><code>restart_ship</code>, <code>clear_play_area</code>, <code>life_state</code></td><td>the same RTS</td></tr>
+  </tbody></table>
+  <p class="cap">No instruction in the snapshot, at the hand-over or in play, writes to the sound chip at <code>$D400</code>-<code>$D41C</code>: a search for every store instruction with those addresses finds none. The only writes to the chip are the sound effects', through its mirror at <code>$D500</code>.</p></div>
+  <p>A call every frame and a call with a tune number at the start and end of each life is how a music player is usually driven. Here the per-frame call goes to <code>$3000</code>. The relocator copied the program from <code>$3000</code> up to <code>$8280</code> and left the old copy behind. Its first byte, <code>$60</code>, happens to be an RTS, so the call returns at once. The sound effects use the chip's mirror at <code>$D500</code> rather than <code>$D400</code>. Whether Firebird's release played music through these calls is not something this copy can show.</p>
+</section>
+<section id="start">
+  <p class="fig">03 · Straight into a game</p>
+  <h2 class="t">Secret: this copy starts a game the moment it loads</h2>
+  <p class="lede">After the loading picture, the first thing on screen is a game, with three lives and nobody at the controls.</p>
+  <p>The start-up code (<code>$B773</code>, run at <code>$0400</code>) ends with a jump to <code>$AF82</code>, seven bytes after <code>pen_diagonal</code> that only this jump reaches. They turn the sound on, then jump to <code>start_game</code> (<code>$B044</code>). The title, with its high score table and the demo pilot, is <code>title</code> (<code>$AF93</code>), and it comes up only when a game ends. In the emulator, with no key pressed, the ship fell and was lost three times. After about 35 seconds the high score table appeared, and the demo pilot took over. Whether TCI added that jump is not known.</p>
+</section>
+<section id="unreachable">
+  <p class="fig">04 · Code that can never run</p>
+  <h2 class="t">Bug: a random choice that the branch before it skips</h2>
+  <p class="lede"><code>free_shot_slot</code> (<code>$9FDD</code>) finds a slot for a new shot or piece of debris. If every slot is busy, the code after the search would pick one at random, but nothing can reach it.</p>
+  <div class="plate"><pre style="font-family:var(--fm);font-size:13px;margin:0;overflow:auto">$9FF7  beq $A003     ; return if Y is 0
+$9FF9  bne $9FF7     ; otherwise branch back to the BEQ above
+$9FFB  jsr random    ; never reached
+$9FFE  and #$0F
+$A000  adc #$04
+$A002  tay</pre><p class="cap">The end of <code>free_shot_slot</code>. Whichever way the zero flag is set, the two branches end at the <code>RTS</code> at <code>$A003</code>.</p></div>
+  <p>The search goes from slot 31 down to slot 1, first for a free slot and then for one with a short life left. When neither search finds one, Y has counted down to 0, and the BEQ returns with slot 0. That is one of the player's own shot slots. The BNE after it could only loop back to the BEQ, so the random pick of a slot from 4 to 19 at <code>$9FFB</code> never runs. A full table therefore puts a new piece of debris in slot 0.</p>
+</section>
+<section id="leftovers">
+  <p class="fig">05 · Leftovers</p>
+  <h2 class="t">Routines nothing calls</h2>
+  <p class="lede">Two small routines look like tools the programmer used while writing the game.</p>
+  <p><code>print_hex</code> (<code>$A004</code>) prints a byte as two hexadecimal digits with the game's own font. It keeps every register it uses, as a routine meant for debugging would. <code>test_shot</code> (<code>$AA8C</code>) puts a shot at a fixed place, with a fixed speed and a life of 40. A references search finds no call or jump to either, and no table holds their addresses.</p>
+</section>
+<section id="sprites">
+  <p class="fig">06 · Unused sprites</p>
+  <h2 class="t">Three sprites the game never shows</h2>
+  <p class="lede">The sprite data copied to <code>$4000</code> holds 52 shapes. The game shows 49 of them.</p>
+  <div class="plate"><div class="th-grid" id="th-unused"></div>
+  <p class="cap">Pointers $31-$33, at <code>$4C40</code>-<code>$4CFF</code>, drawn from the listing's bytes. No sprite pointer the game writes reaches them: its pointers are 0-$30 and the rod's $4C-$4F.</p></div>
+  <p>The game sets a sprite's pointer in a few places: the ship's direction or the shield (0-$20), the pod ($21), each object's shapes ($22-$2E), the tractor beam ($2F, $30) and the two buffers the rod is drawn into ($4C-$4F). The three shapes of horizontal lines after them are never used.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('th-bbc-cap').textContent = 'These widgets need the site\'s c64.js, which did not load.'; return; }
+  // teletext colours: $81 red ... $87 white
+  const TT = ['#000', '#f00', '#0f0', '#ff0', '#00f', '#f0f', '#0ff', '#fff'];
+  const SAA = { 0x23: '£', 0x5B: '←', 0x5C: '½', 0x5D: '→', 0x5E: '↑', 0x5F: '#', 0x60: '―', 0x7B: '¼', 0x7C: '‖', 0x7D: '¾', 0x7E: '÷' };
+  C64.load('listing.json').then(L => {
+    const ram = L.ram;
+    // ---- 01 the key page, as MODE 7 shows it
+    const cv = $('th-bbc'), c = cv.getContext('2d'), CW = 16, CH = 20;
+    c.fillStyle = '#000'; c.fillRect(0, 0, cv.width, cv.height);
+    let a = 0xB9DD + 2, row = 0, col = 0, fg = 7, bg = 0, dbl = false, prevDbl = false;
+    const glyphs = [];
+    const newRow = () => { prevDbl = dbl; row++; col = 0; fg = 7; bg = 0; dbl = false; };
+    for (; ram[a] !== 0xFF && a < 0xBB96; a++) {
+      const b = ram[a];
+      if (b === 0x0D) { col = 0; continue; }
+      if (b === 0x0A) { newRow(); continue; }
+      let ch = ' ';
+      if (b >= 0x81 && b <= 0x87) fg = b - 0x80;
+      else if (b === 0x8D) dbl = true;
+      else if (b === 0x9D) bg = fg;
+      else if (b < 0x80 || b >= 0xA0) { const v = b & 0x7F; ch = SAA[v] || String.fromCharCode(v); }
+      if (col < 40) {
+        c.fillStyle = TT[bg]; c.fillRect(col * CW, row * CH, CW, CH);
+        // the second row of a double-height pair shows the lower halves of the row above
+        if (ch !== ' ' && !(dbl && prevDbl)) glyphs.push([ch, col, row, fg, dbl]);
+      }
+      col++;
+    }
+    c.textBaseline = 'top';
+    for (const [ch, x, y, f, d] of glyphs) {
+      c.fillStyle = TT[f]; c.font = (d ? 2 * CH - 2 : CH - 3) + 'px "IBM Plex Mono", monospace';
+      c.fillText(ch, x * CW + 2, y * CH + (d ? 1 : 2));
+    }
+    // ---- 06 the unused sprites
+    for (const p of [0x31, 0x32, 0x33]) {
+      const d = document.createElement('div'), k = document.createElement('canvas'); d.className = 'th-cell';
+      k.width = 72; k.height = 63; const x = k.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 72, 63);
+      C64.drawSprite(x, ram.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 63), 0, 0, 3, C64.PAL[7]);
+      d.appendChild(k); d.append('$' + p.toString(16).toUpperCase()); $('th-unused').appendChild(d);
+    }
+  }).catch(e => { $('th-bbc-cap').textContent = 'The listing did not load: ' + e.message; });
+})();
+</script>
