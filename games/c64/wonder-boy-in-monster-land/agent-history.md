@@ -553,3 +553,5 @@ Traced resident state reads $29FC and table initialization $2A16. VICE checked t
 Traced resident reward creation $5BE1 and $5C2A. VICE checked eight forced free, occupied and input-state cases with coordinate conversion stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
 
 Checked source-address links reported by the site build. Replaced twelve automatically generated links to the default listing with explicit links to the relevant load-specific listings; each target address is present in that listing.
+
+Traced indexed resident reward initialization $5C66 and $5C94. VICE checked both forced types through the real coordinate conversion with reset and movement callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
