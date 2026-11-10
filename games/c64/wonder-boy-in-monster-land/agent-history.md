@@ -738,3 +738,5 @@ Described six resident display-slot save arrays. A forced VICE save and restore 
 Described the overlapping meter-buffer tail and the patched entity reload multiplier, reusing the earlier VICE checks and listing tests for the meter and record scan.
 
 Traced the resident sprite-register copy at $121C. A forced VICE path and a listing test checked position, pointer, colour and multicolour-mask writes before the timer setup. Restored the paused user snapshot.
+
+Described the CIA keyboard scan at $2951. Three forced VICE cases and a listing test checked the sampled bit and divider behavior; VICE controlled port B as output, so physical key mapping remains open. Restored the paused user snapshot.

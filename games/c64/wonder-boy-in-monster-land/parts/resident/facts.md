@@ -345,3 +345,5 @@ The six 32-byte arrays at $3415–$34D4 save display-slot flags, X coordinates, 
 The meter buffer at $C400–$C43F overlaps the alternate screen matrix; the verified meter update and transition screen clear use the same RAM for different purposes. The reload-record multiplication at $366A uses a patched immediate byte at $3675; the earlier controlled reload check covers that path.
 
 The resident routine at $121C copies 17 sprite position/X-high bytes, eight sprite pointers and eight colour bytes to the VIC and screen pointer locations, then clears the multicolour mask. One forced VICE path and `test_sprite_register_copy.js` check the values through $123D. Interrupt timing and the subsequent timer setup remain separate.
+
+The keyboard scan at $2951 selects CIA1 port-A value $FD and tests port-B bit 7. It writes $5275 as zero or $FF, resets the port-A direction, conditionally updates a self-modified divider and increments $5274. Three forced VICE cases controlled the sampled bit by making port B an output; `test_keyboard_scan.js` checks both bit values and divider reload. These cases do not identify the physical key or establish interrupt timing.
