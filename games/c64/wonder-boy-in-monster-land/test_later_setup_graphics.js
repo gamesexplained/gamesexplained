@@ -1,0 +1,6 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const root=__dirname,base=new Uint8Array(65536);
+for(const r of JSON.parse(fs.readFileSync(path.join(root,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
+const copies=[[0x7b,39,[0xd98f,0xda0f,0xda8f]],[0xa2,39,[0xd9cf,0xda4f,0xdacf]],[0xc9,30,[0xdb18]],[0xe7,30,[0xdb58]],[0x105,30,[0xdb98]],[0x123,30,[0xdbd8]],[0x141,36,[0xdc15]],[0x165,36,[0xdc55]],[0x189,33,[0xdc95]],[0x1aa,33,[0xdcd5]]];
+for(const [n,start] of [[2,0xad0e],[9,0x95c4],[23,0x9d8a],[26,0xa257]]){const m=base.slice();for(const r of JSON.parse(fs.readFileSync(path.join(root,'parts',`stage-${String(n).padStart(2,'0')}`,'listing.json'))).records)if(r.b)m.set(r.b,r.a);const src=m.slice();m[0x10]=0;m.set([0xe6,0x10,0x60],0x2086);m[1]=0x35;const cpu=new CPU(m);cpu.call(start,{}, {maxSteps:3000});for(const [off,len,dests] of copies)for(const d of dests)assert.deepEqual(m.slice(d,d+len),src.slice(start+off,start+off+len),`${n}/${off.toString(16)}`);assert.equal(m[1],0x35);assert.equal(m[0x10],7);}
+console.log('OK - four later-load graphics setup copies with mirror callback stubbed');

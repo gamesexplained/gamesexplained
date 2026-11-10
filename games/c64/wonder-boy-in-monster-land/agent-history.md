@@ -690,3 +690,5 @@ Found and typed the input-held and cursor helpers and adjacent state bytes in 17
 Found and typed conditional-item resolvers in 17 later loads. Fifty-one forced VICE cases and a listing test checked the three outcomes per load. Overlapping character-copy descriptions record both observations; the paused user snapshot was restored.
 
 Checked all 34 shop-message copies in each of 17 later loads against the decoded first-load records. VICE matched each entire message bank; listing tests check all 578 record hashes and decoded fields. Added the ten previously undescribed records per load and noted overlapping character-copy uses. The paused user snapshot was restored.
+
+Found and typed graphics setup code and its ten source blocks in loads 2, 9, 23 and 26. VICE and a listing test checked every copy and seven mirror calls per load with the mirror callback stubbed. Load-2 overlapping character descriptions record both uses; the paused user snapshot was restored.
