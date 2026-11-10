@@ -423,3 +423,5 @@ The 22 message pointer high bytes at $564C pair with lows at $5636; nonzero mess
 The unscrolled downward movement at $0D56 compares ($49 + $4DB4) modulo 256 against ($4D69 + $C2) modulo 256, using the patched operand at $0D6B. At or above the limit it stores the limit and clears $4DB3, $4DB6 and $4D55; otherwise it stores the proposed Y and leaves $4DB6 as $FF. Four forced VICE cases checked both branches and byte wraparound.
 
 The frame wait at $3C2A calls the message-panel copy when $5275 is zero, then polls $526C until it is at least 3 and clears that counter. Three forced VICE cases checked the gate and threshold with the panel copy stubbed, including a controlled increment from 2 to 3. Actual interrupt timing was not measured in these cases.
+
+The stage-record setup at $47E4 patches the callback high byte from $4765,X, subtracts 2 from $4753,X modulo 256, saves X at $7B and passes $4759,X as X to $7119. Three forced VICE cases checked these writes with the visual loader stubbed, including counter wraparound.
