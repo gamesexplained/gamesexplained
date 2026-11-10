@@ -1,6 +1,6 @@
 ---
 name: 12-media
-description: List everything the game came on, straight after orient. Every file, every stray sector and every cartridge bank goes into media.json, and each gets one answer before Silver, a part, data, the loader, saved or never loaded. Only on a machine whose kit has a media reader.
+description: List everything the game came on, straight after orient. Every file, every stray sector, every cartridge bank and every block of a tape goes into media.json, and each gets one answer before Silver, a part, data, the loader, saved or never loaded. Only on a machine whose kit has a media reader.
 ---
 
 # Media: everything the game came on
@@ -20,10 +20,11 @@ ledger, and its games need none: go on to the next skill.
 `python3 kit/scripts/media.py scan <game dir> <name>=<image> ...`, with
 every image the contributor gave, each named as the game asks for it
 (`side1`), writes `media.json`: every file, every run of sectors the
-disk's map marks as used that no file holds, every bank of a cartridge.
-An item several images hold byte for byte is listed once, and each
-starts `open`. The ledger keeps names, sizes and hashes; the images stay
-in `work/`. `media.py <game dir>` prints what is open.
+disk's map marks as used that no file holds, every bank of a cartridge,
+every block of a tape. An item several images hold byte for byte is
+listed once, and each starts `open`. The ledger keeps names, sizes and
+hashes; the images stay in `work/`. `media.py <game dir>` prints what is
+open.
 
 Set the list beside the table of files from `10-orient` step 7. Code
 that no snapshot holds is a part with no folder yet (`15-parts`): a

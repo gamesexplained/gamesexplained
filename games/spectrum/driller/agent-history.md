@@ -179,3 +179,26 @@ Chromium). The page now lets keys go after each refresh too.
 `test_fast.js` gained the beam part, and `port/test/fast-browser.js`
 presses the keys in Chromium; it failed on the old page and passes on
 the new.
+
+## Follow-up: the media ledger (10 November 2026)
+
+Driller is the first Spectrum game through the kit's media ledger,
+`media.json`, which lists everything on the tape and says what each item
+is. The Spectrum had no reader for it, so this follow-up wrote one,
+`kit/spectrum/media.py`, and tried it on the run's own tape (the same
+SHA-256 as `orientation.md`, from archive.org's TOSEC set).
+
+- The tape holds five items: the BASIC program `DRILLER`, the code file
+  `load`, and blocks 6, 7 and 8, which have no header. The scan found
+  block 7 whole in the listing at `$6B12` and block 8 at `$4000`, the
+  addresses `orientation.md` gives.
+- `DRILLER`, `load` and block 6 are answered as the loader. Block 6 was
+  drawn as a screen to check it: it is the loading picture, reading
+  DRILLER introducing FREESCAPE.
+- Listing the BASIC to its end showed what lines 40 to 80 are. They are
+  never reached, and they are the lines that saved the tape's first two
+  files: `SAVE "DRILLER" LINE 10` and `SAVE "load" CODE 32768,448` match
+  the two headers. Line 80 then loads `mast0`, which the tape does not
+  have.
+- Nothing is open. The disc version stays outside the ledger, as it
+  stays outside the listing: only the tape was examined.
