@@ -102,7 +102,7 @@ function findBlock(src, name, isScript) {
 }
 
 // The lib files the build serves from the kit (build.py, KIT_LIB), and the name each gives a page
-const KIT_LIB = { cpu6502: ['kit/cpu/cpu6502.js', 'C64Cpu'] };
+const KIT_LIB = { cpu6502: ['kit/cpu/cpu6502.js', 'C64Cpu'], sm5a: ['kit/gnw/sm5a.js', 'SM5A'] };
 
 function game(dir) {
   dir = path.resolve(dir);

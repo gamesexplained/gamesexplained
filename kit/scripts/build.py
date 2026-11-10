@@ -97,13 +97,14 @@ from media import summary as media_summary   # noqa: E402  what each file on the
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
 PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC Micro", "apple2": "Apple II",
-                  "c16": "Commodore 16 and Plus/4", "nes": "NES"}
+                  "c16": "Commodore 16 and Plus/4", "nes": "NES",
+                  "gnw": "Game & Watch"}
 # The footprint widget and the extra script it needs, per platform: a page loads only
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
 PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap", "apple2": "Apple2Map", "c16": "C16Map",
-                 "nes": "NESMap"}
+                 "nes": "NESMap", "gnw": "GNWMap"}
 PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], "apple2": ["apple2.js"], "c16": ["c16.js"],
-                     "nes": ["nes.js"]}
+                     "nes": ["nes.js"], "gnw": ["gnw.js"]}
 # The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
 # sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
 # (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
@@ -113,12 +114,16 @@ PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], 
 # which a game can load (kit/skills/apple2/apple2-reference, "Memory map").
 # The Commodore 16's 16 KB is $0000-$3FFF, where kit/c16/snapshot.py puts it. A game that uses the
 # Plus/4's other 48 KB needs this widened first (kit/skills/c16/steps, "page").
-PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000), "c16": (0x0000, 0x4000)}
+# A Game & Watch's map is its ROM, $0000-$073F in the order the chip runs it (kit/gnw/snapshot.py),
+# drawn to $07FF so that the columns of 128 bytes come out whole.
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000), "c16": (0x0000, 0x4000),
+                     "gnw": (0x0000, 0x0800)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
                 "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it",
                 "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM",
-                "nes": "the NES's 64 KB address space: 2 KB of RAM, the chips' registers and the cartridge"}
+                "nes": "the NES's 64 KB address space: 2 KB of RAM, the chips' registers and the cartridge",
+                "gnw": "the chip's 1,856 bytes of ROM, in the order it runs them"}
 TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
         ("levels.html", "Levels"), ("graphics.html", "Graphics"), ("source.html", "Source code"),
         ("about.html", "About")]
@@ -1684,7 +1689,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 # The lib files the site serves from the kit instead of site/lib/, each with one source: the 6502
 # a page runs a game's own code on, which sid.js also hands to a music driver in its worklet, is
 # the simulator the kit's tests hold pages to (kit/cpu/cpu6502.js, "On a page").
-KIT_LIB = {"cpu6502.js": "kit/cpu/cpu6502.js"}
+KIT_LIB = {"cpu6502.js": "kit/cpu/cpu6502.js", "sm5a.js": "kit/gnw/sm5a.js"}
 
 def lib_versions(out_root):
     """{lib file: the first 8 hex digits of its SHA-1}, for every script and stylesheet in the

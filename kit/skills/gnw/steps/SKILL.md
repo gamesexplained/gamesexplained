@@ -1,0 +1,33 @@
+---
+name: steps
+description: Which of the kit's tools each core step uses on the Game & Watch: the snapshot, the ROM set, the control file in place of a disassembler, the register census, the references search, the processor's idioms, the simulator, the whole machine, the lockstep, the screen, the sound, the checker's fixes and the page's scripts. Read it beside the core skill that names a row.
+---
+
+# The core steps on the Game & Watch
+
+The core skills (`kit/skills/core/`) say what each step needs and name a
+row of this table where a tool does it; this says which tool does it on
+the Game & Watch. The machine's facts are in `gnw-reference`, the server
+in `tool-gnw-server` and MAME in `tool-mame`. The machine the kit drives
+is its own model of the Sharp SM5A, `kit/gnw/sm5a.js`, held to MAME's
+instruction for instruction (`kit/gnw/test_machine.js`); MAME is the
+second machine, and the one to play the game on with its screen and
+sound. Every script prints its usage with `-h`, and every JavaScript
+file's header is its manual. A row marked "none yet" names what to do
+until a run on this platform builds the tool.
+
+| Row | Core step | On the Game & Watch |
+|---|---|---|
+| `snapshot` | `10-orient`, `50-coverage`: the image everything is read from | a `.gnw.json.gz`, saved by the server (`tool-gnw-server`, "Snapshots") and read by `kit/gnw/snapshot.py`: the ROM in the order the chip runs it at $0000-$073F, and the data cells at $1000-$107F. The snapshot holds the ROM, so it stays in `work/` |
+| `media` | `10-orient`, step 7: what the image holds | MAME's ROM set, a zip of the chip's ROM (1,856 bytes on an SM5A) and an SVG of the screen; the server reads the ROM from the zip itself. MAME's driver block for the unit (`gnw-reference`, "Where to read about a game first") gives the model number, the buttons' wiring and the checksum |
+| `disassembler` | `10-orient`, step 6; `50-coverage`, the loop | none live: the annotations are a control file, `work/<slug>.ctl`, written and read (`kit/gnw/project.py` lists its directives), and `symbols_export.py <game> --project work/<slug>.ctl` exports it. `python3 kit/cpu/sm5a.py <rom>` prints the ROM in running order, a line per instruction with its `CB:PM:PL`, as MAME's debugger writes it. `50-coverage`, "When the disassembler does not follow control flow", applies: nothing follows the jumps for you, so type each page from the jumps into it |
+| `census` | `40-sweep`, the register census | none yet: the chip reaches its pins by instruction, not by address. Count the instructions instead: `KTA` (buttons), `ATR` (buzzer and button rows), `TA` and `TB` (left and right), `WR`, `WS`, `DTW`, `PDTW`, `TW` and `PTW` (the screen), `TG` (the clock), `DTA` (the divider), `CEND` (sleep), with `grep` on the output of `kit/cpu/sm5a.py` |
+| `references` | `50-coverage`, step 2; `60-verify`, "Negative results" | `grep` on the output of `kit/cpu/sm5a.py`: a jump's operand is a step on its page, so search for the step (`TR $1E`) and check the page, and for `TRS` the entry on page $10. A data cell is reached by `LB`, `LBL` and the row moves of `EXC`, `EXCI`, `EXCD` and `LDA`: search for every way B can be set to the cell's row and column, not only `LBL` (`gnw-reference`, "The data memory") |
+| `cpu` | `50-coverage`, inline arguments and jump tables | the Sharp SM5A: `gnw-reference`, "The chip" to "Arithmetic". A table of values is a run of `LAX` jumped into part way, and a jump table a run of `TR` |
+| `simulator` | `60-verify`; `70-minisite`, a widget's test | `kit/gnw/sm5a.js` bare, `new SM5A(rom)`, with `hooks[pc]` on a physical program counter. It is the whole chip: no hook is needed for the pins, which are its fields (`rows`, `always`, `alpha`, `beta`, `rOut`, `o`, `ox`) |
+| `machine` | `60-verify`, "Unreachable"; `70-minisite`, Play | `kit/gnw/sm5a.js`, which is the whole machine: there is nothing on the board but the chip, the LCD, the buzzer and the buttons. The server runs it live (`tool-gnw-server`) |
+| `lockstep` | `70-minisite`, Play (`play.md`) | none yet. A pass is one turn of the game's main loop: put a checkpoint on its first instruction and step the port and the chip a pass at a time, comparing the data cells. There is no interrupt to stand in for; the 1 Hz flag and the divider are the chip's own (`gnw-reference`, "Time"), and a port reads them from the machine it runs beside. The first game's run builds `kit/gnw/lockstep.js` |
+| `frame` | `10-orient`, step 3; `70-minisite`, "One frame, rebuilt from memory" | the server's `screen` gives the lit segments as MAME's `o.b.h` names; `site/lib/gnw.js`, `GNW.draw`, draws them on the unit's SVG. MAME's own picture, `tools.py mame <set.zip>` and its snapshot key, is the check. Which segment is which object is the game's to find, by lighting one bit at a time |
+| `sound` | `70-minisite`, "The sound" | none yet: the buzzer is R1, toggled by `ATR` in a timed loop (`gnw-reference`, "The buzzer"). `kit/gnw/sm5a.js` calls `onBuzzer(level, clocks)` at each change, which is the sound as a list of edges; a player that turns the edges into a tone is the first game's to write |
+| `fixes` | `60-verify`, the checker's corrections | apply each correction to the control file by hand and export again: the file is the source of the symbols, as SkoolKit's is on the Spectrum |
+| `page` | `70-minisite`, "Building it" | `site/lib/gnw.js` (`GNW.draw`, and `GNWMap` for the footprint), with `lib/sm5a.js`, the kit's machine served beside it, for a widget that runs the chip. A page carries the screen's segments it draws as data |

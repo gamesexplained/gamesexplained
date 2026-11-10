@@ -202,6 +202,25 @@ PLATFORM_DEFAULTS = {
         # means the register (listing.py, io_meaning)
         "io_only": [["$2000", "$401F", "the PPU's, the APU's and the I/O registers"]],
     },
+    "gnw": {
+        # The Sharp SM5A of the early Game & Watch: the image is kit/gnw/snapshot.py's, the ROM in
+        # the order the chip runs it at $0000-$073F and the data cells at $1000-$107F
+        # (kit/skills/gnw/gnw-reference). Coverage is the ROM's 1,856 bytes: the rest holds nothing
+        # of the game's program. A page never runs on into the next, so each starts a region.
+        "cpu": "sm5a",
+        "exclude": [["$0740", "$0FFF", "pages $1D-$1F, which repeat page $1C"],
+                    ["$1000", "$107F", "the data memory, 4-bit cells the game reads and writes"],
+                    ["$1080", "$FFFF", "outside the chip"]],
+        "extra": [],
+        "edges": ["$%04X" % (p << 6) for p in range(0x1D)] + ["$1000"],
+        "screen_size": 0,          # the screen is fixed shapes, not memory
+        "charset_size": 0,
+        "snapshot_ext": "gnw.json.gz",
+        "hidden": [],
+        # nothing is ever loaded into the data memory: the program writes every cell as it runs
+        "system": [["$1000", "$107F", "the data memory, which the program fills as it runs"]],
+        "io_only": [],
+    },
 }
 
 

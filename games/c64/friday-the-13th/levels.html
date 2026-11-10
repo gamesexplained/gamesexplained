@@ -1,0 +1,222 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friday the 13th: maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;border:2px solid transparent;background:none;cursor:pointer;position:relative;line-height:0}
+.ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-px{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ft-mark{position:absolute;right:3px;bottom:3px;max-width:calc(100% - 6px);text-align:right;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+@media (max-width:760px){.ft-two{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Domark</p>
+  <h1>Friday the 13th: maps</h1>
+  <p class="sub">All 44 rooms of Crystal Lake camp, each drawn in the page by the game's own drawing routine, laid out as the game joins them, with the doors between them and where everyone starts a round.</p>
+</header>
+<main class="wrap" data-part="game">
+
+<section>
+  <p class="fig">01 · Room viewer</p>
+  <h2 class="t">Any room, drawn the way the game draws it</h2>
+  <p class="lede">Pick a room in any of the four maps below, or step through them here. The labels on each map say where a door leads, which rooms start a <a href="music.html#music">tune</a> of their own, and where you and the ten others begin a round.</p>
+  <div class="plate ft-big"><canvas id="ftBig" width="256" height="128"></canvas>
+    <div class="pick" style="margin-top:12px"><a class="step" id="ftPrev" aria-label="Previous room">‹</a><select id="ftSel" aria-label="Room"></select><a class="step" id="ftNext" aria-label="Next room">›</a></div>
+    <p class="cap" id="ftBigCap"></p></div>
+</section>
+
+<section>
+  <p class="fig">02 · The camp</p>
+  <h2 class="t">Outdoors: 24 rooms, 4 across and 6 down</h2>
+  <p class="lede">The woods and the lake around the cabins. Walk off any side of a room and <a href="levels.html#room">the next one is drawn</a>; the edge of the map stops you. Three rooms have a door into a building.</p>
+  <div class="plate"><div class="ft-grid" id="ftArea0" style="grid-template-columns:repeat(4,1fr)"></div>
+    <p class="cap" id="ftCap0"></p></div>
+</section>
+
+<section>
+  <p class="fig">03 · The lodge</p>
+  <h2 class="t">The lodge: 12 rooms, 3 across and 4 down</h2>
+  <p class="lede">The largest building, the brick one with the red roof in room 17 outdoors. The game gives its buildings no names, so this page names them after how they look from outside.</p>
+  <div class="plate"><div class="ft-grid" id="ftArea1" style="grid-template-columns:repeat(3,1fr)"></div>
+    <p class="cap" id="ftCap1"></p></div>
+</section>
+
+<section>
+  <p class="fig">04 · The church</p>
+  <h2 class="t">The church: 4 rooms, where every round starts</h2>
+  <p class="lede">Entered from room 11 outdoors. The player starts each round in room 38, the church with its benches and organ.</p>
+  <div class="plate"><div class="ft-grid" id="ftArea2" style="grid-template-columns:repeat(2,1fr)"></div>
+    <p class="cap" id="ftCap2"></p></div>
+</section>
+
+<section>
+  <p class="fig">05 · The barn</p>
+  <h2 class="t">The barn: 4 rooms</h2>
+  <p class="lede">The wooden barn with the thatched roof, entered from room 9 outdoors.</p>
+  <div class="plate"><div class="ft-grid" id="ftArea3" style="grid-template-columns:repeat(2,1fr)"></div>
+    <p class="cap" id="ftCap3"></p></div>
+</section>
+
+<section id="room">
+  <p class="fig">06 · A room, rebuilt</p>
+  <h2 class="t">One room drawn by the game's own routine</h2>
+  <p class="lede">Rooms are built from tiles of cells laid over a background, by <a href="source-game.html#A2A2"><code>draw_room</code></a>. The page runs that routine, unchanged, on the game's bytes.</p>
+  <div class="plate"><div class="pick"><a class="step" id="rmPrev" aria-label="Previous room">‹</a><select id="rmSel" aria-label="Room"></select><a class="step" id="rmNext" aria-label="Next room">›</a></div>
+    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The emulator's picture of room 39" id="rmShot" class="ft-px"></div>
+    <p class="cap" id="rmCap">Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which <code>draw_room</code> does not draw.</p></div>
+  <p>Each room is 8 tiles across and 4 down, 32 bytes at <a href="source-game.html#0C00"><code>$0C00</code></a> plus 32 times the room's number. A tile is 4 by 4 cells, and a cell is 8 by 8 multicolour pixels. The cells' see-through pixels let the background show: plain grey outdoors, and indoors one perspective picture of walls and floor that every building room shares, recoloured for each room from two bytes at <a href="source-game.html#AA5E"><code>room_colours</code></a>.</p>
+  <p>The room is also the collision map. Its 32 tiles are copied to <a href="source-game.html#0894"><code>room_map</code></a>, and <a href="source-game.html#AE8F"><code>tile_kind</code></a> sorts the tile under each foot into open, solid, or climbable. Outdoors, walking off a side of the screen moves you one room across the 4 by 6 grid; in a building, the floor narrows with depth, and you leave through the doorways in the walls.</p>
+</section>
+
+<section>
+  <p class="fig">07 · How a room is stored</p>
+  <h2 class="t">32 tiles a room, 16 cells a tile</h2>
+  <p>Each room is 32 bytes at <code>$0C00</code> plus 32 times its number: 8 tile numbers across and 4 down. A tile is 32 bytes at <code>$8000</code> plus 32 times its number, 4 cells across and 4 down, each a two-byte number of an 8-byte multicolour cell at <code>$1180</code>. <a href="source-game.html#A2A2"><code>draw_room</code></a> lays the tiles over a background: a plain grey field outdoors, and in a building the same perspective picture of walls and floor for every room (a 16 by 32 map of patterns at <code>$0400</code>), recoloured from two bytes per room at <a href="source-game.html#AA5E"><code>$AA5E</code></a>. A cell's %00 pixel pairs let that background show through, so the furniture stands on the floor.</p>
+  <p>In a building, a room on the building's outer edge gets its doorway on that side painted over by <a href="source-game.html#C21A"><code>draw_area_edges</code></a>: the side walls' doors on the left and right edges, and a block of the back wall on the first row.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* friday-room */
+// One room of the game, drawn by the game's own draw_room ($A2A2) on the kit's 6502 (C64Cpu, from
+// ../../lib/cpu6502.js) over the bytes of the game's listing (ram, 64 KB). The room's area, column
+// and row go where room_number leaves them; scare_check ($C8E9) and show_room_object ($A3DD), which
+// read the random generator and the sprites, are skipped. Returns the bitmap and screen in m
+// ($4000 and $5400), colour RAM in colour and the background colour draw_backdrop chose.
+const FT_AREAS = [[0, 4, 6], [24, 3, 4], [36, 2, 2], [40, 2, 2]];   // area_base_room and area_size
+function fridayRoom(ram, Cpu, room) {
+  let a = 0;
+  for (let i = 3; i >= 0; i--) if (room >= FT_AREAS[i][0]) { a = i; break; }
+  const off = room - FT_AREAS[a][0], w = FT_AREAS[a][1], col = off % w, row = Math.floor(off / w);
+  const m = ram.slice(), colour = new Uint8Array(1024);
+  m[0x08B9] = a; m[0x086A] = col; m[0x086B] = row; m[0x086C] = room;
+  const cpu = new Cpu.CPU(m, { port: 0x36, io: {
+    read: () => 0,
+    write: (ad, v) => { if (ad >= 0xD800 && ad < 0xDC00) colour[ad - 0xD800] = v & 15; },
+  } });
+  cpu.call(0xA2A2, {}, { maxSteps: 5e6, hooks: { 0xC8E9: c => c.rts(), 0xA3DD: c => c.rts() } });
+  return { m, colour, bg: m[0x08DA], area: a, col, row };
+}
+// The play area: screen columns 4 to 35 and rows 0 to 15 of the multicolour bitmap, 256 by 128 pixels.
+function fridayPaint(cv, r, PAL) {
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(256, 128);
+  const rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  for (let cy = 0; cy < 16; cy++) for (let cx = 0; cx < 32; cx++) {
+    const o = cy * 40 + cx + 4, sc = r.m[0x5400 + o], cr = r.colour[o];
+    for (let y = 0; y < 8; y++) {
+      const b = r.m[0x4000 + o * 8 + y];
+      for (let p = 0; p < 4; p++) {
+        const v = (b >> (6 - 2 * p)) & 3, c = rgb[v === 0 ? r.bg : v === 1 ? sc >> 4 : v === 2 ? sc & 15 : cr];
+        for (let k = 0; k < 2; k++) { const i = ((cy * 8 + y) * 256 + cx * 8 + p * 2 + k) * 4; img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255; }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+// end of friday-room
+
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { $('ftBigCap').textContent = 'This page needs the site\'s shared scripts: open it from the built site.'; return; }
+  // Packed places (area * 64 + column * 8 + row) from the game's tables
+  const DOORS = { 17: 'door to the lodge', 11: 'door to the church', 9: 'door to the barn', 24: 'door to room 17', 36: 'door to room 11', 40: 'door to room 9' };
+  const TUNES = { 37: 'tune 1', 38: 'tune 2', 2: 'tune 3', 40: 'tune 5', 14: 'tune 6' };
+  const STARTS = [5, 3, 14, 16, 27, 34, 26, 36, 39, 43];   // start_places ($BB7E), as rooms
+  const NAMES = ['outdoors', 'the lodge', 'the church', 'the barn'];
+  C64.load('parts/game/listing.json').then(L => {
+    const rooms = [], buttons = [];
+    for (let n = 0; n < 44; n++) rooms.push(fridayRoom(L.ram, C64Cpu, n));
+    let cur = 38;
+    const marks = n => { const t = []; if (DOORS[n]) t.push(DOORS[n]); if (TUNES[n]) t.push(TUNES[n]); STARTS.forEach((r, i) => { if (r === n) t.push('friend ' + i + ' starts'); }); if (n === 38) t.push('you start'); if (n >= 24) t.push('can be the safe room'); return t; };
+    function show(n) {
+      cur = (n + 44) % 44; const r = rooms[cur];
+      fridayPaint($('ftBig'), r, C64.PAL);
+      $('ftSel').value = String(cur);
+      const info = 'Room ' + cur + ': ' + NAMES[r.area] + ', column ' + r.col + ', row ' + r.row + ', packed place $' + (r.area * 64 + r.col * 8 + r.row).toString(16).toUpperCase().padStart(2, '0');
+      const t = marks(cur);
+      const tx = t.join('; ');
+      $('ftBigCap').textContent = info + '. ' + (t.length ? tx[0].toUpperCase() + tx.slice(1) + '. ' : '') + 'Tiles from $' + (0x0C00 + cur * 32).toString(16).toUpperCase() + '. Drawn by draw_room on a copy of the C64\'s processor in the page; people and objects are not drawn.';
+      buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === cur)));
+    }
+    for (let a = 0; a < 4; a++) {
+      const [base, w, h] = FT_AREAS[a];
+      for (let n = base; n < base + w * h; n++) {
+        const b = document.createElement('button'), cv = document.createElement('canvas');
+        cv.width = 256; cv.height = 128; fridayPaint(cv, rooms[n], C64.PAL);
+        b.appendChild(cv);
+        const tag = document.createElement('span'); tag.className = 'ft-tag'; tag.textContent = n; b.appendChild(tag);
+        const k = [DOORS[n] || '', TUNES[n] || '', n === 38 ? 'you start' : '', ...STARTS.map((r, i) => r === n ? 'friend ' + i + ' starts' : '')].filter(Boolean).join(' · ');
+        if (k) { const s = document.createElement('span'); s.className = 'ft-mark'; s.textContent = k; b.appendChild(s); }
+        b.setAttribute('aria-label', 'Room ' + n);
+        b.onclick = () => { show(n); $('ftBig').scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+        $('ftArea' + a).appendChild(b); buttons[n] = b;
+      }
+    }
+    $('ftCap0').innerHTML = 'Rooms 0 to 23, room 0 at the top left. A room\'s number is the area\'s first room plus its row times the area\'s width plus its column (<code>room_number</code>). The doors into the buildings are in rooms 17, 11 and 9. A label says where a door leads and who starts the round in that room.';
+    $('ftCap1').innerHTML = 'Rooms 24 to 35. The door in room 17 brings you in at room 24, the top left, and the way out there leads back to room 17. Any building room, 24 to 43, can be the <a href="gameplay.html#safe-room">safe room</a>.';
+    $('ftCap2').textContent = 'Rooms 36 to 39. The door in room 11 brings you in at room 36, and the way out there leads back to room 11. Room 38 is where each round starts.';
+    $('ftCap3').textContent = 'Rooms 40 to 43. The door in room 9 brings you in at room 40, and the way out there leads back to room 9.';
+    for (let n = 0; n < 44; n++) { const o = document.createElement('option'); o.value = String(n); o.textContent = 'Room ' + n + ', ' + NAMES[rooms[n].area]; $('ftSel').appendChild(o); }
+    $('ftSel').onchange = e => show(+e.target.value);
+    $('ftPrev').onclick = () => show(cur - 1); $('ftNext').onclick = () => show(cur + 1);
+    show(38);
+
+    // Room 39 beside the emulator
+    const sel = $('rmSel');
+    for (let n = 0; n < 44; n++) { const o = document.createElement('option'); o.value = n; const a = n < 24 ? 0 : n < 36 ? 1 : n < 40 ? 2 : 3; o.textContent = 'Room ' + n + ', ' + NAMES[a]; sel.appendChild(o); }
+    let rcur = 39;
+    const showRoom = n => {
+      rcur = (n + 44) % 44; sel.value = rcur;
+      fridayPaint($('rmCv'), rooms[rcur], C64.PAL);
+      $('rmShot').style.display = rcur === 39 ? '' : 'none';
+      if (rcur !== 39) $('rmCap').textContent = 'Room ' + rcur + ', drawn by draw_room from its 32 tiles at $' + (0x0C00 + rcur * 32).toString(16).toUpperCase() + '. Room 39 has the emulator\'s picture beside it.';
+      else $('rmCap').textContent = 'Room 39, beside the emulator\'s screenshot of the same room. Of the play area\'s 32,768 pixels, 292 differ, all of them where the two people stand: people are sprites, which draw_room does not draw.';
+    };
+    sel.onchange = () => showRoom(+sel.value); $('rmPrev').onclick = () => showRoom(rcur - 1); $('rmNext').onclick = () => showRoom(rcur + 1);
+    showRoom(39);
+
+  });
+})();
+</script>
