@@ -760,3 +760,5 @@ Traced the load-19 Sphinx seed and four hint handlers at $991B–$995B. Four for
 Traced eight later-load object message callbacks. Eight forced VICE calls and a listing test checked their one- or two-message pointer sequences with intermediate display calls stubbed. Updated character-source comments where code overlaps. Restored the paused user snapshot.
 
 Traced twelve later-load object result callbacks. Twelve forced VICE calls and a listing test checked their A and carry returns; character-source comments record any code overlap. Restored the paused user snapshot.
+
+Added the conditional Sphinx hint-to-answer mapping to Discoveries. Eight forced VICE cases checked both nonnegative choices for each retained seed, and an integration listing test checks the option strings and selection logic. The controlled stages do not establish ordinary-play order; restored the paused user snapshot.
