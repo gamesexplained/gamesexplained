@@ -104,3 +104,5 @@ The captured shop message bank contains the same 34 records as the decoded first
 The captured split row-pointer tables contain 81 pairs. All follow a 122-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
 
 This load has 1 captured motion-reader entry and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Ordinary-play reachability remains open.
+
+The object record at $9611 contains message callback $9653, which supplies $965A to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.

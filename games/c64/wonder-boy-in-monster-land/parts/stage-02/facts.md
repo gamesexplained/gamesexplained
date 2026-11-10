@@ -120,3 +120,5 @@ The captured shop message bank contains the same 34 records as the decoded first
 A forced graphics setup call at $AD0E copies ten source blocks into RAM beneath I/O and calls the mirror routine seven times. VICE and a listing test checked all copies with the mirror callback stubbed. The callback’s effects, other source uses and ordinary-play reachability remain open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 128-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The object record at $96AA contains message callback $96DA, which supplies $96E8, then $971B to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
