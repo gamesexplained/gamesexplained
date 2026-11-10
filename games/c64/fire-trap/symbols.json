@@ -11107,7 +11107,7 @@
   },
   {
    "address": 65203,
-   "name": "title_colour_cycle",
+   "name": "title_bounce",
    "type": "Jump",
    "kind": "user"
   },
@@ -11434,7 +11434,7 @@
   {
    "address": 67,
    "type": "line",
-   "text": "the firefighter's screen x position in pixels"
+   "text": "the firefighter's screen x position in units of two pixels; sort_sprites doubles it (ASL at $3331) when it fills the sprite bands"
   },
   {
    "address": 68,
@@ -11539,7 +11539,7 @@
   {
    "address": 100,
    "type": "line",
-   "text": "zero-page variable $0064; read by scroll_and_clamp; written by scroll_and_clamp"
+   "text": "zero-page variable $0064; read by scroll_and_clamp, new_stage_setup ($1551) and update_birds ($38C9, $38D1), which index $0061,Y with Y = 3 on stage 16 (reached by the attract demonstration, which counts the stage 1 to 16); written by scroll_and_clamp"
   },
   {
    "address": 101,
@@ -11609,7 +11609,7 @@
   {
    "address": 116,
    "type": "line",
-   "text": "zero-page variable $0074; read by player_update, raster_status; written by firefighter_hit, raster_status, state_8_suit_pickup"
+   "text": "zero-page variable $0074; read by player_update, raster_status; written by firefighter_hit, raster_status, state_8_countdown_pickup"
   },
   {
    "address": 117,
@@ -11849,7 +11849,7 @@
   {
    "address": 180,
    "type": "line",
-   "text": "the number of the tune the game asks the player to start; the player switches to it at the next pattern end"
+   "text": "the number of the tune the game asks the player to start; music_next_note compares it with the current tune ($B0) whenever a voice reaches its next note ($81B2-$81BF), so the switch comes at the next note, not only at a pattern end"
   },
   {
    "address": 181,
@@ -11909,7 +11909,7 @@
   {
    "address": 194,
    "type": "line",
-   "text": "the title-screen animation's current position, moved one step at a time by the raster handler at $110B"
+   "text": "the title-screen animation's current position, moved toward wait_target by the raster handler at $110B: up to three steps a frame down ($111A-$1128), up to two up ($112D-$1134)"
   },
   {
    "address": 196,
@@ -12044,7 +12044,7 @@
   {
    "address": 228,
    "type": "line",
-   "text": "zero-page variable $00E4; read by spray_hits_top_object, update_top_object; written by update_top_object"
+   "text": "zero-page variable $00E4; read and written by update_top_object and by top_object_behaviour_1, top_object_behaviour_2 and top_object_behaviour_3; read by spray_hits_top_object"
   },
   {
    "address": 229,
@@ -12359,7 +12359,7 @@
   {
    "address": 2710,
    "type": "line",
-   "text": "byte 0 of record 0 of the hazard table at $0A96 (6 records of 5 bytes), 1 byte(s) from $0A96; read by draw_hazards, spray_hits_hazards, update_hazards; written by actor_drop_and_scatter, draw_one_hazard, new_stage_setup, spray_hits_hazards and 1 more"
+   "text": "byte 0 of record 0 of the hazard table at $0A96 (5 records of 5 bytes; the loops stop at CPX #$19 at $218D and CPY #$19 at $3D29), 1 byte(s) from $0A96"
   },
   {
    "address": 2711,
@@ -12419,7 +12419,7 @@
   {
    "address": 2731,
    "type": "line",
-   "text": "byte 1 of record 4 of the hazard table at $0A96 (6 records of 5 bytes), 64 byte(s) from $0AAB; written by actor_drop_and_scatter"
+   "text": "byte 1 of record 4 of the hazard table at $0A96 (5 records of 5 bytes, ending at $0AAE); read and written by update_hazards (DEC $0A97,X with X=$14 at $210E); written by actor_drop_and_scatter. $0AAC-$0AEA are not part of the table"
   },
   {
    "address": 2795,
@@ -12429,7 +12429,7 @@
   {
    "address": 4096,
    "type": "line",
-   "text": "entry from the hand-over code at $0929: jumps over a spare byte to the main program"
+   "text": "entry from the hand-over code at $0929 (JMP $1000): jumps to the main program at $1003, the next instruction"
   },
   {
    "address": 4099,
@@ -12529,7 +12529,7 @@
   {
    "address": 5595,
    "type": "line",
-   "text": "copies a row of the building's tile graphics into the character set"
+   "text": "copies 12 bytes at a time from $C44D,X and $C471,X into sprite blocks $2B-$2E at $4AC0-$4BBF (Y jumps from $3F to $80 to follow the 64-byte block layout): the small map of the building on the Get Ready screen, drawn by the Get Ready sprite records at $C020"
   },
   {
    "address": 5627,
@@ -12674,7 +12674,7 @@
   {
    "address": 7218,
    "type": "line",
-   "text": "the descent at the end of a stage: the firefighter's score for the stage is parked in $9A/$9B, then he is moved by the joystick as he floats down the building"
+   "text": "the descent at the end of a stage: the firefighter is moved by the joystick as he floats down the building; state_12_rescue_end copies $70/$71 (the count of fires put out, added in spray_hits_fire) into $9A/$9B at $1C16-$1C1C before falling into this routine"
   },
   {
    "address": 7364,
@@ -12704,7 +12704,7 @@
   {
    "address": 8036,
    "type": "line",
-   "text": "the last character of the number written into the screen at $5F6A by the code above; the routine then carries on into title_colour_cycle"
+   "text": "the last character of the number written into the screen at $5F6A by the code above; the routine then carries on into title_bounce"
   },
   {
    "address": 8042,
@@ -12754,7 +12754,7 @@
   {
    "address": 8597,
    "type": "line",
-   "text": "starts a new fire in a randomly chosen window every few frames"
+   "text": "tries to start a new fire in a window: a countdown in $50 is reloaded with 16 minus the stage number ($21A2-$21A7) and drops once per game tick (four frames), so a fire is tried every 16 ticks (64 frames) on stage 1 and every tick during the descent; the row is random within 32 rows from 8 rows above the scroll position"
   },
   {
    "address": 8762,
@@ -12804,7 +12804,7 @@
   {
    "address": 9532,
    "type": "line",
-   "text": "moves and draws the floating object held at $CA-$CD, a bouncing item that the firefighter can shoot or touch; what it is called in the game is not confirmed"
+   "text": "moves and draws the floating object held at $CA-$CD: it rises 4 units a tick after leaving a burning window, then falls 8 units a tick, pushed sideways by map cells 2 and $0E; when it overlaps the firefighter firefighter_hit is called ($262F) and it is removed, so it is a hazard; what it is called in the game is not confirmed"
   },
   {
    "address": 9859,
@@ -12819,7 +12819,7 @@
   {
    "address": 9948,
    "type": "line",
-   "text": "starts the walker at the right"
+   "text": "starts the walker at the right: stores $CC in $D2 and $FF in $D3, the two sprite shape pointers update_walker puts in the sprite records ($26C3-$26CA)"
   },
   {
    "address": 9957,
@@ -13034,7 +13034,7 @@
   {
    "address": 11980,
    "type": "line",
-   "text": "redraws the building's visible rows into the screen and colour RAM for the current scroll position with unrolled copies, then updates the score, stage and lives text and flips the display buffer"
+   "text": "redraws the building's visible rows for the current scroll position with unrolled copies: characters into the hidden screen, colours into the buffer at $0300; flips the display buffer ($3025-$3029); then copies the colour buffer into colour RAM ($303F-$308F) and updates the score, stage and lives text"
   },
   {
    "address": 12150,
@@ -13219,7 +13219,7 @@
   {
    "address": 12612,
    "type": "line",
-   "text": "puts the character of one spray shot at the right place in the screen and colour RAM"
+   "text": "puts the character of one spray shot at the right place in the hidden screen, with its colour (where the colour goes is not checked)"
   },
   {
    "address": 12727,
@@ -13234,7 +13234,7 @@
   {
    "address": 12763,
    "type": "line",
-   "text": "puts the characters of one hazard at the right place in the screen and colour RAM"
+   "text": "puts the characters of one hazard at the right place in the hidden screen and its colour in the colour buffer at $0300 (the pointer in $20/$21 is the screen offset plus $0300); removes the hazard (clears $0A96,X at $3261) when it is outside the visible area"
   },
   {
    "address": 12872,
@@ -13319,7 +13319,7 @@
   {
    "address": 14819,
    "type": "line",
-   "text": "tests every flying object against the spray shot"
+   "text": "walks the flying objects against the spray shot, but the test is inverted: spray_hit_test returns carry set on a hit and the BCS at $3A12 skips on that, so the first live bird the shot misses is removed and scores 30 ($3A14-$3A1D) and the routine returns there, while a bird the shot overlaps survives and only the shot is removed (run on the play snapshot in the kit's 6502 simulator)"
   },
   {
    "address": 14894,
@@ -13369,7 +13369,7 @@
   {
    "address": 15524,
    "type": "line",
-   "text": "the actor falls; once it has fallen past the firefighter's position it vanishes and drops a row of five hazards at $0A96"
+   "text": "the actor falls; when its vertical position plus $50 reaches the firefighter's ($3CB1-$3CC3), so while it is still 80 units above him, it vanishes and drops a row of five hazards at $0A96"
   },
   {
    "address": 15664,
@@ -13944,7 +13944,7 @@
   {
    "address": 36102,
    "type": "line",
-   "text": "music player variable at $8D06, 2 byte(s), one per voice or a short run; written by music_tick"
+   "text": "voice 2's copy (X=7) of the pattern-position byte $8CFF,X: read and written by music_next_note ($823E, $827A, $8306), cleared by music_reset_state ($8040), written by music_tick; $8D07 is voice 2's step $8D00,X, read by the slide, vibrato and pulse routines"
   },
   {
    "address": 36104,
@@ -14119,7 +14119,7 @@
   {
    "address": 39840,
    "type": "line",
-   "text": "picture data for the stage-end and rescue sequences, 64 bytes at $9BA0; read by state_4_top_of_building"
+   "text": "picture data for the stage-end and rescue sequences; state_4_top_of_building reads 128 bytes from $9BA0 (Y from $7F down to 0 at $1B95-$1B9D) into the sprite blocks at $4B40-$4BBF"
   },
   {
    "address": 39904,
@@ -14449,7 +14449,7 @@
   {
    "address": 48984,
    "type": "line",
-   "text": "screen text and colour data for the title and high-score screens, 40 bytes at $BF58; read by build_title_screen"
+   "text": "one line of title text, 40 screen codes reading \"      EAST INC.ALL RIGHTS RESERVED.     \", which build_title_screen draws as double-height characters (code*2 and code*2+1 at $119B-$11A4); no colour data, and the high-score screen does not read it"
   },
   {
    "address": 49024,
@@ -14734,7 +14734,7 @@
   {
    "address": 51618,
    "type": "line",
-   "text": "game table, 45 bytes at $C9A2; read by load_pickup_budget"
+   "text": "game table, 45 bytes at $C9A2; load_pickup_budget reads the first 40 (LDX #$27 at $34AA); copy_title_graphics also copies $C905-$CA04 to $4600 at $11FB, which reads all of them"
   },
   {
    "address": 51663,
@@ -15324,12 +15324,12 @@
   {
    "address": 65203,
    "type": "line",
-   "text": "runs the title screen's colour cycle one step at a time until start is pressed"
+   "text": "bounces the title picture: sets wait_target ($C1) to 1 and then to each value of the table at $FED0 (1F, 1B, 17, 13, 10, 0E, 0B, 09, 07, 05, 03, 01), waiting each time for wait_position to reach it, and title_raster_scroll pushes the picture down by wait_position raster lines; it ends by itself after twelve bounces, start ends it early"
   },
   {
    "address": 65232,
    "type": "line",
-   "text": "data, 12 bytes at $FED0; read by title_colour_cycle"
+   "text": "data, 12 bytes at $FED0: the bounce heights, read by title_bounce"
   },
   {
    "address": 65244,

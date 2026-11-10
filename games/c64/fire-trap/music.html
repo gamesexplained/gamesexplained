@@ -1,0 +1,44 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fire-trap-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Five stored tunes and six sound effects, played by a driver that runs seven times in six video frames.</p>
+</header>
+<main class="wrap">
+<section id="player">
+  <p class="fig">The player</p>
+  <h2 class="t">Play the stored sounds</h2>
+  <div class="plate" id="music-widget"></div>
+  <p class="cap">The page runs the game's own sound driver, the bytes at <code>$8000</code>-<code>$8DFF</code>, on the kit's 6502 simulator, and plays what it writes through a model of the SID chip with the filter modelled as one 6581's. A test (<code>tests/music.js</code>) runs the game's own interrupt routine on the same bytes and compares every SID register after every frame of every sound below; they match. Low notes are quiet on laptop and phone speakers.</p>
+</section>
+
+<section id="driver">
+  <p class="fig">The driver</p>
+  <h2 class="t">Three voices, seven bytes of state each</h2>
+  <p>The raster handler at line 230 calls the driver once a frame (<code>play_music</code>, <code>$2AA6</code>). Each call runs two ticks (<code>music_play</code>, <code>$8003</code>), and the phase counter <code>$C0</code>, which adds <code>$33</code> a frame, carries on every sixth frame and makes the driver run a second time. The driver therefore runs seven times in six frames. A tick counts down a delay and then steps each of the three voices through seven bytes of state: its pattern pointer, its note, and the slide, vibrato, and pulse sweep (<code>music_tick</code>, <code>$8083</code>).</p>
+  <p>Each tune is a list of patterns for each voice, stored as pointers at <code>$8530</code> (five tunes, three voices each). A pattern is read by <code>music_next_note</code> (<code>$8191</code>), which also starts a pending effect on the second voice and a tune change at the next pattern end. A list ends with <code>$FF</code>, and <code>music_end_of_tune</code> (<code>$83D1</code>) then restarts the tune and looks the next one up in the follow-on table at <code>$8D6C</code>. Notes use the frequency tables at <code>$843C</code> and <code>$8486</code>.</p>
+  <table class="t">
+    <tr><th>Sound</th><th>Where the game starts it</th><th class="n">Frames to the end</th></tr>
+    <tr><td>Tune 0, the title screens</td><td>the start of the attract loop (<code>$1017</code>)</td><td class="n">5,102</td></tr>
+    <tr><td>Tune 1, the top of the building and the name entry</td><td><code>$1B3E</code>, <code>$FC9B</code></td><td class="n">3,703</td></tr>
+    <tr><td>Tune 2, the building scrolling past before a stage</td><td><code>$1681</code></td><td class="n">540</td></tr>
+    <tr><td>Tune 3, the music during a stage</td><td><code>$16CF</code>, when the Get Ready screen ends</td><td class="n">5,102</td></tr>
+    <tr><td>Tune 4</td><td>nothing starts it; it plays no note</td><td class="n">83</td></tr>
+  </table>
+  <p>Sound effects are requested by number through <code>$B5</code> and play on the second voice. The game requests six: <code>$1E</code> from the spray, <code>$1F</code> from pickups and rescued people, <code>$20</code> when a shot lands, <code>$21</code> when the firefighter is hit, <code>$22</code> from the movement code, and <code>$24</code> when a fire goes out.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fire-trap-data.js"></script>
+<script src="reference/fire-trap-music.js"></script>
+<script src="reference/fire-trap-page.js"></script>
+<script>FTP.mountMusic(document.getElementById('music-widget'));</script>

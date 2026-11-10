@@ -44,7 +44,7 @@ from reading the code in the snapshot named in `orientation.md`
 - The raster interrupt engine at `$2936`-`$29BE` walks a list of four-byte entries (handler low and high, raster line, spare). The title list at `$10C3` has entries at lines 2 and 49. The play list at `$2A88` has handlers at lines 20, 92, 124, 155, 212 and 230 (`init_raster_engine`, `raster_list_next`).
 - Each handler ends in the common tail at `$2944`, which advances the list, flips the double buffer, counts the frame in `$10`/`$11`, reads both joysticks into `$13` (port 2) and `$12` (port 1) and the keyboard matrix into `$06`-`$0D`, and calls `$FFAA`.
 - The game logic runs one tick every four video frames: the stage loop at `$13AB` waits for the frame counter to reach 4. That is about 12.5 ticks a second on a PAL machine.
-- The music player is called from the handler at line 230. The counter `$C0` adds `$33` each frame, and every fifth frame the carry makes the player run a second time, so it is called 60 times in 50 frames (`play_music`). Each call plays two ticks.
+- The music player is called from the handler at line 230. The counter `$C0` adds `$33` each frame, and on every sixth frame the carry makes the player run a second time and clears `$C0`, so it is called 7 times in 6 frames (`play_music`). Each call plays two ticks.
 - The stage timer's prescaler `$60` counts down from `$12` once per frame, and each time it runs out the timer drops by one unit, so a unit lasts 13 frames (*live*: 999 became 984 in 200 frames). From 999 the timer lasts about 260 seconds on a PAL machine.
 
 ## Controls
@@ -68,30 +68,30 @@ from reading the code in the snapshot named in `orientation.md`
 - The firefighter has `$63` lives, 4 at the start (*live*), and `firefighter_hit` (`$1CD4`) takes one. When he has been hit he falls until he is off the bottom; if lives and time remain the stage restarts, otherwise the game ends (`state_1_hit` at `$1D19`).
 - The score is six BCD digits at `$54`-`$59` and the high score six at `$5A`-`$5F`. `add_score_digit` (`$C0C4`) adds a digit and carries to the left.
 - The firefighter's spray: up to six shots at once in the table at `$0A78`, five bytes each, and `fire_spray` (`$2048`) refuses a third shot in one direction.
-- Window fires start in random windows every few frames (`start_window_fire`) and grow, spawning falling debris (`grow_window_fires`, `spawn_debris`). There are 16 fire records of 4 bytes at `$0964` and three debris pieces at `$09A4`.
+- Window fires start in random windows every few frames (`start_window_fire`) and grow, spawning falling debris (`grow_window_fires`, `spawn_debris`). There are 16 fire records of 4 bytes at `$0964` and debris pieces at `$09A4` (`clear_hazards` clears four records; the count was not otherwise checked).
 - Pickups: eight records of four bytes at `$09B8`, placed by `queue_pickup` within a per-kind budget copied by `load_pickup_budget` to `$0A38`. The pickup states show a weapon pickup that makes the spray fire three ways (flag `$78`), a second pickup state that starts a countdown in `$74` from 59 (BCD), which the timer routine at line 212 counts down and which may be the protective suit named by the retro blog (not confirmed), and a warp pickup (`$1A75`, `$1A93`, `$1AAA`).
 - People at windows: ten records of four bytes at `$09D8`; pressing fire at their window sets them free and they float down on a parachute (`update_window_people` at `$36DC`).
 - Window creatures: six records of five bytes at `$0A10`, each taking three hits (`place_one_threat`, `spray_hits_threats`).
 - Birds or flying objects: four records of four bytes at `$0A68` (`update_birds`).
 - One large actor held in `$7A`-`$89` is started at random while the firefighter is in the middle of the building, from the table at `$3C5B`, and moves by one of the routines in the table at `$3EDA`.
 - At the top of each building a special object held in `$E2`-`$E8` is drawn as four sprites and moves by the four behaviours in the table at `$27E7` (`update_top_object`).
-- The stage number in `$4C` runs 1 to 16 and wraps with AND `$0F` after the last (`$10B8`-`$10C0`).
+- The stage number in `$4C` runs 1 to 15 and then 0 in a real game (AND `$0F` at `$13D4`); the attract demonstration counts 1 to 16 (`$10B5`-`$10C0`). Stage 0 was not played.
 
 ## Data tables
 
 - Note frequencies: low bytes at `$843C`, high bytes at `$8486`.
 - Instrument table at `$84CE`, tune and pattern data from `$8530` to `$8CF8`, the tune follow-on table at `$8D6C`.
-- Stage maps at `$8E00`, `$9120`, `$9440`, `$9760`; the table of their addresses and of the two character sets at `$CF40`; the tile block sets at `$E000` and `$E920` selected through `$CF50`.
+- Stage maps at `$8E00`, `$9120`, `$9440`, `$9760`; the table of their addresses and of the two character sets at `$CF40`; the tile block sets at `$E000` and `$E920` selected through `$CF50`, and a third at `$F280` used by `clear_world` (reported by the checker, not traced further).
 - High-score table: five names, scores and stages, read by `check_high_score` (`$FC5A`) and drawn by `build_hiscore_screen` (`$1D75`).
 
 ## Sound
 
 - The driver is at `$8000`-`$843B` (`music_entry`, `music_play`, `music_init`, `music_tick`). It keeps seven bytes of state for each of the three voices, decodes pattern entries (`music_next_note`), and handles slides, vibrato and pulse-width sweeps, filter setup (`music_filter_setup`) and the follow-on of one tune to the next (`music_end_of_tune`).
-- The game asks for a tune with `$B4` and a sound effect with `$B5`; the player takes tunes at the next pattern end and plays an effect on the second voice and then returns.
+- The game asks for a tune with `$B4` and a sound effect with `$B5`; the player switches tunes at the next note of a voice (`music_next_note`, `$81B2`) and plays an effect on the second voice and then returns.
 
 ## The listing's error rate
 
-(Sample not drawn yet.)
+A sample of 60 comments (seed 2611: 40 hand-written, 20 template) was checked on a proven model (`claude-opus-5-5`) against the code and the snapshot. 39 were right, 18 had a wrong detail and 3 were wrong. All 21 were corrected, along with the comments that shared their belief (the colour buffer at `$0300`, the hazard table's five records). Two of the errors were in logic, not description: `spray_hits_birds` tests the hit the wrong way round and clears a bird the shot misses. A full audit of the hand-written comments is recommended.
 
 ## Live tests
 

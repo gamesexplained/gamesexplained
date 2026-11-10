@@ -14,7 +14,7 @@ written again when the run reaches its final tier.
 
 ## Candidates
 
-None.
+- A comment that says where a routine writes (colour RAM, a screen, a character set) should be read against the address the pointer is built from. Seven of the 21 wrong comments in this game's sample named the wrong destination. A line in `50-coverage` asking for the pointer's base to be named would catch them.
 
 ## Maintainer asks
 
