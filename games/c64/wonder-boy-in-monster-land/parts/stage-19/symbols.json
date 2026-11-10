@@ -1681,7 +1681,7 @@
   {
    "start": 48464,
    "end": 48620,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 48621,
@@ -9698,6 +9698,66 @@
    "kind": "user"
   },
   {
+   "address": 48464,
+   "name": "captured_quiz_start",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48482,
+   "name": "captured_quiz_poll",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48493,
+   "name": "captured_quiz_input",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48511,
+   "name": "captured_quiz_left",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48525,
+   "name": "captured_quiz_right",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48538,
+   "name": "captured_quiz_wait_release",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48549,
+   "name": "captured_quiz_input_held",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48568,
+   "name": "captured_quiz_check_answer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48601,
+   "name": "captured_quiz_correct",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48608,
+   "name": "captured_quiz_finish",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48621,
    "name": "dialogue_record_bded",
    "type": "UserDefined",
@@ -16139,6 +16199,56 @@
    "address": 48416,
    "type": "line",
    "text": "Three zero-terminated glyph lines, with alignment spaces omitted here: \u201cWhat did I eat\u201d / \u201cyesterday?\u201d / \u201cBEEF  CHICKEN  SARAD\u201d. [$60] denotes a downward-pointing triangular glyph. The following control byte is $FE. The instruction sequence at $BD50 loads this address in X/Y and reaches $77E0 in the listing simulator; with selector $77E1 set to zero, that routine copies the lines into the three message buffers. Normal-play reachability remains open."
+  },
+  {
+   "address": 48464,
+   "type": "line",
+   "text": "Display the three-field question at $BD20, call the HUD updater twice, set cursor mode $BE8E to $FF and enter the cursor/poll loop. Display and HUD callback effects are separate."
+  },
+  {
+   "address": 48482,
+   "type": "line",
+   "text": "Call the cursor-colour routine at $BE61. If message countdown $4D6B is zero, check the answer; otherwise sample input. A zero in $70 checks the answer, a zero in $73 takes the left path, and a zero in $74 takes the right path. If none is zero, repeat."
+  },
+  {
+   "address": 48493,
+   "type": "line",
+   "text": "Call the input sampler and test $70, then $73, then $74 for zero, in that priority order. Physical control mapping belongs to the separate sampler."
+  },
+  {
+   "address": 48511,
+   "type": "line",
+   "text": "If cursor mode $BE8E is negative, leave it unchanged; otherwise decrement it. Both paths enter the input-release wait at $BD9A."
+  },
+  {
+   "address": 48525,
+   "type": "line",
+   "text": "If cursor mode $BE8E equals 1, leave it unchanged; otherwise increment it. Both paths enter the input-release wait at $BD9A."
+  },
+  {
+   "address": 48538,
+   "type": "line",
+   "text": "Update cursor colours and call $BDA5. While it returns carry set, repeat; on carry clear return to the main cursor/poll loop. Callback effects are separate."
+  },
+  {
+   "address": 48549,
+   "type": "line",
+   "text": "Call the input sampler; return carry set if any of $73, $74 or $70 is zero, otherwise return carry clear. The sampler\u2019s physical control mapping is separate."
+  },
+  {
+   "address": 48568,
+   "type": "line",
+   "text": "Call the message routine with A, X and Y cleared. Patch the immediate comparison at $BDD6 with bit 0 of $9A4B. A negative cursor mode goes to $BE38. Otherwise clear $9A4B, rotate the cursor-mode byte right through the incoming carry, rotate its former bit 0 into A, and compare it with the patched bit: equal selects $BDD9, unequal selects $BE38. Incoming carry changes the rotated mode byte but not the compared former bit 0."
+  },
+  {
+   "address": 48601,
+   "type": "line",
+   "text": "Pass message pointer $BDED to the display routine, then continue into $BDE0. Message-display effects are separate."
+  },
+  {
+   "address": 48608,
+   "type": "line",
+   "text": "Call $4B20 with A=$04, load X from $BE95, then jump to $5DB9 with A=$03. Both callback effects and ordinary-play reachability remain open."
   },
   {
    "address": 48621,

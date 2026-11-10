@@ -698,3 +698,5 @@ Found and typed load-19 message setup, cursor-colour code and its tables at $BE3
 Found and typed load-19 entity reaction $BE96–$BF17. Seven forced VICE cases and a listing test checked timer, contact, collision and random-direction paths with callbacks stubbed. The paused user snapshot was restored; the next state has its own coverage boundary.
 
 Traced load-19 entity state $BF18–$BF3E. Three forced VICE cases and a listing test checked inactivity, both directions and wrapped frame arithmetic with movement callbacks stubbed. The paused user snapshot was restored.
+
+Found and typed load-19 question handling $BD50–$BDEC. Sixteen forced VICE cases and a listing test checked initialization, cursor choices, input release, answer comparison and finish dispatch with callbacks stubbed. The paused user snapshot was restored. The answer-bit source and natural reachability remain open.
