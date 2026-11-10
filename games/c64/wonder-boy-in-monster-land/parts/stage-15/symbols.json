@@ -1265,8 +1265,43 @@
   },
   {
    "start": 42325,
+   "end": 42342,
+   "type": "Code"
+  },
+  {
+   "start": 42343,
+   "end": 42345,
+   "type": "Byte"
+  },
+  {
+   "start": 42346,
+   "end": 42348,
+   "type": "Byte"
+  },
+  {
+   "start": 42349,
+   "end": 42415,
+   "type": "Code"
+  },
+  {
+   "start": 42416,
+   "end": 42513,
+   "type": "Code"
+  },
+  {
+   "start": 42514,
+   "end": 42550,
+   "type": "Code"
+  },
+  {
+   "start": 42551,
+   "end": 42608,
+   "type": "Code"
+  },
+  {
+   "start": 42609,
    "end": 42642,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 42643,
@@ -4399,6 +4434,72 @@
    "kind": "user"
   },
   {
+   "address": 42325,
+   "name": "type02_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42340,
+   "name": "type02_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42343,
+   "name": "type02_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42346,
+   "name": "type02_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42349,
+   "name": "type02_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42416,
+   "name": "type02_state0_timer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42475,
+   "name": "type02_state0_move",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42514,
+   "name": "type02_toggle_direction",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42523,
+   "name": "type02_update_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42551,
+   "name": "type02_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42609,
+   "name": "type02_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 42643,
    "name": "type03_state_dispatch",
    "type": "UserDefined",
@@ -6955,6 +7056,61 @@
    "address": 42310,
    "type": "line",
    "text": "State 2 decrements $1B17,X with eight-bit wrap. If nonzero, branch to the frame update at $A52C. If zero, call $4B0E with A=$20 and jump to $5DB9 with A=1. Ordinary-play reachability remains open."
+  },
+  {
+   "address": 42325,
+   "type": "line",
+   "text": "Load 15: the type-$02 vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $A564 from the split tables at $A567/$A56A, and jumps to the selected handler. The state index is not locally bounded; only three captured table pairs are described."
+  },
+  {
+   "address": 42340,
+   "type": "line",
+   "text": "Absolute jump patched through operands $A565/$A566; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 42343,
+   "type": "line",
+   "text": "Three captured low bytes of state targets, paired with high bytes at $A56A: $A56D, $A637, $A671. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42346,
+   "type": "line",
+   "text": "Three captured high bytes paired with low bytes at $A567: $A56D, $A637, $A671. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42349,
+   "type": "line",
+   "text": "State 0: if $1A29,X is zero, continue at $A5B0. Otherwise call $792C and $732A. If $732A returns carry set and $1A6D,X is positive, call $72FC, store 0 in $1AD3,X if carry is set or $80 if clear, set $1AE4,X to 8, select state 1 and return. A zero or negative $1A6D,X sets $1AE4,X to 10, selects state 2 and returns. If $732A returns carry clear, call $7227; if its carry is set, call $5D7A with A=8 and toggle bit 7 of $1AD3,X through $A612. Continue at $A5B0. External callbacks and natural reachability remain open."
+  },
+  {
+   "address": 42416,
+   "type": "line",
+   "text": "Decrement $1AE4,X with eight-bit wrap. If the result is negative and not $FA, jump to the frame update at $A61B. If it equals $FA, set it to 20. When $1A29,X is nonzero, call $72FC; carry set with negative $1AC2,X decrements $1AE4,X once; carry clear with nonnegative $1AC2,X decrements it until the result is nonnegative. Then toggle bit 7 of $1AD3,X and $1AC2,X and jump to the frame update. A nonnegative initial result continues at $A5EB. Callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42475,
+   "type": "line",
+   "text": "Call $45BC with A=4 if $1AD3,X is negative, otherwise call $4574. If the callback result AND 6 is not 2, toggle bit 7 of $1AD3,X. Jump to the frame update at $A61B."
+  },
+  {
+   "address": 42514,
+   "type": "line",
+   "text": "Toggle bit 7 of $1AD3,X and return."
+  },
+  {
+   "address": 42523,
+   "type": "line",
+   "text": "Select 0 if $1AD3,X equals $80, otherwise 8, and write that value to the immediate operand at $A632. Shift $1AE4,X right, mask with 2, clear carry and add $19E5,X and the patched operand in sequence, propagating carry. Store the low byte at $19C3,X and return. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 42551,
+   "type": "line",
+   "text": "State 1 decrements $1AE4,X with eight-bit wrap. If the result is negative, clear $1AB1,X and $1AE4,X, call $A612 and return. Otherwise call $4574 with A=8 if $1AD3,X is nonnegative or $45BC if negative. If the callback result AND 6 is not 2, take the same reset path. Otherwise clear carry, add 4 to $19E5,X for a nonnegative direction or 12 for a negative direction, store the low byte at $19C3,X and return. Arithmetic is binary when decimal mode is clear; callbacks and natural reachability remain open."
+  },
+  {
+   "address": 42609,
+   "type": "line",
+   "text": "State 2 selects offset 0 when $1AD3,X equals $80, otherwise 8. Clear carry, add 6 and $19E5,X in sequence, propagating carry, and store the low byte at $19C3,X. Decrement $1AE4,X with eight-bit wrap. If the result is nonnegative, return; if negative, call $4B0E with A=$20, load A=2 and tail-call $5DB9. Arithmetic is binary when decimal mode is clear; natural reachability remains open."
   },
   {
    "address": 42643,
