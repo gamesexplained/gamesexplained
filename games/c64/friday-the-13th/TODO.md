@@ -1,21 +1,23 @@
 # Friday the 13th — TODO
 
-Tier: bronze (also because the run was on an unproven model; `AGENTS.md`, "Model").
+Tier: silver.
 
-## Missing for Silver
+## Missing for Gold
 
-- Coverage is a few percent: only the code that ran during seven minutes of random play is typed as code, and nearly none of it has a description.
-- 92 routines keep the disassembler's own names.
-- No `levels.html`, `graphics.html`, or Play tab.
-- The five levels, the weapons, how Jason's disguise works, and the score have not been traced.
-- The data files `DATA1` (`$0C00`) and `DATA2` (`$E000`) have not been identified.
+- A human's curation pass, section by section (`AGENTS.md`, "Definition of done").
+
+## Recommended
+
+- A full audit of the listing's comments by fresh checkers, then a second sample: the first sample found 14 of 60 wrong (23 %, interval 14 % to 35 %), all fixed (`kit/skills/core/60-verify`).
+- A Play tab.
 
 ## Questions only the contributor can answer
 
 - Is this the original release, or a crack?
 - What does the one bad-checksum sector on the disk hold?
+- Who wrote the game? No credit was found on the disk or in the sources read.
 
 ## Ideas
 
-- A map of the camp's rooms and outdoor scenes.
-- A picture of every weapon and what each does to Jason.
+- A live test of sheltering a friend from another room after one visit to the safe room.
+- What colour Jason is drawn in once unmasked.

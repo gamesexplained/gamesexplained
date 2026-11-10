@@ -7,28 +7,26 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-None.
+- `70-minisite`: "A widget that runs a mechanic is a claim too": running the round bonus on the kit's processor for the Discoveries widget showed the score is stored least significant first, a comment the sample had not drawn, and that a round with no survivors pays 2,560 points.
+- `70-minisite`: "say in the caption how many differ and why": counting the pixels against the screenshot showed the screenshot was room 39, not the starting room 38 the page was about to call it.
+- `60-verify`: "Silver needs the measure, not the mark": with 14 of 60 wrong, the run fixed the 14, published, and recommended the audit instead of stopping.
 
 ## What was changed in the kit
 
 Nothing.
-(80-retro, step 3).>
 
 ## Candidates
 
-None.
+- Counters described in "passes" when the code counts on every other pass: five comments said "every 16 passes" or "10-pass counter" where the count steps once every two passes. The failure is silent, so it belongs in `50-coverage` if another run meets it: "Before giving a counter's period in frames or passes, find where it is incremented and how often that code runs."
+- A screenshot saved in `20-features` is named for what the agent thought it showed ("play-church", "at the start of a round"); the room was not the starting room. A pixel count against the page's own drawing caught it.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A note in `kit/c64/r2000.py --help` that a text dump of the disassembly taken early in the run goes stale as blocks are retyped: the run read code from an old dump twice and saw bytes where the listing had code.
 
 ## Where the kit cost time
 

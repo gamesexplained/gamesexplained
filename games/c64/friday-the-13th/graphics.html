@@ -1,0 +1,238 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friday the 13th: graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.ft-grid{display:grid;gap:6px}
+.ft-grid button{padding:0;border:2px solid transparent;background:none;cursor:pointer;position:relative;line-height:0}
+.ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
+.ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
+.ft-table{border-collapse:collapse;font-size:14px;width:100%}
+.ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px}
+.ft-four .plate,.ft-two .plate{margin:0;padding:12px}
+.ft-shot,.ft-px{width:100%;image-rendering:pixelated;display:block}
+.ft-wide{max-width:960px;margin:0 auto}
+.plate{margin:0 0 22px}
+.ft-scroll{overflow-x:auto}
+.ft-lab{display:block;font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:6px 0}
+.ft-range{width:100%;max-width:520px;display:block}
+.ft-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:12px 0 0}
+.ft-read{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0}
+.ft-bar-out{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:10px 0 0;max-width:520px}
+.ft-bar-out div{height:100%;background:repeating-linear-gradient(45deg,var(--amber) 0 6px,#e08a3c 6px 12px)}
+.ft-meter{position:relative;width:110px;height:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ft-meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);opacity:.35}
+.ft-meter b{position:relative;font:500 12px/18px var(--fm);padding-left:6px}
+.ft-objs{white-space:nowrap}
+.ft-obj{display:inline-flex;flex-direction:column;align-items:center;margin:0 3px 0 0;padding:2px;background:#222;border-radius:4px;vertical-align:top}
+.ft-obj i{font:500 10px/1.2 var(--fm);color:#fff;font-style:normal}
+.ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
+.ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
+.ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.ft-dead button{font:500 12px var(--fm);padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.ft-dead button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+.ft-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:4px}
+.ft-sheet figure{margin:0;background:#222;border-radius:4px;padding:3px;text-align:center}
+.ft-sheet canvas{width:100%;image-rendering:pixelated;display:block}
+.ft-sheet figcaption{font:500 10px/1.3 var(--fm);color:#ddd}
+.ft-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.ft-row figure{margin:0;text-align:center}
+.ft-row canvas{background:#222;border-radius:4px;image-rendering:pixelated;display:block}
+.ft-row figcaption{font:500 11px/1.4 var(--fm);color:var(--ink-mute)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Domark</p>
+  <h1>Friday the 13th: graphics</h1>
+  <p class="sub">Every sprite the game draws people and weapons with, the eight heads of the fear meter, and the two pictures a body can bring up, all drawn from the game's own bytes.</p>
+</header>
+<main class="wrap" data-part="game">
+
+<section>
+  <p class="fig">01 · People</p>
+  <h2 class="t">Four looks for eleven people, and Jason's own</h2>
+  <p class="lede">Everyone in the camp is one of four sets of sprites, recoloured. The men's set starts at block $6D and the women's at $88; the ten others use those and two more, and Jason without his disguise has a set of his own.</p>
+  <div class="plate"><div class="pick"><a class="step" id="pPrev" aria-label="Previous person">‹</a><select id="pSel" aria-label="Person"></select><a class="step" id="pNext" aria-label="Next person">›</a></div>
+    <div class="ft-row"><figure><canvas id="pWalk"></canvas><figcaption id="pWalkCap"></figcaption></figure><figure><canvas id="pWalk2"></canvas><figcaption id="pWalk2Cap"></figcaption></figure><figure><canvas id="pDead"></canvas><figcaption>dead</figcaption></figure></div>
+    <p class="cap">Sprites are multicolour, with the shared colours 6 and 10 that <a href="source-game.html#9A7D"><code>start_play</code></a> sets and each person's own colour: the counsellors' from <a href="source-game.html#9423"><code>counsellor_colour</code></a>, the others' from the high nibble of <a href="source-game.html#BB88"><code>actor_looks</code></a>. Jason unmasked is drawn here in white. The walk steps through <a href="source-game.html#A677"><code>walk_frames</code></a>, 0, 1, 2, 1, with 5 added for the other direction (<a href="source-game.html#AEDF"><code>walk_frame_offset</code></a>).</p></div>
+  <p>A person's first block is at <a href="source-game.html#AED6"><code>actor_sprite_base</code></a> for the look, and the body at <a href="source-game.html#AEDB"><code>actor_sprite_dead</code></a>. The blocks after each set's body hold the frames for being hit and for swinging a weapon; the whole run is below.</p>
+</section>
+
+<section>
+  <p class="fig">02 · Every sprite</p>
+  <h2 class="t">Sprite blocks $6D to $FF</h2>
+  <p class="lede">All 147 blocks from <a href="source-game.html#5B40"><code>$5B40</code></a> to the end of video bank 1, in one colour. Pick a colour to see them as each person.</p>
+  <div class="plate"><div class="pick"><a class="step" id="cPrev" aria-label="Previous colour">‹</a><select id="cSel" aria-label="Colour"></select><a class="step" id="cNext" aria-label="Next colour">›</a></div>
+    <div class="ft-sheet" id="sheet"></div>
+    <p class="cap">Block numbers are the sprite pointers the game writes; block n is 64 bytes at <code>$4000</code> plus 64 times n.</p></div>
+</section>
+
+<section>
+  <p class="fig">03 · Weapons</p>
+  <h2 class="t">Eleven objects, two directions each</h2>
+  <p class="lede">Each object type has a pair of blocks at <a href="source-game.html#A59F"><code>object_sprite</code></a>: the first lying on the floor or flying one way, the second flying the other.</p>
+  <div class="plate"><div class="ft-row" id="objs"></div>
+    <p class="cap">Every object is white (<a href="source-game.html#A594"><code>object_colour</code></a>). Types 7 and 9 share the axe. The swing frames of the long weapons are the blocks after them on the sheet above.</p></div>
+</section>
+
+<section>
+  <p class="fig">04 · Fear</p>
+  <h2 class="t">The eight heads of the fear meter</h2>
+  <p class="lede">The panel's head is 16 characters, 4 across and 4 down, copied from one of eight 128-byte pictures at <a href="source-game.html#2D80"><code>fear_heads</code></a> by <a href="source-game.html#C15C"><code>draw_fear_head</code></a>.</p>
+  <div class="plate"><div class="ft-row" id="heads"></div>
+    <p class="cap">Head n shows fear from 10 n to 10 n + 9. Fear 80, the most the game allows, shows head 0 again (<a href="discoveries.html#calm-head">Discoveries</a>).</p></div>
+</section>
+
+<section>
+  <p class="fig">05 · Bodies</p>
+  <h2 class="t">The two pictures of a body</h2>
+  <p class="lede">The first time you walk into a room with a body in it, one time in five <a href="source-game.html#C8E9"><code>scare_check</code></a> fills the play area with one of two pictures and plays the scream.</p>
+  <div class="plate"><div class="ft-row"><figure><canvas id="gore0" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>first picture, <code>$F000</code></figcaption></figure><figure><canvas id="gore1" width="256" height="128" style="width:384px;max-width:100%"></canvas><figcaption>second picture, <code>$F930</code></figcaption></figure></div>
+    <p class="cap">Drawn by the game's own <a href="source-game.html#C93B"><code>show_gore</code></a> on a copy of the C64's processor, with its random choice set each way. Each picture is a 16 by 32 map of cells, its cells, and its screen colours; colour RAM is filled with one colour, 9 for the first and 1 for the second. Both lie under the KERNAL ROM.</p></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* friday-room */
+// One room of the game, drawn by the game's own draw_room ($A2A2) on the kit's 6502 (C64Cpu, from
+// ../../lib/cpu6502.js) over the bytes of the game's listing (ram, 64 KB). The room's area, column
+// and row go where room_number leaves them; scare_check ($C8E9) and show_room_object ($A3DD), which
+// read the random generator and the sprites, are skipped. Returns the bitmap and screen in m
+// ($4000 and $5400), colour RAM in colour and the background colour draw_backdrop chose.
+const FT_AREAS = [[0, 4, 6], [24, 3, 4], [36, 2, 2], [40, 2, 2]];   // area_base_room and area_size
+function fridayRoom(ram, Cpu, room) {
+  let a = 0;
+  for (let i = 3; i >= 0; i--) if (room >= FT_AREAS[i][0]) { a = i; break; }
+  const off = room - FT_AREAS[a][0], w = FT_AREAS[a][1], col = off % w, row = Math.floor(off / w);
+  const m = ram.slice(), colour = new Uint8Array(1024);
+  m[0x08B9] = a; m[0x086A] = col; m[0x086B] = row; m[0x086C] = room;
+  const cpu = new Cpu.CPU(m, { port: 0x36, io: {
+    read: () => 0,
+    write: (ad, v) => { if (ad >= 0xD800 && ad < 0xDC00) colour[ad - 0xD800] = v & 15; },
+  } });
+  cpu.call(0xA2A2, {}, { maxSteps: 5e6, hooks: { 0xC8E9: c => c.rts(), 0xA3DD: c => c.rts() } });
+  return { m, colour, bg: m[0x08DA], area: a, col, row };
+}
+// The play area: screen columns 4 to 35 and rows 0 to 15 of the multicolour bitmap, 256 by 128 pixels.
+function fridayPaint(cv, r, PAL) {
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(256, 128);
+  const rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  for (let cy = 0; cy < 16; cy++) for (let cx = 0; cx < 32; cx++) {
+    const o = cy * 40 + cx + 4, sc = r.m[0x5400 + o], cr = r.colour[o];
+    for (let y = 0; y < 8; y++) {
+      const b = r.m[0x4000 + o * 8 + y];
+      for (let p = 0; p < 4; p++) {
+        const v = (b >> (6 - 2 * p)) & 3, c = rgb[v === 0 ? r.bg : v === 1 ? sc >> 4 : v === 2 ? sc & 15 : cr];
+        for (let k = 0; k < 2; k++) { const i = ((cy * 8 + y) * 256 + cx * 8 + p * 2 + k) * 4; img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255; }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+// end of friday-room
+
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { $('pWalkCap').textContent = 'This page needs the site\'s shared scripts: open it from the built site.'; return; }
+  const P = C64.PAL, hx = v => '$' + v.toString(16).toUpperCase().padStart(2, '0');
+  C64.load('parts/game/listing.json').then(L => {
+    const ram = L.ram;
+    const spr = (cv, blk, colour, s) => { cv.width = 24 * s; cv.height = 21 * s; const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, cv.width, cv.height);
+      C64.drawSpriteMC(ctx, ram.subarray(0x4000 + blk * 64, 0x4000 + blk * 64 + 63), 0, 0, s, P[colour], P[6], P[10]); return cv; };
+    const pick = (sel, prev, next, n, on) => { sel.onchange = () => on(+sel.value); prev.onclick = () => { sel.value = (+sel.value + n - 1) % n; on(+sel.value); }; next.onclick = () => { sel.value = (+sel.value + 1) % n; on(+sel.value); }; };
+
+    // People: [name, first block, dead block, colour]
+    const CS = ['Gerry King', 'Wendy Watson', 'Amanda Baxter', 'Bryan Bone', 'Stuart Palmer'];
+    const base = i => ram[0xAED6 + i], deadOf = i => ram[0xAEDB + i];
+    const people = CS.map((n, i) => { const b = ram[0x9414 + i], look = b === base(0) ? 0 : 1; return [n + ' (you)', b, deadOf(look), ram[0x9423 + i]]; });
+    for (let i = 0; i < 10; i++) { const v = ram[0xBB88 + i], look = v & 3; people.push(['Friend ' + i + ', look ' + look, base(look), deadOf(look), v >> 4]); }
+    people.push(['Jason unmasked', base(4), null, 1]);
+    const pSel = $('pSel');
+    people.forEach((p, i) => { const o = document.createElement('option'); o.value = i; o.textContent = p[0]; pSel.appendChild(o); });
+    let who = 0, step = 0;
+    const WALK = Array.from(ram.subarray(0xA677, 0xA67B)), OFF = 5;   // walk_frame_offset ($AEDF) is 0 or 5
+    const drawPerson = () => {
+      const p = people[who], f = WALK[step % 4];
+      spr($('pWalk'), p[1] + f, p[3], 4); $('pWalkCap').textContent = 'block ' + hx(p[1] + f) + ', frame ' + f;
+      spr($('pWalk2'), p[1] + f + OFF, p[3], 4); $('pWalk2Cap').textContent = 'block ' + hx(p[1] + f + OFF) + ', frame ' + f + ' + ' + OFF;
+      const d = $('pDead'); if (p[2] === null) { d.width = 96; d.height = 84; d.getContext('2d').clearRect(0, 0, 96, 84); } else spr(d, p[2], p[3], 4);
+    };
+    pick(pSel, $('pPrev'), $('pNext'), people.length, i => { who = i; drawPerson(); });
+    setInterval(() => { step++; drawPerson(); }, 180);
+    drawPerson();
+
+    // Every block
+    const cSel = $('cSel');
+    const COLS = [[7, 'yellow (7): Gerry, Amanda, Stuart'], [2, 'red (2): Wendy, Bryan'], [1, 'white (1)'], [3, 'cyan (3)'], [4, 'purple (4)'], [5, 'green (5)']];
+    COLS.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c[1]; cSel.appendChild(o); });
+    const sheet = () => {
+      const el = $('sheet'); el.textContent = '';
+      for (let b = 0x6D; b <= 0xFF; b++) { const f = document.createElement('figure'); f.appendChild(spr(document.createElement('canvas'), b, COLS[+cSel.value][0], 2));
+        const c = document.createElement('figcaption'); c.textContent = hx(b); f.appendChild(c); el.appendChild(f); }
+    };
+    pick(cSel, $('cPrev'), $('cNext'), COLS.length, sheet); sheet();
+
+    // Objects
+    for (let t = 0; t <= 10; t++) { const b = ram[0xA59F + t], f = document.createElement('figure');
+      f.appendChild(spr(document.createElement('canvas'), b, ram[0xA594 + t], 3)); f.appendChild(spr(document.createElement('canvas'), b + 1, ram[0xA594 + t], 3));
+      const c = document.createElement('figcaption'); c.textContent = 'type ' + t + ': ' + hx(b) + ', ' + hx(b + 1); f.appendChild(c); $('objs').appendChild(f); }
+
+    // Heads
+    for (let h = 0; h < 8; h++) { const cv = document.createElement('canvas'), s = 4; cv.width = 32 * s; cv.height = 32 * s; const ctx = cv.getContext('2d');
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+      const pic = ram.subarray(0x2D80 + h * 128, 0x2D80 + h * 128 + 128);
+      for (let i = 0; i < 16; i++) C64.drawGlyphMC(ctx, pic, i, (i % 4) * 8 * s, Math.floor(i / 4) * 8 * s, s, [P[0], P[10], P[6], P[7]]);
+      const f = document.createElement('figure'), c = document.createElement('figcaption'); c.textContent = 'head ' + h + ': fear ' + (h * 10) + (h === 7 ? ' to 79' : ' to ' + (h * 10 + 9)) + (h === 0 ? ', and 80' : '');
+      f.appendChild(cv); f.appendChild(c); $('heads').appendChild(f); }
+
+    // Bodies: show_gore with its random choice made each way (a number below 20 picks $F000)
+    [0, 25].forEach((pickv, k) => {
+      const r = fridayRoom(ram, C64Cpu, 38), m = r.m, colour = r.colour;
+      const cpu = new C64Cpu.CPU(m, { port: 0x36, io: { read: a => (a === 0xD41B ? pickv : 0), write: (a, v) => { if (a >= 0xD800 && a < 0xDC00) colour[a - 0xD800] = v & 15; } } });
+      cpu.call(0xC93B, {}, { maxSteps: 5e6 });
+      fridayPaint($('gore' + k), { m, colour, bg: 0 }, P);
+    });
+  });
+})();
+</script>
