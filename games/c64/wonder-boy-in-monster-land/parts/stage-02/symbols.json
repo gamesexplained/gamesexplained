@@ -640,6 +640,41 @@
   },
   {
    "start": 48607,
+   "end": 48648,
+   "type": "Code"
+  },
+  {
+   "start": 48649,
+   "end": 48664,
+   "type": "Code"
+  },
+  {
+   "start": 48665,
+   "end": 48734,
+   "type": "Undefined"
+  },
+  {
+   "start": 48735,
+   "end": 48735,
+   "type": "Byte"
+  },
+  {
+   "start": 48736,
+   "end": 48736,
+   "type": "Undefined"
+  },
+  {
+   "start": 48737,
+   "end": 48740,
+   "type": "Byte"
+  },
+  {
+   "start": 48741,
+   "end": 48744,
+   "type": "Byte"
+  },
+  {
+   "start": 48745,
    "end": 48974,
    "type": "Undefined"
   },
@@ -1383,6 +1418,36 @@
    "kind": "user"
   },
   {
+   "address": 48607,
+   "name": "type05_state5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48649,
+   "name": "type05_update_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48735,
+   "name": "type05_frame_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48737,
+   "name": "type05_frame_offsets_23",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48741,
+   "name": "type05_frame_offsets_5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48975,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -1976,6 +2041,31 @@
    "address": 48572,
    "type": "line",
    "text": "State 4 decrements $1AC2,X with eight-bit wrap. A negative result copies $1AE4,X into $1AB1,X and returns. Otherwise call $72FC, pass A=8 to $4574 on set carry or $45BC on clear carry, then mask the callback\u2019s returned A with 6. If the result is 2, return without changing the state; otherwise copy $1AE4,X into $1AB1,X. Natural reachability and external callbacks remain open."
+  },
+  {
+   "address": 48607,
+   "type": "line",
+   "text": "State 5 decrements $1AC2,X with eight-bit wrap. If the result is negative, call $4B0E with A=$50 and jump to $5DB9 with A=$14. Otherwise copy $1B17,X to the working byte at $BE5F, read the table at $BE65 indexed by $1AD3,X, and call the frame helper at $BE09. Increment the index with eight-bit wrap; if it is at least 4, replace it with 0, then store it back to $1AD3,X. The table read occurs before this bound check, so the possible incoming index range remains open."
+  },
+  {
+   "address": 48649,
+   "type": "line",
+   "text": "Test the sign of the working byte at $BE5F. If negative, clear carry and add 6 to A. Then clear carry again, add $19E5,X, store the low byte at $19C3,X and return. This binary arithmetic assumes decimal mode is clear; overflow from the first addition does not carry into the second."
+  },
+  {
+   "address": 48735,
+   "type": "line",
+   "text": "Working byte tested with BIT by the frame helper. Several handler paths write $1B17,X here; its value differs among the captured snapshots."
+  },
+  {
+   "address": 48737,
+   "type": "line",
+   "text": "Four captured frame offsets 2, 2, 0, 0. The state-2 and state-3 paths index these with $1AF5,X and call the frame helper at $BE09; the index has no local bound."
+  },
+  {
+   "address": 48741,
+   "type": "line",
+   "text": "Four captured frame offsets 4, 4, 2, 2. The state-5 path indexes these with $1AD3,X and calls the frame helper at $BE09; the index has no local bound."
   },
   {
    "address": 48975,
