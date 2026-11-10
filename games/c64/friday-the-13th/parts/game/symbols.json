@@ -397,7 +397,7 @@
   },
   {
    "address": 1840,
-   "name": "fence_patterns",
+   "name": "edge_patterns",
    "type": "Field",
    "kind": "user"
   },
@@ -859,7 +859,7 @@
   },
   {
    "address": 2236,
-   "name": "sprite_mc",
+   "name": "sprite_priority",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -1609,7 +1609,7 @@
   },
   {
    "address": 2541,
-   "name": "in_safe_room",
+   "name": "safe_room_seen",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -6429,7 +6429,7 @@
   {
    "address": 1,
    "type": "line",
-   "text": "the processor port: $36 in play (BASIC out, KERNAL and I/O in); music_swap and show_gore clear bit 0 and set bit 1 to bank the KERNAL out and reach the tunes and pictures beneath it"
+   "text": "the processor port: $36 in play (BASIC out, KERNAL and I/O in); music_swap and show_gore clear bit 1 and set bit 0 ($35) to bank the KERNAL out and reach the tunes and pictures beneath it, and set bit 1 and clear bit 0 to bank it back in"
   },
   {
    "address": 2,
@@ -6534,7 +6534,7 @@
   {
    "address": 1840,
    "type": "line",
-   "text": "the eight patterns of the outdoor fence, 8 bytes each, that edge_left and edge_right OR into the bitmap at an area's sides; the file RM ends at $0771"
+   "text": "the eight patterns of wall that edge_left and edge_right OR over a side door in a room on the building's outer edge, 8 bytes each; the file RM ends at $0771"
   },
   {
    "address": 2048,
@@ -6704,7 +6704,7 @@
   {
    "address": 2081,
    "type": "line",
-   "text": "the danger clock: 0 at the start of a round, up 2 every 128 passes and 2 for each blow on an innocent friend; at $C0 the time is up; drawn as the bar in the panel"
+   "text": "the danger clock: 0 at the start of a round, up 2 every 128 counts of pass_count (256 passes) and 2 for each blow on an innocent friend; at $C0 the time is up; drawn as the bar in the panel"
   },
   {
    "address": 2082,
@@ -6729,7 +6729,7 @@
   {
    "address": 2086,
    "type": "line",
-   "text": "the stick's x: -1 left (A or the joystick), +1 right (S), 0 neither"
+   "text": "the stick's x: -1 left (A or the joystick), +1 right (S or the joystick), 0 neither"
   },
   {
    "address": 2087,
@@ -6919,7 +6919,7 @@
   {
    "address": 2236,
    "type": "line",
-   "text": "multicolour bit of the sprite being placed, for $D01B"
+   "text": "priority bit of the sprite being placed, for $D01B: set, the sprite goes behind the room's foreground colours"
   },
   {
    "address": 2237,
@@ -6949,7 +6949,7 @@
   {
    "address": 2242,
    "type": "line",
-   "text": "bit of the sprite being placed, 8 down to 1 for sprites 3 to 0"
+   "text": "bit of the sprite being placed: 8 down to 1 for sprites 3 to 0 in main_loop, $80 for sprite 7 in show_room_object, $40 for sprite 6 when an object is dropped"
   },
   {
    "address": 2243,
@@ -7029,7 +7029,7 @@
   {
    "address": 2261,
    "type": "line",
-   "text": "passes counted by frame_tail; every 128 the danger clock rises, every 256 Jason may reveal himself"
+   "text": "counted by frame_tail once every two passes, on the pass the counsellors move; every 128 counts the danger clock rises, every 256 Jason may reveal himself, every 16 a sheltering counsellor's time goes down"
   },
   {
    "address": 2263,
@@ -7054,7 +7054,7 @@
   {
    "address": 2268,
    "type": "line",
-   "text": "the score, six decimal digits, one per byte, most significant first; the screen adds a 0"
+   "text": "the score, six decimal digits, one per byte, least significant first (add_one carries upward from $08DC, print_score prints from $08E1 down); the screen adds a 0"
   },
   {
    "address": 2274,
@@ -7114,7 +7114,7 @@
   {
    "address": 2339,
    "type": "line",
-   "text": "each counsellor's 10-pass counter through its row of turn_table"
+   "text": "each counsellor's count of the ten turns in its row of turn_table"
   },
   {
    "address": 2350,
@@ -7154,7 +7154,7 @@
   {
    "address": 2394,
    "type": "line",
-   "text": "each sheltering counsellor's time left, counted down every 16 passes"
+   "text": "each sheltering counsellor's time left, counted down every 16 counts of pass_count (32 passes)"
   },
   {
    "address": 2405,
@@ -7174,7 +7174,7 @@
   {
    "address": 2437,
    "type": "line",
-   "text": "the safe room: the room of object 10, 24 to 43"
+   "text": "the safe room: the room of object 10, 24 to 43; $FF while the player carries it, and then shelter_end sends every sheltering counsellor home"
   },
   {
    "address": 2438,
@@ -7529,7 +7529,7 @@
   {
    "address": 2538,
    "type": "line",
-   "text": "a work byte (a sprite frame, a column, a count)"
+   "text": "a work byte: a sprite frame, a slot index, sprite_hit's sprite number, a y within its tile, a byte while multiplying, a copy of the danger clock"
   },
   {
    "address": 2539,
@@ -7544,7 +7544,7 @@
   {
    "address": 2541,
    "type": "line",
-   "text": "1 while the player is in the safe room"
+   "text": "1 once the player has entered the safe room this round: set when the safe room is drawn ($A3D5) and cleared only by start_play, so it stays 1 after the player leaves; send_to_shelter works only once it is set"
   },
   {
    "address": 2542,
@@ -7669,7 +7669,7 @@
   {
    "address": 11520,
    "type": "line",
-   "text": "cells 880 to 888, the last ones the tiles name; the cells end at $2D4F"
+   "text": "cells 880 to 889, the last ones the tiles name; the cells end at $2D4F"
   },
   {
    "address": 11648,
@@ -7704,7 +7704,7 @@
   {
    "address": 12896,
    "type": "line",
-   "text": "the panel's figures and letters, characters 61 to 90, copied to $59E8 by copy_panel_letters; ends at $334D"
+   "text": "the panel's figures and letters, characters 61 to 90, 240 bytes copied to $59E8 by copy_panel_letters; ends at $334F"
   },
   {
    "address": 13824,
@@ -7804,7 +7804,7 @@
   {
    "address": 29504,
    "type": "line",
-   "text": "sprite blocks $CD to $DC: the rest of Jason's frames"
+   "text": "sprite blocks $CD to $DC: the rest of Jason's walking frames and the start of his swing frames, which go on to $E2"
   },
   {
    "address": 30528,
@@ -7814,7 +7814,7 @@
   {
    "address": 31552,
    "type": "line",
-   "text": "sprite blocks $ED to $FF: the last objects, up to object 10's at $FE"
+   "text": "sprite blocks $ED to $FC: the later objects"
   },
   {
    "address": 32576,
@@ -7859,7 +7859,7 @@
   {
    "address": 37470,
    "type": "line",
-   "text": "Jason is dead: prints text 3 (congratulations), counts the counsellors still alive (state not 0 in $090E-$0917), adds ten times that count to the score with add_score, puts the count as a digit in the two bonus lines on the text screen ($54F4, $5506), adds one to rounds won $09EF, and moves on to the next counsellor in $09EE (0 to 4, then back to 0)"
+   "text": "Jason is dead: prints text 3 (congratulations), counts the counsellors still alive (state not 0 in $090E-$0917), adds 100 points for each with ten calls of add_score (A is ten times the count, which add_score hands back unchanged; with no one alive each call adds 256 points), puts the count as a digit in the two bonus lines on the text screen ($54F4, $5506), adds one to rounds won $09EF, and moves on to the next counsellor in $09EE (0 to 4, then back to 0)"
   },
   {
    "address": 37549,
@@ -7899,7 +7899,7 @@
   {
    "address": 37913,
    "type": "line",
-   "text": "fear added for each counsellor when something frightens them (seeing a body, Jason attacking a friend): Gerry 4, Wendy 7, Amanda 9, Bryan 5, Stuart 7; the profiles' \"hidden weakness\""
+   "text": "fear value of each counsellor: Gerry 4, Wendy 7, Amanda 9, Bryan 5, Stuart 7; the player's fear rises by it when Jason attacks a friend, and by twice it on seeing a body (scare_check); the profiles' \"hidden weakness\""
   },
   {
    "address": 37918,
@@ -8014,7 +8014,7 @@
   {
    "address": 40191,
    "type": "line",
-   "text": "rest of the pass: restarts the theme tune if the interrupt is not the music's, ends the game if the player is dead ($0918 = 0), ends the round if Jason is dead (round_won), waits for frames, runs the throw, Jason's attack, the shelter check and the danger clock (every 128 passes $0821 goes up by 2; at $C0 the time is up), reads sprite collisions, moves the actors, then reads the stick for the player"
+   "text": "rest of the pass: restarts the theme tune if the interrupt is not the music's, ends the game if the player is dead ($0918 = 0), ends the round if Jason is dead (round_won), waits for frames, runs the throw, then on every other pass (half_pass) counts pass_count, tries jason_reveal every 256 counts, checks the shelter and raises the danger clock by 2 every 128 counts (at $C0 the time is up), reads sprite collisions and moves the counsellors (update_actors), then reads the stick for the player"
   },
   {
    "address": 40435,
@@ -8044,7 +8044,7 @@
   {
    "address": 41548,
    "type": "line",
-   "text": "a chance that Jason, still disguised as counsellor $0992, starts killing: none if he already has; the chance is a random number below the danger clock $0821 plus 20 falling under $0821, so it grows as time passes. Sets his state to 7, picks his victim $0993 (the counsellor still about with the highest exposure $092E, or the player if the player's fear $0938 is higher than all of them), and plays tune 4"
+   "text": "a chance that Jason, still disguised as counsellor $0992, starts killing: none if he already has; the chance is a random number below the danger clock $0821 plus 20 falling under $0821, so it grows as time passes. Sets his state to 7, picks his victim $0993 (the counsellor with the highest exposure $092E other than Jason and those sheltering, the dead included, or the player if the player's fear $0938 is higher than all of them), and plays tune 4"
   },
   {
    "address": 41634,
@@ -8159,7 +8159,7 @@
   {
    "address": 43208,
    "type": "line",
-   "text": "copies the panel's letters into the character set (copy_panel_letters), fills the bitmap $4000-$53FF with $AA and clears the screen bytes $5400-$56FF"
+   "text": "copies the panel's letters into the character set (copy_panel_letters), fills the bitmap $4000-$53FF with $AA and clears the screen bytes $5400-$567F, the play area's 16 rows"
   },
   {
    "address": 43273,
@@ -8309,7 +8309,7 @@
   {
    "address": 44873,
    "type": "line",
-   "text": "moves the ten other counsellors once and fills the four sprite slots with the ones in the player's room. For each counsellor (index in $0991, 9 down to 0): a sheltering one (state 5) counts down $095A every 16 passes, adding a point to the score, until it walks home; a wandering one (4 to 7) heads for its target place $0903, through a door of its building when the target is in another area"
+   "text": "moves the ten other counsellors once (frame_tail calls it every other pass) and fills the four sprite slots with the ones in the player's room. For each counsellor (index in $0991, 9 down to 0): a sheltering one (state 5) counts down $095A every 16 counts of pass_count, adding a point to the score, until it walks home; a wandering one (4 to 7) heads for its target place $0903, through a door of its building when the target is in another area"
   },
   {
    "address": 45433,
@@ -8324,7 +8324,7 @@
   {
    "address": 45925,
    "type": "line",
-   "text": "Jason hunts (jason_hunt); a counsellor that has reached its target walks on to a new random target in its area, chosen with the turn table $BB42 and its 10-pass counter $0923; one at a door of its building comes out at the door's place outdoors, or in at the building's first room"
+   "text": "Jason hunts (jason_hunt); a counsellor that has reached its target walks on to a new random target in its area, chosen with the turn table $BB42 and its turn count $0923; one at a door of its building comes out at the door's place outdoors, or in at the building's first room"
   },
   {
    "address": 46227,
@@ -8374,7 +8374,7 @@
   {
    "address": 47028,
    "type": "line",
-   "text": "Jason (state 7) after his victim $0993: if they are in another room he heads for it; if the victim shelters (state 5) he gives up and goes home; otherwise the victim panics (state 8), every counsellor's exposure goes up by 2 and the player's fear by this counsellor's fear value; when Jason is within 13 pixels across and 4 down he swings (jason_swing)"
+   "text": "Jason (state 7) after his victim $0993: if they are in another room he heads for it; if the victim shelters (state 5) he gives up and goes home, and a counsellor victim also makes him give up unless a random number below 60 is under its exposure; otherwise the victim panics (state 8), every counsellor's exposure goes up by 2 and the player's fear by the fear value of the counsellor the player is; when Jason is within 13 pixels across and 4 down he swings (jason_swing)"
   },
   {
    "address": 47204,
@@ -8509,12 +8509,12 @@
   {
    "address": 48664,
    "type": "line",
-   "text": "the player in the safe room ($09ED) holding object 10, touching a counsellor: sends it to shelter in that room (state 5) for 90 minus its exposure passes"
+   "text": "once the player has been in the safe room this round ($09ED) and object 10 still lies there ($0985 not $FF, else shelter_end): a counsellor the player's sprite touches, in any room, alive, not Jason and not sheltering, goes to shelter (state 5) with the safe room as its target, for 90 minus its exposure in shelter_time; its exposure rises by 2 if the player holds an object"
   },
   {
    "address": 48817,
    "type": "line",
-   "text": "with no safe room, every sheltering counsellor goes home and wanders again"
+   "text": "with no safe room (object 10 carried, $0985 = $FF), every sheltering counsellor goes back to its start place and wanders again"
   },
   {
    "address": 48846,
@@ -8604,22 +8604,22 @@
   {
    "address": 49690,
    "type": "line",
-   "text": "draws the edges of the outdoor area on the room's sides: the fence on the left at column 0, on the right at the last column, along the top at row 0, along the bottom at the last row"
+   "text": "in a building room on the building's outer edge, covers the doorway on that side: the side wall's door in the first column (edge_left) and the last (edge_right), the back wall in the top row (edge_top), the bottom row (edge_bottom); outdoors draw_backdrop returns before calling it"
   },
   {
    "address": 49745,
    "type": "line",
-   "text": "draws the top edge: 4 rows of $55 in the bitmap"
+   "text": "covers the back wall's doorway in a room on the building's top row: 4 rows of $55 in the bitmap"
   },
   {
    "address": 49784,
    "type": "line",
-   "text": "draws the bottom edge"
+   "text": "the same for a room on the building's bottom row"
   },
   {
    "address": 49811,
    "type": "line",
-   "text": "draws the left fence from the patterns at $0730, 12 cells down"
+   "text": "covers the left wall's door in a room in the building's first column, from the patterns at $0730, 12 cells down"
   },
   {
    "address": 49870,
@@ -8629,7 +8629,7 @@
   {
    "address": 49897,
    "type": "line",
-   "text": "draws the right fence, the left one mirrored pixel pair by pixel pair"
+   "text": "covers the right wall's door in a room in the building's last column, the left patterns mirrored pixel pair by pixel pair"
   },
   {
    "address": 49956,
@@ -8639,12 +8639,12 @@
   {
    "address": 50019,
    "type": "line",
-   "text": "the patterns of the right fence"
+   "text": "the patterns that cover the right wall's door"
   },
   {
    "address": 50031,
    "type": "line",
-   "text": "the patterns of the left fence"
+   "text": "the patterns that cover the left wall's door"
   },
   {
    "address": 50043,
@@ -8684,7 +8684,7 @@
   {
    "address": 50322,
    "type": "line",
-   "text": "copies 4 by 8 bytes of the strength picture from $3180-$319F into $09FB-$0A1A"
+   "text": "copies 4 by 8 bytes of the strength picture, from the slice the strength picks in $3180-$3217, into $09FB-$0A1A"
   },
   {
    "address": 50392,
@@ -8714,7 +8714,7 @@
   {
    "address": 51108,
    "type": "line",
-   "text": "the four tune commands, each taking the byte after it (left in the voice's length counter $0800-$0802) and then skipping on (tune_skip): this one, command 1, sets the voice's waveform byte $0803-$0805"
+   "text": "the tune commands 1 to 3, each taking the byte after it (left in the voice's length counter $0800-$0802) and then skipping on (tune_skip): this one, command 1, sets the voice's waveform byte $0803-$0805"
   },
   {
    "address": 51119,
@@ -8729,7 +8729,7 @@
   {
    "address": 51151,
    "type": "line",
-   "text": "command 0: turns the tune's repeat flag $0812 on and skips one byte"
+   "text": "command 0: turns the tune's repeat flag $0812 on and skips only the command, so the next byte is read as a note or command"
   },
   {
    "address": 51161,
@@ -8809,7 +8809,7 @@
   {
    "address": 51793,
    "type": "line",
-   "text": "starts the tune of a place: if the packed place $08EC is one of the six at $CA6B and no tune plays, starts tune 1 to 6"
+   "text": "starts the tune of a place: if the packed place $08EC is one of the six at $CA6B and the last tune started was the theme ($0819 = 0), starts tune 1 to 6"
   },
   {
    "address": 51819,
