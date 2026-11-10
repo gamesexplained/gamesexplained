@@ -179,3 +179,7 @@ VICE also checked a forced stage-5 to stage-6 timer transition through the real 
 Resident $3D69 initializes an entity motion state; $3D7F selects movement or starts its animation, and $3D9F selects two captured frames before a cleanup callback. VICE checked six forced initialization, movement-gate and animation cases with callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
 
 Resident helpers $3E54–$3EC5 test display presence, update signed vertical motion, tick a countdown, select horizontal movement and initialize direction. VICE checked three display-presence, five vertical, three countdown, four horizontal-direction and two initialization cases, with movement and release callbacks stubbed. Slot bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $3E15 initializes a second entity-motion mode; $3E2B optionally reverses direction, calls movement and countdown helpers, then selects a frame or invokes cleanup. VICE checked four forced initialization, reversal and countdown cases with movement and cleanup callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $3DB9 either clears an entity, reuses an existing trajectory or initializes one from entity reference bytes and display-slot coordinates. VICE checked four forced state and slot cases with direction, motion and cleanup callbacks stubbed. Callback effects, slot bounds and ordinary-play reachability remain open.

@@ -465,3 +465,7 @@ Traced resident status-animation timer $4A43. VICE checked seven forced countdow
 Traced resident first entity motion and animation $3D69–$3DB8. VICE checked six forced initialization, movement-gate and animation cases with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
 
 Traced the neighboring display-presence, movement, direction and countdown helpers $3E54–$3EC5. VICE checked seventeen forced cases with movement and release callbacks stubbed; a listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Slot bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident second entity motion $3E15/$3E2B. VICE checked four forced initialization, reversal and countdown cases with movement and cleanup callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident trajectory selection $3DB9. VICE checked four forced state and slot cases with direction, movement and cleanup callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, slot bounds and ordinary-play reachability remain open.
