@@ -251,3 +251,9 @@ VICE also checked four forced unscrolled movement cases through the real $0E83 a
 Resident $0D7F handles upward player movement and viewport scrolling, including an anchor at $A2 and a top-of-map path that consumes the remaining step. VICE checked six forced viewport, anchor and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 VICE also checked a forced $0D7F scroll step through the real $0DE9 slot adjustment, verifying all 28 slot bytes. Ordinary-play reachability remains open.
+
+Resident $0CA0 applies a downward player step after the preceding collision checks, including an anchor at $A2 and a bottom-of-map path that consumes the remaining step. VICE checked five forced anchor, scroll and boundary cases with scroll and slot callbacks stubbed. The preceding collision checks, callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced $0CA0 scroll step through the real $0D0A slot adjustment, verifying all 28 slot bytes. Ordinary-play reachability remains open.
+
+Resident $0C2C checks one or two tile attributes before applying downward movement, with the second check skipped when $4DB3 is $FF. A blocking attribute clips the step and clears several motion bytes. VICE checked five forced tile and state cases with the entity-landing callback stubbed and supplied map data. Callback effects, map bounds and ordinary-play reachability remain open.

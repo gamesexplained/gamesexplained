@@ -19092,7 +19092,57 @@
   {
    "address": 3116,
    "type": "line",
-   "text": "Applies downward movement with map and entity contact tests, clipping the step or scrolling the view where required. Results depend on the current world and movement state."
+   "text": "If $7A is zero, tail-jump to $0D56. Otherwise set $4DB6 to $FF and add $527D to $4DB4 modulo 256. A result below $10 skips the tile reads and enters $0C9D; otherwise check the next map row."
+  },
+  {
+   "address": 3139,
+   "type": "line",
+   "text": "Use $6F3D+1 modulo 256 to select a pointer from $85CF/$8620, and use $6F3C as the column. Read the tile index and test bits 0 and 1 of $80CF indexed by it. If either bit is set, enter $0C81."
+  },
+  {
+   "address": 3173,
+   "type": "line",
+   "text": "When $4DB3 is not $FF, repeat the attribute test for the next column. If neither low bit is set, enter $0C9D; otherwise enter $0C81. A $4DB3 value of $FF skips this second tile test."
+  },
+  {
+   "address": 3201,
+   "type": "line",
+   "text": "Set $4DB4 to $0F minus $527D modulo 256. Clear $4DB3, $4DB6, $4D55, $4DB8 and $4DB9, then enter $0CA0 without calling $213E."
+  },
+  {
+   "address": 3229,
+   "type": "line",
+   "text": "Call $213E for the entity-landing check, then continue at $0CA0."
+  },
+  {
+   "address": 3232,
+   "type": "line",
+   "text": "Compare $49 with $A2. Equality enters $0CBD; a higher value enters $0CF6. For a lower value, add $4DB4 modulo 256: if the result is below $A3 store it at $49 and return; otherwise enter $0CB3."
+  },
+  {
+   "address": 3251,
+   "type": "line",
+   "text": "Subtract $A2 from the candidate Y into $4DB4, set $49 to $A2 and continue at $0CBD."
+  },
+  {
+   "address": 3261,
+   "type": "line",
+   "text": "Subtract $4DB4 from $4D69. If there is no borrow, store the result at $4D69 and tail-jump to $0D0A. Otherwise push the result and enter the map-boundary check at $0CCC."
+  },
+  {
+   "address": 3276,
+   "type": "line",
+   "text": "Add 1 to $569E modulo 256, shift it right once and compare it with $7F4C. If below, call $2E77 and $0D0A, pop the saved difference, store its low three bits at $4D69 and tail-jump to $31A9. Otherwise enter $0CE8."
+  },
+  {
+   "address": 3304,
+   "type": "line",
+   "text": "Pop and negate the saved difference modulo 256 into $4DB4, clear $4D69 and continue at $0CF6."
+  },
+  {
+   "address": 3318,
+   "type": "line",
+   "text": "Add $4DB4 to $49 modulo 256. If the result is at least $E1, clear $4DB3 and replace the result with $E1. Store it at $49 and return."
   },
   {
    "address": 3338,
