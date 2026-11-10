@@ -201,3 +201,7 @@ VICE also checked three forced $5D2C-to-$71DB conversions: the returned column e
 Resident $7227 rejects player contact for a nonzero $4DDD or player Y of $FE; otherwise it constructs a rectangle and calls $75E3. On contact it invokes knockback and a comparison, then sets the horizontal direction and facing from that comparison. VICE checked five forced gate, overlap and recoil cases with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 VICE also checked two forced $7227 cases through the real $75E3 rectangle test, with knockback and comparison callbacks stubbed. Ordinary-play reachability remains open.
+
+Resident $727F selects a knockback speed and duration from the selected player motion profile, sets three motion-state bytes and restores incoming X and Y through patched immediate operands. VICE checked all six captured profiles. Profile bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced $7227 contacts with the real rectangle, knockback and horizontal-comparison routines, producing opposite recoil directions and the selected profile values. Ordinary-play reachability remains open.
