@@ -914,3 +914,5 @@ Checked four forced left-boundary adjustment cases in VICE, including the borrow
 Checked three forced stage-record callback completion paths in VICE, with callback and map-writer stubs; restored the paused user snapshot.
 
 Checked three forced contact-message-5 paths in VICE with the message routine stubbed; restored the paused user snapshot.
+
+Checked six forced effect-displacement phases in VICE, including zero entries and byte wraparound; restored the paused user snapshot.
