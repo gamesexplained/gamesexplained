@@ -778,3 +778,5 @@ Traced the relocated shop setup and price formatter in 17 later loads. Eighty-fi
 Traced relocated shop choice code in 17 later loads. One hundred and two forced VICE cases and a listing test checked flag-selected paths, balance rejection, message and optional callbacks, and meter arguments with callbacks stubbed. Character-source comments record overlap. Restored the paused user snapshot.
 
 Traced the second shop entry and item-pair selection across 17 later loads. Sixty-eight forced VICE cases and a listing test checked explicit and player-state-derived pairs using the real resolver. Character-source comments record code overlap. Restored the paused user snapshot.
+
+Traced shop item-drawing setup in 17 later loads. Thirty-four forced VICE cases and a listing test checked selected pointer operands, call arguments and colour RAM writes with item targets stubbed. Character-source comments record code overlap. Restored the paused user snapshot.

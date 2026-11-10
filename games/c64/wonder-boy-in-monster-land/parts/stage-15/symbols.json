@@ -516,7 +516,7 @@
   {
    "start": 38630,
    "end": 38632,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38633,
@@ -526,7 +526,7 @@
   {
    "start": 38649,
    "end": 38656,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38657,
@@ -535,6 +535,11 @@
   },
   {
    "start": 38673,
+   "end": 38708,
+   "type": "Code"
+  },
+  {
+   "start": 38709,
    "end": 38743,
    "type": "Undefined"
   },
@@ -3934,14 +3939,38 @@
    "kind": "user"
   },
   {
+   "address": 38630,
+   "name": "shop_prepare_item_drawing",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 38633,
    "name": "shop_routine_pointer_select_0",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 38649,
+   "name": "shop_draw_second_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 38657,
    "name": "shop_routine_pointer_select_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38673,
+   "name": "shop_draw_first_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38685,
+   "name": "shop_fill_item_colours",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8650,14 +8679,34 @@
    "text": "Read the patched absolute address, clear carry and add $9929,Y. Store the result at $9927, then store that result plus one modulo 256 at $9928. Continue at $96E6; the later drawing callbacks were not exercised."
   },
   {
+   "address": 38630,
+   "type": "line",
+   "text": "Load the second selected item byte at $9928, multiply it by eight modulo 256 and read a target pointer from the table at $9C7A. Patch the JSR operand at $96FC/$96FD. The item index is not locally bounded."
+  },
+  {
    "address": 38633,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $9C7A,Y and $9C7B,Y into the operand of the JSR at $96FB. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
   },
   {
+   "address": 38649,
+   "type": "line",
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $9927, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
+  },
+  {
    "address": 38657,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $9C7A,Y and $9C7B,Y into the operand of the JSR at $9713. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
+  },
+  {
+   "address": 38673,
+   "type": "line",
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $9C77 to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+  },
+  {
+   "address": 38685,
+   "type": "line",
+   "text": "For each of three rows, write colour 9 to four bytes at $D8F8,Y and four at $D90C,Y. Y starts at zero and advances by 40 after each row; the counter at $9C77 ends at zero. With I/O visible, these are colour RAM writes. The next setup continues at $9735."
   },
   {
    "address": 38744,

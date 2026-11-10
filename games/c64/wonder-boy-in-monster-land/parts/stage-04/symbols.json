@@ -591,7 +591,7 @@
   {
    "start": 42997,
    "end": 42999,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 43000,
@@ -601,7 +601,7 @@
   {
    "start": 43016,
    "end": 43023,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 43024,
@@ -610,6 +610,11 @@
   },
   {
    "start": 43040,
+   "end": 43075,
+   "type": "Code"
+  },
+  {
+   "start": 43076,
    "end": 43110,
    "type": "Undefined"
   },
@@ -8006,14 +8011,32 @@
    "kind": "user"
   },
   {
+   "address": 42997,
+   "name": "shop_prepare_item_drawing",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43000,
    "name": "shop_routine_pointer_select_0",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 43016,
+   "name": "shop_draw_second_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43024,
    "name": "shop_routine_pointer_select_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43040,
+   "name": "shop_draw_first_item",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -14661,9 +14684,19 @@
    "text": "Load 4, visual selector 2, character $E0: $8D, $36, $AA, $18, $69, $01, $8D, $37. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D700; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap the shop item-pair selection code at $A7A7; the bounded capture does not establish ordinary-play execution."
   },
   {
+   "address": 42997,
+   "type": "line",
+   "text": "Load the second selected item byte at $AA37, multiply it by eight modulo 256 and read a target pointer from the table at $AD89. Patch the JSR operand at $A80B/$A80C. The item index is not locally bounded."
+  },
+  {
    "address": 43000,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $AD89,Y and $AD8A,Y into the operand of the JSR at $A80A. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
+  },
+  {
+   "address": 43016,
+   "type": "line",
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $AA36, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
   },
   {
    "address": 43024,
@@ -14671,24 +14704,29 @@
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $AD89,Y and $AD8A,Y into the operand of the JSR at $A822. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
   },
   {
+   "address": 43040,
+   "type": "line",
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $AD86 to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+  },
+  {
    "address": 43044,
    "type": "line",
-   "text": "Load 4, visual selector 2, character $E7: $FF, $A9, $03, $8D, $86, $AD, $A0, $00. The eight rows contain 28 set bits across rows 0\u20136. A controlled resource load copied them to $D738; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 4, visual selector 2, character $E7: $FF, $A9, $03, $8D, $86, $AD, $A0, $00. The eight rows contain 28 set bits across rows 0\u20136. A controlled resource load copied them to $D738; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $A7F5; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 43052,
    "type": "line",
-   "text": "Load 4, visual selector 2, character $E8: $A2, $03, $A9, $09, $99, $F8, $D8, $99. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D740; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 4, visual selector 2, character $E8: $A2, $03, $A9, $09, $99, $F8, $D8, $99. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D740; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $A7F5; the bounded capture does not establish ordinary-play execution. For each of three rows, write colour 9 to four bytes at $D8F8,Y and four at $D90C,Y. Y starts at zero and advances by 40 after each row; the counter at $AD86 ends at zero. With I/O visible, these are colour RAM writes. The next setup continues at $A844."
   },
   {
    "address": 43060,
    "type": "line",
-   "text": "Load 4, visual selector 2, character $E9: $0C, $D9, $C8, $CA, $10, $F4, $98, $18. The eight rows contain 25 set bits across rows 0\u20137. A controlled resource load copied them to $D748; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 4, visual selector 2, character $E9: $0C, $D9, $C8, $CA, $10, $F4, $98, $18. The eight rows contain 25 set bits across rows 0\u20137. A controlled resource load copied them to $D748; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $A7F5; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 43068,
    "type": "line",
-   "text": "Load 4, visual selector 2, character $EA: $69, $24, $A8, $CE, $86, $AD, $D0, $E8. The eight rows contain 29 set bits across rows 0\u20137. A controlled resource load copied them to $D750; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 4, visual selector 2, character $EA: $69, $24, $A8, $CE, $86, $AD, $D0, $E8. The eight rows contain 29 set bits across rows 0\u20137. A controlled resource load copied them to $D750; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $A7F5; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 43076,

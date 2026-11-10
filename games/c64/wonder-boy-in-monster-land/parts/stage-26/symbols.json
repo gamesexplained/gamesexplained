@@ -551,7 +551,7 @@
   {
    "start": 39839,
    "end": 39841,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 39842,
@@ -561,7 +561,7 @@
   {
    "start": 39858,
    "end": 39865,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 39866,
@@ -570,6 +570,11 @@
   },
   {
    "start": 39882,
+   "end": 39917,
+   "type": "Code"
+  },
+  {
+   "start": 39918,
    "end": 39952,
    "type": "Undefined"
   },
@@ -5511,14 +5516,32 @@
    "kind": "user"
   },
   {
+   "address": 39839,
+   "name": "shop_prepare_item_drawing",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 39842,
    "name": "shop_routine_pointer_select_0",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 39858,
+   "name": "shop_draw_second_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 39866,
    "name": "shop_routine_pointer_select_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39882,
+   "name": "shop_draw_first_item",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5531,6 +5554,12 @@
   {
    "address": 39893,
    "name": "visual_copy_boundary_9bd5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39894,
+   "name": "shop_fill_item_colours",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10151,9 +10180,19 @@
    "text": "Load 26, visual selector 2, character $C2: $9D, $8D, $E0, $9D, $18, $69, $01, $8D. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D610; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap the shop item-pair selection code at $9B51; the bounded capture does not establish ordinary-play execution."
   },
   {
+   "address": 39839,
+   "type": "line",
+   "text": "Load the second selected item byte at $9DE1, multiply it by eight modulo 256 and read a target pointer from the table at $A133. Patch the JSR operand at $9BB5/$9BB6. The item index is not locally bounded."
+  },
+  {
    "address": 39842,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $A133,Y and $A134,Y into the operand of the JSR at $9BB4. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
+  },
+  {
+   "address": 39858,
+   "type": "line",
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $9DE0, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
   },
   {
    "address": 39866,
@@ -10161,29 +10200,39 @@
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $A133,Y and $A134,Y into the operand of the JSR at $9BCC. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
   },
   {
+   "address": 39882,
+   "type": "line",
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $A130 to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+  },
+  {
    "address": 39885,
    "type": "line",
-   "text": "Load 26, visual selector 2, character $C9: $00, $FF, $A9, $03, $8D, $30, $A1, $A0. The eight rows contain 25 set bits across rows 1\u20137. A controlled resource load copied them to $D648; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 26, visual selector 2, character $C9: $00, $FF, $A9, $03, $8D, $30, $A1, $A0. The eight rows contain 25 set bits across rows 1\u20137. A controlled resource load copied them to $D648; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9B9F; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 39893,
    "type": "line",
-   "text": "Load 26, visual selector 2, character $CA: $00, $A2, $03, $A9, $09, $99, $F8, $D8. The eight rows contain 24 set bits across rows 1\u20137. A controlled resource load copied them to $D650; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 26, visual selector 2, character $CA: $00, $A2, $03, $A9, $09, $99, $F8, $D8. The eight rows contain 24 set bits across rows 1\u20137. A controlled resource load copied them to $D650; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9B9F; the bounded capture does not establish ordinary-play execution."
+  },
+  {
+   "address": 39894,
+   "type": "line",
+   "text": "For each of three rows, write colour 9 to four bytes at $D8F8,Y and four at $D90C,Y. Y starts at zero and advances by 40 after each row; the counter at $A130 ends at zero. With I/O visible, these are colour RAM writes. The next setup continues at $9BEE."
   },
   {
    "address": 39901,
    "type": "line",
-   "text": "Load 26, visual selector 2, character $CB: $99, $0C, $D9, $C8, $CA, $10, $F4, $98. The eight rows contain 27 set bits across rows 0\u20137. A controlled resource load copied them to $D658; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 26, visual selector 2, character $CB: $99, $0C, $D9, $C8, $CA, $10, $F4, $98. The eight rows contain 27 set bits across rows 0\u20137. A controlled resource load copied them to $D658; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9B9F; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 39909,
    "type": "line",
-   "text": "Load 26, visual selector 2, character $CC: $18, $69, $24, $A8, $CE, $30, $A1, $D0. The eight rows contain 24 set bits across rows 0\u20137. A controlled resource load copied them to $D660; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 26, visual selector 2, character $CC: $18, $69, $24, $A8, $CE, $30, $A1, $D0. The eight rows contain 24 set bits across rows 0\u20137. A controlled resource load copied them to $D660; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9B9F; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 39917,
    "type": "line",
-   "text": "Load 26, visual selector 2, character $CD: $E8, $A4, $46, $C8, $8C, $90, $9D, $AD. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D668; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 26, visual selector 2, character $CD: $E8, $A4, $46, $C8, $8C, $90, $9D, $AD. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D668; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9B9F; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 39925,

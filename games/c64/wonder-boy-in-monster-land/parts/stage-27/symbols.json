@@ -581,7 +581,7 @@
   {
    "start": 37401,
    "end": 37403,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 37404,
@@ -591,7 +591,7 @@
   {
    "start": 37420,
    "end": 37427,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 37428,
@@ -600,6 +600,11 @@
   },
   {
    "start": 37444,
+   "end": 37479,
+   "type": "Code"
+  },
+  {
+   "start": 37480,
    "end": 37514,
    "type": "Undefined"
   },
@@ -3510,14 +3515,32 @@
    "kind": "user"
   },
   {
+   "address": 37420,
+   "name": "shop_draw_second_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37428,
    "name": "shop_routine_pointer_select_1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 37444,
+   "name": "shop_draw_first_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37449,
    "name": "copied_charset_glyph_8b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37456,
+   "name": "shop_fill_item_colours",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10546,9 +10569,19 @@
    "text": "Load 27 character $84 occupies eight bytes in the character-copy source: $5A, $94, $18, $69, $01, $8D, $5B, $94. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D420 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap the shop item-pair selection code at $91CB; the bounded capture does not establish ordinary-play execution."
   },
   {
+   "address": 37401,
+   "type": "line",
+   "text": "Load the second selected item byte at $945B, multiply it by eight modulo 256 and read a target pointer from the table at $97AD. Patch the JSR operand at $922F/$9230. The item index is not locally bounded."
+  },
+  {
    "address": 37404,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $97AD,Y and $97AE,Y into the operand of the JSR at $922E. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
+  },
+  {
+   "address": 37420,
+   "type": "line",
+   "text": "Call the patched target with A=$E4. Then read the first item byte at $945A, multiply it by eight modulo 256 and patch a second JSR from the same pointer table. Controlled checks replaced both selected targets with logging stubs; actual drawing effects remain separate."
   },
   {
    "address": 37428,
@@ -10556,24 +10589,34 @@
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $97AD,Y and $97AE,Y into the operand of the JSR at $9246. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
   },
   {
+   "address": 37444,
+   "type": "line",
+   "text": "Call the second patched target with A=$D0, then set the temporary row counter at $97AA to 3 and begin filling colour RAM. The target was replaced with a logging stub in the controlled checks."
+  },
+  {
    "address": 37449,
    "type": "line",
-   "text": "Load 27 character $8B occupies eight bytes in the character-copy source: $A9, $03, $8D, $AA, $97, $A0, $00, $A2. Its rows contain 24 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D458 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 27 character $8B occupies eight bytes in the character-copy source: $A9, $03, $8D, $AA, $97, $A0, $00, $A2. Its rows contain 24 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D458 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9219; the bounded capture does not establish ordinary-play execution."
+  },
+  {
+   "address": 37456,
+   "type": "line",
+   "text": "For each of three rows, write colour 9 to four bytes at $D8F8,Y and four at $D90C,Y. Y starts at zero and advances by 40 after each row; the counter at $97AA ends at zero. With I/O visible, these are colour RAM writes. The next setup continues at $9268."
   },
   {
    "address": 37457,
    "type": "line",
-   "text": "Load 27 character $8C occupies eight bytes in the character-copy source: $03, $A9, $09, $99, $F8, $D8, $99, $0C. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D460 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 27 character $8C occupies eight bytes in the character-copy source: $03, $A9, $09, $99, $F8, $D8, $99, $0C. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D460 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9219; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 37465,
    "type": "line",
-   "text": "Load 27 character $8D occupies eight bytes in the character-copy source: $D9, $C8, $CA, $10, $F4, $98, $18, $69. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D468 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 27 character $8D occupies eight bytes in the character-copy source: $D9, $C8, $CA, $10, $F4, $98, $18, $69. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D468 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9219; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 37473,
    "type": "line",
-   "text": "Load 27 character $8E occupies eight bytes in the character-copy source: $24, $A8, $CE, $AA, $97, $D0, $E8, $A4. Its rows contain 29 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D470 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 27 character $8E occupies eight bytes in the character-copy source: $24, $A8, $CE, $AA, $97, $D0, $E8, $A4. Its rows contain 29 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D470 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. These bytes also overlap shop drawing setup code at $9219; the bounded capture does not establish ordinary-play execution."
   },
   {
    "address": 37481,
