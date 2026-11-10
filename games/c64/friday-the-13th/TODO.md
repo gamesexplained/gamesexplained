@@ -13,8 +13,8 @@ Tier: silver.
 
 ## Questions only the contributor can answer
 
-- Is this the original release, or a crack?
-- What does the one bad-checksum sector on the disk hold?
+- Is this the original release, or a crack? A 2025 cartridge conversion has the same game code and data byte for byte (`facts.md`), so the two come from the same release; neither says which that was.
+- What does the one bad-checksum sector on the disk hold? Not any byte of the game part: the cartridge's copy matches all of them.
 - Who wrote the game? No credit was found on the disk or in the sources read.
 
 ## Ideas

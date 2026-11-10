@@ -11,6 +11,19 @@ intro `$2900`). The introduction loads TITLE2 from device 8 and jumps to it at `
 loads the game's files and hands over to the main program at game `$9200` (part `game`). One
 sector on the disk has a bad checksum, and the game boots and plays from the image (*live*).
 
+## The cartridge conversion
+
+A cartridge image of the game (`Friday the 13th.crt`, 81,920 bytes of ROM: ten 8 KB banks of
+type 19, Magic Desk, named FRIDAY THE 13TH, with the text "STATMAT 2025" in bank 0) was compared
+with this disk on 10 November 2026. Banks 0 to 7 hold the game part's 64 KB at their own
+addresses, behind a starter in the first 1 KB of bank 0. Every byte of the game part's code and
+data (`$0400`-`$0771`, `$0C00`-`$3F9F`, `$5800`-`$CA70` and `$E000`-`$FE5F`) is the same as the
+disk's, except 35 runs that the game writes while it plays: the panel's characters at
+`$58AB`-`$5ACD`, `cell_source` (`$A85A`), `backdrop_colours` (`$AA5A`), `walker_is_actor`
+(`$AEB4`) and `work_byte` (`$BBAD`). Banks 8 and 9 hold the title bitmap and its screen colours,
+the same bytes as the introduction's. The cartridge has no copy of the introduction's code, its
+licence and story texts, or the portraits picture.
+
 ## How the parts follow one another
 
 | Step | Part | What happens |

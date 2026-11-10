@@ -19,3 +19,4 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - The reference screenshot `play-church.png` shows room 39; the round starts in room 38.
 - Running `round_won` on the kit's processor found the 2,560-point bonus for a round with no survivors. Reading `draw_fear_head` found the calm head at fear 80. A live test showed Jason choosing a dead friend.
 - A text dump of the disassembly (`work/code.txt`) taken early went stale as blocks were retyped; read `listing.json` instead.
+- Euan supplied a cartridge conversion (.crt, Magic Desk, "STATMAT 2025"). `kit/c64/crt.py` read it; banks 0-7 are the game's 64 KB at their own addresses, so a straight byte compare against the game part's listing settled that the game code matches. Kept in `work/crt/`, gitignored.
