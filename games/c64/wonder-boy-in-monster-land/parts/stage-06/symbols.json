@@ -555,8 +555,43 @@
   },
   {
    "start": 43032,
-   "end": 43299,
+   "end": 43102,
    "type": "Undefined"
+  },
+  {
+   "start": 43103,
+   "end": 43112,
+   "type": "Code"
+  },
+  {
+   "start": 43113,
+   "end": 43148,
+   "type": "Code"
+  },
+  {
+   "start": 43149,
+   "end": 43163,
+   "type": "Code"
+  },
+  {
+   "start": 43164,
+   "end": 43185,
+   "type": "Code"
+  },
+  {
+   "start": 43186,
+   "end": 43247,
+   "type": "Code"
+  },
+  {
+   "start": 43248,
+   "end": 43288,
+   "type": "Code"
+  },
+  {
+   "start": 43289,
+   "end": 43299,
+   "type": "Code"
   },
   {
    "start": 43300,
@@ -566,7 +601,7 @@
   {
    "start": 43317,
    "end": 43341,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 43342,
@@ -575,6 +610,11 @@
   },
   {
    "start": 43358,
+   "end": 43383,
+   "type": "Code"
+  },
+  {
+   "start": 43384,
    "end": 43439,
    "type": "Undefined"
   },
@@ -2057,14 +2097,80 @@
    "kind": "user"
   },
   {
+   "address": 43103,
+   "name": "shop_initialize_mode_and_timer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43113,
+   "name": "shop_wait_and_count",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43132,
+   "name": "shop_wait_and_sample",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43149,
+   "name": "shop_choose_input",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43164,
+   "name": "shop_timeout",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43186,
+   "name": "shop_choose_left",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43216,
+   "name": "shop_choose_right",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43248,
+   "name": "shop_purchase_gate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43289,
+   "name": "shop_purchase_choose_price_index",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43300,
    "name": "shop_price_charge",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 43317,
+   "name": "shop_purchase_decide",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43342,
    "name": "shop_routine_pointer_select_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43358,
+   "name": "shop_purchase_call_and_wait",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3754,14 +3860,69 @@
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $AD81,Y and $AD82,Y into the operand of the JSR at $A81A. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
   },
   {
+   "address": 43103,
+   "type": "line",
+   "text": "Store 0 in the shop mode byte at $AA29, store $DC in the countdown at $AA2D, and fall through to the wait path at $A869. Starting from 0, the captured left and right handlers keep the mode among $FF, $00 and $01 if no other code changes it; ordinary-play timing and other possible writes remain open."
+  },
+  {
+   "address": 43113,
+   "type": "line",
+   "text": "Call $3C2A, decrement the shop countdown at $AA2D and branch to $A89C when it becomes zero. Otherwise call $370B, $A9A0 and $A98D; on set carry, repeat this path. On clear carry, fall through to $A87C. Starting from the initialized $DC and holding the tested branches, zero is reached after 220 calls to $3C2A; the duration in seconds is not established."
+  },
+  {
+   "address": 43132,
+   "type": "line",
+   "text": "Call $3C2A, decrement $AA2D and branch to $A89C at zero. Otherwise call $370B, $A9A0 and $3C4C, then fall through to the sampled-input choice at $A88D. The controlled test stubs these calls; normal-play timing and other exits remain open."
+  },
+  {
+   "address": 43149,
+   "type": "line",
+   "text": "Use the sampled active-low inputs: if $70 is zero, branch to the shop gate at $A8F0; otherwise, if $73 is zero, branch to the left handler at $A8B2; otherwise, if $74 is zero, branch to the right handler at $A8D0. When all three are nonzero, jump back to $A87C. The preceding code calls $3C4C to sample joystick port 2; fire takes priority over left, and left over right."
+  },
+  {
+   "address": 43164,
+   "type": "line",
+   "text": "If $AA28 is nonzero, jump to $A793. Otherwise load X from $7B, store $FF at $4753,X, load X/Y with message pointer $AA6A, and jump to the $77E0 call at $A969. The selector used by $77E0 and natural timeout reachability remain open."
+  },
+  {
+   "address": 43186,
+   "type": "line",
+   "text": "If the signed mode byte at $AA29 is negative, return to the wait path at $A869. Otherwise decrement it with eight-bit wrap. If the new value is nonzero and $AA28 is zero, pass the item index at $AA2E to the message selector at $A9B8. Call $A9A0 and return to the wait path. The mode\u2019s possible ordinary-play values remain open."
+  },
+  {
+   "address": 43216,
+   "type": "line",
+   "text": "If the mode byte at $AA29 equals 1, return to the wait path at $A869. Otherwise increment it with eight-bit wrap. If the new value is nonzero and $AA28 is zero, pass the item index at $AA2F to the message selector at $A9B8. Call $A9A0 and return to the wait path. The mode\u2019s possible ordinary-play values remain open."
+  },
+  {
+   "address": 43248,
+   "type": "line",
+   "text": "Read $AA28; if nonzero, load $AA29 and jump to $A70C. Otherwise load X from $7B and read $AA29. If nonzero, branch to the purchase index choice at $A919, preserving the negative flag from that read. If zero, inspect $4753,X: a negative value or a clear bit 1 selects message pointer $AA92; a nonnegative value with bit 1 set selects $AA7B. Both paths jump to the $77E0 message call. The meanings and ordinary-play ranges of the two gate bytes remain open."
+  },
+  {
+   "address": 43289,
+   "type": "line",
+   "text": "Choose an item index using the incoming negative flag: load $AA2E when it is set, or $AA2F when clear, then enter the price selector at $A924. The path at $A8F0 supplies that flag from $AA29; other entries remain open."
+  },
+  {
    "address": 43300,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts, use the result as Y, and copy the two bytes at $AD7F,Y and $AD80,Y to $7D/$7E. Call $7901, which subtracts the packed-decimal amount from the selected player\u2019s gold, restores it on insufficient funds, returns carry set on success and clears decimal mode. Inputs 0\u201323 were checked; no local index bound is enforced."
   },
   {
+   "address": 43317,
+   "type": "line",
+   "text": "After the $7901 price subtraction, jump to $A869 on clear carry. On set carry, load X from $7B and decrement $4753,X with eight-bit wrap. Read $AA29; if negative select the item index at $AA2E, otherwise select $AA2F. Push it and continue to the offset-4 routine-pointer selector at $A94E. The natural contexts and callback effects remain open."
+  },
+  {
    "address": 43342,
    "type": "line",
    "text": "Multiply A by 8 with three eight-bit shifts and use the result as Y. Copy bytes at $AD83,Y and $AD84,Y into the operand of the JSR at $A962. Controlled inputs 0\u201323 select the captured pointer pairs; no local index bound is enforced. The target routines and natural-play contexts remain open."
+  },
+  {
+   "address": 43358,
+   "type": "line",
+   "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $AA57 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero. The effect, message and waiting callbacks were stubbed in controlled tests; this does not establish ordinary-play reachability."
   },
   {
    "address": 43440,
