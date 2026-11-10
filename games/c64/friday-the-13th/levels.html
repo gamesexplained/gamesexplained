@@ -39,7 +39,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
 .ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
-.ft-mark{position:absolute;right:3px;bottom:3px;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
+.ft-mark{position:absolute;right:3px;bottom:3px;max-width:calc(100% - 6px);text-align:right;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
 .ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
 .ft-table{border-collapse:collapse;font-size:14px;width:100%}
 .ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
@@ -48,14 +48,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Domark</p>
   <h1>Friday the 13th: maps</h1>
-  <p class="sub">All 44 rooms of Crystal Lake camp, each drawn in the page by the game's own drawing routine, laid out as the game joins them.</p>
+  <p class="sub">All 44 rooms of Crystal Lake camp, each drawn in the page by the game's own drawing routine, laid out as the game joins them, with the doors between them and where everyone starts a round.</p>
 </header>
 <main class="wrap" data-part="game">
 
 <section>
   <p class="fig">01 · Room viewer</p>
   <h2 class="t">Any room, drawn the way the game draws it</h2>
-  <p class="lede">Pick a room in any of the four maps below, or step through them here.</p>
+  <p class="lede">Pick a room in any of the four maps below, or step through them here. The labels on each map say where a door leads, which rooms start a <a href="index.html#music">tune</a> of their own, and where you and the ten others begin a round.</p>
   <div class="plate ft-big"><canvas id="ftBig" width="256" height="128"></canvas>
     <div class="pick" style="margin-top:12px"><a class="step" id="ftPrev" aria-label="Previous room">‹</a><select id="ftSel" aria-label="Room"></select><a class="step" id="ftNext" aria-label="Next room">›</a></div>
     <p class="cap" id="ftBigCap"></p></div>
@@ -64,31 +64,31 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">02 · The camp</p>
   <h2 class="t">Outdoors: 24 rooms, 4 across and 6 down</h2>
-  <p class="lede">The woods and the lake around the cabins. Walk off any side of a room and the next one is drawn; the edge of the map stops you.</p>
+  <p class="lede">The woods and the lake around the cabins. Walk off any side of a room and <a href="index.html#room">the next one is drawn</a>; the edge of the map stops you. Three rooms have a door into a building.</p>
   <div class="plate"><div class="ft-grid" id="ftArea0" style="grid-template-columns:repeat(4,1fr)"></div>
     <p class="cap" id="ftCap0"></p></div>
 </section>
 
 <section>
-  <p class="fig">03 · The first building</p>
-  <h2 class="t">Building 1: 12 rooms, 3 across and 4 down</h2>
-  <p class="lede">The largest building, entered from room 17 outdoors.</p>
+  <p class="fig">03 · The lodge</p>
+  <h2 class="t">The lodge: 12 rooms, 3 across and 4 down</h2>
+  <p class="lede">The largest building, the brick one with the red roof in room 17 outdoors. The game gives its buildings no names, so this page names them after how they look from outside.</p>
   <div class="plate"><div class="ft-grid" id="ftArea1" style="grid-template-columns:repeat(3,1fr)"></div>
     <p class="cap" id="ftCap1"></p></div>
 </section>
 
 <section>
   <p class="fig">04 · The church</p>
-  <h2 class="t">Building 2: 4 rooms, where every round starts</h2>
+  <h2 class="t">The church: 4 rooms, where every round starts</h2>
   <p class="lede">Entered from room 11 outdoors. The player starts each round in room 38, the church with its benches and organ.</p>
   <div class="plate"><div class="ft-grid" id="ftArea2" style="grid-template-columns:repeat(2,1fr)"></div>
     <p class="cap" id="ftCap2"></p></div>
 </section>
 
 <section>
-  <p class="fig">05 · The third building</p>
-  <h2 class="t">Building 3: 4 rooms</h2>
-  <p class="lede">Entered from room 9 outdoors.</p>
+  <p class="fig">05 · The barn</p>
+  <h2 class="t">The barn: 4 rooms</h2>
+  <p class="lede">The wooden barn with the thatched roof, entered from room 9 outdoors.</p>
   <div class="plate"><div class="ft-grid" id="ftArea3" style="grid-template-columns:repeat(2,1fr)"></div>
     <p class="cap" id="ftCap3"></p></div>
 </section>
@@ -147,22 +147,23 @@ function fridayPaint(cv, r, PAL) {
   const $ = id => document.getElementById(id);
   if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') { $('ftBigCap').textContent = 'This page needs the site\'s shared scripts: open it from the built site.'; return; }
   // Packed places (area * 64 + column * 8 + row) from the game's tables
-  const DOORS = { 17: 'door to building 1', 11: 'door to building 2', 9: 'door to building 3', 24: 'door out', 36: 'door out', 40: 'door out' };
+  const DOORS = { 17: 'door to the lodge', 11: 'door to the church', 9: 'door to the barn', 24: 'door to room 17', 36: 'door to room 11', 40: 'door to room 9' };
   const TUNES = { 37: 'tune 1', 38: 'tune 2', 2: 'tune 3', 40: 'tune 5', 14: 'tune 6' };
   const STARTS = [5, 3, 14, 16, 27, 34, 26, 36, 39, 43];   // start_places ($BB7E), as rooms
-  const NAMES = ['outdoors', 'building 1', 'the church', 'building 3'];
+  const NAMES = ['outdoors', 'the lodge', 'the church', 'the barn'];
   C64.load('parts/game/listing.json').then(L => {
     const rooms = [], buttons = [];
     for (let n = 0; n < 44; n++) rooms.push(fridayRoom(L.ram, C64Cpu, n));
     let cur = 38;
-    const marks = n => { const t = []; if (DOORS[n]) t.push(DOORS[n]); if (TUNES[n]) t.push(TUNES[n]); STARTS.forEach((r, i) => { if (r === n) t.push('counsellor ' + i + ' starts'); }); if (n === 38) t.push('the player starts'); if (n >= 24) t.push('can be the safe room'); return t; };
+    const marks = n => { const t = []; if (DOORS[n]) t.push(DOORS[n]); if (TUNES[n]) t.push(TUNES[n]); STARTS.forEach((r, i) => { if (r === n) t.push('friend ' + i + ' starts'); }); if (n === 38) t.push('you start'); if (n >= 24) t.push('can be the safe room'); return t; };
     function show(n) {
       cur = (n + 44) % 44; const r = rooms[cur];
       fridayPaint($('ftBig'), r, C64.PAL);
       $('ftSel').value = String(cur);
       const info = 'Room ' + cur + ': ' + NAMES[r.area] + ', column ' + r.col + ', row ' + r.row + ', packed place $' + (r.area * 64 + r.col * 8 + r.row).toString(16).toUpperCase().padStart(2, '0');
       const t = marks(cur);
-      $('ftBigCap').textContent = info + '. ' + (t.length ? t.join('; ') + '. ' : '') + 'Tiles from $' + (0x0C00 + cur * 32).toString(16).toUpperCase() + '. Drawn by draw_room on a copy of the C64\'s processor in the page; people and objects are not drawn.';
+      const tx = t.join('; ');
+      $('ftBigCap').textContent = info + '. ' + (t.length ? tx[0].toUpperCase() + tx.slice(1) + '. ' : '') + 'Tiles from $' + (0x0C00 + cur * 32).toString(16).toUpperCase() + '. Drawn by draw_room on a copy of the C64\'s processor in the page; people and objects are not drawn.';
       buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === cur)));
     }
     for (let a = 0; a < 4; a++) {
@@ -172,17 +173,17 @@ function fridayPaint(cv, r, PAL) {
         cv.width = 256; cv.height = 128; fridayPaint(cv, rooms[n], C64.PAL);
         b.appendChild(cv);
         const tag = document.createElement('span'); tag.className = 'ft-tag'; tag.textContent = n; b.appendChild(tag);
-        const k = [DOORS[n] ? 'door' : '', TUNES[n] || '', n === 38 ? 'start' : ''].filter(Boolean).join(' · ');
+        const k = [DOORS[n] || '', TUNES[n] || '', n === 38 ? 'you start' : '', ...STARTS.map((r, i) => r === n ? 'friend ' + i + ' starts' : '')].filter(Boolean).join(' · ');
         if (k) { const s = document.createElement('span'); s.className = 'ft-mark'; s.textContent = k; b.appendChild(s); }
         b.setAttribute('aria-label', 'Room ' + n);
         b.onclick = () => { show(n); $('ftBig').scrollIntoView({ block: 'center', behavior: 'smooth' }); };
         $('ftArea' + a).appendChild(b); buttons[n] = b;
       }
     }
-    $('ftCap0').innerHTML = 'Rooms 0 to 23, room 0 at the top left. A room\'s number is the area\'s first room plus its row times the area\'s width plus its column (<code>room_number</code>). The doors into the buildings are in rooms 17, 11 and 9.';
-    $('ftCap1').textContent = 'Rooms 24 to 35. Room 24, at the top left, holds the way out, which leads back to room 17 outdoors.';
-    $('ftCap2').textContent = 'Rooms 36 to 39. Room 36 holds the way out, to room 11 outdoors; room 38, the church, is where each round starts.';
-    $('ftCap3').textContent = 'Rooms 40 to 43. Room 40 holds the way out, to room 9 outdoors.';
+    $('ftCap0').innerHTML = 'Rooms 0 to 23, room 0 at the top left. A room\'s number is the area\'s first room plus its row times the area\'s width plus its column (<code>room_number</code>). The doors into the buildings are in rooms 17, 11 and 9. A label says where a door leads and who starts the round in that room.';
+    $('ftCap1').innerHTML = 'Rooms 24 to 35. The door in room 17 brings you in at room 24, the top left, and the way out there leads back to room 17. Any building room, 24 to 43, can be the <a href="index.html#safe-room">safe room</a>.';
+    $('ftCap2').textContent = 'Rooms 36 to 39. The door in room 11 brings you in at room 36, and the way out there leads back to room 11. Room 38 is where each round starts.';
+    $('ftCap3').textContent = 'Rooms 40 to 43. The door in room 9 brings you in at room 40, and the way out there leads back to room 9.';
     for (let n = 0; n < 44; n++) { const o = document.createElement('option'); o.value = String(n); o.textContent = 'Room ' + n + ', ' + NAMES[rooms[n].area]; $('ftSel').appendChild(o); }
     $('ftSel').onchange = e => show(+e.target.value);
     $('ftPrev').onclick = () => show(cur - 1); $('ftNext').onclick = () => show(cur + 1);
