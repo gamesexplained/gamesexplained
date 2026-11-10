@@ -58,13 +58,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sp-tbl ul{margin:0;padding-left:18px}
 .sp-tbl li{margin:0 0 2px}
 .sp-files{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.sp-form select{display:block;width:100%;font-family:var(--fm);font-size:14px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;margin-top:3px;background:var(--surface);color:var(--ink)}
+.tp-menu{background:#1b1c20;border-radius:8px;padding:10px 8px;font-family:var(--fm);font-size:13.5px}
+.tp-menu button{display:flex;justify-content:space-between;gap:12px;width:100%;background:none;border:0;border-radius:4px;color:#e8e6df;font:inherit;padding:3px 8px;cursor:pointer;text-align:left}
+.tp-menu button:hover{background:#2e3038}
+.tp-menu button.hid{color:#8a8880}
+.tp-menu .pr{color:#9a9890;white-space:nowrap}
+.tp-shot{margin:16px 0}.tp-shot img{display:block;width:100%;max-width:384px;image-rendering:pixelated;border-radius:6px}.tp-shot figcaption{font-size:14px;color:var(--ink-mute);margin-top:6px}
 @media (max-width:760px){.sp-grid{grid-template-columns:1fr}.sp-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1988 · SSI</p>
   <h1>Pool of Radiance</h1>
-  <p class="sub">Spells and monsters' powers are routines in four spell files, and several of them do something other than the rule book says: PRAYER helps the enemy, a mirror never wards off the vampire, and a drained level-1 fighter becomes a magic-user of level 255.</p>
+  <p class="sub">Spells and monsters' powers are routines in four spell files, and several of them do something other than the rule book says: PRAYER helps the enemy, a mirror never wards off the vampire, a drained level-1 fighter becomes a magic-user of level 255, and a temple charges for curing blindness and disease whether or not it cures them.</p>
 </header>
 <main class="wrap">
 
@@ -103,9 +110,54 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The drain then rebuilds the character's figures from the new levels, and for level 255 every table it reads runs off its end into the routines after it. The record says 11,610,464 experience points and a to-hit byte of 109, which is THAC0 −49, and gives the character spell slots from the same stray bytes.</p>
   <p>The rebuild uses tables of its own, which differ from the ones the Training Hall uses. A drained magic-user of levels 1 to 5 and a drained thief of levels 1 to 4 get THAC0 20 where training gives 21. A drained cleric of levels 2 to 4 gets one more second-level spell, and a cleric's extra spells for wisdom come later: the first extra first-level spell at wisdom 14 where training gives it at 12, and the third-level one at 18 where training gives it at 17. Six NOP instructions sit where the drain works out a cleric's turning figure, and the same six are in training's copy of that code.</p>
 </section>
+<section id="temple" data-part="temple">
+  <p class="fig">02 · The temple</p>
+  <h2 class="t">Bug: a temple's CURE BLINDNESS and CURE DISEASE take the money from anyone, and never undo CAUSE BLINDNESS or CAUSE DISEASE</h2>
+  <p class="lede">Each of the two costs 1,000 gold pieces. A cure that finds nothing to cure is meant to say THAT SPELL CAN NOT HELP YOU and charge nothing. These two always find something, because of one instruction, and what they find is never the blindness or the disease that an enemy cleric's spell leaves.</p>
+  <div class="plate">
+    <div class="sp-grid">
+      <div>
+        <div class="sp-bar"><span class="lab">The character</span><span id="tp-presets"></span></div>
+        <div class="sp-form">
+          <label>Constitution<input type="number" id="tp-con" min="3" max="25" value="12"></label>
+          <label>Race<select id="tp-race"><option value="1">DWARF</option><option value="2">ELF</option><option value="3">GNOME</option><option value="4">HALF-ELF</option><option value="5">HALFLING</option><option value="6">HALF-ORC</option><option value="7" selected>HUMAN</option></select></label>
+        </div>
+        <div class="sp-sheet" id="tp-sheet"><p class="sp-miss">The temple runs the game's own code, with the site's shared scripts that the built site serves.</p></div>
+      </div>
+      <div>
+        <div class="sp-bar"><span class="lab">The temple's menu</span></div>
+        <div class="tp-menu" id="tp-menu"></div>
+        <div class="sp-log" id="tp-log"></div>
+      </div>
+    </div>
+    <p class="cap">Each cure runs the temple's own routine on the kit's 6502 over the listing's bytes, as post-com's HEAL calls it (<span data-part="post-com"><code>heal</code>, <code>$209C</code></span>), with the party's money, the screen and the store of the character stood in for. The menu, its prices and the two items it hides are read from the same bytes.</p>
+  </div>
+  <p>Both cures start with the same routine (<code>end_first_kind</code>, <code>$05DA</code>). It is meant to set a count of the effects it ends to 0 and then end every effect of the kind the cure names: kind 33 for CURE BLINDNESS, the blindness that CAUSE BLINDNESS leaves, and kind 34 for CURE DISEASE, CAUSE DISEASE's. It sets the count by loading 0 into the register that held the kind, so it goes looking for kind 0. Kind 0 marks an empty place in the party's table of 64 timed effects, and there is nearly always one. The routine empties it again and counts it, and a cure that has counted anything is paid for (<span data-part="post-com"><code>cured</code>, <code>$22C2</code></span>).</p>
+  <p>So a character with nothing wrong pays 1,000 gold pieces for either cure, and the screen says CURED ... as if it had worked. A character blinded or diseased by an enemy pays the same and stays as it was. CAUSE DISEASE's effect starts again whenever its time runs out in camp, and each time it takes strength and hit points from its victim (<span data-part="camp-spells"><code>disease_ends</code>, <code>$AD49</code></span>). A cleric in the party can end it with the spell CURE DISEASE, and blindness with CURE BLINDNESS (<span data-part="camp-spells"><code>cure_disease_camp</code>, <code>$AA3E</code>; <code>cure_blindness_camp</code>, <code>$AA39</code></span>). The temple's CURE DISEASE still cures mummy rot (<code>cure_disease</code>, <code>$0607</code>).</p>
+</section>
+
+<section id="temple-hidden" data-part="temple">
+  <p class="fig">03 · Two cut cures</p>
+  <h2 class="t">Secret: the temple's menu has two more cures, priced 5,000 and 20,000 gold pieces, that it never shows</h2>
+  <p class="lede">The temple's menu holds eleven cures and EXIT. The sixth and the tenth are named @, and the game hides both.</p>
+  <p>Post-com's HEAL builds the menu from the temple file's own list (<code>menu_text</code>, <code>$0708</code>) with a mask of one bit for each item, <code>FDDF</code> in hexadecimal, and the two bits that are clear hide items 5 and 9, counting from 0 (<span data-part="post-com"><code>heal</code>, <code>$209C</code></span>). Like every other item, each has a price (<code>price_lo</code>, <code>$0448</code>): 5,000 gold pieces for the first and 20,000 for the second, the dearest in the list. Each has an entry in post-com's table of the cures' routines too, and both entries point at <code>$06D2</code> (<span data-part="post-com"><code>temple_lo</code>, <code>$20F8</code></span>). That address holds no routine. It is RAISE DEAD's table of chances.</p>
+  <figure class="tp-shot"><img src="reference/live-temple.png" alt="The temple's menu in the game: nine cures and EXIT"><figcaption>The temple at the Temple of Tempus in VICE: nine cures and EXIT.</figcaption></figure>
+  <p>The file keeps no other trace of them. The first sat between CURE CRITICAL WOUNDS and NEUTRALIZE POISON, and the second between REMOVE CURSE and STONE TO FLESH. What they were meant to cure is unknown.</p>
+</section>
+
+<section id="temple-cures" data-part="temple">
+  <p class="fig">04 · The other cures</p>
+  <h2 class="t">RAISE DEAD takes the money before it rolls, and never works at constitution 6 or below</h2>
+  <p class="lede">RAISE DEAD costs 5,500 gold pieces, the most of the cures the menu shows. The temple takes the money, says CURED ..., and then rolls. A failure says FAILED, and the character is GONE for good, with the money spent.</p>
+  <p>The chance comes from a table of one byte for each constitution from 0 to 25 (<code>survival</code>, <code>$06D2</code>): 60 in 100 at constitution 7, five more for each point up to 90 at 13, then two more for each point up to 100 at 18. From 0 to 6 it is 0. The AD&amp;D Player's Handbook's table gives the same chances from 7 up, and 40 to 55 for constitution 3 to 6. Each raise costs a point of constitution (<code>raised</code>, <code>$0521</code>), so a character raised often enough comes down to 6, and from then on a temple's RAISE DEAD always fails.</p>
+  <p>The temple will not raise an elf, or a half-orc, a race the game does not let a player make (<a href="rules.html#half-orc">Rules</a>). Either is told THAT SPELL CAN NOT HELP YOU and pays nothing.</p>
+  <p>CURE SERIOUS WOUNDS rolls 2d8 and CURE CRITICAL WOUNDS 3d8, and both then add one more figure (<code>cure_critical</code>, <code>$04ED</code>): the dice roller's count of the dice still to roll, which the roll has just brought down to 0. So they heal 2 to 16 and 3 to 24 hit points, with nothing added. A cure of wounds helps only a character who is OK or unconscious, so a dying character is turned away (<code>can_heal</code>, <code>$0400</code>).</p>
+  <p>REMOVE CURSE unreadies every cursed item the character has readied, and leaves each one cursed: it clears the item's readied bit and keeps its curse bit (<code>remove_curse</code>, <code>$0693</code>).</p>
+</section>
+
 
 <section id="prayer" data-part="effects">
-  <p class="fig">02 · Prayer</p>
+  <p class="fig">05 · Prayer</p>
   <h2 class="t">Bug: PRAYER helps the enemy and hinders the caster's own side</h2>
   <p class="lede">The rule book says PRAYER makes every friendly combatant's to-hit rolls and saving throws one better and every enemy's one worse. The game does the opposite.</p>
   <p>Casting PRAYER makes one timed effect that belongs to nobody, so the engine runs it for every combatant, and it stores the caster's side in bit 6 of the effect's fourth byte (<span data-part="spells"><code>spell_prayer</code>, <code>$AC36</code></span>). Its routine runs whenever someone rolls to hit and whenever someone rolls a saving throw (<code>kind_prayer</code>, <code>$A9B9</code>). It moves that bit to bit 0 and compares it with the roller's side. When the two differ, the routine adds one to the roll. When they are the same, it takes one away. A party cleric's PRAYER therefore makes the monsters hit and save one better for its rounds, and the party one worse.</p>
@@ -113,7 +165,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="tyranithraxus" data-part="effects">
-  <p class="fig">03 · Magic resistance</p>
+  <p class="fig">06 · Magic resistance</p>
   <h2 class="t">Bug: no spell cast at level 6 can touch Tyranithraxus</h2>
   <p class="lede">Tyranithraxus's file gives it magic resistance. Against a caster of level 5 it resists 40 times in 100. Against level 6, the highest level a cleric or magic-user can train to in Phlan, it resists every time.</p>
   <p>Its kind 106 (<code>kind_resist_15</code>, <code>$AD81</code>) stops a spell's effect, or its damage when the damage is magical, with a chance of 15 in 100 plus a figure for the caster's level. The figures are a table of six bytes for levels 0 to 5 (<code>mr_by_level</code>, <code>$AD7B</code>):</p>
@@ -125,7 +177,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="vampire" data-part="effects-2">
-  <p class="fig">04 · The vampire</p>
+  <p class="fig">07 · The vampire</p>
   <h2 class="t">Bug: a mirror never keeps the vampire away, because the game looks in the vampire's own pack</h2>
   <p class="lede">The vampire carries kind 126, a ward meant to stop an attack on anyone who holds up a mirror or a holy symbol. The check looks through the items of the combatant being attacked, and the only combatant it ever runs for is the vampire.</p>
   <p>The routine (<code>vampire_wards</code>, <code>$AABC</code>) loads the target and goes through its sixteen items. A readied item with MIRROR in its name, or a HOLY SYMBOL whose last word is WOODEN, makes the target one that cannot be picked. It is run at the moment a combatant is picked as a target, and the engine runs that moment's kinds for the combatant being picked (<span data-part="combat"><code>pick_target</code>, <code>$28AF</code></span>), so only a target that holds kind 126 itself runs it. That target is the vampire, and the vampire carries no mirror. A party member with a SILVER MIRROR readied can be attacked like anyone else.</p>
@@ -133,7 +185,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="evil" data-part="effects">
-  <p class="fig">05 · Protection from Evil</p>
+  <p class="fig">08 · Protection from Evil</p>
   <h2 class="t">Bug: PROTECTION FROM EVIL does nothing against chaotic evil monsters</h2>
   <p class="lede">PROTECTION FROM EVIL makes its holder 2 harder to hit, front and back, and adds 2 to its saving throws, when the attacker is evil. The list of evil alignments it checks has a typing slip in it.</p>
   <p>The routine (<code>kind_prot_evil</code>, <code>$A794</code>) compares the attacker's alignment with three bytes (<code>prot_alignments</code>, <code>$A7CA</code>): 2, 5 and 9. The game numbers the alignments from 0, LAWFUL GOOD, to 8, CHAOTIC EVIL, so the list holds LAWFUL EVIL, NEUTRAL EVIL and a tenth alignment that does not exist. PROTECTION FROM GOOD shares the routine, with the list beside it, 0, 3 and 6, which is right. The 10-foot radius version of each spell uses the same lists.</p>
@@ -141,14 +193,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="mummy-fear" data-part="effects-2">
-  <p class="fig">06 · The mummy's fear</p>
+  <p class="fig">09 · The mummy's fear</p>
   <h2 class="t">Bug: the mummy's fear gives every non-human no saving throw</h2>
   <p class="lede">At the start of a battle the mummy's kind 82 paralyses everyone on the other side for 1 to 4 rounds, unless they save. Because of one missing character in the code, only humans get a saving throw.</p>
   <p>A saving throw is described by one byte, and the routine (<code>mummy_fear</code>, <code>$A736</code>) loads it with the instruction <code>A5 21</code>, LDA $21. That reads the byte at address $21, in zero page. The number $21 would have been <code>A9 21</code>. None of the game's code writes to address $21, and it held 0 in every snapshot taken during play. A save byte of 0 allows no saving throw at all (<span data-part="combat-set"><code>save_roll</code>, <code>$9974</code></span>). A human gets $40 added to it, which is a save with 2 added to the roll. Dwarves, elves, gnomes, half-elves, halflings and half-orcs have no save against it. With the number $21, everyone would have saved with 1 added to the roll and humans with 3.</p>
 </section>
 
 <section id="rot" data-part="effects-2">
-  <p class="fig">07 · Mummy rot</p>
+  <p class="fig">10 · Mummy rot</p>
   <h2 class="t">Bug: mummy rot never rots, and heals a hit point every ten days</h2>
   <p class="lede">A mummy's hit gives its target the rot: IS DISEASED, and two timed effects, kind 50 for 10 days and kind 57 for 30 days (<code>mummy_rot</code>, <code>$A9F4</code>). The routines those kinds run when their time is up do not harm the character.</p>
   <p>When an effect's time runs out in camp, the camp's spell file runs its kind's routine from a table (<span data-part="camp-spells"><code>camp_kinds</code>, <code>$9AD5</code></span>). Kind 50's routine starts it again for another ten days and heals one hit point (<span data-part="camp-spells"><code>rot_ten_days</code>, <code>$AD97</code></span>). Kind 57's starts it again for another thirty days and does nothing else (<span data-part="camp-spells"><code>$AD9F</code></span>). The rot ends only when CURE DISEASE ends both kinds.</p>
@@ -156,14 +208,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="gaze" data-part="effects-2">
-  <p class="fig">08 · A cut power</p>
+  <p class="fig">11 · A cut power</p>
   <h2 class="t">Secret: a vampire's charming gaze is in the code, but no monster has it</h2>
   <p class="lede">SPELLE02 holds most of the vampire's powers: two levels drained with a hit, a turn into gas when it falls, and the mirror check. Beside them is kind 84, a gaze that charms.</p>
   <p>On its holder's turn kind 84 (<code>charm_gaze</code>, <code>$A77F</code>) prints GAZES... and puts CHARM PERSON's effect on the target, with a saving throw 2 harder than the spell's. In the AD&amp;D rules a vampire's gaze charms. Neither of the game's two vampire files carries kind 84, and nor does any other monster's file.</p>
 </section>
 
 <section id="breath" data-part="spells">
-  <p class="fig">09 · Another cut power</p>
+  <p class="fig">12 · Another cut power</p>
   <h2 class="t">Secret: CURE DISEASE's combat record is a breath weapon that no monster has</h2>
   <p class="lede">CURE DISEASE can be cast only in camp, but like every spell it has a record for combat. The routine that record points at is a lightning bolt.</p>
   <p>The routine (<code>cure_disease_record</code>, <code>$AD6D</code>) is LIGHTNING BOLT's code with the caster's full hit points as the damage and a line 10 squares long: a breath weapon that does as much damage as its breather's full hit points. Kind 88 is the power that uses it (<span data-part="effects"><code>kind_breath</code>, <code>$AC60</code></span>): on its holder's turn, half the time, the holder BREATHES... and casts spell 39. No monster file carries kind 88.</p>
@@ -171,7 +223,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="smaller" data-part="spells">
-  <p class="fig">10 · Smaller differences</p>
+  <p class="fig">13 · Smaller differences</p>
   <h2 class="t">Other spells, and a potion, that do less than they should</h2>
   <div class="sp-tbl-wrap"><table class="sp-tbl">
     <thead><tr><th>Spell or item</th><th>What it should do</th><th>What the code does</th></tr></thead>
@@ -189,7 +241,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="specials" data-part="effects">
-  <p class="fig">11 · Monsters' powers</p>
+  <p class="fig">14 · Monsters' powers</p>
   <h2 class="t">Every monster's special abilities, from its file</h2>
   <p class="lede">A monster's file holds up to ten effect kinds that it always has, in the same ten bytes where a party member's record keeps an elf's resistance to sleep. These are all the files that hold any, with what each kind's routine does.</p>
   <div class="sp-tbl-wrap"><table class="sp-tbl" id="sp-specials"><thead><tr><th>Monster</th><th>What its kinds do</th><th>Files</th></tr></thead><tbody><tr><td colspan="3"><p class="sp-miss">The table is drawn by the page's script.</p></td></tr></tbody></table></div>
@@ -197,7 +249,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="how" data-part="effects">
-  <p class="fig">12 · How it works</p>
+  <p class="fig">15 · How it works</p>
   <h2 class="t">A spell is a routine that leaves a timed effect, and an effect is a routine that runs at set moments</h2>
   <p class="lede">The engine keeps 64 timed effects, each a kind, a holder and a time (<span data-part="resident"><code>$4900</code></span>), and every character's record holds ten more kinds that never run out (<span data-part="resident"><code>$6BAD</code></span>).</p>
   <p>A battle has set moments, which the code calls events: a combatant is picked as a target, an attack roll is made, a hit lands, damage is dealt, a saving throw is rolled, an effect is about to land, a combatant goes down, a round ends. Each event has a list of the kinds that care about it. At each event the engine goes through the list, and for each kind the combatant concerned holds, it loads that kind's routine and runs it (<span data-part="combat-set"><code>run_effects</code>, <code>$072E</code></span>). A routine changes the roll, the damage or the effect in hand, or does something of its own.</p>
@@ -322,6 +374,75 @@ function porDrainRead(mem) {
 // end of por-drain
 </script>
 <script>
+/* por-temple */
+// The temple: SQRPACI64's own routines on the kit's 6502 over mem, the resident, tables, post-com and
+// temple parts' bytes, for party member 0 ($6DB4).
+// porTempleMenu(mem): the cures as post-com's heal ($209C) offers them: each item of the menu's list
+// (menu_text, $0708) but EXIT, its price (price_lo/price_hi, $0448/$0453), its routine (post-com
+// temple_lo/temple_hi, $20F8/$2103) and whether the menu's mask (the two LDA #s at $20BE and $20C3,
+// one bit an item, as build_menu, $3CC3, shifts it) shows it.
+function porTempleMenu(mem) {
+  const out = [];
+  const mask = mem[0x20BF] << 8 | mem[0x20C4];
+  let a = 0x070B;
+  for (let i = 0; i < mem[0x0708] - 1; i++) {
+    let name = '';
+    while (mem[a]) name += String.fromCharCode(mem[a++]);
+    a++;
+    out.push({ name, price: mem[0x0448 + i] | mem[0x0453 + i] << 8, at: mem[0x20F8 + i] | mem[0x2103 + i] << 8, shown: !!(mask >> i & 1) });
+  }
+  return out;
+}
+// porTempleSet(mem, CPU, ch): the member from ch = { cond, hp, con, race, level, rolls, timed, kinds,
+// cursed }: the condition ($6C00), the hit points ($6C19), constitution ($6B18) and race ($6B72); a
+// fighter (class mask $6BEB bit 3) of the level shown ($6BA0), whose full hit points ($6B76) are the
+// rolls ($6BED) and the constitution's bonus a level as the temple's con_bonus ($056B) works it out;
+// timed, the kinds of the party's timed effects ($4900) it holds, from the table's last entry down as
+// the game fills it; kinds, its ten kinds that never run out ($6BAD); and cursed, a readied cursed
+// item in its first place ($6C20: the item's readied byte +6 and cursed byte +7, bit 7 each).
+function porTempleSet(mem, CPU, ch) {
+  mem.fill(0, 0x6B00, 0x6D20);
+  mem.fill(0, 0x4900, 0x49C0);
+  mem[0x6DB4] = 0;
+  mem[0x6C00] = ch.cond; mem[0x6B18] = ch.con; mem[0x6B72] = ch.race;
+  mem[0x6BEB] = 8; mem[0x6BCC] = mem[0x6BA0] = ch.level; mem[0x6BED] = ch.rolls;
+  const cpu = new CPU(mem, { port: 0x36, io: { read(a) { throw new Error('a chip read at ' + a.toString(16)); }, write() {} } });
+  cpu.call(0x056B, {}, { maxSteps: 1000 });
+  mem[0x6B76] = Math.min(255, ch.rolls + cpu.a * ch.level);
+  mem[0x6C19] = Math.min(ch.hp ?? 255, mem[0x6B76]);
+  (ch.timed || []).forEach((k, i) => { mem[0x4900 + 63 - i] = k; mem[0x4940 + 63 - i] = 0; mem[0x4980 + 63 - i] = 0x41; });
+  (ch.kinds || []).forEach((k, i) => { mem[0x6BAD + i] = k; });
+  if (ch.cursed) { mem[0x6C20] = 1; mem[0x6C26] = 0x80; mem[0x6C27] = 0x80; }
+}
+// porTemple(mem, CPU, item): the cure of menu item `item`, its routine run as heal runs it after the
+// price is agreed. Stood in for: cured ($22C2, the money paid and CURED ..., message $32), show_msg
+// ($197E) and msg_next ($0E5F) (the message noted), return_pool ($17A8), press_return ($1822), the
+// store at $441E, compute_combat_stats ($3729), clear_main ($1932) and print_name_at ($34BD).
+// Returns { paid, said }: whether the money was taken, and the messages in the order shown.
+function porTemple(mem, CPU, item) {
+  const said = [];
+  let paid = false;
+  const rts = (c) => c.rts();
+  const say = (c) => { said.push(c.x); c.rts(); };
+  const hooks = { 0x22C2: (c) => { paid = true; said.push(0x32); c.rts(); }, 0x197E: say, 0x0E5F: say, 0x17A8: rts,
+    0x1822: rts, 0x441E: rts, 0x3729: rts, 0x1932: rts, 0x34BD: rts };
+  const cpu = new CPU(mem, { port: 0x36, io: { read(a) { throw new Error('a chip read at ' + a.toString(16)); }, write() {} } });
+  cpu.call(mem[0x20F8 + item] | mem[0x2103 + item] << 8, { x: item }, { hooks, maxSteps: 1e6 });
+  return { paid, said };
+}
+// porTempleRead(mem): the member as the cure left it; timed lists the kinds of the timed effects it
+// holds or that hold for anyone.
+function porTempleRead(mem) {
+  const timed = [];
+  for (let i = 63; i >= 0; i--) if (mem[0x4900 + i] && (mem[0x4940 + i] === 0 || mem[0x4940 + i] & 0x80)) timed.push(mem[0x4900 + i]);
+  const kinds = [];
+  for (let i = 0; i < 10; i++) if (mem[0x6BAD + i]) kinds.push(mem[0x6BAD + i]);
+  return { cond: mem[0x6C00], hp: mem[0x6C19], max: mem[0x6B76], con: mem[0x6B18], timed, kinds,
+    item: mem[0x6C20] ? { readied: !!(mem[0x6C26] & 0x80), cursed: !!(mem[0x6C27] & 0x80) } : null };
+}
+// end of por-temple
+</script>
+<script>
 // Spells tab: the drain widget, the chaotic evil monsters and the specials table. The specials are the
 // monster files' own bytes, by spells_data.py (scripts/).
 (async () => {
@@ -403,6 +524,66 @@ function porDrainRead(mem) {
   $('sp-reset').addEventListener('click', reset);
   $('sp-one').addEventListener('click', () => drain(false));
   $('sp-two').addEventListener('click', () => drain(true));
+  reset();
+})();
+</script>
+<script>
+// Spells tab: the temple, over the resident, tables, post-com and temple parts' bytes.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const sheet = $('tp-sheet'), log = $('tp-log'), menu = $('tp-menu');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') return;
+  let parts;
+  try { parts = await Promise.all(['resident', 'tables', 'post-com', 'temple'].map((p) => C64.load('parts/' + p + '/listing.json'))); } catch (e) { sheet.innerHTML = '<p class="sp-miss">The listing did not load, so the temple cannot open.</p>'; return; }
+  const base = new Uint8Array(65536);
+  for (const L of parts) for (let a = 0; a < 65536; a++) if (L.has[a]) base[a] = L.ram[a];
+  const CPU = C64Cpu.CPU;
+  let mem = base.slice(), spent = 0, preset = 0;
+  const KINDS = { 15: 'the poison\'s damage', 22: 'SLOW POISON', 31: 'helpless', 33: 'blindness, from CAUSE BLINDNESS',
+    34: 'disease, from CAUSE DISEASE', 50: 'mummy rot, 10 days', 55: 'poison', 57: 'mummy rot, 30 days' };
+  const COND = { 1: 'OK', 2: 'GONE', 3: 'DEAD', 4: 'DYING', 5: 'UNCONSCIOUS', 7: 'STONED', 9: 'POISONED, slowed' };
+  const MSG = { 0x0E: 'THAT SPELL CAN NOT HELP YOU', 0x1C: 'IS ALIVE', 0x1F: 'FAILED', 0x32: 'CURED ...' };
+  const PRESETS = [['Nothing wrong', {}], ['Blinded by CAUSE BLINDNESS', { timed: [33] }], ['Diseased by CAUSE DISEASE', { timed: [34] }],
+    ['Mummy rot', { cond: 0x21, timed: [50, 57] }], ['Poisoned, with SLOW POISON', { cond: 9, hp: 1, kinds: [55], timed: [22, 15] }],
+    ['Unconscious', { cond: 5, hp: 0 }], ['Dying', { cond: 4, hp: 0 }], ['Turned to stone', { cond: 7 }], ['Dead', { cond: 0x83, hp: 0 }],
+    ['A cursed sword readied', { cursed: true }]];
+  const gp = (n) => n.toLocaleString('en-GB');
+  const cond = (c) => {
+    const v = c & 0x5F;
+    return '<span class="' + (v === 1 ? '' : 'dead') + '">' + (COND[v] || '$' + c.toString(16).toUpperCase()) + '</span>' + (c & 0x20 ? ', <span class="dead">IS DISEASED</span>' : '');
+  };
+  const kinds = (ks) => ks.length ? ks.map((k) => '<span class="hot">' + (KINDS[k] || 'kind ' + k) + '</span>').join(', ') : 'none';
+  function show() {
+    const c = porTempleRead(mem);
+    const row = (k, v) => '<tr><td>' + k + '</td><td>' + v + '</td></tr>';
+    sheet.innerHTML = '<table>' + row('Condition', cond(c.cond)) + row('Hit points', c.hp + ' of ' + c.max) + row('Constitution', c.con) +
+      row('Timed effects', kinds(c.timed)) + row('Lasting effects', kinds(c.kinds)) +
+      (c.item ? row('Sword', (c.item.readied ? 'readied' : 'not readied') + ', ' + (c.item.cursed ? '<span class="hot">cursed</span>' : 'not cursed')) : '') +
+      row('Spent here', gp(spent) + ' gold pieces') + '</table>';
+  }
+  function reset() {
+    const num = (el, lo, hi) => Math.max(lo, Math.min(hi, parseInt(el.value, 10) || 0));
+    mem = base.slice(); spent = 0;
+    porTempleSet(mem, CPU, Object.assign({ cond: 1, hp: 255, con: num($('tp-con'), 3, 25), race: +$('tp-race').value, level: 4, rolls: 28 }, PRESETS[preset][1]));
+    log.textContent = 'Pick a cure. The character keeps what each cure does to it, until you pick another character.';
+    show();
+  }
+  const items = porTempleMenu(base);
+  menu.innerHTML = items.map((it, i) => '<button type="button" data-i="' + i + '"' + (it.shown ? '' : ' class="hid" title="The menu never shows this item"') + '><span>' + it.name +
+    (it.shown ? '' : ' (hidden)') + '</span><span class="pr">' + gp(it.price) + '</span></button>').join('');
+  menu.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    const it = items[+b.dataset.i];
+    if (!it.shown) { log.textContent = 'The game never shows this item. Its routine would be at $' + it.at.toString(16).toUpperCase().padStart(4, '0') + ', which is RAISE DEAD\'s table of chances, not code.'; return; }
+    let r;
+    try { r = porTemple(mem, CPU, +b.dataset.i); } catch (e) { log.textContent = 'The cure stopped: ' + e.message; return; }
+    if (r.paid) spent += it.price;
+    log.textContent = it.name + ': ' + (r.paid ? 'paid ' + gp(it.price) + ' gold pieces. ' : 'nothing paid. ') + r.said.map((m) => MSG[m] || 'message $' + m.toString(16)).join(', then ').replace(/([^.])$/, '$1.');
+    show();
+  }));
+  $('tp-presets').innerHTML = PRESETS.map((p, i) => '<button type="button" data-p="' + i + '">' + p[0] + '</button>').join(' ');
+  $('tp-presets').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { preset = +b.dataset.p; reset(); }));
+  $('tp-con').addEventListener('change', reset);
+  $('tp-race').addEventListener('change', reset);
   reset();
 })();
 </script>

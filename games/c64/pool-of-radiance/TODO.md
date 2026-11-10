@@ -54,8 +54,8 @@ Each is traced in the code; what a player sees is not settled yet.
   penalty applying once a weapon is readied. The side-2 file, with its
   boulders not readied, keeps 12 but moves 3. Fight both live.
 - OGRE LEADER (side 1, MON09) has THAC0 3 in its record, far better
-  than an ogre's 15, and no script the generator follows loads it:
-  find whether anything does.
+  than an ogre's 15. The Temple of Bane quarter loads it as its band's
+  file plus one (side 1 ECL18, the ADD at `$B044`): fight it live.
 
 ## Spell findings to try live
 
@@ -144,3 +144,17 @@ emulator.
   3D view reads (view `$C3D2`); bit 7 picks the second wall colour
   (dungeon `set_wall_colour`, `$1157`), and what the rest means is not
   worked out.
+
+## The temple
+
+- CURE BLINDNESS on a member blinded by CAUSE BLINDNESS, live: the code
+  keeps kind 33 (`test_temple.js`); whether the blindness outlasts the
+  battle it was cast in is not settled.
+- `unzombie` (temple `$059A`), NEUTRALIZE POISON (`$064D`) and CURE
+  DISEASE's helpless (`$0632`) clear `$6BAD + X` after `has_item_type`
+  (resident `$4027`), whose X is the timed effects' entry when it finds
+  the kind there. If ANIMATE DEAD leaves its kind 32 among the timed
+  effects (camp-spells `camp_36`), raising a zombie at a temple writes a
+  byte of the character's record past its ten kinds and leaves the
+  effect, whose end kills its holder (effects `kind_dies_at_end`,
+  `$A889`). Raise a zombie live and watch what changes.

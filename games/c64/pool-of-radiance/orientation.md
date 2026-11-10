@@ -101,6 +101,7 @@ play snapshot is beside it.
 | `combat` | `COMBAT` (module 2) | `$0800` | after `COM.PREP`; `combat_kobolds` |
 | `post-com` | `POST.COM` (module 5) | `$0800` | winning the fight; `postcom_treasure` |
 | `final` | `FINAL` (module 8) | `$0800` | see below |
+| `temple` | `SQRPACI64`, loaded by `POST.COM`'s HEAL at a temple | `$0400` | HEAL at the Temple of Tempus in New Phlan: entry, a stop at post-com `$20BE` after the load (`por_temple_entry`) |
 | `spells` | `SPELLE00`, loaded over `combat-set`'s `SPELLE65` by `load_spell_record` (combat-set `$993D`) when a spell is cast | `$A700` | from `combat_kobolds`, CAST: entry, a stop at `$991F` after the load |
 | `effects` | `SPELLE01`, loaded by `run_effect` (combat-set `$0776`) when an event runs a kind whose routine is in it | `$A700` | from `combat_kobolds`, the first event: entry, a stop at `$07A5` after the load |
 | `effects-2` | `SPELLE02`, loaded the same way for its kinds | `$A700` | no fight that was played needs it, so the load was forced: at a stop in `combat_kobolds`, `$07A4` pushed as the return, A = 2 and PC = `$9B2D` (`load_slot7`), then a stop at `$07A5` |
@@ -154,6 +155,7 @@ every file the game loads):
 | `COMBAT` | combat | `$0800`-`$2B7F` | 9088 |
 | `POST.COM` | post-com | `$0800`-`$2B79` | 9082 |
 | `FINAL` | final | `$0800`-`$0D62` | 1379 |
+| `SQRPACI64` | temple | `$0400`-`$07BC` | 957 |
 
 A module's file says it loads at `$1000`; the linker loads every module
 at `$0800` instead.

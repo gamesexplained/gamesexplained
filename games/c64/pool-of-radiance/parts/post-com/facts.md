@@ -74,8 +74,13 @@ game's own `facts.md`.
 ## Temples
 
 - HEAL (`heal`, `$209C`) loads the temple's own code and price list,
-  SQRPACI64, at `$0400`, which no part holds, and calls back into this
-  module to take the money and cure (`cured`, `$22C2`).
+  SQRPACI64, at `$0400` (the part `temple`), shows its menu with the mask
+  `$FDDF`, which hides items 5 and 9, and calls the cure's routine from
+  `temple_lo`/`temple_hi` (`$20F8`/`$2103`), patched into the JSR at
+  `$20F2`. The temple's code calls back into this module to take the
+  money (`cured`, `$22C2`), to lend the pool's money and give it back
+  (`add_pool`, `$177A`; `return_pool`, `$17A8`) and to count the
+  member's coins (`money_total`, `$12E8`).
 
 ## Old age
 

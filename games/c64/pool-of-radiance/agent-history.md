@@ -341,3 +341,47 @@ same SHA-256s as `orientation.md`, from archive.org's
   sends the drive the name. Two on side 3 hold copies of GEN's bytes.
 - Three items stay open, all code no part holds: SQRPACI64, the temple's
   menu and prices; SQRPACI00 on side 6; and SPELLE20 on side 5.
+
+## Follow-up: the leftovers on the disks (10 November 2026)
+
+Item 8 of Aaron's list for the game: what is left on the disks.
+PENDRAGON (Rules tab) and the item words no item uses (Items tab) were
+already published, so the run took the media ledger's three open items
+and its unused monster files.
+
+- SQRPACI64, the temple, became the part `temple`: a snapshot at post-com
+  `$20BE` after HEAL loaded it at the Temple of Tempus, annotated to
+  100 % (957 bytes). Its first finding is the bug in `end_first_kind`
+  (`$05DA`): CURE BLINDNESS and CURE DISEASE search for kind 0, so they
+  never end CAUSE BLINDNESS or CAUSE DISEASE, and an empty entry of the
+  timed effects is always there to count, so anyone pays. The 6502 run
+  showed it first; VICE confirmed the charge on a healthy member, and
+  RAISE DEAD at constitution 6 taking the money and leaving the member
+  GONE. The two `@` items hidden by the menu's mask have prices (5,000
+  and 20,000) and point at the survival table.
+- `test_temple.js` runs every cure from the listings. Removing the
+  `LDA #$00` from a copy makes CURE BLINDNESS end kind 33, which is how
+  the bug was pinned to that instruction.
+- SPELLE20 is the ending's two backgrounds and SQRPACI00 the overland's
+  copy of SQRPACI01's tables (figure heights, tiles, the map's place, the
+  view's size); both are data, and the ledger has nothing open.
+- The ten monster files the ledger had as unused were six too many.
+  `bestiary_data.py`'s reader had three gaps, each found by asking how a
+  file could be loaded without the reader seeing it:
+  - ON GOTO goes on to the next command when the index is not below the
+    count (dungeon `$2091`), and side 8's ECL1D relies on it for NORRIS
+    THE GRAY's fight. The reader had treated ON GOTO as an end. Following
+    every fall-through read tables as commands in two scripts, so a
+    fall-through is now followed only when its commands all have operand
+    types the scripts use.
+  - The slums and the Temple of Bane quarter load a band's leader as the
+    band's file plus one (ADD 1 and a variable); the reader took only
+    numbers, SAVEs and tables.
+  - Yarash's pyramid (side 7 ECL16) indexes a table of thirteen with a
+    RANDOM 5 that an ADD 7 moves on; the reader's index stopped at 6.
+  Four files remain that no script on their side loads, each a version
+  of a monster another side loads. The MON slot (12) is loaded only by
+  LOAD MONSTER and ADD NPC (dungeon `$1ADF` and `$2737`).
+- A temple comment was corrected: `find_entry` searches the 64 entries
+  from the last down, so `end_first_kind` meets the last empty entry,
+  not the first.
