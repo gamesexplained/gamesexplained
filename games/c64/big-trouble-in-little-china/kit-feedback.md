@@ -5,6 +5,12 @@
 - `10-orient`: "A packed program may pass through several hand-overs": the first stop at the unpacker's last return went into a small stage, not the game, so I went on to a second stop and kept the last one.
 - `10-orient`: "Ask what the image is before trusting it.": the restore of colour RAM and chip registers at `$094B` showed the image holds a frozen machine, so the loader and its protection are not in it, and I wrote that in `orientation.md`.
 
+## Silver run
+
+- `60-verify`: "Correct every comment the sample found wrong, and every other comment that says the same thing": the sample's finding on one follower-script byte led to five more labels and three comments that shared the belief, all corrected.
+- `70-minisite`: the Graphics rule ("every shape its moving things are drawn with") made me find the 19 bitmap shapes as well as the sprite figures; the sewer monster is a bitmap shape, not a sprite.
+- The sample's 18 wrong details were all in hand-written comments on per-object variables and shared routines, where a second writer or a second caller was left out. A note in `50-coverage` asking, for each per-object variable, "which other slots write it?" might have caught half of them.
+
 ## What was changed in the kit
 
 None. The run edited nothing under `kit/`.

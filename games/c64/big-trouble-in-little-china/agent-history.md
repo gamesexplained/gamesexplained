@@ -5,3 +5,7 @@
 - Input in play is on port 2. Random stick input on port 1 produced fights, so the port-2 conclusion rests on the code (`$1AE4` reads `$DC00`) and on one test where holding left on port 2 scrolled a lamppost in.
 - Random play for 200 seconds recorded 5,014 bytes of code. The recording missed everything random input did not reach.
 - A fetch agent read two web pages (Wikipedia and a Commodore User review). Its report said Wikipedia's quote of that review does not match the review's text; the page uses only the review's own words.
+- The Silver run, on a proven model, re-read the Bronze run's 11 comments and rewrote 7 of them while annotating to 100 %. The pause routine at `$11E0` had been called the title's wait for fire; the title's wait is `$11EB`.
+- The street looked like four levels. The map is one street of 1,799 columns, and the four parts are only colour changes at fixed scroll positions (`$01E9`, `$01ED`), so the Maps page draws it as one canvas.
+- Playing to the temple was not practical (energy runs out on its own in about 35 minutes, and each enemy must be beaten). The temple was reached by setting the scroll, and the win by setting the prize's object bytes beside the hero; the code that ran when the prize was taken is the game's own.
+- A separate checker sampled 80 comments and found 18 with a wrong detail. The commonest kind was a second writer or a second case left out. The follower scripts' second byte had been called a gap from its first sighting; it is the speed byte, and the labels were renamed.

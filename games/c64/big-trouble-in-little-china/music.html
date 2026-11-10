@@ -1,0 +1,80 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — sound</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/btilc-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">There is no music. Eight sound effects are all the game has, each played on all three voices at once, and two of them are never used.</p>
+</header>
+<main class="wrap">
+<section id="effects">
+  <p class="fig">01 · The effects</p>
+  <h2 class="t">Sound: eight effects, three voices each</h2>
+  <p class="lede">The player below runs the game's own sound routines, <code>start_sound</code> (<code>$2A8C</code>) and <code>sound_update</code> (<code>$2AA6</code>), on the kit's 6502, over the game's bytes, once a game loop as the game calls them, and plays what they write through a model of the SID.</p>
+  <div class="plate"><div id="sidRoot"><p class="note">Loading the player…</p></div></div>
+  <div class="table-scroll" role="region" aria-label="The sound effects" tabindex="0"><table class="t">
+    <tr><th class="n">Effect</th><th>When the game plays it</th><th class="n">Priority</th></tr>
+    <tr><td class="n">0</td><td>never</td><td class="n">5</td></tr>
+    <tr><td class="n">1</td><td>a bonus taken, and the prize (<code>$2201</code>, <code>$21EB</code>)</td><td class="n">2</td></tr>
+    <tr><td class="n">2</td><td>the game lost (<code>game_over_sound</code>, <code>$2B36</code>)</td><td class="n">6</td></tr>
+    <tr><td class="n">3</td><td>the jingle, struck 29 times (<code>jingle</code>, <code>$2B44</code>)</td><td class="n">6</td></tr>
+    <tr><td class="n">4</td><td>a hero's blow lands (<code>$1FA8</code>)</td><td class="n">4</td></tr>
+    <tr><td class="n">5</td><td>the enemy's blow lands (<code>$29BF</code>)</td><td class="n">1</td></tr>
+    <tr><td class="n">6</td><td>a shot thrown (<code>$2592</code>)</td><td class="n">3</td></tr>
+    <tr><td class="n">7</td><td>never</td><td class="n">3</td></tr>
+  </table></div>
+  <p class="cap">The priorities are the game's (<code>sound_priority</code>, <code>$2AFE</code>): when two effects are asked for in one loop, the one with the higher number plays.</p>
+</section>
+
+<section id="how">
+  <p class="fig">02 · How it plays</p>
+  <h2 class="t">One strike, three voices, slightly out of tune</h2>
+  <p class="lede">An effect is six bytes from six tables (<code>$2B06</code>-<code>$2B35</code>): pulse width, frequency, waveform and attack and decay. <code>sound_update</code> writes the same effect into all three voices, raising each voice's pitch a little more than the last, so the three beat against each other.</p>
+  <p>The game asks for an effect only in the loop where something happens, and clears the request at the start of every loop (<code>game_frame</code>, <code>$117F</code>). An effect is therefore one strike of the gate, with no sustain, that fades on its own decay. The jingle, played at the start and when the prize is taken, is effect 3 struck 29 times with a wait between strikes, the processor doing nothing else meanwhile (<code>jingle</code>, <code>$2B44</code>).</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+function createDriver(M, C64Cpu) {
+  // The game's own sound routines run on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js) over
+  // the game's bytes as the listing has them: start_sound $2A8C (A = the effect) once, then
+  // sound_update $2AA6 once a game loop, with the loop's request byte $1208 cleared after the first
+  // call, as game_frame ($117F) clears it.
+  const mem = new Uint8Array(0x10000), image = M.bytes;
+  const sid = new Uint8Array(25);
+  let writes = [], on = false, calls = 0;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: a => mem[a],
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  const call = (entry, a) => cpu.call(entry, { a, x: 0, y: 0 }, { maxSteps: 20000 });
+  return {
+    init(t) { mem.set(image, 0); sid.fill(0); writes = []; mem[0x1208] = 0; call(0x2A8C, t); on = true; calls = 0; },
+    stop() { on = false; },
+    play() { writes = []; if (!on) return; call(0x2AA6, 0); mem[0x1208] = 0; if (++calls >= 30) on = false; },
+    sid, get writes() { return writes; }, playing: () => on,
+    voice(x) { return { wave: sid[x * 7 + 4] & 0x80 ? 'noise' : sid[x * 7 + 4] & 0x40 ? 'pulse' : '-' }; },
+  };
+}
+// end of createDriver
+
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') {
+    $('sidRoot').textContent = 'This player needs the site\'s shared scripts: open the page from the built site.'; return; }
+  C64.load('listing.json').then(L => {
+    C64Sid.mount($('sidRoot'), {
+      driver: createDriver, data: { bytes: L.ram.slice() }, period: 98525,
+      tunes: ['0 Never used', '1 Bonus taken', '2 Game lost', '3 Jingle note', '4 Hero lands a blow', '5 Enemy lands a blow', '6 Shot thrown', '7 Never used'],
+      rows: [{ k: 'Wave', f: v => v.wave }],
+      bounce: false,
+    });
+  }).catch(e => { $('sidRoot').textContent = 'The listing could not be loaded: ' + e.message; });
+})();
+</script>

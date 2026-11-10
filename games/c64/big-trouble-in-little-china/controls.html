@@ -1,0 +1,56 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — controls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/btilc-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The game is played with a joystick in port 2, but it starts and pauses with the fire button of a joystick in port 1.</p>
+</header>
+<main class="wrap">
+<section id="joystick">
+  <p class="fig">01 · The joystick</p>
+  <h2 class="t">Sixteen moves from one stick</h2>
+  <p class="lede">The stick in port 2 is read once a game loop (<code>read_stick</code>, <code>$1AE4</code>) and turned into a move code from a table (<code>stick_codes</code>, <code>$1AC4</code>). Left and right walk; every other direction, and every direction with fire, is a move of the active hero.</p>
+  <div class="table-scroll" role="region" aria-label="The stick's move codes" tabindex="0"><table class="t">
+    <tr><th>Stick</th><th class="n">Code</th><th class="n">With fire</th></tr>
+    <tr><td>Left</td><td class="n">1</td><td class="n">9</td></tr>
+    <tr><td>Up and left</td><td class="n">2</td><td class="n">10</td></tr>
+    <tr><td>Up</td><td class="n">3</td><td class="n">11</td></tr>
+    <tr><td>Up and right</td><td class="n">4</td><td class="n">12</td></tr>
+    <tr><td>Right</td><td class="n">5</td><td class="n">13</td></tr>
+    <tr><td>Down and right</td><td class="n">6</td><td class="n">14</td></tr>
+    <tr><td>Down</td><td class="n">7</td><td class="n">15</td></tr>
+    <tr><td>Down and left</td><td class="n">8</td><td class="n">16</td></tr>
+    <tr><td>Fire alone</td><td class="n">0</td><td></td></tr>
+  </table></div>
+  <p>Fire on its own does nothing: it gives code 0, the same as a stick at rest (<code>$13F8</code>). Each code starts its own script of frames in the hero's table of moves (<code>move_scripts</code>, <code>$1812</code>), which is why the three heroes fight differently with the same stick. The weapon moves are fire with left, up and left, or down and left, towards the enemies, who come from the left; Jack and Wang Chi can make them only with their weapon (<code>hero_special</code>, <code>$201E</code>). Holding down keeps a hero crouched (<code>script_end</code>, <code>$17D9</code>).</p>
+  <p>While the heroes <a href="gameplay.html#enemies">regroup</a>, as an enemy comes and after it goes, the stick is not read at all.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">02 · The keyboard</p>
+  <h2 class="t">Keys to choose a hero, and keys to play without a stick</h2>
+  <p class="lede">With the stick at rest, the game reads the keyboard instead (<code>read_keys</code>, <code>$1B0D</code>).</p>
+  <div class="table-scroll" role="region" aria-label="The keys" tabindex="0"><table class="t">
+    <tr><th>Key</th><th>What it does</th></tr>
+    <tr><td>B</td><td>makes Jack Burton the active hero</td></tr>
+    <tr><td>C</td><td>makes Wang Chi the active hero</td></tr>
+    <tr><td>S</td><td>makes Egg Shen the active hero</td></tr>
+    <tr><td>RETURN</td><td>passes to the next living hero</td></tr>
+    <tr><td>Y, H, I, O</td><td>up, down, left and right, as the stick</td></tr>
+    <tr><td>P</td><td>fire</td></tr>
+  </table></div>
+  <p>The hero keys are Burton, Chi and Shen's initials, B, C and S. A dead hero's key does nothing (<code>switch_hero</code>, <code>$1469</code>). The keys and the hero switch were tried in the emulator: B, C and S changed the active hero, and I walked the heroes left.</p>
+</section>
+
+<section id="pause">
+  <p class="fig">03 · Port 1</p>
+  <h2 class="t">Fire on the other joystick pauses the game</h2>
+  <p class="lede">The title waits for fire on a joystick in port 1 (<code>wait_fire</code>, <code>$11EB</code>), not the port the game is played with. During play the same button pauses: press it and the game stops until it is pressed again (<code>pause</code>, <code>$11E0</code>).</p>
+  <p>The game tests port 1 by selecting keyboard column 0 and reading bit 4 of <code>$DC01</code>, which is where port 1's fire button appears (<code>$11F6</code>). In the emulator a press stopped the energy timers and the street, and a second press started them again.</p>
+</section>
+</main>

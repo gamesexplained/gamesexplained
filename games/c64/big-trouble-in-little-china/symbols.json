@@ -3053,7 +3053,7 @@
   },
   {
    "address": 5370,
-   "name": "set_follow_gap",
+   "name": "set_follow_speed",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -3359,37 +3359,37 @@
   },
   {
    "address": 6215,
-   "name": "follow_gap_1",
+   "name": "follow_speed_1",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6220,
-   "name": "follow_gap_2",
+   "name": "follow_speed_2",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6304,
-   "name": "follow_gap_3",
+   "name": "follow_speed_3",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6309,
-   "name": "follow_gap_4",
+   "name": "follow_speed_4",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6393,
-   "name": "follow_gap_5",
+   "name": "follow_speed_5",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 6398,
-   "name": "follow_gap_6",
+   "name": "follow_speed_6",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -3617,7 +3617,7 @@
   },
   {
    "address": 7319,
-   "name": "boss_step_x",
+   "name": "boss_step_y",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -6735,7 +6735,7 @@
   {
    "address": 67,
    "type": "line",
-   "text": "Per object: width of the body box for this frame"
+   "text": "Per object: width of the body box. For the figures (slots 0-3) it is set from the frame; a shot gets a fixed 8 ($2570), and the bonus gets the width of its kind ($27AF), or $10 for the prize ($26DD)"
   },
   {
    "address": 74,
@@ -6905,7 +6905,7 @@
   {
    "address": 139,
    "type": "line",
-   "text": "Per object: the move asked for, the stick code from $1AE4 (1-8 directions, 9-16 fire with a direction)"
+   "text": "Per object: the move asked for, 1-8 a direction and 9-16 fire with a direction. For the active hero it is the stick code from $1AE4; the enemy's comes from its own logic ($1353, $1CBC)"
   },
   {
    "address": 142,
@@ -7005,7 +7005,7 @@
   {
    "address": 211,
    "type": "line",
-   "text": "Per object: its figure type. 0 Jack Burton, 1 Wang Chi, 2 Egg Shen, 3 to 9 the enemy kinds (9 the boss), 11 a beaten enemy falling, 12 the boss appearing; for slots 4 to 7, the first of its shapes in the table at $2810"
+   "text": "Per object: its figure type. 0 Jack Burton, 1 Wang Chi, 2 Egg Shen, 3 to 9 the enemy kinds (9 the boss), 11 a beaten enemy or a dead hero falling ($1E10), 12 the boss appearing; for slots 4 to 7, the first of its shapes in the table at $2810"
   },
   {
    "address": 212,
@@ -7065,7 +7065,7 @@
   {
    "address": 243,
    "type": "line",
-   "text": "Bit 7 set while the heroes walk to their places ($1D76), after an enemy appears or the player changes hero; bit 6 once that walk has started"
+   "text": "Bit 7 set while the heroes walk to their places ($1D76): when an enemy appears, and again when it has gone ($1C1D, $1C3A); bit 6 once that walk has started"
   },
   {
    "address": 244,
@@ -7080,7 +7080,7 @@
   {
    "address": 246,
    "type": "line",
-   "text": "Set by the animation code when the active hero's action has finished"
+   "text": "Counted up by play_move ($1803) when a move's script finishes; play_move runs for the followers too, so any hero's move can count"
   },
   {
    "address": 247,
@@ -7360,7 +7360,7 @@
   {
    "address": 801,
    "type": "line",
-   "text": "The map address's high byte, written at $0230"
+   "text": "The map address's high byte, written at $0233"
   },
   {
    "address": 812,
@@ -7980,7 +7980,7 @@
   {
    "address": 2530,
    "type": "line",
-   "text": "The enemy's graphics are in the RAM under the I/O area, so the processor port is set to $30 (all RAM) for the copy, with interrupts off"
+   "text": "Some enemy kinds' parts are in the RAM under the I/O area ($CC00-$DFFF, used by kinds 3 and 6), so for every enemy the processor port is set to $30 (all RAM) for the copy, with interrupts off"
   },
   {
    "address": 2546,
@@ -8000,7 +8000,7 @@
   {
    "address": 2637,
    "type": "line",
-   "text": "The CPY operand: the part of the street last coloured, written when a new part is coloured"
+   "text": "The CPY operand: the part of the street last coloured, set to $63 at set-up ($021D) so the first part is always coloured, and written when a new part is coloured"
   },
   {
    "address": 2640,
@@ -8225,7 +8225,7 @@
   {
    "address": 4550,
    "type": "line",
-   "text": "$1EE2 = 3: all three heroes are dead; $1EE2 = 4: the prize was taken. Both draw GAME OVER over the panel; the win then plays the jingle, the loss one sound, and both start a new game, which waits for fire"
+   "text": "$1EE2 = 3: all three heroes are dead; $1EE2 = 4: the prize was taken. Both draw GAME OVER across the street, at character row 14 ($B200/$F200); the win then plays the jingle, the loss one sound, and both start a new game, which waits for fire"
   },
   {
    "address": 4576,
@@ -8385,7 +8385,7 @@
   {
    "address": 5370,
    "type": "line",
-   "text": "Writes the gap the followers keep from the active hero into six instructions of the follower code"
+   "text": "Writes the speed the followers walk at, 8 pixels a step or 16 while an enemy is in play ($14D1), into the speed byte of six follower scripts; play_move copies it to obj_speed ($1796)"
   },
   {
    "address": 5392,
@@ -8475,12 +8475,12 @@
   {
    "address": 5751,
    "type": "line",
-   "text": "On the screen: clears the off-left flag and marks the object off screen when it is past the right edge"
+   "text": "Past the right edge, reached when the screen X is $0138 or more ($166C): clears the off-left flag and $1676, and marks the object off screen (bit 1)"
   },
   {
    "address": 5809,
    "type": "line",
-   "text": "Moves a hero who is not active: plays out any move he is making, otherwise keeps up with the active hero at the set gap"
+   "text": "Moves a hero who is not active: plays out any move he is making, otherwise keeps up with the active hero at the followers' speed"
   },
   {
    "address": 5825,
@@ -8540,32 +8540,32 @@
   {
    "address": 6215,
    "type": "line",
-   "text": "The walking value of the first follower script; $14FA writes the follower gap here and into five more scripts"
+   "text": "The speed byte of the first follower script; $14FA writes the followers' speed here and into five more scripts"
   },
   {
    "address": 6220,
    "type": "line",
-   "text": "The gap value in the second follower script, written by $14FA"
+   "text": "The speed byte of the second follower script, written by $14FA"
   },
   {
    "address": 6304,
    "type": "line",
-   "text": "The gap value in the fourth follower script, written by $14FA"
+   "text": "The speed byte of the fourth follower script, written by $14FA"
   },
   {
    "address": 6309,
    "type": "line",
-   "text": "The gap value in the third follower script, written by $14FA"
+   "text": "The speed byte of the third follower script, written by $14FA"
   },
   {
    "address": 6393,
    "type": "line",
-   "text": "The gap value in the fifth follower script, written by $14FA"
+   "text": "The speed byte of the fifth follower script, written by $14FA"
   },
   {
    "address": 6398,
    "type": "line",
-   "text": "The gap value in the last follower script, written by $14FA"
+   "text": "The speed byte of the last follower script, written by $14FA and loaded into obj_speed by play_move ($1796)"
   },
   {
    "address": 6470,
@@ -8650,7 +8650,7 @@
   {
    "address": 7319,
    "type": "line",
-   "text": "The operand of the ADC at $1C96 is the boss's step in X, written above"
+   "text": "The operand of the ADC at $1C96 is the boss's step in Y (obj_y), written above"
   },
   {
    "address": 7401,
@@ -8670,7 +8670,7 @@
   {
    "address": 7632,
    "type": "line",
-   "text": "Sets one hero's facing and move for the regroup, and the gap he keeps"
+   "text": "Sets one hero's facing and move for the regroup, and the speed he walks at, 8 or 16 pixels a step"
   },
   {
    "address": 7683,
@@ -8785,7 +8785,7 @@
   {
    "address": 7921,
    "type": "line",
-   "text": "Tests the active hero's blow against the enemy. Egg Shen does not fight hand to hand. The move must be one of the hero's blows (tables from $0F99) and the frame the one that lands; then the strike point, with a margin of 8 lines and 4 pixels, must fall inside the enemy's body box. A hit plays sound 4 and counts on the enemy's hit counter, twice with strength; when the enemy falls, a hit on the boss counts in $1EED"
+   "text": "Tests the active hero's blow against the enemy. Egg Shen does not fight hand to hand. The move must be one of the hero's blows (tables from $0F99) and the frame the one that lands; then the strike point must fall inside the enemy's body box, stretched 8 lines upwards and shifted 4 pixels left. A hit plays sound 4 and counts on the enemy's hit counter, twice with strength; when the enemy falls, a hit on the boss counts in $1EED"
   },
   {
    "address": 8121,
@@ -8885,7 +8885,7 @@
   {
    "address": 8700,
    "type": "line",
-   "text": "The bonus is used up"
+   "text": "Removes the bonus: when it is used up, and also when no bonus is live, when the active hero is dead, or when it has scrolled off"
   },
   {
    "address": 8705,
@@ -8975,12 +8975,12 @@
   {
    "address": 8955,
    "type": "line",
-   "text": "Highlights the active hero's portrait (colour $11) and dims the others ($FF), relighting the item boxes that are on"
+   "text": "Highlights the active hero's portrait (colour $11) and dims the others ($FF), repainting the item boxes the hero lacks"
   },
   {
    "address": 8974,
    "type": "line",
-   "text": "Redraws portrait Y and its two item boxes"
+   "text": "Redraws portrait Y, and repaints each of its two item boxes only when the hero lacks that item; a lit box is left as it is"
   },
   {
    "address": 9035,
@@ -9200,7 +9200,7 @@
   {
    "address": 9908,
    "type": "line",
-   "text": "The bonus kinds' drawing sizes, read with the kind x 2"
+   "text": "The bonus kinds' body-box widths for the touch test, read with the kind x 2"
   },
   {
    "address": 9909,
@@ -9640,7 +9640,7 @@
   {
    "address": 21598,
    "type": "line",
-   "text": "The sprite parts the frames are built from, 21 bytes each, in three stretches: $545E-$7FFF here, $8C00-$9FFF and $CC00-$DFFF"
+   "text": "The sprite parts the frames are built from, 21 bytes each, in three stretches: $545E-$7FFF here, $8C00-$9FFF and $CC00-$DFFF; many frame records also use $336E, the all-zero start of street tile 2, as a blank part"
   },
   {
    "address": 21768,
@@ -9770,7 +9770,7 @@
   {
    "address": 48960,
    "type": "line",
-   "text": "Six character rows of 16 bitmap bytes: the energy bonus's icon, which $223C copies into the panel; also the first bitmap shape"
+   "text": "Six character rows of 16 bitmap bytes: the energy bonus's icon, which $223C copies into the panel; also bitmap shape 18, the last in the table at $2810"
   },
   {
    "address": 48976,
@@ -9800,7 +9800,7 @@
   {
    "address": 49056,
    "type": "line",
-   "text": "A bitmap shape for $283B (the last of the 19), in the spare bytes after the first bitmap"
+   "text": "A bitmap shape for $283B, shape 9 (the prize), in the spare bytes after the first bitmap"
   },
   {
    "address": 52224,
