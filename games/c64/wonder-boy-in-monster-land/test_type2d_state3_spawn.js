@@ -1,0 +1,6 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const parts=path.join(__dirname,'parts'),m=new Uint8Array(65536);for(const p of ['resident','stage-31'])for(const r of JSON.parse(fs.readFileSync(path.join(parts,p,'listing.json'))).records)if(r.b)m.set(r.b,r.a);
+for(const sign of [0,128]){const a=m.slice();a.set([sign,1,2,3,4],0x98be);a[0x196f]=0x22;a[0x195e]=0xf0;a[0x19a2]=0xfb;a[0x962a]=4;a[0x980a]=1;a[0x447a]=0x60;a.set([0xa9,5,0x60],0x34ea);const cpu=new CPU(a);cpu.x=2;cpu.y=1;cpu.pc=0x9794;cpu.run({until:0x980b,maxSteps:200});assert.equal(cpu.x,1);assert.equal(a[0x1970],sign?0x22:0x23);assert.equal(a[0x195f],sign?0xf0:8);for(const [addr,v] of [[0x191b,0x2f],[0x19a3,3],[0x1a09,8],[0x19f8,7],[0x19e7,0xe5],[0x19c5,0xe5],[0x1b2a,0xa5],[0x19b4,1],[0x192c,0],[0x1aa2,0],[0x962a,5]])assert.equal(a[addr],v);assert.deepEqual([...a.slice(0x35bd,0x35c1)],[1,2,3,4])}
+for(const timer of [0xdf,0xe0]){const a=m.slice();a[0x980a]=1;a[0x1b07]=timer;a[0x1ab2]=3;a[0x10]=0;if(timer===0xe0)a.set([0xe6,0x10,0x60],0x9647);const target=timer===0xe0?0x962b:0x9647,cpu=new CPU(a);cpu.pc=0x9809;cpu.run({until:target,maxSteps:50});assert.equal(a[0x1ab2],timer===0xe0?1:3);assert.equal(a[0x10],timer===0xe0?1:0)}
+console.log('OK - load-31 type-$2D/$2E state 3 allocated-slot setup and tail');

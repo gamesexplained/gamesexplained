@@ -1,0 +1,6 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const parts=path.join(__dirname,'parts'),m=new Uint8Array(65536);for(const p of ['resident','stage-31'])for(const r of JSON.parse(fs.readFileSync(path.join(parts,p,'listing.json'))).records)if(r.b)m.set(r.b,r.a);
+for(const [mode,motion,phase,collision] of [[0,1,0,0],[0,2,0,0],[0,2,0,1],[0,130,0,0],[0,130,0,1],[1,0,128,0],[1,0,138,0],[1,0,2,0]]){const a=m.slice();a[0x1ae5]=mode;a[0x1ad4]=motion;a[0x1af6]=phase;a.fill(0,0x10,0x16);for(const [addr,z] of [[0x985c,0x10],[0x983e,0x11],[0x4342,0x14],[0x4368,0x15]])a.set([0xe6,z,0x60],addr);a.set([0xe6,0x12,collision?0x38:0x18,0x60],0x4574);a.set([0xe6,0x13,collision?0x38:0x18,0x60],0x45bc);const target=mode===0&&motion===1?0x956b:0x9647,cpu=new CPU(a);cpu.x=1;cpu.pc=0x95a0;cpu.run({until:target,maxSteps:100});assert.equal(cpu.pc,target);
+ if(mode===0){const v=(motion-1)&255,selected=v!==0;assert.deepEqual([...a.slice(0x10,0x16)],[1,0,+(selected&&!!(v&128)),+(selected&&!(v&128)),0,0]);assert.equal(a[0x1ad4],selected&&collision?v^128:v)}else{assert.deepEqual([...a.slice(0x10,0x16)],phase&128?[0,1,0,0,0,1]:[0,1,0,0,1,0]);assert.equal(a[0x1af6],phase&128?(phase+1)&255:(phase-1)&255);assert.equal(a[0x1ae5],phase===138?0:mode)}}
+console.log('OK - load-31 type-$2D/$2E state 1 movement');

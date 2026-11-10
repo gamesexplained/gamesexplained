@@ -17,7 +17,7 @@ The supplied side B file with index $1F supplies two compressed streams. Executi
 
 The captured map references 54 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
 
-The type-$2D and $2E entity vectors select a dispatcher at $954D. Six captured state-table pairs point to $956B, $95A0, $9749, $976B, $987A, $98C5. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in load 31; handler behavior and ordinary-play reachability remain open.
+The type-$2D and $2E entity vectors select a dispatcher at $954D. Six captured state-table pairs point to $956B, $95A0, $9749, $976B, $987A, $98C5. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in load 31; the state-index range and ordinary-play reachability remain open.
 
 Type-$2D/$2E state 0 at $956B uses results from $3020 to initialize fields and falls through to state 1. VICE checked four controlled constant results with $3020 stubbed. Ordinary-play reachability remains open.
 
@@ -32,3 +32,15 @@ The type-$2D/$2E state-5 loop at $9934 waits for $D012=$80, updates two display 
 After the type-$2D/$2E state-5 raster loop, code at $9972 passes the records at $99B0 and $99E5 to $77E0, then calls $3C2A and $370B in a loop controlled by $4DC7 and $4DC9. When both fields are zero it calls $370B twice and $6DDE, then jumps to $0203. VICE checked three controlled input cases with callbacks stubbed. Ordinary-play reachability remains open.
 
 The type-$2D/$2E frame helpers at $9820, $983E and $985C choose offsets 8/20, 4/16 and 0/12 from carry returned by $72FC, then calculate two frame bytes. VICE checked both carry values for each helper with $72FC stubbed and frame wrap exercised. Ordinary-play reachability remains open.
+
+Type-$2D/$2E state 3 at $976B decrements $1B06,X and can call $983E, skip allocation based on its low bits or $962A, or call $190B. VICE checked five controlled entry cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$2D/$2E state-3 allocated-slot path at $9794 initializes an entity from returned X and Y and the bytes at $98BE–$98C2, then restores X and checks $1B06,X at $9809. VICE checked both signs and two timer cases with callbacks stubbed. Allocation conditions, callback effects and ordinary-play reachability remain open.
+
+Type-$2D/$2E state 1 at $95A0 can select state 0, move according to a shifted direction byte, or update a signed phase and clear its mode at $8B. VICE checked eight controlled movement cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$2D/$2E state-1 transition at $95E6 selects state 3, initializes a timer and four working bytes from shifted coordinate fields, and clears $962A. State 3 uses those bytes to initialize allocated slots. VICE checked both signs of $98BE with $3020 stubbed. Other uses and ordinary-play reachability remain open.
+
+The type-$2D/$2E contact entry at $9647 fills $762E–$7631 and calls $732A. A positive $1A6D,X can trigger the $96AF record when $4DE2,Y has low bits 5, then enter state 2. VICE checked five controlled cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$2D/$2E contact branches at $96CB and $96FA fill a second set of collision fields, or select state 4 or 5 depending on $19E5,X. The state-4 path passes the $9731 record to $77E0 and calls $9820. VICE checked four controlled cases with callbacks stubbed. Ordinary-play reachability remains open.

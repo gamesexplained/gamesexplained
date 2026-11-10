@@ -575,8 +575,28 @@
   },
   {
    "start": 38304,
+   "end": 38373,
+   "type": "Code"
+  },
+  {
+   "start": 38374,
+   "end": 38441,
+   "type": "Code"
+  },
+  {
+   "start": 38442,
+   "end": 38442,
+   "type": "Byte"
+  },
+  {
+   "start": 38443,
+   "end": 38470,
+   "type": "Code"
+  },
+  {
+   "start": 38471,
    "end": 38574,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38575,
@@ -586,7 +606,7 @@
   {
    "start": 38603,
    "end": 38704,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38705,
@@ -600,8 +620,13 @@
   },
   {
    "start": 38763,
+   "end": 38803,
+   "type": "Code"
+  },
+  {
+   "start": 38804,
    "end": 38943,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38944,
@@ -621,7 +646,7 @@
   {
    "start": 39103,
    "end": 39106,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 39107,
@@ -1545,8 +1570,86 @@
    "kind": "user"
   },
   {
+   "address": 38304,
+   "name": "type2d_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38355,
+   "name": "type2d_state1_nonzero_mode",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38374,
+   "name": "type2d_enter_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38442,
+   "name": "type2d_state3_allocation_counter",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38443,
+   "name": "type2d_state1_negative_start",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38448,
+   "name": "type2d_state1_negative_phase",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38471,
+   "name": "type2d_contact_box",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38501,
+   "name": "type2d_contact_test",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38516,
+   "name": "type2d_contact_message",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38556,
+   "name": "type2d_contact_enter_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 38575,
    "name": "dialogue_record_96af",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38603,
+   "name": "type2d_contact_fallback",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38650,
+   "name": "type2d_contact_other_state",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38673,
+   "name": "type2d_contact_enter_state4",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1559,6 +1662,24 @@
   {
    "address": 38729,
    "name": "type2d_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38763,
+   "name": "type2d_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38804,
+   "name": "type2d_state3_allocated_slot",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38921,
+   "name": "type2d_state3_restore_and_timer",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1589,6 +1710,12 @@
   {
    "address": 39102,
    "name": "type2d_frame_direction_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39103,
+   "name": "type2d_state3_coordinate_bytes",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3294,9 +3421,74 @@
    "text": "State 0 clears $1AB1,X, calls $3020, masks its result with $87, clears carry and adds 3, and stores the low byte at $1AD3,X. Increment $1AB1,X. Call $3020 up to four more times: after each call, mask A with $80 and stop if the result is nonnegative. Store the last masked value at $1AE4,X, store 10 at $1AF5,X, and fall through to state 1 at $95A0. The addition is binary when decimal mode is clear; ordinary-play reachability remains open."
   },
   {
+   "address": 38304,
+   "type": "line",
+   "text": "State 1 reads $1AE4,X. If it is zero, call $985C, decrement $1AD3,X and shift the resulting byte left in A. If the shifted value is zero, jump to state 0 at $956B. Otherwise call $4574 with A=4 when the shift sets carry or $45BC with A=4 when it clears carry. If the callback returns carry set, toggle bit 7 of $1AD3,X. Jump to $9647. External callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38355,
+   "type": "line",
+   "text": "Call $983E. If $1AF5,X is negative, continue at $9630. Otherwise call $4342 with A=$1AF5,X and decrement that field. If the result is nonzero, jump to $9647; if zero, continue at $95E6. External callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38374,
+   "type": "line",
+   "text": "Select state 3, call $3020 and store its result AND 7 at $1B06,X. Store $19A1,X shifted right at $98C2. Shift $196E,X right and rotate $195D,X right through its carry, storing the result at $98C1. Store $49 shifted right at $98C0; shift $48 right and rotate $47 right through its carry, storing the result at $98BF. If $98BE is nonnegative, add $0C to $98C1 with carry clear and eight-bit wrap. Clear $962A and jump to $9647. Addition is binary when decimal mode is clear; callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38442,
+   "type": "line",
+   "text": "Working byte cleared by the state-1 transition, compared with 5 and incremented by state 3. Other uses remain open."
+  },
+  {
+   "address": 38443,
+   "type": "line",
+   "text": "Store $80 at $1AF5,X and continue at $9630. State 3 can enter here after its timer reaches $E0."
+  },
+  {
+   "address": 38448,
+   "type": "line",
+   "text": "Mask A with $7F and call $4368. Increment $1AF5,X; if it equals $8B, clear $1AE4,X. Continue at $9647. External callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38471,
+   "type": "line",
+   "text": "Load Y from $1A29,X. Shift $4C4F,Y right and rotate $4C6F,Y right through its carry; store the result at $762E. Store $18 at $7630, $4CCF,Y at $762F and $10 at $7631. Continue at $9665."
+  },
+  {
+   "address": 38501,
+   "type": "line",
+   "text": "Call $732A. Carry clear branches to $96CB. With carry set, a zero or negative $1A6D,X branches to $96FA; a positive value continues at $9674. Callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38516,
+   "type": "line",
+   "text": "Load Y from $4DBD. If $4DE2,Y AND 7 equals 5, clear its low three bits, set $1A8F,X to $20, save X in the immediate operand at $9698 and call $77E0 with X/Y=$AF/$96, pointing to the record at $96AF. Restore X from that operand and shift $1A6D,X right. Continue at $969C. Other uses and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38556,
+   "type": "line",
+   "text": "Copy $1AB1,X to $1B17,X and set $1AB1,X to 2. Call $72FC, rotate the returned A right through its carry and store the result at $1B28,X, then return. Callback effects and ordinary-play reachability remain open."
+  },
+  {
    "address": 38575,
    "type": "line",
    "text": "Three zero-terminated glyph lines, with alignment spaces omitted here: \u201cThe Ruby starts\u201d / \u201cto glow..\u201d / \u201c\u201d. [$60] denotes a downward-pointing triangular glyph. The following control byte is $20. The instruction sequence at $9690 loads this address in X/Y and reaches $77E0 in the listing simulator; with selector $77E1 set to zero, that routine copies the lines into the three message buffers. Normal-play reachability remains open."
+  },
+  {
+   "address": 38603,
+   "type": "line",
+   "text": "Load Y from $1A29,X. Shift $4C4F,Y right and rotate $4C6F,Y right through its carry; clear carry, add 1 and store the low byte at $762E. Store $16 at $7630, add 4 to $4CCF,Y with carry clear and store the low byte at $762F, and store $2C at $7631. Call $7227; return on clear carry, or tail-call $5D7A with A=2 on set carry. Arithmetic is binary when decimal mode is clear; callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38650,
+   "type": "line",
+   "text": "If $19E5,X equals $B5, continue at $9711. Otherwise store $32 at $1B28,X, $FF at $1A8F,X and 5 at $1AB1,X, then return."
+  },
+  {
+   "address": 38673,
+   "type": "line",
+   "text": "Copy $1AB1,X to $98C4, set $1AB1,X to 4 and $98C3 to $14. Save X in the immediate operand at $972C, call $77E0 with X/Y=$31/$97, pointing to the record at $9731, and restore X. Call $9820 and return. Callback effects and ordinary-play reachability remain open."
   },
   {
    "address": 38705,
@@ -3307,6 +3499,21 @@
    "address": 38729,
    "type": "line",
    "text": "State 2 calls $9820, then calls $43F0 with A=8 if $1B28,X is negative or $43A2 with A=8 otherwise. If $1A8F,X is nonzero, return. Otherwise copy $1B17,X to $1AB1,X and return. Callback behavior, the state-index range and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38763,
+   "type": "line",
+   "text": "State 3 decrements $1B06,X with eight-bit wrap. If the result is nonnegative, call $983E and jump to $9647. If negative and its low two bits are nonzero, jump to $9647. Otherwise, if the byte at $962A equals 5, jump to $980B. If it differs, transfer X to Y, save X in the immediate operand at $980A, and call $190B. Carry clear branches to $9809 to restore X; carry set continues at $9794. Callback effects, the byte\u2019s other uses and ordinary-play reachability remain open."
+  },
+  {
+   "address": 38804,
+   "type": "line",
+   "text": "Call $447A. Using the returned X and Y, set $1919,X to $2F, copy $196E,Y and $195D,Y to the corresponding X fields, and store $19A1,Y plus 8 at $19A1,X with carry clear. If $98BE is nonnegative, add $18 to the two-byte value at $195D,X/$196E,X with carry propagation. Set $1A07,X to 8, $19F6,X to 7, and $19E5,X and $19C3,X to $E5. Copy $98BF\u2013$98C2 to $35BD\u2013$35C0 and call $34EA. With its returned X, OR A with $A0 and store it at $1B28,X; set $19B2,X to 1 and clear $192A,X and $1AA0,X. Increment $962A, then continue at $9809. Callback effects, allocation conditions and ordinary-play reachability remain open. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 38921,
+   "type": "line",
+   "text": "Load X from the immediate operand at $980A. If $1B06,X is not $E0, jump to $9647. Otherwise set $1AB1,X to 1, call $9647 and jump to $962B. The state-3 entry patches the operand at $980A before attempting allocation."
   },
   {
    "address": 38944,
@@ -3332,6 +3539,11 @@
    "address": 39102,
    "type": "line",
    "text": "Working byte written by the three type-$2D/$2E frame helpers from A and carry returned by $72FC; another handler reads its sign. Other uses remain open."
+  },
+  {
+   "address": 39103,
+   "type": "line",
+   "text": "Four working bytes set by the state-1 transition from shifted values at $47\u2013$49 and entity fields. The state-3 allocated-slot path copies them to $35BD\u2013$35C0. Other uses remain open."
   },
   {
    "address": 39107,
