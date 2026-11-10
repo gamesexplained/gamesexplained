@@ -622,3 +622,5 @@ Traced the two resident SID frequency tables through $23B7. A listing test check
 Traced the resident status-screen template copy at $6C89. VICE and a listing test compared all 200 bytes in a controlled load-24 state; the paused user snapshot was restored. Later writes and natural reachability remain open.
 
 Traced resident transfer-memory receive and send at $7E02/$7E25. VICE and a listing test checked three-byte paths with serial callbacks stubbed, including page crossing. The paused user snapshot was restored; serial peer behavior and other transfer states remain open.
+
+Traced the rising-entity overlap decision at $6939–$69A1, including carry into the player-Y addition. Seven forced VICE cases and a listing test checked width selection and selected attach/reject branches with the display-slot callback stubbed. The paused user snapshot was restored; further boundary and natural-play cases remain open.
