@@ -826,3 +826,5 @@ Checked load-14 type-$12 state 2 in ten forced VICE cases with callbacks stubbed
 Checked load-14 helper $A6DA in five forced VICE cases with allocation and initialization callbacks stubbed; restored the paused user snapshot.
 
 Checked load-14 type-$13 frame helper in six forced VICE cases, including counter wrap and carry between frame additions; restored the paused user snapshot.
+
+Checked load-14 type-$13 contact helper in five forced VICE cases with callbacks stubbed; restored the paused user snapshot.

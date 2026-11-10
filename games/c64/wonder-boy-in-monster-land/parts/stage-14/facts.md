@@ -142,3 +142,5 @@ Load-14 type-$12 state 2 at $A66F uses an indexed counter, rotates one callback 
 Load-14 helper $A6DA calls $190B and, on a set carry, initializes another entity slot from the incoming Y slot before restoring X from Y. Five forced VICE cases checked allocation failure, both direction values and wrapped frame addition with $190B and $447A stubbed. Callback effects, slot-index bounds and ordinary-play reachability remain open.
 
 Load-14 type-$13 frame helper $A8AC decrements a counter and selects bit 2; $A8B4 adds that value or an incoming A to the base frame, then adds 2 while retaining carry. Six forced VICE cases covered both entries, counter wrap and frame carry in binary mode.
+
+Load-14 type-$13 contact helper $A88A branches according to carries from $732A/$7227 and the sign of $1A6D,X. Five forced VICE cases checked the branch outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
