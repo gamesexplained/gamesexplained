@@ -694,3 +694,5 @@ Checked all 34 shop-message copies in each of 17 later loads against the decoded
 Found and typed graphics setup code and its ten source blocks in loads 2, 9, 23 and 26. VICE and a listing test checked every copy and seven mirror calls per load with the mirror callback stubbed. Load-2 overlapping character descriptions record both uses; the paused user snapshot was restored.
 
 Found and typed load-19 message setup, cursor-colour code and its tables at $BE38–$BE95. Four forced VICE cases and a listing test checked one entity setup and all three usual cursor ranges with callbacks stubbed. The paused user snapshot was restored; the following code remains a separate coverage boundary.
+
+Found and typed load-19 entity reaction $BE96–$BF17. Seven forced VICE cases and a listing test checked timer, contact, collision and random-direction paths with callbacks stubbed. The paused user snapshot was restored; the next state has its own coverage boundary.
