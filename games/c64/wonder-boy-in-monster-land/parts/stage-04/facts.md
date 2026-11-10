@@ -90,3 +90,5 @@ Type-$22 state 1 at $B6F1 can call a sign-selected movement routine, then uses c
 Type-$22 state 0 at $B6BE can enter alternate-slot cleanup, or call a helper and choose a movement callback by a sign byte; callback carry controls its transition to state 1. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
 
 The type-$22 collision helper at $B75B can return directly or enter state-2 setup after either of two carry checks. State-2 setup returns to the helper’s caller, so a state-0 call continues after it. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
+
+A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The selected bytes matched the captured play snapshot, and a 200-frame play capture recorded no instruction entry into those selected ranges. 50 eight-byte characters before the nearest discovered code entry or update pointer were described from their row patterns; whether each is displayed and other possible code uses remain open.
