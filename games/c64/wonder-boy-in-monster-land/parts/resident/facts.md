@@ -299,3 +299,5 @@ Resident $5CCB and $5CFE initialize slot-zero object types $FC and $FB or increm
 Resident $2D3E draws pairs of characters down the exposed right-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
 
 Resident $2E33 draws pairs of characters down the exposed left-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
+
+Resident $3622 scans slots and either copies a new ten-byte entity record or reloads a previous one. VICE checked four forced cases through the real copy routine, including a negative type, occupied slot and reload-count adjustment. Slot and record bounds and ordinary-play reachability remain open.

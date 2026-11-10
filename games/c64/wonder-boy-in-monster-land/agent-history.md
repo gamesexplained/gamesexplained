@@ -561,3 +561,5 @@ Traced resident slot-zero object initialization $5CCB and $5CFE. VICE checked fo
 Traced resident right-scroll tile-column writer $2D3E. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
 
 Traced resident left-scroll tile-column writer $2E33. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
+
+Traced resident entity record scan $3622. VICE checked four forced new, negative, reload and occupied cases through the real ten-byte copy; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Slot and record bounds and ordinary-play reachability remain open.

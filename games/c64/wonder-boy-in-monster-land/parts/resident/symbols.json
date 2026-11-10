@@ -20490,6 +20490,31 @@
    "text": "Scans entity slots and loads or reloads ten-byte records. Its count comes from stage state and is not locally constrained to the physical slot arrays."
   },
   {
+   "address": 13874,
+   "type": "line",
+   "text": "For an empty slot, calculate (($7C * 10) - 10) modulo 256 into Y by patching twice the index into the immediate operand at $363C. If the byte at ($E2),Y is zero, enter the reload path at $366A."
+  },
+  {
+   "address": 13884,
+   "type": "line",
+   "text": "This immediate operand holds twice the new-record index. Adding it to the eight-times value and subtracting 10 yields the record offset modulo 256."
+  },
+  {
+   "address": 13893,
+   "type": "line",
+   "text": "Save $7C into $1B39,X and increment $7C. Copy ten bytes with $369E, clear $1B4A,X, $19B2,X, $1A7E,X and $1A8F,X, and set $1AA0,X to 7 only if the copied type byte is nonnegative. Continue scanning."
+  },
+  {
+   "address": 13930,
+   "type": "line",
+   "text": "Calculate (($1B39,X * 10) - 10) modulo 256 into Y using the patched operand at $3675. Copy ten bytes with $369E and increment $1B4A,X."
+  },
+  {
+   "address": 13952,
+   "type": "line",
+   "text": "Shift the incremented reload count right once, decrement Y to the final copied record byte, add that byte and store the result at $1A6D,X. Clear $19B2,X, $1A7E,X and $1A8F,X, set $1AA0,X to $96 and continue scanning."
+  },
+  {
    "address": 13982,
    "type": "line",
    "text": "Read ten successive bytes through the pointer at $E2/$E3, starting at Y and incrementing Y modulo 256 after each. Store them at $1919,X, $19E5,X, $193B,X, $194C,X, $197F,X, $1990,X, $19F6,X, $1A18,X, $192A,X and $1A6D,X, respectively."
