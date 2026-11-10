@@ -748,3 +748,5 @@ Described the separate player item arrays and checked append, matching-item merg
 Described the remaining captured entries in 30 later-load row-pointer pairs. All 81 pairs per load follow the captured stride; VICE compared every tail byte with the corresponding entry snapshot, and a listing test checks the arithmetic and table bounds. The pointers extend beyond the map rows described by the Maps view; their use and target ownership remain open. Restored the paused user snapshot.
 
 Typed load-11 entity initialization $964E–$968C following the stage-object record. Three forced VICE calls and a listing test checked twelve indexed fields and the message pointer. Restored the paused user snapshot.
+
+Traced two load-11 repeating motion streams and their entries, recording the first stream’s overlap with copied characters. Six forced VICE cases and a listing test checked literal, repeated and reset values. Restored the paused user snapshot.

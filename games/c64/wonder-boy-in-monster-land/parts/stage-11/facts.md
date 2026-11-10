@@ -58,3 +58,5 @@ Controlled visual-resource selections copied 130 additional eight-byte character
 The captured split row-pointer tables contain 81 pairs. All follow a 122-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
 
 Load-11 code at $964E initializes indexed type-$10 entity fields and passes message pointer $968D to $77E0; the captured object record contains $964E. Three forced VICE calls and `test_stage11_kraken_init.js` check the fields and pointer. The message callback and ordinary-play reachability remain open.
+
+Load-11 entries at $95F4 and $9616 pass the encoded streams at $95FF and $9621 to the resident repeating-motion reader. Each yields 38 values before resetting. The first stream overlaps the copied character source at $9601–$9610. Six forced VICE cases and `test_stage11_motion.js` check literal, repeated and reset values; ordinary-play reachability remains open.
