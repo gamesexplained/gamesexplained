@@ -7141,6 +7141,26 @@
    "text": "For right input, return to the release loop without a change when the selection index is exactly 1. Otherwise increment it. If the result is nonzero and the layout selector is zero, call the description routine with the second item ID; then update the cursor and return to the release loop. Values outside the usual $FF, 0 and 1 are not clamped by this code."
   },
   {
+   "address": 42770,
+   "type": "line",
+   "text": "If the layout selector is nonzero, pass the selection index in A to the option dispatcher at $A52E. Otherwise inspect the selected item and stage record."
+  },
+  {
+   "address": 42781,
+   "type": "line",
+   "text": "When the selection index is zero, a negative stage-record field 3 or a clear bit 1 selects message $A8B4. A nonnegative field with bit 1 set selects message $A89D. Nonzero selection indexes instead enter the item-price path."
+  },
+  {
+   "address": 42811,
+   "type": "line",
+   "text": "Use the first item ID when the nonzero index has its sign bit set, otherwise the second item ID. Multiply the ID by eight, use it as an offset into the item records, and pass the first two record bytes in $7D/$7E to the balance-subtraction routine."
+  },
+  {
+   "address": 42844,
+   "type": "line",
+   "text": "If balance subtraction returns carry clear, go back to the release loop. On carry set, decrement stage-record field 3, choose the item ID again by the index sign and use its record to patch an item-effect call. With decimal mode clear, pass item ID plus one in A. After the callback returns, select message $A879."
+  },
+  {
    "address": 42868,
    "type": "line",
    "text": "Patch the low byte of the call target from the selected state."
