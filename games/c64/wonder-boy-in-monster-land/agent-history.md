@@ -936,3 +936,5 @@ Checked five forced entity fall-state outcomes in VICE with collision stubbed, i
 Checked the 80-byte banked visual-resource copy in VICE with the preceding loader stubbed and restored the paused user snapshot. The check reads CPU port $01 through the processor-visible bank rather than underlying RAM.
 
 Checked all five message screen-row copies with known patterns in VICE and restored the paused user snapshot.
+
+Split the three message screen-row boundaries after checking their regular copy in VICE; kept the following bytes outside those explanations.

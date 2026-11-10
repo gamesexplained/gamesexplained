@@ -411,3 +411,5 @@ The entity fall-state update at $44C7 calls $44DE and stores 1 on carry set. On 
 The visual resource wrapper at $7119 calls $7130, sets CPU port $01 to $30, copies 80 bytes from $C808–$C857 to underlying RAM $D7B0–$D7FF, sets $01 to $35 and returns. A forced VICE case compared every copied byte and checked the final visible port value with the preceding loader stubbed.
 
 The first and fifth message-panel rows at $4EE4 and $4F3C each contain 22 screen codes and are copied to $C00E and $C0AE respectively. A forced VICE case replaced all five row buffers with known patterns and checked all 110 copied screen bytes. Character interpretation depends on the selected character set.
+
+The message display copies 22-byte rows to $C036–$C04B, $C05E–$C073 and $C086–$C09B. The regular and alternate panel paths use different source buffers. The regular path was checked in VICE with distinct patterns across all five screen rows; adjacent screen bytes remain separately bounded.
