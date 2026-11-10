@@ -481,7 +481,7 @@
   {
    "start": 41006,
    "end": 41075,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 41076,
@@ -1014,6 +1014,24 @@
    "kind": "user"
   },
   {
+   "address": 41006,
+   "name": "type05_event_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41048,
+   "name": "type05_skip_handler",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41065,
+   "name": "type05_event_continue",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41076,
    "name": "type05_frame_working_byte",
    "type": "UserDefined",
@@ -1409,12 +1427,12 @@
   {
    "address": 40774,
    "type": "line",
-   "text": "State 2: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $FF, toggle bit 7 of $1B17,X, set the state to 3 and return. The event helper, incoming index range and natural reachability remain open."
+   "text": "State 2: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $FF, toggle bit 7 of $1B17,X, set the state to 3 and return. The incoming index range and natural reachability remain open."
   },
   {
    "address": 40850,
    "type": "line",
-   "text": "State 3: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return. The event helper, incoming index range and natural reachability remain open."
+   "text": "State 3: Call the event helper at $A02E; the following describes the path when it returns here. Copy $1B17,X to the working byte at $A074, read the table at $A076 indexed by $1AF5,X, call the frame helper at $A01E, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set the state to 0 and return. The incoming index range and natural reachability remain open."
   },
   {
    "address": 40913,
@@ -1430,6 +1448,21 @@
    "address": 40990,
    "type": "line",
    "text": "Test the sign of the working byte at $A074. If negative, clear carry and add 6 to A. Then clear carry again, add $19E5,X, store the low byte at $19C3,X and return. This binary arithmetic assumes decimal mode is clear; overflow from the first addition does not carry into the second."
+  },
+  {
+   "address": 41006,
+   "type": "line",
+   "text": "Copy $1B17,X to the frame working byte at $A074, call $792C and $732A, and branch on the latter\u2019s carry. On set carry, a positive $1A6D,X saves the old state in $1AE4,X, calls the frame helper at $A01E with A=4 and selects state 4; zero or negative clears $1AD3,X and selects state 5. Both paths set $1AC2,X to 10 and then enter $A058. On clear carry, call $7227; if it returns clear, return normally, otherwise tail-call $5D7A with A=4. The external callees and natural reachability remain open."
+  },
+  {
+   "address": 41048,
+   "type": "line",
+   "text": "Pull two bytes from the stack, discarding the return address for the JSR that entered this helper, then RTS using the next return address. This skips the rest of the calling handler when reached from an ordinary JSR."
+  },
+  {
+   "address": 41065,
+   "type": "line",
+   "text": "Call $7227. On clear carry, return to the calling handler; on set carry, tail-call $5D7A with A=4, allowing it to return to the handler."
   },
   {
    "address": 41076,

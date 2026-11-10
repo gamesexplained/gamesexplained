@@ -187,3 +187,5 @@ The type-$05 frame helper and its two four-byte offset tables were described in 
 Type-$05 state 5 was traced in five loads, including its pre-check table read, countdown and index wrap. Listing tests cover in-range and controlled out-of-range inputs with $4B0E stubbed; eight VICE calls check representative paths. Normal index ranges and natural reachability remain open, and the paused snapshot was restored.
 
 Type-$05 states 2 and 3 were traced across five loads. Listing tests check the frame, countdown and callback branches with the event and movement helpers stubbed; ten VICE calls check representative paths. The event helper, table-index range and natural reachability remain open. The paused snapshot was restored.
+
+The type-$05 event helper was traced across five loads. Its set-carry path removes its own return address and returns past the calling handler; a wrapper test verified that the caller continuation is skipped. Listing tests and nine controlled VICE calls check both stack paths with external callbacks stubbed. The paused snapshot was restored.
