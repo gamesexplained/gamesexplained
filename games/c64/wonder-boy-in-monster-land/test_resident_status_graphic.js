@@ -1,11 +1,7 @@
 'use strict';
 const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
-const base=new Uint8Array(65536);
-for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
-for(const [stage,colour] of [[0,13],[1,null],[5,13],[6,15]]){
- const a=base.slice();a[0x4dd4]=stage;a[0x51b3+stage]=0;a[0x51ba+stage]=0x60;a.set(Array.from({length:20},(_,i)=>i),0x6000);for(let row=0;row<3;row++)a.fill(3,0xd84c+40*row,0xd850+40*row);a.set([0x20,0x90,0x4a,0xea],0x2f0);
- const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f3,maxSteps:500});assert.equal(cpu.pc,0x2f3);
- for(let row=0;row<5;row++)assert.deepStrictEqual([...a.slice(0xc024+40*row,0xc028+40*row)],Array.from({length:4},(_,i)=>row*4+i));
- for(let row=0;row<3;row++)assert.deepStrictEqual([...a.slice(0xd84c+40*row,0xd850+40*row)],Array(4).fill(colour===null?3:colour));
+const base=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const typ of [0,1,2]){
+ const m=base.slice();for(const [address,start] of [[0x5244,10],[0x5264,40],[0x5284,70]])for(let i=0;i<24;i++)m[address+i]=(start+i)&255;m.set([5,6,7],0x52a4);const cpu=new CPU(m);cpu.a=typ;cpu.pc=0x5326;cpu.run({until:0x5355,maxSteps:200});assert.equal(cpu.pc,0x5355);assert.equal(m[0x534a],5+typ);assert.deepEqual([...m.slice(0x4fbf,0x4fc7)],[...Array(8).keys()].map(y=>10+typ*8+7-y));for(const [addr,start] of [[0x4f95,40],[0x4faa,70]])assert.deepEqual([...m.slice(addr,addr+6)],[...Array(6).keys()].map(y=>start+typ*8+7-y));for(const addr of [0x4ffe,0x5013])assert.deepEqual([...m.slice(addr,addr+6)],Array(6).fill(5+typ));
 }
-console.log('OK - resident status graphic copy and colours');
+console.log('OK - resident status graphic table selector and cell copies');

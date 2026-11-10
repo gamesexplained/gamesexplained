@@ -351,3 +351,5 @@ The keyboard scan at $2951 selects CIA1 port-A value $FD and tests port-B bit 7.
 The captured status routine at $7B84 returns $5284. If action tier $4DDB is nonzero, it also makes CIA1 port A an output and reads the byte at $29A3 as data before returning; its jump bypasses the alternate path at $7BA8. Three forced VICE cases and `test_game_status.js` check zero and nonzero tier paths. Ordinary-play reachability and other effects of CPU reads remain open.
 
 The two players have separate item-type and packed-BCD quantity arrays at $51C3/$51E3 and $5203/$5223. Six forced VICE cases and `test_inventory_arrays.js` check append, matching-item merge and carry-to-$99 saturation for both players. The routine indexes by the item count without locally limiting it to the 32-byte spacing.
+
+Resident status graphic selector $5326 patches a colour operand and copies eight label cells plus four six-cell ranges. Three forced VICE cases checked selected table rows and every destination. Type/index bounds and ordinary-play reachability remain open.
