@@ -898,3 +898,5 @@ Checked resident record map updater in three forced VICE cases including a page 
 Verified the map updater’s forced $FF-stride Y wrap and overwrite in VICE; restored the paused user snapshot.
 
 Checked resident reward conversion in five forced VICE cases with score and message callbacks stubbed; restored the paused user snapshot.
+
+Checked resident transfer-failure border flash in VICE with controlled RAM substituted for CIA1 input reads; restored the paused user snapshot.

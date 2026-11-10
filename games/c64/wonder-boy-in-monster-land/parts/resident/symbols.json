@@ -25361,6 +25361,21 @@
    "text": "Clear the transition display: with X=0 on entry, the unrolled stores and decrement loop write zero to $C000\u2013$C3E7 and $C400\u2013$C7E7, and write $08 to $D800\u2013$DBE7. The latter accesses colour RAM when I/O is visible. It then jumps to $6A75. The final 24 bytes of each 1,024-byte screen page are outside these stores; other code writes sprite pointers there."
   },
   {
+   "address": 31576,
+   "type": "line",
+   "text": "Read $D020 into Y and continue at $7B5B, preserving that byte until the retry path writes it back."
+  },
+  {
+   "address": 31579,
+   "type": "line",
+   "text": "Load the immediate byte at $7B5C, XOR it with 8 and write the result to $D020. Starting X at zero, write the result to $7B5C and decrement X until it returns to zero, then AND reads from $DC01 and $DC00 and test bit 4. When that bit is set, repeat; otherwise write saved Y to $D020 and jump to $7AE3. The loop makes 256 decrement iterations per flash. Actual input and delay timing remain open."
+  },
+  {
+   "address": 31580,
+   "type": "line",
+   "text": "Immediate operand of the LDA at $7B5B, repeatedly patched at $7B64 with the XOR result to alternate bit 3 on the next pass."
+  },
+  {
    "address": 31610,
    "type": "line",
    "text": "Values scanned by the alternate $7ba8 path. That path is bypassed by the captured entry flow unless another entry or mutation selects it."

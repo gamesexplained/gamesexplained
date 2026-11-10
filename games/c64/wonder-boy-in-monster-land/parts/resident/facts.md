@@ -375,3 +375,5 @@ Resident record map updater $46D6 patches row, column and saved-Y operands and w
 A forced VICE case with $7F4A=$FF made the map updater’s second-row Y increment wrap to zero and overwrite its first written cell. Whether ordinary play supplies that stride remains open.
 
 Resident reward conversion $7771 splits an input shifted left four places into arguments for $4B0E/$4B20, then uses the real nibble splitter for display fields. Five forced VICE cases checked boundary bytes with score and message callbacks stubbed. Their effects and ordinary-play reachability remain open.
+
+Resident transfer-failure path $7B58 alternates bit 3 of the border byte and polls bit 4 of the AND of two CIA1 port reads before restoring the saved border and retrying. A forced VICE test checked two flash passes and the exit with both input reads redirected to controlled RAM. Actual input and delay timing remain open.
