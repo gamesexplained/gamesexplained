@@ -69,7 +69,10 @@ class BrowserTests(unittest.TestCase):
             start.assert_not_called()
 
     def test_missing_browser_does_not_download(self):
-        with patch.object(browser.shutil, 'which', return_value=None), patch.object(browser.subprocess, 'Popen') as start:
+        with patch.dict(browser.os.environ, {'KIT_BROWSER_CHROMIUM': ''}), \
+             patch.object(browser, 'firefox', return_value=None), \
+             patch.object(browser, 'installed_chromium', return_value=[]), \
+             patch.object(browser.subprocess, 'Popen') as start:
             with self.assertRaisesRegex(SystemExit, 'no installed Firefox'): browser.start()
             start.assert_not_called()
 

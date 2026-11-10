@@ -14,12 +14,8 @@ once game.json has a tier (80-retro, step 7) and on any pull request.>
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/c64/project.py`: retain automatic labels when reconstructing a project, so a direct export does not lose them; `kit/c64/test_project_labels.py` covers the round trip.
+- `kit/scripts/test_browser.py`: isolate the missing-browser test from installed macOS applications; `kit/c64/test_tool_isolation.py` resolves the temporary path before comparing it on macOS.
 
 ## Candidates
 
