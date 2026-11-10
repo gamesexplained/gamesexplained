@@ -44,7 +44,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-table{border-collapse:collapse;font-size:14px;width:100%}
 .ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
 .ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.ft-four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px}
+.ft-four{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px}
 .ft-four .plate,.ft-two .plate{margin:0;padding:12px}
 .ft-shot,.ft-px{width:100%;image-rendering:pixelated;display:block}
 .ft-wide{max-width:960px;margin:0 auto}
@@ -81,47 +81,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section data-part="">
   <p class="fig">01 · The game</p>
   <h2 class="t">A camp, ten friends, and one of them is Jason</h2>
-  <p>You are one of five camp counsellors at Crystal Lake. Ten other people walk about the camp with you: the woods and the lake outside, the church, and two other buildings. One of the ten is Jason Voorhees in disguise. You find weapons lying about, and you can send friends to a safe room, where Jason will not follow them. A round ends when you kill Jason, when Jason kills you, or when the danger clock in the panel runs out.</p>
-  <p>Each round you play the next counsellor, from Gerry King to Stuart Palmer, and Jason hits a little harder each time. The game is two loads from the disk: an introduction with the title picture, the scream, the story, and the counsellors' portraits, then the game itself.</p>
+  <p>You are one of five <a href="#counsellors">camp counsellors</a> at Crystal Lake. Ten other people walk about the camp with you: the woods and the lake outside, the church, and two other buildings. One of the ten is Jason Voorhees in disguise. You find <a href="#weapons">weapons</a> lying about, and you can send friends to a <a href="#safe-room">safe room</a>, where Jason will not follow them. A round ends when you kill <a href="#jason">Jason</a>, when Jason kills you, or when the <a href="#jason">danger clock</a> in the <a href="#panel">panel</a> runs out.</p>
+  <p>Each round you play the next counsellor, from Gerry King to Stuart Palmer, and Jason hits a little harder each time (<a href="#score">Points, the bonus, and five rounds</a>). The game is two loads from the disk: an <a href="#intro">introduction</a> with the title picture, the <a href="#scream">scream</a>, the story, and the counsellors' portraits, then the game itself.</p>
   <div class="ft-two">
     <figure class="plate"><img src="reference/title.png" alt="The title picture: FRIDAY THE 13TH over a hockey mask with a knife through it, in a pool of blood, with the Domark logo" class="ft-shot"><figcaption class="cap"><b>The loading screen.</b> The introduction shows it while the scream plays.</figcaption></figure>
     <figure class="plate"><img src="reference/play-church.png" alt="Play inside the church: two people among benches and an altar, with the panel below" class="ft-shot"><figcaption class="cap"><b>In the church.</b> The room is above; the panel below holds the fear head, the strength weights, the danger bar, the score, the weapon, and the ten others.</figcaption></figure>
   </div>
 </section>
 
-<section id="music">
-  <p class="fig">02 · Music</p>
-  <h2 class="t">Music: the theme and six tunes</h2>
-  <p class="lede">The theme plays throughout and starts again whenever nothing else plays. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise.</p>
-  <div class="plate"><div id="sidRoot"></div>
-    <p class="cap">The player runs the game's own music code, <a href="source-game.html#C4D8"><code>play_tune</code></a> and once a frame <a href="source-game.html#C604"><code>irq_music</code></a>, on a copy of the C64's processor in the page, over the game's bytes from the Source tab. <code>test_music.js</code> runs each tune for 3,000 frames and checks every write to the sound chip against the same code run directly.</p></div>
-  <p>The seven tunes lie under the KERNAL ROM, from <code>$E000</code> to <code>$EF02</code>. To read them, <a href="source-game.html#C81B"><code>music_swap</code></a> banks the ROM out for each step and back in after it. Each voice is a list of note and length pairs, with four commands: repeat, waveform, attack and decay, and sustain and release. A tune's speed is a number of frames between steps at <a href="source-game.html#C8DB"><code>tune_tempo</code></a>, and only the theme repeats.</p>
-  <table class="ft-table" id="ftTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Frames per step</th><th>Length</th></tr></thead><tbody></tbody></table>
-  <p>A room's tune comes from <a href="source-game.html#CA51"><code>place_tune</code></a>, which looks the room up in six places at <a href="source-game.html#CA6B"><code>tune_places</code></a>. It starts one only when the last tune started was the theme, so a room's tune never cuts into another room's, or into Jason's. The fourth place is $FF, which no room has, so tune 4 is heard only when Jason reveals himself (<a href="source-game.html#A24C"><code>jason_reveal</code></a>).</p>
-</section>
-
-<section>
-  <p class="fig">03 · The scream</p>
-  <h2 class="t">Sound: a scream in 18,416 bits</h2>
-  <p class="lede">The scream that plays over the title and whenever someone dies is a recording, one bit per sample, played by turning the sound chip's volume fully up or fully down.</p>
-  <div class="plate"><div id="screamRoot"></div>
-    <p class="cap">The player calls a port of <a href="source-game.html#3600"><code>play_scream</code></a> once for each bit, every 107 cycles, the average gap between the game's own volume writes when its loop is run on the kit's processor; the gaps run from 104 to 125 cycles. The volume steps are heard through the 6581 chip's mixer, whose voices carry a constant level that the volume scales. <code>test_scream.js</code> checks every write against the game's routine. The interrupts are off while the scream plays, so the game stops for its two seconds.</p></div>
-  <p>The sample starts at <a href="source-game.html#36A0"><code>$36A0</code></a> with its length, $08FE bytes, and the bits follow, high bit first. For each 1 bit, <a href="source-game.html#366B"><code>scream_click</code></a> sets volume 15 and starts a triangle wave on voice 1; for each 0 bit, <a href="source-game.html#3680"><code>scream_quiet</code></a> sets volume 0. The two paths are padded with <code>NOP</code>s so that each takes about as long as the other. Before it plays, <a href="source-game.html#C37B"><code>scream</code></a> blanks the panel to the room's background colour, and redraws it afterwards. The introduction carries the same routine and the same bytes at the same address.</p>
-</section>
-
-<section>
-  <p class="fig">04 · A room, rebuilt</p>
-  <h2 class="t">One room drawn by the game's own routine</h2>
-  <p class="lede">Rooms are built from tiles of cells laid over a background, by <a href="source-game.html#A2A2"><code>draw_room</code></a>. The page runs that routine, unchanged, on the game's bytes.</p>
-  <div class="plate"><div class="pick"><a class="step" id="rmPrev" aria-label="Previous room">‹</a><select id="rmSel" aria-label="Room"></select><a class="step" id="rmNext" aria-label="Next room">›</a></div>
-    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The emulator's picture of room 39" id="rmShot" class="ft-px"></div>
-    <p class="cap" id="rmCap">Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which <code>draw_room</code> does not draw.</p></div>
-  <p>Each room is 8 tiles across and 4 down, 32 bytes at <a href="source-game.html#0C00"><code>$0C00</code></a> plus 32 times the room's number. A tile is 4 by 4 cells, and a cell is 8 by 8 multicolour pixels. The cells' see-through pixels let the background show: plain grey outdoors, and indoors one perspective picture of walls and floor that every building room shares, recoloured for each room from two bytes at <a href="source-game.html#AA5E"><code>room_colours</code></a>. The <a href="levels.html">Maps</a> tab draws all 44 rooms the same way, laid out as the game joins them.</p>
-  <p>The room is also the collision map. Its 32 tiles are copied to <a href="source-game.html#0894"><code>room_map</code></a>, and <a href="source-game.html#AE8F"><code>tile_kind</code></a> sorts the tile under each foot into open, solid, or climbable. Outdoors, walking off a side of the screen moves you one room across the 4 by 6 grid; in a building, the floor narrows with depth, and you leave through the doorways in the walls.</p>
-</section>
-
-<section>
-  <p class="fig">05 · Jason</p>
+<section id="jason">
+  <p class="fig">02 · Jason</p>
   <h2 class="t">The disguise, and when it drops</h2>
   <p class="lede">At the start of each round <a href="source-game.html#9B5F"><code>pick_jason</code></a> chooses one of the ten others at random to be Jason. He walks about like everyone else until the game decides he starts killing.</p>
   <div class="plate">
@@ -133,10 +102,42 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The round's clock is <a href="source-game.html#0821"><code>danger_clock</code></a>. It starts at 0 and rises by 2 every 128 counts of <a href="source-game.html#08D5"><code>pass_count</code></a>, which counts once every two passes of the game's loop, about every 4.5 frames. At $C0 the time is up, about 18 minutes in. Hitting an innocent friend with a weapon also adds 2.</p>
   <p>Every 256 counts, about every 23 seconds, <a href="source-game.html#A24C"><code>jason_reveal</code></a> draws a number below the clock plus 20, and Jason reveals himself when the number falls below the clock. The chance is close to clock ÷ (clock + 20): nothing at the start, a third at a clock of 10, and nine in ten by the end. Over ten tries that adds up quickly, so Jason has almost always thrown off the disguise within four minutes. When he does, tune 4 starts and he picks a victim. A hunt he gives up sends him back to wandering (<a href="source-game.html#B864"><code>jason_give_up</code></a>), and the next try can set him off again.</p>
   <p>The victim is whoever is most exposed. Each of the ten starts the round with a random exposure from 10 to 74 at <a href="source-game.html#092E"><code>actor_exposure</code></a>, and every attack by Jason raises everyone's by 2. Your fear sits in the same table, so you become the victim if your fear is higher than every friend's exposure. Jason leaves out himself and anyone sheltering in the safe room, but not the dead, as <a href="discoveries.html#dead-victim">Discoveries</a> shows.</p>
-  <p>The hunt is <a href="source-game.html#B7B4"><code>jason_hunt</code></a>. Jason walks towards the victim's room. A friend he chases panics, and Jason may lose interest: each time, he gives up and goes home unless a number below 60 falls under the friend's exposure. Within 13 pixels across and 4 down he swings, and each blow that lands takes 8 strength plus one for each round you have won (<a href="source-game.html#BD9D"><code>jason_blow_lands</code></a>). Below zero the victim dies with a scream.</p>
+  <p>The hunt is <a href="source-game.html#B7B4"><code>jason_hunt</code></a>. Jason walks towards the victim's room. When he arrives, a friend gets one chance: Jason gives up and goes home unless a number below 60 falls under that friend's exposure. You get no such chance, because the check is only for friends. Otherwise the victim panics, and the attack raises everyone's exposure by 2 and your fear by your counsellor's fear value.</p>
+  <p>Once Jason is within 13 pixels across and 4 down, he swings. Each blow that lands takes 8 strength, plus one for each round you have won (<a href="source-game.html#BD9D"><code>jason_blow_lands</code></a>). When the victim's strength falls below zero, they die with a scream.</p>
 </section>
 
-<section>
+<section id="music">
+  <p class="fig">03 · Music</p>
+  <h2 class="t">Music: the theme and six tunes</h2>
+  <p class="lede">The theme plays throughout and starts again whenever nothing else plays. Five rooms have a tune of their own, and a sixth tune plays only when Jason throws off his disguise.</p>
+  <div class="plate"><div id="sidRoot"></div>
+    <p class="cap">The player runs the game's own music code, <a href="source-game.html#C4D8"><code>play_tune</code></a> and once a frame <a href="source-game.html#C604"><code>irq_music</code></a>, on a copy of the C64's processor in the page, over the game's bytes from the Source tab. <code>test_music.js</code> runs each tune for 3,000 frames and checks every write to the sound chip against the same code run directly.</p></div>
+  <p>The seven tunes lie under the KERNAL ROM, from <code>$E000</code> to <code>$EF02</code>. To read them, <a href="source-game.html#C81B"><code>music_swap</code></a> banks the ROM out for each step and back in after it. Each voice is a list of note and length pairs, with four commands: repeat, waveform, attack and decay, and sustain and release. A tune's speed is a number of frames between steps at <a href="source-game.html#C8DB"><code>tune_tempo</code></a>, and only the theme repeats.</p>
+  <table class="ft-table" id="ftTunes"><thead><tr><th>Tune</th><th>Where it plays</th><th>Frames per step</th><th>Length</th></tr></thead><tbody></tbody></table>
+  <p>A room's tune comes from <a href="source-game.html#CA51"><code>place_tune</code></a>, which looks the room up in six places at <a href="source-game.html#CA6B"><code>tune_places</code></a>. It starts one only when the last tune started was the theme, so a room's tune never cuts into another room's, or into Jason's. The fourth place is $FF, which no room has, so tune 4 is heard only when Jason reveals himself (<a href="source-game.html#A24C"><code>jason_reveal</code></a>).</p>
+</section>
+
+<section id="scream">
+  <p class="fig">04 · The scream</p>
+  <h2 class="t">Sound: a scream in 18,416 bits</h2>
+  <p class="lede">The scream that plays over the title and whenever someone dies is a recording, one bit per sample, played by turning the sound chip's volume fully up or fully down.</p>
+  <div class="plate"><div id="screamRoot"></div>
+    <p class="cap">The player calls a port of <a href="source-game.html#3600"><code>play_scream</code></a> once for each bit, every 107 cycles, the average gap between the game's own volume writes when its loop is run on the kit's processor; the gaps run from 104 to 125 cycles. The volume steps are heard through the 6581 chip's mixer, whose voices carry a constant level that the volume scales. <code>test_scream.js</code> checks every write against the game's routine. The interrupts are off while the scream plays, so the game stops for its two seconds.</p></div>
+  <p>The sample starts at <a href="source-game.html#36A0"><code>$36A0</code></a> with its length, $08FE bytes, and the bits follow, high bit first. For each 1 bit, <a href="source-game.html#366B"><code>scream_click</code></a> sets volume 15 and starts a triangle wave on voice 1; for each 0 bit, <a href="source-game.html#3680"><code>scream_quiet</code></a> sets volume 0. The two paths are padded with <code>NOP</code>s so that each takes about as long as the other. Before it plays, <a href="source-game.html#C37B"><code>scream</code></a> blanks the panel to the room's background colour, and redraws it afterwards. The introduction carries the same routine and the same bytes at the same address.</p>
+</section>
+
+<section id="room">
+  <p class="fig">05 · A room, rebuilt</p>
+  <h2 class="t">One room drawn by the game's own routine</h2>
+  <p class="lede">Rooms are built from tiles of cells laid over a background, by <a href="source-game.html#A2A2"><code>draw_room</code></a>. The page runs that routine, unchanged, on the game's bytes.</p>
+  <div class="plate"><div class="pick"><a class="step" id="rmPrev" aria-label="Previous room">‹</a><select id="rmSel" aria-label="Room"></select><a class="step" id="rmNext" aria-label="Next room">›</a></div>
+    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The emulator's picture of room 39" id="rmShot" class="ft-px"></div>
+    <p class="cap" id="rmCap">Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which <code>draw_room</code> does not draw.</p></div>
+  <p>Each room is 8 tiles across and 4 down, 32 bytes at <a href="source-game.html#0C00"><code>$0C00</code></a> plus 32 times the room's number. A tile is 4 by 4 cells, and a cell is 8 by 8 multicolour pixels. The cells' see-through pixels let the background show: plain grey outdoors, and indoors one perspective picture of walls and floor that every building room shares, recoloured for each room from two bytes at <a href="source-game.html#AA5E"><code>room_colours</code></a>. The <a href="levels.html">Maps</a> tab draws all 44 rooms the same way, laid out as the game joins them.</p>
+  <p>The room is also the collision map. Its 32 tiles are copied to <a href="source-game.html#0894"><code>room_map</code></a>, and <a href="source-game.html#AE8F"><code>tile_kind</code></a> sorts the tile under each foot into open, solid, or climbable. Outdoors, walking off a side of the screen moves you one room across the 4 by 6 grid; in a building, the floor narrows with depth, and you leave through the doorways in the walls.</p>
+</section>
+
+<section id="counsellors">
   <p class="fig">06 · The counsellors</p>
   <h2 class="t">Five counsellors, each with a weakness</h2>
   <p class="lede">The profile of each counsellor hints at a hidden weakness. In the code, the weakness is three numbers and a list of the weapons each one can use.</p>
@@ -146,7 +147,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Weapons depend on who picks them up. When a counsellor takes an object, <a href="source-game.html#A5AA"><code>held_weapon_types</code></a> turns it into the type this counsellor sees: Gerry can use all eleven. The others lose some of the short weapons, objects 3 to 6, and find them as another type: Wendy loses one, Amanda two, Bryan three, and Stuart all four.</p>
 </section>
 
-<section>
+<section id="weapons">
   <p class="fig">07 · Weapons</p>
   <h2 class="t">Thrown, swung, and swung long</h2>
   <p class="lede">At the start of each round <a href="source-game.html#9A7D"><code>start_play</code></a> scatters ten weapons and a cross across eleven different rooms. Fire while standing picks one up, puts it down, or swaps it; fire while walking uses it.</p>
@@ -155,7 +156,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Types 0 to 2 fly across the room on sprite 4, 4 pixels a pass, until they leave the screen (<a href="source-game.html#B933"><code>weapon_fly</code></a>). The others are swung, held out from the counsellor in three frames. A weapon that touches a person takes its strength off theirs (<a href="source-game.html#BBAF"><code>weapon_hits</code></a>). Hit Jason and you score, and he unmasks and turns on you. Hit a friend and the danger clock jumps by 2.</p>
 </section>
 
-<section>
+<section id="panel">
   <p class="fig">08 · The panel</p>
   <h2 class="t">Fear, strength, and the danger bar</h2>
   <p class="lede">The panel under the room is a text screen in the game's own characters. Move the sliders and the page runs the game's <a href="source-game.html#BFFB"><code>draw_panel</code></a> and <a href="source-game.html#C14C"><code>refresh_panel</code></a> to draw it.</p>
@@ -172,7 +173,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The panel is split from the room by <a href="source-game.html#A71B"><code>irq_play</code></a>, which runs twice a frame. At line $B2 it turns bitmap mode off and moves sprite 6 into the weapon box to show what you hold; at line 256 it puts both back for the room.</p>
 </section>
 
-<section>
+<section id="safe-room">
   <p class="fig">09 · The safe room</p>
   <h2 class="t">A cross, and somewhere to hide</h2>
   <p class="lede">One building room each round holds the cross, object 10. That room is the safe room, chosen at random from rooms 24 to 43 by <a href="source-game.html#9B6B"><code>pick_safe_room</code></a>.</p>
@@ -180,7 +181,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Fire does nothing while you carry the cross outdoors. Pick it up and the safe room is gone: <a href="source-game.html#0985"><code>safe_object_room</code></a> becomes $FF, and <a href="source-game.html#BEB1"><code>shelter_end</code></a> sends everyone sheltering back out to wander.</p>
 </section>
 
-<section>
+<section id="score">
   <p class="fig">10 · Score and rounds</p>
   <h2 class="t">Points, the bonus, and five rounds</h2>
   <p>The score is six digits at <a href="source-game.html#08DC"><code>score</code></a>, stored least significant first, with a 0 added on screen, so every point the code adds shows as 10. Points come from hitting Jason, from friends counting down in shelter, and from the bonus at the end of a round.</p>
@@ -188,7 +189,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The round is lost when your strength falls below zero, with "YOU SEEM TO HAVE LOST YOUR HEAD. WHAT A SHAME......HA HA HA", or when the danger clock reaches $C0, with "YOU RAN OUT OF TIME BEFORE YOU FOUND HIM." Either ends the game: <a href="source-game.html#921E"><code>new_game</code></a> shows the score and starts again from Gerry.</p>
 </section>
 
-<section>
+<section id="controls">
   <p class="fig">11 · Controls</p>
   <h2 class="t">Four keys, a joystick, and no RUN/STOP</h2>
   <table class="ft-table"><thead><tr><th>Key</th><th>Joystick in port 2</th><th>Does</th></tr></thead><tbody>
@@ -201,12 +202,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p><a href="source-game.html#A681"><code>read_keyboard</code></a> scans the whole keyboard every frame into one byte per key at <a href="source-game.html#082A"><code>key_table</code></a>, and <a href="source-game.html#A6C6"><code>read_stick</code></a> turns five of them into movement and fire; the joystick replaces the keys whenever it is moved. RETURN is read as well, and nothing uses it. RUN/STOP does nothing: <a href="source-game.html#9200"><code>game_start</code></a> points the KERNAL's STOP vector at a routine that always answers "not pressed".</p>
 </section>
 
-<section data-part="intro">
+<section id="intro" data-part="intro">
   <p class="fig">12 · The introduction</p>
   <h2 class="t">Title, licence, story, and portraits</h2>
-  <p class="lede">The first load, TITLE, is the introduction. It shows the title while the scream plays, then three screens that each wait for a key, and loads the game with the last of them, the portraits, still on screen.</p>
+  <p class="lede">The first load, TITLE, is the introduction. It shows the title picture (at the top of this page) while the scream plays, then three screens that each wait for a key, and loads the game with the last of them, the portraits, still on screen.</p>
   <div class="ft-four">
-    <figure class="plate"><img src="reference/title.png" alt="The title picture" class="ft-shot"><figcaption class="cap"><b>Title</b>, with the scream.</figcaption></figure>
     <figure class="plate"><img src="reference/licence.png" alt="The licence screen: FRIDAY THE 13TH is a trademark of Paramount Pictures Corporation" class="ft-shot"><figcaption class="cap"><b>Licence</b>, as text.</figcaption></figure>
     <figure class="plate"><img src="reference/story.png" alt="The story screen: you and nine friends at Crystal Lake holiday camp" class="ft-shot"><figcaption class="cap"><b>Story</b>, as text.</figcaption></figure>
     <figure class="plate"><img src="reference/portraits.png" alt="The five counsellors' portraits with their names" class="ft-shot"><figcaption class="cap"><b>Portraits</b>, while the game loads.</figcaption></figure>
@@ -370,7 +370,7 @@ const SCREAM_PERIOD = 107;
       $('jsTv').textContent = Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s (' + c + ' counts)';
       $('jsClockBar').style.width = (clock / 192 * 100) + '%';
       $('jsOut').textContent = 'Danger clock ' + clock + ' of 192 (' + hex(clock) + '). Tries so far: ' + Math.floor(c / 256) +
-        (c >= 256 ? '; chance at the last try ' + Math.round(last * 100) + ' %' : '') + '. Chance that Jason has revealed himself by now: ' + Math.round((1 - hidden) * 100) + ' %.' +
+        (c >= 256 ? '; chance at the last try ' + Math.round(last * 100) + ' %' : '') + '. Chance that Jason has revealed himself by now: ' + (1 - hidden > 0.995 ? 'more than 99' : Math.round((1 - hidden) * 100)) + ' %.' +
         (clock >= 192 ? ' The time is up.' : '');
     };
     jsT.oninput = jason; jason();
