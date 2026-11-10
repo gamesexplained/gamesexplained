@@ -20230,6 +20230,26 @@
    "text": "Builds status-display rows from current-player flag bits, copying or blanking icon fragments and caching the low flag bits."
   },
   {
+   "address": 16878,
+   "type": "line",
+   "text": "Decrement $1AF5,X, then read Y from $1AC2,X. If Y is 7, go to $4226; otherwise read $4249,Y. A nonzero byte increments $1AC2,X, calls $4342 with that byte in A, copies $19E5,X to $19C3,X and returns without checking the decremented countdown."
+  },
+  {
+   "address": 16907,
+   "type": "line",
+   "text": "For a zero animation-table byte, set $1A7E,X to 1, increment $1AC2,X and set $19C3,X to $19E5,X plus 2. If the decremented $1AF5,X is zero, jump to $4454; if it is $20 set $1A8F,X to $FF; otherwise return."
+  },
+  {
+   "address": 16934,
+   "type": "line",
+   "text": "When the animation index is 7 and $1A7E,X is 1, set $19C3,X to $19E5,X plus 4. Then test $1AF5,X: zero jumps to $4454, $20 sets $1A8F,X to $FF, and any other value returns."
+  },
+  {
+   "address": 16963,
+   "type": "line",
+   "text": "Set the entity display-effect byte $1A8F,X to $FF and return."
+  },
+  {
    "address": 16969,
    "type": "line",
    "text": "Seven captured animation values, ending at the neighboring routine. The consumer checks for index 7 but does not locally exclude larger initial indices."
@@ -21783,6 +21803,21 @@
    "address": 31000,
    "type": "line",
    "text": "On borrow, add the low and high bytes at $7D/$7E back into the selected balance in decimal mode, clear carry and decimal mode, and return."
+  },
+  {
+   "address": 31020,
+   "type": "line",
+   "text": "Double $1919,X modulo 256 into Y and save X in the immediate operand at $795E. Load the display-slot index from $1A29,X. Shift the slot X position $4C4F,X:$4C6F,X right one bit and add $79B6,Y; store the low result in $762E. Store $79B7,Y in $7630."
+  },
+  {
+   "address": 31053,
+   "type": "line",
+   "text": "Add $7A12,Y to the display-slot Y byte at $4CCF,X and store the result in $762F. Store $7A13,Y in $7631, restore the saved entity X from $795E and return. The table and slot indexes are not bounded locally."
+  },
+  {
+   "address": 31070,
+   "type": "line",
+   "text": "Immediate operand patched by $7931 with the entity index so that $795D can restore X after using it as a display-slot index."
   },
   {
    "address": 31097,
