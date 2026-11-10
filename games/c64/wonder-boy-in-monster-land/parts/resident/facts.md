@@ -219,3 +219,7 @@ VICE also checked two forced $460C cases with the real $4632 reader and supplied
 Resident $43A2 and $43F0 move an entity left or right in world coordinates or screen coordinates according to $7A. The screen paths clamp at different bounds or tail-jump to release for type $28 in specific branches. VICE checked nine forced arithmetic, clamp and release cases with the release callback stubbed. Callback effects and ordinary-play reachability remain open.
 
 VICE also checked two forced $45BC cases using the real horizontal movement, grid conversion and tile-attribute routines with supplied map data. The blocked case restored the initial position; the clear case retained the movement. Ordinary-play reachability remains open.
+
+Resident $4454 releases a primary display pair when its first index is nonzero, clears its links and falls into the $447A reset. A zero second index is still written when the first is nonzero; entity index zero skips setting the animation countdown to 7. VICE checked four forced primary and extra-slot cases using the real reset. Index bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced type-$28 horizontal-boundary cases through the real $4454 release and $447A reset. Each cleared the entity and marked its two primary slots, including the zero second index. Ordinary-play reachability remains open.
