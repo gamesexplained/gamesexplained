@@ -227,3 +227,7 @@ VICE also checked two forced type-$28 horizontal-boundary cases through the real
 Resident $7130 selects screen-resource pointers and colour values, calls $7008, then copies eight pages to RAM under I/O and restores the processor port. VICE checked one forced index with supplied pointers and all 2,048 source bytes, using a $7008 stub that preserves X. The effective port read had low banking bits 5 afterward. Callback effects, index bounds and ordinary-play reachability remain open.
 
 Resident $70D0 maps 20 rows of 40 screen characters through a colour table into colour RAM and restores X from an immediate operand saved by $7008. VICE checked all 800 forced cells with supplied character and colour data. Input bounds and ordinary-play reachability remain open.
+
+Resident $7011 expands literal metatile bytes and $FF-marked runs into a 20-by-10 metatile screen. VICE checked every output cell for three forced 200-metatile streams, including a literal followed by a run and an initial zero run count. Stream bounds and ordinary-play reachability remain open.
+
+VICE checked two forced $7008 decode-and-colour sequences with supplied compressed streams, metatile definitions and colour data. All 800 screen and colour cells matched and the original X was restored. Stream bounds and ordinary-play reachability remain open.

@@ -22105,14 +22105,74 @@
    "text": "Unused byte following the eight partial-meter masks. Full rows use immediate $ff rather than reading this byte.\nTrace-proven startup remnant at $7007\u2013$7007. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
   },
   {
+   "address": 28680,
+   "type": "line",
+   "text": "Patch $7117 with the incoming X, call the compressed-screen decoder at $7011, then tail-jump to the colour-mapping routine at $70D0, which restores X from $7117."
+  },
+  {
    "address": 28689,
    "type": "line",
-   "text": "Expands a compressed stream into a 20-by-10 metatile screen. The input index is 8-bit and wraps without locally advancing the source pointer; each use depends on its supplied stream and initial state."
+   "text": "Set $54 to $4D71 and $55 to ($46 XOR 4) plus $4D8A modulo 256. Set $7063 and $7062 to 10, set Y and $7061 to zero, and enter the compressed-token loop. The input offset is eight-bit; the source pointer is not advanced here."
+  },
+  {
+   "address": 28718,
+   "type": "line",
+   "text": "Read a token from ($52),Y. A byte other than $FF is drawn once by $7064. Return if $7062 is zero; otherwise increment Y and read another token if Y is nonzero, returning if it wrapped."
+  },
+  {
+   "address": 28736,
+   "type": "line",
+   "text": "After $FF, increment Y and save the next byte in the immediate operand at $704D; increment Y again and save the next byte as $7060. Draw the saved byte repeatedly until $7062 becomes zero or decrementing $7060 reaches zero. A zero initial count underflows after the first draw. On a completed run, increment Y and jump back to $702E."
+  },
+  {
+   "address": 28749,
+   "type": "line",
+   "text": "Immediate operand patched at $7043 with the metatile byte following a $FF run marker."
+  },
+  {
+   "address": 28768,
+   "type": "line",
+   "text": "Remaining run count loaded by $7049 and decremented after each draw while the screen remains active."
+  },
+  {
+   "address": 28769,
+   "type": "line",
+   "text": "Current character-column offset within the pair of rows being drawn; advanced by 2 for each metatile."
+  },
+  {
+   "address": 28770,
+   "type": "line",
+   "text": "Decoder-active byte initialized to 10 and cleared after the tenth metatile row."
+  },
+  {
+   "address": 28771,
+   "type": "line",
+   "text": "Metatile-row countdown initialized to 10 and decremented after each 20-metatile row."
+  },
+  {
+   "address": 28772,
+   "type": "line",
+   "text": "If $7062 is zero return. Otherwise save Y in $70CA, multiply the incoming metatile byte by 4, add the pointer at $5A/$5B and patch the source address at $708A/$708B. Copy four bytes to ($54),Y at the current column plus offsets 0, 1, 40 and 41."
+  },
+  {
+   "address": 28830,
+   "type": "line",
+   "text": "Add 2 to $7061. At $28 reset it to zero, add $50 to $54/$55 and decrement $7063; when the count reaches zero clear $7062. Restore the saved input Y from $70CA and return."
   },
   {
    "address": 28864,
    "type": "line",
    "text": "This repeats the immediately preceding BNE with no intervening instruction that changes flags; under ordinary 6502 execution it cannot take a different outcome."
+  },
+  {
+   "address": 28874,
+   "type": "line",
+   "text": "Immediate operand patched at $706A with the compressed-input Y offset for restoration after drawing a metatile."
+  },
+  {
+   "address": 28876,
+   "type": "line",
+   "text": "Four destination offsets within a two-by-two metatile: 0, 1, 40 and 41."
   },
   {
    "address": 28880,
