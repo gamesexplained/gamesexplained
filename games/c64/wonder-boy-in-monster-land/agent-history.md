@@ -529,3 +529,5 @@ Traced the resident sprite mirror $2086. VICE checked both 63-byte outputs again
 Traced resident viewport-origin calculation $6E12. VICE checked three forced inputs, including carries, both mode branches and supplied map rows; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
 
 Traced resident spawned-entity coordinate initialization $0988. VICE checked four forced mode and allocation-carry combinations with allocation and release stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Real callback effects and ordinary-play reachability remain open.
+
+Traced six resident item setup variants and their shared setup at $49D0. VICE checked each forced entry, including message callbacks that clobber X and Y; reset, message and motion callbacks were stubbed. A listing test repeats the cases. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.

@@ -271,3 +271,5 @@ Resident $2086 mirrors two adjacent 63-byte sprite images: one reverses single b
 Resident $6E12 computes view-origin pairs, optionally samples two map rows and derives an eight-bit half player X. VICE checked three forced inputs including 16-bit carry, both mode branches and supplied map bytes. Index bounds and ordinary-play reachability remain open.
 
 Resident $0988 initializes an entity position from screen or world coordinates according to $7A. VICE checked four forced mode and allocation-carry combinations with allocation and release stubbed; the caller does not branch on allocation carry. Real allocation and release effects and ordinary-play reachability remain open.
+
+Six resident item setup variants choose type, sprite frame and attribute before shared setup at $49D0; four also call the message routine while preserving X and Y. VICE checked six forced entries with reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
