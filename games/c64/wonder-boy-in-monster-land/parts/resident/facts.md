@@ -231,3 +231,7 @@ Resident $70D0 maps 20 rows of 40 screen characters through a colour table into 
 Resident $7011 expands literal metatile bytes and $FF-marked runs into a 20-by-10 metatile screen. VICE checked every output cell for three forced 200-metatile streams, including a literal followed by a run and an initial zero run count. Stream bounds and ordinary-play reachability remain open.
 
 VICE checked two forced $7008 decode-and-colour sequences with supplied compressed streams, metatile definitions and colour data. All 800 screen and colour cells matched and the original X was restored. Stream bounds and ordinary-play reachability remain open.
+
+Resident $0364 sets up raster and processor-port state and calls $6CCC before the display initialization at $0383. VICE checked the port state around a stubbed $6CCC call. Three forced $0383 paths checked the horizontal-origin selection and thirteen stubbed initialization calls; the CLI at $03AB was replaced with NOP during those checks. Callback effects, interrupt timing and ordinary-play reachability remain open.
+
+Resident $1665 sets an interrupt target and scans bit 7 of $DC01 after configuring CIA port A; it conditionally increments $526C and always increments $5274 before restoring display registers. VICE checked two forced bit values by temporarily redirecting the BIT instruction to a supplied RAM byte. Real keyboard behavior, interrupt timing and ordinary-play reachability remain open.
