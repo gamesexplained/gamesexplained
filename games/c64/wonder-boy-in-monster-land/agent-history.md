@@ -732,3 +732,5 @@ Traced the special-entity initialization scan and callback setup at $5E71. Two f
 Traced the slot-zero field clear at $18D8. A forced VICE call and a listing test checked thirteen fields and their neighbours. Restored the paused user snapshot.
 
 Traced the resident sound-list reader and shared tick branch. Three forced VICE cases and a listing test checked two pattern pointers and the zero-low-byte restart; the tick branch is described statically. Restored the paused user snapshot.
+
+Described six resident display-slot save arrays. A forced VICE save and restore and a listing test checked all 192 bytes and the released-slot boundary. Restored the paused user snapshot.
