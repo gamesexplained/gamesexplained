@@ -154,3 +154,5 @@ Load-4 type-$08 state 0 calls $3020 twice and uses the second result’s low two
 Load-4 type-$08 shared movement at $B5D0 selects $4574 or $45BC by the sign of $1AC2,X and flips that sign bit if the callback returns carry set. Four forced VICE cases checked both directions and carry outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-4 type-$08 state 2 uses an unsigned phase comparison at 5 and an exact match at 11 to select callbacks or return to state 0. Six forced VICE cases checked these boundaries with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-4 helper $B636 computes two frame bytes with a three-addition carry chain; five forced VICE cases checked carry at both boundaries in binary mode.
