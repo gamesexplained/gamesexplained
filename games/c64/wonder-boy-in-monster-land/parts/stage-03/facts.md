@@ -74,3 +74,5 @@ Load-3 type-$07 states 3 and 4 at $9CE0 and $9D01 use $1AD3,X and $1AF5,X to con
 Load-3 helper $9D18 jumps to $4342 for a zero $19A1,X or a value of $50 or more, and returns for values $01–$4F. Helper $9D25 selects one of two sources for $7D according to $7A. Seven forced VICE cases checked the boundaries and both selector paths, with $4342 stubbed. Ordinary-play reachability remains open.
 
 Load-3 type-$07 state 5 at $9DB6 branches on $1A8F,X and the sign of $9E27, selects a movement call and writes two frame numbers. Five forced VICE cases checked both signs, the inactive branch and wrapped frame arithmetic with movement calls stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-3 type-$07 state 6 decrements $1AC2,X and either returns or calls $4B20 and jumps to $5DB9 with A=2. Four forced VICE cases checked signed boundaries with $4B20 stubbed and stopped at $5DB9. Callback effects and ordinary-play reachability remain open.
