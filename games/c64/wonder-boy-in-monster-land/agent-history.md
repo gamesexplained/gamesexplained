@@ -616,3 +616,5 @@ Traced first-load item release, polling and timeout paths. Five forced VICE case
 Traced first-load item movement at $A6D4/$A6F2. Eight forced VICE cases and a listing test checked selection transitions in both layouts with callbacks stubbed. The paused user snapshot was restored. The confirmation handler has a separate coverage boundary.
 
 Traced first-load confirmation at $A712–$A78A. Seven forced VICE cases and a listing test checked the alternate layout, availability flags, successful and unsuccessful payment results, and patched effect call. Payment and effect callbacks were stubbed; the paused user snapshot was restored.
+
+Traced the two resident SID frequency tables through $23B7. A listing test checked all 96 paired entries, and VICE checked four forced indices against SID state. The paused user snapshot was restored. Input bounds and natural use remain open.
