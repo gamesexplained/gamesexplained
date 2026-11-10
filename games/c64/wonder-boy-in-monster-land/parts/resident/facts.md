@@ -277,3 +277,5 @@ Six resident item setup variants choose type, sprite frame and attribute before 
 Resident $49E3 and $4A12 scan enabled entries and patch their own dispatch jumps; the second selector falls back to the first at index 7. VICE checked four forced selection, wrap and fallback cases with the random routine and dispatch destinations replaced. The enabled ranges overlap, the first scan has no exit when all eight bytes are zero, and ordinary-play reachability remains open.
 
 Resident $497D chooses between another selection and the type-$F0 item setup based on bit $10 of the selected player flags. VICE checked both forced flag paths with selection, reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $7A9A saves and clears three memory pages and stages a 53-byte transfer payload. VICE checked the page copies, clearing, selector and payload with interrupts disabled, the sound callback stubbed and execution stopped before transfer. The CPU-port save bytes, SID behavior, transfer and ordinary-play reachability remain open.

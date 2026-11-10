@@ -1,0 +1,5 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const a=new Uint8Array(65536);
+for(const part of ['resident','stage-24'])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',part,'listing.json'))).records)if(r.b)a.set(r.b,r.a);
+a[1]=0x35;a[0x2201]=0x60;a.set([0xa9,4,0x4c,0x9a,0x7a],0x400);const before=[a.slice(0,256),a.slice(0x200,0x300),a.slice(0x300,0x400)],payload=a.slice(0x7bf7,0x7c2c);const cpu=new CPU(a);cpu.pc=0x400;cpu.run({until:0x7af8,maxSteps:6000});assert.equal(cpu.pc,0x7af8);assert.deepStrictEqual([...a.slice(0xc002,0xc100)],[...before[0].slice(2)]);assert.deepStrictEqual([...a.slice(0xc100,0xc200)],[...before[1]]);assert.deepStrictEqual([...a.slice(0xc200,0xc300)],[...before[2]]);assert.deepStrictEqual([...a.slice(2,256)],Array(254).fill(0));assert.deepStrictEqual([...a.slice(0x200,0x300)],Array(256).fill(0));assert.deepStrictEqual([...a.slice(0x300,0x400)],[...payload,...Array(203).fill(0)]);assert.equal(a[0x2a91],4);assert.equal(a[0x2c15],255);console.log('OK - resident transition preparation');
