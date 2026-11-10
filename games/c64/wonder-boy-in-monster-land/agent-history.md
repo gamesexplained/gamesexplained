@@ -551,3 +551,5 @@ Sampled the forced play captures of the remaining 27 loads every 20 frames throu
 Traced resident state reads $29FC and table initialization $2A16. VICE checked two supplied final-read values and all eight initialized bytes with $6B50 stubbed; a listing test repeats them. The apparent routine references are LDA reads, not calls. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
 
 Traced resident reward creation $5BE1 and $5C2A. VICE checked eight forced free, occupied and input-state cases with coordinate conversion stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Checked source-address links reported by the site build. Replaced twelve automatically generated links to the default listing with explicit links to the relevant load-specific listings; each target address is present in that listing.
