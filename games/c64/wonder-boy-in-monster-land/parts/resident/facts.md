@@ -305,3 +305,5 @@ Resident $3622 scans slots and either copies a new ten-byte entity record or rel
 Resident $2C16 sorts 32 slot indices by descending Y value, preserving equal-value order before forcing the first 15 pairs to even/odd indices. A nonzero cache flag restores cached cursors without sorting. VICE checked three forced value patterns and one cached case. Ordinary-play reachability remains open.
 
 Resident tables $2500–$255F and $2560–$25BF contain paired low and high bytes for 96 SID frequency words. The update at $23B7 writes both bytes to a voice’s frequency registers after an indexed lookup. A listing test exercises all 96 pairs; VICE checked four forced indices. Input bounds and ordinary-play use remain open.
+
+The status-screen initializer copies the 200-byte template at $4DE4–$4EAB to $C000–$C0C7. VICE and a listing test checked every copied byte in a controlled load-24 state. Later screen changes, other source uses and ordinary-play reachability remain open.
