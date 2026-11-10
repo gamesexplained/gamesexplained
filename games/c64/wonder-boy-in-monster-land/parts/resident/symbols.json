@@ -20320,6 +20320,41 @@
    "text": "Add A to $4D29,X and propagate carry into $4D31,X. If bit 0 of the resulting high byte is clear, return carry clear. Otherwise compare the low byte with $3D: below it return carry clear; at or above it write $3D to $4D29,X and return carry set."
   },
   {
+   "address": 16246,
+   "type": "line",
+   "text": "If $4D53 is zero, write 1 to each of the eight bytes at $4D21 through $4D28 and return. Otherwise decrement $4D53; if $4D51 is negative tail-jump to $402F, else continue at $3F91."
+  },
+  {
+   "address": 16273,
+   "type": "line",
+   "text": "If $4D54 is zero, replace $4D3A with $99 when it is $9F, or otherwise add 2 to it. Shift the decremented $4D53 right four bits, patch that value into $3FB2, and set $4D54 to 12 minus the patched value modulo 256."
+  },
+  {
+   "address": 16306,
+   "type": "line",
+   "text": "Immediate operand patched from the upper nibble of $4D53 for the animation-delay subtraction at $3FB1."
+  },
+  {
+   "address": 16310,
+   "type": "line",
+   "text": "Decrement $4D54. If $4D52 is negative enter the fall path at $3FDF. Otherwise use it as Y into the byte table at $4013. A nonzero byte is added to $4D39, $402D is cleared and $4D52 is incremented; zero sets bit 7 of $4D52 instead."
+  },
+  {
+   "address": 16351,
+   "type": "line",
+   "text": "Add $402D to $4D39 modulo 256 and increment $402D if it is below 8. Compute $C2 plus $4D69 modulo 256; if that value is at or below $4D39, enter the landing path at $4000, otherwise return."
+  },
+  {
+   "address": 16384,
+   "type": "line",
+   "text": "Set $4D39 to the computed floor value, clear bit 7 of $4D52, then increment the result unless it equals $19. Return."
+  },
+  {
+   "address": 16429,
+   "type": "line",
+   "text": "Fall-speed byte used by $3FDF; the nonzero displacement path at $3FCD clears it."
+  },
+  {
    "address": 16430,
    "type": "line",
    "text": "Unused startup byte $60 between effect state and the next routine. No resident instruction entry was observed here.\nTrace-proven startup remnant at $402e\u2013$402e. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
