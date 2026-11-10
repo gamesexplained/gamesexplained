@@ -874,3 +874,5 @@ Checked load-20 type-$1B animation and movement in nineteen forced VICE cases wi
 Checked resident status graphic selector $5326 with three forced VICE cases, including the patched immediate operand and all destination ranges; restored the paused user snapshot.
 
 Checked resident player-status selection $530C in four forced VICE cases using the real nibble splitter; restored the paused user snapshot.
+
+Checked the resident continue message pointer and signed displacement table with seven forced VICE cases, and restored the paused user snapshot.

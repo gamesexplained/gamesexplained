@@ -355,3 +355,5 @@ The two players have separate item-type and packed-BCD quantity arrays at $51C3/
 Resident status graphic selector $5326 patches a colour operand and copies eight label cells plus four six-cell ranges. Three forced VICE cases checked selected table rows and every destination. Type/index bounds and ordinary-play reachability remain open.
 
 Resident status selection $530C selects the first or second player’s item arrays, splits the quantity nibbles and forwards the type to $5326. Four forced VICE cases checked both player paths and quantity digits with the real split routine. Item-index bounds and ordinary-play reachability remain open.
+
+Resident $0678 contains the add-credits message passed to $77E0 at $063F. Its two text fields and control bytes were checked in VICE with message rendering stubbed. The 32-byte signed displacement table at $5662 drives continue-animation position arithmetic; six forced VICE cases checked sign extension and position addition. The incoming index and ordinary-play reachability remain open.
