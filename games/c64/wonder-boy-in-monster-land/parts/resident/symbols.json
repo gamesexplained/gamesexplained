@@ -20471,12 +20471,12 @@
   {
    "address": 864,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $EA to $5E, then high byte $13 to $5F, setting the IRQ trampoline target to $13EA. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 868,
    "type": "line",
-   "text": "Set $5F to $13, write $F2 to $D012 and $08 to $D016, then write $30 to the processor port. Clear $4DBC, call $6CCC, write $35 to the port and enable interrupts before entering $0383."
+   "text": "Set $5F to $13, write $F2 to $D012 and $08 to $D016, then write $30 to the processor port. Clear $4DBC, call $6CCC, write $35 to the port and enable interrupts before entering $0383.\nWrite $13 to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $EA, so the pair selects $13EA."
   },
   {
    "address": 899,
@@ -21251,12 +21251,12 @@
   {
    "address": 5729,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $B7 to $5E, then high byte $16 to $5F, setting the IRQ trampoline target to $16B7. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 5733,
    "type": "line",
-   "text": "Set $5F to $16 and $D012 to $2E. Set $5275 and $DC02 to $FF, write $FD to $DC00 and test bit 7 of $DC01; if it is clear, set $5275 to zero. Continue at $1687."
+   "text": "Write $16 to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $B7, so the pair selects $16B7."
   },
   {
    "address": 5767,
@@ -21271,7 +21271,7 @@
   {
    "address": 5818,
    "type": "line",
-   "text": "Save the interrupted register or CPU port value in the immediate operand restored on return."
+   "text": "Save incoming X in the immediate operand at $1796 and incoming Y at $1798. The following code saves CPU port $01 at $179A and selects port value $35 for the sprite IRQ work."
   },
   {
    "address": 5824,
@@ -21321,12 +21321,12 @@
   {
    "address": 6001,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $B0 to $5E, then high byte $17 to $5F, setting the IRQ trampoline target to $17B0. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 6005,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $17 to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $B0, so the pair selects $17B0."
   },
   {
    "address": 6009,
@@ -21341,32 +21341,32 @@
   {
    "address": 6053,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $EA to $5E, then high byte $13 to $5F, setting the IRQ trampoline target to $13EA. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 6057,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $13 to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $EA, so the pair selects $13EA."
   },
   {
    "address": 6064,
    "type": "line",
-   "text": "Later sprite-multiplexer stage updates hardware positions, masks, colours and pointers, then schedules another reuse or the end-of-frame interrupt.\nSave the interrupted register or CPU port value in the immediate operand restored on return.\nSave the interrupted register or CPU port value in the immediate operand restored on return."
+   "text": "Later sprite-multiplexer stage updates hardware positions, masks, colours and pointers, then schedules another reuse or the end-of-frame interrupt.\nSave incoming A in the immediate operand at $1851 before the reused-sprite interrupt work. The following stores save X and Y, and $17B9 saves the CPU port."
   },
   {
    "address": 6067,
    "type": "line",
-   "text": "Save the interrupted register or CPU port value in the immediate operand restored on return."
+   "text": "Save incoming X in the immediate operand at $1849 and incoming Y at $184B for restoration at the end of the reused-sprite interrupt handler."
   },
   {
    "address": 6073,
    "type": "line",
-   "text": "Save the interrupted register or CPU port value in the immediate operand restored on return."
+   "text": "Read CPU port $01 and save it in the immediate restore operand at $184D. Select port value $35, write 1 to VIC interrupt status $D019 and load the display-sort index from $45; interrupt timing is separate."
   },
   {
    "address": 6092,
    "type": "line",
-   "text": "Save the hardware sprite index in the immediate operand used later in this handler."
+   "text": "Mask the display-sort index in A with 7 and save that hardware-sprite index in the immediate operand at $17E4. Shift it left and transfer to X for paired VIC position registers."
   },
   {
    "address": 6106,
@@ -21411,12 +21411,12 @@
   {
    "address": 6232,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $EA to $5E, then high byte $13 to $5F, setting the IRQ trampoline target to $13EA. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 6236,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $13 to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $EA, so the pair selects $13EA."
   },
   {
    "address": 6243,
@@ -21506,7 +21506,7 @@
   {
    "address": 6680,
    "type": "line",
-   "text": "Seventeen-byte entity array for the third display attribute, indexed by entity slot. The ten-byte record copier at $369E installs record byte 7 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+   "text": "Seventeen-byte entity array for the third display attribute, indexed by entity slot. The ten-byte record copier at $369E installs record byte 7 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields. The callback path at $68D9 also uses this byte as a target low byte, paired with the byte at $1A6D,X."
   },
   {
    "address": 6697,
@@ -21531,7 +21531,7 @@
   {
    "address": 6765,
    "type": "line",
-   "text": "Seventeen-byte entity array for the type-dependent parameter, indexed by entity slot. The ten-byte record copier at $369E installs record byte 9 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+   "text": "Seventeen-byte entity array for the type-dependent parameter, indexed by entity slot. The ten-byte record copier at $369E installs record byte 9 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields. The path at $68DF uses it as a callback high byte, while the contact-health path at $74C0 subtracts damage from the same indexed storage."
   },
   {
    "address": 6782,
@@ -21746,17 +21746,17 @@
   {
    "address": 8258,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state."
+   "text": "Read the low call-target byte from $2062,Y and store it at $204F. The following high-byte lookup uses $2074,Y; together they patch the JSR at $204E."
   },
   {
    "address": 8264,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state."
+   "text": "Read the high call-target byte from $2074,Y and store it at $2050, pairing it with the low byte at $204F for JSR $204E."
   },
   {
    "address": 8267,
    "type": "line",
-   "text": "The target is patched before execution; the captured $ff00 operand is not a fixed destination."
+   "text": "Finish storing the selected high byte at $2050, then execute the JSR at $204E. Its $204F/$2050 operand bytes were patched by the two indexed table reads; the entry snapshot value $FF00 is not a fixed target."
   },
   {
    "address": 8276,
@@ -22736,12 +22736,12 @@
   {
    "address": 15295,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $CF to $5E, then high byte $3B to $5F, setting the IRQ trampoline target to $3BCF. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 15299,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $3B to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $CF, so the pair selects $3BCF."
   },
   {
    "address": 15311,
@@ -22751,12 +22751,12 @@
   {
    "address": 15352,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $0A to $5E, then high byte $3C to $5F, setting the IRQ trampoline target to $3C0A. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 15356,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $3C to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $0A, so the pair selects $3C0A."
   },
   {
    "address": 15370,
@@ -22766,12 +22766,12 @@
   {
    "address": 15383,
    "type": "line",
-   "text": "Set the low byte of the IRQ trampoline's next target."
+   "text": "Write low byte $B2 to $5E, then high byte $3B to $5F, setting the IRQ trampoline target to $3BB2. The target is a code address; these two stores do not by themselves measure an interrupt interval."
   },
   {
    "address": 15387,
    "type": "line",
-   "text": "Set the high byte of the IRQ trampoline's next target."
+   "text": "Write $3B to the IRQ target high byte at $5F. The preceding low-byte store sets $5E to $B2, so the pair selects $3BB2."
   },
   {
    "address": 15402,
@@ -23396,7 +23396,7 @@
   {
    "address": 18398,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state."
+   "text": "Read stage-record field $475F,X and store it at $47FD as the low byte of the callback JSR at $47FC. The high byte is read from $4765,X by the following path."
   },
   {
    "address": 18404,
@@ -23506,12 +23506,12 @@
   {
    "address": 18937,
    "type": "line",
-   "text": "Patch the high byte of the jump target from the selected state."
+   "text": "Read the selected high byte from $4A0A,Y and continue to the store at $49FC. It pairs with the low byte already copied from $4A02,Y."
   },
   {
    "address": 18940,
    "type": "line",
-   "text": "The target is patched before execution; the captured $ff00 operand is not a fixed destination."
+   "text": "Store the selected high byte at $4A01 and execute JMP $49FF through operand bytes $4A00/$4A01. The target comes from the two indexed tables, rather than the captured $FF00 placeholder."
   },
   {
    "address": 18962,
@@ -24866,17 +24866,17 @@
   {
    "address": 24222,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state."
+   "text": "Read $4783,X and patch the low operand byte at $5EAD of JSR $5EAC. The following lookup reads the high byte from $4789,X."
   },
   {
    "address": 24228,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state."
+   "text": "Read $4789,X and patch the high operand byte at $5EAE of JSR $5EAC, pairing it with the low byte at $5EAD."
   },
   {
    "address": 24234,
    "type": "line",
-   "text": "The target is patched before execution; the captured $ff00 operand is not a fixed destination."
+   "text": "Load X from the immediate operand at $5EAB, then execute the JSR at $5EAC through the target patched from $4783/$4789. The captured $FF00 operand is a placeholder."
   },
   {
    "address": 24238,
@@ -25121,17 +25121,17 @@
   {
    "address": 26841,
    "type": "line",
-   "text": "Patch the low byte of the call target from the selected state."
+   "text": "Read $1A18,X and patch the low operand byte at $68E6 of JSR $68E5. In this callback path, the matching high byte comes from $1A6D,X; the same fields have other uses in display and contact paths."
   },
   {
    "address": 26847,
    "type": "line",
-   "text": "Patch the high byte of the call target from the selected state."
+   "text": "Read $1A6D,X and patch the high operand byte at $68E7 of JSR $68E5. Pair it with the callback low byte taken from $1A18,X."
   },
   {
    "address": 26850,
    "type": "line",
-   "text": "The target is patched before execution; the captured $ff00 operand is not a fixed destination."
+   "text": "Store the selected high byte to $68E7 and execute JSR $68E5 through the patched $68E6/$68E7 operand. The entry snapshot $FF00 is not a fixed destination."
   },
   {
    "address": 26854,

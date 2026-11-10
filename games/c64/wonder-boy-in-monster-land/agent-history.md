@@ -968,3 +968,9 @@ Connected each resident entity array to the checked record copier, display/movem
 Applied the coverage rule that runtime state and generated output are excluded: zero-page variables, entity arrays, display arrays and generated buffers at $C000–$C7FF. Checked the entry snapshot and typed blocks; the three non-zero-page ranges are all zero and contain no typed code. Preserved their annotations and recorded the scope change separately from newly explained bytes.
 
 Checked all 18 captured contact targets, both player selections for two register-restoring contact handlers and middle-byte BCD carry. Added their table/operand descriptions and connected two HUD colour suffixes and the metatile source-page operand to checked consumers.
+
+Replaced repeated IRQ and call-patch comments with local sources, operand destinations and concrete targets. A listing test checks eight IRQ destinations and four split call patches. Documented the callback/colour/health reuse of entity fields.
+
+The full kit suite ran 934 tests: 920 passed, 11 skipped for missing optional tools and three failed while the resident listing was regenerated. The failures were in item dispatch, item status graphics and item variants; all three passed when rerun against the stable listing. Hold listing files stable during subsequent test runs.
+
+With listing files held stable, all 402 game-specific tests passed, the three repository checks passed and the 102-game site build passed. The earlier full-kit run had 920 passes and 11 optional-tool skips; its three game-listing read failures all passed on stable rerun.

@@ -21,6 +21,10 @@ The same captured bytes can be copied as characters and executed as code. Treati
 
 None identified at this stage. Review the remaining run and existing issues before submission.
 
+## Validation and tool behavior
+
+A full kit run checked 934 tests: 920 passed, 11 skipped for missing optional tools and three failed while the resident listing was being regenerated. All three passed against the stable file. Listing regeneration and tests that read the listing must run sequentially. A subsequent stable run passed all 402 game tests. The three repository checks and the 102-game site build also passed. This failure was visible, so it is recorded here without a general skill change.
+
 ## What cost the most time
 
 Preserving automatic labels in reconstructed disassembler projects would have avoided repeated exports and manual reconciliation of the resident symbol map.
