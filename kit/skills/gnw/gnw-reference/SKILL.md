@@ -226,6 +226,12 @@ is a count of instructions. Nothing else makes sound.
   subroutine is a jump, and the return address is still the first
   caller's.
 - **INCB counting to 16.** It skips at 8.
+- **A skip helper read the wrong way round.** `TM n` skips when bit n is
+  set, so a helper `TM n`, `RTNS`, `RTN` returns with a skip when the bit
+  is *clear*, and `TM n`, `RTN`, `RTNS` when it is set; `TC` skips when C
+  is clear. Run each helper once with the bit set and once clear on
+  `kit/gnw/sm5a.js` before naming it: a name the wrong way round inverts
+  every reading built on it, and reads as right.
 - **Looking for an interrupt or a frame.** There are none. The game's
   speed is the instructions its loops run, and its clock is the 1 Hz
   flag. A routine's cost is counted in instructions, and so is a delay.
