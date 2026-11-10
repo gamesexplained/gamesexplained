@@ -35,7 +35,7 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 
-.wb-controls{display:flex;gap:1rem;flex-wrap:wrap}.wb-controls label{display:grid;gap:.3rem;font-weight:700}.wb-controls select{font:inherit;padding:.45rem;border:1px solid #aaa;border-radius:5px;background:white}.wb-result{font-weight:700;font-size:1.2rem;color:#225f3d}.wb-map-preview{display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap}.wb-map-preview img{max-width:100%;width:384px;image-rendering:pixelated}.wb-map-preview>div{flex:1;min-width:240px}
+.wb-controls{display:flex;gap:1rem;flex-wrap:wrap}.wb-controls label{display:grid;gap:.3rem;font-weight:700}.wb-controls select,.wb-controls input{font:inherit;padding:.45rem;border:1px solid #aaa;border-radius:5px;background:white}.wb-result{font-weight:700;font-size:1.2rem;color:#225f3d}.wb-map-preview{display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap}.wb-map-preview img{max-width:100%;width:384px;image-rendering:pixelated}.wb-map-preview>div{flex:1;min-width:240px}
 </style>
 
 <!-- tabs -->
@@ -75,6 +75,30 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The wing boots count qualifying updates</h2>
   <p>The boots start with a counter of 255. When up is held and the fall-step value is below 4, the game decreases the counter and sets the fall step to 1. At zero it clears the boots flag and selects “Lost the Wing Boots.”</p>
   <p class="cap">The setup is at <a href="source-resident.html#76FD"><code>$76FD</code></a> and the update is at <a href="source-resident.html#0A92"><code>$0A92</code></a>. Five controlled VICE cases checked the branches and expiry flag. The elapsed time depends on how often that code runs.</p>
+  <h3>What does a shop charge?</h3>
+  <p>Choose an item and a balance to try the captured price table. The game keeps the gold when there is not enough to pay.</p>
+  <div class="plate"><div class="wb-controls"><label>Item <select id="shop-item"><option value="0">Cloth Boots · 50 gold</option><option value="1">Leather Boots · 80 gold</option><option value="2">Ceramic Boots · 180 gold</option><option value="3">Legendary Boots · 350 gold</option><option value="4" selected>Winged Boots · 30 gold</option><option value="6">Light Armour · 40 gold</option><option value="7">Knight Armour · 150 gold</option><option value="8">Heavy Armour · 100 gold</option><option value="9">Hard Armour · 360 gold</option><option value="10">Legendary Armour · 540 gold</option><option value="11">A Helmet · 25 gold</option><option value="13">Light Shield · 40 gold</option><option value="14">Knight Shield · 120 gold</option><option value="15">Hard Shield · 250 gold</option><option value="16">Legendary Shield · 350 gold</option><option value="17">A Gauntlet · 25 gold</option><option value="19">Revival Medicine · 100 gold</option><option value="20">Fireballs · 20 gold</option><option value="21">8 Bombs · 10 gold</option><option value="22">Tornado Magic · 30 gold</option><option value="23">Thunder Magic! · 50 gold</option></select></label><label>Gold <input id="shop-gold" type="number" min="0" max="9999" step="1" value="30"></label></div><p id="shop-result" class="wb-result" aria-live="polite"></p>
+  <p class="cap">The price table and selector are in <a href="source-stage-02.html#B184"><code>$B184</code></a>; the gold subtraction is in <a href="source-resident.html#7901"><code>$7901</code></a>. Simulator and VICE checks exercised exact payment and insufficient funds. These prices come from captured loads; ordinary-play shop routes remain open.</p></div>
+  <script>
+  /* SHOP_BEGIN */
+  const SHOP_ITEMS = [{"name":"Cloth Boots","price":50},{"name":"Leather Boots","price":80},{"name":"Ceramic Boots","price":180},{"name":"Legendary Boots","price":350},{"name":"Winged Boots","price":30},{"name":"Winged Boots","price":30},{"name":"Light Armour","price":40},{"name":"Knight Armour","price":150},{"name":"Heavy Armour","price":100},{"name":"Hard Armour","price":360},{"name":"Legendary Armour","price":540},{"name":"A Helmet","price":25},{"name":"A Helmet","price":25},{"name":"Light Shield","price":40},{"name":"Knight Shield","price":120},{"name":"Hard Shield","price":250},{"name":"Legendary Shield","price":350},{"name":"A Gauntlet","price":25},{"name":"A Gauntlet","price":25},{"name":"Revival Medicine","price":100},{"name":"Fireballs","price":20},{"name":"8 Bombs","price":10},{"name":"Tornado Magic","price":30},{"name":"Thunder Magic!","price":50}];
+  function shopItem(index) { return SHOP_ITEMS[index] || null; }
+  function shopQuote(gold, index) {
+    const item = shopItem(index);
+    if (!item || !Number.isInteger(gold) || gold < 0 || gold > 9999) return null;
+    const paid = gold >= item.price;
+    return { price: item.price, paid, remaining: paid ? gold - item.price : gold };
+  }
+  /* SHOP_END */
+  (() => {
+    const item = document.getElementById('shop-item'), gold = document.getElementById('shop-gold'), result = document.getElementById('shop-result');
+    function show() {
+      const quote = gold.value === '' ? null : shopQuote(Number(gold.value), Number(item.value));
+      result.textContent = !quote ? 'Enter a whole number from 0 to 9,999.' : quote.paid ? 'Paid ' + quote.price + ' gold; ' + quote.remaining + ' remains.' : 'Not enough gold; the balance stays at ' + quote.remaining + '.';
+    }
+    item.addEventListener('change', show); gold.addEventListener('input', show); show();
+  })();
+  </script>
   <h3>The Gauntlet lasts ten contacts</h3>
   <p>The Gauntlet doubles the attack damage for ten successful contacts. The tenth contact still gets double damage; then the game selects “Gauntlet is broken.” The next contact uses ordinary damage.</p>
   <p class="cap">The pickup sets the counter at <a href="source-resident.html#76E9"><code>$76E9</code></a>; the contact routine decrements it at <a href="source-resident.html#74A9"><code>$74A9</code></a>. A controlled VICE sequence checked eleven contacts with the overlap and message callbacks stubbed.</p>
