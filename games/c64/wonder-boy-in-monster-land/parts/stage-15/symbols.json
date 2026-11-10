@@ -1365,6 +1365,51 @@
   },
   {
    "start": 43655,
+   "end": 43675,
+   "type": "Undefined"
+  },
+  {
+   "start": 43676,
+   "end": 43693,
+   "type": "Code"
+  },
+  {
+   "start": 43694,
+   "end": 43696,
+   "type": "Byte"
+  },
+  {
+   "start": 43697,
+   "end": 43699,
+   "type": "Byte"
+  },
+  {
+   "start": 43700,
+   "end": 43750,
+   "type": "Code"
+  },
+  {
+   "start": 43751,
+   "end": 43820,
+   "type": "Code"
+  },
+  {
+   "start": 43821,
+   "end": 43856,
+   "type": "Code"
+  },
+  {
+   "start": 43857,
+   "end": 43878,
+   "type": "Code"
+  },
+  {
+   "start": 43879,
+   "end": 43879,
+   "type": "Byte"
+  },
+  {
+   "start": 43880,
    "end": 43884,
    "type": "Undefined"
   },
@@ -4455,6 +4500,72 @@
    "kind": "user"
   },
   {
+   "address": 43676,
+   "name": "type22_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43691,
+   "name": "type22_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43694,
+   "name": "type22_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43697,
+   "name": "type22_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43700,
+   "name": "type22_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43751,
+   "name": "type22_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43785,
+   "name": "type22_enter_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43821,
+   "name": "type22_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43840,
+   "name": "type22_cleanup_alternate_slot",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43857,
+   "name": "type22_collision_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43879,
+   "name": "type22_direction_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43885,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -6864,6 +6975,61 @@
    "address": 43651,
    "type": "line",
    "text": "Four captured frame offsets 4, 4, 2, 2. The state-5 path indexes these with $1AD3,X and calls the frame helper at $AA27; the index has no local bound."
+  },
+  {
+   "address": 43676,
+   "type": "line",
+   "text": "Load 15: the type-$22 vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $AAAB from the split tables at $AAAE/$AAB1, and jumps to the selected handler. The state index is not locally bounded; only three captured table pairs are described."
+  },
+  {
+   "address": 43691,
+   "type": "line",
+   "text": "Absolute jump patched through operands $AAAC/$AAAD; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 43694,
+   "type": "line",
+   "text": "Three captured low bytes of state targets, paired with high bytes at $AAB1: $AAB4, $AAE7, $AB2D. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 43697,
+   "type": "line",
+   "text": "Three captured high bytes paired with low bytes at $AAAE: $AAB4, $AAE7, $AB2D. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 43700,
+   "type": "line",
+   "text": "State 0: when $1A29,X is zero, jump to the alternate-slot cleanup at $AB40. Otherwise copy $1AC2,X to $AB67 and call $AB51. Then call $45BC with A=8 if the working byte is nonnegative or $4574 if negative. If that callback returns carry clear, return. If carry is set, clear $1AF5,X, set $1AE4,X to 3 and $1AB1,X to 1, then fall through to state 1. Callback behavior and natural reachability remain open."
+  },
+  {
+   "address": 43751,
+   "type": "line",
+   "text": "State 1 reads $1AE4,X. If nonnegative, decrement the field and call $43F0 with its original value when $AB67 is nonnegative, or $43A2 when it is negative. Then call $44DE with A=$1AF5,X. If carry is clear, increment $1AF5,X and return. If carry is set, continue at $AB09. External callback behavior and natural reachability remain open."
+  },
+  {
+   "address": 43785,
+   "type": "line",
+   "text": "Clear $1AC2,X and set $1A07,X to 1. Load $19E5,X, add 2 with carry clear if $AB67 is nonnegative, then clear carry and add another 2. Store the result in $19E5,X and $19C3,X, set $1AB1,X to 2 and return. This arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 43821,
+   "type": "line",
+   "text": "State 2 reads $1AC2,X. If it is less than 2, increment that field, double its original value, clear carry, add $19E5,X and store the low byte at $19C3,X, then return. Otherwise continue at $AB40. This addition is binary when decimal mode is clear."
+  },
+  {
+   "address": 43840,
+   "type": "line",
+   "text": "Save X in the immediate operand at $AB4D, use $1AD3,X as an alternate X index and clear $1B28,X there. Restore the saved X and tail-call $4454. The alternate index range and ordinary-play reachability remain open."
+  },
+  {
+   "address": 43857,
+   "type": "line",
+   "text": "Call $792C and $1179. If $1179 returns carry set, jump to the state-2 setup at $AB09. Otherwise call $7227 and return if its carry is clear; if set, call $5D7A with A=8 and jump to the same setup. The setup returns to the caller of this helper; when called by state 0, state 0 then continues with its movement callback. External callbacks and natural reachability remain open."
+  },
+  {
+   "address": 43879,
+   "type": "line",
+   "text": "Working byte tested for its sign by state 1 and by the state-2 setup; the state-0 entry writes $1AC2,X here."
   },
   {
    "address": 43885,

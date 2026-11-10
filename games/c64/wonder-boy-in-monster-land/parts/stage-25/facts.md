@@ -24,3 +24,13 @@ Controlled record-copy, frame-restore and display-routine simulations selected 2
 9 simple eight-row glyphs in the character-copy source are referenced by metatiles in the captured map. Listing tests reconstruct their map references and run the $717C copy; seven controlled VICE reads check representative destination glyphs in loads 2, 20, 27 and 31. These observations do not establish ordinary-play reachability or exclude other possible code uses.
 
 The captured map references 134 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The load’s type-$22 entity vector selects a dispatcher at $A37D. Three captured state-table pairs point to $A395, $A3C8, $A40E; the state index is not locally bounded. Listing tests check all three targets in loads 2, 4, 6, 14, 15, 17, 24 and 25; the state-index range and ordinary-play reachability remain open.
+
+Type-$22 state 2 at $A40E increments a counter and updates a frame while the counter is below 2; otherwise it clears a field in a slot selected by $1AD3,X and calls $4454 with the original X. VICE checked four controlled counter values per load with $4454 stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. The alternate index range and ordinary-play reachability remain open.
+
+Type-$22 state 1 at $A3C8 can call a sign-selected movement routine, then uses carry from $44DE to increment a counter or initialize state 2. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
+
+Type-$22 state 0 at $A395 can enter alternate-slot cleanup, or call a helper and choose a movement callback by a sign byte; callback carry controls its transition to state 1. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
+
+The type-$22 collision helper at $A432 can return directly or enter state-2 setup after either of two carry checks. State-2 setup returns to the helper’s caller, so a state-0 call continues after it. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
