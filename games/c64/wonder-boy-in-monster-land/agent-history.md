@@ -884,3 +884,7 @@ Checked resident serial sender $7E53 in three forced VICE cases with controlled 
 A simulator run found the $7E7C LDX opcode missing from the listing; VICE and the entry snapshot confirmed $A2. Typed the opcode and its immediate byte as code, rebuilt the listing and repeated the sender test.
 
 Checked resident serial receiver $7DC4 in seven forced VICE cases with controlled samples substituted for port reads. The entry snapshot and VICE both hold CPY opcode $C0 at $7DF7, previously a listing gap; typed it and its immediate operand as code and restored the paused user snapshot.
+
+Checked resident vertical entity movement in six forced VICE cases with entity, player and displacement callbacks stubbed; restored the paused user snapshot.
+
+Checked two unsupported upward displacements reach the existing overlap check at $6939 and restored the paused user snapshot.
