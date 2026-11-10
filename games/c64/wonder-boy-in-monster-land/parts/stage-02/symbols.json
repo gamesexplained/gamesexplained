@@ -695,6 +695,11 @@
   },
   {
    "start": 44908,
+   "end": 45054,
+   "type": "Code"
+  },
+  {
+   "start": 45055,
    "end": 45135,
    "type": "Undefined"
   },
@@ -8852,6 +8857,66 @@
    "kind": "user"
   },
   {
+   "address": 44908,
+   "name": "shop_apply_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 44912,
+   "name": "shop_second_price_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 44949,
+   "name": "shop_second_price_fallback",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 44958,
+   "name": "shop_first_price_balance",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 44979,
+   "name": "shop_first_price_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45014,
+   "name": "shop_first_price_fallback",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45020,
+   "name": "shop_message_then_meter",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45025,
+   "name": "shop_apply_meter_and_finish",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45036,
+   "name": "shop_zero_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45043,
+   "name": "shop_decrement_and_message",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 45136,
    "name": "shop_routine_pointer_select_0",
    "type": "UserDefined",
@@ -16143,6 +16208,56 @@
    "address": 44866,
    "type": "line",
    "text": "Save X and Y in immediate operands, call $36E9 to split A into nibbles plus one, clear the first two bytes at $B283, and write the tens and units codes to the next two bytes. A tens code of 1 is written as zero. Restore Y, call $B22A, restore X and return. The display callback was stubbed in the controlled checks."
+  },
+  {
+   "address": 44908,
+   "type": "line",
+   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $AF9E; zero selects a message at $AFEC; otherwise use the second-price path at $AF70. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+  },
+  {
+   "address": 44912,
+   "type": "line",
+   "text": "Call $78D1 with stage field $4789,X, where X comes from $7B. Reload X and read callback high byte $4771,X. If nonzero, patch the JSR operand from $476B/$4771, clear the high byte in the stage record and call the patched target; then use A=4 at $AFE1. If zero, enter the message path at $AF95. Payment and callback effects were stubbed."
+  },
+  {
+   "address": 44949,
+   "type": "line",
+   "text": "Load a message pointer from this entry, set A=4 and enter $AFDC; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+  },
+  {
+   "address": 44958,
+   "type": "line",
+   "text": "If selected-player high balance $4DC7,Y is zero and low balance $4DC9,Y is less than stage field $4783,X under an unsigned byte comparison, jump to $B0DC. Otherwise continue to the first-price payment at $AFB3."
+  },
+  {
+   "address": 44979,
+   "type": "line",
+   "text": "Call $78D1 with stage field $4783,X and reload stage index. If callback high byte $477D,X is nonzero, patch the JSR from $4777/$477D, clear that high byte and call the target; then use A=8 at $AFE1. Otherwise enter the message path at $AFD6. Payment and callback effects were stubbed."
+  },
+  {
+   "address": 45014,
+   "type": "line",
+   "text": "Load a message pointer from this entry, set A=8 and enter $AFDC; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+  },
+  {
+   "address": 45020,
+   "type": "line",
+   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $AFE1; the message routine was stubbed."
+  },
+  {
+   "address": 45025,
+   "type": "line",
+   "text": "Call $77A9 with A=4 or A=8, reload stage index, decrement $4753,X and jump to $B1CC. The meter callback and destination effects were not exercised in these controlled checks."
+  },
+  {
+   "address": 45036,
+   "type": "line",
+   "text": "Load the message pointer encoded here and jump to $B1C9. This branch was reached by forcing the incoming zero flag."
+  },
+  {
+   "address": 45043,
+   "type": "line",
+   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $B1C9. Its ordinary caller was not exercised by the choice tests."
   },
   {
    "address": 45136,

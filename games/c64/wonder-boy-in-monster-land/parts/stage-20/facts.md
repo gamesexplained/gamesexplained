@@ -110,3 +110,5 @@ The object record at $93BC contains message callback $9451, which supplies $9458
 The object record at $93DC contains result callback $94E1, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 The shop entry at $9549 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Ordinary-play contexts remain open.
+
+The shop choice code at $95DC branches on incoming negative and zero flags, selects one of two stage prices, can reject insufficient balance, and follows either a stage callback or a message path before passing 4 or 8 to the meter routine and decrementing the stage field. Six forced VICE cases and `test_later_shop_choices.js` check these paths with payment, meter, message and optional callbacks stubbed. Ordinary-play flag inputs, callback effects and the separate entry at $9663 remain open.

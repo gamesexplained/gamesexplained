@@ -774,3 +774,5 @@ Traced the load-9 countdown trigger and its player-contact patch. Three forced V
 Added the load-9 contact-check patch to Discoveries, with the controlled-trigger and other-damage limitations beside it.
 
 Traced the relocated shop setup and price formatter in 17 later loads. Eighty-five forced VICE cases and a listing test checked page setup, formatting, balance comparisons and message selection with display and gate callbacks stubbed. Character-source comments retain the bounded capture and the newly demonstrated code use. Restored the paused user snapshot.
+
+Traced relocated shop choice code in 17 later loads. One hundred and two forced VICE cases and a listing test checked flag-selected paths, balance rejection, message and optional callbacks, and meter arguments with callbacks stubbed. Character-source comments record overlap. Restored the paused user snapshot.

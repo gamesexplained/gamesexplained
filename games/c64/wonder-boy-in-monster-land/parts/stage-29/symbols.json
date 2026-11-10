@@ -455,6 +455,11 @@
   },
   {
    "start": 37149,
+   "end": 37295,
+   "type": "Code"
+  },
+  {
+   "start": 37296,
    "end": 37376,
    "type": "Undefined"
   },
@@ -3738,6 +3743,66 @@
   {
    "address": 37137,
    "name": "copied_charset_boundary_9111",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37149,
+   "name": "shop_apply_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37153,
+   "name": "shop_second_price_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37190,
+   "name": "shop_second_price_fallback",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37199,
+   "name": "shop_first_price_balance",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37220,
+   "name": "shop_first_price_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37255,
+   "name": "shop_first_price_fallback",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37261,
+   "name": "shop_message_then_meter",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37266,
+   "name": "shop_apply_meter_and_finish",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37277,
+   "name": "shop_zero_choice",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37284,
+   "name": "shop_decrement_and_message",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8869,6 +8934,56 @@
    "address": 37129,
    "type": "line",
    "text": "Load 29 character $FF occupies eight bytes in the character-copy source: $F0, $01, $98, $8D, $36, $94, $AD, $0A. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D7F8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A forced call to the shop setup at $908A also executes overlapping bytes; the bounded capture does not rule that use out."
+  },
+  {
+   "address": 37149,
+   "type": "line",
+   "text": "The incoming processor flags select the path: negative enters the first-price balance check at $914F; zero selects a message at $919D; otherwise use the second-price path at $9121. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
+  },
+  {
+   "address": 37153,
+   "type": "line",
+   "text": "Call $78D1 with stage field $4789,X, where X comes from $7B. Reload X and read callback high byte $4771,X. If nonzero, patch the JSR operand from $476B/$4771, clear the high byte in the stage record and call the patched target; then use A=4 at $9192. If zero, enter the message path at $9146. Payment and callback effects were stubbed."
+  },
+  {
+   "address": 37190,
+   "type": "line",
+   "text": "Load a message pointer from this entry, set A=4 and enter $918D; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+  },
+  {
+   "address": 37199,
+   "type": "line",
+   "text": "If selected-player high balance $4DC7,Y is zero and low balance $4DC9,Y is less than stage field $4783,X under an unsigned byte comparison, jump to $928D. Otherwise continue to the first-price payment at $9164."
+  },
+  {
+   "address": 37220,
+   "type": "line",
+   "text": "Call $78D1 with stage field $4783,X and reload stage index. If callback high byte $477D,X is nonzero, patch the JSR from $4777/$477D, clear that high byte and call the target; then use A=8 at $9192. Otherwise enter the message path at $9187. Payment and callback effects were stubbed."
+  },
+  {
+   "address": 37255,
+   "type": "line",
+   "text": "Load a message pointer from this entry, set A=8 and enter $918D; that path calls $77E0 and restores A before adding to the meter. The controlled tests stubbed the message routine."
+  },
+  {
+   "address": 37261,
+   "type": "line",
+   "text": "Push A, call $77E0 with the selected message pointer and pull A. Continue at $9192; the message routine was stubbed."
+  },
+  {
+   "address": 37266,
+   "type": "line",
+   "text": "Call $77A9 with A=4 or A=8, reload stage index, decrement $4753,X and jump to $937D. The meter callback and destination effects were not exercised in these controlled checks."
+  },
+  {
+   "address": 37277,
+   "type": "line",
+   "text": "Load the message pointer encoded here and jump to $937A. This branch was reached by forcing the incoming zero flag."
+  },
+  {
+   "address": 37284,
+   "type": "line",
+   "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $937A. Its ordinary caller was not exercised by the choice tests."
   },
   {
    "address": 37377,
