@@ -620,6 +620,51 @@
   },
   {
    "start": 41563,
+   "end": 41583,
+   "type": "Code"
+  },
+  {
+   "start": 41584,
+   "end": 41590,
+   "type": "Byte"
+  },
+  {
+   "start": 41591,
+   "end": 41597,
+   "type": "Byte"
+  },
+  {
+   "start": 41598,
+   "end": 41966,
+   "type": "Undefined"
+  },
+  {
+   "start": 41967,
+   "end": 42036,
+   "type": "Code"
+  },
+  {
+   "start": 42037,
+   "end": 42087,
+   "type": "Undefined"
+  },
+  {
+   "start": 42088,
+   "end": 42161,
+   "type": "Code"
+  },
+  {
+   "start": 42162,
+   "end": 42195,
+   "type": "Undefined"
+  },
+  {
+   "start": 42196,
+   "end": 42196,
+   "type": "Byte"
+  },
+  {
+   "start": 42197,
    "end": 42218,
    "type": "Undefined"
   },
@@ -3024,6 +3069,66 @@
    "kind": "user"
   },
   {
+   "address": 41563,
+   "name": "type0b_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41581,
+   "name": "type0b_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41584,
+   "name": "type0b_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41591,
+   "name": "type0b_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41967,
+   "name": "type0b_state5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42021,
+   "name": "type0b_state6",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42088,
+   "name": "type0b_event_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42137,
+   "name": "type0b_event_alternate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42151,
+   "name": "type0b_event_followup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42196,
+   "name": "type0b_rotated_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 42219,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -4885,6 +4990,56 @@
    "address": 41508,
    "type": "line",
    "text": "Load 22: decrement $1B28,X; if the result is odd, return carry clear without changing the frame. Otherwise form $19E5,X plus 4 plus twice bit 0 of $1B17,X, with eight-bit wrap. If $1AF5,X is nonnegative, add 8 with wrap; if that addition produces zero, return carry set without storing the frame or decrementing $1B17,X. Otherwise store the resulting frame at $19C3,X and decrement $1B17,X. If its result has the sign bit set, replace it with 6 and return carry set; otherwise return carry clear. The entry\u2019s callers and ordinary-play reachability are not established here."
+  },
+  {
+   "address": 41563,
+   "type": "line",
+   "text": "Load 22: type-$0B calls $A468; if that returns, it uses $1AB1,X as an index into split target tables at $A270/$A277 and patches the jump at $A26D. Seven captured target pairs follow; this dispatcher does not bound the index."
+  },
+  {
+   "address": 41581,
+   "type": "line",
+   "text": "Absolute jump patched through operands $A26E/$A26F; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 41584,
+   "type": "line",
+   "text": "Seven captured low bytes paired with high bytes at $A277: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF, $A425. State bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 41591,
+   "type": "line",
+   "text": "Seven captured high bytes paired with low bytes at $A270: $A27E, $A2A6, $A342, $A380, $A3BB, $A3EF, $A425."
+  },
+  {
+   "address": 41967,
+   "type": "line",
+   "text": "Decrement $1B28,X. If negative, restore $1AB1,X from $A4C3,X and return. Otherwise copy $1AC2,X to $A4D4, set $19C3,X to $19E5,X plus 10 and, for negative direction, a further 18; set $19D4,X to that result plus 2. Load A=6 and tail-jump to $43F0 for negative direction or $43A2 otherwise."
+  },
+  {
+   "address": 42021,
+   "type": "line",
+   "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The preliminary helper also writes $1AC2,X before the dispatcher; ordinary-play behavior depends on that path."
+  },
+  {
+   "address": 42088,
+   "type": "line",
+   "text": "Call $72FC, rotate $A4D4 right through its carry, copy that byte to $1AC2,X and call $792C. If $1A8F,X is nonzero, skip the $732A call. Otherwise call it and, if carry is set with positive $1A6D,X, store the old state at $A4C3,X, set $1B28,X=8 and $1AB1,X=5, and return to the dispatcher."
+  },
+  {
+   "address": 42137,
+   "type": "line",
+   "text": "Carry set from $732A with zero or negative $1A6D,X sets $1AC2,X=10, $1A8F,X=$FF and $1AB1,X=6, then returns to the dispatcher."
+  },
+  {
+   "address": 42151,
+   "type": "line",
+   "text": "If the effect byte was nonzero or $732A returned carry clear, call $7227. Return if carry is clear; otherwise load A=4 and tail-jump to $5D7A."
+  },
+  {
+   "address": 42196,
+   "type": "line",
+   "text": "Working byte rotated through carry by the preliminary helper, then copied to $1AC2,X. Other uses remain open."
   },
   {
    "address": 42219,
