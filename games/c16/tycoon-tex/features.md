@@ -103,6 +103,3 @@ Found in the code, not in the manual.
 - The cover names "surface missiles"; the code has four enemies, and
   none of them is called that on screen. Which one the cover means, if
   any, is not settled.
-- How control first reaches Novaload's stub in the stack page was not
-  traced (`orientation.md`, "The loader"); the loader is not annotated,
-  by policy.

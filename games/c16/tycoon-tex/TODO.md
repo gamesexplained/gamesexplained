@@ -32,4 +32,3 @@ pass, then becomes `diamond`.
 
 - The cover's "surface missiles": which enemy, if any, it means. The
   authors' plan for the aliens names four and no missiles.
-- How control first reaches Novaload's stub in the stack page.

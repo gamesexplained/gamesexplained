@@ -140,3 +140,28 @@ loaded: the page left `leg_timer` (`$79`) at 0, so `animate_legs`
 counted it down from 256. It now starts at 1. The death also sank 24
 times where the game sinks 23: `tex_death` counts `sink_steps` down from
 24 and calls `sink_tex` while it has not reached 0.
+
+## Follow-up: the media ledger (10 November 2026)
+
+Tycoon Tex is the first C16 game through the kit's media ledger,
+`media.json`, which lists everything on the tape and says what each item
+is. The C16 had no reader for a tape, so this follow-up wrote one,
+`kit/c16/media.py`, and tried it on the run's own tape (the same SHA-256
+as `orientation.md`).
+
+- The tape holds three items: the file `TYCOON TEX`, what its header
+  carries after the name, and the Novaload file `NOVA`. `NOVA` decoded to
+  12,288 bytes with every checksum right, and the scan found all of them
+  in the listing at `$1000`.
+- Novaload's format was read off the loader's own code in the header's
+  171 spare bytes. It agrees with what the run read from `$9B`-`$A0` at
+  checkpoints: the address `$0F00` plus `$100`, the end `$4000`, the
+  count `$31`.
+- The question the run left open, how control first reaches the stub in
+  the stack page, is answered. `TYCOON TEX` loads at `$0140`-`$023F`,
+  over the stack, and its bytes from `$01C3` to `$01FF` are all `$02`,
+  so the KERNAL's return after the load goes to `$0203`. A checkpoint on
+  `$0203` in plus4emu stopped there 2,266 frames after power-on with the
+  stack pointer at `$F7`. `orientation.md`, `features.md` and `TODO.md`
+  were corrected in place.
+- Nothing is open.

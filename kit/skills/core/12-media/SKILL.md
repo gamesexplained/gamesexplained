@@ -52,6 +52,13 @@ family at once (`MON*`) and `--open-only` leaves the answered alone.
 Every answer but `open` takes `--why`, what the item is, except a part
 the scan found whole.
 
+The ledger is there for the game's data, and for code no snapshot
+holds. Put the time there: decode a family of data far enough to say
+what each member is, because a level, a creature or a routine that no
+page shows is what `70-minisite` builds from. A loader takes its one
+line of why and no further study: how a fast loader, an unpacker or a
+protection works is not what a reader came for (`10-orient`, step 8).
+
 - A family the game loads by a name it builds, a stem and a number, is
   `data`, and its why names the routine that builds the name. A member
   that the game's scripts or tables never ask for is `unused` once that
