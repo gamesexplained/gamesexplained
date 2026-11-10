@@ -5069,6 +5069,12 @@
    "kind": "user"
   },
   {
+   "address": 4995,
+   "name": "wait_split_and_position_sprites",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 4996,
    "name": "split_raster_line_operand",
    "type": "Field",
@@ -20928,6 +20934,11 @@
    "text": "Patch the high byte of the next CIA2 timer NMI dispatch target."
   },
   {
+   "address": 4874,
+   "type": "line",
+   "text": "Wait for raster line $56, run two short delay loops around writes of $78 and $78 OR vertical scroll to $D011, then wait for the raster line to change. Set $D016 to $10 OR the low three horizontal-scroll bits, set background colour from $6F, and select timing operands from tables indexed by $5294 according to whether vertical scroll is zero. The table index is not bounded here."
+  },
+  {
    "address": 4938,
    "type": "line",
    "text": "Select the raster comparison value from the zero-scroll table."
@@ -20946,6 +20957,36 @@
    "address": 4959,
    "type": "line",
    "text": "Select the delay loop count from the nonzero-scroll table."
+  },
+  {
+   "address": 4965,
+   "type": "line",
+   "text": "Clear sprite priority, copy the two shared background colours from $529C/$529D, and write $04 to $D018 when $46 equals $C0, otherwise $14. The following raster wait and sprite repositioning continue at $1383. Two forced VICE paths checked the scroll-dependent timing and register values through this point."
+  },
+  {
+   "address": 4995,
+   "type": "line",
+   "text": "Wait for the raster line selected by the patched immediate operand, then read $D011, clear bits 5 and 6, wait the patched delay count, and write the value back. Copy the sprite X-high mask and seven sprite X coordinates from $4D68 and $4D64 down to $4D58 to their VIC registers, then jump to the NMI restore path. The later wait and repositioning were not exercised in the two setup checks."
+  },
+  {
+   "address": 5066,
+   "type": "line",
+   "text": "Eight delay counts selected when vertical scroll is nonzero, indexed by $5294: 10, 9, 7, 7, 7, 6, 6, 6."
+  },
+  {
+   "address": 5074,
+   "type": "line",
+   "text": "Eight raster values selected when vertical scroll is nonzero, indexed by $5294: each is $60."
+  },
+  {
+   "address": 5082,
+   "type": "line",
+   "text": "Eight delay counts selected when vertical scroll is zero, indexed by $5294: 1, 10, 10, 9, 8, 8, 7, 7."
+  },
+  {
+   "address": 5090,
+   "type": "line",
+   "text": "Eight raster values selected when vertical scroll is zero, indexed by $5294: $60 followed by seven $5F values."
   },
   {
    "address": 5098,
