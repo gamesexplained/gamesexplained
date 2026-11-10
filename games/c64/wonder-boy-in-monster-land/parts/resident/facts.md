@@ -427,3 +427,7 @@ The frame wait at $3C2A calls the message-panel copy when $5275 is zero, then po
 The stage-record setup at $47E4 patches the callback high byte from $4765,X, subtracts 2 from $4753,X modulo 256, saves X at $7B and passes $4759,X as X to $7119. Three forced VICE cases checked these writes with the visual loader stubbed, including counter wraparound.
 
 The status HUD copy at $3783 reads 22 bytes from each of ten rows stored 21 bytes apart: five screen rows and five colour rows. Consequently consecutive reads share one source byte; the final colour read reaches the alternate-panel data at $5050. A forced VICE case checked all 220 output bytes with a distinct source pattern, including colour RAM low nibbles.
+
+Seven 20-byte status graphics at $5127–$51B2 are selected through split pointer tables at $51B3/$51BA and copied by $4A90 in five rows of four. The listing simulator checks every captured pointer and all 140 output screen codes. Earlier controlled VICE checks covered four selector/colour paths with redirected source data; the selector is not locally bounded to seven entries.
+
+The display fields based at $4C2F, $4C4F, $4C6F, $4C8F, $4CAF, $4CCF and $4CEF are 32 bytes apart. Existing interior labels identify aliases within those fields. A listing test now exercises all 32 physical indexes through both sprite emitters for X, flags, pointer and colour; earlier VICE probes checked representative register writes. This does not establish ordinary-play use of every index.

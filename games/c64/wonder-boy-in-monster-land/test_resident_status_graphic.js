@@ -9,3 +9,9 @@ for(const [stage,colour] of [[0,13],[1,null],[5,13],[6,15]]){
  for(let row=0;row<3;row++)assert.deepStrictEqual([...a.slice(0xd84c+40*row,0xd850+40*row)],Array(4).fill(colour===null?3:colour));
 }
 console.log('OK - resident status graphic copy and colours');
+// Use the captured pointer tables and all seven source blocks, without redirecting them.
+for(let stage=0;stage<7;stage++){
+ const a=base.slice(),source=a[0x51b3+stage]|a[0x51ba+stage]<<8;assert.equal(source,0x5127+20*stage);const expected=a.slice(source,source+20);a[0x4dd4]=stage;const cpu=new CPU(a);cpu.call(0x4a90,{}, {maxSteps:500});
+ for(let row=0;row<5;row++)assert.deepStrictEqual([...a.slice(0xc024+40*row,0xc028+40*row)],[...expected.slice(row*4,row*4+4)]);
+}
+console.log('OK - all seven captured status graphic sources');

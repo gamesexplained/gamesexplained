@@ -954,3 +954,7 @@ Checked three forced stage-record setup cases in VICE with the visual loader stu
 Checked all ten overlapping status HUD row reads in a forced VICE case and restored the paused user snapshot.
 
 Independent fixed-seed sample 261110 checked 60 of 29,177 listing comments on gpt-6-astra: 59 right, one wrong detail. Settled the finding against the bytes: $70C0 follows DEC $7063; the redundant BNE is at $70C2. Corrected both local descriptions. The sample is not a full audit or a maintainer check.
+
+Resolved the split pointer table for all seven resident status graphics and extended the listing test to check all 140 captured source codes through the real draw routine.
+
+Resolved the resident display-field aliases by base and physical index and extended the two-emitter test to all 32 indexes. Kept possible out-of-range aliasing and ordinary-play constraints explicit.
