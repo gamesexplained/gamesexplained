@@ -36,14 +36,14 @@
   <p class="fig">Stage 1</p>
   <h2 class="t">The station’s floor is its ceiling turned over</h2>
   <p class="lede">Stage 1 loads a second character set in its third file, at <code>$E000</code>. Its first 175 characters are the stage’s own set with every character stored upside down (<code>stage1_chars_flipped</code>, <code>$E000</code>). The interrupt that starts the lowest band of sprites switches the screen to that set, so the same map bytes draw a ceiling in the upper half and a floor in the lower half, and the stage needs only half as many shapes for its girders.</p>
-  <p>The switch rides on a value that <code>stage1_setup</code> sets and the game’s band interrupt writes to the video chip (<code>irq_band2_y</code>, in the game part). The <a href="levels.html#stage-1">Maps</a> tab draws the stage with the two sets, as the screen shows it.</p>
+  <figure class="overview-shot"><img src="reference/stage-1-mirror.png" width="384" height="152" alt="A stretch of stage 1: a machine hangs from the ceiling, and the same machine stands upside down on the floor below it"><figcaption>A stretch of stage 1 from the <a href="levels.html#stage-1">Maps</a> tab. The floor is the same characters as the ceiling, drawn from the upside-down set.</figcaption></figure>
 </section>
 
 <section id="leftovers" data-part="level-8">
   <p class="fig">Stage 8</p>
   <h2 class="t">Stage 8 still carries pieces of stage 7</h2>
   <p class="lede">The files of stage 8 are longer than stage 8 needs. Bytes <code>$832F</code> to <code>$867D</code> of its first file are exactly the end of stage 7’s attack script, and the tail of its second file, <code>$9086</code> to <code>$961B</code>, is the end of stage 7’s second file: the last of stage 7’s map blocks, its block list, its frame routine and the four frames of its animated characters (<code>stage7_leftover_script</code>, <code>stage7_leftover_file2</code>).</p>
-  <p>Both copies were compared byte for byte with stage 7’s files. Stage 8 reads none of it: its script ends earlier, and its frame hook is the game’s plain <code>RTS</code> at <code>$17FA</code>. The likeliest reading is that stage 8’s files were saved from memory that still held stage 7, with the save running past stage 8’s own data.</p>
+  <p>Both copies were compared byte for byte with stage 7’s files. Stage 8 reads none of it: its script ends earlier, and its frame hook is the game’s plain <code>RTS</code> at <code>$17FA</code>.</p>
 </section>
 
 <section id="crystal-reset" data-part="game">
@@ -57,7 +57,12 @@
   <p class="fig">The ending</p>
   <h2 class="t">Two ending tunes that never play</h2>
   <p class="lede">The ending file carries its own copy of the music driver and a music block with three tunes. It starts tune 0 (<code>$8025</code>) and nothing ever asks for the other two, which repeat every 1,760 and 6,528 frames. The <a href="music.html#ending-tunes">Music tab</a> plays all three.</p>
-  <p>A press of space at the end copies a short routine to the stack page and runs it there. It banks out every ROM, fills memory from <span data-part=""><code>$0200</code></span> to <span data-part=""><code>$FFFF</code></span> with zeros, and jumps into the KERNAL’s reset (<code>ending_reset</code>, <code>$80BE</code>). Nothing of the game survives.</p>
+</section>
+
+<section id="wipe" data-part="ending">
+  <p class="fig">The ending</p>
+  <h2 class="t">The last key press wipes the machine</h2>
+  <p class="lede">A press of space at the end copies a short routine to the stack page and runs it there. It banks out every ROM, fills memory from <span data-part=""><code>$0200</code></span> to <span data-part=""><code>$FFFF</code></span> with zeros, and jumps into the KERNAL’s reset (<code>ending_reset</code>, <code>$80BE</code>). Nothing of the game survives.</p>
 </section>
 
 <section id="dropped" data-part="level-6">
