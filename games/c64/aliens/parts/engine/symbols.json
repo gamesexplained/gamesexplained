@@ -25,7 +25,7 @@
    [
     16384,
     44543,
-    "6 parts: Level 1: Drop-Ship maneuvers, Level 6: One-on-one confrontation, Level 4: Air duct maze scramble and others"
+    "6 parts: Level 6: One-on-one confrontation, Level 4: Air duct maze scramble, Level 3: Operations room rampage and others"
    ],
    [
     46080,
@@ -35,7 +35,7 @@
    [
     49664,
     50943,
-    "6 parts: Level 1: Drop-Ship maneuvers, Level 2: APC rescue attempt, Level 3: Operations room rampage and others"
+    "Level 1: Drop-Ship maneuvers"
    ],
    [
     57344,
@@ -62,7 +62,7 @@
    [
     16384,
     44543,
-    "6 parts: Level 1: Drop-Ship maneuvers, Level 6: One-on-one confrontation, Level 4: Air duct maze scramble and others"
+    "6 parts: Level 6: One-on-one confrontation, Level 4: Air duct maze scramble, Level 3: Operations room rampage and others"
    ],
    [
     46080,
@@ -72,7 +72,7 @@
    [
     49664,
     50943,
-    "6 parts: Level 1: Drop-Ship maneuvers, Level 2: APC rescue attempt, Level 3: Operations room rampage and others"
+    "Level 1: Drop-Ship maneuvers"
    ],
    [
     57344,
@@ -2651,7 +2651,7 @@
   },
   {
    "address": 2204,
-   "name": "stage_retry",
+   "name": "stage_complete",
    "type": "Jump",
    "kind": "user"
   },
@@ -6544,17 +6544,17 @@
   {
    "address": 2158,
    "type": "line",
-   "text": "The game's outer loop. Each pass loads and starts the stage numbered in stage ($0205): resets the music (reset_sound unless the stage is 1), loads the stage's files (load_stage), applies the trainer's patches (trainer_patch), waits for RETURN on the stage's title screen (wait_return_screen) and jumps into the stage through its own vector at $8000 (via start_stage at $3BF2). A stage ends at stage_retry ($089C) or stage_done ($08B1)."
+   "text": "The game's outer loop. Each pass loads and starts the stage numbered in stage ($0205): resets the music (reset_sound unless the stage is 1), loads the stage's files (load_stage), applies the trainer's patches (trainer_patch), waits for RETURN on the stage's title screen (wait_return_screen) and jumps into the stage through its own vector at $8000 (via start_stage at $3BF2). A stage ends at stage_complete ($089C), stage_done ($08B1) or stage_skip ($08D8)."
   },
   {
    "address": 2204,
    "type": "line",
-   "text": "Entered when a stage is to be played again (RUN/STOP and RESTORE, or the trainer's skip key on most stages): resets the stack and sound, shows the status update with the code entry (status_screen) and starts the same stage again."
+   "text": "Where a level jumps when it is won (level 1's script at its last step, for one): resets the stack and the sound and shows the status screen, which gives the code for the stage and, with nothing typed, moves stage on by one and shows the next briefing; then hands the raster interrupt back and loads that stage. RUN/STOP and RESTORE on the status screen start the section again instead (nmi_restart)."
   },
   {
    "address": 2220,
    "type": "line",
-   "text": "Where the NMI handler at $0956 jumps: sets $0202 to $FF and falls into stage_done. Nothing in the engine or in the six levels' snapshots points the NMI vector at $0956, so it is never used."
+   "text": "Where RESTORE leads while the key read as bit 6 of $0217 is held (the up-arrow key, by the keyboard matrix): sets $0202 to $FF and falls into stage_done, so the stage is skipped without its status screen. $0202 stays set until a new game, so every code shown after that is five asterisks."
   },
   {
    "address": 2225,
@@ -7264,7 +7264,7 @@
   {
    "address": 4909,
    "type": "line",
-   "text": "The \"Colonial Marines status update\" screen with code entry. Draws the marines' status (show_marines); on stage 0 it reads up to five characters (read_code, DEL rubs one out) and checks them (decode_code, check_code). A valid code sets stage and marines from it (apply_code), says \"VALID\" and moves stage on by one; an invalid code says \"INVALID\" and asks again. On other stages it shows the code for the stage reached (make_code) and waits for RETURN."
+   "text": "The \"Colonial Marines status update\" screen. Draws the marines' status (show_marines). On stage 0, at the start of a game, it reads up to five characters (read_code, DEL rubs one out) and checks them (decode_code, check_code): a valid code sets stage and marines from it (apply_code), an invalid one says \"INVALID\" and asks again. On any later stage it shows the code for the stage just won (make_code) and waits for RETURN. Either way it then moves stage on by one (stage_next) and shows that stage's briefing."
   },
   {
    "address": 4920,
@@ -9314,7 +9314,7 @@
   {
    "address": 15105,
    "type": "line",
-   "text": "The trainer's skip key: with the flag at $C3FF set, the Commodore key ends the stage at once (stage_retry, or stage_done on stage 7; on stage 8 it sets $0622). Not part of Activision's game."
+   "text": "The trainer's skip key: with the flag at $C3FF set, the Commodore key ends the stage at once as if won (stage_complete, or stage_done on stage 7; on stage 8 it sets $0622). Not part of Activision's game."
   },
   {
    "address": 15129,
@@ -9324,7 +9324,7 @@
   {
    "address": 15134,
    "type": "line",
-   "text": "The Commodore key is down (row 7 reads $DF): clears $0202. On stage 7 blanks the screen and the sprites and counts the stage as won (stage_done); on stage 8 sets $0622 to $80 for the ending's own code; on any other stage restarts it through stage_retry, which shows the status screen with the code for the stage, so the next game can start beyond it."
+   "text": "The Commodore key is down (row 7 reads $DF): clears $0202. On stage 7 blanks the screen and the sprites and counts the stage as won (stage_done); on stage 8 sets $0622 to $80 for the ending's own code; on any other stage jumps to stage_complete, which shows the stage's code and moves on to the next stage, as if the level had been won."
   },
   {
    "address": 15172,
@@ -9379,7 +9379,7 @@
   {
    "address": 49344,
    "type": "line",
-   "text": "Four more sprite shapes: a hand with a raised finger and its solid outline ($C0C0, $C100), the same hand a little lower and its outline ($C140, $C180)."
+   "text": "Four more sprite shapes: a glove with a raised finger and its solid outline ($C0C0, $C100), the same glove a little lower and its outline ($C140, $C180), the pointer of the equipment identification screen before level 1."
   },
   {
    "address": 49408,
