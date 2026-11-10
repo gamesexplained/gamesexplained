@@ -906,3 +906,5 @@ Checked resident scroll colour scratch save and restore loops in VICE, comparing
 Described the $04 display-order alias and reran the existing three-case VICE sort check; restored the paused user snapshot.
 
 Checked the resident vertical display-cache alias and four adjustment loops in forced VICE cases; restored the paused user snapshot.
+
+Checked nine forced load-25 type-$1E local state and event cases in VICE, with callback stubs, and restored the paused user snapshot. Replaced duplicate descriptions with the local operands and branch targets.

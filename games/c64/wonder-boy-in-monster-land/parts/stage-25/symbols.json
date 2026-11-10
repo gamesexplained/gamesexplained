@@ -8686,12 +8686,12 @@
   {
    "address": 41159,
    "type": "line",
-   "text": "The same offset and callback sequence as state 2, but its transition sets $1AB1,X=0 without resetting $1AD3,X or toggling $1B17,X."
+   "text": "State 3 calls $A161, saves $1B17,X at $A1A7, uses $1AF5,X to select an offset from $A1A9 and calls $A151. It advances that index modulo four and decrements $1AD3,X. A negative count clears $1AB1,X; otherwise it calls $4574 or $45BC according to the saved sign, with A=4, and clears $1AB1,X if the returned A masked with 6 differs from 2."
   },
   {
    "address": 41222,
    "type": "line",
-   "text": "Decrement $1AC2,X. If negative, copy $1AE4,X to $1AB1,X and return. Otherwise call $72FC; select $45BC for carry clear or $4574 for carry set, with A=8. When the returned A masked with 6 differs from 2, copy $1AE4,X to $1AB1,X."
+   "text": "State 4 decrements $1AC2,X. A negative result copies $1AE4,X to $1AB1,X at $A122. Otherwise $72FC selects $45BC on clear carry or $4574 on set carry, called with A=8; a return value whose bits 1\u20132 differ from 2 also takes the copy at $A122."
   },
   {
    "address": 41257,
@@ -8711,12 +8711,12 @@
   {
    "address": 41358,
    "type": "line",
-   "text": "Carry set from $732A with zero or negative $1A6D,X clears $1AD3,X, sets $1AC2,X=10 and $1AB1,X=5, then discards one return address and returns."
+   "text": "The alternate event clears $1AD3,X, writes 10 to $1AC2,X and branches to $A188 with A=5. That shared tail writes $1AB1,X, removes one return address with two PLA instructions and returns."
   },
   {
    "address": 41372,
    "type": "line",
-   "text": "When $732A returns carry clear, call $7227. Return if carry is clear; otherwise load A=4 and tail-jump to $5D7A."
+   "text": "The event follow-up calls $7227 and returns on clear carry. On set carry it loads A=4 and tail-jumps to $5D7A at $A1A2."
   },
   {
    "address": 41383,
