@@ -744,3 +744,5 @@ Described the CIA keyboard scan at $2951. Three forced VICE cases and a listing 
 Traced status reading at $7B84. Three forced VICE cases and a listing test checked its return and port direction for zero and nonzero tiers. An initial test expected the intermediate data read in A, but the return reloads $5284; corrected before the successful check. Restored the paused user snapshot.
 
 Described the separate player item arrays and checked append, matching-item merge and $99 saturation for both players in six forced VICE cases and a listing test. Restored the paused user snapshot.
+
+Described the remaining captured entries in 30 later-load row-pointer pairs. All 81 pairs per load follow the captured stride; VICE compared every tail byte with the corresponding entry snapshot, and a listing test checks the arithmetic and table bounds. The pointers extend beyond the map rows described by the Maps view; their use and target ownership remain open. Restored the paused user snapshot.

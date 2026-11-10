@@ -126,3 +126,5 @@ Load-19 question code at $BD50 starts at cursor mode $FF, allows changes toward 
 The load-19 state dispatcher at $BC10 selects five handlers using an entity state byte. Its first handler increments the state and sets $9A4B to the low two bits of either its existing negative value or the result of $3020. The quiz later compares the low bit. Six forced VICE paths check all five targets, both answer-source branches and introduction callbacks; normal-play reachability remains open.
 
 The Sphinx state at $BCDC chooses the question using bit 1 of $9A4B: clear enters the question at $BD50, set displays the hobby question at $BCF0 and joins the common setup. Four forced VICE values and a listing test checked the selection with the display callback stubbed; ordinary-play reachability remains open.
+
+The captured split row-pointer tables contain 81 pairs. All follow a 128-byte stride from $8671; the first 29 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.

@@ -94,3 +94,5 @@ The shop conditional-item resolver at $985D changes item $13 to $14 when the sel
 The captured shop message bank contains the same 34 records as the decoded first-load bank. VICE matched the complete message bytes in this load; listing tests check all record hashes and decode the first-load fields. Selection of each record in ordinary play and other overlapping uses remain open.
 
 A forced graphics setup call at $9D8A copies ten source blocks into RAM beneath I/O and calls the mirror routine seven times. VICE and a listing test checked all copies with the mirror callback stubbed. The callback’s effects, other source uses and ordinary-play reachability remain open.
+
+The captured split row-pointer tables contain 81 pairs. All follow a 105-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
