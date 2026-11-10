@@ -686,3 +686,5 @@ Decoded seven panel message records in each of loads 4, 9, 19, 20 and 30, adding
 Found and typed the previously unclassified price formatter and digit writer in 17 later loads. VICE and a listing test checked both paths in every load. Where code overlaps copied character patterns, the descriptions now record both observations; the paused user snapshot was restored. Natural reachability and input bounds remain open.
 
 Found and typed the input-held and cursor helpers and adjacent state bytes in 17 later loads. Eighty-five forced VICE cases and listing tests checked the helpers; existing shop tests check the state paths. Where bytes overlap copied character patterns, descriptions record both observations. The paused user snapshot was restored.
+
+Found and typed conditional-item resolvers in 17 later loads. Fifty-one forced VICE cases and a listing test checked the three outcomes per load. Overlapping character-copy descriptions record both observations; the paused user snapshot was restored.
