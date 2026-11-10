@@ -1,0 +1,180 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>
+.bd-fig{margin:18px 0}.bd-fig img{max-width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px}
+.bd-fig figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
+.bd-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
+.bd-row label{font-size:14px;color:var(--ink-soft)}
+.bd-row select,.bd-row button{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.bd-row button{cursor:pointer}
+canvas.bd-cv{width:100%;max-width:960px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
+.bd-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin:14px 0 0;padding:0;list-style:none;font-size:14px}
+.bd-legend li{display:flex;gap:8px;align-items:center}.bd-legend canvas{width:32px;height:32px;image-rendering:pixelated;background:#000;border:1px solid var(--line)}
+table.bd-t{border-collapse:collapse;width:100%;font-size:15px}table.bd-t th,table.bd-t td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+table.bd-t th{font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em}
+.bd-wrap{overflow-x:auto}
+sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every cave is a recipe: random dirt from a seed, then walls drawn from a short list of records.</p>
+</header>
+<main class="wrap">
+<section id="maps">
+  <p class="fig">01 · Every cave</p>
+  <h2 class="t">Twenty caves, five levels each</h2>
+
+  <p class="lede">Choose a cave and a level to see its map as the game builds it. Sixteen caves are the playing caves A to P, and four are the short bonus caves that follow D, H, L and P.</p>
+  <div class="plate">
+    <div class="bd-row"><label for="bd-cave">Cave</label><select id="bd-cave"></select><label for="bd-level">Level</label><select id="bd-level"></select></div>
+    <canvas id="bd-map" class="bd-cv" aria-label="The cave's first screen" role="img"></canvas>
+    <p class="cap" id="bd-info"></p>
+    <ul class="bd-legend" id="bd-legend"></ul>
+    <p class="cap">Each map is built by the page from the cave's own bytes (<code>$582E</code>) with the game's own recipe, then drawn with the game's character shapes. Every object is named beside its picture, because the colours alone do not tell them apart. Animated objects are shown in their first frame.</p>
+  </div>
+</section>
+<section id="recipe">
+  <p class="fig">02 · How a map is made</p>
+  <h2 class="t">Random dirt first, then drawn walls</h2>
+
+  <p>A cave is not stored as a picture. The game fills the whole 40 by 22 cave with random objects, then draws the cave's fixed features on top. The fill takes each cell's random byte from a small sixteen-bit generator (<code>$7085</code>) and compares it with four thresholds in the cave's header: below the first threshold the cell becomes the first of four header codes, below the second the second code, and so on, with the last threshold that matches winning. A cell that matches none is dirt (<code>$8029</code>).</p>
+  <p>The generator starts from one of five seed bytes in the header, one for each level. The cave is therefore the same every time that cave and level are played, and levels differ in where the boulders and diamonds fall, not in the walls (<code>$8226</code>). The random-byte routine at <code>$6E68</code> is a different one, driven by the timers, and serves the creatures and the sound.</p>
+  <p>The fixed features are a list of records from <code>$2420</code> in the cave header copy: a single object, a line, a filled rectangle with a different inner object, or an outline rectangle. The top two bits of the first byte choose which, and the low six bits are the object (<code>$8518</code>). The list ends with <code>$FF</code>. The steel border is drawn first (<code>$85A7</code>), so a record can overwrite it.</p>
+  <p>To check the recipe, the page's builder was run for cave A, level 1, and compared with the 880 map bytes in the emulator right after play began. All but 33 cells matched, and the 33 differences are Rockford himself and boulders that had already fallen in the seconds of play before the snapshot.</p>
+</section>
+<section id="header">
+  <p class="fig">03 · The header</p>
+  <h2 class="t">Thirty-two bytes that set the cave’s rules</h2>
+
+  <div class="bd-wrap"><table class="bd-t"><tr><th>Byte</th><th>Holds</th></tr>
+  <tr><td>1</td><td>Seconds for the amoeba to start growing fast and for the magic wall to stay active (<code>$7478</code>, <code>$7E9F</code>)</td></tr>
+  <tr><td>2 and 3</td><td>Points for each diamond before and after the quota is met (<code>$74F6</code>)</td></tr>
+  <tr><td>4 to 8</td><td>The random seed for levels 1 to 5</td></tr>
+  <tr><td>9 to 13</td><td>Diamonds needed on levels 1 to 5</td></tr>
+  <tr><td>14 to 18</td><td>Seconds allowed on levels 1 to 5 (<code>$8274</code>)</td></tr>
+  <tr><td>19, 20 and 21</td><td>The two extra multicolour colours and the colour of the cave (<code>$8226</code>)</td></tr>
+  <tr><td>24 to 27 and 28 to 31</td><td>The four fill codes and their thresholds</td></tr></table></div>
+  <p>Bytes 0, 22 and 23 are not explained. Byte 0 repeats the cave number, and the use of bytes 22 and 23 was not found.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script id="levels-core">
+// levels-core: rebuilds a cave from its description, as the routines at $8043, $8029, $7085 and $8518 do.
+const BD = (function () {
+  const DIR = [-40, -39, 1, 41, 40, 39, -1, -41];
+  function lcg(s) {                       // $7085: one step of the 16-bit generator in $3E/$3F
+    let lo = s[0], hi = s[1];
+    const a4 = (hi & 1) << 7, a5 = lo >> 1;
+    let v = lo + ((lo & 1) << 7); let c = v >> 8; v &= 255;
+    v = v + 0x13 + c; c = v >> 8; const nlo = v & 255;
+    let u = hi + a4 + c; c = u >> 8; u &= 255; u = u + a5 + c;
+    return [nlo, u & 255];
+  }
+  function rect(m, x, y, w, h, v) {
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const p = (y + j - 2) * 40 + x + i; if (p >= 0 && p < 880) m[p] = v; }
+  }
+  function outline(m, x, y, w, h, v) {
+    let p = (y - 2) * 40 + x;
+    for (const [n, d] of [[w - 1, 2], [h - 1, 4], [w - 1, 6], [h - 1, 0]])
+      for (let k = 0; k < n; k++) { if (p >= 0 && p < 880) m[p] = v; p += DIR[d]; }
+  }
+  function build(rec, level) {            // rec: the cave's bytes (32-byte header, then the object records, $FF)
+    const m = new Uint8Array(880), thr = rec.slice(28, 32), codes = rec.slice(24, 28);
+    let s = [rec[4 + level], 0];
+    for (let r = 1; r < 22; r++) for (let c = 0; c < 40; c++) {
+      s = lcg(s); let x = 1;
+      for (let k = 0; k < 4; k++) if (s[1] < thr[k]) x = codes[k];
+      m[r * 40 + c] = x;
+    }
+    outline(m, 0, 2, 40, 22, 7);
+    let i = 32;
+    while (rec[i] !== 0xFF) {
+      const t = rec[i] & 0xC0, v = rec[i] & 0x3F, x = rec[i + 1], y = rec[i + 2];
+      if (t === 0) { const p = (y - 2) * 40 + x; if (p >= 0 && p < 880) m[p] = v; i += 3; }
+      else if (t === 0x40) {
+        let p = (y - 2) * 40 + x;
+        for (let k = 0; k < rec[i + 3]; k++) { if (p >= 0 && p < 880) m[p] = v; p += DIR[rec[i + 4]]; }
+        i += 5;
+      } else if (t === 0x80) { rect(m, x, y, rec[i + 3], rec[i + 4], v); rect(m, x + 1, y + 1, rec[i + 3] - 2, rec[i + 4] - 2, rec[i + 5]); i += 6; }
+      else { outline(m, x, y, rec[i + 3], rec[i + 4], v); i += 5; }
+    }
+    return m;
+  }
+  return { build, lcg };
+})();
+if (typeof window !== 'undefined') window.BD = BD;
+</script>
+<script id="levels-data">
+// levels-data and drawing
+const BD_DATA = {"glyphs":{"0":"0000000000000000000000000000000000000000000000000000000000000000","1":"0411504119185151454524649685455815956158649125194444505146101044","2":"3f3f2f2f2a2a0000f3f3f2f2a2a200003f3f2f2f2a2a0000f3f3f2f2a2a20000","3":"3f3f2f2f2a2a0000f3f3f2f2a2a200003f3f2f2f2a2a0000f3f3f2f2a2a20000","4":"aaaaaaaa8282a2a2b2b2aaaaaaaaaaaaaaaaaaaa8282a2a2b2b2aaaaaaaaaaaa","5":"aaaa80028002800280028002800280028002800280028002800280028002aaaa","7":"aaaaaaaa8282a2a2b2b2aaaaaaaaaaaaaaaaaaaa8282a2a2b2b2aaaaaaaaaaaa","8":"aaaaaaaa800280028aa28aa28be28be28be28be28aa28aa280028002aaaaaaaa","9":"aaaaaaaa800280028aa28aa28be28be28be28be28aa28aa280028002aaaaaaaa","10":"aaaaaaaa800280028aa28aa28be28be28be28be28aa28aa280028002aaaaaaaa","11":"aaaaaaaa800280028aa28aa28be28be28be28be28aa28aa280028002aaaaaaaa","16":"0fc03b70defcb67fa9bf9a9ba5afaa9b8aa9a2998aaaa2aaa8a82aa808600280","17":"0fc03b70defcb67fa9bf9a9ba5afaa9b8aa9a2998aaaa2aaa8a82aa808600280","18":"0fc03b70defcb67fa9bf9a9ba5afaa9b8aa9a2998aaaa2aaa8a82aa808600280","19":"0fc03b70defcb67fa9bf9a9ba5afaa9b8aa9a2998aaaa2aaa8a82aa808600280","20":"02c001800bf007e02aac15588003400295576aaa2ffc1ff80ab0056001800140","21":"02c001800bf007e02aac15588003400295576aaa2ffc1ff80ab0056001800140","22":"02c001800bf007e02aac15588003400295576aaa2ffc1ff80ab0056001800140","23":"02c001800bf007e02aac15588003400295576aaa2ffc1ff80ab0056001800140","37":"aaaa80028002800280028002800280028002800280028002800280028002aaaa","48":"c0028001f00be007ac2a5815038002405795aa6afc2ff81fb00a600580014001","49":"c0028001f00be007ac2a5815038002405795aa6afc2ff81fb00a600580014001","50":"c0028001f00be007ac2a5815038002405795aa6afc2ff81fb00a600580014001","51":"c0028001f00be007ac2a5815038002405795aa6afc2ff81fb00a600580014001","56":"f00f3ffcfbeffbefffff3c3c0f300aa05aa44aa10aa43ffc3c3c300cf00c000f","57":"f00f3ffcfbeffbefffff3c3c0f300aa05aa44aa10aa43ffc3c3c300cf00c000f","58":"ffbfffffbfff2ffe2ffe2ffebfffffffffffbffe2ff82ff82ff8bffeffffffff","59":"ffbfffffbfff2ffe2ffe2ffebfffffffffffbffe2ff82ff82ff8bffeffffffff"},"caves":["01140a0f0a0b0c0d0e0c0c0c0c0c966e46281e080b09d420001014003c3209004201091e024209101e02250304042612ff","0214143203000157580a0c090d0a966e4646460a04090000001014083c320902420108260242010f26024208031404421003140442180314044220031404400105260240010b260240011226024014031404251215041216ff","03000f000032363437181718171596645a504609080904000210140064320900250304042714ff","04140514006e70737724242424247864503c320408090000100000001400000025010304261681080a040400300a0b81100a04040030120b81180a040400301a0b81200a04040030220bff","0514325a0000000000040506070896785a3c1e090a090000000000000000000025010304271680080a03030080100a03030080180a03030080200a03030014090c080a0a14110c08120a14190c081a0a14210c08220a800810030300801010030300801810030300802010030300140912080a10141112081210141912081a10142112082210ff","0614283c001415161704060708089678645a500e0a09000010000000320000008201030a04008201060a04008201090a040082010c0a0400410a030d0414030508040514030808040814030b08040b14030e08040e821d030a0400821d060a0400821d090a0400821d0c0a0400411d030d0414240508230514240808230814240b08230b14240e08230e250314042614ff","074b0a140207080a090f141919197878787878090a0d000000100800642802004201070c02421c050b027a1315020214040614040e14041614220414220c142216251403042707ff","08140a1401030405060a0f141414786e645a50020e090000001008005a32020014040614220414220c0400052514034201070c0242010f0c02421c050b02421c0d0b02430e110802140c10000e12141312410e0f0802ff","0914050a64898cfb334b4b50555a9696828278080409000010140000f078000082050a0d0d00010c0a82190a0d0d00011f0a4211120902401113090225070c04080cff","0a14193c00000000000c0c0c0c0c9682786e6406080900000000000000000000250d030427165405041103541504110580050b110308c201041511000d04c207060d0d000d06c209080909000d08c20b0a0505000d0a820306030f080004065404100404ff","0b1432000004669764060606060678789696f00b080900000010080064500200420a0309044214030904421e0309044209160900420c0f110242050b0902420f0b090242190b0902421c130b01140403140e03141803142203140416142315251414042611ff","0c141400003c023b6613130e1015b4aaa0a0a00c0a090000001014003c320900420a051204420e051204421205120442160512044202060b0242020a0b0242020e0f024202120b02811e04040400082005811e0904040008200a811e0e04040008200f250314042716ff","0d8c0508000102030432373c4650a09b96918c06080d00001000000028000000251203040a033a14034205121e027005131e025005141e02c105151e02ff","0e140a1400000000001e23282a2d96918c87820c080900001000000000000000810a0a0d0d00700b0b0c03c10c0a030dc1100a030dc1140a030d5016080c024816070c02c117060304c11b060304c11f060304250303042714ff","0f080a14011d1e1f200f1414191e787878788c080e09000000100800645002004202040a03420f0d0a01410c0e0302430c0f0302041416251403ff","10140a140178817e7b0c0f0f0f0c9696969696090a0900001000000032000000250103042704810813040400080a14c2070a060843070a0602811013040400081214c20f0a0608430f0a0602811813040400081a14812013040400082214ff","11141e000a0b0c0d0e06060606060a0a0a0a0a0e0209000000140000ff090000870002281607870002140c00320a0c100a04010a0525030504120cff","12140a000a0b0c0d0e10101010100f0f0f0f0f060f0900000000000000000000870002281607870002140c015001030903480203080354010508035001060703501203090554120508055012060705250104041204ff","13040a000a0b0c0d0e0e0e0e0e0e141414141406080900000000000000000000870002281607870002140c0054010c1202880f09040408250803041207ff","14031e0000000000000606060606141414141406080900000000000000000000870002281607870002140c01d00b030302800b07030600430b060302430b0a0302500807030325030304090aff"]};
+(function () {
+  if (typeof document === 'undefined') return;
+  const PAL = ['#000000','#ffffff','#880000','#aaffee','#cc44cc','#00cc55','#0000aa','#eeee77','#dd8855','#664400','#ff7777','#333333','#777777','#aaff66','#0088ff','#bbbbbb'];
+  const NAMES = {0:'space',1:'dirt',2:'brick wall',3:'magic wall',4:'exit, closed',5:'exit, open',7:'steel wall',8:'firefly',16:'boulder',20:'diamond',37:'entrance',48:'butterfly',58:'amoeba',56:'Rockford'};
+  const LEG = [0,1,2,3,7,4,16,20,8,48,58,37];
+  const hex = h => Uint8Array.from(h.match(/../g).map(b => parseInt(b, 16)));
+  const caves = BD_DATA.caves.map(hex);
+  const glyph = {}; for (const k in BD_DATA.glyphs) glyph[k] = hex(BD_DATA.glyphs[k]);
+  function paint(ctx, g, ox, oy, cols) {
+    const im = ctx.createImageData(16, 16);
+    for (let y = 0; y < 16; y++) for (let h = 0; h < 2; h++) { const v = g[y * 2 + h];
+      for (let k = 0; k < 4; k++) { const c = cols[(v >> (6 - 2 * k)) & 3];
+        for (let d = 0; d < 2; d++) { const px = h * 8 + k * 2 + d, o = (y * 16 + px) * 4; im.data[o] = c[0]; im.data[o + 1] = c[1]; im.data[o + 2] = c[2]; im.data[o + 3] = 255; } } }
+    ctx.putImageData(im, ox, oy);
+  }
+  const rgb = i => { const s = PAL[i]; return [parseInt(s.substr(1, 2), 16), parseInt(s.substr(3, 2), 16), parseInt(s.substr(5, 2), 16)]; };
+  const cave = document.getElementById('bd-cave'), lvl = document.getElementById('bd-level'), cv = document.getElementById('bd-map'), info = document.getElementById('bd-info'), leg = document.getElementById('bd-legend');
+  const label = i => i < 16 ? 'Cave ' + 'ABCDEFGHIJKLMNOP'[i] : 'Bonus cave ' + (i - 15) + ' (cave number ' + (i + 1) + ')';
+  caves.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = label(i); cave.appendChild(o); });
+  for (let l = 1; l <= 5; l++) { const o = document.createElement('option'); o.value = l - 1; o.textContent = 'Level ' + l; lvl.appendChild(o); }
+  function cols(rec) { return [rgb(0), rgb(rec[19] & 15), rgb(rec[20] & 15), rgb(rec[21] & 7)]; }
+  function draw() {
+    const rec = caves[+cave.value], L = +lvl.value, m = BD.build(rec, L), ctx = cv.getContext('2d'), cc = cols(rec);
+    for (let i = 0; i < 880; i++) { const o = m[i], g = glyph[o] || glyph[0]; paint(ctx, g, (i % 40) * 16, Math.floor(i / 40) * 16, cc); }
+    info.innerHTML = '<b>' + label(+cave.value) + ', level ' + (L + 1) + '</b>: ' + rec[9 + L] + ' diamonds needed, worth ' + rec[2] + ' points each and ' + rec[3] + ' each once the quota is met; ' + rec[14 + L] + ' seconds; the amoeba and magic wall timer is ' + rec[1] + ' seconds; the random fill uses seed ' + rec[4 + L] + '.';
+    leg.innerHTML = '';
+    for (const o of LEG) { const li = document.createElement('li'), c = document.createElement('canvas'); c.width = c.height = 16; paint(c.getContext('2d'), glyph[o], 0, 0, cc); li.appendChild(c); li.appendChild(document.createTextNode(NAMES[o] + ' (object $' + o.toString(16).toUpperCase().padStart(2, '0') + ')')); leg.appendChild(li); }
+  }
+  cv.width = 640; cv.height = 352;
+  cave.onchange = lvl.onchange = draw; draw();
+})();
+</script>

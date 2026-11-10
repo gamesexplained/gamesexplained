@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "boulder-dash",
+  "title": "Boulder Dash",
+  "year": 1984,
+  "publisher": "First Star Software",
+  "developer": "Peter Liepa and Chris Gray (original); First Star Software (Commodore 64 conversion)",
+  "title_image": "reference/title-screen.png",
+  "build": "Re-packaged disk named C64.COM: one program, BOULDER DASH, 16,499 bytes, a BASIC stub and a copier ahead of the game; title screen \"(C)1984 First Star Software Inc.\"",
+  "tier": "bronze",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Peter Liepa",
+      "role": "design and programming of the original Atari 8-bit game, with its music (Wikipedia)"
+    },
+    {
+      "by": "Chris Gray",
+      "role": "co-creator; his BASIC game based on The Pit led to it (Wikipedia)"
+    },
+    {
+      "by": "First Star Software",
+      "role": "published the Commodore 64 version in 1984; the programmer of the conversion is not named in the sources read"
+    }
+  ],
+  "tools": {
+    "host": "Linux 6.18 x86_64, cloud container with no display",
+    "emulator": "VICE 3.14.0 (vice-mcp), driven through kit/c64/vice.py",
+    "disassembler": "regenerator2000 0.9.20",
+    "python": "3.11",
+    "widget tests": "node: test_levels.js holds the Maps tab builder to a second implementation of the recipe",
+    "subagents": "one checking agent for the 60-verify sample, claude-opus-5-5"
+  },
+  "model": "claude-sonnet-5-5",
+  "step_models": {
+    "50-coverage": [
+      "claude-sonnet-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 20,
+      "fixed": 20,
+      "seed": 2611,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "one checker; 18 wrong in a detail and 2 wrong; the comments sharing a template (cave records, character set and frame table chunks) were corrected too"
+    }
+  ],
+  "kit_version": "0.0.318",
+  "created": "2026-11-10",
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$00FF",
+        "zero page: the game's counters, flags and pointers, set at run time"
+      ],
+      [
+        "$0200",
+        "$07FF",
+        "vectors, BASIC's leftovers and the screen of the loader"
+      ],
+      [
+        "$0800",
+        "$0FFF",
+        "the cave's map (40 by 22 object codes from $0850), the menu lines and the text screen, built at run time"
+      ],
+      [
+        "$2000",
+        "$23FF",
+        "the character set the VIC reads, copied from $5000-$53FF at start"
+      ],
+      [
+        "$2400",
+        "$24FF",
+        "the current cave's description, copied from the table at $582E when a cave starts"
+      ],
+      [
+        "$2500",
+        "$3FFF",
+        "screen buffers, the animated character set and the frame tables copied from $5FE8-$6DFF at start, and sprite data, all built at run time"
+      ],
+      [
+        "$4000",
+        "$4EFF",
+        "the 80 by 44 character scroll buffer, redrawn as the cave changes"
+      ],
+      [
+        "$9800",
+        "$9DFF",
+        "the game's variables and text buffers"
+      ],
+      [
+        "$9E00",
+        "$9FFF",
+        "the copy of the screen-copy code from $7EF0 and $7FF0, patched at run time"
+      ],
+      [
+        "$1000",
+        "$1FFF",
+        "the program file's copy of the game: the copier at $0828 moves $0870-$4870 to $5000-$8FFF, and the game runs and reads only the moved copy"
+      ],
+      [
+        "$FD30",
+        "$FD4F",
+        "the KERNAL's table of I/O vectors, set up by the machine and not part of the game"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$5000",
+      "$53AF",
+      "graphics",
+      "text character set"
+    ],
+    [
+      "$53B0",
+      "$5803",
+      "tables",
+      "neighbour offsets, scroll row addresses, animation frame tables"
+    ],
+    [
+      "$5804",
+      "$5EA7",
+      "tables",
+      "cave offsets and the twenty cave descriptions"
+    ],
+    [
+      "$5EA8",
+      "$5FE7",
+      "tables",
+      "demonstration script, remap, tile and handler tables"
+    ],
+    [
+      "$5FE8",
+      "$63E7",
+      "graphics",
+      "title tune and tile character set"
+    ],
+    [
+      "$63E8",
+      "$6E67",
+      "graphics",
+      "Rockford frames, title map templates, frame blocks"
+    ],
+    [
+      "$6E68",
+      "$8F4D",
+      "code",
+      "the game"
+    ],
+    [
+      "$8F4E",
+      "$8F64",
+      "other",
+      "leftover bytes"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "Boulder Dash \u2013 C64-Wiki",
+      "url": "https://c64-wiki.com/wiki/Boulder_Dash"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    },
+    "wikipedia": {
+      "title": "Boulder Dash (video game) \u2013 Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Boulder_Dash_(video_game)"
+    },
+    "review": {
+      "title": "Boulder Dash, ZZAP!64 Top 64 \u2013 GameBase64",
+      "url": "https://gb64.com/oldsite/gameofweek/top64/top64_boulderdash.htm"
+    }
+  },
+  "tabs": [
+    [
+      "index.html",
+      "Overview"
+    ],
+    [
+      "gameplay.html",
+      "Gameplay"
+    ],
+    [
+      "controls.html",
+      "Controls"
+    ],
+    [
+      "levels.html",
+      "Maps"
+    ],
+    [
+      "graphics.html",
+      "Graphics"
+    ],
+    [
+      "music.html",
+      "Music"
+    ],
+    [
+      "discoveries.html",
+      "Discoveries"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ]
+}
