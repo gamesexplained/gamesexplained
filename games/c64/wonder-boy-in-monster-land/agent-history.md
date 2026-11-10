@@ -595,3 +595,5 @@ Traced the first-load entity normal state $B188. VICE checked six forced paths, 
 Traced the first-load entity reaction paths $B1ED and $B224. VICE checked five forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
 
 Traced the first-load second entity normal state $B24B. VICE checked eight forced collision, contact, timer and movement paths with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load second entity reaction and exit paths $B315 and $B34F. VICE checked six forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
