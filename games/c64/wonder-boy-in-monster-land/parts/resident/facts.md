@@ -281,3 +281,5 @@ Resident $497D chooses between another selection and the type-$F0 item setup bas
 Resident $7A9A saves and clears three memory pages and stages a 53-byte transfer payload. VICE checked the page copies, clearing, selector and payload with interrupts disabled, the sound callback stubbed and execution stopped before transfer. The CPU-port save bytes, SID behavior, transfer and ordinary-play reachability remain open.
 
 Resident $4828 writes five 22-cell display rows and three 22-cell colour rows, then stores $FE at $4DAD. VICE checked all 110 display cells and the low nibbles of all 66 colour cells with supplied bytes. Call context and ordinary-play reachability remain open.
+
+Resident $6F86 redraws the meter sprite when a cached value differs, splitting the drawing into 20-unit segments and eight-row masks. VICE checked seven forced values from 0 to 79 and one cache-hit case across all 64 bitmap bytes. The initial Y index and selected-player index can differ; bounds and ordinary-play reachability remain open.

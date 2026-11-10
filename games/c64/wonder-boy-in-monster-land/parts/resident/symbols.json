@@ -22485,6 +22485,26 @@
    "text": "Row countdown initialized to $13 by $70D0 and tested after each 40-byte row."
   },
   {
+   "address": 28550,
+   "type": "line",
+   "text": "Compare $4DCD,Y with $4DA2 and return if equal. Otherwise cache that value, clear 64 bytes at $C400\u2013$C43F, load the selected player index from $4DBD and compute half of (its $4DCD value plus one) using ADC and ROR. Store $21 at $4C6F/$4C70/$6E when the sum is odd, or $20 when it is even."
+  },
+  {
+   "address": 28601,
+   "type": "line",
+   "text": "If the computed half value is at least 20, draw a 20-unit segment with X=0, then draw the remainder with X=$18. Otherwise draw the whole value with X=0. The arithmetic and indexing are not locally bounded."
+  },
+  {
+   "address": 28621,
+   "type": "line",
+   "text": "For a remainder below 8, fetch the mask from $6FFF,Y and store it in eight bytes separated by three positions at $C400,X. For a remainder of at least 8, enter $6FEE."
+  },
+  {
+   "address": 28654,
+   "type": "line",
+   "text": "Write eight $FF bytes through $6FD5, subtract 8 from the saved remainder, increment X and repeat at $6FCD."
+  },
+  {
    "address": 28679,
    "type": "line",
    "text": "Unused byte following the eight partial-meter masks. Full rows use immediate $ff rather than reading this byte.\nTrace-proven startup remnant at $7007\u2013$7007. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
