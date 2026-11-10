@@ -543,3 +543,5 @@ Traced resident message row writer $4828. VICE checked all 110 display cells and
 Traced resident meter sprite update $6F86. VICE checked seven forced meter values and a cache hit across all 64 bitmap bytes; a listing test repeats them against independently calculated segments. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
 
 Traced resident damage and protection $5D7A. VICE checked five forced cooldown and charge cases through the real meter subtraction, including zero-charge wrap, with the message callback stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident temporary action state $08E0 and its restoration at $0841. VICE checked three forced save and restore cases with the following input gate forced to return; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.

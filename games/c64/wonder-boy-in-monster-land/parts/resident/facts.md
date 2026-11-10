@@ -285,3 +285,5 @@ Resident $4828 writes five 22-cell display rows and three 22-cell colour rows, t
 Resident $6F86 redraws the meter sprite when a cached value differs, splitting the drawing into 20-unit segments and eight-row masks. VICE checked seven forced values from 0 to 79 and one cache-hit case across all 64 bitmap bytes. The initial Y index and selected-player index can differ; bounds and ordinary-play reachability remain open.
 
 Resident $5D7A applies damage only when cooldown is zero; protection halves the amount, decrements its byte-sized charge and clears its flag when the decremented charge is zero. VICE checked five forced cases through the real meter subtraction, including a zero charge wrapping to 255, with the message callback stubbed. Ordinary-play reachability remains open.
+
+Resident $08E0 saves two bytes in the operands of $0841, then sets a temporary action mode and colour shadow; $0841 restores them when that mode is 1. VICE checked three forced save and restore cases, forcing the following input gate to return. Ordinary-play reachability remains open.
