@@ -60,6 +60,9 @@ table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.5rem;bo
 <section id="trigger-opcode"><p class="fig">05 · Trigger code</p><h2 class="t">A trigger rewrites its own instruction</h2>
 <p>A load-23 trigger points to a message routine that saves the trigger index into an instruction byte. The store lands on the opcode; the immediate value is the following byte. With index 1, the captured <code>LDX #$FF</code> becomes <code>ORA ($FF,X)</code>.</p>
 <p class="cap">A constructed dispatch of the captured trigger exercised <a href="source-stage-23.html#950A">the callback at $950A</a> in VICE and the listing simulator, with the message routine stubbed. The test does not establish whether ordinary play reaches the trigger or what the real message routine leaves in the registers.</p></section>
+<section id="contact-patch"><p class="fig">06 · Contact</p><h2 class="t">A trigger can switch off a contact check</h2>
+<p>One load-9 trigger counts down, then restores the selected player’s meter and changes the start of the player-contact routine to <code>CLC; RTS</code>. Calls to that entry then return with carry clear, without running the ordinary contact test.</p>
+<p class="cap">The <a href="source-stage-09.html#92F7">trigger at $92F7</a> and the patched <a href="source-resident.html#7227">contact entry at $7227</a> were checked in VICE. The message routine was stubbed. The tests do not establish whether ordinary play reaches the trigger or whether other damage sources remain active.</p></section>
 </main>
 <script id="gauntlet-widget">
 /* GAUNTLET_BEGIN */

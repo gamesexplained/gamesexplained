@@ -768,3 +768,7 @@ Traced eight later-load trigger message callbacks. Eight forced VICE calls and a
 Investigated the unusual load-23 trigger callback: its store patches the opcode at $9514 rather than the immediate operand. Direct VICE calls with X=1 and X=$A2 and a constructed dispatch of the captured second trigger checked the resulting behavior, with the message callback stubbed. A listing test repeats the cases. Natural trigger reachability and real message callback outputs remain open; restored the paused user snapshot.
 
 Added the load-23 self-modifying trigger observation to Discoveries, with the forced-dispatch and callback limitations beside it.
+
+Traced the load-9 countdown trigger and its player-contact patch. Three forced VICE cases checked countdown, guard and activation; a further case used the real flag setter and called the patched contact entry. The message callback was stubbed, and a listing test repeats the paths. Restored the paused user snapshot.
+
+Added the load-9 contact-check patch to Discoveries, with the controlled-trigger and other-damage limitations beside it.
