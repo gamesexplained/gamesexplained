@@ -113,3 +113,5 @@ Resident routine $1179 checks three gate bytes and two position ranges before bu
 Resident initialization at $6C04 copies fields from $7F43–$7F49 and sets $1177 to $7F46 minus $66. The contact routine $1179 later tests whether that byte is zero. VICE checked three forced initialization cases, including eight-bit wrap, and three cases through $1179 with $370B and $75E3 stubbed. Other callback effects and ordinary-play inputs remain open.
 
 Resident display update $1C7C writes a primary pair of slots and conditionally writes a secondary pair. It uses $1A8F,X for blink and palette paths, and patches immediate operands to restore slot indices after palette lookup. VICE checked eight forced display, blink and palette cases in load 24. Slot bounds and ordinary-play reachability remain open.
+
+Resident display update $1E7C writes a primary pair from entity position fields and conditionally writes a secondary pair based on bit 0 of $192A,X. Like $1C7C it has blink and palette paths and patches immediate operands to restore slot indices. VICE checked eight forced display, blink and palette cases in load 24. Slot bounds and ordinary-play reachability remain open.

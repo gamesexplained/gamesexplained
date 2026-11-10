@@ -6287,6 +6287,12 @@
    "kind": "user"
   },
   {
+   "address": 7919,
+   "name": "select_direct_primary_effect_colour",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 7938,
    "name": "direct_pair_1_saved_slot_operand",
    "type": "Field",
@@ -6308,6 +6314,12 @@
    "address": 7954,
    "name": "store_second_sprite_color",
    "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 7962,
+   "name": "check_direct_secondary_pair",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -6344,6 +6356,12 @@
    "address": 8054,
    "name": "store_fourth_sprite_y",
    "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 8075,
+   "name": "select_direct_secondary_effect_colour",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -19275,6 +19293,56 @@
    "address": 7624,
    "type": "line",
    "text": "Updates display-slot state for entities using direct coordinates, including allocation, release and optional second pairs. Slot availability and indexes are runtime state."
+  },
+  {
+   "address": 7804,
+   "type": "line",
+   "text": "Use $1A29,X as the first display slot and store bit 0 of $192A,X at $4CEF,Y. If $1A8F,X is negative, toggle its low bit and use Y position $FE when that bit is set; otherwise use $19A1,X. Copy $196E,X/$195D,X to the slot coordinates, $19C3,X plus 1 to its pointer, $19F6,X to its colour and 1 to $4C2F,Y."
+  },
+  {
+   "address": 7871,
+   "type": "line",
+   "text": "Use $1A3A,X as the second display slot. Store bit 0 of $192A,X at $4CEF,Y, use the same blink and position fields, and store $19C3,X as its pointer."
+  },
+  {
+   "address": 7919,
+   "type": "line",
+   "text": "If $1A8F,X is positive, save the slot index in the immediate operand at $1F02, decrement the effect byte, use its previous value minus 1 as an index at $1FBA and restore the slot index. Otherwise use colour 7 when $1AA0,X is nonzero or $1A07,X when it is zero."
+  },
+  {
+   "address": 7938,
+   "type": "line",
+   "text": "Immediate operand of LDY at $1F01, patched by $1EF6 to restore the second display slot after indexing the colour table."
+  },
+  {
+   "address": 7962,
+   "type": "line",
+   "text": "Skip the secondary pair when bit 0 of $192A,X is clear; otherwise proceed to the third display slot. Unlike the world-position path, this check does not inspect $1919,X."
+  },
+  {
+   "address": 7972,
+   "type": "line",
+   "text": "Use $1A4B,X as the third display slot. Apply the blink test, use $19A1,X plus 21 for its visible Y, and copy the same coordinates. Store $19D4,X plus 1 as its pointer, $1A18,X as its colour and 1 at $4C2F,Y and $4CEF,Y."
+  },
+  {
+   "address": 8032,
+   "type": "line",
+   "text": "Use $1A5C,X as the fourth display slot. Apply the blink and secondary-position rules and store $19D4,X as its pointer."
+  },
+  {
+   "address": 8075,
+   "type": "line",
+   "text": "If $1A8F,X is positive, save the slot index at $1F9A, index $1FBA with the effect byte and restore the slot. Otherwise use colour 7 when $1AA0,X is nonzero or $1A07,X when it is zero. The first pair can already have decremented the effect byte."
+  },
+  {
+   "address": 8090,
+   "type": "line",
+   "text": "Immediate operand of LDY at $1F99, patched by $1F92 to restore the fourth display slot after indexing the colour table."
+  },
+  {
+   "address": 8106,
+   "type": "line",
+   "text": "Store the selected fourth-slot colour, clear $4C2F,Y, set $4CEF,Y to 1 and jump to $1DD7."
   },
   {
    "address": 8122,
