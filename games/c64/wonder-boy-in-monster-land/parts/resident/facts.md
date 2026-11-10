@@ -415,3 +415,5 @@ The first and fifth message-panel rows at $4EE4 and $4F3C each contain 22 screen
 The message display copies 22-byte rows to $C036–$C04B, $C05E–$C073 and $C086–$C09B. The regular and alternate panel paths use different source buffers. The regular path was checked in VICE with distinct patterns across all five screen rows; adjacent screen bytes remain separately bounded.
 
 The regular message-panel colour rows at $4F52 and $4F68 are copied to five colour-RAM rows. The alternate panel uses screen rows at $5066 and $507C and colour rows at $5092 and $50A8; $5092 also supplies a screen fill byte. Forced VICE cases checked the colour low nibbles and the alternate screen copies with distinct row patterns.
+
+The 22 bytes at $243F are the high-byte companion to the built-in sound voice pointer lows at $2429. The $2294 path copies a selected low and high byte to $2227,Y and $2228,Y. Five forced VICE indices checked both bytes; the reader does not locally bound X to the captured table.
