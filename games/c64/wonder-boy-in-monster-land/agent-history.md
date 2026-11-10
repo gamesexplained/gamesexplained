@@ -559,3 +559,5 @@ Traced indexed resident reward initialization $5C66 and $5C94. VICE checked both
 Traced resident slot-zero object initialization $5CCB and $5CFE. VICE checked four forced free and occupied cases with coordinate and movement callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
 
 Traced resident right-scroll tile-column writer $2D3E. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
+
+Traced resident left-scroll tile-column writer $2E33. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
