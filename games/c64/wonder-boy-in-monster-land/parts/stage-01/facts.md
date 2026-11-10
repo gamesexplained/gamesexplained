@@ -45,3 +45,5 @@ Controlled visual-resource selections copied 171 additional eight-byte character
 First-load initializer $92FB fills an entity slot with fixed type, frame, attributes and coordinates before passing message pointer $933C to the message routine. VICE and a listing test checked two forced entity indexes. Index bounds, message callback effects and ordinary-play reachability remain open.
 
 62 conditional sprite slots retain the same 64 captured bytes in entry and play snapshots; VICE matched each slot. Their descriptions identify the 63-byte shape, occupied rows, set-bit count and remaining slot byte. The selection paths remain conditional and other possible uses remain open.
+
+First-load price formatter $A807 splits two packed bytes into four nibble-plus-one display values and replaces leading ones with zero. VICE and a listing test checked five forced values, including non-decimal nibbles. The four 63-byte setup sprite sources were checked through the previously tested setup copies; other uses remain open.
