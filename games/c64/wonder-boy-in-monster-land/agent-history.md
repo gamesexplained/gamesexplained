@@ -610,3 +610,5 @@ Traced first-load setup $93BA–$9490. VICE checked two patched flag operands an
 
 Traced the first-load item layout at $A63F. VICE and a listing test checked 24 colour cells and two price-draw calls with price callbacks stubbed. The paused user snapshot was restored. Natural reachability and callback effects remain open.
 The following prompt and input handler at $A67E has its own routine boundary; its untraced bytes remain in the coverage queue.
+
+Traced first-load item release, polling and timeout paths. Five forced VICE cases checked both 220-frame timeout destinations and three controls; a listing test also checked simultaneous input priority. Callbacks were stubbed and the paused snapshot restored. The following selection handlers have a separate coverage boundary.

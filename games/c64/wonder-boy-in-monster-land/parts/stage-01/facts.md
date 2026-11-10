@@ -33,3 +33,5 @@ The first-load payment screen compares the selected player’s two-byte balance 
 First-load setup at $93BA initializes player and entity fields and copies graphics into RAM beneath I/O, with two 15-byte patches and six nine-byte tails. VICE checked two forced flag values and the resulting copies with sprite-link, mirror and message callbacks stubbed; a listing test repeats the checks. Callback effects and ordinary-play reachability remain open.
 
 First-load item layout at $A63F sets 24 colour cells in two groups, then calls price extraction and drawing for two selected item IDs. VICE checked the colours and call sequence with price callbacks stubbed; a listing test repeats the case. Callback effects and ordinary-play reachability remain open.
+
+First-load item input uses one 220-frame timeout across release and polling. It tests confirmation before left and right, and left before right. VICE checked five forced timeout and control paths with frame, input and display callbacks stubbed; a listing test also checks simultaneous controls. Callback effects and natural reachability remain open.

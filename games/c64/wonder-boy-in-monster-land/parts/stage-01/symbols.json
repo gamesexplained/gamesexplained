@@ -3280,7 +3280,7 @@
   {
    "address": 42708,
    "name": "handle_left_item_selection",
-   "type": "Branch",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -7114,6 +7114,21 @@
    "address": 42590,
    "type": "line",
    "text": "Write $46 plus one to the layout selector, then call price extraction and drawing for the two item IDs at $A850/$A851. Pass Y=$73 and $87 to the respective drawing calls; then select prompt $A857 in X/Y."
+  },
+  {
+   "address": 42622,
+   "type": "line",
+   "text": "Show the selected prompt, clear the selection index, and set the shared timeout to 220. The first loop waits for held input to be released; each frame decrements the same timeout before updating the HUD and cursor. A timeout before release follows the same timeout path as the later polling loop."
+  },
+  {
+   "address": 42654,
+   "type": "line",
+   "text": "Wait a frame, decrement the shared timeout, then update the HUD and cursor and sample controls. A zero at $70 branches to confirmation, otherwise zero at $73 branches left, otherwise zero at $74 branches right. That order gives confirmation priority over left, and left priority over right. With all three nonzero, poll again."
+  },
+  {
+   "address": 42686,
+   "type": "line",
+   "text": "When the timeout reaches zero, a nonzero layout selector jumps to $A5B5. With selector zero, write $FF to field 3 of the selected stage record and pass message $A88C to $A78B. The destination routines and callback effects are separate from this timeout check."
   },
   {
    "address": 42868,
