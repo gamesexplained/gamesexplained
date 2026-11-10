@@ -148,3 +148,5 @@ This load has 27 additional one-byte RTS entries selected by captured entity vec
 Load-4 type-$08 entity vector selects the dispatcher at $B4F3. Five forced VICE cases checked its five captured target pairs; the index is not locally bounded and ordinary-play reachability remains open.
 
 Load-4 type-$08 states 3 and 4 set frames and branch by direction or timer. Eight forced VICE cases covered active, sign, wrap and timer boundaries with the effect callback stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-4 type-$08 state 0 calls $3020 twice and uses the second result’s low two bits to set $1B06,X to 4–7 before incrementing the state. Five forced VICE cases checked the initialization with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
