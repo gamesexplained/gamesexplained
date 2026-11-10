@@ -145,3 +145,7 @@ Resident $3EC6 decrements a nonzero effect-slot speed on four specified phases w
 Resident $3F2E and $3F56 move a two-byte effect-slot X position and report their left and right limits with carry. On the left clamp the code writes the low byte of slot 0 even when X selects another slot; the right clamp writes the indexed slot. VICE checked eight forced boundaries, including this slot-0 write and 16-bit wrap. Ordinary-play reachability and other high-byte values remain open.
 
 With the real movement helpers, VICE checked two forced $3EC6 boundary cases: rightward motion reverses the direction byte, and the left clamp writes slot 0 before toggling the selected direction byte from $80 to zero. Ordinary-play reachability remains open.
+
+Resident $0DE9 adds the player vertical step to 28 eligible slot bytes, skipping $FF entries. When the support flag is positive it also excludes two slot indexes derived from the contact entity. VICE checked the complete 28-byte result for three forced support states, including a wrapped addition. Index bounds and ordinary-play reachability remain open.
+
+Resident $0D0A subtracts the player vertical step from 28 eligible slot bytes, skipping $FF entries and, when the support flag is positive, the two contact-entity slots. VICE checked the complete 28-byte result for three forced support states, including wrapped subtraction. Index bounds and ordinary-play reachability remain open.
