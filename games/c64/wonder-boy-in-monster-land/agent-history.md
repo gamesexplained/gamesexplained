@@ -688,3 +688,5 @@ Found and typed the previously unclassified price formatter and digit writer in 
 Found and typed the input-held and cursor helpers and adjacent state bytes in 17 later loads. Eighty-five forced VICE cases and listing tests checked the helpers; existing shop tests check the state paths. Where bytes overlap copied character patterns, descriptions record both observations. The paused user snapshot was restored.
 
 Found and typed conditional-item resolvers in 17 later loads. Fifty-one forced VICE cases and a listing test checked the three outcomes per load. Overlapping character-copy descriptions record both observations; the paused user snapshot was restored.
+
+Checked all 34 shop-message copies in each of 17 later loads against the decoded first-load records. VICE matched each entire message bank; listing tests check all 578 record hashes and decoded fields. Added the ten previously undescribed records per load and noted overlapping character-copy uses. The paused user snapshot was restored.
