@@ -1,0 +1,86 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/btilc-page.css">
+<style>
+.bt-scroll{overflow-x:auto;background:#000;border-radius:4px}
+.bt-scroll canvas{display:block;image-rendering:pixelated}
+.bt-over{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;cursor:pointer}
+.bt-key{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--ink-soft);margin:10px 0 0}
+.bt-key span{white-space:nowrap}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The whole game is one street, 28,800 pixels long, walked from right to left: Chinatown, the sewers, Lo Pan's halls and the temple at the end.</p>
+</header>
+<main class="wrap">
+<section id="map">
+  <p class="fig">01 · The map</p>
+  <h2 class="t">One street from Chinatown to the temple</h2>
+  <p class="lede">The game has no separate levels. The street map (<code>street_map</code>, <code>$2B66</code>) is 1,800 columns of 16 pixels, each one a tile number, and the walk starts at its right-hand end and ends at its left. Click the strip to jump the street below to that place, or scroll it.</p>
+  <canvas class="bt-over" id="bt-over" width="1800" height="128" aria-label="The whole street, shrunk: click a place to show it below"></canvas>
+  <div class="bt-key" id="bt-key"></div>
+  <div class="bt-scroll" id="bt-scroll" tabindex="0" role="region" aria-label="The street at full size, scrollable"><canvas id="bt-street" width="28800" height="160"></canvas></div>
+  <p class="cap">The street drawn from the map and the 29 tiles (<code>street_tiles</code>, <code>$326E</code>), each column in the colours of the part of the street it lies in. Above the street, numbered ticks mark where each of the 12 sections begins, a cross marks each of the 16 sewer monsters' places, and the label B marks where the boss's stretch begins. In the game the whole view takes the colours of the part its left edge is in, so the colours change all at once as a boundary scrolls past.</p>
+</section>
+
+<section id="parts">
+  <p class="fig">02 · The four parts</p>
+  <h2 class="t">Four parts, told apart only by their colours and their tiles</h2>
+  <p class="lede">The game knows which part the view is in from the scroll position alone (<code>$0A23</code>), and the only thing it changes there is the play area's colours (<code>zone_colours</code>, <code>$01E9</code> and <code>$01ED</code>).</p>
+  <div class="table-scroll" role="region" aria-label="The street's parts" tabindex="0"><table class="t">
+    <tr><th>Part</th><th>Scroll X</th><th>Map columns</th><th>What is there</th></tr>
+    <tr><td>Chinatown</td><td>$6F70 to $4A60</td><td>1,799 to 1,188</td><td>brick walls and lampposts; enemies of kind 3 and, now and then, 4 and 5</td></tr>
+    <tr><td>The sewers</td><td>$4A60 to $24E0</td><td>1,188 to 588</td><td>the 16 <a href="gameplay.html#monsters">sewer monsters</a>, between $4968 and $26B8</td></tr>
+    <tr><td>Lo Pan's halls</td><td>$24E0 to $03A0</td><td>588 to 56</td><td>colonnades; near their end, the enemies in broad hats</td></tr>
+    <tr><td>The temple</td><td>below $03A0</td><td>56 to 0</td><td>seated statues; <a href="gameplay.html#end">Lo Pan and the prize</a></td></tr>
+  </table></div>
+  <p>The part names are this page's: the game has no text but its score and GAME OVER. The <a href="gameplay.html#enemies">enemies</a> come by section, which is a different division: 12 sections of 150 columns, counted from the start, each with its own delay and its own four kinds (<code>spawn_lists</code>, <code>$122C</code>).</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/btilc.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof BTILC === 'undefined') { $('bt-key').textContent = 'This map needs the site\'s shared scripts: open the page from the built site.'; return; }
+  BTILC.load().then(L => {
+    const m = L.ram, cv = $('bt-street'), ctx = cv.getContext('2d'), TOP = 32;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const parts = [0, 1, 2, 3].map(z => BTILC.partColours(m, z));
+    ctx.save(); ctx.translate(0, TOP);
+    for (let c = 0; c < 1800; c++) BTILC.drawColumn(ctx, m, c, c * 16, 1, parts[BTILC.partAt(c * 16 + 0x20)]);
+    ctx.restore();
+    // Section starts: column n x 150 from the start ($7080), and the boss's stretch at 1,740.
+    const px = x => x - 0x20;                         // street X to map pixel
+    ctx.font = '12px monospace'; ctx.textBaseline = 'top';
+    for (let s = 0; s < 12; s++) {
+      const x = px(0x7080 - s * 150 * 16);
+      ctx.fillStyle = '#fff'; ctx.fillRect(x - 1, 0, 2, 14); ctx.fillText(String(s), x + 4, 1);
+    }
+    const bx = px(0x7080 - 1740 * 16);
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx - 1, 0, 2, 30); ctx.fillText('B boss', bx + 4, 16);
+    for (let i = 0; i < 16; i++) {
+      const x = px(m[0x20B2 + 2 * i] | m[0x20B3 + 2 * i] << 8);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 5, 17); ctx.lineTo(x + 5, 27); ctx.moveTo(x + 5, 17); ctx.lineTo(x - 5, 27); ctx.stroke();
+    }
+    // The overview strip: every 16th pixel column of the street.
+    const ov = $('bt-over').getContext('2d');
+    ov.imageSmoothingEnabled = true;
+    ov.drawImage(cv, 0, TOP, 28800, 128, 0, 0, 1800, 128);
+    const sc = $('bt-scroll');
+    sc.scrollLeft = cv.width;                        // the walk starts at the right-hand end
+    $('bt-over').onclick = e => {
+      const r = e.target.getBoundingClientRect();
+      sc.scrollLeft = (e.clientX - r.left) / r.width * 28800 - sc.clientWidth / 2;
+    };
+    $('bt-key').innerHTML = ['Chinatown', 'The sewers', 'Lo Pan’s halls', 'The temple'].map((n, z) =>
+      '<span><span class="sw" style="background:' + parts[z][1] + '"></span><span class="sw" style="background:' + parts[z][2] + '"></span><span class="sw" style="background:' + parts[z][3] + '"></span>' + n + '</span>').join('') +
+      '<span>Ticks 0-11: sections</span><span>✕: sewer monster</span><span>B: the boss’s stretch</span>';
+  }).catch(e => { $('bt-key').textContent = 'The listing could not be loaded: ' + e.message; });
+})();
+</script>

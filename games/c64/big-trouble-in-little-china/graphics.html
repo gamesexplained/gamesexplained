@@ -1,0 +1,119 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/btilc-page.css">
+<style>
+.bt-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:18px}
+.bt-fig{margin:0}
+.bt-fig canvas{display:block;background:#000;border-radius:4px;image-rendering:pixelated;width:100%;max-width:240px;height:auto}
+.bt-fig figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.bt-fig figcaption b{color:var(--ink)}
+.bt-strip{display:block;background:#000;border-radius:4px;image-rendering:pixelated;max-width:100%;height:auto}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every fighter is two sprites wide and three tall, built each frame from strips seven lines high. The sewer monster is not a sprite at all: it is painted into the picture.</p>
+</header>
+<main class="wrap">
+<section id="figures">
+  <p class="fig">01 · The figures</p>
+  <h2 class="t">Every figure, at the game's speed</h2>
+  <p class="lede">Each figure below plays its whole list of frames, one frame a game loop, about ten a second (<code>$117F</code>). The frames come from the game's own lists (<code>figure_types</code>, <code>$0E99</code>) and are drawn in the colours the game gives each figure.</p>
+  <div class="row"><button class="b" id="bt-pause" aria-pressed="false">Pause</button><button class="b" id="bt-step">Next frame</button><span class="note" id="bt-frame"></span></div>
+  <div class="bt-figs" id="bt-figs"><p class="note">Loading the figures from the listing…</p></div>
+  <p>The three heroes are <a href="gameplay.html#heroes">Jack Burton</a>, in blue with his gun, <a href="gameplay.html#heroes">Wang Chi</a>, in grey with his sword and his flying kicks, and <a href="gameplay.html#heroes">Egg Shen</a>, in white, who throws his magic. The enemies come in <a href="gameplay.html#enemies">seven kinds</a>, and the game gives each kind its own colour by writing the enemy's two sprite colour registers (<code>$132A</code>). The lists run on into each other, so a list's last frame can be the next figure's first.</p>
+</section>
+
+<section id="parts">
+  <p class="fig">02 · How a frame is built</p>
+  <h2 class="t">Strips of seven lines, stacked into a figure</h2>
+  <p class="lede">A frame is a record of 12 bytes (<code>frame_records</code>, <code>$506E</code>): three addresses for each of the figure's two sprite columns. Each address points at a run of sprite rows in the parts at <code>$545E</code>-<code>$7FFF</code>, <code>$8C00</code>-<code>$9FFF</code> or <code>$CC00</code>-<code>$DFFF</code>, which <code>build_figure</code> (<code>$08A4</code>) copies into the figure's sprite page every loop.</p>
+  <canvas class="bt-strip" id="bt-parts" width="420" height="140" aria-label="One frame of Jack Burton taken apart into its six runs of sprite rows"></canvas>
+  <p class="cap">One frame of Jack, left, and the six runs of rows it is made of: 21, 21 and 14 lines for each column. The first two addresses of a column give three 7-line parts each, the last gives two.</p>
+  <p>Sharing parts saves memory: the same legs serve a hero's standing and punching frames, and 84 records draw every frame of every figure from about 22 kilobytes of parts. The enemy's parts lie under the I/O chips at <code>$CC00</code>-<code>$DFFF</code>, so <code>update_display</code> switches all RAM in, with interrupts off, while it builds the enemy's frame (<code>$09E2</code>).</p>
+  <p>Four figures are on the screen at once: the three heroes and one enemy. Each is two sprites side by side, and the raster interrupt reuses the same pair down the screen, three times for each figure, stopping 13 times a frame to move the sprites down and turn their pointers on (<code>irq_sprites_bank2</code>, <code>$0622</code>). The tables of stops are sorted each loop by height (<code>build_mux_bank2</code>, <code>$06BA</code>), because a figure that jumps changes where its sprites have to be reused.</p>
+</section>
+
+<section id="shapes">
+  <p class="fig">03 · Painted into the picture</p>
+  <h2 class="t">The sewer monster, the shots, and the bonuses</h2>
+  <p class="lede">Nineteen shapes are not sprites. <code>draw_items</code> (<code>$283B</code>) copies them straight into the hidden bitmap after the street has been drawn, so they need no rubbing out: the next loop draws the street again over them.</p>
+  <canvas class="bt-strip" id="bt-monster" width="640" height="112" aria-label="The sewer monster rising and sinking, frame by frame"></canvas>
+  <p class="cap">The sewer monster's eight frames (shapes 10 to 17), in the sewer's colours. It hurts the active hero in frames 3 and 4, at the top of its rise, so a hero who is walking past has to time it (<a href="gameplay.html#monsters">the sewer monsters</a>).</p>
+  <canvas class="bt-strip" id="bt-shapes" width="640" height="112" aria-label="The other bitmap shapes: shots and bonuses"></canvas>
+  <p class="cap">The other eleven, numbered as the game numbers them: shots 0 to 3 (Jack’s bullet, Egg Shen’s magic and the enemies’ throws), then the bonuses 4 to 9 (gun, strength potion, Egg Shen's potion, food, Wang Chi's sword and the prize), and 18, the panel icon. A shape's colours are the street part's, so they change as the street does.</p>
+</section>
+
+<section id="screen">
+  <p class="fig">04 · The screen</p>
+  <h2 class="t">Two whole pictures, swapped every loop</h2>
+  <p class="lede">The play area is a multicolour bitmap. The game keeps two copies, in video banks 2 and 3, draws the street into the one not shown, and then swaps them by flipping one bit of <code>$DD00</code> (<code>$0A68</code>).</p>
+  <p>Nothing of the old picture is kept: every loop <code>draw_street</code> (<code>$0221</code>) copies 19 tile columns from the <a href="levels.html#map">street map</a> into the hidden bitmap, about 4,600 bytes, with a copy loop whose 32 addresses it rewrites first. That is why the street scrolls in steps of 8 pixels and why the game runs at about ten loops a second rather than fifty. The colours of the whole play area change only when the street enters a new part (<code>$0A23</code>).</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/btilc.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined' || typeof BTILC === 'undefined') { $('bt-figs').textContent = 'This viewer needs the site\'s shared scripts: open the page from the built site.'; return; }
+  BTILC.load().then(L => {
+    const m = L.ram, S = 3;
+    const types = BTILC.figureTypes(m).filter(Boolean);
+    const box = $('bt-figs'); box.textContent = '';
+    const cells = types.map(t => {
+      const f = document.createElement('figure'); f.className = 'bt-fig';
+      const c = document.createElement('canvas'); c.width = 56 * S; c.height = 60 * S;
+      c.setAttribute('aria-label', t.name + ', animated');
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = '<b>' + t.name + '</b><br>' + t.recs.length + ' frames, figure type ' + t.type + ', list at $' + t.list.toString(16).toUpperCase().padStart(4, '0');
+      f.append(c, cap); box.append(f);
+      return { t, ctx: c.getContext('2d'), c };
+    });
+    let tick = 0, paused = false;
+    function draw() {
+      for (const k of cells) {
+        k.ctx.clearRect(0, 0, k.c.width, k.c.height);
+        const rec = k.t.recs[tick % k.t.recs.length];
+        BTILC.drawFigure(k.ctx, m, rec, BTILC.figureColour(m, k.t.type), 4 * S, 2 * S, S);
+      }
+      $('bt-frame').textContent = 'Loop ' + tick;
+    }
+    draw();
+    setInterval(() => { if (!paused) { tick++; draw(); } }, 100);
+    $('bt-pause').onclick = e => { paused = !paused; e.target.setAttribute('aria-pressed', paused); e.target.textContent = paused ? 'Play' : 'Pause'; };
+    $('bt-step').onclick = () => { tick++; draw(); };
+
+    // The parts of one frame of Jack.
+    const pc = $('bt-parts').getContext('2d'); pc.fillStyle = '#000'; pc.fillRect(0, 0, 420, 140);
+    const rec = types[0].recs[0];
+    BTILC.drawFigure(pc, m, rec, 6, 8, 12, 2);
+    const cols = [null, BTILC.PAL[0], BTILC.PAL[6], BTILC.PAL[10]];
+    let x = 140;
+    for (let half = 0; half < 2; half++) for (let k = 0; k < 3; k++) {
+      const p = m[rec + half * 6 + k * 2] | m[rec + half * 6 + k * 2 + 1] << 8, n = k < 2 ? 21 : 14;
+      for (let r = 0; r < n; r++) for (let bx = 0; bx < 3; bx++) {
+        const b = m[p + r * 3 + bx];
+        for (let px = 0; px < 4; px++) { const v = (b >> (6 - 2 * px)) & 3; if (!v) continue; pc.fillStyle = cols[v]; pc.fillRect(x + (bx * 8 + px * 2) * 1.5, 12 + r * 2, 3, 2); }
+      }
+      pc.fillStyle = '#777'; pc.font = '10px monospace'; pc.fillText('$' + p.toString(16).toUpperCase(), x, 132);
+      x += 46;
+    }
+
+    // The sewer monster's frames and the other shapes, in the street parts' colours.
+    const sewer = BTILC.partColours(m, 1), street = BTILC.partColours(m, 0);
+    const mc = $('bt-monster').getContext('2d'); mc.fillStyle = '#000'; mc.fillRect(0, 0, 640, 112);
+    for (let i = 10; i <= 17; i++) BTILC.drawShape(mc, m, i, (i - 10) * 80 + 4, 4, 2, sewer);
+    const sc = $('bt-shapes').getContext('2d'); sc.fillStyle = '#000'; sc.fillRect(0, 0, 640, 112);
+    sc.font = '11px monospace';
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 18].forEach((i, k) => {
+      BTILC.drawShape(sc, m, i, k * 56 + 6, 4, 2, street);
+      sc.fillStyle = '#aaa'; sc.fillText(String(i), k * 56 + 8, 108);
+    });
+  }).catch(e => { $('bt-figs').textContent = 'The listing could not be loaded: ' + e.message; });
+})();
+</script>
