@@ -638,3 +638,5 @@ Traced first-load price formatting and described the four previously verified se
 Decoded 34 first-load item and shop messages using the rendered $C800 character set and the three-field record format. VICE matched all captured record bytes; a listing test checks every field and control byte. The paused user snapshot was restored. Ordinary-play selection remains open.
 
 Traced first-load item effects at $AC61–$ACAA. Seven forced VICE cases and a listing test checked flag setters, counters, attributes and the record callback with that callback stubbed and execution stopped before slot disable. The following item-push entries have a separate coverage boundary. The paused user snapshot was restored.
+
+Traced four first-load item-push entries and described a previously checked setup graphics source. VICE and a listing test checked all four type/quantity pairs, stopping before the destination. The paused user snapshot was restored.

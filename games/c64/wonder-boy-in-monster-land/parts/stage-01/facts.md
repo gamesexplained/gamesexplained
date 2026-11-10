@@ -51,3 +51,5 @@ First-load price formatter $A807 splits two packed bytes into four nibble-plus-o
 The first load contains 34 three-field shop and item message records at $A857–$AB54, followed individually by control bytes. The decoded records retain the game’s spelling and punctuation; VICE checked their captured bytes and a listing test decodes every field. Ordinary-play selection of each record remains open.
 
 First-load item effects $AC61–$ACAA call four resident player-flag setters or write one of three selected-player attributes, then enter slot disable. The last attribute entry patches and calls a record-supplied callback. Seven forced VICE cases and a listing test check the flags, counters, wrapped subtraction and callback dispatch, stopping before slot disable and stubbing the record callback. Natural reachability remains open.
+
+Four first-load item-push entries pass fixed type and quantity pairs to $536F. VICE and a listing test checked all four argument pairs, stopping before the destination routine. The second 54-byte setup graphics source and its three destinations are covered by the setup-copy test. Natural reachability and other uses remain open.
