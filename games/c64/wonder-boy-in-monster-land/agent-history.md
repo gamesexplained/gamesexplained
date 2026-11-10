@@ -984,3 +984,9 @@ A nonzero sparse pattern repeats in nine load captures and was omitted by the pr
 The pattern viewer passed Firefox desktop and 390-pixel mobile checks with 253 options, the new ten-pixel pattern and its source link. Saved review screenshots. A fresh tool-owned Firefox profile needed an explicit about:blank context; creating a tab hung, while reusing an existing context worked. Reset the selected option before comparing pixels when navigating to the same URL.
 
 Verified load 22 quest flag branches in 522 simulator cases and 11 forced VICE cases. Kept the overlapping character-copy evidence, typed the complete routines, and restored the paused user state. Object record 2 contains the $94AA callback; ordinary-play entry to either routine remains open.
+
+Closed 415 gaps (1569 bytes) inside verified character-copy sources. Seventy full 2048-byte copies matched in VICE. Kept display use and overlapping code uses separate, preserved symbols, and restored the paused user state.
+
+Described 4 previously bare fragments (233 bytes) within the existing verified sound-pattern boundaries. Kept the voice-state interpretation and sequencer marker evidence, without extending the streams beyond their captured terminators.
+
+Described 26 resident routine and patched-operand boundaries, checking the complete local continuation against the listing and keeping callback, frame-rate and external-peer limits explicit.

@@ -45,3 +45,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 21-byte str
 This load has 1 captured motion-reader entry and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Some bytes also serve as copied character data, as noted in the listing. Ordinary-play reachability remains open.
 
 This load has 31 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+The remaining 9 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.

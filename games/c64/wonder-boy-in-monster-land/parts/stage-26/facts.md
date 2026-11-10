@@ -106,3 +106,5 @@ The shop drawing setup at $9B9F selects two pointer-table entries, calls the sec
 The shop label code at $9BEE passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9DE7 to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 This load has 28 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+The remaining 3 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.

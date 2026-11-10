@@ -20454,6 +20454,11 @@
    "text": "Initializes the title display, copies the screen template, maps its colours, formats the stored record and installs the title raster interrupt before waiting for Fire."
   },
   {
+   "address": 768,
+   "type": "line",
+   "text": "After the title record digit loop compares X with 6 at $02FE, branch back to $02F7 while unequal. On equality, set background colour register $D022 to 0 and enable the raster interrupt with $D01A=1 before continuing title setup at $030C."
+  },
+  {
    "address": 780,
    "type": "line",
    "text": "Set the low byte of the IRQ trampoline's next target."
@@ -20619,6 +20624,11 @@
    "text": "Wait for fire. In two-player mode, when the selected player index is zero and the second player meter is nonzero, select the second player and initialize the game display. Otherwise continue at the stage-counter path."
   },
   {
+   "address": 1842,
+   "type": "line",
+   "text": "Increment stage-transition selector $073E modulo 256, pass its new value in A to $7A6E, and jump to display initialization $0383 after the transition returns. This entry does not locally bound the selector."
+  },
+  {
    "address": 1855,
    "type": "line",
    "text": "Runs an alternate update loop with entity and completion scans. It patches an initializer call and preserves selected state in immediate operands before restoring it on exit."
@@ -20647,6 +20657,16 @@
    "address": 2064,
    "type": "line",
    "text": "Preserve the cleanup loop counter in the immediate operand reloaded after the calls."
+  },
+  {
+   "address": 2086,
+   "type": "line",
+   "text": "Immediate X restored by LDX at $0825 after the cleanup callbacks. Decrement X and loop to $0810 while nonnegative. Once exhausted, call $370B, restore $5243 from saved state $0834 and return."
+  },
+  {
+   "address": 2101,
+   "type": "line",
+   "text": "Call revival test $04B2. Carry set jumps to no-revival sequence $04DA; carry clear jumps back to alternate frame loop $079F. The decision is the callback\u2019s returned carry."
   },
   {
    "address": 2113,
@@ -20974,6 +20994,11 @@
    "text": "Save the borrowed fine-scroll difference in the immediate operand at $0F07. If $569C is odd and (($569C >> 1) + 1) is at least $7F4B, enter $0F17. Otherwise call $2C8D, add 8 to the saved difference, call $0F63 and store the result at $4D6A, then call $3033."
   },
   {
+   "address": 3847,
+   "type": "line",
+   "text": "Immediate operand of LDA at $0F06 holding the saved right-scroll difference. Add 8 with carry clear, preserve the result across $0F63 on the stack, write it to $4D6A and call $3033, then return. The earlier path patches this operand; it is not a fixed $FF constant."
+  },
+  {
    "address": 3863,
    "type": "line",
    "text": "Add 8 to the saved difference, XOR with 7, then add that value plus one to the two-byte player X at $47/$48. Clear $4D6A and return."
@@ -21037,6 +21062,11 @@
    "address": 4226,
    "type": "line",
    "text": "Patch the sum into the operand at $108E. When $569B is nonzero, call $2D82, subtract 8 from the patched sum, call $1107, store the result at $4D6A and tail-jump to $30EE. A zero $569B enters $109D."
+  },
+  {
+   "address": 4238,
+   "type": "line",
+   "text": "Immediate operand of LDA at $108D holding the saved left-scroll sum. Subtract 8 with carry set, preserve the result across $1107 on the stack, write it to $4D6A and tail-jump to $30EE. The earlier path patches this operand; its captured $FF is not a fixed input."
   },
   {
    "address": 4253,
@@ -21134,6 +21164,11 @@
    "text": "CIA2 timer dispatch target is patched at runtime; the captured $ff00 operand is not a fixed destination."
   },
   {
+   "address": 4611,
+   "type": "line",
+   "text": "High byte of the patched JMP at $1201, paired with $1202. The alternative NMI path begins at $1204: if either $5275 or $56A7 is zero, restore through $1211; when both are nonzero, jump to title initialization at $0203."
+  },
+  {
    "address": 4634,
    "type": "line",
    "text": "Immediate operand that restores X before RTI; the NMI entry patches it with the interrupted X value."
@@ -21197,6 +21232,11 @@
    "address": 4995,
    "type": "line",
    "text": "Wait for the raster line selected by the patched immediate operand, then read $D011, clear bits 5 and 6, wait the patched delay count, and write the value back. Copy the sprite X-high mask and seven sprite X coordinates from $4D68 and $4D64 down to $4D58 to their VIC registers, then jump to the NMI restore path. Two forced VICE cases also checked the later wait and sprite writes before the restore jump."
+  },
+  {
+   "address": 4996,
+   "type": "line",
+   "text": "Patched raster-line operand of LDA at $1383. Compare that line with $D012 until equal, then read $D011, clear bits 5 and 6 with AND $9F, and load the separately patched delay counter at $1390. The parent routine documents the later sprite writes and return."
   },
   {
    "address": 5008,
@@ -21427,6 +21467,11 @@
    "address": 6360,
    "type": "line",
    "text": "Clear slot zero of entity type, eight type-state fields, auxiliary state, display effect, animation countdown and direct-coordinate state: $1919, $1AB1, $1AC2, $1AD3, $1AE4, $1AF5, $1B06, $1B17, $1B28, $1A7E, $1A8F, $1AA0 and $19B2. Return after the thirteen stores; adjacent slot-one bytes are untouched by this routine."
+  },
+  {
+   "address": 6411,
+   "type": "line",
+   "text": "Search the 17 entity-type slots $1919\u2013$1929 from index 16 down to 0. Return the first zero slot in X with carry set. If every slot is nonzero, return X=$FF with carry clear. Y is not changed."
   },
   {
    "address": 6425,
@@ -21829,6 +21874,11 @@
    "text": "Scratch byte holding the selected entity display-slot X coordinate shifted right one bit for the contact check at $2173."
   },
   {
+   "address": 8673,
+   "type": "line",
+   "text": "Save caller X in immediate operand $21EE. Index the selected player with $4DBD, AND incoming A with that player\u2019s flags at $4DE2,X, store the result through $21EA and restore X at $21ED. Y is unchanged."
+  },
+  {
    "address": 8685,
    "type": "line",
    "text": "Restore X from the immediate operand patched by either flag-update entry."
@@ -21837,6 +21887,11 @@
    "address": 8687,
    "type": "line",
    "text": "Return from the selected-player flag update after restoring X at $21ED."
+  },
+  {
+   "address": 8688,
+   "type": "line",
+   "text": "Save caller X in immediate operand $21EE, index the selected player from $4DBD and OR incoming A with $4DE2,X. Jump to the shared store at $21EA, which writes the new flags and restores caller X."
   },
   {
    "address": 8705,
@@ -22299,6 +22354,11 @@
    "text": "If entered here, write $9A and $29 to $999A and $999B, then return. The selector-31 path at $2B03 branches around these instructions; another entry is not established."
   },
   {
+   "address": 11030,
+   "type": "line",
+   "text": "Set CIA1 port-A direction $DC02 to $FF, load A from $29A3 and tail-jump to wait routine $2B46. The wait receives that captured instruction byte as its A input."
+  },
+  {
    "address": 11041,
    "type": "line",
    "text": "This instruction sequence is present in the capture. No entry from the traced resident paths is established; behavior is conditional on an external or otherwise unproved entry."
@@ -22504,6 +22564,11 @@
    "text": "Thirty-two saved display-slot Y or free-slot bytes, copied from $4CCF\u2013$4CEE by $331F and restored there by $3386. The save loop marks slots 2\u201331 free after copying the Y array; slots 0 and 1 retain their Y values."
   },
   {
+   "address": 13533,
+   "type": "line",
+   "text": "Load the stage character source pointer from $7F41/$7F42 into $52/$53 and tail-jump to $717C, which copies eight pages into RAM under I/O. The source pointer is supplied by the loaded stage."
+  },
+  {
    "address": 13546,
    "type": "line",
    "text": "Subtract $35BD from $35BF and $35BE from $35C0 modulo 256, storing the bytes at $35BB and $35BC. Rotate the carry from each subtraction into $3576, then use that 0\u20133 value to index $3577 and replace $3576 with the table result."
@@ -22639,9 +22704,19 @@
    "text": "Immediate operand of LDY at $3705; $36EC patches it with the incoming Y for the return from the nibble-splitting routine."
   },
   {
+   "address": 14091,
+   "type": "line",
+   "text": "Increment the byte at $3718 and test its low bit. Even values branch to status-panel update $3719; odd values jump to amount-and-score display $3897. Thus these two display paths alternate per call, without this entry alone establishing a frame rate."
+  },
+  {
    "address": 14105,
    "type": "line",
    "text": "Update the selected player\u2019s status panel. When the message countdown at $4D6B is nonzero, copy five rows of message cells and colours from $4EE4\u2013$4F7D; otherwise compare the player\u2019s flags at $4DE2,Y with the cache at $4DAD and, on a change, call $408A and copy the status rows. Continue at $37C2 to check the remaining fields."
+  },
+  {
+   "address": 14441,
+   "type": "line",
+   "text": "Immediate operand of LDA at $3868, patched by $3860 with the current meter threshold. After loading it, add 8 with carry clear, increment X and continue testing segments at $385B; when X reaches 5, replace X with $28 before continuing. The separate exit at $3877 jumps to the meter sprite update."
   },
   {
    "address": 14487,
@@ -23419,6 +23494,11 @@
    "text": "High byte of the JSR operand at $47FC, patched from selected record field 6 at $47E4\u2013$47E7; $47FD is its low byte. After the selected callback returns, reload X from $7B and inspect $4753,X. If negative, call $46D6. Set $7A to $FF; if $0840 is nonzero branch to $479B, otherwise jump to $3384."
   },
   {
+   "address": 18457,
+   "type": "line",
+   "text": "Call the display-step wait at $3C2A four times, then tail-jump to the same wait for a fifth pass. This counts calls to the wait routine; it does not independently establish five video frames."
+  },
+  {
    "address": 18472,
    "type": "line",
    "text": "For X from 21 down to 0, fill $C00E,X and $C0AE,X with the same byte at $5092. Copy $5050,X, $5066,X and $507C,X to $C036,X, $C05E,X and $C086,X respectively. Write $5092,X to colour RAM $D886,X and $D836,X, and $50A8,X to $D85E,X. After the loop, decrement X once more, store $FE at $4DAD and return."
@@ -23464,14 +23544,29 @@
    "text": "Call $447A, copy $7F66 to $19E5,X and preserve X and Y in patched operands. Call $77E2 with A=$10, restore X and Y, set $19F6,X to 7 and enter $49D0 with A=$F3."
   },
   {
+   "address": 18734,
+   "type": "line",
+   "text": "Saved Y immediate operand at $492D. After restoring it, set entity attribute $19F6,X to 7 and tail-jump to common item initialization $49D0 with A=$F3. The variant entry at $4917 sets the saved registers before this continuation."
+  },
+  {
    "address": 18745,
    "type": "line",
    "text": "Call $447A, copy $7F67 to $19E5,X and preserve X and Y in patched operands. Call $77E2 with A=$0F, restore X and Y, set $19F6,X to 7 and enter $49D0 with A=$F2."
   },
   {
+   "address": 18768,
+   "type": "line",
+   "text": "Saved Y immediate operand at $494F. After restoring it, set $19F6,X to 7 and tail-jump to item initialization $49D0 with A=$F2; the variant entry at $4939 supplies the saved registers."
+  },
+  {
    "address": 18779,
    "type": "line",
    "text": "Call $447A, copy $7F68 to $19E5,X and preserve X and Y in patched operands. Call $77E2 with A=$0D, restore X and Y, set $19F6,X to 1 and enter $49D0 with A=$F1."
+  },
+  {
+   "address": 18802,
+   "type": "line",
+   "text": "Saved Y immediate operand at $4971. After restoring it, set $19F6,X to 1 and tail-jump to item initialization $49D0 with A=$F1; the variant entry at $495B supplies the saved registers."
   },
   {
    "address": 18813,
@@ -23592,6 +23687,11 @@
    "address": 19454,
    "type": "line",
    "text": "Signed movement sequence; the updating routine increments its index and wraps at 28."
+  },
+  {
+   "address": 19482,
+   "type": "line",
+   "text": "Decrement entity countdown $1AF5,X modulo 256. Zero branches to removal at $4C2C; value $20 continues at $4C26 to set $1A8F to $FF; every other value returns through $4C2B. The store at $4C28 is unindexed and therefore targets slot zero."
   },
   {
    "address": 19494,
@@ -25389,6 +25489,11 @@
    "text": "If the computed half value is at least 20, draw a 20-unit segment with X=0, then draw the remainder with X=$18. Otherwise draw the whole value with X=0. The arithmetic and indexing are not locally bounded."
   },
   {
+   "address": 28602,
+   "type": "line",
+   "text": "Immediate half-meter value loaded at $6FB9. Compare with 20; values below 20 enter $6FCD directly. Otherwise subtract 20 using the comparison carry, save the remainder at $6FCA, draw 20 units through $6FCD, and reload that remainder before drawing the second segment."
+  },
+  {
    "address": 28621,
    "type": "line",
    "text": "For a remainder below 8, fetch the mask from $6FFF,Y and store it in eight bytes separated by three positions at $C400,X. For a remainder of at least 8, enter $6FEE."
@@ -25744,6 +25849,11 @@
    "text": "Restore Y from the immediate operand at $74BF, subtract the patched damage byte at $74C5 from $1A6D,X, and store zero on borrow. When the result is nonzero, set $1A8F,X to 8. Return carry set in either case. The same subtraction entry is also used by entity-contact paths."
   },
   {
+   "address": 29893,
+   "type": "line",
+   "text": "Damage operand of SBC at $74C4. Carry is set at $74C3, so subtract this byte from the incoming health. Clamp a borrow to zero and store $1A6D,X; nonzero health also sets $1A8F,X to 8. Return with carry set. The parent entry $74BE restores Y before this subtraction."
+  },
+  {
    "address": 29910,
    "type": "line",
    "text": "Scan entity indexes from $10 down to zero. Skip nonnegative $1919,X values and those whose $1902 slot test returns carry clear; otherwise check the display mode at $74E6. A contact dispatch tail-jumps to its selected handler rather than resuming this scan."
@@ -25869,6 +25979,11 @@
    "text": "Push $1AB1,X, call $4454 to release the entity, restore the saved byte into A, call $771F to calculate and display the reward, then return. Saving the byte preserves it across the release reset."
   },
   {
+   "address": 30324,
+   "type": "line",
+   "text": "Saved Y operand of LDY at $7673, followed by a tail jump to entity release at $4454. The following separate entry $7678 preserves Y at $7684 and X at $7682 across meter-to-score conversion $6097, then begins restoring those registers."
+  },
+  {
    "address": 30344,
    "type": "line",
    "text": "Save X and Y in the immediate operands at $7697 and $7699, call $76E9 to set the Gauntlet flag and its ten-contact counter, and display message 11, \u201cWore the Gauntlet.\u201d Restore X and Y and release the entity's display slots."
@@ -25946,7 +26061,7 @@
   {
    "address": 30672,
    "type": "line",
-   "text": "This instruction sequence is present in the capture, but no entry from the traced resident paths is established. Its behavior is conditional on an otherwise unproved entry."
+   "text": "This instruction sequence is present in the capture, but no entry from the traced resident paths is established. Its behavior is conditional on an otherwise unproved entry. Preserve A while comparing horizontal sub-tile offset $527C with 8. At offsets 8\u2013255, increment $487F,X, restore A and return. At offsets 0\u20137, restore A and branch to $77E2 when nonzero; zero falls through $77E0, which also loads zero before preparing the message."
   },
   {
    "address": 30690,
@@ -26294,6 +26409,11 @@
    "text": "Clear carry and branch unconditionally to $7D79, which restores the transfer stack and processor port. This is a transfer-failure path rather than the ordinary buffered return."
   },
   {
+   "address": 32171,
+   "type": "line",
+   "text": "Begin a transfer block header: set the receive counter at $7D9C to 2 and patch $7DED with opcode $60 (RTS), then call the byte receiver $7DC4. A received byte equal to 1 branches to the transfer-failure path $7DA3; any other value continues at $7DBC. Completion depends on the external serial peer."
+  },
+  {
    "address": 32188,
    "type": "line",
    "text": "The opcode at this address is rewritten by $7d53 and $7da8. Its runtime meaning depends on the selected transfer state; the captured decoding is only one state."
@@ -26332,6 +26452,11 @@
    "address": 32323,
    "type": "line",
    "text": "This routine waits for external CIA2 line states without a local timeout; completion depends on the attached peer."
+  },
+  {
+   "address": 32324,
+   "type": "line",
+   "text": "Start the serial handshake by writing $1F to CIA2 data direction $DD02. Load Y=$3F and wait while unsigned $DD00 is greater than $3F, then write $3F to $DD02 and fall through to the byte sender at $7E53. There is no timeout in this local wait loop; an external peer supplies the line state."
   },
   {
    "address": 32339,

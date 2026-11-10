@@ -76,3 +76,5 @@ This load has 29 additional one-byte RTS entries selected by captured entity vec
 Controlled visual-resource reconstruction reads 14 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
 
 Load 22 $9373 tests the selected player’s masked flags and either clears/increments an object byte or enters a callback-driven movement loop. Load 22 $94AA is stored in object record 2 and accepts low flag bits 2, changes them to 3, shows charm/emblem messages, and copies 72 glyph bytes and nine colour bytes. The 522 simulator cases and 11 forced VICE cases replace display/movement callbacks and establish those local effects, not ordinary-play reachability.
+
+The remaining 18 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
