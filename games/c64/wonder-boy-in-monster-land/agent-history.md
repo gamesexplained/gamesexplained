@@ -254,4 +254,8 @@ Traced the visual-resource pointer tables used by $7119. In a forced load-20 sta
 
 Firefox rendered the visual-resource selector, changed its canvas and source link with the selection, and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
 
+Swept nonzero screen and character pointers in the 31 load-entry listings. The simulator produced 16 distinct screen, colour, visible-glyph and palette combinations from 68 selections; one representative of each also ran through $7119 in VICE. Expanded the Graphics selector to those 16 reconstructions, and checked all 68 selections against the listing simulator. Added source anchors to six part projects and exported each without a reported loss. The controlled selections do not prove natural reachability. The paused user snapshot was restored after the VICE sweep.
+
+Firefox checked the expanded selector and source link on desktop and the mobile viewport; the page fit without horizontal overflow. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.

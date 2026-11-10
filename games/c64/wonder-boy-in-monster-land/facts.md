@@ -14,6 +14,8 @@ The renderer at `$6D41–$6D63` expands a map byte into four character codes fro
 
 The [Maps](levels.html) viewer draws the 31 captured maps from their tile and character data. The numbers identify forced load captures, and do not establish the order or reachability of natural gameplay. The viewer omits sprites and later runtime changes.
 
+The visual-resource selector at $7119 builds screens from per-load pointers to compressed metatiles, colours and character shapes. Across the 31 supplied load-entry snapshots, 68 selector entries have nonzero screen and character pointers. A listing-simulator sweep grouped their reconstructed 40-by-20-character areas into 16 distinct combinations of screen, colours, used glyphs and palette. One representative of each was reproduced by a controlled VICE call. The [Graphics](graphics.html#visual-resources) viewer shows those reconstructions; `test_visual_resources.js` checks all 68 selections and the viewer data. These forced selections do not establish which ones ordinary play reaches.
+
 ## Entity records
 
 Each later load supplies an entity-record pointer at `$7F4F` and an initial slot limit at `$7F51`. `$369E` copies ten bytes from a record into the resident entity arrays. A zero first byte ends the record sequence; the slot-reuse path can select records beyond the initial limit. Controlled VICE tests checked all ten copied fields for load 2's first record and load 19's twelfth record. `test_entity_records.js` checks the copies for the later loads' 179 described records against the resident instructions. A field's later use depends on the entity's handler.
