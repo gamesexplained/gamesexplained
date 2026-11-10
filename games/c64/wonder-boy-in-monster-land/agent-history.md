@@ -189,3 +189,5 @@ Type-$05 state 5 was traced in five loads, including its pre-check table read, c
 Type-$05 states 2 and 3 were traced across five loads. Listing tests check the frame, countdown and callback branches with the event and movement helpers stubbed; ten VICE calls check representative paths. The event helper, table-index range and natural reachability remain open. The paused snapshot was restored.
 
 The type-$05 event helper was traced across five loads. Its set-carry path removes its own return address and returns past the calling handler; a wrapper test verified that the caller continuation is skipped. Listing tests and nine controlled VICE calls check both stack paths with external callbacks stubbed. The paused snapshot was restored.
+
+Type-$05 state 0 was traced in five loads. It patches an immediate operand in state 2 from the entry-snapshot $FF to $0A, so the state-2 description and test were corrected to account for both values. A listing test exposed an initially reversed direction-sign interpretation. Nine controlled VICE calls check state 0, and three check state 2 with snapshot and patched operands. The paused snapshot was restored.

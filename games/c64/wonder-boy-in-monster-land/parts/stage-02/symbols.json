@@ -630,6 +630,11 @@
   },
   {
    "start": 48117,
+   "end": 48258,
+   "type": "Code"
+  },
+  {
+   "start": 48259,
    "end": 48432,
    "type": "Undefined"
   },
@@ -666,7 +671,7 @@
   {
    "start": 48736,
    "end": 48736,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 48737,
@@ -1417,6 +1422,18 @@
    "kind": "user"
   },
   {
+   "address": 48117,
+   "name": "type05_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48183,
+   "name": "type05_state0_distance_result",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48433,
    "name": "type05_state2",
    "type": "UserDefined",
@@ -1467,6 +1484,12 @@
   {
    "address": 48735,
    "name": "type05_frame_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48736,
+   "name": "type05_distance_temporary",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2073,9 +2096,19 @@
    "text": "Six captured high bytes paired with low bytes at $BBE9. The pairs target $BBF5, $BC83, $BD31, $BD7D, $BDBC, $BDDF. State index bounds and handler reachability are open."
   },
   {
+   "address": 48117,
+   "type": "line",
+   "text": "State 0 calls the event helper at $BE19; this describes the path if it returns here. Call $72FC and toggle bit 7 of $1B17,X when its sign matches the returned carry. Call $71DB, save returned A in the LDX immediate operand at $BC19, copy returned X to A, and restore the entity index from the patched operand. Compare that returned X with $6F3C and compute their unsigned absolute difference, using $BE60 as temporary storage in one branch. The subtraction is binary when decimal mode is clear."
+  },
+  {
+   "address": 48183,
+   "type": "line",
+   "text": "When the distance is below 20 and $1B28,X is zero, copy $1B17,X into $BE5F, call the frame helper with A=2, store 5 at $1AF5,X and 6 at $1B06,X, and select state 1. Otherwise return if $1A29,X is zero. If nonzero, store 10 in $1AD3,X and patch the immediate operand at $BD6B used by state 2. Call $3020: if A is below $80, call $72FC and store $80 or 0 in $1B17,X according to carry; otherwise preserve that field. Clear $1AF5,X and select state 2. External callbacks and natural reachability remain open."
+  },
+  {
    "address": 48433,
    "type": "line",
-   "text": "State 2: Call the event helper at $BE19; the following describes the path when it returns here. Copy $1B17,X to the working byte at $BE5F, read the table at $BE61 indexed by $1AF5,X, call the frame helper at $BE09, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X to $FF, toggle bit 7 of $1B17,X, set the state to 3 and return. The incoming index range and natural reachability remain open."
+   "text": "State 2: Call the event helper at $BE19; the following describes the path when it returns here. Copy $1B17,X to the working byte at $BE5F, read the table at $BE61 indexed by $1AF5,X, call the frame helper at $BE09, then increment the index and replace values of 4 or above with 0. The table is read before the bound check. Decrement $1AD3,X. If its result is nonnegative, pass A=4 to $4574 when the working byte is negative or $45BC otherwise; return if the callback result AND 6 equals 2. Otherwise set $1AD3,X from the immediate operand at $BD6B (the snapshot has $FF and state 0 can patch it to $0A), toggle bit 7 of $1B17,X, set the state to 3 and return. The incoming index range and natural reachability remain open."
   },
   {
    "address": 48509,
@@ -2116,6 +2149,11 @@
    "address": 48735,
    "type": "line",
    "text": "Working byte tested with BIT by the frame helper. Several handler paths write $1B17,X here; its value differs among the captured snapshots."
+  },
+  {
+   "address": 48736,
+   "type": "line",
+   "text": "Temporary byte used when state 0 subtracts the returned position from $6F3C. Its captured value differs across the five snapshots."
   },
   {
    "address": 48737,
