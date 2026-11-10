@@ -179,3 +179,5 @@ The type-$04 shared event check was traced in all three loads. Its state changes
 A separate type-$01 dispatcher was found in loads 2, 4, 12, 20 and 23. Listing tests and seven controlled VICE calls checked its three targets. States 1 and 2 were traced and checked with callbacks stubbed in listing tests and ten VICE calls; state 0 and natural reachability remain open. The paused game was restored.
 
 Type-$01 state 0 was traced in all five loads, completing the three captured state bodies. Listing tests cover its callback, sign, flag and frame paths with external calls stubbed; ten controlled VICE calls check representative paths. The state index and normal-play reachability remain open, and the paused snapshot was restored.
+
+A six-state type-$05 dispatcher was found in loads 2, 4, 6, 15 and 17. Listing tests and ten controlled VICE calls checked its targets. State 4 was traced and checked with callbacks stubbed in listing tests and nine VICE calls; the remaining state bodies and natural reachability remain open. The paused snapshot was restored.
