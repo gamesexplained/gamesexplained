@@ -64,3 +64,5 @@ Type-$1E state 0 can select state 1 or 2 after a comparison involving the X valu
 Type-$1E state 1 calls its event helper, counts down $1AF5,X and uses $1B06,X to choose a movement callback, a spawn call or the return to state 0. VICE checked six forced delay and timer cases in load 25 with callbacks and spawn stubbed. Callback effects and ordinary-play reachability remain open.
 
 The type-$1E spawn helper at $A019 calls $190B and returns if carry is clear. On carry set it calls $447A, copies fields from slot Y into slot X, initializes a type-$2D entity and sets $1B28,Y=1 before returning with X restored from Y. VICE checked allocation success and failure with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+The load-25 type-$2D dispatcher has a captured state-0 target at $A1C5. Its handler updates timers, calls direction-selected callbacks and may decrement a linked slot before jumping to $4454. Type-$1E can allocate this entity. VICE checked the captured dispatch target and eight forced handler cases with callbacks stubbed and cleanup stopped at $4454. Index bounds and ordinary-play reachability remain open.
