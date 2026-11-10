@@ -69,6 +69,10 @@ All in VICE 3.14 from the snapshots in `orientation.md`, part `game` unless name
 - Friend 6 dead, Jason as friend 5, friend 6 given the highest exposure, `danger_clock` `$B0` and
   `pass_count` `$FF`: at the next count Jason revealed himself and chose friend 6, whose state went
   from 0 to `$88`, then `$80` as the blow landed.
+- The safe room in room 25, the player in room 38, and friend 0 moved onto the player's sprite:
+  with `safe_room_seen` (`$09ED`) 0 the friend kept wandering (state 4); with it set to 1, as a
+  visit to the safe room leaves it, the touch sent the friend to shelter (state 5, target `$48`,
+  shelter time 32, which is 90 minus exposure 58).
 
 Run on the kit's 6502 over the listing's memory (no emulator):
 

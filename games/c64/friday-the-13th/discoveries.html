@@ -65,10 +65,17 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-swapped{outline:2px dashed var(--amber);outline-offset:-2px}
 .ft-swapped i{text-decoration:line-through;text-decoration-color:var(--amber)}
 .ft-table canvas{background:#222;border-radius:4px;image-rendering:pixelated}
+.ft-steps{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;counter-reset:st}
+.ft-steps li{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;position:relative}
+.ft-steps li+li::before{content:"\2192";position:absolute;left:-12px;top:50%;transform:translate(-50%,-50%);font:700 16px var(--fm);color:var(--ink-mute)}
+.ft-steps .n{font:500 12px var(--fm);color:var(--ink-mute);display:block}
+.ft-steps .v{font:500 22px var(--fm);display:block;margin:2px 0}
+.ft-steps .w{font-weight:700;display:block}
+.ft-steps .d{font-size:14px;color:var(--ink-soft)}
 .ft-dead{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
 .ft-dead button{font:500 12px var(--fm);padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
 .ft-dead button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
-@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls{grid-template-columns:1fr}}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.ft-two,.ft-four,.ft-controls,.ft-steps{grid-template-columns:1fr}.ft-steps li+li::before{content:"\2193";left:50%;top:-12px}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -81,14 +88,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="dead-victim">
   <p class="fig">01 · Bug</p>
   <h2 class="t">Bug: Jason picks a victim he has already killed</h2>
-  <p>When Jason reveals himself, <a href="source-game.html#A24C"><code>jason_reveal</code></a> looks through the ten others for the one with the highest exposure. The loop leaves out Jason himself and anyone sheltering in the safe room, and nothing else: a dead friend keeps the exposure they had, so a body can be the victim.</p>
-  <p>The hunt that follows does not check either. <a href="source-game.html#B7B4"><code>jason_hunt</code></a> walks Jason to the body's room and sets the victim's state to panicking, which brings the body back into play to be killed a second time. In the emulator, with friend 6 dead, Jason as friend 5, and friend 6 given the highest exposure, the next try revealed Jason and friend 6's state at <a href="source-game.html#090E"><code>actor_state</code></a> went from 0 (dead) to $88 (panicking and struck by Jason), then to $80 as the blow landed. Every attack also raises everyone's exposure and your fear, so a second death of the same friend costs you as much as the first.</p>
+  <p>When <a href="index.html#jason">Jason reveals himself</a>, <a href="source-game.html#A24C"><code>jason_reveal</code></a> looks through the ten others for the one with the highest exposure. The loop leaves out Jason himself and anyone sheltering in the safe room, and nothing else: a dead friend keeps the exposure they had, so a body can be the victim.</p>
+  <p>The hunt that follows does not check either. <a href="source-game.html#B7B4"><code>jason_hunt</code></a> walks Jason to the body's room and sets the victim's state to panicking, which brings the body back into play to be killed a second time. In the emulator, with friend 6 dead, Jason as friend 5, and friend 6 given the highest exposure, the next try revealed Jason and friend 6's state at <a href="source-game.html#090E"><code>actor_state</code></a> went through the three steps below.</p>
+  <div class="plate"><ol class="ft-steps">
+    <li><span class="n">Step 1</span><span class="v">0</span><span class="w">Dead</span><span class="d">Killed earlier in the round, but still the most exposed.</span></li>
+    <li><span class="n">Step 2</span><span class="v">$88</span><span class="w">Panicking, struck</span><span class="d">Jason reaches the body, and the hunt marks it as a victim in panic.</span></li>
+    <li><span class="n">Step 3</span><span class="v">$80</span><span class="w">Killed again</span><span class="d">The blow lands on someone who was already dead.</span></li>
+  </ol>
+  <p class="cap">Friend 6's state at <a href="source-game.html#090E"><code>actor_state</code></a>, read in the emulator at each step.</p></div>
+  <p>Every attack also raises everyone's exposure and your fear, so a second death of the same friend costs you as much as the first.</p>
 </section>
 
 <section id="calm-head">
   <p class="fig">02 · Bug</p>
   <h2 class="t">Bug: at full fear the head is the calmest one</h2>
-  <p class="lede">Fear runs from 0 to 80, and the panel shows it as one of eight heads, picked by fear divided by 10. Fear 80 divided by 10 is 8, one past the last head.</p>
+  <p class="lede">Fear runs from 0 to 80, and the <a href="index.html#panel">panel</a> shows it as one of eight heads, picked by fear divided by 10. Fear 80 divided by 10 is 8, one past the last head.</p>
   <div class="plate"><canvas id="hdCv" class="ft-px" style="max-width:420px"></canvas>
     <label class="ft-lab">Fear <b id="hdV"></b><input type="range" id="hdF" min="60" max="80" value="79" class="ft-range"></label>
     <p class="cap">The page runs the game's <a href="source-game.html#C15C"><code>draw_fear_head</code></a> on a copy of the C64's processor and draws the head's 16 characters from the panel's character set.</p></div>
@@ -98,7 +112,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="bonus">
   <p class="fig">03 · Bug</p>
   <h2 class="t">Bug: the biggest bonus is for saving nobody</h2>
-  <p class="lede">Kill Jason and the round's bonus is meant to be 1,000 on screen for each friend still alive. With every friend dead it is 25,600.</p>
+  <p class="lede">Kill Jason and the <a href="index.html#score">round's bonus</a> is meant to be 1,000 on screen for each friend still alive. With every friend dead it is 25,600.</p>
   <div class="plate"><label class="ft-lab">Friends alive when Jason dies: <b id="bnV"></b><input type="range" id="bnN" min="0" max="9" value="0" class="ft-range"></label>
     <p class="ft-read" id="bnOut"></p>
     <p class="cap">The page runs the bonus part of <a href="source-game.html#925E"><code>round_won</code></a>, from <code>$9266</code> to <code>$928C</code>, on a copy of the C64's processor and reads the score it leaves.</p></div>
@@ -108,7 +122,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="shelter-anywhere">
   <p class="fig">04 · Quirk</p>
   <h2 class="t">One visit to the safe room lets you shelter friends from anywhere</h2>
-  <p><a href="source-game.html#BE18"><code>send_to_shelter</code></a> sends a friend you touch to the safe room only if <a href="source-game.html#09ED"><code>safe_room_seen</code></a> is set. The flag looks as if it means "the player is in the safe room", but <a href="source-game.html#A2A2"><code>draw_room</code></a> sets it when it draws the safe room and nothing clears it until <a href="source-game.html#9A7D"><code>start_play</code></a> begins the next round. After one visit, any friend you bump into, in any room, turns round and walks to shelter.</p>
+  <p><a href="source-game.html#BE18"><code>send_to_shelter</code></a> sends a friend you touch to the <a href="index.html#safe-room">safe room</a> only if <a href="source-game.html#09ED"><code>safe_room_seen</code></a> is set. The flag looks as if it means "the player is in the safe room", but <a href="source-game.html#A2A2"><code>draw_room</code></a> sets it when it draws the safe room and nothing clears it until <a href="source-game.html#9A7D"><code>start_play</code></a> begins the next round. After one visit, any friend you bump into, in any room, turns round and walks to shelter.</p>
+  <p>The emulator agrees. With the safe room in room 25 and you in room 38, a friend placed on top of you kept wandering while the flag was 0. With the flag set to 1, as a visit leaves it, the same touch sent the friend to shelter: state 5, heading for room 25, with 32 counts of shelter time, which is 90 minus that friend's exposure of 58.</p>
 </section>
 
 <section id="footstep">
@@ -130,13 +145,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <li><a href="source-game.html#A6C6"><code>read_stick</code></a> reads RETURN into <a href="source-game.html#0828"><code>return_up</code></a> on every frame, and nothing reads it.</li>
     <li>Beside the scream's delay of four <code>NOP</code>s, <a href="source-game.html#368B"><code>scream_delay</code></a>, are delays of six, two, and three <code>NOP</code>s (<a href="source-game.html#3689"><code>$3689</code></a>, <a href="source-game.html#3690"><code>$3690</code></a>, <a href="source-game.html#3693"><code>$3693</code></a>) that nothing calls: what is left of tuning the scream's speed by hand.</li>
     <li><a href="source-game.html#AEE0"><code>init_actors</code></a> fills 64 bytes at <a href="source-game.html#02C0"><code>$02C0</code></a> with $FF, a solid sprite block in video bank 0. Play shows bank 1, so the block is never seen.</li>
-    <li>Every friend's exposure is random, from 10 to 74, except friend 1's, which <code>init_actors</code> sets to 60 every round (<a href="source-game.html#092F"><code>$092F</code></a>).</li>
-    <li>Object types 7 and 9 have the same picture, the axe (<a href="source-game.html#A59F"><code>object_sprite</code></a>), and the same damage and points, so two of the eleven objects are the same weapon.</li>
+  </ul>
+</section>
+
+<section id="oddities">
+  <p class="fig">08 · Quirk</p>
+  <h2 class="t">Oddities: a fixed exposure and a second axe</h2>
+  <ul>
+    <li>Every friend's <a href="index.html#jason">exposure</a> is random, from 10 to 74, except friend 1's, which <a href="source-game.html#AEE0"><code>init_actors</code></a> sets to 60 every round (<a href="source-game.html#092F"><code>$092F</code></a>).</li>
+    <li>Object types 7 and 9 have the same picture, the axe (<a href="source-game.html#A59F"><code>object_sprite</code></a>), and the same damage and points, so two of the eleven <a href="index.html#weapons">weapons</a> are the same one.</li>
   </ul>
 </section>
 
 <section id="nine-friends" data-part="intro">
-  <p class="fig">08 · Quirk</p>
+  <p class="fig">09 · Quirk</p>
   <h2 class="t">"You and nine friends" are eleven</h2>
   <p>The story screen of the introduction (<a href="source-intro.html#2B68"><code>text_story</code></a>) sends you to Crystal Lake with nine friends. The game has ten others walking about besides you, at <a href="source-game.html#08E2"><code>actor_place</code></a> and the tables after it, because one of them is Jason in disguise.</p>
 </section>

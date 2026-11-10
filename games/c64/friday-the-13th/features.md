@@ -41,7 +41,7 @@ Sources:
 - Jason can pick a dead friend as his victim and kill them again (live; Discoveries).
 - At fear 80 the panel shows the calmest head (traced; Discoveries).
 - The round bonus is 2,560 points with no survivors, more than the 900 for nine (run on the kit's processor; Discoveries).
-- One visit to the safe room lets the player send friends to shelter from any room (traced).
+- One visit to the safe room lets the player send friends to shelter from any room (live; Discoveries).
 - Tune 4's room entry is `$FF`, which no room has, so it plays only when Jason reveals himself (traced).
 - The footstep sound is switched off by an `RTS` (traced).
 
