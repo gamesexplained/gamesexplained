@@ -120,3 +120,5 @@ The shop drawing setup at $96BD selects two pointer-table entries, calls the sec
 The shop label code at $970C passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9905 to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Load-20 type-$2A vector selects $BE8D, which chooses a frame and branches on $19A1,X being below $40. Four forced VICE cases checked the height threshold and phase/frame wrapping with $4342 stubbed. Callback effects and ordinary-play reachability remain open.

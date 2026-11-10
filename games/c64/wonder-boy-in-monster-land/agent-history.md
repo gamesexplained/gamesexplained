@@ -856,3 +856,5 @@ Forced all 17 entity slots occupied in load 4 and ran the actual allocator and r
 Checked load-9 block-copy routine $94A0 in three forced VICE cases with display callbacks stubbed; restored the paused user snapshot.
 
 Checked load-9 object callback $9465 in four forced VICE cases, redirecting the overlapping $77E0/$77E2 call sites independently. Rechecked the block-copy test with the same isolation and restored the paused user snapshot.
+
+Checked load-20 type-$2A entity entry in four forced VICE cases with movement callback stubbed; restored the paused user snapshot.
