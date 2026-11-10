@@ -928,3 +928,5 @@ Connected the display-slot flag range to the previously checked display-builder 
 Checked both banked 24-byte sprite-fragment copies in VICE and restored the paused user snapshot.
 
 Checked four forced entity-candidate scan cases in VICE and restored the paused user snapshot.
+
+Checked four forced top and bottom scroll tile-pair cases in VICE, including source-pointer page crossings, and restored the paused user snapshot.

@@ -403,3 +403,5 @@ The indexed display-slot flags at $4CEF feed sprite horizontal expansion: the pa
 The fragment at $50EF is copied to RAM $D900–$D917 by the loop at $6CF5. The fragment at $5107 is copied to RAM $D940–$D957 by the descending loop at $6CE9; the alternate initialization loop clears that destination. Two forced VICE checks, with RAM visible beneath I/O, compared all 24 bytes in both copies.
 
 The candidate scan at $09C5 checks 17 entity slots in descending order. It accepts only types $01–$20 with a nonzero first display-slot byte, returning X as the entity slot, Y as that byte and carry set; if none match it returns X=$FF and carry clear. Four forced VICE cases checked filtering, priority and the empty result.
+
+The top and bottom scroll tile loops patch immediate operands at $3009 and $2F2E to preserve each tile index across their first table lookup. Both write a two-byte pair, advance the output column by two and increment the source pointer with page carry. Four forced VICE cases checked both loops, including source-pointer page crossings.
