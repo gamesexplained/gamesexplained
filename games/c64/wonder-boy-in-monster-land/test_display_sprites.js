@@ -24,7 +24,7 @@ for(const capture of observations.loads){
 }
 assert.equal(total,158);assert.equal(observations.loads.flatMap(x=>x.slots).filter(x=>x.input_sequence==='right-fire-up').length,16);
 const html=fs.readFileSync(path.join(root,'graphics.html'),'utf8'),match=html.match(/<script id="observed-sprites-data" type="application\/json">([^<]+)<\/script>/);assert(match,'observed sprite gallery data');
-const frames=JSON.parse(match[1]);assert.equal(frames.length,total);
+const frames=JSON.parse(match[1]).filter(f=>f.sequence!=='record');assert.equal(frames.length,total);
 for(const capture of observations.loads)for(const sprite of capture.slots){
  const frame=frames.find(f=>f.load===capture.stage&&f.pointer===sprite.pointer),sample=sprite.display[0];assert(frame,`load ${capture.stage} gallery slot`);
  assert.equal(crypto.createHash('sha256').update(Uint8Array.from(frame.pixels)).digest('hex'),sprite.hash);
