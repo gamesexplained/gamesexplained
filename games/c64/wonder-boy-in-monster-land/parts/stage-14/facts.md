@@ -130,3 +130,5 @@ The second shop entry at $97B6 selects an item pair from explicit stage fields t
 The shop drawing setup at $9804 selects two pointer-table entries, calls the second and first item targets with A=$E4 and $D0, and fills three rows of colour RAM. Two forced VICE cases and `test_later_shop_draw_setup.js` check the target selection and colour writes with both item targets replaced by stubs. The actual drawing effects, index bounds and ordinary-play contexts remain open.
 
 The shop label code at $9853 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9A4C to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
+
+Load-14 type-$12/$21 and type-$13 vectors select dispatchers at $A5B1 and $A7FF. Nine forced VICE cases checked active and sign conditions plus three and one captured state targets; $A8AC was stubbed. Their state indexes are not locally bounded, and callback effects and ordinary-play reachability remain open.
