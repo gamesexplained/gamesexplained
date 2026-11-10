@@ -740,3 +740,5 @@ Described the overlapping meter-buffer tail and the patched entity reload multip
 Traced the resident sprite-register copy at $121C. A forced VICE path and a listing test checked position, pointer, colour and multicolour-mask writes before the timer setup. Restored the paused user snapshot.
 
 Described the CIA keyboard scan at $2951. Three forced VICE cases and a listing test checked the sampled bit and divider behavior; VICE controlled port B as output, so physical key mapping remains open. Restored the paused user snapshot.
+
+Traced status reading at $7B84. Three forced VICE cases and a listing test checked its return and port direction for zero and nonzero tiers. An initial test expected the intermediate data read in A, but the return reloads $5284; corrected before the successful check. Restored the paused user snapshot.
