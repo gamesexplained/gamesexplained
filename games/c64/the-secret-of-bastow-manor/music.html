@@ -1,0 +1,64 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bastow-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The only music is the title tune: fourteen low notes over a drone, played by BASIC itself between pauses made by empty loops. The fifteenth note in the data is read and thrown away.</p>
+</header>
+<main class="wrap">
+<section id="tune">
+  <h2 class="t">The title tune</h2>
+  <p>The notes are fifteen triples of numbers in a <code>DATA</code> statement at lines 5900 to 5904: the high byte and the low byte of a frequency for the sound chip, and a delay count. The routine at line 1800 (<code>$4AF9</code>) reads a triple, writes the two bytes to voice 1, sets the sawtooth waveform with the gate on, and waits by running an empty <code>FOR</code> loop that many times. Voice 2 is set once to a steady triangle wave at a frequency register value of 675, and sounds throughout.</p>
+  <div class="plate">
+    <p class="fig">Play the tune</p>
+    <div class="row"><button class="b" id="play" type="button">Play</button><button class="b" id="stop" type="button">Stop</button><span class="note" id="msg"></span></div>
+    <table class="t" id="notes" style="margin-top:14px"></table>
+    <p class="cap">Frequency in hertz is the register value times 985,248 divided by 16,777,216 (the PAL clock). One pass of the empty loop took 1.24 ms in the emulator: 124 clock ticks at 50 a second for 2,000 passes, timed at the READY prompt with <code>TI</code>, so the 14 sounded notes last about 6.5 seconds. The page plays them with the browser’s own sawtooth and triangle oscillators, not with the kit’s model of the sound chip, and the chip’s envelope is not modelled. Most of the notes lie below 140 Hz, which laptop and phone speakers barely play.</p>
+  </div>
+</section>
+
+<section id="details">
+  <h2 class="t">What the code does with it</h2>
+  <p>Each note writes <code>33</code> to the voice 1 control register, which is the sawtooth waveform with the gate bit set, and nothing in the loop ever clears the gate between notes. The notes therefore follow one another without the envelope restarting; the chip simply changes pitch. The attack, decay, sustain, and release values are all set to 136 (line 1800).</p>
+  <p>The routine counts the notes it has read in <code>QW</code> before it tests the count. The fifteenth read makes the count 15, which is above 14, so the routine returns without sounding the fifteenth triple (<code>4,48,1056</code>). When the count reaches nine, after that note has been read and before it is played, a subroutine prints the year 1983 on the title screen.</p>
+  <p>A second player at line 1570 takes triplets of the same shape on voice 2, with a negative high byte as its end marker, but <a href="discoveries.html#dead">nothing in the program ever jumps to it</a>. The program has no <code>RESTORE</code>, so by the time play starts every <code>DATA</code> item has been read, and a call would stop with an error.</p>
+  <p>The only other sound is the death sound: one low sawtooth note on voice 1 at frequency register 803, whose volume the program steps down from 15 to 0 (line 1661).</p>
+</section>
+</main>
+<script>
+(function(){
+  var DATA=[[8,255,800],[7,119,600],[5,237,1024],[5,152,250],[4,180,300],[6,71,270],[6,71,400],[4,180,128],[5,152,300],[4,180,250],[6,71,128],[7,12,128],[7,233,128],[7,12,568],[4,48,1056]];
+  var MS=1.24, K=985248/16777216;
+  var tb=document.getElementById('notes'), h='<tr><th class="n">#</th><th>Register</th><th class="n">Hz</th><th class="n">Delay count</th><th class="n">Seconds</th><th>Played?</th></tr>';
+  DATA.forEach(function(d,i){var r=d[0]*256+d[1]; h+='<tr id="n'+i+'"><td class="n">'+(i+1)+'</td><td>'+r+'</td><td class="n">'+(r*K).toFixed(1)+'</td><td class="n">'+d[2]+'</td><td class="n">'+(d[2]*MS/1000).toFixed(2)+'</td><td>'+(i<14?'yes':'no: read, then dropped')+'</td></tr>';});
+  tb.innerHTML=h;
+  var ctx=null, nodes=[], timers=[], msg=document.getElementById('msg');
+  function stop(){timers.forEach(clearTimeout);timers=[];nodes.forEach(function(n){try{n.stop()}catch(e){}});nodes=[];for(var i=0;i<15;i++){var r=document.getElementById('n'+i);if(r)r.style.background='';}}
+  document.getElementById('stop').onclick=stop;
+  document.getElementById('play').onclick=function(){
+    stop();
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC){msg.textContent='This browser has no Web Audio.';return;}
+    ctx=ctx||new AC(); if(ctx.resume) ctx.resume();
+    var g=ctx.createGain(); g.gain.value=0.18; g.connect(ctx.destination);
+    var o1=ctx.createOscillator(); o1.type='sawtooth'; o1.connect(g);
+    var o2=ctx.createOscillator(); o2.type='triangle'; o2.frequency.value=675*K; o2.connect(g);
+    var t=ctx.currentTime+0.05; o1.start(t); o2.start(t); nodes=[o1,o2,g];
+    var at=0;
+    for(var i=0;i<14;i++){
+      (function(i){var r=DATA[i][0]*256+DATA[i][1]; o1.frequency.setValueAtTime(r*K,t+at);
+        timers.push(setTimeout(function(){for(var j=0;j<15;j++){var e=document.getElementById('n'+j);if(e)e.style.background=j===i?'#fff0c2':'';}},at*1000+50));
+      })(i);
+      at+=DATA[i][2]*MS/1000;
+    }
+    o1.stop(t+at); o2.stop(t+at);
+    timers.push(setTimeout(stop,(at+0.2)*1000));
+    msg.textContent='Playing…';
+  };
+})();
+</script>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
