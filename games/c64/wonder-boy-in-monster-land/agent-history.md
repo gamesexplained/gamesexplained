@@ -525,3 +525,5 @@ Traced resident record-driven map writer $46D6. VICE checked three forced tile-s
 Traced resident display initialization $719E. VICE checked every RAM and VIC register write for two forced X/Y inputs; a listing test repeats them in flat memory. The project exported without a reported loss and the paused user snapshot was restored. Call context and ordinary-play reachability remain open.
 
 Traced the resident sprite mirror $2086. VICE checked both 63-byte outputs against supplied patterns, the untouched padding bytes and returned indices; a listing test repeats the comparison using independently computed bit and two-bit-group reversals. The project exported without a reported loss and the paused user snapshot was restored. Overlapping inputs and ordinary-play reachability remain open.
+
+Traced resident viewport-origin calculation $6E12. VICE checked three forced inputs, including carries, both mode branches and supplied map rows; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
