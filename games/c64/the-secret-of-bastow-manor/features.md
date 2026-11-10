@@ -43,7 +43,7 @@ Sources:
 | A text adventure typed at a `> what now ?` prompt, with a PETSCII picture of each place | live | `prompt` line 300, `show_room` line 41; 27 places |
 | Commands of one or two words: only the first three letters of the verb count, and the first three of the noun | live | `verb_dispatch` line 360 and the tables `X1$`, `X2$`, `X3$` (lines 12 and 13) |
 | Twenty-four verbs: break, climb, cut, drop, eat, fill, get, go, help, inventory, light, look, move, open, press, pull, quit, read, remove, ring, save, unlock, throw, wear | live for eighteen of them; traced for `eat`, `help`, `inventory` (the letter `i` was tried), `quit`, `ring` and `save`, which the replayed walkthrough does not use | `verb_dispatch` |
-| One-letter commands: `i` for the pack, `g` for the exits, and `n`, `s`, `e`, `w` | live | `prompt` lines 308 to 358; `i` and the compass letters were used, `g` was not |
+| One-letter commands: `i` for the pack, `g` for the exits, and `n`, `s`, `e`, `w` | live | `prompt` lines 308 to 359; `i` and the compass letters were used, `g` was not |
 | A pack of five things; an empty pack prints "not a cracker !" | live | `show_pack` line 1500, line 1512 |
 | Dogs that begin to howl when the gate is opened and kill a player who stays in the open for eight moves; the tree, the shed and the window ledge are safe | live (the barking and howling); traced (the death) | `move_events` lines 140 to 146 |
 | The torch is needed in four dark places: the dim room, the tunnel, the corridor and the cell | traced: the walkthrough always lit it first | `place_names` lines 80 to 106, `death_in_the_dark` line 1920 |
