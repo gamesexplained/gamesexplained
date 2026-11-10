@@ -950,3 +950,5 @@ Checked four forced unscrolled downward movement cases in VICE, including wrappe
 Checked three controlled frame-wait gate/counter cases in VICE with the panel copy stubbed; restored the paused user snapshot.
 
 Checked three forced stage-record setup cases in VICE with the visual loader stubbed; restored the paused user snapshot.
+
+Checked all ten overlapping status HUD row reads in a forced VICE case and restored the paused user snapshot.

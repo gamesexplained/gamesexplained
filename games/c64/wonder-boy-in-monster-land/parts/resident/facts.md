@@ -425,3 +425,5 @@ The unscrolled downward movement at $0D56 compares ($49 + $4DB4) modulo 256 agai
 The frame wait at $3C2A calls the message-panel copy when $5275 is zero, then polls $526C until it is at least 3 and clears that counter. Three forced VICE cases checked the gate and threshold with the panel copy stubbed, including a controlled increment from 2 to 3. Actual interrupt timing was not measured in these cases.
 
 The stage-record setup at $47E4 patches the callback high byte from $4765,X, subtracts 2 from $4753,X modulo 256, saves X at $7B and passes $4759,X as X to $7119. Three forced VICE cases checked these writes with the visual loader stubbed, including counter wraparound.
+
+The status HUD copy at $3783 reads 22 bytes from each of ten rows stored 21 bytes apart: five screen rows and five colour rows. Consequently consecutive reads share one source byte; the final colour read reaches the alternate-panel data at $5050. A forced VICE case checked all 220 output bytes with a distinct source pattern, including colour RAM low nibbles.
