@@ -511,3 +511,5 @@ Traced resident sprite-reuse scheduling at $1753/$182A and the split count at $1
 Traced resident right and left acceleration $0E42/$0FDC. VICE checked fourteen forced direction, gate, speed and profile cases; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
 
 Traced resident unscrolled horizontal movement $0FC1/$115B. VICE checked eight forced boundary and wrap cases, plus four cases through the real $0E83/$101F callers and their step cap; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident upward movement and viewport handling $0D7F. VICE checked six forced viewport, anchor and top-boundary cases with scroll and slot callbacks stubbed, plus one case through the real $0DE9 slot adjustment checking all 28 bytes; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.

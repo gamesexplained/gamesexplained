@@ -247,3 +247,7 @@ Resident $0E42 and $0FDC update player facing and horizontal speed for right and
 Resident $0FC1 and $115B update player X without viewport scrolling. Their low-byte clamps depend on whether the resulting high byte is zero, so forced 16-bit underflow can avoid the left clamp. VICE checked eight forced boundary and wrap cases. Ordinary-play reachability remains open.
 
 VICE also checked four forced unscrolled movement cases through the real $0E83 and $101F callers, including their eight-unit step cap. Ordinary-play reachability remains open.
+
+Resident $0D7F handles upward player movement and viewport scrolling, including an anchor at $A2 and a top-of-map path that consumes the remaining step. VICE checked six forced viewport, anchor and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced $0D7F scroll step through the real $0DE9 slot adjustment, verifying all 28 slot bytes. Ordinary-play reachability remains open.
