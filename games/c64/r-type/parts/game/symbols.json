@@ -14991,7 +14991,7 @@
   {
    "address": 7164,
    "type": "line",
-   "text": "By the crystal's colour (0 to 7), the low byte of the weapon routine the Force fires with."
+   "text": "By the crystal's colour (0 to 7), the low byte of the weapon routine fired with each press while the Force is docked: colour 2 (red) $4CB3 weapon_red, 6 (blue) $42FA the reflecting lasers, 7 (yellow) $47A1 weapon_yellow; the other five colours, which no crystal has, hold $FCE2, the KERNAL's reset."
   },
   {
    "address": 7172,
@@ -15716,7 +15716,7 @@
   {
    "address": 11932,
    "type": "line",
-   "text": "Puts the ship's two sprites (1 above 2, 21 lines apart) at its position, and works out the screen row it is on ($02E4 = (Y - $32) / 8), that row's screen address ($2D/$2E, also at $3EEE/$3EEF, from the row tables at $2F72 and $2F8B) and its column ($3EED = X / 8 - 3, plus 32 past X 255). A docked Force is placed too."
+   "text": "Puts the ship's two sprites (1 above 2, 21 lines apart) at its position, and works out the screen row it is on from the lower sprite's Y ($02E4 = (Y + 21 - $32) / 8), that row's screen address ($2D/$2E, also at $3EEE/$3EEF, from the row tables at $2F72 and $2F8B) and its column ($3EED = X / 8 - 2, plus 32 past X 255). A docked Force is placed too."
   },
   {
    "address": 12016,
@@ -15766,7 +15766,7 @@
   {
    "address": 12211,
    "type": "line",
-   "text": "Docking offsets for each Force level, copied to $2FC5-$2FC7: how far across the Force sits from the ship when docked in front ..."
+   "text": "Per Force level, the offset subtracted from the ship's X when the Force docks behind; force_shape copies it to $2FC5. The offset for docking in front is force_dock_x2 ($2FB8, to $2FC6), and the vertical one force_dock_y ($2FBD, to $2FC7)."
   },
   {
    "address": 12216,
@@ -16811,12 +16811,12 @@
   {
    "address": 17146,
    "type": "line",
-   "text": "Code nothing calls (no address in memory points here): it would launch the two diagonal lasers from a docked Force into the slots at $4791, one up and one down, as the characters $DA and $DB in cyan (sound $12). The diagonal laser in use starts at $47A1."
+   "text": "The blue crystal's weapon, reached through the weapon table (weapon_lo/weapon_hi, colour 6, which collect copies into the JSR at $3B98) on each press of fire: with the ship below Y $32, a docked Force ($32 = 1) and neither reflecting laser in flight ($4791, $4792), it launches two diagonal lasers from beside the Force into the slots at $4791, one up and one down, as the characters $DA and $DB in cyan (sound $12). move_reflect then moves them."
   },
   {
    "address": 17377,
    "type": "line",
-   "text": "Moves the two reflecting lasers (slots $4791) one cell diagonally a frame as the characters $DA and $DB in cyan, $DC where the two cross. Each tests the cells ahead across, up or down against the background flags ($8D6C): at a solid cell it bounces, flipping its direction across ($4799) or up and down ($479B), a breakable cell or an enemy character blows up (reflect_hit), and it ends at the play area's edges. Every frame, but nothing in the game launches them: their launcher at $42FA is never called."
+   "text": "Moves the two reflecting lasers (slots $4791), the blue crystal's weapon launched at $42FA, one cell diagonally a frame as the characters $DA and $DB in cyan, $DC where the two cross. Each tests the cells ahead across, up or down against the background flags ($8D6C): at a solid cell it bounces, flipping its direction across ($4799) or up and down ($479B), a breakable cell or an enemy character blows up (reflect_hit), and it ends at the play area's edges."
   },
   {
    "address": 18139,
@@ -17141,7 +17141,7 @@
   {
    "address": 19601,
    "type": "line",
-   "text": "Frames to the next crawler frame ($4C91, $4C92); then nine bytes nothing reads."
+   "text": "The crawling laser's animation: frames left before the frame operand at $4855 goes back to $4C93 ($4C91, four frames), and frames to the next frame copy ($4C92, three); the four frames follow at crawl_frames."
   },
   {
    "address": 19602,

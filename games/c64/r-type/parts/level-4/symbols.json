@@ -2154,21 +2154,9 @@
    "kind": "user"
   },
   {
-   "address": 32369,
-   "name": "enemy_programs_7e71",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
    "address": 32768,
    "name": "enemy_programs_8000",
    "type": "Jump",
-   "kind": "user"
-  },
-  {
-   "address": 33393,
-   "name": "enemy_programs_8271",
-   "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
@@ -3060,18 +3048,6 @@
    "kind": "user"
   },
   {
-   "address": 57526,
-   "name": "stage4_shapes_e0b6",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
-   "address": 57714,
-   "name": "stage4_shapes_e172",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
    "address": 58368,
    "name": "stage4_shapes_90",
    "type": "UserDefined",
@@ -3536,17 +3512,17 @@
   {
    "address": 25640,
    "type": "line",
-   "text": "Each voice's gate mode ($6428) and a column copied from the track ($642B)."
+   "text": "Each voice's gate mode ($6428) and the instrument it last started ($642B)."
   },
   {
    "address": 25643,
    "type": "line",
-   "text": "voice_gate_mode: Each voice's gate mode ($6428) and a column copied from the track (the byte at $642B)."
+   "text": "voice_gate_mode: each voice's last instrument number (the byte at $642B on), written from $6431 at $66FA and set to $E6 when a tune starts ($650E); start_instrument compares the new instrument with it and skips reloading the pulse settings when the same one repeats."
   },
   {
    "address": 25646,
    "type": "line",
-   "text": "The note being started ($642E), its control byte ($642F) and its two instrument offsets ($6430, $6431)."
+   "text": "The note being started ($642E), its control byte ($642F), its sequence number ($6430) and its instrument number ($6431)."
   },
   {
    "address": 25647,
@@ -3556,12 +3532,12 @@
   {
    "address": 25648,
    "type": "line",
-   "text": "note_temp: its control byte ($642F) and its two instrument offsets (the byte at $6430)."
+   "text": "note_temp: the sequence number (the byte at $6430): the high nibble of the pattern's instrument byte plus the track column at $63E4; it goes to $6409, where run_sequence takes it as an index into the sequence table."
   },
   {
    "address": 25649,
    "type": "line",
-   "text": "Inside note_temp, at offset 3; an address other code names."
+   "text": "note_temp: the instrument number (the byte at $6431): the low nibble of the pattern's instrument byte plus the track column at $63E1, passed to start_instrument."
   },
   {
    "address": 25650,
@@ -3752,11 +3728,6 @@
    "address": 26032,
    "type": "line",
    "text": "An entry into j_6588 that other code jumps to."
-  },
-  {
-   "address": 26038,
-   "type": "line",
-   "text": "Operand of the LDX at $65B5 in b_65B0, a byte other code reads or writes by address."
   },
   {
    "address": 26039,
@@ -4062,16 +4033,6 @@
    "address": 27225,
    "type": "line",
    "text": "Moves a voice's sliding frequency by its step, or towards the note by a step scaled with the distance, stopping on it."
-  },
-  {
-   "address": 27248,
-   "type": "line",
-   "text": "Operand of the LDA at $6A6F in slide, a byte other code reads or writes by address."
-  },
-  {
-   "address": 27250,
-   "type": "line",
-   "text": "An entry into slide that other code jumps to."
   },
   {
    "address": 27267,
@@ -4794,19 +4755,9 @@
    "text": "Stage 4's enemy programs: steps of six bytes (kind $D3-$D6, speed, duration, step, wall test, what follows: 0 the next step, 1 back to the first, $80 remove), and the animation programs' shape lists."
   },
   {
-   "address": 32369,
-   "type": "line",
-   "text": "Inside enemy_programs, at offset 55; an address other code names."
-  },
-  {
    "address": 32768,
    "type": "line",
    "text": "Inside enemy_programs, at offset 454; an address other code names."
-  },
-  {
-   "address": 33393,
-   "type": "line",
-   "text": "Inside enemy_programs, at offset 1079; an address other code names."
   },
   {
    "address": 33432,
@@ -5574,16 +5525,6 @@
    "text": "Stage 4's sprite shapes, pointers $80-$BD in video bank 3; $AC-$BD are the boss's parts."
   },
   {
-   "address": 57526,
-   "type": "line",
-   "text": "Character $16, row 6, of stage4_shapes; an address other code names."
-  },
-  {
-   "address": 57714,
-   "type": "line",
-   "text": "Character $2E, row 2, of stage4_shapes; an address other code names."
-  },
-  {
    "address": 58368,
    "type": "line",
    "text": "Shapes $90-$9F of stage4_shapes."
@@ -5591,37 +5532,37 @@
   {
    "address": 58744,
    "type": "line",
-   "text": "Character $AF, row 0, of stage4_shapes_90; an address other code names."
+   "text": "Byte 56 of sprite shape $95 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58768,
    "type": "line",
-   "text": "Character $B2, row 0, of stage4_shapes_90; an address other code names."
+   "text": "Byte 16 of sprite shape $96 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58780,
    "type": "line",
-   "text": "Character $B3, row 4, of stage4_shapes_90; an address other code names."
+   "text": "Byte 28 of sprite shape $96 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58797,
    "type": "line",
-   "text": "Character $B5, row 5, of stage4_shapes_90; an address other code names."
+   "text": "Byte 45 of sprite shape $96 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58802,
    "type": "line",
-   "text": "Character $B6, row 2, of stage4_shapes_90; an address other code names."
+   "text": "Byte 50 of sprite shape $96 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58815,
    "type": "line",
-   "text": "Character $B7, row 7, of stage4_shapes_90; an address other code names."
+   "text": "Byte 63 of sprite shape $96 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 58827,
    "type": "line",
-   "text": "Character $B9, row 3, of stage4_shapes_90; an address other code names."
+   "text": "Byte 11 of sprite shape $97 in stage4_shapes_90; the resident stage 1 set-up at $1224 writes a star into this byte, but it runs only in stage 1."
   },
   {
    "address": 59392,
