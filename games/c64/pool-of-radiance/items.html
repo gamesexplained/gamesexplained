@@ -1,0 +1,426 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool of Radiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+@media (max-width:760px){:root{--gx:18px}}
+.it-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.it-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
+.it-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.it-bar button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 9px;cursor:pointer;text-align:left}
+.it-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.it-bar .lab{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.05em;text-transform:uppercase;margin-right:4px}
+.it-bar select{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);color:var(--ink);max-width:100%}
+.it-carry{list-style:none;margin:0 0 10px;padding:0;font-family:var(--fm);font-size:12.5px}
+.it-carry li{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line-soft);padding:4px 0}
+.it-carry li span{flex:1;min-width:0}
+.it-carry label{font-size:11.5px;color:var(--ink-mute);display:flex;gap:4px;align-items:center;cursor:pointer}
+.it-carry button{font-family:var(--fm);font-size:11px;border:1px solid var(--line);background:var(--surface);color:var(--ink-mute);border-radius:5px;padding:1px 6px;cursor:pointer}
+.it-sheet{background:#1b1c20;color:#e8e6df;border-radius:8px;padding:14px 16px;font-family:var(--fm);font-size:13.5px;line-height:1.6}
+.it-sheet table{border-collapse:collapse;width:100%}
+.it-sheet td{padding:1px 0;vertical-align:top;color:#e8e6df}
+.it-sheet td:first-child{color:#9a9890;padding-right:12px;white-space:nowrap}
+.it-sheet .hot{color:#ffd37a}
+.it-sheet .dead{color:#ff8a7a}
+.it-sheet .was{color:#9a9890;font-size:12px}
+.it-tbl-wrap{overflow-x:auto}
+.it-tbl{border-collapse:collapse;width:100%;font-size:14px}
+.it-tbl th,.it-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.it-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;white-space:nowrap}
+.it-tbl td.nm{font-family:var(--fm);font-size:13px}
+.it-tbl td.n{font-family:var(--fm);font-size:13px;text-align:right;white-space:nowrap}
+.it-tbl th.n{text-align:right}
+.it-tbl .bad{color:var(--coral);font-weight:700}
+.it-tbl .off{color:var(--ink-mute)}
+.it-tbl ul{margin:0;padding-left:18px}
+.it-tbl li{margin:0 0 2px;font-family:var(--fm);font-size:12.5px}
+.it-small{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.it-words{font-family:var(--fm);font-size:12.5px;line-height:1.9;color:var(--ink-soft)}
+.it-words span{white-space:nowrap;margin-right:14px}
+details.it-fold{margin:12px 0 0}
+details.it-fold summary{cursor:pointer;font-family:var(--fm);font-size:13px;color:var(--link)}
+@media (max-width:760px){.it-grid{grid-template-columns:1fr}.it-tbl{min-width:0}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · SSI</p>
+  <h1>Pool of Radiance</h1>
+  <p class="sub">An item is sixteen bytes, and a few of them disagree with their names: the trolls' RING OF PROTECTION +2 protects nothing, BRACERS AC2 give AC 4, and a pile of 26 HUGE TAPESTRIES weighs about as much as one.</p>
+</header>
+<main class="wrap">
+
+<section id="ring" data-part="resident">
+  <p class="fig">01 · The trolls' ring</p>
+  <h2 class="t">Bug: the trolls' RING OF PROTECTION +2 protects nothing</h2>
+  <p class="lede">Every troll in the hedge maze of Valjevo Castle carries a RING OF PROTECTION +2 and leaves it in the treasure when it dies. Readied, the ring leaves the armour class where it was. Try it on the sheet, beside a real one.</p>
+  <div class="plate">
+    <div class="it-grid">
+      <div>
+        <div class="it-bar"><span class="lab">Try</span><span id="it-presets"></span></div>
+        <ul class="it-carry" id="it-carry"></ul>
+        <div class="it-bar"><span class="lab">Add</span><select id="it-add" aria-label="Add an item"><option value="">any item the game gives…</option></select></div>
+      </div>
+      <div>
+        <div class="it-sheet" id="it-sheet"><p class="it-miss">The sheet runs the game's own code, with the site's shared scripts that the built site serves.</p></div>
+      </div>
+    </div>
+    <p class="cap">Each change runs the game's own routines on the kit's 6502 over the listing's bytes: <code>compute_combat_stats</code> (<code>$3729</code>) for the armour class, THAC0, damage and weight, <code>max_load</code> (<code>$472E</code>) for the most PENDRAGON can carry, and COMBAT's <code>can_strike</code> (<span data-part="combat"><code>$1648</code></span>) for whether a bow or crossbow has what it shoots. The character is PENDRAGON, a level-1 fighter with strength 17 and dexterity 17, whose saved record is a file of its own on disk 2 side A.</p>
+  </div>
+  <p>Whether an item protects is set by its type, not by its name. Each of the 128 item types has a byte whose top bit marks an item that protects, and whose other bits hold a base armour class (<code>armour_bonus</code>, <code>$37E3</code>). A ring of that kind adds its plus, and only the best ring counts. Every other RING OF PROTECTION in the game, on a THEURGIST, the LEVEL 6 MUs, an 8TH LVL FIGHTER and Tyranithraxus, or in a treasure in the slums, is type 93, which has the bit. The trolls' ring is type 69, the type of the plain RING and of the RING OF FIRE RESISTANCE, whose byte is 0, so its +2 is never added.</p>
+  <p>The ring is in one troll file, MON1F on disk 3 side A, which the hedge maze loads; the trolls elsewhere carry nothing. Its worth is a real ring's, 15,000 gold, so a shop pays 7,500 for each one, like a working ring (<span data-part="post-com"><code>sale_price</code>, <code>$1A27</code></span>).</p>
+</section>
+
+<section id="bracers" data-part="resident">
+  <p class="fig">02 · Bracers</p>
+  <h2 class="t">Bug: the shaman's BRACERS AC2 give AC 4</h2>
+  <p class="lede">Bracers work like armour: armour class 10, less their plus. Their name gives the armour class they should make, and one pair's plus is two short of its name.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-bracers"><thead><tr><th>Name</th><th>Worn by</th><th class="n">Plus</th><th class="n">Armour class</th><th class="n">Worth</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">The armour class before dexterity: the type's base of 10 less the plus, the figure <code>armour_bonus</code> (<code>$37E3</code>) works with. The worths are in gold.</p>
+  <p>The pair named AC2 has the plus of the AC4 pair, so it makes AC 4. It is worse than the AC3 pair and worth more than any of them. The shaman in the nomad camp wears it. Random treasure makes bracers too, always as BRACERS AC4 with a plus of 6 (<span data-part="post-com"><code>bracers_ac</code>, <code>$1F13</code></span>).</p>
+</section>
+
+<section id="piles" data-part="resident">
+  <p class="fig">03 · Piles</p>
+  <h2 class="t">Bug: a pile of heavy things weighs almost nothing</h2>
+  <p class="lede">An item with a count, such as a bundle of arrows, weighs its weight times its count. The multiplication uses only the weight's low byte, so a piece heavier than 255 loses 256 for each 256 it weighs, and the loss is multiplied by the count.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-piles"><thead><tr><th>Pile</th><th>Where</th><th class="n">Count</th><th class="n">Each weighs</th><th class="n">Should weigh</th><th class="n">Weighs</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">Every item with a count whose pieces weigh 256 or more, from the item lists on the disks. Weights are in the game's units, of which a character carries 1,500 and more with strength.</p>
+  <p>The routine that adds up what a character carries (<code>add_item_weight</code>, <code>$4093</code>) loads the weight's low byte into one register and its high byte into another, then loads the count into the second register over the high byte and multiplies the two registers, eight bits by eight. The check made when a character takes an item does the same (<code>item_fits</code>, <code>$47A1</code>). The 26 HUGE TAPESTRIES in Kovel Mansion, 800 each and worth 300 each, weigh 832 in all, so one fighter can carry 7,800 gold's worth of tapestry, which a shop buys for 3,900. The price uses the worth's full bytes (<span data-part="post-com"><code>item_price</code>, <code>$13B4</code></span>).</p>
+</section>
+
+<section id="crossbow" data-part="resident">
+  <p class="fig">04 · The heavy crossbow</p>
+  <h2 class="t">Bug: the HEAVY CROSSBOW shoots arrows, and the 25,000-gold bow is one</h2>
+  <p class="lede">The item type named HEAVY CROSSBOW behaves as a bow: it shoots arrows, twice a round, and adds the archer's strength to the roll to hit and to the damage. No other bow or crossbow that an item uses adds strength.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-bows"><thead><tr><th>Type</th><th>Shoots</th><th class="n">Shots a round</th><th>Strength adds</th><th class="n">Range</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">From each type's bytes: its flags (bit 0 arrows, bit 7 quarrels, bit 2 strength), the shots it makes in two rounds and its range.</p>
+  <p>A weapon's flags decide what it needs: with bit 7 set it needs quarrels readied, and otherwise with bit 0 set it needs arrows (<span data-part="combat"><code>can_strike</code>, <code>$1648</code></span>). The light crossbow has bit 7. Type 45, the heavy crossbow, has bit 0 and not bit 7, so it needs arrows, and it has bit 2, which adds strength's adjustments to the roll and to the damage (<code>weapon_bonuses</code>, <code>$368F</code>).</p>
+  <p>The FINE COMPOSITE LONG BOW in New Phlan's silver shop costs 25,000 gold, and its type is 45. The HEAVY CROSSBOW in Valjevo Castle's armoury, worth 20, is the same weapon. The 3RD LVL FIGHTER and 5TH LVL FIGHTER at the buccaneers' base each carry a HEAVY CROSSBOW and QUARREL(S), so the party that beats them takes a crossbow and the one thing it cannot shoot. Three item types that no item uses, 94 to 96, are bows with the heavy crossbow's flags.</p>
+</section>
+
+<section id="restoration" data-part="camp">
+  <p class="fig">05 · Restoration</p>
+  <h2 class="t">Bug: the CLERICAL SCROLL OF RESTORATION vanishes with a spell still on it</h2>
+  <p class="lede">A treasure in Valhingen Graveyard holds a CLERICAL SCROLL OF RESTORATION with RESTORATION on it twice. Casting the first one in camp takes the scroll away, and the second goes with it.</p>
+  <p>A scroll counts its spells in its name. The middle word is WITH 3 SPELLS, WITH 2 SPELLS or WITH 1 SPELL, words 212, 211 and 210, and casting a spell from it takes one off the word. In camp, a word that falls below WITH 1 SPELL means the scroll is used up and gone (<code>use_scroll_word</code>, <code>$1ED9</code>). The scroll of Restoration's middle word is OF, word 167. The first spell cast from it takes that to 166, below 210, and the scroll is gone.</p>
+  <p>Every other scroll with RESTORATION twice, in the graveyard, the city hall's reward and Mendor's library, is named WITH 2 SPELLS and lasts for both. In combat a scroll is used up only when its word reaches exactly one below WITH 1 SPELL (<span data-part="combat"><code>gone_if_zero</code>, <code>$2832</code></span>).</p>
+</section>
+
+<section id="kovel-scroll" data-part="resident">
+  <p class="fig">06 · Kovel Mansion's scroll</p>
+  <h2 class="t">Bug: a CLERICAL SCROLL that only a magic-user can ready</h2>
+  <p class="lede">In Kovel Mansion one of the scrolls is named CLERICAL SCROLL WITH 3 SPELLS and holds three cleric's spells: PRAYER, REMOVE CURSE and ANIMATE DEAD. Its type is 61, the magic-user's scroll.</p>
+  <p>Readying an item checks the classes its type allows (<code>ready_item</code>, <code>$4630</code>). Type 61 allows the magic-user and type 62, the clerical scroll, allows the cleric, so a cleric gets WRONG CLASS and a magic-user can ready it. In combat a cleric is shown the spells on a clerical scroll before it is identified, by a test of the type's class byte, which this scroll does not pass (<span data-part="combat"><code>item_spells</code>, <code>$270D</code></span>). Once it is identified, its spells show to anyone.</p>
+</section>
+
+<section id="sword" data-part="effects">
+  <p class="fig">07 · Aligned swords</p>
+  <h2 class="t">Three long swords that hurt a wearer of the wrong alignment</h2>
+  <p class="lede">A LONG SWORD +2 in Valhingen Graveyard and two LONG SWORD +3 in the bailey of Valjevo Castle each accept one alignment, and their names do not say so. Readied by anyone else, the sword comes off and deals its wearer damage with no saving throw.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl"><thead><tr><th>Sword</th><th>Where</th><th>Accepts</th><th class="n">Damage to anyone else</th></tr></thead><tbody>
+  <tr><td class="nm">LONG SWORD +2</td><td>Valhingen Graveyard</td><td>lawful good</td><td class="n">15</td></tr>
+  <tr><td class="nm">LONG SWORD +3 (two)</td><td>Valjevo Castle, the bailey</td><td>lawful evil</td><td class="n">5</td></tr>
+  </tbody></table></div>
+  <p>An item can carry a power that comes on when it is readied, in its last byte with the top bit set. These swords' power is kind 132, and the byte before it holds the rest: the low half is the alignment the sword accepts (0 lawful good, 2 lawful evil), and the high half is the damage. The routine is in the combat's effects file and again in the camp's spell file (<code>kind_item_aligned</code>, <code>$AE94</code>; <span data-part="camp-spells"><code>aligned_item</code>, <code>$AE5F</code></span>). No other item has the power.</p>
+  <p>The graveyard's sword is also in an earlier list left on disk 2 side A, with no power at all (section 10).</p>
+</section>
+
+<section id="random" data-part="post-com">
+  <p class="fig">08 · Random treasure</p>
+  <h2 class="t">Secret: the random treasure has a cloak that never comes up</h2>
+  <p class="lede">A treasure can ask for random magic items instead of a list. Each one is picked from a table of 36 kinds by a roll of 1 to 188, and one kind, a CLOAK, has no share of the roll.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-random"><thead><tr><th>Kind</th><th class="n">Rolls in 188</th><th class="n">Chance</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">The table (<code>item_chance</code>, <code>$1F7C</code>) in its own order. The last kind takes the rolls the others leave.</p>
+  <p>The roll is taken away from each kind's share in turn, and the kind that brings it to 0 or below is the one made (<code>random_base</code>, <code>$1E98</code>). The cloak's share is 0, so the roll is still above 0 after it, and the cloak is never made. Its type, 67, adds nothing to the armour class. The one item of that type, a LEVEL 6 MU's CLOAK OF DISPLACEMENT with a plus of 8, adds nothing either, while the CLOAK OF DISPLACEMENT +2 in Mendor's library is type 92 and adds its plus; both give their wearer the power of displacement. The clerical scroll comes last and takes rolls 184 to 188, 5 in 188, where the magic-user's scroll has 50.</p>
+  <p>Each random item gets +1 on a d100 roll of 1 to 64, +2 on 65 to 95 and +3 on 96 to 100, and its worth is multiplied by the plus (<code>random_plus</code>, <code>$1EE4</code>). A scroll gets one spell of its own kind, rolled from 1 to 55 (<code>scroll_spell</code>, <code>$1F2F</code>), so RESTORATION, spell 56, is never on one. Arrows and quarrels come in piles of 2d6 (<code>missile_count</code>, <code>$1F66</code>). <span id="it-random-where"></span></p>
+</section>
+
+<section id="shops" data-part="post-com">
+  <p class="fig">09 · Shops and the armoury</p>
+  <h2 class="t">The castle armoury fills up again, and a shop never runs out</h2>
+  <p class="lede">The barracks of Valjevo Castle have an armoury of 58 weapons and armours, free to take. The script offers the whole list every time the party stands there.</p>
+  <p>The armoury is the arms and armour shop's list with a HEAVY CROSSBOW added, and its QUARREL(S) weigh 20 each where the shop's weigh 3. Taking an item from a treasure removes it from the list in memory (<code>remove_item</code>, <code>$11BB</code>), but the script loads the list from the disk afresh each time, asking DO YOU WANT TO TAKE ANYTHING? with no flag to stop it. A shop's list is never changed at all, so a shop sells the same DIAMOND NECKLACE as often as the party can pay for it.</p>
+  <p>New Phlan's four shops, for general goods, jewelry, arms and armour, and silver items, run the same code as a treasure, with a flag that makes it a shop. A price is the worth times the count, times a factor the script sets, divided by 16 (<code>item_price</code>, <code>$13B4</code>). All four shops set 16, the factor that leaves the price as it is. A shop buys an item for half its worth (<code>sale_price</code>, <code>$1A27</code>) and names an unidentified one for 200 gold (<code>identify</code>, <code>$1D82</code>).</p>
+  <p>When a battle is won, every item in its treasure with a plus adds 400 experience points for each point of it to the party's share, before anyone takes anything (<code>magic_exp</code>, <code>$15A7</code>). The plus is a byte of its own, not the name: a scroll from the random table keeps the +1 to +3 it was rolled although its name drops it (<code>scroll_spell</code>, <code>$1F2F</code>).</p>
+</section>
+
+<section id="leftovers" data-part="tables">
+  <p class="fig">10 · Left on the disks</p>
+  <h2 class="t">Item lists no script gives, item types no item uses, and names never given</h2>
+  <p class="lede">Five item lists are on a disk side whose scripts never ask for them. Two are earlier forms of treasures in Valhingen Graveyard, left on the other side of the graveyard's disk.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-unused"><thead><tr><th>File</th><th>Items</th><th>What it is</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">A script's TREASURE loads the list of that number from the disk side in the drive, so a list is given only on a side whose scripts name its number. The scripts that choose a list from a variable are counted too.</p>
+  <p>The table of item types has entries that no item uses, in a list, on a monster or in the random table.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-types-unused"><thead><tr><th class="n">Type</th><th>What its bytes say</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">Types 1 to 47 are named by the name word of the same number. A type above 47 has no name of its own.</p>
+  <p>The table of name words has these words on no item, in a list, on a monster or in the random table, and the code never writes them into a name. Many name items of the AD&amp;D rule books that the game does not have.</p>
+  <p class="it-words" id="it-words"></p>
+</section>
+
+<section id="treasures" data-part="post-com">
+  <p class="fig">11 · Every treasure</p>
+  <h2 class="t">Every item list, and where the party finds it</h2>
+  <p class="lede">A treasure names its list by number, and each disk side has its own files of that number. These are all of them, with the squares the scripts give them on.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-sets"><thead><tr><th>List</th><th>Where</th><th>Items</th></tr></thead><tbody><tr><td colspan="3"><p class="it-miss">The table is drawn by the page's script.</p></td></tr></tbody></table></div>
+  <p class="cap">A square is given as the map, then across and down from the north-west corner. A list met on many squares shows the first few. Three scripts choose their list from a variable, and those give no square here.</p>
+</section>
+
+<section id="monsters" data-part="post-com">
+  <p class="fig">12 · Monsters' items</p>
+  <h2 class="t">Every magic item a monster carries</h2>
+  <p class="lede">A monster's file holds its items, and each one it carries goes into the treasure when it dies (<code>add_monster_items</code>, <code>$0DBD</code>). These are the items with a plus or a power.</p>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-mon"><thead><tr><th>Item</th><th>Carried by</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="types" data-part="tables">
+  <p class="fig">13 · Item types</p>
+  <h2 class="t">Every kind of item the game knows</h2>
+  <p class="lede">An item's first byte is its type, an entry of 16 bytes in a table of 128 (<code>$7B00</code>). The type holds what the item is: where it is worn, the hands it takes, its damage, its range, its armour class and the classes that may ready it.</p>
+  <details class="it-fold"><summary>Show every type with an entry</summary>
+  <div class="it-tbl-wrap"><table class="it-tbl" id="it-types"><thead><tr><th class="n">Type</th><th>Name, or the items of that type</th><th class="n">Hands</th><th>Damage, small or man-sized</th><th>Large</th><th>Shots and range</th><th>Protection</th><th>Classes</th></tr></thead><tbody></tbody></table></div>
+  </details>
+  <p class="cap">Classes as the first four bits of the type's class byte allow them: M magic-user, C cleric, T thief, F fighter. The four higher bits are for classes the game does not let a player make.</p>
+</section>
+
+</main>
+
+<script type="application/json" id="por-items">{"w":["","BATTLE AXE","HAND AXE","BARDICHE","BEC DE CORBIN","BILL-GUISARME","BO STICK","CLUB","DAGGER","DART","FAUCHARD","FAUCHARD-FORK","FLAIL","MILITARY FORK","GLAIVE","GLAIVE-GUISARME","GUISARME","GUISARME-VOULGE","HALBERD","LUCERN HAMMER","HAMMER","JAVELIN","JO STICK","MACE","MORNING STAR","PARTISAN","MILITARY PICK","AWL PIKE","QUARREL(S)","RANSEUR","SCIMITAR","SPEAR","SPETUM","QUARTER STAFF","BASTARD SWORD","BROAD SWORD","LONG SWORD","SHORT SWORD","TWO-HANDED SWORD","TRIDENT","VOULGE","COMPOSITE LONG BOW","COMPOSITE SHORT BOW","LONG BOW","SHORT BOW","HEAVY CROSSBOW","LIGHT CROSSBOW","SLING","MAIL","ARMOR","LEATHER","PADDED","STUDDED","RING","SCALE","CHAIN","SPLINT","BANDED","PLATE","SHIELD","WOOD","ARROW(S)","","","POTION","SCROLL","RING","ROD","STAVE","WAND","JUG","AMULET","APPARATUS","BAG","BEAKER","BOAT","BOOK","BOOTS","BOWL","BRACERS","BRAZIER","BROOCH","BROOM","PURSE","CANDLE","CARPET","CENSER","CHIME","CLOAK","CRYSTAL","CUBE","CUBIC","FORTRESS","DECANTER","DECK","DRUMS","DUST","EYES","FIGURINE","FLASK","GAUNTLETS","GEM","GIRDLE","HELM","HORN","HORSESHOES","INCENSE","STONE","INSTRUMENT","JAVELIN","JEWEL","OINTMENT","LIBRAM","LYRE","MANUAL","MATTOCK","MAUL","MEDALLION","MIRROR","NECKLACE","NET","PIGMENT","PEARL","PERIAPT","PHYLACTERY","PIPES","HOLE","TOKEN","ROBE","ROPE","RUG","SAW","SCARAB","SPADE","SPHERE","STONE","TALISMAN","TOME","TRIDENT","GRIMOIRE","WELL","WINGS","VIAL","LANTERN","MIRROR","FLASK OF OIL","10' POLE","50' ROPE","IRON","THIEVES' PICKS & TOOLS","IRON RATIONS","STANDARD RATIONS","HOLY SYMBOL","VIAL OF HOLY WATER","VIAL OF UNHOLY WATER","BARDING","DRAGON","LIGHTNING","SADDLE","SMALL RAFT","CART","WAGON","+1","+2","+3","+4","+5","OF","","CLOAK","DISPLACEMENT","TORCH(ES)","OIL","SPEED","TAPESTRY","BODILY HEALTH","COPPER","SILVER","ELECTRUM","GOLD","PLATINUM","OINTMENT","KEOGHTUM'S","SHEET(S)","STRENGTH","HEALING","HOLDING","EXTRA","GASEOUS FORM","SLIPPERINESS","JEWELLED","FLYING","TREASURE FINDING","FEAR","DISAPPEARANCE","STATUETTE","FUNGUS","CHAIN(S)","PENDANT","BROACH","OF SEEKING","-1","-2","-3","LIGHTNING BOLT","FIRE RESISTANCE","MAGIC MISSILES","SAVE","CLERICAL SCROLL","MU SCROLL","WITH 1 SPELL","WITH 2 SPELLS","WITH 3 SPELLS","PROTECTION SCROLL","JEWELRY","FINE","HUGE","BONE","BRASS","KEY","AC2","AC6","AC4","AC3","OF PROTECTION","PARALYZATION","OGRE POWER","INVISIBILITY","MISSILES","ELVENKIND","ROTTING","COVERED","EFREETI","BOTTLE","MISSILE ATTRACTOR","OF MAGLUBIYET","SECR DOOR & TRAP DET","GOOD DRAGON CONTROL","FEATHER FALLING","GIANT STRENGTH","RESTORATION",",FLAMETONGUE","FIREBALLS","SPIRITUAL","BOULDER","DIAMOND","EMERALD","OPAL","SAPHIRE","OF TYR","OF TEMPUS","OF SUNE","WOODEN","+3 VS UNDEAD","PASS","CURSED"],"t":["00010106000000000001060000480100","00010108000000018001080000480400","00010104000200008001060004681400","00020304000000008002040000680400","00020106000000008001080000681400","0002010a000000008002040000680100","00010103000000808001060000680400","000101030002008080010600047e1400","000101030002000180010400047d1400","000101020006000180010300065d1a00","00020108000000008001060000680400","0002010a000000008001080000680400","000102040000008080010601004a0400","00020204000000008001080000680400","0002010a000000008001060000680400","00020206000000008002040000680400","00020108000000008002040000680400","00020204000000008002040000680000","000202060000000080010a0000680400","00020106000000018002040000480400","000101040002008080010401045a1400","00010106000200018001060007681a00","00010104000000808001060000680400","000101060000008080010601004a0400","00010106010000808002040000480400","00020106010000008001060000680400","00010204000000018001060100480400","0002010c000000018001060000680400","0a000104000000018001040000688a00","00020204000000008002040000680400","00010108000000008001080000580400","00020108000200018001060004781400","00020206000000008001060100680400","000201060000008080010600007b0400","00020208000000008002040000480400","000101060100000080020400004c0400","0001010c0000000080010800004c0400","000101080000000080010600004c0400","000203060000000080010a0000480400","00010304000000008001060100480400","00020204000000008002040000680400","00020106000400018001060016480b00","00020106000400018001060013480b00","00020106000400018001060016480b00","00020106000400018001060010480b00","00020106000400018001060014680f00","00020104000200018001040013688a00","000101060102008080010401155c0a00","00000000000000000000000000000000","00000000000000000000000000000000","020000000000b40000000000005e0000","020000000000b40000000000004a0000","020000000000b50000000000004a0000","020000000000b50000000000004a0000","020000000000b60000000000004a0000","020000000000b70000000000004a0000","020000000000b80000000000004a0000","020000000000b80000000000004a0000","020000000000b90000000000004a0000","010100000000810000000000005a0000","0a0200000000000000000000007f0000","0b020000000000000000000000010000","0c020000000000000000000000020000","030000000000000000000000007f0000","040000000000000000000000007f0000","050000000000000000000000007f0000","060000000000000000000000007f0000","070000000000000000000000007f0000","080000000000000000000000007f0000","090000000000000000000000007f0000","0a0000000000000000000000007f0000","0a0100000000000000000000007f0000","0a0200000000000000000000007f0000","0a000106000000000001060000480000","4a0000000000000000000000007f0000","4b0100000000000000000000007f0000","050000000000800000000000007f0000","4d0000000000b20000000000007f0000","4e01000000000000000000005a010000","4e0100000000000000000000007f0000","500100000000000000000000007f0000","510100000000000000000000007f0000","520200000000000000000000007f0000","53010000000000000000000000000000","50010000000000000000000000080000","00010101ff020000800101ff047f1a00","000102060002000080020600047f1a00","0002010808020080000108080a081a00","0002010c0802008000010c0814001a00","000203060000000080010a0000080400","090000000000000000000000007f0000","5b0000000000bc000000000000000000","070000000000800000000000007f0000","090000000000800000000000007f0000","00020106000400010001060016480f00","00020106000400010001060016480f00","00020106000400010001060010480f00","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","00000000000000000000000000000000","000102140028b601800214003c7f0a00"],"sets":[{"n":1,"s":2,"i":["46afa7720c000600c8000050c3015a00"],"at":[{"e":15,"p":"Mendor's library","m":["0F"],"sq":[[15,13,13]]}]},{"n":2,"s":2,"i":["46b3a7b7000000000000030300000000"],"at":[{"e":15,"p":"Mendor's library","m":["0F"],"sq":[[15,10,9],[15,8,10],[15,10,13]]}]},{"n":3,"s":2,"i":["54efa74001000600190000f401015200","46b9a74001000600190000c800015500","5caaa758020006001e00005c44005985","3e00d3d0010000000a0000e803383800"],"at":[{"e":15,"p":"Mendor's library","m":["0F"],"sq":[[15,4,2],[15,5,2],[15,6,2],[15,10,2],[15,11,2],[15,12,2],[15,4,3],[15,6,3],[15,10,3],[15,12,3],[15,4,4],[15,5,4]]}]},{"n":4,"s":1,"i":["480000ae00000000f40100fa00000000"],"at":[{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[]}]},{"n":4,"s":2,"i":["480000ae00000000f40100fa00000000"],"at":[]},{"n":5,"s":2,"i":["46b9bb40010006000a00002003030300","46b9bb40010006000a00002003030300","46b9bb40010006000a00002003030300"],"at":[{"e":15,"p":"Mendor's library","m":["0F"],"sq":[[15,8,11]]}]},{"n":6,"s":1,"i":["3e00d3d0010006001900004c1d242500","47b9bb40010006001900002003030300","5aeea742030006000000008813000000"],"at":[{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[]}]},{"n":8,"s":1,"i":["3e00d4d002000600190000941124282a","3e00d4d00200060019000008071b1901","3d00d4d10200060019000034082f2122"],"at":[{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[]}]},{"n":9,"s":1,"i":["46efa74001000600190000f401015200","46b9a74001000600190000c800015500","46ada740010006001900005802015000","4fcea7450a0006001e0000b888145800","46c2a76001000600140000401f015600","4600c3b300000000320007f401000000","4600983c00000000140000f401000000"],"at":[{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[]}]},{"n":17,"s":1,"i":["0200a20201000600320000d606000000","0800a208010006000a0000f401000000","1400a21401000600320000c409000000","1700a21701000600640000b80b000000","1800a218010006007d0000b80b000000","1e00a21e01000600280000d007000000","1f00a21f01000600280000b80b000000","2500a22501000600230000d007000000"],"at":[{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[]}]},{"n":19,"s":4,"i":["1400a21401000600320000c409000000"],"at":[{"e":21,"p":"Sokal Keep","m":["15"],"sq":[[21,15,6]]}]},{"n":21,"s":4,"i":["3b00a23b01000600320000c409000000","2400a224010006003c0000d007000000","37a23037010004002c0100ac0d000000","1700a317020006006400009411000000"],"at":[{"e":21,"p":"Sokal Keep","m":["15"],"sq":[[21,12,0]]}]},{"n":22,"s":1,"i":["4a009832000000000001060000000000"],"at":[{"e":18,"p":"Podol Plaza","m":["12"],"sq":[[18,14,8]]},{"e":24,"p":"the Temple of Bane quarter","m":["18","1F"],"sq":[[24,0,0],[24,1,0],[24,2,0],[24,3,0],[24,4,0],[24,5,0],[24,6,0],[24,7,0],[24,8,0],[24,9,0],[24,10,0],[24,11,0]]}]},{"n":23,"s":3,"i":["2400a324020000003c0000a00f000000","3b00a23b01000000320000c409000000","3aa3303a02000000c201000429000000","45cda742000000000100008813000000"],"at":[]},{"n":24,"s":3,"i":["4600aed80000000020031a2c01000000","4600aed7000000002003028813000000"],"at":[{"e":14,"p":"Kovel Mansion","m":["0E"],"sq":[[14,14,14]]}]},{"n":25,"s":3,"i":["3d00d4d1020006001900006c392f3031","3d00d4d102000600190000d0202d2137","3e00d4d0020006001900007c2e17252c","3d00d4d002000600190000100e2a2b24","4800c36b00000000fa00001e00000000","36003136000000009001000000000000","3d00d4d10100060032000058022f1d0d","3d00d4d10100060032000058022d0920"],"at":[{"e":14,"p":"Kovel Mansion","m":["0E"],"sq":[[14,3,13]]}]},{"n":26,"s":3,"i":["3e00d4d0000000001900001815000000","46b9bb40000000001900009001000000","1400a414000000003200000b2e000000","2fa3c82f020000000a0000581b000000"],"at":[]},{"n":26,"s":4,"i":["3d00d4d1020000001900001815373132","46b9bb40010006001900009001030300","1400a414030006003200000b2e000000","2fa3c82f020006000a0000581b000000","3e00d3d0010006000a0000e803383800"],"at":[{"e":10,"p":"Valhingen Graveyard","m":["0A"],"sq":[[10,15,8]]}]},{"n":27,"s":3,"i":["0800a208010006000a0000f401000000","0800a208010006000a0000f401000000","1400a21401000600320000c409000000","1800a218010006007d0000b80b000000","1e00a21e01000600280000d007000000","2500a22501000600230000d007000000","3b00a33b020006003200008813000000","37a23037010004002c0100ac0d000000","23ffca23fe0006804b00000000000000"],"at":[{"e":14,"p":"Kovel Mansion","m":["0E"],"sq":[[14,3,4]]}]},{"n":28,"s":4,"i":["46b9a74001000600190000c800015500","4ecca7450c0006001e00008403033300","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[{"e":10,"p":"Valhingen Graveyard","m":["0A"],"sq":[[10,9,15]]}]},{"n":29,"s":4,"i":["3aa3303a02000400c201000429000000","2400a324020006003c0000a00f00f084","45cda742030006000000008813003d81","3b00a23b01000600960000c409000000","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[{"e":10,"p":"Valhingen Graveyard","m":["0A"],"sq":[[10,8,2]]}]},{"n":30,"s":4,"i":["4fcea7450a000600000000204e215800","47b9a740010006001400039001015500","3ef0a7d0010000000a00000807383800","3b00a23b01000600960000c409000000","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[{"e":10,"p":"Valhingen Graveyard","m":["0A"],"sq":[[10,14,0],[10,15,0]]}]},{"n":31,"s":8,"i":["3b00a33b020006003c00008813000000"],"at":[{"e":16,"p":"the lizard men's keep","m":["10","1E"],"sq":[]}]},{"n":32,"s":8,"i":["2400a224010006003c0000d007000000"],"at":[{"e":16,"p":"the lizard men's keep","m":["10","1E"],"sq":[]}]},{"n":33,"s":5,"i":["01000001000000004b00000500000000","02000002000000003200000100000000","03000003000000007d00000700000000","04000004000000006400000600000000","05000005000000009600000600000000","06000006000000000f00000100000000","07000007000000001e00000100000000","08000008000000000a00000200000000","09000009000000000500040000000000","0a00000a000000003c00000300000000","0b00000b000000005000000800000000","0c00000c000000009600000300000000","0d00000d000000004b00000400000000","0e00000e000000004b00000600000000","0f00000f000000006400000a00000000","10000010000000005000000500000000","11000011000000009600000700000000","1200001200000000af00000900000000","13000013000000009600000700000000","14000014000000003200000100000000","15000015000000001400020100000000","16000016000000002800000100000000","17000017000000006400000800000000","18000018000000007d00000500000000","19000019000000005000000a00000000","1a00001a000000003c00000800000000","1b00001b000000005000000300000000","1c00001c000000001400140000000000","1d00001d000000003200000400000000","1e00001e000000002800000f00000000","1f00001f000000003200000100000000","20000020000000003200000300000000","21000021000000003200000100000000","22000022000000006400001900000000","23000023000000004b00000a00000000","24000024000000003c00000f00000000","25000025000000002300000800000000","2600002600000000fa00001e00000000","27000027000000003200000400000000","28000028000000007d00000200000000","29000029000000005000006400000000","2a00002a000000003200004b00000000","2b00002b000000006400003c00000000","2c00002c000000003200000f00000000","2d00002d000000005000001400000000","2e00002e000000003200000c00000000","4900003d0000000004000a0000000000","32003132000000009600000500000000","33003133000000006400000400000000","3431323400000000c800000f00000000","3500303500000000fa00001e00000000","36003036000000009001002d00000000","37003037000000002c01004b00000000","38003038000000009001005000000000","39003039000000005e01005a00000000","3a00303a00000000c201009001000000","3b00003b000000006400000f00000000","2f00002f000000000200000000000000"],"at":[{"e":4,"p":"Valjevo Castle, the barracks","m":["04"],"sq":[[4,14,2],[4,15,2],[4,14,3],[4,15,3]]},{"e":6,"p":"Valjevo Castle, the bailey","m":["06"],"sq":[[6,0,14],[6,1,14],[6,2,14],[6,3,14],[6,0,15],[6,1,15],[6,2,15],[6,3,15]]}]},{"n":34,"s":5,"i":["47ada74001000600140000c201015000"],"at":[{"e":3,"p":"Valjevo Castle, the grounds","m":["03","05"],"sq":[[3,0,2],[5,3,1]]}]},{"n":35,"s":5,"i":["2400a424030006003c0000581b005284","2400a424030006003c0000581b005284"],"at":[{"e":6,"p":"Valjevo Castle, the bailey","m":["06"],"sq":[[6,1,0]]}]},{"n":36,"s":5,"i":["24f1a324020006003c00009411001600"],"at":[{"e":3,"p":"Valjevo Castle, the grounds","m":["05"],"sq":[[5,15,10]]}]},{"n":37,"s":7,"i":["2600a326020006005a0000a00f000000","4fcea7450a000600140000204e235800"],"at":[{"e":17,"p":"the nomad camp","m":["11"],"sq":[]}]},{"n":38,"s":4,"i":["4c0077fffbfb05800000001400000000","4b00dbda000000000000000100000000","47b9a740010006001400009001015500","21000021000000006400000a00000000","4800c36b00000000fa00001e00000000","36003136000000009001000000000000","3d00d4d10100060032000058022f1d0d","3d00d4d10100060032000058022d0920"],"at":[{"e":2,"p":"the Cadorna Textile House","m":["02"],"sq":[[2,3,11],[2,2,12]]}]},{"n":39,"s":4,"i":["45000042000000000000000100000000","47c39cbe000000001400005e01000000","464e346e000000000a00002c01000000","464539b3000000000a00006400000000","3fe2a76402000000280000983a002683"],"at":[{"e":2,"p":"the Cadorna Textile House","m":["02"],"sq":[[2,1,3],[2,12,14]]}]},{"n":40,"s":2,"i":["5da2e042010006000000001027000000","2c00a22c01000600320000ac0d000000"],"at":[{"e":20,"p":"the slums","m":["14"],"sq":[]}]},{"n":41,"s":2,"i":["4900a23d010006000400146400000000","2c00a22c01000600320000ac0d000000"],"at":[{"e":20,"p":"the slums","m":["14"],"sq":[[20,0,0]]}]},{"n":42,"s":2,"i":["3b00a23b01000600960000c409000000","3d00d2d1010000000a00002c010f0000"],"at":[{"e":20,"p":"the slums","m":["14"],"sq":[]}]},{"n":43,"s":8,"i":["48d9a7c5000000009600320000000000","480082e600000000e803060100000000","480050b000000000bc02030100000000","470076b1000000000a00000200000000","48aee7c400000000b004060200000000","460051b1000000000a00000200000000","489e32e600000000fa00050100000000","444de760000000006400190000000000","3d00d4d1010006000a0000dc050a1023","3d00d4d1010006000a0000e8030e1e36"],"at":[{"e":13,"p":"the kobold caves","m":["0D"],"sq":[[13,13,1]]}]},{"n":50,"s":8,"i":["5200e9e80a000000000000b888000000"],"at":[{"e":13,"p":"the kobold caves","m":["0D"],"sq":[[13,12,0]]}]},{"n":51,"s":3,"i":["26fda22601000000fa0000ac0d000388","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[{"e":8,"p":"the city hall","m":["00"],"sq":[[0,5,5]]}]},{"n":51,"s":4,"i":["4900a23d010006000400146400000000","2c00a22c01000600320000ac0d000000","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[]},{"n":52,"s":3,"i":["460077f5000000000a000150c3000000","46c6f7d7000000000a0001546f000000","460086b4000000001e00014448000000","4600c7f6000000000a0001401f000000","460084b3000000000a00019411000000","46c39cb100000000140001c409000000","468db1be000000000a00011a04000000","46629db3000000000000018a02000000","4600777a000000000000019001000000","4600c5b3000000000000016400000000","46629cda000000000000014b00000000"],"at":[{"e":0,"p":"New Phlan","m":["00"],"sq":[[0,8,10]]}]},{"n":53,"s":1,"i":["01000001000000004b00000500000000","02000002000000003200000100000000","03000003000000007d00000700000000","04000004000000006400000600000000","05000005000000009600000600000000","06000006000000000f00000100000000","07000007000000001e00000100000000","08000008000000000a00000200000000","09000009000000000500040000000000","0a00000a000000003c00000300000000","0b00000b000000005000000800000000","0c00000c000000009600000300000000","0d00000d000000004b00000400000000","0e00000e000000004b00000600000000","0f00000f000000006400000a00000000","10000010000000005000000500000000","11000011000000009600000700000000","1200001200000000af00000900000000","13000013000000009600000700000000","14000014000000003200000100000000","15000015000000001400020000000000","16000016000000002800000100000000","17000017000000006400000800000000","18000018000000007d00000500000000","19000019000000005000000a00000000","1a00001a000000003c00000800000000","1b00001b000000005000000300000000","1c00001c000000000300140000000000","1d00001d000000003200000400000000","1e00001e000000002800000f00000000","1f00001f000000003200000100000000","20000020000000003200000300000000","21000021000000003200000100000000","22000022000000006400001900000000","23000023000000004b00000a00000000","24000024000000003c00000f00000000","25000025000000002300000800000000","2600002600000000fa00001e00000000","27000027000000003200000400000000","28000028000000007d00000200000000","29000029000000005000006400000000","2a00002a000000003200004b00000000","2b00002b000000006400003c00000000","2c00002c000000003200000f00000000","2f00002f000000000200000000000000","2e00002e000000003200000c00000000","4900003d0000000004000a0000000000","32003132000000009600000500000000","33003133000000006400000400000000","3431323400000000c800000f00000000","3500303500000000fa00001e00000000","36003036000000009001002d00000000","37003037000000002c01004b00000000","38003038000000009001005000000000","39003039000000005e01005a00000000","3a00303a00000000c201009001000000","3b00003b000000006400000f00000000"],"at":[]},{"n":53,"s":3,"i":["01000001000000004b00000500000000","02000002000000003200000100000000","03000003000000007d00000700000000","04000004000000006400000600000000","05000005000000009600000600000000","06000006000000000f00000100000000","07000007000000001e00000100000000","08000008000000000a00000200000000","09000009000000000500040000000000","0a00000a000000003c00000300000000","0b00000b000000005000000800000000","0c00000c000000009600000300000000","0d00000d000000004b00000400000000","0e00000e000000004b00000600000000","0f00000f000000006400000a00000000","10000010000000005000000500000000","11000011000000009600000700000000","1200001200000000af00000900000000","13000013000000009600000700000000","14000014000000003200000100000000","15000015000000001400020000000000","16000016000000002800000100000000","17000017000000006400000800000000","18000018000000007d00000500000000","19000019000000005000000a00000000","1a00001a000000003c00000800000000","1b00001b000000005000000300000000","1c00001c000000000300140000000000","1d00001d000000003200000400000000","1e00001e000000002800000f00000000","1f00001f000000003200000100000000","20000020000000003200000300000000","21000021000000003200000100000000","22000022000000006400001900000000","23000023000000004b00000a00000000","24000024000000003c00000f00000000","25000025000000002300000800000000","2600002600000000fa00001e00000000","27000027000000003200000400000000","28000028000000007d00000200000000","29000029000000005000006400000000","2a00002a000000003200004b00000000","2b00002b000000006400003c00000000","2c00002c000000003200000f00000000","2f00002f000000000200000000000000","2e00002e000000003200000c00000000","4900003d0000000004000a0000000000","32003132000000009600000500000000","33003133000000006400000400000000","3431323400000000c800000f00000000","3500303500000000fa00001e00000000","36003036000000009001002d00000000","37003037000000002c01004b00000000","38003038000000009001005000000000","39003039000000005e01005a00000000","3a00303a00000000c201009001000000","3b00003b000000006400000f00000000"],"at":[{"e":0,"p":"New Phlan","m":["00"],"sq":[[0,13,8],[0,8,11],[0,11,12],[0,8,13],[0,9,13]]}]},{"n":54,"s":3,"i":["470076da000000000a00000a00000000","470076b1000000000a00001400000000","56aca763000000001e00010100000000","47f998fc000000001e00000100000000","47fa9894000000002800000200000000","47fb98b1000000002800003200000000","55000099000000000a00011900000000"],"at":[{"e":0,"p":"New Phlan","m":["00"],"sq":[[0,15,8],[0,9,10],[0,12,10],[0,9,11],[0,11,11]]}]},{"n":55,"s":3,"i":["170017b1000000006400005000000000","220022b100000000640000fa00000000","230023b1000000004b00006400000000","240024b1000000003c00009600000000","250025b1000000002300005000000000","260026b100000000fa00002c01000000","080008b1000000000a00011400000000","49003db1000000000400141400000000","1c001cb1000000000300011400000000","373037b1000000002c0100ee02000000","3a303ab100000000c20100a00f000000","460042b1000000000000005a00000000","2d0029d7000000003c0000a861000000"],"at":[{"e":0,"p":"New Phlan","m":["00"],"sq":[[0,11,10],[0,10,13]]}]},{"n":56,"s":3,"i":["2500a32502000600230000a00f000000","32a5313204000400960000983a000000","470076b1000000001400001400000000","4600006a000000000a00000100000000","460084b1000000000a00006400000000","46005db2000000006400000f00000000"],"at":[{"e":14,"p":"Kovel Mansion","m":["0E"],"sq":[[14,10,9]]}]},{"n":57,"s":6,"i":["5b0000fe000000000000000000000000"],"at":[{"e":1,"p":"the buccaneers' base","m":["01"],"sq":[[1,2,11]]}]},{"n":58,"s":8,"i":["39a23039010004005e0100b80b000000","2100a22101000600320000e803000000","4d00de4f060006000000005046000000"],"at":[{"e":29,"p":"Kuto's Well","m":["1D","20"],"sq":[]}]},{"n":59,"s":4,"i":["3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800","3e00d3d0010000000a0000e803383800"],"at":[{"e":10,"p":"Valhingen Graveyard","m":["0A"],"sq":[[10,7,6],[10,7,7],[10,7,8]]}]}],"rnd":[{"k":1,"s":2,"e":20,"p":"the slums","m":["14"]},{"k":3,"s":2,"e":20,"p":"the slums","m":["14"]},{"k":1,"s":6,"e":25,"p":"the wilderness to the west","m":["19"]},{"k":3,"s":7,"e":23,"p":"the pyramid's lower level","m":["17"]},{"k":1,"s":8,"e":27,"p":"the wilderness to the north","m":["1B"]},{"k":2,"s":8,"e":13,"p":"the kobold caves","m":["0D"]}],"mon":[{"i":"01000001000000004b00000400000000","who":["ORC LEADER"],"f":[[1,5],[2,5],[4,5]]},{"i":"010001b1000000003200003200000000","who":["WARRIOR"],"f":[[3,103]]},{"i":"08000008000000000a00000000000000","who":["5TH LVL ELVISH M","5TH LVL MU","DIANE"],"f":[[1,79],[2,89],[7,79]]},{"i":"08000008000000000a00000100000000","who":["EVOKER"],"f":[[3,122]]},{"i":"08000008000000001e00000100000000","who":["THEURGIST"],"f":[[3,110]]},{"i":"0800a308020006000a0000d007000000","who":["LEVEL 6 MU"],"f":[[2,82]]},{"i":"0800a308020006000a0000dc05000000","who":["SHAMAN"],"f":[[7,43]]},{"i":"09000009000000000500060100000000","who":["EVOKER","THEURGIST"],"f":[[3,110],[3,122]]},{"i":"0c00a20c010006004b0000a00f000000","who":["ORC LEADER"],"f":[[2,15]]},{"i":"1300a213010006003c0000c409000000","who":["7TH LVL DW FIGHT"],"f":[[7,76]]},{"i":"159da71501000600280000b80b015300","who":["6TH LVL FIGHTER"],"f":[[3,84],[5,84]]},{"i":"17000017000000003200000100000000","who":["1ST LVL CLERIC","ACOLYTE"],"f":[[3,108],[5,90]]},{"i":"17000017000000003200000300000000","who":["CURATE"],"f":[[3,112]]},{"i":"17000017000000006400000300000000","who":["DIRTEN","WILLIAM D'OR"],"f":[[1,107],[3,107]]},{"i":"1700a21701000600320000b80b000000","who":["MACE"],"f":[[1,33]]},{"i":"1700a317020006003c00009411000000","who":["7TH LVL CLERIC"],"f":[[3,83]]},{"i":"1700a417030006002800001027000000","who":["LEVEL 5 CLERIC"],"f":[[5,91]]},{"i":"1c00001c000000000200010000000000","who":["GUARD"],"f":[[6,96]]},{"i":"1c00001c0000000002000f0000000000","who":["3RD LVL FIGHTER","5TH LVL FIGHTER","BUCCANEER","CAPTAIN"],"f":[[6,99],[6,100],[6,101],[6,102]]},{"i":"2300a223010006004b0000d007000000","who":["ORC LEADER"],"f":[[2,14]]},{"i":"24000024000000003c00000500000000","who":["3RD LVL FIGHTER","BUCCANEER","GUARD"],"f":[[6,96],[6,99],[6,100]]},{"i":"24000024000000003c00000800000000","who":["1ST LVL THIEF","AIDE","AIDES","SWORDSMAN"],"f":[[2,53],[3,36],[3,45],[3,53],[5,45],[6,45],[6,53],[7,53]]},{"i":"24000024000000003c00000a00000000","who":["6TH LVL THIEF"],"f":[[3,51],[6,51]]},{"i":"24000024000000003c00000f00000000","who":["HOBGOBLIN","HOBGOBLIN LEADER"],"f":[[1,6],[1,7],[2,6],[2,7],[4,6],[4,7]]},{"i":"2400a22401000600320000d007000000","who":["NORRIS THE GRAY"],"f":[[8,32]]},{"i":"2400a224010006003c0000c409000000","who":["4TH LVL FIGHTER","DWARVEN FIGHTER","RESTAL","TARRAN"],"f":[[1,22],[1,23],[1,41],[3,41],[5,41],[6,41],[6,48],[7,41]]},{"i":"2400a224010006003c0000d007000000","who":["6TH LVL FIGHTER","6TH LVL THIEF"],"f":[[2,75],[5,75],[5,93],[7,75]]},{"i":"2400a324020006003c0000a00f000000","who":["5TH LVL FIGHTER","COMMANDANT"],"f":[[6,50],[6,101]]},{"i":"2400a324020006003c0000d007000000","who":["HASSAD"],"f":[[7,42]]},{"i":"2400a524040006003c00001027000000","who":["CAPTAIN"],"f":[[6,102]]},{"i":"2400a624050006003c0000983a000000","who":["TYRANITHRAXUS"],"f":[[5,92]]},{"i":"25000025000000001e00000000000000","who":["KOBOLD","PRINCESS FATIMA"],"f":[[2,0],[4,104],[7,0],[7,123],[8,0],[8,104]]},{"i":"25000025000000002300000300000000","who":["GOBLIN GUARD","GOBLIN LEADER","KOBOLD LEADER"],"f":[[1,2],[1,3],[2,1],[2,2],[2,3],[2,11],[2,12],[7,1],[8,1]]},{"i":"25000025000000002300000800000000","who":["BANDIT","MERCHANT","NOMAD"],"f":[[3,40],[6,97],[7,40],[7,97],[7,98]]},{"i":"2500a22501000000230000d007000000","who":["ROBBER"],"f":[[3,111]]},{"i":"26000026000000005a00000500000000","who":["7TH LVL FIGHTER"],"f":[[7,80]]},{"i":"2600a22601000000780000d007000000","who":["HERO"],"f":[[3,109]]},{"i":"2600a32602000600000000a00f000000","who":["ENVOY"],"f":[[5,87],[8,87]]},{"i":"2600a326020006005a0000a00f000000","who":["6TH LVL FIGHTER","8TH LVL FIGHTER"],"f":[[3,84],[3,85],[5,84],[5,85]]},{"i":"29000029000000005000006400000000","who":["DRIDER"],"f":[[7,69]]},{"i":"2b00002b000000002800001e00000000","who":["AIDE","AIDES","SWORDSMAN"],"f":[[2,53],[3,36],[3,53],[6,53],[7,53]]},{"i":"2b00002b000000003c00001e00000000","who":["BANDIT","MERCHANT","NOMAD"],"f":[[3,40],[6,97],[7,40],[7,97],[7,98]]},{"i":"2b00002b000000003c00007800000000","who":["HERO","WARRIOR"],"f":[[3,103],[3,109]]},{"i":"2b00002b000000006400001400000000","who":["HOBGOBLIN LEADER","OGRE LEADER","ORC LEADER"],"f":[[1,5],[1,7],[1,9],[2,5],[2,7],[2,14],[2,15],[4,5],[4,7]]},{"i":"2b00002b000000006400003200000000","who":["GOBLIN LEADER"],"f":[[1,3],[2,3]]},{"i":"2c00002c000000001900003200000000","who":["KOBOLD"],"f":[[7,123]]},{"i":"2c00002c000000001e00000000000000","who":["GIANT SKELETON","JUJU ZOMBIE","KOBOLD LEADER","LARGE SCORPION","SPECTRE","VAMPIRE"],"f":[[2,1],[2,17],[4,18],[4,22],[4,23],[4,29],[7,1],[8,1]]},{"i":"2c00002c000000003200000f00000000","who":["ORC"],"f":[[1,44],[7,44]]},{"i":"2d00002d000000005000000500000000","who":["3RD LVL FIGHTER","5TH LVL FIGHTER"],"f":[[6,100],[6,101]]},{"i":"2e00002e000000005000000500000000","who":["BUCCANEER","CAPTAIN","GUARD"],"f":[[6,96],[6,99],[6,102]]},{"i":"32003132000000009600000000000000","who":["1ST LVL THIEF","6TH LVL THIEF","7TH LVL THIEF","PRINCESS FATIMA"],"f":[[3,45],[3,51],[4,104],[5,45],[5,93],[6,45],[6,51],[7,77],[8,104]]},{"i":"32003132000000009600000100000000","who":["BUCCANEER","GUARD"],"f":[[6,96],[6,99]]},{"i":"32003132000000009600000500000000","who":["BANDIT","MERCHANT","NOMAD"],"f":[[3,40],[6,97],[7,40],[7,97],[7,98]]},{"i":"32a2313201000000960000d007000000","who":["ROBBER"],"f":[[3,111]]},{"i":"32a2313201000400960000d007000000","who":["GOBLIN LEADER"],"f":[[2,12]]},{"i":"3431323400000000c800000500000000","who":["GOBLIN GUARD","KOBOLD LEADER"],"f":[[1,2],[2,1],[2,2],[2,11],[7,1],[8,1]]},{"i":"36003036000000009001000f00000000","who":["GOBLIN LEADER"],"f":[[1,3],[2,3]]},{"i":"36a33036020004009001005e1a000000","who":["HASSAD"],"f":[[7,42]]},{"i":"37003037000000002c01001400000000","who":["1ST LVL CLERIC","ACOLYTE"],"f":[[3,108],[5,90]]},{"i":"37003037000000002c01001900000000","who":["ORC LEADER"],"f":[[1,5],[2,5],[2,14],[4,5]]},{"i":"37003037000000002c01002600000000","who":["AIDE","AIDES","SWORDSMAN"],"f":[[2,53],[3,36],[3,53],[6,53],[7,53]]},{"i":"37003037000000002c01004b00000000","who":["DIRTEN","MACE","NORRIS THE GRAY","WILLIAM D'OR"],"f":[[1,33],[1,107],[3,107],[8,32]]},{"i":"37a23037010004002c0100ac0d000000","who":["4TH LVL FIGHTER","6TH LVL FIGHTER","DWARVEN FIGHTER","ORC LEADER","RESTAL","TARRAN"],"f":[[1,22],[1,23],[1,41],[2,15],[3,41],[3,84],[5,41],[5,84],[6,41],[6,48],[7,41]]},{"i":"39003039000000002c01005a00000000","who":["WARRIOR"],"f":[[3,103]]},{"i":"39a33139020004005e01003421000000","who":["7TH LVL CLERIC"],"f":[[3,83]]},{"i":"3a00003a00000000c201000a00000000","who":["ENVOY"],"f":[[5,87],[8,87]]},{"i":"3a00303a00000000c201009001000000","who":["CURATE"],"f":[[3,112]]},{"i":"3a00313a00000000c201002c01000000","who":["7TH LVL FIGHTER"],"f":[[7,80]]},{"i":"3a00313a00000000c201006400000000","who":["3RD LVL FIGHTER"],"f":[[6,100]]},{"i":"3a00313a00000000c20100c800000000","who":["6TH LVL FIGHTER"],"f":[[2,75],[5,75],[7,75]]},{"i":"3aa2303a01000000c201008813000000","who":["HERO"],"f":[[3,109]]},{"i":"3aa2303a01000400c201008813000000","who":["LEVEL 5 CLERIC"],"f":[[5,91]]},{"i":"3aa3303a02000400c201000429000000","who":["8TH LVL FIGHTER","COMMANDANT"],"f":[[3,85],[5,85],[6,50]]},{"i":"3aa4303a030004002c0100d430000000","who":["5TH LVL FIGHTER","CAPTAIN"],"f":[[6,101],[6,102]]},{"i":"3b00003b000000003200000000000000","who":["GOBLIN GUARD","GOBLIN LEADER","KOBOLD LEADER"],"f":[[1,2],[1,3],[2,1],[2,2],[2,3],[2,11],[2,12],[7,1],[8,1]]},{"i":"3b00003b000000003200000a00000000","who":["BANDIT","MERCHANT","NOMAD"],"f":[[3,40],[6,97],[7,40],[7,97],[7,98]]},{"i":"3b00003b000000005a00000000000000","who":["PRINCESS FATIMA"],"f":[[4,104],[8,104]]},{"i":"3b00003b000000006400000a00000000","who":["6TH LVL FIGHTER"],"f":[[2,75],[5,75],[7,75]]},{"i":"3b00003b000000009600000000000000","who":["4TH LVL FIGHTER","DRIDER","MACE","NORRIS THE GRAY","RESTAL","TARRAN","WARRIOR"],"f":[[1,22],[1,23],[1,33],[1,41],[3,41],[3,103],[5,41],[6,41],[7,41],[7,69],[8,32]]},{"i":"3b00003b000000009600000200000000","who":["ACOLYTE"],"f":[[3,108]]},{"i":"3b00003b000000009600000a00000000","who":["5TH LVL FIGHTER"],"f":[[6,101]]},{"i":"3b00a23b01000600960000c409000000","who":["COMMANDANT","HASSAD"],"f":[[6,50],[7,42]]},{"i":"3b00a33b020006009600008813000000","who":["CAPTAIN"],"f":[[6,102]]},{"i":"3d00d4d1010000000a0000b0042f2d2d","who":["LEVEL 6 MU"],"f":[[2,82]]},{"i":"3e00d3d0010000000a00005802030300","who":["ORC"],"f":[[2,13]]},{"i":"3fe2a76403000600000000983a002683","who":["TYRANITHRAXUS"],"f":[[5,92]]},{"i":"3fe2a76403000600c201000429002683","who":["DWARVEN FIGHTER"],"f":[[6,48]]},{"i":"43aaa758080006001400005c44005985","who":["LEVEL 6 MU"],"f":[[2,82]]},{"i":"45a3e04202000600000000983a000000","who":["TROLL"],"f":[[5,31]]},{"i":"45cda742030006000000008813003d81","who":["AL-HYAM DAZID","COMMANDANT"],"f":[[5,86],[6,50],[6,86]]},{"i":"46e4a77702000600000000b004065700","who":["LEVEL 5 CLERIC"],"f":[[5,91]]},{"i":"470098fc000000003200000100000000","who":["DIRTEN","WILLIAM D'OR"],"f":[[1,107],[3,107]]},{"i":"479da71501000600140000b80b015300","who":["COMMANDANT"],"f":[[6,50]]},{"i":"47ada74001000600140000c201015000","who":["YARASH"],"f":[[7,81]]},{"i":"47b9a740010006000000009001015500","who":["7TH LVL CLERIC"],"f":[[3,83]]},{"i":"47b9a740010006001400029001015500","who":["YARASH"],"f":[[7,81]]},{"i":"47b9bb40010006001400032003030300","who":["COMMANDANT"],"f":[[6,50]]},{"i":"47fb98b1000000001400003200000000","who":["ACOLYTE"],"f":[[3,108]]},{"i":"4900003d0000000002000f0000000000","who":["OGRE LEADER"],"f":[[1,9]]},{"i":"4900003d000000000400040000000000","who":["DRIDER"],"f":[[7,69]]},{"i":"4900003d000000000400070000000000","who":["ORC LEADER"],"f":[[1,5],[2,5],[2,14],[2,15],[4,5]]},{"i":"4900003d0000000004000c0000000000","who":["HOBGOBLIN LEADER"],"f":[[1,7],[2,7],[4,7]]},{"i":"4900003d000000000400140000000000","who":["BANDIT","GOBLIN LEADER","KOBOLD LEADER","MERCHANT","NOMAD","SWORDSMAN"],"f":[[2,1],[2,3],[3,36],[3,40],[6,97],[7,1],[7,40],[7,97],[7,98],[8,1]]},{"i":"4900003d000000000400140200000000","who":["GOBLIN LEADER"],"f":[[1,3]]},{"i":"4900003d0000000004001e0000000000","who":["KOBOLD","ORC"],"f":[[1,44],[7,44],[7,123]]},{"i":"4900003d0000000004003c0000000000","who":["HERO","WARRIOR"],"f":[[3,103],[3,109]]},{"i":"4900003d000000000a00140000000000","who":["AIDE","AIDES"],"f":[[2,53],[3,53],[6,53],[7,53]]},{"i":"4d00dc4f06000600140000c05d000000","who":["SHAMAN"],"f":[[7,43]]},{"i":"4d00dd4f04000600140000e02e000000","who":["KOBOLD LEADER"],"f":[[2,11]]},{"i":"4d00de4f060006000000005046000000","who":["YARASH"],"f":[[7,81]]},{"i":"4d00df4f070006000000000852000000","who":["AL-HYAM DAZID"],"f":[[5,86],[6,86]]},{"i":"4e9da7450a0006000000003075383300","who":["GENHEERIS"],"f":[[5,88]]},{"i":"4e9da7450a0006000a00003075143300","who":["AL-HYAM DAZID"],"f":[[5,86],[6,86]]},{"i":"4e9da7450a0006000a00003075433300","who":["LEVEL 6 MU"],"f":[[2,82]]},{"i":"4ee1a745020006000a0000c409175400","who":["YARASH"],"f":[[7,81]]},{"i":"4fcea745010006000500005c44325800","who":["SHAMAN"],"f":[[7,43]]},{"i":"4fcea7450a000600000000b888435800","who":["LEVEL 3 MU"],"f":[[2,94],[3,94]]},{"i":"4fcea7450a000600140000b888175800","who":["7TH LVL THIEF"],"f":[[7,77]]},{"i":"55000099000000000000001900000000","who":["ACOLYTE"],"f":[[3,108]]},{"i":"570000f4000000009411000000000087","who":["HILL GIANT"],"f":[[2,55]]},{"i":"570000f400000000c800000000000087","who":["HILL GIANT"],"f":[[5,55]]},{"i":"570000f4000006009411000000000087","who":["HILL GIANT"],"f":[[2,55]]},{"i":"5da2e042010100000000001027000000","who":["THEURGIST"],"f":[[3,110]]},{"i":"5da3e04202000600000000983a000000","who":["LEVEL 6 MU"],"f":[[2,24],[4,24]]},{"i":"5da4e04203000600000000204e000000","who":["8TH LVL FIGHTER","LEVEL 6 MU","TYRANITHRAXUS"],"f":[[2,82],[3,85],[5,85],[5,92]]}],"rand":{"chance":[6,2,1,4,8,3,1,2,2,5,3,6,2,5,15,3,1,1,2,2,3,4,1,2,3,3,8,3,8,10,8,0,4,2,50,255],"type":[8,12,18,20,23,24,26,28,30,73,31,33,34,35,36,37,38,41,42,43,44,50,51,52,53,54,55,56,57,58,59,67,77,93,61,62],"n3":[8,12,18,20,23,24,26,28,30,61,31,33,34,35,36,37,38,41,42,43,44,50,51,52,53,54,55,56,57,58,59,88,79,66,209,208],"n2":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,49,49,49,48,48,48,48,48,48,0,0,0,224,210,210],"wt":[10,150,175,50,100,125,60,2,40,2,50,40,100,75,60,35,250,80,50,100,50,150,100,200,250,400,300,400,350,450,100,30,1,1,20,20],"worth":[750,4000,3000,2500,3000,3000,2500,120,3000,120,3000,1500,2000,2000,2000,2000,2000,3500,3500,3500,3500,2000,2000,3000,2500,3000,3500,4000,4500,5000,2500,10000,18000,8000,200,200]},"spells":["","BLESS","CURSE","CURE LIGHT WOUNDS","CAUSE LIGHT WOUNDS","DETECT MAGIC","PROTECTION FROM EVIL","PROTECTION FROM GOOD","RESIST COLD","BURNING HANDS","CHARM PERSON","DETECT MAGIC","ENLARGE","REDUCE","FRIENDS","MAGIC MISSILE","PROTECTION FROM EVIL","PROTECTION FROM GOOD","READ MAGIC","SHIELD","SHOCKING GRASP","SLEEP","FIND TRAPS","HOLD PERSON","RESIST FIRE","SILENCE 15' RADIUS","SLOW POISON","SNAKE CHARM","SPIRITUAL HAMMER","DETECT INVISIBILITY","INVISIBILITY","KNOCK","MIRROR IMAGE","RAY OF ENFEEBLEMENT","STINKING CLOUD","STRENGTH","ANIMATE DEAD","CURE BLINDNESS","CAUSE BLINDNESS","CURE DISEASE","CAUSE DISEASE","DISPEL MAGIC","PRAYER","REMOVE CURSE","BESTOW CURSE","BLINK","DISPEL MAGIC","FIREBALL","HASTE","HOLD PERSON","INVISIBILITY 10' RADIUS","LIGHTNING BOLT","PROTECTION FROM EVIL 10' RADIUS","PROTECTION FROM GOOD 10' RADIUS","PROTECTION FROM NORMAL MISSILES","SLOW","RESTORATION"],"pen":"50454e445241474f4e000000000000000000000011110c11120d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000028070215000d00000000000000000000000000000000000000000000000000000000000000000000010e0f1011110c010000000000000000000000000000000000000000000000000000000000000000500000000000000000000001000000000000000000000003020001000200000032110100001e64000000080009000000000000000000000000000000002212010000000000000000000000000829353000000100020001000d000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020a02086878806070820a020898a8b0610110e0f0e0e0e0e0e0e0e0e0f0e0e0e0e0e0e0e"}</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* por-ready */
+// PENDRAGON's figures with the items given, worked out by the game's own code on the kit's 6502.
+// mem holds the resident, tables and combat parts' bytes; porReady puts the record (pen, 580 bytes
+// from $6B00, the file less its load address) in place, the items (16-byte arrays, readied ones with
+// bit 7 of byte 6 set) in slots 0 on from $6C20, and runs compute_combat_stats ($3729) for a party
+// member ($6DB1 = 0), max_load ($472E) and COMBAT's can_strike ($1648, load_current at $12E6 stood in
+// for). Returns { ac, thac0, dice, sides, bonus, weight, most, strikes }.
+function porReady(mem, CPU, pen, items) {
+  mem.set(pen, 0x6B00);
+  mem.fill(0, 0x6C20, 0x6D20);
+  items.forEach((it, i) => mem.set(it, 0x6C20 + 16 * i));
+  mem[0x6DB1] = 0;
+  const io = { read(a) { throw new Error('a chip read at $' + a.toString(16)); }, write() {} };
+  const cpu = new CPU(mem, { port: 0x36, io });
+  cpu.call(0x3729, {}, { maxSteps: 1e6 });
+  const out = { ac: 60 - mem[0x6C0F], thac0: 60 - mem[0x6C0E], dice: mem[0x6C13], sides: mem[0x6C15],
+    bonus: (mem[0x6C17] << 24) >> 24, weight: mem[0x6DF6] | mem[0x6DF7] << 8 };
+  cpu.call(0x472E, {}, { maxSteps: 1e5 });
+  out.most = mem[0x6D63] | mem[0x6D64] << 8;
+  cpu.call(0x1648, {}, { maxSteps: 1e5, hooks: { 0x12E6: (c) => c.rts() } });
+  out.strikes = cpu.c === 1;
+  return out;
+}
+// end of por-ready
+</script>
+<script>
+// Items tab: the sheet and the tables, from the game's own files by items_data.py (scripts/).
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const D = JSON.parse($('por-items').textContent);
+  const W = D.w, T = D.t.map((h) => h.match(/../g).map((x) => parseInt(x, 16)));
+  const bytes = (h) => h.match(/../g).map((x) => parseInt(x, 16));
+  const nameOf = (b) => [b[3], b[2], b[1]].filter(Boolean).map((w) => W[w]).join(' ');
+  const SIDE = (s) => 'disk ' + ((s + 1) >> 1) + ' side ' + (s & 1 ? 'A' : 'B');
+  const hx = (n) => n.toString(16).toUpperCase().padStart(2, '0');
+  const num = (n) => n.toLocaleString('en-GB');
+  const weight = (b) => b[8] | b[9] << 8, worth = (b) => b[11] | b[12] << 8;
+  const mapLink = (m) => '<a href="levels.html#GEO' + m + '">map ' + m + '</a>';
+  const where = (s) => s.at.map((a) => esc(a.p)).join('; ');
+  const ALL = [];     // every distinct item the game gives: [bytes, where]
+  const seen = new Map();
+  const note = (h, w) => { const b = bytes(h); b[6] &= 0x7F; const k = b.join(','); if (!seen.has(k)) { seen.set(k, ALL.length); ALL.push([b, w]); } };
+  for (const s of D.sets) if (s.at.length) for (const h of s.i) note(h, where(s));
+  for (const m of D.mon) note(m.i, m.who.join(', '));
+
+  // --- bracers
+  const br = D.mon.map((m) => [bytes(m.i), m.who]).filter(([b]) => b[0] === 77).sort((a, b) => nameOf(a[0]).localeCompare(nameOf(b[0])));
+  $('it-bracers').querySelector('tbody').innerHTML = br.map(([b, who]) => {
+    const said = +(nameOf(b).match(/AC(\d+)/) || [0, 0])[1], ac = 10 - b[4];
+    return '<tr><td class="nm">' + esc(nameOf(b)) + '</td><td>' + esc(who.join(', ')) + '</td><td class="n">' + b[4] + '</td><td class="n' + (ac !== said ? ' bad' : '') + '">' + ac + '</td><td class="n">' + num(worth(b)) + '</td></tr>';
+  }).join('');
+
+  // --- piles
+  const piles = [];
+  for (const s of D.sets) if (s.at.length) for (const h of s.i) { const b = bytes(h); if (b[10] && weight(b) >= 256) piles.push([b, s]); }
+  $('it-piles').querySelector('tbody').innerHTML = piles.map(([b, s]) =>
+    '<tr><td class="nm">' + esc(nameOf(b)) + '</td><td>' + where(s) + '</td><td class="n">' + b[10] + '</td><td class="n">' + num(weight(b)) + '</td><td class="n">' + num(weight(b) * b[10]) + '</td><td class="n bad">' + num((weight(b) & 255) * b[10]) + '</td></tr>').join('');
+
+  // --- bows and crossbows
+  const bows = [41, 42, 43, 44, 45, 46, 47];
+  $('it-bows').querySelector('tbody').innerHTML = bows.map((t) => {
+    const e = T[t], f = e[14];
+    const shoots = f & 0x80 ? 'quarrels' : f & 1 ? 'arrows' : 'itself';
+    return '<tr><td class="nm' + (t === 45 ? ' bad' : '') + '">' + t + ' ' + esc(W[t]) + '</td><td>' + shoots + '</td><td class="n">' + e[5] / 2 + '</td><td>' + (f & 4 ? 'yes' : 'no') + '</td><td class="n">' + e[12] + '</td></tr>';
+  }).join('');
+
+  // --- random treasure
+  const R = D.rand;
+  let left = 188;
+  const rows = R.chance.map((c, i) => { const n = c === 255 ? left : c; left -= c === 255 ? 0 : c; return [i, n]; });
+  $('it-random').querySelector('tbody').innerHTML = rows.map(([i, n]) => {
+    const nm = [R.n3[i], R.n2[i]].filter(Boolean).map((w) => W[w]).join(' ');
+    return '<tr><td class="nm' + (n ? '' : ' bad') + '">' + esc(nm) + (R.type[i] === 67 ? ' (type 67)' : '') + '</td><td class="n">' + n + '</td><td class="n">' + (n / 1.88).toFixed(1) + ' %</td></tr>';
+  }).join('');
+  const rw = [...new Set(D.rnd.map((r) => r.p))];
+  $('it-random-where').textContent = 'The scripts ask for random items in ' + rw.slice(0, -1).join(', ') + ' and ' + rw[rw.length - 1] + ', from one to three at a time.';
+
+  // --- leftovers
+  const unused = D.sets.filter((s) => !s.at.length);
+  const NOTE = {
+    '2:4': 'Disk 1 side A has a list 4 with the same TAPESTRY, one of those the Temple of Bane quarter chooses from.',
+    '3:23': "An earlier form of the graveyard's list 29 on disk 2 side B. There the LONG SWORD +2 hurts anyone not lawful good, the ring has its power and a plus of 3, and four scrolls of RESTORATION are added; here every item is already identified and has no power.",
+    '3:26': "An earlier form of the graveyard's list 26 on disk 2 side B. There the scroll is a magic-user's, with SLOW, HOLD PERSON and INVISIBILITY 10' RADIUS on it, the HAMMER +3 has its plus of 3 and a scroll of RESTORATION is added; here the scroll is empty, the potion has no power and the hammer's plus is 0.",
+    '4:51': "The list of the same number on disk 2 side A is the city hall's reward: a TWO-HANDED SWORD +1 +3 VS UNDEAD and four scrolls of RESTORATION.",
+    '1:53': "The arms and armour shop's 57 items, the same as its list on disk 2 side A, where New Phlan is.",
+  };
+  $('it-unused').querySelector('tbody').innerHTML = unused.map((s) => {
+    const its = s.i.map((h) => { const b = bytes(h); return esc(nameOf(b)) + (b[10] ? ' ×' + b[10] : ''); });
+    const list = its.length > 6 ? '<details><summary>' + its.length + ' items</summary><ul>' + its.map((x) => '<li>' + x + '</li>').join('') + '</ul></details>' : '<ul>' + its.map((x) => '<li>' + x + '</li>').join('') + '</ul>';
+    return '<tr><td class="nm">ITEMFILE' + hx(s.n) + '<br><span class="it-small">' + SIDE(s.s) + '</span></td><td>' + list + '</td><td>' + esc(NOTE[s.s + ':' + s.n] || '') + '</td></tr>';
+  }).join('');
+  const usedT = new Set([0, ...ALL.map(([b]) => b[0]), ...R.type]);
+  for (const s of unused) for (const h of s.i) usedT.add(bytes(h)[0]);
+  const PLACE = ['a weapon', 'a shield', 'armour', "readied in the gauntlets' place", 'readied in place 4, which no item uses', "readied in the necklace's place", 'readied in place 6, which no item uses', "readied in the cloak's place", "readied in the boots' place", 'a ring'];
+  const dmg = (n, s, b) => n ? n + 'd' + s + (b ? (b > 127 ? '−' + (256 - b) : '+' + b) : '') : '';
+  const acText = (e) => !(e[6] & 0x80) ? '' : e[0] === 1 ? 'protects by ' + (e[6] & 0x7F) : (e[6] & 0x7F) ? 'armour class ' + (60 - (e[6] & 0x7F)) : 'protects by its plus';
+  const usersOfClass = (c) => { const s = new Set(); for (const [b] of ALL) if (T[b[0]][0] === c) s.add(nameOf(b)); return [...s]; };
+  const desc = (t) => {
+    const e = T[t], bits = [];
+    if (e[0] < 10) bits.push(PLACE[e[0]]);
+    else { const u = usersOfClass(e[0]); bits.push('carried, with the class byte $' + hx(e[0]) + (u.length ? ' of the ' + u.slice(0, 2).join(' and the ') : ', which no item has')); }
+    if (e[1]) bits.push(e[1] + ' hand' + (e[1] > 1 ? 's' : ''));
+    if (e[10]) bits.push(dmg(e[9], e[10], e[11]) + ' against small or man-sized and ' + dmg(e[2], e[3], e[4]) + ' against large');
+    if (e[14] & 8) bits.push(e[5] / 2 + ' shot' + (e[5] === 2 ? '' : 's') + ' a round');
+    if (e[14] & 1 && !(e[14] & 0x80)) bits.push('needs arrows');
+    if (e[14] & 4) bits.push('adds strength');
+    if (e[14] & 0x10) bits.push('thrown');
+    if (e[12]) bits.push('range ' + e[12]);
+    if (acText(e)) bits.push(acText(e));
+    const c = e[13] & 15;
+    bits.push(c === 15 ? 'any class' : c ? 'for ' + ['magic-users', 'clerics', 'thieves', 'fighters'].filter((_, i) => c & (1 << i)).join(' and ') : 'for no class a player has');
+    return bits.join(', ');
+  };
+  const unusedT = [];
+  for (let t = 0; t < 128; t++) if (T[t].some(Boolean) && !usedT.has(t)) unusedT.push(t);
+  $('it-types-unused').querySelector('tbody').innerHTML = unusedT.map((t) => '<tr><td class="n">' + t + '</td><td>' + (t >= 1 && t <= 47 ? esc(W[t]) + ': ' : '') + esc(desc(t)) + '</td></tr>').join('');
+  const wordsUsed = new Set([0xA2, 0xA3, 0xA4, 0xDE, 0xD2, 0xD3, 0xD4, 0x65, 0xD6, 0xF3]);
+  for (const [b] of ALL) [b[1], b[2], b[3]].forEach((w) => wordsUsed.add(w));
+  for (const s of unused) for (const h of s.i) { const b = bytes(h); [b[1], b[2], b[3]].forEach((w) => wordsUsed.add(w)); }
+  R.n3.concat(R.n2).forEach((w) => wordsUsed.add(w));
+  const freeW = [];
+  for (let w = 1; w < 256; w++) if (W[w] && !wordsUsed.has(w)) freeW.push(w);
+  $('it-words').innerHTML = freeW.map((w) => '<span>' + esc(W[w]) + '</span>').join(' ');
+
+  // --- every treasure
+  const itemList = (hs) => {
+    const c = new Map();
+    for (const h of hs) { const b = bytes(h); b[6] &= 0x7F; const k = nameOf(b) + (b[10] ? ' ×' + b[10] : ''); c.set(k, (c.get(k) || 0) + 1); }
+    return '<ul>' + [...c].map(([k, n]) => '<li>' + esc(k) + (n > 1 ? ' <span class="it-small">(' + n + ')</span>' : '') + '</li>').join('') + '</ul>';
+  };
+  $('it-sets').querySelector('tbody').innerHTML = D.sets.filter((s) => s.at.length).map((s) => {
+    const at = s.at.map((a) => esc(a.p) + (a.m.length ? ', ' + a.m.map(mapLink).join(', ') : '') +
+      (a.sq.length ? '<br><span class="it-small">' + a.sq.map((q) => hx(q[0]) + ' ' + q[1] + ',' + q[2]).join(' · ') + '</span>' : '')).join('<br>');
+    const long = s.i.length > 12;
+    return '<tr><td class="nm">' + s.n + '<br><span class="it-small">ITEMFILE' + hx(s.n) + ', ' + SIDE(s.s) + '</span></td><td>' + at + '</td><td>' +
+      (long ? '<details><summary>' + s.i.length + ' items</summary>' + itemList(s.i) + '</details>' : itemList(s.i)) + '</td></tr>';
+  }).join('') + D.rnd.map((r) => '<tr><td class="nm">random</td><td>' + esc(r.p) + (r.m.length ? ', ' + r.m.map(mapLink).join(', ') : '') + '</td><td>' + r.k + ' random magic item' + (r.k > 1 ? 's' : '') + '</td></tr>').join('');
+
+  // --- monsters' magic items
+  const magic = D.mon.map((m) => [bytes(m.i), m.who]).filter(([b]) => b[4] || b[13] || b[14] || b[15] || b[0] >= 60).filter(([b]) => ![73, 28, 50, 52, 54, 55, 57, 58, 59].includes(b[0]) || b[4]);
+  magic.sort((a, b) => nameOf(a[0]).localeCompare(nameOf(b[0])));
+  $('it-mon').querySelector('tbody').innerHTML = magic.map(([b, who]) => '<tr><td class="nm">' + esc(nameOf(b)) + (b[10] ? ' ×' + b[10] : '') + ' <span class="it-small">type ' + b[0] + '</span></td><td>' + esc(who.join(', ')) + '</td></tr>').join('');
+
+  // --- item types
+  const users = new Map();
+  for (const [b] of ALL) { if (!users.has(b[0])) users.set(b[0], new Set()); users.get(b[0]).add(nameOf(b)); }
+  const cls = (c) => ['M', 'C', 'T', 'F'].filter((_, i) => c & (1 << i)).join(' ') + (c & 0xF0 ? ' <span class="it-small">+$' + hx(c & 0xF0) + '</span>' : '');
+  $('it-types').querySelector('tbody').innerHTML = T.map((e, t) => [e, t]).filter(([e, t]) => t && e.some(Boolean)).map(([e, t]) => {
+    const nm = t <= 47 ? W[t] : [...(users.get(t) || [])].slice(0, 4).join(', ') || '(no item)';
+    return '<tr><td class="n">' + t + '</td><td class="nm">' + esc(nm) + '</td><td class="n">' + (e[1] || '') + '</td><td>' + dmg(e[9], e[10], e[11]) + '</td><td>' + dmg(e[2], e[3], e[4]) + '</td><td>' +
+      [e[14] & 8 ? e[5] / 2 + ' a round' : '', e[12] ? 'range ' + e[12] : ''].filter(Boolean).join(', ') + '</td><td>' + acText(e) + '</td><td>' + cls(e[13]) + '</td></tr>';
+  }).join('');
+
+  // --- the sheet
+  const sheet = $('it-sheet');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') return;
+  let parts;
+  try { parts = await Promise.all(['resident', 'tables', 'combat'].map((p) => C64.load('parts/' + p + '/listing.json'))); } catch (e) { sheet.innerHTML = '<p class="it-miss">The listing did not load, so the sheet cannot run.</p>'; return; }
+  const base = new Uint8Array(65536);
+  for (const L of parts) for (let a = 0; a < 65536; a++) if (L.has[a]) base[a] = L.ram[a];
+  const pen = Uint8Array.from(bytes(D.pen));
+  const find = (re, pred = () => true) => { const i = ALL.findIndex(([b, w]) => re.test(nameOf(b)) && pred(b, w)); return i < 0 ? null : ALL[i][0].slice(); };
+  const ready = (b) => { if (b) b[6] |= 0x80; return b; };
+  const PRESETS = [
+    ["The trolls' ring", () => [ready(find(/^RING OF PROTECTION \+2$/, (b) => b[0] === 69))]],
+    ['A real one', () => [ready(find(/^RING OF PROTECTION \+2$/, (b) => b[0] === 93))]],
+    ["The magic-user's CLOAK OF DISPLACEMENT", () => [ready(find(/^CLOAK OF DISPLACEMENT$/, (b) => b[0] === 67))]],
+    ["Mendor's CLOAK OF DISPLACEMENT", () => [ready(find(/^CLOAK OF DISPLACEMENT$/, (b) => b[0] === 92))]],
+    ['BRACERS AC2', () => [ready(find(/AC2$/))]],
+    ['BRACERS AC3', () => [ready(find(/AC3$/))]],
+    ['BRACERS AC4', () => [ready(find(/AC4$/))]],
+    ['26 HUGE TAPESTRIES', () => [find(/^HUGE TAPESTRY$/)]],
+    ['6 LEATHER HOLY SYMBOLS', () => [find(/^LEATHER HOLY SYMBOL$/)]],
+    ['COMPOSITE LONG BOW and arrows', () => [ready(find(/^COMPOSITE LONG BOW$/)), ready(find(/^ARROW\(S\)$/))]],
+    ['FINE COMPOSITE LONG BOW and arrows', () => [ready(find(/^FINE COMPOSITE LONG BOW$/)), ready(find(/^ARROW\(S\)$/))]],
+    ['HEAVY CROSSBOW and quarrels', () => [ready(find(/^HEAVY CROSSBOW$/)), ready(find(/^QUARREL\(S\)$/, (b) => b[8] === 3))]],
+    ['LIGHT CROSSBOW and quarrels', () => [ready(find(/^LIGHT CROSSBOW$/)), ready(find(/^QUARREL\(S\)$/, (b) => b[8] === 3))]],
+  ];
+  let carry = [];
+  const bare = porReady(base.slice(), C64Cpu.CPU, pen, []);
+  const add = $('it-add');
+  add.innerHTML += ALL.map(([b], i) => [nameOf(b) + (b[10] ? ' ×' + b[10] : ''), i]).sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([n, i]) => '<option value="' + i + '">' + esc(n) + '</option>').join('');
+  function show(pressed) {
+    $('it-presets').querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', i === pressed ? 'true' : 'false'));
+    $('it-carry').innerHTML = carry.length ? carry.map((b, i) => '<li><span>' + esc(nameOf(b)) + (b[10] ? ' ×' + b[10] : '') + '</span><label><input type="checkbox" data-r="' + i + '"' + (b[6] & 0x80 ? ' checked' : '') + '> readied</label><button type="button" data-x="' + i + '">drop</button></li>').join('') : '<li><span class="it-small">Carrying nothing but his money.</span></li>';
+    let r;
+    try { r = porReady(base.slice(), C64Cpu.CPU, pen, carry); } catch (e) { sheet.innerHTML = '<p class="it-miss">The routine stopped: ' + esc(e.message) + '</p>'; return; }
+    const missile = carry.some((b) => b[6] & 0x80 && T[b[0]][14] & 8);
+    const row = (k, v, was) => '<tr><td>' + k + '</td><td>' + v + (was !== undefined && String(was) !== String(v) ? ' <span class="was">(' + was + ' with nothing)</span>' : '') + '</td></tr>';
+    const dm = (x) => x.dice + 'd' + x.sides + (x.bonus ? (x.bonus > 0 ? '+' : '−') + Math.abs(x.bonus) : '');
+    sheet.innerHTML = '<table>' + row('Character', 'PENDRAGON, fighter 1') + row('Armour class', r.ac, bare.ac) + row('THAC0', r.thac0, bare.thac0) +
+      row('Damage', dm(r), dm(bare)) +
+      row('Weight carried', num(r.weight) + ' of ' + num(r.most), num(bare.weight) + ' of ' + num(bare.most)) +
+      (missile ? row('Can shoot', r.strikes ? 'yes' : '<span class="dead">no: nothing to shoot</span>') : '') + '</table>';
+    $('it-carry').querySelectorAll('input').forEach((c) => c.addEventListener('change', () => { carry[+c.dataset.r][6] ^= 0x80; show(-1); }));
+    $('it-carry').querySelectorAll('button').forEach((x) => x.addEventListener('click', () => { carry.splice(+x.dataset.x, 1); show(-1); }));
+  }
+  $('it-presets').innerHTML = PRESETS.map((p, i) => '<button type="button" data-p="' + i + '">' + esc(p[0]) + '</button>').join(' ');
+  $('it-presets').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { carry = PRESETS[+b.dataset.p][1]().filter(Boolean); show(+b.dataset.p); }));
+  add.addEventListener('change', () => { if (add.value !== '' && carry.length < 16) { carry.push(ALL[+add.value][0].slice()); show(-1); } add.value = ''; });
+  carry = PRESETS[0][1]();
+  show(0);
+})();
+</script>
