@@ -343,3 +343,5 @@ The sound list reader at $22DC reads a little-endian pattern pointer at a voice 
 The six 32-byte arrays at $3415–$34D4 save display-slot flags, X coordinates, sprite pointers, colours and Y/free bytes. The save loop at $331F marks slots 2–31 free after copying; the restore loop at $3386 copies all six arrays back. One forced VICE save and restore and `test_display_arrays.js` checked all 192 bytes and the slot-release boundary.
 
 The meter buffer at $C400–$C43F overlaps the alternate screen matrix; the verified meter update and transition screen clear use the same RAM for different purposes. The reload-record multiplication at $366A uses a patched immediate byte at $3675; the earlier controlled reload check covers that path.
+
+The resident routine at $121C copies 17 sprite position/X-high bytes, eight sprite pointers and eight colour bytes to the VIC and screen pointer locations, then clears the multicolour mask. One forced VICE path and `test_sprite_register_copy.js` check the values through $123D. Interrupt timing and the subsequent timer setup remain separate.
