@@ -131,7 +131,9 @@ class Ledger(unittest.TestCase):
         s = M.summary(str(self.g))
         self.assertEqual((s["files"], s["runs"], s["count"]["part"], s["count"]["open"]), (3, 1, 1, 0))
         import build
-        self.assertIn("1 is in the listings", build.media_row(str(self.g)))
+        row = build.media_row(str(self.g))
+        self.assertIn("Counting each copy once, the disk side holds 3 files and 1 run of sectors", row)
+        self.assertIn("1 is in the listings", row)
 
         led = json.loads(before)
         led["items"][0]["answer"] = "maybe"

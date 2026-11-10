@@ -4,8 +4,8 @@
 The TZX holds a block of every kind the format has, so that the reader must step over each
 correctly to number the next: a BASIC program and a code file under headers, the code's block
 at turbo speed, a block with no header in the ROM's form, one whose parity is wrong, a pure
-data block, a header that lies about its length, a header with nothing after it, and a
-recording. Each item's label, place, address, bytes and problem are checked, then the tape goes
+data block, a header that lies about its length, a header with nothing after it, and three
+recordings. Each item's label, place, address, bytes and problem are checked, then the tape goes
 through the ledger (kit/scripts/media.py): the code file is found in the game's listing, the
 rest are answered, and the About row says what the tape holds.
 
@@ -89,9 +89,16 @@ TZX = [                                                                         
     b"\x26\x01\x00\x01\x00",                                                   # 24 call sequence
     b"\x27",                                                                   # 25 return
     b"\x28" + struct.pack("<H", 7) + b"\x01" + struct.pack("<H", 1) + text("one"),   # 26 select
-    std(header(3, "short", 99, 0xC000, 0x8000)),                               # 27 header that says 99
-    std(rom(0xFF, SHORT)),                                                     # 28 a block of 40
-    std(header(3, "alone", 10, 0x9000, 0x8000)),                               # 29 header with nothing after it
+    b"\x18" + struct.pack("<I", 10 + len(RECORDING)) + struct.pack("<H", 0) + (44100).to_bytes(3, "little")
+    + b"\x01" + struct.pack("<I", 64) + RECORDING,                             # 27 a CSW recording
+    b"\x19" + struct.pack("<I", len(RECORDING)) + RECORDING[::-1],             # 28 generalized data
+    b"\x16" + struct.pack("<I", 4) + b"c64r",                                  # 29 C64 ROM data (deprecated)
+    b"\x17" + struct.pack("<I", 4) + b"c64t",                                  # 30 C64 turbo data (deprecated)
+    b"\x34" + bytes(8),                                                        # 31 emulation info (deprecated)
+    b"\x40\x00" + (3).to_bytes(3, "little") + b"sna",                          # 32 snapshot (deprecated)
+    std(header(3, "short", 99, 0xC000, 0x8000)),                               # 33 header that says 99
+    std(rom(0xFF, SHORT)),                                                     # 34 a block of 40
+    std(header(3, "alone", 10, 0x9000, 0x8000)),                               # 35 header with nothing after it
 ]
 
 
@@ -107,8 +114,8 @@ def skoolkit():
 
 def check_items(its, tzx):
     by = {i["label"]: i for i in its}
-    n = lambda a, b=None: a if tzx else {5: 1, 6: 2, 9: 3, 12: 4, 14: 5, 16: 6, 27: 7, 28: 8, 29: 9}[a]
-    want = ["GAME", "code", f"block {n(14)}", f"block {n(16)}"] + (["block 17"] if tzx else []) + ["short", f"block {n(29)}"]
+    n = lambda a, b=None: a if tzx else {5: 1, 6: 2, 9: 3, 12: 4, 14: 5, 16: 6, 33: 7, 34: 8, 35: 9}[a]
+    want = ["GAME", "code", f"block {n(14)}", f"block {n(16)}"] + (["block 17", "block 27", "block 28"] if tzx else []) + ["short", f"block {n(35)}"]
     assert [i["label"] for i in its] == want, [i["label"] for i in its]
 
     g = by["GAME"]
@@ -132,12 +139,14 @@ def check_items(its, tzx):
     if tzx:
         rec = by["block 17"]
         assert rec["data"] == b"" and rec["raw"] == RECORDING and "direct recording" in rec["problem"], rec
+        assert by["block 27"]["place"] == {"block": 27, "timing": "CSW recording"}, by["block 27"]["place"]
+        assert by["block 28"]["place"] == {"block": 28, "timing": "generalized data"} and by["block 28"]["raw"] == RECORDING[::-1]
 
     s = by["short"]
     assert s["data"] == SHORT and s["load"] == 0xC000
     assert s["problem"] == "its header says 99 bytes and the block holds 40", s["problem"]
 
-    alone = by[f"block {n(29)}"]
+    alone = by[f"block {n(35)}"]
     assert alone["problem"] == "a header for alone with no block after it", alone["problem"]
     assert alone["data"] == header(3, "alone", 10, 0x9000, 0x8000)[1:-1]
 
@@ -188,11 +197,10 @@ def main():
     run("answer", g, "short", "unused", "--why", "nothing loads it")
     assert M.problems(str(g), game) == [], M.problems(str(g), game)
     s = M.summary(str(g))
-    assert (s["files"], s["blocks"], s["runs"], s["banks"], s["copies"]) == (3, 4, 0, 0, 0), s
+    assert (s["files"], s["blocks"], s["runs"], s["banks"], s["copies"]) == (3, 6, 0, 0, 0), s
     import build
     row = build.media_row(str(g))
-    assert "The tape holds 3 files and 4 blocks with no header." in row, row
-    assert "Counting each copy once" not in row
+    assert ">The tape holds 3 files and 6 blocks with no header." in row, row
 
     parse = skoolkit()
     if parse is None:
