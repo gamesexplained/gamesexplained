@@ -44,3 +44,9 @@ The type-$2D/$2E state-1 transition at $95E6 selects state 3, initializes a time
 The type-$2D/$2E contact entry at $9647 fills $762E–$7631 and calls $732A. A positive $1A6D,X can trigger the $96AF record when $4DE2,Y has low bits 5, then enter state 2. VICE checked five controlled cases with callbacks stubbed. Ordinary-play reachability remains open.
 
 The type-$2D/$2E contact branches at $96CB and $96FA fill a second set of collision fields, or select state 4 or 5 depending on $19E5,X. The state-4 path passes the $9731 record to $77E0 and calls $9820. VICE checked four controlled cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+The load-31 type-$2F vector selects $9A11, which calls $35C1 and uses an incremented state byte to select a frame offset and an index for later code. VICE checked five controlled state values with $35C1 stubbed. Ordinary-play reachability remains open.
+
+The type-$2F path at $9A41 checks $19A1,X against $CA and tests $195D,X for equality with $40 or $1F according to $196E,X. VICE checked five controlled boundary cases. Whether ordinary play reaches values that cross the exact equality checks remains open.
+
+The load-31 type-$2F collision path at $9A5F constructs four fields from display coordinates and four three-byte tables, then calls $1179 and possibly $7227, $5D7A and $4454. VICE checked all three table indices and both collision outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.

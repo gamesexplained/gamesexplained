@@ -1,0 +1,5 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const parts=path.join(__dirname,'parts'),m=new Uint8Array(65536);for(const p of ['resident','stage-31'])for(const r of JSON.parse(fs.readFileSync(path.join(parts,p,'listing.json'))).records)if(r.b)m.set(r.b,r.a);assert.deepEqual([...m.slice(0x9aab,0x9ab7)],[3,2,1,6,4,2,4,6,8,12,16,20]);
+for(const [index,hit,other] of [[0,0,0],[1,1,0],[2,0,1]]){const a=m.slice();a[0x1a2a]=3;a[0x4c52]=1;a[0x4c72]=0x80;a[0x4cd2]=0x50;a[0x9a74]=index;a.fill(0,0x10,0x14);a.set([0xe6,0x10,hit?0x38:0x18,0x60],0x1179);a.set([other?0x38:0x18,0x60],0x7227);a.set([0x85,0x12,0xe6,0x11,0x60],0x5d7a);a.set([0xe6,0x13,0x60],0x4454);new CPU(a).call(0x9a5f,{x:1});const t=m.slice(0x9aab,0x9ab7);assert.deepEqual([...a.slice(0x762e,0x7632)],[(0xc0+t[index])&255,(0x50+t[3+index])&255,t[6+index],t[9+index]]);assert.deepEqual([...a.slice(0x10,0x14)],other?[1,1,4,1]:hit?[1,0,0,1]:[1,0,0,0])}
+console.log('OK - load-31 type-$2F collision fields and callbacks');

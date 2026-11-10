@@ -13,5 +13,6 @@ The run is in progress and has no published tier. The requested Silver needs eve
 - Determine the type-$01 state-index range and ordinary-play reachability in loads 3, 13, 14, 15, 17, 19 and 26.
 - Determine the type-$02 state-index range and ordinary-play reachability in loads 13, 14, 15, 17 and 19.
 - Determine the type-$2D/$2E state-index range and ordinary-play reachability in load 31, and identify the other uses of their working bytes.
+- Determine the type-$2F state range and ordinary-play reachability in load 31, including whether the exact coordinate equality checks can be crossed.
 - Complete the feature and text investigations, independent listing sample, facts, minisite, retrospective and metadata. Build and run the required checks before committing.
 - Push through the contributor fork and open the pull request when the work is ready.
