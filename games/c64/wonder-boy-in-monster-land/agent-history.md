@@ -682,3 +682,5 @@ Traced panel input and cursor paths in loads 4, 9, 19, 20 and 30. Twenty-five fo
 Traced panel completion and message waiting in loads 4, 9, 19, 20 and 30. Ten forced VICE cases and a listing test checked callback arguments, state writes and the wait loop with callbacks stubbed. The paused user snapshot was restored. Load-4 character descriptions overlapping this code record both observations.
 
 Decoded seven panel message records in each of loads 4, 9, 19, 20 and 30, adding descriptions for four messages per load. VICE matched all 35 captured records; a listing test decodes each field, preserving the game’s spelling and punctuation. The paused user snapshot was restored.
+
+Found and typed the previously unclassified price formatter and digit writer in 17 later loads. VICE and a listing test checked both paths in every load. Where code overlaps copied character patterns, the descriptions now record both observations; the paused user snapshot was restored. Natural reachability and input bounds remain open.

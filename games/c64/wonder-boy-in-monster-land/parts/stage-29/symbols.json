@@ -545,6 +545,16 @@
   },
   {
    "start": 37851,
+   "end": 37939,
+   "type": "Code"
+  },
+  {
+   "start": 37940,
+   "end": 37943,
+   "type": "Byte"
+  },
+  {
+   "start": 37944,
    "end": 37957,
    "type": "Undefined"
   },
@@ -3725,6 +3735,30 @@
   {
    "address": 37833,
    "name": "shop_item_message_select",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37851,
+   "name": "captured_shop_draw_price",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37869,
+   "name": "captured_shop_write_digit",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37878,
+   "name": "captured_shop_format_price",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37940,
+   "name": "captured_shop_price_buffer",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8651,6 +8685,26 @@
    "address": 37833,
    "type": "line",
    "text": "Multiply A by 8 using three eight-bit shifts, clear carry, add 6 and use the eight-bit result as X. Read the high byte from $9791,X into Y and the low byte from $9790,X into X, then jump to $77E0. Inputs 0\u201323 select the captured item-message pointers; the arithmetic aliases inputs modulo 32 and there is no local bound check. The message routine uses this X/Y pointer when its selector $77E1 is zero."
+  },
+  {
+   "address": 37851,
+   "type": "line",
+   "text": "Load 29: process four price-display bytes at $9434 in reverse order. Leave zero unchanged; add $F5 to each nonzero byte with eight-bit wrap and decimal mode clear. Call the digit writer at $93ED with successive Y positions, decrementing Y after each call."
+  },
+  {
+   "address": 37869,
+   "type": "line",
+   "text": "Load 29: write A through this absolute-indexed store, whose high operand can be patched by surrounding layout code, then write colour 1 to $D900,Y and return. Colour RAM requires I/O visible."
+  },
+  {
+   "address": 37878,
+   "type": "line",
+   "text": "Load 29: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $9790 into four nibble-plus-one values at $9434, and replace consecutive leading ones with zero. Nibbles and item indexes are not locally validated."
+  },
+  {
+   "address": 37940,
+   "type": "line",
+   "text": "Load 29: four working price-display bytes, written by the formatter at $93F6 and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
   },
   {
    "address": 37958,

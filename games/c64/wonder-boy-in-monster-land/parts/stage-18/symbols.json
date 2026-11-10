@@ -560,6 +560,16 @@
   },
   {
    "start": 38100,
+   "end": 38188,
+   "type": "Code"
+  },
+  {
+   "start": 38189,
+   "end": 38192,
+   "type": "Byte"
+  },
+  {
+   "start": 38193,
    "end": 38206,
    "type": "Undefined"
   },
@@ -3231,6 +3241,12 @@
    "kind": "user"
   },
   {
+   "address": 38100,
+   "name": "captured_shop_draw_price",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 38105,
    "name": "copied_charset_glyph_dd",
    "type": "UserDefined",
@@ -3243,8 +3259,20 @@
    "kind": "user"
   },
   {
+   "address": 38118,
+   "name": "captured_shop_write_digit",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 38121,
    "name": "copied_charset_boundary_94e9",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38127,
+   "name": "captured_shop_format_price",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3293,6 +3321,12 @@
   {
    "address": 38185,
    "name": "copied_charset_boundary_9529",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38189,
+   "name": "captured_shop_price_buffer",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7383,59 +7417,79 @@
    "text": "Multiply A by 8 using three eight-bit shifts, clear carry, add 6 and use the eight-bit result as X. Read the high byte from $988A,X into Y and the low byte from $9889,X into X, then jump to $77E0. Inputs 0\u201323 select the captured item-message pointers; the arithmetic aliases inputs modulo 32 and there is no local bound check. The message routine uses this X/Y pointer when its selector $77E1 is zero."
   },
   {
+   "address": 38100,
+   "type": "line",
+   "text": "Load 18: process four price-display bytes at $952D in reverse order. Leave zero unchanged; add $F5 to each nonzero byte with eight-bit wrap and decimal mode clear. Call the digit writer at $94E6 with successive Y positions, decrementing Y after each call."
+  },
+  {
    "address": 38105,
    "type": "line",
-   "text": "Load 18 character $DD occupies eight bytes in the character-copy source: $F0, $03, $18, $69, $F5, $20, $E6, $94. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6E8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $DD occupies eight bytes in the character-copy source: $F0, $03, $18, $69, $F5, $20, $E6, $94. Its rows contain 27 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6E8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38113,
    "type": "line",
-   "text": "Load 18 character $DE occupies eight bytes in the character-copy source: $88, $CA, $10, $F1, $60, $99, $00, $FF. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6F0 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $DE occupies eight bytes in the character-copy source: $88, $CA, $10, $F1, $60, $99, $00, $FF. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6F0 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 38118,
+   "type": "line",
+   "text": "Load 18: write A through this absolute-indexed store, whose high operand can be patched by surrounding layout code, then write colour 1 to $D900,Y and return. Colour RAM requires I/O visible."
   },
   {
    "address": 38121,
    "type": "line",
-   "text": "Load 18 character $DF occupies eight bytes in the character-copy source: $A9, $01, $99, $00, $D9, $60, $0A, $0A. Its rows contain 20 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6F8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $DF occupies eight bytes in the character-copy source: $A9, $01, $99, $00, $D9, $60, $0A, $0A. Its rows contain 20 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D6F8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 38127,
+   "type": "line",
+   "text": "Load 18: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $9889 into four nibble-plus-one values at $952D, and replace consecutive leading ones with zero. Nibbles and item indexes are not locally validated."
   },
   {
    "address": 38129,
    "type": "line",
-   "text": "Load 18 character $E0 occupies eight bytes in the character-copy source: $0A, $48, $AA, $BD, $8A, $98, $20, $E9. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D700 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E0 occupies eight bytes in the character-copy source: $0A, $48, $AA, $BD, $8A, $98, $20, $E9. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D700 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38137,
    "type": "line",
-   "text": "Load 18 character $E1 occupies eight bytes in the character-copy source: $36, $AD, $09, $37, $8D, $2D, $95, $AD. Its rows contain 33 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D708 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E1 occupies eight bytes in the character-copy source: $36, $AD, $09, $37, $8D, $2D, $95, $AD. Its rows contain 33 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D708 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38145,
    "type": "line",
-   "text": "Load 18 character $E2 occupies eight bytes in the character-copy source: $0A, $37, $8D, $2E, $95, $68, $AA, $BD. Its rows contain 32 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D710 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E2 occupies eight bytes in the character-copy source: $0A, $37, $8D, $2E, $95, $68, $AA, $BD. Its rows contain 32 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D710 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38153,
    "type": "line",
-   "text": "Load 18 character $E3 occupies eight bytes in the character-copy source: $89, $98, $20, $E9, $36, $AD, $09, $37. Its rows contain 28 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D718 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E3 occupies eight bytes in the character-copy source: $89, $98, $20, $E9, $36, $AD, $09, $37. Its rows contain 28 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D718 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38161,
    "type": "line",
-   "text": "Load 18 character $E4 occupies eight bytes in the character-copy source: $8D, $2F, $95, $AD, $0A, $37, $8D, $30. Its rows contain 31 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D720 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E4 occupies eight bytes in the character-copy source: $8D, $2F, $95, $AD, $0A, $37, $8D, $30. Its rows contain 31 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D720 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38169,
    "type": "line",
-   "text": "Load 18 character $E5 occupies eight bytes in the character-copy source: $95, $A2, $00, $8A, $BC, $2D, $95, $C0. Its rows contain 25 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D728 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E5 occupies eight bytes in the character-copy source: $95, $A2, $00, $8A, $BC, $2D, $95, $C0. Its rows contain 25 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D728 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38177,
    "type": "line",
-   "text": "Load 18 character $E6 occupies eight bytes in the character-copy source: $01, $D0, $08, $9D, $2D, $95, $E8, $E0. Its rows contain 25 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D730 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E6 occupies eight bytes in the character-copy source: $01, $D0, $08, $9D, $2D, $95, $E8, $E0. Its rows contain 25 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D730 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 38185,
    "type": "line",
-   "text": "Load 18 character $E7 occupies eight bytes in the character-copy source: $04, $D0, $F1, $60, $5A, $5A, $5A, $7B. Its rows contain 29 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D738 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 18 character $E7 occupies eight bytes in the character-copy source: $04, $D0, $F1, $60, $5A, $5A, $5A, $7B. Its rows contain 29 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D738 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 38189,
+   "type": "line",
+   "text": "Load 18: four working price-display bytes, written by the formatter at $94EF and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
   },
   {
    "address": 38193,

@@ -665,6 +665,16 @@
   },
   {
    "start": 43681,
+   "end": 43769,
+   "type": "Code"
+  },
+  {
+   "start": 43770,
+   "end": 43773,
+   "type": "Byte"
+  },
+  {
+   "start": 43774,
    "end": 43787,
    "type": "Undefined"
   },
@@ -7830,6 +7840,12 @@
    "kind": "user"
   },
   {
+   "address": 43681,
+   "name": "captured_shop_draw_price",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43685,
    "name": "visual_copy_4_glyph_df",
    "type": "UserDefined",
@@ -7842,8 +7858,20 @@
    "kind": "user"
   },
   {
+   "address": 43699,
+   "name": "captured_shop_write_digit",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43701,
    "name": "visual_copy_boundary_aab5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43708,
+   "name": "captured_shop_format_price",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7892,6 +7920,12 @@
   {
    "address": 43765,
    "name": "visual_copy_boundary_aaf5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43770,
+   "name": "captured_shop_price_buffer",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -14218,59 +14252,79 @@
    "text": "Multiply A by 8 using three eight-bit shifts, clear carry, add 6 and use the eight-bit result as X. Read the high byte from $AE57,X into Y and the low byte from $AE56,X into X, then jump to $77E0. Inputs 0\u201323 select the captured item-message pointers; the arithmetic aliases inputs modulo 32 and there is no local bound check. The message routine uses this X/Y pointer when its selector $77E1 is zero."
   },
   {
+   "address": 43681,
+   "type": "line",
+   "text": "Load 30: process four price-display bytes at $AAFA in reverse order. Leave zero unchanged; add $F5 to each nonzero byte with eight-bit wrap and decimal mode clear. Call the digit writer at $AAB3 with successive Y positions, decrementing Y after each call."
+  },
+  {
    "address": 43685,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $DF: $AA, $F0, $03, $18, $69, $F5, $20, $B3. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D6F8; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $DF: $AA, $F0, $03, $18, $69, $F5, $20, $B3. The eight rows contain 28 set bits across rows 0\u20137. A controlled resource load copied them to $D6F8; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43693,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E0: $AA, $88, $CA, $10, $F1, $60, $99, $00. The eight rows contain 22 set bits across rows 0\u20136. A controlled resource load copied them to $D700; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E0: $AA, $88, $CA, $10, $F1, $60, $99, $00. The eight rows contain 22 set bits across rows 0\u20136. A controlled resource load copied them to $D700; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 43699,
+   "type": "line",
+   "text": "Load 30: write A through this absolute-indexed store, whose high operand can be patched by surrounding layout code, then write colour 1 to $D900,Y and return. Colour RAM requires I/O visible."
   },
   {
    "address": 43701,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E1: $FF, $A9, $01, $99, $00, $D9, $60, $0A. The eight rows contain 26 set bits across rows 0\u20137. A controlled resource load copied them to $D708; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E1: $FF, $A9, $01, $99, $00, $D9, $60, $0A. The eight rows contain 26 set bits across rows 0\u20137. A controlled resource load copied them to $D708; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 43708,
+   "type": "line",
+   "text": "Load 30: multiply item ID A by eight with eight-bit wrap, split the two packed bytes from the item table at $AE56 into four nibble-plus-one values at $AAFA, and replace consecutive leading ones with zero. Nibbles and item indexes are not locally validated."
   },
   {
    "address": 43709,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E2: $0A, $0A, $48, $AA, $BD, $57, $AE, $20. The eight rows contain 27 set bits across rows 0\u20137. A controlled resource load copied them to $D710; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E2: $0A, $0A, $48, $AA, $BD, $57, $AE, $20. The eight rows contain 27 set bits across rows 0\u20137. A controlled resource load copied them to $D710; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43717,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E3: $E9, $36, $AD, $09, $37, $8D, $FA, $AA. The eight rows contain 35 set bits across rows 0\u20137. A controlled resource load copied them to $D718; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E3: $E9, $36, $AD, $09, $37, $8D, $FA, $AA. The eight rows contain 35 set bits across rows 0\u20137. A controlled resource load copied them to $D718; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43725,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E4: $AD, $0A, $37, $8D, $FB, $AA, $68, $AA. The eight rows contain 34 set bits across rows 0\u20137. A controlled resource load copied them to $D720; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E4: $AD, $0A, $37, $8D, $FB, $AA, $68, $AA. The eight rows contain 34 set bits across rows 0\u20137. A controlled resource load copied them to $D720; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43733,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E5: $BD, $56, $AE, $20, $E9, $36, $AD, $09. The eight rows contain 32 set bits across rows 0\u20137. A controlled resource load copied them to $D728; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E5: $BD, $56, $AE, $20, $E9, $36, $AD, $09. The eight rows contain 32 set bits across rows 0\u20137. A controlled resource load copied them to $D728; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43741,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E6: $37, $8D, $FC, $AA, $AD, $0A, $37, $8D. The eight rows contain 35 set bits across rows 0\u20137. A controlled resource load copied them to $D730; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E6: $37, $8D, $FC, $AA, $AD, $0A, $37, $8D. The eight rows contain 35 set bits across rows 0\u20137. A controlled resource load copied them to $D730; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43749,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E7: $FD, $AA, $A2, $00, $8A, $BC, $FA, $AA. The eight rows contain 32 set bits across rows 0\u20137. A controlled resource load copied them to $D738; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E7: $FD, $AA, $A2, $00, $8A, $BC, $FA, $AA. The eight rows contain 32 set bits across rows 0\u20137. A controlled resource load copied them to $D738; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43757,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E8: $C0, $01, $D0, $08, $9D, $FA, $AA, $E8. The eight rows contain 26 set bits across rows 0\u20137. A controlled resource load copied them to $D740; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E8: $C0, $01, $D0, $08, $9D, $FA, $AA, $E8. The eight rows contain 26 set bits across rows 0\u20137. A controlled resource load copied them to $D740; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
   },
   {
    "address": 43765,
    "type": "line",
-   "text": "Load 30, visual selector 4, character $E9: $E0, $04, $D0, $F1, $60, $8A, $BC, $0B. The eight rows contain 25 set bits across rows 0\u20137. A controlled resource load copied them to $D748; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open."
+   "text": "Load 30, visual selector 4, character $E9: $E0, $04, $D0, $F1, $60, $8A, $BC, $0B. The eight rows contain 25 set bits across rows 0\u20137. A controlled resource load copied them to $D748; no instruction entered these source bytes in a 200-frame capture. Display use and other possible code uses remain open. A controlled price routine also executes some of these source bytes; the earlier 200-frame capture did not enter them."
+  },
+  {
+   "address": 43770,
+   "type": "line",
+   "text": "Load 30: four working price-display bytes, written by the formatter at $AABC and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
   },
   {
    "address": 43773,
