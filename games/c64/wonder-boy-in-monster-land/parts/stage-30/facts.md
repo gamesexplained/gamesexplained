@@ -72,3 +72,5 @@ A forced $717C call copied all 2,048 bytes from the entry character source to RA
 Controlled visual-resource selections copied 307 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 A forced call to the captured panel setup at $AF7C writes four character cells and their colours after patching its helper at $B0BB. VICE and a listing test check the path with $46=$C0. Following panel behavior and ordinary-play reachability remain open.
+
+The captured panel at $AF7C displays a byte-derived value, checks shifted player balance and meter state, and chooses one of four message paths. Four forced VICE cases and a listing test check these branches in this load. Later message behavior and ordinary-play reachability remain open.

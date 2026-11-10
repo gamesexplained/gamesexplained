@@ -1310,6 +1310,11 @@
   },
   {
    "start": 40345,
+   "end": 40472,
+   "type": "Code"
+  },
+  {
+   "start": 40473,
    "end": 40627,
    "type": "Undefined"
   },
@@ -5242,6 +5247,30 @@
   {
    "address": 40345,
    "name": "captured_panel_setup_continue",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40384,
+   "name": "captured_panel_compare_balance",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40433,
+   "name": "captured_panel_compare_meter",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40453,
+   "name": "captured_panel_select_prompt",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40473,
+   "name": "captured_panel_prompt_continue",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -13742,6 +13771,26 @@
    "address": 40309,
    "type": "line",
    "text": "Load 20: set sound-control state to 7, clear $4D6A and patch the character writer at $9EB4 with $46 plus one as its destination high byte. Call it with zero at Y=$95\u2013$98, then with $F6 at Y=$97. In the controlled case $46=$C0, this writes $00, $00, $F6, $00 to $C195\u2013$C198 and colour 1 to $D995\u2013$D998. The following panel code and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40345,
+   "type": "line",
+   "text": "Load 20: read the selected player and the byte at $9F5F, indexed by that player. With decimal mode clear, write its nonzero low nibble plus $F6 at Y=$97, then its high nibble plus $F6 at Y=$98 through the patched character writer. The reads from $528C,X are overwritten before each writer call."
+  },
+  {
+   "address": 40384,
+   "type": "line",
+   "text": "Load 20: shift the selected player\u2019s two balance bytes at $4DC7/$4DC9 right four bits. If the remaining high byte is zero and the low byte is below the indexed byte at $9F5F, decrement the current stage-record field 3 and pass message $9F3E to the later message path. Otherwise continue to the meter comparison."
+  },
+  {
+   "address": 40433,
+   "type": "line",
+   "text": "Load 20: compare the selected player\u2019s current and maximum meter bytes at $4DCD/$4DCF. When equal, decrement current stage-record field 3 and pass message $9F2A to the later message path; otherwise inspect the record flag."
+  },
+  {
+   "address": 40453,
+   "type": "line",
+   "text": "Load 20: test bit 1 of current stage-record field 3. Pass message $9EBD when set, or $9ED2 when clear, and continue at $9E19. Message-display effects and ordinary-play reachability remain open."
   },
   {
    "address": 40628,
