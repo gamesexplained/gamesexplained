@@ -20320,6 +20320,46 @@
    "text": "Sorts display-slot indices by the slot values, caches the resulting cursors and normalizes adjacent slot pairs. A nonzero cache flag restores the saved cursors."
   },
   {
+   "address": 11292,
+   "type": "line",
+   "text": "Set $79 to 1 and copy all 32 slot Y values from $4CCF\u2013$4CEE to $23\u2013$42. Begin an insertion sort of the 32 indices at $03\u2013$22."
+  },
+  {
+   "address": 11304,
+   "type": "line",
+   "text": "Compare the Y values selected by the previous and current indices. If the previous value is at least the current value, advance. Otherwise save the current index and scan earlier indices for its insertion point."
+  },
+  {
+   "address": 11324,
+   "type": "line",
+   "text": "Scan earlier indices until the current slot value is less than or equal to the earlier value, or the scan reaches the start. Equal values retain their input order before the later pair normalization."
+  },
+  {
+   "address": 11336,
+   "type": "line",
+   "text": "Patch the insertion index into the immediate operand at $2C54. Shift earlier index bytes one position to the right until X equals that patched value, then insert the saved index and resume the outer scan."
+  },
+  {
+   "address": 11348,
+   "type": "line",
+   "text": "This immediate operand holds the insertion index patched at $2C49. The surrounding loop shifts bytes in $03\u2013$22 until X equals it, inserts the saved index and returns to the outer scan."
+  },
+  {
+   "address": 11362,
+   "type": "line",
+   "text": "Set $45 and $4D1F to $1F and copy $44 to $4D20. The value in $44 is the last saved sort cursor and is not freshly set when the scan makes no insertion."
+  },
+  {
+   "address": 11373,
+   "type": "line",
+   "text": "For index positions 0\u201329, in adjacent pairs, clear bit 0 of the first index and set bit 0 of the second. Positions 30 and 31 are left unchanged; this transformation follows the descending stable sort."
+  },
+  {
+   "address": 11394,
+   "type": "line",
+   "text": "When $79 was nonzero at entry, restore $44 from $4D20 and $45 from $4D1F and return without sorting or rewriting the index array."
+  },
+  {
    "address": 11405,
    "type": "line",
    "text": "Prepares a rightward one-character viewport shift in the alternate screen buffer and draws the newly exposed column from map and metatile tables."
@@ -22605,9 +22645,19 @@
    "text": "Computes world-space view origins and selected map cells from viewport and fine-scroll state. Arithmetic and cached cell values depend on the current mode."
   },
   {
+   "address": 28217,
+   "type": "line",
+   "text": "This immediate operand is patched to $4D69 XOR 7 and added to the low byte of the Y origin; the carry is added to its high byte. The following instructions multiply $569B by eight into $56A5/$56A6 and patch $4D6A XOR 7 into $6E64."
+  },
+  {
    "address": 28229,
    "type": "line",
    "text": "Multiply $569B by eight into the 16-bit pair $56A5/$56A6. XOR $4D6A with 7, patch that value into $6E64 and add it to the pair; the preceding block calculates $569F/$56A0 the same way from $569D and $4D69."
+  },
+  {
+   "address": 28260,
+   "type": "line",
+   "text": "This immediate operand is patched to $4D6A XOR 7 and added to the low byte of the X origin; the carry is added to its high byte. When $7A is nonzero, the following instructions sample two map rows at column $6F3C into $61D6/$61D7. They then store the shifted player X at $4DAE."
   },
   {
    "address": 28272,

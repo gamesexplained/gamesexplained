@@ -301,3 +301,5 @@ Resident $2D3E draws pairs of characters down the exposed right-scroll column an
 Resident $2E33 draws pairs of characters down the exposed left-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
 
 Resident $3622 scans slots and either copies a new ten-byte entity record or reloads a previous one. VICE checked four forced cases through the real copy routine, including a negative type, occupied slot and reload-count adjustment. Slot and record bounds and ordinary-play reachability remain open.
+
+Resident $2C16 sorts 32 slot indices by descending Y value, preserving equal-value order before forcing the first 15 pairs to even/odd indices. A nonzero cache flag restores cached cursors without sorting. VICE checked three forced value patterns and one cached case. Ordinary-play reachability remains open.
