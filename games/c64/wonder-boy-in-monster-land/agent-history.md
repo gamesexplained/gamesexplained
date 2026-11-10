@@ -706,3 +706,5 @@ Typed the load-19 five-way Sphinx dispatcher and its first two states at $BC10â€
 Described the resident raster split setup and four timing tables. Two forced VICE paths and a listing test checked zero and nonzero scroll through $1383; the paused user snapshot was restored. The subsequent raster wait and sprite writes remain outside the test.
 
 Typed the load-19 question selector at $BCDC. Four forced VICE cases and a listing test checked both question choices with display stubbed. Restored the paused user snapshot.
+
+Described the resident entity collision parameter tables through type 45. The listing test checked all 46 types, and five forced VICE cases checked the coordinate and size calculation. Restored the paused user snapshot.
