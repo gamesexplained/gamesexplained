@@ -50,3 +50,9 @@ The type-$26 entity dispatcher at $A5BB uses $1AB1,X without a local bounds chec
 Type-$26 state 1 calls $792C and $1179 and may call $7227 and $5D7A, then decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
 
 Type-$23 state 0 can transition to state 1 after carry from $1179, $7227 or a zero-countdown call to $44DE. Its other paths update $1AC2,X, a motion countdown and $1AE4,X according to callback results. VICE checked nine forced cases in loads 12 and 23 with callbacks stubbed; callback effects and ordinary-play reachability remain open.
+
+The type-$11 entity vector selects a dispatcher at $A325. Six captured state-table pairs point to $A343, $A3D6, $A478, $A4C4, $A503, $A526. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in loads 12 and 23; handler behavior and ordinary-play reachability remain open.
+
+Type-$11 state 4 decrements $1AC2,X and copies $1AE4,X to the state when the result is negative or the selected $45BC/$4574 callback returns a value whose bits 1–2 are not 2. VICE checked six forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$11 state 5 decrements $1AC2,X. A negative result calls $4B0E with A=$60 and jumps to $5DB9; otherwise it indexes the four captured offsets 6, 6, 8, 8, updates $19C3,X and advances $1AD3,X. The input index is not bounded before the read. VICE checked four forced cases in loads 12 and 23 with the exit callback stubbed. Ordinary-play reachability remains open.
