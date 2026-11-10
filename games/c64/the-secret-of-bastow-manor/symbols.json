@@ -658,7 +658,7 @@
   {
    "address": 2049,
    "type": "line",
-   "text": "Start of the program. Clears the screen and sets V to $D000 (53248), the base of the video chip, which every later POKEV+n reaches the sprite registers through; A$ is a line of 39 spaces used to wipe the message area. Line 10 dimensions three tables: S$(27,7) the objects lying in each of the 27 places, R$(27,3) the compass directions open from each place, T$(5) the pack (five items at most). Lines 12 and 13 hold the verb tables, three letters per verb, packed in three strings (X1$ for verbs from A to H, X2$ for I to P, X3$ for Q to Z); line 360 reads them. Y$, Y2$, ZZ$, Y1$, YY$ and WW$ are stock replies and tags. B=1 sets the start place, the manor gates; X=0 is the border and background colour. H2$ and H3$ are the two strings that draw the bedroom window shut or open. Line 17 pokes 168 into $0307, the high byte of BASIC's LIST vector at $0306, which turns it from $A71A into $A81A: after this a LIST no longer lists the program. Line 18 jumps to the title screen at line 4900."
+   "text": "Start of the program. Clears the screen and sets V to $D000 (53248), the base of the video chip, which every later POKEV+n reaches the sprite registers through; A$ is a line of 39 spaces used to wipe the message area. Line 10 dimensions three tables: S$(27,7) the objects lying in each of the 27 places, R$(27,3) the compass directions open from each place, T$(5) the pack (five items at most). Lines 12 and 13 hold the verb tables, three letters per verb, packed in three strings (X1$ for verbs from A to H, X2$ for I to P, X3$ for Q to Z); lines 362, 364 and 366 compare the typed word with them. Y$, Y2$, ZZ$, Y1$, YY$ and WW$ are stock replies and tags. B=1 sets the start place, the manor gates; X=0 is the border and background colour. H2$ and H3$ are the two strings that draw the bedroom window shut or open. Line 17 pokes 168 into $0307, the high byte of BASIC's LIST vector at $0306, which turns it from $A71A into $A81A: after this a LIST no longer lists the program. Line 18 jumps to the title screen at line 4900."
   },
   {
    "address": 2449,
@@ -673,12 +673,12 @@
   {
    "address": 2816,
    "type": "line",
-   "text": "Redraws the current place. Line 41 prints the stock O.K. reply and pauses (line 1550); line 42 clears the screen; line 44 sets border and background to X (0, black; 2 red in the laboratory); line 46 to 53 pick the picture routine for place B with ON B GOTO, 13 places on the first line and 14 on the second: 2000, 2400, 2200, 2300, 2100, 2600, 2500, 2700, 2800, 2900, 3000, 3100, 3200 for places 1 to 13, then 3300, 3400, 3500, 3600, 3700, 3800, 4450, 4100, 4200, 4250, 4300, 4350, 4400, 4500 for places 14 to 27. Each picture routine ends by adding 13 back to B (where it took it off) and jumping to line 57. Line 57 and 58 set the text colour (yellow in the laboratory, grey elsewhere) and line 60 puts the cursor 15 lines down, under the picture."
+   "text": "Redraws the current place. Line 41 prints the stock O.K. reply and pauses (line 1550); line 42 clears the screen; line 44 sets border and background to X (0, black; 2 red in the laboratory); line 46 to 53 pick the picture routine for place B with ON B GOTO, 13 places on the first line and 14 on the second: 2000, 2400, 2200, 2300, 2100, 2600, 2500, 2700, 2800, 2900, 3000, 3100, 3200 for places 1 to 13, then 3300, 3400, 3500, 3600, 3700, 3800, 4450, 4100, 4200, 4250, 4300, 4350, 4400, 4500 for places 14 to 27. The routines for places 14 to 27 end by adding 13 back to B and jumping to line 57; those for places 1 to 13 jump to 57 with B unchanged (the dark places without the torch, and the front door after the bell, go to a death instead). Line 57 and 58 set the text colour (yellow in the laboratory, grey elsewhere) and line 60 puts the cursor 15 lines down, under the picture."
   },
   {
    "address": 3086,
    "type": "line",
-   "text": "Prints 'i am ' and then the name of place B. Line 62 jumps by ON B GOTO to the lines below, one per place from 1 to 22, and line 63, which places 24 to 27 reach after 22 is subtracted, does the same for the cellar end of the map. Each line prints one name and goes to line 110. Places 9, 23, 24 and 27 (lines 80, 100, 102 and 106) first send the player to the death in the dark (line 1920) when the torch is not lit (CC=0). Places 23 to 27 add 22 back to B at line 109 before line 110 lists the objects."
+   "text": "Prints 'i am ' and then the name of place B. Line 62 jumps by ON B GOTO to the lines below, one per place from 1 to 22, and line 63, which places 24 to 27 reach from line 61 and place 23 by falling through line 62's 22 targets, subtracts 22 and does the same for the cellar end of the map. Each line prints one name and goes to line 110. Places 9, 23, 24 and 27 (lines 80, 100, 102 and 106) first send the player to the death in the dark (line 1920) when the torch is not lit (CC=0). Places 23 to 27 add 22 back to B at line 109 before line 110 lists the objects."
   },
   {
    "address": 3537,
@@ -698,12 +698,12 @@
   {
    "address": 4511,
    "type": "line",
-   "text": "What happens at the end of every move, before the prompt. Line 140 counts a move for the dogs: PB=1 means the gate has been opened and PC=0 that the player is in the open, so PA goes up by one; the string Z6$ is also built here from two characters set elsewhere (A6$ and A9$, the second and third letters of the safe's combination, B and D). PA=1 prints 'i hear dogs howling !!', PA above 2 prints 'bark!  bark!  bark!' every move and PA above 7 kills the player (line 144). Line 150 tests whether the branch is in the pack and, each move it is, adds one to HB; when HB passes 3 the player is too tired to go on (HJ=1; the shed, place 8, refuses another step north). Line 155 starts the old man's knock-out when HK=4 in the closet (place 21). Line 160 lets the robot push the player back when place 14 is entered while the robot is still working (HR=0). Lines 165 to 169 run the skeleton: LR=1 after the gold is picked up makes bells ring, LR=2 and place 26 makes the skeleton stir (LR=3), and from then each move adds one to LT; five moves later the skeleton kills the player. Reaching the shed once the chest's combination has been entered (line 168, H8=1 in place 8) sets the skeleton's move count LT back to 0 (LR stays 3, so it counts again on later moves), clears the hiding flag and sets the dog counter to 3. Line 180 jumps to the prompt."
+   "text": "What happens at the end of every move, before the prompt. Line 140 counts a move for the dogs: PB=1 means the gate has been opened and PC=0 that the player is in the open, so PA goes up by one; the string Z6$ is also built here from two characters set elsewhere (A6$ and A9$, the second and third letters of the chest's combination, B and D). PA=1 prints 'i hear dogs howling !!', PA above 2 prints 'bark!  bark!  bark!' every move and PA above 7 kills the player (line 144). Line 150 tests whether the branch is in the pack and, each move it is, adds one to HB; when HB passes 3 the player is too tired to go on (HJ=1; the shed, place 8, refuses another step north). Line 155 starts the old man's knock-out when HK=4 in the closet (place 21). Line 160 lets the robot push the player back when place 14 is entered while the robot is still working (HR=0). Lines 165 to 169 run the skeleton: LR=1, set when 'get gold' is typed in the treasure room once the chest is open (line 1406), makes bells ring, LR=2 and place 26 makes the skeleton stir (LR=3), and from then each move adds one to LT; five moves later the skeleton kills the player. Reaching the shed once the chest's combination has been entered (line 168, H8=1 in place 8) sets the skeleton's move count LT back to 0 (LR stays 3, so it counts again on later moves), clears the hiding flag and sets the dog counter to 3. Line 180 jumps to the prompt."
   },
   {
    "address": 5209,
    "type": "line",
-   "text": "The command prompt. Clears P$, reads a line with INPUT (the prompt is 'what now '), keeps its length in D and adds one to the move counter C (the count the death screen shows). Line 302 and 303 reset the text colour. An empty line redraws the screen (line 305 to 42). A one-letter command is handled from line 308: i is the pack, g lists the exits, and the compass letters n, s, e and w move the player. The special exits are coded one by one (lines 320 to 353): the passage from the dim room into the hall, the wine-cellar stairs, the corridor and the pit, the east door out of the foyer that drops the safe, and so on; each sets B and jumps to line 41. A letter that is neither a special exit nor in the place's R$ list falls to line 359, 'sorry, can't go there'."
+   "text": "The command prompt. Clears P$, reads a line with INPUT (the prompt is 'what now '), keeps its length in D and adds one to the move counter C (the count the death screen shows). Line 302 and 303 reset the text colour. An empty line redraws the screen (line 305 to 42). A one-letter command is handled from line 308: i is the pack, g lists the exits, and the compass letters n, s, e and w move the player. The special exits are coded one by one (lines 320 to 353): the north hall to the foyer, the dim room to the tunnel, the tunnel and the pit, the corridor, the east door out of the foyer that drops the safe, and so on; most set B and jump to line 41 or 42, and a few go to a refusal or a routine of their own. A letter that is neither a special exit nor in the place's R$ list falls to line 359, 'sorry, can't go there'."
   },
   {
    "address": 6204,
@@ -718,7 +718,7 @@
   {
    "address": 6658,
    "type": "line",
-   "text": "The GO verb, used for gates, doors, stairs, windows, holes and the trapdoor. The noun is read from the fourth letter. Line 370 takes 'go gate' from the gates (place 1) to the gravel path (place 2) once the gate is open (AM=1); line 371 answers 'i can't do that...yet' when it is only unlocked (DK=1). Lines 372 and 373 are the trapdoor in the shed (place 8): with the ladder carried it goes to line 1930 (it will not fit), otherwise it needs the case moved (KK=1) and the player not too tired from the branch (HJ=0) and leads to the dim room (place 9). Lines 374 to 391 are the manor: the doors in the north hall (place 10) and at the front (place 3) are locked; the stairs join the south hall (11) and the bedroom (16); 'go window' joins the bedroom and the window ledge (18) when the window is open (BW=1); the study door from the south hall needs the brass key and to be opened (GG=1, GZ=1); the dim room's door leads to the north hall once it has been opened (G7=1, set by 'open door' after the beam is off); 'go hole' from the cell (27) leads to the secret room (14) once the hole exists (HH=1). Everything else ends at line 397, 'sorry can't go there'."
+   "text": "The GO verb, used for gates, doors, stairs, windows, holes and the trapdoor. The noun is read from the fourth letter. Line 370 takes 'go gate' from the gates (place 1) to the gravel path (place 2) once the gate is open (AM=1); line 371 answers 'i can't do that...yet' when it is only unlocked (DK=1). Lines 372 and 373 are the trapdoor in the shed (place 8): with the ladder carried it goes to line 1930 (it will not fit), otherwise it needs the case moved (KK=1) and the player not too tired from the branch (HJ=0) and leads to the dim room (place 9). Lines 374 to 391 are the manor: the doors in the north hall (place 10) and at the front (place 3) are locked; the stairs join the south hall (11) and the bedroom (16); 'go window' takes the bedroom to the window ledge (18) when the window is open (BW=1), and back only once CW=1 as well; the study door from the south hall needs the brass key and to be opened (GG=1, GZ=1); the dim room's door leads to the north hall once it has been opened (G7=1, set by 'open door' after the beam is off); 'go hole' from the cell (27) leads to the secret room (14) once the hole exists (HH=1); 'go bed' in the bedroom answers 'no time for that!'. Most other cases end at line 397, 'sorry can't go there'."
   },
   {
    "address": 7326,
@@ -738,12 +738,12 @@
   {
    "address": 7812,
    "type": "line",
-   "text": "The LOOK verb, also used for 'examine'. The noun is the three letters from the sixth character on (MID$(P$,6,3)); line 435 turns the mailbox state forward when the old man has moved the brass key there (BM=3 and HK=2 make BM=5). The rest is a long list of situations, one IF per case: looking at the gate (the iron key appears), the mailbox in stages (BM: locked, letter, torch, brass key), the sign, the front door, the clock (the knife), the case in the shed (the apple), the table (hot food), the chest, the window, the bath, the desk and its drawer (pencil), the toolbox (crowbar), the skeleton, the beam, the pit (snakes), and so on. Each case reveals an object by putting it in the room (line 1620) or prints a remark. Anything else is 'i see nothing special' (line 480). The clock, skeleton, beam, pit, toolbox and small-box cases, with line 471, are in the next group."
+   "text": "The LOOK verb. The noun is the three letters from the sixth character on (MID$(P$,6,3)); line 435 turns the mailbox state forward when the old man has moved the brass key there (BM=3 and HK=2 make BM=5). The rest is a long list of situations, one IF per case: looking at the gate (the iron key appears), the mailbox in its first stages (BM: locked, letter, torch), the front door, the case in the shed (the apple), the table (hot food), the chest, the bath, the desk and its drawer (pencil), and so on. Each case reveals an object by putting it in the room (line 1620) or prints a remark. Anything else is 'i see nothing special' (line 480). The windows, the mailbox's brass-key stage, the clock, skeleton, beam, pit, toolbox and small-box cases, with line 471, are in the next group."
   },
   {
    "address": 8723,
    "type": "line",
-   "text": "The second half of the cases of LOOK. Looking at the gold in the treasure room, once the combination is right (CO=1), says 'its what i came for..'; the basement door and the window at the east side say 'its the basement door' and 'its on the second floor'; the ledge's window 'its locked' until the player has walked through the dim room's door into the north hall (CW=0 until then); the tree 'i see a branch'; the apple (after the case has been opened) 'looks like a iie', a joke on the Apple IIe; the door of the dim room 'it's secured with a beam'; the pit 'my gosh!! it's full of snakes'; the skeleton 'i thought it moved!'; the mailbox once the old man has put the brass key in it shows the brass key; the open book on the library desk; the beam 'looks v e r y heavy..'; the toolbox gives the crowbar (DC=2); the wall of the cell 'i hear a noise behind it!'; the clock gives the knife (DF=1); the small box gives the note (lines 471 to 485); the robot, once shorted out, 'its shorted out!'; and the chest, once the combination is right (H8=1), gives the gold (MJ=1)."
+   "text": "The second half of the cases of LOOK. Looking at the gold in the treasure room, once the combination is right (CO=1), says 'its what i came for..'; the basement door and the window at the east side say 'its the basement door' and 'its on the second floor'; the ledge's window 'its locked' until the player has walked through the dim room's door into the north hall (CW=0 until then); the tree 'i see a branch'; the apple (once looking in the open case has revealed it, BB=2) 'looks like a iie', a joke on the Apple IIe; the door of the dim room 'it's secured with a beam'; the pit 'my gosh!! it's full of snakes'; the skeleton 'i thought it moved!'; the mailbox once the old man has put the brass key in it shows the brass key; the open book on the library desk; the beam 'looks v e r y heavy..'; the toolbox gives the crowbar (DC=2); the wall of the cell 'i hear a noise behind it!'; the clock gives the knife (DF=1); the small box gives the note (lines 471 to 485); the robot, once shorted out, 'its shorted out!'; and the chest, once the combination is right (H8=1), gives the gold (MJ=1)."
   },
   {
    "address": 9624,
@@ -773,7 +773,7 @@
   {
    "address": 10537,
    "type": "line",
-   "text": "The LIGHT verb. 'light torch' with the torch in the pack sets CC=1; without CC=1 the dark places (the dim room, the tunnel, the corridor and the cell) kill the player. Line 600 also loads the character 'F' into A5$ whatever the player types: the last letter of the safe's combination."
+   "text": "The LIGHT verb. 'light torch' with the torch in the pack sets CC=1; without CC=1 the dark places (the dim room, the tunnel, the corridor and the cell) kill the player. Line 600 also loads the character 'F' into A5$ whatever the player types: the last letter of the chest's combination."
   },
   {
    "address": 10637,
@@ -788,7 +788,7 @@
   {
    "address": 10883,
    "type": "line",
-   "text": "The PULL verb. 'pull switch' in the dark room (place 25) prints a whirr and runs the 'coming soon' advertisement at line 1940; 'pull button' in the study after the panel has been pressed (DP=1) prints 'i hear a rumble', puts a hole in the stone cell (S$(27,7)='hole', HH=1, AZ=1). Line 660 also loads the letter 'I' into A1$ whatever the player types: the first letter of the safe's combination."
+   "text": "The PULL verb. 'pull switch' in the dark room (place 25) prints a whirr and runs the 'coming soon' advertisement at line 1940; 'pull button' in the study after the panel has been pressed (DP=1) prints 'i hear a rumble', puts a hole in the stone cell (S$(27,7)='hole', HH=1, AZ=1). Line 660 also loads the letter 'I' into A1$ whatever the player types: the first letter of the chest's combination."
   },
   {
    "address": 11077,
@@ -798,7 +798,7 @@
   {
    "address": 11322,
    "type": "line",
-   "text": "The READ verb. The signs at the manor wall and the front door, the letter in the mailbox ('the left is right...or is the right wrong?'), the note found in the small box ('i see writing.looks like 'vi'...') and the open book in the library (line 733 jumps to line 1699, the missing page that gives the safe's turns). 'read' of anything else answers 'sorry,must have dropped my glasses'."
+   "text": "The READ verb. The signs at the manor wall and the front door, the letter in the mailbox ('the left is right...or is the right wrong?'), the note found in the small box ('i see writing.looks like 'vi'...') and the open book in the library (line 733 jumps to line 1699, the missing page that gives the chest's turns). 'read' of anything else answers 'sorry,must have dropped my glasses'."
   },
   {
    "address": 11783,
@@ -823,7 +823,7 @@
   {
    "address": 13121,
    "type": "line",
-   "text": "The THROW verb. Builds the combination Z2$ from three letters (A1$ + Z6$ + A5$) every time it is used (line 830). 'throw water' in the stone cell (place 27) with the bucket filled (AF=1) asks 'where ' and wants 'hole': the water is thrown at the robot, HT counts the throws, and the third (HT=3) shorts the robot out (HR=1)."
+   "text": "The THROW verb. Builds the combination Z2$ from three strings, A1$ + Z6$ + A5$ ('I', 'BD' and 'F' once all are set), every time it is used (line 830). 'throw water' in the stone cell (place 27) with the bucket filled (AF=1) asks 'where ' and wants 'hole': the water is thrown at the robot, HT counts the throws, and the third (HT=3) shorts the robot out (HR=1)."
   },
   {
    "address": 13325,
@@ -833,7 +833,7 @@
   {
    "address": 13482,
    "type": "line",
-   "text": "The OPEN verb, one IF per thing that can be opened. The drawer in the study (BA=1), the case in the shed (BB=1), the bedroom window (BW=1, redrawn at once), the door of the dim room once the beam has been removed (G7=1), the toolbox in the corridor (DC=1), the study door from the south hall once unlocked with the brass key (GZ=1), the small box once unlocked (BN=2) and the clock (DF=1). 'open gate' with the gate unlocked sets G1=1, AM=1 and PB=1: the gate is open and the dogs start to come. Doors that cannot be opened say so: 'its locked', 'sorry,it's sealed tight' for the foyer door, 'sorry,its jammed shut!' for the door on the east side. Opening the drawer, case, window, gate or toolbox a second time answers 'i already have'; the clock answers 'o.k.' again, the two doors just redraw, and an opened small box falls through to 'sorry'."
+   "text": "The OPEN verb, one IF per thing that can be opened. The drawer in the study (BA=1), the case in the shed (BB=1), the bedroom window (BW=1, redrawn at once), the door of the dim room once the beam has been removed (G7=1), the toolbox in the corridor (DC=1), the study door from the south hall once unlocked with the brass key (GZ=1), the small box once unlocked (BN=2) and the clock (DF=1). 'open gate' with the gate unlocked sets G1=1, AM=1 and PB=1: the gate is open and the dogs start to come. Doors that cannot be opened say so: 'its locked', 'sorry,it's sealed tight' for the foyer door, 'sorry,its jammed shut!' for the door on the east side. Opening the window, the gate, or the drawer, case or toolbox while still open and not yet searched answers 'i already have'; once its find has been made, the drawer and case answer 'o.k.' again (lines 877 and 879) and the toolbox falls through to 'sorry'; the clock answers 'o.k.' again, the two doors just redraw, and an opened small box falls through to 'sorry'."
   },
   {
    "address": 14192,
@@ -843,17 +843,17 @@
   {
    "address": 14728,
    "type": "line",
-   "text": "Turns what the player typed into an object's full name and, for a few objects, does the state change that taking or dropping brings. K is the column where the noun starts: 5 after 'get ', 6 after 'drop '. The three letters are matched against the objects (arm to armour, bra to branch, buc to bucket, lad to ladder, ...). For 'key' it asks 'which one ' and reads a second line (line 1444), then picks the iron, brass or small key (lines 1456 to 1468). Anything not known becomes '999', which line 408 turns into 'i'm not that strong'."
+   "text": "Turns what the player typed into an object's full name and, for a few objects, does the state change that taking or dropping brings. K is the column where the noun starts: 5 after 'get ', 6 after 'drop '. The three letters are matched against the objects (arm to armour, bra to branch, buc to bucket, lad to ladder, ...). For 'key' it asks 'which one ' and reads a second line (line 1444), then picks the iron, brass or small key (lines 1456 to 1468). Anything not known becomes '999', which GET turns into 'i'm not that strong' (line 408) and DROP into 'its not in my pack' (line 422)."
   },
   {
    "address": 15566,
    "type": "line",
-   "text": "The rest of resolve_noun: mostly nouns that are only turned into their full names (letter, small box, armour, bucket, mop, gold, branch, ladder, knife, note), though the mop line also sets H7 (line 1429) and taking the brass key sets H3 (line 1456). 'key' on its own asks 'which one ' and takes the first three letters of the answer (line 1444); line 1456 and the following turn 'bra', 'sma' and 'iro' into the brass, small and iron key. The iron key needs the branch in the pack at the gates while DM=0 (line 1462); line 1468 then sets DM=1. Anything else becomes '999'."
+   "text": "The rest of resolve_noun: mostly nouns that are only turned into their full names (letter, small box, armour, bucket, mop, gold, branch, ladder, knife, note), though the mop line also sets H7 (line 1429) and taking the brass key sets H3 (line 1456). 'key' on its own asks 'which one ' and takes the first three letters of the answer (line 1444); line 1456 and the following turn 'bra', 'sma' and 'iro' into the brass, small and iron key; any other answer falls to lines 1466 and 1468, which test an E left over from an earlier command. The iron key needs the branch in the pack at the gates while DM=0 (line 1462); line 1468 then sets DM=1. Any other noun becomes '999'."
   },
   {
    "address": 16203,
    "type": "line",
-   "text": "The pack display. Clears the screen (after hiding the sprites with line 1518), prints each non-empty T$ slot three columns in, with '(worn)' after the armour when AW=1 and '(filled)' after the bucket when AF=1. An empty pack prints 'not a cracker !' in the middle of the screen: a message printed when nothing is carried. Then waits (line 1556) and redraws."
+   "text": "The pack display. Clears the screen (after line 1518, which in the laboratory, place 26, moves the skeleton's sprite 4 to 0,0), prints each non-empty T$ slot three columns in, with '(worn)' after the armour when AW=1 and '(filled)' after the bucket when AF=1. An empty pack prints 'not a cracker !' in the middle of the screen: a message printed when nothing is carried. Then waits (line 1556) and redraws."
   },
   {
    "address": 16569,
@@ -878,7 +878,7 @@
   {
    "address": 16808,
    "type": "line",
-   "text": "A tune player the program never calls (nothing jumps to line 1570). It sets up voice 2 of the sound chip at $D400 (S=54272), writing 17 and 244 to the attack and decay and the sustain and release registers S+12 and S+13, volume 15, and plays notes read from DATA as pairs of frequency bytes written to S+8 and S+7, gating the voice with 33 in S+11, and a length until it reads a negative high byte; the DATA it reads is the same set at line 5900 that the title tune uses, but the title tune has its own player at line 1800."
+   "text": "A tune player the program never calls (nothing jumps to line 1570). It sets up voice 2 of the sound chip at $D400 (S=54272), writing 17 and 244 to the attack and decay and the sustain and release registers S+12 and S+13, volume 15, and plays notes read from DATA as pairs of frequency bytes written to S+8 and S+7, gating the voice with 33 in S+11, and a length until it reads a negative high byte. Its triplets match the tune's DATA at line 5900, but the program has no RESTORE and in a new game every DATA item has been read by the time play starts, so a call would stop with OUT OF DATA (in a resumed game the object DATA of line 6200 is still unread, and the word 'gate' would stop it with an error); the title tune has its own player at line 1800."
   },
   {
    "address": 16927,
@@ -903,17 +903,17 @@
   {
    "address": 17882,
    "type": "line",
-   "text": "The library book. Prints, in reverse video, 'locks and cunning escapes ..and as a general rule for opening treasure chests, try... right 3, left 7, right 2 ...the rest of the page is missing..'. These are the turns of the dial for the combination lock; the safe's letters have to be worked out from them (and the note's 'vi'). After a pause returns to the game at line 42."
+   "text": "The library book. Prints, in reverse video, 'locks and cunning escapes ..and as a general rule for opening treasure chests, try... right 3, left 7, right 2', then in yellow '...the rest of the page is missing..'. These are the turns of the dial for the combination lock; the chest's letters have to be worked out from them (and the note's 'vi'). After a pause returns to the game at line 42."
   },
   {
    "address": 18413,
    "type": "line",
-   "text": "The cutscene of old man Bastow dropping the safe from the balcony when the player walks east from the foyer. Turns sprite 0 on (POKEV+21,1), makes it yellow and double size, then steps its y from 50 to 144 by 3 with the sprite pointer 2040 set to block 13 (the safe is the first shape drawn at line 5001), then clears the screen and prints the message. With the armour worn (AW=1, line 1731) the player survives and is placed in the library (line 1736); without it the death screen follows (line 1734)."
+   "text": "The cutscene of old man Bastow dropping the safe from the balcony when the player walks east from the foyer. Turns sprite 0 on (POKEV+21,1), makes it yellow and double size, then steps its y from 50 to 143 by 3 with the sprite pointer 2040 set to block 13 (the safe, the first shape of the second set, poked there by line 5055), then clears the screen and prints the message. With the armour worn (AW=1, line 1731) the player survives and is placed in the library (line 1736); without it the death screen follows (line 1734)."
   },
   {
    "address": 18746,
    "type": "line",
-   "text": "The safe's combination lock. Prints that the lock has the letters of the alphabet around its rim and asks for the letters or '*' to quit. A string typed is compared with Z2$ (line 1745): if it matches, 'thats it!' and H8=1, CO=1 (the chest is open); otherwise the question is asked again. The right answer is the four letters I, B, D, F in one line, assembled in Z2$ from A1$ ('I'), Z6$ (A6$ and A9$, 'B' and 'D') and A5$ ('F'): A6$ and A9$ are set in the title's set-up (lines 5070 and 5000), Z6$ at line 140, A1$ at line 660, A5$ at line 600, and Z2$ itself when THROW runs (line 830)."
+   "text": "The chest's combination lock. Prints that the lock has the letters of the alphabet around its rim and asks for the letters or '*' to quit. A string typed is compared with Z2$ (line 1745): if it matches, 'thats it!' and H8=1, CO=1 (the chest is open); otherwise the question is asked again. The right answer is the four letters I, B, D, F in one line, assembled in Z2$ from A1$ ('I'), Z6$ (A6$ and A9$, 'B' and 'D') and A5$ ('F'): A6$ and A9$ are set in the title's set-up (lines 5070 and 5000), Z6$ at line 140, A1$ at line 660, A5$ at line 600, and Z2$ itself when THROW runs (line 830)."
   },
   {
    "address": 18986,
@@ -933,7 +933,7 @@
   {
    "address": 19374,
    "type": "line",
-   "text": "Called when a get or a drop fails after line 1400 has already changed a flag for the picture. Line 1820 is for a get that finds the pack full (K=5): the bucket, the mop, the small box and the armour in their places have their 'taken' flags put back (H6, H7, G6, H5 set to 0) so the picture still shows them. Line 1840 does the same for a drop that finds the place full (K=6), putting G6 back to 1 for the small box in the dim room."
+   "text": "Called when a get finds the pack full or a drop finds the place full, after line 1400 has already changed a flag for the picture. Line 1820 is for a get that finds the pack full (K=5): the bucket, the mop, the small box and the armour in their places have their 'taken' flags put back (H6, H7, G6, H5 set to 0) so the picture still shows them. Line 1840 does the same for a drop that finds the place full (K=6), putting G6 back to 1 for the small box in the dim room."
   },
   {
    "address": 19552,
@@ -943,7 +943,7 @@
   {
    "address": 19757,
    "type": "line",
-   "text": "Wipes the text area under the picture (15 lines down) after a short pause, used for the dogs' and the skeleton's warning messages."
+   "text": "After a short pause, blanks one line of the text area (the cursor goes home and 19 lines down, A$ is printed there, and the cursor goes back up two lines); used after the dogs', the bells', the skeleton's and the tired player's messages."
   },
   {
    "address": 19803,
@@ -958,7 +958,7 @@
   {
    "address": 20014,
    "type": "line",
-   "text": "The 'coming soon' advertisement. Pulling the switch in the dark room (line 661) clears the screen to light grey (colour 15), draws a black-bordered frame and announces '*** coming soon ***', 'graphic adventure no. 2' and a title in a green box, '005 super spy', 'from' and a red box, and 'look for it' followed by a line of asterisks. Then it returns to the game. Line 1957 toggles G5, the state that shows the switch as pulled in the dark room's picture."
+   "text": "The 'coming soon' advertisement. Pulling the switch in the dark room (line 661) clears the screen to light grey (colour 15), prints pairs of black blocks down the left and right edges and announces '*** coming soon ***', 'graphic adventure no. 2' and a title in a green box, '005 super spy', 'from' and a red box, and 'look for it' followed by a line of asterisks. Then it returns to the game. Line 1957 toggles G5, the state that shows the switch as pulled in the dark room's picture."
   },
   {
    "address": 20618,
@@ -968,7 +968,7 @@
   {
    "address": 20674,
    "type": "line",
-   "text": "Climbing the ladder: line 1991 from the window ledge (place 18) goes back down to the east side (place 4) when the ladder is there; line 1994 from place 4 up to the ledge puts the ladder among the ledge's objects (S$(18,5)) and sets DG=1."
+   "text": "Climbing the ladder: from the window ledge (place 18) line 1992 goes back down to the east side (place 4) when the ladder is there, and line 1991 refuses when it is not; from place 4 line 1995 goes up to the ledge, puts the ladder among the ledge's objects (S$(18,5)), sets DG=1 and hides the player from the dogs (PC=1, PA=0), and line 1994 refuses without the ladder."
   },
   {
    "address": 20809,
@@ -1013,7 +1013,7 @@
   {
    "address": 24809,
    "type": "line",
-   "text": "Place 8, inside the storage shed. Lines 2730 to 2735 are a subroutine that draws a room as an outline in perspective, grey lines; places 14, 15 and 27 call it too, with a flag (DO, DN or DE) set that makes it return at line 2736 before the shed's own contents. The shed's contents are the case in maroon (line 2740) and, once it has been moved (G9=1, line 2742), the case drawn aside and the trapdoor (line 2744)."
+   "text": "Place 8, inside the storage shed. Lines 2730 to 2735 are a subroutine that draws a room as an outline in perspective, grey lines; places 14, 15 and 27 call it too, with a flag (DO, DN or DE) set that makes it return at lines 2736 to 2738 before the shed's own contents. The shed's contents are the case in red with an orange edge (line 2740) and, once it has been moved (G9=1, line 2742), the case drawn aside and the trapdoor (line 2744)."
   },
   {
    "address": 25303,
@@ -1023,7 +1023,7 @@
   {
    "address": 25874,
    "type": "line",
-   "text": "Place 10, at the north end of the hall. Draws the hall as a grey outline in perspective with an open door at the left and a tall brown clock with a yellow face and pendulum at the right."
+   "text": "Place 10, at the north end of the hall. Draws the hall as a grey outline in perspective with a dark grey door at the left and a tall brown clock with a yellow face and pendulum at the right."
   },
   {
    "address": 26457,
@@ -1033,12 +1033,12 @@
   {
    "address": 27186,
    "type": "line",
-   "text": "Place 12, in the kitchen. Draws a grey outline with a doorway at the left, a brown table with a green bottle and a yellow plate on it, and a brown chair."
+   "text": "Place 12, in the kitchen. Draws a grey outline with a doorway at the left, a table with an orange top and brown legs with a green bottle and a yellow plate on it, and a brown chair."
   },
   {
    "address": 27671,
    "type": "line",
-   "text": "Place 13, in the wine cellar. Draws three racks of bottles as rows of circles (green, red and white) and, unless the armour has been taken (H5=0, line 3230), a suit of armour in red and white standing at the right."
+   "text": "Place 13, in the wine cellar. Draws three racks of bottles as rows of circles (green, red and light grey) and, unless the armour has been taken (H5=1 skips it, line 3230), a suit of armour in red and grey with a yellow plume standing at the right."
   },
   {
    "address": 28250,
@@ -1058,7 +1058,7 @@
   {
    "address": 29147,
    "type": "line",
-   "text": "Place 17, in the master bathroom. Draws a bath in green with blue water, a pair of taps over it and a towel on a line, yellow and maroon."
+   "text": "Place 17, in the master bathroom. Draws a bath in light green with light blue water, a pair of taps over it and two towels on a line, yellow and red."
   },
   {
    "address": 29517,
@@ -1068,12 +1068,12 @@
   {
    "address": 29968,
    "type": "line",
-   "text": "Place 19, in the entrance foyer. Draws a blue stippled wall with a brown barred door at the middle, the balcony stairs at the right in cyan and three candles."
+   "text": "Place 19, in the entrance foyer. Draws a blue stippled wall with a brown barred door at the middle, the balcony with its railing at the right in cyan over a cyan doorway, and three candles."
   },
   {
    "address": 30448,
    "type": "line",
-   "text": "Place 21, in a closet. Draws the closet as grey lines with a yellow mop hanging at the middle, a grey bucket at the left and the brown crate at the right. The bucket and mop are drawn while H6=0 and H7=0 and disappear when taken, which sets them to 1 (lines 4134 and 4136) and the crate shows moved (H2=1)."
+   "text": "Place 21, in a closet. Draws the closet as grey lines with a mop (brown handle, yellow head) at the middle, a grey bucket at the left and the orange crate at the right. The bucket and mop are drawn while H6=0 and H7=0 (lines 4134 and 4136) and disappear when taken, which sets them to 1 (lines 1425 and 1427); once the crate has been moved (H2=1) it is drawn one row higher."
   },
   {
    "address": 31058,
@@ -1088,7 +1088,7 @@
   {
    "address": 32227,
    "type": "line",
-   "text": "Place 24, in a damp stone corridor. With the torch not lit (CC=0) the player dies in the dark (line 4300). Otherwise draws the corridor in perspective with a maroon end wall and a blue block."
+   "text": "Place 24, in a damp stone corridor. With the torch not lit (CC=0) the player dies in the dark (line 4300). Otherwise draws the corridor in perspective with a red end wall and a blue block."
   },
   {
    "address": 32512,
@@ -1098,12 +1098,12 @@
   {
    "address": 32603,
    "type": "line",
-   "text": "Place 26, in the secret laboratory. Sets border and background to red (POKE53280,2 and 53281,2), then draws a black bench, a barred window and shelves in white. Turns on sprite 4 (POKEV+21,16) as white (V+43), expanded, at x=80, y=110 (V+8 and V+9) with the shape pointer 2044 set to block 15: the skeleton."
+   "text": "Place 26, in the secret laboratory. Sets border and background to red (POKE53280,2 and 53281,2), then draws a black barred window, a black bench and shelves in white. Turns on sprite 4 (POKEV+21,16) as white (V+43), expanded, at x=80, y=110 (V+8 and V+9) with the shape pointer 2044 set to block 15: the skeleton."
   },
   {
    "address": 32867,
    "type": "line",
-   "text": "Place 20, in the library. Draws shelves of books in rows of yellow, red, green and blue, with a brown desk in front. Its picture routine is placed after the laboratory's, at line 4450."
+   "text": "Place 20, in the library. Draws shelves of books in rows of yellow, red, green and blue (with light red and light blue among them), with a desk in front, orange on brown legs. Its picture routine is placed after the laboratory's, at line 4450."
   },
   {
    "address": 33396,
@@ -1118,7 +1118,7 @@
   {
    "address": 33796,
    "type": "line",
-   "text": "The title screen. Black background; draws the manor in blue at the lower left (lines 4910 to 4918) and the name of the game in light blue at the top right ('t h e', 's e c r e t', 'o f', 'b a s t o w', 'm a n o r'). Sets A6=68 (the character 'D') and calls the title tune (line 1800); then goes to line 5000. Line 4924 prints '1983' under the title and is called from inside the tune at the ninth note."
+   "text": "The title screen. Black background; draws the manor as a black silhouette against a blue panel at the lower left (lines 4910 to 4918) and the name of the game in light blue at the top right ('t h e', 's e c r e t', 'o f', 'b a s t o w', 'm a n o r'). Sets A6=68 (the character 'D') and calls the title tune (line 1800); then goes to line 5000. Line 4924 prints '1983' under the title and is called from inside the tune at the ninth note."
   },
   {
    "address": 34279,
@@ -1128,12 +1128,12 @@
   {
    "address": 34570,
    "type": "line",
-   "text": "Prints 'special commands' and the instructions that are already stored on the screen as text by the title screen; then loads the exits table, 27 by 3 strings from DATA (line 5015), and the second set of sprite shapes."
+   "text": "Clears the screen and prints 'special commands' and the instructions ('i', 'save', 'g', 'quit', and the direction commands); then loads the exits table, 27 by 3 strings from DATA (line 5015), leaves only sprite 0 enabled (POKEV+21,1), and goes on to the second set of sprite shapes."
   },
   {
    "address": 34882,
    "type": "line",
-   "text": "Reads three more 63-byte shapes from DATA into 832, 896 and 960: the second set of shapes (a man, a robot and a skeleton at line 6100 and after). They replace the first set, which the title screen has used."
+   "text": "Reads three more 63-byte shapes from DATA into 832, 896 and 960: the second set of shapes (a safe, a robot and a skeleton at line 6100 and after). They replace the first set, which the title screen has used."
   },
   {
    "address": 34960,

@@ -129,7 +129,7 @@ routine writes the first 58 of them (line 782 to 787) and nothing else.
 | `G6`, `H6`, `H7` | the small box, the bucket and the mop still lie where the picture draws them |
 | `ZA`, `G5` | the dark room's switch, drawn pulled or not |
 | `DN`, `DE`, `DO`, `LI` | flags and a counter for the pictures |
-| `A1$`, `A5$`, `A6$`, `A9$`, `Z6$`, `Z2$` | the letters of the safe's combination (below) |
+| `A1$`, `A5$`, `A6$`, `A9$`, `Z6$`, `Z2$` | the letters of the chest's combination (below) |
 | `LW`, `QW`, `ZB` | the `help` count, the notes of the title tune, the items shown |
 | `AB`, `LL`, `BR`, `DM`, `MJ`, `HZ` | stage flags: the iron key found at the gate, the ladder found in the shed, the branch broken off, the iron key got by the pit, the gold taken (not saved), `HZ` (saved and restored; no line uses it) |
 
@@ -210,7 +210,7 @@ prints bells next move and sets `LR`=2; entering place 26 makes `LR`=3
 and the skeleton starts to chase: every move adds one to `LT` and the fifth
 (`LT`>4) kills. The shed resets it (line 168).
 
-## The safe's combination
+## The chest's combination
 
 The code is `IBDF`. The book (line 1699 to 1706) gives three turns,
 `right 3`, `left 7`, `right 2`, and the note in the small box says `VI`,
@@ -294,4 +294,14 @@ comment on every line.
 
 ## The listing's error rate
 
-A sample of 60 of the 102 comments (seed 4711, drawn with `kit/scripts/sample.py`) was checked by one agent on claude-opus-5-5 that wrote none of them: 26 were wrong in a detail (43 %, 95 % interval 32 % to 56 %), none in what the comment is about, and 1 could not be checked. The errors were of the usual kinds: which places are dark, what a flag means, which sprite number, a count that is off by one, a claim of "every" or "any other". All 26 were corrected, and the other comments that said the same were corrected with them. The 42 comments outside the sample were not checked and probably hold errors at a similar rate: the listing needs an audit before it is trusted. Its comments are on groups of lines, not on each line.
+Every check was made by an agent on claude-opus-5-5 that wrote none of the comments it checked, one at a time.
+
+| Step | Seed | Result | Corrected |
+|---|---|---|---|
+| sample of 60 of 102 | 4711 | 26 wrong in a detail (43 %) | 26 |
+| audit of all 102 | | 22 wrong in a detail | 22 |
+| sample of 60 | 1111 | 5 wrong (8 %), over the mark of 2 | 5 |
+| audit of all 102 | | 12 wrong in a detail | 12 |
+| sample of 60 | 2222 | 1 wrong (1.7 %, 95 % interval 0.3 % to 8.9 %), within the mark | 1 |
+
+The errors were in details, never in what a comment is about: which places are dark, what a flag means, sprite and voice numbers, colours, line numbers off by one, "every" claims that fail for one case, and calling the chest's combination the safe's. The comments are on groups of lines, not on each line. The annotation itself was written on claude-sonnet-5-5, which is not a proven model, so the game awaits a maintainer's check (`kit/CHECKING.md`).

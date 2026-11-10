@@ -65,7 +65,7 @@ Sources:
 Found in the code, not in anything the game or the sources say.
 
 - `LIST` is switched off: line 17 changes the vector BASIC lists through.
-- The safe's combination is not written anywhere in the program as a
+- The chest's combination is not written anywhere in the program as a
   string: it is assembled from four one-letter or two-letter variables set
   in four different places.
 - A dark room west of the damp stone corridor holds a switch that does
