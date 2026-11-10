@@ -976,3 +976,5 @@ The full kit suite ran 934 tests: 920 passed, 11 skipped for missing optional to
 With listing files held stable, all 402 game-specific tests passed, the three repository checks passed and the 102-game site build passed. The earlier full-kit run had 920 passes and 11 optional-tool skips; its three game-listing read failures all passed on stable rerun.
 
 Lowered the ignored shape matcher threshold to include nonzero sparse masks that already have a verified gallery counterpart. Twenty more ranges matched their entry/play snapshots; VICE read each and observed no instruction entry during a 200-frame play probe. Preserved the original 302 observations and appended the 20 matches. Restored the paused user snapshot.
+
+Identified 11 blank bitmap slots next to nonzero shapes that match verified two-layer source frames. VICE matched the bytes and observed no instruction entry during 200-frame probes. Added bounded descriptions and retained target-frame selection as open; restored the paused user snapshot.

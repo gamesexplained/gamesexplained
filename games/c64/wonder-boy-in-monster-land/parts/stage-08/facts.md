@@ -58,4 +58,4 @@ This load has 2 captured motion-reader entries and encoded streams documented in
 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
-10 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
+12 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.

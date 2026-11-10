@@ -135,4 +135,4 @@ This load has 28 additional one-byte RTS entries selected by captured entity vec
 
 Controlled visual-resource reconstruction reads 7 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
 
-5 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
+6 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
