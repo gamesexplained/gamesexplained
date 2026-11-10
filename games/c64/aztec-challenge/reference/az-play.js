@@ -66,7 +66,7 @@ globalThis.AztecPlay = (function () {
     const M = o.M, cost = o.cost || COST, YIELD = cost['@yield'] || {}, IRQ = cost['@irq'] || {}, FN = cost['@fn'] || {}, TO = cost['@to'] || {};
     // the KERNAL's bytes as the game starts on them: the interrupt's vector at its own handler, the
     // cursor's colour (light blue), and $91 with no STOP key held
-    M[0x0314] = 0x31; M[0x0315] = 0xEA; M[0x0286] = 0x03; M[0x91] = 0xFF;
+    M[0x0314] = 0x31; M[0x0315] = 0xEA; M[0x0286] = 0x03; M[0x91] = 0xFF; M[0xC5] = 64; M[0xC6] = 0;
     const vic = new Uint8Array(64), colour = new Uint8Array(1024), sid = new Uint8Array(32);
     vic[0x11] = 0x1B; vic[0x16] = 0xC8; vic[0x18] = 0x14;          // the screen as the KERNAL leaves it
     const cia2 = [0x97, 0x3F];
@@ -126,7 +126,7 @@ globalThis.AztecPlay = (function () {
         if (chip === 'collide') { coll.to(S.clock + 1); return coll.read(0x1E, S.clock); }
         if (chip === 'sid') return osc3();
         if (chip === 'joy') return 0xE0 | S.joy;
-        if (chip === 'getin') return P.K.getin();
+        if (chip === 'getin') return P.getin;
         if (chip === 'd011') return io.vicRead(0x11);
         if (chip === 'd011inc') return (io.vicRead(0x11) + 1) & 255;   // INC $D011, as the register reads now
         throw new Error('no chip ' + chip);

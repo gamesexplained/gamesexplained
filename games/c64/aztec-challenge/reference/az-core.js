@@ -21,7 +21,7 @@
 // address of the next stage, and P.program runs them one after another.
 (function (root) {
   'use strict';
-  // The four KERNAL routines the game calls, as the test's machine runs them and the port does:
+  // The four KERNAL routines the game calls, and the keyboard scan of its interrupt, as the test's machine runs them and the port does:
   // env is { M, colourWrite(i, v), keyDown(k) } (k a KERNAL key number: F1 4, F3 5, RUN/STOP 63).
   // Only what the game relies on is kept: the screen and colour cleared, the clock counted, the
   // STOP key's row kept in $91 and read back, the two function keys the menu waits for.
@@ -44,8 +44,25 @@
     },
     // STOP ($FFE1): true (Z set) when $91 says RUN/STOP is held
     stop(env) { return env.M[0x91] === 0x7F; },
-    // GETIN ($FFE4): the key typed, as the menu reads it: F1 $85, F3 $86, otherwise 0
-    getin(env) { return env.keyDown(4) ? 0x85 : env.keyDown(5) ? 0x86 : 0; },
+    // SCNKEY, which the KERNAL's interrupt runs at $EA31 (the game's own interrupt ends there too):
+    // a key newly down since the last scan ($C5, 64 for none) goes into the keyboard buffer at $0277,
+    // ten keys at most, counted in $C6. Function keys do not repeat. So F1 pressed during a preview
+    // waits in the buffer, and the menu takes it when it comes back.
+    scan(env) {
+      const M = env.M, k = env.keyDown(4) ? 4 : env.keyDown(5) ? 5 : 64;
+      if (k === M[0xC5]) return;
+      M[0xC5] = k;
+      if (k !== 64 && M[0xC6] < 10) M[0x0277 + M[0xC6]++] = k === 4 ? 0x85 : 0x86;
+    },
+    // GETIN ($FFE4): the first key in the buffer (F1 $85, F3 $86), or 0 when it is empty
+    getin(env) {
+      const M = env.M;
+      if (!M[0xC6]) return 0;
+      const a = M[0x0277];
+      for (let i = 0; i < 9; i++) M[0x0277 + i] = M[0x0278 + i];
+      M[0xC6]--;
+      return a;
+    },
   };
 
   // Input is taken the same way: the joystick ('joy', what $DC00 read) and the key GETIN gave ('getin'),
@@ -74,6 +91,7 @@
       udtim: () => kernal.udtim(env),
       stop: () => kernal.stop(env),
       getin: () => kernal.getin(env),
+      scan: () => kernal.scan(env),
     };
     const H = {
       // a read the port takes from the game (the lockstep) or its own chips (the page)

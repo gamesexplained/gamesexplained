@@ -67,6 +67,7 @@
       M[0x02] = 4;
       P.show_menu();
       for (;;) {                                            // $1B1A: the keys, or the next preview
+        P.getin = K.getin();                              // GETIN takes the key from the buffer
         const a = yield* H.live(0x1B1D, 'getin', 'a');   // the key GETIN gave the game
         if (a === 0x85) { M[0x08] = 1; return 0x115B; }
         if (a === 0x86) { M[0x08] = 2; return 0x115B; }
@@ -214,9 +215,11 @@
         }
       }
       vicW(0x1A, 0x10);
+      K.scan();                                             // then on to the KERNAL's at $EA31
     };
-    // the KERNAL's own handler, while $0314 still points at it: nothing the game sees
-    P.irqs[0xEA31] = function () {};
+    // the KERNAL's own handler, while $0314 still points at it: of what the game sees, only the
+    // keyboard scan into the buffer GETIN reads
+    P.irqs[0xEA31] = function () { K.scan(); };
   }
   (root.AZ_GROUPS = root.AZ_GROUPS || []).push(install);
   if (typeof module !== 'undefined') module.exports = install;

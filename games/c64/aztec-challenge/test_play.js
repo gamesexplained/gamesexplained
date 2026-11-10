@@ -60,7 +60,7 @@ const LINE = AztecPlay.LINE;
 // ---- the game on the kit's C64
 function machine() {
   const ram = RAM.slice();
-  ram[0x0314] = 0x31; ram[0x0315] = 0xEA; ram[0x0286] = 0x03; ram[0x91] = 0xFF;
+  ram[0x0314] = 0x31; ram[0x0315] = 0xEA; ram[0x0286] = 0x03; ram[0x91] = 0xFF; ram[0xC5] = 64; ram[0xC6] = 0;
   const m = new Machine({ ram, pc: 0x1000, port: { dir: 0x2F, data: 0x37 }, cia: true, collide: true, passAt: 0x121D });
   m.cpu.i = 0; m.cpu.sp = 0xF6;
   for (const [a, v] of [[0xDC04, 0x25], [0xDC05, 0x40], [0xDC0E, 0x11], [0xDC0D, 0x81], [0xDD04, 0xFF], [0xDD05, 0xFF], [0xDD0E, 0x18]]) m.ioWrite(a, v);
@@ -71,8 +71,9 @@ function machine() {
     0xFFEA: (c) => { K.udtim(env(c)); c.rts(); },
     0xFFE1: (c) => { const s = K.stop(env(c)); c.z = s ? 1 : 0; c.a = s ? 0x7F : 0xFF; c.rts(); },
     0xFFE4: (c) => { c.a = K.getin(env(c)); c.z = c.a ? 0 : 1; c.rts(); },
-    // the KERNAL's exit reads $DC0D, which acknowledges the timer, and returns
-    0xEA31: () => { m.ioRead(0xDC0D); m.leave(62); return false; },
+    // the KERNAL's exit scans the keyboard into its buffer, reads $DC0D, which acknowledges the
+    // timer, and returns
+    0xEA31: (c) => { K.scan(env(c)); m.ioRead(0xDC0D); m.leave(62); return false; },
   };
   for (const a of Object.keys(m.azHooks)) m.hooks[a] = m.azHooks[a];
   // The kit's machine does not run the SID's voices, and voice 3's oscillator ($D41B) would read 0:

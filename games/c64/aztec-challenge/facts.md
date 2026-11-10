@@ -79,6 +79,12 @@ every level but the Bridge, whose gorge is single colour.
   nothing reads `$DC01`. F1 and F3 are read through the KERNAL's GETIN
   (`$1B1A`), RUN/STOP through `$FFE1` on the scorecard and in the
   Stairs, the Vermin and the Temple.
+- GETIN reads the KERNAL's keyboard buffer, which the KERNAL's interrupt
+  fills; the game's interrupt ends in it (`JMP $EA31` at `$1C84` and
+  `$1C98`) and nothing in the game touches the buffer (`$C6`, `$0277`).
+  So F1 or F3 pressed during a preview waits there, and the menu starts
+  the game when the preview hands back to it (traced; the Play tab's
+  port does the same).
 - On the scorecard any stick direction or fire starts the level
   (`$121A`), but only between two delays of about a third of a second.
 - Per level (the code): Gauntlet up jumps, down ducks, and any input held
