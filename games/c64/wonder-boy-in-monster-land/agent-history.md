@@ -818,3 +818,5 @@ Checked load-3 child initializers in twelve forced VICE cases, including offset 
 Checked two load-14 entity dispatchers in nine forced VICE cases, with $A8AC stubbed. Recorded three and one target pairs and restored the paused user snapshot.
 
 Checked load-14 type-$12 state 0 in five forced VICE cases with the random source stubbed, and restored the paused user snapshot.
+
+Checked load-14 type-$12 state 1 in six forced VICE cases, with movement and contact callbacks stubbed; restored the paused user snapshot.

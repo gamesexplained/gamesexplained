@@ -134,3 +134,5 @@ The shop label code at $9853 passes two selected item bytes to the formatter and
 Load-14 type-$12/$21 and type-$13 vectors select dispatchers at $A5B1 and $A7FF. Nine forced VICE cases checked active and sign conditions plus three and one captured state targets; $A8AC was stubbed. Their state indexes are not locally bounded, and callback effects and ordinary-play reachability remain open.
 
 Load-14 type-$12 state 0 at $A5D4 initializes a timer and stores twice the low two bits of the $3020 result, then falls through to state 1. Five forced VICE cases covered all four low-bit combinations with $3020 stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-14 type-$12 state 1 at $A5EA controls a timer, direction, a four-byte parameter block and contact branches. Six forced VICE cases checked timer boundaries, both directions and contact outcomes with callbacks stubbed. Callback effects, table-index bounds and ordinary-play reachability remain open.
