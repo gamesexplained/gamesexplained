@@ -76,3 +76,5 @@ Load-3 helper $9D18 jumps to $4342 for a zero $19A1,X or a value of $50 or more,
 Load-3 type-$07 state 5 at $9DB6 branches on $1A8F,X and the sign of $9E27, selects a movement call and writes two frame numbers. Five forced VICE cases checked both signs, the inactive branch and wrapped frame arithmetic with movement calls stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-3 type-$07 state 6 decrements $1AC2,X and either returns or calls $4B20 and jumps to $5DB9 with A=2. Four forced VICE cases checked signed boundaries with $4B20 stubbed and stopped at $5DB9. Callback effects and ordinary-play reachability remain open.
+
+Load-3 helper $9DF1 checks two callback carry results. A set carry from $732A changes entity state and removes the helper’s return address, skipping the rest of its caller; a clear carry leads to $7227 and can call $5D7A and jump to $9CD6. Five forced VICE cases tested state changes and the stack behavior with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
