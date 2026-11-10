@@ -99,6 +99,56 @@ something else (resident `$6E13`-`$6E2B`).
 - Portraits and close-up pictures are drawn and animated by ANIMATE, a
   file the engine loads at `$8400` (resident `start_view_picture`,
   `$8400`).
+- A map's walls are three wall sets, each a WALLDEF (780 character codes,
+  five shapes of 156, then their colours packed) and a WALLSET (50
+  characters, at `$6A`, `$9C` or `$CE` for the first, second or third
+  set). `install_wall_def` (dungeon `$1485`) adds 0, 50 or 100 to every
+  code of `$6A` or more (`renumber_wall_chars`, `$14CB`) unless the set's
+  flag (`$49E7` + the set) is set, puts the codes at `$ED50` + 780 × the
+  set and unpacks the colours to `$F674` + 780 × the set
+  (`unpack_pushed`, tables `$7A00`). A wall number 1-15 on the map is
+  set (n - 1) / 5, shape (n - 1) mod 5. New Phlan loads WALLS00 (all
+  4,680 bytes) and SECSET00 (192 characters from `$40`); every other map
+  SECSET02 (42 characters). Held by `test_graphics.js` for all 18 WALLDEF
+  files in each set, flag clear and set.
+- Three scripts SAVE to `$49E7` and `$49E8`. The graveyard (side 4,
+  ECL0A) sets both to 1 at its arrival entry (`$9A72`), before loading
+  WALLDEF15, 16 and 14, and to 0 on its way out (`$9932`). Valjevo
+  Castle's bailey (side 5, ECL06) sets them to 1 at its arrival entry
+  (`$9C5A`), before loading WALLDEF18, 19 and 01, except when the last
+  script was its own (`$49F2` = 6), and to 0 on a way out (`$9B7F`); the
+  keep (ECL07) sets them to 0 on its way out to New Phlan (`$A8DA`). The
+  castle's other blocks (ECL03-ECL05) keep the bailey's sets and flags.
+- `set_wall_colour` (dungeon `$1157`): bit 7 of the square's byte on the
+  map's third page picks `$49FE`, otherwise `$49FD`; the colour goes to
+  `$C05B` and `$C05C` and, when it differs from `$6DDB`, into the low half
+  of every colour byte in `$F674`-`$FF97` whose high half is not 0. Most
+  scripts set `$49FD` from the hour (New Phlan, ECL00 `$9914`: 11 while
+  `$49C9` is under 14, else 8, which multicolour cells show as cyan and
+  black). Held by `test_graphics.js` with `draw_view` on 1,044 views of
+  the 29 maps, by day and by night, with `door_state` (`$1143`) and
+  `check_leave_block` (`$10EC`) on the same squares.
+- Five wall shapes are drawn on no map: WALLDEF02's first, WALLDEF07's
+  third and fourth, WALLDEF08's fifth and WALLDEF17's fifth. Each file is
+  loaded by some map's script, and no GEO file of a map that loads it has
+  that wall number (`scripts/graphics_data.py`). No script SAVEs to an
+  address in `$0400`-`$07FF`, and DUNGEON's only store there is to the
+  door bits (`mark_door_side`, `$0F86`).
+- Portraits: 41 HEAD and 21 BODY files on the eight sides, each one frame,
+  a head 11 by 5 characters and a body 11 by 11. ANIMATE00 draws the body
+  (`$8406`), then the head over its top five rows (`$8409`). VIEW shows a
+  portrait only while `$49EB` is 0 and bit 7 of `$49FF` is set (resident
+  `show_portrait`, `$48A4`); the only script that writes `$49EB` is New
+  Phlan's (side 3, ECL00): 0 at its arrival entry (`$9AF8`), 1 on its two
+  ways out (`$9945`, `$9BBC`).
+- HEAD03 (side 6) is on neither creation list (gen `portrait_heads`,
+  `$1347`; `portrait_bodies`, `$133B`), on no one who joins the party and
+  in no script. HEAD12, HEAD33, BODY12, BODY1A and BODY23 appear only in the
+  creation lists; HEAD44 also as the training hall's THEURGIST.
+- No side holds HEAD23 or BODY00. The MAD MAN (head `$23`), the LEVEL 6 MU
+  and PRINCESS FATIMA (body 0), who join the party, name them, and so do
+  the title's demonstration party's RESTAL, TARRAN and DIANE (body 0).
+  Live test below.
 - The title is a hires bitmap at `$E000` with its colours at `$DC00`,
   unpacked from TITLEPG (title `title_packed`, `$6F00`).
 
@@ -672,3 +722,9 @@ effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
   north, east, south and west, and 11, 10, 11 and 11 with the store by
   Y; as the game has it the goblins stood around the middle of the 56 by
   26 field for north, east and west.
+- A portrait with no file (10 November 2026): from `por_phlan_party` with
+  disk 2 side A attached, ZARRADA's body set to 0 (`$4DFF` and `$6BFF`),
+  then VIEW for her. The screen read INSERT SIDE # 3, AND PRESS ANY KEY.
+  and asked again after each key, with side 3 in the drive and with each
+  of the other seven. The same with her head set to `$23` (`$4DFE` and
+  `$6BFE`).

@@ -284,3 +284,35 @@ over the resident, combat and tables listings.
 - The comments on ANIMATE DEAD in spells (`$AB29`) and camp-spells
   (`$A9C2`) now say what the figure does.
 
+
+
+## Follow-up: walls, portraits and the ending on the Graphics tab (10 November 2026)
+
+Aaron's queue, fourth item: the 3D view's walls, the portraits and the
+ending on the Graphics tab. Added four sections to `graphics.html`, the
+data script `scripts/graphics_data.py` (it reads `work/files` and writes
+the page's `por-graphics` data) and `test_graphics.js`.
+
+- The walk runs GDRIVE01's `draw_view` on the kit's 6502 over the view
+  part's bytes, with the walls as each map's script installs them. A
+  first port drew the views from a rendering of my own; running the
+  game's `install_wall_def` and `set_wall_colour` beside it found the
+  pre-numbered sets (graveyard, castle hedges) wrapped past `$FF`, which
+  the port then did with `& 255`. The test holds every view it draws.
+- Which wall sets, flags and colours each map uses came from reading the
+  29 scripts' SAVEs and wall loads; the table in `graphics_data.py` cites
+  each script address.
+- The ending's third picture, PIC `$35`, was first described as the
+  spirit's face, from the routine's name (`show_head`, from its
+  picture_kind 1). Drawn, it is the same window with the pool going grey;
+  the routine is now `dim_pool`.
+- The listing's comment on `sprite_falls` said the eyes turn red once the
+  wait is under 50; the code's BCC skips the store only below 50, so they
+  are red from the second step. Run in the test.
+- The final part's listing left out four bytes, `$0B22`-`$0B25`, which
+  `fade_sprites` reads as colours: the block was Undefined and no symbol
+  reached them, so the ledger did not count them and the part still read
+  100 %. Typed as bytes and added to the listing from FINAL, whose bytes
+  match all 1,375 the listing already held.
+- The missing HEAD23 and BODY00 were tried live: VIEW asks for side 3
+  after every key, whatever side is in the drive.

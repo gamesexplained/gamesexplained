@@ -31,7 +31,7 @@ Sources:
 | Pre-rolled party stored as a saved game on side 1 | live | `SAVEDGAME0`, `SAVEDGAME1` on side 1 |
 | Up to 6 player characters and 2 NPCs; NPCs have morale and may flee or betray | traced | eight party slots (camp part, order_command's slots 0-7; combat part, quick_off from slot 7 down); an NPC is `$6BB8` bit 7: it stays under the computer's control and flees when hurt enough (combat part, morale `$20C1`, hurt_check `$211C`). Attacking an ally turns every NPC on the party's side against it (confirm_ally, `$0F08`). Betrayal outside combat is the scripts' and was not searched |
 | Adventure Menu: move, view, cast, area, encamp, search, look | live | dungeon part |
-| 3D view in town and underground; I/J/K/M or the joystick move and turn; each step is one minute, ten with Search on | live | dungeon part, view part |
+| 3D view in town and underground; I/J/K/M or the joystick move and turn; each step is one minute, ten with Search on | live | dungeon part, view part; the Graphics tab walks all 29 maps with draw_view (`$C183`) itself, held to set_wall_colour and check_leave_block by `test_graphics.js` |
 | Area command: an overhead map of the block, not always available | traced | dungeon part: area_command (`$0CFD`) draws 11 by 11 of the block's 16 by 16 squares round the party (draw_area_map, `$1266`); show_menu_bar (`$09B5`) leaves AREA out when the area forbids it (`$49FB`) |
 | Blocks of 16 by 16 squares, entered through low corridors, stairs and caves | traced | view part, square_index (`$C29D`): row times 16 plus column; each GEO map is four pages of 256 bytes, the walls, the squares' bytes and the doors (wall_at `$C39A`, door_state in the dungeon part `$1143`). The way between blocks is in the scripts (dungeon part, cmd_load_files `$2041`, cmd_new_ecl `$2011`) |
 | Wilderness travel in eight directions, half a day a square | traced | dungeon part, overland_move (`$0ABA`): keys 1 to 8 or the joystick, and add_half_day (`$1241`) puts twelve hours on the clock for each move |
@@ -65,11 +65,11 @@ Sources:
 | Coins: copper, silver, electrum, gold, platinum, gems and jewelry; weight slows a character | traced | resident part: max_load (`$472E`) is 1500 coins plus the strength allowance (carry_allowance, `$3AC1`); post-com part, money_menu (`$0E7B`) lists the seven kinds |
 | Magic: clerics and magic-users memorise spells in camp; first to third level spell lists | traced | camp part: magic_command (`$14E2`), memorize_command (`$184A`), scribe_command (`$152E`), spell_level (`$2B35`) |
 | Item Menu: ready, use, trade, drop, halve, join, sell, ID; some items ready only in combat or camp ("NOT HERE") | traced | camp part: camp_item_actions (`$1082`) fills READY, USE, TRADE, DROP, HALVE and JOIN, and the camp lets NOT HERE items be readied (`$6DE4` = 1); SELL and ID are not in the camp |
-| Portraits shown only in the civilised area | traced | resident part, show_portrait (`$48A4`): only with portraits on (`$49FF` bit 7) and `$49EB` clear; which areas set `$49EB` is the scripts' |
+| Portraits shown only in the civilised area | traced | resident part, show_portrait (`$48A4`): only with portraits on (`$49FF` bit 7) and `$49EB` clear; New Phlan's script (side 3, ECL00) is the only one that writes `$49EB`, 0 as the party arrives and 1 on its ways out. Three who join the party name a HEAD or BODY file no disk holds, and VIEW for them asks for side 3 for ever (live; Graphics tab) |
 | Saving and loading games on a save disk | traced | camp part: save_command (`$0CAB`) writes SAVEDGAME1 and SAVEDGAME0; gen part loads them |
 | Runes shown in play, translated with the wheel | traced | the code-word runes are the title part's (code_wheel, `$11DF`). In play, PRINT GLYPHS prints runes from the font SECSET10 in five places: the giants' password list and the paper in the castle barracks, the kitchen slave's and Cadorna's slips, the sign in Yarash's pyramid and the dead elf's scroll at Sokal Keep. Each spells a password one rune to a letter (`facts.md`, "The runes"); whether the wheel's runes are the same alphabets was not checked |
 | Journal entries named by number in messages | live | 28 texts in the scripts name journal entries by number (ECL18: "YOU PLACE IT IN YOUR JOURNAL UNDER ENTRY 53") |
-| Ending: the dragon dies and Tyranthraxus speaks from its body | live | final part |
+| Ending: the dragon dies and Tyranthraxus speaks from its body | live | final part; played on the Graphics tab from FINAL's own steps and waits, held by `test_graphics.js` |
 
 ## Beyond the documentation
 
