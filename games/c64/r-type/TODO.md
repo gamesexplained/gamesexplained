@@ -8,8 +8,6 @@ built). What is missing for the next tiers:
   audit of the listings on a proven model is recommended.
 - **Gold.** A human pass over every page, section by section, with Euan.
 - **Platinum.** No Play tab yet.
-- **Sound effects.** The Music tab plays the 35 tunes; the 23 sound
-  effects (voice 3, track positions 0-22) have no player.
 - **Reference screenshot.** `reference/level-1-later.png` shows a blue
   lattice that is not in stage 1's map. Where it was taken is unknown, so
   it is not used on any page.

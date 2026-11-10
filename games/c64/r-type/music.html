@@ -8,15 +8,15 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Every stage loads its own copy of the music, so the game holds 35 tunes in nine sets. Two of them, in the ending's file, are never played.</p>
+  <p class="sub">The longest tune in the game, over two minutes, sits in the ending’s file and never plays. Here are all 35 tunes and all 23 sound effects, played by the game’s own music code.</p>
 </header>
 <main class="wrap">
 <section id="tunes" data-part="level-1">
   <p class="fig">Music</p>
-  <h2 class="t">Music: four tunes for every stage, three for the ending</h2>
+  <h2 class="t">Four tunes for every stage, three for the ending</h2>
   <p class="lede">Chris Hülsbeck and Ramiro Vaca are credited with the music and sound effects in the ending's own text. Each stage's first file brings a copy of the music driver and a block of music data with four tunes: the stage's theme, the boss music, the stage-end jingle and the game-over jingle. Pick a tune to hear the game's own driver play it.</p>
   <div class="plate"><div id="rt-music"></div>
-    <p class="cap">The player runs the driver from each part's own file on the kit's 6502 simulator, starts a tune the way the game does (<code>$637C</code> with the data's address, then <code>$6379</code> with the tune's number) and calls <code>$6370</code> once a frame, as the raster interrupt at <span data-part="game"><code>$0DE6</code></span> does. test_music.js runs the same calls on the listing's bytes and compares every write to the sound chip, frame by frame, for all 35 tunes. The filter is a model of one 6581 chip, and real chips differ.</p>
+    <p class="cap">Each button plays the tune with the game’s own music code, started as the game starts it. The filter is a model of one 6581 sound chip, and real chips differ.</p>
   </div>
   <div class="tw" role="region" aria-label="Every tune the game stores" tabindex="0"><table class="t">
     <thead><tr><th>Stage</th><th class="n">Tune</th><th>What it is</th><th>Started at</th><th>Length</th></tr></thead>
@@ -65,13 +65,21 @@
   <h2 class="t">One driver, copied into every stage</h2>
   <p>The driver sits at <code>$6370-$6D3F</code> in every stage's first file, byte for byte the same code, and the resident program reaches it only through five jumps at the start: <code>$6370</code> plays one frame, <code>$6373</code> silences the chip, <code>$6376</code> asks for a sound effect, <code>$6379</code> asks for a tune and <code>$637C</code> points the driver at its music data. The data follows at <code>$6D40</code>. The ending's file carries the same driver moved up by $490 bytes, to <span data-part="ending"><code>$6800</code></span>, with its data at <span data-part="ending"><code>$71D0</code></span>.</p>
   <p>The data block starts with 22 offsets that <code>music_data</code> (<code>$6564</code>) turns into addresses. A tune is a column of the tune table: its start, loop and end positions, its tempo and the rows in each pattern. Each position names, for each of the three voices, a pattern, a transposition and an instrument. A pattern is a list of notes, each played through an instrument with its own pulse sweep, vibrato, detune and, on voice 1, a filter sweep (<code>start_instrument</code>, <code>$6730</code>).</p>
-  <p>The sound effects use the same tracks. Positions 0 to 22 of the third voice's track hold no tune at all: <code>start_sound</code> (<code>$6544</code>) plays the pattern at the effect's position on that voice in place of the music, so every explosion, shot and pick-up interrupts the melody's third voice for a moment. The resident program asks for them through <span data-part="game"><code>play_sound</code></span> (<span data-part="game"><code>$33FB</code></span>), which lets only some effects through when they come too fast.</p>
-  <p>The tune request keeps the X register as well as the tune's number, and the stage code and the resident program both set X before asking. <code>start_tune</code> loads that value at <code>$64B9</code> and loads the tune's start position over it two instructions later, so X changes nothing.</p>
+</section>
+
+<section id="effects" data-part="level-1">
+  <p class="fig">Sound effects</p>
+  <h2 class="t">Every shot and explosion borrows the tune’s third voice</h2>
+  <p class="lede">The sound effects use the same tracks as the music. Positions 0 to 22 of the third voice’s track hold no tune at all: <code>start_sound</code> (<code>$6544</code>) plays the pattern at the effect’s position on that voice in place of the music, for as many rows as the tune’s header says. So every explosion, shot and pick-up interrupts the melody’s third voice for a moment, and an effect can only sound while a tune is playing.</p>
+  <div class="plate"><div id="rt-effects"></div>
+    <p class="cap">Stage 1’s copies of the 23 effects, each played over stage 1’s theme with the theme’s other two voices left out, until the effect’s time runs out. The names come from the code that asks for each one; six have no caller in the program.</p>
+  </div>
+  <p>The resident program asks for an effect through <span data-part="game"><code>play_sound</code></span> (<span data-part="game"><code>$33FB</code></span>), which lets only some effects through when they come too fast, so a stream of shots does not drown out an explosion. A boss that dies plays one of four explosions at random, picked from the timer of the first CIA chip (<span data-part="game"><code>boss_dies</code></span>, <span data-part="game"><code>$5DB1</code></span>).</p>
 </section>
 
 <section id="ending-tunes" data-part="ending">
   <p class="fig">The ending</p>
-  <h2 class="t">Music: the ending plays one of its three tunes</h2>
+  <h2 class="t">The ending plays one of its three tunes</h2>
   <p>The ending's music data holds three tunes. <code>ending_start</code> asks for tune 0 at <code>$8025</code>, and no other instruction in the file asks for a tune, so tunes 1 and 2 never play. Tune 2 is the longest piece in the game, 130 seconds before it repeats. Press "Ending · 2" in the player above to hear it.</p>
 </section>
 <script src="../../lib/sid.js"></script>
@@ -87,29 +95,38 @@ function createDriver(M, C64Cpu) {
   // address, then $6379 with A the tune; the ending also sets the volume to 15, as $8028 does.
   // The player then calls $6370 once a frame, as the raster interrupt at $0DE6 does.
   const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
-  let writes = [], carry = [], on = false, D = 0, cur = null;
+  let writes = [], carry = [], on = false, D = 0, cur = null, fx = false;
   const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
     read: () => 0,
-    write(a, v) { if (a >= 0xD400 && a <= 0xD7FF) { const r = (a - 0xD400) & 31; if (r < 25) { sid[r] = v; writes.push(r, v); } } },
+    write(a, v) { if (a >= 0xD400 && a <= 0xD7FF) { const r = (a - 0xD400) & 31; if (r < 25 && !(fx && r < 14)) { sid[r] = v; writes.push(r, v); } } },
   } });
   const bytes = (s) => { const t = atob(s), b = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) b[i] = t.charCodeAt(i); return b; };
   const word = (a) => mem[a] | mem[a + 1] << 8;
   return {
     init(n) {
-      const [part, tune] = M.tunes[n], P = M.parts[part];
-      cur = part; D = part === 'ending' ? 0x490 : 0;
+      const [part, tune, effect] = M.tunes[n], P = M.parts[part];
+      cur = part; D = part === 'ending' ? 0x490 : 0; fx = false;
       mem.fill(0); mem.set(bytes(P.b64), P.base);
       sid.fill(0); writes = []; carry = [];
       const data = part === 'ending' ? 0x71D0 : 0x6D40;
       cpu.call(0x637C + D, { x: data & 255, y: data >> 8 });
       cpu.call(0x6379 + D, { a: tune, x: 0 });
       if (part === 'ending') mem[0x637F + D] = 15;
+      if (effect !== undefined) {
+        // An effect plays only over a running tune (start_tune clears the effect timers), so the
+        // tune is started and run one frame, as in play, and then the effect asked for on voice 3
+        // as play_sound ($33FB) asks: $6376 with X = 2. Writes to voices 1 and 2 are left out,
+        // and so is the tune's first frame on voice 3; the effect ends when its timer ($63CB) does.
+        cpu.call(0x6370 + D, {});
+        writes = writes.filter((v, i, a) => i % 2 ? a[i - 1] > 20 : v > 20);
+        cpu.call(0x6376 + D, { a: effect, x: 2 }); fx = true;
+      }
       carry = writes.slice(); on = true;
     },
     stop() { writes = []; cpu.call(0x6373 + D, {}); carry = carry.concat(writes); on = false; },
-    play() { writes = carry; carry = []; if (on) cpu.call(0x6370 + D, {}); },
+    play() { writes = carry; carry = []; if (on) { cpu.call(0x6370 + D, {}); if (fx && mem[0x63CB + D] === 0) on = false; } },
     sid, get writes() { return writes; },
-    playing: () => on && mem[0x6386 + D] === 1,
+    playing: () => on && (fx || mem[0x6386 + D] === 1),
     position: () => mem[0x6380 + D],
     voice(x) {
       const pos = mem[0x6380 + D];
@@ -132,6 +149,7 @@ const RT_MUSIC = {
 };
 
 const RT_TUNES = [["level-1", 0], ["level-1", 1], ["level-1", 2], ["level-1", 3], ["level-2", 0], ["level-2", 1], ["level-2", 2], ["level-2", 3], ["level-3", 0], ["level-3", 1], ["level-3", 2], ["level-3", 3], ["level-4", 0], ["level-4", 1], ["level-4", 2], ["level-4", 3], ["level-5", 0], ["level-5", 1], ["level-5", 2], ["level-5", 3], ["level-6", 0], ["level-6", 1], ["level-6", 2], ["level-6", 3], ["level-7", 0], ["level-7", 1], ["level-7", 2], ["level-7", 3], ["level-8", 0], ["level-8", 1], ["level-8", 2], ["level-8", 3], ["ending", 0], ["ending", 1], ["ending", 2]];
+const RT_EFFECTS = [["level-1", 3, 0], ["level-1", 3, 1], ["level-1", 3, 2], ["level-1", 3, 3], ["level-1", 3, 4], ["level-1", 3, 5], ["level-1", 3, 6], ["level-1", 3, 7], ["level-1", 3, 8], ["level-1", 3, 9], ["level-1", 3, 10], ["level-1", 3, 11], ["level-1", 3, 12], ["level-1", 3, 13], ["level-1", 3, 14], ["level-1", 3, 15], ["level-1", 3, 16], ["level-1", 3, 17], ["level-1", 3, 18], ["level-1", 3, 19], ["level-1", 3, 20], ["level-1", 3, 21], ["level-1", 3, 22]];
 // end of rt-music
 (function () {
   const root = document.getElementById('rt-music'), S = globalThis.C64Sid;
@@ -143,6 +161,11 @@ const RT_TUNES = [["level-1", 0], ["level-1", 1], ["level-1", 2], ["level-1", 3]
       { k: 'Position', f: (v) => String(v.position) },
       { k: 'Pattern', f: (v) => String(v.pattern) },
     ],
+  });
+  const fxRoot = document.getElementById('rt-effects');
+  if (fxRoot) S.mount(fxRoot, {
+    driver: createDriver, data: { parts: RT_MUSIC, tunes: RT_EFFECTS }, filter: '6581',
+    tunes: ["0 \u00b7 Shot", "1 \u00b7 No caller found", "2 \u00b7 Beam", "3 \u00b7 Force sent off or called back", "4 \u00b7 Ship destroyed", "5 \u00b7 Force docks", "6 \u00b7 Extra ship", "7 \u00b7 No caller found", "8 \u00b7 Crawling lasers", "9 \u00b7 Enemy destroyed", "10 \u00b7 No caller found", "11 \u00b7 No caller found", "12 \u00b7 Enemy destroyed, second kind", "13 \u00b7 No caller found", "14 \u00b7 Big enemy or boss destroyed", "15 \u00b7 Boss destroyed, and from update_objects", "16 \u00b7 Boss destroyed", "17 \u00b7 Enemy hit, or boss destroyed", "18 \u00b7 Reflecting lasers", "19 \u00b7 Enemy hit, second kind", "20 \u00b7 No caller found", "21 \u00b7 Red wave", "22 \u00b7 Pick-up"],
   });
 })();
 </script>

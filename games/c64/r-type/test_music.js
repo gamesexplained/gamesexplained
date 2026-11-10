@@ -5,7 +5,8 @@
 // driver straight from each part's listing on kit/cpu/cpu6502.js, started as the game starts it
 // ($637C with the data's address, $6379 with the tune; the ending at $8016-$802A, which also sets
 // the volume byte to 15), and compares every write to the sound chip, frame by frame, for all 35
-// tunes. It also holds the lengths the page's table gives to what the driver does.
+// tunes, and the same for the 23 sound effects. It also holds the lengths the page's table gives
+// to what the driver does.
 //   node games/c64/r-type/test_music.js [music.html]
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -14,7 +15,7 @@ const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const page = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, 'music.html');
 globalThis.atob = globalThis.atob || ((s) => Buffer.from(s, 'base64').toString('latin1'));
-const { createDriver, RT_MUSIC, RT_TUNES } = g.run(page, 'rt-music', 'createDriver', 'RT_MUSIC', 'RT_TUNES');
+const { createDriver, RT_MUSIC, RT_TUNES, RT_EFFECTS } = g.run(page, 'rt-music', 'createDriver', 'RT_MUSIC', 'RT_TUNES', 'RT_EFFECTS');
 const html = fs.readFileSync(page, 'utf8');
 let bad = 0;
 const fail = (...w) => { if (bad++ < 20) console.log('DIFFERS', ...w); };
@@ -71,6 +72,36 @@ RT_TUNES.forEach(([part, tune], n) => {
     if (attr('open') !== wraps[0] || attr('loop') !== wraps[1] - wraps[0]) fail(part, 'tune', tune, 'repeats from', wraps[0], 'every', wraps[1] - wraps[0], 'but the page says', row[1]);
   } else if (attr('end') !== last) fail(part, 'tune', tune, 'ends after', last, 'but the page says', row[1]);
 });
-console.log(`35 tunes, ${FRAMES} frames each, ${compared} writes compared`);
+// The effects: the stage theme started and run one frame, then the effect asked for on voice 3
+// ($6376, X = 2, as play_sound asks); the page leaves out voices 1 and 2 and the theme's first
+// frame on voice 3, and stops when the effect's timer ($63CB) runs out.
+if (!RT_EFFECTS || RT_EFFECTS.length !== 23) fail('the page lists', RT_EFFECTS && RT_EFFECTS.length, 'effects, not 23');
+let fxw = 0;
+(RT_EFFECTS || []).forEach(([part, tune, fx], n) => {
+  const [a, b] = ranges[part];
+  const mem = new Uint8Array(0x10000);
+  for (let x = a; x <= b; x++) mem[x] = rams[part][x];
+  let w = [];
+  const cpu = new CPU(mem, { port: 0x35, io: { read(addr) { throw new Error('read $' + addr.toString(16)); },
+    write(addr, v) { if (addr < 0xD400 || addr > 0xD418) throw new Error('write $' + addr.toString(16)); w.push(addr - 0xD400, v); } } });
+  cpu.call(0x637C, { x: 0x40, y: 0x6D }); cpu.call(0x6379, { a: tune, x: 0 }); cpu.call(0x6370, {});
+  const keep = (lo) => { const o = []; for (let i = 0; i < w.length; i += 2) if (w[i] >= lo) o.push(w[i], w[i + 1]); return o; };
+  let pending = keep(21); w = [];
+  cpu.call(0x6376, { a: fx, x: 2 });
+  const d = createDriver({ parts: RT_MUSIC, tunes: RT_EFFECTS }, kit);
+  d.init(n);
+  let f = 0;
+  for (; f < 2000; f++) {
+    d.play(); cpu.call(0x6370, {});
+    const got = pending.concat(keep(14)); pending = []; w = [];
+    fxw += got.length / 2;
+    if (got.join() !== d.writes.join()) { fail('effect', fx, 'frame', f); return; }
+    const done = mem[0x63CB] === 0;
+    if (done !== !d.playing()) { fail('effect', fx, 'ends at frame', f, 'in the game but the page says', d.playing()); return; }
+    if (done) break;
+  }
+  if (f === 2000) fail('effect', fx, 'never ends');
+});
+console.log(`35 tunes, ${FRAMES} frames each, ${compared} writes compared; ${RT_EFFECTS.length} effects, ${fxw} writes compared`);
 if (bad) { console.log(bad, 'differences'); process.exit(1); }
-console.log('the page plays every tune as the game does');
+console.log('the page plays every tune and effect as the game does');
