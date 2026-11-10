@@ -20,3 +20,7 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - Running `round_won` on the kit's processor found the 2,560-point bonus for a round with no survivors. Reading `draw_fear_head` found the calm head at fear 80. A live test showed Jason choosing a dead friend.
 - A text dump of the disassembly (`work/code.txt`) taken early went stale as blocks were retyped; read `listing.json` instead.
 - Euan supplied a cartridge conversion (.crt, Magic Desk, "STATMAT 2025"). `kit/c64/crt.py` read it; banks 0-7 are the game's 64 KB at their own addresses, so a straight byte compare against the game part's listing settled that the game code matches. Kept in `work/crt/`, gitignored.
+
+## 10 November 2026 (Gold pass 1)
+
+Euan went through the four pages one at a time and approved the changes for each. Overview: Jason's section moved up and the opening links to every section. Discoveries: a labelled strip for the dead victim's second death, links to the Overview, an Oddities section, and a live test of the safe-room quirk (with `$09ED` at 0 a touch did nothing; at 1 it sent the friend to shelter from another building). Maps: door and start-room labels, and the buildings named the lodge, the church and the barn after how they look, since the game names none. Graphics: a walking strip with a pause button, the sprite sheet split by look, Jason's body at `$D3` and the figure in the cross's pair `$FF` noted, and links to the Overview.

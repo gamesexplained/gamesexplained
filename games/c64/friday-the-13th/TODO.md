@@ -1,15 +1,14 @@
 # Friday the 13th — TODO
 
-Tier: silver.
+Tier: gold.
 
-## Missing for Gold
+## Missing for Platinum
 
-- A human's curation pass, section by section (`AGENTS.md`, "Definition of done").
+- A Play tab that is the whole game, ported to JavaScript and run in lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
 
 ## Recommended
 
 - A full audit of the listing's comments by fresh checkers, then a second sample: the first sample found 14 of 60 wrong (23 %, interval 14 % to 35 %), all fixed (`kit/skills/core/60-verify`).
-- A Play tab.
 
 ## Questions only the contributor can answer
 
@@ -19,5 +18,4 @@ Tier: silver.
 
 ## Ideas
 
-- A live test of sheltering a friend from another room after one visit to the safe room.
 - What colour Jason is drawn in once unmasked.
