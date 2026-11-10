@@ -48,3 +48,9 @@ The shop initializer at $9744 sets the mode byte to 0 and its countdown to $DC. 
 The shop wait paths at $974E and $9761 call $3C2A and decrement the countdown. Starting from $DC, controlled paths reach zero after 220 calls; the timeout then either branches on the gate byte or marks $4753,X and passes a message pointer. Listing tests check both wait paths and timeout branches in 17 loads with callbacks stubbed; eight controlled VICE calls check representative paths. Seconds, ordinary-play timing and other exits remain open.
 
 The captured map references 110 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The type-$26 entity dispatcher at $B3DE uses $1AB1,X without a local bounds check. Two captured table pairs select $B3F4, $B471; VICE checked both in loads 12 and 23. Ordinary-play reachability and index bounds remain open.
+
+Type-$26 state 1 calls $792C and $1179 and may call $7227 and $5D7A, then decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$23 state 0 can transition to state 1 after carry from $1179, $7227 or a zero-countdown call to $44DE. Its other paths update $1AC2,X, a motion countdown and $1AE4,X according to callback results. VICE checked nine forced cases in loads 12 and 23 with callbacks stubbed; callback effects and ordinary-play reachability remain open.

@@ -67,7 +67,7 @@ The type-$03 state-0 frame path at $AC9F uses carry returned by $72FC and the pa
 
 The type-$03 horizontal calculation at $ACF1 subtracts 6 from negative magnitudes but 5 from nonnegative values before deciding whether to call a movement routine. The difference comes from carry left clear by ADC 1 on the negative path. VICE checked seven controlled inputs per load with movement callbacks stubbed in loads 13, 14, 15, 17, 18, 24, 26 and 27. Whether ordinary play reaches these inputs remains open.
 
-The type-$25 entity dispatcher at $B021 uses $1AB1,X without a local bounds check. Two captured table pairs select $B037, $B09D; VICE checked both in loads 10, 28 and 29. Ordinary-play reachability and index bounds remain open.
+The type-$25 entity dispatcher at $B021 uses $1AB1,X without a local bounds check. Two captured table pairs select $B037, $B09D; VICE checked both in loads 8, 9 and 27. Ordinary-play reachability and index bounds remain open.
 
 Type-$25 state 1 increments $1AC2,X and computes $19C3,X from $19E5,X and twice the old value, unless $1AC2,X equals 2. In that case it decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 8, 9 and 27. Ordinary-play reachability remains open.
 

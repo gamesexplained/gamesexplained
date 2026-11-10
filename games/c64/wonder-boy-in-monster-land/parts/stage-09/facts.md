@@ -63,7 +63,7 @@ Type-$0E state 0 at $BB33 uses values returned by $71DB and compares $6F3C again
 
 The type-$0E shared collision check at $BC0E can return normally, tail-call $5D7A, or select state 4 or 5 and discard its own return address so the calling handler returns immediately. VICE exercised six controlled paths per load in loads 9, 11 and 20, with external callbacks stubbed. Natural reachability remains open.
 
-The type-$25 entity dispatcher at $BC87 uses $1AB1,X without a local bounds check. Two captured table pairs select $BC9D, $BD03; VICE checked both in loads 10, 28 and 29. Ordinary-play reachability and index bounds remain open.
+The type-$25 entity dispatcher at $BC87 uses $1AB1,X without a local bounds check. Two captured table pairs select $BC9D, $BD03; VICE checked both in loads 8, 9 and 27. Ordinary-play reachability and index bounds remain open.
 
 Type-$25 state 1 increments $1AC2,X and computes $19C3,X from $19E5,X and twice the old value, unless $1AC2,X equals 2. In that case it decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 8, 9 and 27. Ordinary-play reachability remains open.
 
