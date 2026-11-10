@@ -128,3 +128,5 @@ Load-20 type-$1B dispatcher $BCD5 has three captured target pairs, checked in fo
 Load-20 type-$1B state 1 at $BE49 selects a movement path by the sign of $1AC2,X. A negative path whose addition of 16 to $19E5,X produces zero falls through to the other movement call. Five forced VICE cases checked both directions and that wrapped case with movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 With all 17 entity slots forced occupied, load-20 setup $BD35 called the real allocator and reset without testing carry. VICE observed X=$FF and a subsequent $2A write to $1A18; $78D1 was stubbed. The path’s ordinary-play reachability and player-visible effects remain open.
+
+Load-20 type-$1B motion routine $BDFF uses 40 captured signed values at $BE21 and resets its incremented index on equality with 40. Five forced VICE cases covered negative, zero, positive and wraparound values with movement callbacks stubbed. Initial-index bounds, callback effects and ordinary-play reachability remain open.
