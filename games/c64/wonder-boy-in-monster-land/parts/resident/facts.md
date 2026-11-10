@@ -379,3 +379,5 @@ Resident reward conversion $7771 splits an input shifted left four places into a
 Resident transfer-failure path $7B58 alternates bit 3 of the border byte and polls bit 4 of the AND of two CIA1 port reads before restoring the saved border and retrying. A forced VICE test checked two flash passes and the exit with both input reads redirected to controlled RAM. Actual input and delay timing remain open.
 
 Resident scroll code saves two 39-byte colour rows in zero-page ranges $82–$A8 and $A9–$CF and restores them to shifted colour RAM ranges. VICE checked all 39 low nibbles in both save and restore loops. The scratch ranges can have other uses.
+
+Resident $03–$22 is the 32-byte display-slot order array; $04 is an alias into it used for odd-position normalization. Three forced VICE cases checked the sort and the normalization of positions 0–29.
