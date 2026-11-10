@@ -600,6 +600,51 @@
   },
   {
    "start": 40874,
+   "end": 40874,
+   "type": "Undefined"
+  },
+  {
+   "start": 40875,
+   "end": 40895,
+   "type": "Code"
+  },
+  {
+   "start": 40896,
+   "end": 40897,
+   "type": "Byte"
+  },
+  {
+   "start": 40898,
+   "end": 40899,
+   "type": "Byte"
+  },
+  {
+   "start": 40900,
+   "end": 41025,
+   "type": "Code"
+  },
+  {
+   "start": 41026,
+   "end": 41041,
+   "type": "Code"
+  },
+  {
+   "start": 41042,
+   "end": 41115,
+   "type": "Byte"
+  },
+  {
+   "start": 41116,
+   "end": 41149,
+   "type": "Byte"
+  },
+  {
+   "start": 41150,
+   "end": 41186,
+   "type": "Code"
+  },
+  {
+   "start": 41187,
    "end": 41202,
    "type": "Undefined"
   },
@@ -2596,6 +2641,72 @@
    "kind": "user"
   },
   {
+   "address": 40875,
+   "name": "type10_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40893,
+   "name": "type10_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40896,
+   "name": "type10_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40898,
+   "name": "type10_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40900,
+   "name": "type10_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40937,
+   "name": "type10_state0_vertical",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40974,
+   "name": "type10_state0_event",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41026,
+   "name": "type10_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41042,
+   "name": "type10_horizontal_deltas",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41116,
+   "name": "type10_vertical_deltas",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41150,
+   "name": "type10_position_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41203,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -4135,6 +4246,61 @@
    "address": 40873,
    "type": "line",
    "text": "Working byte written from $1B28,X and tested for its sign by state 4; other handler paths also use it."
+  },
+  {
+   "address": 40875,
+   "type": "line",
+   "text": "Use $1AB1,X to patch the jump at $9FBD from split target tables at $9FC0/$9FC2. Call the position helper at $A0BE before the jump. The index is not locally bounded; two captured pairs are described."
+  },
+  {
+   "address": 40893,
+   "type": "line",
+   "text": "Absolute jump patched through operands $9FBE/$9FBF; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 40896,
+   "type": "line",
+   "text": "Two captured low target bytes paired with $9FC2: $9FC4 and $A042. Ordinary-play index bounds remain open."
+  },
+  {
+   "address": 40898,
+   "type": "line",
+   "text": "Two captured high target bytes paired with $9FC0: $9FC4 and $A042."
+  },
+  {
+   "address": 40900,
+   "type": "line",
+   "text": "Read a signed byte at $A052,Y using $1AC2,X as Y. If negative, negate it and call $43A2; otherwise call $43F0 with the byte. If $1AC2,X equals $49, set it to $FF, then increment it."
+  },
+  {
+   "address": 40937,
+   "type": "line",
+   "text": "Read a signed byte at $A09C,Y using $1AD3,X as Y. If negative, negate it and call $4342; otherwise call $4368 with the byte. If $1AD3,X equals $21, set it to $FF, then increment it. Neither input index is bounded before its read."
+  },
+  {
+   "address": 40974,
+   "type": "line",
+   "text": "Return if $1A8F,X is nonzero. Otherwise call $792C and $732A. Carry clear calls $7227 and may tail-jump to $5D7A with A=8. Carry set returns when $1A6D,X is positive; otherwise increment $1AB1,X, set $1B28,X=16 and $1A8F,X=$FF."
+  },
+  {
+   "address": 41026,
+   "type": "line",
+   "text": "Decrement $1B28,X and return unless the result is exactly zero. At zero, call $4B20 with A=3, load A=1 and jump to $5DB9."
+  },
+  {
+   "address": 41042,
+   "type": "line",
+   "text": "74 captured signed movement bytes, read by state 0 with $1AC2,X as index. The post-read wrap compares the index to $49; input bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 41116,
+   "type": "line",
+   "text": "34 captured signed movement bytes, read by state 0 with $1AD3,X as index. The post-read wrap compares the index to $21; input bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 41150,
+   "type": "line",
+   "text": "Call $72FC; set $19C3,X to $19E5,X plus 6 if carry is set, otherwise plus zero. Decrement $1AE4,X, then set $19D4,X to $19C3,X plus 2 plus bit 2 of that decremented byte shifted right once. Additions wrap at 256."
   },
   {
    "address": 41203,

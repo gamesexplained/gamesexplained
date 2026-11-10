@@ -32,3 +32,7 @@ Type-$0E states 2 and 3 at $9EB2 and $9EC9 update $1AD3,X and select the next st
 Type-$0E state 0 at $9E65 uses values returned by $71DB and compares $6F3C against the returned X to choose $FA or 0, then advances state and updates a frame. Its movement helper at $9EEC chooses a callback by the sign of $1B28,X and reverses it on carry. VICE checked six controlled cases per load with callbacks stubbed in loads 9, 11 and 20. Natural reachability remains open.
 
 The type-$0E shared collision check at $9F40 can return normally, tail-call $5D7A, or select state 4 or 5 and discard its own return address so the calling handler returns immediately. VICE exercised six controlled paths per load in loads 9, 11 and 20, with external callbacks stubbed. Natural reachability remains open.
+
+The load-11 type-$10 dispatcher has two captured targets, $9FC4 and $A042, and calls a position helper before jumping. State 1 decrements $1B28,X and calls $4B20 with A=3 before jumping to $5DB9 with A=1 only when it reaches zero. VICE checked both targets and four countdown cases with callbacks stubbed. The state index and ordinary-play reachability remain open.
+
+Type-$10 state 0 reads signed movement bytes from 74-byte and 34-byte captured tables, selects callbacks by sign and wraps indices after reading at $49 and $21. It can select state 1 and set a 16-count timer when $732A returns carry set and $1A6D,X is zero or negative. VICE checked four forced table-index cases and five event cases with callbacks stubbed. Input-index bounds and ordinary-play reachability remain open.
