@@ -930,3 +930,5 @@ Checked both banked 24-byte sprite-fragment copies in VICE and restored the paus
 Checked four forced entity-candidate scan cases in VICE and restored the paused user snapshot.
 
 Checked four forced top and bottom scroll tile-pair cases in VICE, including source-pointer page crossings, and restored the paused user snapshot.
+
+Checked five forced entity fall-state outcomes in VICE with collision stubbed, including out-of-range and wraparound cases; restored the paused user snapshot.
