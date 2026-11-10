@@ -640,3 +640,5 @@ Decoded 34 first-load item and shop messages using the rendered $C800 character 
 Traced first-load item effects at $AC61–$ACAA. Seven forced VICE cases and a listing test checked flag setters, counters, attributes and the record callback with that callback stubbed and execution stopped before slot disable. The following item-push entries have a separate coverage boundary. The paused user snapshot was restored.
 
 Traced four first-load item-push entries and described a previously checked setup graphics source. VICE and a listing test checked all four type/quantity pairs, stopping before the destination. The paused user snapshot was restored.
+
+Traced first-load record drawing at $AB55–$AB9F. Five controlled VICE calls and a listing test checked each drawing entry and its three- or four-row output. The paused user snapshot was restored; other arguments and natural reachability remain open.
