@@ -19132,7 +19132,17 @@
   {
    "address": 3939,
    "type": "line",
-   "text": "Adjusts up to 28 position entries after horizontal movement. One path subtracts an additional 7 from the low byte when the high-byte subtraction borrows; this is not ordinary 16-bit subtraction in every case."
+   "text": "If $4DB8 is nonnegative, subtract the horizontal step from all 28 positions through $0F9F. If it is negative, derive two exclusion indexes from the contact entity slots and subtract through $0F7D. Only the all-position path applies a further low-byte subtraction after a high-byte borrow."
+  },
+  {
+   "address": 3965,
+   "type": "line",
+   "text": "Scan X from $1B down to zero, skipping both exclusion indexes. Subtract $4DB1 from the low byte at $4C73,X and the borrow from the high byte at $4C53,X; store both and return after 28 positions."
+  },
+  {
+   "address": 3999,
+   "type": "line",
+   "text": "Scan all 28 positions, subtracting $4DB1 from $4C73,X and the borrow from $4C53,X. If that high-byte subtraction borrows, subtract another 8 from the low byte modulo 256: SBC #7 executes with carry clear. The extra subtraction does not update the high byte."
   },
   {
    "address": 4127,
@@ -19143,6 +19153,21 @@
    "address": 4358,
    "type": "line",
    "text": "Unused startup byte between the temporary coordinate pair and the following routine.\nTrace-proven startup remnant at $1106\u2013$1106. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
+  },
+  {
+   "address": 4359,
+   "type": "line",
+   "text": "If $4DB8 is nonnegative, update all positions through $1143. If it is negative, use $4DB9 as Y, subtract 4 from each of $1A29,Y and $1A3A,Y, and save the resulting exclusion indexes at $0D54 and $0D55."
+  },
+  {
+   "address": 4385,
+   "type": "line",
+   "text": "Scan X from $1B down to zero, skipping the two exclusion indexes. Add $4DB1 to the low byte at $4C73,X, add the carry to the high byte at $4C53,X, and store both."
+  },
+  {
+   "address": 4419,
+   "type": "line",
+   "text": "Scan all 28 positions, adding $4DB1 to $4C73,X and propagating carry into $4C53,X. Store both bytes and return after the scan."
   },
   {
    "address": 4471,
