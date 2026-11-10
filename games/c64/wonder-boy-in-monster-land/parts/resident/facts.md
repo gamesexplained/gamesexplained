@@ -397,3 +397,5 @@ The helper at $2938 writes A to VIC $D021 and $D015; $293F writes A to $D018 and
 The meter writer at $6FD5 stores A to eight addresses spaced three bytes apart, from $C400+X through $C415+X. Three forced VICE cases checked index/value pairs including X=$FF; ordinary caller constraints on X were not established.
 
 For stage selector 1, the immediate operand at $2A91 selects the path that stores ($2A34 OR $10) at $93C3 and copies 72 bytes from $2A35–$2A7C to $CCD0–$CD17. A forced VICE case checked the marker and every copied byte. The stage selector is patched at $7A9A.
+
+The indexed display-slot flags at $4CEF feed sprite horizontal expansion: the paths at $1732 and $1809 use bit 0 to update the selected bit of VIC $D01D. Forced VICE checks exercised both paths and display-builder writes. The annotated first 24 bytes end at $4D06; indexed accesses can address beyond this range.

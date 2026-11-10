@@ -922,3 +922,5 @@ Checked three controlled VIC display-helper cases in VICE and described the adja
 Checked the meter bitmap row writer in three forced VICE cases and restored the paused user snapshot.
 
 Checked the selector-1 stage patch and all 72 copied bytes in VICE, then restored the paused user snapshot.
+
+Connected the display-slot flag range to the previously checked display-builder and sprite-register paths; distinguished its 24-byte annotation range from indexed accesses beyond it.
