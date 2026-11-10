@@ -1,4 +1,4 @@
-## next · 2026-11-10 · Pool of Radiance (C64) · air with Claude
+## 0.0.319 · 2026-11-10 · Pool of Radiance (C64) · air with Claude
 
 - **Coverage counts memory, so the disks need a list of their own.**
   Pool of Radiance reached 100 % over 17 parts while code the game runs
