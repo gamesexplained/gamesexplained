@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "aztec-challenge",
+  "title": "Aztec Challenge",
+  "year": 1983,
+  "publisher": "Cosmi (U.S. Gold in the UK)",
+  "developer": "Paul Norman",
+  "title_image": "reference/title.png",
+  "build": "PAL cassette in the KERNAL's own format, two files (AC, a BASIC boot; AZTEC, the game at $1000-$7FFE); the U.S. Gold release of Cosmi's tape as the Ultimate Tape Archive V4.0 has it (entry 733)",
+  "tier": "platinum",
+  "coverage_percent": 100.0,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Paul Norman",
+      "role": "the Commodore 64 game and its music (the title screen and C64-Wiki)"
+    },
+    {
+      "by": "Robert T. Bonifacio",
+      "role": "the Atari 8-bit game it is based on (the boot program's title card)"
+    },
+    {
+      "by": "Cosmi",
+      "role": "publisher, 1983 (the boot program's title card); U.S. Gold published the tape in the UK"
+    }
+  ],
+  "tools": {
+    "emulator": "own build of github.com/barryw/vice-mcp, release v3.13.2, commit 1e83aab134; driven through kit/c64/vice.py; check-emulator 57 of 57",
+    "disassembler": "regenerator2000, live, through kit/c64/r2000.py",
+    "host": "Linux 6.18 x86_64 (WSL2) on Windows 11, Ubuntu 26.04.1, Intel Core i7-3770, eight threads, display through WSLg",
+    "node": "24.21.0 (tools/node)",
+    "browser": "Google Chrome, headless, on Windows 11, for the page checks"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5"
+    ],
+    "20-features": [
+      "claude-opus-5-5"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5",
+      "claude-fable-5-1"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "80-retro": [
+      "claude-opus-5-5"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 11,
+      "fixed": 11,
+      "seed": 20261108,
+      "models": [
+        "claude-fable-5-1"
+      ],
+      "note": "60 of 313 comments, all wrong in a detail; corrected with four more that shared two of the beliefs"
+    },
+    {
+      "step": "play",
+      "fixed": 2,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "note": "the whole game ported routine by routine and held in lockstep with its own code; 2 comments the port showed wrong were corrected: the Stairs' colour loops that run once ($6CF5) and the third block's X from CIA 2's timer, which never runs ($7000)"
+    }
+  ],
+  "kit_version": "0.0.314",
+  "created": "2026-11-08",
+  "video": {
+    "screen": "$0400",
+    "charset": "$3000"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "runtime: zero page, the game's variables (levels, scores, counters, the tune's pointer) and the KERNAL's"
+      ],
+      [
+        "$0200",
+        "$03FF",
+        "runtime: the KERNAL's work area and vectors; the game writes only the interrupt vector at $0314"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "runtime: the screen and the sprite pointers; at the hand-over it still shows the boot program's title card, which the game clears"
+      ],
+      [
+        "$0A66",
+        "$0FFF",
+        "not the game's: BASIC's variables after the boot program and the power-on pattern of the RAM; nothing reads it"
+      ],
+      [
+        "$E000",
+        "$FFFF",
+        "not the game's: the RAM under the KERNAL ROM, which the game never banks out; at $FD30 it holds a copy of the KERNAL's table of vectors, the same at the hand-over and in play"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [],
+  "links": {
+    "wiki": {
+      "title": "Aztec Challenge – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Aztec_Challenge"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    }
+  },
+  "basic": [
+    [
+      "$0801",
+      "$0A65",
+      "the boot program AC, loaded from the tape before the game"
+    ]
+  ],
+  "levels_tab": "Levels",
+  "graphics_tab": "Graphics"
+}

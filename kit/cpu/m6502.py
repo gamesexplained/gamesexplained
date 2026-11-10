@@ -57,7 +57,7 @@ assert len(OPS) == 151, len(OPS)
 # separate from the documented table used by other tooling.
 UNDOCUMENTED = {0xBF: ("lax", "aby"),
                 0xAF: ("lax", "abs"), 0x4B: ("asr", "imm"), 0x8F: ("sax", "abs"),
-                0x0B: ("anc", "imm")}
+                0x0B: ("anc", "imm"), 0x1A: ("noop", "imp"), 0x04: ("noop", "zp")}
 
 
 def decode(ram, a):
