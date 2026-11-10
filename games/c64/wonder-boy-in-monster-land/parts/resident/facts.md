@@ -287,3 +287,5 @@ Resident $6F86 redraws the meter sprite when a cached value differs, splitting t
 Resident $5D7A applies damage only when cooldown is zero; protection halves the amount, decrements its byte-sized charge and clears its flag when the decremented charge is zero. VICE checked five forced cases through the real meter subtraction, including a zero charge wrapping to 255, with the message callback stubbed. Ordinary-play reachability remains open.
 
 Resident $08E0 saves two bytes in the operands of $0841, then sets a temporary action mode and colour shadow; $0841 restores them when that mode is 1. VICE checked three forced save and restore cases, forcing the following input gate to return. Ordinary-play reachability remains open.
+
+Resident $29FC calls $6B50 then reads several addresses rather than calling them; $2A16 initializes two four-byte arrays. VICE checked two supplied final-read values and all eight table bytes with $6B50 stubbed. Callback effects and ordinary-play reachability remain open.
