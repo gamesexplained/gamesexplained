@@ -29,3 +29,5 @@ The third captured entity normal state at $B389 handles collision, heading, anim
 The third captured entity reaction at $B48E calls the right-movement path after the left path if its first frame sum wraps to zero. VICE checked five forced reaction and exit cases with movement, score and dispatch callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 The first-load payment screen compares the selected player’s two-byte balance with the record’s second amount byte and chooses a prompt or an insufficient-balance message using record field 3. Five forced VICE paths and a listing test check selection with rendering and slot deletion stubbed. Ordinary-play reachability and callback effects remain open.
+
+First-load setup at $93BA initializes player and entity fields and copies graphics into RAM beneath I/O, with two 15-byte patches and six nine-byte tails. VICE checked two forced flag values and the resulting copies with sprite-link, mirror and message callbacks stubbed; a listing test repeats the checks. Callback effects and ordinary-play reachability remain open.
