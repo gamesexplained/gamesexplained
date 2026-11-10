@@ -49,3 +49,5 @@ First-load initializer $92FB fills an entity slot with fixed type, frame, attrib
 First-load price formatter $A807 splits two packed bytes into four nibble-plus-one display values and replaces leading ones with zero. VICE and a listing test checked five forced values, including non-decimal nibbles. The four 63-byte setup sprite sources were checked through the previously tested setup copies; other uses remain open.
 
 The first load contains 34 three-field shop and item message records at $A857–$AB54, followed individually by control bytes. The decoded records retain the game’s spelling and punctuation; VICE checked their captured bytes and a listing test decodes every field. Ordinary-play selection of each record remains open.
+
+First-load item effects $AC61–$ACAA call four resident player-flag setters or write one of three selected-player attributes, then enter slot disable. The last attribute entry patches and calls a record-supplied callback. Seven forced VICE cases and a listing test check the flags, counters, wrapped subtraction and callback dispatch, stopping before slot disable and stubbing the record callback. Natural reachability remains open.
