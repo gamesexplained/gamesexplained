@@ -21,12 +21,12 @@ for(const capture of observations.loads){
   total++;
  }
 }
-assert.equal(total,52);
+assert.equal(total,142);
 const html=fs.readFileSync(path.join(root,'graphics.html'),'utf8'),match=html.match(/<script id="observed-sprites-data" type="application\/json">([^<]+)<\/script>/);assert(match,'observed sprite gallery data');
 const frames=JSON.parse(match[1]);assert.equal(frames.length,total);
 for(const capture of observations.loads)for(const sprite of capture.slots){
  const frame=frames.find(f=>f.load===capture.stage&&f.pointer===sprite.pointer),sample=sprite.display[0];assert(frame,`load ${capture.stage} gallery slot`);
  assert.equal(crypto.createHash('sha256').update(Uint8Array.from(frame.pixels)).digest('hex'),sprite.hash);
- assert.equal(frame.multicolour,!!(sample.flags&1));assert.equal(frame.colour,sample.colour&15);assert.equal(frame.displaySlot,sample.index);assert.equal(frame.y,sample.y);
+ assert.equal(frame.multicolour,!!(sample.flags&1));assert.equal(frame.colour,sample.colour&15);assert.equal(frame.displaySlot,sample.index);assert.equal(frame.y,sample.y);assert.equal(frame.frame,sprite.first_frame||0);
 }
 console.log(`OK - ${total} observed sprite bitmaps, display-pointer writes and gallery data`);
