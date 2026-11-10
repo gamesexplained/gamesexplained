@@ -670,3 +670,5 @@ Described six first-load entity records individually. Six forced VICE calls and 
 Traced the first-load welcome and message entries in three controlled VICE calls and a listing test. Described the previously checked six setup graphics tails, the setup entry and an overlapping message suffix. The paused user snapshot was restored.
 
 Described all 24 first-load item records individually, including packed prices and decoded description names. VICE matched the complete table and checked nine representative pointer dispatches; a listing test checks all 24 records through price, drawing, effect and message selection. The paused user snapshot was restored.
+
+Found and typed previously unclassified panel setup code in loads 9, 19, 20 and 30. Controlled VICE calls and a listing test checked the four character and colour writes and patched helper. The paused user snapshot was restored; subsequent panel behavior and natural reachability remain open. A related copy in load 4 overlaps previously documented character-copy bytes and needs separate reconciliation.

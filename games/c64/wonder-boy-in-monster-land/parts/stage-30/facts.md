@@ -70,3 +70,5 @@ The captured bytes at $7F43–$7F49 supply initial colour shadows, player frame 
 A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The selected bytes matched the captured play snapshot, and a 200-frame play capture recorded no instruction entry into those selected ranges. 75 eight-byte characters excluding typed code, discovered entry bytes, update pointers and existing annotations were described from their row patterns; whether each is displayed and other possible code uses remain open.
 
 Controlled visual-resource selections copied 307 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
+
+A forced call to the captured panel setup at $AF7C writes four character cells and their colours after patching its helper at $B0BB. VICE and a listing test check the path with $46=$C0. Following panel behavior and ordinary-play reachability remain open.
