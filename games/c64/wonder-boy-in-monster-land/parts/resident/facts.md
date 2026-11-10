@@ -337,3 +337,5 @@ The resident special-entity dispatcher at $5DB9 saves the incoming context, opti
 The world-mode-zero special-entity path at $5E71 releases an unflagged entity; otherwise it scans 17 entity slots and calls release for nonzero coordinate-state entries whose flag bit 0 is clear, adds 8 to the player meter, writes $FE to sound state and calls a stage-selected callback with the original entity index. Two forced VICE paths and a listing test check this with the release, meter and stage callbacks stubbed. Their effects and ordinary-play reachability remain open.
 
 The resident routine at $18D8 clears thirteen fields belonging to entity slot zero and does not write their adjacent slot-one bytes. A forced VICE call and `test_clear_entity_zero.js` check all thirteen fields and neighbours.
+
+The sound list reader at $22DC reads a little-endian pattern pointer at a voice offset, advances by two, and on a zero low byte restarts at offset zero and writes the patched configuration byte to $2C15. Three forced VICE cases and `test_sound_list_reader.js` check two pointers and the restart. The pointer and offset are not bounded locally.
