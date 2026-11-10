@@ -152,3 +152,5 @@ Load-4 type-$08 states 3 and 4 set frames and branch by direction or timer. Eigh
 Load-4 type-$08 state 0 calls $3020 twice and uses the second result’s low two bits to set $1B06,X to 4–7 before incrementing the state. Five forced VICE cases checked the initialization with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-4 type-$08 shared movement at $B5D0 selects $4574 or $45BC by the sign of $1AC2,X and flips that sign bit if the callback returns carry set. Four forced VICE cases checked both directions and carry outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-4 type-$08 state 2 uses an unsigned phase comparison at 5 and an exact match at 11 to select callbacks or return to state 0. Six forced VICE cases checked these boundaries with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
