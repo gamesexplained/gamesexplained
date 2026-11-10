@@ -43,3 +43,5 @@ First-load item confirmation selects messages from the stage-record flags or sel
 Controlled visual-resource selections copied 171 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 First-load initializer $92FB fills an entity slot with fixed type, frame, attributes and coordinates before passing message pointer $933C to the message routine. VICE and a listing test checked two forced entity indexes. Index bounds, message callback effects and ordinary-play reachability remain open.
+
+62 conditional sprite slots retain the same 64 captured bytes in entry and play snapshots; VICE matched each slot. Their descriptions identify the 63-byte shape, occupied rows, set-bit count and remaining slot byte. The selection paths remain conditional and other possible uses remain open.

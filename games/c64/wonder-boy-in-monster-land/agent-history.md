@@ -630,3 +630,5 @@ Checked 5003 additional visual-resource character patterns against controlled co
 Checked 171 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
 
 Traced the first-load message entity initializer at $92FB. VICE and a listing test checked every field for two forced indexes, stopping before the message callback. The paused user snapshot was restored; index bounds and natural reachability remain open.
+
+Compared 62 first-load conditional sprite slots in entry and play snapshots and checked all 64 bytes of each in VICE. Added individual shape and slot-byte descriptions, with a listing test checking the statistics. The paused user snapshot was restored; selection remains conditional.
