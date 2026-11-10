@@ -67,3 +67,5 @@ The first-load item-pair initializer either uses record-supplied IDs or derives 
 First-load item-result message handling calls the display routine and waits while the message countdown is nonzero, updating the HUD each frame. A controlled VICE case and a listing test checked a two-frame wait with display, frame and HUD callbacks stubbed. Actual callback effects and natural reachability remain open.
 
 First-load item controls return carry set when any of the three sampled input bytes is zero. The cursor routine indexes its position table with the selection index plus one. Eight forced VICE cases and a listing test check the carry and three usual cursor positions with input sampling stubbed and display initialization stopped. Physical input mapping and other indexes remain open.
+
+First-load item description code selects the message pointer from the item record, while its price writer converts four display bytes and writes corresponding character and colour cells. VICE and a listing test checked a forced pointer and a four-digit draw. Bounds, other display values and ordinary-play reachability remain open.

@@ -9143,6 +9143,21 @@
    "text": "With decimal mode clear, add one to the eight-bit selection index and use the result as an index into the cursor-position table at $A84C. Pass the resulting byte in X and $82 in Y to the display-slot initializer at $719E. This routine does not locally bound the table index."
   },
   {
+   "address": 42970,
+   "type": "line",
+   "text": "With decimal mode clear, multiply the item ID in A by eight and add six with eight-bit wrap. Read the two bytes at that offset in the item-record table as a little-endian message pointer, pass its low byte in X and high byte in Y, and jump to the message display routine. Item bounds and display behavior are separate."
+  },
+  {
+   "address": 42988,
+   "type": "line",
+   "text": "Process four price-display bytes from $A848 down to $A845. Leave zero unchanged; for each nonzero byte add $F5 with eight-bit wrap and decimal mode clear. Call the digit writer at $A7FE with successive Y positions, decrementing Y after each call."
+  },
+  {
+   "address": 43006,
+   "type": "line",
+   "text": "Write A through the indexed store instruction at $A7FE; its high address byte at $A800 is patched by the surrounding layout code. Write colour 1 to $D900,Y and return. The colour destination requires I/O to be visible."
+  },
+  {
    "address": 43015,
    "type": "line",
    "text": "Multiply the item ID in A by eight with eight-bit wrap. Split the two packed bytes from the item record into four nibbles, high record byte first, and store each nibble plus one at $A845\u2013$A848. Starting at the first digit, replace consecutive values of 1 with zero until a different value or all four digits have been processed. Nibbles are not checked for valid decimal digits."
