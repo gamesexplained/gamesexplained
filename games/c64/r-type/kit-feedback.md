@@ -42,6 +42,11 @@ written up as candidates for the next run that meets them.
   it once, and the fix had to be made nine times. A shared-code note in
   `15-parts` would say: annotate the copy once, compare the bytes, and
   carry comments over by script, so a correction is also made once.
+- **KERNAL names on RAM under the ROM.** The export gave stage 1 and stage
+  2 a KERNAL name each (`$FD15`, `$E5A0`) where those stages keep sprite
+  shapes in the RAM under the ROM, and `kit/c64/test_kernal.py` failed on
+  one. They were removed. `symbols_export.py` could drop a system name
+  for an address the part's own load covers.
 
 ## Maintainer asks
 
