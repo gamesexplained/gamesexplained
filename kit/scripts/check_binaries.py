@@ -8,7 +8,8 @@ a file starting with a known snapshot magic; a JSON file carrying a
 not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. A
 plus4emu snapshot (the Commodore 16's and Plus/4's) is caught by its magic,
 whatever its name. The kit's NES snapshot is gzipped JSON as jsbeeb's is, found
-the same way. A Z-machine story (an Infocom game, whatever the machine) has no
+the same way, and so is the Game & Watch's. A Game & Watch's ROM is 1,856 bytes
+with no extension, caught by its size when it is not text. A Z-machine story (an Infocom game, whatever the machine) has no
 magic, only a version byte, so it is caught by its extension. work/ folders are
 skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
@@ -44,6 +45,9 @@ SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 
          163840: "ADFS S disc", 327680: "ADFS M disc", 655360: "ADFS L disc",
          143360: "16-sector Apple II disk", 116480: "13-sector Apple II disk",
          232960: "Apple II .nib disk", 223440: "Apple II .nb2 disk"}
+# a microcontroller's mask ROM, too small for its size alone to say so: a hit only when the file
+# is not text (a ROM dump has no extension, as MAME's ROM sets name them)
+ROM_SIZES = {1856: "Sharp SM5A mask ROM (a Game & Watch)"}
 MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge image"),
          (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM"),
          (b"ZXST", "SZX snapshot"), (b"ZSF", "ZEsarUX snapshot"), (b"PZXT", "PZX tape image"),
@@ -59,6 +63,7 @@ JSBEEB = re.compile(rb'"format"\s*:\s*"jsbeeb-snapshot"')   # the BBC Micro's sn
 # the Apple II's: the kit's (kit/apple2/snapshot.py), Apple2TS's own save state, and AppleWin's
 APPLE2 = re.compile(rb'"format"\s*:\s*"apple2ts-kit-snapshot"|"state6502"\s*:|AppleWin Save State')
 KIT_NES = re.compile(rb'"format"\s*:\s*"kit-nes-snapshot"')  # the NES's, kit/nes/snapshot.py
+KIT_GNW = re.compile(rb'"format"\s*:\s*"kit-gnw-snapshot"')  # the Game & Watch's, kit/gnw/snapshot.py
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 # The bytes a page spells out: base64, a hex string, a list of numbers.
 B64 = re.compile(rb"[A-Za-z0-9+/]{64,}={0,2}")
@@ -83,6 +88,16 @@ def check(path):
     size = os.path.getsize(path)
     if size in SIZES:
         return f"size matches a {SIZES[size]}"
+    if size in ROM_SIZES and ext not in TEXT:
+        with open(path, "rb") as f:
+            data = f.read()
+        try:
+            data.decode("utf-8")
+            binary = any(b < 9 or 13 < b < 32 for b in data)
+        except UnicodeDecodeError:
+            binary = True
+        if binary:
+            return f"size matches a {ROM_SIZES[size]}"
     with open(path, "rb") as f:
         head = f.read(64)
     for m, what in MAGIC:
@@ -106,6 +121,8 @@ def check(path):
                 return "Apple II snapshot"
     if KIT_NES.search(head):
         return "NES snapshot"
+    if KIT_GNW.search(head):
+        return "Game & Watch snapshot"
     return None
 
 

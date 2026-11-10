@@ -9,7 +9,8 @@ snapshots are JSON (the kit's and Apple2TS's) or YAML (AppleWin's), found by wha
 disks by extension, size and magic. A JSON file that is not a snapshot passes. The C16's snapshot
 is plus4emu's own file, found by its magic under any name; its tapes and cartridges by their
 headers too. The NES's cartridges are found by extension and header, and the kit's NES
-snapshot, gzipped JSON like jsbeeb's, by what it holds.
+snapshot, gzipped JSON like jsbeeb's, by what it holds. A Game & Watch's ROM, 1,856 bytes with
+no extension, is found by its size unless it is text, and the kit's snapshot of it by what it holds.
 
 A page that spells out most of its game's code, as base64, hex or a list of numbers, carries the
 program and is refused; one that carries the data with the code zeroed, or a share of the code
@@ -115,6 +116,20 @@ class NES(Files):
     def test_cartridge(self):
         self.assertIn(".nes", self.why("game.nes", b"\0" * 10))
         self.assertEqual(self.why("game.dat", b"NES\x1a" + bytes(12)), "NES ROM")
+
+
+class GameAndWatch(Files):
+    def test_snapshot_by_content(self):
+        body = json.dumps({"format": "kit-gnw-snapshot", "chip": "SM5A", "state": {}}).encode()
+        self.assertEqual(self.why("play.gnw.json.gz", gzip.compress(body)), "Game & Watch snapshot")
+        self.assertEqual(self.why("plain.txt", body), "Game & Watch snapshot")
+
+    def test_rom_by_size(self):
+        rng = random.Random(3)
+        rom = bytes(rng.randrange(256) for _ in range(1856))
+        self.assertIn("SM5A mask ROM", self.why("ac-01", rom))
+        self.assertIsNone(self.why("notes", b"a" * 1855 + b"\n"))
+        self.assertIsNone(self.why("page.js", rom))      # a text file's size is its own business
 
 
 class Program(unittest.TestCase):
