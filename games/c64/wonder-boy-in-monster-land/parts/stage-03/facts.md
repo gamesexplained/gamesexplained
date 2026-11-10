@@ -70,3 +70,5 @@ The load-3 type-$24 state-0 handler at $9E42 calls detection and contact checks,
 Load-3 type-$24 state 1 calls detection, contact and movement checks; four forced VICE cases checked both detected conditions and both movement carry outcomes with callbacks stubbed. State 2 calls state 0 and then state 1 even if state 0 changes the state, provided it returns normally; two forced VICE cases confirmed both calls. Callback effects and ordinary-play reachability remain open.
 
 Load-3 type-$07 states 3 and 4 at $9CE0 and $9D01 use $1AD3,X and $1AF5,X to control transitions; the first can fall through to the second. Eight forced VICE cases checked phase and timer boundaries with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-3 helper $9D18 jumps to $4342 for a zero $19A1,X or a value of $50 or more, and returns for values $01–$4F. Helper $9D25 selects one of two sources for $7D according to $7A. Seven forced VICE cases checked the boundaries and both selector paths, with $4342 stubbed. Ordinary-play reachability remains open.

@@ -794,3 +794,5 @@ Checked load-3 state $9E42 in six forced VICE cases with detection, contact, eff
 Checked load-3 type-$24 states 1 and 2 with six forced VICE cases and stubbed callbacks. Confirmed that state 2 executes both handlers after either detection result, and restored the paused user snapshot.
 
 Checked load-3 type-$07 states 3 and 4 in eight forced VICE cases with callbacks stubbed, including unsigned compare and sign boundaries; restored the paused user snapshot.
+
+Checked load-3 helpers $9D18 and $9D25 in seven forced VICE cases, including bounds and both source-selection paths; restored the paused user snapshot.
