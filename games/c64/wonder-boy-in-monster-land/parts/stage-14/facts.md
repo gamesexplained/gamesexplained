@@ -136,3 +136,5 @@ Load-14 type-$12/$21 and type-$13 vectors select dispatchers at $A5B1 and $A7FF.
 Load-14 type-$12 state 0 at $A5D4 initializes a timer and stores twice the low two bits of the $3020 result, then falls through to state 1. Five forced VICE cases covered all four low-bit combinations with $3020 stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-14 type-$12 state 1 at $A5EA controls a timer, direction, a four-byte parameter block and contact branches. Six forced VICE cases checked timer boundaries, both directions and contact outcomes with callbacks stubbed. Callback effects, table-index bounds and ordinary-play reachability remain open.
+
+Load-14 type-$12 state 2 at $A66F uses an indexed counter, rotates one callback carry into a working byte and uses a second carry to choose a frame offset. Its second addition retains carry from the first. Ten forced VICE cases checked counter parity, timer, carry and contact branches with callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
