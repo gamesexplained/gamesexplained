@@ -66,6 +66,7 @@ Found in the code, not in the manual.
 | Switch 8 is always on: the always-on cannons and crushers read the first object's type as their switch | confirmed | `object_timer` reads `switch_state` + 8, which is `obj_type` |
 | A second tune player that nothing calls, reading room data as its tune | traced | `old_music_tick` |
 | The tune's first six frames read past the tune, and three of its notes past the frequency tables | traced | `music_tick`, `tune_voice1`, `note_freq_lo` (`facts.md`, "The tune") |
+| About 120 exits after loading, the game freezes in the KERNAL's monitor and BREAK lines scroll the screen away | live | `leave_room` leaves `main_loop`'s return address on the stack; once S wraps, the KERNAL's interrupt entry reads the pushed status past the end of page 1, finds BASIC's LOAD token `$93` in page 2, and takes the BRK path (`facts.md`, "The stack"). Seen in a clip of Unloved8Bit's Twitch stream of 8 January 2022, and reproduced in the kit's C16 model with the KERNAL ROM |
 
 ## Open questions
 
