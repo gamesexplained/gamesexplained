@@ -802,3 +802,5 @@ Checked load-3 type-$07 state 5 in five forced VICE cases, with movement callbac
 Checked load-3 type-$07 state 6 in four forced VICE cases around the signed timer boundary; restored the paused user snapshot.
 
 Checked load-3 helper $9DF1 with five forced VICE cases and a two-level caller, verifying the return-address removal and callback outcomes; restored the paused user snapshot.
+
+Checked load-3 type-$07 state 1 with four forced VICE cases and a stubbed helper, and restored the paused user snapshot.
