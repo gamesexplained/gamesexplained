@@ -8,12 +8,12 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Every sprite shape the game and its eight stages carry, and the characters that the shots, the beam and the lasers are drawn with.</p>
+  <p class="sub">The chip’s eight sprites are stretched to cover eighteen moving things, and every shot the player fires is drawn as text characters. Every shape the game carries, stage by stage.</p>
 </header>
 <main class="wrap">
 <section id="sprites" data-part="game">
   <p class="fig">Sprites</p>
-  <h2 class="t">Eight sprites stretched to cover twenty</h2>
+  <h2 class="t">Eight sprites stretched to cover eighteen</h2>
   <p class="lede">The Commodore 64 shows eight sprites at once. R-Type gives sprite 0 to <a href="gameplay.html#force">the Force</a> and sprites 1 and 2 to the ship, one above the other, and shares the other five among up to fifteen enemies in three bands down the screen, reusing each sprite in every band (<code>attack_script</code>, <code>$4FA8</code>; <code>irq_band1_y</code>, <code>$0F6C</code>). A <a href="gameplay.html#bosses">boss</a> takes over the same five sprites for up to seven rows of its own.</p>
   <p>The shapes are 64 bytes each, in the last bank the video chip can see, so a sprite pointer <i>p</i> picks the shape at <span data-part=""><code>$C000</code></span> + 64 × <i>p</i>. They are multicoloured: every sprite shares dark grey and light grey, the colours the game puts in the shared registers, and each sprite has one colour of its own.</p>
   <p>The sheets below draw every shape with white as that colour of its own, since that colour comes from the enemy’s type. Shapes are in pointer order, sixteen to a row. Each stage brings its own set in its third file, at <span data-part=""><code>$E000</code></span> and up, so these sheets are the full cast of each stage.</p>
@@ -59,7 +59,14 @@
   <p class="fig">Characters</p>
   <h2 class="t">Shots, the beam and the lasers are characters</h2>
   <p class="lede">None of the player’s fire is a sprite. A shot, the <a href="gameplay.html#beam">beam</a>, the <a href="gameplay.html#weapons">reflecting and crawling lasers</a> and the red wave are characters <code>$CC</code> to <code>$ED</code> of the play-area set, written into screen memory and moved a cell at a time (<code>check_hits</code>, <code>$17FB</code>; <code>move_beam</code>, <code>$416C</code>; <code>move_crawlers</code>, <code>$4848</code>). That leaves every sprite free for the ship, the Force and the enemies, and it lets the game find a hit by reading the characters in the cells under each enemy.</p>
-  <figure class="sheet"><img src="reference/sprites/shots.png" width="340" height="40" alt="Thirty-four small characters: arrow-shaped shots, beam pieces of three widths, diagonal laser segments and wave pieces" style="max-width:680px"><figcaption class="cap">Characters <code>$CC</code> to <code>$ED</code> from the set at <span data-part=""><code>$C000</code></span>, in pairs of pixels, drawn in white and two greys; on screen each takes its colour from colour memory.</figcaption></figure>
+  <div class="tw" role="region" aria-label="The player's fire characters" tabindex="0"><table class="t">
+    <tr><th>Shapes</th><th>Characters</th><th>What they draw</th><th class="n">Damage</th></tr>
+    <tr><td><img src="reference/sprites/shots-a.png" width="240" height="30" alt="Characters <code>$CC</code> to <code>$D3</code>" style="image-rendering:pixelated;display:block"></td><td><code>$CC</code> to <code>$D3</code></td><td>Shots and lasers</td><td class="n">1</td></tr>
+    <tr><td><img src="reference/sprites/shots-beam.png" width="180" height="30" alt="Characters <code>$D4</code> to <code>$D9</code>" style="image-rendering:pixelated;display:block"></td><td><code>$D4</code> to <code>$D9</code></td><td>The <a href="gameplay.html#beam">beam</a>, in its three widths</td><td class="n">2, 6 or 10</td></tr>
+    <tr><td><img src="reference/sprites/shots-b.png" width="330" height="30" alt="Characters <code>$DA</code> to <code>$E4</code>" style="image-rendering:pixelated;display:block"></td><td><code>$DA</code> to <code>$E4</code></td><td>Shots and lasers; the hit test treats both ranges alike</td><td class="n">1</td></tr>
+    <tr><td><img src="reference/sprites/shots-wave.png" width="240" height="30" alt="Characters <code>$E5</code> to <code>$EC</code>" style="image-rendering:pixelated;display:block"></td><td><code>$E5</code> to <code>$EC</code></td><td>The red crystal’s <a href="gameplay.html#weapons">wave</a></td><td class="n">5</td></tr>
+  </table></div>
+  <p class="cap">Drawn three times their size from the set at <span data-part=""><code>$C000</code></span>, in white and two greys; on screen each takes its colour from colour memory. The damage is what <code>check_hits</code> (<code>$17FB</code>) takes from an enemy when it finds the character in a cell under it.</p>
   <p>The scenery is characters too, in a set of its own for each stage. The <a href="levels.html">Maps</a> tab draws every stage from them.</p>
 </section>
 </main>
