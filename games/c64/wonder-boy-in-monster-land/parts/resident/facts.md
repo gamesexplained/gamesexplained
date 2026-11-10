@@ -275,3 +275,5 @@ Resident $0988 initializes an entity position from screen or world coordinates a
 Six resident item setup variants choose type, sprite frame and attribute before shared setup at $49D0; four also call the message routine while preserving X and Y. VICE checked six forced entries with reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Resident $49E3 and $4A12 scan enabled entries and patch their own dispatch jumps; the second selector falls back to the first at index 7. VICE checked four forced selection, wrap and fallback cases with the random routine and dispatch destinations replaced. The enabled ranges overlap, the first scan has no exit when all eight bytes are zero, and ordinary-play reachability remains open.
+
+Resident $497D chooses between another selection and the type-$F0 item setup based on bit $10 of the selected player flags. VICE checked both forced flag paths with selection, reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
