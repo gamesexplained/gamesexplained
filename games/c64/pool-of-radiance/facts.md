@@ -597,12 +597,17 @@ listing's bytes by `test_combat.js`, which holds `combat.html` to it.
   is three words.
 - COMBAT3: the joystick's directions, the turning tables and the
   missile pictures' places (tables `$7AC0`-`$7AFE`).
-- The temple's prices and its menu are in the file SQRPACI64, which
-  POST.COM loads at `$0400` for a temple (post-com `heal`, `$209C`):
-  in gold, cure blindness 1000, cure disease 1000, cure light wounds 100,
-  cure serious wounds 350, cure critical wounds 600, neutralize poison
-  1000, raise dead 5500, remove curse 3500, stone to flesh 2000, and two
-  items the menu hides at 5000 and 20000. The file is in no part.
+- The temple's code, prices and menu are in the file SQRPACI64, which
+  POST.COM loads at `$0400` for a temple (post-com `heal`, `$209C`), the
+  part `temple` (`parts/temple/facts.md`): in gold, cure blindness 1000,
+  cure disease 1000, cure light wounds 100, cure serious wounds 350, cure
+  critical wounds 600, neutralize poison 1000, raise dead 5500, remove
+  curse 3500, stone to flesh 2000, and two items named `@` that the
+  menu's mask hides, at 5000 and 20000, whose routine is RAISE DEAD's
+  table of chances. CURE BLINDNESS and CURE DISEASE lose the kind they
+  are meant to end and are paid for by anyone (`end_first_kind`, temple
+  `$05DA`). *Run* (`test_temple.js`), and *live* for CURE BLINDNESS on a
+  healthy member and RAISE DEAD at constitution 6.
 
 ## Sound
 
@@ -728,3 +733,13 @@ effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
   and asked again after each key, with side 3 in the drive and with each
   of the other seven. The same with her head set to `$23` (`$4DFE` and
   `$6BFE`).
+- The temple's CURE BLINDNESS (10 November 2026): from `por_temple_entry`
+  (post-com `$20BE`, ARAX THE BOLD at the Temple of Tempus, condition 1,
+  no timed effects), his platinum set to 1,000 (`$6BC3`), then CURE
+  BLINDNESS and YES. The platinum read 800 afterwards: 1,000 gold pieces
+  paid for a member with nothing to cure.
+- The temple's RAISE DEAD (10 November 2026): from the same snapshot, his
+  condition set to `$83` (DEAD), constitution 6 (`$6B18`) and platinum
+  2,000, then RAISE DEAD and YES, with a checkpoint on `show_msg`
+  (resident `$197E`). X was `$32` (CURED ...) and then `$1F` (FAILED);
+  the platinum read 900 and the condition `$82`, GONE.

@@ -34,7 +34,8 @@ COUNTS = [0, 1, 1, 2, 3, 3, 3, 3, 2, 2, 1, 3, 2, 0, 1, 2, 2, 1, 1, 0, 4, 0, 0, 0
           2, 4, 0, 0, 0, 8, 3, 13, 3, 0, 6, 1, 5, 3, 3, 0, 1, 0, 1, 3, 1, 3, 1, 1, 0, 3, 1, 0]
 GOTO, GOSUB, ADD, RANDOM, SAVE, LOAD_MONSTER, SETUP_MONSTER, PICTURE = 1, 2, 4, 8, 9, 11, 12, 14
 ON_GOTO, ON_GOSUB, ENCOUNTER_MENU, GET_TABLE, ADD_NPC = 37, 38, 41, 42, 54
-ENDS = (0, 1, 19, 32, 37)      # EXIT, GOTO, RETURN, NEW ECL, ON GOTO: the next command is not reached
+ENDS = (0, 1, 19, 32)          # EXIT, GOTO, RETURN, NEW ECL: the next command is not reached
+KINDS = (0, 1, 2, 3, 0x80, 0x81)   # the operand types the scripts use; other bytes there are not commands
 IFS = range(22, 28)            # an IF before one of those makes it conditional
 HEAD = 0x6DE1                  # SAVEd to: a portrait's head, or 255 for a whole close-up
 
@@ -77,33 +78,46 @@ def command(b, i):
 
 
 def flow(b, base=0x9900):
-    """The commands reached from the script's five entries, in address order."""
-    seen, work = {}, [base + 4 * k for k in range(5)]
+    """The commands reached from the script's five entries, in address order. ON GOTO goes on to the
+    next command when its index is not below its count (dungeon cmd_on_goto, $2091), and some scripts
+    rely on it, as side 8's ECL1D does to reach NORRIS THE GRAY's fight; others keep a table there.
+    So the bytes after an ON GOTO are followed only when every command they lead to, up to a command
+    already reached or an end, reads as one with the operand types the scripts use."""
+    seen, work = {}, [(base + 4 * k, False) for k in range(5)]
     while work:
-        a, prev_if = work.pop(), False
-        while isinstance(a, int) and base <= a < base + len(b) and a not in seen:
+        a, tentative = work.pop()
+        run, more, prev_if, ok = {}, [], False, True
+        while isinstance(a, int) and base <= a < base + len(b) and a not in seen and a not in run:
             try:
                 c = command(b, a - base)
             except IndexError:
+                ok = not tentative
                 break
-            if c is None:
+            if c is None or (tentative and any(o[0] not in KINDS for o in c[1])):
+                ok = not tentative
                 break
             cmd, ops, nxt = c
-            seen[a] = (cmd, ops)
+            run[a] = (cmd, ops)
             if cmd in (GOTO, GOSUB) and ops[0][0] == 1:
-                work.append(ops[0][1])
+                more.append((ops[0][1], False))
             if cmd in (ON_GOTO, ON_GOSUB):
-                work += [o[1] for o in ops[2:] if o[0] == 1]
+                more += [(o[1], False) for o in ops[2:] if o[0] == 1]
+                if cmd == ON_GOTO and not prev_if:
+                    more.append((base + nxt, True))
+                    break
             if cmd in ENDS and not prev_if:
                 break
             prev_if = cmd in IFS
             a = base + nxt
+        if ok:
+            seen.update(run)
+            work += more
     return [(a,) + seen[a] for a in sorted(seen)]
 
 
 def resolver(b, cmds, base=0x9900):
     """of(operand): its possible values as (value, key), the key pairing values read with one index."""
-    sets, rnd, incs = defaultdict(list), {}, set()
+    sets, rnd, incs, shifts = defaultdict(list), {}, set(), {}
     for at, cmd, ops in cmds:
         if cmd == SAVE and ops[0][0] in (0, 2) and ops[1][0] == 1:
             sets[ops[1][1]].append(("c", ops[0][1]))
@@ -113,17 +127,23 @@ def resolver(b, cmds, base=0x9900):
             rnd[ops[1][1]] = max(rnd.get(ops[1][1], 0), ops[0][1])
         if cmd == ADD and ops[0] == (0, 1) and ops[1][0] == 1 and ops[1] == ops[2]:
             incs.add(ops[1][1])
+        elif cmd == ADD and ops[0][0] == 0 and ops[1][0] == 1 and ops[1] == ops[2]:
+            shifts[ops[1][1]] = max(shifts.get(ops[1][1], 0), ops[0][1])   # side 7's ECL16 adds 7 to a
+                                                                            # RANDOM 5 to read 13 entries
+        elif cmd == ADD and ops[2][0] == 1 and sorted(o[0] for o in ops[:2]) == [0, 1]:
+            lit, var = sorted(ops[:2])          # a number and a variable: the sum, as side 1's ECL18
+            sets[ops[2][1]].append(("a", lit[1], var))   # loads a group's leader from the next file
 
     def indices(var):
         vs = [s[1] for s in sets.get(var, []) if s[0] == "c"]
         hi = max([rnd.get(var, -1)] + vs) if (var in rnd or vs) else 7
-        return range(hi + (3 if var in incs else 0) + 1)
+        return range(hi + (3 if var in incs else 0) + shifts.get(var, 0) + 1)
 
     def table(t, i):
         o = t - base + i
         return b[o] if 0 <= o < len(b) else None
 
-    def of(op):
+    def of(op, depth=0):
         k, v = op
         if k == 0:
             return [(v, None)]
@@ -131,6 +151,9 @@ def resolver(b, cmds, base=0x9900):
         for s in sets.get(v, []):
             if s[0] == "c":
                 out.append((s[1], None))
+            elif s[0] == "a":
+                if depth < 3:
+                    out += [((x + s[1]) & 255, key) for x, key in of(s[2], depth + 1)]
             elif s[2][0] == 0:
                 out.append((table(s[1], s[2][1]), None))
             elif s[2][0] == 1:
