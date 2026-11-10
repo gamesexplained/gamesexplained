@@ -21531,6 +21531,21 @@
    "text": "Tests downward player movement against a candidate entity and can shorten the step, record the entity index and set support state. Arithmetic uses 8-bit values and carry."
   },
   {
+   "address": 8603,
+   "type": "line",
+   "text": "Immediate operand of ADC at $219A, patched by $2173 with the selected horizontal contact width. The following comparison skips the candidate when the player lies beyond the computed upper bound."
+  },
+  {
+   "address": 8609,
+   "type": "line",
+   "text": "Add $14 plus the carry left set by the successful horizontal comparison to player Y. Equal to the display-slot Y takes the zero-step path; greater or equal skips the candidate. Otherwise add the vertical step and 3 with carry as produced by the preceding instructions, and skip if still below the slot Y. For contact, set the step to slot Y minus player Y minus $15 modulo 256."
+  },
+  {
+   "address": 8643,
+   "type": "line",
+   "text": "Clear downward-move, vertical-animation and vertical-motion state, store entity flags OR 2 as support flags, record the entity index and return. This continuation is reached with A=0 from either contact path."
+  },
+  {
    "address": 8666,
    "type": "line",
    "text": "The preceding LDA #0 sets Z and STA preserves it, so this BEQ is unconditional. The following bytes at $21df\u2013$21e0 are scratch data, not fall-through instructions."
@@ -21538,7 +21553,7 @@
   {
    "address": 8672,
    "type": "line",
-   "text": "Save X in the shared restore instruction before indexing the selected player's flags."
+   "text": "Scratch byte holding the selected entity display-slot X coordinate shifted right one bit for the contact check at $2173."
   },
   {
    "address": 8685,
@@ -21548,7 +21563,7 @@
   {
    "address": 8687,
    "type": "line",
-   "text": "Save X in the shared restore instruction before indexing the selected player's flags."
+   "text": "Return from the selected-player flag update after restoring X at $21ED."
   },
   {
    "address": 8705,

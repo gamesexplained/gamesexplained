@@ -716,3 +716,5 @@ Described the alternate screen matrix cells $C500–$C7E7 by their positions and
 Described primary screen matrix cells $C0AE–$C3E7 by position, using the VICE-checked transition clear and the separately checked status-template copy. The existing screen-clear test checks the range and untouched tail.
 
 Described the previously unlabelled tail of the 200-byte status template and its six-byte meter-background use. The existing VICE and listing checks cover the full template copy.
+
+Traced the resident platform-contact bounds through the support-state update. Four forced VICE paths and a listing test checked horizontal rejection, vertical rejection, equal height and a shortened step. Corrected two misplaced existing comments at $21E0 and $21EF; restored the paused user snapshot.
