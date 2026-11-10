@@ -792,3 +792,5 @@ Checked load-3 state $9EB1 in four forced VICE cases, stubbing the contact, effe
 Checked load-3 state $9E42 in six forced VICE cases with detection, contact, effect and movement callbacks stubbed. Recorded the branches, selected movement call and state-3 field writes; restored the paused user snapshot.
 
 Checked load-3 type-$24 states 1 and 2 with six forced VICE cases and stubbed callbacks. Confirmed that state 2 executes both handlers after either detection result, and restored the paused user snapshot.
+
+Checked load-3 type-$07 states 3 and 4 in eight forced VICE cases with callbacks stubbed, including unsigned compare and sign boundaries; restored the paused user snapshot.
