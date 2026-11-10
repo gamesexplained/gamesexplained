@@ -197,3 +197,5 @@ Type-$05 state 1 was traced across five loads, completing its six captured state
 The type-$0C dispatcher, all four captured state bodies and the stack-skipping event helper were traced in loads 8, 10, 26 and 29. Listing tests and controlled VICE calls cover all dispatches, representative state paths and both stack paths with external callbacks stubbed. The state-index range and natural reachability remain open; the paused snapshot was restored.
 
 The type-$0D dispatcher, states 0, 3 and 4, and a stack-skipping event helper were traced in loads 8, 9 and 27. Listing tests and controlled VICE calls check dispatch, alternate-index and stack paths with external calls stubbed. States 1 and 2, index ranges and ordinary-play reachability remain open; the paused snapshot was restored.
+
+Type-$0D states 1 and 2 were traced in three loads, completing the five captured state bodies. Listing tests cover slot allocation success and failure, countdowns and movement results with the event and external callbacks stubbed; ten controlled VICE calls check representative paths. The index ranges and ordinary-play reachability remain open; the paused snapshot was restored.

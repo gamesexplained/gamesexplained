@@ -486,7 +486,7 @@
   {
    "start": 47526,
    "end": 47752,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 47753,
@@ -1007,6 +1007,24 @@
    "kind": "user"
   },
   {
+   "address": 47526,
+   "name": "type0d_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47566,
+   "name": "type0d_state1_allocate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47655,
+   "name": "type0d_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 47753,
    "name": "type0d_state3",
    "type": "UserDefined",
@@ -1432,6 +1450,21 @@
    "address": 47516,
    "type": "line",
    "text": "State 0 stores $32 in $1AD3,X, selects state 1 and falls through to its handler at $B9A6."
+  },
+  {
+   "address": 47526,
+   "type": "line",
+   "text": "State 1 calls the event helper at $BAC8; this describes the path if it returns here. Decrement $1AD3,X. If negative, set it to $1E, select state 2 and fall through to $BA27. Otherwise copy $1AE4,X to $BB14 and store $19E5,X plus 6 when that byte is negative at $19C3,X, using binary addition with carry clear. Return if $1B28,X is nonzero. Otherwise call $3020 and return if its result is nonnegative; a negative result enters the allocation path at $B9CE."
+  },
+  {
+   "address": 47566,
+   "type": "line",
+   "text": "Set $1B28,X to 1 and save the original X in Y before calling $190B. On clear carry restore X from Y and return. On set carry use returned X for another slot: save it at $1B17,Y, copy $194C, $193B, $1990 and $197F from Y, set $1A07,X=1, $1919,X=$25 and $1AA0,X=0, and set both $19C3,X and $19E5,X to $19E5,Y plus 12 with carry clear. Store $7F at $1B28,X and the original Y at $1AD3,X, restore X from Y and return. The slot allocation callback and normal-play context remain open."
+  },
+  {
+   "address": 47655,
+   "type": "line",
+   "text": "State 2 calls $BAC8; this describes the path if that helper returns. Decrement $1AD3,X; if negative, jump to state 0. Otherwise copy $1AE4,X to $BB14 and pass A=2 to $4574 when that byte is negative or $45BC otherwise. If the callback result AND 6 is not 2, toggle bit 7 of $1AE4,X and jump to state 0. If it is 2 and $1B06,X is nonzero, decrement that field and return. If zero, set it to 4, compute $19C3,X from $19E5,X plus optional 6, toggle bit 0 of $1AF5,X, and add 2 to the frame when that result is zero. Arithmetic is binary when decimal mode is clear."
   },
   {
    "address": 47753,
