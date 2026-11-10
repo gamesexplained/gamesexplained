@@ -708,3 +708,5 @@ Described the resident raster split setup and four timing tables. Two forced VIC
 Typed the load-19 question selector at $BCDC. Four forced VICE cases and a listing test checked both question choices with display stubbed. Restored the paused user snapshot.
 
 Described the resident entity collision parameter tables through type 45. The listing test checked all 46 types, and five forced VICE cases checked the coordinate and size calculation. Restored the paused user snapshot.
+
+Distinguished 29 previously duplicated resident sprite descriptions by their own bitmap bit and row counts. VICE compared all 63 bitmap bytes per slot with the first-load play capture; a listing test checks the counts. Restored the paused user snapshot.
