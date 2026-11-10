@@ -888,3 +888,5 @@ Checked resident serial receiver $7DC4 in seven forced VICE cases with controlle
 Checked resident vertical entity movement in six forced VICE cases with entity, player and displacement callbacks stubbed; restored the paused user snapshot.
 
 Checked two unsupported upward displacements reach the existing overlap check at $6939 and restored the paused user snapshot.
+
+Checked resident entity vertical steps in seven forced VICE cases covering world and screen modes, wrap and clamp carry; restored the paused user snapshot.

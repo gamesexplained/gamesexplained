@@ -365,3 +365,5 @@ Resident serial sender $7E53 shifts a byte most-significant bit first and writes
 Resident serial receiver $7DC4 combines four port samples and has a runtime-patched return/store opcode at $7DED. Four forced VICE cases checked byte reconstruction in $60 return mode and three checked $99 store mode, with the wait and sample reads redirected to controlled RAM. Real bus timing, peer behavior and ordinary-play reachability remain open.
 
 Resident vertical entity movement $68F1 uses a callback displacement and can move an attached player through $0C2C or $0D7F. Six forced VICE cases checked nonnegative and negative values, support, contact and restored X with callbacks stubbed. Two more forced VICE cases checked that unsupported upward motion reaches the overlap check at $6939; its own branches were checked separately. Callback effects and ordinary-play reachability remain open.
+
+Resident entity vertical steps $4342/$4368 select world or screen coordinates by $7A. Seven forced VICE cases checked 16-bit carry/borrow, wrapped screen positions and the downward clamp, including its returned carry. Slot bounds remain open.
