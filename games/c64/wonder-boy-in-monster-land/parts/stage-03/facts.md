@@ -86,3 +86,5 @@ Load-3 type-$07 state 2 at $9C9A calls movement and contact checks, conditionall
 Load-3 phase calculation at $9C5A uses two subtract-with-borrow checks, divides a nonnegative remainder by eight, and stores a second value two less modulo 256. Five forced VICE cases checked the boundaries with the position selector stubbed. Input meanings and ordinary-play reachability remain open.
 
 The first part of load-3 type-$07 state 0 at $9BB6 stores a callback carry as a sign bit, tests $1AE4,X, selects two frames, and branches at random-byte value $BE. Six forced VICE cases checked the branches and frame wrap with callbacks stubbed. These instructions overlap copied character-source bytes. Callback effects and ordinary-play reachability remain open.
+
+The second part of load-3 type-$07 state 0 at $9BEA sets the allocation loop counter to 2 and writes two direction-dependent frame numbers. Eight forced VICE cases covered both source modes, both directions and both allocation outcomes with callbacks stubbed. The code overlaps copied character-source bytes; callback effects, index bounds and ordinary-play reachability remain open.
