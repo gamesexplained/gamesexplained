@@ -670,6 +670,11 @@
   },
   {
    "start": 45612,
+   "end": 45677,
+   "type": "Code"
+  },
+  {
+   "start": 45678,
    "end": 47586,
    "type": "Undefined"
   },
@@ -1445,6 +1450,24 @@
    "kind": "user"
   },
   {
+   "address": 45612,
+   "name": "type04_event_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45637,
+   "name": "type04_store_state",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45658,
+   "name": "type04_restore_index",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 47587,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -2003,7 +2026,7 @@
   {
    "address": 45349,
    "type": "line",
-   "text": "State 1 calls $B22C, the flag setter at $B1EE, and the movement helper at $B205. If movement returns carry set, A bit 3 selects the direction toggle when set, or clears the flag and $1B28,X and stores state 4 when clear. With carry clear, A bits 0\u20131 index the paired tables at $B155/$B159, patching the jump at $B152. The first callee and natural reachability remain open."
+   "text": "State 1 calls $B22C, the flag setter at $B1EE, and the movement helper at $B205. If movement returns carry set, A bit 3 selects the direction toggle when set, or clears the flag and $1B28,X and stores state 4 when clear. With carry clear, A bits 0\u20131 index the paired tables at $B155/$B159, patching the jump at $B152. The external callbacks and natural reachability remain open."
   },
   {
    "address": 45394,
@@ -2038,7 +2061,7 @@
   {
    "address": 45451,
    "type": "line",
-   "text": "State 5 calls $B22C, clears $1A7E,X and increments $1B28,X with eight-bit wrap. For a result below 7, jump to movement at $B205. For 7\u2013255 except 11, increment $1B17,X, pass it to $4368 and jump to movement at $B207 with A=1. For 11, call $4368 with A=6 and store state 1. Natural reachability and the first callee remain open."
+   "text": "State 5 calls $B22C, clears $1A7E,X and increments $1B28,X with eight-bit wrap. For a result below 7, jump to movement at $B205. For 7\u2013255 except 11, increment $1B17,X, pass it to $4368 and jump to movement at $B207 with A=1. For 11, call $4368 with A=6 and store state 1. Natural reachability and the external callbacks remain open."
   },
   {
    "address": 45496,
@@ -2074,6 +2097,21 @@
    "address": 45591,
    "type": "line",
    "text": "Increment $1AC2,X with eight-bit wrap, take bit 1 of the result, clear carry and add $19E5,X, 4 and $1AD3,X in sequence, including carry from each addition. The described binary arithmetic assumes decimal mode is clear. Store the resulting low byte at $19C3,X and return. State 0 and other handlers call this routine; natural contexts remain open."
+  },
+  {
+   "address": 45612,
+   "type": "line",
+   "text": "Return immediately when $1A29,X is zero. Otherwise call $792C and $732A. On set carry from $732A, a positive $1A6D,X calls state 0 at $B0F8 and selects state 2; zero or negative sets $1AE4,X to 10 and selects state 3. In the latter case a nonzero $1AF5,X becomes an X index for decrementing $1B28,X; the original X is saved into the immediate operand at $B25B and restored afterward. No local bound on that alternate index is established. On clear carry from $732A, call $7227; if it returns set carry, call $5D7A with A=2 and jump to the direction toggle at $B1FD; otherwise return. External callees and natural reachability remain open."
+  },
+  {
+   "address": 45637,
+   "type": "line",
+   "text": "Store A as the entity state $1AB1,X and return. Several branches enter here with A=1, 2 or 3."
+  },
+  {
+   "address": 45658,
+   "type": "line",
+   "text": "Restore the entity index from the immediate operand at $B25B, patched by STX before using an alternate index. The snapshot placeholder is $FF."
   },
   {
    "address": 47587,
