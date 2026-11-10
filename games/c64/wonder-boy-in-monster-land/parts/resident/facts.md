@@ -193,3 +193,7 @@ Resident $35C1 selects a horizontal helper from entity type and signed table val
 Resident $369E copies ten record bytes through $E2/$E3 into entity fields, advances Y by ten modulo 256 and clears four display-slot indexes. VICE checked two forced source offsets, including Y wrapping within the source page. Record bounds and ordinary-play reachability remain open.
 
 Resident $5D2C converts selected trigger column and row bytes into unindexed entity coordinates: X is column times 16 plus $1B and Y is row times 16 plus $59. VICE checked five forced input pairs including byte-boundary carries and $FF values. Index bounds and ordinary-play reachability remain open.
+
+Resident $71DB converts entity world coordinates to truncated grid coordinates after subtracting $1B horizontally and $5A vertically. It returns the entity index in A and sets carry when the adjusted horizontal low nibble is at least 7. VICE checked eight forced coordinate and boundary cases, including 16-bit wrap. Ordinary-play reachability remains open.
+
+VICE also checked three forced $5D2C-to-$71DB conversions: the returned column equals the input column, while the row is one less modulo 256 because the two routines use $59 and $5A respectively. Ordinary-play reachability remains open.
