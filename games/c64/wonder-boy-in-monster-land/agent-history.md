@@ -758,3 +758,5 @@ Traced twelve object-record entity initializers across later loads. Twenty-four 
 Traced the load-19 Sphinx seed and four hint handlers at $991B–$995B. Four forced VICE cases and a listing test checked message selection and the subsequent state’s bit retention with the random routine stubbed. Recorded the overlap with copied characters and the mutable $9A4B byte. Restored the paused user snapshot.
 
 Traced eight later-load object message callbacks. Eight forced VICE calls and a listing test checked their one- or two-message pointer sequences with intermediate display calls stubbed. Updated character-source comments where code overlaps. Restored the paused user snapshot.
+
+Traced twelve later-load object result callbacks. Twelve forced VICE calls and a listing test checked their A and carry returns; character-source comments record any code overlap. Restored the paused user snapshot.

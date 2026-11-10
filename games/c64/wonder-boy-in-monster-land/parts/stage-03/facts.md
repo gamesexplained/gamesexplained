@@ -56,3 +56,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 102-byte st
 This load has 1 captured motion-reader entry and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Some bytes also serve as copied character data, as noted in the listing. Ordinary-play reachability remains open.
 
 The object record at $901F contains initialization target $902F. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
+
+The object record at $901F contains result callback $9085, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.

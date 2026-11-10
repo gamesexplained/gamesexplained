@@ -106,3 +106,5 @@ This load has 1 captured motion-reader entry and encoded streams documented in `
 The object record at $93DC contains initialization target $948A. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 The object record at $93BC contains message callback $9451, which supplies $9458 to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
+
+The object record at $93DC contains result callback $94E1, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.

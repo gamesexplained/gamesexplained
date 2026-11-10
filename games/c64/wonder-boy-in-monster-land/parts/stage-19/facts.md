@@ -132,3 +132,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 128-byte st
 The object record at $98CE contains initialization target $98DE. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 The load-19 object callback at $991B takes two low bits from $3020, stores them with bit 7 set at $9A4B, and selects one of four hint messages. If the $BC2C state then runs, its negative-byte branch preserves those two low bits: bit 1 chooses the quiz question and bit 0 chooses its accepted cursor mode. Four forced VICE cases and `test_sphinx_choice.js` check the hint pointers and retention with the random routine stubbed. The callback and state were invoked separately; their ordinary-play order remains open.
+
+The object record at $98CE contains result callback $9917, which returns A=$00 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.

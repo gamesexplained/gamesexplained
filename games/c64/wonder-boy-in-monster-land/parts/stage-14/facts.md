@@ -116,3 +116,5 @@ The captured shop message bank contains the same 34 records as the decoded first
 The captured split row-pointer tables contain 81 pairs. All follow a 102-byte stride from $8671; the first 14 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
 
 The object record at $8F72 contains initialization target $8F82. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
+
+The object record at $8F72 contains result callback $8FD3, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.

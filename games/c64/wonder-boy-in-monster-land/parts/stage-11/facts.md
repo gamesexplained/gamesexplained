@@ -60,3 +60,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 122-byte st
 Load-11 code at $964E initializes indexed type-$10 entity fields and passes message pointer $968D to $77E0; the captured object record contains $964E. Three forced VICE calls and `test_stage11_kraken_init.js` check the fields and pointer. The message callback and ordinary-play reachability remain open.
 
 Load-11 entries at $95F4 and $9616 pass the encoded streams at $95FF and $9621 to the resident repeating-motion reader. Each yields 38 values before resetting. The first stream overlaps the copied character source at $9601–$9610. Six forced VICE cases and `test_stage11_motion.js` check literal, repeated and reset values; ordinary-play reachability remains open.
+
+The object record at $963E contains result callback $969F, which returns A=$F7 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
