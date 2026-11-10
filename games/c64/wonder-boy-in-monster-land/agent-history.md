@@ -692,3 +692,5 @@ Found and typed conditional-item resolvers in 17 later loads. Fifty-one forced V
 Checked all 34 shop-message copies in each of 17 later loads against the decoded first-load records. VICE matched each entire message bank; listing tests check all 578 record hashes and decoded fields. Added the ten previously undescribed records per load and noted overlapping character-copy uses. The paused user snapshot was restored.
 
 Found and typed graphics setup code and its ten source blocks in loads 2, 9, 23 and 26. VICE and a listing test checked every copy and seven mirror calls per load with the mirror callback stubbed. Load-2 overlapping character descriptions record both uses; the paused user snapshot was restored.
+
+Found and typed load-19 message setup, cursor-colour code and its tables at $BE38–$BE95. Four forced VICE cases and a listing test checked one entity setup and all three usual cursor ranges with callbacks stubbed. The paused user snapshot was restored; the following code remains a separate coverage boundary.

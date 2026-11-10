@@ -114,3 +114,5 @@ Shop helpers at $9D60 and $9D73 test sampled input and choose a cursor position.
 The shop conditional-item resolver at $9D4B changes item $13 to $14 when the selected player has flag $10; other inputs pass through. Three forced VICE cases and a listing test check it in this load. Other callers and ordinary-play reachability remain open.
 
 The captured shop message bank contains the same 34 records as the decoded first-load bank. VICE matched the complete message bytes in this load; listing tests check all record hashes and decode the first-load fields. Selection of each record in ordinary play and other overlapping uses remain open.
+
+A forced load-19 message setup at $BE38 initializes an entity after passing a message pointer, and $BE61 fills one of three cursor-colour ranges. Four VICE cases and a listing test check the setup and three ranges with display, frame and HUD callbacks stubbed. Bounds, callback effects and ordinary-play reachability remain open.
