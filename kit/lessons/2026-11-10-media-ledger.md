@@ -13,8 +13,10 @@
   file holds and every cartridge bank into `media.json`
   (`kit/scripts/media.py`, `kit/c64/media.py`), each with one answer:
   in a part, data the game loads, the loader, saved by the game, never
-  loaded, or open. A game at Silver needs nothing open; a game made
-  before keeps its tier and its About tab names what is open.
+  loaded, or open. A new skill, `kit/skills/core/12-media`, lists them
+  straight after orient and answers them before Silver. A game at
+  Silver needs nothing open; a game made before keeps its tier and its
+  About tab names what is open.
 - **Matching the bytes answers most of it at once.** On Pool's eight
   sides, 596 different items, the scan found 36 files whole in a part's
   listing, and two spell files more held all but the kilobyte the next

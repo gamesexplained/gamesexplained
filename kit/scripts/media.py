@@ -3,9 +3,10 @@
 
 Coverage counts the bytes that were in memory when a part's snapshot was taken, so a file the
 game loads into a slot and then replaces, or never loads, is invisible to it. The ledger closes
-the list from the other side (kit/skills/core/50-coverage, "The media ledger"). A platform's reader (kit/<platform>/media.py) lists every item on each image the
-contributor supplied: every file on a disk, every run of sectors the disk's map marks as used
-that no file holds, every bank of a cartridge. Each item then gets one answer:
+the list from the other side (kit/skills/core/12-media). A platform's reader
+(kit/<platform>/media.py) lists every item on each image the contributor supplied: every file on
+a disk, every run of sectors the disk's map marks as used that no file holds, every bank of a
+cartridge. Each item then gets one answer:
 
   part     its bytes are listed in a part ("part", its id; left out in a game of one load),
            at "at"; "packed": true when it unpacks into the part rather than lying there whole
@@ -376,7 +377,7 @@ def problems(gdir, game):
                 and reader(game.get("platform", "")) is not None)
     if led is None:
         return [f"Silver or above with no {FILE}: list the media with kit/scripts/media.py scan "
-                "(kit/skills/core/10-orient, step 7)"] if required else []
+                "(kit/skills/core/12-media)"] if required else []
     if not isinstance(led.get("images"), list) or not isinstance(led.get("items"), list):
         return [f'{FILE} needs "images" and "items", lists']
     P = part_dirs(gdir)

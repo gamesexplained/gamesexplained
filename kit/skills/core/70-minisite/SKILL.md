@@ -466,7 +466,7 @@ you find one, do not stop at the poke: prove a player could get there
 reader can walk through. It is one kind of discovery among several.
 
 Another is what the game left on its media and never loads: each
-`unused` item in `media.json` (`50-coverage`, "The media ledger"). A
+`unused` item in `media.json` (`12-media`). A
 monster no script sends, a level no door leads to or a tune nothing
 plays is cut content; show it, drawn or played from its bytes, beside
 the search that found nothing loads it. The developers' tools and

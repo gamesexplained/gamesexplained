@@ -70,7 +70,7 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
    one writes nothing another part shares. A part with no symbol
    map shows as not analysed on the page and in `coverage.py`, and that
    is what keeps the game's figure honest: the parts with no folder are
-   the ones nobody knows are missing. `media.json` (`10-orient` step 7)
+   the ones nobody knows are missing. `media.json` (`12-media`)
    lists every file, so a file of code that no part's snapshot holds
    stays open there until it has a folder or is shown to be the
    loader's. When the first load was analysed
