@@ -197,3 +197,7 @@ Resident $5D2C converts selected trigger column and row bytes into unindexed ent
 Resident $71DB converts entity world coordinates to truncated grid coordinates after subtracting $1B horizontally and $5A vertically. It returns the entity index in A and sets carry when the adjusted horizontal low nibble is at least 7. VICE checked eight forced coordinate and boundary cases, including 16-bit wrap. Ordinary-play reachability remains open.
 
 VICE also checked three forced $5D2C-to-$71DB conversions: the returned column equals the input column, while the row is one less modulo 256 because the two routines use $59 and $5A respectively. Ordinary-play reachability remains open.
+
+Resident $7227 rejects player contact for a nonzero $4DDD or player Y of $FE; otherwise it constructs a rectangle and calls $75E3. On contact it invokes knockback and a comparison, then sets the horizontal direction and facing from that comparison. VICE checked five forced gate, overlap and recoil cases with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked two forced $7227 cases through the real $75E3 rectangle test, with knockback and comparison callbacks stubbed. Ordinary-play reachability remains open.
