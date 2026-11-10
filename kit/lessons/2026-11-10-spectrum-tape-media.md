@@ -1,4 +1,4 @@
-## next · 2026-11-10 · Driller (ZX Spectrum) · air with Claude
+## 0.0.320 · 2026-11-10 · Driller (ZX Spectrum) · air with Claude
 
 - **A tape's blocks go in the media ledger, and the parity test for the
   ROM's form holds only for standard and turbo blocks.** The Spectrum had
