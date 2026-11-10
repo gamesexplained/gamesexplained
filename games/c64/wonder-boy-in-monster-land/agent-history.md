@@ -782,3 +782,5 @@ Traced the second shop entry and item-pair selection across 17 later loads. Sixt
 Traced shop item-drawing setup in 17 later loads. Thirty-four forced VICE cases and a listing test checked selected pointer operands, call arguments and colour RAM writes with item targets stubbed. Character-source comments record code overlap. Restored the paused user snapshot.
 
 Traced the shop item-label and prompt setup in 17 later loads. Thirty-four forced VICE cases and a listing test checked the call arguments and page byte with formatting, display and message callbacks stubbed. Character-source comments record the overlap. Restored the paused user snapshot.
+
+Described the captured storage after declared map columns in 16 loads. The row boundaries and captured values are checked against every listing; 20 forced VICE cases across six loads confirmed that the renderer can read the first and last remainder positions. Ordinary-play reachability and other uses remain open. The user’s paused snapshot was restored.

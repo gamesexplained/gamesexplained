@@ -35,8 +35,14 @@ for number in range(1, 32):
         assert block['end'] == address + width - 1 and block['type'] == 'Byte', f'load {number}: row {row} block'
         if width < stride:
             tail = next(b for b in symbols['blocks'] if b['start'] == address + width)
-            assert tail['end'] == address + stride - 1 and tail['type'] == 'Undefined', f'load {number}: row {row} remainder'
+            assert tail['end'] == address + stride - 1 and tail['type'] == 'Byte', f'load {number}: row {row} remainder'
+            values = [byte(a) for a in range(address + width, address + stride)]
+            description = next(c['text'] for c in symbols['comments'] if c['address'] == address + width and c['type'] == 'line')
+            assert f'{len(values)} captured bytes' in description
+            assert f'beginning ${values[0]:02X} and ending ${values[-1]:02X}; {values.count(0)} are zero' in description
+            assert f'column index from {width} through {stride-1}' in description
+            assert 'whether ordinary play reaches it' in description
         comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
         assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
         assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
-print('OK - map pointers, rows, dimensions, endpoint descriptions and unclassified remainders agree for loads 1–31')
+print('OK - map pointers, rows, dimensions, endpoint descriptions and captured row remainders agree for loads 1–31')
