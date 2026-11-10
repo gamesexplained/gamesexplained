@@ -387,3 +387,5 @@ Resident $27–$42 aliases the final 28 bytes of the display-slot Y cache. Four 
 At the left map boundary, $109D patches the immediate SBC operand at $10A9 with ($108E - 7) modulo 256. The carry from that first subtraction feeds the player X subtraction: when $108E is below 7, it subtracts one extra unit because of the borrow. Four forced VICE cases checked this and the $001C clamp; ordinary reachability of the borrow case remains open.
 
 The stage-record callback at $47FC uses the high operand byte at $47FE, patched from record field 6. On return it reloads X from $7B, calls $46D6 when $4753,X is negative, sets $7A to $FF and selects $479B or $3384 according to $0840. Three forced VICE cases checked the completion paths with the callback and $46D6 stubbed.
+
+The contact handler at $76B2 saves X and Y in the immediate operands at $76C1 and $76C3, sets bit $08 in the selected player flags and calls $77E2 with A=5. It restores the saved registers before jumping to $4454. Three forced VICE cases checked the flag and register behavior with $77E2 stubbed; the full message and release effects remain open.
