@@ -872,3 +872,5 @@ Checked the front of load-20 type-$1B state 0 in nine forced VICE cases with cal
 Checked load-20 type-$1B animation and movement in nineteen forced VICE cases with callbacks stubbed, including signed thresholds and carry; preserved overlapping character-source descriptions and restored the paused user snapshot.
 
 Checked resident status graphic selector $5326 with three forced VICE cases, including the patched immediate operand and all destination ranges; restored the paused user snapshot.
+
+Checked resident player-status selection $530C in four forced VICE cases using the real nibble splitter; restored the paused user snapshot.

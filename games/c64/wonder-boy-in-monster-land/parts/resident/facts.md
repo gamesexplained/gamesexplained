@@ -353,3 +353,5 @@ The captured status routine at $7B84 returns $5284. If action tier $4DDB is nonz
 The two players have separate item-type and packed-BCD quantity arrays at $51C3/$51E3 and $5203/$5223. Six forced VICE cases and `test_inventory_arrays.js` check append, matching-item merge and carry-to-$99 saturation for both players. The routine indexes by the item count without locally limiting it to the 32-byte spacing.
 
 Resident status graphic selector $5326 patches a colour operand and copies eight label cells plus four six-cell ranges. Three forced VICE cases checked selected table rows and every destination. Type/index bounds and ordinary-play reachability remain open.
+
+Resident status selection $530C selects the first or second player’s item arrays, splits the quantity nibbles and forwards the type to $5326. Four forced VICE cases checked both player paths and quantity digits with the real split routine. Item-index bounds and ordinary-play reachability remain open.
