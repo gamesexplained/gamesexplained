@@ -15,3 +15,7 @@ The first load holds eight sound patterns at `$B03D–$B16F`, selected by record
 The title initializer at `$0256–$025E` passes `$B5C4` to `$717C`, which copies eight pages to `$D000–$D7FF` with I/O banked out. The first 1,216 source bytes exactly match the earlier resident-entry RAM at `$D000–$D4BF`. The screen template beginning at `$BA84` overlaps the second half of the source. `test_title_copy.js` checks the full eight-page copy and the captured first-1,216-byte hash against the listing.
 
 All twelve 63-byte bitmap portions of the six source pairs match the corresponding resident-entry RAM copies. The 64th byte of each slot differs in that earlier snapshot, so only the bitmap portions are excluded as duplicates; their source blocks remain counted in the first load. The copying routine writes all 128 bytes of each pair during title-to-play initialization.
+
+The first captured entity state at $B188 selects reaction states on collision or updates a timer and frame on the movement path. The frame calculation propagates the carry from its first addition into the second. VICE checked six forced paths, including that carry, with collision, overlap and damage callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+The first captured entity reaction paths at $B1ED and $B224 select movement, animate a frame or finish a countdown. VICE checked five forced cases with movement, score and dispatch callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.

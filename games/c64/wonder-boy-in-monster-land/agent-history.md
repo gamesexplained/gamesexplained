@@ -589,3 +589,7 @@ Rendered 170 further distinct one-bit patterns from 174 aligned ranges found in 
 Examined character-copy gaps around known code in loads 3–31. Excluded typed code, discovered handler and update entry bytes, existing annotations and bytes that differed between entry and play. VICE checked the complete copy and watched the candidate ranges during 200 frames; 1,317 additional eight-byte patterns passed. The listing test checks every pattern against its copied bytes. Other code uses and display reachability remain open. The paused user snapshot was restored.
 
 Rechecked the expanded 252-choice pattern viewer in headless Firefox after the final page text change; changing a selection updated both canvas and source link. A screenshot is retained in ignored work storage. The preview browser and server were stopped.
+
+Traced the first-load entity normal state $B188. VICE checked six forced paths, including propagation of carry between the two frame additions, with collision, overlap and damage callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load entity reaction paths $B1ED and $B224. VICE checked five forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
