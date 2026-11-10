@@ -680,3 +680,5 @@ Reconciled the load-4 panel code with 22 overlapping visual-character descriptio
 Traced panel input and cursor paths in loads 4, 9, 19, 20 and 30. Twenty-five forced VICE cases and a listing test checked prompt arguments and branch outcomes with callbacks stubbed. The paused user snapshot was restored; physical input mapping and natural reachability remain open. Load-4 character descriptions overlapping this code record both observations.
 
 Traced panel completion and message waiting in loads 4, 9, 19, 20 and 30. Ten forced VICE cases and a listing test checked callback arguments, state writes and the wait loop with callbacks stubbed. The paused user snapshot was restored. Load-4 character descriptions overlapping this code record both observations.
+
+Decoded seven panel message records in each of loads 4, 9, 19, 20 and 30, adding descriptions for four messages per load. VICE matched all 35 captured records; a listing test decodes each field, preserving the game’s spelling and punctuation. The paused user snapshot was restored.

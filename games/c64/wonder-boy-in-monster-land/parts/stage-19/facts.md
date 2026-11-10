@@ -104,3 +104,5 @@ The captured panel at $A278 displays a byte-derived value, checks shifted player
 The captured panel at $A278 has two input loops that select a first or second path, or return to cursor setup. Five forced VICE cases and a listing test check prompt arguments, cursor fields and four branch outcomes in this load with frame, HUD and input callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 The panel completion path at $A378 calls resident routines, updates the selected-player index and stage-record field, and enters a message wait. Two forced VICE cases and a listing test check completion fields and a two-frame message wait in this load with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Seven captured message records are selected by this panel’s controlled paths. VICE matched their bytes and a listing test decodes all fields using the captured character set; spelling and punctuation are retained. Ordinary-play reachability remains open.
