@@ -293,3 +293,5 @@ Resident $29FC calls $6B50 then reads several addresses rather than calling them
 Resident $5BE1 and $5C2A either initialize slot-zero reward types $FE and $FD or increment the calling trigger count if slot zero is occupied. Both reach the input-edge test that can replace the saved reward byte with $FF. VICE checked eight forced free, occupied and input-state cases with coordinate conversion stubbed. Ordinary-play reachability remains open.
 
 Resident $5C66 and $5C94 initialize indexed reward types $FE and $FD; the latter records a converted grid row. VICE checked both forced entries through the real coordinate conversion with reset and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $5CCB and $5CFE initialize slot-zero object types $FC and $FB or increment the calling trigger count if slot zero is occupied. VICE checked four forced free and occupied cases with coordinate and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
