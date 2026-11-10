@@ -612,3 +612,5 @@ Traced the first-load item layout at $A63F. VICE and a listing test checked 24 c
 The following prompt and input handler at $A67E has its own routine boundary; its untraced bytes remain in the coverage queue.
 
 Traced first-load item release, polling and timeout paths. Five forced VICE cases checked both 220-frame timeout destinations and three controls; a listing test also checked simultaneous input priority. Callbacks were stubbed and the paused snapshot restored. The following selection handlers have a separate coverage boundary.
+
+Traced first-load item movement at $A6D4/$A6F2. Eight forced VICE cases and a listing test checked selection transitions in both layouts with callbacks stubbed. The paused user snapshot was restored. The confirmation handler has a separate coverage boundary.

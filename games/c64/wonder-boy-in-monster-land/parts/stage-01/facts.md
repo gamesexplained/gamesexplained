@@ -35,3 +35,5 @@ First-load setup at $93BA initializes player and entity fields and copies graphi
 First-load item layout at $A63F sets 24 colour cells in two groups, then calls price extraction and drawing for two selected item IDs. VICE checked the colours and call sequence with price callbacks stubbed; a listing test repeats the case. Callback effects and ordinary-play reachability remain open.
 
 First-load item input uses one 220-frame timeout across release and polling. It tests confirmation before left and right, and left before right. VICE checked five forced timeout and control paths with frame, input and display callbacks stubbed; a listing test also checks simultaneous controls. Callback effects and natural reachability remain open.
+
+First-load left and right selection handlers move among the usual $FF, 0 and 1 states, optionally requesting the first or second item description when the layout selector is zero. Eight forced VICE cases and a listing test check the transitions with description and cursor callbacks stubbed. Other input values and natural reachability remain open.
