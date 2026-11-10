@@ -20,3 +20,15 @@ Controlled record-copy, frame-restore and display-routine simulations selected 2
 2 simple eight-row glyphs in the character-copy source are referenced by metatiles in the captured map. Listing tests reconstruct their map references and run the $717C copy; seven controlled VICE reads check representative destination glyphs in loads 2, 20, 27 and 31. These observations do not establish ordinary-play reachability or exclude other possible code uses.
 
 The captured map references 96 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The type-$0E entity vector selects a dispatcher at $9E47. Six captured state-table pairs point to $9E65, $9E85, $9EB2, $9EC9, $9EFF, $9F1D. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in loads 9, 11 and 20; The state-index range and ordinary-play reachability remain open.
+
+Type-$0E state 4 at $9EFF counts down and either selects state 0 or calls a sign-selected movement routine. State 5 at $9F1D counts down and can call $4B0E and $5DB9. VICE checked five controlled cases with callbacks stubbed in loads 9, 11 and 20. Natural reachability remains open.
+
+Type-$0E state 1 at $9E85 chooses a movement callback by the sign of $1B28,X and either updates a frame or sets a timer, increments the state, updates the frame and reverses direction. VICE checked four controlled movement cases per load, with external callbacks and the first shared call stubbed, in loads 9, 11 and 20. Natural reachability remains open.
+
+Type-$0E states 2 and 3 at $9EB2 and $9EC9 update $1AD3,X and select the next state or a shared frame update. Controlled VICE cases checked the decrement-to-zero transition, the state-3 value 8 boundary and both carry results in loads 9, 11 and 20, with callbacks stubbed. Natural reachability remains open.
+
+Type-$0E state 0 at $9E65 uses values returned by $71DB and compares $6F3C against the returned X to choose $FA or 0, then advances state and updates a frame. Its movement helper at $9EEC chooses a callback by the sign of $1B28,X and reverses it on carry. VICE checked six controlled cases per load with callbacks stubbed in loads 9, 11 and 20. Natural reachability remains open.
+
+The type-$0E shared collision check at $9F40 can return normally, tail-call $5D7A, or select state 4 or 5 and discard its own return address so the calling handler returns immediately. VICE exercised six controlled paths per load in loads 9, 11 and 20, with external callbacks stubbed. Natural reachability remains open.

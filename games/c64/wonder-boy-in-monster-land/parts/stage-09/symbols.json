@@ -1415,6 +1415,61 @@
   },
   {
    "start": 47893,
+   "end": 47910,
+   "type": "Code"
+  },
+  {
+   "start": 47911,
+   "end": 47916,
+   "type": "Byte"
+  },
+  {
+   "start": 47917,
+   "end": 47922,
+   "type": "Byte"
+  },
+  {
+   "start": 47923,
+   "end": 47948,
+   "type": "Code"
+  },
+  {
+   "start": 47949,
+   "end": 47999,
+   "type": "Code"
+  },
+  {
+   "start": 48000,
+   "end": 48057,
+   "type": "Code"
+  },
+  {
+   "start": 48058,
+   "end": 48076,
+   "type": "Code"
+  },
+  {
+   "start": 48077,
+   "end": 48120,
+   "type": "Code"
+  },
+  {
+   "start": 48121,
+   "end": 48141,
+   "type": "Code"
+  },
+  {
+   "start": 48142,
+   "end": 48246,
+   "type": "Code"
+  },
+  {
+   "start": 48247,
+   "end": 48247,
+   "type": "Byte"
+  },
+  {
+   "start": 48248,
    "end": 48467,
    "type": "Undefined"
   },
@@ -6888,6 +6943,108 @@
    "kind": "user"
   },
   {
+   "address": 47893,
+   "name": "type0e_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47908,
+   "name": "type0e_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47911,
+   "name": "type0e_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47917,
+   "name": "type0e_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47923,
+   "name": "type0e_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47949,
+   "name": "type0e_increment_state_and_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47955,
+   "name": "type0e_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48000,
+   "name": "type0e_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48023,
+   "name": "type0e_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48058,
+   "name": "type0e_move_and_reverse",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48077,
+   "name": "type0e_state4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48107,
+   "name": "type0e_state5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48121,
+   "name": "type0e_frame_update",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48142,
+   "name": "type0e_shared_collision_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48199,
+   "name": "type0e_collision_state5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48236,
+   "name": "type0e_other_collision_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48247,
+   "name": "type0e_direction_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48468,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -11192,6 +11349,91 @@
    "address": 47892,
    "type": "line",
    "text": "Working byte used by BIT to select the sign-dependent frame offset and movement callback; handler paths write $1AE4,X here."
+  },
+  {
+   "address": 47893,
+   "type": "line",
+   "text": "Load 9: the type-$0E vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $BB24 from split target tables at $BB27/$BB2D, and jumps to the selected handler. The state index is not locally bounded; six captured table pairs are described."
+  },
+  {
+   "address": 47908,
+   "type": "line",
+   "text": "Absolute jump patched through operands $BB25/$BB26; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 47911,
+   "type": "line",
+   "text": "Six captured low bytes of state targets, paired with high bytes at $BB2D: $BB33, $BB53, $BB80, $BB97, $BBCD, $BBEB. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 47917,
+   "type": "line",
+   "text": "Six captured high bytes paired with low bytes at $BB27: $BB33, $BB53, $BB80, $BB97, $BBCD, $BBEB. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 47923,
+   "type": "line",
+   "text": "State 0 calls $BC0E, then $71DB. It writes the returned X into the immediate operand at $BB41, transfers the returned A to X, compares $6F3C to that saved X and stores $FA in $1B28,X if lower or 0 otherwise. It increments $1AB1,X and enters the frame update. The first callback can change control flow; ordinary-play reachability remains open."
+  },
+  {
+   "address": 47949,
+   "type": "line",
+   "text": "Increment $1AB1,X, then enter the frame update at $BBF9. When called from state 1, the frame update returns to the direction reversal."
+  },
+  {
+   "address": 47955,
+   "type": "line",
+   "text": "State 1 first calls $BC0E. If that returns, call $4574 with A=6 when $1B28,X is nonnegative, or $45BC with A=6 when it is negative. If the result masked with 6 equals 2, jump to the frame update. Otherwise set $1AD3,X to 7, call the state increment and frame update at $BB4D, exclusive-OR $1B28,X with $FA and return. Callback behavior and ordinary-play reachability remain open."
+  },
+  {
+   "address": 48000,
+   "type": "line",
+   "text": "State 2 calls $BC0E, then calls $4342 with A=$1AD3,X and decrements $1AD3,X. If nonzero, call $BBBA and jump to the frame update at $BBF9. If zero, increment $1AB1,X and fall through to state 3. External callbacks and natural reachability remain open."
+  },
+  {
+   "address": 48023,
+   "type": "line",
+   "text": "State 3 calls $BC0E and then $44DE with A=$1AD3,X. If carry is set, set $1AB1,X to 1 and enter state 1. Otherwise call $BBBA, increment $1AD3,X unless it equals 8, and jump to the frame update at $BBF9. External callbacks and natural reachability remain open."
+  },
+  {
+   "address": 48058,
+   "type": "line",
+   "text": "Call $4574 with A=4 when $1B28,X is nonnegative, or $45BC when negative. If the callback returns carry set, jump to the direction reversal at $BB77; otherwise return. External callback behavior and ordinary-play reachability remain open."
+  },
+  {
+   "address": 48077,
+   "type": "line",
+   "text": "State 4 decrements $1AE4,X with eight-bit wrap. A negative result sets $1AB1,X to zero and returns. Otherwise copy $1B28,X to $BC77, load A=8, and tail-call $4574 if the copied byte is negative or $45BC otherwise. Natural reachability remains open."
+  },
+  {
+   "address": 48107,
+   "type": "line",
+   "text": "State 5 decrements $1AC2,X with eight-bit wrap and returns if the result is nonnegative. If negative, call $4B0E with A=$30 and tail-call $5DB9. Natural reachability remains open."
+  },
+  {
+   "address": 48121,
+   "type": "line",
+   "text": "Decrement $1AC2,X with eight-bit wrap. Mask the result with 2; clear carry and add $19E5,X, 6 and $1B28,X in sequence, propagating carry between additions. Store the low byte at $19C3,X and return. This arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 48142,
+   "type": "line",
+   "text": "Call $792C and $732A. If $732A returns carry clear, continue at $BC6C. If carry is set and $1A6D,X is positive, call $72FC and rotate its returned carry into bit 7 of $BC77; copy that byte to $1B28,X. Add 6 to $19E5,X if the copied byte is negative, then add 4 and store the frame; each addition begins with carry clear. Set $1AE4,X to 10 and $1AB1,X to 4. Pop two stack bytes to discard this routine\u2019s return address, then return to its caller\u2019s caller. A zero or negative $1A6D,X selects $BC47. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 48199,
+   "type": "line",
+   "text": "Copy $1B28,X to $BC77. Add 6 to $19E5,X if the copied byte is nonnegative, then add 4 and store the frame; each addition begins with carry clear. Set $1AC2,X to 10, $1A8F,X to $FF and $1AB1,X to 5. Pop the shared routine\u2019s return address and return to its caller\u2019s caller. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 48236,
+   "type": "line",
+   "text": "Call $7227 and return if carry is clear. If carry is set, load A=8 and tail-call $5D7A, whose return continues the original caller. External callbacks and ordinary-play reachability remain open."
+  },
+  {
+   "address": 48247,
+   "type": "line",
+   "text": "Working byte written from $1B28,X and tested for its sign by state 4; other handler paths also use it."
   },
   {
    "address": 48468,
