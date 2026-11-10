@@ -261,3 +261,5 @@ Resident $0C2C checks one or two tile attributes before applying downward moveme
 Resident $0ED3 handles rightward movement and fine scrolling around an $AA player-X anchor, including a right map-edge path. VICE checked six forced anchor, scrolling and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Resident $1069 handles leftward movement and fine scrolling around an $AA player-X anchor, including a left map-edge path. VICE checked six forced anchor, scrolling and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $46D6 selects four tile bytes and writes a two-by-two map area using a record-selected row and column. VICE checked three forced field and mode cases, including pointer carry and Y restoration. Record and pointer bounds and ordinary-play reachability remain open.

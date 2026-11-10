@@ -519,3 +519,5 @@ Traced resident downward movement and viewport handling $0CA0 and the preceding 
 Traced resident rightward movement and viewport handling $0ED3. VICE checked six forced anchor, fine-scroll and map-boundary cases with scroll and slot callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
 
 Traced resident leftward movement and viewport handling $1069. VICE checked six forced anchor, fine-scroll and map-boundary cases with scroll and slot callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident record-driven map writer $46D6. VICE checked three forced tile-source cases including pointer carry and restored Y; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Record and pointer bounds and ordinary-play reachability remain open.
