@@ -65,3 +65,5 @@ The first-load second and third voice lists contain one and ten pattern pointers
 The first-load item-pair initializer either uses record-supplied IDs or derives consecutive IDs from selected-player state and a lookup. Conditional ID $13 becomes $14 when player flag $10 is set. Four forced VICE cases and a listing test checked these choices; drawing and ordinary-play reachability remain separate.
 
 First-load item-result message handling calls the display routine and waits while the message countdown is nonzero, updating the HUD each frame. A controlled VICE case and a listing test checked a two-frame wait with display, frame and HUD callbacks stubbed. Actual callback effects and natural reachability remain open.
+
+First-load item controls return carry set when any of the three sampled input bytes is zero. The cursor routine indexes its position table with the selection index plus one. Eight forced VICE cases and a listing test check the carry and three usual cursor positions with input sampling stubbed and display initialization stopped. Physical input mapping and other indexes remain open.

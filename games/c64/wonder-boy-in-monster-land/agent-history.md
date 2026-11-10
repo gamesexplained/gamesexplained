@@ -654,3 +654,5 @@ Traced first-load item-pair selection and the conditional $13/$14 resolver. Four
 Described 247 stable resident $C800 character patterns after comparing entry and first-load play snapshots. VICE matched the bytes and watched the selected ranges for 200 frames without an instruction entry. The paused user snapshot was restored; individual display use and other possible code uses remain open.
 
 Traced first-load item-result message waiting at $A78B. VICE and a listing test checked a two-frame countdown with display, frame and HUD callbacks stubbed. The paused user snapshot was restored; callback effects and natural reachability remain open.
+
+Traced first-load item input-held and cursor selection. Eight forced VICE cases and a listing test checked the carry and usual cursor positions, with the sampler stubbed and display initialization stopped. The paused user snapshot was restored.
