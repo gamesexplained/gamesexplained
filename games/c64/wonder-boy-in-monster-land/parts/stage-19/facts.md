@@ -74,3 +74,7 @@ After its initial delay, type-$0A state 1 decrements $1AC2,X. A nonnegative resu
 The type-$0A frame helper at $BA7B increments $1B06,X, resetting it for values at least 3, and uses twice that value plus a direction-dependent offset and $19E5,X to set $19C3,X. VICE checked four forced cases in loads 6, 19 and 28. Ordinary-play reachability remains open.
 
 Type-$0A state 2 calls its event helper and, after a delay, updates $1AF5,X and either selects state 0 or calls the frame helper and a direction-selected callback. Negative $1AF5,X values below $8C increment before returning to the frame update; values at least $8C remain unchanged. VICE checked eight forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$17 handler at $BAEA updates a timer and position and can allocate a type-$2C slot when its decremented timer is $FC. That timer resets to 20 even when the active-slot check skips allocation. Its event helper can call $4B0E and jump to $5DB9. VICE checked six handler cases and five event cases in loads 19, 24 and 28 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+The type-$2C handler at $BB9D initializes parameters when $1B28,X is zero, or updates a position and frame before returning or jumping to $4454 when it is nonzero. Type-$17 can initialize a type-$2C slot. VICE checked six forced cases in loads 19, 24 and 28 with callbacks stubbed and cleanup paths stopped at $4454. Callback effects, indexed-value bounds and ordinary-play reachability remain open.
