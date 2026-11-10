@@ -83,8 +83,10 @@ $18, $10-$14 and the digits' other half.
   $0505). During a game under way only left and right are read.
 - Left is beta, right alpha, both read by read_pad ($03D6) and never by
   KTA. A press moves Popeye one place; holding it does nothing more,
-  except after power on, when a held press repeats about four times a
-  second to set the time.
+  except after power on and in the alarm's setting, where a held press
+  repeats about four times a second to set the time (read_pad, $03D6;
+  in mode 8 the `ADX 9` at $03E9 carries and skips the `RTN`). Found by
+  the Play tab's lockstep.
 - After power on: left adds an hour, right a minute. In the alarm's
   setting: left adds an hour to the alarm, right a minute (pad_moved,
   $02C6). Holding Time in the clock shows the alarm's time

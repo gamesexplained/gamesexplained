@@ -191,14 +191,14 @@ function gnwScreen(holder, SEG, opts) {
 /* draw-from-cells */
 // The game's draw_screen ($0640) as a port: which segments the chip lights from its 65 cells.
 // Common H1 (h 0) takes latch 0 from $08, latches 1-4 from $00-$03, latch 5 from $04 (bit 0 off
-// while the bonus blinks: $2A bit 1 and $42 bit 0), and latches 6-8 from the digits $15-$17
+// while the bonus blinks: $2A bit 1 set and $42 bit 0 clear), and latches 6-8 from the digits $15-$17
 // through the chip's digit table, first row, with each digit's spare segment from bit 0 of $05,
 // $06 and $07 ($06's off while the bonus blinks). Common H2 (h 1) takes $18, $10-$14 and the
 // digit table's second row.
 const PP_DIGITS = [0xe, 0x0, 0xc, 0x8, 0x2, 0xa, 0xe, 0x2, 0xe, 0xa, 0x0, 0x0, 0x2, 0xa, 0x2, 0x2,
                    0xb, 0x9, 0x7, 0xf, 0xd, 0xe, 0xe, 0xb, 0xf, 0xf, 0x4, 0x0, 0xd, 0xe, 0x4, 0x0];
 function litFromCells(c) {
-  const blink = (c[0x2a] >> 1 & 1) && (c[0x42] & 1);
+  const blink = (c[0x2a] >> 1 & 1) && !(c[0x42] & 1);
   const h1 = [c[0x08], c[0x00], c[0x01], c[0x02], c[0x03], blink ? c[0x04] & 0xe : c[0x04]];
   const h2 = [c[0x18], c[0x10], c[0x11], c[0x12], c[0x13], c[0x14]];
   for (let k = 0; k < 3; k++) {

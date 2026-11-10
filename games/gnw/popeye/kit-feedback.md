@@ -16,6 +16,8 @@ time, operating system and tool versions.
 - `kit/cpu/sm5a.py`: a TRS on page $10 is shown as the jump within pages $10-$13 that it is, since the call table runs only inside a subroutine (the checker found every such target wrong in the listing).
 - `kit/skills/gnw/gnw-reference/SKILL.md`: "Jumps and calls" says which TRS the listing still cannot resolve; "Mistakes that bite" gains the skip helper read the wrong way round (`kit/lessons/2026-11-09-popeye.md`).
 - `kit/skills/gnw/steps/SKILL.md`: the references row adds a recorded cross-reference on the model; the sound and frame rows name the way this run tested both.
+- `kit/gnw/lockstep.js` (new): the platform's lockstep, a port beside the game's program on the kit's SM5A, compared on memory and cycles at each checkpoint, with pokes into both for states play seldom reaches; the steps skill's `lockstep` row names it (`kit/lessons/2026-11-09-popeye.md`).
+- `site/lib/buzzer.js` (new): a one-pin buzzer played live from the chip's pin edges, half a second at most waiting, for any Game & Watch Play tab: the site had no sound model for this machine.
 - `kit/lessons/2026-11-09-popeye.md`: the run's entry.
 
 ## Candidates

@@ -1,7 +1,7 @@
 'use strict';
 // Holds index.html's port of the game's drawing routine ($0640), litFromCells, to the chip's own
 // picture: the game, rebuilt from listing.json, runs on the kit's SM5A through three minutes of
-// Game A and B and the clock, and on every screen it draws the port must light the same segments
+// Game A and B and the clock and the bonus's blinking, and on every screen it draws the port must light the same segments
 // from the same cells. Also the page's own frame, its recorded cells against its recorded segments.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
@@ -20,9 +20,10 @@ function romFromListing() {
 }
 const { rom, phys } = romFromListing();
 const m = new SM5A(rom);
-let frames = 0, bad = 0, first = null;
+let frames = 0, bad = 0, first = null, blinking = 0;
 m.hooks[phys[0x0670]] = () => {         // after ATBP: both sets of latches hold the picture
   frames++;
+  if ((m.ram[0x2a] >> 1 & 1) && !(m.ram[0x42] & 1)) blinking++;
   const a = litFromCells(m.ram).sort().join(), b = m.lit().sort().join();
   if (a !== b) { bad++; if (!first) first = { cycles: m.cycles, port: a, chip: b }; }
 };
@@ -33,9 +34,11 @@ const play = s => { const end = m.cycles + s * HZ; while (m.cycles < end) { cons
 run(1); press(1, 0.3); run(20);           // Time: the clock and its demo
 press(4, 0.3); play(80);                  // Game A
 press(2, 0.3); play(80);                  // Game B
+press(4, 0.3); run(2);                    // Game A again, and the bonus's blinking: two marks lit
+m.ram[0x06] |= 1; m.ram[0x04] |= 1; m.ram[0x2a] |= 2; m.ram[0x42] = 10; run(8);
 const page = g.read('index.html');
 const rec = JSON.parse(page.match(/const REC = (\{.*\});\n/)[1]);
 const okPage = litFromCells(rec.cells).sort().join() === rec.frameLit.slice().sort().join();
-console.log(frames + ' screens drawn, ' + bad + ' differ; the page\'s own frame ' + (okPage ? 'agrees' : 'DIFFERS'));
+console.log(frames + ' screens drawn (' + blinking + ' with the bonus blinking), ' + bad + ' differ; the page\'s own frame ' + (okPage ? 'agrees' : 'DIFFERS'));
 if (first) console.log('first difference at cycle ' + first.cycles + '\n port ' + first.port + '\n chip ' + first.chip);
-if (bad || !okPage || frames < 500) process.exit(1);
+if (bad || !okPage || frames < 500 || blinking < 5) process.exit(1);

@@ -181,7 +181,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><div id="demo"></div><div class="pp-bar"><button id="dm-play">play</button><span id="dm-time" class="pp-mono"></span></div>
     <p class="cap">Twenty seconds of the clock, recorded on the kit's model: each frame is one redraw, once a second.</p></div>
   <p>The clock keeps time on the chip's 1 Hz flag, set by a 15-bit counter of the 32,768 Hz crystal (<code>$0200</code>). Each second it runs one step of the game with a limit of 3 items. Popeye walks one place toward each item as it passes a point on its path, at most once a second (<code>$0340</code>), and no miss is ever counted. Between seconds the chip stops its own clock with <code>CEND</code> and waits for the next second or a button (<code>$0030</code>).</p>
-  <p>Alarm switches to the alarm's time, and each press turns the alarm on or off; the bell beside Olive is lit while it is on. Left and right then set the alarm's hours and minutes. Holding Time in the clock shows the alarm's time too (<code>$06C0</code>). After ACL, the reset button, every segment is lit and left and right set the time, repeating about four times a second while held (<code>$03D6</code>).</p>
+  <p>Alarm switches to the alarm's time, and each press turns the alarm on or off; the bell beside Olive is lit while it is on. Left and right then set the alarm's hours and minutes. Holding Time in the clock shows the alarm's time too (<code>$06C0</code>). After ACL, the reset button, every segment is lit and left and right set the time. In both settings a held button repeats about four times a second (<code>$03D6</code>).</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -227,14 +227,14 @@ function gnwScreen(holder, SEG, opts) {
 /* draw-from-cells */
 // The game's draw_screen ($0640) as a port: which segments the chip lights from its 65 cells.
 // Common H1 (h 0) takes latch 0 from $08, latches 1-4 from $00-$03, latch 5 from $04 (bit 0 off
-// while the bonus blinks: $2A bit 1 and $42 bit 0), and latches 6-8 from the digits $15-$17
+// while the bonus blinks: $2A bit 1 set and $42 bit 0 clear), and latches 6-8 from the digits $15-$17
 // through the chip's digit table, first row, with each digit's spare segment from bit 0 of $05,
 // $06 and $07 ($06's off while the bonus blinks). Common H2 (h 1) takes $18, $10-$14 and the
 // digit table's second row.
 const PP_DIGITS = [0xe, 0x0, 0xc, 0x8, 0x2, 0xa, 0xe, 0x2, 0xe, 0xa, 0x0, 0x0, 0x2, 0xa, 0x2, 0x2,
                    0xb, 0x9, 0x7, 0xf, 0xd, 0xe, 0xe, 0xb, 0xf, 0xf, 0x4, 0x0, 0xd, 0xe, 0x4, 0x0];
 function litFromCells(c) {
-  const blink = (c[0x2a] >> 1 & 1) && (c[0x42] & 1);
+  const blink = (c[0x2a] >> 1 & 1) && !(c[0x42] & 1);
   const h1 = [c[0x08], c[0x00], c[0x01], c[0x02], c[0x03], blink ? c[0x04] & 0xe : c[0x04]];
   const h2 = [c[0x18], c[0x10], c[0x11], c[0x12], c[0x13], c[0x14]];
   for (let k = 0; k < 3; k++) {

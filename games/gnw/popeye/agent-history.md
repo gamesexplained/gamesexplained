@@ -29,3 +29,15 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   all were confirmed and corrected with every comment sharing the
   belief. The checker's extra finding, wrong targets for TRS inside
   subroutines, led to the disassembler fix in the platform branch.
+- 10 November 2026, the Play tab. The port charges each straight run of
+  the program its length in cycles, so its clock is the chip's; the
+  kit's new lockstep compares memory and cycles at each checkpoint. Two
+  test deadlocks first: a held game key and a held test-pad K3 each keep
+  the program in a loop that never passes the main loop, so the inputs,
+  which change only at checkpoints, never let go; checkpoints at $00B4
+  and $0500 fixed both. One port error the cycle count caught: a held
+  press repeats in the alarm's setting too (the `ADX 9` at $03E9 skips
+  the `RTN`), which the listing had missed; corrected there as well. The
+  How it works page's drawing port had the bonus's blink the wrong way
+  round, unnoticed because its test never blinked; fixed, and the test
+  now includes the bonus.
