@@ -7,4 +7,8 @@ for(const [tier,frame] of [[0,0x55],[3,0x77],[255,0xff]]){
  const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f5,maxSteps:100});assert.equal(cpu.pc,0x2f5);assert.deepStrictEqual([...a.slice(0x300,0x303)],[(tier+17)&255,12,2]);assert.equal(a[0x6020],2);
  for(const [address,value] of [[0x191b,0xf8],[0x19e7,frame],[0x19c5,frame],[0x19f8,15],[0x1a09,0],[0x1aa2,7]])assert.equal(a[address],value);
 }
-console.log('OK - resident type F8 initialization');
+for(const [frame,aux,nextAux] of [[0,0,1],[77,1,1],[255,255,255]]){
+ const a=base.slice();a[0x19e7]=frame;a[0x19c5]=0x55;a[0x1a80]=aux;a.set([0xa2,2,0x20,0x86,0x60,0xea],0x2f0);
+ const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f5,maxSteps:40});assert.equal(cpu.pc,0x2f5);assert.equal(a[0x19c5],frame);assert.equal(a[0x1a80],nextAux);
+}
+console.log('OK - resident type F8 initialization and update');
