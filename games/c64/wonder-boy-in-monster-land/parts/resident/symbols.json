@@ -20107,12 +20107,27 @@
   {
    "address": 13761,
    "type": "line",
-   "text": "Uses signed horizontal and vertical displacement samples to update an entity. The input index is supplied by the caller and is not bounded here."
+   "text": "Copy A to Y and clear the patched high-byte adjustment at $3613. Read the signed horizontal byte at $56A8,Y. For entity types $06 or $14, use collision-aware callbacks $45BC for negative or $4574 for nonnegative values; for other types use $43A2 or $43F0. Negate a negative byte modulo 256 before the callback. Y is not restored afterward."
   },
   {
    "address": 13816,
    "type": "line",
    "text": "The horizontal-movement call can tail-jump to $4454 on a boundary, clearing the entity and replacing Y with a display-link index. This vertical lookup and the subsequent coordinate writes still execute for that cleared slot; in other paths Y is the original trajectory index."
+  },
+  {
+   "address": 13819,
+   "type": "line",
+   "text": "Read $5778,Y after the horizontal callback. If it is negative, patch $3613 to $FF; otherwise leave the zero written at entry. Thus a callback that changes Y changes the vertical lookup."
+  },
+  {
+   "address": 13829,
+   "type": "line",
+   "text": "Subtract $5778,Y from $1990,X and subtract its sign byte plus borrow from $197F,X. Subtract $5778,Y from $19A1,X modulo 256 and return."
+  },
+  {
+   "address": 13843,
+   "type": "line",
+   "text": "Immediate operand patched to zero or $FF according to the sign of $5778,Y before the high-byte subtraction at $3612."
   },
   {
    "address": 13858,
