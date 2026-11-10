@@ -136,6 +136,18 @@ every level but the Bridge, whose gorge is single colour.
   the spawner's check for it ORs `#$00` into `$2A` (`$6772`) where the
   others OR in their own bit, so it never moves and is never shown (the
   unused copy at `$6860` has the same, at `$68C7`).
+- The Stairs' blocks come back in at the top once past line `$F0`
+  (`$7000`): block 0 at the climber's X, block 1 at a random X from CIA
+  1's timer (`$7082`), block 2 at the X CIA 2's timer A gives (`$70AD`).
+  That timer never runs: it stands at `$FFFF` with control register `$08`
+  (stopped) in the game's snapshots at the hand-over and in play on the
+  Stairs and the Piranha, and `$70AD` is the game's only access to it, so
+  block 2 always comes back at X 255, the ninth bit clear.
+- The Stairs' set-up colours the screen white (`$6E70`); the loops at
+  `$6D40` that follow, with light grey, start X at `$FF` and `$E7`, both
+  already negative, so each stops after one cell and only four cells
+  (`$D8FF`, `$D9FF`, `$DAFF`, `$DBE7`) are light grey (the port, in
+  lockstep with the game's code).
 - Creatures A, B, E and F are placed at X 256 plus a random byte, so
   about a third of the time they appear already on the screen's right
   edge rather than walking in (`$67A0`).

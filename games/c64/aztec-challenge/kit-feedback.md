@@ -10,6 +10,8 @@ time, operating system and tool versions.
 - `kit/skills/c64/tool-regen2000`: "add the opcode to `UNDOCUMENTED` with a case in `kit/scripts/test_listing_undocumented.py` instead": the two no-ops at `$7887` ran in play, so I added `$1A` and `$04` to the decoder instead of typing them as bytes.
 - `kit/skills/core/50-coverage`: "Before calling 100 %, go through that list and say what each stretch is": the build listed 1.1 KB outside the count; one of them, `$5D00`, turned out to be an unused row of Hopaztec's tiles, now described.
 - `kit/skills/core/10-orient`: "Map the disk's files onto memory.": the kit has no tool for a tape's files, so I decoded the TAP's KERNAL blocks with a script and found both files whole in memory.
+- `kit/skills/core/70-minisite/play.md`: "give the lockstep that address as `entry`, or the stretch to the first checkpoint has no row": in the Platinum port the page ran 37 % fast from the cold start until I did; the delays of the untimed first stretch had been charged to the next one as a negative cost.
+- `kit/skills/core/70-minisite/play.md`: "A polling loop in the port yields at each turn": Hopaztec's stick loop hung the port until each of its turns yielded.
 
 ## What was changed in the kit
 
@@ -18,6 +20,11 @@ time, operating system and tool versions.
 ## Candidates
 
 - **A one-byte end of a table left untyped, and nothing said so.** Hopaztec's table of the floor's nine rows (`$5BF8`-`$5C00`) was typed `$5800`-`$5BFF` with the room before it, so its ninth byte, `$C6` at `$5C00`, sat in an untyped gap of eight bytes. Coverage was 100 %, since untyped bytes are not counted, and `listing.py`'s list of uncounted loaded data did not name the gap, though it named a 9-byte one elsewhere. A page that drew the floor from the listing then put the front row at Y 0; the test against the game's own hop checks caught it. A skill or `listing.py` could say: list every untyped gap between two typed data blocks that holds a non-zero byte, however short. Only this game shows it so far.
+
+- **A pace check by passes a frame assumes the page and the machine play the same game.** This game draws its random numbers from CIA 1's timer and voice 3's noise, which the page models and the kit's machine either times differently or reads as 0, so the same input plays out differently on each, and counts of checkpoints a frame in each level differed by tens of percent with costs that held within 1 %. What held the pace instead: the page's costs summed over the stretches of a lockstep session they were not fitted on, against the game's cycles there (within 0.7 % in every level); a stretch from the start that chance does not touch (the frame the menu appears: 584 and 583); and the page alone never stopping. `play.md` could say so for a game whose chance comes from the chips.
+- **Main-program costs per routine call, not only per stretch.** `play.md` fits per-call costs for the interrupts; here the main program's stretches between two spear checkpoints hold a varying number of the Gauntlet's 44 steps, and costs per stretch alone came out 5 % short on one session and 1 % over on another. A base per stretch plus a non-negative cost per call of the port's routines (from the lockstep's `calls`) held every level within 0.7 %.
+- **The kit's machine reads `$D41B` as 0.** A game that takes chance from voice 3 then never meets its random paths in the lockstep (here every Hopaztec trap was tile 0, off the floor). `test_play.js` wraps `m.sidBus.read` to give seeded bytes, which the port takes from the game like any read. `kit/c64/machine.js` could offer it as an option.
+- **A read-modify-write of `$D011` is a race like the raster wait's.** `INC $D011` copies the raster's ninth bit at that moment into the compare register; the port takes the register from the game after it, and the comparison skips that one checkpoint, since the port writes after it. `play.md` names the two-instruction raster wait; this is the same race in one instruction.
 
 ## Maintainer asks
 

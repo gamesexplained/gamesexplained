@@ -1,0 +1,215 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aztec Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8; --coral:#d04a3a;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+table.az-tab{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0 0}
+table.az-tab th,table.az-tab td{border-bottom:1px solid var(--line-soft);padding:6px 10px;text-align:left;vertical-align:top}
+table.az-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.az-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.az-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.az-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.az-btn:hover{border-color:var(--ink-mute)}
+.az-out{font-family:var(--fm);font-size:13.5px;color:var(--ink-soft)}
+.az-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+#az-screen{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;touch-action:none}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+#az-keys .az-keys-tap{display:none}
+#az-keys.pc-keys-touch .az-keys-tap{display:table-row}
+#az-keys.pc-keys-touch .az-keys-pad{display:none}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1983 · Cosmi</p>
+  <h1>Aztec Challenge</h1>
+  <p class="sub">The whole game, ported to JavaScript routine by routine and run on its own bytes at the C64's pace, from Cosmi's logo to the seventh level and round again.</p>
+</header>
+<main class="wrap">
+
+<section id="play">
+  <p class="fig">01 · Play</p>
+  <h2 class="t">Play Aztec Challenge with the keyboard</h2>
+  <p class="lede">The arrow keys are the joystick in port 2, and Z or Enter is its fire button. On the menu, F1 starts a game for one player and F3 a game for two, who take turns. On the scorecard, fire starts the level. Left alone, the menu shows the levels played by the game itself.</p>
+  <div class="plate">
+    <div class="az-bar">
+      <button class="az-btn" type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" class="az-btn" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="az-out" id="az-out"></span>
+    </div>
+    <div><canvas id="az-screen" width="768" height="544" aria-label="The game"></canvas></div>
+    <table class="az-tab" id="az-keys">
+      <tr><th>Keys</th><th>On the C64</th><th>Does</th></tr>
+      <tr class="az-keys-tap"><td colspan="3">Tap a key in this table to press it in the game.</td></tr>
+      <tr><td><kbd data-key="F1">F1</kbd></td><td>F1</td><td>on the menu: a game for one player</td></tr>
+      <tr><td><kbd data-key="F3">F3</kbd></td><td>F3</td><td>on the menu: a game for two players</td></tr>
+      <tr><td><kbd data-key="Escape">Esc</kbd></td><td>RUN/STOP</td><td>on the scorecard, the Stairs, the Temple and the Vermin: back to Cosmi's logo</td></tr>
+      <tr class="az-keys-pad"><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>the joystick in port 2</td><td>run, jump, duck, climb, swim and hop, as each level reads it</td></tr>
+      <tr class="az-keys-pad"><td><kbd>Z</kbd> or <kbd>Enter</kbd></td><td>fire</td><td>start the level from the scorecard; on the Stairs, step right; in the Piranha, alone, dive</td></tr>
+    </table>
+    <p class="cap"><b>The game as the port runs it</b>, from <code>$1000</code>, where the tape hands over. The game reads the menu's keys through the KERNAL's GETIN and RUN/STOP through its STOP routine, and the port runs the same four KERNAL routines on its own memory.</p>
+  </div>
+</section>
+
+<section id="port">
+  <p class="fig">02 · The port</p>
+  <h2 class="t">Every checkpoint compared with the game's own code</h2>
+  <p>Nothing on this page emulates a 6502. The game is written out in JavaScript, one function for each routine of the listing, in eight files under <code>reference/</code>: one for the engine (Cosmi's logo, the menu and its previews, the scorecard, the end of a level, and the music's interrupt) and one for each of the seven levels. The port runs on the game's own 64 KB, loaded from the bytes the Source code tab shows, and every variable stays where the game keeps it: the lives lost at <code>$02</code>, the level at <code>$03</code>, the stage reached in it at <code>$45</code>, and Hopaztec's trapped tiles from <code>$5C28</code>.</p>
+  <p><code>test_play.js</code> runs the port beside the game's own code on the kit's model of the C64, from <code>$1000</code>, with the same input to both. The port has no stand-ins: a call to any routine of the game's that it had not written would throw. At every turn of the scorecard, and at one checkpoint in four besides, the two memories are compared, and so are colour RAM and every register written to the video chip and the SID. The test runs three sessions. In the first, the menu is left alone and shows each level played by the game itself. In the second, one player goes through all seven levels with a stick moved at random. In the third, two players win level after level: the test sets what counts each level's progress to one step short of the end, in both at once, and the first player's win on the Bridge in phase 4 ends the game, which starts again from Cosmi's logo.</p>
+  <p>Some of what the game reads cannot be worked out from memory. Its random numbers come from the low byte of CIA 1's timer, which counts down 16,422 cycles between interrupts, and from voice 3 of the SID, set to noise. Its hits come from the video chip's sprite collisions. On the page the timer is counted from the page's own clock, the noise is the SID's 23-bit shift register stepped as the voice runs, and the collisions are the site's model of the video chip, which works them out pixel by pixel as the clock moves. In the test, the port takes each such value from the game at the instruction after its read; the kit's model of the C64 does not run the SID's voices, so there the noise is a fixed sequence of numbers instead. The Stairs also read CIA 2's timer, for the third block's X, but that timer never runs, so the read gives 255 on the C64 and here alike.</p>
+  <p>The page keeps the C64's pace by keeping its clock. The game times itself with delay loops, and the port names the cycles of each one exactly as it reaches it. The rest of the game's work was fitted to the cycles its own code took on the kit's machine: a cost for each stretch between two checkpoints, and a cost for each call of one of the port's routines, so that a stretch which holds more of the Gauntlet's 44 steps costs more. Every 16,422 cycles the clock runs the music's interrupt. The Stairs and the Vermin wait for the raster, and there the clock runs to the line. The page and the game draw different random numbers, so the same input plays out differently on each, and the test compares the pace where chance has no part. On 10 November 2026, on a session the costs were not fitted on, the page's clock gave every level within half a percent of the cycles the game took, and from <code>$1000</code> the page reached the menu at frame 584 and the game at frame 583.</p>
+  <p>The screen is drawn by the site's model of the video chip from the port's memory, with each write to the chip at the line and cycle where the clock stood. The sound is the port's writes to the SID, in twelfths of a frame, played through the site's model of the SID.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script src="../../lib/collide.js"></script>
+<script src="../../lib/play-controls.js"></script>
+<script src="reference/az-core.js"></script>
+<script src="reference/az-g0-engine.js"></script>
+<script src="reference/az-g1-gauntlet.js"></script>
+<script src="reference/az-g2-stairs.js"></script>
+<script src="reference/az-g3-temple.js"></script>
+<script src="reference/az-g4-vermin.js"></script>
+<script src="reference/az-g5-hopaztec.js"></script>
+<script src="reference/az-g6-piranha.js"></script>
+<script src="reference/az-g7-bridge.js"></script>
+<script src="reference/az-play.js"></script>
+<script>
+/* az-play-page */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const CLOCK = 985248;
+// the PC's keys: the arrows are the joystick, Z and Enter its fire; F1, F3 and Esc the C64's F1, F3
+// and RUN/STOP (the KERNAL's numbers 4, 5 and 63)
+const STICK = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, KeyZ: 16, Enter: 16, NumpadEnter: 16 };
+const KEYS = { F1: 4, F3: 5, Escape: 63 };
+
+function start(D) {
+  const keep = {};
+  const play = AztecPlay.create({ M: D.ram.slice(), groups: window.AZ_GROUPS, keep });
+  let target = 0;
+
+  // ---- the keys and the joystick, while the game is on the screen. Each key stays down for HOLD of
+  // the game's frames at least (site/lib/play-controls.js, hold): the scorecard looks at the stick
+  // only once in about 17 frames, and the menu at the keys between its previews
+  const cv = $('az-screen'), HOLD = 20;
+  let padBits = 0;
+  const held = PlayControls.hold({ clock: () => play.frames, least: () => HOLD, change: () => input() });
+  const inView = () => { const r = cv.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+  addEventListener('keydown', (e) => {
+    if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || !inView()) return;
+    if (KEYS[e.code] === undefined && !STICK[e.code]) return;
+    held.down(e.code, e.code); e.preventDefault();
+  });
+  addEventListener('keyup', (e) => { if (held.has(e.code)) { held.up(e.code); e.preventDefault(); } });
+  addEventListener('blur', () => held.clear());
+  PlayControls.keys($('az-keys'), { down: (k) => held.tap(k, k), up: (k) => held.up(k) });
+  function input() {
+    let joy = padBits;
+    play.keys.clear();
+    for (const c of held.values()) { if (STICK[c]) joy |= STICK[c]; else if (KEYS[c] !== undefined) play.keys.add(KEYS[c]); }
+    play.joy = 0x1F & ~joy;
+  }
+
+  // ---- the screen: the port's memory through the site's model of the video chip
+  const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });
+  PlayControls.attach({ screen: cv.parentNode, canvas: cv, bar: cv.parentNode.previousElementSibling, keys: $('az-keys'),
+    pad: true, onPad(bits) { padBits = bits; input(); } });
+  function draw() {
+    const f = play.shown;
+    if (!f) return;
+    C64.drawFrame(cv, { lines: 312, cycles: 63, vic: f.vic, cia2: f.cia2, writes: f.writes, mem: f.mem, colourMem: f.colour, keep }, 2);
+  }
+
+  // ---- the sound: the SID writes of each twelfth of a frame, one call of the model's driver each
+  let host = null, soundOn = false;
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]); return all; };
+  async function sound(on) {
+    soundOn = on;
+    if (on && !host) {
+      try {
+        host = await C64Sid.host({ live: true, gain: 0.5, period: AztecPlay.FRAME / AztecPlay.SLICES });
+        host.push([registers()]);
+      } catch (e) { soundOn = false; $('az-out').textContent = 'No sound: ' + e.message; }
+    }
+    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
+    return soundOn;
+  }
+  Sound.attach(document.querySelector('[data-sound]'), sound);
+
+  // ---- what the game shows: the level, the phase and the lives lost, in play
+  const NAMES = ['the Gauntlet', 'the Stairs', 'the Temple', 'the Vermin', 'Hopaztec', 'the Piranha', 'the Bridge'];
+  function say() {
+    const M = play.M;
+    if (M[0x07]) return 'the game playing itself';
+    if (M[0x08] !== 1 && M[0x08] !== 2) return '';
+    const p2 = M[0x08] === 2 && M[0x09] === 0x32, lv = M[p2 ? 0x04 : 0x03] - 0x31, ph = M[p2 ? 0x06 : 0x05] - 0x30;
+    if (lv < 0 || lv > 6) return '';
+    return (M[0x08] === 2 ? 'player ' + (p2 ? 2 : 1) + ' · ' : '') + `level ${lv + 1}, ${NAMES[lv]} · phase ${ph} · lives lost ${M[0x02]}`;
+  }
+
+  // ---- the clock: a target one frame on for each frame shown, and the port run up to it
+  let last = 0;
+  for (const b of document.querySelectorAll('#play .az-btn')) b.addEventListener('click', () => b.blur());
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  function frame(t) {
+    try {
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      input();
+      target += dt * CLOCK;
+      play.run(target);
+      held.release();
+      const slices = [];
+      for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
+      if (soundOn && host && slices.length) host.push(slices);
+      draw();
+      $('az-out').textContent = say();
+    } catch (e) { console.error(e); $('az-out').textContent = 'The port stopped: ' + e.message + '. Reloading the page starts it again.'; return; }
+    last = t;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+if (!window.C64 || !window.AztecCore || !window.AztecPlay || !window.AZ_GROUPS || !window.C64Collide) {
+  const p = document.createElement('p'); p.className = 'az-note';
+  p.textContent = 'The game runs from the listing\'s bytes through the site\'s shared scripts; it works in the built site.';
+  $('az-screen').replaceWith(p);
+} else C64.load('listing.json').then(start).catch((e) => { console.error(e); $('az-out').textContent = 'The game could not start: ' + e.message; });
+// end of az-play-page
+</script>

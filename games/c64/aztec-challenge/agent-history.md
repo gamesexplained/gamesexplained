@@ -47,3 +47,34 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the listing: untyped, so the coverage figure never missed it. The
   Temple's head was tested live, and the sound effects play from the
   game's own code (`test_sounds.js`).
+
+## 9-10 November 2026, claude-opus-5-5, Platinum
+
+- The contributor asked for Platinum after Silver. The port was written a
+  group at a time (the engine, then each level) and held in lockstep with
+  the game by a development harness before the next group began; one
+  agent, no helpers.
+- What the lockstep caught, in order: the KERNAL exit must read `$DC0D`
+  or the interrupt repeats for ever; the menu key and the scorecard stick
+  must be taken from the game where it read them; delay routines leave
+  their zero-page counters at 0, which the port must too; voice 1's pitch
+  is written by the music interrupt as well, so a checkpoint comes before
+  each of the main program's writes; the Vermin's wait for line 0 or 256
+  can be swallowed by an interrupt, so its exit is a checkpoint in the
+  lockstep; Hopaztec's stick loop does nothing but poll, and counts each
+  turn with the stick up or down in `$68`, so each read is a checkpoint;
+  the Stairs' `LDA $D011` and `INC $D011` copy the raster's ninth bit at
+  that moment, so the port takes both from the game.
+- The kit's machine reads voice 3 as 0, which left every Hopaztec trap on
+  tile 0 and the previews' stick still; the test gives it seeded bytes.
+- The first page runtime ran 37 % fast from the cold start: the stretch
+  from `$1000` to the first checkpoint was not timed, and its delays were
+  charged to the next stretch as a negative cost. The lockstep's `entry`
+  fixed it, as `play.md` says. A pace check by checkpoints a frame on two
+  separate runs never settled, since the page and the machine draw
+  different random numbers; it became the costs against the game's cycles
+  on a held-out session, the start to the menu, and the page alone. The
+  Gauntlet's costs needed a cost per routine call as well as per stretch.
+- Two listing comments corrected: the Stairs' colour loops run once, and
+  CIA 2's timer, which gives the third block's X, never runs (stopped at
+  `$FFFF` in every snapshot), so that block always comes back at X 255.
