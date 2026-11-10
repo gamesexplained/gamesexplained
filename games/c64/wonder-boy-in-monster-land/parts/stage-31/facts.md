@@ -16,3 +16,19 @@ The supplied side B file with index $1F supplies two compressed streams. Executi
 6 simple eight-row glyphs in the character-copy source are referenced by metatiles in the captured map. Listing tests reconstruct their map references and run the $717C copy; seven controlled VICE reads check representative destination glyphs in loads 2, 20, 27 and 31. These observations do not establish ordinary-play reachability or exclude other possible code uses.
 
 The captured map references 54 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The type-$2D and $2E entity vectors select a dispatcher at $954D. Six captured state-table pairs point to $956B, $95A0, $9749, $976B, $987A, $98C5. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in load 31; handler behavior and ordinary-play reachability remain open.
+
+Type-$2D/$2E state 0 at $956B uses results from $3020 to initialize fields and falls through to state 1. VICE checked four controlled constant results with $3020 stubbed. Ordinary-play reachability remains open.
+
+Type-$2D/$2E state 2 at $9749 calls $9820, chooses a movement callback by a signed field and can copy $1B17,X to the state. VICE checked four controlled cases with callbacks stubbed. The state-index range and ordinary-play reachability remain open.
+
+Type-$2D/$2E state 4 at $987A alternates two frame calculations while $98C3 is nonzero, then copies $98C4 to the state and initializes fields when it is zero. VICE checked three controlled counter values, including frame-addition carry. The bytes’ writers and ordinary-play reachability remain open.
+
+Type-$2D/$2E state 5 at $98C5 decrements a timer and either calls $9820 or prepares two display entries after a series of callbacks. VICE checked three timer cases up to $9934 with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$2D/$2E state-5 loop at $9934 waits for $D012=$80, updates two display coordinates and repeats until Y is below $50. With the setup values X=$74, Y=$C8, steps 8 and 0, a controlled VICE run reached $9972 after 62 iterations with X=$50, Y=$4F and steps 0 and 2. The loop does not require the raster to leave $80 between iterations. Other uses and ordinary-play reachability remain open.
+
+After the type-$2D/$2E state-5 raster loop, code at $9972 passes the records at $99B0 and $99E5 to $77E0, then calls $3C2A and $370B in a loop controlled by $4DC7 and $4DC9. When both fields are zero it calls $370B twice and $6DDE, then jumps to $0203. VICE checked three controlled input cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$2D/$2E frame helpers at $9820, $983E and $985C choose offsets 8/20, 4/16 and 0/12 from carry returned by $72FC, then calculate two frame bytes. VICE checked both carry values for each helper with $72FC stubbed and frame wrap exercised. Ordinary-play reachability remains open.
