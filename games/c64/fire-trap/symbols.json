@@ -54,7 +54,7 @@
    [
     23552,
     24575,
-    "runtime: the status panel's screen RAM, rewritten as the score and timer change"
+    "runtime: the text screen that the title, high-score and name-entry displays are built on and that the status panel at the bottom of the play screen uses; clear_screen and the screen builders rewrite it"
    ]
   ],
   "extra": [],
@@ -1369,9 +1369,9 @@
   },
   {
    "address": 99,
-   "name": "zpa_63",
+   "name": "lives",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 100,
@@ -4195,7 +4195,7 @@
   },
   {
    "address": 6803,
-   "name": "state_8_suit_pickup",
+   "name": "state_8_countdown_pickup",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -11439,12 +11439,12 @@
   {
    "address": 68,
    "type": "line",
-   "text": "the firefighter's height up the building, low byte (16-bit with $45)"
+   "text": "the firefighter's vertical position in the building, measured down from the top, low byte (16-bit with $45): climbing makes it smaller and falling makes it larger"
   },
   {
    "address": 69,
    "type": "line",
-   "text": "the firefighter's height up the building, high byte"
+   "text": "the firefighter's vertical position in the building, high byte"
   },
   {
    "address": 70,
@@ -11469,12 +11469,12 @@
   {
    "address": 74,
    "type": "line",
-   "text": "low byte of the screen's scroll position up the building"
+   "text": "low byte of the screen's scroll position, measured down from the top of the building like the firefighter's position"
   },
   {
    "address": 75,
    "type": "line",
-   "text": "high byte of the screen's scroll position up the building"
+   "text": "high byte of the screen's scroll position"
   },
   {
    "address": 76,
@@ -11519,7 +11519,7 @@
   {
    "address": 96,
    "type": "line",
-   "text": "the stage timer's fractional part in BCD, counted down once per frame"
+   "text": "the stage timer's prescaler in BCD: counted down once per frame from $12 to zero, so the timer drops by one unit about every 13 frames"
   },
   {
    "address": 97,
@@ -11534,7 +11534,7 @@
   {
    "address": 99,
    "type": "line",
-   "text": "zero-page variable $0063; read by draw_screen_unrolled_copy, firefighter_hit, state_1_hit; written by run_stage"
+   "text": "the number of lives left; firefighter_hit decrements it, and the game ends when it is zero"
   },
   {
    "address": 100,
@@ -12639,7 +12639,7 @@
   {
    "address": 6803,
    "type": "line",
-   "text": "the suit-pickup state: starts the protective-suit timer at $59 and returns to normal"
+   "text": "the second pickup state: sets $6F to 6 and a countdown in $74 to 59 in BCD (which the timer routine at line 212 counts down) and returns to normal; it may be the protective suit named by the retro blog, which is not confirmed"
   },
   {
    "address": 6818,
@@ -12685,6 +12685,11 @@
    "address": 7380,
    "type": "line",
    "text": "the firefighter is hit by fire: starts the falling and loses a life"
+  },
+  {
+   "address": 7407,
+   "type": "line",
+   "text": "takes a life: with the trainer's infinite-lives option the decrement is replaced by BIT, which changes nothing"
   },
   {
    "address": 7449,
@@ -12794,7 +12799,7 @@
   {
    "address": 9498,
    "type": "line",
-   "text": "converts a world height in the Y register and a column in A into the sprite's screen y for the sprite list"
+   "text": "converts a world y position in the Y register (measured down from the top of the building) and a column in A into the sprite's screen y for the sprite list"
   },
   {
    "address": 9532,
@@ -12839,22 +12844,22 @@
   {
    "address": 10223,
    "type": "line",
-   "text": "the top object's first behaviour: subtracts 12 from its height in $E5/$E6 every tick; the bytes after it set the speed $E8 to $18 and step on to the next behaviour in $E3"
+   "text": "the top object's first behaviour: subtracts 12 from its y position in $E5/$E6 every tick, so it rises; the bytes after it set the speed $E8 to $18 and step on to the next behaviour in $E3"
   },
   {
    "address": 10244,
    "type": "line",
-   "text": "subtracts 9 from the top object's height and moves it along x by a step that shrinks as $E8 counts down from $18 to 8, then goes on to the next behaviour when its x reaches the firefighter's"
+   "text": "the top object's second behaviour: subtracts 9 from its y position, so it rises, and moves it along x by a step that shrinks as $E8 counts down from $18 to 8; it goes on to the next behaviour when its x reaches the firefighter's"
   },
   {
    "address": 10291,
    "type": "line",
-   "text": "adds 11 to the top object's height and moves it along x by a quarter of $E8, which counts down to 8, then goes on to the next behaviour when its height has passed the firefighter's"
+   "text": "the top object's third behaviour: adds 11 to its y position, so it falls, and moves it along x by a quarter of $E8, which counts down to 8; it goes on to the next behaviour once it has fallen below the firefighter"
   },
   {
    "address": 10336,
    "type": "line",
-   "text": "moves the top object 8 to the left and 16 higher; once its height is a page or more away from the scroll position it jumps to $271C"
+   "text": "the top object's fourth behaviour: moves it 8 to the left and adds 16 to its y position, so it falls; once its y is a page or more away from the scroll position it jumps to $271C"
   },
   {
    "address": 10373,
@@ -13005,6 +13010,11 @@
    "address": 11355,
    "type": "line",
    "text": "raster handler at line 212: switches to the status panel's mode and colours, then counts the stage timer down in decimal"
+  },
+  {
+   "address": 11496,
+   "type": "line",
+   "text": "the amount the stage timer drops by each time its prescaler runs out: $01 in the unpatched game"
   },
   {
    "address": 11575,
@@ -13354,12 +13364,12 @@
   {
    "address": 15507,
    "type": "line",
-   "text": "starts the actor at the firefighter's height at the left edge"
+   "text": "starts the actor at the firefighter's vertical position at the left edge"
   },
   {
    "address": 15524,
    "type": "line",
-   "text": "the actor falls; once it passes the firefighter's height it vanishes and drops a row of five hazards at $0A96"
+   "text": "the actor falls; once it has fallen past the firefighter's position it vanishes and drops a row of five hazards at $0A96"
   },
   {
    "address": 15664,

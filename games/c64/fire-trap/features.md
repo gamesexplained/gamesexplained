@@ -32,18 +32,18 @@ Sources:
 | Status line: STAGE, POINTS, TIME (counting down from 999), lives (hose icon and a count of 4) and HIGH | live | text at `$C06C`; `reference/stage1-demo-play.png` |
 | Window fires that grow, then throw down falling debris | traced | `$2195`, `$223A`, `$2322` |
 | Water spray fired by the firefighter, up to six shots at once, at most two the same way | traced | `$1F88`, `$2048` |
-| Joystick control: up and down climb, left and right move, fire sprays; reads both joystick ports and the keyboard matrix every frame | traced | `$2944` |
+| Joystick control: up and down climb, left and right move, fire sprays; the game acts on joystick port 2, and when it is idle the keys Q, Z, comma, full stop and space stand in | live | `$2A31`, `$FFAA`; each direction and fire held in the emulator |
 | Sixteen stages (the stage number runs 1 to 16 and wraps) | traced | `$10B8`-`$10C0`, `$13D0`-`$13D6` |
 | Stage colour schemes (blue building, green building) | live | `reference/stage2-demo-play.png` |
 | Player hit by fire or debris: falls, loses a life | traced | `$1CD4` |
 | Name entry for a high score on a letter grid with RUB and END | traced | strings at `$FC43` and `$FF0A` |
-| Money bags for bonus points | open | documented by the blog for the arcade and the home versions |
-| Weapon upgrades that fire left, right and up at once | open | documented by the blog |
-| Suit upgrades | open | documented by the blog |
-| Parachutes given to people and pets that are rescued | open | documented by the blog |
-| Rescue of a woman at the top of each building, then the descent with her | open | documented by the blog; the end-of-stage states at `$1B34` are not yet attributed |
+| Money bags for bonus points | open | documented by the blog; the pickup table at `$09B8` holds eight records of several kinds, but their meanings are not yet attributed to money bags |
+| Weapon upgrades that fire left, right and up at once | traced | `$1A75` sets flag `$78`, and the spray then fires three ways (`$1B11`-`$1B27`); the pickup is not yet seen on the screen |
+| Suit upgrades | open | a second pickup state at `$1A93` starts a countdown in `$74`; whether it is a suit is not confirmed |
+| Parachutes given to people and pets that are rescued | traced | people at windows are set free by fire and float down (`$36DC`); the parachute itself is not yet seen |
+| Rescue at the top of each building, then the descent | traced | the end-of-stage states at `$1B34`, `$1B4D`, `$1BB2`, `$1C01` and `$1C32` play a run of pictures, then the firefighter floats down; the rescued person is not yet seen on the screen |
 | Extinguisher range of about two windows | open | the blog's description of this version |
-| Music and sound effects | open | SID writes first seen at `$800D`; the music is not yet attributed |
+| Music and sound effects | traced | the sound driver at `$8000`-`$843B`; tunes and effects chosen through `$B4` and `$B5` |
 
 ## Beyond the documentation
 
@@ -62,6 +62,6 @@ Sources:
 - The C64 manual and magazine reviews could not be read, so the controls,
   scoring values and the time limit are known only from the code and the
   emulator.
-- Which of the blog's items (money bags, weapon and suit upgrades, parachutes)
-  the C64 version contains.
-- What the stage number 0 displayed after the last stage means.
+- Which kinds the pickup table at `$09B8` holds, and so whether the C64 version
+  has the blog's money bags and suits.
+- What the stage number 0 displayed after the last stage means (the stage number in `$4C` runs 1 to 16 and wraps back to 1, so a 0 may be a display quirk).
