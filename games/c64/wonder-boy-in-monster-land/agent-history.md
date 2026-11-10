@@ -896,3 +896,5 @@ Checked resident transition entry with two controlled raster cases and message w
 Checked resident record map updater in three forced VICE cases including a page crossing; clarified eight-bit row-offset wrap and restored the paused user snapshot.
 
 Verified the map updater’s forced $FF-stride Y wrap and overwrite in VICE; restored the paused user snapshot.
+
+Checked resident reward conversion in five forced VICE cases with score and message callbacks stubbed; restored the paused user snapshot.

@@ -373,3 +373,5 @@ Resident transition entry $7A6E waits for raster value $80, clears display and s
 Resident record map updater $46D6 patches row, column and saved-Y operands and writes four cells. Three forced VICE cases checked the original and two replacement sources, including a row-pointer page crossing. The second-row Y offset wraps at 256; index bounds and ordinary-play reachability remain open.
 
 A forced VICE case with $7F4A=$FF made the map updater’s second-row Y increment wrap to zero and overwrite its first written cell. Whether ordinary play supplies that stride remains open.
+
+Resident reward conversion $7771 splits an input shifted left four places into arguments for $4B0E/$4B20, then uses the real nibble splitter for display fields. Five forced VICE cases checked boundary bytes with score and message callbacks stubbed. Their effects and ordinary-play reachability remain open.
