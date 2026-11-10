@@ -321,3 +321,5 @@ The horizontal and vertical collision parameter tables at $79B6 and $7A12 contai
 Twenty-nine resident VIC sprite slots selected conditionally by player, continue, effect or entity routines have individually recorded bitmap bit and row counts in `resident-sprite-shapes.json`. VICE compared each 63-byte bitmap to the first-load play capture, and `test_resident_sprite_shapes.js` checks the counts from the listing. These observations do not establish ordinary-play display or exclude other uses.
 
 The alternate matrix cells $C500–$C7E7 are part of the screen cleared by $7B2A. Their cell offsets in a 40-column matrix are recorded in the listing. The same addresses can be reused for other purposes; the clear check does not establish their contents throughout play.
+
+The primary matrix cells $C0AE–$C3E7 are part of the screen cleared by $7B2A. Their offsets in a 40-column matrix are recorded in the listing; the status initializer also copies its template through $C0C7. The same addresses can have other uses, and the clear check does not establish their contents throughout play.

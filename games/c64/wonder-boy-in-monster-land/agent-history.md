@@ -712,3 +712,5 @@ Described the resident entity collision parameter tables through type 45. The li
 Distinguished 29 previously duplicated resident sprite descriptions by their own bitmap bit and row counts. VICE compared all 63 bitmap bytes per slot with the first-load play capture; a listing test checks the counts. Restored the paused user snapshot.
 
 Described the alternate screen matrix cells $C500–$C7E7 by their positions and the previously VICE-checked transition clear, retaining the possibility of other uses. The existing screen-clear test checks the whole range and the untouched tail.
+
+Described primary screen matrix cells $C0AE–$C3E7 by position, using the VICE-checked transition clear and the separately checked status-template copy. The existing screen-clear test checks the range and untouched tail.
