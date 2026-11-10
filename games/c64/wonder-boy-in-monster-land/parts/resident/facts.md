@@ -413,3 +413,5 @@ The visual resource wrapper at $7119 calls $7130, sets CPU port $01 to $30, copi
 The first and fifth message-panel rows at $4EE4 and $4F3C each contain 22 screen codes and are copied to $C00E and $C0AE respectively. A forced VICE case replaced all five row buffers with known patterns and checked all 110 copied screen bytes. Character interpretation depends on the selected character set.
 
 The message display copies 22-byte rows to $C036–$C04B, $C05E–$C073 and $C086–$C09B. The regular and alternate panel paths use different source buffers. The regular path was checked in VICE with distinct patterns across all five screen rows; adjacent screen bytes remain separately bounded.
+
+The regular message-panel colour rows at $4F52 and $4F68 are copied to five colour-RAM rows. The alternate panel uses screen rows at $5066 and $507C and colour rows at $5092 and $50A8; $5092 also supplies a screen fill byte. Forced VICE cases checked the colour low nibbles and the alternate screen copies with distinct row patterns.
