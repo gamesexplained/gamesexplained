@@ -974,3 +974,5 @@ Replaced repeated IRQ and call-patch comments with local sources, operand destin
 The full kit suite ran 934 tests: 920 passed, 11 skipped for missing optional tools and three failed while the resident listing was regenerated. The failures were in item dispatch, item status graphics and item variants; all three passed when rerun against the stable listing. Hold listing files stable during subsequent test runs.
 
 With listing files held stable, all 402 game-specific tests passed, the three repository checks passed and the 102-game site build passed. The earlier full-kit run had 920 passes and 11 optional-tool skips; its three game-listing read failures all passed on stable rerun.
+
+Lowered the ignored shape matcher threshold to include nonzero sparse masks that already have a verified gallery counterpart. Twenty more ranges matched their entry/play snapshots; VICE read each and observed no instruction entry during a 200-frame play probe. Preserved the original 302 observations and appended the 20 matches. Restored the paused user snapshot.

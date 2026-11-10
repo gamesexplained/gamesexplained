@@ -17,6 +17,8 @@ This retrospective records work through the ongoing analysis. The final listing 
 
 The same captured bytes can be copied as characters and executed as code. Treating a character-copy observation as proof that a range contains only graphics would hide executable entry points. This run found the overlap by watching execution in each forced load; another game's evidence should be checked before changing a general skill.
 
+The shape matcher initially ignored masks with fewer than 16 set bits. Comparing sparse nonzero masks against the verified gallery found 20 more matches; VICE confirmed their bytes and the bounded execution probes. A candidate rule is to compare known shapes before filtering by visual density, but this run alone does not establish a general skill change.
+
 ## Maintainer asks
 
 None identified at this stage. Review the remaining run and existing issues before submission.
