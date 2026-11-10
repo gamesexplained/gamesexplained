@@ -644,3 +644,5 @@ Traced four first-load item-push entries and described a previously checked setu
 Traced first-load record drawing at $AB55–$AB9F. Five controlled VICE calls and a listing test checked each drawing entry and its three- or four-row output. The paused user snapshot was restored; other arguments and natural reachability remain open.
 
 Traced first-load payment option selection at $A52E–$A5AD. Six forced VICE cases and a listing test checked insufficient balance, default messages and patched callbacks with payment, message and meter routines stubbed. The paused user snapshot was restored.
+
+Traced the first-load payment amount formatter and separated its saved-X operand from the option dispatcher. Four forced VICE cases and a listing test checked digit values and X restoration with drawing stubbed; the earlier option test covers the dispatcher. The paused user snapshot was restored.
