@@ -541,7 +541,7 @@
   {
    "start": 38154,
    "end": 38166,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 38167,
@@ -4201,6 +4201,18 @@
   {
    "address": 38148,
    "name": "load_trigger_record_02",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38154,
+   "name": "trigger_message_overwrites_opcode",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 38164,
+   "name": "trigger_patched_opcode",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10864,6 +10876,16 @@
    "address": 38148,
    "type": "line",
    "text": "Load 23 trigger record 2 of 2: initial bytes $07, $0B, $01, $FF, $0A, $95. $7979 copies the fields to the column, row, remaining-count, argument and callback arrays; the initial callback address is $950A. $48BF compares the stored column and row with the view tile, checks and decrements the count, then dispatches through the callback. Other code can change the stored count."
+  },
+  {
+   "address": 38154,
+   "type": "line",
+   "text": "Store the incoming trigger index X at $9514, which is the opcode of the captured LDX #$FF rather than its operand at $9515. Pass message $9517 to $77E0, then execute the modified bytes. The captured second trigger record at $9504 supplies this callback; the shared dispatcher passes its matched index in X. Forced VICE tests checked direct X=1 and a constructed dispatch of that record with the message callback stubbed; ordinary-play reachability and actual callback register results remain open."
+  },
+  {
+   "address": 38164,
+   "type": "line",
+   "text": "The captured bytes are LDX #$FF followed by RTS, but $950A overwrites this opcode with incoming X. With X=1, the modified instruction is ORA ($FF,X), using X returned by the message callback, and then returns without restoring X. In the forced test the callback returned A=1 and X=$55, and a pointer at $54/$55 addressed $0400=$40, producing A=$41. Other patched opcodes and ordinary-play effects are not established."
   },
   {
    "address": 38167,

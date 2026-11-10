@@ -764,3 +764,7 @@ Traced twelve later-load object result callbacks. Twelve forced VICE calls and a
 Added the conditional Sphinx hint-to-answer mapping to Discoveries. Eight forced VICE cases checked both nonnegative choices for each retained seed, and an integration listing test checks the option strings and selection logic. The controlled stages do not establish ordinary-play order; restored the paused user snapshot.
 
 Traced eight later-load trigger message callbacks. Eight forced VICE calls and a listing test checked their message sequences and X restoration with the display callback stubbed. Character-source comments record overlapping code. A superficially similar load-23 callback patches an opcode rather than its immediate operand and remains separate for investigation. Restored the paused user snapshot.
+
+Investigated the unusual load-23 trigger callback: its store patches the opcode at $9514 rather than the immediate operand. Direct VICE calls with X=1 and X=$A2 and a constructed dispatch of the captured second trigger checked the resulting behavior, with the message callback stubbed. A listing test repeats the cases. Natural trigger reachability and real message callback outputs remain open; restored the paused user snapshot.
+
+Added the load-23 self-modifying trigger observation to Discoveries, with the forced-dispatch and callback limitations beside it.
