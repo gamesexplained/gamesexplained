@@ -1,37 +1,26 @@
 # Super Wonder Boy in Monster Land — kit feedback
 
-Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
-changed what the run did, what the skills and kit got wrong or left out,
-what was changed, what needs a maintainer's decision, what cost the most
-time, operating system and tool versions.
+This retrospective records work through the ongoing analysis. The final listing review, remaining checks and maintainer asks are still to be completed.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `40-sweep`: "Compare the analysis's bytes with the snapshot's": compared the supplied listing with independently captured title and play states and kept differing rows out of the initial seed.
+- `60-verify`: "A negative result is a claim about your search": kept ordinary-play reachability open for forced loads and direct-entry tests instead of treating a bounded capture as proof of absence.
 
 ## What was changed in the kit
 
 - `kit/c64/project.py`: retain automatic labels when reconstructing a project, so a direct export does not lose them; `kit/c64/test_project_labels.py` covers the round trip.
-- `kit/scripts/test_browser.py`: isolate the missing-browser test from installed macOS applications; `kit/c64/test_tool_isolation.py` resolves the temporary path before comparing it on macOS.
+- `kit/scripts/test_browser.py`: isolate the missing-browser test from installed macOS applications.
+- `kit/c64/test_tool_isolation.py`: resolve the temporary path before comparing it on macOS.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+The same captured bytes can be copied as characters and executed as code. Treating a character-copy observation as proof that a range contains only graphics would hide executable entry points. This run found the overlap by watching execution in each forced load; another game's evidence should be checked before changing a general skill.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None identified at this stage. Review the remaining run and existing issues before submission.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Preserving automatic labels in reconstructed disassembler projects would have avoided repeated exports and manual reconciliation of the resident symbol map.
