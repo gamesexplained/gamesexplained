@@ -860,3 +860,7 @@ Checked load-9 object callback $9465 in four forced VICE cases, redirecting the 
 Checked load-20 type-$2A entity entry in four forced VICE cases with movement callback stubbed; restored the paused user snapshot.
 
 Checked load-20 and load-27 entity dispatchers in six forced VICE cases, preserving the overlapping character-source descriptions in load 20; restored the paused user snapshot.
+
+Checked load-20 type-$1B state 1 in five forced VICE cases, including a frame sum that wraps to zero and enters the other movement path; restored the paused user snapshot.
+
+Forced all 17 entity slots occupied and ran load-20 setup $BD35 with the real allocator and reset and $78D1 stubbed. VICE observed X=$FF and a $2A write to $1A18; restored the paused user snapshot.

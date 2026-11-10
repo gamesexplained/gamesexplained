@@ -124,3 +124,7 @@ This load has 29 additional one-byte RTS entries selected by captured entity vec
 Load-20 type-$2A vector selects $BE8D, which chooses a frame and branches on $19A1,X being below $40. Four forced VICE cases checked the height threshold and phase/frame wrapping with $4342 stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-20 type-$1B dispatcher $BCD5 has three captured target pairs, checked in forced VICE calls. Its code and table overlap copied character-source bytes; index bounds and ordinary-play reachability remain open.
+
+Load-20 type-$1B state 1 at $BE49 selects a movement path by the sign of $1AC2,X. A negative path whose addition of 16 to $19E5,X produces zero falls through to the other movement call. Five forced VICE cases checked both directions and that wrapped case with movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+With all 17 entity slots forced occupied, load-20 setup $BD35 called the real allocator and reset without testing carry. VICE observed X=$FF and a subsequent $2A write to $1A18; $78D1 was stubbed. The path’s ordinary-play reachability and player-visible effects remain open.
