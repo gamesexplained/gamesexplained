@@ -132,3 +132,5 @@ The shop drawing setup at $9804 selects two pointer-table entries, calls the sec
 The shop label code at $9853 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9A4C to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 Load-14 type-$12/$21 and type-$13 vectors select dispatchers at $A5B1 and $A7FF. Nine forced VICE cases checked active and sign conditions plus three and one captured state targets; $A8AC was stubbed. Their state indexes are not locally bounded, and callback effects and ordinary-play reachability remain open.
+
+Load-14 type-$12 state 0 at $A5D4 initializes a timer and stores twice the low two bits of the $3020 result, then falls through to state 1. Five forced VICE cases covered all four low-bit combinations with $3020 stubbed. Callback effects and ordinary-play reachability remain open.
