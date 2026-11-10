@@ -8,4 +8,8 @@ for(const [life,mode,phase,delay,y,speed,frame,nextLife,nextPhase,nextY,nextSpee
  const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f3,maxSteps:300});assert.equal(cpu.pc,0x2f3);
  if(!life)assert.deepStrictEqual([...a.slice(0x4d21,0x4d29)],Array(8).fill(1));else{assert.deepStrictEqual([a[0x4d53],a[0x4d52],a[0x4d39],a[0x402d],a[0x4d54]],[nextLife,nextPhase,nextY,nextSpeed,nextDelay]);assert.equal(a[0x300],mode?1:0);if(!delay&&!mode)assert.equal(a[0x4d3a],0x99);}
 }
+for(const [phase,y,nextY,frame,nextPhase,land] of [[0,100,90,0xa1,1,false],[10,100,100,0xa3,11,false],[18,100,108,0xa3,18,false],[0,210,194,0xa5,0xa5,true],[128,100,100,0x55,128,false],[128,200,194,0xa5,0xa5,true]]){
+ const a=base.slice();a[0x4d52]=phase;a[0x4d39]=y;a[0x4d3a]=0x55;a[0x4d69]=0;a.set([1,2,3,4,5,6,7,8],0x4d3b);a[0x40f7]=8;a.set([0x20,0x2f,0x40,0xea],0x2f0);
+ const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f3,maxSteps:100});assert.equal(cpu.pc,0x2f3);assert.deepStrictEqual([a[0x4d39],a[0x4d3a],a[0x4d52]],[nextY,frame,nextPhase]);assert.deepStrictEqual([...a.slice(0x4d3b,0x4d43)],land?Array(8).fill(0):[1,2,3,4,5,6,7,8]);
+}
 console.log('OK - resident effect-group motion');

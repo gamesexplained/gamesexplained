@@ -20360,6 +20360,31 @@
    "text": "Unused startup byte $60 between effect state and the next routine. No resident instruction entry was observed here.\nTrace-proven startup remnant at $402e\u2013$402e. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
   },
   {
+   "address": 16431,
+   "type": "line",
+   "text": "Load Y from $4D52. If it is nonnegative, read $4077,Y, choose $A1 for a negative displacement or $A3 otherwise, store that frame in $4D3A, and add the displacement to $4D39 modulo 256. A negative Y skips those writes."
+  },
+  {
+   "address": 16457,
+   "type": "line",
+   "text": "Compute $C2 plus $4D69 modulo 256 and compare it with $4D39. If the floor value is at or below the position, enter $4056; otherwise enter $406C."
+  },
+  {
+   "address": 16470,
+   "type": "line",
+   "text": "Store the computed floor value at $4D39, clear all eight bytes at $4D3B through $4D42, and set both $4D52 and $4D3A to $A5 before returning."
+  },
+  {
+   "address": 16492,
+   "type": "line",
+   "text": "Read $4077,Y, including when Y is negative. If the byte is $08, return; otherwise increment $4D52 and return. The routine does not locally bound Y to the captured table."
+  },
+  {
+   "address": 16503,
+   "type": "line",
+   "text": "Nineteen captured displacement bytes for $402F, from $F6 through $08; index $12 contains the $08 stop value. Negative or larger indexes address bytes beyond this captured table."
+  },
+  {
    "address": 16522,
    "type": "line",
    "text": "Builds status-display rows from current-player flag bits, copying or blanking icon fragments and caching the low flag bits."
@@ -21383,6 +21408,16 @@
    "address": 24413,
    "type": "line",
    "text": "Clear the effect cursor and eight occupancy flags. Restore the saved callback-derived value; if it is zero, set the game-exit flag to $FF before returning to the special-object dispatcher."
+  },
+  {
+   "address": 24584,
+   "type": "line",
+   "text": "Call $447A, set $1919,X to $F8 and patch the immediate operand at $6020 with X. Load the selected player index from $4DBD, add $11 to $4DDB,X modulo 256 and call $77E2 with the result."
+  },
+  {
+   "address": 24608,
+   "type": "line",
+   "text": "Immediate operand patched at $6010 to restore the entity index after $77E2. With that X, copy $7F6C to $19E5,X and $19C3,X; set $19F6,X to $0F, $1A07,X to zero and $1AA0,X to 7. Call $4342 with A=$0C and return."
   },
   {
    "address": 24791,
