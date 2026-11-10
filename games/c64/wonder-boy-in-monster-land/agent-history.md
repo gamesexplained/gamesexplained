@@ -750,3 +750,5 @@ Described the remaining captured entries in 30 later-load row-pointer pairs. All
 Typed load-11 entity initialization $964E–$968C following the stage-object record. Three forced VICE calls and a listing test checked twelve indexed fields and the message pointer. Restored the paused user snapshot.
 
 Traced two load-11 repeating motion streams and their entries, recording the first stream’s overlap with copied characters. Six forced VICE cases and a listing test checked literal, repeated and reset values. Restored the paused user snapshot.
+
+Traced 14 additional motion-reader entries and encoded streams across later loads. Twenty-eight forced VICE cases checked first values and resets; a listing test checks each complete decoded sequence. Where the setup or stream overlaps copied characters, the comments retain both observed uses. Restored the paused user snapshot.
