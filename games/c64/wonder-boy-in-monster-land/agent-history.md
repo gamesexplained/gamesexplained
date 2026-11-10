@@ -942,3 +942,5 @@ Split the three message screen-row boundaries after checking their regular copy 
 Checked both message-panel colour paths and the alternate screen-row copies in VICE with controlled patterns, then restored the paused user snapshot.
 
 Checked five forced built-in sound pointer-table indices in VICE and restored the paused user snapshot.
+
+Checked three message pointer IDs in VICE and connected the checked message buffers and screen row to their exact boundaries; restored the paused user snapshot.
