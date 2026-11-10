@@ -185,3 +185,5 @@ A six-state type-$05 dispatcher was found in loads 2, 4, 6, 15 and 17. Listing t
 The type-$05 frame helper and its two four-byte offset tables were described in five loads. The working byte has different snapshot values, and the helper clears carry between additions. Listing tests check 15,360 sign, input and base combinations; seven VICE calls check representative cases with decimal mode clear. The paused snapshot was restored.
 
 Type-$05 state 5 was traced in five loads, including its pre-check table read, countdown and index wrap. Listing tests cover in-range and controlled out-of-range inputs with $4B0E stubbed; eight VICE calls check representative paths. Normal index ranges and natural reachability remain open, and the paused snapshot was restored.
+
+Type-$05 states 2 and 3 were traced across five loads. Listing tests check the frame, countdown and callback branches with the event and movement helpers stubbed; ten VICE calls check representative paths. The event helper, table-index range and natural reachability remain open. The paused snapshot was restored.
