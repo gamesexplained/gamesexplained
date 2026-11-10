@@ -1310,8 +1310,23 @@
   },
   {
    "start": 41795,
+   "end": 41941,
+   "type": "Code"
+  },
+  {
+   "start": 41942,
+   "end": 42003,
+   "type": "Code"
+  },
+  {
+   "start": 42004,
+   "end": 42103,
+   "type": "Code"
+  },
+  {
+   "start": 42104,
    "end": 42242,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 42243,
@@ -1326,7 +1341,7 @@
   {
    "start": 42334,
    "end": 42403,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 42404,
@@ -1335,8 +1350,13 @@
   },
   {
    "start": 42405,
+   "end": 42405,
+   "type": "Byte"
+  },
+  {
+   "start": 42406,
    "end": 42409,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 42410,
@@ -4348,6 +4368,66 @@
    "kind": "user"
   },
   {
+   "address": 41795,
+   "name": "type11_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41861,
+   "name": "type11_state0_close",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41896,
+   "name": "type11_state0_far",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41942,
+   "name": "type11_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41987,
+   "name": "type11_state1_finish",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42004,
+   "name": "type11_spawn_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42046,
+   "name": "type11_spawn_fields",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42104,
+   "name": "type11_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42133,
+   "name": "type11_state2_countdown",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42180,
+   "name": "type11_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 42243,
    "name": "type11_state4",
    "type": "UserDefined",
@@ -4366,8 +4446,38 @@
    "kind": "user"
   },
   {
+   "address": 42334,
+   "name": "type11_event_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42379,
+   "name": "type11_event_alternate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42393,
+   "name": "type11_event_followup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 42404,
    "name": "type11_position_sign",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42405,
+   "name": "type11_distance_scratch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42406,
+   "name": "type11_states23_offsets",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6788,6 +6898,56 @@
    "text": "Six captured high bytes paired with low bytes at $A337: $A343, $A3D6, $A478, $A4C4, $A503, $A526. State index bounds and ordinary-play reachability remain open."
   },
   {
+   "address": 41795,
+   "type": "line",
+   "text": "Call the event helper and, if it returns, use carry from $72FC and the sign of $1B17,X to decide whether to toggle its top bit. Call $71DB, patch the immediate X load at $A367 with its returned A, then compare the previous X with $6F3C and compute their unsigned difference."
+  },
+  {
+   "address": 41861,
+   "type": "line",
+   "text": "If the difference is below 20 and $1B28,X is zero, update position through $A54E, set $1AF5,X=5 and $1B06,X=6, then select state 1. X here is the value loaded through the patched immediate instruction."
+  },
+  {
+   "address": 41896,
+   "type": "line",
+   "text": "Otherwise return if $1A29,X is zero. If nonzero, set $1AD3,X=10 and patch the state-2 immediate operand at $A4B2 to 10. Call $3020; when its result is below $80, use carry from $72FC to set $1B17,X to zero or $80. Clear $1AF5,X and select state 2."
+  },
+  {
+   "address": 41942,
+   "type": "line",
+   "text": "Save $1B17,X at $A5A4 and call the event helper. If it returns and $1AF5,X is nonzero, decrement that byte and return. Otherwise inspect $1B06,X: positive calls $4342 and decrements it; zero calls the spawn helper, sets it to $80 and calls $4368 with A=0; negative calls $4368 with its value."
+  },
+  {
+   "address": 41987,
+   "type": "line",
+   "text": "When $1B06,X is below $86 after the callback, increment it and return; at $86 or above, set $1AB1,X=0 and return."
+  },
+  {
+   "address": 42004,
+   "type": "line",
+   "text": "Copy X to Y and call $190B. Return if carry is clear. Otherwise call $447A, then copy $194C, $193B, $1990 and $197F from slot Y to slot X; callbacks determine the returned indices."
+  },
+  {
+   "address": 42046,
+   "type": "line",
+   "text": "Initialize slot X with type $26, $19F6=7, $1A07/$1AA0=0, $19C3/$19E5 equal to $19E5,Y plus 20, $1AC2=4, $1AF5=10, $1B06=2 and $1AD3=Y. The preceding instructions set $1AE4 to $1B17,Y XOR $80. Restore X from Y, set $1B28,X=1 and return."
+  },
+  {
+   "address": 42104,
+   "type": "line",
+   "text": "Call event helper $A55E. If it returns, save $1B17,X at $A5A4, read the four captured offsets at $A5A6 using $1AF5,X and call the position helper. Increment Y, reset it to zero if at least 4 and write it back. The input index is not bounded before the read."
+  },
+  {
+   "address": 42133,
+   "type": "line",
+   "text": "Decrement $1AD3,X. If negative, or if the selected $45BC/$4574 callback returns a value whose bits 1\u20132 are not 2, load the immediate byte at $A4B2 into $1AD3,X, toggle bit 7 of $1B17,X and set $1AB1,X=3. State 0 can patch this byte to 10; the captured placeholder is $FF."
+  },
+  {
+   "address": 42180,
+   "type": "line",
+   "text": "The same offset and callback sequence as state 2, but its transition sets $1AB1,X=0 without resetting $1AD3,X or toggling $1B17,X."
+  },
+  {
    "address": 42243,
    "type": "line",
    "text": "Decrement $1AC2,X. If negative, copy $1AE4,X to $1AB1,X and return. Otherwise call $72FC; select $45BC for carry clear or $4574 for carry set, with A=8. When the returned A masked with 6 differs from 2, copy $1AE4,X to $1AB1,X."
@@ -6803,9 +6963,34 @@
    "text": "Test the sign of $A5A4. If nonnegative, add 10 to A; then add $19E5,X with carry cleared and store the low byte in $19C3,X."
   },
   {
+   "address": 42334,
+   "type": "line",
+   "text": "Save $1B17,X at $A5A4, then call $792C and $732A. Carry set from $732A with positive $1A6D,X saves the current state in $1AE4,X, calls the position helper with A=4, sets $1AC2,X=10 and $1AB1,X=4, then discards one return address and returns."
+  },
+  {
+   "address": 42379,
+   "type": "line",
+   "text": "Carry set from $732A with zero or negative $1A6D,X clears $1AD3,X, sets $1AC2,X=10 and $1AB1,X=5, then discards one return address and returns."
+  },
+  {
+   "address": 42393,
+   "type": "line",
+   "text": "When $732A returns carry clear, call $7227. Return if carry is clear; otherwise load A=4 and tail-jump to $5D7A."
+  },
+  {
    "address": 42404,
    "type": "line",
    "text": "Working byte set from $1B17,X by state 5 and read by the position helper. Other callers may write it."
+  },
+  {
+   "address": 42405,
+   "type": "line",
+   "text": "Temporary byte used when state 0 subtracts the previous X value from $6F3C."
+  },
+  {
+   "address": 42406,
+   "type": "line",
+   "text": "Four captured state-2 and state-3 position offsets: 2, 2, 4, 4. The input index is not locally bounded; ordinary-play bounds remain open."
   },
   {
    "address": 42410,
