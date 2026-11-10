@@ -650,3 +650,5 @@ Traced the first-load payment amount formatter and separated its saved-X operand
 Described the first-load second and third voice pointer sequences individually. VICE checked the bytes and a listing test checks each pointer and terminator. The paused user snapshot was restored.
 
 Traced first-load item-pair selection and the conditional $13/$14 resolver. Four forced VICE cases and a listing test checked both supplied and derived pairs. Drawing has a separate coverage boundary, and the paused user snapshot was restored.
+
+Described 247 stable resident $C800 character patterns after comparing entry and first-load play snapshots. VICE matched the bytes and watched the selected ranges for 200 frames without an instruction entry. The paused user snapshot was restored; individual display use and other possible code uses remain open.

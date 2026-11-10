@@ -311,3 +311,5 @@ The status-screen initializer copies the 200-byte template at $4DE4–$4EAB to $
 Resident transfer routines at $7E02 and $7E25 receive or send bytes through the pointer at $64/$65. VICE and a listing test checked three-byte receive and send cases, including receive pointer page crossing, with serial callbacks stubbed. Peer behavior, additional transfer states and natural reachability remain open.
 
 Resident rising-entity overlap code at $6939 compares halved X coordinates and a carry-dependent player-Y offset before entering attachment at $69A2. Seven forced VICE cases and a listing test check both width choices and selected rejection and attachment paths with the display-slot callback stubbed. Other boundary and ordinary-play cases remain open.
+
+247 additional eight-byte patterns in the resident $C800 character set match the first-load play snapshot. VICE matched their bytes and recorded no instruction entry into the selected ranges during 200 frames; a listing test checks the individual rows. Individual display use and other possible code uses remain open.
