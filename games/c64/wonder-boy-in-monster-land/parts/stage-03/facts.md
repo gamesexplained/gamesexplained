@@ -62,3 +62,5 @@ The object record at $901F contains result callback $9085, which returns A=$0A w
 The trigger record at $8FD2 contains message callback $8FDE, which passes $8FEB to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
 
 Load 3 entity types $07 and $24 have state dispatchers at $9B96 and $9E28. Forced VICE calls confirmed seven and four captured targets respectively; index bounds, handler behavior and ordinary-play reachability remain open. The first dispatcher overlaps bytes copied as character data.
+
+The load-3 type-$24 state-3 handler at $9EB1 decrements an entity timer, changes a frame while the result is nonnegative, and on expiry changes a second slot before jumping to $4454. Four forced VICE cases covered both branches and both outcomes of the stubbed contact callback; the other callbacks and ordinary-play reachability remain open.

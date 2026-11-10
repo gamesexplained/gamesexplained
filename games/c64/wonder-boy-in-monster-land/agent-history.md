@@ -786,3 +786,5 @@ Traced the shop item-label and prompt setup in 17 later loads. Thirty-four force
 Described the captured storage after declared map columns in 16 loads. The row boundaries and captured values are checked against every listing; 20 forced VICE cases across six loads confirmed that the renderer can read the first and last remainder positions. Ordinary-play reachability and other uses remain open. The user’s paused snapshot was restored.
 
 Found and checked two load-3 entity state dispatchers with 11 forced VICE calls. Their target tables lead into a region previously left untyped; the first dispatcher also overlaps copied character data. Restored the paused user snapshot.
+
+Checked load-3 state $9EB1 in four forced VICE cases, stubbing the contact, effect and setup calls. Checked the timer, frame, selected second slot and self-modified restore operand. Restored the paused user snapshot.
