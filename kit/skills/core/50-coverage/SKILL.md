@@ -312,6 +312,10 @@ shifted, interleaved, or built from pieces) matches nowhere, so follow
 the start-up's copy loops to their destinations as well, and check each
 against the ledger.
 
+What never reaches memory is outside every snapshot, so this list
+cannot show it. Before calling 100 %, answer every item in `media.json`
+(`12-media`, "Before Silver: the answers").
+
 ## Interpreted programs and code loaded as level data
 
 If a CPU trace reaches an interpreter or calls into a loaded level,

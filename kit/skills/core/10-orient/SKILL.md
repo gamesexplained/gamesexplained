@@ -114,8 +114,9 @@ annotate it byte by byte.
    A file that lands whole says what a region is before any code is read
    (one run found its speech samples and its speech timing table this way,
    and caught a table it had credited to the wrong file); a file that is
-   found nowhere is the loader's, or is built from. Put the table in
-   `orientation.md`.
+   found nowhere is the loader's, is built from, or is a part of its
+   own: `12-media` lists every one and keeps it open until it is
+   answered. Put the table in `orientation.md`.
 8. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), switches in
    banks (a cartridge's, or a 128K machine's RAM), or reads its own code
