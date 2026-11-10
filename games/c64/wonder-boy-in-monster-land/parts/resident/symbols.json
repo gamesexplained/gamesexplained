@@ -600,16 +600,6 @@
   },
   {
    "start": 10877,
-   "end": 10895,
-   "type": "Code"
-  },
-  {
-   "start": 10896,
-   "end": 10897,
-   "type": "Undefined"
-  },
-  {
-   "start": 10898,
    "end": 11121,
    "type": "Code"
   },
@@ -1400,26 +1390,6 @@
   },
   {
    "start": 32027,
-   "end": 32113,
-   "type": "Code"
-  },
-  {
-   "start": 32114,
-   "end": 32116,
-   "type": "Undefined"
-  },
-  {
-   "start": 32117,
-   "end": 32154,
-   "type": "Code"
-  },
-  {
-   "start": 32155,
-   "end": 32157,
-   "type": "Undefined"
-  },
-  {
-   "start": 32158,
    "end": 32236,
    "type": "Code"
   },
@@ -6572,9 +6542,9 @@
   },
   {
    "address": 10896,
-   "name": "s_2A90",
+   "name": "apply_transition_stage_patches",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10897,
@@ -15482,9 +15452,9 @@
   },
   {
    "address": 32114,
-   "name": "b_7D72",
+   "name": "call_transition_mode_handler",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 32115,
@@ -15542,9 +15512,9 @@
   },
   {
    "address": 32155,
-   "name": "b_7D9B",
+   "name": "read_transfer_buffer_byte",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 32156,
@@ -15856,6 +15826,12 @@
    "address": 49920,
    "name": "f_C300",
    "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 49922,
+   "name": "a_C302",
+   "type": "AbsoluteAddress",
    "kind": "auto"
   },
   {
@@ -17725,6 +17701,46 @@
    "text": "Nine eight-byte character slots copied to $ccd0\u2013$cd17 when the patch selector is 1. Other state can bypass this copy."
   },
   {
+   "address": 10896,
+   "type": "line",
+   "text": "Load the stage selector from the immediate operand at $2A91, which $7A9A patches before the transition. $7B04 calls this routine after a successful transfer. For selector 1, OR $2A34 with $10 and store it at $93C3, then copy 72 bytes from $2A35\u2013$2A7C to $CCD0\u2013$CD17. Continue through the selector checks at $2AA9."
+  },
+  {
+   "address": 10921,
+   "type": "line",
+   "text": "For selector 2, jump to $AD0E when $4DD7 equals 4; otherwise continue to the selector 10 check. The target's behavior depends on the loaded state."
+  },
+  {
+   "address": 10935,
+   "type": "line",
+   "text": "For selector 10, write $20, $7D, $2A to $9FEB\u2013$9FED, forming JSR $2A7D in that loaded image. Other selector values continue without this write."
+  },
+  {
+   "address": 10954,
+   "type": "line",
+   "text": "For selector 14, write $20, $87, $2A to $9D4E\u2013$9D50, forming JSR $2A87 in that loaded image. Other selector values continue without this write."
+  },
+  {
+   "address": 10973,
+   "type": "line",
+   "text": "For selector 28, write $20, $7D, $2A to $A7BE\u2013$A7C0, forming JSR $2A7D in that loaded image. Other selector values continue without this write."
+  },
+  {
+   "address": 10992,
+   "type": "line",
+   "text": "For selector 29, write $20, $7D, $2A to $A3CF\u2013$A3D1, forming JSR $2A7D in that loaded image. Other selector values continue without this write."
+  },
+  {
+   "address": 11011,
+   "type": "line",
+   "text": "For selector 31, load A with zero and branch to the return at $2B15. Other selectors also return there. The writes at $2B0B are not reached from this check; another entry has not been established."
+  },
+  {
+   "address": 11019,
+   "type": "line",
+   "text": "If entered here, write $9A and $29 to $999A and $999B, then return. The selector-31 path at $2B03 branches around these instructions; another entry is not established."
+  },
+  {
    "address": 11041,
    "type": "line",
    "text": "This instruction sequence is present in the capture. No entry from the traced resident paths is established; behavior is conditional on an external or otherwise unproved entry."
@@ -19015,6 +19031,11 @@
    "text": "Captured offset/size pairs indexed by twice the entity type. The consumer does not locally bound the type to these 46 pairs."
   },
   {
+   "address": 31480,
+   "type": "line",
+   "text": "Load the stage selector from $2A91 and call the transfer routine at $7D1B with X=0 and Y=2. Mode zero selects the decoder at $7C2C and the saved count requests two calls. On carry clear, branch to the transfer-failure path at $7B58; on carry set, call the selector-specific patches at $2A90 and continue to restore the saved pages."
+  },
+  {
    "address": 31530,
    "type": "line",
    "text": "Clear the transition display: with X=0 on entry, the unrolled stores and decrement loop write zero to $C000\u2013$C3E7 and $C400\u2013$C7E7, and write $08 to $D800\u2013$DBE7. The latter accesses colour RAM when I/O is visible. It then jumps to $6A75. The final 24 bytes of each 1,024-byte screen page are outside these stores; other code writes sprite pointers there."
@@ -19038,6 +19059,91 @@
    "address": 31735,
    "type": "line",
    "text": "These 53 captured bytes are temporarily copied to $0300\u2013$0334 during the resident transition. Their individual meanings and transfer role are unresolved; the prior page is restored on success."
+  },
+  {
+   "address": 31788,
+   "type": "line",
+   "text": "Set Y to zero and fetch three bytes into $69, $68 and $67 in that order. The first two form the initial output pointer high and low bytes; $67 is the bit reservoir. Build 52 decoding-table entries at $7C38, reset Y to zero and enter the item decoder at $7C96. The transfer callback and later item decoding have separate paths."
+  },
+  {
+   "address": 31800,
+   "type": "line",
+   "text": "Build 52 entries in the stack-page tables: bit counts at $0104\u2013$0137, base low bytes at $0138\u2013$016B and base high bytes at $016C\u2013$019F. For entries 0, 16, 32 and 48, start the 16-bit base at 1. For each other entry, add 2 raised to the preceding entry's bit count to the preceding base, modulo 65536. Read four bits through $7C6A for this entry's bit count; after entry 51, continue at $7C66. The table describes decoder parameters, not established output boundaries by itself."
+  },
+  {
+   "address": 31850,
+   "type": "line",
+   "text": "Clear A and the high accumulator at $66. If X is zero, return immediately; otherwise read X bits through $7C72. On the ordinary carry-set refill path, bits are taken least-significant first from each fetched byte and shifted into the 16-bit accumulator $66:A, with A as the low byte; X reaches zero and Y is unchanged. A transfer callback that returns carry clear branches to $7C91 while A is still saved on the stack, so that path is not an ordinary return from the bit reader."
+  },
+  {
+   "address": 31858,
+   "type": "line",
+   "text": "Shift the reservoir at $67 right. If the result is zero, save A, call the buffered-byte reader and, when carry is set, rotate the fetched byte right with a high sentinel bit before restoring A. Rotate the selected bit into A and then $66, decrement X and repeat until X is zero. If that fetch returns carry clear, branch to the output store at $7C91 instead of restoring A here."
+  },
+  {
+   "address": 31879,
+   "type": "line",
+   "text": "Decrement X and the high bytes of both the output pointer at $69 and the source pointer at $65. Continue to the backward byte-copy loop at $7C8C; this entry handles the next full page of a copy."
+  },
+  {
+   "address": 31884,
+   "type": "line",
+   "text": "Decrement Y. With carry clear, call the buffered-byte reader through $7C77; when it returns carry clear, store the fetched byte at the output pointer plus Y. With carry set, load from the source pointer at $64\u2013$65 plus Y and store it at the same output position. The ordinary buffered-byte reader preserves carry; its refill and failure paths are separate."
+  },
+  {
+   "address": 31889,
+   "type": "line",
+   "text": "Store A at the output pointer $68\u2013$69 plus Y. This entry is shared by fetched literal bytes and source-pointer copies."
+  },
+  {
+   "address": 31891,
+   "type": "line",
+   "text": "Transfer Y to A. If Y is nonzero, copy another byte at $7C8C; otherwise continue to $7C96, which either advances a full page or decodes the next item."
+  },
+  {
+   "address": 31894,
+   "type": "line",
+   "text": "If X is nonzero, go to $7C87 to advance another page of the current copy. Otherwise increment X and read one bit with $7C6A. A nonzero result goes to $7CB5; zero begins the prefix loop at $7CA0. These statements describe the ordinary returning bit-reader path."
+  },
+  {
+   "address": 31904,
+   "type": "line",
+   "text": "Increment X, read through $7C72, shift A right and increment Y. Repeat while the shifted bit is clear. If Y wraps to zero, branch to $7CE4. Otherwise, Y below $11 selects $7CBD, Y equal to $11 returns from the decoder, and Y above $11 reads 16 bits before continuing at $7CB5."
+  },
+  {
+   "address": 31925,
+   "type": "line",
+   "text": "Save A as the low length byte at $63, load X from the high accumulator at $66 and clear Y. If carry is clear, branch to the destination adjustment at $7CE4; otherwise continue into the table-based length decoder at $7CBD."
+  },
+  {
+   "address": 31933,
+   "type": "line",
+   "text": "Read the bit count indexed by Y from $0103, read that many bits, and add the indexed low base from $0137 using the returned carry. Store the low result at $63, add the indexed high base from $016B to $66 with the low addition's carry, and push the high result. If it is nonzero, use class 3; otherwise use the low result as class when it is below 4, or class 3 when it is not."
+  },
+  {
+   "address": 31960,
+   "type": "line",
+   "text": "Read the bit count indexed by Y at $7D14, call the bit reader and add the indexed adjustment from $7D17 using its returned carry. Move that result to Y, reload the low length at $63 and continue to the destination adjustment at $7CE4. The bit-count lookup overlaps adjacent instruction and table bytes."
+  },
+  {
+   "address": 31972,
+   "type": "line",
+   "text": "Subtract the output-pointer low byte at $68 from A using the incoming carry. If the subtraction sets carry, decrement the output-pointer high byte at $69. Invert the subtraction result and store it at $68. Compare Y with 1: zero selects $7D10, while a nonzero Y continues to $7CF2."
+  },
+  {
+   "address": 31986,
+   "type": "line",
+   "text": "Read the bit count at $0104,Y and use $7C6A to read that many bits. Add the indexed low base at $0138,Y with the returned carry; if that addition carries, increment $66. Clear carry and add the adjusted value to output-pointer low byte $68 to form source-pointer low byte $64. Continue forming its high byte at $7D04."
+  },
+  {
+   "address": 32004,
+   "type": "line",
+   "text": "Add the indexed high base at $016C,Y and the output-pointer high byte $69 to $66, propagating carry between the additions, and store the result at source-pointer high byte $65. Pop the saved high length into X, set carry and continue to $7D10."
+  },
+  {
+   "address": 32016,
+   "type": "line",
+   "text": "Load Y from the low length at $63 and jump to $7C93. Carry is retained through that jump and selects literal-byte fetching or the source-pointer copy when the backward loop copies bytes."
   },
   {
    "address": 32021,
@@ -19070,9 +19176,44 @@
    "text": "The transfer-mode table patches this call to $7c2c, $7e02, or $7e25 for indices 0\u20132. The routine has no local bounds check on the supplied mode index."
   },
   {
+   "address": 32114,
+   "type": "line",
+   "text": "Call the address patched into the operands at $7D73\u2013$7D74 by the transfer-mode tables at $7D42\u2013$7D4B. For mode index 0, those tables select the transition decoder at $7C2C. The captured operand selects $7E02; the runtime mode determines the target."
+  },
+  {
+   "address": 32117,
+   "type": "line",
+   "text": "Decrement the transfer count at $61 and call the patched target at $7D72 again while it is nonzero. A count of 2 therefore makes two calls, provided the target returns normally. Continue to stack and port restoration when the count reaches zero."
+  },
+  {
+   "address": 32121,
+   "type": "line",
+   "text": "Restore the stack pointer from the immediate operand at $7D7A, which $7D37 patched after saving the CIA2 port and processor port. Pop and restore $01 and $DD00, then wait until bit 6 of $DD00 is set and return. The wait has no local timeout; this code does not change carry."
+  },
+  {
+   "address": 32137,
+   "type": "line",
+   "text": "Save processor flags with PHP and test the low address operand at $7D9C. When it is nonzero, read the buffered byte at $7D9B. When it is zero, first enter the refill path at $7D8F. On the ordinary buffered return, PLP restores the incoming flags, including carry, while A holds the fetched byte."
+  },
+  {
+   "address": 32143,
+   "type": "line",
+   "text": "Save Y into the immediate operand at $7D9A, increment the processor port at $01, call $7DAB for a transfer-block header, decrement $01 and restore Y from the patched immediate. Continue to read the buffered byte at $7D9B; the transfer routine has its own failure and stack paths."
+  },
+  {
    "address": 32153,
    "type": "line",
    "text": "The low address operand $7d9c is also the mutable buffer position; it is incremented during reads."
+  },
+  {
+   "address": 32155,
+   "type": "line",
+   "text": "Load a byte through the absolute address whose low operand is $7D9C and high operand is $7D9D; the captured high byte is $C3. Increment the low operand, restore the flags saved by $7D89 and return. Incrementing $FF wraps the low operand to zero so the next call enters the refill path."
+  },
+  {
+   "address": 32163,
+   "type": "line",
+   "text": "Clear carry and branch unconditionally to $7D79, which restores the transfer stack and processor port. This is a transfer-failure path rather than the ordinary buffered return."
   },
   {
    "address": 32188,
