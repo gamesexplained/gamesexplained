@@ -171,3 +171,7 @@ Resident $5FB5 initializes a type-$FA entity from values supplied in A and Y, pr
 Resident $447A optionally marks two linked display slots $FF, then clears sixteen bytes of entity state. If the third-slot index is nonzero and the fourth-slot index is zero, the second write targets display slot 0. VICE checked four forced flag and index cases, including that slot-0 write. Index bounds and ordinary-play reachability remain open.
 
 VICE also checked three forced type-$F8 initializations through the real $447A reset, including the zero fourth-slot case; the message and movement callbacks remained stubbed. Ordinary-play reachability remains open.
+
+Resident $4A43 decrements the status-animation timer and advances or reverses its stage when the timer reaches zero. Forward stage 6 calls the meter helper with 8 and wraps to stage 0; a transition into stage 6 loads a countdown of 3. VICE checked seven forced countdown, forward and reverse cases with drawing and meter callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced stage-5 to stage-6 timer transition through the real $4A90 draw, including all 20 character bytes and the colour-15 writes. Ordinary-play reachability remains open.
