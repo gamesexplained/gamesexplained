@@ -20675,6 +20675,86 @@
    "text": "Flag set from carry returned by $71DB; when nonzero the clear first-tile path checks the next tile."
   },
   {
+   "address": 17780,
+   "type": "line",
+   "text": "Save A at $45BB. If $7A is zero, reload it and tail-jump to $43F0. Otherwise call $43F0, save its returned Y at $45BA, and call $71DB."
+  },
+  {
+   "address": 17805,
+   "type": "line",
+   "text": "Save the A returned by $71DB on the stack and set $7E to $0F. Increment its returned X; if it equals $7F4B, enter rollback at $45A2. Otherwise decrement X and call $460C. Store its result at $7E; bit 2 set enters rollback, clear enters $45B1."
+  },
+  {
+   "address": 17826,
+   "type": "line",
+   "text": "Restore the saved entity index into X, call $43A2 with the saved amount, restore Y from $45BA, load A from $7E and return carry set."
+  },
+  {
+   "address": 17841,
+   "type": "line",
+   "text": "Restore the saved entity index into X and Y from $45BA, load A from $7E and return carry clear."
+  },
+  {
+   "address": 17850,
+   "type": "line",
+   "text": "Y saved after the initial rightward movement call for restoration by $4574."
+  },
+  {
+   "address": 17851,
+   "type": "line",
+   "text": "Incoming movement amount saved by $4574 for its initial move and possible rollback."
+  },
+  {
+   "address": 17852,
+   "type": "line",
+   "text": "Save A at $460B. If $7A is zero, reload it and tail-jump to $43A2. Otherwise call $43A2, save its returned Y at $460A, and call $71DB."
+  },
+  {
+   "address": 17877,
+   "type": "line",
+   "text": "Save the A returned by $71DB on the stack and set $7E to $0F. If returned X is $FF, enter rollback. Otherwise subtract 1 from X: a borrow stores 3 at $7E and returns clear; without borrow call $460C with that index. Store its result at $7E; bit 2 set enters rollback, clear returns without rollback."
+  },
+  {
+   "address": 17902,
+   "type": "line",
+   "text": "Restore the saved entity index into X, call $43F0 with the saved amount, restore Y from $460A, load A from $7E and return carry set."
+  },
+  {
+   "address": 17921,
+   "type": "line",
+   "text": "Restore the saved entity index into X and Y from $460A, load A from $7E and return carry clear."
+  },
+  {
+   "address": 17930,
+   "type": "line",
+   "text": "Y saved after the initial leftward movement call for restoration by $45BC."
+  },
+  {
+   "address": 17931,
+   "type": "line",
+   "text": "Incoming movement amount saved by $45BC for its initial move and possible rollback."
+  },
+  {
+   "address": 17932,
+   "type": "line",
+   "text": "Clear $7D and call $4632 at Y-1, Y, Y+1 and Y+2, with Y arithmetic modulo 256. Pack bit 1 of the first two returned attributes into result bits 3 and 2, and bit 0 of the last two into bits 1 and 0. Return that result in A, Y advanced by two and carry clear."
+  },
+  {
+   "address": 17970,
+   "type": "line",
+   "text": "Patch $463D with X and $4650 with Y. Add X to the row pointer formed from $85D0,Y and $8621,Y, then read the byte one position beyond the resulting address. Use that byte as an index into $80CF and return its value in A, restoring X and Y from the patched operands."
+  },
+  {
+   "address": 17981,
+   "type": "line",
+   "text": "Immediate addition operand patched with X by $4632; it also stores the X restored before return."
+  },
+  {
+   "address": 18000,
+   "type": "line",
+   "text": "Immediate operand patched with Y by $4635 and restored before $4632 returns."
+  },
+  {
    "address": 18005,
    "type": "line",
    "text": "Loads 16-byte stage records into parallel fields and uses the last four bytes for a map update. The runtime count is not locally checked against field spacing."
@@ -22052,17 +22132,32 @@
   {
    "address": 29355,
    "type": "line",
-   "text": "This instruction sequence is present in the capture. No entry from the traced resident paths is established; behavior is conditional on an external or otherwise unproved entry."
+   "text": "Push A, increment $487F,X and patch the saved-X operand at $72C0. If $527D is below $0B, restore A and X and return. Otherwise, if $1919 is zero, initialize a temporary entity at $72CA; if nonzero, discard the saved A, restore X, load A=$10 and branch to $7298. Entry from an ordinary resident path is not established."
   },
   {
    "address": 29356,
    "type": "line",
-   "text": "Save the caller's X in the immediate operand restored before the recoil path."
+   "text": "Increment the trigger count at $487F,X; the following STX at $72AF patches the saved-X operand at $72C0."
+  },
+  {
+   "address": 29376,
+   "type": "line",
+   "text": "Immediate operand patched by $72AF with the incoming X; both return paths restore that index."
   },
   {
    "address": 29377,
    "type": "line",
    "text": "The preceding LDA #$10 sets Z clear, so this BNE is unconditional in ordinary execution."
+  },
+  {
+   "address": 29386,
+   "type": "line",
+   "text": "Call $5D2C, then set $1AB1 to 8 and $19F6 to $0F. Restore the saved A into $19E5 and $19C3, set $1919 to $2B and jump to $72BF, which restores X and enters the $10-duration recoil path."
+  },
+  {
+   "address": 29414,
+   "type": "line",
+   "text": "Decrement $1AB1,X modulo 256. If it becomes zero, tail-jump to $4454. Otherwise set $19C3,X to $19E5,X plus 2 when the decremented byte is odd or plus zero when it is even, modulo 256, then return."
   },
   {
    "address": 29436,

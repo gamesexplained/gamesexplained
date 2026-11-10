@@ -205,3 +205,13 @@ VICE also checked two forced $7227 cases through the real $75E3 rectangle test, 
 Resident $727F selects a knockback speed and duration from the selected player motion profile, sets three motion-state bytes and restores incoming X and Y through patched immediate operands. VICE checked all six captured profiles. Profile bounds and ordinary-play reachability remain open.
 
 VICE also checked two forced $7227 contacts with the real rectangle, knockback and horizontal-comparison routines, producing opposite recoil directions and the selected profile values. Ordinary-play reachability remains open.
+
+If entered, resident $72AB increments a trigger counter and either returns, starts a $10-duration recoil, or first initializes a temporary type-$2B entity from trigger coordinates. VICE checked three forced threshold and occupied-slot cases using the real coordinate conversion and recoil-state code. An ordinary resident entry and ordinary-play reachability remain unproved.
+
+Resident $72E6 decrements a temporary entity countdown, releases it at zero, or selects one of two frames from the countdown parity. VICE checked four forced values including zero wrapping to $FF, with the release callback stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $4574 and $45BC apply rightward and leftward entity movement and may undo it after a boundary or tile check. The leftward zero-column path returns a tile result of 3 without undoing the move; a returned $FF column is rolled back. VICE checked four forced rightward and five leftward boundary and tile cases with movement, grid and tile callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $460C packs four bits from four consecutive tile attributes, while $4632 reads each attribute through a row pointer and restores X and Y. VICE checked four forced packing cases with the reader stubbed and three direct forced reads including pointer carry. Index bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced $460C cases with the real $4632 reader and supplied map and attribute data. Ordinary-play reachability remains open.
