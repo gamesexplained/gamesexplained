@@ -1,0 +1,216 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/aliens-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every sprite the game stores, stage by stage, played through the game's own animation tables where the code has them.</p>
+</header>
+<main class="wrap" data-part="level2">
+<section id="viewer">
+  <p class="fig">01 · The sprites</p>
+  <h2 class="t">Every stage brings its own sprites</h2>
+  <p class="lede">Each stage file carries its sprites with it, so each level's cast is drawn from a different set of shapes. Pick a stage to see them. The animations play at the game's rate, and the sheet below them holds every other shape the stage stores.</p>
+  <div class="plate">
+    <div class="al-ctl"><label for="al-stage">Stage</label> <select id="al-stage"></select>
+      <label for="al-col">Colours</label> <select id="al-col"></select></div>
+    <p class="al-out" id="al-note"></p>
+    <div id="al-anims" class="al-grid"></div>
+    <p class="al-out" id="al-sheet-head"></p>
+    <div id="al-sheet" class="al-grid"></div>
+    <p class="cap">Drawn from the bytes on the Source tab. Each shape is labelled with its sprite frame number (the address divided by 64 within the video bank) and links to its bytes. The colours are those the video chip held when each stage was paused in play; where the game gives two kinds of sprite different colours, the Colours menu switches between them.</p>
+  </div>
+</section>
+
+<section id="rings">
+  <p class="fig">02 · The drop-ship</p>
+  <h2 class="t">Level 1's nearest ring is two sprites moved on every line</h2>
+  <p class="lede">The pipe the drop-ship flies down is a row of rings coming nearer, one sprite each. A sprite can be stretched to twice its size but no further, so the nearest ring, larger than any sprite, is drawn another way.</p>
+  <p>The far rings are sprites 5, 6, and 7, and each takes a larger frame as it nears: <code>ring_frames7</code> (<a href="source-level1.html#8402"><code>$8402</code></a>), <code>ring_frames6</code> and <code>ring_frames5</code> give a frame from <code>$BB</code> to <code>$BF</code> for each of eight depth steps. <code>ring_advance</code> (<a href="source-level1.html#8163"><code>$8163</code></a>) adds the speed, <code>$50</code> on a PAL machine and <code>$60</code> on an American one (<code>speed_table</code>, <a href="source-level1.html#83c9"><code>$83C9</code></a>), to a fraction, and each carry moves the rings a depth step on. After the eighth, <code>new_ring</code> (<a href="source-level1.html#817f"><code>$817F</code></a>) moves every ring one sprite down and starts a new far ring in sprite 7, light blue and yellow in turn.</p>
+  <p>The nearest ring is sprites 3 and 4 together, its left and right edges, in frames <code>$B6</code> to <code>$BA</code>. The raster interrupt moves both sprites across on every line from tables of x positions, one table for each depth step (<code>near_x3_tables</code>, <a href="source-level1.html#8422"><code>$8422</code></a>), so the two thin edges draw a circle up to 264 lines tall (<code>near_ring_half</code>, <a href="source-level1.html#8472"><code>$8472</code></a>). How far that ring is from the centre decides whether the <a href="gameplay.html#level1">drop-ship</a> crashes.</p>
+</section>
+
+<section id="queen">
+  <p class="fig">03 · The Queen</p>
+  <h2 class="t">The Queen is five sprites, and two of them draw her twice</h2>
+  <p class="lede">The Queen fight shows two large figures, the power loader and the Queen, with only eight sprites. The loader takes four and the Queen the other four, and the Queen's legs come from re-using two of hers lower down the screen.</p>
+  <p>At line 5, <code>raster_top</code> (<a href="source-queen.html#8270"><code>$8270</code></a>) places the loader's claws and arms in sprites 0 to 3, in frames <code>$0603</code> and <code>$0603</code> plus <code>$1C</code>, at the heights of the two arms. Sprites 4 to 7 are her head (frames <code>$05</code> and <code>$06</code>, or <code>$20</code> and <code>$21</code>, chosen at random), her body (<code>body_frames</code>, <a href="source-queen.html#823a"><code>$823A</code></a>), and her tail (<code>tail_frames</code>, <a href="source-queen.html#8234"><code>$8234</code></a>). Once the beam is past them, <code>raster_queen</code> (<a href="source-queen.html#8347"><code>$8347</code></a>) moves sprites 5 and 6 down and gives them her legs' frames (<code>lower_frames</code>, <a href="source-queen.html#8621"><code>$8621</code></a>). The loader's sprites are multicolour and yellow, and hers are single-colour black.</p>
+  <p>Every eight frames <code>swing_tick</code> (<a href="source-queen.html#8625"><code>$8625</code></a>) moves the tail and the legs a step on. At line <code>$DF</code>, <code>raster_floor</code> points every sprite at the blank frame 4, and while she reels from a strike it shakes the screen by a line and a pixel on odd frames.</p>
+</section>
+
+<section id="lanes">
+  <p class="fig">04 · The operations room</p>
+  <h2 class="t">Ten aliens in five lanes come from four sprites</h2>
+  <p class="lede">Level 3 has two aliens in each of five lanes, ten in all, each drawn in two halves. That would take twenty sprites. The game uses four, re-placed for each lane as the beam moves down the screen.</p>
+  <p><code>raster_lane_a</code> (<a href="source-level3.html#81ab"><code>$81AB</code></a>) puts the upper halves of a lane's two aliens in sprites 0 and 1, and <code>raster_lane_b</code> (<a href="source-level3.html#81ed"><code>$81ED</code></a>), six lines further down, the lower halves in sprites 4 and 5, then sets the next call <code>$0E</code> lines on for the next lane. The upper halves step through <code>frames_upper</code> (<a href="source-level3.html#89c3"><code>$89C3</code></a>) every eight frames. A burning alien shows <code>burn_upper</code> and <code>burn_lower</code> instead (<a href="source-level3.html#8a0b"><code>$8A0B</code></a>). The flame thrower is sprite 2, flickering between yellow and orange from <code>flame_colours</code> (<a href="source-level3.html#8a27"><code>$8A27</code></a>).</p>
+</section>
+
+<section id="objects">
+  <p class="fig">05 · The complex</p>
+  <h2 class="t">Levels 2 and 5 animate through the engine's object code</h2>
+  <p class="lede">The APC rescue and the Newt rescue share their sprites byte for byte: 112 frames of marines walking four ways, gun flashes, and aliens. They are the two stages that drive their sprites through the engine's shared object code, and they hand it the same animation tables, each from its own file.</p>
+  <p>A stage hands the engine 18 table addresses from the start of its file, and <code>link_object_tables</code> (<a href="source-engine.html#0dc1"><code>$0DC1</code></a>) writes them into the object code. For each of level 2's thirty animations the tables give a first frame (<code>anim_frame</code>, <a href="source-level2.html#93e4"><code>$93E4</code></a>), a last step, a speed, flags, and a list of frames counted from the first (<code>frame_lists</code>, <a href="source-level2.html#9391"><code>$9391</code></a>). <code>part_frames_tick</code> (<a href="source-engine.html#0fa4"><code>$0FA4</code></a>) adds the speed to a fraction each pass and takes a step on each carry, and <code>frame_step</code> (<a href="source-engine.html#1041"><code>$1041</code></a>) reads the flags: one bit plays the animation once, another swings it to and fro. Both levels' tables decode to the same thirty animations, which the viewer above plays from level 2's copy.</p>
+</section>
+
+<section id="screens">
+  <p class="fig">06 · The screens</p>
+  <h2 class="t">The pictures are bitmaps, packed in the stage files</h2>
+  <p class="lede">Most stages show a high-resolution or multicolour bitmap in video bank 1, with the screen matrix at <code>$5C00</code> and the bitmap at <code>$6000</code>. Each picture is stored packed in its stage's file and unpacked into place when the stage starts.</p>
+  <p><code>unpack_inline</code> (<a href="source-engine.html#129d"><code>$129D</code></a>) takes the packed data's address and length from the four bytes after its call. In the data, <code>$80</code> and two bytes set where the next bytes go, a byte from <code>$81</code> up repeats the next byte (its low seven bits plus one) times, and a byte below <code>$80</code> copies the next bytes as they are. The briefing's picture of the marines, for one, is 5,325 bytes packed (<code>scene_picture</code>, <a href="source-intro.html#9810"><code>$9810</code></a>). The text between the levels is printed into the same bitmap with the engine's own font, which is why the story pages and the pictures share one screen.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* al-graphics: every sprite frame of every stage, from the listings */
+(() => {
+  const C = window.C64, PAL = C.PAL;
+  // An animation: seq() gives its frames from the stage's memory; fps is frames of the
+  // game per step (50 a second on a PAL machine); mode 'loop', 'swing' or 'once'.
+  const tbl = (a, n) => m => Array.from(m.bytes(a, n));
+  const STAGES = [
+    { name: 'Title and briefing: the engine\'s sprites', part: 'engine', lo: 0xC000, hi: 0xC200, bank: 0xC000, bg: 0,
+      note: 'Eight shapes the engine keeps at $C000 and copies to frames 0 to 7 at $4000 for the title, the briefing, and the lift scene. The briefing\'s glove is frames 3 and 5, each with its outline in the frame after.',
+      presets: [{ n: 'The glove: white', col: 1 }, { n: 'The glove\'s outline: dark grey', col: 11 }, { n: 'Multicolour', mc: 1, col: 1, mc0: 11, mc1: 12 }],
+      auto: f => (f === 4 || f === 6) ? 1 : (f === 1 || f === 2 || f === 7) ? 2 : 0, anims: [] },
+    { name: 'Level 1: the drop-ship', part: 'level1', lo: 0xED80, hi: 0xF2C0, bank: 0xC000, bg: 0,
+      note: 'Sprites in video bank 3. The rings take a larger frame at each of eight depth steps; at the PAL speed of $50 a frame, a step comes about every three frames.',
+      presets: [{ n: 'Rings: light blue', col: 14 }, { n: 'Rings: yellow', col: 7 }, { n: 'The indicator: cyan', col: 3 }, { n: 'White (colour not read)', col: 1 }],
+      auto: f => f <= 0xBF ? 0 : f === 0xC0 ? 2 : 3,
+      anims: [
+        { n: 'The far ring, sprite 7', seq: tbl(0x8402, 8), fps: 256 / 0x50, src: 0x8402 },
+        { n: 'The middle ring, sprite 6', seq: tbl(0x840A, 8), fps: 256 / 0x50, src: 0x840A },
+        { n: 'The near ring, sprite 5', seq: tbl(0x8412, 8), fps: 256 / 0x50, src: 0x8412 },
+        { n: 'The nearest ring\'s edges, sprites 3 and 4', seq: tbl(0x841A, 8), fps: 256 / 0x50, src: 0x841A },
+      ] },
+    { name: 'Levels 2 and 5: the complex', part: 'level2', lo: 0x4000, hi: 0x5C00, bank: 0x4000, bg: 0, objects: true,
+      note: 'The same 112 frames in both levels, multicolour. The animations are decoded from the object tables at the start of level 2\'s file, and play at the speed each gives, a fraction of a step every pass of two frames.',
+      presets: [{ n: 'Level 2\'s marine: brown', mc: 1, col: 9, mc0: 11, mc1: 10 }, { n: 'Level 5\'s Ripley: blue', mc: 1, col: 6, mc0: 11, mc1: 10 }, { n: 'Level 5\'s aliens: grey', mc: 1, col: 12, mc0: 11, mc1: 10 }],
+      anims: [] },
+    { name: 'Level 3: the operations room', part: 'level3', lo: 0x4000, hi: 0x4D00, bank: 0x4000, bg: 12,
+      note: 'Single-colour sprites. The aliens\' upper halves step every eight frames; the other animations\' rates were not traced, and play here at a step every eight frames.',
+      presets: [{ n: 'The marine: white', col: 1 }, { n: 'The aliens: black', col: 0 }, { n: 'The flame: yellow', col: 7 }],
+      auto: f => (f >= 0x1B && f <= 0x1E) ? 0 : (f >= 0x1F && f <= 0x25) ? 2 : 1,
+      anims: [
+        { n: 'An alien\'s upper half', seq: tbl(0x89C3, 32), fps: 8, src: 0x89C3 },
+        { n: 'Its lower half', seq: tbl(0x89F3, 24), fps: 8, src: 0x89F3 },
+        { n: 'Burning, upper', seq: tbl(0x8A0B, 4), fps: 8, src: 0x8A0B },
+        { n: 'Burning, lower', seq: tbl(0x8A0F, 4), fps: 8, src: 0x8A0F },
+        { n: 'The marine walking', seq: tbl(0x8A13, 4), fps: 8, src: 0x8A13 },
+        { n: 'The flame, fire released', seq: tbl(0x8A17, 8), fps: 8, src: 0x8A17 },
+        { n: 'The flame, fire held', seq: tbl(0x8A1F, 8), fps: 8, src: 0x8A1F },
+      ] },
+    { name: 'Level 4: the air ducts', part: 'level4', lo: 0x4000, hi: 0x4400, bank: 0x4000, bg: 0,
+      note: 'Frame $00 is the squad\'s marines, $01 its shadow, $02 the alien and $03 to $05 the alien appearing and fading, then the grenade\'s blast. Their timing was not traced, so they are shown as stills.',
+      presets: [{ n: 'The aliens: light red', col: 10 }, { n: 'The marines: white', col: 1 }, { n: 'The shadow: green, multicolour', mc: 1, col: 5, mc0: 9, mc1: 11 }],
+      auto: f => f === 0 ? 1 : f === 1 ? 2 : 0, anims: [] },
+    { name: 'The lift scene', part: 'level6', lo: 0x41C0, hi: 0x4200, bank: 0x4000, bg: 0,
+      note: 'One shape of its own, the lamp the lift passes, multicolour, in all eight sprites.',
+      presets: [{ n: 'The lamp', mc: 1, col: 12, mc0: 11, mc1: 15 }], anims: [] },
+    { name: 'Level 6: the Queen', part: 'queen', lo: 0x4000, hi: 0x4900, bank: 0x4000, bg: 12,
+      note: 'The loader\'s claws and arms (frames $00 to $03 and $1C to $1F) are multicolour yellow; the Queen\'s frames are single-colour black.',
+      presets: [{ n: 'The loader: yellow, multicolour', mc: 1, col: 7, mc0: 0, mc1: 6 }, { n: 'The Queen: black', col: 0 }],
+      auto: f => (f <= 3 || (f >= 0x1C && f <= 0x1F)) ? 0 : 1,
+      anims: [
+        { n: 'Her body, sprite 5', seq: tbl(0x823A, 6), fps: 8, src: 0x823A },
+        { n: 'Her tail', seq: tbl(0x8234, 6), fps: 8, src: 0x8234 },
+        { n: 'Her legs', seq: tbl(0x8621, 4), fps: 8, src: 0x8621 },
+      ] },
+  ];
+
+  // Level 2's thirty animations from its object tables: the word at $8004 + 2(k-1) is table k.
+  function objectAnims(m) {
+    const w = a => m.ram[a] | m.ram[a + 1] << 8;
+    const [t6, t7, t8, t9, t10, t11] = [6, 7, 8, 9, 10, 11].map(k => w(0x8004 + 2 * (k - 1)));
+    const out = [];
+    for (let i = 0; i < t8 - t7; i++) {
+      const first = m.ram[t7 + i], last = m.ram[t8 + i], speed = m.ram[t11 + i], flags = m.ram[t6 + i];
+      const list = m.ram[t9 + i] | m.ram[t10 + i] << 8;
+      if (!speed || !last) continue;
+      const seq = [];
+      for (let s = 0; s <= last; s++) seq.push((first + (list ? m.ram[list + s] : s)) & 255);
+      out.push({ n: 'Animation ' + i, seq: () => seq, fps: 2 * 256 / speed, src: t7 + i,
+                 mode: flags & 0x10 ? 'swing' : flags & 0x20 ? 'once' : 'loop' });
+    }
+    return out;
+  }
+
+  const sel = document.getElementById('al-stage'), colSel = document.getElementById('al-col');
+  const animsEl = document.getElementById('al-anims'), sheetEl = document.getElementById('al-sheet');
+  const hex = (v, n) => v.toString(16).toUpperCase().padStart(n, '0');
+  let playing = [], stage = null, mem = null, t0 = performance.now();
+  STAGES.forEach((s, i) => sel.add(new Option(s.name, i)));
+
+  function presetFor(f) {
+    const v = colSel.value;
+    return stage.presets[v === 'auto' ? stage.auto(f) : +v];
+  }
+  function draw(cv, f) {
+    const p = presetFor(f), ctx = C.canvas(cv, 24 * 3, 21 * 3);
+    ctx.fillStyle = PAL[stage.bg]; ctx.fillRect(0, 0, cv.width, cv.height);
+    const a = stage.bank + 64 * f;
+    const data = mem.bytes(a, 63);
+    if (p.mc) C.drawSpriteMC(ctx, data, 0, 0, 3, PAL[p.col], PAL[p.mc0], PAL[p.mc1]);
+    else C.drawSprite(ctx, data, 0, 0, 3, PAL[p.col]);
+  }
+  function cell(parent, label, href) {
+    const el = document.createElement(href ? 'a' : 'figure');
+    el.className = 'al-cell'; if (href) el.href = href;
+    const cv = document.createElement('canvas'); cv.className = 'al-canvas';
+    const cap = document.createElement('span'); cap.textContent = label;
+    el.append(cv, cap); parent.append(el); return { cv, cap };
+  }
+  const srcHref = a => 'source-' + stage.part + '.html#' + hex(a, 4).toLowerCase();
+
+  function render() {
+    animsEl.textContent = ''; sheetEl.textContent = ''; playing = [];
+    const anims = stage.objects ? objectAnims(mem) : stage.anims;
+    const used = new Set();
+    for (const an of anims) {
+      const seq = an.seq(mem); seq.forEach(f => used.add(f));
+      const c = cell(animsEl, an.n, srcHref(an.src));
+      c.cv.setAttribute('aria-label', an.n + ', frames ' + seq.map(f => '$' + hex(f, 2)).join(' '));
+      playing.push({ cv: c.cv, seq, fps: an.fps, mode: an.mode || 'loop', last: -1 });
+    }
+    const rest = [];
+    for (let a = stage.lo; a < stage.hi; a += 64) {
+      const f = (a - stage.bank) >> 6;
+      if (used.has(f)) continue;
+      if (mem.bytes(a, 63).some(b => b)) rest.push(f);
+    }
+    document.getElementById('al-sheet-head').textContent = anims.length
+      ? (rest.length ? 'The frames no animation above uses (' + rest.length + '):' : 'Every frame the stage stores is in an animation above.')
+      : 'Every frame the stage stores (' + rest.length + '):';
+    for (const f of rest) draw(cell(sheetEl, '$' + hex(f, 2), srcHref(stage.bank + 64 * f)).cv, f);
+    tick();
+  }
+  function tick() {
+    const frames = (performance.now() - t0) / 20;
+    for (const p of playing) {
+      const n = p.seq.length;
+      let step = Math.floor(frames / p.fps);
+      if (p.mode === 'swing' && n > 1) { step %= 2 * n - 2; if (step >= n) step = 2 * n - 2 - step; }
+      else if (p.mode === 'once') step = Math.min(step % (n + 12), n - 1);
+      else step %= n;
+      if (step !== p.last) { p.last = step; draw(p.cv, p.seq[step]); }
+    }
+  }
+  (function loop() { tick(); requestAnimationFrame(loop); })();
+
+  function choose(i) {
+    stage = STAGES[i];
+    colSel.textContent = '';
+    if (stage.auto) colSel.add(new Option('As the game colours them', 'auto'));
+    stage.presets.forEach((p, k) => colSel.add(new Option(p.n, k)));
+    document.getElementById('al-note').textContent = stage.note;
+    C.load('parts/' + stage.part + '/listing.json').then(m => { mem = m; render(); });
+  }
+  sel.addEventListener('change', () => choose(+sel.value));
+  colSel.addEventListener('change', render);
+  choose(0);
+})();
+</script>

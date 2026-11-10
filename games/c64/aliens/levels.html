@@ -1,0 +1,107 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/aliens-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The two levels with places to get lost in: the atmosphere processor's complex of rooms, which the APC rescue and the Newt rescue share, and the air duct maze.</p>
+</header>
+<main class="wrap" data-part="level2">
+<section id="complex">
+  <p class="fig">01 · The complex</p>
+  <h2 class="t">One map of 256 rooms serves two levels</h2>
+  <p class="lede">The APC rescue and the Newt rescue take place in the same 16 by 16 grid of rooms. Each level keeps its own copy of the map, byte for byte the same, and draws only the room the marine or Ripley stands in.</p>
+  <div class="plate">
+    <div id="al-complex" class="al-scroll"></div>
+    <p class="al-out" id="al-room">Point at a room to read its byte.</p>
+    <p class="cap">Drawn from <code>room_map</code> (<a href="source-level2.html#9498"><code>$9498</code></a> in level 2, <a href="source-level5.html#95fb"><code>$95FB</code></a> in level 5). A line between two rooms is a doorway. <b>APC</b> is the APC room, <b>L</b> the lift, <b>N</b> Newt's room, and <b>Q</b> the Queen's chamber. Hatched rooms have bit 5 set. Rooms drawn with a dashed outline have bit 7 set, and no marine starts the APC rescue in one.</p>
+  </div>
+  <p>Each room is one byte. Its low four bits are its doorways: far, right, near, and left, in that order. Walking through the right doorway adds 1 to the room number and the left one takes 1 away (<code>exit_right</code>, <a href="source-level2.html#8698"><code>$8698</code></a>), and the near and far doorways add and take away 16 (<code>exit_near</code>, <a href="source-level2.html#872a"><code>$872A</code></a>). A byte of <code>$80</code> or 0 is no room at all. Bit 7 keeps the marines out of a room at the start of the APC rescue: <code>random_room</code> (<a href="source-level2.html#8984"><code>$8984</code></a>), which places each of them, tries again when it draws a room with that bit set. All of the rooms marked so lie in the map's lower left, the part the Newt rescue's Queen's chamber is in.</p>
+  <p>The screen shows one room at a time, in perspective, built from four quarters of characters. <code>draw_room</code> (<a href="source-level2.html#82a2"><code>$82A2</code></a>) picks one of 32 views by the room's doorways, so every room with the same doorways looks the same. Bit 5 picks the second set of 16 views, and in the Newt rescue it also lets a second alien into the room (<code>aliens_enter</code>, <a href="source-level5.html#8824"><code>$8824</code></a>). Bit 4 marks the three rooms with a view of their own: the APC (room <code>$BE</code>), the lift (<code>$56</code>), and the Queen's chamber (<code>$C3</code>).</p>
+  <p>In the <a href="gameplay.html#level2">APC rescue</a>, a marine in room <code>$BE</code> is safe (<code>marines_group</code>, <a href="source-level2.html#8905"><code>$8905</code></a>). In the <a href="gameplay.html#level5">Newt rescue</a>, Ripley starts in the lift room, Newt waits in room <code>$C1</code>, and the chance of meeting an alien grows with the room's number, from <code>$40</code> plus half the number, out of 256.</p>
+</section>
+
+<section id="maze">
+  <p class="fig">02 · The air ducts</p>
+  <h2 class="t">The duct maze is 32 cells wide, and a third of it fits on screen</h2>
+  <p class="lede">Level 4's maze is a map of 32 by 8 cells. The screen holds ten cells across, and the view scrolls sideways after the squad.</p>
+  <div class="plate">
+    <div id="al-maze" class="al-scroll"></div>
+    <p class="al-out" id="al-cell">Point at a cell to read its byte.</p>
+    <p class="cap">Drawn from <code>maze_map</code> (<a href="source-level4.html#9430"><code>$9430</code></a>). Each line is a duct. A cell drawn with a gap in one of its ducts is a crossing, where the other duct passes over it. Shaded cells use a tile of their own. <b>EXIT</b> marks the way out, below column 29.</p>
+  </div>
+  <p>A cell's low four bits are the ways open from it: 1 down, 2 left, 4 up, and 8 right. A cell with only 2 or only 8 would be a dead end facing one way, and the game uses those two values for crossings instead (<code>cell_open</code>, <a href="source-level4.html#8d7a"><code>$8D7A</code></a>): in a <code>$02</code> cell a sprite going up or down passes behind the duct, and in an <code>$08</code> cell one going left or right does. A squad that enters a crossing can only go straight on.</p>
+  <p><code>column_build</code> (<a href="source-level4.html#86d9"><code>$86D9</code></a>) builds the screen a column at a time from each cell's tile, four characters wide and three deep, and writes a grid label of a letter and a number into blank tops of cells. The squad wins when it reaches x <code>$0740</code>, y <code>$BE</code>, the duct out at the bottom of column 29 (<a href="source-level4.html#8198"><code>$8198</code></a>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* al-maps: the complex and the duct maze, drawn from the listings' map bytes */
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const hex = (v, n) => v.toString(16).toUpperCase().padStart(n, '0');
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+  const INK = 'var(--ink)', MUTE = 'var(--ink-mute)';
+
+  function complex(m) {
+    const S = 40, P = 6, map = m.bytes(m.sym('room_map'), 256);
+    const svg = el('svg', { viewBox: `0 0 ${16 * S} ${16 * S}`, width: 16 * S, role: 'img', 'aria-label': 'Map of the 256-room complex' });
+    svg.style.maxWidth = '100%'; svg.style.height = 'auto';
+    const defs = el('defs', {}, svg), pat = el('pattern', { id: 'al-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#9aa0a8', 'stroke-width': 2 }, pat);
+    const marks = { 0xBE: 'APC', 0x56: 'L', 0xC1: 'N', 0xC3: 'Q' };
+    const out = document.getElementById('al-room');
+    for (let r = 0; r < 256; r++) {
+      const b = map[r], x = (r & 15) * S, y = (r >> 4) * S;
+      if (!(b & 0x7F)) continue;
+      const g = el('g', {}, svg);
+      el('rect', { x: x + P, y: y + P, width: S - 2 * P, height: S - 2 * P, rx: 3, fill: b & 0x20 ? 'url(#al-hatch)' : 'var(--surface-2)', stroke: INK, 'stroke-width': 1.5, 'stroke-dasharray': b & 0x80 ? '3 2' : 'none' }, g);
+      const c = S / 2, w = 2.5;
+      if (b & 1) el('line', { x1: x + c, y1: y, x2: x + c, y2: y + P, stroke: INK, 'stroke-width': w }, g);
+      if (b & 2) el('line', { x1: x + S - P, y1: y + c, x2: x + S, y2: y + c, stroke: INK, 'stroke-width': w }, g);
+      if (b & 4) el('line', { x1: x + c, y1: y + S - P, x2: x + c, y2: y + S, stroke: INK, 'stroke-width': w }, g);
+      if (b & 8) el('line', { x1: x, y1: y + c, x2: x + P, y2: y + c, stroke: INK, 'stroke-width': w }, g);
+      if (marks[r]) el('text', { x: x + c, y: y + c + 4, 'text-anchor': 'middle', 'font-size': marks[r].length > 1 ? 10 : 13, 'font-weight': 700, fill: INK, 'font-family': 'IBM Plex Mono, monospace' }, g).textContent = marks[r];
+      const doors = ['far', 'right', 'near', 'left'].filter((_, i) => b & (1 << i)).join(', ') || 'none';
+      const say = () => { out.textContent = `Room $${hex(r, 2)}: byte $${hex(b, 2)}, doorways ${doors}` + (b & 0x10 ? ', a view of its own' : '') + (b & 0x20 ? ', bit 5 set' : '') + (b & 0x80 ? ', bit 7 set' : '') + '.'; };
+      g.addEventListener('mouseenter', say); g.addEventListener('click', say);
+      el('title', {}, g).textContent = 'Room $' + hex(r, 2);
+    }
+    document.getElementById('al-complex').append(svg);
+  }
+
+  function maze(m) {
+    const S = 30, map = m.bytes(m.sym('maze_map'), 256), W = 32 * S, H = 8 * S + 30;
+    const svg = el('svg', { viewBox: `0 0 ${W + 24} ${H}`, width: W + 24, role: 'img', 'aria-label': 'Map of the air duct maze' });
+    svg.style.maxWidth = 'none'; svg.style.height = 'auto';
+    const out = document.getElementById('al-cell'), w = 5;
+    for (let i = 0; i < 256; i++) {
+      const b = map[i], cx = (i & 31) * S + S / 2, cy = (i >> 5) * S + S / 2, d = b & 15;
+      const g = el('g', {}, svg);
+      el('rect', { x: cx - S / 2, y: cy - S / 2, width: S, height: S, fill: b & 0x30 ? 'var(--surface-2)' : 'transparent', stroke: 'var(--line-soft)' }, g);
+      const arm = (dx, dy, dash) => el('line', { x1: cx, y1: cy, x2: cx + dx * S / 2, y2: cy + dy * S / 2, stroke: INK, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-dasharray': dash ? '4 6' : 'none' }, g);
+      if (d === 2 || d === 8) {           // a crossing: both ducts, the one passing under drawn broken
+        arm(1, 0, d === 8); arm(-1, 0, d === 8); arm(0, 1, d === 2); arm(0, -1, d === 2);
+      } else {
+        if (d & 1) arm(0, 1); if (d & 2) arm(-1, 0); if (d & 4) arm(0, -1); if (d & 8) arm(1, 0);
+      }
+      const ways = d === 2 ? 'a crossing, the up-down duct passing under' : d === 8 ? 'a crossing, the left-right duct passing under'
+        : ['down', 'left', 'up', 'right'].filter((_, k) => d & (1 << k)).join(', ') || 'none';
+      const say = () => { out.textContent = `Column ${i & 31}, row ${i >> 5}: byte $${hex(b, 2)}, ${ways}` + (b & 0x30 ? ', a tile of its own' : '') + '.'; };
+      g.addEventListener('mouseenter', say); g.addEventListener('click', say);
+    }
+    el('text', { x: 29 * S + S / 2, y: 8 * S + 22, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: INK, 'font-family': 'IBM Plex Mono, monospace' }, svg).textContent = 'EXIT';
+    el('line', { x1: 29 * S + S / 2, y1: 8 * S, x2: 29 * S + S / 2, y2: 8 * S + 8, stroke: INK, 'stroke-width': w }, svg);
+    for (let c = 0; c < 32; c += 4) el('text', { x: c * S + 2, y: 8 * S + 22, 'font-size': 10, fill: MUTE, 'font-family': 'IBM Plex Mono, monospace' }, svg).textContent = c;
+    document.getElementById('al-maze').append(svg);
+  }
+
+  C64.load('parts/level2/listing.json').then(complex);
+  C64.load('parts/level4/listing.json').then(maze);
+})();
+</script>

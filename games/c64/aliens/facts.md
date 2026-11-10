@@ -133,8 +133,11 @@ meets her as it moves towards her strikes her: she slows (`$0497`,
 (`$0497` = `$27`). Fire grips her; holding fire opens the airlock, and
 letting go with her over x `$30`-`$7F` drops her in (`grip_tick`,
 `$846E`). The ending (`$88DA`) shows Bishop's picture, the hypersleep
-text and "The End", unless a stage was skipped with the trainer's key
-(`$0202`), when it goes straight to the wait for RETURN.
+text and "The End", unless a stage was skipped with the game's own
+up-arrow and RESTORE (`stage_abort`, `$08AC`, which sets `$0202`), when
+it goes straight to the wait for RETURN. After such a skip every status
+code shows as five asterisks (`make_code`, `$1720`). The trainer's skip,
+the Commodore key (`skip_pressed`, `$3B1E`), clears `$0202` instead.
 
 ## Sound
 
