@@ -20,8 +20,11 @@ $6B00" is the engine's routine at $6B00, "cliff $B700" the cliff's.
 Side A of Brøderbund's original disk, 1984, as 4am copied it to WOZ for
 A Woz A Day (`orientation.md`, "The image"). There is no DOS and no file:
 the disk is the game's own format, twelve 256-byte sectors a track, read
-by a loader of its own (engine $0300). Side B holds the same game with
-every picture upside down; it is not analysed.
+by a loader of its own (engine $0300). Side B holds the same game
+upside down: its engine and stages are side A's byte for byte but for the
+two tables of screen row addresses at $0800-$097F, which run bottom to
+top, and its castle picture is stored with its rows in reverse order
+(`orientation.md`, "Side B").
 
 ## Memory layout
 

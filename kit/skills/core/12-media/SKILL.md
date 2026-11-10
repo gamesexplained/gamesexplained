@@ -21,8 +21,12 @@ ledger, and its games need none: go on to the next skill.
 every image the contributor gave, each named as the game asks for it
 (`side1`), writes `media.json`: every file, every run of sectors the
 disk's map marks as used that no file holds, every bank of a cartridge,
-every block of a tape. An item several images hold byte for byte is
-listed once, and each starts `open`. The ledger keeps names, sizes and
+every block of a tape, and every track of a disk that has no catalog. An
+item several images hold byte for byte is listed once, and each starts
+`open`. A disk in a format of the game's own gives no bytes to a reader:
+the game's loader is the only program that can read it, so the
+platform's `steps` skill, "media", says how to record what the loader
+reads, and the scan takes the bytes from that. The ledger keeps names, sizes and
 hashes; the images stay in `work/`. `media.py <game dir>` prints what is
 open.
 

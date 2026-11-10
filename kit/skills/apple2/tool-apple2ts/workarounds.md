@@ -9,7 +9,8 @@ and "A slow host" below is for it.
 Measured on **Apple2TS 3.7.0** (the tag v3.7.0, commit c900979), in the kit's
 server (protocol 1), under Node 22.22.0 on Linux x86_64, on **20 October
 2026**: 49 passed, 0 failed, the II Plus's seven among them, in 8 seconds,
-the same in two runs. No
+the same in two runs; and under Node 22.23.4 on **10 November 2026**, with
+`disk-read-log` added: 50 passed, 0 failed. No
 check fails on that build, so there is no section for one. When a later
 build fails a check, add a section here named after it, with what to do
 instead, and delete the section when a build passes it again.

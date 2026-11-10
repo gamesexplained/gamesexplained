@@ -109,3 +109,37 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   else). The cast now uses $50 = 0, as the stages' set-up leaves it, the
   hero at column 10 standing, a guard at 31, Akuma at 30, Mariko at 11
   and the hawk at 19, which gives the screenshots' colours.
+
+## 10 November 2026, the media ledger and side B
+
+- The ledger had no reader for the Apple II, and this disk gives a reader
+  nothing: one 16-sector boot sector on track 0, and every other track in
+  the game's own format. A look at the tracks' fields between their sync
+  gaps showed marks that change from sector to sector (the loader's table
+  at $414C), so the format was not decoded a second time in Python: the
+  emulator was taught to keep what the game's loader stores while it
+  reads the drive (`reads`), and `kit/apple2/media.py` takes a track's
+  bytes from that log.
+- The first log kept every store near a drive read, and the loader's own
+  counters and zero-page swap filled it with one-byte runs. Runs that end
+  below $0200 are now left out by the reader, and a single byte that is
+  written again is dropped.
+- Tracks 12 and 20 stayed open at 2,048 of 3,072 bytes. Each track's
+  twelve sectors go to two places ($1C00 and $A000 onwards), and the
+  title and the cliff hold the same bytes at $1C00-$1FFF, as do the
+  palace and the dungeon, so the ledger credited the $1C00 run to the
+  earlier part and found the rest in the later one. The ledger now counts
+  an item's pieces in every part that holds them.
+- Side B was scanned to see what "upside down" is made of. It is 384
+  bytes of row addresses and one picture; the rest is side A. Booted, it
+  shows the title, the castle and the cliff upside down
+  (`reference/side-b-*.png`).
+- Side B's palace load stopped with the head on track 18 and never came
+  back: the loader was reading one sector again and again. Tracks 17, 18
+  and 19 each have a sector that does not read in this copy. Tracks 20-22 were read by entering the
+  loader at $501D with the half track and the table row set by hand; a
+  first try at track 18's later sectors the same way timed out.
+- The four sectors the loader reads into page $40 and discards were
+  looked at because the ledger listed them. On side B one holds code that
+  prints `FREE=`: a leftover of a patched DOS 3.3 on the disk the side
+  was mastered from.

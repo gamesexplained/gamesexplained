@@ -170,20 +170,50 @@ class Finder:
                         if len(hits) < 50:
                             hits.append((pid, a - 15))
 
-    def find(self, data):
-        """(bytes equal, part id, address) of the best place, or (0, None, None)."""
+    def places(self, data, at=None):
+        """{part id: (bytes equal, address)}: the best place for the bytes in each part's listing
+        that the pieces vote for, and `at`, the address the bytes are known to load to, in
+        every part."""
         votes = Counter()
         for off in range(0, len(data) - 15, 8):
             for pid, s in self.index.get(bytes(data[off:off + 16]), ()):
                 votes[(pid, s - off)] += 1
-        best = (0, None, None)
-        for (pid, base), _ in votes.most_common(6):
+        tries = [k for k, _ in votes.most_common(6)]
+        if at is not None:
+            tries += [(pid, at) for pid in self.parts]
+        best = {}
+        for pid, base in tries:
             mem, mask = self.parts[pid]
             n = sum(1 for i, x in enumerate(data)
                     if 0 <= base + i < len(mem) and mask[base + i] and mem[base + i] == x)
+            if n > best.get(pid, (0, None))[0]:
+                best[pid] = (n, base)
+        return best
+
+    def find(self, data):
+        """(bytes equal, part id, address) of the best place, or (0, None, None)."""
+        best = (0, None, None)
+        for pid, (n, base) in self.places(data).items():
             if n > best[0]:
                 best = (n, pid, base)
         return best
+
+    def pieces(self, pieces):
+        """The same for an item that reaches memory in pieces (a track's sectors or the runs a
+        loader stored), each (address or None, bytes): every piece is looked for on its own, and
+        the part that holds the most of them answers, at the place of its first piece. Parts that
+        share code each count the pieces they hold, so the shared piece does not go to one part
+        and the rest of the item to another."""
+        held, first = Counter(), {}
+        for at, data in pieces:
+            for pid, (n, base) in self.places(data, at).items():
+                held[pid] += n
+                first.setdefault(pid, base)
+        if not held:
+            return (0, None, None)
+        pid, n = held.most_common(1)[0]
+        return (n, pid, first[pid])
+
 
 
 # --- scan ------------------------------------------------------------------------------------
@@ -240,16 +270,17 @@ def scan(gdir, images):
             else:
                 item["answer"] = "open"
             item["_data"] = it["data"]
+            item["_pieces"] = list(it.get("pieces") or ())
             led["items"].append(item)
             if it["raw"]:
                 by_hash[h] = item
     find = Finder(gdir)
     for item in led["items"]:
-        data = item.pop("_data")
+        data, pieces = item.pop("_data"), item.pop("_pieces")
         if item["answer"] != "open" or len(data) < 16:
             continue
         item.pop("near", None)
-        n, pid, base = find.find(data)
+        n, pid, base = find.pieces(pieces) if pieces else find.find(data)
         if not n:
             continue
         where = {"at": hexa(base), "matched": n}
@@ -322,17 +353,18 @@ def counts(led):
 def summary(gdir):
     """What the About tab says: None for a game with no media.json, else {"images", "files",
     "runs", "banks", "blocks" (a tape's with no header), "stretches" (of a tape, that no reader
-    decodes), "copies" (items left out because another holds the same bytes), "count" (by answer), "open", "unused" (labels), "unread", "missing"}."""
+    decodes), "tracks" (of a disk listed track by track), "copies" (items left out because another holds the same bytes), "count" (by answer), "open", "unused" (labels), "unread", "missing"}."""
     led = load(gdir)
     if led is None:
         return None
     many = len(led["images"]) > 1
     lab = lambda i: f"{i['label']} ({i['image']})" if many else i["label"]
-    kinds = Counter(next((k for k in ("file", "bank", "block", "pulses") if k in i["place"]), "run")
+    kinds = Counter(next((k for k in ("file", "bank", "block", "pulses", "sectors", "track") if k in i["place"]), "run")
                     for i in led["items"])
+    kinds["run"] += kinds.pop("sectors", 0)       # a run of sectors names its track too
     return {"images": Counter(i["what"] for i in led["images"]),
             "files": kinds["file"], "runs": kinds["run"], "banks": kinds["bank"], "blocks": kinds["block"],
-            "stretches": kinds["pulses"],
+            "stretches": kinds["pulses"], "tracks": kinds["track"],
             "copies": sum(len(i.get("also", ())) for i in led["items"]),
             "count": counts(led),
             "open": [lab(i) for i in led["items"] if i["answer"] == "open"],

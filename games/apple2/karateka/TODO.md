@@ -23,7 +23,25 @@ Tier: Silver. Coverage is 100 % in all six parts (84,224 bytes).
   comments that said the same were corrected, but the rate says more
   remain.
 
+## The pages
+
+- Side B is on no page: that the game upside down is side A with two
+  tables of 192 row addresses reversed and one picture stored upside
+  down, and the piece of a patched DOS 3.3 left in a sector the game
+  throws away (`orientation.md`, "Side B"). Both belong on Discoveries.
+- The castle picture (tracks 4-6) is drawn on no page; the Graphics tab
+  could show it.
+
+## The media
+
+- `kit/apple2/media.py` lists a disk by its tracks. A DOS 3.3 or ProDOS
+  disk's files are not listed by name.
+
 ## Open questions
+
+- Whether Brøderbund's side B had the three sectors that do not read on
+  tracks 17-19 of this copy, or the copy got them (`orientation.md`,
+  "Side B"). Another copy of side B would say.
 
 - Which key, if any, once ran the handler at engine $7742 that leaves the
   opponent one arrow.

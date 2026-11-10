@@ -43,7 +43,7 @@ A check fails for what the machine does, never for how fast the host runs it: co
 with the test program's own counters, and the host's speed is reported on lines of its own, NOTEs
 when it is slow, which fail nothing.
 """
-import json, os, random, subprocess, sys, threading, time, traceback
+import base64, json, os, random, subprocess, sys, threading, time, traceback
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -704,6 +704,24 @@ def p_disk(m):
           "reach the end at the same cycle",
           f"ended on {ends[0][0]} at cycle {ends[0][1]}, then {ends[1][1]}; "
           f"sectors {'all right' if not wrong else 'WRONG: ' + ', '.join(map(str, wrong))}")
+
+    # The boot ROM stores each data nibble's six bits as it reads them and adds the low two bits
+    # afterwards, with the drive left alone: the log holds the first, which shows the window.
+    m.reads("start")
+    m.boot(until=DONE, seconds=20)
+    log = m.reads("stop")
+    seen = bytearray(0x1000)
+    for x in log["runs"]:
+        if x["track"] == 0 and x["address"] >= 0x0800 and x["address"] + x["length"] <= 0x1800:
+            seen[x["address"] - 0x0800:x["address"] - 0x0800 + x["length"]] = base64.b64decode(x["data"])
+    elsewhere = sorted({x["track"] for x in log["runs"] if x["track"] != 0})
+    sixes = bytes(b >> 2 for b in want)
+    check("disk-read-log", bytes(seen) == sixes and not elsewhere and not m.status()["reads"],
+          "the read log has what the boot ROM stored while it read track 0, the top six bits of each of the 4,096 "
+          "bytes at the address it went to, and nothing stored after the reading or from another track",
+          f"{len(log['runs'])} runs of {log['min']} bytes or more; $0800-$17FF "
+          f"{'as read' if bytes(seen) == sixes else 'DIFFERS'}"
+          + (f"; runs from tracks {elsewhere}" if elsewhere else ""))
 
     total = ends[0][1]
     mid = snap_path("emutest_disk")

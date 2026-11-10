@@ -13,8 +13,8 @@ collection, item `wozaday_Karateka`. It is a copy of Brøderbund's original
 disk, side A, made by 4am with Passport.py on 14 August 2018. Copied into
 `work/` as `karateka.woz`. The same zip holds side B
 (`Karateka side B.woz`, SHA-1 `58c3cf8c66c48eac9d0602a3a5437b03577edbe9`),
-the copy of the game with every picture upside down; it is kept in `work/`
-as `karateka-side-b.woz` and was not analysed.
+the copy of the game that plays upside down, kept in `work/` as
+`karateka-side-b.woz` ("Side B", below).
 
 What the header says (`python3 kit/apple2/disk.py info work/karateka.woz`):
 WOZ 1, CRC good, write protected, cross-track synchronized, "fake bits
@@ -25,6 +25,17 @@ track 0 has a standard address field: one 16-sector field (D5 AA 96), the
 boot sector, and 13-sector-style fields (D5 AA B5) ending EF FF instead of
 DE AA. No other track has a field DOS could read, so there is no catalog
 and no file to extract: the game reads its own format (below).
+
+Neither side gives a reader its bytes, so `media.json` was made from what
+the game's own loader read. With the emulator running and the image in
+the drive, `reads start` records every byte the processor stores while it
+reads the drive, by the track the head is on; the game is booted, each of
+its six loads is asked for (`lda #n; jsr $0300` from a stub at $0400, n =
+$10, 1, 2, 3, 4, 0), and `reads stop` writes `<image>.reads.json` beside
+the image (`kit/skills/apple2/steps`, "media"). Side A's log holds 49
+runs of bytes and side B's 72. `python3 kit/scripts/media.py scan
+games/apple2/karateka side-a=work/karateka.woz
+side-b=work/karateka-side-b.woz` reads both.
 
 ## From power-on to play
 
@@ -125,6 +136,48 @@ thrown into $4000), copies it to the screen and then loads stage 1 over it.
 All five stages were loaded with the game's own loader (`lda #n; jsr
 $0300` from a stub at $0400, on `parts/title/work/play.json`) and each
 ended with its own stage number at $BFFD-$BFFF.
+
+## Side B
+
+Side B is side A with three things changed. Its 35 tracks were read
+through its own loader and set beside side A's (`media.json`): 24 are
+side A's byte for byte, and the differences are these.
+
+- **The row tables.** `row_lo` and `row_hi`, the engine's two tables of
+  the 192 hi-res rows' addresses at $0800-$097F, run from the bottom row
+  to the top. These 384 bytes are the only ones that differ in all that
+  could be read of the engine and the five stages (see the three damaged
+  sectors below), so everything the game draws through the tables comes
+  out upside down, and nothing else about the game changes: the same
+  code, pictures, tunes and text. `reference/side-b-title.png`,
+  `side-b-cliff.png`.
+- **The castle picture**, tracks 4-6, is stored upside down: side A's 192
+  rows in reverse order, each row's 40 bytes the same (0 of 7,680 bytes
+  differ once the rows are turned back). It has to be, because the game
+  copies it to the screen page for page (engine $03A5) without the row
+  tables. `reference/side-b-castle.png`.
+- **The loader's table of disk bytes** at $5600, on track 2.5, differs in
+  59 bytes: it starts with 32 disk byte values, the same 32 on both
+  sides in a different order, so each side is written in its own code.
+
+In this copy of side B, tracks 17, 18 and 19 each have one sector that
+does not read: the twelfth of track 17 gave different bytes in each of
+five readings, and the loader never got past the ninth of track 18 or
+the sixth of track 19. The three lie at about the same angle on
+neighbouring tracks. Every sector read before them is side A's byte for
+byte, and so are tracks 20-22, read by starting the loader past them
+(a checkpoint at $501D, with the half track in A and the table row in
+Y). So in the kit's emulator this copy's palace and dungeon do not load;
+whether the original disk had the fault or the copy got it is not known.
+
+The four sectors of track 6 that the loader reads into page $40 and
+throws away ("The parts", above) hold only $00, $FF and one $02 on side
+A. On side B one of them holds a leftover: 6502 code assembled for DOS
+3.3's page $B6 that counts the free sectors in the disk's map (the VTOC
+bitmap, from $B3BB + $38) in decimal mode and prints `FREE=` and the
+count through the monitor's COUT ($FDED) and PRBYTE ($FDDA). That is a
+patch to DOS 3.3's CATALOG, not part of the game, which has no DOS: a
+piece of whatever was on the disk the side was mastered from.
 
 ## Steady state
 

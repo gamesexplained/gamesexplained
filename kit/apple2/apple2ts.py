@@ -258,6 +258,19 @@ class Machine:
     def codemap(self, action="read"):
         return self.call("codemap", action=action)
 
+    def reads(self, action="read", image=None, drive=1, window=None, min=None):
+        """start, then read or stop: every run of bytes the processor stored just after reading
+        the disk, each with the track the head was on and the address it went to. It is how the
+        kit reads a disk whose format is the game's own. With `image`, the file in `drive`, the
+        runs from that drive are added to the log beside it, <image>.reads.json, which
+        kit/apple2/media.py lists the disk's tracks from (kit/apple2/readlog.py)."""
+        r = self.call("reads", action=action, window=window, min=min)
+        if image and action != "start":
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import readlog
+            r["log"] = readlog.add(image, [x for x in r["runs"] if x["drive"] == drive], r["window"])
+        return r
+
 
 def connect(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=120.0):
     return Machine(host, port, timeout)
