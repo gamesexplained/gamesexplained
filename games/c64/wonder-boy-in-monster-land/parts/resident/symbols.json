@@ -22095,6 +22095,11 @@
    "text": "Switches screen buffer and maps displayed character values to colour RAM for 20 rows of 39 characters."
   },
   {
+   "address": 28549,
+   "type": "line",
+   "text": "Row countdown initialized to $13 by $70D0 and tested after each 40-byte row."
+  },
+  {
    "address": 28679,
    "type": "line",
    "text": "Unused byte following the eight partial-meter masks. Full rows use immediate $ff rather than reading this byte.\nTrace-proven startup remnant at $7007\u2013$7007. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
@@ -22108,6 +22113,31 @@
    "address": 28864,
    "type": "line",
    "text": "This repeats the immediately preceding BNE with no intervening instruction that changes flags; under ordinary 6502 execution it cannot take a different outcome."
+  },
+  {
+   "address": 28880,
+   "type": "line",
+   "text": "Set the source pointer $54/$55 to low byte $C8 and high byte $46 XOR 4; set destination $52/$53 to $D8C8. Set $6F85 to $13 and enter the row loop at $70E5."
+  },
+  {
+   "address": 28901,
+   "type": "line",
+   "text": "For 40 bytes in a row, use each source character byte as an index into the table at $6C/$6D and write the selected byte to the destination. Save and restore the row offset through the patched operand at $70F0."
+  },
+  {
+   "address": 28912,
+   "type": "line",
+   "text": "Immediate operand patched by $70E9 to restore the row offset after using Y as the colour-table index."
+  },
+  {
+   "address": 28920,
+   "type": "line",
+   "text": "Decrement the row counter. If it becomes negative, restore X from $7117 and return; otherwise add 40 to both source and destination pointers and process another row. Starting from $13 processes 20 rows."
+  },
+  {
+   "address": 28951,
+   "type": "line",
+   "text": "Immediate operand of $7116, patched by the entry at $7008 with X for restoration after the colour mapping."
   },
   {
    "address": 28976,
