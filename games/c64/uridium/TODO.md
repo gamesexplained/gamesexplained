@@ -5,7 +5,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: 100 % coverage, `facts.md`, every feature confirmed, traced or
+Gold (every page read and updated by chunkypixel) : 100 % coverage, `facts.md`, every feature confirmed, traced or
 open, the listing, and the minisite with the title tune's player, all
 agent-written (copy `agent-draft`).
 
