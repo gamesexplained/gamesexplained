@@ -139,3 +139,9 @@ Resident $7901 subtracts the two packed-decimal bytes at $7D/$7E from the select
 Resident $792C builds an entity contact rectangle from a display slot and two type-indexed parameter tables, restoring the entity index through a patched immediate operand. VICE checked four forced position, type-index and arithmetic-wrap cases with supplied parameters. Table and slot bounds and ordinary-play reachability remain open.
 
 Resident $41EE decrements an entity countdown and advances an animation. A nonzero animation-table entry moves the entity and returns without testing whether the countdown became zero; the zero-entry and index-7 paths check for removal at zero and an effect flag at $20. VICE checked eight forced phase and countdown cases with movement and removal callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $3EC6 decrements a nonzero effect-slot speed on four specified phases when $4D51 is nonnegative. It selects a movement helper from the slot direction and toggles bit 7 of that direction if the helper returns carry set. VICE checked eight forced phase, speed, mode and direction cases with movement helpers stubbed. Slot bounds, helper effects and ordinary-play reachability remain open.
+
+Resident $3F2E and $3F56 move a two-byte effect-slot X position and report their left and right limits with carry. On the left clamp the code writes the low byte of slot 0 even when X selects another slot; the right clamp writes the indexed slot. VICE checked eight forced boundaries, including this slot-0 write and 16-bit wrap. Ordinary-play reachability and other high-byte values remain open.
+
+With the real movement helpers, VICE checked two forced $3EC6 boundary cases: rightward motion reverses the direction byte, and the left clamp writes slot 0 before toggling the selected direction byte from $80 to zero. Ordinary-play reachability remains open.

@@ -435,3 +435,7 @@ Traced the resident two-byte packed-decimal balance subtraction at $7901. VICE c
 Traced resident entity collision-box setup $792C. VICE checked four forced table-index, display-position and arithmetic-wrap cases using supplied parameters; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Table and slot bounds and ordinary-play reachability remain open.
 
 Traced resident entity lifetime and animation $41EE. VICE checked eight forced phase, countdown and effect cases with movement and removal callbacks stubbed; a listing test repeats them. The nonzero animation-table path does not check whether its countdown became zero. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident effect-slot speed, direction and position limits at $3EC6, $3F2E and $3F56. VICE checked eight forced speed and direction cases with helpers stubbed, then eight position and boundary cases with the real helpers; a listing test repeats them. The left clamp writes slot 0 even when X selects slot 2, which the forced probe reproduced. The projects exported without a reported loss and the paused user snapshot was restored. Slot bounds and ordinary-play reachability remain open.
+
+Checked $3EC6 with its real movement helpers in two forced boundary cases. VICE and a listing test agreed, including the slot-0 left-clamp write and direction toggle to zero. The paused user snapshot was restored.
