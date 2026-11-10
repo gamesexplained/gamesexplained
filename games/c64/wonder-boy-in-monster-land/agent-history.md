@@ -904,3 +904,5 @@ Checked resident transfer-failure border flash in VICE with controlled RAM subst
 Checked resident scroll colour scratch save and restore loops in VICE, comparing the 39 colour nibbles per row; the emulator service had stopped, so the saved user snapshot was restored in pause after restarting it.
 
 Described the $04 display-order alias and reran the existing three-case VICE sort check; restored the paused user snapshot.
+
+Checked the resident vertical display-cache alias and four adjustment loops in forced VICE cases; restored the paused user snapshot.
