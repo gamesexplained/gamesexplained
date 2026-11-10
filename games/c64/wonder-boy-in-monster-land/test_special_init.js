@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const enabled of [0,1]){const m=base.slice();m.fill(0,0x19b2,0x19c3);m.fill(0,0x192a,0x193b);m[0x192c]=enabled;m.set([1,1,1],0x19b5);m.set([0,0,1],0x192d);m.set([0xe6,0x10,0x60],0x4454);m.set([0xe6,0x11,0x85,0x12,0x60],0x77a9);m.set([0x86,0x13,0xa9,0,0x18,0x60],0x0300);m[0x7b]=0;m[0x4783]=0;m[0x4789]=3;const cpu=new CPU(m);cpu.x=2;cpu.pc=0x5e71;const target=enabled?0x5eca:0x4454;cpu.run({until:target,maxSteps:300});assert.equal(cpu.pc,target);if(enabled){assert.deepEqual([...m.slice(0x10,0x14)],[2,1,8,2]);assert.equal(m[0x2c15],0xfe);assert.deepEqual([...m.slice(0x5ead,0x5eaf)],[0,3]);}}
+console.log('OK - special entity initialization and callback');

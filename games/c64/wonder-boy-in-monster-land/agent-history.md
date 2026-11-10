@@ -726,3 +726,5 @@ Described sprite interrupt initialization at $16C0. Two forced VICE cases and a 
 Distinguished all 18 resident built-in sound pointer lists by their actual sequences. VICE compared every list byte with the first-load play capture; a listing test checks each pointer and terminator. Restored the paused user snapshot.
 
 Described resident special-entity dispatch and its second selector and high-byte tables. Six forced VICE paths and a listing test checked mode, phase, movement and all 38 captured type selections with movement stubbed. Restored the paused user snapshot.
+
+Traced the special-entity initialization scan and callback setup at $5E71. Two forced VICE paths and a listing test checked release selection, scan count and callback arguments with callbacks stubbed. An initial test setup placed flags at the wrong indexes; corrected before the successful check. Restored the paused user snapshot.
