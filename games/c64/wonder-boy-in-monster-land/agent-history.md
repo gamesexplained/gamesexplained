@@ -728,3 +728,5 @@ Distinguished all 18 resident built-in sound pointer lists by their actual seque
 Described resident special-entity dispatch and its second selector and high-byte tables. Six forced VICE paths and a listing test checked mode, phase, movement and all 38 captured type selections with movement stubbed. Restored the paused user snapshot.
 
 Traced the special-entity initialization scan and callback setup at $5E71. Two forced VICE paths and a listing test checked release selection, scan count and callback arguments with callbacks stubbed. An initial test setup placed flags at the wrong indexes; corrected before the successful check. Restored the paused user snapshot.
+
+Traced the slot-zero field clear at $18D8. A forced VICE call and a listing test checked thirteen fields and their neighbours. Restored the paused user snapshot.
