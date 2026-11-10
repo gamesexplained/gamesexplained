@@ -66,3 +66,9 @@ Type-$1E state 1 calls its event helper, counts down $1AF5,X and uses $1B06,X to
 The type-$1E spawn helper at $A019 calls $190B and returns if carry is clear. On carry set it calls $447A, copies fields from slot Y into slot X, initializes a type-$2D entity and sets $1B28,Y=1 before returning with X restored from Y. VICE checked allocation success and failure with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 The load-25 type-$2D dispatcher has a captured state-0 target at $A1C5. Its handler updates timers, calls direction-selected callbacks and may decrement a linked slot before jumping to $4454. Type-$1E can allocate this entity. VICE checked the captured dispatch target and eight forced handler cases with callbacks stubbed and cleanup stopped at $4454. Index bounds and ordinary-play reachability remain open.
+
+The type-$1F entity dispatcher at $A248 uses $1AB1,X without a local bounds check. Three captured table pairs select $A260, $A280, $A30C; VICE checked all three in load 25. Ordinary-play reachability and index bounds remain open.
+
+Type-$1F state 2 calls a position helper, selects a movement callback by the sign of $1B28,X, decrements it and restores the state from $1B17,X when its low seven bits reach zero. Three helpers update paired positions using $72FC carry and different offsets. VICE checked six forced timer cases and six position cases with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$1F state 0 initializes two bytes from $3020 and falls through into state 1. State 1 selects movement and timer paths, can return to state 0, and may select state 2 after a carry-set event. VICE checked three state-0 setup cases and eleven state-1 cases with callbacks stubbed. Ordinary-play reachability and callback effects remain open.

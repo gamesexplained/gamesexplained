@@ -765,6 +765,31 @@
   },
   {
    "start": 41544,
+   "end": 41561,
+   "type": "Code"
+  },
+  {
+   "start": 41562,
+   "end": 41564,
+   "type": "Byte"
+  },
+  {
+   "start": 41565,
+   "end": 41567,
+   "type": "Byte"
+  },
+  {
+   "start": 41568,
+   "end": 41739,
+   "type": "Code"
+  },
+  {
+   "start": 41740,
+   "end": 41851,
+   "type": "Code"
+  },
+  {
+   "start": 41852,
    "end": 41852,
    "type": "Undefined"
   },
@@ -3502,6 +3527,90 @@
    "kind": "user"
   },
   {
+   "address": 41544,
+   "name": "type1f_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41559,
+   "name": "type1f_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41562,
+   "name": "type1f_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41565,
+   "name": "type1f_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41568,
+   "name": "type1f_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41600,
+   "name": "type1f_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41638,
+   "name": "type1f_state1_alternate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41685,
+   "name": "type1f_event_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41721,
+   "name": "type1f_event_followup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41740,
+   "name": "type1f_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41779,
+   "name": "type1f_base_positions",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41792,
+   "name": "type1f_offset_positions",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41808,
+   "name": "type1f_animated_positions",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41836,
+   "name": "type1f_position_base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41853,
    "name": "type22_state_dispatch",
    "type": "UserDefined",
@@ -5641,6 +5750,76 @@
    "address": 41529,
    "type": "line",
    "text": "Save X into the immediate operand at $A244, load X from $1AD3,X, decrement $1B28,X in that linked slot, restore the original X through the patched immediate instruction and jump to $4454."
+  },
+  {
+   "address": 41544,
+   "type": "line",
+   "text": "Load 25: type-$1F uses $1AB1,X as an index into split target tables at $A25A/$A25D and patches the jump at $A257. Three captured target pairs follow; this dispatcher does not bound the index."
+  },
+  {
+   "address": 41559,
+   "type": "line",
+   "text": "Absolute jump patched through operands $A258/$A259; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 41562,
+   "type": "line",
+   "text": "Three captured low bytes paired with high bytes at $A25D: $A260, $A280, $A30C. State bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 41565,
+   "type": "line",
+   "text": "Three captured high bytes paired with low bytes at $A25A: $A260, $A280, $A30C."
+  },
+  {
+   "address": 41568,
+   "type": "line",
+   "text": "Clear $1AB1,X. Call $3020 twice, storing the first result masked with $87 plus 3 in $1AD3,X and the top bit of the second result in $1AE4,X. Set $1AB1,X=1 and $1AF5,X=7, then fall through into state 1."
+  },
+  {
+   "address": 41600,
+   "type": "line",
+   "text": "When $1AE4,X is zero, call $A350 and decrement $1AD3,X. Shift the resulting byte left: a zero result jumps back to state 0; otherwise carry selects $43F0 or $43A2 with A=10, then execution reaches the event check."
+  },
+  {
+   "address": 41638,
+   "type": "line",
+   "text": "When $1AE4,X is nonzero, call $A333. A nonnegative $1AF5,X calls $4342 and is decremented; if the result is zero, set it to $80. Negative values, including that reset, call $4368 with the low seven bits and are incremented. On reaching $88, clear $1AE4,X; then proceed to the event check."
+  },
+  {
+   "address": 41685,
+   "type": "line",
+   "text": "Call $792C and $732A. Carry set with positive $1A6D,X saves the state in $1B17,X, selects state 2, calls $72FC and rotates $10 right through its carry into $1B28,X. Carry set with zero or negative $1A6D,X calls $4B20 with A=8 and jumps to $5DB9."
+  },
+  {
+   "address": 41721,
+   "type": "line",
+   "text": "If $732A returns carry clear, call $7227. Return if carry is clear; otherwise load A=8 and tail-jump to $5D7A."
+  },
+  {
+   "address": 41740,
+   "type": "line",
+   "text": "Call $A340. If $1B28,X is negative call $43F0 with A=8, otherwise call $43A2 with A=8. Decrement $1B28,X; if its low seven bits are zero, copy $1B17,X into $1AB1,X, otherwise return."
+  },
+  {
+   "address": 41779,
+   "type": "line",
+   "text": "Call $A36C and store its returned byte in $19C3,X; set $19D4,X to that byte plus 2, modulo 256."
+  },
+  {
+   "address": 41792,
+   "type": "line",
+   "text": "Call $A36C, add 10 and store the low byte in $19C3,X; set $19D4,X to that result plus 2, modulo 256."
+  },
+  {
+   "address": 41808,
+   "type": "line",
+   "text": "Call $A36C, add 4 and store the low byte in $19C3,X. Decrement $1AC2,X and set $19D4,X to $19C3,X plus 2 plus bit 2 of the decremented byte shifted right once."
+  },
+  {
+   "address": 41836,
+   "type": "line",
+   "text": "Call $72FC; add 14 to $19E5,X if carry is set, otherwise add zero, and return the low byte in A."
   },
   {
    "address": 41853,
