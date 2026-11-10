@@ -395,3 +395,5 @@ The 26 bytes at $4013 contain four signed displacement sequences ending in zero:
 The helper at $2938 writes A to VIC $D021 and $D015; $293F writes A to $D018 and jumps to $7BE1. Three controlled VICE cases checked the register writes, including colour-register low-nibble behavior. The entry points $2945 and $294B both call $2951 before tail-jumping to $1779 and $1848 respectively; their interrupt timing was not tested here.
 
 The meter writer at $6FD5 stores A to eight addresses spaced three bytes apart, from $C400+X through $C415+X. Three forced VICE cases checked index/value pairs including X=$FF; ordinary caller constraints on X were not established.
+
+For stage selector 1, the immediate operand at $2A91 selects the path that stores ($2A34 OR $10) at $93C3 and copies 72 bytes from $2A35–$2A7C to $CCD0–$CD17. A forced VICE case checked the marker and every copied byte. The stage selector is patched at $7A9A.
