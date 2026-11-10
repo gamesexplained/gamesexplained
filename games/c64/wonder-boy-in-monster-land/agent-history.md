@@ -982,3 +982,5 @@ Identified 11 blank bitmap slots next to nonzero shapes that match verified two-
 A nonzero sparse pattern repeats in nine load captures and was omitted by the prior density filter. VICE matched its bytes and observed no instruction entry during 200-frame probes in all nine loads. Described its stored geometry with display use and colours left open, preserving all prior shared-pattern observations and restoring the paused snapshot.
 
 The pattern viewer passed Firefox desktop and 390-pixel mobile checks with 253 options, the new ten-pixel pattern and its source link. Saved review screenshots. A fresh tool-owned Firefox profile needed an explicit about:blank context; creating a tab hung, while reusing an existing context worked. Reset the selected option before comparing pixels when navigating to the same URL.
+
+Verified load 22 quest flag branches in 522 simulator cases and 11 forced VICE cases. Kept the overlapping character-copy evidence, typed the complete routines, and restored the paused user state. Object record 2 contains the $94AA callback; ordinary-play entry to either routine remains open.

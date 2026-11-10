@@ -74,3 +74,5 @@ The trigger record at $9324 contains message callback $9336, which passes $9343 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
 Controlled visual-resource reconstruction reads 14 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
+
+Load 22 $9373 tests the selected player’s masked flags and either clears/increments an object byte or enters a callback-driven movement loop. Load 22 $94AA is stored in object record 2 and accepts low flag bits 2, changes them to 3, shows charm/emblem messages, and copies 72 glyph bytes and nine colour bytes. The 522 simulator cases and 11 forced VICE cases replace display/movement callbacks and establish those local effects, not ordinary-play reachability.
