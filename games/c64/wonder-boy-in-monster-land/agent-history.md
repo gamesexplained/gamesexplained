@@ -607,3 +607,6 @@ Traced the resident display-slot sort and the patched viewport-origin operands. 
 Traced the first-load payment screen selector. Five controlled VICE cases and a listing test check sufficient and insufficient balances and the record flags, with rendering and slot deletion stubbed. The paused user snapshot was restored; callback effects and natural reachability remain open.
 
 Traced first-load setup $93BA–$9490. VICE checked two patched flag operands and the graphics copies, including overlapping patches and six tails, with callbacks stubbed. A listing test repeats the cases. The user snapshot was restored; callback effects and natural reachability remain open.
+
+Traced the first-load item layout at $A63F. VICE and a listing test checked 24 colour cells and two price-draw calls with price callbacks stubbed. The paused user snapshot was restored. Natural reachability and callback effects remain open.
+The following prompt and input handler at $A67E has its own routine boundary; its untraced bytes remain in the coverage queue.
