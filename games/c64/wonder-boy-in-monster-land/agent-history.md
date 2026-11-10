@@ -990,3 +990,9 @@ Closed 415 gaps (1569 bytes) inside verified character-copy sources. Seventy ful
 Described 4 previously bare fragments (233 bytes) within the existing verified sound-pattern boundaries. Kept the voice-state interpretation and sequencer marker evidence, without extending the streams beyond their captured terminators.
 
 Described 26 resident routine and patched-operand boundaries, checking the complete local continuation against the listing and keeping callback, frame-rate and external-peer limits explicit.
+
+Checked the executable tails in loads 20, 25 and 27 with 225 simulator cases and eight VICE cases. Preserved their overlapping copied-data descriptions and left ordinary-play routes open. Rechecked the load-22 object pointer at record offsets 10/11 (the eleventh/twelfth bytes), copied to $475F/$4765 for the interaction callback.
+
+Described 1405 trailing bytes of already identified 63-byte sprite masks. The VIC pointer stride is 64 bytes and its pixel fetch is 63; comments preserve the possibility of another CPU use rather than labeling those bytes unused.
+
+Described 19 resident table and row boundaries from their consumers, checking the 25 row-offset pairs and sprite bit masks against the captured bytes.

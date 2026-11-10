@@ -20329,8 +20329,20 @@
    "kind": "user"
   },
   {
+   "address": 59903,
+   "name": "sprite_slot_a7_trailing_byte_e9ff",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 59904,
    "name": "vic_sprite_slot_a8",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 59967,
+   "name": "sprite_slot_a8_trailing_byte_ea3f",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -20341,8 +20353,20 @@
    "kind": "user"
   },
   {
+   "address": 60031,
+   "name": "sprite_slot_a9_trailing_byte_ea7f",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 60032,
    "name": "vic_sprite_slot_aa",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60095,
+   "name": "sprite_slot_aa_trailing_byte_eabf",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -20353,8 +20377,20 @@
    "kind": "user"
   },
   {
+   "address": 60159,
+   "name": "sprite_slot_ab_trailing_byte_eaff",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 60160,
    "name": "vic_sprite_slot_ac",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 60223,
+   "name": "sprite_slot_ac_trailing_byte_eb3f",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -21824,6 +21860,11 @@
    "text": "Entries indexed by the negated entity type. Entry zero is $0000; the dispatch has no local bound check."
   },
   {
+   "address": 8308,
+   "type": "line",
+   "text": "Eighteen high bytes of the negative-type dispatch table, paired with low bytes at $2062. The indexed read at $2048 patches $2050, completing the JSR operand at $204E. The first pair is $0000; the dispatcher does not locally bound every possible negated type."
+  },
+  {
    "address": 8326,
    "type": "line",
    "text": "Mirrors pairs of sprite images: one representation reverses individual bits and its companion reverses two-bit groups. It uses patched immediates to preserve indices."
@@ -22951,12 +22992,12 @@
   {
    "address": 15874,
    "type": "line",
-   "text": "Patch the low byte of the dispatch target from the entity-state table."
+   "text": "Patch the low byte of the dispatch target from the entity-state table. At $3E02, load A from $3E11,Y and write it to $3E0F."
   },
   {
    "address": 15880,
    "type": "line",
-   "text": "Patch the high byte of the dispatch target from the entity-state table."
+   "text": "Patch the high byte of the dispatch target from the entity-state table. At $3E08, load A from $3E13,Y and write it to $3E10."
   },
   {
    "address": 15883,
@@ -23509,6 +23550,31 @@
    "text": "Six 16-byte-spaced trigger fields. The loader uses a runtime count without a local 16-slot bound; the captured arrays are zero before any inferred initialization."
   },
   {
+   "address": 18543,
+   "type": "line",
+   "text": "Sixteen-slot trigger row array. The six-byte record loader at $7979 fills this field from the stage stream; its count is not locally capped at 16. The position tests at $48CB and $5D57 read it. Values are mutable runtime state, not fixed properties of the captured record."
+  },
+  {
+   "address": 18559,
+   "type": "line",
+   "text": "Sixteen-slot trigger remaining count array. The six-byte record loader at $7979 fills this field from the stage stream; its count is not locally capped at 16. The position dispatcher reads it and decrements it at $48E4; several deferred contact paths increment it. Values are mutable runtime state, not fixed properties of the captured record."
+  },
+  {
+   "address": 18575,
+   "type": "line",
+   "text": "Sixteen-slot trigger callback low byte array. The six-byte record loader at $7979 fills this field from the stage stream; its count is not locally capped at 16. It forms a callback pointer with $489F. Values are mutable runtime state, not fixed properties of the captured record."
+  },
+  {
+   "address": 18591,
+   "type": "line",
+   "text": "Sixteen-slot trigger callback high byte array. The six-byte record loader at $7979 fills this field from the stage stream; its count is not locally capped at 16. It forms a callback pointer with $488F. Values are mutable runtime state, not fixed properties of the captured record."
+  },
+  {
+   "address": 18607,
+   "type": "line",
+   "text": "Sixteen-slot trigger argument array. The six-byte record loader at $7979 fills this field from the stage stream; its count is not locally capped at 16. The dispatcher retrieves it before the selected callback. Values are mutable runtime state, not fixed properties of the captured record."
+  },
+  {
    "address": 18623,
    "type": "line",
    "text": "Scans six-field trigger records, matches positions and jumps through a patched callback. Count zero starts with X=$ff and tests one entry before exiting; counts $81\u2013$ff likewise start negative, while $80 scans $7f down to zero."
@@ -23914,6 +23980,16 @@
    "text": "Alias for slots 24\u201331 of the extra display flags field based at $4CEF, within its 32-byte physical spacing. At this indexed field, bit 0 supplies the selected sprite bit in VIC $D01D. The alias ends at $4D0E; an index outside the spacing can address adjacent fields."
   },
   {
+   "address": 19727,
+   "type": "line",
+   "text": "Eight clear-bit masks $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F. Each preserves every bit except its corresponding sprite bit, paired with the set masks at $4D17."
+  },
+  {
+   "address": 19735,
+   "type": "line",
+   "text": "Eight set-bit masks $01,$02,$04,$08,$10,$20,$40,$80 for sprite indexes 0\u20137. OR sets the selected sprite bit; the paired masks at $4D0F clear it."
+  },
+  {
    "address": 19798,
    "type": "line",
    "text": "Unused startup bytes between the player-animation flag and the split-sprite shadows.\nTrace-proven startup remnant at $4d56\u2013$4d57. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
@@ -23964,6 +24040,26 @@
    "text": "Unused interleaved byte: the split-sprite X-shadow accesses select only even offsets from $4d58.\nTrace-proven startup remnant at $4d67\u2013$4d67. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
   },
   {
+   "address": 19820,
+   "type": "line",
+   "text": "Low bytes of the 25 screen-row offsets 40 times row, for rows 0\u201324. The colour-column loops at $30C7 and $3182 index this table with the row and combine it with the high bytes at $4D85."
+  },
+  {
+   "address": 19825,
+   "type": "line",
+   "text": "Low-byte continuation of the screen-row table at $4D6C, beginning with row 5 and offset 200. The values through row 24 are the low bytes of 40 times row. The screen expansion at $7011 also reads this entry directly as its starting offset."
+  },
+  {
+   "address": 19845,
+   "type": "line",
+   "text": "High bytes of the 25 row offsets 40 times row, paired with low bytes at $4D6C for colour-column address calculation. Rows 0\u20136 have high byte zero; later rows carry into pages 1\u20133."
+  },
+  {
+   "address": 19850,
+   "type": "line",
+   "text": "High-byte continuation of the row-offset table, beginning with row 5. The screen expander combines the first value here with the bank selection derived from $46 and the low offset at $4D71. Indexed colour writes also use the full table starting at $4D85."
+  },
+  {
    "address": 19884,
    "type": "line",
    "text": "Initialized by resident setup; no reader is established in the currently traced code. Its role remains unresolved."
@@ -23994,6 +24090,26 @@
    "text": "Status-screen template cells 145\u2013199, copied by $6C89 to $C091\u2013$C0C7. Later screen updates and other source uses remain open."
   },
   {
+   "address": 20140,
+   "type": "line",
+   "text": "Fourteen colour-template bytes copied with X=13 down to 0 by $6C94\u2013$6CBF. Template 1 is written to $D800 plus X. The second template supplies two screen rows; these stored colours are inputs to the HUD initialization copy."
+  },
+  {
+   "address": 20154,
+   "type": "line",
+   "text": "Fourteen colour-template bytes copied with X=13 down to 0 by $6C94\u2013$6CBF. Template 2 is written to $D828 and $D850 plus X. The second template supplies two screen rows; these stored colours are inputs to the HUD initialization copy."
+  },
+  {
+   "address": 20168,
+   "type": "line",
+   "text": "Fourteen colour-template bytes copied with X=13 down to 0 by $6C94\u2013$6CBF. Template 3 is written to $D878 plus X. The second template supplies two screen rows; these stored colours are inputs to the HUD initialization copy."
+  },
+  {
+   "address": 20182,
+   "type": "line",
+   "text": "Fourteen colour-template bytes copied with X=13 down to 0 by $6C94\u2013$6CBF. Template 4 is written to $D8A0 plus X. The second template supplies two screen rows; these stored colours are inputs to the HUD initialization copy."
+  },
+  {
    "address": 20196,
    "type": "line",
    "text": "Twenty-two bytes for the first message-panel screen row. At $3731 the copy loop writes them to $C00E\u2013$C023 in reverse index order. The captured row starts with $39, contains twenty $3A bytes and ends with $3E; the glyph interpretation depends on the active character set."
@@ -24007,6 +24123,11 @@
    "address": 20219,
    "type": "line",
    "text": "The first 20-byte message text buffer occupies $4EFB\u2013$4F0E; $4F0F is the following right border byte, captured as $40. The message routine writes translated text here, and the panel copy reads the enclosing row beginning at $4EFA. The text copy has no local length check."
+  },
+  {
+   "address": 20246,
+   "type": "line",
+   "text": "Message-row storage beginning at $4F16. The reward formatter at $7743 stores the low packed-nibble display code from $370A in the first byte, while $774D can write the preceding high code to $4F15. The rest belongs to the same mutable message row; the entry values do not fix later text."
   },
   {
    "address": 20263,
@@ -24082,6 +24203,16 @@
    "address": 20648,
    "type": "line",
    "text": "Twenty-two colour values for the alternate message panel. The loop at $4828 copies them to colour RAM $D85E\u2013$D873, where the low nibble of each byte is retained."
+  },
+  {
+   "address": 20670,
+   "type": "line",
+   "text": "Seventeen initial sprite-position register values. The Y=16 down to 0 loop at $121C copies $50BE\u2013$50CE to $D000\u2013$D010, covering eight X/Y pairs and their shared X-high mask."
+  },
+  {
+   "address": 20687,
+   "type": "line",
+   "text": "Eight sprite pointers copied by the initialization loop at $1227 from $50CF\u2013$50D6 to $C3F8\u2013$C3FF. Each pointer selects a 64-byte slot in the active VIC bank, whose first 63 bytes hold pixels."
   },
   {
    "address": 20695,
@@ -24216,22 +24347,22 @@
   {
    "address": 21102,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $526E and contains the six captured bytes $00, $ED, $EC, $EB, $EA, $00."
   },
   {
    "address": 21110,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $5276 and contains the six captured bytes $00, $00, $FC, $FB, $FA, $00."
   },
   {
    "address": 21118,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $527E and contains the six captured bytes $00, $E5, $E4, $00, $E3, $E2."
   },
   {
    "address": 21126,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $5286 and contains the six captured bytes $00, $00, $F9, $F8, $F7, $F6."
   },
   {
    "address": 21132,
@@ -24241,7 +24372,7 @@
   {
    "address": 21134,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $528E and contains the six captured bytes $00, $F0, $EF, $00, $EE, $00."
   },
   {
    "address": 21141,
@@ -24251,12 +24382,12 @@
   {
    "address": 21142,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $5296 and contains the six captured bytes $00, $00, $FF, $FE, $FD, $00."
   },
   {
    "address": 21150,
    "type": "line",
-   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read."
+   "text": "Six-byte status-renderer window: $5323\u2013$5353 indexes this range when the item variant is in 0\u20133. The renderer does not bound the mutable variant, so other values can read beyond these observed windows; the intervening two bytes are not part of this bounded read. This window begins at $529E and contains the six captured bytes $00, $E9, $E8, $00, $E7, $E6."
   },
   {
    "address": 21156,
@@ -27929,9 +28060,19 @@
    "text": "63 sprite bitmap bytes for VIC bank-3 slot $60, in RAM beneath CPU I/O; the 64th slot byte is outside this bitmap. In the paused second-load play capture, hardware sprite 1 was enabled with this pointer and multicolour mode off. These bytes match the resident entry and the first- and second-load play captures; other states and writes remain to be checked."
   },
   {
+   "address": 55359,
+   "type": "line",
+   "text": "The byte $00 at $D83F follows the 63-byte mask at $D800. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $60 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 55360,
    "type": "line",
    "text": "63 sprite bitmap bytes for VIC bank-3 slot $61, in RAM beneath CPU I/O; the 64th slot byte is outside this bitmap. In the paused second-load play capture, hardware sprite 2 was enabled with this pointer and multicolour mode off. These bytes match the resident entry and the first- and second-load play captures; other states and writes remain to be checked."
+  },
+  {
+   "address": 55423,
+   "type": "line",
+   "text": "The byte $00 at $D87F follows the 63-byte mask at $D840. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $61 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 55424,
@@ -27992,6 +28133,11 @@
    "address": 55488,
    "type": "line",
    "text": "63 sprite bitmap bytes for VIC bank-3 slot $63, in RAM beneath CPU I/O; the 64th slot byte is outside this bitmap. In the paused second-load play capture, hardware sprite 4 was enabled with this pointer and multicolour mode off. These bytes match the resident entry and the first- and second-load play captures; other states and writes remain to be checked."
+  },
+  {
+   "address": 55551,
+   "type": "line",
+   "text": "The byte $00 at $D8FF follows the 63-byte mask at $D8C0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $63 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 55552,
@@ -28209,9 +28355,19 @@
    "text": "RAM beneath I/O: the remaining 33 bytes of sprite slot $6C hold monochrome rows 10\u201320 of the action bitmap selected by $3CD5. The CPU-visible I/O meaning is separate. Other RAM uses remain open."
   },
   {
+   "address": 56127,
+   "type": "line",
+   "text": "The byte $00 at $DB3F follows the 63-byte mask at $DB00. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $6C contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56128,
    "type": "line",
    "text": "Multicolour bitmap for player sprite slot $6D, the second layer paired with $6C. $2086 reflects two-bit pixels into slot $7B at $DEC0; a controlled VICE call reproduced all 63 output bytes."
+  },
+  {
+   "address": 56191,
+   "type": "line",
+   "text": "The byte $00 at $DB7F follows the 63-byte mask at $DB40. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $6D contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56192,
@@ -28219,9 +28375,19 @@
    "text": "Monochrome bitmap for player sprite slot $6E, selected with adjacent slot $6F by the fire-action path at $3CEA when the facing offset is zero. $2086 generates its reflection at $DF00; a controlled VICE call reproduced all 63 output bytes."
   },
   {
+   "address": 56255,
+   "type": "line",
+   "text": "The byte $00 at $DBBF follows the 63-byte mask at $DB80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $6E contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56256,
    "type": "line",
    "text": "Multicolour bitmap for player sprite slot $6F, the second layer paired with $6E. $2086 reflects two-bit pixels into slot $7D at $DF40; a controlled VICE call reproduced all 63 output bytes."
+  },
+  {
+   "address": 56319,
+   "type": "line",
+   "text": "The byte $00 at $DBFF follows the 63-byte mask at $DBC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $6F contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56448,
@@ -28229,9 +28395,19 @@
    "text": "The 63-byte monochrome bitmap for VIC sprite slot $72 beneath I/O. A forced load-13 play snapshot has active display slot 2 at Y=162 using this pointer, and its bytes match the resident entry. In the title-to-play route, $2086 reads this source and mirrors it into slot $80 at $E000; a controlled VICE call reproduced the observed 63-byte output. Natural reachability and other writes remain open."
   },
   {
+   "address": 56511,
+   "type": "line",
+   "text": "The byte $00 at $DCBF follows the 63-byte mask at $DC80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $72 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56512,
    "type": "line",
    "text": "The 63-byte multicolour bitmap for VIC sprite slot $73 beneath I/O. A forced load-13 play snapshot has active display slot 3 at Y=162 using this pointer, and its bytes match the resident entry. In the title-to-play route, $2086 reads this source and mirrors it into slot $81 at $E040; a controlled VICE call reproduced the observed 63-byte output. Natural reachability and other writes remain open."
+  },
+  {
+   "address": 56575,
+   "type": "line",
+   "text": "The byte $00 at $DCFF follows the 63-byte mask at $DCC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $73 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56576,
@@ -28239,9 +28415,19 @@
    "text": "RAM beneath I/O holds sprite slot $74: a monochrome reflection of the first-load bitmap at $ACC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
   },
   {
+   "address": 56639,
+   "type": "line",
+   "text": "The byte $00 at $DD3F follows the 63-byte mask at $DD00. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $74 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56640,
    "type": "line",
    "text": "RAM beneath I/O holds sprite slot $75: a multicolour reflection of the first-load bitmap at $AD07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56703,
+   "type": "line",
+   "text": "The byte $00 at $DD7F follows the 63-byte mask at $DD40. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $75 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56704,
@@ -28249,9 +28435,19 @@
    "text": "RAM beneath I/O holds sprite slot $76: a monochrome reflection of the first-load bitmap at $AD47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
   },
   {
+   "address": 56767,
+   "type": "line",
+   "text": "The byte $00 at $DDBF follows the 63-byte mask at $DD80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $76 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56768,
    "type": "line",
    "text": "RAM beneath I/O holds sprite slot $77: a multicolour reflection of the first-load bitmap at $AD87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56831,
+   "type": "line",
+   "text": "The byte $00 at $DDFF follows the 63-byte mask at $DDC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $77 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56832,
@@ -28259,9 +28455,19 @@
    "text": "RAM beneath I/O holds sprite slot $78: a monochrome reflection of the first-load bitmap at $ADC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
   },
   {
+   "address": 56895,
+   "type": "line",
+   "text": "The byte $00 at $DE3F follows the 63-byte mask at $DE00. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $78 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 56896,
    "type": "line",
    "text": "RAM beneath I/O holds sprite slot $79: a multicolour reflection of the first-load bitmap at $AE07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56959,
+   "type": "line",
+   "text": "The byte $00 at $DE7F follows the 63-byte mask at $DE40. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $79 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 56960,
@@ -28289,9 +28495,19 @@
    "text": "RAM beneath I/O holds sprite slot $7E: a monochrome reflection of the first-load bitmap at $AE47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
   },
   {
+   "address": 57279,
+   "type": "line",
+   "text": "The byte $00 at $DFBF follows the 63-byte mask at $DF80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $7E contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 57280,
    "type": "line",
    "text": "RAM beneath I/O holds sprite slot $7F: a multicolour reflection of the first-load bitmap at $AE87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 57343,
+   "type": "line",
+   "text": "The byte $00 at $DFFF follows the 63-byte mask at $DFC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $7F contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 57344,
@@ -28469,9 +28685,19 @@
    "text": "Countdown sprite pointer $A7: 63-byte monochrome bitmap with 15 nonzero monochrome pixels on rows 10\u201315. With the countdown initially 6, $1FF2 selects the pair $A7/$A8; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
   },
   {
+   "address": 59903,
+   "type": "line",
+   "text": "The byte $00 at $E9FF follows the 63-byte mask at $E9C0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $A7 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 59904,
    "type": "line",
    "text": "Countdown sprite pointer $A8: 63-byte multicolour bitmap with 29 nonzero multicolour pixel pairs on rows 8\u201315. With the countdown initially 6, $1FF2 selects the pair $A7/$A8; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
+  },
+  {
+   "address": 59967,
+   "type": "line",
+   "text": "The byte $00 at $EA3F follows the 63-byte mask at $EA00. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $A8 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 59968,
@@ -28479,9 +28705,19 @@
    "text": "Countdown sprite pointer $A9: 63-byte monochrome bitmap with 44 nonzero monochrome pixels on rows 7\u201315. With the countdown initially 4 or 5, $1FF2 selects the pair $A9/$AA; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
   },
   {
+   "address": 60031,
+   "type": "line",
+   "text": "The byte $00 at $EA7F follows the 63-byte mask at $EA40. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $A9 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 60032,
    "type": "line",
    "text": "Countdown sprite pointer $AA: 63-byte multicolour bitmap with 40 nonzero multicolour pixel pairs on rows 5\u201317. With the countdown initially 4 or 5, $1FF2 selects the pair $A9/$AA; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
+  },
+  {
+   "address": 60095,
+   "type": "line",
+   "text": "The byte $00 at $EABF follows the 63-byte mask at $EA80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $AA contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 60096,
@@ -28489,9 +28725,19 @@
    "text": "Countdown sprite pointer $AB: 63-byte monochrome bitmap with 69 nonzero monochrome pixels on rows 6\u201316. With the countdown initially 2 or 3, $1FF2 selects the pair $AB/$AC; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
   },
   {
+   "address": 60159,
+   "type": "line",
+   "text": "The byte $00 at $EAFF follows the 63-byte mask at $EAC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $AB contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 60160,
    "type": "line",
    "text": "Countdown sprite pointer $AC: 63-byte multicolour bitmap with 66 nonzero multicolour pixel pairs on rows 5\u201317. With the countdown initially 2 or 3, $1FF2 selects the pair $AB/$AC; a controlled display update selected this layer and its companion. The type, position, slots and colours were forced. Ordinary-play reachability and other uses remain open."
+  },
+  {
+   "address": 60223,
+   "type": "line",
+   "text": "The byte $00 at $EB3F follows the 63-byte mask at $EB00. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $AC contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 65530,

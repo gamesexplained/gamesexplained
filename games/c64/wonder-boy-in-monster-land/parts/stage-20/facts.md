@@ -138,3 +138,5 @@ Controlled visual-resource reconstruction reads 24 additionally described bytes 
 26 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
 
 The remaining 21 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The listing identifies complete code sequences beside copied visual data. A combined 225 simulator cases and eight forced VICE cases checked the local acceleration, motion-mode and message effects with callbacks replaced where required. These checks establish local effects, not ordinary-play routes.

@@ -122,3 +122,5 @@ Controlled visual-resource reconstruction reads 17 additionally described bytes 
 23 stable 63-byte aligned ranges form one-bit patterns that recur in other loads. VICE checked their entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares every matching range and the viewer. Display use, actual colours and other possible code uses remain open.
 
 The remaining 26 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The listing identifies complete code sequences beside copied visual data. A combined 225 simulator cases and eight forced VICE cases checked the local acceleration, motion-mode and message effects with callbacks replaced where required. These checks establish local effects, not ordinary-play routes.
