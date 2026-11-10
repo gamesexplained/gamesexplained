@@ -790,3 +790,5 @@ Found and checked two load-3 entity state dispatchers with 11 forced VICE calls.
 Checked load-3 state $9EB1 in four forced VICE cases, stubbing the contact, effect and setup calls. Checked the timer, frame, selected second slot and self-modified restore operand. Restored the paused user snapshot.
 
 Checked load-3 state $9E42 in six forced VICE cases with detection, contact, effect and movement callbacks stubbed. Recorded the branches, selected movement call and state-3 field writes; restored the paused user snapshot.
+
+Checked load-3 type-$24 states 1 and 2 with six forced VICE cases and stubbed callbacks. Confirmed that state 2 executes both handlers after either detection result, and restored the paused user snapshot.

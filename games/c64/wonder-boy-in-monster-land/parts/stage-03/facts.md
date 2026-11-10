@@ -66,3 +66,5 @@ Load 3 entity types $07 and $24 have state dispatchers at $9B96 and $9E28. Force
 The load-3 type-$24 state-3 handler at $9EB1 decrements an entity timer, changes a frame while the result is nonnegative, and on expiry changes a second slot before jumping to $4454. Four forced VICE cases covered both branches and both outcomes of the stubbed contact callback; the other callbacks and ordinary-play reachability remain open.
 
 The load-3 type-$24 state-0 handler at $9E42 calls detection and contact checks, selects a direction from the sign of $1AE4,X and can enter state 3 at $9E99. Six forced VICE cases covered both detected conditions, both directions and both movement carry outcomes with callbacks stubbed. The callback effects and ordinary-play reachability remain open.
+
+Load-3 type-$24 state 1 calls detection, contact and movement checks; four forced VICE cases checked both detected conditions and both movement carry outcomes with callbacks stubbed. State 2 calls state 0 and then state 1 even if state 0 changes the state, provided it returns normally; two forced VICE cases confirmed both calls. Callback effects and ordinary-play reachability remain open.
