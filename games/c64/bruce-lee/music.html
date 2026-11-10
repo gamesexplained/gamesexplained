@@ -1,0 +1,72 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bruce-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">One tune, played only on the title screen by John A. Fitzpatrick’s Micropearl Music Player, and thirteen sound effects that fight over the SID’s three voices.</p>
+</header>
+<main class="wrap">
+<section id="tune">
+  <p class="fig">Listen</p>
+  <h2 class="t">The title tune and the effects</h2>
+  <p class="lede">Each button runs the game’s own code from its listing on the site’s model of the C64’s 6502 processor, heard through the site’s model of its SID sound chip. The tune is set up the way the title screen sets it up and played a frame at a time; each effect is started through the game’s own <code>play_sound</code> (<code>$2509</code>).</p>
+  <div class="plate" id="sid"></div>
+  <details class="reference-detail"><summary>How this player was checked</summary><p>The same calls were made in the kit’s model of the whole C64, with a raster interrupt calling the player once a frame as the game does, and every write to the sound chip compared, in order: 3,000 frames of the tune and 300 of each effect, all the same (<code>test_music.js</code>).</p></details>
+</section>
+
+<section id="driver">
+  <p class="fig">The tune</p>
+  <h2 class="t">A music player with its maker’s name inside</h2>
+  <p class="lede">The tune is played by a separate music player at <code>$E000</code>, whose text reads “MICROPEARL MUSIC PLAYER COPYRIGHT 1983 JOHN A. FITZPATRICK” (<code>$E315</code>). Nothing on screen shows it.</p>
+  <p>The title screen’s raster interrupt calls the player once a frame (<code>irq_menu_bottom</code>, <code>$152C</code>, calling <code>$E006</code>). It reads three streams of notes and commands, one for each voice of the SID (<code>$E8D0</code>, <code>$E97D</code>, <code>$EA31</code>): a byte with bit 7 clear is a note, and the commands that follow set the next notes’ length, the waveform, the envelope, an instrument, the pulse width, the filter, or the tempo (<code>voice_next_note</code>, <code>$E578</code>).</p>
+  <p>Before it starts the tune, the title screen writes a song list of song 0 followed by <code>$FF</code>, which sends the player back to the start of the list (<code>$06CC</code>-<code>$06DA</code>). The tune therefore repeats for as long as the title screen is up, every 1,154 frames, about 23 seconds. In play the game has no music, only effects.</p>
+  <p>The player’s song table has room for a second song, but song 1’s three voice addresses point into the sound-effect code at <code>$EB00</code> and beyond (<code>song_table</code>, <code>$E8C0</code>). Nothing ever asks for it.</p>
+</section>
+
+<section id="effects">
+  <p class="fig">The effects</p>
+  <h2 class="t">Three players, one per voice</h2>
+  <p class="lede">The effects have a player of their own, copied three times, once for each voice of the SID (<code>$EB03</code>, <code>$EF73</code>, <code>$F073</code>), and all three run once a frame (<code>frame_work</code>, <code>$15A8</code>). An effect is a script of steps, each a command byte followed by a duration, a note, an envelope, a pulse width, or a waveform as the command needs (<code>sfx_scripts</code>, <code>$EBE5</code>).</p>
+  <p><code>play_sound</code> (<code>$2509</code>) puts a new effect in the first free voice. When all three are busy it takes the voice playing the effect of lowest priority, as long as the new one’s priority is at least as high (<code>$2572</code>). There are fifteen scripts; nothing asks for effects 3 and 8.</p>
+  <div class="tw"><table class="t">
+    <tr><th class="n">Effect</th><th>When</th><th class="n">Priority</th><th>Asked for by</th></tr>
+    <tr><td class="n">0</td><td>a jump</td><td class="n">11</td><td><code>jump_sound</code>, <code>$1FC4</code></td></tr>
+    <tr><td class="n">1</td><td>an enemy turns to face Bruce; a door flashes open</td><td class="n">12</td><td><code>action_10_turn</code>, <code>$2235</code>; <code>room_0</code>, <code>$3642</code></td></tr>
+    <tr><td class="n">2</td><td>Yamo comes in</td><td class="n">10</td><td><code>spawn_yamo</code>, <code>$0CD5</code></td></tr>
+    <tr><td class="n">4</td><td>a flying kick</td><td class="n">8</td><td><code>continue_action</code>, <code>$2008</code></td></tr>
+    <tr><td class="n">5</td><td>a punch, or an enemy’s strike</td><td class="n">7</td><td><code>action_11_punch</code>, <code>$226A</code>; <code>$22BD</code></td></tr>
+    <tr><td class="n">6</td><td>Bruce’s punch, kick, or landing hits; the Wizard throws a fireball</td><td class="n">9</td><td><code>hit_sound</code>, <code>$2E29</code></td></tr>
+    <tr><td class="n">7</td><td>an enemy’s strike lands</td><td class="n">6</td><td><code>check_collisions</code>, <code>$29C3</code></td></tr>
+    <tr><td class="n">9</td><td>a swinging object moves</td><td class="n">0</td><td><code>draw_object</code>, <code>$404E</code></td></tr>
+    <tr><td class="n">10</td><td>a passage opens; a human Yamo is taken over</td><td class="n">1</td><td><code>wall_sound</code>, <code>$424F</code></td></tr>
+    <tr><td class="n">11</td><td>the Wizard is beaten</td><td class="n">2</td><td><code>wizard_beaten</code>, <code>$3DAF</code></td></tr>
+    <tr><td class="n">12</td><td>a deadly character is touched</td><td class="n">3</td><td><code>deadly_tile</code>, <code>$304B</code></td></tr>
+    <tr><td class="n">13</td><td>a mine explodes</td><td class="n">4</td><td><code>animate_mines</code>, <code>$3228</code></td></tr>
+    <tr><td class="n">14</td><td>a lantern or the bonus fall is taken</td><td class="n">5</td><td><code>collect_lantern</code>, <code>$2F04</code></td></tr>
+  </table></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/bruce-music.js"></script>
+<script>
+(async function () {
+  const root = document.getElementById('sid');
+  if (!window.C64Sid || !window.C64Cpu || !window.C64) { root.textContent = 'This player needs the site’s shared scripts, lib/sid.js and lib/cpu6502.js.'; return; }
+  let G; try { G = await C64.load('listing.json'); } catch (e) { root.textContent = 'The player needs listing.json: ' + e.message; return; }
+  C64Sid.mount(root, {
+    driver: BRUCEMUSIC.createDriver,
+    data: { base: 0, bytes: Array.from(G.ram), ids: [null, 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14] },
+    tunes: ['The title tune', 'Effect 0: a jump', 'Effect 1: an enemy turns', 'Effect 2: Yamo comes in', 'Effect 4: a flying kick', 'Effect 5: a punch or strike', 'Effect 6: a hit', 'Effect 7: a strike lands', 'Effect 9: a swinging object', 'Effect 10: a passage opens', 'Effect 11: the Wizard beaten', 'Effect 12: a deadly cell', 'Effect 13: a mine', 'Effect 14: a lantern taken'],
+    filter: '6581',
+    loops: [{ from: 1, period: 1154 }],
+  });
+})();
+</script>

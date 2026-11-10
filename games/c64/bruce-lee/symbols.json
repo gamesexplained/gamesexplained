@@ -939,7 +939,7 @@
   },
   {
    "address": 75,
-   "name": "pause_flag",
+   "name": "last_key",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
@@ -1203,7 +1203,7 @@
   },
   {
    "address": 128,
-   "name": "pause_frames",
+   "name": "slow_count",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
@@ -3219,13 +3219,13 @@
   },
   {
    "address": 4995,
-   "name": "joy1_lefthanded",
+   "name": "joy1_righthanded",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 4996,
-   "name": "joy2_lefthanded",
+   "name": "joy2_righthanded",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -3345,7 +3345,7 @@
   },
   {
    "address": 5218,
-   "name": "scan_fkeys",
+   "name": "scan_play_keys",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -3363,13 +3363,13 @@
   },
   {
    "address": 5256,
-   "name": "fkey_matrix",
+   "name": "play_key_matrix",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 5264,
-   "name": "fkey_codes",
+   "name": "play_key_codes",
    "type": "Field",
    "kind": "user"
   },
@@ -5487,25 +5487,25 @@
   },
   {
    "address": 9956,
-   "name": "frame_addr_mirror",
+   "name": "frame_addr_wide",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 9957,
-   "name": "frame_addr_mirror_hi",
+   "name": "frame_addr_wide_hi",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 9966,
-   "name": "frame_addr_mirror2",
+   "name": "frame_addr_wide2",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 9967,
-   "name": "frame_addr_mirror2_hi",
+   "name": "frame_addr_wide2_hi",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -12753,9 +12753,9 @@
   },
   {
    "address": 59505,
-   "name": "a_E871",
+   "name": "song_list_end",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 59584,
@@ -13237,7 +13237,7 @@
   {
    "address": 6,
    "type": "line",
-   "text": "second pointer (text source, or the bottom half of a big digit)"
+   "text": "second pointer: the source of text, room records ($0A8A) and packed room screens ($0AB2); the destination of copy_doubled ($0488) and of the moving pattern's characters ($2D13); the bottom half of a big digit ($1936)"
   },
   {
    "address": 8,
@@ -13347,7 +13347,7 @@
   {
    "address": 75,
    "type": "line",
-   "text": "set by the pause countdown"
+   "text": "the code of the last key read in play ($1B41), $FF for none (set at $0771 and by the pause countdown); nothing reads it"
   },
   {
    "address": 76,
@@ -13472,7 +13472,7 @@
   {
    "address": 128,
    "type": "line",
-   "text": "frames counted while paused ($80/$81)"
+   "text": "counts up once every 256 frames, when $7F wraps ($163F), paused or not ($80/$81); its low byte is the colour-cycling XOR while paused ($164F)"
   },
   {
    "address": 130,
@@ -13552,7 +13552,7 @@
   {
    "address": 182,
    "type": "line",
-   "text": "per actor, the terrain flags down to its feet: bit 0 colour %01, bit 1 %10, bit 2 %11 in coloured characters (climbable), bit 3 %11 in black ones"
+   "text": "per actor, the terrain flags down to its feet: bit 0 colour %01, bit 1 %10, bit 2 %11 in coloured characters (solid: ground to stand on and nets to climb), bit 3 %11 in black ones"
   },
   {
    "address": 191,
@@ -13692,7 +13692,7 @@
   {
    "address": 1891,
    "type": "line",
-   "text": "resets the keyboard and interrupts ($082D, $1386), builds the screen row tables ($0869), clears the screen, sets colours from $479B, selects video bank 2 ($DD00 = $01) with the screen at $8C00 and characters at $A000 ($D018 = $38), and draws the status line (score, top score, FALLS) before jumping to the room loader at $0B8E with X = 0 (Bruce)"
+   "text": "resets the keyboard and interrupts ($082D, $1386), builds the screen row tables ($0869), clears the screen, sets colours from $479B, selects video bank 2 ($DD00 = $01) with the screen at $8C00 and characters at $A000 ($D018 = $38), and draws the status line (score, top score, FALLS) before placing Bruce at the room's start (place_actor, $0B8E, with X = 0)"
   },
   {
    "address": 2093,
@@ -13732,7 +13732,7 @@
   {
    "address": 2390,
    "type": "line",
-   "text": "keys $2A/$AA and $11/$91 (the code with and without bit 7) choose left- or right-handed play for joysticks 1 and 2: $1383 and $1384, with the message from $43BE drawn by $17E2"
+   "text": "in the menu, L ($2A) and R ($11) choose left- or right-handed play for joystick 1, SHIFT L ($AA) and SHIFT R ($91) for joystick 2: $1383 and $1384, with the message from $43BE drawn by $17E2"
   },
   {
    "address": 2473,
@@ -14047,22 +14047,22 @@
   {
    "address": 4975,
    "type": "line",
-   "text": "per room, which start Yamo takes, read as $1333 is for the Ninja; 20 bytes"
+   "text": "per room, which start Yamo takes; the Ninja reads it too ($0C38), its bit 7 choosing his start table when $1333 lets him in; 20 bytes"
   },
   {
    "address": 4995,
    "type": "line",
-   "text": "1 when joystick 1 is in left-handed mode"
+   "text": "1 (the start value) when joystick 1 is in right-handed mode; 0 in left-handed mode, which turns the stick a quarter turn ($169D)"
   },
   {
    "address": 4996,
    "type": "line",
-   "text": "1 when joystick 2 is in left-handed mode"
+   "text": "the same for joystick 2"
   },
   {
    "address": 4997,
    "type": "line",
-   "text": "nonzero turns the menu tune off (key $0D toggles it)"
+   "text": "nonzero turns the menu tune off (the S key toggles it in play, $1B4A)"
   },
   {
    "address": 4998,
@@ -14072,7 +14072,7 @@
   {
    "address": 5022,
    "type": "line",
-   "text": "scans the keyboard when nothing is held on the joysticks: the key code goes to $010A and, with bit 7 for SHIFT, to $0109, and $010C is set when it changes; $010E chooses the full scan ($142C) or the function-key scan ($1462)"
+   "text": "scans the keyboard when nothing is held on the joysticks: the key code (8 x row + column, as the KERNAL numbers keys) goes to $010A and, with bit 7 for SHIFT, to $0109, and $010C is set when it changes; $010E chooses the full scan ($142C, the menu) or the four keys play listens for ($1462)"
   },
   {
    "address": 5164,
@@ -14082,17 +14082,17 @@
   {
    "address": 5218,
    "type": "line",
-   "text": "checks the four function keys with the column/row pairs at $1488 and returns the code from $1490"
+   "text": "in play, checks only four keys, F1, S, SPACE and V, with the row and column pairs at $1488, and returns the code from $1490"
   },
   {
    "address": 5256,
    "type": "line",
-   "text": "four pairs of CIA values, one per function key"
+   "text": "four pairs of CIA values, a row to drive on $DC00 and the column it reads on $DC01: F1, S, SPACE and V"
   },
   {
    "address": 5264,
    "type": "line",
-   "text": "the codes the function keys return"
+   "text": "the codes those keys return: 4 (F1), $0D (S), $3C (SPACE) and $1F (V)"
   },
   {
    "address": 5268,
@@ -14102,7 +14102,7 @@
   {
    "address": 5276,
    "type": "line",
-   "text": "the first key code of each column"
+   "text": "the first key code of each row (8 x row)"
   },
   {
    "address": 5284,
@@ -14132,12 +14132,12 @@
   {
    "address": 5625,
    "type": "line",
-   "text": "the mark at $8C2A is character $2C, or a blank when joystick 1 is turned for the left hand"
+   "text": "the mark at $8C2A is character $2C while joystick 1 is in left-handed mode ($1383 = 0), a blank otherwise"
   },
   {
    "address": 5649,
    "type": "line",
-   "text": "the mark for joystick 2 at $8C4D, shown only in a two-player game or with a human Yamo"
+   "text": "the same mark for joystick 2 at $8C4D, shown only in a two-player game or with a human Yamo"
   },
   {
    "address": 5652,
@@ -14152,7 +14152,7 @@
   {
    "address": 5701,
    "type": "line",
-   "text": "while $82 is negative (paused by the idle timer) the room's colour record $0153 is the saved one at $47B4 XORed with the frame count $80 and masked with $F7, so the colours cycle until a stick moves"
+   "text": "while $82 is negative (paused by the idle timer) the room's colour record $0153 is the saved one at $47B4 XORed with the slow count $80, which goes up every 256 frames, and masked with $F7, so the colours cycle until a stick moves"
   },
   {
    "address": 5769,
@@ -14222,7 +14222,7 @@
   {
    "address": 6584,
    "type": "line",
-   "text": "in the demo, fire on joystick 1 or the key with code 4 ends it: waits for fire to be let go, six frames, and restarts at the menu ($050F)"
+   "text": "in the demo, fire on joystick 1 or F1 (code 4) ends it: waits for fire to be let go, six frames, and restarts at the menu ($050F)"
   },
   {
    "address": 6636,
@@ -14297,12 +14297,12 @@
   {
    "address": 6953,
    "type": "line",
-   "text": "reads a key in play: RUN/STOP ($04) restarts at $050F, $0D toggles the music flag $1385, $3C toggles pause ($1A22), and $1F shows the version line ($1B68)"
+   "text": "reads a key in play: F1 ($04) restarts at $050F, S ($0D) toggles the music flag $1385, SPACE ($3C) toggles pause ($1A22), and V ($1F) shows the version line ($1B68)"
   },
   {
    "address": 7016,
    "type": "line",
-   "text": "the key with code $1F puts \"BRUCE LEE (C) 1984 DATASOFT REV.2 BY RJF\" ($4707) on the top screen row, or clears the row if it is already there"
+   "text": "the V key puts \"BRUCE LEE (C) 1984 DATASOFT REV.2 BY RJF\" ($4707) on the top screen row, or clears the row if it is already there"
   },
   {
    "address": 7044,
@@ -14327,7 +14327,7 @@
   {
    "address": 7106,
    "type": "line",
-   "text": "once every three frames ($48): check RUN/STOP and the keys, pause, the timers and the enemies' entrances; then move the actors ($3A6F, $5212, $2E39), test the protection bytes $CF7A/$CF9A, check collisions ($29C3, in rooms with enemies), update the top score ($3184), read the sticks and step each actor ($179E), draw the sprites ($2584) and check for deaths ($2D55); then wait for the frame count"
+   "text": "once every three frames ($48): check F1 and the keys, pause, the timers and the enemies' entrances; then move the actors ($3A6F, $5212, $2E39), test the protection bytes $CF7A/$CF9A, check collisions ($29C3, in rooms with enemies), update the top score ($3184), read the sticks and step each actor ($179E), draw the sprites ($2584) and check for deaths ($2D55); then wait for the frame count"
   },
   {
    "address": 7188,
@@ -14367,12 +14367,12 @@
   {
    "address": 7660,
    "type": "line",
-   "text": "one pixel up, only on a climbable surface (bit 2 of $B6)"
+   "text": "one pixel up, only where the outline touches a solid surface (bit 2 of $B6)"
   },
   {
    "address": 7666,
    "type": "line",
-   "text": "moves actor X one pixel up if its feet are on a climbable tile ($B6 bit 2) and it is not above line $2E, and counts the step in $4F57"
+   "text": "moves actor X one pixel up if its feet touch a solid surface ($B6 bit 2) and it is not above line $2E, and counts the step in $4F57"
   },
   {
    "address": 7737,
@@ -14387,7 +14387,7 @@
   {
    "address": 7792,
    "type": "line",
-   "text": "walking left ($C2,x = 3, the action before) for three frames or more with fire held starts a flying kick left ($1F64); otherwise one pixel left"
+   "text": "walking left ($C2,x = 3, the action before) with fire held starts a flying kick left ($1F64) once the walk's count $CB,x has fallen below 4, from the fifth pass of walking; otherwise one pixel left"
   },
   {
    "address": 7814,
@@ -14402,7 +14402,7 @@
   {
    "address": 7857,
    "type": "line",
-   "text": "walking right for three frames or more with fire held starts a flying kick right ($1F6D); otherwise one pixel right"
+   "text": "walking right with fire held starts a flying kick right ($1F6D) once $CB,x is below 4, as $1E70; otherwise one pixel right"
   },
   {
    "address": 7876,
@@ -14417,7 +14417,7 @@
   {
    "address": 8073,
    "type": "line",
-   "text": "no move possible: back to standing (action 0), counting the stops in $4FDB"
+   "text": "no move possible: back to standing (action 0); an actor that was standing already gets $4FDB set, which tells choose_frame ($2780) to keep its frame"
   },
   {
    "address": 8082,
@@ -14557,7 +14557,7 @@
   {
    "address": 9888,
    "type": "line",
-   "text": "copies a frame's bytes from its shape table (address patched into $26AB, $26E4 and $26EE) into a 63-byte sprite at ($0E), A selecting a mirrored copy; pads the rest with zeros"
+   "text": "copies a frame's rows from its shape table (address patched into $26AB, $26E4 and $26EE) into a 63-byte sprite at ($0E), bottom row first; A nonzero (from $5CBF) selects the loop for frames two bytes wide ($26D7), which puts each row one sprite row higher than a narrow frame's; pads the rest with zeros. The two directions an actor faces are separate frames, not mirrored copies"
   },
   {
    "address": 9899,
@@ -14572,22 +14572,22 @@
   {
    "address": 9956,
    "type": "line",
-   "text": "the same address for the mirrored copy"
+   "text": "the same address, for the loop that copies wide frames: reads the second byte of each row"
   },
   {
    "address": 9957,
    "type": "line",
-   "text": "the high byte of the mirrored address"
+   "text": "the high byte of the address the wide loop reads each row's second byte from"
   },
   {
    "address": 9966,
    "type": "line",
-   "text": "the same address, second byte of each row"
+   "text": "the same address, read with X - 1: the first byte of each two-byte row, stored one place to the left"
   },
   {
    "address": 9967,
    "type": "line",
-   "text": "the high byte of the mirrored second-byte address"
+   "text": "the high byte of the address the wide loop reads each row's first byte from"
   },
   {
    "address": 9988,
@@ -14597,7 +14597,7 @@
   {
    "address": 10009,
    "type": "line",
-   "text": "for frame X, patches the shape's address from $59BD/$5A8F into $26A0 and returns its colour ($5C33, or $F0, black, for the Ninja) in A and its height ($5B61) in $E0,x"
+   "text": "for frame X, patches the shape's address from $59BD/$5A8F into copy_shape, puts its height ($5B61) in $E0,x, and returns its colour ($5C33, or $F0, black, for the Ninja) in A and its width flag ($5CBF) in X"
   },
   {
    "address": 10063,
@@ -14657,7 +14657,7 @@
   {
    "address": 10691,
    "type": "line",
-   "text": "reads the sprite collision register $D01E and works out which pairs of actors touch; for each, an attack in progress hits: a punch ($11) within 6 pixels, a flying kick ($0C, $0D) within 6, an enemy strike ($16) within 4, and a fall onto the other's head ($0E, from 10 pixels above, twice at most until $4F45 is reset)"
+   "text": "reads the sprite collision register $D01E and works out which pairs of actors touch; for each, an attack in progress hits when the target is far enough in front of the attacker: a punch ($11) at least 6 pixels, a flying kick ($0C, $0D) at least 6, an enemy strike ($16) at least 4, and a fall onto the other's head ($0E, from at least 10 lines above, twice at most until $4F45 is reset)"
   },
   {
    "address": 11070,
@@ -15062,12 +15062,12 @@
   {
    "address": 15504,
    "type": "line",
-   "text": "room 10: when two items are gone draws a wall section; the NOPs at $3CA7 are a removed call; runs the mines"
+   "text": "room 10: when two items are gone draws a wall section; then 22 NOPs ($3CA7), as long as room 11's item block ($3CC0), as if that block had been blanked out here; runs the mines"
   },
   {
    "address": 15552,
    "type": "line",
-   "text": "room 11: when an item is gone the hazard turns; runs the mines and the hazard"
+   "text": "room 11: when lantern 3 ($4E33) is gone, once, sets the hazard's direction $65 to 0 and its speed step $4321 to 7; runs the mines and the hazard"
   },
   {
    "address": 15580,
@@ -15312,12 +15312,12 @@
   {
    "address": 18183,
    "type": "line",
-   "text": "the hidden credit line shown by key $1F: \"BRUCE LEE (C) 1984 DATASOFT REV.2 BY RJF\" in the game's character codes"
+   "text": "the hidden credit line shown by the V key: \"BRUCE LEE (C) 1984 DATASOFT REV.2 BY RJF\" in the game's character codes"
   },
   {
    "address": 18258,
    "type": "line",
-   "text": "text CONGRATULATIONS, shown in the treasure room"
+   "text": "the rest of text 4, which starts two bytes earlier ($4750, \"** \"): \" CONGRATULATIONS **\", shown in the treasure room"
   },
   {
    "address": 18288,
@@ -16227,12 +16227,12 @@
   {
    "address": 42034,
    "type": "line",
-   "text": "flame pixel rows of a lantern character in the set at $A000, rewritten at random by flicker_lanterns"
+   "text": "row 2 of character $86 in the set at $A000, a flame row rewritten at random by flicker_lanterns"
   },
   {
    "address": 42035,
    "type": "line",
-   "text": "the flame rows of the first lantern character, from its second row"
+   "text": "row 3 of character $86, the other flame row flicker_lanterns rewrites ($40E3); then its rows 4-7 and the first three rows of character $87, which nothing changes"
   },
   {
    "address": 42096,
@@ -16462,7 +16462,7 @@
   {
    "address": 57648,
    "type": "line",
-   "text": "the byte the tune reader fetched last"
+   "text": "the look-ahead: the byte after the one the tune reader returned ($E3FF), whose bit 7 says a command follows; $FF at the start ($E399)"
   },
   {
    "address": 57649,
@@ -16812,7 +16812,7 @@
   {
    "address": 59505,
    "type": "line",
-   "text": "the song list's end and leftover tune bytes"
+   "text": "the song list's end, $FF, which the menu writes there ($06D7)"
   },
   {
    "address": 59506,

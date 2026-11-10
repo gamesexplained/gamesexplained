@@ -384,6 +384,12 @@ number the keys the other way round, row + 8 × column; its key table is 64
 bytes in that order, and printing it as an 8 × 8 grid against this one
 settles which.
 
+A game may also test only a few keys, from a short table of the row
+it drives on `$DC00` and the column it expects low on `$DC01`. Name each
+key from its pair against the grid above, not from what such a routine
+looks like it reads: a four-key table in play is easily taken for the
+function keys or RUN/STOP when it holds letters and SPACE.
+
 **A game that scans from its main loop drops short presses.** The scan
 runs once a pass, not once a frame, and a pass can take several frames.
 Most scanners also keep only one of two held keys and ignore a key equal

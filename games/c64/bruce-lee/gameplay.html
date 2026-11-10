@@ -1,0 +1,74 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bruce-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Take the lanterns, open the passages, and keep away from the Ninja and Yamo. The numbers behind each part of that come straight from the game’s tables.</p>
+</header>
+<main class="wrap">
+<section id="lanterns">
+  <p class="fig">The goal</p>
+  <h2 class="t">Lanterns open the fortress</h2>
+  <p class="lede">Every room keeps a list of its lanterns, four bytes each: whether it still hangs, its character, its column, and its row (<code>item_lists</code>, <code>$4D0C</code>, through <code>item_pointers</code>, <code>$4CE2</code>). Walking into one takes it for 125 points (<code>collect_lantern</code>, <code>$2F04</code>).</p>
+  <p>Each room also has a routine that runs every pass (<code>room_frame_table</code>, <code>$4EC4</code>). It watches the room’s lanterns, or the lanterns of other rooms, and when the right ones are gone it draws a passage open. In room 0, for example, taking the room’s six lanterns sets a door flashing (<code>room_0</code>, <code>$3642</code>); room 1’s gate opens only when rooms 0, 1, and 2 are all empty of lanterns (<code>room_1</code>, <code>$3679</code>). The <a href="levels.html">Maps</a> tab shows which exits each room opens.</p>
+  <p>The count of lanterns left in every room is part of each player’s state (<code>$2A</code>-<code>$3D</code>), so in a two-player game each player has a fortress of their own.</p>
+</section>
+
+<section id="enemies">
+  <p class="fig">The enemies</p>
+  <h2 class="t">The Ninja and Yamo keep coming back</h2>
+  <p class="lede">Yamo is actor 1 and the Ninja actor 2 (<code>spawn_yamo</code>, <code>$0CD5</code>; <code>spawn_ninja</code>, <code>$0DF8</code>). Each waits a time set per room before he comes in (<code>$131F</code> and <code>$135B</code>), and eight rooms have no enemies at all: 3, 8, 9, 11, 13, 17, 18, and 19 (<code>room_no_enemies</code>, <code>$4C9E</code>).</p>
+  <p>Blows come off a health count (<code>apply_hits</code>, <code>$2B4E</code>). An actor is beaten when it goes below zero.</p>
+  <div class="tw"><table class="t">
+    <tr><th>Blow</th><th class="n">Health it costs</th></tr>
+    <tr><td>an enemy’s strike</td><td class="n">2</td></tr>
+    <tr><td>a punch</td><td class="n">3</td></tr>
+    <tr><td>landing on someone’s head</td><td class="n">5</td></tr>
+    <tr><td>a flying kick</td><td class="n">7</td></tr>
+  </table></div>
+  <p>The Ninja starts with at most 7, so two kicks beat him; Yamo starts with at most 20, so it takes three. Bruce starts each fall with 36 (<code>lose_fall</code>, <code>$1818</code>). A blow lands only when the two sprites touch and the target is at least a set distance in front of the attacker: 6 pixels for a punch or a kick, 4 for an enemy’s strike (<code>check_collisions</code>, <code>$29C3</code>).</p>
+  <p>Lingering makes them come sooner. Once Bruce has been in a room for <code>$19</code> x 256 frames, about two minutes, an enemy’s wait is halved when he next sets off, and after <code>$20</code> x 256 frames, about two and three-quarter minutes, it is cut to 3. In the second loop, after the treasure room, every wait is cut to 3 from the start (<code>set_yamo_wait</code>, <code>$0D46</code>, and the room clock test at <code>$10D0</code>).</p>
+</section>
+
+<section id="score">
+  <p class="fig">Scoring</p>
+  <h2 class="t">The points table</h2>
+  <div class="tw"><table class="t">
+    <tr><th>For</th><th class="n">Points</th><th>Where</th></tr>
+    <tr><td>landing on an enemy</td><td class="n">50</td><td><code>$2B4E</code></td></tr>
+    <tr><td>a kick that lands</td><td class="n">75</td><td><code>$2B4E</code></td></tr>
+    <tr><td>a punch that lands</td><td class="n">100</td><td><code>$2B4E</code></td></tr>
+    <tr><td>a lantern</td><td class="n">125</td><td><code>$2F04</code></td></tr>
+    <tr><td>beating the Ninja</td><td class="n">200</td><td><code>$2B4E</code></td></tr>
+    <tr><td>beating Yamo</td><td class="n">450</td><td><code>$2B4E</code></td></tr>
+    <tr><td>dropping through each of three heights in room 13, three times a player</td><td class="n">500</td><td><code>room_13</code>, <code>$3E7C</code></td></tr>
+    <tr><td>entering a room for the first time</td><td class="n">2,000</td><td><code>$0A0E</code></td></tr>
+    <tr><td>beating the Wizard</td><td class="n">3,000</td><td><code>room_18</code>, <code>$3CDC</code></td></tr>
+  </table></div>
+</section>
+
+<section id="falls">
+  <p class="fig">Falls</p>
+  <h2 class="t">Four falls, and more to earn</h2>
+  <p class="lede">A game starts with four falls, or nine when a person plays Yamo (<code>new_game</code>, <code>$0F72</code>). Losing the last one ends the game (<code>lose_fall</code>, <code>$1818</code>).</p>
+  <p>The first extra fall is due at 40,000 points and the next every 30,000 after (<code>$438B</code>, <code>$438E</code>), though the check that gives them has a flaw explained on the <a href="discoveries.html#extra-fall">Discoveries</a> tab. Room 16 has a fall of its own to take, a spot that adds one when Bruce stands on it (<code>bonus_fall</code>, <code>$2FD6</code>).</p>
+</section>
+
+<section id="traps">
+  <p class="fig">Traps</p>
+  <h2 class="t">Mines, moving walls, and deadly cells</h2>
+  <p>Some screen characters kill whoever touches them: characters <code>$0F</code>, <code>$40</code>, <code>$54</code>-<code>$5A</code>, <code>$64</code>, and <code>$71</code>-<code>$7C</code> (<code>tile_action</code>, <code>$2E89</code>). They remove an enemy the same way, everywhere except the Wizard’s room (<code>deadly_tile</code>, <code>$304B</code>). Mines explode in a short animation (<code>animate_mines</code>, <code>$3228</code>), sections of wall slide back and forth, and a moving hazard is redrawn a pattern at a time in characters <code>$61</code>-<code>$63</code> (<code>animate_hazard</code>, <code>$2C70</code>). In the Wizard’s room, his fireballs kill Bruce on contact (<code>room_18</code>, <code>$3CDC</code>).</p>
+</section>
+
+<section id="players">
+  <p class="fig">Two players</p>
+  <h2 class="t">Taking turns, or playing Yamo</h2>
+  <p>Two players can take turns as Bruce, swapping after each fall with their own score, falls, and lanterns (<code>lose_fall</code>, <code>$1818</code>). A second player can instead play Yamo, with a joystick of their own, against the first player’s Bruce. A human Yamo who leaves the stick alone for 7 x 256 frames, about 36 seconds, is handed back to the computer, and both players lose five falls for it (<code>yamo_idle</code>, <code>$173F</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

@@ -22,14 +22,14 @@ Whether the code the trainers change differs from the original release is not ch
 3. Hold RUN/STOP for 1.5 seconds. Wait about 26 seconds: the loading picture appears, the game decompressing behind it.
 4. Tap fire on joystick port 2. The trainer asks "Unlimited lives ??". Press `N` for each question (two, in this order: lives, opponents), a second apart. **Choice: no trainer options, the plain game.**
 5. The game's menu appears: `F3` toggles one or two players, `F5` computer or opponent, `F7` begins. Press `F7`.
-6. Play begins in room one after about 6 seconds, with `000000 TOP 000000 FALLS 04` on the status line. The joystick is read from port 2.
+6. Play begins in room one after about 6 seconds, with `000000 TOP 000000 FALLS 04` on the status line. Bruce is played with the joystick in port 1 (`$DC01`); port 2 is the second player's (`facts.md`, "Controls").
 
 Snapshots, all in `work/` (gitignored): `entry.vsf` at the hand-over (a stopping checkpoint on `$0400`), `menu.vsf` (menu), `play-room1.vsf` (first frames of play), `title-picture.vsf` and `trainer-prompt.vsf`. `play-room1.vsf` is the one the listing is built from; it and `entry.vsf` agree on all the program's code (they differ in zero page, `$0200`-`$03A0` and the screens, tile and bitmap data the game writes as it starts).
 
 ## Steady state
 
 - Processor port `$01` = `$35` in play: BASIC and KERNAL ROMs banked out, I/O visible. The hardware vectors at `$FFFA`-`$FFFF` are RAM: NMI and reset point to `$1116` (an `RTI`), IRQ to `$1103`, which saves the registers and jumps through the pointer in `$0408`-`$0409`; the KERNAL's `$0314` vector is not used (reads `$0101`).
-- VIC: video bank 2 (`$DD00` = `$C1`, so `$8000`-`$BFFF`), bitmap mode with `$D018` = `$78` (screen RAM at `$9C00`, bitmap at `$A000`), multicolour on (`$D016` = `$D8`).
+- VIC: video bank 2 (`$DD00` = `$C1`, so `$8000`-`$BFFF`), character mode with multicolour, the screen at `$8C00`. A chain of raster interrupts splits the screen: the score band uses the characters at `$8800` (`$D018` = `$32`), the room the set at `$A000`, `$A800` or `$B000` (`$D018` = `$38`, `$3A` or `$3C`, kept in `$F2`), and each room changes its colours at a list of raster lines (`facts.md`, "Memory layout").
 - Music and sound: the sound routines identify themselves in a string at `$E314` as the "Micropearl Music Player, copyright 1983 John A. Fitzpatrick"; code around `$EB00`-`$F100` writes SID voices 1, 2 and 3.
 - Nothing is reloaded from disk during play: the whole game is in the single file.
 
