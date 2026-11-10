@@ -150,3 +150,5 @@ Load-4 type-$08 entity vector selects the dispatcher at $B4F3. Five forced VICE 
 Load-4 type-$08 states 3 and 4 set frames and branch by direction or timer. Eight forced VICE cases covered active, sign, wrap and timer boundaries with the effect callback stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-4 type-$08 state 0 calls $3020 twice and uses the second result’s low two bits to set $1B06,X to 4–7 before incrementing the state. Five forced VICE cases checked the initialization with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-4 type-$08 shared movement at $B5D0 selects $4574 or $45BC by the sign of $1AC2,X and flips that sign bit if the callback returns carry set. Four forced VICE cases checked both directions and carry outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.

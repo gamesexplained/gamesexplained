@@ -840,3 +840,5 @@ Checked load-4 type-$08 dispatcher and five state targets in forced VICE cases; 
 Checked load-4 type-$08 states 3 and 4 in eight forced VICE cases with an effect callback stubbed; restored the paused user snapshot.
 
 Checked load-4 type-$08 state 0 in five forced VICE cases with callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 movement helper in four forced VICE cases with movement callbacks stubbed; restored the paused user snapshot.
