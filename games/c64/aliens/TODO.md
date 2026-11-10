@@ -1,5 +1,18 @@
 # Aliens — TODO
 
-Tier: bronze. The run was on an unproven model, so Silver also needs a maintainer's sample on a proven model.
+Tier: silver. Coverage and verify ran on a proven model. The sample of 80
+comments found 12 wrong (all corrected); an audit of the whole listing on
+a proven model is recommended before Gold (`kit/CHECKING.md`).
 
-Missing for Silver: annotate the engine (6,913 tracked bytes, 0 % explained) and the six level parts (not analysed; only level 3 has a code map), a hand-over snapshot per part, which packed file holds which level, `facts.md` from the code, verify, graphics, music and levels pages.
+Missing for Gold: a human curation pass over every page, section by section.
+
+Open for later:
+
+- The timing of level 4's alien and blast frames, and of level 3's burning
+  and flame frames: the Graphics tab shows them as stills or at a step every
+  eight frames.
+- Names for level 2's thirty animations on the Graphics tab (shown by number).
+- Whether an uncracked disk's engine differs from this one.
+- What the fourteen bytes at `$895C` in the briefing were for.
+- The title's entry byte `$8028` as the file arrives.
+- A Play tab.

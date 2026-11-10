@@ -21,16 +21,16 @@
 <section id="skip">
   <p class="fig">02 · Skipping a level</p>
   <h2 class="t">The game's own skip costs the ending, and the crack's does not</h2>
-  <p class="lede">The manual tells players stuck on a level how to skip it: hold a key and press RESTORE. It warns that a game with a skipped level never reaches the final screen. The code keeps that promise with a single byte, and the cracked disk studied here adds a skip of its own that leaves the byte alone.</p>
+  <p class="lede">The manual tells players stuck on a level how to skip it: hold a key and press RESTORE. The manual warns that a game with a skipped level never reaches the final screen. The code keeps that promise with a single byte, and the cracked disk studied here adds a skip of its own that leaves the byte alone.</p>
   <p>With the up-arrow key held, RESTORE leads to <code>stage_abort</code> (<a href="source-engine.html#08ac"><code>$08AC</code></a>), which sets <code>$0202</code> to <code>$FF</code> and ends the stage without its status screen. From then until a new game, <code>make_code</code> (<a href="source-engine.html#1720"><code>$1720</code></a>) writes no code, so the status screen shows five asterisks, and the ending (<a href="source-queen.html#88da"><code>$88DA</code></a>) skips Bishop, the hypersleep text, and The End.</p>
-  <p>The crack's trainer adds a second skip on the Commodore key (<code>trainer_skip</code>, <a href="source-engine.html#3b01"><code>$3B01</code></a>). It ends the stage as if it had been won, through the status screen, and it clears <code>$0202</code> as it does (<code>skip_pressed</code>, <a href="source-engine.html#3b1e"><code>$3B1E</code></a>). A player using the crack's key still gets codes and the ending, which the game's own skip was written to deny.</p>
+  <p>The crack's trainer adds a second skip on the Commodore key (<code>trainer_skip</code>, <a href="source-engine.html#3b01"><code>$3B01</code></a>). That key ends the stage as if it had been won, through the status screen, and it clears <code>$0202</code> as it does (<code>skip_pressed</code>, <a href="source-engine.html#3b1e"><code>$3B1E</code></a>). A player using the crack's key still gets codes and the ending, which the game's own skip was written to deny.</p>
 </section>
 
 <section id="zone">
   <p class="fig">03 · A slip in the ducts</p>
   <h2 class="t">Level 4 tests a byte in memory where it meant a number</h2>
   <p class="lede">In the air duct maze, aliens come out of vents chosen by zones of the map. The routine that finds a cell's zone has an instruction that reads the wrong thing.</p>
-  <p>Each cell of the maze has two zones, four bits each, in a table at <code>$9530</code>. <code>zone_of</code> (<a href="source-level4.html#91c7"><code>$91C7</code></a>) takes the low four bits, or the high four when a test is set. The test ANDs a byte with <code>$05</code>, written as <code>AND $05</code>, which reads memory location 5, rather than <code>AND #$05</code>, the number 5. It also indexes a table by a register the routine does not set. Which of a cell's two zones it gives therefore depends on bytes the routine does not control.</p>
+  <p>Each cell of the maze has two zones, four bits each, in a table at <code>$9530</code>. <code>zone_of</code> (<a href="source-level4.html#91c7"><code>$91C7</code></a>) takes the low four bits, or the high four when a test is set. The test ANDs a byte with <code>$05</code>, written as <code>AND $05</code>, which reads memory location 5, rather than <code>AND #$05</code>, the number 5. The routine also indexes a table by a register the routine does not set. Which of a cell's two zones it gives therefore depends on bytes the routine does not control.</p>
 </section>
 
 <section id="leftovers">
