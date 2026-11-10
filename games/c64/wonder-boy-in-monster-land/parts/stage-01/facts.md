@@ -39,3 +39,5 @@ First-load item input uses one 220-frame timeout across release and polling. It 
 First-load left and right selection handlers move among the usual $FF, 0 and 1 states, optionally requesting the first or second item description when the layout selector is zero. Eight forced VICE cases and a listing test check the transitions with description and cursor callbacks stubbed. Other input values and natural reachability remain open.
 
 First-load item confirmation selects messages from the stage-record flags or selects an item record by index sign. On a successful payment result it decrements the record field and calls the selected item effect with ID plus one. Seven forced VICE cases and a listing test check the branches with payment and effect callbacks stubbed. The callbacks and natural reachability remain open.
+
+Controlled visual-resource selections copied 171 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.

@@ -626,3 +626,5 @@ Traced resident transfer-memory receive and send at $7E02/$7E25. VICE and a list
 Traced the rising-entity overlap decision at $6939–$69A1, including carry into the player-Y addition. Seven forced VICE cases and a listing test checked width selection and selected attach/reject branches with the display-slot callback stubbed. The paused user snapshot was restored; further boundary and natural-play cases remain open.
 
 Checked 5003 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Checked 171 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
