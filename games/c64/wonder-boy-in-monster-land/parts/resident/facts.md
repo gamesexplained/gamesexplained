@@ -183,3 +183,7 @@ Resident helpers $3E54–$3EC5 test display presence, update signed vertical mot
 Resident $3E15 initializes a second entity-motion mode; $3E2B optionally reverses direction, calls movement and countdown helpers, then selects a frame or invokes cleanup. VICE checked four forced initialization, reversal and countdown cases with movement and cleanup callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Resident $3DB9 either clears an entity, reuses an existing trajectory or initializes one from entity reference bytes and display-slot coordinates. VICE checked four forced state and slot cases with direction, motion and cleanup callbacks stubbed. Callback effects, slot bounds and ordinary-play reachability remain open.
+
+Resident $34EA calculates a four-bit direction from coordinate differences, subtraction carries and two tables. It normalizes negative byte values modulo 256 and reduces both magnitudes before indexing the eight-by-eight table. VICE checked twelve forced coordinate cases against an independent calculation, including wrapped differences and $80. Ordinary-play reachability remains open.
+
+VICE also checked three forced $3DB9 trajectory initializations through the real $34EA direction calculation, with the motion callback stubbed. Ordinary-play reachability remains open.

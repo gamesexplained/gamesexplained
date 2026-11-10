@@ -20052,7 +20052,57 @@
   {
    "address": 13546,
    "type": "line",
-   "text": "Calculates a 4-bit direction from coordinate differences by reducing magnitudes, selecting a quadrant and indexing a direction table."
+   "text": "Subtract $35BD from $35BF and $35BE from $35C0 modulo 256, storing the bytes at $35BB and $35BC. Rotate the carry from each subtraction into $3576, then use that 0\u20133 value to index $3577 and replace $3576 with the table result."
+  },
+  {
+   "address": 13586,
+   "type": "line",
+   "text": "For each delta byte, if bit 7 is set, negate it modulo 256. This includes $80, which remains $80."
+  },
+  {
+   "address": 13612,
+   "type": "line",
+   "text": "While the first delta is at least 8, shift both delta bytes right once."
+  },
+  {
+   "address": 13628,
+   "type": "line",
+   "text": "While the second delta is at least 8, shift both delta bytes right once."
+  },
+  {
+   "address": 13644,
+   "type": "line",
+   "text": "If bit 0 of $3576 is set, exchange the two reduced delta bytes before the lookup."
+  },
+  {
+   "address": 13665,
+   "type": "line",
+   "text": "Form Y as the second reduced delta times 8 OR the first. Add $357B,Y to four times $3576, mask the result to four bits and return it in A."
+  },
+  {
+   "address": 13686,
+   "type": "line",
+   "text": "Quadrant index accumulated from the two subtraction carries, then replaced by a value from $3577 and used for the final lookup."
+  },
+  {
+   "address": 13687,
+   "type": "line",
+   "text": "Four-byte quadrant remapping table: 1, 0, 2, 3, indexed by the two subtraction carry bits."
+  },
+  {
+   "address": 13691,
+   "type": "line",
+   "text": "An eight-by-eight table of direction offsets, indexed by the two reduced coordinate-difference bytes."
+  },
+  {
+   "address": 13755,
+   "type": "line",
+   "text": "First coordinate difference, normalized and reduced by $34EA before the direction-table lookup."
+  },
+  {
+   "address": 13756,
+   "type": "line",
+   "text": "Second coordinate difference, normalized and reduced by $34EA before the direction-table lookup."
   },
   {
    "address": 13761,
