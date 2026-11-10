@@ -5,7 +5,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="{{lib}}/site.css">
 <style>
-ol.src li{margin-bottom:10px}
+ol.gr-src li{margin-bottom:10px}
+sup.fn{font-size:.7em;line-height:0}
+sup.fn a{text-decoration:none}
+sup.fn + sup.fn::before{content:","}
 </style>
 <body class="site">
 <!-- tabs -->
@@ -14,15 +17,30 @@ ol.src li{margin-bottom:10px}
   <h1 style="margin-top:0">About this page</h1>
   <h2 id="copy">The copy studied</h2>
   <p>The pages describe the V-Max! version 2 disk, whose loader reads one file, <code>G2</code>, unpacks it twice into <code>$0801</code>-<code>$FFF9</code> and starts it at <code>$1688</code>. The game never reads the disk again, so the addresses on these pages are those of that one load. The Source tab's listing is built from memory saved at the moment the game starts. No game image is hosted here.</p>
-  <p>The game was not looked up online for these pages: no manual, review or interview was read, and every claim comes from the game's own code and screens.</p>
-  <h2 id="sources">How the pages were checked</h2>
-  <ol class="src">
+  <p>This is the American release, titled Gradius on its title screen, with KONAMI 1986 on its loading screen. Konami sold the same game in Britain and Europe in 1987 as Nemesis, and Ocean's Hit Squad label sold Nemesis again at a budget price in 1990.<sup class="fn"><a href="#src-7">7</a></sup><sup class="fn"><a href="#src-8">8</a></sup> Only this Gradius was analysed. Where a page says what Nemesis does, it says so from the sources below, not from its code.</p>
+  <h2 id="credits">Original game credits</h2>
+  <p>The loading screen reads PROGRAMMING SIMON PICK, and is signed STU in its bottom left corner. C64-Wiki credits Simon Pick with the programming and graphics, and Stu Jackson and Ashley Routledge with graphics,<sup class="fn"><a href="#src-7">7</a></sup> so STU is probably Stu Jackson, an inference. No one is credited with the music.</p>
+  {{game_credits}}
+  <h2 id="reception">Reception</h2>
+  <p>British magazines reviewed the Commodore 64 game as Nemesis. The scores below are those C64-Wiki lists for it; the reviews themselves were not read for these pages.<sup class="fn"><a href="#src-7">7</a></sup></p>
+  <div class="tablewrap"><table>
+    <tr><th>Magazine</th><th>Issue</th><th>Score</th></tr>
+    <tr><td><i>Commodore User</i></td><td>March 1987, p. 18</td><td>9 out of 10</td></tr>
+    <tr><td><i>Computer &amp; Video Games</i></td><td>March 1987, p. 14</td><td>9 out of 10</td></tr>
+    <tr><td><i>Zzap!64</i></td><td>May 1987, p. 90</td><td>80 %</td></tr>
+    <tr><td><i>Your Commodore</i></td><td>July 1987, p. 84</td><td>8 out of 10</td></tr>
+  </table></div>
+  <h2 id="sources">Sources, and how the pages were checked</h2>
+  <ol class="gr-src">
     <li id="src-1">The music player on the Overview runs the game's own tune player over the bytes in the listing. <code>test_music.js</code>, beside the page, runs the game's <code>music_tick</code> (<code>$6AA9</code>) on the kit's 6502 and holds every sound-chip write of 3,000 frames of each tune to the page's player.</li>
     <li id="src-2">The effects player runs the game's <code>play_effect</code> (<code>$9B71</code>) and <code>effects_tick</code> (<code>$9BE1</code>), checked by <code>test_music.js</code> in the same way as the tunes.</li>
     <li id="src-3">The screen-split stepper works out the lines from the timers' period (<code>$42C6</code>) and the frame's length. On VICE's PAL C64, three frames recorded with <code>frame.py</code> had the split writes at lines 82 and 242; 1, 161 and 272; and 80, 191 and 226. The stepper gives the same lines to within one, apart from the write at line 226, which it does not have.</li>
     <li id="src-4">The scenery viewer and the Levels tab draw the maps with the page's own reader. <code>test_map.js</code> runs the game's <code>map_column</code> (<code>$4EA9</code>) and <code>map_column_up</code> (<code>$54DF</code>) on every column of every stage, 2,135 in all, and holds the reader to them.</li>
     <li id="src-5">The last boss on the Graphics tab is drawn by the page dot by dot. <code>test_brain.js</code> runs the game's <code>grow_brain</code> (<code>$9985</code>) and matches every one of its 83 frames.</li>
     <li id="src-6">The sprites' colours, modes and sizes on the Graphics tab were recorded in VICE on 9 November 2026: each stage was started with the cheat flag set, so the ship could not die, and played for 13,000 frames, reading the game's sprite table (<code>$408C</code>-<code>$40C3</code>) every six frames. The Options and the exhaust flame did not appear in that play, so their colours come from <code>draw_options</code> (<code>$6F7E</code>), and the hatch's explosion from <code>move_hatch</code>.</li>
+    <li id="src-7">C64-Wiki, "<a href="https://www.c64-wiki.com/wiki/Nemesis_(Konami)">Nemesis (Konami)</a>", read 10 November 2026: the titles of the European and American releases, the credits, the M key in Nemesis and the sound effects only in Gradius, the cheat in Nemesis and its overwritten part in Gradius, and the magazine scores.</li>
+    <li id="src-8">MobyGames, "<a href="https://www.mobygames.com/game/4512/gradius/releases/">Gradius: releases</a>", read 10 November 2026: the British release by Konami in 1987 and the budget re-release by The Hit Squad in 1990.</li>
+    <li id="src-9">Eli's Software Encyclopedia, "<a href="https://elisoftware.org/wiki/Gradius_(C64,_5_1/4%22_Disk)_Konami_-_1986_USA,_Canada_Release">Gradius (C64, 5¼" disk), Konami, 1986, USA and Canada release</a>", read 10 November 2026: the American release in 1986.</li>
   </ol>
   <!-- footprint: build.py leaves this out for a game with no listing -->
   <h2>Footprint</h2>
@@ -42,7 +60,7 @@ ol.src li{margin-bottom:10px}
     <tr><th>Kit version</th><td>{{kit_version}}</td></tr>
   </table></div>
   {{accuracy}}
-  <h2>Contributors</h2>
+  <h2>Site contributors</h2>
   {{contributors}}
   <h2>Other places to love this game</h2>
   {{links}}

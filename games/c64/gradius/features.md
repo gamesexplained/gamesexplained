@@ -10,8 +10,14 @@ was tried), **confirmed** (in the code, consistent with the emulator),
 Sources:
 
 - The game's own screens: the loading screen, the title, the power-up bar
-  and the ending text, seen in VICE on 9 November 2026. The run did not
-  look the game up online, so no manual or review is listed here.
+  and the ending text, seen in VICE on 9 November 2026.
+- C64-Wiki, "Nemesis (Konami)", read 10 November 2026: the European
+  release is Nemesis, where M switches between music and sound effects and
+  the title-screen cheat works; Gradius has only the effects, and the
+  cheat's most important part is overwritten.
+- MobyGames, Gradius releases, and Eli's Software Encyclopedia, read 10
+  November 2026: Gradius in the USA and Canada in 1986, Nemesis in Britain
+  in 1987.
 
 ## Features
 
@@ -46,7 +52,8 @@ Found in the code, not on any screen.
 
 ## Open questions
 
-- Whether the published game was meant to play music: the driver and its
-  two tunes are complete, but two links to them are missing.
+- Why the American release lost its music: the European Nemesis plays it
+  (C64-Wiki), and this Gradius has the same driver and tunes with two links
+  cut. Whether the links were cut on purpose is not known.
 - What the developer's disk name "NEM" stands for in full: the file name
   reads OBJNEMMAIN3, and Nemesis is the game's name in Europe.
