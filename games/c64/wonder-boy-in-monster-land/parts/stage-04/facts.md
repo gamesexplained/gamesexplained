@@ -146,3 +146,5 @@ The shop label code at $A844 passes two selected item bytes to the formatter and
 This load has 27 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
 Load-4 type-$08 entity vector selects the dispatcher at $B4F3. Five forced VICE cases checked its five captured target pairs; the index is not locally bounded and ordinary-play reachability remains open.
+
+Load-4 type-$08 states 3 and 4 set frames and branch by direction or timer. Eight forced VICE cases covered active, sign, wrap and timer boundaries with the effect callback stubbed. Callback effects and ordinary-play reachability remain open.

@@ -836,3 +836,5 @@ Classified load-14 immediate-return entity vector entries, sampled five in VICE 
 Classified immediate-return entity vector targets across later loads; checked every recorded vector pair and RTS byte in the listing test, sampled 18 calls across six loads in VICE, and preserved overlapping character-source descriptions. Restored the paused user snapshot.
 
 Checked load-4 type-$08 dispatcher and five state targets in forced VICE cases; restored the paused user snapshot.
+
+Checked load-4 type-$08 states 3 and 4 in eight forced VICE cases with an effect callback stubbed; restored the paused user snapshot.
