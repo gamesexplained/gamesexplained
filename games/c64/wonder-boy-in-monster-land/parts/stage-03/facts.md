@@ -60,3 +60,5 @@ The object record at $901F contains initialization target $902F. Two forced VICE
 The object record at $901F contains result callback $9085, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 The trigger record at $8FD2 contains message callback $8FDE, which passes $8FEB to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
+
+Load 3 entity types $07 and $24 have state dispatchers at $9B96 and $9E28. Forced VICE calls confirmed seven and four captured targets respectively; index bounds, handler behavior and ordinary-play reachability remain open. The first dispatcher overlaps bytes copied as character data.
