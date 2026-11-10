@@ -72,3 +72,5 @@ The object record at $9152 contains initialization target $9162. Two forced VICE
 The object record at $9152 contains result callback $91B4, which returns A=$00 with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 5 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

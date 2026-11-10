@@ -162,3 +162,5 @@ Load-4 type-$08 helper $B646 changes state and removes its return address when $
 Load-4 type-$08 state 1 uses a phase and count to select callbacks and can initialize a second slot. The code calls $447A immediately after $190B without testing carry. Five forced VICE cases checked phase, count, position carry and both stubbed allocator carry results; whether ordinary play fills all slots on this path and callback effects remain open.
 
 With all 17 entity slots forced occupied, a VICE test called the real $190B allocator and $447A reset from $B571. The allocator returned carry clear with X=$FF; the following setup wrote $04 to $1A18 and $01 to $1BF4 before restoring X. Ordinary-play reachability and player-visible effects remain open.
+
+Controlled visual-resource reconstruction reads 15 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

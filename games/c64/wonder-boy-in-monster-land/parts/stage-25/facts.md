@@ -100,3 +100,5 @@ The object record at $94C0 contains result callback $9522, which returns A=$09 w
 This load has 27 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
 Load 25 type-$1E state 3 advances an offset index and clears its state when the countdown is negative or a selected callback returns a value whose bits 1–2 differ from 2. State 4 decrements its timer and can copy the saved state at $1AE4,X back to $1AB1,X. The alternate event removes one return address; its follow-up tail-calls $5D7A only on carry from $7227. Nine forced VICE cases checked the local paths with callbacks stubbed; normal reachability and callback effects remain open.
+
+Controlled visual-resource reconstruction reads 206 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

@@ -150,3 +150,5 @@ Load-14 type-$13 state 0 at $A822 resets a timer, can change direction and anima
 Load 14 has 23 one-byte RTS entries selected by captured entity vectors at $A5A6–$A5B0 and $A8C1–$A8CC. Five forced VICE calls sampled the ranges and preserved A, X and Y; a listing test checks every vector pair and byte. Ordinary-play reachability remains open.
 
 This load has 2 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 8 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

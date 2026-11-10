@@ -92,3 +92,5 @@ The second part of load-3 type-$07 state 0 at $9BEA sets the allocation loop cou
 Load-3 child initializers $9D38 and $9D5C use three captured offsets at $9E24 and share setup at $9D8E. Twelve forced VICE cases checked all three offset values, both source paths and position-byte carry; both paths patch an immediate operand to restore Y. The index is not locally bounded and ordinary-play reachability remains open.
 
 This load has 28 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 18 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

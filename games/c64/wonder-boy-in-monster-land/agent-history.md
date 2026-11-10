@@ -958,3 +958,5 @@ Independent fixed-seed sample 261110 checked 60 of 29,177 listing comments on gp
 Resolved the split pointer table for all seven resident status graphics and extended the listing test to check all 140 captured source codes through the real draw routine.
 
 Resolved the resident display-field aliases by base and physical index and extended the two-emitter test to all 32 indexes. Kept possible out-of-range aliasing and ordinary-play constraints explicit.
+
+Traced the token and metatile-character source reads in all 99 captured visual-resource selections. Bounded 496 previously bare data bytes across 74 read segments, preserving existing code and descriptions and leaving unread tails separate.

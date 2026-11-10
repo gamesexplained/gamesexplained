@@ -64,3 +64,5 @@ Load-11 entries at $95F4 and $9616 pass the encoded streams at $95FF and $9621 t
 The object record at $963E contains result callback $969F, which returns A=$F7 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 This load has 30 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 14 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

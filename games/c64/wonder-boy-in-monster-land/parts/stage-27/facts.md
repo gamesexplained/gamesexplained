@@ -118,3 +118,5 @@ The shop label code at $9268 passes two selected item bytes to the formatter and
 This load has 28 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
 Load-27 type-$20 dispatcher $AF5C chooses a direct path for a positive field or a captured target for zero and negative fields. Three forced VICE cases checked those paths with $B009 stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Controlled visual-resource reconstruction reads 17 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

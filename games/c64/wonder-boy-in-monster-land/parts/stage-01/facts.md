@@ -81,3 +81,5 @@ The first-load entity stream at $B4EF contains six ten-byte records before a zer
 First-load welcome handling saves and restores X around a message call; a neighboring entry returns carry set and A=9, and another jumps to a second message. Three VICE calls and a listing test check these entries with message display stubbed or stopped. The six nine-byte setup graphics tails are covered by the setup-copy test. Natural reachability and callback effects remain open.
 
 The first load has 24 eight-byte item records with packed prices, drawing and effect targets, and description pointers. A listing test exercises price and pointer selection for every record; VICE matched all table bytes and checked three representative records through each of the three pointer-dispatch paths. Callback effects and natural selection remain open.
+
+Controlled visual-resource reconstruction reads 55 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

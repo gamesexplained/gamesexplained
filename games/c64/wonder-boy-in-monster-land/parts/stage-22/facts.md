@@ -72,3 +72,5 @@ The object record at $9430 contains result callback $94A6, which returns A=$F7 w
 The trigger record at $9324 contains message callback $9336, which passes $9343 to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 14 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

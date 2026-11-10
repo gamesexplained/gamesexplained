@@ -134,3 +134,5 @@ Load-20 type-$1B motion routine $BDFF uses 40 captured signed values at $BE21 an
 Load-20 type-$1B state 0 begins at $BCED and selects return, state change, contact or allocation paths. Nine forced VICE cases checked these branches with callbacks stubbed. The code overlaps copied character-source bytes; callback effects, index bounds and ordinary-play reachability remain open.
 
 Load-20 type-$1B animation at $BD7B adjusts phase and frame fields using a callback carry and counter parity. Its movement tail at $BDCD uses asymmetric positive and negative thresholds because the negative path subtracts with carry clear. Eight forced VICE cases checked animation and eleven checked movement with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Controlled visual-resource reconstruction reads 24 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

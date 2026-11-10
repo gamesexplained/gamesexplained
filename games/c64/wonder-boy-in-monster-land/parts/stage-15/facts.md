@@ -136,3 +136,5 @@ The shop drawing setup at $96E6 selects two pointer-table entries, calls the sec
 The shop label code at $9735 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $992E to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 This load has 27 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 3 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

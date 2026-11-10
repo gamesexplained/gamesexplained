@@ -132,3 +132,5 @@ This load has 29 additional one-byte RTS entries selected by captured entity vec
 Load-9 routine $94A0 copies 72 bytes to $CCD0–$CD17 and three three-byte tables to $5023, $5038 and $504D. Three forced VICE cases checked source variations with $77E0/$77E2 stubbed. The data’s display role, callback effects and ordinary-play reachability remain open.
 
 Load-9 first stage-object record points to $9465. The callback tests the low three bits of $4DE2,Y, changes a matching value from 1 to 2 and selects four message pointers before the block copy; other values call $77E2 twice. Four forced VICE cases checked both branches with the two overlapping message entry points redirected independently to stubs. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Controlled visual-resource reconstruction reads 20 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.

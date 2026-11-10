@@ -46,6 +46,8 @@ In load 31, controlled type-$2D state-4 setup and frame-helper calls selected 12
 
 In load 31, direct type-$2D state-5 entry with the timer forced to zero and callbacks stubbed selected two additional sprite masks for display slots 4 and 5. Each mask matches its entry and play capture, and a 200-frame probe found no instruction entry in its range. `test_type2d_finish_sprites.js` checks the selection, bitmap geometry and gallery data; the controlled VICE state-5 setup confirmed the display fields. Ordinary-play reachability and other uses remain open.
 
+The visual-resource tests also record source reads at the compressed-token and metatile-copy instructions. They establish 496 additionally described bytes across 74 bounded segments in the captured selections. `visual-source-observations.json` records the bounds, and `test_visual_source_reads.js` repeats the reads through the game instructions. Unread tails and other uses remain open.
+
 ## Entity records
 
 Each later load supplies an entity-record pointer at `$7F4F` and an initial slot limit at `$7F51`. `$369E` copies ten bytes from a record into the resident entity arrays. A zero first byte ends the record sequence; the slot-reuse path can select records beyond the initial limit. Controlled VICE tests checked all ten copied fields for load 2's first record and load 19's twelfth record. `test_entity_records.js` checks the copies for the later loads' 179 described records against the resident instructions. A field's later use depends on the entity's handler.

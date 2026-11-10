@@ -72,3 +72,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 128-byte st
 The object record at $91B2 contains initialization target $91C2. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 This load has 32 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 11 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
