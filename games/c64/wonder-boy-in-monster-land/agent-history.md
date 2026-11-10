@@ -175,3 +175,5 @@ The type-$04 state-1 result dispatch was described in loads 2, 4 and 6. Listing 
 Type-$04 states 4 and 5 were described in loads 2, 4 and 6, completing the six captured handler bodies while leaving their common first callee, index bounds and natural reachability open. Listing tests check counter boundaries and wrap; nine controlled VICE calls check representative paths with external callees stubbed. The paused game was restored.
 
 The type-$04 shared event check was traced in all three loads. Its state changes, callbacks and alternate-index decrement were tested in listing simulation; eight controlled VICE calls checked representative paths with the external callees stubbed. The alternate index and normal-play contexts remain open; the paused snapshot was restored.
+
+A separate type-$01 dispatcher was found in loads 2, 4, 12, 20 and 23. Listing tests and seven controlled VICE calls checked its three targets. States 1 and 2 were traced and checked with callbacks stubbed in listing tests and ten VICE calls; state 0 and natural reachability remain open. The paused game was restored.
