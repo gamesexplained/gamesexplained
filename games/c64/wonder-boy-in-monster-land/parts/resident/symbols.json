@@ -23901,6 +23901,26 @@
    "text": "Restore the saved Y, load the patched damage amount and call $77BC. Set cooldown $4DE1 to $28, set carry, restore the original X from the patched operand and return. The subtraction routine selects its own player index and floors a result whose sign bit is set."
   },
   {
+   "address": 23991,
+   "type": "line",
+   "text": "Immediate operand restoring the entity index X after damage processing; $5D7D patches it before any damage branch."
+  },
+  {
+   "address": 23993,
+   "type": "line",
+   "text": "Save the incoming A in $58. If entity flag bit 0 is set, call $43F0 with A=$0C. With world mode $7A zero, jump to $5E71; otherwise use the entity reload counter to choose release for values 2 or more, or a selector table for values 0 and 1. Movement callback effects and ordinary-play reachability are separate."
+  },
+  {
+   "address": 24014,
+   "type": "line",
+   "text": "Read $1B4A,X. Values 2 or more jump to $4454; zero selects the first handler selector table and one selects the second. Table indexing is not bounded here."
+  },
+  {
+   "address": 24024,
+   "type": "line",
+   "text": "Use entity type $1919,X as an index into the first selector table at $5DFD when the counter is zero; otherwise use the second table at $5E23. Pass the resulting byte as Y to the handler-pointer dispatch at $5DEB. Neither index is bounded locally."
+  },
+  {
    "address": 24044,
    "type": "line",
    "text": "Patch the low byte of the dispatch target from the indexed table."
@@ -23921,9 +23941,19 @@
    "text": "Two captured 38-byte selector sequences. The code does not locally limit the type index to these sequences; the resulting handler index can also come directly from a callback."
   },
   {
+   "address": 24099,
+   "type": "line",
+   "text": "Second 38-byte captured entity-type selector sequence, used when the entity reload counter is 1. Each byte selects an index in the handler-pointer tables at $5E49/$5E5D. The consumer does not locally bound the entity type."
+  },
+  {
    "address": 24137,
    "type": "line",
    "text": "Twenty captured handler entries. The selector and direct callback paths do not locally bound the index."
+  },
+  {
+   "address": 24157,
+   "type": "line",
+   "text": "High bytes paired with the twenty handler-pointer low bytes at $5E49. The code patches the jump operand using the selector value; neither selector nor direct callback index is bounded locally."
   },
   {
    "address": 24222,
