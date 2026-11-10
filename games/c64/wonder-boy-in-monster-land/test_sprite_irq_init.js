@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const [port,meter] of [[0x37,0x55],[0x35,0xa3]]){const m=base.slice();m[1]=port;m[0x6e]=meter;const cpu=new CPU(m);cpu.pc=0x16c0;cpu.run({until:0x16ed,maxSteps:150});assert.equal(cpu.pc,0x16ed);assert.equal(m[0x179a],port);assert.equal(m[1],0x35);assert.deepEqual([...m.slice(0xd000,0xd00e)],Array(14).fill(255));assert.equal(m[0xd00e],meter);assert.equal(m[0xd010],0x7f);assert.equal(m[0x4d68],0x7f);assert.equal(m[0xd01d],0x80);assert.equal(m[0xd01b],0x80);}
+console.log('OK - sprite interrupt initialization');

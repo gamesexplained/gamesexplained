@@ -327,3 +327,5 @@ The primary matrix cells $C0AE–$C3E7 are part of the screen cleared by $7B2A. 
 The status template $4DE4–$4EAB is copied to $C000–$C0C7. Its six bytes at $4E35–$4E3A also restore the meter background at $C051–$C056 in the routine at $37F7. The full copy was checked in VICE and the listing; other source uses remain open.
 
 The platform contact calculation at $2173 uses halved horizontal positions and a patched width; its vertical path compares player Y plus 21 against the entity slot and may shorten the downward step. Four forced VICE cases and a listing test cover equality, a shortened step, horizontal rejection and vertical rejection. These checks start within the routine and do not prove ordinary-play reachability.
+
+The first sprite interrupt setup at $16C0 saves the CPU-port read, banks I/O in, acknowledges the VIC interrupt, initializes sprite coordinates and masks, and sets sprite 7 X from the meter byte. Two forced VICE cases checked these writes through $16ED; the listing test checks the same sequence with ordinary flat-memory port reads. Actual interrupt scheduling and CPU-port input-pin state are separate.

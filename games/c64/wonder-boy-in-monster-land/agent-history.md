@@ -720,3 +720,5 @@ Described the previously unlabelled tail of the 200-byte status template and its
 Traced the resident platform-contact bounds through the support-state update. Four forced VICE paths and a listing test checked horizontal rejection, vertical rejection, equal height and a shortened step. Corrected two misplaced existing comments at $21E0 and $21EF; restored the paused user snapshot.
 
 Checked the later resident raster-split wait and sprite positioning in two forced VICE cases with different raster and delay operands, and extended the listing test. Restored the paused user snapshot.
+
+Described sprite interrupt initialization at $16C0. Two forced VICE cases and a listing test checked its coordinate and mask writes; the VICE port read reflects input-pin state. Restored the paused user snapshot.
