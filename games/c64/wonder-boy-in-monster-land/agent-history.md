@@ -339,3 +339,7 @@ Firefox rendered a type-$02 frame and its source link on desktop and fit the 390
 Applied the type-$01 frame-selection probe to the newly traced handler copies. Load 3 yielded eight additional masks matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both paths. Added bounded descriptions and gallery entries, extended the listing test, exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
 
 Firefox rendered a load-3 type-$01 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Forced type-$09 record copies and direct animation-helper calls in loads 5, 7, 13, 21 and 22. These selected 20 additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both countdowns in every load. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the five projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$09 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
