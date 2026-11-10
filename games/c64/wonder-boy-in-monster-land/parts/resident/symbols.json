@@ -4,7 +4,7 @@
  "game": "wonder-boy-in-monster-land",
  "part": "resident",
  "build": "",
- "source": "regenerator2000 live",
+ "source": "regen2000proj",
  "regions": {
   "exclude": [
    [
@@ -10283,6 +10283,12 @@
    "kind": "user"
   },
   {
+   "address": 17676,
+   "name": "downward_collision_tile_scan",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 17690,
    "name": "select_downward_collision_row",
    "type": "Branch",
@@ -18769,9 +18775,79 @@
    "text": "The immediate operand is set to $00 for a nonnegative displacement or $ff for a negative one, extending the signed byte into the high-byte addition."
   },
   {
+   "address": 1347,
+   "type": "line",
+   "text": "Immediate byte of the ADC at $0542, patched to $00 or $FF to extend the displacement sign into the high-byte addition."
+  },
+  {
+   "address": 1382,
+   "type": "line",
+   "text": "Set shared sprite colours, hide the player and initialize eight display slots from position and frame tables. Wait for fire, mark 29 display slots free, wait for the fire input to change, then return to title for continue values $11 or $01. Otherwise save the display, load visual resources, show the continue message and select the left choice."
+  },
+  {
+   "address": 1504,
+   "type": "line",
+   "text": "On each frame refresh the HUD and sample the controls. Test left first, right second and fire third; no selected input repeats the poll."
+  },
+  {
+   "address": 1533,
+   "type": "line",
+   "text": "Place the two selection sprites using X=$E6 and Y=$E1, set the selection byte to $FF and resume polling."
+  },
+  {
+   "address": 1548,
+   "type": "line",
+   "text": "Place the two selection sprites using X=$6E and Y=$E1, clear the selection byte and resume polling."
+  },
+  {
+   "address": 1563,
+   "type": "line",
+   "text": "Fire with a nonzero selection returns to the title; a zero selection checks the remaining continue count."
+  },
+  {
+   "address": 1571,
+   "type": "line",
+   "text": "If no continues remain, show the add-credits message. Otherwise spend one, restore the player meter to its limit, clear all three BCD score bytes and initialize the game display."
+  },
+  {
+   "address": 1599,
+   "type": "line",
+   "text": "Display the message at $0678 and return to the continue-choice poll."
+  },
+  {
    "address": 1613,
    "type": "line",
    "text": "Three zero-terminated message fields followed by a $fe control byte. Text uses the captured character set."
+  },
+  {
+   "address": 1689,
+   "type": "line",
+   "text": "Prepare the post-event tally: set the sound state, save the display, load the visual resource selected at $7F81, hide the player and clear the display-sort flag. Write $01 across 39 bytes at $D940; when the selected player meter equals its limit also write $01 across 39 bytes at $D990."
+  },
+  {
+   "address": 1737,
+   "type": "line",
+   "text": "When the selected player meter equals its limit, pass $10 to the middle-byte BCD score addition routine. Otherwise skip this full-meter bonus."
+  },
+  {
+   "address": 1750,
+   "type": "line",
+   "text": "Set the refill counter to the selected meter plus eight with eight-bit wrap, and set the score-conversion counter to that meter shifted right once."
+  },
+  {
+   "address": 1768,
+   "type": "line",
+   "text": "On each conversion pass wait for frames, refresh the HUD, pass $02 to the meter-subtraction routine and $41 to the score routine. Decrement the conversion counter and repeat until it is zero. The first pass executes even if the counter began at zero."
+  },
+  {
+   "address": 1795,
+   "type": "line",
+   "text": "Wait for a frame, pass $01 to the meter-addition routine, refresh the HUD and decrement the refill counter until zero. A zero initial counter takes 256 iterations because the decrement wraps."
+  },
+  {
+   "address": 1811,
+   "type": "line",
+   "text": "Wait for fire. In two-player mode, when the selected player index is zero and the second player meter is nonzero, select the second player and initialize the game display. Otherwise continue at the stage-counter path."
   },
   {
    "address": 1855,
@@ -19889,6 +19965,61 @@
    "text": "Releases allocated display slots and clears the selected entity's state. Slot zero and optional second pairs follow distinct branches."
   },
   {
+   "address": 17630,
+   "type": "line",
+   "text": "Save A at $4571. If $7A is zero, reload A and tail-jump to $4368; otherwise enter the tile check at $44EB."
+  },
+  {
+   "address": 17643,
+   "type": "line",
+   "text": "Save Y, subtract $005A from the 16-bit coordinate $197F,X:$1990,X into $4570:$456F, and add the requested amount to the low nibble. If the sum is below 16, restore the saved amount and Y and tail-jump to $4368."
+  },
+  {
+   "address": 17676,
+   "type": "line",
+   "text": "Clear $4573, call $71DB, push its returned A and set $4573 to 1 if carry is set. Save the returned X, form $52/$53 from the indexed bytes at $85D1/$8622 plus that X, and read the first tile. If its $80CF-indexed value has either low bit set, clamp; if not, check the next tile only when $4573 is nonzero."
+  },
+  {
+   "address": 17737,
+   "type": "line",
+   "text": "Pop the saved A into X. Set $1990,X to the high nibble of $456F plus $69 and $197F,X to $4570 plus the carry; restore Y from $456E, set carry and return."
+  },
+  {
+   "address": 17763,
+   "type": "line",
+   "text": "Pop the saved A into X. Reload the movement amount from $4571 and Y from $456E, then tail-jump to $4368."
+  },
+  {
+   "address": 17774,
+   "type": "line",
+   "text": "Saved Y for the downward tile check; restored on both its clamp and fallback paths."
+  },
+  {
+   "address": 17775,
+   "type": "line",
+   "text": "Low byte of the coordinate after subtracting $005A, used for the tile boundary and clamp."
+  },
+  {
+   "address": 17776,
+   "type": "line",
+   "text": "High byte of the coordinate after subtracting $005A, used for the clamp."
+  },
+  {
+   "address": 17777,
+   "type": "line",
+   "text": "Movement amount saved from A on entry, passed to $4368 on fallback."
+  },
+  {
+   "address": 17778,
+   "type": "line",
+   "text": "X returned by $71DB, added to the indexed row pointer for the tile check."
+  },
+  {
+   "address": 17779,
+   "type": "line",
+   "text": "Flag set from carry returned by $71DB; when nonzero the clear first-tile path checks the next tile."
+  },
+  {
    "address": 18005,
    "type": "line",
    "text": "Loads 16-byte stage records into parallel fields and uses the last four bytes for a map update. The runtime count is not locally checked against field spacing."
@@ -19917,6 +20048,11 @@
    "address": 18425,
    "type": "line",
    "text": "Call the fixed visual-resource loader at $7119 with X from the selected stage record\u2019s field 4. The loader uses that selector to choose the screen and character tables."
+  },
+  {
+   "address": 18428,
+   "type": "line",
+   "text": "Call the target patched from the selected stage record\u2019s fields 5 and 6 at $47DE\u2013$47E7. The captured $FF00 operand is a placeholder; the target depends on the record."
   },
   {
    "address": 18527,
@@ -20339,6 +20475,311 @@
    "text": "Character-source prefix accessed by the decoded screen in the capture; the resident copy reads 2 KB and may overlap other code and data. Other states can access additional characters."
   },
   {
+   "address": 22608,
+   "type": "line",
+   "text": "Screen 17 glyph $01 first occurs at column 1, row 0 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 31 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22616,
+   "type": "line",
+   "text": "Screen 17 glyph $02 first occurs at column 0, row 0 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22624,
+   "type": "line",
+   "text": "Screen 17 glyph $03 first occurs at column 10, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22632,
+   "type": "line",
+   "text": "Screen 17 glyph $04 first occurs at column 11, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22640,
+   "type": "line",
+   "text": "Screen 17 glyph $05 first occurs at column 26, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22648,
+   "type": "line",
+   "text": "Screen 17 glyph $06 first occurs at column 27, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22656,
+   "type": "line",
+   "text": "Screen 17 glyph $07 first occurs at column 16, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22664,
+   "type": "line",
+   "text": "Screen 17 glyph $08 first occurs at column 17, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22672,
+   "type": "line",
+   "text": "Screen 17 glyph $09 first occurs at column 18, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22680,
+   "type": "line",
+   "text": "Screen 17 glyph $0A first occurs at column 19, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22688,
+   "type": "line",
+   "text": "Screen 17 glyph $0B first occurs at column 20, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22696,
+   "type": "line",
+   "text": "Screen 17 glyph $0C first occurs at column 21, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22704,
+   "type": "line",
+   "text": "Screen 17 glyph $0D first occurs at column 22, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22720,
+   "type": "line",
+   "text": "Screen 17 glyph $0F first occurs at column 11, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22728,
+   "type": "line",
+   "text": "Screen 17 glyph $10 first occurs at column 26, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22736,
+   "type": "line",
+   "text": "Screen 17 glyph $11 first occurs at column 16, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22744,
+   "type": "line",
+   "text": "Screen 17 glyph $12 first occurs at column 17, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22752,
+   "type": "line",
+   "text": "Screen 17 glyph $13 first occurs at column 18, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22760,
+   "type": "line",
+   "text": "Screen 17 glyph $14 first occurs at column 19, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22768,
+   "type": "line",
+   "text": "Screen 17 glyph $15 first occurs at column 20, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22776,
+   "type": "line",
+   "text": "Screen 17 glyph $16 first occurs at column 21, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22784,
+   "type": "line",
+   "text": "Screen 17 glyph $17 first occurs at column 22, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22792,
+   "type": "line",
+   "text": "Screen 17 glyph $18 first occurs at column 10, row 13 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22800,
+   "type": "line",
+   "text": "Screen 17 glyph $19 first occurs at column 12, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 64 nonzero monochrome pixels, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22808,
+   "type": "line",
+   "text": "Screen 17 glyph $1A first occurs at column 10, row 14 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22816,
+   "type": "line",
+   "text": "Screen 17 glyph $1B first occurs at column 27, row 13 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22824,
+   "type": "line",
+   "text": "Screen 17 glyph $1C first occurs at column 16, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22832,
+   "type": "line",
+   "text": "Screen 17 glyph $1D first occurs at column 17, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22840,
+   "type": "line",
+   "text": "Screen 17 glyph $1E first occurs at column 18, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22848,
+   "type": "line",
+   "text": "Screen 17 glyph $1F first occurs at column 19, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22856,
+   "type": "line",
+   "text": "Screen 17 glyph $20 first occurs at column 20, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22864,
+   "type": "line",
+   "text": "Screen 17 glyph $21 first occurs at column 21, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22872,
+   "type": "line",
+   "text": "Screen 17 glyph $22 first occurs at column 22, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22880,
+   "type": "line",
+   "text": "Screen 17 glyph $23 first occurs at column 16, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22888,
+   "type": "line",
+   "text": "Screen 17 glyph $24 first occurs at column 17, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22896,
+   "type": "line",
+   "text": "Screen 17 glyph $25 first occurs at column 18, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22904,
+   "type": "line",
+   "text": "Screen 17 glyph $26 first occurs at column 19, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22912,
+   "type": "line",
+   "text": "Screen 17 glyph $27 first occurs at column 20, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22920,
+   "type": "line",
+   "text": "Screen 17 glyph $28 first occurs at column 21, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22928,
+   "type": "line",
+   "text": "Screen 17 glyph $29 first occurs at column 12, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22936,
+   "type": "line",
+   "text": "Screen 17 glyph $2A first occurs at column 16, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22944,
+   "type": "line",
+   "text": "Screen 17 glyph $2B first occurs at column 17, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22952,
+   "type": "line",
+   "text": "Screen 17 glyph $2C first occurs at column 18, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22960,
+   "type": "line",
+   "text": "Screen 17 glyph $2D first occurs at column 19, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22968,
+   "type": "line",
+   "text": "Screen 17 glyph $2E first occurs at column 20, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22976,
+   "type": "line",
+   "text": "Screen 17 glyph $2F first occurs at column 21, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 22984,
+   "type": "line",
+   "text": "Screen 17 glyph $30 first occurs at column 11, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 22992,
+   "type": "line",
+   "text": "Screen 17 glyph $31 first occurs at column 18, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 28 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23000,
+   "type": "line",
+   "text": "Screen 17 glyph $32 first occurs at column 15, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 22 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23008,
+   "type": "line",
+   "text": "Screen 17 glyph $33 first occurs at column 13, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 37 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23016,
+   "type": "line",
+   "text": "Screen 17 glyph $34 first occurs at column 12, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 30 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23024,
+   "type": "line",
+   "text": "Screen 17 glyph $35 first occurs at column 14, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 19 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23032,
+   "type": "line",
+   "text": "Screen 17 glyph $36 first occurs at column 17, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 29 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23040,
+   "type": "line",
+   "text": "Screen 17 glyph $37 first occurs at column 9, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 23048,
+   "type": "line",
+   "text": "Screen 17 glyph $38 first occurs at column 10, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 20 nonzero multicolour pixel pairs, occupying rows 0\u20136. Other uses remain open."
+  },
+  {
+   "address": 23056,
+   "type": "line",
+   "text": "Screen 17 glyph $39 first occurs at column 28, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 23064,
+   "type": "line",
+   "text": "Screen 17 glyph $3A first occurs at column 9, row 16 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 23072,
+   "type": "line",
+   "text": "Screen 17 glyph $3B first occurs at column 28, row 16 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 23080,
+   "type": "line",
+   "text": "Screen 17 glyph $3C first occurs at column 9, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
+   "address": 23088,
+   "type": "line",
+   "text": "Screen 17 glyph $3D first occurs at column 10, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 20 nonzero multicolour pixel pairs, occupying rows 1\u20137. Other uses remain open."
+  },
+  {
+   "address": 23096,
+   "type": "line",
+   "text": "Screen 17 glyph $3E first occurs at column 28, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
+  },
+  {
    "address": 23104,
    "type": "line",
    "text": "Extent accessed by the corresponding captured screen data. This region also lies inside the stage-zero 2 KB character-copy source; other runtime inputs may read beyond it."
@@ -20407,6 +20848,71 @@
    "address": 24234,
    "type": "line",
    "text": "The target is patched before execution; the captured $ff00 operand is not a fixed destination."
+  },
+  {
+   "address": 24238,
+   "type": "line",
+   "text": "High operand byte of the JSR at $5EAC. The selected stage record supplies this byte at $5EA4; it is not a standalone instruction."
+  },
+  {
+   "address": 24239,
+   "type": "line",
+   "text": "Use the callback flags to select effect setup: zero enters the zero-result path, a nonzero result with carry clear skips the setup, and a nonzero result with carry set branches according to its sign."
+  },
+  {
+   "address": 24246,
+   "type": "line",
+   "text": "Save the zero callback result and clear the effect direction. Carry clear selects the positive configuration; carry set changes the direction to $FF and selects the negative configuration."
+  },
+  {
+   "address": 24260,
+   "type": "line",
+   "text": "For a nonzero callback result with carry set, a negative value selects the negative configuration. A positive value is saved on the stack and used as the direction."
+  },
+  {
+   "address": 24266,
+   "type": "line",
+   "text": "Set the positive effect frame base to $99, animation delay to $0A and sprite colour to $07, then initialize its sprite arrays."
+  },
+  {
+   "address": 24283,
+   "type": "line",
+   "text": "Store the negative result as direction, negate it with eight-bit arithmetic and save the magnitude on the stack."
+  },
+  {
+   "address": 24292,
+   "type": "line",
+   "text": "Set the negative effect frame base to $A1 and sprite colour to $01, then initialize its sprite arrays."
+  },
+  {
+   "address": 24302,
+   "type": "line",
+   "text": "Copy eight motion speeds and directions, set lifetime to $C0 and animation phase to zero, and copy the selected entity position into eight effect positions."
+  },
+  {
+   "address": 24352,
+   "type": "line",
+   "text": "Search display slots from index 31 down for the first free Y byte ($FF); save its index as effect slot 1. If none is free, the descending scan exits at $FF and saves that out-of-range index."
+  },
+  {
+   "address": 24368,
+   "type": "line",
+   "text": "Search below the first saved index for the second free display slot and save it as effect slot 2. The loop has no separate failure check before storing the resulting Y value."
+  },
+  {
+   "address": 24383,
+   "type": "line",
+   "text": "Search below the second saved index for the third free display slot and save it as effect slot 3. The loop has no separate failure check before storing the resulting Y value."
+  },
+  {
+   "address": 24398,
+   "type": "line",
+   "text": "Search below the third saved index for the fourth free display slot and save it as effect slot 4. The loop has no separate failure check before storing the resulting Y value."
+  },
+  {
+   "address": 24413,
+   "type": "line",
+   "text": "Clear the effect cursor and eight occupancy flags. Restore the saved callback-derived value; if it is zero, set the game-exit flag to $FF before returning to the special-object dispatcher."
   },
   {
    "address": 24791,
@@ -21084,9 +21590,294 @@
    "text": "63 sprite bitmap bytes for VIC bank-3 slot $61, in RAM beneath CPU I/O; the 64th slot byte is outside this bitmap. In the paused second-load play capture, hardware sprite 2 was enabled with this pointer and multicolour mode off. These bytes match the resident entry and the first- and second-load play captures; other states and writes remain to be checked."
   },
   {
+   "address": 55424,
+   "type": "line",
+   "text": "The first eight rows of VIC sprite slot $62 show the fixed numeral 1 in the resident-entry and load-2 play captures. The score renderer writes two columns in the following rows; other uses remain open."
+  },
+  {
+   "address": 55430,
+   "type": "line",
+   "text": "RAM beneath I/O: rows 2\u20137 of the fixed numeral 1 in sprite slot $62. This address also has a CPU-visible I/O meaning when the chip is banked in; other RAM uses remain open."
+  },
+  {
+   "address": 55450,
+   "type": "line",
+   "text": "The rightmost byte of row 8 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55453,
+   "type": "line",
+   "text": "The rightmost byte of row 9 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55456,
+   "type": "line",
+   "text": "The rightmost byte of row 10 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55459,
+   "type": "line",
+   "text": "The rightmost byte of row 11 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55462,
+   "type": "line",
+   "text": "The rightmost byte of row 12 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55465,
+   "type": "line",
+   "text": "The rightmost byte of row 13 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55468,
+   "type": "line",
+   "text": "The rightmost byte of row 14 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55471,
+   "type": "line",
+   "text": "The rightmost byte of row 15 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55472,
+   "type": "line",
+   "text": "The last five rows of VIC sprite slot $62 are blank in the resident-entry and load-2 play captures. Other uses remain open."
+  },
+  {
    "address": 55488,
    "type": "line",
    "text": "63 sprite bitmap bytes for VIC bank-3 slot $63, in RAM beneath CPU I/O; the 64th slot byte is outside this bitmap. In the paused second-load play capture, hardware sprite 4 was enabled with this pointer and multicolour mode off. These bytes match the resident entry and the first- and second-load play captures; other states and writes remain to be checked."
+  },
+  {
+   "address": 55552,
+   "type": "line",
+   "text": "The first eight rows of VIC sprite slot $64 are the fixed HIGH lettering in the resident-entry and load-2 play captures. The score renderer writes the following rows; other uses remain open."
+  },
+  {
+   "address": 55600,
+   "type": "line",
+   "text": "The last five rows of VIC sprite slot $64 are blank in the resident-entry and load-2 play captures. Other uses remain open."
+  },
+  {
+   "address": 55616,
+   "type": "line",
+   "text": "The first eight rows of VIC sprite slot $65 are blank in the resident-entry and load-2 play captures. The score renderer writes two columns in the following rows; other uses remain open."
+  },
+  {
+   "address": 55642,
+   "type": "line",
+   "text": "The rightmost byte of row 8 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55645,
+   "type": "line",
+   "text": "The rightmost byte of row 9 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55648,
+   "type": "line",
+   "text": "The rightmost byte of row 10 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55651,
+   "type": "line",
+   "text": "The rightmost byte of row 11 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55654,
+   "type": "line",
+   "text": "The rightmost byte of row 12 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55657,
+   "type": "line",
+   "text": "The rightmost byte of row 13 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55660,
+   "type": "line",
+   "text": "The rightmost byte of row 14 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55663,
+   "type": "line",
+   "text": "The rightmost byte of row 15 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
+  },
+  {
+   "address": 55664,
+   "type": "line",
+   "text": "The last five rows of VIC sprite slot $65 are blank in the resident-entry and load-2 play captures. Other uses remain open."
+  },
+  {
+   "address": 56064,
+   "type": "line",
+   "text": "Monochrome bitmap for player sprite slot $6C, selected with adjacent slot $6D by the fire-action path at $3CD5 when the facing offset is zero. $2086 generates its reflection at $DE80; a controlled VICE call reproduced all 63 output bytes."
+  },
+  {
+   "address": 56065,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 0, byte 1 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56066,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 0, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56067,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56068,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 1 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56069,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56070,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56071,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 1 is $BE in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56072,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56073,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56074,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 1 is $41 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56075,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 2 is $80 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56076,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56077,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 1 is $7C in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56078,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 2 is $60 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56079,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56080,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 1 is $82 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56081,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 2 is $20 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56082,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56083,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 1 is $7F in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56084,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 2 is $20 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56085,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56086,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 1 is $A9 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56087,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 2 is $A0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56088,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56089,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 1 is $A8 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56090,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 2 is $A0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56091,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56092,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 1 is $80 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56093,
+   "type": "line",
+   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 2 is $C0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56094,
+   "type": "line",
+   "text": "RAM beneath I/O: the remaining 33 bytes of sprite slot $6C hold monochrome rows 10\u201320 of the action bitmap selected by $3CD5. The CPU-visible I/O meaning is separate. Other RAM uses remain open."
+  },
+  {
+   "address": 56128,
+   "type": "line",
+   "text": "Multicolour bitmap for player sprite slot $6D, the second layer paired with $6C. $2086 reflects two-bit pixels into slot $7B at $DEC0; a controlled VICE call reproduced all 63 output bytes."
+  },
+  {
+   "address": 56192,
+   "type": "line",
+   "text": "Monochrome bitmap for player sprite slot $6E, selected with adjacent slot $6F by the fire-action path at $3CEA when the facing offset is zero. $2086 generates its reflection at $DF00; a controlled VICE call reproduced all 63 output bytes."
+  },
+  {
+   "address": 56256,
+   "type": "line",
+   "text": "Multicolour bitmap for player sprite slot $6F, the second layer paired with $6E. $2086 reflects two-bit pixels into slot $7D at $DF40; a controlled VICE call reproduced all 63 output bytes."
   },
   {
    "address": 56448,
@@ -21097,6 +21888,66 @@
    "address": 56512,
    "type": "line",
    "text": "The 63-byte multicolour bitmap for VIC sprite slot $73 beneath I/O. A forced load-13 play snapshot has active display slot 3 at Y=162 using this pointer, and its bytes match the resident entry. In the title-to-play route, $2086 reads this source and mirrors it into slot $81 at $E040; a controlled VICE call reproduced the observed 63-byte output. Natural reachability and other writes remain open."
+  },
+  {
+   "address": 56576,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $74: a monochrome reflection of the first-load bitmap at $ACC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
+  },
+  {
+   "address": 56640,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $75: a multicolour reflection of the first-load bitmap at $AD07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56704,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $76: a monochrome reflection of the first-load bitmap at $AD47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
+  },
+  {
+   "address": 56768,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $77: a multicolour reflection of the first-load bitmap at $AD87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56832,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $78: a monochrome reflection of the first-load bitmap at $ADC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
+  },
+  {
+   "address": 56896,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $79: a multicolour reflection of the first-load bitmap at $AE07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
+  },
+  {
+   "address": 56960,
+   "type": "line",
+   "text": "Mirror of the player action bitmap at $DB00, generated by $2086 as sprite slot $7A; $3CD5 selects it when the facing offset is $0E."
+  },
+  {
+   "address": 57024,
+   "type": "line",
+   "text": "Mirror of the multicolour action bitmap at $DB40, generated by $2086 as sprite slot $7B adjacent to $7A."
+  },
+  {
+   "address": 57088,
+   "type": "line",
+   "text": "Mirror of the player action bitmap at $DB80, generated by $2086 as sprite slot $7C; $3CEA selects it when the facing offset is $0E."
+  },
+  {
+   "address": 57152,
+   "type": "line",
+   "text": "Mirror of the multicolour action bitmap at $DBC0, generated by $2086 as sprite slot $7D adjacent to $7C."
+  },
+  {
+   "address": 57216,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $7E: a monochrome reflection of the first-load bitmap at $AE47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
+  },
+  {
+   "address": 57280,
+   "type": "line",
+   "text": "RAM beneath I/O holds sprite slot $7F: a multicolour reflection of the first-load bitmap at $AE87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
   },
   {
    "address": 57344,
@@ -21302,796 +22153,6 @@
    "address": 65530,
    "type": "line",
    "text": "Captured RAM vectors: NMI $11e8, reset $121b, IRQ $005d. Under the captured CPU port state RAM is visible here; $121b is the NMI return instruction, so do not infer a conventional reset path."
-  },
-  {
-   "address": 1347,
-   "type": "line",
-   "text": "Immediate byte of the ADC at $0542, patched to $00 or $FF to extend the displacement sign into the high-byte addition."
-  },
-  {
-   "address": 1382,
-   "type": "line",
-   "text": "Set shared sprite colours, hide the player and initialize eight display slots from position and frame tables. Wait for fire, mark 29 display slots free, wait for the fire input to change, then return to title for continue values $11 or $01. Otherwise save the display, load visual resources, show the continue message and select the left choice."
-  },
-  {
-   "address": 1504,
-   "type": "line",
-   "text": "On each frame refresh the HUD and sample the controls. Test left first, right second and fire third; no selected input repeats the poll."
-  },
-  {
-   "address": 1533,
-   "type": "line",
-   "text": "Place the two selection sprites using X=$E6 and Y=$E1, set the selection byte to $FF and resume polling."
-  },
-  {
-   "address": 1548,
-   "type": "line",
-   "text": "Place the two selection sprites using X=$6E and Y=$E1, clear the selection byte and resume polling."
-  },
-  {
-   "address": 1563,
-   "type": "line",
-   "text": "Fire with a nonzero selection returns to the title; a zero selection checks the remaining continue count."
-  },
-  {
-   "address": 1571,
-   "type": "line",
-   "text": "If no continues remain, show the add-credits message. Otherwise spend one, restore the player meter to its limit, clear all three BCD score bytes and initialize the game display."
-  },
-  {
-   "address": 1599,
-   "type": "line",
-   "text": "Display the message at $0678 and return to the continue-choice poll."
-  },
-  {
-   "address": 56064,
-   "type": "line",
-   "text": "Monochrome bitmap for player sprite slot $6C, selected with adjacent slot $6D by the fire-action path at $3CD5 when the facing offset is zero. $2086 generates its reflection at $DE80; a controlled VICE call reproduced all 63 output bytes."
-  },
-  {
-   "address": 56128,
-   "type": "line",
-   "text": "Multicolour bitmap for player sprite slot $6D, the second layer paired with $6C. $2086 reflects two-bit pixels into slot $7B at $DEC0; a controlled VICE call reproduced all 63 output bytes."
-  },
-  {
-   "address": 56192,
-   "type": "line",
-   "text": "Monochrome bitmap for player sprite slot $6E, selected with adjacent slot $6F by the fire-action path at $3CEA when the facing offset is zero. $2086 generates its reflection at $DF00; a controlled VICE call reproduced all 63 output bytes."
-  },
-  {
-   "address": 56256,
-   "type": "line",
-   "text": "Multicolour bitmap for player sprite slot $6F, the second layer paired with $6E. $2086 reflects two-bit pixels into slot $7D at $DF40; a controlled VICE call reproduced all 63 output bytes."
-  },
-  {
-   "address": 56960,
-   "type": "line",
-   "text": "Mirror of the player action bitmap at $DB00, generated by $2086 as sprite slot $7A; $3CD5 selects it when the facing offset is $0E."
-  },
-  {
-   "address": 57024,
-   "type": "line",
-   "text": "Mirror of the multicolour action bitmap at $DB40, generated by $2086 as sprite slot $7B adjacent to $7A."
-  },
-  {
-   "address": 57088,
-   "type": "line",
-   "text": "Mirror of the player action bitmap at $DB80, generated by $2086 as sprite slot $7C; $3CEA selects it when the facing offset is $0E."
-  },
-  {
-   "address": 57152,
-   "type": "line",
-   "text": "Mirror of the multicolour action bitmap at $DBC0, generated by $2086 as sprite slot $7D adjacent to $7C."
-  },
-  {
-   "address": 1689,
-   "type": "line",
-   "text": "Prepare the post-event tally: set the sound state, save the display, load the visual resource selected at $7F81, hide the player and clear the display-sort flag. Write $01 across 39 bytes at $D940; when the selected player meter equals its limit also write $01 across 39 bytes at $D990."
-  },
-  {
-   "address": 1737,
-   "type": "line",
-   "text": "When the selected player meter equals its limit, pass $10 to the middle-byte BCD score addition routine. Otherwise skip this full-meter bonus."
-  },
-  {
-   "address": 1750,
-   "type": "line",
-   "text": "Set the refill counter to the selected meter plus eight with eight-bit wrap, and set the score-conversion counter to that meter shifted right once."
-  },
-  {
-   "address": 1768,
-   "type": "line",
-   "text": "On each conversion pass wait for frames, refresh the HUD, pass $02 to the meter-subtraction routine and $41 to the score routine. Decrement the conversion counter and repeat until it is zero. The first pass executes even if the counter began at zero."
-  },
-  {
-   "address": 1795,
-   "type": "line",
-   "text": "Wait for a frame, pass $01 to the meter-addition routine, refresh the HUD and decrement the refill counter until zero. A zero initial counter takes 256 iterations because the decrement wraps."
-  },
-  {
-   "address": 1811,
-   "type": "line",
-   "text": "Wait for fire. In two-player mode, when the selected player index is zero and the second player meter is nonzero, select the second player and initialize the game display. Otherwise continue at the stage-counter path."
-  },
-  {
-   "address": 24238,
-   "type": "line",
-   "text": "High operand byte of the JSR at $5EAC. The selected stage record supplies this byte at $5EA4; it is not a standalone instruction."
-  },
-  {
-   "address": 24239,
-   "type": "line",
-   "text": "Use the callback flags to select effect setup: zero enters the zero-result path, a nonzero result with carry clear skips the setup, and a nonzero result with carry set branches according to its sign."
-  },
-  {
-   "address": 24246,
-   "type": "line",
-   "text": "Save the zero callback result and clear the effect direction. Carry clear selects the positive configuration; carry set changes the direction to $FF and selects the negative configuration."
-  },
-  {
-   "address": 24260,
-   "type": "line",
-   "text": "For a nonzero callback result with carry set, a negative value selects the negative configuration. A positive value is saved on the stack and used as the direction."
-  },
-  {
-   "address": 24266,
-   "type": "line",
-   "text": "Set the positive effect frame base to $99, animation delay to $0A and sprite colour to $07, then initialize its sprite arrays."
-  },
-  {
-   "address": 24283,
-   "type": "line",
-   "text": "Store the negative result as direction, negate it with eight-bit arithmetic and save the magnitude on the stack."
-  },
-  {
-   "address": 24292,
-   "type": "line",
-   "text": "Set the negative effect frame base to $A1 and sprite colour to $01, then initialize its sprite arrays."
-  },
-  {
-   "address": 24302,
-   "type": "line",
-   "text": "Copy eight motion speeds and directions, set lifetime to $C0 and animation phase to zero, and copy the selected entity position into eight effect positions."
-  },
-  {
-   "address": 24352,
-   "type": "line",
-   "text": "Search display slots from index 31 down for the first free Y byte ($FF); save its index as effect slot 1. If none is free, the descending scan exits at $FF and saves that out-of-range index."
-  },
-  {
-   "address": 24368,
-   "type": "line",
-   "text": "Search below the first saved index for the second free display slot and save it as effect slot 2. The loop has no separate failure check before storing the resulting Y value."
-  },
-  {
-   "address": 24383,
-   "type": "line",
-   "text": "Search below the second saved index for the third free display slot and save it as effect slot 3. The loop has no separate failure check before storing the resulting Y value."
-  },
-  {
-   "address": 24398,
-   "type": "line",
-   "text": "Search below the third saved index for the fourth free display slot and save it as effect slot 4. The loop has no separate failure check before storing the resulting Y value."
-  },
-  {
-   "address": 24413,
-   "type": "line",
-   "text": "Clear the effect cursor and eight occupancy flags. Restore the saved callback-derived value; if it is zero, set the game-exit flag to $FF before returning to the special-object dispatcher."
-  },
-  {
-   "address": 18428,
-   "type": "line",
-   "text": "Call the target patched from the selected stage record\u2019s fields 5 and 6 at $47DE\u2013$47E7. The captured $FF00 operand is a placeholder; the target depends on the record."
-  },
-  {
-   "address": 22608,
-   "type": "line",
-   "text": "Screen 17 glyph $01 first occurs at column 1, row 0 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 31 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22616,
-   "type": "line",
-   "text": "Screen 17 glyph $02 first occurs at column 0, row 0 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22624,
-   "type": "line",
-   "text": "Screen 17 glyph $03 first occurs at column 10, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22632,
-   "type": "line",
-   "text": "Screen 17 glyph $04 first occurs at column 11, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22640,
-   "type": "line",
-   "text": "Screen 17 glyph $05 first occurs at column 26, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22648,
-   "type": "line",
-   "text": "Screen 17 glyph $06 first occurs at column 27, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22656,
-   "type": "line",
-   "text": "Screen 17 glyph $07 first occurs at column 16, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22664,
-   "type": "line",
-   "text": "Screen 17 glyph $08 first occurs at column 17, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22672,
-   "type": "line",
-   "text": "Screen 17 glyph $09 first occurs at column 18, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22680,
-   "type": "line",
-   "text": "Screen 17 glyph $0A first occurs at column 19, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22688,
-   "type": "line",
-   "text": "Screen 17 glyph $0B first occurs at column 20, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22696,
-   "type": "line",
-   "text": "Screen 17 glyph $0C first occurs at column 21, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22704,
-   "type": "line",
-   "text": "Screen 17 glyph $0D first occurs at column 22, row 7 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22720,
-   "type": "line",
-   "text": "Screen 17 glyph $0F first occurs at column 11, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22728,
-   "type": "line",
-   "text": "Screen 17 glyph $10 first occurs at column 26, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22736,
-   "type": "line",
-   "text": "Screen 17 glyph $11 first occurs at column 16, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22744,
-   "type": "line",
-   "text": "Screen 17 glyph $12 first occurs at column 17, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22752,
-   "type": "line",
-   "text": "Screen 17 glyph $13 first occurs at column 18, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22760,
-   "type": "line",
-   "text": "Screen 17 glyph $14 first occurs at column 19, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22768,
-   "type": "line",
-   "text": "Screen 17 glyph $15 first occurs at column 20, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22776,
-   "type": "line",
-   "text": "Screen 17 glyph $16 first occurs at column 21, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22784,
-   "type": "line",
-   "text": "Screen 17 glyph $17 first occurs at column 22, row 8 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22792,
-   "type": "line",
-   "text": "Screen 17 glyph $18 first occurs at column 10, row 13 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22800,
-   "type": "line",
-   "text": "Screen 17 glyph $19 first occurs at column 12, row 12 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 64 nonzero monochrome pixels, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22808,
-   "type": "line",
-   "text": "Screen 17 glyph $1A first occurs at column 10, row 14 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22816,
-   "type": "line",
-   "text": "Screen 17 glyph $1B first occurs at column 27, row 13 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22824,
-   "type": "line",
-   "text": "Screen 17 glyph $1C first occurs at column 16, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22832,
-   "type": "line",
-   "text": "Screen 17 glyph $1D first occurs at column 17, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22840,
-   "type": "line",
-   "text": "Screen 17 glyph $1E first occurs at column 18, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22848,
-   "type": "line",
-   "text": "Screen 17 glyph $1F first occurs at column 19, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22856,
-   "type": "line",
-   "text": "Screen 17 glyph $20 first occurs at column 20, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22864,
-   "type": "line",
-   "text": "Screen 17 glyph $21 first occurs at column 21, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22872,
-   "type": "line",
-   "text": "Screen 17 glyph $22 first occurs at column 22, row 9 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22880,
-   "type": "line",
-   "text": "Screen 17 glyph $23 first occurs at column 16, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22888,
-   "type": "line",
-   "text": "Screen 17 glyph $24 first occurs at column 17, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22896,
-   "type": "line",
-   "text": "Screen 17 glyph $25 first occurs at column 18, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22904,
-   "type": "line",
-   "text": "Screen 17 glyph $26 first occurs at column 19, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22912,
-   "type": "line",
-   "text": "Screen 17 glyph $27 first occurs at column 20, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22920,
-   "type": "line",
-   "text": "Screen 17 glyph $28 first occurs at column 21, row 10 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22928,
-   "type": "line",
-   "text": "Screen 17 glyph $29 first occurs at column 12, row 6 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22936,
-   "type": "line",
-   "text": "Screen 17 glyph $2A first occurs at column 16, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22944,
-   "type": "line",
-   "text": "Screen 17 glyph $2B first occurs at column 17, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22952,
-   "type": "line",
-   "text": "Screen 17 glyph $2C first occurs at column 18, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22960,
-   "type": "line",
-   "text": "Screen 17 glyph $2D first occurs at column 19, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22968,
-   "type": "line",
-   "text": "Screen 17 glyph $2E first occurs at column 20, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22976,
-   "type": "line",
-   "text": "Screen 17 glyph $2F first occurs at column 21, row 11 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 32 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 22984,
-   "type": "line",
-   "text": "Screen 17 glyph $30 first occurs at column 11, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 22992,
-   "type": "line",
-   "text": "Screen 17 glyph $31 first occurs at column 18, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 28 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23000,
-   "type": "line",
-   "text": "Screen 17 glyph $32 first occurs at column 15, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 22 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23008,
-   "type": "line",
-   "text": "Screen 17 glyph $33 first occurs at column 13, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 37 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23016,
-   "type": "line",
-   "text": "Screen 17 glyph $34 first occurs at column 12, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 30 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23024,
-   "type": "line",
-   "text": "Screen 17 glyph $35 first occurs at column 14, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 19 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23032,
-   "type": "line",
-   "text": "Screen 17 glyph $36 first occurs at column 17, row 17 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 29 nonzero monochrome pixels, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23040,
-   "type": "line",
-   "text": "Screen 17 glyph $37 first occurs at column 9, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 23048,
-   "type": "line",
-   "text": "Screen 17 glyph $38 first occurs at column 10, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 20 nonzero multicolour pixel pairs, occupying rows 0\u20136. Other uses remain open."
-  },
-  {
-   "address": 23056,
-   "type": "line",
-   "text": "Screen 17 glyph $39 first occurs at column 28, row 15 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 23064,
-   "type": "line",
-   "text": "Screen 17 glyph $3A first occurs at column 9, row 16 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 23072,
-   "type": "line",
-   "text": "Screen 17 glyph $3B first occurs at column 28, row 16 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 24 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 23080,
-   "type": "line",
-   "text": "Screen 17 glyph $3C first occurs at column 9, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 23088,
-   "type": "line",
-   "text": "Screen 17 glyph $3D first occurs at column 10, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 20 nonzero multicolour pixel pairs, occupying rows 1\u20137. Other uses remain open."
-  },
-  {
-   "address": 23096,
-   "type": "line",
-   "text": "Screen 17 glyph $3E first occurs at column 28, row 19 in the controlled load-17 selector-0 reconstruction. In that cell its bitmap has 26 nonzero multicolour pixel pairs, occupying rows 0\u20137. Other uses remain open."
-  },
-  {
-   "address": 56576,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $74: a monochrome reflection of the first-load bitmap at $ACC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
-  },
-  {
-   "address": 56640,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $75: a multicolour reflection of the first-load bitmap at $AD07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
-  },
-  {
-   "address": 56704,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $76: a monochrome reflection of the first-load bitmap at $AD47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
-  },
-  {
-   "address": 56768,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $77: a multicolour reflection of the first-load bitmap at $AD87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
-  },
-  {
-   "address": 56832,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $78: a monochrome reflection of the first-load bitmap at $ADC7, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
-  },
-  {
-   "address": 56896,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $79: a multicolour reflection of the first-load bitmap at $AE07, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
-  },
-  {
-   "address": 57216,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $7E: a monochrome reflection of the first-load bitmap at $AE47, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry differs at offsets 46 and 49; their later writer and role remain open."
-  },
-  {
-   "address": 57280,
-   "type": "line",
-   "text": "RAM beneath I/O holds sprite slot $7F: a multicolour reflection of the first-load bitmap at $AE87, generated by $2086. A controlled load-13 VICE call reproduced all 63 bytes. The resident entry matches the reflected bytes."
-  },
-  {
-   "address": 55552,
-   "type": "line",
-   "text": "The first eight rows of VIC sprite slot $64 are the fixed HIGH lettering in the resident-entry and load-2 play captures. The score renderer writes the following rows; other uses remain open."
-  },
-  {
-   "address": 55600,
-   "type": "line",
-   "text": "The last five rows of VIC sprite slot $64 are blank in the resident-entry and load-2 play captures. Other uses remain open."
-  },
-  {
-   "address": 55616,
-   "type": "line",
-   "text": "The first eight rows of VIC sprite slot $65 are blank in the resident-entry and load-2 play captures. The score renderer writes two columns in the following rows; other uses remain open."
-  },
-  {
-   "address": 55664,
-   "type": "line",
-   "text": "The last five rows of VIC sprite slot $65 are blank in the resident-entry and load-2 play captures. Other uses remain open."
-  },
-  {
-   "address": 55642,
-   "type": "line",
-   "text": "The rightmost byte of row 8 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55645,
-   "type": "line",
-   "text": "The rightmost byte of row 9 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55648,
-   "type": "line",
-   "text": "The rightmost byte of row 10 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55651,
-   "type": "line",
-   "text": "The rightmost byte of row 11 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55654,
-   "type": "line",
-   "text": "The rightmost byte of row 12 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55657,
-   "type": "line",
-   "text": "The rightmost byte of row 13 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55660,
-   "type": "line",
-   "text": "The rightmost byte of row 14 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55663,
-   "type": "line",
-   "text": "The rightmost byte of row 15 of VIC sprite slot $65 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55424,
-   "type": "line",
-   "text": "The first eight rows of VIC sprite slot $62 show the fixed numeral 1 in the resident-entry and load-2 play captures. The score renderer writes two columns in the following rows; other uses remain open."
-  },
-  {
-   "address": 55472,
-   "type": "line",
-   "text": "The last five rows of VIC sprite slot $62 are blank in the resident-entry and load-2 play captures. Other uses remain open."
-  },
-  {
-   "address": 55450,
-   "type": "line",
-   "text": "The rightmost byte of row 8 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55453,
-   "type": "line",
-   "text": "The rightmost byte of row 9 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55456,
-   "type": "line",
-   "text": "The rightmost byte of row 10 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55459,
-   "type": "line",
-   "text": "The rightmost byte of row 11 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55462,
-   "type": "line",
-   "text": "The rightmost byte of row 12 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55465,
-   "type": "line",
-   "text": "The rightmost byte of row 13 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55468,
-   "type": "line",
-   "text": "The rightmost byte of row 14 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55471,
-   "type": "line",
-   "text": "The rightmost byte of row 15 of VIC sprite slot $62 is zero in the resident-entry and load-2 play captures. $39E7 can write the other two byte columns of this row as score digits. Other uses remain open."
-  },
-  {
-   "address": 55430,
-   "type": "line",
-   "text": "RAM beneath I/O: rows 2\u20137 of the fixed numeral 1 in sprite slot $62. This address also has a CPU-visible I/O meaning when the chip is banked in; other RAM uses remain open."
-  },
-  {
-   "address": 56065,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 0, byte 1 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56066,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 0, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56067,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56068,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 1 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56069,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 1, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56070,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56071,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 1 is $BE in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56072,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 2, byte 2 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56073,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56074,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 1 is $41 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56075,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 3, byte 2 is $80 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56076,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56077,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 1 is $7C in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56078,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 4, byte 2 is $60 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56079,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56080,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 1 is $82 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56081,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 5, byte 2 is $20 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56082,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 0 is $01 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56083,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 1 is $7F in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56084,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 6, byte 2 is $20 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56085,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56086,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 1 is $A9 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56087,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 7, byte 2 is $A0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56088,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56089,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 1 is $A8 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56090,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 8, byte 2 is $A0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56091,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 0 is $00 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56092,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 1 is $80 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56093,
-   "type": "line",
-   "text": "RAM beneath I/O: sprite slot $6C row 9, byte 2 is $C0 in the resident-entry capture. This is part of the monochrome player action bitmap selected by $3CD5; the CPU-visible I/O meaning is separate. Other RAM uses remain open."
-  },
-  {
-   "address": 56094,
-   "type": "line",
-   "text": "RAM beneath I/O: the remaining 33 bytes of sprite slot $6C hold monochrome rows 10\u201320 of the action bitmap selected by $3CD5. The CPU-visible I/O meaning is separate. Other RAM uses remain open."
   }
  ]
 }
