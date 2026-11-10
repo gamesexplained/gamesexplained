@@ -465,6 +465,13 @@ you find one, do not stop at the poke: prove a player could get there
 (`60-verify`, reachability), and build the section around a stepper the
 reader can walk through. It is one kind of discovery among several.
 
+Another is what the game left on its media and never loads: each
+`unused` item in `media.json` (`50-coverage`, "The media ledger"). A
+monster no script sends, a level no door leads to or a tune nothing
+plays is cut content; show it, drawn or played from its bytes, beside
+the search that found nothing loads it. The developers' tools and
+leftover sectors are worth a line when they say how the game was made.
+
 When the run found none, leave the tab out and say so in
 `agent-history.md`.
 

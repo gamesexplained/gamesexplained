@@ -522,6 +522,8 @@ def main():
     fails += models_check()
     from accuracy import check as accuracy_check
     fails += accuracy_check()
+    from media import check as media_check
+    fails += media_check()
     from maintainer_asks import check as asks_check
     fails += asks_check(sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))))
     if fails:

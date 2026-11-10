@@ -312,6 +312,50 @@ shifted, interleaved, or built from pieces) matches nowhere, so follow
 the start-up's copy loops to their destinations as well, and check each
 against the ledger.
 
+## The media ledger
+
+Coverage counts the bytes in the parts' snapshots, so a file the game
+loads into a slot and then replaces, or never loads, is outside it
+whatever the figure says. `media.json` (`10-orient` step 7) closes the
+list from the other side: every item on the media, with one answer.
+
+| Answer | The item | Also give |
+|---|---|---|
+| `part` | is listed in a part | `--part` (none in a game of one load) and `--at`; `--packed` when it unpacks into the part |
+| `data` | is data the game loads into a buffer: a level, a picture, a monster, a tune | `--page`, the page that decodes it, when one does |
+| `loader` | stands in front of the game: the boot program, a fast loader or its drive code, a loading picture, a protection, a cracker's intro | |
+| `saved` | is written by the game: saved games, high scores, a party it ships with | |
+| `unused` | is loaded by nothing | how that was shown |
+| `open` | is not explained yet | |
+
+Every answer but `open` takes `--why`, what the item is, except a part
+the scan found whole. Once the listings exist, scan again with the same
+images: an open file or bank with 90 % of its bytes in one part's
+listing is answered `part`, and one found in some measure says where
+(`near`). Answer the rest with `media.py answer <game dir> <pattern>
+<answer>`, where a pattern takes a family at once (`MON*`) and
+`--open-only` leaves the answered alone.
+
+- A family the game loads by a name it builds, a stem and a number, is
+  `data`, and its why names the routine that builds the name. A member
+  that the game's scripts or tables never ask for is `unused` once that
+  has been shown, because a cut monster or level is what a reader came
+  for (`70-minisite`, "Discoveries").
+- A file found in part is that part when the rest is accounted for:
+  loaded over by another file, or past the end of its slot. The why says
+  which.
+- Code that no part's snapshot holds is a part with no folder yet
+  (`15-parts`): a module the game loads into a slot and replaces is in
+  none of the snapshots taken after it.
+- Sectors no file holds are what a game reads with the drive's block
+  commands, a protection's track, or leftovers of writing the disk.
+  Answer them `unused` only once the game is shown to ask for every
+  file by name.
+
+A game at Silver or above needs a `media.json` with nothing open
+(`check_docs.py`). A game made before the ledger keeps its tier, and its
+About tab lists what is open (`kit/lessons/2026-11-10-media-ledger.md`).
+
 ## Interpreted programs and code loaded as level data
 
 If a CPU trace reaches an interpreter or calls into a loaded level,

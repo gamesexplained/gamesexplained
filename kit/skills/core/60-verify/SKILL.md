@@ -27,6 +27,10 @@ that nothing reads or writes an address, search with every opcode and
 every index that can reach it, with the platform's references search
 (`kit/skills/<platform>/steps`, "references").
 
+An `unused` answer in `media.json` is a negative result as well: before
+giving it, name every call that loads a file and the table of names it
+loads from, and check for names the game builds as it runs.
+
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived
 from the code misses what the code does off the path you read. Search

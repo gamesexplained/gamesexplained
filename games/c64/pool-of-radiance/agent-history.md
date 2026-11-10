@@ -231,3 +231,31 @@ Added `items.html`, its data script `scripts/items_data.py` and
   magic-user's level (it is the cleric's), and resident `add_item_weight`
   and `item_fits` said the whole weight is multiplied by the count.
 
+
+## Follow-up: the media ledger (10 November 2026)
+
+Pool of Radiance is the first game through the kit's media ledger,
+`media.json`, which lists every file and stray sector on the eight sides
+and says what each is. The scan read the eight D64s the run used (the
+same SHA-256s as `orientation.md`, from archive.org's
+`d64_Pool_of_Radiance_v1.0_1988_SSI_Disk_1_of_4_Side_A`).
+
+- The scan found 38 files whole in a part's listing. Both copies of
+  SPELLE65 count as combat-set's: their first 2048 bytes are its
+  `$A700`-`$AEFF`, and SPELLN00 lies past `$AF00`.
+- The twenty families `load_resource` names (MON, PIC, ECL, GEO and the
+  rest) were answered as data, family by family, with the slot each
+  loads into. The Bestiary's data marks ten monster files that no
+  script loads (side 1 MON03 and MON09, side 2 MON52, side 3 MON6A,
+  side 4 MON68, side 7 MON2C, MON3E, MON4F and MON50, side 8 MON20):
+  those are `unused`.
+- PIC64 is the drive's half of FAST1.O, not a picture: `loader`.
+  LOAD/SAVE is the developers' load and save subroutines as a BASIC
+  program that saves itself; nothing names it: `unused`. `$01PENDRAGON`
+  on side 3 is a saved character, absent from the preservation
+  collection's G64 of the side.
+- The twelve runs of sectors the map marks as used and no file holds
+  are `unused`: the game asks for every file by name, and the fast loader
+  sends the drive the name. Two on side 3 hold copies of GEN's bytes.
+- Three items stay open, all code no part holds: SQRPACI64, the temple's
+  menu and prices; SQRPACI00 on side 6; and SPELLE20 on side 5.

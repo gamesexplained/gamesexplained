@@ -106,7 +106,16 @@ annotate it byte by byte.
    one (`kit/skills/<platform>/steps`, "disassembler"). Note
    which processor-port or banking configuration was active when the
    snapshot was taken: what is visible at a given address depends on it.
-7. **Map the disk's files onto memory.** Extract every file (the
+7. **List the media, then map the files onto memory.**
+   `python3 kit/scripts/media.py scan <game dir> <name>=<image> ...`,
+   with every image the contributor gave, each named as the game asks
+   for it (`side1`), writes `media.json`: every file, every run of
+   sectors the disk's map marks as used that no file holds, every bank of
+   a cartridge, each listed once however many images hold it, and each
+   `open` until the media ledger answers it (`50-coverage`). The ledger
+   keeps names, sizes and hashes; the images stay in `work/`. A machine
+   whose kit has no reader, `kit/<platform>/media.py`, skips the scan.
+   Extract every file (the
    platform's tools for its disks and tapes: `kit/skills/<platform>/steps`,
    "media"), then search the
    hand-over and play snapshots for each file's bytes in 16-byte pieces,
@@ -114,8 +123,8 @@ annotate it byte by byte.
    A file that lands whole says what a region is before any code is read
    (one run found its speech samples and its speech timing table this way,
    and caught a table it had credited to the wrong file); a file that is
-   found nowhere is the loader's, or is built from. Put the table in
-   `orientation.md`.
+   found nowhere is the loader's, is built from, or is a part of its
+   own (`15-parts`). Put the table in `orientation.md`.
 8. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), switches in
    banks (a cartridge's, or a 128K machine's RAM), or reads its own code
@@ -171,7 +180,8 @@ original worth checking.
 
 ## Outputs
 
-`orientation.md` filled in; at least one steady-state snapshot in `work/`;
+`orientation.md` filled in; `media.json`, where the platform has a reader;
+at least one steady-state snapshot in `work/`;
 the disassembler running on it, or its first control file; with a live
 disassembler, a first `work/annotations.jsonl` (the client script creates
 it on the first mutating call).

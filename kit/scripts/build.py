@@ -92,6 +92,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
 from models import awaits_check, proven   # noqa: E402  which games still need a maintainer's check
 from accuracy import status as listing_status, table as accuracy_table, SILVER_UP   # noqa: E402  the work behind the listing
+from media import summary as media_summary   # noqa: E402  what each file on the game's disks is
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
@@ -625,6 +626,44 @@ def listing_row(game):
     rest = st["row"][len(st["lead"]):].lstrip()
     return (f'<tr><th>Comments checked</th><td><b>{html.escape(st["lead"])}</b> {html.escape(rest)} '
             f'{how_checked()}</td></tr>')
+
+
+# The About tab's row on the media (kit/scripts/media.py): what each answer says, one and many.
+MEDIA_SAY = (("part", "is in the listings", "are in the listings"),
+             ("data", "is data the game loads", "are data the game loads"),
+             ("loader", "loads the game", "load the game"),
+             ("saved", "was saved by the game", "were saved by the game"),
+             ("unused", "is never loaded", "are never loaded"),
+             ("open", "is not explained yet", "are not explained yet"))
+MEDIA_NAMES = {"disk side": ("disk side", "disk sides"), "cartridge": ("cartridge", "cartridges"),
+               "program file": ("program file", "program files"), "tape": ("tape", "tapes")}
+MEDIA_OPEN_SHOWN = 12
+
+
+def media_row(gdir):
+    """The About tab's Status row on the media.json ledger: what the game's disks, cartridge or
+    tape hold, what each item is, and every item still open (up to a dozen). None without one."""
+    s = media_summary(gdir)
+    if not s:
+        return ""
+    many = lambda n, one, more: f"{n:,} {one if n == 1 else more}"
+    held = " and ".join(many(n, *MEDIA_NAMES.get(w, (w, w + "s"))) for w, n in sorted(s["images"].items()))
+    kinds = [many(s["files"], "file", "files"), many(s["runs"], "run of sectors no file holds", "runs of sectors no file holds"),
+             many(s["banks"], "bank", "banks")]
+    kinds = [k for k, n in zip(kinds, (s["files"], s["runs"], s["banks"])) if n]
+    what = (" and ".join(kinds) if len(kinds) < 3 else ", ".join(kinds[:-1]) + " and " + kinds[-1]) or "nothing the kit can list"
+    said = [f"{n:,} {one if n == 1 else more}" for a, one, more in MEDIA_SAY for n in [s["count"][a]] if n]
+    text = f"Counting each copy once, the {held} hold {what}. " + ("Of those, " + ", ".join(said[:-1]) + (" and " if len(said) > 1 else "")
+                                                       + said[-1] + "." if said else "")
+    if s["open"]:
+        shown = ", ".join(s["open"][:MEDIA_OPEN_SHOWN]) + (f" and {len(s['open']) - MEDIA_OPEN_SHOWN:,} more"
+                                                          if len(s["open"]) > MEDIA_OPEN_SHOWN else "")
+        text += f" Still open: {shown}."
+    if s["unread"]:
+        text += f" The kit cannot list {', '.join(s['unread'])} yet."
+    if s["missing"]:
+        text += f" {s['missing']:,} sectors marked as used could not be read, so they are in no item."
+    return f'<tr><th>Media</th><td>{html.escape(text)}</td></tr>'
 
 
 def accuracy_section(game, gdir):
@@ -1601,7 +1640,7 @@ def build_game(gdir, out_root):
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
     data = "" if bare else WITHHELD if hidden else data_links(P)
     about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // 128,
-                 tier=html.escape(tier_name(game.get("tier", "none"), game.get("steward"))), coverage=cov, listing_row=listing_row(game),
+                 tier=html.escape(tier_name(game.get("tier", "none"), game.get("steward"))), coverage=cov, listing_row=listing_row(game) + media_row(gdir),
                  accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
