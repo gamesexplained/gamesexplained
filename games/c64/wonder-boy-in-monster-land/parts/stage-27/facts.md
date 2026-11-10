@@ -92,3 +92,5 @@ A forced $717C call copied all 2,048 bytes from the entry character source to RA
 Controlled visual-resource selections copied 345 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 A forced call to the price formatter at $9411 and digit writer at $93F6 converts packed price bytes into four character and colour cells. VICE and a listing test check both calls in this load. Input bounds, other values and ordinary-play reachability remain open.
+
+Shop helpers at $93B9 and $93CC test sampled input and choose a cursor position. Five forced VICE cases and a listing test checked both helpers in this load, with the sampler stubbed and display initialization stopped. The adjacent layout, selection, timeout and item bytes are read or written by the separately tested shop paths. Physical control mapping, other indexes and ordinary-play reachability remain open.

@@ -610,8 +610,13 @@
   },
   {
    "start": 39749,
-   "end": 39804,
+   "end": 39769,
    "type": "Undefined"
+  },
+  {
+   "start": 39770,
+   "end": 39804,
+   "type": "Code"
   },
   {
    "start": 39805,
@@ -635,6 +640,41 @@
   },
   {
    "start": 39924,
+   "end": 39924,
+   "type": "Undefined"
+  },
+  {
+   "start": 39925,
+   "end": 39925,
+   "type": "Byte"
+  },
+  {
+   "start": 39926,
+   "end": 39926,
+   "type": "Byte"
+  },
+  {
+   "start": 39927,
+   "end": 39929,
+   "type": "Byte"
+  },
+  {
+   "start": 39930,
+   "end": 39930,
+   "type": "Byte"
+  },
+  {
+   "start": 39931,
+   "end": 39931,
+   "type": "Byte"
+  },
+  {
+   "start": 39932,
+   "end": 39932,
+   "type": "Byte"
+  },
+  {
+   "start": 39933,
    "end": 39937,
    "type": "Undefined"
   },
@@ -4823,6 +4863,18 @@
    "kind": "user"
   },
   {
+   "address": 39770,
+   "name": "captured_shop_input_held",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39789,
+   "name": "captured_shop_cursor",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 39805,
    "name": "shop_mark_selected_slot",
    "type": "UserDefined",
@@ -4855,6 +4907,42 @@
   {
    "address": 39920,
    "name": "captured_shop_price_buffer",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39925,
+   "name": "captured_shop_layout_gate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39926,
+   "name": "captured_shop_selection",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39927,
+   "name": "captured_shop_cursor_positions",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39930,
+   "name": "captured_shop_timeout",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39931,
+   "name": "captured_shop_first_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39932,
+   "name": "captured_shop_second_item",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8656,6 +8744,16 @@
    "text": "Pull the selected item index, clear carry, add 1 in binary mode and call the JSR whose operand was patched by the selector. Load X/Y with $9C24 and call $77E0, then call $3C2A and $370B repeatedly while $4D6B is nonzero. Return once it is zero. The effect, message and waiting callbacks were stubbed in controlled tests; this does not establish ordinary-play reachability."
   },
   {
+   "address": 39770,
+   "type": "line",
+   "text": "Load 12: call the input sampler and return carry set if any of $73, $74 or $70 is zero; return carry clear if all are nonzero. Physical control mapping is owned by the sampler."
+  },
+  {
+   "address": 39789,
+   "type": "line",
+   "text": "Load 12: with decimal mode clear, add one to the selection byte at $9BF6, use the wrapped result as an index into $9BF7, and pass that position in X and $82 in Y to $719E. The table index is not locally bounded."
+  },
+  {
    "address": 39805,
    "type": "line",
    "text": "Load X from $7B, store $FF at $4753,X and return. Several item-effect routines tail-call this helper."
@@ -8684,6 +8782,36 @@
    "address": 39920,
    "type": "line",
    "text": "Load 12: four working price-display bytes, written by the formatter at $9BB2 and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
+  },
+  {
+   "address": 39925,
+   "type": "line",
+   "text": "Load 12: mutable shop layout gate. Timeout, selection and purchase code read this byte to choose alternate paths; its complete meaning and ordinary-play values remain open."
+  },
+  {
+   "address": 39926,
+   "type": "line",
+   "text": "Load 12: mutable shop selection byte. The input loop initializes it to zero, left and right paths update it, and the cursor helper indexes the position table using this value plus one."
+  },
+  {
+   "address": 39927,
+   "type": "line",
+   "text": "Load 12: three captured cursor-position bytes indexed by the selection byte plus one in the cursor helper. Other indexes and runtime changes are not locally constrained."
+  },
+  {
+   "address": 39930,
+   "type": "line",
+   "text": "Load 12: mutable shop timeout. The input loop initializes it to $DC and decrements it during both input-release and polling paths."
+  },
+  {
+   "address": 39931,
+   "type": "line",
+   "text": "Load 12: mutable first item ID, read by the left-selection description and purchase paths. Item selection and ordinary-play values remain open."
+  },
+  {
+   "address": 39932,
+   "type": "line",
+   "text": "Load 12: mutable second item ID, read by the right-selection description and purchase paths. Item selection and ordinary-play values remain open."
   },
   {
    "address": 39938,

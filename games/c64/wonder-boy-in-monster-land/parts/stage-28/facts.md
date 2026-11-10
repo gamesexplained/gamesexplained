@@ -94,3 +94,5 @@ The captured bytes at $7F43–$7F49 supply initial colour shadows, player frame 
 Controlled visual-resource selections copied 114 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 A forced call to the price formatter at $9F09 and digit writer at $9EEE converts packed price bytes into four character and colour cells. VICE and a listing test check both calls in this load. Input bounds, other values and ordinary-play reachability remain open.
+
+Shop helpers at $9EB1 and $9EC4 test sampled input and choose a cursor position. Five forced VICE cases and a listing test checked both helpers in this load, with the sampler stubbed and display initialization stopped. The adjacent layout, selection, timeout and item bytes are read or written by the separately tested shop paths. Physical control mapping, other indexes and ordinary-play reachability remain open.
