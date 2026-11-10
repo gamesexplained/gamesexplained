@@ -37,10 +37,10 @@ Sources:
 | Stage colour schemes (blue building, green building) | live | `reference/stage2-demo-play.png` |
 | Player hit by fire or debris: falls, loses a life | traced | `$1CD4` |
 | Name entry for a high score on a letter grid with RUB and END | traced | strings at `$FC43` and `$FF0A` |
-| Money bags for bonus points | open | documented by the blog; the pickup table at `$09B8` holds eight records of several kinds, but their meanings are not yet attributed to money bags |
+| Money bags for bonus points | open | documented by the blog; pickup kinds 0 and 1 score 1,000 and 2,000 points (`update_pickups`, `$3524`) and are the likely money bags, but their look on screen is not confirmed |
 | Weapon upgrades that fire left, right and up at once | traced | `$1A75` sets flag `$78`, and the spray then fires three ways (`$1B11`-`$1B27`); the pickup is not yet seen on the screen |
 | Suit upgrades | open | a second pickup state at `$1A93` starts a countdown in `$74`; whether it is a suit is not confirmed |
-| Parachutes given to people and pets that are rescued | traced | people at windows are set free by fire and float down (`$36DC`); the parachute itself is not yet seen |
+| Parachutes given to people and pets that are rescued | open | people at windows are freed when the firefighter reaches their window, for 300 points; they rise, then fall drawn as two sprites, which may be the parachute (`$36DC`); not seen in play |
 | Rescue at the top of each building, then the descent | traced | the end-of-stage states at `$1B34`, `$1B4D`, `$1BB2`, `$1C01` and `$1C32` play a run of pictures, then the firefighter floats down; the rescued person is not yet seen on the screen |
 | Extinguisher range of about two windows | open | the blog's description of this version |
 | Music and sound effects | traced | the sound driver at `$8000`-`$843B`; tunes and effects chosen through `$B4` and `$B5` |
