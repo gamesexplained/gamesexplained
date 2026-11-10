@@ -1,0 +1,354 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool of Radiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+@media (max-width:760px){:root{--gx:18px}}
+.cb-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.cb-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
+.cb-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.cb-bar .lab{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.05em;text-transform:uppercase;margin-right:4px;min-width:64px}
+.cb-bar button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 9px;cursor:pointer}
+.cb-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cb-bar button.go{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cb-bar select{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);color:var(--ink);max-width:100%}
+.cb-bar input[type=range]{flex:1;min-width:120px;max-width:260px}
+.cb-bar output{font-family:var(--fm);font-size:13px;min-width:44px}
+.cb-bar label.ck{font-family:var(--fm);font-size:12.5px;display:flex;gap:5px;align-items:center}
+.cb-bar.off{opacity:.45}
+.cb-panel{background:#1b1c20;color:#e8e6df;border-radius:8px;padding:14px 16px;font-family:var(--fm);font-size:13px;line-height:1.6}
+.cb-panel table{border-collapse:collapse;width:100%}
+.cb-panel td{padding:1px 0;vertical-align:top;color:#e8e6df}
+.cb-panel td:first-child{color:#9a9890;padding-right:12px;width:42%}
+.cb-verdict{font-size:22px;font-weight:500;letter-spacing:.04em;margin:0 0 8px}
+.cb-verdict.runs{color:#ffd37a}
+.cb-verdict.gives{color:#ff8a7a}
+.cb-verdict.holds{color:#8fdc9a}
+.cb-why{color:#c9c7bf;margin:10px 0 0;font-family:var(--fb);font-size:14px;line-height:1.5}
+.cb-tbl-wrap{overflow-x:auto}
+.cb-tbl{border-collapse:collapse;width:100%;font-size:14px}
+.cb-tbl th,.cb-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.cb-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;white-space:nowrap}
+.cb-tbl td.nm{font-family:var(--fm);font-size:13px}
+.cb-tbl td.n,.cb-tbl th.n{text-align:right;white-space:nowrap}
+.cb-tbl td.n{font-family:var(--fm);font-size:13px}
+.cb-tbl .sel{background:var(--hl)}
+.cb-tbl .t{color:var(--green);font-weight:700}
+.cb-tbl .d{color:var(--coral);font-weight:700}
+.cb-tbl .no{color:var(--ink-mute)}
+.cb-roll{font-family:var(--fm);font-size:12px;white-space:nowrap}
+.cb-roll.t{color:var(--green)}
+.cb-roll.d{color:var(--coral)}
+.cb-roll.no{color:var(--ink-mute)}
+.cb-maps{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.cb-maps h3{font-size:14px;margin:0 0 6px;font-family:var(--fm);font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.cb-maps svg{width:100%;height:auto;display:block;background:#2b3a26;border-radius:6px}
+.cb-key{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin:10px 0 0}
+.cb-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.cb-out{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;min-height:1.5em}
+.cb-tbl td.hit{outline:2px solid var(--ink);outline-offset:-3px}
+.cb-tbl .sm{display:none}
+@media (max-width:760px){.cb-grid{grid-template-columns:1fr}.cb-panel td:first-child{width:46%}#cb-turn th,#cb-turn td{padding:6px 4px}#cb-turn td.nm{font-size:11.5px}.cb-tbl .lg{display:none}.cb-tbl .sm{display:inline}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · SSI</p>
+  <h1>Pool of Radiance</h1>
+  <p class="sub">The battles keep rules the rulebook never prints. A zombie raised from one of the party runs from every fight, a monster that surrenders is worth as much as one killed, and on the wilderness map the monsters start in the middle of the field.</p>
+</header>
+<main class="wrap" data-part="combat">
+
+<section id="morale">
+  <p class="fig">01 · Morale</p>
+  <h2 class="t">Who runs, who surrenders and who fights on</h2>
+  <p class="lede">Before each turn it takes, a combatant the computer runs checks its morale. Pick one, set how hurt it is and how the fight is going, and the panel runs the game's own check.</p>
+  <div class="plate">
+    <div class="cb-grid">
+      <div>
+        <div class="cb-bar"><span class="lab">Monster</span><span id="cb-mon"></span></div>
+        <div class="cb-bar"><span class="lab">With party</span><span id="cb-npc"></span></div>
+        <div class="cb-bar"><span class="lab">Hit points</span><input type="range" id="cb-hp" min="1" max="100" value="60" aria-label="Hit points left, out of 100"><output id="cb-hp-o"></output></div>
+        <div class="cb-bar" id="cb-loss-bar"><span class="lab">Side lost</span><input type="range" id="cb-loss" min="0" max="100" step="5" value="55" aria-label="Share of the monsters' hit points lost"><output id="cb-loss-o"></output></div>
+        <div class="cb-bar" id="cb-script-bar"><span class="lab">Script</span><select id="cb-script" aria-label="The morale the area's script sets for the fight"></select></div>
+        <div class="cb-bar" id="cb-fast-bar"><span class="lab">Party</span><select id="cb-fast" aria-label="The party's fastest movement"></select></div>
+        <div class="cb-bar"><span class="lab">Spells</span><label class="ck"><input type="checkbox" id="cb-bless"> BLESS</label><label class="ck"><input type="checkbox" id="cb-curse"> CURSE</label></div>
+      </div>
+      <div>
+        <div class="cb-panel" id="cb-panel"><p class="cb-miss">The panel runs the game's own code, with the site's shared scripts that the built site serves.</p></div>
+      </div>
+    </div>
+    <p class="cap">Each change runs COMBAT's <code>morale</code> (<code>$20C1</code>) and <code>hurt_check</code> (<code>$211C</code>) on the kit's 6502 over the listing's bytes. BLESS and CURSE answer the event that the check runs, and here they do what <span data-part="effects"><code>kind_bless</code> (<code>$A73F</code>) and <code>kind_curse</code> (<code>$A74F</code>)</span> do: 5 off the figure, at least 0, or 5 on.</p>
+  </div>
+  <p>The check starts with the combatant's hit points. Each monster and NPC carries a figure in its record, and it counts as hurt when its hit points are at or below that share of its full hit points. Almost every monster file holds a figure over 100, so a monster always counts as hurt. Five files hold a figure of 0, so those never do: HASSAD, the SHAMAN, and one file each of the EFREETI, the NOMAD and the 4TH LVL FIGHTER.</p>
+  <p>A hurt NPC on the party's side runs. A hurt monster looks at how much of its side's hit points are gone, in steps of 5 from 0 to 100 (<code>side_losses</code>, <code>$203C</code>), and holds while that is no more than the morale the area's script set for the fight. When it breaks, it runs if it moves as fast as the party's fastest member. If it is slower, it SURRENDERS when its intelligence is 5 or more, and fights on when it is lower. Every fight with undead is set to 99, 100 or 101, so undead break only when all but a twentieth of their side's hit points are gone, if at all.</p>
+  <p>BLESS takes 5 off both figures for a blessed combatant, and CURSE adds 5, so a blessed hireling holds on a little longer and a cursed monster breaks a step sooner. The rulebook says that BLESS raises the morale of friendly NPCs by 1 (page 23), and that giving an NPC treasure may help its morale. Nothing that moves items or money writes to the byte that holds the figure.</p>
+</section>
+
+<section id="animate-dead" data-part="spells">
+  <p class="fig">02 · ANIMATE DEAD</p>
+  <h2 class="t">Bug: a zombie raised from one of the party runs from every fight</h2>
+  <p class="lede">The rulebook says ANIMATE DEAD turns a dead human into a zombie that fights for the caster (page 24). Raised from a monster or a hired NPC, it does, to the end. Raised from one of the party's own characters, it runs at its first turn in every fight.</p>
+  <p>The spell sets the zombie's morale figure from the byte that holds it. A monster or an NPC has the top bit of that byte set, and the spell writes <code>$B2</code> there, a figure of 0: never hurt. For a character of the party it ORs the old byte with <code>$FE</code>, which leaves a figure of 102 or 104. The zombie counts as hurt at full hit points and, being on the party's side, runs. The spell cast in a fight (<code>$AB76</code>) and the one cast in camp (<span data-part="camp-spells"><code>$A9FA</code></span>) are the same six instructions.</p>
+</section>
+
+<section id="npcs" data-part="dungeon">
+  <p class="fig">03 · NPCs</p>
+  <h2 class="t">Each hired companion runs at its own point, and the MAD MAN at once</h2>
+  <p class="lede">The rulebook says that NPCs may run if things are going badly for the party. What counts is the NPC's own hit points: the party's losses never come into it. The figure comes from the script command that adds the NPC to the party (<code>cmd_add_npc</code>, <code>$2724</code>), and the training hall gives each of its eight hirelings a different one.</p>
+  <div class="cb-tbl-wrap"><table class="cb-tbl" id="cb-npcs"><thead><tr><th>NPC</th><th>Joins in</th><th class="n">Runs at or below</th></tr></thead><tbody></tbody></table></div>
+  <p class="cap">The share of its full hit points at which each NPC runs, before BLESS or CURSE. The MAD MAN joins with a figure of 100, so he counts as hurt at full hit points and runs at his first turn in every fight.</p>
+</section>
+
+<section id="surrender" data-part="post-com">
+  <p class="fig">04 · Surrender</p>
+  <h2 class="t">A monster that surrenders is worth as much as one killed</h2>
+  <p>SURRENDERS takes the monster off the field with the condition the party's own unconscious have. After the fight, every monster that went down and did not flee counts for experience (<code>$0990</code>), so one that surrendered gives its full share, and one that ran gives nothing.</p>
+</section>
+
+<section id="turning">
+  <p class="fig">05 · Turning undead</p>
+  <h2 class="t">What a cleric's turning does to each undead in the game</h2>
+  <p class="lede">Pick the cleric's level and roll. One d20 serves the whole turning. Then up to a d12 undead are tried, nearest first, until one is not beaten (<code>turn_undead</code>, <code>$24AA</code>).</p>
+  <div class="plate">
+    <div class="cb-bar"><span class="lab">Cleric</span><span id="cb-lv"></span></div>
+    <div class="cb-bar"><span class="lab">d20</span><button type="button" class="go" id="cb-roll">Roll</button><output id="cb-d20"></output></div>
+    <div class="cb-tbl-wrap"><table class="cb-tbl" id="cb-turn"></table></div>
+    <div class="cb-out" id="cb-out"></div>
+    <p class="cap">Each cell runs <code>turn_roll</code> (<code>$252B</code>) on the kit's 6502 for every roll of the d20, over the tables at <span data-part="tables"><code>$7AD7</code>, <code>$7AE4</code> and <code>$7AF1</code></span>, with the turning figure GEN gives each level of cleric (<span data-part="gen"><code>cleric_figures</code>, <code>$239A</code></span>). A number is the least roll that turns, and a roll outlines the cells it beats; <b>turned</b> (T) and <b>destroyed</b> (D) happen whatever the roll.</p>
+  </div>
+</section>
+
+<section id="cursed">
+  <p class="fig">06 · The message</p>
+  <h2 class="t">Bug: an undead that a cleric destroys IS CURSED</h2>
+  <p>A turned undead gets the message IS TURNED. One that is destroyed is laid down and gets message 18 of the spell file, SPELLN00, which reads IS CURSED (<code>$24E2</code>). The file has no message that says destroyed. A 6th level cleric destroys skeletons and zombies whatever the roll, so each of them falls with the words IS CURSED beside its name.</p>
+</section>
+
+<section id="start" data-part="com-prep">
+  <p class="fig">07 · Starting squares</p>
+  <h2 class="t">Bug: on the wilderness map, the monsters start in the middle of the field</h2>
+  <p class="lede">A fight on the wilderness map faces the party a random way and gives each side four of the field's 25 big squares to start in, the monsters' from the opposite facing. One instruction stores the monsters' four in the wrong place. Three times in four they start in the middle square, 5 or 6 squares from the party instead of 10 or 11. With the party facing south they start 16 squares away instead of 11.</p>
+  <div class="plate">
+    <div class="cb-bar"><span class="lab">Facing</span><span id="cb-face"></span></div>
+    <div class="cb-maps"><div><h3>As the game places them</h3><svg id="cb-game" viewBox="0 0 56 26" role="img" aria-label="The field as the game places the two sides"></svg></div><div><h3>As the table means</h3><svg id="cb-fix" viewBox="0 0 56 26" role="img" aria-label="The field as the table means the two sides to start"></svg></div></div>
+    <div class="cb-key"><span><i style="background:#6fb6ff"></i>the party, six characters</span><span><i style="background:#ff7a6a"></i>twelve goblins</span><span id="cb-gap"></span></div>
+    <p class="cap">The 56 by 26 squares of the field, with where the game put a party of six and twelve goblins for each facing, and where it puts them with the one instruction corrected.</p>
+  </div>
+  <p>The loop that copies the monsters' four squares (<code>$15C2</code>) stores them by X, its index into the table, where the party's loop stores by Y, which counts 3 down to 0. Only when the monsters take the table's first facing, north, does X fall on their four bytes, and then in the wrong order, so their own square is the one meant to lie beyond them. Otherwise the four bytes keep the zeros they hold on the disk, and square 0 is the middle of the field. Fights in towns and dungeons place the two sides another way.</p>
+</section>
+
+<section id="long-shot" data-part="combat-set">
+  <p class="fig">08 · Long shots</p>
+  <h2 class="t">Bug: the penalty for a long shot never applies, and would make it easier</h2>
+  <p><code>range_penalty</code> (<code>$695D</code>) gives a shot beyond a third of the weapon's range −2, and beyond two thirds −5. It works out the thirds from the byte that <code>missile_leg</code> (<code>$6652</code>) has just set to 128 to draw the arrow's flight, not from the weapon's range. That puts the first third at 42 squares, and no bow or thrown weapon in the game reaches so far: the long bows' 22 is the longest. Only item type 127, which no item has, would shoot 60. Had the weapon's range been used, the penalty would still have helped the archer: the 2 or 5 comes off the target's armour class figure (<span data-part="combat"><code>$11F1</code></span>), as a backstab's bonus does, and that makes a hit easier.</p>
+</section>
+
+<section id="surprise">
+  <p class="fig">09 · Surprise</p>
+  <h2 class="t">A surprised character with dexterity 16 or more can still act</h2>
+  <p>The rulebook says that monsters that surprise the party get a series of attacks before the party can reply (page 16). In the game, surprise lasts one round, in which the surprised side's initiative is cut by 6 (<code>surprise_round</code>, <code>$15D9</code>). Initiative is a d6 plus the dexterity bonus to hit, at least 1 (<code>$0895</code>), and a combatant cut to 0 does not act. So a character with dexterity 16 still acts on a 6, one with 17 on a 5 or 6, and one with 18 or more on a 4, 5 or 6. It works the other way too: the QUICKLINGS, the thieves, NORRIS THE GRAY and the other monsters with dexterity 16 or more can strike back in a round the party surprised them.</p>
+</section>
+
+<section id="view" data-part="com-prep">
+  <p class="fig">10 · Dexterity</p>
+  <h2 class="t">VIEW leaves dexterity out of a new archer's THAC0</h2>
+  <p>Dexterity's bonus to hit with a bow is kept in the character's record, and only the setting up of a fight writes it (<code>$1639</code>, from <code>dex_hit_bonus</code>, <code>$1682</code>). A character who has never fought has 0 there, so VIEW gives its bow a THAC0 without the bonus until its first fight. PENDRAGON, the fighter on the <a href="items.html">Items</a> tab, has dexterity 17 and has never fought: with a bow his THAC0 reads 20 on VIEW and is 18 in a fight.</p>
+</section>
+
+<section id="tactics" data-part="combat-set">
+  <p class="fig">11 · The computer's side</p>
+  <h2 class="t">The computer goes for enemies it cannot see</h2>
+  <p>A combatant the computer runs picks a target at random among the enemies it can see. When it sees none, it searches again with its line of sight let through the walls, and heads for whatever it finds (<code>ai_target</code>, <code>$670A</code>). A magic-user with no other class stays where it is unless it flees. One that flees runs the way the party faced when the fight began, or the opposite way for the party's own side (<code>$6884</code>).</p>
+</section>
+
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* por-combat */
+// COMBAT's own checks on the kit's 6502. mem holds the resident, combat and tables parts' bytes.
+// porMorale runs morale ($20C1) for one combatant the computer runs, c = { rec: its figure byte ($6BB8),
+// hp: its hit points now, full: its full hit points, side: 0 the party's or 1 the monsters', losses: the
+// monsters' losses, 0 to 100 ($2B68), script: the script's morale ($6DC6), move: its movement, fastest: the
+// party's fastest movement, int: its intelligence, bless, curse }. Event 17, which BLESS and CURSE answer,
+// is stood in for at events_attacker ($0764) as kind_bless ($A73F) and kind_curse ($A74F) work: 5 off the
+// figure ($2B67), at least 0, or 5 on. fastest_sides ($1768) gives c.fastest, event 18 ($9B8F) leaves the
+// movement as it is, and report_msg ($29B1) and set_condition ($1732) are noted. Returns { runs,
+// surrenders, msg, cond, figures: what event 17 left, the hurt figure first and then the losses }.
+function porMorale(mem, CPU, c) {
+  mem[0x6BB8] = c.rec; mem[0x6C19] = c.hp; mem[0x6B76] = c.full; mem[0x6B15] = c.int; mem[0x6C1B] = c.move;
+  mem[0x2B68] = c.losses; mem[0x6DC6] = c.script; mem[0xA4E2] = c.side; mem[0xA4F4] = 0; mem[0xA680] = 0;
+  mem[0x2B70] = 0;
+  const out = { msg: null, cond: null, figures: [] };
+  const io = { read(a) { throw new Error('a chip read at $' + a.toString(16)); }, write() {} };
+  const cpu = new CPU(mem, { port: 0x36, io });
+  cpu.call(0x20C1, {}, { maxSteps: 1e5, hooks: {
+    0x0764: (k) => { let v = mem[0x2B67]; if (c.bless) v = Math.max(0, v - 5); if (c.curse) v = (v + 5) & 0xFF; mem[0x2B67] = v; out.figures.push(v); k.rts(); },
+    0x1768: (k) => { mem[0x2B69] = c.fastest; k.rts(); },
+    0x9B8F: (k) => k.rts(),
+    0x29B1: (k) => { out.msg = k.x; k.rts(); },
+    0x1732: (k) => { out.cond = k.a; k.rts(); },
+  } });
+  out.surrenders = cpu.c === 1;
+  out.runs = mem[0x2B70] !== 0;
+  return out;
+}
+// porTurn runs turn_roll ($252B): turning figure fig ($6BA4) against undead type t, rolling d20.
+// Returns 0 for no effect, 1 turned, 2 destroyed and 3 destroyed with more to come.
+function porTurn(mem, CPU, fig, t, d20) {
+  mem[0x6BA4] = fig; mem[0x2B75] = t; mem[0x2B74] = d20;
+  const io = { read(a) { throw new Error('a chip read at $' + a.toString(16)); }, write() {} };
+  const cpu = new CPU(mem, { port: 0x36, io });
+  cpu.call(0x252B, {}, { maxSteps: 1e5 });
+  if (!cpu.c) return 0;
+  const d = mem[0x2B77];
+  return d === 0 ? 1 : d === 1 ? 2 : 3;
+}
+// end of por-combat
+</script>
+<script>
+// Combat tab: the morale panel, the NPCs' figures, the turning table and the starting squares.
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  // Monsters from their files: movement, intelligence and the figure byte ($6BB8).
+  const MONSTERS = [['KOBOLD', 6, 6, 255], ['HOBGOBLIN', 9, 10, 255], ['LIZARDMAN', 6, 3, 255], ['WOLF', 18, 3, 255], ['ZOMBIE', 6, 10, 255], ['HASSAD', 12, 12, 0xB2]];
+  // With the party: the figure byte the joining gives (ADD NPC's operand halved, with bit 7), or ANIMATE DEAD's.
+  const ALLIES = [['WARRIOR', 0x9B, 'hired'], ['THEURGIST', 0xAA, 'hired'], ['DIANE', 0xB2, ''], ['MAD MAN', 0x80, ''], ['your fighter, raised', 0xFE, 'zombie'], ['a kobold, raised', 0xB2, 'zombie']];
+  // The NPCs that join in play: name, where, ADD NPC's second operand.
+  const NPCS = [['ACOLYTE', 'the training hall', 50], ['WARRIOR', 'the training hall', 55], ['EVOKER', 'the training hall', 60], ['SWORDSMAN', 'the training hall', 65], ['ROBBER', 'the training hall', 70], ['CURATE', 'the training hall', 75], ['HERO', 'the training hall', 80], ['THEURGIST', 'the training hall', 85], ['DIRTEN', 'New Phlan', 99], ['LEVEL 6 MU', 'Valhingen Graveyard', 99], ['GENHEERIS', 'Valjevo Castle', 100], ['PRINCESS FATIMA', 'the kobold caves', 100], ['SKULLCRUSHER', 'the Cadorna Textile House', 100], ['MAD MAN', "Mendor's library", 0]];
+  const SCRIPTS = [101, 100, 99, 80, 60, 50, 0];
+  // The undead in the game by turning type ($6BA3 in their files).
+  const UNDEAD = [[1, 'SKELETON'], [2, 'ZOMBIE'], [3, 'GHOUL'], [5, 'WIGHT'], [7, 'WRAITH'], [8, 'MUMMY, GIANT SKELETON'], [9, 'SPECTRE, JUJU ZOMBIE, FERRAN MARTINEZ'], [10, 'VAMPIRE']];
+  // GEN's turning figure for cleric levels 1 to 6 (cleric_figures, $239A).
+  const FIGURES = [1, 2, 3, 5, 6, 7];
+  // Where the game put the six characters (P) and twelve goblins, by the party's facing, as it places
+  // them (G) and with the store at $15C5 made by Y (F).
+  const START = {"P":[[[33,19],[34,19],[30,18],[35,18],[34,18],[31,18]],[[19,13],[18,12],[20,13],[19,12],[21,13],[20,12]],[[21,6],[20,6],[22,7],[19,7],[24,7],[23,7]],[[36,13],[35,12],[35,13],[34,12],[33,12],[34,13]]],
+    "G":[[[26,11],[25,11],[27,12],[24,12],[29,12],[28,12],[25,12],[30,12],[23,12],[23,11],[28,11],[27,11]],[[30,13],[29,12],[29,13],[28,12],[27,12],[28,13],[30,15],[29,14],[26,11],[27,11],[30,14],[26,10]],[[39,24],[37,23],[38,23],[35,23],[40,23],[39,23],[36,23],[41,23],[34,23],[36,24],[41,24],[39,25]],[[25,13],[24,12],[26,13],[25,12],[27,13],[28,14],[25,11],[23,10],[28,15],[27,14],[27,15],[22,10]]],
+    "F":[[[21,6],[20,6],[22,7],[19,7],[24,7],[23,7],[20,7],[25,7],[18,7],[18,6],[23,6],[22,6]],[[36,13],[35,12],[35,13],[34,12],[33,12],[34,13],[31,10],[36,15],[35,14],[33,11],[36,14],[32,10]],[[33,19],[34,19],[30,18],[35,18],[34,18],[31,18],[36,18],[29,18],[36,19],[34,20],[32,20],[36,20]],[[19,13],[18,12],[20,13],[19,12],[21,13],[20,12],[17,10],[22,15],[21,14],[18,11],[21,15],[16,10]]]};
+  const FACINGS = ['North', 'East', 'South', 'West'];
+  const figure = (op) => 100 - 2 * (op >> 1);
+  const runsAt = (f) => f <= 0 ? 'never' : f >= 100 ? 'always' : f + '%';
+
+  // The NPC table and the starting squares need no code.
+  $('cb-npcs').tBodies[0].innerHTML = NPCS.map(([n, w, op]) => '<tr><td class="nm">' + n + '</td><td>' + w + '</td><td class="n">' + runsAt(figure(op)) + '</td></tr>').join('');
+  const gap = (a, b) => Math.min(...a.flatMap(([x, y]) => b.map(([u, v]) => Math.max(Math.abs(x - u), Math.abs(y - v)))));
+  const draw = (svg, P, G) => {
+    let h = '';
+    for (let x = 0; x <= 56; x++) h += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="26" stroke="#3a4a34" stroke-width=".05"/>';
+    for (let y = 0; y <= 26; y++) h += '<line x1="0" y1="' + y + '" x2="56" y2="' + y + '" stroke="#3a4a34" stroke-width=".05"/>';
+    h += '<rect x="28" y="13" width="1" height="1" fill="none" stroke="#c8d6bf" stroke-width=".12"/>';
+    for (const [x, y] of G) h += '<rect x="' + (x + .1) + '" y="' + (y + .1) + '" width=".8" height=".8" rx=".15" fill="#ff7a6a"/>';
+    for (const [x, y] of P) h += '<rect x="' + (x + .1) + '" y="' + (y + .1) + '" width=".8" height=".8" rx=".15" fill="#6fb6ff"/>';
+    svg.innerHTML = h;
+  };
+  let face = 0;
+  const showFace = () => {
+    draw($('cb-game'), START.P[face], START.G[face]); draw($('cb-fix'), START.P[face], START.F[face]);
+    $('cb-gap').textContent = 'nearest goblin: ' + gap(START.P[face], START.G[face]) + ' squares as placed, ' + gap(START.P[face], START.F[face]) + ' as meant';
+    [...$('cb-face').children].forEach((b, i) => b.setAttribute('aria-pressed', i === face));
+  };
+  $('cb-face').innerHTML = FACINGS.map((f) => '<button type="button">' + f + '</button>').join(' ');
+  [...$('cb-face').children].forEach((b, i) => b.onclick = () => { face = i; showFace(); });
+  showFace();
+
+  const panel = $('cb-panel');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') return;
+  let parts;
+  try { parts = await Promise.all(['resident', 'combat', 'tables'].map((p) => C64.load('parts/' + p + '/listing.json'))); } catch (e) { panel.innerHTML = '<p class="cb-miss">The listing did not load, so the panel cannot run.</p>'; return; }
+  const base = new Uint8Array(65536);
+  for (const L of parts) for (let a = 0; a < 65536; a++) if (L.has[a]) base[a] = L.ram[a];
+  const CPU = C64Cpu.CPU;
+
+  // The morale panel.
+  let who = { kind: 'mon', i: 0 };
+  const btns = (el, list, kind) => {
+    el.innerHTML = list.map((m) => '<button type="button">' + m[0] + '</button>').join(' ');
+    [...el.children].forEach((b, i) => b.onclick = () => { who = { kind, i }; morale(); });
+  };
+  btns($('cb-mon'), MONSTERS, 'mon'); btns($('cb-npc'), ALLIES, 'npc');
+  $('cb-script').innerHTML = SCRIPTS.map((s) => '<option value="' + s + '"' + (s === 50 ? ' selected' : '') + '>' + s + (s >= 100 ? ', the losses never break it' : '') + '</option>').join('');
+  $('cb-fast').innerHTML = [6, 9, 12, 15].map((s) => '<option value="' + s + '"' + (s === 12 ? ' selected' : '') + '>fastest moves ' + s + '</option>').join('');
+  const morale = () => {
+    const mon = who.kind === 'mon', m = mon ? MONSTERS[who.i] : ALLIES[who.i];
+    [...$('cb-mon').children].forEach((b, i) => b.setAttribute('aria-pressed', mon && i === who.i));
+    [...$('cb-npc').children].forEach((b, i) => b.setAttribute('aria-pressed', !mon && i === who.i));
+    ['cb-loss-bar', 'cb-script-bar', 'cb-fast-bar'].forEach((id) => $(id).classList.toggle('off', !mon));
+    const c = { rec: mon ? m[3] : m[1], hp: +$('cb-hp').value, full: 100, side: mon ? 1 : 0, losses: +$('cb-loss').value,
+      script: +$('cb-script').value, move: mon ? m[1] : 12, fastest: +$('cb-fast').value, int: mon ? m[2] : 10,
+      bless: $('cb-bless').checked, curse: $('cb-curse').checked };
+    $('cb-hp-o').textContent = c.hp + '%'; $('cb-loss-o').textContent = c.losses + '%';
+    const r = porMorale(base.slice(), CPU, c);
+    const hurtAt = r.figures[0], hurt = hurtAt !== undefined && hurtAt >= c.hp;
+    const verdict = r.surrenders ? ['SURRENDERS', 'gives'] : r.runs ? ['RUNS', 'runs'] : ['FIGHTS ON', 'holds'];
+    const row = (k, v) => '<tr><td>' + k + '</td><td>' + v + '</td></tr>';
+    let why;
+    if (!hurt) why = 'Its hit points are above the figure, so nothing else is looked at.';
+    else if (!mon) why = 'Hurt, and on the party\'s side, so it runs: the party\'s losses never come into it.';
+    else if (!r.runs && !r.surrenders) why = r.figures[1] <= c.script ? 'Hurt, but its side\'s losses are within the script\'s morale.' : 'Its side has broken and it is slower than the party, but its intelligence is under 5, so it fights on.';
+    else if (r.runs) why = 'Its side has broken, and it is as fast as the party\'s fastest, so it runs.';
+    else why = 'Its side has broken and it is slower than the party, so it gives up.';
+    panel.innerHTML = '<p class="cb-verdict ' + verdict[1] + '">' + verdict[0] + '</p><table>' +
+      row('Counts as hurt at', hurtAt === undefined ? 'never checked' : runsAt(hurtAt) + (hurtAt > 0 && hurtAt < 100 ? ' or below' : '')) +
+      row('Hit points', c.hp + '% of full' + (hurt ? ', hurt' : '')) +
+      (mon ? row('Side\'s losses', (r.figures[1] !== undefined ? r.figures[1] : c.losses) + ' against the script\'s ' + c.script) + row('Moves', c.move + ' against the party\'s ' + c.fastest) + row('Intelligence', c.int) : '') +
+      '</table><p class="cb-why">' + why + '</p>';
+  };
+  ['cb-hp', 'cb-loss', 'cb-script', 'cb-fast', 'cb-bless', 'cb-curse'].forEach((id) => $(id).addEventListener('input', morale));
+  morale();
+
+  // The turning table.
+  const TURN = UNDEAD.map(([t]) => FIGURES.map((f) => { const r = []; for (let d = 1; d <= 20; d++) r.push(porTurn(base.slice(), CPU, f, t, d)); return r; }));
+  const cell = (r) => {
+    if (r.every((x) => x === 0)) return ['—', 'no'];
+    if (r.every((x) => x === r[0])) return ['<span class="lg">' + ['', 'turned', 'destroyed', 'destroyed+'][r[0]] + '</span><span class="sm">' + ['', 'T', 'D', 'D+'][r[0]] + '</span>', r[0] === 1 ? 't' : 'd'];
+    return [r.findIndex((x) => x) + 1 + '+', ''];
+  };
+  let lv = 5, d20 = null;
+  const turning = () => {
+    let h = '<thead><tr><th>Undead</th>' + FIGURES.map((_, i) => '<th class="n' + (i === lv ? ' sel' : '') + '">' + (i + 1) + '</th>').join('') + '</tr></thead><tbody>';
+    UNDEAD.forEach(([, n], u) => {
+      h += '<tr><td class="nm">' + n + '</td>' + TURN[u].map((r, i) => { const [s, k] = cell(r); return '<td class="n ' + k + (i === lv ? ' sel' : '') + (i === lv && d20 !== null && r[d20 - 1] ? ' hit' : '') + '">' + s + '</td>'; }).join('') + '</tr>';
+    });
+    $('cb-turn').innerHTML = h + '</tbody>';
+    $('cb-out').innerHTML = d20 === null ? '' : UNDEAD.map(([, n], u) => { const x = TURN[u][lv][d20 - 1]; return '<span class="cb-roll ' + ['no', 't', 'd', 'd'][x] + '">' + n.split(',')[0] + ' ' + ['is not turned', 'IS TURNED', 'IS CURSED', 'IS CURSED'][x] + '</span>'; }).join('');
+    [...$('cb-lv').children].forEach((b, i) => b.setAttribute('aria-pressed', i === lv));
+    $('cb-d20').textContent = d20 === null ? '' : 'rolled ' + d20;
+  };
+  $('cb-lv').innerHTML = FIGURES.map((_, i) => '<button type="button">Level ' + (i + 1) + '</button>').join(' ');
+  [...$('cb-lv').children].forEach((b, i) => b.onclick = () => { lv = i; turning(); });
+  $('cb-roll').onclick = () => { d20 = 1 + Math.floor(Math.random() * 20); turning(); };
+  turning();
+})();
+</script>

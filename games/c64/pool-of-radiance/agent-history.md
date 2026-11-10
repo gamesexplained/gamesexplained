@@ -259,6 +259,30 @@ gen and resident listings, so the page has no data file of its own.
   first draft of the cut classes missed until the test checked every
   class against every race on the menu.
 
+## Follow-up: the Combat tab (10 November 2026)
+
+Aaron's queue, third item: a Combat tab. Added `combat.html` and
+`test_combat.js`. The morale panel runs COMBAT's `morale` and
+`hurt_check` and the turning table runs `turn_roll`, on the kit's 6502
+over the resident, combat and tables listings.
+
+- Two of the TODO's discoveries to try live were settled in VICE: the
+  long-shot penalty (`$0364` is 128 at `range_penalty`) and the outdoor
+  start squares (each facing, then again with the store at `$15C5` made
+  by Y). The features table had said the monsters start in a corner
+  block; square 0 is the middle of the field, which the live run showed.
+- The page first said no weapon reaches the 43 squares the penalty needs;
+  the test found item type 127 with a range of 60. It is on no item, and
+  the sentence now says so.
+- Morale was read for every writer of `$6BB8`. That found ANIMATE
+  DEAD's ORA `#$FE` for a party member, which makes the zombie run, and
+  that the rulebook's treasure for NPC morale has no code. The NPCs'
+  operands come from the scripts (the hireling script computes 50 + 5 ×
+  its index); the Bestiary's `scripts/bestiary_data.py` helpers decoded
+  them.
+- The comments on ANIMATE DEAD in spells (`$AB29`) and camp-spells
+  (`$A9C2`) now say what the figure does.
+
 ## Follow-up: the media ledger (10 November 2026)
 
 Pool of Radiance is the first game through the kit's media ledger,

@@ -49,6 +49,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pu-box{border:2px solid #ffd23f;border-radius:2px}
 .pu-exit{border:2px solid #4ad1ff}
 .pu-state{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.5em}
+.pu-say{font-family:var(--fb);font-size:15px;line-height:1.55;color:var(--ink)}
 .pu-small{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
 .pu-small canvas{image-rendering:pixelated;background:#000;border-radius:3px;display:block}
 .pu-small figure{margin:0;text-align:center;font-size:12.5px;color:var(--ink-soft);cursor:pointer}
@@ -70,18 +71,62 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pu-side{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
 .pu-bytes{font-family:var(--fm);font-size:12.5px;word-break:break-all}
 .pu-bytes span{padding:0 1px;border-radius:2px}
-@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pu-pair,.pu-side{grid-template-columns:1fr}}
+.pu-stack{display:grid;grid-template-columns:auto repeat(16,minmax(0,1fr));gap:2px;font-family:var(--fm);font-size:11px;max-width:640px;margin:0 auto}
+.pu-stack span{display:block;text-align:center;padding:2px 0;border-radius:3px;background:var(--surface-2);color:var(--ink-mute);line-height:1.5;white-space:nowrap;overflow:hidden}
+.pu-stack span.ad{background:none;text-align:right;padding-right:6px}
+.pu-stack span.gap{grid-column:1/-1;height:4px;padding:0;background:none}
+.pu-stack span.old{background:#dcd9d2;color:var(--ink-soft)}
+.pu-stack span.leak{background:#f6d98a;color:#5a4300}
+.pu-stack span.work{background:#dbe7f6;color:#5a7290}
+.pu-stack span.push{background:#1f5fa8;color:#fff}
+.pu-stack span.tok{background:#fbd3cd;color:#7a1c10}
+.pu-stack span.sp{box-shadow:inset 0 0 0 2px var(--ink)}
+.pu-stack span.read{box-shadow:inset 0 0 0 3px var(--coral);font-weight:700}
+.pu-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:12px 0 0}
+.pu-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.pu-asm{margin:0 0 1em}
+.pu-bar select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
+@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pu-pair,.pu-side{grid-template-columns:1fr}.pu-stack{font-size:9.5px;gap:1px}.pu-stack span.ad{padding-right:3px}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1985 · Mastertronic</p>
   <h1>Mr Puniverse</h1>
-  <p class="sub">What the code holds that the game never shows. A second title, WIMPO, waits beside MR PUNIVERSE for a routine that never reads it, one room spells REST ROOM in its walls, and five exits lead somewhere other than the room next door.</p>
+  <p class="sub">What the code holds that the game never shows, and a bug that a live stream caught: about 120 rooms in, the game falls into the C16's built-in monitor and the screen scrolls away. A second title, WIMPO, waits beside MR PUNIVERSE for a routine that never reads it, one room spells REST ROOM in its walls, and five exits lead somewhere other than the room next door.</p>
 </header>
 <main class="wrap">
 
+<section id="freeze">
+  <p class="fig">01 · Bug</p>
+  <h2 class="t">Bug: about 120 rooms in, the game falls into the monitor</h2>
+  <p class="lede">Every exit Mr Puniverse walks through leaves two bytes on the processor's stack, and nothing takes them off. About 120 exits after the game is loaded, those bytes have pushed the stack far enough to fool the C16's own interrupt code. It takes an interrupt for a BRK instruction and hands the machine to its built-in monitor. The game stops, and the monitor's BREAK messages scroll the picture up off the screen. On 8 January 2022 it happened live on <a href="https://www.twitch.tv/unloved8bit">Unloved8Bit's Twitch stream</a>, and the moment was kept as <a href="https://www.twitch.tv/unloved8bit/clip/BashfulGlutenFreeStingrayOpieOP-JgwxkF73cs0_VMhC">a 13-second clip</a>.</p>
+  <div class="plate">
+    <div class="pu-bar"><button type="button" id="pu-fgo">▶ Play to the freeze</button></div>
+    <canvas id="pu-fscreen" class="pu-screen" width="640" height="400" aria-label="Room 14 as the game runs, then frozen, its picture moving up a row at a time until the screen is black."></canvas>
+    <p class="pu-state" id="pu-fstate"></p>
+    <p class="cap">Room 14, the room in the clip, with Mr Puniverse at its top left, where the clip shows him. Until the freeze, the game's own <code>main_loop</code> (<code>$32BC</code>) runs on the page's 6502, twenty passes a second. From the freeze on, the page does what the KERNAL, the program in the C16's ROM, does. The room's colours stay all the way down the screen, because the game's interrupt routine no longer runs to set the panel's. The monitor prints a new line and BREAK over and over, in black, so the letters vanish into the background. Once its cursor reaches the bottom row, each new line moves every row of characters and colours up one, every two frames. The KERNAL prints wherever its cursor was left. In the clip the labels TIME1, TIME2 and EGY go first, so the page starts the cursor on row 18, just above the panel. In the kit's model of the C16, running the KERNAL's own code, memory changed in the same way.</p>
+  </div>
+  <p>The main loop calls <code>player_pass</code> on every pass, and the call leaves the way back, the address <code>$32BE</code>, on the stack. When <code>player_pass</code> finds an exit beside him, it jumps to <code>leave_room</code> instead of returning. <code>leave_room</code> ends by jumping to <code>room_start</code>, which runs on into the main loop. The way back is never taken off, so each exit leaves its two bytes behind. The game never resets the stack either, not even after GAME OVER, which jumps back to the title. So the count runs from the moment the game is loaded. Two <code>PLA</code> instructions in <code>leave_room</code>, taking the way back off before the jump, would have kept the stack level.</p>
+  <div class="plate">
+    <div class="pu-bar"><label>Exits since the game was loaded <input type="range" id="pu-sk" min="0" max="256" value="121" style="width:220px"></label><span id="pu-sn" class="pu-state" style="margin:0"></span></div>
+    <div class="pu-scroll"><div class="pu-stack" id="pu-sgrid" role="img" aria-label="The stack's page of memory, $0100 to $01FF, and the first bytes of page 2."></div></div>
+    <div class="pu-bar" style="margin:14px 0 0"><label>An interrupt arrives with S at <select id="pu-ssel"></select></label></div>
+    <p class="pu-state pu-say" id="pu-sstate"></p>
+    <div class="pu-key"><span><i style="background:#dcd9d2"></i>left by BASIC and the loader</span><span><i style="background:#f6d98a"></i>left by the exits: <code>$32BE</code>, two bytes each</span><span><i style="background:#dbe7f6"></i>where the main loop's calls and interrupts push</span><span><i style="background:#1f5fa8"></i>this interrupt's pushes</span><span><i style="background:#fbd3cd"></i><code>$93</code>, BASIC's LOAD</span><span><i style="box-shadow:inset 0 0 0 2px #2f3136"></i>S at the top of the main loop</span><span><i style="box-shadow:inset 0 0 0 3px #d04a3a"></i>the byte the KERNAL reads as the status</span></div>
+    <p class="cap" data-part="">Page 1 of memory, <code>$0100</code> to <code>$01FF</code>, which holds the stack, then the first 16 bytes of page 2, as the game leaves them after the number of exits on the slider. S starts at <code>$F6</code>, where the tape's loader hands over. The menu offers the values of S that interrupts found in 3,000 interrupts in the kit's model of the C16, below the main loop's own S, with how often each came. The kit's model ran the KERNAL's own code: falling through room 0's shaft into room 5 moved S at the top of the main loop from <code>$F6</code> to <code>$F4</code>. Page 2's first bytes are what typing LOAD leaves there.</p>
+  </div>
+  <p data-part="">The stack is page 1 of memory, <code>$0100</code> to <code>$01FF</code>, and the stack pointer, S, counts down through it as bytes are pushed, wrapping from <code>$00</code> to <code>$FF</code>. That wrap does the processor no harm. The KERNAL's interrupt code is another matter. An interrupt and a <code>BRK</code> instruction both push the program counter and the status, and the KERNAL tells them apart by bit 4 of the pushed status, which is set only for a <code>BRK</code>. Its interrupt entry pushes A, X and Y, and then, at <code>$CE00</code>, reads the status four bytes up:</p>
+  <pre class="pu-asm">TSX            ; X = the stack pointer
+LDA $0104,X    ; the status the processor pushed, four bytes up
+AND #$10       ; bit 4, set only by a BRK
+BNE $CE0B      ; set: JMP ($0316), the monitor's break entry
+JMP ($0314)    ; clear: the game's interrupt routine</pre>
+  <p data-part=""><code>LDA $0104,X</code> adds X to <code>$0104</code>, and when X is <code>$FC</code> or above the sum is past <code>$01FF</code>. The processor then reads page 2, where it should have wrapped round to the start of page 1. That happens to an interrupt that arrives with S at <code>$02</code> to <code>$05</code>. Page 2 holds BASIC's input line, and the line that started the game was LOAD, which BASIC stores as the single byte <code>$93</code>, with bit 4 set. An interrupt that arrives with S at <code>$02</code> reads <code>$93</code> as its status. The KERNAL jumps through <code>$0316</code> to the monitor's break entry at <code>$F44C</code>, and the game's interrupt routine never runs. A game loaded with another command leaves other bytes in page 2, and the danger moves to other values of S, or goes away.</p>
+  <p data-part="">The break entry never gives the machine back. It takes the registers off the stack, which puts S back at <code>$02</code>, prints a new line and BREAK, and lets interrupts in again. The interrupt that started all this is still waiting, because only the game's interrupt routine tells TED, the chip that draws the picture, that its interrupt has been seen. The processor takes it at once, with S at <code>$02</code> again, and the KERNAL reads <code>$93</code> again. So the monitor starts over, a BREAK at a time, for as long as the machine is on.</p>
+</section>
+
 <section id="wimpo">
-  <p class="fig">01 · Secret</p>
+  <p class="fig">02 · Secret</p>
   <h2 class="t">Secret: an unused title spells WIMPO</h2>
   <p class="lede">The routine that draws MR PUNIVERSE in dots on the title has a second path beside its own. Pointed at it, the title spells WIMPO.</p>
   <div class="plate">
@@ -97,7 +142,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="rest">
-  <p class="fig">02 · Secret</p>
+  <p class="fig">03 · Secret</p>
   <h2 class="t">Secret: room 18 spells REST ROOM</h2>
   <p class="lede">The walls of room 18 are letters five rows high, REST along the top and ROOM below, and the room is an easy one.</p>
   <div class="plate">
@@ -108,7 +153,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="offmap">
-  <p class="fig">03 · Secret</p>
+  <p class="fig">04 · Secret</p>
   <h2 class="t">Secret: five exits lead off the map</h2>
   <p class="lede">The rooms are a map five by five, and most exits lead to the room next door. Five lead elsewhere: four of them to room 0, at the top left, and one up two rows at once.</p>
   <div class="plate">
@@ -125,7 +170,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="refill">
-  <p class="fig">04 · Bug</p>
+  <p class="fig">05 · Bug</p>
   <h2 class="t">Bug: a room that fills the EGY bar never fills its last cell</h2>
   <p class="lede">In a room that fills the bar, the filling stops when it reaches the rightmost cell, before it fills it. Whatever that cell lost stays lost until the next turn.</p>
   <div class="plate">
@@ -142,7 +187,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="lift">
-  <p class="fig">05 · Secret</p>
+  <p class="fig">06 · Secret</p>
   <h2 class="t">Secret: the code has a working lift, and none of the rooms uses it</h2>
   <p class="lede">A lift is coded from end to end: a character that moves, a way to draw it, and a rule that carries Mr Puniverse up when he stands on it. There is none in any of the 25 rooms.</p>
   <div class="plate">
@@ -155,7 +200,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="oldtune">
-  <p class="fig">06 · Secret</p>
+  <p class="fig">07 · Secret</p>
   <h2 class="t">Secret: a second tune player plays the room data</h2>
   <p class="lede">Beside the title tune's player is another of the same shape, which the game never calls. Its tables lie where the rooms are.</p>
   <div class="plate">
@@ -167,7 +212,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="tune">
-  <p class="fig">07 · Bug</p>
+  <p class="fig">08 · Bug</p>
   <h2 class="t">Bug: the title tune reads past its own tables</h2>
   <p class="lede">The tune starts on a step 255, which reads bytes beyond both of the tune's tables. Three of its notes also take their pitches from beyond the table of pitches.</p>
   <div class="plate">
@@ -179,14 +224,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="switch8">
-  <p class="fig">08 · Bug</p>
+  <p class="fig">09 · Bug</p>
   <h2 class="t">Bug: cannons that are always on read another table as their switch</h2>
   <p class="lede">Every cannon and crusher has a switch number in its record. Those without a switch of their own give switch 8, and there are only eight switches, 0 to 7.</p>
   <p><code>object_timer</code> looks the switch up in <code>switch_state</code> (<code>$0FE8</code>), a table of eight bytes, one for each switch. Switch 8 would be the byte after them, which is the first byte of the next table, <code>obj_type</code>: the type of the room's first moving object. In a room with a cannon or a crusher, that byte is never 0, so switch 8 is always on. The game works, by way of a byte that belongs to another table.</p>
 </section>
 
 <section id="colours">
-  <p class="fig">09 · Bug</p>
+  <p class="fig">10 · Bug</p>
   <h2 class="t">Bug: the title's colours are whatever the tape left behind</h2>
   <p class="lede">Nothing in the game sets the title screen's colours. Once a frame, the game's interrupt routine copies three bytes into TED, the chip that draws the picture, as the colours for the top of the screen. On the title, those bytes still hold what loading the tape left in them.</p>
   <p>The top of the screen takes its colours from <code>room_colours</code> (<code>$0339</code>-<code>$033B</code>), which <code>draw_room</code> fills each time it draws a room (<a href="index.html#frame">How it works</a>). Those three bytes lie in the cassette buffer, a part of memory that the C16's built-in program, the KERNAL, uses when it reads a tape. Until the first room is drawn, they hold what the tape's loader left there: <code>$4C</code>, <code>$4A</code> and <code>$F0</code>, a blue-green, a yellow-green and black. A loader that left other bytes behind would give the title other colours.</p>
@@ -202,7 +247,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 (function () {
   const $ = id => document.getElementById(id);
   if (!window.C16 || !window.C64Cpu || !window.Puni || !window.TEDSound) {
-    for (const id of ['pu-wtitle', 'pu-rest', 'pu-xfrom', 'pu-rbefore', 'pu-lift', 'pu-oplayer', 'pu-ttable']) {
+    for (const id of ['pu-fscreen', 'pu-sgrid', 'pu-wtitle', 'pu-rest', 'pu-xfrom', 'pu-rbefore', 'pu-lift', 'pu-oplayer', 'pu-ttable']) {
       const el = $(id); if (!el) continue;
       const p = document.createElement('p'); p.className = 'pu-need';
       p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js, lib/ted-sound.js): open the page from the built site.';
@@ -241,6 +286,123 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     const records = Array.from({ length: 25 }, (_, r) => Puni.record(L.ram, r));
     const rooms = [];
     const roomMem = r => rooms[r] || (rooms[r] = Puni.room(base.slice(), r));
+
+    /* The freeze: the game runs, then the KERNAL's BREAK loop scrolls the screen away */
+    (function () {
+      const cv = $('pu-fscreen'), st = $('pu-fstate'), go = $('pu-fgo');
+      const MAIN = 0x32BC, ROOM = 14, AT = 0x0C04, PASSES = 30;
+      // the KERNAL's message 9, "\rBREAK": BREAK in screen codes, printed in its colour, $10 (black)
+      const BREAK = [0x02, 0x12, 0x05, 0x01, 0x0B], INK = 0x10, CURSOR = 18;
+      const first = Puni.start(base.slice(), { room: ROOM, at: AT });
+      let m, c, timer = null;
+      const pass = () => { c.pc = MAIN; c.step(); c.run({ until: MAIN, maxSteps: 2e6 }); };
+      // one set of colours all the way down: the room's, as the last interrupt that ran left them
+      const frozen = () => C16.renderBands([{ y0: 0, y1: 199, mem: m, ted: Puni.bands(m)[0].ted }], { size: 0x4000 });
+      function reset() {
+        m = first.slice(); c = Puni.cpuFor(m);
+        for (let i = 0; i < 6; i++) pass();                 // he drops onto the wall's top
+        Puni.draw(cv, Puni.picture(m), 2);
+      }
+      // A new line, then BREAK: on the bottom row the new line moves the characters and colours up
+      // a row and clears the last, as the KERNAL's screen editor does.
+      function breakLine(s) {
+        if (s.row === 24) {
+          m.copyWithin(0x0C00, 0x0C28, 0x0FE8); m.copyWithin(0x0800, 0x0828, 0x0BE8);
+          m.fill(0x20, 0x0FC0, 0x0FE8); m.fill(INK, 0x0BC0, 0x0BE8);
+        } else s.row++;
+        for (let i = 0; i < 5; i++) { m[0x0C00 + s.row * 40 + i] = BREAK[i]; m[0x0800 + s.row * 40 + i] = INK; }
+        s.n++;
+      }
+      function play() {
+        clearTimeout(timer); reset();
+        let n = 0;
+        const s = { row: CURSOR, n: 0 };
+        const tick = () => {
+          if (n < PASSES) {
+            pass(); n++;
+            Puni.draw(cv, Puni.picture(m), 2);
+            st.textContent = `The game runs: pass ${n} of the main loop.`;
+            timer = setTimeout(tick, 50);
+            return;
+          }
+          if (s.row < 24) while (s.row < 24) breakLine(s);   // the lines above the bottom go in a frame
+          else breakLine(s);
+          Puni.draw(cv, frozen(), 2);
+          st.textContent = `Frozen: the monitor has printed BREAK ${s.n} times. The game's main loop and its interrupt routine never run again.`;
+          if (s.n < 24 - CURSOR + 26) timer = setTimeout(tick, 40);
+        };
+        tick();
+      }
+      go.onclick = play;
+      reset();
+      st.textContent = 'Room 14 as the game draws it. Press the button to run the game until it freezes.';
+    })();
+
+    /* The freeze: the stack, exit by exit */
+    (function () {
+      const START = 0xF6, PAGE2 = [0x93, 0x00, 0x41, 0x44];
+      // How far below the main loop's own S the stack was when an interrupt arrived, in 3,000
+      // interrupts in the kit's model of the C16 (standing, walking and jumping in room 0): depth -> count
+      const DEPTH = { 0: 4, 1: 1, 2: 1279, 3: 306, 4: 676, 5: 16, 6: 380, 7: 17, 8: 295, 9: 9, 10: 7, 13: 1, 16: 1, 18: 8 };
+      // Seconds before the KERNAL took the BRK path, by S at the top of the main loop, in the same
+      // model, standing in room 0 (null: a minute went by without it)
+      const FROZE = { 0x1E: null, 0x1C: null, 0x1A: null, 0x18: null, 0x16: null, 0x14: 0.4, 0x12: null, 0x10: null,
+        0x0E: 12.5, 0x0C: 0.2, 0x0A: 0.1, 0x08: 0, 0x06: 0.1, 0x04: 0, 0x02: 16.2, 0x00: null, 0xFE: null, 0xFC: null, 0xFA: null };
+      const grid = $('pu-sgrid'), slide = $('pu-sk'), sel = $('pu-ssel'), out = $('pu-sn'), state = $('pu-sstate');
+      const b2 = v => v.toString(16).toUpperCase().padStart(2, '0');
+      const depths = Object.keys(DEPTH).map(Number).sort((a, b) => a - b);
+      let lastK = -1;
+      function draw() {
+        const k = +slide.value, s0 = (START - 2 * k) & 0xFF;
+        out.textContent = `${k} exit${k === 1 ? '' : 's'}: S at ${hex(s0)}`;
+        const hit = depths.find(d => ((s0 - d) & 0xFF) === 2);
+        if (k !== lastK) {
+          sel.innerHTML = depths.map(d => `<option value="${d}">${hex((s0 - d) & 0xFF)}, ${DEPTH[d].toLocaleString('en-GB')} of 3,000</option>`).join('');
+          sel.value = hit !== undefined ? hit : 2;
+          lastK = k;
+        }
+        const d = +sel.value, s = (s0 - d) & 0xFF;
+        const cls = new Array(256).fill(''), txt = new Array(256).fill('··');
+        for (let a = START + 1; a <= 0xFF; a++) cls[a] = 'old';
+        for (let i = 0; i < Math.min(k, 128); i++) {
+          const t = (START - 2 * i) & 0xFF;
+          cls[t] = 'leak'; txt[t] = '32'; cls[(t - 1) & 0xFF] = 'leak'; txt[(t - 1) & 0xFF] = 'BE';
+        }
+        for (let j = 0; j < 24; j++) { const a = (s0 - j) & 0xFF; cls[a] = 'work'; txt[a] = '··'; }
+        ['PC', 'PC', 'P', 'A', 'X', 'Y'].forEach((n, j) => { const a = (s - j) & 0xFF; cls[a] = 'push'; txt[a] = n; });
+        cls[s0] += ' sp';
+        const x = (s - 6) & 0xFF, read = 0x0104 + x;
+        const p2 = new Array(16).fill(''), t2 = PAGE2.map(b2).concat(new Array(12).fill('··'));
+        p2[0] = 'tok';
+        if (read < 0x0200) cls[read - 0x0100] += ' read'; else p2[read - 0x0200] += ' read';
+        const cell = (c, t) => `<span class="${c}">${t}</span>`;
+        let h = '';
+        for (let r = 0; r < 16; r++) {
+          h += `<span class="ad">${hex(0x0100 + r * 16, 4)}</span>`;
+          for (let col = 0; col < 16; col++) h += cell(cls[r * 16 + col], txt[r * 16 + col]);
+        }
+        h += '<span class="gap"></span><span class="ad">$0200</span>' + p2.map((c, i) => cell(c, t2[i])).join('');
+        grid.innerHTML = h;
+        let say = `After ${k} exit${k === 1 ? '' : 's'}, each pass of the main loop starts with S at ${hex(s0)}. `;
+        const f = FROZE[s0];
+        if (typeof f === 'number') say += `In the kit's model the game froze ${f < 1 ? 'within a second' : `after ${f} seconds`}. `;
+        else if (f === null) say += hit !== undefined
+          ? 'Its interrupts can find S at $02, but so seldom that in the kit\'s model the game ran a minute without freezing. '
+          : 'In the kit\'s model the game ran a minute without freezing. ';
+        else say += 'Its interrupts find S well away from $02. ';
+        const ps = 0x0100 + ((s - 2) & 0xFF);
+        if (read < 0x0200) say += `An interrupt with S at ${hex(s)} leaves X at ${hex(x)}, so LDA $0104,X reads ${hex(read, 4)}, the status the processor pushed. Bit 4 is clear, and the KERNAL goes on to the game's interrupt routine.`;
+        else {
+          const v = PAGE2[read - 0x0200];
+          say += `An interrupt with S at ${hex(s)} leaves X at ${hex(x)}, so LDA $0104,X reads ${hex(read, 4)}, past the end of the stack's page, instead of ${hex(ps, 4)}, where the status went. `;
+          say += v & 0x10 ? `${hex(v)} is BASIC's LOAD, and its bit 4 is set: the KERNAL takes the interrupt for a BRK and jumps to the monitor. The game never runs again.`
+            : `${hex(v)} has bit 4 clear, so the KERNAL goes on to the game's interrupt routine all the same.`;
+        }
+        state.textContent = say;
+      }
+      slide.oninput = draw; sel.onchange = draw;
+      draw();
+    })();
 
     /* WIMPO */
     (function () {

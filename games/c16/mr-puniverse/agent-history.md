@@ -126,3 +126,28 @@ split moved there, with their scripts, after the cast and before the
 character set's explanation of multicolour cells, which now points at the
 frame. How it works keeps the objects' table, what each kind does and how
 a room's record makes it, and links to the Graphics tab for the rest.
+
+## 10 November 2026: the freeze on stream
+
+air asked why the screen scrolled up and away in a clip of Unloved8Bit's
+Twitch stream (8 January 2022). The clip, read frame by frame, showed the
+game stop (the crushers and a shot froze), the panel take the room's
+colours, and the picture climb exactly one character row at a time:
+memory being scrolled, not TED's scroll register. That pointed at the
+KERNAL's screen editor printing, so the listing was searched for what
+could reach it. `leave_room` is entered by `JMP` from `player_pass` and
+leaves by `JMP room_start`, so main_loop's return address stays on the
+stack at every exit, and nothing in the game resets S. Disassembling
+plus4emu's KERNAL ROM gave the interrupt entry's `LDA $0104,X`, the
+monitor's break entry at `$F44C` and its message, CR and BREAK.
+
+plus4emu could not be built in the cloud session (the build was refused
+by the session's permissions), so the check ran in `kit/c16/machine.js`,
+which runs the KERNAL's own code when given the ROMs: it booted to
+READY, LOAD was typed, the game's memory went in at the hand-over, and
+S at `main_loop` was set as after a number of exits. The break loop
+started within seconds from 113 exits to 122, and the screen's memory
+changed as the clip shows. A real exit, room 0's shaft into room 5,
+lowered S by 2. The Discoveries entry replays the freeze from the game's
+own main loop and the KERNAL's behaviour written in JavaScript, since a
+page may not carry the ROM.

@@ -32,13 +32,6 @@
 
 Each is traced in the code; what a player sees is not settled yet.
 
-- The long-shot penalty (combat-set `range_penalty`, `$695D`) is added
-  to the target's armour figure, which makes a long shot easier to hit.
-  `missile_leg` (`$6652`) sets the range it reads, `$0364`, to 128
-  before the flight is drawn: find whether any shot reaches the penalty.
-- The monsters' start squares (com-prep `$15C2`) are stored by X, so for
-  three of the four facings they keep square 0. Watch where monsters
-  start in a fight begun facing north.
 - POOL (post-com `$1AB7`) adds a carry from a coin kind that reaches
   65,535 to the next kind.
 - SHARE (post-com `$21CD`) loses the coin it has just taken when nobody
@@ -106,6 +99,19 @@ Each is traced in the code; what a player sees is not settled yet.
 - Cast HASTE in camp twice on one member and read the age.
 - Watch a party of a thief and a fighter fail the move silently part of a
   PARTY SURPRISE (dungeon `$1D43`).
+
+## Combat findings to try live
+
+- Raise a dead party member with ANIMATE DEAD and watch the zombie run
+  at its first turn (spells `$AB76`).
+- Hire the training hall's WARRIOR and watch him run once his hit points
+  are at or below 46 % (combat `hurt_check`, `$211C`).
+- Break a side of kobolds slower than the party and see SURRENDERS, then
+  the experience it gives (combat `$210E`, post-com `$0990`).
+- Turn skeletons with a 6th level cleric and read IS CURSED (combat
+  `$24E2`).
+- Be surprised with a character of dexterity 18 and see it act in the
+  surprise round (combat `surprise_round`, `$15D9`).
 
 ## Script findings to watch live
 
