@@ -713,6 +713,19 @@ the Zifra loader, Audiogenic's, Supersoft's, Anirog's, Microdeal's,
 Razorload, NewLine's and Novotrade's), with its thresholds, sync bytes and
 checksums. The loader is part of the game's code: annotate it as such.
 
+**Novaload**, as its loader reads a file (`kit/c16/media.py` decodes it,
+and its docstring has the layout): the loader's code travels in the
+first file's header, in the 171 bytes of the tape buffer after the name,
+and the first file itself loads over the stack page, where a run of $02
+makes the KERNAL return to $0203. A bit is one wave, timed with timer 2
+loaded with $018F: a wave the timer runs out on is a 1 (the tapes' two
+waves are near 296 and 536 cycles), and bits come lowest first.
+A file is a leader of 0 bits, a 1, $AA, the name's length and the name,
+six bytes ($9B-$A0: the address less $100, the end address, the last
+block's size, one more than the count of whole blocks), a checksum, then
+blocks of 256 bytes with a checksum after each. A wrong checksum leaves
+$30 in the status ($90).
+
 ## Disks, program files and cartridges
 
 **Disks.** The 1541 attaches to the serial bus as on the C64; the 1551,

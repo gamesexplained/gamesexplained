@@ -74,14 +74,15 @@ the character set as the game was loaded, so it is the one to read.
 
 ## The tape's files
 
-There is no script that reads a C16 tape's files (`kit/skills/c16/steps`,
-"media"), so the map comes from the loader's own variables, read at
-checkpoints during the load.
+`python3 kit/c16/media.py work/<the tape>` reads the tape's files, and
+`media.json` lists them. The run made its map first from the loader's
+own variables, read at checkpoints during the load, and the two agree.
 
 | File | Format | Loads to | How it was found |
 |---|---|---|---|
-| `TYCOON TEX` | the KERNAL's | the stub at $0180-$01BF and the loader at $0333-$03F2, and $032E (iload) pointed at $0333 | read at the hand-over |
-| `NOVA` (the name the stub passes, at $0225, length 4) | Novaload | $1000-$3FFF, 48 pages and an end block (49 passes of the header check at $0378) | the block header at $9B-$A0: start page $0F00 + $100, end $4000, page count $31 |
+| `TYCOON TEX` | the KERNAL's | 256 bytes at $0140-$023F, by its header: the stub, and from $01C3 to $01FF a run of $02 over the stack. At the hand-over the stub is at $0180-$01BF, and $032E (iload) points at $0333 | the tape, and memory at the hand-over |
+| `TYCOON TEX`'s header | the KERNAL's | the tape buffer, $0333-$03F1: the file's addresses and name, then the loader from $0348 | the tape, and memory at the hand-over |
+| `NOVA` (the name the stub passes, at $0225, length 4) | Novaload | $1000-$3FFF, 48 pages and an end block (49 passes of the header check at $0378) | the block header at $9B-$A0: start page $0F00 + $100, end $4000, page count $31; the tape's file has the same six bytes and every checksum right |
 
 The game's bytes in the snapshot are that file's bytes: the hand-over is
 the first instruction after the load, so no code of the game has run.
@@ -89,8 +90,14 @@ the first instruction after the load, so no code of the game has run.
 ## The loader, in a paragraph
 
 The KERNAL's `LOAD` reads `TYCOON TEX`, which puts a short stub in the
-stack page and Novaload in the tape buffer; how control first reaches the
-stub was not traced. The stub points the name at `NOVA` and calls the
+stack page and Novaload in the tape buffer. The file loads over the
+stack itself, and its bytes from $01C3 to $01FF are all $02, so the
+first return address the KERNAL pulls after the load is $0202 and
+control goes to $0203 (live: a checkpoint on $0203 stops there 2,266
+frames after power-on, with the stack pointer at $F7). That clears the
+screen and jumps to the stub at $0140, which draws the name and
+`NOVALOAD A100000`, copies 21 bytes over the start of the tape buffer and
+points $032E at them. The stub points the name at `NOVA` and calls the
 loader at $033C, which pages the RAM in, waits for
 a sync byte $AA and the name, reads a six-byte header into $9B-$A0 (the
 address one page below the first, the end address and the page count)
