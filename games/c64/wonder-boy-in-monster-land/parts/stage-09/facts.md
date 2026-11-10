@@ -136,3 +136,7 @@ Controlled visual-resource reconstruction reads 20 additionally described bytes 
 9 stable 63-byte aligned ranges form one-bit patterns that recur in other loads. VICE checked their entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares every matching range and the viewer. Display use, actual colours and other possible code uses remain open.
 
 The remaining 14 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The high-memory output also contains 1 aligned all-zero 63-byte masks. VICE matched their entry/play bytes and saw no instruction entry in a 200-frame capture. They render as transparent masks; actual sprite selection and other CPU uses remain open.
+
+Unattributed bytes $BD51 had no CPU read, write or instruction-entry hits during a 200-frame VICE probe with a working interrupt control checkpoint. Their semantic role and uses in other states remain explicitly unknown.

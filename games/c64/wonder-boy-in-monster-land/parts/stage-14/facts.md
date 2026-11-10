@@ -154,3 +154,5 @@ This load has 2 additional one-byte RTS entries selected by captured entity vect
 Controlled visual-resource reconstruction reads 8 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
 
 The remaining 15 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The high-memory output also contains 6 aligned all-zero 63-byte masks. VICE matched their entry/play bytes and saw no instruction entry in a 200-frame capture. They render as transparent masks; actual sprite selection and other CPU uses remain open.

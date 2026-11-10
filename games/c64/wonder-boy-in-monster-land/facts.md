@@ -60,4 +60,12 @@ Each of the 30 later-load entry snapshots supplies an update target through `$7F
 
 ## Listing error rate
 
-The independent sample with seed 261110 drew 60 comments from a population of 29,177 across all parts. The checker used gpt-6-astra and marked 59 right and one wrong-detail. The finding held: the comment at resident $70C0 described the redundant branch at $70C2, while $70C0 follows DEC $7063. The sampled error was corrected, and the adjacent branch now has its own description. The measured error rate was 1/60 (1.7%), with a 95% Wilson interval of 0.3%–8.9%. A full audit is recommended. This sample does not constitute the maintainer check required for this imported analysis. The verbatim draw and verdicts are in `listing-sample-261110.json`.
+The independent sample with seed 261110 drew 60 comments from a population of 29,177 across all parts. The checker used gpt-6-astra and marked 59 right and one wrong-detail. The finding held: the comment at resident $70C0 described the redundant branch at $70C2, while $70C0 follows DEC $7063. The sampled error was corrected, and the adjacent branch now has its own description. The measured error rate was 1/60 (1.7%), with a 95% Wilson interval of 0.3%–8.9%. A full audit is recommended. This sample does not constitute the maintainer check required for this imported analysis. The verbatim draw and verdicts remain in ignored working reports.
+
+The final sample (seed 261111) drew 80 of 32,315 comments: 60 of 21,215 written comments and 20 of 11,100 generated comments. An independent checker found one wrong detail: $7165 loads a table value, while $7168 stores it to $6F. The same wording was corrected in 29 loads. The plain observed error rate is 1.25% (Wilson 95% interval 0.2%–6.7%); weighting by stratum size gives 1.7%. This measures a sample, not a full audit. A maintainer must perform the imported-analysis check before the tier can be Silver.
+
+## Coverage and remaining uncertainty
+
+The exported ledger describes all 490,491 counted bytes across the resident engine and 31 load parts. Eight loaded bytes retain an explicitly unknown semantic role; 200-frame VICE probes recorded no CPU access to them while a control interrupt checkpoint recorded 200 hits. Full coverage means each byte has a description, including bounded unknowns. It does not establish every possible path through the game. No loaded-data range is left outside the ledger.
+
+The imported analysis requires the maintainer check in `kit/CHECKING.md` before the tier can be recorded as Silver. A full audit is recommended.

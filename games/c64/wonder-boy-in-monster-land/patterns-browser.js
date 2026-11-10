@@ -11,8 +11,8 @@ const {start} = require('../../../kit/scripts/play_browser.js');
     await page.goto(`${base}/c64/wonder-boy-in-monster-land/graphics.html`, {waitUntil: 'load'});
     const before = await page.locator('#shared-pattern-canvas').evaluate(canvas =>
       [...canvas.getContext('2d').getImageData(0, 0, 24, 21).data]);
-    assert.equal(await page.locator('#shared-pattern-select option').count(), 252);
-    await page.locator('#shared-pattern-select').selectOption('251');
+    assert.equal(await page.locator('#shared-pattern-select option').count(), 253);
+    await page.locator('#shared-pattern-select').selectOption('252');
     const after = await page.locator('#shared-pattern-canvas').evaluate(canvas =>
       [...canvas.getContext('2d').getImageData(0, 0, 24, 21).data]);
     assert.notDeepStrictEqual(after, before);

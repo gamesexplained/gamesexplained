@@ -79,3 +79,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 22-byte str
 This load has 27 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
 
 The remaining 13 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The remaining 1 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.

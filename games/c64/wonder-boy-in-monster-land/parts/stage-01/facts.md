@@ -85,3 +85,5 @@ The first load has 24 eight-byte item records with packed prices, drawing and ef
 Controlled visual-resource reconstruction reads 55 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
 
 The remaining 23 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+The remaining 1 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.

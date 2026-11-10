@@ -118,3 +118,5 @@ The shop drawing setup at $9D11 selects two pointer-table entries, calls the sec
 The shop label code at $9D60 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9F59 to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 This load has 27 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Unattributed bytes $A7B1 had no CPU read, write or instruction-entry hits during a 200-frame VICE probe with a working interrupt control checkpoint. Their semantic role and uses in other states remain explicitly unknown.

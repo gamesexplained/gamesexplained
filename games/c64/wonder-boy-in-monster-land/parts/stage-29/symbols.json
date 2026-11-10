@@ -4167,6 +4167,12 @@
    "kind": "user"
   },
   {
+   "address": 37944,
+   "name": "shop_price_boundary_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37945,
    "name": "captured_shop_layout_gate",
    "type": "UserDefined",
@@ -4199,6 +4205,12 @@
   {
    "address": 37952,
    "name": "captured_shop_second_item",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37953,
+   "name": "shop_item_index_offsets",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7725,14 +7737,32 @@
    "kind": "user"
   },
   {
+   "address": 61311,
+   "name": "sprite_slot_bd_trailing_byte_ef7f",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 61312,
    "name": "matching_sprite_shape_be",
    "type": "UserDefined",
    "kind": "user"
   },
   {
+   "address": 61375,
+   "name": "sprite_slot_be_trailing_byte_efbf",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 61376,
    "name": "matching_sprite_shape_bf",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 61439,
+   "name": "sprite_slot_bf_trailing_byte_efff",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7755,8 +7785,20 @@
    "kind": "user"
   },
   {
+   "address": 61567,
+   "name": "sprite_slot_c1_trailing_byte_f07f",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 61568,
    "name": "matching_sprite_shape_c2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 61631,
+   "name": "sprite_slot_c2_trailing_byte_f0bf",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7863,8 +7905,20 @@
    "kind": "user"
   },
   {
+   "address": 62207,
+   "name": "sprite_slot_cb_trailing_byte_f2ff",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 62208,
    "name": "matching_sprite_shape_cc",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62271,
+   "name": "sprite_slot_cc_trailing_byte_f33f",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8076,7 +8130,7 @@
   {
    "address": 32698,
    "type": "line",
-   "text": "Load 29, resource selectors 0\u20136: values loaded into the background and action-mode byte at $7165. The seven captured bytes in selector order are $06, $06, $02, $00, $00, $00, $00. The loader does not itself check that a selector is valid."
+   "text": "Load 29, resource selectors 0\u20136: values read by LDA at $7165 and stored by $7168 into the background and action-mode byte at $6F. The seven captured bytes in selector order are $06, $06, $02, $00, $00, $00, $00. The loader does not itself check that a selector is valid."
   },
   {
    "address": 32705,
@@ -9549,6 +9603,11 @@
    "text": "Load 29 character $FF occupies eight bytes in the character-copy source: $F0, $01, $98, $8D, $36, $94, $AD, $0A. Its rows contain 26 set bits across rows 0\u20137. A forced $717C copy placed these bytes at $D7F8 in RAM; no instruction entered these eight source bytes in a 200-frame capture. Display use and other possible code uses remain open. A forced call to the shop setup at $908A also executes overlapping bytes; the bounded capture does not rule that use out."
   },
   {
+   "address": 37137,
+   "type": "line",
+   "text": "High address byte of the LDA $370A at $910F. Store that loaded low-nibble display code to $9437, restore Y from $9116, call price drawing at $93DB, restore X from $911B and return."
+  },
+  {
    "address": 37149,
    "type": "line",
    "text": "The incoming processor flags select the path: negative enters the first-price balance check at $914F; zero selects a message at $919D; otherwise use the second-price path at $9121. The controlled cases set these flags directly, so ordinary-play choice mapping remains open."
@@ -9769,6 +9828,11 @@
    "text": "Load 29: four working price-display bytes, written by the formatter at $93F6 and read in reverse by the digit writer. Their captured initial values can be overwritten before drawing."
   },
   {
+   "address": 37944,
+   "type": "line",
+   "text": "Load 29: captured byte $AB immediately after the four price-display cells at $9434\u2013$9437, before the layout gate. The normal price formatter bounds X to 0\u20133, so it does not write this fifth position; an out-of-range indexed access can reach it. A separate ordinary-play role for this intervening byte is unresolved."
+  },
+  {
    "address": 37945,
    "type": "line",
    "text": "Load 29: mutable shop layout gate. Timeout, selection and purchase code read this byte to choose alternate paths; its complete meaning and ordinary-play values remain open."
@@ -9797,6 +9861,11 @@
    "address": 37952,
    "type": "line",
    "text": "Load 29: mutable second item ID, read by the right-selection description and purchase paths. Item selection and ordinary-play values remain open."
+  },
+  {
+   "address": 37953,
+   "type": "line",
+   "text": "Load 29: five captured item-index offsets at $9441\u2013$9445. ADC $9441,Y at $91F2 adds the selected offset to the player-state value and stores the first item ID; the following addition of one supplies the second ID. Y comes from the selected record, and the lookup does not locally bound it to these five bytes."
   },
   {
    "address": 37958,
@@ -12734,14 +12803,29 @@
    "text": "Load 29: these 63 bytes at $EF40 match the verified shape at VIC bank-3 pointer $BD in load 10. They occupy the bitmap portion of bank-3 slot $BD; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
   },
   {
+   "address": 61311,
+   "type": "line",
+   "text": "The byte $00 at $EF7F follows the 63-byte mask at $EF40. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $BD contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 61312,
    "type": "line",
    "text": "Load 29: these 63 bytes at $EF80 match the verified shape at VIC bank-3 pointer $BE in load 10. They occupy the bitmap portion of bank-3 slot $BE; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
   },
   {
+   "address": 61375,
+   "type": "line",
+   "text": "The byte $00 at $EFBF follows the 63-byte mask at $EF80. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $BE contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 61376,
    "type": "line",
    "text": "Load 29: these 63 bytes at $EFC0 match the verified shape at VIC bank-3 pointer $BB in load 10. They occupy the bitmap portion of bank-3 slot $BF; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
+  },
+  {
+   "address": 61439,
+   "type": "line",
+   "text": "The byte $00 at $EFFF follows the 63-byte mask at $EFC0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $BF contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 61440,
@@ -12759,9 +12843,19 @@
    "text": "Load 29: these 63 bytes at $F040 match the verified shape at VIC bank-3 pointer $AD in load 10. They occupy the bitmap portion of bank-3 slot $C1; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
   },
   {
+   "address": 61567,
+   "type": "line",
+   "text": "The byte $00 at $F07F follows the 63-byte mask at $F040. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $C1 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 61568,
    "type": "line",
    "text": "Load 29: these 63 bytes at $F080 match the verified shape at VIC bank-3 pointer $AE in load 10. They occupy the bitmap portion of bank-3 slot $C2; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
+  },
+  {
+   "address": 61631,
+   "type": "line",
+   "text": "The byte $00 at $F0BF follows the 63-byte mask at $F080. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $C2 contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 61632,
@@ -12849,9 +12943,19 @@
    "text": "Load 29: these 63 bytes at $F2C0 match the verified shape at VIC bank-3 pointer $CD in load 25. They occupy the bitmap portion of bank-3 slot $CB; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
   },
   {
+   "address": 62207,
+   "type": "line",
+   "text": "The byte $00 at $F2FF follows the 63-byte mask at $F2C0. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $CB contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
+  },
+  {
    "address": 62208,
    "type": "line",
    "text": "Load 29: these 63 bytes at $F300 match the verified shape at VIC bank-3 pointer $CE in load 25. They occupy the bitmap portion of bank-3 slot $CC; its 64th byte is outside this range. The entry and play bytes match, and no instruction entered this range during a 200-frame capture. Display use in this load and other possible code uses remain open."
+  },
+  {
+   "address": 62271,
+   "type": "line",
+   "text": "The byte $00 at $F33F follows the 63-byte mask at $F300. VIC sprite pointers step by 64 bytes but fetch 63 bytes of pixels, so this last byte of bank-3 slot $CC contributes no sprite pixels. This hardware layout does not rule out a separate CPU use of the byte."
   },
   {
    "address": 62272,

@@ -996,3 +996,27 @@ Checked the executable tails in loads 20, 25 and 27 with 225 simulator cases and
 Described 1405 trailing bytes of already identified 63-byte sprite masks. The VIC pointer stride is 64 bytes and its pixel fetch is 63; comments preserve the possibility of another CPU use rather than labeling those bytes unused.
 
 Described 19 resident table and row boundaries from their consumers, checking the 25 row-offset pairs and sprite bit masks against the captured bytes.
+
+Completed 45 small resident continuations, including arithmetic operands, interrupt returns, serial loops and sprite-index restoration, from the surrounding typed instructions.
+
+Described 36 status-table, glyph and row fragments from their display consumers. Checked meter mask values and retained the distinction between captured character bytes and mutable display output.
+
+A coverage-span audit found one-byte sprite-slot descriptions extending into following undefined blocks. Added explicit boundaries after those bytes so their comments cover only the byte they explain; the remaining tails stay in the queue.
+
+Described 59 resident record fields, sound structures, dispatch tables and remaining HUD boundaries from their loaders and consumers.
+
+Classified 17 complete aligned all-zero masks in the high-memory decoder output after verifying their entry/play bytes and 200-frame execution bounds in VICE. Kept actual display selection and other CPU uses open. Their slot-end comments are explicitly bounded.
+
+Described 334 trailing bytes of already identified 63-byte sprite masks. The VIC pointer stride is 64 bytes and its pixel fetch is 63; comments preserve the possibility of another CPU use rather than labeling those bytes unused.
+
+A coverage-span audit found one-byte sprite-slot descriptions extending into following undefined blocks. Added explicit boundaries after those bytes so their comments cover only the byte they explain; the remaining tails stay in the queue.
+
+Closed 9 gaps (12 bytes) inside verified character-copy sources. Seventy full 2048-byte copies matched in VICE. Kept display use and overlapping code uses separate, preserved symbols, and restored the paused user state.
+
+Recorded the final eight unattributed bytes explicitly rather than guessing padding or dead code. Each 200-frame VICE probe had zero CPU-access hits and a control count of 200; their meaning remains open. Coverage therefore measures descriptions of known behavior and bounded unknowns, not proof that every possible game state was reached.
+
+Reached 100% exported coverage: 490,491 of 490,491 counted bytes across 32 parts. Eight bytes retain explicit unknown roles with bounded CPU-access probes; no absent-use claim or padding guess was substituted. Kept tier Bronze pending the imported-analysis maintainer check and began final stable validation.
+
+Final independent sample 261111 checked 80 of 32,315 comments, with one wrong load/store-address detail. Corrected that wording in 29 loads, retained all verdicts in ignored work storage, and recorded the plain and stratum-weighted results.
+
+Final validation: all 403 game checks passed after updating the hidden-RAM expectation and narrowing the table-value parser. The full 939-test run had 927 passes, 11 optional-tool skips and the subsequently fixed hidden-RAM assertion. Repository binary, documentation and listing checks passed; all 102 games built into 1175 pages; desktop/mobile browser checks passed. Saved the comment-only reward/wing-boots update to the oldware upstream branch; the Ghidra archive remains local.

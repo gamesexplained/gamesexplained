@@ -1,6 +1,6 @@
 # Super Wonder Boy in Monster Land — kit feedback
 
-This retrospective records work through the ongoing analysis. The final listing review, remaining checks and maintainer asks are still to be completed.
+The run describes all counted bytes and keeps forced tests, ordinary-play reachability, and eight unattributed byte roles distinct. Final validation is recorded below.
 
 ## Skill text that changed what I did
 
@@ -21,12 +21,18 @@ The shape matcher initially ignored masks with fewer than 16 set bits. Comparing
 
 ## Maintainer asks
 
-None identified at this stage. Review the remaining run and existing issues before submission.
+No additional kit changes require a maintainer decision. The pull request requires the routine listing check for an imported analysis on an unproven model.
 
 ## Validation and tool behavior
 
-A full kit run checked 934 tests: 920 passed, 11 skipped for missing optional tools and three failed while the resident listing was being regenerated. All three passed against the stable file. Listing regeneration and tests that read the listing must run sequentially. A subsequent stable run passed all 402 game tests. The three repository checks and the 102-game site build also passed. This failure was visible, so it is recorded here without a general skill change.
+The final full kit run checked 939 tests: 927 passed, 11 skipped for missing optional tools, and one failed because the hidden-RAM test required sprite-slot tails to remain undescribed. The test checks their physical role and the pixel-fragment descriptions. A subsequent stable run passed all 403 game checks. The table-description test was also corrected to parse the stated seven data bytes, rather than treating a destination address as another table value. The three repository checks passed. The 102-game, 1175-page site build and Firefox checks at desktop and 390-pixel widths passed, including the source links. Local browser checks used Firefox; the committed browser checks select Chromium in CI.
+
+An earlier full run encountered three tests reading a listing during regeneration. All three passed against the stable file. Listing regeneration and tests that read listings must run sequentially.
+
+A span audit found that a comment on a sprite slot’s final byte could extend into a following undefined block. Explicit boundaries now constrain those comments to one byte, and `test_sprite_slot_boundaries.py` checks that invariant. The metric already documents span ownership, so this is recorded as an implementation error caught and corrected during this run.
 
 ## What cost the most time
 
 Preserving automatic labels in reconstructed disassembler projects would have avoided repeated exports and manual reconciliation of the resident symbol map.
+
+The final source-comment sample drew 80 comments across written and generated strata, with one wrong address detail. The correction was applied to all 29 copies of that sentence. Verbatim draws and verdicts stay in ignored working storage; `facts.md` and `game.json` carry the results.

@@ -150,3 +150,5 @@ Controlled visual-resource reconstruction reads 19 additionally described bytes 
 18 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
 
 The remaining 25 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+Unattributed bytes $BAE9 had no CPU read, write or instruction-entry hits during a 200-frame VICE probe with a working interrupt control checkpoint. Their semantic role and uses in other states remain explicitly unknown.
