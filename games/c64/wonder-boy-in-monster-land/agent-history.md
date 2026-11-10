@@ -978,3 +978,7 @@ With listing files held stable, all 402 game-specific tests passed, the three re
 Lowered the ignored shape matcher threshold to include nonzero sparse masks that already have a verified gallery counterpart. Twenty more ranges matched their entry/play snapshots; VICE read each and observed no instruction entry during a 200-frame play probe. Preserved the original 302 observations and appended the 20 matches. Restored the paused user snapshot.
 
 Identified 11 blank bitmap slots next to nonzero shapes that match verified two-layer source frames. VICE matched the bytes and observed no instruction entry during 200-frame probes. Added bounded descriptions and retained target-frame selection as open; restored the paused user snapshot.
+
+A nonzero sparse pattern repeats in nine load captures and was omitted by the prior density filter. VICE matched its bytes and observed no instruction entry during 200-frame probes in all nine loads. Described its stored geometry with display use and colours left open, preserving all prior shared-pattern observations and restoring the paused snapshot.
+
+The pattern viewer passed Firefox desktop and 390-pixel mobile checks with 253 options, the new ten-pixel pattern and its source link. Saved review screenshots. A fresh tool-owned Firefox profile needed an explicit about:blank context; creating a tab hung, while reusing an existing context worked. Reset the selected option before comparing pixels when navigating to the same URL.
