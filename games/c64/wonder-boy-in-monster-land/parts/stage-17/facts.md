@@ -96,3 +96,5 @@ A forced $717C call copied all 2,048 bytes from the entry character source to RA
 Controlled visual-resource selections copied 97 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 123-byte stride from $8671; the first 15 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The trigger record at $94C1 contains message callback $94D3, which passes $94E0 to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.

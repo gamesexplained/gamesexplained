@@ -762,3 +762,5 @@ Traced eight later-load object message callbacks. Eight forced VICE calls and a 
 Traced twelve later-load object result callbacks. Twelve forced VICE calls and a listing test checked their A and carry returns; character-source comments record any code overlap. Restored the paused user snapshot.
 
 Added the conditional Sphinx hint-to-answer mapping to Discoveries. Eight forced VICE cases checked both nonnegative choices for each retained seed, and an integration listing test checks the option strings and selection logic. The controlled stages do not establish ordinary-play order; restored the paused user snapshot.
+
+Traced eight later-load trigger message callbacks. Eight forced VICE calls and a listing test checked their message sequences and X restoration with the display callback stubbed. Character-source comments record overlapping code. A superficially similar load-23 callback patches an opcode rather than its immediate operand and remains separate for investigation. Restored the paused user snapshot.

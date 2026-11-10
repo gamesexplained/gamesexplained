@@ -112,3 +112,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 67-byte str
 This load has 2 captured motion-reader entries and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Some bytes also serve as copied character data, as noted in the listing. Ordinary-play reachability remains open.
 
 The object record at $93A4 contains message callback $9430, which supplies $9437 to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
+
+The trigger record at $92DF contains message callback $9359, which passes $9366 to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.

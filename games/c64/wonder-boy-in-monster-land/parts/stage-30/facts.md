@@ -96,3 +96,5 @@ The object record at $937F contains initialization target $94AE. Two forced VICE
 The object record at $935F contains message callback $9509, which supplies $9517, then $9543 to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
 
 The object record at $937F contains result callback $9505, which returns A=$F7 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+The trigger record at $92A4 contains message callback $92B0, which passes $92CB, then $92FB, then $932E to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.

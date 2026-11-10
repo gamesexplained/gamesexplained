@@ -118,3 +118,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 102-byte st
 The object record at $8F72 contains initialization target $8F82. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 The object record at $8F72 contains result callback $8FD3, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+The trigger record at $8F3A contains message callback $8F46, which passes $8F53 to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
