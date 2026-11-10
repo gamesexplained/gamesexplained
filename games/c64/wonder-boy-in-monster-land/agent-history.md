@@ -858,3 +858,5 @@ Checked load-9 block-copy routine $94A0 in three forced VICE cases with display 
 Checked load-9 object callback $9465 in four forced VICE cases, redirecting the overlapping $77E0/$77E2 call sites independently. Rechecked the block-copy test with the same isolation and restored the paused user snapshot.
 
 Checked load-20 type-$2A entity entry in four forced VICE cases with movement callback stubbed; restored the paused user snapshot.
+
+Checked load-20 and load-27 entity dispatchers in six forced VICE cases, preserving the overlapping character-source descriptions in load 20; restored the paused user snapshot.
