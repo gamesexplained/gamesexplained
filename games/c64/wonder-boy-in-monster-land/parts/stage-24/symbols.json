@@ -920,6 +920,31 @@
   },
   {
    "start": 40689,
+   "end": 40690,
+   "type": "Undefined"
+  },
+  {
+   "start": 40691,
+   "end": 40708,
+   "type": "Code"
+  },
+  {
+   "start": 40709,
+   "end": 40710,
+   "type": "Byte"
+  },
+  {
+   "start": 40711,
+   "end": 40712,
+   "type": "Byte"
+  },
+  {
+   "start": 40713,
+   "end": 41054,
+   "type": "Code"
+  },
+  {
+   "start": 41055,
    "end": 41209,
    "type": "Undefined"
   },
@@ -3023,6 +3048,84 @@
    "kind": "user"
   },
   {
+   "address": 40691,
+   "name": "type1d_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40706,
+   "name": "type1d_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40709,
+   "name": "type1d_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40711,
+   "name": "type1d_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40713,
+   "name": "type1d_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40731,
+   "name": "type1d_spawn_fields",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40784,
+   "name": "type1d_timer_setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40803,
+   "name": "type1d_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40853,
+   "name": "type1d_effect_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40873,
+   "name": "type1d_event_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40918,
+   "name": "type1d_position_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40954,
+   "name": "type1d_move_positive",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41002,
+   "name": "type1d_move_negative",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41210,
    "name": "type22_state_dispatch",
    "type": "UserDefined",
@@ -4701,6 +4804,71 @@
    "address": 40641,
    "type": "line",
    "text": "Copy $1AC2,X/$1AD3,X to $35BD/$35BE. If $1A29,X is zero, return. Otherwise use that byte as Y to fill $35C0 from $4CCF,Y shifted right and $35BF from $4C4F,Y and $4C6F,Y combined by LSR/ROR. Call $34EA, OR its result with $A0, store it in $1B28,X and tail-jump to $35C1. The input index is not locally bounded."
+  },
+  {
+   "address": 40691,
+   "type": "line",
+   "text": "Use $1AB1,X to patch the jump at $9F02 from split target tables at $9F05/$9F07. Two captured target pairs select $9F09 and $9F63; the index is not locally bounded."
+  },
+  {
+   "address": 40706,
+   "type": "line",
+   "text": "Absolute jump patched through operands $9F03/$9F04; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 40709,
+   "type": "line",
+   "text": "Two captured low target bytes paired with $9F07: $9F09 and $9F63. Input-index bounds remain open."
+  },
+  {
+   "address": 40711,
+   "type": "line",
+   "text": "Two captured high target bytes paired with $9F05: $9F09 and $9F63."
+  },
+  {
+   "address": 40713,
+   "type": "line",
+   "text": "Patch the immediate X load at $9F1A with X, then call $190B and $4454 without a local branch on carry. Set type $2F in the slot X left by those callbacks, copy X to Y and restore the original X through the patched instruction."
+  },
+  {
+   "address": 40731,
+   "type": "line",
+   "text": "In slot Y, store $195D,X minus $18 in $195D,Y and $196E,X minus the borrow in $196E,Y; store $19A1,X plus 8, set $19E5/$19C3=$B3, $1A07=7, $19B2=1 and $1AA0=0. Store Y in $1B28,X."
+  },
+  {
+   "address": 40784,
+   "type": "line",
+   "text": "Set $1AB1,X=0; call $3020, mask with $8F, add 7 and store in $1AC2,X. Increment $1AB1,X and fall through into state 1."
+  },
+  {
+   "address": 40803,
+   "type": "line",
+   "text": "Call $9FD6 and $9F95. If $1A8F,X is nonzero, return. Otherwise rotate $1AC2,X left through the carry left by those calls; a zero result jumps to $9F50. For a nonzero result decrement $1AC2,X, then call $9FFA if carry from the rotate was set or $A02A if it was clear, with A=2. Carry set from the selected helper toggles bit 7 of $1AC2,X."
+  },
+  {
+   "address": 40853,
+   "type": "line",
+   "text": "If $1A8F,X is zero, branch to the event helper at $9FA9. Otherwise load A=4 and tail-jump to $9FFA for negative $1AD3,X or $A02A for nonnegative $1AD3,X."
+  },
+  {
+   "address": 40873,
+   "type": "line",
+   "text": "Call $792C and $732A. If $732A returns carry set and $1A6D,X is positive, call $72FC, rotate its returned A right through its carry and store it in $1AD3,X. If $1A6D,X is zero or negative, call $4B20 with A=6 and jump to $5DB9. If $732A returns carry clear, call $7227; on carry set toggle bit 7 of $1AC2,X and tail-jump to $5D7A with A=4."
+  },
+  {
+   "address": 40918,
+   "type": "line",
+   "text": "Call $72FC, set $19C3,X to $19E5,X plus 6 if carry is clear or zero otherwise, and decrement $1AC2,X. Set $19D4,X to $19C3,X plus 2 plus bit 2 of the decremented byte shifted right once."
+  },
+  {
+   "address": 40954,
+   "type": "line",
+   "text": "Save A, use $1B28,X as Y and clear $1B28,Y. If $196E,X is nonzero and $195D,X is at least $1F, discard the saved byte and return carry set. Otherwise store the saved byte in $1B28,Y, add it to the 16-bit $196E,X:$195D,X coordinate and return carry clear."
+  },
+  {
+   "address": 41002,
+   "type": "line",
+   "text": "Negate A, save it, use $1B28,X as Y and clear $1B28,Y. If $196E,X is zero and $195D,X is below $1F, discard the saved byte and return carry set. Otherwise store it in $1B28,Y, add it as a signed byte to the 16-bit $196E,X:$195D,X coordinate and return carry clear."
   },
   {
    "address": 41210,
