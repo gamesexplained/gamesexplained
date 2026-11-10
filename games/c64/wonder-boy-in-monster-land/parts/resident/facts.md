@@ -237,3 +237,7 @@ Resident $0364 sets up raster and processor-port state and calls $6CCC before th
 Resident $1665 sets an interrupt target and scans bit 7 of $DC01 after configuring CIA port A; it conditionally increments $526C and always increments $5274 before restoring display registers. VICE checked two forced bit values by temporarily redirecting the BIT instruction to a supplied RAM byte. Real keyboard behavior, interrupt timing and ordinary-play reachability remain open.
 
 Resident $1703 and $17DA write the first and reused hardware-sprite settings from a display slot. The first stages the X position and high-bit mask in RAM; the reuse path writes those directly to VIC registers. VICE checked four forced high-bit, multicolour and expansion combinations for each path, including screen pointers and colour. Index bounds, interrupt scheduling and ordinary-play reachability remain open.
+
+Resident $1753 and $182A schedule further sprite reuse or the end-of-frame interrupt based on the decremented slot count and a sprite Y plus $15 compared with the raster. VICE checked ten forced branches after redirecting the raster comparison to a supplied RAM byte. Actual interrupt timing and ordinary-play reachability remain open.
+
+Resident $1779 counts seven hardware-sprite Y values from $4A through $5F inclusive. VICE checked three forced register sets, including both boundary values. Interrupt timing and ordinary-play reachability remain open.
