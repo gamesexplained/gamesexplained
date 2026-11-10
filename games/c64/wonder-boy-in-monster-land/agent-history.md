@@ -668,3 +668,5 @@ Described the three captured first-load stage records individually. VICE and a l
 Described six first-load entity records individually. Six forced VICE calls and a listing test checked the ten-byte copies, including the record beyond the initial limit. The paused user snapshot was restored; the overlapping dispatch role remains open.
 
 Traced the first-load welcome and message entries in three controlled VICE calls and a listing test. Described the previously checked six setup graphics tails, the setup entry and an overlapping message suffix. The paused user snapshot was restored.
+
+Described all 24 first-load item records individually, including packed prices and decoded description names. VICE matched the complete table and checked nine representative pointer dispatches; a listing test checks all 24 records through price, drawing, effect and message selection. The paused user snapshot was restored.

@@ -79,3 +79,5 @@ The first-load stage header selects three 16-byte records at $92CB–$92FA. VICE
 The first-load entity stream at $B4EF contains six ten-byte records before a zero byte; its captured initial limit is five. Six forced VICE calls and a listing test checked each record’s copy into the entity arrays. The first record also overlaps dispatch targets whose executable role remains unresolved.
 
 First-load welcome handling saves and restores X around a message call; a neighboring entry returns carry set and A=9, and another jumps to a second message. Three VICE calls and a listing test check these entries with message display stubbed or stopped. The six nine-byte setup graphics tails are covered by the setup-copy test. Natural reachability and callback effects remain open.
+
+The first load has 24 eight-byte item records with packed prices, drawing and effect targets, and description pointers. A listing test exercises price and pointer selection for every record; VICE matched all table bytes and checked three representative records through each of the three pointer-dispatch paths. Callback effects and natural selection remain open.
