@@ -710,3 +710,5 @@ Typed the load-19 question selector at $BCDC. Four forced VICE cases and a listi
 Described the resident entity collision parameter tables through type 45. The listing test checked all 46 types, and five forced VICE cases checked the coordinate and size calculation. Restored the paused user snapshot.
 
 Distinguished 29 previously duplicated resident sprite descriptions by their own bitmap bit and row counts. VICE compared all 63 bitmap bytes per slot with the first-load play capture; a listing test checks the counts. Restored the paused user snapshot.
+
+Described the alternate screen matrix cells $C500–$C7E7 by their positions and the previously VICE-checked transition clear, retaining the possibility of other uses. The existing screen-clear test checks the whole range and the untouched tail.
