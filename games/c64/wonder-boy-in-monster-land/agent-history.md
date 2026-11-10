@@ -272,4 +272,8 @@ Annotated 1,082 used glyphs in ten later-load projects and 61 in the resident sy
 
 Included the first load in the tally-selector check as well: its captured selector chooses the skyline reconstruction, giving 11 skyline and 20 continue selections across all 31 captures.
 
+Carried 3,690 screen-glyph descriptions to byte-for-byte copies in 24 load projects, retaining each load and selector in its own comment. The listing test runs the loader for the described selections and checks all 4,833 descriptions against their copied bytes and cell geometry. Each changed part was imported into and exported from its rebuilt disassembler project without a reported loss; other uses of these bytes remain open.
+
+Tried `carry.py pair` on the eight-byte glyph at load 2 $97B0 and its load 9 copy at $A1AD. The tool reported that no code was known in the source range, so the glyph pass used byte matching and the independent loader test for data rather than an instruction pairing.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.

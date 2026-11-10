@@ -20,7 +20,7 @@ The resource tables contain seven entries apiece at $7F82–$7FCE. `test_visual_
 
 The 55 captured stage-object records in loads 2–31 have initial visual selectors from 0 through 6. If a record reaches the interaction path at $47F5 with that field unchanged, those selectors map to 16 of the reconstructed screens. The post-event tally reads a separate selector at $7F81: 20 captured loads specify the shared continue-screen reconstruction, and 11 specify the skyline reconstruction. `test_visual_record_selectors.js` runs the record copy and caller with callbacks stubbed for all 55 records and checks all 31 tally selectors. These initial values do not establish that the paths are reached or that the fields remain unchanged in play.
 
-The symbol maps describe 1,143 eight-byte glyphs used in the 17 controlled screen reconstructions. Each description identifies its first screen cell and the nonzero pixels or multicolour pixel pairs in that cell. `test_screen_glyphs.js` runs the loader and checks every description against the copied bytes, cell position and decoded row geometry. The descriptions establish those captured uses; other uses and ordinary-play reachability remain open.
+The symbol maps describe 4,833 eight-byte glyph instances used in the 17 controlled screen reconstructions, including byte-for-byte copies in different loads. Each description identifies its first screen cell and the nonzero pixels or multicolour pixel pairs in that cell. `test_screen_glyphs.js` runs the loader for each described load and selection and checks every description against the copied bytes, cell position and decoded row geometry. The descriptions establish those captured uses; other uses and ordinary-play reachability remain open.
 
 ## Entity records
 
