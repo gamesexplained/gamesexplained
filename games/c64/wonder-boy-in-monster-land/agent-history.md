@@ -926,3 +926,5 @@ Checked the selector-1 stage patch and all 72 copied bytes in VICE, then restore
 Connected the display-slot flag range to the previously checked display-builder and sprite-register paths; distinguished its 24-byte annotation range from indexed accesses beyond it.
 
 Checked both banked 24-byte sprite-fragment copies in VICE and restored the paused user snapshot.
+
+Checked four forced entity-candidate scan cases in VICE and restored the paused user snapshot.
