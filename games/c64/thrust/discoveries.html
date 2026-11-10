@@ -60,7 +60,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Secret: the C64 game carries the BBC Micro's instructions page</h2>
   <p class="lede">Thrust began on the BBC Micro, written by Jeremy C. Smith. The C64 program still holds the BBC version's key page, in the BBC's own teletext codes.</p>
   <div class="plate"><canvas id="th-bbc" class="th-cv" width="640" height="500" style="width:100%;max-width:640px" aria-label="The key page drawn as the BBC Micro's teletext mode would show it"></canvas>
-  <p class="cap" id="th-bbc-cap">The text at <code>$B9DD</code>, drawn by this page the way the BBC Micro's MODE 7 would show it: each control code takes a cell and changes the colour, the background or the height of what follows. The page draws the letters in a browser font, not the BBC's teletext font.</p></div>
+  <p class="cap" id="th-bbc-cap">The text at <code>$B9DD</code>, drawn by this page the way the BBC Micro's MODE 7 would show it: each control code takes a cell and changes the colour, the background or the height of what follows.</p></div>
   <p>The text opens with the bytes 22 and 7, which the BBC Micro reads as "change to MODE 7", its teletext screen. After them come teletext control codes: <code>$84</code> blue, <code>$9D</code> new background, <code>$83</code> yellow, <code>$8D</code> double height. The keys it lists are the BBC's: CAPS LOCK and CTRL to turn, COPY and DELETE to freeze, ESCAPE to quit. The C64 version uses A and S, the function keys and RUN/STOP.</p>
   <p>The crackers added their own line near the end, "Cracked By The Syndicate For TCI !", in letters with the top bit set, which teletext shows as plain capitals. A routine to print the page is there too: <code>show_bbc_keys_page</code> (<code>$B74B</code>) sends the text to the C64's own print routine (<code>CHROUT</code>), waits for Space and starts the game. No instruction calls it, and no table holds its address. On a C64 the teletext codes would print as other characters, so the page could never have looked like this one.</p>
 </section>
@@ -111,43 +111,28 @@ $A002  tay</pre><p class="cap">The end of <code>free_shot_slot</code>. Whichever
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/bbc.js"></script>
 <script>
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  if (typeof C64 === 'undefined') { $('th-bbc-cap').textContent = 'These widgets need the site\'s c64.js, which did not load.'; return; }
-  // teletext colours: $81 red ... $87 white
-  const TT = ['#000', '#f00', '#0f0', '#ff0', '#00f', '#f0f', '#0ff', '#fff'];
-  const SAA = { 0x23: '£', 0x5B: '←', 0x5C: '½', 0x5D: '→', 0x5E: '↑', 0x5F: '#', 0x60: '―', 0x7B: '¼', 0x7C: '‖', 0x7D: '¾', 0x7E: '÷' };
+  if (typeof C64 === 'undefined' || typeof BBC === 'undefined') { $('th-bbc-cap').textContent = 'These widgets need the site\'s c64.js and bbc.js, which did not load.'; return; }
   C64.load('listing.json').then(L => {
     const ram = L.ram;
-    // ---- 01 the key page, as MODE 7 shows it
-    const cv = $('th-bbc'), c = cv.getContext('2d'), CW = 16, CH = 20;
-    c.fillStyle = '#000'; c.fillRect(0, 0, cv.width, cv.height);
-    let a = 0xB9DD + 2, row = 0, col = 0, fg = 7, bg = 0, dbl = false, prevDbl = false;
-    const glyphs = [];
-    const newRow = () => { prevDbl = dbl; row++; col = 0; fg = 7; bg = 0; dbl = false; };
-    for (; ram[a] !== 0xFF && a < 0xBB96; a++) {
+    // ---- 01 the key page, as MODE 7 shows it. The text is what the BBC version sent to the
+    // screen, after its VDU 22,7: the MOS stores a character at the cursor and moves on, CR goes
+    // to the start of the row and LF down one, scrolling at the bottom, and in MODE 7 it stores
+    // &23, &5F and &60 as &5F, &60 and &23 (bbc-reference, "Mode 7").
+    const scr = new Uint8Array(1000).fill(32), TR = { 0x23: 0x5F, 0x5F: 0x60, 0x60: 0x23 };
+    let cx = 0, cy = 0;
+    const down = () => { if (cy < 24) cy++; else { scr.copyWithin(0, 40); scr.fill(32, 960); } };
+    for (let a = 0xB9DD + 2; ram[a] !== 0xFF && a < 0xBB96; a++) {
       const b = ram[a];
-      if (b === 0x0D) { col = 0; continue; }
-      if (b === 0x0A) { newRow(); continue; }
-      let ch = ' ';
-      if (b >= 0x81 && b <= 0x87) fg = b - 0x80;
-      else if (b === 0x8D) dbl = true;
-      else if (b === 0x9D) bg = fg;
-      else if (b < 0x80 || b >= 0xA0) { const v = b & 0x7F; ch = SAA[v] || String.fromCharCode(v); }
-      if (col < 40) {
-        c.fillStyle = TT[bg]; c.fillRect(col * CW, row * CH, CW, CH);
-        // the second row of a double-height pair shows the lower halves of the row above
-        if (ch !== ' ' && !(dbl && prevDbl)) glyphs.push([ch, col, row, fg, dbl]);
-      }
-      col++;
+      if (b === 0x0D) cx = 0;
+      else if (b === 0x0A) down();
+      else if (b >= 0x20 && b !== 0x7F) { scr[cy * 40 + cx] = TR[b] || b; if (++cx === 40) { cx = 0; down(); } }
     }
-    c.textBaseline = 'top';
-    for (const [ch, x, y, f, d] of glyphs) {
-      c.fillStyle = TT[f]; c.font = (d ? 2 * CH - 2 : CH - 3) + 'px "IBM Plex Mono", monospace';
-      c.fillText(ch, x * CW + 2, y * CH + (d ? 1 : 2));
-    }
+    BBC.drawTeletext($('th-bbc'), scr);
     // ---- 06 the unused sprites
     for (const p of [0x31, 0x32, 0x33]) {
       const d = document.createElement('div'), k = document.createElement('canvas'); d.className = 'th-cell';
