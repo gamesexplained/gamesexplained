@@ -323,3 +323,5 @@ Twenty-nine resident VIC sprite slots selected conditionally by player, continue
 The alternate matrix cells $C500–$C7E7 are part of the screen cleared by $7B2A. Their cell offsets in a 40-column matrix are recorded in the listing. The same addresses can be reused for other purposes; the clear check does not establish their contents throughout play.
 
 The primary matrix cells $C0AE–$C3E7 are part of the screen cleared by $7B2A. Their offsets in a 40-column matrix are recorded in the listing; the status initializer also copies its template through $C0C7. The same addresses can have other uses, and the clear check does not establish their contents throughout play.
+
+The status template $4DE4–$4EAB is copied to $C000–$C0C7. Its six bytes at $4E35–$4E3A also restore the meter background at $C051–$C056 in the routine at $37F7. The full copy was checked in VICE and the listing; other source uses remain open.
