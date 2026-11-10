@@ -286,4 +286,8 @@ In each later-load capture, a non-stopping VICE execute checkpoint found no inst
 
 Firefox rendered the countdown-frame selector and layers on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
 
+Traced the type-$28 path from $0916 through frame restore and display setup. Its $B3/$B4 masks form one identical pair across loads 2–5 and another across loads 6–31. VICE checked controlled selection in loads 2, 6, 20 and 31 with position setup stubbed; the 200-frame execute probe found no entry into $ECC0–$ED3E in any later-load capture. Added 60 bounded bitmap descriptions and both variants to the Graphics selector. The listing test checks all masks, their geometry, selection and the viewer. Exported each affected project without a reported loss and restored the paused user snapshot after the VICE probes.
+
+Firefox rendered the type-$28 selection on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.
