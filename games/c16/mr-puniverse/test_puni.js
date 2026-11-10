@@ -19,6 +19,9 @@
 //   lead off the map (discoveries.html, "offmap"); Puni.solid: is_solid's groups.
 // - What discoveries.html runs: the WIMPO path's 220 dots, the refill that stops short of cell 33,
 //   and the notes the tune reads past its tables.
+// - The freeze (discoveries.html, "freeze"): main_loop calls player_pass, player_pass reaches
+//   leave_room by jumping, and leave_room jumps on to room_start, so the way back stays on the
+//   stack; nothing in the game sets S (no TXS), and nothing between leave_room and its jump pulls.
 // It exits 1 on any difference.
 //   node games/c16/mr-puniverse/test_puni.js
 const path = require('path'), fs = require('fs'), zlib = require('zlib'), crypto = require('crypto');
@@ -161,6 +164,19 @@ const base = Puni.fresh(L), first = Puni.start(base.slice());
   const v2 = [...L.ram.subarray(0x1A27, 0x1A27 + 128)];
   if (![84, 85, 87].every(n => v2.includes(n)) || v2.some(n => n > 27 && n < 128 && ![84, 85, 87].includes(n))) fail('the tune\'s notes past the table');
   console.log(`discoveries: dot paths 233 and 220, the refill back to ${held}, notes 84, 85 and 87`);
+}
+// The freeze: what leaves $32BE on the stack at each exit
+{
+  const code = L.listing.records.filter(r => r.t === 'code'), at = new Map(code.map(r => [r.a, r]));
+  const is = (a, m, o) => { const r = at.get(a); if (!r || r.m !== m || r.o !== o) fail('the freeze:', a.toString(16), 'is not', m, o); };
+  is(0x32BC, 'jsr', 'player_pass'); is(0x25BD, 'jmp', 'leave_room'); is(0x25F7, 'jmp', 'leave_room'); is(0x2795, 'jmp', 'room_start');
+  const into = code.filter(r => r.o === 'player_pass' || r.o === 'leave_room').map(r => r.a.toString(16)).join(' ');
+  if (into !== '25bd 25f7 32bc') fail('the freeze: the ways into player_pass and leave_room are', into);
+  if (code.some(r => r.m === 'txs')) fail('the freeze: the game sets S');
+  if (code.some(r => r.a >= 0x2703 && r.a < 0x2795 && ['pla', 'rts', 'rti', 'txs'].includes(r.m))) fail('the freeze: leave_room takes bytes off the stack');
+  const run = code.filter(r => r.a >= L.sym('room_start') && r.a < L.sym('main_loop'));
+  if (L.sym('main_loop') !== 0x32BC || !run.length || run.some(r => ['jmp', 'rts', 'rti'].includes(r.m))) fail('the freeze: room_start does not run on into main_loop');
+  console.log('the freeze: two bytes left at each exit, and no TXS');
 }
 console.log(bad ? `${bad} difference(s)` : 'ok');
 process.exit(bad ? 1 : 0);

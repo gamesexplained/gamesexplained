@@ -176,6 +176,41 @@ room 0, room 24's top to room 14, and rooms 18's and 19's floors to room
 where a room's bottom row has gaps: room 18's nine and room 19's one
 are each under a wall or a ladder.
 
+**The stack.** `main_loop` reaches `player_pass` with `JSR` (`$32BC`),
+and `player_pass` reaches `leave_room` with `JMP` (`$25BD`, `$25F7`);
+`leave_room` ends with `JMP room_start` (`$2795`), which runs on into
+`main_loop`. The way back, `$32BE`, stays on the stack, so each exit
+lowers S at the top of `main_loop` by 2. The game has no `TXS`, and
+GAME OVER jumps to `new_game`, so the count runs from the hand-over,
+where S is `$F6`, across games. *(live, kit's C16 model,
+`kit/c16/machine.js`, with plus4emu's KERNAL and BASIC ROMs: falling
+through room 0's shaft into room 5 took S at `main_loop` from `$F6` to
+`$F4`)*
+
+After about 120 exits the stack reaches the bottom of page 1. The
+KERNAL's interrupt entry (`$FCB3`, then `$CE00`: `TSX`, `LDA $0104,X`,
+`AND #$10`) reads the pushed status at `$0104`+X, and when an interrupt
+arrives with S at `$02`-`$05`, X is `$FC`-`$FF` and the read lands on
+`$0200`-`$0203`. Typing LOAD leaves `$93 $00 $41 $44` there (BASIC's
+token for LOAD, the line's end, and the rest of the typed word). `$93`
+has bit 4 set, so an interrupt with S at `$02` goes through `$0316` to
+the monitor's break entry, `$F44C`. That entry pulls the registers (S
+back at `$02`), prints message 9 of the KERNAL's table at `$CF36`, a
+carriage return and BREAK, in the cursor's colour `$10`, and executes
+`CLI`. TED's raster flag was never acknowledged, because `irq` did not
+run, so the interrupt is taken again at once with S at `$02`, and the
+loop never ends. Each BREAK goes on a new line; on the bottom row the
+new line scrolls the screen's characters and colours up a row, about
+every two frames. *(live, the same model: with S at `main_loop` set as
+after 113 and 116-122 exits, standing in room 0, the break entry ran
+within 0 to 16 seconds; at 108-112, 114, 115 and 123-126, not in a
+minute. Interrupts in room 0 found S 2 below `main_loop`'s in 1,279 of
+3,000, 4 below in 676, 6 below in 380, 8 below in 295, and as deep as
+18 below in 8)* This is what a clip of Unloved8Bit's Twitch stream of
+8 January 2022 shows in room 14: the panel takes the room's colours,
+the labels TIME1, TIME2 and EGY go black, and the picture climbs a row
+at a time until the screen is empty.
+
 **Switches** (`make_switch`, `switch_off`, `switch_on`): touching the
 lit half of a switch turns it off and the unlit half on. Its number is
 the low three bits of its colour; `switch_state` holds the eight states,
