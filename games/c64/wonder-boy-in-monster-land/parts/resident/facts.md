@@ -189,3 +189,7 @@ Resident $34EA calculates a four-bit direction from coordinate differences, subt
 VICE also checked three forced $3DB9 trajectory initializations through the real $34EA direction calculation, with the motion callback stubbed. Ordinary-play reachability remains open.
 
 Resident $35C1 selects a horizontal helper from entity type and signed table value, then subtracts a signed vertical table byte from entity positions. It uses Y after the horizontal callback without restoring it. VICE checked six forced type, signed-motion and callback-Y cases with horizontal callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $369E copies ten record bytes through $E2/$E3 into entity fields, advances Y by ten modulo 256 and clears four display-slot indexes. VICE checked two forced source offsets, including Y wrapping within the source page. Record bounds and ordinary-play reachability remain open.
+
+Resident $5D2C converts selected trigger column and row bytes into unindexed entity coordinates: X is column times 16 plus $1B and Y is row times 16 plus $59. VICE checked five forced input pairs including byte-boundary carries and $FF values. Index bounds and ordinary-play reachability remain open.
