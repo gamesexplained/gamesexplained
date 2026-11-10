@@ -812,3 +812,5 @@ Checked load-3 phase calculation $9C5A with five forced VICE cases at both subtr
 Checked the first part of load-3 type-$07 state 0 in six forced VICE cases with callbacks stubbed. Preserved the overlapping character-source descriptions and restored the paused user snapshot.
 
 Checked load-3 type-$07 state-0 setup with eight forced VICE cases and stubbed callbacks, preserved overlapping character-source descriptions, and restored the paused user snapshot.
+
+Checked load-3 child initializers in twelve forced VICE cases, including offset choices, position carry, overwritten frame writes and patched Y operands; restored the paused user snapshot.

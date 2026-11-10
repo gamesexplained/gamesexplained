@@ -606,7 +606,7 @@
   {
    "start": 40248,
    "end": 40373,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 40374,
@@ -625,8 +625,13 @@
   },
   {
    "start": 40484,
+   "end": 40486,
+   "type": "Byte"
+  },
+  {
+   "start": 40487,
    "end": 40487,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 40488,
@@ -4731,6 +4736,36 @@
    "kind": "user"
   },
   {
+   "address": 40248,
+   "name": "type07_init_child_from_table",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40277,
+   "name": "type07_restore_parent_y_operand",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40284,
+   "name": "type07_init_child_from_slot",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40310,
+   "name": "type07_restore_parent_y_operand2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40334,
+   "name": "type07_init_child_common",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 40374,
    "name": "type07_state5",
    "type": "UserDefined",
@@ -4745,6 +4780,18 @@
   {
    "address": 40433,
    "name": "type07_hit_and_contact_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40484,
+   "name": "type07_child_position_offsets",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40487,
+   "name": "type07_direction_working_byte",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7935,6 +7982,31 @@
    "text": "When $7A is zero, read $1A29,X into Y and copy $4CCF,Y to $7D, returning with A holding the value. Otherwise copy $1990,X to $7D and return with A holding it. The index and ordinary-play reachability remain open."
   },
   {
+   "address": 40248,
+   "type": "line",
+   "text": "Set $19B2,X to 1 and copy $7D/$7E to $195D,X/$196E,X. Save Y in the immediate operand at $9D55; use $1B28,Y as an index to add $9E24,Y to $7F with carry clear, restore Y, and store the low byte at $19A1,X. Jump to the common child setup at $9D8E. Addition wraps with decimal mode clear; index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40277,
+   "type": "line",
+   "text": "Immediate operand patched by STY at $9D47 to restore the incoming Y after table indexing."
+  },
+  {
+   "address": 40284,
+   "type": "line",
+   "text": "Copy $194C,Y and $193B,Y to the corresponding X slots. Save Y at $9D76, use $1B28,X as an index to add $9E24,Y to $1990 of the saved Y slot, restore Y, and write the low result to $1990,X. Add the carry to $197F,Y and write $197F,X. Add $26 to $19E5,Y, storing it in $19E5,X and $19C3,X, then fall through to $9D8E, which overwrites those last two stores. Arithmetic is binary with decimal mode clear; index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40310,
+   "type": "line",
+   "text": "Immediate operand patched by STY at $9D6B to restore the incoming Y after table indexing."
+  },
+  {
+   "address": 40334,
+   "type": "line",
+   "text": "Copy $9E27 to $1AE4,X; set $1919,X to $24, $1A07,X to 1, and both $19E5,X and $19C3,X to $F1. Clear $1AA0,X, copy Y to $1AD3,X, and copy $1B28,Y to $1AB1,X, then return. Index bounds and ordinary-play reachability remain open."
+  },
+  {
    "address": 40374,
    "type": "line",
    "text": "If $1A8F,X is zero, jump to $9CD6. Otherwise, when $9E27 is nonnegative call $45BC with A=8 and use offset $12; when negative call $4574 with A=8 and use offset 8. Add that offset to $19E5,X and store it at $19C3,X, then add 2 and store at $19D4,X. Each addition clears carry; values wrap with decimal mode clear. Callback effects and ordinary-play reachability remain open."
@@ -7948,6 +8020,16 @@
    "address": 40433,
    "type": "line",
    "text": "Call $792C and $732A. If $732A returns carry set, set $1AB1,X to 5 when $1A6D,X is positive, or set $1A8F,X to $FF, $1AC2,X to 10 and $1AB1,X to 6 when it is zero or negative. Then pull the two bytes of this helper\u2019s return address and RTS to its caller\u2019s caller. If $732A returns carry clear, call $7227; return on carry clear, or call $5D7A with A=8 and jump to $9CD6 on carry set. Callback effects and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40484,
+   "type": "line",
+   "text": "Three captured offset bytes $05, $14 and $0F read by the child initializers at $9D38 and $9D5C. Neither initializer locally bounds its index; other indexed values and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40487,
+   "type": "line",
+   "text": "Working byte cleared and rotated through carry by $9BB6; its sign selects movement and frame paths and is copied to child field $1AE4,X. Its entry value is snapshot state, not a constant."
   },
   {
    "address": 40488,
