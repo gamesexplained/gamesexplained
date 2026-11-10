@@ -106,3 +106,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 122-byte st
 This load has 1 captured motion-reader entry and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Ordinary-play reachability remains open.
 
 The object record at $9611 contains message callback $9653, which supplies $965A to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
+
+The shop entry at $9B9D configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

@@ -98,3 +98,5 @@ The object record at $935F contains message callback $9509, which supplies $9517
 The object record at $937F contains result callback $9505, which returns A=$F7 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 The trigger record at $92A4 contains message callback $92B0, which passes $92CB, then $92FB, then $932E to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
+
+The shop entry at $A750 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

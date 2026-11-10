@@ -772,3 +772,5 @@ Added the load-23 self-modifying trigger observation to Discoveries, with the fo
 Traced the load-9 countdown trigger and its player-contact patch. Three forced VICE cases checked countdown, guard and activation; a further case used the real flag setter and called the patched contact entry. The message callback was stubbed, and a listing test repeats the paths. Restored the paused user snapshot.
 
 Added the load-9 contact-check patch to Discoveries, with the controlled-trigger and other-damage limitations beside it.
+
+Traced the relocated shop setup and price formatter in 17 later loads. Eighty-five forced VICE cases and a listing test checked page setup, formatting, balance comparisons and message selection with display and gate callbacks stubbed. Character-source comments retain the bounded capture and the newly demonstrated code use. Restored the paused user snapshot.

@@ -120,3 +120,5 @@ The object record at $8F72 contains initialization target $8F82. Two forced VICE
 The object record at $8F72 contains result callback $8FD3, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
 
 The trigger record at $8F3A contains message callback $8F46, which passes $8F53 to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
+
+The shop entry at $9690 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

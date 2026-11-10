@@ -140,3 +140,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 49-byte str
 The object record at $95EA contains message callback $961A, which supplies $9621 to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
 
 The trigger record at $95C8 contains message callback $95CE, which passes $95DB to $77E0 and restores X. A forced VICE call and `test_later_trigger_messages.js` check the pointer sequence and X restoration with the message callback stubbed. Display effects and ordinary-play reachability remain open.
+
+The shop entry at $A679 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

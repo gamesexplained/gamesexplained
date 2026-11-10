@@ -94,3 +94,5 @@ The captured shop message bank contains the same 34 records as the decoded first
 A forced graphics setup call at $A257 copies ten source blocks into RAM beneath I/O and calls the mirror routine seven times. VICE and a listing test checked all copies with the mirror callback stubbed. The callback’s effects, other source uses and ordinary-play reachability remain open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 128-byte stride from $8671; the first 15 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The shop entry at $9A2B configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

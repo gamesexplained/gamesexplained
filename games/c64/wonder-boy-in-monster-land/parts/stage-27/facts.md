@@ -104,3 +104,5 @@ The captured split row-pointer tables contain 81 pairs. All follow a 128-byte st
 The object record at $903E contains initialization target $904E. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 The object record at $903E contains result callback $90A1, which returns A=$00 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+The shop entry at $90A5 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.

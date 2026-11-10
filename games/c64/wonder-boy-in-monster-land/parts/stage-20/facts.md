@@ -108,3 +108,5 @@ The object record at $93DC contains initialization target $948A. Two forced VICE
 The object record at $93BC contains message callback $9451, which supplies $9458 to $77E0. A forced VICE call and `test_later_object_messages.js` check the pointer sequence with intermediate display calls stubbed. Display effects and ordinary-play reachability remain open.
 
 The object record at $93DC contains result callback $94E1, which returns A=$0A with carry 0. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+The shop entry at $9549 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Ordinary-play contexts remain open.

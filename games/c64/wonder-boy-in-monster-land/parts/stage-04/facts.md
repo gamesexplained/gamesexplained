@@ -132,3 +132,5 @@ This load has 3 captured motion-reader entries and encoded streams documented in
 The object record at $9542 contains initialization target $9552. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.
 
 The object record at $9542 contains result callback $95A7, which returns A=$09 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+The shop entry at $A681 configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Some bytes also occur in captured character or graphics sources; ordinary-play contexts remain open.
