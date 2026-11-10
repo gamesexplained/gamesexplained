@@ -890,3 +890,5 @@ Checked resident vertical entity movement in six forced VICE cases with entity, 
 Checked two unsupported upward displacements reach the existing overlap check at $6939 and restored the paused user snapshot.
 
 Checked resident entity vertical steps in seven forced VICE cases covering world and screen modes, wrap and clamp carry; restored the paused user snapshot.
+
+Checked resident transition entry with two controlled raster cases and message wrapper with two callback-stub cases in VICE; restored the paused user snapshot.
