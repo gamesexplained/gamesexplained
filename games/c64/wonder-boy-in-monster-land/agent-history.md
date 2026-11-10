@@ -276,4 +276,14 @@ Carried 3,690 screen-glyph descriptions to byte-for-byte copies in 24 load proje
 
 Tried `carry.py pair` on the eight-byte glyph at load 2 $97B0 and its load 9 copy at $A1AD. The tool reported that no code was known in the source range, so the glyph pass used byte matching and the independent loader test for data rather than an instruction pairing.
 
+Traced the type-$27 and type-$29 spawned-entity initializers, direct frame restore and display update. Their four sprite masks match across all 30 later-load entry and play captures. VICE reproduced both controlled selection paths in loads 2, 20 and 31 with position setup stubbed; a non-stopping execute checkpoint saw no instruction entry in $EB40–$EC3E during 200 frames in each later load. Added 116 individual bitmap descriptions; four masks already had descriptions. The listing test checks all 120 masks, pixel counts and 60 forced selection paths. Exported each affected part project without a reported loss and restored the paused user snapshot after every VICE probe.
+
+Firefox rendered both spawned shapes and their layers on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Traced the entity countdown's $A7/$A8, $A9/$AA and $AB/$AC display pairs. Replaced six repeated resident comments with individual bitmap descriptions and bounded each to 63 bytes. The listing test checks initial countdown values 2–6, bitmap geometry and the viewer; VICE checked values 2, 4 and 6 with entity state forced. All six masks match the resident entry and 30 later-load play snapshots. The paused user snapshot was restored. The resident descriptions and block boundaries must be carried into the project before its next export.
+
+In each later-load capture, a non-stopping VICE execute checkpoint found no instruction entries in $E9C0–$EB3E during 200 frames. This is a bounded observation, and the paused user snapshot was restored.
+
+Firefox rendered the countdown-frame selector and layers on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.
