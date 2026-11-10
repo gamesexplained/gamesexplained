@@ -24,7 +24,7 @@ in order:
    | Step | Skill | Produces |
    |---|---|---|
    | orient | `kit/skills/core/10-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
-   | media | `kit/skills/core/12-media` | `media.json`: every file, stray sector and cartridge bank the game came on, listed now and each answered before Silver, where the platform has a reader |
+   | media | `kit/skills/core/12-media` | `media.json`: every file, stray sector, cartridge bank and tape block the game came on, listed now and each answered before Silver, where the platform has a reader |
    | parts | `kit/skills/core/15-parts` | a folder, snapshot and route for each part, when the game is more than one image |
    | features | `kit/skills/core/20-features` | `features.md` and `reference/` before any code is read |
    | text | `kit/skills/core/30-text` | the game's alphabets decoded, when it has a custom charset |

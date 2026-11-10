@@ -6,7 +6,7 @@ game loads into a slot and then replaces, or never loads, is invisible to it. Th
 the list from the other side (kit/skills/core/12-media). A platform's reader
 (kit/<platform>/media.py) lists every item on each image the contributor supplied: every file on
 a disk, every run of sectors the disk's map marks as used that no file holds, every bank of a
-cartridge. Each item then gets one answer:
+cartridge, every block of a tape. Each item then gets one answer:
 
   part     its bytes are listed in a part ("part", its id; left out in a game of one load),
            at "at"; "packed": true when it unpacks into the part rather than lying there whole
@@ -321,16 +321,18 @@ def counts(led):
 
 def summary(gdir):
     """What the About tab says: None for a game with no media.json, else {"images", "files",
-    "runs", "banks", "count" (by answer), "open", "unused" (labels), "unread", "missing"}."""
+    "runs", "banks", "blocks" (a tape's with no header), "copies" (items left out because another
+    holds the same bytes), "count" (by answer), "open", "unused" (labels), "unread", "missing"}."""
     led = load(gdir)
     if led is None:
         return None
     many = len(led["images"]) > 1
     lab = lambda i: f"{i['label']} ({i['image']})" if many else i["label"]
-    kinds = Counter("file" if "file" in i["place"] else "bank" if "bank" in i["place"] else "run"
-                    for i in led["items"])
+    kinds = Counter("file" if "file" in i["place"] else "bank" if "bank" in i["place"]
+                    else "block" if "block" in i["place"] else "run" for i in led["items"])
     return {"images": Counter(i["what"] for i in led["images"]),
-            "files": kinds["file"], "runs": kinds["run"], "banks": kinds["bank"],
+            "files": kinds["file"], "runs": kinds["run"], "banks": kinds["bank"], "blocks": kinds["block"],
+            "copies": sum(len(i.get("also", ())) for i in led["items"]),
             "count": counts(led),
             "open": [lab(i) for i in led["items"] if i["answer"] == "open"],
             "unused": [lab(i) for i in led["items"] if i["answer"] == "unused"],
