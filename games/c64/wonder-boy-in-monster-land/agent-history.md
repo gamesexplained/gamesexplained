@@ -666,3 +666,5 @@ Decoded the first-load repeating motion stream at $924C. VICE and a listing test
 Described the three captured first-load stage records individually. VICE and a listing test checked the record loader’s field copies with map writing stubbed. The paused user snapshot was restored.
 
 Described six first-load entity records individually. Six forced VICE calls and a listing test checked the ten-byte copies, including the record beyond the initial limit. The paused user snapshot was restored; the overlapping dispatch role remains open.
+
+Traced the first-load welcome and message entries in three controlled VICE calls and a listing test. Described the previously checked six setup graphics tails, the setup entry and an overlapping message suffix. The paused user snapshot was restored.
