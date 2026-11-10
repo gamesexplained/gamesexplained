@@ -73,3 +73,5 @@ First-load item description code selects the message pointer from the item recor
 The first-load visual tables contain seven split-byte pointers each for metatile definitions, screen streams, colour lookups and character sources. VICE checked the captured pointer values; listing tests check both values and loader reads. The two setup sprite patches and the drawing-store operand are covered by the setup and record-draw tests. Selector bounds, other data uses and ordinary-play reachability remain open.
 
 First-load motion stream $924C produces 44 values and resets to the start, including two 13-value runs. VICE and a listing test checked 45 successive decoder outputs using a forced entity slot. Other callers and ordinary-play reachability remain open.
+
+The first-load stage header selects three 16-byte records at $92CB–$92FA. VICE and a listing test checked the loader’s twelve parallel fields and final four scratch bytes with map writing stubbed. Subsequent mutations, map effects and ordinary-play reachability remain open.
