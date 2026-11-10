@@ -265,3 +265,5 @@ Resident $1069 handles leftward movement and fine scrolling around an $AA player
 Resident $46D6 selects four tile bytes and writes a two-by-two map area using a record-selected row and column. VICE checked three forced field and mode cases, including pointer carry and Y restoration. Record and pointer bounds and ordinary-play reachability remain open.
 
 Resident $719E initializes two display-slot entries from X and Y, fixed attributes, two VIC sprite multicolours and a sort flag. VICE checked two forced X/Y inputs and all writes. The call context and ordinary-play reachability remain open.
+
+Resident $2086 mirrors two adjacent 63-byte sprite images: one reverses single bits, the other reverses two-bit groups. VICE checked all 126 output bytes against supplied patterns, preserved both padding bytes and returned each sprite index plus two. Source and destination overlap and ordinary-play reachability remain open.
