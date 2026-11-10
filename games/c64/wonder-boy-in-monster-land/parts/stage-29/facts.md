@@ -46,3 +46,7 @@ The captured map references 39 additional described glyphs through its tile-quad
 The type-$0F entity dispatcher at $A3C7 returns when $1A8F,X is positive. Otherwise $2A7D clamps the state index to 4, and five captured table pairs select $A3EB, $A404, $A479, $A4CB, $A4D1. VICE checked the five states and out-of-range indices in loads 10, 28 and 29; ordinary-play reachability and the handlers remain open.
 
 For type-$0F state 0, after two helpers return, $1B28,X increments; reaching $14 changes it to 7 and increments $1AB1,X. State 3 sets $1AB1,X to zero. VICE checked timer boundaries and state 3 with the two state-0 helpers replaced by returns in loads 10, 28 and 29. Helper effects and ordinary-play reachability remain open.
+
+Type-$0F state 4 decrements $1AC2,X. A nonnegative result sets $19C3,X from $19E5,X plus 4 or 10 according to the sign of $1AE4,X; a negative result calls $4B0E with A=$40 and jumps to $5DB9. VICE checked both outcomes and both position offsets in loads 10, 28 and 29, stubbing $4B0E to record its argument. Ordinary-play reachability remains open.
+
+Type-$0F helper $A4F1 calls $792C and $732A. Carry set from $732A with positive $1A6D,X discards the helper return address and returns from the calling state; with zero or negative $1A6D,X it sets $1AC2,X=10, $1A8F,X=$FF and $1AB1,X=4. Other returning paths call $7227 and tail-jump to $5D7A with A=8 if carry is set. VICE checked five forced cases with callbacks stubbed in loads 10, 28 and 29; ordinary-play reachability remains open.
