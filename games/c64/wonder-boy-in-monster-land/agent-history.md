@@ -634,3 +634,5 @@ Traced the first-load message entity initializer at $92FB. VICE and a listing te
 Compared 62 first-load conditional sprite slots in entry and play snapshots and checked all 64 bytes of each in VICE. Added individual shape and slot-byte descriptions, with a listing test checking the statistics. The paused user snapshot was restored; selection remains conditional.
 
 Traced first-load price formatting and described the four previously verified setup sprite sources. VICE and a listing test checked five forced price values; setup-copy tests checked each sprite source and overlapping patch. The paused user snapshot was restored.
+
+Decoded 34 first-load item and shop messages using the rendered $C800 character set and the three-field record format. VICE matched all captured record bytes; a listing test checks every field and control byte. The paused user snapshot was restored. Ordinary-play selection remains open.

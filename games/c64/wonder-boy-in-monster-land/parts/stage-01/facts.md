@@ -47,3 +47,5 @@ First-load initializer $92FB fills an entity slot with fixed type, frame, attrib
 62 conditional sprite slots retain the same 64 captured bytes in entry and play snapshots; VICE matched each slot. Their descriptions identify the 63-byte shape, occupied rows, set-bit count and remaining slot byte. The selection paths remain conditional and other possible uses remain open.
 
 First-load price formatter $A807 splits two packed bytes into four nibble-plus-one display values and replaces leading ones with zero. VICE and a listing test checked five forced values, including non-decimal nibbles. The four 63-byte setup sprite sources were checked through the previously tested setup copies; other uses remain open.
+
+The first load contains 34 three-field shop and item message records at $A857–$AB54, followed individually by control bytes. The decoded records retain the game’s spelling and punctuation; VICE checked their captured bytes and a listing test decodes every field. Ordinary-play selection of each record remains open.
