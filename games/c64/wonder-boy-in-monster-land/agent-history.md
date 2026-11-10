@@ -658,3 +658,5 @@ Traced first-load item-result message waiting at $A78B. VICE and a listing test 
 Traced first-load item input-held and cursor selection. Eight forced VICE cases and a listing test checked the carry and usual cursor positions, with the sampler stubbed and display initialization stopped. The paused user snapshot was restored.
 
 Traced first-load item-description pointer selection and price-digit drawing. VICE and a listing test checked a forced pointer and four character/colour cells. The paused user snapshot was restored; bounds and natural reachability remain open.
+
+Described the four first-load visual pointer tables individually and added the previously verified sprite patches and drawing-store operand. VICE checked the pointer bytes; listing tests check pointers, loader reads, setup copies and drawing. The paused user snapshot was restored.
