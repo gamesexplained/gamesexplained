@@ -932,3 +932,5 @@ Checked four forced entity-candidate scan cases in VICE and restored the paused 
 Checked four forced top and bottom scroll tile-pair cases in VICE, including source-pointer page crossings, and restored the paused user snapshot.
 
 Checked five forced entity fall-state outcomes in VICE with collision stubbed, including out-of-range and wraparound cases; restored the paused user snapshot.
+
+Checked the 80-byte banked visual-resource copy in VICE with the preceding loader stubbed and restored the paused user snapshot. The check reads CPU port $01 through the processor-visible bank rather than underlying RAM.

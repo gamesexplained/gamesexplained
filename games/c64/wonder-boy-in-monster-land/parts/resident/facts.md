@@ -407,3 +407,5 @@ The candidate scan at $09C5 checks 17 entity slots in descending order. It accep
 The top and bottom scroll tile loops patch immediate operands at $3009 and $2F2E to preserve each tile index across their first table lookup. Both write a two-byte pair, advance the output column by two and increment the source pointer with page carry. Four forced VICE cases checked both loops, including source-pointer page crossings.
 
 The entity fall-state update at $44C7 calls $44DE and stores 1 on carry set. On carry clear it increments the returned Y, undoing that increment only when the result equals 9, then stores it at $1A7E,X. Five forced VICE cases used a stubbed collision routine; values 9 and 255 show that this is not a general clamp for arbitrary inputs.
+
+The visual resource wrapper at $7119 calls $7130, sets CPU port $01 to $30, copies 80 bytes from $C808–$C857 to underlying RAM $D7B0–$D7FF, sets $01 to $35 and returns. A forced VICE case compared every copied byte and checked the final visible port value with the preceding loader stubbed.
