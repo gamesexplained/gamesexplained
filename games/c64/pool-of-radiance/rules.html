@@ -1,0 +1,445 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool of Radiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+@media (max-width:760px){:root{--gx:18px}}
+.ru-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.ru-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start}
+.ru-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.ru-bar .lab{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.05em;text-transform:uppercase;margin-right:4px;min-width:52px}
+.ru-bar select{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);color:var(--ink);max-width:100%}
+.ru-bar button,.ru-scores button{font-family:var(--fm);font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:4px 9px;cursor:pointer}
+.ru-bar button.go{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ru-scores{list-style:none;margin:0 0 10px;padding:0;font-family:var(--fm);font-size:13px}
+.ru-scores li{display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line-soft);padding:3px 0}
+.ru-scores li b{width:38px;font-weight:500;color:var(--ink-mute)}
+.ru-scores li span{width:62px;text-align:right}
+.ru-scores li em{font-style:normal;font-size:11.5px;color:var(--ink-mute);flex:1;min-width:0}
+.ru-scores button{padding:0 8px;min-width:28px}
+.ru-levels{display:flex;flex-wrap:wrap;gap:10px;font-family:var(--fm);font-size:12.5px;margin:4px 0 0}
+.ru-levels label{display:flex;gap:5px;align-items:center}
+.ru-levels select{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:2px 4px;background:var(--surface)}
+.ru-sheet{background:#1b1c20;color:#e8e6df;border-radius:8px;padding:14px 16px;font-family:var(--fm);font-size:13px;line-height:1.6}
+.ru-sheet table{border-collapse:collapse;width:100%}
+.ru-sheet td{padding:1px 0;vertical-align:top;color:#e8e6df}
+.ru-sheet td:first-child{color:#9a9890;padding-right:12px;white-space:nowrap}
+.ru-sheet .hot{color:#ffd37a}
+.ru-sheet .dead{color:#ff8a7a}
+.ru-sheet .was{color:#9a9890;font-size:12px}
+.ru-tbl-wrap{overflow-x:auto}
+.ru-tbl{border-collapse:collapse;width:100%;font-size:14px}
+.ru-tbl th,.ru-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.ru-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;white-space:nowrap}
+.ru-tbl td.nm{font-family:var(--fm);font-size:13px}
+.ru-tbl td.n{font-family:var(--fm);font-size:13px;text-align:right;white-space:nowrap}
+.ru-tbl th.n{text-align:right}
+.ru-tbl .bad{color:var(--coral);font-weight:700}
+.ru-tbl .off{color:var(--ink-mute)}
+.ru-small{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.ru-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.ru-tabs h3{font-size:15px;margin:0 0 8px}
+@media (max-width:760px){.ru-grid{grid-template-columns:1fr}.ru-sheet td:first-child{white-space:normal;width:32%}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · SSI</p>
+  <h1>Pool of Radiance</h1>
+  <p class="sub">GEN, the part of the game that makes and trains characters, keeps rules the rulebook never prints. A halfling can't become the 6th level fighter it promises, training throws experience away, and a seventh race and six more classes sit in its tables with no way onto the menus.</p>
+</header>
+<main class="wrap" data-part="gen">
+
+<section id="sheet">
+  <p class="fig">01 · Character sheet</p>
+  <h2 class="t">Roll a character by GEN's own rules</h2>
+  <p class="lede">Pick a race, a gender and a class, and roll. Each score comes from the game's own dice, adjusted for the race and held to its limits, and the hit points, gold and age follow as CREATE NEW CHARACTER sets them. Raise or lower a score as MODIFY CHARACTER allows, or change a level, and the rest of the sheet follows.</p>
+  <div class="plate">
+    <div class="ru-grid">
+      <div>
+        <div class="ru-bar"><span class="lab">Race</span><select id="ru-race" aria-label="Race"></select><select id="ru-gender" aria-label="Gender"><option value="0">MALE</option><option value="1">FEMALE</option></select></div>
+        <div class="ru-bar"><span class="lab">Class</span><select id="ru-class" aria-label="Class"></select></div>
+        <div class="ru-bar"><span class="lab">Try</span><button type="button" class="go" id="ru-roll">Roll again</button><button type="button" id="ru-halfling">Halfling fighter</button><button type="button" id="ru-gnome">Gnome fighter</button><button type="button" id="ru-pen">PENDRAGON</button></div>
+        <ul class="ru-scores" id="ru-scores"></ul>
+        <div class="ru-levels" id="ru-levels"></div>
+      </div>
+      <div>
+        <div class="ru-sheet" id="ru-sheet"><p class="ru-miss">The sheet runs the game's own code, with the site's shared scripts that the built site serves.</p></div>
+      </div>
+    </div>
+    <p class="cap">Each change runs GEN's routines on the kit's 6502 over the listing's bytes: <code>roll_ability</code> (<code>$0D1F</code>) and <code>adjust_ability</code> (<code>$0D4A</code>) for the scores, the code from <code>$0B26</code> for the hit points, gold and age, <code>best_to_hit</code> (<code>$1EF3</code>), <code>saving_throws</code> (<code>$1F44</code>), <code>set_thief_skills</code> (<code>$1FEC</code>), <code>con_hp_bonus</code> (<code>$2471</code>), <code>race_level_limit</code> (<code>$24A0</code>) with the training hall's <code>class_max_level</code> (<code>$1E5C</code>), and <code>cap_experience</code> (<code>$23D4</code>). The classes are those the race may take (<code>race_classes</code>, <code>$0E64</code>); a class whose lowest scores the roll misses is marked, as the game would leave it off its menu (<code>class_minimums</code>, <code>$0E75</code>).</p>
+  </div>
+</section>
+
+<section id="limits">
+  <p class="fig">02 · Level limits</p>
+  <h2 class="t">A halfling never reaches the 6th fighter level the rulebook promises</h2>
+  <p class="lede">The rulebook gives each race one limit as a fighter: 6th level for a halfling, 7th for an elf. GEN lowers it by a level for each point of strength below 18, two at most. A halfling man's strength can't go above 17 and a woman's above 14, so no halfling fighter gets past 5th level.</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-limits"><thead><tr><th>Race</th><th class="n">Rulebook</th><th class="n">Strongest man</th><th class="n">Strongest woman</th><th class="n">Strength 16 or less</th></tr></thead><tbody></tbody></table></div>
+  <p>The rulebook's limits are on page 3, and the training hall's, 8th level for a fighter, 9th for a thief and 6th for a cleric or a magic-user, on page 7. The race's limit comes from <code>race_level_table</code> (<code>$1E60</code>), and <code>race_level_limit</code> (<code>$24A0</code>) lowers it for each class part that training looks at (<code>level_limits</code>, <code>$1E21</code>). A character stopped there is told NO MORE ADVANCEMENT POSSIBLE.</p>
+  <p>Intelligence lowers a magic-user's limit the same way, but the training hall's 6th level comes first: an elf's limit is 11th and a half-elf's 8th. A half-elf cleric stops at 5th level, which the rulebook leaves out, giving the half-elf's limits as a magic-user and a fighter only. Try the halfling fighter on the sheet.</p>
+</section>
+
+<section id="experience">
+  <p class="fig">03 · Training</p>
+  <h2 class="t">Training throws away experience past the next level</h2>
+  <p class="lede">A character goes up one level each time it trains. Then GEN cuts its experience to one point short of the level after that. A 1st level fighter who saves up 100,000 points trains to 2nd level and keeps 4,000, and the other 96,000 are gone.</p>
+  <p>Experience is never cut as it is won (<span data-part="post-com"><code>add_exp</code>, <code>$0C69</code></span>), so it piles up until the character trains. Then <code>cap_experience</code> (<code>$23D4</code>) holds it to one point less than the next level needs, the highest such figure over the character's classes. It runs after every training, and also when a level limit stops the character. The rulebook says only that the character advances a level (page 7). The sheet's last line shows the most a character keeps.</p>
+</section>
+
+<section id="half-orc">
+  <p class="fig">04 · The seventh race</p>
+  <h2 class="t">The half-orc is in every table and on no menu</h2>
+  <p class="lede">The rulebook names six races. GEN's tables hold a seventh, the half-orc, with everything a race needs, and the race menu skips its number.</p>
+  <p>The menu reads its races from <code>race_numbers</code> (<code>$121A</code>): 1 to 5, then 7, the human. Race 6 has its own adjustments to the scores (strength +2, constitution +2, charisma −2) and limits (wisdom at most 14 and charisma 12), its classes (cleric, fighter, thief, cleric/fighter, cleric/thief and fighter/thief), its level limits (4th as a cleric, 8th as a thief, 10th as a fighter), its adjustments to the thief skills, a starting age of 16 and death of old age at 80. The engine's own words include HALF-ORC (<span data-part="resident"><code>messages</code>, <code>$3243</code></span>). The sheet offers it.</p>
+</section>
+
+<section id="classes">
+  <p class="fig">05 · Cut classes</p>
+  <h2 class="t">Druids, paladins, rangers and monks were cut, with their rules left in</h2>
+  <p class="lede">The class tables have 17 entries, and no race may take five of them: the druid, the paladin, the ranger, the monk and the cleric/ranger. A sixth, the cleric/thief, belongs to the half-orc alone. Each still has its lowest scores, its alignments, its first hit dice and its starting gold.</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-cut"><thead><tr><th>Class</th><th>Lowest scores</th><th>Alignments</th><th>First hit dice</th><th>Gold</th></tr></thead><tbody></tbody></table></div>
+  <p>None of the first five has a row in the experience, to-hit or saving throw tables, which have rows for the magic-user, the cleric, the thief and the fighter, and none has a prime ability for the experience bonus. The monk's row of alignments allows none at all. The engine's list of class names has DRUID and MONK, but PALADIN and RANGER have no words of their own: the pointers for those two names lead to MAGIC-USER (<span data-part="resident">messages 13 and 14, <code>$3439</code></span>). One piece of the adventure still looks for a ranger. The dungeon's surprise check notes whether anyone in the party has the ranger's bit in their class, for the area scripts to read (<span data-part="dungeon"><code>cmd_party_surprise</code>, <code>$1D6B</code></span>).</p>
+</section>
+
+<section id="thief">
+  <p class="fig">06 · Thief skills</p>
+  <h2 class="t">Three of the eight thief skills are never used</h2>
+  <p class="lede">Training sets a thief's eight skills from its level and race. The game reads five of them, most in one place only. Hide in shadows, hear noise and read languages are worked out and never looked at again, and dexterity changes none of the eight.</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-thief"><thead><tr><th>Skill</th><th class="n">1st level</th><th>Read by</th></tr></thead><tbody></tbody></table></div>
+  <p>Move silently counts in the surprise check only when every standing member of the party rolls under their own figure, and a member who is not a thief has 0, so a party with anyone else in it never passes that part (<span data-part="dungeon"><code>cmd_party_surprise</code>, <code>$1D43</code></span>). The skills come from <code>thief_skills</code> (<code>$102E</code>) and <code>race_thief_adjust</code> (<code>$1076</code>) in <code>set_thief_skills</code> (<code>$1FEC</code>).</p>
+</section>
+
+<section id="saves">
+  <p class="fig">07 · Saving throws</p>
+  <h2 class="t">Dwarves, gnomes and halflings save better against everything</h2>
+  <p class="lede">The rulebook says dwarves and halflings save better against magic (page 23). GEN takes two-sevenths of the constitution off all five saving throws of a dwarf, a gnome or a halfling, so they also save better against breath, poison and petrification. A gnome fighter with constitution 18 saves against a dragon's breath on 12, where a human needs 17.</p>
+  <p><code>con_save_bonus</code> (<code>$2359</code>) does it for the races whose byte in <code>race_save_bonus</code> (<code>$2380</code>) is 1. The bonus is 2 for a constitution of 7 to 10, 3 for 11 to 13, 4 for 14 to 17 and 5 for 18 and 19. Try the gnome fighter on the sheet.</p>
+</section>
+
+<section id="hit-points">
+  <p class="fig">08 · Hit points</p>
+  <h2 class="t">A new character's hit die never rolls low</h2>
+  <p class="lede">A new character's first hit dice are raised to a floor near their top: a fighter's d10 gives 9 or 10, a cleric's d8 7 or 8, a thief's d6 5 or 6, and a magic-user's d4 always 4. When a fighter trains, its d10 never gives less than 4, where the rulebook says 1 to 10 (page 4).</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-hp"><thead><tr><th>Class</th><th class="n">First hit dice</th><th class="n">At least</th><th class="n">Constitution adds at most</th></tr></thead><tbody></tbody></table></div>
+  <p>CREATE NEW CHARACTER rolls <code>class_hp_dice</code> (<code>$0F7C</code>) dice of <code>class_hp_sides</code> (<code>$0F8D</code>) and raises the total to <code>class_hp_least</code> (<code>$0F9E</code>). A character of two or three classes rolls one die between its classes', some with 9, 7 or 5 sides. Training rolls a die for each class that goes up (4, 8, 6 or 10 sides), divides it by the number of classes, rounds a remainder up by chance, and gives a fighter of one class at least 4 (<code>train_hp</code>, <code>$2037</code>). Constitution adds to each die from 15 up.</p>
+</section>
+
+<section id="bonus">
+  <p class="fig">09 · Experience</p>
+  <h2 class="t">The experience bonus starts at 16, where the rulebook says 15</h2>
+  <p class="lede">A character of one class with 16 or more in its class's prime ability gets a tenth more of every award. The rulebook puts the line at 15 (page 3). A character of two classes gets half of each award and one of three a third, and neither ever gets the bonus.</p>
+  <p><span data-part="post-com"><code>prime_bonus</code> (<code>$15E3</code>)</span> compares with 16. It works the tenth out in two pieces, from the award's low two bytes and from its high byte, and drops the high byte's remainder, so an award of 65,536 points gets no bonus and one of 100,000 gets 3,446.</p>
+</section>
+
+<section id="scores">
+  <p class="fig">10 · Ability scores</p>
+  <h2 class="t">Every score is the best of six rolls</h2>
+  <p class="lede">The rulebook says only that the computer generates the scores (page 3). GEN rolls three dice six times for each score and keeps the best, so 44 scores in 100 come out at 15 or more before the race's adjustment, and the average is 14.2. Then every race but the halfling adds at least one to strength and every race but the elf at least one to constitution, humans included.</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-abil"><thead><tr><th>Race</th><th>STR</th><th>INT</th><th>WIS</th><th>DEX</th><th>CON</th><th>CHR</th></tr></thead><tbody></tbody></table></div>
+  <p class="ru-small">Each cell: the adjustment, then the lowest and highest score, and a woman's highest where it differs.</p>
+  <p><code>roll_ability</code> (<code>$0D1F</code>) keeps the best of the six; <code>adjust_ability</code> (<code>$0D4A</code>) adds <code>ability_adjust</code> (<code>$0D60</code>) and holds the score between <code>ability_minimum</code> (<code>$0DB4</code>) and <code>ability_maximum</code> (<code>$0E08</code>). An 18 strength rolls a percentage only in a class with a fighter's part, up to 75 for an elf man and 50 for a gnome (<code>strength_pct_cap</code>, <code>$0FC0</code>).</p>
+</section>
+
+<section id="age">
+  <p class="fig">11 · Age</p>
+  <h2 class="t">Every HASTE adds a year to its target's age</h2>
+  <p class="lede">A character starts at a fixed age for its race and grows older with the days that pass. Each HASTE cast on it, in combat or in camp, and each potion of speed adds a year as well, which the rulebook's HASTE doesn't mention (page 27). At its race's limit a character dies of old age.</p>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-age"><thead><tr><th>Race</th><th class="n">Starts at</th><th class="n">Dies at</th><th class="n">HASTEs to get there</th></tr></thead><tbody></tbody></table></div>
+  <p>The ages come from <code>race_ages</code> (<code>$1004</code>) and POST.COM's <span data-part="post-com"><code>old_age</code> (<code>$215D</code>)</span>. HASTE in combat adds the year once for each casting (<span data-part="effects"><code>kind_haste</code>, <code>$A977</code></span>). In camp it adds one to every member it reaches, even one already hasted (<span data-part="camp-spells"><code>haste_member</code>, <code>$AAEA</code></span>). How the days are counted is on the Discoveries tab, in <a href="discoveries.html#time">A month of rest in camp ages the party one day</a>.</p>
+</section>
+
+<section id="fee">
+  <p class="fig">12 · The training fee</p>
+  <h2 class="t">Training costs 1,000 gold at every level, and the change becomes platinum</h2>
+  <p class="lede">The fee is the same 1,000 gold pieces for 2nd level as for 9th. The trainer adds up all of a character's coins, takes the fee, and pays the rest back as platinum, one piece for each 5 gold, keeping the change: a character with 1,234 gold leaves with 46 platinum, worth 230.</p>
+  <p><code>has_money</code> (<code>$1D50</code>) counts the five kinds of coin in copper and asks for 200,000. <code>pay_training</code> (<code>$1D63</code>) clears them all and gives back a platinum piece for each 1,000 copper left. Gems and jewellery stay as they are. A hired companion trains free: for a character who is not a player's, <code>has_money</code> always says yes and the payment is skipped (<code>train_choice</code>, <code>$1B84</code>).</p>
+</section>
+
+<section id="pendragon">
+  <p class="fig">13 · PENDRAGON</p>
+  <h2 class="t">PENDRAGON is a player's fighter, saved onto a game disk</h2>
+  <p class="lede">The copy of game disk 3 kept on archive.org holds a saved character, PENDRAGON, a 1st level human fighter. The C64 Preservation Project's images of that disk, of versions 1.0 and 1.1, end with three blocks free, and PENDRAGON's file takes exactly those three: its owner saved him there. The game lets that happen, because it never checks which disk is in the drive.</p>
+  <p>When CREATE NEW CHARACTER saves, it asks for the save disk and writes to whatever disk is there (<code>ask_save_disk</code>, <code>$22EF</code>; <code>save_character</code>, <code>$10F6</code>). ADD CHARACTER TO PARTY reads the directory the same way and lists every file whose name starts with the byte 1 (<code>dir_byte</code>, <code>$1825</code>), so with that copy of game disk 3 left in the drive, PENDRAGON is offered and joins the party with armour class 7 and 13 hit points. He has <span id="ru-pen-text">strength 17, intelligence 17, wisdom 12, dexterity 17, constitution 18 and charisma 13</span>, 80 gold, no items and no experience, and is neutral good. The Items tab's sheet uses him, and the button above puts him on this one.</p>
+</section>
+
+<section id="tables">
+  <p class="fig">14 · Tables</p>
+  <h2 class="t">Experience, to-hit figures and saving throws by level</h2>
+  <p class="lede">What GEN gives each class part at each level, worked out on this page from the game's own tables and routines. Levels past the training hall's limits are grey.</p>
+  <div class="ru-tabs">
+    <div><h3>Experience for each level</h3><div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-xp"></table></div></div>
+    <div><h3>THAC0</h3><div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-hit"></table></div></div>
+  </div>
+  <h3 style="font-size:15px;margin:26px 0 8px">Saving throws: paralysis, petrification, rod, breath, spell</h3>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-saves"></table></div>
+  <h3 style="font-size:15px;margin:26px 0 8px">Thief skills by level, and each race's adjustments (grey: never read)</h3>
+  <div class="ru-tbl-wrap"><table class="ru-tbl" id="ru-tlev"></table></div>
+  <p class="cap"><code>xp_table</code> (<code>$1DB5</code>), <code>to_hit_table</code> (<code>$1F1F</code>), <code>saving_throws</code> (<code>$1F44</code>) run for a human of constitution 10, <code>thief_skills</code> (<code>$102E</code>) and <code>race_thief_adjust</code> (<code>$1076</code>).</p>
+</section>
+
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* por-rules */
+// A character's figures by the game's own code (GEN, with the resident part's dice and arithmetic),
+// on the kit's 6502. mem holds the resident and gen parts' bytes. ch is { race: 1-7, female, cls: 0-16,
+// ab: [STR, INT, WIS, DEX, CON, CHR], pct: 18's percentage, lv: [magic-user, cleric, thief, fighter] }.
+// porRules puts them in the working record ($6B00) and runs best_to_hit ($1EF3), saving_throws ($1F44),
+// set_thief_skills ($1FEC), con_hp_bonus ($2471), race_level_limit ($24A0) for each class part with the
+// training hall's class_max_level ($1E5C), and cap_experience ($23D4, its store at $441E stood in for)
+// on the most experience a record holds. porRoll rolls a new character as CREATE NEW CHARACTER does:
+// roll_ability ($0D1F) and adjust_ability ($0D4A) for each score, then the figures from $0B26 (age,
+// gold, hit points, strength percentage) up to $0BBE, with seed in the random bytes $03C2-$03C7.
+function porSetup(mem, ch) {
+  mem.fill(0, 0x6B00, 0x6D44);
+  const idx = ch.race + (ch.female ? 7 : 0);
+  mem[0x6B72] = ch.race; mem[0x6B73] = ch.cls; mem[0x6BD6] = ch.female ? 1 : 0; mem[0x6DB7] = idx;
+  mem[0x6BEB] = mem[0x101D + ch.cls];
+  (ch.ab || []).forEach((v, i) => { mem[0x6B14 + i] = v; });
+  mem[0x6B1A] = ch.pct || 0;
+  (ch.lv || []).forEach((v, i) => { mem[0x6BC9 + i] = v; });
+  return idx;
+}
+function porRules(mem, CPU, ch) {
+  porSetup(mem, ch);
+  const io = { read(a) { throw new Error('a chip read at $' + a.toString(16)); }, write() {} };
+  const cpu = new CPU(mem, { port: 0x36, io });
+  const run = (at, regs) => cpu.call(at, regs || {}, { maxSteps: 1e6, hooks: { 0x441E: (c) => c.rts() } });
+  run(0x1EF3); run(0x1F44); run(0x1FEC);
+  run(0x2471); const conHp = cpu.a;
+  const limits = [0, 1, 2, 3].map((p) => {
+    if (!mem[0x6BC9 + p]) return 0;
+    run(0x24A0, { x: p, y: ch.race * 4 + p });
+    return Math.min(mem[0x1E5C + p], mem[0xB1]);
+  });
+  mem[0x6BE8] = mem[0x6BE9] = mem[0x6BEA] = 0xFF;
+  run(0x23D4);
+  return { thac0: 60 - mem[0x6B71], saves: Array.from(mem.slice(0x6B9A, 0x6B9F)), thief: Array.from(mem.slice(0x6BA5, 0x6BAD)),
+    conHp: (conHp << 24) >> 24, limits, cap: mem[0x6BE8] | mem[0x6BE9] << 8 | mem[0x6BEA] << 16 };
+}
+function porRoll(mem, CPU, ch, seed) {
+  const idx = porSetup(mem, ch);
+  mem.set(seed, 0x03C2);
+  const io = { read(a) { throw new Error('a chip read at $' + a.toString(16)); }, write() {} };
+  const cpu = new CPU(mem, { port: 0x36, io });
+  const ab = [];
+  for (let i = 0; i < 6; i++) {
+    cpu.call(0x0D1F, {}, { maxSteps: 1e5 });
+    cpu.call(0x0D4A, { a: mem[0xB1], x: 14 * i + idx }, { maxSteps: 1e4 });
+    ab.push(cpu.a); mem[0x6B14 + i] = cpu.a;
+  }
+  cpu.call(0x0B26, {}, { maxSteps: 1e5, hooks: { 0x0BBE: (c) => c.rts() } });
+  return { ab, pct: mem[0x6B1A], hp: mem[0x6B76], base: mem[0x6BED], gold: mem[0x6BC1], age: mem[0x6B74], seed: Array.from(mem.slice(0x03C2, 0x03C8)) };
+}
+// end of por-rules
+</script>
+<script>
+// Rules tab: the sheet and the tables, from GEN's own tables and routines (por-rules above).
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const num = (n) => n.toLocaleString('en-GB');
+  const th = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  const RACES = ['', 'DWARF', 'ELF', 'GNOME', 'HALF-ELF', 'HALFLING', 'HALF-ORC', 'HUMAN'];
+  const CLASSES = ['CLERIC', 'DRUID', 'FIGHTER', 'PALADIN', 'RANGER', 'MAGIC-USER', 'THIEF', 'MONK', 'CLERIC/FIGHTER', 'CLERIC/FIGHTER/MAGIC-USER', 'CLERIC/RANGER', 'CLERIC/MAGIC-USER', 'CLERIC/THIEF', 'FIGHTER/MAGIC-USER', 'FIGHTER/THIEF', 'FIGHTER/MAGIC-USER/THIEF', 'MAGIC-USER/THIEF'];
+  const ALIGN = ['LG', 'LN', 'LE', 'NG', 'N', 'NE', 'CG', 'CN', 'CE'];
+  const ALIGN_NAME = ['lawful good', 'lawful neutral', 'lawful evil', 'neutral good', 'true neutral', 'neutral evil', 'chaotic good', 'chaotic neutral', 'chaotic evil'];
+  const AB = ['STR', 'INT', 'WIS', 'DEX', 'CON', 'CHR'];
+  const PARTS = ['MAGIC-USER', 'CLERIC', 'THIEF', 'FIGHTER'];
+  const SAVES = ['PPD', 'PP', 'RSW', 'BR', 'SP'];
+  const SKILLS = ['Pick pockets', 'Open locks', 'Find and remove traps', 'Move silently', 'Hide in shadows', 'Hear noise', 'Climb walls', 'Read languages'];
+  const SHORT = ['PP', 'OL', 'FT', 'MS', 'HS', 'HN', 'CW', 'RL'];
+  const READ = ['one script in Kovel Mansion', "PICKLOCK at a locked door", 'scripts in Kovel Mansion and the kobold caves', 'the surprise check, when every member passes', null, null, 'one script in the Cadorna Textile House', null];
+  // POST.COM's figures the sheet shows, held to its listing by test_rules.js: each class's prime ability as
+  // its offset in the record (prime_ability, $163E; 0 for none) and the age each race dies at (old_age, $215D).
+  const PRIME = [0x16, 0, 0x14, 0, 0, 0x15, 0x17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const DIES = [0, 525, 1600, 750, 325, 199, 80, 120];
+  // The rulebook's limit for each race as a fighter (page 3).
+  const RULEBOOK = { 1: '9th', 2: '7th', 3: '6th', 4: '8th', 5: '6th', 7: 'none' };
+  // PENDRAGON's record as saved on the copy of game disk 3 (the Items tab carries the whole of it).
+  const PEN = { race: 7, female: 0, cls: 2, ab: [17, 17, 12, 17, 18, 13], pct: 0, hp: 13, base: 9, gold: 80, age: 21, align: 3, name: 'PENDRAGON' };
+
+  const sheet = $('ru-sheet');
+  if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') return;
+  let parts;
+  try { parts = await Promise.all(['resident', 'gen'].map((p) => C64.load('parts/' + p + '/listing.json'))); } catch (e) { sheet.innerHTML = '<p class="ru-miss">The listing did not load, so the sheet cannot run.</p>'; return; }
+  const base = new Uint8Array(65536);
+  for (const L of parts) for (let a = 0; a < 65536; a++) if (L.has[a]) base[a] = L.ram[a];
+  const CPU = C64Cpu.CPU;
+  const B = (a) => base[a];
+  const s8 = (v) => (v << 24) >> 24;
+  const index = (race, female) => race + (female ? 7 : 0);
+  const mask = (cls) => B(0x101D + cls);
+  const may = (race, cls) => (B(0x0E64 + cls) & B(0x0EDA + race)) !== 0;
+  const mins = (cls) => AB.map((_, i) => B(0x0E75 + 6 * cls + i));
+  const aligns = (cls) => ALIGN.map((_, al) => al).filter((al) => B(0x0EE3 + 9 * cls + 8 - al));
+  const lo = (race, female, i) => B(0x0DB4 + 14 * i + index(race, female));
+  const hi = (race, female, i) => B(0x0E08 + 14 * i + index(race, female));
+  const adj = (race, i) => s8(B(0x0D60 + 14 * i + race));
+  const xpFor = (p, level) => { const i = 9 * p + level - 2; return B(0x1DB5 + i) | B(0x1DD9 + i) << 8 | B(0x1DFD + i) << 16; };
+  const dice = (cls) => B(0x0F7C + cls) + 'd' + B(0x0F8D + cls);
+  const rules = (ch) => porRules(base.slice(), CPU, ch);
+  const lvOf = (cls, lv) => [0, 1, 2, 3].map((p) => (mask(cls) >> p & 1 ? (lv && lv[p]) || 1 : 0));
+
+  // --- the sheet
+  const st = { race: 7, female: 0, cls: 2, ab: [10, 10, 10, 10, 10, 10], pct: 0, hp: 0, base: 0, gold: 0, age: 0, lv: [0, 0, 0, 1], name: '' };
+  const seed = () => Array.from({ length: 6 }, () => Math.floor(Math.random() * 256));
+  function roll() {
+    const r = porRoll(base.slice(), CPU, st, seed());
+    Object.assign(st, { ab: r.ab, pct: r.pct, hp: r.hp, base: r.base, gold: r.gold, age: r.age, name: '' });
+    st.lv = lvOf(st.cls);
+  }
+  function fillRace() {
+    $('ru-race').innerHTML = [1, 2, 3, 4, 5, 6, 7].map((r) => '<option value="' + r + '"' + (r === st.race ? ' selected' : '') + '>' + RACES[r] + (r === 6 ? ' (cut)' : '') + '</option>').join('');
+    $('ru-gender').value = st.female ? '1' : '0';
+  }
+  function fillClass() {
+    const ok = CLASSES.map((_, c) => c).filter((c) => may(st.race, c));
+    if (!ok.includes(st.cls)) st.cls = ok[0];
+    $('ru-class').innerHTML = ok.map((c) => {
+      const short = mins(c).some((m, i) => st.ab[i] < m);
+      return '<option value="' + c + '"' + (c === st.cls ? ' selected' : '') + '>' + CLASSES[c] + (short ? ' (scores too low)' : '') + '</option>';
+    }).join('');
+  }
+  function scores() {
+    const fighter = mask(st.cls) & 8;
+    $('ru-scores').innerHTML = AB.map((a, i) => {
+      const v = st.ab[i], shown = i === 0 && v === 18 && fighter && st.pct ? '18/' + (st.pct === 100 ? '00' : String(st.pct).padStart(2, '0')) : v;
+      return '<li><b>' + a + '</b><button type="button" data-i="' + i + '" data-d="-1" aria-label="Lower ' + a + '">−</button><span>' + shown + '</span><button type="button" data-i="' + i + '" data-d="1" aria-label="Raise ' + a + '">+</button><em>' + lo(st.race, st.female, i) + ' to ' + hi(st.race, st.female, i) + (adj(st.race, i) ? ', ' + (adj(st.race, i) > 0 ? '+' : '') + adj(st.race, i) + ' for the race' : '') + '</em></li>';
+    }).join('');
+  }
+  function levels(lim) {
+    $('ru-levels').innerHTML = [0, 1, 2, 3].filter((p) => st.lv[p]).map((p) => {
+      const top = Math.max(1, Math.min(lim[p], 9));
+      if (st.lv[p] > top) st.lv[p] = top;
+      let o = '';
+      for (let l = 1; l <= top; l++) o += '<option value="' + l + '"' + (l === st.lv[p] ? ' selected' : '') + '>' + l + '</option>';
+      return '<label>' + PARTS[p] + ' level <select data-p="' + p + '">' + o + '</select></label>';
+    }).join('');
+  }
+  function show() {
+    fillRace(); fillClass(); scores();
+    let r;
+    try { r = rules(st); } catch (e) { sheet.innerHTML = '<p class="ru-miss">The routine stopped: ' + esc(e.message) + '</p>'; return; }
+    levels(r.limits);
+    r = rules(st);
+    const parts = [0, 1, 2, 3].filter((p) => st.lv[p]);
+    const row = (k, v) => '<tr><td>' + k + '</td><td>' + v + '</td></tr>';
+    const al = aligns(st.cls);
+    const short = mins(st.cls).map((m, i) => (st.ab[i] < m ? AB[i] + ' ' + m : null)).filter(Boolean);
+    const hp = st.base + r.conHp * B(0x0F7C + st.cls);
+    const top = parts.map((p) => {
+      const hall = B(0x1E5C + p), lim = r.limits[p];
+      return PARTS[p] + ' ' + th(lim) + (lim < hall ? ' <span class="hot">(race' + (p === 3 ? ' and strength' : p === 0 ? ' and intelligence' : '') + '; the hall trains to ' + th(hall) + ')</span>' : ' <span class="was">(the hall)</span>');
+    }).join('<br>');
+    const next = parts.map((p) => (st.lv[p] < r.limits[p] ? PARTS[p] + ' ' + th(st.lv[p] + 1) + ' at ' + num(xpFor(p, st.lv[p] + 1)) : PARTS[p] + ' <span class="was">no higher</span>')).join('<br>');
+    const n = parts.length, prime = PRIME[st.cls] && st.ab[PRIME[st.cls] - 0x14] >= 16;
+    const share = n === 1 ? (prime ? '110 per cent, with the bonus for ' + AB[PRIME[st.cls] - 0x14] + ' ' + st.ab[PRIME[st.cls] - 0x14] : '100 per cent' + (PRIME[st.cls] ? ' (' + AB[PRIME[st.cls] - 0x14] + ' 16 gives 110)' : '')) : (n === 2 ? 'half' : 'a third');
+    const thief = st.lv[2] ? r.thief.map((v, i) => (READ[i] ? SHORT[i] + ' ' + v : '<span class="dead">' + SHORT[i] + ' ' + v + '</span>')).join(' · ') + '<br><span class="was">red: never read</span>' : null;
+    sheet.innerHTML = '<table>' +
+      row('Character', (st.name ? st.name + ', ' : '') + RACES[st.race] + ' ' + (st.female ? 'FEMALE' : 'MALE') + ' ' + CLASSES[st.cls] + (st.race === 6 ? ' <span class="hot">(cut race)</span>' : '')) +
+      (short.length ? row('Menu', '<span class="dead">not offered with ' + short.join(', ') + '</span>') : '') +
+      row('Alignments', st.name ? ALIGN[PEN.align] : al.length ? al.map((a) => ALIGN[a]).join(' ') : '<span class="dead">none</span>') +
+      row('Age', st.age + ', dies of old age at ' + DIES[st.race]) +
+      row('Hit points', hp + ' at 1st level <span class="was">(' + dice(st.cls) + ', at least ' + B(0x0F9E + st.cls) + (r.conHp ? ', ' + (r.conHp > 0 ? '+' : '') + r.conHp + ' a die for CON' : '') + ')</span>') +
+      row('Gold', st.gold) +
+      row('THAC0', r.thac0) +
+      row('Saves', r.saves.map((v, i) => SAVES[i] + ' ' + v).join(' · ')) +
+      (thief ? row('Thief', thief) : '') +
+      row('Highest level', top) +
+      row('Next level', next) +
+      row('Awards', share) +
+      row('Kept on training', 'at most ' + num(r.cap) + ' experience') +
+      '</table>';
+  }
+  $('ru-race').addEventListener('change', (e) => { st.race = +e.target.value; fillClass(); roll(); show(); });
+  $('ru-gender').addEventListener('change', (e) => { st.female = +e.target.value; roll(); show(); });
+  $('ru-class').addEventListener('change', (e) => { st.cls = +e.target.value; roll(); show(); });
+  $('ru-roll').addEventListener('click', () => { roll(); show(); });
+  $('ru-scores').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const i = +b.dataset.i, d = +b.dataset.d, v = st.ab[i] + d;
+    if (v < lo(st.race, st.female, i) || v > hi(st.race, st.female, i)) return;
+    st.ab[i] = v; if (i === 0 && v < 18) st.pct = 0; st.name = '';
+    show();
+  });
+  $('ru-levels').addEventListener('change', (e) => { const p = +e.target.dataset.p; st.lv[p] = +e.target.value; show(); });
+  const preset = (race, cls, set) => { Object.assign(st, { race, female: 0, cls }); roll(); set(); show(); };
+  $('ru-halfling').addEventListener('click', () => preset(5, 2, () => { st.ab[0] = hi(5, 0, 0); st.lv[3] = 9; }));
+  $('ru-gnome').addEventListener('click', () => preset(3, 2, () => { st.ab[4] = Math.min(18, hi(3, 0, 4)); }));
+  $('ru-pen').addEventListener('click', () => { Object.assign(st, JSON.parse(JSON.stringify(PEN))); st.lv = [0, 0, 0, 1]; show(); });
+  roll(); show();
+
+  // --- the tables
+  const tbody = (id, html) => { $(id).querySelector('tbody').innerHTML = html; };
+  const td = (v, c) => '<td' + (c ? ' class="' + c + '"' : '') + '>' + v + '</td>';
+  const fighterTop = (race, female, str) => rules({ race, female, cls: 2, ab: [str, 10, 10, 10, 10, 10], lv: [0, 0, 0, 1] }).limits[3];
+  tbody('ru-limits', [1, 2, 3, 4, 5, 7, 6].map((race) => {
+    const m = hi(race, 0, 0), w = hi(race, 1, 0);
+    return '<tr' + (race === 6 ? ' class="off"' : '') + '>' + td(RACES[race] + (race === 6 ? ' (cut)' : '')) + td(RULEBOOK[race] || '', 'n') +
+      td(th(fighterTop(race, 0, m)) + ' <span class="ru-small">(' + m + ')</span>', 'n' + (race !== 6 && RULEBOOK[race] !== 'none' && fighterTop(race, 0, m) < Math.min(8, parseInt(RULEBOOK[race], 10)) ? ' bad' : '')) +
+      td(th(fighterTop(race, 1, w)) + ' <span class="ru-small">(' + w + ')</span>', 'n' + (race !== 6 && RULEBOOK[race] !== 'none' && fighterTop(race, 1, w) < Math.min(8, parseInt(RULEBOOK[race], 10)) ? ' bad' : '')) +
+      td(th(fighterTop(race, 0, 16)), 'n') + '</tr>';
+  }).join(''));
+  const money = (cls) => B(0x0FE3 + cls) + 'd' + B(0x0FF4 + cls) + ' × 10';
+  tbody('ru-cut', [1, 3, 4, 7, 10, 12].map((c) => '<tr>' + td(CLASSES[c], 'nm') +
+    td(mins(c).map((m, i) => (m ? AB[i] + ' ' + m : null)).filter(Boolean).join(', ')) +
+    td(aligns(c).length ? aligns(c).map((a) => ALIGN_NAME[a]).join(', ') : '<span class="bad">none</span>') +
+    td(dice(c) + ', at least ' + B(0x0F9E + c)) + td(money(c)) + '</tr>').join(''));
+  tbody('ru-thief', SKILLS.map((s, i) => '<tr>' + td(s) + td(B(0x102E + i), 'n') + td(READ[i] || '<span class="bad">nothing</span>') + '</tr>').join(''));
+  const playable = CLASSES.map((_, c) => c).filter((c) => [1, 2, 3, 4, 5, 7].some((r) => may(r, c)));
+  tbody('ru-hp', playable.map((c) => '<tr>' + td(CLASSES[c], 'nm') + td(dice(c), 'n') + td(B(0x0F9E + c), 'n') + td('+' + B(0x0FAF + c), 'n') + '</tr>').join(''));
+  tbody('ru-abil', [1, 2, 3, 4, 5, 6, 7].map((race) => '<tr' + (race === 6 ? ' class="off"' : '') + '>' + td(RACES[race] + (race === 6 ? ' (cut)' : '')) + AB.map((_, i) => {
+    const a = adj(race, i), m = hi(race, 0, i), w = hi(race, 1, i);
+    return td((a ? '<b>' + (a > 0 ? '+' : '') + a + '</b> · ' : '') + lo(race, 0, i) + '–' + m + (w !== m ? ' <span class="ru-small">(' + w + ')</span>' : ''), 'nm');
+  }).join('') + '</tr>').join(''));
+  tbody('ru-age', [1, 2, 3, 4, 5, 6, 7].map((race) => '<tr' + (race === 6 ? ' class="off"' : '') + '>' + td(RACES[race] + (race === 6 ? ' (cut)' : '')) + td(B(0x1004 + race), 'n') + td(num(DIES[race]), 'n') + td(num(DIES[race] - B(0x1004 + race)), 'n') + '</tr>').join(''));
+  const head = (cols) => '<thead><tr>' + cols.map((c, i) => '<th' + (i ? ' class="n"' : '') + '>' + c + '</th>').join('') + '</tr></thead>';
+  let h = head(['Level', ...PARTS]) + '<tbody>';
+  for (let l = 2; l <= 10; l++) h += '<tr>' + td(l, 'n') + [0, 1, 2, 3].map((p) => td(num(xpFor(p, l)), 'n' + (l > B(0x1E5C + p) ? ' off' : ''))).join('') + '</tr>';
+  $('ru-xp').innerHTML = h + '</tbody>';
+  h = head(['Level', ...PARTS]) + '<tbody>';
+  for (let l = 1; l <= 9; l++) h += '<tr>' + td(l, 'n') + [0, 1, 2, 3].map((p) => td(60 - B(0x1F20 + 9 * p + l - 1), 'n' + (l > B(0x1E5C + p) ? ' off' : ''))).join('') + '</tr>';
+  $('ru-hit').innerHTML = h + '</tbody>';
+  const single = [5, 0, 6, 2];
+  h = head(['Level', ...PARTS]) + '<tbody>';
+  for (let l = 1; l <= 9; l++) h += '<tr>' + td(l, 'n') + [0, 1, 2, 3].map((p) => { const lv = [0, 0, 0, 0]; lv[p] = l; return td(rules({ race: 7, cls: single[p], ab: [10, 10, 10, 10, 10, 10], lv }).saves.join(' '), 'n' + (l > B(0x1E5C + p) ? ' off' : '')); }).join('') + '</tr>';
+  $('ru-saves').innerHTML = h + '</tbody>';
+  h = head(['', ...SHORT]) + '<tbody>';
+  for (let l = 1; l <= 9; l++) h += '<tr>' + td('Level ' + l) + SHORT.map((_, i) => td(B(0x102E + 8 * (l - 1) + i), 'n' + (READ[i] ? '' : ' off'))).join('') + '</tr>';
+  for (let r = 1; r <= 7; r++) h += '<tr' + (r === 6 ? ' class="off"' : '') + '>' + td(RACES[r] + (r === 6 ? ' (cut)' : '')) + SHORT.map((_, i) => { const v = s8(B(0x1076 + 8 * (r - 1) + i)); return td(v > 0 ? '+' + v : v || '·', 'n'); }).join('') + '</tr>';
+  $('ru-tlev').innerHTML = h + '</tbody>';
+})();
+</script>

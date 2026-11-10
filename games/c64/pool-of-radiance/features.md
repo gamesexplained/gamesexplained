@@ -110,5 +110,17 @@ Found in the code, not in the manual.
 | The Valjevo armoury's 58 items are offered again on every visit; a shop never runs out | traced | post-com part, remove_item (`$11BB`); ECL04 and ECL06 on disk 3 side A |
 | Every item with a plus in a won battle's treasure gives 400 experience a point, taken or not | traced | post-com part, magic_exp (`$15A7`) |
 | Five item lists, 13 item types and many name words are used by nothing; two lists are earlier forms of graveyard treasures | traced | `scripts/items_data.py` over the eight disk sides' files |
+| A fighter's race limit drops a level for each point of strength below 18, two at most: no halfling passes 5th (rulebook 6th), an elf woman stops at 5th (rulebook 7th); a half-elf cleric stops at 5th | traced | gen part, race_level_limit (`$24A0`), level_limits (`$1E21`), can_train (`$1BBC`); run by `test_rules.js` |
+| Training cuts experience to one point short of the next level: a 1st level fighter with 100,000 trains to 2nd and keeps 4,000 | traced | gen part, cap_experience (`$23D4`); run by `test_rules.js` |
+| The half-orc has every table and is left off the race menu; the cleric/thief is its class alone | traced | gen part, race_numbers (`$121A`), race_classes (`$0E64`); run by `test_rules.js` |
+| Druid, paladin, ranger, monk and cleric/ranger have minimums, alignments, hit dice and money but no race and no level tables; PALADIN and RANGER print as MAGIC-USER; the dungeon's surprise check still looks for a ranger | traced | gen part, class_masks (`$101D`); resident part, messages (`$3243`); dungeon part, cmd_party_surprise (`$1D6B`) |
+| Hide in shadows, hear noise and read languages are never read; move silently counts only when every member passes; dexterity changes no thief skill | traced | gen part, set_thief_skills (`$1FEC`); dungeon part, cmd_party_surprise (`$1D43`); area scripts of all eight sides |
+| Dwarves, gnomes and halflings take constitution × 2 / 7 off all five saving throws (rulebook: dwarves and halflings, against magic) | traced | gen part, con_save_bonus (`$2359`); run by `test_rules.js` |
+| A new character's first hit die has a floor (fighter 9 of 10, magic-user always 4); a single-class fighter's training die never gives less than 4 | traced | gen part, class_hp_least (`$0F9E`), train_hp (`$2037`); run by `test_rules.js` |
+| The experience bonus needs 16 (rulebook 15), and an award of 65,536 or more loses most of it | traced | post-com part, prime_bonus (`$15E3`); run by `test_rules.js` |
+| Each score is the best of six rolls of 3d6, and every race but the halfling gets +1 strength or more | traced | gen part, roll_ability (`$0D1F`), ability_adjust (`$0D60`); run by `test_rules.js` |
+| HASTE and the potion of speed add a year to the target's age | traced | effects part, kind_haste (`$A977`); camp-spells part, haste_member (`$AAEA`) |
+| Training costs 1,000 gold at every level, the rest of the coins come back as platinum with the change lost, and a non-player character trains free | traced | gen part, has_money (`$1D50`), pay_training (`$1D63`), train_choice (`$1B84`); run by `test_rules.js` |
+| PENDRAGON, on the archive.org copy of disk 2 side A, is a player's save: the preserved originals have the 3 free blocks his file fills; ADD CHARACTER lists him when that disk is left in | live | gen part, dir_byte (`$1825`), ask_save_disk (`$22EF`); 10 November 2026 |
 
 ## Open questions
