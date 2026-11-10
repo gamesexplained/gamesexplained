@@ -7371,9 +7371,49 @@
    "text": "The table has three entries; the state index has no local bounds check. The captured $ff00 operand is not a fixed destination."
   },
   {
+   "address": 45961,
+   "type": "line",
+   "text": "Return if $1A29,X is zero. Otherwise call $792C and $732A; carry clear enters the player-contact path at $B3B6, while carry set tests $1A6D,X."
+  },
+  {
+   "address": 45977,
+   "type": "line",
+   "text": "For a positive $1A6D,X, call $72FC, store 1 at $1AC2,X for carry set or $FF for carry clear, and select state 1 at $1AB1,X. For a zero or negative parameter, select state 2."
+  },
+  {
+   "address": 46006,
+   "type": "line",
+   "text": "Call $7227; if it returns carry set, call $5D7A with A=8. Call $72FC to choose the heading path."
+  },
+  {
+   "address": 46021,
+   "type": "line",
+   "text": "When bit 0 of $1B28,X is clear, the carry-set heading increments a nonnegative $1AD3,X or resets a negative value to zero. Its frame offset is zero. The carry-clear path at $B3DF adjusts the speed in the other direction and selects offset 10."
+  },
+  {
+   "address": 46047,
+   "type": "line",
+   "text": "When bit 0 of $1B28,X is clear, decrement a zero or negative $1AD3,X; if the result is nonnegative, or the original value was positive, reset it to zero. Select frame offset 10."
+  },
+  {
+   "address": 46073,
+   "type": "line",
+   "text": "Add the selected offset to $19E5,X and store the low byte at $19C3,X. Decrement $1B28,X, shift it right, mask with 2, add 2 and the primary frame, then store the low byte at $19D4,X."
+  },
+  {
+   "address": 46098,
+   "type": "line",
+   "text": "For a negative $1AD3,X, negate it and subtract 6 because the SBC at $B41C starts with carry clear. For a nonnegative value, subtract 5 with carry set. If the subtraction does not borrow, call $43F0 for negative speed or $43A2 for nonnegative speed; values at least 5 after subtraction clamp the stored speed and call with A=4."
+  },
+  {
    "address": 46106,
    "type": "line",
    "text": "SBC #5 inherits clear carry from the preceding two's-complement calculation for negative input, so this path subtracts six. The nonnegative path explicitly sets carry and subtracts five."
+  },
+  {
+   "address": 46148,
+   "type": "line",
+   "text": "Use $1AE4,X as an index into the signed byte table at $B466. Negate a negative value and call $4342, or call $4368 with a nonnegative value. Increment the index, wrap it to zero when it equals $28 and store it at $1AE4,X. The table index is not locally bounded."
   },
   {
    "address": 46182,

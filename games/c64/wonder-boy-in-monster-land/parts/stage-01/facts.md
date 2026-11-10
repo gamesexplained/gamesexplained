@@ -23,3 +23,5 @@ The first captured entity reaction paths at $B1ED and $B224 select movement, ani
 The second captured entity normal state at $B24B handles collision, player contact, a signed timer, movement and frame selection. VICE checked eight forced paths with collision, overlap, damage and movement callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
 
 The second captured entity reaction and exit paths at $B315 and $B34F update direction, frames and countdowns. VICE checked six forced cases with movement, score and dispatch callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+The third captured entity normal state at $B389 handles collision, heading, animation and a signed wave table. Negative and nonnegative horizontal speeds subtract six and five respectively before movement. VICE checked ten forced cases, including both threshold directions and wave wrap, with callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
