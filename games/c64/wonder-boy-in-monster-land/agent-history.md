@@ -868,3 +868,5 @@ Forced all 17 entity slots occupied and ran load-20 setup $BD35 with the real al
 Checked load-20 indexed motion $BDFF in five forced VICE cases with callbacks stubbed, including index wrap; restored the paused user snapshot.
 
 Checked the front of load-20 type-$1B state 0 in nine forced VICE cases with callbacks stubbed, preserved overlapping character-source descriptions and restored the paused user snapshot.
+
+Checked load-20 type-$1B animation and movement in nineteen forced VICE cases with callbacks stubbed, including signed thresholds and carry; preserved overlapping character-source descriptions and restored the paused user snapshot.
