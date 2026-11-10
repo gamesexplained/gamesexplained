@@ -50,3 +50,5 @@ The load-31 type-$2F vector selects $9A11, which calls $35C1 and uses an increme
 The type-$2F path at $9A41 checks $19A1,X against $CA and tests $195D,X for equality with $40 or $1F according to $196E,X. VICE checked five controlled boundary cases. Whether ordinary play reaches values that cross the exact equality checks remains open.
 
 The load-31 type-$2F collision path at $9A5F constructs four fields from display coordinates and four three-byte tables, then calls $1179 and possibly $7227, $5D7A and $4454. VICE checked all three table indices and both collision outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The source bytes matched the captured play snapshot, and an earlier 200-frame play capture recorded no instruction entry into that source range. 42 eight-byte characters before the nearest discovered code entry or update pointer were described from their row patterns; whether each is displayed and other possible code uses remain open.
