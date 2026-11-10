@@ -59,3 +59,5 @@ First-load item drawing entries at $AB56–$AB9F write a four-by-three or four-b
 First-load payment options either select a default message or call a record-supplied one-shot callback, then add 4 or 8 to the player meter and decrement the record field. The second option also checks the player balance before proceeding. Six forced VICE cases and a listing test check the selection with payment, message and meter callbacks stubbed. Callback effects and natural reachability remain open.
 
 First-load payment display $A504 formats a packed byte into the last two of four character positions and restores X after the draw call. Four forced VICE cases and a listing test checked the values and saved register with drawing stubbed. The adjacent option dispatcher branches on the selection sign; its cases are checked by the payment-option test. Natural reachability remains open.
+
+The first-load second and third voice lists contain one and ten pattern pointers respectively before their zero-low-byte terminators. VICE checked the captured bytes and a listing test checks the pointer sequences. Runtime voice state and natural playback remain separate.
