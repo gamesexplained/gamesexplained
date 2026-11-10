@@ -960,3 +960,7 @@ Resolved the split pointer table for all seven resident status graphics and exte
 Resolved the resident display-field aliases by base and physical index and extended the two-emitter test to all 32 indexes. Kept possible out-of-range aliasing and ordinary-play constraints explicit.
 
 Traced the token and metatile-character source reads in all 99 captured visual-resource selections. Bounded 496 previously bare data bytes across 74 read segments, preserving existing code and descriptions and leaving unread tails separate.
+
+Checked the resident clamp, stage-field initializer, generator, record copy and sound-service counter in the listing simulator, including all byte states and explicit decimal-mode assumptions.
+
+Connected each resident entity array to the checked record copier, display/movement paths or a specific load-25 working-field reader. Kept the 17-byte physical spacing separate from caller bounds and avoided assigning a universal meaning to per-type state.

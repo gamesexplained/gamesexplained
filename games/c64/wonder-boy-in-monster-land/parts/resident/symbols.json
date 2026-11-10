@@ -21414,6 +21414,171 @@
    "text": "Parallel entity arrays have 17 slots in the normal entity loops. The record-loading loop uses a stored count without a local 17-slot bound; an excessive count can index beyond these arrays."
   },
   {
+   "address": 6442,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the flags, indexed by entity slot. The ten-byte record copier at $369E installs record byte 8 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6459,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the world X high byte, indexed by entity slot. The ten-byte record copier at $369E installs record byte 2 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6476,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the world X low byte, indexed by entity slot. The ten-byte record copier at $369E installs record byte 3 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6493,
+   "type": "line",
+   "text": "Seventeen per-entity low bytes of the screen-relative X coordinate, paired with high bytes at $196E. The display builders read the pair when producing display-slot coordinates; world-to-screen conversion and direct-coordinate paths can supply it."
+  },
+  {
+   "address": 6510,
+   "type": "line",
+   "text": "Seventeen per-entity high bytes of the screen-relative X coordinate, paired with low bytes at $195D. The display builders consume these with the indexed low byte; the high-byte value is distinct from the world-coordinate high byte at $193B."
+  },
+  {
+   "address": 6527,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the world Y high byte, indexed by entity slot. The ten-byte record copier at $369E installs record byte 4 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6544,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the world Y low byte, indexed by entity slot. The ten-byte record copier at $369E installs record byte 5 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6561,
+   "type": "line",
+   "text": "Seventeen per-entity screen Y bytes used by the display builders. World-to-screen conversion can derive them from $197F/$1990; direct-coordinate paths also supply screen-space values."
+  },
+  {
+   "address": 6578,
+   "type": "line",
+   "text": "Seventeen per-entity direct-coordinate state bytes. Initialization clears the selected slot; display-update code tests the indexed state when choosing how to obtain screen coordinates. Its bit meanings depend on the path, rather than forming another coordinate byte."
+  },
+  {
+   "address": 6595,
+   "type": "line",
+   "text": "Seventeen primary sprite-frame bytes, indexed by entity slot. The display builder uses this field for the first layer; loaded type handlers can update it separately from the base frame at $19E5."
+  },
+  {
+   "address": 6612,
+   "type": "line",
+   "text": "Seventeen secondary sprite-frame bytes, indexed by entity slot. The display builder uses this field for the second layer, alongside the primary frame at $19C3."
+  },
+  {
+   "address": 6629,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the base sprite frame, indexed by entity slot. The ten-byte record copier at $369E installs record byte 1 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6646,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the first display attribute, indexed by entity slot. The ten-byte record copier at $369E installs record byte 6 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6663,
+   "type": "line",
+   "text": "Seventeen second display-attribute bytes, indexed by entity slot. Record initialization clears the selected slot; the display builder consumes this runtime attribute separately from the first and third attributes copied from the record."
+  },
+  {
+   "address": 6680,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the third display attribute, indexed by entity slot. The ten-byte record copier at $369E installs record byte 7 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6697,
+   "type": "line",
+   "text": "Seventeen first display-slot indexes. $1902 reads the indexed byte and returns carry clear for zero, or carry set with A holding the nonzero slot index. Allocation, display building and release share this field."
+  },
+  {
+   "address": 6714,
+   "type": "line",
+   "text": "Seventeen second display-slot indexes. The two-layer entity display path reads this separately from the first index at $1A29; the record copier clears both before later allocation."
+  },
+  {
+   "address": 6731,
+   "type": "line",
+   "text": "Seventeen third display-slot indexes used by the optional additional display layers. The record copier clears this indexed byte along with the other three display-slot fields."
+  },
+  {
+   "address": 6748,
+   "type": "line",
+   "text": "Seventeen fourth display-slot indexes used by the optional additional display layers. The record copier clears this indexed byte; it is separate from the third index at $1A4B."
+  },
+  {
+   "address": 6765,
+   "type": "line",
+   "text": "Seventeen-byte entity array for the type-dependent parameter, indexed by entity slot. The ten-byte record copier at $369E installs record byte 9 here. Its physical slot range is 0\u201316; the record-loading caller does not locally enforce that bound, so larger indexes can address neighboring fields."
+  },
+  {
+   "address": 6782,
+   "type": "line",
+   "text": "Seventeen auxiliary state bytes. The helper at $44C7 stores 1 on collision carry, or an adjusted returned Y on clear carry. Other type handlers can use the same indexed storage, so that helper does not establish a single meaning for every use."
+  },
+  {
+   "address": 6799,
+   "type": "line",
+   "text": "Seventeen display-effect bytes. Initialization clears the selected slot and the display builders test the field when selecting colour/effect paths. The meaning of a value depends on the consuming path."
+  },
+  {
+   "address": 6816,
+   "type": "line",
+   "text": "Seventeen entity animation countdown bytes. The record-loading path initializes the selected byte to 0 for type $FF and 7 for other types; animation paths subsequently update it."
+  },
+  {
+   "address": 6833,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 1. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $9C84, where it is used as the dispatch index. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6850,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 2. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $A106, where it is decremented as the state-4 timer. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6867,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 3. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $A098, where it is decremented in the type-$1E state-2 path. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6884,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 4. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $A122, where it is copied back to the current state. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6901,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 5. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $9D53, where it is read as a type-$05 working counter. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6918,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 6. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $9D66, where it is decremented by a type-$05 handler. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6935,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 7. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $9CAA, where it is read by the type-$05 initialization path. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6952,
+   "type": "line",
+   "text": "Seventeen per-entity bytes for type-specific working field 8. Slot zero is cleared by $18D8; loaded handlers give the field its meaning. For example, load 25 reads this array at $9F8E, where it is read by the type-$1E state-0 path. A role established in one handler does not apply automatically to every entity type."
+  },
+  {
+   "address": 6969,
+   "type": "line",
+   "text": "Seventeen entity record-index bytes. After copying a record, the loader stores the current entity slot number here with TXA/STA; record-reload paths subsequently use the indexed value."
+  },
+  {
+   "address": 6986,
+   "type": "line",
+   "text": "Seventeen entity reload-counter bytes. The record-loading path clears the selected slot after installing a record. Reload logic and loaded type handlers can then change it."
+  },
+  {
    "address": 7003,
    "type": "line",
    "text": "Transforms world-relative entity positions into display-slot state, allocates or releases slot pairs and updates sprite coordinates, frames and colours."
@@ -22059,6 +22224,16 @@
    "text": "Nine eight-byte character slots copied to $ccd0\u2013$cd17 when the patch selector is 1. Other state can bypass this copy."
   },
   {
+   "address": 10877,
+   "type": "line",
+   "text": "Read $1AB1,X into Y. Return Y unchanged when it is below 5; otherwise return Y=4. This clamps the returned index, not the byte stored in the entity array."
+  },
+  {
+   "address": 10887,
+   "type": "line",
+   "text": "Write $4F to $4777, then return Y loaded from $4777,X. The store always targets element zero even when incoming X selects another element."
+  },
+  {
    "address": 10896,
    "type": "line",
    "text": "Load the stage selector from the immediate operand at $2A91, which $7A9A patches before the transition. $7B04 calls this routine after a successful transfer. For selector 1, OR $2A34 with $10 and store it at $93C3, then copy 72 bytes from $2A35\u2013$2A7C to $CCD0\u2013$CD17. Continue through the selector checks at $2AA9."
@@ -22122,6 +22297,11 @@
    "address": 11102,
    "type": "line",
    "text": "Compares the three stored bytes against their corresponding candidate bytes. It replaces all three when any stored byte is lower; an earlier greater byte does not stop the scan, so this is not a lexicographic comparison."
+  },
+  {
+   "address": 11125,
+   "type": "line",
+   "text": "Copy three bytes from $4DBE\u2013$4DC0 to $2B72\u2013$2B74 in descending index order. Write $2C to $7AE3 and tail-jump to $7A9A. The transition routine has separate effects."
   },
   {
    "address": 11144,
@@ -22242,6 +22422,11 @@
    "address": 12297,
    "type": "line",
    "text": "Immediate LDY operand patched at $2FFF with the current top-row tile index. It restores the index for the second lookup through ($5A),Y; the byte goes to output column $5C+1 through ($54). The loop advances $5C by two and the source pointer $52/$53 by one, including a page carry, then repeats while its decremented X is nonnegative."
+  },
+  {
+   "address": 12320,
+   "type": "line",
+   "text": "Load the old $526D, shift it left twice, increment $526D, add the incremented byte and XOR with $4B0D. Store and return the result. With decimal mode clear this is ((5*old + 1) modulo 256) XOR $4B0D; the routine does not clear decimal mode itself."
   },
   {
    "address": 12339,
@@ -25872,6 +26057,16 @@
    "address": 31709,
    "type": "line",
    "text": "When the key-test branch is taken, A=$1f, Y=$fd and carry is set by CMP. If the captured RAM bytes at $98d9 are still present and visible, execution begins with SBC ($c1),Y, ORA $f13d, four EOR $55,X instructions, ASL $05, three ORA $05 instructions and EOR $55,X; $98f0 is the undocumented opcode $57. Its effects and any runtime replacement of these bytes remain unresolved. The same address is used as a character-source byte in this capture."
+  },
+  {
+   "address": 31713,
+   "type": "line",
+   "text": "Load the service counter from the immediate operand at $7BE2. Its zero/nonzero paths either reset the counter and delay or decrement it and call $2201, as described at the operand."
+  },
+  {
+   "address": 31714,
+   "type": "line",
+   "text": "Self-modified immediate counter for $7BE1. A nonzero value is decremented before calling the SID sequencer at $2201. Zero skips that call, resets the counter to 6 and runs a delay with X starting at $40 and ending at $FF. Without other writes, initial value 6 gives six sequencer calls followed by one skipped call."
   },
   {
    "address": 31735,
