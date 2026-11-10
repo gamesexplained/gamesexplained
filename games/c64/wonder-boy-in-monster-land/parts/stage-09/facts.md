@@ -128,3 +128,7 @@ The shop drawing setup at $9903 selects two pointer-table entries, calls the sec
 The shop label code at $9952 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $9B4B to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
 
 This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Load-9 routine $94A0 copies 72 bytes to $CCD0–$CD17 and three three-byte tables to $5023, $5038 and $504D. Three forced VICE cases checked source variations with $77E0/$77E2 stubbed. The data’s display role, callback effects and ordinary-play reachability remain open.
+
+Load-9 first stage-object record points to $9465. The callback tests the low three bits of $4DE2,Y, changes a matching value from 1 to 2 and selects four message pointers before the block copy; other values call $77E2 twice. Four forced VICE cases checked both branches with the two overlapping message entry points redirected independently to stubs. Callback effects, index bounds and ordinary-play reachability remain open.

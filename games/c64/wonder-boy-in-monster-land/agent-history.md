@@ -852,3 +852,7 @@ Checked load-4 type-$08 helper $B646 in six forced VICE cases with a two-level c
 Checked load-4 type-$08 state 1 in five forced VICE cases with callbacks stubbed, including both allocator carries and position carry; restored the paused user snapshot.
 
 Forced all 17 entity slots occupied in load 4 and ran the actual allocator and reset from $B571. VICE observed X=$FF after allocation and subsequent writes to $1A18 and $1BF4. Restored the paused user snapshot.
+
+Checked load-9 block-copy routine $94A0 in three forced VICE cases with display callbacks stubbed; restored the paused user snapshot.
+
+Checked load-9 object callback $9465 in four forced VICE cases, redirecting the overlapping $77E0/$77E2 call sites independently. Rechecked the block-copy test with the same isolation and restored the paused user snapshot.
