@@ -341,3 +341,5 @@ The resident routine at $18D8 clears thirteen fields belonging to entity slot ze
 The sound list reader at $22DC reads a little-endian pattern pointer at a voice offset, advances by two, and on a zero low byte restarts at offset zero and writes the patched configuration byte to $2C15. Three forced VICE cases and `test_sound_list_reader.js` check two pointers and the restart. The pointer and offset are not bounded locally.
 
 The six 32-byte arrays at $3415–$34D4 save display-slot flags, X coordinates, sprite pointers, colours and Y/free bytes. The save loop at $331F marks slots 2–31 free after copying; the restore loop at $3386 copies all six arrays back. One forced VICE save and restore and `test_display_arrays.js` checked all 192 bytes and the slot-release boundary.
+
+The meter buffer at $C400–$C43F overlaps the alternate screen matrix; the verified meter update and transition screen clear use the same RAM for different purposes. The reload-record multiplication at $366A uses a patched immediate byte at $3675; the earlier controlled reload check covers that path.

@@ -734,3 +734,5 @@ Traced the slot-zero field clear at $18D8. A forced VICE call and a listing test
 Traced the resident sound-list reader and shared tick branch. Three forced VICE cases and a listing test checked two pattern pointers and the zero-low-byte restart; the tick branch is described statically. Restored the paused user snapshot.
 
 Described six resident display-slot save arrays. A forced VICE save and restore and a listing test checked all 192 bytes and the released-slot boundary. Restored the paused user snapshot.
+
+Described the overlapping meter-buffer tail and the patched entity reload multiplier, reusing the earlier VICE checks and listing tests for the meter and record scan.
