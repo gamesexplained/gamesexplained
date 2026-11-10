@@ -628,3 +628,5 @@ Traced the rising-entity overlap decision at $6939–$69A1, including carry into
 Checked 5003 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
 
 Checked 171 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Traced the first-load message entity initializer at $92FB. VICE and a listing test checked every field for two forced indexes, stopping before the message callback. The paused user snapshot was restored; index bounds and natural reachability remain open.

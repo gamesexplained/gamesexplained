@@ -41,3 +41,5 @@ First-load left and right selection handlers move among the usual $FF, 0 and 1 s
 First-load item confirmation selects messages from the stage-record flags or selects an item record by index sign. On a successful payment result it decrements the record field and calls the selected item effect with ID plus one. Seven forced VICE cases and a listing test check the branches with payment and effect callbacks stubbed. The callbacks and natural reachability remain open.
 
 Controlled visual-resource selections copied 171 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
+
+First-load initializer $92FB fills an entity slot with fixed type, frame, attributes and coordinates before passing message pointer $933C to the message routine. VICE and a listing test checked two forced entity indexes. Index bounds, message callback effects and ordinary-play reachability remain open.
