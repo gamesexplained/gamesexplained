@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Five programs that never load each other, the codes that link them, and the code they share.</p>
+  <p class="sub">Paris starts every chase by resetting the computer, and a mission played without its code can never be won. Here are the five programs that never load each other, and the codes that link them.</p>
 </header>
 <main class="wrap">
 <section id="programs" data-part="">
@@ -29,7 +29,7 @@
 <section id="codes" data-part="">
   <p class="fig">02 · The codes</p>
   <h2 class="t">A section played without its code can never be won</h2>
-  <p class="lede">City Hall, the mine and the ending start with PLEASE ENTER CODE. RETURN on its own lets the player in anyway, but the choice is remembered, and it decides how the section ends.</p>
+  <p class="lede">City Hall, the mine, and the ending start with PLEASE ENTER CODE. RETURN on its own lets the player in anyway, but the choice is remembered, and it decides how the section ends.</p>
   <div class="plate">
     <label class="f" for="code-in">Type a code, as at the prompt</label>
     <input id="code-in" class="tx" value="CCPHJ" maxlength="20" spellcheck="false">
@@ -43,14 +43,14 @@
     <tr><td>The mine</td><td>the right digits show ILVCT (<a href="source-mine.html#25F2"><code>$25F2</code></a>)</td><td>the bomb goes off, whatever the digits</td></tr>
     <tr><td>Finale</td><td>the ending plays</td><td>the prompt asks again</td></tr>
   </table>
-  <p>Every code is fixed text in the program that shows it: CCPHJ in Paris's telex, DB4CT in City Hall's end screen, ILVCT in the mine's. Nothing in them depends on how the section was played. There is no score anywhere in the game.</p>
+  <p>Every code is fixed text in the program that shows it: CCPHJ in Paris's telex, DB4CT in City Hall's end screen, ILVCT in the mine's. Nothing in them depends on how the section was played.</p>
 </section>
 
 <section id="reset" data-part="paris">
   <p class="fig">03 · Paris</p>
   <h2 class="t">Secret: Paris starts the chase by resetting the computer</h2>
   <p>Fire on Paris's instruction page does not call the game. It jumps to the operating system's own reset routine (<code>$4FBB</code>). A reset checks the memory at <code>$8004</code> for the letters CBM80, the signature a cartridge carries, and if it finds them it starts the cartridge instead of BASIC. Paris keeps a cartridge header of its own at <code>$8000</code>, pointing at the chase (<code>$5A00</code>). So the reset sets up the machine from scratch and then hands straight back to the game.</p>
-  <p>RESTORE brings the instruction page back. The part points the RESTORE key's interrupt at a short routine that resets the stack and shows the page (<code>$43D0</code>).</p>
+  <p>RESTORE brings the instruction page back. Paris points the RESTORE key's interrupt at a short routine that resets the stack and shows the page (<code>$43D0</code>).</p>
 </section>
 
 <section id="menu" data-part="">
@@ -60,22 +60,6 @@
   <figure style="margin:18px 0"><img src="reference/city-hall-abort.png" width="384" height="272" alt="City Hall's ABORT screen: RESTART GAME and RETURN TO MENU"><figcaption class="cap">City Hall's ABORT screen.</figcaption></figure>
 </section>
 
-<section id="shared" data-part="">
-  <p class="fig">05 · Shared code</p>
-  <h2 class="t">The same routines at the same addresses in different sections</h2>
-  <p class="lede">Compared byte for byte in the unpacked programs, these are identical.</p>
-  <table class="t">
-    <tr><th>What</th><th>Where</th></tr>
-    <tr><td>The music driver</td><td>intro and City Hall, <code>$C621</code>-<code>$C7FE</code></td></tr>
-    <tr><td>The Bond theme's notes</td><td>intro and City Hall, from <code>$E000</code></td></tr>
-    <tr><td>The second tune's notes</td><td>Paris and the mine, <code>$E000</code>-<code>$FBE6</code></td></tr>
-    <tr><td>Reading the joystick</td><td>City Hall <code>$4700</code>, the mine <code>$17A0</code></td></tr>
-    <tr><td>The clock</td><td>Paris <code>$4170</code>, City Hall <code>$6E40</code></td></tr>
-    <tr><td>The "OK" sound</td><td>City Hall <code>$6B50</code>, the mine <code>$3B7D</code></td></tr>
-    <tr><td>The code prompt's check</td><td>City Hall, the mine and the finale, apart from the addresses it names</td></tr>
-    <tr><td>The ABORT screen, apart from its text and addresses</td><td>City Hall and the mine, <code>$0B00</code>-<code>$0D1E</code></td></tr>
-  </table>
-</section>
 </main>
 <script>
 (function(){

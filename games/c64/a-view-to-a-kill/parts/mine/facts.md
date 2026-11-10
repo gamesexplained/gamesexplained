@@ -140,8 +140,9 @@ City Hall's, apart from its text and addresses. Only port 2 is read
 - With `$1B16` = 0, touching some lit hazard glyphs spins the main loop for
   good at `$2BAB`-`$2BB7`. Not tried.
 - The meter at the right of the panel (`$3000`) reads (`$C7` - row +
-  column) / 21, rising to the right and upwards. Whether it is the
-  "Geiger counter" the sources name is not known.
+  column) / 21, rising to the right and upwards. The panel labels it
+  GEIGER (seen in VICE); what it measures in the game's story is not
+  known.
 - `welcome_page` does `LDX $FF`, `TXS` (`$7D1D`), putting 7 in the stack
   pointer; `LDX #$FF` was probably meant. `start_level` resets the stack.
 - A new start does not clear `$1B16`, May Day's freed flag `$1B96`, or the
@@ -152,3 +153,21 @@ City Hall's, apart from its text and addresses. Only port 2 is read
   whose bytes spell "ZOOM" in PETSCII. The same word ends a page of
   memory in the intro (`$9FF6`, "MOZOOM1000") and in City Hall (`$48FC`,
   inside an item icon). What wrote it is not known.
+- `type2_count` (`$1B16`) reads 2 straight after the mine is loaded from
+  the disk and started (VICE), so `hazard_test`'s endless loop at `$2BAB`
+  never runs and the helmets (objects 40 and 41) change nothing.
+- EXAMINE's upper test (`$3727`) subtracts 5 from the object's column; for
+  object 40 at column 3 it wraps to 254, so object 40 can never be
+  examined or taken (VICE: refused from every column 4 to 10).
+- Object 48 (the number 7) lies in a pit two steps wide. Jumps end on its
+  floor; a rope fired there takes Bond out (the steward's recording of a
+  complete play, 2021). A rope tried from one spot in it in VICE could not
+  be climbed, so where he stands matters. Blasting rock fall 14, the
+  pit's floor, also drops Bond to a pit where a rope can be climbed (VICE).
+- A sixth digit makes `code_count` 6: EXAMINE then refuses object 50, and
+  with object 50 carried the end check at map column `$15` lets play go
+  on (VICE).
+- `fall_drift_period` and `fall_drift` start at 1 on a fall, but the count
+  that slows the drift is `idle_timer` (`$1B66`), which runs 7 to 1 every
+  few passes whether Bond stands or walks, so a fall from the same place
+  can land in different places.

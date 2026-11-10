@@ -77,3 +77,35 @@ run's. The mine's snapshots were made again from it by the route in
 variables, sprite pointers and screen, which were written back from the
 earlier listing into `parts/mine/work/play.vsf`; the unpatched snapshot
 is `parts/mine/work/play-raw.vsf`.
+
+The mine walkthrough on Maps (9 November 2026, before the Gold pull
+request). A model of Bond's moves (jumps, falls, ladders, the rope,
+belts and the lift), measured in VICE, planned each walk, and a closed
+loop in VICE played the first five stops with the joystick. Three things
+broke the loop and are worth knowing: a fall's sideways drift slows
+after a count taken from `idle_timer` (`$1B66`), which idle_anim counts
+round from 7 to 1 all the time, so the same step off a ledge lands in
+different places; the conveyor belts carry Bond faster than he walks
+against them; and the probes look only at Bond's columns +1 and +2, so
+his left column may overlap rock. After the plank, each stop was checked
+instead by moving Bond beside it the way `winch_down` does (map_view,
+map_col, map_row, fine scroll 2 and 7) and using the panel. The checks
+found that the helmet by the start can never be examined, that the
+helmet count starts at 2 so the hazard freeze cannot happen, and that the
+number 7 lies in a pit whose floor (rock fall 14) has to be blasted. The
+steward reviewed the planned walks on 9 November 2026: they jumped over every
+falling-rock column, because the model charged each hazard step as if the
+rock were always lit, and one fall passed through rock by a game bug the
+steward knows (stuck in the ground, jumping through rock), which he does not
+want used. He then supplied his own recording of a complete play from 2021.
+It overturned two findings: he climbs out of the number 7's pit on a rope,
+so it is not a dead end, and he enters the digits in the detonator's cave
+after WINCH DOWN, never laying the plank. The walkthrough was rebuilt from
+that recording: Bond's place in each quarter second was found by matching
+the playfield's rock to the map (an FFT correlation of the two masks), the
+stops were read from the panel, and the model only joins waypoints where
+the match is unsure, as in the long bottom corridor, whose repeating
+pattern lets the match slide sideways. The
+scripts are kept outside the repository, with the contributor's project
+files; `test_mine_route.py` checks the published route's stops against
+the game's rules from the listing.
