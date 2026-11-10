@@ -128,3 +128,5 @@ The load-19 state dispatcher at $BC10 selects five handlers using an entity stat
 The Sphinx state at $BCDC chooses the question using bit 1 of $9A4B: clear enters the question at $BD50, set displays the hobby question at $BCF0 and joins the common setup. Four forced VICE values and a listing test checked the selection with the display callback stubbed; ordinary-play reachability remains open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 128-byte stride from $8671; the first 29 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The object record at $98CE contains initialization target $98DE. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.

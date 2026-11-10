@@ -68,3 +68,5 @@ A forced $717C call copied all 2,048 bytes from the entry character source to RA
 Controlled visual-resource selections copied 111 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 128-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The object record at $91B2 contains initialization target $91C2. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.

@@ -114,3 +114,5 @@ The shop conditional-item resolver at $998F changes item $13 to $14 when the sel
 The captured shop message bank contains the same 34 records as the decoded first-load bank. VICE matched the complete message bytes in this load; listing tests check all record hashes and decode the first-load fields. Selection of each record in ordinary play and other overlapping uses remain open.
 
 The captured split row-pointer tables contain 81 pairs. All follow a 102-byte stride from $8671; the first 14 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The object record at $8F72 contains initialization target $8F82. Two forced VICE calls and `test_later_object_inits.js` check its indexed entity-field writes and message pointer. The listing records the overlapping character-source use; callback effects and ordinary-play reachability remain open.

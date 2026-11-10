@@ -752,3 +752,5 @@ Typed load-11 entity initialization $964E–$968C following the stage-object rec
 Traced two load-11 repeating motion streams and their entries, recording the first stream’s overlap with copied characters. Six forced VICE cases and a listing test checked literal, repeated and reset values. Restored the paused user snapshot.
 
 Traced 14 additional motion-reader entries and encoded streams across later loads. Twenty-eight forced VICE cases checked first values and resets; a listing test checks each complete decoded sequence. Where the setup or stream overlaps copied characters, the comments retain both observed uses. Restored the paused user snapshot.
+
+Traced twelve object-record entity initializers across later loads. Twenty-four forced VICE calls and a listing test checked their indexed writes and message pointers. Updated the copied-character comments where the executable bytes overlap. Restored the paused user snapshot.
