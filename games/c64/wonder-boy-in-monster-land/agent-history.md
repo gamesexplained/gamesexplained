@@ -892,3 +892,7 @@ Checked two unsupported upward displacements reach the existing overlap check at
 Checked resident entity vertical steps in seven forced VICE cases covering world and screen modes, wrap and clamp carry; restored the paused user snapshot.
 
 Checked resident transition entry with two controlled raster cases and message wrapper with two callback-stub cases in VICE; restored the paused user snapshot.
+
+Checked resident record map updater in three forced VICE cases including a page crossing; clarified eight-bit row-offset wrap and restored the paused user snapshot.
+
+Verified the map updater’s forced $FF-stride Y wrap and overwrite in VICE; restored the paused user snapshot.

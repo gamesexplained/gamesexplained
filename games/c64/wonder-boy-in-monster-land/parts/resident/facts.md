@@ -369,3 +369,7 @@ Resident vertical entity movement $68F1 uses a callback displacement and can mov
 Resident entity vertical steps $4342/$4368 select world or screen coordinates by $7A. Seven forced VICE cases checked 16-bit carry/borrow, wrapped screen positions and the downward clamp, including its returned carry. Slot bounds remain open.
 
 Resident transition entry $7A6E waits for raster value $80, clears display and sound registers, restores A and jumps to $7A9A. Two forced VICE cases checked A and VIC writes with $6A75 stubbed and the raster read redirected to controlled RAM. Message wrapper $7A91 restores X after $77E2; two VICE cases checked it with that callback stubbed. Actual raster timing, callback effects and ordinary-play reachability remain open.
+
+Resident record map updater $46D6 patches row, column and saved-Y operands and writes four cells. Three forced VICE cases checked the original and two replacement sources, including a row-pointer page crossing. The second-row Y offset wraps at 256; index bounds and ordinary-play reachability remain open.
+
+A forced VICE case with $7F4A=$FF made the map updater’s second-row Y increment wrap to zero and overwrite its first written cell. Whether ordinary play supplies that stride remains open.
