@@ -685,6 +685,11 @@
   },
   {
    "start": 39093,
+   "end": 39170,
+   "type": "Code"
+  },
+  {
+   "start": 39171,
    "end": 39173,
    "type": "Undefined"
   },
@@ -4480,6 +4485,30 @@
   {
    "address": 39081,
    "name": "shop_decrement_and_message",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39093,
+   "name": "shop_select_item_pair",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39110,
+   "name": "shop_select_explicit_pair",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39135,
+   "name": "shop_select_implicit_pair",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 39155,
+   "name": "shop_finish_implicit_pair",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -12752,6 +12781,26 @@
    "address": 39081,
    "type": "line",
    "text": "Reload stage index, decrement $4753,X, load the message pointer encoded here and jump to $9A7F. Its ordinary caller was not exercised by the choice tests."
+  },
+  {
+   "address": 39093,
+   "type": "line",
+   "text": "Store zero at $9B3E, set sound state $2C15 to 2, and set $4D69 to 7. Reload stage index from $7B and continue to the item-pair selection. The later drawing paths start at $9903 and are separate."
+  },
+  {
+   "address": 39110,
+   "type": "line",
+   "text": "Read $476B,X. If nonzero, pass it and $4771,X separately through the conditional-item resolver at $9A8E; store the returned values at $9B44/$9B45, then jump to $9903. Four forced VICE inputs per load checked this and the implicit path with the real resolver."
+  },
+  {
+   "address": 39135,
+   "type": "line",
+   "text": "Use $4771,X as Y. Clear carry, add selected-player index $4DBD to A, then add $D5 with the carry from that first addition. Patch this as the low byte of an absolute read; load $4D and add the carry from the second addition to form its high byte. Index values and carry behavior are not locally bounded."
+  },
+  {
+   "address": 39155,
+   "type": "line",
+   "text": "Read the patched absolute address, clear carry and add $9B46,Y. Store the result at $9B44, then store that result plus one modulo 256 at $9B45. Continue at $9903; the later drawing callbacks were not exercised."
   },
   {
    "address": 39174,
