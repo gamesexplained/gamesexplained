@@ -876,3 +876,5 @@ Checked resident status graphic selector $5326 with three forced VICE cases, inc
 Checked resident player-status selection $530C in four forced VICE cases using the real nibble splitter; restored the paused user snapshot.
 
 Checked the resident continue message pointer and signed displacement table with seven forced VICE cases, and restored the paused user snapshot.
+
+Checked resident two- and three-row replacement icon routines in two forced VICE cases; restored the paused user snapshot.
