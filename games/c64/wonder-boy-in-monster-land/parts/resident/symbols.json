@@ -19300,6 +19300,31 @@
    "text": "Applies leftward movement, testing map attributes and either moving the player or updating the view. A blocking test can shorten the step."
   },
   {
+   "address": 4201,
+   "type": "line",
+   "text": "If the high player-X byte $48 is nonzero or the low byte $47 is at least $AB, enter $10C4. Otherwise add $4DB1 to $4D6A; store the sum and return if below 8, or enter $1082."
+  },
+  {
+   "address": 4226,
+   "type": "line",
+   "text": "Patch the sum into the operand at $108E. When $569B is nonzero, call $2D82, subtract 8 from the patched sum, call $1107, store the result at $4D6A and tail-jump to $30EE. A zero $569B enters $109D."
+  },
+  {
+   "address": 4253,
+   "type": "line",
+   "text": "Subtract 7 from the patched sum and patch the result into the immediate subtraction at $10A8. Subtract it from the player X at $47/$48. If the high byte is zero and the low byte is below $1C, clamp the low byte to $1C. Set $4D6A to 7 and return."
+  },
+  {
+   "address": 4292,
+   "type": "line",
+   "text": "Subtract $4DB1 from player X into the temporary bytes $1104/$1105. If the temporary high byte is zero and its low byte is below $AA, enter $10EB; otherwise store both bytes at $47/$48 and return."
+  },
+  {
+   "address": 4331,
+   "type": "line",
+   "text": "Set the low player X byte to $AA. Patch the temporary low byte into $10F6, calculate $AA minus that value, patch the result into $10FF and add it to $4D6A."
+  },
+  {
    "address": 4358,
    "type": "line",
    "text": "Unused startup byte between the temporary coordinate pair and the following routine.\nTrace-proven startup remnant at $1106\u2013$1106. The continuous reset/BASIC-to-level-3 run records initialization reads and writes, with final captured values written by STA ($fe),Y at $0132. After initialization completes at CPU clock 490731830, no CPU load, store or instruction entry touches these bytes through the stopped-trace endpoint at clock 854603571. The saved endpoint retains the captured values."
