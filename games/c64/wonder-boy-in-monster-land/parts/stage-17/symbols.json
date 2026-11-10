@@ -461,7 +461,7 @@
   {
    "start": 40600,
    "end": 40773,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 40774,
@@ -1001,6 +1001,18 @@
    "kind": "user"
   },
   {
+   "address": 40600,
+   "name": "type05_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40679,
+   "name": "type05_state1_allocate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 40774,
    "name": "type05_state2",
    "type": "UserDefined",
@@ -1456,6 +1468,16 @@
    "address": 40524,
    "type": "line",
    "text": "When the distance is below 20 and $1B28,X is zero, copy $1B17,X into $A074, call the frame helper with A=2, store 5 at $1AF5,X and 6 at $1B06,X, and select state 1. Otherwise return if $1A29,X is zero. If nonzero, store 10 in $1AD3,X and patch the immediate operand at $9F80 used by state 2. Call $3020: if A is below $80, call $72FC and store $80 or 0 in $1B17,X according to carry; otherwise preserve that field. Clear $1AF5,X and select state 2. External callbacks and natural reachability remain open."
+  },
+  {
+   "address": 40600,
+   "type": "line",
+   "text": "State 1 preserves the low seven bits of $1B17,X and sets its sign opposite to carry returned by $72FC. Copy it to $A074, call the frame helper at $A01E with A=2, and call the event helper at $A02E. If that helper returns here and $1AF5,X is nonzero, decrement it and return. Otherwise use $1B06,X: positive values are passed to $4342 then decremented; zero becomes $80; negative values have bit 7 cleared and are passed to $4368. If the resulting stored field is below $86, increment it and return; otherwise continue at $9EE7."
+  },
+  {
+   "address": 40679,
+   "type": "line",
+   "text": "Save the entity index in Y and call $190B. On clear carry, restore X from Y and select state 0. On set carry, call $447A and use X as the other slot: copy $194C, $193B, $1990 and $197F from Y to X, copy the working byte to $1AC2,X, and initialize $1919,X=$22, $19F6,X=7, $1A07,X=0 and $1AA0,X=0. Compute the other slot\u2019s $19C3,X and $19E5,X from $19E5,Y plus 12 and, when the working byte is negative, 2 more; carry from the first addition enters the second. Save Y at $1AD3,X, restore X from Y, set $1B28,X=1 and select state 0. Arithmetic is binary when decimal mode is clear; external calls and natural reachability remain open."
   },
   {
    "address": 40774,
