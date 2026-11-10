@@ -215,3 +215,7 @@ Resident $4574 and $45BC apply rightward and leftward entity movement and may un
 Resident $460C packs four bits from four consecutive tile attributes, while $4632 reads each attribute through a row pointer and restores X and Y. VICE checked four forced packing cases with the reader stubbed and three direct forced reads including pointer carry. Index bounds and ordinary-play reachability remain open.
 
 VICE also checked two forced $460C cases with the real $4632 reader and supplied map and attribute data. Ordinary-play reachability remains open.
+
+Resident $43A2 and $43F0 move an entity left or right in world coordinates or screen coordinates according to $7A. The screen paths clamp at different bounds or tail-jump to release for type $28 in specific branches. VICE checked nine forced arithmetic, clamp and release cases with the release callback stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked two forced $45BC cases using the real horizontal movement, grid conversion and tile-attribute routines with supplied map data. The blocked case restored the initial position; the clear case retained the movement. Ordinary-play reachability remains open.
