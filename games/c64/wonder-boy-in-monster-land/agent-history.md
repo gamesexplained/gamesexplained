@@ -866,3 +866,5 @@ Checked load-20 type-$1B state 1 in five forced VICE cases, including a frame su
 Forced all 17 entity slots occupied and ran load-20 setup $BD35 with the real allocator and reset and $78D1 stubbed. VICE observed X=$FF and a $2A write to $1A18; restored the paused user snapshot.
 
 Checked load-20 indexed motion $BDFF in five forced VICE cases with callbacks stubbed, including index wrap; restored the paused user snapshot.
+
+Checked the front of load-20 type-$1B state 0 in nine forced VICE cases with callbacks stubbed, preserved overlapping character-source descriptions and restored the paused user snapshot.
