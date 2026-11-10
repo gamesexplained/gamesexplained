@@ -878,3 +878,7 @@ Checked resident player-status selection $530C in four forced VICE cases using t
 Checked the resident continue message pointer and signed displacement table with seven forced VICE cases, and restored the paused user snapshot.
 
 Checked resident two- and three-row replacement icon routines in two forced VICE cases; restored the paused user snapshot.
+
+Checked resident serial sender $7E53 in three forced VICE cases with controlled RAM substituted for its $DD00 clock reads; verified 24 output bits and restored the paused user snapshot.
+
+A simulator run found the $7E7C LDX opcode missing from the listing; VICE and the entry snapshot confirmed $A2. Typed the opcode and its immediate byte as code, rebuilt the listing and repeated the sender test.

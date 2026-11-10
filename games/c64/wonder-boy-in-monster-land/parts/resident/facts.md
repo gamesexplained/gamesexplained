@@ -359,3 +359,5 @@ Resident status selection $530C selects the first or second player’s item arra
 Resident $0678 contains the add-credits message passed to $77E0 at $063F. Its two text fields and control bytes were checked in VICE with message rendering stubbed. The 32-byte signed displacement table at $5662 drives continue-animation position arithmetic; six forced VICE cases checked sign extension and position addition. The incoming index and ordinary-play reachability remain open.
 
 Resident $417D and $4194 copy two and three rows of three replacement cells respectively. Two forced VICE cases checked all written cells and A/X/Y on return. Caller-provided Y bounds remain open.
+
+Resident serial sender $7E53 shifts a byte most-significant bit first and writes $1F/$2F and $3F to CIA2 direction register $DD02 after two clock waits. Three forced VICE calls checked 24 bits, X/Y restoration and direction-register writes with both $DD00 reads redirected to controlled RAM. Real peer behavior, line timing and ordinary-play reachability remain open.
