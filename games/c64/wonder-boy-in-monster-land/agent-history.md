@@ -660,3 +660,5 @@ Traced first-load item input-held and cursor selection. Eight forced VICE cases 
 Traced first-load item-description pointer selection and price-digit drawing. VICE and a listing test checked a forced pointer and four character/colour cells. The paused user snapshot was restored; bounds and natural reachability remain open.
 
 Described the four first-load visual pointer tables individually and added the previously verified sprite patches and drawing-store operand. VICE checked the pointer bytes; listing tests check pointers, loader reads, setup copies and drawing. The paused user snapshot was restored.
+
+Decoded the first-load repeating motion stream at $924C. VICE and a listing test checked 45 outputs through its reset with a forced entity slot. The paused user snapshot was restored; other callers and natural reachability remain open.

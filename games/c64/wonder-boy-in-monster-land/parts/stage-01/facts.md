@@ -71,3 +71,5 @@ First-load item controls return carry set when any of the three sampled input by
 First-load item description code selects the message pointer from the item record, while its price writer converts four display bytes and writes corresponding character and colour cells. VICE and a listing test checked a forced pointer and a four-digit draw. Bounds, other display values and ordinary-play reachability remain open.
 
 The first-load visual tables contain seven split-byte pointers each for metatile definitions, screen streams, colour lookups and character sources. VICE checked the captured pointer values; listing tests check both values and loader reads. The two setup sprite patches and the drawing-store operand are covered by the setup and record-draw tests. Selector bounds, other data uses and ordinary-play reachability remain open.
+
+First-load motion stream $924C produces 44 values and resets to the start, including two 13-value runs. VICE and a listing test checked 45 successive decoder outputs using a forced entity slot. Other callers and ordinary-play reachability remain open.
