@@ -900,3 +900,5 @@ Verified the map updater’s forced $FF-stride Y wrap and overwrite in VICE; res
 Checked resident reward conversion in five forced VICE cases with score and message callbacks stubbed; restored the paused user snapshot.
 
 Checked resident transfer-failure border flash in VICE with controlled RAM substituted for CIA1 input reads; restored the paused user snapshot.
+
+Checked resident scroll colour scratch save and restore loops in VICE, comparing the 39 colour nibbles per row; the emulator service had stopped, so the saved user snapshot was restored in pause after restarting it.
