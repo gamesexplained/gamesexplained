@@ -467,6 +467,78 @@ Rulebook pages are the C64 rulebook's.
   CHARACTER use whatever disk is in the drive. *Live*: with that copy in
   the drive, ADD CHARACTER listed him and he joined (AC 7, 13 HP).
 
+## Combat
+
+*Run* below means the routine was run on the kit's 6502 over the
+listing's bytes by `test_combat.js`, which holds `combat.html` to it.
+
+- **Morale.** combat `morale` (`$20C1`) runs before each turn of a
+  combatant the computer runs (combat-set `ai_turn`, `$678D`). A turned
+  undead flees. Otherwise `hurt_check` (`$211C`) takes, for an NPC or
+  monster (`$6BB8` bit 7), the figure 100 less twice `$6BB8`'s low bits,
+  through event 17, and the combatant is hurt when its hit points are at
+  or below that share of its full hit points. A hurt combatant of side 0
+  flees. One of side 1 compares the monsters' losses (`$2B68`, 0 to 100
+  in fives, through event 17) with the script's morale (`$6DC6`): above
+  it, one as fast as the party's fastest (`$2B69`) flees; a slower one
+  SURRENDERS (message `$3F`, condition `$85`) with intelligence 5 or
+  more, and fights on below. *Run*.
+- **BLESS and CURSE** answer event 17: 5 off the figure, at least 0, or
+  5 on (effects `kind_bless` `$A73F`, `kind_curse` `$A74F`). *Run*. No
+  code that moves items or money writes `$6BB8`; ADD NPC (dungeon
+  `$2756`), ANIMATE DEAD and GEN's editors do. *Traced*.
+- **Monster files.** `$6BB8` is `$FF` (figure 102, always hurt) in all
+  but five files: HASSAD, the SHAMAN and one file each of the EFREETI,
+  NOMAD and 4TH LVL FIGHTER hold `$B2` (figure 0, never hurt). The
+  scripts set `$6DC6` to 100 or 101 for the undead fights, and Sokal
+  Keep (ECL15 on disk 2 side B) to 99 for its skeletons, zombies and
+  FERRAN MARTINEZ, from the table at `$AF08` of its script: losses reach
+  100 only with under a twentieth of the side's hit points left. *Traced*
+  (the files).
+- **NPCs.** ADD NPC's second operand, halved, is `$6BB8`'s low bits. The
+  training hall's eight hirelings (ECL0B on disk 2 side A) get 50 + 5 ×
+  their place in its list: ACOLYTE 50 (runs at 50 %) to THEURGIST 85
+  (16 %). DIRTEN and the LEVEL 6 MU join with 99 (2 %); GENHEERIS,
+  PRINCESS FATIMA and SKULLCRUSHER with 100 (never); the MAD MAN with 0
+  (always). The title demonstration's party joins with 100. *Run* for
+  the figures, *traced* for the operands.
+- **ANIMATE DEAD** (spells `$AB76`, camp-spells `$A9FA`) writes `$B2` to
+  `$6BB8` for one already an NPC or monster, and ORs `$FE` into a party
+  member's (0, or 1 once GEN's editors have written it), a figure of 104
+  or 102: the
+  zombie of a party member flees at its first turn in every fight.
+  *Run* for the morale, *traced* for the spell.
+- **Surrender and experience.** post-com (`$0990`) counts every monster
+  with condition bit 7 that is not `$86` (fled): one that surrendered
+  (`$85`) gives its experience. *Traced*.
+- **Turning.** `turn_roll` (`$252B`) with tables `$7AD7`, `$7AE4`,
+  `$7AF1` and GEN's `cleric_figures` (`$239A`: 1, 2, 3, 5, 6, 7 for
+  levels 1 to 6). A 6th level cleric destroys skeletons and zombies.
+  *Run*. A destroyed undead gets report_msg `$12`, SPELLN00 string `$4B`,
+  IS CURSED (combat `$24E2`); a turned one IS TURNED (`$24F9`). SPELLN00
+  has no message with DESTR in it. *Run* for the strings.
+- **Outdoor start squares.** com-prep `$15C2` stores the monsters' four
+  by X (`$9D` at `$15C5`). *Run* for each facing; *live*, below.
+- **Long shots.** combat-set `range_penalty` (`$695D`) reads `$0364`,
+  which `missile_leg` (`$6652`) sets to 128: the penalty starts beyond 42
+  squares. The longest range of a weapon type any item has is 22; type
+  127, on no item, has 60. combat `$11F1` adds the penalty to the AC
+  figure, as a backstab's `$FE` (`$11F9`), which makes a hit easier.
+  *Run*; *live*, below.
+- **Surprise.** `surprise_round` (`$15D9`) takes 6 from the surprised
+  side's initiative in the first round, down to 0, which gets no turn.
+  Initiative is d6 + `$6BEC`, at least 1 (`$0893`). `$6BEC` is written
+  only by com-prep (`$1639`, `dex_hit_bonus` `$1682`: +1 at 16, +2 at
+  17, +3 at 18 to 20), for every combatant. *Run*.
+- **VIEW and dexterity.** Until a character's first fight `$6BEC` is 0,
+  so VIEW's THAC0 with a bow leaves dexterity out: PENDRAGON's composite
+  long bow reads 20 and is 18 in a fight. *Run* (the Items tab's sheet).
+- **The computer's targets.** combat-set `ai_target` (`$670A`) searches
+  again with the sight allowance `$034E` at `$FF` when it finds no enemy
+  in sight. A pure magic-user (`$6BEB` = 1) that is not fleeing does not
+  move; one fleeing heads by the party's facing (`$49C2`), turned round
+  for side 0 (`$6884`). *Traced*.
+
 ## Data tables
 
 - ITEMS: 128 item types of 16 bytes (tables `item_types`, `$7B00`). An
@@ -589,3 +661,14 @@ effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
   disk, then ADD CHARACTER TO PARTY with a copy of disk 2 side A in the
   drive. The list showed PENDRAGON and EXIT; he joined the party with AC 7
   and 13 HP.
+- Long shots (10 November 2026): from `por_combat_goblins`, SHARA's
+  long bow at HOGARTH, stopped at combat-set `$695D`: `$0364` was 128,
+  the distance (`$034F`) 2, `$2B42` 1 and `aim_range` (`$2B50`) 22.
+- Outdoor start squares (10 November 2026): from
+  `por_encounter_goblins` with disk 1 side B attached, `$49E6` set to 0
+  at com-prep `$0ABD` and the facing set in A at `$15A3`, for each
+  facing, then again with `$99` at `$15C5`. The six characters and twelve
+  goblins started 6, 5, 16 and 5 squares apart (nearest to nearest) for
+  north, east, south and west, and 11, 10, 11 and 11 with the store by
+  Y; as the game has it the goblins stood around the middle of the 56 by
+  26 field for north, east and west.
