@@ -76,3 +76,5 @@ The type-$02 helper at $9C09 toggles bit 7 of $1AD3,X. The frame helper at $9C12
 The type-$02 state-0 entry at $9B64 can select state 1 or 2 or continue to the timer path. VICE checked seven controlled entry cases per load with callbacks stubbed in loads 13, 14, 15, 17 and 19. Natural reachability remains open.
 
 The type-$02 state-0 timer path at $9BA7 can update a frame, select a movement callback, or reset a timer and toggle two direction bits. VICE checked seven controlled cases per load with callbacks stubbed in loads 13, 14, 15, 17 and 19. Natural reachability remains open.
+
+Sampling a forced play capture every 20 frames through frame 400 while holding right, alternating fire and adding up after frame 100 found 2 additional active sprite pointers whose bitmap ranges had no prior descriptions. Their sampled bytes matched the entry snapshot; non-stopping execution checkpoints saw no instruction entry into those ranges during a replay with the same inputs. The recorded settings and first sampled frames are in `wide-display-observations.json`; ordinary-play reachability remains open.
