@@ -22422,7 +22422,22 @@
   {
    "address": 29910,
    "type": "line",
-   "text": "Scans active negative entity types for overlap and dispatches contact handling through a patched jump table. The negated type index is not locally bounded."
+   "text": "Scan entity indexes from $10 down to zero. Skip nonnegative $1919,X values and those whose $1902 slot test returns carry clear; otherwise check the display mode at $74E6. A contact dispatch tail-jumps to its selected handler rather than resuming this scan."
+  },
+  {
+   "address": 29926,
+   "type": "line",
+   "text": "If $7A is nonzero, continue to the contact rectangle. If it is zero, skip this entity unless $19B2,X is nonzero."
+  },
+  {
+   "address": 29935,
+   "type": "line",
+   "text": "Build rectangle A with X=$4DAE+4, Y=$49+9, width 4 and height 12. Use the entity display slot from $1A29,X to build rectangle B with its 16-bit X shifted right once plus 2, Y=$4CCF,Y+5, width 8 and height 16. Call $75E3; carry set enters $7536, otherwise continue scanning."
+  },
+  {
+   "address": 30006,
+   "type": "line",
+   "text": "Negate $1919,X modulo 256 into Y, use Y to select low and high target bytes from $754E and $7560, patch the jump at $754B and execute it. The type index is not bounded locally."
   },
   {
    "address": 30015,
@@ -22438,6 +22453,16 @@
    "address": 30024,
    "type": "line",
    "text": "Dispatches through the tables indexed by the negated entity type. No local bounds check limits that index."
+  },
+  {
+   "address": 30028,
+   "type": "line",
+   "text": "Low byte of the contact-handler jump, patched by $7542 before $754B executes."
+  },
+  {
+   "address": 30029,
+   "type": "line",
+   "text": "High byte of the contact-handler jump, patched by $7548 before $754B executes."
   },
   {
    "address": 30066,
@@ -22503,6 +22528,11 @@
    "address": 30253,
    "type": "line",
    "text": "Contact-box height value, set to 11 before $75E3."
+  },
+  {
+   "address": 30258,
+   "type": "line",
+   "text": "Push $1AB1,X, call $4454 to release the entity, restore the saved byte into A, call $771F to calculate and display the reward, then return. Saving the byte preserves it across the release reset."
   },
   {
    "address": 30344,
