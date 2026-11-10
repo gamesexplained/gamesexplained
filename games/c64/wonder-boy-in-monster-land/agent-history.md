@@ -910,3 +910,5 @@ Checked the resident vertical display-cache alias and four adjustment loops in f
 Checked nine forced load-25 type-$1E local state and event cases in VICE, with callback stubs, and restored the paused user snapshot. Replaced duplicate descriptions with the local operands and branch targets.
 
 Checked four forced left-boundary adjustment cases in VICE, including the borrow carried across the patched immediate instruction; restored the paused user snapshot.
+
+Checked three forced stage-record callback completion paths in VICE, with callback and map-writer stubs; restored the paused user snapshot.
