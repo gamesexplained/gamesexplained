@@ -118,7 +118,7 @@ Found in the code, not in the manual.
 | Dwarves, gnomes and halflings take constitution × 2 / 7 off all five saving throws (rulebook: dwarves and halflings, against magic) | traced | gen part, con_save_bonus (`$2359`); run by `test_rules.js` |
 | A new character's first hit die has a floor (fighter 9 of 10, magic-user always 4); a single-class fighter's training die never gives less than 4 | traced | gen part, class_hp_least (`$0F9E`), train_hp (`$2037`); run by `test_rules.js` |
 | The experience bonus needs 16 (rulebook 15), and an award of 65,536 or more loses most of it | traced | post-com part, prime_bonus (`$15E3`); run by `test_rules.js` |
-| Each score is the best of six rolls of 3d6, and every race but the halfling gets +1 strength or more | traced | gen part, roll_ability (`$0D1F`), ability_adjust (`$0D60`); run by `test_rules.js` |
+| Every race but the halfling gets +1 strength or more, and every race but the elf +1 constitution, humans included | traced | gen part, roll_ability (`$0D1F`), ability_adjust (`$0D60`); run by `test_rules.js` |
 | HASTE and the potion of speed add a year to the target's age | traced | effects part, kind_haste (`$A977`); camp-spells part, haste_member (`$AAEA`) |
 | Training costs 1,000 gold at every level, the rest of the coins come back as platinum with the change lost, and a non-player character trains free | traced | gen part, has_money (`$1D50`), pay_training (`$1D63`), train_choice (`$1B84`); run by `test_rules.js` |
 | PENDRAGON, on the archive.org copy of disk 2 side A, is a player's save: the preserved originals have the 3 free blocks his file fills; ADD CHARACTER lists him when that disk is left in | live | gen part, dir_byte (`$1825`), ask_save_disk (`$22EF`); 10 November 2026 |
