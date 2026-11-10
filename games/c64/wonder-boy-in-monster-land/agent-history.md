@@ -268,4 +268,8 @@ Mapped all 55 captured stage-object selector bytes to the reconstructed screens 
 
 Firefox rendered the continue-screen selection and its resident source link at desktop and mobile widths. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
 
+Annotated 1,082 used glyphs in ten later-load projects and 61 in the resident symbol map. Each eight-byte description names its first cell in one controlled reconstruction and reports its decoded nonzero pixel count and row extent. A listing test runs the loader and checks all 1,143 descriptions against the source bytes, cell and geometry. The later-load maps were exported from rebuilt projects without a reported loss. The resident export guard still rejects losing older tracked bytes, so its 61 hand-edited descriptions must be carried into the project before its next export. Other uses of these overlapping bytes remain open.
+
+Included the first load in the tally-selector check as well: its captured selector chooses the skyline reconstruction, giving 11 skyline and 20 continue selections across all 31 captures.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.
