@@ -118,8 +118,10 @@ screen starts a one-player game (`game_over`, `$5E47`, key code 4 in
   (`force_control` `$2A12`, `force_dock` `$2953`).
 - The beam: six to eleven cells charged give a beam one character wide,
   twelve to nineteen two, twenty to twenty-two three; it costs a target
-  four times the cells it covers plus two (`release_beam` `$40EC`,
-  `check_hits` `$17FB`).
+  its width less one times four, plus two: 2, 6 or 10 hit points, where a
+  plain shot costs 1 (`release_beam` `$40EC`, `check_hits` `$17FB`,
+  `boss_hits` `$5902`). Stage 4's boss parts lose 10 to any beam
+  (`boss3_parts`, `$5BA0`).
 - Enemies are spawned by the stage's attack script, two bytes an entry
   (map column, what), and run three programs each: across, down and
   animation (game, `attack_script` `$4FA8`, `move_enemies` `$518D`).

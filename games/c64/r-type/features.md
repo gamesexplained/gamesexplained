@@ -22,22 +22,26 @@ Sources:
 |---|---|---|
 | Horizontally scrolling shoot-'em-up, one player, joystick in port 2 | live | |
 | Title screen: F1 starts a one-player game, F7 pauses (title text) | live (F1) | |
-| Eight stages: The encounter, The living cave, The huge battleship, Fortress at the front, The nest, The transport system, A destroyed city, The heart of the Bydo empire (C64-Wiki) | open | each loaded as three files, `orientation.md` |
+| Eight stages: The encounter, The living cave, The huge battleship, Fortress at the front, The nest, The transport system, A destroyed city, The heart of the Bydo empire (C64-Wiki) | live | each loaded as three files (A-X); all eight reached on 10 November 2026, `facts.md` "Live tests" |
 | Each stage loads from tape (disk in this crack) after the one before is won | live | loader at `$6200` |
-| Short press of fire fires the standard shot; holding fire charges the beam, shown on the BEAM bar | open | |
-| The Force: a pod that docks at the front or the back of the ship, detached and recalled with space (C64-Wiki) | open | |
-| The Force upgrades in three stages from laser crystals; undocked it fires three or five shots (C64-Wiki) | open | |
-| Pickups from bonus containers: reflection laser, anti-aircraft laser, ground laser, homing missiles, extra speed, shield orbs (C64-Wiki) | open | |
-| F7 turns the music on and off; Shift Lock pauses (C64-Wiki); the title says F7 pauses | open | |
+| Short press of fire fires the standard shot; holding fire charges the beam, shown on the BEAM bar | confirmed | `fire` `$3B74`, `charge_beam` `$40D1`, `release_beam` `$40EC` |
+| The Force: a pod that docks at the front or the back of the ship, detached and recalled with space (C64-Wiki) | confirmed | `force_control` `$2A12`, `force_dock` `$2953` |
+| The Force upgrades in three stages from laser crystals; undocked it fires three or five shots (C64-Wiki) | differs | the first crystal brings it and later ones raise it to level 4 (`collect` `$1B61`); a free Force fires one, two or four shots by level (`fire` `$3B74`) |
+| Pickups from bonus containers: reflection laser, anti-aircraft laser, ground laser, homing missiles, extra speed, shield orbs (C64-Wiki) | confirmed | crystals by colour: red wave `$4CB3`, blue reflecting lasers `$42FA`, yellow crawling lasers `$47A1`; missiles `$1CBC`, speed and bits in `collect` `$1B61` |
+| F7 turns the music on and off; Shift Lock pauses (C64-Wiki); the title says F7 pauses | differs | F7 pauses and fire resumes (`$0E85`); the music driver runs before the pause test, so the music plays on; no other key is read there |
 | Three lives shown as ship icons; score for player 1; GAME OVER, then "PLEASE REWIND TAPE THEN PRESS F1 TO START" | live | |
 | "READY" before each life | live | |
-| A boss at the end of each stage | open | |
-| No high-score table is saved (C64-Wiki) | open | |
-| Two-player code present but unused (C64-Wiki) | open | |
-| Music by Chris Hülsbeck (C64-Wiki) | open | |
-| An ending after stage 8 (MobyGames says there is none; the disk holds a ninth load, Y, which the loader jumps into at `$8000`) | open | |
+| A boss at the end of each stage | differs | bosses in stages 1, 2, 4, 5 and 8; stages 3, 6 and 7 end when the waves are gone (each stage's `facts.md`) |
+| No high-score table is saved (C64-Wiki) | traced | GAME OVER goes straight to a cold start that loads stage 1 again (`game_over` `$5E47`); no score table was found in the code |
+| Two-player code present but unused (C64-Wiki) | confirmed | the prompt loop at `$5EAA` loads where it should store, and only F1 is accepted (`two_players` `$2820`) |
+| Music by Chris Hülsbeck (C64-Wiki) | live | the ending's credits name Ramiro Vaca and Chris Hülsbeck (ending, `$8373`) |
+| An ending after stage 8 (MobyGames says there is none; the disk holds a ninth load, Y, which the loader jumps into at `$8000`) | live | reached after stage 8 on 10 November 2026 (ending, `ending_start` `$8000`) |
 
 ## Beyond the documentation
+
+- MobyGames says stage 6 (The transport system) was dropped from the C64
+  version. Files P, Q and R are that stage, with its own map and frame
+  routine (level-6, `stage6_frame` `$9286`), reached live.
 
 - The crackers (Oneway) added a key: `←` during play sets the "stage won"
   flag and loads the next stage (`$6290`, on the interrupt). Found by
@@ -48,6 +52,5 @@ Sources:
 
 ## Open questions
 
-- MobyGames says stage 6 (The transport system) was dropped from the C64
-  version, yet the disk holds eight stage loads. Which of them is which
-  stage is to be read from the levels themselves.
+- The reference screenshot `reference/level-1-later.png` shows a blue
+  lattice that is not in stage 1's map; where it was taken is unknown.
