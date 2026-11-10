@@ -10,5 +10,6 @@ The run is in progress and has no published tier. The requested Silver needs eve
 - Determine the type-$0E state-index range and ordinary-play reachability in loads 9, 11 and 20.
 - Determine the type-$03 state and movement-table index ranges and ordinary-play reachability in loads 13, 14, 15, 17, 18, 24, 26 and 27, including whether the asymmetric horizontal arithmetic is encountered.
 - Determine the type-$22 state and alternate-slot index ranges and ordinary-play reachability in loads 2, 4, 6, 14, 15, 17, 24 and 25.
+- Determine the type-$01 state-index range and ordinary-play reachability in loads 3, 13, 14, 15, 17, 19 and 26.
 - Complete the feature and text investigations, independent listing sample, facts, minisite, retrospective and metadata. Build and run the required checks before committing.
 - Push through the contributor fork and open the pull request when the work is ready.

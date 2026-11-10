@@ -1270,6 +1270,31 @@
   },
   {
    "start": 42808,
+   "end": 42825,
+   "type": "Code"
+  },
+  {
+   "start": 42826,
+   "end": 42828,
+   "type": "Byte"
+  },
+  {
+   "start": 42829,
+   "end": 42831,
+   "type": "Byte"
+  },
+  {
+   "start": 42832,
+   "end": 42932,
+   "type": "Code"
+  },
+  {
+   "start": 42933,
+   "end": 43002,
+   "type": "Code"
+  },
+  {
+   "start": 43003,
    "end": 43003,
    "type": "Undefined"
   },
@@ -4455,6 +4480,66 @@
    "kind": "user"
   },
   {
+   "address": 42808,
+   "name": "type01_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42823,
+   "name": "type01_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42826,
+   "name": "type01_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42829,
+   "name": "type01_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42832,
+   "name": "type01_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42877,
+   "name": "type01_state0_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42922,
+   "name": "type01_state0_flag",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42933,
+   "name": "type01_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42962,
+   "name": "type01_update_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 42988,
+   "name": "type01_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 43004,
    "name": "type03_state_dispatch",
    "type": "UserDefined",
@@ -7055,6 +7140,56 @@
    "address": 42664,
    "type": "line",
    "text": "Load 26 captured sound pattern 6: 143 nonzero event bytes from $A6A8, followed by the zero marker at $A737. Voice-list pointer records at $A430 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 42808,
+   "type": "line",
+   "text": "Load 26: the type-$01 vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $A747 from the split tables at $A74A/$A74D, and jumps to the selected handler. The state index is not locally bounded; only three captured table pairs are described."
+  },
+  {
+   "address": 42823,
+   "type": "line",
+   "text": "Absolute jump patched through operands $A748/$A749; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 42826,
+   "type": "line",
+   "text": "Three captured low bytes of state targets, paired with high bytes at $A74D: $A750, $A7B5, $A7EC. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42829,
+   "type": "line",
+   "text": "Three captured high bytes paired with low bytes at $A74A: $A750, $A7B5, $A7EC. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42832,
+   "type": "line",
+   "text": "State 0: if $1A29,X is zero, go directly to the flag setter at $A7AA. Otherwise call $792C and $732A. If $732A returns carry set, a positive $1A6D,X selects state 1; zero or negative stores 8 at $1B17,X and selects state 2. If carry is clear, call $7227; when that returns carry set, call $5D7A with A=4. Continue at $A77D. External callbacks and ordinary-play reachability remain open."
+  },
+  {
+   "address": 42877,
+   "type": "line",
+   "text": "If $1AD3,X is zero, toggle bit 1 of $1AE4,X and set $1AD3,X to 3. Decrement $1AD3,X. Call $72FC: carry set selects 0 and clear selects 8 for $1B28,X. Clear carry, add $19E5,X and $1AE4,X to that value in sequence, propagating carry, and store the low byte at $19C3,X. This binary arithmetic assumes decimal mode is clear."
+  },
+  {
+   "address": 42922,
+   "type": "line",
+   "text": "Set $1A7E,X to 1 only when it is zero, then return."
+  },
+  {
+   "address": 42933,
+   "type": "line",
+   "text": "State 1: if $1A8F,X is zero, store state 0 and return. Otherwise pass A=8 to $45BC if $1B28,X is nonzero or $4574 if it is zero, then continue at $A7D2."
+  },
+  {
+   "address": 42962,
+   "type": "line",
+   "text": "Set $1AD3,X to 2; exclusive-OR $1AC2,X with 2 and store it. Clear carry and add 4, $1B28,X and $19E5,X in sequence, carrying between additions, then store the low byte at $19C3,X and return. This binary arithmetic assumes decimal mode is clear."
+  },
+  {
+   "address": 42988,
+   "type": "line",
+   "text": "State 2 decrements $1B17,X with eight-bit wrap. If nonzero, branch to the frame update at $A7D2. If zero, call $4B0E with A=$20 and jump to $5DB9 with A=1. Ordinary-play reachability remains open."
   },
   {
    "address": 43004,
