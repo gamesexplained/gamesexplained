@@ -55,3 +55,5 @@ First-load item effects $AC61–$ACAA call four resident player-flag setters or 
 Four first-load item-push entries pass fixed type and quantity pairs to $536F. VICE and a listing test checked all four argument pairs, stopping before the destination routine. The second 54-byte setup graphics source and its three destinations are covered by the setup-copy test. Natural reachability and other uses remain open.
 
 First-load item drawing entries at $AB56–$AB9F write a four-by-three or four-by-four block of consecutive character values with 40-byte row stride. Five controlled VICE calls and a listing test checked the entry-specific values and destinations. Other arguments and ordinary-play reachability remain open.
+
+First-load payment options either select a default message or call a record-supplied one-shot callback, then add 4 or 8 to the player meter and decrement the record field. The second option also checks the player balance before proceeding. Six forced VICE cases and a listing test check the selection with payment, message and meter callbacks stubbed. Callback effects and natural reachability remain open.

@@ -642,3 +642,5 @@ Traced first-load item effects at $AC61–$ACAA. Seven forced VICE cases and a l
 Traced four first-load item-push entries and described a previously checked setup graphics source. VICE and a listing test checked all four type/quantity pairs, stopping before the destination. The paused user snapshot was restored.
 
 Traced first-load record drawing at $AB55–$AB9F. Five controlled VICE calls and a listing test checked each drawing entry and its three- or four-row output. The paused user snapshot was restored; other arguments and natural reachability remain open.
+
+Traced first-load payment option selection at $A52E–$A5AD. Six forced VICE cases and a listing test checked insufficient balance, default messages and patched callbacks with payment, message and meter routines stubbed. The paused user snapshot was restored.
