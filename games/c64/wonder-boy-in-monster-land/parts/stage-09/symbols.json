@@ -455,6 +455,56 @@
   },
   {
    "start": 47475,
+   "end": 47486,
+   "type": "Undefined"
+  },
+  {
+   "start": 47487,
+   "end": 47504,
+   "type": "Code"
+  },
+  {
+   "start": 47505,
+   "end": 47509,
+   "type": "Byte"
+  },
+  {
+   "start": 47510,
+   "end": 47514,
+   "type": "Byte"
+  },
+  {
+   "start": 47515,
+   "end": 47515,
+   "type": "Undefined"
+  },
+  {
+   "start": 47516,
+   "end": 47525,
+   "type": "Code"
+  },
+  {
+   "start": 47526,
+   "end": 47752,
+   "type": "Undefined"
+  },
+  {
+   "start": 47753,
+   "end": 47815,
+   "type": "Code"
+  },
+  {
+   "start": 47816,
+   "end": 47891,
+   "type": "Code"
+  },
+  {
+   "start": 47892,
+   "end": 47892,
+   "type": "Byte"
+  },
+  {
+   "start": 47893,
    "end": 48467,
    "type": "Undefined"
   },
@@ -927,6 +977,66 @@
    "kind": "user"
   },
   {
+   "address": 47487,
+   "name": "type0d_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47502,
+   "name": "type0d_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47505,
+   "name": "type0d_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47510,
+   "name": "type0d_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47516,
+   "name": "type0d_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47753,
+   "name": "type0d_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47788,
+   "name": "type0d_state4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47816,
+   "name": "type0d_event_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47841,
+   "name": "type0d_skip_handler",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47892,
+   "name": "type0d_direction_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48468,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -1297,6 +1407,56 @@
    "address": 47401,
    "type": "line",
    "text": "Load 9 captured sound pattern 6: 73 nonzero event bytes from $B929, followed by the zero marker at $B972. Voice-list pointer records at $B7D1 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 47487,
+   "type": "line",
+   "text": "Load 9: the type-$0D vector in $7EDF/$7F0F selects this dispatcher. It reads $1AB1,X into Y, patches the jump at $B98E from the split tables at $B991/$B996, and jumps to the selected handler. The state index is not locally bounded; only five captured table pairs are described."
+  },
+  {
+   "address": 47502,
+   "type": "line",
+   "text": "Absolute jump patched through operands $B98F/$B990; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 47505,
+   "type": "line",
+   "text": "Five captured low bytes of state targets, paired with high bytes at $B996: $B99C, $B9A6, $BA27, $BA89, $BAAC. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 47510,
+   "type": "line",
+   "text": "Five captured high bytes paired with low bytes at $B991: $B99C, $B9A6, $BA27, $BA89, $BAAC. State index bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 47516,
+   "type": "line",
+   "text": "State 0 stores $32 in $1AD3,X, selects state 1 and falls through to its handler at $B9A6."
+  },
+  {
+   "address": 47753,
+   "type": "line",
+   "text": "State 3 decrements $1AC2,X with eight-bit wrap. If the result is negative, select state 0 and return. Otherwise copy $1AE4,X to $BB14, load $19E5,X and add 6 with carry clear when that byte is negative; clear carry again, add 4 and store the low byte at $19C3,X. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 47788,
+   "type": "line",
+   "text": "State 4 decrements $1AC2,X with eight-bit wrap and returns if nonnegative. If negative and $1B17,X is nonzero, save X in the LDX immediate operand at $BABF, use $1B17,X as an alternate X index for $4454, then restore X. Call $4B0E with A=$50 and tail-call $5DB9. The alternate index range and natural reachability remain open."
+  },
+  {
+   "address": 47816,
+   "type": "line",
+   "text": "Call $792C and $732A. On set carry from $732A, a positive $1A6D,X stores 4 in $1AC2,X and selects state 3; zero or negative copies $1AE4,X to $BB14, calculates a frame from $19E5,X plus optional 6 and then 4 with carry cleared before each addition, stores 10 in $1AC2,X and $FF in $1A8F,X, and selects state 4. Both paths pull the helper\u2019s return address off the stack and return past the calling handler. On clear carry from $732A, call $7227 and return normally if it clears carry, or tail-call $5D7A with A=3 if it sets carry. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 47841,
+   "type": "line",
+   "text": "Pull two bytes from the stack to discard this helper\u2019s return address, then RTS to the caller\u2019s caller; the rest of the calling handler is skipped."
+  },
+  {
+   "address": 47892,
+   "type": "line",
+   "text": "Working byte used by BIT to select the sign-dependent frame offset and movement callback; handler paths write $1AE4,X here."
   },
   {
    "address": 48468,
