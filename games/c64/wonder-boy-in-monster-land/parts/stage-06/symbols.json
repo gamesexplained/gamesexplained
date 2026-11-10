@@ -595,6 +595,41 @@
   },
   {
    "start": 45271,
+   "end": 45273,
+   "type": "Undefined"
+  },
+  {
+   "start": 45274,
+   "end": 45291,
+   "type": "Code"
+  },
+  {
+   "start": 45292,
+   "end": 45297,
+   "type": "Byte"
+  },
+  {
+   "start": 45298,
+   "end": 45303,
+   "type": "Byte"
+  },
+  {
+   "start": 45304,
+   "end": 45348,
+   "type": "Code"
+  },
+  {
+   "start": 45349,
+   "end": 45590,
+   "type": "Undefined"
+  },
+  {
+   "start": 45591,
+   "end": 45611,
+   "type": "Code"
+  },
+  {
+   "start": 45612,
    "end": 47586,
    "type": "Undefined"
   },
@@ -1250,6 +1285,42 @@
    "kind": "user"
   },
   {
+   "address": 45274,
+   "name": "type04_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45289,
+   "name": "type04_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45292,
+   "name": "type04_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45298,
+   "name": "type04_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45304,
+   "name": "type04_state0_initialize",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45591,
+   "name": "type04_update_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 47587,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -1779,6 +1850,36 @@
    "address": 45245,
    "type": "line",
    "text": "Load 6 captured sound pattern 11: 25 nonzero event bytes from $B0BD, followed by the zero marker at $B0D6. Voice-list pointer records at $AED1, $AED3 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 45274,
+   "type": "line",
+   "text": "Load 6: the type-$04 vector in the split tables at $7EDF/$7F0F selects this entry. Read state $1AB1,X into Y, use the low and high tables at $B0EC/$B0F2 to patch the jump at $B0E9, and jump to its selected handler. No local bounds check limits the state; only six table pairs are captured here."
+  },
+  {
+   "address": 45289,
+   "type": "line",
+   "text": "Absolute jump patched through its operands at $B0EA/$B0EB; the entry snapshot has placeholder $FF00."
+  },
+  {
+   "address": 45292,
+   "type": "line",
+   "text": "Six captured low bytes of handler addresses, paired with high bytes at $B0F2. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. State index bounds and handler reachability are open."
+  },
+  {
+   "address": 45298,
+   "type": "line",
+   "text": "Six captured high bytes paired with low bytes at $B0EC. The pairs target $B0F8, $B125, $B1B8, $B1D7, $B15D, $B18B. State index bounds and handler reachability are open."
+  },
+  {
+   "address": 45304,
+   "type": "line",
+   "text": "Load 6, state 0: if $19B2,X is nonzero, call $3020 and select $FC when its negative flag is set, otherwise $00. If $19B2,X is zero, call $71DB, patch the immediate operand at $B110 with returned X, restore the entity index from A, and select $FC when $6F3C is below returned X, otherwise $00. Store the selected value at $1AD3,X, call $B217, set $1AB1,X to 1 and return. The called routine updates a frame value; ordinary-play reachability remains open."
+  },
+  {
+   "address": 45591,
+   "type": "line",
+   "text": "Increment $1AC2,X with eight-bit wrap, take bit 1 of the result, clear carry and add $19E5,X, 4 and $1AD3,X in sequence, including carry from each addition. The described binary arithmetic assumes decimal mode is clear. Store the resulting low byte at $19C3,X and return. State 0 and other handlers call this routine; natural contexts remain open."
   },
   {
    "address": 47587,
