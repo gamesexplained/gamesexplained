@@ -110,3 +110,5 @@ A forced $717C call copied all 2,048 bytes from the entry character source to RA
 Controlled visual-resource selections copied 308 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
 
 A forced panel path at $A48F executes bytes that also lie in the source copied by visual selector 2. VICE and listing tests checked its setup and four balance/meter/message branches; an earlier 200-frame capture did not execute those ranges. Both the copying and forced execution are observations; natural reachability remains open.
+
+The captured panel at $A48F has two input loops that select a first or second path, or return to cursor setup. Five forced VICE cases and a listing test check prompt arguments, cursor fields and four branch outcomes in this load with frame, HUD and input callbacks stubbed. Callback effects and ordinary-play reachability remain open.

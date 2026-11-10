@@ -74,3 +74,5 @@ Controlled visual-resource selections copied 307 additional eight-byte character
 A forced call to the captured panel setup at $AF7C writes four character cells and their colours after patching its helper at $B0BB. VICE and a listing test check the path with $46=$C0. Following panel behavior and ordinary-play reachability remain open.
 
 The captured panel at $AF7C displays a byte-derived value, checks shifted player balance and meter state, and chooses one of four message paths. Four forced VICE cases and a listing test check these branches in this load. Later message behavior and ordinary-play reachability remain open.
+
+The captured panel at $AF7C has two input loops that select a first or second path, or return to cursor setup. Five forced VICE cases and a listing test check prompt arguments, cursor fields and four branch outcomes in this load with frame, HUD and input callbacks stubbed. Callback effects and ordinary-play reachability remain open.
