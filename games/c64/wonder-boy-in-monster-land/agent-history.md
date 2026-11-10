@@ -846,3 +846,5 @@ Checked load-4 type-$08 movement helper in four forced VICE cases with movement 
 Checked load-4 type-$08 state 2 in six forced VICE cases at phase boundaries with callbacks stubbed; restored the paused user snapshot.
 
 Checked load-4 frame helper $B636 in five forced VICE cases, including carry from both preceding additions; restored the paused user snapshot.
+
+Checked load-4 type-$08 helper $B646 in six forced VICE cases with a two-level caller and callbacks stubbed; restored the paused user snapshot.
