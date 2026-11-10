@@ -60,3 +60,17 @@ The type-$23 entity dispatcher at $AA3E uses $1AB1,X without a local bounds chec
 Type-$23 state 1 calls $792C and $7227, optionally calls $5D7A with A=8, and decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1AC2 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 10, 28 and 29 with callbacks stubbed. Ordinary-play reachability remains open.
 
 Type-$23 state 0 can transition to state 1 after carry from $7227 or a zero-countdown call to $44DE. Its other paths update $1AC2,X, a motion countdown and $1AE4,X according to callback results. VICE checked eight forced cases in loads 10, 28 and 29 with callbacks stubbed; callback effects and ordinary-play reachability remain open.
+
+The type-$0A entity dispatcher at $A62E uses $1AB1,X without a local bounds check. Five captured table pairs select $A64A, $A667, $A6B9, $A714, $A735; VICE checked all five in loads 6, 19 and 28. Ordinary-play reachability and index bounds remain open.
+
+Type-$0A state 3 decrements $1B17,X and either tail-calls a direction-selected callback or toggles bit 7 of $1AD3,X and restores the state from $1B28,X. State 4 decrements $1AC2,X and on a negative result calls $4B0E with A=$50 and jumps to $5DB9. VICE checked seven forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$0A helper $A769 saves the state in $1B28,X and calls $792C and $732A. Carry set from $732A selects state 3 for positive $1A6D,X or state 4 otherwise, then discards one return address. The positive path rotates a working byte through carry from $72FC; the other sets $1A8F,X=$FF and $1AC2,X=10. Carry clear calls $7227 and may tail-jump to $5D7A with A=4. VICE checked six forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$0A state 0 calls the event helper, stores masked results from two $3020 calls, sets $1AE4,X=4 and state 1, and falls through to state 1. If the second helper call returns normally, state 1 decrements $1AE4,X to 3. VICE checked three forced $3020 values in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
+
+After its initial delay, type-$0A state 1 decrements $1AC2,X. A nonnegative result calls its frame helper and a direction-selected callback, and selects state 0 when the callback result masked with 6 differs from 2. A negative result calls $3020 and selects state 0 or, for a negative result, calls it again and selects state 2. VICE checked six forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
+
+The type-$0A frame helper at $A743 increments $1B06,X, resetting it for values at least 3, and uses twice that value plus a direction-dependent offset and $19E5,X to set $19C3,X. VICE checked four forced cases in loads 6, 19 and 28. Ordinary-play reachability remains open.
+
+Type-$0A state 2 calls its event helper and, after a delay, updates $1AF5,X and either selects state 0 or calls the frame helper and a direction-selected callback. Negative $1AF5,X values below $8C increment before returning to the frame update; values at least $8C remain unchanged. VICE checked eight forced cases in loads 6, 19 and 28 with callbacks stubbed. Ordinary-play reachability remains open.
