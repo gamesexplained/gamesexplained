@@ -361,3 +361,5 @@ Resident $0678 contains the add-credits message passed to $77E0 at $063F. Its tw
 Resident $417D and $4194 copy two and three rows of three replacement cells respectively. Two forced VICE cases checked all written cells and A/X/Y on return. Caller-provided Y bounds remain open.
 
 Resident serial sender $7E53 shifts a byte most-significant bit first and writes $1F/$2F and $3F to CIA2 direction register $DD02 after two clock waits. Three forced VICE calls checked 24 bits, X/Y restoration and direction-register writes with both $DD00 reads redirected to controlled RAM. Real peer behavior, line timing and ordinary-play reachability remain open.
+
+Resident serial receiver $7DC4 combines four port samples and has a runtime-patched return/store opcode at $7DED. Four forced VICE cases checked byte reconstruction in $60 return mode and three checked $99 store mode, with the wait and sample reads redirected to controlled RAM. Real bus timing, peer behavior and ordinary-play reachability remain open.

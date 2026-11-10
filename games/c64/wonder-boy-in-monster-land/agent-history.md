@@ -882,3 +882,5 @@ Checked resident two- and three-row replacement icon routines in two forced VICE
 Checked resident serial sender $7E53 in three forced VICE cases with controlled RAM substituted for its $DD00 clock reads; verified 24 output bits and restored the paused user snapshot.
 
 A simulator run found the $7E7C LDX opcode missing from the listing; VICE and the entry snapshot confirmed $A2. Typed the opcode and its immediate byte as code, rebuilt the listing and repeated the sender test.
+
+Checked resident serial receiver $7DC4 in seven forced VICE cases with controlled samples substituted for port reads. The entry snapshot and VICE both hold CPY opcode $C0 at $7DF7, previously a listing gap; typed it and its immediate operand as code and restored the paused user snapshot.
