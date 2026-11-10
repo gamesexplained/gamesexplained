@@ -648,3 +648,5 @@ Traced first-load payment option selection at $A52E–$A5AD. Six forced VICE cas
 Traced the first-load payment amount formatter and separated its saved-X operand from the option dispatcher. Four forced VICE cases and a listing test checked digit values and X restoration with drawing stubbed; the earlier option test covers the dispatcher. The paused user snapshot was restored.
 
 Described the first-load second and third voice pointer sequences individually. VICE checked the bytes and a listing test checks each pointer and terminator. The paused user snapshot was restored.
+
+Traced first-load item-pair selection and the conditional $13/$14 resolver. Four forced VICE cases and a listing test checked both supplied and derived pairs. Drawing has a separate coverage boundary, and the paused user snapshot was restored.

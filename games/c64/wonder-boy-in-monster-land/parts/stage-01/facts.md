@@ -61,3 +61,5 @@ First-load payment options either select a default message or call a record-supp
 First-load payment display $A504 formats a packed byte into the last two of four character positions and restores X after the draw call. Four forced VICE cases and a listing test checked the values and saved register with drawing stubbed. The adjacent option dispatcher branches on the selection sign; its cases are checked by the payment-option test. Natural reachability remains open.
 
 The first-load second and third voice lists contain one and ten pattern pointers respectively before their zero-low-byte terminators. VICE checked the captured bytes and a listing test checks the pointer sequences. Runtime voice state and natural playback remain separate.
+
+The first-load item-pair initializer either uses record-supplied IDs or derives consecutive IDs from selected-player state and a lookup. Conditional ID $13 becomes $14 when player flag $10 is set. Four forced VICE cases and a listing test checked these choices; drawing and ordinary-play reachability remain separate.
