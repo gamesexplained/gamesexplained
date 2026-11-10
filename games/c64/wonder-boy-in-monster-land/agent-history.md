@@ -704,3 +704,5 @@ Found and typed load-19 question handling $BD50–$BDEC. Sixteen forced VICE cas
 Typed the load-19 five-way Sphinx dispatcher and its first two states at $BC10–$BC6F. Six forced VICE paths checked all targets, both answer-source branches, state changes and introduction calls. The paused user snapshot was restored.
 
 Described the resident raster split setup and four timing tables. Two forced VICE paths and a listing test checked zero and nonzero scroll through $1383; the paused user snapshot was restored. The subsequent raster wait and sprite writes remain outside the test.
+
+Typed the load-19 question selector at $BCDC. Four forced VICE cases and a listing test checked both question choices with display stubbed. Restored the paused user snapshot.
