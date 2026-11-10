@@ -8,6 +8,7 @@ for(const capture of observations.loads){
  const n=capture.stage,dir=path.join(parts,`stage-${String(n).padStart(2,'0')}`),mem=resident.slice(),seen=new Uint8Array(65536),symbols=JSON.parse(fs.readFileSync(path.join(dir,'symbols.json')));
  for(const r of JSON.parse(fs.readFileSync(path.join(dir,'listing.json'))).records)if(r.b){mem.set(r.b,r.a);seen.fill(1,r.a,r.a+r.b.length);}
  for(const sprite of capture.slots){
+  if(sprite.first_frame!==undefined){assert(sprite.first_frame>=0&&sprite.first_frame<=200&&sprite.first_frame%10===0);assert.equal(sprite.executions,0);}
   const a=0xc000+64*sprite.pointer;assert.equal(a,sprite.address);assert(seen.slice(a,a+63).every(Boolean));
   assert.equal(crypto.createHash('sha256').update(mem.slice(a,a+63)).digest('hex'),sprite.hash,`load ${n} slot ${sprite.pointer.toString(16)} bytes`);
   const block=symbols.blocks.find(b=>b.start===a);assert(block&&block.type==='Byte'&&block.end===a+62,`load ${n} bitmap extent`);
@@ -21,12 +22,12 @@ for(const capture of observations.loads){
   total++;
  }
 }
-assert.equal(total,142);
+assert.equal(total,158);assert.equal(observations.loads.flatMap(x=>x.slots).filter(x=>x.input_sequence==='right-fire-up').length,16);
 const html=fs.readFileSync(path.join(root,'graphics.html'),'utf8'),match=html.match(/<script id="observed-sprites-data" type="application\/json">([^<]+)<\/script>/);assert(match,'observed sprite gallery data');
 const frames=JSON.parse(match[1]);assert.equal(frames.length,total);
 for(const capture of observations.loads)for(const sprite of capture.slots){
  const frame=frames.find(f=>f.load===capture.stage&&f.pointer===sprite.pointer),sample=sprite.display[0];assert(frame,`load ${capture.stage} gallery slot`);
  assert.equal(crypto.createHash('sha256').update(Uint8Array.from(frame.pixels)).digest('hex'),sprite.hash);
- assert.equal(frame.multicolour,!!(sample.flags&1));assert.equal(frame.colour,sample.colour&15);assert.equal(frame.displaySlot,sample.index);assert.equal(frame.y,sample.y);assert.equal(frame.frame,sprite.first_frame||0);
+ assert.equal(frame.multicolour,!!(sample.flags&1));assert.equal(frame.colour,sample.colour&15);assert.equal(frame.displaySlot,sample.index);assert.equal(frame.y,sample.y);assert.equal(frame.frame,sprite.first_frame||0);assert.equal(frame.sequence,sprite.input_sequence||'none');
 }
 console.log(`OK - ${total} observed sprite bitmaps, display-pointer writes and gallery data`);
