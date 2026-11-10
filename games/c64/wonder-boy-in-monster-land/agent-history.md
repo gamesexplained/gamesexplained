@@ -806,3 +806,5 @@ Checked load-3 helper $9DF1 with five forced VICE cases and a two-level caller, 
 Checked load-3 type-$07 state 1 with four forced VICE cases and a stubbed helper, and restored the paused user snapshot.
 
 Checked load-3 type-$07 state 2 in eight forced VICE cases, with helpers and contact checks stubbed; restored the paused user snapshot.
+
+Checked load-3 phase calculation $9C5A with five forced VICE cases at both subtraction boundaries, and restored the paused user snapshot.

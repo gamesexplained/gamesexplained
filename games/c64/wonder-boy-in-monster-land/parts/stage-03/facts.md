@@ -82,3 +82,5 @@ Load-3 helper $9DF1 checks two callback carry results. A set carry from $732A ch
 Load-3 type-$07 state 1 at $9C80 checks a signed phase byte and either decrements it and jumps to $4368 with A=8 or changes to state 2 and falls through. Four forced VICE cases tested the signed boundary with $9DF1 stubbed; the actual helper can skip its caller. Callback effects and ordinary-play reachability remain open.
 
 Load-3 type-$07 state 2 at $9C9A calls movement and contact checks, conditionally increments $1B06,X below $10, or resets a phase byte and enters state 3 when the contact carry differs from the sign of $9E27. Eight forced VICE cases covered both phase signs, both directions and both contact outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-3 phase calculation at $9C5A uses two subtract-with-borrow checks, divides a nonnegative remainder by eight, and stores a second value two less modulo 256. Five forced VICE cases checked the boundaries with the position selector stubbed. Input meanings and ordinary-play reachability remain open.
