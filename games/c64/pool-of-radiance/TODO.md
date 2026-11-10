@@ -42,10 +42,6 @@ Each is traced in the code; what a player sees is not settled yet.
 
 ## The Bestiary
 
-- Portraits: the NPCs that join the party (SWORDSMAN, HERO, CURATE and
-  others) name a head and a body (`$6BFE`, `$6BFF`) drawn from the HEAD
-  and BODY files by ANIMATE00's portrait entry (`$8409`); the Bestiary
-  draws none of them.
 - The 3D-view sprites are placed by the page's port of
   `draw_monster_sprites` (`$28FA`); `test_bestiary.js` holds the battle
   numbers and the close-ups to the game, not the sprites' places.
@@ -131,7 +127,20 @@ emulator.
 - The shortest way: a party that walks from New Phlan to the audience
   hall with no commission done.
 
+## The Graphics tab
+
+- The ending's replay leaves out its two sounds (`play_sound` with 4 and
+  `$0A`) and takes ANIMATE's frame delays as jiffies; watch the ending in
+  VICE beside it.
+- The walk starts each map on the view with the most different
+  characters, not where the party enters; a reader may want the entry
+  square from the map's script.
+- VIEW for the MAD MAN, the LEVEL 6 MU or PRINCESS FATIMA, recruited in
+  play rather than set up in memory, in New Phlan.
+
 ## Open questions
 
 - The third page of a map file holds a byte for each square, which the
-  3D view reads (view `$C3D2`); what the values mean is not worked out.
+  3D view reads (view `$C3D2`); bit 7 picks the second wall colour
+  (dungeon `set_wall_colour`, `$1157`), and what the rest means is not
+  worked out.
