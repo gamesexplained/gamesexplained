@@ -400,6 +400,46 @@
   },
   {
    "start": 40695,
+   "end": 40705,
+   "type": "Undefined"
+  },
+  {
+   "start": 40706,
+   "end": 40723,
+   "type": "Code"
+  },
+  {
+   "start": 40724,
+   "end": 40727,
+   "type": "Byte"
+  },
+  {
+   "start": 40728,
+   "end": 40731,
+   "type": "Byte"
+  },
+  {
+   "start": 40732,
+   "end": 40822,
+   "type": "Code"
+  },
+  {
+   "start": 40823,
+   "end": 40880,
+   "type": "Code"
+  },
+  {
+   "start": 40881,
+   "end": 40927,
+   "type": "Code"
+  },
+  {
+   "start": 40928,
+   "end": 40928,
+   "type": "Byte"
+  },
+  {
+   "start": 40929,
    "end": 41473,
    "type": "Undefined"
   },
@@ -779,6 +819,72 @@
    "kind": "user"
   },
   {
+   "address": 40706,
+   "name": "type0c_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40721,
+   "name": "type0c_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40724,
+   "name": "type0c_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40728,
+   "name": "type0c_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40732,
+   "name": "type0c_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40768,
+   "name": "type0c_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40793,
+   "name": "type0c_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40823,
+   "name": "type0c_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40881,
+   "name": "type0c_event_check",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40914,
+   "name": "type0c_skip_handler",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40928,
+   "name": "type0c_direction_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 41474,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -1084,6 +1190,61 @@
    "address": 40580,
    "type": "line",
    "text": "Load 10 captured sound pattern 3: 114 nonzero event bytes from $9E84, followed by the zero marker at $9EF6. Voice-list pointer records at $9D83 select it. The resident sequencer parses its events at $2332 and checks for its end at $2322; the captured selector-1 loop reached this marker in the simulator. Event meaning depends on voice state and tick."
+  },
+  {
+   "address": 40706,
+   "type": "line",
+   "text": "Load 10: the type-$0C vector in the split handler tables at $7EDF/$7F0F selects this entry. Read state $1AB1,X into Y, use the split tables at $9F14/$9F18 to patch the jump at $9F11, and jump to the selected handler. The state index is not locally bounded; only the four captured table entries are described."
+  },
+  {
+   "address": 40721,
+   "type": "line",
+   "text": "Absolute jump whose low and high operands at $9F12/$9F13 are patched from the state tables before execution. The entry snapshot contains placeholder $FF00; controlled dispatch tests reach the four captured targets."
+  },
+  {
+   "address": 40724,
+   "type": "line",
+   "text": "Four captured low bytes of state-handler addresses, paired with high bytes at $9F18. The pairs target $9F1C, $9F40, $9F59, $9F77. The state index has no local bounds check."
+  },
+  {
+   "address": 40728,
+   "type": "line",
+   "text": "Four captured high bytes paired with the low bytes at $9F14. The pairs target $9F1C, $9F40, $9F59, $9F77; their state-handler behavior and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40732,
+   "type": "line",
+   "text": "State 0 calls the event helper at $9FB1; the following describes the path if it returns here. Increment $1AC2,X with eight-bit wrap. If the result is 10, call $3020, mask A with 3, add $17 with carry clear, store the result at $1AD3,X, store one more at $1AE4,X and select state 1. Otherwise return. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 40768,
+   "type": "line",
+   "text": "State 1 calls the event helper at $9FB1; if it returns, a negative $1AD3,X selects state 2. Otherwise pass min($1AD3,X, 8) to $4342, decrement $1AD3,X and return."
+  },
+  {
+   "address": 40793,
+   "type": "line",
+   "text": "State 2 calls the event helper at $9FB1; if it returns, increment $1AD3,X with eight-bit wrap. If it equals $1AE4,X, clear $1AC2,X and select state 0. Otherwise pass min($1AD3,X, 8) to $4368 by tail-call. Ordinary-play reachability remains open."
+  },
+  {
+   "address": 40823,
+   "type": "line",
+   "text": "State 3 reads $1AC2,X. A positive value is passed to $4342 and decremented. Zero is replaced by $80; a negative value has bit 7 masked off and is passed to $4368. If the stored value is below $85, increment it; otherwise call $4B0E with A=$20 and jump to $5DB9 with A=3. On the continuing path, load A=3 and use the sign of $9FE0 to jump to $43F0 when negative or $43A2 otherwise. Natural reachability and external callbacks remain open."
+  },
+  {
+   "address": 40881,
+   "type": "line",
+   "text": "Call $792C and $732A. On set carry from $732A, call $72FC and rotate its carry into $9FE0; with carry clear, store 2 plus $19E5,X at $19C3,X, set $1AC2,X=5 and state 3, then pull two stack bytes and return past the calling handler. On clear carry from $732A, call $7227 and return normally if it clears carry, or tail-call $5D7A with A=8 if it sets carry. Arithmetic is binary when decimal mode is clear."
+  },
+  {
+   "address": 40914,
+   "type": "line",
+   "text": "Pull the return address of the JSR that entered this helper off the stack, then RTS to the next return address, skipping the rest of the calling handler."
+  },
+  {
+   "address": 40928,
+   "type": "line",
+   "text": "Working byte rotated right through carry from $72FC by the event helper; state 3 tests its sign to choose a callback."
   },
   {
    "address": 41474,
