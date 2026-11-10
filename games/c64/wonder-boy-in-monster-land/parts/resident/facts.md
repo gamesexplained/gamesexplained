@@ -175,3 +175,7 @@ VICE also checked three forced type-$F8 initializations through the real $447A r
 Resident $4A43 decrements the status-animation timer and advances or reverses its stage when the timer reaches zero. Forward stage 6 calls the meter helper with 8 and wraps to stage 0; a transition into stage 6 loads a countdown of 3. VICE checked seven forced countdown, forward and reverse cases with drawing and meter callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 VICE also checked a forced stage-5 to stage-6 timer transition through the real $4A90 draw, including all 20 character bytes and the colour-15 writes. Ordinary-play reachability remains open.
+
+Resident $3D69 initializes an entity motion state; $3D7F selects movement or starts its animation, and $3D9F selects two captured frames before a cleanup callback. VICE checked six forced initialization, movement-gate and animation cases with callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident helpers $3E54–$3EC5 test display presence, update signed vertical motion, tick a countdown, select horizontal movement and initialize direction. VICE checked three display-presence, five vertical, three countdown, four horizontal-direction and two initialization cases, with movement and release callbacks stubbed. Slot bounds, callback effects and ordinary-play reachability remain open.
