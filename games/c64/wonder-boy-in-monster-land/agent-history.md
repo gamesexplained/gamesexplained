@@ -722,3 +722,5 @@ Traced the resident platform-contact bounds through the support-state update. Fo
 Checked the later resident raster-split wait and sprite positioning in two forced VICE cases with different raster and delay operands, and extended the listing test. Restored the paused user snapshot.
 
 Described sprite interrupt initialization at $16C0. Two forced VICE cases and a listing test checked its coordinate and mask writes; the VICE port read reflects input-pin state. Restored the paused user snapshot.
+
+Distinguished all 18 resident built-in sound pointer lists by their actual sequences. VICE compared every list byte with the first-load play capture; a listing test checks each pointer and terminator. Restored the paused user snapshot.
