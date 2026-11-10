@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const p of ['resident','stage-19'])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',p,'listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(let value=0;value<4;value++){const m=base.slice();m.set([0xe6,0x10,0xa9,value,0x60],0x3020);const cpu=new CPU(m);cpu.pc=0x991b;cpu.run({until:0x77e0,maxSteps:50});assert.equal(cpu.pc,0x77e0);assert.equal(cpu.x|cpu.y<<8,[0x995c,0x998a,0x99eb,0x99b6][value]);assert.equal(m[0x9a4b],0x80|value);assert.equal(m[0x10],1);cpu.x=2;cpu.call(0xbc2c,{}, {maxSteps:40});assert.equal(m[0x9a4b],value);assert.equal(m[0x10],1);}
+console.log('OK - Sphinx hints and retained question/answer bits');

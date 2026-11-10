@@ -754,3 +754,5 @@ Traced two load-11 repeating motion streams and their entries, recording the fir
 Traced 14 additional motion-reader entries and encoded streams across later loads. Twenty-eight forced VICE cases checked first values and resets; a listing test checks each complete decoded sequence. Where the setup or stream overlaps copied characters, the comments retain both observed uses. Restored the paused user snapshot.
 
 Traced twelve object-record entity initializers across later loads. Twenty-four forced VICE calls and a listing test checked their indexed writes and message pointers. Updated the copied-character comments where the executable bytes overlap. Restored the paused user snapshot.
+
+Traced the load-19 Sphinx seed and four hint handlers at $991B–$995B. Four forced VICE cases and a listing test checked message selection and the subsequent state’s bit retention with the random routine stubbed. Recorded the overlap with copied characters and the mutable $9A4B byte. Restored the paused user snapshot.
