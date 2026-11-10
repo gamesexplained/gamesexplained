@@ -392,6 +392,81 @@ disk sides' files by `scripts/items_data.py`.
   are on no item; the page lists the name words no item has and no code
   writes. *Traced* (the files read by `scripts/items_data.py`).
 
+## Rules
+
+*Run* below means the routine was run on the kit's 6502 over the
+listing's bytes by `test_rules.js`, which holds `rules.html` to it.
+Rulebook pages are the C64 rulebook's.
+
+- **Rolling.** Each score is the best of six rolls of 3d6 (gen
+  `roll_ability`, `$0D1F`), then `adjust_ability` (`$0D4A`) adds the race's
+  adjustment (`$0D60`, index 14 × ability + race, +7 for a woman) and holds
+  it to `ability_minimum`/`ability_maximum`. Every race but the halfling
+  gets at least +1 strength, every race but the elf at least +1
+  constitution. 44 % of scores are 15 or more before the adjustment; the
+  mean is 14.2. *Run*.
+- **First hit points** are `class_hp_dice` dice of `class_hp_sides` raised
+  to `class_hp_least` (`$0B4C`-`$0B60`): fighter 1d10 at least 9, cleric
+  1d8 at least 7, thief 1d6 at least 5, magic-user 1d4 at least 4;
+  classes of several parts roll one die of 9, 8, 7, 6 or 5 sides. Training
+  (`train_hp`, `$2037`) rolls each rising part's die, divides by the
+  number of parts with a chance rounding, and gives a single-class fighter
+  at least 4 (rulebook page 4: 1 to 10). *Run*.
+- **Level limits.** `race_level_limit` (`$24A0`) lowers the race's limit
+  (`race_level_table`, `$1E60`) by each point of strength (fighter part) or
+  intelligence (magic-user part) below 18, at most 2; `level_limits`
+  (`$1E21`) also holds it to the hall's 6/6/9/8. Halfling men's strength is
+  at most 17 and women's 14, so a halfling fighter stops at 5th (4th for
+  strength 16 or less, and for any woman), against the rulebook's 6th
+  (page 3). Elf women stop at 5th (rulebook 7th). The half-elf cleric's
+  limit is 5. A race whose limit is 0 for a part gets 254 or 255 when the
+  score is below 18 (no menu offers such a class). *Run*, through
+  `can_train` (`$1BBC`) too.
+- **Experience.** `cap_experience` (`$23D4`) cuts experience to one less
+  than the next level needs, after every training and when a limit stops
+  one; awards are never capped (post-com `add_exp`). A 1st level fighter
+  with 100,000 trains to 2nd and keeps 4,000. `prime_bonus` (post-com
+  `$15E3`) needs 16 (rulebook page 3: 15) and only for one class; it takes
+  a tenth of the low 16 bits and of the high byte apart, so 65,536 gets
+  nothing and 100,000 gets 3,446. Two classes get half, three a third.
+  *Run*.
+- **Saving throws.** `con_save_bonus` (`$2359`) takes constitution × 2 / 7
+  off all five saves for dwarves, gnomes and halflings (rulebook page 23:
+  dwarves and halflings, against magic). The five are paralysis/poison/
+  death, petrification/polymorph, rod/staff/wand, breath, spell. *Run*.
+- **Thief skills** (`set_thief_skills`, `$1FEC`): level table plus race,
+  no dexterity. Engine code reads only move silently (dungeon
+  `cmd_party_surprise`, `$1D88`, where every standing member must roll
+  under their own figure, and a non-thief has 0) and open locks (the door
+  menu, `$100E`); `effects` `$A76F` reads `$6BA5` as a monster's byte.
+  Area scripts read pick pockets (ECL0E, Kovel Mansion), find and remove
+  traps (ECL0E; ECL0D, the kobold caves, twice) and climb walls (ECL02,
+  the Cadorna Textile House). Hide in shadows, hear noise and read
+  languages are read nowhere (decoded scripts of all eight sides and every
+  part's code).
+- **Cut.** Race 6, the half-orc, has every table and the race menu
+  (`race_numbers`, `$121A`) skips it; the cleric/thief is its class only.
+  The druid, paladin, ranger, monk and cleric/ranger have minimums,
+  alignments (the monk's none), hit dice and money, no race, no level
+  tables and no prime ability; resident messages 13 and 14 (their names)
+  point at MAGIC-USER. The dungeon's PARTY SURPRISE still sets its first
+  result for a ranger (`$1D6B`). *Run* (tables).
+- **Ageing.** Starting ages are fixed (`race_ages`, `$1004`); HASTE adds a
+  year once per casting in combat (effects `kind_haste`) and to every
+  member it reaches in camp (`haste_member`), and the potion of speed
+  through the same routine. Age is shown and checked against the race's
+  limit; the rulebook's HASTE (page 27) says nothing of it.
+- **Training fee.** 1,000 gold at every level (`has_money`, `$1D50`);
+  `pay_training` (`$1D63`) turns the rest of the coins into platinum and
+  drops change under 1,000 copper; a non-player character pays nothing
+  (`$1B84`). 1,234 gold leaves 46 platinum. *Run*.
+- **PENDRAGON** (`$01PENDRAGON`) is on the archive.org copy of disk 2
+  side A (GAME DISK #3) only: the C64 Preservation Project's G64s of that
+  side, v1.0 and v1.1, end with HEAD20 and 3 blocks free, and PENDRAGON
+  is the last directory entry, 3 blocks from track 35. Saving and ADD
+  CHARACTER use whatever disk is in the drive. *Live*: with that copy in
+  the drive, ADD CHARACTER listed him and he joined (AC 7, 13 HP).
+
 ## Data tables
 
 - ITEMS: 128 item types of 16 bytes (tables `item_types`, `$7B00`). An
@@ -509,3 +584,8 @@ effect kinds (resident `has_item_type`, `$4027`, and `$6BAD`; gen
   each of `$37`, `$34`, `$33`, `$32`, `$31` and `$30` and `$A000`,
   `$D000`, `$D800` and `$E000` read as the processor sees them. `$30`, the
   value `all_ram` (resident `$3AAB`) writes, showed RAM at all four.
+- PENDRAGON from the game disk (10 November 2026): from the party menu
+  with the six pre-rolled characters, one removed to a copy of the save
+  disk, then ADD CHARACTER TO PARTY with a copy of disk 2 side A in the
+  drive. The list showed PENDRAGON and EXIT; he joined the party with AC 7
+  and 13 HP.

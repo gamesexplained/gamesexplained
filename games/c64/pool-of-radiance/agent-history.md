@@ -231,3 +231,30 @@ Added `items.html`, its data script `scripts/items_data.py` and
   magic-user's level (it is the cleric's), and resident `add_item_weight`
   and `item_fits` said the whole weight is multiplied by the count.
 
+
+## Follow-up: the Rules tab (10 November 2026)
+
+Aaron asked for a Rules tab: races, classes and the cut ones, level
+limits, experience, saves, thief skills, training and ageing, with a
+character sheet. Added `rules.html` and `test_rules.js`; the sheet and
+every table on the page run GEN's routines and read its tables from the
+gen and resident listings, so the page has no data file of its own.
+
+- GEN was already annotated; the work was reading it against the
+  rulebook (the OCR in `work/reference/`, pages 3 to 7, 23 and 27) and
+  running each routine on the kit's 6502. The level limits were run
+  through `can_train`, the routine training uses, not only
+  `race_level_limit`.
+- `cap_experience`'s comment said the cap was the level after the next;
+  running it showed the next (it reads `xp_table` one place early, from
+  the present level). Corrected in `symbols.json`.
+- PENDRAGON, the character the Items tab's sheet uses and the "#8"
+  leftover, looked like a character left on the game disk. The C64
+  Preservation Project's G64s of the same side (v1.0 and v1.1) end with
+  3 blocks free, which his file fills, so he is a player's save on the
+  archive.org copy. The Items tab's sentence about him was corrected.
+  ADD CHARACTER with that copy in the drive listed him and he joined
+  (live, from `por_party_prerolled`).
+- The cleric/thief turned out to be a half-orc class only, which the
+  first draft of the cut classes missed until the test checked every
+  class against every race on the menu.

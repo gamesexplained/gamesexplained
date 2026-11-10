@@ -95,6 +95,18 @@ Each is traced in the code; what a player sees is not settled yet.
 - Ready one of the bailey's LONG SWORD +3 on a character who is not
   lawful evil (effects `$AE94`).
 
+## Rules findings to try live
+
+- Train a 1st level fighter who has 100,000 experience and look at what
+  is left (gen `cap_experience`, `$23D4`).
+- Train a halfling fighter of strength 17 to 5th level and try 6th, then
+  try again under ENLARGE or STRENGTH, which raise the strength the limit
+  reads (gen `race_level_limit`, `$24A0`; camp-spells `enlarge_camp`).
+- Train with 1,234 gold and count the platinum (gen `pay_training`).
+- Cast HASTE in camp twice on one member and read the age.
+- Watch a party of a thief and a fighter fail the move silently part of a
+  PARTY SURPRISE (dungeon `$1D43`).
+
 ## Script findings to watch live
 
 The Maps, Solution and Discoveries tabs read these from the area
