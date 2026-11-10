@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),crypto=require('crypto'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const m=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)m.set(r.b,r.a);
+const hashes=[['c83c52d25660467ea9c7124f295c892ab68430cdba4a50e8d4fe211bc59e3a0b','ad55115fcda088b0f89faeca3c754ee8e19d0f892f2c5a93cd73afdc12d0b0f9'],['7d2150e150fa2b9a99789d8e94e849dd6afe35bb280fc0c6d18ccbee48c31b9e','060441e15da3c448bc1356d073bb64a2d335aa5cbfcaf218f86ab0dd9514c5cb']];
+for(const [i,src,dst] of [[0,0x6c,0x7a],[1,0x6e,0x7c]]){
+ const run=m.slice();run.fill(0,0xc000+dst*64,0xc000+dst*64+128);const cpu=new CPU(run);cpu.call(0x2086,{x:src,y:dst});
+ for(let layer=0;layer<2;layer++){const a=0xc000+(dst+layer)*64;assert.equal(crypto.createHash('sha256').update(run.slice(a,a+63)).digest('hex'),hashes[i][layer])}
+}
+for(const [entry,offset,frame] of [[0x3cd5,0,0x6c],[0x3cd5,14,0x7a],[0x3cea,0,0x6e],[0x3cea,14,0x7c]]){
+ const run=m.slice(),cpu=new CPU(run);run[0x1177]=offset;cpu.call(entry);assert.equal(run[0x4a],frame);cpu.pc=0x1481;cpu.run({until:0x1512,maxSteps:150});assert.equal(run[0x4c91],frame);assert.equal(run[0x4c92],frame+1)
+}
+console.log('OK - action frames select sprite pairs and the game reproduces both reflected pairs');
+const html=fs.readFileSync(path.join(__dirname,'graphics.html'),'utf8'),match=html.match(/<script id="attack-pair-data" type="application\/json">([^<]+)<\/script>\s*<script>([\s\S]*?)<\/script>/);assert(match);const data=JSON.parse(match[1]);for(let i=0;i<2;i++)for(let layer=0;layer<2;layer++){const a=0xdb00+i*128+layer*64;assert.deepEqual(data[i][layer],[...m.slice(a,a+63)])}
+const vm=require('vm'),calls=[],button={events:{},setAttribute(k,v){this[k]=v},addEventListener(k,fn){this.events[k]=fn}},select={value:'0',events:{},addEventListener(k,fn){this.events[k]=fn}},label={},canvas={getContext(){return{clearRect(){}}}},dom={'attack-pair-data':{textContent:match[1]},'attack-frame':select,'attack-flip':button,'attack-direction':label,'attack-mono':canvas,'attack-multi':canvas,'attack-combined':canvas};vm.runInNewContext(match[2],{document:{getElementById:id=>dom[id]},C64:{PAL:Array.from({length:16},(_,i)=>i),drawSprite(c,b){calls.push([...b])},drawSpriteMC(c,b){calls.push([...b])}}});assert.deepEqual(calls[0],data[0][0]);select.value='1';select.events.change();assert.deepEqual(calls[4],data[1][0]);button.events.click();assert.equal(button['aria-pressed'],'true');assert.equal(label.textContent,'Mirrored direction');for(let layer=0;layer<2;layer++)assert.equal(crypto.createHash('sha256').update(Uint8Array.from(calls[8+layer])).digest('hex'),hashes[1][layer]);console.log('OK - action viewer data and frame/direction controls match the listing');
