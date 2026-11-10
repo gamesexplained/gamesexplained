@@ -1,0 +1,8 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const base=new Uint8Array(65536);
+for(const part of ['resident','stage-24'])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',part,'listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const odd of [0,1]){
+ const a=base.slice();a.set([0xfc,0x70,0xe0,0xc8],0x52);a.set([0,0x72,0,0x73],0x58);a[0x7f4a]=4;a[0x569d]=odd;a[0x70fc]=3;a[0x7100]=4;a[0x7104]=5;a.set([0x41,0x42,0x43],0x7203);a.set([0x51,0x52],0x7303);for(const addr of [0xc8e0,0xc908,0xc930,0xc958,0xc980])a[addr]=0xee;a.set([0xa2,1,0x20,0x3e,0x2d,0xea],0x2f0);const cpu=new CPU(a);cpu.pc=0x2f0;cpu.run({until:0x2f5,maxSteps:150});assert.equal(cpu.pc,0x2f5);assert.deepStrictEqual([0xc8e0,0xc908,0xc930,0xc958,0xc980].map(addr=>a[addr]),[0x41,0x51,0x42,0x52,odd?0x43:0xee]);assert.deepStrictEqual([...a.slice(0x52,0x56)],[4,0x71,0x80,0xc9]);
+}
+console.log('OK - resident right-scroll tile column');

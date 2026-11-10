@@ -295,3 +295,5 @@ Resident $5BE1 and $5C2A either initialize slot-zero reward types $FE and $FD or
 Resident $5C66 and $5C94 initialize indexed reward types $FE and $FD; the latter records a converted grid row. VICE checked both forced entries through the real coordinate conversion with reset and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Resident $5CCB and $5CFE initialize slot-zero object types $FC and $FB or increment the calling trigger count if slot zero is occupied. VICE checked four forced free and occupied cases with coordinate and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $2D3E draws pairs of characters down the exposed right-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
