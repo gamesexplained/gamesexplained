@@ -808,3 +808,5 @@ Checked load-3 type-$07 state 1 with four forced VICE cases and a stubbed helper
 Checked load-3 type-$07 state 2 in eight forced VICE cases, with helpers and contact checks stubbed; restored the paused user snapshot.
 
 Checked load-3 phase calculation $9C5A with five forced VICE cases at both subtraction boundaries, and restored the paused user snapshot.
+
+Checked the first part of load-3 type-$07 state 0 in six forced VICE cases with callbacks stubbed. Preserved the overlapping character-source descriptions and restored the paused user snapshot.

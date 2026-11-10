@@ -84,3 +84,5 @@ Load-3 type-$07 state 1 at $9C80 checks a signed phase byte and either decrement
 Load-3 type-$07 state 2 at $9C9A calls movement and contact checks, conditionally increments $1B06,X below $10, or resets a phase byte and enters state 3 when the contact carry differs from the sign of $9E27. Eight forced VICE cases covered both phase signs, both directions and both contact outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-3 phase calculation at $9C5A uses two subtract-with-borrow checks, divides a nonnegative remainder by eight, and stores a second value two less modulo 256. Five forced VICE cases checked the boundaries with the position selector stubbed. Input meanings and ordinary-play reachability remain open.
+
+The first part of load-3 type-$07 state 0 at $9BB6 stores a callback carry as a sign bit, tests $1AE4,X, selects two frames, and branches at random-byte value $BE. Six forced VICE cases checked the branches and frame wrap with callbacks stubbed. These instructions overlap copied character-source bytes. Callback effects and ordinary-play reachability remain open.
