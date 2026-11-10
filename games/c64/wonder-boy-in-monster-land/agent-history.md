@@ -335,3 +335,7 @@ Found and traced the type-$02 dispatcher, three handlers and direction and frame
 Forced a type-$02 record copy and direct frame-helper or state-2 calls in load 19. These selected six additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for all three selections. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
 
 Firefox rendered a type-$02 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Applied the type-$01 frame-selection probe to the newly traced handler copies. Load 3 yielded eight additional masks matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both paths. Added bounded descriptions and gallery entries, extended the listing test, exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a load-3 type-$01 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
