@@ -258,4 +258,14 @@ Swept nonzero screen and character pointers in the 31 load-entry listings. The s
 
 Firefox checked the expanded selector and source link on desktop and the mobile viewport; the page fit without horizontal overflow. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
 
+Described the 11 seven-byte visual-resource tables in each later load other than load 20, whose tables were already annotated; load 1 had its own descriptions. Every comment records that load's captured bytes and the corresponding indexed reader. The listing test checks all 319 newly described tables and runs the pointer and colour setup for all 217 load/selector pairs with the screen expander stubbed. Rebuilt and exported each affected part project; no export reported lost bytes.
+
+Corrected the $47F9 listing comment after tracing its caller: that JSR has fixed target $7119; the subsequent JSR at $47FC is patched from the stage record. A listing test checks three forced selectors and the callback operand with the loader stubbed. VICE confirmed selector 6 and a patched $1234 target with the same stub, then restored the paused user snapshot.
+
+Extended the visual-resource sweep to selector zero. All 31 captured loads select the same reconstructed continue screen, bringing the total to 99 nonzero-pointer selections and 17 distinct screens. A load-17 VICE call reproduced it; the listing test checks all 31 zero selections along with the other 68. The Graphics viewer now includes the continue screen and links its resident character source. The paused user snapshot was restored.
+
+Mapped all 55 captured stage-object selector bytes to the reconstructed screens and added the conditional mapping to each record's listing comment. A listing test copies each record and runs the interaction setup with callbacks stubbed; it also checks the 30 captured tally selectors. The mappings describe initial values, not ordinary-play reachability or later mutations. Exported the affected part projects without a reported loss.
+
+Firefox rendered the continue-screen selection and its resident source link at desktop and mobile widths. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
 A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.
