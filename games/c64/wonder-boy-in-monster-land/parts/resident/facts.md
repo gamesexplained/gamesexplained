@@ -241,3 +241,5 @@ Resident $1703 and $17DA write the first and reused hardware-sprite settings fro
 Resident $1753 and $182A schedule further sprite reuse or the end-of-frame interrupt based on the decremented slot count and a sprite Y plus $15 compared with the raster. VICE checked ten forced branches after redirecting the raster comparison to a supplied RAM byte. Actual interrupt timing and ordinary-play reachability remain open.
 
 Resident $1779 counts seven hardware-sprite Y values from $4A through $5F inclusive. VICE checked three forced register sets, including both boundary values. Interrupt timing and ordinary-play reachability remain open.
+
+Resident $0E42 and $0FDC update player facing and horizontal speed for right and left input. They slow an opposite-direction movement before changing direction, and profile 3 skips the speed update on odd $5274 values. VICE checked fourteen forced direction, gate, speed and profile cases. Ordinary-play reachability remains open.
