@@ -916,3 +916,5 @@ Checked three forced stage-record callback completion paths in VICE, with callba
 Checked three forced contact-message-5 paths in VICE with the message routine stubbed; restored the paused user snapshot.
 
 Checked six forced effect-displacement phases in VICE, including zero entries and byte wraparound; restored the paused user snapshot.
+
+Checked three controlled VIC display-helper cases in VICE and described the adjacent keyboard-scan entry points; restored the paused user snapshot.

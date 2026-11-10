@@ -391,3 +391,5 @@ The stage-record callback at $47FC uses the high operand byte at $47FE, patched 
 The contact handler at $76B2 saves X and Y in the immediate operands at $76C1 and $76C3, sets bit $08 in the selected player flags and calls $77E2 with A=5. It restores the saved registers before jumping to $4454. Three forced VICE cases checked the flag and register behavior with $77E2 stubbed; the full message and release effects remain open.
 
 The 26 bytes at $4013 contain four signed displacement sequences ending in zero: -10 through 0, -6 through 0, -4 through 0 and -2 through 0. The $3FB6 motion routine adds nonzero entries to $4D39 modulo 256 and advances the phase; zero sets the fall-phase bit. Six forced VICE cases covered sequence boundaries and wraparound; ordinary reachability of each phase remains open.
+
+The helper at $2938 writes A to VIC $D021 and $D015; $293F writes A to $D018 and jumps to $7BE1. Three controlled VICE cases checked the register writes, including colour-register low-nibble behavior. The entry points $2945 and $294B both call $2951 before tail-jumping to $1779 and $1848 respectively; their interrupt timing was not tested here.
