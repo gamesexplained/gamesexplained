@@ -1,0 +1,55 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bruce-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">One joystick and fire do everything Bruce can do. In play the keyboard has just four keys, and a menu key turns the stick a quarter turn for a left-handed grip.</p>
+</header>
+<main class="wrap">
+<section id="joystick">
+  <p class="fig">The joystick</p>
+  <h2 class="t">Moves</h2>
+  <p class="lede">Player 1’s Bruce reads the joystick in port 1. The C64-Wiki gives port 2<sup class="fn"><a href="about.html#src-2" title="C64-Wiki, Bruce Lee">2</a></sup>, but on the disk studied port 2 never moved him: it is the second player’s, or a human Yamo’s (<code>$169D</code>, <code>$16CF</code>).</p>
+  <div class="tw"><table class="t">
+    <tr><th>Stick</th><th>Move</th></tr>
+    <tr><td>left or right</td><td>walk</td></tr>
+    <tr><td>fire while walking</td><td>flying kick, once he has walked for four passes (<code>$1E70</code>, <code>$1EB1</code>)</td></tr>
+    <tr><td>fire, standing</td><td>punch</td></tr>
+    <tr><td>up</td><td>jump straight up, or climb a net</td></tr>
+    <tr><td>up-left or up-right</td><td>jump sideways</td></tr>
+    <tr><td>down</td><td>lie flat, or climb down a net</td></tr>
+  </table></div>
+  <p>The moves are chosen in <code>choose_action</code> (<code>$1D77</code>) when Bruce’s last move has finished.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">The keyboard</p>
+  <h2 class="t">Keys in the menu and in play</h2>
+  <div class="tw"><table class="t">
+    <tr><th>Key</th><th>When</th><th>What it does</th></tr>
+    <tr><td>F3</td><td>menu</td><td>one player or two (<code>$092C</code>)</td></tr>
+    <tr><td>F5</td><td>menu</td><td>Yamo played by the computer or by a person (<code>$0908</code>)</td></tr>
+    <tr><td>F7, or fire</td><td>menu</td><td>start (<code>$08FC</code>)</td></tr>
+    <tr><td>L, R</td><td>menu</td><td>joystick 1 left- or right-handed (<code>$0956</code>)</td></tr>
+    <tr><td>SHIFT L, SHIFT R</td><td>menu</td><td>joystick 2 left- or right-handed</td></tr>
+    <tr><td>SPACE</td><td>play</td><td>pause, and again to go on (<code>$1A22</code>)</td></tr>
+    <tr><td>S</td><td>play</td><td>switch the title tune off or on (<code>$1385</code>)</td></tr>
+    <tr><td>V</td><td>play</td><td>show or hide the hidden version line (<code>show_version</code>, <code>$1B68</code>)</td></tr>
+    <tr><td>F1</td><td>play</td><td>give up and go back to the menu (<code>$050F</code>)</td></tr>
+  </table></div>
+  <p>In play the game looks at only those four keys. <code>scan_play_keys</code> (<code>$1462</code>) drives one row of the keyboard for each and reads one column, from a table of four pairs (<code>$1488</code>), instead of scanning the whole keyboard as the menu does (<code>read_key</code>, <code>$139E</code>).</p>
+</section>
+
+<section id="lefthand">
+  <p class="fig">Left-handed play</p>
+  <h2 class="t">A quarter turn of the stick</h2>
+  <p>A left-handed player can hold the joystick turned on its side. The game turns the readings back: pushed left reads as up, right as down, up as right, and down as left (<code>lefthand_turn</code>, <code>$4A85</code>). The setting is kept for each joystick (<code>$1383</code>, <code>$1384</code>), and the menu shows “JOYSTICK #1 IS IN LEFT HANDED MODE” when it changes.</p>
+  <p>Tested in the emulator: with joystick 1 set left-handed, the stick pushed left read <code>$0E</code>, up, in the game’s copy of the stick (<code>$98</code>); set right-handed, it read <code>$0B</code>, left.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

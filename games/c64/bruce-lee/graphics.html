@@ -1,0 +1,43 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bruce-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Bruce and Yamo are each two sprites laid one over the other, a coloured one and a black one. Every pose, facing either way, is a frame of its own.</p>
+</header>
+<main class="wrap">
+<section id="frames">
+  <p class="fig">The frames</p>
+  <h2 class="t">Every pose the three fighters are drawn with</h2>
+  <p class="lede">The game keeps 210 frames as rows of one-bit pixels, 8 or 16 pixels wide (<code>frame_rows</code>, <code>$5D91</code>), with a table each for their addresses, heights, widths, and colours (<code>$59BD</code>, <code>$5B61</code>, <code>$5CBF</code>, <code>$5C33</code>). Bruce’s frames start at 0, Yamo’s at <code>$46</code>, and the Ninja’s at <code>$8C</code> (<code>frame_offsets</code>, <code>$59A5</code>).</p>
+  <div class="plate" id="frames-widget"></div>
+  <p class="cap">Drawn from the game’s own bytes, four screen pixels to one of the frame’s, on the grey of the room backgrounds. Each caption names the frames, their size in pixels, and their colours.</p>
+  <p>Bruce and Yamo each use two hardware sprites for one pose: frames n and n + 1, laid one over the other, one in their colour, yellow for Bruce and green for Yamo, and the other in black (<code>build_sprites</code>, <code>$2584</code>). Each frame is one bit a pixel, copied straight into its sprite, so the two colours come from the two sprites. The Ninja is one sprite, always drawn black (<code>frame_address</code>, <code>$2719</code>).</p>
+  <p>Nothing is mirrored. A fighter facing left and the same fighter facing right are separate frames, which is why each actor needs 70. <code>copy_shape</code> (<code>$26A0</code>) copies a frame’s rows into a sprite, into one of two buffers that take turns (<code>$8180</code>-<code>$83FF</code>), so a sprite is never shown half drawn.</p>
+</section>
+
+<section id="outlines">
+  <p class="fig">Outlines</p>
+  <h2 class="t">A second copy of every frame, for touching the scenery</h2>
+  <p class="lede">At start-up the game unpacks every pair of frames into an outline 24 pixels wide with each pixel doubled to the width of a multicolour pixel, and stores them at <code>$9000</code>-<code>$9FBF</code> and <code>$C000</code>-<code>$CA7F</code> (<code>build_body_shapes</code>, <code>$513B</code>). The 105 pairs share 71 places.</p>
+  <p>Those outlines are what the game lays over the room to find what each fighter is standing on or holding. The <a href="discoveries.html#terrain">Discoveries</a> tab explains the test.</p>
+</section>
+
+<section id="rooms">
+  <p class="fig">Rooms</p>
+  <h2 class="t">Packed screens, coloured in bands</h2>
+  <p class="lede">Each room is a packed screen of 440 cells, eleven rows of 40, each cell two characters tall (<code>room_screens</code>, <code>$68F9</code>, decoded at <code>$0AD5</code>). A byte with bit 7 set is followed by that many bytes to copy as they are, and a byte without it repeats the next byte that many times; a zero ends the room.</p>
+  <p>The scenery is in multicolour characters, four colours to a cell. To get more colours down the screen, a raster interrupt changes the background and the two shared colours at a list of lines for each room (<code>irq_colour_band</code>, <code>$4982</code>, with the lists through <code>room_raster_pointers</code>, <code>$4833</code>).</p>
+  <p>The Wizard’s fireballs are sprites 6 and 7, and they have no fixed shape: a fireball is random bytes ANDed with one of four masks (<code>fireball_masks</code>, <code>$4322</code>). Each falls five lines a frame and drifts towards Bruce’s column (<code>wizard_fireballs</code>, <code>$4133</code>).</p>
+  <p>The lanterns’ flames flicker because their characters are redrawn: every 1 to 15 frames, at random, three lantern characters get new flame rows (<code>flicker_lanterns</code>, <code>$40BC</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/bruce-page.js"></script>
+<script>BRUCE.mountFrames(document.getElementById('frames-widget'));</script>

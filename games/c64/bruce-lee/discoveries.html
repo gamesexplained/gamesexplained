@@ -1,0 +1,57 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/bruce-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A floor is a colour, a copy protection burns slowly inside the jump sound, and the bonus-life check compares a number one byte at a time.</p>
+</header>
+<main class="wrap">
+<section id="terrain">
+  <p class="fig">Terrain by colour</p>
+  <h2 class="t">The game finds the floor by looking at the pixels</h2>
+  <p class="lede">There is no map of floors, walls, and nets anywhere in the game. Every pass, <code>terrain_test</code> (<code>$5212</code>) takes the outline of each fighter’s current frame, shifts it to where he stands, and ANDs it with the pixels of the room characters under it, four character rows deep (<code>touch_test</code>, <code>$537E</code>).</p>
+  <p>A multicolour pixel has one of four values, and each value the outline touches becomes a flag (<code>touch_flags</code>, <code>$5431</code>). Bit 0 means a pixel of colour %01, bit 1 of %10, and the third colour, %11, gives bit 3 in a character whose colour RAM is black and bit 2 in any other. Bit 2 is the solid surface: what a fighter stands on (<code>$1F7E</code>) and what he climbs (<code>climb_step</code>, <code>$1DEC</code>).</p>
+  <p>So the artist decided where Bruce can stand by how the rooms were painted. A net is climbable because of the colour its strands are drawn in and the colour RAM of their characters: the same strands in a character coloured black would set bit 3 instead.</p>
+</section>
+
+<section id="extra-fall">
+  <p class="fig">A bonus-life slip</p>
+  <h2 class="t">The extra fall compares the score one byte at a time</h2>
+  <p class="lede">A fall is added at 40,000 points and then every 30,000 (<code>$438B</code>, <code>$438E</code>). The score is a 24-bit number in three bytes (<code>$41</code>-<code>$43</code>), and <code>add_score</code> (<code>$312C</code>) gives the fall only when each of the score’s three bytes is at least the matching byte of the threshold.</p>
+  <p>That is not the same as the score being at least the threshold. 40,000 is <code>$009C40</code>. A score of 40,200 is <code>$009D08</code>: higher, but its low byte, <code>$08</code>, is below <code>$40</code>, so no fall. Run with the game’s own routine on the kit’s 6502 simulator, 39,900 + 100 = 40,000 and 40,150 + 125 = 40,275 earned the fall, while 40,100 + 100 = 40,200 and 65,400 + 200 = 65,600 did not.</p>
+  <p>The fall is only delayed: the next score whose bytes all clear the threshold gives it. The same slip comes with every threshold. The second fall is due at 70,000, <code>$011170</code>, and a score of 70,150, <code>$011206</code>, does not earn it.</p>
+</section>
+
+<section id="fuse">
+  <p class="fig">Copy protection</p>
+  <h2 class="t">A slow fuse in the jump sound</h2>
+  <p class="lede">The game checks a block of bytes that its loader leaves at <code>$CF00</code>-<code>$CFB1</code> in several places. At start-up, <code>check_cf8f</code> (<code>$512F</code>) hangs unless two of them are <code>$B9</code>, and another check (<code>$06DD</code>) writes over memory for ever unless six of them XOR to zero. Every frame, <code>protect_fill</code> (<code>$1703</code>) wrecks memory unless the loader’s mark <code>$32</code> is in <code>$02</code>.</p>
+  <p>The cleverest check is hidden in <code>jump_sound</code> (<code>$1FC4</code>). While a byte worked out from the block is zero (<code>$1166</code>, set from <code>$CF79</code> XOR <code>$CF99</code>), every jump moves the operands of another check one byte along. After <code>$99</code> jumps it writes a <code>TXS</code> instruction over the first byte of the random-number routine, which wrecks the stack the next time it runs. A second byte, <code>$2007</code>, drives the same kind of fuse against the <code>CLC</code> at <code>$1FFE</code>.</p>
+  <p>In the copy studied neither byte is zero, so nothing burns. A copy whose protection bytes were wrong would play normally at first, then crash some 150 jumps in.</p>
+</section>
+
+<section id="idle">
+  <p class="fig">Left alone</p>
+  <h2 class="t">The game pauses itself and cycles its colours</h2>
+  <p>With no stick or fire touched for 128 x 256 frames, about eleven minutes, the game pauses itself, shows PAUSED, and saves the room’s colours (<code>idle_count</code>, <code>$1628</code>). While it waits, the room’s colours are the saved ones XORed with a count that goes up every 256 frames, so they change every five seconds or so until a stick moves (<code>idle_colour_cycle</code>, <code>$1645</code>).</p>
+</section>
+
+<section id="version">
+  <p class="fig">Hidden text</p>
+  <h2 class="t">REV.2, by RJF</h2>
+  <p>Pressing V in play writes “BRUCE LEE (C) 1984 DATASOFT REV.2 BY RJF” over the top row, and pressing it again clears it (<code>show_version</code>, <code>$1B68</code>). The line is in the game’s own character codes (<code>$4707</code>), so it does not show up as text in a search of the program. The initials match Ron J. Fortier’s.</p>
+</section>
+
+<section id="leftovers">
+  <p class="fig">Leftovers</p>
+  <h2 class="t">Traces of an earlier build</h2>
+  <p>Room 10’s routine has 22 <code>NOP</code> instructions in the middle of it (<code>room_10</code>, <code>$3C90</code>). Twenty-two bytes is exactly the length of the block in room 11’s routine that sets the moving hazard going when a lantern is taken (<code>room_11</code>, <code>$3CC0</code>), as if a copy of that block had once been in room 10 and was blanked out.</p>
+  <p>The music player’s second song points into the sound-effect code, and two of the fifteen effect scripts, 3 and 8, are never asked for (<a href="music.html#effects">Music</a>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
