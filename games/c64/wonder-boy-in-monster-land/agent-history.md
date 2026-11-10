@@ -171,3 +171,5 @@ The type-$04 state-2 and state-3 branches match in loads 2, 4 and 6. Listing tes
 The type-$04 flag and movement helpers were described in three loads. Listing tests check flag values and signed direction choices, and seven controlled VICE calls check representative cases with the frame helper stubbed. The user’s paused snapshot was restored afterwards.
 
 The type-$04 state-1 result dispatch was described in loads 2, 4 and 6. Listing tests cover all four table indexes and both carry-set choices with two callees stubbed; eight VICE calls checked the same cases. The first callee and ordinary-play reachability remain open. The paused game was restored after the probes.
+
+Type-$04 states 4 and 5 were described in loads 2, 4 and 6, completing the six captured handler bodies while leaving their common first callee, index bounds and natural reachability open. Listing tests check counter boundaries and wrap; nine controlled VICE calls check representative paths with external callees stubbed. The paused game was restored.
