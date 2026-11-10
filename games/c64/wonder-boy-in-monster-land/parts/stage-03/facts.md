@@ -90,3 +90,5 @@ The first part of load-3 type-$07 state 0 at $9BB6 stores a callback carry as a 
 The second part of load-3 type-$07 state 0 at $9BEA sets the allocation loop counter to 2 and writes two direction-dependent frame numbers. Eight forced VICE cases covered both source modes, both directions and both allocation outcomes with callbacks stubbed. The code overlaps copied character-source bytes; callback effects, index bounds and ordinary-play reachability remain open.
 
 Load-3 child initializers $9D38 and $9D5C use three captured offsets at $9E24 and share setup at $9D8E. Twelve forced VICE cases checked all three offset values, both source paths and position-byte carry; both paths patch an immediate operand to restore Y. The index is not locally bounded and ordinary-play reachability remains open.
+
+This load has 28 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.

@@ -108,3 +108,5 @@ The second shop entry at $9684 selects an item pair from explicit stage fields t
 The shop drawing setup at $96D2 selects two pointer-table entries, calls the second and first item targets with A=$E4 and $D0, and fills three rows of colour RAM. Two forced VICE cases and `test_later_shop_draw_setup.js` check the target selection and colour writes with both item targets replaced by stubs. The actual drawing effects, index bounds and ordinary-play contexts remain open.
 
 The shop label code at $9721 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $991A to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
+
+This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.

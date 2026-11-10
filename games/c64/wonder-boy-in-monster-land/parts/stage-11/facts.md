@@ -62,3 +62,5 @@ Load-11 code at $964E initializes indexed type-$10 entity fields and passes mess
 Load-11 entries at $95F4 and $9616 pass the encoded streams at $95FF and $9621 to the resident repeating-motion reader. Each yields 38 values before resetting. The first stream overlaps the copied character source at $9601–$9610. Six forced VICE cases and `test_stage11_motion.js` check literal, repeated and reset values; ordinary-play reachability remains open.
 
 The object record at $963E contains result callback $969F, which returns A=$F7 with carry 1. A forced VICE call and `test_later_object_results.js` check the return; ordinary-play reachability remains open.
+
+This load has 30 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
