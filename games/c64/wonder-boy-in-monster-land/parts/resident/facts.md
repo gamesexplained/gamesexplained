@@ -163,3 +163,7 @@ Resident $603F updates a type-$F9 entity, decrementing its countdown and copying
 Resident type-$F8 update $6086 copies the entity base frame to its primary frame and sets its auxiliary byte to 1 only when it is zero. VICE checked three forced frame and auxiliary-byte cases. Index bounds and ordinary-play reachability remain open.
 
 Resident $5FE2 initializes a type-$F9 entity from the frame byte at $7F6B, sets its display attributes and countdown, and calls a movement helper with 12. VICE checked three forced frame cases with sprite-link and movement callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Resident $6097 initializes a conversion countdown from half the selected player meter, calls meter and score helpers in a loop, then increments the meter until it equals the selected limit. Both loops execute at least once. VICE checked three forced initial-meter and limit cases with frame, HUD, meter and score callbacks stubbed, including a zero countdown and arithmetic wrap. Callback effects and ordinary-play reachability remain open.
+
+Resident $5FB5 initializes a type-$FA entity from values supplied in A and Y, preserving A on the stack and Y in a patched immediate operand across the sprite-link callback. VICE checked three forced value and frame cases with sprite-link and movement callbacks stubbed, including a link callback that changes A and Y. Callback effects, index bounds and ordinary-play reachability remain open.
