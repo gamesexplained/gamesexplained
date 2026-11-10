@@ -21740,6 +21740,51 @@
    "text": "A nonzero A selects a message record; zero with nonzero X/Y uses a direct pointer, while A=X=Y=0 clears message state. It copies three zero-terminated fields into 20-byte buffers, translating spaces to zero, then reads a control byte. No local bounds checks are made. Control $ff waits for Fire before changing to 5.\nfunction: undefined prepare_message()"
   },
   {
+   "address": 30836,
+   "type": "line",
+   "text": "Set decimal mode, load player index X from $4DBD and add the packed-decimal byte in A to $4DC9,X, propagating carry into $4DC7,X. Clear decimal mode and return; a carry out of the high byte is not stored."
+  },
+  {
+   "address": 30857,
+   "type": "line",
+   "text": "Set decimal mode and split A into $78CF=(A AND $0F) shifted left four bits and $78D0=A shifted right four bits. Load X from $4DBD and subtract those bytes from $4DC9,X and $4DC7,X with decimal borrow."
+  },
+  {
+   "address": 30906,
+   "type": "line",
+   "text": "If the two-byte subtraction borrowed, add $78CF and $78D0 back to the selected player balance in decimal mode; both the successful and restored paths clear decimal mode and return."
+  },
+  {
+   "address": 30927,
+   "type": "line",
+   "text": "Low packed-decimal byte of the amount formed by $7889 from its input nibble."
+  },
+  {
+   "address": 30928,
+   "type": "line",
+   "text": "High packed-decimal byte of the amount formed by $7889 from its input nibble."
+  },
+  {
+   "address": 30929,
+   "type": "line",
+   "text": "Set decimal mode and save A at $7900. Subtract it from $4DC9,X and subtract the borrow from $4DC7,X, with X loaded from $4DBD. If that borrowed, add the saved byte and carry back; clear decimal mode and return."
+  },
+  {
+   "address": 30976,
+   "type": "line",
+   "text": "Packed-decimal byte saved from A for the subtraction and possible restoration at $78D1."
+  },
+  {
+   "address": 30977,
+   "type": "line",
+   "text": "Set decimal mode and load X from $4DBD. Subtract the packed-decimal low byte at $7D from $4DC9,X and the high byte at $7E plus borrow from $4DC7,X. If the high-byte subtraction does not borrow, clear decimal mode and return with carry set."
+  },
+  {
+   "address": 31000,
+   "type": "line",
+   "text": "On borrow, add the low and high bytes at $7D/$7E back into the selected balance in decimal mode, clear carry and decimal mode, and return."
+  },
+  {
    "address": 31097,
    "type": "line",
    "text": "Copies six-byte records into 16-byte-spaced parallel fields. The count is tested only after incrementing an 8-bit index: zero causes 256 iterations, and counts above 16 can overlap neighboring fields. The captured count is eight."
