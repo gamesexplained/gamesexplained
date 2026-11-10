@@ -283,3 +283,5 @@ Resident $7A9A saves and clears three memory pages and stages a 53-byte transfer
 Resident $4828 writes five 22-cell display rows and three 22-cell colour rows, then stores $FE at $4DAD. VICE checked all 110 display cells and the low nibbles of all 66 colour cells with supplied bytes. Call context and ordinary-play reachability remain open.
 
 Resident $6F86 redraws the meter sprite when a cached value differs, splitting the drawing into 20-unit segments and eight-row masks. VICE checked seven forced values from 0 to 79 and one cache-hit case across all 64 bitmap bytes. The initial Y index and selected-player index can differ; bounds and ordinary-play reachability remain open.
+
+Resident $5D7A applies damage only when cooldown is zero; protection halves the amount, decrements its byte-sized charge and clears its flag when the decremented charge is zero. VICE checked five forced cases through the real meter subtraction, including a zero charge wrapping to 255, with the message callback stubbed. Ordinary-play reachability remains open.
