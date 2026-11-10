@@ -848,3 +848,7 @@ Checked load-4 type-$08 state 2 in six forced VICE cases at phase boundaries wit
 Checked load-4 frame helper $B636 in five forced VICE cases, including carry from both preceding additions; restored the paused user snapshot.
 
 Checked load-4 type-$08 helper $B646 in six forced VICE cases with a two-level caller and callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 state 1 in five forced VICE cases with callbacks stubbed, including both allocator carries and position carry; restored the paused user snapshot.
+
+Forced all 17 entity slots occupied in load 4 and ran the actual allocator and reset from $B571. VICE observed X=$FF after allocation and subsequent writes to $1A18 and $1BF4. Restored the paused user snapshot.

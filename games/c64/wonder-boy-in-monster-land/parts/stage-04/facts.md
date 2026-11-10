@@ -158,3 +158,7 @@ Load-4 type-$08 state 2 uses an unsigned phase comparison at 5 and an exact matc
 Load-4 helper $B636 computes two frame bytes with a three-addition carry chain; five forced VICE cases checked carry at both boundaries in binary mode.
 
 Load-4 type-$08 helper $B646 changes state and removes its return address when $732A returns carry set. A clear result leads to $7227 and can negate $1AC2,X and call $5D7A. Six forced VICE cases checked the stack skip, sign storage and contact outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load-4 type-$08 state 1 uses a phase and count to select callbacks and can initialize a second slot. The code calls $447A immediately after $190B without testing carry. Five forced VICE cases checked phase, count, position carry and both stubbed allocator carry results; whether ordinary play fills all slots on this path and callback effects remain open.
+
+With all 17 entity slots forced occupied, a VICE test called the real $190B allocator and $447A reset from $B571. The allocator returned carry clear with X=$FF; the following setup wrote $04 to $1A18 and $01 to $1BF4 before restoring X. Ordinary-play reachability and player-visible effects remain open.
