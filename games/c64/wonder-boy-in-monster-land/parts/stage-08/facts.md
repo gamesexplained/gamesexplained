@@ -31,3 +31,11 @@ Type-$0D state 1 at $9807 counts down, can select state 2, and can allocate and 
 2 simple eight-row glyphs in the character-copy source are referenced by metatiles in the captured map. Listing tests reconstruct their map references and run the $717C copy; seven controlled VICE reads check representative destination glyphs in loads 2, 20, 27 and 31. These observations do not establish ordinary-play reachability or exclude other possible code uses.
 
 The captured map references 76 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The type-$25 entity dispatcher at $9986 uses $1AB1,X without a local bounds check. Two captured table pairs select $999C, $9A02; VICE checked both in loads 10, 28 and 29. Ordinary-play reachability and index bounds remain open.
+
+Type-$25 state 1 increments $1AC2,X and computes $19C3,X from $19E5,X and twice the old value, unless $1AC2,X equals 2. In that case it decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 8, 9 and 27. Ordinary-play reachability remains open.
+
+Type-$25 helper $9A24 calls $792C and $1179, then may call $7227 and $5D7A. Its transition sets $1AC2,X=0, adds 2 to $19E5,X and sets $1AB1,X=1, then discards a return address. VICE checked four forced helper cases in loads 8, 9 and 27 with callbacks stubbed. State 0 also jumps to the transition, where the discarded return address has a different caller. Callback effects and ordinary-play reachability remain open.
+
+Type-$25 state 0 decrements $1B28,X, checks $1A29,X and calls its event helper. A negative countdown jumps directly to the transition, which discards one return address. Other paths update a four-bit phase through $3020 and $35C1, or at countdown $7E build four parameters at $35BD–$35C0 before calling $34EA and $35C1. VICE checked five forced cases and one special parameter case in loads 8, 9 and 27 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.

@@ -62,3 +62,11 @@ Type-$0E states 2 and 3 at $BB80 and $BB97 update $1AD3,X and select the next st
 Type-$0E state 0 at $BB33 uses values returned by $71DB and compares $6F3C against the returned X to choose $FA or 0, then advances state and updates a frame. Its movement helper at $BBBA chooses a callback by the sign of $1B28,X and reverses it on carry. VICE checked six controlled cases per load with callbacks stubbed in loads 9, 11 and 20. Natural reachability remains open.
 
 The type-$0E shared collision check at $BC0E can return normally, tail-call $5D7A, or select state 4 or 5 and discard its own return address so the calling handler returns immediately. VICE exercised six controlled paths per load in loads 9, 11 and 20, with external callbacks stubbed. Natural reachability remains open.
+
+The type-$25 entity dispatcher at $BC87 uses $1AB1,X without a local bounds check. Two captured table pairs select $BC9D, $BD03; VICE checked both in loads 10, 28 and 29. Ordinary-play reachability and index bounds remain open.
+
+Type-$25 state 1 increments $1AC2,X and computes $19C3,X from $19E5,X and twice the old value, unless $1AC2,X equals 2. In that case it decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 8, 9 and 27. Ordinary-play reachability remains open.
+
+Type-$25 helper $BD25 calls $792C and $1179, then may call $7227 and $5D7A. Its transition sets $1AC2,X=0, adds 2 to $19E5,X and sets $1AB1,X=1, then discards a return address. VICE checked four forced helper cases in loads 8, 9 and 27 with callbacks stubbed. State 0 also jumps to the transition, where the discarded return address has a different caller. Callback effects and ordinary-play reachability remain open.
+
+Type-$25 state 0 decrements $1B28,X, checks $1A29,X and calls its event helper. A negative countdown jumps directly to the transition, which discards one return address. Other paths update a four-bit phase through $3020 and $35C1, or at countdown $7E build four parameters at $35BD–$35C0 before calling $34EA and $35C1. VICE checked five forced cases and one special parameter case in loads 8, 9 and 27 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.

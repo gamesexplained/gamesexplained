@@ -1470,6 +1470,41 @@
   },
   {
    "start": 48248,
+   "end": 48262,
+   "type": "Undefined"
+  },
+  {
+   "start": 48263,
+   "end": 48280,
+   "type": "Code"
+  },
+  {
+   "start": 48281,
+   "end": 48282,
+   "type": "Byte"
+  },
+  {
+   "start": 48283,
+   "end": 48284,
+   "type": "Byte"
+  },
+  {
+   "start": 48285,
+   "end": 48386,
+   "type": "Code"
+  },
+  {
+   "start": 48387,
+   "end": 48420,
+   "type": "Code"
+  },
+  {
+   "start": 48421,
+   "end": 48464,
+   "type": "Code"
+  },
+  {
+   "start": 48465,
    "end": 48467,
    "type": "Undefined"
   },
@@ -7065,6 +7100,72 @@
    "kind": "user"
   },
   {
+   "address": 48263,
+   "name": "type25_state_dispatch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48278,
+   "name": "type25_patched_jump",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48281,
+   "name": "type25_target_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48283,
+   "name": "type25_target_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48285,
+   "name": "type25_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48309,
+   "name": "type25_state0_phase",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48340,
+   "name": "type25_state0_special",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48387,
+   "name": "type25_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48406,
+   "name": "type25_state1_expired",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48421,
+   "name": "type25_event_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48429,
+   "name": "type25_event_transition",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48468,
    "name": "entity_record_01",
    "type": "UserDefined",
@@ -11466,6 +11567,61 @@
    "address": 48247,
    "type": "line",
    "text": "Working byte written from $1B28,X and tested for its sign by state 4; other handler paths also use it."
+  },
+  {
+   "address": 48263,
+   "type": "line",
+   "text": "Load 9: type-$25 uses $1AB1,X as an index into split target tables at $BC99/$BC9B and patches the jump at $BC96. Two captured target pairs follow; this dispatcher does not bound the index."
+  },
+  {
+   "address": 48278,
+   "type": "line",
+   "text": "Absolute jump patched through operands $BC97/$BC98; the entry snapshot placeholder is $FF00."
+  },
+  {
+   "address": 48281,
+   "type": "line",
+   "text": "Two captured low bytes paired with high bytes at $BC9B: $BC9D, $BD03. State bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 48283,
+   "type": "line",
+   "text": "Two captured high bytes paired with low bytes at $BC99: $BC9D, $BD03."
+  },
+  {
+   "address": 48285,
+   "type": "line",
+   "text": "Decrement $1B28,X. A negative result jumps to $BD2D, whose two stack pulls discard a return address. Otherwise return if $1A29,X is zero, or call the event helper. If it returns, a countdown of $7E selects the special parameter path."
+  },
+  {
+   "address": 48309,
+   "type": "line",
+   "text": "For other countdowns, odd values call $3020 and increment or decrement $1B17,X according to its returned sign. Mask the result to four bits, OR it with $20 and tail-jump to $35C1."
+  },
+  {
+   "address": 48340,
+   "type": "line",
+   "text": "Copy $4DAE to $35BD, shift $49 right into $35BE, combine $4C4F,Y and $4C6F,Y using LSR/ROR into $35BF, and shift $4CCF,Y into $35C0. Call $34EA, store its low nibble OR $20 in $1B17,X, call $35C1 and return."
+  },
+  {
+   "address": 48387,
+   "type": "line",
+   "text": "Compare $1AC2,X with 2. If different, increment that byte and set $19C3,X to $19E5,X plus twice the old byte, modulo 256. The shift carry is cleared before the addition."
+  },
+  {
+   "address": 48406,
+   "type": "line",
+   "text": "When the byte equals 2, save X into the immediate operand at $BD21, load X from $1AD3,X, decrement $1B28,X in that other slot, restore the original X through the patched immediate instruction and jump to $4454."
+  },
+  {
+   "address": 48421,
+   "type": "line",
+   "text": "Call $792C and $1179. Carry set from $1179 enters the transition; otherwise call $7227, return if carry is clear, or call $5D7A with A=8 and enter the transition."
+  },
+  {
+   "address": 48429,
+   "type": "line",
+   "text": "Set $1AC2,X=0, add 2 to $19E5,X, set $1AB1,X=1, discard one return address and return. A call from state 0 exits that state; state 0 can also jump here directly, so the discarded address then belongs to a different call."
   },
   {
    "address": 48468,
