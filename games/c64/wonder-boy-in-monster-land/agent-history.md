@@ -664,3 +664,5 @@ Described the four first-load visual pointer tables individually and added the p
 Decoded the first-load repeating motion stream at $924C. VICE and a listing test checked 45 outputs through its reset with a forced entity slot. The paused user snapshot was restored; other callers and natural reachability remain open.
 
 Described the three captured first-load stage records individually. VICE and a listing test checked the record loader’s field copies with map writing stubbed. The paused user snapshot was restored.
+
+Described six first-load entity records individually. Six forced VICE calls and a listing test checked the ten-byte copies, including the record beyond the initial limit. The paused user snapshot was restored; the overlapping dispatch role remains open.

@@ -75,3 +75,5 @@ The first-load visual tables contain seven split-byte pointers each for metatile
 First-load motion stream $924C produces 44 values and resets to the start, including two 13-value runs. VICE and a listing test checked 45 successive decoder outputs using a forced entity slot. Other callers and ordinary-play reachability remain open.
 
 The first-load stage header selects three 16-byte records at $92CB–$92FA. VICE and a listing test checked the loader’s twelve parallel fields and final four scratch bytes with map writing stubbed. Subsequent mutations, map effects and ordinary-play reachability remain open.
+
+The first-load entity stream at $B4EF contains six ten-byte records before a zero byte; its captured initial limit is five. Six forced VICE calls and a listing test checked each record’s copy into the entity arrays. The first record also overlaps dispatch targets whose executable role remains unresolved.
