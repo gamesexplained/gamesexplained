@@ -137,7 +137,7 @@ alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
 RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
-RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000 --version 0.9.20
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
@@ -306,8 +306,14 @@ the way to one where none exists, and no run of it is recorded on either.
 ## Get the disassembler
 
 ```
-cargo install --root tools/cargo regenerator2000 --version 0.9.20
+cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
+
+Keep `--locked`: without it cargo resolves the newest compatible
+version of the project's own `regenerator2000-tui` crate, and on
+10 November 2026 that did not compile against 0.9.20's `main.rs`
+(`cannot find dialog_d64_picker in ui`, three errors); `--locked` uses
+the dependency versions the release was published with, and built.
 
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
