@@ -36,6 +36,8 @@ In loads 2, 4, 6, 15 and 17, controlled type-$05 record copies and direct frame-
 
 In loads 18, 26 and 27, controlled type-$03 record copies and direct state-0 frame calculations selected 18 additional sprite masks. Callback carry, frame counter, motion byte, display slots, position, effect state and one colour were forced. Each mask matches its entry and play capture, and a 200-frame probe found no instruction entry in its range. `test_type03_frame_sprites.js` checks the selections, bitmap geometry and gallery data; VICE reproduced both layers in each load. Ordinary-play reachability and other uses remain open.
 
+In load 19, a controlled type-$02 record copy followed by direct frame-helper or state-2 calls selected six additional sprite masks. Direction, timer, display slots, position, effect state and one colour were forced. Each mask matches its entry and play capture, and a 200-frame probe found no instruction entry in its range. `test_type02_frame_sprites.js` checks the selections, bitmap geometry and gallery data; VICE reproduced both layers for all three selections. Ordinary-play reachability and other uses remain open.
+
 ## Entity records
 
 Each later load supplies an entity-record pointer at `$7F4F` and an initial slot limit at `$7F51`. `$369E` copies ten bytes from a record into the resident entity arrays. A zero first byte ends the record sequence; the slot-reuse path can select records beyond the initial limit. Controlled VICE tests checked all ten copied fields for load 2's first record and load 19's twelfth record. `test_entity_records.js` checks the copies for the later loads' 179 described records against the resident instructions. A field's later use depends on the entity's handler.
