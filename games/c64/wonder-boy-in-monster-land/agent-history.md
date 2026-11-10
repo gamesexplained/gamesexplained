@@ -571,3 +571,5 @@ Extended the character-source audit to loads 2–28. For each load, VICE copied 
 Described the 48 captured split entity-handler address pairs in loads 2–31. VICE checked indices 0, 1 and 47 in loads 2, 24 and 31 up to the patched call; a listing test checks all 48 indices in every load. The paused user snapshot was restored. The caller has no local index bound, and individual target reachability remains open.
 
 Described the 42 load-header bytes at $7F58–$7F81 in loads 2–31 using their resident readers. VICE checked the sound-pointer and visual-selector reads in loads 2, 24 and 31; a listing test checks those reads and the captured header bytes for every load. The paused user snapshot was restored. Other fields retain their documented conditional uses and ordinary-play reachability remains open.
+
+Described the nine captured starting colour, player and view-origin fields in loads 2–31. VICE checked the initialization and temporary-bound calculations in loads 2, 24 and 31 with the HUD callback stubbed; the listing test repeats both paths for every load. The paused user snapshot was restored. Ordinary-play reachability remains open.
