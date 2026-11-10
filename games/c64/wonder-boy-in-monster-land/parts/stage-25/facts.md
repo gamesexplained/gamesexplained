@@ -34,3 +34,17 @@ Type-$22 state 1 at $A3C8 can call a sign-selected movement routine, then uses c
 Type-$22 state 0 at $A395 can enter alternate-slot cleanup, or call a helper and choose a movement callback by a sign byte; callback carry controls its transition to state 1. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
 
 The type-$22 collision helper at $A432 can return directly or enter state-2 setup after either of two carry checks. State-2 setup returns to the helper’s caller, so a state-0 call continues after it. VICE checked five controlled cases per load with callbacks stubbed in loads 2, 4, 6, 14, 15, 17, 24 and 25. Natural reachability remains open.
+
+The type-$05 entity vector selects a dispatcher at $9C84. Six captured state-table pairs point to $9CA2, $9D30, $9DDE, $9E2A, $9E69, $9E8C. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in loads 24 and 25; handler behavior and ordinary-play reachability remain open.
+
+Type-$05 state 4 decrements $1AC2,X and copies $1AE4,X to the state when the result is negative or the selected $45BC/$4574 callback returns a value whose bits 1–2 are not 2. VICE checked six forced cases in loads 24 and 25 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$05 state 5 decrements $1AC2,X. A negative result calls $4B0E with A=$50, loads A=$14 and jumps to $5DB9; otherwise it indexes the four captured offsets 4, 4, 2, 2, updates $19C3,X and advances $1AD3,X. The input index is not bounded before the read. VICE checked four forced cases in loads 24 and 25 with the exit callback stubbed. Ordinary-play reachability remains open.
+
+Type-$05 helper $9EC6 saves $1B17,X and calls $792C and $732A. Carry set from $732A selects state 4 for positive $1A6D,X or state 5 otherwise, sets $1AC2,X to 10 and discards one return address; the positive path also saves the previous state and updates position. Carry clear calls $7227 and may tail-jump to $5D7A with A=4. VICE checked six forced cases in loads 24 and 25 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$05 states 2 and 3 call the event helper, use four captured offsets 2, 2, 0, 0 to update position, and decrement $1AD3,X. A negative countdown or a callback result with bits 1–2 other than 2 triggers a transition: state 2 loads the timer from a patchable immediate byte (captured as $FF and set to 10 by one state-0 path), toggles bit 7 of $1B17,X and selects state 3; state 3 selects state 0. VICE checked six forced cases in loads 24 and 25 with callbacks stubbed. The offset index is not bounded before its read and ordinary-play reachability remains open.
+
+Type-$05 state 0 can select state 1 or 2 after a comparison involving the X value and $6F3C. Its state-2 path sets $1AD3,X=10 and patches the immediate byte used by a later state-2 transition to 10. VICE checked four forced close, far, busy and inactive-slot cases in loads 24 and 25 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Type-$05 state 1 updates direction and position, calls its event helper and counts down. After the second countdown reaches its allocation path, it calls $190B and may initialize a type-$22 slot; both allocation outcomes restore X from Y and select state 0. VICE checked seven forced cases, including successful and failed allocation, in loads 24 and 25 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
