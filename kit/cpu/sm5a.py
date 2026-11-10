@@ -150,12 +150,17 @@ def _num(v):
 def target(a, mode, op):
     """The logical address a TR or TRS at logical address a goes to, as the listing shows it:
     TR stays on its page, or goes to the page an SSR just before named; TRS calls page $10, or
-    with SSR before it that page (gnw-reference, "Jumps and calls")."""
+    with SSR before it that page (gnw-reference, "Jumps and calls"). A TRS on page $10 itself, the
+    call table, runs inside the subroutine its caller started, so it is a jump within the four
+    pages $10-$13: the page from bits 4-5 of its operand, the step from bits 0-3. Elsewhere the
+    listing cannot see whether a TRS runs inside a subroutine; such a line wants a comment."""
     kind, _, ssr = mode.partition(":")
     pl = op & 0x3F
     cb = a >> 10 & 1
     if kind == "t6":
         page = (a >> 6) if not ssr else (cb << 4 | int(ssr))
+    elif not ssr and a >> 6 == SUB_PAGE:
+        page, pl = SUB_PAGE | (pl >> 4 & 3), pl & 0x0F
     else:
         page = SUB_PAGE if not ssr else (cb << 4 | int(ssr))
     pc = page << 6 | pl

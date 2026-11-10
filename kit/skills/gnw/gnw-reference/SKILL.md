@@ -105,9 +105,14 @@ decapped chips, and MAME's own notes mark what is a guess (`sm500.cpp`,
   pages $10-$1C.
 - The listing shows `TR` going to its own page, or to the page an `SSR`
   just before it names, and `TRS` to page $10, or to the page an `SSR`
-  just before it names (`kit/cpu/sm5a.py`, `target`). It cannot see CB
-  or an `SSR` further back: where those decide the target, check it
-  live, and comment the line.
+  just before it names (`kit/cpu/sm5a.py`, `target`). A `TRS` on page
+  $10 itself is shown as the jump it is, since the call table runs only
+  inside a subroutine. The listing cannot see CB, an `SSR` further back,
+  or that other code runs inside a subroutine: a `TRS` in a routine
+  reached by a call is a jump, and the listing names a page $10 entry
+  instead. Where any of these decides the target, check it live (the
+  server's checkpoints, or `hooks` on `kit/gnw/sm5a.js`), and comment
+  the line.
 
 ## Skips
 
