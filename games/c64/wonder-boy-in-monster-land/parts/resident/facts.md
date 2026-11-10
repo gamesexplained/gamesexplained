@@ -223,3 +223,5 @@ VICE also checked two forced $45BC cases using the real horizontal movement, gri
 Resident $4454 releases a primary display pair when its first index is nonzero, clears its links and falls into the $447A reset. A zero second index is still written when the first is nonzero; entity index zero skips setting the animation countdown to 7. VICE checked four forced primary and extra-slot cases using the real reset. Index bounds and ordinary-play reachability remain open.
 
 VICE also checked two forced type-$28 horizontal-boundary cases through the real $4454 release and $447A reset. Each cleared the entity and marked its two primary slots, including the zero second index. Ordinary-play reachability remains open.
+
+Resident $7130 selects screen-resource pointers and colour values, calls $7008, then copies eight pages to RAM under I/O and restores the processor port. VICE checked one forced index with supplied pointers and all 2,048 source bytes, using a $7008 stub that preserves X. The effective port read had low banking bits 5 afterward. Callback effects, index bounds and ordinary-play reachability remain open.
