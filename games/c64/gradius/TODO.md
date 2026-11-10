@@ -5,31 +5,29 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: 100 % coverage on a proven model, `facts.md`, a checker sample,
-the minisite built.
+Gold: Euan's page-by-page pass over every page, 9 and 10 November 2026.
 
 ## Recommended: a full audit of the listing
 
 The checker sample (seed 1109, 60 comments) found 14 with a wrong detail,
 23 % (95 % interval 14 % to 35 %), over the mark. All 14 were corrected,
 with every comment that shared the same belief, but the rest of the
-listing has not been audited. An audit (`kit/CHECKING.md`) should come
-before the Gold pass leans on the listing.
+listing has not been audited (`kit/CHECKING.md`).
 
-## For Gold
+## For Platinum
 
-- A human pass over every page (`kit/START.md`).
-- The game was not looked up online: no manual, reviews or links. The
-  loading screen says KONAMI 1986 and the disk image's name 1987; settle
-  the year and fill `links`.
-- Graphics tab: the sprites are drawn in generic colours (white, or grey
-  and white in multicolour); draw each in the colour its mover gives it.
-- A section on how a frame is built (the four interrupt phases and the two
-  NMI splits) was not written.
 - Play tab: not started.
+
+## Ideas
+
+- A section on how a frame is built (the four interrupt phases and the two
+  NMI splits).
+- Compare with a Nemesis disk, if one turns up: which bytes differ, and
+  whether its music links are the two cut here.
+- Read the 1987 reviews themselves; only their scores are on the page.
 
 ## Open questions
 
-- Whether the published game was meant to play music.
-- What "NEM" in the file name OBJNEMMAIN3 stands for, and who "STU" on the
-  loading screen is.
+- Whether the American release's music was cut on purpose.
+- What "NEM" in the file name OBJNEMMAIN3 stands for, and whether "STU" on
+  the loading screen is Stu Jackson.
