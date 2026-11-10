@@ -71,58 +71,49 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pu-side{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
 .pu-bytes{font-family:var(--fm);font-size:12.5px;word-break:break-all}
 .pu-bytes span{padding:0 1px;border-radius:2px}
-.pu-stack{display:grid;grid-template-columns:auto repeat(16,minmax(0,1fr));gap:2px;font-family:var(--fm);font-size:11px;max-width:640px;margin:0 auto}
-.pu-stack span{display:block;text-align:center;padding:2px 0;border-radius:3px;background:var(--surface-2);color:var(--ink-mute);line-height:1.5;white-space:nowrap;overflow:hidden}
-.pu-stack span.ad{background:none;text-align:right;padding-right:6px}
-.pu-stack span.gap{grid-column:1/-1;height:4px;padding:0;background:none}
-.pu-stack span.old{background:#dcd9d2;color:var(--ink-soft)}
-.pu-stack span.leak{background:#f6d98a;color:#5a4300}
-.pu-stack span.work{background:#dbe7f6;color:#5a7290}
-.pu-stack span.push{background:#1f5fa8;color:#fff}
-.pu-stack span.tok{background:#fbd3cd;color:#7a1c10}
-.pu-stack span.sp{box-shadow:inset 0 0 0 2px var(--ink)}
-.pu-stack span.read{box-shadow:inset 0 0 0 3px var(--coral);font-weight:700}
+.pu-stack{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:2px;max-width:640px;margin:0 auto}
+.pu-stack span{display:block;height:13px;border-radius:3px;background:var(--surface-2)}
+.pu-stack span.lab{grid-column:1/-1;height:auto;background:none;font-size:13px;color:var(--ink-soft);padding:2px 0}
+.pu-stack span.lab+span.lab,.pu-stack span:not(.lab)+span.lab{margin-top:10px}
+.pu-stack span.old{background:#dcd9d2}
+.pu-stack span.leak{background:#f6d98a}
+.pu-stack span.work{background:#dbe7f6}
+.pu-stack span.tok{background:#e58a7e}
+.pu-stack span.read{box-shadow:inset 0 0 0 3px var(--coral)}
 .pu-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:12px 0 0}
 .pu-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.pu-asm{margin:0 0 1em}
 .pu-bar select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
-@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pu-pair,.pu-side{grid-template-columns:1fr}.pu-stack{font-size:9.5px;gap:1px}.pu-stack span.ad{padding-right:3px}}
+@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.pu-pair,.pu-side{grid-template-columns:1fr}.pu-stack{gap:1px}.pu-stack span{height:11px}.pu-stack span.lab{height:auto}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1985 · Mastertronic</p>
   <h1>Mr Puniverse</h1>
-  <p class="sub">What the code holds that the game never shows, and a bug that a live stream caught: about 120 rooms in, the game falls into the C16's built-in monitor and the screen scrolls away. A second title, WIMPO, waits beside MR PUNIVERSE for a routine that never reads it, one room spells REST ROOM in its walls, and five exits lead somewhere other than the room next door.</p>
+  <p class="sub">What the code holds that the game never shows, and a bug that a live stream caught: about 120 rooms in, the game freezes and its picture scrolls away off the top of the screen. A second title, WIMPO, waits beside MR PUNIVERSE for a routine that never reads it, one room spells REST ROOM in its walls, and five exits lead somewhere other than the room next door.</p>
 </header>
 <main class="wrap">
 
 <section id="freeze">
   <p class="fig">01 · Bug</p>
-  <h2 class="t">Bug: about 120 rooms in, the game falls into the monitor</h2>
-  <p class="lede">Every exit Mr Puniverse walks through leaves two bytes on the processor's stack, and nothing takes them off. About 120 exits after the game is loaded, those bytes have pushed the stack far enough to fool the C16's own interrupt code. It takes an interrupt for a BRK instruction and hands the machine to its built-in monitor. The game stops, and the monitor's BREAK messages scroll the picture up off the screen. On 8 January 2022 it happened live on <a href="https://www.twitch.tv/unloved8bit">Unloved8Bit's Twitch stream</a>, and the moment was kept as <a href="https://www.twitch.tv/unloved8bit/clip/BashfulGlutenFreeStingrayOpieOP-JgwxkF73cs0_VMhC">a 13-second clip</a>.</p>
+  <h2 class="t">Bug: after about 120 rooms, the game freezes and its picture scrolls away</h2>
+  <p class="lede">Walk through about 120 exits and the game stops dead. Then the picture climbs off the top of the screen, a row at a time, until the screen is black. On 8 January 2022 it happened live on <a href="https://www.twitch.tv/unloved8bit">Unloved8Bit's Twitch stream</a>, and the moment was kept as <a href="https://www.twitch.tv/unloved8bit/clip/BashfulGlutenFreeStingrayOpieOP-JgwxkF73cs0_VMhC">a 13-second clip</a>.</p>
   <div class="plate">
     <div class="pu-bar"><button type="button" id="pu-fgo">▶ Play to the freeze</button></div>
     <canvas id="pu-fscreen" class="pu-screen" width="640" height="400" aria-label="Room 14 as the game runs, then frozen, its picture moving up a row at a time until the screen is black."></canvas>
     <p class="pu-state" id="pu-fstate"></p>
-    <p class="cap">Room 14, the room in the clip, with Mr Puniverse at its top left, where the clip shows him. Until the freeze, the game's own <code>main_loop</code> (<code>$32BC</code>) runs on the page's 6502, twenty passes a second. From the freeze on, the page does what the KERNAL, the program in the C16's ROM, does. The room's colours stay all the way down the screen, because the game's interrupt routine no longer runs to set the panel's. The monitor prints a new line and BREAK over and over, in black, so the letters vanish into the background. Once its cursor reaches the bottom row, each new line moves every row of characters and colours up one, every two frames. The KERNAL prints wherever its cursor was left. In the clip the labels TIME1, TIME2 and EGY go first, so the page starts the cursor on row 18, just above the panel. In the kit's model of the C16, running the KERNAL's own code, memory changed in the same way.</p>
+    <p class="cap">Room 14, the room in the clip. The frozen C16 prints the word BREAK over and over, each on a new line. The letters are black on black, so they cannot be seen, but every new line pushes the picture up a row. The panel loses its colours at the same moment, because the game is no longer running to set them.</p>
   </div>
-  <p>The main loop calls <code>player_pass</code> on every pass, and the call leaves the way back, the address <code>$32BE</code>, on the stack. When <code>player_pass</code> finds an exit beside him, it jumps to <code>leave_room</code> instead of returning. <code>leave_room</code> ends by jumping to <code>room_start</code>, which runs on into the main loop. The way back is never taken off, so each exit leaves its two bytes behind. The game never resets the stack either, not even after GAME OVER, which jumps back to the title. So the count runs from the moment the game is loaded. Two <code>PLA</code> instructions in <code>leave_room</code>, taking the way back off before the jump, would have kept the stack level.</p>
+  <p>The cause is a note that the game forgets to throw away. Whenever one routine calls another, the processor writes down where to come back to, as two bytes on a 256-byte pile called the stack. Coming back takes the note off again. When <code>player_pass</code>, the routine that moves Mr Puniverse, finds an exit, it jumps to <code>leave_room</code> and on into the next room, and never comes back. The note that the main loop left when it called <code>player_pass</code> stays on the stack. The game never clears the stack, not even at GAME OVER, so every exit since the game was loaded has left two bytes there.</p>
+  <p>After about 120 exits, the notes fill the stack. A full stack alone would do no harm, because the stack is a ring and carries on from its other end. But twice in every frame the game is interrupted, and each interrupt first passes through the KERNAL, the system program built into the C16. The KERNAL checks one byte on the stack, where a single bit says whether the program has just hit a BRK, an instruction that means stop. The KERNAL's check does not follow the ring. With the stack full, the check runs off the end and reads the next thing in memory, which is the last line typed at the keyboard. That line was LOAD. The C16 stores LOAD as a single byte, and in that byte the BRK bit happens to be set.</p>
   <div class="plate">
-    <div class="pu-bar"><label>Exits since the game was loaded <input type="range" id="pu-sk" min="0" max="256" value="121" style="width:220px"></label><span id="pu-sn" class="pu-state" style="margin:0"></span></div>
-    <div class="pu-scroll"><div class="pu-stack" id="pu-sgrid" role="img" aria-label="The stack's page of memory, $0100 to $01FF, and the first bytes of page 2."></div></div>
-    <div class="pu-bar" style="margin:14px 0 0"><label>An interrupt arrives with S at <select id="pu-ssel"></select></label></div>
+    <div class="pu-bar"><button type="button" id="pu-sgo">▶ Walk through 121 exits</button><label>Exits since the game was loaded <input type="range" id="pu-sk" min="0" max="122" value="121" style="width:220px"></label><span id="pu-sn" class="pu-state" style="margin:0"></span></div>
+    <div class="pu-stack" id="pu-sgrid" role="img" aria-label="The stack's 256 bytes, filling with the notes that exits leave, and the 16 bytes of memory that come after it."></div>
     <p class="pu-state pu-say" id="pu-sstate"></p>
-    <div class="pu-key"><span><i style="background:#dcd9d2"></i>left by BASIC and the loader</span><span><i style="background:#f6d98a"></i>left by the exits: <code>$32BE</code>, two bytes each</span><span><i style="background:#dbe7f6"></i>where the main loop's calls and interrupts push</span><span><i style="background:#1f5fa8"></i>this interrupt's pushes</span><span><i style="background:#fbd3cd"></i><code>$93</code>, BASIC's LOAD</span><span><i style="box-shadow:inset 0 0 0 2px #2f3136"></i>S at the top of the main loop</span><span><i style="box-shadow:inset 0 0 0 3px #d04a3a"></i>the byte the KERNAL reads as the status</span></div>
-    <p class="cap" data-part="">Page 1 of memory, <code>$0100</code> to <code>$01FF</code>, which holds the stack, then the first 16 bytes of page 2, as the game leaves them after the number of exits on the slider. S starts at <code>$F6</code>, where the tape's loader hands over. The menu offers the values of S that interrupts found in 3,000 interrupts in the kit's model of the C16, below the main loop's own S, with how often each came. The kit's model ran the KERNAL's own code: falling through room 0's shaft into room 5 moved S at the top of the main loop from <code>$F6</code> to <code>$F4</code>. Page 2's first bytes are what typing LOAD leaves there.</p>
+    <div class="pu-key"><span><i style="background:#dcd9d2"></i>in use before the game starts</span><span><i style="background:#f6d98a"></i>notes left by exits, two bytes each</span><span><i style="background:#dbe7f6"></i>in use at this moment, by the game and the interrupt</span><span><i style="background:#e58a7e"></i>LOAD</span><span><i style="box-shadow:inset 0 0 0 3px #d04a3a"></i>the byte the KERNAL checks</span></div>
+    <p class="cap">Each square is a byte. The stack fills from the bottom right towards the top left. The row underneath is the memory that comes straight after the stack, where the C16 keeps the last line typed.</p>
   </div>
-  <p data-part="">The stack is page 1 of memory, <code>$0100</code> to <code>$01FF</code>, and the stack pointer, S, counts down through it as bytes are pushed, wrapping from <code>$00</code> to <code>$FF</code>. That wrap does the processor no harm. The KERNAL's interrupt code is another matter. An interrupt and a <code>BRK</code> instruction both push the program counter and the status, and the KERNAL tells them apart by bit 4 of the pushed status, which is set only for a <code>BRK</code>. Its interrupt entry pushes A, X and Y, and then, at <code>$CE00</code>, reads the status four bytes up:</p>
-  <pre class="pu-asm">TSX            ; X = the stack pointer
-LDA $0104,X    ; the status the processor pushed, four bytes up
-AND #$10       ; bit 4, set only by a BRK
-BNE $CE0B      ; set: JMP ($0316), the monitor's break entry
-JMP ($0314)    ; clear: the game's interrupt routine</pre>
-  <p data-part=""><code>LDA $0104,X</code> adds X to <code>$0104</code>, and when X is <code>$FC</code> or above the sum is past <code>$01FF</code>. The processor then reads page 2, where it should have wrapped round to the start of page 1. That happens to an interrupt that arrives with S at <code>$02</code> to <code>$05</code>. Page 2 holds BASIC's input line, and the line that started the game was LOAD, which BASIC stores as the single byte <code>$93</code>, with bit 4 set. An interrupt that arrives with S at <code>$02</code> reads <code>$93</code> as its status. The KERNAL jumps through <code>$0316</code> to the monitor's break entry at <code>$F44C</code>, and the game's interrupt routine never runs. A game loaded with another command leaves other bytes in page 2, and the danger moves to other values of S, or goes away.</p>
-  <p data-part="">The break entry never gives the machine back. It takes the registers off the stack, which puts S back at <code>$02</code>, prints a new line and BREAK, and lets interrupts in again. The interrupt that started all this is still waiting, because only the game's interrupt routine tells TED, the chip that draws the picture, that its interrupt has been seen. The processor takes it at once, with S at <code>$02</code> again, and the KERNAL reads <code>$93</code> again. So the monitor starts over, a BREAK at a time, for as long as the machine is on.</p>
+  <p>So the KERNAL stops the game and starts the monitor, a programmer's tool built into the C16, and the monitor prints BREAK. The interrupt is still waiting, because only the game's own routine switches it off. The interrupt arrives again as soon as the word is printed, the KERNAL misreads it again, and the monitor prints BREAK again, for as long as the machine is on.</p>
+  <p>The freeze needs that leftover LOAD. A game started with another command has other bytes after its stack, and the freeze may come at another count, or never. Two instructions in <code>leave_room</code> that took the note off the stack before the jump would have prevented the freeze.</p>
 </section>
 
 <section id="wimpo">
@@ -321,86 +312,74 @@ JMP ($0314)    ; clear: the game's interrupt routine</pre>
           if (n < PASSES) {
             pass(); n++;
             Puni.draw(cv, Puni.picture(m), 2);
-            st.textContent = `The game runs: pass ${n} of the main loop.`;
+            st.textContent = 'The game is running.';
             timer = setTimeout(tick, 50);
             return;
           }
           if (s.row < 24) while (s.row < 24) breakLine(s);   // the lines above the bottom go in a frame
           else breakLine(s);
           Puni.draw(cv, frozen(), 2);
-          st.textContent = `Frozen: the monitor has printed BREAK ${s.n} times. The game's main loop and its interrupt routine never run again.`;
+          st.textContent = `Frozen. The C16 has printed BREAK ${s.n} time${s.n === 1 ? '' : 's'}, in black on black.`;
           if (s.n < 24 - CURSOR + 26) timer = setTimeout(tick, 40);
         };
         tick();
       }
       go.onclick = play;
       reset();
-      st.textContent = 'Room 14 as the game draws it. Press the button to run the game until it freezes.';
+      st.textContent = 'Room 14. Press the button to run the game until it freezes.';
     })();
 
     /* The freeze: the stack, exit by exit */
     (function () {
-      const START = 0xF6, PAGE2 = [0x93, 0x00, 0x41, 0x44];
-      // How far below the main loop's own S the stack was when an interrupt arrived, in 3,000
-      // interrupts in the kit's model of the C16 (standing, walking and jumping in room 0): depth -> count
-      const DEPTH = { 0: 4, 1: 1, 2: 1279, 3: 306, 4: 676, 5: 16, 6: 380, 7: 17, 8: 295, 9: 9, 10: 7, 13: 1, 16: 1, 18: 8 };
-      // Seconds before the KERNAL took the BRK path, by S at the top of the main loop, in the same
-      // model, standing in room 0 (null: a minute went by without it)
-      const FROZE = { 0x1E: null, 0x1C: null, 0x1A: null, 0x18: null, 0x16: null, 0x14: 0.4, 0x12: null, 0x10: null,
-        0x0E: 12.5, 0x0C: 0.2, 0x0A: 0.1, 0x08: 0, 0x06: 0.1, 0x04: 0, 0x02: 16.2, 0x00: null, 0xFE: null, 0xFC: null, 0xFA: null };
-      const grid = $('pu-sgrid'), slide = $('pu-sk'), sel = $('pu-ssel'), out = $('pu-sn'), state = $('pu-sstate');
-      const b2 = v => v.toString(16).toUpperCase().padStart(2, '0');
-      const depths = Object.keys(DEPTH).map(Number).sort((a, b) => a - b);
-      let lastK = -1;
+      // S where the tape's loader hands over, and the exits after which the stack is as the page first shows it
+      const START = 0xF6, FULL = 121;
+      // How many bytes below the main loop's own S the stack was when an interrupt arrived, on a model of
+      // the C16 running the KERNAL's own code: every depth met in 3,000 interrupts in room 0, and 12, the
+      // depth of the freeze the same model reached after 116 exits. The interrupt whose check lands on
+      // LOAD arrives with S at $02, so after k exits it is the one that comes 244 - 2k bytes deep.
+      const SEEN = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 16, 18];
+      // The depths a tenth or more of those interrupts came at. With one of these on LOAD (118 to 121
+      // exits), the same model froze within a tenth of a second, standing in room 0. With a rarer depth
+      // on LOAD, the freeze took from 0.2 seconds to more than a minute.
+      const OFTEN = [2, 4, 6, 8];
+      const grid = $('pu-sgrid'), slide = $('pu-sk'), out = $('pu-sn'), state = $('pu-sstate'), go = $('pu-sgo');
+      let timer = null;
       function draw() {
         const k = +slide.value, s0 = (START - 2 * k) & 0xFF;
-        out.textContent = `${k} exit${k === 1 ? '' : 's'}: S at ${hex(s0)}`;
-        const hit = depths.find(d => ((s0 - d) & 0xFF) === 2);
-        if (k !== lastK) {
-          sel.innerHTML = depths.map(d => `<option value="${d}">${hex((s0 - d) & 0xFF)}, ${DEPTH[d].toLocaleString('en-GB')} of 3,000</option>`).join('');
-          sel.value = hit !== undefined ? hit : 2;
-          lastK = k;
-        }
-        const d = +sel.value, s = (s0 - d) & 0xFF;
-        const cls = new Array(256).fill(''), txt = new Array(256).fill('··');
+        out.textContent = String(k);
+        // the interrupt drawn: the one whose check lands on LOAD, when the game is ever that deep, or
+        // the commonest, two bytes deep
+        const deep = s0 - 2, hit = SEEN.includes(deep), d = hit ? deep : 2, s = (s0 - d) & 0xFF;
+        const cls = new Array(256).fill('');
         for (let a = START + 1; a <= 0xFF; a++) cls[a] = 'old';
-        for (let i = 0; i < Math.min(k, 128); i++) {
-          const t = (START - 2 * i) & 0xFF;
-          cls[t] = 'leak'; txt[t] = '32'; cls[(t - 1) & 0xFF] = 'leak'; txt[(t - 1) & 0xFF] = 'BE';
-        }
-        for (let j = 0; j < 24; j++) { const a = (s0 - j) & 0xFF; cls[a] = 'work'; txt[a] = '··'; }
-        ['PC', 'PC', 'P', 'A', 'X', 'Y'].forEach((n, j) => { const a = (s - j) & 0xFF; cls[a] = 'push'; txt[a] = n; });
-        cls[s0] += ' sp';
-        const x = (s - 6) & 0xFF, read = 0x0104 + x;
-        const p2 = new Array(16).fill(''), t2 = PAGE2.map(b2).concat(new Array(12).fill('··'));
-        p2[0] = 'tok';
-        if (read < 0x0200) cls[read - 0x0100] += ' read'; else p2[read - 0x0200] += ' read';
-        const cell = (c, t) => `<span class="${c}">${t}</span>`;
-        let h = '';
-        for (let r = 0; r < 16; r++) {
-          h += `<span class="ad">${hex(0x0100 + r * 16, 4)}</span>`;
-          for (let col = 0; col < 16; col++) h += cell(cls[r * 16 + col], txt[r * 16 + col]);
-        }
-        h += '<span class="gap"></span><span class="ad">$0200</span>' + p2.map((c, i) => cell(c, t2[i])).join('');
-        grid.innerHTML = h;
-        let say = `After ${k} exit${k === 1 ? '' : 's'}, each pass of the main loop starts with S at ${hex(s0)}. `;
-        const f = FROZE[s0];
-        if (typeof f === 'number') say += `In the kit's model the game froze ${f < 1 ? 'within a second' : `after ${f} seconds`}. `;
-        else if (f === null) say += hit !== undefined
-          ? 'Its interrupts can find S at $02, but so seldom that in the kit\'s model the game ran a minute without freezing. '
-          : 'In the kit\'s model the game ran a minute without freezing. ';
-        else say += 'Its interrupts find S well away from $02. ';
-        const ps = 0x0100 + ((s - 2) & 0xFF);
-        if (read < 0x0200) say += `An interrupt with S at ${hex(s)} leaves X at ${hex(x)}, so LDA $0104,X reads ${hex(read, 4)}, the status the processor pushed. Bit 4 is clear, and the KERNAL goes on to the game's interrupt routine.`;
-        else {
-          const v = PAGE2[read - 0x0200];
-          say += `An interrupt with S at ${hex(s)} leaves X at ${hex(x)}, so LDA $0104,X reads ${hex(read, 4)}, past the end of the stack's page, instead of ${hex(ps, 4)}, where the status went. `;
-          say += v & 0x10 ? `${hex(v)} is BASIC's LOAD, and its bit 4 is set: the KERNAL takes the interrupt for a BRK and jumps to the monitor. The game never runs again.`
-            : `${hex(v)} has bit 4 clear, so the KERNAL goes on to the game's interrupt routine all the same.`;
-        }
+        for (let i = 0; i < 2 * k; i++) cls[(START - i) & 0xFF] = 'leak';
+        // the game's calls in progress, then what the interrupt pushes: the way back, the status, A, X and Y
+        for (let j = 0; j < d + 6; j++) cls[(s0 - j) & 0xFF] = 'work';
+        // the KERNAL adds 4 to S as it stands after those pushes, and does not wrap at the stack's end
+        const read = 4 + ((s - 6) & 0xFF);
+        const next = new Array(16).fill('');
+        next[0] = 'tok';
+        if (read < 256) cls[read] += ' read'; else next[read - 256] += ' read';
+        const cell = c => `<span class="${c}"></span>`;
+        grid.innerHTML = '<span class="lab">The stack: 256 bytes</span>' + cls.map(cell).join('')
+          + '<span class="lab">The next 16 bytes of memory: the last line typed</span>' + next.map(cell).join('');
+        let say = k === 0 ? 'The game has just been loaded, and the stack holds none of its notes. '
+          : `After ${k} exit${k === 1 ? ', the note takes' : 's, the notes take'} up ${2 * k} of the stack's 256 bytes. `;
+        if (!hit) say += 'The KERNAL\'s check lands inside the stack, on the byte the KERNAL means to read, and the game carries on.';
+        else if (OFTEN.includes(d)) say += 'The KERNAL\'s check runs off the end of the stack and lands on LOAD. The game freezes within a second.';
+        else say += 'Once in a while, the KERNAL\'s check runs off the end of the stack and lands on LOAD. The game may freeze within a second, or run on for a minute or more.';
         state.textContent = say;
       }
-      slide.oninput = draw; sel.onchange = draw;
+      function walk() {
+        clearInterval(timer);
+        slide.value = 0; draw();
+        timer = setInterval(() => {
+          slide.value = +slide.value + 1; draw();
+          if (+slide.value >= FULL) clearInterval(timer);
+        }, 40);
+      }
+      slide.oninput = () => { clearInterval(timer); draw(); };
+      go.onclick = walk;
       draw();
     })();
 
