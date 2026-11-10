@@ -19235,6 +19235,31 @@
    "text": "Applies rightward movement, testing map attributes and either moving the player or updating the view. A blocking test can shorten the step."
   },
   {
+   "address": 3795,
+   "type": "line",
+   "text": "If the high byte at $48 is nonzero or the low byte at $47 is below $AA, enter $0F30. Otherwise subtract $4DB1 from $4D6A; store the difference and return if it does not borrow, or enter $0EED if it does."
+  },
+  {
+   "address": 3821,
+   "type": "line",
+   "text": "Save the borrowed fine-scroll difference in the immediate operand at $0F07. If $569C is odd and (($569C >> 1) + 1) is at least $7F4B, enter $0F17. Otherwise call $2C8D, add 8 to the saved difference, call $0F63 and store the result at $4D6A, then call $3033."
+  },
+  {
+   "address": 3863,
+   "type": "line",
+   "text": "Add 8 to the saved difference, XOR with 7, then add that value plus one to the two-byte player X at $47/$48. Clear $4D6A and return."
+  },
+  {
+   "address": 3888,
+   "type": "line",
+   "text": "Add $4DB1 to the low byte of player X. If the result is below $AA, store it and its carry in the high byte; when that high byte is nonzero, clamp the low byte to at most $3A. Otherwise enter $0F4F."
+  },
+  {
+   "address": 3919,
+   "type": "line",
+   "text": "Set the low player X byte to $AA, subtract $AA from the candidate position and patch that remainder into the operand at $0F5E. Subtract the patched remainder from $4D6A and return."
+  },
+  {
    "address": 3939,
    "type": "line",
    "text": "If $4DB8 is nonnegative, subtract the horizontal step from all 28 positions through $0F9F. If it is negative, derive two exclusion indexes from the contact entity slots and subtract through $0F7D. Only the all-position path applies a further low-byte subtraction after a high-byte borrow."
