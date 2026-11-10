@@ -525,8 +525,28 @@
   },
   {
    "start": 40041,
+   "end": 40080,
+   "type": "Code"
+  },
+  {
+   "start": 40081,
+   "end": 40236,
+   "type": "Code"
+  },
+  {
+   "start": 40237,
+   "end": 40298,
+   "type": "Code"
+  },
+  {
+   "start": 40299,
+   "end": 40357,
+   "type": "Code"
+  },
+  {
+   "start": 40358,
    "end": 40409,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 40410,
@@ -535,8 +555,13 @@
   },
   {
    "start": 40480,
+   "end": 40503,
+   "type": "Code"
+  },
+  {
+   "start": 40504,
    "end": 40530,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 40531,
@@ -555,6 +580,11 @@
   },
   {
    "start": 40640,
+   "end": 40640,
+   "type": "Byte"
+  },
+  {
+   "start": 40641,
    "end": 40661,
    "type": "Undefined"
   },
@@ -2698,6 +2728,72 @@
    "kind": "user"
   },
   {
+   "address": 40041,
+   "name": "type0b_state0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40081,
+   "name": "type0b_state1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40118,
+   "name": "type0b_state1_far",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40167,
+   "name": "type0b_position_near",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40191,
+   "name": "type0b_state1_close",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40203,
+   "name": "type0b_state2_setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40237,
+   "name": "type0b_state2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40262,
+   "name": "type0b_state2_expired",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40299,
+   "name": "type0b_state3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40344,
+   "name": "type0b_state3_move",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40358,
+   "name": "type0b_state4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 40410,
    "name": "type0b_state5",
    "type": "UserDefined",
@@ -2706,6 +2802,18 @@
   {
    "address": 40464,
    "name": "type0b_state6",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40480,
+   "name": "type0b_position_helper",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40504,
+   "name": "type0b_position_from_direction",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2730,6 +2838,12 @@
   {
    "address": 40639,
    "name": "type0b_rotated_working_byte",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40640,
+   "name": "type0b_comparison_scratch",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -4354,6 +4468,61 @@
    "text": "Seven captured high bytes paired with low bytes at $9C5B: $9C69, $9C91, $9D2D, $9D6B, $9DA6, $9DDA, $9E10."
   },
   {
+   "address": 40041,
+   "type": "line",
+   "text": "Select $1AD3,X as 10 when $19F6,X is 10, 12 when it is 14, or 14 otherwise. Set $1AC2,X and $9EBF to $FF, call $9E38, set $1AB1,X=1 and fall through into state 1."
+  },
+  {
+   "address": 40081,
+   "type": "line",
+   "text": "Use $1A29,X as Y and combine $4C4F,Y and $4C6F,Y by LSR/ROR. Subtract $4DAE from the result for negative $9EBF, or subtract the result from $4DAE otherwise. If the low byte is below 20, jump to the close-range branch at $9CFF."
+  },
+  {
+   "address": 40118,
+   "type": "line",
+   "text": "Otherwise clear $1B17,X and call $43A2 for a negative direction or $43F0 otherwise, with $1AD3,X in A. Call $3020; if its result is at least $F0, save the direction at $9E9D,X, select state 3, set $1AE4,X=10 and tail-jump to the position helper at $9E20."
+  },
+  {
+   "address": 40167,
+   "type": "line",
+   "text": "Set $19C3,X to $19E5,X plus 4 and, if $9EBF is negative, another 18. Set $19D4,X to the result plus 2 and return; additions wrap at 256."
+  },
+  {
+   "address": 40191,
+   "type": "line",
+   "text": "If $1B17,X is nonzero, select state 4 and set $1AE4,X=5. Otherwise call $3020 and do the same when the result is below $F0. Both cases tail-jump to $9E20. A result at least $F0 enters the state-2 setup."
+  },
+  {
+   "address": 40203,
+   "type": "line",
+   "text": "Clear $1B17,X. Call $3020 three times, storing its top bit in $1AE4,X and the low three bits of the next two results in $1AF5,X and $1B06,X. Set $1AB1,X=2 and fall through into state 2."
+  },
+  {
+   "address": 40237,
+   "type": "line",
+   "text": "Decrement $1AF5,X. If nonnegative, copy $1AE4,X to $9EBF and tail-jump to $43F0 for a negative value or $43A2 otherwise, with $1AD3,X in A. If the result is negative, decrement $1B06,X."
+  },
+  {
+   "address": 40262,
+   "type": "line",
+   "text": "If $1B06,X remains nonnegative, toggle bit 7 of $1AE4,X, call $3020, store its low three bits in $1AF5,X and take the movement path. Otherwise select state 4, set $1AE4,X=5 and tail-jump to the position helper at $9E20."
+  },
+  {
+   "address": 40299,
+   "type": "line",
+   "text": "Copy $9E9D,X to the direction working byte $9EBF. If $1AE4,X is positive, call $4342 and decrement it. If it is zero, set it to $80; zero and negative paths call $4368 with its low seven bits. After that call, jump to $9CFF if $1AE4,X is at least $8A; otherwise increment it."
+  },
+  {
+   "address": 40344,
+   "type": "line",
+   "text": "Load $1AD3,X into A and tail-jump to $43A2 when $9EBF is negative, otherwise $43F0. Indexed source bounds and ordinary-play reachability remain open."
+  },
+  {
+   "address": 40358,
+   "type": "line",
+   "text": "Decrement $1AE4,X and return if nonnegative. Otherwise set $19C3,X to $19E5,X plus 18 when $9EBF is negative, and $19D4,X to that result plus 2. Set $1B17,X=1, $1AB1,X=1 and $1AE4,X=5. Call $3020; return if its result is below $80, otherwise jump to $9D0B."
+  },
+  {
    "address": 40410,
    "type": "line",
    "text": "Decrement $1B28,X. If negative, restore $1AB1,X from $9EAE,X and return. Otherwise copy $1AC2,X to $9EBF, set $19C3,X to $19E5,X plus 10 and, for negative direction, a further 18; set $19D4,X to that result plus 2. Load A=6 and tail-jump to $43F0 for negative direction or $43A2 otherwise."
@@ -4362,6 +4531,16 @@
    "address": 40464,
    "type": "line",
    "text": "Decrement $1AC2,X and return if the result is nonnegative. If negative, call $4B20 with A=3, load A=2 and jump to $5DB9. The preliminary helper also writes $1AC2,X before the dispatcher; ordinary-play behavior depends on that path."
+  },
+  {
+   "address": 40480,
+   "type": "line",
+   "text": "Set $19C3,X to $19E5,X plus 14 and, if $9EBF is negative, another 18. Set $19D4,X to that result plus 2 and return; additions wrap at 256."
+  },
+  {
+   "address": 40504,
+   "type": "line",
+   "text": "Copy $1AC2,X to $9EBF; set $19C3,X to $19E5,X plus 18 if that byte is negative, and $19D4,X to the result plus 2. Additions wrap at 256."
   },
   {
    "address": 40531,
@@ -4382,6 +4561,11 @@
    "address": 40639,
    "type": "line",
    "text": "Working byte rotated through carry by the preliminary helper, then copied to $1AC2,X. Other uses remain open."
+  },
+  {
+   "address": 40640,
+   "type": "line",
+   "text": "Temporary byte used by the nonnegative-direction comparison in state 1."
   },
   {
    "address": 40662,

@@ -44,3 +44,13 @@ The type-$0B entity dispatcher at $B359 calls $B566 and, if it returns, uses $1A
 The type-$0B preliminary helper at $B566 rotates a working byte through carry from $72FC and copies it to $1AC2,X. With $1A8F,X zero, carry set from $732A selects state 5 for positive $1A6D,X or state 6 otherwise, before the dispatcher reads the state. Other paths call $7227 and may tail-jump to $5D7A with A=4. VICE checked six forced cases in loads 6, 7, 22 and 30 with callbacks stubbed. Indexed-write bounds and ordinary-play reachability remain open.
 
 Type-$0B state 5 decrements $1B28,X and either restores the state from an indexed working location or updates two positions and tail-calls a direction-selected callback. State 6 decrements $1AC2,X and on a negative result calls $4B20 with A=3 before jumping to $5DB9 with A=2. VICE checked six forced direct calls in loads 6, 7, 22 and 30 with callbacks stubbed. The preliminary helper also changes $1AC2,X; ordinary-play reachability remains open.
+
+Type-$0B state 4 decrements $1AE4,X and, if it becomes negative, updates two positions, selects state 1, sets a five-count delay and conditionally jumps according to $3020. VICE checked four forced cases in loads 6, 7, 22 and 30 with $3020 stubbed. Ordinary-play reachability remains open.
+
+Type-$0B state 3 copies an indexed direction byte and handles positive, zero and negative $1AE4,X values through $4342 or $4368 before jumping to another handler path or tail-calling a direction-selected movement routine. VICE checked six forced cases in loads 6, 7, 22 and 30 with callbacks stubbed. Indexed-source bounds and ordinary-play reachability remain open.
+
+Type-$0B state 2 decrements $1AF5,X, tail-calls a direction-selected movement routine, or updates a second countdown and either reverses direction or selects state 4 and computes two positions. VICE checked six forced cases in loads 6, 7, 22 and 30 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$0B state 0 sets $1AD3,X according to $19F6,X, initializes a direction and two positions, selects state 1 and falls through into it. VICE checked four forced setup cases with the position helper stubbed and three direct position-helper cases in loads 6, 7, 22 and 30. Ordinary-play reachability remains open.
+
+Type-$0B state 1 compares a direction-dependent difference, then may call a movement routine, select state 3, or enter a close-range branch that selects state 4 or initializes state 2 and falls through. VICE checked six comparison cases, three close-range cases and three direct position-helper cases in loads 6, 7, 22 and 30 with callbacks stubbed. The indexed values and ordinary-play reachability remain open.
