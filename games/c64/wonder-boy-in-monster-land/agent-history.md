@@ -593,3 +593,5 @@ Rechecked the expanded 252-choice pattern viewer in headless Firefox after the f
 Traced the first-load entity normal state $B188. VICE checked six forced paths, including propagation of carry between the two frame additions, with collision, overlap and damage callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
 
 Traced the first-load entity reaction paths $B1ED and $B224. VICE checked five forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load second entity normal state $B24B. VICE checked eight forced collision, contact, timer and movement paths with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.

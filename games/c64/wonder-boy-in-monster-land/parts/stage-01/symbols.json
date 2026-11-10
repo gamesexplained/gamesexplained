@@ -7286,6 +7286,46 @@
    "text": "The table has three entries; the state index has no local bounds check. The captured $ff00 operand is not a fixed destination."
   },
   {
+   "address": 45643,
+   "type": "line",
+   "text": "If $1A29,X is zero, enter the timer path at $B28E. Otherwise call $792C and $732A; carry clear enters the player-contact path, and carry set tests $1A6D,X."
+  },
+  {
+   "address": 45656,
+   "type": "line",
+   "text": "If $1A6D,X is positive, call $72FC, store 0 at $1AD3,X for carry set or $80 for carry clear, set $1AE4,X to 8 and select state 1 at $1AB1,X. If the parameter is zero or negative, set $1AE4,X to 10 and select state 2."
+  },
+  {
+   "address": 45697,
+   "type": "line",
+   "text": "Call $7227. If it returns carry set, call $5D7A with A=8 and toggle bit 7 of $1AD3,X through $B2F0; then continue to the timer."
+  },
+  {
+   "address": 45710,
+   "type": "line",
+   "text": "Decrement $1AE4,X. A nonnegative result enters movement at $B2C9; a negative result equal to $FA enters $B29D, and any other negative result enters the frame update at $B2F9."
+  },
+  {
+   "address": 45725,
+   "type": "line",
+   "text": "Set $1AE4,X to 20. If the display slot is nonzero, call $72FC and decrement that timer once when carry is set and $1AC2,X is negative, or carry is clear and $1AC2,X is nonnegative. Toggle bit 7 of both $1AD3,X and $1AC2,X, then enter the frame update."
+  },
+  {
+   "address": 45769,
+   "type": "line",
+   "text": "Call $45BC with A=4 when $1AD3,X is negative, or $4574 with A=4 otherwise. If the returned value masked with 6 is not 2, toggle bit 7 of $1AD3,X. Continue to the frame update."
+  },
+  {
+   "address": 45808,
+   "type": "line",
+   "text": "Toggle bit 7 of $1AD3,X and return."
+  },
+  {
+   "address": 45817,
+   "type": "line",
+   "text": "Patch an offset of zero into $B310 when $1AD3,X equals $80, or 8 otherwise. Shift $1AE4,X right once, mask with 2, add $19E5,X and then the patched offset with the carry from the first addition; store the low byte at $19C3,X."
+  },
+  {
    "address": 45824,
    "type": "line",
    "text": "Set the animation offset to zero only when $1ad3,X equals $80; otherwise use eight."

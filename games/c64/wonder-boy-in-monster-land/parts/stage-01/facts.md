@@ -19,3 +19,5 @@ All twelve 63-byte bitmap portions of the six source pairs match the correspondi
 The first captured entity state at $B188 selects reaction states on collision or updates a timer and frame on the movement path. The frame calculation propagates the carry from its first addition into the second. VICE checked six forced paths, including that carry, with collision, overlap and damage callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
 
 The first captured entity reaction paths at $B1ED and $B224 select movement, animate a frame or finish a countdown. VICE checked five forced cases with movement, score and dispatch callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+The second captured entity normal state at $B24B handles collision, player contact, a signed timer, movement and frame selection. VICE checked eight forced paths with collision, overlap, damage and movement callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
