@@ -583,6 +583,26 @@
     "Runtime first-player digit byte written by the score renderer at $39E7"
    ],
    [
+    0,
+    255,
+    "Runtime zero-page variables, pointers and display caches; transition saves, clears and restores their values"
+   ],
+   [
+    6425,
+    7002,
+    "Runtime entity arrays populated from records and updated during play; zero-filled in the resident entry snapshot"
+   ],
+   [
+    19503,
+    19726,
+    "Runtime display-slot arrays filled by the entity display builders; zero-filled in the resident entry snapshot"
+   ],
+   [
+    49152,
+    51199,
+    "Generated screen, meter-bitmap and sprite-pointer output, also reused for transition context; zero-filled in the resident entry snapshot"
+   ],
+   [
     32479,
     49099,
     "31 parts: Load 16, Fifth load, Load 13 and others"
@@ -23549,6 +23569,11 @@
    "text": "Adds packed-BCD score bytes, compares against the record, and can increase meter thresholds. The later meter addition has a carry-dependent edge case documented at $4bae."
   },
   {
+   "address": 19232,
+   "type": "line",
+   "text": "Clear carry, select player Y from $4DBD, set decimal mode and add incoming A to the middle packed-BCD score byte at $4DC3,Y. If carry is set, pass A=0 with that carry to the high-byte addition at $4B37; otherwise continue at $4B3D. The common comparison path handles the remaining effects."
+  },
+  {
    "address": 19250,
    "type": "line",
    "text": "This instruction sequence is present in the capture, but no entry from the traced resident paths is established. Its behavior is conditional on an otherwise unproved entry."
@@ -23912,6 +23937,16 @@
    "address": 20455,
    "type": "line",
    "text": "First 21 stored bytes of the first status-panel colour row. The loop at $3783 reads 22 bytes from $4FE7\u2013$4FFC and writes their low nibbles to colour RAM $D80E\u2013$D823. Its last source byte is shared with the next 21-byte row."
+  },
+  {
+   "address": 20478,
+   "type": "line",
+   "text": "The 19-byte suffix at offsets 2\u201320 of the status colour row based at $4FFC. The HUD copy reads it into colour RAM $D838\u2013$D84A; the item-status loop at $5333 also updates the first six bytes here from its patched colour immediate. Other writers and the following row are separate."
+  },
+  {
+   "address": 20499,
+   "type": "line",
+   "text": "The 19-byte suffix at offsets 2\u201320 of the status colour row based at $5011. The HUD copy reads it into colour RAM $D860\u2013$D872; the item-status loop at $5333 also updates the first six bytes here from the same patched colour immediate used for $4FFE."
   },
   {
    "address": 20518,
@@ -25424,6 +25459,11 @@
    "text": "If $7062 is zero return. Otherwise save Y in $70CA, multiply the incoming metatile byte by 4, add the pointer at $5A/$5B and patch the source address at $708A/$708B. Copy four bytes to ($54),Y at the current column plus offsets 0, 1, 40 and 41."
   },
   {
+   "address": 28811,
+   "type": "line",
+   "text": "High byte of the absolute,X source operand at $7089, patched at $7084 after calculating $5A/$5B plus four times the metatile index. The drawing loop uses that patched source to read the four character codes; changing this byte changes their source page."
+  },
+  {
    "address": 28830,
    "type": "line",
    "text": "Add 2 to $7061. At $28 reset it to zero, add $50 to $54/$55 and decrement $7063; when the count reaches zero clear $7062. Restore the saved input Y from $70CA and return."
@@ -25749,6 +25789,16 @@
    "text": "High byte of the contact-handler jump, patched by $7548 before $754B executes."
   },
   {
+   "address": 30030,
+   "type": "line",
+   "text": "Eighteen captured low bytes for the contact-handler targets, paired with high bytes at $7560. Indexes 0\u201317 reconstruct $74E2, $74E2, $7632, $7632, $763E, $7646, $7656, $7661, $7707, $74E2, $74E2, $763E, $7678, $7688, $769D, $76B2, $76C7 and $76CD. The dispatcher negates the entity type modulo 256 to form the index and does not bound it locally."
+  },
+  {
+   "address": 30048,
+   "type": "line",
+   "text": "Eighteen captured high bytes paired with the contact-handler lows at $754E. The $7536 path loads the pair indexed by the negated entity type into $754C/$754D, then jumps through the patched instruction at $754B. The table size does not establish a bound on every possible type."
+  },
+  {
    "address": 30066,
    "type": "line",
    "text": "Scan slots 7 down to 0, testing only slots whose $4D21,X byte is zero. Return after slot 0."
@@ -25822,6 +25872,21 @@
    "address": 30344,
    "type": "line",
    "text": "Save X and Y in the immediate operands at $7697 and $7699, call $76E9 to set the Gauntlet flag and its ten-contact counter, and display message 11, \u201cWore the Gauntlet.\u201d Restore X and Y and release the entity's display slots."
+  },
+  {
+   "address": 30361,
+   "type": "line",
+   "text": "Immediate LDY operand patched with incoming Y by the message-11 handler at $7688. After calling the flag helper and message routine, the handler restores X from $7697 and Y here, then tail-jumps to $4454."
+  },
+  {
+   "address": 30365,
+   "type": "line",
+   "text": "Save incoming X and Y in the immediate operands at $76AC/$76AE. Call $76F3 to set selected-player flag $80 and counter $4DDE=5, pass A=9 to $77E2, restore X and Y, then tail-jump to $4454."
+  },
+  {
+   "address": 30382,
+   "type": "line",
+   "text": "Immediate LDY operand patched with incoming Y at $769D. The message-9 handler reloads X from $76AC and Y here after its calls, then jumps to the display-slot release entry at $4454."
   },
   {
    "address": 30403,

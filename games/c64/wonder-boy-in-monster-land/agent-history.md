@@ -966,3 +966,5 @@ Checked the resident clamp, stage-field initializer, generator, record copy and 
 Connected each resident entity array to the checked record copier, display/movement paths or a specific load-25 working-field reader. Kept the 17-byte physical spacing separate from caller bounds and avoided assigning a universal meaning to per-type state.
 
 Applied the coverage rule that runtime state and generated output are excluded: zero-page variables, entity arrays, display arrays and generated buffers at $C000–$C7FF. Checked the entry snapshot and typed blocks; the three non-zero-page ranges are all zero and contain no typed code. Preserved their annotations and recorded the scope change separately from newly explained bytes.
+
+Checked all 18 captured contact targets, both player selections for two register-restoring contact handlers and middle-byte BCD carry. Added their table/operand descriptions and connected two HUD colour suffixes and the metatile source-page operand to checked consumers.

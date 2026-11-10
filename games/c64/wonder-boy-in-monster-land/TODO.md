@@ -2,6 +2,19 @@
 
 The run is in progress and has no published tier. The requested Silver needs every part explained and verified; the imported listing was produced by an unproven model and needs the maintainer check described in `kit/CHECKING.md` before Silver can be recorded.
 
+## Required before submission
+
+- Reach 100% coverage across every part and account for every uncounted loaded-data range.
+- Reconcile feature statuses, facts and the visible pages with the final listing; preserve explicit limits on forced tests.
+- Finish the retrospective and metadata, including host/tool versions, and run the required checks, full kit suite, site build and browser checks.
+- Push the complete branch and open the authorized pull request with its validation, page screenshots and any maintainer asks.
+
+The fixed independent sample is complete: one wrong detail in 60 comments, corrected. Later annotation is recorded separately in the accuracy ledger. A full audit is recommended. The maintainer check in `kit/CHECKING.md` remains necessary before this imported analysis can be recorded as Silver.
+
+## Open investigations
+
+The following questions stay explicit where the evidence does not settle them. A bounded forced test does not establish an ordinary-play route.
+
 - Establish the natural routes to the forced loads, classify bytes after the two decoded streams in the extracted disk files and their transfer and determine ownership of repeated data across loads. The two decoded streams reproduce each recorded write range and its entry snapshot, including four post-load patches; `stream-boundaries.json` records the bounded result.
 - Restore or attribute the four older resident annotations at $BE84, $FAC0, $FD30 and $FD50 only after checking the corresponding state. The prior map is saved under resident `work/`.
 - Preserve the resident automatic labels when rebuilding its disassembler project: the reseeded project exports without losing tracked bytes only after those labels are carried into it. Establish whether the effect slot searches can run with fewer than four free slots and what follows if they do.
@@ -14,7 +27,4 @@ The run is in progress and has no published tier. The requested Silver needs eve
 - Determine the type-$02 state-index range and ordinary-play reachability in loads 13, 14, 15, 17 and 19.
 - Determine the type-$2D/$2E state-index range and ordinary-play reachability in load 31, and identify the other uses of their working bytes.
 - Determine the type-$2F state range and ordinary-play reachability in load 31, including whether the exact coordinate equality checks can be crossed.
-- Complete the feature and text investigations, remaining verification, facts, minisite, retrospective and metadata. Build and run the required checks before committing.
-- Push through the contributor fork and open the pull request when the work is ready.
 
-Independent sample 261110 found one wrong detail in 60 comments; it has been corrected. A full audit is recommended. The maintainer check in `kit/CHECKING.md` is still required for Silver.
