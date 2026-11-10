@@ -830,3 +830,5 @@ Checked load-14 type-$13 frame helper in six forced VICE cases, including counte
 Checked load-14 type-$13 contact helper in five forced VICE cases with callbacks stubbed; restored the paused user snapshot.
 
 Checked load-14 type-$13 state 0 in five forced VICE cases with contact, random, movement and animation callbacks stubbed; restored the paused user snapshot.
+
+Classified load-14 immediate-return entity vector entries, sampled five in VICE and checked all vector pairs and bytes in a listing test; restored the paused user snapshot.

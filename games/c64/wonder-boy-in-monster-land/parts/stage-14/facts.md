@@ -146,3 +146,5 @@ Load-14 type-$13 frame helper $A8AC decrements a counter and selects bit 2; $A8B
 Load-14 type-$13 contact helper $A88A branches according to carries from $732A/$7227 and the sign of $1A6D,X. Five forced VICE cases checked the branch outcomes with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
 
 Load-14 type-$13 state 0 at $A822 resets a timer, can change direction and animation mode, then calls movement and animation routines. Five forced VICE cases checked timer, random-result, movement and animation boundaries with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Load 14 has 23 one-byte RTS entries selected by captured entity vectors at $A5A6–$A5B0 and $A8C1–$A8CC. Five forced VICE calls sampled the ranges and preserved A, X and Y; a listing test checks every vector pair and byte. Ordinary-play reachability remains open.
