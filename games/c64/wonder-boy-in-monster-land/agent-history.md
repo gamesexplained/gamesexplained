@@ -946,3 +946,5 @@ Checked five forced built-in sound pointer-table indices in VICE and restored th
 Checked three message pointer IDs in VICE and connected the checked message buffers and screen row to their exact boundaries; restored the paused user snapshot.
 
 Checked four forced unscrolled downward movement cases in VICE, including wrapped additions, and restored the paused user snapshot.
+
+Checked three controlled frame-wait gate/counter cases in VICE with the panel copy stubbed; restored the paused user snapshot.
