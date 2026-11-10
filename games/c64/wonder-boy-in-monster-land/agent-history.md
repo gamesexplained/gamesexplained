@@ -678,3 +678,5 @@ Traced the next panel section in loads 9, 19, 20 and 30. Sixteen forced VICE cas
 Reconciled the load-4 panel code with 22 overlapping visual-character descriptions. Controlled VICE and listing tests establish both byte copying and forced execution; the earlier 200-frame watch remained a bounded observation. The paused user snapshot was restored.
 
 Traced panel input and cursor paths in loads 4, 9, 19, 20 and 30. Twenty-five forced VICE cases and a listing test checked prompt arguments and branch outcomes with callbacks stubbed. The paused user snapshot was restored; physical input mapping and natural reachability remain open. Load-4 character descriptions overlapping this code record both observations.
+
+Traced panel completion and message waiting in loads 4, 9, 19, 20 and 30. Ten forced VICE cases and a listing test checked callback arguments, state writes and the wait loop with callbacks stubbed. The paused user snapshot was restored. Load-4 character descriptions overlapping this code record both observations.
