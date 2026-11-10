@@ -472,6 +472,12 @@ plays is cut content; show it, drawn or played from its bytes, beside
 the search that found nothing loads it. The developers' tools and
 leftover sectors are worth a line when they say how the game was made.
 
+How the game's loader, unpacker or protection works is not a discovery
+and gets no section on any page: its paragraph stays in
+`orientation.md`. A secret found inside one still counts, a message to
+crackers or a name in the loading picture, told as the secret and not
+as a tour of the loader.
+
 When the run found none, leave the tab out and say so in
 `agent-history.md`.
 
