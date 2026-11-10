@@ -24,3 +24,7 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 ## 10 November 2026 (Gold pass 1)
 
 Euan went through the four pages one at a time and approved the changes for each. Overview: Jason's section moved up and the opening links to every section. Discoveries: a labelled strip for the dead victim's second death, links to the Overview, an Oddities section, and a live test of the safe-room quirk (with `$09ED` at 0 a touch did nothing; at 1 it sent the friend to shelter from another building). Maps: door and start-room labels, and the buildings named the lodge, the church and the barn after how they look, since the game names none. Graphics: a walking strip with a pause button, the sprite sheet split by look, Jason's body at `$D3` and the figure in the cross's pair `$FF` noted, and links to the Overview.
+
+## 10 November 2026 (layout)
+
+Euan asked for his own layout, the one The Goonies and Darkman use. The Overview became four story sections (the game, the people behind it, the reception, what the reviewers did not see) with numbered sources on a new `about-layout.html`; the mechanics moved to Gameplay, the controls to Controls, the tunes and the scream to Music, and the room beside the emulator's screenshot to Maps. A search of Wikipedia, GameBase64, Every Game Going, MobyGames, World of Spectrum and the Centre for Computing History found no programmer, artist or musician credited for any version; MobyGames credits only the Spectrum cover artist.

@@ -88,7 +88,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="dead-victim">
   <p class="fig">01 · Bug</p>
   <h2 class="t">Bug: Jason picks a victim he has already killed</h2>
-  <p>When <a href="index.html#jason">Jason reveals himself</a>, <a href="source-game.html#A24C"><code>jason_reveal</code></a> looks through the ten others for the one with the highest exposure. The loop leaves out Jason himself and anyone sheltering in the safe room, and nothing else: a dead friend keeps the exposure they had, so a body can be the victim.</p>
+  <p>When <a href="gameplay.html#jason">Jason reveals himself</a>, <a href="source-game.html#A24C"><code>jason_reveal</code></a> looks through the ten others for the one with the highest exposure. The loop leaves out Jason himself and anyone sheltering in the safe room, and nothing else: a dead friend keeps the exposure they had, so a body can be the victim.</p>
   <p>The hunt that follows does not check either. <a href="source-game.html#B7B4"><code>jason_hunt</code></a> walks Jason to the body's room and sets the victim's state to panicking, which brings the body back into play to be killed a second time. In the emulator, with friend 6 dead, Jason as friend 5, and friend 6 given the highest exposure, the next try revealed Jason and friend 6's state at <a href="source-game.html#090E"><code>actor_state</code></a> went through the three steps below.</p>
   <div class="plate"><ol class="ft-steps">
     <li><span class="n">Step 1</span><span class="v">0</span><span class="w">Dead</span><span class="d">Killed earlier in the round, but still the most exposed.</span></li>
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="calm-head">
   <p class="fig">02 · Bug</p>
   <h2 class="t">Bug: at full fear the head is the calmest one</h2>
-  <p class="lede">Fear runs from 0 to 80, and the <a href="index.html#panel">panel</a> shows it as one of eight heads, picked by fear divided by 10. Fear 80 divided by 10 is 8, one past the last head.</p>
+  <p class="lede">Fear runs from 0 to 80, and the <a href="gameplay.html#panel">panel</a> shows it as one of eight heads, picked by fear divided by 10. Fear 80 divided by 10 is 8, one past the last head.</p>
   <div class="plate"><canvas id="hdCv" class="ft-px" style="max-width:420px"></canvas>
     <label class="ft-lab">Fear <b id="hdV"></b><input type="range" id="hdF" min="60" max="80" value="79" class="ft-range"></label>
     <p class="cap">The page runs the game's <a href="source-game.html#C15C"><code>draw_fear_head</code></a> on a copy of the C64's processor and draws the head's 16 characters from the panel's character set.</p></div>
@@ -112,7 +112,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="bonus">
   <p class="fig">03 · Bug</p>
   <h2 class="t">Bug: the biggest bonus is for saving nobody</h2>
-  <p class="lede">Kill Jason and the <a href="index.html#score">round's bonus</a> is meant to be 1,000 on screen for each friend still alive. With every friend dead it is 25,600.</p>
+  <p class="lede">Kill Jason and the <a href="gameplay.html#score">round's bonus</a> is meant to be 1,000 on screen for each friend still alive. With every friend dead it is 25,600.</p>
   <div class="plate"><label class="ft-lab">Friends alive when Jason dies: <b id="bnV"></b><input type="range" id="bnN" min="0" max="9" value="0" class="ft-range"></label>
     <p class="ft-read" id="bnOut"></p>
     <p class="cap">The page runs the bonus part of <a href="source-game.html#925E"><code>round_won</code></a>, from <code>$9266</code> to <code>$928C</code>, on a copy of the C64's processor and reads the score it leaves.</p></div>
@@ -122,7 +122,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="shelter-anywhere">
   <p class="fig">04 · Quirk</p>
   <h2 class="t">One visit to the safe room lets you shelter friends from anywhere</h2>
-  <p><a href="source-game.html#BE18"><code>send_to_shelter</code></a> sends a friend you touch to the <a href="index.html#safe-room">safe room</a> only if <a href="source-game.html#09ED"><code>safe_room_seen</code></a> is set. The flag looks as if it means "the player is in the safe room", but <a href="source-game.html#A2A2"><code>draw_room</code></a> sets it when it draws the safe room and nothing clears it until <a href="source-game.html#9A7D"><code>start_play</code></a> begins the next round. After one visit, any friend you bump into, in any room, turns round and walks to shelter.</p>
+  <p><a href="source-game.html#BE18"><code>send_to_shelter</code></a> sends a friend you touch to the <a href="gameplay.html#safe-room">safe room</a> only if <a href="source-game.html#09ED"><code>safe_room_seen</code></a> is set. The flag looks as if it means "the player is in the safe room", but <a href="source-game.html#A2A2"><code>draw_room</code></a> sets it when it draws the safe room and nothing clears it until <a href="source-game.html#9A7D"><code>start_play</code></a> begins the next round. After one visit, any friend you bump into, in any room, turns round and walks to shelter.</p>
   <p>The emulator agrees. With the safe room in room 25 and you in room 38, a friend placed on top of you kept wandering while the flag was 0. With the flag set to 1, as a visit leaves it, the same touch sent the friend to shelter: state 5, heading for room 25, with 32 counts of shelter time, which is 90 minus that friend's exposure of 58.</p>
 </section>
 
@@ -135,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="tune-4">
   <p class="fig">06 · Quirk</p>
   <h2 class="t">A room tune with no room</h2>
-  <p>The six places that start a tune of their own are at <a href="source-game.html#CA6B"><code>tune_places</code></a>, one for each of tunes 1 to 6. Five are rooms. The fourth is $FF, a packed place no room has (area 3, column 7, row 7), so <a href="source-game.html#CA51"><code>place_tune</code></a> never starts tune 4 and it is heard only when Jason reveals himself. The <a href="index.html#music">How it works</a> tab plays all seven.</p>
+  <p>The six places that start a tune of their own are at <a href="source-game.html#CA6B"><code>tune_places</code></a>, one for each of tunes 1 to 6. Five are rooms. The fourth is $FF, a packed place no room has (area 3, column 7, row 7), so <a href="source-game.html#CA51"><code>place_tune</code></a> never starts tune 4 and it is heard only when Jason reveals himself. The <a href="music.html#music">Music</a> page plays all seven.</p>
 </section>
 
 <section id="leftovers">
@@ -152,8 +152,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">08 · Quirk</p>
   <h2 class="t">Oddities: a fixed exposure and a second axe</h2>
   <ul>
-    <li>Every friend's <a href="index.html#jason">exposure</a> is random, from 10 to 74, except friend 1's, which <a href="source-game.html#AEE0"><code>init_actors</code></a> sets to 60 every round (<a href="source-game.html#092F"><code>$092F</code></a>).</li>
-    <li>Object types 7 and 9 have the same picture, the axe (<a href="source-game.html#A59F"><code>object_sprite</code></a>), and the same damage and points, so two of the eleven <a href="index.html#weapons">weapons</a> are the same one.</li>
+    <li>Every friend's <a href="gameplay.html#jason">exposure</a> is random, from 10 to 74, except friend 1's, which <a href="source-game.html#AEE0"><code>init_actors</code></a> sets to 60 every round (<a href="source-game.html#092F"><code>$092F</code></a>).</li>
+    <li>Object types 7 and 9 have the same picture, the axe (<a href="source-game.html#A59F"><code>object_sprite</code></a>), and the same damage and points, so two of the eleven <a href="gameplay.html#weapons">weapons</a> are the same one.</li>
   </ul>
 </section>
 

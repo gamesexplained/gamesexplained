@@ -1,5 +1,5 @@
 'use strict';
-// Holds the room drawing that index.html, levels.html and graphics.html share: every copy of the
+// Holds the room drawing that levels.html and graphics.html share: every copy of the
 // block friday-room is the same, and fridayRoom draws each of the 44 rooms with the game's
 // draw_room on the kit's 6502, leaving its area, column and row where room_number would and a
 // tile map at room_map ($0894) equal to the room's 32 bytes at $0C00 + 32 x room, step tiles

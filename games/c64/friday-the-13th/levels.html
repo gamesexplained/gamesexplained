@@ -39,10 +39,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ft-grid button[aria-pressed="true"]{border-color:var(--ink)}
 .ft-grid canvas{width:100%;image-rendering:pixelated;display:block}
 .ft-tag{position:absolute;left:3px;top:3px;font:500 11px/1.3 var(--fm);background:rgba(255,255,255,.88);color:var(--ink);border-radius:3px;padding:1px 4px}
+.ft-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.ft-px{width:100%;image-rendering:pixelated;display:block}
 .ft-mark{position:absolute;right:3px;bottom:3px;max-width:calc(100% - 6px);text-align:right;font:500 10px/1.3 var(--fm);background:var(--chip);color:var(--chip-ink);border-radius:3px;padding:1px 4px}
 .ft-big canvas{width:100%;max-width:768px;image-rendering:pixelated;display:block;margin:0 auto}
 .ft-table{border-collapse:collapse;font-size:14px;width:100%}
 .ft-table td,.ft-table th{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+@media (max-width:760px){.ft-two{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -55,7 +58,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · Room viewer</p>
   <h2 class="t">Any room, drawn the way the game draws it</h2>
-  <p class="lede">Pick a room in any of the four maps below, or step through them here. The labels on each map say where a door leads, which rooms start a <a href="index.html#music">tune</a> of their own, and where you and the ten others begin a round.</p>
+  <p class="lede">Pick a room in any of the four maps below, or step through them here. The labels on each map say where a door leads, which rooms start a <a href="music.html#music">tune</a> of their own, and where you and the ten others begin a round.</p>
   <div class="plate ft-big"><canvas id="ftBig" width="256" height="128"></canvas>
     <div class="pick" style="margin-top:12px"><a class="step" id="ftPrev" aria-label="Previous room">‹</a><select id="ftSel" aria-label="Room"></select><a class="step" id="ftNext" aria-label="Next room">›</a></div>
     <p class="cap" id="ftBigCap"></p></div>
@@ -64,7 +67,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">02 · The camp</p>
   <h2 class="t">Outdoors: 24 rooms, 4 across and 6 down</h2>
-  <p class="lede">The woods and the lake around the cabins. Walk off any side of a room and <a href="index.html#room">the next one is drawn</a>; the edge of the map stops you. Three rooms have a door into a building.</p>
+  <p class="lede">The woods and the lake around the cabins. Walk off any side of a room and <a href="levels.html#room">the next one is drawn</a>; the edge of the map stops you. Three rooms have a door into a building.</p>
   <div class="plate"><div class="ft-grid" id="ftArea0" style="grid-template-columns:repeat(4,1fr)"></div>
     <p class="cap" id="ftCap0"></p></div>
 </section>
@@ -93,8 +96,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap" id="ftCap3"></p></div>
 </section>
 
+<section id="room">
+  <p class="fig">06 · A room, rebuilt</p>
+  <h2 class="t">One room drawn by the game's own routine</h2>
+  <p class="lede">Rooms are built from tiles of cells laid over a background, by <a href="source-game.html#A2A2"><code>draw_room</code></a>. The page runs that routine, unchanged, on the game's bytes.</p>
+  <div class="plate"><div class="pick"><a class="step" id="rmPrev" aria-label="Previous room">‹</a><select id="rmSel" aria-label="Room"></select><a class="step" id="rmNext" aria-label="Next room">›</a></div>
+    <div class="ft-two"><canvas id="rmCv" width="256" height="128" class="ft-px"></canvas><img src="reference/play-church.png" alt="The emulator's picture of room 39" id="rmShot" class="ft-px"></div>
+    <p class="cap" id="rmCap">Room 39, beside the emulator's screenshot of the same room. Of the play area's 32,768 pixels, 292 differ, all of them in the two places where people stand: people are sprites, which <code>draw_room</code> does not draw.</p></div>
+  <p>Each room is 8 tiles across and 4 down, 32 bytes at <a href="source-game.html#0C00"><code>$0C00</code></a> plus 32 times the room's number. A tile is 4 by 4 cells, and a cell is 8 by 8 multicolour pixels. The cells' see-through pixels let the background show: plain grey outdoors, and indoors one perspective picture of walls and floor that every building room shares, recoloured for each room from two bytes at <a href="source-game.html#AA5E"><code>room_colours</code></a>.</p>
+  <p>The room is also the collision map. Its 32 tiles are copied to <a href="source-game.html#0894"><code>room_map</code></a>, and <a href="source-game.html#AE8F"><code>tile_kind</code></a> sorts the tile under each foot into open, solid, or climbable. Outdoors, walking off a side of the screen moves you one room across the 4 by 6 grid; in a building, the floor narrows with depth, and you leave through the doorways in the walls.</p>
+</section>
+
 <section>
-  <p class="fig">06 · How a room is stored</p>
+  <p class="fig">07 · How a room is stored</p>
   <h2 class="t">32 tiles a room, 16 cells a tile</h2>
   <p>Each room is 32 bytes at <code>$0C00</code> plus 32 times its number: 8 tile numbers across and 4 down. A tile is 32 bytes at <code>$8000</code> plus 32 times its number, 4 cells across and 4 down, each a two-byte number of an 8-byte multicolour cell at <code>$1180</code>. <a href="source-game.html#A2A2"><code>draw_room</code></a> lays the tiles over a background: a plain grey field outdoors, and in a building the same perspective picture of walls and floor for every room (a 16 by 32 map of patterns at <code>$0400</code>), recoloured from two bytes per room at <a href="source-game.html#AA5E"><code>$AA5E</code></a>. A cell's %00 pixel pairs let that background show through, so the furniture stands on the floor.</p>
   <p>In a building, a room on the building's outer edge gets its doorway on that side painted over by <a href="source-game.html#C21A"><code>draw_area_edges</code></a>: the side walls' doors on the left and right edges, and a block of the back wall on the first row.</p>
@@ -181,13 +195,28 @@ function fridayPaint(cv, r, PAL) {
       }
     }
     $('ftCap0').innerHTML = 'Rooms 0 to 23, room 0 at the top left. A room\'s number is the area\'s first room plus its row times the area\'s width plus its column (<code>room_number</code>). The doors into the buildings are in rooms 17, 11 and 9. A label says where a door leads and who starts the round in that room.';
-    $('ftCap1').innerHTML = 'Rooms 24 to 35. The door in room 17 brings you in at room 24, the top left, and the way out there leads back to room 17. Any building room, 24 to 43, can be the <a href="index.html#safe-room">safe room</a>.';
+    $('ftCap1').innerHTML = 'Rooms 24 to 35. The door in room 17 brings you in at room 24, the top left, and the way out there leads back to room 17. Any building room, 24 to 43, can be the <a href="gameplay.html#safe-room">safe room</a>.';
     $('ftCap2').textContent = 'Rooms 36 to 39. The door in room 11 brings you in at room 36, and the way out there leads back to room 11. Room 38 is where each round starts.';
     $('ftCap3').textContent = 'Rooms 40 to 43. The door in room 9 brings you in at room 40, and the way out there leads back to room 9.';
     for (let n = 0; n < 44; n++) { const o = document.createElement('option'); o.value = String(n); o.textContent = 'Room ' + n + ', ' + NAMES[rooms[n].area]; $('ftSel').appendChild(o); }
     $('ftSel').onchange = e => show(+e.target.value);
     $('ftPrev').onclick = () => show(cur - 1); $('ftNext').onclick = () => show(cur + 1);
     show(38);
+
+    // Room 39 beside the emulator
+    const sel = $('rmSel');
+    for (let n = 0; n < 44; n++) { const o = document.createElement('option'); o.value = n; const a = n < 24 ? 0 : n < 36 ? 1 : n < 40 ? 2 : 3; o.textContent = 'Room ' + n + ', ' + NAMES[a]; sel.appendChild(o); }
+    let rcur = 39;
+    const showRoom = n => {
+      rcur = (n + 44) % 44; sel.value = rcur;
+      fridayPaint($('rmCv'), rooms[rcur], C64.PAL);
+      $('rmShot').style.display = rcur === 39 ? '' : 'none';
+      if (rcur !== 39) $('rmCap').textContent = 'Room ' + rcur + ', drawn by draw_room from its 32 tiles at $' + (0x0C00 + rcur * 32).toString(16).toUpperCase() + '. Room 39 has the emulator\'s picture beside it.';
+      else $('rmCap').textContent = 'Room 39, beside the emulator\'s screenshot of the same room. Of the play area\'s 32,768 pixels, 292 differ, all of them where the two people stand: people are sprites, which draw_room does not draw.';
+    };
+    sel.onchange = () => showRoom(+sel.value); $('rmPrev').onclick = () => showRoom(rcur - 1); $('rmNext').onclick = () => showRoom(rcur + 1);
+    showRoom(39);
+
   });
 })();
 </script>

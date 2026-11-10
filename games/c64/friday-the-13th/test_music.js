@@ -1,5 +1,5 @@
 'use strict';
-// Holds index.html's music player, the game's own music code on the kit's 6502 as sid.js hands it
+// Holds music.html's music player, the game's own music code on the kit's 6502 as sid.js hands it
 // to createDriver, against that code run on the kit's simulator directly over the listing's
 // memory: each of the seven tunes, started by play_tune ($C4D8) as the game starts it, then
 // irq_music ($C604) once a frame for 3,000 frames, every SID write compared in order.
@@ -7,7 +7,7 @@ const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const kit = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
-const { createDriver, FRIDAY_TUNES } = g.run('index.html', 'createDriver', 'createDriver', 'FRIDAY_TUNES');
+const { createDriver, FRIDAY_TUNES } = g.run('music.html', 'createDriver', 'createDriver', 'FRIDAY_TUNES');
 const ram = g.listing('parts/game/listing.json').ram;
 const FRAMES = 3000;
 let bad = 0;

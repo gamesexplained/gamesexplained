@@ -1,5 +1,5 @@
 'use strict';
-// Holds index.html's scream player, a port of play_scream ($3600) called once a bit, against the
+// Holds music.html's scream player, a port of play_scream ($3600) called once a bit, against the
 // game's routine run on the kit's 6502 over the listing's memory: every write to the sound chip,
 // in order, and the number of bits. Also says how many cycles the game's loop takes between
 // volume writes, which the page's SCREAM_PERIOD is the average of.
@@ -7,7 +7,7 @@ const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const kit = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
-const { createScreamDriver, SCREAM_PERIOD } = g.run('index.html', 'createScreamDriver', 'createScreamDriver', 'SCREAM_PERIOD');
+const { createScreamDriver, SCREAM_PERIOD } = g.run('music.html', 'createScreamDriver', 'createScreamDriver', 'SCREAM_PERIOD');
 const ram = g.listing('parts/game/listing.json').ram;
 const m = ram.slice(), game_w = [], vol = [];
 const cpu = new CPU(m, { port: 0x36, io: { read: a => { throw new Error('read ' + a.toString(16)); },

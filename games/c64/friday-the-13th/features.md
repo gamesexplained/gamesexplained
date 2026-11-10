@@ -13,6 +13,7 @@ Sources:
 - Wikipedia, "Friday the 13th: The Computer Game", read 9 November 2026: Domark, 1986, C64, Amstrad CPC and ZX Spectrum; five levels; the player is a random character each round; weapons lie about the camp and its buildings; a fear meter shows as a blonde woman's head; Jason often appears disguised as one of the friends.
 - ZZAP!64 issue 10 (street date 9 January 1986), as quoted on the GameBase64 "Game of the Week" page, read 9 November 2026. Second-hand: the fetch tool could read the page but the review is a reviewer's opinion, not a statement of mechanics.
 - The C64-Wiki has no page for this game (9 November 2026).
+- Credits and reception, read 10 November 2026: GameBase64's ZZAP!64 10 page ("Programmed by ?"), Every Game Going's transcriptions of the ZZAP!64, Commodore User 28 and Computer and Video Games reviews, MobyGames (credits for the Spectrum version only), World of Spectrum and the Centre for Computing History (no authors listed). None names who wrote the game.
 
 ## Features
 
