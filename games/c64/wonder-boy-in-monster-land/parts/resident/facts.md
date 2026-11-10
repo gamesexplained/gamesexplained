@@ -243,3 +243,7 @@ Resident $1753 and $182A schedule further sprite reuse or the end-of-frame inter
 Resident $1779 counts seven hardware-sprite Y values from $4A through $5F inclusive. VICE checked three forced register sets, including both boundary values. Interrupt timing and ordinary-play reachability remain open.
 
 Resident $0E42 and $0FDC update player facing and horizontal speed for right and left input. They slow an opposite-direction movement before changing direction, and profile 3 skips the speed update on odd $5274 values. VICE checked fourteen forced direction, gate, speed and profile cases. Ordinary-play reachability remains open.
+
+Resident $0FC1 and $115B update player X without viewport scrolling. Their low-byte clamps depend on whether the resulting high byte is zero, so forced 16-bit underflow can avoid the left clamp. VICE checked eight forced boundary and wrap cases. Ordinary-play reachability remains open.
+
+VICE also checked four forced unscrolled movement cases through the real $0E83 and $101F callers, including their eight-unit step cap. Ordinary-play reachability remains open.
