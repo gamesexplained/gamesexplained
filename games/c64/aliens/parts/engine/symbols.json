@@ -25,7 +25,7 @@
    [
     16384,
     48895,
-    "7 parts: Level 6: The power loader's lift, Level 4: Air duct maze scramble, Level 6: The Queen and others"
+    "9 parts: Level 6: The power loader's lift, Level 4: Air duct maze scramble, Level 6: The Queen and others"
    ],
    [
     49664,
@@ -35,7 +35,7 @@
    [
     57344,
     65535,
-    "7 parts: Level 1: Drop-Ship maneuvers, Level 3: Operations room rampage, Level 4: Air duct maze scramble and others"
+    "9 parts: Level 1: Drop-Ship maneuvers, Level 3: Operations room rampage, Level 4: Air duct maze scramble and others"
    ]
   ],
   "extra": [],
@@ -57,7 +57,7 @@
    [
     16384,
     48895,
-    "7 parts: Level 6: The power loader's lift, Level 4: Air duct maze scramble, Level 6: The Queen and others"
+    "9 parts: Level 6: The power loader's lift, Level 4: Air duct maze scramble, Level 6: The Queen and others"
    ],
    [
     49664,
@@ -67,7 +67,7 @@
    [
     57344,
     65535,
-    "7 parts: Level 1: Drop-Ship maneuvers, Level 3: Operations room rampage, Level 4: Air duct maze scramble and others"
+    "9 parts: Level 1: Drop-Ship maneuvers, Level 3: Operations room rampage, Level 4: Air duct maze scramble and others"
    ]
   ]
  },
@@ -5282,7 +5282,7 @@
   },
   {
    "address": 10463,
-   "name": "title_tune",
+   "name": "briefing_tune",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5306,19 +5306,19 @@
   },
   {
    "address": 10642,
-   "name": "title_voice1",
+   "name": "briefing_voice1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 10693,
-   "name": "title_voice2",
+   "name": "briefing_voice2",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 10723,
-   "name": "title_voice3",
+   "name": "briefing_voice3",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -6734,7 +6734,7 @@
   {
    "address": 2950,
    "type": "line",
-   "text": "No key in the matrix: reads the joysticks, then clears the keyboard state."
+   "text": "No key read: reads the joysticks, then clears the keyboard state. read_keys comes here from $0BA8 when a joystick line is low on both of CIA 1's ports (a stick pushed or fire held), whatever keys are down, and from $0BAD when no key is down."
   },
   {
    "address": 2953,
@@ -7209,7 +7209,7 @@
   {
    "address": 4888,
    "type": "line",
-   "text": "The bytes just used, patched into the SBC that takes them off the length."
+   "text": "One less than the bytes just used, patched into the SBC: it runs with the carry clear, so it takes off one more, the bytes used."
   },
   {
    "address": 4902,
@@ -7554,7 +7554,7 @@
   {
    "address": 8751,
    "type": "line",
-   "text": "Sets up the text screen the briefings and the status update use: stops the stage's sprites ($045A), points the raster call at $149F, sets the VIC-II registers from the list after its call, starts the title music (start_music with the tune list at $28DF), turns on the raster interrupt, sets text to the bitmap at $6000 with its screen at $5C00, selects VIC-II bank 1 ($4000), clears $1326-$132C, clears the screen and colour and, if $0203 is 0, prints the list at $14C9 and waits for ever."
+   "text": "Sets up the text screen the briefings and the status update use: stops the stage's sprites ($045A), points the raster call at $149F, sets the VIC-II registers from the list after its call, starts the briefing tune (start_music with the tune list at $28DF), turns on the raster interrupt, sets text to the bitmap at $6000 with its screen at $5C00, selects VIC-II bank 1 ($4000), clears $1326-$132C, clears the screen and colour and, if $0203 is 0, prints the list at $14C9 and waits for ever."
   },
   {
    "address": 8770,
@@ -7564,12 +7564,12 @@
   {
    "address": 8799,
    "type": "line",
-   "text": "Starts the title tune (start_music, its header at $28DF inline), turns on the raster interrupt and waits a frame, then sets text to the bitmap at $6000 and screen $5C00 in VIC-II bank 1, clears the status bytes and the screen; with no marines left shows the memorandum and loops for ever at $2299."
+   "text": "Starts the briefing tune (start_music, its header at $28DF inline), turns on the raster interrupt and waits a frame, then sets text to the bitmap at $6000 and screen $5C00 in VIC-II bank 1, clears the status bytes and the screen; with no marines left shows the memorandum and loops for ever at $2299."
   },
   {
    "address": 8860,
    "type": "line",
-   "text": "With marines left: fills the screen colours $5C00-$5FE7 with $66 and returns."
+   "text": "With the stage not lost ($0203 non-zero): fills the screen colours $5C00-$5FE7 with $66 and returns."
   },
   {
    "address": 8887,
@@ -8039,12 +8039,12 @@
   {
    "address": 10463,
    "type": "line",
-   "text": "The title tune's header, named by the JSR start_music at $225F: the start addresses of its three voices, $2992, $29C5 and $29E3."
+   "text": "The tune of the text screens, the briefings and the status update: its header, named by the JSR start_music at $225F, holds the start addresses of its three voices, $2992, $29C5 and $29E3."
   },
   {
    "address": 10469,
    "type": "line",
-   "text": "The first voice of a second tune whose header is at $345A ($28E5, $2939, $2978). It opens with tempo $91, volume 0 and fade-in (D3), so it rises out of silence; no code in the engine or the six levels' snapshots names the header, so when it plays is unknown. The voices are command and note bytes as music_tick reads them; patterns are called with $C0-$C3 and the voices loop with $F2."
+   "text": "The first voice of tune2, whose header is at $345A ($28E5, $2939, $2978). It opens with tempo $91, volume 0 and fade-in (D3), so it rises out of silence. The title screen plays it ($83D3), its credits and logo following the tune's markers (command $F4), and so does the ending after the Queen fight ($88E4). The voices are command and note bytes as music_tick reads them; patterns are called with $C0-$C3 and the voices loop with $F2."
   },
   {
    "address": 10553,
@@ -8059,17 +8059,17 @@
   {
    "address": 10642,
    "type": "line",
-   "text": "The title tune's first voice: tempo $91, volume 13, then patterns called from $2A36 and $2A60."
+   "text": "The briefing tune's first voice: tempo $91, volume 13, then patterns called from $2A36 and $2A60."
   },
   {
    "address": 10693,
    "type": "line",
-   "text": "The title tune's second voice."
+   "text": "The briefing tune's second voice."
   },
   {
    "address": 10723,
    "type": "line",
-   "text": "The title tune's third voice, and from $29ED the patterns the two tunes share, each ending with command $F1."
+   "text": "The briefing tune's third voice, and from $29ED the patterns it shares with tune2, each ending with command $F1."
   },
   {
    "address": 10729,
@@ -8319,7 +8319,7 @@
   {
    "address": 13402,
    "type": "line",
-   "text": "The header of a second tune: its three voices start at $28E5, $2939 and $2978. No code names it."
+   "text": "The header of tune2: its three voices start at $28E5, $2939 and $2978. Started by the title screen at $83D3 and by the ending after the Queen fight at $88E4."
   },
   {
    "address": 13407,
@@ -8524,7 +8524,7 @@
   {
    "address": 13698,
    "type": "line",
-   "text": "Sound effect record (start $35A3, every frame $363D, voice 1 $35E7, voice 2 $35F3, no length, priority 40): three ring-modulated triangle voices whose frequencies are set at random every frame, a warbling electronic noise; after 40 frames voice 1's routine releases the voices and after a random 16 to 47 frames voice 2's silences the effect. Started by levels 2, 3, 4 and 5 ($8CD0, $8593, $89FC, $8961, $9028)."
+   "text": "Sound effect record (start $35A3, every frame $363D, voice 1 $35E7, voice 2 $35F3, no length, priority 40): three ring-modulated triangle voices whose frequencies are set at random every frame, a warbling electronic noise; after 40 frames voice 1's routine releases the voices and after a random 16 to 47 frames voice 2's silences the effect. Started by levels 2, 3, 4 and 5 ($8CD0, $8593, $89FC, $8961, $9028) and five times in the Queen fight ($8100, $810A, $8139, $8228, $8498)."
   },
   {
    "address": 13710,
@@ -8609,7 +8609,7 @@
   {
    "address": 13944,
    "type": "line",
-   "text": "Sound effect record (start $3699, every frame $35F6, voices $36D3, $36DB and $36E3, no length, priority 20): three ring-modulated triangle voices with a slow attack, rising in pitch until voice 3's routine stops the rise after 32 frames. Started by level 6 at $80AB."
+   "text": "Sound effect record (start $3699, every frame $35F6, voices $36D3, $36DB and $36E3, no length, priority 20): three ring-modulated triangle voices with a slow attack, rising in pitch until voice 3's routine stops the rise after 32 frames. Started by the lift scene at $80AB, and as the power loader's hum in the Queen fight at $8215."
   },
   {
    "address": 13956,
@@ -8869,7 +8869,7 @@
   {
    "address": 14500,
    "type": "line",
-   "text": "Sound effect record (start $38C5, every frame $3ABA, 50 frames, priority 30): two ring-modulated triangles and a noise voice that drift in pitch, the filter following voice 3. Started by level 6 at $8125."
+   "text": "Sound effect record (start $38C5, every frame $3ABA, 50 frames, priority 30): two ring-modulated triangles and a noise voice that drift in pitch, the filter following voice 3. Started by the lift scene at $8125 and by the Queen's cries at $822E."
   },
   {
    "address": 14512,
@@ -8984,7 +8984,7 @@
   {
    "address": 14680,
    "type": "line",
-   "text": "Sound effect record (start $3979, no routines, 40 frames, priority 25): three sawtooth voices a little out of tune ($0861, $0852, $0870), a buzzing chord. Started by level 5 at $94DC."
+   "text": "Sound effect record (start $3979, no routines, 40 frames, priority 25): three sawtooth voices a little out of tune ($0861, $0852, $0870), a buzzing chord. Started by level 5 at $94DC and by stage 1, the briefing and equipment check, at $9062."
   },
   {
    "address": 14692,
@@ -9039,7 +9039,7 @@
   {
    "address": 14740,
    "type": "line",
-   "text": "Sound effect record (start $39B5, no routines, 20 frames, priority 20): three sawtooth voices at $0861, $0430 and $0444. None of the six levels' snapshots starts it."
+   "text": "Sound effect record (start $39B5, no routines, 20 frames, priority 20): three sawtooth voices at $0861, $0430 and $0444. Started by stage 1, the briefing and equipment check, at $9075."
   },
   {
    "address": 14752,
@@ -9094,7 +9094,7 @@
   {
    "address": 14800,
    "type": "line",
-   "text": "Sound effect record (start $39F1, voice 1 $3A14, voice 2 $39F1, no length, priority 20): three sawtooth voices close together ($0323, $0332, $0314) with a slow attack, started again every 80 frames and released by voice 1's routine. None of the six levels' snapshots starts it."
+   "text": "Sound effect record (start $39F1, voice 1 $3A14, voice 2 $39F1, no length, priority 20): three sawtooth voices close together ($0323, $0332, $0314) with a slow attack, started again every 80 frames and released by voice 1's routine. Started by stage 1, the briefing and equipment check, at $88BD, $908E and $909F."
   },
   {
    "address": 14812,
@@ -9214,7 +9214,7 @@
   {
    "address": 14964,
    "type": "line",
-   "text": "Sound effect record (start $3A95, every frame $3ABA, 70 frames, priority 30): three noise voices at $0B44, $0B30 and $0B1C, drifting, with the filter following voice 3. None of the six levels' snapshots starts it."
+   "text": "Sound effect record (start $3A95, every frame $3ABA, 70 frames, priority 30): three noise voices at $0B44, $0B30 and $0B1C, drifting, with the filter following voice 3. No JSR start_effect names it in the engine or in any of the nine stage files' snapshots, and its address appears nowhere else in their memory."
   },
   {
    "address": 14976,
