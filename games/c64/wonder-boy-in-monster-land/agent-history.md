@@ -603,3 +603,5 @@ Traced the first-load third entity normal state $B389. VICE checked ten forced c
 Traced the first-load third entity reaction and exit $B48E/$B4C8. VICE checked five forced cases with movement, score and dispatch callbacks stubbed, including the zero-frame fallthrough into both movement callbacks; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
 
 Traced the resident display-slot sort and the patched viewport-origin operands. VICE checked three forced sort patterns and a cached path; listing tests exercise those cases and the previously checked viewport calculations. Sorting preserves equal-value order before rewriting the first fifteen index pairs. The paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced the first-load payment screen selector. Five controlled VICE cases and a listing test check sufficient and insufficient balances and the record flags, with rendering and slot deletion stubbed. The paused user snapshot was restored; callback effects and natural reachability remain open.

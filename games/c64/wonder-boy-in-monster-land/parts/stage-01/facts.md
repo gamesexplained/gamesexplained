@@ -27,3 +27,5 @@ The second captured entity reaction and exit paths at $B315 and $B34F update dir
 The third captured entity normal state at $B389 handles collision, heading, animation and a signed wave table. Negative and nonnegative horizontal speeds subtract six and five respectively before movement. VICE checked ten forced cases, including both threshold directions and wave wrap, with callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
 
 The third captured entity reaction at $B48E calls the right-movement path after the left path if its first frame sum wraps to zero. VICE checked five forced reaction and exit cases with movement, score and dispatch callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+The first-load payment screen compares the selected player’s two-byte balance with the record’s second amount byte and chooses a prompt or an insufficient-balance message using record field 3. Five forced VICE paths and a listing test check selection with rendering and slot deletion stubbed. Ordinary-play reachability and callback effects remain open.
