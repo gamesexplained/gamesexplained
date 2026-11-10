@@ -409,3 +409,5 @@ The top and bottom scroll tile loops patch immediate operands at $3009 and $2F2E
 The entity fall-state update at $44C7 calls $44DE and stores 1 on carry set. On carry clear it increments the returned Y, undoing that increment only when the result equals 9, then stores it at $1A7E,X. Five forced VICE cases used a stubbed collision routine; values 9 and 255 show that this is not a general clamp for arbitrary inputs.
 
 The visual resource wrapper at $7119 calls $7130, sets CPU port $01 to $30, copies 80 bytes from $C808–$C857 to underlying RAM $D7B0–$D7FF, sets $01 to $35 and returns. A forced VICE case compared every copied byte and checked the final visible port value with the preceding loader stubbed.
+
+The first and fifth message-panel rows at $4EE4 and $4F3C each contain 22 screen codes and are copied to $C00E and $C0AE respectively. A forced VICE case replaced all five row buffers with known patterns and checked all 110 copied screen bytes. Character interpretation depends on the selected character set.

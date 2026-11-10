@@ -934,3 +934,5 @@ Checked four forced top and bottom scroll tile-pair cases in VICE, including sou
 Checked five forced entity fall-state outcomes in VICE with collision stubbed, including out-of-range and wraparound cases; restored the paused user snapshot.
 
 Checked the 80-byte banked visual-resource copy in VICE with the preceding loader stubbed and restored the paused user snapshot. The check reads CPU port $01 through the processor-visible bank rather than underlying RAM.
+
+Checked all five message screen-row copies with known patterns in VICE and restored the paused user snapshot.
