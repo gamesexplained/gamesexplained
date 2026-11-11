@@ -8,10 +8,11 @@ Silver run on Ubuntu 24.04.3, x86_64, Python 3.12.3. Reused local plus4emu 1.2.1
 - `50-coverage`: "Resolve every pointer table before excluding a region": followed the directory at $3300 into all player, fire, and guard banks, retaining the fifth images and graphics tail rather than dismissing them with the fill around them.
 - `60-verify`: "Run each checker alone and wait for its verdicts before going on": paused the parent throughout the independent sample and left the frozen comments unchanged until the verdicts arrived.
 - `50-coverage`: "A comment a program writes is one claim made for every record": corrected all ten generated maze-value descriptions together after the score-carry finding, and checked every packet and all 256 level values against the builder.
+- `60-verify`: "Report it as a lower bound on the true rate": the first draft described its sample estimate that way. The full audit identified the missing sampling-uncertainty qualification; the passage is corrected in the game and filed as #868 for a maintainer's decision on the shared rule.
 
 ## What was changed in the kit
 
-None. Existing rules cover the silent errors found here. The game keeps its routine-comparison tests and browser check beside its pages.
+None. The game keeps its routine-comparison and animation timing tests beside its pages. The sampling-wording ask below concerns the shared verification rule; no shared kit or site file was changed.
 
 ## Candidates
 
@@ -19,7 +20,9 @@ None. The first control probe reached a frame limit during the startup fade. The
 
 ## Maintainer asks
 
-None. No additional kit issue was identified. The later listing audit is a follow-up for this game, rather than a proposed kit change.
+- #868: Clarify sampling uncertainty in listing error rates.
+
+The full audit found that the kit's lower-bound wording was copied into the game's first draft. A sample proportion can be above or below the population proportion through sampling variation. The corrected game calls it an estimate and keeps the interval and checker limitations. The issue asks for the same qualification in the shared reporting rule.
 
 ## What cost the most time
 

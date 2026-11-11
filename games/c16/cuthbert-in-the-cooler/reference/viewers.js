@@ -171,23 +171,36 @@
       player('Cuthbert: right',false,[0,1,2,3]);player('Cuthbert: left',false,[7,6,5,4]);
       player('Cuthbert: down',true,[0,1,2,3]);player('Cuthbert: up',true,[7,6,5,4]);
       for(let type=1;type<=4;type++)groups.push({name:`Guard shape ${type}`,frames:D.enemyFrames.map(b=>b.slice((type-1)*32,type*32)),cols:2,rows:2,colour:D.enemyColours[type-1],delay:290});
-      groups.push({name:'Explosion',source:D.explosion,stride:32,indices:[0,1,2,3],cols:2,rows:2,colour:0x42,delay:165});
+      groups.push({name:'Explosion',source:D.explosion,stride:32,indices:[0,1,2,3],cols:2,rows:2,colour:0x42,delays:Cooler.explosionFrameUpdates.map(n=>n*55)});
       groups.push({name:'Deployed bomb',frames:[
         [...D.font.slice(0x64*8,0x66*8),...D.font.slice(0x62*8,0x64*8)],
         [...D.font.slice(0x66*8,0x68*8),...D.font.slice(0x62*8,0x64*8)]],cols:2,rows:2,colour:0x33,delay:55});
       for(const [name,code,colour]of [['Key',0x44,0x57],['Ring',0x48,0x54],['Apple',0x50,0x42],['Inventory bomb',0x60,0x43]])groups.push({name,frames:[D.font.slice(code*8,(code+4)*8)],cols:2,rows:2,colour,delay:1000});
       groups.push({name:'Lives icon',frames:[D.font.slice(0x68*8,0x69*8)],cols:1,rows:1,colour:0x3a,delay:1000});
       groups.forEach((g,i)=>{const o=document.createElement('option');o.value=i;o.textContent=g.name;$('ct-cast').append(o);});
-      let frame=0,last=0;
+      let frame=0,last=null,elapsed=0;
+      const resetClock=()=>{last=null;elapsed=0;};
       const draw=()=>{
         const g=groups[+$('ct-cast').value],n=g.frames?g.frames.length:g.indices.length;frame%=n;
         const bytes=g.frames?g.frames[frame]:g.source.slice(g.indices[frame]*g.stride,(g.indices[frame]+1)*g.stride);
         drawPixels($('ct-cast-canvas'),bytes,g.cols,g.rows,g.colour,10);
         $('ct-cast-label').textContent=`${g.name} · frame ${frame+1}/${n}`;
       };
-      picker($('ct-cast'),$('ct-cast-prev'),$('ct-cast-next'),()=>{frame=0;draw();},groups.length);
-      $('ct-frame-step').onclick=()=>{frame++;draw();};
-      const animate=t=>{const g=groups[+$('ct-cast').value];if($('ct-animate').checked&&t-last>=g.delay){last=t;frame++;draw();}requestAnimationFrame(animate);};requestAnimationFrame(animate);
+      picker($('ct-cast'),$('ct-cast-prev'),$('ct-cast-next'),()=>{frame=0;resetClock();draw();},groups.length);
+      $('ct-frame-step').onclick=()=>{frame++;resetClock();draw();};
+      $('ct-animate').onchange=resetClock;
+      const animate=t=>{
+        if($('ct-animate').checked) {
+          if(last!==null) {
+            const g=groups[+$('ct-cast').value],count=g.frames?g.frames.length:g.indices.length;
+            const next=Cooler.advanceAnimation(frame,elapsed,t-last,g.delays||Array(count).fill(g.delay));
+            frame=next.frame;elapsed=next.elapsed;
+            if(next.advances)draw();
+          }
+          last=t;
+        } else resetClock();
+        requestAnimationFrame(animate);
+      };requestAnimationFrame(animate);
       for(let phase=0;phase<2;phase++)drawPixels($('ct-retained-'+phase),D.enemyFrames[phase].slice(128,160),2,2,0x57,6);
       drawPixels($('ct-retained-tail'),Array.from(L.ram.slice(0x374a,0x3762)),3,1,0x61,6,true);
       const canvas=$('ct-font'),c=canvas.getContext('2d');canvas.width=640;canvas.height=280;c.fillStyle=black;c.fillRect(0,0,640,280);

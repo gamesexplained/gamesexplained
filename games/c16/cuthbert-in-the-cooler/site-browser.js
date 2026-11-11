@@ -89,8 +89,33 @@ async function check(browser,base,out=null) {
       if(out)await page.screenshot({path:path.join(out,`${file}-${width}.png`)});
     }
   }
+  const paced=await browser.newContext({viewport:{width:1280,height:900}});
+  await paced.addInitScript(()=>{
+    let next=0;const queue=new Map();
+    window.requestAnimationFrame=callback=>{queue.set(++next,callback);return next;};
+    window.cancelAnimationFrame=id=>queue.delete(id);
+    window.__coolerTick=time=>{const callbacks=Array.from(queue.values());queue.clear();for(const callback of callbacks)callback(time);};
+  });
+  const animation=await paced.newPage();animation.on('pageerror',e=>errors.push(String(e)));
+  await animation.goto(url('graphics'));await animation.waitForFunction(()=>globalThis.coolerReady===true);
+  for(const hz of [60,120]) {
+    await animation.locator('#ct-cast').selectOption('1');await animation.locator('#ct-cast').selectOption('0');
+    await animation.evaluate(hz=>{window.__coolerTick(0);for(let n=1;n<=hz;n++)window.__coolerTick(n*1000/hz);},hz);
+    assert.match(await animation.locator('#ct-cast-label').textContent(),/frame 3\/4/,`walking at ${hz} Hz preserves elapsed time`);
+  }
+  await animation.locator('#ct-cast').selectOption('8');await animation.evaluate(()=>window.__coolerTick(0));
+  for(const [time,frame] of [[164,1],[165,2],[329,2],[330,3],[494,3],[495,4],[549,4],[550,1]]) {
+    await animation.evaluate(time=>window.__coolerTick(time),time);
+    assert.match(await animation.locator('#ct-cast-label').textContent(),new RegExp(`frame ${frame}/4`),`explosion at ${time} ms`);
+  }
+  await animation.locator('#ct-animate').uncheck();await animation.evaluate(()=>window.__coolerTick(50000));
+  await animation.locator('#ct-animate').check();await animation.evaluate(()=>window.__coolerTick(60000));
+  assert.match(await animation.locator('#ct-cast-label').textContent(),/frame 1\/4/,'resume starts a fresh interval');
+  await animation.evaluate(()=>window.__coolerTick(60165));
+  assert.match(await animation.locator('#ct-cast-label').textContent(),/frame 2\/4/);
+  await paced.close();
   assert.deepEqual(errors,[],'browser errors');
-  console.log('OK — four tabs, every level/shape, all controls, audible-player buttons, nonblank canvases, and 375/768px layouts');
+  console.log('OK — four tabs, every level/shape, all controls, sound, 375/768px layouts, and actual animation pacing/boundaries');
   await ctx.close();
 }
 

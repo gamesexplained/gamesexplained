@@ -44,7 +44,7 @@
    [
     15176,
     16383,
-    "runtime character slots: fire glyphs $69-$6C at $3B48, per-enemy shifted glyphs $CE-$F7 at $3E70, and the player glyphs $FA-$FF at $3FD0. Their shapes are copied from the authored source frames; the other high slots retain fill."
+    "runtime character slots: fire glyphs $69-$6C at $3B48, normal active-enemy shifted glyphs $CE-$F1 at $3E70-$3F8F, and the player glyphs $FA-$FF at $3FD0. Their shapes are copied from the authored source frames; the other high slots retain fill."
    ]
   ],
   "extra": [
@@ -3708,7 +3708,7 @@
   {
    "address": 92,
    "type": "line",
-   "text": "Seven zero/one movement phases, used for the intermediate half-character shift and for choosing when to move the screen pointer."
+   "text": "Six independent zero/one movement phases at $5C-$61, used for half-character shifts and deciding when to move a screen pointer. The allocated seventh index aliases enemy_colour at $62; that slot stays inactive in normal play."
   },
   {
    "address": 98,
@@ -3718,7 +3718,7 @@
   {
    "address": 106,
    "type": "line",
-   "text": "Seven shape selectors, set to 1-4 from the level modulo eight. select_enemy_glyphs uses shape minus one to index a thirty-two-byte source frame."
+   "text": "Seven shape selectors, set to 1-4 from the level modulo eight. draw_enemy uses shape minus one to select a thirty-two-byte source frame; select_enemy_glyphs computes the destination from the slot index."
   },
   {
    "address": 114,
@@ -3793,7 +3793,7 @@
   {
    "address": 4493,
    "type": "line",
-   "text": "Erase the player, silence sound, delay, compare the six score digits with the high score and copy a qualifying score. Clear the score and show random mazes until fire starts a new game."
+   "text": "Erase the player, silence sound and delay. Compare the five most significant score digits with the high score and copy all six digits when they qualify. Clear the score and show timer-selected nonzero-level mazes until fire starts a new game."
   },
   {
    "address": 4583,
@@ -3818,7 +3818,7 @@
   {
    "address": 4620,
    "type": "line",
-   "text": "Add fade_delta to the 800 maze attributes at $08C8-$0BE7 in four passes, with a busy wait between passes. The top score panel is outside this range."
+   "text": "Add fade_delta to 824 attributes at $08C8-$0BFF in four passes, with a busy wait after each pass. This includes the 800 maze attributes and 24 trailing bytes beyond the visible screen; the top score panel is outside the range."
   },
   {
    "address": 4683,
@@ -3843,7 +3843,7 @@
   {
    "address": 4829,
    "type": "line",
-   "text": "Six ASCII high-score digits and a zero terminator. game_over compares them from most significant digit and replaces them from score_digits when the score qualifies."
+   "text": "Six ASCII high-score digits and a zero terminator. game_over compares the five most significant digits and replaces all six from score_digits when those five qualify; ordinary scoring leaves the ones digit zero."
   },
   {
    "address": 4836,
@@ -3933,7 +3933,7 @@
   {
    "address": 5063,
    "type": "line",
-   "text": "Clear the bomb-tone and explosion-sound flags and sound_scratch; retain the volume nibble with bits 0-2 set and clear the voice/noise enable bits in TED sound control."
+   "text": "Clear the bomb-tone and explosion-sound flags and cleared_sound_byte. Retain the volume nibble with bits 0-2 set and clear the voice/noise enable bits in TED sound control."
   },
   {
    "address": 5084,
@@ -3978,7 +3978,7 @@
   {
    "address": 5210,
    "type": "line",
-   "text": "Poll input, test current enemy/explosion contact and erase the old player; prioritise right, left, up and down. Right tests neighbours on horizontal half-step one, left on zero; vertical motion tests when aligned. Update the pointer/frame and redraw."
+   "text": "Poll input, test current enemy/explosion contact and erase the old player. Test requests in right, left, up, down order. During a vertical half-step, right instead finishes up if up is held, otherwise down; left finishes down if down is held, otherwise up. Once vertically aligned, right tests neighbours on horizontal half-step one and left on zero. Update the pointer/frame and redraw."
   },
   {
    "address": 5407,
@@ -4133,7 +4133,7 @@
   {
    "address": 6191,
    "type": "line",
-   "text": "Four mutable inline character selectors. draw_maze_packet writes consecutive glyph codes here before printing an object, then restores its saved map pointer."
+   "text": "Four mutable inline character selectors. draw_maze_packet writes four consecutive parameters here, beginning at $04, $08 or $10; print_char converts them to glyphs $44-$47, $48-$4B or $50-$53. After printing, the saved map pointer is restored."
   },
   {
    "address": 6197,
@@ -4373,7 +4373,7 @@
   {
    "address": 6890,
    "type": "line",
-   "text": "Count the remaining rearm updates down; once zero, a pressed fire flag starts the explosion and ten-update explosion sound, then immediately enters update_bomb again."
+   "text": "Count the remaining rearm updates down. Once zero, a pressed fire flag sets the explosion sound countdown to ten and starts the explosion, then immediately enters update_bomb again. update_sound enables the explosion noise for nine updates and disables it on the tenth."
   },
   {
    "address": 6918,
@@ -4583,7 +4583,7 @@
   {
    "address": 7911,
    "type": "line",
-   "text": "Read a candidate screen cell through scratch_ptr and Y. Return zero for spaces or codes at least $60, and retain wall/object glyph codes below $60 as blockers."
+   "text": "Read a candidate screen cell through scratch_ptr and Y. Return with Z set for a space (A remains $20) or a code at least $60 (A becomes zero). Other codes below $60 return with Z clear and A unchanged, so callers treat them as blockers."
   },
   {
    "address": 7924,
@@ -4683,12 +4683,12 @@
   {
    "address": 8305,
    "type": "line",
-   "text": "Twenty-four map packets for levels with units digit 5: six wall bits per packet and two object bits. This layout contains 0 keys, 0 rings and 7 apples, with a nominal face-value sum of 2100 points. The score adder can discard carry remainder, so the actual gain depends on the previous score and collection order."
+   "text": "Twenty-four map packets for levels with units digit 5: six wall bits per packet and two object bits. This layout contains 0 keys, 0 rings and 7 apples, with a nominal face-value sum of 2100 points. The score adder can discard carry remainder, so the actual pickup gain depends on the previous score. All seven pickups have the same value, so their order does not change that gain."
   },
   {
    "address": 8329,
    "type": "line",
-   "text": "Twenty-four map packets for levels with units digit 6: six wall bits per packet and two object bits. This layout contains 0 keys, 7 rings and 0 apples, with a nominal face-value sum of 1400 points. The score adder can discard carry remainder, so the actual gain depends on the previous score and collection order."
+   "text": "Twenty-four map packets for levels with units digit 6: six wall bits per packet and two object bits. This layout contains 0 keys, 7 rings and 0 apples, with a nominal face-value sum of 1400 points. The score adder can discard carry remainder, so the actual pickup gain depends on the previous score. All seven pickups have the same value, so their order does not change that gain."
   },
   {
    "address": 8353,

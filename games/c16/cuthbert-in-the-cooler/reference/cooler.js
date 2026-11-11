@@ -105,7 +105,18 @@ const Cooler = (() => {
     if(fresh<45)return {kind:'idle',state:fresh+5,source:'fresh'};
     return {kind:'direction',direction:fresh&3,source:'fresh'};
   }
-  return {D, decode, memory, ted, tile, lifeAfter, useListing, addPickup, horizontalStep, directionCandidate};
+  const explosionFrameUpdates = [3,3,3,1];
+  function advanceAnimation(frame, elapsed, delta, durations) {
+    elapsed += Math.max(0,delta);
+    const cycle=durations.reduce((sum,n)=>sum+n,0),cycles=Math.floor(elapsed/cycle);
+    let advances=cycles*durations.length;
+    elapsed-=cycles*cycle;
+    while(elapsed+1e-8>=durations[frame]) {
+      elapsed-=durations[frame];frame=(frame+1)%durations.length;advances++;
+    }
+    return {frame,elapsed:Math.max(0,elapsed),advances};
+  }
+  return {D, decode, memory, ted, tile, lifeAfter, useListing, addPickup, horizontalStep, directionCandidate, explosionFrameUpdates, advanceAnimation};
 })();
 if (typeof module !== 'undefined') module.exports = Cooler;
 // end of Cooler

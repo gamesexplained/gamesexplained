@@ -5,7 +5,10 @@ Silver: 100% of the defined engine and authored data is covered. The supplied PR
 ## Toward Gold
 
 - A human reads every authored page, checks its explanations and controls, and curates the copy. Record that review honestly in `game.json`.
-- A later, explicitly requested audit checks every listing comment and draws a new independent sample. The first sample found 16 incorrect details in 80 comments; all 16 were corrected. Its population-weighted rate was 13.2%, before corrections. See `facts.md` for the method and limits.
+
+## Full audit
+
+The contributor requested the full audit after the first Silver draft. A fresh checker examined all 249 comments and 44 document/widget groups. Ten incorrect comment details and twelve article/widget findings were corrected. The fresh independent sample found two incorrect details in 80 comments, both corrected. Its 2.5% detected rate (population-weighted 0.8%) is within the kit's mark. `facts.md` records the method and limits.
 
 ## Questions sources did not settle
 
