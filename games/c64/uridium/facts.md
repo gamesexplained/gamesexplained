@@ -59,6 +59,14 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   `pause_check` (twice), an RTS, `spawn_mine`, `port_colour`.
 - The fuel rod chamber's countdown steps every 256 - `$AE` frames:
   112 frames at level 1 (`chamber_speeds`), 16 at the fastest.
+- The chamber panel's colours: the three backgrounds fade in to white,
+  light grey and dark grey (`$D021`-`$D023` = `$F1`, `$FF`, `$FB`;
+  `chamber_fade`), and the wipe that clears the hull before it
+  (`shift_rows_left`/`_right`) leaves every panel cell at colour `$F8`,
+  so the fourth multicolour (colour RAM's low three bits) is `0`, black:
+  the slot interiors. Traced by running the wipe and `fuel_rod_chamber`
+  on the kit's 6502 and reading the backgrounds and colour RAM; shown on
+  the Graphics tab.
 
 ## Controls
 

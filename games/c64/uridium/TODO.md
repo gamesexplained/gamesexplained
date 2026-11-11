@@ -17,9 +17,6 @@ A human goes through `index.html` and `levels.html` section by section
 
 ## Open
 
-- Graphics: add the fuel rod chamber's characters (`$D200`) once the colours its screen
-  gives each cell are traced (`fuel_rod_chamber`, `chamber_fade`).
-
 - Measure the listing again: the first sample found 13 % of comments
   wrong, and the audit that followed rewrote 21; a second sample with a
   new seed would say what is left (`kit/skills/core/60-verify`).
