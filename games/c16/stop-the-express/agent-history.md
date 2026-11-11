@@ -113,3 +113,8 @@ build. Repeated the complete desktop/mobile checks in a fresh context
 with service workers blocked, asserted the Source audit badge, and
 captured the corrected caution sign. Both viewport runs passed without
 page errors or horizontal overflow.
+
+A final pass measured the sound-model notes for the title and all nine
+effect previews. The lowest reported pitch is about 108.24 Hz, so removed
+the article's unsupported sub-100-Hz speaker sentence. Clarified that
+the effect previews advance once per PAL frame (about 20 ms).
