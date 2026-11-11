@@ -73,10 +73,13 @@ FORMAT = {"zp": "{}", "zpx": "{},x", "zpy": "{},y", "izx": "({},x)", "izy": "({}
           "zpi": "({})", "iax": "({},x)"}
 
 
-def operand(a, m, mode, bs, names, regs, chips):
+def operand(a, m, mode, bs, names, regs, chips, port=()):
     """(text, address) of the operand of the instruction at a. The address is None where
     there is none, and on a chip's register: nothing in the listing is there to link to or
-    to be referenced from."""
+    to be referenced from. `port` is the addresses of the CPU's own port, on a machine whose
+    6502 has one (the 6510's and the 7501's, at $00 and $01). No code runs there, so a JSR or a
+    JMP there is a placeholder the program writes over before it gets to it: it reads as the
+    number the file holds, never as a call into the port by its name, and has no address."""
     if mode == "imp":
         return None, None
     if mode == "imm":
@@ -92,6 +95,8 @@ def operand(a, m, mode, bs, names, regs, chips):
     width = 2 if LEN[mode] == 2 and mode != "rel" else 4
     plain = f"${ta:0{width}X}"
     goes = mode == "rel" or (m in ("jsr", "jmp") and mode == "abs")   # code never runs in the chips
+    if goes and mode == "abs" and ta in port:
+        return plain, None
     if not goes and chips(ta, a):
         return FORMAT[mode].format(regs.get(ta) or plain), None
     return FORMAT[mode].format(names.get(ta) or plain), ta

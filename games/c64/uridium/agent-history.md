@@ -229,3 +229,39 @@ all fifteen Dreadnoughts and checks that every routine ends and that every shape
 and no blank one, is drawn. Found on the way: bullets, mines and explosions never set a colour
 (`sprite_put`), and the Manta turns while the game waits for fire. The fuel rod chamber's
 characters are left off the tab: the colours its screen gives each cell were not traced.
+
+## Controls tab and the fuel rod chamber on Graphics (11 November 2026)
+
+Added a Controls tab (`controls.html`), the standard Controls page the site model gives a game, built
+from the controls already documented in `facts.md` and the source: the joystick (`read_stick`,
+either port; up and down change height, left and right are throttle, and fire held for seven frames
+then up or down rolls the Manta), fire starting a game from any attract screen (`title`), the title
+function keys (`option_keys`, `volume_keys`, `colour_keys`), and pausing with RUN/STOP, with CLR/HOME
+abandoning the game (`read_pause_keys`, `pause_check`). Each entry names its routine and address.
+
+Cleared the Graphics tab's open item: the fuel rod chamber now has a section of its own. The colours
+its screen gives each cell were traced by running the game's own code on the kit's 6502 &mdash; the
+hull wipe (`shift_rows_left`/`_right`) then `fuel_rod_chamber` (`$114E`), stopped at its play loop.
+The wipe leaves every panel cell at colour `$F8`, so the fourth multicolour is black (the slots), and
+`chamber_fade` fades the three backgrounds to white, light grey and dark grey. The section draws the
+chamber rebuilt from memory (it matches `reference/fuel-rod-chamber.png`) and the chamber's own
+character set `$80`-`$BF` (`$D200`, copied to `$7C00`). `gxChamber` in the page is a standalone
+function like `gxRecord`, and `test_ports.py` runs it to check the backgrounds, the character copy,
+and that the wipe left every cell at colour 8. The countdown digit and the flashing bonus are drawn
+only once play reaches the panel, so they are blank in the still, which the caption says.
+
+## Gold curation (11 November 2026)
+
+chunkypixel curated the Silver to Gold, section by section, with the agent
+as hands. The Overview's standfirst and first lede, which an earlier edit had
+put into a marketing tone, were rewritten to `kit/style.md`: a warm but plain
+standfirst that leads with the hook (every collision read from the map's
+characters, never the video chip's registers) and a factual lede for the
+strafing-run section. On Discoveries, the Stars entry (only ten of sixteen
+stars drawn) and the Shots entry (two characters on alternate frames) were cut:
+both restated mechanics the How it works tab already explains beside their
+steppers, rather than the player-can't-see-it corner cases Discoveries is for;
+the three routines that set the star count were folded into How it works so
+nothing was lost. How it works, Controls, Discoveries, Levels, Graphics and
+Music were read and left as they stood. `copy` is `human-edited`, `steward`
+`chunkypixel`. The curation made no changes to the kit.

@@ -18,7 +18,10 @@ does. Other branches (the kit's, or a sweep across games), and edits that only c
 text, are not checked. The branch is compared with its merge base with
 $GITHUB_BASE_REF (set by CI on a pull request), else with whichever of origin/main,
 another remote's main (a fork's upstream) and the local main it was cut from last;
-with no git or no such ref there is nothing to compare, and nothing fails.
+with no git or no such ref there is nothing to compare, and nothing fails. A failure
+ends with the ref the branch was compared with, and, where no remote is the project's
+own repository, how to add one: a fork's main that is behind makes the project's changes
+read as the branch's (#837).
 
 Usage: skill_edits.py [<base ref>]    exit 1 on a problem
 No dependencies.
@@ -27,6 +30,7 @@ import os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HEADING = "## What was changed in the kit"
+PROJECT = "gamesexplained/gamesexplained"       # the repository a fork is of
 GAME = re.compile(r"games/([\w.-]+)/([\w.-]+)")
 SKILL = re.compile(r"^kit/skills/core/([^/]+)/")
 
@@ -114,6 +118,29 @@ def base_ref(root=ROOT):
     return best
 
 
+def compared(base=None, root=ROOT):
+    """Lines for the foot of a failure that depends on what the branch was compared with: the
+    ref, the commit the branch left it at and that commit's date. When no remote is the
+    project's own repository, the lines to add it: origin is then a fork, whose main can be
+    behind the main the branch holds, and the project's changes since read as the branch's
+    (#837). [] with no git or no such ref."""
+    base = base or base_ref(root)
+    mb = git("merge-base", base, "HEAD", root=root)
+    if mb.returncode:
+        return []
+    at = git("log", "-1", "--format=%h of %cs", mb.stdout.strip(), root=root).stdout.strip()
+    out = [f"The branch was compared with {base}, from commit {at} on: every change after it counts as this branch's."]
+    if os.environ.get("GITHUB_BASE_REF"):
+        return out
+    urls = git("remote", "-v", root=root).stdout
+    if not re.search(r"[:/]" + re.escape(PROJECT) + r"(?:\.git)?/?\s", urls):
+        out += [f"No remote here is {PROJECT}. If origin is a fork whose main is behind, changes the project made",
+                "since then are counted too. Add the project and fetch its main, then run the check again:",
+                f"  git remote add upstream https://github.com/{PROJECT}",
+                "  git fetch upstream main"]
+    return out
+
+
 def check(base=None, root=ROOT):
     """Print each problem; return how many."""
     files = changed(base or base_ref(root), root)
@@ -124,4 +151,7 @@ def check(base=None, root=ROOT):
 
 
 if __name__ == "__main__":
-    sys.exit(1 if check(sys.argv[1] if len(sys.argv) > 1 else None) else 0)
+    given = sys.argv[1] if len(sys.argv) > 1 else None
+    if check(given):
+        print("\n".join(compared(given)))
+        sys.exit(1)

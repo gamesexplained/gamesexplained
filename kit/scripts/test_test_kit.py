@@ -7,13 +7,15 @@ file it fails to find is a test that never runs. This checks that it finds
 the tests that exist, that it does not try to run itself, that every
 `SELF_TESTS` entry names a file that is really there and no script with a
 `--test` flag is missing from it, that a skip fails under `--require-tools`,
-and that the declaration a tool-dependent test reads is the one the runner
-exports.
+that the declaration a tool-dependent test reads is the one the runner
+exports, and that `--changed` picks the tests a changed file can reach and
+no others (#833).
 """
 import importlib.util
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -110,6 +112,110 @@ class Discovery(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True)
         self.assertIn("test_z80.py", users.stdout,
                       "test_z80.py should read the variable the runner exports")
+
+
+TREE = {
+    # a decoder the listing tools use, and a test that imports it
+    "kit/cpu/decoder.py": "TABLE = {}\n",
+    "kit/cpu/test_decoder.py": "import decoder\n",
+    # a script that imports the decoder, and a test that runs the script by its path
+    "kit/scripts/lister.py": "import os, sys\nsys.path.insert(0, 'kit/cpu')\nfrom decoder import TABLE\n",
+    "kit/scripts/test_lister.py": "import subprocess\nsubprocess.run(['python3', 'kit/scripts/lister.py'])\n",
+    "kit/scripts/test_other.py": "import os\nprint('*.json', '**', 'kit/scripts')\n",
+    # an emulator core, a machine built on it, and tests in node
+    "kit/cpu/core.js": "module.exports = {};\n",
+    "kit/box/machine.js": "const core = require('../cpu/core.js');\n",
+    "kit/box/test_machine.js": "const M = require('./machine');\n",
+    "kit/box/fixtures/bus.json": "{}\n",
+    "kit/box/test_bus.js": "const path = require('path');\n"
+                           "const f = path.join(__dirname, 'fixtures', 'bus.json');\n",
+    # a game: a port, a page that loads it and the site's library, tests beside them
+    "site/lib/sound.js": "window.Sound = {};\n",
+    "site/lib/keys.js": "window.Keys = {};\n",
+    "games/box/alpha/port/game.js": "module.exports = {};\n",
+    "games/box/alpha/play.html": '<script src="../../lib/sound.js"></script>\n<script src="port/game.js"></script>\n',
+    "games/box/alpha/test_play.js": "const kit = '../../../kit/';\nconst M = require(kit + 'box/machine.js');\n"
+                                    "const page = require('fs').readFileSync(__dirname + '/play.html');\n",
+    "games/box/alpha/game.json": "{}\n",
+    "games/box/beta/test_levels.py": "import json\nopen('levels.json')\n",
+    "games/box/beta/levels.json": "{}\n",
+    # a test that reads every game's page, and one that reads a folder of data
+    "kit/scripts/test_pages.py": "import glob\nglob.glob('games/*/*/play.html')\n",
+    "kit/template/index.html": "<html></html>\n",
+    "kit/scripts/test_template.py": "import os\nos.listdir(os.path.join('kit', 'template'))\n",
+}
+
+
+class Changed(unittest.TestCase):
+    """`--changed` runs a test when the branch changes it, a file it loads (or one that file
+    loads), or anything in its game's folder; every other test is left to CI."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        for rel, text in TREE.items():
+            path = os.path.join(cls.tmp.name, rel)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as fh:
+                fh.write(text)
+        cls.runner = runner_module()
+        cls.tests = sorted(f for f in TREE if os.path.basename(f).startswith("test_"))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def picked(self, *changed):
+        return sorted(self.runner.affected(changed, self.tests, files=list(TREE), root=self.tmp.name))
+
+    def test_a_python_decoder_reaches_its_importers_and_no_node_test(self):
+        """The case the option was asked for: two opcodes in the Python decoder."""
+        self.assertEqual(self.picked("kit/cpu/decoder.py"),
+                         ["kit/cpu/test_decoder.py", "kit/scripts/test_lister.py"])
+
+    def test_a_core_reaches_the_tests_of_what_is_built_on_it(self):
+        self.assertEqual(self.picked("kit/cpu/core.js"),
+                         ["games/box/alpha/test_play.js", "kit/box/test_machine.js"])
+
+    def test_a_require_without_its_extension_and_a_path_begun_in_a_variable(self):
+        self.assertEqual(self.picked("kit/box/machine.js"),
+                         ["games/box/alpha/test_play.js", "kit/box/test_machine.js"])
+
+    def test_a_fixture_named_in_the_parts_of_a_join(self):
+        self.assertEqual(self.picked("kit/box/fixtures/bus.json"), ["kit/box/test_bus.js"])
+
+    def test_a_page_s_scripts_count_for_the_test_that_reads_the_page(self):
+        # test_pages.py names the page by a pattern, and what a pattern's files load is not followed
+        self.assertEqual(self.picked("site/lib/sound.js"), ["games/box/alpha/test_play.js"])
+        self.assertEqual(self.picked("site/lib/keys.js"), [])
+
+    def test_anything_in_a_game_s_folder_runs_that_game_s_tests(self):
+        self.assertEqual(self.picked("games/box/alpha/game.json"), ["games/box/alpha/test_play.js"])
+        self.assertEqual(self.picked("games/box/beta/levels.json"), ["games/box/beta/test_levels.py"])
+
+    def test_a_pattern_and_a_folder_stand_for_their_files(self):
+        self.assertIn("kit/scripts/test_pages.py", self.picked("games/box/alpha/play.html"))
+        self.assertEqual(self.picked("kit/template/index.html"), ["kit/scripts/test_template.py"])
+
+    def test_a_changed_test_runs(self):
+        self.assertEqual(self.picked("kit/scripts/test_other.py"), ["kit/scripts/test_other.py"])
+
+    def test_a_folder_of_scripts_or_a_bare_wildcard_is_no_dependency(self):
+        """test_other.py names "kit/scripts", "**" and "*.json": none of them is a file it loads."""
+        for changed in ("kit/scripts/lister.py", "kit/box/fixtures/bus.json", "games/box/beta/levels.json"):
+            self.assertNotIn("kit/scripts/test_other.py", self.picked(changed))
+
+    def test_a_file_no_test_names_runs_nothing(self):
+        self.assertEqual(self.picked("README.md"), [])
+
+    def test_the_option_lists_and_says_what_it_left_out(self):
+        """On this checkout, whatever it holds: the line that says what was compared and how
+        many tests are left to CI, or that every test runs."""
+        p = subprocess.run([sys.executable, RUNNER, "--changed", "--list"], cwd=ROOT,
+                           capture_output=True, text=True)
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn("--changed:", p.stdout)
+        self.assertRegex(p.stdout, r"are left to CI|running every test")
 
 
 if __name__ == "__main__":

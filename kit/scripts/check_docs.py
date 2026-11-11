@@ -460,8 +460,9 @@ def main():
             print("        is Linux on x86_64 or arm64. A kind of computer new to the kit gets its cell (kit/INSTALL.md)")
             fails += 1
     fails += skill_game_paths()
+    based = 0                               # failures that depend on what the branch is compared with
     if titles:
-        fails += skill_game_names(titles)
+        based += skill_game_names(titles)
         for f in sorted(glob.glob(os.path.join(ROOT, "kit", "lessons", "*.md"))):
             if os.path.basename(f) == "README.md":
                 continue
@@ -489,7 +490,7 @@ def main():
     fails += duplicate_ids()
     fails += platform_notes()
     fails += steps_tables()
-    fails += skill_dated_records()
+    based += skill_dated_records()
     notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
     notes.append("original-source.md")     # what the authors' own source shows, where it survives (build.py)
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
@@ -517,7 +518,11 @@ def main():
             print(f"  x  {os.path.relpath(f, ROOT)}:{n}  skill text that changed what I did: {msg}")
             fails += 1
     from skill_edits import check as skill_edits_check
-    fails += skill_edits_check()
+    based += skill_edits_check()
+    if based:
+        from skill_edits import compared
+        print("\n".join("        " + line for line in compared()))
+    fails += based
     from models import check as models_check
     fails += models_check()
     from accuracy import check as accuracy_check

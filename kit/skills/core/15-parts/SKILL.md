@@ -140,6 +140,10 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
 
 From here on, every script that takes a game's folder takes a part's in
 its place.
+A part annotated in the session another part started (one disassembler
+holding both) is exported with `symbols_export.py <part dir> --from <that
+part's dir>`: its own session is empty, and an export read from it holds
+nothing.
 
 ## Outputs
 

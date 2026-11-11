@@ -69,7 +69,12 @@ in order:
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
    python3 kit/scripts/check_listing.py
+   python3 kit/scripts/test_kit.py --changed
    ```
+
+   The last runs the kit tests the branch can affect: the game's own,
+   and those that load a file it changes. It says how many it left
+   out, and CI runs every test on the pull request.
 
    Commit as the contributor, under the GitHub noreply address checked
    at the start (`kit/START.md`); the agent appears only in the commit
@@ -90,7 +95,9 @@ Not every task is a game. A maintainer's agent may be asked to change
 the kit, the skills, the scripts or the site templates. The rules below
 apply unchanged, and so does the delivery: branch as `kit/<topic>` or
 `site/<topic>`, run the three checks, run
-`python3 kit/scripts/test_kit.py` (every kit test), run
+`python3 kit/scripts/test_kit.py --changed` (the kit tests the branch can
+affect; CI runs every one on the pull request, and so does the command
+without the option), run
 `python3 kit/scripts/build.py`
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
@@ -404,6 +411,14 @@ the container, and a new container signs in again.
    the effort too: the default model's default was low on 14 October
    2026. An unknown level fails with the list the server accepts, which
    on that day was none, minimal, low, medium, high, xhigh and max.
+   When the contributor named Codex and no model or effort, do not ask:
+   take the strongest model the account lists that
+   `python3 kit/scripts/models.py` shows as proven, at `medium`. If the
+   plan's usage runs down before the checkers finish, go on with the
+   next proven model down, and record both ids. On 5 November 2026 an
+   account on ChatGPT's $20-a-month plan had gpt-6-astra as its
+   strongest, with the highest-numbered gpt-6.x-sol beneath it, and at
+   `medium` a sample of 60 comments ran to its end on that plan.
    `workspace-write` lets the checker write its verdicts in the clone,
    and `-o` keeps its last reply. A prompt given as an argument needs
    `</dev/null` after it, because `codex exec` also reads standard input

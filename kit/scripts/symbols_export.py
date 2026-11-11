@@ -424,6 +424,19 @@ def regions(game):
     return out
 
 
+def from_hint(gdir, argv):
+    """What to say when a part's export holds less than its file, or nothing: its annotations
+    may be in the session another part started, which --from reads. "" for a game that is one
+    load, for an export that was not read from a live session, and when --from was given."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from parts import home
+    if home(gdir)[1] is None or any(k in argv for k in ("--from", "--project", "--ctl")):
+        return ""
+    return ("This folder is a part's. If the part was annotated in the session another part started (one "
+            "disassembler holding both), its own session is empty: export it with --from <that part's "
+            "folder> (#842).")
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -481,11 +494,14 @@ def main():
                  + "\nThe session holds older or other work than the file: most often it was started on another "
                  "snapshot than the listing's, and rebuilt from the file and that snapshot, which differ where "
                  "their bytes do. Start it again on the listing's snapshot, or seed it with symbols_import.py. If "
-                 "the loss is meant (labels or comments deleted, a table typed again), add --force.")
+                 "the loss is meant (labels or comments deleted, a table typed again), add --force."
+                 + ("\n" + from_hint(gdir, argv) if from_hint(gdir, argv) else ""))
     with open(path, "w") as f:
         json.dump(out, f, indent=1)
     users = sum(1 for s in syms if s['kind'] == 'user')
     print(f"wrote {path}: {len(blocks)} blocks, {len(syms)} symbols ({users} user), {len(comments)} comments")
+    if not users and not comments and from_hint(gdir, argv):
+        print("no user label and no comment in it. " + from_hint(gdir, argv))
     for a, name in ported:
         print(f"renamed the user label start at ${a:04X} {name}, the name kit/{plat}/registers.py gives the "
               "machine's own byte there; rename it in the session too")

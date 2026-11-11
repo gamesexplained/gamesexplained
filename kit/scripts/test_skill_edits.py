@@ -148,6 +148,20 @@ class BaseRef(unittest.TestCase):
         self.git("checkout", "-q", "main")
         self.assertEqual(skill_edits.base_ref(self.root), "origin/main")
 
+    def test_a_failure_says_what_it_compared_with(self):
+        # a clone of a fork alone: the ref, the commit, and how to add the project (#837)
+        self.git("update-ref", "refs/heads/main", self.base)
+        lines = skill_edits.compared(root=self.root)
+        self.assertIn("origin/main", lines[0])
+        self.assertIn(self.base[:7], lines[0])
+        self.assertTrue(any("git remote add upstream https://github.com/gamesexplained/gamesexplained" in x for x in lines))
+        # the project's repository among the remotes: the ref alone
+        self.git("remote", "add", "upstream", "https://github.com/gamesexplained/gamesexplained.git")
+        self.git("update-ref", "refs/remotes/upstream/main", self.upstream)
+        lines = skill_edits.compared(root=self.root)
+        self.assertEqual(len(lines), 1)
+        self.assertIn("upstream/main", lines[0])
+
     def test_a_pull_request_names_its_base(self):
         os.environ["GITHUB_BASE_REF"] = "main"
         try:
