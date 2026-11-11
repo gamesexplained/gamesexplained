@@ -1733,7 +1733,7 @@
   },
   {
    "address": 7328,
-   "name": "object_shape_dx",
+   "name": "object_shape_dy",
    "type": "Field",
    "kind": "user"
   },
@@ -4393,7 +4393,7 @@
   {
    "address": 6728,
    "type": "line",
-   "text": "Remaining $1800-bank glyphs include bike icons, digits $52-$5B, punctuation and uppercase letters at $61-$7A. Zero is a blank cell. Bonus and course-selector messages use these glyph indices."
+   "text": "Remaining $1800-bank glyphs include bike icons, digits $52-$5B, punctuation and uppercase letters A-Y at $61-$79. Glyphs $00 and $7A are blank. Bonus and course-selector messages use these glyph indices."
   },
   {
    "address": 7168,
@@ -4438,7 +4438,7 @@
   {
    "address": 7328,
    "type": "line",
-   "text": "Column deltas for the six-cell two-row object shape; entry three moves back two columns for its second row."
+   "text": "Row deltas for the six-cell shape arranged as two columns of three cells. The delta at $1CA3 (index 3) moves up two rows before drawing the second column."
   },
   {
    "address": 7336,
@@ -4493,12 +4493,12 @@
   {
    "address": 7496,
    "type": "line",
-   "text": "Twenty-four custom glyphs spelling EXTRA BIKE AWARDED with exclamation marks."
+   "text": "Twenty-four custom glyphs spelling EXTRA BIKE AWARDED followed by 6 full stops."
   },
   {
    "address": 7520,
    "type": "line",
-   "text": "Twenty-four custom glyphs spelling FIVE BIKES LEFT STILL with exclamation marks."
+   "text": "Twenty-four custom glyphs spelling FIVE BIKES LEFT STILL followed by 3 full stops."
   },
   {
    "address": 7544,
@@ -4548,7 +4548,7 @@
   {
    "address": 7712,
    "type": "line",
-   "text": "Three tables of sixteen course bytes. Masked bits enable candidate types, low nibble plus six sets minimum spacing and high three bits set cloud phase speed."
+   "text": "Three tables of sixteen course bytes. Masked bits enable candidate types. Spawning requires distance $2B greater than the low nibble plus six, so the smallest accepted distance is the low nibble plus seven. The high three bits determine cloud phase speed."
   },
   {
    "address": 7760,
@@ -4628,7 +4628,7 @@
   {
    "address": 8592,
    "type": "line",
-   "text": "Skip two NOPs, compare the four time digits (excluding the separator) with zero glyph $0B. If all are zero and $3B is clear, set it, set bikes to one and start a crash. Uses the screen codes as the timer storage."
+   "text": "Execute three NOPs, compare the four time digits (excluding the separator) with zero glyph $0B. If all are zero and $3B is clear, set it, set bikes to one and start a crash. Uses the screen codes as the timer storage."
   },
   {
    "address": 8627,
@@ -4678,7 +4678,7 @@
   {
    "address": 8764,
    "type": "line",
-   "text": "Visit four active object slots. Types below 8 produce a six-character shape from vertical fine position, type palette and the two-row layout table; cloud types produce four horizontal cells with animated luminance, then optionally queue a lightning bolt."
+   "text": "Visit four active object slots. Types below 8 produce a six-character shape from vertical fine position, type palette and the three-row, two-column layout table; cloud types produce four horizontal cells with animated luminance, then optionally queue a lightning bolt."
   },
   {
    "address": 8892,
@@ -4698,7 +4698,7 @@
   {
    "address": 8944,
    "type": "line",
-   "text": "Advance the six-cell shape index and character code. Apply the column delta table at $1CA0; after its third cell advance one row."
+   "text": "Advance the six-cell shape index and character code. Apply the row delta table at $1CA0; after the third cell advance one column."
   },
   {
    "address": 8962,
@@ -5023,7 +5023,7 @@
   {
    "address": 10436,
    "type": "line",
-   "text": "Advance the game-over counter; at $F0 return to attract mode. After its initial delay, set a changing tone from shifted counter bits."
+   "text": "Advance the game-over counter; at $F0 return to attract mode. For new counter values $20-$9F, set a changing tone from shifted counter bits. Other counter values return without setting that effect."
   },
   {
    "address": 10485,
@@ -5063,7 +5063,7 @@
   {
    "address": 10596,
    "type": "line",
-   "text": "Copy two twenty-four-character bonus lines, map the time HUD digits into single-row digits, look up the bikes bonus for the remaining-bike count, choose the extra-bike or five-bike message and clear the bonus counter."
+   "text": "Copy two twenty-four-character bonus lines, map the time HUD digits into single-row digits, and look up the remaining-bikes bonus. The helper displays FIVE BIKES LEFT STILL at five bikes, or grants an extra bike and displays its message below five bikes on course indices below 16. Below five bikes on later indices it leaves that message row unchanged. Clear the bonus counter."
   },
   {
    "address": 10674,
@@ -5118,7 +5118,7 @@
   {
    "address": 10826,
    "type": "line",
-   "text": "If five bikes remain, display FIVE BIKES LEFT STILL; otherwise add one bike for course numbers below 16 and display EXTRA BIKE AWARDED. Show the low-nibble course multiplier after an X glyph."
+   "text": "At five bikes, display FIVE BIKES LEFT STILL. Below five bikes on course indices below 16, add one bike and display EXTRA BIKE AWARDED. Below five bikes on indices 16 or higher, leave that message row unchanged. In every case display the low-nibble course multiplier after an X glyph."
   },
   {
    "address": 10908,
@@ -5138,7 +5138,7 @@
   {
    "address": 10988,
    "type": "line",
-   "text": "Outside attract, advance the active effect's eight-bit pitch ramp and write its pitch times four to voice 2. Merge effect flags with engine voice, suppress engine in recovery or at zero speed, alternate volume 4/8 by tick parity, and write engine pitch from speed."
+   "text": "Outside attract, advance the active effect's eight-bit pitch ramp and write its pitch times four to voice 2. Merge effect flags with engine voice and suppress engine in recovery or at zero speed. Nonzero speed alternates volume 4/8 by tick parity; zero speed writes volume nibbles $0C/$08, both sounding as 8. Write engine pitch from speed."
   },
   {
    "address": 10995,
@@ -5148,7 +5148,7 @@
   {
    "address": 10996,
    "type": "line",
-   "text": "Advance the shared effect pitch ramp and remaining duration, write voice 2's pitch, combine effect flags with engine voice and alternating volume, then write voice 1 from bike_speed. The state-zero return above keeps attract music in control of audio."
+   "text": "If an effect is active, advance its pitch ramp and remaining duration and write voice 2's pitch. Combine effect flags with engine voice, suppressing engine at zero speed or in recovery. Volume alternates 4/8 at nonzero speed; zero speed writes $0C/$08, both sounding as 8. Write voice 1 from bike_speed. The state-zero return above leaves attract music in control."
   },
   {
    "address": 11096,
@@ -5278,7 +5278,7 @@
   {
    "address": 11584,
    "type": "line",
-   "text": "Decrement the active-slot scan index and continue the collision loop through the remaining slots; return when all four are checked."
+   "text": "Decrement the slot index and continue the collision loop while it is nonnegative. Return after the last slot; a contact found by the continued loop returns immediately without checking later slots."
   },
   {
    "address": 11588,
@@ -5378,7 +5378,7 @@
   {
    "address": 11892,
    "type": "line",
-   "text": "Enter airborne with zero initial vertical velocity when the bike coordinate is above the first sampled surface, or when the first surface has bit 7 set."
+   "text": "Enter airborne with zero initial vertical velocity when the bike coordinate is numerically less than the second sampled surface ($39), or when the first surface flags ($38) have bit 7 set."
   },
   {
    "address": 11916,
@@ -5388,7 +5388,7 @@
   {
    "address": 11920,
    "type": "line",
-   "text": "Start the time-award sound, then inspect the two seconds digits. If both equal zero glyph $0B after an increment wraps them, replace them with nine glyph $14 and corresponding lower halves."
+   "text": "Start the time-award sound only if no effect is active; otherwise preserve the active effect. Then inspect the two seconds digits. If both equal zero glyph $0B after an increment wraps them, replace them with nine glyph $14 and corresponding lower halves."
   },
   {
    "address": 11954,

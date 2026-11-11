@@ -25,6 +25,11 @@ None. The incorrect surface-interval description was caught by the
 existing checker process. The relevant general rule is already in
 60-verify, under “What a test lets through”.
 
+The requested full audit and fresh sample also followed existing
+60-verify rules. Reading callers exposed two conditions omitted even
+after the audit; the fresh checker measured them and the lead corrected
+their repeated wording. No additional shared rule was needed.
+
 The checker did encounter visible tool failures. Its Python command hit
 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`; an
 escalated request waited 637 seconds without a progress report. Another

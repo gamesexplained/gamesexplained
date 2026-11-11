@@ -67,7 +67,9 @@ The engine, its graphics, tune, tables, and sixteen course starts are
 resident together. No tape or disk is attached during play. This is one
 part. The supplied PRG was also booted on the PAL Plus/4: its entry bytes
 at $1000-$3FFF matched the C16, and it reached riding state 2 with five bikes. The terrain base pointer wraps at $3FD8, while its forty-column
-window can read the loaded tail through $3FFF.
+window can read the loaded tail through $3FFE. The loaded allocation
+continues through $3FFF; the last base before wrapping is $3FD7 and the
+greatest display offset is 39.
 
 ## File-to-memory mapping
 

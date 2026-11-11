@@ -89,13 +89,16 @@ stores forty columns; the narrower window hides its scrolling edges.
 The bike is a three-by-three grid. Fine scroll and the low two bits of
 its height select pre-shifted variants through $1CC8/$1CCC ($246C).
 This is position alignment, rather than a wheel animation. Types 0-7 use
-six-cell balloon/cross shapes. Types 8-15 use four-cell clouds, with
+balloon/cross shapes two columns wide and three rows high. The row deltas
+are at $1CA0; $22F0 advances the column after the third cell.
+Types 8-15 use four-cell clouds, with
 attributes changing through $1CA8's 32-entry phase table. Type bit $10
 adds a bolt from glyphs $34-$36 ($22C0).
 
 The double-height HUD uses $0B-$14 for upper digits 0-9 and $1F-$28 for
 their lower halves. Single-row messages use $52-$5B for digits 0-9,
-$61-$7A for A-Z, $00 blank, and $5C exclamation. The title uses standard
+$61-$79 for A-Y, $00 and $7A blank, $5C full stop, and $5E exclamation.
+The title uses standard
 screen codes. Rendered glyphs, the course-number tables $1DC0/$1DD0,
 and bonus digits establish these separate alphabets.
 
@@ -129,6 +132,9 @@ five on the first sixteen course indices ($2A4A), after calculating the
 remaining-bike bonus. The paired tables $1D38/$1D40 give 10,25,40,75,99
 units for 1-5 bikes. Live setup with three bikes displayed 040 and then
 held four bikes; five displayed 099 and remained five.
+Below five bikes on course indices 16 or higher, $2A4A grants no bike
+and leaves the extra-bike message row unchanged. This is a conditional
+routine test, not a completed player route beyond course sixteen.
 
 ## Data tables
 
@@ -140,7 +146,8 @@ at $1E80 supply surface heights and flags.
 Full byte $FE enables countdown and $FD requests finishing; both are
 sampled at offset sixteen ($2318). The base pointer wraps at $3FD8
 ($2E28), while the screen reads forty columns. Its look-ahead can reach
-$3FD8-$3FFF before the base wraps. This loaded tail differs from
+$3FD8-$3FFE before the base wraps: $3FD7 plus the last window offset, 39.
+The loaded allocation continues through $3FFF. This tail differs from
 power-on RAM and contains $FD,$FF at $3FE8 and $FE,$FF at $3FF8.
 The stream boundary and look-ahead window are distinct extents.
 
@@ -167,12 +174,21 @@ Gameplay audio ($2AEC) combines a speed-derived engine voice with a
 shared effect ramp. Pitch, signed delta, remaining calls, and flags are
 $50,$51,$54,$55. Jump and spring use different ramps; crash and lightning
 select noise. Effects share these cells, so a new effect can replace one.
+At nonzero speed, $2B33-$2B3C alternates volume 4/8 with tick parity.
+At zero speed, $2B4A-$2B50 additionally sets bit 3, producing volume
+nibbles $0C/$08; TED sounds both as volume 8 (c16-reference, Sound).
+The time-award helper at $2BA0 leaves an active effect unchanged. Its
+caller $2E90 still checks the time limit when that sound request is skipped.
 A live log captured one tune period plus a call; the page's test checks
 the chosen loop against the driver.
 
 ## The listing's error rate
 
-Seed 20261111 drew 116 of 294 comments: 60 of 137 written comments, 20 of 63 title allocations, 20 of 78 gaps, and all 16 course slices. The independent checker ran on harness-selected gpt-6-astra with xhigh effort. The lead confirmed two wrong details: the final gap's neighbours and the riding surface predicate. Both sampled comments were corrected, along with the airborne comment carrying the same interval misreading. The plain observed rate is 2/116 (1.7%), with a 95% Wilson interval of 0.5%-6.1%; weighting by stratum size gives 2.1%. This is a lower bound on errors the checker could detect. The listing has not had a full audit; a later full audit is recommended. Frozen texts, verdicts, and simulator evidence remain in `work/reports/`.
+Seed 20261111 drew 116 of 294 comments: 60 of 137 written comments, 20 of 63 title allocations, 20 of 78 gaps, and all 16 course slices. The independent checker ran on harness-selected gpt-6-astra with xhigh effort. The lead confirmed two wrong details: the final gap's neighbours and the riding surface predicate. Both sampled comments were corrected, along with the airborne comment carrying the same interval misreading. The plain observed rate was 2/116 (1.7%), with a 95% Wilson interval of 0.5%-6.1%; weighting by stratum size gives 2.1%. This was the pre-audit sample. Frozen texts, verdicts, and simulator evidence remain in `work/reports/`.
+
+At the contributor's request, a fresh gpt-6-astra checker with xhigh effort audited all 294 of 294 comments and the claims in this file. The lead upheld and corrected 13 comments: object-drawing axes, glyph and punctuation descriptions, strict spawn spacing, the NOP count, the zero-speed volume override, the falling surface sample, and the scope of the game-over tone and collision scan. The last two narrowed overbroad descriptions of conditional behavior. The alphabet and greatest terrain look-ahead address were also corrected here and in orientation.md where applicable. All 25 independent simulator groups passed when reproduced, alongside the snapshot/data checks and existing page tests. Historical live observations were checked against saved artifacts; this audit did not rerun those emulator observations. Findings are a lower bound on errors the checker can detect.
+
+After the audit, seed 2026111102 drew a fresh 116 of 294 comments: 60 of 138 written comments, 20 of 63 title allocations, 20 of 77 gaps, and all 16 course slices. A separate fresh gpt-6-astra checker with xhigh effort, which wrote and audited none of the comments, found two wrong details. The bonus-panel comment omitted the later-course branch that leaves its message row unchanged, and the time-limit helper comment omitted the active-effect guard on its sound request. Both were upheld and corrected; the related extra-bike helper description was made explicit as well. The measured rate is 2/116 (1.7%), with a 95% Wilson interval of 0.5%-6.1% and a stratum-weighted rate of 1.6%. This is within the kit's one-in-thirty mark, not a guarantee that no errors remain. All 26 independent simulator groups passed when reproduced, including concrete caller-state tests for both findings. The full audit and this sample are recorded separately in game.json; frozen texts, verdicts and evidence stay in work/reports/.
 
 ## Live tests
 

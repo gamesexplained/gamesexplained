@@ -59,3 +59,22 @@ The browser uses an existing Chromium headless-shell, a repository-local
 profile, and Python CDP calls, with no new browser download.
 
 After the checked draft pages were committed, a separate copy pass defined memory and character terms, simplified the prose, and checked that every script block stayed byte-for-byte unchanged. The sound heading was aligned with the two distinct voice roles. Copy remains agent-draft pending human curation.
+
+## 11 November 2026 — requested full audit
+
+The contributor requested a full audit on the still-open PR #864. The
+canonical snapshot rebuilt the listing without differences. A fresh
+independent checker audited all 294 comments and facts.md. Its 13
+findings were upheld after instruction/byte review and reproduction of
+25 simulator groups. These covered axes, glyphs, strict comparisons,
+conditional effects, a NOP count and a surface sample. The alphabet and
+last readable terrain byte were corrected in the reference notes.
+
+A second fresh checker then checked the new seed 2026111102, without
+reading the audit's verdicts or evidence. Its 116 comments included
+separate generated strata. It found two missing helper conditions; the
+lead upheld both and reproduced all 26 independent simulator groups.
+Both sampled comments were corrected, along with a related helper's
+wording. The measured 2/116 rate remains recorded even after those fixes.
+All corrections went through r2000.py, followed by symbol export and
+listing regeneration. No game bytes or page widget logic changed.
