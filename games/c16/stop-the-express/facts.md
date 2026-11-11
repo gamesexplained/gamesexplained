@@ -131,7 +131,8 @@ with a separate falling stream at $3DCF.
 ## Mechanics
 
 $51C6 starts round 1 with three lives. Stage byte $49 selects roof or
-interior. $268B selects min((round+4)&255,10) carriages. $5339 gives time
+interior. $268B selects min((round+4)&255,10) carriages. At rounds 252-255 the byte
+addition wraps, giving 0-3 carriages; no played route is established. $5339 gives time
 limits 100,120,140,160,180,200,190,180,170,160,150, clamped to the final
 entry. The byte addition wraps at rounds 252-255, giving 0-3
 carriages; no played route to those rounds is established. $2573 maps (round-1)&7 to designs 0,0,1,1,2,2,3,3.

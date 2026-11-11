@@ -71,3 +71,13 @@ The kit now honours ram_kb=64 for a Plus/4 footprint while preserving
 existing C16 spans. Its standard code-map exporter still omits high RAM;
 maintainer request #874 asks for fetch-source tracking before that default
 is changed. Browser state stayed under this clone's tools/chromium.
+
+## Final copy pass
+
+Committed the complete draft as 21f26df1 after all four required checks.
+Then rewrote every authored page for a reader of fifteen, explained
+character codes, bytes, flags, hexadecimal addresses, and the sound
+hardware, and compared the diff against the draft. The pass preserves
+every numeric/address evidence token in the article text. All four pages
+retain the same tested decoder block. Copy remains agent-draft; Silver
+is the completed unattended tier, pending human curation for Gold.
