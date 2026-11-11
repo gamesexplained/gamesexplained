@@ -12,6 +12,7 @@ listing.py picks it by `game.json`'s `platform`.
 
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None
   operand(a, m, mode, bs, names, regs, chips) -> (text, target)
+      the 6502's, except that a JSR or a JMP to the 6510's port ($0000, $0001) is a number
   text_decode(kind, byte)            -> str
   text_items(kind, ram, start, end)  -> (texts, starts) or None
       for BASIC, whose items are longer than a byte: a program line each (basic.pieces)
@@ -26,12 +27,21 @@ import os, sys
 CPU = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cpu")
 if CPU not in sys.path:
     sys.path.append(CPU)
-from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode, operand  # noqa: E402,F401  the 6502, shared
+from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode  # noqa: E402,F401  the 6502, shared
+import m6502  # noqa: E402
 import importlib.util  # noqa: E402
 # by path, under a name of its own: kit/spectrum/ and kit/bbc/ each have a basic.py too
 _spec = importlib.util.spec_from_file_location("c64_basic", os.path.join(os.path.dirname(os.path.abspath(__file__)), "basic.py"))
 basic = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(basic)
+
+PORT = (0x0000, 0x0001)      # the 6510's own port: its direction register and its lines
+
+
+def operand(a, m, mode, bs, names, regs, chips):
+    """The 6502's, with the 6510's port: a JSR or a JMP to $0000 or $0001 is a call the game
+    fills in as it runs, and reads as that number (m6502.operand)."""
+    return m6502.operand(a, m, mode, bs, names, regs, chips, PORT)
 
 
 # --- text -------------------------------------------------------------------
