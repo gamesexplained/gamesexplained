@@ -1,0 +1,120 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+</style>
+<style>
+.bd-fig{margin:18px 0}.bd-fig img{max-width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px}
+.bd-fig figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
+.bd-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
+.bd-row label{font-size:14px;color:var(--ink-soft)}
+.bd-row select,.bd-row button{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.bd-row button{cursor:pointer}
+canvas.bd-cv{width:100%;max-width:960px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
+.bd-legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px 16px;margin:14px 0 0;padding:0;list-style:none;font-size:14px}
+.bd-legend li{display:flex;gap:8px;align-items:center}.bd-legend canvas{width:32px;height:32px;image-rendering:pixelated;background:#000;border:1px solid var(--line)}
+table.bd-t{border-collapse:collapse;width:100%;font-size:15px}table.bd-t th,table.bd-t td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+table.bd-t th{font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em}
+.bd-wrap{overflow-x:auto}
+sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">One tune, played by two voices stepping through pairs of note numbers.</p>
+</header>
+<main class="wrap">
+<section id="tune">
+  <p class="fig">01 · Music: the title tune</p>
+  <h2 class="t">Two voices, one pair of notes at a time</h2>
+
+  <p class="lede">The only music is the tune on the title screen. During play the game makes sound effects only.</p>
+  <div class="plate">
+    <div class="bd-row"><button id="mu-play" type="button">Play the title tune</button><span id="mu-pos" class="cap" style="margin:0"></span></div>
+    <canvas id="mu-grid" class="bd-cv" style="max-width:512px" aria-label="The tune's notes, pitch upward against time, voice 1 as short bars above voice 2" role="img"></canvas>
+    <p class="cap">The page plays the 128 note pairs with a triangle wave on the Web Audio clock, using the SID chip's frequency formula for a PAL machine. It is an approximation of the sound chip, and the envelope shape is a guess at the real one. Voice 1 is drawn in the lighter colour, voice 2 in the darker, and voice 1's bars are one pixel shorter, so the two stay apart without relying on colour.</p>
+  </div>
+</section>
+<section id="format">
+  <p class="fig">02 · How the tune is stored</p>
+  <h2 class="t">256 bytes of note numbers, read in pairs</h2>
+
+  <p>The tune is a list of note numbers with no durations. Each step of the music routine (<code>$8754</code>) takes two bytes from <code>$5FE8</code>: the first for voice 2 and the second for voice 1. Each number selects a 16-bit frequency from a table of 49 notes that rise by semitones from <b>$02DC</b> to <b>$2DC0</b> (<code>$86CA</code>). The step counter runs through 128 pairs and then wraps, and each wrap adds one to a second counter; when it reaches 2 and the demonstration flag is set, the title hands over to play, which runs the demonstration (<code>$87CA</code>).</p>
+  <p>The routine runs on every other title animation step, and that step is taken every fourth video frame (<code>$87EE</code>), so a pair of notes lasts eight frames, about a sixth of a second on a PAL machine. Most pairs are an arpeggio, a low note repeated against a rising one.</p>
+  <p>The tune bytes also sit at the start of the tile character set in the program file. The start-up copies the whole block to <code>$3000</code> as characters (<code>$8D11</code>), which means the first thirty-two tile characters hold the tune and are not drawn as tiles. That the two uses share the same bytes is what the code shows; whether it is deliberate is not known.</p>
+</section>
+<section id="effects">
+  <p class="fig">03 · Sound: the effects</p>
+  <h2 class="t">Short bursts on three voices</h2>
+
+  <p>The effects are set by tables of SID register values and played by one routine every frame (<code>$7D09</code>).</p>
+  <div class="bd-wrap"><table class="bd-t"><tr><th>Effect</th><th>Voice</th><th>Settings</th></tr>
+  <tr><td>Diamond picked up</td><td>1</td><td>Pitch from <b>$1478</b>, waveform <code>$11</code>, a random pitch is added for diamonds that land (<code>$7522</code>, <code>$71C0</code>)</td></tr>
+  <tr><td>Boulder thud</td><td>1</td><td>Noise, pitch <b>$0932</b> (<code>$71E7</code>)</td></tr>
+  <tr><td>Explosion</td><td>2</td><td>Noise, pitch <b>$1432</b> (<code>$713D</code>)</td></tr>
+  <tr><td>Quota reached, cave start</td><td>3</td><td>Pitch from <b>$2F32</b> (<code>$7418</code>)</td></tr>
+  <tr><td>Low time</td><td>2</td><td>A beep that rises as the last second digit falls (<code>$7424</code>)</td></tr></table></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+const MU = {"tune":[22,34,29,38,34,41,37,46,20,36,31,39,32,41,39,48,18,42,18,44,30,46,18,49,32,44,51,55,33,45,49,53,22,34,22,46,22,29,22,36,20,32,20,48,20,36,20,32,22,34,22,46,22,29,22,36,30,42,30,58,30,46,30,42,20,32,20,44,20,27,20,34,28,40,28,56,28,44,28,40,17,29,41,45,17,31,41,46,15,39,15,39,22,51,22,39,22,46,22,46,22,46,22,46,34,46,34,46,22,46,22,46,20,46,20,46,20,46,20,46,32,46,32,46,20,46,20,46,22,46,50,46,22,46,51,46,34,46,50,46,22,46,51,46,20,46,50,46,20,46,51,46,32,44,48,44,20,44,49,44,22,46,22,58,22,46,53,56,34,46,34,55,22,46,49,53,20,44,20,56,20,44,20,56,32,44,32,51,20,44,20,56,22,46,50,46,22,46,51,46,34,46,50,46,22,46,51,46,20,46,50,46,20,46,51,46,32,44,48,44,20,44,49,44,46,50,41,46,38,41,34,38,44,48,39,44,36,39,20,32,53,50,50,46,46,41,41,38,39,48,36,44,32,39,20,32],"notes":[732,778,826,876,928,978,1042,1100,1170,1238,1312,1390,1464,1556,1652,1752,1856,1956,2084,2200,2340,2476,2624,2780,2928,3112,3304,3504,3712,3912,4168,4400,4680,4952,5248,5560,5856,6224,6608,7008,7424,7824,8336,8800,9360,9904,10496,11120,11712]};
+(function () {
+  const PAL_CLOCK = 985248, STEP = 8 / 50;          // a pair of notes every 8 frames at 50 frames a second
+  const freq = n => MU.notes[n - 10] * PAL_CLOCK / 16777216;
+  const btn = document.getElementById('mu-play'), out = document.getElementById('mu-pos');
+  let ac = null, timer = null, step = 0;
+  function note(f, t, vol) {
+    const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.16);
+  }
+  function tick() {
+    const x = (step * 2) % 256, t = ac.currentTime + 0.02;
+    note(freq(MU.tune[x]), t, 0.12); note(freq(MU.tune[x + 1]), t, 0.12);
+    out.textContent = 'step ' + (step + 1) + ' of 128'; step = (step + 1) % 128;
+  }
+  btn.onclick = function () {
+    if (timer) { clearInterval(timer); timer = null; btn.textContent = 'Play the title tune'; return; }
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); step = 0; tick(); timer = setInterval(tick, STEP * 1000); btn.textContent = 'Stop';
+  };
+  const ct = document.getElementById('mu-grid'), ctx = ct.getContext('2d');
+  ct.width = 512; ct.height = 160; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 512, 160);
+  for (let s = 0; s < 128; s++) for (let v = 0; v < 2; v++) { const n = MU.tune[s * 2 + (1 - v)]; ctx.fillStyle = v ? '#aaffee' : '#ff7777'; ctx.fillRect(s * 4, 160 - (n - 10) * 3, 3, 3 + (v ? 0 : 1)); }
+})();
+</script>
