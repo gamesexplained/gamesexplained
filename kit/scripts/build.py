@@ -344,6 +344,10 @@ def footprint(gdir, game):
         for a in range(lo, hi + 1):
             cat[a] = "other"; why[a] = name
     lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000)) if size == 0x10000 else (0, size)
+    if platform_of(game) == "c16" and any(
+            r.get("b") and r["a"] + len(r["b"]) > 0x4000 for r in L["records"]):
+        # A Plus/4 game's listing can hold authored RAM beyond the stock C16's 16 KB.
+        hi = 0x10000
     if lo:   # the ROM is off this map, so RAM that a game.json names after the ROM is working memory
         cat[lo:hi] = ["runtime" if k == "rom" else k for k in cat[lo:hi]]
     runs, totals = [], {k: 0 for k in CATS}
