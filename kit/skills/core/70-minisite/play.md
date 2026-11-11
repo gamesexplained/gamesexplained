@@ -108,7 +108,18 @@ demonstration.
   gives, for each stretch between checkpoints, the cycles the game took
   (its interrupts excluded) and how often the port called each routine.
   Add the pixels drawn and rows filled from the port's own counters, and
-  fit each routine's own cycles by non-negative least squares. Leave a
+  fit each routine's own cycles by non-negative least squares. Where
+  routines always run together (an interpreter's procedures, a routine
+  and its one caller) the fit can share their cycles among them in any
+  proportion, and a scene comes out several times too slow: measure
+  each routine's own cycles instead. `kit/cpu/profile.js` gives every
+  instruction the game runs to the routine whose code it is, by the
+  listing's labels, keeps the interrupts apart and adds the result to
+  the same rows. Its header says how to place an interpreter's time by
+  the bytecode it is running, and how a label the port never calls
+  gives its cycles to the routine it does call. Charge each routine by
+  the port's count of its calls, and read the share no call paid for
+  (`perCall`): a page that runs early has its reason there. Leave a
   polling loop's cycles out of what is fitted: the page's clock runs its
   turns for itself, a line at a time, so a cost that holds the wait pays
   it twice and the page runs late. Check the
