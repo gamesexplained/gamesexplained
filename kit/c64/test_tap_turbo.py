@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""The C64's tape reader (kit/c64/tape.py) on a made-up tape, as a TAP of version 1 and of version 0.
+"""The turbo formats of the C64's tape reader (kit/c64/tap.py) on a made-up tape, as a TAP of
+version 1 and of version 0. The KERNAL's format has a test of its own, kit/c64/test_tap.py.
 
-The tape is written here, pulse by pulse, in the two kinds of format the reader knows: the
-KERNAL's (a boot program whose header carries code after its name, a BASIC program whose first
-writing is damaged) and the turbo format of TURBO's first row (a picture, a game, a block whose
-end address is not past its start, a block with a gap of the recording inside it, and a block
-the tape ends in the middle of). Between them lie a stretch of pulses in no format and a block
-whose pilot is too short to be taken for one. Each item's label, place, address, bytes and
-problem are checked; then the tape goes through the ledger (kit/scripts/media.py), where the
-game's listing holds the game block, and the About row says what the tape holds. The reader's
-reading of ten real tapes is in kit/lessons/2026-11-11-c64-tape-media.md: this test holds the
-mechanics, with no game's bytes.
+The tape is written here, pulse by pulse, as a game's tape is: a boot program in the KERNAL's
+format whose header carries code after its name, then blocks in the turbo format of TURBO's
+first row (a picture, a game, a block whose end address is not past its start, a block with a
+gap of the recording inside it, and a block the tape ends in the middle of). Between them lie a
+BASIC program whose first writing is damaged, a stretch of pulses in no format and a block whose
+pilot is too short to be taken for one. Each item's label, place, address, bytes and problem are
+checked; `tap.py` lists the tape and `tap.py extract` writes its blocks; then the tape goes
+through the ledger (kit/scripts/media.py), where the game's listing holds the game block, and
+the About row says what the tape holds. The reader's reading of ten real tapes is in
+kit/lessons/2026-11-11-c64-tape-media.md: this test holds the mechanics, with no game's bytes.
 
-Usage: test_tape.py
+Usage: test_tap_turbo.py
 """
 import json, os, random, subprocess, sys, tempfile
 from functools import reduce
@@ -25,8 +26,8 @@ sys.path.insert(0, os.path.join(KIT, "scripts"))
 import media as M  # noqa: E402
 
 R = M.reader("c64")
-T = R.tape_mod
-S, MD, L = T.SHORT, T.MEDIUM, T.LONG
+T = R.tap_mod
+S, MD, L = (x // 8 * 8 for x in (T.SHORT, T.MEDIUM, T.LONG))       # as a TAP's bytes hold them
 FMT = T.TURBO[0]
 ZERO, ONE = 280, 528                                # the turbo format's two pulses
 GAP = 300000
@@ -133,7 +134,7 @@ def check_items(its, picture_raw, game_raw):
     assert h["place"]["pulse"] == b["place"]["pulse"]
 
     p = by["PLAIN"]
-    assert p["place"]["type"] == "BASIC program" and p["load"] == 0x0801 and p["data"] == BASIC
+    assert p["place"]["type"] == "relocatable program" and p["load"] == 0x0801 and p["data"] == BASIC
     assert p["problem"] == "its first writing's checksum is wrong; the copy is listed", p["problem"]
     assert "PLAIN (header)" not in by                                    # nothing but spaces after its name
 
@@ -158,14 +159,6 @@ def check_items(its, picture_raw, game_raw):
     assert "in a format the kit does not decode" in w["problem"], w["problem"]
 
 
-def refuses(blob):
-    try:
-        T.waves(blob, "made-up.tap")
-    except SystemExit as e:
-        return str(e)
-    return None
-
-
 def main():
     tmp = Path(tempfile.mkdtemp())
     pulses, picture_raw, game_raw = the_tape()
@@ -176,22 +169,28 @@ def main():
     assert got["what"] == "tape"
     check_items(got["items"], picture_raw, game_raw)
     check_items(R.items(str(v0))["items"], picture_raw, game_raw)
-    assert T.waves(tap([S, GAP, L], 1)) == [S, GAP, L] and T.waves(tap([S, GAP, L], 0)) == [S, T.SILENCE, L]
-    assert R.petscii(b"A\x00b") == "A{00}{62}"
+    assert T.waves(tap([S, GAP, L], 1)) == [S, GAP, L] and T.waves(tap([S, GAP, L], 0)) == [S, T.GAP, L]
+    assert T.GAP >= T.SILENCE                                           # a version 0 gap still counts as one inside a block
 
-    assert "not a C64 TAP" in refuses(b"C16-TAPE-RAW" + bytes(20))
-    assert "version 2" in refuses(b"C64-TAPE-RAW" + bytes([2, 0, 0, 0]) + bytes(8))
-    assert "machine 1" in refuses(b"C64-TAPE-RAW" + bytes([1, 1, 0, 0]) + bytes(8))
-    assert R.items(str(tmp / "game.t64"))["items"] is None
-
-    assert T.is_tone([ZERO] * 200 + [GAP] + [S] * 300 + [L] + [S] * 50) and not T.is_tone([S, L, S, S, L] * 20)
-    once = T.kernal_blocks(T.kernal_runs([S] * 50 + [x for v in bytes(range(0x89, 0x80, -1)) + b"\x07\x07" for x in kernal_byte(v)]))
-    assert once[0]["problem"] == "written once, where the KERNAL writes every block twice", once
+    assert T.free([(3, 5), (9, 12)], 20) == [(0, 3), (5, 9), (12, 20)] and T.free([(0, 4)], 4) == []
+    assert T.lengths([248] * 9 + [704] * 5 + [400] * 2 + [GAP] * 30) == [248, 704]
     msb = dict(FMT, lsb=False)                                          # a format whose bytes come highest bit first
     flipped = [ONE if v >> (7 - n) & 1 else ZERO for v in bytes([0xE3] * 16 + [0xED, 0x00, 0x20, 0x04, 0x20]) + b"TURN" for n in range(8)]
     back = T.turbo_blocks([GAP] + flipped + [GAP], [], msb)
     assert len(back) == 1 and back[0]["load"] == 0x2000 and back[0]["data"] == b"TURN", back
     assert T.turbo_blocks([GAP] + flipped + [GAP], [], FMT) == []
+
+    # the command line: the list names the turbo blocks, and extract writes them beside the programs
+    tool = lambda *a: subprocess.run([sys.executable, os.path.join(HERE, "tap.py"), *map(str, a)], capture_output=True, text=True)
+    r = tool(v1)
+    assert r.returncode == 0 and "2 items in the KERNAL's format and 5 turbo blocks" not in r.stdout, r.stdout + r.stderr
+    assert "3 items in the KERNAL's format and 5 turbo blocks" in r.stdout, r.stdout
+    assert "turbo block 2" in r.stdout and "$4000-$4258" in r.stdout and "most of them 248 or 704 cycles long" in r.stdout, r.stdout
+    r = tool("extract", v1, tmp / "out")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (tmp / "out" / "turbo block 2.prg").read_bytes() == b"\x00\x40" + GAME
+    assert (tmp / "out" / "BOOT.prg").read_bytes() == b"\xa7\x02" + BOOT
+    assert (tmp / "out" / "BOOT.header.prg").read_bytes()[:3] == b"\x3c\x03\x03"
 
     # through the ledger: a C64 game whose listing holds the game block
     g = tmp / "game"
@@ -213,7 +212,7 @@ def main():
     row = build.media_row(str(g))
     assert ">The tape holds 8 files and 2 stretches the kit cannot decode." in row, row
 
-    print(f"ok - c64 tape.py: {len(got['items'])} items of a made-up tape of {len(pulses):,} pulses read as they must, "
+    print(f"ok - c64 tap.py turbo: {len(got['items'])} items of a made-up tape of {len(pulses):,} pulses read as they must, "
           "as a TAP of version 1 and of version 0")
     return 0
 

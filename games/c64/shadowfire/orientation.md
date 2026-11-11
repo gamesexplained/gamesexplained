@@ -81,7 +81,7 @@ moves any of it.
 
 ## What the tape holds
 
-Decoded from the pulses by `kit/c64/tape.py`, and listed item by item in
+Decoded from the pulses by `kit/c64/tap.py`, and listed item by item in
 `media.json`. The first two blocks
 are in the Commodore ROM loader's format: a header and a short program.
 The rest is a turbo format: pulses of 280 cycles are 0 bits and

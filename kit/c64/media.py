@@ -3,18 +3,23 @@
 
   items(path) -> {"what": ..., "items": [item, ...], "missing": n}
 
-what is "disk side", "cartridge", "tape" or "program file"; missing counts the sectors the
-disk's allocation map marks as used that no file holds and that the image lacks or cannot read (a
+what is "disk side", "cartridge", "program file" or "tape"; missing counts the sectors the disk's
+allocation map marks as used that no file holds and that the image lacks or cannot read (a
 format of the game's own). Each item is a dict:
 
   label    how a person names it: a file's name as the directory shows it, up to its first
            shifted space ($A0), with printable PETSCII as it is and any other byte as {hex}
            (as kit/c64/loads.py writes the names the game asks for); "track 17, sectors 3-7"
-           for sectors no file holds; "bank 3" for a cartridge's bank
+           for sectors no file holds; "bank 3" for a cartridge's bank; a tape file's name
+           without the spaces that pad it, "NAME (header)" for what its header carries after
+           the name, "pulses 52187-60000" for a stretch of tape the kit cannot decode
   place    where it is: {"file": label, "type": "PRG", "track": t, "sector": s},
-           {"track": 17, "sectors": [3, 7]} or {"bank": 3}
-  load     the address it says it loads at: a file's first two bytes, a bank's lowest chip's
-           (None for sectors, and for a SEQ or USR file)
+           {"track": 17, "sectors": [3, 7]}, {"bank": 3}, {"file": label, "type": "program",
+           "pulse": n} (n the first pulse of a tape file's first byte, counted from the tape's
+           start) or {"pulses": [first, last]}
+  load     the address it says it loads at: a file's first two bytes, a bank's lowest chip's,
+           the one in a tape file's header, $033C for a header (None for sectors, a stretch
+           of tape, and a SEQ, USR or data file)
   data     its bytes as they reach memory: a PRG without its two-byte address
   raw      its bytes on the medium, which the ledger hashes
   problem  why it cannot be read whole (a decoy's chain that leaves the disk), or absent
@@ -25,10 +30,12 @@ scratched ones too, then each run of consecutive sectors on a track that the dis
 allocation map marks as used and that no file holds (what a game reads with the drive's block
 commands). A sector the 1541's DOS cannot read is in no item: a disk the game reads in a format
 of its own needs a log of what the drive reads. A .crt (kit/c64/crt.py): every bank. A .prg,
-or a .p00 (a PRG behind a 26-byte header): the file. A .tap (kit/c64/tape.py, which says what a
-tape's items are): the files in the KERNAL's format, the blocks in the turbo formats the kit
-knows, and every other stretch of pulses that is not a tone, to be answered by hand. A .t64 has
-no reader: its image is listed with "unread" and no items.
+or a .p00 (a PRG behind a 26-byte header): the file. A .tap (kit/c64/tap.py): every file in
+the KERNAL's own format, a header that carries more than spaces after its name as an item of its
+own, every block in a turbo format of that module's table, and every other stretch of 32 pulses
+or more that is not a tone as an item of no bytes with "problem" saying so: a loader's own fast
+format the table does not hold, to be answered by hand. A .t64 has no reader:
+its image is listed with "unread" and no items.
 
   python3 kit/c64/media.py <image>     the items, one a line
 """
@@ -38,10 +45,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import disk as disk_mod   # noqa: E402
 import crt as crt_mod     # noqa: E402
-import tape as tape_mod   # noqa: E402
+import tap as tap_mod     # noqa: E402
 
 KINDS = {0: "DEL", 1: "SEQ", 2: "PRG", 3: "USR", 4: "REL"}
-petscii = tape_mod.petscii
+
+
+def petscii(raw):
+    """A name as text: printable PETSCII as it is, any other byte as {hex} (kit/c64/loads.py)."""
+    return "".join(chr(b) if 0x20 <= b <= 0x5F else f"{{{b:02X}}}" for b in raw)
 
 
 def runs(numbers):
@@ -138,8 +149,7 @@ def items(path):
     if low.endswith((".prg", ".p00")):
         return program_items(path)
     if low.endswith(".tap"):
-        with open(path, "rb") as f:
-            return {"what": "tape", "items": tape_mod.tape_items(tape_mod.waves(f.read(), path))}
+        return {"what": "tape", "items": tap_mod.read(path)}
     kind = "tape" if low.endswith(".t64") else "image"
     return {"what": kind, "items": None,
             "unread": f"the kit has no reader for a {os.path.splitext(low)[1] or 'file'} yet"}

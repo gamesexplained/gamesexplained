@@ -232,7 +232,7 @@ edited, following the site's standard for them.
 ## 11 November 2026: the tape's ledger
 
 Aaron Bell asked for a tape reader for the C64's media ledger, and this
-tape was the first read with it (`kit/c64/tape.py`).
+tape was the first read with it (`kit/c64/tap.py`).
 
 - `media.json` lists the tape's 12 items: the boot program and its
   header, and the ten turbo blocks. Blocks 6, 7 and 10 are in the listing

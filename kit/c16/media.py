@@ -25,8 +25,7 @@ or. A file is a header block of 192 bytes (the type, the start and end addresses
 characters, then 171 bytes the KERNAL fills with spaces) and a block of its bytes. A loader
 often keeps code in those 171 bytes, which land in the tape buffer at $0333 with the header: a
 header that holds anything but spaces there is an item of its own. A data file's blocks (type
-2) follow its header (type 4) and are joined into one item. The format is the C64's with longer
-waves, and kit/c64/tape.py reads it for both machines.
+2) follow its header (type 4) and are joined into one item.
 
 A Novaload file is a leader of 0 bits, a 1 bit, $AA, the length of its name, the name, six bytes
 (the address less $100, the end address, the size of the last block and one more than the count of
@@ -50,25 +49,14 @@ import importlib.util, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 SHORT, LONG, MARK = 424, 848, 1696      # the KERNAL's three waves, in cycles of the single clock
-BUFFER = 0x0333                         # the tape buffer, where a header's bytes after its type land
 TURBO = 416                             # Novaload: a wave shorter than this is a 0
+KINDS = {1: "BASIC program", 3: "program", 4: "data file"}
 LEADER = 64                             # 0 bits a Novaload leader has at the least
 
 
-def c64(name):
-    """A module of kit/c64, loaded by its path: the two machines share tapes' and disks' formats."""
-    spec = importlib.util.spec_from_file_location(f"c64_{name}", os.path.join(HERE, "..", "c64", name + ".py"))
-    mod = importlib.util.module_from_spec(spec)
-    keep = list(sys.path)
-    try:
-        spec.loader.exec_module(mod)
-    finally:
-        sys.path[:] = keep
-    return mod
-
-
-TAPE = c64("tape")                      # the KERNAL's format, the C64's but for the three waves' lengths
-petscii, is_tone = TAPE.petscii, TAPE.is_tone
+def petscii(raw):
+    """A name as text: printable PETSCII as it is, any other byte as {hex} (kit/c64/media.py)."""
+    return "".join(chr(b) if 0x20 <= b <= 0x5F else f"{{{b:02X}}}" for b in raw)
 
 
 def waves(blob, path="tape"):
@@ -92,6 +80,31 @@ def waves(blob, path="tape"):
     if version == 2:
         out = [a + b for a, b in zip(out[0::2], out[1::2])]
     return out
+
+
+# --- the KERNAL's format ---------------------------------------------------------------------
+# The C64's, with other wave lengths and the tape buffer elsewhere: kit/c64/tap.py reads both.
+
+def _tap():
+    spec = importlib.util.spec_from_file_location("c64_tap", os.path.join(HERE, "..", "c64", "tap.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+TAP = _tap()
+kernal_blocks, is_tone = TAP.kernal_blocks, TAP.is_tone
+
+
+def kernal_runs(W):
+    """[(first wave, bytes)] of every run of bytes in the KERNAL's format: a byte is a word
+    marker and a long, then nine pairs, a short and a long for a 0 and a long and a short for a
+    1: eight bits from the lowest and an odd parity. A byte whose parity is wrong ends its run."""
+    return TAP.kernal_runs(W, SHORT, LONG, MARK)
+
+
+def kernal_items(blocks):
+    return TAP.kernal_items(blocks, KINDS, (0x0333, 1))
 
 
 # --- Novaload ----------------------------------------------------------------------------------
@@ -154,19 +167,11 @@ def novaload_files(W, taken):
 
 # --- the tape ----------------------------------------------------------------------------------
 
-def kernal_runs(W):
-    """The runs of bytes in the KERNAL's format, read with this machine's three waves."""
-    return TAPE.kernal_runs(W, SHORT, LONG, MARK)
-
-
-kernal_blocks = TAPE.kernal_blocks
-
-
 def tape_items(W):
     runs = kernal_runs(W)
     taken = [(at, at + 20 * len(run)) for at, run in runs]
     files = novaload_files(W, taken)
-    out = [(i["place"]["pulse"], i) for i in TAPE.kernal_items(kernal_blocks(runs), BUFFER, 1)]
+    out = [(i["place"]["pulse"], i) for i in kernal_items(kernal_blocks(runs))]
     for n, f in enumerate(files, 1):
         label = petscii(f["name"].rstrip(b" ")) or f"Novaload file {n}"
         item = {"label": label, "place": {"file": label, "type": "Novaload", "pulse": f["at"]}, "load": f["load"],
@@ -174,8 +179,19 @@ def tape_items(W):
         if f["problem"]:
             item["problem"] = f["problem"]
         out.append((f["at"], item))
-    out += TAPE.leftovers(W, taken + [(f["at"], f["end"]) for f in files])
+    out += TAP.undecoded(W, taken + [(f["at"], f["end"]) for f in files])
     return [item for _, item in sorted(out, key=lambda x: x[0])]
+
+
+def c64_reader():
+    spec = importlib.util.spec_from_file_location("c64_media", os.path.join(HERE, "..", "c64", "media.py"))
+    mod = importlib.util.module_from_spec(spec)
+    keep = list(sys.path)
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.path[:] = keep
+    return mod
 
 
 def items(path):
@@ -185,7 +201,7 @@ def items(path):
         with open(path, "rb") as f:
             return {"what": "tape", "items": tape_items(waves(f.read(), path))}
     if low.endswith((".d64", ".g64", ".prg", ".p00")):
-        return c64("media").items(path)
+        return c64_reader().items(path)
     return {"what": "image", "items": None,
             "unread": f"the kit has no reader for a {os.path.splitext(low)[1] or 'file'} yet"}
 
