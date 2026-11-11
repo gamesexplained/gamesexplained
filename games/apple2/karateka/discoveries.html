@@ -49,18 +49,56 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .kd-err{color:var(--coral);font-size:14px}
 .kd-code{font-family:var(--fm);font-size:13px;background:#1b1c1f;color:#ddd;border-radius:6px;padding:12px 14px;overflow-x:auto;white-space:pre;line-height:1.55}
 .kd-code b{color:#ffcf6b;font-weight:500}
+.kd-bar select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;max-width:100%}
+.kd-screen{width:100%;max-width:560px;height:auto;display:block;background:#000;border-radius:4px;image-rendering:pixelated}
+.kd-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;max-width:400px}
+.kd-grid i{display:block;aspect-ratio:1;border-radius:2px;background:var(--line-soft)}
+.kd-grid i.date,.kd-key i.date{background:var(--cyan)}
+.kd-grid i.today,.kd-key i.today{background:var(--amber)}
+.kd-grid i.free,.kd-key i.free{background:var(--green)}
+.kd-grid i.fill,.kd-key i.fill{background:var(--ink-mute)}
+.kd-key{list-style:none;margin:14px 0 0;padding:0;font-size:14px;display:grid;gap:5px}
+.kd-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:8px;background:var(--line-soft);vertical-align:-1px}
 @media (max-width:760px){:root{--gx:16px;--pp:14px}.kd-pair{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">1984 · Brøderbund Software · Apple II</p>
   <h1>Karateka</h1>
-  <p class="sub">What the code does that the game never tells the player: a trap with a safe way through, an opening that kills a hero who runs in, a demonstration fighter who cannot aim low, and two pieces of the game that never run.</p>
+  <p class="sub">What the code does that the game never tells the player: a second side of the disk that plays the whole game upside down by turning one list over, a trap with a safe way through, an opening that kills a hero who runs in, a demonstration fighter who cannot aim low, and two pieces of the game that never run.</p>
 </header>
 <main class="wrap">
 
+<section id="side-b" data-part="engine">
+  <p class="fig">01 · The other side of the disk</p>
+  <h2 class="t">The upside-down game on side B is side A with one list of screen lines turned over</h2>
+  <p class="lede">Put the disk in the drive the wrong way up and Karateka plays upside down. The second side holds the whole game again, and all that differs in its program is the order of one list.</p>
+  <div class="plate">
+    <div class="kd-bar" id="sb-bar">
+      <select id="sb-place" aria-label="Place"></select>
+      <button type="button" data-side="a">Side A</button>
+      <button type="button" data-side="b">Side B</button>
+      <button type="button" id="sb-play">▶ Play on</button>
+    </div>
+    <canvas id="sb-cv" class="kd-screen" width="560" height="384"></canvas>
+    <p class="cap" id="sb-cap">Each picture is drawn by the stage's own code, run from the game's listing. For side B the list of screen lines is turned over first and nothing else is changed.</p>
+  </div>
+  <p>The Apple II's picture is 192 lines, and the lines sit in memory in an awkward order. So the game keeps a list of where each line lives, and its drawing routines look every line up there (<a href="source-engine.html#0800"><code>row_lo</code></a> and <a href="source-engine.html#08C0"><code>row_hi</code></a>, the two halves of each address). On side A the list starts with the top line. On side B the same 192 entries run from the bottom line up. A routine that asks for line 0 is handed the bottom of the screen, so the hero, the guards, the arrows of health, and the words all land upside down.</p>
+  <p>Nothing else in the program changed. Read off the disk and set beside side A, side B's engine and five stages differ in those 384 bytes and no others, in all that the copy examined would give: three of its sectors could not be read. The upside-down side itself is no secret, and Jordan Mechner's published journals mention it.</p>
+  <p>The picture is turned top to bottom and not spun round. Letters stand on their heads but still run from left to right. A player who turns the monitor over to match sees the title in mirror writing and the hero climbing onto the cliff from the right.</p>
+  <p>One picture does not go through the list. The castle that shows before the cliff is a whole screen stored on the disk, and the game copies it into place in one block (<a href="source-engine.html#03A5"><code>$03A5</code></a>). With only the list turned over, the castle would have stayed the right way up in an upside-down game. So side B stores the castle itself upside down: the same 192 lines, in reverse order.</p>
+  <div class="plate">
+    <div class="kd-bar" id="sc-bar">
+      <button type="button" data-side="a">As side A stores it</button>
+      <button type="button" data-side="b">As side B stores it</button>
+    </div>
+    <canvas id="sc-cv" class="kd-screen" width="560" height="384"></canvas>
+    <p class="cap">The castle picture's bytes, drawn in the order each side of the disk holds them.</p>
+  </div>
+</section>
+
 <section id="entry-bytes" data-part="">
-  <p class="fig">01 · The guards' brain</p>
+  <p class="fig">02 · The guards' brain</p>
   <h2 class="t">Secret: a guard's chance of stepping in is read from the stage's own entry jump</h2>
   <p class="lede">When a guard in the stance decides against a blow, a fourth table decides whether he steps in or holds his place. That table has five entries, one for each distance from 7 to 11 columns, and only the first belongs to it. The other four are the stage's entry: the jump the engine takes into the stage, and the stage's number.</p>
   <div class="plate">
@@ -73,7 +111,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="portcullis" data-part="palace">
-  <p class="fig">02 · The palace</p>
+  <p class="fig">03 · The palace</p>
   <h2 class="t">Secret: the portcullis can be sprung from one step short</h2>
   <p class="lede">At the end of the palace hall the portcullis is a trap: it falls whenever the hero stands under it, faster than he can run clear, and it kills him. A punch or a kick thrown from one step short sets it off harmlessly, and he can walk through as it rises.</p>
   <div class="plate">
@@ -87,7 +125,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="akuma-kicks" data-part="akuma">
-  <p class="fig">03 · Akuma</p>
+  <p class="fig">04 · Akuma</p>
   <h2 class="t">Secret: Akuma's first kicks kill a hero who runs into his room</h2>
   <p class="lede">Akuma does not fight by the brain at first. As the hero comes into room 6, Akuma is sent a kick on every frame, and the kicks are never refused and never knocked back. A hero who runs in dies of the first. A hero who comes in the stance is knocked back into room 5, and from then on Akuma fights like any guard.</p>
   <div class="plate">
@@ -101,7 +139,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="mariko" data-part="akuma">
-  <p class="fig">04 · Mariko</p>
+  <p class="fig">05 · Mariko</p>
   <h2 class="t">Secret: Mariko decides at column 19 whether to kick the hero</h2>
   <p class="lede">With Akuma beaten, the hero must come to Mariko standing. Whether she kicks him is settled at one column, and by the pose she took on the frames before.</p>
   <div class="plate">
@@ -115,7 +153,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="bow" data-part="engine">
-  <p class="fig">05 · Bowing</p>
+  <p class="fig">06 · Bowing</p>
   <h2 class="t">Secret: bow to a guard 13 columns away and he bows back</h2>
   <p class="lede">The manual lists B for a bow. A guard who is standing, not yet in the stance, answers it with a bow of his own, as long as the hero is 13 columns away or more.</p>
   <div class="plate kd-one">
@@ -126,7 +164,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="demo-low" data-part="title">
-  <p class="fig">06 · The demonstration</p>
+  <p class="fig">07 · The demonstration</p>
   <h2 class="t">Bug: the demonstration's hero never aims a low blow</h2>
   <p class="lede">The fight that plays itself at the title has a brain of its own for the hero. Its choice of height has one branch the wrong way round, so his blows are high two times in three, middle the third, and never low.</p>
   <div class="kd-code">engine $6C80   CMP #$55   ; the guards' height
@@ -144,7 +182,7 @@ title  $A0BA   CMP #$AA   ; reached only below $55, so always below $AA: middle<
 </section>
 
 <section id="hawk" data-part="dungeon">
-  <p class="fig">07 · The hawk</p>
+  <p class="fig">08 · The hawk</p>
   <h2 class="t">Secret: the hawk can be killed in the dungeon, but in the palace it always comes back</h2>
   <p class="lede">In the palace, a hawk struck by a kick or a punch flies off and comes back later. In the dungeon the hawk is the last opponent, with arrows of its own, and the last blow brings it down in a burst of feathers.</p>
   <div class="plate">
@@ -158,29 +196,114 @@ title  $A0BA   CMP #$AA   ; reached only below $55, so always below $AA: middle<
 </section>
 
 <section id="step-back" data-part="engine">
-  <p class="fig">08 · Code that never runs</p>
+  <p class="fig">09 · Code that never runs</p>
   <h2 class="t">Secret: the guards have a working step backwards that nothing ever runs</h2>
   <p class="lede">The guards' brain holds a step back, complete and correct. There is no jump or branch to it, so a guard in the stance never retreats.</p>
   <p>Seven bytes at <code>$6C4B</code>, <code>LDA #$FF</code>, <code>STA $29</code>, <code>JMP $6540</code>, would set the stick backwards (<code>$29</code> = <code>$FF</code>) and carry out the command, as the step forward does with <code>$29</code> = 1. They sit between a <code>JMP</code> (<code>$6C48</code>) and the step forward (<code>$6C52</code>), and there is no jump or branch to them in any of the six parts. The demonstration's own hero does step back: its brain is a separate routine in the title (<a href="source-title.html#A000"><code data-part="">$A000</code></a>).</p>
 </section>
 
 <section id="one-arrow" data-part="engine">
-  <p class="fig">09 · Code that never runs</p>
+  <p class="fig">10 · Code that never runs</p>
   <h2 class="t">Secret: a cheat that cuts the opponent to one arrow of health has no key to run it</h2>
   <p class="lede">Among the handlers of the special keys is one that sets the opponent's arrows to one and beeps, as the other special keys beep. There is no key that runs it.</p>
   <p>The handler is <code>LDA #1</code> and <code>STA $B7</code> at <code>$7742</code>, then a branch to the beep the other keys share (<code>$771F</code>). There is no key test, jump or branch to it in any of the six parts, so it reads as a cheat whose key was taken out. Which key it once answered is not in the code.</p>
 </section>
 
 <section id="hem" data-part="akuma">
-  <p class="fig">10 · The last stage</p>
+  <p class="fig">11 · The last stage</p>
   <h2 class="t">Bug: one of Akuma's pictures lands on a jump in the dungeon's code</h2>
   <p class="lede">The last stage loads over the dungeon's code, and one of its pictures is a byte longer than the space before <code>$B000</code>. Its last byte lands where the dungeon keeps a jump.</p>
   <p>The picture is a mask for the foot of Akuma's robe (<code>$AFE4</code>), 9 rows of 3 bytes, so it ends at <code>$B000</code>. In the dungeon, <code>$B000</code> is <code>JMP $B006</code>, the routine that draws the stairs. In the last stage it is <code>$AA</code>, then the dungeon's <code>$06</code> <code>$B0</code>: read as code, <code>TAX</code> and <code>ASL $B0</code>, which would double the hero's most arrows. <code>$B000</code> is called only on the first screen of a stage (<code>$44</code> = 0), and the hero cannot get back there in the last stage: room 1's door is shut behind him, and the stage keeps him at column 7 or more in the first room (<code>$BA01</code>).</p>
 </section>
 
+<section id="dos-leftover" data-part="">
+  <p class="fig">12 · Left on the disk</p>
+  <h2 class="t">Secret: a sector of side B that the game never uses holds add-ons for Apple's DOS and the date 27 July 1982</h2>
+  <p class="lede">The castle picture fills 32 sectors of the disk, and the three tracks it sits on hold 36. The game reads the four spare sectors and uses none of them. On side A they are blank. On side B one of them holds about 220 bytes of program that have nothing to do with Karateka.</p>
+  <div class="plate">
+    <div class="kd-grid" id="dl-grid" role="img" aria-label="The sector's 256 bytes, coloured by what they are"></div>
+    <ul class="kd-key">
+      <li><i class="date"></i>An add-on that stamps saved files with a date</li>
+      <li><i class="today"></i>The date the add-on was holding: <b id="dl-date">07/27/82</b></li>
+      <li><i class="free"></i>An add-on that prints <code>FREE=</code> and the free space on a disk</li>
+      <li><i class="fill"></i>A repeating pattern, the same one that fills the spare sector after this one</li>
+      <li><i></i>Zeros</li>
+    </ul>
+    <p class="cap">The sector's 256 bytes, one square each, in the order the disk holds them.</p>
+  </div>
+  <p>The bytes are two add-ons for DOS 3.3, the disk operating system that Apple sold with its disk drive. Karateka has no DOS. Its disk holds no files, and the game reads the disk with a loader of its own.</p>
+  <p>The first add-on changes <code>CATALOG</code>, the command that lists the files on a disk. Where DOS prints the disk's volume number at the top of the list, the add-on goes on to count the free sectors in the disk's map, and prints <code>FREE=</code> and the count.</p>
+  <p>The second add-on stamps files with a date. When a file is saved, the add-on tucks two bytes for the day into spare room in the disk's list of files. When the list is shown, the add-on prints them beside the file as month, day, and year, with the year counted from 1982. The add-on keeps the day's date in two bytes of its own, and in this sector they read 07/27/82: the 27th of July 1982, two years before Karateka went on sale.</p>
+  <p>Whose DOS this was, and how a piece of it came to be on a disk with no DOS, is not recorded. The sector's last eight bytes carry the same repeating pattern that fills the whole of the spare sector after it, so the add-ons look to have been lying in a larger stretch of memory that was written to the disk as it stood. The game's loader reads the sector, reads the next one over it, and moves on.</p>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/cpu6502.js"></script>
 <script src="../../lib/apple2.js"></script>
+<script src="reference/stages.js"></script>
+<script src="reference/sideb.js"></script>
+<script>
+// Side B: a stage drawn by its own code with either side's list of screen lines, the castle picture
+// as each side stores it, and the leftover sector (reference/sideb.js; test_sideb.js)
+(async function () {
+  const bar = document.getElementById('sb-bar'), cv = document.getElementById('sb-cv'), cap = document.getElementById('sb-cap');
+  const sel = document.getElementById('sb-place'), play = document.getElementById('sb-play');
+  const missing = [['C64Cpu', 'cpu6502.js'], ['Apple2', 'apple2.js'], ['KarStages', 'reference/stages.js'], ['KarSideB', 'reference/sideb.js']].filter(([g]) => !globalThis[g]).map(([, f]) => f);
+  if (missing.length) { cap.innerHTML = '<span class="kd-err">This widget needs the built site (missing: ' + missing.join(', ') + ').</span>'; return; }
+
+  // the leftover sector and the castle need no listing
+  const sector = KarSideB.leftover(), grid = document.getElementById('dl-grid'), kind = new Array(256).fill('');
+  for (const [a, b, k] of KarSideB.MAP) for (let i = a; i <= b; i++) kind[i] = k;
+  grid.innerHTML = kind.map(k => `<i class="${k}"></i>`).join('');
+  document.getElementById('dl-date').textContent = KarSideB.date(sector);
+  const scBar = document.getElementById('sc-bar'), scCv = document.getElementById('sc-cv');
+  function castle(side) {
+    [...scBar.children].forEach(b => b.classList.toggle('on', b.dataset.side === side));
+    Apple2.draw(scCv, KarSideB.screen(KarSideB.castle(side)), null, { hires: true }, 'hires');
+  }
+  [...scBar.children].forEach(b => { b.onclick = () => castle(b.dataset.side); });
+  castle('b');
+
+  const Ls = {}, note = cap.textContent;
+  cap.textContent = 'Loading the listings…';
+  try {
+    await Promise.all(['engine', 'cliff', 'palace', 'dungeon', 'akuma'].map(async p => { Ls[p] = await Apple2.load(`parts/${p}/listing.json`); }));
+  } catch (e) { cap.innerHTML = `<span class="kd-err">The listings did not load: ${e.message}</span>`; return; }
+  const PLACES = [];
+  for (const S of KarStages.STAGES) S.places.forEach((P, k) => PLACES.push([S.part, k, `${S.name}: ${P.name}`]));
+  PLACES.forEach(([, , name], i) => { const o = document.createElement('option'); o.value = i; o.textContent = name; sel.appendChild(o); });
+  const sides = [...bar.querySelectorAll('[data-side]')];
+  let s = null, side = 'b', at = 2, playing = false, raf = 0, owed = 0, last = 0;
+  const draw = () => Apple2.draw(cv, s.m, null, { hires: true, page2: s.page === 2 }, 'hires');
+  function stop() { playing = false; cancelAnimationFrame(raf); play.textContent = '▶ Play on'; play.classList.remove('on'); }
+  function go() {
+    stop();
+    sel.value = at; sides.forEach(b => b.classList.toggle('on', b.dataset.side === side));
+    cap.textContent = 'Running the stage…';
+    setTimeout(() => { s = KarSideB.place(Ls, PLACES[at][0], PLACES[at][1], side); draw(); cap.textContent = note; }, 0);
+  }
+  function tick(t) {
+    if (!playing) return;
+    owed += Math.min(250, t - (last || t)); last = t;
+    while (owed > 0) {
+      const f = KarStages.next(s, {});
+      if (!f) { draw(); return stop(); }
+      owed -= f.cycles / KarStages.CLOCK * 1000;
+    }
+    draw();
+    raf = requestAnimationFrame(tick);
+  }
+  play.onclick = () => {
+    if (playing || !s || s.done) return stop();
+    playing = true; owed = 0; last = 0; play.textContent = '❚❚ Pause'; play.classList.add('on');
+    raf = requestAnimationFrame(tick);
+  };
+  sel.onchange = () => { at = +sel.value; go(); };
+  sides.forEach(b => { b.onclick = () => { side = b.dataset.side; go(); }; });
+  go();
+})();
+</script>
 <script>
 (async function () {
   const tbl = document.getElementById('eb-tbl'), btns = document.getElementById('eb-btns');

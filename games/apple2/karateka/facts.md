@@ -259,6 +259,20 @@ found, outside the sample, the demo's height choice (title $A0AF), which
 gave three heights where the code gives two; it was corrected too. The
 checker's rate is a lower bound on the true rate.
 
+## Side B
+
+- Side B's `row_lo` and `row_hi` ($0800-$097F) are side A's with each
+  table's 192 bytes in reverse order, and its castle picture is side A's
+  with the 192 rows in reverse order. Those are the bytes side B's own
+  loader read (`orientation.md`, "Side B"); `test_sideb.js` holds the
+  Discoveries tab's side B to their SHA-256.
+- With the two tables turned over and nothing else changed, the
+  listings' code draws every place of the Levels tab as side A's
+  picture with its rows in reverse order: 17 of 17 places, all 192 rows
+  (`test_sideb.js`).
+- The picture is mirrored top to bottom, not turned through 180
+  degrees: a row's 40 bytes keep their order.
+
 ## Live tests
 
 All in Apple2TS as the kit's enhanced IIe, from the parts' entry
@@ -292,6 +306,10 @@ snapshots, with the keyboard chosen by writing 1 to $C4.
   speeds 30, 40 and 18, each called with a return to $0200, clicked as the
   listing's code does, with the Monitor's WAIT taken as
   (26 + 27A + 5A²) / 2 cycles (`test_sound.js`).
+- *Side B's title* (both sides of the disk, booted from power-on): 12
+  seconds and 22 seconds after power-on, the 192 rows of the page shown
+  from side B were the rows of the page shown from side A in reverse
+  order, 192 of 192 at both times (11 November 2026).
 - *The title and the demo* (title): run from $BFFA with no key, the two
   hi-res pages held the same bytes as the listing's code run on the kit's
   6502 at each of 18 flips of the page shown, from the credits to the
