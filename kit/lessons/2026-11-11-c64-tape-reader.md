@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Aztec Challenge (C64) · Nico-van-der-Zijden's run; air with Claude
+## 0.0.332 · 2026-11-11 · Aztec Challenge (C64) · Nico-van-der-Zijden's run; air with Claude
 
 - **A tape's files are read from its pulses before anything is loaded.**
   The run wrote a 70-line decoder of its own, which found both files and

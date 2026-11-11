@@ -3,9 +3,10 @@
 
 Every tool the kit uses is started only through this script (AGENTS.md,
 "Leave the cleanest footprint you can"), so that the containment lives in
-kit/scripts/browser.py for browser checks, kit/zmachine/bocfel.py for the
+kit/scripts/browser.py for browser checks, kit/scripts/node.py for the Node
+and Playwright client the page tests need, kit/zmachine/bocfel.py for the
 Z-machine interpreter, kit/scumm/scummvm.py for the SCUMM one, and
-kit/<platform>/tools.py for platform tools. Browser, Bocfel and ScummVM
+kit/<platform>/tools.py for platform tools. Browser, Node, Bocfel and ScummVM
 commands need no platform selection: Infocom's games run on the Z-machine and
 Lucasfilm's on SCUMM whatever machine they were sold for
 (kit/zmachine/INSTALL.md, kit/scumm/INSTALL.md).
@@ -14,6 +15,10 @@ Usage:
   tools.py [--platform <name>] <command> [args]     e.g. tools.py status
   tools.py browser                                 installed browser, isolated profile (browser.py documents Chromium selection)
   tools.py stop browser                            stop only this clone's browser
+  tools.py get-node [--version vX.Y.Z]             download Node (the newest LTS release) and playwright-core into tools/,
+                                                   for a machine with no Node
+  tools.py node run <command> [args]               run a command with that Node first on its PATH (node.py -h for the rest);
+                                                   a platform's launcher is given it without being asked
   tools.py get-bocfel                              download and build Bocfel, with the kit's trace
   tools.py bocfel run <story> [...]                play a story on it (bocfel.py -h for the rest)
   tools.py get-scummvm                             download and build ScummVM's SCUMM engine, with the kit's trace
@@ -42,12 +47,14 @@ read here without running it:
 """
 import ast, os, runpy, subprocess, sys
 import browser
+import node
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(KIT)
 SELF_DIR = os.path.basename(os.path.dirname(os.path.abspath(__file__)))   # "scripts" is not a platform
 EVERY_PLATFORM = ("status", "stop")    # safe to run on every platform's tools at once
-SHARED = ("get-bocfel", "bocfel",      # the Z-machine's, which every platform's Infocom games share
+SHARED = ("get-node", "node",          # Node and the Playwright client, which every platform's page tests share
+          "get-bocfel", "bocfel",      # the Z-machine's, which every platform's Infocom games share
           "get-scummvm", "scummvm")    # SCUMM's, which every platform's Lucasfilm games share
 
 
@@ -153,6 +160,10 @@ def main():
         browser.start(); return
     if a in (["stop", "browser"], ["stop", "browser", "--force"]):
         browser.stop(); return
+    if a and a[0] == "get-node":
+        sys.exit(node.main(["get"] + a[1:]))
+    if a and a[0] == "node":
+        sys.exit(node.main(a[1:]))
     if a == ["get-bocfel"]:
         bocfel().get(); return
     if a and a[0] == "bocfel":
@@ -161,6 +172,8 @@ def main():
         scummvm().get(); return
     if a and a[0] == "scummvm":
         sys.exit(scummvm().main(a[1:]))
+    if os.path.isfile(os.path.join(ROOT, "tools", "node", "bin", "node")):
+        os.environ.update(node.environment())    # a launcher's server runs on the Node in tools/, when there is one
     avail = platforms()
     decl = {p: declared(p) for p in avail}
     if not explicit and not os.environ.get("KIT_PLATFORM") and len(avail) > 1 \
@@ -172,6 +185,8 @@ def main():
         sys.exit(f"{e}\n\n{usage(avail, decl)}")
     if a == ["status"]:
         browser.status()
+        if os.path.isdir(os.path.join(ROOT, "tools", "node")):
+            print(f"node          {node.build_line()}")
         if os.path.isdir(os.path.join(ROOT, "tools", "zmachine")):
             print(f"bocfel        {bocfel().build_line()}")
         if os.path.isdir(os.path.join(ROOT, "tools", "scumm")):
