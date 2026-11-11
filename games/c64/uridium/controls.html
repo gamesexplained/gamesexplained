@@ -1,0 +1,100 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uridium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+a{color:var(--link)}a:hover{color:var(--link-hover)}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;overflow-wrap:break-word;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}}
+.ur-wrap{overflow-x:auto}
+table.ur-t{border-collapse:collapse;width:100%;font-size:15px}
+table.ur-t th,table.ur-t td{border-bottom:1px solid var(--line-soft);padding:7px 9px;text-align:left;vertical-align:top}
+table.ur-t th{font-size:13px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+table.ur-t td:first-child{white-space:nowrap;font-weight:700}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A joystick in either port flies the Manta; a handful of function keys set the game up, and RUN/STOP pauses it. There is no keyboard control of the ship.</p>
+</header>
+<main class="wrap">
+
+<section id="joystick">
+  <p class="fig">01 · Flying the Manta</p>
+  <h2 class="t">One joystick, in either port</h2>
+  <p class="lede">The ship is flown with a single joystick. The game reads both ports and acts on either (<code>read_stick</code>, <code>$B019</code>), so it does not matter which one the stick is in &mdash; unless two players each have their own, which the F3 option sets up below. Up and down change the Manta's height; left and right are its throttle, not its steering.</p>
+  <div class="ur-wrap"><table class="ur-t">
+    <tr><th>Input</th><th>What it does</th></tr>
+    <tr><td>Up / down</td><td>Climb and dive. The stick nudges the vertical velocity one step a frame up to the level's limit; centred, the velocity halves back towards level each frame (<code>manta_vertical</code>, <code>$2576</code>). Vertical position is <code>$16</code>.</td></tr>
+    <tr><td>Left / right</td><td>Accelerate backwards and forwards. Left and right do not turn the ship; they add to its signed speed, so the Manta speeds up, slows, stops and reverses along the hull (<code>manta_speed</code>, <code>$2635</code>). Horizontal is <code>$17</code>.</td></tr>
+    <tr><td>Fire</td><td>Fire a pair of shots at once, one from each gun, on the press, and a second pair on the release (<code>manta_fire</code>, <code>$2959</code>; <code>fire_control</code>, <code>$292F</code>). Fire is <code>$18</code>, zero while the button is held.</td></tr>
+    <tr><td>Hold fire,<br>then up or down</td><td>Flip the ship. Once fire has been held for seven frames (<code>$49</code> counts down from 7 to 0), the next push of up or down rolls the Manta edge-on and through a half-loop to face the other way, so it can turn round and strafe back &mdash; as long as it is moving at speed 3 or more and not already in a manoeuvre (<code>manta_vertical</code>; the turn's own acceleration carries it through, <code>manta_speed</code>).</td></tr>
+  </table></div>
+  <p>The Manta never collides through the video chip's sprite registers. Every hit &mdash; against the hull, a wall, a shot &mdash; is worked out from the map characters beneath it (<code>manta_collide</code>, <code>$27D5</code>; <a href="how-it-works.html#dreadnought">How it works</a>).</p>
+</section>
+
+<section id="start">
+  <p class="fig">02 · Starting a game</p>
+  <h2 class="t">Fire starts the game from any title screen</h2>
+  <p class="lede">The outer loop cycles through four attract screens &mdash; the title page with the music, the giant scrolling message, the hall of fame, and a demonstration flight. Pressing fire on any of them starts a game (<code>title</code>, <code>$0A20</code>; <code>new_game</code>). A game begins on level 1, the Zinc Dreadnought, with three lives.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">03 · The title keys</p>
+  <h2 class="t">Function keys set the game up before you start</h2>
+  <p class="lede">The function keys are read only on the title screens, into a bitfield (<code>read_keys</code>, <code>$B1FD</code>). Each of F1, F3, F5 and F7 pairs with its SHIFTed form (F2, F4, F6, F8). Each option shows a small icon in the status line.</p>
+  <div class="ur-wrap"><table class="ur-t">
+    <tr><th>Key</th><th>Effect</th></tr>
+    <tr><td>F1</td><td>One player (<code>$5C = 1</code>) (<code>option_keys</code>, <code>$2342</code>).</td></tr>
+    <tr><td>F2 <span style="font-weight:400;color:var(--ink-mute)">(SHIFT + F1)</span></td><td>Two players sharing one joystick (<code>$5C = 2</code>); the turn passes when a life is lost.</td></tr>
+    <tr><td>F3</td><td>Two players with a joystick each (<code>$5C = 0</code>). This is the one setting that reads the two ports separately.</td></tr>
+    <tr><td>F5 / F6</td><td>Turn the music volume up (F5) and down (F6), 0 to 15, five at the start (<code>volume_keys</code>, <code>$B31B</code>). The reading is shown as <code>Volume&nbsp;nn</code>.</td></tr>
+    <tr><td>F7 / F8</td><td>Colour (F7) or black and white (F8) (<code>colour_keys</code>, <code>$23B5</code>). Black and white makes every Dreadnought use the plain scheme instead of its own colours.</td></tr>
+  </table></div>
+</section>
+
+<section id="pause">
+  <p class="fig">04 · Pausing and quitting</p>
+  <h2 class="t">RUN/STOP pauses; CLR/HOME abandons the game</h2>
+  <p class="lede">In play, only three keys are read, and they are read apart from the joystick (<code>read_pause_keys</code>, <code>$2F9D</code>; <code>pause_check</code>, <code>$2B6D</code>).</p>
+  <div class="ur-wrap"><table class="ur-t">
+    <tr><th>Key</th><th>Effect</th></tr>
+    <tr><td>RUN/STOP</td><td>Pause. The word <code>Pause</code> appears in the status line and the sound stops. Press fire, or RUN/STOP again, to carry on; the frame counter is kept so nothing is lost.</td></tr>
+    <tr><td>CLR/HOME <span style="font-weight:400;color:var(--ink-mute)">(while paused)</span></td><td>Abandon the game in progress and go back to the title screens.</td></tr>
+  </table></div>
+  <p>RUN/STOP sits in the same keyboard column the joystick's right direction would read, so <code>read_pause_keys</code> ignores it when port&nbsp;1 is being pushed right, to keep a strafe from pausing the game by accident.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
