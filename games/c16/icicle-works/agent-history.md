@@ -95,3 +95,18 @@ The source footprint diagram clipped authored Plus/4 RAM at the C16's
 above that boundary, with three regression cases. No skill workflow was
 changed, so this script fix needs no lesson or kit version bump. Reference
 captures unused by the pages were moved into the ignored work cache.
+
+## Final copy and delivery checks
+
+The draft pages were committed before the ELI15 rewrite. The rewrite
+explains memory addresses, display interrupts, character shapes, and sound
+registers on each relevant tab. A sentence-by-sentence comparison retained
+the technical conditions; a separate text check retained every numeric
+piece of evidence. The copy remains agent-draft pending human curation.
+
+The four required checks passed before the draft commit: no game binaries,
+documentation separation, 609 matching listings, and 50 affected tests
+(49 passed, one unrelated Spectrum media test skipped because SkoolKit was
+not installed). No Spectrum analysis depends on that skip. The checks are
+repeated for the final copy commit. PR review screenshots show the base
+branch's three-entry C16 catalogue and the new explanation pages.
