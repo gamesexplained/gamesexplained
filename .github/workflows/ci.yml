@@ -9,24 +9,34 @@ on:
   schedule:
     - cron: "17 6 * * *"
 
+# A new push to a pull request cancels the older run of it: PR runs
+# share a group (refs/pull/N/merge), so only the newest runs. Any
+# other run gets a group of its own, so pushes to main, scheduled
+# runs and manual runs neither cancel nor queue behind each other.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  check-and-build:
+  # Every kit test, on four computers at once. The tests are most of a run's time, and
+  # each is a process of its own, so each computer takes a share of them: test_kit.py --shard
+  # gives the Kth of N shares, which together are every test, each once
+  # (kit/scripts/test_test_kit.py holds that). Another entry in `share` is another computer: the
+  # number of shares is read from the list. A share that fails leaves the others running, so one
+  # run names every failing test, and deploy waits for all of them.
+  tests:
+    name: tests (${{ matrix.share }} of ${{ strategy.job-total }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: read   # the build reads which issues are closed, for the activity page
-    # A new push to a pull request cancels the older run of it: PR runs
-    # share a group (refs/pull/N/merge), so only the newest runs. Any
-    # other run gets a group of its own, so pushes to main, scheduled
-    # runs and manual runs neither cancel nor queue behind each other,
-    # and deploy and announce are untouched.
-    concurrency:
-      group: ${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
-      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        share: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # contributors are read from git history
+          fetch-depth: 0   # tests of the tools that read git history have it to read
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -40,7 +50,7 @@ jobs:
       # self-tests on the tools are run by the same script, from a list at
       # the top of it. `--require-tools` makes a test that needs an installed
       # tool fail rather than skip, so CI cannot pass because an oracle was
-      # absent. See AGENTS.md, "Working on the kit or the site".
+      # absent: every share installs every oracle. See AGENTS.md, "Working on the kit or the site".
       - name: SkoolKit, the Z80 decoder's oracle in CI
         run: pip install skoolkit==10.1
       - name: jsbeeb, the BBC sound chip's oracle in CI
@@ -49,17 +59,82 @@ jobs:
         run: python3 kit/scripts/tools.py --platform nes get-jsnes
       - name: Bocfel, the Z-machine decoder's oracle in CI
         run: python3 kit/scripts/tools.py get-bocfel
+      # ScummVM takes a minute or two to build, so the folder it is built in is kept between
+      # runs. The key changes with everything the build is made from: scummvm.py (the release,
+      # the configure options, the edits), the kit's files compiled into it, and the runner's
+      # image, whose compiler builds it and whose libraries it runs on. scummvm.py also keeps
+      # a stamp of the first two in the folder and checks it before any use, so a build that is
+      # out of date is built again below, and could only fail a test, never pass one.
+      - name: The runner's image, for the key below, and its processor
+        id: image
+        run: |
+          echo "version=$ImageOS-$ImageVersion" >> "$GITHUB_OUTPUT"
+          echo "$ImageOS-$ImageVersion, $(nproc) processors: $(lscpu | sed -n 's/^Model name: *//p')"
+      - name: ScummVM's build, cached
+        id: scummvm
+        uses: actions/cache/restore@v4
+        with:
+          path: tools/scumm/scummvm-*/
+          key: scummvm-build-${{ steps.image.outputs.version }}-${{ hashFiles('kit/scumm/scummvm.py', 'kit/scumm/scummvm_kit*') }}
       # ScummVM's source is 223 MB: kept between runs, so its site is asked for it once
       # for each change to the script that names the release.
       - name: ScummVM's source tarball, cached
+        if: steps.scummvm.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: tools/scumm/scummvm-*.tar.xz
           key: scummvm-source-${{ hashFiles('kit/scumm/scummvm.py') }}
       - name: ScummVM, the SCUMM decoder's oracle in CI
-        run: python3 kit/scripts/tools.py get-scummvm
-      - name: Every kit test
-        run: python3 kit/scripts/test_kit.py --require-tools
+        run: |
+          if python3 -c "import sys; sys.path.insert(0, 'kit/scumm'); import scummvm; sys.exit(not scummvm.available())"; then
+            echo "The build kept from an earlier run is up to date: $(python3 kit/scripts/tools.py scummvm status)"
+          else
+            python3 kit/scripts/tools.py get-scummvm
+          fi
+      - name: Keep ScummVM's build for the next run
+        if: steps.scummvm.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: tools/scumm/scummvm-*/
+          key: ${{ steps.scummvm.outputs.cache-primary-key }}
+      # How long each test took on an earlier run, so that the longest start first and none is
+      # left to start when the rest are done (test_kit.py --times). It changes the order the
+      # tests start in and nothing else. Runs on main keep the times; a pull request reads them.
+      - name: Each test's time on an earlier run
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/kit-test-times.json
+          key: kit-test-times-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.share }}
+          restore-keys: kit-test-times-
+      - name: Every kit test, this computer's share
+        id: tests
+        run: >
+          python3 kit/scripts/test_kit.py --require-tools
+          --shard ${{ matrix.share }}/${{ strategy.job-total }}
+          --times "$RUNNER_TEMP/kit-test-times.json"
+      - name: Keep each test's time for the next run
+        if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/kit-test-times.json
+          key: kit-test-times-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.share }}
+
+  # The other checks, the site, and the checks of the built site in a browser, beside the tests.
+  check-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read   # the build reads which issues are closed, for the activity page
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # contributors are read from git history
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Every kit script imports
         run: |
           for f in $(git ls-files 'kit/*.py' 'kit/**/*.py'); do
@@ -120,7 +195,7 @@ jobs:
   # repository variable DEPLOY_PAGES is "true" (it is). The CNAME file is
   # written by kit/scripts/build.py.
   deploy:
-    needs: check-and-build
+    needs: [tests, check-and-build]
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
     runs-on: ubuntu-latest
     # one deployment at a time
