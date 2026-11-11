@@ -109,7 +109,10 @@ address links into the Source tab, and the house style in `kit/style.md`.
    the bytes that produce each note. When the game has music, the player
    is required, with a button for every tune the game stores, unused
    ones too: a run that names the music driver and leaves the player to
-   `TODO.md` has not built the page. It plays through the site's model
+   `TODO.md` has not built the page. A tune the loader plays while the
+   game loads gets its button here too, played from the bytes
+   `media.json` found on the tape or disk (`12-media`), with its driver
+   and data embedded in the page, since no listing holds them. It plays through the site's model
    of the machine's sound chip, and what drives the model is the game's
    own music: its driver ported, or run on the kit's processor, on the
    page or ahead of time into a recording of what it wrote to the chip,
@@ -476,7 +479,9 @@ How the game's loader, unpacker or protection works is not a discovery
 and gets no section on any page: its paragraph stays in
 `orientation.md`. A secret found inside one still counts, a message to
 crackers or a name in the loading picture, told as the secret and not
-as a tour of the loader.
+as a tour of the loader. The loading picture and the loading tune are
+not the loader's workings and are always shown: the picture on the
+Graphics tab and the tune with "The sound".
 
 When the run found none, leave the tab out and say so in
 `agent-history.md`.
@@ -531,12 +536,19 @@ drags them or presses the buttons beside them (games/c64/space-rogue,
 `ships.html`). How the screen is built, its modes, character sets and
 splits, follows the viewer on this tab.
 
+The picture the tape or disk shows while the game loads is drawn on
+this tab too, in a section of its own after the game's shapes. Readers
+remember it, and the game has usually loaded over it, so no listing
+holds it: draw it from the bytes `media.json` found on the medium
+(`12-media`), embedded in the page as a picture's data, and name that
+page in the items' answers (games/c64/shadowfire).
+
 Name the tab in one word in `game.json`'s `"graphics_tab"` (or as its
 label in `"tabs"`): **Graphics**, or a word for the cast when the cast
 is what the tab is about, such as Fighters or Ships. The file is
 `graphics.html` whatever the tab is called. Leave the tab out only when
-nothing drawn moves (a text adventure, a board of fixed squares), and
-say why in `agent-history.md`.
+nothing drawn moves (a text adventure, a board of fixed squares) and
+the game has no loading picture, and say why in `agent-history.md`.
 
 ## Play
 

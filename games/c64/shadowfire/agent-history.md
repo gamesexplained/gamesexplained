@@ -256,3 +256,25 @@ tape was the first read with it (`kit/c64/tap.py`).
   were set beside the game's bytes at `$1400`-`$1FFF` and share no run
   of 12 bytes or more with them. What they are stays open.
 
+## 11 November 2026: the loading picture on the Graphics tab
+
+Aaron Bell asked that loading screens and loading music be shown
+wherever a game has them, the screen on Graphics and the music on How it
+works, as the exception to keeping loaders off the pages.
+
+- `graphics.html` has a third section, the loading picture, drawn from
+  the tape's blocks 2, 3 and 4, which the page carries as data.
+  `media.json` now answers those three blocks `data` with that page;
+  block 5, the video registers, stays the loader's.
+- `test_loading_picture.py` holds the page's bytes to the hashes
+  `media.json` took from the tape, and the page's decoder to the
+  multicolour rule.
+- What the section says of the load is read off the loader's code and
+  the tape, not watched in an emulator. The loader clears bit 4 of
+  `$D011` as it starts (`$035C`) and increments `$D020` after every bit
+  (`$03DA`). Block 5 sets `$D011` to `$3B` and block 8 to `$0B`. Summing
+  the TAP's pulses at 985,248 cycles a second gives 64 seconds before
+  block 5 has loaded, 143 seconds from there to the end of block 8, and
+  43 seconds from there to the end of block 10.
+- The tape has no loading music: the loader's 163 bytes write to no
+  sound register.
