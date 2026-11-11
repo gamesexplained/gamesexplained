@@ -17,7 +17,12 @@
 //   when sidLog is an array. A read of a register the chip does not answer returns the data bus,
 //   the last value written to any register, fading as VICE's does (site/lib/sid.js, createBus;
 //   the option sid below), not the register's last value; $D419 and $D41A read $FF, no
-//   paddles, and $D41B and $D41C read 0: the voices are not modelled.
+//   paddles. $D41B reads voice 3's oscillator as the chip's stands on the cycle of the read:
+//   noise, a waveform, the test bit, sync and ring modulation from voice 2 (site/lib/sid.js,
+//   createOsc, held to VICE by kit/c64/test_sid_osc.js), so a game that takes its random numbers
+//   there gets the numbers a C64's would give from the same start. The oscillators start as the
+//   chip leaves reset, whatever the snapshot's stood at (x64sc's snapshot does not hold them).
+//   $D41C reads 0: the envelopes are not modelled.
 // The processor port starts as a loader leaves it ($37: BASIC, KERNAL and I/O in); the simulator
 // holds no ROM, so the game must bank the ROMs out itself (most do, with $01 = $35) or a hook must
 // stand in for what it calls. Checked by kit/c64/test_machine.js.
@@ -98,9 +103,10 @@
 //   compare line is 0 and the raster interrupt is off until the game sets them.
 // - Machine.fromSnapshot(vsf, opts): the machine as an x64sc snapshot left it, for a start in the
 //   middle of play: the RAM, the port, the processor's registers and the video chip, its raster
-//   interrupt included, and the colour RAM when the file's VIC-IISC module is format 1.4
-//   (readSnapshot's colour). The raster starts at line 0, wherever the snapshot's was, and the
-//   CIAs start as new Machine starts them: the snapshot's are not read.
+//   interrupt included, the colour RAM when the file's VIC-IISC module is format 1.4
+//   (readSnapshot's colour), and the SID's registers as last written (readSnapshot's sid), so
+//   a voice the game set up before the snapshot runs on. The raster starts at line 0, wherever
+//   the snapshot's was, and the CIAs start as new Machine starts them: the snapshot's are not read.
 //   opts as for new Machine, but ram, port, pc and vic come from the file.
 // - passAt: the address of the main loop's first instruction. Each time the processor reaches it,
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
@@ -125,7 +131,7 @@ const path = require('path');
 const { CPU, readSnapshot } = require('../cpu/cpu6502.js');
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'sid.js'));
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'collide.js'));
-const { createBus } = globalThis.C64Sid.engine();
+const { createBus, createOsc } = globalThis.C64Sid.engine();
 
 function loadListing(file) {
   const L = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -157,6 +163,7 @@ class Machine {
     this.sidLog = null;
     this.sidChip = opts.sid || '8580';
     this.sidBus = createBus(this.sidChip);
+    this.sidOsc = createOsc(this.sidChip);
     this.colour = new Uint8Array(0x400);
     this.pra = 0x7F; this.ddra = 0xFF; this.ddrb = 0;   // CIA 1's ports as the KERNAL leaves them
     this.keys = new Set();
@@ -221,7 +228,13 @@ class Machine {
     const m = new Machine(Object.assign({}, opts, { ram: s.ram, port: s.port, pc: s.regs.pc, vic: s.vic }));
     m.cpu.setRegs(s.regs);
     if (s.colour) m.colour.set(s.colour);
+    if (s.sid) m.setSid(s.sid.regs);
     return m;
+  }
+  // The SID's registers as a snapshot or a saved state holds them, with nothing written on the
+  // bus: the oscillators take their frequencies, widths and controls from here on.
+  setSid(regs) {
+    for (let r = 0; r < 0x19 && r < regs.length; r++) { this.sidw[r] = regs[r]; this.sidOsc.write(r, regs[r], this.now); }
   }
   get line() { return Math.floor(this.cpu.cycles / LINE) % LINES; }
   get now() { return this.cpu.cycles; }      // the chips' clock
@@ -246,7 +259,7 @@ class Machine {
       if (r === 0x1A) return this.enable | 0xF0;
       return this.vic[r];
     }
-    if (a >= 0xD400 && a < 0xD800) return this.sidBus.read(a & 0x1F, this.now, 0);
+    if (a >= 0xD400 && a < 0xD800) { const r = a & 0x1F; return this.sidBus.read(r, this.now, r === 0x1B ? this.sidOsc.read(this.now) : 0); }
     if (a >= 0xD800 && a < 0xDC00) return this.colour[a - 0xD800] | 0xF0;
     if (a >= 0xDC00 && a < 0xDD00) {
       const r = a & 15;
@@ -337,7 +350,7 @@ class Machine {
       else this.vic[r] = v;
       return;
     }
-    if (a >= 0xD400 && a < 0xD800) { this.sidw[a & 0x1F] = v; this.sidBus.write(v, this.now); if (this.sidLog) this.sidLog.push([this.cpu.cycles, a & 0x1F, v]); return; }
+    if (a >= 0xD400 && a < 0xD800) { this.sidw[a & 0x1F] = v; this.sidBus.write(v, this.now); this.sidOsc.write(a & 0x1F, v, this.now); if (this.sidLog) this.sidLog.push([this.cpu.cycles, a & 0x1F, v]); return; }
     if (a >= 0xD800 && a < 0xDC00) { this.colour[a - 0xD800] = v & 15; return; }
     if (a >= 0xDC00 && a < 0xDD00) {
       const r = a & 15;
@@ -504,7 +517,7 @@ class Machine {
   save() {
     const c = this.cpu;
     return { ram: Buffer.from(this.ram).toString('base64'), vic: Array.from(this.vic), sidw: Array.from(this.sidw),
-      sid: this.sidChip, sidBus: this.sidBus.save(), colour: Buffer.from(this.colour).toString('base64'),
+      sid: this.sidChip, sidBus: this.sidBus.save(), sidOsc: this.sidOsc.save(), colour: Buffer.from(this.colour).toString('base64'),
       cpu: { a: c.a, x: c.x, y: c.y, sp: c.sp, pc: c.pc, p: c.p, cycles: c.cycles, pdir: c.pdir, pdata: c.pdata, pout: c.pout },
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt,
@@ -521,7 +534,7 @@ class Machine {
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
     c.p = s.cpu.p; c.pdir = s.cpu.pdir; c.pdata = s.cpu.pdata; c.pout = s.cpu.pout; c.mapPort();
-    m.vic.set(s.vic); if (s.sidw) m.sidw.set(s.sidw); if (s.sidBus) m.sidBus.load(s.sidBus); m.colour.set(Buffer.from(s.colour, 'base64'));
+    m.vic.set(s.vic); if (s.sidw) m.sidw.set(s.sidw); if (s.sidBus) m.sidBus.load(s.sidBus); if (s.sidOsc) m.sidOsc.load(s.sidOsc); else if (s.sidw) m.setSid(s.sidw); m.colour.set(Buffer.from(s.colour, 'base64'));
     Object.assign(m, { cmp: s.cmp, latch: s.latch, enable: s.enable, lastLine: s.lastLine, frames: s.frames, passes: s.passes, pra: s.pra, ddra: s.ddra, ddrb: s.ddrb,
       skipOnce: !!s.skipOnce, joy: s.joy === undefined ? 0x1F : s.joy, keys: new Set(s.keys || []) });
     if (s.joy1 !== undefined) m.joy1 = s.joy1;
