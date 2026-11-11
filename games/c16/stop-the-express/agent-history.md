@@ -81,3 +81,35 @@ hardware, and compared the diff against the draft. The pass preserves
 every numeric/address evidence token in the article text. All four pages
 retain the same tested decoder block. Copy remains agent-draft; Silver
 is the completed unattended tier, pending human curation for Gold.
+
+## Requested full audit
+
+On the contributor's request, froze all 439 comments at listing hash
+2c92f5a2df278f375925edea07ea305b7a5195ec187dd8b52d2bd8556fd62982.
+Three fresh gpt-6-astra checkers worked one at a time over ranges
+0000-35F3 (138), 35F4-544E (102), and 544F-FFFF (199). They found
+14, 18, and 6 detail errors respectively. All 38 were upheld. Applied
+38 comments and four label changes through the live disassembler, then
+exported symbols and regenerated the listing. No program byte changed.
+
+Propagated sound ownership, collision states, record-overrun bounds, and
+optional-table uncertainty into the authored pages and facts. The caution
+sign's decoder was correct but its selector omitted the caller's $80
+offset; fixed that selection and added a native-caller regression check.
+The audit also exposed an interior-initializer overrun at rounds 0/255.
+Live emulator probes reproduced all three forced initializer cases,
+including the untouched $24FE/$24FF bytes. The post-audit sample follows
+after all corrections; no auditor will check that sample.
+
+The fresh post-audit gpt-6-astra checker assessed seed 2026111101:
+60 written and 20 generated comments out of the 439-comment population.
+All 80 were right, without doubtful or unverifiable verdicts. The rate
+is 0%, Wilson 95% interval 0%-4.6%, within the kit's mark. Its exact
+text/hash validation passed and every listed byte matched the snapshot.
+The full audit is complete; copy remains agent-draft and tier Silver.
+
+The visual comparison caught a reused browser context showing an earlier
+build. Repeated the complete desktop/mobile checks in a fresh context
+with service workers blocked, asserted the Source audit badge, and
+captured the corrected caution sign. Both viewport runs passed without
+page errors or horizontal overflow.

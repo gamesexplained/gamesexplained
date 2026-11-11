@@ -9,14 +9,16 @@ payload are covered. This is a 64 KB Plus/4 conversion.
   The intended name of the floating ceiling figure remains uncertain;
   the pages call it the ceiling obstacle. The converter's notes and
   online searches on 11 November 2026 did not settle the name.
-- **Recommend a full annotation audit.** The independent seed-20261111
-  sample found seven detail errors among 80 comments (8.8%, Wilson 95%
-  interval 4.3%–17.0%). All seven were upheld and fixed, along with
-  related ground-strip comments. The sample measured the frozen draft;
-  no full audit or fresh post-audit sample has occurred.
+- The full audit checked all 439 annotations and corrected 38 detail
+  errors. A fresh independent sample found 0 errors in 80 comments
+  (seed 2026111101; Wilson 95% interval 0%-4.6%). The annotation audit
+  requirement is complete; human curation remains for Gold.
 - Verify optional SID and DigiMuz playback/calibration on appropriate
   hardware. The TED player covers the complete stored tune's TED parts;
   the optional board outputs are traced but not presented as verified audio.
+  The DigiMuz table addresses $FC00/$FC60 contain alternating $00/$FF
+  bytes at entry and are not filled by music initialization or playback;
+  verify their preparation before adding a pitched DigiMuz player.
 
 ## Possible follow-ups
 

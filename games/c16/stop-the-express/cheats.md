@@ -17,7 +17,7 @@ POKE commands while its ROMs were paged out.
 | Practice flag | $7E = 1 before the collision/timer routines | Tested with native code and in emulator stage setup |
 | Inspect stage two | Set round $4A = 2, enter the native common interior setup at $2844, stop at $2860 | Tested live; reference/play-interior.png |
 | Inspect engine approach | During interior practice, set $75 = 2*$7D-1 and $74 = 22, run to $2860 | Tested live; native approach sets player (37,17) and $3F=1 |
-| Force round-zero initializer | Set $4A=0, call $51F5 | Tested live; corrupts code through $24FF and places $FF at $2500; use a disposable snapshot |
+| Force round-zero initializer | Set $4A=0, call $51F5 | Tested live; modifies record fields through $24FD, leaves $24FE/$24FF unchanged, and places $FF at $2500; use a disposable snapshot |
 
 Forced setup is evidence about a routine's behaviour, not evidence of a
 legal route through the game. No untested lives/score poke is proposed.

@@ -43,7 +43,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <div class="pick"><button class="step" type="button" aria-label="Previous">←</button><select id="ex-family" aria-label="Choose view"><option value="0">Runner</option><option value="1">Enemy</option><option value="2">Bird</option><option value="3">Ceiling obstacle</option><option value="4">Bouncing obstacle</option><option value="5">Death</option><option value="6">Brake / warning / ladder / life</option><option value="7">Poles and overhead wires</option></select><button class="step" type="button" aria-label="Next">→</button></div>
 <div class="ex-controls"><button id="ex-pose-prev">← Previous pose</button><label>Pose <input id="ex-pose" type="range" min="0" max="7" value="0"></label><button id="ex-pose-next">Next pose →</button></div>
 <canvas id="ex-figure" width="288" height="288" aria-label="Selected character figure"></canvas><p id="ex-figure-text" class="ex-readout" data-ex-status>Loading figures…</p>
-<p class="cap">Every pose uses the selected train’s actual character shapes and colours. The pose controls show one stored variant at a time. They do not reproduce the game’s playback speed. The page’s reader for drawing lists is checked against <code>$50A0</code> for every shown list and every possible one-byte adjustment to its character codes. Addresses such as <code>$50A0</code> name places in memory; the $ marks a base-16 number using digits 0–9 and A–F.</p>
+<p class="cap">Every pose uses the selected train’s actual character shapes and colours. The pose controls show one stored variant at a time. They do not reproduce the game’s playback speed. The page’s reader for drawing lists is checked against <code>$50A0</code> for every shown list and every character-code adjustment from 0 to 255. The caution sign also uses the $80 adjustment chosen by the game at <code>$47C9</code>. Addresses such as <code>$50A0</code> name places in memory; the $ marks a base-16 number using digits 0–9 and A–F.</p>
 </div>
 <p>The same higher character codes can choose different shapes inside the train. A bird pose on the roof can therefore draw a different picture with the interior font. Pole and wire views run the original drawing routines at <code>$4571</code> and <code>$4709</code>. The game’s routines choose which combinations appear during play. This browser also shows combinations that the game does not select.</p>
 </section>
@@ -87,7 +87,7 @@ function expressPoses(){return [
  [0,2,32,34].map(o=>({name:'Ceiling obstacle offset '+o,fixed:0x4154,offset:o,size:4})),
  [{name:'Bouncing obstacle',address:0x42d2}],
  [0x2efd,0x2f0a,0x2f17,0x2f24].map((a,i)=>({name:'Death pose '+i,address:a})),
- [0x438d,0x4809,0x2c4a,0x2c51,0x4ea5].map((a,i)=>({name:['Brake detail','Caution sign','Ladder detail 1','Ladder detail 2','Spare-life figure'][i],address:a})).concat([{name:'Roof knife',glyph:0xe8},{name:'Interior knife',glyph:0xe9}]),
+ [0x438d,0x4809,0x2c4a,0x2c51,0x4ea5].map((a,i)=>({name:['Brake detail','Caution sign','Ladder step 5','Ladder step 6','Spare-life figure'][i],address:a,offset:a===0x4809?0x80:0})).concat([{name:'Roof knife',glyph:0xe8},{name:'Interior knife',glyph:0xe9}]),
  Array.from({length:85},(_,i)=>({name:'Wire position '+i+' / pole column '+(i%39+1),environment:i}))
 ];}
 // end of express-poses

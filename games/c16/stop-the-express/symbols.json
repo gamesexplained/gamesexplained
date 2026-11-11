@@ -2033,13 +2033,13 @@
   },
   {
    "address": 8845,
-   "name": "released_bird_pitch",
+   "name": "wire_death_pitch",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 8846,
-   "name": "update_released_bird_sound",
+   "name": "update_wire_death_sound",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -2933,13 +2933,13 @@
   },
   {
    "address": 11338,
-   "name": "shape_ladder_end",
+   "name": "shape_ladder_step_five",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 11345,
-   "name": "shape_ladder_moving",
+   "name": "shape_ladder_step_six",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8258,7 +8258,7 @@
   {
    "address": 6340,
    "type": "line",
-   "text": "Fifth cell of the forty-character ground row. wire_death_sequence reads it as the outgoing value before its one-character left rotation of that row."
+   "text": "Fifth cell of the forty-character ground row. wire_death_sequence saves it as the replacement for the far-right cell while shifting offsets 1-39 left into offsets 0-38, preserving the six-character repeated pattern."
   },
   {
    "address": 6370,
@@ -8278,7 +8278,7 @@
   {
    "address": 6377,
    "type": "line",
-   "text": "Twenty-five rows of forty character codes for the cast reveal. Includes THE CAST, THIS IS YOU! and TRAIN GANG with their pictures. The reveal loops read each full row through their fixed forty-column arithmetic, rather than using a text terminator."
+   "text": "Twenty-five rows of forty character codes for the cast reveal. Includes THE CAST, THIS IS YOU! and TRAIN GANG with their pictures. Each reveal loop advances by a forty-cell source row, copying its visible portion and skipping the hidden cells rather than using a text terminator."
   },
   {
    "address": 7377,
@@ -8338,7 +8338,7 @@
   {
    "address": 7979,
    "type": "line",
-   "text": "Convert the current carriage distance to HUD text at $1079, then use stage-specific engine width and the background scroll to write the carriage's two displayed digits into the train character buffer. The tables at $1FE8/$1FEB supply the train's digit characters."
+   "text": "Convert the remaining carriage distance into three decimal scratch characters at $0079-$007B, then use stage-specific engine width and the background scroll to write the carriage number into the train character buffer. The overlapping tables at $1FE8/$1FEB supply the train digit characters."
   },
   {
    "address": 8121,
@@ -8443,7 +8443,7 @@
   {
    "address": 8770,
    "type": "line",
-   "text": "Twenty-eight command codes shared by joystick combinations and the two scanned keyboard rows. The nine keypad-like movement commands are ASCII digits 1-9; $20 is the release/start action. Zero entries suppress unsupported keys."
+   "text": "Twenty-eight command codes shared by joystick combinations and the two scanned keyboard rows. The eight keypad-like movement commands are ASCII digits 1-4 and 6-9; $20 is the release/start action. Zero entries suppress unsupported keys."
   },
   {
    "address": 8798,
@@ -8458,12 +8458,12 @@
   {
    "address": 8845,
    "type": "line",
-   "text": "Mutable pitch/envelope byte for the sound of a released bird; $2F8A resets it and the updater at $228E subtracts six while sounding."
+   "text": "Mutable pitch/envelope byte for the wire-death sound; wire_death_sequence resets it to $FF at $2F8A, and the updater at $228E subtracts six while sounding."
   },
   {
    "address": 8846,
    "type": "line",
-   "text": "While the train is moving, attract mode is off, and no stream effect owns the sound, decrease $228D by six until below $46. Write half the result to TED voice 2's low frequency and derive a falling volume; otherwise clear voice 2's square-wave enable bit."
+   "text": "Update the wire-death sound. If the train is stopped or attract mode is active, return without changing TED. Otherwise, when no stream effect is active and $228D is at least $46, subtract six, write half the result to voice 2 frequency and derive its falling volume. An active stream effect or pitch below $46 clears voice 2 square-wave enable bit 5."
   },
   {
    "address": 8902,
@@ -8663,12 +8663,12 @@
   {
    "address": 10572,
    "type": "line",
-   "text": "Keep drawing the final engine view while progressively delaying its scroll. Every sixteenth pass advance the slowdown stage; rotate the background row and wrap wire_position at $54 as the slower scroll advances. After the delay reaches 10, enter the stopped-train celebration."
+   "text": "Keep drawing the fixed final engine view while progressively slowing the surrounding ground, wires and pole. Every sixteenth pass advance the delay stage; as the slower background advances, shift the ground row and wrap wire_position at $54. After the delay reaches 10, enter the stopped-train celebration."
   },
   {
    "address": 10772,
    "type": "line",
-   "text": "Clear effect/ladder state, then animate the ladder and stopped-engine view for up to 90 iterations, allowing Space/fire to shorten the live-play wait. Show the next-round message for up to 160 iterations, increment the round byte and restart the roof stage."
+   "text": "Clear effect/ladder state, then animate the ladder and stopped-engine view for up to 90 iterations, allowing Space/fire to shorten the live-play wait. In live play, show the next-round message for up to 160 iterations; attract mode skips that phase. Increment the round byte and restart the roof stage."
   },
   {
    "address": 10920,
@@ -8738,12 +8738,12 @@
   {
    "address": 11338,
    "type": "line",
-   "text": "Zero-terminated character/skip stream for the ladder's final decoration, consumed at $2C40 through draw_shape_stream; its header uses no separate length byte."
+   "text": "Zero-terminated character/skip stream for the ladder decoration at animation step 5, consumed at $2C40 through draw_shape_stream. The stream has three character/skip pairs and no separate length byte; step 6 uses $2C51."
   },
   {
    "address": 11345,
    "type": "line",
-   "text": "Zero-terminated character/skip stream for the earlier lower decoration, selected while the ladder animation step is greater than five."
+   "text": "Zero-terminated character/skip stream for the lower decoration selected when the ladder animation step is greater than five. The normal animation stops at step 6 with this six-character decoration visible."
   },
   {
    "address": 11358,
@@ -8768,7 +8768,7 @@
   {
    "address": 11430,
    "type": "line",
-   "text": "Stop effects, clear the active released bird and death frame, then animate the fallen player while the train slows. Rotate its background row and wrap the one-byte wire position, play the death effect as the player reaches row 22, and count down a long wait. Decrement lives and restart the roof or enter game over."
+   "text": "Stop effects, clear the active released bird and death frame, then animate the fallen player while the train image scrolls left increasingly quickly and the ground/wire motion slows to a stop. Shift the ground row with its repeated-pattern replacement and wrap wire_position, start the death effect when the player reaches row 22, and count down the wait. Decrement lives and restart the roof or enter game over."
   },
   {
    "address": 11900,
@@ -8818,17 +8818,17 @@
   {
    "address": 12525,
    "type": "line",
-   "text": "Clamp the starting player row, animate an interior death through several timed phases and loop the stream effects at $6DBD/$6DC9. After the final wait, subtract a life and restart stage two at $2852, or enter game over. A death reason of $FF skips the first animation phase."
+   "text": "Clamp the starting player row, animate an interior death through timed phases, loop the stream effect at $6DBD, then start $6DC9 once for the final wait. Subtract a life and restart stage two at $2852, or enter game over. A death reason of $FF skips the first animation phase."
   },
   {
    "address": 12882,
    "type": "line",
-   "text": "During live moving-train play and phase_2=0, advance $42 up to $0F. The constructed $90|$42 value is overwritten before a sound call, so this entry changes state but writes no sound registers."
+   "text": "During live moving-train play and phase_2=0, advance $42 up to $0F. The constructed $90|$42 value is immediately overwritten by phase_2 and is never passed to a sound routine; this entry changes state but writes no sound registers."
   },
   {
    "address": 12939,
    "type": "line",
-   "text": "Silence effects. Attract mode returns to the cast; live play draws GAME OVER, enables that banner for the next attract display, and keeps the train/HUD animation running. Space/fire starts a new game; expiration returns to the attract setup."
+   "text": "Silence effects. Attract mode returns to the cast; live play draws GAME OVER, enables that banner for the next attract display, and repeatedly redraws the stationary train/HUD scene. Space/fire starts a new game; expiration returns to the attract setup."
   },
   {
    "address": 13028,
@@ -8928,17 +8928,17 @@
   {
    "address": 14000,
    "type": "line",
-   "text": "Standing leg pair $A0/$A1, followed by its zero terminator and a retained zero byte; used below the shared torso."
+   "text": "Standing leg pair $A0/$A1, with destination skips 1 and 0 followed by the stream's zero terminator; used below the shared torso."
   },
   {
    "address": 14005,
    "type": "line",
-   "text": "Walking leg pair $B0/$B1 with zero terminator and retained zero byte. The player drawer selects it when the walk-frame byte is nonzero."
+   "text": "Walking leg pair $B0/$B1, with destination skips 1 and 0 followed by the zero terminator. The player drawer selects it when the walk-frame byte is nonzero."
   },
   {
    "address": 14010,
    "type": "line",
-   "text": "Three rows of character pairs for the ducking pose without the extra facing offset; draw_player selects this stream when ducking with zero facing offset."
+   "text": "Ducking pose with two glyphs $84/$85 on its first row and four glyphs $94/$95/$A4/$A5 on its second. draw_player selects this stream when ducking with zero facing offset."
   },
   {
    "address": 14023,
@@ -8948,7 +8948,7 @@
   {
    "address": 14038,
    "type": "line",
-   "text": "Dispatch active jump and fall states first. Otherwise set the standing row for the stage, read commands from the recorded attract buffer or real controls, record live non-practice input into that buffer, and dispatch digit commands 1-9 as duck, walk or jump. Space/fire releases a captured bird. Roof walking scrolls the world; free interior movement changes player_x."
+   "text": "Dispatch active jump and fall states first. Otherwise set the player's row from the stage and hanging state, read recorded attract commands or real controls, and record live non-practice input while the buffer has room. Commands 1-3 select ducking, 4/6 walking, 7-9 jumping and 5 idle. When hanging, duck/walk commands release into a fall and jump commands leave the hang unchanged. Space/fire releases a captured bird. Walking scrolls the world outside the engine room; inside it, walking changes player_x."
   },
   {
    "address": 14460,
@@ -8973,7 +8973,7 @@
   {
    "address": 14620,
    "type": "line",
-   "text": "Clear duck/walk state and, when a bird is carried at roof row 8 and its previous release is clear, consume the carried bird and initialize the released bird's position and movement bytes. If the player was ducking, tail-call the common stand-up path."
+   "text": "Clear duck/walk state and, when a bird is carried at row 8 and the previous released bird is inactive or at column 40 or beyond, consume the carried bird and initialize the released bird's position and movement bytes. If the player was ducking on entry, tail-call the ducking path at $3793, restoring the ducking flag and pose."
   },
   {
    "address": 14682,
@@ -9013,7 +9013,7 @@
   {
    "address": 15399,
    "type": "line",
-   "text": "Outside engine_room, walk the eight-byte enemy records at $1D00 to their $FF state terminator. Draw each active knife at its recorded position, then visible actor glyph pairs for the current pose and reveal height. Pose 8 uses a separate death stream. Queue retained sprite metadata and add the throw-frame projectile detail for state 3."
+   "text": "Outside engine_room, walk the eight-byte enemy records at $1D00 to their $FF state terminator. Draw each active knife whose column is below 40, then actor glyph pairs for visible actors at columns below 39 using their current pose and reveal height. Pose 8 uses a separate death stream. Queue retained sprite metadata for drawn actors and add the throw-frame projectile detail for state 3 while its counter is below 4."
   },
   {
    "address": 15668,
@@ -9143,12 +9143,12 @@
   {
    "address": 17115,
    "type": "line",
-   "text": "In engine_room, move the obstacle horizontally and vertically on phase_3=0 in rounds below 3, or phase_2=0 thereafter. Reverse horizontal direction at columns 3 and 37, and vertical direction at rows 12 and 18, triggering the short TED sound at each bounce. Count down that voice-1 sound after motion."
+   "text": "In engine_room, move the obstacle horizontally and vertically on phase_3=0 in rounds below 3, or phase_2=0 thereafter. Reverse horizontal direction at columns 3 and 37, and vertical direction at rows 12 and 18. Each bounce calls the short TED-sound helper, which sounds only outside attract mode and when no pitch-stream effect is active. Count down that voice-1 sound after motion."
   },
   {
    "address": 17264,
    "type": "line",
-   "text": "When engine_room is set and brake_triggered is still zero, draw the four-glyph stream at $438D at working position column 27, row 18."
+   "text": "When engine_room is set and brake_triggered is still zero, draw the four-glyph stream at $438D directly at working-screen address $121B, column 19 and row 13."
   },
   {
    "address": 17293,
@@ -9168,7 +9168,7 @@
   {
    "address": 17620,
    "type": "line",
-   "text": "Outside attract mode, advance a pointer through the signed-terminated rhythm at $4516. For nonzero pattern entries while progress is nonzero and the train moves, enable TED voice-2 noise with a mutable pitch and volume 4, preserving voice 1's enable. Otherwise turn off voice 2's square/noise selection bits."
+   "text": "Outside attract mode, advance a pointer through the signed-terminated rhythm at $4516. For nonzero pattern entries while either carriage_progress or scroll_offset is nonzero and the train moves, enable TED voice-2 noise with a mutable pitch and volume 4, preserving voice 1's enable. Otherwise turn off voice 2's square/noise selection bits."
   },
   {
    "address": 17657,
@@ -9233,7 +9233,7 @@
   {
    "address": 18185,
    "type": "line",
-   "text": "When a pole is active and its column is visible, overlay a vertical pole from row 7 downward while respecting characters at least $09, then draw its horizontal arm. Near its countdown or arm crossing, flash the caution graphic and text on roof live play when the player has no death state."
+   "text": "When a pole is active and its column is visible, overlay a vertical pole from row 7 downward, replacing spaces and characters below $09 while preserving other characters, then draw its horizontal arm. Near its countdown or arm crossing, flash the caution graphic and text on roof live play when the player has no death state."
   },
   {
    "address": 18387,
@@ -9253,7 +9253,7 @@
   {
    "address": 18459,
    "type": "line",
-   "text": "While no pole is active, decrement its 16-bit countdown and spawn a pole at column 1 on reaching zero. Active poles move two columns per call; on reaching 40, clear the pole and read the next word from $6D4F. A zero low byte restarts the schedule at its beginning."
+   "text": "While no pole is active, decrement its 16-bit countdown and spawn a pole at column 1 on reaching zero. Active poles move two columns per call; at column 40 or above, clear the pole and load the next countdown word from the schedule starting at $6D4F. A zero low byte restarts the schedule at its beginning."
   },
   {
    "address": 18570,
@@ -9288,7 +9288,7 @@
   {
    "address": 18947,
    "type": "line",
-   "text": "Scan eight-byte enemy records. Contact at row 6 defeats an active enemy for 30 internal score units; other contact kills, or flashes lives in practice. A released bird can defeat an enemy for 10 units. Attract mode suppresses awards. A defeat or damaging contact returns immediately; only continuing paths check knives and later records."
+   "text": "Scan eight-byte enemy records ending with state $FF. The contact tests accept states $02-$FE except $04, normally walking/throwing states 2/3. At row 6, contact defeats the enemy for 30 internal score units; other contact kills or flashes lives in practice. A released bird can defeat the same accepted states for 10 units. Attract mode suppresses awards. A defeat or damaging contact returns immediately; only continuing paths check knives and later records."
   },
   {
    "address": 19234,
@@ -9303,12 +9303,12 @@
   {
    "address": 19679,
    "type": "line",
-   "text": "From round 2 onward, when player_y<16, normalize the overhead obstacle column modulo 40 and compare it with the player's column. A three-column overlap causes reason 5, or flashes spare lives in practice. Continue to engine-section checks."
+   "text": "From round 2 onward, when player_y<16, normalize the overhead obstacle column modulo 40 and compare it with the player's column. A three-column overlap causes reason 5, or flashes spare lives in practice, and returns. Skipped tests and misses continue to engine-section checks."
   },
   {
    "address": 19766,
    "type": "line",
-   "text": "In the engine section, a player above row 15 at columns 18-20 sets brake_triggered and starts the effect at $6D79. Compare the bouncing obstacle against a three-column by four-row window around the player; a hit sets reason 6 or flashes the practice indicator."
+   "text": "In the engine section, a player above row 15 at columns 18-20 sets brake_triggered and starts the effect at $6D79 if the brake has not already been triggered. Compare the bouncing obstacle against a three-column by four-row window around the player; a hit sets reason 6 or flashes the practice indicator."
   },
   {
    "address": 19889,
@@ -9323,7 +9323,7 @@
   {
    "address": 20128,
    "type": "line",
-   "text": "Set $7F to six so update_hud selects a death-pose shape for spare-life icons for the next six icon draws."
+   "text": "Set $7F to six so update_hud selects the death-pose shape for spare-life icons on the next six HUD updates that draw at least one spare icon. The counter decreases once after all icons are drawn and stays unchanged when no spare icon is drawn."
   },
   {
    "address": 20133,
@@ -9393,17 +9393,17 @@
   {
    "address": 20934,
    "type": "line",
-   "text": "Set round=1, lives=3, the attract command buffer pointer $B02E, the scroller pointer, counters $62/$69, the moving-train flag and the initial player position. Clear score $43/$44 only outside attract mode."
+   "text": "Set round=1, lives=3, the attract command buffer pointer $B02E, the scroller pointer $4F29, both bird-animation cycle lengths $62/$69 to 4, the moving-train flag and player_x=19. Leave player_y unchanged. Clear score $43/$44 only outside attract mode."
   },
   {
    "address": 20981,
    "type": "line",
-   "text": "Clear stage state, select stage 1 and the initial distance/player position, read the pole schedule from $6D4F, and create min(round,3) eight-byte pursuer records at $1D00, followed by $FF. For round zero, the do-then-decrement loop runs 256 times, touching code through $24FF before writing the terminator at $2500."
+   "text": "Clear stage state, select stage 1 and the initial distance/player position, read the pole schedule from $6D4F, and initialize min(round,3) eight-byte pursuer records at $1D00, followed by $FF. Each record writes its state, delay and knife-active fields. For round zero, the do-then-decrement loop runs 256 times, with its final record write at $24FD before writing the terminator at $2500."
   },
   {
    "address": 21113,
    "type": "line",
-   "text": "Clear stage state, select stage 2, set distance to carriage count+1 and position the player inside the train. Point $6D/$6E at the interior schedule at $41E9 and initialize up to four eight-byte enemy records from min((round+1)/2,4), ending with $FF."
+   "text": "Clear stage state, select stage 2, set distance to carriage count+1 and position the player inside the train. Point $6D/$6E at the ceiling-obstacle path $41E9. For rounds 1-254, initialize min(floor((round+1)/2),4) eight-byte enemy records and append $FF. At round 0 or 255 the computed count is zero, so the do-then-decrement loop initializes 256 records and writes its terminator at $2500."
   },
   {
    "address": 21252,
@@ -9718,7 +9718,7 @@
   {
    "address": 40776,
    "type": "line",
-   "text": "Initialize eight order pointers, odd duration counters and even note durations using the initial-order table. Set the TED fade offset to 180, SID/DigiMuz master volumes to 15, clear SID controls/envelopes and pulse widths, and silence the DigiMuz channels. It writes optional-device addresses unconditionally; absent hardware ignores those stores."
+   "text": "Initialize eight order pointers, set the odd duration counters to zero and even note durations to one, and select the first phrases. Set the TED fade offset to 180 and SID/DigiMuz master-volume variables to 15. Set each SID pulse width to $0800 and its ADSR bytes to $00/$FF, leaving SID control registers unchanged; silence the DigiMuz channels. Optional-device addresses are written unconditionally; absent hardware ignores those stores."
   },
   {
    "address": 40899,
@@ -9758,7 +9758,7 @@
   {
    "address": 41072,
    "type": "line",
-   "text": "Advance the selected volume-envelope index, dispatch instruments for two TED, three SID and three DigiMuz channels, and write each chip's frequency/control/volume registers. Increment the eight note-age counters and set TED's sound mix/volume unless both TED frequencies are the $FE rest value. The IRQ calls this entry both alone and after sequencing."
+   "text": "Advance the selected volume-envelope index, dispatch instruments for two TED, three SID and three DigiMuz channels, and write their output registers. Increment the eight note-age counters. Update TED sound mix/volume unless both TED low pitch bytes at $FF0E/$FF0F equal $FE; the high pitch bytes are not tested. The IRQ calls this entry both alone and after sequencing."
   },
   {
    "address": 41104,
@@ -9838,7 +9838,7 @@
   {
    "address": 41678,
    "type": "line",
-   "text": "Return separate low/high pitch bytes from $A2F5/$A2FB, indexed by the unmasked note age. Its normal short events keep the index within the intended percussion contour."
+   "text": "Return separate low/high pitch bytes from $A2F5/$A2FB, indexed by the unmasked note age. Each table has six entries, so ages six and above read adjacent bytes. Dispatch instrument 1 reaches this handler, but none of the eight shipped order lists selects it."
   },
   {
    "address": 41688,
@@ -9908,7 +9908,7 @@
   {
    "address": 41898,
    "type": "line",
-   "text": "For an active note, choose a volume contour according to note duration 6,12 or 24 (otherwise volume 11), then apply a sixteen-phase positive/negative pitch adjustment to the generated DigiMuz period tables at $FC00/$FC60. Return the volume in X and period in A/Y; rest returns zeros."
+   "text": "For an active note, choose a volume contour according to note duration 6,12 or 24 (otherwise volume 11), then apply a sixteen-phase positive/negative pitch adjustment to the DigiMuz period-table addresses at $FC00/$FC60. Return the volume in X and period in A/Y; rest returns zeros. In the entry snapshot these table addresses contain alternating $00/$FF bytes; music initialization and a complete music traversal leave them unchanged. Their preparation for physical DigiMuz hardware is unverified."
   },
   {
    "address": 41998,
@@ -9928,7 +9928,7 @@
   {
    "address": 42082,
    "type": "line",
-   "text": "Sixteen unsigned magnitudes for the generated-period adjustment: the first eight phases add, the next eight subtract. The maximum adjustment is fifteen period units."
+   "text": "Sixteen unsigned magnitudes for the DigiMuz period adjustment: the first eight phases add, the next eight subtract. The maximum adjustment is fifteen period units."
   },
   {
    "address": 42098,
@@ -9943,7 +9943,7 @@
   {
    "address": 42138,
    "type": "line",
-   "text": "Return the active note's generated DigiMuz period and an unmasked note-age-indexed volume from $A4B5. Rest takes the shared zero return."
+   "text": "Return the active note's period bytes from $FC00/$FC60 and an unmasked note-age-indexed volume from $A4B5. Rest takes the shared zero return. In the entry snapshot these table addresses contain alternating $00/$FF bytes; music initialization and a complete music traversal leave them unchanged. Their preparation for physical DigiMuz hardware is unverified."
   },
   {
    "address": 42165,

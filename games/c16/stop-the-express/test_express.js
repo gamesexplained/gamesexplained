@@ -11,6 +11,12 @@ for(const stream of [...Express.tiles,0x91e3,...Express.fronts]){
  const m=mem.slice(),glyphs=new Uint8Array(2048).fill(0x5a),colours=new Uint8Array(256).fill(0x5a);m.set(glyphs,0x800);m.set(colours,0x1400);m[6]=stream&255;m[7]=stream>>8;new CPU(m).call(0x201e,{x:0});Express.applyTiles(mem,stream,glyphs,colours);assert.deepEqual(Array.from(glyphs),Array.from(m.slice(0x800,0x1000)));assert.deepEqual(Array.from(colours),Array.from(m.slice(0x1400,0x1500)));
 }
 const {expressPoses}=g.run('graphics.html','express-poses','expressPoses');
+// The caution pose must use the state chosen by its real caller, not just parse a stream correctly.
+{const m=mem.slice();m.fill(0,0,0x100);m.fill(32,0x1000,0x1400);m[0x49]=1;m[0x2f]=1;let native;
+ new CPU(m).call(0x4709,{x:0},{hooks:{0x50a0:c=>{if(c.m[6]+256*c.m[7]===0x4809)native={offset:c.m[0x18],dest:c.m[2]+256*c.m[3]};}}});
+ assert(native,'The real warning caller must draw the sign');const pose=expressPoses().flat().find(p=>p.address===0x4809);assert.equal(pose.offset,native.offset);
+ for(const [a,v] of Express.shape(mem,pose.address,pose.offset,native.dest).cells)assert.equal(m[a],v);
+}
 const streams=new Set(expressPoses().flat().filter(p=>p.address).map(p=>p.address));streams.add(0x36a7);streams.add(0x36b0);streams.add(0x36b5);
 let shapeCases=0;
 for(const address of streams)for(let offset=0;offset<256;offset++){
@@ -31,4 +37,4 @@ const {expressEffects}=g.run('index.html','express-effects','expressEffects');le
 const {exFrameData}=g.run('index.html','express-frame','exFrameData');
 const fm=new Uint8Array(65536);fm.set(exFrameData.glyphs,0x800);fm.set(exFrameData.screen,0xdc00);fm.set(exFrameData.attributes,0xd800);const picture=C16.rgba(C16.render(fm,exFrameData.ted));
 const png=require('fs').readFileSync(path.join(__dirname,'reference/frame-native.png')),chunks=[];let width,height;for(let off=8;off<png.length;){let n=png.readUInt32BE(off),type=png.toString('ascii',off+4,off+8),data=png.subarray(off+8,off+8+n);if(type==='IHDR'){width=data.readUInt32BE(0);height=data.readUInt32BE(4);assert.equal(data[8],8);assert.equal(data[9],2);}if(type==='IDAT')chunks.push(data);off+=12+n;}const rgb=require('zlib').inflateSync(Buffer.concat(chunks));let different=0;for(let y=0;y<200;y++){assert.equal(rgb[(y+47)*(width*3+1)],0);for(let x=0;x<320;x++){let a=(y+47)*(width*3+1)+1+(x+32)*3,b=(y*320+x)*4;if([0,1,2].some(k=>rgb[a+k]!==picture[b+k]))different++;}}assert.equal(different,0);assert.equal(exFrameData.different_pixels,0);
-console.log('PASS: 12 native font hashes; nine sentinel loader cases; '+shapeCases+' native shape cases; rounds 1–255; both jump streams; 789 ground rows; five native pitch lists; all '+native.writes.length+' music writes; nine audible effects.');
+console.log('PASS: 12 native font hashes; nine sentinel loader cases; '+shapeCases+' native shape cases; rounds 1–255; both jump streams; 789 ground rows; five native pitch lists; all '+native.writes.length+' music writes; nine audible effects; caller-selected caution pose.');

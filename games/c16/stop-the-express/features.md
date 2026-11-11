@@ -29,8 +29,8 @@ C16/Plus/4 platform. It is not an unexpanded C16 game.
 | M fades/stops title music | traced | $1ED0; title IRQ switches to short handler after fading |
 | C starts practice with damage feedback | traced | $2155/$498A/$4999/$4DB1; native contact/timer/HUD probes |
 | Pause banner and fire to resume/shorten waits | traced | $5104/$214D and ready/bonus controllers; native banner and ready probes |
-| Optional SID and DigiMuz writes | traced | Eight-channel music driver $9D32-$A520; output addresses written unconditionally |
-| Optional sound hardware calibration/detection | open | Startup is outside the gameplay payload; physical DigiMuz and SID-card playback not verified |
+| Optional SID and DigiMuz writes | traced | Eight-channel music driver $9D32-$A520; all channels dispatched; individual frequency/control stores have conditions |
+| Optional sound hardware calibration/detection | open | Startup is outside the gameplay payload; physical playback is unverified; $FC00/$FC60 hold alternating bytes at entry and music does not prepare them |
 | Continued high-score rounds | traced | $2AA0 increments an uncapped round byte; no final-ending branch in the round transition |
 | Natural completion of extreme late rounds | open | Forced arithmetic/setup tests establish wrap behaviour, not a played route to rounds 252–255 |
 
@@ -41,7 +41,7 @@ C16/Plus/4 platform. It is not an unexpanded C16 game.
 - The ground's forty-cell window copies from a shorter repeated pattern
   ($18E2/$18E3/$4960), rather than rotating the last physical cells.
 - Forced round zero initializes 256 enemy records over live code
-  ($51F5/$524E). A native emulator probe reproduced the corrupted entry.
+  ($51F5/$524E). Interior setup at rounds 0/255 has the same count failure ($5279). Live emulator probes reproduced the corrupted entry; the final record write is $24FD.
 - The engine approach leaves enemy and knife state present, although the
   engine-room flag stops their usual drawing/collision path ($5344/$3C27).
 

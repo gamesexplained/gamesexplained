@@ -134,8 +134,7 @@ $51C6 starts round 1 with three lives. Stage byte $49 selects roof or
 interior. $268B selects min((round+4)&255,10) carriages. At rounds 252-255 the byte
 addition wraps, giving 0-3 carriages; no played route is established. $5339 gives time
 limits 100,120,140,160,180,200,190,180,170,160,150, clamped to the final
-entry. The byte addition wraps at rounds 252-255, giving 0-3
-carriages; no played route to those rounds is established. $2573 maps (round-1)&7 to designs 0,0,1,1,2,2,3,3.
+entry. $2573 maps (round-1)&7 to designs 0,0,1,1,2,2,3,3.
 
 Roof movement rotates thirteen template rows and shifts actor positions
 ($4396/$442B). Progress changes on a forty-column wrap. The engine room
@@ -157,7 +156,8 @@ awards. Roof gaps read working-screen cells $11CB/$11CC.
 
 Score units are ten displayed points: $4DB1 appends a zero to five
 digits. A jump attack pays 30 units/300 points; a bird attack pays 10
-units/100 points ($4A54). $3497 transfers actual remaining time to score
+units/100 points ($4A54). The raw roof-contact gate accepts states
+$02-$FE except $04; ordinary walking/throwing states are 2/3. $3497 transfers actual remaining time to score
 one unit at a time, paying ten displayed points per time unit.
 
 Attract mode reads one command from $B02E per ordinary input poll
@@ -168,16 +168,26 @@ bytes beyond the authored recording are runtime/loader workspace.
 
 **Live, forced counter case:** round zero makes $51F5 initialize 256
 enemies. $1E00 changes from `4c061e4caa1ead19` to
-`00101e4caa00ad19`; the terminator lands at $2500. The round increment
-is an uncapped byte. This probe does not establish a played route
+`00101e4caa00ad19`; the terminator lands at $2500. Each record initializes offsets 0, 1, and 5. The last record store is
+$24FD; $24FE/$24FF are untouched. **Live:** interior setup at $5279
+also initializes 256 records for rounds 0 and 255, with the same entry
+corruption and $2500 end marker. The round increment is an uncapped byte. This probe does not establish a played route
 through 255 rounds.
 
 ## Sound
 
 The score has eight logical channels: two TED, three SID at $FD40-$FD58,
 and three DigiMuz through $FD22/$FD23. $9F48 initializes the outputs and
-$A070 writes all device groups unconditionally. The page player presents
-the native TED part. Physical DigiMuz output/calibration was not tested.
+$A070 dispatches all eight channels; individual stores are conditional.
+SID rest paths skip frequency stores. The final TED mix/volume store is
+skipped when both low pitch bytes are $FE, regardless of their high bytes. The page player presents
+the native TED part. Physical DigiMuz output/calibration was not tested. The entry snapshot
+holds alternating $00/$FF at the period-table addresses $FC00/$FC60.
+A complete tune reads these tables. Neither music initialization nor
+playback writes them; their preparation for real hardware remains unverified.
+Instrument 1 reaches $A2CE, but none of the eight shipped orders selects it.
+Its two six-byte percussion tables are indexed by unmasked note age, so
+ages six and above read adjacent bytes.
 
 $9FF1 recognizes $FF (next phrase), $FE plus two bytes (shared SID ADSR),
 $F0-$FD (instrument), $E0-$E2 (TED envelope), and $60+N (duration N).
@@ -187,7 +197,7 @@ and loop order-pointer tables match.
 
 Five short effects at $6D63/$6D79/$6DA5/$6DBD/$6DC9 use little-endian
 TED pitch values and a high byte $FF to end. Other sounds are train
-noise ($44D4/$4516), jump/bounce ($2267), the released-bird sweep
+noise ($44D4/$4516), jump/bounce ($2267), the wire-death sweep
 ($228E), and the bonus chord ($3527). Several retained parameter paths
 call the shared RTS at $23CE, which writes no sound register.
 
@@ -199,8 +209,29 @@ Seven written comments had detail errors; all seven findings were upheld
 and corrected in the live disassembler, including related ground-strip
 claims. The plain error rate was 8.8%, Wilson 95% interval 4.3%-17.0%;
 the population-weighted rate was 8.8%. This measures the frozen draft,
-not the corrected listing. A later full audit is recommended. Coverage
-measures the stated payload and does not measure comment accuracy.
+not the corrected listing. This sampled rate is a lower bound because
+a checker can miss errors. Coverage measures the stated payload and
+does not measure comment accuracy.
+
+The round-parameter widget subsequently exposed and corrected one
+carriage-count comment: the byte addition wraps at rounds 252-255.
+
+The requested full audit used three fresh gpt-6-astra checkers, running
+one at a time, across all 439 comments. It found 38 detail errors; all
+were upheld and corrected, with four label changes and related prose
+updates. Findings include screen-address interpretation, shape geometry,
+caller and mode conditions, loop counts, sound ownership, and unsupported
+pitch-table preparation claims. The original program bytes are unchanged.
+A separate caution-sign viewer correction now uses the original caller’s
+$80 glyph offset. The fresh post-audit sample follows below.
+
+The independent post-audit gpt-6-astra sample used seed 2026111101:
+80 of 439 comments, drawing 60 of 332 written and 20 of 107 generated
+comments. All 80 were right; none were doubtful or unverifiable. The
+observed error rate and population-weighted rate were 0%, with Wilson
+95% interval 0%-4.6%. The checker had no part in annotation or the audit.
+The listing therefore has a full audit followed by a sample within the
+kit's mark. A zero observed rate does not prove every comment is right.
 
 ## Live tests
 
@@ -215,3 +246,9 @@ measures the stated payload and does not measure comment accuracy.
   the main program was parked at $0200.
 - Demonstrated code corruption from a forced round-zero initializer;
   this is separate from proving a route through 255 rounds.
+- Full-audit native checks covered every layout and tile stream, all 69
+  music phrases and eight complete orders, all demo positions in three
+  input modes, and 143,360 instrument cases. Focused live setup probes
+  confirmed both initializer overruns and the last modified record byte.
+- The caution-sign pose is held to the original warning caller at $4709,
+  including its $80 character-code offset.
