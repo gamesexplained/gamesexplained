@@ -278,3 +278,33 @@ works, as the exception to keeping loaders off the pages.
   43 seconds from there to the end of block 10.
 - The tape has no loading music: the loader's 163 bytes write to no
   sound register.
+
+## 11 November 2026: the 3,072 bytes below the loading picture
+
+The contributor asked what the bytes at `$1400`-`$1FFF` of the tape's
+block 4 are, which the ledger had left as a question in `TODO.md`.
+
+- The first look found nothing. Only 365 of the 3,072 bytes equal the
+  game's bytes at the same addresses, no 16-byte run of them occurs in
+  any block, and they are not a character set or sprites.
+- What gave them away was a byte histogram: most bytes lie between `$40`
+  and `$7F`, and seven offsets hold `$FF` in every page. Exclusive-or
+  with the game's bytes gave `$40` and `$60` far more often than anything
+  else. Counted a bit at a time, six bits of the eight agree with the
+  game about nine times in ten, bit 6 is nearly all ones and bit 5
+  follows the address's lowest bit.
+- A search of the whole game with bits 5 and 6 left out then placed the
+  other leftovers: the 24 spare bytes of blocks 2 and 3 are the game's
+  bytes at `$0FE8` and `$13E8`, and the first 68 bytes after the bitmap
+  are `voice1_effect` with its variables at other addresses. The last
+  124 bytes matched nothing and are in `TODO.md`.
+- The cause (memory that lost power for a moment) is an inference from
+  the pattern of the damage. `facts.md` says so, and the Discoveries tab
+  calls it the likeliest story.
+- `discoveries.html` gained section 15 with the two fonts drawn side by
+  side and the count for each bit, worked out on the page from the 3,072
+  bytes it carries and the listing. `test_tape_leftover.py` holds those
+  bytes to the tape and the page's figures to the listing.
+- `kit/scripts/media.py`'s help still listed a loading picture under
+  `loader` after the rule changed; it now reads as
+  `kit/skills/core/12-media` does.

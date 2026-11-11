@@ -10,10 +10,11 @@ cartridge, every file and block of a tape. Each item then gets one answer:
 
   part     its bytes are listed in a part ("part", its id; left out in a game of one load),
            at "at"; "packed": true when it unpacks into the part rather than lying there whole
-  data     data the game loads into a buffer: a level, a picture, a monster, a tune;
+  data     data the game loads into a buffer: a level, a picture, a monster, a tune; or what
+           its loader shows and plays: a loading picture, a loading tune;
            "page" names the page that decodes it, when one does
   loader   stands in front of the game: the boot program, a fast loader, code for the drive,
-           a loading picture, a protection, a cracker's intro, directory art
+           a protection, a cracker's intro, directory art
   saved    something the game writes: saved games, high scores, a party it ships with
   unused   nothing loads it: "why" says how that was shown (every load call and the loader's
            table of names searched, with names the game builds as it runs in mind)

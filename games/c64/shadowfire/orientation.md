@@ -98,7 +98,7 @@ with the listing (`media.json`).
 | 1 | `$0300`-`$030B` | 12 | equal: BASIC's six vectors, at their default values |
 | 2 | `$0C00`-`$0FFF` | 1,024 | 349 equal: the loading picture's colour matrix, later overwritten by block 9 |
 | 3 | colour RAM `$D800`-`$DBFF` | 1,024 | the picture's colour RAM |
-| 4 | `$1400`-`$3FFF` | 11,264 | 3,475 equal: the loading picture's bitmap at `$2000`-`$3F3F`, and `$1400`-`$1FFF` beside it, all overwritten by block 9. The 3,072 bytes at `$1400`-`$1FFF` are no part of the picture and nothing runs or shows them: block 5 turns no sprite on, and only the loader runs until block 9 has replaced them. What they are is not known |
+| 4 | `$1400`-`$3FFF` | 11,264 | 3,475 equal: the loading picture's bitmap at `$2000`-`$3F3F`, with `$1400`-`$1FFF` below it and `$3F40`-`$3FFF` after it, all overwritten by block 9. The 3,072 bytes at `$1400`-`$1FFF` are no part of the picture and nothing runs or shows them: block 5 turns no sprite on, and only the loader runs until block 9 has replaced them. They are a damaged copy of the game's own bytes at those addresses, the font and the music driver among them (`facts.md`, "The tape's leftover memory") |
 | 5 | `$D000`-`$D02F` | 48 | the video chip's registers: multicolour bitmap at `$2000`, colours at `$0C00`, which puts the picture up |
 | 6 | `$E000`-`$FFF7` | 8,184 | equal, every byte |
 | 7 | `$4000`-`$CFFE` | 36,863 | equal, every byte |
