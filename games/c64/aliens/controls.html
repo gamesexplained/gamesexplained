@@ -1,0 +1,48 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/aliens-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A joystick for every level, RETURN for the story, and a few keys that only one level reads. The engine reads the keyboard and both joystick ports itself.</p>
+</header>
+<main class="wrap" data-part="engine">
+<section id="joystick">
+  <p class="fig">01 · The joystick</p>
+  <h2 class="t">Either joystick port works</h2>
+  <p class="lede">The manual says to plug the joystick into port 1. The game reads both ports at once, so a joystick in port 2 works just as well.</p>
+  <p><code>read_joysticks</code> (<a href="source-engine.html#0bfe"><code>$0BFE</code></a>) reads port A and port B of CIA 1, the chip both control ports are wired to, and combines them, so a direction or the fire button on either stick counts. The routine keeps what is held in <code>$0222</code> and what was newly pressed in <code>$0223</code>, which every level reads.</p>
+  <div class="al-scroll"><table class="al-table">
+    <tr><th>Where</th><th>Joystick</th><th>Fire</th></tr>
+    <tr><td><a href="gameplay.html#briefing">Equipment identification</a></td><td>moves the glove</td><td>names the piece under it</td></tr>
+    <tr><td><a href="gameplay.html#level1">Level 1, the drop-ship</a></td><td>steers: back to climb, forward to dive</td><td>none</td></tr>
+    <tr><td><a href="gameplay.html#level2">Level 2, the APC rescue</a></td><td>walks the marine through the rooms</td><td>shoots; the marine cannot turn while firing</td></tr>
+    <tr><td><a href="gameplay.html#level3">Level 3, the operations room</a></td><td>up and down along the lanes</td><td>the flame thrower</td></tr>
+    <tr><td><a href="gameplay.html#level4">Level 4, the air ducts</a></td><td>leads the squad through the ducts</td><td>a hand grenade, at the cost of a marine</td></tr>
+    <tr><td><a href="gameplay.html#level5">Level 5, the Newt rescue</a></td><td>walks Ripley through the rooms</td><td>shoots, 99 rounds</td></tr>
+    <tr><td><a href="gameplay.html#level6">Level 6, the Queen</a></td><td>swings the loader's arms</td><td>closes the claws; hold to open the airlock, release to drop her</td></tr>
+  </table></div>
+</section>
+
+<section id="keys">
+  <p class="fig">02 · The keys</p>
+  <h2 class="t">Keys for the story, the marines, and the flares</h2>
+  <p class="lede">The engine scans the keyboard itself, eight rows at a time (<code>read_keys</code>, <a href="source-engine.html#0b96"><code>$0B96</code></a>), and turns the first new key into a character for the levels to read.</p>
+  <div class="al-scroll"><table class="al-table">
+    <tr><th>Key</th><th>What it does</th></tr>
+    <tr><td>RETURN</td><td>starts the game from the title, turns the pages of the story, and enters a status code</td></tr>
+    <tr><td>Letters and digits, DEL</td><td>type a <a href="gameplay.html#codes">status code</a> at the start; DEL rubs out a character</td></tr>
+    <tr><td>F1, F3, F5, F7</td><td>switch between the four marines in <a href="gameplay.html#level2">level 2</a> (<code>marine_switch</code>, <a href="source-level2.html#899f"><code>$899F</code></a>), unless the one on the monitors is under attack</td></tr>
+    <tr><td>Space</td><td>drops a flare in <a href="gameplay.html#level5">level 5</a> (<code>flare_drop</code>, <a href="source-level5.html#917e"><code>$917E</code></a>), one to a room</td></tr>
+    <tr><td>RUN/STOP</td><td>pauses and unpauses, stopping the music's timer and silencing the three voices (<code>restore_choose</code>, <a href="source-engine.html#09b0"><code>$09B0</code></a>)</td></tr>
+    <tr><td>RUN/STOP held, then RESTORE</td><td>starts the level again, with the marines it began with (<code>nmi_restart</code>, <a href="source-engine.html#0959"><code>$0959</code></a>)</td></tr>
+    <tr><td>Up-arrow held, then RESTORE</td><td>skips the level, and gives up the ending (<a href="gameplay.html#ending">why</a>); not in the lift scene</td></tr>
+  </table></div>
+  <p>RESTORE is not an ordinary key: it is wired to the processor's non-maskable interrupt. Each frame <code>frame_tick</code> (<a href="source-engine.html#099d"><code>$099D</code></a>) points that interrupt at one of three handlers by what is held: one that ignores it, <code>nmi_abort</code> (<a href="source-engine.html#0956"><code>$0956</code></a>) with the up-arrow key, or <code>nmi_restart</code> with RUN/STOP. Left alone for a long while, the game turns the volume down and blanks the screen until a key is pressed.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

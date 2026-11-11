@@ -1,0 +1,126 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/aliens-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Russell Lieblich's three tunes and sixteen sound effects, played by the game's own sound code running in the page.</p>
+</header>
+<main class="wrap" data-part="engine">
+<section id="tunes">
+  <p class="fig">01 · The tunes</p>
+  <h2 class="t">Music: three tunes, two of them in the engine</h2>
+  <p class="lede">Press a tune to hear it. The briefing tune plays under every page of text between the levels, tune 2 plays under the title screen and the ending, and the drop-ship level brings a tune of its own.</p>
+  <div class="plate"><div id="al-tunes"></div>
+    <p class="cap">The game's own music player (<code>music_tick</code>, <code>$249E</code>) and frame effects (<code>effects_tick</code>, <code>$27FB</code>) running on the kit's 6502 simulator over the bytes on the Source tab, heard through the site's model of the SID with a 6581's filter. A test held the page's player against the same code run as the game runs it: every write to the sound chip matched, in order, on every frame of every tune and effect.</p></div>
+  <p>A tune starts with <code>start_music</code> (<code>$2437</code>), which takes the address of three voice pointers from the bytes after its call. The routine also starts timer A of CIA 1, one of the C64's two timer chips, with a period of <code>$80FF</code> cycles, so the player runs about 30 times a second, apart from the screen's 50. Each voice reads a stream of notes and commands: a byte of <code>$80</code> or more is a command, picked by its bits 4 to 6 from the table at <code>$332F</code> (tempo, volume, envelope, repeat, call, effect, waveform and sixteen more). Notes take their pitch from the frequency tables at <code>$339A</code> and <code>$33FA</code>, and their length from <code>note_lengths</code> (<code>$338E</code>).</p>
+  <p>Tune 2 (<code>$345A</code>) starts at volume 0 and fades in through a frame effect (<code>fx_fade_in</code>, <code>$28B1</code>). Tune 2 also carries markers: command <code>$F4</code> calls <code>count_marker</code> (<code>$2A54</code>), and the <a href="gameplay.html#title">title screen</a> times its credits and its logo by them. The drop-ship's tune is stored with <a href="gameplay.html#level1">level 1</a> (<code>$8E94</code>, <a href="source-level1.html#8e94">on level 1's Source page</a>).</p>
+</section>
+<section id="effects">
+  <p class="fig">02 · The effects</p>
+  <h2 class="t">Sound: sixteen effect records, one of them never started</h2>
+  <p class="lede">Press an effect to hear it, as the game starts it with nothing else playing. Some last a fixed number of frames; the others play until another sound takes over, so press Stop to end them.</p>
+  <div class="plate"><div id="al-effects"></div>
+    <p class="cap">The game's own effect code (<code>start_effect</code>, <code>$2A79</code>, then <code>effects_frame</code>, <code>$2B0F</code>, once a frame) running in the page, as above.</p></div>
+  <p>An effect is a 12-byte record: the routine that starts it, one run every frame, one for each voice's timer, its length in frames and its priority. <code>start_effect</code> takes the record's address from the bytes after its call and starts it only when no effect plays or the new one's priority is not lower.</p>
+  <p><code>sfx_rumble</code> (<code>$3A74</code>) is never heard in the game. A search of the engine and all nine stage files found no call that starts it, and its address appears nowhere else in their memory. The <a href="discoveries.html#rumble">Discoveries page</a> has it with the game's other leftovers.</p>
+  <div class="al-scroll"><table class="al-table">
+    <tr><th>Effect</th><th>Where the game plays it</th></tr>
+    <tr><td><code>sfx_roar</code></td><td>level 4, the air ducts (<a href="source-level4.html#8173"><code>$8173</code></a>)</td></tr>
+    <tr><td><code>sfx_burst</code></td><td>levels 2 and 5 (<a href="source-level2.html#88a5"><code>$88A5</code></a>, <a href="source-level5.html#87a0"><code>$87A0</code></a>)</td></tr>
+    <tr><td><code>sfx_crash</code></td><td>footsteps in levels 2 and 5</td></tr>
+    <tr><td><code>sfx_alarm</code></td><td>levels 2 to 5, and the Queen fight</td></tr>
+    <tr><td><code>sfx_siren</code></td><td>the lift scene, and the power loader's hum in the Queen fight</td></tr>
+    <tr><td><code>sfx_falling</code>, <code>sfx_rising</code>, <code>sfx_hiss</code></td><td>the drop-ship's descent, level 1</td></tr>
+    <tr><td><code>sfx_hiss_short</code>, <code>sfx_blast</code>, <code>sfx_chord</code></td><td>level 5, the Newt rescue</td></tr>
+    <tr><td><code>sfx_engine</code></td><td>the lift scene, and one of the Queen's cries</td></tr>
+    <tr><td><code>sfx_chord</code>, <code>sfx_chord2</code>, <code>sfx_drone</code></td><td>the equipment check: right, wrong, and the hum between</td></tr>
+    <tr><td><code>sfx_buzz</code></td><td>level 2, the APC rescue</td></tr>
+    <tr><td><code>sfx_rumble</code></td><td>never</td></tr>
+  </table></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* al-music */
+const AL_TUNES = [
+  { name: 'Briefing tune', hdr: 0x28DF },
+  { name: 'Tune 2: title and ending', hdr: 0x345A },
+  { name: 'Level 1: the drop-ship', hdr: 0x8E94 },
+];
+const AL_EFFECTS = [
+  ['sfx_roar', 0x3463], ['sfx_burst', 0x34AF], ['sfx_crash', 0x3526], ['sfx_alarm', 0x3582],
+  ['sfx_siren', 0x3678], ['sfx_falling', 0x36E7], ['sfx_rising', 0x3796], ['sfx_hiss', 0x3837],
+  ['sfx_hiss_short', 0x3843], ['sfx_engine', 0x38A4], ['sfx_blast', 0x38EF], ['sfx_chord', 0x3958],
+  ['sfx_chord2', 0x3994], ['sfx_drone', 0x39D0], ['sfx_buzz', 0x3A2A], ['sfx_rumble', 0x3A74],
+].map(([name, rec]) => ({ name, rec }));
+// The engine's code and tables, and level 1's tune, as the Source pages hold them.
+const AL_RANGES = [[0x0800, 0x3CFF], [0x8E94, 0x9010]];
+// One call of the driver is one PAL frame (312 lines of 63 cycles); the music runs on CIA 1's
+// timer A, every $80FF + 1 cycles, so it ticks when that many cycles have built up.
+const AL_FRAME = 312 * 63, AL_TIMER = 0x80FF + 1;
+function createDriver(M, C64Cpu) {
+  // Aliens' own sound code run on the kit's 6502: reset_sound ($0903), then start_music ($2437) or
+  // start_effect ($2A79) called through a stub with the tune's or effect's address after the JSR,
+  // as the game calls them; then each frame music_tick ($249E) for every timer period that has
+  // passed, effects_tick ($27FB) and effects_frame ($2B0F), as the IRQ and frame_tick run them.
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  let writes = [], bus = 0, env3 = 0, osc3 = 0, acc = 0, on = false, isEffect = false;
+  const io = {
+    read(a) { if (a === 0xD41C) return env3; if (a === 0xD41B) return osc3; if (a >= 0xD400 && a < 0xD800) return bus; return 0; },
+    write(a, v) { if (a >= 0xD400 && a < 0xD800) { const r = (a - 0xD400) & 31; bus = v; if (r < 25) { sid[r] = v; writes.push(r, v); } } },
+  };
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });
+  const call = a => cpu.call(a, {}, { maxSteps: 400000 });
+  const STUB = 0x03C0;
+  function start(list, i) {
+    mem.fill(0); for (const [a, b] of M.mem) mem.set(b, a);
+    mem[0x022A] = 0x5A; mem[0x022B] = 0xC3; mem[0x022C] = 0x71;   // the random generator's seed
+    sid.fill(0); writes = []; bus = 0; acc = 0;
+    call(0x0903);                                                    // reset_sound
+    const e = list === 'effects', addr = e ? M.effects[i].rec : M.tunes[i].hdr;
+    mem.set([0x20, e ? 0x79 : 0x37, e ? 0x2A : 0x24, addr & 255, addr >> 8, 0x60], STUB);
+    call(STUB); isEffect = e; on = true;
+  }
+  return {
+    init(t) { if (t < M.tunes.length) start('tunes', t); else start('effects', t - M.tunes.length); },
+    stop() { writes = []; call(0x0903); on = false; },
+    play() {
+      writes = []; if (!on) return;
+      acc += M.frame;
+      while (acc >= M.timer) { acc -= M.timer; call(0x249E); }        // music_tick
+      call(0x27FB); call(0x2B0F);                                     // effects_tick, effects_frame
+      if (isEffect && !mem[0x05A1]) on = false;                       // the effect's priority cleared: it has ended
+    },
+    readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
+    sid, get writes() { return writes; }, playing: () => on,
+    voice(x) { return { gate: sid[x * 7 + 4] & 1 ? 'on' : 'off' }; },
+    mem,
+  };
+}
+// end of createDriver
+// end of al-music
+(function () {
+  const $ = id => document.getElementById(id);
+  const needSite = 'This player needs the site\'s shared scripts: open the page from the built site.';
+  const C = globalThis.C64, S = globalThis.C64Sid;
+  if (typeof C64 === 'undefined' || typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') { $('al-tunes').textContent = needSite; $('al-effects').textContent = needSite; return; }
+  Promise.all([C.load('parts/engine/listing.json'), C.load('parts/level1/listing.json')]).then(([E, L1]) => {
+    const mem = [[0x0800, E.ram.slice(0x0800, 0x3D00)], [0x8E94, L1.ram.slice(0x8E94, 0x9011)]];
+    const data = { mem, tunes: AL_TUNES, effects: AL_EFFECTS, frame: AL_FRAME, timer: AL_TIMER };
+    const rows = [{ k: 'Gate', f: v => v.gate }];
+    S.mount($('al-tunes'), { driver: createDriver, data, filter: '6581', tunes: AL_TUNES.map(t => t.name), rows });
+    // The effects: the same driver, its buttons numbered after the tunes.
+    const fx = Object.assign({}, data, { tunes: [], effects: AL_EFFECTS });
+    S.mount($('al-effects'), { driver: createDriver, data: fx, filter: '6581', tunes: AL_EFFECTS.map(t => t.name), rows });
+  });
+})();
+</script>
