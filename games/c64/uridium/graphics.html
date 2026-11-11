@@ -154,6 +154,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The game's file holds the font eight rows to a character. <code>spread_font</code> runs once at start-up and spreads each character over two: the top four rows go to the top half at <code>$7000</code> and the bottom four to the bottom half at <code>$7400</code>, each row followed by a blank one, which gives the status text its scan-line look. Among the 128 are the digits, the lower case, wide capitals in two halves, the joystick and colour icons and the URIDIUM logo.</p>
 </section>
 
+<section id="chamber">
+  <p class="fig">04 · The fuel rod chamber</p>
+  <h2 class="t">The bonus screen has a character set of its own</h2>
+  <p class="lede">After a landing, the hull wipes away and the fuel rod chamber takes its place: a grey panel of paired slots joined by arrows, where fire at the right moment takes a bonus. It is drawn from a screen and a character set the rest of the game never uses, kept under the I/O chips at <code>$D200</code>.</p>
+  <div class="plate">
+    <div class="ur-scroll"><canvas id="gx-cham" class="gx-cv" width="640" height="336"></canvas></div>
+    <p class="cap">The chamber rebuilt from memory. <code>fuel_rod_chamber</code> (<code>$114E</code>) runs on the kit's 6502 after the wipe (<code>shift_rows_left</code>, <code>shift_rows_right</code>): it copies the screen from <code>$A600</code> and the characters from <code>$D200</code> to <code>$7C00</code>, then fades the three backgrounds in to white, light grey and dark grey (<code>chamber_fade</code>, <code>$38DE</code>). The wipe leaves every panel cell at colour <code>$F8</code>, so the fourth multicolour is black &mdash; the slots. The countdown digit and the flashing bonus are drawn only once play reaches the panel, so they are blank here.</p>
+  </div>
+  <div class="plate" style="margin-top:16px">
+    <div class="ur-scroll"><canvas id="gx-chamset" class="gx-cv" width="864" height="54"></canvas></div>
+    <p class="gx-out" id="gx-chamout">Point at a character to see its code.</p>
+    <p class="cap">The chamber's characters <code>$80</code>-<code>$BF</code>, copied to <code>$7C00</code> from <code>$D200</code>, in the panel's colours: white, light grey and dark grey from the faded backgrounds, and black for the slot interiors. Codes <code>$A0</code>-<code>$A3</code> spell &ldquo;Quit&rdquo;; the arrows, slot ends and digit box fill the rest. The shared characters <code>$00</code>-<code>$7F</code> are the same set the status lines use.</p>
+  </div>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
@@ -271,7 +286,30 @@ if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
   }
   // end of gxRecord
 
-const NAMES = ['Message', 'Zinc', 'Lead', 'Copper', 'Silver', 'Iron', 'Gold', 'Platinum', 'Tungsten', 'Iridon', 'Kallisto', 'Tri-alloy', 'Quadmium', 'Ergonite', 'Galactium', 'Uridium'];
+  // The fuel rod chamber, built by the game's own code on the kit's 6502 over the listing's memory.
+  // The chamber keeps its colour RAM from the wipe that clears the hull, so the wipe is run first.
+  function gxChamber(ram, CPU) {
+    const m = Uint8Array.from(ram), vic = new Uint8Array(0x40), col = new Uint8Array(0x400);
+    const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: {
+      read(a) { if (a >= 0xD000 && a < 0xD040) return vic[a - 0xD000];
+        if (a >= 0xD800 && a < 0xDC00) return col[a - 0xD800];
+        if (a >= 0xDC00 && a < 0xDD10) return 0xFF; return 0; },
+      write(a, v) { if (a >= 0xD000 && a < 0xD040) vic[a - 0xD000] = v; else if (a >= 0xD800 && a < 0xDC00) col[a - 0xD800] = v; } } });
+    const call = (a, hooks) => cpu.call(a, {}, { maxSteps: 9e6, hooks: hooks || {} });
+    m[0x26] = 1; m[0x28] = 0;                         // level 1, difficulty 0
+    call(0x2F33);                                     // level_colours: the map colour the hull wears
+    const mc = m[0x4D] & 15;
+    for (let i = 0; i < 25 * 40; i++) { m[0x4800 + i] = 0x20; col[i] = mc; }
+    let tog = 0; const feed = (c) => { c.m[0x2F] = (tog ^= 1); };   // the frame flag the loops wait on
+    for (let i = 0; i < 0x1F; i++) { call(0x15D4, { 0x15D4: feed }); call(0x1627); }   // the wipe
+    tog = 0; const H2 = { 0x2B6D: (c) => c.rts(), 0xB244: (c) => c.rts(), 0x11E6: () => true };
+    for (const a of [0x116B, 0x116F, 0x11A0, 0x11A4]) H2[a] = feed;
+    call(0x114E, H2);                                 // fuel_rod_chamber, stopped at its play loop
+    return { m, col, bg: [m[0x4A] & 15, vic[0x22] & 15, vic[0x23] & 15] };   // bg0 from playfield_bg
+  }
+  // end of gxChamber
+
+const NAMES =['Message', 'Zinc', 'Lead', 'Copper', 'Silver', 'Iron', 'Gold', 'Platinum', 'Tungsten', 'Iridon', 'Kallisto', 'Tri-alloy', 'Quadmium', 'Ergonite', 'Galactium', 'Uridium'];
 const H = (n, w) => C64.hex(n, w || 2), code = (t) => '<code>' + t + '</code>';
 const S = 2, PAD = 4, FRAME_MS = 20, BG = 15;           // light grey behind the sprites
 C64.load('listing.json').then((L) => {
@@ -442,6 +480,33 @@ C64.load('listing.json').then((L) => {
       if (n >= 0 && n < 128) $('gx-fout').textContent = 'Codes ' + H(n) + ' (top) and ' + H(n + 0x80) + ' (bottom)';
     });
   }
+  // draw one multicolour cell, or hires when colour RAM has bit 3 clear
+  function cell(ctx, set, code, cr, bg, x, y, s) {
+    const o = code * 8;
+    for (let yy = 0; yy < 8; yy++) { const row = set[o + yy];
+      if (cr & 8) for (let xx = 0; xx < 4; xx++) { const v = (row >> (6 - 2 * xx)) & 3;
+        ctx.fillStyle = P[v === 0 ? bg[0] : v === 1 ? bg[1] : v === 2 ? bg[2] : (cr & 7)];
+        ctx.fillRect(x + xx * 2 * s, y + yy * s, 2 * s, s); }
+      else for (let xx = 0; xx < 8; xx++) { ctx.fillStyle = P[((row >> (7 - xx)) & 1) ? (cr & 15) : bg[0]];
+        ctx.fillRect(x + xx * s, y + yy * s, s, s); } }
+  }
+  {
+    const C = gxChamber(ram, C64Cpu.CPU), set = C.m.subarray(0x7800, 0x8000);
+    const sv = $('gx-cham'), ss = 2, sctx = C64.canvas(sv, 40 * 8 * ss, 21 * 8 * ss);
+    sctx.fillStyle = P[0]; sctx.fillRect(0, 0, sv.width, sv.height);
+    for (let r = 4; r < 25; r++) for (let c = 0; c < 40; c++) { const i = r * 40 + c;
+      cell(sctx, set, C.m[0x4800 + i], C.col[i] & 15, C.bg, c * 8 * ss, (r - 4) * 8 * ss, ss); }
+    const kv = $('gx-chamset'), ks = 3, kctx = C64.canvas(kv, 32 * 9 * ks, 2 * 9 * ks);
+    kctx.fillStyle = '#e0ded8'; kctx.fillRect(0, 0, kv.width, kv.height);
+    const cols = [P[C.bg[0]], P[C.bg[1]], P[C.bg[2]], P[0]];
+    for (let n = 0x80; n < 0xC0; n++) { const x = ((n - 0x80) % 32) * 9 * ks, y = Math.floor((n - 0x80) / 32) * 9 * ks;
+      C64.drawGlyphMC(kctx, set, n, x, y, ks, cols); }
+    kv.addEventListener('mousemove', (e) => { const r = kv.getBoundingClientRect(), k = kv.width / r.width;
+      const n = 0x80 + Math.floor((e.clientX - r.left) * k / (9 * ks)) + 32 * Math.floor((e.clientY - r.top) * k / (9 * ks));
+      if (n >= 0x80 && n < 0xC0) $('gx-chamout').textContent = 'Character ' + H(n) + (n >= 0xA0 && n <= 0xA3 ? ': part of “Quit”' : '');
+    });
+  }
+
   const lv = $('gx-lv'), clv = $('gx-clv');
   lv.onchange = () => { build(+lv.value); R.level = +lv.value; clv.value = lv.value; chars(+lv.value); };
   clv.onchange = () => { lv.value = clv.value; lv.onchange(); };

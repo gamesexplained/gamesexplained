@@ -5,20 +5,20 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Gold (every page read and updated by chunkypixel) : 100 % coverage, `facts.md`, every feature confirmed, traced or
-open, the listing, and the minisite with the title tune's player, all
-agent-written (copy `agent-draft`).
+Gold. chunkypixel curated the Silver section by section
+(`kit/style.md`): the Overview standfirst and lede were rewritten and two
+Discoveries entries that How it works already covers were cut; How it
+works, Controls, Discoveries, Levels, Graphics and Music were read and
+left as they stood. `copy` is `human-edited`, `steward` is `chunkypixel`.
 
-## For Gold
+## For Diamond
 
-A human goes through `index.html` and `levels.html` section by section
-(`kit/style.md`), sets `copy` in `game.json` to what that pass did, and
-`tier` to `silver-claimed` when it starts.
+A Play tab taken to Platinum (`kit/skills/core/70-minisite/play.md`): the
+game ported to JavaScript and run in lockstep with its own code. The map
+builder, the Manta's movement tables and the wave records are already
+ported or decoded (see Ideas).
 
 ## Open
-
-- Graphics: add the fuel rod chamber's characters (`$D200`) once the colours its screen
-  gives each cell are traced (`fuel_rod_chamber`, `chamber_fade`).
 
 - Measure the listing again: the first sample found 13 % of comments
   wrong, and the audit that followed rewrote 21; a second sample with a

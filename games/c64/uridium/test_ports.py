@@ -25,7 +25,10 @@ points of its run; the fighters ($1A98, $1C73) on all 57 wave records, both entr
 Manta heights, every position frame by frame; the shots ($2A17, $2AE9) over random volleys on
 every Dreadnought; the stars ($2ED7) on random screens; and the homing mines ($1F62, $2021,
 $205F) over 600 random launches, every frame from materialising to the burst. Last, the Graphics tab's recorder on all fifteen
-Dreadnoughts: every routine it runs reaches its end and every shape that holds a picture is drawn.
+Dreadnoughts: every routine it runs reaches its end and every shape that holds a picture is drawn;
+and the fuel rod chamber built by the game's own wipe and fuel_rod_chamber ($114E), checking the
+backgrounds fade to white, light grey and dark grey, the characters are copied from $D200, and the
+wipe leaves every panel cell at colour 8.
 
 Everything it needs is committed: no game image, no snapshot, no emulator.
 It needs node; with KIT_REQUIRE_TOOLS set it fails without it.
@@ -409,7 +412,20 @@ const gxRecord = new Function(s.slice(s.indexOf('function gxRecord'), s.indexOf(
     const st = [...new Set(o.mine.map((f) => f.st))].join();
     if (st !== '8,10,6,0') bad(lv, 'the mine goes through states ' + st);
   }
-  console.log(`15 Dreadnoughts recorded; ${fail ? fail + ' problems' : 'every routine ran to its end and every shape is drawn'}`);
+  // the fuel rod chamber: the game's own setup, then the panel it leaves
+  if (s.indexOf('function gxChamber') < 0) throw new Error('gxChamber not found in graphics.html');
+  const gxChamber = new Function(s.slice(s.indexOf('function gxChamber'), s.indexOf('// end of gxChamber')) + '\nreturn gxChamber;')();
+  const C = gxChamber(ram, CPU);
+  const badc = (why) => { fail++; console.log('chamber:', why); };
+  if (C.bg.join() !== '1,15,11') badc('the backgrounds faded to ' + C.bg.join() + ', not white, light grey, dark grey');
+  for (let i = 0; i < 0x200; i++) if (C.m[0x7C00 + i] !== C.m[0xD200 + i]) { badc('the characters at $7C00 are not the copy of $D200'); break; }
+  let allEight = true, usesChamberChar = false;
+  for (let r = 4; r < 25; r++) for (let cc = 0; cc < 40; cc++) { const i = r * 40 + cc;
+    if ((C.col[i] & 15) !== 8) allEight = false;
+    if (C.m[0x4800 + i] >= 0x80) usesChamberChar = true; }
+  if (!allEight) badc('the wipe did not leave every panel cell at colour 8 (the black slots)');
+  if (!usesChamberChar) badc('the panel screen uses none of the chamber characters $80-$BF');
+  console.log(`15 Dreadnoughts recorded and the chamber built; ${fail ? fail + ' problems' : 'every routine ran to its end and every shape is drawn'}`);
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.log(e.stack || e); process.exit(1); });
 """
