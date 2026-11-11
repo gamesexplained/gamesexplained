@@ -1,7 +1,8 @@
 # Checking a run made on an unproven model
 
 Any model may run the kit. A proven model is one the maintainers declare
-good enough in `kit/models.json`, or one that took a game to Silver
+good enough in `kit/models.json`, by its id or as every model of a line
+from a version on, or one that took a game to Silver
 before this check was needed: `python3 kit/scripts/models.py` lists
 them, with the games. When a run's coverage or verify step ran on a
 model that is not on that list, the game cannot be Silver until a
@@ -89,7 +90,9 @@ the maintainers made the measure, and an audit may have made the
 listing. When a model's own work keeps measuring as well as the proven
 models' first drafts (on 11 October 2026, typically one comment in eight
 wrong in a first sample), declare it in `kit/models.json`, naming the
-games.
+games. When the maintainers take every later model of a line as good
+enough too, they declare the line there (`lines`), with the version it
+starts at, and a new model of that line needs no entry.
 
 Checks made before 12 October 2026 tested twenty claims from `facts.md`,
 ten names from `symbols.json` and the orientation facts, and one wrong

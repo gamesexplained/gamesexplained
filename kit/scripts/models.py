@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Which models are proven, and which games still need a maintainer's check.
 
-A model is proven when kit/models.json declares it, or when it ran both
+A model is proven when kit/models.json declares it, by its id or as one of
+a line of models from a version on (`lines`: every claude-opus from 5.5,
+whatever its id says after that), or when it ran both
 50-coverage and 60-verify on a game at Silver or above made under kit 0.0.32
 or earlier (merged after a maintainer's review, the only check there was),
 going by `step_models` in that game's game.json. A game is trusted when it
@@ -23,6 +25,11 @@ cannot be Silver.
 Ids are recorded exactly as the session names them, and compared without
 a context-window suffix: claude-opus-5-5[1m] is the same model as
 claude-opus-5-5, run with a larger context, so either proves the other.
+
+A line reads an id as <line>-<major>[-<minor>], with or without a
+provider before a slash and a snapshot date after it: claude-opus-5-5,
+anthropic/claude-opus-6 and claude-opus-5-6-20270101 are all in the
+claude-opus line. An id it cannot read that way is in no line.
 
 Usage:
   models.py                  the proven models, each with the games that proved it
@@ -73,6 +80,43 @@ def declared():
         return {base(m): why for m, why in d.items()}
     except (OSError, ValueError):
         return {}
+
+
+LINE_ID = re.compile(r"^(?:[a-z0-9_.-]+/)?(?P<line>[a-z]+(?:-[a-z]+)*)-(?P<major>\d+)"
+                     r"(?:[-.](?P<minor>\d{1,2}))?(?:-(?P<date>\d{8}))?$")
+
+
+def lines():
+    """The lines of models kit/models.json declares good enough from a version on:
+    {line: ((major, minor), why)}, from `lines`, as {"claude-opus": {"from": "5.5", "why": "..."}}."""
+    try:
+        d = json.load(open(os.path.join(ROOT, "kit", "models.json"))).get("lines") or {}
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for line, row in d.items():
+        m = re.fullmatch(r"(\d+)(?:\.(\d+))?", str((row or {}).get("from", "")).strip())
+        if m:
+            out[str(line).strip().lower()] = ((int(m.group(1)), int(m.group(2) or 0)), row.get("why", ""))
+    return out
+
+
+def line_of(model, L=None):
+    """The line that makes a model proven, as "claude-opus from 5.5", or '' when none does:
+    its id names a declared line and a version at or above the line's first."""
+    m = LINE_ID.match(base(model).lower())
+    L = lines() if L is None else L
+    if not m or m.group("line") not in L:
+        return ""
+    first = L[m.group("line")][0]
+    if (int(m.group("major")), int(m.group("minor") or 0)) < first:
+        return ""
+    return f"{m.group('line')} from {first[0]}.{first[1]}"
+
+
+def good(model, P, L=None):
+    """Whether a model is proven: P names it (proven()), or its line does from that version on."""
+    return model in P or bool(line_of(model, L))
 
 
 def before_rule(g):
@@ -129,7 +173,8 @@ def check_problem(g, P, K=None):
         return "no `accuracy` in game.json to record the maintainer's sample in"
     if accuracy.problems(dict(g, tier="none")):
         return "its `accuracy` is malformed (accuracy.py check says how)"
-    on_proven = lambda r: {base(m) for m in r["models"]} <= set(P)
+    L = lines()
+    on_proven = lambda r: all(good(base(m), P, L) for m in r["models"])
     theirs = lambda r: "by" in r and on_proven(r)
     K = known() if K is None else K
     start = max((n for n, r in enumerate(rows) if r["step"] == "annotate"), default=-1)
@@ -157,7 +202,7 @@ def settle():
     """(proven, untrusted). proven is {model: [games that proved it]}; untrusted is [(game dir, used, why)]
     for every Silver-or-above game that is neither from before the rule, nor made on proven models only,
     nor checked. A trusted game proves the models that ran both its coverage and its verify step."""
-    P, pending = {m: ["declared in kit/models.json"] for m in declared()}, []
+    P, pending, L = {m: ["declared in kit/models.json"] for m in declared()}, [], lines()
     for gdir, g, t in games():
         if g.get("tier") in SILVER_UP:
             used = set().union(*(step_models(t, s) for s in PROVING_STEPS)) | import_models(g)
@@ -166,7 +211,7 @@ def settle():
     while changed:
         changed, left = False, []
         for gdir, g, t, used in pending:
-            ok = before_rule(g) or (used and used <= set(P))
+            ok = before_rule(g) or (used and all(good(m, P, L) for m in used))
             if not ok and check_problem(g, P):
                 left.append((gdir, g, t, used)); continue
             changed = True
@@ -181,7 +226,7 @@ def settle():
             why = "game.json has no `step_models` for 50-coverage or 60-verify to say which model did them"
         else:
             why = check_problem(g, P)
-        untrusted.append((gdir, sorted(used - set(P)), why))
+        untrusted.append((gdir, sorted(m for m in used if not good(m, P, L)), why))
     return P, untrusted
 
 
@@ -195,14 +240,22 @@ def awaits_check(g, P):
     page says so (build.py's banner). Empty for a game made on proven models, made before the
     rule, or checked."""
     sm = g.get("step_models") if isinstance(g.get("step_models"), dict) else {}
-    need = (set().union(*(step_models(sm, s) for s in PROVING_STEPS)) | import_models(g)) - set(P)
+    L = lines()
+    need = {m for m in set().union(*(step_models(sm, s) for s in PROVING_STEPS)) | import_models(g)
+            if not good(m, P, L)}
     if not need or before_rule(g) or not check_problem(g, P):
         return []
     return sorted(need)
 
 
 def is_proven(model):
-    return base(model) in proven()
+    return good(base(model), proven())
+
+
+def proven_names(P):
+    """What `models.py` and its refusal list as proven: each declared line, then each model by id."""
+    L = lines()
+    return [f"{line} from {first[0]}.{first[1]} on" for line, (first, _) in sorted(L.items())] + sorted(P)
 
 
 def check():
@@ -284,15 +337,18 @@ def main():
     if a and a[0] == "--test":
         test(); return
     if not a:
-        P = proven()
-        if not P:
+        P, L = proven(), lines()
+        if not P and not L:
             print("no proven models yet")
+        for line, (first, _) in sorted(L.items()):
+            print(f"{line} from {first[0]}.{first[1]} on  (declared in kit/models.json: every model of the line "
+                  "at or above that version)")
         for m in sorted(P):
             print(f"{m}  ({', '.join(P[m])})")
     elif a[0] == "is-proven" and len(a) == 2:
         if is_proven(a[1]):
             print(f"{a[1]} is a proven model"); return
-        print(f"{a[1]} is not a proven model (proven: {', '.join(sorted(proven())) or 'none'}).\n"
+        print(f"{a[1]} is not a proven model (proven: {', '.join(proven_names(proven())) or 'none'}).\n"
               "The run may go on. Tell the contributor now, in plain words: an untested model often produces\n"
               "results that read as right and are wrong, and this game cannot be Silver until a maintainer has\n"
               "measured its listing on a proven model, or, for a contributor kit/contributors.json lists, until\n"
