@@ -1,12 +1,9 @@
 # Toki — verified technical facts
 
-Current truth for this game. The workflow lives in `kit/skills/`; how this
-understanding developed lives in `agent-history.md`. Every fact names
-the routine or table it comes from. Unless marked *live*, a fact comes
-from reading the code in the snapshot named in `orientation.md`
-(`work/play-round1.vsf`, stage 1 in play).
+What is true of the game as a whole: how its parts follow one another, and what they share.
+Each part's own facts are in `parts/<id>/facts.md`.
 
-## Build
+## Parts
 
 An Ocean type 1 cartridge of sixteen 8 KB banks; bank 2 carries
 "1991 OCEAN SOFTWARE LTD / ALL RIGHTS RESERVED" ($8CEC-$8D15, game

@@ -58,3 +58,7 @@ There is no loader: the cartridge's cold start at $812C copies the game
 from its banks into RAM and calls $51FB, which clears $C480-$C53F, fills
 $44E1-$45A0 from a 192-byte copy loop and selects bank 13. Not
 annotated further.
+
+## Parts: the five stages
+
+Each stage is a part (`parts/stage-N`), loaded over the resident game. To reach a stage, load `parts/resident/work/play.vsf` in VICE, hold joystick 2 up+fire and joystick 1 down+fire for 0.6 s, release, and press the Commodore key; the game waits about 7 s through STAGE CLEAR and the stage card, and fire on the card starts the next stage. Repeat for each stage, and save a snapshot once the player is in the playfield (the snapshots in `parts/stage-N/work/play.vsf` were made this way). Stage 1 is the resident snapshot itself.
