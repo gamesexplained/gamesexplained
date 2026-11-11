@@ -27,7 +27,11 @@ takes the one the instruction sees. Code located in that range runs with
 the chips banked out, so it sees the RAM and gets the game's symbols; all
 other code sees the chips, and gets the register's name from
 kit/<platform>/registers.py, or the bare address where there is none. A
-jump or a call always gets the code's symbol. game.json overrides the rule
+jump or a call always gets the code's symbol, but for one to the CPU's own
+port, on a machine whose 6502 has one (the C64's and the C16's, at $0000 and
+$0001): no code runs there, so the instruction is one the game fills in as it
+runs, and its operand reads as the number the file holds, with no address
+(#774). game.json overrides the rule
 for code that banks the chips out itself, over the instructions' own
 addresses, the last row that holds the instruction deciding:
 

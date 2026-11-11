@@ -14,6 +14,7 @@ kit/c64/cpu.py, so that a fix to one is a fix to both.
 
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None
   operand(a, m, mode, bs, names, regs, chips) -> (text, target)
+      the 6502's, except that a JSR or a JMP to the 7501's port ($0000, $0001) is a number
   text_decode(kind, byte)            -> str
   TEXT_TYPES                         the block types this machine can hold
 
@@ -26,7 +27,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CPU = os.path.join(os.path.dirname(HERE), "cpu")
 if CPU not in sys.path:
     sys.path.append(CPU)
-from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode, operand  # noqa: E402,F401  the 6502, shared
+from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode  # noqa: E402,F401  the 6502, shared
+import m6502  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("c64_cpu_text", os.path.join(os.path.dirname(HERE), "c64", "cpu.py"))
 _c64 = importlib.util.module_from_spec(_spec)
@@ -34,6 +36,13 @@ _spec.loader.exec_module(_c64)
 petscii, screencode, sweep_runs = _c64.petscii, _c64.screencode, _c64.sweep_runs
 
 TEXT_TYPES = ("PETSCII", "Screencode")
+PORT = (0x0000, 0x0001)      # the 7501's own port
+
+
+def operand(a, m, mode, bs, names, regs, chips):
+    """The 6502's, with the 7501's port: a JSR or a JMP to $0000 or $0001 is a call the game
+    fills in as it runs, and reads as that number (m6502.operand)."""
+    return m6502.operand(a, m, mode, bs, names, regs, chips, PORT)
 
 
 def text_decode(kind, byte):
