@@ -1,4 +1,4 @@
-## next · 2026-11-10 · Karateka (Apple II) · air with Claude
+## 0.0.323 · 2026-11-10 · Karateka (Apple II) · air with Claude
 
 - **A disk in the game's own format is read by letting the game read
   it.** None of the three Apple II games had a catalog, and two had no
