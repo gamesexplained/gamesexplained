@@ -69,7 +69,12 @@ in order:
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
    python3 kit/scripts/check_listing.py
+   python3 kit/scripts/test_kit.py --changed
    ```
+
+   The last runs the kit tests the branch can affect: the game's own,
+   and those that load a file it changes. It says how many it left
+   out, and CI runs every test on the pull request.
 
    Commit as the contributor, under the GitHub noreply address checked
    at the start (`kit/START.md`); the agent appears only in the commit
@@ -90,7 +95,9 @@ Not every task is a game. A maintainer's agent may be asked to change
 the kit, the skills, the scripts or the site templates. The rules below
 apply unchanged, and so does the delivery: branch as `kit/<topic>` or
 `site/<topic>`, run the three checks, run
-`python3 kit/scripts/test_kit.py` (every kit test), run
+`python3 kit/scripts/test_kit.py --changed` (the kit tests the branch can
+affect; CI runs every one on the pull request, and so does the command
+without the option), run
 `python3 kit/scripts/build.py`
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
