@@ -110,3 +110,16 @@ The checked route draft was committed before its final prose pass. That
 pass led with the visible next-lap behavior, explained the address
 notation beside the evidence, and changed the Levels wording to seconds
 added. Script changes in that pass were limited to display strings.
+
+## 11 November 2026 — animation layout feedback
+
+The contributor brought back the open review comment on the Graphics
+viewer's changing height. A full cloud cycle moved the panel by 480
+pixels at desktop width; the crash cycle moved it by 526. The viewer
+now reserves a 320-pixel stage and fits each cropped frame within it.
+The character atlas keeps its separate layout. Browser checks stepped
+all 256 cloud passes and 25 particle passes at widths 1100, 390 and 320,
+with zero change in the panel, stage or readout height during each
+cycle. Animate/Pause, the static shape controls and atlas still work,
+with no page overflow or console errors. Game routines and drawing
+data were unchanged.
