@@ -33,9 +33,11 @@ should be compared.
 
 ## What you need first
 
-**Node and npm**, which the kit does not install. If the contributor has
-no `node`, tell them, and let them decide whether to install it
-(https://nodejs.org, the project's own installers; npm comes with it).
+**Node and npm.** If the contributor has
+no `node`, tell them, and let them choose: their own install
+(https://nodejs.org, the project's own installers; npm comes with it), or
+`python3 kit/scripts/tools.py get-node`, which keeps Node inside `tools/`
+(`kit/INSTALL.md`, "Node for a machine without it").
 jsnes 2.1.0 names no Node version. Everything in this file was measured on
 Node 24.18.0.
 

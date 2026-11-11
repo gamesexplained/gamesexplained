@@ -37,9 +37,12 @@ play a game on with its screen and its sound (`kit/skills/gnw/tool-mame`).
 
 ## What you need first
 
-**Node**, which the kit does not install. If the contributor has no
-`node`, tell them, and let them decide whether to install it
-(https://nodejs.org). Measured on Node 24.18.0.
+**Node.** If the contributor has
+no `node`, tell them, and let them choose: their own install
+(https://nodejs.org, the project's own installers; npm comes with it), or
+`python3 kit/scripts/tools.py get-node`, which keeps Node inside `tools/`
+(`kit/INSTALL.md`, "Node for a machine without it").
+Measured on Node 24.18.0.
 
 **A C++ compiler and Python 3**, for MAME's build: on macOS, Xcode's
 command line tools (`xcode-select --install`, Apple's own, outside the
