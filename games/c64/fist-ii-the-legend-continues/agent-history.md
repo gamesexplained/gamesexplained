@@ -91,6 +91,50 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   blow lands went to Gameplay, how rooms join to Maps and solution, and
   the scroll flags into the Gameplay trigram table.
 
+## 11 November 2026: the disk's ledger
+
+Aaron Bell asked for the disk to be covered by the media ledger while
+the pages stay with their steward, unorig. An agent run for him made
+`media.json` and changed no page.
+
+- The image is the Mindscape G64 with its protection, the first of the
+  two in `orientation.md` (SHA-256 `87ad649d...`), fetched again from the
+  C64 Preservation Project's collection. 22 items: the 20 files and 3
+  sectors of track 2 that no file holds.
+- The scan found `L`, `BNK12A`, `BNK2B`, `BNK3` and `BNK4B` in the
+  listing. `LOADALL` and `BNK4A` were answered by hand: every byte of
+  `BNK4A` that the listing holds is equal and the rest is a play screen
+  the listing leaves out, and `LOADALL` differs only where the menu, the
+  loader's own loops and `BNK4A` change it.
+- The menu's code was read in the second image, the one without the
+  protection, where `LL` is plain. It loads `M`, unpacks and shows it,
+  loads and unpacks `T`, asks 1 or 2, shows `T`'s picture and loads
+  `LOADIT` or `LOADALL`. For the Adventure it writes `JMP $C06E` at
+  `$C011` first. `orientation.md` said that `LOADALL` loads `TITLE` and
+  `TSETUP`; it holds the code, and the menu's jump skips it. The
+  paragraph now says so.
+- `M` and `T` were unpacked with the rule read from `$9B0E` and drawn:
+  each is exactly 10,001 bytes and a picture, the Mindscape logo and the
+  title picture.
+- `L`, `LL`, `LOADALL` and `LOADIT` are the only files with a call to
+  the KERNAL's `SETNAM` or `LOAD`. None asks for `TSETUP` on a path the
+  menu leaves in, and none names `DUMMY`, so both are answered `unused`.
+- Left open at first: the seven Training files and sectors 10 and 11
+  of track 2. The Training program was listed as the part `training`
+  the same day, and the disk was scanned again against both parts. The
+  scan found `TNK12A`, `TNK2B` and `TNK3` whole. `TNK4A` and `TNK4B`
+  were answered by hand: every byte the Training listing holds is equal
+  (963 and 8,432), and the rest are buffers and the picture band the
+  program writes as it runs. `TOLOR` is the colour RAM (`LOADIT` copies
+  it from `$6000` to `$D800`, the same code as `LOADALL`'s) and
+  `LOADIT` the loader, which the Training listing leaves out because
+  sprites are built over it. `TSETUP` stays unused: neither loader
+  reaches the load of it. One item is open, the two sectors.
+- The table of files in `orientation.md` listed a file `TITLE` beside
+  `TSETUP`. The disk has none, which made its twenty files twenty-one;
+  the row now says what `TSETUP` is, and the row for `M` and `T` what
+  the two pictures are.
+
 ## 11 November 2026, the Training program as a second part
 
 - The Adventure's folder was adopted as the part `adventure` and Training

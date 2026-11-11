@@ -17,9 +17,9 @@ twenty files:
 |---|---|---|---|---|
 | `L` | `$032C` | 90 | autostart stub: hooks a KERNAL vector, loads `LL` at `$9800` and jumps to it | both |
 | `LL` | `$9800` | 1,187 | the menu: "PRESS THE NUMBER OF YOUR CHOICE 1) TRAINING 2) ADVENTURE" | both |
-| `M`, `T` | `$6000` | 3,890 / 6,949 | the Mindscape logo and a second picture (not traced) | both |
+| `M`, `T` | `$6000` | 3,890 / 6,949 | the Mindscape logo and the title picture, packed; the menu loads each at `$4000`, unpacks it to `$2000` and shows it (`TODO.md`, "From the disk's ledger") | both |
 | `LOADALL` | `$C000` | 689 | the Adventure loader | adventure |
-| `TITLE`, `TSETUP` | `$6000`, `$1000` | 1,024 / 98 | the title picture and the code that shows it | adventure |
+| `TSETUP` | `$1000` | 98 | code that shows a picture held at `$6000`. `LOADALL` holds the code to load a file `TITLE` and then this one, the disk has no `TITLE`, and the menu jumps the loader past both loads ("The loader, in a paragraph") | neither |
 | `BNK4B`, `BNK4A`, `BNK3`, `BNK12A`, `COLOR`, `BNK2B` | see below | | Adventure | adventure |
 | `LOADIT` | `$C000` | 640 | the Training loader | training |
 | `TNK4B`, `TNK4A`, `TNK3`, `TNK12A`, `TOLOR`, `TNK2B` | as the Adventure's ("Training", below) | | Training | training |
@@ -59,6 +59,14 @@ Neither image is the `.d64` analysed here (its SHA-256 differs and it has
 no disk name); its game files were not compared with these byte for byte
 beyond the three above.
 
+`media.json` lists the first of the two, the disk with its protection,
+item by item (`python3 kit/scripts/media.py games/c64/fist-ii-the-legend-continues`).
+Every byte of `L`, `BNK12A`, `BNK2B`, `BNK3`, `BNK4A` and `BNK4B` that
+the Adventure's listing holds is the disk's, and so is `LOADALL` but for
+what the menu and the loader change in it. Every byte of `TNK12A`,
+`TNK2B`, `TNK3`, `TNK4A` and `TNK4B` that the Training's listing holds
+is the disk's too.
+
 ## From power-on to play
 
 1. Hard reset (power cycle) the emulator, PAL.
@@ -95,8 +103,12 @@ v3.14.0-linux-x86_64-gui.zip`, the same kind of container;
 
 ## The loader, in a paragraph
 
-`LOADALL` (`$C000`) loads `TITLE` and `TSETUP` and calls `$1000` to show
-the title picture. It then loads `BNK4B` at `$1000` and, with every ROM
+`LOADALL` (`$C000`) holds code that loads `TITLE` and `TSETUP` and calls
+`$1000` to show the title picture, but the menu skips it: before it
+starts the loader for the Adventure, `LL` writes `JMP $C06E` over
+`$C011` (`$9985`), which is why the listing holds that jump there. The
+picture on the screen is the one the menu itself unpacked from `T`. From
+`$C06E` the loader loads `BNK4B` at `$1000` and, with every ROM
 and the I/O switched out (`$01` = 0), copies `$1000`-`$3FEF` up to
 `$D000`-`$FFEF`, under the I/O area and the KERNAL: the copy counts
 `$2FF0` bytes, so the file's last nine (`$3FF0`-`$3FF8`) stay behind. It loads `BNK4A` at

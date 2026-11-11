@@ -45,6 +45,41 @@ Worth doing, found in the run and not done:
   describes the late-game respawns on the tape version, and the code read
   here is the disk's.
 
+## From the disk's ledger
+
+`media.json` lists everything on the Mindscape disk (11 November 2026).
+What it found is here for the steward: no page was changed.
+
+- **Two pictures are on the disk and drawn by no page.** `M` is the
+  Mindscape logo and `T` is the title picture (the fighter's high kick,
+  "FIST THE LEGEND CONTINUES", "COPYRIGHT © 1986 BEAM SOFTWARE"), which
+  the overview shows as a screenshot. Each unpacks to 10,001 bytes: 8,000
+  of bitmap, 1,000 screen colours, 1,000 bytes of colour RAM and a
+  background byte, a multicolour picture. The packing is a count byte:
+  `$00` ends the file, `$81`-`$FF` repeats the next byte that many times
+  less `$80`, and `$01`-`$7F` copies that many bytes as they are
+  (`LL`, `$9B0E`). The menu shows the logo first, and the title picture
+  while the chosen program loads. A loading picture belongs on the
+  Graphics tab, drawn from the disk's bytes (`kit/skills/core/70-minisite`,
+  "Graphics").
+- **A leftover of an earlier loader, a candidate for Discoveries.**
+  `LOADALL` still holds the code to load a file `TITLE` and then `TSETUP`
+  and to call `TSETUP` at `$1000`, which shows a picture held at `$6000`.
+  This disk has no `TITLE`, and the menu jumps the loader over all of it
+  (`LL`, `$9985`, writes `JMP $C06E` at `$C011`). So `TSETUP` is on the
+  disk and nothing loads it. Read from the code of `LL` (in the copy of
+  the disk without its protection) and `LOADALL`; not run in the
+  emulator.
+- **`DUMMY` is loaded by nothing** and is a copy of 256 bytes of the
+  Training program: `TNK12A`'s bytes at `$1000`-`$10FF`.
+- **The Training files are answered from the part `training`.**
+  `TNK12A`, `TNK2B` and `TNK3` are in its listing whole, `TNK4A` and
+  `TNK4B` in every byte the listing holds, `TOLOR` is its colour RAM and
+  `LOADIT` its loader. One item is left open, the two sectors below.
+- **Track 2, sectors 10 and 11** are marked used, belong to no file and
+  hold 512 bytes with no pattern. The protection's drive program reads
+  sector 0 of that track; whether it reads these two is not known.
+
 ## Training, analysed as a second part
 
 The disk's Training program is the part `training` (`parts/training/`):
