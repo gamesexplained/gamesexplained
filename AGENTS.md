@@ -404,6 +404,14 @@ the container, and a new container signs in again.
    the effort too: the default model's default was low on 14 October
    2026. An unknown level fails with the list the server accepts, which
    on that day was none, minimal, low, medium, high, xhigh and max.
+   When the contributor named Codex and no model or effort, do not ask:
+   take the strongest model the account lists that
+   `python3 kit/scripts/models.py` shows as proven, at `medium`. If the
+   plan's usage runs down before the checkers finish, go on with the
+   next proven model down, and record both ids. On 5 November 2026 an
+   account on ChatGPT's $20-a-month plan had gpt-6-astra as its
+   strongest, with the highest-numbered gpt-6.x-sol beneath it, and at
+   `medium` a sample of 60 comments ran to its end on that plan.
    `workspace-write` lets the checker write its verdicts in the clone,
    and `-o` keeps its last reply. A prompt given as an argument needs
    `</dev/null` after it, because `codex exec` also reads standard input
