@@ -118,3 +118,16 @@ A final pass measured the sound-model notes for the title and all nine
 effect previews. The lowest reported pitch is about 108.24 Hz, so removed
 the article's unsupported sub-100-Hz speaker sentence. Clarified that
 the effect previews advance once per PAL frame (about 20 ms).
+
+## Human curation begins
+
+jankfoundry found the moving figure cramped into the top-left corner of
+its oversized canvas. Centred each individual pose by its visible pixels
+in a smaller frame, retaining the same integer pixel scale and expanding
+the frame when needed for padding. The world views retain their full
+screen coordinates. A browser comparison checked all 1,464 combinations:
+444 individual views and 1,020 world views preserve their visible pixels
+exactly; every nonblank individual view is centred with at least 16 pixels
+of padding. Seven raw font/pose combinations are blank in both versions.
+The first human edit pass marks Silver as claimed by jankfoundry; copy
+remains agent-draft and the remaining sections await curation.

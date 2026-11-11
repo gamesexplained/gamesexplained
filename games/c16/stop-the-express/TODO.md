@@ -1,11 +1,12 @@
 # Stop the Express — next steps
 
-Silver; copy is agent-draft. All 42,263 bytes in the declared gameplay
+Silver claimed by jankfoundry; copy is agent-draft. All 42,263 bytes in the declared gameplay
 payload are covered. This is a 64 KB Plus/4 conversion.
 
 ## Before Gold
 
-- A human should curate every authored section and check the visual names.
+- Human curation has begun with the moving-figure viewer's framing.
+  Every authored section still needs a complete pass, including the visual names.
   The intended name of the floating ceiling figure remains uncertain;
   the pages call it the ceiling obstacle. The converter's notes and
   online searches on 11 November 2026 did not settle the name.

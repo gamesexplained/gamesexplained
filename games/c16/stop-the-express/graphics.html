@@ -31,6 +31,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 
 .ex-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}.ex-row>*{flex:1;min-width:240px}.ex-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}.ex-controls label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,select,input{font:inherit}button,select{padding:7px 12px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink)}button{cursor:pointer}button:hover{border-color:var(--accent)}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent)}input[type=range]{max-width:100%;accent-color:var(--accent)}canvas{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#080808}img{max-width:100%;height:auto;image-rendering:pixelated}.ex-wide{width:100%;max-width:640px;margin:auto}.ex-card{padding:18px;background:var(--surface-2);border-radius:6px}.ex-readout{font:14px var(--fm);white-space:pre-wrap;overflow-wrap:anywhere}.ex-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}.ex-grid canvas{width:100%}table{width:100%;border-collapse:collapse;font-size:15px}td,th{padding:8px;text-align:left;border-bottom:1px solid var(--line)}.ex-scroll{overflow-x:auto}.ex-error{color:#a02b20}.ex-good{color:#29653b}.ex-focus{outline:2px solid var(--amber)}.ex-note{border-left:3px solid var(--accent);padding-left:16px}.ex-pick{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ex-pick select{min-width:150px;max-width:100%}@media(max-width:650px){:root{--gx:20px;--h1:34px;--sy:30px;--pp:14px}.hero{padding-top:30px}.ex-row>*{min-width:200px}.ex-controls{gap:8px}td,th{padding:6px}}
+#ex-figure{margin:16px auto 12px}#ex-figure-text{text-align:center}
 </style><!-- tabs --><header class="hero"><p class="eyebrow">2021 · Legion of Doom · Plus/4 · 64 KB</p>
 <h1>Stop the Express</h1>
 <p class="sub">Every stored moving pose and every character shape, decoded in the game’s colours.</p>
@@ -42,7 +43,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </div>
 <div class="pick"><button class="step" type="button" aria-label="Previous">←</button><select id="ex-family" aria-label="Choose view"><option value="0">Runner</option><option value="1">Enemy</option><option value="2">Bird</option><option value="3">Ceiling obstacle</option><option value="4">Bouncing obstacle</option><option value="5">Death</option><option value="6">Brake / warning / ladder / life</option><option value="7">Poles and overhead wires</option></select><button class="step" type="button" aria-label="Next">→</button></div>
 <div class="ex-controls"><button id="ex-pose-prev">← Previous pose</button><label>Pose <input id="ex-pose" type="range" min="0" max="7" value="0"></label><button id="ex-pose-next">Next pose →</button></div>
-<canvas id="ex-figure" width="288" height="288" aria-label="Selected character figure"></canvas><p id="ex-figure-text" class="ex-readout" data-ex-status>Loading figures…</p>
+<canvas id="ex-figure" width="200" height="160" aria-label="Selected character figure"></canvas><p id="ex-figure-text" class="ex-readout" data-ex-status>Loading figures…</p>
 <p class="cap">Every pose uses the selected train’s actual character shapes and colours. The pose controls show one stored variant at a time. They do not reproduce the game’s playback speed. The page’s reader for drawing lists is checked against <code>$50A0</code> for every shown list and every character-code adjustment from 0 to 255. The caution sign also uses the $80 adjustment chosen by the game at <code>$47C9</code>. Addresses such as <code>$50A0</code> name places in memory; the $ marks a base-16 number using digits 0–9 and A–F.</p>
 </div>
 <p>The same higher character codes can choose different shapes inside the train. A bird pose on the roof can therefore draw a different picture with the interior font. Pole and wire views run the original drawing routines at <code>$4571</code> and <code>$4709</code>. The game’s routines choose which combinations appear during play. This browser also shows combinations that the game does not select.</p>
@@ -75,6 +76,24 @@ const Express = (() => {
 const ex = id => document.getElementById(id);
 const exHex = n => '$'+n.toString(16).toUpperCase().padStart(4,'0');
 function exDraw(canvas,cells,width,height,chars,scale=2){canvas.width=width*8*scale;canvas.height=height*8*scale;const ctx=canvas.getContext('2d');ctx.fillStyle='#080808';ctx.fillRect(0,0,canvas.width,canvas.height);for(let i=0;i<cells.length;i++){const code=cells[i];if(code<0)continue;ctx.fillStyle=C16.css(chars.colours[code]);for(let y=0;y<8;y++){const b=chars.glyphs[code*8+y];for(let x=0;x<8;x++)if(b&(128>>x))ctx.fillRect(((i%width)*8+x)*scale,(Math.floor(i/width)*8+y)*scale,scale,scale);}}}
+function exDrawPose(canvas,cells,chars){
+ const source=document.createElement('canvas');
+ exDraw(source,cells,6,6,chars,1);
+ const pixels=source.getContext('2d').getImageData(0,0,source.width,source.height).data;
+ let left=source.width,top=source.height,right=-1,bottom=-1;
+ for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++){
+  const i=(y*source.width+x)*4;
+  if(pixels[i]===8&&pixels[i+1]===8&&pixels[i+2]===8)continue;
+  left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+ }
+ const scale=5,width=Math.max(0,right-left+1),height=Math.max(0,bottom-top+1);
+ canvas.width=Math.max(200,width*scale+32);canvas.height=Math.max(160,height*scale+32);
+ const ctx=canvas.getContext('2d');
+ ctx.fillStyle='#080808';ctx.fillRect(0,0,canvas.width,canvas.height);
+ if(!width||!height)return;
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(source,left,top,width,height,Math.floor((canvas.width-width*scale)/2),Math.floor((canvas.height-height*scale)/2),width*scale,height*scale);
+}
 function exShape(canvas,mem,chars,address,offset=0){let cells=new Int16Array(6*6).fill(-1);for(const [d,g] of Express.shape(mem,address,offset).cells){const x=d%40,y=Math.floor(d/40);if(x<6&&y<6)cells[y*6+x]=g;}exDraw(canvas,cells,6,6,chars,3);}
 function exPick(select,update){const box=select.closest('.pick');if(box){box.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{select.selectedIndex=(select.selectedIndex+(i?1:-1)+select.options.length)%select.options.length;update();});}select.onchange=update;}
 function exFail(error){document.querySelectorAll('[data-ex-status]').forEach(e=>{e.textContent='This interactive view needs the built site and its shared C16 scripts. '+error.message;e.classList.add('ex-error');});console.error(error);}
@@ -96,7 +115,7 @@ function expressPoses(){return [
  if(pose.environment!==undefined){const m=mem.slice();m.fill(32,0x1000,0x1400);m[0x2b]=pose.environment;m[0x2d]=1;m[0x2e]=pose.environment%39+1;m[0x3e]=1;m[0x49]=1;const c=new C64Cpu.CPU(m);c.call(0x4571,{x:0});c.call(0x4709,{x:0});exDraw(ex('ex-figure'),m.slice(0x1000,0x13e8),40,25,chars,2);ex('ex-figure-text').textContent=pose.name+' · native $4571 / $4709';}
  else {if(pose.glyph){cells[0]=pose.glyph;}else if(pose.fixed){for(let i=0;i<(pose.size||6);i++)cells[Math.floor(i/2)*6+i%2]=(mem[pose.fixed+i]+(pose.offset||0))&255;}
  else{for(const [d,g] of Express.shape(mem,address,pose.offset||0).cells){let x=d%40,y=Math.floor(d/40);if(x<6&&y<6)cells[y*6+x]=g;}if(pose.body){let legs=pose.walk?0x36b5:0x36b0;for(const [d,g] of Express.shape(mem,legs,pose.offset).cells){let x=d%40,y=Math.floor(d/40)+2;if(x<6&&y<6)cells[y*6+x]=g;}}}
- exDraw(ex('ex-figure'),cells,6,6,chars,5);ex('ex-figure-text').textContent=pose.name+' · '+exHex(address)+' · variant '+(n+1)+' of '+poses.length;}
+ exDrawPose(ex('ex-figure'),cells,chars);ex('ex-figure-text').textContent=pose.name+' · '+exHex(address)+' · variant '+(n+1)+' of '+poses.length;}
  const all=Array.from({length:256},(_,i)=>i);exDraw(ex('ex-font'),all,16,16,chars,3);const glyph=+ex('ex-glyph').value;exDraw(ex('ex-glyph-big'),[glyph],1,1,chars,16);ex('ex-glyph-text').textContent='Character $'+glyph.toString(16).toUpperCase().padStart(2,'0')+' · colour $'+chars.colours[glyph].toString(16).toUpperCase().padStart(2,'0')+' · dot rows (hex bytes) '+Array.from(chars.glyphs.slice(glyph*8,glyph*8+8),v=>v.toString(16).padStart(2,'0')).join(' ');
  }exPick(ex('ex-gfx-design'),draw);exPick(ex('ex-gfx-state'),draw);exPick(ex('ex-family'),()=>{ex('ex-pose').value=0;draw();});ex('ex-pose').oninput=draw;ex('ex-glyph').oninput=draw;for(const [id,d] of [['ex-pose-prev',-1],['ex-pose-next',1]])ex(id).onclick=()=>{let n=expressPoses()[+ex('ex-family').value].length;ex('ex-pose').value=(+ex('ex-pose').value+d+n)%n;draw();};ex('ex-font').onclick=e=>{let r=e.currentTarget.getBoundingClientRect();ex('ex-glyph').value=Math.floor((e.clientY-r.top)/r.height*16)*16+Math.floor((e.clientX-r.left)/r.width*16);draw();};draw();
 }catch(e){exFail(e);}})();
