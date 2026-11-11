@@ -48,6 +48,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .cm-btn[aria-pressed=true]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
 .cm-two{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
 .cm-miss{font-size:14px;color:var(--coral)}
+.cm-lcv{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;background:#000;border-radius:6px}
+.cm-lstat{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 @media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}.cm-two{grid-template-columns:1fr}.cm-card.wide{grid-column:auto}}
 </style>
 <!-- tabs -->
@@ -93,6 +95,18 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">A vehicle is two sprites side by side, 24 pixels apart, moved together. Shapes the game never changes are shown still.</p>
   <div class="plate"><div class="cm-cards" id="cm-others"></div>
   <p class="cap">The title's logo is seven sprites, each doubled in width and height, in orange with black and yellow as the shared colours (<code>$0F48</code>). The two doors have handlers but are in no area's list of what to put on the map; they are drawn here in the colour their handler gives them.</p></div>
+</section>
+
+<section id="loading">
+  <p class="fig">05 · The loading picture</p>
+  <h2 class="t">The cassette draws an arcade cabinet, and its screen counts down the tape</h2>
+  <p class="lede">While it loads, the 1985 cassette shows an arcade cabinet, ELITE PRESENTS across the top and COMMANDO (C) CAPCOM on its screen. Above the title the screen keeps score for the tape: the blocks still to load, counting down from 206, and the time since the picture came up. The 1985 disk loads without a picture.</p>
+  <div class="plate">
+    <canvas class="cm-lcv" id="cm-l-cv" width="384" height="272" role="img" aria-label="The cassette's loading picture: an arcade cabinet with ELITE PRESENTS on top; its screen shows the blocks left and the time, and COMMANDO (C) CAPCOM"></canvas>
+    <div class="cm-bar" style="margin:12px 0 0"><button type="button" class="cm-btn" id="cm-l-go">Load it again</button><button type="button" class="cm-btn" id="cm-l-skip">Skip</button><span class="cm-lstat" id="cm-l-stat" aria-live="polite"></span></div>
+    <p class="cap">The cassette's own screen, recorded in VICE and drawn as the video chip draws it, with the counters as they stood in each frame of the load: the blocks go at the tape's own pace, and the clock gains two hundredths of a second a frame. The picture is built from the C64's own character set in ROM, and the page carries only the 80 characters it shows, 640 bytes of Commodore's character ROM 901225-01, from its upper-case set at offsets <code>$0000</code>-<code>$07FF</code>.</p>
+  </div>
+  <p>The cabinet is drawn in the C64's own letters and block graphics, forty characters by twenty-five, with no bitmap and no characters of its own, and it comes up all at once, 42 seconds into the tape, after a plain grey title. A block goes about every 0.9 seconds. The last goes when the clock reads 3:11:02, and the clock stops at 3:15:00, four seconds later.</p>
 </section>
 
 </main>
@@ -287,4 +301,63 @@ else C64.load('listing.json').then((D) => {
   const tick = (now) => { if (!paused) { const t = Math.max(0, Math.floor((now - t0) * 50 / 1000)); for (const f of live) f(t); } requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }).catch((e) => { console.error(e); ['cm-compass', 'cm-joe', 'cm-shots', 'cm-soldiers', 'cm-others'].forEach((id) => $(id) && lack($(id))); });
+</script>
+<script type="application/json" id="cm-loading-data">{"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"Elite's 1985 cassette at 120 seconds, the Ultimate Tape Archive's Commando.tap: kit/c64/frame.py capture, then trim, in VICE 3.10 (vice-mcp 3.14.0) on 11 November 2026. The screen and colour RAM, with the counters as they stood then (124 blocks, 1:17:92); rom_excerpt holds the characters of Commodore's character ROM 901225-01 that the screen and its counters show","vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,0,21,113,240,0,0,0,0,0,240,240,241,242,243,244,240,241,242,243,244,245,246,247,252],"cia2":[151,63],"writes":[],"colour":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkJCQkJCQkJCQcHBwcHBwcHBwcHBwcHBwcHBwcHBwkJCQkJCQIGBgYGBgYGBgYGCQkHBwcHBwcHBwcHBwcHBwcHBwcHBwcJCQkJCQICBgYGAQEBAgICAgkJBwcHBwcHBwcHBwcHBwcHBwcHBwcHCQkJCQICAgYGBgEBAQICAgILCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkLCwICAgIGBgYBAQECAgICAgkLCwsLCwsLCwsLCwsLCwsLCwsLCwsJCQkCAgICBgYOBgEBAgICAgIJCwsLCwsLCwsLCwsLCwsLCwsLCwsLCQkJAgICAgYGDgYBAQICAgICCQsLCwEBAQEBAQEBAQEBAQEBAQEBCwkJCQICAgIGBg4GAQECAgICAgkLCwEBAQEBAQEBAQEBAQEBAQEBAQsJCQkCAgICBgYOBgEBAgICAgIJCwsLCwsLCwsLCwsLCwsLCwsLCwsLCQkJAgICAgYGDgYBAQICAgICCQsLCwUFBQUFBQUFBQUFBQUFBQsLCwkJCQICAgIGBg4GAQECAgICAgkLCwsICAgICAgICAgICAgICAgLCwsJCQkCAgICBgYOBgEBAgICAgIJCwsLCQkJCQkJBQUFCQkJCQkJCwsLCQkJAgICAgYGDgYBAQICAgICCQsLCwkJCQkJBQUFBQkJCQkJCQsLCwkJCQICAgIGBg4GAQECAgICAgkLCwsFBQUFBQUFBQUFBQUFBQULCwsJCQACAgICBgYOBgEBAgICAgIJCwsLBQUFBQUFBQUFBQUFBQUFCwsLCQkJAgICAgYGDgYBAQICAgICCQsLCwUFBQUFBQUFBQUFBQUFBQsLCwkJAAICAgIGBg4GAQECAgICAgkLCwsFBQUFBQUFBQUFBQUFBQULCwsJCQkCAgICBgYOBgEBAgICAgIJCwsLCwsLCwsLCwsLCwsLCwsLCwsLCQkAAgICAgYGDgYBAQICAgICCQwMDAwMDAwMDAwMDAwMDAwMDAwMDAkJCQICAgIGBg4GAQECAgICAgkLCwsLCwsLBgYGBgYLCwsLCwsLCwsJCQkCAgICBgYLCwEBAgICAgIJCwsLCwsLCwYGBgYGCwsLCwsLCwsLCQAAAgICAgYGCwsBAQICAgICCQgICAgICAgICAgICAgICAgICAgICAkJCQICAgIGBgsBAQECAgICAgkICAgICAgICAgICAgICAgICAgICAgJCQkCAgICBgYGAQEBAgICAgIJCAgJCQkJCQkJCQkJCQkJCQkJCQgICQkJAgICAgYGBgIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":1024,"b":"ICAgICAgIKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgICAgICAgICAgICAgICCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICAgIOnloKAgICAgICAgoKCgoKCFjImUhaCgkJKFk4WOlJOgoKCgoCAgIOmg5aCgoKDn3yAgIKCgoKCg9/f39/egoPf39/f39/f3oKCgoKAgIOmgoOWgoKCg56DfICBfoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBpIOmgoKDloKCgoOegoN8gIKDfICAgICAgICAgICAgICAgICAgIOmgICCgoKCg5aAgIKDnoKCg3yCgoGNjY2NjY2NjY2NjY2NjY2NjY2OgoCAgoKCgoOWgICCg56CgoKAgoKAgIDEyNCAgICAgIDE6MTc6OTIgoKAgIKCgoKDloCAgoOegoKCgIOCgIAIMDwMLICAgICAgIBQJDQUgIKCgICCgoKCg5aAgIKDnoKCgoCCgoCAgZG95YmL4+Pj4+GJieW9kICCgoCAgoKCgoOWgICCg56CgoKAgoKAgdqCgoIOPjY2BjoSPoKCgoHUgoKAgIKCgoKDloCAgoOfgoKCgIKCgIOF5eXl5eXl5eXl5eXl5eXlhIKCgICCgoKCg5aAgIKDnoKCgoCCgoCD15ubm5uYg4+Mg5ubm5ubm9iCgoCAgoKCgoOWgICCg5+CgoKAgoKAg9ebm5ubm6aCg3+bm5ubm5vYgoKAgIKCgoKDloCAgoOegoKCgIKCgIOWgoKCgoKCgoKCgoKCgoKDnIKCgIKCgoKCg5aAgIKDnoKCgoCCgoCDloKCog6mgg4GQg4+NoKCg5yCgoCAgoKCgoOWgICDg56CgoKAgoKAgoKCgoKCgoKCgoKCgoKCgoKAgoKAgoKCgoKDloCAg4OegoKCgIKCgIKDY2NjYoKCg2rWgoKCg09OgIKCgICCgoKCg5aAgIODnoKCg4CCgoCBfoKCgoKCgoKCgoKCgoKCgaSCgoCCgoKCgoOWgICCg56CgoKAgoO/v7+/R7+/v7+/v7+/v7+/v7+/v76AgIKCgoKDloCAgoOegoOCgIKD017GgwqCgz/f399CgoKDVyaDVyeqgICCgoKCg5eCgoKDnoKCg4CCg9NeyoNugoMzv7+/6oKCgysugysvqoKCgoKCgoOWgoKCg56Cg4KAgoPf39/f39/f39/f39/f39/f39/f396AgIKCgoKDloKCg4OegoKCgIKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICCgoKCg5aCgoKDnoKCgoCCgoKDP9/f39/f39/f39/f39/f30KCgoCAgoKCgoOWgoA=="},{"a":16383,"b":"4Q=="}],"rom_excerpt":{"rom":"chargen 901225-01","ranges":[{"a":16,"b":"fGZmfGZmfAA8ZmBgYGY8AA=="},{"a":40,"b":"fmBgeGBgfgA="},{"a":72,"b":"PBgYGBgYPAA="},{"a":88,"b":"Zmx4cHhsZgBgYGBgYGB+AGN3f2tjY2MA"},{"a":120,"b":"PGZmZmZmPAA="},{"a":160,"b":"fhgYGBgYGAA="},{"a":256,"b":"AAAAAAAAAAA="},{"a":384,"b":"PGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAA=="},{"a":760,"b":"/38/Hw8HAwE="},{"a":776,"b":"8PDw8PDw8PAAAAAA//////8AAAAAAAAAAAAAAAAAAP8="},{"a":840,"b":"//78+PDgwIA="},{"a":888,"b":"AAAAAAAA//8="},{"a":936,"b":"4ODg4ODg4OAHBwcHBwcHBw=="},{"a":968,"b":"AAAAAAD///8="},{"a":1032,"b":"58OZgZmZmf8="},{"a":1048,"b":"w5mfn5+Zw/+Hk5mZmZOH/4Gfn4efn4H/"},{"a":1096,"b":"w+fn5+fnw/8="},{"a":1120,"b":"n5+fn5+fgf+ciICUnJyc/5mJgYGRmZn/w5mZmZmZw/+DmZmDn5+f/w=="},{"a":1168,"b":"g5mZg4eTmf/DmZ/D+ZnD/4Hn5+fn5+f/"},{"a":1280,"b":"//////////8="},{"a":1344,"b":"8+fPz8/n8//P5/Pz8+fP/w=="},{"a":1416,"b":"5+fH5+fngf/Dmfnzz5+B/w=="},{"a":1448,"b":"gZ+D+fmZw/8="},{"a":1552,"b":"5+fn5+fn5+c="},{"a":1608,"b":"////Hw/H5+fn5+Pw+P///+fnxw8f////Pz8/Pz8/AAA="},{"a":1656,"b":"AAA/Pz8/Pz8AAPz8/Pz8/P/DgYGBgcP/"},{"a":1688,"b":"yYCAgMHj9/8="},{"a":1704,"b":"////+PDj5+c="},{"a":1720,"b":"/8OBmZmBw//n55mZ5+fD/w=="},{"a":1744,"b":"9+PBgMHj9//n5+cAAOfn5w=="},{"a":1784,"b":"AIDA4PD4/P7//////////w8PDw8PDw8P"},{"a":1816,"b":"AP////////8="},{"a":1832,"b":"Pz8/Pz8/Pz8zM8zMMzPMzPz8/Pz8/Pz8"},{"a":1864,"b":"AAEDBw8fP3/8/Pz8/Pz8/A=="},{"a":1912,"b":"////////AAA="},{"a":1952,"b":"Pz8/Pz8/Pz8fHx8fHx8fH/j4+Pj4+Pj4AAD///////8AAAD//////w=="},{"a":2000,"b":"/Pz8/Pz8AAA="}]}}</script>
+<script>
+/* cm-loading */
+// cmLoadingFrame(F, mem, n): the frame for C64.drawFrame (../../lib/c64.js) of the cassette's cabinet n
+// frames after it came up, with its counters as they stood then. F is the frame recorded in VICE (the
+// block cm-loading-data) with charrom built from its rom_excerpt (cmFont), and mem its memory. The
+// counters are screen codes: the blocks left at $0524-$0526, and the clock's minutes at $052D, seconds
+// at $052F-$0530 and hundredths at $0532-$0533. CM_BLOCKS is the frame, counted from the cabinet's
+// first, at which each block went, read from the tape's screen in VICE in every frame: the first at 39,
+// the last at 9,554. The clock reads 0:00:00 for four frames, then gains two hundredths a frame until
+// it stops at 3:15:00, frame 9,753 (CM_END).
+const CM_BLOCKS = [39,81,122,164,204,253,302,348,396,441,489,536,584,633,680,725,773,822,871,920,971,1017,1059,1095,1130,1166,1207,1252,1296,1341,1388,1436,1483,1531,1579,1627,1672,1720,1768,1816,1864,1913,1961,2010,2057,2105,2153,2202,2249,2297,2346,2395,2445,2493,2543,2591,2639,2688,2736,2784,2833,2882,2930,2978,3025,3074,3122,3171,3223,3275,3328,3380,3432,3484,3536,3588,3640,3693,3745,3796,3846,3896,3945,3992,4035,4076,4125,4170,4216,4263,4309,4354,4400,4448,4498,4550,4594,4636,4680,4724,4767,4810,4853,4896,4939,4982,5025,5068,5111,5166,5215,5259,5303,5347,5392,5440,5485,5529,5573,5618,5664,5707,5753,5797,5842,5888,5938,5991,6037,6083,6127,6170,6212,6255,6298,6340,6383,6431,6482,6526,6571,6613,6657,6710,6756,6799,6841,6884,6926,6969,7011,7054,7096,7138,7181,7223,7266,7308,7356,7409,7463,7508,7551,7594,7637,7681,7726,7770,7813,7858,7905,7951,7998,8045,8091,8138,8185,8232,8278,8323,8368,8413,8463,8512,8558,8608,8659,8705,8754,8803,8850,8896,8938,8986,9038,9090,9138,9184,9230,9272,9319,9371,9419,9465,9507,9554];
+const CM_END = 9753;
+function cmCounters(n) {
+  let left = 206;
+  for (const f of CM_BLOCKS) { if (n < f) break; left--; }
+  return [left, n < 4 ? 0 : 2 * (Math.min(n, CM_END) - 3)];
+}
+function cmFont(F) {
+  const font = new Uint8Array(4096);
+  for (const r of F.rom_excerpt.ranges) font.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  return Object.assign({}, F, { charrom: btoa(String.fromCharCode(...font)) });
+}
+function cmLoadingFrame(F, mem, n) {
+  const [left, hs] = cmCounters(n), m = mem.slice(), b = String(left).padStart(3, '0');
+  for (let i = 0; i < 3; i++) m[0x524 + i] = 0x30 + +b[i];
+  const sec = Math.floor(hs / 100) % 60, cs = hs % 100;
+  m[0x52D] = 0x30 + Math.floor(hs / 6000);
+  m[0x52F] = 0x30 + Math.floor(sec / 10); m[0x530] = 0x30 + sec % 10;
+  m[0x532] = 0x30 + Math.floor(cs / 10); m[0x533] = 0x30 + cs % 10;
+  return Object.assign({}, F, { mem: m });
+}
+// end of cm-loading
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cm-l-cv'), stat = $('cm-l-stat');
+  if (typeof C64 === 'undefined') { stat.textContent = 'The picture is drawn by the site\'s shared scripts, which the built site serves.'; return; }
+  const F = cmFont(JSON.parse($('cm-loading-data').textContent));
+  const mem = new Uint8Array(0x10000);
+  for (const r of F.ram) mem.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  let t0 = 0, raf = 0, shown = -1;
+  const draw = (n) => { if (n !== shown) { C64.drawFrame(cv, cmLoadingFrame(F, mem, n), 1); shown = n; } };
+  const skip = () => { cancelAnimationFrame(raf); raf = 0; draw(CM_END); stat.textContent = 'Loaded'; };
+  const tick = (now) => {
+    const n = Math.min(CM_END, Math.floor(Math.max(0, now - t0) / 20));   // a frame every 20 ms
+    draw(n);
+    if (n < CM_END) raf = requestAnimationFrame(tick); else { raf = 0; stat.textContent = 'Loaded'; }
+  };
+  const go = () => { cancelAnimationFrame(raf); t0 = performance.now(); shown = -1; stat.textContent = 'Loading'; raf = requestAnimationFrame(tick); };
+  $('cm-l-go').addEventListener('click', go);
+  $('cm-l-skip').addEventListener('click', skip);
+  draw(0);
+  // the load starts when the picture comes into view
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.4 });
+    io.observe(cv);
+  } else go();
+})();
 </script>

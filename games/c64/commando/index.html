@@ -131,8 +131,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </tbody></table>
 </section>
 
+<section id="loading-tune">
+  <p class="fig">04 · The loading tune</p>
+  <h2 class="t">Music: the cassette's tune, which fades out every minute and starts again</h2>
+  <p class="lede">The 1985 cassette plays a tune of its own while the game loads, from its grey title screen until the last block is in, a little over three minutes later. Most of that time it plays over the cassette's picture of an arcade cabinet (<a href="graphics.html#loading">Graphics</a>). The 1985 disk loads without it.</p>
+  <div class="plate">
+    <div id="cm-load"></div>
+    <p class="cap">The player runs the cassette's own code and notes, as the cassette leaves them in memory, on the kit's 6502 simulator, once a frame as the cassette does. It was checked against the cassette loading in VICE: after each of the tune's first 6,100 frames, two minutes of it, the sound chip's registers are the player's, from the second frame on.</p>
+  </div>
+  <p>The notes and everything else the tune does come from one list (<code>$EF80</code>), read a byte at a time: a note and how long it lasts, or a run of bytes to write into memory, the sound chip's registers among them. The fade is written into the list, fifteen steps of the volume. Each pass plays for 53 seconds at full volume, fades away over the next 12, is silent for a second and starts again, so the tune comes round every 66 seconds. It uses the pulse and triangle waveforms and never the filter.</p>
+</section>
+
 <section>
-  <p class="fig">04 · The battlefield</p>
+  <p class="fig">05 · The battlefield</p>
   <h2 class="t">Every area's map, from the start line to the gate</h2>
   <p class="lede">Each area is one map, 40 characters wide and 200 rows deep, built from the area's own character set. Play starts near the bottom and the gate is at row 0. The screen shows 21 rows at a time.</p>
   <div class="plate" id="cm-maps">
@@ -157,7 +168,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">05 · Enemy fire</p>
+  <p class="fig">06 · Enemy fire</p>
   <h2 class="t">A soldier fires only where he already faces</h2>
   <p class="lede">Point at the field to move Super Joe. The shading shows which way the soldier would have to face to shoot at him from each place, and the line shows a shot when the facing matches.</p>
   <div class="plate" id="cm-aim1"></div>
@@ -166,7 +177,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · Progression</p>
+  <p class="fig">07 · Progression</p>
   <h2 class="t">Soldiers fire faster in each area, until the third loop starts over</h2>
   <p class="lede">A rifle soldier may fire once every 64 frames in the first area, every 32 in the second and every 16 in the third. The game keeps counting areas after the third, and the rate follows the count.</p>
   <div class="plate" id="cm-loop">
@@ -180,7 +191,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">07 · The play screen</p>
+  <p class="fig">08 · The play screen</p>
   <h2 class="t">One frame, rebuilt from memory</h2>
   <p class="lede">The first area at the start of play, drawn by this page from the game's memory and the video chip's registers.</p>
   <div class="plate"><canvas id="cm-frame" class="cm-cv" width="768" height="544" role="img" aria-label="The play screen rebuilt from one frame of memory"></canvas>
@@ -192,7 +203,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">08 · Weapons</p>
+  <p class="fig">09 · Weapons</p>
   <h2 class="t">Super Joe's weapons</h2>
   <p class="lede">A press of fire gives two bullets and no more until the button is let go (<code>$39C3</code>). Space throws a grenade.</p>
   <p>A counter set to <code>$FF</code> while fire is up counts once a frame for each free bullet slot. A bullet goes when the counter reaches 0 and again when it reaches 8, two frames later with all four shot slots free, and there the counter stops. Held down for 40 frames at a time, four presses made eight bullets in the emulator. A bullet flies for 15 frames and stops at a wall.</p>
@@ -207,7 +218,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">09 · This copy</p>
+  <p class="fig">10 · This copy</p>
   <h2 class="t">What REMEMBER's crack changed in the game</h2>
   <p class="lede">Set beside the 1985 release, this copy differs in 29 of the game's 19,450 bytes. The maps, the character sets and the sprites are the same, apart from two bytes of a glyph no map uses. Everything else REMEMBER added sits in memory the 1985 game never uses: a menu, two pages of instructions, a trainer, and a saver for the high scores.</p>
   <div class="plate cm-scroll"><table class="cm-tbl"><thead><tr><th>Where</th><th>The 1985 release</th><th>This copy</th></tr></thead><tbody>
@@ -237,6 +248,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8">gamesexplained</a> · Commando for the Commodore 64, explained from its code</footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
 /* commando-music */
 /* Commando (Elite, 1985), music by Rob Hubbard: the game's music and sound-effect driver
@@ -571,7 +583,7 @@ function pick(root, names, go, start) {
   return set;
 }
 
-// ---- the music and the sound effects (sections 02 and 09), the port above through ../../lib/sid.js
+// ---- the music and the sound effects (sections 02 and 03), the port above through ../../lib/sid.js
 (function music() {
   const S = window.C64Sid;
   const roots = [$('#cm-music'), $('#cm-sfx')];
@@ -592,7 +604,7 @@ function pick(root, names, go, start) {
   });
 })();
 
-// ---- the maps (section 03)
+// ---- the maps (section 05)
 // What the game uses for area a (0-3): $3EB0 map page, $40BC colour, $14A5 terrain table, $148D and
 // $149D the spawn list's rows and handlers, $3ED0 the restart rows; the character set is $C000 +
 // $800 * a ($1427 sets $D018's low bits to a * 2).
@@ -742,7 +754,7 @@ function terrainImage(D, ar) {
   }).catch((e) => miss(root, e));
 })();
 
-// ---- one frame (section 06)
+// ---- one frame (section 08)
 (function frame() {
   const cv = $('#cm-frame'), box = $('#cm-bands');
   if (!window.C64) { miss(cv.parentNode, new Error(NEED)); return; }
@@ -775,7 +787,7 @@ function terrainImage(D, ar) {
   box.onchange = draw; draw();
 })();
 
-// ---- the fire rate by area played (section 05)
+// ---- the fire rate by area played (section 07)
 (function loop() {
   const root = $('#cm-loop'), cv = $('canvas', root), read = $('.cm-read', root);
   const COUNTERS = [0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15];
@@ -792,7 +804,7 @@ function terrainImage(D, ar) {
   }).catch((e) => miss(root, e));
 })();
 
-// ---- where a soldier sees the player (section 04), aim() and fires() from the port above
+// ---- where a soldier sees the player (section 06), aim() and fires() from the port above
 const HEAD = { 0: 'up', 2: 'up and right', 4: 'right', 6: 'down and right', 8: 'down', 10: 'down and left', 12: 'left', 14: 'up and left' };
 const PLACE = { 0: 'above him', 2: 'above and to his right', 4: 'to his right', 6: 'below and to his right', 8: 'below him',
   10: 'below and to his left', 12: 'to his left', 14: 'above and to his left' };
@@ -860,4 +872,35 @@ function mountAim(root, sx0, fixed) {
   sel.value = 12; draw();
 }
 mountAim($('#cm-aim1'), 200, false);
+</script>
+<script type="application/json" id="cm-loader-data">{"about":"The cassette's loading tune as the cassette leaves it in memory when the tune starts: its five settings at $E003-$E007, its player and note table at $E114-$E360, and the list of notes and register settings it reads from $EF80, as it stands once the tape has brought in the whole list ($EF80-$F4CC)","blocks":[[57347,"QUFBAQA="],[57620,"rVbj8AONBNStV+PwA40L1K1Y4/ADjRLUqQCNVuONV+ONWOPOVePwA0zn4a0G4I1V485Z49AxIFDirV/jqjALrQPgjVbjKfCNBNSK0AWNVuPwDwqqvbHi6I0A1L2x4o0B1K1g441Z485a49AxIFDirV/jqjALrQTgjVfjKfCNC9SK0AWNV+PwDwqqvbHi6I0H1L2x4o0I1K1g441a485b49AxIFDirV/jqjALrQXgjVjjKfCNEtSK0AWNWOPwDwqqvbHi6I0O1L2x4o0P1K1g441b46AGOCCN4oggjeKIiCCN4oggjeKIiCCN4qWr8Aqlp81T4/AYjVPjTJDgqQCiE53/08rQ+qkIjRbQYID/eKASuTDimR8AiND3TCIAAAGRIMjQ++Yh0PepN4UBbPz/IIHiqiCB4o6C4o2D4iCB4sn+8Ayw6o1f4yCB4o1g42AggeKNeeIggeKNeuIggeKoogAggeKdeOLoiND28M+tgO/uguLQA+6D4mCxZGkByTqQBqkwkWQYYJFkwALQBMk28PBoaEz/4QoMAQMFBggAAFoEnATiBCwFewXPBScGhQboBlEHwAc2CLMIAAAAADYIswg4CcQJWQr2Cp0LTgwJDdANog6BD20QZxEAAAAAbRBnEXASiBOyFO0VOhecGBMaoBtEHQEf2SDOIgAAAADZIM4i3yQRJ2Mp2St1LjgxJTQ/N4g6Az6zQZtFAAAAALNBm0W/SSFOx1KzV+pccGJKaH5uEHUGfGaDNosAAAAAADIZcQEAAAABAQEGAAAAAA=="],[61312,"/vUDA0wWCP4D4AVBEUELAAABAAEAAf4A1BkAAAAoQBlJAAAAA0AZSQAAAApAGWkAAAAP/h/iAUwACAAIBgEWAQYBFgEBAREBAgESAQAIAAgEARQBBAEUAQQBFAEEARQBAAgACAYBFgEGARYBAQERAQIBEgEACAAIBAEUAQQBFAEEARQBBAEUATkBNgEGATYBMQEWATkBNgEGATEBKQEWATkBNgEBATYBMQERATkBNgECATQBMQESATsBOAEEATQBKwEUATsBOAEEATQBKwEUATkBNAEEATgBNAEUATkBNAEEATYBNAEUATkBNgEGATYBMQEWATkBNgEGATEBKQEWATkBNgEBATYBMQERATkBNgECATQBMQESATsBOAEEATQBKwEUATsBOAEEATQBKwEUATkBNAEEATgBNAEUATkBNAEEATYBNAEUAQAIAAgGARYBBgEWAQEBEQECARIBAAgACAQBFAEEARQBBAEUAQQBFAEACAAIBgEWAQYBFgEBAREBAgESAQAIAAgEARQBBAEUAQQBFAEEARQBNgIxAgYBFgE2ATEBBgE4ATEBFgE5ATYBAQEyAisCEQECAbQBsQESAbQBsQEEATQBMQEUATYBMQEEATQBMQEUATsBNgEEATkBNgEUATgCMQIEARQBNgIxAgYBFgE2ATEBBgE4ATEBFgE5ATYBAQEyAisCEQECAbQBsQESAbQBsQEEATQBMQEUATYBMQEEATQBMQEUATsBNgEEATkBNgEUATgCMQIEARQBNgJJAQYBRgEWATYBSQEGATgBQQEWATkBSQEBATICRgERAUkBAgG0AUQBEgG0AUsBBAE0AUQBFAE2AUsBBAE0AUQBFAE7AUsBBAE5AUgBFAE4AksBBAFGARQBNgJJAQYBRgEWATYBSQEGATgBQQEWATkBSQEBATICRgERAUkBAgG0AUQBEgG0AUsBBAE0AUQBFAE2AUsBBAE0AUQBFAE7AUsBBAE5AUgBFAE4AksBBAFGARQBMQIrAgYBFgE2ATEBBgE4ATEBFgE5AjYCAQERATgBMQECATYBMQESATsCNgIEARQBOQE2AQQBOAExARQBOQE2AQQBOAExARQBNgExAQQBNAErARQBNgExAQYBOQI2AhYBBgE4ATEBFgE5AjYCAQERATgBMQECATYBMQESATsCNgIEARQBOQE2AQQBOAExARQBOQE2AQQBOAExARQBNgExAQQBNAErARQBNgQxBAYBFgEGARYBRgJBAgEBEQFEATsBAgHGAcEBEgHGAcEBBAFJAUYBFAFIAUQBBAFJAUYBFAFLAUYBBAFJAUYBFAFIAUEBBAFJAUYBFAFGAUEBBgE5AjYCFgEGATgBMQEWATkCNgIBAREBOAExAQIBNgExARIBOwI2AgQBFAE5ATYBBAE4ATEBFAE5ATYBBAE4ATEBFAE2ATEBBAE0ASsBFAE2CDEIBgEWAQYBFgEBAREBAgESAQAIAAgEARQBBAEUAQQBFAEEARQB/hjUAQ4ACAAIBgEWAf4Y1AENBgEWAf4Y1AEMAQERAf4Y1AELAgESAf4Y1AEKAAgACAQBFAH+GNQBCQQBFAH+GNQBCAQBFAH+GNQBBwQBFAH+GNQBBgAIAAgGARYB/hjUAQUGARYBAQERAf4Y1AEEAgESAQAIAAgEARQB/hjUAQMEARQBBAEUAQQBFAH+GNQBAgAIAAgGARYBBgEWAQEBEQECARIBAAgACAQBFAEEARQB/hjUAQEEARQBBAEUAQAIAAgGARYBBgEWAQEBEQECARIB/hjUAQAABAAEAAT+GNQBD/+47w=="]],"play":57620,"until":57831}</script>
+<script>
+/* cm-loader-tune */
+// createNovaloadTune for C64Sid: the cassette's loading tune on the kit's 6502 over the bytes the cassette
+// leaves in memory (D.blocks, the block cm-loader-data). Once a frame the cassette's interrupt runs the
+// stretch from $E114 to $E1E7 (D.play, D.until), which plays the tune: so does the page. The player reads
+// its list of notes and settings from $EF80 through the pointer at $E282. Only the SID's registers are
+// I/O; the tune reads none of them.
+function createNovaloadTune(D, C64Cpu) {
+  const mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+  const image = D.blocks.map(([a, s]) => [a, Uint8Array.from(atob(s), (c) => c.charCodeAt(0))]);
+  let writes = [], on = false;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: (a) => (a >= 0xD400 && a <= 0xD41F ? 0 : mem[a]),
+    write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; },
+  } });
+  return {
+    init() { mem.fill(0); for (const [a, b] of image) mem.set(b, a); sid.fill(0); writes = []; cpu.sp = 0xFF; on = true; },
+    stop() { on = false; },
+    play() { writes = []; if (on) { cpu.pc = D.play; cpu.run({ until: D.until, maxSteps: 200000 }); } },
+    sid, get writes() { return writes; }, playing: () => on, mem,
+  };
+}
+// end of cm-loader-tune
+(() => {
+  const el = document.getElementById('cm-load');
+  if (typeof C64Sid === 'undefined' || typeof C64Cpu === 'undefined') { el.textContent = 'The player needs the site\'s shared scripts, which the built site serves.'; return; }
+  C64Sid.mount(el, { driver: createNovaloadTune, data: JSON.parse(document.getElementById('cm-loader-data').textContent),
+    tunes: ['The loading tune'], loops: [{ from: 354, period: 3300 }] });
+})();
 </script>

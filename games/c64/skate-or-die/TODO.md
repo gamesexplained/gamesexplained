@@ -25,3 +25,11 @@ loader and event manager, the shop and town and the five events, are at
 - The reception has one review. Zzap!64's full review (issue 33), and the
   C64 reviews in CCI, C&VG, ACE, and Commodore User, wait on sources this
   session could not read.
+
+## Loading picture and tune
+
+- The Electronic Arts cassette shows the same title picture the disk does
+  (the Loading tab's "A picture that moves only its colours") from about 1:30 into the load,
+  with sound from about 2:00 that changes the volume register as the sampled title music
+  does. Worth checking that the tape plays the disk's title music and nothing of its own;
+  if it has a tune of its own, it belongs on the Music tab.
