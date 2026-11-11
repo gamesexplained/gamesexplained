@@ -1,0 +1,141 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkanoid: graphics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:26px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;max-width:100%;display:block}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ink-mute)}
+button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+input[type=range]{width:220px}
+.lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.scroll{overflow-x:auto}
+.bands{font-family:var(--fm);font-size:13px;line-height:1.5;margin:12px 0 0;padding:0;list-style:none}
+.bands li{padding:4px 8px;border-left:3px solid transparent;cursor:default}
+.bands li.hl{background:var(--hl);border-left-color:var(--amber)}
+.two{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+.out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
+.stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
+.stages button{padding:5px 0;font-size:12px}
+.stages button.hz{border-bottom:3px solid var(--amber)}
+.msg{font-size:14px;color:var(--coral)}
+.ak-cv{width:100%;max-width:768px;height:auto;background:#000;border-radius:4px}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
+  <h1>Arkanoid: graphics</h1>
+  <p class="sub">The picture the cassette builds on the screen while the game loads, which the game then keeps as its title picture.</p>
+</header>
+<main class="wrap">
+
+<section id="loading">
+  <p class="fig">01 · The loading picture</p>
+  <h2 class="t">The title picture, drawn on the screen as the tape reads it</h2>
+  <p class="lede">The cassette loads the title picture first and lets you watch it arrive. On a white screen it fills in a cell at a time, left to right along each row of cells and down the screen, over 38 seconds, while Martin Galway's Ocean loading tune plays (<a href="music.html#loading-tune">Music</a>).</p>
+  <div class="plate">
+    <canvas class="ak-cv" id="ak-l-cv" width="384" height="272" role="img" aria-label="Arkanoid's title picture: the word ARKANOID, IMAGINE and TAITO, the mothership Arkanoid and the Vaus in space, signed Jones"></canvas>
+    <div class="row">
+      <button type="button" id="ak-l-go">Load it again</button>
+      <button type="button" id="ak-l-skip">Skip</button>
+      <span class="lab" id="ak-l-stat" aria-live="polite"></span>
+    </div>
+    <p class="cap">The game's own bytes, from the listing: the bitmap at <code>$4000</code>-<code>$5F3F</code>, its screen colours at <code>$6000</code>-<code>$63E7</code> and the colour RAM that the title copies from <code>$6400</code>, all three the same byte for byte as the 1987 cassette loads them. The bitmap appears at the tape's own pace, where it had got to every half second, measured in VICE.</p>
+  </div>
+  <p>About a minute into the tape, with the screen switched off, the loader reads the picture's screen colours and its colour RAM. Then it turns the screen on, white, and reads the bitmap in the order it lies in memory, at about 210 bytes a second. The bitmap keeps the eight rows of each 8 by 8 cell together, eight bytes in a row, so the picture arrives in whole cells: forty across, then the next row of cells down, twenty-five rows in all.</p>
+  <p>The game keeps these bytes as they loaded: they are its title picture. <code>show_title_picture</code> (<code>$B480</code>) points the video chip at them again for the title screen, and once more after Doh falls at the end.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* ark-loading */
+// arkLoadingFrame(ram, n): the frame for C64.drawFrame (../../lib/c64.js) of the title picture as the
+// tape shows it with the first n of the bitmap's 8,000 bytes loaded (the rest are still 0). ram is the
+// listing's memory: bitmap $4000, screen colours $6000, colour RAM from $6400 (show_title_picture).
+// The video chip's registers are those of a frame recorded in VICE with the picture on the screen:
+// a multicolour bitmap ($D011 = $3B, $D016 = $D8) in bank 1 ($DD00 = $C2, $D018 = $81), black
+// border and white background.
+const AK_VIC = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,59,0,0,0,0,216,0,129,112,240,0,0,0,0,0,240,241,241,242,243,244,240,241,242,243,244,245,246,247,252];
+// The bitmap's bytes loaded at each half second from the moment the screen comes on, read from the
+// tape's memory in VICE.
+const AK_FRONT = [0,40,144,243,340,452,569,667,788,910,1013,1128,1246,1352,1483,1589,1729,1862,1968,2108,2218,2328,2455,2557,2671,2790,2887,2986,3081,3179,3274,3368,3463,3559,3664,3765,3859,3957,4062,4159,4261,4363,4461,4563,4674,4774,4876,4987,5090,5198,5316,5417,5526,5636,5741,5856,5968,6075,6186,6292,6399,6510,6617,6726,6833,6941,7048,7144,7249,7355,7449,7552,7654,7749,7848,7946,8000];
+function arkLoadingFrame(ram, n) {
+  const mem = ram.slice();
+  mem.fill(0, 0x4000 + n, 0x5F40);
+  const colourMem = new Uint8Array(1024);
+  for (let i = 0; i < 1024; i++) colourMem[i] = ram[0x6400 + i] & 15;
+  return { schema: 1, standard: 'PAL', lines: 312, cycles: 63, vic: AK_VIC, cia2: [0xC2, 0x3F], writes: [], mem, colourMem };
+}
+// end of ark-loading
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('ak-l-cv'), stat = $('ak-l-stat');
+  let L;
+  try { L = await C64.load('listing.json'); } catch (e) {
+    stat.textContent = 'The listing did not load, so the picture cannot be drawn.'; return;
+  }
+  const END = (AK_FRONT.length - 1) * 500;                  // milliseconds from the screen coming on
+  let t0 = 0, raf = 0, shown = -1;
+  const at = (ms) => {                                      // the bytes loaded ms into the bitmap
+    if (ms >= END) return 8000;
+    const k = Math.floor(ms / 500), f = ms / 500 - k;
+    return Math.round(AK_FRONT[k] + (AK_FRONT[k + 1] - AK_FRONT[k]) * f);
+  };
+  const draw = (n) => { if (n !== shown) { C64.drawFrame(cv, arkLoadingFrame(L.ram, n), 1); shown = n; } };
+  const skip = () => { cancelAnimationFrame(raf); raf = 0; draw(8000); stat.textContent = ''; };
+  const tick = (now) => {
+    const ms = Math.max(0, now - t0), n = at(ms);   // the first frame can be stamped before t0
+    draw(n);
+    stat.textContent = n < 8000 ? Math.floor(ms / 1000) + ' s, ' + n.toLocaleString('en-GB') + ' of 8,000 bytes' : '';
+    raf = n < 8000 ? requestAnimationFrame(tick) : 0;
+  };
+  const go = () => { cancelAnimationFrame(raf); t0 = performance.now(); shown = -1; raf = requestAnimationFrame(tick); };
+  $('ak-l-go').addEventListener('click', go);
+  $('ak-l-skip').addEventListener('click', skip);
+  draw(0);
+  // the load starts when the picture comes into view
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.4 });
+    io.observe(cv);
+  } else go();
+})();
+</script>

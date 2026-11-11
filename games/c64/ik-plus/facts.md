@@ -314,6 +314,34 @@ each human player in turn (player 2 first):
   game's code, run in the kit's 6502 simulator from `work/ram-play.bin`,
   over 4,000 steps with the drift operand changed every 700
   (`work/page/test_antics.js`).
+- **The cassette's loading screens** (the 1987 tape, the Ultimate Tape
+  Archive's `IK+.tap`, 745,527 bytes, SHA-256
+  `8c02b1bdb2e4c79e1e387899a29e70ca307ac011cb9e9e6d93295da26efc2a32`;
+  live in VICE 3.10, 11 November 2026, sampled every half second from
+  155 to 205 seconds into the tape). System 3's logo from 158.5 s,
+  SYSTEM 3 PRESENTS typed on a text screen from 164.5 s, the fist from
+  175.5 s, the credits typed a line at a time from 181.5 s (DESIGNED AND
+  WRITTEN BY ARCHER MACLEAN / SOUND TRACK BY ROBB HUBBARD / A SOFTWARE
+  STUDIOS PRODUCTION IN ASSOCIATION WITH MARJACQ MICROS / COPYRIGHT
+  (C)1987 ARCHER MACLEAN), and the fist again from 192.5 s until about
+  395 s; the game's attract mode by 430 s. Both pictures are multicolour
+  bitmaps at `$E000` with their screens at `$D000` (`$DD00` = `$C4`,
+  `$D018` = `$49`, `$D011` = `$3B`, `$D016` = `$D8`). The SID's volume
+  stays 0 until the game starts: the tape plays no music. The Fighters
+  tab draws a frame of each, recorded at 160 and 194 seconds
+  (`test_loading_picture.js`).
+- **How the loading pictures come and go** (the same tape, memory read
+  every frame in VICE 3.10, 11 November 2026, 157.8 to 159 s, 162.9 to
+  164.1 s, 174.8 to 176.1 s and 191.5 to 193 s, and every fifth frame
+  between 176.2 and 181.6 s). The screen switches to the picture's
+  bitmap mode and colours with the bitmap empty, then the bitmap fills a
+  pixel row at a time: row 0 of every character cell in screen order,
+  then row 1, to row 7, about 200 bytes a frame, so 8,000 bytes in 41
+  frames (the fist at 191.54 to 192.34 s; bytes not yet reached stay
+  0). A picture leaves in the same order, each byte set to 0 (the logo
+  at about 162.8 to 163.4 s, the fist at about 179.7 to 180.5 s),
+  before the text screen comes back. The Fighters tab replays the front
+  frame by frame (`IK_FRONT`, `test_loading_picture.js`).
 
 ## Text
 

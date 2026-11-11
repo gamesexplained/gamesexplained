@@ -145,6 +145,16 @@ only), and of the sound driver at `$3B8B`-`$3EFF` and `$3F96`-`$3FFE`
   (`$F6B1`), opened by `$A428` and animated by `$A45A`.
 - Enemies come in through one gate in the top wall at X `$47`; the
   second gate path needs `$0246`, which nothing writes (`$9F9E`).
+- **The cassette's title picture** (the 1987 tape, the Ultimate Tape
+  Archive's `Arkanoid.tap`, 640,955 bytes, SHA-256
+  `d1f218962fa31396e580fdd390e256e92fd5dcadd0736550d71236ba2bc63a81`;
+  VICE 3.10, 11 November 2026, memory read every half second from 55 to
+  115 s). The screen comes on 66 s into the tape, with the screen colours
+  (`$6000`) and the colour RAM copy (`$6400`) already in, and the bitmap
+  arrives from `$4000` upward in whole cells, about 210 bytes a second,
+  done about 38 s later; every byte past the front is 0. The three parts
+  equal the listing's title picture byte for byte. The Graphics tab
+  replays it (`AK_FRONT`, `test_loading_picture.js`).
 
 ## Mechanics
 
@@ -250,6 +260,21 @@ only), and of the sound driver at `$3B8B`-`$3EFF` and `$3F96`-`$3FFE`
   routine patches its own `STA $9418` into `STA $D418` and writes a noise
   nibble from `$DE` to the volume register in timed loops (`$F604`,
   `$F345`, `$AEEF`, `$B500`, `$B290`, `$ACD6`).
+- **The cassette's loading tune** (the same tape and session). The
+  loader starts it 58.5 s into the tape (`$AD05`: `$D418` = `$0F`, then
+  `JSR $A000`) and calls `$A04E` once a frame, its main loop at `$002B`
+  waiting for the raster interrupt's flag, while bit 1 of `$0C` is set;
+  at 276.5 s it clears the flag and the volume (`$ACFB`). The tune's code
+  and notes are `$A000`-`$ACFA`. VICE's SID registers after each of the
+  cassette's first 9,000 calls equal the kit's simulator running the same
+  bytes (VICE reports the pulse width's top nibble as 0, and `$D418` bit 3
+  in `$D417`'s place). The High Voltage SID Collection's
+  `MUSICIANS/G/Galway_Martin/Ocean_Loader_2.sid` (title "Ocean Loader 2",
+  released "1985 Ocean") loads at `$A000`-`$ACFA` with init `$A000` and
+  play `$A04E`; 3,113 of its 3,323 bytes are the cassette's, and played on
+  the simulator its registers equal the cassette tune's for 20,000 frames.
+  The registers repeat every 12,672 frames from frame 2,305, and the whole
+  state from frame 7,425. The Music tab plays it (`test_loading_tune.js`).
 
 ## Hardware register census
 
