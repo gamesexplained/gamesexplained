@@ -47,8 +47,8 @@ family at once (`MON*`) and `--open-only` leaves the answered alone.
 | Answer | The item | Also give |
 |---|---|---|
 | `part` | is listed in a part | `--part` (none in a game of one load) and `--at`; `--packed` when it unpacks into the part |
-| `data` | is data the game loads into a buffer: a level, a picture, a monster, a tune | `--page`, the page that decodes it, when one does |
-| `loader` | stands in front of the game: the boot program, a fast loader or its drive code, a loading picture, a protection, a cracker's intro | |
+| `data` | is data the game loads into a buffer: a level, a picture, a monster, a tune; or what its loader shows and plays: a loading picture, a loading tune | `--page`, the page that decodes it, when one does |
+| `loader` | stands in front of the game: the boot program, a fast loader or its drive code, a protection, a cracker's intro | |
 | `saved` | is written by the game: saved games, high scores, a party it ships with | |
 | `unused` | is loaded by nothing | how that was shown (`60-verify`, "Negative results") |
 | `open` | is not explained yet | |
@@ -62,6 +62,11 @@ what each member is, because a level, a creature or a routine that no
 page shows is what `70-minisite` builds from. A loader takes its one
 line of why and no further study: how a fast loader, an unpacker or a
 protection works is not what a reader came for (`10-orient`, step 8).
+What a loader shows and plays is: the loading picture and the loading
+tune are what many readers remember of the game, and the running game
+has usually loaded over both, so no snapshot holds them. Answer them
+`data`, and `70-minisite` draws the picture on the Graphics tab and
+plays the tune with the game's other music.
 
 - A family the game loads by a name it builds, a stem and a number, is
   `data`, and its why names the routine that builds the name. A member

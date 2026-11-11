@@ -478,8 +478,9 @@ loader the game calls at its own address does not pass `$FFD5`.
 ## Tapes
 
 **The TAP file**: a 20-byte header, then the pulses. `$00`-`$0B` hold
-`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$10`-`$13` the data's length,
-low byte first. Each byte of data is one pulse, the time from one falling
+`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$0D` the machine (0 for the
+C64), `$0E` the video standard (0 PAL, 1 NTSC), `$10`-`$13` the data's
+length, low byte first. Each byte of data is one pulse, the time from one falling
 edge to the next, in units of 8 cycles. A `$00` is a pulse too long for a
 byte: in version 1 the next three bytes give its length in cycles, low
 byte first, and in version 0 nothing does.
@@ -508,9 +509,29 @@ read a header that holds anything else as a loader's code or data.
 
 `python3 kit/c64/tap.py <image>` reads all of that from the pulses, with
 no emulator, and `kit/c64/test_tap.py` holds it to a tape the KERNAL saved
-(`kit/lessons/2026-11-11-c64-tape-reader.md`). Most games load one short
-program this way, and that program reads the rest in a faster format of
-its own, which `tap.py` shows as a stretch of pulses and does not read.
+(`kit/lessons/2026-11-11-c64-tape-reader.md`). On real cassettes the three
+pulses were `$2F` or `$30`, `$42` or `$43`, and `$56` or `$57` in the TAP,
+and every block's checksum came out right
+(`kit/lessons/2026-11-11-c64-tape-media.md`). A boot file that loads over
+the vectors at `$0300` is of type 3.
+
+**Turbo formats.** Most games load one short program in the KERNAL's
+format, and that program reads the rest in a faster format of its own. On
+the tapes read it was always a bit a pulse, in two lengths that differ
+from tape to tape, from 216 and 312 cycles to 496 and 952. The loaders
+whose code was read time a pulse with a CIA timer they restart on every
+pulse: a pulse the timer runs out on is a 1. The loader's own code is the only
+description of its format. Read off it the timer's value, the order of a
+byte's bits, the bytes it hunts for and the header it reads, and let the
+game's listing say whether the bytes came out right. A format that is a
+pilot byte, a sync byte, two addresses and the bytes is one more row of
+`TURBO` in `kit/c64/tap.py`, which then lists and extracts its blocks. A
+loader may be stored scrambled (`games/c64/shadowfire/orientation.md`,
+"The loader") or change its own code as it loads: run its unscrambling in
+`kit/cpu/cpu6502.js` and read what that leaves, not the bytes on the
+tape. A stretch `tap.py` cannot decode is shown with its two commonest
+pulse lengths, and is an item of `media.json` all the same, to be
+answered by hand from what the run saw load.
 
 ## Cartridge images
 

@@ -48,3 +48,6 @@ With the Play tab Platinum, that pass makes the game Diamond.
   refused towards location `$80` would add the observation.
 - The Load and Save game icons were not run: saving to tape or disk, and
   what a saved position holds, are traced only.
+- What the 3,072 bytes at `$1400`-`$1FFF` of the tape's block 4 are. They
+  load with the loading picture, the picture does not use them, and
+  block 9 loads over them (`orientation.md`, "What the tape holds").

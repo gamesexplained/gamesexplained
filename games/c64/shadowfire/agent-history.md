@@ -228,3 +228,53 @@ edited, following the site's standard for them.
   with `draw_picture` (`$42D9`) on the 6502, grouped, each with its note.
 - The iris takes about 73 frames of the 6502's time to open and 94 to
   close, before the interrupt and the video chip take theirs.
+
+## 11 November 2026: the tape's ledger
+
+Aaron Bell asked for a tape reader for the C64's media ledger, and this
+tape was the first read with it (`kit/c64/tap.py`).
+
+- `media.json` lists the tape's 12 items: the boot program and its
+  header, and the ten turbo blocks. Blocks 6, 7 and 10 are in the listing
+  byte for byte, block 1 too, and every byte of block 9 that the listing
+  holds is equal. The other blocks are the loading picture and the two
+  sets of video registers around it.
+- The table in `orientation.md` gave the boot program's addresses as
+  `$044E`-`$0617`. The tape's header says `$02A7`-`$030C`, 101 bytes over
+  BASIC's vectors, and the table now says so. It also gave the short
+  pulse as about 272 cycles; the TAP's byte for it is `$23`, 280.
+- The notes called the loader scrambled without having read it. The boot
+  program's own code was run on the tape's bytes in the kit's 6502, which
+  left the turbo loader in the clear at `$0351`. It agrees with the
+  format the earlier run had worked out from the pulses in every
+  particular, and adds three: the timer's value, the count of ten blocks,
+  and that the `$44` after each block is never read.
+- The loading picture was drawn from blocks 2, 3 and 4 as a check, and
+  is the picture of `reference/web-tape-loading-title.png`. It is on no
+  page (`TODO.md`).
+- Block 4 carries 3,072 bytes below the bitmap that nothing uses. They
+  were set beside the game's bytes at `$1400`-`$1FFF` and share no run
+  of 12 bytes or more with them. What they are stays open.
+
+## 11 November 2026: the loading picture on the Graphics tab
+
+Aaron Bell asked that loading screens and loading music be shown
+wherever a game has them, the screen on Graphics and the music on How it
+works, as the exception to keeping loaders off the pages.
+
+- `graphics.html` has a third section, the loading picture, drawn from
+  the tape's blocks 2, 3 and 4, which the page carries as data.
+  `media.json` now answers those three blocks `data` with that page;
+  block 5, the video registers, stays the loader's.
+- `test_loading_picture.py` holds the page's bytes to the hashes
+  `media.json` took from the tape, and the page's decoder to the
+  multicolour rule.
+- What the section says of the load is read off the loader's code and
+  the tape, not watched in an emulator. The loader clears bit 4 of
+  `$D011` as it starts (`$035C`) and increments `$D020` after every bit
+  (`$03DA`). Block 5 sets `$D011` to `$3B` and block 8 to `$0B`. Summing
+  the TAP's pulses at 985,248 cycles a second gives 64 seconds before
+  block 5 has loaded, 143 seconds from there to the end of block 8, and
+  43 seconds from there to the end of block 10.
+- The tape has no loading music: the loader's 163 bytes write to no
+  sound register.

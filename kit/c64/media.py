@@ -32,8 +32,9 @@ commands). A sector the 1541's DOS cannot read is in no item: a disk the game re
 of its own needs a log of what the drive reads. A .crt (kit/c64/crt.py): every bank. A .prg,
 or a .p00 (a PRG behind a 26-byte header): the file. A .tap (kit/c64/tap.py): every file in
 the KERNAL's own format, a header that carries more than spaces after its name as an item of its
-own, and every other stretch of 32 pulses or more that is not a tone as an item of no bytes with
-"problem" saying so: a loader's own fast format, to be answered by hand. A .t64 has no reader:
+own, every block in a turbo format of that module's table, and every other stretch of 32 pulses
+or more that is not a tone as an item of no bytes with "problem" saying so: a loader's own fast
+format the table does not hold, to be answered by hand. A .t64 has no reader:
 its image is listed with "unread" and no items.
 
   python3 kit/c64/media.py <image>     the items, one a line
