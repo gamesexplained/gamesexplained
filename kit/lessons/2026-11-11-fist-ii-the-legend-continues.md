@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Fist II: The Legend Continues (C64) · Aaron Bell with Claude
+## 0.0.336 · 2026-11-11 · Fist II: The Legend Continues (C64) · Aaron Bell with Claude
 
 - **A comment carried from another part keeps what was true there.**
   `carry.py` rewrites the addresses of the code it pairs, but a comment
