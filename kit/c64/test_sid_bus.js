@@ -36,8 +36,8 @@ for (const model of Object.keys(F.models)) {
       }
       check(got === want, `sid.js ${model}, ${c.name}, ${t} cycles: read ${hex(got)}, VICE ${hex(want)}`);
     }
-    // the test machine, on the processor's clock; it has no voices, so $D41B and $D41C read 0
-    if ((c.before || []).some(([r]) => r === 0x1B || r === 0x1C) || c.read === 0x1B || c.read === 0x1C) continue;
+    // the test machine, on the processor's clock; it has no envelopes, so $D41C reads 0
+    if ((c.before || []).some(([r]) => r === 0x1C) || c.read === 0x1C) continue;
     for (const [t, want] of c.reads) {
       const m = new Machine({ ram: new Uint8Array(65536), sid: model });
       let got;

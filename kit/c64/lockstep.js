@@ -149,6 +149,14 @@
 //   a handler being run reads them so too, from what its game's handler read (irqs above). On the
 //   page, outside the lockstep, the port's io gives irqByte: a => M[a]. With nest the lockstep's
 //   io gives the list too, as irqBytes, a Set.
+// - $D41B, voice 3's oscillator: a game's random numbers when the voice makes noise, and a
+//   different byte every few cycles, which a port that does not run on the game's cycles cannot
+//   work out. The port reads it through P.io (sidRead(0x1B), or read) wherever the game does,
+//   and gets, in turn, the bytes the game's main program read in the same stretch, by the same
+//   copy run on ahead as irqBytes, with no option to set; a handler gets what the game's handler
+//   read. A read past the game's gets the port's own chip's. On the page the port's io answers
+//   it from an oscillator of its own (site/lib/sid.js, createOsc) or any other source: the
+//   numbers differ from a C64's only in when they are read.
 // - P.cpuPort: a port whose game changes its banking as it goes ($01: the chips at $D000 in play,
 //   RAM under them while a level is built) keeps the processor port's data there, as the game last
 //   wrote it. The game's own code standing in for a routine (standIn, standInGen) then runs on that
@@ -252,6 +260,7 @@ const flagRegister = a => (a >= 0xD000 && a < 0xD400 && ((a & 0x3F) === 0x19 || 
   : a >= 0xDC00 && a < 0xDE00 && (a & 0x0F) === 0x0D ? (a & 0xFF00) | 0x0D : -1);
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
+const OSC3 = 0xD41B;                               // voice 3's oscillator, at every mirror (a & 0xFC1F)
 const LIST = 64;                                   // differing bytes kept per pass
 // A pass's differing bytes of RAM that lastWriters gave back unlike the game's, marked restored
 // (the set is emptied for the next pass).
@@ -404,6 +413,7 @@ class Lockstep {
     c.raster = m.line;
     c.vic.set(m.vic); c.colour.set(m.colour); c.sidw.set(m.sidw);
     c.sidBus.chip(m.sidChip); c.sidBus.load(m.sidBus.save());
+    c.sidOsc.chip(m.sidChip); c.sidOsc.load(m.sidOsc.save());
     for (const k of ['cmp', 'latch', 'enable', 'pra', 'ddra', 'ddrb', 'pra2', 'ddra2']) c[k] = m[k];
     if (m.cia) c.cia = JSON.parse(JSON.stringify(m.cia));   // CIA 2's port and the timers' latches; they never count here
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
@@ -460,12 +470,17 @@ class Lockstep {
       q.ibUsed.set(a, j + 1);
       return j < vs.length ? vs[j] : this.P.M[a];
     }
+    return this.turn(a, this.P.M[a]);
+  }
+  // The port's main program's next read of a (one of irqBytes, or OSC3): what the game's main
+  // program read at that point of the stretch, or own once the port has read more often than it.
+  turn(a, own) {
     const s = this.ib, i = s.used.get(a) || 0;
     s.used.set(a, i + 1);
     let vs = (s.list || s.live).get(a) || [];
     // the game waiting at a stop the port has not reached has read all it will in the stretch
     if (i >= vs.length && !s.list && !(this.at >= 0 && !this.matched)) { s.list = this.lookahead(); vs = s.list.get(a) || []; }
-    return i < vs.length ? vs[i] : this.P.M[a];
+    return i < vs.length ? vs[i] : own;
   }
   // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
   // then a copy's, run on from here to the next stop outside its interrupts.
@@ -501,6 +516,7 @@ class Lockstep {
     g.ioRead = function (x) {
       const v = ioRead.call(this, x);
       if (!depth && x >= 0xD000 && x < 0xD400) { const r = x & 0x3F; if (r === 0x11 || r === 0x12 || r === 0x19) polled = true; }
+      else if ((x & 0xFC1F) === OSC3) { left(); if (!depth) { if (!out.has(OSC3)) out.set(OSC3, []); out.get(OSC3).push(v); } }
       return v;
     };
     const irq = g.cpu.irq, run = g.cpu.run;
@@ -540,6 +556,8 @@ class Lockstep {
     // with nest, the rest as the game's handler read them: one that came inside another read what
     // the other had written, which the port has not run yet
     if (q !== null && f < 0) { const x = q.chip.get(chipRead(a)); if (x && x.i < x.v.length) return x.v[x.i++]; }
+    // voice 3's oscillator changes every cycle, and the port does not run on the game's cycles
+    if (q === null && (a & 0xFC1F) === OSC3) return this.turn(OSC3, v);
     return v;
   }
 
@@ -704,6 +722,7 @@ class Lockstep {
         if (q === null) { if (r === 0x11 || r === 0x12 || r === 0x19) { ls.polled = true; ls.readLine = this.line; } }
         else if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
       }
+      else if (q === null && (a & 0xFC1F) === OSC3 && !ls.ib.list) { const L = ls.ib.live; if (!L.has(OSC3)) L.set(OSC3, []); L.get(OSC3).push(v); }
       const f = q !== null ? flagRegister(a) : -1;
       if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
       // with nest every chip register, and without it the SID's: a read of one of its write-only
@@ -972,7 +991,7 @@ class Lockstep {
     for (const chip of this.chipList) {
       if (chip === 'colour') p.colour.set(g.colour);
       else if (chip === 'vic') { p.vic.set(g.vic); p.cmp = g.cmp; p.enable = g.enable; }
-      else if (chip === 'sid') { p.sidw.set(g.sidw); p.sidBus.load(g.sidBus.save()); }
+      else if (chip === 'sid') { p.sidw.set(g.sidw); p.sidBus.load(g.sidBus.save()); p.sidOsc.load(g.sidOsc.save()); }
       else { p.pra = g.pra; p.ddra = g.ddra; p.ddrb = g.ddrb; }
     }
   }
