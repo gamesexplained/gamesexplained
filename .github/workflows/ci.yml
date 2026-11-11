@@ -21,9 +21,11 @@ jobs:
   # Every kit test, on four computers at once. The tests are most of a run's time, and
   # each is a process of its own, so each computer takes a share of them: test_kit.py --shard
   # gives the Kth of N shares, which together are every test, each once
-  # (kit/scripts/test_test_kit.py holds that). Another entry in `share` is another computer: the
-  # number of shares is read from the list. A share that fails leaves the others running, so one
-  # run names every failing test, and deploy waits for all of them.
+  # (kit/scripts/test_test_kit.py holds that). Another entry in `share` is another computer.
+  # The number of shares is the number of this job's copies, so `share` stays the matrix's one
+  # list: a second list beside it would make copies that repeat some shares and leave others
+  # out. A share that fails leaves the others running, so one run names every failing test,
+  # and deploy waits for all of them.
   tests:
     name: tests (${{ matrix.share }} of ${{ strategy.job-total }})
     runs-on: ubuntu-latest
@@ -113,7 +115,7 @@ jobs:
           --shard ${{ matrix.share }}/${{ strategy.job-total }}
           --times "$RUNNER_TEMP/kit-test-times.json"
       - name: Keep each test's time for the next run
-        if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+        if: always() && github.ref == 'refs/heads/main' && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/kit-test-times.json
