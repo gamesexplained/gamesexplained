@@ -101,7 +101,7 @@ const FTP = (function () {
     if (!window.C64Sid) { root.textContent = 'This player needs the site’s shared script, lib/sid.js.'; return; }
     C64Sid.mount(root, {
       driver: FTMUSIC.createDriver,
-      data: { bytes: Array.from(un(D.music)) },
+      data: { bytes: Array.from(un(D.music)), sounds: FTMUSIC.sounds },
       tunes: FTMUSIC.sounds.map((s) => s[0]),
       filter: '6581',
       rows: [

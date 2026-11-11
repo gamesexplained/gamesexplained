@@ -17,7 +17,7 @@ FTMUSIC.sounds.forEach((s, t) => {
   const regs = new Uint8Array(25);
   const io = { read: (a) => m[a], write(a, v) { if (a >= 0xD400 && a <= 0xD418) regs[a - 0xD400] = v; else m[a] = v; } };
   const cpu = new CPU(m, { port: 0x35, io });
-  const drv = FTMUSIC.createDriver({ bytes: image.slice(0x8000, 0x8E00) }, { CPU });
+  const drv = FTMUSIC.createDriver({ bytes: image.slice(0x8000, 0x8E00), sounds: FTMUSIC.sounds }, { CPU });
   // the game starts at the hand-over's memory; the driver's own state starts clean, as music_entry makes it
   m.fill(0, 0, 0x100);
   cpu.call(0x8000, {});

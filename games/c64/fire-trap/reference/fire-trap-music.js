@@ -5,7 +5,8 @@
 // raster handler's play_music ($2AA6) once a frame, which calls music_play ($8003) and calls it a
 // second time whenever the phase counter $C0, adding $33 a frame, carries (every sixth frame). The page
 // embeds the driver's bytes as data. Checked against the game's own play_music in tests/music.js.
-// createDriver refers to nothing outside itself: the player runs its source text in an AudioWorklet.
+// createDriver refers to nothing outside itself, so the page hands it the sounds table with the bytes
+// (M.sounds): the player runs its source text in an AudioWorklet.
 const FTMUSIC = {
   // sounds[t]: [what, 'tune' or 'effect', the number the game writes]
   sounds: [
@@ -39,7 +40,7 @@ const FTMUSIC = {
         for (let r = 0; r < 25; r++) sid[r] = 0;
         writes = []; phase = 0; quiet = 0; exec.fill(0);
         call(0x8000);
-        const s = FTMUSIC.sounds[t];
+        const s = M.sounds[t];
         if (s[1] === 'tune') { mem[0xB4] = s[2]; effect = false; }
         else { mem[0xB4] = 4; effect = true; for (let i = 0; i < 3; i++) frame(); mem[0xB5] = s[2]; writes = []; }
         on = true;
