@@ -127,6 +127,7 @@ class Carry(unittest.TestCase):
                        'and draws again, then copies the four bar_colours to the screen at $0400.' % L['draw']},
               {'address': L['draw'], 'type': 'line', 'text': 'Moves the bar one place right: adds 1 to $F0.'},
               {'address': L['move'], 'type': 'line', 'text': 'Flips every bit of save_flag and stores it back.'},
+              {'address': L['loop'], 'type': 'line', 'text': 'Copies the colours; the high score is at $C000.'},
               {'address': L['table'], 'type': 'line', 'text': 'The bar\'s colours: brown ($09) for all four.'},
               {'address': 0xF0, 'type': 'line', 'text': 'The bar\'s place, 0 at the left.'}],
              [{'start': 0x8000, 'end': L['table'] - 1, 'type': 'Code'},
@@ -134,7 +135,9 @@ class Carry(unittest.TestCase):
         (cls.src / 'listing.json').write_text(json.dumps({'records': records(cls.src_code, 0x8000, L['table'])}))
         game(cls.dst, [], [], [{'start': 0x9100, 'end': D['table'] - 1, 'type': 'Code'}])
         cls.snap = root / 'level-2.vsf'
-        vsf(cls.snap, _ram(cls.dst_code, 0x9100))
+        ram = _ram(cls.dst_code, 0x9100)
+        ram[0xC000] = 0xAA                  # the copy's image holds something else where the source's comment points
+        vsf(cls.snap, ram)
         cls.end_s = 0x8000 + len(cls.src_code) - 1
         cls.end_d = 0x9100 + len(cls.dst_code) - 1
         cls.out = run('pair', cls.src, f'8000-{cls.end_s:04X}', cls.dst, f'9100-{cls.end_d:04X}',
@@ -189,6 +192,11 @@ class Carry(unittest.TestCase):
         self.assertEqual(table['address'], self.D['table'])
         self.assertIn('$09', table['reread'][0])
 
+    def test_address_outside_the_pairing_is_noted_where_the_copy_differs(self):
+        self.assertIn('names $C000, outside the code paired', '; '.join(self.comment(self.L['loop']).get('notes', [])))
+        # $0400 holds the same bytes in both images: kept without a note
+        self.assertNotIn('$0400', '; '.join(self.comment(self.L['start']).get('notes', [])))
+
     def test_apply_keeps_hand_edits_and_carries_corrections_again(self):
         run('apply', self.pairing)
         S = json.loads((self.dst / 'symbols.json').read_text())
@@ -222,6 +230,67 @@ class Carry(unittest.TestCase):
         p = run('pair', self.src, '8000-8009', self.src, '8000-8009', ok=False)
         self.assertNotEqual(p.returncode, 0)
         self.assertIn('--name', p.stderr)
+
+
+# a handler that ends in a jump, so the RTI after it is reached by nothing; the copy leaves the
+# jump out, and runs into the RTI
+HANDLER = '''
+start:  pha
+        lda #$01
+        sta $D019
+        pla
+        jmp done
+spare:  rti
+done:   lda #$00
+        sta $D020
+        rts
+'''
+HANDLER_COPY = '''
+start:  pha
+        lda #$01
+        sta $D019
+        pla
+spare:  rti
+done:   lda #$00
+        sta $D020
+        rts
+'''
+
+
+class RunsIn(unittest.TestCase):
+    def pair(self, rti_is_code):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, L = assemble(HANDLER, org=0x8000)
+            copy, D = assemble(HANDLER_COPY, org=0x9000)
+            src, dst = root / 'main', root / 'training'
+            game(src, [], [{'address': L['spare'], 'type': 'line', 'text': 'An RTI nothing reaches.'},
+                           {'address': L['done'], 'type': 'line', 'text': 'Clears the border.'}],
+                 [{'start': 0x8000, 'end': 0x8000 + len(code) - 1, 'type': 'Code'}])
+            recs = records(code, 0x8000, 0x8000 + len(code))
+            if not rti_is_code:             # the source's listing holds the unreached RTI as a byte
+                recs = [dict(r, t='byte') if r['a'] == L['spare'] else r for r in recs]
+            (src / 'listing.json').write_text(json.dumps({'records': recs}))
+            game(dst, [], [], [{'start': 0x9000, 'end': 0x9000 + len(copy) - 1, 'type': 'Code'}])
+            snap = root / 'training.vsf'
+            vsf(snap, _ram(copy, 0x9000))
+            run('pair', src, f'8000-{0x8000 + len(code) - 1:04X}', dst, f'9000-{0x9000 + len(copy) - 1:04X}',
+                '--snapshot', snap)
+            R = json.loads(next((dst / 'work' / 'carry').glob('*.json')).read_text())
+        return R, L, D, {c['from']: c for c in R['comments']}
+
+    def test_code_the_copy_runs_into_is_flagged(self):
+        R, L, D, at = self.pair(rti_is_code=True)
+        runs = [f for f in R['findings'] if f['kind'] == 'runs in']
+        self.assertEqual([(f['source'], f['copy']) for f in runs], [(L['spare'], D['spare'])], R['findings'])
+        self.assertIn('runs into it in the copy only', ' '.join(at[L['spare']].get('reread', [])))
+        # done follows the RTI in both: no note
+        self.assertFalse(any('runs' in w for w in at[L['done']].get('reread', [])))
+
+    def test_bytes_the_copy_runs_into_are_flagged(self):
+        R, L, D, at = self.pair(rti_is_code=False)
+        self.assertEqual(at[L['spare']]['address'], D['spare'])
+        self.assertIn(f"runs on into ${D['spare']:04X}", ' '.join(at[L['spare']].get('reread', [])))
 
 
 if __name__ == '__main__':

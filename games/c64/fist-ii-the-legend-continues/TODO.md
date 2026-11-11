@@ -37,7 +37,6 @@ Worth doing, found in the run and not done:
 - symbols.json: `$0491` and `$0492` are the blink count and the scroll
   icon of `blink_icons` (`$2D57`); their comments still say "meaning not
   traced".
-- The Training program: a separate load (`LOADIT`, the `TNK` files).
 - The Overview has no reception or developer quotes: the review pages
   were refused in this environment. Commodore User, November 1986 (Ken
   McMahon, 8/10) and Zzap!64's interview with Gregg Barnett (October 1986)
@@ -73,9 +72,75 @@ What it found is here for the steward: no page was changed.
   emulator.
 - **`DUMMY` is loaded by nothing** and is a copy of 256 bytes of the
   Training program: `TNK12A`'s bytes at `$1000`-`$10FF`.
-- **The Training files are open in the ledger** (`LOADIT`, `TNK12A`,
-  `TNK2B`, `TNK3`, `TNK4A`, `TNK4B`, `TOLOR`) until the Training program
-  is listed as a part of its own.
+- **The Training files are answered from the part `training`.**
+  `TNK12A`, `TNK2B` and `TNK3` are in its listing whole, `TNK4A` and
+  `TNK4B` in every byte the listing holds, `TOLOR` is its colour RAM and
+  `LOADIT` its loader. One item is left open, the two sectors below.
 - **Track 2, sectors 10 and 11** are marked used, belong to no file and
   hold 512 bytes with no pattern. The protection's drive program reads
   sector 0 of that track; whether it reads these two is not known.
+
+## Training, analysed as a second part
+
+The disk's Training program is the part `training` (`parts/training/`):
+58,291 bytes, 100 % explained, its own listing, `facts.md` and sample.
+The sample of 80 comments found 8 wrong (10 %, 5.2 % to 18.5 % at 95 %),
+over the mark of 2 in 60; they and one repeat were corrected, and the
+details are in `parts/training/facts.md`. An audit of every Training
+comment by checkers that wrote none of them, then a new sample, is
+recommended (`kit/skills/core/60-verify`), and the Adventure's listing
+has had no sample at all. Every page is unorig's, so nothing on them
+was changed but the About tab's links to the data, which now name both
+parts. Found in Training and worth showing readers, for unorig to place;
+addresses are Training's:
+
+- **The two-player game differs from the manual.** The Mindscape manual
+  promises "eight sixty-second rounds, two in each of four locations";
+  the code plays four, one in each location (`two_player_game` `$1DA6`,
+  the `CMP #$04` at `$1DEF`). The Gameplay tab repeats the manual's eight.
+- **A knockdown scores twice in a two-player game.** The hit that floors
+  a fighter scores as it lands, and the same points again when the other
+  falls (`two_player_bout` `$1E18`). The time bonus (100 a second left)
+  is for a one-player win only (`time_bonus` `$241A`).
+- **The Exploding Fist's scoring is still inside.** Code that adds half
+  and whole points and draws the yin-yang point symbols in rows 0-1 is
+  left in and never called (`$1FEF`-`$2097`, `$23A4`); Training still
+  colours those cells light blue and clears them before every bout. The
+  status font keeps the symbols (characters `$21`-`$28`, `$E000`).
+- **The sounds hide under the floor.** The four samples are stored in the
+  bitmap's bottom rows (`$F580`-`$FFDC`), and the floor there is drawn in
+  one colour for all four pixel values, so they never show.
+- **A fifth sound nothing plays.** 512 bytes in the samples' form sit
+  between samples 2 and 3 (`$FCD3`-`$FED2`) with no table entry pointing
+  at them, and entry points for samples 4-7 (`$344D`-`$3462`) are never
+  called. The Music tab's sample player (`reference/fist-samples.js`)
+  could play it.
+- **Tune 4 is never played.** Nothing sets the tune byte to 4 (patterns
+  at `$08D6`, sequences at `$1055`). A Music tab player could.
+- **Unused pictures.** 26 of Training's 256 packed body images belong to
+  no pose, and 34 sprite images under the I/O area are shown by none
+  (`parts/training/facts.md`, Unused and leftover); script steps for poses
+  `$40`-`$4C` survive at `$7C16`, though Training has only poses
+  `$00`-`$3B`. A Graphics tab viewer of Training's images would show them.
+- **Small bugs.** In the demonstration both computer fighters play with
+  the masks of whichever level was set last (`ai_set_level` `$27F2`
+  stores without X), and plan 8 hands a plan to fighter 0 whichever
+  fighter runs it (`$289D`). A bit mask that would clear two sprites'
+  bits (`$1305` = `$DD`) is never read.
+- **The computer's levels.** Levels 7 and up never make the flying kick
+  their distance table offers (they walk forwards), levels 0 and 1 never
+  sweep from it, and past 10TH DAN the game goes on for ever against
+  levels 7-10 (`$2780`, `$278A`, `$1EFE`).
+- **No loading picture.** The Adventure's loader shows the title picture
+  while it loads (on the How it works tab); Training's blanks the screen
+  and shows only a cyan border (`LOADIT`, `$C20D`), turning it red if a
+  file fails to load, so there is no Training loading screen to show.
+- **The About tab's load ends at `$FFF8`; both loaders stop at `$FFEF`.**
+  `LOADALL` and `LOADIT` copy `$2FF0` bytes of `BNK4B`/`TNK4B` under the
+  KERNAL, so each file's last nine bytes never reach memory
+  (`orientation.md`). The About tab's first paragraph says `$FFF8`.
+- **The hand-over holds location 1's picture.** At the moment Training
+  starts, the band and its colours already hold the river picture, byte
+  for byte as the game unpacks it, left in memory from the developers'
+  machine; every mode starts at location 0, so it is unpacked over.
+

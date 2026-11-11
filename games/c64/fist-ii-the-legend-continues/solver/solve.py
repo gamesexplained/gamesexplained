@@ -22,7 +22,7 @@ _vsf=os.path.join(G,'work','f2-entry.vsf')
 if os.path.exists(_vsf): d=open(_vsf,'rb').read()[209:209+65536]
 else:   # no snapshot in this session: the same bytes from the committed listing
     d=bytearray(65536)
-    for _r in json.load(open(os.path.join(G,'listing.json')))['records']:
+    for _r in json.load(open(os.path.join(G,'parts','adventure','listing.json')))['records']:
         if _r.get('b'): d[_r['a']:_r['a']+len(_r['b'])]=bytes(_r['b'])
 a=0x4AEC; ex={}
 for s in range(123):

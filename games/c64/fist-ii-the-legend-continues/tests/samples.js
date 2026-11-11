@@ -9,7 +9,7 @@
 const path = require('path');
 const { CPU } = require(path.join(__dirname, '../../../../kit/cpu/cpu6502'));
 const FISTSAMPLES = require(path.join(__dirname, '../reference/fist-samples.js'));
-const L = require(path.join(__dirname, '../listing.json')).records;
+const L = require(path.join(__dirname, '../parts/adventure/listing.json')).records;
 const N = +process.argv[2] || 300;
 const image = new Uint8Array(65536);
 for (const r of L) if (r.b) image.set(r.b, r.a);
