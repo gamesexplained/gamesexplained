@@ -1,16 +1,18 @@
 # Boulder Dash — TODO
 
-Tier: bronze. Run on `claude-sonnet-5-5`, which the kit has not proven, so a maintainer must measure the listing on a proven model before it can be Silver (`kit/CHECKING.md`). The listing is 100 % described (17,228 bytes) and a sample of 60 comments found 20 wrong (33 %), all corrected. The error rate is high, so an audit of every comment on a proven model is recommended before Silver.
+Tier: silver. The run was on `claude-sonnet-5-5`, which the kit has not proven, so a maintainer measured the listing on `claude-opus-5-5` (`kit/CHECKING.md`): a sample, an audit of all 358 comments and every claim in `facts.md`, and a second sample (`game.json`, `accuracy`).
 
-For Silver:
+For Gold, a human's pass over every section of the pages.
 
-- a maintainer's sample, or a full audit on a proven model;
-- every feature in `features.md` confirmed, traced or open: five are open (see its open questions);
-- verify live the items marked "traced": the creatures' handlers, the magic wall, the amoeba, RESTORE, two-player play.
+Open:
+
+- Twelve short runs, 26 bytes in all, are missing from the listing (gap records at `$5140`, `$5240`, `$5340`, `$54CE`, `$6328`, `$6430`, `$6530`, `$6630`, `$6928`, `$6C28`, `$6D68`, `$6DE8`). A build of the listing from the contributor's snapshot would fill them; on the First Star disks they are all 0 except the five at `$54CE`, which are `$FF`.
+- Header bytes 0, 22 and 23 have no reader.
+- The black band of sprites under the status line in play: what it hides was not checked.
+- Verify live the items marked "traced": the creatures' handlers, the magic wall bugs, the amoeba, RESTORE, two-player play.
 
 Ideas:
 
-- A Play tab with a level select, as the Gold reference page has.
-- Rockford's frame sets at `$63E8`-`$66E7`: which set is used for which move.
-- The eight unread blocks at `$68E8`-`$6E67`: whether the VIC shows them.
-- Compare with the Atari original's cave data, which the sources say the C64 game converts.
+- A Play tab: the cave rules are a small set of handlers, and the Maps tab already builds every cave.
+- Compare with the Atari original's cave data, which the sources say the C64 game converts, and with the First Star disks, which are a different build of the same game.
+- The sound effects the Music tab leaves out: the amoeba's hum, the walk and dig notes, the magic wall's notes and the time-bonus blips.

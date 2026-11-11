@@ -55,51 +55,110 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
 <header class="hero">
   <p class="eyebrow">{{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The caves are never random, the tune hides in the graphics, and a rock takes four tries to push.</p>
+  <p class="sub">A pause lets the magic wall run out, and the programmer's own labels are still in the file.</p>
 </header>
 <main class="wrap">
+<section id="logo">
+  <p class="fig">01 · Secret: the logo screen ignores the button</p>
+  <h2 class="t">Fire does nothing while the logo shows</h2>
+
+  <p>The first title screen after the game loads has First Star Software's logo along its bottom, drawn in bitmap mode under the big BOULDER DASH letters. While the logo is up, the menu does not read the fire button at all (<code>$8918</code>). F1 swaps the logo for the credits and PRESS BUTTON TO PLAY (<code>$88CA</code>), and only then does the button start a game. A player who waits gets the demonstration instead, and the title that follows it has no logo (<code>$8F22</code>). The logo comes back only when the program starts again: after RESTORE, or after F1 during a cave.</p>
+  <div class="plate">
+    <canvas id="bd-logo" class="bd-cv" width="320" height="48" role="img" aria-label="The First Star Software logo: a white star, FIRST STAR in blue, stripes, and SOFTWARE INC. (C)1984"></canvas>
+    <p class="cap">The logo as the game stores it: 1,408 bytes at <code>$68E8</code>-<code>$6E67</code>, which the start-up copies into the last six character rows of a bitmap (<code>$8D46</code>), in blue, light blue and white.</p>
+  </div>
+</section>
+<section id="wall-pause">
+  <p class="fig">02 · Bug: the magic wall's clock</p>
+  <h2 class="t">Pausing lets the magic wall run out</h2>
+
+  <p>A magic wall works for as many seconds as byte 1 of the cave's header says, then stops for good. The wall counts those seconds itself, and stops counting while the game is paused, but only while the pause flag holds 1 (<code>$7E9F</code>). The flag holds 1 for a moment: on its first flash of the status line, the pause screen raises it to 2 (<code>$80D7</code>), and the wall's count runs on. The cave's clock and the sound stop for any value of the flag. So a pause holds the time limit and not the wall, and a player who pauses with the wall humming can come back to a dead one.</p>
+</section>
+<section id="wall-dead">
+  <p class="fig">03 · Bug: the magic wall cuts a turn short</p>
+  <h2 class="t">A boulder on the magic wall stops the cave for a step</h2>
+
+  <p>The game moves the cave one cell at a time, row by row from the top, and each object's routine hands back to the sweep when it is done. A boulder that falls onto a magic wall is the exception. Its routine ends by jumping into the routine for the diamond sound (<code>$7775</code>), and that routine's return leaves the whole sweep instead of the boulder's turn (<code>$71E6</code>). Everything after that cell, the rest of its row and every row below, sits out the step: boulders below hang in the air and creatures stand still. It happens for every boulder that lands on the wall, alive or dead.</p>
+  <p>A dead wall is a trap of its own. When its time is up the wall goes back to looking like brick (<code>$7E84</code>), but the game still treats it as magic wall, and a boulder or diamond that falls onto it disappears with nothing coming out underneath (<code>$776E</code>, <code>$72C6</code>).</p>
+</section>
+<section id="seconds">
+  <p class="fig">04 · Quirk: a slow second in Europe</p>
+  <h2 class="t">The cave clock counts American seconds</h2>
+
+  <p>The time on the status line goes down once every 60 frames (<code>$74A9</code>). That is a second on an American machine, which draws its picture 60 times a second. A European machine draws 50, so there each of the game's seconds lasts 1.2 real ones, and cave A's 150 seconds on level 1 last three minutes. The disk First Star sold for European machines counts 60 frames too: on it, 600 frames, twelve real seconds, take ten off the clock. The magic wall's time is counted the same way.</p>
+</section>
+<section id="labels">
+  <p class="fig">05 · Leftover: the programmer's own names</p>
+  <h2 class="t">The author's labels are still in the file</h2>
+
+  <p>After the last instruction, the file ends with 195 bytes that nothing reads (<code>$8F3D</code>-<code>$8FFF</code>). They are a piece of the assembler's table of labels, left in memory when the game was saved: each entry is a name the programmer typed and the address it stood for. Sixteen survive, from the end of the interrupt routine and the four routines after it. The routine that takes away a man after a death is NXTPLY, next player, because in a two-player game that is what it does next. Names that start with a colon are local to the routine above them, so <code>:LOOP1</code> and <code>:SK1</code> each appear twice.</p>
+  <div class="bd-wrap"><table class="bd-t">
+    <thead><tr><th>Label</th><th>Address</th><th>What is there</th></tr></thead>
+    <tbody>
+      <tr><td><code>KEY1</code>, <code>:SK3A</code>, <code>:SK4</code>, <code>:EXIT</code></td><td><code>$8A66</code>-<code>$8A90</code></td><td>the end of the raster interrupt, after the keys are read: the title's step or the frame's work, then the exit</td></tr>
+      <tr><td><code>KEY</code>, <code>:SK1</code></td><td><code>$8A9B</code>, <code>$8AB8</code></td><td>the routine that lets the joystick cancel the keys</td></tr>
+      <tr><td><code>SETUP0</code></td><td><code>$8AB9</code></td><td>sets up a cave: loads it, fills it, draws it</td></tr>
+      <tr><td><code>GMINIT</code>, <code>:LOOP1</code>, <code>:LOOP3</code>, <code>:LOOP5</code></td><td><code>$8ADD</code>-<code>$8AFD</code></td><td>starts a new game: three men, scores cleared</td></tr>
+      <tr><td><code>NXTPLY</code>, <code>:LOOP1</code>, <code>:SK1</code>, <code>:LOOP2</code></td><td><code>$8B05</code>-<code>$8B18</code></td><td>takes a man away and passes play to the other player</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">One more entry, <code>:SK2</code>, is cut off by the end of the file: its address reads <code>$FF1F</code>, and why the high byte is <code>$FF</code> is not known.</p>
+</section>
 <section id="seeds">
-  <p class="fig">01 · Secret: the same cave every time</p>
+  <p class="fig">06 · Secret: the same cave every time</p>
   <h2 class="t">Seeds make the caves repeatable</h2>
 
-  <p>The cave's dirt, boulders and diamonds look random but are not. Each of a cave's five levels has a seed byte in its header, and a small generator started from it places every cell the same way each time (<code>$7085</code>, <code>$8029</code>). The recipe is on the <a href="levels.html#recipe">Maps tab</a>, and the page redraws any cave from it. A player who learns where the boulders sit in cave A, level 1, can rely on it. The routine for random bytes elsewhere in the game is a different one, driven by timers, and is used for the creatures, the amoeba and the sound (<code>$6E68</code>).</p>
+  <p>The cave's dirt, boulders and diamonds look random but are not. Each of a cave's five levels has a seed byte in its header, and a small generator started from it places every cell the same way each time (<code>$7085</code>, <code>$8029</code>). The recipe is on the <a href="levels.html#recipe">Maps tab</a>, and the page redraws any cave from it. A player who learns where the boulders sit in cave A, level 1, can rely on it. The routine for random bytes elsewhere in the game is a different one, driven by timers (<code>$6E68</code>). It serves the amoeba, Rockford's push and idle animation, the cave's opening and closing, the glisten, and the sound. The fireflies and butterflies make no random choices at all.</p>
 </section>
 <section id="tune-bytes">
-  <p class="fig">02 · Secret: the tune is in the pictures</p>
+  <p class="fig">07 · Secret: the tune is in the pictures</p>
   <h2 class="t">Tune bytes double as characters</h2>
 
   <p>The title tune, 256 bytes of note numbers, starts at <code>$5FE8</code>. So does the tile character set. The start-up copies 1,024 bytes from there to <code>$3000</code> (<code>$8D11</code>), and the music routine reads the same bytes at their original address (<code>$8754</code>). The first thirty-two tile characters are therefore the tune. Whether the sharing was designed or a happy accident is not known.</p>
 </section>
 <section id="push">
-  <p class="fig">03 · Quirk: a boulder takes four tries</p>
+  <p class="fig">08 · Quirk: a boulder moves one push in four</p>
   <h2 class="t">The push succeeds one time in four</h2>
 
   <p>When Rockford walks into a boulder beside him, the game takes a random byte and moves the boulder only when its low two bits are zero (<code>$7543</code>). The same step does not count as a move on the other three tries, so the player seems to lean on the boulder until it gives.</p>
 </section>
 <section id="speed">
-  <p class="fig">04 · Quirk: the easy levels are slow</p>
+  <p class="fig">09 · Quirk: the easy levels are slow</p>
   <h2 class="t">Speed is a delay loop</h2>
 
   <p>The game has no clock for its pace. After each row of the cave, a loop of idle counts runs, for 12, 6, 3, 1 or 0 passes depending on the level (<code>$8065</code>). Level 5 runs flat out.</p>
 </section>
-<section id="copier">
-  <p class="fig">05 · The copier</p>
-  <h2 class="t">A packager’s stub in front of the game</h2>
-
-  <p>The disk image holds one 65-block program. It starts with a BASIC line, <code>SYS 2088</code>, which enters a copier at <code>$0828</code>. The copier moves 16,384 bytes from <code>$0870</code> to <code>$5000</code> in a loop and jumps to the game's real start at <code>$8E69</code>. The game's own code therefore never runs at the addresses it was loaded at, and the same entry is the target of the NMI vector the game sets, so the RESTORE key restarts the game. That was traced in the code and not tried.</p>
-</section>
 <section id="open">
-  <p class="fig">06 · Open questions</p>
+  <p class="fig">10 · Open questions</p>
   <h2 class="t">What could not be explained</h2>
 
   <ul>
-    <li>Object <code>$3A</code> is drawn as amoeba by the table at <code>$5F28</code>, but the test for Rockford in <code>$714C</code> counts objects <code>$38</code> to <code>$3A</code>. Which one it is in play was not found.</li>
-    <li>Bytes 22 and 23 of each cave header have no use found.</li>
-    <li>Eight 192-byte blocks at <code>$68E8</code>-<code>$6E67</code> are copied to <code>$3840</code> at start, and no routine that reads them was found.</li>
-    <li>Twenty-three bytes after the program at <code>$8F4E</code> spell “:SK3A” and “:SK4” between other bytes. Nothing refers to them.</li>
-    <li>Fire in play can end the cave in some state (<code>$815B</code>); the condition was not tried.</li>
+    <li>Bytes 0, 22 and 23 of each cave header are copied with the rest and never read. Cave A has <code>$D4</code> and <code>$20</code> in bytes 22 and 23; most caves have zeros.</li>
+    <li>The last label in the leftover symbol table, <code>:SK2</code>, reads <code>$FF1F</code>, and why its high byte is <code>$FF</code> is not known.</li>
+    <li>None of the sources read names the programmer of the Commodore 64 version.</li>
   </ul>
 </section>
 
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+(() => {
+  // The First Star Software logo: the 1,408 bytes at $68E8-$6E67, which the start-up copies into
+  // character rows 19 to 24 of the bitmap at $2000 ($8D46-$8D89). Seven bytes the listing does not
+  // hold ($6928, $6C28-$6C29, $6D68-$6D6A, $6DE8) are 0 here, as on the First Star disks.
+  const HEX = '000000000000ff3f00000000000000fc000000000000030f0f0f3f3fffffffffc0c0c0c0c0c0ffea0000000003fffcaa00000000c00000aa00010101010101a100555555555050550045454545050545004545454545454500555555554141550040515151515151005555555550505500151515150000500055555555555555005151515101000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555000000555555555500000f03000000000000ffffffff3f0f3f3ffffffffffffffffffffefafafafafafaaaaaaaaaaaaaaaaaaaaaaaaa80000000aaaaaaaa00000000a1a1a1a101010101555555505050505045454505050505054545454545454545555555454545454551515100005151515555550000555555545454545454545455555555555555552a2a2a2a2a000000aaaaaaaaaa000000aaaaaaaaaa000000aaaaaaaaaa000000aaaaaaaaaa000000aaaaaaaaaa000000aaaaaaaaaa000000aaaaaaaaaa0000000000030f0f3f3ffcfffffffffdf5c505fffff35555555555fefeff5555555555aaaaaaaa2a2a4a4a008080a2a0a8a8aa000000aaaaaa2a2a010100aaaaaaaaaa505000aaaaaaaaaa050500828a8a8a8a454500aaaaaaaaaa454100aaaaaaaaaa51510082a2a2a2a2555500aaaaaaaaaa544000aaaaaaaaaa555500a0a8aaaaaa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f000000000000000050505010100000055555555555555150f03404050505454c2c2c0f030000000aaaaaaaa2a2a0a0a008080a0a0a8a8aa0202020202020202a8a8a8a8a8a8a8a80a0a0a0a0a0a0a0aaaa8a0a0a0aaaaaaaa2a0a0a0aaaaaaaa2a2a2a2a2a2a2a2aaa8a8a8a8aaaaaaaa02020202aaaaaaaaaaaaaaaaaaaaa8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa0000aaaaaaaaaaaa1505a5a9a9aaaaaa555555555555559500006a6a5a5a56560202aaaaaaaaaaaaaaaaaaaaaaaaaaa80282828282820202a8a8a8a8a8a8a8a80a0a0a0a0a0a0a0aaaaaaaa0a0a0a0a0aaaaaa0a0a0a0a00a2a2a2a2a2a2a200aaaaaaa8a8a8a800aaaaaa2a2a2a2a2a808080aaaaaaaaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005555555555000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555000000555555555500000055555555550000005555555555150505555555555554545454505040400015101010101515004544444545444400510000404000000051414141414140000111111155554400151010151510100045444445454444005111115151415100540000500054540a00444445454444aa0045454444444500000000000000100020a0828282a0200000a8808080a8000080a2202020a08200828282828080a200a22222a22222a200a22222a22020a000000020a0202020';
+  const src = new Uint8Array(HEX.length / 2);
+  for (let i = 0; i < src.length; i++) src[i] = parseInt(HEX.substr(i * 2, 2), 16);
+  const bm = new Uint8Array(320 * 6);                  // six character rows, 40 cells of 8 bytes
+  [0, 0xC0, 0x180, 0x240].forEach((o, r) => bm.set(src.subarray(o, o + 192), r * 320 + 128));  // rows 19-22, cells 16-39
+  bm.set(src.subarray(0x300, 0x440), 4 * 320);          // row 23 from $6BE8
+  bm.set(src.subarray(0x440, 0x580), 5 * 320);          // row 24 from $6D28
+  const cols = ['#000000', '#0000aa', '#0088ff', '#ffffff'];  // background, screen $6E (blue, light blue), colour RAM 1 (white)
+  const cv = document.getElementById('bd-logo'), ctx = cv.getContext('2d');
+  for (let row = 0; row < 6; row++) for (let c = 0; c < 40; c++) for (let y = 0; y < 8; y++) {
+    const v = bm[row * 320 + c * 8 + y];
+    for (let p = 0; p < 4; p++) { ctx.fillStyle = cols[(v >> (6 - 2 * p)) & 3]; ctx.fillRect(c * 8 + p * 2, row * 8 + y, 2, 1); }
+  }
+})();
+</script>
+

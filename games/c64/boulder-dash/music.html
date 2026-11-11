@@ -74,16 +74,17 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <h2 class="t">256 bytes of note numbers, read in pairs</h2>
 
   <p>The tune is a list of note numbers with no durations. Each step of the music routine (<code>$8754</code>) takes two bytes from <code>$5FE8</code>: the first for voice 2 and the second for voice 1. Each number selects a 16-bit frequency from a table of 49 notes that rise by semitones from <b>$02DC</b> to <b>$2DC0</b> (<code>$86CA</code>). The step counter runs through 128 pairs and then wraps, and each wrap adds one to a second counter; when it reaches 2 and the demonstration flag is set, the title hands over to play, which runs the demonstration (<code>$87CA</code>).</p>
-  <p>The routine runs on every other title animation step, and that step is taken every fourth video frame (<code>$87EE</code>), so a pair of notes lasts eight frames, about a sixth of a second on a PAL machine. Most pairs are an arpeggio, a low note repeated against a rising one.</p>
+  <p>The title step runs twice a frame, at both of the raster interrupt's lines (<code>$87EE</code>), and the music routine works on every other step, so once a frame. It holds each pair for eight of those calls, so a pair of notes lasts eight frames, about a sixth of a second on a PAL machine. In most pairs one voice repeats a note while the other moves: first voice 2 repeats a low note under short figures in voice 1, then voice 1 holds a high note while voice 2 moves.</p>
   <p>The tune bytes also sit at the start of the tile character set in the program file. The start-up copies the whole block to <code>$3000</code> as characters (<code>$8D11</code>), which means the first thirty-two tile characters hold the tune and are not drawn as tiles. That the two uses share the same bytes is what the code shows; whether it is deliberate is not known.</p>
 </section>
 <section id="effects">
   <p class="fig">03 · Sound: the effects</p>
   <h2 class="t">Short bursts on three voices</h2>
 
-  <p>The effects are set by tables of SID register values and played by one routine every frame (<code>$7D09</code>).</p>
+  <p>Most effects are set by tables of SID register values and played by one routine every frame (<code>$7D09</code>). The explosion, the low-time beep and a few short ticks write the sound chip directly.</p>
   <div class="bd-wrap"><table class="bd-t"><tr><th>Effect</th><th>Voice</th><th>Settings</th></tr>
-  <tr><td>Diamond picked up</td><td>1</td><td>Pitch from <b>$1478</b>, waveform <code>$11</code>, a random pitch is added for diamonds that land (<code>$7522</code>, <code>$71C0</code>)</td></tr>
+  <tr><td>Diamond picked up</td><td>1</td><td>Pitch <b>$1478</b>, waveform <code>$11</code> (<code>$7522</code>)</td></tr>
+  <tr><td>Diamond falling or landing, boulder into the magic wall</td><td>1</td><td>A random pitch, waveform <code>$11</code> (<code>$71C0</code>)</td></tr>
   <tr><td>Boulder thud</td><td>1</td><td>Noise, pitch <b>$0932</b> (<code>$71E7</code>)</td></tr>
   <tr><td>Explosion</td><td>2</td><td>Noise, pitch <b>$1432</b> (<code>$713D</code>)</td></tr>
   <tr><td>Quota reached, cave start</td><td>3</td><td>Pitch from <b>$2F32</b> (<code>$7418</code>)</td></tr>

@@ -58,8 +58,21 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="sub">The cave is built from characters, and the creatures move by rewriting their own characters.</p>
 </header>
 <main class="wrap">
+<section id="rockford">
+  <p class="fig">01 · Rockford</p>
+  <h2 class="t">Rockford walks, blinks and taps his foot</h2>
+
+  <p class="lede">Rockford is one tile of four characters, like everything else in the cave. At every step of the animation the game draws those four characters again from tables of frames, so he moves on the spot without a sprite.</p>
+  <div class="plate">
+    <div class="bd-row"><label for="rf-move">Move</label><select id="rf-move"><option value="wait">Waiting, as the game plays it</option><option value="left">Walking left</option><option value="right">Walking right</option><option value="blink">Blinking</option><option value="tap">Tapping his foot</option></select>
+    <button id="rf-play" type="button">Play</button><button id="rf-step" type="button">Next phase</button><span id="rf-phase" class="cap" style="margin:0"></span></div>
+    <canvas id="rf-anim" class="bd-cv" style="width:256px;height:256px" aria-label="Rockford, in the move picked above" role="img"></canvas>
+    <p class="cap">The routine at <code>$7BC2</code> writes his upper two characters (<code>$3260</code>) from one table and his lower two (<code>$32E0</code>) from another, 16 bytes for each phase. Walking left takes them from <code>$64E8</code> and <code>$6568</code>, walking right from <code>$65E8</code> and <code>$6668</code>. Moving up or down keeps the way he last faced. Standing still, he shows the plain standing characters <code>$42</code>, <code>$43</code>, <code>$52</code> and <code>$53</code>, with the eyes from <code>$63E8</code> while he blinks and the feet from <code>$6468</code> while he taps. A phase lasts two frames, as for the creatures below. The colours are cave A's.</p>
+  </div>
+  <p>Whether he blinks or taps is left to chance. At the start of each cycle of eight phases, while the joystick is centred, there is one chance in four that he blinks for that cycle, and one in sixteen that he starts tapping his foot, or stops if he was tapping already (<code>$7C04</code>). Once he starts tapping he keeps on until the next one-in-sixteen chance or until he moves, and any move stops both.</p>
+</section>
 <section id="creatures">
-  <p class="fig">01 · The creatures</p>
+  <p class="fig">02 · The creatures</p>
   <h2 class="t">Four animated pictures, eight phases each</h2>
 
   <p class="lede">The firefly, butterfly, amoeba and diamond move by changing the shape of their own characters, not by moving a picture around.</p>
@@ -67,30 +80,30 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
     <div class="bd-row"><label for="gx-who">Picture</label><select id="gx-who"><option value="diamond">Diamond</option><option value="firefly">Firefly</option><option value="butterfly">Butterfly</option><option value="amoeba">Amoeba</option></select>
     <button id="gx-play" type="button">Play</button><button id="gx-step" type="button">Next phase</button><span id="gx-phase" class="cap" style="margin:0"></span></div>
     <canvas id="gx-anim" class="bd-cv" style="width:256px;height:256px" aria-label="One of the animated pictures" role="img"></canvas>
-    <p class="cap">The 16 by 16 picture is a tile of four characters. Each phase of the frame tables holds 16 bytes for the upper row and 16 for the lower, and the routine at <code>$7C61</code> copies the current phase into the character set at <code>$3100</code>-<code>$33A8</code> once for each step of the animation (<code>$7E8F</code>). The colours are cave A's.</p>
+    <p class="cap">The 16 by 16 picture is a tile of four characters. Each phase of the frame tables holds 16 bytes for the upper row and 16 for the lower, and the routine at <code>$7C61</code> copies the current phase into the character set at <code>$3100</code>-<code>$33AF</code> once for each step of the animation (<code>$7E8F</code>), which comes every second frame, 25 times a second on a European machine, the speed Play shows. The colours are cave A's.</p>
   </div>
-  <p>A cave only pays for the pictures it uses. The mask byte for the cave (<code>$8740</code>) says whether fireflies, butterflies or the amoeba are present, and the routine rebuilds those sets only when their bit is set; the diamond and Rockford are always rebuilt. This keeps the work of each animation step small.</p>
+  <p>Caves A to P only pay for the pictures they use. The mask byte for each of them (<code>$8740</code>) says whether fireflies, butterflies or the amoeba are present, and the routine rebuilds those sets only when their bit is set. The bonus caves have no mask byte and rebuild all three; the diamond and Rockford are always rebuilt. This keeps the work of each animation step small.</p>
 </section>
 <section id="charsets">
-  <p class="fig">02 · Character sets</p>
+  <p class="fig">03 · Character sets</p>
   <h2 class="t">Two sets, copied into place at start</h2>
 
-  <p>The program keeps two character sets in its file and copies them to where the VIC chip reads them when it starts (<code>$8D11</code>). The text set of 118 characters holds the digits, letters and the title's pieces. The tile set of 128 characters holds the cave's tiles. Characters of the tile set from <code>$20</code> up that are animated hold only a first frame in the file, and the frame routine overwrites them as the game runs.</p>
+  <p>The program keeps two character sets in its file and copies them to where the VIC chip reads them when it starts (<code>$8D11</code>). The text set of 118 characters holds the digits, letters and the title's pieces. The tile set of 128 characters holds the cave's tiles. Characters of the tile set from <code>$20</code> up that are animated hold a picture in the file that is none of the eight phases (the diamond's is an outline), and the frame routine overwrites them as the game runs.</p>
   <div class="plate"><p class="cap" style="margin-top:0"><b>Text set</b>, characters $00 to $75 in rows of 16 (drawn black and white)</p><canvas id="gx-text" class="bd-cv" style="max-width:480px"></canvas></div>
   <div class="plate" style="margin-top:20px"><p class="cap" style="margin-top:0"><b>Tile set</b>, characters $00 to $7F in rows of 16 (cave A's colours)</p><canvas id="gx-tile" class="bd-cv" style="max-width:480px"></canvas></div>
 </section>
 <section id="colour">
-  <p class="fig">03 · Colour</p>
+  <p class="fig">04 · Colour</p>
   <h2 class="t">Four colours a cave, three from its header</h2>
 
   <p>The cave tiles use the VIC chip's multicolour character mode, in which each pair of pixels picks one of four colours. One is the background, black. Two come from the cave's header (bytes 19 and 20, written to <code>$D022</code> and <code>$D023</code> at <code>$8226</code>), and the fourth is the colour held in colour memory, which the header's byte 21 also sets. This is why each cave looks different with the same shapes: cave A pairs orange and dark grey with white, and the bonus caves choose others.</p>
-  <p>Two screen regions with different settings share the display: the status line at the top and the cave below it. The raster interrupt (<code>$8A0C</code>) switches the VIC registers between them by writing from two small tables (<code>$899C</code> for play, <code>$89A4</code> for the title).</p>
+  <p>Two screen regions with different settings share the display: the status line at the top and the cave below it. The raster interrupt (<code>$8A0C</code>) switches the VIC registers between them by writing from two small tables (<code>$89A4</code> for play, <code>$899C</code> for the title).</p>
 </section>
 <section id="scroll">
-  <p class="fig">04 · Scrolling</p>
+  <p class="fig">05 · Scrolling</p>
   <h2 class="t">A window on an 80 by 44 character buffer</h2>
 
-  <p>The cave is 40 by 22 cells of 2 by 2 characters, which is larger than the screen shows at once. The game draws all of it into a character buffer 80 characters wide and 44 high at <code>$4000</code> and shows a window of it, scrolling it one fine pixel step at a time with the VIC's scroll registers and moving the window's start by a character when the fine position wraps (<code>$7878</code>, <code>$78F1</code>). Two screens at <code>$0C00</code> and <code>$2C00</code> are copied to in turn, by routines copied into <code>$9E00</code> and <code>$9F00</code> at start.</p>
+  <p>The cave is 40 by 22 cells of 2 by 2 characters, which is larger than the screen shows at once. The game draws all of it into a character buffer 80 characters wide and 44 high at <code>$4003</code> and shows a window of it, scrolling it two pixels at a time with the VIC's scroll registers and moving the window's start by a character when the fine position wraps (<code>$7878</code>, <code>$78F1</code>). Two screens at <code>$0C00</code> and <code>$2C00</code> are copied to in turn, by routines copied into <code>$9E00</code> and <code>$9F00</code> at start.</p>
   <p>The window follows Rockford: the scroll speed is set from the row and column of the window where he stands (<code>$79E2</code>), and stops at the cave's edges (<code>$796D</code>).</p>
 </section>
 
@@ -124,8 +137,55 @@ const GX = {"anim":{"amoeba":"ffffbf2f2f2fbfffbffffffefefeffffffffbf2f2f2fbfffbf
   let p = 0, timer = null;
   cv.width = cv.height = 128;
   function run() { frame(p); p = (p + 1) % 8; }
-  document.getElementById('gx-play').onclick = function () { if (timer) { clearInterval(timer); timer = null; this.textContent = 'Play'; } else { timer = setInterval(run, 120); this.textContent = 'Stop'; } };
+  document.getElementById('gx-play').onclick = function () { if (timer) { clearInterval(timer); timer = null; this.textContent = 'Play'; } else { timer = setInterval(run, 40); this.textContent = 'Stop'; } };
   document.getElementById('gx-step').onclick = run;
   sel.onchange = () => frame((p + 7) % 8); frame(0);
+})();
+</script>
+<script>
+(function () {
+  // Rockford's six frame tables, $63E8-$66E7, 128 bytes each: upper half blinking, lower half tapping,
+  // upper and lower walking left, upper and lower walking right. A phase is 16 bytes, the left
+  // character's eight rows and then the right one's. The listing has no bytes at $6430, $6530-$6531 and
+  // $6630-$6631 (the top row of phase 4's right character); they are 0 here, as in the 1984 Micro Fun
+  // release, which has the other 763 bytes of these tables the same.
+  const RF = '00080a2a220a020a0020a0a888a080a000080a2a2a0a020a0020a0a8a8a080a000080a2a2a0a020a0020a0a8a8a080a000080a2a220a020a0020a0a888a080a000080a22220a020a0020a08888a080a000080a22220a020a0020a08888a080a000080a22220a020a0020a08888a080a000080a22220a020a0020a08888a080a0230e030207043c00c8b0c080d010103c230e030207043c00c8b0c080d010103c230e030207043c00c8b0c080d010103c230e030207043c00c8b0c080d010103c230e03020704043cc8b0c080d010103c230e03020704043cc8b0c080d010103c230e03020704043cc8b0c080d010103c230e03020704043cc8b0c080d010103c00020a22220a02020080a0a0a0a0808000020a22220a02020080a0a0a0a0808000020a22220a02020080a0a0a0a080800000020a22220a02000080a0a0a0a0800000020a22220a02000080a0a0a0a0800000020a22220a02000080a0a0a0a08000020a22220a02020080a0a0a0a0808000020a22220a02020080a0a0a0a08080030e0302071010f0c080c080d4030300030e0302071010f0c080c080d4030300030e03020704043cc080c080d0170300030e03020704043cc080c080c0541c0c030e03020301010fc080c080c0407030030e030203050503c080c080c04040c0030e03020305050fc080c080c04040f0030e03020704043cc080c080c0541c0c00020a0a0a0a02020080a08888a0808000020a0a0a0a02020080a08888a0808000020a0a0a0a02020080a08888a080800000020a0a0a0a02000080a08888a0800000020a0a0a0a02000080a08888a0800000020a0a0a0a02000080a08888a08000020a0a0a0a02020080a08888a0808000020a0a0a0a02020080a08888a080800302030217c0c000c0b0c080d004040f0302030217c0c000c0b0c080d004040f0302030207d5c000c0b0c080d010103c0302030203153430c0b0c080d010103c0302030203010d0cc0b0c080c04040f00302030203010103c0b0c080c05050c0030203020301010fc0b0c080c05050f00302030203153430c0b0c080d010103c';
+  const PAL = ['#000000','#ffffff','#880000','#aaffee','#cc44cc','#00cc55','#0000aa','#eeee77','#dd8855','#664400','#ff7777','#333333','#777777','#aaff66','#0088ff','#bbbbbb'];
+  const COLS = [PAL[0], PAL[8], PAL[11], PAL[1]];     // cave A's colours, as in the creatures above
+  const hex = h => Uint8Array.from(h.match(/../g).map(b => parseInt(b, 16)));
+  const rf = hex(RF), tile = hex(GX.tile);
+  const SET = { blink: 0, tap: 0x80, upLeft: 0x100, downLeft: 0x180, upRight: 0x200, downRight: 0x280 };
+  const STAND_UP = 0x42 * 8, STAND_DOWN = 0x52 * 8;     // the standing characters $42/$43 and $52/$53
+  function drawChar(ctx, bytes, off, ox, oy, s) {
+    for (let y = 0; y < 8; y++) { const v = bytes[off + y];
+      for (let k = 0; k < 4; k++) { ctx.fillStyle = COLS[(v >> (6 - 2 * k)) & 3]; ctx.fillRect(ox + k * 2 * s, oy + y * s, 2 * s, s); } }
+  }
+  const sel = document.getElementById('rf-move'), cv = document.getElementById('rf-anim'), ph = document.getElementById('rf-phase');
+  cv.width = cv.height = 128;
+  let p = 0, blink = false, tap = false, timer = null;
+  function frame(q) {
+    const m = sel.value, ctx = cv.getContext('2d'), s = 8;
+    if (m === 'wait' && q === 0) {          // $7C04: decided at the first phase of each cycle
+      blink = Math.random() < 1 / 4;
+      if (Math.random() < 1 / 16) tap = !tap;
+    }
+    let up, down;
+    if (m === 'left') { up = [rf, SET.upLeft + q * 16]; down = [rf, SET.downLeft + q * 16]; }
+    else if (m === 'right') { up = [rf, SET.upRight + q * 16]; down = [rf, SET.downRight + q * 16]; }
+    else {
+      const b = m === 'blink' || (m === 'wait' && blink), t = m === 'tap' || (m === 'wait' && tap);
+      up = b ? [rf, SET.blink + q * 16] : [tile, STAND_UP];
+      down = t ? [rf, SET.tap + q * 16] : [tile, STAND_DOWN];
+    }
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    drawChar(ctx, up[0], up[1], 0, 0, s); drawChar(ctx, up[0], up[1] + 8, 8 * s, 0, s);
+    drawChar(ctx, down[0], down[1], 0, 8 * s, s); drawChar(ctx, down[0], down[1] + 8, 8 * s, 8 * s, s);
+    ph.textContent = 'phase ' + q + (m === 'wait' ? (blink ? ', blinking' : '') + (tap ? ', tapping' : '') : '');
+  }
+  function run() { frame(p); p = (p + 1) % 8; }
+  document.getElementById('rf-play').onclick = function () { if (timer) { clearInterval(timer); timer = null; this.textContent = 'Play'; } else { timer = setInterval(run, 40); this.textContent = 'Stop'; } };
+  document.getElementById('rf-step').onclick = run;
+  sel.onchange = () => { blink = tap = false; p = 0; run(); };
+  run();
 })();
 </script>
