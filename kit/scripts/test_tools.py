@@ -161,6 +161,13 @@ def test_shared_commands():
         r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), tool, "-h"],
                            capture_output=True, text=True, cwd=ROOT)
         check(f"tools.py {tool} -h prints {script}'s usage", "verify-footprint" in r.stdout, r.stdout + r.stderr)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "node", "status"],
+                       capture_output=True, text=True, cwd=ROOT)
+    check("tools.py node status reaches node.py",
+          r.returncode == 0 and ("Node.js" in r.stdout or "MISSING" in r.stdout), r.stdout + r.stderr)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "node", "-h"],
+                       capture_output=True, text=True, cwd=ROOT)
+    check("tools.py node -h prints node.py's usage", "node.py run <command>" in r.stdout, r.stdout + r.stderr)
     check("no platform declares a shared command",
           not any(c in tools.SHARED for d in decls().values() for c in d["COMMANDS"]))
 
@@ -177,7 +184,7 @@ def test_end_to_end():
     with tempfile.TemporaryDirectory() as tmp:
         kit = os.path.join(tmp, "kit")
         os.makedirs(os.path.join(kit, "scripts"))
-        for f in ("tools.py", "launcher.py", "browser.py"):   # the dispatcher, what the launchers share, the browser
+        for f in ("tools.py", "launcher.py", "browser.py", "node.py"):   # the dispatcher, and what it imports
             shutil.copy(os.path.join(HERE, f), os.path.join(kit, "scripts"))
         for p in tools.platforms():
             shutil.copytree(os.path.join(KIT, p), os.path.join(kit, p))

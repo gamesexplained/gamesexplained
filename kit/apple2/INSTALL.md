@@ -26,9 +26,11 @@ iiplus` makes it Apple2TS's II Plus instead, with the same slots but slot 3
 
 ## What you need first
 
-**Node and npm**, which the kit does not install. If the contributor has
-no `node`, tell them, and let them decide whether to install it
-(https://nodejs.org, the project's own installers; npm comes with it).
+**Node and npm.** If the contributor has
+no `node`, tell them, and let them choose: their own install
+(https://nodejs.org, the project's own installers; npm comes with it), or
+`python3 kit/scripts/tools.py get-node`, which keeps Node inside `tools/`
+(`kit/INSTALL.md`, "Node for a machine without it").
 Everything in this file was measured on Node 22.22.0; no run is recorded
 on another version.
 

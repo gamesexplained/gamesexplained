@@ -122,6 +122,50 @@ anything else ambiguous (`check-emulator`, `verify-footprint`,
 `snapshots`) is refused until a platform is named. `tools.py -h` lists
 each platform's commands.
 
+## Node for a machine without it
+
+The page tests (`test_*.js`), the frame renderers, some platforms' emulator
+servers and `kit/scripts/shoot.js` run on Node, and the browser checks
+drive a browser through a Playwright client. A machine that has Node needs
+nothing here. On one that has none, the contributor chooses between their
+own install and this one, which stays inside the clone:
+
+```
+python3 kit/scripts/tools.py get-node                      # or: get-node --version v24.18.0
+python3 kit/scripts/tools.py node run <command> [args]     # e.g. node run python3 kit/scripts/test_kit.py
+```
+
+`get-node` (`kit/scripts/node.py`) installs two things. Tell the
+contributor all of this before running it:
+
+- **Node.js** (the OpenJS Foundation's, open source, MIT licence), into
+  `tools/node/`: the newest LTS release for the machine, taken from the
+  project's own site, `https://nodejs.org/dist/`. The download is checked
+  against the SHA-256 in the release's own `SHASUMS256.txt`, which catches
+  a broken download and does not prove who published it. npm comes in it.
+- **playwright-core** (Microsoft's, open source, Apache-2.0), into
+  `tools/npm/node_modules/`, from the npm registry, its publisher's own
+  channel. It is the client alone: no browser is downloaded, and the
+  browser is chosen as "Browser checks" says.
+
+On 11 November 2026, on Linux x86_64, that was Node v26.13.0 at 230 MB and
+playwright-core 1.65.0 at 35 MB with npm's cache. A run on macOS arm64
+that did the same steps by hand on 8 November 2026 measured 222 MB for
+Node v26.13.0. npm runs with its home, its settings file, its cache and
+its logs under `tools/npm/`, so it neither reads nor writes `~/.npmrc` or
+`~/.npm`. On the Linux install above, with no other Node on the path,
+nothing outside the clone was created or changed (a search of the home
+folder and `/tmp` for files newer than the start). Up to that day
+`get-node` itself had run on Linux only. It serves macOS and Linux on
+x86_64 and arm64; on any other machine it says so and installs nothing.
+
+`node run` starts a command with `tools/node/bin` first on its `PATH` and
+`tools/npm/node_modules` as its `NODE_PATH`, and what that command starts
+inherits both. A platform's launcher gets the same from `tools.py` whenever
+`tools/node/` is there, so its server needs no `node run`. `tools.py
+status` names the versions. Deleting `tools/node/` and `tools/npm/` removes
+all of it.
+
 ## Browser checks
 
 The shared launcher works for every game platform; neither `browser` nor
@@ -160,7 +204,9 @@ was downloaded in that run. This establishes the tested configuration;
 `verify-footprint` still does not scan browser state.
 
 `kit/scripts/shoot.js`, which takes a picture of each section of a page,
-drives Chromium through Playwright, and installs neither. With `--cdp
+drives Chromium through Playwright, and installs neither: `tools.py
+get-node` ("Node for a machine without it") installs the Playwright
+client, and never a browser. With `--cdp
 http://127.0.0.1:9222` it uses the Chromium started above; without it, it
 starts Playwright's own, with its profile, temporary files and XDG state
 under `tools/shoot/`.

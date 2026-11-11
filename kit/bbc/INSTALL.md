@@ -19,9 +19,11 @@ MCP server are not used.
 
 ## What you need first
 
-**Node and npm**, which the kit does not install. If the contributor has
-no `node`, tell them, and let them decide whether to install it
-(https://nodejs.org, the project's own installers; npm comes with it).
+**Node and npm.** If the contributor has
+no `node`, tell them, and let them choose: their own install
+(https://nodejs.org, the project's own installers; npm comes with it), or
+`python3 kit/scripts/tools.py get-node`, which keeps Node inside `tools/`
+(`kit/INSTALL.md`, "Node for a machine without it").
 jsbeeb 2.4.0 says it wants Node 24.15.0 or later. Everything in this file
 was measured on Node 22.22.0, where npm warns `EBADENGINE` while
 installing and every check passes; no run is recorded on Node 24.
