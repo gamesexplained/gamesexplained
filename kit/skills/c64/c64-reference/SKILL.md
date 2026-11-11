@@ -289,6 +289,43 @@ In VICE with sound off, `$D41B` and `$D41C` read the low byte of the
 cycle counter, and such a table is a ramp
 (`kit/lessons/2026-10-26-into-the-eagles-nest.md`).
 
+## The serial bus on CIA 2's port A (`$DD00`)
+
+The disk drive hangs on three lines of the serial bus, and CIA 2's port
+A is where a program drives and reads them. The names are the Commodore
+64 Programmer's Reference Guide's (the memory map at `$DD00`):
+
+| Bit | Way | Line | A 1 means |
+|---|---|---|---|
+| 7 | in | serial data | the line is high: nothing on the bus pulls it low |
+| 6 | in | serial clock | the line is high |
+| 5 | out | serial data | the C64 pulls the line low; 0 lets it go |
+| 4 | out | serial clock | the C64 pulls the line low; 0 lets it go |
+| 3 | out | serial ATN | the C64 pulls the line low; 0 lets it go |
+| 2 | out | RS-232 data, on the user port | |
+| 1-0 | out | video bank | "VIC bank", above |
+
+The outputs are inverted on their way to the bus and the inputs are not,
+so a 1 written to bit 4 reads back as a 0 on bit 6, and bit 5 likewise
+on bit 7. On VICE x64sc (vice-mcp v3.14.0, measured 11 November 2026)
+with `$3F` in the direction register `$DD02`, as the KERNAL leaves it,
+and no drive holding a line: `$07` written read back `$C7`, `$17` read
+`$97`, `$27` read `$67` and `$37` read `$37`. At the READY prompt the
+port reads `$97`, the clock held low. A line is low while anything on
+the bus pulls it, so bits 6 and 7 also carry what the drive is doing,
+which is how the two talk.
+
+The KERNAL's own routines show the use (ROM 901227-03): `$EE85` clears
+bit 4 and `$EE8E` sets it, `$EE97` clears bit 5 and `$EEA0` sets it,
+`$ED2E` and `$EDF3` set bit 3 and `$EDBE` clears it. A line can change
+under a read, so `$EEA9` reads the port until two reads agree (`LDA
+$DD00`, `CMP $DD00`, `BNE`) and then shifts bit 7 into the carry and bit
+6 into bit 7. A game's own disk loader drives and reads the same bits
+(`games/c64/zak-mckracken-and-the-alien-mindbenders`, `$3BCB`-`$3CDE`:
+a bit out on bit 5 or in on bit 7 at each change of bit 4), and each of
+its stores sets the video bank as well, since bits 0-1 are in the same
+register.
+
 ## CIA timers and the tick
 
 CIA1 `$DC00`–`$DC0F`: port A `$DC00`, port B `$DC01`, timer A latch
