@@ -25,7 +25,8 @@ or. A file is a header block of 192 bytes (the type, the start and end addresses
 characters, then 171 bytes the KERNAL fills with spaces) and a block of its bytes. A loader
 often keeps code in those 171 bytes, which land in the tape buffer at $0333 with the header: a
 header that holds anything but spaces there is an item of its own. A data file's blocks (type
-2) follow its header (type 4) and are joined into one item.
+2) follow its header (type 4) and are joined into one item. The format is the C64's with longer
+waves, and kit/c64/tape.py reads it for both machines.
 
 A Novaload file is a leader of 0 bits, a 1 bit, $AA, the length of its name, the name, six bytes
 (the address less $100, the end address, the size of the last block and one more than the count of
@@ -45,25 +46,29 @@ lists them.
   python3 kit/c16/media.py <image>     the items, one a line
 """
 import importlib.util, os, sys
-from functools import reduce
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 SHORT, LONG, MARK = 424, 848, 1696      # the KERNAL's three waves, in cycles of the single clock
+BUFFER = 0x0333                         # the tape buffer, where a header's bytes after its type land
 TURBO = 416                             # Novaload: a wave shorter than this is a 0
-KINDS = {1: "BASIC program", 3: "program", 4: "data file"}
 LEADER = 64                             # 0 bits a Novaload leader has at the least
-TONE = 0.1                              # a stretch is tones when no more than this share of its waves change length
-SILENCE = 5000                          # a wave this long is a gap in the recording, not a wave
 
 
-def petscii(raw):
-    """A name as text: printable PETSCII as it is, any other byte as {hex} (kit/c64/media.py)."""
-    return "".join(chr(b) if 0x20 <= b <= 0x5F else f"{{{b:02X}}}" for b in raw)
+def c64(name):
+    """A module of kit/c64, loaded by its path: the two machines share tapes' and disks' formats."""
+    spec = importlib.util.spec_from_file_location(f"c64_{name}", os.path.join(HERE, "..", "c64", name + ".py"))
+    mod = importlib.util.module_from_spec(spec)
+    keep = list(sys.path)
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.path[:] = keep
+    return mod
 
 
-def xor(data):
-    return reduce(lambda a, b: a ^ b, data, 0)
+TAPE = c64("tape")                      # the KERNAL's format, the C64's but for the three waves' lengths
+petscii, is_tone = TAPE.petscii, TAPE.is_tone
 
 
 def waves(blob, path="tape"):
@@ -86,109 +91,6 @@ def waves(blob, path="tape"):
             p += 1
     if version == 2:
         out = [a + b for a, b in zip(out[0::2], out[1::2])]
-    return out
-
-
-# --- the KERNAL's format ---------------------------------------------------------------------
-
-def kernal_runs(W):
-    """[(first wave, bytes)] of every run of bytes in the KERNAL's format: a byte is a word
-    marker and a long, then nine pairs, a short and a long for a 0 and a long and a short for a
-    1: eight bits from the lowest and an odd parity. A byte whose parity is wrong ends its run."""
-    S = lambda x: x < (SHORT + LONG) // 2
-    M = lambda x: (SHORT + LONG) // 2 <= x < (LONG + MARK) // 2
-    L = lambda x: (LONG + MARK) // 2 <= x < MARK * 3 // 2
-    runs, i = [], 0
-    while i + 19 < len(W):
-        byte = None
-        if L(W[i]) and M(W[i + 1]):
-            bits = []
-            for k in range(9):
-                a, b = W[i + 2 + 2 * k], W[i + 3 + 2 * k]
-                if S(a) and M(b):
-                    bits.append(0)
-                elif M(a) and S(b):
-                    bits.append(1)
-                else:
-                    break
-            if len(bits) == 9 and sum(bits) & 1:
-                byte = sum(bit << n for n, bit in enumerate(bits[:8]))
-        if byte is None:
-            i += 1
-            continue
-        if runs and runs[-1][0] + 20 * len(runs[-1][1]) == i:
-            runs[-1][1].append(byte)
-        else:
-            runs.append((i, bytearray([byte])))
-        i += 20
-    return [(at, bytes(b)) for at, b in runs]
-
-
-def kernal_blocks(runs):
-    """[{"at", "data", "copies", "problem"}] of the blocks: a run that opens with the countdown
-    $89 to $81 is a block's first writing and one with $09 to $01 its copy."""
-    first, copy = bytes(range(0x89, 0x80, -1)), bytes(range(0x09, 0x00, -1))
-    out = []
-    for at, run in runs:
-        if len(run) < 11 or run[:9] not in (first, copy):
-            continue
-        body, wrong = run[9:-1], xor(run[9:]) != 0
-        last = out[-1] if out else None
-        if run[:9] == copy and last and last["copies"] == 1 and len(last["data"]) == len(body):
-            last["copies"] = 2
-            if last["data"] != body:
-                if last["bad"] and not wrong:
-                    last.update(data=body, bad=False, problem="its first writing's checksum is wrong; the copy is listed")
-                elif not wrong:
-                    last["problem"] = "its two writings differ; the first is listed"
-            continue
-        out.append({"at": at + 180, "end": at + 20 * len(run), "data": body, "copies": 1, "bad": wrong,
-                    "problem": "its checksum is wrong" if wrong else None})
-    for b in out:
-        if b["copies"] == 1 and not b["problem"]:
-            b["problem"] = "written once, where the KERNAL writes every block twice"
-    return out
-
-
-def kernal_items(blocks):
-    out, k = [], 0
-    while k < len(blocks):
-        b = blocks[k]
-        k += 1
-        d = b["data"]
-        if len(d) != 192 or d[0] not in KINDS:
-            if len(d) == 192 and d[0] == 5:
-                continue                                    # the end of the tape: nothing to load
-            out.append({"label": f"block at pulse {b['at']}", "place": {"file": f"block at pulse {b['at']}",
-                        "type": "block with no header", "pulse": b["at"]}, "load": None, "data": d, "raw": d,
-                        **({"problem": b["problem"]} if b["problem"] else {})})
-            continue
-        start, end = d[1] | d[2] << 8, d[3] | d[4] << 8
-        name = petscii(d[5:21].rstrip(b" ")) or f"file at pulse {b['at']}"
-        wrong = [b["problem"]] if b["problem"] else []
-        body = b""
-        if d[0] == 4:
-            while k < len(blocks) and len(blocks[k]["data"]) == 192 and blocks[k]["data"][0] == 2:
-                body += blocks[k]["data"][1:]
-                wrong += [blocks[k]["problem"]] if blocks[k]["problem"] else []
-                k += 1
-        elif k < len(blocks) and not (len(blocks[k]["data"]) == 192 and blocks[k]["data"][0] in (1, 3, 4, 5)):
-            body = blocks[k]["data"]
-            wrong += [blocks[k]["problem"]] if blocks[k]["problem"] else []
-            k += 1
-            if len(body) != (end - start) & 0xFFFF:
-                wrong.append(f"its header says {(end - start) & 0xFFFF:,} bytes and the block holds {len(body):,}")
-        else:
-            wrong.append("a header with no block after it")
-        item = {"label": name, "place": {"file": name, "type": KINDS[d[0]], "pulse": b["at"]},
-                "load": None if d[0] == 4 else start, "data": body, "raw": d + body}
-        if wrong:
-            item["problem"] = "; ".join(wrong)
-        out.append(item)
-        if d[21:].strip(b" "):
-            label = f"{name} (header)"
-            out.append({"label": label, "place": {"file": label, "type": "header", "pulse": b["at"]},
-                        "load": 0x0333, "data": d[1:], "raw": d[1:]})
     return out
 
 
@@ -252,20 +154,19 @@ def novaload_files(W, taken):
 
 # --- the tape ----------------------------------------------------------------------------------
 
-def is_tone(stretch):
-    """True when a stretch is tones and silence: leaving out the gaps where the tape stood still,
-    hardly a wave differs from the one before it by more than an eighth. Bytes in any format
-    change length from wave to wave."""
-    waves = [x for x in stretch if x < SILENCE]
-    changes = sum(1 for a, b in zip(waves, waves[1:]) if abs(a - b) > max(a, b) / 8)
-    return changes <= TONE * max(len(waves) - 1, 0)
+def kernal_runs(W):
+    """The runs of bytes in the KERNAL's format, read with this machine's three waves."""
+    return TAPE.kernal_runs(W, SHORT, LONG, MARK)
+
+
+kernal_blocks = TAPE.kernal_blocks
 
 
 def tape_items(W):
     runs = kernal_runs(W)
     taken = [(at, at + 20 * len(run)) for at, run in runs]
     files = novaload_files(W, taken)
-    out = [(i["place"]["pulse"], i) for i in kernal_items(kernal_blocks(runs))]
+    out = [(i["place"]["pulse"], i) for i in TAPE.kernal_items(kernal_blocks(runs), BUFFER, 1)]
     for n, f in enumerate(files, 1):
         label = petscii(f["name"].rstrip(b" ")) or f"Novaload file {n}"
         item = {"label": label, "place": {"file": label, "type": "Novaload", "pulse": f["at"]}, "load": f["load"],
@@ -273,27 +174,8 @@ def tape_items(W):
         if f["problem"]:
             item["problem"] = f["problem"]
         out.append((f["at"], item))
-    pos = 0
-    for a, b in sorted(taken + [(f["at"], f["end"]) for f in files]) + [(len(W), len(W))]:
-        stretch = W[pos:a]
-        if len(stretch) >= 32 and not is_tone(stretch):
-            label = f"pulses {pos}-{a - 1}"
-            out.append((pos, {"label": label, "place": {"pulses": [pos, a - 1]}, "load": None, "data": b"",
-                              "raw": b"".join(x.to_bytes(4, "little") for x in stretch),
-                              "problem": f"{len(stretch):,} pulses in a format the kit does not decode"}))
-        pos = max(pos, b)
+    out += TAPE.leftovers(W, taken + [(f["at"], f["end"]) for f in files])
     return [item for _, item in sorted(out, key=lambda x: x[0])]
-
-
-def c64_reader():
-    spec = importlib.util.spec_from_file_location("c64_media", os.path.join(HERE, "..", "c64", "media.py"))
-    mod = importlib.util.module_from_spec(spec)
-    keep = list(sys.path)
-    try:
-        spec.loader.exec_module(mod)
-    finally:
-        sys.path[:] = keep
-    return mod
 
 
 def items(path):
@@ -303,7 +185,7 @@ def items(path):
         with open(path, "rb") as f:
             return {"what": "tape", "items": tape_items(waves(f.read(), path))}
     if low.endswith((".d64", ".g64", ".prg", ".p00")):
-        return c64_reader().items(path)
+        return c64("media").items(path)
     return {"what": "image", "items": None,
             "unread": f"the kit has no reader for a {os.path.splitext(low)[1] or 'file'} yet"}
 

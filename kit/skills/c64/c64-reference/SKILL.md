@@ -425,6 +425,56 @@ whatever the vector leads to, a fast loader of its own included, and
 `kit/c64/loads.py` logs every such load with the memory it changed. A
 loader the game calls at its own address does not pass `$FFD5`.
 
+## Tapes
+
+**The TAP file** (VICE's manual, "The raw tape image format", read on 11
+November 2026): a 20-byte header, then the pulses. `$00`-`$0B` hold
+`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$0D` the machine (0 for the
+C64), `$0E` the video standard (0 PAL, 1 NTSC), `$10`-`$13` the data's
+length, low byte first. Each byte is the length of one pulse in units of
+8 cycles of the machine's clock. A `$00` is a pulse too long for a byte:
+in version 1 the three bytes after it give its length in cycles, low
+byte first, and in version 0 nothing does. `kit/c64/tape.py` reads both.
+
+**The KERNAL's own format**, as `kit/c64/tape.py` reads it. There are
+three pulse lengths. On the ten tapes of this repository's C64 games,
+read on 11 November 2026, they were `$2F` or `$30`, `$42` or `$43`, and
+`$56` or `$57` in the TAP: near 380, 532 and 692 cycles. A byte is a long
+and a medium, then nine pairs, a short and a medium for a 0 and a medium
+and a short for a 1: 8 bits from the lowest, then an odd parity bit. A
+block is a leader of shorts, a countdown `$89` to `$81` (on the second
+copy `$09` to `$01`), the bytes, and a checksum, all the bytes XORed
+together. Every block is written twice. A file is a header block of 192
+bytes and a block of its bytes. The header holds the type, the start
+address, the address after the end, 16 characters of name, and 171 more
+bytes that the KERNAL fills with spaces. It lands whole in the tape
+buffer, `$033C`-`$03FB`, the type first, so the 171 bytes sit at `$0351`
+(`games/c64/gribblys-day-out/orientation.md` has boot code there). The
+types are the C16's (`kit/skills/c16/c16-reference`, "Tapes"); the ten
+tapes hold only 1, a BASIC program, and 3, a program that loads where it
+was saved, which is the type of all eight boot files that load over the
+vectors at `$0300`. Every checksum on the ten tapes came out right, and
+the two games whose tapes hold nothing else (`games/c64/squirm`,
+`games/c64/aztec-challenge`) have every byte of their files in their
+listings.
+
+**Turbo formats.** After its boot file, a commercial tape usually goes on
+in a format of its loader's own. On the eight such tapes it was always a
+bit a pulse, in two lengths that differ from tape to tape, from 216 and
+312 cycles to 496 and 952. The loaders read so far time a pulse with a
+CIA timer they restart on every pulse: a pulse the timer runs out on is
+a 1. The loader's own code is
+the only description of its format. Read off it the timer's value, the
+order of a byte's bits, the bytes it hunts for and the header it reads,
+and let the game's listing say whether the bytes came out right. A format
+that is a pilot byte, a sync byte, two addresses and the bytes is one
+more row of `TURBO` in `kit/c64/tape.py`. A loader may be stored
+scrambled (`games/c64/shadowfire/orientation.md`, "The loader") or change
+its own code as it loads: run its unscrambling in `kit/cpu/cpu6502.js`
+and read what that leaves, not the bytes on the tape. A stretch the kit
+cannot decode is an item of `media.json` all the same, to be answered by
+hand from what the run saw load.
+
 ## Cartridge images
 
 A 16 KB program that loads at `$8000` and begins

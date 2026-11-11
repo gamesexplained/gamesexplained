@@ -5,7 +5,8 @@ The disk holds an engine whose bytes the game's listing holds, two levels with t
 under two names, a boot program, and a sector the disk's map marks as used that no file holds.
 The scan must list each once, answer the engine as the part, keep every answer on a second scan,
 and the rules must hold a new Silver game to an answer for every item while an older one only
-shows what is open. The cartridge's blank bank answers itself; a tape is listed as unread.
+shows what is open. The cartridge's blank bank answers itself; a T64, which the kit has no
+reader for, is listed as unread (kit/c64/test_tape.py holds the reader of a TAP).
 """
 import json
 from pathlib import Path
@@ -151,8 +152,8 @@ class Ledger(unittest.TestCase):
     def test_cartridge_and_tape(self):
         crt = self.tmp / 'game.crt'
         write_crt(crt, [(0, ENGINE[:512]), (1, b"\xff" * 512)])
-        tap = self.tmp / 'game.tap'
-        tap.write_bytes(b"C64-TAPE-RAW" + bytes(8))
+        tap = self.tmp / 'game.t64'
+        tap.write_bytes(b"C64 tape image file" + bytes(64))
         r = run('scan', self.g, crt, tap)
         it = self.items()
         self.assertEqual(it["bank 0"]["answer"], "part")
