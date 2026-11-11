@@ -187,7 +187,8 @@ copy drifts."
 
 - **Model.** Any model may run the kit, but only a proven one can take a
   game to Silver on its own. A proven model is one the maintainers have
-  declared good enough in `kit/models.json`, or one that took a game to
+  declared good enough in `kit/models.json`, by its id or as every model
+  of a line from a version on, or one that took a game to
   Silver before the check below was needed: `python3 kit/scripts/models.py`
   lists them, with the games. On any other model, tell the contributor
   before the first step, in plain words, that an untested model often

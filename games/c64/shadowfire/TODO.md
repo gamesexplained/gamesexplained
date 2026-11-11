@@ -48,3 +48,8 @@ With the Play tab Platinum, that pass makes the game Diamond.
   refused towards location `$80` would add the observation.
 - The Load and Save game icons were not run: saving to tape or disk, and
   what a saved position holds, are traced only.
+- What the last 124 bytes of the tape's block 4 are (`$3F84`-`$3FFF`).
+  They are damaged like the rest of the tape's leftover memory and match
+  nothing in the game at any address (`facts.md`, "The tape's leftover
+  memory"). The 68 bytes before them are a copy of `voice1_effect` with
+  its variables elsewhere, so they may be more of an earlier build.

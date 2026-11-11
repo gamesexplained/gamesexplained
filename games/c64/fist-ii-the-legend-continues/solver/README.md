@@ -3,8 +3,8 @@
 This folder holds the work on a route through Fist II's Adventure: a
 search over the game's own tables, and scripts that drive the joystick in
 the emulator to test the search's routes. It is not published: the site
-build copies only the pages, `listing.json`, `symbols.json` and
-`reference/`. The game facts it relies on are in `../facts.md`, "Towards
+build copies only the pages, the listings, the symbol maps and
+`reference/`. The game facts it relies on are in `../parts/adventure/facts.md`, "Towards
 a solution"; this file is how to pick the work up.
 
 ## The world map
@@ -19,7 +19,7 @@ The blocker below is solved on paper: room 43's exit at 88 arrives in
 room 79 at column 0, left of the drop at 18, and with scroll 6 delivered
 the drop narrows to 18-24, which a somersault crosses. `solve.py` now
 models that (area 13 with scroll 6: the type-17 drop is neither a wall
-nor 11 columns wide) and reads `../listing.json` when there is no
+nor 11 columns wide) and reads `../parts/adventure/listing.json` when there is no
 snapshot. It plans all eight scrolls and room 122. Drive it: room 43,
 up at 88, somersault from about column 15 (as from 112 over 115-121 in room 85), kick the barrier at 109,
 walk off at 171. "The blocker" below is kept for the live findings.

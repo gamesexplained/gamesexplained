@@ -140,15 +140,20 @@ The loading picture survives only in part in the backup (`facts.md`,
 bytes, SHA-256
 `b1b8ee375b605adeee846fa7a82c8aff3548426dfc32c1e52fe4961f039ded5a`;
 `work/sentinel-firebird.tap`). Autostarted in warp mode, it prints a
-LOADING countdown on a text screen and then shows the picture, with
+LOADING count on a text screen (the blocks read so far, in hexadecimal,
+01 to 5F) and then shows the picture, with
 `$D011` = `$3B`, `$D018` = `$81`
 and `$DD00` = `$C6`: bitmap `$4000`, screen `$6000`, colour RAM all
 `$0F`, background `$00`. `reference/loading-screen.png` is VICE's
 picture of it, and `reference/loading-screen-in-memory.png` keeps only
-the bitmap bytes the backup still holds. The load stalled with the
-picture on screen, the loader waiting at `$C86B` for bytes from the
-tape; it was not followed further, since the analysis stays on the
-backup.
+the bitmap bytes the backup still holds. On 22 October 2026 the load
+stalled with the picture on screen, the loader waiting at `$C86B` for
+bytes from the tape. On 11 November 2026 the same tape, autostarted in
+VICE 3.10 with vice-mcp 3.14.0 and run in warp mode a frame batch at a
+time, loaded to the end: the picture appears about 195 seconds into the
+tape and the title screen about 265. The Graphics tab draws a frame of
+it recorded then (`frame.py capture`, 250 seconds in), and
+`test_loading_picture.js` holds the page to that recording.
 
 ## Steady state
 

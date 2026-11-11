@@ -1020,3 +1020,13 @@ Reached 100% exported coverage: 490,491 of 490,491 counted bytes across 32 parts
 Final independent sample 261111 checked 80 of 32,315 comments, with one wrong load/store-address detail. Corrected that wording in 29 loads, retained all verdicts in ignored work storage, and recorded the plain and stratum-weighted results.
 
 Final validation: all 403 game checks passed after updating the hidden-RAM expectation and narrowing the table-value parser. The full 939-test run had 927 passes, 11 optional-tool skips and the subsequently fixed hidden-RAM assertion. Repository binary, documentation and listing checks passed; all 102 games built into 1175 pages; desktop/mobile browser checks passed. Saved the comment-only reward/wing-boots update to the oldware upstream branch; the Ghidra archive remains local.
+
+## 11 November 2026
+
+A maintainer's session went through the merged game. It found 30 comments that the imported listing had left one row above the instruction they describe, 20 in the resident part and 10 in load 1, and moved each to its row. The 24 `annotation_xxxx` labels the import had made only to hold those comments were removed, because a user label without a comment counts as an unexplained byte. Eight comments still ended in the imported listing's "function: undefined name()" line; two of them were nothing else, and got comments written from the code (`$3CBF`, `$6ACB`).
+
+Reading for names in the game's own terms found the hourglass. The routine labelled as a meter animation at `$4A43` steps the status panel's hourglass and takes 8 from the life meter, one heart, each time the glass empties. The tile check at `$613B` takes a second count in each pass on the tile that draws the top of a pool, and the contact handler at `$7646` runs the glass backwards. The time-limit entry in `features.md` had been open.
+
+The same reading matched the ten message callbacks of one shape across the loads. Nine save the trigger index in the operand of their `LDX`; the "DANGER! KEEP OUT" callback in load 23 saves it over the opcode. The Discoveries entry, which had described a trigger rewriting an instruction, was retold around that comparison.
+
+The pages' sentences about how each claim was tested were rewritten to describe the game, as `kit/style.md` asks; the tests and their results stay in the facts files. The two-player flag at `$4DBC` is cleared at `$0378` and no instruction found sets it; that lead is in `TODO.md`, not on a page.

@@ -178,3 +178,9 @@ keyboard and touch activation, zoom, and mobile containment.
 This begins the contributor's section-by-section curation, so the metadata
 is silver-claimed with jankfoundry as steward; copy remains agent-draft
 until the human copy pass. The remaining curation is listed in TODO.md.
+
+## Upstream memory diagram support
+
+Main added a `ram_kb` setting for the Plus/4 memory diagram in PR #876.
+The merge uses that implementation, sets `ram_kb` to 64 for this game,
+and removes the superseded local builder change and tests.

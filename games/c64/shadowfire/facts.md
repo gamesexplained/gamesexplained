@@ -15,6 +15,64 @@ load: a ROM-format header and loader, then ten turbo blocks
 `$081B` that jumps to `$4000`. Nothing is read from the tape after that
 except a saved game.
 
+## The tape's leftover memory
+
+The tape carries bytes the loading picture does not use, in the gaps of
+the three blocks that hold it (`orientation.md`, "What the tape holds").
+They are a damaged copy of the game's own memory. Counted from the tape's
+bytes against the listing by `test_tape_leftover.py`, and for the smaller
+stretches against block 9 of the tape; nothing here was run.
+
+- **`$1400`-`$1FFF`, the first 3,072 bytes of block 4.** They sit where
+  the game keeps its font (`$1402`), the bitmap row tables (`$1504`),
+  the demonstration's script (`$1571`), the speech rules left after it
+  (`$15DF`) and the music driver (`$1600`-`$1FC5`). Bit by bit, the
+  bytes that hold the game's value:
+
+  | Bit | Same as the game | How it differs |
+  |---|---|---|
+  | 0 | 2,836 of 3,072 | |
+  | 1 | 2,882 | |
+  | 2 | 2,805 | |
+  | 3 | 2,623 | 253 of the 322 bits that turned to 1 are at odd addresses |
+  | 4 | 2,820 | all 86 bits that turned to 1 are at even addresses |
+  | 5 | 1,728 | at even addresses 517 of the game's 562 set bits are clear; at odd addresses 728 of its 1,063 clear bits are set |
+  | 6 | 899 | set in 2,400 bytes, where the game sets it in 403 |
+  | 7 | 2,884 | |
+
+  Over bits 0-4 and 7 the agreement is 91.4 %. Against the game's bytes
+  one, two, three or 256 bytes away it is at most 63.8 %, so the copy is
+  of these addresses.
+- **Seven columns are `$FF` in all twelve pages**: the bytes whose
+  address ends `$04`, `$52`, `$9A`, `$A0`, `$A6`, `$C6` and `$E2`.
+- **The 24 bytes after the picture's 1,000 colour cells in block 2**
+  (`$0FE8`-`$0FFF`) agree with the game's bytes there in 116 of 144 of
+  those six bits. **The 24 after the 1,000 cells of block 3**, which the
+  loader puts in colour RAM, agree with the game's bytes at
+  `$13E8`-`$13FF` in 123 of 144, and in 70 of 72 over the first twelve.
+  So blocks 2, 3 and 4 read as one stretch of a computer's memory,
+  `$0C00`-`$3FFF`, saved in three pieces, with the picture's colours for
+  colour RAM held at `$1000`.
+- **The last 192 bytes of block 4** (`$3F40`-`$3FFF`, after the bitmap's
+  8,000) are damaged the same way and are not the game's bytes at those
+  addresses. The first 68 agree with `voice1_effect` from `$1F77` to its
+  `RTS` at `$1FBA` in 374 of 408 bits, but its three variables are at
+  other addresses there: a copy of the routine from another build. What
+  the other 124 bytes are is not known.
+- **The copy is of a game that had run.** With bits 5 and 6 left out,
+  `tune_request` (`$1600`) reads `$81`, tune 1 started, where the
+  cassette's own block 9 has `$00`; `tune_now` (`$161F`) reads 1. Each
+  rests on one or two bits that are wrong in about one byte in fourteen
+  elsewhere, so this is likely, not certain.
+- **Why the bytes look like this is an inference.** Damage that goes by
+  bit and by address, the same in every page, is what dynamic memory
+  does when its power is cut for a moment: the C64 of 1985 holds each
+  bit of a byte in a chip of its own, and each chip falls back to its own
+  pattern. The reading is that the mastering computer had held the game,
+  lost power briefly, and had the picture loaded into it and saved from
+  `$0C00` to `$3FFF`. No test here can show what happened to that
+  computer.
+
 ## Memory layout
 
 | Thing | Where |

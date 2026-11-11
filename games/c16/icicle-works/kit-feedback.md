@@ -10,8 +10,7 @@
 
 ## What was changed in the kit
 
-- `kit/scripts/build.py`: a C16-platform listing with bytes above 16 KB gets a 64 KB memory diagram, so the supplied Plus/4 game's authored upper RAM appears. Stock C16 listings keep the 16 KB diagram.
-- `kit/scripts/test_build_c16_span.py`: checks stock C16, upper Plus/4 RAM, and a listing record crossing the 16 KB boundary.
+The shared builder supports a 64 KB Plus/4 memory diagram through `ram_kb` in `game.json`. Icicle Works uses that setting.
 
 Visible tool failures are recorded in `agent-history.md`: the combined C64
 footprint command requires VICE; the disassembler JSON batch rejects an

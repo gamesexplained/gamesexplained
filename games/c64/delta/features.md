@@ -52,7 +52,7 @@ Sources:
 | Game over, then high-score entry by name | live | eight letters with the joystick (`hiscore_entry_step` `$1E52`); `reference/game-over.png`, `high-score-entry.png` |
 | Title, top-scores table and a demo in turn | live | three title pages (`$0FA9`); the demo replays recorded joystick input (`demo_input` `$9F40`) |
 | Music by Rob Hubbard | confirmed | a Hubbard-style driver with 13 tunes (`music_play` `$BDE4`); the title music plays at start-up; in play the music replaces the effects when F5 is pressed on the title |
-| Mix-E-Load: remixing the loading music while the game loads | open | not in this image, which was loaded by the crack's own depacker; the SID register census finds only two players, the effects (`$0406`) and the music (`$BDE4`), neither with remix controls. It belonged to the original loader, which this copy does not have |
+| Mix-E-Load: remixing the loading music while the game loads | traced | not in this site's image, which a crack's own depacker loaded; it is on the original tape (`facts.md`, "Mix-E-Load"). The Music tab runs its code, held to VICE by `test_mix_e_load.js` |
 | Published in the US as "Delta Patrol" by Electronic Arts | open | not a feature of this image; nothing in it says Delta Patrol (string sweep in the game's alphabet and PETSCII) |
 | Pause | live | RUN/STOP; fire resumes; T quits to game over (`pause_check` `$9A30`) |
 
@@ -91,6 +91,5 @@ Found in the code, not in the sources read.
 
 ## Open questions
 
-- The Mix-E-Load loader: only an original disk or tape would show it.
 - Which enemies carry the "take a credit away" flag (bit 6 of the
   record's byte 3) in practice; none was seen.

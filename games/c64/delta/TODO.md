@@ -11,8 +11,6 @@ A human curates the page section by section (`kit/START.md`, the
 
 ## Open
 
-- Mix-E-Load, the loading-music remixer, belonged to the original loader;
-  this crack does not contain it. An original disk or tape image would.
 - "Delta Patrol", the US release, is not identified in this image.
 - Which wave records take a credit away (bit 6 of byte 3) in play.
 

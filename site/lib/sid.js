@@ -253,6 +253,172 @@ globalThis.C64Sid = (function () {
         (r >> 2 & 0x080) | (r << 1 & 0x040) | (r << 3 & 0x020) | (r << 4 & 0x010);
     }
 
+    // ------------------------------------------------------------------ the oscillators, to the cycle
+    // What $D41B reads: the top eight bits of voice 3's waveform on the cycle of the read. A
+    // game that wants a random number sets voice 3 to noise and reads it, so the byte depends
+    // on the cycle: each oscillator adds its frequency to a 24-bit count every cycle, and the
+    // noise register shifts two cycles after bit 19 of the count rises. createOsc(chip) keeps
+    // the three oscillators on the caller's clock t, in cycles:
+    //   write(register, value, t)  read(t)  chip(model)  save()  load(state)
+    // write takes every write to the chip (it keeps the oscillators' registers, $D400-$D404,
+    // $D407-$D40B and $D40E-$D412, and ignores the rest); read gives $D41B's byte, and the
+    // caller hands it to the bus as own (createBus). kit/c64/machine.js does both.
+    // The model is reSID's single-cycle one (wave.h and wave.cc: clock, synchronize,
+    // set_waveform_output, writeCONTROL_REG), with the times VICE's reSIDfp takes to fade, and
+    // is held to the kit's VICE build to the cycle by kit/c64/test_sid_osc.js, on readings
+    // kit/c64/sid_osc.py recorded there (kit/c64/fixtures/sid-osc.json): noise, sawtooth,
+    // triangle and pulse; a frequency or width changed between reads; the test bit, which
+    // holds the count at 0, and held long enough sets the noise register's bits; ring
+    // modulation and hard sync from voice 2, with the other two counts kept for them; the
+    // output held and then fading when no waveform is selected; noise selected with another
+    // waveform, which clears bits of the noise register for good. On the 8580 a triangle or
+    // sawtooth reads a cycle late. Two waveforms of triangle, sawtooth and pulse selected
+    // together read as their AND, which the chip's are not. A new one starts as the chip
+    // leaves reset; a machine loaded from a snapshot does not have the emulator's register.
+    const NOISE_FADE = { '6581': [50000, 15000], '8580': [986000, 314300] };   // under the test bit: the first step, then each
+    const FLOAT_FADE = { '6581': [54000, 1400], '8580': [800000, 50000] };     // no waveform: the same for the output
+    const NOISE_TAPS = 0x144A25;                                                // the bits noiseBits reads
+    const noiseTaps = o => (o & 0x800) << 9 | (o & 0x400) << 8 | (o & 0x200) << 5 | (o & 0x100) << 3 |
+      (o & 0x080) << 2 | (o & 0x040) >> 1 | (o & 0x020) >> 3 | (o & 0x010) >> 4;
+    function createOsc(chip) {
+      let model = chip === '6581' ? '6581' : '8580', old = model === '6581';
+      const acc = [0, 0, 0], freq = [0, 0, 0], ctrl = [0, 0, 0], up = [false, false, false];
+      let at = 0, pw = 0;                                    // the state is as the chip's after cycle at
+      // voice 3's: the noise register and its output bits, the cycles left to its shift, the
+      // cycles left to its next step under the test bit, the pulse's level and the 8580's
+      // triangle or sawtooth of the cycle before, the output, what $D41B gives, and the
+      // cycles left to the output's next fade
+      let lfsr = 0x7FFFFE, noise = noiseBits(lfsr), pipe = 0, reset = 0, pulse = 0xFFF, late = 0, out = 0, osc3 = 0, ttl = 0;
+
+      function shift() {
+        lfsr = ((lfsr << 1) | ((lfsr >> 22 ^ lfsr >> 17) & 1)) & 0x7FFFFF;
+        noise = noiseBits(lfsr);
+      }
+      function fadeNoise() {                                 // a step towards all ones
+        lfsr |= 1; lfsr = (lfsr | lfsr << 1) & 0x7FFFFF;
+        noise = noiseBits(lfsr);
+        if (lfsr !== 0x7FFFFF) reset = NOISE_FADE[model][1];
+      }
+      function fadeOut() { out &= out >> 1; osc3 = out; if (out) ttl = FLOAT_FADE[model][1]; }
+      function writeBack() { lfsr &= ~NOISE_TAPS | noiseTaps(out); noise &= out; }
+      function output() {                                    // voice 3's waveform, once a cycle
+        const w = ctrl[2] >> 4;
+        if (w) {
+          const a = (ctrl[2] & 0x24) === 0x04 ? acc[2] ^ (~acc[1] & 0x800000) : acc[2];
+          let base = 0xFFF;
+          if (w & 1) base &= ((a & 0x800000 ? ~a : a) >> 11) & 0xFFE;
+          if (w & 2) base &= a >> 12;
+          const mask = (w & 4 ? pulse : 0xFFF) & (w & 8 ? noise : 0xFFF);
+          out = base & mask;
+          if ((w & 3) && !old) { osc3 = late & mask; late = base; } else osc3 = out;
+          if (old && (w & 2) && (w & 0xD)) acc[2] &= (out << 12) | 0x7FFFFF;
+          if (w > 8 && !(ctrl[2] & 8) && pipe !== 1) writeBack();
+        }
+        else if (ttl && !--ttl) fadeOut();
+        pulse = (acc[2] >> 12) >= pw ? 0xFFF : 0;
+      }
+      function step() {                                      // one cycle
+        for (let i = 0; i < 3; i++) {
+          if (ctrl[i] & 8) {
+            if (i === 2) { if (reset && !--reset) fadeNoise(); pulse = 0xFFF; }
+            continue;
+          }
+          const a = acc[i], n = (a + freq[i]) & 0xFFFFFF, set = ~a & n;
+          acc[i] = n; up[i] = (set & 0x800000) !== 0;
+          if (i === 2) { if (set & 0x080000) pipe = 2; else if (pipe && !--pipe) shift(); }
+        }
+        // hard sync: a count whose top bit has just risen clears the next voice's, unless its
+        // own is being cleared on the same cycle
+        const s1 = up[0] && (ctrl[1] & 2) && !((ctrl[0] & 2) && up[2]);
+        const s2 = up[1] && (ctrl[2] & 2) && !((ctrl[1] & 2) && up[0]);
+        const s0 = up[2] && (ctrl[0] & 2) && !((ctrl[2] & 2) && up[1]);
+        if (s1) acc[1] = 0;
+        if (s2) acc[2] = 0;
+        if (s0) acc[0] = 0;
+        output();
+        at++;
+      }
+      // k cycles at once, where no cycle's work depends on another voice's or writes to the
+      // noise register: the counts move by k times the frequency, and the noise register
+      // shifts once for each rise of bit 19 that is two cycles old
+      const rises = u => Math.floor((Math.floor(u / 0x80000) + 1) / 2);
+      function leap(k) {
+        for (let i = 0; i < 2; i++) if (!(ctrl[i] & 8)) {
+          const n = (acc[i] + k * freq[i]) % 0x1000000;
+          up[i] = (~((n - freq[i]) & 0xFFFFFF) & n & 0x800000) !== 0;
+          acc[i] = n;
+        }
+        if (ctrl[2] & 8) {
+          let n = k;
+          while (reset && n >= reset) { n -= reset; reset = 0; fadeNoise(); }
+          if (reset) reset -= n;
+        }
+        else {
+          const a = acc[2], f = freq[2], r0 = rises(a), r2 = rises(a + (k - 2) * f), r1 = rises(a + (k - 1) * f);
+          let n = r2 - r0;
+          if (lfsr === 0) n = 0; else n %= 0x7FFFFF;
+          while (n-- > 0) lfsr = ((lfsr << 1) | ((lfsr >> 22 ^ lfsr >> 17) & 1)) & 0x7FFFFF;
+          noise = noiseBits(lfsr);
+          pipe = rises(a + k * f) > r1 ? 2 : r1 > r2 ? 1 : 0;
+          const e = (a + k * f) % 0x1000000;
+          up[2] = (~((e - f) & 0xFFFFFF) & e & 0x800000) !== 0;
+          acc[2] = e;
+        }
+        if (!(ctrl[2] >> 4)) {
+          let n = k;
+          while (ttl && n >= ttl) { n -= ttl; ttl = 0; fadeOut(); }
+          if (ttl) ttl -= n;
+        }
+        at += k;
+      }
+      function advance(t) {
+        if (t - at > 8) {
+          while (pipe) step();
+          const w = ctrl[2] >> 4;
+          if (!((ctrl[0] | ctrl[1] | ctrl[2]) & 2) && (w <= 8 || (ctrl[2] & 8)) && !(old && (w & 2) && (w & 0xD))) leap(t - at - 2);
+        }
+        while (at < t) step();
+      }
+      function control(i, v) {
+        const prev = ctrl[i];
+        ctrl[i] = v;
+        if (!(prev & 8) && (v & 8)) { acc[i] = 0; up[i] = false; if (i === 2) { pipe = 0; reset = NOISE_FADE[model][0]; pulse = 0xFFF; } }
+        if (i !== 2) return;
+        if ((prev & 8) && !(v & 8)) {                        // the test bit cleared: the register's shift is completed
+          const w0 = prev >> 4, w = v >> 4;
+          if (w0 > 8 && !(w0 === 0xC && (old || (w !== 9 && w !== 0xE))) &&
+            !(old && (((w0 & 3) === 1 && (w & 3) === 2) || ((w0 & 3) === 2 && (w & 3) === 1)))) writeBack();
+          lfsr = ((lfsr << 1) | (~lfsr >> 17 & 1)) & 0x7FFFFF;
+          noise = noiseBits(lfsr);
+        }
+        if (v >> 4) output();
+        else if (prev >> 4) ttl = FLOAT_FADE[model][0];
+      }
+      return {
+        write(r, v, t) {
+          r &= 31; v &= 0xFF;
+          if (r > 0x12 || r % 7 > 4) return;
+          advance(t);
+          const i = Math.floor(r / 7), k = r % 7;
+          if (k === 0) freq[i] = (freq[i] & 0xFF00) | v;
+          else if (k === 1) freq[i] = (freq[i] & 0xFF) | v << 8;
+          else if (k === 4) control(i, v);
+          else if (i === 2) {
+            pw = k === 2 ? (pw & 0xF00) | v : (pw & 0xFF) | (v & 15) << 8;
+            pulse = (acc[2] >> 12) >= pw ? 0xFFF : 0;
+          }
+        },
+        read(t) { advance(t); return osc3 >> 4; },
+        chip(c) { model = c === '6581' ? '6581' : '8580'; old = model === '6581'; },
+        save() { return [at, pw, lfsr, pipe, reset, pulse, late, out, osc3, ttl, acc.slice(), freq.slice(), ctrl.slice(), up.slice()]; },
+        load(s) {
+          [at, pw, lfsr, pipe, reset, pulse, late, out, osc3, ttl] = s;
+          for (let i = 0; i < 3; i++) { acc[i] = s[10][i]; freq[i] = s[11][i]; ctrl[i] = s[12][i]; up[i] = s[13][i]; }
+          noise = noiseBits(lfsr);
+        },
+      };
+    }
+
     function createSID(sampleRate, opts) {
       const CK = clockOf(opts);
       const cps = CK / sampleRate;                           // cycles per output sample
@@ -534,7 +700,7 @@ globalThis.C64Sid = (function () {
       return again;
     }
 
-    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer,
+    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createOsc, createSID, createPlayer,
       createLive, liveMost, restarted };
   }
 
@@ -810,8 +976,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (lengths[t] === undefined) {
         let n = 0, f = false;
         const notes = [[], [], []], prev = [null, null, null];
-        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1).fill(NaN)) : null;
-        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1)) : null;
+        // a loop: run on a second into it, and one period more, for the ball to repeat, however
+        // long the period
+        const lp = loopOf(t), cycle = lp ? lp.from + lp.period * Math.ceil(FPS / lp.period) : 0;
+        const stop = lp ? cycle + lp.period : LONG;
+        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(stop + 1).fill(NaN)) : null;
+        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(stop + 1)) : null;
         const chip = BOUNCE ? E.createSID(8000, { ntsc: o.ntsc }) : null;
         const starts = noteStarts(mark);
         const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
@@ -839,9 +1009,6 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           if (w) for (let k = 0; k + 1 < w.length; k += 2) if (w[k] === 23 && w[k + 1] & 7) return true;
           return false;
         };
-        // a loop: run on a second into it, and one period more, for the ball to repeat
-        const lp = loopOf(t), cycle = lp ? lp.from + lp.period * Math.ceil(FPS / lp.period) : 0;
-        const stop = lp ? Math.min(LONG, cycle + lp.period) : LONG;
         try {
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);

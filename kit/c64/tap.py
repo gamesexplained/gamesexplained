@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Read a C64 tape image (.tap): the files the KERNAL's own loader reads from it, straight from
-the pulses, with no emulator.
+"""Read a C64 tape image (.tap): the files the KERNAL's own loader reads from it, and the blocks
+in the turbo formats the kit knows, straight from the pulses, with no emulator.
 
 A TAP is "C64-TAPE-RAW", a version byte, three more bytes, the length of the data in four, and
 the data: a byte for each pulse, its length in units of 8 cycles of the machine's clock. A zero
@@ -17,33 +17,56 @@ unless a loader keeps code there) and a block of its bytes. The header lands in 
 at $033C, so those 171 bytes are in memory from $0351 while the file loads. A data file is a
 header of type 4 and blocks of type 2 after it.
 
-That is all this reads. Most games load a short program this way and that program reads the
-rest of the tape in a faster format of its own: `list` says where on the tape such a stretch
-lies and how long it is, and reads none of it.
+Most games load a short program this way and that program reads the rest of the tape in a
+faster format of its own, a turbo format: nearly always a bit a pulse, a pulse longer than the
+loader's timer a 1. This reads the formats in TURBO, each read off a game's own loader
+(kit/lessons/2026-11-11-c64-tape-media.md), and every one of them is a block of this shape: a
+pilot, one byte repeated, which the loader finds bit by bit; a sync byte; the block's first
+address and the address after its last, low byte first; and the bytes. A format with no checksum
+its loader reads gives this none either: what proves such a block is the game's listing holding
+the same bytes. A block is the item "turbo block 3", counted from the tape's start, its place
+{"file": label, "type": "turbo, <the format's name>", "pulse": n}, n the first pulse of its
+pilot, and its raw bytes run from its addresses to its last byte.
+
+A stretch in any other format is not read: `list` says where on the tape it lies, how long it is
+and which two pulse lengths are commonest in it.
 
   waves(blob, path)        the tape's pulses, each a length in cycles
   items(W)                 what the tape holds, as kit/c64/media.py's items (its docstring has
-                           the fields): each file, a header that carries more than spaces, and
-                           each stretch that is neither a KERNAL block nor a tone
+                           the fields): each file, a header that carries more than spaces, each
+                           turbo block, and each stretch that is none of those nor a tone
 
 Usage:
   tap.py <image>                  (or: tap.py list <image>) each file with its type, the
                                   addresses its header gives and its length, each block's
-                                  checksum checked and its first good writing taken; then the
-                                  stretches in a format this does not read
-  tap.py extract <image> <dir>    each program to <dir>/<name>.prg, its two-byte address first,
-                                  and each header that carries code to <name>.header.prg, at
-                                  $033C. A file is a part of the game: <dir> belongs in work/
+                                  checksum checked and its first good writing taken; each turbo
+                                  block with its addresses; then the stretches in a format this
+                                  does not read
+  tap.py extract <image> <dir>    each program and each turbo block to <dir>/<name>.prg, its
+                                  two-byte address first, and each header that carries code to
+                                  <name>.header.prg, at $033C. A file is a part of the game:
+                                  <dir> belongs in work/
 """
 import os, sys
+from collections import Counter
 from functools import reduce
 
 SHORT, MEDIUM, LONG = 376, 528, 700     # the KERNAL's three pulses, in cycles; told apart halfway between
 KINDS = {1: "relocatable program", 3: "program", 4: "data file"}
 BUFFER = 0x033C                         # where a header's 192 bytes land
 TONE = 0.1                              # a stretch is tones when no more than this share of its pulses change length
+LEAST = 32                              # a stretch shorter than this is in no item
 SILENCE = 5000                          # a pulse this long is a gap in the recording
 GAP = 20000                             # what a version 0 overflow byte is taken as
+
+
+# The turbo formats: a pulse of "split" cycles or more is a 1, a byte's bits come lowest first when
+# "lsb" is set, "pilot" is the byte the loader looks for bit by bit and "sync" the one that ends the
+# pilot. "least" is how many pilot bytes a block needs to be taken for one.
+TURBO = [
+    # CIA 2's timer A at 384 cycles, restarted some 16 cycles after each pulse; no checksum
+    {"name": "pilot $E3, sync $ED", "split": 400, "lsb": True, "pilot": 0xE3, "sync": 0xED, "least": 8},
+]
 
 
 def petscii(raw):
@@ -182,6 +205,77 @@ def kernal_items(blocks, kinds=KINDS, buffer=(BUFFER, 0)):
     return out
 
 
+# --- the turbo formats ---------------------------------------------------------------------------
+
+def free(taken, n):
+    """[(first, end)] of the stretches of n pulses outside taken ([(first, end)], sorted, apart)."""
+    edges = [0] + [x for span in taken for x in span] + [n]
+    return [(lo, hi) for lo, hi in zip(edges[0::2], edges[1::2]) if hi > lo]
+
+
+def turbo_blocks(W, taken, fmt):
+    """[{"at", "end", "load", "data", "raw", "problem"}] of the blocks in one turbo format outside
+    the stretches already read. A block is found as its loader finds it: the pilot's byte at any
+    pulse, then pilot bytes, then the sync byte. "at" is the pilot's first pulse and "end" the
+    pulse after the last byte's."""
+    bit = lambda k: W[k] >= fmt["split"]
+    if fmt["lsb"]:
+        byte = lambda k: sum(bit(k + j) << j for j in range(8))
+    else:
+        byte = lambda k: sum(bit(k + j) << (7 - j) for j in range(8))
+    out = []
+    for lo, hi in free(taken, len(W)):
+        i = lo
+        while i + 8 * (fmt["least"] + 5) <= hi:
+            if byte(i) != fmt["pilot"]:
+                i += 1
+                continue
+            j = i
+            while j + 8 <= hi and byte(j) == fmt["pilot"]:
+                j += 8
+            if (j - i) // 8 < fmt["least"] or j + 8 * 5 > hi or byte(j) != fmt["sync"]:
+                i += 1
+                continue
+            k = j + 8
+            head = bytes(byte(k + 8 * t) for t in range(4))
+            start, end = head[0] | head[1] << 8, head[2] | head[3] << 8
+            k += 32
+            size = end - start if end > start else 1        # the loader stores a byte before it compares
+            got = min(size, (hi - k) // 8)
+            data = bytes(byte(k + 8 * t) for t in range(got))
+            problem = []
+            if got < size:
+                problem.append(f"the tape ends {got:,} bytes into it")
+            if any(x >= SILENCE for x in W[k:k + 8 * got]):
+                problem.append("a gap in the recording falls inside it")
+            k += 8 * got
+            out.append({"at": i, "end": k, "load": start, "data": data, "raw": head + data,
+                        "problem": "; ".join(problem) or None})
+            i = k
+    return out
+
+
+def turbo_items(W, taken):
+    """([(first pulse, item)], [(first, end)]) of the blocks in every format of TURBO outside taken,
+    numbered along the tape, and the stretches they take."""
+    taken, blocks = sorted(taken), []
+    for fmt in TURBO:
+        for b in turbo_blocks(W, taken, fmt):
+            taken = sorted(taken + [(b["at"], b["end"])])
+            blocks.append((b, fmt))
+    out = []
+    for n, (b, fmt) in enumerate(sorted(blocks, key=lambda x: x[0]["at"]), 1):
+        label = f"turbo block {n}"
+        item = {"label": label, "place": {"file": label, "type": f"turbo, {fmt['name']}", "pulse": b["at"]},
+                "load": b["load"], "data": b["data"], "raw": b["raw"]}
+        if b["problem"]:
+            item["problem"] = b["problem"]
+        out.append((b["at"], item))
+    return out, [(b["at"], b["end"]) for b, _ in blocks]
+
+
+# --- the rest of the tape ------------------------------------------------------------------------
+
 def is_tone(stretch):
     """True when a stretch is tones and silence: leaving out the gaps where the tape stood still,
     hardly a pulse differs from the one before it by more than an eighth. Bytes in any format
@@ -192,12 +286,12 @@ def is_tone(stretch):
 
 
 def undecoded(W, taken):
-    """[(first pulse, item)] of each stretch of 32 pulses or more outside taken ([(first, end)])
+    """[(first pulse, item)] of each stretch of LEAST pulses or more outside taken ([(first, end)])
     that is not tones: a format this does not read, to be answered by hand."""
     out, pos = [], 0
     for a, b in sorted(taken) + [(len(W), len(W))]:
         stretch = W[pos:a]
-        if len(stretch) >= 32 and not is_tone(stretch):
+        if len(stretch) >= LEAST and not is_tone(stretch):
             label = f"pulses {pos}-{a - 1}"
             out.append((pos, {"label": label, "place": {"pulses": [pos, a - 1]}, "load": None, "data": b"",
                               "raw": b"".join(x.to_bytes(4, "little") for x in stretch),
@@ -206,10 +300,24 @@ def undecoded(W, taken):
     return out
 
 
+def lengths(stretch, most=2):
+    """The commonest pulse lengths of a stretch, in cycles, shortest first: what to tell a person
+    about one this cannot decode."""
+    return sorted(x for x, _ in Counter(x for x in stretch if x < SILENCE).most_common(most))
+
+
 def items(W):
     runs = kernal_runs(W)
+    taken = [(at, at + 20 * len(run)) for at, run in runs]
     out = [(i["place"]["pulse"], i) for i in kernal_items(kernal_blocks(runs))]
-    out += undecoded(W, [(at, at + 20 * len(run)) for at, run in runs])
+    blocks, spans = turbo_items(W, taken)
+    out += blocks
+    for at, item in undecoded(W, taken + spans):
+        a, b = item["place"]["pulses"]
+        common = lengths(W[a:b + 1])
+        if len(common) == 2:
+            item["problem"] += f", most of them {common[0]} or {common[1]} cycles long"
+        out.append((at, item))
     return [item for _, item in sorted(out, key=lambda x: x[0])]
 
 
@@ -237,7 +345,7 @@ def main(argv):
             written += 1
             print(f"{path}: ${it['load']:04X}, {len(it['data']):,} bytes" + (f"  ({it['problem']})" if it.get("problem") else ""))
         if not written:
-            print(f"{argv[1]}: no file in the KERNAL's format")
+            print(f"{argv[1]}: no file in a format this reads")
         return 0
     if len(argv) == 2 and argv[0] == "list":
         argv = argv[1:]
@@ -247,14 +355,16 @@ def main(argv):
     with open(argv[0], "rb") as f:
         W = waves(f.read(), argv[0])
     its = items(W)
-    print(f"{argv[0]}: {len(W):,} pulses, {sum(1 for i in its if 'pulses' not in i['place'])} items in the KERNAL's format")
+    turbo = sum(1 for i in its if i["place"].get("type", "").startswith("turbo"))
+    print(f"{argv[0]}: {len(W):,} pulses, {sum(1 for i in its if 'pulses' not in i['place']) - turbo} items in the KERNAL's format"
+          + (f" and {turbo} turbo blocks" if turbo else ""))
     for it in its:
         if "pulses" in it["place"]:
             a, b = it["place"]["pulses"]
             print(f"  pulses {a:,}-{b:,}: {it['problem']} ({sum(W[a:b + 1]) / 985248:.0f} seconds of tape)")
             continue
         at = f"${it['load']:04X}-${(it['load'] + len(it['data'])) & 0xFFFF:04X}" if it["load"] is not None else ""
-        print(f"  {it['label']:<24} {it['place']['type']:<20} {at:<12} {len(it['data']):6,} bytes  at pulse {it['place']['pulse']:,}"
+        print(f"  {it['label']:<24} {it['place']['type']:<27} {at:<12} {len(it['data']):6,} bytes  at pulse {it['place']['pulse']:,}"
               + (f"  ({it['problem']})" if it.get("problem") else ""))
     return 0
 

@@ -289,6 +289,18 @@ In VICE with sound off, `$D41B` and `$D41C` read the low byte of the
 cycle counter, and such a table is a ramp
 (`kit/lessons/2026-10-26-into-the-eagles-nest.md`).
 
+The kit's machine (`kit/c64/machine.js`) answers `$D41B` from voice 3's
+oscillator on the cycle of the read (`createOsc` in `site/lib/sid.js`,
+held to VICE by `kit/c64/test_sid_osc.js`), so a game in a lockstep rolls
+the numbers a C64 would from the same start. A port does not run on the
+game's cycles and cannot work those numbers out: it reads `$D41B` through
+`P.io` wherever the game does, and the lockstep hands it the bytes the
+game read, in order. Never give the two sides a generator of your own in
+its place: the game then plays numbers no C64 gives it. On the page the
+port's `io` answers the read from an oscillator of its own, clocked by
+the port's count of cycles. `$D41C`, voice 3's envelope, reads 0 on the
+kit's machine.
+
 ## The serial bus on CIA 2's port A (`$DD00`)
 
 The disk drive hangs on three lines of the serial bus, and CIA 2's port
@@ -325,6 +337,7 @@ $DD00`, `CMP $DD00`, `BNE`) and then shifts bit 7 into the carry and bit
 a bit out on bit 5 or in on bit 7 at each change of bit 4), and each of
 its stores sets the video bank as well, since bits 0-1 are in the same
 register.
+
 
 ## CIA timers and the tick
 
@@ -465,8 +478,9 @@ loader the game calls at its own address does not pass `$FFD5`.
 ## Tapes
 
 **The TAP file**: a 20-byte header, then the pulses. `$00`-`$0B` hold
-`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$10`-`$13` the data's length,
-low byte first. Each byte of data is one pulse, the time from one falling
+`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$0D` the machine (0 for the
+C64), `$0E` the video standard (0 PAL, 1 NTSC), `$10`-`$13` the data's
+length, low byte first. Each byte of data is one pulse, the time from one falling
 edge to the next, in units of 8 cycles. A `$00` is a pulse too long for a
 byte: in version 1 the next three bytes give its length in cycles, low
 byte first, and in version 0 nothing does.
@@ -495,9 +509,29 @@ read a header that holds anything else as a loader's code or data.
 
 `python3 kit/c64/tap.py <image>` reads all of that from the pulses, with
 no emulator, and `kit/c64/test_tap.py` holds it to a tape the KERNAL saved
-(`kit/lessons/2026-11-11-c64-tape-reader.md`). Most games load one short
-program this way, and that program reads the rest in a faster format of
-its own, which `tap.py` shows as a stretch of pulses and does not read.
+(`kit/lessons/2026-11-11-c64-tape-reader.md`). On real cassettes the three
+pulses were `$2F` or `$30`, `$42` or `$43`, and `$56` or `$57` in the TAP,
+and every block's checksum came out right
+(`kit/lessons/2026-11-11-c64-tape-media.md`). A boot file that loads over
+the vectors at `$0300` is of type 3.
+
+**Turbo formats.** Most games load one short program in the KERNAL's
+format, and that program reads the rest in a faster format of its own. On
+the tapes read it was always a bit a pulse, in two lengths that differ
+from tape to tape, from 216 and 312 cycles to 496 and 952. The loaders
+whose code was read time a pulse with a CIA timer they restart on every
+pulse: a pulse the timer runs out on is a 1. The loader's own code is the only
+description of its format. Read off it the timer's value, the order of a
+byte's bits, the bytes it hunts for and the header it reads, and let the
+game's listing say whether the bytes came out right. A format that is a
+pilot byte, a sync byte, two addresses and the bytes is one more row of
+`TURBO` in `kit/c64/tap.py`, which then lists and extracts its blocks. A
+loader may be stored scrambled (`games/c64/shadowfire/orientation.md`,
+"The loader") or change its own code as it loads: run its unscrambling in
+`kit/cpu/cpu6502.js` and read what that leaves, not the bytes on the
+tape. A stretch `tap.py` cannot decode is shown with its two commonest
+pulse lengths, and is an item of `media.json` all the same, to be
+answered by hand from what the run saw load.
 
 ## Cartridge images
 

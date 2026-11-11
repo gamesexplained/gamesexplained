@@ -312,6 +312,23 @@ allowed on screen on later passes.
 - Register census: the game writes `$D400`-`$D406` (indexed, all three
   voices), `$D416`, `$D417`, `$D418`; it never writes the filter
   cutoff's low bits (`$D415`).
+- **Mix-E-Load** (the original tape, the Ultimate Tape Archive's
+  `Delta.tap`, 505,231 bytes, SHA-256
+  `4e83b918920ac9d65431427eee90c60871ecc28081e7d275a6c3fa9490c287d7`;
+  VICE 3.10 with vice-mcp 3.14.0, 11 November 2026). The tape's loader
+  calls the program at `$CCDD` (from `$ED4F`), and it runs while the
+  rest of the game loads. Its bytes at that moment: `$05`-`$06`, `$0400`-
+  `$0FFF` (screen, sprite pointers, character set, twinkle sprites),
+  `$BF00`-`$CFFF` (option lists, tables, music driver, program) and
+  `$E000`-`$E830` (the scrolling message, ended by `$FF`). One pass of
+  its main loop (`$CF67`) a frame plays the tune and reads the joystick;
+  every fifth frame it draws a lead phrase and a bass transposition at
+  random (`$CE6B`). The SID registers after each of 2,001 passes with
+  joystick moves equal VICE's, and two pictures equal VICE's in every
+  pixel (`test_mix_e_load.js`, the Music tab). Bug: to put a twinkle past
+  x 255 it adds one to `$D010` (`INC $D010` at `$CEC1`) instead of
+  setting the bit, and never clears it, so about a third of the twinkles
+  are drawn off the screen. "HELLO TAZZS" sits unread at `$BFF4`.
 
 ## Video register census
 

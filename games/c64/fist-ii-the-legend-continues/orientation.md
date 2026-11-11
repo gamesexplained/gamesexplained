@@ -13,16 +13,17 @@ US; the in-game title reads FIST, THE LEGEND CONTINUES, COPYRIGHT 1986
 BEAM SOFTWARE). No crack intro or trainer appears. The directory holds
 twenty files:
 
-| File | Loads at | Bytes | What it is |
-|---|---|---|---|
-| `L` | `$032C` | 90 | autostart stub: hooks a KERNAL vector, loads `LL` at `$9800` and jumps to it |
-| `LL` | `$9800` | 1,187 | the menu: "PRESS THE NUMBER OF YOUR CHOICE 1) TRAINING 2) ADVENTURE" |
-| `M`, `T` | `$6000` | 3,890 / 6,949 | the Mindscape logo and a second picture (not traced) |
-| `LOADALL` | `$C000` | 689 | the Adventure loader |
-| `TITLE`, `TSETUP` | `$6000`, `$1000` | 1,024 / 98 | the title picture and the code that shows it |
-| `BNK4B`, `BNK4A`, `BNK3`, `BNK12A`, `COLOR`, `BNK2B` | see below | | Adventure |
-| `LOADIT` and the `TNK`/`TOLOR` files | | | Training, the same layout |
-| `DUMMY` | `$1000` | 256 | not loaded by either loader |
+| File | Loads at | Bytes | What it is | Part |
+|---|---|---|---|---|
+| `L` | `$032C` | 90 | autostart stub: hooks a KERNAL vector, loads `LL` at `$9800` and jumps to it | both |
+| `LL` | `$9800` | 1,187 | the menu: "PRESS THE NUMBER OF YOUR CHOICE 1) TRAINING 2) ADVENTURE" | both |
+| `M`, `T` | `$6000` | 3,890 / 6,949 | the Mindscape logo and the title picture, packed; the menu loads each at `$4000`, unpacks it to `$2000` and shows it (`TODO.md`, "From the disk's ledger") | both |
+| `LOADALL` | `$C000` | 689 | the Adventure loader | adventure |
+| `TSETUP` | `$1000` | 98 | code that shows a picture held at `$6000`. `LOADALL` holds the code to load a file `TITLE` and then this one, the disk has no `TITLE`, and the menu jumps the loader past both loads ("The loader, in a paragraph") | neither |
+| `BNK4B`, `BNK4A`, `BNK3`, `BNK12A`, `COLOR`, `BNK2B` | see below | | Adventure | adventure |
+| `LOADIT` | `$C000` | 640 | the Training loader | training |
+| `TNK4B`, `TNK4A`, `TNK3`, `TNK12A`, `TOLOR`, `TNK2B` | as the Adventure's ("Training", below) | | Training | training |
+| `DUMMY` | `$1000` | 256 | not loaded by either loader | neither |
 
 ## Two more copies compared
 
@@ -58,6 +59,14 @@ Neither image is the `.d64` analysed here (its SHA-256 differs and it has
 no disk name); its game files were not compared with these byte for byte
 beyond the three above.
 
+`media.json` lists the first of the two, the disk with its protection,
+item by item (`python3 kit/scripts/media.py games/c64/fist-ii-the-legend-continues`).
+Every byte of `L`, `BNK12A`, `BNK2B`, `BNK3`, `BNK4A` and `BNK4B` that
+the Adventure's listing holds is the disk's, and so is `LOADALL` but for
+what the menu and the loader change in it. Every byte of `TNK12A`,
+`TNK2B`, `TNK3`, `TNK4A` and `TNK4B` that the Training's listing holds
+is the disk's too.
+
 ## From power-on to play
 
 1. Hard reset (power cycle) the emulator, PAL.
@@ -88,14 +97,40 @@ started. Training is a separate load of its own files.
 container with no display. `check-emulator`: 56 of 57, failed
 `pause-at-instruction`.
 
+Training (11 November 2026): `release v3.14.0,
+v3.14.0-linux-x86_64-gui.zip`, the same kind of container;
+`check-emulator`: 54 of 54.
+
 ## The loader, in a paragraph
 
-`LOADALL` (`$C000`) loads `TITLE` and `TSETUP` and calls `$1000` to show
-the title picture. It then loads `BNK4B` at `$1000` and, with every ROM
-and the I/O switched out (`$01` = 0), copies `$1000`-`$3FF8` up to
-`$D000`-`$FFF8`, under the I/O area and the KERNAL. It loads `BNK4A` at
+`LOADALL` (`$C000`) holds code that loads `TITLE` and `TSETUP` and calls
+`$1000` to show the title picture, but the menu skips it: before it
+starts the loader for the Adventure, `LL` writes `JMP $C06E` over
+`$C011` (`$9985`), which is why the listing holds that jump there. The
+picture on the screen is the one the menu itself unpacked from `T`. From
+`$C06E` the loader loads `BNK4B` at `$1000` and, with every ROM
+and the I/O switched out (`$01` = 0), copies `$1000`-`$3FEF` up to
+`$D000`-`$FFEF`, under the I/O area and the KERNAL: the copy counts
+`$2FF0` bytes, so the file's last nine (`$3FF0`-`$3FF8`) stay behind. It loads `BNK4A` at
 `$C280`-`$CFFF` (over the end of the loader itself), `BNK3` at `$1000`
 and copies it to `$8000`-`$BFFF`, `BNK12A` at `$0400`-`$5BFF`, `COLOR` at
 `$6000` copied into colour RAM, and `BNK2B` at `$5C00`-`$7FFF`. Then it
 switches everything out again and jumps to `$C3FD`. The game fills all
-of memory from `$0400` to `$FFF8`, the RAM under the I/O chips included.
+of memory from `$0400` to `$FFEF`, the RAM under the I/O chips included.
+
+## Training
+
+The part `training` (`parts/training/`), with its own snapshots in that
+folder's `work/`:
+
+1. From the menu (`work/menu.vsf` there), press `1` (Training). `LOADIT`
+   blanks the screen, sets a cyan border and reads `TNK4B`, `TNK4A`,
+   `TNK3`, `TNK12A`, `TOLOR` and `TNK2B` in that order, copying `TNK4B`
+   to `$D000`-`$FFEF`, `TNK3` to `$8000`-`$BFFF` and `TOLOR` into colour
+   RAM (`parts/training/facts.md`, Build).
+2. The loader ends with `JMP $C3FD`: `work/entry.vsf` is stopped there (a
+   stopping checkpoint on `$C3FD` set from the menu snapshot), with `$01`
+   = 0.
+3. `$C3FD` jumps to `$115A`, which jumps to the start-up at `$1D8A`. The
+   title comes up with the demonstration; F1 or fire on port 2 starts a
+   one-player game. `work/play.vsf` is in its first bout, at the temple.

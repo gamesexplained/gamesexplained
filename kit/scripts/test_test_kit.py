@@ -8,10 +8,12 @@ the tests that exist, that it does not try to run itself, that every
 `SELF_TESTS` entry names a file that is really there and no script with a
 `--test` flag is missing from it, that a skip fails under `--require-tools`,
 that the declaration a tool-dependent test reads is the one the runner
-exports, and that `--changed` picks the tests a changed file can reach and
-no others (#833).
+exports, that `--changed` picks the tests a changed file can reach and
+no others (#833), that the shares `--shard` splits a run into hold every test
+once, and that `--times` changes the order the tests start in and nothing else.
 """
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -216,6 +218,106 @@ class Changed(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
         self.assertIn("--changed:", p.stdout)
         self.assertRegex(p.stdout, r"are left to CI|running every test")
+
+
+class Shares(unittest.TestCase):
+    """`--shard K/N` gives each of N computers a share of one run. A test in no share would
+    never run, and nothing would say so: the shares together are the whole list, each test once."""
+
+    def tests(self):
+        m = runner_module()
+        tests = m.discovered() + [(" ".join(a), a) for a in m.SELF_TESTS]
+        tests.sort()
+        self.assertGreater(len(tests), 100)
+        return m, tests
+
+    def test_the_shares_hold_every_test_once(self):
+        m, tests = self.tests()
+        for n in range(1, 13):
+            shares = [m.share(tests, k, n) for k in range(1, n + 1)]
+            self.assertEqual(sorted(t for s in shares for t in s), tests,
+                             f"{n} shares do not hold every test once")
+            self.assertTrue(all(shares), f"one of {n} shares is empty")
+        self.assertEqual(m.share(tests, 1, 1), tests)
+
+    def test_a_test_s_share_is_its_name_s_alone(self):
+        """Whatever else is in the list and whatever order it is in: two computers that found
+        different tests would still each run every one of their share, and a new test moves
+        no other."""
+        m, tests = self.tests()
+        new = ("games/c64/a-new-game/test_play.js", ["node", "games/c64/a-new-game/test_play.js"])
+        for n in (2, 3, 4, 7):
+            for k in range(1, n + 1):
+                mine = m.share(tests, k, n)
+                self.assertEqual([t for t in m.share(tests + [new], k, n) if t != new], mine)
+                self.assertEqual(m.share(tests[::-1], k, n), mine[::-1])
+                self.assertEqual(m.share(tests[::2], k, n), [t for t in mine if t in tests[::2]])
+            self.assertEqual(sum(new in m.share([new], k, n) for k in range(1, n + 1)), 1)
+
+    def test_the_option_runs_its_share(self):
+        """Through the command, on tests no other test adds to while this one runs."""
+        def labels(*args):
+            p = subprocess.run([sys.executable, RUNNER, "--list", *args, "kit/cpu/"], cwd=ROOT,
+                               capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            return [ln.split()[1] for ln in p.stdout.splitlines() if ln.startswith("  discovered")], p.stdout
+        whole, _ = labels()
+        self.assertGreater(len(whole), 3)
+        got = []
+        for k in (1, 2, 3):
+            mine, out = labels("--shard", f"{k}/3")
+            self.assertIn(f"--shard: share {k} of 3, {len(mine)} of {len(whole)} test(s)", out)
+            got += mine
+        self.assertEqual(sorted(got), sorted(whole))
+
+    def test_a_share_that_is_not_one_of_them_is_refused(self):
+        for bad in ("0/4", "5/4", "2", "a/b", ""):
+            p = subprocess.run([sys.executable, RUNNER, "--list", "--shard", bad], cwd=ROOT,
+                               capture_output=True, text=True)
+            self.assertEqual(p.returncode, 1, f"--shard {bad!r}: {p.stdout}")
+            self.assertNotIn("discovered", p.stdout)
+
+
+class Times(unittest.TestCase):
+    """`--times FILE` starts the longest tests first. It may only change the order."""
+
+    def test_the_longest_start_first_and_one_not_on_record_before_them(self):
+        m = runner_module()
+        tests = [(x, []) for x in "abcde"]
+        order = [t[0] for t in m.longest_first(tests, {"a": 1.0, "c": 30.0, "d": 2.5, "e": 2.5})]
+        self.assertEqual(order, ["b", "c", "d", "e", "a"])
+        self.assertEqual(m.longest_first(tests, {}), tests)
+
+    def test_a_file_that_is_not_a_run_s_times_counts_for_nothing(self):
+        m = runner_module()
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(m.read_times(os.path.join(d, "none.json")), {})
+            for text in ("", "not json", "[1, 2]", '{"a": "long"}', "null"):
+                path = os.path.join(d, "times.json")
+                with open(path, "w") as fh:
+                    fh.write(text)
+                self.assertEqual(m.read_times(path), {}, text)
+
+    def test_a_run_reports_as_before_and_leaves_its_times(self):
+        ran = ("kit/cpu/test_census.py", "kit/cpu/test_m65c02.py")
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "sub", "times.json")
+            os.makedirs(os.path.dirname(path))
+            # the second is on record as the longer, another test as it was, and one that has gone
+            with open(path, "w") as fh:
+                json.dump({ran[0]: 0.1, ran[1]: 500.0, "kit/cpu/test_cpu6502.js": 7.5, "kit/gone/test_gone.py": 9.0}, fh)
+            plain = subprocess.run([sys.executable, RUNNER, *ran], cwd=ROOT, capture_output=True, text=True)
+            timed = subprocess.run([sys.executable, RUNNER, "--times", path, *ran], cwd=ROOT,
+                                   capture_output=True, text=True)
+            self.assertEqual((plain.returncode, timed.returncode), (0, 0), plain.stdout + timed.stdout)
+            said = lambda p: [ln.split()[:2] for ln in p.stdout.splitlines() if ln.startswith("  PASS")]
+            self.assertEqual(said(timed), [["PASS", ran[0]], ["PASS", ran[1]]])
+            self.assertEqual(said(timed), said(plain))
+            with open(path) as fh:
+                left = json.load(fh)
+            self.assertEqual(sorted(left), sorted(ran + ("kit/cpu/test_cpu6502.js",)))
+            self.assertEqual(left["kit/cpu/test_cpu6502.js"], 7.5)
+            self.assertLess(left[ran[1]], 500.0)
 
 
 if __name__ == "__main__":
