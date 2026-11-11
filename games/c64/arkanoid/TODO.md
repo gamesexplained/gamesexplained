@@ -25,3 +25,6 @@ A human pass over `index.html` and `levels.html`, section by section
   writes to the volume register.
 - A Play tab: the capsule chooser, the round renderer and the sound
   driver already run on the page.
+- The Graphics tab holds only the cassette's title picture. It should
+  also draw every shape the moving things use: the Vaus, the balls, the
+  capsules, the enemies and Doh (`kit/skills/core/70-minisite`).

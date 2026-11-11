@@ -976,8 +976,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (lengths[t] === undefined) {
         let n = 0, f = false;
         const notes = [[], [], []], prev = [null, null, null];
-        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1).fill(NaN)) : null;
-        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1)) : null;
+        // a loop: run on a second into it, and one period more, for the ball to repeat, however
+        // long the period
+        const lp = loopOf(t), cycle = lp ? lp.from + lp.period * Math.ceil(FPS / lp.period) : 0;
+        const stop = lp ? cycle + lp.period : LONG;
+        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(stop + 1).fill(NaN)) : null;
+        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(stop + 1)) : null;
         const chip = BOUNCE ? E.createSID(8000, { ntsc: o.ntsc }) : null;
         const starts = noteStarts(mark);
         const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
@@ -1005,9 +1009,6 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           if (w) for (let k = 0; k + 1 < w.length; k += 2) if (w[k] === 23 && w[k + 1] & 7) return true;
           return false;
         };
-        // a loop: run on a second into it, and one period more, for the ball to repeat
-        const lp = loopOf(t), cycle = lp ? lp.from + lp.period * Math.ceil(FPS / lp.period) : 0;
-        const stop = lp ? Math.min(LONG, cycle + lp.period) : LONG;
         try {
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);

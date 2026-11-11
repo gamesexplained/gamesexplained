@@ -643,7 +643,10 @@ printable range.
   to the tape's, and so are the colour bytes after the bitmap (`$7BB3`
   = `$00`, the background; `$7BB6` = `$0F`, light grey for every cell's
   colour RAM; `$7BB7` = `$00`, the border) and the screen's last 91
-  cells (`$8000`-`$805A`). The tape's loader shows a purple border.
+  cells (`$8000`-`$805A`). The tape's loader moves the border on to the next of the sixteen
+  colours with every block it reads (live, 11 November 2026: a block, and
+  a step of the border, about every 60 frames), so the border around the
+  picture changes about once a second.
   *Live*, 22 October 2026 (`reference/loading-screen.png`).
 
 ## Open questions
