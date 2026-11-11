@@ -76,6 +76,29 @@ async function check(browser,base,out=null) {
   await nonblank();await photos('levels');
 
   await go('graphics');await page.locator('#ct-animate').uncheck();
+  for(let direction=0;direction<4;direction++) {
+    await page.locator('#ct-cast').selectOption(String(direction));
+    const anchors=[];
+    for(let frame=0;frame<4;frame++) {
+      const pose=await page.locator('#ct-cast-canvas').evaluate((el,{direction,frame})=>{
+        const pixels=el.getContext('2d').getImageData(0,0,el.width,el.height).data;
+        let count=0,top=Infinity,left=Infinity,right=-1;
+        for(let y=0;y<el.height;y++)for(let x=0;x<el.width;x++) {
+          const at=(y*el.width+x)*4;
+          if(pixels[at]===8&&pixels[at+1]===8&&pixels[at+2]===8)continue;
+          count++;if(y<top){top=y;left=x;right=x;}else if(y===top){left=Math.min(left,x);right=Math.max(right,x);}
+        }
+        const vertical=direction>=2,index=direction%2?7-frame:frame,stride=vertical?48:32;
+        const source=(vertical?Cooler.D.playerVertical:Cooler.D.playerHorizontal).slice(index*stride,(index+1)*stride);
+        let originalPixels=0;for(const byte of source)for(let shift=0;shift<8;shift+=2)if((byte>>shift)&3)originalPixels+=2;
+        return {width:el.width,height:el.height,count,expected:originalPixels*100,anchor:[top,left,right]};
+      },{direction,frame});
+      assert.equal(pose.width,160);assert.equal(pose.height,160);
+      assert.equal(pose.count,pose.expected,`direction ${direction}, frame ${frame}: original pixels survive alignment`);
+      anchors.push(pose.anchor);await page.locator('#ct-frame-step').click();
+    }
+    for(const anchor of anchors)assert.deepEqual(anchor,anchors[0],`direction ${direction}: head stays in place`);
+  }
   const count=await page.locator('#ct-cast option').count();assert.equal(count,15);
   for(let i=0;i<count;i++){await page.locator('#ct-cast').selectOption(String(i));await page.locator('#ct-frame-step').click();}
   await page.locator('#ct-cast-prev').click();await page.locator('#ct-cast-next').click();

@@ -8,9 +8,10 @@
     Cooler.useListing(L);
     const D=Cooler.D, black='#080808';
     const hex=n=>'$'+n.toString(16).toUpperCase().padStart(2,'0');
-    function drawPixels(canvas, bytes, cols, rows, colour, scale=6, monochrome=false) {
-      canvas.width=cols*8*scale;canvas.height=rows*8*scale;
+    function drawPixels(canvas, bytes, cols, rows, colour, scale=6, monochrome=false, placement=null) {
+      canvas.width=cols*8*scale;canvas.height=(placement?.rows??rows)*8*scale;
       const c=canvas.getContext('2d');c.fillStyle=black;c.fillRect(0,0,canvas.width,canvas.height);
+      c.save();c.translate((placement?.x||0)*scale,(placement?.y||0)*scale);
       for(let tile=0;tile<cols*rows;tile++)for(let y=0;y<8;y++) {
         const b=bytes[tile*8+y]||0;
         if(monochrome || !(colour&8))for(let x=0;x<8;x++) {
@@ -20,6 +21,7 @@
           if(p){c.fillStyle=C16.css([0,0x61,0x26,colour&0x77][p]);c.fillRect(((tile%cols)*8+x*2)*scale,(Math.floor(tile/cols)*8+y)*scale,scale*2,scale);}
         }
       }
+      c.restore();
     }
     function map(canvas, level, overlay=false, inactive=false, selected=-1) {
       const {m,board}=Cooler.memory(level,true), picture=C16.render(m,Cooler.ted());
@@ -167,7 +169,7 @@
     }
     if($('ct-cast')) {
       const groups=[];
-      const player=(name,vertical,indices)=>groups.push({name,source:vertical?D.playerVertical:D.playerHorizontal,stride:vertical?48:32,cols:2,rows:vertical?3:2,indices,colour:0x4a,delay:55});
+      const player=(name,vertical,indices)=>groups.push({name,player:true,vertical,source:vertical?D.playerVertical:D.playerHorizontal,stride:vertical?48:32,cols:2,rows:vertical?3:2,indices,colour:0x4a,delay:55});
       player('Cuthbert: right',false,[0,1,2,3]);player('Cuthbert: left',false,[7,6,5,4]);
       player('Cuthbert: down',true,[0,1,2,3]);player('Cuthbert: up',true,[7,6,5,4]);
       for(let type=1;type<=4;type++)groups.push({name:`Guard shape ${type}`,frames:D.enemyFrames.map(b=>b.slice((type-1)*32,type*32)),cols:2,rows:2,colour:D.enemyColours[type-1],delay:290});
@@ -183,7 +185,11 @@
       const draw=()=>{
         const g=groups[+$('ct-cast').value],n=g.frames?g.frames.length:g.indices.length;frame%=n;
         const bytes=g.frames?g.frames[frame]:g.source.slice(g.indices[frame]*g.stride,(g.indices[frame]+1)*g.stride);
-        drawPixels($('ct-cast-canvas'),bytes,g.cols,g.rows,g.colour,10);
+        // Odd source frames contain position shifts. Align the in-place preview and leave
+        // a two-pixel horizontal margin for feet that extend beyond the body.
+        const odd=g.player?g.indices[frame]&1:0;
+        const placement=g.player?{x:g.vertical?0:2-odd*6,y:g.vertical?-odd*4:0,rows:2}:null;
+        drawPixels($('ct-cast-canvas'),bytes,g.cols,g.rows,g.colour,10,false,placement);
         $('ct-cast-label').textContent=`${g.name} · frame ${frame+1}/${n}`;
       };
       picker($('ct-cast'),$('ct-cast-prev'),$('ct-cast-next'),()=>{frame=0;resetClock();draw();},groups.length);
