@@ -1,6 +1,6 @@
 # Super Wonder Boy in Monster Land — kit feedback
 
-The run describes all counted bytes and keeps forced tests, ordinary-play reachability, and eight unattributed byte roles distinct. Final validation is recorded below.
+The run describes all counted bytes and keeps forced tests, ordinary-play reachability, and seven unattributed byte roles distinct. Final validation is recorded below.
 
 ## Skill text that changed what I did
 

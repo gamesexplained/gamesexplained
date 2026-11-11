@@ -115,4 +115,4 @@ Controlled visual-resource reconstruction reads 10 additionally described bytes 
 
 The remaining 24 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
 
-Unattributed bytes $955D had no CPU read, write or instruction-entry hits during a 200-frame VICE probe with a working interrupt control checkpoint. Their semantic role and uses in other states remain explicitly unknown.
+The byte at $955D is an RTS. Stage object record 2 at $953D holds its address twice, at $9541 and $9543; the record loader copies those bytes to fields 7 to 10, and the shop code patches them into the calls at $9612 and $9653, so both option callbacks of that record return at once. A 200-frame VICE probe in which nothing was bought recorded no CPU read, write or instruction entry at $955D.
