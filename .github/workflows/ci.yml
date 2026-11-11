@@ -20,12 +20,12 @@ concurrency:
 jobs:
   # Every kit test, on four computers at once. The tests are most of a run's time, and
   # each is a process of its own, so each computer takes a share of them: test_kit.py --shard
-  # gives the Kth of N shares, which together are every test, each once
-  # (kit/scripts/test_test_kit.py holds that). Another entry in `share` is another computer.
-  # The number of shares is the number of this job's copies, so `share` stays the matrix's one
-  # list: a second list beside it would make copies that repeat some shares and leave others
-  # out. A share that fails leaves the others running, so one run names every failing test,
-  # and deploy waits for all of them.
+  # gives the Kth of N shares. A test's share comes from its name alone, so the shares
+  # together are every test, each once (kit/scripts/test_test_kit.py holds that). Another
+  # entry in `share` is another computer. The number of shares is the number of this job's
+  # copies, so `share` stays the matrix's one list: a second list beside it would make copies
+  # that repeat some shares and leave others out. A share that fails leaves the others
+  # running, so one run names every failing test, and deploy waits for all of them.
   tests:
     name: tests (${{ matrix.share }} of ${{ strategy.job-total }})
     runs-on: ubuntu-latest
@@ -99,15 +99,16 @@ jobs:
         with:
           path: tools/scumm/scummvm-*/
           key: ${{ steps.scummvm.outputs.cache-primary-key }}
-      # How long each test took on an earlier run, so that the longest start first and none is
-      # left to start when the rest are done (test_kit.py --times). It changes the order the
-      # tests start in and nothing else. Runs on main keep the times; a pull request reads them.
+      # How long each test of this share took on an earlier run, so that the longest start first
+      # and none is left to start when the rest are done (test_kit.py --times). It changes the
+      # order the tests start in and nothing else. Runs on main keep the times, a file for each
+      # share; a pull request reads them.
       - name: Each test's time on an earlier run
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/kit-test-times.json
-          key: kit-test-times-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.share }}
-          restore-keys: kit-test-times-
+          key: kit-test-times-${{ matrix.share }}of${{ strategy.job-total }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: kit-test-times-${{ matrix.share }}of${{ strategy.job-total }}-
       - name: Every kit test, this computer's share
         id: tests
         run: >
@@ -115,11 +116,11 @@ jobs:
           --shard ${{ matrix.share }}/${{ strategy.job-total }}
           --times "$RUNNER_TEMP/kit-test-times.json"
       - name: Keep each test's time for the next run
-        if: always() && github.ref == 'refs/heads/main' && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+        if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/kit-test-times.json
-          key: kit-test-times-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.share }}
+          key: kit-test-times-${{ matrix.share }}of${{ strategy.job-total }}-${{ github.run_id }}-${{ github.run_attempt }}
 
   # The other checks, the site, and the checks of the built site in a browser, beside the tests.
   check-and-build:

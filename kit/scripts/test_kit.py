@@ -41,9 +41,10 @@ Usage:
                     names, imports, a page's scripts. A change to this script runs them
                     all. A test that reaches a changed file by a name it builds as it
                     runs is left out here and runs in CI
-  --shard K/N       run share K of N of the tests: every Nth of the list in its order,
-                    from the Kth. The N shares together are every test, each once, so N
-                    computers can split one run between them, as CI does
+  --shard K/N       run share K of N of the tests, so N computers can split one run
+                    between them, as CI does. A test's share comes from its name alone
+                    (the name's SHA-256, modulo N): the N shares together are every
+                    test, each once, and a new test moves no other out of its share
   --times FILE      start the longest tests first, going by how long each took on the run
                     before, read from FILE, and write this run's times there for the next.
                     A test with no time in FILE starts before those that have one. Only
@@ -56,6 +57,7 @@ says it skipped is reported as SKIP, which is not a failure without
 """
 import concurrent.futures
 import glob
+import hashlib
 import json
 import os
 import re
@@ -291,8 +293,11 @@ def _glob(pattern):
 
 
 def share(tests, k, n):
-    """Share k of n (--shard): every nth test from the kth, so the n shares hold each test once."""
-    return tests[k - 1::n]
+    """Share k of n (--shard): the tests whose name's SHA-256, modulo n, is k - 1. A test's share
+    depends on its name and n and on nothing else in the list, so the n shares hold each test
+    once on any computer, and adding a test moves no other, which keeps --times' record of a
+    share's tests good from one run to the next."""
+    return [t for t in tests if int(hashlib.sha256(t[0].encode()).hexdigest(), 16) % n == k - 1]
 
 
 def read_times(path):

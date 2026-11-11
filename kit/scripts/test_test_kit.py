@@ -224,17 +224,35 @@ class Shares(unittest.TestCase):
     """`--shard K/N` gives each of N computers a share of one run. A test in no share would
     never run, and nothing would say so: the shares together are the whole list, each test once."""
 
-    def test_the_shares_hold_every_test_once(self):
+    def tests(self):
         m = runner_module()
         tests = m.discovered() + [(" ".join(a), a) for a in m.SELF_TESTS]
         tests.sort()
         self.assertGreater(len(tests), 100)
+        return m, tests
+
+    def test_the_shares_hold_every_test_once(self):
+        m, tests = self.tests()
         for n in range(1, 13):
             shares = [m.share(tests, k, n) for k in range(1, n + 1)]
             self.assertEqual(sorted(t for s in shares for t in s), tests,
                              f"{n} shares do not hold every test once")
-            self.assertLessEqual(max(map(len, shares)) - min(map(len, shares)), 1)
-        self.assertEqual([m.share(list("abc"), k, 5) for k in range(1, 6)], [["a"], ["b"], ["c"], [], []])
+            self.assertTrue(all(shares), f"one of {n} shares is empty")
+        self.assertEqual(m.share(tests, 1, 1), tests)
+
+    def test_a_test_s_share_is_its_name_s_alone(self):
+        """Whatever else is in the list and whatever order it is in: two computers that found
+        different tests would still each run every one of their share, and a new test moves
+        no other."""
+        m, tests = self.tests()
+        new = ("games/c64/a-new-game/test_play.js", ["node", "games/c64/a-new-game/test_play.js"])
+        for n in (2, 3, 4, 7):
+            for k in range(1, n + 1):
+                mine = m.share(tests, k, n)
+                self.assertEqual([t for t in m.share(tests + [new], k, n) if t != new], mine)
+                self.assertEqual(m.share(tests[::-1], k, n), mine[::-1])
+                self.assertEqual(m.share(tests[::2], k, n), [t for t in mine if t in tests[::2]])
+            self.assertEqual(sum(new in m.share([new], k, n) for k in range(1, n + 1)), 1)
 
     def test_the_option_runs_its_share(self):
         """Through the command, on tests no other test adds to while this one runs."""
