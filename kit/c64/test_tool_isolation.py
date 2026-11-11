@@ -360,7 +360,7 @@ class SnapshotTests(unittest.TestCase):
             ram = bytes(range(256)) * 256
             source.write_bytes(snapshot(ram))
             project = bridge.project_path(source, root / "tools")
-            self.assertEqual(project.parent, root / "tools")
+            self.assertEqual(project.parent, (root / "tools").resolve())
             data = json.loads(project.read_text())
             self.assertEqual(gzip.decompress(base64.b64decode(data["raw_data_base64"])), ram)
             self.assertEqual(source.read_bytes(), snapshot(ram))

@@ -1,0 +1,5 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const p of ['resident','stage-23'])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',p,'listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const index of [1,0xa2]){const m=base.slice();m.set([0,4],0x54);m[0x400]=0x40;m.set([0xa9,1,0xa2,0x55,0x60],0x77e0);const cpu=new CPU(m);cpu.x=index;cpu.call(0x950a,{}, {maxSteps:30});assert.equal(m[0x9514],index);assert.equal(cpu.a,index===1?0x41:1);assert.equal(cpu.x,index===1?0x55:255);}
+{const m=base.slice(),record=[...m.slice(0x9504,0x950a)];assert.deepEqual(record,[7,11,1,255,10,149]);m[0x7f54]=2;m.set([7,11],0x6f3c);[0x4860,0x4870,0x4880,0x48b0,0x4890,0x48a0].forEach((a,i)=>m[a]=record[i]);m.set([0,4],0x54);m[0x400]=0x40;m.set([0xa9,1,0xa2,0x55,0x60],0x77e0);const cpu=new CPU(m);cpu.call(0x48bf,{}, {maxSteps:80});assert.equal(m[0x9514],1);assert.equal(m[0x4880],0);assert.equal(cpu.a,0x41);assert.equal(cpu.x,0x55);}
+console.log('OK - load-23 trigger patches its return opcode');

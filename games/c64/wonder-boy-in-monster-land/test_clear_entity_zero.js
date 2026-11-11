@@ -1,0 +1,3 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const m=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)m.set(r.b,r.a);const fields=[0x1919,0x1ab1,0x1ac2,0x1ad3,0x1ae4,0x1af5,0x1b06,0x1b17,0x1b28,0x1a7e,0x1a8f,0x1aa0,0x19b2];for(const a of fields)m.set([0xa5,0x5a],a);const cpu=new CPU(m);cpu.call(0x18d8,{}, {maxSteps:30});for(const a of fields)assert.deepEqual([...m.slice(a,a+2)],[0,0x5a]);
+console.log('OK - entity slot zero field clear');

@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const p of ['resident','stage-11'])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',p,'listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const [entry,first,other] of [[0x95f4,3,253],[0x9616,253,3]]){const m=base.slice();m[0x1ab3]=0;m[0x1ac4]=0;const up=first===3;const expected=up?[0,1,1,2,2,...Array(10).fill(3),2,2,1,1,0,255,255,254,254,...Array(10).fill(253),254,254,255,255]:[0,255,255,254,254,...Array(10).fill(253),254,254,255,255,0,1,1,2,2,...Array(10).fill(3),2,2,1,1];const cpu=new CPU(m);for(const value of [...expected,0]){cpu.x=2;cpu.call(entry,{}, {maxSteps:40});assert.equal(cpu.a,value);}assert.equal(expected.length,38);}
+console.log('OK - two repeating load-11 motion streams');

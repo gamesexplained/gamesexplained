@@ -95,10 +95,11 @@ def project(sym, ram, settings=None):
     disassembler's own block, which names the machine when it is not a C64."""
     labels = {}
     for s in sym["symbols"]:
-        if s.get("kind", "user") != "user":
-            continue  # the disassembler regenerates auto symbols itself
+        kind = s.get("kind", "user")
+        if kind not in ("user", "auto"):
+            continue
         labels.setdefault(str(s["address"]), []).append(
-            {"name": s["name"], "label_type": s["type"], "kind": "User"})
+            {"name": s["name"], "label_type": s["type"], "kind": kind.capitalize()})
     body = {
         "version": 1, "origin": 0,
         "raw_data_base64": base64.b64encode(gzip.compress(ram, mtime=0)).decode(),

@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),crypto=require('crypto'),fs=require('fs'),path=require('path');const root=__dirname,shops=JSON.parse(fs.readFileSync(path.join(root,'shop-routine-observations.json'))),records=JSON.parse(fs.readFileSync(path.join(root,'first-messages.json'))).records;
+for(const o of shops){const m=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(root,'parts',`stage-${String(o.load).padStart(2,'0')}`,'listing.json'))).records)if(r.b)m.set(r.b,r.a);for(const r of records){const a=o.table-0x34a+r.address-0xa857;assert.equal(crypto.createHash('sha256').update(m.slice(a,a+r.length)).digest('hex'),r.sha256,`${o.load}/${a.toString(16)}`);}}
+assert.equal(shops.length,17);assert.equal(records.length,34);console.log('OK - 578 later-load shop message records match the decoded first-load records');

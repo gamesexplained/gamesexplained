@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Check the recorded map dimensions against every load's listing bytes."""
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+for number in range(1, 32):
+    part = ROOT / 'parts' / f'stage-{number:02d}'
+    listing = json.loads((part / 'listing.json').read_text())
+    memory = {}
+    for record in listing['records']:
+        for offset, byte in enumerate(record.get('b', [])):
+            memory[record['a'] + offset] = byte
+    def byte(address):
+        assert address in memory, f'load {number}: missing ${address:04X}'
+        return memory[address]
+    rows, stride, width = byte(0x7F4C), byte(0x7F4A), byte(0x7F4B)
+    next_data = byte(0x7F41) | byte(0x7F42) << 8
+    assert 0x8671 + rows * stride == next_data, f'load {number}: map end'
+    for row in range(rows):
+        address = byte(0x85CF + row) | byte(0x8620 + row) << 8
+        assert address == 0x8671 + row * stride, f'load {number}: row {row}'
+    symbols = json.loads((part / 'symbols.json').read_text())
+    if number >= 2:
+        for address, side in ((0x85CF, 'low'), (0x8620, 'high')):
+            block = next(b for b in symbols['blocks'] if b['start'] == address)
+            assert block['type'] == 'Byte' and block['end'] == address + rows - 1, f'load {number}: {side} pointer block'
+            comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
+            assert f'first {rows} {side} bytes' in comment and f'{stride}-byte steps' in comment, f'load {number}: {side} pointer description'
+        fact = (part / 'facts.md').read_text()
+        assert 'row pointers in split tables at `$85CF` and `$8620`' in fact
+    for row in range(rows):
+        address = 0x8671 + row * stride
+        block = next(b for b in symbols['blocks'] if b['start'] == address)
+        assert block['end'] == address + width - 1 and block['type'] == 'Byte', f'load {number}: row {row} block'
+        if width < stride:
+            tail = next(b for b in symbols['blocks'] if b['start'] == address + width)
+            assert tail['end'] == address + stride - 1 and tail['type'] == 'Byte', f'load {number}: row {row} remainder'
+            values = [byte(a) for a in range(address + width, address + stride)]
+            description = next(c['text'] for c in symbols['comments'] if c['address'] == address + width and c['type'] == 'line')
+            assert f'{len(values)} captured bytes' in description
+            assert f'beginning ${values[0]:02X} and ending ${values[-1]:02X}; {values.count(0)} are zero' in description
+            assert f'column index from {width} through {stride-1}' in description
+            assert 'whether ordinary play reaches it' in description
+        comment = next(c['text'] for c in symbols['comments'] if c['address'] == address and c['type'] == 'line')
+        assert f'Map row {row + 1} of {rows}: {width} metatile indices' in comment, f'load {number}: row {row} description'
+        assert f'first index is ${byte(address):02X} and the last is ${byte(address + width - 1):02X}' in comment, f'load {number}: row {row} endpoints'
+print('OK - map pointers, rows, dimensions, endpoint descriptions and captured row remainders agree for loads 1–31')

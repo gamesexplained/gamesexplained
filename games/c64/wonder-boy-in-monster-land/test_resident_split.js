@@ -1,0 +1,6 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const base=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)base.set(r.b,r.a);
+for(const [scroll,bank,line,delay] of [[0,0xc0,95,10],[3,0,96,7]]){const m=base.slice();m[0x4d69]=scroll;m[0x4d6a]=5;m[0x5294]=2;m[0x529c]=3;m[0x529d]=4;m[0x46]=bank;m[0x6f]=6;m[0xd012]=0x56;const cpu=new CPU(m);cpu.pc=0x130a;for(let i=0;cpu.pc!==0x1383&&i<300;i++){if(cpu.pc===0x132e)m[0xd012]=0x57;cpu.step();}assert.equal(cpu.pc,0x1383);assert.equal(m[0x1384],line);assert.equal(m[0x1390],delay);assert.equal(m[0xd016],0x15);assert.equal(m[0xd018],bank===0xc0?4:0x14);assert.deepEqual([...m.slice(0xd021,0xd024)],[6,3,4]);}
+console.log('OK - raster split setup for two scroll paths');
+for(const [line,delay] of [[95,0],[96,7]]){const m=base.slice();m[0x1384]=line;m[0x1390]=delay;m[0xd012]=line;m[0xd011]=0x7b;for(let i=0;i<7;i++)m[0x4d58+i*2]=(i+1)*11;m[0x4d68]=0xaa;const cpu=new CPU(m);cpu.pc=0x1383;cpu.run({until:0x1211,maxSteps:200});assert.equal(cpu.pc,0x1211);for(let i=0;i<7;i++)assert.equal(m[0xd000+i*2],(i+1)*11);assert.equal(m[0xd010],0xaa);assert.equal(m[0xd011]&0x60,0);}
+console.log('OK - raster split sprite positioning');

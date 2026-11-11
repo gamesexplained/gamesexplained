@@ -1,0 +1,443 @@
+# Resident engine — verified technical facts
+
+### A direction reversal and the gold reward
+
+In the captured code, the slot-zero initializers for entity types `$FE` and `$FD` call `$5C0C` as they create the entity. The check uses the input sampled at `$3C4C`: a right press with left pressed in the preceding sample, or a left press with right pressed in the preceding sample, sets the entity's reward byte at `$1AB1` to `$FF`, provided the player's vertical-motion state at `$4DB3` is nonnegative. In the main update path, input is sampled at `$0407` before the record dispatcher at `$0434`. The condition is therefore a reversal across two consecutive input samples at creation; a fixed number of video frames before appearance has not been established.
+
+On contact, the dispatch table at `$754E` selects `$7632` for both types. `$771F` adds a pseudorandom offset of 0–4 to the saved reward byte with the 6510 in decimal mode; with `$FF`, this invalid BCD operand produces `$65`–`$69`, and `$7874` adds that packed-decimal amount to the player's gold. The small offset is chosen at collection, not at creation. The NMOS 6502 simulator ran the captured reversal routine for all 32 combinations of current and previous left/right values and both signs of the vertical-motion state. VICE single-stepped four controlled cases through `$5C0C`: both reversal directions set `$FF`, while a neutral previous input and a negative vertical state did not. VICE also ran the decimal addition at `$7730` for all five offsets and produced `$65`–`$69`. VICE also ran the full `$771F` calculation for all eight forced random inputs with reward bytes `$05` and `$FF`, using the real balance-add and digit-split routines and stubbed random, message and score callbacks; `$FF` produced `$65`–`$69`. VICE also called the full `$7632` reward handler with real entity release and balance calculation for all eight forced random inputs and reward bytes `$05` and `$FF`; the random, message and score callbacks were stubbed. The ranges `$5BE1`–`$5C29`, `$771F`–`$7755`, `$3020`–`$3032` and `$3C4C`–`$3C9D` match `work/play-round1.vsf` and the contributor's title capture. VICE also forced three entries through the real `$74D6` scan, slot check, rectangle test, dispatch, release and reward calculation: overlapping `$FE` and `$FD` entities awarded the expected forced amounts, while a separated `$FE` entity did not. Random, message and score callbacks were stubbed. A live, unmodified pickup test remains open.
+
+### Score glyphs and display setup
+
+The resident entry snapshot contains ten eight-byte digit shapes at `$C808–$C857`; rendering those bytes shows zero through nine, and the same bytes are present in the first-load play snapshot. `$39E7` uses eight-byte entries from a table based at `$C800` when it updates the score graphic. `$7122` copies the 80 digit bytes to `$D7B0–$D7FF` after banking I/O out.
+
+The code at `$6ABD` clears the low two bits of CIA2 port A, and the title raster handler writes `$02` to `$D018` at `$3BE8`. With VIC bank 3 selected, that pointer chooses `$C800` as the character base; the title handler also writes `$1B` to `$D011`, selecting character rather than bitmap display. The snapshot comparison differs at 20 addresses in `$C858–$CFFF`, so their ownership and exact use need further checking.
+
+### Character codes
+
+Rendering the 256 eight-byte shapes at `$C800` in the first-load play snapshot gives the following visible characters: `$00` is blank; `$01–$0A` are `0–9`; `$0B–$10` are `(`, `)`, `/`, `:`, `&`, `-`; `$41–$5A` are `A–Z`; `$5B–$5F` are `.`, apostrophe, `!`, comma, `?`; `$60` is a downward-pointing triangle; and `$61–$7A` are `a–z`. The triangle’s role in messages is not established. Other cells contain graphics or shapes whose text meaning is not established. Comparing the resident entry and first-load play snapshots finds differences in glyphs `$9D`, `$9E`, `$A1` and `$A2` only.
+
+Message records selected through the pointer tables at `$5636` and `$564C` contain three zero-terminated fields followed by a control byte. The copy loops at `$7806`, `$781B` and `$7830` replace stored `$20` spaces with glyph `$00` while filling the screen buffers. The record at `$549E` says “Lost the / Wing Boots.”; the record at `$5555` says “WING BOOTS.” The reward handler at `$771F` fills the copied “gold get” message with the calculated amount, while the score handler at `$7756` fills the copied “BONUS POINTS” message with digits derived from its reward input. The source records themselves hold zero glyphs as placeholders.
+
+### Drawing map characters
+
+The playfield raster path at `$1333–$133F` enables multicolour character mode and writes the value at `$6F` to the background-colour register `$D021`. The path at `$136A–$1373` writes `$529C` and `$529D` to the two shared character colours at `$D022` and `$D023`. The map viewer uses the values saved in each part's play snapshot. In every captured part, the 2,048 bytes at the entry snapshot's `$7F41` pointer match the play snapshot's RAM at `$D000–$D7FF`, where `$717C` copies the character data. The second and third load's reconstructed terrain was compared visually with their captured screens; the map viewer omits sprites and runtime changes.
+
+### Wing boots
+
+`$76FD` sets the selected player's flag `$08` and initializes `$4DE0` to `$FF`. At `$0A92`, when that flag is set, the fall-step value `$4DB5` is below 4 and the sampled up input is pressed, the game decrements `$4DE0`. A nonzero result sets the fall step to 1; a zero result clears the flag and selects the “Lost the Wing Boots.” message. Starting at `$FF`, expiration therefore takes 255 qualifying visits to this code. Visits on which up is not pressed or the fall step is at least 4 do not decrement it. The duration in seconds has not been measured.
+
+VICE single-stepping checked five controlled cases: the flag absent, up released, fall step 4, a qualifying visit with the count at 2, and expiration with the count at 1. The expiry case stopped after clearing the flag and before the message call; the message selection is traced in code. The tested `$0A92–$0ABE` bytes match the resident entry snapshot; the `$21E1` flag-clear helper differs only in its self-modified saved-X operand at `$21EE`. These tests do not establish the natural pickup route.
+
+### Sound sequencing
+
+The sequencer at `$2201` reads its request from `$2C15`. Request 1 enters the `$224F` initializer and uses the three pointers at `$7F58–$7F5D`; requests 2–7 select built-in pointer lists. The initializer subtracts one after the comparison at `$220D`, so request 1 selects the stage pointers and the others select the built-in entries. `$23EF` writes master volume 15 to `$D418`.
+
+In four sampled play states, VICE recorded 120 sequencer calls in 120 video frames, all through `$125B`. A controlled test on the second-load entry compared the sequencer state and final SID register values with the kit's 6502 for 50 calls; stopping on each SID store also confirmed the order of writes for the first 10. The first 10 calls of each built-in request 2–7 matched VICE's ordered writes from the first-load entry state. Those controlled calls do not establish the behavior of every game state.
+
+Recordings for 31 captured stage requests and six built-in requests are regenerated from the listings by `test_music.js`. Three saved note values and the SID registers seed each captured state; this matters because initialization retains some voice state. The sequencer state and register values repeat for each recorded looping state. From the tested first-load entry state, request 3 produced no gated voices through its simulated loop and is labelled silent.
+
+The scroll-copy entries at `$61D8`, `$61DD` and `$629C` copy 39 or 38 bytes through the pointers at `$54/$55` and `$52/$53`. The entries at `$635B–$67E6` use unrolled indexed loads and stores using base addresses in `$D8C8–$DB1E`; the descending routines have alternate entries that skip their first byte. The test `test_scroll_copies.js` runs all 12 entry points from the listing, including overlapping source and destination ranges.
+
+The sequence reader at `$6A3A` uses `$1AB1,X` as an index into the stream at `$54/$55`, `$1AC2,X` as a remaining count and `$1AD3,X` as a cached byte. Values `$00–$7F` and `$C0–$FF` return directly; `$81–$BF` repeat the following byte 1–63 times, and `$80` restarts the stream. A stream that continually resets without yielding a value does not terminate. `test_motion_sequence.js` exercises literal, repeat and reset cases against the listing; a controlled VICE run matched five successive calls.
+
+The terrain-sample routine at `$60D7` compares `$61D6` with per-load entries at `$7F75–$7F7D`. Its six-entry match path uses `$71`, `$527C` and the sign of `$4DB3` to manage a movement latch. `$7F76` selects a countdown path that decrements `$4B0D` only from 2 or higher. The two damage paths set `$4DE1` to `$50` and `$3C`, subject to the code’s effect and cooldown checks. A separate comparison of `$61D7` with `$7F7E–$7F80` sets `$61D5`. `test_sampled_tile.js` exercises these branches from the listing with movement and damage callees stubbed; five paths were checked in VICE without stubs.
+
+With decimal mode clear, `$6EA9` calculates the player’s map column, row and offsets from player coordinates, fine scrolling and the view origin. The horizontal path shifts the low nine bits and adds the carry from the last shift to the view’s left tile. The vertical path subtracts `$43`, then subtracts fine scroll without resetting carry; if the first subtraction underflows, the second subtracts one extra. The routine does not clamp the resulting indices. `test_view_grid.js` checks 5,000 input cases against the listing; five controlled cases, including the extra borrow, also matched VICE. These inputs include boundary cases and do not establish which positions ordinary play can reach.
+
+The entity update at `$4250` decrements a per-slot lifetime, sets a display flag at `$20`, updates a frame timer and a two-step sprite-frame offset, then uses the sequence at `$4319` for motion and phase decisions. Depending on two more per-slot fields it can call horizontal movement with collision and reverse direction when that call returns carry set. The sequence index is not locally bounded on entry. `test_entity_tick.js` checks its decisions with movement, release and coordinate callees stubbed; a controlled VICE call without stubs confirmed the lifetime, flag, frame timer, frame and sequence-index updates.
+
+The resident snapshot contains 25 sound-pattern blocks at `$2619–$2933`. Each block is named by at least one two-byte record in the built-in voice lists, has nonzero bytes up to a final zero, and is read by the sequencer’s event path at `$2332`. The path at `$2322–$2329` advances to another pattern on a zero; `$FF` takes a special event path. The meaning of an event depends on voice state and the sequencer tick. `test_sound_patterns.js` checks all 25 boundaries and pointer records against the listing, and `test_music.js` checks the captured sound-player sequences.
+
+The transition clear at `$7B2A` starts with X=0 after the preceding restore loop and writes zero to `$C000–$C3E7` and `$C400–$C7E7`, then writes `$08` to `$D800–$DBE7` with I/O visible. Each 1,000-byte clear leaves the last 24 bytes of its 1,024-byte page untouched. `test_screen_clear.js` checks the loop from the listing, and a controlled VICE run confirmed both screen clear boundaries. The earlier resident-entry snapshot contains zeros across `$C000–$C7FF`; The matrix bytes can also have other uses, and this observation does not exclude them from the ledger.
+
+The title raster selects VIC bank 3 and character base `$D000` before switching to `$C800`. In a controlled title-ready VICE capture, `$D018` selected the `$D000` base and the first 12 screen rows used character codes no greater than `$97`. RAM `$D000–$D4BF` is identical in the resident-entry and title-ready snapshots and to the first-load source at `$B5C4–$BA83`. The title initializer copies the source through `$717C`; the source is counted in the first load, and the RAM copy is excluded from the resident ledger to avoid counting it twice. The code subsequently overwrites the underlying RAM for gameplay; the I/O registers at the same addresses remain a separate CPU-visible meaning. The meanings of individual shapes and the adjacent `$D4C0–$D4FF` bytes remain open.
+
+In the paused second-load play capture, VIC bank 3 and the screen pointer selected six enabled hardware sprite pointers `$60–$65`, at `$D800–$D97F` beneath I/O; `$D01C` was zero. Slots `$60`, `$61` and `$63` match the resident-entry and first- and second-load play snapshots. In slots `$62`, `$64` and `$65`, the fixed numeral, lettering and blank rows match the resident entry and load-2 play capture; the score renderer generates the changing digit columns. `test_hidden_ram.js` checks the static bytes and the digit writes. A 200-frame VICE execution probe in each later load found no instruction entry in `$D880–$D8BE` or `$D900–$D97E`. These observations do not enumerate all sprite uses.
+
+A whole-frame VICE trace of the second-load play capture records the multiplexer assigning slots `$74` and `$75` to hardware sprites 4 and 5. By raster line 100 they share X=90, Y=210, the captured player coordinates; slot `$74` is monochrome and `$75` is multicolour. These settings remain unchanged through raster line 210 in the recorded frame. The 63 bytes at `$DD40` for slot `$75` match the resident entry; slot `$74` at `$DD00` differs at `$DD2E` and `$DD31` and needs its writes traced. The multicolour sprite used individual colour `$07` and shared colours `$02` and `$05` in that frame.
+
+During a title-to-play VICE run, a store watch at `$DD2E` stopped after `$20C5` with source slot `$66` and destination slot `$74` selected. `$2086` mirrors the two 24-by-21 source bitmaps in slots `$66/$67` at `$D980/$D9C0` into `$74/$75` at `$DD00/$DD40`: it reverses individual bits in the first layer and two-bit groups in the second. Reconstructing both layers from the resident-entry source bytes matches all 126 bitmap bytes in the second-load play snapshot. This establishes that the two changes at `$DD2E/$DD31` are produced in that title-to-play route; it does not establish all other writes or uses of those destinations.
+
+Controlled load-13 calls to $2086 reproduced four reflected pairs, using source slots $66/$67, $68/$69, $6A/$6B and $70/$71 and destination slots $74/$75, $76/$77, $78/$79 and $7E/$7F. Each multicolour destination also matches the resident entry. Each monochrome destination differs from that entry at offsets 46 and 49; the eight differing bytes remain unexplained. `test_player_mirrors.js` checks the generated bytes and those differences against captured hashes. Confirmed duplicate ranges are excluded from the ledger, while the eight differences remain in it as bare bytes.
+
+Every RAM byte at $D800–$DFFF is now represented in the ledger configuration as observed data, a confirmed duplicate, a generated score digit or an unresolved byte. The unresolved set includes the eight reflection differences and the 32 byte-63 positions that follow the 63 bytes of each sprite slot. `test_hidden_ram.js` checks that this accounting has no gaps or overlaps. The CPU-visible I/O registers at these addresses are separate, and the accounting does not establish all uses of the RAM.
+
+The instruction at `$044D` jumps directly to the tally entry at `$0699`. The separate instruction at `$0450` jumps through the little-endian pointer at `$7F3F/$7F40`; the first-load entry snapshot holds `$0200` there, and the second-load entry holds `$9661`. The pointer is part of loaded state and its runtime value controls the dispatch.
+
+### Record and alternate score graphics
+
+The code at $3A0A selects a record-score or alternate-player score path. It splits each of three packed score bytes into six glyph indexes, suppresses leading zeroes in the first five positions, and writes seven digit columns into RAM beneath I/O through $39E7. Each column takes eight bytes from the $C800 character set, spaced three bytes apart in the destination; the seventh column is a fixed zero glyph. The record path caches its three score bytes and skips redraw when they match. The alternate path returns when $4DBD is zero. `test_score_display.js` exercises both paths, the cache and the glyph-copy loop from listing bytes. Two controlled VICE calls confirmed the decoded digits and all seven columns with the I/O area banked out by the game routine.
+
+The first-player path at $38FE uses the same nibble conversion and zero suppression but keeps six individual cached glyph indexes at $4DA6–$4DAB. It redraws a digit column only when its index changes, then always draws a fixed zero at $D899. A listing test checks the cache and all seven destinations; one controlled VICE call confirmed the decoded indexes and columns.
+
+### Position comparison and attack contact
+
+At $72FC, the game compares the entity display slot’s horizontal position and the player’s position after halving each using the low bit of the high byte. Bit 0 of $192A,X adds 6 to the entity value with eight-bit wrap. Carry reports whether the resulting entity value is at least the player value. The routine restores Y after CMP, so N and Z describe restored Y, not the comparison. A listing test covers 4,096 combinations and an equality case; three controlled VICE calls include a wrap and equality.
+
+At $7430, an attack needs a nonzero contact budget, a visible player Y, a nonzero selected-player action tier, and frame $6E or $7C. Its box is three units high and 5 plus the action tier wide. On overlap, the routine spends one contact and subtracts the tier from $1A6D,X, saturating at zero. Flag $20 doubles that byte-sized damage and decrements $4DDF on the contact; when the counter reaches zero the flag is cleared, but that contact is still doubled. The listing test exercises both facing directions, misses, ordinary and doubled damage, saturation and flag expiry with the overlap routine stubbed; three controlled VICE calls confirmed two hits and a miss with the same stub. The Gauntlet pickup at $7688 calls $76E9, which sets that flag and initializes the counter to 10, then selects the “Wore the Gauntlet.” message. The tenth successful attack contact still deals doubled damage and selects the “Gauntlet is broken.” message; the next contact uses ordinary damage. The complete sequence was checked in the listing simulator and VICE with overlap and message callbacks stubbed. Natural contact timing remains open.
+
+After a player attack misses, $7330 can test entity contacts. Unless the original entity’s display-slot byte is zero or $6F selects the direct-damage path, it scans types $27, $29 and $28 in that order, each from entity index 16 down to zero. Their overlap boxes have respective widths and heights 4×8, 6×11 and 10×15, with distinct position offsets; the first hit selects damage 1, 2 or 3, marks the scanned entity and applies the damage to the original entity. The direct path uses twice the selected player’s action tier as an eight-bit damage value. `test_collision_scan.js` checks the boxes, scan priority, miss and direct path with overlap stubbed; four controlled VICE calls checked all three types and the direct path. These controlled calls do not establish which types can meet in ordinary play.
+
+The rectangle routine at $75E3 uses eight-bit arithmetic and does not clear decimal mode itself. In binary mode its two horizontal edge checks are asymmetric: an A box ending exactly where B begins can pass, while an A box beginning at B’s computed right edge fails. The vertical path returns carry set if either of its two height additions carries. `test_rectangle_overlap.js` checks 10,006 binary-mode cases against those exact operations; six VICE calls checked overlap, both touching edges and wrap cases with decimal mode cleared.
+
+### Transition bit reader
+
+The bit reader at $7C6A clears its 16-bit accumulator at $66:A and reads the number of bits in X. With the fetch callback returning carry set, bits from each fetched byte enter least-significant first; A holds the result’s low byte and $66 its high byte. A zero count returns without fetching. `test_unpack_bits.js` checks 68 combinations with the transfer callback stubbed; three controlled VICE calls confirmed four, nine and sixteen bits using the same stub. The ordinary buffered fetch at $7D89 preserves the incoming flags, reads through the address patched at $7D9B and increments its low operand; a wrapped index requests a refill on the next call. With the reservoir set to zero, a simulator test and a controlled VICE call using the real buffered fetch confirmed a carry-clear branch that writes the fetched byte while the saved accumulator remains on the stack. With a stubbed block receiver, simulator and VICE checks also exercised the zero-index refill and confirmed the returned byte, restored Y and preserved carry for both carry values. The actual serial transfer and full decompression boundaries remain to be traced.
+
+The transition header at $7C2C reads an initial output pointer and bit reservoir, then constructs 52 entries across three stack-page arrays: four-bit counts at $0104, and 16-bit bases split between $0138 and $016C. Each group of 16 entries begins with base 1; the next base adds 2 raised to the previous count, with 16-bit wrap. `test_unpack_header.js` checks every entry for uniform and varied synthetic streams using a stubbed byte source. Controlled VICE runs confirmed both streams, the initial destination and all three arrays. This does not establish the actual streams’ termination or natural load routes.
+
+### Transition streams and post-load patches
+
+The transition at $7AF8 calls $7D1B with mode 0 and a count of 2; the mode tables select $7C2C and the loop calls it twice. A simulator test checks counts 1, 2 and 3 with handshake, receive and decoder routines stubbed; a controlled VICE call confirmed two calls with those routines and the final ready wait stubbed. For each later load, two consecutive streams from its supplied disk file were decoded by the game's own $7C2C routine in the kit's 6502 simulator. Their writes match the two recorded load ranges; 26 loads match the forced VICE entry snapshot byte for byte, and four match after the game's selector-specific three-byte patch. Those patches are made by $2A90, called after successful transfer at $7B04; controlled VICE calls confirmed selectors 10, 14, 28 and 29. `stream-boundaries.json` records consumed lengths, writes and discrepancies. This does not establish ordinary-play routes, the role and transfer of bytes beyond the two decoded streams, or whether repeated data is owned separately.
+
+To reproduce the audit with the contributor's images and saved captures, extract each disk into ignored work storage with `python3 kit/c64/disk.py extract <side-A.d64> games/c64/wonder-boy-in-monster-land/work/side-a-files` and the corresponding side B command with `side-b-files`, then run `node games/c64/wonder-boy-in-monster-land/audit_disk_streams.js`. The program reads the ignored entry and play snapshots and writes its detailed report under `work/`; it does not require or publish a disk image.
+
+The item decoder at $7C96 uses a prefix to select length and distance paths; prefix count $11 returns from a stream. Its backward copy loop at $7C8C either reads buffered bytes or copies from the computed source pointer, according to carry. `test_unpack_copy.js` checks both modes and a full-page copy; two controlled VICE calls confirm the five-byte literal and source-pointer cases. Across the 30 supplied file audits, the simulator observed 60 end-marker returns, 90,681 carry-clear and 343,113 carry-set visits to the copy-loop entry, and 28 visits to the 16-bit-length path. These are counts for the two decoded streams per file, not a claim about other data or play routes.
+
+In a forced load-13 play snapshot, active display slots 2 and 3 select VIC sprite pointers $72 and $73 at Y=162; their monochrome and multicolour bitmaps at $DC80 and $DCC0 match the resident-entry bytes. During title-to-play, a store watch at $20C5 observed the mirror routine writing slot $80 from slot $72, replacing the resident-entry byte $20 at $E000 with $00. A controlled VICE call to $2086 with X=$72 and Y=$80 reproduced all 126 captured bytes in slots $80/$81. Forced load-10 and load-16 play snapshots select that mirrored pair; ordinary-play reachability and other writes remain open.
+
+The fire-action entries at $3CD5 and $3CEA set the player frame to $6C or $6E plus the facing offset. The display setup at $1481 assigns that pointer and the next to the two player slots. For offsets 0 and $0E, `test_attack_sprites.js` checks all four resulting pairs against the listing. Their source bitmaps occupy 63 bytes each at $DB00, $DB40, $DB80 and $DBC0; the reflected pairs occupy $DE80, $DEC0, $DF00 and $DF40. Controlled calls to $2086 in the load-13 VICE state reproduced all 252 reflected bytes. This demonstrates the code and controlled states, not an ordinary-play route to each action frame.
+
+The post-event tally at $0699 compares the selected player's meter with its limit and calls the middle-byte BCD score routine with $10 when equal. It initializes the score-conversion counter to the meter divided by two, then makes at least one pass that calls the meter-subtraction routine with $02 and the score routine with $41. It initializes a refill counter to the meter plus eight with eight-bit wrap, then calls the meter-addition routine with $01 until the counter reaches zero. A zero initial refill counter therefore takes 256 passes. `test_tally.js` checks ten input combinations with display, timing, meter and score callbacks stubbed; controlled VICE runs checked callback counts modulo 256 for meter values 0, 8 and 248 with the same callbacks stubbed. The possible meter range and the ordinary-play reachability of the wrap are open.
+
+The callback-result path at $5EAF can initialize an effect using four display-slot indices. It searches downward from slot 31 for Y values of $FF and stores each result without a separate failure check. If all 32 slots are occupied, the first search stores $FF, outside the 0–31 slot range. In a controlled state with the subsequently inspected bytes also cleared, the four saved indices are $FF, $FD, $FB and $F9. A controlled follow-up through $1555 uses $FD as an index and overwrites effect slot 1 at $4D4C and the byte at $4DCC. `test_effect_setup.js` checks callback flag paths and these cases; controlled VICE runs reproduced them and a four-free-slot case. Whether ordinary play can reach the all-occupied state here, and what a player would see, remain open.
+
+The record-interaction path calls the fixed visual-resource loader at $47F9 with the selected stage record's field 4 in X. The following call at $47FC has its target patched from that record's fields 5 and 6. `test_visual_tables.js` checks three forced selectors and the patched operands with the loader stubbed; a controlled VICE call confirmed selector 6, a $1234 callback target and the preceding field decrement with the same stub. This does not establish which selectors are reached in play.
+
+The entity countdown at $1FF2 selects the $A7/$A8 sprite pair for an initial value of 6, $A9/$AA for 4 or 5, and $AB/$AC for 2 or 3. The six 63-byte masks begin at $E9C0 and match the resident entry and all 30 later-load play captures. `test_countdown_sprites.js` checks the five countdown values, bitmap geometry and the Graphics selector. Controlled VICE calls checked initial values 2, 4 and 6 with position, display slots and colours forced. A 200-frame execution probe in each later-load capture found no instruction entry in $E9C0–$EB3E. These tests do not establish ordinary-play reachability or exclude other uses of the bytes.
+
+The resident routine $44DE either tail-jumps to $4368 or checks one or two tile flags before clamping an entity coordinate and returning with carry set. VICE checked six forced fallback, single-tile and two-tile cases with $71DB stubbed. Other map data and ordinary-play reachability remain open.
+
+Resident routine $1179 checks three gate bytes and two position ranges before building a contact box and calling $75E3. If that call returns carry set, it updates $4DAF/$4DB0 and returns carry set; otherwise it returns carry clear. VICE checked nine forced gate, boundary and contact cases with $75E3 stubbed, and two forced touching and separated cases with the real $75E3 routine. Ordinary-play reachability and the callback’s other effects remain open.
+
+Resident initialization at $6C04 copies fields from $7F43–$7F49 and sets $1177 to $7F46 minus $66. The contact routine $1179 later tests whether that byte is zero. VICE checked three forced initialization cases, including eight-bit wrap, and three cases through $1179 with $370B and $75E3 stubbed. Other callback effects and ordinary-play inputs remain open.
+
+Resident display update $1C7C writes a primary pair of slots and conditionally writes a secondary pair. It uses $1A8F,X for blink and palette paths, and patches immediate operands to restore slot indices after palette lookup. VICE checked eight forced display, blink and palette cases in load 24. Slot bounds and ordinary-play reachability remain open.
+
+Resident display update $1E7C writes a primary pair from entity position fields and conditionally writes a secondary pair based on bit 0 of $192A,X. Like $1C7C it has blink and palette paths and patches immediate operands to restore slot indices. VICE checked eight forced display, blink and palette cases in load 24. Slot bounds and ordinary-play reachability remain open.
+
+Resident routine $7572 scans eight effect slots whose occupancy byte is zero and tests each against a player rectangle through $75E3. On contact it marks the slot, calls $4B0E with 2 and calls $7874 with 5 or $15 according to the sign of $4D51. VICE checked five forced overlap, separation and direction cases with those two callbacks stubbed. Their full effects and ordinary-play reachability remain open.
+
+Resident $0B41 handles a positive vertical-motion state: it selects a frame, caps the step at 8, calls $0D7F and decrements a countdown, or clears the state when the countdown is zero. A gated input edge initializes the state and calls $0D7F once before re-entering the handler. VICE checked eight forced state, countdown and input cases with $0D7F and the alternate path stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+The resident divider at $2974 uses the immediate operand at $2975 as a countdown. A nonzero value is decremented while $526C is incremented; zero reloads the operand to 6. Both paths increment $5274. VICE checked four forced countdown values. The preceding keyboard scan and ordinary-play conditions remain open.
+
+Resident $69A2 calculates a player attachment target from the displayed slot Y position and a movement byte, patches an immediate operand, and calls the player movement routine before setting support flags and moving the entity. VICE checked four forced attachment and wrap cases with movement callbacks stubbed. The caller’s overlap conditions, callback effects and ordinary-play reachability remain open.
+
+Resident $0841 checks an input byte, motion state, map value and tile offsets before moving the player and setting a negative vertical state; other paths can reach an item action gated by a latch and count. VICE checked seven forced input, tile-match and offset cases with movement and item callbacks stubbed. Patched restoration operands, dispatch targets, callback effects and ordinary-play reachability remain open.
+
+Resident $4A90 selects a source pointer by animation stage and copies a four-by-five character block into screen RAM. Stages 0 and 5 write colour 13 and stage 6 writes colour 15 to a separate four-by-three colour region. VICE checked the copy at stages 0, 1, 5 and 6 and colour writes at 0, 5 and 6 with a supplied source block. Index bounds and ordinary-play reachability remain open.
+
+Resident $6D17 expands a 20-by-10 map window into 800 character cells, saves visible bounds, and calls alignment helpers for odd origin coordinates. VICE checked every output cell and final bounds for four forced even/odd origins with supplied map and character data, and with the two alignment helpers and colour-update callback stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Resident $0BC6 resets or advances the player animation using two input bytes, an index and a delay; index 4 resets to the first frame. VICE checked eight forced reset, countdown and indexed-frame cases. The frame and delay tables overlap at $0C28. Index bounds outside these cases and ordinary-play reachability remain open.
+
+Resident $7874 adds a packed-decimal byte to a selected two-byte balance, propagating carry. $7889 and $78D1 subtract amounts in decimal mode and restore the balance if the high-byte subtraction borrows; $7889 first splits its input nibbles into two packed-decimal bytes. VICE checked nine forced addition, carry, subtraction and restoration cases with player index 1. Index bounds and ordinary-play reachability remain open.
+
+Resident $7901 subtracts the two packed-decimal bytes at $7D/$7E from the selected balance; if the result borrows, it restores the balance and returns carry clear, otherwise it returns carry set. VICE checked five forced successful, exact and insufficient-balance cases with player index 1. Index bounds and ordinary-play reachability remain open.
+
+Resident $792C builds an entity contact rectangle from a display slot and two type-indexed parameter tables, restoring the entity index through a patched immediate operand. VICE checked four forced position, type-index and arithmetic-wrap cases with supplied parameters. Table and slot bounds and ordinary-play reachability remain open.
+
+Resident $41EE decrements an entity countdown and advances an animation. A nonzero animation-table entry moves the entity and returns without testing whether the countdown became zero; the zero-entry and index-7 paths check for removal at zero and an effect flag at $20. VICE checked eight forced phase and countdown cases with movement and removal callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $3EC6 decrements a nonzero effect-slot speed on four specified phases when $4D51 is nonnegative. It selects a movement helper from the slot direction and toggles bit 7 of that direction if the helper returns carry set. VICE checked eight forced phase, speed, mode and direction cases with movement helpers stubbed. Slot bounds, helper effects and ordinary-play reachability remain open.
+
+Resident $3F2E and $3F56 move a two-byte effect-slot X position and report their left and right limits with carry. On the left clamp the code writes the low byte of slot 0 even when X selects another slot; the right clamp writes the indexed slot. VICE checked eight forced boundaries, including this slot-0 write and 16-bit wrap. Ordinary-play reachability and other high-byte values remain open.
+
+With the real movement helpers, VICE checked two forced $3EC6 boundary cases: rightward motion reverses the direction byte, and the left clamp writes slot 0 before toggling the selected direction byte from $80 to zero. Ordinary-play reachability remains open.
+
+Resident $0DE9 adds the player vertical step to 28 eligible slot bytes, skipping $FF entries. When the support flag is positive it also excludes two slot indexes derived from the contact entity. VICE checked the complete 28-byte result for three forced support states, including a wrapped addition. Index bounds and ordinary-play reachability remain open.
+
+Resident $0D0A subtracts the player vertical step from 28 eligible slot bytes, skipping $FF entries and, when the support flag is positive, the two contact-entity slots. VICE checked the complete 28-byte result for three forced support states, including wrapped subtraction. Index bounds and ordinary-play reachability remain open.
+
+Resident $1107 adds the horizontal step to 28 two-byte positions, while $0F63 subtracts it. A negative support flag excludes two contact-entity slots. On the all-position subtraction path, a high-byte borrow causes an additional subtraction of 8 from the low byte without changing the high byte. VICE checked all positions for three forced support states in each direction, including this borrow case. Index bounds and ordinary-play reachability remain open.
+
+Resident $3F76 disables eight slots when its lifetime is zero; otherwise it decrements the lifetime and selects an alternate path or a frame and vertical-motion update. Its falling path increments speed only when below 8 and clamps to a scroll-dependent floor. VICE checked seven forced lifetime, frame, rise, fall and landing cases with the alternate callback stubbed. Table bounds and ordinary-play reachability remain open.
+
+Resident $402F selects an alternate group frame and vertical displacement, or skips them when its phase is negative. Landing clamps the position, clears eight direction bytes and sets phase and frame to $A5. If it has not landed, the code reads its table even for a negative phase. VICE checked six forced movement, stop and landing cases, including a supplied byte beyond the captured table. Index bounds and ordinary-play reachability remain open.
+
+Resident $6008 initializes a type-$F8 entity, passes the selected player tier plus $11 to a message callback, restores the entity index via a patched operand, and initializes its frame and attributes. VICE checked three forced tier and frame cases with sprite-link, message and movement callbacks stubbed, including an index-clobbering message callback. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $603F updates a type-$F9 entity, decrementing its countdown and copying the base frame before using a seven-byte movement table. Nonzero entries move the entity without checking for expiry; the zero and phase-7 paths remove it at zero or set an effect byte at $20. VICE checked eight forced phase and countdown cases with movement and removal callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident type-$F8 update $6086 copies the entity base frame to its primary frame and sets its auxiliary byte to 1 only when it is zero. VICE checked three forced frame and auxiliary-byte cases. Index bounds and ordinary-play reachability remain open.
+
+Resident $5FE2 initializes a type-$F9 entity from the frame byte at $7F6B, sets its display attributes and countdown, and calls a movement helper with 12. VICE checked three forced frame cases with sprite-link and movement callbacks stubbed. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Resident $6097 initializes a conversion countdown from half the selected player meter, calls meter and score helpers in a loop, then increments the meter until it equals the selected limit. Both loops execute at least once. VICE checked three forced initial-meter and limit cases with frame, HUD, meter and score callbacks stubbed, including a zero countdown and arithmetic wrap. Callback effects and ordinary-play reachability remain open.
+
+Resident $5FB5 initializes a type-$FA entity from values supplied in A and Y, preserving A on the stack and Y in a patched immediate operand across the sprite-link callback. VICE checked three forced value and frame cases with sprite-link and movement callbacks stubbed, including a link callback that changes A and Y. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Resident $447A optionally marks two linked display slots $FF, then clears sixteen bytes of entity state. If the third-slot index is nonzero and the fourth-slot index is zero, the second write targets display slot 0. VICE checked four forced flag and index cases, including that slot-0 write. Index bounds and ordinary-play reachability remain open.
+
+VICE also checked three forced type-$F8 initializations through the real $447A reset, including the zero fourth-slot case; the message and movement callbacks remained stubbed. Ordinary-play reachability remains open.
+
+Resident $4A43 decrements the status-animation timer and advances or reverses its stage when the timer reaches zero. Forward stage 6 calls the meter helper with 8 and wraps to stage 0; a transition into stage 6 loads a countdown of 3. VICE checked seven forced countdown, forward and reverse cases with drawing and meter callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced stage-5 to stage-6 timer transition through the real $4A90 draw, including all 20 character bytes and the colour-15 writes. Ordinary-play reachability remains open.
+
+Resident $3D69 initializes an entity motion state; $3D7F selects movement or starts its animation, and $3D9F selects two captured frames before a cleanup callback. VICE checked six forced initialization, movement-gate and animation cases with callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident helpers $3E54–$3EC5 test display presence, update signed vertical motion, tick a countdown, select horizontal movement and initialize direction. VICE checked three display-presence, five vertical, three countdown, four horizontal-direction and two initialization cases, with movement and release callbacks stubbed. Slot bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $3E15 initializes a second entity-motion mode; $3E2B optionally reverses direction, calls movement and countdown helpers, then selects a frame or invokes cleanup. VICE checked four forced initialization, reversal and countdown cases with movement and cleanup callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $3DB9 either clears an entity, reuses an existing trajectory or initializes one from entity reference bytes and display-slot coordinates. VICE checked four forced state and slot cases with direction, motion and cleanup callbacks stubbed. Callback effects, slot bounds and ordinary-play reachability remain open.
+
+Resident $34EA calculates a four-bit direction from coordinate differences, subtraction carries and two tables. It normalizes negative byte values modulo 256 and reduces both magnitudes before indexing the eight-by-eight table. VICE checked twelve forced coordinate cases against an independent calculation, including wrapped differences and $80. Ordinary-play reachability remains open.
+
+VICE also checked three forced $3DB9 trajectory initializations through the real $34EA direction calculation, with the motion callback stubbed. Ordinary-play reachability remains open.
+
+Resident $35C1 selects a horizontal helper from entity type and signed table value, then subtracts a signed vertical table byte from entity positions. It uses Y after the horizontal callback without restoring it. VICE checked six forced type, signed-motion and callback-Y cases with horizontal callbacks stubbed. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Resident $369E copies ten record bytes through $E2/$E3 into entity fields, advances Y by ten modulo 256 and clears four display-slot indexes. VICE checked two forced source offsets, including Y wrapping within the source page. Record bounds and ordinary-play reachability remain open.
+
+Resident $5D2C converts selected trigger column and row bytes into unindexed entity coordinates: X is column times 16 plus $1B and Y is row times 16 plus $59. VICE checked five forced input pairs including byte-boundary carries and $FF values. Index bounds and ordinary-play reachability remain open.
+
+Resident $71DB converts entity world coordinates to truncated grid coordinates after subtracting $1B horizontally and $5A vertically. It returns the entity index in A and sets carry when the adjusted horizontal low nibble is at least 7. VICE checked eight forced coordinate and boundary cases, including 16-bit wrap. Ordinary-play reachability remains open.
+
+VICE also checked three forced $5D2C-to-$71DB conversions: the returned column equals the input column, while the row is one less modulo 256 because the two routines use $59 and $5A respectively. Ordinary-play reachability remains open.
+
+Resident $7227 rejects player contact for a nonzero $4DDD or player Y of $FE; otherwise it constructs a rectangle and calls $75E3. On contact it invokes knockback and a comparison, then sets the horizontal direction and facing from that comparison. VICE checked five forced gate, overlap and recoil cases with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked two forced $7227 cases through the real $75E3 rectangle test, with knockback and comparison callbacks stubbed. Ordinary-play reachability remains open.
+
+Resident $727F selects a knockback speed and duration from the selected player motion profile, sets three motion-state bytes and restores incoming X and Y through patched immediate operands. VICE checked all six captured profiles. Profile bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced $7227 contacts with the real rectangle, knockback and horizontal-comparison routines, producing opposite recoil directions and the selected profile values. Ordinary-play reachability remains open.
+
+If entered, resident $72AB increments a trigger counter and either returns, starts a $10-duration recoil, or first initializes a temporary type-$2B entity from trigger coordinates. VICE checked three forced threshold and occupied-slot cases using the real coordinate conversion and recoil-state code. An ordinary resident entry and ordinary-play reachability remain unproved.
+
+Resident $72E6 decrements a temporary entity countdown, releases it at zero, or selects one of two frames from the countdown parity. VICE checked four forced values including zero wrapping to $FF, with the release callback stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $4574 and $45BC apply rightward and leftward entity movement and may undo it after a boundary or tile check. The leftward zero-column path returns a tile result of 3 without undoing the move; a returned $FF column is rolled back. VICE checked four forced rightward and five leftward boundary and tile cases with movement, grid and tile callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $460C packs four bits from four consecutive tile attributes, while $4632 reads each attribute through a row pointer and restores X and Y. VICE checked four forced packing cases with the reader stubbed and three direct forced reads including pointer carry. Index bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced $460C cases with the real $4632 reader and supplied map and attribute data. Ordinary-play reachability remains open.
+
+Resident $43A2 and $43F0 move an entity left or right in world coordinates or screen coordinates according to $7A. The screen paths clamp at different bounds or tail-jump to release for type $28 in specific branches. VICE checked nine forced arithmetic, clamp and release cases with the release callback stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked two forced $45BC cases using the real horizontal movement, grid conversion and tile-attribute routines with supplied map data. The blocked case restored the initial position; the clear case retained the movement. Ordinary-play reachability remains open.
+
+Resident $4454 releases a primary display pair when its first index is nonzero, clears its links and falls into the $447A reset. A zero second index is still written when the first is nonzero; entity index zero skips setting the animation countdown to 7. VICE checked four forced primary and extra-slot cases using the real reset. Index bounds and ordinary-play reachability remain open.
+
+VICE also checked two forced type-$28 horizontal-boundary cases through the real $4454 release and $447A reset. Each cleared the entity and marked its two primary slots, including the zero second index. Ordinary-play reachability remains open.
+
+Resident $7130 selects screen-resource pointers and colour values, calls $7008, then copies eight pages to RAM under I/O and restores the processor port. VICE checked one forced index with supplied pointers and all 2,048 source bytes, using a $7008 stub that preserves X. The effective port read had low banking bits 5 afterward. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Resident $70D0 maps 20 rows of 40 screen characters through a colour table into colour RAM and restores X from an immediate operand saved by $7008. VICE checked all 800 forced cells with supplied character and colour data. Input bounds and ordinary-play reachability remain open.
+
+Resident $7011 expands literal metatile bytes and $FF-marked runs into a 20-by-10 metatile screen. VICE checked every output cell for three forced 200-metatile streams, including a literal followed by a run and an initial zero run count. Stream bounds and ordinary-play reachability remain open.
+
+VICE checked two forced $7008 decode-and-colour sequences with supplied compressed streams, metatile definitions and colour data. All 800 screen and colour cells matched and the original X was restored. Stream bounds and ordinary-play reachability remain open.
+
+Resident $0364 sets up raster and processor-port state and calls $6CCC before the display initialization at $0383. VICE checked the port state around a stubbed $6CCC call. Three forced $0383 paths checked the horizontal-origin selection and thirteen stubbed initialization calls; the CLI at $03AB was replaced with NOP during those checks. Callback effects, interrupt timing and ordinary-play reachability remain open.
+
+Resident $1665 sets an interrupt target and scans bit 7 of $DC01 after configuring CIA port A; it conditionally increments $526C and always increments $5274 before restoring display registers. VICE checked two forced bit values by temporarily redirecting the BIT instruction to a supplied RAM byte. Real keyboard behavior, interrupt timing and ordinary-play reachability remain open.
+
+Resident $1703 and $17DA write the first and reused hardware-sprite settings from a display slot. The first stages the X position and high-bit mask in RAM; the reuse path writes those directly to VIC registers. VICE checked four forced high-bit, multicolour and expansion combinations for each path, including screen pointers and colour. Index bounds, interrupt scheduling and ordinary-play reachability remain open.
+
+Resident $1753 and $182A schedule further sprite reuse or the end-of-frame interrupt based on the decremented slot count and a sprite Y plus $15 compared with the raster. VICE checked ten forced branches after redirecting the raster comparison to a supplied RAM byte. Actual interrupt timing and ordinary-play reachability remain open.
+
+Resident $1779 counts seven hardware-sprite Y values from $4A through $5F inclusive. VICE checked three forced register sets, including both boundary values. Interrupt timing and ordinary-play reachability remain open.
+
+Resident $0E42 and $0FDC update player facing and horizontal speed for right and left input. They slow an opposite-direction movement before changing direction, and profile 3 skips the speed update on odd $5274 values. VICE checked fourteen forced direction, gate, speed and profile cases. Ordinary-play reachability remains open.
+
+Resident $0FC1 and $115B update player X without viewport scrolling. Their low-byte clamps depend on whether the resulting high byte is zero, so forced 16-bit underflow can avoid the left clamp. VICE checked eight forced boundary and wrap cases. Ordinary-play reachability remains open.
+
+VICE also checked four forced unscrolled movement cases through the real $0E83 and $101F callers, including their eight-unit step cap. Ordinary-play reachability remains open.
+
+Resident $0D7F handles upward player movement and viewport scrolling, including an anchor at $A2 and a top-of-map path that consumes the remaining step. VICE checked six forced viewport, anchor and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced $0D7F scroll step through the real $0DE9 slot adjustment, verifying all 28 slot bytes. Ordinary-play reachability remains open.
+
+Resident $0CA0 applies a downward player step after the preceding collision checks, including an anchor at $A2 and a bottom-of-map path that consumes the remaining step. VICE checked five forced anchor, scroll and boundary cases with scroll and slot callbacks stubbed. The preceding collision checks, callback effects and ordinary-play reachability remain open.
+
+VICE also checked a forced $0CA0 scroll step through the real $0D0A slot adjustment, verifying all 28 slot bytes. Ordinary-play reachability remains open.
+
+Resident $0C2C checks one or two tile attributes before applying downward movement, with the second check skipped when $4DB3 is $FF. A blocking attribute clips the step and clears several motion bytes. VICE checked five forced tile and state cases with the entity-landing callback stubbed and supplied map data. Callback effects, map bounds and ordinary-play reachability remain open.
+
+Resident $0ED3 handles rightward movement and fine scrolling around an $AA player-X anchor, including a right map-edge path. VICE checked six forced anchor, scrolling and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $1069 handles leftward movement and fine scrolling around an $AA player-X anchor, including a left map-edge path. VICE checked six forced anchor, scrolling and boundary cases with scroll and slot callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $46D6 selects four tile bytes and writes a two-by-two map area using a record-selected row and column. VICE checked three forced field and mode cases, including pointer carry and Y restoration. Record and pointer bounds and ordinary-play reachability remain open.
+
+Resident $719E initializes two display-slot entries from X and Y, fixed attributes, two VIC sprite multicolours and a sort flag. VICE checked two forced X/Y inputs and all writes. The call context and ordinary-play reachability remain open.
+
+Resident $2086 mirrors two adjacent 63-byte sprite images: one reverses single bits, the other reverses two-bit groups. VICE checked all 126 output bytes against supplied patterns, preserved both padding bytes and returned each sprite index plus two. Source and destination overlap and ordinary-play reachability remain open.
+
+Resident $6E12 computes view-origin pairs, optionally samples two map rows and derives an eight-bit half player X. VICE checked three forced inputs including 16-bit carry, both mode branches and supplied map bytes. Index bounds and ordinary-play reachability remain open.
+
+Resident $0988 initializes an entity position from screen or world coordinates according to $7A. VICE checked four forced mode and allocation-carry combinations with allocation and release stubbed; the caller does not branch on allocation carry. Real allocation and release effects and ordinary-play reachability remain open.
+
+Six resident item setup variants choose type, sprite frame and attribute before shared setup at $49D0; four also call the message routine while preserving X and Y. VICE checked six forced entries with reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $49E3 and $4A12 scan enabled entries and patch their own dispatch jumps; the second selector falls back to the first at index 7. VICE checked four forced selection, wrap and fallback cases with the random routine and dispatch destinations replaced. The enabled ranges overlap, the first scan has no exit when all eight bytes are zero, and ordinary-play reachability remains open.
+
+Resident $497D chooses between another selection and the type-$F0 item setup based on bit $10 of the selected player flags. VICE checked both forced flag paths with selection, reset, message and motion callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $7A9A saves and clears three memory pages and stages a 53-byte transfer payload. VICE checked the page copies, clearing, selector and payload with interrupts disabled, the sound callback stubbed and execution stopped before transfer. The CPU-port save bytes, SID behavior, transfer and ordinary-play reachability remain open.
+
+Resident $4828 writes five 22-cell display rows and three 22-cell colour rows, then stores $FE at $4DAD. VICE checked all 110 display cells and the low nibbles of all 66 colour cells with supplied bytes. Call context and ordinary-play reachability remain open.
+
+Resident $6F86 redraws the meter sprite when a cached value differs, splitting the drawing into 20-unit segments and eight-row masks. VICE checked seven forced values from 0 to 79 and one cache-hit case across all 64 bitmap bytes. The initial Y index and selected-player index can differ; bounds and ordinary-play reachability remain open.
+
+Resident $5D7A applies damage only when cooldown is zero; protection halves the amount, decrements its byte-sized charge and clears its flag when the decremented charge is zero. VICE checked five forced cases through the real meter subtraction, including a zero charge wrapping to 255, with the message callback stubbed. Ordinary-play reachability remains open.
+
+Resident $08E0 saves two bytes in the operands of $0841, then sets a temporary action mode and colour shadow; $0841 restores them when that mode is 1. VICE checked three forced save and restore cases, forcing the following input gate to return. Ordinary-play reachability remains open.
+
+Resident $29FC calls $6B50 then reads several addresses rather than calling them; $2A16 initializes two four-byte arrays. VICE checked two supplied final-read values and all eight table bytes with $6B50 stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $5BE1 and $5C2A either initialize slot-zero reward types $FE and $FD or increment the calling trigger count if slot zero is occupied. Both reach the input-edge test that can replace the saved reward byte with $FF. VICE checked eight forced free, occupied and input-state cases with coordinate conversion stubbed. Ordinary-play reachability remains open.
+
+Resident $5C66 and $5C94 initialize indexed reward types $FE and $FD; the latter records a converted grid row. VICE checked both forced entries through the real coordinate conversion with reset and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $5CCB and $5CFE initialize slot-zero object types $FC and $FB or increment the calling trigger count if slot zero is occupied. VICE checked four forced free and occupied cases with coordinate and movement callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Resident $2D3E draws pairs of characters down the exposed right-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
+
+Resident $2E33 draws pairs of characters down the exposed left-scroll column and can draw one extra character when the top tile is odd. VICE checked two forced cases with supplied map and table data, including page-crossing pointers. Input bounds and ordinary-play reachability remain open.
+
+Resident $3622 scans slots and either copies a new ten-byte entity record or reloads a previous one. VICE checked four forced cases through the real copy routine, including a negative type, occupied slot and reload-count adjustment. Slot and record bounds and ordinary-play reachability remain open.
+
+Resident $2C16 sorts 32 slot indices by descending Y value, preserving equal-value order before forcing the first 15 pairs to even/odd indices. A nonzero cache flag restores cached cursors without sorting. VICE checked three forced value patterns and one cached case. Ordinary-play reachability remains open.
+
+Resident tables $2500–$255F and $2560–$25BF contain paired low and high bytes for 96 SID frequency words. The update at $23B7 writes both bytes to a voice’s frequency registers after an indexed lookup. A listing test exercises all 96 pairs; VICE checked four forced indices. Input bounds and ordinary-play use remain open.
+
+The status-screen initializer copies the 200-byte template at $4DE4–$4EAB to $C000–$C0C7. VICE and a listing test checked every copied byte in a controlled load-24 state. Later screen changes, other source uses and ordinary-play reachability remain open.
+
+Resident transfer routines at $7E02 and $7E25 receive or send bytes through the pointer at $64/$65. VICE and a listing test checked three-byte receive and send cases, including receive pointer page crossing, with serial callbacks stubbed. Peer behavior, additional transfer states and natural reachability remain open.
+
+Resident rising-entity overlap code at $6939 compares halved X coordinates and a carry-dependent player-Y offset before entering attachment at $69A2. Seven forced VICE cases and a listing test check both width choices and selected rejection and attachment paths with the display-slot callback stubbed. Other boundary and ordinary-play cases remain open.
+
+247 additional eight-byte patterns in the resident $C800 character set match the first-load play snapshot. VICE matched their bytes and recorded no instruction entry into the selected ranges during 200 frames; a listing test checks the individual rows. Individual display use and other possible code uses remain open.
+
+The resident raster split at $130A waits on the VIC raster, sets scroll and background registers, then chooses self-modified timing operands from tables according to vertical scroll and $5294. Two forced VICE paths checked zero and nonzero scroll through the setup at $1383, including the colour and memory-pointer registers; `test_resident_split.js` checks those paths from the listing with controlled raster reads. Two separate forced VICE paths checked the later raster wait and seven sprite X writes before the restore jump; the listing test covers those paths too.
+
+The horizontal and vertical collision parameter tables at $79B6 and $7A12 contain 46 offset/size pairs each. The code at $792C indexes them by twice the entity type, adding the offsets to display-slot coordinates and using the sizes for the collision rectangle. A listing test checks all 46 entries; five representative types were checked in VICE. The consumer does not locally bound the type.
+
+Twenty-nine resident VIC sprite slots selected conditionally by player, continue, effect or entity routines have individually recorded bitmap bit and row counts in `resident-sprite-shapes.json`. VICE compared each 63-byte bitmap to the first-load play capture, and `test_resident_sprite_shapes.js` checks the counts from the listing. These observations do not establish ordinary-play display or exclude other uses.
+
+The alternate matrix cells $C500–$C7E7 are part of the screen cleared by $7B2A. Their cell offsets in a 40-column matrix are recorded in the listing. The same addresses can be reused for other purposes; the clear check does not establish their contents throughout play.
+
+The primary matrix cells $C0AE–$C3E7 are part of the screen cleared by $7B2A. Their offsets in a 40-column matrix are recorded in the listing; the status initializer also copies its template through $C0C7. The same addresses can have other uses, and the clear check does not establish their contents throughout play.
+
+The status template $4DE4–$4EAB is copied to $C000–$C0C7. Its six bytes at $4E35–$4E3A also restore the meter background at $C051–$C056 in the routine at $37F7. The full copy was checked in VICE and the listing; other source uses remain open.
+
+The platform contact calculation at $2173 uses halved horizontal positions and a patched width; its vertical path compares player Y plus 21 against the entity slot and may shorten the downward step. Four forced VICE cases and a listing test cover equality, a shortened step, horizontal rejection and vertical rejection. These checks start within the routine and do not prove ordinary-play reachability.
+
+The first sprite interrupt setup at $16C0 saves the CPU-port read, banks I/O in, acknowledges the VIC interrupt, initializes sprite coordinates and masks, and sets sprite 7 X from the meter byte. Two forced VICE cases checked these writes through $16ED; the listing test checks the same sequence with ordinary flat-memory port reads. Actual interrupt scheduling and CPU-port input-pin state are separate.
+
+The 18 resident built-in sound pattern lists contain the individual pointer sequences recorded in `resident-sound-pointers.json`; a zero low byte restarts the reader before its final high byte is used. VICE compared all list bytes to the first-load play capture, and `test_resident_sound_pointers.js` checks each pointer and terminator from the listing. Actual playback context remains open.
+
+The resident special-entity dispatcher at $5DB9 saves the incoming context, optionally calls movement, then selects initialization, release or one of two type-indexed handler tables according to world mode and entity reload counter. Six forced VICE paths checked those choices with movement stubbed. `test_special_dispatch.js` exercises all 38 captured types across both selector tables and the mode and release branches. Neither table index is bounded locally; ordinary-play reachability remains open.
+
+The world-mode-zero special-entity path at $5E71 releases an unflagged entity; otherwise it scans 17 entity slots and calls release for nonzero coordinate-state entries whose flag bit 0 is clear, adds 8 to the player meter, writes $FE to sound state and calls a stage-selected callback with the original entity index. Two forced VICE paths and a listing test check this with the release, meter and stage callbacks stubbed. Their effects and ordinary-play reachability remain open.
+
+The resident routine at $18D8 clears thirteen fields belonging to entity slot zero and does not write their adjacent slot-one bytes. A forced VICE call and `test_clear_entity_zero.js` check all thirteen fields and neighbours.
+
+The sound list reader at $22DC reads a little-endian pattern pointer at a voice offset, advances by two, and on a zero low byte restarts at offset zero and writes the patched configuration byte to $2C15. Three forced VICE cases and `test_sound_list_reader.js` check two pointers and the restart. The pointer and offset are not bounded locally.
+
+The six 32-byte arrays at $3415–$34D4 save display-slot flags, X coordinates, sprite pointers, colours and Y/free bytes. The save loop at $331F marks slots 2–31 free after copying; the restore loop at $3386 copies all six arrays back. One forced VICE save and restore and `test_display_arrays.js` checked all 192 bytes and the slot-release boundary.
+
+The meter buffer at $C400–$C43F overlaps the alternate screen matrix; the verified meter update and transition screen clear use the same RAM for different purposes. The reload-record multiplication at $366A uses a patched immediate byte at $3675; the earlier controlled reload check covers that path.
+
+The resident routine at $121C copies 17 sprite position/X-high bytes, eight sprite pointers and eight colour bytes to the VIC and screen pointer locations, then clears the multicolour mask. One forced VICE path and `test_sprite_register_copy.js` check the values through $123D. Interrupt timing and the subsequent timer setup remain separate.
+
+The keyboard scan at $2951 selects CIA1 port-A value $FD and tests port-B bit 7. It writes $5275 as zero or $FF, resets the port-A direction, conditionally updates a self-modified divider and increments $5274. Three forced VICE cases controlled the sampled bit by making port B an output; `test_keyboard_scan.js` checks both bit values and divider reload. These cases do not identify the physical key or establish interrupt timing.
+
+The captured status routine at $7B84 returns $5284. If action tier $4DDB is nonzero, it also makes CIA1 port A an output and reads the byte at $29A3 as data before returning; its jump bypasses the alternate path at $7BA8. Three forced VICE cases and `test_game_status.js` check zero and nonzero tier paths. Ordinary-play reachability and other effects of CPU reads remain open.
+
+The two players have separate item-type and packed-BCD quantity arrays at $51C3/$51E3 and $5203/$5223. Six forced VICE cases and `test_inventory_arrays.js` check append, matching-item merge and carry-to-$99 saturation for both players. The routine indexes by the item count without locally limiting it to the 32-byte spacing.
+
+Resident status graphic selector $5326 patches a colour operand and copies eight label cells plus four six-cell ranges. Three forced VICE cases checked selected table rows and every destination. Type/index bounds and ordinary-play reachability remain open.
+
+Resident status selection $530C selects the first or second player’s item arrays, splits the quantity nibbles and forwards the type to $5326. Four forced VICE cases checked both player paths and quantity digits with the real split routine. Item-index bounds and ordinary-play reachability remain open.
+
+Resident $0678 contains the add-credits message passed to $77E0 at $063F. Its two text fields and control bytes were checked in VICE with message rendering stubbed. The 32-byte signed displacement table at $5662 drives continue-animation position arithmetic; six forced VICE cases checked sign extension and position addition. The incoming index and ordinary-play reachability remain open.
+
+Resident $417D and $4194 copy two and three rows of three replacement cells respectively. Two forced VICE cases checked all written cells and A/X/Y on return. Caller-provided Y bounds remain open.
+
+Resident serial sender $7E53 shifts a byte most-significant bit first and writes $1F/$2F and $3F to CIA2 direction register $DD02 after two clock waits. Three forced VICE calls checked 24 bits, X/Y restoration and direction-register writes with both $DD00 reads redirected to controlled RAM. Real peer behavior, line timing and ordinary-play reachability remain open.
+
+Resident serial receiver $7DC4 combines four port samples and has a runtime-patched return/store opcode at $7DED. Four forced VICE cases checked byte reconstruction in $60 return mode and three checked $99 store mode, with the wait and sample reads redirected to controlled RAM. Real bus timing, peer behavior and ordinary-play reachability remain open.
+
+Resident vertical entity movement $68F1 uses a callback displacement and can move an attached player through $0C2C or $0D7F. Six forced VICE cases checked nonnegative and negative values, support, contact and restored X with callbacks stubbed. Two more forced VICE cases checked that unsupported upward motion reaches the overlap check at $6939; its own branches were checked separately. Callback effects and ordinary-play reachability remain open.
+
+Resident entity vertical steps $4342/$4368 select world or screen coordinates by $7A. Seven forced VICE cases checked 16-bit carry/borrow, wrapped screen positions and the downward clamp, including its returned carry. Slot bounds remain open.
+
+Resident transition entry $7A6E waits for raster value $80, clears display and sound registers, restores A and jumps to $7A9A. Two forced VICE cases checked A and VIC writes with $6A75 stubbed and the raster read redirected to controlled RAM. Message wrapper $7A91 restores X after $77E2; two VICE cases checked it with that callback stubbed. Actual raster timing, callback effects and ordinary-play reachability remain open.
+
+Resident record map updater $46D6 patches row, column and saved-Y operands and writes four cells. Three forced VICE cases checked the original and two replacement sources, including a row-pointer page crossing. The second-row Y offset wraps at 256; index bounds and ordinary-play reachability remain open.
+
+A forced VICE case with $7F4A=$FF made the map updater’s second-row Y increment wrap to zero and overwrite its first written cell. Whether ordinary play supplies that stride remains open.
+
+Resident reward conversion $7771 splits an input shifted left four places into arguments for $4B0E/$4B20, then uses the real nibble splitter for display fields. Five forced VICE cases checked boundary bytes with score and message callbacks stubbed. Their effects and ordinary-play reachability remain open.
+
+Resident transfer-failure path $7B58 alternates bit 3 of the border byte and polls bit 4 of the AND of two CIA1 port reads before restoring the saved border and retrying. A forced VICE test checked two flash passes and the exit with both input reads redirected to controlled RAM. Actual input and delay timing remain open.
+
+Resident scroll code saves two 39-byte colour rows in zero-page ranges $82–$A8 and $A9–$CF and restores them to shifted colour RAM ranges. VICE checked all 39 low nibbles in both save and restore loops. The scratch ranges can have other uses.
+
+Resident $03–$22 is the 32-byte display-slot order array; $04 is an alias into it used for odd-position normalization. Three forced VICE cases checked the sort and the normalization of positions 0–29.
+
+Resident $27–$42 aliases the final 28 bytes of the display-slot Y cache. Four forced VICE cases checked up/down adjustment loops, $FF skips and optional exclusion indexes.
+
+At the left map boundary, $109D patches the immediate SBC operand at $10A9 with ($108E - 7) modulo 256. The carry from that first subtraction feeds the player X subtraction: when $108E is below 7, it subtracts one extra unit because of the borrow. Four forced VICE cases checked this and the $001C clamp; ordinary reachability of the borrow case remains open.
+
+The stage-record callback at $47FC uses the high operand byte at $47FE, patched from record field 6. On return it reloads X from $7B, calls $46D6 when $4753,X is negative, sets $7A to $FF and selects $479B or $3384 according to $0840. Three forced VICE cases checked the completion paths with the callback and $46D6 stubbed.
+
+The contact handler at $76B2 saves X and Y in the immediate operands at $76C1 and $76C3, sets bit $08 in the selected player flags and calls $77E2 with A=5. It restores the saved registers before jumping to $4454. Three forced VICE cases checked the flag and register behavior with $77E2 stubbed; the full message and release effects remain open.
+
+The 26 bytes at $4013 contain four signed displacement sequences ending in zero: -10 through 0, -6 through 0, -4 through 0 and -2 through 0. The $3FB6 motion routine adds nonzero entries to $4D39 modulo 256 and advances the phase; zero sets the fall-phase bit. Six forced VICE cases covered sequence boundaries and wraparound; ordinary reachability of each phase remains open.
+
+The helper at $2938 writes A to VIC $D021 and $D015; $293F writes A to $D018 and jumps to $7BE1. Three controlled VICE cases checked the register writes, including colour-register low-nibble behavior. The entry points $2945 and $294B both call $2951 before tail-jumping to $1779 and $1848 respectively; their interrupt timing was not tested here.
+
+The meter writer at $6FD5 stores A to eight addresses spaced three bytes apart, from $C400+X through $C415+X. Three forced VICE cases checked index/value pairs including X=$FF; ordinary caller constraints on X were not established.
+
+For stage selector 1, the immediate operand at $2A91 selects the path that stores ($2A34 OR $10) at $93C3 and copies 72 bytes from $2A35–$2A7C to $CCD0–$CD17. A forced VICE case checked the marker and every copied byte. The stage selector is patched at $7A9A.
+
+The indexed display-slot flags at $4CEF feed sprite horizontal expansion: the paths at $1732 and $1809 use bit 0 to update the selected bit of VIC $D01D. Forced VICE checks exercised both paths and display-builder writes. The annotated first 24 bytes end at $4D06; indexed accesses can address beyond this range.
+
+The fragment at $50EF is copied to RAM $D900–$D917 by the loop at $6CF5. The fragment at $5107 is copied to RAM $D940–$D957 by the descending loop at $6CE9; the alternate initialization loop clears that destination. Two forced VICE checks, with RAM visible beneath I/O, compared all 24 bytes in both copies.
+
+The candidate scan at $09C5 checks 17 entity slots in descending order. It accepts only types $01–$20 with a nonzero first display-slot byte, returning X as the entity slot, Y as that byte and carry set; if none match it returns X=$FF and carry clear. Four forced VICE cases checked filtering, priority and the empty result.
+
+The top and bottom scroll tile loops patch immediate operands at $3009 and $2F2E to preserve each tile index across their first table lookup. Both write a two-byte pair, advance the output column by two and increment the source pointer with page carry. Four forced VICE cases checked both loops, including source-pointer page crossings.
+
+The entity fall-state update at $44C7 calls $44DE and stores 1 on carry set. On carry clear it increments the returned Y, undoing that increment only when the result equals 9, then stores it at $1A7E,X. Five forced VICE cases used a stubbed collision routine; values 9 and 255 show that this is not a general clamp for arbitrary inputs.
+
+The visual resource wrapper at $7119 calls $7130, sets CPU port $01 to $30, copies 80 bytes from $C808–$C857 to underlying RAM $D7B0–$D7FF, sets $01 to $35 and returns. A forced VICE case compared every copied byte and checked the final visible port value with the preceding loader stubbed.
+
+The first and fifth message-panel rows at $4EE4 and $4F3C each contain 22 screen codes and are copied to $C00E and $C0AE respectively. A forced VICE case replaced all five row buffers with known patterns and checked all 110 copied screen bytes. Character interpretation depends on the selected character set.
+
+The message display copies 22-byte rows to $C036–$C04B, $C05E–$C073 and $C086–$C09B. The regular and alternate panel paths use different source buffers. The regular path was checked in VICE with distinct patterns across all five screen rows; adjacent screen bytes remain separately bounded.
+
+The regular message-panel colour rows at $4F52 and $4F68 are copied to five colour-RAM rows. The alternate panel uses screen rows at $5066 and $507C and colour rows at $5092 and $50A8; $5092 also supplies a screen fill byte. Forced VICE cases checked the colour low nibbles and the alternate screen copies with distinct row patterns.
+
+The 22 bytes at $243F are the high-byte companion to the built-in sound voice pointer lows at $2429. The $2294 path copies a selected low and high byte to $2227,Y and $2228,Y. Five forced VICE indices checked both bytes; the reader does not locally bound X to the captured table.
+
+The 22 message pointer high bytes at $564C pair with lows at $5636; nonzero message numbers are decremented to form the index. Three forced VICE cases checked both selected bytes, and no local bounds check was found. The message text buffers at $4EFB and $4F27 each contain 20 character positions followed by a captured $40 border byte; prior live dialogue checks exercised both. The regular panel writes its first screen row to $C00E–$C023, as checked with a controlled 22-byte pattern.
+
+The unscrolled downward movement at $0D56 compares ($49 + $4DB4) modulo 256 against ($4D69 + $C2) modulo 256, using the patched operand at $0D6B. At or above the limit it stores the limit and clears $4DB3, $4DB6 and $4D55; otherwise it stores the proposed Y and leaves $4DB6 as $FF. Four forced VICE cases checked both branches and byte wraparound.
+
+The frame wait at $3C2A calls the message-panel copy when $5275 is zero, then polls $526C until it is at least 3 and clears that counter. Three forced VICE cases checked the gate and threshold with the panel copy stubbed, including a controlled increment from 2 to 3. Actual interrupt timing was not measured in these cases.
+
+The stage-record setup at $47E4 patches the callback high byte from $4765,X, subtracts 2 from $4753,X modulo 256, saves X at $7B and passes $4759,X as X to $7119. Three forced VICE cases checked these writes with the visual loader stubbed, including counter wraparound.
+
+The status HUD copy at $3783 reads 22 bytes from each of ten rows stored 21 bytes apart: five screen rows and five colour rows. Consequently consecutive reads share one source byte; the final colour read reaches the alternate-panel data at $5050. A forced VICE case checked all 220 output bytes with a distinct source pattern, including colour RAM low nibbles.
+
+Seven 20-byte status graphics at $5127–$51B2 are selected through split pointer tables at $51B3/$51BA and copied by $4A90 in five rows of four. The listing simulator checks every captured pointer and all 140 output screen codes. Earlier controlled VICE checks covered four selector/colour paths with redirected source data; the selector is not locally bounded to seven entries.
+
+The display fields based at $4C2F, $4C4F, $4C6F, $4C8F, $4CAF, $4CCF and $4CEF are 32 bytes apart. Existing interior labels identify aliases within those fields. A listing test now exercises all 32 physical indexes through both sprite emitters for X, flags, pointer and colour; earlier VICE probes checked representative register writes. This does not establish ordinary-play use of every index.
+
+The helper at $2A7D clamps its returned Y to 4 without changing the entity state byte. $2A87 writes $4F to element zero of $4777 before returning the indexed element in Y. $2B75 copies three record bytes and patches $7AE3 before tail-jumping to $7A9A. With decimal mode clear, $3020 returns and stores ((5*old $526D + 1) modulo 256) XOR $4B0D. The transition sound wrapper at $7BE1 decrements a nonzero immediate counter and calls $2201; zero resets it to 6 and skips the call. Listing tests cover all byte values for the clamp and counter, four salts for all generator states, indexed field edge cases and the record copy, with transition and sound callbacks stubbed.
+
+The parallel entity arrays from $1919 through $1B5A are spaced 17 bytes apart. The ten-byte record copier supplies type, base frame, world coordinates, two display attributes, flags and a parameter; it clears the four display-slot indexes. The other fields hold screen coordinates, frames and runtime state. The per-type working fields at $1AB1–$1B38 have handler-specific meanings, with concrete load-25 readers identified in their descriptions. Existing record-copy, initialization, display, movement and type-handler tests exercise these uses; the physical spacing does not impose a general bound on every caller.
+
+The coverage count excludes zero-page runtime variables, the entity arrays at $1919–$1B5A, the display arrays at $4C2F–$4D0E and generated buffers at $C000–$C7FF. The last three ranges are entirely zero in the resident entry snapshot and contain no typed instructions there. Record initialization, display builders, screen copying, meter generation and transition context storage supply their later values. Their descriptions remain in the listing; exclusion identifies runtime state and generated output rather than authored program data.
+
+The split contact table at $754E/$7560 has 18 captured entries, selected by the modulo-256 negation of an entity type. A listing test checks every captured target by running the real dispatch sequence, without executing the target. The same test checks register restoration and flag/counter changes in the message-11 and message-9 handlers with message display stubbed, and the middle-byte BCD score addition with and without carry. The annotated status-colour suffixes at $4FFE and $5013 are read by the checked overlapping HUD copy and partly updated by the item-status loop.
+
+Eight IRQ setup paths write concrete target pairs to $5E/$5F. Four split call-target paths patch JSR operands from indexed fields or tables; listing tests check their low and high bytes without executing the targets. Entity fields $1A18,X and $1A6D,X supply a callback low/high pair at $68D9/$68DF, while other paths use those fields for a display colour or contact health. Their meanings therefore depend on the entity path.

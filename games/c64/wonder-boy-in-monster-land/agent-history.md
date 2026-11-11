@@ -1,0 +1,1022 @@
+# Super Wonder Boy in Monster Land — agent history
+
+## 9 November 2026
+
+VICE-MCP 3.14.0 passed 57 of 57 checks. Booted the Nostalgia side A, left all trainer switches off, and captured the first round. The contributor played to round 3 with gold, equipment, life and wing-boots values changed on request; `work/round3-shop.vsf` and `wonderboy_user_pause` preserve that assisted state, not an unmodified route.
+
+The supplied Ghidra export parses to 12,114 initialized rows; all match the contributor's title snapshot. Of these, 11,971 match the fresh first-round snapshot and 143 do not. `work/import-preview.json` is an unverified seed made only from matching rows; it is not an import or a substitute for the hand-over and part mapping. Two attempts to stop at `$3C42` after restoring the first logo timed out: the logo waits for fire before continuing. Rebooting, pressing fire there and stopping at `$3C42` produced `work/title-ready.vsf`, with 24 parsed rows differing from the original. `work/import-title-preview.json` omits those rows. The contributor's paused state was restored after each attempt.
+
+The direction-reversal reward was tested by stepping four controlled cases and five decimal additions in VICE, and all 32 input and vertical-state combinations in the kit's 6502 simulator. The actual natural pickup remains to be tested. Side B was supplied after the initial copy and is in `work/`.
+
+A second cold boot stopped at `$6A75`, the machine-initialization routine, and saved `work/init.vsf`. It differs from `work/title-ready.vsf` at 19,602 RAM addresses, largely above `$8000`; its stack returns to a call of the transition loader, so it is not established as the final loader hand-over. Determine the writes between the stops before choosing the listing image. The early `$3C42` stop initially looked like a different call because its screen was incomplete and some saved stack bytes differed. Its active stack frames actually match the contributor's title wait. Letting it run 100 checkpoint hits yielded `work/title-fire-wait.vsf`, with 33 RAM differences from the original and 18 differing parsed listing rows.
+
+Restoring the first logo from the cold boot, pressing fire and stopping at `$0203` reached the title initializer with its expected instruction bytes. `work/entry-candidate.vsf` differs from the title wait at 18,520 RAM addresses, mostly above `$8000`. This initializer may itself invoke the transition loader at `$0246`, so the difference is not yet classified as authored data, overwritten initialization or loader state.
+
+On resuming the run, non-stopping store watches at each endpoint and adjacent byte independently checked loads 20–31. Together with the checks of loads 6–19, all 31 forced loads now have boundary checks; this does not establish which bytes are useful output or whether the states arise during ordinary play. The emulator returned to the contributor’s paused snapshot after each check. GitHub authentication succeeded for 64kramsystem.
+
+The resident export refused to overwrite its older map after the later load ranges were added: eight labels and comments belonged to addresses that those ranges now own. Saved the earlier map as `parts/resident/work/symbols-before-ownership-reconciliation.json` and exported the resident session with the intended ownership clipping. Those older comments describe pre-load RAM, so they were not copied into later snapshots without checking their bytes. Added the ten digit shapes at $C808–$C857 after rendering them and tracing the $39E7 reader; the listing still names further uncounted memory.
+
+Rendered the `$C800` character set and traced the message copy's `$20`-to-blank conversion; decoded the resident equipment and reward messages and the first load's welcome and quest messages. On forced loads 2–31, a non-stopping execute checkpoint at `$6D4D` recorded 200 hits in the first 200 frames after each load returned. The bytes of the draw loop agreed across all 31 entry snapshots except the self-modified map pointer at `$6D42–$6D43`; the indexed colour-lookup instruction at `$6F59–$6F60` and the checked collision instructions also agreed. The observations support the table descriptions in those forced states, not a claim that each state is reached naturally.
+
+The first row's byte sequence happened to match the contributor's title capture in eleven later loads, so the byte-matching import carried a comment claiming 15 rows of 96 bytes into those loads. Their headers and pointers give different dimensions. The mistake shows that matching the bytes at a comment's address does not establish that a contextual comment applies to a replacement load; the import remains a lead and must be checked throughout. For all 31 captures, the first `$7F4C` row pointers start at `$8671` and advance by `$7F4A`, and the address following those rows equals the pointer at `$7F41`. Corrected the first-row descriptions from each capture, without asserting every cell is naturally reached.
+
+An additional audit found later-load names and types copied solely because individual source rows happened to match the first-load bytes. For example, a name for the first load's second map row appeared at `$86D1` in loads whose row stride is not 96. Saved the pre-audit maps in each later part's `work/symbols-before-import-audit.json`, removed those unverified labels, types and comments from the later-load symbols, and rebuilt their listings from their own snapshots. Retained only the map and colour tables and first-row descriptions checked in this run. `test_map_rows.py` compares the row descriptions and pointers against each listing so a first-load dimension cannot silently return.
+
+A non-stopping execute checkpoint spanning the map storage found no instruction entries during 200 frames of the first play capture and each of the 30 later forced-load entries. This is a bounded observation, not proof about unobserved paths. The 2,048 bytes copied from each entry snapshot's `$7F41` pointer equal the play snapshot's RAM at `$D000–$D7FF` for all 31 captures. Reconstructed map prototypes for all captures and visually compared loads 2 and 3 with their VICE screenshots. The viewer's extracted tiles, glyphs and colours are checked against all 31 listings; five renderer outputs match independently generated pixel hashes. Firefox, started through `tools.py browser`, rendered the built page and its load selector and zoom worked.
+
+Single-stepped five wing-boots cases at `$0A92` in VICE, restoring `wonderboy_user_pause` afterwards. The tests cover flag absent, up released, the fall-step threshold, a qualifying decrement, and the expiry flag clear; the expiry case stopped before the message call. Annotated the counter setup and the conditional update, and kept the natural pickup and time in seconds open.
+
+Described the first `$7F4B` bytes of each recorded map row as metatile indices, using the verified row-pointer tables and the same cells the Maps viewer renders. Bytes between the horizontal bound and the stored stride remain undefined and uncredited. The row test checks every pointer, described span, first and last index and unclassified remainder against the committed listing. This does not settle whether an unobserved path uses some of the storage differently.
+
+In sampled play captures for loads 1, 2, 3 and 20, a non-stopping checkpoint found 120 calls to `$2201` through `$125B` over 120 frames. A listing-based simulator initially disagreed with later snapshots because three previous-note values survive initialization; supplying those captured values made its SID writes agree with snapshot-based simulation for a complete detected loop in all 31 loads. VICE matched 50 controlled load-2 calls' sequencer state and final SID registers and the first 10 calls' ordered writes. VICE also matched the first 10 ordered-write calls for each built-in request 2–7. The page carries recorded register writes, not executable game code. `test_music.js` regenerates all 37 recordings from the committed listings and renders each player button through the SID model.
+
+The pointer at `$7F4F` identifies a sequence of ten-byte entity records, and `$7F51` limits the initial slots. Across later loads, the sequences contain 179 nonzero-type records before their zero terminators; some records follow the initial limit and are eligible for the slot-reuse path. VICE checked the field copy at `$369E` with load 2's first record and load 19's twelfth record. The listing describes the bytes copied into each resident array without assuming every type uses them as an ordinary sprite. `test_entity_records.js` runs the copy routine against every described record from the listings.
+
+Sampled entity slot 1 in the forced load-2 play state for 120 video frames without added input. Its primary-frame field alternated between `$C7` and `$C9`; after the first partial interval, each change was six frames apart. The display mapper selects the adjacent frame as a multicolour layer and the primary frame as a monochrome layer. Captured their colours and rendered the four matching 63-byte bitmaps in a partial Graphics viewer. This sample does not account for the game's other shapes or all states.
+
+The title raster selects the character-set address range $C800–$CFFF. Added that complete range to the resident ledger so that the shapes without descriptions remain visible in the coverage queue; this does not establish what each character is used for. The entry and first-play snapshots agree at 2,028 of the 2,048 addresses. The five uncounted stretches became two, both under I/O, after rebuilding against the first-play snapshot. The resident disassembler project still needs this ledger change carried into its export settings.
+
+Traced and described the 12 entry points of the unrolled screen and colour-address copy routines at $61D8–$68CA. Executed each entry using the 6502 simulator against the listing and checked the copied bytes, direction, count and index registers, including overlapping indexed ranges. The resulting comments must be carried into the resident disassembler project.
+
+Ran the copy entries $61D8, $629C, $635B, $660A and $6610 in VICE against controlled RAM and checked all 256 destination bytes; the user pause was restored. The first attempt wrote the data while I/O was visible, so it could not seed the RAM under $D800; repeating with the I/O area banked out passed. Traced the motion sequence reader $6A3A and tested literal, repeat and reset cases in the listing simulator and VICE, again restoring the user pause.
+
+Traced the sampled-terrain decision routine at $60D7. Tested latch, countdown, damage cooldown and secondary-sample branches using the listing; the listing test replaces three callees with RTS to isolate the decisions. Five non-calling paths also matched a controlled VICE run, after which the user pause was restored.
+
+Traced the player-to-map calculation at $6EA9. The first independent formula failed: the horizontal calculation uses only the low nine bits, and the second vertical subtraction retains the first subtraction’s borrow. Corrected the formula, tested 5,000 cases against the listing and five in VICE, and restored the user pause. The unusual borrow is an observed arithmetic property; whether it matters in reachable play is open.
+
+Sampled the player coordinates for 120 frames of the second forced-load play capture with no new input. The player stayed at X=90, Y=210; none of these samples takes the vertical-underflow path. This bounded observation does not settle whether another route can reach it. The user pause was restored.
+
+Traced the entity update at $4250. Tested lifetime, animation-frame timer, phase and collision reversal paths with callee stubs in the listing simulator; checked the lifetime and frame path with the original callees in VICE, then restored the user pause. The entry sequence index is not bounded locally.
+
+Matched all 25 resident sound-pattern starts to records in the built-in voice lists and checked their zero-terminated extents against the entry snapshot. Described each pattern with its own length and pointer locations, while keeping the event interpretation conditional on voice state and sequencer tick. The listing-based sound-pattern and music tests pass.
+
+Made the already-rendered lowercase glyph description distinct from the uppercase description. The coverage ledger normalizes letter case when detecting repeated comments and had treated the two as duplicates.
+
+Traced the transition screen-clear loop at $7B2A. With X=0 it clears the first 1,000 bytes of each screen page; the simulator and VICE both checked the exact endpoints and the untouched 24-byte tails. The earlier resident-entry snapshot has zeros in the two pages. The range remains in the ledger until its pointer and video uses are checked. Restored the user pause.
+
+Checked the title raster in VICE: at the first title IRQ, CIA2 selects VIC bank 3 and $D018 selects $D000; the first 12 screen rows use character codes through $97. The corresponding $D000–$D4BF RAM bytes match the resident-entry snapshot exactly. Added that range beneath I/O to the resident ledger as unexplained title graphics, leaving the adjacent $D4C0–$D4FF for further investigation. Restored the user pause.
+
+Read VIC bank, screen pointer, sprite enable and sprite pointers in six captured play states; in the second-load sample the enabled pointers include slots $60–$65 beneath I/O, with multicolour mode off. Slots $60, $61 and $63 match the resident-entry, first-load and second-load play bytes and were rendered as 24-by-21 masks. Added their 63-byte bitmap ranges to the resident ledger; retained their padding and changing neighbours for further ownership checks. Restored the user pause.
+
+Removed 51 automatic aliases inside the three newly counted sprite masks, so addresses that also refer to CPU-visible I/O do not split the VIC RAM data into misleading tiny spans. The listing still applies the platform’s I/O naming rules to instructions; the change must be retained when rebuilding the disassembler export. The hidden-RAM audit reports whole pages only when at least 16 non-fill bytes remain, so the small gaps next to the newly counted ranges are listed explicitly in TODO.
+
+Added the three observed resident sprite masks to the Graphics page. The listing-based test checks the embedded bytes against the three captured hashes. Firefox rendered nonempty pixels in all three canvases, and the existing animation pause and step controls worked.
+
+Captured one complete second-load video frame with the kit frame recorder, including VIC and sprite-pointer writes. At line 100, hardware sprites 4 and 5 share the player’s captured X=90, Y=210 and point to slots $74/$75; their settings remain unchanged through line 210. Slot $75 is multicolour and matches the resident entry, so its $DD40–$DD7E bitmap was added to the ledger. Slot $74 differs from the entry at two bytes and remains open. The frame recorder reports zero timing uncertainty and matching end-state writes; the capture is in ignored work storage. Restored the user pause.
+
+A store watch from the title-ready snapshot stopped at $20C7 after $20C5 wrote the changed byte at $DD2E. At that stop the mirror routine had source slot $66 and destination slot $74. Independently reversing the rows of the resident $66/$67 pair as bits and two-bit groups reproduces all 126 bitmap bytes of the $74/$75 pair in the second-load play snapshot. Counted the two source masks, filtered their automatic I/O aliases, and restored the user pause.
+
+Added the two observed player-position layers and their composite to the Graphics page. The browser generated the monochrome layer from the resident source bitmap; the listing test runs the game’s mirror routine and checks both output layers, including the captured monochrome hash. Firefox rendered nonempty pixels in each layer and the composite.
+
+Stopped at the sprite mirror entry during title-to-play and recovered the return address $AFFB. The first-load routine at $AFC7 copies six source pairs from $ACC7–$AFC6 and then invokes the resident mirror routine seven times. Compared each 128-byte source block with its destination: all six match the second-load play snapshot; the resident-entry copy differs only in the two 64th slot bytes per pair, which the VIC does not fetch as sprite pixels. Moved ownership of the two previously counted source masks and one mirrored output to the first-load source, avoiding double-counting. Restored the user pause.
+
+Changed the player graphics viewer to use the first-load source masks and mirror both layers in the page. The listing-based test executes $AFC7 and checks all six 128-byte copies, plus the restored X and memory configuration; the mirror test checks both captured output hashes.
+
+Rechecked the first load’s map descriptor against its entry snapshot: 15 row pointers select 96-byte rows at $8671 and the end meets the character-data pointer at $8C11. Described each row by its own dimensions and endpoint bytes, preserving the warning that later pointer-table entries and unbounded consumers exist. Extended the map-row test to include the first load.
+
+After moving the player masks to their first-load source, Firefox rendered both reconstructed layers and the composite, and the map, sprite-copy and mirror tests passed. The first-load sprite-copy instructions are marked as RAM accesses because $01 banks I/O out for that loop.
+
+Traced the first-load voice lists to eight event-pattern blocks at $B03D–$B16F. Each has one trailing zero and is referenced from a voice list. Added distinct lengths and pointer locations to the listing, with the same state-dependent event caveat used for resident patterns.
+
+Matched the resident-entry title bytes $D000–$D4BF to the first-load source $B5C4–$BA83. The title initializer at $0256 passes $B5C4 to the eight-page copy at $717C, so the resident RAM copy is excluded and the source counted in the first load. Added a description for the second half of the source, including its overlap with the screen template.
+
+Described the $9011–$9240 continuation of the first-load character-copy source, which the ledger had left beyond the first symbol’s 1,024-byte reach. The full eight-page source overlaps executable code and other records after this byte-typed prefix; its separate alias is retained.
+
+Parsed the three captured voice lists in each of loads 2–31 and checked their pointer targets and event boundaries against the resident sequencer. The listing-based simulator ran each captured selector-1 loop: all 207 patterns were selected and reached the parsed zero marker. Added 90 list descriptions and 207 pattern descriptions, leaving reachability in ordinary play open. The permanent test rebuilds these checks from the committed listings and recorded loop states.
+
+Rechecked the split row-pointer tables at $85CF/$8620 against the captured row counts and strides in loads 2–31. Described only the entries that name captured rows; later entries remain unclassified. Corrected the part facts to distinguish the pointer tables from the map rows they point to, and extended the map-row test to check both tables.
+
+Traced the two per-load record formats selected by $7F52–$7F57. The listing-based test checks the actual $7979 copy for all 112 six-byte trigger records and $4655 for all 55 sixteen-byte records, with its map-writing callee stubbed; zero object counts return without reading the pointer. Controlled VICE calls in loads 2 and 19 confirmed the copied fields with the real map updater. Added per-record descriptions and kept activation in ordinary play open.
+
+Excluded the ten additional 63-byte resident bitmap copies of the first-load sprite source pairs. Comparison against the resident-entry snapshot covered each bitmap byte; the 64th byte of every slot remains outside the exclusion. The first-load source remains counted, and the copy routine test checks all six complete 128-byte writes.
+
+Checked the captured display-pointer, Y, flags and colour tables against VICE for all later-load play snapshots. In VIC bank 3, 52 selected 63-byte bitmap slots matched their load-entry bytes; two had already been described. Non-stopping execution checkpoints on all 52 ranges recorded no instruction entries over the following 200 frames per capture. Documented the remaining 50 masks and recorded the limited observations in `display-observations.json`; the test checks bitmap hashes and runs the display-pointer writer. Restored the user pause.
+
+Added an interactive gallery of the 52 observed bitmap slots, using the captured display-slot flags and individual colours with a fixed shared preview palette. The listing-based test verifies each embedded bitmap against its observation hash and checks the display-pointer writer.
+
+Built the site and checked the observed-sprite gallery in Firefox: it offered 20 captured loads, changed the selected bitmap, and produced a source link for the selected slot. The other sprite canvases and animation controls also rendered and responded.
+
+The character-source execution probe led to the loaded update pointer at $7F3F. Corrected an imported comment at $044D that had attributed the following indirect jump to the preceding direct tally jump. Added a separate description at $0450 and checked both instructions from the listing.
+
+Watched each later-load eight-page character source for instruction execution over 200 frames; 27 captures executed within it, and loads 29–31 did not in that bounded observation. Recorded instruction starts within the source after a separate 200-frame probe and monitor collection, retaining only instructions whose bytes still matched the entry snapshot. Two starts in load 16, $8F02 and $8F29, changed and were left open. Typed the unchanged observed instructions as code, preserving their simultaneous character-source use, and traced the 27 simpler update entries through their terminal jumps. Checked 140,616 input combinations against the listing and ten representative branch cases in VICE. Loads 25–27 have more complex entries and remain to be traced. Corrected the $044D/$0450 dispatch comments. Restored the user pause.
+
+Traced the two changing load-16 instruction starts. The jump at $8F02 is patched from split state tables; a VICE stop observed target $9023. The compare at $8F29 uses an immediate patched by $8F22; a VICE stop observed $10. Their opcodes and instruction lengths remain stable, so the two starts were added to the bounded code map with operand-patching caveats. Restored the user pause.
+
+Traced the load 25–27 update entries and their six-byte gate patterns. The listing test checks all six initial indexes, both tested motion-state bytes and the load-26 column decision; nine controlled VICE cases agreed. The timing of those visits and the reachability of each state in ordinary play remain open. Restored the user pause.
+
+Decoded and described all seven targets of the load-16 entity-state table. The listing test exercises representative branches with dependent routines stubbed, and seven matching controlled VICE calls used the same stubs. The shared routine at $909C and natural reachability remain open. Restored the user pause.
+
+Traced the load-16 shared entity routine at $909C and its eight-byte animation table. Its collision branch can discard one stacked return address before returning. The listing test checks animation, collision, damage and caller-continuation paths with dependent routines stubbed; three VICE cases confirmed the same field and stack behavior using those stubs. Restored the user pause.
+
+Found four relocated copies of the load-16 entity handlers in loads 3, 14, 24 and 26. The carry tool paired all 205 instructions in each copy without a difference after relocation. A listing-based test independently checks every instruction byte, relocated internal absolute operand, and the eight animation offsets. Rebuilt the five corresponding disassembler projects and exported their maps. The earlier controlled VICE observation applies only to load 16; the copied comments do not attribute it to the other loads. Natural reachability of the copied handlers remains open.
+
+Matched the four corresponding dispatchers and checked each split table against its seven relocated handler addresses. The carry tool did not rewrite the handler addresses written as prose in the table comments, so those were corrected against the bytes; the VICE observation was also kept specific to load 16. The copy test covers all 212 instructions and the four dispatch tables.
+
+Traced the record and alternate score-display paths, their packed-nibble conversion and the eight-row glyph copy under I/O. A listing test covers both modes, zero suppression, caching and destination bytes; two controlled VICE calls confirmed the decoded indexes and seven columns, then restored the user pause. The listing had omitted the LDY opcode at $3705 because its operand was separately typed; corrected it. Rebuilding the resident disassembler project from the corrected map produced an export with 279 fewer automatic aliases and 605 fewer tracked bytes, so the export guard refused it. A forced export was inspected only in ignored work storage; the fuller canonical map was retained and the discrepancy remains open.
+
+Traced the first-player score path and its six per-digit caches. The listing test verifies decoded glyphs, all seven output columns, skipping an unchanged digit and redrawing the fixed zero. A controlled VICE call confirmed the resulting digits and columns; the user pause was restored.
+
+Restarted the resident disassembler through the kit launcher on its entry snapshot and rebuilt project. The live tool regenerated the automatic symbols, and its guarded export retained all 2,557 symbols and the coverage denominator. The earlier file-only project export cannot regenerate those symbols; it was not used. The launcher removed 84 automatic I/O-area names absent from the canonical map.
+
+Traced the entity/player horizontal comparison and the attack-contact gate, box and damage path. The position test covers 4,096 combinations and a separate equality case; a VICE equality probe caught that the final LDY overwrites the comparison zero flag while retaining carry. Three VICE comparisons agreed after correcting the test. The attack test covers both facing directions, gates, misses, saturation and doubled-damage expiry with the overlap and message callbacks stubbed; three VICE calls confirmed ordinary damage, doubled damage and a miss with overlap stubbed. Each VICE probe restored the user pause.
+
+Followed the $20 damage flag to the Gauntlet pickup and message records 11 and 12. Both the listing simulator and a controlled VICE sequence set the ten-contact counter, observed doubled damage on all ten hits and ordinary damage on the eleventh, and checked the selected pickup and break message IDs. Overlap and message callbacks were stubbed; VICE restored the user pause.
+
+Traced the entity-contact scan following a missed player attack. A listing test checks type priority, all three rectangle configurations, damage, miss and direct mode with overlap stubbed. Four VICE calls confirmed the three type-specific damage values and direct mode with the same stub. The user pause was restored.
+
+Traced the actual rectangle test rather than assuming ordinary geometric overlap. The listing test compares 10,006 binary-mode inputs against its eight-bit operations; six VICE calls confirm normal, touching-edge and wrap cases with decimal mode cleared. Its asymmetric horizontal edge behavior and carry returns are recorded in the listing. The user pause was restored.
+
+Sampled the active display-pointer table every ten frames through frame 200 in all 30 later forced play captures. This exposed 90 additional load/pointer pairs. Replaying each first sampled frame confirmed its display slot, Y, flags, colour and bitmap bytes against the entry snapshot; execution checkpoints reported no instruction entries in those 90 ranges during the same 200-frame probes. Two bitmaps already had descriptions, and the other 88 received descriptions. The graphics gallery now includes all 142 observed load/pointer pairs and labels each sampled frame. The user pause was restored.
+
+Rebuilt the first-load and all 30 later-load disassembler projects from their corrected symbol maps and entry snapshots, then exported and rebuilt each listing using its paired play snapshot. The export guard accepted every part. Firefox rendered the expanded sprite gallery, selected load 16 pointer $B5 at sampled frame 20 and linked it to $ED40 in the corresponding source. The temporary browser and local preview server were stopped.
+
+Repeated the 200-frame sample on all 30 later forced captures while holding right, alternating fire every 20 frames and adding up after frame 100. It found 16 further load/pointer pairs. A replay confirmed their first sampled display settings and entry-matching bitmap bytes, and execution checkpoints recorded no instruction entries in those ranges. The gallery identifies these as controlled movement samples; this is not a natural-route recording. Released the joystick and restored the user pause.
+
+Split the load-16 state-zero continuation at $8F2B out of the patched comparison so the code after that instruction has its own description. Carried the comment to the four verified relocated copies, checked the rewritten addresses and rebuilt their projects and listings. The existing state-handler and byte-for-byte relocation tests pass.
+
+Added a Discoveries page for the Gauntlet and the reward reversal, with links back to the related explanations and listing. Its Gauntlet control is checked against 55 simulated contacts from the game code; the text keeps the controlled-overlap and natural-pickup limits visible. Added explicit tab metadata for the authored pages.
+
+Traced the ordinary transition bit-reader refill path at $7C6A. The listing test checks 68 input/count combinations with the transfer callback stubbed; three VICE calls confirmed the bit order, accumulator and refill counts. The callback carry-clear path branches into the output writer with a saved accumulator on the stack and remains open, as do the full unpacked-stream boundaries. The user pause was restored.
+
+Traced the buffered transfer reader at $7D89 and restored the omitted LDA opcode at $7D9B. Re-disassembly regenerated 84 automatic aliases in copied sprite data; removed those aliases again and retained the new $C302 buffer reference. The listing test checks ordinary buffered fetches, preserved flags and a carry-clear path using the real fetch. A VICE call with a zero reservoir confirmed the byte write, buffer-index increment and saved stack byte. The complete stream and refill failure path remain open; the user pause was restored.
+
+Checked the zero-index buffered refill in the listing simulator and VICE, with the block receiver stubbed. Both carry values were preserved, Y returned unchanged and the next buffer index advanced to 3. This does not verify the serial receiver itself. The user pause was restored.
+
+Traced the transition header and its 52-entry count and base tables. The listing simulator checked every entry for zero and varied synthetic bit streams, and two VICE calls with the same byte-source stub confirmed the destination pointer, fetch count and arrays. The actual serial stream and its output boundaries remain open. The user pause was restored.
+
+Extracted files from the contributor-supplied disks were fed to the game’s own decoder in the kit’s 6502 simulator, with the byte source stubbed and incoming flags preserved. For all 30 later loads, two consecutive streams produced exactly the previously recorded write ranges. Twenty-six outputs matched their VICE entry snapshots byte for byte; loads 10, 14, 28 and 29 each differed at three bytes until the resident selector-specific patch was run, after which all output bytes matched. Four controlled VICE calls confirmed those patch writes. Recorded lengths and ranges, retained the bytes beyond the two decoded streams and natural routes as open, and added a reproducible binary-free audit script and ledger consistency test. Corrected the omitted LDY opcode at $2A90 and the descriptions of its selector paths. The user pause was restored.
+
+Confirmed why each load has two streams: $7AF8 calls transfer mode 0 with a count of 2, and its mode table selects the decoder. A listing test checks counts 1–3 with I/O and decoder callbacks stubbed; a VICE call confirmed the two-call case with the final ready wait also stubbed. Corrected the omitted self-modifying JSR opcode at $7D72 and its mode and stack-restoration comments. The user pause was restored.
+
+Traced the unpacker item branches and backward copy loop. Simulator tests cover literal, source-pointer and full-page copies; two controlled VICE calls confirmed the literal and source-pointer cases. Instrumenting the 30 disk-file audits recorded two end-marker returns per file and visits to both copy modes and the wider length path. These are bounded observations of the supplied streams, not the serial transfer or natural routes. The user pause was restored.
+
+Reconstructed 94 additional possible bitmap selections by executing each relevant entity-record copy, entering the frame-restore routine directly and running the display-slot update with slot assignment, position, effect state and one colour forced. Four representative records were checked in VICE after controlling the previously uninitialised colour field; 200-frame execution probes found no instruction entries in the 94 bitmap ranges. The entry and play bitmap bytes match. The gallery labels these as forced record examples, not naturally observed encounters, and the listing test repeats every controlled selection. The user pause was restored.
+
+Added the required game introduction and title screenshot to the start of the How it works page, keeping the forced-load limitation beside the description. Reworded the published reward and graphics limitations as statements about the tests performed.
+
+Identified the type-$09 entity dispatcher in loads 5, 7, 13, 21 and 22; load 22 also selects it for type $1C. The listing test executes all four captured table entries in each load, and six VICE calls checked all four load-5 targets and one each in loads 7 and 22. The state handlers and ordinary-play reachability remain open. The user pause was restored.
+
+Traced type-$09 state 0 in the five dispatcher copies. The listing test exercises positive and negative $3020 results and coordinate wrap with $71DB and $3020 stubbed. Four matching VICE calls cover loads 5, 13 and 22. State 0 increments the state byte and falls through into state 1; that continuation and the other states remain open. The user pause was restored.
+
+Traced the shared type-$09 animation routine and states 2 and 3 across all five copies. The shared test covers odd visits, signed countdown and an add-eight wrap that returns carry set without a frame write; four VICE calls confirmed representative cases. The late-state test covers the reset, direction and entity-type branches with callbacks stubbed; six VICE calls checked loads 5 and 22 with the same stubs. State 1 and natural reachability remain open. The user pause was restored.
+
+Traced the type-$09 state-1 movement, timer, frame and contact paths. The five-copy test exercises controlled branches and 40,960 direction-helper combinations with external routines stubbed; eight VICE calls checked state-1 paths and three checked the helper. The helper’s subtract-eight wrap was confirmed in VICE. Paired the comments into the other copies and independently checked all 103 relocated instructions. The complete state-index bounds and natural reachability remain open. The user pause was restored.
+
+The type-$09 handler family also appears in load 24, where type $1C shares its vector. All 191 instructions and four dispatch targets match the other five relocated copies. Controlled VICE calls checked load 24 dispatch, initialization, animation, late states, movement and the direction helper with external calls stubbed. The six-copy listing tests include 49,152 helper inputs; ordinary-play reachability and the state index range remain open.
+
+In loads 2, 4 and 6 the type-$04 dispatcher selects six captured handlers. Listing simulation checked all targets, and controlled VICE calls checked every load-2 target and one each in loads 4 and 6. The state-0 code compares $6F3C with a value patched from the X returned by $71DB, rather than its snapshot placeholder; a failing test exposed that distinction. Listing and VICE checks cover both initializer branches with callees stubbed. The remaining states and natural reachability are open. The state-0 callee increments a counter and computes a frame byte with carry between additions. Listing tests cover the three copies; four controlled VICE calls check counter wrap and carry with decimal mode clear.
+
+The type-$04 state-2 and state-3 branches match in loads 2, 4 and 6. Listing tests cover their zero, sign and countdown paths with callbacks stubbed; seven VICE calls checked the same paths, restoring the paused game afterwards. Natural reachability and other state behaviors remain open.
+
+The type-$04 flag and movement helpers were described in three loads. Listing tests check flag values and signed direction choices, and seven controlled VICE calls check representative cases with the frame helper stubbed. The user’s paused snapshot was restored afterwards.
+
+The type-$04 state-1 result dispatch was described in loads 2, 4 and 6. Listing tests cover all four table indexes and both carry-set choices with two callees stubbed; eight VICE calls checked the same cases. The first callee and ordinary-play reachability remain open. The paused game was restored after the probes.
+
+Type-$04 states 4 and 5 were described in loads 2, 4 and 6, completing the six captured handler bodies while leaving their common first callee, index bounds and natural reachability open. Listing tests check counter boundaries and wrap; nine controlled VICE calls check representative paths with external callees stubbed. The paused game was restored.
+
+The type-$04 shared event check was traced in all three loads. Its state changes, callbacks and alternate-index decrement were tested in listing simulation; eight controlled VICE calls checked representative paths with the external callees stubbed. The alternate index and normal-play contexts remain open; the paused snapshot was restored.
+
+A separate type-$01 dispatcher was found in loads 2, 4, 12, 20 and 23. Listing tests and seven controlled VICE calls checked its three targets. States 1 and 2 were traced and checked with callbacks stubbed in listing tests and ten VICE calls; state 0 and natural reachability remain open. The paused game was restored.
+
+Type-$01 state 0 was traced in all five loads, completing the three captured state bodies. Listing tests cover its callback, sign, flag and frame paths with external calls stubbed; ten controlled VICE calls check representative paths. The state index and normal-play reachability remain open, and the paused snapshot was restored.
+
+A six-state type-$05 dispatcher was found in loads 2, 4, 6, 15 and 17. Listing tests and ten controlled VICE calls checked its targets. State 4 was traced and checked with callbacks stubbed in listing tests and nine VICE calls; the remaining state bodies and natural reachability remain open. The paused snapshot was restored.
+
+The type-$05 frame helper and its two four-byte offset tables were described in five loads. The working byte has different snapshot values, and the helper clears carry between additions. Listing tests check 15,360 sign, input and base combinations; seven VICE calls check representative cases with decimal mode clear. The paused snapshot was restored.
+
+Type-$05 state 5 was traced in five loads, including its pre-check table read, countdown and index wrap. Listing tests cover in-range and controlled out-of-range inputs with $4B0E stubbed; eight VICE calls check representative paths. Normal index ranges and natural reachability remain open, and the paused snapshot was restored.
+
+Type-$05 states 2 and 3 were traced across five loads. Listing tests check the frame, countdown and callback branches with the event and movement helpers stubbed; ten VICE calls check representative paths. The event helper, table-index range and natural reachability remain open. The paused snapshot was restored.
+
+The type-$05 event helper was traced across five loads. Its set-carry path removes its own return address and returns past the calling handler; a wrapper test verified that the caller continuation is skipped. Listing tests and nine controlled VICE calls check both stack paths with external callbacks stubbed. The paused snapshot was restored.
+
+Type-$05 state 0 was traced in five loads. It patches an immediate operand in state 2 from the entry-snapshot $FF to $0A, so the state-2 description and test were corrected to account for both values. A listing test exposed an initially reversed direction-sign interpretation. Nine controlled VICE calls check state 0, and three check state 2 with snapshot and patched operands. The paused snapshot was restored.
+
+Type-$05 state 1 was traced across five loads, completing its six captured state bodies. Listing tests check the delay, phase, allocator failure and allocator success paths with external calls stubbed; eleven VICE calls check representative paths and the initialized slot. The input ranges and natural reachability remain open. The paused snapshot was restored.
+
+The type-$0C dispatcher, all four captured state bodies and the stack-skipping event helper were traced in loads 8, 10, 26 and 29. Listing tests and controlled VICE calls cover all dispatches, representative state paths and both stack paths with external callbacks stubbed. The state-index range and natural reachability remain open; the paused snapshot was restored.
+
+The type-$0D dispatcher, states 0, 3 and 4, and a stack-skipping event helper were traced in loads 8, 9 and 27. Listing tests and controlled VICE calls check dispatch, alternate-index and stack paths with external calls stubbed. States 1 and 2, index ranges and ordinary-play reachability remain open; the paused snapshot was restored.
+
+Type-$0D states 1 and 2 were traced in three loads, completing the five captured state bodies. Listing tests cover slot allocation success and failure, countdowns and movement results with the event and external callbacks stubbed; ten controlled VICE calls check representative paths. The index ranges and ordinary-play reachability remain open; the paused snapshot was restored.
+
+The message-pointer sweep identified 129 three-line records in 25 loads from sequences that load X/Y and reach $77E0. A listing test executes each sequence and copies all three lines through the resident routine with selector $77E1 forced to zero. Eight controlled VICE calls checked representative records and control-byte values; the paused snapshot was restored. Glyph $60, other pointer forms and ordinary-play reachability remain open. The resident glyph bitmap at $CB00–$CB07 shows that glyph $60 is a downward-pointing triangle; its role remains open.
+
+A second sweep executed longer pointer-loading instruction sequences and found 22 additional message records. The listing test now checks all 151 records; four further controlled VICE calls check examples in loads 2, 4, 19 and 30. The paused snapshot was restored.
+
+The item-message selector was traced in 17 loads. Controlled inputs 0–23 select 408 pointer entries and 357 distinct three-line records, including Winged Boots and Gauntlet. Listing tests check all 256 input values for each selector with decimal mode clear and copy each captured record; ten controlled VICE calls check representative selections. Six bytes per table row, the normal-play input range and reachability remain open. The paused snapshot was restored.
+
+The first two bytes of each item row were traced to the packed-decimal gold subtraction at $7901. Listing tests checked 1,632 balance/price combinations across 17 loads, including exact payment and insufficient funds; ten controlled VICE calls confirmed representative cases. Captured item index 4 selects Winged Boots at 30 gold. Four row bytes, the input range and natural purchase reachability remain open; the paused snapshot was restored.
+
+The remaining four bytes of each item row were traced to two subroutine-call targets. Three selectors patch JSR operands from those bytes; listing tests check 1,224 controlled selections, and eleven VICE calls check representative patches. The target routine behavior, natural input range and purchase reachability remain open; the paused snapshot was restored.
+
+The item-row offset-4 targets were traced in 17 loads. Controlled item inputs exercise Wing Boots and Gauntlet helpers, three selected-player fields, and four $536F argument pairs. Listing tests check 816 item/player cases with external calls stubbed; sixteen VICE calls check representative paths. The offset-2 targets, remaining callback effects and natural purchase reachability remain open. The paused snapshot was restored.
+
+The item-row offset-2 targets were traced in 17 loads. They either return or write 4-by-3 or 4-by-4 blocks of consecutive tile bytes with a 40-byte row stride. Listing tests cover all 24 entries with two controlled destination low bytes, including page crossing; eleven VICE calls check representative writes. Normal shop contexts remain open; the paused snapshot was restored.
+
+A sweep found 105 simple glyphs referenced by captured map metatiles in 24 loads, outside known handler entries. Their row bit patterns and map references are recorded individually. The listing test runs the $717C character copy and reconstructs every recorded reference; seven controlled VICE reads match representative destination bytes in loads 2, 20, 27 and 31. Other possible code uses and normal-play reachability remain open. The paused snapshot was restored.
+
+The shop purchase path was traced across 17 loads, linking index selection, packed-decimal charging, the item-effect call and the message wait. Listing tests check 68 controlled success and insufficient-funds cases with effect and message callbacks stubbed; eight VICE calls check representative paths. The source of the incoming flag and normal-play purchase reachability remain open; the paused snapshot was restored.
+
+The purchase path’s preceding gate was traced in 17 loads: on one path it reads the mode byte immediately before supplying the sign flag, and on other paths it passes a message pointer. Listing tests check 102 controlled gate cases and the extended 68 purchase cases; eight VICE calls check gate branches and eight check purchases. Other entry paths and normal-play contexts remain open; the paused snapshot was restored.
+
+The shop’s sampled-input branch and left/right mode handlers were traced in 17 loads. The listing test covers 204 controlled paths and eleven VICE calls check representative branches with message and helper callbacks stubbed. Fire precedes left, which precedes right; the mode range and ordinary-play timing remain open. The paused snapshot was restored.
+
+The shop mode initializer sets mode 0 and timer $DC. Starting there, the left and right handlers preserve the set $FF, $00 and $01 when no other code changes the mode. Listing tests check initialization and all six transitions in 17 loads; ten controlled VICE calls check representative cases. Other possible writes and ordinary-play timing remain open; the paused snapshot was restored.
+
+The shop wait and timeout paths were traced in 17 loads. With the controlled callbacks held on either wait path, the initial $DC countdown reaches zero after 220 calls to $3C2A. Listing tests check both paths and timeout branches; eight VICE calls check representative cases. The duration in seconds, other exits and ordinary-play reachability remain open; the paused snapshot was restored.
+
+The isolated $3C2A wait took 55,295, 35,641, 15,986 and 35 cycles with initial $526C values 0, 1, 2 and 3 in the forced load-2 play snapshot. With real interrupts, $5275=1 and the other shop callbacks stubbed, each controlled 220-count wait path took 12,969,296 cycles, about 13.16 seconds at the PAL 985,248 Hz clock. This does not establish normal-play timing. The paused snapshot was restored.
+
+Added a shop price widget to the equipment section. Its test compares the displayed names and 2,040 balance calculations with the captured tables and the game’s subtraction routine, and exercises the DOM handlers. The site builds. The browser connector lacked its managed Firefox and the kit’s isolated Firefox did not start on this attempt; a visual preview and reviewer screenshots remain open.
+
+A preinstalled Firefox Nightly from the local browser cache ran through a fresh isolated kit profile. The built page passed desktop and 390-pixel mobile checks, including the 29/30-gold boundary, item changes and invalid input; no mobile horizontal overflow was observed. Before, after and mobile screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Firefox rendered the resident sprite pair on desktop and at a 390-pixel mobile width. The direction button changed the drawn pixels, updated its accessible state and caused no horizontal overflow. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Audited active display pointers $64–$7F in all 30 forced-load play captures. Slots $66/$67 occur in eight captures and match the resident-entry bytes; those bytes are already accounted for as first-load bitmap copies. The other selected slots were $72–$75. The paused user snapshot was restored after the audit. Read the resident raster interrupt through $1661 and replaced the repeated comments at $13F3 and $1526 with descriptions of the actual display setup and slot scan. The resident export guard still rejects loss of older tracked bytes, so these edits remain in the canonical symbol map and must be carried into the project before its next export.
+
+Read the continue display and choice path at $0566–$0646. Annotated its slot setup, ordered control checks, two selection positions, continue expenditure and no-credit message, and identified the signed-add immediate byte at $0543. A listing simulator test checks all eight input combinations with the frame, HUD and input calls stubbed, and six choice and credit combinations. These checks do not establish how every continue value is reached in play.
+
+Sampled resident sprite pointers every ten frames through frame 200 in all 30 later forced-load captures; the selected hidden pointers were $66/$67, $72/$73 and $74/$75. A title-to-play write watch at $DB00 stopped on a colour-RAM update at $6F5F, so that hit does not establish a write to the RAM underneath. The fire-action code selects slots $6C/$6D and $6E/$6F, or their mirrors with facing offset $0E. The listing simulator checked selection and both mirror calls; two controlled load-13 VICE calls reproduced all 252 mirrored bytes. Recorded the four source bitmaps in the ledger, excluded the corresponding generated copies, and restored the paused user snapshot after every VICE probe.
+
+Added the two action frames and their reflections to the Graphics page. The viewer test checks its embedded pixels and both controls against the listing and captured hashes. Firefox rendered both frames and directions on desktop and a 390-pixel mobile viewport without horizontal overflow. A reviewer screenshot is in ignored work storage; the isolated browser and preview server were stopped.
+
+Rendered all 256 resident-entry character shapes as a labelled grid and corrected the $CAD8 listing comment: character $60 is the downward-pointing triangle already recorded in facts, not a heart. Its use remains open.
+
+Traced the post-event tally at $0699–$072D and annotated its full-meter bonus, conversion and refill counters, and player-switch branch. Ten simulator cases check the loop counts with callbacks stubbed. Controlled VICE calls for meter values 0, 8 and 248 confirmed the callback counts modulo 256 with the same stubs. The user pause was restored. A separate title-to-play watch caught $2086 writing the initial mirror byte at $DD2E from $D9AE; no later write to that address stopped in the next three seconds, which does not explain the differing saved byte or prove that later writes cannot occur.
+
+Traced the effect callback result and four descending display-slot searches at $5EAF–$5F75. The listing test checks four callback outcomes, a skipped setup and a controlled full-slot case. Two controlled VICE runs reproduced the selected indices with four free slots and with none. A further controlled run through the display setup at $1555 showed the out-of-range index overwriting $4D4C and $4DCC. Ordinary-play reachability and the visible effect remain open. The paused user snapshot was restored.
+
+Added the bounded slot-search finding to Discoveries and checked the built page in Firefox at desktop and 390-pixel mobile widths. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Traced the visual-resource pointer tables used by $7119. In a forced load-20 state, six VICE calls with the screen expander stubbed checked the 1,968 source bytes and the 80-byte digit tail of the character copy; six further calls ran the full loader and recorded the 40-by-20 screen areas and colours. The listing simulator reproduced every screen, colour and visible glyph. Added a Graphics selector embedding only the observed screen data and used glyphs. Exported the load-20 symbol map from its rebuilt project, with no loss reported. This is a controlled reconstruction, not proof of normal-play routes or exclusive ownership of the overlapping sources. The paused user snapshot was restored after both VICE audits.
+
+Firefox rendered the visual-resource selector, changed its canvas and source link with the selection, and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Swept nonzero screen and character pointers in the 31 load-entry listings. The simulator produced 16 distinct screen, colour, visible-glyph and palette combinations from 68 selections; one representative of each also ran through $7119 in VICE. Expanded the Graphics selector to those 16 reconstructions, and checked all 68 selections against the listing simulator. Added source anchors to six part projects and exported each without a reported loss. The controlled selections do not prove natural reachability. The paused user snapshot was restored after the VICE sweep.
+
+Firefox checked the expanded selector and source link on desktop and the mobile viewport; the page fit without horizontal overflow. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Described the 11 seven-byte visual-resource tables in each later load other than load 20, whose tables were already annotated; load 1 had its own descriptions. Every comment records that load's captured bytes and the corresponding indexed reader. The listing test checks all 319 newly described tables and runs the pointer and colour setup for all 217 load/selector pairs with the screen expander stubbed. Rebuilt and exported each affected part project; no export reported lost bytes.
+
+Corrected the $47F9 listing comment after tracing its caller: that JSR has fixed target $7119; the subsequent JSR at $47FC is patched from the stage record. A listing test checks three forced selectors and the callback operand with the loader stubbed. VICE confirmed selector 6 and a patched $1234 target with the same stub, then restored the paused user snapshot.
+
+Extended the visual-resource sweep to selector zero. All 31 captured loads select the same reconstructed continue screen, bringing the total to 99 nonzero-pointer selections and 17 distinct screens. A load-17 VICE call reproduced it; the listing test checks all 31 zero selections along with the other 68. The Graphics viewer now includes the continue screen and links its resident character source. The paused user snapshot was restored.
+
+Mapped all 55 captured stage-object selector bytes to the reconstructed screens and added the conditional mapping to each record's listing comment. A listing test copies each record and runs the interaction setup with callbacks stubbed; it also checks the 30 captured tally selectors. The mappings describe initial values, not ordinary-play reachability or later mutations. Exported the affected part projects without a reported loss.
+
+Firefox rendered the continue-screen selection and its resident source link at desktop and mobile widths. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Annotated 1,082 used glyphs in ten later-load projects and 61 in the resident symbol map. Each eight-byte description names its first cell in one controlled reconstruction and reports its decoded nonzero pixel count and row extent. A listing test runs the loader and checks all 1,143 descriptions against the source bytes, cell and geometry. The later-load maps were exported from rebuilt projects without a reported loss. The resident export guard still rejects losing older tracked bytes, so its 61 hand-edited descriptions must be carried into the project before its next export. Other uses of these overlapping bytes remain open.
+
+Included the first load in the tally-selector check as well: its captured selector chooses the skyline reconstruction, giving 11 skyline and 20 continue selections across all 31 captures.
+
+Carried 3,690 screen-glyph descriptions to byte-for-byte copies in 24 load projects, retaining each load and selector in its own comment. The listing test runs the loader for the described selections and checks all 4,833 descriptions against their copied bytes and cell geometry. Each changed part was imported into and exported from its rebuilt disassembler project without a reported loss; other uses of these bytes remain open.
+
+Tried `carry.py pair` on the eight-byte glyph at load 2 $97B0 and its load 9 copy at $A1AD. The tool reported that no code was known in the source range, so the glyph pass used byte matching and the independent loader test for data rather than an instruction pairing.
+
+Traced the type-$27 and type-$29 spawned-entity initializers, direct frame restore and display update. Their four sprite masks match across all 30 later-load entry and play captures. VICE reproduced both controlled selection paths in loads 2, 20 and 31 with position setup stubbed; a non-stopping execute checkpoint saw no instruction entry in $EB40–$EC3E during 200 frames in each later load. Added 116 individual bitmap descriptions; four masks already had descriptions. The listing test checks all 120 masks, pixel counts and 60 forced selection paths. Exported each affected part project without a reported loss and restored the paused user snapshot after every VICE probe.
+
+Firefox rendered both spawned shapes and their layers on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Traced the entity countdown's $A7/$A8, $A9/$AA and $AB/$AC display pairs. Replaced six repeated resident comments with individual bitmap descriptions and bounded each to 63 bytes. The listing test checks initial countdown values 2–6, bitmap geometry and the viewer; VICE checked values 2, 4 and 6 with entity state forced. All six masks match the resident entry and 30 later-load play snapshots. The paused user snapshot was restored. The resident descriptions and block boundaries must be carried into the project before its next export.
+
+In each later-load capture, a non-stopping VICE execute checkpoint found no instruction entries in $E9C0–$EB3E during 200 frames. This is a bounded observation, and the paused user snapshot was restored.
+
+Firefox rendered the countdown-frame selector and layers on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Traced the type-$28 path from $0916 through frame restore and display setup. Its $B3/$B4 masks form one identical pair across loads 2–5 and another across loads 6–31. VICE checked controlled selection in loads 2, 6, 20 and 31 with position setup stubbed; the 200-frame execute probe found no entry into $ECC0–$ED3E in any later-load capture. Added 60 bounded bitmap descriptions and both variants to the Graphics selector. The listing test checks all masks, their geometry, selection and the viewer. Exported each affected project without a reported loss and restored the paused user snapshot after the VICE probes.
+
+Firefox rendered the type-$28 selection on desktop and at a 390-pixel mobile width. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Copied entity records and entered the frame-offset update at $4261 with three prior offsets forced, then entered the display update with slots, position, effect state and one colour forced. The sweep found 298 additional nonconflicting 63-byte masks in loads 2–30; all match their entry and play captures. Non-stopping execute checkpoints found no instruction entries in those ranges during 200 frames per capture. VICE reproduced both layers for representative records in loads 2, 6, 20, 26 and 28. Added bounded descriptions and gallery entries; `test_frame_offset_sprites.js` checks every selection, bitmap and pixel count. Exported the affected part projects without a reported loss and restored the paused user snapshot after VICE probes. Normal-play reachability and other uses remain open.
+
+Firefox rendered a frame-offset example and its source link in the expanded gallery on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Compared four player sprite pairs with $2086's output. Four controlled load-13 VICE calls reproduced all 504 destination bytes; the resident-entry monochrome layers differ at offsets 46 and 49, so those eight bytes remain bare in the ledger. Marked the remaining confirmed reflected copies as duplicates of the first-load bitmaps. Classified static score-sprite rows at $D880–$D97E separately from digit columns written by $39E7; VICE checked all seven relevant column starts. A 200-frame execution probe in each later load found no instruction entries in the tested score-sprite ranges. Added the 32 slot-end bytes as unclassified rather than assuming they are padding. `test_hidden_ram.js` checks all 2,048 addresses for explicit accounting and verifies the score writes; 40 bytes remain bare. The resident map was edited by hand because its export guard still rejects losing older tracked bytes. The paused user snapshot was restored after the VICE probes.
+
+A scan of forced-play display slots found resident pointers $72/$73 in load 13 and $80/$81 in loads 10 and 16. A title-to-play store watch at $20C5 showed $2086 using $72 as source and $80 as destination, replacing the entry byte at $E000. A controlled VICE call and listing test reproduced all 126 mirrored bytes. Counted the source bitmaps beneath I/O, excluded the derived destination bytes and added an interactive orientation viewer. The resident project export guard still rejected an export that would lose 601 tracked bytes, so the fuller canonical map was retained. The paused snapshot was restored.
+
+Expanded the map-glyph pass beyond the simple repeating rows. In loads 2–31, selected 2,166 map-referenced eight-byte glyphs whose entry and play source bytes and copied play character RAM match, stopping at known update or handler boundaries and excluding known code and conflicting annotations. The listing test runs the character copy and checks the tile-quadrant references and every new description. Controlled VICE reads checked three glyphs each in loads 2, 9, 16, 20, 27 and 31; the paused user snapshot was restored. Rebuilt and exported the 30 affected disassembler projects without a reported loss. Other uses and natural reachability remain open.
+
+Found the type-$0E vector and six-entry state dispatcher in loads 9, 11 and 20, in ranges previously typed as data. VICE reached all six patched targets in each load. Traced states 4 and 5, checking five countdown and direction cases per load with callbacks stubbed in VICE and in the listing tests. The state index, the other handlers and ordinary-play reachability remain open. Exported the three projects without a reported loss and restored the paused user snapshot after the probes.
+
+Traced type-$0E state 1 and the shared frame update in the same three loads. Four VICE cases per load exercised both movement directions and both callback results with the initial shared routine stubbed. The listing test repeats those cases. Exported the projects without a reported loss and restored the paused user snapshot.
+
+Traced type-$0E states 0, 2 and 3 and the movement helper. VICE checked five controlled cases per load for states 2 and 3, and six cases per load for state 0 and the helper; callbacks were stubbed. Listing tests repeat the cases. The remaining shared callback and natural reachability are open. Exported each affected project without a reported loss and restored the paused user snapshot.
+
+Traced the type-$0E shared collision check, including the paths that discard its return address. Six controlled VICE cases per load and the listing test cover both collision branches and the state-4 and state-5 paths with external callbacks stubbed. Exported the three projects without a reported loss and restored the paused user snapshot. The state-index range and ordinary-play reachability remain open.
+
+Forced type-$01 record copies and the state-0 and state-1 frame updates in loads 2, 4, 12, 20 and 23. They selected 40 additional bitmap masks, all matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both paths in every load. Added bounded descriptions and gallery entries; the listing test checks all selections, shapes and viewer data. Exported the five projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$01 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Forced type-$0E record copies and the frame update or collision path selecting state 4 in loads 9, 11 and 20. These selected ten additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for each path represented per load, with collision callbacks stubbed. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the three projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$0E frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Forced type-$05 record copies and direct frame-helper calls in loads 2, 4, 6, 15 and 17. These selected 18 additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers in every load. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the five projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$05 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Found and traced the type-$03 dispatcher and three handlers in loads 13, 14, 15, 17, 18, 24, 26 and 27. VICE checked all 24 jump targets, seven state-0 entry cases, six frame cases, seven horizontal-motion cases, four signed-table indices and five later-state cases per load, with external callbacks stubbed. Listing tests repeat the cases. The negative horizontal path subtracts six where the nonnegative path subtracts five; whether play reaches the relevant values remains open. Exported all eight projects without a reported loss and restored the paused user snapshot. The state and table index ranges and natural reachability remain open.
+
+Forced type-$03 record copies and direct state-0 frame calculations in loads 18, 26 and 27. These selected 18 additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers in every load. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the three projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$03 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Found and traced the type-$22 dispatcher, three handlers and collision helper in loads 2, 4, 6, 14, 15, 17, 24 and 25. VICE checked all 24 jump targets, five state-0 cases, five state-1 cases, four state-2 cases and five helper cases per load with callbacks stubbed. Listing tests repeat the cases. Exported all eight projects without a reported loss and restored the paused user snapshot. The state and alternate-slot index ranges and ordinary-play reachability remain open.
+
+Found seven additional type-$01 handler copies in loads 3, 13, 14, 15, 17, 19 and 26. Pairing from load 2 reported apparent differences where it decoded the target’s split jump table as instructions; a byte comparison established that the handler bodies match apart from one relocated jump, and `test_type01_copies.py` holds that comparison. VICE checked all three dispatch targets and four representative handler cases in every copy with external callbacks stubbed. Carried the descriptions with their local addresses, extended the existing behavior tests, exported all seven projects without a reported loss and restored the paused user snapshot. State-index bounds and ordinary-play reachability remain open.
+
+Found and traced the type-$02 dispatcher, three handlers and direction and frame helpers in loads 13, 14, 15, 17 and 19. VICE checked all 15 jump targets, seven state-0 entry cases, seven timer-path cases, three frame-helper cases, five state-1 cases and four state-2 cases per load, with external callbacks stubbed. Listing tests repeat the cases. Exported all five projects without a reported loss and restored the paused user snapshot. The state-index range and ordinary-play reachability remain open.
+
+Forced a type-$02 record copy and direct frame-helper or state-2 calls in load 19. These selected six additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for all three selections. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$02 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Applied the type-$01 frame-selection probe to the newly traced handler copies. Load 3 yielded eight additional masks matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both paths. Added bounded descriptions and gallery entries, extended the listing test, exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a load-3 type-$01 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Forced type-$09 record copies and direct animation-helper calls in loads 5, 7, 13, 21 and 22. These selected 20 additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for both countdowns in every load. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the five projects without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered a type-$09 frame and its source link on desktop and fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Found the type-$2D/$2E dispatcher in load 31 and verified all six targets in VICE. Traced states 0, 2, 4 and 5, three frame helpers, the raster motion and the following finish loop. Controlled VICE cases checked their branches with callbacks stubbed; the raster motion reached its exit in 62 iterations from the setup values. Listing tests repeat the bounded cases. Exported the project without a reported loss and restored the paused user snapshot. States 1 and 3, index bounds, working-byte writers and natural reachability remain open.
+
+Traced type-$2D/$2E states 1 and 3, including the allocated-slot setup, the transition’s working bytes and the contact branches around the two existing text records. VICE checked their entry, movement, allocation, transition and contact cases with callbacks stubbed, and listing tests repeat those cases. Exported the project without a reported loss and restored the paused user snapshot. State-index bounds, other uses and natural reachability remain open.
+
+Traced the load-31 type-$2F handler selected by the allocated-slot setup. VICE checked five frame-state values, five coordinate boundary cases and three collision-table indices with callbacks stubbed. Listing tests repeat the cases. Exported the project without a reported loss and restored the paused user snapshot. The state range, exact-coordinate crossing and ordinary-play reachability remain open.
+
+Forced the load-31 allocated-slot setup and type-$2F frame update. They selected six additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. An initial VICE comparison exposed a mismatched display-position setup; after forcing the same Y position in both runs, VICE reproduced both layers for all three selections. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Forced load-31 type-$2D state-4 setup and each frame helper with both carry values. They selected 12 additional masks, matching entry and play captures; a 200-frame execution probe found no instruction entry in their ranges. VICE reproduced both layers for all six combinations. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+The controlled load-31 type-$2D state-5 display setup selected two further masks. Their entry and play bytes match, and a 200-frame execution probe found no instruction entry in their ranges. The earlier VICE state-5 probe confirmed their display slots, pointers, flags and colours. Added bounded descriptions and gallery entries, with a listing test for selections, shapes and viewer data. Exported the project without a reported loss and restored the paused user snapshot. Ordinary-play reachability and other uses remain open.
+
+Firefox rendered load-31 type-$2F, type-$2D helper and type-$2D display-setup examples with source links on desktop; each page fit the 390-pixel mobile viewport. Before and after screenshots are in ignored work storage. The isolated browser and preview server were stopped.
+
+Traced the type-$0F dispatcher in loads 10, 28 and 29. VICE checked its signed effect gate, all five state targets and out-of-range state indices; the state helper clamps the latter to 4. Also checked the state-0 timer boundaries and state-3 reset with the state-0 helpers stubbed. Listing tests repeat these cases, and the three projects exported without a reported loss. The paused user snapshot was restored. The remaining state handlers, helper effects and ordinary-play reachability remain open.
+
+Traced type-$0F state 4 and its event helper across loads 10, 28 and 29. VICE checked four state-4 cases and five helper cases per load with callbacks stubbed, including the helper's stack-discard early return. Listing tests repeat the cases, the three projects exported without a reported loss, and the paused user snapshot was restored. Callback behavior and ordinary-play reachability remain open.
+
+Traced the remaining type-$0F states and frame helper in loads 10, 28 and 29. VICE checked four state-1 paths, four state-2 timer cases and four frame-helper cases per load, with callbacks stubbed; listing tests repeat the cases. The three projects exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Followed the type-$0F allocation path to type-$23 in loads 10, 28 and 29. VICE checked both captured dispatcher targets, eight state-0 cases and four state-1 cases per load with callbacks stubbed; listing tests repeat the cases. State 1 patches an immediate load to restore the original slot after updating a linked slot. The three projects exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the two captured type-$25 states and their event helper in loads 8, 9 and 27. VICE checked both dispatch targets, four state-1 cases, four helper cases, five state-0 cases and one special parameter case per load, with callbacks stubbed where needed. A nested caller demonstrated the direct transition's stack effect. Listing tests repeat the cases, the three projects exported without a reported loss, and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced both captured type-$26 states in loads 12 and 23. VICE checked dispatcher targets, four state-1 cases and nine state-0 cases per load with callbacks stubbed; listing tests repeat the cases. An initial state-0 test assertion omitted the $1179 early path; the corrected assertion passed all cases. Also corrected a copied type-$25 facts sentence that named the wrong tested loads. Both projects exported without a reported loss, and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the type-$11 dispatcher and states 4 and 5 in loads 12 and 23. VICE checked all six captured targets, six state-4 cases and four state-5 cases per load with callbacks stubbed; listing tests repeat the cases. The position-table input is not locally bounded. Both projects exported without a reported loss and the paused user snapshot was restored. The remaining states, callback effects and ordinary-play reachability remain open.
+
+Traced the remaining type-$11 states and their event and spawn helpers in loads 12 and 23. VICE checked six helper cases, six cases across states 2 and 3, six state-1 cases, allocation success and failure, four state-0 cases and an end-to-end state-0-to-state-2 patch case per load; callbacks were stubbed where isolated. The initial state-2 description treated an immediate operand as fixed at the snapshot's $FF; tracing state 0 showed that it can patch the operand to 10, and the description was corrected. Listing tests repeat the cases, both projects exported without a reported loss, and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the five captured type-$0A states and their event and frame helpers in loads 6, 19 and 28. VICE checked all targets, six helper cases, three state-0 cases, six state-1 cases, eight state-2 cases, seven cases across states 3 and 4, and four frame-helper cases per load; callbacks were stubbed where needed. An initial state-0 expectation missed its fall-through into state 1, and initial state-2 expectations missed a backward branch into its frame update; both were corrected against VICE. Listing tests repeat the cases, the projects exported without a reported loss, and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the seven-target type-$0B dispatcher, its preliminary helper and states 5 and 6 in loads 6, 7, 22 and 30. VICE checked all targets, six helper cases and six state cases per load with callbacks stubbed; listing tests repeat the cases. The helper can select state 5 or 6 before dispatch and overwrites $1AC2,X, so direct state-6 tests alone do not establish its ordinary-play behavior. The projects exported without a reported loss and the paused user snapshot was restored. Other states, indexed-write bounds and ordinary-play reachability remain open.
+
+Traced the remaining type-$0B states and position helpers in loads 6, 7, 22 and 30. VICE checked four state-4 cases, six state-3 cases, six state-2 cases, four state-0 cases, six state-1 comparison cases, three close-range cases and six position-helper cases per load; callbacks were stubbed where needed. Initial state-3 test expectations missed the movement callback on negative countdowns and were corrected against VICE. Listing tests repeat the cases, the projects exported without a reported loss, and the paused user snapshot was restored. Indexed-value bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the load-11 type-$10 dispatcher, both states, its position helper and its two captured signed movement tables. VICE checked four dispatcher/helper cases, four countdown cases, four table-index cases and five event cases with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Table-index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the six captured type-$05 states and their shared helper in loads 24 and 25, including two offset tables and the type-$22 allocation path. VICE checked six dispatch targets, six state-4 cases, four state-5 cases, six helper cases, six cases across states 2 and 3, four state-0 cases, a state-0-to-state-2 patch case and seven state-1 cases per load. The state-1 allocation cases included carry from an overflowing position addition. Callbacks were stubbed where needed; listing tests repeat the cases. Both projects exported without a reported loss and the paused user snapshot was restored. Input bounds, callback effects and ordinary-play reachability remain open.
+
+Traced type-$17 and its spawned type-$2C handler in loads 19, 24 and 28. VICE checked six type-$17 cases, five event cases and six type-$2C cases per load with callbacks stubbed; listing tests repeat the cases. An initial type-$17 expectation missed the timer reset when allocation is skipped. An initial type-$2C final-state expectation overlooked the jump into $4454, whose real cleanup changed the fields; stopping at its entry exposed the correct path. The projects exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Reseeded the resident disassembler project from its canonical symbols and entry snapshot. A direct export still omitted 601 tracked bytes because the project writer drops automatic labels and the file export does not regenerate them. Carried the 273 existing automatic labels into the ignored project, then exported successfully without the guard reporting loss. A multiset comparison found the same blocks, symbols and comments, and the rebuilt listing's records were unchanged. The project writer's offline round-trip behavior remains a kit issue to address in the retrospective.
+
+Traced resident downward collision routine $44DE and its six working bytes. VICE checked six forced fallback, single-tile and two-tile cases with $71DB stubbed, and a listing test repeats them. The reseeded resident project, with its existing automatic labels carried in, exported without a reported loss; its listing was rebuilt and the paused user snapshot was restored. Other map data and ordinary-play reachability remain open.
+
+Traced resident contact routine $1179 and its box parameters. VICE checked nine forced gate, boundary and contact cases with $75E3 stubbed, and a listing test repeats them. An initial test expectation inverted the $4DDD gate branch; it was corrected against VICE. The resident project exported without a reported loss after carrying the existing automatic labels, its listing was rebuilt and the paused user snapshot was restored. Ordinary-play reachability and the callback's other effects remain open.
+
+Checked resident $1179 together with its real $75E3 contact checker in two forced touching and separated cases; VICE and the listing test agreed. A separate eight-case probe repeated the rectangle check's boundary and overflow behavior already recorded in facts.md. The first probe expectation missed that a vertical addition carry returns set; it was corrected against the code and VICE. The paused user snapshot was restored.
+
+Traced resident initialization $6C04 and the byte at $1177 that the contact routine later tests. VICE checked three forced initialization cases and three initialization-to-contact cases with $370B and $75E3 stubbed; a listing test repeats them. The resident project exported without a reported loss with existing automatic labels carried in, its listing was rebuilt and the paused user snapshot was restored. Callback effects and ordinary-play inputs remain open.
+
+Traced resident world display update $1C7C, including the optional secondary pair, blink and colour paths, and its patched slot-index operands. VICE checked eight forced display cases, including effect 1 falling to zero between the two colour selections; a listing test repeats them. The resident project exported without a reported loss with existing automatic labels carried in, its listing was rebuilt and the paused user snapshot was restored. Slot bounds and ordinary-play reachability remain open.
+
+Traced resident direct-position display update $1E7C and its patched slot-index operands. VICE checked eight forced display, blink and palette cases, and also rechecked both direct and world paths' coordinate and flag writes; listing tests repeat them. In the forced $FF entity-type case the direct path still writes the secondary pair when its flag is set, unlike the world path. The resident project exported without a reported loss with existing automatic labels carried in, its listing was rebuilt and the paused user snapshot was restored. Slot bounds and ordinary-play reachability remain open.
+
+Traced the six captured type-$1E states and shared helper in load 25, including its offset tables, patched timer and type-$2D allocation path. VICE checked six dispatch targets, six state-4 cases, four state-5 cases, six helper cases, six cases across states 2 and 3, five state-0 cases, a state-0-to-state-2 patch case, six state-1 cases and allocation success and failure. Callbacks were stubbed where needed; a listing test repeats the cases. A negative $1B28,X takes the close path in this variant; an initial copied expectation missed that branch and was corrected against VICE. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Followed load-25 type-$1E allocation to type-$2D. VICE checked its captured state-0 dispatch target and eight forced timer, callback and linked-slot cleanup cases with callbacks stubbed and cleanup stopped at $4454; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. State-index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the load-25 type-$1F dispatcher, all three captured states and four position helpers. VICE checked three dispatch targets, three state-0 setup cases, eleven state-1 cases, six state-2 cases and six position-helper cases with callbacks stubbed; a listing test repeats them. The shift-to-zero test includes both $00 and $80 after the decrement. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the load-24 type-$1D dispatcher, two captured states and movement, position, event and effect helpers. VICE checked both targets, two forced allocation-carry setups, seven state-1 cases, six movement boundaries, four position cases, six event cases and five effect-helper cases; callbacks were stubbed where needed. A listing test repeats them. The initial effect-helper description missed its zero-effect branch to the event helper; the listing test exposed and corrected it. The project exported without a reported loss and the paused user snapshot was restored. Allocation-failure behavior, index bounds and ordinary-play reachability remain open.
+
+Followed load-24 type-$1D allocation to its type-$2F handler. VICE checked four forced signed-motion and contact-setup cases with callbacks stubbed; a listing test repeats them. The handler uses a patched immediate operand to sign-extend its table byte. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Extended the controlled display capture in loads 22 and 24 to 1,000 frames, sampling every ten frames while holding right, alternating fire and adding up after frame 100. Eight newly observed bitmap ranges matched the entry snapshots and had no instruction entries during an independent replay with execution checkpoints. Added their observed display settings to the gallery and a test comparing its pixels against the listings and recorded hashes. The user snapshot was restored with the joystick released and warp disabled. Ordinary-play reachability and other uses of these bytes remain open.
+
+Traced resident effect-slot contact scan $7572 and its saved slot index. VICE checked five forced overlap, separation and direction cases with the score and amount callbacks stubbed; a listing test repeats them with the real rectangle routine. The first separated-X expectation still touched the player rectangle and was corrected against VICE. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident positive vertical-motion handler $0B41 and its input-edge initialization. VICE checked eight forced state, countdown and input cases with the movement and alternate-path callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the resident self-modifying divider at $2974. VICE checked four forced countdown values; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. The preceding keyboard scan and ordinary-play conditions remain open.
+
+Traced the rising-entity attachment calculation at $69A2. VICE checked four forced arithmetic and wrap cases with the two movement callbacks stubbed; a listing test repeats them. An initial probe used the wrong display-slot address and a wrap expectation omitted a borrow; both were corrected against the instructions. A comment also initially named the wrong cleared byte; it was corrected to $4DB6 before publication. The project exported without a reported loss and the paused user snapshot was restored. Caller overlap conditions and callback effects remain open.
+
+Traced the resident down-input and map-position gates at $0841. VICE checked seven forced input, matching-cell and horizontal-offset cases with movement and item callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. The values installed in the restored immediate operands, dispatch targets and ordinary-play reachability remain open.
+
+Traced resident status graphic routine $4A90. VICE checked the four-by-five copy for four forced animation stages and the colour writes for stages 0, 5 and 6, with a supplied source block; a listing test repeats the cases and checks the unchanged colour path. The project exported without a reported loss and the paused user snapshot was restored. Stage bounds and ordinary-play reachability remain open.
+
+Traced the resident 20-by-10 map-window expansion and origin alignment at $6D17. VICE checked all 800 character cells and the final bounds for four forced even/odd origins using supplied map and character data, with alignment and colour callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced resident animation tick $0BC6 and its overlapping frame and delay tables. VICE checked eight forced reset, countdown and indexed-frame cases; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds outside the checked cases and ordinary-play reachability remain open.
+
+Traced resident packed-decimal balance routines $7874, $7889 and $78D1. VICE checked nine forced addition, carry, subtraction and insufficient-balance restoration cases for player index 1; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced the resident two-byte packed-decimal balance subtraction at $7901. VICE checked five forced successful, exact and insufficient-balance cases, including the returned carry; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident entity collision-box setup $792C. VICE checked four forced table-index, display-position and arithmetic-wrap cases using supplied parameters; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Table and slot bounds and ordinary-play reachability remain open.
+
+Traced resident entity lifetime and animation $41EE. VICE checked eight forced phase, countdown and effect cases with movement and removal callbacks stubbed; a listing test repeats them. The nonzero animation-table path does not check whether its countdown became zero. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident effect-slot speed, direction and position limits at $3EC6, $3F2E and $3F56. VICE checked eight forced speed and direction cases with helpers stubbed, then eight position and boundary cases with the real helpers; a listing test repeats them. The left clamp writes slot 0 even when X selects slot 2, which the forced probe reproduced. The projects exported without a reported loss and the paused user snapshot was restored. Slot bounds and ordinary-play reachability remain open.
+
+Checked $3EC6 with its real movement helpers in two forced boundary cases. VICE and a listing test agreed, including the slot-0 left-clamp write and direction toggle to zero. The paused user snapshot was restored.
+
+Traced resident upward and downward vertical slot adjustment at $0D0A and $0DE9. VICE checked all 28 bytes for three forced support states in each direction, including excluded slots, $FF entries and wrapped arithmetic; a listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident horizontal slot updates $0F63 and $1107. VICE checked all 28 two-byte positions for three forced support states in each direction; the listing test repeats them. A forced high-byte borrow showed that the all-position subtraction path subtracts another eight from the low byte, because SBC #7 executes with carry clear. The earlier comment said seven and was corrected. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident effect-group lifetime, animation and vertical motion at $3F76. VICE checked seven forced lifetime, frame, rise, fall and landing cases with the alternate callback stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Table bounds, alternate behavior and ordinary-play reachability remain open.
+
+Traced resident alternate effect-group motion $402F. VICE checked six forced movement, table-stop and landing cases, including a supplied byte beyond the captured table; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident type-$F8 initialization $6008. VICE checked three forced tier and frame cases with sprite-link, message and movement callbacks stubbed; the message stub deliberately changes X to exercise the patched restoration. A listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident type-$F9 update $603F and type-$F8 update $6086, plus type-$F9 initialization $5FE2. VICE checked eight forced type-$F9 phase and countdown cases, three type-$F8 update cases and three type-$F9 initialization cases; movement, removal and sprite-link callbacks were stubbed where needed. Listing tests repeat them. An initial copied probe patched the wrong callback address, which was corrected before the successful check. The projects exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident meter conversion loops $6097 and the countdown helper $2B4C. VICE checked three forced initial-meter and limit cases with frame, HUD, meter and score callbacks stubbed, including zero countdown and byte wrap; the listing test repeats them. Both loops execute at least once. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident type-$FA initialization $5FB5 and its six entry points. VICE checked three forced value and frame cases with sprite-link and movement callbacks stubbed; the link stub deliberately changes A and Y to check the saved values. A listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Checked the full resident reward calculation at $771F with the real packed-decimal balance add and digit splitter. VICE ran all eight forced random values for incoming reward bytes $05 and $FF, with random, message and score callbacks stubbed; a listing test repeats the sixteen cases. The $FF cases produced $65–$69. The project exported without a reported loss and the paused user snapshot was restored. An ordinary pickup remains open.
+
+Traced resident entity reset $447A. VICE checked four forced flag and extra-slot combinations, including a zero fourth-slot index that writes slot 0; a listing test repeats them. Three additional forced type-$F8 initializations used the real reset and stubbed message and movement callbacks, and a listing test checks one of those integrated cases. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident status-animation timer $4A43. VICE checked seven forced countdown, forward and reverse cases with the draw and meter callbacks stubbed. A separate forced stage-5 to stage-6 transition used the real $4A90 draw and checked all 20 character bytes and colour writes; the listing test repeats these cases. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident first entity motion and animation $3D69–$3DB8. VICE checked six forced initialization, movement-gate and animation cases with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced the neighboring display-presence, movement, direction and countdown helpers $3E54–$3EC5. VICE checked seventeen forced cases with movement and release callbacks stubbed; a listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Slot bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident second entity motion $3E15/$3E2B. VICE checked four forced initialization, reversal and countdown cases with movement and cleanup callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident trajectory selection $3DB9. VICE checked four forced state and slot cases with direction, movement and cleanup callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, slot bounds and ordinary-play reachability remain open.
+
+Traced resident coordinate direction calculation $34EA. VICE checked twelve forced coordinate combinations against an independent calculation, and a listing test checks those plus 1,024 deterministic combinations. Three more VICE cases ran trajectory initialization through the real calculator with the motion callback stubbed; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident directional motion $35C1. VICE checked six forced entity-type, signed-motion and callback-Y cases with horizontal callbacks stubbed; a listing test repeats them. A deliberately changed Y selects a different vertical table byte, consistent with the known collision-callback path. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, callback effects and ordinary-play reachability remain open.
+
+Traced resident entity-record copy $369E. VICE checked two forced source offsets, including Y wrapping within the page; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Record bounds and ordinary-play reachability remain open.
+
+Traced resident trigger-coordinate conversion $5D2C. VICE checked five forced column and row pairs, including carry and $FF values; a listing test checks those and 1,024 deterministic pairs against the arithmetic formula. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident world-to-grid conversion $71DB. VICE checked eight forced coordinates and carry boundaries; a listing test checks those and 1,024 deterministic coordinate pairs against the arithmetic formula. Three additional forced cases ran $5D2C into the real $71DB, showing that its row output is one less modulo 256 because the two routines use offsets $59 and $5A. The listing test repeats those cases. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident player contact and recoil selection $7227. VICE checked five forced gate, overlap and recoil cases with callbacks stubbed, plus two cases using the real $75E3 rectangle test and stubbed knockback and comparison callbacks; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident knockback initialization $727F. VICE checked all six captured motion profiles and register restoration; a listing test repeats them. Two more forced $7227 contacts used the real rectangle, knockback and horizontal-comparison routines and exercised opposite recoil directions; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Profile bounds and ordinary-play reachability remain open.
+
+Traced conditional resident record recoil $72AB and temporary animation $72E6. VICE checked three forced threshold and occupied-slot cases with real coordinate conversion and recoil-state code, plus four forced animation counts with the release callback stubbed; a listing test repeats them. Corrected a pre-existing comment that attached the saved-X operation to the preceding increment. The project exported without a reported loss and the paused user snapshot was restored. An ordinary entry and ordinary-play reachability remain unproved.
+
+Traced resident horizontal collision wrappers $4574/$45BC and tile-attribute code $460C/$4632. VICE checked four forced rightward and five leftward wrapper cases with movement, grid and tile callbacks stubbed, four attribute-packing cases with the reader stubbed, and three direct reader cases. Two more cases used the real reader with supplied map data. A listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced resident horizontal entity movement $43A2/$43F0. VICE checked nine forced world-coordinate, screen-bound and type-$28 release cases with release stubbed; a listing test repeats them. Two additional forced $45BC cases used the real movement, grid and tile-attribute code with supplied map data and verified rollback versus retained motion; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident entity release $4454. VICE checked four forced primary and extra-slot cases using the real $447A reset, including entity index zero and a zero second slot. Two more forced type-$28 screen-boundary cases ran the real release and reset from $43A2/$43F0; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident stage screen-resource setup $7130 and its eight-page copy. VICE checked one forced table index and every byte of a supplied 2,048-byte source in RAM under I/O, with $7008 stubbed; a listing test repeats the pointer and copy checks. A raw RAM read of address 1 exposed the backing byte rather than the processor port, so the banking check uses the processor-visible read and verifies its low three bits. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced resident screen-colour mapping $70D0. VICE checked all 800 forced character-to-colour mappings and restored X, with supplied screen and colour-table data; a listing test repeats them. An initial comment named $7118 as the row counter, but the instruction operands show it is $6F85; the comment was corrected and re-exported before publication. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
+
+Traced resident compressed-screen decoder $7011 and entry $7008. VICE checked all 800 output cells for three forced 200-metatile streams, including a literal followed by a run and a zero initial run count. Two more cases used the real decoder and colour mapper together and checked all screen and colour cells plus X restoration; a listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Stream bounds and ordinary-play reachability remain open.
+
+Traced resident reward handler $7632 and negative-entity contact scan $74D6. VICE checked sixteen forced reward-handler cases with real release and balance arithmetic, then three forced scan cases using the real slot, rectangle, dispatch, release and reward code. The overlap cases for types $FE and $FD awarded the expected amounts; the separated case did not. Random, message and score callbacks were stubbed. The listing test repeats them, and the discovery states the controlled-test limit. The projects exported without a reported loss and the paused user snapshot was restored. An ordinary unmodified pickup remains open.
+
+Traced resident transition setup $0364 and display initialization $0383. VICE checked the processor-port state around a stubbed $6CCC call, and three forced origin-selection paths with thirteen initialization calls stubbed. The latter probe replaced CLI at $03AB with NOP to keep interrupts disabled; a listing test repeats those controlled conditions. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, interrupt timing and ordinary-play reachability remain open.
+
+Traced the resident interrupt input-scan sequence $1665–$16AA. VICE checked both branches using a temporary BIT operand redirected to a supplied RAM byte; the listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Real keyboard behavior, interrupt timing and ordinary-play reachability remain open.
+
+Traced resident first-sprite and reused-sprite register updates at $1703 and $17DA. VICE checked four forced combinations of X-high, multicolour and expansion bits for each path, including both screen pointers and sprite colour; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds, interrupt scheduling and ordinary-play reachability remain open.
+
+Traced resident sprite-reuse scheduling at $1753/$182A and the split count at $1779. VICE checked ten forced scheduling branches after redirecting the raster comparison to a supplied RAM byte, and three forced sprite-register sets including the split-count boundaries; a listing test repeats them. The projects exported without a reported loss and the paused user snapshot was restored. Actual interrupt timing and ordinary-play reachability remain open.
+
+Traced resident right and left acceleration $0E42/$0FDC. VICE checked fourteen forced direction, gate, speed and profile cases; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident unscrolled horizontal movement $0FC1/$115B. VICE checked eight forced boundary and wrap cases, plus four cases through the real $0E83/$101F callers and their step cap; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident upward movement and viewport handling $0D7F. VICE checked six forced viewport, anchor and top-boundary cases with scroll and slot callbacks stubbed, plus one case through the real $0DE9 slot adjustment checking all 28 bytes; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident downward movement and viewport handling $0CA0 and the preceding tile checks at $0C2C. VICE checked five forced scrolling cases with callbacks stubbed, one through the real $0D0A slot adjustment, and five forced tile and state cases with the entity-landing callback stubbed. A listing test repeats the cases. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, map bounds and ordinary-play reachability remain open.
+
+Traced resident rightward movement and viewport handling $0ED3. VICE checked six forced anchor, fine-scroll and map-boundary cases with scroll and slot callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident leftward movement and viewport handling $1069. VICE checked six forced anchor, fine-scroll and map-boundary cases with scroll and slot callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident record-driven map writer $46D6. VICE checked three forced tile-source cases including pointer carry and restored Y; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Record and pointer bounds and ordinary-play reachability remain open.
+
+Traced resident display initialization $719E. VICE checked every RAM and VIC register write for two forced X/Y inputs; a listing test repeats them in flat memory. The project exported without a reported loss and the paused user snapshot was restored. Call context and ordinary-play reachability remain open.
+
+Traced the resident sprite mirror $2086. VICE checked both 63-byte outputs against supplied patterns, the untouched padding bytes and returned indices; a listing test repeats the comparison using independently computed bit and two-bit-group reversals. The project exported without a reported loss and the paused user snapshot was restored. Overlapping inputs and ordinary-play reachability remain open.
+
+Traced resident viewport-origin calculation $6E12. VICE checked three forced inputs, including carries, both mode branches and supplied map rows; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident spawned-entity coordinate initialization $0988. VICE checked four forced mode and allocation-carry combinations with allocation and release stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Real callback effects and ordinary-play reachability remain open.
+
+Traced six resident item setup variants and their shared setup at $49D0. VICE checked each forced entry, including message callbacks that clobber X and Y; reset, message and motion callbacks were stubbed. A listing test repeats the cases. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident enabled-entry selectors $49E3 and $4A12. VICE checked four forced selection, wrap and fallback cases with random values and dispatch targets replaced; the enabled-byte ranges overlap. A listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. The first loop has no exit when all its flags are zero; ordinary-play reachability remains open.
+
+Traced resident revival-item choice $497D and $498F. VICE checked both forced player-flag branches with selection, reset, message and motion callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident transfer preparation $7A9A. VICE checked the saved and cleared pages, selector and 53-byte transfer payload with interrupts disabled, the sound callback stubbed and execution stopped before the transfer; a listing test repeats the RAM checks. The project exported without a reported loss and the paused user snapshot was restored. CPU-port saved bytes, SID behavior, transfer and ordinary-play reachability remain open.
+
+Traced resident message row writer $4828. VICE checked all 110 display cells and the low nibbles of all 66 colour cells with supplied bytes; a listing test repeats the writes in flat memory. The project exported without a reported loss and the paused user snapshot was restored. Call context and ordinary-play reachability remain open.
+
+Traced resident meter sprite update $6F86. VICE checked seven forced meter values and a cache hit across all 64 bitmap bytes; a listing test repeats them against independently calculated segments. The project exported without a reported loss and the paused user snapshot was restored. Index bounds and ordinary-play reachability remain open.
+
+Traced resident damage and protection $5D7A. VICE checked five forced cooldown and charge cases through the real meter subtraction, including zero-charge wrap, with the message callback stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced resident temporary action state $08E0 and its restoration at $0841. VICE checked three forced save and restore cases with the following input gate forced to return; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Sampled the forced play captures of the remaining 27 loads every 20 frames through frame 400 using right, alternating fire and up after frame 100. A replay with identical input and non-stopping execution checkpoints verified ten additional active sprite bitmap ranges in loads 7, 10, 14 and 17; their sampled bytes matched the entry snapshots. Added those masks to the listing and gallery, with a test comparing the gallery bytes to the listings. The paused user snapshot was restored. Other uses and ordinary-play reachability remain open.
+
+Traced resident state reads $29FC and table initialization $2A16. VICE checked two supplied final-read values and all eight initialized bytes with $6B50 stubbed; a listing test repeats them. The apparent routine references are LDA reads, not calls. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident reward creation $5BE1 and $5C2A. VICE checked eight forced free, occupied and input-state cases with coordinate conversion stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Checked source-address links reported by the site build. Replaced twelve automatically generated links to the default listing with explicit links to the relevant load-specific listings; each target address is present in that listing.
+
+Traced indexed resident reward initialization $5C66 and $5C94. VICE checked both forced types through the real coordinate conversion with reset and movement callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident slot-zero object initialization $5CCB and $5CFE. VICE checked four forced free and occupied cases with coordinate and movement callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced resident right-scroll tile-column writer $2D3E. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
+
+Traced resident left-scroll tile-column writer $2E33. VICE checked two forced top-tile parity cases with supplied map and table data and page-crossing pointers; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Input bounds and ordinary-play reachability remain open.
+
+Traced resident entity record scan $3622. VICE checked four forced new, negative, reload and occupied cases through the real ten-byte copy; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Slot and record bounds and ordinary-play reachability remain open.
+
+Described 276 additional eight-byte characters in loads 29–31, stopping before each nearest discovered code-entry or update pointer and excluding typed code, overlapping annotations and bytes that differed between entry and play. VICE copied all 2,048 source bytes per load with $717C; the resulting character RAM matched each entry snapshot. An earlier 200-frame capture recorded no instruction entries into those source ranges. A listing test checks every added glyph and the copy. The paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Extended the character-source audit to loads 2–28. For each load, VICE copied the complete 2,048-byte entry source with $717C; the destination matched the entry snapshot. Separate non-stopping execution checkpoints covered the candidate ranges during 200 frames of the play capture. Described 2,759 additional eight-byte characters that matched entry and play, preceded discovered code-entry and update pointers, and received no observed instruction entry. The listing test checks every added character against the copy routine. The paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Described the 48 captured split entity-handler address pairs in loads 2–31. VICE checked indices 0, 1 and 47 in loads 2, 24 and 31 up to the patched call; a listing test checks all 48 indices in every load. The paused user snapshot was restored. The caller has no local index bound, and individual target reachability remains open.
+
+Described the 42 load-header bytes at $7F58–$7F81 in loads 2–31 using their resident readers. VICE checked the sound-pointer and visual-selector reads in loads 2, 24 and 31; a listing test checks those reads and the captured header bytes for every load. The paused user snapshot was restored. Other fields retain their documented conditional uses and ordinary-play reachability remains open.
+
+Described the nine captured starting colour, player and view-origin fields in loads 2–31. VICE checked the initialization and temporary-bound calculations in loads 2, 24 and 31 with the HUD callback stubbed; the listing test repeats both paths for every load. The paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Compared aligned 63-byte ranges in loads 2–30 with sprite shapes already verified in other loads. VICE confirmed the entry bytes for 302 matches and watched each range for instruction entries during a 200-frame play capture; none was entered. Added descriptions and a test comparing each pair with both listings and the source gallery. The paused user snapshot was restored. Display use in the destination loads and other possible code uses remain open.
+
+Fixed the kit project writer to retain automatic as well as user labels when rebuilding a disassembler project. A new round-trip test first reproduced the loss and then passed; rebuilding the resident project retained all 273 recorded automatic labels. A separate stage-31 disassembler instance opened the rebuilt project, and was stopped after the check; its launcher removed one seeded underlying label during its ordinary automatic-label cleanup.
+
+Extended the controlled right, alternating-fire and up observation to 1,200 frames in the 27 loads outside the earlier 1,000-frame sample. It found no stable active sprite range without an existing description; 40 samples in load 13 differed from its entry snapshot and remain unclassified. This is a limit of the sampled inputs, not a claim that every shape was reached. The paused user snapshot was restored.
+
+Rendered and compared previously unclassified aligned 63-byte ranges across loads. Eighty-two distinct one-bit patterns recurred in at least two loads, covering 315 stable ranges; the rendered sheet showed recognizable shapes, without establishing their runtime use or colours. VICE confirmed each entry range and recorded no instruction entry during a 200-frame capture. Added the patterns to the listings and a separate viewer, with a test comparing every occurrence to the viewer. The paused user snapshot was restored.
+
+Built the site and checked the repeated-pattern viewer in headless Firefox: all 82 choices were present, changing the selection changed the canvas and source link, and the unverified-use text was visible. A screenshot is retained in ignored work storage. The separate preview browser and local server were stopped afterward.
+
+Rendered 170 further distinct one-bit patterns from 174 aligned ranges found in individual loads. Visual inspection showed recognizable shapes or sprite-layer fragments; VICE checked the entry bytes and observed no instruction entry into the ranges during a 200-frame capture. Added them to the listings and the separate pattern viewer; a listing test compares every range to the viewer. The paused user snapshot was restored. Display use, actual colours and other possible code uses remain open.
+
+Examined character-copy gaps around known code in loads 3–31. Excluded typed code, discovered handler and update entry bytes, existing annotations and bytes that differed between entry and play. VICE checked the complete copy and watched the candidate ranges during 200 frames; 1,317 additional eight-byte patterns passed. The listing test checks every pattern against its copied bytes. Other code uses and display reachability remain open. The paused user snapshot was restored.
+
+Rechecked the expanded 252-choice pattern viewer in headless Firefox after the final page text change; changing a selection updated both canvas and source link. A screenshot is retained in ignored work storage. The preview browser and server were stopped.
+
+Traced the first-load entity normal state $B188. VICE checked six forced paths, including propagation of carry between the two frame additions, with collision, overlap and damage callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load entity reaction paths $B1ED and $B224. VICE checked five forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load second entity normal state $B24B. VICE checked eight forced collision, contact, timer and movement paths with callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load second entity reaction and exit paths $B315 and $B34F. VICE checked six forced cases with movement, score and dispatch callbacks stubbed; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load third entity normal state $B389. VICE checked ten forced collision, horizontal threshold and wave-table cases with callbacks stubbed; a listing test repeats them. The asymmetric subtraction is six for negative speed and five for nonnegative speed. The project exported without a reported loss and the paused user snapshot was restored. Callback effects, index bounds and ordinary-play reachability remain open.
+
+Traced the first-load third entity reaction and exit $B48E/$B4C8. VICE checked five forced cases with movement, score and dispatch callbacks stubbed, including the zero-frame fallthrough into both movement callbacks; a listing test repeats them. The project exported without a reported loss and the paused user snapshot was restored. Callback effects and ordinary-play reachability remain open.
+
+Traced the resident display-slot sort and the patched viewport-origin operands. VICE checked three forced sort patterns and a cached path; listing tests exercise those cases and the previously checked viewport calculations. Sorting preserves equal-value order before rewriting the first fifteen index pairs. The paused user snapshot was restored. Ordinary-play reachability remains open.
+
+Traced the first-load payment screen selector. Five controlled VICE cases and a listing test check sufficient and insufficient balances and the record flags, with rendering and slot deletion stubbed. The paused user snapshot was restored; callback effects and natural reachability remain open.
+
+Traced first-load setup $93BA–$9490. VICE checked two patched flag operands and the graphics copies, including overlapping patches and six tails, with callbacks stubbed. A listing test repeats the cases. The user snapshot was restored; callback effects and natural reachability remain open.
+
+Traced the first-load item layout at $A63F. VICE and a listing test checked 24 colour cells and two price-draw calls with price callbacks stubbed. The paused user snapshot was restored. Natural reachability and callback effects remain open.
+The following prompt and input handler at $A67E has its own routine boundary; its untraced bytes remain in the coverage queue.
+
+Traced first-load item release, polling and timeout paths. Five forced VICE cases checked both 220-frame timeout destinations and three controls; a listing test also checked simultaneous input priority. Callbacks were stubbed and the paused snapshot restored. The following selection handlers have a separate coverage boundary.
+
+Traced first-load item movement at $A6D4/$A6F2. Eight forced VICE cases and a listing test checked selection transitions in both layouts with callbacks stubbed. The paused user snapshot was restored. The confirmation handler has a separate coverage boundary.
+
+Traced first-load confirmation at $A712–$A78A. Seven forced VICE cases and a listing test checked the alternate layout, availability flags, successful and unsuccessful payment results, and patched effect call. Payment and effect callbacks were stubbed; the paused user snapshot was restored.
+
+Traced the two resident SID frequency tables through $23B7. A listing test checked all 96 paired entries, and VICE checked four forced indices against SID state. The paused user snapshot was restored. Input bounds and natural use remain open.
+
+Traced the resident status-screen template copy at $6C89. VICE and a listing test compared all 200 bytes in a controlled load-24 state; the paused user snapshot was restored. Later writes and natural reachability remain open.
+
+Traced resident transfer-memory receive and send at $7E02/$7E25. VICE and a listing test checked three-byte paths with serial callbacks stubbed, including page crossing. The paused user snapshot was restored; serial peer behavior and other transfer states remain open.
+
+Traced the rising-entity overlap decision at $6939–$69A1, including carry into the player-Y addition. Seven forced VICE cases and a listing test checked width selection and selected attach/reject branches with the display-slot callback stubbed. The paused user snapshot was restored; further boundary and natural-play cases remain open.
+
+Checked 5003 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Checked 171 additional visual-resource character patterns against controlled copies and 200-frame execution watches. Excluded code, discovered handler/update entries, changed bytes and existing annotations. VICE checked the copies by selection and a listing test repeats them; the paused user snapshot was restored. Display use and other possible code uses remain open.
+
+Traced the first-load message entity initializer at $92FB. VICE and a listing test checked every field for two forced indexes, stopping before the message callback. The paused user snapshot was restored; index bounds and natural reachability remain open.
+
+Compared 62 first-load conditional sprite slots in entry and play snapshots and checked all 64 bytes of each in VICE. Added individual shape and slot-byte descriptions, with a listing test checking the statistics. The paused user snapshot was restored; selection remains conditional.
+
+Traced first-load price formatting and described the four previously verified setup sprite sources. VICE and a listing test checked five forced price values; setup-copy tests checked each sprite source and overlapping patch. The paused user snapshot was restored.
+
+Decoded 34 first-load item and shop messages using the rendered $C800 character set and the three-field record format. VICE matched all captured record bytes; a listing test checks every field and control byte. The paused user snapshot was restored. Ordinary-play selection remains open.
+
+Traced first-load item effects at $AC61–$ACAA. Seven forced VICE cases and a listing test checked flag setters, counters, attributes and the record callback with that callback stubbed and execution stopped before slot disable. The following item-push entries have a separate coverage boundary. The paused user snapshot was restored.
+
+Traced four first-load item-push entries and described a previously checked setup graphics source. VICE and a listing test checked all four type/quantity pairs, stopping before the destination. The paused user snapshot was restored.
+
+Traced first-load record drawing at $AB55–$AB9F. Five controlled VICE calls and a listing test checked each drawing entry and its three- or four-row output. The paused user snapshot was restored; other arguments and natural reachability remain open.
+
+Traced first-load payment option selection at $A52E–$A5AD. Six forced VICE cases and a listing test checked insufficient balance, default messages and patched callbacks with payment, message and meter routines stubbed. The paused user snapshot was restored.
+
+Traced the first-load payment amount formatter and separated its saved-X operand from the option dispatcher. Four forced VICE cases and a listing test checked digit values and X restoration with drawing stubbed; the earlier option test covers the dispatcher. The paused user snapshot was restored.
+
+Described the first-load second and third voice pointer sequences individually. VICE checked the bytes and a listing test checks each pointer and terminator. The paused user snapshot was restored.
+
+Traced first-load item-pair selection and the conditional $13/$14 resolver. Four forced VICE cases and a listing test checked both supplied and derived pairs. Drawing has a separate coverage boundary, and the paused user snapshot was restored.
+
+Described 247 stable resident $C800 character patterns after comparing entry and first-load play snapshots. VICE matched the bytes and watched the selected ranges for 200 frames without an instruction entry. The paused user snapshot was restored; individual display use and other possible code uses remain open.
+
+Traced first-load item-result message waiting at $A78B. VICE and a listing test checked a two-frame countdown with display, frame and HUD callbacks stubbed. The paused user snapshot was restored; callback effects and natural reachability remain open.
+
+Traced first-load item input-held and cursor selection. Eight forced VICE cases and a listing test checked the carry and usual cursor positions, with the sampler stubbed and display initialization stopped. The paused user snapshot was restored.
+
+Traced first-load item-description pointer selection and price-digit drawing. VICE and a listing test checked a forced pointer and four character/colour cells. The paused user snapshot was restored; bounds and natural reachability remain open.
+
+Described the four first-load visual pointer tables individually and added the previously verified sprite patches and drawing-store operand. VICE checked the pointer bytes; listing tests check pointers, loader reads, setup copies and drawing. The paused user snapshot was restored.
+
+Decoded the first-load repeating motion stream at $924C. VICE and a listing test checked 45 outputs through its reset with a forced entity slot. The paused user snapshot was restored; other callers and natural reachability remain open.
+
+Described the three captured first-load stage records individually. VICE and a listing test checked the record loader’s field copies with map writing stubbed. The paused user snapshot was restored.
+
+Described six first-load entity records individually. Six forced VICE calls and a listing test checked the ten-byte copies, including the record beyond the initial limit. The paused user snapshot was restored; the overlapping dispatch role remains open.
+
+Traced the first-load welcome and message entries in three controlled VICE calls and a listing test. Described the previously checked six setup graphics tails, the setup entry and an overlapping message suffix. The paused user snapshot was restored.
+
+Described all 24 first-load item records individually, including packed prices and decoded description names. VICE matched the complete table and checked nine representative pointer dispatches; a listing test checks all 24 records through price, drawing, effect and message selection. The paused user snapshot was restored.
+
+Found and typed previously unclassified panel setup code in loads 9, 19, 20 and 30. Controlled VICE calls and a listing test checked the four character and colour writes and patched helper. The paused user snapshot was restored; subsequent panel behavior and natural reachability remain open. A related copy in load 4 overlaps previously documented character-copy bytes and needs separate reconciliation.
+
+Traced the next panel section in loads 9, 19, 20 and 30. Sixteen forced VICE cases and a listing test checked balance, full-meter and record-flag message selection. Execution stopped before message display, and the paused user snapshot was restored. Natural reachability remains open.
+
+Reconciled the load-4 panel code with 22 overlapping visual-character descriptions. Controlled VICE and listing tests establish both byte copying and forced execution; the earlier 200-frame watch remained a bounded observation. The paused user snapshot was restored.
+
+Traced panel input and cursor paths in loads 4, 9, 19, 20 and 30. Twenty-five forced VICE cases and a listing test checked prompt arguments and branch outcomes with callbacks stubbed. The paused user snapshot was restored; physical input mapping and natural reachability remain open. Load-4 character descriptions overlapping this code record both observations.
+
+Traced panel completion and message waiting in loads 4, 9, 19, 20 and 30. Ten forced VICE cases and a listing test checked callback arguments, state writes and the wait loop with callbacks stubbed. The paused user snapshot was restored. Load-4 character descriptions overlapping this code record both observations.
+
+Decoded seven panel message records in each of loads 4, 9, 19, 20 and 30, adding descriptions for four messages per load. VICE matched all 35 captured records; a listing test decodes each field, preserving the game’s spelling and punctuation. The paused user snapshot was restored.
+
+Found and typed the previously unclassified price formatter and digit writer in 17 later loads. VICE and a listing test checked both paths in every load. Where code overlaps copied character patterns, the descriptions now record both observations; the paused user snapshot was restored. Natural reachability and input bounds remain open.
+
+Found and typed the input-held and cursor helpers and adjacent state bytes in 17 later loads. Eighty-five forced VICE cases and listing tests checked the helpers; existing shop tests check the state paths. Where bytes overlap copied character patterns, descriptions record both observations. The paused user snapshot was restored.
+
+Found and typed conditional-item resolvers in 17 later loads. Fifty-one forced VICE cases and a listing test checked the three outcomes per load. Overlapping character-copy descriptions record both observations; the paused user snapshot was restored.
+
+Checked all 34 shop-message copies in each of 17 later loads against the decoded first-load records. VICE matched each entire message bank; listing tests check all 578 record hashes and decoded fields. Added the ten previously undescribed records per load and noted overlapping character-copy uses. The paused user snapshot was restored.
+
+Found and typed graphics setup code and its ten source blocks in loads 2, 9, 23 and 26. VICE and a listing test checked every copy and seven mirror calls per load with the mirror callback stubbed. Load-2 overlapping character descriptions record both uses; the paused user snapshot was restored.
+
+Found and typed load-19 message setup, cursor-colour code and its tables at $BE38–$BE95. Four forced VICE cases and a listing test checked one entity setup and all three usual cursor ranges with callbacks stubbed. The paused user snapshot was restored; the following code remains a separate coverage boundary.
+
+Found and typed load-19 entity reaction $BE96–$BF17. Seven forced VICE cases and a listing test checked timer, contact, collision and random-direction paths with callbacks stubbed. The paused user snapshot was restored; the next state has its own coverage boundary.
+
+Traced load-19 entity state $BF18–$BF3E. Three forced VICE cases and a listing test checked inactivity, both directions and wrapped frame arithmetic with movement callbacks stubbed. The paused user snapshot was restored.
+
+Found and typed load-19 question handling $BD50–$BDEC. Sixteen forced VICE cases and a listing test checked initialization, cursor choices, input release, answer comparison and finish dispatch with callbacks stubbed. The paused user snapshot was restored. The answer-bit source and natural reachability remain open.
+
+Typed the load-19 five-way Sphinx dispatcher and its first two states at $BC10–$BC6F. Six forced VICE paths checked all targets, both answer-source branches, state changes and introduction calls. The paused user snapshot was restored.
+
+Described the resident raster split setup and four timing tables. Two forced VICE paths and a listing test checked zero and nonzero scroll through $1383; the paused user snapshot was restored. The subsequent raster wait and sprite writes remain outside the test.
+
+Typed the load-19 question selector at $BCDC. Four forced VICE cases and a listing test checked both question choices with display stubbed. Restored the paused user snapshot.
+
+Described the resident entity collision parameter tables through type 45. The listing test checked all 46 types, and five forced VICE cases checked the coordinate and size calculation. Restored the paused user snapshot.
+
+Distinguished 29 previously duplicated resident sprite descriptions by their own bitmap bit and row counts. VICE compared all 63 bitmap bytes per slot with the first-load play capture; a listing test checks the counts. Restored the paused user snapshot.
+
+Described the alternate screen matrix cells $C500–$C7E7 by their positions and the previously VICE-checked transition clear, retaining the possibility of other uses. The existing screen-clear test checks the whole range and the untouched tail.
+
+Described primary screen matrix cells $C0AE–$C3E7 by position, using the VICE-checked transition clear and the separately checked status-template copy. The existing screen-clear test checks the range and untouched tail.
+
+Described the previously unlabelled tail of the 200-byte status template and its six-byte meter-background use. The existing VICE and listing checks cover the full template copy.
+
+Traced the resident platform-contact bounds through the support-state update. Four forced VICE paths and a listing test checked horizontal rejection, vertical rejection, equal height and a shortened step. Corrected two misplaced existing comments at $21E0 and $21EF; restored the paused user snapshot.
+
+Checked the later resident raster-split wait and sprite positioning in two forced VICE cases with different raster and delay operands, and extended the listing test. Restored the paused user snapshot.
+
+Described sprite interrupt initialization at $16C0. Two forced VICE cases and a listing test checked its coordinate and mask writes; the VICE port read reflects input-pin state. Restored the paused user snapshot.
+
+Distinguished all 18 resident built-in sound pointer lists by their actual sequences. VICE compared every list byte with the first-load play capture; a listing test checks each pointer and terminator. Restored the paused user snapshot.
+
+Described resident special-entity dispatch and its second selector and high-byte tables. Six forced VICE paths and a listing test checked mode, phase, movement and all 38 captured type selections with movement stubbed. Restored the paused user snapshot.
+
+Traced the special-entity initialization scan and callback setup at $5E71. Two forced VICE paths and a listing test checked release selection, scan count and callback arguments with callbacks stubbed. An initial test setup placed flags at the wrong indexes; corrected before the successful check. Restored the paused user snapshot.
+
+Traced the slot-zero field clear at $18D8. A forced VICE call and a listing test checked thirteen fields and their neighbours. Restored the paused user snapshot.
+
+Traced the resident sound-list reader and shared tick branch. Three forced VICE cases and a listing test checked two pattern pointers and the zero-low-byte restart; the tick branch is described statically. Restored the paused user snapshot.
+
+Described six resident display-slot save arrays. A forced VICE save and restore and a listing test checked all 192 bytes and the released-slot boundary. Restored the paused user snapshot.
+
+Described the overlapping meter-buffer tail and the patched entity reload multiplier, reusing the earlier VICE checks and listing tests for the meter and record scan.
+
+Traced the resident sprite-register copy at $121C. A forced VICE path and a listing test checked position, pointer, colour and multicolour-mask writes before the timer setup. Restored the paused user snapshot.
+
+Described the CIA keyboard scan at $2951. Three forced VICE cases and a listing test checked the sampled bit and divider behavior; VICE controlled port B as output, so physical key mapping remains open. Restored the paused user snapshot.
+
+Traced status reading at $7B84. Three forced VICE cases and a listing test checked its return and port direction for zero and nonzero tiers. An initial test expected the intermediate data read in A, but the return reloads $5284; corrected before the successful check. Restored the paused user snapshot.
+
+Described the separate player item arrays and checked append, matching-item merge and $99 saturation for both players in six forced VICE cases and a listing test. Restored the paused user snapshot.
+
+Described the remaining captured entries in 30 later-load row-pointer pairs. All 81 pairs per load follow the captured stride; VICE compared every tail byte with the corresponding entry snapshot, and a listing test checks the arithmetic and table bounds. The pointers extend beyond the map rows described by the Maps view; their use and target ownership remain open. Restored the paused user snapshot.
+
+Typed load-11 entity initialization $964E–$968C following the stage-object record. Three forced VICE calls and a listing test checked twelve indexed fields and the message pointer. Restored the paused user snapshot.
+
+Traced two load-11 repeating motion streams and their entries, recording the first stream’s overlap with copied characters. Six forced VICE cases and a listing test checked literal, repeated and reset values. Restored the paused user snapshot.
+
+Traced 14 additional motion-reader entries and encoded streams across later loads. Twenty-eight forced VICE cases checked first values and resets; a listing test checks each complete decoded sequence. Where the setup or stream overlaps copied characters, the comments retain both observed uses. Restored the paused user snapshot.
+
+Traced twelve object-record entity initializers across later loads. Twenty-four forced VICE calls and a listing test checked their indexed writes and message pointers. Updated the copied-character comments where the executable bytes overlap. Restored the paused user snapshot.
+
+Traced the load-19 Sphinx seed and four hint handlers at $991B–$995B. Four forced VICE cases and a listing test checked message selection and the subsequent state’s bit retention with the random routine stubbed. Recorded the overlap with copied characters and the mutable $9A4B byte. Restored the paused user snapshot.
+
+Traced eight later-load object message callbacks. Eight forced VICE calls and a listing test checked their one- or two-message pointer sequences with intermediate display calls stubbed. Updated character-source comments where code overlaps. Restored the paused user snapshot.
+
+Traced twelve later-load object result callbacks. Twelve forced VICE calls and a listing test checked their A and carry returns; character-source comments record any code overlap. Restored the paused user snapshot.
+
+Added the conditional Sphinx hint-to-answer mapping to Discoveries. Eight forced VICE cases checked both nonnegative choices for each retained seed, and an integration listing test checks the option strings and selection logic. The controlled stages do not establish ordinary-play order; restored the paused user snapshot.
+
+Traced eight later-load trigger message callbacks. Eight forced VICE calls and a listing test checked their message sequences and X restoration with the display callback stubbed. Character-source comments record overlapping code. A superficially similar load-23 callback patches an opcode rather than its immediate operand and remains separate for investigation. Restored the paused user snapshot.
+
+Investigated the unusual load-23 trigger callback: its store patches the opcode at $9514 rather than the immediate operand. Direct VICE calls with X=1 and X=$A2 and a constructed dispatch of the captured second trigger checked the resulting behavior, with the message callback stubbed. A listing test repeats the cases. Natural trigger reachability and real message callback outputs remain open; restored the paused user snapshot.
+
+Added the load-23 self-modifying trigger observation to Discoveries, with the forced-dispatch and callback limitations beside it.
+
+Traced the load-9 countdown trigger and its player-contact patch. Three forced VICE cases checked countdown, guard and activation; a further case used the real flag setter and called the patched contact entry. The message callback was stubbed, and a listing test repeats the paths. Restored the paused user snapshot.
+
+Added the load-9 contact-check patch to Discoveries, with the controlled-trigger and other-damage limitations beside it.
+
+Traced the relocated shop setup and price formatter in 17 later loads. Eighty-five forced VICE cases and a listing test checked page setup, formatting, balance comparisons and message selection with display and gate callbacks stubbed. Character-source comments retain the bounded capture and the newly demonstrated code use. Restored the paused user snapshot.
+
+Traced relocated shop choice code in 17 later loads. One hundred and two forced VICE cases and a listing test checked flag-selected paths, balance rejection, message and optional callbacks, and meter arguments with callbacks stubbed. Character-source comments record overlap. Restored the paused user snapshot.
+
+Traced the second shop entry and item-pair selection across 17 later loads. Sixty-eight forced VICE cases and a listing test checked explicit and player-state-derived pairs using the real resolver. Character-source comments record code overlap. Restored the paused user snapshot.
+
+Traced shop item-drawing setup in 17 later loads. Thirty-four forced VICE cases and a listing test checked selected pointer operands, call arguments and colour RAM writes with item targets stubbed. Character-source comments record code overlap. Restored the paused user snapshot.
+
+Traced the shop item-label and prompt setup in 17 later loads. Thirty-four forced VICE cases and a listing test checked the call arguments and page byte with formatting, display and message callbacks stubbed. Character-source comments record the overlap. Restored the paused user snapshot.
+
+Described the captured storage after declared map columns in 16 loads. The row boundaries and captured values are checked against every listing; 20 forced VICE cases across six loads confirmed that the renderer can read the first and last remainder positions. Ordinary-play reachability and other uses remain open. The user’s paused snapshot was restored.
+
+Found and checked two load-3 entity state dispatchers with 11 forced VICE calls. Their target tables lead into a region previously left untyped; the first dispatcher also overlaps copied character data. Restored the paused user snapshot.
+
+Checked load-3 state $9EB1 in four forced VICE cases, stubbing the contact, effect and setup calls. Checked the timer, frame, selected second slot and self-modified restore operand. Restored the paused user snapshot.
+
+Checked load-3 state $9E42 in six forced VICE cases with detection, contact, effect and movement callbacks stubbed. Recorded the branches, selected movement call and state-3 field writes; restored the paused user snapshot.
+
+Checked load-3 type-$24 states 1 and 2 with six forced VICE cases and stubbed callbacks. Confirmed that state 2 executes both handlers after either detection result, and restored the paused user snapshot.
+
+Checked load-3 type-$07 states 3 and 4 in eight forced VICE cases with callbacks stubbed, including unsigned compare and sign boundaries; restored the paused user snapshot.
+
+Checked load-3 helpers $9D18 and $9D25 in seven forced VICE cases, including bounds and both source-selection paths; restored the paused user snapshot.
+
+Checked load-3 type-$07 state 5 in five forced VICE cases, with movement callbacks stubbed; restored the paused user snapshot.
+
+Checked load-3 type-$07 state 6 in four forced VICE cases around the signed timer boundary; restored the paused user snapshot.
+
+Checked load-3 helper $9DF1 with five forced VICE cases and a two-level caller, verifying the return-address removal and callback outcomes; restored the paused user snapshot.
+
+Checked load-3 type-$07 state 1 with four forced VICE cases and a stubbed helper, and restored the paused user snapshot.
+
+Checked load-3 type-$07 state 2 in eight forced VICE cases, with helpers and contact checks stubbed; restored the paused user snapshot.
+
+Checked load-3 phase calculation $9C5A with five forced VICE cases at both subtraction boundaries, and restored the paused user snapshot.
+
+Checked the first part of load-3 type-$07 state 0 in six forced VICE cases with callbacks stubbed. Preserved the overlapping character-source descriptions and restored the paused user snapshot.
+
+Checked load-3 type-$07 state-0 setup with eight forced VICE cases and stubbed callbacks, preserved overlapping character-source descriptions, and restored the paused user snapshot.
+
+Checked load-3 child initializers in twelve forced VICE cases, including offset choices, position carry, overwritten frame writes and patched Y operands; restored the paused user snapshot.
+
+Checked two load-14 entity dispatchers in nine forced VICE cases, with $A8AC stubbed. Recorded three and one target pairs and restored the paused user snapshot.
+
+Checked load-14 type-$12 state 0 in five forced VICE cases with the random source stubbed, and restored the paused user snapshot.
+
+Checked load-14 type-$12 state 1 in six forced VICE cases, with movement and contact callbacks stubbed; restored the paused user snapshot.
+
+Checked load-14 type-$12 state 2 in ten forced VICE cases with callbacks stubbed, including carry across both additions and contact outcomes; restored the paused user snapshot.
+
+Checked load-14 helper $A6DA in five forced VICE cases with allocation and initialization callbacks stubbed; restored the paused user snapshot.
+
+Checked load-14 type-$13 frame helper in six forced VICE cases, including counter wrap and carry between frame additions; restored the paused user snapshot.
+
+Checked load-14 type-$13 contact helper in five forced VICE cases with callbacks stubbed; restored the paused user snapshot.
+
+Checked load-14 type-$13 state 0 in five forced VICE cases with contact, random, movement and animation callbacks stubbed; restored the paused user snapshot.
+
+Classified load-14 immediate-return entity vector entries, sampled five in VICE and checked all vector pairs and bytes in a listing test; restored the paused user snapshot.
+
+Classified immediate-return entity vector targets across later loads; checked every recorded vector pair and RTS byte in the listing test, sampled 18 calls across six loads in VICE, and preserved overlapping character-source descriptions. Restored the paused user snapshot.
+
+Checked load-4 type-$08 dispatcher and five state targets in forced VICE cases; restored the paused user snapshot.
+
+Checked load-4 type-$08 states 3 and 4 in eight forced VICE cases with an effect callback stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 state 0 in five forced VICE cases with callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 movement helper in four forced VICE cases with movement callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 state 2 in six forced VICE cases at phase boundaries with callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 frame helper $B636 in five forced VICE cases, including carry from both preceding additions; restored the paused user snapshot.
+
+Checked load-4 type-$08 helper $B646 in six forced VICE cases with a two-level caller and callbacks stubbed; restored the paused user snapshot.
+
+Checked load-4 type-$08 state 1 in five forced VICE cases with callbacks stubbed, including both allocator carries and position carry; restored the paused user snapshot.
+
+Forced all 17 entity slots occupied in load 4 and ran the actual allocator and reset from $B571. VICE observed X=$FF after allocation and subsequent writes to $1A18 and $1BF4. Restored the paused user snapshot.
+
+Checked load-9 block-copy routine $94A0 in three forced VICE cases with display callbacks stubbed; restored the paused user snapshot.
+
+Checked load-9 object callback $9465 in four forced VICE cases, redirecting the overlapping $77E0/$77E2 call sites independently. Rechecked the block-copy test with the same isolation and restored the paused user snapshot.
+
+Checked load-20 type-$2A entity entry in four forced VICE cases with movement callback stubbed; restored the paused user snapshot.
+
+Checked load-20 and load-27 entity dispatchers in six forced VICE cases, preserving the overlapping character-source descriptions in load 20; restored the paused user snapshot.
+
+Checked load-20 type-$1B state 1 in five forced VICE cases, including a frame sum that wraps to zero and enters the other movement path; restored the paused user snapshot.
+
+Forced all 17 entity slots occupied and ran load-20 setup $BD35 with the real allocator and reset and $78D1 stubbed. VICE observed X=$FF and a $2A write to $1A18; restored the paused user snapshot.
+
+Checked load-20 indexed motion $BDFF in five forced VICE cases with callbacks stubbed, including index wrap; restored the paused user snapshot.
+
+Checked the front of load-20 type-$1B state 0 in nine forced VICE cases with callbacks stubbed, preserved overlapping character-source descriptions and restored the paused user snapshot.
+
+Checked load-20 type-$1B animation and movement in nineteen forced VICE cases with callbacks stubbed, including signed thresholds and carry; preserved overlapping character-source descriptions and restored the paused user snapshot.
+
+Checked resident status graphic selector $5326 with three forced VICE cases, including the patched immediate operand and all destination ranges; restored the paused user snapshot.
+
+Checked resident player-status selection $530C in four forced VICE cases using the real nibble splitter; restored the paused user snapshot.
+
+Checked the resident continue message pointer and signed displacement table with seven forced VICE cases, and restored the paused user snapshot.
+
+Checked resident two- and three-row replacement icon routines in two forced VICE cases; restored the paused user snapshot.
+
+Checked resident serial sender $7E53 in three forced VICE cases with controlled RAM substituted for its $DD00 clock reads; verified 24 output bits and restored the paused user snapshot.
+
+A simulator run found the $7E7C LDX opcode missing from the listing; VICE and the entry snapshot confirmed $A2. Typed the opcode and its immediate byte as code, rebuilt the listing and repeated the sender test.
+
+Checked resident serial receiver $7DC4 in seven forced VICE cases with controlled samples substituted for port reads. The entry snapshot and VICE both hold CPY opcode $C0 at $7DF7, previously a listing gap; typed it and its immediate operand as code and restored the paused user snapshot.
+
+Checked resident vertical entity movement in six forced VICE cases with entity, player and displacement callbacks stubbed; restored the paused user snapshot.
+
+Checked two unsupported upward displacements reach the existing overlap check at $6939 and restored the paused user snapshot.
+
+Checked resident entity vertical steps in seven forced VICE cases covering world and screen modes, wrap and clamp carry; restored the paused user snapshot.
+
+Checked resident transition entry with two controlled raster cases and message wrapper with two callback-stub cases in VICE; restored the paused user snapshot.
+
+Checked resident record map updater in three forced VICE cases including a page crossing; clarified eight-bit row-offset wrap and restored the paused user snapshot.
+
+Verified the map updater’s forced $FF-stride Y wrap and overwrite in VICE; restored the paused user snapshot.
+
+Checked resident reward conversion in five forced VICE cases with score and message callbacks stubbed; restored the paused user snapshot.
+
+Checked resident transfer-failure border flash in VICE with controlled RAM substituted for CIA1 input reads; restored the paused user snapshot.
+
+Checked resident scroll colour scratch save and restore loops in VICE, comparing the 39 colour nibbles per row; the emulator service had stopped, so the saved user snapshot was restored in pause after restarting it.
+
+Described the $04 display-order alias and reran the existing three-case VICE sort check; restored the paused user snapshot.
+
+Checked the resident vertical display-cache alias and four adjustment loops in forced VICE cases; restored the paused user snapshot.
+
+Checked nine forced load-25 type-$1E local state and event cases in VICE, with callback stubs, and restored the paused user snapshot. Replaced duplicate descriptions with the local operands and branch targets.
+
+Checked four forced left-boundary adjustment cases in VICE, including the borrow carried across the patched immediate instruction; restored the paused user snapshot.
+
+Checked three forced stage-record callback completion paths in VICE, with callback and map-writer stubs; restored the paused user snapshot.
+
+Checked three forced contact-message-5 paths in VICE with the message routine stubbed; restored the paused user snapshot.
+
+Checked six forced effect-displacement phases in VICE, including zero entries and byte wraparound; restored the paused user snapshot.
+
+Checked three controlled VIC display-helper cases in VICE and described the adjacent keyboard-scan entry points; restored the paused user snapshot.
+
+Checked the meter bitmap row writer in three forced VICE cases and restored the paused user snapshot.
+
+Checked the selector-1 stage patch and all 72 copied bytes in VICE, then restored the paused user snapshot.
+
+Connected the display-slot flag range to the previously checked display-builder and sprite-register paths; distinguished its 24-byte annotation range from indexed accesses beyond it.
+
+Checked both banked 24-byte sprite-fragment copies in VICE and restored the paused user snapshot.
+
+Checked four forced entity-candidate scan cases in VICE and restored the paused user snapshot.
+
+Checked four forced top and bottom scroll tile-pair cases in VICE, including source-pointer page crossings, and restored the paused user snapshot.
+
+Checked five forced entity fall-state outcomes in VICE with collision stubbed, including out-of-range and wraparound cases; restored the paused user snapshot.
+
+Checked the 80-byte banked visual-resource copy in VICE with the preceding loader stubbed and restored the paused user snapshot. The check reads CPU port $01 through the processor-visible bank rather than underlying RAM.
+
+Checked all five message screen-row copies with known patterns in VICE and restored the paused user snapshot.
+
+Split the three message screen-row boundaries after checking their regular copy in VICE; kept the following bytes outside those explanations.
+
+Checked both message-panel colour paths and the alternate screen-row copies in VICE with controlled patterns, then restored the paused user snapshot.
+
+Checked five forced built-in sound pointer-table indices in VICE and restored the paused user snapshot.
+
+Checked three message pointer IDs in VICE and connected the checked message buffers and screen row to their exact boundaries; restored the paused user snapshot.
+
+Checked four forced unscrolled downward movement cases in VICE, including wrapped additions, and restored the paused user snapshot.
+
+Checked three controlled frame-wait gate/counter cases in VICE with the panel copy stubbed; restored the paused user snapshot.
+
+Checked three forced stage-record setup cases in VICE with the visual loader stubbed; restored the paused user snapshot.
+
+Checked all ten overlapping status HUD row reads in a forced VICE case and restored the paused user snapshot.
+
+Independent fixed-seed sample 261110 checked 60 of 29,177 listing comments on gpt-6-astra: 59 right, one wrong detail. Settled the finding against the bytes: $70C0 follows DEC $7063; the redundant BNE is at $70C2. Corrected both local descriptions. The sample is not a full audit or a maintainer check.
+
+Resolved the split pointer table for all seven resident status graphics and extended the listing test to check all 140 captured source codes through the real draw routine.
+
+Resolved the resident display-field aliases by base and physical index and extended the two-emitter test to all 32 indexes. Kept possible out-of-range aliasing and ordinary-play constraints explicit.
+
+Traced the token and metatile-character source reads in all 99 captured visual-resource selections. Bounded 496 previously bare data bytes across 74 read segments, preserving existing code and descriptions and leaving unread tails separate.
+
+Checked the resident clamp, stage-field initializer, generator, record copy and sound-service counter in the listing simulator, including all byte states and explicit decimal-mode assumptions.
+
+Connected each resident entity array to the checked record copier, display/movement paths or a specific load-25 working-field reader. Kept the 17-byte physical spacing separate from caller bounds and avoided assigning a universal meaning to per-type state.
+
+Applied the coverage rule that runtime state and generated output are excluded: zero-page variables, entity arrays, display arrays and generated buffers at $C000–$C7FF. Checked the entry snapshot and typed blocks; the three non-zero-page ranges are all zero and contain no typed code. Preserved their annotations and recorded the scope change separately from newly explained bytes.
+
+Checked all 18 captured contact targets, both player selections for two register-restoring contact handlers and middle-byte BCD carry. Added their table/operand descriptions and connected two HUD colour suffixes and the metatile source-page operand to checked consumers.
+
+Replaced repeated IRQ and call-patch comments with local sources, operand destinations and concrete targets. A listing test checks eight IRQ destinations and four split call patches. Documented the callback/colour/health reuse of entity fields.
+
+The full kit suite ran 934 tests: 920 passed, 11 skipped for missing optional tools and three failed while the resident listing was regenerated. The failures were in item dispatch, item status graphics and item variants; all three passed when rerun against the stable listing. Hold listing files stable during subsequent test runs.
+
+With listing files held stable, all 402 game-specific tests passed, the three repository checks passed and the 102-game site build passed. The earlier full-kit run had 920 passes and 11 optional-tool skips; its three game-listing read failures all passed on stable rerun.
+
+Lowered the ignored shape matcher threshold to include nonzero sparse masks that already have a verified gallery counterpart. Twenty more ranges matched their entry/play snapshots; VICE read each and observed no instruction entry during a 200-frame play probe. Preserved the original 302 observations and appended the 20 matches. Restored the paused user snapshot.
+
+Identified 11 blank bitmap slots next to nonzero shapes that match verified two-layer source frames. VICE matched the bytes and observed no instruction entry during 200-frame probes. Added bounded descriptions and retained target-frame selection as open; restored the paused user snapshot.
+
+A nonzero sparse pattern repeats in nine load captures and was omitted by the prior density filter. VICE matched its bytes and observed no instruction entry during 200-frame probes in all nine loads. Described its stored geometry with display use and colours left open, preserving all prior shared-pattern observations and restoring the paused snapshot.
+
+The pattern viewer passed Firefox desktop and 390-pixel mobile checks with 253 options, the new ten-pixel pattern and its source link. Saved review screenshots. A fresh tool-owned Firefox profile needed an explicit about:blank context; creating a tab hung, while reusing an existing context worked. Reset the selected option before comparing pixels when navigating to the same URL.
+
+Verified load 22 quest flag branches in 522 simulator cases and 11 forced VICE cases. Kept the overlapping character-copy evidence, typed the complete routines, and restored the paused user state. Object record 2 contains the $94AA callback; ordinary-play entry to either routine remains open.
+
+Closed 415 gaps (1569 bytes) inside verified character-copy sources. Seventy full 2048-byte copies matched in VICE. Kept display use and overlapping code uses separate, preserved symbols, and restored the paused user state.
+
+Described 4 previously bare fragments (233 bytes) within the existing verified sound-pattern boundaries. Kept the voice-state interpretation and sequencer marker evidence, without extending the streams beyond their captured terminators.
+
+Described 26 resident routine and patched-operand boundaries, checking the complete local continuation against the listing and keeping callback, frame-rate and external-peer limits explicit.
+
+Checked the executable tails in loads 20, 25 and 27 with 225 simulator cases and eight VICE cases. Preserved their overlapping copied-data descriptions and left ordinary-play routes open. Rechecked the load-22 object pointer at record offsets 10/11 (the eleventh/twelfth bytes), copied to $475F/$4765 for the interaction callback.
+
+Described 1405 trailing bytes of already identified 63-byte sprite masks. The VIC pointer stride is 64 bytes and its pixel fetch is 63; comments preserve the possibility of another CPU use rather than labeling those bytes unused.
+
+Described 19 resident table and row boundaries from their consumers, checking the 25 row-offset pairs and sprite bit masks against the captured bytes.
+
+Completed 45 small resident continuations, including arithmetic operands, interrupt returns, serial loops and sprite-index restoration, from the surrounding typed instructions.
+
+Described 36 status-table, glyph and row fragments from their display consumers. Checked meter mask values and retained the distinction between captured character bytes and mutable display output.
+
+A coverage-span audit found one-byte sprite-slot descriptions extending into following undefined blocks. Added explicit boundaries after those bytes so their comments cover only the byte they explain; the remaining tails stay in the queue.
+
+Described 59 resident record fields, sound structures, dispatch tables and remaining HUD boundaries from their loaders and consumers.
+
+Classified 17 complete aligned all-zero masks in the high-memory decoder output after verifying their entry/play bytes and 200-frame execution bounds in VICE. Kept actual display selection and other CPU uses open. Their slot-end comments are explicitly bounded.
+
+Described 334 trailing bytes of already identified 63-byte sprite masks. The VIC pointer stride is 64 bytes and its pixel fetch is 63; comments preserve the possibility of another CPU use rather than labeling those bytes unused.
+
+A coverage-span audit found one-byte sprite-slot descriptions extending into following undefined blocks. Added explicit boundaries after those bytes so their comments cover only the byte they explain; the remaining tails stay in the queue.
+
+Closed 9 gaps (12 bytes) inside verified character-copy sources. Seventy full 2048-byte copies matched in VICE. Kept display use and overlapping code uses separate, preserved symbols, and restored the paused user state.
+
+Recorded the final eight unattributed bytes explicitly rather than guessing padding or dead code. Each 200-frame VICE probe had zero CPU-access hits and a control count of 200; their meaning remains open. Coverage therefore measures descriptions of known behavior and bounded unknowns, not proof that every possible game state was reached.
+
+Reached 100% exported coverage: 490,491 of 490,491 counted bytes across 32 parts. Eight bytes retain explicit unknown roles with bounded CPU-access probes; no absent-use claim or padding guess was substituted. Kept tier Bronze pending the imported-analysis maintainer check and began final stable validation.
+
+Final independent sample 261111 checked 80 of 32,315 comments, with one wrong load/store-address detail. Corrected that wording in 29 loads, retained all verdicts in ignored work storage, and recorded the plain and stratum-weighted results.
+
+Final validation: all 403 game checks passed after updating the hidden-RAM expectation and narrowing the table-value parser. The full 939-test run had 927 passes, 11 optional-tool skips and the subsequently fixed hidden-RAM assertion. Repository binary, documentation and listing checks passed; all 102 games built into 1175 pages; desktop/mobile browser checks passed. Saved the comment-only reward/wing-boots update to the oldware upstream branch; the Ghidra archive remains local.

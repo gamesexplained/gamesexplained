@@ -1,0 +1,4 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');
+const m=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)m.set(r.b,r.a);m[0xd020]=3;m[0x7b5c]=6;m.set([0xe0,2],0x7b6b);m.set([0xe1,2],0x7b6e);m.set([0x10,0x10],0x02e0);const cpu=new CPU(m);cpu.pc=0x7b58;cpu.run({until:0x7b6a,maxSteps:1200});assert.equal(cpu.pc,0x7b6a);assert.deepEqual([m[0x7b5c],m[0xd020]],[14,14]);cpu.step();cpu.run({until:0x7b6a,maxSteps:1200});assert.equal(cpu.pc,0x7b6a);assert.deepEqual([m[0x7b5c],m[0xd020]],[6,6]);m[0x02e0]=0;cpu.run({until:0x7ae3,maxSteps:40});assert.equal(cpu.pc,0x7ae3);assert.equal(m[0xd020],3);
+console.log('OK - resident transfer-failure flash with controlled inputs');

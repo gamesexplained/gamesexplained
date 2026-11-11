@@ -1,0 +1,3 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path');const m=new Uint8Array(65536);for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts/resident/listing.json'))).records)if(r.b)m.set(r.b,r.a);const lists=JSON.parse(fs.readFileSync(path.join(__dirname,'resident-sound-pointers.json')));assert.equal(lists.length,18);assert.equal(new Set(lists.map(x=>x.address)).size,18);for(const x of lists){for(let i=0;i<x.pointers.length;i++)assert.equal(m[x.address+2*i]|m[x.address+2*i+1]<<8,x.pointers[i]);const a=x.address+2*x.pointers.length;assert.deepEqual([...m.slice(a,a+2)],x.terminator);assert.equal(m[a],0);}
+console.log('OK - 18 resident sound pointer lists');

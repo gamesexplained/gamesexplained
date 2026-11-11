@@ -1,0 +1,49 @@
+# Load 16 — verified technical facts
+
+The resident draw loop at `$6D41–$6D63` ran 200 iterations in the first 200 frames after this forced load returned. Its four indexed reads use `$81CF`, `$82CF`, `$83CF` and `$84CF` to place a metatile's four character codes in a two-by-two block. The resident movement checks use the indexed attribute table at `$80CF`; the exact meanings of all its bit combinations remain open. This observation follows a forced transition and does not establish a route by ordinary play.
+
+The entry snapshot has 14 row pointers in split tables at `$85CF` and `$8620`. They point to rows beginning at `$8671` and spaced 21 bytes apart; the address immediately after that storage is `$8797`, the character-data pointer recorded at `$7F41`. The downward scroll check uses `$7F4C` as its vertical boundary. This does not establish that every stored cell is encountered during play.
+
+The captured sound pointers select voice lists at $8D0B, $8D13, $8D1B; their records name 6 distinct event patterns. In the captured selector-1 loop, the resident sequencer selected each pattern and reached its documented zero marker in the listing-based simulator. `test_stage_sound_patterns.js` checks the pointers, pattern boundaries and those visits. This observation does not establish when ordinary play selects the sound.
+
+The captured descriptor names 1 six-byte trigger records at `$8D01` and 0 sixteen-byte stage object records at `$8D07`. `$7979` copies the trigger fields; `$4655` returns before reading the object pointer if its count is zero, otherwise it copies the fields and calls the map updater. `test_stage_records.js` checks the copies and descriptions, stubbing the map updater for the sixteen-byte records. These captured records do not establish that ordinary play activates them.
+
+In the forced play capture, 6 stable 63-byte sprite bitmaps from this load were named by active display-slot entries in VIC bank 3. Their entry and play bytes match; non-stopping checkpoints saw no instruction entry into those bitmap ranges during the following 200 frames. The observation covers those captured states and does not establish all animation or ordinary-play behavior.
+
+The loaded pointer at `$7F3F/$7F40` targets `$8CE7`, inside the eight-page character-copy source at `$8797`. The entry was observed in the 200-frame forced-play probe and monitor collection. The code and graphics uses overlap; `codemap.json` records observed instruction starts in that source whose opcodes and lengths matched the load entry, including two documented instructions with patched operands.
+
+The code at `$8EF0–$8F02` uses `$1AB1,X` to index split low/high tables at `$8F05/$8F0C`, patches a jump operand and dispatches. The seven captured pairs target `$8F13`, `$8F4B`, `$8F7C`, `$8FAA`, `$9023`, `$904E` and `$907E`; the index has no local bounds check. The entry snapshot’s jump operand is `$FF00`, while a VICE stop after the patch observed `$9023`. Separately, `$8F22` patches the immediate operand of the comparison at `$8F29`; the entry snapshot holds `$FF` and a VICE stop observed `$10`. `test_stage16_patches.js` checks the table dispatch and comparison with their callees stubbed.
+
+The seven captured dispatch targets at `$8F13–$909B` implement different entity-state paths: initialization, a position-window check, movement and turning, position restoration, an effect path and a finishing countdown. Their exact field writes and calls are described at each entry in the listing. `test_stage16_handlers.js` checks representative branches with dependent routines stubbed; the same seven controlled cases matched VICE with the same stubs. The callers’ complete state ranges and natural reachability still need tracing.
+
+The shared routine at `$909C` increments an entity byte, uses it to index eight animation offsets and updates the primary frame. Depending on carry from `$732A` and the signed value at `$1A6D,X`, it can choose state 5 or 6 and pop two stack bytes before returning, bypassing a caller continuation. Another branch calls `$7227` and can call `$5D7A` before jumping to `$8FFF`. `test_stage16_shared.js` checks representative paths with those dependent routines stubbed; three corresponding VICE calls confirmed the stack and field effects with the same stubs. The table index is not locally bounded before the read.
+
+Sampling the forced play capture every ten frames through frame 200 found 8 additional active sprite pointers in this load. Their bitmap bytes matched the entry snapshot at their first sampled frame, and execution checkpoints recorded no instruction entries in those ranges during the same 200-frame probe. The recorded display settings and first sampled frame are in `display-observations.json`; natural reachability remains open.
+
+The supplied side A file with index $10 supplies two compressed streams. Executing the game’s decoder on those bytes in the 6502 simulator consumed 979 and 1999 bytes and wrote $EB40–$F43F and $7EDF–$9178, respectively. All written output bytes match the forced VICE load-entry snapshot. The extracted file has 70 further bytes after the two streams; their role is not established. This establishes these stream writes for the supplied image, not natural reachability or ownership of repeated data across loads.
+
+Controlled record-copy, frame-restore and display-routine simulations selected 2 additional bitmap pointers in this load. Slot assignment, position, effect state and one colour were forced. The bitmaps match the load-entry and play captures; no instruction entered their ranges during a 200-frame probe. These examples do not establish natural reachability.
+
+The captured map references 31 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The selected bytes matched the captured play snapshot, and a 200-frame play capture recorded no instruction entry into those selected ranges. 139 eight-byte characters before the nearest discovered code entry or update pointer were described from their row patterns; whether each is displayed and other possible code uses remain open.
+
+The captured 48 low and high entity-handler bytes at $7EDF–$7F3E pair into 38 distinct addresses. The listing test runs the instructions from $2027 up to the call at $2036 for every index in this load. VICE checked indices 0, 1 and 47 in loads 2, 24 and 31 before the call. The code does not locally bound the index, and individual target reachability remains open.
+
+The 42 captured bytes at $7F58–$7F81 supply sound pointers, reward and item values, map replacements, sampled-map comparisons and a visual-resource selector. The listing test checks the bytes and exercises the sound-pointer and visual-selector reads for this load; VICE checked those reads in loads 2, 24 and 31. Other fields are tied to their documented resident readers; their ordinary-play reachability remains open.
+
+The captured bytes at $7F43–$7F49 supply initial colour shadows, player frame and position; $7F4D/$7F4E supply view-origin values that later code can change. A listing test checks their initialization paths for this load. VICE checked both paths in loads 2, 24 and 31 with the HUD callback stubbed. Ordinary-play reachability remains open.
+
+2 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
+
+4 stable 63-byte aligned ranges form one-bit patterns that recur in other loads. VICE checked their entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares every matching range and the viewer. Display use, actual colours and other possible code uses remain open.
+
+A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The selected bytes matched the captured play snapshot, and a 200-frame play capture recorded no instruction entry into those selected ranges. 51 eight-byte characters excluding typed code, discovered entry bytes, update pointers and existing annotations were described from their row patterns; whether each is displayed and other possible code uses remain open.
+
+The captured split row-pointer tables contain 81 pairs. All follow a 21-byte stride from $8671; the first 14 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+This load has 1 captured motion-reader entry and encoded streams documented in `later-motion-streams.json`. Forced VICE calls checked each first value and reset; the listing test checks full decoded sequences. Some bytes also serve as copied character data, as noted in the listing. Ordinary-play reachability remains open.
+
+This load has 31 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+The remaining 9 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.

@@ -1,0 +1,118 @@
+# Load 23 — verified technical facts
+
+The resident draw loop at `$6D41–$6D63` ran 200 iterations in the first 200 frames after this forced load returned. Its four indexed reads use `$81CF`, `$82CF`, `$83CF` and `$84CF` to place a metatile's four character codes in a two-by-two block. The resident movement checks use the indexed attribute table at `$80CF`; the exact meanings of all its bit combinations remain open. This observation follows a forced transition and does not establish a route by ordinary play.
+
+The entry snapshot has 16 row pointers in split tables at `$85CF` and `$8620`. They point to rows beginning at `$8671` and spaced 105 bytes apart; the address immediately after that storage is `$8D01`, the character-data pointer recorded at `$7F41`. The downward scroll check uses `$7F4C` as its vertical boundary. This does not establish that every stored cell is encountered during play.
+
+The captured sound pointers select voice lists at $AE4A, $AE52, $AE5A; their records name 6 distinct event patterns. In the captured selector-1 loop, the resident sequencer selected each pattern and reached its documented zero marker in the listing-based simulator. `test_stage_sound_patterns.js` checks the pointers, pattern boundaries and those visits. This observation does not establish when ordinary play selects the sound.
+
+The captured descriptor names 2 six-byte trigger records at `$94FE` and 3 sixteen-byte stage object records at `$952D`. `$7979` copies the trigger fields; `$4655` returns before reading the object pointer if its count is zero, otherwise it copies the fields and calls the map updater. `test_stage_records.js` checks the copies and descriptions, stubbing the map updater for the sixteen-byte records. These captured records do not establish that ordinary play activates them.
+
+In the forced play capture, 2 stable 63-byte sprite bitmaps from this load were named by active display-slot entries in VIC bank 3. Their entry and play bytes match; non-stopping checkpoints saw no instruction entry into those bitmap ranges during the following 200 frames. The observation covers those captured states and does not establish all animation or ordinary-play behavior.
+
+The loaded pointer at `$7F3F/$7F40` targets `$94E9`, inside the eight-page character-copy source at `$8D01`. The entry was observed in the 200-frame forced-play probe and monitor collection. The code and graphics uses overlap; `codemap.json` records only observed instruction starts in that source whose bytes still matched the load-entry snapshot.
+
+Sampling the forced play capture every ten frames through frame 200 found 2 additional active sprite pointers in this load. Their bitmap bytes matched the entry snapshot at their first sampled frame, and execution checkpoints recorded no instruction entries in those ranges during the same 200-frame probe. The recorded display settings and first sampled frame are in `display-observations.json`; natural reachability remains open.
+
+The supplied side B file with index $17 supplies two compressed streams. Executing the game’s decoder on those bytes in the 6502 simulator consumed 1570 and 7505 bytes and wrote $EB40–$FBBF and $7EDF–$B4DE, respectively. All written output bytes match the forced VICE load-entry snapshot. The extracted file has 69 further bytes after the two streams; their role is not established. This establishes these stream writes for the supplied image, not natural reachability or ownership of repeated data across loads.
+
+Controlled record-copy, frame-restore and display-routine simulations selected 4 additional bitmap pointers in this load. Slot assignment, position, effect state and one colour were forced. The bitmaps match the load-entry and play captures; no instruction entered their ranges during a 200-frame probe. These examples do not establish natural reachability.
+
+The load’s type-$01 entity vector selects a dispatcher at $B076. Three captured state-table pairs point to $B08E, $B0F3, $B12A; the state index is not locally bounded. Listing tests check all three targets in loads 2, 4, 12, 20 and 23; seven controlled VICE calls checked all load-2 targets and one target in each other load. The state index and ordinary-play reachability remain open.
+
+Type-$01 state 1 at $B0F3 returns to state 0 when $1A8F,X is zero; otherwise it calls $45BC or $4574 according to $1B28,X and updates the frame. State 2 at $B12A decrements $1B17,X, uses the same frame update when the result is nonzero, and calls $4B0E before jumping to $5DB9 when it is zero. Listing tests cover both states across five loads with callbacks stubbed; ten controlled VICE calls checked representative paths with the same stubs and decimal mode clear. Natural reachability remains open.
+
+Type-$01 state 0 at $B08E can select state 1 or 2 based on carry from $732A and the sign of $1A6D,X. Its other active paths update $1AD3,X, $1AE4,X and a frame byte and set $1A7E,X if clear; when $1A29,X is zero it only sets that flag if clear. Listing tests exercise these branches across five loads with external callees stubbed; ten controlled VICE calls checked representative paths with the same stubs and decimal mode clear. Natural reachability remains open.
+
+4 three-line message records in this load were identified from instruction sequences that load their addresses in X/Y before reaching $77E0. With selector $77E1 forced to zero, listing tests check the pointer and copy of every recorded line into the message buffers; spaces become glyph zero. Twelve controlled VICE calls check representative records from loads 2, 4, 9, 12, 19, 22, 29, 30 and 31 with the same selector. Glyph $60 is a downward-pointing triangle; its role and ordinary-play reachability remain open.
+The item-message selector at $989D computes an eight-bit table offset from A with decimal mode clear and passes a selected pointer in X/Y to $77E0. Controlled inputs 0–23 select 24 pointer entries and 21 distinct three-line records, including item names. Listing tests check every selection and copy with selector $77E1 forced to zero; ten controlled VICE calls check representative selections in loads 2, 4, 9, 19, 27 and 30. The input range in play and ordinary-play reachability remain open.
+
+The price selector at $9809 sends the first two bytes of an eight-byte item row to $7901 as a packed-decimal amount. The game subtracts that amount from the selected player’s gold when funds suffice; otherwise it restores the balance and returns clear carry. Listing tests cover all 24 captured prices at zero, one below the price, the exact price and 9,999 gold (where distinct), and ten controlled VICE calls check representative deductions. Item index 4 selects the Winged Boots message and has a price of 30 in these captured tables; ordinary-play reachability remains open.
+
+The two pointer pairs at offsets 2–5 in each item row supply subroutine-call operands. Three selectors copy these pairs into JSR instructions; listing tests check all 24 captured rows at each selector, and eleven controlled VICE calls check representative patches. Ordinary-play reachability remains open.
+
+The item-row targets at offset 4 select routines at $9D24–$9D89. Controlled item inputs call helpers for Wing Boots, Helmet, Gauntlet or Revival Medicine, update one of three selected-player fields, or pass fixed A/X values to $536F. Listing tests cover all 24 item paths for both player indices with external routines stubbed; sixteen controlled VICE calls check representative paths. Natural purchase reachability and the external callbacks’ remaining effects remain open.
+
+The item-row targets at offset 2 select drawing routines at $9C18–$9C62. Depending on the target, they return or write a 4-by-3 or 4-by-4 block of consecutive tile bytes using a 40-byte row stride. Listing tests check all 24 item targets in 17 loads with decimal mode clear; eleven controlled VICE calls check representative tile writes. Natural shop contexts remain open.
+
+8 simple eight-row glyphs in the character-copy source are referenced by metatiles in the captured map. Listing tests reconstruct their map references and run the $717C copy; seven controlled VICE reads check representative destination glyphs in loads 2, 20, 27 and 31. These observations do not establish ordinary-play reachability or exclude other possible code uses.
+
+The purchase path at $97FE selects an item index, charges its packed-decimal price and branches away on insufficient funds. On success it decrements $4753,X, selects an effect target, calls it with the item index plus 1, passes a message pointer to $77E0 and waits while $4D6B is nonzero. Listing tests cover 68 controlled purchase paths across 17 loads and eight VICE calls check representative paths, with effect and message callbacks stubbed. The gate at $97D5 supplies that flag from $990E on one path; other entry paths and ordinary-play purchase reachability remain open.
+
+The shop gate at $97D5 can branch to the purchase choice using the sign of $990E, or pass one of two message pointers according to $4753,X. Listing tests check 102 controlled gate cases and the extended purchase paths across 17 loads; eight VICE calls check gate cases and eight check purchases. The gate byte’s role, the mode’s possible values and natural reachability remain open.
+
+The shop input choice at $9772 tests active-low fire, left and right in that order. Its direction handlers decrement or increment the mode byte at $990E, can pass the corresponding item index to the message selector, and call another helper. Listing tests check 204 controlled input and mode cases across 17 loads with callbacks stubbed; eleven VICE calls check representative paths. Ordinary-play timing, mode ranges and callback effects remain open.
+
+The shop initializer at $9744 sets the mode byte to 0 and its countdown to $DC. Starting from 0, the traced left and right handlers keep the mode among $FF, $00 and $01 if no other code changes it. Listing tests check initialization and every transition among those three values in 17 loads; ten controlled VICE calls check representative cases with callbacks stubbed. Other possible writes and ordinary-play timing remain open.
+
+The shop wait paths at $974E and $9761 call $3C2A and decrement the countdown. Starting from $DC, controlled paths reach zero after 220 calls; the timeout then either branches on the gate byte or marks $4753,X and passes a message pointer. Listing tests check both wait paths and timeout branches in 17 loads with callbacks stubbed; eight controlled VICE calls check representative paths. Seconds, ordinary-play timing and other exits remain open.
+
+The captured map references 110 additional described glyphs through its tile-quadrant tables. Their source bytes match the copied character RAM in the play capture, and `test_map_glyphs_expanded.js` checks each map reference and runs the $717C copy. Controlled VICE reads of 18 glyphs in loads 2, 9, 16, 20, 27 and 31 agree with the captures. Ordinary-play reachability and other uses remain open.
+
+The type-$26 entity dispatcher at $B3DE uses $1AB1,X without a local bounds check. Two captured table pairs select $B3F4, $B471; VICE checked both in loads 12 and 23. Ordinary-play reachability and index bounds remain open.
+
+Type-$26 state 1 calls $792C and $1179 and may call $7227 and $5D7A, then decrements $1AC2,X. A nonnegative result subtracts 2 from $19C3,X; a negative result decrements $1B28 in the slot named by $1AD3,X, restores the original X through a patched immediate operand and jumps to $4454. VICE checked four forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$23 state 0 can transition to state 1 after carry from $1179, $7227 or a zero-countdown call to $44DE. Its other paths update $1AC2,X, a motion countdown and $1AE4,X according to callback results. VICE checked nine forced cases in loads 12 and 23 with callbacks stubbed; callback effects and ordinary-play reachability remain open.
+
+The type-$11 entity vector selects a dispatcher at $B148. Six captured state-table pairs point to $B166, $B1F9, $B29B, $B2E7, $B326, $B349. The dispatcher does not bound the state index. VICE and the listing test checked all six patched jumps in loads 12 and 23; handler behavior and ordinary-play reachability remain open.
+
+Type-$11 state 4 decrements $1AC2,X and copies $1AE4,X to the state when the result is negative or the selected $45BC/$4574 callback returns a value whose bits 1–2 are not 2. VICE checked six forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$11 state 5 decrements $1AC2,X. A negative result calls $4B0E with A=$60 and jumps to $5DB9; otherwise it indexes the four captured offsets 6, 6, 8, 8, updates $19C3,X and advances $1AD3,X. The input index is not bounded before the read. VICE checked four forced cases in loads 12 and 23 with the exit callback stubbed. Ordinary-play reachability remains open.
+
+Type-$11 helper $B381 saves $1B17,X and calls $792C and $732A. Carry set from $732A selects state 4 for positive $1A6D,X or state 5 otherwise, sets $1AC2,X to 10 and discards one return address; the positive path also saves the previous state and updates position. Carry clear calls $7227 and may tail-jump to $5D7A with A=4. VICE checked six forced cases in loads 12 and 23 with callbacks stubbed. Ordinary-play reachability remains open.
+
+Type-$11 states 2 and 3 call the event helper, use four captured offsets 2, 2, 4, 4 to update position, and decrement $1AD3,X. A negative countdown or a callback result with bits 1–2 other than 2 triggers a transition: state 2 loads the timer from a patchable immediate byte (captured as $FF and set to 10 by one state-0 path), toggles bit 7 of $1B17,X and selects state 3; state 3 selects state 0. VICE checked six forced cases in loads 12 and 23 with callbacks stubbed. The offset index is not bounded before its read and ordinary-play reachability remains open.
+
+Type-$11 state 1 calls its event helper, counts down $1AF5,X and uses $1B06,X to choose a movement callback, a spawn call or the return to state 0. VICE checked six forced delay and timer cases in loads 12 and 23 with callbacks and spawn stubbed. Callback effects and ordinary-play reachability remain open.
+
+The type-$11 spawn helper at $B237 calls $190B and returns if carry is clear. On carry set it calls $447A, copies fields from slot Y into slot X, initializes a type-$26 entity and sets $1B28,Y=1 before returning with X restored from Y. VICE checked allocation success and failure in loads 12 and 23 with allocation callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+Type-$11 state 0 can select state 1 or 2 after a comparison involving the X value and $6F3C. Its state-2 path sets $1AD3,X=10 and patches the immediate byte used by a later state-2 transition to 10. VICE checked four forced close, far, busy and inactive-slot cases in loads 12 and 23 with callbacks stubbed. Callback effects and ordinary-play reachability remain open.
+
+A forced $717C call copied all 2,048 bytes from the entry character source to RAM at $D000–$D7FF. The selected bytes matched the captured play snapshot, and a 200-frame play capture recorded no instruction entry into those selected ranges. 135 eight-byte characters before the nearest discovered code entry or update pointer were described from their row patterns; whether each is displayed and other possible code uses remain open.
+
+The captured 48 low and high entity-handler bytes at $7EDF–$7F3E pair into 38 distinct addresses. The listing test runs the instructions from $2027 up to the call at $2036 for every index in this load. VICE checked indices 0, 1 and 47 in loads 2, 24 and 31 before the call. The code does not locally bound the index, and individual target reachability remains open.
+
+The 42 captured bytes at $7F58–$7F81 supply sound pointers, reward and item values, map replacements, sampled-map comparisons and a visual-resource selector. The listing test checks the bytes and exercises the sound-pointer and visual-selector reads for this load; VICE checked those reads in loads 2, 24 and 31. Other fields are tied to their documented resident readers; their ordinary-play reachability remains open.
+
+The captured bytes at $7F43–$7F49 supply initial colour shadows, player frame and position; $7F4D/$7F4E supply view-origin values that later code can change. A listing test checks their initialization paths for this load. VICE checked both paths in loads 2, 24 and 31 with the HUD callback stubbed. Ordinary-play reachability remains open.
+
+14 stable 63-byte ranges match shapes verified in other loads and lie at VIC bank-3 sprite-slot boundaries. VICE read the entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares each range with its source shape and the graphics gallery. Display use in this load and other possible code uses remain open.
+
+14 stable 63-byte aligned ranges form one-bit patterns that recur in other loads. VICE checked their entry bytes and observed no instruction entry into those ranges during a 200-frame play capture. The listing test compares every matching range and the viewer. Display use, actual colours and other possible code uses remain open.
+
+Controlled visual-resource selections copied 248 additional eight-byte character patterns from their captured sources. VICE checked each copy and recorded no instruction entry into the selected bytes during 200 frames of captured play; a listing test repeats the copies. Display use, other possible code uses and ordinary-play reachability remain open.
+
+A forced call to the price formatter at $98CA and digit writer at $98AF converts packed price bytes into four character and colour cells. VICE and a listing test check both calls in this load. Input bounds, other values and ordinary-play reachability remain open.
+
+Shop helpers at $9872 and $9885 test sampled input and choose a cursor position. Five forced VICE cases and a listing test checked both helpers in this load, with the sampler stubbed and display initialization stopped. The adjacent layout, selection, timeout and item bytes are read or written by the separately tested shop paths. Physical control mapping, other indexes and ordinary-play reachability remain open.
+
+The shop conditional-item resolver at $985D changes item $13 to $14 when the selected player has flag $10; other inputs pass through. Three forced VICE cases and a listing test check it in this load. Other callers and ordinary-play reachability remain open.
+
+The captured shop message bank contains the same 34 records as the decoded first-load bank. VICE matched the complete message bytes in this load; listing tests check all record hashes and decode the first-load fields. Selection of each record in ordinary play and other overlapping uses remain open.
+
+A forced graphics setup call at $9D8A copies ten source blocks into RAM beneath I/O and calls the mirror routine seven times. VICE and a listing test checked all copies with the mirror callback stubbed. The callback’s effects, other source uses and ordinary-play reachability remain open.
+
+The captured split row-pointer tables contain 81 pairs. All follow a 105-byte stride from $8671; the first 16 correspond to the map rows described here. VICE compared the remaining table bytes to the entry snapshot, and `test_later_row_pointer_tails.js` checks all pairs. Whether gameplay uses the extra entries and the uses of their targets remain open.
+
+The load-23 trigger callback at $950A stores its incoming X at $9514, the opcode of the captured `LDX #$FF`, rather than at its operand. The captured second trigger record selects $950A, and the shared dispatcher passes the matched record index in X. A forced dispatch of that record supplied X=1, replacing the opcode with `ORA ($FF,X)`; with the message callback stubbed to return A=1 and X=$55 and an indirect byte $40, VICE returned A=$41 and X=$55. A forced X=$A2 leaves the opcode as LDX and returns X=$FF. `test_stage23_trigger_opcode.js` checks both direct calls and the constructed dispatch. Natural trigger reachability and the real message callback’s return state remain open.
+
+The shop entry at $955E configures two screen-page bytes, formats two stage prices and branches on the selected player’s balance and stage category. Five forced VICE cases and `test_later_shop_entries.js` check formatting, insufficient and sufficient balance, and message selection with display and gate callbacks stubbed. Ordinary-play contexts remain open.
+
+The shop choice code at $95F1 branches on incoming negative and zero flags, selects one of two stage prices, can reject insufficient balance, and follows either a stage callback or a message path before passing 4 or 8 to the meter routine and decrementing the stage field. Six forced VICE cases and `test_later_shop_choices.js` check these paths with payment, meter, message and optional callbacks stubbed. Ordinary-play flag inputs, callback effects and the separate entry at $9678 remain open.
+
+The second shop entry at $9684 selects an item pair from explicit stage fields through the conditional-item resolver, or from a patched player-state read plus a table value. Four forced VICE cases and `test_later_shop_pairs.js` check both paths and both selected players using the real resolver. Index bounds, carry edge cases and later drawing remain open.
+
+The shop drawing setup at $96D2 selects two pointer-table entries, calls the second and first item targets with A=$E4 and $D0, and fills three rows of colour RAM. Two forced VICE cases and `test_later_shop_draw_setup.js` check the target selection and colour writes with both item targets replaced by stubs. The actual drawing effects, index bounds and ordinary-play contexts remain open.
+
+The shop label code at $9721 passes two selected item bytes to the formatter and calls the display routine with Y=$73 and $87, then passes choice-prompt pointer $991A to $77E0. Two forced VICE cases and `test_later_shop_labels.js` check call arguments and screen-page selection with the formatting, display and message callbacks stubbed. Their effects and ordinary-play contexts remain open.
+
+This load has 29 additional one-byte RTS entries selected by captured entity vectors. A listing test checks every selected vector and byte; forced VICE samples cover loads 2, 3, 9, 23, 28 and 31. Ordinary-play reachability remains open.
+
+Controlled visual-resource reconstruction reads 10 additionally described bytes as compressed input or metatile character codes. The listing simulator records the reads at the token and metatile-copy instructions; `visual-source-observations.json` in the game folder bounds the segments. The descriptions leave unread tails and other uses open.
+
+The remaining 24 character-copy fragments are identified by source, row offsets and destination. A forced VICE $717C call matched each complete source against $D000–$D7FF; this proves the copy, not display use or absence of another use.
+
+Unattributed bytes $955D had no CPU read, write or instruction-entry hits during a 200-frame VICE probe with a working interrupt control checkpoint. Their semantic role and uses in other states remain explicitly unknown.

@@ -1,0 +1,3 @@
+'use strict';
+const assert=require('assert'),fs=require('fs'),path=require('path'),{CPU}=require('../../../kit/cpu/cpu6502.js');const items=JSON.parse(fs.readFileSync(path.join(__dirname,'later-object-results.json')));assert.equal(items.length,12);for(const item of items){const m=new Uint8Array(65536);for(const p of ['resident',item.part])for(const r of JSON.parse(fs.readFileSync(path.join(__dirname,'parts',p,'listing.json'))).records)if(r.b)m.set(r.b,r.a);assert.equal(m[item.record+8]|m[item.record+9]<<8,item.entry);const cpu=new CPU(m);cpu.call(item.entry,{}, {maxSteps:10});assert.equal(cpu.a,item.value);assert.equal(cpu.p&1,item.carry);}
+console.log('OK - 12 later-load object result callbacks');
