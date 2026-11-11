@@ -109,7 +109,7 @@
         const first=+$('ct-ai-first').value,fresh=+$('ct-ai-fresh').value;
         const result=Cooler.directionCandidate(state,first,fresh);
         $('ct-ai-values').textContent=`First timer read ${first} · fresh read ${fresh}`;
-        $('ct-ai-result').textContent=result.kind==='idle'?`Idle for this update (state ${result.state}).`:`Candidate: ${['right →','down ↓','left ←','up ↑'][result.direction]} · ${result.source} state. The map check comes next.`;
+        $('ct-ai-result').textContent=result.kind==='idle'?`Idle for this update (state ${result.state}).`:`Chosen direction: ${['right →','down ↓','left ←','up ↑'][result.direction]} · ${result.source==='retained'?'retained previous direction':'fresh timer choice'}. The map check comes next.`;
       };
       $('ct-ai-first').oninput=draw;$('ct-ai-fresh').oninput=draw;
       $('ct-ai-state').onchange=()=>{state=+$('ct-ai-state').value;draw();};
@@ -120,7 +120,7 @@
       $('ct-level').value=1;
       const draw=n=>{
         const b=map($('ct-level-map'),n,$('ct-show-spawns').checked,$('ct-inactive').checked);
-        $('ct-level-description').textContent=`Level ${n}: layout ${b.digit||10}, ${b.enemies} guards, shape ${b.shape}, ${b.objects.length} objects. Nominal pickup value ${b.nominalPoints}; actual score gain follows the digit-adder rule.`;
+        $('ct-level-description').textContent=`Level ${n}: layout ${b.digit||10}, ${b.enemies} guards, shape ${b.shape}, ${b.objects.length} objects. Pickup face values add up to ${b.nominalPoints}; the score adder can lose points at a digit boundary.`;
         $('ct-level-byte').textContent=`level byte ${hex(n)} · units ${b.digit} · tens ${Math.floor(n/10)%10}`;
       };
       picker($('ct-level'),$('ct-level-prev'),$('ct-level-next'),draw);

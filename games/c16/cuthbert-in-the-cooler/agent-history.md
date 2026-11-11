@@ -20,3 +20,11 @@ The independent checker, gpt-6-astra, received seed 20261111, all 20 generated m
 Original-code comparisons cover all 256 level values, all original pickup records, the life-character wrap, every collision glyph, 30,000 score/pickup states, and the sampled boundary findings. The score adder's 800+300→1000 case and the life wrap to the C16 monitor were also verified in plus4emu. A legal held-SPACE route from first play produced deaths at polls 8–12; the kit's independent C16 model repeated those milestones from engine initialisation. Its original-code sound logs provide three audible page excerpts.
 
 The frozen reconstructed frame matches plus4emu at every one of 64,000 display pixels. The source listing contains no game executable on the authored pages: the published widgets are small ports and data viewers; original engine execution stays in the tests. A full JavaScript Play port is a follow-up rather than an unverified approximation of this game's loop.
+
+## Minisite and delivery
+
+The authored pages were committed as a draft before the separate rewrite and ELI15 pass. That pass defined bytes, hexadecimal addresses, character pictures, and the monitor where each tab needs them; it moved the bonus clock into its own section and preserved the numerical evidence. The final word diff was checked against the draft and facts. Copy remains agent-draft.
+
+The expanded direction-selector comparison passed 458,752 cases, bringing test_cooler.js to 489,540 cases. The four authored tabs passed Chromium checks for all 256 level choices, all fifteen shape choices, interactive controls, sound buttons, nonblank canvases, and layouts at 375 and 768 pixels. The whole-site build completed with 112 games and 1,258 pages. Shared build warnings about existing source links and another game's tab name are outside this contribution.
+
+The retrospective found no additional kit issue to file. Web searches left the exact PRG provenance, individual C16 programmer, and intended retained-image meanings unresolved; TODO.md records them.

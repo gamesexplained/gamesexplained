@@ -51,6 +51,9 @@ async function check(browser,base,out=null) {
 
   await go('discoveries');
   await page.locator('#ct-add-pickup').click();assert.equal(await page.locator('#ct-score').textContent(),'001000');
+  await page.locator('#ct-score-start').evaluate(el=>{el.value=900;el.dispatchEvent(new Event('change',{bubbles:true}));});
+  await page.locator('#ct-pickup-type').selectOption('2');
+  await page.locator('#ct-add-pickup').click();assert.equal(await page.locator('#ct-score').textContent(),'001000');
   await page.locator('#ct-seven-apples').click();assert.equal(await page.locator('#ct-score').textContent(),'001900');
   await page.locator('#ct-score-reset').click();
   await page.locator('#ct-last-safe').click();assert.match(await page.locator('#ct-life-value').textContent(),/208 attempts/);
