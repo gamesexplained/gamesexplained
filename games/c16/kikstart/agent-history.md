@@ -57,3 +57,5 @@ browser setup, a private helper named inspect.py shadowed Python's
 standard module and broke websockets; renaming it fixed the import.
 The browser uses an existing Chromium headless-shell, a repository-local
 profile, and Python CDP calls, with no new browser download.
+
+After the checked draft pages were committed, a separate copy pass defined memory and character terms, simplified the prose, and checked that every script block stayed byte-for-byte unchanged. The sound heading was aligned with the two distinct voice roles. Copy remains agent-draft pending human curation.
