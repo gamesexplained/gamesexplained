@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Replay the recorded game (route.json) on an emulator, read by read, and hold it to the
+"""Replay the recorded games (route.json) on an emulator, read by read, and hold each to the
 milestones the kit's NES reached (kit/skills/core/65-inputs, "Replay it on a second machine").
 
 The emulator is the kit's server, jsnes on port 6855 or MesenCE on 6857
@@ -10,7 +10,9 @@ the milestones are made of, and runs on. Each milestone must come at the same re
 value as on the kit's NES; the frame may differ by a constant, as an emulator boots on another
 frame, and the script prints the spread. It exits 1 on any difference.
 
-    python3 games/nes/balloon-fight/route/check_emulator.py [--port 6855] [--cartridge work/game.nes]
+    python3 games/nes/balloon-fight/route/check_emulator.py [--port 6855] [--cartridge work/game.nes] [--seed N]
+
+Without --seed it replays every game in route.json, one after another.
 
 It is run by hand, as CI installs neither emulator with a cartridge. The results are in the
 game's facts.md, "The recorded game".
@@ -77,17 +79,10 @@ class Watch:
         self.n += 1
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--port", type=int, default=6855, help="6855 jsnes, 6857 MesenCE")
-    ap.add_argument("--cartridge", default=os.path.join(GAME, "work", "game.nes"))
-    ap.add_argument("--clear-ram", action="store_true", help="write 0 to all 2 KB of RAM at power-on, as the kit's NES and the page start")
-    a = ap.parse_args()
-    rec = json.load(open(os.path.join(HERE, "route.json")))
+def replay(m, rec, a):
+    """One recorded game from power-on; returns 0 when every milestone is met."""
     want = rec["milestones"]
     feed, seen = Feeder(rec), Watch()
-    m = connect(port=a.port)
-    m.cartridge(a.cartridge)
     m.delete()
     m.reset(hard=True)
     if a.clear_ram:
@@ -98,7 +93,7 @@ def main():
     while not feed.done():
         r = m.run(frames=600)
         if r.get("reason") != "checkpoint":
-            print("FAIL the game made no read of a controller in 600 frames, after read %d" % seen.n)
+            print("FAIL seed %d: the game made no read of a controller in 600 frames, after read %d" % (rec["seed"], seen.n))
             return 1
         x = m.registers()["x"] & 1
         v = feed(x)
@@ -110,7 +105,7 @@ def main():
                 if (v ^ held[x]) & bit:
                     m.button(name, down=bool(v & bit), controller=x + 1)
             held[x] = v
-    m.delete()
+    m.release_buttons()
     got = seen.marks
     wrong = None
     for i, w in enumerate(want):
@@ -123,13 +118,30 @@ def main():
     same = next((i for i, (g, w) in enumerate(zip(got, want)) if g[0] != w[0] or g[2:] != w[2:]), min(len(got), len(want)))
     gaps = sorted({g[1] - w[1] for g, w in zip(got[:same], want[:same])}) or [0]
     name = "MesenCE" if a.port == 6857 else "jsnes" if a.port == 6855 else "port %d" % a.port
-    print("%s: %d reads, %d milestones; frames after the kit's NES's: %s" % (
-        name, seen.n, len(got), gaps[0] if len(gaps) == 1 else "%d to %d" % (gaps[0], gaps[-1])))
+    print("%s, seed %d: %d reads, %d milestones; frames after the kit's NES's: %s" % (
+        name, rec["seed"], seen.n, len(got), gaps[0] if len(gaps) == 1 else "%d to %d" % (gaps[0], gaps[-1])))
     if wrong:
         print("FAIL " + wrong)
         return 1
     print("ok   every milestone at the same read with the same value")
     return 0
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--port", type=int, default=6855, help="6855 jsnes, 6857 MesenCE")
+    ap.add_argument("--cartridge", default=os.path.join(GAME, "work", "game.nes"))
+    ap.add_argument("--clear-ram", action="store_true", help="write 0 to all 2 KB of RAM at power-on, as the kit's NES and the page start")
+    ap.add_argument("--seed", type=int, help="replay only the game of this seed")
+    a = ap.parse_args()
+    games = json.load(open(os.path.join(HERE, "route.json")))["routes"]
+    if a.seed is not None:
+        games = [g for g in games if g["seed"] == a.seed]
+    m = connect(port=a.port)
+    m.cartridge(a.cartridge)
+    fails = sum(replay(m, rec, a) for rec in games)
+    m.delete()
+    return 1 if fails or not games else 0
 
 
 if __name__ == "__main__":

@@ -118,7 +118,7 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
       <li>Player 2: <kbd>A</kbd> <kbd>D</kbd> steer, <kbd>G</kbd> A, <kbd>H</kbd> B</li>
     </ul>
     <div class="pl-levels" id="pl-levels"><span>Start at</span></div>
-    <div class="pl-levels" id="pl-watch"><span>Recorded game</span><button type="button" id="pl-watch-go">▶ Watch phases 1 to 3 and a bonus round</button><span class="pl-inside" id="pl-watch-out"></span></div>
+    <div class="pl-levels" id="pl-watch"><span>Recorded game</span><button type="button" id="pl-watch-go">▶ Watch phases 1 to 3 and a perfect bonus round</button><span class="pl-inside" id="pl-watch-out"></span></div>
     <div class="pl-mods" id="pl-mods">
       <fieldset><legend>Cheats</legend>
         <label><input type="checkbox" data-mod="lives"> Lives that never run out</label>
@@ -165,12 +165,13 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
 
 <section id="watch">
   <p class="fig">03 · Watch</p>
-  <h2 class="t">A recorded game that plays the same on the cartridge's code and on this page</h2>
-  <p class="lede">The Watch button plays a game from switch-on. One player clears phases 1, 2 and 3 and a bonus round without losing a life, in about a minute and a half, and then hands you the controls at phase 4.</p>
-  <p>The game reads the controller in one routine, <code>read_joypad_x</code> at <code>$E76A</code>, and the recording keeps the buttons that routine saw each time it ran, in order: 6,513 reads. Two machines that start the game a frame apart, or run at different speeds, still hand the game the same buttons at the same moment of its own play, so the game makes the same choices on both.</p>
-  <p>A search on the kit's model of the console found the game. Every nine frames it tried nine ways of holding the controller on copies of the machine, looked three quarters of a second ahead, and kept the way that came out best: points scored, no balloon lost, and the player close above a bird or a bonus balloon. Nothing in the search is random, so it finds the same game every time (<code>route/find_route.js</code>).</p>
-  <p>The same recording plays on the cartridge's own code in two emulators, jsnes and MesenCE, and on this page's port. Each reaches the same 150 checkpoints at the same read: every phase begun, every change of score, every bonus balloon popped, and the player's place every 60 reads. jsnes needed one change first. It fills the console's memory with <code>$FF</code> at switch-on, where MesenCE and the kit start with 0, and the bonus round reads a byte it never sets: the timer that counts down to the next balloon (<code>$05CC</code>). From <code>$FF</code> the first balloon rises a frame sooner, and the recorded player pops the second one two reads early. With the memory cleared to 0, jsnes plays the recording to the end like the others. The Discoveries tab has the timer.</p>
-  <p>Any key, a button on the pad, a phase button or Rewind takes over from the recording. The cheats and the gravity switch go off while it plays, because the game was recorded without them. <code>test_route.js</code> plays the recording on the kit's model and on this page's machine every time the site is checked, and holds both to the 150 checkpoints.</p>
+  <h2 class="t">Seven recorded games that play the same on the cartridge's code and on this page</h2>
+  <p class="lede">The Watch button plays a game from switch-on, one of seven picked at random, never the one just watched. In each, one player clears phases 1, 2 and 3 without losing a life, pops all 20 balloons of the bonus round for the perfect bonus, and then hands you the controls at phase 4.</p>
+  <p>The game reads the controller in one routine, <code>read_joypad_x</code> at <code>$E76A</code>, and a recording keeps the buttons that routine saw each time it ran, in order: 5,468 to 7,208 reads a game. Two machines that start the game a frame apart, or run at different speeds, still hand the game the same buttons at the same moment of its own play, so the game makes the same choices on both.</p>
+  <p>A search on the kit's model of the console found the games. Every few frames it tries nine ways of holding the controller on copies of the machine, looks half a second or more ahead, and keeps the way that comes out best. In a phase that is points scored, no balloon lost, and the player close above a bird. In the bonus round the score does not move until the results, so there it counts the balloons popped (<code>balloons_popped</code>, <code>$05CD</code>) and keeps the player near the next one to rise. Each phase is played twice and the better play kept; the bonus round is played up to six ways until one pops all 20. A seed changes when Start is pressed on the title, the order the ways are tried in, and how near ties are broken, so each seed plays its own game. Ten seeds were searched and the seven that popped all 20 were kept: they end phase 3's bonus with 38,250 to 42,750 points (<code>route/find_route.js</code>).</p>
+  <p>Before the search counted the popped balloons, it played the bonus round for the score alone, which stays put until the round is over, and its one recording popped 5 of the 20.</p>
+  <p>Each recording reaches the same checkpoints at the same read on the kit's model of the console, running the cartridge's own code, and on this page's port: every phase begun, every change of score, every bonus balloon popped, and the player's place every 60 reads. The earlier recording also played to the end in two emulators, jsnes and MesenCE, once jsnes had its memory cleared. jsnes fills the console's memory with <code>$FF</code> at switch-on, where MesenCE and the kit start with 0, and the bonus round reads a byte it never sets: the timer that counts down to the next balloon (<code>$05CC</code>). From <code>$FF</code> the first balloon rises a frame sooner and a recorded game parts from it. The Discoveries tab has the timer.</p>
+  <p>Any key, a button on the pad, a phase button or Rewind takes over from the recording. The cheats and the gravity switch go off while it plays, because the games were recorded without them. <code>test_route.js</code> plays every recording on the kit's model and on this page's machine every time the site is checked, and holds both to each game's checkpoints.</p>
 </section>
 
 <section id="port">
@@ -305,12 +306,13 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   }
   cv.addEventListener('pointerdown', () => cv.focus());
 
-  // ---- the recorded game (route/route.json, copied to reference/bf-route.js by test_route.js): from
+  // ---- the recorded games (route/route.json, copied to reference/bf-route.js by test_route.js): from
   // power-on, each controller's buttons at each of the game's reads of it, which plays the same game
-  // here as on the console (route/route.js); the mods go off, as the recording was made without
-  // them, and any key or button of the player's takes over
-  const R = typeof BalloonFightRoute === 'undefined' ? null : BalloonFightRoute;
-  let watching = null;
+  // here as on the console (route/route.js). Each press of Watch picks one of them at random, never
+  // the one just played; the mods go off, as the games were recorded without them, and any key or
+  // button of the player's takes over
+  const RS = typeof BalloonFightRoutes === 'undefined' ? [] : BalloonFightRoutes;
+  let watching = null, lastPick = -1;
   function feeder(rec) {
     const at = [{ runs: rec.p1, i: 0, left: 0 }, { runs: rec.p2, i: 0, left: 0 }];
     const feed = (x) => {
@@ -329,21 +331,24 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   }
   function watchShow() {
     if (!watching) return;
+    const R = watching.rec;
     let where = 'the title';
-    // R.phases: [read, phase_index, phase_counter], the counter the number the game shows
     for (const [read, index, counter] of R.phases) if (read <= watching.n) where = index === 3 ? 'the bonus round' : counter ? 'phase ' + counter : 'the title';
-    $('pl-watch-out').textContent = 'Watching: ' + where + ', read ' + watching.n.toLocaleString('en-GB') + ' of ' + R.end.reads.toLocaleString('en-GB') + '. Press any key or button to take over.';
+    $('pl-watch-out').textContent = 'Watching game ' + (watching.pick + 1) + ' of ' + RS.length + ': ' + where + ', read ' + watching.n.toLocaleString('en-GB') + ' of ' + R.end.reads.toLocaleString('en-GB') + '. Press any key or button to take over.';
   }
-  if (!R) $('pl-watch').hidden = true;
+  if (!RS.length) $('pl-watch').hidden = true;
   else $('pl-watch-go').onclick = () => {
     for (const c of document.querySelectorAll('[data-mod]')) if (c.checked) { c.checked = false; mods.set(c.dataset.mod, false); }
     if ($('pl-gravity').value !== '1') { $('pl-gravity').value = '1'; mods.set('gravity', 1); }
     p1 = p2 = tap = 0;
     g.boot();
-    const feed = feeder(R);
-    watching = { n: 0 };
+    let pick = Math.floor(Math.random() * RS.length);
+    if (RS.length > 1 && pick === lastPick) pick = (pick + 1 + Math.floor(Math.random() * (RS.length - 1))) % RS.length;
+    lastPick = pick;
+    const R = RS[pick], feed = feeder(R);
+    watching = { n: 0, rec: R, pick };
     g.onRead = (x) => {
-      if (feed.done()) { watchStop('The recording ends here, at the start of phase 4: the controls are yours.'); return undefined; }
+      if (feed.done()) { watchStop('Game ' + (pick + 1) + ' ends here, at the start of phase 4, with ' + R.popped + ' of the 20 bonus balloons popped: the controls are yours.'); return undefined; }
       watching.n++;
       return feed(x);
     };

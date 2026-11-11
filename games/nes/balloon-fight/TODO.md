@@ -13,7 +13,11 @@ later run could add.
   Trip loops; the bonus round's loop is inline in `bonus_round_play`,
   and resuming there needs the round's tail written as a routine of its
   own in the page.
-- The recorded game (Watch) ends at phase 4. A longer one, through the
+- Replay the seven recorded games on MesenCE and on jsnes with its RAM
+  cleared (`route/check_emulator.py`, with `--port 6857`, and with
+  `--port 6855 --clear-ram`). Only the earlier single recording was
+  replayed there.
+- The recorded games (Watch) end at phase 4. A longer one, through the
   later phases with their propellers, or a Balloon Trip, would need
   `route/find_route.js` to look further ahead: its lookahead loses
   nothing in phases 1 to 3 and has not been tried past them.
