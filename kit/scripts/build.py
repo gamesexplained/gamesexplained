@@ -113,7 +113,7 @@ PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], 
 # The Apple II's map is all 64 KB: its ROM at $D000-$FFFF has the language card's RAM beneath it,
 # which a game can load (kit/skills/apple2/apple2-reference, "Memory map").
 # The Commodore 16's 16 KB is $0000-$3FFF, where kit/c16/snapshot.py puts it. A game that uses the
-# Plus/4's other 48 KB needs this widened first (kit/skills/c16/steps, "page").
+# Plus/4's other 48 KB sets ram_kb: 64 in game.json (memory_span below).
 # A Game & Watch's map is its ROM, $0000-$073F in the order the chip runs it (kit/gnw/snapshot.py),
 # drawn to $07FF so that the columns of 128 bytes come out whole.
 PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000), "c16": (0x0000, 0x4000),
@@ -290,6 +290,23 @@ def hexint(v):
     return int(v[1:], 16) if isinstance(v, str) and v.startswith("$") else int(v)
 
 
+def memory_span(game, size=0x10000):
+    """The physical RAM shown by the footprint, including a 64 KB Plus/4."""
+    from symbols_export import platform_of
+    if size != 0x10000:
+        return 0, size
+    if platform_of(game) == "c16" and game.get("ram_kb") == 64:
+        return 0, 0x10000
+    return PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000))
+
+
+def memory_name(game):
+    from symbols_export import platform_of
+    if platform_of(game) == "c16" and game.get("ram_kb") == 64:
+        return "the Plus/4's 64 KB of RAM"
+    return PLATFORM_MEM.get(platform_of(game), "the machine's 64 KB")
+
+
 def footprint(gdir, game):
     """Classify every byte the platform's map draws (PLATFORM_MAP_SPAN, else all 65536).
     Returns (runs, totals, symbols, span)."""
@@ -343,7 +360,7 @@ def footprint(gdir, game):
     for lo, hi, name in cov_regions(game).get("elsewhere", []):
         for a in range(lo, hi + 1):
             cat[a] = "other"; why[a] = name
-    lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000)) if size == 0x10000 else (0, size)
+    lo, hi = memory_span(game, size)
     if lo:   # the ROM is off this map, so RAM that a game.json names after the ROM is working memory
         cat[lo:hi] = ["runtime" if k == "rom" else k for k in cat[lo:hi]]
     runs, totals = [], {k: 0 for k in CATS}
@@ -1577,7 +1594,7 @@ def build_game(gdir, out_root):
                   platform=plat, platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
                   publisher=html.escape(game.get("publisher") or ""),
                   platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
-                  platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
+                  platform_mem=memory_name(game))
     for f in authored(gdir, game):
         empty = empty_sections(read(os.path.join(gdir, f)))
         if empty:
