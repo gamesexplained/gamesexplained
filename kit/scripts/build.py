@@ -655,8 +655,9 @@ def media_row(gdir):
     held = " and ".join(many(n, *MEDIA_NAMES.get(w, (w, w + "s"))) for w, n in sorted(s["images"].items()))
     kinds = [many(s["files"], "file", "files"), many(s["runs"], "run of sectors no file holds", "runs of sectors no file holds"),
              many(s["banks"], "bank", "banks"), many(s["blocks"], "block with no header", "blocks with no header"),
-             many(s["stretches"], "stretch the kit cannot decode", "stretches the kit cannot decode")]
-    kinds = [k for k, n in zip(kinds, (s["files"], s["runs"], s["banks"], s["blocks"], s["stretches"])) if n]
+             many(s["stretches"], "stretch the kit cannot decode", "stretches the kit cannot decode"),
+             many(s["tracks"], "track", "tracks")]
+    kinds = [k for k, n in zip(kinds, (s["files"], s["runs"], s["banks"], s["blocks"], s["stretches"], s["tracks"])) if n]
     what = (" and ".join(kinds) if len(kinds) < 3 else ", ".join(kinds[:-1]) + " and " + kinds[-1]) or "nothing the kit can list"
     said = [f"{n:,} {one if n == 1 else more}" for a, one, more in MEDIA_SAY for n in [s["count"][a]] if n]
     held = f"the {held.split(' ', 1)[1]} holds" if sum(s["images"].values()) == 1 else f"the {held} hold"

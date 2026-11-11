@@ -437,6 +437,7 @@ const S = {
     rearmNeeded: false,
     codemap: null,
     sound: null,
+    reads: null,          // what the disk gives to memory, while `reads` records
     kept: new Map(),
     typing: false,
 };
@@ -490,6 +491,7 @@ function arrive(pc, mayStop) {
 let accessPc = 0;
 let watchStop = false;
 function access(addr, value, isWrite) {
+    if (S.reads) diskAccess(addr, value, isWrite);
     const kind = isWrite ? "write" : "read";
     for (const cp of S.watches) {
         if (cp.kind !== kind || addr < cp.start || addr > cp.end) continue;
@@ -536,7 +538,7 @@ async function runCore({ cycles: limit, frames: nframes, until, maxCycles, steps
     S.stopRequested = false;
     S.hit = null;
     watchStop = false;
-    hooks.access = S.watches.length ? access : null;
+    hooks.access = S.watches.length || S.reads ? access : null;
     const c0 = cycles();
     const f0 = frames();
     let end = Infinity;
@@ -630,7 +632,7 @@ function rearm() {
         }
     }
     S.watches = all.filter((c) => c.kind !== "exec");
-    if (S.running) hooks.access = S.watches.length ? access : null;
+    if (S.running) hooks.access = S.watches.length || S.reads ? access : null;
 }
 
 // A temporary checkpoint goes once it has stopped the machine.
@@ -943,6 +945,105 @@ function sound(args) {
     return { path: path.resolve(args.path), clicks: cap.speaker.length, writes: cap.mockingboard.length, start: out.start, end: out.end };
 }
 
+// What the disk gives to memory. A game with a disk format of its own is its own decoder, so
+// the bytes of such a disk are read here as the game reads them: while `reads` records, every
+// byte the processor stores within `window` cycles of reading the Disk II's data register is
+// kept, in runs of neighbouring addresses, each with the track the head was on. A loader stores
+// a sector's bytes one after another, upwards or downwards, and its counters at single
+// addresses over and over: a run of one byte is dropped when its address is written again, so
+// what stays is the sectors. A run ends when the head moves. The second run to an address is
+// kept beside the first, since a loader may read a sector over the last one.
+const DISK_SLOT = Number(Object.keys(SLOTS).find((n) => SLOTS[n] === "disk2"));
+const DISK_IO = 0xc080 + 16 * DISK_SLOT;
+
+function readsRun(r, addr, value) {
+    const run = { drive: r.drive, quarter: r.quarter, address: addr, up: [value], down: [], cycle: cycles(), pc: accessPc };
+    const old = r.single.get(addr);
+    if (old) {                          // a counter written again: the run of one byte goes
+        if (r.above.get(addr + 1) === old) r.above.delete(addr + 1);
+        if (r.below.get(addr - 1) === old) r.below.delete(addr - 1);
+    }
+    r.single.set(addr, run);
+    r.above.set(addr + 1, run);
+    r.below.set(addr - 1, run);
+}
+
+function diskAccess(addr, value, isWrite) {
+    const r = S.reads;
+    if (!isWrite) {
+        // any even address from $C0x8 up returns the data register
+        if (addr < DISK_IO + 8 || addr > DISK_IO + 15 || addr & 1) return;
+        const ds = getCurrentDriveState();
+        if (ds.quarterTrack !== r.quarter || ds.drive !== r.drive) {
+            r.above.clear();
+            r.below.clear();
+            r.single.clear();
+            r.quarter = ds.quarterTrack;
+            r.drive = ds.drive;
+        }
+        r.last = s6502.cycleCount;
+        return;
+    }
+    if (s6502.cycleCount - r.last > r.window) return;
+    let run = r.above.get(addr);
+    if (run) {
+        r.above.delete(addr);
+        if (run.up.length + run.down.length === 1) {
+            r.single.delete(run.address);
+            r.below.delete(run.address - 1);
+            r.runs.push(run);
+        }
+        if (!run.down.length) {
+            run.up.push(value);
+            r.above.set(addr + 1, run);
+            return;
+        }
+    }
+    run = r.below.get(addr);
+    if (run) {
+        r.below.delete(addr);
+        if (run.up.length + run.down.length === 1) {
+            r.single.delete(run.address);
+            r.above.delete(run.address + 1);
+            r.runs.push(run);
+        }
+        if (run.up.length === 1) {
+            run.down.push(value);
+            r.below.set(addr - 1, run);
+            return;
+        }
+    }
+    readsRun(r, addr, value);
+}
+
+function reads(args) {
+    const action = args.action ?? "read";
+    if (action === "start") {
+        S.reads = {
+            start: cycles(), window: args.window ?? 64, last: -Infinity, drive: null, quarter: null,
+            runs: [], above: new Map(), below: new Map(), single: new Map(),
+        };
+        if (S.running) hooks.access = access;
+        return { recording: true, start: S.reads.start, window: S.reads.window };
+    }
+    if (action !== "stop" && action !== "read") throw new Error('action: "start", "read" or "stop"');
+    const r = S.reads;
+    if (!r) throw new Error("nothing recording: `reads` start first");
+    const min = args.min ?? 64;
+    const runs = [];
+    for (const run of r.runs) {
+        const n = run.up.length + run.down.length;
+        if (n < min) continue;
+        const data = Buffer.from([...run.down].reverse().concat(run.up));
+        runs.push({ drive: run.drive, track: run.quarter / 4, address: run.address - run.down.length, length: n, cycle: run.cycle, pc: run.pc, data: data.toString("base64") });
+    }
+    if (action === "stop") {
+        S.reads = null;
+        if (S.running) hooks.access = S.watches.length ? access : null;
+    }
+    return { recording: !!S.reads, start: r.start, end: cycles(), window: r.window, min, drives: { ...mounted }, runs };
+}
+
 // Every address an instruction started at, with its length and how often it ran.
 function codemap(args) {
     const action = args.action ?? "read";
@@ -980,6 +1081,7 @@ function status() {
         checkpoints: S.checkpoints.size,
         codemap: !!S.codemap,
         sound: !!S.sound,
+        reads: !!S.reads,
         drives: { ...mounted },
         held: held(),
     };
@@ -1070,6 +1172,7 @@ const COMMANDS = {
     back,
     sound,
     codemap,
+    reads,
     quit: () => {
         setImmediate(() => process.exit(0));
         return { bye: true };

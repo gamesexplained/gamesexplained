@@ -67,12 +67,12 @@ here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| Apple2TS 3.7.0 (tag v3.7.0), bundled with esbuild 0.25.12 into the kit's server, Node 22.22.0 | Linux x86_64 (Ubuntu 24.04, no display) | 20 October 2026 | 49 of 49, the II Plus's seven among them, 8 s, two runs; `verify-footprint` clean |
+| Apple2TS 3.7.0 (tag v3.7.0), bundled with esbuild 0.25.12 into the kit's server, Node 22.22.0 | Linux x86_64 (Ubuntu 24.04, no display) | 20 October 2026 | 49 of 49, the II Plus's seven among them, 8 s, two runs; `verify-footprint` clean. On 10 November 2026, under Node 22.23.4, with the read log's check added: 50 of 50, 8 s |
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
 | 1 static inspection | all 64 KB as the CPU sees it in one call (5 ms), the I/O page read as $00 and flagged without touching a switch; main memory, auxiliary memory, the language card's four banks and the ROM, each by name, the switches left as they were; the registers and the cycle count; the soft switches by name, the keyboard, the game port, the disk drive and the Mockingboard's 6522s; a snapshot read by `kit/apple2/snapshot.py` matches the live machine bank by bank; a screenshot drawn with no display, its text the same as the server's | | |
-| 2 state management | a save from a second connection while a run is in progress; a load leaves the machine stopped at the saved state; a counting checkpoint goes on counting after a load; three loads give the same machine, from a stopped save, from a running one, and after a restart of the server; a load continues exactly as the machine that saved; a 16-sector disk boots to the same memory at the same cycle twice, and a snapshot saved while the disk was being read reads on to the same memory at the same cycle; warp: 600 frames, ten seconds of the machine's time, in 0.55 s, 18.3 times real time | | |
+| 2 state management | a save from a second connection while a run is in progress; a load leaves the machine stopped at the saved state; a counting checkpoint goes on counting after a load; three loads give the same machine, from a stopped save, from a running one, and after a restart of the server; a load continues exactly as the machine that saved; a 16-sector disk boots to the same memory at the same cycle twice, and a snapshot saved while the disk was being read reads on to the same memory at the same cycle; the read log holds what the boot ROM stored while it read track 0, each run at its address, and nothing stored after the reading; warp: 600 frames, ten seconds of the machine's time, in 0.55 s, 18.3 times real time | | |
 | 3 live measurement | counting checkpoints agree with the program's own counter to one pass (249 hits in 250 passes); one on a routine nothing calls stays at zero; the vertical blank seen once a frame; the Mockingboard timer's interrupts counted, 260 of 260; write and read checkpoints, 250 stores and 250 reads of the keyboard; the cycle counter, 17,030 a frame; every address an instruction started at, with its count, in one call (100 frames in 0.08 s, 0.09 s recording); reads from a second connection while the machine runs; `stop` from a second connection; every click of the speaker and every change to a sound chip's registers, with its cycle | | |
 | 4 frame stepping | a stopping checkpoint stops before its instruction runs; a step returns with the new PC; a key pressed while stopped is waiting in $C000 at the program's next read; ten one-frame advances with a key held, one pass a frame; the key released when the script says; button 0 held and let go; paddle 0 set to 20, 100 and 200 read 20, 100 and 197; a hundred runs back to back, 1,888 calls a second; thirty stops from a second connection, each between two instructions; keep and go back in 2.8 ms a pair | | |
 
@@ -141,7 +141,7 @@ shell made for a person, and neither has a saved state.
 python3 kit/scripts/tools.py --platform apple2 status
 python3 kit/scripts/tools.py get-apple2ts                             # clone Apple2TS and install esbuild into tools/apple2, then build the server
 python3 kit/scripts/tools.py apple2ts                                 # powered on with no disk, waiting on 127.0.0.1:6502
-python3 kit/scripts/tools.py --platform apple2 check-emulator         # 49 named checks, about nine seconds
+python3 kit/scripts/tools.py --platform apple2 check-emulator         # 50 named checks, about nine seconds
 python3 kit/scripts/tools.py --platform apple2 stop                   # this clone's servers
 python3 kit/scripts/tools.py --platform apple2 verify-footprint       # what it writes outside the repository
 python3 kit/scripts/tools.py r2000 games/apple2/<slug>/work/<state>.json    # the disassembler, on a snapshot
@@ -198,7 +198,9 @@ uninstall`), are the only things left outside it.
 Run on Linux x86_64 (Ubuntu 24.04 in a cloud container, no display, Node
 22.22.0) on 19 October 2026, with Apple2TS 3.7.0: `check-emulator` passed
 42 of 42 in each of two runs, and on 20 October 2026, with phase 5's
-seven checks of the II Plus added, 49 of 49 in each of two runs;
+seven checks of the II Plus added, 49 of 49 in each of two runs,
+and on 10 November 2026, under Node 22.23.4, with the read log's check
+added, 50 of 50;
 `test_frame.py` found no pixel different,
 and `verify-footprint` was clean, with nothing written outside the
 repository either by the server or by `get-apple2ts`'s install. Nothing in

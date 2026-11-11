@@ -82,7 +82,7 @@ all hexadecimal. A `path` is made absolute by the client.
 | What | Command and arguments | Notes |
 |---|---|---|
 | Who answers | `hello` | the server, its protocol, Apple2TS's version, the model, Node's version, the clock and the frame in cycles, the memory spaces, the commands, and `workarounds` |
-| State | `status` | running or not, typing or not, PC, the cycle and frame counts, how many checkpoints, whether the code map and the sound are recording, the disks in the drives, the keys and the game port as held |
+| State | `status` | running or not, typing or not, PC, the cycle and frame counts, how many checkpoints, whether the code map, the sound and the read log are recording, the disks in the drives, the keys and the game port as held |
 | Reset | `reset` (`hard`, true; `model`) | `hard` is a power-on, below; `"hard": false` is CONTROL-RESET. Neither runs the machine. A power-on with `model` makes it that machine ("Models") |
 | Boot | `boot` (`until`, `seconds`, `max_cycles`, `frames`, `model`) | a power-on with the disks in, as `model` when given, then a run: `until` an address (for at most `seconds`, 30), or for `seconds`, or for `frames` (300). Returns the run's reply and the text page |
 | Disks | `disk` (`drive` 1 or 2, `path`, or `eject`) | below |
@@ -103,6 +103,7 @@ all hexadecimal. A `path` is made absolute by the client.
 | Snapshots | `save` (`path`), `load` (`path`), `keep` and `back` (`name`) | below |
 | Sound | `sound` (`action` start or stop, `path`) | the speaker's clicks and the Mockingboard's writes, each with its cycle |
 | What ran | `codemap` (`action` start, read, zap or stop) | `[address, length, count]` for each address an instruction started at |
+| What the disk gave | `reads` (`action` start, read or stop; `window`, 64; `min`, 64) | every run of bytes stored just after the disk was read, with its track and address; "Disks", below |
 | Quit | `quit` | the server exits |
 
 The client adds `screenshot` (`path`, `mode`), which draws the screen
@@ -274,6 +275,26 @@ order, `.po` in ProDOS order. It does not read `.nib`, `.d13` or `.2mg`;
 had, so a WOZ of the original is better when there is one. The disk is the
 contributor's own file, in the game's `work/` folder.
 
+- **A disk in a format of the game's own** is read by the game. A
+  protected original often has no sector DOS could read
+  (`kit/apple2/disk.py info` says so), and only its loader knows the
+  format. `reads` with `"action": "start"` makes the server keep every
+  byte the processor stores within `window` cycles (64) of reading the
+  drive's data register, in runs of neighbouring addresses, each with the
+  track the head was on and the address it went to. `read` and `stop`
+  return the runs of `min` bytes (64) or more. A loader's counters are
+  single addresses written over and over and drop out; a second run to
+  an address is kept beside the first; a run ends when the head moves.
+  The client's `m.reads("stop", image=<the disk's file>)` adds the runs
+  to the log beside the image, `<image>.reads.json`
+  (`kit/apple2/readlog.py`), each different run once, so a second session
+  adds only what is new. `kit/apple2/media.py` lists the disk's tracks
+  from it (`steps`, "media"). Start it before the power-on and make the
+  game load everything it has: each level, and the other side. A loader
+  that reads a sector into a buffer and decodes it after the reading is
+  over, as DOS and the boot ROM do, stores nothing useful inside the
+  window: such a disk has sectors `disk.py` reads, and needs no log
+  (`disk-read-log`).
 - **A disk changed between two runs** stays where a person's swap leaves
   it: the drive's head, its motor and the drive selected are kept. A power-on
   then starts every drive afresh.

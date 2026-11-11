@@ -65,7 +65,7 @@ Sources:
 | Approaching Mariko in a fighting stance: she kicks the hero dead | live | stage 4, `reference/mariko-kicks-hero.png`. $BB05: she holds out an arm (pose $20, the picture at $1F00) while he comes standing, and takes pose $24 while he is in the stance; reaching column $13 when her arm is not out, he is kicked ($9A = $FE, pose $21), a killing blow ($B91D) |
 | Approaching her standing: she is rescued, and the closing text | live | `reference/ending-embrace.png`, `ending-text.png`. With her arm out, at column $16 the embrace begins ($BB44): twenty steps of her poses ($BB72), then the eight lines of closing text ($A321) |
 | "The end" after the hero dies | live | `reference/the-end.png` |
-| Side B: the whole game upside down | open | `work/karateka-side-b.woz` kept, not analysed |
+| Side B: the whole game upside down | live | `reference/side-b-title.png`, `side-b-castle.png`, `side-b-cliff.png`. The same code and pictures as side A: only `row_lo` and `row_hi` ($0800-$097F, the 192 screen rows' addresses) run bottom to top, and the castle picture, which is copied without them, is stored upside down (`orientation.md`, "Side B") |
 
 ## Beyond the documentation
 
@@ -133,4 +133,7 @@ Found in the code, not in the manual.
   arrows to one and clicks, but no key test leads to it: no JMP, JSR or
   branch to $7742 is in any of the six parts. It is unreached in this
   copy; what key once led there is unknown.
-- Side B, the game upside down, is not analysed.
+- In the copy of side B used here, one sector on each of tracks 17, 18
+  and 19 does not read, so its palace and dungeon do not load in the
+  kit's emulator. Whether Brøderbund's disk had the fault, or the copy
+  got it, is unknown (`orientation.md`, "Side B").
