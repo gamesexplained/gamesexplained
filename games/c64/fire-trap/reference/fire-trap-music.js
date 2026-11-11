@@ -14,7 +14,7 @@ const FTMUSIC = {
     ['Tune 1: the top of the building and the name entry', 'tune', 1],
     ['Tune 2: the building scrolling past before a stage', 'tune', 2],
     ['Tune 3: the music during a stage', 'tune', 3],
-    ['Tune 4: stored, never requested, plays no note', 'tune', 4],
+    ['Tune 4: stored, never requested (silent)', 'tune', 4],
     ['Effect $1E: the spray', 'effect', 0x1E],
     ['Effect $1F: a pickup or a person', 'effect', 0x1F],
     ['Effect $20: a spray shot lands', 'effect', 0x20],
