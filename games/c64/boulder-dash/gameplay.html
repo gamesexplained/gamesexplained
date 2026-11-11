@@ -62,15 +62,15 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="fig">01 · The aim</p>
   <h2 class="t">Reach the quota, then the exit</h2>
 
-  <p class="lede">The status line at the top gives, in order, the diamonds needed, the points for each diamond, the diamonds collected, and the seconds left.</p>
-  <p>Diamonds collected are counted against a quota that is different for every cave and level (<code>$74C5</code>, <code>$74F6</code>). Reaching it flashes the screen white and starts a sound, and the closed exit, which looks like steel wall, turns into the open flashing exit (<code>$70EC</code>). Walking into the open exit ends the cave. Each diamond is worth fewer points before the quota is met than after (<a href="levels.html#header">header bytes 2 and 3</a>). The seconds left are then counted into the score, adding the level number plus one for each second (<code>$8BF0</code>).</p>
-  <p>A man is added whenever the score passes a multiple of 500, up to nine (<code>$73DE</code>, <code>$73D1</code>); a game starts with three (<code>$8ADD</code>). Losing a man sends Rockford to the cave's start again, and with two players the turn passes to the other one (<code>$8B05</code>).</p>
+  <p class="lede">The status line at the top gives, in order, the diamonds needed, the points for each diamond, the diamonds collected, the seconds left, and the score.</p>
+  <p>Diamonds collected are counted against a quota set for each cave and level, though caves A, D, J and K and the bonus caves need the same number on all five levels (<code>$74C5</code>, <code>$74F6</code>). Reaching it flashes the screen white and starts a sound, and the closed exit, which looks like steel wall, turns into the open flashing exit (<code>$70EC</code>). Walking into the open exit ends the cave. In most caves each diamond is worth more points after the quota is met than before; in caves C, K and L and the bonus caves a diamond after the quota is worth nothing (<a href="levels.html#header">header bytes 2 and 3</a>). The seconds left are then counted into the score, adding the level number, 1 to 5, for each second (<code>$8BF0</code>).</p>
+  <p>A man is added whenever the score passes a multiple of 500, up to nine (<code>$73DE</code>, <code>$73D1</code>); a game starts with three (<code>$8ADD</code>). Losing a man sends Rockford to the cave's start again, and with two players the turn passes to the other one if they still have men (<code>$8B05</code>).</p>
 </section>
 <section id="rocks">
   <p class="fig">02 · Rocks and diamonds</p>
   <h2 class="t">Anything unsupported falls</h2>
 
-  <p>The cave is a grid of objects, and every pass over it gives each object's routine a turn (<code>$8171</code>). A <a href="graphics.html">boulder</a> or diamond with an empty cell below starts to fall. One resting on another boulder, a diamond or a brick wall slips sideways into an empty cell on either side, so heaps do not stand (<code>$76F8</code>, <code>$731F</code>, <code>$71FD</code>).</p>
+  <p>The cave is a grid of objects, and every pass over it gives each object's routine a turn (<code>$8171</code>). A <a href="graphics.html">boulder</a> or diamond with an empty cell below starts to fall. One resting on another boulder, a diamond or a brick wall slips sideways, left first, when the cell beside it and the cell below that are both empty, so heaps do not stand (<code>$76F8</code>, <code>$731F</code>, <code>$71FD</code>).</p>
   <p>A falling thing that lands on Rockford or on a creature explodes the three by three cells around the cell below it (<code>$70BA</code>). Rockford can push a boulder sideways into an empty cell, but the push works only one time in four, so a push usually takes several tries (<code>$7543</code>). Digging with the fire button held takes the dirt or diamond next to Rockford without moving him (<code>$75A9</code>).</p>
   <p>To stop a thing that has just moved from moving again in the same pass, the game keeps a “handled” twin of each moving object. The scan visits the cells from the top row down, so a boulder that fell into a lower cell would otherwise be stepped again as the scan reached it. The twin has no routine, and a table turns it back as the scan passes (<code>$81AD</code>, <code>$5EE8</code>).</p>
 </section>
@@ -78,19 +78,19 @@ sup.fn{font-size:.7em;line-height:0}sup.fn a{text-decoration:none}
   <p class="fig">03 · Creatures</p>
   <h2 class="t">Fireflies and butterflies</h2>
 
-  <p>A firefly follows the wall on its left. It turns into the empty cell on its left side if there is one, else goes straight on, else turns right in place (<code>$7172</code>). A butterfly has a routine of its own with a similar shape (<code>$7245</code>). Both explode when Rockford is next to them, and they explode when a boulder or diamond falls on them. A firefly leaves empty space, and a butterfly leaves a three by three patch of diamonds, which is the usual way to collect a lot at once (<code>$764F</code>).</p>
+  <p>A firefly follows the wall on its left. It turns into the empty cell on its left side if there is one, else goes straight on, else turns right in place (<code>$7172</code>). A butterfly follows the wall on its right, the same rule mirrored (<code>$7245</code>). Both explode when Rockford or the amoeba is next to them, and they explode when a boulder or diamond falls on them. A firefly leaves empty space, and a butterfly leaves a three by three patch of diamonds, which is the usual way to collect a lot at once (<code>$764F</code>).</p>
 </section>
 <section id="amoeba">
   <p class="fig">04 · The amoeba</p>
   <h2 class="t">A patch that spreads</h2>
 
-  <p>Where a cave has amoeba, each piece gets a random chance on each pass to spread into an empty or dirt cell next to it, and the chance is low at first and higher once the cave's amoeba timer has run out (<code>$7368</code>, <code>$7478</code>). When the previous pass counted 200 pieces, the whole patch turns into boulders. When it had no room to grow, it turns into diamonds, so walling the amoeba in is a way to harvest it.</p>
+  <p>Where a cave has amoeba, each piece gets a random chance on each pass to spread into an empty or dirt cell next to it, and the chance is low at first and higher once the cave's amoeba timer has run out (<code>$7368</code>, <code>$7478</code>). When the previous pass counted 200 pieces, the whole patch turns into boulders. When it had no room to grow, it turns into diamonds, so walling the amoeba in is a way to harvest it. The test is for a pass with no room after one that had some, so an amoeba walled in from the very start never changes (<code>$813B</code>).</p>
 </section>
 <section id="magic">
   <p class="fig">05 · The magic wall</p>
   <h2 class="t">Boulders become diamonds</h2>
 
-  <p>A diamond or boulder that falls into an active magic wall comes out two cells lower as the other kind: a falling boulder becomes a diamond and a falling diamond becomes a boulder (<code>$729D</code>, <code>$7745</code>). The wall stays active for the number of seconds in byte 1 of the cave's header and then stops working (<code>$7E9F</code>).</p>
+  <p>A diamond or boulder that falls into an active magic wall comes out two cells lower as the other kind if that cell is empty, and is lost if it is not: a falling boulder becomes a diamond and a falling diamond becomes a boulder (<code>$729D</code>, <code>$7745</code>). The wall stays active for the number of seconds in byte 1 of the cave's header. After that it looks like brick again, and a boulder or diamond that falls onto it is destroyed (<code>$7E9F</code>, <code>$7E84</code>). <a href="discoveries.html#wall-pause">Discoveries</a> has two bugs in the wall.</p>
 </section>
 <section id="levels">
   <p class="fig">06 · Levels</p>
