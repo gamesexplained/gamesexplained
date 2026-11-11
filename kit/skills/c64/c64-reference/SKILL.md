@@ -462,6 +462,43 @@ whatever the vector leads to, a fast loader of its own included, and
 `kit/c64/loads.py` logs every such load with the memory it changed. A
 loader the game calls at its own address does not pass `$FFD5`.
 
+## Tapes
+
+**The TAP file**: a 20-byte header, then the pulses. `$00`-`$0B` hold
+`C64-TAPE-RAW`, `$0C` the version (0 or 1), `$10`-`$13` the data's length,
+low byte first. Each byte of data is one pulse, the time from one falling
+edge to the next, in units of 8 cycles. A `$00` is a pulse too long for a
+byte: in version 1 the next three bytes give its length in cycles, low
+byte first, and in version 0 nothing does.
+
+**The KERNAL's own format** has three pulses: a short near 376 cycles
+(`$2F` in a TAP), a medium near 528 (`$42`) and a long near 700 (`$57` or
+`$58`). A byte is
+20 pulses: a long and a medium to mark it, then nine pairs, a short and a
+medium for a 0 and a medium and a short for a 1: the eight bits from the
+lowest, then a bit that makes the count of ones odd. A block is a leader
+of shorts, a countdown `$89` to `$81`, the block's bytes, their exclusive
+or, and a long and a short; then, after 79 shorts more, the same again
+with the countdown `$09` to `$01`: every block is on the tape twice. The
+leader is some 27,000 shorts before a header and 5,400 before a file's
+bytes.
+
+A file is two blocks. The header is 192 bytes: the type, the start
+address, the end address (one past the last byte), a name of 16
+characters padded with spaces, and 171 bytes more. SAVE with secondary
+address 0 writes type 1, a program BASIC may move, and with 1 type 3, a
+program that loads where its header says. Type 4 heads a data file, whose
+blocks of 192 bytes each start with a 2, and type 5 ends the tape. The
+header lands in the tape buffer at `$033C`, so its last 171 bytes sit at
+`$0351`-`$03FB` while the file loads. The KERNAL fills them with spaces:
+read a header that holds anything else as a loader's code or data.
+
+`python3 kit/c64/tap.py <image>` reads all of that from the pulses, with
+no emulator, and `kit/c64/test_tap.py` holds it to a tape the KERNAL saved
+(`kit/lessons/2026-11-11-c64-tape-reader.md`). Most games load one short
+program this way, and that program reads the rest in a faster format of
+its own, which `tap.py` shows as a stretch of pulses and does not read.
+
 ## Cartridge images
 
 A 16 KB program that loads at `$8000` and begins

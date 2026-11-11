@@ -45,7 +45,6 @@ lists them.
   python3 kit/c16/media.py <image>     the items, one a line
 """
 import importlib.util, os, sys
-from functools import reduce
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -53,17 +52,11 @@ SHORT, LONG, MARK = 424, 848, 1696      # the KERNAL's three waves, in cycles of
 TURBO = 416                             # Novaload: a wave shorter than this is a 0
 KINDS = {1: "BASIC program", 3: "program", 4: "data file"}
 LEADER = 64                             # 0 bits a Novaload leader has at the least
-TONE = 0.1                              # a stretch is tones when no more than this share of its waves change length
-SILENCE = 5000                          # a wave this long is a gap in the recording, not a wave
 
 
 def petscii(raw):
     """A name as text: printable PETSCII as it is, any other byte as {hex} (kit/c64/media.py)."""
     return "".join(chr(b) if 0x20 <= b <= 0x5F else f"{{{b:02X}}}" for b in raw)
-
-
-def xor(data):
-    return reduce(lambda a, b: a ^ b, data, 0)
 
 
 def waves(blob, path="tape"):
@@ -90,106 +83,28 @@ def waves(blob, path="tape"):
 
 
 # --- the KERNAL's format ---------------------------------------------------------------------
+# The C64's, with other wave lengths and the tape buffer elsewhere: kit/c64/tap.py reads both.
+
+def _tap():
+    spec = importlib.util.spec_from_file_location("c64_tap", os.path.join(HERE, "..", "c64", "tap.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+TAP = _tap()
+kernal_blocks, is_tone = TAP.kernal_blocks, TAP.is_tone
+
 
 def kernal_runs(W):
     """[(first wave, bytes)] of every run of bytes in the KERNAL's format: a byte is a word
     marker and a long, then nine pairs, a short and a long for a 0 and a long and a short for a
     1: eight bits from the lowest and an odd parity. A byte whose parity is wrong ends its run."""
-    S = lambda x: x < (SHORT + LONG) // 2
-    M = lambda x: (SHORT + LONG) // 2 <= x < (LONG + MARK) // 2
-    L = lambda x: (LONG + MARK) // 2 <= x < MARK * 3 // 2
-    runs, i = [], 0
-    while i + 19 < len(W):
-        byte = None
-        if L(W[i]) and M(W[i + 1]):
-            bits = []
-            for k in range(9):
-                a, b = W[i + 2 + 2 * k], W[i + 3 + 2 * k]
-                if S(a) and M(b):
-                    bits.append(0)
-                elif M(a) and S(b):
-                    bits.append(1)
-                else:
-                    break
-            if len(bits) == 9 and sum(bits) & 1:
-                byte = sum(bit << n for n, bit in enumerate(bits[:8]))
-        if byte is None:
-            i += 1
-            continue
-        if runs and runs[-1][0] + 20 * len(runs[-1][1]) == i:
-            runs[-1][1].append(byte)
-        else:
-            runs.append((i, bytearray([byte])))
-        i += 20
-    return [(at, bytes(b)) for at, b in runs]
-
-
-def kernal_blocks(runs):
-    """[{"at", "data", "copies", "problem"}] of the blocks: a run that opens with the countdown
-    $89 to $81 is a block's first writing and one with $09 to $01 its copy."""
-    first, copy = bytes(range(0x89, 0x80, -1)), bytes(range(0x09, 0x00, -1))
-    out = []
-    for at, run in runs:
-        if len(run) < 11 or run[:9] not in (first, copy):
-            continue
-        body, wrong = run[9:-1], xor(run[9:]) != 0
-        last = out[-1] if out else None
-        if run[:9] == copy and last and last["copies"] == 1 and len(last["data"]) == len(body):
-            last["copies"] = 2
-            if last["data"] != body:
-                if last["bad"] and not wrong:
-                    last.update(data=body, bad=False, problem="its first writing's checksum is wrong; the copy is listed")
-                elif not wrong:
-                    last["problem"] = "its two writings differ; the first is listed"
-            continue
-        out.append({"at": at + 180, "end": at + 20 * len(run), "data": body, "copies": 1, "bad": wrong,
-                    "problem": "its checksum is wrong" if wrong else None})
-    for b in out:
-        if b["copies"] == 1 and not b["problem"]:
-            b["problem"] = "written once, where the KERNAL writes every block twice"
-    return out
+    return TAP.kernal_runs(W, SHORT, LONG, MARK)
 
 
 def kernal_items(blocks):
-    out, k = [], 0
-    while k < len(blocks):
-        b = blocks[k]
-        k += 1
-        d = b["data"]
-        if len(d) != 192 or d[0] not in KINDS:
-            if len(d) == 192 and d[0] == 5:
-                continue                                    # the end of the tape: nothing to load
-            out.append({"label": f"block at pulse {b['at']}", "place": {"file": f"block at pulse {b['at']}",
-                        "type": "block with no header", "pulse": b["at"]}, "load": None, "data": d, "raw": d,
-                        **({"problem": b["problem"]} if b["problem"] else {})})
-            continue
-        start, end = d[1] | d[2] << 8, d[3] | d[4] << 8
-        name = petscii(d[5:21].rstrip(b" ")) or f"file at pulse {b['at']}"
-        wrong = [b["problem"]] if b["problem"] else []
-        body = b""
-        if d[0] == 4:
-            while k < len(blocks) and len(blocks[k]["data"]) == 192 and blocks[k]["data"][0] == 2:
-                body += blocks[k]["data"][1:]
-                wrong += [blocks[k]["problem"]] if blocks[k]["problem"] else []
-                k += 1
-        elif k < len(blocks) and not (len(blocks[k]["data"]) == 192 and blocks[k]["data"][0] in (1, 3, 4, 5)):
-            body = blocks[k]["data"]
-            wrong += [blocks[k]["problem"]] if blocks[k]["problem"] else []
-            k += 1
-            if len(body) != (end - start) & 0xFFFF:
-                wrong.append(f"its header says {(end - start) & 0xFFFF:,} bytes and the block holds {len(body):,}")
-        else:
-            wrong.append("a header with no block after it")
-        item = {"label": name, "place": {"file": name, "type": KINDS[d[0]], "pulse": b["at"]},
-                "load": None if d[0] == 4 else start, "data": body, "raw": d + body}
-        if wrong:
-            item["problem"] = "; ".join(wrong)
-        out.append(item)
-        if d[21:].strip(b" "):
-            label = f"{name} (header)"
-            out.append({"label": label, "place": {"file": label, "type": "header", "pulse": b["at"]},
-                        "load": 0x0333, "data": d[1:], "raw": d[1:]})
-    return out
+    return TAP.kernal_items(blocks, KINDS, (0x0333, 1))
 
 
 # --- Novaload ----------------------------------------------------------------------------------
@@ -252,15 +167,6 @@ def novaload_files(W, taken):
 
 # --- the tape ----------------------------------------------------------------------------------
 
-def is_tone(stretch):
-    """True when a stretch is tones and silence: leaving out the gaps where the tape stood still,
-    hardly a wave differs from the one before it by more than an eighth. Bytes in any format
-    change length from wave to wave."""
-    waves = [x for x in stretch if x < SILENCE]
-    changes = sum(1 for a, b in zip(waves, waves[1:]) if abs(a - b) > max(a, b) / 8)
-    return changes <= TONE * max(len(waves) - 1, 0)
-
-
 def tape_items(W):
     runs = kernal_runs(W)
     taken = [(at, at + 20 * len(run)) for at, run in runs]
@@ -273,15 +179,7 @@ def tape_items(W):
         if f["problem"]:
             item["problem"] = f["problem"]
         out.append((f["at"], item))
-    pos = 0
-    for a, b in sorted(taken + [(f["at"], f["end"]) for f in files]) + [(len(W), len(W))]:
-        stretch = W[pos:a]
-        if len(stretch) >= 32 and not is_tone(stretch):
-            label = f"pulses {pos}-{a - 1}"
-            out.append((pos, {"label": label, "place": {"pulses": [pos, a - 1]}, "load": None, "data": b"",
-                              "raw": b"".join(x.to_bytes(4, "little") for x in stretch),
-                              "problem": f"{len(stretch):,} pulses in a format the kit does not decode"}))
-        pos = max(pos, b)
+    out += TAP.undecoded(W, taken + [(f["at"], f["end"]) for f in files])
     return [item for _, item in sorted(out, key=lambda x: x[0])]
 
 
