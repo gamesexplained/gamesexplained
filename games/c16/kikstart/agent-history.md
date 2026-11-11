@@ -95,9 +95,18 @@ sets only those bytes. The input sequence replays on that timed C16 and
 on plus4emu read by read; 370 evenly spaced emulator checkpoints agree,
 with four further checkpoints for resumed control on the next lap.
 
+The same recording was then replayed from a fresh PRG boot on the
+64 KB PAL Plus/4. Its 391 checkpoints, including all sixteen finish
+milestones, also matched. No game-memory patches were used.
+
 The final wrap reuses $2F10's finish marker. The bonus increments the
 course counter to 16, then riding resumes. The route also exposed that
 the course time table credits the existing clock instead of replacing
 it. The Levels prose and widget label now state credits. The new input
 recording, trace viewer and original-code replay test carry that result;
 the listing's audited comments needed no further changes.
+
+The checked route draft was committed before its final prose pass. That
+pass led with the visible next-lap behavior, explained the address
+notation beside the evidence, and changed the Levels wording to seconds
+added. Script changes in that pass were limited to display strings.

@@ -177,12 +177,12 @@ $270D/$2718. A poll count is the number of recorded inputs completed
 before the next $2704 call. This is an input recording, with checkpoints
 and positions, rather than a saved machine image.
 
-The recording starts with a fresh PRG boot through BASIC and the loader,
+The live replay starts with a fresh PRG boot through BASIC and the loader,
 then one fire input starts the game. It uses ordinary controls throughout,
 with five crashes and recoveries on courses 10,11,13,14,16. The timed C16
 model replays from clear runtime RAM with only the observed loader seed
 bytes $2C=$10,$2D=$D6,$2E=$28 restored. The game reads these before its
-first random update ($27E0). All other read-before-write runtime bytes
+first random update ($27E0). All other read-before-write runtime bytes outside the stack
 observed in the full route ($3D-$3F) are zero. The KERNAL return at
 $FCC3-$FCC8 is modelled as PLA/TAY/PLA/TAX/PLA/RTI, 22 cycles.
 
@@ -193,6 +193,11 @@ state, bikes, terrain pointer, bike position/fraction/velocity, speed,
 tick, random state and the HUD timer. Four additional next-lap checkpoints
 verify the continuation. `test_route.js` replays the published recording
 through the game's original code and checks the checkpoints and trajectory.
+
+The same full recording also replayed from a fresh PRG boot on the PAL
+Plus/4 model with 64 KB. All 391 selected checkpoints matched, including
+the sixteen finish milestones and next-lap control checks. Both emulator
+replays use the original game and ordinary joystick inputs.
 
 The sixteenth finish is at poll 35,890. Immediately before the wrap, the
 base can reach $3FD7 and the marker read is $3FE7=$00. $2E28 wraps the

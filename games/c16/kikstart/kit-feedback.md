@@ -7,9 +7,9 @@ tools and their state stayed under tools/; the footprint check was clean.
 
 ## Skill text that changed what I did
 
+- `65-inputs`: "Record by the game's reads, not by the frame": the full route was recorded at $2704 and reached the same checkpoints on the timed model and plus4emu.
 - `20-features`: "the same snapshot run once": matched control tests exposed the opposite 3/4 directions from the printed instructions.
 - `50-coverage`: "Is the picture loaded or drawn?": the loaded title was kept in coverage even though play replaces its screen memory.
-- `50-coverage`: "Data the ledger cannot see": the listing audit brought the complete character banks and terrain look-ahead into the described image.
 - `60-verify`: "A wrong comment is usually one belief written down more than once": the surface finding was applied to the unsampled airborne comment as well as the sampled riding comment.
 - `70-minisite`: "The comparison that counts the pixels that differ": the split-screen reconstruction was checked numerically, giving zero differences in the 320x200 display window.
 

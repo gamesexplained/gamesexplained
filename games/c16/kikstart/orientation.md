@@ -81,6 +81,8 @@ with only the three cold-loader random-seed bytes $2C-$2E set to
 $10,$D6,$28. The same recording replayed in plus4emu after a fresh boot
 using steps 1-4 above, then stopping at $2704 before every input and
 running to the next $2704. No game-memory writes are used on that route.
+The same complete recording also replayed on the PAL Plus/4 model with
+391 matching checkpoints, including every finish and the next-lap controls.
 See facts.md for the marker read, checkpoints, and continuation.
 
 ## File-to-memory mapping
