@@ -14,23 +14,23 @@ Statuses are open, traced, confirmed, live and differs.
 | Feature | Status | Where |
 |---|---|---|
 | Sixteen courses | confirmed | Sixteen starts at $1E50/$1E60; input-only selector reaches 16 |
-| A time limit for each course | confirmed | $1E70 time table; $2304 countdown, measured live |
+| A time allowance for each course | live | $1E70 time-credit table; $2304 countdown and pending-time transfer. The complete route confirms that remaining time carries through the bonus |
 | Keyboard 3 accelerates; 4 slows; T jumps | differs | $2704 and matched-state tests: 3 brakes, 4 accelerates, T jumps |
 | Joystick horizontal movement changes speed; fire jumps | confirmed | Emulator joystick 1 left/right/fire matches 3/4/T; printed “port 0” maps to this tested set |
 | Obstacles require timed jumps | confirmed | $23EC surface properties; $2784 riding and $28F8 airborne tests; live jump |
 | Title or attract display previews a course and plays music | confirmed | Attract state 0, $2DB4/$2AA0, observed scrolling with recorded TED writes |
 | Five bikes at the start; collisions cost one | confirmed | $2640, $26AC, $2894; live start and controlled crashes |
 | Timer exhaustion and losing all bikes end the game | confirmed | $2190 converts zero time into a final crash; $2894/$26CC; controlled one-bike crash reaches game over |
-| Course completion restores one bike, up to five | confirmed | $2A4A, with course-index guard; controlled bonus setup: 3 becomes 4 and 5 remains 5 |
+| First sixteen course completions restore one bike, up to five | live | $2A4A, with course-index guard; the complete route uses five crashes and recovers its fifth bike at the final bonus |
 | Remaining time and bikes contribute to a course bonus | confirmed | $2964/$2834; three bikes display 040, five display 099; $1E10 applies the multiplier |
-| Recovery scrolls to a safe place while time continues | traced | $2894 advances objects during recovery preparation; $2948 waits for high terrain flags and state 8 still reaches the timer. A full safe-recovery player route is unrecorded |
+| Recovery scrolls to a safe place while time continues | live | $2894/$2948; the complete route recovers from crashes on courses 10,11,13,14,16 and resumes riding |
 | Speed can change during a jump | confirmed | $28F8 calls $2E44; sprite remains airborne in live T test; page tests compare the air control helper with the 6502 |
 | Springboards change the jump | confirmed | $2784 tests both $40 flags; controlled contact launches at $A0 (-96), versus normal $CC (-52) |
 | Clouds darken and release lightning | traced | $1CA8 palette cycle; $2524 lightning phase; $22C0 bolt drawing; full player contact route unrecorded |
 | Balloons and crosses can award points or time | confirmed | $2D48 types 0-4; controlled contacts queue five seconds or award 20/50 points on course 1 |
 | Later courses introduce different terrain | confirmed | The sixteen pointer spans differ; course 16 reached with the built-in selector |
 | Holding 3 and 4 opens a built-in course selector | confirmed | $2DB4; 105 held frames latch $56=$64, then 3 wraps to course 16 |
-| Course sixteen has an ending or wraps to an earlier state | open | $2E28 wraps the terrain pointer at $3FD8 and $2A18 advances the course index. No complete sixteen-course route is recorded; the forty-column look-ahead extends beyond the base wrap and needs an end-route check |
+| Course sixteen has an ending or wraps to an earlier state | live | The 36,979-poll route finishes all sixteen courses, wraps to $2F00, reads the $FD finish marker at $2F10, awards the final bonus and resumes riding at counter 16. Further right input accelerates normally |
 | Title music and gameplay sound effects | confirmed | $2AA0 packed two-voice tune; $2AEC ramps; live TED write recording |
 
 ## Beyond the documentation
@@ -42,5 +42,6 @@ character bank that are not used for its displayed message glyphs.
 
 ## Open questions
 
-The final-course route and the supplied packed release's provenance remain
-open. The original cassette, including its loader, was not supplied.
+The supplied packed release's provenance remains open. The original
+cassette, including its loader, was not supplied. The recording verifies
+the first lap and 64 further control polls; later laps remain a follow-up.

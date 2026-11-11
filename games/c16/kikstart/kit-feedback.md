@@ -30,6 +30,13 @@ The requested full audit and fresh sample also followed existing
 after the audit; the fresh checker measured them and the lead corrected
 their repeated wording. No additional shared rule was needed.
 
+The full-route follow-up used 65-inputs' read-by-read recording. A route
+found with fast original-code movement was checked again on the complete
+timed machine, then replayed in plus4emu from a fresh PRG boot. Three
+loader-derived random bytes had to be explicit when starting the kit's
+machine with clear RAM. This was already covered by the skill's warning
+about bytes read before initialization. No additional kit rule was needed.
+
 The checker did encounter visible tool failures. Its Python command hit
 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`; an
 escalated request waited 637 seconds without a progress report. Another

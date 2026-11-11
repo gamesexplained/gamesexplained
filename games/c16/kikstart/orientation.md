@@ -71,6 +71,18 @@ window can read the loaded tail through $3FFE. The loaded allocation
 continues through $3FFF; the last base before wrapping is $3FD7 and the
 greatest display offset is 39.
 
+## Replaying the complete route
+
+`reference/ending-route.json` records port 1 joystick bits at each $2704
+control poll. It completes all sixteen finishes and 64 further polls on
+the next lap. `node games/c16/kikstart/test_route.js` replays it on the
+kit's timed C16 using the committed listing. Runtime RAM starts clear,
+with only the three cold-loader random-seed bytes $2C-$2E set to
+$10,$D6,$28. The same recording replayed in plus4emu after a fresh boot
+using steps 1-4 above, then stopping at $2704 before every input and
+running to the next $2704. No game-memory writes are used on that route.
+See facts.md for the marker read, checkpoints, and continuation.
+
 ## File-to-memory mapping
 
 | Supplied file | On-disk load | Captured result |

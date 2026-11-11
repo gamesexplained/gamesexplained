@@ -8,15 +8,15 @@ Coverage has no remaining bare or uncounted bytes. Copy is agent-draft.
 
 ## Recommended follow-ups
 
-- Record a complete sixteen-course input route and check the ending and
-  the terrain look-ahead around $3FD8. Pointer wrapping is traced; a
-  full player route through the last course has not been recorded.
+- Explore later laps beyond the first 64 continuation polls. The recorded
+  route completes all sixteen courses, verifies the wrap and final bonus,
+  and resumes riding with course counter 16. Some readers of that counter
+  mask it to four bits while others retain its full value.
 - Compare the supplied packed release with an identified original copy
   supplied by its owner. Its original distribution and packer are unknown.
 - A human can curate the explanation section by section for Gold.
 - Extend the verified mechanics into a playable JavaScript port and
   check it in lockstep for Platinum.
 
-The web sources establish the original cassette controls and catalogue
-ending claim, but do not establish the exact provenance or full ending
-behaviour of this supplied packed file.
+The supplied packed release's original provenance remains unknown. The
+recorded controls establish this copy's first sixteen-course transition.

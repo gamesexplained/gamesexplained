@@ -56,6 +56,11 @@ and 1,773,447 Hz clock.
 
 Pending seconds ($3C) transfer into the display on alternating ticks
 ($2372-$2394). Countdown is disabled before the start marker.
+The existing HUD time survives the bonus panel: $2964 copies its digits
+to a separate bonus counter, which $2834 consumes. $2A18/$2DA8 then
+queue the next course's time credit; $2372 adds it to the retained HUD.
+The time table supplies an allowance, rather than a replacement clock.
+$2E90 clamps a seconds overflow back to 99.
 
 ## Controls
 
@@ -151,7 +156,7 @@ The loaded allocation continues through $3FFF. This tail differs from
 power-on RAM and contains $FD,$FF at $3FE8 and $FE,$FF at $3FF8.
 The stream boundary and look-ahead window are distinct extents.
 
-Initial seconds at $1E70 are
+Time credits in seconds at $1E70 are
 20,30,30,30,32,30,30,32,16,36,30,36,44,44,28,48.
 Multipliers at $1E10 are 1,1,2,2,2,3,3,3,4,4,4,4,5,5,5,5.
 Drift ($1DE0), random thresholds ($1DF0), candidate-type masks and
@@ -160,8 +165,49 @@ is not a complete spawning probability: a free slot and spacing test
 must also pass ($2C5A).
 
 Live input-only selection wrapped from course 1 to 16 and started index
-15 with five bikes. Completing a full sixteen-course route remains a
-follow-up; a start-state test does not establish that ending.
+15 with five bikes. The complete route below establishes the final
+course's finish and the return to riding on another lap.
+
+## Complete input route and the final finish
+
+`reference/ending-route.json` holds 36,979 logical control polls as 685
+held-joystick runs. Bits 4,8,16 are port 1 left, right, and fire. The
+anchor is entry to $2704; each poll includes the hardware reads at
+$270D/$2718. A poll count is the number of recorded inputs completed
+before the next $2704 call. This is an input recording, with checkpoints
+and positions, rather than a saved machine image.
+
+The recording starts with a fresh PRG boot through BASIC and the loader,
+then one fire input starts the game. It uses ordinary controls throughout,
+with five crashes and recoveries on courses 10,11,13,14,16. The timed C16
+model replays from clear runtime RAM with only the observed loader seed
+bytes $2C=$10,$2D=$D6,$2E=$28 restored. The game reads these before its
+first random update ($27E0). All other read-before-write runtime bytes
+observed in the full route ($3D-$3F) are zero. The KERNAL return at
+$FCC3-$FCC8 is modelled as PLA/TAY/PLA/TAX/PLA/RTI, 22 cycles.
+
+The same controls replayed in plus4emu from hard reset, 150 boot frames,
+loading the supplied PRG and RUN, without game-memory patches. All 370
+checkpoints spaced 100 polls apart matched the clear-RAM model: course,
+state, bikes, terrain pointer, bike position/fraction/velocity, speed,
+tick, random state and the HUD timer. Four additional next-lap checkpoints
+verify the continuation. `test_route.js` replays the published recording
+through the game's original code and checks the checkpoints and trajectory.
+
+The sixteenth finish is at poll 35,890. Immediately before the wrap, the
+base can reach $3FD7 and the marker read is $3FE7=$00. $2E28 wraps the
+next base to $2F00, so the next $2318 read is $2F10=$FD and requests the
+finish. The first course's selected start is $2F02, which skips this
+marker on a new game. The tail marker at $3FE8 is part of the rendered
+look-ahead, but this finish uses $2F10.
+
+The final bonus begins at poll 35,952 with five bikes, and $2A18 increments
+the course counter to 16 at poll 36,852. Riding resumes at poll 36,915,
+terrain pointer $2F07. The extra 64 right-held polls accelerate speed
+from 96 to 249 and advance the pointer to $2F13, with five bikes still
+present. This route continues into another lap; a victory screen does
+not appear at this transition. Behavior far into later laps is outside
+this recording.
 
 ## Sound
 

@@ -78,3 +78,26 @@ Both sampled comments were corrected, along with a related helper's
 wording. The measured 2/116 rate remains recorded even after those fixes.
 All corrections went through r2000.py, followed by symbol export and
 listing regeneration. No game bytes or page widget logic changed.
+
+## 11 November 2026 — complete route
+
+The contributor chose a replayable sixteen-course route as the next step.
+A search used the original movement, terrain, object and collision code,
+with drawing omitted only during search. A complete timed-machine replay
+then checked the candidate with drawing and interrupts. The final route
+uses five ordinary crash/recovery sequences; no memory patches are used
+by the plus4emu replay.
+
+Fresh PRG boots supplied the initial random seed. A read-before-write
+check found three nonzero dependencies, $2C-$2E=$10,$D6,$28, left by the
+cold loader route. The published test starts all runtime RAM clear and
+sets only those bytes. The input sequence replays on that timed C16 and
+on plus4emu read by read; 370 evenly spaced emulator checkpoints agree,
+with four further checkpoints for resumed control on the next lap.
+
+The final wrap reuses $2F10's finish marker. The bonus increments the
+course counter to 16, then riding resumes. The route also exposed that
+the course time table credits the existing clock instead of replacing
+it. The Levels prose and widget label now state credits. The new input
+recording, trace viewer and original-code replay test carry that result;
+the listing's audited comments needed no further changes.
