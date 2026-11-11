@@ -154,7 +154,7 @@
     }
     const mem = mods.C64MEM;
     if (!mem || mem.size < 4 + 65536) throw new Error(path + ': no C64MEM module (not a C64 snapshot?)');
-    const b = mem.at, cpu = mods.MAINC64CPU, vic = mods['VIC-IISC'];
+    const b = mem.at, cpu = mods.MAINC64CPU, vic = mods['VIC-IISC'], sid = mods.SID;
     return {
       ram: Uint8Array.from(buf.subarray(b + 4, b + 4 + 65536)),
       port: { data: buf[b], dir: buf[b + 1], out: mem.size > 4 + 65536 ? buf[b + 4 + 65536] : buf[b] & buf[b + 1] },
@@ -166,6 +166,10 @@
         irq: buf[vic.at + 78] } : null,
       colour: vic && vic.major === 1 && vic.minor === 4 && vic.size >= 761 + 1024
         ? Uint8Array.from(buf.subarray(vic.at + 761, vic.at + 761 + 1024), (c) => c & 15) : null,
+      // the SID's 32 registers as last written, after the count of SIDs, sound on or off, the
+      // engine and the model (sid-snapshot.c, from module version 1.4)
+      sid: sid && sid.major === 1 && sid.minor >= 4 && sid.size >= 36
+        ? { regs: Uint8Array.from(buf.subarray(sid.at + 4, sid.at + 36)), model: buf[sid.at + 3] } : null,
     };
   }
 

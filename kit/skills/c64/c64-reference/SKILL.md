@@ -289,6 +289,18 @@ In VICE with sound off, `$D41B` and `$D41C` read the low byte of the
 cycle counter, and such a table is a ramp
 (`kit/lessons/2026-10-26-into-the-eagles-nest.md`).
 
+The kit's machine (`kit/c64/machine.js`) answers `$D41B` from voice 3's
+oscillator on the cycle of the read (`createOsc` in `site/lib/sid.js`,
+held to VICE by `kit/c64/test_sid_osc.js`), so a game in a lockstep rolls
+the numbers a C64 would from the same start. A port does not run on the
+game's cycles and cannot work those numbers out: it reads `$D41B` through
+`P.io` wherever the game does, and the lockstep hands it the bytes the
+game read, in order. Never give the two sides a generator of your own in
+its place: the game then plays numbers no C64 gives it. On the page the
+port's `io` answers the read from an oscillator of its own, clocked by
+the port's count of cycles. `$D41C`, voice 3's envelope, reads 0 on the
+kit's machine.
+
 ## The serial bus on CIA 2's port A (`$DD00`)
 
 The disk drive hangs on three lines of the serial bus, and CIA 2's port
@@ -325,6 +337,7 @@ $DD00`, `CMP $DD00`, `BNE`) and then shifts bit 7 into the carry and bit
 a bit out on bit 5 or in on bit 7 at each change of bit 4), and each of
 its stores sets the video bank as well, since bits 0-1 are in the same
 register.
+
 
 ## CIA timers and the tick
 
