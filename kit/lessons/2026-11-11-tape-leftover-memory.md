@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Shadowfire (C64) · air with Claude
+## 0.0.337 · 2026-11-11 · Shadowfire (C64) · air with Claude
 
 - **Bytes a medium carries beside what the loader uses can be the
   mastering computer's memory, and a count of equal bytes will not show
