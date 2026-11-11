@@ -14,7 +14,7 @@ Tier: `bronze` in `game.json`, because the run was made on `claude-sonnet-5-5`, 
 - A map of part one, drawn from `$4000`-`$42FF` and the tiles at `$5000`, with every object marked from `$1568`.
 - A map of part two's two rows with the event columns from `$896E`.
 - A walkthrough: the order of objects that builds the decoy robot (the objects `$225A` names).
-- The title picture, drawn from `$5C00`, `$6000` and `$8548`.
+- The Graphics tab holds only the title picture. It should also draw every shape the moving things use: Number 5 and part two's creatures (`kit/skills/core/70-minisite`).
 - The 1,192 bytes after the title picture's bitmap (`$7F40`-`$83E7`) and the 1,051 bytes at `$8B75`-`$8F8F`: what reads them, if anything.
 
 ## More ideas
