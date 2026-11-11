@@ -1,4 +1,4 @@
-## next · 2026-11-11 · Alter Ego (C64) · air with Claude
+## 0.0.335 · 2026-11-11 · Alter Ego (C64) · air with Claude
 
 - **A game that rolls its numbers from `$D41B` now rolls a C64's in a
   lockstep.** The kit's machine read `$D41B` as 0, so Alter Ego's
