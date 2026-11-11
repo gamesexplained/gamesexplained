@@ -66,7 +66,25 @@ Sources:
 | Sampled sound effects | traced | `$3D8B`, `$3DB8` |
 | RESTORE pauses | live | `$3C23` |
 | F5 restarts | traced | `$2444` |
-| Training / combat practice mode | live (menu); not analysed: a separate load | `LOADIT` |
+| Training / combat practice mode | confirmed: a separate load, analysed as the part `training` (below) | `LOADIT`, `parts/training` |
+
+## Training
+
+The part `training`; addresses are that part's (`parts/training/facts.md`).
+
+| Feature | Status | Where |
+|---|---|---|
+| One player against the computer: beat each opponent twice to go up a dan | traced | `one_player_game` `$1E45`, `wins_needed` `$D1` |
+| Ranks NOVICE, then 1ST to 10TH DAN; endless past 10TH DAN | traced | `show_rank` `$2436`, `one_player_endless` `$1EFE` |
+| Two players: "eight sixty-second rounds, two in each of four locations" (manual) | **differs**: four rounds of 60 seconds, one in each location | `two_player_game` `$1DA6`, `$1DEF` |
+| Points for every strike that connects | confirmed: a full point the move's hundreds, a half point half | `add_score` `$22A7`, `move_points` `$1297` |
+| Points for the time left after a knockout | traced in a one-player game, 100 a second; a two-player knockdown scores the last hit again instead | `time_bonus` `$241A`, `two_player_bout` `$1E18` |
+| Four locations, each with its own picture and colours | live (the temple); traced | `load_location` `$21C4`, pictures `$3CE2`-`$74FF` |
+| A demonstration between games | traced | `demo` `$1F5D` |
+| Keyboard play (F7) and joystick | traced | `read_keyboard` `$2AF8`, `read_joystick` `$2AB8` |
+| Samples on and off (DEL) | traced | `read_function_keys` `$20F4`, `samples_off` `$EE` |
+| RESTORE pauses | traced | `nmi` `$32C4`, `pause_flag` `$1166` |
+| Music: a tune for the demonstration and each mode | traced; a fourth tune is never played | `music_update` `$09A5`, `tune` `$FF` |
 
 ## Beyond the documentation
 
@@ -75,10 +93,14 @@ Sources:
 - Fighters are stored facing one way and mirrored as they are unpacked.
 - The fighters' sprites are split down the screen in one of seven layouts.
 - A second fighter on joystick port 1 is wired into the input routine.
+- Training keeps the scoring of The Way of the Exploding Fist, half and
+  whole point symbols, with nothing calling it (parts/training, `$1FEF`).
+- Training's four samples lie in the bitmap under its one-colour floor, with
+  a fifth sound beside them that nothing plays (parts/training, `$FCD3`).
 
 ## Open questions
 
-See `facts.md`, Open questions.
+See `parts/adventure/facts.md`, Open questions.
 
 ## Outside sources checked on 1 October 2026
 

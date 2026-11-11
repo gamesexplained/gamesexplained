@@ -90,3 +90,36 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - How it works was then folded away at the contributor's choice: how a
   blow lands went to Gameplay, how rooms join to Maps and solution, and
   the scroll flags into the Gameplay trigram table.
+
+## 11 November 2026, the Training program as a second part
+
+- The Adventure's folder was adopted as the part `adventure` and Training
+  given a folder of its own (`kit/scripts/parts.py`). The route: the
+  disk's menu, `1`, and the loader stopping at `JMP $C3FD`. Training was
+  never loaded in the Silver run.
+- `carry.py find` placed five stretches of the Adventure's code in
+  Training (the music driver, the start-up, the fighter engine, the hit
+  test with the raster handlers and the multiplexer), and `pair` brought
+  their names and comments over: 1,765 instructions. The comments came
+  across with the Adventure's own addresses wherever they named something
+  outside the code paired, such as the music driver's tune tables, and
+  were corrected by hand; `carry.py` now flags those.
+- Four pointer tables were first typed `lo_hi_address`, which made
+  automatic symbols at addresses nothing uses; they are interleaved
+  pairs, retyped `address`.
+- The orientation said the loader copies TNK4B to `$D000`-`$FFF8`, from
+  the file's length. Both loaders' copy loops move `$2FF0` bytes, so the
+  copy ends at `$FFEF`. The simulator showed the picture held at the
+  hand-over to be location 1's.
+- The extra sprites at `$D480`-`$DC3F` are read only by the video chip,
+  so `$D000`-`$DFFF` was included; 17 colour RAM writes made automatic
+  symbols inside those images, each commented to reach 100 %.
+- The sample (80 comments, seed 20261111) found 8 wrong. The worst was a
+  comment calling the RTI at the end of `irq_bottom` unreachable; it had
+  come from the Adventure, where the RTI after a jump really is, and a
+  second comment like it at `$32C3` was found by searching for the same
+  words. That led to `carry.py`'s second flag: code the copy runs into
+  where the source does not.
+- The manual says a two-player game is eight rounds; the code plays four.
+  Findings like that went to `TODO.md` for unorig, since every page is
+  theirs.
