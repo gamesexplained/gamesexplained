@@ -58,6 +58,12 @@ Neither image is the `.d64` analysed here (its SHA-256 differs and it has
 no disk name); its game files were not compared with these byte for byte
 beyond the three above.
 
+`media.json` lists the first of the two, the disk with its protection,
+item by item (`python3 kit/scripts/media.py games/c64/fist-ii-the-legend-continues`).
+Every byte of `L`, `BNK12A`, `BNK2B`, `BNK3`, `BNK4A` and `BNK4B` that
+the listing holds is the disk's, and so is `LOADALL` but for what the
+menu and the loader change in it.
+
 ## From power-on to play
 
 1. Hard reset (power cycle) the emulator, PAL.
@@ -90,8 +96,12 @@ container with no display. `check-emulator`: 56 of 57, failed
 
 ## The loader, in a paragraph
 
-`LOADALL` (`$C000`) loads `TITLE` and `TSETUP` and calls `$1000` to show
-the title picture. It then loads `BNK4B` at `$1000` and, with every ROM
+`LOADALL` (`$C000`) holds code that loads `TITLE` and `TSETUP` and calls
+`$1000` to show the title picture, but the menu skips it: before it
+starts the loader for the Adventure, `LL` writes `JMP $C06E` over
+`$C011` (`$9985`), which is why the listing holds that jump there. The
+picture on the screen is the one the menu itself unpacked from `T`. From
+`$C06E` the loader loads `BNK4B` at `$1000` and, with every ROM
 and the I/O switched out (`$01` = 0), copies `$1000`-`$3FF8` up to
 `$D000`-`$FFF8`, under the I/O area and the KERNAL. It loads `BNK4A` at
 `$C280`-`$CFFF` (over the end of the loader itself), `BNK3` at `$1000`
