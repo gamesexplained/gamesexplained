@@ -116,7 +116,7 @@ jobs:
           --shard ${{ matrix.share }}/${{ strategy.job-total }}
           --times "$RUNNER_TEMP/kit-test-times.json"
       - name: Keep each test's time for the next run
-        if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+        if: always() && github.ref == 'refs/heads/main' && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.temp }}/kit-test-times.json
