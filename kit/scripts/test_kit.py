@@ -20,7 +20,8 @@ caught. New tests belong in a `test_*.py` file rather than a new flag, so
 that this list does not grow.
 
 Usage:
-  test_kit.py [--require-tools] [--list] [--until PATH] [--changed [REF]] [substring ...]
+  test_kit.py [--require-tools] [--list] [--until PATH] [--changed [REF]] [--shard K/N]
+              [--times FILE] [substring ...]
   test_kit.py -h                    this
 
   --require-tools   export KIT_REQUIRE_TOOLS=1 to every test (CI), so a
@@ -40,6 +41,15 @@ Usage:
                     names, imports, a page's scripts. A change to this script runs them
                     all. A test that reaches a changed file by a name it builds as it
                     runs is left out here and runs in CI
+  --shard K/N       run share K of N of the tests, so N computers can split one run
+                    between them, as CI does. A test's share comes from its name alone
+                    (the name's SHA-256, modulo N): the N shares together are every
+                    test, each once, and a new test moves no other out of its share
+  --times FILE      start the longest tests first, going by how long each took on the run
+                    before, read from FILE, and write this run's times there for the next.
+                    A test with no time in FILE starts before those that have one. Only
+                    the order they start in changes: the same tests run, and the report
+                    is in the same order
 
 Exit status is 1 if any test failed, 0 otherwise. A test that exits 0 but
 says it skipped is reported as SKIP, which is not a failure without
@@ -47,6 +57,8 @@ says it skipped is reported as SKIP, which is not a failure without
 """
 import concurrent.futures
 import glob
+import hashlib
+import json
 import os
 import re
 import subprocess
@@ -280,6 +292,42 @@ def _glob(pattern):
     return _GLOBS[pattern]
 
 
+def share(tests, k, n):
+    """Share k of n (--shard): the tests whose name's SHA-256, modulo n, is k - 1. A test's share
+    depends on its name and n and on nothing else in the list, so the n shares hold each test
+    once on any computer, and adding a test moves no other, which keeps --times' record of a
+    share's tests good from one run to the next."""
+    return [t for t in tests if int(hashlib.sha256(t[0].encode()).hexdigest(), 16) % n == k - 1]
+
+
+def read_times(path):
+    """{test: seconds} as a run before left it (--times), or {} with no file a run wrote."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            got = json.load(fh)
+        return {k: float(v) for k, v in got.items()}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def longest_first(tests, times):
+    """The order to start the tests in: one with no time on record first, then the longest
+    that has, so that no long test is left to start when the others are done."""
+    return sorted(tests, key=lambda t: -times.get(t[0], float("inf")))
+
+
+def write_times(path, times, results, known):
+    """This run's times over those on record, for the tests there still are."""
+    times = dict(times)
+    times.update({label: round(took, 1) for _, label, took, _, _ in results})
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({k: times[k] for k in sorted(times) if k in known}, fh, indent=0)
+    except OSError as e:
+        print(f"  --times: {path} was not written ({e}); the next run starts in the usual order")
+
+
 def unlisted_self_tests():
     """Kit scripts that handle `--test` but have no SELF_TESTS entry."""
     listed = {a[0] for a in SELF_TESTS}
@@ -341,6 +389,20 @@ def main(argv):
         if a.startswith("--until"):
             until = argv[argv.index(a) + 1]
             argv = [x for x in argv if x not in (a, until)]
+    shard, times_file = None, None
+    for flag in ("--shard", "--times"):
+        if flag in argv:
+            i = argv.index(flag)
+            value = argv[i + 1] if i + 1 < len(argv) else ""
+            del argv[i:i + 2]
+            m = re.fullmatch(r"(\d+)/(\d+)", value)
+            if flag == "--times" and value:
+                times_file = value
+            elif flag == "--shard" and m and 1 <= int(m[1]) <= int(m[2]):
+                shard = int(m[1]), int(m[2])
+            else:
+                print(f"  x  {flag} {value}: --shard takes K/N with K from 1 to N, and --times a file (test_kit.py -h)")
+                return 1
     changed_only, ref = "--changed" in argv, None
     if changed_only:
         i = argv.index("--changed")
@@ -352,6 +414,7 @@ def main(argv):
     tests = discovered() + [(a[0] if len(a) == 1 else a[0] + " " + " ".join(a[1:]),
                              [sys.executable] + a) for a in SELF_TESTS]
     tests.sort()
+    known = {t[0] for t in tests}
     if changed_only:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         ref, files = branch_files(ref)
@@ -369,6 +432,13 @@ def main(argv):
                 return 0
     if wanted:
         tests = [t for t in tests if any(w in t[0] for w in wanted)]
+    if shard:
+        whole = len(tests)
+        tests = share(tests, *shard)
+        print(f"  --shard: share {shard[0]} of {shard[1]}, {len(tests)} of {whole} test(s)")
+        if whole and not tests and not listed:
+            print("\n0 test(s): there are fewer tests than shares, and this share has none")
+            return 0
 
     if listed:
         for label, argv_ in tests:
@@ -406,9 +476,13 @@ def main(argv):
         # each test is its own process, so they run side by side; the report
         # below still comes out in discovery order, not completion order
         workers = min(8, os.cpu_count() or 2)
+        times = read_times(times_file) if times_file else {}
+        if times_file:
+            print(f"  --times: {sum(1 for t in tests if t[0] in times)} of {len(tests)} test(s) have a time "
+                  f"on record in {times_file}, and the longest of those start first")
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
             fut = {ex.submit(run, label, argv_, require_tools, True): label
-                   for label, argv_ in tests}
+                   for label, argv_ in longest_first(tests, times)}
             got = {}
             for f in concurrent.futures.as_completed(fut):
                 got[fut[f]] = f.result()
@@ -419,6 +493,8 @@ def main(argv):
             failed += 1
         report(verdict, label, took, rc, tail)
 
+    if times_file and not until:
+        write_times(times_file, times, results, known)
     slow = [r for r in results if r[2] > 60]
     if slow:
         print("\n  over 60 seconds:")
