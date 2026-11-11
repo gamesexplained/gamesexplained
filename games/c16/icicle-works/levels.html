@@ -36,7 +36,45 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 
 .ic-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:14px 0}.ic-two{display:grid;grid-template-columns:1fr 1fr;gap:22px}.ic-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}.ic-card{padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:10px}.ic-card h3{font-size:19px;margin-bottom:10px}.ic-pixel{image-rendering:pixelated;max-width:100%;height:auto;background:#8f8ffb}.ic-map{width:100%;max-width:608px}.ic-big-tile{width:112px}.ic-toy{width:240px}.ic-shot{width:384px;max-width:100%;image-rendering:pixelated}.ic-error{color:#a52a22;white-space:pre-wrap}.ic-small{font-size:14px;color:var(--ink-soft)}.ic-room-links{display:flex;flex-wrap:wrap;gap:8px}.ic-room-links button{min-width:43px}.ic-clock{font-family:var(--fm);font-size:58px;font-weight:700;color:#3737a3}.ic-grid-table{width:100%;border-collapse:collapse;font-size:15px}.ic-grid-table th,.ic-grid-table td{text-align:left;border-bottom:1px solid var(--line-soft);padding:9px}.ic-water{width:240px;cursor:pointer}.ic-range{width:min(300px,100%)}.ic-source{font-family:var(--fm);font-size:12px}.ic-image-pair{display:flex;flex-wrap:wrap;gap:18px}.ic-font{width:100%;max-width:640px}.ic-text-output{font-family:var(--fm);letter-spacing:.14em;font-size:23px}.ic-bar{height:12px;background:var(--line-soft);border-radius:6px;overflow:hidden}.ic-bar i{display:block;height:100%;background:#6d6eda}.ic-controls button{padding:8px 14px}.ic-room-links button[aria-current=true]{background:#3737a3;color:white}button,select,input{font:inherit}button,select{cursor:pointer}input[type=range]{accent-color:#4a5bd6}button{border:1px solid var(--line);border-radius:6px;padding:6px 12px;background:var(--surface);color:var(--ink)}button:hover{border-color:var(--violet)}label{font-size:15px}figure{margin:0}details{margin-top:16px}summary{cursor:pointer}section a{color:var(--link)}@media(max-width:680px){:root{--gx:20px;--h1:36px;--sy:34px;--pp:16px}.ic-two{grid-template-columns:1fr}.ic-grid-table{font-size:13px}}
-</style><!-- tabs --><header class="hero"><p class="eyebrow">1985 · Commodore · Plus/4, 64 KB</p><h1>Icicle Works</h1><p class="sub">Every room, its exits, and the toy that opens its doors.</p></header><main class="wrap"><section id="rooms"><p class="fig">01 · Room browser</p><h2 class="t">The sixteen rooms</h2><div class="pick"><button class="step" id="ic-prev" aria-label="Previous room">‹</button><select id="ic-room-select" aria-label="Room"></select><button class="step" id="ic-next" aria-label="Next room">›</button></div><div class="plate"><canvas class="ic-pixel ic-map" id="ic-room-map" aria-label="The selected complete room"></canvas><div class="ic-row"><label><input id="ic-marks" type="checkbox" checked> Mark Santa and label exit destinations</label></div><p id="ic-room-note" class="cap"></p></div><table class="ic-grid-table" id="ic-room-stats"></table><p>The maps are stored at <code>$A800</code> through <code>$C81F</code>. A number beginning with $ is a hexadecimal address, a location in the computer's memory. Each room has 513 packed bytes plus one extra byte kept beside them. A byte holds two tile numbers. Reading its high half first gives the tiles in room order. The game loads each room into two grids that track its objects. Both grids matched this decoding in all sixteen rooms.</p></section><section id="exits"><p class="fig">02 · Choosing a route</p><h2 class="t">The doors form a network</h2><p>Santa can choose among the current room's exits after building its toy. Each door stores its destination; some links lead back by a different route. Choose any room below to inspect its exits.</p><div class="ic-room-links" id="ic-all-rooms"></div><div class="ic-row" id="ic-exits"></div><p class="cap">The destination list starts at <code>$8F11</code>. The game assigns that room's entries as it reads each map row from left to right, working from the top row down. A <a href="reference/web-map.gif">map by Ulysses777</a>, preserved by Plus/4 World, provides an independent visual reference.</p></section><section id="toy"><p class="fig">03 · Assembly order</p><h2 class="t">The toy for this room</h2><div class="plate ic-two"><canvas id="ic-room-toy" class="ic-pixel ic-toy" aria-label="The selected room's assembled toy"></canvas><div><label>Parts collected <input id="ic-toy-parts" type="range" min="0" value="0" class="ic-range"></label><p id="ic-toy-note"></p><p class="cap">The lists at <code>$8F51</code> and <code>$9051</code> choose a picture piece and its position for each pickup. These sixteen pictures use all 163 stored pieces.</p></div></div><p>Finishing a toy turns that room's remaining parcels into bonuses. Returning to a finished room starts the clock at 40. Each player has a separate record of finished rooms. The game saves that room's result when the player leaves through a door.</p></section><p class="ic-error" id="ic-error" role="status"></p></main><footer class="wrap"><p class="cap">Icicle Works · Doug Turner · Commodore, 1985. Explanation and symbol map: Games Explained contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Code: <a href="https://opensource.org/licenses/MIT">MIT</a>.</p></footer><script src="../../lib/c16.js"></script><script src="../../lib/ted-sound.js"></script><script>
+
+.ic-network-frame{margin:22px 0 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.ic-network-toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line-soft)}
+.ic-network-counts{margin:0;font:12px var(--fm);color:var(--ink-soft)}
+.ic-network-zoom{display:flex;gap:6px;align-items:center}.ic-network-zoom button{padding:5px 10px;min-width:34px}.ic-network-zoom output{font:12px var(--fm);min-width:44px;text-align:center}
+.ic-network-legend{display:flex;flex-wrap:wrap;gap:10px 22px;padding:12px 18px;font-size:12px;color:var(--ink-soft)}
+.ic-network-legend span{display:inline-flex;align-items:center;gap:7px}.ic-network-legend b{font-size:22px;line-height:1;color:#9d9386}.ic-network-one-way-key{color:#ad7120!important}
+.ic-network-key{width:22px;height:3px;background:#4d4ac9;border-radius:2px}
+.ic-network-viewport{height:clamp(330px,55vh,480px);overflow:auto;scrollbar-gutter:stable;overscroll-behavior-x:contain;touch-action:pan-x pan-y pinch-zoom;background:radial-gradient(circle,#dcd7ce .7px,transparent .8px) 0 0/14px 14px}
+.ic-network-viewport:focus-visible{outline:3px solid #4d4ac9;outline-offset:-3px}
+#ic-network{display:block;max-width:none;height:auto;margin:auto}
+.ic-network-link{fill:none;stroke:#b9b1a6;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.ic-network-link.ic-network-one-way{stroke:#ad7120;stroke-dasharray:6 5}
+.ic-network-link.ic-network-outgoing{stroke:#4d4ac9;stroke-width:3}
+.ic-network-room{cursor:pointer;outline:none}.ic-network-room rect{fill:#fff;stroke:#c4beb3;stroke-width:1.2;vector-effect:non-scaling-stroke}
+.ic-network-room text{fill:#55514b;font:20px var(--fm)}.ic-network-room .ic-network-start{font:12px var(--fm);fill:#716957}
+.ic-network-room image{image-rendering:pixelated;pointer-events:none}
+.ic-network-room:hover rect,.ic-network-room:focus-visible rect{stroke:#4d4ac9;stroke-width:3}
+.ic-network-room.ic-network-neighbour rect{fill:#f0efff;stroke:#9b98dd;stroke-width:2}
+.ic-network-room[aria-pressed=true] rect{fill:#4d4ac9;stroke:#3e3bac;stroke-width:3}.ic-network-room[aria-pressed=true] text{fill:#fff}
+.ic-network-help{margin:0;padding:11px 18px 14px;border-top:1px solid var(--line-soft);font-size:12px;color:var(--ink-mute)}
+.ic-network-selection{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:baseline;justify-content:space-between}.ic-network-selection h3{font-size:21px}.ic-network-selection a{font-size:14px}
+.ic-network-doors button{display:flex;gap:8px;align-items:center;text-align:left}.ic-network-door-tag{font:10px var(--fm);color:#92601f;border:1px solid #d8b478;border-radius:4px;padding:2px 4px}
+@media(max-width:680px){.ic-network-toolbar{padding:12px}.ic-network-legend{padding:10px 12px;gap:8px 14px}.ic-network-zoom button{min-height:38px}.ic-network-viewport{height:440px}.ic-network-help{padding:10px 12px}.ic-network-doors button{min-height:44px}}
+</style><!-- tabs --><header class="hero"><p class="eyebrow">1985 · Commodore · Plus/4, 64 KB</p><h1>Icicle Works</h1><p class="sub">Every room, its exits, and the toy that opens its doors.</p></header><main class="wrap"><section id="rooms"><p class="fig">01 · Room browser</p><h2 class="t">The sixteen rooms</h2><div class="pick"><button class="step" id="ic-prev" aria-label="Previous room">‹</button><select id="ic-room-select" aria-label="Room"></select><button class="step" id="ic-next" aria-label="Next room">›</button></div><div class="plate"><canvas class="ic-pixel ic-map" id="ic-room-map" aria-label="The selected complete room"></canvas><div class="ic-row"><label><input id="ic-marks" type="checkbox" checked> Mark Santa and label exit destinations</label></div><p id="ic-room-note" class="cap"></p></div><table class="ic-grid-table" id="ic-room-stats"></table><p>The maps are stored at <code>$A800</code> through <code>$C81F</code>. A number beginning with $ is a hexadecimal address, a location in the computer's memory. Each room has 513 packed bytes plus one extra byte kept beside them. A byte holds two tile numbers. Reading its high half first gives the tiles in room order. The game loads each room into two grids that track its objects. Both grids matched this decoding in all sixteen rooms.</p></section><section id="exits">
+<p class="fig">02 · Choosing a route</p><h2 class="t">The doors form a network</h2>
+<p>All sixteen rooms connect through their doors. Follow the arrows to see where a door leads. Select a miniature map to highlight that room’s exits and update its full map above.</p>
+<div class="ic-network-frame">
+  <div class="ic-network-toolbar"><p id="ic-network-counts" class="ic-network-counts"></p><div class="ic-network-zoom" role="group" aria-label="Network zoom"><button id="ic-network-out" aria-label="Zoom out">−</button><output id="ic-network-zoom" aria-live="polite">100%</output><button id="ic-network-in" aria-label="Zoom in">+</button><button id="ic-network-fit">Fit overview</button></div></div>
+  <div class="ic-network-legend"><span><i class="ic-network-key ic-network-key-active"></i>Selected room’s exits</span><span><b aria-hidden="true">↔</b>Doors both ways</span><span><b class="ic-network-one-way-key" aria-hidden="true">⇢</b>One-way door</span></div>
+  <div id="ic-network-viewport" class="ic-network-viewport" role="region" aria-label="Room connections; scroll to pan when zoomed" tabindex="0">
+    <svg id="ic-network" viewBox="0 0 1340 675" role="group" aria-labelledby="ic-network-title ic-network-description"><title id="ic-network-title">Icicle Works room connections</title><desc id="ic-network-description">Choose a room to highlight its outgoing doors. Arrowheads show the direction of travel.</desc><defs id="ic-network-defs"></defs><g id="ic-network-links"></g><g id="ic-network-rooms"></g></svg>
+  </div>
+  <p class="ic-network-help">Use + to enlarge the maps, then scroll to explore. Fit overview shows every room. Keyboard: Tab to a room, then press Enter.</p>
+</div>
+<div class="ic-network-selection"><h3 id="ic-network-room-name"></h3><a id="ic-network-view-room" href="#rooms">View the full room map ↑</a></div>
+<p id="ic-network-summary" class="ic-small" aria-live="polite"></p><div class="ic-row ic-network-doors" id="ic-exits"></div>
+<p class="cap">A single arrow means there is no door straight back between those two rooms. Rooms are arranged to keep the connections readable. The links come from the door destinations at <code>$8F11</code>, assigned as the game reads each map row from left to right, working down from the top. A <a href="reference/web-map.gif">map by Ulysses777</a>, preserved by Plus/4 World, provides an independent visual reference.</p>
+</section><section id="toy"><p class="fig">03 · Assembly order</p><h2 class="t">The toy for this room</h2><div class="plate ic-two"><canvas id="ic-room-toy" class="ic-pixel ic-toy" aria-label="The selected room's assembled toy"></canvas><div><label>Parts collected <input id="ic-toy-parts" type="range" min="0" value="0" class="ic-range"></label><p id="ic-toy-note"></p><p class="cap">The lists at <code>$8F51</code> and <code>$9051</code> choose a picture piece and its position for each pickup. These sixteen pictures use all 163 stored pieces.</p></div></div><p>Finishing a toy turns that room's remaining parcels into bonuses. Returning to a finished room starts the clock at 40. Each player has a separate record of finished rooms. The game saves that room's result when the player leaves through a door.</p></section><p class="ic-error" id="ic-error" role="status"></p></main><footer class="wrap"><p class="cap">Icicle Works · Doug Turner · Commodore, 1985. Explanation and symbol map: Games Explained contributors, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Code: <a href="https://opensource.org/licenses/MIT">MIT</a>.</p></footer><script src="../../lib/c16.js"></script><script src="../../lib/ted-sound.js"></script><script>
 /* icicle-core */
 const IC = (() => {
   const word = (m,a) => m[a] | m[a+1]<<8;
@@ -145,7 +183,96 @@ const IC = (() => {
 })();
 // end of icicle-core
 </script><script>
-(async()=>{if(typeof C16==='undefined'){document.getElementById('ic-error').textContent='Serve the built site to load its shared graphics library.';return;}const L=await C16.load('listing.json'),m=L.ram;
-const select=document.getElementById('ic-room-select'),slider=document.getElementById('ic-toy-parts'),marks=document.getElementById('ic-marks');for(let i=0;i<16;i++){select.add(new Option('Room '+(i+1),i));const b=document.createElement('button');b.textContent=i+1;b.dataset.room=i;b.onclick=()=>{select.value=i;show();};document.getElementById('ic-all-rooms').append(b);}const requested=+new URLSearchParams(location.search).get('room');if(requested>=1&&requested<=16)select.value=requested-1;function toy(){const n=+select.value;IC.drawToy(document.getElementById('ic-room-toy'),m,n,+slider.value);document.getElementById('ic-toy-note').textContent=slider.value+' / '+m[0x8F01+n]+' parts shown in collection order.';}function show(){const n=+select.value,r=IC.drawRoom(document.getElementById('ic-room-map'),m,n,0,marks.checked);document.getElementById('ic-room-note').textContent='Room '+(n+1)+' · source '+IC.hex(r.at)+' · 38 × 27 tiles.';document.getElementById('ic-room-stats').innerHTML='<tr><th>Parts needed</th><th>Loose parcels</th><th>Starting time</th><th>Bears / penguins</th><th>Water / magic grids</th></tr><tr><td>'+r.parts+'</td><td>'+r.counts[6]+'</td><td>'+r.time+'</td><td>'+r.counts[2]+' / '+r.counts[3]+'</td><td>'+r.counts[12]+' / '+r.counts[13]+'</td></tr>';slider.max=r.parts;slider.value=r.parts;toy();const exits=document.getElementById('ic-exits');exits.replaceChildren();for(const e of r.exits){const b=document.createElement('button');b.textContent='Door at '+e.x+','+e.y+' → room '+(e.dest+1);b.onclick=()=>{select.value=e.dest;show();};exits.append(b);}document.querySelectorAll('[data-room]').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.room===n)));}select.onchange=show;marks.onchange=show;slider.oninput=toy;document.getElementById('ic-prev').onclick=()=>{select.value=(+select.value+15)%16;show();};document.getElementById('ic-next').onclick=()=>{select.value=(+select.value+1)%16;show();};show();
+/* icicle-network */
+const ICNetwork=(()=>{
+  const positions=[[90,335],[285,90],[285,255],[285,420],[285,585],[480,90],[480,255],[480,420],[480,585],[675,335],[675,90],[870,255],[870,420],[675,585],[1065,335],[1260,335]];
+  const width=144,height=126;
+  function fromRooms(rooms){
+    const doors=rooms.flatMap((room,from)=>room.exits.map((e,index)=>({from,to:e.dest,x:e.x,y:e.y,index})));
+    const pairs=new Map();
+    for(const door of doors){
+      const a=Math.min(door.from,door.to),b=Math.max(door.from,door.to),key=a+':'+b;
+      if(!pairs.has(key))pairs.set(key,{a,b,forward:false,backward:false});
+      pairs.get(key)[door.from===a?'forward':'backward']=true;
+    }
+    return {doors,links:Array.from(pairs.values()),oneWay:Array.from(pairs.values()).filter(e=>!e.forward||!e.backward).length};
+  }
+  function path(a,b){
+    const [x1,y1]=positions[a],[x2,y2]=positions[b];
+    if(x1===x2){const sign=Math.sign(y2-y1),start=y1+sign*height/2,end=y2-sign*height/2,middle=(start+end)/2;return `M ${x1} ${start} C ${x1} ${middle} ${x2} ${middle} ${x2} ${end}`;}
+    const sign=Math.sign(x2-x1),start=x1+sign*width/2,end=x2-sign*width/2,middle=(start+end)/2;
+    return `M ${start} ${y1} C ${middle} ${y1} ${middle} ${y2} ${end} ${y2}`;
+  }
+  function doorName(e){return e.x===0?'Left door':e.x===37?'Right door':e.y===0?'Top door':e.y===26?'Bottom door':'Door';}
+  return {fromRooms,path,doorName,positions,width,height};
+})();
+// end of icicle-network
+(async()=>{
+if(typeof C16==='undefined'){document.getElementById('ic-error').textContent='Serve the built site to load its shared graphics library.';return;}
+const L=await C16.load('listing.json'),m=L.ram;
+const select=document.getElementById('ic-room-select'),slider=document.getElementById('ic-toy-parts'),marks=document.getElementById('ic-marks');
+const rooms=Array.from({length:16},(_,n)=>IC.decodeRoom(m,n)),network=ICNetwork.fromRooms(rooms);
+const NS='http://www.w3.org/2000/svg',svg=document.getElementById('ic-network'),nodes=[],paths=[];
+function element(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const [key,value] of Object.entries(attrs))e.setAttribute(key,String(value));if(parent)parent.append(e);return e;}
+for(const [name,colour] of [['normal','#b9b1a6'],['one-way','#ad7120'],['active','#4d4ac9']]){
+  const marker=element('marker',{id:'ic-arrow-'+name,viewBox:'0 0 8 8',refX:8,refY:4,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},document.getElementById('ic-network-defs'));
+  element('path',{d:'M 0 0 L 8 4 L 0 8 Z',fill:colour},marker);
+}
+for(const link of network.links){
+  const p=element('path',{d:ICNetwork.path(link.a,link.b),class:'ic-network-link','data-from':link.a,'data-to':link.b,'data-forward':link.forward,'data-backward':link.backward},document.getElementById('ic-network-links'));
+  const t=element('title',{},p);t.textContent='Room '+(link.a+1)+(link.forward&&link.backward?' ↔ ':link.forward?' → ':' ← ')+'Room '+(link.b+1);paths.push({link,p});
+}
+for(let n=0;n<16;n++){
+  select.add(new Option('Room '+(n+1),n));
+  const [cx,cy]=ICNetwork.positions[n],x=cx-ICNetwork.width/2,y=cy-ICNetwork.height/2;
+  const node=element('g',{class:'ic-network-room',role:'button',tabindex:0,'data-network-room':n,'aria-label':'Room '+(n+1)+(n===0?', starting room':'')+'. Doors to rooms '+rooms[n].exits.map(e=>e.dest+1).join(', ')+'.','aria-pressed':'false'},document.getElementById('ic-network-rooms'));
+  element('rect',{x,y,width:ICNetwork.width,height:ICNetwork.height,rx:8},node);
+  const label=element('text',{x:x+10,y:y+22},node);label.textContent='Room '+(n+1);
+  if(n===0){const start=element('text',{x:x+102,y:y+21,class:'ic-network-start'},node);start.textContent='start';}
+  const canvas=document.createElement('canvas');IC.drawRoom(canvas,m,n);
+  element('image',{x:x+8,y:y+28,width:128,height:91,href:canvas.toDataURL(),preserveAspectRatio:'xMidYMid meet'},node);
+  const choose=()=>{select.value=n;show();};node.onclick=choose;
+  node.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}};
+  nodes.push(node);
+}
+document.getElementById('ic-network-counts').textContent='16 rooms · '+network.doors.length+' doors · '+network.oneWay+' one-way connections';
+document.getElementById('ic-network-description').textContent='Sixteen room miniatures joined by '+network.links.length+' connections. Arrowheads show travel direction; dashed lines mark one-way doors. Choose a room to highlight its exits.';
+svg.dataset.ready='true';
+const viewport=document.getElementById('ic-network-viewport');let zoom=Math.max(1,720/viewport.clientWidth);
+function resize(){svg.style.width=Math.round(viewport.clientWidth*zoom)+'px';document.getElementById('ic-network-zoom').textContent=Math.round(zoom*100)+'%';document.getElementById('ic-network-out').disabled=zoom<=1;document.getElementById('ic-network-in').disabled=zoom>=3;}
+function changeZoom(next){const old=zoom,left=viewport.scrollLeft,top=viewport.scrollTop;zoom=Math.max(1,Math.min(3,next));resize();viewport.scrollLeft=(left+viewport.clientWidth/2)*zoom/old-viewport.clientWidth/2;viewport.scrollTop=(top+viewport.clientHeight/2)*zoom/old-viewport.clientHeight/2;}
+document.getElementById('ic-network-out').onclick=()=>changeZoom(zoom/1.25);
+document.getElementById('ic-network-in').onclick=()=>changeZoom(zoom*1.25);
+document.getElementById('ic-network-fit').onclick=()=>{zoom=1;resize();viewport.scrollTo(0,0);};
+new ResizeObserver(resize).observe(viewport);resize();
+const requested=+new URLSearchParams(location.search).get('room');if(requested>=1&&requested<=16)select.value=requested-1;
+function toy(){const n=+select.value;IC.drawToy(document.getElementById('ic-room-toy'),m,n,+slider.value);document.getElementById('ic-toy-note').textContent=slider.value+' / '+m[0x8F01+n]+' parts shown in collection order.';}
+function show(){
+  const n=+select.value,r=IC.drawRoom(document.getElementById('ic-room-map'),m,n,0,marks.checked);
+  document.getElementById('ic-room-note').textContent='Room '+(n+1)+' · source '+IC.hex(r.at)+' · 38 × 27 tiles.';
+  document.getElementById('ic-room-stats').innerHTML='<tr><th>Parts needed</th><th>Loose parcels</th><th>Starting time</th><th>Bears / penguins</th><th>Water / magic grids</th></tr><tr><td>'+r.parts+'</td><td>'+r.counts[6]+'</td><td>'+r.time+'</td><td>'+r.counts[2]+' / '+r.counts[3]+'</td><td>'+r.counts[12]+' / '+r.counts[13]+'</td></tr>';
+  slider.max=r.parts;slider.value=r.parts;toy();
+  const destinations=new Set(r.exits.map(e=>e.dest));
+  nodes.forEach((node,i)=>{node.setAttribute('aria-pressed',String(i===n));node.classList.toggle('ic-network-neighbour',destinations.has(i));});
+  for(const {link,p} of paths){
+    const both=link.forward&&link.backward,outgoing=(link.a===n&&link.forward)||(link.b===n&&link.backward);
+    p.classList.toggle('ic-network-one-way',!both);p.classList.toggle('ic-network-outgoing',outgoing);
+    const arrow='url(#ic-arrow-'+(outgoing?'active':both?'normal':'one-way')+')';
+    if(link.forward)p.setAttribute('marker-end',arrow);else p.removeAttribute('marker-end');
+    if(link.backward)p.setAttribute('marker-start',arrow);else p.removeAttribute('marker-start');
+  }
+  document.getElementById('ic-network-room-name').textContent='Room '+(n+1)+'’s doors';
+  document.getElementById('ic-network-summary').textContent='Build the toy with '+r.parts+' parts to use these doors. Starting time: '+r.time+'.';
+  const roomSection=document.getElementById('ic-room-map').closest('section');document.getElementById('ic-network-view-room').href='#'+roomSection.id;
+  const exits=document.getElementById('ic-exits');exits.replaceChildren();
+  for(const e of r.exits){
+    const b=document.createElement('button');b.textContent=ICNetwork.doorName(e)+' → Room '+(e.dest+1);b.title='Door at tile '+e.x+', '+e.y;b.dataset.destination=e.dest;
+    if(!network.doors.some(d=>d.from===e.dest&&d.to===n)){const badge=document.createElement('span');badge.className='ic-network-door-tag';badge.textContent='one-way';b.append(badge);}
+    b.onclick=()=>{select.value=e.dest;show();};exits.append(b);
+  }
+}
+select.onchange=show;marks.onchange=show;slider.oninput=toy;
+document.getElementById('ic-prev').onclick=()=>{select.value=(+select.value+15)%16;show();};
+document.getElementById('ic-next').onclick=()=>{select.value=(+select.value+1)%16;show();};show();
 })().catch(e=>{document.getElementById('ic-error').textContent=e.message;console.error(e);});
 </script>

@@ -155,3 +155,26 @@ evidence; the Graphics caption explains two bits as one wide pixel.
 The original annotation PR was still open and its earlier CI passed when
 checked before audit delivery. The required checks and full site build
 are run against the completed audit before the new commit.
+
+## Room-network overview requested during curation
+
+The contributor requested a clearer visualization of the door network.
+PR #875 remained open, so this continues the existing branch. The Maps
+section replaces the numbered room bar with an interactive SVG overview
+of all sixteen room miniatures. It groups the 42 original doors into
+24 connections and shows the six one-way links with single arrowheads
+and dashed lines. The selection highlights outgoing connections and
+updates the detailed map, toy, and door buttons. Zoom, Fit, native panning,
+keyboard activation, and touch selection are supported.
+
+The layout follows the topology to keep connections readable; it does not
+assert geographic room positions. Thumbnails use the page's existing
+room renderer. A new test compares every graph door and direction with
+the original room loader's runtime grid. The existing listing and its
+audit sample are unchanged. The copy received its own plain-language pass.
+Browser checks cover all sixteen selections, arrows, one-way badges,
+keyboard and touch activation, zoom, and mobile containment.
+
+This begins the contributor's section-by-section curation, so the metadata
+is silver-claimed with jankfoundry as steward; copy remains agent-draft
+until the human copy pass. The remaining curation is listed in TODO.md.

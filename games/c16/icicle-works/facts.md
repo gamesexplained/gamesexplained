@@ -74,6 +74,14 @@ caps surplus time at 40 and clears the active room flag at `$42`. The persistent
 per-player flag at `$A5F1,X` is written only on the door-exit path at `$61AA`. Leaving through a
 door requires the completed flag and held fire at `$6C46-$6C65`.
 
+The sixteen original room loads contain 42 doors joining 24 room pairs.
+Eighteen pairs have doors both ways; six work in one direction: 6 to 7,
+7 to 11, 7 to 3, 8 to 4, 8 to 14, and 9 to 8. The Maps overview groups
+reciprocal doors into one connection with arrowheads at both ends. Its
+room placement is a schematic arrangement. `test_network.js` compares
+every door's destination and tile position with the original loader's
+first runtime grid, then checks every displayed direction.
+
 Toy collection order uses `room*16 + parts_collected` into `$8F51` for the
 visible position and `$9051` for the graphic-piece index. `$7431` has fifteen
 screen positions in a five-by-three diagram. `$6377` copies a 448-byte window

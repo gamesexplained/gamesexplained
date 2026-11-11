@@ -1,6 +1,6 @@
 # Icicle Works: TODO
 
-Silver: all 26,129 authored bytes described; all supplied media answered;
+Silver, claimed by jankfoundry for curation: all 26,129 authored bytes described; all supplied media answered;
 four authored tabs plus Source; both tunes playable; every moving shape
 viewable; original-code and live verification recorded in `facts.md`.
 Copy remains agent-draft.
@@ -20,9 +20,10 @@ the requested audit and new measurement are complete.
 
 ## Gold
 
-A human should curate every section, choose what deserves more space, and
-rewrite or approve the copy. Claim the game with `silver-claimed` and a
-steward login when that pass starts. An agent cannot grant Gold.
+The contributor began curation by requesting a clearer room-network
+overview. The game is silver-claimed with jankfoundry as steward. Every
+section still needs its human pass: choose what deserves more space, and
+rewrite or approve the copy. An agent cannot grant Gold.
 
 ## Open checks and possible follow-ups
 
