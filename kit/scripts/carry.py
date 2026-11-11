@@ -52,10 +52,16 @@ What the report flags:
     sends elsewhere;
   - an immediate value that differs;
   - stretches of instructions the copy adds or leaves out;
+  - an instruction the code above runs into in one of the two only, where a jump or a return
+    before it is in one copy and not the other, and each comment on bytes the source does not
+    hold as code that the copy's code runs on into;
   - an instruction whose operand the copy keeps apart from where it keeps it elsewhere, such as
     a store back to the byte the source read, which the copy puts in a variable of its own;
   - each carried comment whose stretch of code holds any of those, and each comment on data
     whose bytes differ in the copy, with the hex values it names that the copy does not hold;
+  - each carried comment that names an address outside the code paired where the copy, in
+    another folder, holds other bytes: a caller, a table or an operand's value that the source
+    had there and the copy need not;
   - comments and names that could not be placed.
 
 The 6502 family only (c64, c16, bbc, apple2, nes): the shapes are its addressing modes.
@@ -73,6 +79,7 @@ sys.path.insert(0, HERE)
 
 GOES = ("jsr", "jmp")
 SIX502 = ("c64", "c16", "bbc", "apple2", "nes")
+ENDS = {"rts", "rti", "jmp", "bra"}  # instructions the next one is never run into from
 SHOW = 12                       # findings of each kind printed; the pairing file holds them all
 
 
@@ -374,6 +381,15 @@ def findings(src, dst, pairs, srange, chips):
             w = 2 if s.zp else 4
             add("operand", s.a, d.a, f"${s.a:04X} {s.text()}, the copy ${d.a:04X} {d.text()}; elsewhere the "
                 f"copy uses ${most:0{w}X} for ${s.data:0{w}X}")
+    # an instruction the code above runs into in one copy and not in the other: what a comment
+    # says reaches it (nothing, or only a jump) may not hold in the copy
+    for i, j in pairs:
+        if not i or not j:
+            continue
+        p, q, s, d = src[i - 1], dst[j - 1], src[i], dst[j]
+        if p.a + p.n == s.a and q.a + q.n == d.a and (p.m in ENDS) != (q.m in ENDS):
+            add("runs in", s.a, d.a, f"${s.a:04X} {s.text()}: the code above runs into it in the "
+                f"{'copy' if p.m in ENDS else 'source'} only (${p.a:04X} {p.text()}, the copy ${q.a:04X} {q.text()})")
     ps, pd = {i for i, _ in pairs}, {j for _, j in pairs}
     for side, seq, got, kind in ((0, src, ps, "left out"), (1, dst, pd, "added")):
         for r in stretches([k for k in range(len(seq)) if k not in got]):
@@ -430,7 +446,8 @@ def data_twin(code, x, n, ram_s, ram_d):
     return None, None
 
 
-def carry(S_src, S_dst, M, how, code, srange, findings_, ram_s, ram_d, rules, src_ins, same_dir, chips):
+def carry(S_src, S_dst, M, how, code, srange, findings_, ram_s, ram_d, rules, src_ins, same_dir, chips,
+          runs_into=frozenset()):
     slo, shi = srange
     rename = lambda n: rename_with(rules, n)
 
@@ -523,6 +540,9 @@ def carry(S_src, S_dst, M, how, code, srange, findings_, ram_s, ram_d, rules, sr
             if t is None:
                 if slo <= x <= shi:
                     notes.append(f"names ${x:04X}, which has no twin")
+                elif not same_dir and ram_s[x:x + 4] != ram_d[x:x + 4]:
+                    # another image: the address keeps the source's meaning only where both hold the same
+                    notes.append(f"names ${x:04X}, outside the code paired, where the copy holds other bytes")
                 return m.group(0)
             return f"${t:04X}" if t != x else m.group(0)
 
@@ -590,6 +610,8 @@ def carry(S_src, S_dst, M, how, code, srange, findings_, ram_s, ram_d, rules, sr
                 why.append(f"the copy's bytes differ from ${a + k:04X} (${here[k]:02X}, the copy ${there[k]:02X})"
                            + (f"; the comment names {', '.join(f'${v:02X}' for v in missing)}, "
                               "which the copy's bytes do not hold" if missing else ""))
+        if not code_here and t in runs_into:
+            why.append(f"the copy's code runs on into ${t:04X}, where the source has no code")
         placed_com.append({"address": t, "type": c["type"], "text": text, "from": a, "by": h,
                            **({"reread": why} if why else {}), **({"notes": notes} if notes else {})})
     return placed_sym, placed_com, unplaced
@@ -655,7 +677,7 @@ def cmd_pair(argv):
     F, uses = findings(src, dst, pairs, srange, io_meaning(sgame))
     M, how, code = address_map(src, dst, pairs, uses, srange)
     syms, coms, unplaced = carry(S_src, S_dst, M, how, code, srange, F, ram_s, ram_d, rules, src, same_dir,
-                                 io_meaning(sgame))
+                                 io_meaning(sgame), {q.a + q.n for q in dst if q.m not in ENDS})
     for c in coms:
         c["text"] = rename_with(prose, c["text"])
 

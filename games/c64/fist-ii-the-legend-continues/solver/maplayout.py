@@ -10,7 +10,7 @@ it below, with the two exits' columns lined up where there is room. When
 the spot is taken it moves the room sideways or a row further on, whichever
 is the smaller change.
 
-Reads ../listing.json. Prints the layout as JSON, {room: [x, row]}: x is
+Reads ../parts/adventure/listing.json. Prints the layout as JSON, {room: [x, row]}: x is
 the world column of the room's column 0, row 0 holds room 94 and rows
 above it are negative. levels.html carries a copy as LAYOUT.
 
@@ -21,7 +21,7 @@ from collections import deque, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 d = bytearray(65536)
-for r in json.load(open(os.path.join(HERE, '..', 'listing.json')))['records']:
+for r in json.load(open(os.path.join(HERE, '..', 'parts', 'adventure', 'listing.json')))['records']:
     if r.get('b'): d[r['a']:r['a'] + len(r['b'])] = bytes(r['b'])
 
 a = 0x4AEC; ex = {}
