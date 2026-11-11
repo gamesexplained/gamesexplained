@@ -143,3 +143,30 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   looked at because the ledger listed them. On side B one holds code that
   prints `FREE=`: a leftover of a patched DOS 3.3 on the disk the side
   was mastered from.
+
+## 11 November 2026, side B on the Discoveries tab
+
+- The ledger's notes said the leftover sector was "code assembled for
+  DOS 3.3's page $B6". Taken apart for the page, only its first 151
+  bytes are: they call $B6B8, $B6C2 and $B6C7, and those addresses fit
+  the sector's own routines only if it starts at $B65B. The routine that
+  prints `FREE=` has no address of its own in it. `orientation.md` and
+  `media.json` now say what each stretch is.
+- What $AE42, $AE2F, $B3BB and $AA5F are in DOS 3.3 came first from
+  memory. They were then read off a DOS 3.3 System Master: CATALOG calls
+  $AE42 at $ADC0 to print the volume number, the VTOC's buffer starts at
+  $B3BB, and the command numbers 4, $10 and $30 are SAVE, CLOSE and
+  BSAVE in the table of names at $A884.
+- The date came out of following the second patch's printing routine by
+  hand: its two bytes in the sector are $1B and $07, which it prints as
+  07/27/82.
+- The first plan for the page was two screenshots side by side. The
+  Levels tab already runs every stage from the listings, so the entry
+  runs the same code with the two tables turned over. All 17 places
+  came out as side A's rows in reverse on the first run, which is the
+  check that the drawing goes through the tables everywhere those
+  places reach.
+- The castle picture is drawn in the side B entry and not on the
+  Graphics tab: it is the one picture side B had to store differently,
+  and the entry needs it to make that point.
+

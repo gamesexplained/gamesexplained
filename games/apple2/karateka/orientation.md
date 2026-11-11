@@ -172,12 +172,40 @@ whether the original disk had the fault or the copy got it is not known.
 
 The four sectors of track 6 that the loader reads into page $40 and
 throws away ("The parts", above) hold only $00, $FF and one $02 on side
-A. On side B one of them holds a leftover: 6502 code assembled for DOS
-3.3's page $B6 that counts the free sectors in the disk's map (the VTOC
-bitmap, from $B3BB + $38) in decimal mode and prints `FREE=` and the
-count through the monitor's COUT ($FDED) and PRBYTE ($FDDA). That is a
-patch to DOS 3.3's CATALOG, not part of the game, which has no DOS: a
-piece of whatever was on the disk the side was mastered from.
+A: the first 128 bytes $00 and the last 128 $FF. On side B the four
+are all $FF, all $00, a leftover, and $FF $FF $F7 $F7 repeated. The
+leftover is two patches to DOS 3.3, which the game does not have. Its
+addresses were checked against a DOS 3.3 System Master (`DOS 3.3 System
+Master 16 Sector Version Apple 1980`, archive.org, SHA-1
+`c973d149f5feecd47b6ed257e57d2a817c09ad4a`, read 11 November 2026), as
+that DOS lies in a 48K Apple.
+
+| Sector bytes | What |
+|---|---|
+| $00-$54, $5D-$96 | a date stamp, assembled for $B65B-$B6F1, the free end of DOS's page $B6: its own calls go to $B6B8, $B6C2 and $B6C7, which are the sector's $5D, $67 and $6C |
+| $A3-$A4 | the date it holds, its $B6FE and $B6FF: $1B and $07 |
+| $A8-$F5 | a count of free sectors for CATALOG, with no address of its own in it |
+| $F8-$FF | $FF $FF $F7 $F7 twice, the pattern of the sector after it |
+
+- The count starts with `JSR $AE42`, the call CATALOG makes at $ADC0 to
+  print the volume number after "DISK VOLUME". So the patch stands in
+  for that call. After it, the patch counts the set bits of the VTOC's
+  map of free sectors ($B3BB + $38 to the buffer's last byte) in decimal
+  mode, and prints three blanks ($F948), `FREE=` through COUT ($FDED)
+  and the count through PRBYTE ($FDDA).
+- The date stamp's first routine runs when the command is SAVE, CLOSE or
+  BSAVE ($AA5F is 4, $10 or $30) and stores $B6FE and $B6FF in the
+  catalog sector's buffer: one in the eight unused bytes at its start
+  ($B4BE + the file's number), the other in the high byte of the file's
+  sector count. Its printing routine ($B6C7) moves to column 30 and
+  prints the low four bits of the second byte, `/`, the first byte, `/`
+  and the second byte's high four bits plus 82, each as two digits
+  through $AE44, and leaves through CATALOG's new line ($AE2F). So the
+  two bytes are a day, and a year from 1982 with a month. The sector's
+  read 07/27/82.
+
+Whose DOS it was and how it came to be in the sector is not known. The
+sector's last eight bytes carry on the pattern of the sector after it.
 
 ## Steady state
 
