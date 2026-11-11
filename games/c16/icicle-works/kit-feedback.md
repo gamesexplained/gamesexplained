@@ -23,6 +23,12 @@ tools, rebuilt plus4emu 1.2.11 (939e652) with the kit's patch, and used
 regenerator2000 0.9.20. The C16 footprint was clean; all 46 emulator
 capability checks passed. Cached Chromium was used for the browser checks.
 
+A partial single-game build can leave an existing browser profile's service
+worker serving the preceding page. The new-viewer assertion caught the
+stale DOM. The audit's CDP checks bypass the service worker and HTTP cache;
+the full build refreshes the site's versioned assets. This was a visible
+local-preview failure and needed no skill edit.
+
 ## Candidates
 
 None.

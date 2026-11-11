@@ -7,10 +7,16 @@ Copy remains agent-draft.
 
 ## Confidence
 
-The independent 80-comment sample found five wrong details, all corrected.
-The weighted observed error rate was 5.5%, above the kit's mark. A later
-full audit should check every comment, fix it, and draw another independent
-sample. The run's sample is not an estimate after correction.
+The full audit checked all 242 comments. Nine wrong-detail findings held;
+ten comments were corrected, including one repeated restoration claim.
+A fresh independent sample then found zero wrong, doubtful, or unverifiable
+comments in 80. Seed: 202611112; 95% Wilson interval: 0-4.6%. The Source tab
+can report the completed audit and a sample within the kit's mark. The
+measure is a lower bound on errors the checker can find.
+
+The earlier seed-20261111 sample remains in the accuracy record. Its five
+findings were corrected before the full audit. A further audit is optional;
+the requested audit and new measurement are complete.
 
 ## Gold
 

@@ -27,6 +27,7 @@ this program; expanded C16 compatibility is open.
 | Extra lives every 1,000 points | confirmed | `$6EEA`; assisted 990-point score plus an adjacent parcel reached 1,000 and increased spares from 2 to 3. |
 | Springs spread into passages; animals block them | differs; reachability open | `$70F9` accepts low tile kinds 0-3, including bears/penguins. Original routine tested on 4,096 cases with successful controls. A legal room route demonstrating water replacing an enemy remains open. |
 | High-score table with three-letter names | differs; confirmed | `$8D5E` accepts five letters/spaces. Assisted qualifying score accepted and stored ABCDE; all 256 byte inputs and editing sequences checked against original code. |
+| Title brick animation | confirmed and tested | `$688C-$68BF` rotates three brick glyphs; icicle glyphs stay unchanged. Thirty-two live IRQ calls and 256 original-code updates agree with the Graphics viewer. |
 | Music and sound effects | confirmed and tested | Two complete tunes and four effect examples on the page; original sound writes match independent emulator captures. Melody names remain open. |
 | Two-player alternation | traced | Death path from `$6253` selects the next player; room, score, and completion state are separate. Full alternating playthrough remains open. |
 

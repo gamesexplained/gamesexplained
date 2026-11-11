@@ -5624,7 +5624,7 @@
   {
    "address": 24813,
    "type": "line",
-   "text": "Clears the completion flash and calls title_screen. On return, clears both players' scores, rooms, camera state and animation state, sets player 1's spare-life count to BCD 2, and starts the room loop. The title routine initializes player 2 according to the selected player count."
+   "text": "Clears the completion flash and calls title_screen, which clears both players' room numbers and may select a demonstration room before returning. On return, clears both players' scores and camera state, resets Santa's direction and the six-frame animation counter, sets player 1's spare-life count to BCD 2, and starts the room loop. The title routine initializes player 2 according to the selected player count."
   },
   {
    "address": 24867,
@@ -5644,7 +5644,7 @@
   {
    "address": 25171,
    "type": "line",
-   "text": "Stops the timer and clears voice 1's frequency high bits. Carry distinguishes the RUN/STOP sacrifice path from timeout/collision handling. Demo termination returns to the title; normal play runs an object-update delay and the snowball screen wipe before selecting the next player or high-score entry."
+   "text": "Stops the timer and clears voice 1's frequency high bits. Carry set on the RUN/STOP sacrifice path skips directly to the snowball wipe. With carry clear for timeout/collision, a demonstration returns to the title; normal play runs an object-update delay before the wipe and the next-player or high-score decision."
   },
   {
    "address": 25217,
@@ -5674,12 +5674,12 @@
   {
    "address": 25447,
    "type": "line",
-   "text": "Copies the 25-byte source at grid_pointer_helper to RAM $0400, retaining the source bytes as well. On exit Y is $FF; storing it through the $0409 pointer at index $FF sets the machine's $0508 reset marker to $FF. The simulation calls the helper's copy at $0400."
+   "text": "Copies the 25-byte source at grid_pointer_helper to RAM $0400, retaining the source bytes as well. On exit Y is $FF and A is $A5, the first copied opcode; STA through the $0409 pointer at index $FF sets the machine's $0508 reset marker to $A5. The simulation calls the helper's copy at $0400."
   },
   {
    "address": 25463,
    "type": "line",
-   "text": "Resets per-room state and sound, blanks the display, restores the icicle glyphs and HUD, reads the active player's room and completion flag, copies that room's 448-byte toy picture into the charset area at $55A8, selects its required parts and time, and expands the packed 38-by-27 map into the $2200 and $2800 grids. Draws each tile and records Santa's start, then enables the display and interrupts."
+   "text": "Resets per-room state and sound, blanks the display, restores the three brick glyphs animated on the title screen and the HUD, and reads the active player's room and completion flag. Copies a 448-byte window beginning at the room's toy-picture pointer into $55A8; for a shorter picture this includes subsequent picture data. Selects required parts and time, expands the packed 38-by-27 map into both grids, draws each tile and records Santa's start, then enables the display and interrupts."
   },
   {
    "address": 26053,
@@ -5689,7 +5689,7 @@
   {
    "address": 26233,
    "type": "line",
-   "text": "Sixteen ASCII bytes for the demonstration label, copied into the room/player HUD and translated by adding $4F."
+   "text": "Sixteen bytes for DEMO PRESS A KEY, with ASCII letters and $B1 separators. The demonstration HUD adds $4F to every byte, turning the separators into blank glyph 0."
   },
   {
    "address": 26249,
@@ -5714,7 +5714,7 @@
   {
    "address": 26402,
    "type": "line",
-   "text": "Saves A/X/Y and clears decimal mode, acknowledges TED's interrupt and selects title or play work. In play it copies the camera window, handles the completion flash and countdown, moves the camera every other interrupt, updates animated glyphs and the time/lives HUD, and runs the music routine. In title mode it animates icicles and calls the copied KERNAL keyboard scan. Restores the saved registers and returns with RTI."
+   "text": "Saves A/X/Y and clears decimal mode, acknowledges TED's interrupt and selects title or play work. In play it copies the camera window, handles the completion flash and countdown, moves the camera every other interrupt, updates animated glyphs and the time/lives HUD, and runs the music routine. In title mode it animates three brick glyphs and calls the copied KERNAL keyboard scan. Restores the saved registers and returns with RTI."
   },
   {
    "address": 26849,
@@ -6069,7 +6069,7 @@
   {
    "address": 27752,
    "type": "line",
-   "text": "Preserves the tile code while saving the music registers for an effect. Toy parts call reveal_toy_part and increment parts_collected; reaching parts_required starts a screen flash and a higher-pitched tone. Bonuses use the ordinary collection tone. Starts a voice-2 effect and clears voice 1's enable bit; music_tick later restores the saved sound registers."
+   "text": "Preserves the tile code while saving the music registers for an effect. Toy parts call reveal_toy_part and increment parts_collected; reaching parts_required starts a screen flash and a higher-pitched tone. Bonuses use the ordinary collection tone. Starts a voice-2 effect and clears voice 1's enable bit. music_tick restores a pending save only when its input latch is nonzero and both effect_active and life_ended are clear."
   },
   {
    "address": 27808,
@@ -6174,7 +6174,7 @@
   {
    "address": 28835,
    "type": "line",
-   "text": "Checks empty down-left and left cells first, rejecting a same-level neighbour whose low seven bits are a snowball/parcel. If blocked, applies the corresponding right-side tests. Clears the current cell and moves the object sideways with bit 7 set so that the next sweep can continue its fall."
+   "text": "Checks exact-empty down-left and left cells first, then rejects rolling left when the above-left cell masked with $7F is tile 4, 5 or 6. If blocked, checks exact-empty down-right and right cells, then rejects rolling right when the above-right cell's low nibble is 4, 5 or 6. Clears the current cell and moves the object sideways with bit 7 set for a later fall."
   },
   {
    "address": 28921,
@@ -6439,7 +6439,7 @@
   {
    "address": 34075,
    "type": "line",
-   "text": "Five-byte runtime save area for TED $FF0E-$FF12, initially zero in the hand-over. Collection and explosion effects save music here; music_tick restores the registers after the effect ends."
+   "text": "Five-byte runtime save area for TED $FF0E-$FF12, initially zero in the hand-over. Collection and explosion effects save music here. When the music/input latch is nonzero, music_tick restores a pending save after both effect_active and life_ended become clear."
   },
   {
    "address": 34080,
@@ -6594,7 +6594,7 @@
   {
    "address": 35978,
    "type": "line",
-   "text": "Ten 13-byte high-score records: leading blank, rank glyph, blank, five name glyphs, blank and four encoded score digits. draw_high_scores appends the displayed trailing zero. Initial names and scores are authored data; insert_high_score shifts and overwrites the records in RAM."
+   "text": "Ten 13-byte high-score records: two rank columns, a blank, five name glyphs, a blank and four encoded score digits. Ranks 1-9 have a leading blank; rank 10 uses both columns. draw_high_scores appends the displayed trailing zero. Initial names and scores are authored data; insert_high_score shifts and overwrites the records in RAM."
   },
   {
    "address": 36108,

@@ -138,9 +138,9 @@ state; the alternation is traced, not a complete two-player playthrough.
 `$8D5E` accepts five uppercase letters/spaces for a qualifying high score,
 with DELETE editing and RETURN confirmation. The original leaflet says
 three letters. An assisted qualifying score accepted `ABCDE` on screen and
-stored all five glyphs in the top record. Each record begins with a blank,
-a rank glyph, another blank, five name glyphs, a blank and four score
-glyphs. `$8C1D` appends the displayed score's final zero.
+stored all five glyphs in the top record. Each record starts with two rank columns, a blank, five name glyphs,
+a blank and four score glyphs. Ranks 1-9 begin with a blank; rank 10
+uses both rank columns for its two digits. `$8C1D` appends the displayed score's final zero.
 
 ## Timing and sound
 
@@ -155,7 +155,12 @@ were exactly 51 IRQ hits, with the handler as a positive control. NTSC's
 at `$6A97-$6AFA` cover magic grid (8), Santa (3 groups of 4), water (4),
 explosion (4), two bear orientations (4 each), two penguin orientations
 (4 each), and bonus (6). The explosion frame is copied to both ordinary
-and gift-explosion glyph groups.
+and gift-explosion glyph groups. In title mode, `$688C-$68BF` instead
+rotates the live brick glyphs 28-30 at `$50E0-$50F7`: glyph 28 moves
+vertically on odd frame-counter values; glyphs 29 and 30 rotate their
+rows two bits left and right on every title interrupt. Icicle glyphs
+68-75 remain unchanged. The title-brick viewer matches 256 original
+updates, including every phase and frame-counter wrap.
 
 Music has two tune descriptors, selected by title_mode at `$8292/$829A`.
 Each voice has little-endian ten-bit frequency words and a separate byte
@@ -164,12 +169,17 @@ and summed durations 1568/1392 IRQ calls for the two voices. The title tune
 has 54/66 timed notes, with both duration sums 1104. `$8170` drives the two
 voices and a shared volume envelope; `$81E1` reads the streams. Effects
 borrow voice 2, save five sound registers at `$851B` and defer the music
-updates until the effect ends. The volume envelope approaches level 2 on
+updates while the effect or life-ended flag is set. Restoring a saved
+register set requires the music/input latch at `$60` to be nonzero and
+both flags clear. The volume envelope approaches level 2 on
 a two-call cycle. Tune identities remain open.
 
 ## Verification evidence
 
 - Emulator capability suite: 46 passed, zero failed, PAL Plus/4.
+- Title animation: 32 live updates match the brick-rotation rule; the
+  icicle bytes remain unchanged and an IRQ control counts 32 calls.
+  The published viewer also matches 256 original-code updates.
 - All sixteen room loads: both full 1,026-cell grids match independent
   nibble decoding, all 448-byte toy windows match their source pointers,
   and all initial BCD times match the parameter table.
@@ -205,6 +215,26 @@ routine silences sound, and the music option's encoded trailing blank.
 The observed plain rate was 5/80 (6.25%), with a 95% Wilson interval of
 2.7-13.8%; weighting the two strata by population gives 5.5%. The sample
 is above the kit's mark. It is a lower bound on errors the checker can find,
-not an audit or a measurement after correction. A full audit is recommended
-for a later run. Coverage of 100% measures described bytes, not the absence
+not an audit or a measurement after correction. That result prompted the full audit reported below. Coverage of 100% measures described bytes, not the absence
 of errors in their descriptions.
+
+On 11 November 2026, two fresh gpt-6-astra checkers audited all 242 comments
+in disjoint ranges of 138 and 104. They found nine comments with wrong
+details and no doubtful or unverifiable comments. The parent verified every
+finding and corrected ten comments, including a repeated sound-restoration
+claim. The findings concern title state and brick animation, the death
+delay, the reset marker's stored value, the toy-copy window, encoded
+separators, music restoration, rolling neighbours and masks, and the
+tenth high-score record. All 62 original-code test groups and complete
+upper-data checks passed. These counts describe what the audit found;
+they are a lower bound on errors it could find, not a guarantee that the
+corrected listing has no errors.
+
+A fresh gpt-6-astra checker, which wrote and audited none of these comments,
+checked a new seed-202611112 sample of 80 from the corrected population of
+242: 60 from 160 written comments and 20 from 82 generated comments. All
+80 were right, with zero wrong, doubtful, or unverifiable verdicts and no
+further corrections. The observed plain and weighted error rates are 0%;
+the plain 95% Wilson interval is 0-4.6%. All 25 independent original-code
+test groups passed. The sample is within the kit's mark. Zero observed
+errors does not establish that every remaining detail is right.

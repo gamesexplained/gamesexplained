@@ -129,7 +129,19 @@ const IC = (() => {
     else if((code===32||code>=65&&code<=90)&&text.length<5)text+=String.fromCharCode(code);
     return {text,done};
   }
-  return {word,hex,kinds,decodeRoom,glyphBase,worldChars,anims,framePtr,fontFor,pixels,paint,drawQuad,drawRoom,toyChars,drawToy,waterStep,clockTick,nameFeed};
+  function titleBricks(m,tick) {
+    const bytes=m.slice(0x7578,0x7590);
+    for(let frame=0;frame<(tick%16);frame++) {
+      if(frame&1){const first=bytes[0];bytes.copyWithin(0,1,8);bytes[7]=first;}
+      for(let y=0;y<8;y++) {
+        const left=bytes[8+y],right=bytes[16+y];
+        bytes[8+y]=((left<<2)|(left>>6))&255;
+        bytes[16+y]=((right>>2)|(right<<6))&255;
+      }
+    }
+    return bytes;
+  }
+  return {word,hex,kinds,decodeRoom,glyphBase,worldChars,anims,framePtr,fontFor,pixels,paint,drawQuad,drawRoom,toyChars,drawToy,waterStep,clockTick,nameFeed,titleBricks};
 })();
 // end of icicle-core
 </script><script>

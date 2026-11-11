@@ -110,3 +110,48 @@ documentation separation, 609 matching listings, and 50 affected tests
 not installed). No Spectrum analysis depends on that skip. The checks are
 repeated for the final copy commit. PR review screenshots show the base
 branch's three-entry C16 catalogue and the new explanation pages.
+
+## Full audit requested by the contributor
+
+The contributor requested a full audit after the Silver PR opened. PR #875
+was open, so this work continues its existing branch. A listing rebuild
+from the entry and stable-play snapshots reproduced the committed result.
+The 242-comment population was frozen in ignored work/reports/audit-20261111.
+Two fresh gpt-6-astra checkers worked sequentially with cold briefs and
+no access to one another's findings. They checked 138 and 104 comments.
+All nine wrong-detail findings held on parent review. Ten comments were
+corrected through a restarted canonical disassembler session, including
+the repeated restoration condition at $851B. The export retained 55 blocks,
+878 symbols, 242 comments, and 100% coverage of 26,129 authored bytes.
+Only the intended ten comment fields changed in the listing.
+
+The title animates brick glyphs rather than icicles. A small Graphics
+viewer now demonstrates all sixteen phases; its pure JavaScript rotations
+agree with 256 original-code updates, including the frame-counter wrap.
+The article states the music-restoration condition and facts.md gives the
+two-column rank-10 layout. The two original-code audit suites passed all
+40 and 22 groups, with complete room and data checks. Evidence, scripts,
+source copies, and verdicts remain in ignored work.
+
+The title rule also passed a live 32-interrupt plus4emu check, with an IRQ
+counting control and unchanged icicle bytes. A partial local game rebuild
+left the browser's service worker serving the previous page; the new
+viewer was missing from that cached DOM. Browser validation bypasses the
+service worker and HTTP cache and then passes all controls and sixteen
+distinct title phases on desktop and mobile. The failure was visible in
+the new-widget assertion, and required no product-code change.
+
+A third fresh gpt-6-astra checker took no part in annotation or auditing.
+It checked the seed-202611112 draw: 60 written and 20 generated comments.
+All 80 exact verdicts were right, with no doubtful or unverifiable rows.
+sample.py count validated the unchanged drawn texts and reports 0/80,
+Wilson 0-4.6%, and a weighted observed rate of 0%. The parent reproduced
+its 25 original-code test groups. The accuracy ledger retains the first
+sample, full audit, and new sample in that order. No repeat audit was
+needed because the new sample is within the kit's mark.
+
+The new copy was reviewed separately for plain language and numerical
+evidence; the Graphics caption explains two bits as one wide pixel.
+The original annotation PR was still open and its earlier CI passed when
+checked before audit delivery. The required checks and full site build
+are run against the completed audit before the new commit.
