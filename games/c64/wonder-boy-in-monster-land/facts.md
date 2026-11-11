@@ -8,6 +8,14 @@ Joystick port 2 is sampled at `$3C4C`. The code retains the preceding left and r
 
 The wing-boots flag and counter are also in the resident engine. The counter starts at `$FF` and is decremented only on a qualifying visit while up is pressed. The same resident facts give the conditions and the VICE tests.
 
+## The hourglass
+
+The status panel’s hourglass is the routine at `$4A43`, called once in each pass of the main loop (`$0437`) and of the alternate loop (`$07B2`). It decrements the count at `$4B0D`; when the count reaches zero the forward step at `$4A50` reloads it with 150 and moves the picture number at `$4DD4` on by one. On reaching picture 6 the count is set to 3. The step after picture 6 calls `$77BC` with A=8, which takes 8 from the selected player’s meter, and goes back to picture 0. The meter starts at 40 (`$6BF3`), and the panel code at `$3800` divides the limit by 8 for its hearts, so 8 is one heart. `$4A90` draws the picture: twenty screen codes from one of the seven blocks at `$5127`–`$51B2`, in five rows of four at columns 36 to 39 of the top five screen rows.
+
+The tile check at `$613B`, in the tile-interaction routine the main loop calls at `$0423`, compares the first sampled map value at `$61D6`, the cell at the view tile’s column and row, with the load’s byte at `$7F76` and, on a match, decrements `$4B0D` once more while it is at least 2. Loads 2, 8, 9, 11, 15, 17, 22, 25 and 28 hold a tile number there (`$42`, `$20`, `$20`, `$20`, `$42`, `$42`, `$20`, `$35` and `$83`); the other 22 loads hold `$FF`. Drawn from each load’s map data, that tile is the top row of the load’s pools.
+
+The contact handler at `$7646` adds to the score and writes 1 to the flag at `$4DD3` and to the count. While the flag is set the backward step at `$4A74` moves the picture number down by one every 8 calls, and clears the flag at picture 0. Which entity type dispatches to `$7646` is open. The area setup at `$6C73` adds 8 to `$4DCD`, sets the count to 1 and the picture to 6, so the first tick takes the 8 back and draws picture 0. These are readings of the listing; none of them has been watched in play.
+
 ## Maps and display
 
 The renderer at `$6D41–$6D63` expands a map byte into four character codes from the tables at `$81CF`, `$82CF`, `$83CF` and `$84CF`. A character-to-colour table begins at `$7FCF`. Each captured load supplies its own tables and map. The pointer and dimensions were checked against the entry snapshot of each part; the part's `facts.md` gives the observed row count and stride.

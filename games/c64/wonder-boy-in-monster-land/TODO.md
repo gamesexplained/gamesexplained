@@ -11,6 +11,8 @@ All 490,491 counted bytes have descriptions. The requested Silver still needs th
 
 The following questions stay explicit where the evidence does not settle them. A bounded forced test does not establish an ordinary-play route.
 
+- Find which entity type’s contact handler is `$7646`, the code that runs the hourglass backwards, and watch the hourglass in play: its seven pictures, the heart it costs, and the doubled count in a pool (`facts.md`, “The hourglass”).
+- Check whether two-player play can start. The resident code clears the two-player flag at `$4DBC` (`$0378`) and no traced instruction sets it; the title code and the release’s trainer have not been ruled out. If it can start, the area setup at `$6C73` adds 8 to the first player’s meter while the first hourglass tick takes 8 from the selected player’s.
 - Establish the natural routes to the forced loads, classify bytes after the two decoded streams in the extracted disk files and their transfer and determine ownership of repeated data across loads. The two decoded streams reproduce each recorded write range and its entry snapshot, including four post-load patches; `stream-boundaries.json` records the bounded result.
 - Restore or attribute the four older resident annotations at $BE84, $FAC0, $FD30 and $FD50 only after checking the corresponding state. The prior map is saved under resident `work/`.
 - Preserve the resident automatic labels when rebuilding its disassembler project: the reseeded project exports without losing tracked bytes only after those labels are carried into it. Establish whether the effect slot searches can run with fewer than four free slots and what follows if they do.

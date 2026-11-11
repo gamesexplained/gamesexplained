@@ -5,7 +5,7 @@ These are leads for verification, not findings from the code. Each remains open 
 | Feature | Status |
 |---|---|
 | Twelve rounds with towns, caves, woods, dungeons and an underwater section | partially observed: the opening capture shows round 1; forced load 2 shows “RND. 2”. The total, environment names and natural sequence remain open. |
-| A time limit and hourglasses that extend it | open |
+| A time limit and hourglasses that extend it | traced: `$4A43` steps the status-panel hourglass through seven pictures, 150 passes of the main loop for each of the first six and three for the last; then `$77BC` takes 8 from the life meter, one heart, and the glass starts again. `$613B` takes a second count in each pass while the player is at the load’s tile from `$7F76`, the top row of a pool. The contact handler at `$7646` runs the glass back to its first picture; which object uses that handler is open, and no hourglass has been collected in play. |
 | Walking, jumping, climbing ladders, sword attacks and special weapons | open |
 | Doors opened with Space, including hidden passages and shops | open |
 | Enemies, duels, bosses and a final dragon | open |
